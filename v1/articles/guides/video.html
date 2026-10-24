@@ -596,7 +596,7 @@ foreach (DetectedRange range in freeze.Ranges)
     Console.WriteLine($&quot;Frozen from {range.Start.ToTimeSpan()} to {range.End.ToTimeSpan()}&quot;);
 }
 
-Console.WriteLine($&quot;{black.Ranges.Count} black stretches, crop to {crop.Report.Crop}, {fields.Report.Verdict}&quot;);
+Console.WriteLine($&quot;{black.Ranges.Count} black stretches, crop to {crop.Report().Crop}, {fields.Report().Verdict}&quot;);
 Console.WriteLine($&quot;{duplicates.DuplicateCount} repeated frames&quot;);
 </code></pre>
 <p><code>SignalMeter</code> reports what signalstats and colordetect do: the lowest, 10 %, mean, 90 % and highest code values of each plane
@@ -607,7 +607,7 @@ keeps a <code>SignalFrame</code> per frame.</p>
 // blockiness scores.
 SignalMeter meter = new(new SignalOptions { Blur = true, Blockiness = true });
 MediaAnalysis.Run(&quot;shots.mkv&quot;, new MediaAnalysisOptions { Scenes = null, VideoDetectors = [meter] });
-SignalReport report = meter.Report;
+SignalReport report = meter.Report();
 Console.WriteLine($&quot;Y {report.Y.Min}..{report.Y.Max} (mean {report.Y.Mean:0.0}), {report.OutOfRange:P1} out of range, {report.Range} range&quot;);
 Console.WriteLine($&quot;Edges {report.Blur:0.00} px wide, blockiness {report.Blockiness:0.00}&quot;);
 </code></pre>

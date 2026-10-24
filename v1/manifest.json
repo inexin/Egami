@@ -11489,7 +11489,7 @@
       "Uid": null,
       "IsMRef": true,
       "Title": "Egami.Video.Analysis.DuplicateDetector",
-      "Summary": "<p sourcefile=\"api/Egami.Video.Analysis.DuplicateDetector.yml\" sourcestartlinenumber=\"1\">Finds repeated frames with ffmpeg mpdecimate's test, without dropping anything: a frame repeats the last kept frame when none\nof its 8 by 8 luma blocks differs by more than <xref href=\"Egami.Video.Analysis.DuplicateOptions.High\" data-throw-if-not-resolved=\"false\"></xref> and no more than\n<xref href=\"Egami.Video.Analysis.DuplicateOptions.Fraction\" data-throw-if-not-resolved=\"false\"></xref> of them differ by more than <xref href=\"Egami.Video.Analysis.DuplicateOptions.Low\" data-throw-if-not-resolved=\"false\"></xref>. Block differences are\nsums of absolute differences on the 8-bit scale, so the thresholds mean the same at every bit depth.</p>\n"
+      "Summary": "<p sourcefile=\"api/Egami.Video.Analysis.DuplicateDetector.yml\" sourcestartlinenumber=\"1\">Finds repeated frames with ffmpeg mpdecimate's test, without dropping anything: a frame repeats the last kept frame when none\nof its 8 by 8 luma blocks differs by more than <xref href=\"Egami.Video.Analysis.DuplicateOptions.High\" data-throw-if-not-resolved=\"false\"></xref> and no more than\n<xref href=\"Egami.Video.Analysis.DuplicateOptions.Fraction\" data-throw-if-not-resolved=\"false\"></xref> of them differ by more than <xref href=\"Egami.Video.Analysis.DuplicateOptions.Low\" data-throw-if-not-resolved=\"false\"></xref>. A block's difference is\nthe mean absolute difference of its samples as a share of the range, so the thresholds mean the same at every bit depth.</p>\n"
     },
     {
       "type": "ManagedReference",
@@ -11615,7 +11615,7 @@
       "Uid": null,
       "IsMRef": true,
       "Title": "Egami.Video.Analysis.FrequencyScale",
-      "Summary": "<p sourcefile=\"api/Egami.Video.Analysis.FrequencyScale.yml\" sourcestartlinenumber=\"1\">The frequency axis of <xref href=\"Egami.Video.Analysis.AudioPictures.Spectrogram(System.Collections.Generic.IEnumerable%7bEgami.Video.Audio.AudioFrame%7d%2cEgami.Video.MediaTime%2cEgami.Video.Analysis.SpectrogramOptions%2cEgami.Video.MediaContext)\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n"
+      "Summary": "<p sourcefile=\"api/Egami.Video.Analysis.FrequencyScale.yml\" sourcestartlinenumber=\"1\">The frequency axis of <xref href=\"Egami.Video.Analysis.AudioPictures.Spectrogram(System.Collections.Generic.IEnumerable%7bEgami.Video.Audio.AudioFrame%7d%2cEgami.Video.MediaTime%2cEgami.Video.Analysis.SpectrogramOptions%2cEgami.Video.MediaContext%2cSystem.Threading.CancellationToken)\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n"
     },
     {
       "type": "ManagedReference",
@@ -12021,7 +12021,7 @@
       "Uid": null,
       "IsMRef": true,
       "Title": "Egami.Video.Analysis.SpectrogramColors",
-      "Summary": "<p sourcefile=\"api/Egami.Video.Analysis.SpectrogramColors.yml\" sourcestartlinenumber=\"1\">The colors of <xref href=\"Egami.Video.Analysis.AudioPictures.Spectrogram(System.Collections.Generic.IEnumerable%7bEgami.Video.Audio.AudioFrame%7d%2cEgami.Video.MediaTime%2cEgami.Video.Analysis.SpectrogramOptions%2cEgami.Video.MediaContext)\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n"
+      "Summary": "<p sourcefile=\"api/Egami.Video.Analysis.SpectrogramColors.yml\" sourcestartlinenumber=\"1\">The colors of <xref href=\"Egami.Video.Analysis.AudioPictures.Spectrogram(System.Collections.Generic.IEnumerable%7bEgami.Video.Audio.AudioFrame%7d%2cEgami.Video.MediaTime%2cEgami.Video.Analysis.SpectrogramOptions%2cEgami.Video.MediaContext%2cSystem.Threading.CancellationToken)\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n"
     },
     {
       "type": "ManagedReference",
@@ -12105,7 +12105,7 @@
       "Uid": null,
       "IsMRef": true,
       "Title": "Egami.Video.Analysis.WaveformScale",
-      "Summary": "<p sourcefile=\"api/Egami.Video.Analysis.WaveformScale.yml\" sourcestartlinenumber=\"1\">How <xref href=\"Egami.Video.Analysis.AudioPictures.Waveform(System.Collections.Generic.IEnumerable%7bEgami.Video.Audio.AudioFrame%7d%2cEgami.Video.MediaTime%2cEgami.Video.Analysis.WaveformOptions%2cEgami.Video.MediaContext)\" data-throw-if-not-resolved=\"false\"></xref> scales sample values.</p>\n"
+      "Summary": "<p sourcefile=\"api/Egami.Video.Analysis.WaveformScale.yml\" sourcestartlinenumber=\"1\">How <xref href=\"Egami.Video.Analysis.AudioPictures.Waveform(System.Collections.Generic.IEnumerable%7bEgami.Video.Audio.AudioFrame%7d%2cEgami.Video.MediaTime%2cEgami.Video.Analysis.WaveformOptions%2cEgami.Video.MediaContext%2cSystem.Threading.CancellationToken)\" data-throw-if-not-resolved=\"false\"></xref> scales sample values.</p>\n"
     },
     {
       "type": "ManagedReference",

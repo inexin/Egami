@@ -74469,24 +74469,24 @@ references:
   commentId: T:Egami.Video.Analysis.AudioPictures
   fullName: Egami.Video.Analysis.AudioPictures
   nameWithType: AudioPictures
-- uid: Egami.Video.Analysis.AudioPictures.Spectrogram(System.Collections.Generic.IEnumerable{Egami.Video.Audio.AudioFrame},Egami.Video.MediaTime,Egami.Video.Analysis.SpectrogramOptions,Egami.Video.MediaContext)
-  name: Spectrogram(IEnumerable<AudioFrame>, MediaTime, SpectrogramOptions?, MediaContext?)
-  href: api/Egami.Video.Analysis.AudioPictures.html#Egami_Video_Analysis_AudioPictures_Spectrogram_System_Collections_Generic_IEnumerable_Egami_Video_Audio_AudioFrame__Egami_Video_MediaTime_Egami_Video_Analysis_SpectrogramOptions_Egami_Video_MediaContext_
-  commentId: M:Egami.Video.Analysis.AudioPictures.Spectrogram(System.Collections.Generic.IEnumerable{Egami.Video.Audio.AudioFrame},Egami.Video.MediaTime,Egami.Video.Analysis.SpectrogramOptions,Egami.Video.MediaContext)
-  name.vb: Spectrogram(IEnumerable(Of AudioFrame), MediaTime, SpectrogramOptions, MediaContext)
-  fullName: Egami.Video.Analysis.AudioPictures.Spectrogram(System.Collections.Generic.IEnumerable<Egami.Video.Audio.AudioFrame>, Egami.Video.MediaTime, Egami.Video.Analysis.SpectrogramOptions?, Egami.Video.MediaContext?)
-  fullName.vb: Egami.Video.Analysis.AudioPictures.Spectrogram(System.Collections.Generic.IEnumerable(Of Egami.Video.Audio.AudioFrame), Egami.Video.MediaTime, Egami.Video.Analysis.SpectrogramOptions, Egami.Video.MediaContext)
-  nameWithType: AudioPictures.Spectrogram(IEnumerable<AudioFrame>, MediaTime, SpectrogramOptions?, MediaContext?)
-  nameWithType.vb: AudioPictures.Spectrogram(IEnumerable(Of AudioFrame), MediaTime, SpectrogramOptions, MediaContext)
-- uid: Egami.Video.Analysis.AudioPictures.Spectrogram(System.String,Egami.Video.Analysis.SpectrogramOptions,Egami.Video.MediaContext)
-  name: Spectrogram(string, SpectrogramOptions?, MediaContext?)
-  href: api/Egami.Video.Analysis.AudioPictures.html#Egami_Video_Analysis_AudioPictures_Spectrogram_System_String_Egami_Video_Analysis_SpectrogramOptions_Egami_Video_MediaContext_
-  commentId: M:Egami.Video.Analysis.AudioPictures.Spectrogram(System.String,Egami.Video.Analysis.SpectrogramOptions,Egami.Video.MediaContext)
-  name.vb: Spectrogram(String, SpectrogramOptions, MediaContext)
-  fullName: Egami.Video.Analysis.AudioPictures.Spectrogram(string, Egami.Video.Analysis.SpectrogramOptions?, Egami.Video.MediaContext?)
-  fullName.vb: Egami.Video.Analysis.AudioPictures.Spectrogram(String, Egami.Video.Analysis.SpectrogramOptions, Egami.Video.MediaContext)
-  nameWithType: AudioPictures.Spectrogram(string, SpectrogramOptions?, MediaContext?)
-  nameWithType.vb: AudioPictures.Spectrogram(String, SpectrogramOptions, MediaContext)
+- uid: Egami.Video.Analysis.AudioPictures.Spectrogram(System.Collections.Generic.IEnumerable{Egami.Video.Audio.AudioFrame},Egami.Video.MediaTime,Egami.Video.Analysis.SpectrogramOptions,Egami.Video.MediaContext,System.Threading.CancellationToken)
+  name: Spectrogram(IEnumerable<AudioFrame>, MediaTime, SpectrogramOptions?, MediaContext?, CancellationToken)
+  href: api/Egami.Video.Analysis.AudioPictures.html#Egami_Video_Analysis_AudioPictures_Spectrogram_System_Collections_Generic_IEnumerable_Egami_Video_Audio_AudioFrame__Egami_Video_MediaTime_Egami_Video_Analysis_SpectrogramOptions_Egami_Video_MediaContext_System_Threading_CancellationToken_
+  commentId: M:Egami.Video.Analysis.AudioPictures.Spectrogram(System.Collections.Generic.IEnumerable{Egami.Video.Audio.AudioFrame},Egami.Video.MediaTime,Egami.Video.Analysis.SpectrogramOptions,Egami.Video.MediaContext,System.Threading.CancellationToken)
+  name.vb: Spectrogram(IEnumerable(Of AudioFrame), MediaTime, SpectrogramOptions, MediaContext, CancellationToken)
+  fullName: Egami.Video.Analysis.AudioPictures.Spectrogram(System.Collections.Generic.IEnumerable<Egami.Video.Audio.AudioFrame>, Egami.Video.MediaTime, Egami.Video.Analysis.SpectrogramOptions?, Egami.Video.MediaContext?, System.Threading.CancellationToken)
+  fullName.vb: Egami.Video.Analysis.AudioPictures.Spectrogram(System.Collections.Generic.IEnumerable(Of Egami.Video.Audio.AudioFrame), Egami.Video.MediaTime, Egami.Video.Analysis.SpectrogramOptions, Egami.Video.MediaContext, System.Threading.CancellationToken)
+  nameWithType: AudioPictures.Spectrogram(IEnumerable<AudioFrame>, MediaTime, SpectrogramOptions?, MediaContext?, CancellationToken)
+  nameWithType.vb: AudioPictures.Spectrogram(IEnumerable(Of AudioFrame), MediaTime, SpectrogramOptions, MediaContext, CancellationToken)
+- uid: Egami.Video.Analysis.AudioPictures.Spectrogram(System.String,Egami.Video.Analysis.SpectrogramOptions,Egami.Video.MediaContext,System.IProgress{Egami.Video.MediaProgress},System.Threading.CancellationToken)
+  name: Spectrogram(string, SpectrogramOptions?, MediaContext?, IProgress<MediaProgress>?, CancellationToken)
+  href: api/Egami.Video.Analysis.AudioPictures.html#Egami_Video_Analysis_AudioPictures_Spectrogram_System_String_Egami_Video_Analysis_SpectrogramOptions_Egami_Video_MediaContext_System_IProgress_Egami_Video_MediaProgress__System_Threading_CancellationToken_
+  commentId: M:Egami.Video.Analysis.AudioPictures.Spectrogram(System.String,Egami.Video.Analysis.SpectrogramOptions,Egami.Video.MediaContext,System.IProgress{Egami.Video.MediaProgress},System.Threading.CancellationToken)
+  name.vb: Spectrogram(String, SpectrogramOptions, MediaContext, IProgress(Of MediaProgress), CancellationToken)
+  fullName: Egami.Video.Analysis.AudioPictures.Spectrogram(string, Egami.Video.Analysis.SpectrogramOptions?, Egami.Video.MediaContext?, System.IProgress<Egami.Video.MediaProgress>?, System.Threading.CancellationToken)
+  fullName.vb: Egami.Video.Analysis.AudioPictures.Spectrogram(String, Egami.Video.Analysis.SpectrogramOptions, Egami.Video.MediaContext, System.IProgress(Of Egami.Video.MediaProgress), System.Threading.CancellationToken)
+  nameWithType: AudioPictures.Spectrogram(string, SpectrogramOptions?, MediaContext?, IProgress<MediaProgress>?, CancellationToken)
+  nameWithType.vb: AudioPictures.Spectrogram(String, SpectrogramOptions, MediaContext, IProgress(Of MediaProgress), CancellationToken)
 - uid: Egami.Video.Analysis.AudioPictures.Spectrogram*
   name: Spectrogram
   href: api/Egami.Video.Analysis.AudioPictures.html#Egami_Video_Analysis_AudioPictures_Spectrogram_
@@ -74494,24 +74494,24 @@ references:
   isSpec: "True"
   fullName: Egami.Video.Analysis.AudioPictures.Spectrogram
   nameWithType: AudioPictures.Spectrogram
-- uid: Egami.Video.Analysis.AudioPictures.Waveform(System.Collections.Generic.IEnumerable{Egami.Video.Audio.AudioFrame},Egami.Video.MediaTime,Egami.Video.Analysis.WaveformOptions,Egami.Video.MediaContext)
-  name: Waveform(IEnumerable<AudioFrame>, MediaTime, WaveformOptions?, MediaContext?)
-  href: api/Egami.Video.Analysis.AudioPictures.html#Egami_Video_Analysis_AudioPictures_Waveform_System_Collections_Generic_IEnumerable_Egami_Video_Audio_AudioFrame__Egami_Video_MediaTime_Egami_Video_Analysis_WaveformOptions_Egami_Video_MediaContext_
-  commentId: M:Egami.Video.Analysis.AudioPictures.Waveform(System.Collections.Generic.IEnumerable{Egami.Video.Audio.AudioFrame},Egami.Video.MediaTime,Egami.Video.Analysis.WaveformOptions,Egami.Video.MediaContext)
-  name.vb: Waveform(IEnumerable(Of AudioFrame), MediaTime, WaveformOptions, MediaContext)
-  fullName: Egami.Video.Analysis.AudioPictures.Waveform(System.Collections.Generic.IEnumerable<Egami.Video.Audio.AudioFrame>, Egami.Video.MediaTime, Egami.Video.Analysis.WaveformOptions?, Egami.Video.MediaContext?)
-  fullName.vb: Egami.Video.Analysis.AudioPictures.Waveform(System.Collections.Generic.IEnumerable(Of Egami.Video.Audio.AudioFrame), Egami.Video.MediaTime, Egami.Video.Analysis.WaveformOptions, Egami.Video.MediaContext)
-  nameWithType: AudioPictures.Waveform(IEnumerable<AudioFrame>, MediaTime, WaveformOptions?, MediaContext?)
-  nameWithType.vb: AudioPictures.Waveform(IEnumerable(Of AudioFrame), MediaTime, WaveformOptions, MediaContext)
-- uid: Egami.Video.Analysis.AudioPictures.Waveform(System.String,Egami.Video.Analysis.WaveformOptions,Egami.Video.MediaContext)
-  name: Waveform(string, WaveformOptions?, MediaContext?)
-  href: api/Egami.Video.Analysis.AudioPictures.html#Egami_Video_Analysis_AudioPictures_Waveform_System_String_Egami_Video_Analysis_WaveformOptions_Egami_Video_MediaContext_
-  commentId: M:Egami.Video.Analysis.AudioPictures.Waveform(System.String,Egami.Video.Analysis.WaveformOptions,Egami.Video.MediaContext)
-  name.vb: Waveform(String, WaveformOptions, MediaContext)
-  fullName: Egami.Video.Analysis.AudioPictures.Waveform(string, Egami.Video.Analysis.WaveformOptions?, Egami.Video.MediaContext?)
-  fullName.vb: Egami.Video.Analysis.AudioPictures.Waveform(String, Egami.Video.Analysis.WaveformOptions, Egami.Video.MediaContext)
-  nameWithType: AudioPictures.Waveform(string, WaveformOptions?, MediaContext?)
-  nameWithType.vb: AudioPictures.Waveform(String, WaveformOptions, MediaContext)
+- uid: Egami.Video.Analysis.AudioPictures.Waveform(System.Collections.Generic.IEnumerable{Egami.Video.Audio.AudioFrame},Egami.Video.MediaTime,Egami.Video.Analysis.WaveformOptions,Egami.Video.MediaContext,System.Threading.CancellationToken)
+  name: Waveform(IEnumerable<AudioFrame>, MediaTime, WaveformOptions?, MediaContext?, CancellationToken)
+  href: api/Egami.Video.Analysis.AudioPictures.html#Egami_Video_Analysis_AudioPictures_Waveform_System_Collections_Generic_IEnumerable_Egami_Video_Audio_AudioFrame__Egami_Video_MediaTime_Egami_Video_Analysis_WaveformOptions_Egami_Video_MediaContext_System_Threading_CancellationToken_
+  commentId: M:Egami.Video.Analysis.AudioPictures.Waveform(System.Collections.Generic.IEnumerable{Egami.Video.Audio.AudioFrame},Egami.Video.MediaTime,Egami.Video.Analysis.WaveformOptions,Egami.Video.MediaContext,System.Threading.CancellationToken)
+  name.vb: Waveform(IEnumerable(Of AudioFrame), MediaTime, WaveformOptions, MediaContext, CancellationToken)
+  fullName: Egami.Video.Analysis.AudioPictures.Waveform(System.Collections.Generic.IEnumerable<Egami.Video.Audio.AudioFrame>, Egami.Video.MediaTime, Egami.Video.Analysis.WaveformOptions?, Egami.Video.MediaContext?, System.Threading.CancellationToken)
+  fullName.vb: Egami.Video.Analysis.AudioPictures.Waveform(System.Collections.Generic.IEnumerable(Of Egami.Video.Audio.AudioFrame), Egami.Video.MediaTime, Egami.Video.Analysis.WaveformOptions, Egami.Video.MediaContext, System.Threading.CancellationToken)
+  nameWithType: AudioPictures.Waveform(IEnumerable<AudioFrame>, MediaTime, WaveformOptions?, MediaContext?, CancellationToken)
+  nameWithType.vb: AudioPictures.Waveform(IEnumerable(Of AudioFrame), MediaTime, WaveformOptions, MediaContext, CancellationToken)
+- uid: Egami.Video.Analysis.AudioPictures.Waveform(System.String,Egami.Video.Analysis.WaveformOptions,Egami.Video.MediaContext,System.IProgress{Egami.Video.MediaProgress},System.Threading.CancellationToken)
+  name: Waveform(string, WaveformOptions?, MediaContext?, IProgress<MediaProgress>?, CancellationToken)
+  href: api/Egami.Video.Analysis.AudioPictures.html#Egami_Video_Analysis_AudioPictures_Waveform_System_String_Egami_Video_Analysis_WaveformOptions_Egami_Video_MediaContext_System_IProgress_Egami_Video_MediaProgress__System_Threading_CancellationToken_
+  commentId: M:Egami.Video.Analysis.AudioPictures.Waveform(System.String,Egami.Video.Analysis.WaveformOptions,Egami.Video.MediaContext,System.IProgress{Egami.Video.MediaProgress},System.Threading.CancellationToken)
+  name.vb: Waveform(String, WaveformOptions, MediaContext, IProgress(Of MediaProgress), CancellationToken)
+  fullName: Egami.Video.Analysis.AudioPictures.Waveform(string, Egami.Video.Analysis.WaveformOptions?, Egami.Video.MediaContext?, System.IProgress<Egami.Video.MediaProgress>?, System.Threading.CancellationToken)
+  fullName.vb: Egami.Video.Analysis.AudioPictures.Waveform(String, Egami.Video.Analysis.WaveformOptions, Egami.Video.MediaContext, System.IProgress(Of Egami.Video.MediaProgress), System.Threading.CancellationToken)
+  nameWithType: AudioPictures.Waveform(string, WaveformOptions?, MediaContext?, IProgress<MediaProgress>?, CancellationToken)
+  nameWithType.vb: AudioPictures.Waveform(String, WaveformOptions, MediaContext, IProgress(Of MediaProgress), CancellationToken)
 - uid: Egami.Video.Analysis.AudioPictures.Waveform*
   name: Waveform
   href: api/Egami.Video.Analysis.AudioPictures.html#Egami_Video_Analysis_AudioPictures_Waveform_
@@ -74989,11 +74989,11 @@ references:
   fullName: Egami.Video.Analysis.CropDetector.Options
   nameWithType: CropDetector.Options
 - uid: Egami.Video.Analysis.CropDetector.Report
-  name: Report
+  name: Report()
   href: api/Egami.Video.Analysis.CropDetector.html#Egami_Video_Analysis_CropDetector_Report
-  commentId: P:Egami.Video.Analysis.CropDetector.Report
-  fullName: Egami.Video.Analysis.CropDetector.Report
-  nameWithType: CropDetector.Report
+  commentId: M:Egami.Video.Analysis.CropDetector.Report
+  fullName: Egami.Video.Analysis.CropDetector.Report()
+  nameWithType: CropDetector.Report()
 - uid: Egami.Video.Analysis.CropDetector.Report*
   name: Report
   href: api/Egami.Video.Analysis.CropDetector.html#Egami_Video_Analysis_CropDetector_Report_
@@ -76017,19 +76017,19 @@ references:
   isSpec: "True"
   fullName: Egami.Video.Analysis.InterlaceDetector.FrameCount
   nameWithType: InterlaceDetector.FrameCount
-- uid: Egami.Video.Analysis.InterlaceDetector.LastFrame
-  name: LastFrame
-  href: api/Egami.Video.Analysis.InterlaceDetector.html#Egami_Video_Analysis_InterlaceDetector_LastFrame
-  commentId: P:Egami.Video.Analysis.InterlaceDetector.LastFrame
-  fullName: Egami.Video.Analysis.InterlaceDetector.LastFrame
-  nameWithType: InterlaceDetector.LastFrame
-- uid: Egami.Video.Analysis.InterlaceDetector.LastFrame*
-  name: LastFrame
-  href: api/Egami.Video.Analysis.InterlaceDetector.html#Egami_Video_Analysis_InterlaceDetector_LastFrame_
-  commentId: Overload:Egami.Video.Analysis.InterlaceDetector.LastFrame
+- uid: Egami.Video.Analysis.InterlaceDetector.LastFieldOrder
+  name: LastFieldOrder
+  href: api/Egami.Video.Analysis.InterlaceDetector.html#Egami_Video_Analysis_InterlaceDetector_LastFieldOrder
+  commentId: P:Egami.Video.Analysis.InterlaceDetector.LastFieldOrder
+  fullName: Egami.Video.Analysis.InterlaceDetector.LastFieldOrder
+  nameWithType: InterlaceDetector.LastFieldOrder
+- uid: Egami.Video.Analysis.InterlaceDetector.LastFieldOrder*
+  name: LastFieldOrder
+  href: api/Egami.Video.Analysis.InterlaceDetector.html#Egami_Video_Analysis_InterlaceDetector_LastFieldOrder_
+  commentId: Overload:Egami.Video.Analysis.InterlaceDetector.LastFieldOrder
   isSpec: "True"
-  fullName: Egami.Video.Analysis.InterlaceDetector.LastFrame
-  nameWithType: InterlaceDetector.LastFrame
+  fullName: Egami.Video.Analysis.InterlaceDetector.LastFieldOrder
+  nameWithType: InterlaceDetector.LastFieldOrder
 - uid: Egami.Video.Analysis.InterlaceDetector.Options
   name: Options
   href: api/Egami.Video.Analysis.InterlaceDetector.html#Egami_Video_Analysis_InterlaceDetector_Options
@@ -76044,11 +76044,11 @@ references:
   fullName: Egami.Video.Analysis.InterlaceDetector.Options
   nameWithType: InterlaceDetector.Options
 - uid: Egami.Video.Analysis.InterlaceDetector.Report
-  name: Report
+  name: Report()
   href: api/Egami.Video.Analysis.InterlaceDetector.html#Egami_Video_Analysis_InterlaceDetector_Report
-  commentId: P:Egami.Video.Analysis.InterlaceDetector.Report
-  fullName: Egami.Video.Analysis.InterlaceDetector.Report
-  nameWithType: InterlaceDetector.Report
+  commentId: M:Egami.Video.Analysis.InterlaceDetector.Report
+  fullName: Egami.Video.Analysis.InterlaceDetector.Report()
+  nameWithType: InterlaceDetector.Report()
 - uid: Egami.Video.Analysis.InterlaceDetector.Report*
   name: Report
   href: api/Egami.Video.Analysis.InterlaceDetector.html#Egami_Video_Analysis_InterlaceDetector_Report_
@@ -76957,19 +76957,19 @@ references:
   isSpec: "True"
   fullName: Egami.Video.Analysis.SceneDetector.Scenes
   nameWithType: SceneDetector.Scenes
-- uid: Egami.Video.Analysis.SceneDetector.Scores
-  name: Scores
-  href: api/Egami.Video.Analysis.SceneDetector.html#Egami_Video_Analysis_SceneDetector_Scores
-  commentId: P:Egami.Video.Analysis.SceneDetector.Scores
-  fullName: Egami.Video.Analysis.SceneDetector.Scores
-  nameWithType: SceneDetector.Scores
-- uid: Egami.Video.Analysis.SceneDetector.Scores*
-  name: Scores
-  href: api/Egami.Video.Analysis.SceneDetector.html#Egami_Video_Analysis_SceneDetector_Scores_
-  commentId: Overload:Egami.Video.Analysis.SceneDetector.Scores
+- uid: Egami.Video.Analysis.SceneDetector.Series
+  name: Series
+  href: api/Egami.Video.Analysis.SceneDetector.html#Egami_Video_Analysis_SceneDetector_Series
+  commentId: P:Egami.Video.Analysis.SceneDetector.Series
+  fullName: Egami.Video.Analysis.SceneDetector.Series
+  nameWithType: SceneDetector.Series
+- uid: Egami.Video.Analysis.SceneDetector.Series*
+  name: Series
+  href: api/Egami.Video.Analysis.SceneDetector.html#Egami_Video_Analysis_SceneDetector_Series_
+  commentId: Overload:Egami.Video.Analysis.SceneDetector.Series
   isSpec: "True"
-  fullName: Egami.Video.Analysis.SceneDetector.Scores
-  nameWithType: SceneDetector.Scores
+  fullName: Egami.Video.Analysis.SceneDetector.Series
+  nameWithType: SceneDetector.Series
 - uid: Egami.Video.Analysis.SceneDetector.SettledFrames
   name: SettledFrames
   href: api/Egami.Video.Analysis.SceneDetector.html#Egami_Video_Analysis_SceneDetector_SettledFrames
@@ -77587,11 +77587,11 @@ references:
   fullName: Egami.Video.Analysis.SignalMeter.Options
   nameWithType: SignalMeter.Options
 - uid: Egami.Video.Analysis.SignalMeter.Report
-  name: Report
+  name: Report()
   href: api/Egami.Video.Analysis.SignalMeter.html#Egami_Video_Analysis_SignalMeter_Report
-  commentId: P:Egami.Video.Analysis.SignalMeter.Report
-  fullName: Egami.Video.Analysis.SignalMeter.Report
-  nameWithType: SignalMeter.Report
+  commentId: M:Egami.Video.Analysis.SignalMeter.Report
+  fullName: Egami.Video.Analysis.SignalMeter.Report()
+  nameWithType: SignalMeter.Report()
 - uid: Egami.Video.Analysis.SignalMeter.Report*
   name: Report
   href: api/Egami.Video.Analysis.SignalMeter.html#Egami_Video_Analysis_SignalMeter_Report_

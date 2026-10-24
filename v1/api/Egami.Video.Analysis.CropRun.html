@@ -89,7 +89,7 @@
 
 
   <h1 id="Egami_Video_Analysis_CropRun" data-uid="Egami.Video.Analysis.CropRun" class="text-break">
-Class CropRun  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Analysis/CropDetector.cs/#L295"><i class="bi bi-code-slash"></i></a>
+Class CropRun  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Analysis/CropDetector.cs/#L293"><i class="bi bi-code-slash"></i></a>
   </h1>
 
   <div class="facts text-secondary">
@@ -164,7 +164,7 @@ foreach (DetectedRange range in freeze.Ranges)
     Console.WriteLine($"Frozen from {range.Start.ToTimeSpan()} to {range.End.ToTimeSpan()}");
 }
 
-Console.WriteLine($"{black.Ranges.Count} black stretches, crop to {crop.Report.Crop}, {fields.Report.Verdict}");
+Console.WriteLine($"{black.Ranges.Count} black stretches, crop to {crop.Report().Crop}, {fields.Report().Verdict}");
 Console.WriteLine($"{duplicates.DuplicateCount} repeated frames");</code></pre>
 
 
@@ -178,7 +178,7 @@ Console.WriteLine($"{duplicates.DuplicateCount} repeated frames");</code></pre>
 
   <h3 id="Egami_Video_Analysis_CropRun__ctor_Egami_Video_MediaTime_Egami_Video_MediaTime_Egami_Rect_System_Int64_" data-uid="Egami.Video.Analysis.CropRun.#ctor(Egami.Video.MediaTime,Egami.Video.MediaTime,Egami.Rect,System.Int64)">
   CropRun(MediaTime, MediaTime, Rect, long)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Analysis/CropDetector.cs/#L295"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Analysis/CropDetector.cs/#L293"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>A run of frames that share one crop rectangle.</p>
@@ -226,7 +226,7 @@ foreach (DetectedRange range in freeze.Ranges)
     Console.WriteLine($"Frozen from {range.Start.ToTimeSpan()} to {range.End.ToTimeSpan()}");
 }
 
-Console.WriteLine($"{black.Ranges.Count} black stretches, crop to {crop.Report.Crop}, {fields.Report.Verdict}");
+Console.WriteLine($"{black.Ranges.Count} black stretches, crop to {crop.Report().Crop}, {fields.Report().Verdict}");
 Console.WriteLine($"{duplicates.DuplicateCount} repeated frames");</code></pre>
 
 
@@ -242,7 +242,7 @@ Console.WriteLine($"{duplicates.DuplicateCount} repeated frames");</code></pre>
 
   <h3 id="Egami_Video_Analysis_CropRun_Crop" data-uid="Egami.Video.Analysis.CropRun.Crop">
   Crop
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Analysis/CropDetector.cs/#L295"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Analysis/CropDetector.cs/#L293"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>The rectangle.</p>
@@ -274,7 +274,7 @@ Console.WriteLine($"{duplicates.DuplicateCount} repeated frames");</code></pre>
 
   <h3 id="Egami_Video_Analysis_CropRun_End" data-uid="Egami.Video.Analysis.CropRun.End">
   End
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Analysis/CropDetector.cs/#L295"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Analysis/CropDetector.cs/#L293"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>When the run ends: the next run's start, or the end of the video.</p>
@@ -306,7 +306,7 @@ Console.WriteLine($"{duplicates.DuplicateCount} repeated frames");</code></pre>
 
   <h3 id="Egami_Video_Analysis_CropRun_Frames" data-uid="Egami.Video.Analysis.CropRun.Frames">
   Frames
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Analysis/CropDetector.cs/#L295"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Analysis/CropDetector.cs/#L293"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>How many frames the run holds.</p>
@@ -338,7 +338,7 @@ Console.WriteLine($"{duplicates.DuplicateCount} repeated frames");</code></pre>
 
   <h3 id="Egami_Video_Analysis_CropRun_Start" data-uid="Egami.Video.Analysis.CropRun.Start">
   Start
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Analysis/CropDetector.cs/#L295"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Analysis/CropDetector.cs/#L293"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>The run's first frame's timestamp.</p>
@@ -370,7 +370,7 @@ Console.WriteLine($"{duplicates.DuplicateCount} repeated frames");</code></pre>
 </article>
 
         <div class="contribution d-print-none">
-          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Analysis/CropDetector.cs/#L295" class="edit-link">Edit this page</a>
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Analysis/CropDetector.cs/#L293" class="edit-link">Edit this page</a>
         </div>
 
 

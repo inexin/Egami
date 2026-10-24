@@ -167,7 +167,7 @@ foreach (DetectedRange range in freeze.Ranges)
     Console.WriteLine($"Frozen from {range.Start.ToTimeSpan()} to {range.End.ToTimeSpan()}");
 }
 
-Console.WriteLine($"{black.Ranges.Count} black stretches, crop to {crop.Report.Crop}, {fields.Report.Verdict}");
+Console.WriteLine($"{black.Ranges.Count} black stretches, crop to {crop.Report().Crop}, {fields.Report().Verdict}");
 Console.WriteLine($"{duplicates.DuplicateCount} repeated frames");</code></pre>
 
 
@@ -220,7 +220,7 @@ foreach (DetectedRange range in freeze.Ranges)
     Console.WriteLine($"Frozen from {range.Start.ToTimeSpan()} to {range.End.ToTimeSpan()}");
 }
 
-Console.WriteLine($"{black.Ranges.Count} black stretches, crop to {crop.Report.Crop}, {fields.Report.Verdict}");
+Console.WriteLine($"{black.Ranges.Count} black stretches, crop to {crop.Report().Crop}, {fields.Report().Verdict}");
 Console.WriteLine($"{duplicates.DuplicateCount} repeated frames");</code></pre>
 
 

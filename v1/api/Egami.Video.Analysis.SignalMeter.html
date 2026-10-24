@@ -158,7 +158,7 @@ blurdetect and blockdetect do.</p>
 // blockiness scores.
 SignalMeter meter = new(new SignalOptions { Blur = true, Blockiness = true });
 MediaAnalysis.Run("shots.mkv", new MediaAnalysisOptions { Scenes = null, VideoDetectors = [meter] });
-SignalReport report = meter.Report;
+SignalReport report = meter.Report();
 Console.WriteLine($"Y {report.Y.Min}..{report.Y.Max} (mean {report.Y.Mean:0.0}), {report.OutOfRange:P1} out of range, {report.Range} range");
 Console.WriteLine($"Edges {report.Blur:0.00} px wide, blockiness {report.Blockiness:0.00}");</code></pre>
 
@@ -202,7 +202,7 @@ Console.WriteLine($"Edges {report.Blur:0.00} px wide, blockiness {report.Blockin
 // blockiness scores.
 SignalMeter meter = new(new SignalOptions { Blur = true, Blockiness = true });
 MediaAnalysis.Run("shots.mkv", new MediaAnalysisOptions { Scenes = null, VideoDetectors = [meter] });
-SignalReport report = meter.Report;
+SignalReport report = meter.Report();
 Console.WriteLine($"Y {report.Y.Min}..{report.Y.Max} (mean {report.Y.Mean:0.0}), {report.OutOfRange:P1} out of range, {report.Range} range");
 Console.WriteLine($"Edges {report.Blur:0.00} px wide, blockiness {report.Blockiness:0.00}");</code></pre>
 
@@ -285,38 +285,6 @@ Console.WriteLine($"Edges {report.Blur:0.00} px wide, blockiness {report.Blockin
 
 
 
-  <a id="Egami_Video_Analysis_SignalMeter_Report_" data-uid="Egami.Video.Analysis.SignalMeter.Report*"></a>
-
-  <h3 id="Egami_Video_Analysis_SignalMeter_Report" data-uid="Egami.Video.Analysis.SignalMeter.Report">
-  Report
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Analysis/SignalMeter.cs/#L67"><i class="bi bi-code-slash"></i></a>
-  </h3>
-
-  <div class="markdown level1 summary"><p>Gets the measures over every frame so far.</p>
-</div>
-  <div class="markdown level1 conceptual"></div>
-
-  <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public SignalReport Report { get; }</code></pre>
-  </div>
-
-
-
-
-
-  <h4 class="section">Property Value</h4>
-  <dl class="parameters">
-    <dt><a class="xref" href="Egami.Video.Analysis.SignalReport.html">SignalReport</a></dt>
-    <dd></dd>
-  </dl>
-
-
-
-
-
-
-
-
   <a id="Egami_Video_Analysis_SignalMeter_Series_" data-uid="Egami.Video.Analysis.SignalMeter.Series*"></a>
 
   <h3 id="Egami_Video_Analysis_SignalMeter_Series" data-uid="Egami.Video.Analysis.SignalMeter.Series">
@@ -357,7 +325,7 @@ Console.WriteLine($"Edges {report.Blur:0.00} px wide, blockiness {report.Blockin
 
   <h3 id="Egami_Video_Analysis_SignalMeter_Add_Egami_Video_YuvVideoFrame_" data-uid="Egami.Video.Analysis.SignalMeter.Add(Egami.Video.YuvVideoFrame)">
   Add(YuvVideoFrame)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Analysis/SignalMeter.cs/#L96"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Analysis/SignalMeter.cs/#L94"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Takes the next frame.</p>
@@ -396,7 +364,7 @@ Console.WriteLine($"Edges {report.Blur:0.00} px wide, blockiness {report.Blockin
 
   <h3 id="Egami_Video_Analysis_SignalMeter_Complete_Egami_Video_MediaTime_" data-uid="Egami.Video.Analysis.SignalMeter.Complete(Egami.Video.MediaTime)">
   Complete(MediaTime)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Analysis/SignalMeter.cs/#L132"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Analysis/SignalMeter.cs/#L130"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Finishes the measures.</p>
@@ -414,6 +382,39 @@ Console.WriteLine($"Edges {report.Blur:0.00} px wide, blockiness {report.Blockin
 </dd>
   </dl>
 
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Analysis_SignalMeter_Report_" data-uid="Egami.Video.Analysis.SignalMeter.Report*"></a>
+
+  <h3 id="Egami_Video_Analysis_SignalMeter_Report" data-uid="Egami.Video.Analysis.SignalMeter.Report">
+  Report()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Analysis/SignalMeter.cs/#L68"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns the measures over every frame so far.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public SignalReport Report()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Video.Analysis.SignalReport.html">SignalReport</a></dt>
+    <dd><p>The report.</p>
+</dd>
+  </dl>
 
 
 

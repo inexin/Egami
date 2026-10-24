@@ -89,7 +89,7 @@
 
 
   <h1 id="Egami_Video_Analysis_CropOptions" data-uid="Egami.Video.Analysis.CropOptions" class="text-break">
-Class CropOptions  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Analysis/CropDetector.cs/#L236"><i class="bi bi-code-slash"></i></a>
+Class CropOptions  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Analysis/CropDetector.cs/#L234"><i class="bi bi-code-slash"></i></a>
   </h1>
 
   <div class="facts text-secondary">
@@ -164,7 +164,7 @@ foreach (DetectedRange range in freeze.Ranges)
     Console.WriteLine($"Frozen from {range.Start.ToTimeSpan()} to {range.End.ToTimeSpan()}");
 }
 
-Console.WriteLine($"{black.Ranges.Count} black stretches, crop to {crop.Report.Crop}, {fields.Report.Verdict}");
+Console.WriteLine($"{black.Ranges.Count} black stretches, crop to {crop.Report().Crop}, {fields.Report().Verdict}");
 Console.WriteLine($"{duplicates.DuplicateCount} repeated frames");</code></pre>
 
 
@@ -178,7 +178,7 @@ Console.WriteLine($"{duplicates.DuplicateCount} repeated frames");</code></pre>
 
   <h3 id="Egami_Video_Analysis_CropOptions_Default" data-uid="Egami.Video.Analysis.CropOptions.Default">
   Default
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Analysis/CropDetector.cs/#L239"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Analysis/CropDetector.cs/#L237"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the default options.</p>
@@ -210,7 +210,7 @@ Console.WriteLine($"{duplicates.DuplicateCount} repeated frames");</code></pre>
 
   <h3 id="Egami_Video_Analysis_CropOptions_Limit" data-uid="Egami.Video.Analysis.CropOptions.Limit">
   Limit
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Analysis/CropDetector.cs/#L245"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Analysis/CropDetector.cs/#L243"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the highest mean luma, as a fraction of the largest code value, of a row or column that counts as border. Default 24/255,
@@ -243,7 +243,7 @@ as cropdetect's limit of 24.</p>
 
   <h3 id="Egami_Video_Analysis_CropOptions_Round" data-uid="Egami.Video.Analysis.CropOptions.Round">
   Round
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Analysis/CropDetector.cs/#L248"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Analysis/CropDetector.cs/#L246"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the multiple the width and height are rounded down to. Default 2, so sizes stay even for 4:2:0 encoders.</p>
@@ -275,7 +275,7 @@ as cropdetect's limit of 24.</p>
 
   <h3 id="Egami_Video_Analysis_CropOptions_Skip" data-uid="Egami.Video.Analysis.CropOptions.Skip">
   Skip
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Analysis/CropDetector.cs/#L251"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Analysis/CropDetector.cs/#L249"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets how many frames at the start are not measured, as cropdetect's skip. Default 2.</p>
@@ -307,7 +307,7 @@ as cropdetect's limit of 24.</p>
 </article>
 
         <div class="contribution d-print-none">
-          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Analysis/CropDetector.cs/#L236" class="edit-link">Edit this page</a>
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Analysis/CropDetector.cs/#L234" class="edit-link">Edit this page</a>
         </div>
 
 

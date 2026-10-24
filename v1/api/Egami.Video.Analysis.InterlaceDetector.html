@@ -167,7 +167,7 @@ foreach (DetectedRange range in freeze.Ranges)
     Console.WriteLine($"Frozen from {range.Start.ToTimeSpan()} to {range.End.ToTimeSpan()}");
 }
 
-Console.WriteLine($"{black.Ranges.Count} black stretches, crop to {crop.Report.Crop}, {fields.Report.Verdict}");
+Console.WriteLine($"{black.Ranges.Count} black stretches, crop to {crop.Report().Crop}, {fields.Report().Verdict}");
 Console.WriteLine($"{duplicates.DuplicateCount} repeated frames");</code></pre>
 
 
@@ -220,7 +220,7 @@ foreach (DetectedRange range in freeze.Ranges)
     Console.WriteLine($"Frozen from {range.Start.ToTimeSpan()} to {range.End.ToTimeSpan()}");
 }
 
-Console.WriteLine($"{black.Ranges.Count} black stretches, crop to {crop.Report.Crop}, {fields.Report.Verdict}");
+Console.WriteLine($"{black.Ranges.Count} black stretches, crop to {crop.Report().Crop}, {fields.Report().Verdict}");
 Console.WriteLine($"{duplicates.DuplicateCount} repeated frames");</code></pre>
 
 
@@ -270,19 +270,19 @@ Console.WriteLine($"{duplicates.DuplicateCount} repeated frames");</code></pre>
 
 
 
-  <a id="Egami_Video_Analysis_InterlaceDetector_LastFrame_" data-uid="Egami.Video.Analysis.InterlaceDetector.LastFrame*"></a>
+  <a id="Egami_Video_Analysis_InterlaceDetector_LastFieldOrder_" data-uid="Egami.Video.Analysis.InterlaceDetector.LastFieldOrder*"></a>
 
-  <h3 id="Egami_Video_Analysis_InterlaceDetector_LastFrame" data-uid="Egami.Video.Analysis.InterlaceDetector.LastFrame">
-  LastFrame
+  <h3 id="Egami_Video_Analysis_InterlaceDetector_LastFieldOrder" data-uid="Egami.Video.Analysis.InterlaceDetector.LastFieldOrder">
+  LastFieldOrder
   <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Analysis/InterlaceDetector.cs/#L52"><i class="bi bi-code-slash"></i></a>
   </h3>
 
-  <div class="markdown level1 summary"><p>Gets the last frame's verdict on its own.</p>
+  <div class="markdown level1 summary"><p>Gets the field order the last frame shows on its own.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public FieldOrder LastFrame { get; }</code></pre>
+    <pre><code class="lang-csharp hljs">public FieldOrder LastFieldOrder { get; }</code></pre>
   </div>
 
 
@@ -334,38 +334,6 @@ Console.WriteLine($"{duplicates.DuplicateCount} repeated frames");</code></pre>
 
 
 
-  <a id="Egami_Video_Analysis_InterlaceDetector_Report_" data-uid="Egami.Video.Analysis.InterlaceDetector.Report*"></a>
-
-  <h3 id="Egami_Video_Analysis_InterlaceDetector_Report" data-uid="Egami.Video.Analysis.InterlaceDetector.Report">
-  Report
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Analysis/InterlaceDetector.cs/#L55"><i class="bi bi-code-slash"></i></a>
-  </h3>
-
-  <div class="markdown level1 summary"><p>Gets the counts so far and the verdict they give.</p>
-</div>
-  <div class="markdown level1 conceptual"></div>
-
-  <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public InterlaceReport Report { get; }</code></pre>
-  </div>
-
-
-
-
-
-  <h4 class="section">Property Value</h4>
-  <dl class="parameters">
-    <dt><a class="xref" href="Egami.Video.Analysis.InterlaceReport.html">InterlaceReport</a></dt>
-    <dd></dd>
-  </dl>
-
-
-
-
-
-
-
-
   <h2 class="section" id="methods">Methods
 </h2>
 
@@ -374,7 +342,7 @@ Console.WriteLine($"{duplicates.DuplicateCount} repeated frames");</code></pre>
 
   <h3 id="Egami_Video_Analysis_InterlaceDetector_Add_Egami_Video_YuvVideoFrame_" data-uid="Egami.Video.Analysis.InterlaceDetector.Add(Egami.Video.YuvVideoFrame)">
   Add(YuvVideoFrame)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Analysis/InterlaceDetector.cs/#L67"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Analysis/InterlaceDetector.cs/#L65"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Takes the next frame.</p>
@@ -413,7 +381,7 @@ Console.WriteLine($"{duplicates.DuplicateCount} repeated frames");</code></pre>
 
   <h3 id="Egami_Video_Analysis_InterlaceDetector_Complete_Egami_Video_MediaTime_" data-uid="Egami.Video.Analysis.InterlaceDetector.Complete(Egami.Video.MediaTime)">
   Complete(MediaTime)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Analysis/InterlaceDetector.cs/#L112"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Analysis/InterlaceDetector.cs/#L110"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Finishes the counts.</p>
@@ -431,6 +399,39 @@ Console.WriteLine($"{duplicates.DuplicateCount} repeated frames");</code></pre>
 </dd>
   </dl>
 
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Analysis_InterlaceDetector_Report_" data-uid="Egami.Video.Analysis.InterlaceDetector.Report*"></a>
+
+  <h3 id="Egami_Video_Analysis_InterlaceDetector_Report" data-uid="Egami.Video.Analysis.InterlaceDetector.Report">
+  Report()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Analysis/InterlaceDetector.cs/#L56"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns the counts so far and the verdict they give.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public InterlaceReport Report()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Video.Analysis.InterlaceReport.html">InterlaceReport</a></dt>
+    <dd><p>The report.</p>
+</dd>
+  </dl>
 
 
 

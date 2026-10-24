@@ -90,7 +90,7 @@
 
 
   <h1 id="Egami_Video_Analysis_InterlaceVerdict" data-uid="Egami.Video.Analysis.InterlaceVerdict" class="text-break">
-Enum InterlaceVerdict  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Analysis/InterlaceDetector.cs/#L370"><i class="bi bi-code-slash"></i></a>
+Enum InterlaceVerdict  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Analysis/InterlaceDetector.cs/#L368"><i class="bi bi-code-slash"></i></a>
   </h1>
 
   <div class="facts text-secondary">
@@ -158,7 +158,7 @@ foreach (DetectedRange range in freeze.Ranges)
     Console.WriteLine($"Frozen from {range.Start.ToTimeSpan()} to {range.End.ToTimeSpan()}");
 }
 
-Console.WriteLine($"{black.Ranges.Count} black stretches, crop to {crop.Report.Crop}, {fields.Report.Verdict}");
+Console.WriteLine($"{black.Ranges.Count} black stretches, crop to {crop.Report().Crop}, {fields.Report().Verdict}");
 Console.WriteLine($"{duplicates.DuplicateCount} repeated frames");</code></pre>
 
 
@@ -166,7 +166,7 @@ Console.WriteLine($"{duplicates.DuplicateCount} repeated frames");</code></pre>
 </article>
 
         <div class="contribution d-print-none">
-          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Analysis/InterlaceDetector.cs/#L370" class="edit-link">Edit this page</a>
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Analysis/InterlaceDetector.cs/#L368" class="edit-link">Edit this page</a>
         </div>
 
 

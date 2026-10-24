@@ -6,7 +6,7 @@
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <meta name="title" content="Class DuplicateDetector | Egami ">
       
-      <meta name="description" content="Finds repeated frames with ffmpeg mpdecimate&#39;s test, without dropping anything: a frame repeats the last kept frame when none of its 8 by 8 luma blocks differs by more than  and no more than  of them differ by more than . Block differences are sums of absolute differences on the 8-bit scale, so the thresholds mean the same at every bit depth.">
+      <meta name="description" content="Finds repeated frames with ffmpeg mpdecimate&#39;s test, without dropping anything: a frame repeats the last kept frame when none of its 8 by 8 luma blocks differs by more than  and no more than  of them differ by more than . A block&#39;s difference is the mean absolute difference of its samples as a share of the range, so the thresholds mean the same at every bit depth.">
       <link rel="icon" href="../images/favicon.ico">
       <link rel="stylesheet" href="../public/docfx.min.css">
       <link rel="stylesheet" href="../public/main.css">
@@ -99,8 +99,8 @@ Class DuplicateDetector  <a class="header-action link-secondary" title="View sou
 
   <div class="markdown summary"><p>Finds repeated frames with ffmpeg mpdecimate's test, without dropping anything: a frame repeats the last kept frame when none
 of its 8 by 8 luma blocks differs by more than <a class="xref" href="Egami.Video.Analysis.DuplicateOptions.html#Egami_Video_Analysis_DuplicateOptions_High">High</a> and no more than
-<a class="xref" href="Egami.Video.Analysis.DuplicateOptions.html#Egami_Video_Analysis_DuplicateOptions_Fraction">Fraction</a> of them differ by more than <a class="xref" href="Egami.Video.Analysis.DuplicateOptions.html#Egami_Video_Analysis_DuplicateOptions_Low">Low</a>. Block differences are
-sums of absolute differences on the 8-bit scale, so the thresholds mean the same at every bit depth.</p>
+<a class="xref" href="Egami.Video.Analysis.DuplicateOptions.html#Egami_Video_Analysis_DuplicateOptions_Fraction">Fraction</a> of them differ by more than <a class="xref" href="Egami.Video.Analysis.DuplicateOptions.html#Egami_Video_Analysis_DuplicateOptions_Low">Low</a>. A block's difference is
+the mean absolute difference of its samples as a share of the range, so the thresholds mean the same at every bit depth.</p>
 </div>
   <div class="markdown conceptual"></div>
 
@@ -167,7 +167,7 @@ foreach (DetectedRange range in freeze.Ranges)
     Console.WriteLine($"Frozen from {range.Start.ToTimeSpan()} to {range.End.ToTimeSpan()}");
 }
 
-Console.WriteLine($"{black.Ranges.Count} black stretches, crop to {crop.Report.Crop}, {fields.Report.Verdict}");
+Console.WriteLine($"{black.Ranges.Count} black stretches, crop to {crop.Report().Crop}, {fields.Report().Verdict}");
 Console.WriteLine($"{duplicates.DuplicateCount} repeated frames");</code></pre>
 
 
@@ -220,7 +220,7 @@ foreach (DetectedRange range in freeze.Ranges)
     Console.WriteLine($"Frozen from {range.Start.ToTimeSpan()} to {range.End.ToTimeSpan()}");
 }
 
-Console.WriteLine($"{black.Ranges.Count} black stretches, crop to {crop.Report.Crop}, {fields.Report.Verdict}");
+Console.WriteLine($"{black.Ranges.Count} black stretches, crop to {crop.Report().Crop}, {fields.Report().Verdict}");
 Console.WriteLine($"{duplicates.DuplicateCount} repeated frames");</code></pre>
 
 

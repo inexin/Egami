@@ -99,7 +99,7 @@ Class CropDetector  <a class="header-action link-secondary" title="View source" 
 
   <div class="markdown summary"><p>Finds black borders: the rectangle inside letterbox, pillarbox or windowbox bars, as ffmpeg's cropdetect does in its black mode.
 Rows and columns whose mean luma is at or under <a class="xref" href="Egami.Video.Analysis.CropOptions.html#Egami_Video_Analysis_CropOptions_Limit">Limit</a> count as border. Each frame's rectangle is
-rounded to <a class="xref" href="Egami.Video.Analysis.CropOptions.html#Egami_Video_Analysis_CropOptions_Round">Round</a>; <a class="xref" href="Egami.Video.Analysis.CropDetector.html#Egami_Video_Analysis_CropDetector_Report">Report</a> gives the rectangle that keeps every frame's picture, the most
+rounded to <a class="xref" href="Egami.Video.Analysis.CropOptions.html#Egami_Video_Analysis_CropOptions_Round">Round</a>; <a class="xref" href="Egami.Video.Analysis.CropDetector.html#Egami_Video_Analysis_CropDetector_Report">Report()</a> gives the rectangle that keeps every frame's picture, the most
 common one, and the runs of frames that share one.</p>
 </div>
   <div class="markdown conceptual"></div>
@@ -167,7 +167,7 @@ foreach (DetectedRange range in freeze.Ranges)
     Console.WriteLine($"Frozen from {range.Start.ToTimeSpan()} to {range.End.ToTimeSpan()}");
 }
 
-Console.WriteLine($"{black.Ranges.Count} black stretches, crop to {crop.Report.Crop}, {fields.Report.Verdict}");
+Console.WriteLine($"{black.Ranges.Count} black stretches, crop to {crop.Report().Crop}, {fields.Report().Verdict}");
 Console.WriteLine($"{duplicates.DuplicateCount} repeated frames");</code></pre>
 
 
@@ -220,7 +220,7 @@ foreach (DetectedRange range in freeze.Ranges)
     Console.WriteLine($"Frozen from {range.Start.ToTimeSpan()} to {range.End.ToTimeSpan()}");
 }
 
-Console.WriteLine($"{black.Ranges.Count} black stretches, crop to {crop.Report.Crop}, {fields.Report.Verdict}");
+Console.WriteLine($"{black.Ranges.Count} black stretches, crop to {crop.Report().Crop}, {fields.Report().Verdict}");
 Console.WriteLine($"{duplicates.DuplicateCount} repeated frames");</code></pre>
 
 
@@ -334,38 +334,6 @@ Console.WriteLine($"{duplicates.DuplicateCount} repeated frames");</code></pre>
 
 
 
-  <a id="Egami_Video_Analysis_CropDetector_Report_" data-uid="Egami.Video.Analysis.CropDetector.Report*"></a>
-
-  <h3 id="Egami_Video_Analysis_CropDetector_Report" data-uid="Egami.Video.Analysis.CropDetector.Report">
-  Report
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Analysis/CropDetector.cs/#L55"><i class="bi bi-code-slash"></i></a>
-  </h3>
-
-  <div class="markdown level1 summary"><p>Gets what the detector found so far.</p>
-</div>
-  <div class="markdown level1 conceptual"></div>
-
-  <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public CropReport Report { get; }</code></pre>
-  </div>
-
-
-
-
-
-  <h4 class="section">Property Value</h4>
-  <dl class="parameters">
-    <dt><a class="xref" href="Egami.Video.Analysis.CropReport.html">CropReport</a></dt>
-    <dd></dd>
-  </dl>
-
-
-
-
-
-
-
-
   <h2 class="section" id="methods">Methods
 </h2>
 
@@ -374,7 +342,7 @@ Console.WriteLine($"{duplicates.DuplicateCount} repeated frames");</code></pre>
 
   <h3 id="Egami_Video_Analysis_CropDetector_Add_Egami_Video_YuvVideoFrame_" data-uid="Egami.Video.Analysis.CropDetector.Add(Egami.Video.YuvVideoFrame)">
   Add(YuvVideoFrame)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Analysis/CropDetector.cs/#L74"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Analysis/CropDetector.cs/#L72"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Takes the next frame.</p>
@@ -413,7 +381,7 @@ Console.WriteLine($"{duplicates.DuplicateCount} repeated frames");</code></pre>
 
   <h3 id="Egami_Video_Analysis_CropDetector_Complete_Egami_Video_MediaTime_" data-uid="Egami.Video.Analysis.CropDetector.Complete(Egami.Video.MediaTime)">
   Complete(MediaTime)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Analysis/CropDetector.cs/#L125"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Analysis/CropDetector.cs/#L123"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Ends the last run.</p>
@@ -431,6 +399,39 @@ Console.WriteLine($"{duplicates.DuplicateCount} repeated frames");</code></pre>
 </dd>
   </dl>
 
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Analysis_CropDetector_Report_" data-uid="Egami.Video.Analysis.CropDetector.Report*"></a>
+
+  <h3 id="Egami_Video_Analysis_CropDetector_Report" data-uid="Egami.Video.Analysis.CropDetector.Report">
+  Report()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Analysis/CropDetector.cs/#L56"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns what the detector found so far.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public CropReport Report()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Video.Analysis.CropReport.html">CropReport</a></dt>
+    <dd><p>The report.</p>
+</dd>
+  </dl>
 
 
 

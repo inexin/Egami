@@ -90,7 +90,7 @@
 
 
   <h1 id="Egami_Video_Analysis_SignalRange" data-uid="Egami.Video.Analysis.SignalRange" class="text-break">
-Enum SignalRange  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Analysis/SignalMeter.cs/#L671"><i class="bi bi-code-slash"></i></a>
+Enum SignalRange  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Analysis/SignalMeter.cs/#L669"><i class="bi bi-code-slash"></i></a>
   </h1>
 
   <div class="facts text-secondary">
@@ -132,7 +132,7 @@ Enum SignalRange  <a class="header-action link-secondary" title="View source" hr
 // blockiness scores.
 SignalMeter meter = new(new SignalOptions { Blur = true, Blockiness = true });
 MediaAnalysis.Run("shots.mkv", new MediaAnalysisOptions { Scenes = null, VideoDetectors = [meter] });
-SignalReport report = meter.Report;
+SignalReport report = meter.Report();
 Console.WriteLine($"Y {report.Y.Min}..{report.Y.Max} (mean {report.Y.Mean:0.0}), {report.OutOfRange:P1} out of range, {report.Range} range");
 Console.WriteLine($"Edges {report.Blur:0.00} px wide, blockiness {report.Blockiness:0.00}");</code></pre>
 
@@ -141,7 +141,7 @@ Console.WriteLine($"Edges {report.Blur:0.00} px wide, blockiness {report.Blockin
 </article>
 
         <div class="contribution d-print-none">
-          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Analysis/SignalMeter.cs/#L671" class="edit-link">Edit this page</a>
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Analysis/SignalMeter.cs/#L669" class="edit-link">Edit this page</a>
         </div>
 
 
