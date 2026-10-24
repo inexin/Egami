@@ -1,3 +1,5 @@
+using System.Runtime.CompilerServices;
+
 namespace Egami.Formats.Av1;
 
 /// <summary>
@@ -178,7 +180,7 @@ internal partial class Av1TileCoder
             throw new InvalidOperationException("An inter block's mode does not match its number of references.");
         }
 
-        FindMvRefs();
+        BlockMvRefs();
         if (b.SkipMode)
         {
             Require(b.YMode == InterMode.NearestNearest, "A skip mode block uses its nearest vectors.");
@@ -390,8 +392,10 @@ internal partial class Av1TileCoder
             InterMode.GlobalGlobal => (_gmRow0, _gmCol0, _gmRow1, _gmCol1),
             _ => (b.MvRow, b.MvCol, b.Mv1Row, b.Mv1Col),
         };
-        Require(r0 == b.MvRow && c0 == b.MvCol && (!b.HasSecondRef || (r1 == b.Mv1Row && c1 == b.Mv1Col)),
-            $"The block's vectors ({b.MvRow}, {b.MvCol}) do not match the ({r0}, {c0}) its mode {b.YMode} derives.");
+        if (r0 != b.MvRow || c0 != b.MvCol || (b.HasSecondRef && (r1 != b.Mv1Row || c1 != b.Mv1Col)))
+        {
+            throw new InvalidOperationException($"The block's vectors ({b.MvRow}, {b.MvCol}) do not match the ({r0}, {c0}) its mode {b.YMode} derives.");
+        }
         if (InterMode.First(b.YMode) == InterMode.New)
         {
             CodeMv(ref s, b.MvRow - v.RefRow0, b.MvCol - v.RefCol0);
@@ -407,6 +411,12 @@ internal partial class Av1TileCoder
     private protected void CodeMv<TSink>(ref TSink s, int row, int col)
         where TSink : struct, IAv1SymbolSink
     {
+        if (typeof(TSink) == typeof(Av1CostSink) && !Unsafe.As<TSink, Av1CostSink>(ref s).Adapt && KnownMvRate(row, col) is long known)
+        {
+            Unsafe.As<TSink, Av1CostSink>(ref s).Cost += known;
+            return;
+        }
+
         Av1FrameContext.MvTables t = Av1FrameContext.Mv;
         int precision = _header.ForceIntegerMv ? -1 : _header.AllowHighPrecisionMv ? 1 : 0;
         s.Symbol(_cdf, t.Joints[0], 4, (row != 0 ? 2 : 0) | (col != 0 ? 1 : 0));
@@ -421,8 +431,11 @@ internal partial class Av1TileCoder
         }
     }
 
+    /// <summary>Gets the rate of a vector difference from rates kept while the CDFs stay as they are, or null to cost its symbols.</summary>
+    private protected virtual long? KnownMvRate(int row, int col) => null;
+
     /// <summary>Codes one nonzero component of a vector difference: sign, class, integer bits, fraction and high precision bit (read_mv_component).</summary>
-    private void CodeMvComponent<TSink>(ref TSink s, Av1FrameContext.MvTables t, int comp, int value, int precision)
+    private protected void CodeMvComponent<TSink>(ref TSink s, Av1FrameContext.MvTables t, int comp, int value, int precision)
         where TSink : struct, IAv1SymbolSink
     {
         int z = Math.Abs(value) - 1;

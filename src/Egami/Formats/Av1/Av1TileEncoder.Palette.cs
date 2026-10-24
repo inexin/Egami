@@ -438,6 +438,17 @@ internal sealed partial class Av1TileEncoder
         }
     }
 
-    /// <summary>Gets the map being tried while the search weighs a palette, else the chosen block's map.</summary>
-    private protected override byte[] ColorMap(int plane) => _mapInSearch ? ColorMaps[plane] : base.ColorMap(plane);
+    /// <summary>Gets the map being tried while the search weighs a palette, else the chosen block's map (other rows may be adding theirs).</summary>
+    private protected override byte[] ColorMap(int plane)
+    {
+        if (_mapInSearch)
+        {
+            return ColorMaps[plane];
+        }
+
+        lock (_decisions.ColorMaps)
+        {
+            return base.ColorMap(plane);
+        }
+    }
 }

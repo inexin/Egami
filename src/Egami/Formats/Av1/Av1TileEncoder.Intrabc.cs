@@ -219,6 +219,21 @@ internal sealed partial class Av1TileEncoder
 
         int gradient = 1 + IntrabcDelaySb64 + (sbSize > 64 ? 1 : 0);
         int wavefront = gradient * (activeSbRow - srcSbRow);
-        return srcSbRow <= activeSbRow && srcSb64Col < activeSb64Col - IntrabcDelaySb64 + wavefront;
+        if (srcSbRow > activeSbRow || srcSb64Col >= activeSb64Col - IntrabcDelaySb64 + wavefront)
+        {
+            return false;
+        }
+
+        // The encoder's own row wavefront lags each row one superblock behind the row above, so a row d above is finished
+        // only through the column d to the right: tighter than the decoder's, and it must hold for the output to be the same
+        // at any thread count.
+        if (_rowWavefront && srcSbRow < activeSbRow)
+        {
+            int activeSbCol = (_miCol - MiColStart) / _sbMi;
+            int srcSbCol = (((srcRight >> 3) - 1) - (MiColStart * 4)) / sbSize;
+            return srcSbCol <= activeSbCol + (activeSbRow - srcSbRow);
+        }
+
+        return true;
     }
 }

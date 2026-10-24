@@ -125,8 +125,10 @@ public sealed class Av1StreamEncoder : IDisposable
             ScreenContent = plan.ScreenContent,
             IntraBlockCopy = intra ? null : false,
             Parallelism = _parallelism,
+            Stream = true,
+            Reference = plan.Referenced ?? (kind == Av1FrameKind.Key || plan.RefreshSlots != 0),
         };
-        Av1SearchProfile profile = Av1SearchProfile.For(settings.Effort, settings.Lossless);
+        Av1SearchProfile profile = Av1SearchProfile.For(settings.Effort, settings.Lossless, settings.Reference);
         Av1FrameParameters parameters = Av1Encoder.ParametersFor(input, _sequence, settings);
         parameters.FrameType = kind == Av1FrameKind.Key ? Av1FrameType.Key : kind == Av1FrameKind.IntraOnly ? Av1FrameType.IntraOnly : Av1FrameType.Inter;
         parameters.ShowFrame = plan.Show;
@@ -208,6 +210,7 @@ public sealed class Av1StreamEncoder : IDisposable
 
         Av1ObuWriter.Obu(data, Av1ObuType.Frame, payload);
         (long luma, long chroma) = SquaredErrors(input, reconstruction);
+
         byte[] unit = [];
         if (plan.Show)
         {
@@ -664,6 +667,14 @@ public sealed record Av1FramePlan
         get => _primary;
         init => _primary = value is int p ? InRange(p, 0, 6) : null;
     }
+
+    /// <summary>
+    /// Gets whether later frames predict from this one; null (the default) when it refreshes a slot. A frame nothing predicts from,
+    /// such as the top layer of a pyramid, is searched without the tools whose misses would otherwise carry on into the frames that
+    /// predict from it: transform size search, chroma from luma, inter-intra, overlapped and warped motion, filter choice, global
+    /// motion, and the deblocking and CDEF searches of higher efforts. The caller knows; the encoder cannot tell from the slots alone.
+    /// </summary>
+    public bool? Referenced { get; init; }
 
     /// <summary>Gets whether the frame decodes without the probabilities and vectors of earlier frames, as real-time streams want. Defaults to false.</summary>
     public bool ErrorResilient { get; init; }

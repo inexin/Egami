@@ -44,11 +44,14 @@ internal partial class Av1TileCoder : Av1TileState
     private readonly byte[] _levels = new byte[((32 + 4) * (32 + 4)) + 16];
 
     /// <summary>Starts the syntax of a tile.</summary>
-    internal Av1TileCoder(Av1Frame frame, int tileRow, int tileCol, Av1FrameDecisions decisions)
-        : base(frame, tileRow, tileCol)
+    internal Av1TileCoder(Av1Frame frame, int tileRow, int tileCol, Av1FrameDecisions decisions, Av1TileState? shared = null)
+        : base(frame, tileRow, tileCol, shared)
     {
         _decisions = decisions;
     }
+
+    /// <summary>Builds the current block's reference vector stack (<see cref="Av1TileState.FindMvRefs"/>), as an inter block's mode info is coded.</summary>
+    private protected virtual void BlockMvRefs() => FindMvRefs();
 
     /// <summary>Codes every superblock of the tile.</summary>
     private protected void CodeTile<TSink>(ref TSink s)
@@ -209,7 +212,7 @@ internal partial class Av1TileCoder : Av1TileState
         s.SymbolFixed(gathered, 2, partition == Partition.Split ? 1 : 0);
     }
 
-    private protected void CodeBlock<TSink>(ref TSink s, int miRow, int miCol, int bsize)
+    private protected void CodeBlock<TSink>(ref TSink s, int miRow, int miCol, int bsize, bool coefficients = true)
         where TSink : struct, IAv1SymbolSink
     {
         Av1BlockInfo b = _frame.Grid[(miRow * _miCols) + miCol]!;
@@ -253,7 +256,7 @@ internal partial class Av1TileCoder : Av1TileState
             ResetEntropyContext(bsize);
         }
 
-        CodeResidual(ref s, bsize, xMis, yMis);
+        CodeResidual(ref s, bsize, xMis, yMis, coefficients);
     }
 
     private protected void CodeIntraFrameModeInfo<TSink>(ref TSink s)
@@ -831,7 +834,7 @@ internal partial class Av1TileCoder : Av1TileState
         }
     }
 
-    private protected void CodeResidual<TSink>(ref TSink s, int bsize, int xMis, int yMis)
+    private protected void CodeResidual<TSink>(ref TSink s, int bsize, int xMis, int yMis, bool coefficients = true)
         where TSink : struct, IAv1SymbolSink
     {
         Av1BlockInfo b = _b;
@@ -845,7 +848,7 @@ internal partial class Av1TileCoder : Av1TileState
             _frame.TxSizeMap.AsSpan(((_miRow + y) * _miCols) + _miCol, xMis).Fill((byte)b.TxSize);
         }
 
-        if (b.Skip)
+        if (b.Skip || !coefficients)
         {
             return;
         }
