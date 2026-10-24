@@ -342,6 +342,37 @@ public class Audio
     }
 
     [Fact]
+    public void Ac3Decode()
+    {
+        using SampleFiles files = new();
+
+        #region audio-ac3-decode
+        // AC-3 decodes to planar float in Egami.Video's order: 5.1 is front left, front right, center, LFE, side left, side right.
+        using (AudioReader reader = AudioReader.Open("surround.ac3"))
+        {
+            Console.WriteLine($"{reader.Layout}, {reader.SampleRate} Hz");
+        }
+
+        // The full dynamic range (no DRC gain words), mixed down to stereo with the stream's center and surround levels.
+        AudioReaderOptions stereo = new()
+        {
+            Decoder = new AudioDecoderOptions { Ac3 = new Ac3DecoderOptions { DynamicRange = 0, Downmix = ChannelLayout.Stereo } },
+        };
+        using (AudioReader reader = AudioReader.Open("surround.ac3", stereo))
+        {
+            Console.WriteLine($"{reader.Layout.ChannelCount} channels");
+        }
+
+        // Decoded and encoded again as FLAC, all six channels.
+        MediaFile.Transcode("surround.ac3", "surround.flac", FlacCodec.Instance);
+        #endregion
+
+        Assert.Equal(6, ((AudioTrackInfo)MediaFile.Probe("surround.flac").Tracks[0]).Channels);
+        using AudioReader check = AudioReader.Open("surround.ac3", stereo);
+        Assert.Equal(ChannelLayout.Stereo, check.Layout);
+    }
+
+    [Fact]
     public void VideoWithAudio()
     {
         using SampleFiles files = new();

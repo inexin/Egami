@@ -31,7 +31,7 @@ public sealed record MediaContext
     public IReadOnlyList<VideoCodec> Codecs { get; init; } = [MotionJpegCodec.Instance, Vp8Codec.Instance, Vp9Codec.Instance, Av1Codec.Instance, RawVideoCodec.Instance];
 
     /// <summary>Gets the audio codecs.</summary>
-    public IReadOnlyList<AudioCodec> AudioCodecs { get; init; } = [PcmCodec.Instance, PcmCodec.BigEndian, PcmCodec.FloatingPoint, FlacCodec.Instance, AlacCodec.Instance, OpusCodec.Instance, VorbisCodec.Instance, Mp3Codec.Instance, G711Codec.MuLaw, G711Codec.ALaw];
+    public IReadOnlyList<AudioCodec> AudioCodecs { get; init; } = [PcmCodec.Instance, PcmCodec.BigEndian, PcmCodec.FloatingPoint, FlacCodec.Instance, AlacCodec.Instance, OpusCodec.Instance, VorbisCodec.Instance, Mp3Codec.Instance, Ac3Codec.Instance, G711Codec.MuLaw, G711Codec.ALaw];
 
     /// <summary>
     /// Gets the Egami context: the memory source decoded frames come from, the parallelism limit for decoding, and the image

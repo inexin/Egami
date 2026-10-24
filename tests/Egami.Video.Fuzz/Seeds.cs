@@ -155,6 +155,7 @@ internal static class Seeds
         WriteH264(directory);
         WriteMp4(directory);
         WriteMp3(directory);
+        WriteAc3(directory);
         WriteSubtitles(directory);
         File.WriteAllBytes(Path.Combine(y4m, "420.y4m"), [.. "YUV4MPEG2 W4 H2 F25:1 Ip A1:1 C420jpeg XCOLORRANGE=FULL\n"u8, .. "FRAME\n"u8, .. new byte[12], .. "FRAME\n"u8, .. new byte[12]]);
         File.WriteAllBytes(Path.Combine(y4m, "444p10.y4m"), [.. "YUV4MPEG2 W2 H2 F30000:1001 It A4:3 C444p10\n"u8, .. "FRAME\n"u8, .. new byte[24]]);
@@ -218,6 +219,35 @@ internal static class Seeds
                 output.WriteByte((byte)(length >> 8));
                 output.WriteByte((byte)length);
                 output.Write(bytes.GetRange(p, length).ToArray());
+                p += length;
+            }
+
+            File.WriteAllBytes(Path.Combine(raw, Path.GetFileNameWithoutExtension(clip) + ".bin"), output.ToArray());
+        }
+    }
+
+    /// <summary>
+    /// AC-3 decoder seeds (V5.9): the first frames of three corpus clips (tests/video/corpus/audio/ac3-decode: stereo with coupling,
+    /// 5.1, dual mono), cut into chunks of uneven length, with flag bytes that turn the CRC check off so mutations reach the parser.
+    /// </summary>
+    public static void WriteAc3(string directory)
+    {
+        string raw = Directory.CreateDirectory(Path.Combine(directory, "ac3raw")).FullName;
+        string corpus = Path.Combine("tests", "video", "corpus", "audio", "ac3-decode");
+        foreach ((string clip, byte flags) in (ReadOnlySpan<(string, byte)>)[("stereo-96k-cpl.ac3", 0), ("3-2-lfe-192k-cpl.ac3", 6), ("dual-mono-192k.ac3", 9)])
+        {
+            byte[] bytes = File.ReadAllBytes(Path.Combine(corpus, clip));
+            int frame = Egami.Video.Audio.Codecs.Ac3.Ac3Header.FrameSize(bytes[4] >> 6, bytes[4] & 0x3F);
+            bytes = bytes[..Math.Min(bytes.Length, 3 * frame)];
+            MemoryStream output = new();
+            output.WriteByte(flags);
+            int p = 0;
+            for (int k = 0; p < bytes.Length; k++)
+            {
+                int length = Math.Min(bytes.Length - p, 150 + (k * 337 % 700));
+                output.WriteByte((byte)(length >> 8));
+                output.WriteByte((byte)length);
+                output.Write(bytes, p, length);
                 p += length;
             }
 

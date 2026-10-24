@@ -306,6 +306,8 @@ public class AudioAllocationTests
     [InlineData("opus/opus-mono-speech.opus")]
     [InlineData("mp3/mp3-vbr-joint.mp3")]
     [InlineData("mp3/mp2-stereo.mp2")]
+    [InlineData("ac3/ac3-51-48k.ac3")]
+    [InlineData("ac3-decode/stereo-96k-cpl.ac3")]
     public void DecodeLoopAllocatesNoSampleMemory(string name)
     {
         List<EncodedPacket> packets = [];
@@ -340,11 +342,11 @@ public class AudioAllocationTests
         long perPacket = (GC.GetAllocatedBytesForCurrentThread() - before) / packets.Count;
         packets.ForEach(p => p.Dispose());
 
-        // Unoptimized (Debug) code does not fold the static table spans the Opus and MP3 decoders read: every read of a table that
+        // Unoptimized (Debug) code does not fold the static table spans the Opus, MP3 and AC-3 decoders read: every read of a table that
         // is not bytes allocates (about 72 bytes), so the budget only holds in optimized builds, which CI tests and packages ship.
         bool optimized = typeof(AudioFrame).Assembly.GetCustomAttributes(typeof(System.Diagnostics.DebuggableAttribute), false)
             .OfType<System.Diagnostics.DebuggableAttribute>().All(d => !d.IsJITOptimizerDisabled);
-        if (optimized || !(name.StartsWith("opus", StringComparison.Ordinal) || name.StartsWith("mp3", StringComparison.Ordinal)))
+        if (optimized || !(name.StartsWith("opus", StringComparison.Ordinal) || name.StartsWith("mp3", StringComparison.Ordinal) || name.StartsWith("ac3", StringComparison.Ordinal)))
         {
             Assert.True(perPacket < 400, $"{perPacket} bytes allocated per packet");
         }

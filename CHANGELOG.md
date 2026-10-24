@@ -559,6 +559,23 @@ V5.9 stage D (container part): AC-3 and E-AC-3.
   and writes them, with a dac3 or dec3 box made from the first packet's headers; the boxes match FFmpeg's. CAF maps ec-3 too.
 - Fuzz target `ac3`.
 
+V5.9 tasks 14, 15 and 17: AC-3 decoding.
+
+### AC-3 decoding
+
+- `Ac3Codec` (`AudioCodecs.Ac3`, registered by default) decodes AC-3, written from ATSC A/52:2018 alone: every channel mode
+  (1/0 to 3/2 and dual mono) with or without the LFE, 32, 44.1 and 48 kHz, 32 to 640 kbit/s, coupling, rematrixing, block
+  switching, delta bit allocation and dither, with both frame CRCs checked (`Ac3.BadCrc`, `Ac3.CorruptFrame`, handled as
+  `AudioDecoderOptions.Errors` says). Frames are 1536 samples of planar float in Egami.Video's channel order, so AudioReader
+  reads AC-3 from .ac3 files and from MP4, Matroska, AVI and CAF tracks. E-AC-3 still passes through.
+- `AudioDecoderOptions.Ac3` takes an `Ac3DecoderOptions`: `DynamicRange` (1 by default, the stream's dynamic range control in
+  full; 0 turns it off) and `Downmix`, a layout to mix to with the stream's center and surround mix levels (A/52's LoRo
+  equations, scaled so the mix cannot clip). AudioReader hands out frames in the downmix layout. Dialogue normalization is
+  not applied.
+- Within 2^-14 and at 90 dB SNR or more of FFmpeg's float decode on 24 FFmpeg-encoded streams (every mode FFmpeg writes, 32 to
+  640 kbit/s, LFE and coupling on and off, dual mono), made by `tools/video/make-audio-corpus.py --ac3-decode`.
+- Fuzz target `ac3raw`.
+
 V5.9 task 19: the CLI.
 
 ### egami-video

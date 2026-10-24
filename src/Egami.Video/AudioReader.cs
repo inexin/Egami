@@ -40,7 +40,9 @@ public sealed class AudioReader : IDisposable
             ?? throw new UnsupportedFormatException("The file has no audio track.");
         _decoder = AudioCodecs.CreateDecoder(Track, (_options.Decoder ?? AudioDecoderOptions.Default) with { Errors = _options.Errors, KeepPadding = _options.KeepAllSamples }, context);
         SampleRate = _options.SampleRate ?? Track.SampleRate;
-        Layout = _options.Layout ?? Track.EffectiveLayout;
+        // An AC-3 downmix asked of the decoder sets the layout handed out, so the reader does not mix the channels back up.
+        ChannelLayout? downmix = Track.CodecId == CodecIds.Ac3 ? _options.Decoder?.Ac3?.Downmix : null;
+        Layout = _options.Layout ?? downmix ?? Track.EffectiveLayout;
     }
 
     /// <summary>Gets what the file holds.</summary>
