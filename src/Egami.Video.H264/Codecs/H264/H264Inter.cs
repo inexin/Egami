@@ -454,7 +454,7 @@ internal sealed class H264Inter
     }
 
     /// <summary>Asks the cache for the reference samples a 16x16 block at (x, y) moved by mv reads, luma and chroma.</summary>
-    private void Prefetch<T>(H264Picture refPic, int x, int y, int mv)
+    private unsafe void Prefetch<T>(H264Picture refPic, int x, int y, int mv)
         where T : unmanaged
     {
         if (!Sse.IsSupported)
@@ -465,13 +465,15 @@ internal sealed class H264Inter
         int pad = H264Picture.Pad;
         int xs = Math.Clamp(x + (H264SliceDecoder.MvX(mv) >> 2) - 2, -pad, refPic.Width + pad - 24);
         int ys = Math.Clamp(y + (H264SliceDecoder.MvY(mv) >> 2) - 2, -pad, refPic.Height + pad - 21);
-        ref T luma = ref H264Samples.At(refPic.Y<T>(), refPic.Origin + (ys * refPic.Stride) + xs);
-        int stride = refPic.Stride;
+        // Byte addresses, so each prefetch takes its address as an operand. A prefetch never faults: if the collector moves
+        // the plane meanwhile, the hint is only wasted.
+        byte* luma = (byte*)Unsafe.AsPointer(ref H264Samples.At(refPic.Y<T>(), refPic.Origin + (ys * refPic.Stride) + xs));
+        nint stride = refPic.Stride * sizeof(T), across = 23 * sizeof(T);
         for (int row = 0; row < 21; row++)
         {
-            Prefetch(ref luma);
-            Prefetch(ref Unsafe.Add(ref luma, 23));
-            luma = ref Unsafe.Add(ref luma, stride);
+            Sse.Prefetch0(luma);
+            Sse.Prefetch0(luma + across);
+            luma += stride;
         }
 
         if (_chroma != 1)
@@ -482,22 +484,19 @@ internal sealed class H264Inter
         int cx = Math.Clamp((x >> 1) + (H264SliceDecoder.MvX(mv) >> 3), -pad, refPic.ChromaWidth + pad - 9);
         int cy = Math.Clamp((y >> 1) + (H264SliceDecoder.MvY(mv) >> 3), -pad, refPic.ChromaHeight + pad - 9);
         int c = refPic.ChromaOrigin + (cy * refPic.ChromaStride) + cx;
-        ref T cb = ref H264Samples.At(refPic.Cb<T>(), c);
-        ref T cr = ref H264Samples.At(refPic.Cr<T>(), c);
-        int cStride = refPic.ChromaStride;
+        byte* cb = (byte*)Unsafe.AsPointer(ref H264Samples.At(refPic.Cb<T>(), c));
+        byte* cr = (byte*)Unsafe.AsPointer(ref H264Samples.At(refPic.Cr<T>(), c));
+        nint cStride = refPic.ChromaStride * sizeof(T), cAcross = 9 * sizeof(T);
         for (int row = 0; row < 9; row++)
         {
-            Prefetch(ref cb);
-            Prefetch(ref Unsafe.Add(ref cb, 9));
-            Prefetch(ref cr);
-            Prefetch(ref Unsafe.Add(ref cr, 9));
-            cb = ref Unsafe.Add(ref cb, cStride);
-            cr = ref Unsafe.Add(ref cr, cStride);
+            Sse.Prefetch0(cb);
+            Sse.Prefetch0(cb + cAcross);
+            Sse.Prefetch0(cr);
+            Sse.Prefetch0(cr + cAcross);
+            cb += cStride;
+            cr += cStride;
         }
     }
-
-    private static unsafe void Prefetch<T>(ref T at)
-        where T : unmanaged => Sse.Prefetch0(Unsafe.AsPointer(ref at));
 
     /// <summary>Weighted sample prediction (8.4.2.3): default, explicit or implicit, into the picture.</summary>
     private void Combine<T>(T[] plane, int at, int stride, int w, int h, int r0, int r1, int component, int max, int bitShift, int po)
