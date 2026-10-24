@@ -73,11 +73,7 @@ internal sealed partial class H264SliceDecoder
                     int first = ac ? 1 : 0;
                     if (_cabac)
                     {
-                        for (int i = 0; i < count; i++)
-                        {
-                            int k = _significant[i], pos = H264ScalingLists.Zigzag4x4[k + first];
-                            dest[pos] = Scale4x4(_levels[k], qpY, scale4, pos);
-                        }
+                        Place(count, first, qpY, scale4, 4, H264ScalingLists.Zigzag4x4, _coef, blk * 16);
                     }
                     else
                     {
@@ -110,11 +106,7 @@ internal sealed partial class H264SliceDecoder
         if (_cabac)
         {
             total = ResidualCabac(5, -1, 64, _levels, clear: false);
-            for (int i = 0; i < total; i++)
-            {
-                int k = _significant[i], pos = H264ScalingLists.Zigzag8x8[k];
-                dest[pos] = Scale8x8(_levels[k], qpY, scale8, pos);
-            }
+            Place(total, 0, qpY, scale8, 6, H264ScalingLists.Zigzag8x8, _coef, i8 * 64);
 
             for (int i4 = 0; i4 < 4; i4++)
             {
@@ -198,11 +190,7 @@ internal sealed partial class H264SliceDecoder
                         Span<int> dest = _coefC.AsSpan(((c * 8) + blk) * 16, 16);
                         if (_cabac)
                         {
-                            for (int i = 0; i < count; i++)
-                            {
-                                int k = _significant[i], pos = H264ScalingLists.Zigzag4x4[k + 1];
-                                dest[pos] = Scale4x4(_levels[k], qpc, scale, pos);
-                            }
+                            Place(count, 1, qpc, scale, 4, H264ScalingLists.Zigzag4x4, _coefC, ((c * 8) + blk) * 16);
                         }
                         else
                         {
@@ -230,6 +218,42 @@ internal sealed partial class H264SliceDecoder
                     int qpc = ChromaQp(_qp, c == 0 ? _pps.ChromaQpIndexOffset : _pps.SecondChromaQpIndexOffset) + _qpBdOffsetC;
                     ChromaDcTransform(c, qpc, scale);
                 }
+            }
+        }
+    }
+
+    /// <summary>
+    /// Scales the levels of the last CABAC block (8.5.12.1) into their scan positions in dest from destAt: a block of
+    /// 16 (log 4) or 64 (log 6) coefficients whose first scan position is first. The scale row and the shift are found once.
+    /// </summary>
+    private void Place(int count, int first, int qp, int[] scale, int log, byte[] scan, int[] dest, int destAt)
+    {
+        int size = log == 4 ? 16 : 64, row = (qp % 6) * size, shift = (qp / 6) - log;
+        if (count > size - first || scan.Length < size || row + size > scale.Length || destAt < 0 || destAt + size > dest.Length)
+        {
+            throw H264Errors.Corrupt("A residual block is larger than its coefficients.");
+        }
+
+        ref byte sig = ref MemoryMarshal.GetArrayDataReference(_significant);
+        ref int levels = ref MemoryMarshal.GetArrayDataReference(_levels);
+        ref byte order = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(scan), first);
+        ref int ls = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(scale), row);
+        ref int d = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(dest), destAt);
+        if (shift >= 0)
+        {
+            for (int i = 0; i < count; i++)
+            {
+                int k = Unsafe.Add(ref sig, i), pos = Unsafe.Add(ref order, k);
+                Unsafe.Add(ref d, pos) = (Unsafe.Add(ref levels, k) * Unsafe.Add(ref ls, pos)) << shift;
+            }
+        }
+        else
+        {
+            int down = -shift, round = 1 << (down - 1);
+            for (int i = 0; i < count; i++)
+            {
+                int k = Unsafe.Add(ref sig, i), pos = Unsafe.Add(ref order, k);
+                Unsafe.Add(ref d, pos) = ((Unsafe.Add(ref levels, k) * Unsafe.Add(ref ls, pos)) + round) >> down;
             }
         }
     }
