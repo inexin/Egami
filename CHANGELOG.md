@@ -677,6 +677,62 @@ V5.9 task 19: the CLI.
   to `audio` unless the audio is copied. `info` and ffprobe mode name ALAC, E-AC-3, G.711, AIFF, CAF and raw AC-3 as ffprobe
   does.
 
+V5.4: AV1 encoding, through Egami's `Av1StreamEncoder` (Egami 2.9.9). API review pending (combined encoders review).
+
+### AV1 encoding
+
+- `Av1Codec.CanEncode` is true and `Av1Codec.CreateEncoder` encodes AV1 into WebM, Matroska, MP4, IVF, raw OBU and Annex B,
+  with the encoder core's keyframes, groups and rate control modes on the shared `Quality` (0 to 100, default 60, the same
+  quantizer steps as VP9) and `Effort` (0 to 10, default 4) scales; `Quantizer` is AV1's base_q_idx, 0 to 255 (0 lossless).
+  Each packet is a temporal unit; the track's av1C is built from the sequence header.
+- Hierarchical groups: each group of 16 frames is a five-layer pyramid (Phase 2.9.11 stage B). Its hidden alternate reference,
+  then hidden frames halfway to it, halfway again and down to pairs, are coded ahead, lead the next shown frame's temporal unit,
+  and are shown at their own place with `show_existing_frame`, a packet of a few bytes, instead of an overlay frame. The frames
+  left between them (the leaves) predict from both sides and refresh no slot. Every frame reads its three nearest past frames as
+  LAST to LAST3, the golden frame and the hidden frames ahead as BWDREF, ALTREF2 and ALTREF. Each frame's layer goes to the AV1
+  encoder, which weighs rate more the deeper the layer; the steps fall from the leaves' halfway toward the alternate reference's
+  at each layer up.
+- Before a group is coded, it and the group after it (AV1 looks 40 frames ahead) run through `Av1StreamEncoder.Analyze`: the
+  keyframe's and the alternate reference's steps fall with the square root of how much the frames after them reuse them, the
+  base frames get superblock quantizers and the frames above them block multipliers from the same analysis. Keyframes and
+  alternate references are blended by the temporal filter, whose strength follows each picture's noise and the frame's
+  quantizer (`TemporalFilterStrength` null, the default). `AdaptiveQuantization` also gives the other frames Variance Boost.
+- Main, High and Professional profiles: 8, 10 and 12 bits, 4:2:0, 4:2:2 and 4:4:4, from the frames' planes or
+  `Av1EncoderOptions.BitDepth`. The frames' color code points and 4:2:0 chroma siting go into the sequence header and the
+  container; static HDR metadata into content light level and mastering display metadata OBUs on every keyframe and into the
+  container (Matroska Colour, MP4 mdcv and clli); HDR10+ from a frame into its temporal unit as an ITU-T T.35 metadata OBU.
+  The level is the smallest whose picture size, dimensions and sample rate hold the stream. No alpha (AV1 has no alpha in
+  Matroska or MP4; animated AVIF has it).
+- `Av1EncoderOptions` (`VideoEncoderOptions.Av1`, `VideoWriterOptions.Av1`): quantizer limits, alternate references and the
+  pyramid, golden frame spacing, temporal filter, adaptive quantization (delta q per superblock), screen content tools, error
+  resilience and bit depth.
+- Rate control plans later groups with their hidden frames, and a real-time constant bitrate stream plans its first inter frame
+  from the keyframe probe (both for AV1 only; VP8 and VP9 output is unchanged).
+- `egami-video encode --codec av1` (with `--effort` and `--bitrate`), `run --codec av1` (and AV1 sources stay AV1), and
+  `egami-video ffmpeg` takes `-c:v libaom-av1`, `libsvtav1`, `librav1e` and `av1`.
+- dav1d 1.5.4 and libaom 3.15.2's aomdec decode every test stream (28: every effort from 0 to 8, the pyramid, real time, the
+  bitrate modes, keyframes at cuts and the interval, quantizers 0 and 255, error resilience, sizes down to 1x1, all three
+  profiles at 8, 10 and 12 bits, HDR metadata) exactly as Egami does (`tools/video/check-av1-encoder.py`); each is the same
+  bytes at one thread and at all cores, and with hardware intrinsics off. 10 minutes of AFL++ on the av1enc target found no
+  crash (two inputs at effort 10 ran past AFL++'s 5 s limit: 5.5 s each).
+- Against libaom 3.15.2 `aomenc --good` (one-pass VBR, 25 frames of lag, alternate references) and SVT-AV1 3.0.2
+  (`tools/video/time-av1-encoder.py`), at effort 4, 720p, 60 frames, BD-rate on PSNR-Y / SSIM, with stage B's pyramid,
+  temporal model and filters: against `--cpu-used=4` crowd_run +18.4 % / +17.3 %, ducks_take_off +15.4 % / -8.8 %, park_joy
+  +21.4 % / +17.0 %, old_town_cross +42.8 % / +13.3 %; against `--cpu-used=5` +16.2 % / +8.3 %, +13.5 % / -10.3 %, +14.2 % /
+  +7.1 %, +37.0 % / -1.5 %; against `--cpu-used=6` +7.9 % / +3.4 %, +12.4 % / -11.1 %, +13.8 % / +6.3 %, +25.7 % / -1.5 % (stage
+  A: +26.7 % / +7.6 %, +31.9 % / -4.0 %, +34.5 % / +13.8 %, +131 % / -3.5 %). SVT-AV1 preset 6: -9.8 % / -8.0 %, -5.3 % /
+  -19.8 %, -4.4 % / -4.4 %, +9.5 % / -6.2 %. The +15 % gate is met on both metrics against `--cpu-used=6` by three clips of
+  four and against `=5` by two (crowd_run misses PSNR-Y by 1.2 points); old_town_cross misses PSNR-Y at every setting, and
+  against `=4` PSNR-Y is met by none but ducks_take_off's +15.4 % is close.
+- Speed (1080p, 10 frames, effort 4, crowd_run and park_joy, best of two runs): one thread 6.3 and 4.9 s a frame (stage A:
+  8.3 and 5.4 s), between libaom's `--cpu-used=4` (8.3 and 7.2 s) and `=5` (3.3 and 2.8 s); all 24 cores 1.6 and 1.4 s (stage A
+  1.8 and 2.2 s) against 2.5 and 2.3 s at `=4`, 0.76 and 0.66 s at `=5`, 0.63 and 0.55 s at `=6`. So the setting matched by
+  time is `=4`, where the BD-rate gate is missed, and the setting matched by BD-rate is faster than `=6`, against which Egami
+  takes 2.3 to 2.4 times as long on one thread and 2.5 to 2.6 times on all cores: the 2x speed gate is missed, by much less
+  than before stage A (12 to 14 times and 48 to 57 times).
+- Rate control (720p, 100 frames, 3 Mbit/s, effort 0): one-pass bitrate +0.8 % to +2.1 % of the target and two-pass +1.0 % to
+  +3.1 %, within the 5 % gate; constant bitrate -6.4 % to +2.2 %, its one-second buffer never below 55 %.
+
 ## Egami.Video 0.5.0 (unreleased)
 
 V5.0 audio core: decoded audio, PCM and FLAC, WAV and FLAC files, resampling and channel mixing; V5.1: Opus decoding and Ogg;

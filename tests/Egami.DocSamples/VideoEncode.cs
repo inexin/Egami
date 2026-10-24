@@ -90,6 +90,64 @@ public class VideoEncode
     }
 
     [Fact]
+    public void Av1()
+    {
+        using SampleFiles files = new();
+        using Raster<Rgb8> duck = Raster.Load<Rgb8>("duck.png");
+
+        #region video-encode-av1
+        // AV1 in MP4 at constant quality, on the same Quality and Effort scales as VP8 and VP9. Each group's hidden alternate
+        // reference, and a hidden frame halfway to it, are shown later with show_existing_frame.
+        VideoWriterOptions options = new() { Codec = VideoCodecs.Av1, FrameRate = new Rational(30, 1), Quality = 70, Effort = 1 };
+        using (VideoWriter writer = VideoWriter.Create("duck-av1.mp4", options))
+        {
+            for (int i = 0; i < 10; i++)
+            {
+                using Raster<Rgb8> frame = duck.Derive(ops => ops.Crop(new Rect(i * 4, i * 2, 320, 240)));
+                writer.WriteFrame(frame);
+            }
+        }
+
+        // Expert settings: no pyramid, no adaptive quantization, quantizer limits on AV1's 0 to 255 base_q_idx scale.
+        VideoWriterOptions tuned = options with
+        {
+            Av1 = new Av1EncoderOptions { Pyramid = false, AdaptiveQuantization = false, MinQuantizer = 20, MaxQuantizer = 200 },
+        };
+        #endregion
+
+        Assert.Equal(CodecIds.Av1, MediaFile.Probe("duck-av1.mp4").Tracks[0].CodecId);
+        Assert.False(tuned.Av1!.Pyramid);
+    }
+
+    [Fact]
+    public void Av1Hdr()
+    {
+        using SampleFiles files = new();
+
+        #region video-encode-av1-hdr
+        // 10-bit 4:2:0 planes code the Main profile (4:4:4 High; 12 bits or 4:2:2 Professional). The frames' code points go into
+        // the sequence header and the container, their HDR metadata into metadata OBUs on every keyframe and into the container
+        // (Matroska's Colour, MP4's mdcv and clli).
+        ColorCodePoints pq = new(9, 16, 9, false);
+        HdrMetadata hdr = new() { MasteringMaxLuminance = 1000, MasteringMinLuminance = 0.005, MaxContentLightLevel = 1000, MaxFrameAverageLightLevel = 400 };
+        VideoWriterOptions options = new() { Codec = VideoCodecs.Av1, Quality = 80, Effort = 1 };
+        using (VideoWriter writer = VideoWriter.Create("hdr-av1.mkv", options))
+        {
+            for (int i = 0; i < 5; i++)
+            {
+                YuvRaster<ushort> planes = YuvRaster.Create(64, 48, ChromaFormat.Yuv420, 10, new YuvColor(YuvMatrix.Bt2020Ncl, YuvRange.Limited, ChromaSiting.TopLeft));
+                using YuvVideoFrame frame = new(planes, new MediaTime(i, new Rational(1, 30)), color: pq) { Hdr = hdr };
+                writer.WriteFrame(frame);
+            }
+        }
+        #endregion
+
+        VideoTrackInfo track = MediaFile.Probe("hdr-av1.mkv").Tracks.OfType<VideoTrackInfo>().First();
+        Assert.Equal(10, track.BitDepth);
+        Assert.Equal(1000, track.Hdr!.MaxContentLightLevel);
+    }
+
+    [Fact]
     public void Bitrate()
     {
         using SampleFiles files = new();

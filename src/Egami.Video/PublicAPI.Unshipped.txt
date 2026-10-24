@@ -426,6 +426,32 @@ Egami.Video.AudioWriterOptions.Quality.init -> void
 Egami.Video.AudioWriterOptions.SampleRate.get -> int?
 Egami.Video.AudioWriterOptions.SampleRate.init -> void
 Egami.Video.Codecs.Av1Codec
+Egami.Video.Codecs.Av1EncoderOptions
+Egami.Video.Codecs.Av1EncoderOptions.<Clone>$() -> Egami.Video.Codecs.Av1EncoderOptions!
+Egami.Video.Codecs.Av1EncoderOptions.AdaptiveQuantization.get -> bool
+Egami.Video.Codecs.Av1EncoderOptions.AdaptiveQuantization.init -> void
+Egami.Video.Codecs.Av1EncoderOptions.AlternateReference.get -> bool
+Egami.Video.Codecs.Av1EncoderOptions.AlternateReference.init -> void
+Egami.Video.Codecs.Av1EncoderOptions.Av1EncoderOptions() -> void
+Egami.Video.Codecs.Av1EncoderOptions.BitDepth.get -> int?
+Egami.Video.Codecs.Av1EncoderOptions.BitDepth.init -> void
+Egami.Video.Codecs.Av1EncoderOptions.Equals(Egami.Video.Codecs.Av1EncoderOptions? other) -> bool
+Egami.Video.Codecs.Av1EncoderOptions.ErrorResilient.get -> bool?
+Egami.Video.Codecs.Av1EncoderOptions.ErrorResilient.init -> void
+Egami.Video.Codecs.Av1EncoderOptions.GoldenInterval.get -> int?
+Egami.Video.Codecs.Av1EncoderOptions.GoldenInterval.init -> void
+Egami.Video.Codecs.Av1EncoderOptions.MaxQuantizer.get -> int
+Egami.Video.Codecs.Av1EncoderOptions.MaxQuantizer.init -> void
+Egami.Video.Codecs.Av1EncoderOptions.MinQuantizer.get -> int
+Egami.Video.Codecs.Av1EncoderOptions.MinQuantizer.init -> void
+Egami.Video.Codecs.Av1EncoderOptions.Pyramid.get -> bool
+Egami.Video.Codecs.Av1EncoderOptions.Pyramid.init -> void
+Egami.Video.Codecs.Av1EncoderOptions.ScreenContent.get -> bool?
+Egami.Video.Codecs.Av1EncoderOptions.ScreenContent.init -> void
+Egami.Video.Codecs.Av1EncoderOptions.TemporalFilterFrames.get -> int
+Egami.Video.Codecs.Av1EncoderOptions.TemporalFilterFrames.init -> void
+Egami.Video.Codecs.Av1EncoderOptions.TemporalFilterStrength.get -> int?
+Egami.Video.Codecs.Av1EncoderOptions.TemporalFilterStrength.init -> void
 Egami.Video.Codecs.Av1Packets
 Egami.Video.Codecs.CodecHeaderReader
 Egami.Video.Codecs.CodecHeaderReader.CodecHeaderReader(Egami.Video.TrackInfo! track, Egami.Video.MediaContext? context = null) -> void
@@ -455,6 +481,8 @@ Egami.Video.Codecs.RateControlMode.Quality = 0 -> Egami.Video.Codecs.RateControl
 Egami.Video.Codecs.RateControlMode.Quantizer = 3 -> Egami.Video.Codecs.RateControlMode
 Egami.Video.Codecs.VideoDecoderOptions.ApplyFilmGrain.get -> bool
 Egami.Video.Codecs.VideoDecoderOptions.ApplyFilmGrain.init -> void
+Egami.Video.Codecs.VideoEncoderOptions.Av1.get -> Egami.Video.Codecs.Av1EncoderOptions?
+Egami.Video.Codecs.VideoEncoderOptions.Av1.init -> void
 Egami.Video.Codecs.VideoEncoderOptions.Bitrate.get -> long?
 Egami.Video.Codecs.VideoEncoderOptions.Bitrate.init -> void
 Egami.Video.Codecs.VideoEncoderOptions.BufferSize.get -> long?
@@ -871,6 +899,8 @@ Egami.Video.VideoWriterOptions.AudioLayout.get -> Egami.Video.Audio.ChannelLayou
 Egami.Video.VideoWriterOptions.AudioLayout.init -> void
 Egami.Video.VideoWriterOptions.AudioSampleRate.get -> int
 Egami.Video.VideoWriterOptions.AudioSampleRate.init -> void
+Egami.Video.VideoWriterOptions.Av1.get -> Egami.Video.Codecs.Av1EncoderOptions?
+Egami.Video.VideoWriterOptions.Av1.init -> void
 Egami.Video.VideoWriterOptions.Bitrate.get -> long?
 Egami.Video.VideoWriterOptions.Bitrate.init -> void
 Egami.Video.VideoWriterOptions.BufferSize.get -> long?
@@ -964,9 +994,14 @@ override Egami.Video.AudioReaderOptions.ToString() -> string!
 override Egami.Video.AudioWriterOptions.Equals(object? obj) -> bool
 override Egami.Video.AudioWriterOptions.GetHashCode() -> int
 override Egami.Video.AudioWriterOptions.ToString() -> string!
+override Egami.Video.Codecs.Av1Codec.CanEncode.get -> bool
 override Egami.Video.Codecs.Av1Codec.CodecId.get -> string!
 override Egami.Video.Codecs.Av1Codec.CreateDecoder(Egami.Video.VideoTrackInfo! track, Egami.Video.Codecs.VideoDecoderOptions? options, Egami.Video.MediaContext! context) -> Egami.Video.Codecs.IVideoDecoder!
+override Egami.Video.Codecs.Av1Codec.CreateEncoder(Egami.Video.Codecs.VideoEncoderOptions! options, Egami.Video.MediaContext! context) -> Egami.Video.Codecs.IVideoEncoder!
 override Egami.Video.Codecs.Av1Codec.Name.get -> string!
+override Egami.Video.Codecs.Av1EncoderOptions.Equals(object? obj) -> bool
+override Egami.Video.Codecs.Av1EncoderOptions.GetHashCode() -> int
+override Egami.Video.Codecs.Av1EncoderOptions.ToString() -> string!
 override Egami.Video.Codecs.EncodeFrameOptions.Equals(object? obj) -> bool
 override Egami.Video.Codecs.EncodeFrameOptions.GetHashCode() -> int
 override Egami.Video.Codecs.EncodeFrameOptions.ToString() -> string!
@@ -1135,6 +1170,9 @@ static Egami.Video.AudioWriter.Create(System.IO.Stream! stream, string! formatNa
 static Egami.Video.AudioWriterOptions.operator !=(Egami.Video.AudioWriterOptions? left, Egami.Video.AudioWriterOptions? right) -> bool
 static Egami.Video.AudioWriterOptions.operator ==(Egami.Video.AudioWriterOptions? left, Egami.Video.AudioWriterOptions? right) -> bool
 static Egami.Video.Codecs.Av1Codec.Instance.get -> Egami.Video.Codecs.Av1Codec!
+static Egami.Video.Codecs.Av1EncoderOptions.Default.get -> Egami.Video.Codecs.Av1EncoderOptions!
+static Egami.Video.Codecs.Av1EncoderOptions.operator !=(Egami.Video.Codecs.Av1EncoderOptions? left, Egami.Video.Codecs.Av1EncoderOptions? right) -> bool
+static Egami.Video.Codecs.Av1EncoderOptions.operator ==(Egami.Video.Codecs.Av1EncoderOptions? left, Egami.Video.Codecs.Av1EncoderOptions? right) -> bool
 static Egami.Video.Codecs.Av1Packets.ExtractConfig(System.ReadOnlySpan<byte> obus) -> byte[]?
 static Egami.Video.Codecs.Av1Packets.MergeFrames(System.Collections.Generic.IEnumerable<System.ReadOnlyMemory<byte>>! frames) -> byte[]!
 static Egami.Video.Codecs.Av1Packets.SplitFrames(System.ReadOnlyMemory<byte> temporalUnit) -> System.Collections.Generic.IReadOnlyList<System.ReadOnlyMemory<byte>>!

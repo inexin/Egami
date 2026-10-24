@@ -267,3 +267,123 @@ public sealed record Vp9EncoderOptions
     private static int InRange(int value, int min, int max, [System.Runtime.CompilerServices.CallerArgumentExpression(nameof(value))] string? name = null) =>
         value < min || value > max ? throw new ArgumentOutOfRangeException(name, value, $"The value must be {min} to {max}.") : value;
 }
+
+/// <summary>
+/// The AV1 settings beyond <see cref="VideoEncoderOptions"/>, for experts: quantizer limits, hidden alternate reference frames
+/// and their pyramid, golden frame spacing, the temporal filter, adaptive quantization, screen content tools, error resilience
+/// and the bit depth. Every one has a default that suits most uses.
+/// </summary>
+/// <example>
+/// <code language="csharp" source="../../../tests/Egami.DocSamples/VideoEncode.cs" region="video-encode-av1"/>
+/// </example>
+public sealed record Av1EncoderOptions
+{
+    private readonly int _minQuantizer;
+    private readonly int _maxQuantizer = 255;
+    private readonly int? _goldenInterval;
+    private readonly int _temporalFilterFrames = 7;
+    private readonly int? _temporalFilterStrength;
+    private readonly int? _bitDepth;
+
+    /// <summary>Gets the defaults.</summary>
+    public static Av1EncoderOptions Default { get; } = new();
+
+    /// <summary>Gets the smallest base_q_idx rate control may use, 0 (finest, lossless) to 255. Default 0.</summary>
+    /// <exception cref="ArgumentOutOfRangeException">The value is outside 0 to 255.</exception>
+    public int MinQuantizer
+    {
+        get => _minQuantizer;
+        init => _minQuantizer = InRange(value, 0, 255);
+    }
+
+    /// <summary>Gets the largest base_q_idx rate control may use, 0 to 255. Default 255.</summary>
+    /// <exception cref="ArgumentOutOfRangeException">The value is outside 0 to 255.</exception>
+    public int MaxQuantizer
+    {
+        get => _maxQuantizer;
+        init => _maxQuantizer = InRange(value, 0, 255);
+    }
+
+    /// <summary>
+    /// Gets whether <see cref="LatencyMode.Quality"/> codes hidden alternate reference frames: a temporally filtered copy of a
+    /// frame ahead that the frames before it predict from, shown later with show_existing_frame at its own place. Default on;
+    /// <see cref="LatencyMode.Realtime"/> never codes them.
+    /// </summary>
+    public bool AlternateReference { get; init; } = true;
+
+    /// <summary>
+    /// Gets whether each group is a pyramid, as libaom and SVT-AV1 build them: after the hidden alternate reference at its end, a
+    /// hidden frame halfway to it, then halfway again, down to pairs of frames, each shown later the same way; the frames between
+    /// predict from both sides and nothing predicts from them. Groups are 16 frames (five layers) unless
+    /// <see cref="GoldenInterval"/> says otherwise, and each group and the one after it are run through the AV1 encoder's
+    /// temporal model first, which sets the alternate reference's and keyframe's quantizers. Default on; off codes one hidden
+    /// alternate reference a group, its group 8 to 16 frames long by how much the picture moves.
+    /// </summary>
+    public bool Pyramid { get; init; } = true;
+
+    /// <summary>
+    /// Gets the most frames between golden frame refreshes (and alternate reference frames), 4 to 64, or <see langword="null"/>
+    /// (the default) for 16 with the <see cref="Pyramid"/>, else 8 to 16 chosen by how much the picture moves.
+    /// </summary>
+    /// <exception cref="ArgumentOutOfRangeException">The value is outside 4 to 64.</exception>
+    public int? GoldenInterval
+    {
+        get => _goldenInterval;
+        init => _goldenInterval = value is int v ? InRange(v, 4, 64) : null;
+    }
+
+    /// <summary>Gets how many frames the temporal filter blends into an alternate reference frame, 1 (none) to 15. Default 7.</summary>
+    /// <exception cref="ArgumentOutOfRangeException">The value is outside 1 to 15.</exception>
+    public int TemporalFilterFrames
+    {
+        get => _temporalFilterFrames;
+        init => _temporalFilterFrames = InRange(value, 1, 15);
+    }
+
+    /// <summary>
+    /// Gets how strongly the temporal filter blends, 0 (weakest) to 6, or <see langword="null"/> (the default) for a strength that
+    /// follows each picture's noise and the frame's quantizer: clean pictures and fine quantizers blend little, noisy pictures at
+    /// coarse quantizers most. With the <see cref="Pyramid"/>, keyframes are blended with the frames after them too.
+    /// </summary>
+    /// <exception cref="ArgumentOutOfRangeException">The value is outside 0 to 6.</exception>
+    public int? TemporalFilterStrength
+    {
+        get => _temporalFilterStrength;
+        init => _temporalFilterStrength = value is int v ? InRange(v, 0, 6) : null;
+    }
+
+    /// <summary>
+    /// Gets whether each 64x64 superblock gets its own quantizer (delta q): on a group's base frames from the temporal model, finer
+    /// where the frames after it reuse most; on the others by its detail (Egami's Variance Boost), finer where the picture is flat
+    /// and banding shows, which SSIM rewards more than PSNR loses. Default on.
+    /// </summary>
+    public bool AdaptiveQuantization { get; init; } = true;
+
+    /// <summary>
+    /// Gets whether the screen content tools (palettes, and intra block copy in keyframes) are on, or <see langword="null"/>
+    /// (the default) to turn them on per frame when the frame looks like screen content.
+    /// </summary>
+    public bool? ScreenContent { get; init; }
+
+    /// <summary>
+    /// Gets whether frames start from the default probabilities and keep no motion vectors for the frames after them, so a lost
+    /// packet spoils only its own frame, or <see langword="null"/> (the default) for on in <see cref="LatencyMode.Realtime"/> and
+    /// off otherwise.
+    /// </summary>
+    public bool? ErrorResilient { get; init; }
+
+    /// <summary>
+    /// Gets the bit depth to code, 8, 10 or 12, or <see langword="null"/> (the default) for the frames' own: 10 or 12 for 16-bit
+    /// planes of that depth, 8 for everything else. 8 and 10-bit 4:2:0 make Main profile streams, 4:4:4 High, and 12 bits or
+    /// 4:2:2 Professional.
+    /// </summary>
+    /// <exception cref="ArgumentOutOfRangeException">The value is not 8, 10 or 12.</exception>
+    public int? BitDepth
+    {
+        get => _bitDepth;
+        init => _bitDepth = value is null or 8 or 10 or 12 ? value : throw new ArgumentOutOfRangeException(nameof(value), value, "The bit depth must be 8, 10 or 12.");
+    }
+
+    private static int InRange(int value, int min, int max, [System.Runtime.CompilerServices.CallerArgumentExpression(nameof(value))] string? name = null) =>
+        value < min || value > max ? throw new ArgumentOutOfRangeException(name, value, $"The value must be {min} to {max}.") : value;
+}
