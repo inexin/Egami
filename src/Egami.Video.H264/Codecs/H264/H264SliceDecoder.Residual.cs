@@ -1,4 +1,5 @@
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 using Egami.Nal;
 
@@ -560,8 +561,9 @@ internal sealed partial class H264SliceDecoder
         }
 
         int numC8x8 = _chromaArrayType == 1 ? 1 : 2;
-        Span<byte> significant = stackalloc byte[64];
-        int numCoeff = maxNumCoeff;
+        // The positions of the significant coefficients, kept for the caller's placing pass; at most 64.
+        ref byte significant = ref MemoryMarshal.GetArrayDataReference(_significant);
+        int numCoeff = Math.Min(maxNumCoeff, 64);
         int count = 0;
         bool last = false;
         ref byte sig = ref _ctx[sigBase];
@@ -575,7 +577,7 @@ internal sealed partial class H264SliceDecoder
             {
                 if (engine.Decode(ref st, ref Unsafe.Add(ref sig, sigInc[i])) != 0)
                 {
-                    significant[count++] = (byte)i;
+                    Unsafe.Add(ref significant, count++) = (byte)i;
                     if (engine.Decode(ref st, ref Unsafe.Add(ref lastCtx, lastInc[i])) != 0)
                     {
                         last = true;
@@ -591,7 +593,7 @@ internal sealed partial class H264SliceDecoder
                 int inc = Math.Min(numC8x8 == 1 ? i : i >> 1, 2);
                 if (engine.Decode(ref st, ref Unsafe.Add(ref sig, inc)) != 0)
                 {
-                    significant[count++] = (byte)i;
+                    Unsafe.Add(ref significant, count++) = (byte)i;
                     if (engine.Decode(ref st, ref Unsafe.Add(ref lastCtx, inc)) != 0)
                     {
                         last = true;
@@ -606,7 +608,7 @@ internal sealed partial class H264SliceDecoder
             {
                 if (engine.Decode(ref st, ref Unsafe.Add(ref sig, i)) != 0)
                 {
-                    significant[count++] = (byte)i;
+                    Unsafe.Add(ref significant, count++) = (byte)i;
                     if (engine.Decode(ref st, ref Unsafe.Add(ref lastCtx, i)) != 0)
                     {
                         last = true;
@@ -619,12 +621,18 @@ internal sealed partial class H264SliceDecoder
         if (!last)
         {
             // The last position is significant when no earlier one was the last.
-            significant[count++] = (byte)(numCoeff - 1);
+            Unsafe.Add(ref significant, count++) = (byte)(numCoeff - 1);
         }
 
         int eq1 = 0, gt1 = 0;
         int maxGt1Inc = cat == 3 ? 3 : 4;
         ref byte abs = ref _ctx[absBase];
+        if (levels.Length < numCoeff)
+        {
+            throw H264Errors.Corrupt("A residual block is larger than its coefficients.");
+        }
+
+        ref int level = ref MemoryMarshal.GetArrayDataReference(levels);
         for (int k = count - 1; k >= 0; k--)
         {
             int inc = gt1 != 0 ? 0 : Math.Min(4, 1 + eq1);
@@ -674,8 +682,7 @@ internal sealed partial class H264SliceDecoder
                 gt1++;
             }
 
-            levels[significant[k]] = engine.Bypass(ref st) != 0 ? -value : value;
-            _significant[k] = significant[k];
+            Unsafe.Add(ref level, Unsafe.Add(ref significant, k)) = engine.Bypass(ref st) != 0 ? -value : value;
         }
 
         engine.Restore(st);
