@@ -94,8 +94,9 @@ no copying. It is fully managed and ships only royalty-free codecs:</p>
 frames.</li>
 <li>Codecs: AV1 (8, 10 and 12 bit, 4:0:0 to 4:4:4, film grain, equal to libaom frame for frame), VP9 (all four profiles, 8,
 10 and 12 bit, equal to libvpx frame for frame), VP8 (with WebM alpha) and Motion JPEG decode; VP8 (see
-<a href="video-encoding.html">Encoding video</a>), Motion JPEG and uncompressed encode. FLAC and PCM audio decode and encode (see <a href="audio.html">Audio</a>); other tracks are copied through
-untouched. H.264 decodes with the opt-in Egami.Video.H264 package (see <a href="h264.html">H.264</a>).</li>
+<a href="video-encoding.html">Encoding video</a>), Motion JPEG and uncompressed encode. Audio codecs such as FLAC, Opus, ALAC and AC-3
+(see <a href="audio.html">Audio</a>); other tracks are copied through untouched. H.264 decodes with the opt-in Egami.Video.H264
+package (see <a href="h264.html">H.264</a>).</li>
 </ul>
 <h2 id="probing-a-file">Probing a file</h2>
 <p><code>MediaFile.Probe</code> reads the headers and returns a <code>MediaInfo</code>: the container's <code>FormatName</code>, the <code>Duration</code>, and the
