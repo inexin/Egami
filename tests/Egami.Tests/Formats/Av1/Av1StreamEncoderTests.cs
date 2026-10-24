@@ -45,6 +45,24 @@ public class Av1StreamEncoderTests
     }
 
     [Theory]
+    [InlineData(4)]
+    [InlineData(6)]
+    public void FramesNothingPredictsFromDecodeToTheReconstruction(int effort)
+    {
+        Av1SequenceOptions options = new() { Width = 160, Height = 96 };
+        using Av1StreamEncoder encoder = new(options);
+        using Av1StreamDecoder decoder = new();
+        for (int i = 0; i < 4; i++)
+        {
+            using YuvRaster frame = Moving(160, 96, 8, ChromaFormat.Yuv420, i);
+            // Frames 2 and 3 predict from frame 1 and are left out of the slots that matter.
+            Av1FramePlan plan = new() { Effort = effort, Quality = 60, Referenced = i < 2, RefreshSlots = i < 2 ? 1 : 2 };
+            decoder.Send(encoder.Encode(frame, plan).Data.Span);
+            AssertDecodesToReconstruction(decoder, encoder.Reconstruction!, 160, 96, 8, ChromaFormat.Yuv420);
+        }
+    }
+
+    [Theory]
     [InlineData(4, 8, ChromaFormat.Yuv420)]
     [InlineData(7, 8, ChromaFormat.Yuv420)]
     [InlineData(2, 10, ChromaFormat.Yuv444)]

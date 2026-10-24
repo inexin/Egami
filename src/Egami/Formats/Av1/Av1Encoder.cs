@@ -54,6 +54,9 @@ internal sealed class Av1EncoderSettings
     /// <summary>Gets whether the frame is one of a stream's (<see cref="Av1StreamEncoder"/>), not a still picture.</summary>
     internal bool Stream { get; init; }
 
+    /// <summary>Gets whether later frames predict from the frame; one that is not searches with fewer tools (<see cref="Av1SearchProfile.For"/>).</summary>
+    internal bool Reference { get; init; } = true;
+
     internal CancellationToken CancellationToken { get; init; }
 }
 
@@ -243,7 +246,6 @@ internal sealed class Av1Encoder
     internal static (byte[] Payload, Av1Frame Frame, double EstimatedBits, double TileBits) EncodeFrame(Av1EncoderInput input, Av1EncoderSettings settings,
         Av1SequenceHeader sequence, Av1FrameParameters parameters, Av1ReferencePlane?[] referencePlanes, int[] searchReferences)
     {
-        long t0 = System.Diagnostics.Stopwatch.GetTimestamp(); // TEMP-TIMES
         Av1BitWriter bits = new();
         Av1ObuWriter.FrameHeader(bits, sequence, parameters);
         Av1FrameHeader header = Av1FrameHeader.Parse(bits.ToArray(), sequence, 0, 0, "AV1", parameters.Slots is null ? null : (Av1Frame?[])parameters.Slots.Clone());
@@ -269,13 +271,11 @@ internal sealed class Av1Encoder
             source.SuperblockColumns = sbCols;
         }
 
-        long t1 = System.Diagnostics.Stopwatch.GetTimestamp(); // TEMP-TIMES
         if (!header.FrameIsIntra && searchReferences.Length > 0)
         {
             source.Prepass = Av1MotionPrepass.Build(frame, source.Planes[0], frame.Strides[0], source.ReferencePlanes, searchReferences);
         }
 
-        long t2 = System.Diagnostics.Stopwatch.GetTimestamp(); // TEMP-TIMES
         if (header.AllowIntrabc)
         {
             source.Hash = new Av1BlockHash(source.Planes[0], frame.Strides[0], header.MiCols * 4, header.MiRows * 4);
@@ -288,12 +288,11 @@ internal sealed class Av1Encoder
         Av1FrameDecisions decisions = new(frame);
         int tiles = header.TileCols * header.TileRows;
         Av1TileRows[] tileRows = Search(frame, source, decisions, settings);
-        long t3 = System.Diagnostics.Stopwatch.GetTimestamp(); // TEMP-TIMES
         MarkCdef(frame);
 
-        Av1FilterSearch.Search(frame, source, sequence, parameters, settings.Effort, Av1Rate.RdMultiplier(Math.Max(parameters.BaseQIdx, 1), sequence.BitDepth));
+        Av1FilterSearch.Search(frame, source, sequence, parameters, settings.Effort, Av1Rate.RdMultiplier(Math.Max(parameters.BaseQIdx, 1), sequence.BitDepth),
+            settings.Reference);
 
-        long t4 = System.Diagnostics.Stopwatch.GetTimestamp(); // TEMP-TIMES
         byte[][] tileData = new byte[tiles][];
         Av1FrameContext?[] contexts = new Av1FrameContext?[tiles];
         frame.For(tiles, tile =>
@@ -303,13 +302,6 @@ internal sealed class Av1Encoder
             contexts[tile] = writer.Context;
         });
         parameters.TileSizeBytes = Av1ObuWriter.TileSizeBytesFor(tileData);
-        long t5 = System.Diagnostics.Stopwatch.GetTimestamp(); // TEMP-TIMES
-        if (Environment.GetEnvironmentVariable("EGAMI_AV1_TIMES") is not null)
-        {
-            double f = 1000.0 / System.Diagnostics.Stopwatch.Frequency;
-            Console.Error.WriteLine($"av1 frame {(header.FrameIsIntra ? "I" : "P")}: setup {(t1 - t0) * f:F0} prepass {(t2 - t1) * f:F0} rest {(t3 - t2) * f:F0}(search) filters {(t4 - t3) * f:F0} write {(t5 - t4) * f:F0}");
-        }
-
         if (!frame.Header.DisableFrameEndUpdateCdf)
         {
             // The CDFs the context update tile ends with, which the frames that load this one start from.

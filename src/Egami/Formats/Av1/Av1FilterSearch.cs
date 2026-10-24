@@ -18,8 +18,11 @@ internal static class Av1FilterSearch
     ];
 
     /// <summary>Searches and applies the filters.</summary>
-    internal static void Search(Av1Frame frame, Av1EncoderSource source, Av1SequenceHeader sequence, Av1FrameParameters parameters, int effort, long rdmult)
+    internal static void Search(Av1Frame frame, Av1EncoderSource source, Av1SequenceHeader sequence, Av1FrameParameters parameters, int effort, long rdmult,
+        bool reference = true)
     {
+        // A frame no other predicts from searches its filters as two efforts lower do.
+        effort = reference ? effort : Math.Max(0, effort - 2);
         Av1FrameHeader header = frame.Header;
         // Intra block copy turns every loop filter off.
         if (header.CodedLossless || header.AllowIntrabc)

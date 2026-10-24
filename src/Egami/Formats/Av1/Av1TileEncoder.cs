@@ -14,8 +14,11 @@ internal sealed partial class Av1TileEncoder : Av1TileCoder
     private readonly Av1EncoderSource _source;
     private readonly Av1SearchProfile _profile;
 
-    /// <summary>Whether intra blocks search the intra modes of a still picture, not the faster ones of a stream's frames.</summary>
+    /// <summary>Whether the frame is intra, its intra blocks searching the intra modes of a still picture, not the faster ones of an inter frame.</summary>
     private readonly bool _stillIntra;
+
+    /// <summary>Whether the frame is a stream's (<see cref="Av1EncoderSettings.Stream"/>), not a still picture's.</summary>
+    private readonly bool _stream;
     private long _frameRdmult;
     private int _sbQIndex;
     private long _rdmult;
@@ -35,7 +38,6 @@ internal sealed partial class Av1TileEncoder : Av1TileCoder
     /// <summary>The planes whose coefficients <see cref="EncodePlane"/> last coded in full, one bit each, which <see cref="FinishBlock"/> reuses.</summary>
     private int _codedPlanes;
 
-    private static readonly bool NoReuse = Environment.GetEnvironmentVariable("EGAMI_AV1_NOREUSE") is not null; // TEMP-TUNE
     private readonly Stack<Snapshot> _pool = new();
     private readonly Dictionary<int, QuantTable> _tables = [];
     private readonly Av1CoeffCosts _costs = new();
@@ -52,8 +54,9 @@ internal sealed partial class Av1TileEncoder : Av1TileCoder
     {
         _reconstructor = new Av1Reconstructor<ushort>(frame);
         _source = source;
-        _profile = Av1SearchProfile.For(settings.Effort, frame.Header.CodedLossless);
-        _stillIntra = frame.Header.FrameIsIntra && !(settings.Stream && _profile.FastStreamIntra);
+        _profile = Av1SearchProfile.For(settings.Effort, frame.Header.CodedLossless, settings.Reference);
+        _stream = settings.Stream;
+        _stillIntra = frame.Header.FrameIsIntra;
         _frameRdmult = _rdmult = Av1Rate.RdMultiplier(Math.Max(frame.Header.BaseQIdx, 1), frame.Sequence.BitDepth);
     }
 
@@ -99,7 +102,8 @@ internal sealed partial class Av1TileEncoder : Av1TileCoder
             // At lower efforts: a block coded whole with no residual is not split, and rectangles are tried only where
             // splitting beat keeping the block whole.
             if (_profile.PrunePartitions && partition == Partition.Split && noneCost != long.MaxValue
-                && Av1Tables.BlockSizeWide[bsize] >= 16 && (_header.FrameIsIntra || Av1Tables.BlockSizeWide[bsize] <= _profile.SkipKeepsWhole)
+                && Av1Tables.BlockSizeWide[bsize] >= (_header.FrameIsIntra ? 16 : _profile.InterSkipKeepsWholeFrom)
+                && (_header.FrameIsIntra || Av1Tables.BlockSizeWide[bsize] <= _profile.SkipKeepsWhole)
                 && _frame.Grid[(miRow * _miCols) + miCol] is { Skip: true } whole && whole.Size == bsize)
             {
                 continue;
@@ -589,7 +593,7 @@ internal sealed partial class Av1TileEncoder : Av1TileCoder
 
         // The coefficients' rate as they were coded, their contexts as coding them left them.
         int planes = chroma ? (1 << _planes) - 1 : 1;
-        bool coded = !_b.Skip && (_codedPlanes & planes) == planes && !NoReuse;
+        bool coded = !_b.Skip && (_codedPlanes & planes) == planes;
         Span<byte> contexts = stackalloc byte[3 * 64];
         if (coded)
         {
@@ -1079,6 +1083,10 @@ internal sealed partial class Av1TileEncoder : Av1TileCoder
         leftCtx.AsSpan(lOff, txh).CopyTo(leftSaved);
         long bestCost = long.MaxValue;
         int bestType = types[0];
+
+        // The types are weighed without the trellis below the efforts that search with it; the chosen one is then coded with it
+        // (libaom's winner mode processing).
+        _typesWithoutTrellis = !_profile.TrellisInSearch && _stream;
         foreach (int txType in types)
         {
             long cost = TryType(plane, blkRow, blkCol, txSize, txType, x, y, originIndex, lossless, keep: false);
@@ -1091,6 +1099,7 @@ internal sealed partial class Av1TileEncoder : Av1TileCoder
             leftSaved[..txh].CopyTo(leftCtx.AsSpan(lOff));
         }
 
+        _typesWithoutTrellis = false;
         return TryType(plane, blkRow, blkCol, txSize, bestType, x, y, originIndex, lossless, keep: true);
     }
 
@@ -1184,7 +1193,10 @@ internal sealed partial class Av1TileEncoder : Av1TileCoder
     }
 
     /// <summary>Gets whether the transform blocks being tried are optimized by the trellis.</summary>
-    private bool Trellis => _profile.Trellis && (_winner || _profile.TrellisInSearch);
+    private bool Trellis => _profile.Trellis && (_winner || _profile.TrellisInSearch) && !_typesWithoutTrellis;
+
+    /// <summary>Whether a transform block's types are being weighed, without the trellis.</summary>
+    private bool _typesWithoutTrellis;
 
     /// <summary>Gets the rate of a luma transform block's type.</summary>
     private long TxTypeRate(int plane, int txSize, int txType)
@@ -1727,6 +1739,9 @@ internal sealed class Av1SearchProfile
     /// </summary>
     internal int SkipKeepsWhole { get; init; } = 128;
 
+    /// <summary>Gets the smallest block side of an inter frame that, coded whole without residual, is not tried split.</summary>
+    internal int InterSkipKeepsWholeFrom { get; init; } = 16;
+
     /// <summary>Gets the largest block side an inter frame keeps whole with a residual; larger whole blocks are coded without one.</summary>
     internal int InterResidualBlock { get; init; } = 128;
 
@@ -1747,28 +1762,11 @@ internal sealed class Av1SearchProfile
 
     internal int[] ChromaModes { get; init; } = AllModes;
 
-    /// <summary>Gets whether the intra frames of a stream (<see cref="Av1EncoderSettings.Stream"/>) search intra modes as inter frames do.</summary>
-    internal bool FastStreamIntra { get; init; }
-
     /// <summary>Gets the luma intra modes an intra block of an inter frame tries.</summary>
     internal int[] InterFrameLumaModes { get; init; } = AllModes;
 
     /// <summary>Gets the chroma intra modes an intra block of an inter frame tries.</summary>
     internal int[] InterFrameChromaModes { get; init; } = AllModes;
-
-    // TEMP-TUNE
-    internal bool FastInterIntra
-    {
-        get => InterFrameLumaModes.Length < 13;
-        init
-        {
-            if (value)
-            {
-                InterFrameLumaModes = [Pred.Dc, Pred.V, Pred.H, Pred.Smooth, Pred.Paeth];
-                InterFrameChromaModes = [Pred.Dc, Pred.Paeth];
-            }
-        }
-    }
 
     internal bool AngleDeltas { get; init; }
 
@@ -1868,11 +1866,16 @@ internal sealed class Av1SearchProfile
     internal int[] TxTypeBuffer { get; } = new int[16];
 
     /// <summary>Gets the search of an effort, 0 to 10.</summary>
-    internal static Av1SearchProfile For(int effort, bool lossless)
+    /// <summary>
+    /// Gets the search of an effort, 0 to 10; a frame no later frame predicts from (<paramref name="reference"/> false) leaves out the
+    /// tools that cost most for what they give, whose misses do not carry on into other frames: transform size search, chroma from
+    /// luma, inter-intra, overlapped and warped motion, filter choice and global motion (SVT-AV1 keeps them for reference frames).
+    /// </summary>
+    internal static Av1SearchProfile For(int effort, bool lossless, bool reference = true)
     {
         int[] fast = [Pred.Dc, Pred.V, Pred.H, Pred.Smooth, Pred.Paeth];
         int[] twoD = [TxType.DctDct, TxType.AdstDct, TxType.DctAdst, TxType.AdstAdst];
-        Av1SearchProfile made = new Av1SearchProfile
+        return new Av1SearchProfile
         {
             // libaom's speed 6 keeps no block larger than 32x32 whole.
             MaxBlock = effort <= 4 ? 32 : 64,
@@ -1887,8 +1890,8 @@ internal sealed class Av1SearchProfile
             ChromaModes = effort <= 2 ? [Pred.Dc, Pred.Paeth] : effort <= 5 ? fast : AllModes,
             AngleDeltas = effort >= 5 && !lossless,
             FilterIntra = effort >= 6,
-            Cfl = effort >= 2,
-            TxDepth = effort <= 4 ? 0 : effort <= 5 ? 1 : 2,
+            Cfl = effort >= 2 && (reference || effort >= 8),
+            TxDepth = effort <= 4 ? 0 : effort <= 5 || !reference ? 1 : 2,
             LumaShortlist = effort <= 2 ? 2 : effort <= 4 ? 3 : effort <= 6 ? 5 : effort <= 8 ? 8 : 0,
             ChromaShortlist = effort <= 4 ? 2 : effort <= 6 ? 3 : effort <= 8 ? 5 : 0,
             InterFrameLumaShortlist = effort <= 4 ? 2 : effort <= 6 ? 5 : effort <= 8 ? 8 : 0,
@@ -1908,28 +1911,15 @@ internal sealed class Av1SearchProfile
             InterCandidates = effort <= 2 ? 1 : effort <= 4 ? 2 : effort <= 6 ? 3 : 5,
             Compound = effort <= 2 ? 0 : effort <= 4 ? 1 : effort <= 5 ? 2 : 3,
             CompoundReferences = effort <= 4 ? 2 : 3,
-            InterIntra = effort >= 6,
-            MotionModes = effort >= 6,
-            Filters = effort <= 4 ? 0 : effort <= 6 ? 1 : 2,
-            InterTxSplit = effort >= 5,
-            GlobalMotion = effort >= 7,
+            InterIntra = effort >= 6 && (reference || effort >= 8),
+            MotionModes = effort >= 6 && (reference || effort >= 8),
+            Filters = effort <= 4 || (!reference && effort <= 6) ? 0 : effort <= 6 || !reference ? 1 : 2,
+            InterTxSplit = effort >= 5 && (reference || effort >= 7),
+            GlobalMotion = effort >= 7 && (reference || effort >= 9),
             IntraAfterSkip = effort >= 8,
             IntraInInter = effort <= 2 ? 25 : 0,
             InterFrameLumaModes = effort <= 4 ? fast : AllModes,
             InterFrameChromaModes = effort <= 4 ? [Pred.Dc, Pred.Paeth] : effort <= 5 ? fast : AllModes,
         };
-        // TEMP-TUNE: overrides for tuning runs; remove before landing.
-        if (Environment.GetEnvironmentVariable("EGAMI_AV1_TUNE") is { Length: > 0 } tune)
-        {
-            foreach (string pair in tune.Split(','))
-            {
-                string[] kv = pair.Split('=');
-                System.Reflection.PropertyInfo prop = typeof(Av1SearchProfile).GetProperty(kv[0], System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!;
-                prop.SetValue(made, prop.PropertyType == typeof(bool) ? kv[1] == "1" : (object)int.Parse(kv[1], System.Globalization.CultureInfo.InvariantCulture));
-            }
-        }
-
-        return made;
-
     }
 }
