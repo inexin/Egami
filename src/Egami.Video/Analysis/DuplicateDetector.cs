@@ -1,4 +1,6 @@
 using System.Numerics;
+using System.Runtime.Intrinsics;
+using System.Runtime.Intrinsics.X86;
 
 namespace Egami.Video.Analysis;
 
@@ -16,6 +18,7 @@ public sealed class DuplicateDetector : IVideoDetector
     private readonly DuplicateOptions _options;
     private readonly RangeBuilder _ranges = new(MediaTime.Zero);
     private ushort[] _kept = [];
+    private byte[] _kept8 = [];
     private int _width;
     private int _height;
     private int _depth;
@@ -87,17 +90,26 @@ public sealed class DuplicateDetector : IVideoDetector
         _width = raster.Width;
         _height = raster.Height;
         _depth = raster.BitDepth;
-        if (_kept.Length != _width * _height)
-        {
-            _kept = new ushort[_width * _height];
-        }
-
         switch (raster)
         {
             case YuvRaster<byte> bytes:
-                Keep(bytes.Y);
+                if (_kept8.Length != _width * _height)
+                {
+                    _kept8 = new byte[_width * _height];
+                }
+
+                for (int y = 0; y < _height; y++)
+                {
+                    bytes.Y.Row(y)[.._width].CopyTo(_kept8.AsSpan(y * _width, _width));
+                }
+
                 break;
             case YuvRaster<ushort> words:
+                if (_kept.Length != _width * _height)
+                {
+                    _kept = new ushort[_width * _height];
+                }
+
                 Keep(words.Y);
                 break;
         }
@@ -133,6 +145,11 @@ public sealed class DuplicateDetector : IVideoDetector
     private bool Repeats<T>(YuvPlane<T> plane)
         where T : unmanaged, IBinaryInteger<T>
     {
+        if (typeof(T) == typeof(byte))
+        {
+            return Repeats8((YuvPlane<byte>)(object)plane);
+        }
+
         int shift = _depth - 8;
         long high = (long)_options.High << shift, low = (long)_options.Low << shift;
         int across = _width / 8, down = _height / 8;
@@ -174,6 +191,76 @@ public sealed class DuplicateDetector : IVideoDetector
 
         return true;
     }
+
+    /// <summary>
+    /// The 8-bit test, a band of 8 rows at a time: vpsadbw sums each block row of 8 samples in one lane, so four blocks side by
+    /// side take one instruction per row.
+    /// </summary>
+    private bool Repeats8(YuvPlane<byte> plane)
+    {
+        int across = _width / 8, down = _height / 8;
+        long blocks = (long)across * down;
+        if (blocks == 0)
+        {
+            return false;
+        }
+
+        long high = _options.High, low = _options.Low;
+        long allowed = (long)Math.Floor(_options.Fraction * blocks);
+        long overLow = 0;
+        Span<ulong> sums = stackalloc ulong[4];
+        for (int by = 0; by < down; by++)
+        {
+            int bx = 0;
+            if (Avx2.IsSupported)
+            {
+                for (; bx <= across - 4; bx += 4)
+                {
+                    Vector256<ulong> sum = Vector256<ulong>.Zero;
+                    for (int y = by * 8; y < (by * 8) + 8; y++)
+                    {
+                        Vector256<byte> a = Vector256.Create(plane.Row(y).Slice(bx * 8, 32));
+                        Vector256<byte> b = Vector256.Create(_kept8.AsSpan((y * _width) + (bx * 8), 32));
+                        sum += Avx2.SumAbsoluteDifferences(a, b).AsUInt64();
+                    }
+
+                    sum.CopyTo(sums);
+                    for (int k = 0; k < 4; k++)
+                    {
+                        if (!Allowed((long)sums[k], high, low, allowed, ref overLow))
+                        {
+                            return false;
+                        }
+                    }
+                }
+            }
+
+            for (; bx < across; bx++)
+            {
+                long sum = 0;
+                for (int y = by * 8; y < (by * 8) + 8; y++)
+                {
+                    ReadOnlySpan<byte> row = plane.Row(y).Slice(bx * 8, 8);
+                    ReadOnlySpan<byte> kept = _kept8.AsSpan((y * _width) + (bx * 8), 8);
+                    for (int x = 0; x < 8; x++)
+                    {
+                        int d = row[x] - kept[x];
+                        sum += d < 0 ? -d : d;
+                    }
+                }
+
+                if (!Allowed(sum, high, low, allowed, ref overLow))
+                {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    private static bool Allowed(long sum, long high, long low, long allowed, ref long overLow) =>
+        sum <= high && (sum <= low || ++overLow <= allowed);
 }
 
 /// <summary>What <see cref="DuplicateDetector"/> counts as a repeat. The defaults are ffmpeg mpdecimate's.</summary>

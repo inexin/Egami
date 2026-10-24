@@ -65,7 +65,7 @@ internal static class Mp4Metadata
     /// <summary>Reads a movie-level udta box into tags, chapters and cover art.</summary>
     public static void ReadMovie(IsoBoxReader parent, IsoBox udta, Dictionary<string, string> tags, List<ChapterInfo> chapters, List<AttachmentInfo> attachments)
     {
-        IsoBoxReader children = parent.Children(udta);
+        IsoBoxReader children = UserData(ref parent, udta);
         while (children.Next(out IsoBox box))
         {
             ReadOnlySpan<byte> c = children.Content(box);
@@ -84,6 +84,32 @@ internal static class Mp4Metadata
                 tags.TryAdd(TagNames.GetValueOrDefault(box.Type.Value, box.Type.ToString()), text);
             }
         }
+    }
+
+    /// <summary>
+    /// Returns a reader over a udta box's items. A QuickTime user data list may end with a 32-bit zero after its last item
+    /// (QuickTime File Format, User Data Atoms), as QuickTime 7 wrote it; that terminator is left out rather than read as a
+    /// cut-off box.
+    /// </summary>
+    private static IsoBoxReader UserData(ref IsoBoxReader parent, in IsoBox udta)
+    {
+        ReadOnlySpan<byte> content = parent.Content(udta);
+        int at = 0;
+        while (content.Length - at >= 8)
+        {
+            uint size = BinaryPrimitives.ReadUInt32BigEndian(content[at..]);
+            if (size < 8 || size > content.Length - at)
+            {
+                break;
+            }
+
+            at += (int)size;
+        }
+
+        int left = content.Length - at;
+        return left is > 0 and < 8 && !content[at..].ContainsAnyExcept((byte)0)
+            ? new IsoBoxReader(content[..at], "QuickTime", udta.ContentStart)
+            : parent.Children(udta);
     }
 
     /// <summary>Reads a meta box (iTunes mdir with ilst, or QuickTime mdta with keys and ilst).</summary>
@@ -178,7 +204,7 @@ internal static class Mp4Metadata
     /// <summary>Reads a track's udta for its name: a QuickTime 'name' box, or a ©nam text box.</summary>
     public static string? ReadTrackName(IsoBoxReader parent, IsoBox udta)
     {
-        IsoBoxReader children = parent.Children(udta);
+        IsoBoxReader children = UserData(ref parent, udta);
         while (children.Next(out IsoBox box))
         {
             ReadOnlySpan<byte> c = children.Content(box);

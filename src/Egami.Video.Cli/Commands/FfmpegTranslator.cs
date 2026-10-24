@@ -452,7 +452,8 @@ internal static class FfmpegTranslator
                     case "cropdetect":
                         detectors.Add("crop");
                         Set("--crop-limit", Get("limit", "limit"));
-                        Set("--crop-round", Get("round", "round"));
+                        // ffmpeg rounds the size to 16 by default (its documentation), analyze to 2.
+                        Set("--crop-round", Get("round", "round") ?? "16");
                         Set("--crop-skip", Get("skip", "skip"));
                         break;
                     case "idet":

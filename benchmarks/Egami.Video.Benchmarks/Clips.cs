@@ -12,9 +12,12 @@ internal static class Clips
     public static string Directory { get; } = System.IO.Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), "egami-video-bench")).FullName;
 
     /// <summary>A 720p Motion JPEG clip of <paramref name="frames"/> frames with PCM audio, in the given container.</summary>
-    public static string MotionJpeg720p(string extension, int frames)
+    public static string MotionJpeg720p(string extension, int frames) => MotionJpeg(1280, 720, extension, frames);
+
+    /// <summary>A Motion JPEG clip of <paramref name="frames"/> frames with PCM audio, in the given container.</summary>
+    public static string MotionJpeg(int width, int height, string extension, int frames)
     {
-        string path = Path.Combine(Directory, $"mjpeg-720p-{frames}{extension}");
+        string path = Path.Combine(Directory, width == 1280 && height == 720 ? $"mjpeg-720p-{frames}{extension}" : $"mjpeg-{width}x{height}-{frames}{extension}");
         if (File.Exists(path))
         {
             return path;
@@ -22,11 +25,11 @@ internal static class Clips
 
         // Ten distinct frames, encoded once at quality 85, repeated.
         List<byte[]> encoded = [];
-        using (IVideoEncoder encoder = VideoCodecs.MotionJpeg.CreateEncoder(new VideoEncoderOptions { Width = 1280, Height = 720, FrameRate = new Rational(25, 1), Quality = 85 }, MediaContext.Default))
+        using (IVideoEncoder encoder = VideoCodecs.MotionJpeg.CreateEncoder(new VideoEncoderOptions { Width = width, Height = height, FrameRate = new Rational(25, 1), Quality = 85 }, MediaContext.Default))
         {
             for (int i = 0; i < 10; i++)
             {
-                using VideoFrame<Rgb8> frame = new(Picture(1280, 720, i), new MediaTime(i, new Rational(1, 25)));
+                using VideoFrame<Rgb8> frame = new(Picture(width, height, i), new MediaTime(i, new Rational(1, 25)));
                 encoder.Send(frame);
                 while (encoder.TryReceive(out EncodedPacket? packet))
                 {
@@ -38,7 +41,7 @@ internal static class Clips
             }
         }
 
-        VideoTrackInfo video = new() { Number = 1, Kind = TrackKind.Video, CodecId = CodecIds.MotionJpeg, TimeBase = new Rational(1, 25), Width = 1280, Height = 720, FrameRate = new Rational(25, 1) };
+        VideoTrackInfo video = new() { Number = 1, Kind = TrackKind.Video, CodecId = CodecIds.MotionJpeg, TimeBase = new Rational(1, 25), Width = width, Height = height, FrameRate = new Rational(25, 1) };
         AudioTrackInfo audio = new() { Number = 2, Kind = TrackKind.Audio, CodecId = CodecIds.PcmLittleEndian, TimeBase = new Rational(1, 48000), SampleRate = 48000, Channels = 2, BitsPerSample = 16 };
         byte[] sound = new byte[1920 * 4];
         string partial = Path.Combine(Directory, "partial-" + Path.GetFileName(path));

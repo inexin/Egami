@@ -174,7 +174,9 @@ each fade out and fade in (`FadeKind`).
 `SceneOptions` picks the method and its threshold. `SceneMethod.Adaptive` weighs each frame's change against the frames
 around it, so a fast pan is not taken for a cut; `Content` compares with the frames just before, as ffmpeg's scene score does;
 `Histogram` compares luma histograms, which ignores motion inside a steady picture. A cut closer than `MinSceneLength` to the
-last is dropped, and with `FlashMode.Merge` a flash that comes back to the picture before it is no scene. `KeepSeries` keeps every frame's score.
+last is dropped, and with `FlashMode.Merge` a flash that comes back to the picture before it is no scene. A frame counts as black
+for fades when its mean luma is at or under `FadeLevel` (2 % of the range, so dark scenes keep their cuts). `KeepSeries` keeps
+every frame's score.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/VideoAnalysis.cs#analysis-scene-options)]
 

@@ -34,8 +34,9 @@ public sealed class VideoDetectorTests
     [Fact]
     public void BlackCountsSamplesNearBlackLevel()
     {
-        // Limited range: black is 16 and the 10 % threshold 37; dark gray at 0.08 of the range counts, 0.12 does not.
-        BlackDetector detector = new(new BlackOptions { MinDuration = MediaTime.Zero });
+        // Limited range: black is 16 and the 10 % threshold 37; dark gray at 0.08 of the range counts, 0.12 does not. The series
+        // makes every frame counted to the end.
+        BlackDetector detector = new(new BlackOptions { MinDuration = MediaTime.Zero, KeepSeries = true });
         using (YuvVideoFrame dark = Frame(Solid(8, 0.08, 0.08, 0.08), 0))
         {
             detector.Add(dark);
@@ -52,6 +53,35 @@ public sealed class VideoDetectorTests
         using YuvVideoFrame half = Frame(Painted(8, p => p.Fill(0, 0, 32, 36, 1, 1, 1)), 2);
         detector.Add(half);
         Assert.Equal(0.5, detector.LastRatio, 9);
+        detector.Complete(MediaTime.FromSeconds(3.0 / 25));
+        Assert.Single(detector.Ranges);
+    }
+
+    [Fact]
+    public void BlackStopsCountingAFrameThatCannotBeBlack()
+    {
+        // Without the series, a gray frame is given up on early: its ratio is only known to be under the picture ratio.
+        BlackDetector detector = new(new BlackOptions { MinDuration = MediaTime.Zero });
+        using (YuvVideoFrame gray = Frame(Solid(8, 0.12, 0.12, 0.12), 0))
+        {
+            detector.Add(gray);
+            Assert.InRange(detector.LastRatio, 0, detector.Options.PictureRatio - 1e-9);
+        }
+
+        using (YuvVideoFrame dark = Frame(Solid(8, 0.08, 0.08, 0.08), 1))
+        {
+            detector.Add(dark);
+            Assert.Equal(1, detector.LastRatio);
+        }
+
+        // One white column of 64 (1.6 %) still leaves a black frame, counted exactly.
+        using YuvVideoFrame almost = Frame(Painted(8, p =>
+        {
+            p.Fill(0, 0, 64, 36, 0, 0, 0);
+            p.Fill(0, 0, 1, 36, 1, 1, 1);
+        }), 2);
+        detector.Add(almost);
+        Assert.Equal(63.0 / 64, detector.LastRatio, 9);
         detector.Complete(MediaTime.FromSeconds(3.0 / 25));
         Assert.Single(detector.Ranges);
     }

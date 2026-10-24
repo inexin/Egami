@@ -1,4 +1,5 @@
 using System.Numerics;
+using System.Runtime.Intrinsics;
 
 namespace Egami.Video.Analysis;
 
@@ -244,55 +245,63 @@ public sealed class SignalMeter : IVideoDetector
         int bb = levels.BroadcastBlack, bw = levels.BroadcastWhite, cl = levels.ChromaLow, ch = levels.ChromaHigh;
         long frameOut = 0;
         double sumY = 0, sumCb = 0, sumCr = 0, sumSat = 0;
-        if (u is not null && v is not null)
+        if (typeof(T) == typeof(byte))
         {
-            _anyChroma = true;
-            if (_chromaOut.Length < u.Width)
-            {
-                _chromaOut = new byte[u.Width];
-            }
-
-            for (int y = 0; y < u.Height; y++)
-            {
-                ReadOnlySpan<T> ur = u.Row(y)[..u.Width], vr = v.Row(y)[..u.Width];
-                for (int x = 0; x < ur.Length; x++)
-                {
-                    int cu = int.CreateTruncating(ur[x]), cv = int.CreateTruncating(vr[x]);
-                    _frameCb[cu]++;
-                    _frameCr[cv]++;
-                    sumCb += cu;
-                    sumCr += cv;
-                    double du = cu - levels.Middle, dv = cv - levels.Middle;
-                    double sat = Math.Sqrt((du * du) + (dv * dv));
-                    sumSat += sat;
-                    _frameSat[Math.Min((int)Math.Round(sat), _frameSat.Length - 1)]++;
-                }
-            }
+            (sumY, sumCb, sumCr, sumSat, frameOut) = Measure8((YuvPlane<byte>)(object)lumaPlane, (YuvPlane<byte>?)(object?)u,
+                (YuvPlane<byte>?)(object?)v, levels, xShift, yShift);
         }
-
-        int chromaRow = -1;
-        for (int y = 0; y < height; y++)
+        else
         {
-            if (u is not null && v is not null && (y >> yShift) != chromaRow)
+            if (u is not null && v is not null)
             {
-                chromaRow = y >> yShift;
-                ReadOnlySpan<T> ur = u.Row(chromaRow)[..u.Width], vr = v.Row(chromaRow)[..u.Width];
-                for (int x = 0; x < ur.Length; x++)
+                _anyChroma = true;
+                if (_chromaOut.Length < u.Width)
                 {
-                    int cu = int.CreateTruncating(ur[x]), cv = int.CreateTruncating(vr[x]);
-                    _chromaOut[x] = (byte)(cu < cl || cu > ch || cv < cl || cv > ch ? 1 : 0);
+                    _chromaOut = new byte[u.Width];
+                }
+
+                for (int y = 0; y < u.Height; y++)
+                {
+                    ReadOnlySpan<T> ur = u.Row(y)[..u.Width], vr = v.Row(y)[..u.Width];
+                    for (int x = 0; x < ur.Length; x++)
+                    {
+                        int cu = int.CreateTruncating(ur[x]), cv = int.CreateTruncating(vr[x]);
+                        _frameCb[cu]++;
+                        _frameCr[cv]++;
+                        sumCb += cu;
+                        sumCr += cv;
+                        double du = cu - levels.Middle, dv = cv - levels.Middle;
+                        double sat = Math.Sqrt((du * du) + (dv * dv));
+                        sumSat += sat;
+                        _frameSat[Math.Min((int)Math.Round(sat), _frameSat.Length - 1)]++;
+                    }
                 }
             }
 
-            ReadOnlySpan<T> row = lumaPlane.Row(y)[..width];
-            for (int x = 0; x < width; x++)
+            int chromaRow = -1;
+            for (int y = 0; y < height; y++)
             {
-                int value = int.CreateTruncating(row[x]);
-                _frameY[value]++;
-                sumY += value;
-                if (value < bb || value > bw || (u is not null && _chromaOut[x >> xShift] != 0))
+                if (u is not null && v is not null && (y >> yShift) != chromaRow)
                 {
-                    frameOut++;
+                    chromaRow = y >> yShift;
+                    ReadOnlySpan<T> ur = u.Row(chromaRow)[..u.Width], vr = v.Row(chromaRow)[..u.Width];
+                    for (int x = 0; x < ur.Length; x++)
+                    {
+                        int cu = int.CreateTruncating(ur[x]), cv = int.CreateTruncating(vr[x]);
+                        _chromaOut[x] = (byte)(cu < cl || cu > ch || cv < cl || cv > ch ? 1 : 0);
+                    }
+                }
+
+                ReadOnlySpan<T> row = lumaPlane.Row(y)[..width];
+                for (int x = 0; x < width; x++)
+                {
+                    int value = int.CreateTruncating(row[x]);
+                    _frameY[value]++;
+                    sumY += value;
+                    if (value < bb || value > bw || (u is not null && _chromaOut[x >> xShift] != 0))
+                    {
+                        frameOut++;
+                    }
                 }
             }
         }
@@ -346,6 +355,142 @@ public sealed class SignalMeter : IVideoDetector
                 blur,
                 blockiness));
         }
+    }
+
+    /// <summary>The saturation of each 8-bit Cb and Cr pair (index Cb x 256 + Cr), shared by every meter.</summary>
+    private static readonly Lazy<double[]> Saturation8 = new(() =>
+    {
+        double[] table = new double[256 * 256];
+        for (int cu = 0; cu < 256; cu++)
+        {
+            for (int cv = 0; cv < 256; cv++)
+            {
+                double du = cu - 128, dv = cv - 128;
+                table[(cu << 8) | cv] = Math.Sqrt((du * du) + (dv * dv));
+            }
+        }
+
+        return table;
+    });
+
+    /// <summary>
+    /// The 8-bit pass: each chroma row is measured with the luma rows it covers. Saturation comes from a table, sums from the
+    /// histograms, and a luma row whose chroma is all in range counts its out-of-range samples with vector compares; the
+    /// histograms are counted four ways so neighboring samples do not wait on each other's counts.
+    /// </summary>
+    private (double SumY, double SumCb, double SumCr, double SumSat, long Out) Measure8(YuvPlane<byte> luma, YuvPlane<byte>? u, YuvPlane<byte>? v,
+        VideoLevels levels, int xShift, int yShift)
+    {
+        int width = luma.Width, height = luma.Height;
+        int bb = levels.BroadcastBlack, bw = levels.BroadcastWhite, cl = levels.ChromaLow, ch = levels.ChromaHigh;
+        Span<int> counts = stackalloc int[4 * 256];
+        counts.Clear();
+        double sumSat = 0;
+        long frameOut = 0;
+        bool chroma = u is not null && v is not null;
+        double[] saturation = chroma ? Saturation8.Value : [];
+        if (chroma)
+        {
+            _anyChroma = true;
+            if (_chromaOut.Length < u!.Width)
+            {
+                _chromaOut = new byte[u.Width];
+            }
+        }
+
+        int chromaRow = -1;
+        bool rowOut = false;
+        for (int y = 0; y < height; y++)
+        {
+            if (chroma && (y >> yShift) != chromaRow)
+            {
+                chromaRow = y >> yShift;
+                ReadOnlySpan<byte> ur = u!.Row(chromaRow)[..u.Width], vr = v!.Row(chromaRow)[..u.Width];
+                rowOut = false;
+                for (int x = 0; x < ur.Length; x++)
+                {
+                    int cu = ur[x], cv = vr[x];
+                    _frameCb[cu]++;
+                    _frameCr[cv]++;
+                    double sat = saturation[(cu << 8) | cv];
+                    sumSat += sat;
+                    _frameSat[Math.Min((int)Math.Round(sat), _frameSat.Length - 1)]++;
+                    bool outside = cu < cl || cu > ch || cv < cl || cv > ch;
+                    _chromaOut[x] = (byte)(outside ? 1 : 0);
+                    rowOut |= outside;
+                }
+            }
+
+            ReadOnlySpan<byte> row = luma.Row(y)[..width];
+            int i = 0;
+            for (; i <= width - 4; i += 4)
+            {
+                counts[row[i]]++;
+                counts[256 + row[i + 1]]++;
+                counts[512 + row[i + 2]]++;
+                counts[768 + row[i + 3]]++;
+            }
+
+            for (; i < width; i++)
+            {
+                counts[row[i]]++;
+            }
+
+            if (rowOut)
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    int value = row[x];
+                    if (value < bb || value > bw || _chromaOut[x >> xShift] != 0)
+                    {
+                        frameOut++;
+                    }
+                }
+            }
+            else
+            {
+                frameOut += CountOutside(row, bb, bw);
+            }
+        }
+
+        double sumY = 0, sumCb = 0, sumCr = 0;
+        for (int value = 0; value < 256; value++)
+        {
+            int count = counts[value] + counts[256 + value] + counts[512 + value] + counts[768 + value];
+            _frameY[value] += count;
+            sumY += (double)value * count;
+            sumCb += (double)value * _frameCb[value];
+            sumCr += (double)value * _frameCr[value];
+        }
+
+        return (sumY, sumCb, sumCr, sumSat, frameOut);
+    }
+
+    /// <summary>Counts the samples under <paramref name="low"/> or over <paramref name="high"/>.</summary>
+    private static long CountOutside(ReadOnlySpan<byte> row, int low, int high)
+    {
+        long count = 0;
+        int x = 0;
+        if (Vector256.IsHardwareAccelerated && row.Length >= Vector256<byte>.Count)
+        {
+            Vector256<byte> lo = Vector256.Create((byte)low), hi = Vector256.Create((byte)high);
+            for (; x <= row.Length - Vector256<byte>.Count; x += Vector256<byte>.Count)
+            {
+                Vector256<byte> values = Vector256.Create(row.Slice(x, Vector256<byte>.Count));
+                Vector256<byte> outside = Vector256.LessThan(values, lo) | Vector256.GreaterThan(values, hi);
+                count += BitOperations.PopCount(outside.ExtractMostSignificantBits());
+            }
+        }
+
+        for (; x < row.Length; x++)
+        {
+            if (row[x] < low || row[x] > high)
+            {
+                count++;
+            }
+        }
+
+        return count;
     }
 
     private static void Add(long[] total, int[] frame)

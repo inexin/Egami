@@ -39,7 +39,11 @@ public sealed class BlackDetector : IVideoDetector
     /// <summary>Gets every frame's black ratio, when <see cref="BlackOptions.KeepSeries"/> is set; otherwise empty.</summary>
     public IReadOnlyList<FrameValue> Series => _series;
 
-    /// <summary>Gets the share of the last frame's luma samples that counted as black, from 0 to 1.</summary>
+    /// <summary>
+    /// Gets the share of the last frame's luma samples that counted as black, from 0 to 1. Unless
+    /// <see cref="BlackOptions.KeepSeries"/> is set, counting stops once a frame cannot be black, so for such a frame this is an
+    /// upper bound still under <see cref="BlackOptions.PictureRatio"/>.
+    /// </summary>
     public double LastRatio { get; private set; }
 
     /// <summary>Gets how many frames the detector has taken.</summary>
@@ -93,10 +97,14 @@ public sealed class BlackDetector : IVideoDetector
     {
         VideoLevels levels = new(raster);
         int threshold = (int)(levels.Black + (_options.PixelThreshold * (levels.White - levels.Black)));
+        long samples = (long)raster.Width * raster.Height;
+
+        // A frame is black with at most this many lighter samples; past that it cannot be, and only the series needs the rest.
+        long misses = _options.KeepSeries ? long.MaxValue : (long)Math.Floor(samples * (1 - _options.PictureRatio)) + 1;
         return raster switch
         {
-            YuvRaster<byte> bytes => (double)PlaneMath.CountAtMost(bytes.Y, threshold) / ((long)bytes.Y.Width * bytes.Y.Height),
-            YuvRaster<ushort> words => (double)PlaneMath.CountAtMost(words.Y, threshold) / ((long)words.Y.Width * words.Y.Height),
+            YuvRaster<byte> bytes => (double)PlaneMath.CountAtMost(bytes.Y, threshold, misses) / ((long)bytes.Y.Width * bytes.Y.Height),
+            YuvRaster<ushort> words => (double)PlaneMath.CountAtMost(words.Y, threshold, misses) / ((long)words.Y.Width * words.Y.Height),
             _ => throw new NotSupportedException($"Planes of {raster.GetType().Name} are not supported."),
         };
     }
