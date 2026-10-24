@@ -39,6 +39,10 @@ changes that break code come only in a new major version.
   loop restoration with a closed-form Wiener filter per 256x256 unit, kept where it pays. Frames nothing predicts from try only
   the CDEF strengths of their nearest references.
 - Effort 3 and 4 try 4x4 inter blocks again in the 16x16 cells the motion pre-pass predicts worst.
+- Through Egami.Video's pyramid (720p derf clips, 60 frames, effort 4), BD-rate on PSNR-Y / SSIM against libaom 3.15.2
+  `--good --cpu-used=6` falls from stage A's +26.7 % / +7.6 % (crowd_run), +31.9 % / -4.0 % (ducks_take_off), +34.5 % /
+  +13.8 % (park_joy) and +131 % / -3.5 % (old_town_cross) to +7.9 % / +3.4 %, +12.4 % / -11.1 %, +13.8 % / +6.3 % and
+  +25.7 % / -1.5 %. The output is the same at any thread count and without SIMD.
 - Video and animated AVIF bytes change (animated AVIF codes its frames with the video tools and Variance Boost); still AVIF
   files are byte for byte as before.
 
