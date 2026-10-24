@@ -38116,6 +38116,19 @@ references:
   isSpec: "True"
   fullName: Egami.Formats.Av1.Av1FramePlan.ReferenceSlots
   nameWithType: Av1FramePlan.ReferenceSlots
+- uid: Egami.Formats.Av1.Av1FramePlan.Referenced
+  name: Referenced
+  href: api/Egami.Formats.Av1.Av1FramePlan.html#Egami_Formats_Av1_Av1FramePlan_Referenced
+  commentId: P:Egami.Formats.Av1.Av1FramePlan.Referenced
+  fullName: Egami.Formats.Av1.Av1FramePlan.Referenced
+  nameWithType: Av1FramePlan.Referenced
+- uid: Egami.Formats.Av1.Av1FramePlan.Referenced*
+  name: Referenced
+  href: api/Egami.Formats.Av1.Av1FramePlan.html#Egami_Formats_Av1_Av1FramePlan_Referenced_
+  commentId: Overload:Egami.Formats.Av1.Av1FramePlan.Referenced
+  isSpec: "True"
+  fullName: Egami.Formats.Av1.Av1FramePlan.Referenced
+  nameWithType: Av1FramePlan.Referenced
 - uid: Egami.Formats.Av1.Av1FramePlan.References
   name: References
   href: api/Egami.Formats.Av1.Av1FramePlan.html#Egami_Formats_Av1_Av1FramePlan_References
