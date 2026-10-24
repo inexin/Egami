@@ -25,6 +25,7 @@ public static partial class MediaFile
     /// <returns>Where the cut starts and what was copied and encoded again.</returns>
     /// <exception cref="ArgumentOutOfRangeException"><paramref name="start"/> is negative, or at or past the last frame.</exception>
     /// <exception cref="ArgumentException"><paramref name="end"/> is not after <paramref name="start"/>, or no track is kept.</exception>
+    /// <exception cref="InvalidDataException">The video has no keyframe to start from.</exception>
     /// <exception cref="UnsupportedFormatException">The input is not a registered container, or no container writes the output's extension.</exception>
     /// <exception cref="NotSupportedException">The output container cannot hold one of the tracks, or <see cref="TrimMode.Reencode"/> was asked for a codec that cannot encode.</exception>
     /// <exception cref="OperationCanceledException">The job was cancelled.</exception>
@@ -62,6 +63,7 @@ public static partial class MediaFile
     /// <returns>Where the cut starts and what was copied and encoded again.</returns>
     /// <exception cref="ArgumentOutOfRangeException"><paramref name="start"/> is negative, or at or past the last frame.</exception>
     /// <exception cref="ArgumentException"><paramref name="end"/> is not after <paramref name="start"/>, or no track is kept.</exception>
+    /// <exception cref="InvalidDataException">The video has no keyframe to start from.</exception>
     /// <exception cref="UnsupportedFormatException">The input is not a registered container, or no container writes <paramref name="outputFormat"/>.</exception>
     /// <exception cref="NotSupportedException">The output container cannot hold one of the tracks or needs a seekable output, or <see cref="TrimMode.Reencode"/> was asked for a codec that cannot encode.</exception>
     /// <exception cref="OperationCanceledException">The job was cancelled.</exception>

@@ -125,6 +125,27 @@ internal sealed class TrimCodec
         }
     }
 
+    /// <summary>The color_space and color_range a VP9 keyframe states, or null when the packet holds no keyframe.</summary>
+    public (int Space, int Range)? Vp9ColorConfig(ReadOnlyMemory<byte> keyframe)
+    {
+        try
+        {
+            foreach (ReadOnlyMemory<byte> frame in Vp9Superframe.Split(keyframe))
+            {
+                Vp9FrameHeader h = Vp9FrameHeader.Read(frame.Span, _ => (_track.Width, _track.Height));
+                if (h.KeyFrame)
+                {
+                    return (h.ColorSpace, h.ColorRange);
+                }
+            }
+        }
+        catch (CorruptDataException)
+        {
+        }
+
+        return null;
+    }
+
     /// <summary>The sequence header OBU (with its size field) in a temporal unit, or in the track's av1C when the unit has none.</summary>
     public byte[]? SequenceHeader(ReadOnlySpan<byte> unit)
     {

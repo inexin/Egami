@@ -536,7 +536,7 @@ internal sealed class TrimJob : IDisposable
                             return false;
                         }
 
-                        encoder ??= CreateEncoder(frame, quantizer, sequence, wanted.Count);
+                        encoder ??= CreateEncoder(frame, quantizer, sequence, wanted.Count, _codec.Vp9ColorConfig(keyframe));
                         encoder.Send(frame, decoded - skip == 1 ? new EncodeFrameOptions { ForceKeyframe = true } : EncodeFrameOptions.Default);
                         shown += Drain(encoder, encoded, times, output);
                     }
@@ -753,7 +753,7 @@ internal sealed class TrimJob : IDisposable
     /// hidden VP8 frames (so each packet is one frame). A head of <paramref name="headFrames"/> frames gets one keyframe, at its
     /// start; an AV1 head reproduces <paramref name="sequence"/>.
     /// </summary>
-    private IVideoEncoder CreateEncoder(VideoFrame first, int? quantizer, Av1SequenceOptions? sequence, int headFrames)
+    private IVideoEncoder CreateEncoder(VideoFrame first, int? quantizer, Av1SequenceOptions? sequence, int headFrames, (int Space, int Range)? vp9Color = null)
     {
         VideoCodec codec = _context.FindCodec(_main!) ?? throw new NotSupportedException($"No registered codec encodes {CodecName(_main!)}.");
         Rational rate = _main!.FrameRate is { Numerator: > 0, Denominator: > 0 } r ? r : new Rational(30, 1);
@@ -770,7 +770,12 @@ internal sealed class TrimJob : IDisposable
             Vp8 = new Vp8EncoderOptions { AlternateReference = false, MinQuantizer = 0, Alpha = _main.HasAlpha },
             Vp9 = new Vp9EncoderOptions { Alpha = _main.HasAlpha },
         };
-        return sequence is not null && codec is Av1Codec ? new Av1VideoEncoder(options, _context, sequence) : codec.CreateEncoder(options, _context);
+        return codec switch
+        {
+            Av1Codec when sequence is not null => new Av1VideoEncoder(options, _context, sequence),
+            Vp9Codec when vp9Color is not null => new Codecs.Vp9.Vp9VideoEncoder(options, _context, vp9Color),
+            _ => codec.CreateEncoder(options, _context),
+        };
     }
 
     /// <summary>The track of video encoded again: the encoder's, keeping the source's number, names, timing and display.</summary>
