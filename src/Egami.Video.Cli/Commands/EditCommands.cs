@@ -777,7 +777,7 @@ internal static class EditCommands
             ContainerCheck(session, extension);
             VideoCodec codec = EncodeCommand.FindCodec(session, result.GetValue(_codec) ?? (extension == "webm" ? "vp9" : null), MediaIO.FindContainer(session, extension));
             int? quality = result.GetValue(_quality) is { } q ? (q is >= 0 and <= 100 ? Math.Max(1, q) : throw new UsageException("--quality must be from 0 to 100.")) : null;
-            EditRenderOptions options = new() { Writer = new VideoWriterOptions { Codec = codec, Quality = quality }, Audio = !result.GetValue(_noAudio), SmartRender = result.GetValue(_smart) };
+            EditRenderOptions options = new() { Writer = new VideoWriterOptions { Codec = codec, Quality = quality }, Audio = !result.GetValue(_noAudio), SmartRender = result.GetValue(_smart), Context = session.Context };
             EditPlan? plan = null;
             InputFile display = new(target, output, Path.GetDirectoryName(target) ?? ".", 0);
             try
