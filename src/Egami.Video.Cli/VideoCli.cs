@@ -135,6 +135,14 @@ internal static class VideoCli
         // Stage C: audio (V5).
         root.Subcommands.Add(AudioCommand.Create(session));
 
+        // V9 Editing stage A: everything here decodes and encodes again.
+        root.Subcommands.Add(EditCommands.Join(session));
+        root.Subcommands.Add(EditCommands.Fade(session));
+        root.Subcommands.Add(EditCommands.Overlay(session));
+        root.Subcommands.Add(EditCommands.Pip(session));
+        root.Subcommands.Add(EditCommands.StackCommand(session));
+        root.Subcommands.Add(EditCommands.Edit(session));
+
         root.Subcommands.Add(FormatsCommand.Create(session));
         root.Subcommands.Add(FfmpegMode.CreateFfmpeg(session));
         root.Subcommands.Add(FfmpegMode.CreateFfprobe(session));

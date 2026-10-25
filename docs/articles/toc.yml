@@ -146,6 +146,8 @@
       href: guides/streaming-mp4.md
     - name: Encoding video
       href: guides/video-encoding.md
+    - name: Video editing
+      href: guides/video-editing.md
     - name: H.264
       href: guides/h264.md
     - name: Audio
