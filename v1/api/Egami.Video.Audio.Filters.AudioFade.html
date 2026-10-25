@@ -2,9 +2,9 @@
 <html>
   <head>
     <meta charset="utf-8">
-      <title>Class Fade | Egami </title>
+      <title>Class AudioFade | Egami </title>
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <meta name="title" content="Class Fade | Egami ">
+      <meta name="title" content="Class AudioFade | Egami ">
       
       <meta name="description" content="Fades the sound in or out over a stretch of the stream&#39;s time line. A fade in is silent before  and reaches full level on the exact sample at  plus ; a fade out is full level before  and silent from its end on. Times are on the frames&#39; time line, rounded to whole samples. The curves give the same gains as ffmpeg&#39;s afade with the curve each value names. Works in place.">
       <link rel="icon" href="../images/favicon.ico">
@@ -16,7 +16,7 @@
       <meta name="docfx:rel" content="../">
       
       
-      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_Video_Audio_Filters_Fade.md&amp;value=---%0Auid%3A%20Egami.Video.Audio.Filters.Fade%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_Video_Audio_Filters_AudioFade.md&amp;value=---%0Auid%3A%20Egami.Video.Audio.Filters.AudioFade%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
       <meta name="loc:inThisArticle" content="In this article">
       <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
       <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
@@ -84,12 +84,12 @@
           <nav id="breadcrumb"></nav>
         </div>
 
-        <article data-uid="Egami.Video.Audio.Filters.Fade">
+        <article data-uid="Egami.Video.Audio.Filters.AudioFade">
 
 
 
-  <h1 id="Egami_Video_Audio_Filters_Fade" data-uid="Egami.Video.Audio.Filters.Fade" class="text-break">
-Class Fade  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/Filters/Fade.cs/#L50"><i class="bi bi-code-slash"></i></a>
+  <h1 id="Egami_Video_Audio_Filters_AudioFade" data-uid="Egami.Video.Audio.Filters.AudioFade" class="text-break">
+Class AudioFade  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/Filters/AudioFade.cs/#L50"><i class="bi bi-code-slash"></i></a>
   </h1>
 
   <div class="facts text-secondary">
@@ -97,15 +97,15 @@ Class Fade  <a class="header-action link-secondary" title="View source" href="ht
   <dl><dt>Assembly</dt><dd>Egami.Video.dll</dd></dl>
   </div>
 
-  <div class="markdown summary"><p>Fades the sound in or out over a stretch of the stream's time line. A fade in is silent before <a class="xref" href="Egami.Video.Audio.Filters.Fade.html#Egami_Video_Audio_Filters_Fade_Start">Start</a> and
-reaches full level on the exact sample at <a class="xref" href="Egami.Video.Audio.Filters.Fade.html#Egami_Video_Audio_Filters_Fade_Start">Start</a> plus <a class="xref" href="Egami.Video.Audio.Filters.Fade.html#Egami_Video_Audio_Filters_Fade_Duration">Duration</a>; a fade out is full level before
-<a class="xref" href="Egami.Video.Audio.Filters.Fade.html#Egami_Video_Audio_Filters_Fade_Start">Start</a> and silent from its end on. Times are on the frames' time line, rounded to whole samples. The curves
+  <div class="markdown summary"><p>Fades the sound in or out over a stretch of the stream's time line. A fade in is silent before <a class="xref" href="Egami.Video.Audio.Filters.AudioFade.html#Egami_Video_Audio_Filters_AudioFade_Start">Start</a> and
+reaches full level on the exact sample at <a class="xref" href="Egami.Video.Audio.Filters.AudioFade.html#Egami_Video_Audio_Filters_AudioFade_Start">Start</a> plus <a class="xref" href="Egami.Video.Audio.Filters.AudioFade.html#Egami_Video_Audio_Filters_AudioFade_Duration">Duration</a>; a fade out is full level before
+<a class="xref" href="Egami.Video.Audio.Filters.AudioFade.html#Egami_Video_Audio_Filters_AudioFade_Start">Start</a> and silent from its end on. Times are on the frames' time line, rounded to whole samples. The curves
 give the same gains as ffmpeg's <code>afade</code> with the curve each value names. Works in place.</p>
 </div>
   <div class="markdown conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public sealed class Fade : AudioFilter, IAudioFilter, IDisposable</code></pre>
+    <pre><code class="lang-csharp hljs">public sealed class AudioFade : AudioFilter, IAudioFilter, IDisposable</code></pre>
   </div>
 
 
@@ -116,7 +116,7 @@ give the same gains as ffmpeg's <code>afade</code> with the curve each value nam
     <dd>
       <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
       <div><a class="xref" href="Egami.Video.Audio.Filters.AudioFilter.html">AudioFilter</a></div>
-      <div><span class="xref">Fade</span></div>
+      <div><span class="xref">AudioFade</span></div>
     </dd>
   </dl>
 
@@ -172,9 +172,9 @@ give the same gains as ffmpeg's <code>afade</code> with the curve each value nam
 
 
 
-  <h2 id="Egami_Video_Audio_Filters_Fade_examples">Examples</h2>
+  <h2 id="Egami_Video_Audio_Filters_AudioFade_examples">Examples</h2>
   <pre><code class="lang-csharp">// A 3 s clip: fade out over its last second along an S curve.
-using Fade fadeOut = new(FadeDirection.Out, MediaTime.FromSeconds(2), MediaTime.FromSeconds(1), FadeCurve.SCurve);</code></pre>
+using AudioFade fadeOut = new(FadeDirection.Out, MediaTime.FromSeconds(2), MediaTime.FromSeconds(1), FadeCurve.SCurve);</code></pre>
 
 
 
@@ -183,11 +183,11 @@ using Fade fadeOut = new(FadeDirection.Out, MediaTime.FromSeconds(2), MediaTime.
 </h2>
 
 
-  <a id="Egami_Video_Audio_Filters_Fade__ctor_" data-uid="Egami.Video.Audio.Filters.Fade.#ctor*"></a>
+  <a id="Egami_Video_Audio_Filters_AudioFade__ctor_" data-uid="Egami.Video.Audio.Filters.AudioFade.#ctor*"></a>
 
-  <h3 id="Egami_Video_Audio_Filters_Fade__ctor_Egami_Video_Audio_Filters_FadeDirection_Egami_Video_MediaTime_Egami_Video_MediaTime_Egami_Video_Audio_Filters_FadeCurve_" data-uid="Egami.Video.Audio.Filters.Fade.#ctor(Egami.Video.Audio.Filters.FadeDirection,Egami.Video.MediaTime,Egami.Video.MediaTime,Egami.Video.Audio.Filters.FadeCurve)">
-  Fade(FadeDirection, MediaTime, MediaTime, FadeCurve)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/Filters/Fade.cs/#L62"><i class="bi bi-code-slash"></i></a>
+  <h3 id="Egami_Video_Audio_Filters_AudioFade__ctor_Egami_Video_Audio_Filters_FadeDirection_Egami_Video_MediaTime_Egami_Video_MediaTime_Egami_Video_Audio_Filters_FadeCurve_" data-uid="Egami.Video.Audio.Filters.AudioFade.#ctor(Egami.Video.Audio.Filters.FadeDirection,Egami.Video.MediaTime,Egami.Video.MediaTime,Egami.Video.Audio.Filters.FadeCurve)">
+  AudioFade(FadeDirection, MediaTime, MediaTime, FadeCurve)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/Filters/AudioFade.cs/#L62"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Creates a fade.</p>
@@ -195,7 +195,7 @@ using Fade fadeOut = new(FadeDirection.Out, MediaTime.FromSeconds(2), MediaTime.
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public Fade(FadeDirection direction, MediaTime start, MediaTime duration, FadeCurve curve = FadeCurve.Linear)</code></pre>
+    <pre><code class="lang-csharp hljs">public AudioFade(FadeDirection direction, MediaTime start, MediaTime duration, FadeCurve curve = FadeCurve.Linear)</code></pre>
   </div>
 
   <h4 class="section">Parameters</h4>
@@ -235,11 +235,11 @@ using Fade fadeOut = new(FadeDirection.Out, MediaTime.FromSeconds(2), MediaTime.
 </h2>
 
 
-  <a id="Egami_Video_Audio_Filters_Fade_Curve_" data-uid="Egami.Video.Audio.Filters.Fade.Curve*"></a>
+  <a id="Egami_Video_Audio_Filters_AudioFade_Curve_" data-uid="Egami.Video.Audio.Filters.AudioFade.Curve*"></a>
 
-  <h3 id="Egami_Video_Audio_Filters_Fade_Curve" data-uid="Egami.Video.Audio.Filters.Fade.Curve">
+  <h3 id="Egami_Video_Audio_Filters_AudioFade_Curve" data-uid="Egami.Video.Audio.Filters.AudioFade.Curve">
   Curve
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/Filters/Fade.cs/#L81"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/Filters/AudioFade.cs/#L81"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the shape.</p>
@@ -267,11 +267,11 @@ using Fade fadeOut = new(FadeDirection.Out, MediaTime.FromSeconds(2), MediaTime.
 
 
 
-  <a id="Egami_Video_Audio_Filters_Fade_Direction_" data-uid="Egami.Video.Audio.Filters.Fade.Direction*"></a>
+  <a id="Egami_Video_Audio_Filters_AudioFade_Direction_" data-uid="Egami.Video.Audio.Filters.AudioFade.Direction*"></a>
 
-  <h3 id="Egami_Video_Audio_Filters_Fade_Direction" data-uid="Egami.Video.Audio.Filters.Fade.Direction">
+  <h3 id="Egami_Video_Audio_Filters_AudioFade_Direction" data-uid="Egami.Video.Audio.Filters.AudioFade.Direction">
   Direction
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/Filters/Fade.cs/#L72"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/Filters/AudioFade.cs/#L72"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets whether the fade is in or out.</p>
@@ -299,11 +299,11 @@ using Fade fadeOut = new(FadeDirection.Out, MediaTime.FromSeconds(2), MediaTime.
 
 
 
-  <a id="Egami_Video_Audio_Filters_Fade_Duration_" data-uid="Egami.Video.Audio.Filters.Fade.Duration*"></a>
+  <a id="Egami_Video_Audio_Filters_AudioFade_Duration_" data-uid="Egami.Video.Audio.Filters.AudioFade.Duration*"></a>
 
-  <h3 id="Egami_Video_Audio_Filters_Fade_Duration" data-uid="Egami.Video.Audio.Filters.Fade.Duration">
+  <h3 id="Egami_Video_Audio_Filters_AudioFade_Duration" data-uid="Egami.Video.Audio.Filters.AudioFade.Duration">
   Duration
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/Filters/Fade.cs/#L78"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/Filters/AudioFade.cs/#L78"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets how long the fade lasts.</p>
@@ -331,11 +331,11 @@ using Fade fadeOut = new(FadeDirection.Out, MediaTime.FromSeconds(2), MediaTime.
 
 
 
-  <a id="Egami_Video_Audio_Filters_Fade_Start_" data-uid="Egami.Video.Audio.Filters.Fade.Start*"></a>
+  <a id="Egami_Video_Audio_Filters_AudioFade_Start_" data-uid="Egami.Video.Audio.Filters.AudioFade.Start*"></a>
 
-  <h3 id="Egami_Video_Audio_Filters_Fade_Start" data-uid="Egami.Video.Audio.Filters.Fade.Start">
+  <h3 id="Egami_Video_Audio_Filters_AudioFade_Start" data-uid="Egami.Video.Audio.Filters.AudioFade.Start">
   Start
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/Filters/Fade.cs/#L75"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/Filters/AudioFade.cs/#L75"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets when the fade starts.</p>
@@ -367,7 +367,7 @@ using Fade fadeOut = new(FadeDirection.Out, MediaTime.FromSeconds(2), MediaTime.
 </article>
 
         <div class="contribution d-print-none">
-          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/Filters/Fade.cs/#L50" class="edit-link">Edit this page</a>
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/Filters/AudioFade.cs/#L50" class="edit-link">Edit this page</a>
         </div>
 
 

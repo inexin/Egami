@@ -80870,6 +80870,83 @@ references:
   commentId: N:Egami.Video.Audio.Filters
   fullName: Egami.Video.Audio.Filters
   nameWithType: Egami.Video.Audio.Filters
+- uid: Egami.Video.Audio.Filters.AudioFade
+  name: AudioFade
+  href: api/Egami.Video.Audio.Filters.AudioFade.html
+  commentId: T:Egami.Video.Audio.Filters.AudioFade
+  fullName: Egami.Video.Audio.Filters.AudioFade
+  nameWithType: AudioFade
+- uid: Egami.Video.Audio.Filters.AudioFade.#ctor(Egami.Video.Audio.Filters.FadeDirection,Egami.Video.MediaTime,Egami.Video.MediaTime,Egami.Video.Audio.Filters.FadeCurve)
+  name: AudioFade(FadeDirection, MediaTime, MediaTime, FadeCurve)
+  href: api/Egami.Video.Audio.Filters.AudioFade.html#Egami_Video_Audio_Filters_AudioFade__ctor_Egami_Video_Audio_Filters_FadeDirection_Egami_Video_MediaTime_Egami_Video_MediaTime_Egami_Video_Audio_Filters_FadeCurve_
+  commentId: M:Egami.Video.Audio.Filters.AudioFade.#ctor(Egami.Video.Audio.Filters.FadeDirection,Egami.Video.MediaTime,Egami.Video.MediaTime,Egami.Video.Audio.Filters.FadeCurve)
+  name.vb: New(FadeDirection, MediaTime, MediaTime, FadeCurve)
+  fullName: Egami.Video.Audio.Filters.AudioFade.AudioFade(Egami.Video.Audio.Filters.FadeDirection, Egami.Video.MediaTime, Egami.Video.MediaTime, Egami.Video.Audio.Filters.FadeCurve)
+  fullName.vb: Egami.Video.Audio.Filters.AudioFade.New(Egami.Video.Audio.Filters.FadeDirection, Egami.Video.MediaTime, Egami.Video.MediaTime, Egami.Video.Audio.Filters.FadeCurve)
+  nameWithType: AudioFade.AudioFade(FadeDirection, MediaTime, MediaTime, FadeCurve)
+  nameWithType.vb: AudioFade.New(FadeDirection, MediaTime, MediaTime, FadeCurve)
+- uid: Egami.Video.Audio.Filters.AudioFade.#ctor*
+  name: AudioFade
+  href: api/Egami.Video.Audio.Filters.AudioFade.html#Egami_Video_Audio_Filters_AudioFade__ctor_
+  commentId: Overload:Egami.Video.Audio.Filters.AudioFade.#ctor
+  isSpec: "True"
+  name.vb: New
+  fullName: Egami.Video.Audio.Filters.AudioFade.AudioFade
+  fullName.vb: Egami.Video.Audio.Filters.AudioFade.New
+  nameWithType: AudioFade.AudioFade
+  nameWithType.vb: AudioFade.New
+- uid: Egami.Video.Audio.Filters.AudioFade.Curve
+  name: Curve
+  href: api/Egami.Video.Audio.Filters.AudioFade.html#Egami_Video_Audio_Filters_AudioFade_Curve
+  commentId: P:Egami.Video.Audio.Filters.AudioFade.Curve
+  fullName: Egami.Video.Audio.Filters.AudioFade.Curve
+  nameWithType: AudioFade.Curve
+- uid: Egami.Video.Audio.Filters.AudioFade.Curve*
+  name: Curve
+  href: api/Egami.Video.Audio.Filters.AudioFade.html#Egami_Video_Audio_Filters_AudioFade_Curve_
+  commentId: Overload:Egami.Video.Audio.Filters.AudioFade.Curve
+  isSpec: "True"
+  fullName: Egami.Video.Audio.Filters.AudioFade.Curve
+  nameWithType: AudioFade.Curve
+- uid: Egami.Video.Audio.Filters.AudioFade.Direction
+  name: Direction
+  href: api/Egami.Video.Audio.Filters.AudioFade.html#Egami_Video_Audio_Filters_AudioFade_Direction
+  commentId: P:Egami.Video.Audio.Filters.AudioFade.Direction
+  fullName: Egami.Video.Audio.Filters.AudioFade.Direction
+  nameWithType: AudioFade.Direction
+- uid: Egami.Video.Audio.Filters.AudioFade.Direction*
+  name: Direction
+  href: api/Egami.Video.Audio.Filters.AudioFade.html#Egami_Video_Audio_Filters_AudioFade_Direction_
+  commentId: Overload:Egami.Video.Audio.Filters.AudioFade.Direction
+  isSpec: "True"
+  fullName: Egami.Video.Audio.Filters.AudioFade.Direction
+  nameWithType: AudioFade.Direction
+- uid: Egami.Video.Audio.Filters.AudioFade.Duration
+  name: Duration
+  href: api/Egami.Video.Audio.Filters.AudioFade.html#Egami_Video_Audio_Filters_AudioFade_Duration
+  commentId: P:Egami.Video.Audio.Filters.AudioFade.Duration
+  fullName: Egami.Video.Audio.Filters.AudioFade.Duration
+  nameWithType: AudioFade.Duration
+- uid: Egami.Video.Audio.Filters.AudioFade.Duration*
+  name: Duration
+  href: api/Egami.Video.Audio.Filters.AudioFade.html#Egami_Video_Audio_Filters_AudioFade_Duration_
+  commentId: Overload:Egami.Video.Audio.Filters.AudioFade.Duration
+  isSpec: "True"
+  fullName: Egami.Video.Audio.Filters.AudioFade.Duration
+  nameWithType: AudioFade.Duration
+- uid: Egami.Video.Audio.Filters.AudioFade.Start
+  name: Start
+  href: api/Egami.Video.Audio.Filters.AudioFade.html#Egami_Video_Audio_Filters_AudioFade_Start
+  commentId: P:Egami.Video.Audio.Filters.AudioFade.Start
+  fullName: Egami.Video.Audio.Filters.AudioFade.Start
+  nameWithType: AudioFade.Start
+- uid: Egami.Video.Audio.Filters.AudioFade.Start*
+  name: Start
+  href: api/Egami.Video.Audio.Filters.AudioFade.html#Egami_Video_Audio_Filters_AudioFade_Start_
+  commentId: Overload:Egami.Video.Audio.Filters.AudioFade.Start
+  isSpec: "True"
+  fullName: Egami.Video.Audio.Filters.AudioFade.Start
+  nameWithType: AudioFade.Start
 - uid: Egami.Video.Audio.Filters.AudioFilter
   name: AudioFilter
   href: api/Egami.Video.Audio.Filters.AudioFilter.html
@@ -81453,83 +81530,6 @@ references:
   isSpec: "True"
   fullName: Egami.Video.Audio.Filters.Delay.Delays
   nameWithType: Delay.Delays
-- uid: Egami.Video.Audio.Filters.Fade
-  name: Fade
-  href: api/Egami.Video.Audio.Filters.Fade.html
-  commentId: T:Egami.Video.Audio.Filters.Fade
-  fullName: Egami.Video.Audio.Filters.Fade
-  nameWithType: Fade
-- uid: Egami.Video.Audio.Filters.Fade.#ctor(Egami.Video.Audio.Filters.FadeDirection,Egami.Video.MediaTime,Egami.Video.MediaTime,Egami.Video.Audio.Filters.FadeCurve)
-  name: Fade(FadeDirection, MediaTime, MediaTime, FadeCurve)
-  href: api/Egami.Video.Audio.Filters.Fade.html#Egami_Video_Audio_Filters_Fade__ctor_Egami_Video_Audio_Filters_FadeDirection_Egami_Video_MediaTime_Egami_Video_MediaTime_Egami_Video_Audio_Filters_FadeCurve_
-  commentId: M:Egami.Video.Audio.Filters.Fade.#ctor(Egami.Video.Audio.Filters.FadeDirection,Egami.Video.MediaTime,Egami.Video.MediaTime,Egami.Video.Audio.Filters.FadeCurve)
-  name.vb: New(FadeDirection, MediaTime, MediaTime, FadeCurve)
-  fullName: Egami.Video.Audio.Filters.Fade.Fade(Egami.Video.Audio.Filters.FadeDirection, Egami.Video.MediaTime, Egami.Video.MediaTime, Egami.Video.Audio.Filters.FadeCurve)
-  fullName.vb: Egami.Video.Audio.Filters.Fade.New(Egami.Video.Audio.Filters.FadeDirection, Egami.Video.MediaTime, Egami.Video.MediaTime, Egami.Video.Audio.Filters.FadeCurve)
-  nameWithType: Fade.Fade(FadeDirection, MediaTime, MediaTime, FadeCurve)
-  nameWithType.vb: Fade.New(FadeDirection, MediaTime, MediaTime, FadeCurve)
-- uid: Egami.Video.Audio.Filters.Fade.#ctor*
-  name: Fade
-  href: api/Egami.Video.Audio.Filters.Fade.html#Egami_Video_Audio_Filters_Fade__ctor_
-  commentId: Overload:Egami.Video.Audio.Filters.Fade.#ctor
-  isSpec: "True"
-  name.vb: New
-  fullName: Egami.Video.Audio.Filters.Fade.Fade
-  fullName.vb: Egami.Video.Audio.Filters.Fade.New
-  nameWithType: Fade.Fade
-  nameWithType.vb: Fade.New
-- uid: Egami.Video.Audio.Filters.Fade.Curve
-  name: Curve
-  href: api/Egami.Video.Audio.Filters.Fade.html#Egami_Video_Audio_Filters_Fade_Curve
-  commentId: P:Egami.Video.Audio.Filters.Fade.Curve
-  fullName: Egami.Video.Audio.Filters.Fade.Curve
-  nameWithType: Fade.Curve
-- uid: Egami.Video.Audio.Filters.Fade.Curve*
-  name: Curve
-  href: api/Egami.Video.Audio.Filters.Fade.html#Egami_Video_Audio_Filters_Fade_Curve_
-  commentId: Overload:Egami.Video.Audio.Filters.Fade.Curve
-  isSpec: "True"
-  fullName: Egami.Video.Audio.Filters.Fade.Curve
-  nameWithType: Fade.Curve
-- uid: Egami.Video.Audio.Filters.Fade.Direction
-  name: Direction
-  href: api/Egami.Video.Audio.Filters.Fade.html#Egami_Video_Audio_Filters_Fade_Direction
-  commentId: P:Egami.Video.Audio.Filters.Fade.Direction
-  fullName: Egami.Video.Audio.Filters.Fade.Direction
-  nameWithType: Fade.Direction
-- uid: Egami.Video.Audio.Filters.Fade.Direction*
-  name: Direction
-  href: api/Egami.Video.Audio.Filters.Fade.html#Egami_Video_Audio_Filters_Fade_Direction_
-  commentId: Overload:Egami.Video.Audio.Filters.Fade.Direction
-  isSpec: "True"
-  fullName: Egami.Video.Audio.Filters.Fade.Direction
-  nameWithType: Fade.Direction
-- uid: Egami.Video.Audio.Filters.Fade.Duration
-  name: Duration
-  href: api/Egami.Video.Audio.Filters.Fade.html#Egami_Video_Audio_Filters_Fade_Duration
-  commentId: P:Egami.Video.Audio.Filters.Fade.Duration
-  fullName: Egami.Video.Audio.Filters.Fade.Duration
-  nameWithType: Fade.Duration
-- uid: Egami.Video.Audio.Filters.Fade.Duration*
-  name: Duration
-  href: api/Egami.Video.Audio.Filters.Fade.html#Egami_Video_Audio_Filters_Fade_Duration_
-  commentId: Overload:Egami.Video.Audio.Filters.Fade.Duration
-  isSpec: "True"
-  fullName: Egami.Video.Audio.Filters.Fade.Duration
-  nameWithType: Fade.Duration
-- uid: Egami.Video.Audio.Filters.Fade.Start
-  name: Start
-  href: api/Egami.Video.Audio.Filters.Fade.html#Egami_Video_Audio_Filters_Fade_Start
-  commentId: P:Egami.Video.Audio.Filters.Fade.Start
-  fullName: Egami.Video.Audio.Filters.Fade.Start
-  nameWithType: Fade.Start
-- uid: Egami.Video.Audio.Filters.Fade.Start*
-  name: Start
-  href: api/Egami.Video.Audio.Filters.Fade.html#Egami_Video_Audio_Filters_Fade_Start_
-  commentId: Overload:Egami.Video.Audio.Filters.Fade.Start
-  isSpec: "True"
-  fullName: Egami.Video.Audio.Filters.Fade.Start
-  nameWithType: Fade.Start
 - uid: Egami.Video.Audio.Filters.FadeCurve
   name: FadeCurve
   href: api/Egami.Video.Audio.Filters.FadeCurve.html
@@ -89553,6 +89553,19 @@ references:
   isSpec: "True"
   fullName: Egami.Video.Editing.EditRenderOptions.Audio
   nameWithType: EditRenderOptions.Audio
+- uid: Egami.Video.Editing.EditRenderOptions.Context
+  name: Context
+  href: api/Egami.Video.Editing.EditRenderOptions.html#Egami_Video_Editing_EditRenderOptions_Context
+  commentId: P:Egami.Video.Editing.EditRenderOptions.Context
+  fullName: Egami.Video.Editing.EditRenderOptions.Context
+  nameWithType: EditRenderOptions.Context
+- uid: Egami.Video.Editing.EditRenderOptions.Context*
+  name: Context
+  href: api/Egami.Video.Editing.EditRenderOptions.html#Egami_Video_Editing_EditRenderOptions_Context_
+  commentId: Overload:Egami.Video.Editing.EditRenderOptions.Context
+  isSpec: "True"
+  fullName: Egami.Video.Editing.EditRenderOptions.Context
+  nameWithType: EditRenderOptions.Context
 - uid: Egami.Video.Editing.EditRenderOptions.Default
   name: Default
   href: api/Egami.Video.Editing.EditRenderOptions.html#Egami_Video_Editing_EditRenderOptions_Default
@@ -91358,6 +91371,22 @@ references:
   isSpec: "True"
   fullName: Egami.Video.Editing.VideoEdit.Plan
   nameWithType: VideoEdit.Plan
+- uid: Egami.Video.Editing.VideoEdit.ReadFrames(Egami.Video.MediaContext)
+  name: ReadFrames(MediaContext?)
+  href: api/Egami.Video.Editing.VideoEdit.html#Egami_Video_Editing_VideoEdit_ReadFrames_Egami_Video_MediaContext_
+  commentId: M:Egami.Video.Editing.VideoEdit.ReadFrames(Egami.Video.MediaContext)
+  name.vb: ReadFrames(MediaContext)
+  fullName: Egami.Video.Editing.VideoEdit.ReadFrames(Egami.Video.MediaContext?)
+  fullName.vb: Egami.Video.Editing.VideoEdit.ReadFrames(Egami.Video.MediaContext)
+  nameWithType: VideoEdit.ReadFrames(MediaContext?)
+  nameWithType.vb: VideoEdit.ReadFrames(MediaContext)
+- uid: Egami.Video.Editing.VideoEdit.ReadFrames*
+  name: ReadFrames
+  href: api/Egami.Video.Editing.VideoEdit.html#Egami_Video_Editing_VideoEdit_ReadFrames_
+  commentId: Overload:Egami.Video.Editing.VideoEdit.ReadFrames
+  isSpec: "True"
+  fullName: Egami.Video.Editing.VideoEdit.ReadFrames
+  nameWithType: VideoEdit.ReadFrames
 - uid: Egami.Video.Editing.VideoEdit.Render(System.IO.Stream,System.String,Egami.Video.Editing.EditRenderOptions,System.IProgress{Egami.Video.MediaProgress},System.Threading.CancellationToken)
   name: Render(Stream, string, EditRenderOptions?, IProgress<MediaProgress>?, CancellationToken)
   href: api/Egami.Video.Editing.VideoEdit.html#Egami_Video_Editing_VideoEdit_Render_System_IO_Stream_System_String_Egami_Video_Editing_EditRenderOptions_System_IProgress_Egami_Video_MediaProgress__System_Threading_CancellationToken_

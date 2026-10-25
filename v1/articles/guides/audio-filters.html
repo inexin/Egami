@@ -101,7 +101,7 @@ Egami.Video's filters derive from <code>AudioFilter</code>, which takes the rate
 that differ; to put a filter of your own in a chain, implement <code>IAudioFilter</code>.</p>
 <pre><code class="lang-csharp">// Fade in over 2 s, then turn down 3 dB: frames of any format go in, F32 planar frames come out.
 using AudioFilterChain chain = new AudioFilterChain(48000, ChannelLayout.Stereo)
-    .Add(new Fade(FadeDirection.In, MediaTime.Zero, MediaTime.FromSeconds(2)))
+    .Add(new AudioFade(FadeDirection.In, MediaTime.Zero, MediaTime.FromSeconds(2)))
     .Add(new Gain(-3));
 foreach (AudioFrame frame in frames)
 {
@@ -129,12 +129,12 @@ using Gain duck = new()
         new Keyframe(MediaTime.FromSeconds(2.25), 0)),
 };
 </code></pre><h2 id="fades-and-crossfades">Fades and crossfades</h2>
-<p><code>Fade</code> fades in (<code>FadeDirection.In</code>, silent before its start) or out (<code>FadeDirection.Out</code>, silent after its end) over a
+<p><code>AudioFade</code> fades in (<code>FadeDirection.In</code>, silent before its start) or out (<code>FadeDirection.Out</code>, silent after its end) over a
 stretch of the time line, and reaches full level or silence on the exact sample. <code>FadeCurve</code> has five shapes with the same
 gains as FFmpeg's <code>afade</code> curves: <code>Linear</code> (<code>tri</code>, the default), <code>EqualPower</code> (<code>qsin</code>), <code>Logarithmic</code> (<code>log</code>),
 <code>Exponential</code> (<code>exp</code>) and <code>SCurve</code> (<code>hsin</code>).</p>
 <pre><code class="lang-csharp">// A 3 s clip: fade out over its last second along an S curve.
-using Fade fadeOut = new(FadeDirection.Out, MediaTime.FromSeconds(2), MediaTime.FromSeconds(1), FadeCurve.SCurve);
+using AudioFade fadeOut = new(FadeDirection.Out, MediaTime.FromSeconds(2), MediaTime.FromSeconds(1), FadeCurve.SCurve);
 </code></pre>
 <p><code>Crossfade</code> joins two streams with an overlap, like FFmpeg's <code>acrossfade</code>: the first stream's end fades out as the second's
 start fades in, <code>EqualPower</code> by default so unrelated material keeps its loudness. It has two inputs, so it takes

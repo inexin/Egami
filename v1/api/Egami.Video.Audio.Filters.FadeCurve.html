@@ -90,7 +90,7 @@
 
 
   <h1 id="Egami_Video_Audio_Filters_FadeCurve" data-uid="Egami.Video.Audio.Filters.FadeCurve" class="text-break">
-Enum FadeCurve  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/Filters/Fade.cs/#L7"><i class="bi bi-code-slash"></i></a>
+Enum FadeCurve  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/Filters/AudioFade.cs/#L7"><i class="bi bi-code-slash"></i></a>
   </h1>
 
   <div class="facts text-secondary">
@@ -98,7 +98,7 @@ Enum FadeCurve  <a class="header-action link-secondary" title="View source" href
   <dl><dt>Assembly</dt><dd>Egami.Video.dll</dd></dl>
   </div>
 
-  <div class="markdown summary"><p>The shape of a <a class="xref" href="Egami.Video.Audio.Filters.Fade.html">Fade</a> or <a class="xref" href="Egami.Video.Audio.Filters.Crossfade.html">Crossfade</a>, as the gain of a fade in over its length.</p>
+  <div class="markdown summary"><p>The shape of a <a class="xref" href="Egami.Video.Audio.Filters.AudioFade.html">AudioFade</a> or <a class="xref" href="Egami.Video.Audio.Filters.Crossfade.html">Crossfade</a>, as the gain of a fade in over its length.</p>
 </div>
   <div class="markdown conceptual"></div>
 
@@ -128,7 +128,7 @@ keeps its loudness through the overlap. The default for <a class="xref" href="Eg
 </dd>
     <dt id="Egami_Video_Audio_Filters_FadeCurve_Linear"><code>Linear = 0</code></dt>
   
-  <dd><p>A straight line in amplitude, ffmpeg's <code>tri</code>. The default for <a class="xref" href="Egami.Video.Audio.Filters.Fade.html">Fade</a>.</p>
+  <dd><p>A straight line in amplitude, ffmpeg's <code>tri</code>. The default for <a class="xref" href="Egami.Video.Audio.Filters.AudioFade.html">AudioFade</a>.</p>
 </dd>
     <dt id="Egami_Video_Audio_Filters_FadeCurve_Logarithmic"><code>Logarithmic = 2</code></dt>
   
@@ -142,14 +142,14 @@ keeps its loudness through the overlap. The default for <a class="xref" href="Eg
 
   <h2 id="Egami_Video_Audio_Filters_FadeCurve_examples">Examples</h2>
   <pre><code class="lang-csharp">// A 3 s clip: fade out over its last second along an S curve.
-using Fade fadeOut = new(FadeDirection.Out, MediaTime.FromSeconds(2), MediaTime.FromSeconds(1), FadeCurve.SCurve);</code></pre>
+using AudioFade fadeOut = new(FadeDirection.Out, MediaTime.FromSeconds(2), MediaTime.FromSeconds(1), FadeCurve.SCurve);</code></pre>
 
 
 
 </article>
 
         <div class="contribution d-print-none">
-          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/Filters/Fade.cs/#L7" class="edit-link">Edit this page</a>
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/Filters/AudioFade.cs/#L7" class="edit-link">Edit this page</a>
         </div>
 
 

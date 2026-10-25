@@ -95,6 +95,14 @@
 Classes
 </h3>
     <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Audio.Filters.AudioFade.html">AudioFade</a></dt>
+      <dd><p>Fades the sound in or out over a stretch of the stream's time line. A fade in is silent before <a class="xref" href="Egami.Video.Audio.Filters.AudioFade.html#Egami_Video_Audio_Filters_AudioFade_Start">Start</a> and
+reaches full level on the exact sample at <a class="xref" href="Egami.Video.Audio.Filters.AudioFade.html#Egami_Video_Audio_Filters_AudioFade_Start">Start</a> plus <a class="xref" href="Egami.Video.Audio.Filters.AudioFade.html#Egami_Video_Audio_Filters_AudioFade_Duration">Duration</a>; a fade out is full level before
+<a class="xref" href="Egami.Video.Audio.Filters.AudioFade.html#Egami_Video_Audio_Filters_AudioFade_Start">Start</a> and silent from its end on. Times are on the frames' time line, rounded to whole samples. The curves
+give the same gains as ffmpeg's <code>afade</code> with the curve each value names. Works in place.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
       <dt><a class="xref" href="Egami.Video.Audio.Filters.AudioFilter.html">AudioFilter</a></dt>
       <dd><p>The base of Egami.Video's own audio filters. It takes the rate and channels from the first frame, converts every frame to
 <a class="xref" href="Egami.Video.Audio.SampleFormat.html#Egami_Video_Audio_SampleFormat_F32Planar">F32Planar</a> once on the way in, and queues the output. Inside an <a class="xref" href="Egami.Video.Audio.Filters.AudioFilterChain.html">AudioFilterChain</a>
@@ -135,14 +143,6 @@ starts at the first input's first timestamp and runs on without gaps.</p>
       <dd><p>Delays channels by putting silence in front of them, like ffmpeg's <code>adelay</code>: each channel can have its own delay, for
 example to line up microphones or fix lip sync. The output keeps the input's timestamps and gets longer by the longest
 delay; <a class="xref" href="Egami.Video.Audio.Filters.AudioFilter.html#Egami_Video_Audio_Filters_AudioFilter_Flush">Flush()</a> hands out the tail, so no input is lost.</p>
-</dd>
-    </dl>
-    <dl class="jumplist">
-      <dt><a class="xref" href="Egami.Video.Audio.Filters.Fade.html">Fade</a></dt>
-      <dd><p>Fades the sound in or out over a stretch of the stream's time line. A fade in is silent before <a class="xref" href="Egami.Video.Audio.Filters.Fade.html#Egami_Video_Audio_Filters_Fade_Start">Start</a> and
-reaches full level on the exact sample at <a class="xref" href="Egami.Video.Audio.Filters.Fade.html#Egami_Video_Audio_Filters_Fade_Start">Start</a> plus <a class="xref" href="Egami.Video.Audio.Filters.Fade.html#Egami_Video_Audio_Filters_Fade_Duration">Duration</a>; a fade out is full level before
-<a class="xref" href="Egami.Video.Audio.Filters.Fade.html#Egami_Video_Audio_Filters_Fade_Start">Start</a> and silent from its end on. Times are on the frames' time line, rounded to whole samples. The curves
-give the same gains as ffmpeg's <code>afade</code> with the curve each value names. Works in place.</p>
 </dd>
     </dl>
     <dl class="jumplist">
@@ -223,12 +223,12 @@ Enums
 </h3>
     <dl class="jumplist">
       <dt><a class="xref" href="Egami.Video.Audio.Filters.FadeCurve.html">FadeCurve</a></dt>
-      <dd><p>The shape of a <a class="xref" href="Egami.Video.Audio.Filters.Fade.html">Fade</a> or <a class="xref" href="Egami.Video.Audio.Filters.Crossfade.html">Crossfade</a>, as the gain of a fade in over its length.</p>
+      <dd><p>The shape of a <a class="xref" href="Egami.Video.Audio.Filters.AudioFade.html">AudioFade</a> or <a class="xref" href="Egami.Video.Audio.Filters.Crossfade.html">Crossfade</a>, as the gain of a fade in over its length.</p>
 </dd>
     </dl>
     <dl class="jumplist">
       <dt><a class="xref" href="Egami.Video.Audio.Filters.FadeDirection.html">FadeDirection</a></dt>
-      <dd><p>Whether a <a class="xref" href="Egami.Video.Audio.Filters.Fade.html">Fade</a> brings the sound in or takes it out.</p>
+      <dd><p>Whether a <a class="xref" href="Egami.Video.Audio.Filters.AudioFade.html">AudioFade</a> brings the sound in or takes it out.</p>
 </dd>
     </dl>
     <dl class="jumplist">

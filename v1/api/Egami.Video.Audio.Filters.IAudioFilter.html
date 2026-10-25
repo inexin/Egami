@@ -127,7 +127,7 @@ filter of your own in an <a class="xref" href="Egami.Video.Audio.Filters.AudioFi
   <h2 id="Egami_Video_Audio_Filters_IAudioFilter_examples">Examples</h2>
   <pre><code class="lang-csharp">// Fade in over 2 s, then turn down 3 dB: frames of any format go in, F32 planar frames come out.
 using AudioFilterChain chain = new AudioFilterChain(48000, ChannelLayout.Stereo)
-    .Add(new Fade(FadeDirection.In, MediaTime.Zero, MediaTime.FromSeconds(2)))
+    .Add(new AudioFade(FadeDirection.In, MediaTime.Zero, MediaTime.FromSeconds(2)))
     .Add(new Gain(-3));
 foreach (AudioFrame frame in frames)
 {

@@ -12445,6 +12445,20 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Audio.Filters.AudioFade.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Audio.Filters.AudioFade.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Audio.Filters.AudioFade",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Audio.Filters.AudioFade.yml\" sourcestartlinenumber=\"1\">Fades the sound in or out over a stretch of the stream's time line. A fade in is silent before <xref href=\"Egami.Video.Audio.Filters.AudioFade.Start\" data-throw-if-not-resolved=\"false\"></xref> and\nreaches full level on the exact sample at <xref href=\"Egami.Video.Audio.Filters.AudioFade.Start\" data-throw-if-not-resolved=\"false\"></xref> plus <xref href=\"Egami.Video.Audio.Filters.AudioFade.Duration\" data-throw-if-not-resolved=\"false\"></xref>; a fade out is full level before\n<xref href=\"Egami.Video.Audio.Filters.AudioFade.Start\" data-throw-if-not-resolved=\"false\"></xref> and silent from its end on. Times are on the frames' time line, rounded to whole samples. The curves\ngive the same gains as ffmpeg's <code>afade</code> with the curve each value names. Works in place.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.Video.Audio.Filters.AudioFilter.yml",
       "output": {
         ".html": {
@@ -12515,20 +12529,6 @@
     },
     {
       "type": "ManagedReference",
-      "source_relative_path": "api/Egami.Video.Audio.Filters.Fade.yml",
-      "output": {
-        ".html": {
-          "relative_path": "api/Egami.Video.Audio.Filters.Fade.html"
-        }
-      },
-      "version": "",
-      "Uid": null,
-      "IsMRef": true,
-      "Title": "Egami.Video.Audio.Filters.Fade",
-      "Summary": "<p sourcefile=\"api/Egami.Video.Audio.Filters.Fade.yml\" sourcestartlinenumber=\"1\">Fades the sound in or out over a stretch of the stream's time line. A fade in is silent before <xref href=\"Egami.Video.Audio.Filters.Fade.Start\" data-throw-if-not-resolved=\"false\"></xref> and\nreaches full level on the exact sample at <xref href=\"Egami.Video.Audio.Filters.Fade.Start\" data-throw-if-not-resolved=\"false\"></xref> plus <xref href=\"Egami.Video.Audio.Filters.Fade.Duration\" data-throw-if-not-resolved=\"false\"></xref>; a fade out is full level before\n<xref href=\"Egami.Video.Audio.Filters.Fade.Start\" data-throw-if-not-resolved=\"false\"></xref> and silent from its end on. Times are on the frames' time line, rounded to whole samples. The curves\ngive the same gains as ffmpeg's <code>afade</code> with the curve each value names. Works in place.</p>\n"
-    },
-    {
-      "type": "ManagedReference",
       "source_relative_path": "api/Egami.Video.Audio.Filters.FadeCurve.yml",
       "output": {
         ".html": {
@@ -12539,7 +12539,7 @@
       "Uid": null,
       "IsMRef": true,
       "Title": "Egami.Video.Audio.Filters.FadeCurve",
-      "Summary": "<p sourcefile=\"api/Egami.Video.Audio.Filters.FadeCurve.yml\" sourcestartlinenumber=\"1\">The shape of a <xref href=\"Egami.Video.Audio.Filters.Fade\" data-throw-if-not-resolved=\"false\"></xref> or <xref href=\"Egami.Video.Audio.Filters.Crossfade\" data-throw-if-not-resolved=\"false\"></xref>, as the gain of a fade in over its length.</p>\n"
+      "Summary": "<p sourcefile=\"api/Egami.Video.Audio.Filters.FadeCurve.yml\" sourcestartlinenumber=\"1\">The shape of a <xref href=\"Egami.Video.Audio.Filters.AudioFade\" data-throw-if-not-resolved=\"false\"></xref> or <xref href=\"Egami.Video.Audio.Filters.Crossfade\" data-throw-if-not-resolved=\"false\"></xref>, as the gain of a fade in over its length.</p>\n"
     },
     {
       "type": "ManagedReference",
@@ -12553,7 +12553,7 @@
       "Uid": null,
       "IsMRef": true,
       "Title": "Egami.Video.Audio.Filters.FadeDirection",
-      "Summary": "<p sourcefile=\"api/Egami.Video.Audio.Filters.FadeDirection.yml\" sourcestartlinenumber=\"1\">Whether a <xref href=\"Egami.Video.Audio.Filters.Fade\" data-throw-if-not-resolved=\"false\"></xref> brings the sound in or takes it out.</p>\n"
+      "Summary": "<p sourcefile=\"api/Egami.Video.Audio.Filters.FadeDirection.yml\" sourcestartlinenumber=\"1\">Whether a <xref href=\"Egami.Video.Audio.Filters.AudioFade\" data-throw-if-not-resolved=\"false\"></xref> brings the sound in or takes it out.</p>\n"
     },
     {
       "type": "ManagedReference",
