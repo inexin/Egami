@@ -19,6 +19,7 @@ internal static class CodecNames
         [CodecIds.PcmFloat] = ("PCM float", "pcm", "PCM"),
         [CodecIds.Mp3] = ("MP3", "mp3", "MP3 (MPEG audio layer 3)"),
         [CodecIds.Mp2] = ("MP2", "mp2", "MP2 (MPEG audio layer 2)"),
+        [CodecIds.Mp1] = ("MP1", "mp1", "MP1 (MPEG audio layer 1)"),
         [CodecIds.Ac3] = ("AC-3", "ac3", "ATSC A/52A (AC-3)"),
         [CodecIds.EAc3] = ("E-AC-3", "eac3", "ATSC A/52B (AC-3, E-AC-3)"),
         [CodecIds.Alac] = ("ALAC", "alac", "ALAC (Apple Lossless Audio Codec)"),

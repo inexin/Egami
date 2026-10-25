@@ -42,10 +42,12 @@ Add only the packages you use. Each one has its own guides.
 | [Egami.Metafiles](https://www.nuget.org/packages/Egami.Metafiles) | Plays WMF, EMF and EMF+ pictures | [Guide](https://inexin.github.io/Egami/v1/articles/guides/metafiles.html) |
 | [Egami.Barcodes](https://www.nuget.org/packages/Egami.Barcodes) | Writes and reads 1D and 2D barcodes | [Writing](https://inexin.github.io/Egami/v1/articles/guides/barcodes.html), [reading](https://inexin.github.io/Egami/v1/articles/guides/barcode-reading.html) |
 | [Egami.Cli](https://www.nuget.org/packages/Egami.Cli) | The `egami` command: convert, resize, inspect and edit images from a shell, with chained steps, workflow files and batches | [The egami command](https://inexin.github.io/Egami/v1/articles/cli/index.html) |
-| Egami.Video | Reads and writes video with Egami rasters as frames: WebM, Matroska, AVI, IVF; VP9, VP8 and Motion JPEG (preview) | [Guide](https://inexin.github.io/Egami/v1/articles/guides/video.html) |
+| [Egami.Video](https://www.nuget.org/packages/Egami.Video) | Reads and writes video and audio with Egami rasters as frames: MP4, WebM, Matroska, AVI; AV1, VP9 and VP8 decode and encode; Opus, Vorbis, FLAC, MP3 and more | [Guide](https://inexin.github.io/Egami/v1/articles/guides/video.html) |
+| [Egami.Video.H264](https://www.nuget.org/packages/Egami.Video.H264) | H.264 decoding for Egami.Video; opt-in because H.264 is covered by patents | [Guide](https://inexin.github.io/Egami/v1/articles/guides/h264.html) |
+| [Egami.Video.Cli](https://www.nuget.org/packages/Egami.Video.Cli) | The `egami-video` command: inspect, remux, cut, join and convert video and audio from a shell, with ffmpeg and ffprobe command lines | [The egami-video command](https://inexin.github.io/Egami/v1/articles/video-cli/index.html) |
 | [Egami.Heic](https://www.nuget.org/packages/Egami.Heic) | Reads HEIC phone photos; opt-in because HEVC is covered by patents | [Guide](https://inexin.github.io/Egami/v1/articles/formats/heic.html) |
 
-All packages except Egami.Video are 1.0 or later and on [NuGet](https://www.nuget.org/packages?q=Egami).
+All packages are 1.0 or later and on [NuGet](https://www.nuget.org/packages?q=Egami).
 [Packages](https://inexin.github.io/Egami/v1/articles/packages.html) lists what each one needs.
 
 ## The egami command

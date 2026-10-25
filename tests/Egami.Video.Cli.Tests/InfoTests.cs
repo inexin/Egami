@@ -2,6 +2,9 @@ using System.Globalization;
 using System.Text.Json;
 using System.Xml.Linq;
 
+using Egami.Video.Cli.Commands;
+using Egami.Video.Cli.Host;
+
 namespace Egami.Video.Cli.Tests;
 
 /// <summary>
@@ -159,6 +162,18 @@ public sealed class InfoTests
         Assert.Equal("5.1", track.GetProperty("layout").GetString());
         Assert.Equal(24, track.GetProperty("bitsPerSample").GetInt32());
         Assert.Equal("s32", track.GetProperty("sampleFormat").GetString());
+    }
+
+    [Theory]
+    [InlineData(CodecIds.Mp3, "MP3", "mp3")]
+    [InlineData(CodecIds.Mp2, "MP2", "mp2")]
+    [InlineData(CodecIds.Mp1, "MP1", "mp1")]
+    public void MpegAudioNames(string codecId, string name, string ffprobeName)
+    {
+        AudioTrackInfo track = new() { Number = 1, Kind = TrackKind.Audio, CodecId = codecId, TimeBase = new Rational(1, 44100), SampleRate = 44100, Channels = 2 };
+        Assert.Equal(name, CodecNames.Name(codecId));
+        Assert.Equal(ffprobeName, CodecNames.FfprobeName(track));
+        Assert.Equal("fltp", InfoCommand.TrackSampleFormat(track));
     }
 
     [Fact]
