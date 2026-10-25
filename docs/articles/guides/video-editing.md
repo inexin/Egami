@@ -154,10 +154,10 @@ the encoder starts again with a keyframe after each copied part. A source that d
 
 Stabilizing takes two passes, like FFmpeg's vidstabdetect and vidstabtransform. `Stabilizer.Analyze` measures the camera's
 motion from each frame to the next: it tracks corners with pyramidal Lucas-Kanade on a copy of the luma no wider than
-`StabilizerOptions.AnalysisWidth` and fits a turn, a zoom and a move to them with RANSAC. The `CameraMotion` it returns saves
+`MotionAnalysisOptions.AnalysisWidth` and fits a turn, a zoom and a move to them with RANSAC. The `CameraMotion` it returns saves
 as JSON, so the slow pass runs once; its `Frames` are `FrameMotion`s, the move, turn and zoom from the frame before. `Clip.Stabilize` then smooths the camera's path with a Gaussian over
 `StabilizeOptions.Smoothing` frames either way and warps each frame onto the smooth path; the clip's `Stabilization` holds both as a `ClipStabilization`. `StabilizeEdges` says what fills
-the edges a correction uncovers: `Zoom` (the least zoom, up to 1.5, that hides them in every frame), `Black` or `Blur`. The
+the edges a correction uncovers: `Zoom` (the least zoom that hides them in every frame, up to `StabilizeOptions.MaxZoom`, 1.5 by default), `Black` or `Blur`. The
 command line's `stabilize` does both passes, and `--save-motion` and `--motion` split them.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Editing.cs#edit-stabilize)]

@@ -20,7 +20,7 @@ public static class Stabilizer
     /// <example>
     /// <code language="csharp" source="../../../../tests/Egami.DocSamples/Editing.cs" region="edit-stabilize"/>
     /// </example>
-    public static CameraMotion Analyze(string path, StabilizerOptions? options = null, IProgress<MediaProgress>? progress = null, CancellationToken cancellationToken = default)
+    public static CameraMotion Analyze(string path, MotionAnalysisOptions? options = null, IProgress<MediaProgress>? progress = null, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrEmpty(path);
         using VideoReader reader = VideoReader.Open(path, new VideoReaderOptions { AutoOrient = true });
@@ -36,16 +36,16 @@ public static class Stabilizer
     /// <example>
     /// <code language="csharp" source="../../../../tests/Egami.DocSamples/Editing.cs" region="edit-stabilize"/>
     /// </example>
-    public static CameraMotion Analyze(Stream stream, StabilizerOptions? options = null, IProgress<MediaProgress>? progress = null, CancellationToken cancellationToken = default)
+    public static CameraMotion Analyze(Stream stream, MotionAnalysisOptions? options = null, IProgress<MediaProgress>? progress = null, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(stream);
         using VideoReader reader = VideoReader.Open(stream, new VideoReaderOptions { AutoOrient = true }, leaveOpen: true);
         return Analyze(reader, options, progress, cancellationToken);
     }
 
-    private static CameraMotion Analyze(VideoReader reader, StabilizerOptions? options, IProgress<MediaProgress>? progress, CancellationToken cancellationToken)
+    private static CameraMotion Analyze(VideoReader reader, MotionAnalysisOptions? options, IProgress<MediaProgress>? progress, CancellationToken cancellationToken)
     {
-        options ??= StabilizerOptions.Default;
+        options ??= MotionAnalysisOptions.Default;
         ArgumentOutOfRangeException.ThrowIfLessThan(options.AnalysisWidth, 64, nameof(options));
         MotionEstimator estimator = new();
         List<FrameMotion> frames = [];
@@ -114,7 +114,8 @@ internal sealed class StabilizationPath
                 * Matrix3x2.CreateTranslation(centre + new Vector2((float)(sx[i] - x[i]), (float)(sy[i] - y[i])));
         }
 
-        Zoom = options.Edges == StabilizeEdges.Zoom ? EdgeZoom(motion.Width, motion.Height) : 1;
+        ArgumentOutOfRangeException.ThrowIfLessThan(options.MaxZoom, 1, nameof(options));
+        Zoom = options.Edges == StabilizeEdges.Zoom ? EdgeZoom(motion.Width, motion.Height, options.MaxZoom) : 1;
         if (Zoom != 1)
         {
             Matrix3x2 zoom = Matrix3x2.CreateScale((float)Zoom, centre);
@@ -184,15 +185,15 @@ internal sealed class StabilizationPath
         return result;
     }
 
-    /// <summary>The least zoom about the centre for which every corrected frame covers the whole picture, at most 1.5.</summary>
-    private double EdgeZoom(int width, int height)
+    /// <summary>The least zoom about the centre for which every corrected frame covers the whole picture, at most <paramref name="max"/>.</summary>
+    private double EdgeZoom(int width, int height, double max)
     {
         double worst = 1;
         Vector2[] corners = [new(0, 0), new(width, 0), new(0, height), new(width, height)];
         Vector2 centre = new(width / 2f, height / 2f);
         foreach (Matrix3x2 correction in _corrections)
         {
-            double low = 1, high = 1.5;
+            double low = 1, high = max;
             if (Covers(correction, 1))
             {
                 continue;

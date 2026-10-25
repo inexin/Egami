@@ -430,17 +430,19 @@ Egami.Video.Editing.StabilizeOptions
 Egami.Video.Editing.StabilizeOptions.<Clone>$() -> Egami.Video.Editing.StabilizeOptions!
 Egami.Video.Editing.StabilizeOptions.Edges.get -> Egami.Video.Editing.StabilizeEdges
 Egami.Video.Editing.StabilizeOptions.Edges.init -> void
+Egami.Video.Editing.StabilizeOptions.MaxZoom.get -> double
+Egami.Video.Editing.StabilizeOptions.MaxZoom.init -> void
 Egami.Video.Editing.StabilizeOptions.Equals(Egami.Video.Editing.StabilizeOptions? other) -> bool
 Egami.Video.Editing.StabilizeOptions.Smoothing.get -> int
 Egami.Video.Editing.StabilizeOptions.Smoothing.init -> void
 Egami.Video.Editing.StabilizeOptions.StabilizeOptions() -> void
 Egami.Video.Editing.Stabilizer
-Egami.Video.Editing.StabilizerOptions
-Egami.Video.Editing.StabilizerOptions.<Clone>$() -> Egami.Video.Editing.StabilizerOptions!
-Egami.Video.Editing.StabilizerOptions.AnalysisWidth.get -> int
-Egami.Video.Editing.StabilizerOptions.AnalysisWidth.init -> void
-Egami.Video.Editing.StabilizerOptions.Equals(Egami.Video.Editing.StabilizerOptions? other) -> bool
-Egami.Video.Editing.StabilizerOptions.StabilizerOptions() -> void
+Egami.Video.Editing.MotionAnalysisOptions
+Egami.Video.Editing.MotionAnalysisOptions.<Clone>$() -> Egami.Video.Editing.MotionAnalysisOptions!
+Egami.Video.Editing.MotionAnalysisOptions.AnalysisWidth.get -> int
+Egami.Video.Editing.MotionAnalysisOptions.AnalysisWidth.init -> void
+Egami.Video.Editing.MotionAnalysisOptions.Equals(Egami.Video.Editing.MotionAnalysisOptions? other) -> bool
+Egami.Video.Editing.MotionAnalysisOptions.MotionAnalysisOptions() -> void
 Egami.Video.Editing.Stack
 Egami.Video.Editing.StackLayout
 Egami.Video.Editing.StackLayout.Grid = 2 -> Egami.Video.Editing.StackLayout
@@ -566,9 +568,9 @@ override Egami.Video.Editing.SlideshowOptions.ToString() -> string!
 override Egami.Video.Editing.StabilizeOptions.Equals(object? obj) -> bool
 override Egami.Video.Editing.StabilizeOptions.GetHashCode() -> int
 override Egami.Video.Editing.StabilizeOptions.ToString() -> string!
-override Egami.Video.Editing.StabilizerOptions.Equals(object? obj) -> bool
-override Egami.Video.Editing.StabilizerOptions.GetHashCode() -> int
-override Egami.Video.Editing.StabilizerOptions.ToString() -> string!
+override Egami.Video.Editing.MotionAnalysisOptions.Equals(object? obj) -> bool
+override Egami.Video.Editing.MotionAnalysisOptions.GetHashCode() -> int
+override Egami.Video.Editing.MotionAnalysisOptions.ToString() -> string!
 override Egami.Video.Editing.StackOptions.Equals(object? obj) -> bool
 override Egami.Video.Editing.StackOptions.GetHashCode() -> int
 override Egami.Video.Editing.StackOptions.ToString() -> string!
@@ -627,11 +629,11 @@ static Egami.Video.Editing.SlideshowOptions.operator ==(Egami.Video.Editing.Slid
 static Egami.Video.Editing.StabilizeOptions.Default.get -> Egami.Video.Editing.StabilizeOptions!
 static Egami.Video.Editing.StabilizeOptions.operator !=(Egami.Video.Editing.StabilizeOptions? left, Egami.Video.Editing.StabilizeOptions? right) -> bool
 static Egami.Video.Editing.StabilizeOptions.operator ==(Egami.Video.Editing.StabilizeOptions? left, Egami.Video.Editing.StabilizeOptions? right) -> bool
-static Egami.Video.Editing.Stabilizer.Analyze(string! path, Egami.Video.Editing.StabilizerOptions? options = null, System.IProgress<Egami.Video.MediaProgress>? progress = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> Egami.Video.Editing.CameraMotion!
-static Egami.Video.Editing.Stabilizer.Analyze(System.IO.Stream! stream, Egami.Video.Editing.StabilizerOptions? options = null, System.IProgress<Egami.Video.MediaProgress>? progress = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> Egami.Video.Editing.CameraMotion!
-static Egami.Video.Editing.StabilizerOptions.Default.get -> Egami.Video.Editing.StabilizerOptions!
-static Egami.Video.Editing.StabilizerOptions.operator !=(Egami.Video.Editing.StabilizerOptions? left, Egami.Video.Editing.StabilizerOptions? right) -> bool
-static Egami.Video.Editing.StabilizerOptions.operator ==(Egami.Video.Editing.StabilizerOptions? left, Egami.Video.Editing.StabilizerOptions? right) -> bool
+static Egami.Video.Editing.Stabilizer.Analyze(string! path, Egami.Video.Editing.MotionAnalysisOptions? options = null, System.IProgress<Egami.Video.MediaProgress>? progress = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> Egami.Video.Editing.CameraMotion!
+static Egami.Video.Editing.Stabilizer.Analyze(System.IO.Stream! stream, Egami.Video.Editing.MotionAnalysisOptions? options = null, System.IProgress<Egami.Video.MediaProgress>? progress = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> Egami.Video.Editing.CameraMotion!
+static Egami.Video.Editing.MotionAnalysisOptions.Default.get -> Egami.Video.Editing.MotionAnalysisOptions!
+static Egami.Video.Editing.MotionAnalysisOptions.operator !=(Egami.Video.Editing.MotionAnalysisOptions? left, Egami.Video.Editing.MotionAnalysisOptions? right) -> bool
+static Egami.Video.Editing.MotionAnalysisOptions.operator ==(Egami.Video.Editing.MotionAnalysisOptions? left, Egami.Video.Editing.MotionAnalysisOptions? right) -> bool
 static Egami.Video.Editing.Stack.Grid(int columns, int rows, System.Collections.Generic.IEnumerable<Egami.Video.Editing.Clip!>! clips, Egami.Video.Editing.StackOptions? options = null) -> Egami.Video.Editing.Clip!
 static Egami.Video.Editing.Stack.Horizontal(params Egami.Video.Editing.Clip![]! clips) -> Egami.Video.Editing.Clip!
 static Egami.Video.Editing.Stack.Horizontal(System.Collections.Generic.IEnumerable<Egami.Video.Editing.Clip!>! clips, Egami.Video.Editing.StackOptions? options = null) -> Egami.Video.Editing.Clip!

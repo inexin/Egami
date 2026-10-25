@@ -272,6 +272,11 @@ internal static class EditJson
                 json.WriteString("edges", Name(stabilization.Options.Edges));
             }
 
+            if (stabilization.Options.MaxZoom != 1.5)
+            {
+                json.WriteNumber("maxZoom", stabilization.Options.MaxZoom);
+            }
+
             json.WritePropertyName("motion");
             stabilization.Motion.Write(json);
             json.WriteEndObject();
@@ -614,7 +619,7 @@ internal static class EditJson
                     throw new FormatException($"{at}.motion is not a camera motion: {ex.Message}", ex);
                 }
 
-                clip = clip.Stabilize(camera, new StabilizeOptions { Smoothing = Int(stabilize, "smoothing", at) ?? 15, Edges = Enum<StabilizeEdges>(stabilize, "edges", at) ?? StabilizeEdges.Zoom });
+                clip = clip.Stabilize(camera, new StabilizeOptions { Smoothing = Int(stabilize, "smoothing", at) ?? 15, Edges = Enum<StabilizeEdges>(stabilize, "edges", at) ?? StabilizeEdges.Zoom, MaxZoom = Number(stabilize, "maxZoom", at) ?? 1.5 });
             }
 
             if (e.TryGetProperty("panZoom", out JsonElement panZoom))

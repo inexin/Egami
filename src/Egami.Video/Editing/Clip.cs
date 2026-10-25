@@ -277,7 +277,7 @@ public sealed record Clip
     /// Returns the clip stabilized (pass 2): the camera path <paramref name="motion"/> measured is smoothed with a Gaussian, and
     /// each frame is warped onto the smooth path with a sub-pixel transform, zooming in to hide the edges or filling them.
     /// </summary>
-    /// <param name="motion">The camera motion of this clip's source, from <see cref="Stabilizer.Analyze(string, StabilizerOptions?, IProgress{MediaProgress}?, CancellationToken)"/>.</param>
+    /// <param name="motion">The camera motion of this clip's source, from <see cref="Stabilizer.Analyze(string, MotionAnalysisOptions?, IProgress{MediaProgress}?, CancellationToken)"/>.</param>
     /// <param name="options">The smoothing and edges, or <see langword="null"/> for the defaults.</param>
     /// <returns>The clip.</returns>
     /// <example>
