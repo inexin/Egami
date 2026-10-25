@@ -84,6 +84,9 @@ public sealed record EditRenderOptions
     /// set, Opus is used, or PCM in AVI. Default <see langword="true"/>.
     /// </summary>
     public bool Audio { get; init; } = true;
+
+    /// <summary>Gets the context frames are decoded, composed and encoded with, such as one with fewer threads, or <see langword="null"/> for <see cref="MediaContext.Default"/>.</summary>
+    public MediaContext? Context { get; init; }
 }
 
 /// <summary>
@@ -185,7 +188,7 @@ public sealed class VideoEdit
     private EditPlan Render(string? path, Stream? stream, string? format, EditRenderOptions? options, IProgress<MediaProgress>? progress, CancellationToken cancellationToken)
     {
         options ??= EditRenderOptions.Default;
-        MediaContext context = MediaContext.Default;
+        MediaContext context = options.Context ?? MediaContext.Default;
         EditPlan plan = Plan(context);
         EditCanvas canvas = plan.Canvas;
         bool audio = options.Audio && plan.HasAudio;

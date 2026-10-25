@@ -24,6 +24,14 @@ comes after stage D.
   a gain, fade, pan and envelope chain runs 520 times real time, `Tempo` 610 times and `Speed` 500 times
   (`AudioFilterBenchmarks`).
 
+V9 Editing task 18: the gates in egami-compare, and what they needed.
+
+- Edits render cuts, fades, hard wipes and opaque, unkeyed layers straight from the decoded planes when they match the canvas,
+  without going through RGBA, as FFmpeg's filters do; a 1080p dissolve renders in 0.31 times FFmpeg's time at one thread.
+- `EditRenderOptions.Context` sets the context an edit renders with, such as one with fewer threads.
+- A seekable YUV4MPEG2 file of plain FRAME lines now reports its duration (`MediaInfo.Duration` and the track's), and the
+  editor counts packets for a source that reports none.
+
 V9 Editing stage B: speed, reverse, loops, freezes, stills and Ken Burns, and time windows on run steps (Build Plan tasks 12
 to 17). All additive; the API review for stages A and B comes next (task 19).
 

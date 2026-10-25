@@ -21,6 +21,8 @@ internal sealed class EditRenderer : IDisposable
     private readonly Raster<Rgba8> _frame;
     private readonly Raster<Rgba8> _from;
     private readonly Raster<Rgba8> _to;
+    private readonly Dictionary<int, YuvRaster<byte>> _scaled = [];
+    private YuvRaster<byte>? _mixed;
 
     public EditRenderer(EditPlan plan, bool audio, MediaContext context)
     {
@@ -41,8 +43,15 @@ internal sealed class EditRenderer : IDisposable
         for (long n = 0; n < _plan.FrameCount; n++)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            Raster<Rgba8> frame = Render(n);
-            writer.WriteFrame(frame, _plan.TimeOf(n));
+            if (Planes(n) is { } planes)
+            {
+                writer.WriteFrame(planes, _plan.TimeOf(n));
+            }
+            else
+            {
+                writer.WriteFrame(Render(n), _plan.TimeOf(n));
+            }
+
             _audio?.WriteUntil(_plan.TimeOf(n + 1), writer, final: false);
             if (progress is not null && (clock.ElapsedMilliseconds - last >= 250 || n == 0))
             {
@@ -69,6 +78,12 @@ internal sealed class EditRenderer : IDisposable
 
     public void Dispose()
     {
+        _mixed?.Dispose();
+        foreach (YuvRaster<byte> scaled in _scaled.Values)
+        {
+            scaled.Dispose();
+        }
+
         foreach (ClipFrames frames in _clips.Values.Concat(_layers.Values))
         {
             frames.Dispose();
@@ -120,6 +135,254 @@ internal sealed class EditRenderer : IDisposable
         }
 
         return _frame;
+    }
+
+    /// <summary>
+    /// The fast path: when output frame <paramref name="n"/> is a source frame of the canvas size, or a fade or hard wipe
+    /// between two, with no fit, fade to a colour, effect, motion or layer, it is made from the decoded planes, as FFmpeg's
+    /// filters work, without going through RGBA. Returns <see langword="null"/> when the frame needs the full renderer.
+    /// </summary>
+    private YuvRaster<byte>? Planes(long n)
+    {
+        if (_plan.Edit.Effects.Count > 0)
+        {
+            return null;
+        }
+
+        List<(PlannedLayer Layer, YuvRaster<byte> Planes, Rect Area)> layers = [];
+        foreach (PlannedLayer layer in _plan.Layers)
+        {
+            if (n < layer.StartFrame || n >= layer.StartFrame + layer.FrameCount)
+            {
+                continue;
+            }
+
+            if (SimpleLayer(layer, n - layer.StartFrame) is not { } placed)
+            {
+                return null;
+            }
+
+            layers.Add((layer, placed.Planes, placed.Area));
+        }
+
+        YuvRaster<byte>? frame = TrackPlanes(n);
+        if (frame is null || layers.Count == 0)
+        {
+            return frame;
+        }
+
+        if (layers.Any(l => l.Planes.ChromaFormat != frame.ChromaFormat))
+        {
+            return null;
+        }
+
+        // Layers draw into a copy of the track's frame, each scaled into its area, plane by plane.
+        if (!ReferenceEquals(frame, _mixed))
+        {
+            YuvRaster<byte> copy = Mixed(frame);
+            for (int plane = 0; plane < 3; plane++)
+            {
+                YuvPlane<byte> source = Plane(frame, plane), target = Plane(copy, plane);
+                for (int y = 0; y < source.Height; y++)
+                {
+                    source.Row(y).CopyTo(target.Row(y));
+                }
+            }
+        }
+
+        foreach ((PlannedLayer layer, YuvRaster<byte> planes, Rect area) in layers)
+        {
+            if (!_scaled.TryGetValue(layer.Index, out YuvRaster<byte>? scaled) || scaled.Width != area.Width || scaled.Height != area.Height)
+            {
+                scaled?.Dispose();
+                scaled = YuvRaster.Create(area.Width, area.Height, planes.ChromaFormat, planes.Color, context: _context.Egami);
+                _scaled[layer.Index] = scaled;
+            }
+
+            planes.ResizeTo(scaled);
+            for (int plane = 0; plane < 3; plane++)
+            {
+                YuvPlane<byte> source = Plane(scaled, plane), target = Plane(_mixed!, plane);
+                int sx = plane == 0 ? 1 : _mixed!.Width / target.Width, sy = plane == 0 ? 1 : _mixed!.Height / target.Height;
+                for (int y = 0; y < source.Height; y++)
+                {
+                    source.Row(y).CopyTo(target.Row((area.Y / sy) + y)[(area.X / sx)..]);
+                }
+            }
+        }
+
+        return _mixed;
+    }
+
+    /// <summary>A layer's planes and area when it can be drawn as planes: opaque, unkeyed, still, aligned to the chroma grid, inside the canvas.</summary>
+    private (YuvRaster<byte> Planes, Rect Area)? SimpleLayer(PlannedLayer planned, long local)
+    {
+        Layer layer = planned.Layer;
+        Clip c = layer.Clip;
+        if (layer.ChromaKey is not null || layer.Effects.Count > 0 || layer.Animations.Count > 0 || layer.OpacityAmount < 1 || layer.BlendMode != BlendMode.SourceOver
+            || local < EditPlanner.Frames(layer.FadeInDuration, _canvas) || (layer.FadeOutDuration > MediaTime.Zero && local >= planned.FrameCount - EditPlanner.Frames(layer.FadeOutDuration, _canvas))
+            || c.Effects.Count > 0 || c.Motion is not null || c.IsReversed || c.Source is not (FileClipSource or StreamClipSource))
+        {
+            return null;
+        }
+
+        if (!_layers.TryGetValue(planned.Index, out ClipFrames? frames))
+        {
+            frames = ClipFrames.Open(c, _plan, _canvas, _context);
+            _layers[planned.Index] = frames;
+        }
+
+        if (frames.PlanesBefore(Limit(Math.Min(local, planned.ClipFrames - 1)))?.Raster is not YuvRaster<byte> { HasAlpha: false } planes || planes.ChromaFormat == ChromaFormat.Yuv400)
+        {
+            return null;
+        }
+
+        Rect area = Area(layer, planes.Width, planes.Height);
+        int align = planes.ChromaFormat == ChromaFormat.Yuv444 ? 1 : 2;
+        bool aligned = area.X % align == 0 && area.Width % align == 0 && (planes.ChromaFormat != ChromaFormat.Yuv420 || (area.Y % 2 == 0 && area.Height % 2 == 0));
+        bool inside = area.X >= 0 && area.Y >= 0 && area.X + area.Width <= _canvas.Width && area.Y + area.Height <= _canvas.Height;
+        return aligned && inside ? (planes, area) : null;
+    }
+
+    private YuvRaster<byte> Mixed(YuvRaster<byte> like)
+    {
+        if (_mixed is null || _mixed.ChromaFormat != like.ChromaFormat)
+        {
+            _mixed?.Dispose();
+            _mixed = YuvRaster.Create(_canvas.Width, _canvas.Height, like.ChromaFormat, like.Color, context: _context.Egami);
+        }
+
+        return _mixed;
+    }
+
+    /// <summary>The main track's frame as planes: a clip's own, or a fade or hard wipe between two.</summary>
+    private YuvRaster<byte>? TrackPlanes(long n)
+    {
+        int current = ClipAt(n);
+        PlannedClip clip = _plan.Clips[current];
+        long local = n - clip.StartFrame;
+        YuvRaster<byte>? to = SimplePlanes(clip, local);
+        if (to is null)
+        {
+            return null;
+        }
+
+        if (local >= clip.TransitionFrames || current == 0)
+        {
+            Release(current);
+            return to;
+        }
+
+        Transition transition = _plan.Edit.Track[current].Transition!;
+        if (transition.Kind is not (TransitionKind.Fade or TransitionKind.Wipe) || (transition.Kind == TransitionKind.Wipe && transition.Softness > 0))
+        {
+            return null;
+        }
+
+        PlannedClip previous = _plan.Clips[current - 1];
+        YuvRaster<byte>? from = SimplePlanes(previous, n - previous.StartFrame);
+        if (from is null || from.ChromaFormat != to.ChromaFormat)
+        {
+            return null;
+        }
+
+        YuvRaster<byte> mixed = Mixed(to);
+        double p = Math.Clamp(Keyframe.Ease(transition.Easing, (double)local / clip.TransitionFrames), 0, 1);
+        for (int plane = 0; plane < 3; plane++)
+        {
+            YuvPlane<byte> a = Plane(from, plane), b = Plane(to, plane), target = Plane(mixed, plane);
+            if (transition.Kind == TransitionKind.Fade)
+            {
+                MixPlane(a, b, p, target);
+            }
+            else
+            {
+                WipePlane(a, b, p, transition.Direction, target);
+            }
+        }
+
+        return mixed;
+    }
+
+    /// <summary>A clip's planes at a frame when they can go straight out: 8-bit, the canvas size, no fit, fade, effect or motion.</summary>
+    private YuvRaster<byte>? SimplePlanes(PlannedClip clip, long local)
+    {
+        Clip c = clip.Clip;
+        if (c.Effects.Count > 0 || c.Motion is not null || c.Source is not (FileClipSource or StreamClipSource) || c.IsReversed
+            || local < EditPlanner.Frames(c.FadeInDuration, _canvas) || (c.FadeOutDuration > MediaTime.Zero && local >= clip.FrameCount - EditPlanner.Frames(c.FadeOutDuration, _canvas)))
+        {
+            return null;
+        }
+
+        if (!_clips.TryGetValue(clip.Index, out ClipFrames? frames))
+        {
+            frames = ClipFrames.Open(clip.Clip, _plan, _canvas, _context);
+            _clips[clip.Index] = frames;
+        }
+
+        return frames.PlanesBefore(Limit(local))?.Raster is YuvRaster<byte> { HasAlpha: false } planes && planes.Width == _canvas.Width && planes.Height == _canvas.Height
+            && planes.ChromaFormat != ChromaFormat.Yuv400 ? planes : null;
+    }
+
+    /// <summary>Lets go of the clips before the one showing, as <see cref="Render"/> does.</summary>
+    private void Release(int current)
+    {
+        foreach (int index in _clips.Keys.Where(i => i < current).ToList())
+        {
+            _clips[index].Dispose();
+            _clips.Remove(index);
+        }
+    }
+
+    private static YuvPlane<byte> Plane(YuvRaster<byte> raster, int plane) => plane switch
+    {
+        0 => raster.Y,
+        1 => raster.U!,
+        _ => raster.V!,
+    };
+
+    private static void MixPlane(YuvPlane<byte> a, YuvPlane<byte> b, double p, YuvPlane<byte> target)
+    {
+        int w = (int)Math.Round(p * 65536), keep = 65536 - w;
+        for (int y = 0; y < target.Height; y++)
+        {
+            Span<byte> s = a.Row(y), t = b.Row(y), d = target.Row(y);
+            for (int x = 0; x < d.Length; x++)
+            {
+                d[x] = (byte)(((s[x] * keep) + (t[x] * w) + 32768) >> 16);
+            }
+        }
+    }
+
+    /// <summary>A hard wipe on one plane; the edge falls where the RGBA wipe's does, in the plane's own resolution.</summary>
+    private static void WipePlane(YuvPlane<byte> a, YuvPlane<byte> b, double p, TransitionDirection direction, YuvPlane<byte> target)
+    {
+        bool horizontal = direction is TransitionDirection.Left or TransitionDirection.Right;
+        int extent = horizontal ? target.Width : target.Height;
+        double edge = p * extent;
+        for (int y = 0; y < target.Height; y++)
+        {
+            Span<byte> s = a.Row(y), t = b.Row(y), d = target.Row(y);
+            if (!horizontal)
+            {
+                double dy = direction == TransitionDirection.Up ? extent - y - 0.5 : y + 0.5;
+                (dy < edge ? t : s).CopyTo(d);
+                continue;
+            }
+
+            // The uncovered part is a run from one side: copy the two runs.
+            int uncovered = Math.Clamp((int)Math.Ceiling(edge - 0.5), 0, d.Length);
+            if (direction == TransitionDirection.Left)
+            {
+                s[..(d.Length - uncovered)].CopyTo(d);
+                t[(d.Length - uncovered)..].CopyTo(d[(d.Length - uncovered)..]);
+            }
+            else
+            {
+                t[..uncovered].CopyTo(d);
+                s[uncovered..].CopyTo(d[uncovered..]);
+            }
+        }
     }
 
     private void Report(IProgress<MediaProgress> progress, long frames, TimeSpan elapsed, bool final)

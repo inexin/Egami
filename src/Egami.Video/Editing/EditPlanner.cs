@@ -126,7 +126,7 @@ internal static class EditPlanner
         {
             info = clip.Source switch
             {
-                FileClipSource file => FromMedia(MediaFile.Probe(file.Path, context), clip),
+                FileClipSource file => FromMedia(MediaFile.Probe(file.Path, context), clip, () => MediaFile.OpenDemuxer(file.Path, context)),
                 StreamClipSource stream => FromStream(stream.Stream, clip, context),
                 StackClipSource stack => FromStack(stack, clip, sources, context, errors),
                 StillClipSource still => Trimmed(clip, still.Image is { } image ? new Size(image.Width, image.Height) : ImageSize(still.Path!, context), new Rational(30, 1), still.Duration, true, false),
@@ -151,7 +151,9 @@ internal static class EditPlanner
         long position = stream.Position;
         try
         {
-            return FromMedia(MediaFile.Probe(stream, context), clip);
+            MediaInfo media = MediaFile.Probe(stream, context);
+            stream.Position = position;
+            return FromMedia(media, clip, () => MediaFile.OpenDemuxer(stream, context, leaveOpen: true));
         }
         finally
         {
@@ -159,14 +161,31 @@ internal static class EditPlanner
         }
     }
 
-    private static SourceInfo FromMedia(MediaInfo media, Clip clip)
+    private static SourceInfo FromMedia(MediaInfo media, Clip clip, Func<Containers.IDemuxer> open)
     {
         VideoTrackInfo? video = media.VideoTrack;
         bool audio = media.Tracks.Any(t => t is AudioTrackInfo);
         MediaTime duration = media.Duration ?? video?.Duration ?? media.Tracks.Select(t => t.Duration).FirstOrDefault(d => d is not null)
-            ?? throw new UnsupportedFormatException($"{Name(clip)} does not say how long it is.");
+            ?? Scan(open) ?? throw new UnsupportedFormatException($"{Name(clip)} does not say how long it is, and has no packets to count.");
         Size size = video is null ? new Size(0, 0) : new Size(video.Width, video.Height);
         return Trimmed(clip, size, video?.FrameRate ?? new Rational(30, 1), duration, video is not null, audio);
+    }
+
+    /// <summary>The end of the last packet, for containers that do not record a duration (YUV4MPEG2, raw streams).</summary>
+    private static MediaTime? Scan(Func<Containers.IDemuxer> open)
+    {
+        using Containers.IDemuxer demuxer = open();
+        MediaTime? end = null;
+        while (demuxer.ReadPacket() is { } packet)
+        {
+            using (packet)
+            {
+                MediaTime last = packet.Duration is MediaTime d ? Times.Add(packet.Timestamp, d) : packet.Timestamp;
+                end = end is MediaTime e && e >= last ? e : last;
+            }
+        }
+
+        return end;
     }
 
     private static SourceInfo FromStack(StackClipSource stack, Clip clip, Dictionary<Clip, SourceInfo> sources, MediaContext context, List<string> errors)
