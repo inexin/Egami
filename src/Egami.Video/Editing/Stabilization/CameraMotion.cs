@@ -5,7 +5,7 @@ using System.Text.Json;
 namespace Egami.Video.Editing;
 
 /// <summary>
-/// How the camera moved from one frame to the next, as <see cref="Stabilizer.Analyze(string, StabilizerOptions?, IProgress{MediaProgress}?, CancellationToken)"/>
+/// How the camera moved from one frame to the next, as <see cref="Stabilizer.Analyze(string, MotionAnalysisOptions?, IProgress{MediaProgress}?, CancellationToken)"/>
 /// measures it: a shift, a rotation and a scale per frame, in the clip's own pixels. It is pass 1 of stabilization; pass 2,
 /// <see cref="Clip.Stabilize"/>, smooths the path and warps the frames. Save it as JSON to stabilize again with other settings
 /// without measuring again.
@@ -152,16 +152,22 @@ public sealed record StabilizeOptions
 
     /// <summary>Gets what happens to uncovered edges. Default <see cref="StabilizeEdges.Zoom"/>.</summary>
     public StabilizeEdges Edges { get; init; }
+
+    /// <summary>
+    /// Gets the most <see cref="StabilizeEdges.Zoom"/> zooms in to hide the edges, as a factor of at least 1; a frame that needs
+    /// more keeps some edge showing. Default 1.5, like vidstab's <c>maxzoom</c> of 50 %.
+    /// </summary>
+    public double MaxZoom { get; init; } = 1.5;
 }
 
-/// <summary>How <see cref="Stabilizer.Analyze(string, StabilizerOptions?, IProgress{MediaProgress}?, CancellationToken)"/> measures.</summary>
+/// <summary>How <see cref="Stabilizer.Analyze(string, MotionAnalysisOptions?, IProgress{MediaProgress}?, CancellationToken)"/> measures.</summary>
 /// <example>
 /// <code language="csharp" source="../../../../tests/Egami.DocSamples/Editing.cs" region="edit-stabilize"/>
 /// </example>
-public sealed record StabilizerOptions
+public sealed record MotionAnalysisOptions
 {
     /// <summary>Gets the defaults.</summary>
-    public static StabilizerOptions Default { get; } = new();
+    public static MotionAnalysisOptions Default { get; } = new();
 
     /// <summary>Gets the width the luma is downscaled to, at most, before measuring: smaller is faster, larger finer. Default 480.</summary>
     public int AnalysisWidth { get; init; } = 480;

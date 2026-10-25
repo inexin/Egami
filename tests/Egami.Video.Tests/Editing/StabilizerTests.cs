@@ -69,7 +69,7 @@ public class StabilizerTests
         string clip = Shaky("known", i => path[i]);
         try
         {
-            CameraMotion motion = Stabilizer.Analyze(clip, new StabilizerOptions { AnalysisWidth = Width }, cancellationToken: TestContext.Current.CancellationToken);
+            CameraMotion motion = Stabilizer.Analyze(clip, new MotionAnalysisOptions { AnalysisWidth = Width }, cancellationToken: TestContext.Current.CancellationToken);
             Assert.Equal(Frames, motion.Frames.Count);
             double worst = 0;
             for (int i = 1; i < Frames; i++)
@@ -139,10 +139,11 @@ public class StabilizerTests
     {
         CameraMotion motion = new(64, 48, [new FrameMotion(MediaTime.Zero, 0, 0, 0, 1), new FrameMotion(MediaTime.FromSeconds(0.04), 1.5, -0.25, 0.001, 1.002)]);
         VideoEdit edit = new();
-        edit.Track.Add(Clip.Open("a.mkv").Stabilize(motion, new StabilizeOptions { Smoothing = 30, Edges = StabilizeEdges.Blur }));
+        edit.Track.Add(Clip.Open("a.mkv").Stabilize(motion, new StabilizeOptions { Smoothing = 30, Edges = StabilizeEdges.Blur, MaxZoom = 1.2 }));
         string json = edit.ToJson();
         VideoEdit back = VideoEdit.FromJson(json);
         Assert.Equal(json, back.ToJson());
         Assert.Equal(StabilizeEdges.Blur, back.Track[0].Clip.Stabilization!.Options.Edges);
+        Assert.Equal(1.2, back.Track[0].Clip.Stabilization!.Options.MaxZoom);
     }
 }

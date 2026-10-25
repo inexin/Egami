@@ -24,6 +24,15 @@ comes after stage D.
   a gain, fade, pan and envelope chain runs 520 times real time, `Tempo` 610 times and `Speed` 500 times
   (`AudioFilterBenchmarks`).
 
+V9 Editing API review for stages C and D (task 25), accepted 2026-10-25 (all as recommended), with tasks 21 to 23's gates.
+
+- `StabilizerOptions` is now `MotionAnalysisOptions`, so it no longer reads like `StabilizeOptions`.
+- `StabilizeOptions.MaxZoom` (default 1.5, like vidstab's `maxzoom`) caps the zoom that hides the edges; the edit file stores
+  it as `maxZoom`.
+- Kept as built: `Smoothing` in frames, `FrameMotion` in pixels and radians, `Stabilizer.Analyze` of a whole file,
+  `ClipStabilization`'s constructor, smart render off by default with warnings only, and ffmpeg mode's refusals
+  (freezeframes, loudnorm, and picture and sound changed apart).
+
 V9 Editing stage D: ffmpeg mode's editing filters, smart render and the editing guide (Build Plan tasks 22 to 24). All
 additive; the API review for stages C and D comes next (task 25).
 
@@ -48,7 +57,7 @@ stage D (task 25).
 
 - `Stabilizer.Analyze` measures a clip's `CameraMotion` (a `FrameMotion` per frame: move, turn and zoom from the frame before)
   with Shi-Tomasi corners, pyramidal Lucas-Kanade tracking and a RANSAC similarity fit on a downscaled luma copy
-  (`StabilizerOptions.AnalysisWidth`, 480 by default); it saves as JSON. Known synthetic shakes up to 6 px and 1 degree are
+  (`MotionAnalysisOptions.AnalysisWidth`, 480 by default); it saves as JSON. Known synthetic shakes up to 6 px and 1 degree are
   recovered within 0.18 px at the frame's corners (gate 0.25 px).
 - `Clip.Stabilize` with `StabilizeOptions` (`Smoothing`, `Edges`: `StabilizeEdges.Zoom`, `Black` or `Blur`) smooths the camera
   path with a Gaussian and warps each frame onto it; the edit file stores it with the motion.
