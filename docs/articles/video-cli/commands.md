@@ -779,6 +779,7 @@ Options:
   -c, --codec <codec>            The video codec: vp9 (the default for webm), vp8, av1, mjpeg (the default otherwise) or raw.
   --quality <0-100>              Quality from 0 to 100.
   -an, --no-audio                Write no audio track.
+  --smart                        Copy the untouched parts of clips instead of encoding them again (smart render), where the source matches the canvas and the encoder's stream.
   --save-edit <file.json>        Also write the edit as a JSON file that 'egami-video edit' renders; with no -o, write only the file.
 ```
 
@@ -806,6 +807,7 @@ Options:
   -c, --codec <codec>            The video codec: vp9 (the default for webm), vp8, av1, mjpeg (the default otherwise) or raw.
   --quality <0-100>              Quality from 0 to 100.
   -an, --no-audio                Write no audio track.
+  --smart                        Copy the untouched parts of clips instead of encoding them again (smart render), where the source matches the canvas and the encoder's stream.
   --save-edit <file.json>        Also write the edit as a JSON file that 'egami-video edit' renders; with no -o, write only the file.
 ```
 
@@ -844,6 +846,7 @@ Options:
   -c, --codec <codec>            The video codec: vp9 (the default for webm), vp8, av1, mjpeg (the default otherwise) or raw.
   --quality <0-100>              Quality from 0 to 100.
   -an, --no-audio                Write no audio track.
+  --smart                        Copy the untouched parts of clips instead of encoding them again (smart render), where the source matches the canvas and the encoder's stream.
   --save-edit <file.json>        Also write the edit as a JSON file that 'egami-video edit' renders; with no -o, write only the file.
 ```
 
@@ -879,6 +882,7 @@ Options:
   -c, --codec <codec>            The video codec: vp9 (the default for webm), vp8, av1, mjpeg (the default otherwise) or raw.
   --quality <0-100>              Quality from 0 to 100.
   -an, --no-audio                Write no audio track.
+  --smart                        Copy the untouched parts of clips instead of encoding them again (smart render), where the source matches the canvas and the encoder's stream.
   --save-edit <file.json>        Also write the edit as a JSON file that 'egami-video edit' renders; with no -o, write only the file.
 ```
 
@@ -908,6 +912,7 @@ Options:
   -c, --codec <codec>            The video codec: vp9 (the default for webm), vp8, av1, mjpeg (the default otherwise) or raw.
   --quality <0-100>              Quality from 0 to 100.
   -an, --no-audio                Write no audio track.
+  --smart                        Copy the untouched parts of clips instead of encoding them again (smart render), where the source matches the canvas and the encoder's stream.
   --save-edit <file.json>        Also write the edit as a JSON file that 'egami-video edit' renders; with no -o, write only the file.
 ```
 
@@ -934,6 +939,7 @@ Options:
   -c, --codec <codec>            The video codec: vp9 (the default for webm), vp8, av1, mjpeg (the default otherwise) or raw.
   --quality <0-100>              Quality from 0 to 100.
   -an, --no-audio                Write no audio track.
+  --smart                        Copy the untouched parts of clips instead of encoding them again (smart render), where the source matches the canvas and the encoder's stream.
   --save-edit <file.json>        Also write the edit as a JSON file that 'egami-video edit' renders; with no -o, write only the file.
 ```
 
@@ -958,6 +964,7 @@ Options:
   -c, --codec <codec>            The video codec: vp9 (the default for webm), vp8, av1, mjpeg (the default otherwise) or raw.
   --quality <0-100>              Quality from 0 to 100.
   -an, --no-audio                Write no audio track.
+  --smart                        Copy the untouched parts of clips instead of encoding them again (smart render), where the source matches the canvas and the encoder's stream.
   --save-edit <file.json>        Also write the edit as a JSON file that 'egami-video edit' renders; with no -o, write only the file.
 ```
 
@@ -983,6 +990,7 @@ Options:
   -c, --codec <codec>            The video codec: vp9 (the default for webm), vp8, av1, mjpeg (the default otherwise) or raw.
   --quality <0-100>              Quality from 0 to 100.
   -an, --no-audio                Write no audio track.
+  --smart                        Copy the untouched parts of clips instead of encoding them again (smart render), where the source matches the canvas and the encoder's stream.
   --save-edit <file.json>        Also write the edit as a JSON file that 'egami-video edit' renders; with no -o, write only the file.
 ```
 
@@ -1009,6 +1017,7 @@ Options:
   -c, --codec <codec>            The video codec: vp9 (the default for webm), vp8, av1, mjpeg (the default otherwise) or raw.
   --quality <0-100>              Quality from 0 to 100.
   -an, --no-audio                Write no audio track.
+  --smart                        Copy the untouched parts of clips instead of encoding them again (smart render), where the source matches the canvas and the encoder's stream.
   --save-edit <file.json>        Also write the edit as a JSON file that 'egami-video edit' renders; with no -o, write only the file.
 ```
 
@@ -1037,6 +1046,7 @@ Options:
   -c, --codec <codec>            The video codec: vp9 (the default for webm), vp8, av1, mjpeg (the default otherwise) or raw.
   --quality <0-100>              Quality from 0 to 100.
   -an, --no-audio                Write no audio track.
+  --smart                        Copy the untouched parts of clips instead of encoding them again (smart render), where the source matches the canvas and the encoder's stream.
   --save-edit <file.json>        Also write the edit as a JSON file that 'egami-video edit' renders; with no -o, write only the file.
 ```
 
@@ -1066,6 +1076,7 @@ Options:
   -c, --codec <codec>            The video codec: vp9 (the default for webm), vp8, av1, mjpeg (the default otherwise) or raw.
   --quality <0-100>              Quality from 0 to 100.
   -an, --no-audio                Write no audio track.
+  --smart                        Copy the untouched parts of clips instead of encoding them again (smart render), where the source matches the canvas and the encoder's stream.
   --save-edit <file.json>        Also write the edit as a JSON file that 'egami-video edit' renders; with no -o, write only the file.
 ```
 
@@ -1090,6 +1101,7 @@ Options:
   -c, --codec <codec>            The video codec: vp9 (the default for webm), vp8, av1, mjpeg (the default otherwise) or raw.
   --quality <0-100>              Quality from 0 to 100.
   -an, --no-audio                Write no audio track.
+  --smart                        Copy the untouched parts of clips instead of encoding them again (smart render), where the source matches the canvas and the encoder's stream.
   --save-edit <file.json>        Also write the edit as a JSON file that 'egami-video edit' renders; with no -o, write only the file.
 ```
 

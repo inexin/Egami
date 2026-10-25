@@ -24,7 +24,7 @@ comes after stage D.
   a gain, fade, pan and envelope chain runs 520 times real time, `Tempo` 610 times and `Speed` 500 times
   (`AudioFilterBenchmarks`).
 
-V9 Editing stage D: ffmpeg mode's editing filters (Build Plan task 22).
+V9 Editing stage D: ffmpeg mode's editing filters and smart render (Build Plan tasks 22 and 23).
 
 - `egami-video ffmpeg` renders `-vf`, `-af` and `-filter_complex` graphs of fade, setpts, reverse, loop, tpad, fps, scale, xfade,
   concat, overlay, hstack, vstack, xstack, zoompan, chromakey, colorkey, despill, hflip and vflip, with afade, acrossfade,
@@ -33,6 +33,11 @@ V9 Editing stage D: ffmpeg mode's editing filters (Build Plan task 22).
   edit cannot match stop with exit code 2 and the reason: freezeframes (it adds no time), loudnorm, setpts without the same
   atempo, and expressions beyond the documented forms.
 - Gate: 67 copied ffmpeg lines run on real clips with the right length, or stop with the right message (`ffmpeg-edit-lines.txt`).
+- Smart render (task 23): `EditRenderOptions.SmartRender` and `--smart` on the editing commands copy the untouched parts of
+  clips (no transition, fade, layer, effect or change of time, the canvas's size and rate, and a stream that matches the
+  encoder's) packet for packet from the first keyframe on, with V5.6's stream checks; the encoder starts again with a keyframe
+  after each copied part. Gate: VP8, VP9 and AV1 edits with a fade, a dissolve and a layer decode cleanly to the full render's
+  frame count, within 28 dB of it, with 60 to 72 of 90 packets copied byte for byte.
 
 V9 Editing stage C: stabilization (Build Plan tasks 20 and 21). All additive; the API review for stages C and D comes after
 stage D (task 25).

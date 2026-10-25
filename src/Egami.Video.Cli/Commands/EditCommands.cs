@@ -674,6 +674,7 @@ internal static class EditCommands
         private readonly Option<string?> _codec = new("--codec", "-c") { Description = "The video codec: vp9 (the default for webm), vp8, av1, mjpeg (the default otherwise) or raw.", HelpName = "codec" };
         private readonly Option<int?> _quality = new("--quality") { Description = "Quality from 0 to 100.", HelpName = "0-100" };
         private readonly Option<bool> _noAudio = new("--no-audio", "-an") { Description = "Write no audio track." };
+        private readonly Option<bool> _smart = new("--smart") { Description = "Copy the untouched parts of clips instead of encoding them again (smart render), where the source matches the canvas and the encoder's stream." };
         public Option<string?> OutputOption => _output;
 
         public Option<string?> SaveEditOption => _saveEdit;
@@ -682,7 +683,7 @@ internal static class EditCommands
 
         public void AddTo(Command command)
         {
-            foreach (Option option in new Option[] { _output, _size, _rate, _fit, _background, _codec, _quality, _noAudio, _saveEdit })
+            foreach (Option option in new Option[] { _output, _size, _rate, _fit, _background, _codec, _quality, _noAudio, _smart, _saveEdit })
             {
                 command.Options.Add(option);
             }
@@ -776,7 +777,7 @@ internal static class EditCommands
             ContainerCheck(session, extension);
             VideoCodec codec = EncodeCommand.FindCodec(session, result.GetValue(_codec) ?? (extension == "webm" ? "vp9" : null), MediaIO.FindContainer(session, extension));
             int? quality = result.GetValue(_quality) is { } q ? (q is >= 0 and <= 100 ? Math.Max(1, q) : throw new UsageException("--quality must be from 0 to 100.")) : null;
-            EditRenderOptions options = new() { Writer = new VideoWriterOptions { Codec = codec, Quality = quality }, Audio = !result.GetValue(_noAudio) };
+            EditRenderOptions options = new() { Writer = new VideoWriterOptions { Codec = codec, Quality = quality }, Audio = !result.GetValue(_noAudio), SmartRender = result.GetValue(_smart) };
             EditPlan? plan = null;
             InputFile display = new(target, output, Path.GetDirectoryName(target) ?? ".", 0);
             try

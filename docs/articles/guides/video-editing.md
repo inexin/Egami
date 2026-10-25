@@ -100,6 +100,15 @@ attach to the whole edit (`VideoEdit.Effects`), to a clip (`Clip.WithEffect`) or
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Editing.cs#edit-darken)]
 
+## Smart render
+
+`EditRenderOptions.SmartRender` (the command line's `--smart`) copies the untouched parts of clips instead of encoding them
+again. Where one clip fills the picture with no transition, fade, layer, effect or change of time, its source has the canvas's
+size and frame rate, and its stream matches what the encoder writes (VP8, VP9, AV1 or Motion JPEG with the same profile,
+bit depth, chroma, color and, for AV1, sequence header), its packets are copied byte for byte from the first keyframe on, and
+the encoder starts again with a keyframe after each copied part. A source that does not match is encoded as usual, with a
+`MediaWarning`. The sound is always mixed and encoded. It is off by default.
+
 ## Stabilizing
 
 Stabilizing takes two passes, like FFmpeg's vidstabdetect and vidstabtransform. `Stabilizer.Analyze` measures the camera's

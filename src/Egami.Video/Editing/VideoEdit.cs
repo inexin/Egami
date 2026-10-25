@@ -87,6 +87,16 @@ public sealed record EditRenderOptions
 
     /// <summary>Gets the context frames are decoded, composed and encoded with, such as one with fewer threads, or <see langword="null"/> for <see cref="MediaContext.Default"/>.</summary>
     public MediaContext? Context { get; init; }
+
+    /// <summary>
+    /// Gets whether to copy the untouched parts of clips instead of encoding them again (smart render). Where one clip fills the
+    /// picture with no transition, fade, layer, effect or change of time, its source has the canvas's size and frame rate, and
+    /// its stream matches what the encoder writes (codec, profile, size, bit depth, chroma and color, and for AV1 the sequence
+    /// header), its packets are copied byte for byte from the first keyframe on; the encoder starts again with a keyframe after
+    /// each copied part. A source that does not match is encoded as usual, with a <see cref="MediaWarning"/>. The sound is always
+    /// mixed and encoded. Default <see langword="false"/>.
+    /// </summary>
+    public bool SmartRender { get; init; }
 }
 
 /// <summary>
@@ -230,7 +240,7 @@ public sealed class VideoEdit
         }
 
         using VideoWriter output = path is not null ? VideoWriter.Create(path, writer, context) : VideoWriter.Create(stream!, format!, writer, context);
-        using EditRenderer renderer = new(plan, audio, context);
+        using EditRenderer renderer = new(plan, audio, context) { Smart = options.SmartRender };
         renderer.Run(output, progress, cancellationToken);
         output.Finish();
         return plan;
