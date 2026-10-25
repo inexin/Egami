@@ -140,6 +140,7 @@ Commands:
   loop &lt;input&gt;                  Play a clip several times in a row; like ffmpeg's loop and aloop.
   freeze &lt;input&gt;                Hold one frame of a clip still for a while, with silence, then go on; --at end holds the last frame, like ffmpeg's tpad.
   slideshow &lt;images&gt;            Make a video of images shown one after another, with transitions and an optional pan and zoom; like ffmpeg's loop=1, zoompan and xfade, but with sub-pixel motion.
+  stabilize &lt;input&gt;             Take the shake out of a clip in two passes: measure the camera's motion (corners tracked with Lucas-Kanade, a RANSAC fit), smooth its path with a Gaussian, and warp each frame onto it; like ffmpeg's vidstabdetect and vidstabtransform.
   edit &lt;file&gt;                   Render an edit file: clips on a track with transitions, layers over it and effects with time windows. Every other editing command writes one with --save-edit.
   formats                       List the containers and codecs egami-video reads and writes, like ffmpeg -formats and -codecs.
   ffmpeg &lt;arguments&gt;            Run an ffmpeg command line with egami-video: 'egami-video ffmpeg -i in.avi -c copy out.mkv'. --explain prints the native command instead. Takes -i, -f, -y, -n, -ss, -to, -t, -itsoffset, -framerate, -map, -c, -codec, -c:v, -c:a, -c:s, -vcodec, -acodec, -scodec, -an, -vn, -sn, -dn, -r, -s, -frames:v, -vframes, -q:v, -qscale:v, -ar, -ac, -sample_fmt, -metadata, -map_metadata, -map_chapters, -vf, -filter:v, -af, -filter:a, -lavfi, -filter_complex (psnr, ssim, showwavespic, showspectrumpic), -segment_time, -segment_times, -update, -progress, -stats, -nostats, -stats_period, -hide_banner, -loglevel, -v, -nostdin, %d patterns and pipe:; filters scale, crop, pad, transpose, hflip, vflip, fps, thumbnail, select (scene), tile; to -f null the detection filters blackdetect, freezedetect, cropdetect, idet, signalstats, blurdetect, blockdetect, silencedetect, volumedetect, astats and ebur128; -f lavfi sources testsrc, testsrc2, smptebars, smptehdbars, color, sine, anullsrc and anoisesrc; anything else stops with exit code 2.
@@ -1014,6 +1015,32 @@ Options:
   --transition &lt;kind:time&gt;       The transition between images, as kind:duration; fade:0.5 by default, cut for none.
   --pan-zoom                     Slowly pan and zoom each image (Ken Burns).
   --seed &lt;number&gt;                The seed the pan and zoom directions come from. Default 1. [default: 1]
+  -o, --output &lt;path&gt;            The file to write; its extension names the container (webm, mkv, mp4, avi).
+  --size &lt;WxH&gt;                   The canvas size, such as 1920x1080. Default the first clip's.
+  --rate &lt;fps&gt;                   The frame rate, such as 30 or 30000/1001. Default the first clip's.
+  --fit &lt;mode&gt;                   How clips of another size fit the canvas: contain (the default, with bars), cover (cropped), stretch or none.
+  --background &lt;color&gt;           The colour behind clips that do not cover the canvas. Default black.
+  -c, --codec &lt;codec&gt;            The video codec: vp9 (the default for webm), vp8, av1, mjpeg (the default otherwise) or raw.
+  --quality &lt;0-100&gt;              Quality from 0 to 100.
+  -an, --no-audio                Write no audio track.
+  --save-edit &lt;file.json&gt;        Also write the edit as a JSON file that 'egami-video edit' renders; with no -o, write only the file.
+</code></pre>
+<h2 id="stabilize">stabilize</h2>
+<pre><code class="lang-text">Description:
+  Take the shake out of a clip in two passes: measure the camera's motion (corners tracked with Lucas-Kanade, a RANSAC fit), smooth its path with a Gaussian, and warp each frame onto it; like ffmpeg's vidstabdetect and vidstabtransform.
+
+Usage:
+  egami-video stabilize &lt;input&gt; [options]
+
+Arguments:
+  &lt;input&gt;  The shaky clip.
+
+Options:
+  --smoothing &lt;frames&gt;           How many frames either way the camera path is smoothed over: more keeps only slow intended motion. Default 15.
+  --edges &lt;mode&gt;                 What fills the edges a correction uncovers: zoom (the default, the least zoom that hides them), black or blur.
+  --zoom &lt;auto|none&gt;             auto (the default) zooms to hide the edges, the same as --edges zoom; none keeps the size and fills them with black.
+  --motion &lt;file.json&gt;           Use a camera motion saved by --save-motion instead of measuring it again.
+  --save-motion &lt;file.json&gt;      Write the measured camera motion (pass 1) to a JSON file; with no -o, only that.
   -o, --output &lt;path&gt;            The file to write; its extension names the container (webm, mkv, mp4, avi).
   --size &lt;WxH&gt;                   The canvas size, such as 1920x1080. Default the first clip's.
   --rate &lt;fps&gt;                   The frame rate, such as 30 or 30000/1001. Default the first clip's.

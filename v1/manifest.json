@@ -13691,6 +13691,20 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Editing.CameraMotion.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Editing.CameraMotion.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Editing.CameraMotion",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Editing.CameraMotion.yml\" sourcestartlinenumber=\"1\">How the camera moved from one frame to the next, as <xref href=\"Egami.Video.Editing.Stabilizer.Analyze(System.String%2cEgami.Video.Editing.StabilizerOptions%2cSystem.IProgress%7bEgami.Video.MediaProgress%7d%2cSystem.Threading.CancellationToken)\" data-throw-if-not-resolved=\"false\"></xref>\nmeasures it: a shift, a rotation and a scale per frame, in the clip's own pixels. It is pass 1 of stabilization; pass 2,\n<xref href=\"Egami.Video.Editing.Clip.Stabilize(Egami.Video.Editing.CameraMotion%2cEgami.Video.Editing.StabilizeOptions)\" data-throw-if-not-resolved=\"false\"></xref>, smooths the path and warps the frames. Save it as JSON to stabilize again with other settings\nwithout measuring again.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.Video.Editing.ChromaKey.yml",
       "output": {
         ".html": {
@@ -13744,6 +13758,20 @@
       "IsMRef": true,
       "Title": "Egami.Video.Editing.ClipFreeze",
       "Summary": "<p sourcefile=\"api/Egami.Video.Editing.ClipFreeze.yml\" sourcestartlinenumber=\"1\">A frame of a <xref href=\"Egami.Video.Editing.Clip\" data-throw-if-not-resolved=\"false\"></xref> held still for a time by <xref href=\"Egami.Video.Editing.Clip.Freeze(Egami.Video.MediaTime%2cEgami.Video.MediaTime)\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Editing.ClipStabilization.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Editing.ClipStabilization.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Editing.ClipStabilization",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Editing.ClipStabilization.yml\" sourcestartlinenumber=\"1\">A clip's stabilization, set by <xref href=\"Egami.Video.Editing.Clip.Stabilize(Egami.Video.Editing.CameraMotion%2cEgami.Video.Editing.StabilizeOptions)\" data-throw-if-not-resolved=\"false\"></xref>: the measured camera motion and how it is smoothed.</p>\n"
     },
     {
       "type": "ManagedReference",
@@ -13828,6 +13856,20 @@
       "IsMRef": true,
       "Title": "Egami.Video.Editing.FrameEffectContext",
       "Summary": "<p sourcefile=\"api/Egami.Video.Editing.FrameEffectContext.yml\" sourcestartlinenumber=\"1\">Where an <xref href=\"Egami.Video.Editing.IFrameEffect\" data-throw-if-not-resolved=\"false\"></xref> is: the frame's time and how far through its window it is.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Editing.FrameMotion.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Editing.FrameMotion.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Editing.FrameMotion",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Editing.FrameMotion.yml\" sourcestartlinenumber=\"1\">The camera's motion into one frame from the one before: about the frame's centre, in its pixels.</p>\n"
     },
     {
       "type": "ManagedReference",
@@ -13968,6 +14010,62 @@
       "IsMRef": true,
       "Title": "Egami.Video.Editing.SlideshowOptions",
       "Summary": "<p sourcefile=\"api/Egami.Video.Editing.SlideshowOptions.yml\" sourcestartlinenumber=\"1\">How <xref href=\"Egami.Video.Editing.Slideshow.Create(System.Collections.Generic.IEnumerable%7bSystem.String%7d%2cEgami.Video.Editing.SlideshowOptions)\" data-throw-if-not-resolved=\"false\"></xref> builds a slideshow.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Editing.StabilizeEdges.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Editing.StabilizeEdges.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Editing.StabilizeEdges",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Editing.StabilizeEdges.yml\" sourcestartlinenumber=\"1\">What <xref href=\"Egami.Video.Editing.Clip.Stabilize(Egami.Video.Editing.CameraMotion%2cEgami.Video.Editing.StabilizeOptions)\" data-throw-if-not-resolved=\"false\"></xref> does with the edges a correction uncovers.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Editing.StabilizeOptions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Editing.StabilizeOptions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Editing.StabilizeOptions",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Editing.StabilizeOptions.yml\" sourcestartlinenumber=\"1\">How <xref href=\"Egami.Video.Editing.Clip.Stabilize(Egami.Video.Editing.CameraMotion%2cEgami.Video.Editing.StabilizeOptions)\" data-throw-if-not-resolved=\"false\"></xref> smooths the camera path and treats the edges.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Editing.Stabilizer.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Editing.Stabilizer.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Editing.Stabilizer",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Editing.Stabilizer.yml\" sourcestartlinenumber=\"1\">Pass 1 of two-pass stabilization: measures the camera's motion over a clip (<xref href=\"Egami.Video.Editing.CameraMotion\" data-throw-if-not-resolved=\"false\"></xref>). Pass 2 is\n<xref href=\"Egami.Video.Editing.Clip.Stabilize(Egami.Video.Editing.CameraMotion%2cEgami.Video.Editing.StabilizeOptions)\" data-throw-if-not-resolved=\"false\"></xref>, which smooths the camera path with a Gaussian and warps each frame onto it.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Editing.StabilizerOptions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Editing.StabilizerOptions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Editing.StabilizerOptions",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Editing.StabilizerOptions.yml\" sourcestartlinenumber=\"1\">How <xref href=\"Egami.Video.Editing.Stabilizer.Analyze(System.String%2cEgami.Video.Editing.StabilizerOptions%2cSystem.IProgress%7bEgami.Video.MediaProgress%7d%2cSystem.Threading.CancellationToken)\" data-throw-if-not-resolved=\"false\"></xref> measures.</p>\n"
     },
     {
       "type": "ManagedReference",

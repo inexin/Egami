@@ -88570,6 +88570,112 @@ references:
   commentId: N:Egami.Video.Editing
   fullName: Egami.Video.Editing
   nameWithType: Egami.Video.Editing
+- uid: Egami.Video.Editing.CameraMotion
+  name: CameraMotion
+  href: api/Egami.Video.Editing.CameraMotion.html
+  commentId: T:Egami.Video.Editing.CameraMotion
+  fullName: Egami.Video.Editing.CameraMotion
+  nameWithType: CameraMotion
+- uid: Egami.Video.Editing.CameraMotion.#ctor(System.Int32,System.Int32,System.Collections.Generic.IEnumerable{Egami.Video.Editing.FrameMotion})
+  name: CameraMotion(int, int, IEnumerable<FrameMotion>)
+  href: api/Egami.Video.Editing.CameraMotion.html#Egami_Video_Editing_CameraMotion__ctor_System_Int32_System_Int32_System_Collections_Generic_IEnumerable_Egami_Video_Editing_FrameMotion__
+  commentId: M:Egami.Video.Editing.CameraMotion.#ctor(System.Int32,System.Int32,System.Collections.Generic.IEnumerable{Egami.Video.Editing.FrameMotion})
+  name.vb: New(Integer, Integer, IEnumerable(Of FrameMotion))
+  fullName: Egami.Video.Editing.CameraMotion.CameraMotion(int, int, System.Collections.Generic.IEnumerable<Egami.Video.Editing.FrameMotion>)
+  fullName.vb: Egami.Video.Editing.CameraMotion.New(Integer, Integer, System.Collections.Generic.IEnumerable(Of Egami.Video.Editing.FrameMotion))
+  nameWithType: CameraMotion.CameraMotion(int, int, IEnumerable<FrameMotion>)
+  nameWithType.vb: CameraMotion.New(Integer, Integer, IEnumerable(Of FrameMotion))
+- uid: Egami.Video.Editing.CameraMotion.#ctor*
+  name: CameraMotion
+  href: api/Egami.Video.Editing.CameraMotion.html#Egami_Video_Editing_CameraMotion__ctor_
+  commentId: Overload:Egami.Video.Editing.CameraMotion.#ctor
+  isSpec: "True"
+  name.vb: New
+  fullName: Egami.Video.Editing.CameraMotion.CameraMotion
+  fullName.vb: Egami.Video.Editing.CameraMotion.New
+  nameWithType: CameraMotion.CameraMotion
+  nameWithType.vb: CameraMotion.New
+- uid: Egami.Video.Editing.CameraMotion.Frames
+  name: Frames
+  href: api/Egami.Video.Editing.CameraMotion.html#Egami_Video_Editing_CameraMotion_Frames
+  commentId: P:Egami.Video.Editing.CameraMotion.Frames
+  fullName: Egami.Video.Editing.CameraMotion.Frames
+  nameWithType: CameraMotion.Frames
+- uid: Egami.Video.Editing.CameraMotion.Frames*
+  name: Frames
+  href: api/Egami.Video.Editing.CameraMotion.html#Egami_Video_Editing_CameraMotion_Frames_
+  commentId: Overload:Egami.Video.Editing.CameraMotion.Frames
+  isSpec: "True"
+  fullName: Egami.Video.Editing.CameraMotion.Frames
+  nameWithType: CameraMotion.Frames
+- uid: Egami.Video.Editing.CameraMotion.FromJson(System.String)
+  name: FromJson(string)
+  href: api/Egami.Video.Editing.CameraMotion.html#Egami_Video_Editing_CameraMotion_FromJson_System_String_
+  commentId: M:Egami.Video.Editing.CameraMotion.FromJson(System.String)
+  name.vb: FromJson(String)
+  fullName: Egami.Video.Editing.CameraMotion.FromJson(string)
+  fullName.vb: Egami.Video.Editing.CameraMotion.FromJson(String)
+  nameWithType: CameraMotion.FromJson(string)
+  nameWithType.vb: CameraMotion.FromJson(String)
+- uid: Egami.Video.Editing.CameraMotion.FromJson*
+  name: FromJson
+  href: api/Egami.Video.Editing.CameraMotion.html#Egami_Video_Editing_CameraMotion_FromJson_
+  commentId: Overload:Egami.Video.Editing.CameraMotion.FromJson
+  isSpec: "True"
+  fullName: Egami.Video.Editing.CameraMotion.FromJson
+  nameWithType: CameraMotion.FromJson
+- uid: Egami.Video.Editing.CameraMotion.Height
+  name: Height
+  href: api/Egami.Video.Editing.CameraMotion.html#Egami_Video_Editing_CameraMotion_Height
+  commentId: P:Egami.Video.Editing.CameraMotion.Height
+  fullName: Egami.Video.Editing.CameraMotion.Height
+  nameWithType: CameraMotion.Height
+- uid: Egami.Video.Editing.CameraMotion.Height*
+  name: Height
+  href: api/Egami.Video.Editing.CameraMotion.html#Egami_Video_Editing_CameraMotion_Height_
+  commentId: Overload:Egami.Video.Editing.CameraMotion.Height
+  isSpec: "True"
+  fullName: Egami.Video.Editing.CameraMotion.Height
+  nameWithType: CameraMotion.Height
+- uid: Egami.Video.Editing.CameraMotion.ToJson
+  name: ToJson()
+  href: api/Egami.Video.Editing.CameraMotion.html#Egami_Video_Editing_CameraMotion_ToJson
+  commentId: M:Egami.Video.Editing.CameraMotion.ToJson
+  fullName: Egami.Video.Editing.CameraMotion.ToJson()
+  nameWithType: CameraMotion.ToJson()
+- uid: Egami.Video.Editing.CameraMotion.ToJson*
+  name: ToJson
+  href: api/Egami.Video.Editing.CameraMotion.html#Egami_Video_Editing_CameraMotion_ToJson_
+  commentId: Overload:Egami.Video.Editing.CameraMotion.ToJson
+  isSpec: "True"
+  fullName: Egami.Video.Editing.CameraMotion.ToJson
+  nameWithType: CameraMotion.ToJson
+- uid: Egami.Video.Editing.CameraMotion.ToString
+  name: ToString()
+  href: api/Egami.Video.Editing.CameraMotion.html#Egami_Video_Editing_CameraMotion_ToString
+  commentId: M:Egami.Video.Editing.CameraMotion.ToString
+  fullName: Egami.Video.Editing.CameraMotion.ToString()
+  nameWithType: CameraMotion.ToString()
+- uid: Egami.Video.Editing.CameraMotion.ToString*
+  name: ToString
+  href: api/Egami.Video.Editing.CameraMotion.html#Egami_Video_Editing_CameraMotion_ToString_
+  commentId: Overload:Egami.Video.Editing.CameraMotion.ToString
+  isSpec: "True"
+  fullName: Egami.Video.Editing.CameraMotion.ToString
+  nameWithType: CameraMotion.ToString
+- uid: Egami.Video.Editing.CameraMotion.Width
+  name: Width
+  href: api/Egami.Video.Editing.CameraMotion.html#Egami_Video_Editing_CameraMotion_Width
+  commentId: P:Egami.Video.Editing.CameraMotion.Width
+  fullName: Egami.Video.Editing.CameraMotion.Width
+  nameWithType: CameraMotion.Width
+- uid: Egami.Video.Editing.CameraMotion.Width*
+  name: Width
+  href: api/Egami.Video.Editing.CameraMotion.html#Egami_Video_Editing_CameraMotion_Width_
+  commentId: Overload:Egami.Video.Editing.CameraMotion.Width
+  isSpec: "True"
+  fullName: Egami.Video.Editing.CameraMotion.Width
+  nameWithType: CameraMotion.Width
 - uid: Egami.Video.Editing.ChromaKey
   name: ChromaKey
   href: api/Egami.Video.Editing.ChromaKey.html
@@ -89061,6 +89167,35 @@ references:
   isSpec: "True"
   fullName: Egami.Video.Editing.Clip.SpeedFactor
   nameWithType: Clip.SpeedFactor
+- uid: Egami.Video.Editing.Clip.Stabilization
+  name: Stabilization
+  href: api/Egami.Video.Editing.Clip.html#Egami_Video_Editing_Clip_Stabilization
+  commentId: P:Egami.Video.Editing.Clip.Stabilization
+  fullName: Egami.Video.Editing.Clip.Stabilization
+  nameWithType: Clip.Stabilization
+- uid: Egami.Video.Editing.Clip.Stabilization*
+  name: Stabilization
+  href: api/Egami.Video.Editing.Clip.html#Egami_Video_Editing_Clip_Stabilization_
+  commentId: Overload:Egami.Video.Editing.Clip.Stabilization
+  isSpec: "True"
+  fullName: Egami.Video.Editing.Clip.Stabilization
+  nameWithType: Clip.Stabilization
+- uid: Egami.Video.Editing.Clip.Stabilize(Egami.Video.Editing.CameraMotion,Egami.Video.Editing.StabilizeOptions)
+  name: Stabilize(CameraMotion, StabilizeOptions?)
+  href: api/Egami.Video.Editing.Clip.html#Egami_Video_Editing_Clip_Stabilize_Egami_Video_Editing_CameraMotion_Egami_Video_Editing_StabilizeOptions_
+  commentId: M:Egami.Video.Editing.Clip.Stabilize(Egami.Video.Editing.CameraMotion,Egami.Video.Editing.StabilizeOptions)
+  name.vb: Stabilize(CameraMotion, StabilizeOptions)
+  fullName: Egami.Video.Editing.Clip.Stabilize(Egami.Video.Editing.CameraMotion, Egami.Video.Editing.StabilizeOptions?)
+  fullName.vb: Egami.Video.Editing.Clip.Stabilize(Egami.Video.Editing.CameraMotion, Egami.Video.Editing.StabilizeOptions)
+  nameWithType: Clip.Stabilize(CameraMotion, StabilizeOptions?)
+  nameWithType.vb: Clip.Stabilize(CameraMotion, StabilizeOptions)
+- uid: Egami.Video.Editing.Clip.Stabilize*
+  name: Stabilize
+  href: api/Egami.Video.Editing.Clip.html#Egami_Video_Editing_Clip_Stabilize_
+  commentId: Overload:Egami.Video.Editing.Clip.Stabilize
+  isSpec: "True"
+  fullName: Egami.Video.Editing.Clip.Stabilize
+  nameWithType: Clip.Stabilize
 - uid: Egami.Video.Editing.Clip.Still(Egami.Raster{Egami.Pixels.Rgba8},Egami.Video.MediaTime)
   name: Still(Raster<Rgba8>, MediaTime)
   href: api/Egami.Video.Editing.Clip.html#Egami_Video_Editing_Clip_Still_Egami_Raster_Egami_Pixels_Rgba8__Egami_Video_MediaTime_
@@ -89222,6 +89357,57 @@ references:
   isSpec: "True"
   fullName: Egami.Video.Editing.ClipFreeze.Duration
   nameWithType: ClipFreeze.Duration
+- uid: Egami.Video.Editing.ClipStabilization
+  name: ClipStabilization
+  href: api/Egami.Video.Editing.ClipStabilization.html
+  commentId: T:Egami.Video.Editing.ClipStabilization
+  fullName: Egami.Video.Editing.ClipStabilization
+  nameWithType: ClipStabilization
+- uid: Egami.Video.Editing.ClipStabilization.#ctor(Egami.Video.Editing.CameraMotion,Egami.Video.Editing.StabilizeOptions)
+  name: ClipStabilization(CameraMotion, StabilizeOptions)
+  href: api/Egami.Video.Editing.ClipStabilization.html#Egami_Video_Editing_ClipStabilization__ctor_Egami_Video_Editing_CameraMotion_Egami_Video_Editing_StabilizeOptions_
+  commentId: M:Egami.Video.Editing.ClipStabilization.#ctor(Egami.Video.Editing.CameraMotion,Egami.Video.Editing.StabilizeOptions)
+  name.vb: New(CameraMotion, StabilizeOptions)
+  fullName: Egami.Video.Editing.ClipStabilization.ClipStabilization(Egami.Video.Editing.CameraMotion, Egami.Video.Editing.StabilizeOptions)
+  fullName.vb: Egami.Video.Editing.ClipStabilization.New(Egami.Video.Editing.CameraMotion, Egami.Video.Editing.StabilizeOptions)
+  nameWithType: ClipStabilization.ClipStabilization(CameraMotion, StabilizeOptions)
+  nameWithType.vb: ClipStabilization.New(CameraMotion, StabilizeOptions)
+- uid: Egami.Video.Editing.ClipStabilization.#ctor*
+  name: ClipStabilization
+  href: api/Egami.Video.Editing.ClipStabilization.html#Egami_Video_Editing_ClipStabilization__ctor_
+  commentId: Overload:Egami.Video.Editing.ClipStabilization.#ctor
+  isSpec: "True"
+  name.vb: New
+  fullName: Egami.Video.Editing.ClipStabilization.ClipStabilization
+  fullName.vb: Egami.Video.Editing.ClipStabilization.New
+  nameWithType: ClipStabilization.ClipStabilization
+  nameWithType.vb: ClipStabilization.New
+- uid: Egami.Video.Editing.ClipStabilization.Motion
+  name: Motion
+  href: api/Egami.Video.Editing.ClipStabilization.html#Egami_Video_Editing_ClipStabilization_Motion
+  commentId: P:Egami.Video.Editing.ClipStabilization.Motion
+  fullName: Egami.Video.Editing.ClipStabilization.Motion
+  nameWithType: ClipStabilization.Motion
+- uid: Egami.Video.Editing.ClipStabilization.Motion*
+  name: Motion
+  href: api/Egami.Video.Editing.ClipStabilization.html#Egami_Video_Editing_ClipStabilization_Motion_
+  commentId: Overload:Egami.Video.Editing.ClipStabilization.Motion
+  isSpec: "True"
+  fullName: Egami.Video.Editing.ClipStabilization.Motion
+  nameWithType: ClipStabilization.Motion
+- uid: Egami.Video.Editing.ClipStabilization.Options
+  name: Options
+  href: api/Egami.Video.Editing.ClipStabilization.html#Egami_Video_Editing_ClipStabilization_Options
+  commentId: P:Egami.Video.Editing.ClipStabilization.Options
+  fullName: Egami.Video.Editing.ClipStabilization.Options
+  nameWithType: ClipStabilization.Options
+- uid: Egami.Video.Editing.ClipStabilization.Options*
+  name: Options
+  href: api/Egami.Video.Editing.ClipStabilization.html#Egami_Video_Editing_ClipStabilization_Options_
+  commentId: Overload:Egami.Video.Editing.ClipStabilization.Options
+  isSpec: "True"
+  fullName: Egami.Video.Editing.ClipStabilization.Options
+  nameWithType: ClipStabilization.Options
 - uid: Egami.Video.Editing.EditCanvas
   name: EditCanvas
   href: api/Egami.Video.Editing.EditCanvas.html
@@ -89768,6 +89954,96 @@ references:
   isSpec: "True"
   fullName: Egami.Video.Editing.FrameEffectContext.Time
   nameWithType: FrameEffectContext.Time
+- uid: Egami.Video.Editing.FrameMotion
+  name: FrameMotion
+  href: api/Egami.Video.Editing.FrameMotion.html
+  commentId: T:Egami.Video.Editing.FrameMotion
+  fullName: Egami.Video.Editing.FrameMotion
+  nameWithType: FrameMotion
+- uid: Egami.Video.Editing.FrameMotion.#ctor(Egami.Video.MediaTime,System.Double,System.Double,System.Double,System.Double)
+  name: FrameMotion(MediaTime, double, double, double, double)
+  href: api/Egami.Video.Editing.FrameMotion.html#Egami_Video_Editing_FrameMotion__ctor_Egami_Video_MediaTime_System_Double_System_Double_System_Double_System_Double_
+  commentId: M:Egami.Video.Editing.FrameMotion.#ctor(Egami.Video.MediaTime,System.Double,System.Double,System.Double,System.Double)
+  name.vb: New(MediaTime, Double, Double, Double, Double)
+  fullName: Egami.Video.Editing.FrameMotion.FrameMotion(Egami.Video.MediaTime, double, double, double, double)
+  fullName.vb: Egami.Video.Editing.FrameMotion.New(Egami.Video.MediaTime, Double, Double, Double, Double)
+  nameWithType: FrameMotion.FrameMotion(MediaTime, double, double, double, double)
+  nameWithType.vb: FrameMotion.New(MediaTime, Double, Double, Double, Double)
+- uid: Egami.Video.Editing.FrameMotion.#ctor*
+  name: FrameMotion
+  href: api/Egami.Video.Editing.FrameMotion.html#Egami_Video_Editing_FrameMotion__ctor_
+  commentId: Overload:Egami.Video.Editing.FrameMotion.#ctor
+  isSpec: "True"
+  name.vb: New
+  fullName: Egami.Video.Editing.FrameMotion.FrameMotion
+  fullName.vb: Egami.Video.Editing.FrameMotion.New
+  nameWithType: FrameMotion.FrameMotion
+  nameWithType.vb: FrameMotion.New
+- uid: Egami.Video.Editing.FrameMotion.Angle
+  name: Angle
+  href: api/Egami.Video.Editing.FrameMotion.html#Egami_Video_Editing_FrameMotion_Angle
+  commentId: P:Egami.Video.Editing.FrameMotion.Angle
+  fullName: Egami.Video.Editing.FrameMotion.Angle
+  nameWithType: FrameMotion.Angle
+- uid: Egami.Video.Editing.FrameMotion.Angle*
+  name: Angle
+  href: api/Egami.Video.Editing.FrameMotion.html#Egami_Video_Editing_FrameMotion_Angle_
+  commentId: Overload:Egami.Video.Editing.FrameMotion.Angle
+  isSpec: "True"
+  fullName: Egami.Video.Editing.FrameMotion.Angle
+  nameWithType: FrameMotion.Angle
+- uid: Egami.Video.Editing.FrameMotion.Dx
+  name: Dx
+  href: api/Egami.Video.Editing.FrameMotion.html#Egami_Video_Editing_FrameMotion_Dx
+  commentId: P:Egami.Video.Editing.FrameMotion.Dx
+  fullName: Egami.Video.Editing.FrameMotion.Dx
+  nameWithType: FrameMotion.Dx
+- uid: Egami.Video.Editing.FrameMotion.Dx*
+  name: Dx
+  href: api/Egami.Video.Editing.FrameMotion.html#Egami_Video_Editing_FrameMotion_Dx_
+  commentId: Overload:Egami.Video.Editing.FrameMotion.Dx
+  isSpec: "True"
+  fullName: Egami.Video.Editing.FrameMotion.Dx
+  nameWithType: FrameMotion.Dx
+- uid: Egami.Video.Editing.FrameMotion.Dy
+  name: Dy
+  href: api/Egami.Video.Editing.FrameMotion.html#Egami_Video_Editing_FrameMotion_Dy
+  commentId: P:Egami.Video.Editing.FrameMotion.Dy
+  fullName: Egami.Video.Editing.FrameMotion.Dy
+  nameWithType: FrameMotion.Dy
+- uid: Egami.Video.Editing.FrameMotion.Dy*
+  name: Dy
+  href: api/Egami.Video.Editing.FrameMotion.html#Egami_Video_Editing_FrameMotion_Dy_
+  commentId: Overload:Egami.Video.Editing.FrameMotion.Dy
+  isSpec: "True"
+  fullName: Egami.Video.Editing.FrameMotion.Dy
+  nameWithType: FrameMotion.Dy
+- uid: Egami.Video.Editing.FrameMotion.Scale
+  name: Scale
+  href: api/Egami.Video.Editing.FrameMotion.html#Egami_Video_Editing_FrameMotion_Scale
+  commentId: P:Egami.Video.Editing.FrameMotion.Scale
+  fullName: Egami.Video.Editing.FrameMotion.Scale
+  nameWithType: FrameMotion.Scale
+- uid: Egami.Video.Editing.FrameMotion.Scale*
+  name: Scale
+  href: api/Egami.Video.Editing.FrameMotion.html#Egami_Video_Editing_FrameMotion_Scale_
+  commentId: Overload:Egami.Video.Editing.FrameMotion.Scale
+  isSpec: "True"
+  fullName: Egami.Video.Editing.FrameMotion.Scale
+  nameWithType: FrameMotion.Scale
+- uid: Egami.Video.Editing.FrameMotion.Time
+  name: Time
+  href: api/Egami.Video.Editing.FrameMotion.html#Egami_Video_Editing_FrameMotion_Time
+  commentId: P:Egami.Video.Editing.FrameMotion.Time
+  fullName: Egami.Video.Editing.FrameMotion.Time
+  nameWithType: FrameMotion.Time
+- uid: Egami.Video.Editing.FrameMotion.Time*
+  name: Time
+  href: api/Egami.Video.Editing.FrameMotion.html#Egami_Video_Editing_FrameMotion_Time_
+  commentId: Overload:Egami.Video.Editing.FrameMotion.Time
+  isSpec: "True"
+  fullName: Egami.Video.Editing.FrameMotion.Time
+  nameWithType: FrameMotion.Time
 - uid: Egami.Video.Editing.IFrameEffect
   name: IFrameEffect
   href: api/Egami.Video.Editing.IFrameEffect.html
@@ -90670,6 +90946,138 @@ references:
   isSpec: "True"
   fullName: Egami.Video.Editing.SlideshowOptions.Transition
   nameWithType: SlideshowOptions.Transition
+- uid: Egami.Video.Editing.StabilizeEdges
+  name: StabilizeEdges
+  href: api/Egami.Video.Editing.StabilizeEdges.html
+  commentId: T:Egami.Video.Editing.StabilizeEdges
+  fullName: Egami.Video.Editing.StabilizeEdges
+  nameWithType: StabilizeEdges
+- uid: Egami.Video.Editing.StabilizeEdges.Black
+  name: Black
+  href: api/Egami.Video.Editing.StabilizeEdges.html#Egami_Video_Editing_StabilizeEdges_Black
+  commentId: F:Egami.Video.Editing.StabilizeEdges.Black
+  fullName: Egami.Video.Editing.StabilizeEdges.Black
+  nameWithType: StabilizeEdges.Black
+- uid: Egami.Video.Editing.StabilizeEdges.Blur
+  name: Blur
+  href: api/Egami.Video.Editing.StabilizeEdges.html#Egami_Video_Editing_StabilizeEdges_Blur
+  commentId: F:Egami.Video.Editing.StabilizeEdges.Blur
+  fullName: Egami.Video.Editing.StabilizeEdges.Blur
+  nameWithType: StabilizeEdges.Blur
+- uid: Egami.Video.Editing.StabilizeEdges.Zoom
+  name: Zoom
+  href: api/Egami.Video.Editing.StabilizeEdges.html#Egami_Video_Editing_StabilizeEdges_Zoom
+  commentId: F:Egami.Video.Editing.StabilizeEdges.Zoom
+  fullName: Egami.Video.Editing.StabilizeEdges.Zoom
+  nameWithType: StabilizeEdges.Zoom
+- uid: Egami.Video.Editing.StabilizeOptions
+  name: StabilizeOptions
+  href: api/Egami.Video.Editing.StabilizeOptions.html
+  commentId: T:Egami.Video.Editing.StabilizeOptions
+  fullName: Egami.Video.Editing.StabilizeOptions
+  nameWithType: StabilizeOptions
+- uid: Egami.Video.Editing.StabilizeOptions.Default
+  name: Default
+  href: api/Egami.Video.Editing.StabilizeOptions.html#Egami_Video_Editing_StabilizeOptions_Default
+  commentId: P:Egami.Video.Editing.StabilizeOptions.Default
+  fullName: Egami.Video.Editing.StabilizeOptions.Default
+  nameWithType: StabilizeOptions.Default
+- uid: Egami.Video.Editing.StabilizeOptions.Default*
+  name: Default
+  href: api/Egami.Video.Editing.StabilizeOptions.html#Egami_Video_Editing_StabilizeOptions_Default_
+  commentId: Overload:Egami.Video.Editing.StabilizeOptions.Default
+  isSpec: "True"
+  fullName: Egami.Video.Editing.StabilizeOptions.Default
+  nameWithType: StabilizeOptions.Default
+- uid: Egami.Video.Editing.StabilizeOptions.Edges
+  name: Edges
+  href: api/Egami.Video.Editing.StabilizeOptions.html#Egami_Video_Editing_StabilizeOptions_Edges
+  commentId: P:Egami.Video.Editing.StabilizeOptions.Edges
+  fullName: Egami.Video.Editing.StabilizeOptions.Edges
+  nameWithType: StabilizeOptions.Edges
+- uid: Egami.Video.Editing.StabilizeOptions.Edges*
+  name: Edges
+  href: api/Egami.Video.Editing.StabilizeOptions.html#Egami_Video_Editing_StabilizeOptions_Edges_
+  commentId: Overload:Egami.Video.Editing.StabilizeOptions.Edges
+  isSpec: "True"
+  fullName: Egami.Video.Editing.StabilizeOptions.Edges
+  nameWithType: StabilizeOptions.Edges
+- uid: Egami.Video.Editing.StabilizeOptions.Smoothing
+  name: Smoothing
+  href: api/Egami.Video.Editing.StabilizeOptions.html#Egami_Video_Editing_StabilizeOptions_Smoothing
+  commentId: P:Egami.Video.Editing.StabilizeOptions.Smoothing
+  fullName: Egami.Video.Editing.StabilizeOptions.Smoothing
+  nameWithType: StabilizeOptions.Smoothing
+- uid: Egami.Video.Editing.StabilizeOptions.Smoothing*
+  name: Smoothing
+  href: api/Egami.Video.Editing.StabilizeOptions.html#Egami_Video_Editing_StabilizeOptions_Smoothing_
+  commentId: Overload:Egami.Video.Editing.StabilizeOptions.Smoothing
+  isSpec: "True"
+  fullName: Egami.Video.Editing.StabilizeOptions.Smoothing
+  nameWithType: StabilizeOptions.Smoothing
+- uid: Egami.Video.Editing.Stabilizer
+  name: Stabilizer
+  href: api/Egami.Video.Editing.Stabilizer.html
+  commentId: T:Egami.Video.Editing.Stabilizer
+  fullName: Egami.Video.Editing.Stabilizer
+  nameWithType: Stabilizer
+- uid: Egami.Video.Editing.Stabilizer.Analyze(System.IO.Stream,Egami.Video.Editing.StabilizerOptions,System.IProgress{Egami.Video.MediaProgress},System.Threading.CancellationToken)
+  name: Analyze(Stream, StabilizerOptions?, IProgress<MediaProgress>?, CancellationToken)
+  href: api/Egami.Video.Editing.Stabilizer.html#Egami_Video_Editing_Stabilizer_Analyze_System_IO_Stream_Egami_Video_Editing_StabilizerOptions_System_IProgress_Egami_Video_MediaProgress__System_Threading_CancellationToken_
+  commentId: M:Egami.Video.Editing.Stabilizer.Analyze(System.IO.Stream,Egami.Video.Editing.StabilizerOptions,System.IProgress{Egami.Video.MediaProgress},System.Threading.CancellationToken)
+  name.vb: Analyze(Stream, StabilizerOptions, IProgress(Of MediaProgress), CancellationToken)
+  fullName: Egami.Video.Editing.Stabilizer.Analyze(System.IO.Stream, Egami.Video.Editing.StabilizerOptions?, System.IProgress<Egami.Video.MediaProgress>?, System.Threading.CancellationToken)
+  fullName.vb: Egami.Video.Editing.Stabilizer.Analyze(System.IO.Stream, Egami.Video.Editing.StabilizerOptions, System.IProgress(Of Egami.Video.MediaProgress), System.Threading.CancellationToken)
+  nameWithType: Stabilizer.Analyze(Stream, StabilizerOptions?, IProgress<MediaProgress>?, CancellationToken)
+  nameWithType.vb: Stabilizer.Analyze(Stream, StabilizerOptions, IProgress(Of MediaProgress), CancellationToken)
+- uid: Egami.Video.Editing.Stabilizer.Analyze(System.String,Egami.Video.Editing.StabilizerOptions,System.IProgress{Egami.Video.MediaProgress},System.Threading.CancellationToken)
+  name: Analyze(string, StabilizerOptions?, IProgress<MediaProgress>?, CancellationToken)
+  href: api/Egami.Video.Editing.Stabilizer.html#Egami_Video_Editing_Stabilizer_Analyze_System_String_Egami_Video_Editing_StabilizerOptions_System_IProgress_Egami_Video_MediaProgress__System_Threading_CancellationToken_
+  commentId: M:Egami.Video.Editing.Stabilizer.Analyze(System.String,Egami.Video.Editing.StabilizerOptions,System.IProgress{Egami.Video.MediaProgress},System.Threading.CancellationToken)
+  name.vb: Analyze(String, StabilizerOptions, IProgress(Of MediaProgress), CancellationToken)
+  fullName: Egami.Video.Editing.Stabilizer.Analyze(string, Egami.Video.Editing.StabilizerOptions?, System.IProgress<Egami.Video.MediaProgress>?, System.Threading.CancellationToken)
+  fullName.vb: Egami.Video.Editing.Stabilizer.Analyze(String, Egami.Video.Editing.StabilizerOptions, System.IProgress(Of Egami.Video.MediaProgress), System.Threading.CancellationToken)
+  nameWithType: Stabilizer.Analyze(string, StabilizerOptions?, IProgress<MediaProgress>?, CancellationToken)
+  nameWithType.vb: Stabilizer.Analyze(String, StabilizerOptions, IProgress(Of MediaProgress), CancellationToken)
+- uid: Egami.Video.Editing.Stabilizer.Analyze*
+  name: Analyze
+  href: api/Egami.Video.Editing.Stabilizer.html#Egami_Video_Editing_Stabilizer_Analyze_
+  commentId: Overload:Egami.Video.Editing.Stabilizer.Analyze
+  isSpec: "True"
+  fullName: Egami.Video.Editing.Stabilizer.Analyze
+  nameWithType: Stabilizer.Analyze
+- uid: Egami.Video.Editing.StabilizerOptions
+  name: StabilizerOptions
+  href: api/Egami.Video.Editing.StabilizerOptions.html
+  commentId: T:Egami.Video.Editing.StabilizerOptions
+  fullName: Egami.Video.Editing.StabilizerOptions
+  nameWithType: StabilizerOptions
+- uid: Egami.Video.Editing.StabilizerOptions.AnalysisWidth
+  name: AnalysisWidth
+  href: api/Egami.Video.Editing.StabilizerOptions.html#Egami_Video_Editing_StabilizerOptions_AnalysisWidth
+  commentId: P:Egami.Video.Editing.StabilizerOptions.AnalysisWidth
+  fullName: Egami.Video.Editing.StabilizerOptions.AnalysisWidth
+  nameWithType: StabilizerOptions.AnalysisWidth
+- uid: Egami.Video.Editing.StabilizerOptions.AnalysisWidth*
+  name: AnalysisWidth
+  href: api/Egami.Video.Editing.StabilizerOptions.html#Egami_Video_Editing_StabilizerOptions_AnalysisWidth_
+  commentId: Overload:Egami.Video.Editing.StabilizerOptions.AnalysisWidth
+  isSpec: "True"
+  fullName: Egami.Video.Editing.StabilizerOptions.AnalysisWidth
+  nameWithType: StabilizerOptions.AnalysisWidth
+- uid: Egami.Video.Editing.StabilizerOptions.Default
+  name: Default
+  href: api/Egami.Video.Editing.StabilizerOptions.html#Egami_Video_Editing_StabilizerOptions_Default
+  commentId: P:Egami.Video.Editing.StabilizerOptions.Default
+  fullName: Egami.Video.Editing.StabilizerOptions.Default
+  nameWithType: StabilizerOptions.Default
+- uid: Egami.Video.Editing.StabilizerOptions.Default*
+  name: Default
+  href: api/Egami.Video.Editing.StabilizerOptions.html#Egami_Video_Editing_StabilizerOptions_Default_
+  commentId: Overload:Egami.Video.Editing.StabilizerOptions.Default
+  isSpec: "True"
+  fullName: Egami.Video.Editing.StabilizerOptions.Default
+  nameWithType: StabilizerOptions.Default
 - uid: Egami.Video.Editing.Stack
   name: Stack
   href: api/Egami.Video.Editing.Stack.html

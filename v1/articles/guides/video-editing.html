@@ -271,6 +271,20 @@ edit.Render(&quot;effects.mkv&quot;);
         }
     }
 }
+</code></pre><h2 id="stabilizing">Stabilizing</h2>
+<p>Stabilizing takes two passes, like FFmpeg's vidstabdetect and vidstabtransform. <code>Stabilizer.Analyze</code> measures the camera's
+motion from each frame to the next: it tracks corners with pyramidal Lucas-Kanade on a copy of the luma no wider than
+<code>StabilizerOptions.AnalysisWidth</code> and fits a turn, a zoom and a move to them with RANSAC. The <code>CameraMotion</code> it returns saves
+as JSON, so the slow pass runs once; its <code>Frames</code> are <code>FrameMotion</code>s, the move, turn and zoom from the frame before. <code>Clip.Stabilize</code> then smooths the camera's path with a Gaussian over
+<code>StabilizeOptions.Smoothing</code> frames either way and warps each frame onto the smooth path; the clip's <code>Stabilization</code> holds both as a <code>ClipStabilization</code>. <code>StabilizeEdges</code> says what fills
+the edges a correction uncovers: <code>Zoom</code> (the least zoom, up to 1.5, that hides them in every frame), <code>Black</code> or <code>Blur</code>. The
+command line's <code>stabilize</code> does both passes, and <code>--save-motion</code> and <code>--motion</code> split them.</p>
+<pre><code class="lang-csharp">// Two passes: measure the camera's motion, then render the clip warped onto a smoothed path, zoomed to hide the edges.
+CameraMotion motion = Stabilizer.Analyze(&quot;talk.avi&quot;);
+File.WriteAllText(&quot;talk.motion.json&quot;, motion.ToJson());
+VideoEdit edit = new();
+edit.Track.Add(Clip.Open(&quot;talk.avi&quot;).Stabilize(motion, new StabilizeOptions { Smoothing = 20, Edges = StabilizeEdges.Zoom }));
+edit.Render(&quot;steady.mkv&quot;);
 </code></pre>
 </article>
 

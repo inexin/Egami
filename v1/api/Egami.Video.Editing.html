@@ -95,6 +95,14 @@
 Classes
 </h3>
     <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Editing.CameraMotion.html">CameraMotion</a></dt>
+      <dd><p>How the camera moved from one frame to the next, as <a class="xref" href="Egami.Video.Editing.Stabilizer.html#Egami_Video_Editing_Stabilizer_Analyze_System_String_Egami_Video_Editing_StabilizerOptions_System_IProgress_Egami_Video_MediaProgress__System_Threading_CancellationToken_">Analyze(string, StabilizerOptions?, IProgress&lt;MediaProgress&gt;?, CancellationToken)</a>
+measures it: a shift, a rotation and a scale per frame, in the clip's own pixels. It is pass 1 of stabilization; pass 2,
+<a class="xref" href="Egami.Video.Editing.Clip.html#Egami_Video_Editing_Clip_Stabilize_Egami_Video_Editing_CameraMotion_Egami_Video_Editing_StabilizeOptions_">Stabilize(CameraMotion, StabilizeOptions?)</a>, smooths the path and warps the frames. Save it as JSON to stabilize again with other settings
+without measuring again.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
       <dt><a class="xref" href="Egami.Video.Editing.ChromaKey.html">ChromaKey</a></dt>
       <dd><p>A chroma key for <a class="xref" href="Egami.Video.Editing.Layer.html#Egami_Video_Editing_Layer_Key_Egami_Video_Editing_ChromaKey_">Key(ChromaKey)</a>: pixels near <a class="xref" href="Egami.Video.Editing.ChromaKey.html#Egami_Video_Editing_ChromaKey_Color">Color</a> in the CbCr plane become transparent with
 Egami's <a class="xref" href="Egami.Operations.RasterOps.html#Egami_Operations_RasterOps_ChromaKey_Egami_Pixels_Rgba8_System_Single_System_Single_">ChromaKey(Rgba8, float, float)</a>, then <a class="xref" href="Egami.Operations.RasterOps.html#Egami_Operations_RasterOps_Despill_Egami_Operations_DespillColor_System_Single_System_Single_">Despill(DespillColor, float, float)</a> takes the screen's colour out of the
@@ -106,6 +114,11 @@ edges and see-through pixels that are left.</p>
       <dd><p>A piece of video, with its audio, as it goes into a <a class="xref" href="Egami.Video.Editing.VideoEdit.html">VideoEdit</a>: a file or stream, or a <a class="xref" href="Egami.Video.Editing.Stack.html">Stack</a> of
 clips. The methods return a changed copy, so they chain: <code>Clip.Open(&quot;a.mp4&quot;).Trim(start, end).FadeIn(duration)</code>.
 Nothing is decoded until the edit renders.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Editing.ClipStabilization.html">ClipStabilization</a></dt>
+      <dd><p>A clip's stabilization, set by <a class="xref" href="Egami.Video.Editing.Clip.html#Egami_Video_Editing_Clip_Stabilize_Egami_Video_Editing_CameraMotion_Egami_Video_Editing_StabilizeOptions_">Stabilize(CameraMotion, StabilizeOptions?)</a>: the measured camera motion and how it is smoothed.</p>
 </dd>
     </dl>
     <dl class="jumplist">
@@ -171,6 +184,22 @@ keyframed motion. Layers draw in order, the last on top. The methods return a ch
 </dd>
     </dl>
     <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Editing.StabilizeOptions.html">StabilizeOptions</a></dt>
+      <dd><p>How <a class="xref" href="Egami.Video.Editing.Clip.html#Egami_Video_Editing_Clip_Stabilize_Egami_Video_Editing_CameraMotion_Egami_Video_Editing_StabilizeOptions_">Stabilize(CameraMotion, StabilizeOptions?)</a> smooths the camera path and treats the edges.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Editing.Stabilizer.html">Stabilizer</a></dt>
+      <dd><p>Pass 1 of two-pass stabilization: measures the camera's motion over a clip (<a class="xref" href="Egami.Video.Editing.CameraMotion.html">CameraMotion</a>). Pass 2 is
+<a class="xref" href="Egami.Video.Editing.Clip.html#Egami_Video_Editing_Clip_Stabilize_Egami_Video_Editing_CameraMotion_Egami_Video_Editing_StabilizeOptions_">Stabilize(CameraMotion, StabilizeOptions?)</a>, which smooths the camera path with a Gaussian and warps each frame onto it.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Editing.StabilizerOptions.html">StabilizerOptions</a></dt>
+      <dd><p>How <a class="xref" href="Egami.Video.Editing.Stabilizer.html#Egami_Video_Editing_Stabilizer_Analyze_System_String_Egami_Video_Editing_StabilizerOptions_System_IProgress_Egami_Video_MediaProgress__System_Threading_CancellationToken_">Analyze(string, StabilizerOptions?, IProgress&lt;MediaProgress&gt;?, CancellationToken)</a> measures.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
       <dt><a class="xref" href="Egami.Video.Editing.Stack.html">Stack</a></dt>
       <dd><p>Builds one clip out of several shown at once: side by side, one above the other, or in a grid. A stack is an ordinary
 <a class="xref" href="Egami.Video.Editing.Clip.html">Clip</a>, so it can be trimmed, faded or joined with a transition.</p>
@@ -214,6 +243,11 @@ Structs
       <dd><p>Where an <a class="xref" href="Egami.Video.Editing.IFrameEffect.html">IFrameEffect</a> is: the frame's time and how far through its window it is.</p>
 </dd>
     </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Editing.FrameMotion.html">FrameMotion</a></dt>
+      <dd><p>The camera's motion into one frame from the one before: about the frame's centre, in its pixels.</p>
+</dd>
+    </dl>
     <h3 id="interfaces">
 Interfaces
 </h3>
@@ -247,6 +281,11 @@ Enums
     <dl class="jumplist">
       <dt><a class="xref" href="Egami.Video.Editing.LayerProperty.html">LayerProperty</a></dt>
       <dd><p>A property of a <a class="xref" href="Egami.Video.Editing.Layer.html">Layer</a> that <a class="xref" href="Egami.Video.Editing.Layer.html#Egami_Video_Editing_Layer_Animate_Egami_Video_Editing_LayerProperty_Egami_Video_Keyframe___">Animate(LayerProperty, params Keyframe[])</a> moves over time.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Editing.StabilizeEdges.html">StabilizeEdges</a></dt>
+      <dd><p>What <a class="xref" href="Egami.Video.Editing.Clip.html#Egami_Video_Editing_Clip_Stabilize_Egami_Video_Editing_CameraMotion_Egami_Video_Editing_StabilizeOptions_">Stabilize(CameraMotion, StabilizeOptions?)</a> does with the edges a correction uncovers.</p>
 </dd>
     </dl>
     <dl class="jumplist">
