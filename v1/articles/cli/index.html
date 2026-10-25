@@ -304,6 +304,14 @@ has a version, <code>&quot;schema&quot;: 1</code>, which changes only when a fie
 <p>With <code>--all</code>, each file also has <code>metadata</code>: the blocks it holds (<code>icc</code>, <code>exif</code>, <code>xmp</code>, <code>iptc</code>, <code>text</code>, <code>gain-map</code>), the color
 profile's name and size, resolution, gamma, EXIF's camera, date, orientation and location, the XMP size, IPTC datasets and
 text entries. <code>info</code> never decodes pixels; <code>--all</code> reads the metadata, which may decode a pixel.</p>
+<h2 id="text-in-images">Text in images</h2>
+<p><code>ocr</code> reads the text of images through an OCR program you install, such as Tesseract, run once per image as
+<code>CommandOcrEngine</code> runs it (<a href="../guides/ocr.html">OCR</a>). It writes plain text to standard output by default, or text, hOCR or
+ALTO files by <code>-o</code>'s extension (<code>.txt</code>, <code>.hocr</code>, <code>.xml</code>) or <code>--as</code>. <code>egami mcp</code> does not offer it, since it runs the program
+the call names.</p>
+<pre><code class="lang-sh">egami ocr scan.png --engine-command &quot;tesseract {image} {output} -l {langs} --dpi {dpi} hocr&quot; --lang eng
+egami ocr &quot;scans/*.png&quot; --engine-command &quot;tesseract {image} {output} -l {langs} hocr&quot; --lang eng+nor -o &quot;text/{name}.hocr&quot;
+</code></pre>
 <h2 id="other-tools">Other tools</h2>
 <p>A command egami does not know runs the program <code>egami-&lt;name&gt;</code> from the PATH with the rest of the arguments, as git does, so
 <code>egami video info clip.webm</code> starts <code>egami-video</code> once Egami.Video's tool is installed. Egap (documents) has its own <code>egap</code> tool
