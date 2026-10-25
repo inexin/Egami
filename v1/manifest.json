@@ -13691,6 +13691,342 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Editing.ChromaKey.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Editing.ChromaKey.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Editing.ChromaKey",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Editing.ChromaKey.yml\" sourcestartlinenumber=\"1\">A chroma key for <xref href=\"Egami.Video.Editing.Layer.Key(Egami.Video.Editing.ChromaKey)\" data-throw-if-not-resolved=\"false\"></xref>: pixels near <xref href=\"Egami.Video.Editing.ChromaKey.Color\" data-throw-if-not-resolved=\"false\"></xref> in the CbCr plane become transparent with\nEgami's <xref href=\"Egami.Operations.RasterOps.ChromaKey(Egami.Pixels.Rgba8%2cSystem.Single%2cSystem.Single)\" data-throw-if-not-resolved=\"false\"></xref>, then <xref href=\"Egami.Operations.RasterOps.Despill(Egami.Operations.DespillColor%2cSystem.Single%2cSystem.Single)\" data-throw-if-not-resolved=\"false\"></xref> takes the screen's colour out of the\nedges and see-through pixels that are left.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Editing.Clip.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Editing.Clip.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Editing.Clip",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Editing.Clip.yml\" sourcestartlinenumber=\"1\">A piece of video, with its audio, as it goes into a <xref href=\"Egami.Video.Editing.VideoEdit\" data-throw-if-not-resolved=\"false\"></xref>: a file or stream, or a <xref href=\"Egami.Video.Editing.Stack\" data-throw-if-not-resolved=\"false\"></xref> of\nclips. The methods return a changed copy, so they chain: <code>Clip.Open(&quot;a.mp4&quot;).Trim(start, end).FadeIn(duration)</code>.\nNothing is decoded until the edit renders.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Editing.ClipFit.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Editing.ClipFit.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Editing.ClipFit",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Editing.ClipFit.yml\" sourcestartlinenumber=\"1\">How a clip whose size differs from the canvas is fitted to it.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Editing.EditCanvas.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Editing.EditCanvas.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Editing.EditCanvas",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Editing.EditCanvas.yml\" sourcestartlinenumber=\"1\">The output of a <xref href=\"Egami.Video.Editing.VideoEdit\" data-throw-if-not-resolved=\"false\"></xref>: picture size, frame rate, how clips are fitted, the background, and the audio\nformat every clip's audio is resampled and remixed to. When an edit has no canvas, it takes the first clip's size and\nframe rate.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Editing.EditEffect.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Editing.EditEffect.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Editing.EditEffect",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Editing.EditEffect.yml\" sourcestartlinenumber=\"1\">Egami operations or an app's own effect on the frames of a <xref href=\"Egami.Video.Editing.VideoEdit\" data-throw-if-not-resolved=\"false\"></xref>, a <xref href=\"Egami.Video.Editing.Clip\" data-throw-if-not-resolved=\"false\"></xref> or a\n<xref href=\"Egami.Video.Editing.Layer\" data-throw-if-not-resolved=\"false\"></xref>, optionally only inside a time window (<xref href=\"Egami.Video.Editing.EditEffect.Between(Egami.Video.MediaTime%2cSystem.Nullable%7bEgami.Video.MediaTime%7d)\" data-throw-if-not-resolved=\"false\"></xref>). Effects keep the frame size.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Editing.EditPlan.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Editing.EditPlan.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Editing.EditPlan",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Editing.EditPlan.yml\" sourcestartlinenumber=\"1\">An edit's timeline worked out before rendering by <xref href=\"Egami.Video.Editing.VideoEdit.Plan(Egami.Video.MediaContext)\" data-throw-if-not-resolved=\"false\"></xref>: the canvas, where every clip and layer\nfalls in whole frames, the length, and warnings about things it fixed up, such as a trim past a clip's end.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Editing.EditRenderOptions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Editing.EditRenderOptions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Editing.EditRenderOptions",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Editing.EditRenderOptions.yml\" sourcestartlinenumber=\"1\">How <xref href=\"Egami.Video.Editing.VideoEdit.Render(System.String%2cEgami.Video.Editing.EditRenderOptions%2cSystem.IProgress%7bEgami.Video.MediaProgress%7d%2cSystem.Threading.CancellationToken)\" data-throw-if-not-resolved=\"false\"></xref> encodes.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Editing.EditTrack.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Editing.EditTrack.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Editing.EditTrack",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Editing.EditTrack.yml\" sourcestartlinenumber=\"1\">The main track of a <xref href=\"Egami.Video.Editing.VideoEdit\" data-throw-if-not-resolved=\"false\"></xref>: clips that play one after another. A <xref href=\"Egami.Video.Editing.Transition\" data-throw-if-not-resolved=\"false\"></xref> between two clips\noverlaps them by its length; without one, the next clip starts on the frame after the last one ends.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Editing.FrameEffectContext.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Editing.FrameEffectContext.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Editing.FrameEffectContext",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Editing.FrameEffectContext.yml\" sourcestartlinenumber=\"1\">Where an <xref href=\"Egami.Video.Editing.IFrameEffect\" data-throw-if-not-resolved=\"false\"></xref> is: the frame's time and how far through its window it is.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Editing.IFrameEffect.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Editing.IFrameEffect.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Editing.IFrameEffect",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Editing.IFrameEffect.yml\" sourcestartlinenumber=\"1\">An app's own effect for <xref href=\"Egami.Video.Editing.EditEffect.Of(Egami.Video.Editing.IFrameEffect%2cSystem.String)\" data-throw-if-not-resolved=\"false\"></xref>, which knows each frame's time. It changes the frame in place. The same\ninstance runs on every frame, so keep it stateless.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Editing.ITransition.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Editing.ITransition.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Editing.ITransition",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Editing.ITransition.yml\" sourcestartlinenumber=\"1\">An app's own picture transition for <xref href=\"Egami.Video.Editing.Transition.Custom(Egami.Video.Editing.ITransition%2cEgami.Video.MediaTime)\" data-throw-if-not-resolved=\"false\"></xref>: it draws one frame of the change from one clip to the\nnext. The two frames and the target have the canvas size. The same instance draws every frame, possibly on several threads,\nso keep it stateless.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Editing.Layer.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Editing.Layer.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Editing.Layer",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Editing.Layer.yml\" sourcestartlinenumber=\"1\">A clip drawn over the main track of a <xref href=\"Egami.Video.Editing.VideoEdit\" data-throw-if-not-resolved=\"false\"></xref> inside a time window: a logo, a picture-in-picture, a lower\nthird or a keyed presenter. It has a place, an opacity, a blend mode, fades, an optional <xref href=\"Egami.Video.Editing.Layer.ChromaKey\" data-throw-if-not-resolved=\"false\"></xref> and\nkeyframed motion. Layers draw in order, the last on top. The methods return a changed copy, so they chain.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Editing.LayerProperty.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Editing.LayerProperty.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Editing.LayerProperty",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Editing.LayerProperty.yml\" sourcestartlinenumber=\"1\">A property of a <xref href=\"Egami.Video.Editing.Layer\" data-throw-if-not-resolved=\"false\"></xref> that <xref href=\"Egami.Video.Editing.Layer.Animate(Egami.Video.Editing.LayerProperty%2cEgami.Video.Keyframe%5b%5d)\" data-throw-if-not-resolved=\"false\"></xref> moves over time.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Editing.PlannedClip.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Editing.PlannedClip.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Editing.PlannedClip",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Editing.PlannedClip.yml\" sourcestartlinenumber=\"1\">Where one clip of the main track falls in a planned edit, in whole output frames.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Editing.PlannedLayer.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Editing.PlannedLayer.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Editing.PlannedLayer",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Editing.PlannedLayer.yml\" sourcestartlinenumber=\"1\">Where one layer falls in a planned edit, in whole output frames.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Editing.Stack.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Editing.Stack.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Editing.Stack",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Editing.Stack.yml\" sourcestartlinenumber=\"1\">Builds one clip out of several shown at once: side by side, one above the other, or in a grid. A stack is an ordinary\n<xref href=\"Egami.Video.Editing.Clip\" data-throw-if-not-resolved=\"false\"></xref>, so it can be trimmed, faded or joined with a transition.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Editing.StackLayout.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Editing.StackLayout.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Editing.StackLayout",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Editing.StackLayout.yml\" sourcestartlinenumber=\"1\">How a <xref href=\"Egami.Video.Editing.Stack\" data-throw-if-not-resolved=\"false\"></xref> lays out its clips.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Editing.StackOptions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Editing.StackOptions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Editing.StackOptions",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Editing.StackOptions.yml\" sourcestartlinenumber=\"1\">How a <xref href=\"Egami.Video.Editing.Stack\" data-throw-if-not-resolved=\"false\"></xref> is drawn and how long it lasts.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Editing.TrackItem.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Editing.TrackItem.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Editing.TrackItem",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Editing.TrackItem.yml\" sourcestartlinenumber=\"1\">One clip on an <xref href=\"Egami.Video.Editing.EditTrack\" data-throw-if-not-resolved=\"false\"></xref> and the transition into it from the clip before.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Editing.Transition.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Editing.Transition.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Editing.Transition",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Editing.Transition.yml\" sourcestartlinenumber=\"1\">How one clip on an <xref href=\"Egami.Video.Editing.EditTrack\" data-throw-if-not-resolved=\"false\"></xref> changes into the next. The two clips overlap by <xref href=\"Egami.Video.Editing.Transition.Duration\" data-throw-if-not-resolved=\"false\"></xref>, so the\nedit gets shorter by it; their audio crossfades over the same time, equal power by default. Make one with the static\nmethods, such as <xref href=\"Egami.Video.Editing.Transition.Dissolve(Egami.Video.MediaTime)\" data-throw-if-not-resolved=\"false\"></xref> or <xref href=\"Egami.Video.Editing.Transition.Wipe(Egami.Video.Editing.TransitionDirection%2cEgami.Video.MediaTime)\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Editing.TransitionDirection.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Editing.TransitionDirection.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Editing.TransitionDirection",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Editing.TransitionDirection.yml\" sourcestartlinenumber=\"1\">Which way a <xref href=\"Egami.Video.Editing.TransitionKind.Wipe\" data-throw-if-not-resolved=\"false\"></xref> edge or a <xref href=\"Egami.Video.Editing.TransitionKind.Slide\" data-throw-if-not-resolved=\"false\"></xref> moves.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Editing.TransitionKind.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Editing.TransitionKind.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Editing.TransitionKind",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Editing.TransitionKind.yml\" sourcestartlinenumber=\"1\">The built-in kinds of <xref href=\"Egami.Video.Editing.Transition\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Editing.VideoEdit.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Editing.VideoEdit.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Editing.VideoEdit",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Editing.VideoEdit.yml\" sourcestartlinenumber=\"1\">An edit: clips on a main <xref href=\"Egami.Video.Editing.VideoEdit.Track\" data-throw-if-not-resolved=\"false\"></xref> with transitions between them, <xref href=\"Egami.Video.Editing.VideoEdit.Layers\" data-throw-if-not-resolved=\"false\"></xref> drawn over it, and\n<xref href=\"Egami.Video.Editing.VideoEdit.Effects\" data-throw-if-not-resolved=\"false\"></xref> on the result, all fitted to one <xref href=\"Egami.Video.Editing.VideoEdit.Canvas\" data-throw-if-not-resolved=\"false\"></xref>. It is a description: <xref href=\"Egami.Video.Editing.VideoEdit.Plan(Egami.Video.MediaContext)\" data-throw-if-not-resolved=\"false\"></xref> lays\nout the timeline and checks it, and <xref href=\"Egami.Video.Editing.VideoEdit.Render(System.String%2cEgami.Video.Editing.EditRenderOptions%2cSystem.IProgress%7bEgami.Video.MediaProgress%7d%2cSystem.Threading.CancellationToken)\" data-throw-if-not-resolved=\"false\"></xref>\ndecodes, composes and encodes it in one pass, holding only the frames in use. Save it as JSON with <xref href=\"Egami.Video.Editing.VideoEdit.ToJson\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Editing.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Editing.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Editing",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.Video.EncodedPacket.yml",
       "output": {
         ".html": {
@@ -15224,6 +15560,16 @@
       "output": {
         ".html": {
           "relative_path": "articles/guides/unicode-text.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "articles/guides/video-editing.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/guides/video-editing.html"
         }
       },
       "version": ""

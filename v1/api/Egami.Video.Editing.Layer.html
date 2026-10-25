@@ -1,0 +1,1155 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class Layer | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class Layer | Egami ">
+      
+      <meta name="description" content="A clip drawn over the main track of a  inside a time window: a logo, a picture-in-picture, a lower third or a keyed presenter. It has a place, an opacity, a blend mode, fades, an optional  and keyframed motion. Layers draw in order, the last on top. The methods return a changed copy, so they chain.">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_Video_Editing_Layer.md&amp;value=---%0Auid%3A%20Egami.Video.Editing.Layer%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.Video.Editing.Layer">
+
+
+
+  <h1 id="Egami_Video_Editing_Layer" data-uid="Egami.Video.Editing.Layer" class="text-break">
+Class Layer  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Editing/Layer.cs/#L76"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a>.<a class="xref" href="Egami.Video.html">Video</a>.<a class="xref" href="Egami.Video.Editing.html">Editing</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.Video.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>A clip drawn over the main track of a <a class="xref" href="Egami.Video.Editing.VideoEdit.html">VideoEdit</a> inside a time window: a logo, a picture-in-picture, a lower
+third or a keyed presenter. It has a place, an opacity, a blend mode, fades, an optional <a class="xref" href="Egami.Video.Editing.Layer.html#Egami_Video_Editing_Layer_ChromaKey">ChromaKey</a> and
+keyframed motion. Layers draw in order, the last on top. The methods return a changed copy, so they chain.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public sealed record Layer : IEquatable&lt;Layer&gt;</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><span class="xref">Layer</span></div>
+    </dd>
+  </dl>
+
+  <dl class="typelist implements">
+    <dt>Implements</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.iequatable-1">IEquatable</a>&lt;<a class="xref" href="Egami.Video.Editing.Layer.html">Layer</a>&gt;</div>
+    </dd>
+  </dl>
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+  </dd></dl>
+
+
+
+  <h2 id="Egami_Video_Editing_Layer_examples">Examples</h2>
+  <pre><code class="lang-csharp">// Picture-in-picture: talk.avi in the bottom-right corner from 0.5 s to 1.5 s, sliding in from the right as it fades in.
+VideoEdit edit = new(new EditCanvas(320, 180, new Rational(25, 1)));
+edit.Track.Add(Clip.Open("intro.avi"));
+edit.Layers.Add(Layer.Of(Clip.Open("talk.avi").Muted())
+    .Place(Anchor.BottomRight, margin: 8, scale: 0.3)
+    .Between(MediaTime.FromSeconds(0.5), MediaTime.FromSeconds(1.5))
+    .FadeIn(MediaTime.FromSeconds(0.25))
+    .Animate(LayerProperty.X, new Keyframe(MediaTime.Zero, 60, Easing.EaseOut), new Keyframe(MediaTime.FromSeconds(0.25), 0)));
+edit.Render("pip.mkv");</code></pre>
+
+
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="Egami_Video_Editing_Layer_Anchor_" data-uid="Egami.Video.Editing.Layer.Anchor*"></a>
+
+  <h3 id="Egami_Video_Editing_Layer_Anchor" data-uid="Egami.Video.Editing.Layer.Anchor">
+  Anchor
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Editing/Layer.cs/#L90"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the canvas corner, edge or centre the layer sits at when it has no <a class="xref" href="Egami.Video.Editing.Layer.html#Egami_Video_Editing_Layer_Area">Area</a>. Default the centre.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Anchor Anchor { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Operations.Anchor.html">Anchor</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Editing_Layer_Animations_" data-uid="Egami.Video.Editing.Layer.Animations*"></a>
+
+  <h3 id="Egami_Video_Editing_Layer_Animations" data-uid="Egami.Video.Editing.Layer.Animations">
+  Animations
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Editing/Layer.cs/#L123"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the keyframed properties; times are from the layer's start.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public IReadOnlyDictionary&lt;LayerProperty, IReadOnlyList&lt;Keyframe&gt;&gt; Animations { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2">IReadOnlyDictionary</a>&lt;<a class="xref" href="Egami.Video.Editing.LayerProperty.html">LayerProperty</a>, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="Egami.Video.Keyframe.html">Keyframe</a>&gt;&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Editing_Layer_Area_" data-uid="Egami.Video.Editing.Layer.Area*"></a>
+
+  <h3 id="Egami_Video_Editing_Layer_Area" data-uid="Egami.Video.Editing.Layer.Area">
+  Area
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Editing/Layer.cs/#L87"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the rectangle the layer is scaled into, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> to place it by <a class="xref" href="Egami.Video.Editing.Layer.html#Egami_Video_Editing_Layer_Anchor">Anchor</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Rect? Area { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Rect.html">Rect</a>?</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Editing_Layer_BlendMode_" data-uid="Egami.Video.Editing.Layer.BlendMode*"></a>
+
+  <h3 id="Egami_Video_Editing_Layer_BlendMode" data-uid="Egami.Video.Editing.Layer.BlendMode">
+  BlendMode
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Editing/Layer.cs/#L102"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets how the layer blends with what is under it. Default <a class="xref" href="Egami.Operations.BlendMode.html#Egami_Operations_BlendMode_SourceOver">SourceOver</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public BlendMode BlendMode { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Operations.BlendMode.html">BlendMode</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Editing_Layer_ChromaKey_" data-uid="Egami.Video.Editing.Layer.ChromaKey*"></a>
+
+  <h3 id="Egami_Video_Editing_Layer_ChromaKey" data-uid="Egami.Video.Editing.Layer.ChromaKey">
+  ChromaKey
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Editing/Layer.cs/#L120"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the chroma key run on the layer's frames, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for none.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public ChromaKey? ChromaKey { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Video.Editing.ChromaKey.html">ChromaKey</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Editing_Layer_Clip_" data-uid="Egami.Video.Editing.Layer.Clip*"></a>
+
+  <h3 id="Egami_Video_Editing_Layer_Clip" data-uid="Egami.Video.Editing.Layer.Clip">
+  Clip
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Editing/Layer.cs/#L84"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the clip the layer shows.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Clip Clip { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Video.Editing.Clip.html">Clip</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Editing_Layer_Effects_" data-uid="Egami.Video.Editing.Layer.Effects*"></a>
+
+  <h3 id="Egami_Video_Editing_Layer_Effects" data-uid="Egami.Video.Editing.Layer.Effects">
+  Effects
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Editing/Layer.cs/#L126"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the effects that run on the layer's frames before it is placed, timed from the layer's start.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public IReadOnlyList&lt;EditEffect&gt; Effects { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="Egami.Video.Editing.EditEffect.html">EditEffect</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Editing_Layer_End_" data-uid="Egami.Video.Editing.Layer.End*"></a>
+
+  <h3 id="Egami_Video_Editing_Layer_End" data-uid="Egami.Video.Editing.Layer.End">
+  End
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Editing/Layer.cs/#L108"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the edit time the layer ends, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for when its clip ends.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public MediaTime? End { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Video.MediaTime.html">MediaTime</a>?</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Editing_Layer_FadeInDuration_" data-uid="Egami.Video.Editing.Layer.FadeInDuration*"></a>
+
+  <h3 id="Egami_Video_Editing_Layer_FadeInDuration" data-uid="Egami.Video.Editing.Layer.FadeInDuration">
+  FadeInDuration
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Editing/Layer.cs/#L114"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets how long the layer fades in (its opacity, and its audio). Zero for none.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public MediaTime FadeInDuration { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Video.MediaTime.html">MediaTime</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Editing_Layer_FadeOutDuration_" data-uid="Egami.Video.Editing.Layer.FadeOutDuration*"></a>
+
+  <h3 id="Egami_Video_Editing_Layer_FadeOutDuration" data-uid="Egami.Video.Editing.Layer.FadeOutDuration">
+  FadeOutDuration
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Editing/Layer.cs/#L117"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets how long the layer fades out. Zero for none.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public MediaTime FadeOutDuration { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Video.MediaTime.html">MediaTime</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Editing_Layer_HoldsLastFrame_" data-uid="Egami.Video.Editing.Layer.HoldsLastFrame*"></a>
+
+  <h3 id="Egami_Video_Editing_Layer_HoldsLastFrame" data-uid="Egami.Video.Editing.Layer.HoldsLastFrame">
+  HoldsLastFrame
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Editing/Layer.cs/#L111"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether the layer holds its clip's last frame until <a class="xref" href="Egami.Video.Editing.Layer.html#Egami_Video_Editing_Layer_End">End</a> or the edit's end, instead of disappearing when the clip ends.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool HoldsLastFrame { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Editing_Layer_Margin_" data-uid="Egami.Video.Editing.Layer.Margin*"></a>
+
+  <h3 id="Egami_Video_Editing_Layer_Margin" data-uid="Egami.Video.Editing.Layer.Margin">
+  Margin
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Editing/Layer.cs/#L93"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the space in pixels between the layer and the canvas edge it is anchored to. Default 0.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int Margin { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Editing_Layer_OpacityAmount_" data-uid="Egami.Video.Editing.Layer.OpacityAmount*"></a>
+
+  <h3 id="Egami_Video_Editing_Layer_OpacityAmount" data-uid="Egami.Video.Editing.Layer.OpacityAmount">
+  OpacityAmount
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Editing/Layer.cs/#L99"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the opacity from 0 to 1. Default 1.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float OpacityAmount { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Editing_Layer_Scale_" data-uid="Egami.Video.Editing.Layer.Scale*"></a>
+
+  <h3 id="Egami_Video_Editing_Layer_Scale" data-uid="Egami.Video.Editing.Layer.Scale">
+  Scale
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Editing/Layer.cs/#L96"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the size of an anchored layer as a factor of the clip's own size. Default 1.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public double Scale { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Editing_Layer_Start_" data-uid="Egami.Video.Editing.Layer.Start*"></a>
+
+  <h3 id="Egami_Video_Editing_Layer_Start" data-uid="Egami.Video.Editing.Layer.Start">
+  Start
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Editing/Layer.cs/#L105"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the edit time the layer starts. Default zero.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public MediaTime Start { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Video.MediaTime.html">MediaTime</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="Egami_Video_Editing_Layer_Animate_" data-uid="Egami.Video.Editing.Layer.Animate*"></a>
+
+  <h3 id="Egami_Video_Editing_Layer_Animate_Egami_Video_Editing_LayerProperty_Egami_Video_Keyframe___" data-uid="Egami.Video.Editing.Layer.Animate(Egami.Video.Editing.LayerProperty,Egami.Video.Keyframe[])">
+  Animate(LayerProperty, params Keyframe[])
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Editing/Layer.cs/#L231"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns the layer with a property moving through keyframes, timed from the layer's start.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Layer Animate(LayerProperty property, params Keyframe[] keyframes)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>property</code> <a class="xref" href="Egami.Video.Editing.LayerProperty.html">LayerProperty</a></dt>
+    <dd><p>The property.</p>
+</dd>
+    <dt><code>keyframes</code> <a class="xref" href="Egami.Video.Keyframe.html">Keyframe</a>[]</dt>
+    <dd><p>The keyframes; at least one. Before the first and after the last the value holds.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Video.Editing.Layer.html">Layer</a></dt>
+    <dd><p>The layer.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Editing_Layer_Between_" data-uid="Egami.Video.Editing.Layer.Between*"></a>
+
+  <h3 id="Egami_Video_Editing_Layer_Between_Egami_Video_MediaTime_System_Nullable_Egami_Video_MediaTime__" data-uid="Egami.Video.Editing.Layer.Between(Egami.Video.MediaTime,System.Nullable{Egami.Video.MediaTime})">
+  Between(MediaTime, MediaTime?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Editing/Layer.cs/#L185"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns the layer shown only from one edit time to another.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Layer Between(MediaTime start, MediaTime? end = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>start</code> <a class="xref" href="Egami.Video.MediaTime.html">MediaTime</a></dt>
+    <dd><p>When it starts; its clip starts here.</p>
+</dd>
+    <dt><code>end</code> <a class="xref" href="Egami.Video.MediaTime.html">MediaTime</a>?</dt>
+    <dd><p>When it ends, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for when its clip ends.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Video.Editing.Layer.html">Layer</a></dt>
+    <dd><p>The layer.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Editing_Layer_Blend_" data-uid="Egami.Video.Editing.Layer.Blend*"></a>
+
+  <h3 id="Egami_Video_Editing_Layer_Blend_Egami_Operations_BlendMode_" data-uid="Egami.Video.Editing.Layer.Blend(Egami.Operations.BlendMode)">
+  Blend(BlendMode)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Editing/Layer.cs/#L179"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns the layer with a blend mode.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Layer Blend(BlendMode mode)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>mode</code> <a class="xref" href="Egami.Operations.BlendMode.html">BlendMode</a></dt>
+    <dd><p>How it blends with what is under it.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Video.Editing.Layer.html">Layer</a></dt>
+    <dd><p>The layer.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Editing_Layer_FadeIn_" data-uid="Egami.Video.Editing.Layer.FadeIn*"></a>
+
+  <h3 id="Egami_Video_Editing_Layer_FadeIn_Egami_Video_MediaTime_" data-uid="Egami.Video.Editing.Layer.FadeIn(Egami.Video.MediaTime)">
+  FadeIn(MediaTime)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Editing/Layer.cs/#L203"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns the layer fading in at its start.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Layer FadeIn(MediaTime duration)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>duration</code> <a class="xref" href="Egami.Video.MediaTime.html">MediaTime</a></dt>
+    <dd><p>How long the fade lasts.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Video.Editing.Layer.html">Layer</a></dt>
+    <dd><p>The layer.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Editing_Layer_FadeOut_" data-uid="Egami.Video.Editing.Layer.FadeOut*"></a>
+
+  <h3 id="Egami_Video_Editing_Layer_FadeOut_Egami_Video_MediaTime_" data-uid="Egami.Video.Editing.Layer.FadeOut(Egami.Video.MediaTime)">
+  FadeOut(MediaTime)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Editing/Layer.cs/#L212"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns the layer fading out at its end.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Layer FadeOut(MediaTime duration)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>duration</code> <a class="xref" href="Egami.Video.MediaTime.html">MediaTime</a></dt>
+    <dd><p>How long the fade lasts.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Video.Editing.Layer.html">Layer</a></dt>
+    <dd><p>The layer.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Editing_Layer_HoldLastFrame_" data-uid="Egami.Video.Editing.Layer.HoldLastFrame*"></a>
+
+  <h3 id="Egami_Video_Editing_Layer_HoldLastFrame" data-uid="Egami.Video.Editing.Layer.HoldLastFrame">
+  HoldLastFrame()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Editing/Layer.cs/#L198"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns the layer holding its clip's last frame to its end.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Layer HoldLastFrame()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Video.Editing.Layer.html">Layer</a></dt>
+    <dd><p>The layer.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Editing_Layer_Key_" data-uid="Egami.Video.Editing.Layer.Key*"></a>
+
+  <h3 id="Egami_Video_Editing_Layer_Key_Egami_Video_Editing_ChromaKey_" data-uid="Egami.Video.Editing.Layer.Key(Egami.Video.Editing.ChromaKey)">
+  Key(ChromaKey)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Editing/Layer.cs/#L221"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns the layer with a chroma key on its frames.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Layer Key(ChromaKey key)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>key</code> <a class="xref" href="Egami.Video.Editing.ChromaKey.html">ChromaKey</a></dt>
+    <dd><p>The key.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Video.Editing.Layer.html">Layer</a></dt>
+    <dd><p>The layer.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Editing_Layer_Of_" data-uid="Egami.Video.Editing.Layer.Of*"></a>
+
+  <h3 id="Egami_Video_Editing_Layer_Of_Egami_Video_Editing_Clip_" data-uid="Egami.Video.Editing.Layer.Of(Egami.Video.Editing.Clip)">
+  Of(Clip)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Editing/Layer.cs/#L131"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns a layer that shows a clip over the whole edit, centred at its own size.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Layer Of(Clip clip)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>clip</code> <a class="xref" href="Egami.Video.Editing.Clip.html">Clip</a></dt>
+    <dd><p>The clip. Its audio is mixed in unless the clip is muted.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Video.Editing.Layer.html">Layer</a></dt>
+    <dd><p>The layer.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Editing_Layer_Opacity_" data-uid="Egami.Video.Editing.Layer.Opacity*"></a>
+
+  <h3 id="Egami_Video_Editing_Layer_Opacity_System_Single_" data-uid="Egami.Video.Editing.Layer.Opacity(System.Single)">
+  Opacity(float)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Editing/Layer.cs/#L169"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns the layer with an opacity.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Layer Opacity(float amount)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>amount</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>From 0 (invisible) to 1 (opaque).</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Video.Editing.Layer.html">Layer</a></dt>
+    <dd><p>The layer.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Editing_Layer_Place_" data-uid="Egami.Video.Editing.Layer.Place*"></a>
+
+  <h3 id="Egami_Video_Editing_Layer_Place_Egami_Operations_Anchor_System_Int32_System_Double_" data-uid="Egami.Video.Editing.Layer.Place(Egami.Operations.Anchor,System.Int32,System.Double)">
+  Place(Anchor, int, double)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Editing/Layer.cs/#L155"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns the layer anchored to a corner, an edge or the centre of the canvas.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Layer Place(Anchor anchor, int margin = 0, double scale = 1)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>anchor</code> <a class="xref" href="Egami.Operations.Anchor.html">Anchor</a></dt>
+    <dd><p>Where it sits.</p>
+</dd>
+    <dt><code>margin</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The space to the canvas edges in pixels.</p>
+</dd>
+    <dt><code>scale</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></dt>
+    <dd><p>Its size as a factor of the clip's own size.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Video.Editing.Layer.html">Layer</a></dt>
+    <dd><p>The layer.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Editing_Layer_Place_" data-uid="Egami.Video.Editing.Layer.Place*"></a>
+
+  <h3 id="Egami_Video_Editing_Layer_Place_Egami_Rect_" data-uid="Egami.Video.Editing.Layer.Place(Egami.Rect)">
+  Place(Rect)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Editing/Layer.cs/#L140"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns the layer scaled into a rectangle of the canvas.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Layer Place(Rect area)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>area</code> <a class="xref" href="Egami.Rect.html">Rect</a></dt>
+    <dd><p>The rectangle, in canvas pixels.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Video.Editing.Layer.html">Layer</a></dt>
+    <dd><p>The layer.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Editing_Layer_WithEffect_" data-uid="Egami.Video.Editing.Layer.WithEffect*"></a>
+
+  <h3 id="Egami_Video_Editing_Layer_WithEffect_Egami_Video_Editing_EditEffect_" data-uid="Egami.Video.Editing.Layer.WithEffect(Egami.Video.Editing.EditEffect)">
+  WithEffect(EditEffect)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Editing/Layer.cs/#L246"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns the layer with one more effect on its frames.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Layer WithEffect(EditEffect effect)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>effect</code> <a class="xref" href="Egami.Video.Editing.EditEffect.html">EditEffect</a></dt>
+    <dd><p>The effect, timed from the layer's start.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Video.Editing.Layer.html">Layer</a></dt>
+    <dd><p>The layer.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Editing/Layer.cs/#L76" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class PlannedClip | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class PlannedClip | Egami ">
+      
+      <meta name="description" content="Where one clip of the main track falls in a planned edit, in whole output frames.">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_Video_Editing_PlannedClip.md&amp;value=---%0Auid%3A%20Egami.Video.Editing.PlannedClip%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.Video.Editing.PlannedClip">
+
+
+
+  <h1 id="Egami_Video_Editing_PlannedClip" data-uid="Egami.Video.Editing.PlannedClip" class="text-break">
+Class PlannedClip  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Editing/EditPlan.cs/#L15"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a>.<a class="xref" href="Egami.Video.html">Video</a>.<a class="xref" href="Egami.Video.Editing.html">Editing</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.Video.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>Where one clip of the main track falls in a planned edit, in whole output frames.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public sealed record PlannedClip : IEquatable&lt;PlannedClip&gt;</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><span class="xref">PlannedClip</span></div>
+    </dd>
+  </dl>
+
+  <dl class="typelist implements">
+    <dt>Implements</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.iequatable-1">IEquatable</a>&lt;<a class="xref" href="Egami.Video.Editing.PlannedClip.html">PlannedClip</a>&gt;</div>
+    </dd>
+  </dl>
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+  </dd></dl>
+
+
+
+  <h2 id="Egami_Video_Editing_PlannedClip_examples">Examples</h2>
+  <pre><code class="lang-csharp">// Lay out the timeline before rendering, and save the edit as the JSON file 'egami-video edit' runs.
+VideoEdit edit = new(new EditCanvas(320, 180, new Rational(25, 1)));
+edit.Track.Add(Clip.Open("intro.avi")).Add(Clip.Open("talk.avi"), Transition.Fade(MediaTime.FromSeconds(1)));
+EditPlan plan = edit.Plan();
+foreach (PlannedClip clip in plan.Clips)
+{
+    Console.WriteLine($"clip {clip.Index}: frames {clip.StartFrame} to {clip.StartFrame + clip.FrameCount - 1}, {clip.SourceSize.Width}x{clip.SourceSize.Height}");
+}
+
+foreach (string warning in plan.Warnings)
+{
+    Console.WriteLine(warning);
+}
+
+File.WriteAllText("edit.json", edit.ToJson());
+VideoEdit again = VideoEdit.FromJson(File.ReadAllText("edit.json"));</code></pre>
+
+
+
+
+  <h2 class="section" id="constructors">Constructors
+</h2>
+
+
+  <a id="Egami_Video_Editing_PlannedClip__ctor_" data-uid="Egami.Video.Editing.PlannedClip.#ctor*"></a>
+
+  <h3 id="Egami_Video_Editing_PlannedClip__ctor_System_Int32_Egami_Video_Editing_Clip_System_Int64_System_Int64_System_Int64_Egami_Video_MediaTime_Egami_Size_System_Boolean_" data-uid="Egami.Video.Editing.PlannedClip.#ctor(System.Int32,Egami.Video.Editing.Clip,System.Int64,System.Int64,System.Int64,Egami.Video.MediaTime,Egami.Size,System.Boolean)">
+  PlannedClip(int, Clip, long, long, long, MediaTime, Size, bool)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Editing/EditPlan.cs/#L15"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Where one clip of the main track falls in a planned edit, in whole output frames.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public PlannedClip(int Index, Clip Clip, long StartFrame, long FrameCount, long TransitionFrames, MediaTime SourceIn, Size SourceSize, bool HasAudio)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>Index</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The clip's position on the track.</p>
+</dd>
+    <dt><code>Clip</code> <a class="xref" href="Egami.Video.Editing.Clip.html">Clip</a></dt>
+    <dd><p>The clip.</p>
+</dd>
+    <dt><code>StartFrame</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int64">long</a></dt>
+    <dd><p>The output frame it starts on.</p>
+</dd>
+    <dt><code>FrameCount</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int64">long</a></dt>
+    <dd><p>How many output frames it lasts, its transitions included.</p>
+</dd>
+    <dt><code>TransitionFrames</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int64">long</a></dt>
+    <dd><p>How many of its first frames overlap the clip before it.</p>
+</dd>
+    <dt><code>SourceIn</code> <a class="xref" href="Egami.Video.MediaTime.html">MediaTime</a></dt>
+    <dd><p>The time in its source it starts at.</p>
+</dd>
+    <dt><code>SourceSize</code> <a class="xref" href="Egami.Size.html">Size</a></dt>
+    <dd><p>The size of its picture.</p>
+</dd>
+    <dt><code>HasAudio</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>Whether it brings audio into the edit.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Video_Editing_PlannedClip__ctor_System_Int32_Egami_Video_Editing_Clip_System_Int64_System_Int64_System_Int64_Egami_Video_MediaTime_Egami_Size_System_Boolean__examples">Examples</h4>
+  <pre><code class="lang-csharp">// Lay out the timeline before rendering, and save the edit as the JSON file 'egami-video edit' runs.
+VideoEdit edit = new(new EditCanvas(320, 180, new Rational(25, 1)));
+edit.Track.Add(Clip.Open("intro.avi")).Add(Clip.Open("talk.avi"), Transition.Fade(MediaTime.FromSeconds(1)));
+EditPlan plan = edit.Plan();
+foreach (PlannedClip clip in plan.Clips)
+{
+    Console.WriteLine($"clip {clip.Index}: frames {clip.StartFrame} to {clip.StartFrame + clip.FrameCount - 1}, {clip.SourceSize.Width}x{clip.SourceSize.Height}");
+}
+
+foreach (string warning in plan.Warnings)
+{
+    Console.WriteLine(warning);
+}
+
+File.WriteAllText("edit.json", edit.ToJson());
+VideoEdit again = VideoEdit.FromJson(File.ReadAllText("edit.json"));</code></pre>
+
+
+
+
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="Egami_Video_Editing_PlannedClip_Clip_" data-uid="Egami.Video.Editing.PlannedClip.Clip*"></a>
+
+  <h3 id="Egami_Video_Editing_PlannedClip_Clip" data-uid="Egami.Video.Editing.PlannedClip.Clip">
+  Clip
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Editing/EditPlan.cs/#L15"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>The clip.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Clip Clip { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Video.Editing.Clip.html">Clip</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Editing_PlannedClip_FrameCount_" data-uid="Egami.Video.Editing.PlannedClip.FrameCount*"></a>
+
+  <h3 id="Egami_Video_Editing_PlannedClip_FrameCount" data-uid="Egami.Video.Editing.PlannedClip.FrameCount">
+  FrameCount
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Editing/EditPlan.cs/#L15"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>How many output frames it lasts, its transitions included.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public long FrameCount { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int64">long</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Editing_PlannedClip_HasAudio_" data-uid="Egami.Video.Editing.PlannedClip.HasAudio*"></a>
+
+  <h3 id="Egami_Video_Editing_PlannedClip_HasAudio" data-uid="Egami.Video.Editing.PlannedClip.HasAudio">
+  HasAudio
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Editing/EditPlan.cs/#L15"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Whether it brings audio into the edit.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool HasAudio { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Editing_PlannedClip_Index_" data-uid="Egami.Video.Editing.PlannedClip.Index*"></a>
+
+  <h3 id="Egami_Video_Editing_PlannedClip_Index" data-uid="Egami.Video.Editing.PlannedClip.Index">
+  Index
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Editing/EditPlan.cs/#L15"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>The clip's position on the track.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int Index { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Editing_PlannedClip_SourceIn_" data-uid="Egami.Video.Editing.PlannedClip.SourceIn*"></a>
+
+  <h3 id="Egami_Video_Editing_PlannedClip_SourceIn" data-uid="Egami.Video.Editing.PlannedClip.SourceIn">
+  SourceIn
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Editing/EditPlan.cs/#L15"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>The time in its source it starts at.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public MediaTime SourceIn { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Video.MediaTime.html">MediaTime</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Editing_PlannedClip_SourceSize_" data-uid="Egami.Video.Editing.PlannedClip.SourceSize*"></a>
+
+  <h3 id="Egami_Video_Editing_PlannedClip_SourceSize" data-uid="Egami.Video.Editing.PlannedClip.SourceSize">
+  SourceSize
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Editing/EditPlan.cs/#L15"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>The size of its picture.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Size SourceSize { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Size.html">Size</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Editing_PlannedClip_StartFrame_" data-uid="Egami.Video.Editing.PlannedClip.StartFrame*"></a>
+
+  <h3 id="Egami_Video_Editing_PlannedClip_StartFrame" data-uid="Egami.Video.Editing.PlannedClip.StartFrame">
+  StartFrame
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Editing/EditPlan.cs/#L15"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>The output frame it starts on.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public long StartFrame { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int64">long</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Editing_PlannedClip_TransitionFrames_" data-uid="Egami.Video.Editing.PlannedClip.TransitionFrames*"></a>
+
+  <h3 id="Egami_Video_Editing_PlannedClip_TransitionFrames" data-uid="Egami.Video.Editing.PlannedClip.TransitionFrames">
+  TransitionFrames
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Editing/EditPlan.cs/#L15"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>How many of its first frames overlap the clip before it.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public long TransitionFrames { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int64">long</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Editing/EditPlan.cs/#L15" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

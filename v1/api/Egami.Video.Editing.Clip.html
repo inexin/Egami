@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class Clip | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class Clip | Egami ">
+      
+      <meta name="description" content="A piece of video, with its audio, as it goes into a : a file or stream, or a  of clips. The methods return a changed copy, so they chain: Clip.Open(&amp;quot;a.mp4&amp;quot;).Trim(start, end).FadeIn(duration). Nothing is decoded until the edit renders.">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_Video_Editing_Clip.md&amp;value=---%0Auid%3A%20Egami.Video.Editing.Clip%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.Video.Editing.Clip">
+
+
+
+  <h1 id="Egami_Video_Editing_Clip" data-uid="Egami.Video.Editing.Clip" class="text-break">
+Class Clip  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Editing/Clip.cs/#L13"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a>.<a class="xref" href="Egami.Video.html">Video</a>.<a class="xref" href="Egami.Video.Editing.html">Editing</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.Video.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>A piece of video, with its audio, as it goes into a <a class="xref" href="Egami.Video.Editing.VideoEdit.html">VideoEdit</a>: a file or stream, or a <a class="xref" href="Egami.Video.Editing.Stack.html">Stack</a> of
+clips. The methods return a changed copy, so they chain: <code>Clip.Open(&quot;a.mp4&quot;).Trim(start, end).FadeIn(duration)</code>.
+Nothing is decoded until the edit renders.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public sealed record Clip : IEquatable&lt;Clip&gt;</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><span class="xref">Clip</span></div>
+    </dd>
+  </dl>
+
+  <dl class="typelist implements">
+    <dt>Implements</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.iequatable-1">IEquatable</a>&lt;<a class="xref" href="Egami.Video.Editing.Clip.html">Clip</a>&gt;</div>
+    </dd>
+  </dl>
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+  </dd></dl>
+
+
+
+  <h2 id="Egami_Video_Editing_Clip_examples">Examples</h2>
+  <pre><code class="lang-csharp">// Three clips of different sizes and rates, fitted to one 320x180 canvas at 25 fps, with fades at both ends.
+VideoEdit edit = new(new EditCanvas(320, 180, new Rational(25, 1)) { Fit = ClipFit.Contain });
+edit.Track
+    .Add(Clip.Open("intro.avi").FadeIn(MediaTime.FromSeconds(0.5)))
+    .Add(Clip.Open("talk.avi").Trim(MediaTime.FromSeconds(0.5), MediaTime.FromSeconds(1.5)))
+    .Add(Clip.Open("outro.avi").FadeOut(MediaTime.FromSeconds(0.5)));
+EditPlan plan = edit.Render("joined.mkv", new EditRenderOptions { Writer = new VideoWriterOptions { Codec = MotionJpegCodec.Instance, Quality = 80 } });
+Console.WriteLine($"{plan.FrameCount} frames, {plan.Duration.Seconds} s");</code></pre>
+
+
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="Egami_Video_Editing_Clip_Effects_" data-uid="Egami.Video.Editing.Clip.Effects*"></a>
+
+  <h3 id="Egami_Video_Editing_Clip_Effects" data-uid="Egami.Video.Editing.Clip.Effects">
+  Effects
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Editing/Clip.cs/#L45"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the effects that run on the clip's frames, after it is fitted to the canvas, timed from the clip's start.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public IReadOnlyList&lt;EditEffect&gt; Effects { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="Egami.Video.Editing.EditEffect.html">EditEffect</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Editing_Clip_FadeColor_" data-uid="Egami.Video.Editing.Clip.FadeColor*"></a>
+
+  <h3 id="Egami_Video_Editing_Clip_FadeColor" data-uid="Egami.Video.Editing.Clip.FadeColor">
+  FadeColor
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Editing/Clip.cs/#L36"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the colour the picture fades from and to. Default black.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Rgba8 FadeColor { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Pixels.Rgba8.html">Rgba8</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Editing_Clip_FadeInDuration_" data-uid="Egami.Video.Editing.Clip.FadeInDuration*"></a>
+
+  <h3 id="Egami_Video_Editing_Clip_FadeInDuration" data-uid="Egami.Video.Editing.Clip.FadeInDuration">
+  FadeInDuration
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Editing/Clip.cs/#L30"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets how long the clip fades in from <a class="xref" href="Egami.Video.Editing.Clip.html#Egami_Video_Editing_Clip_FadeColor">FadeColor</a>, and its audio from silence. Zero for none.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public MediaTime FadeInDuration { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Video.MediaTime.html">MediaTime</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Editing_Clip_FadeOutDuration_" data-uid="Egami.Video.Editing.Clip.FadeOutDuration*"></a>
+
+  <h3 id="Egami_Video_Editing_Clip_FadeOutDuration" data-uid="Egami.Video.Editing.Clip.FadeOutDuration">
+  FadeOutDuration
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Editing/Clip.cs/#L33"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets how long the clip fades out to <a class="xref" href="Egami.Video.Editing.Clip.html#Egami_Video_Editing_Clip_FadeColor">FadeColor</a>, and its audio to silence. Zero for none.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public MediaTime FadeOutDuration { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Video.MediaTime.html">MediaTime</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Editing_Clip_In_" data-uid="Egami.Video.Editing.Clip.In*"></a>
+
+  <h3 id="Egami_Video_Editing_Clip_In" data-uid="Egami.Video.Editing.Clip.In">
+  In
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Editing/Clip.cs/#L24"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the time in the source where the clip starts, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for the start.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public MediaTime? In { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Video.MediaTime.html">MediaTime</a>?</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Editing_Clip_IsMuted_" data-uid="Egami.Video.Editing.Clip.IsMuted*"></a>
+
+  <h3 id="Egami_Video_Editing_Clip_IsMuted" data-uid="Egami.Video.Editing.Clip.IsMuted">
+  IsMuted
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Editing/Clip.cs/#L42"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether the clip's audio is left out.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool IsMuted { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Editing_Clip_Out_" data-uid="Egami.Video.Editing.Clip.Out*"></a>
+
+  <h3 id="Egami_Video_Editing_Clip_Out" data-uid="Egami.Video.Editing.Clip.Out">
+  Out
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Editing/Clip.cs/#L27"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the time in the source where the clip ends (the first moment not used), or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for the end.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public MediaTime? Out { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Video.MediaTime.html">MediaTime</a>?</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Editing_Clip_Path_" data-uid="Egami.Video.Editing.Clip.Path*"></a>
+
+  <h3 id="Egami_Video_Editing_Clip_Path" data-uid="Egami.Video.Editing.Clip.Path">
+  Path
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Editing/Clip.cs/#L21"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the path of the file the clip reads, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for a stream or a stack.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public string? Path { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Editing_Clip_VolumeDecibels_" data-uid="Egami.Video.Editing.Clip.VolumeDecibels*"></a>
+
+  <h3 id="Egami_Video_Editing_Clip_VolumeDecibels" data-uid="Egami.Video.Editing.Clip.VolumeDecibels">
+  VolumeDecibels
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Editing/Clip.cs/#L39"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the gain of the clip's audio in decibels. Default 0.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public double VolumeDecibels { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="Egami_Video_Editing_Clip_FadeIn_" data-uid="Egami.Video.Editing.Clip.FadeIn*"></a>
+
+  <h3 id="Egami_Video_Editing_Clip_FadeIn_Egami_Video_MediaTime_System_Nullable_Egami_Pixels_Rgba8__" data-uid="Egami.Video.Editing.Clip.FadeIn(Egami.Video.MediaTime,System.Nullable{Egami.Pixels.Rgba8})">
+  FadeIn(MediaTime, Rgba8?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Editing/Clip.cs/#L95"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns the clip with a fade in from a colour at its start, and a fade in of its audio.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Clip FadeIn(MediaTime duration, Rgba8? color = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>duration</code> <a class="xref" href="Egami.Video.MediaTime.html">MediaTime</a></dt>
+    <dd><p>How long the fade lasts.</p>
+</dd>
+    <dt><code>color</code> <a class="xref" href="Egami.Pixels.Rgba8.html">Rgba8</a>?</dt>
+    <dd><p>The colour, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> to keep <a class="xref" href="Egami.Video.Editing.Clip.html#Egami_Video_Editing_Clip_FadeColor">FadeColor</a> (black unless set).</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Video.Editing.Clip.html">Clip</a></dt>
+    <dd><p>The clip.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Editing_Clip_FadeOut_" data-uid="Egami.Video.Editing.Clip.FadeOut*"></a>
+
+  <h3 id="Egami_Video_Editing_Clip_FadeOut_Egami_Video_MediaTime_System_Nullable_Egami_Pixels_Rgba8__" data-uid="Egami.Video.Editing.Clip.FadeOut(Egami.Video.MediaTime,System.Nullable{Egami.Pixels.Rgba8})">
+  FadeOut(MediaTime, Rgba8?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Editing/Clip.cs/#L105"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns the clip with a fade out to a colour at its end, and a fade out of its audio.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Clip FadeOut(MediaTime duration, Rgba8? color = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>duration</code> <a class="xref" href="Egami.Video.MediaTime.html">MediaTime</a></dt>
+    <dd><p>How long the fade lasts.</p>
+</dd>
+    <dt><code>color</code> <a class="xref" href="Egami.Pixels.Rgba8.html">Rgba8</a>?</dt>
+    <dd><p>The colour, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> to keep <a class="xref" href="Egami.Video.Editing.Clip.html#Egami_Video_Editing_Clip_FadeColor">FadeColor</a> (black unless set).</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Video.Editing.Clip.html">Clip</a></dt>
+    <dd><p>The clip.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Editing_Clip_Muted_" data-uid="Egami.Video.Editing.Clip.Muted*"></a>
+
+  <h3 id="Egami_Video_Editing_Clip_Muted" data-uid="Egami.Video.Editing.Clip.Muted">
+  Muted()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Editing/Clip.cs/#L126"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns the clip without its audio.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Clip Muted()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Video.Editing.Clip.html">Clip</a></dt>
+    <dd><p>The clip.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Editing_Clip_Open_" data-uid="Egami.Video.Editing.Clip.Open*"></a>
+
+  <h3 id="Egami_Video_Editing_Clip_Open_System_IO_Stream_" data-uid="Egami.Video.Editing.Clip.Open(System.IO.Stream)">
+  Open(Stream)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Editing/Clip.cs/#L64"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns a clip that reads a stream's first video track and its first audio track. The stream must be seekable and stay
+open until the edit has rendered. A clip from a stream cannot be saved as JSON.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Clip Open(Stream stream)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>stream</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.io.stream">Stream</a></dt>
+    <dd><p>The stream.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Video.Editing.Clip.html">Clip</a></dt>
+    <dd><p>The clip.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Editing_Clip_Open_" data-uid="Egami.Video.Editing.Clip.Open*"></a>
+
+  <h3 id="Egami_Video_Editing_Clip_Open_System_String_" data-uid="Egami.Video.Editing.Clip.Open(System.String)">
+  Open(string)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Editing/Clip.cs/#L52"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns a clip that reads a file's first video track and its first audio track.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Clip Open(string path)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>path</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The file.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Video.Editing.Clip.html">Clip</a></dt>
+    <dd><p>The clip.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Editing_Clip_Trim_" data-uid="Egami.Video.Editing.Clip.Trim*"></a>
+
+  <h3 id="Egami_Video_Editing_Clip_Trim_Egami_Video_MediaTime_System_Nullable_Egami_Video_MediaTime__" data-uid="Egami.Video.Editing.Clip.Trim(Egami.Video.MediaTime,System.Nullable{Egami.Video.MediaTime})">
+  Trim(MediaTime, MediaTime?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Editing/Clip.cs/#L80"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns the clip cut to a part of its source, on the exact frame and sample.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Clip Trim(MediaTime start, MediaTime? end = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>start</code> <a class="xref" href="Egami.Video.MediaTime.html">MediaTime</a></dt>
+    <dd><p>The time in the source where the clip starts.</p>
+</dd>
+    <dt><code>end</code> <a class="xref" href="Egami.Video.MediaTime.html">MediaTime</a>?</dt>
+    <dd><p>The time where it ends, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for the end of the source.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Video.Editing.Clip.html">Clip</a></dt>
+    <dd><p>The trimmed clip.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>The start is negative or the end is not after it.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Video_Editing_Clip_Volume_" data-uid="Egami.Video.Editing.Clip.Volume*"></a>
+
+  <h3 id="Egami_Video_Editing_Clip_Volume_System_Double_" data-uid="Egami.Video.Editing.Clip.Volume(System.Double)">
+  Volume(double)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Editing/Clip.cs/#L114"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns the clip with its audio turned up or down.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Clip Volume(double decibels)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>decibels</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></dt>
+    <dd><p>The gain in decibels.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Video.Editing.Clip.html">Clip</a></dt>
+    <dd><p>The clip.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Editing_Clip_WithEffect_" data-uid="Egami.Video.Editing.Clip.WithEffect*"></a>
+
+  <h3 id="Egami_Video_Editing_Clip_WithEffect_Egami_Video_Editing_EditEffect_" data-uid="Egami.Video.Editing.Clip.WithEffect(Egami.Video.Editing.EditEffect)">
+  WithEffect(EditEffect)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Editing/Clip.cs/#L131"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns the clip with one more effect on its frames.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Clip WithEffect(EditEffect effect)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>effect</code> <a class="xref" href="Egami.Video.Editing.EditEffect.html">EditEffect</a></dt>
+    <dd><p>The effect, timed from the clip's start.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Video.Editing.Clip.html">Clip</a></dt>
+    <dd><p>The clip.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Editing/Clip.cs/#L13" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

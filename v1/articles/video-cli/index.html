@@ -230,6 +230,36 @@ egami-video audio in.mkv -o sound.flac
 <td><code>-vn -c:a flac</code>, <code>-c:a libopus -b:a</code>, <code>-ar</code>, <code>-ac</code></td>
 </tr>
 <tr>
+<td><code>join</code></td>
+<td>Clips of any size, rate and audio fitted to one canvas and joined, with transitions</td>
+<td><code>concat</code> filter with <code>scale</code>, <code>pad</code>, <code>fps</code>; <code>xfade</code> and <code>acrossfade</code></td>
+</tr>
+<tr>
+<td><code>fade</code></td>
+<td>Fade in from and out to a colour, picture and sound</td>
+<td><code>-vf fade -af afade</code></td>
+</tr>
+<tr>
+<td><code>overlay</code></td>
+<td>One clip over another, with <code>--key</code> for a chroma key</td>
+<td><code>overlay</code>, <code>chromakey</code>, <code>despill</code></td>
+</tr>
+<tr>
+<td><code>pip</code></td>
+<td>A second clip small in a corner</td>
+<td><code>scale</code> and <code>overlay</code></td>
+</tr>
+<tr>
+<td><code>stack</code></td>
+<td>Clips side by side, above each other or in a grid</td>
+<td><code>hstack</code>, <code>vstack</code>, <code>xstack</code></td>
+</tr>
+<tr>
+<td><code>edit</code></td>
+<td>Render an edit file: clips, transitions, layers and effects</td>
+<td><code>-filter_complex</code></td>
+</tr>
+<tr>
 <td><code>formats</code></td>
 <td>The containers and codecs this build reads and writes</td>
 <td><code>ffmpeg -formats</code></td>
@@ -365,6 +395,22 @@ egami-video audio sound.flac --bitrate 96k -o sound.opus
 egami-video audio in.mp4 --bitrate 64k -o opus-audio.webm
 egami-video audio sound.flac -o sound.m4a
 egami-video audio sound.wav --sample-format s24 -o sound.aiff
+</code></pre>
+<h2 id="editing">Editing</h2>
+<p><code>join</code>, <code>fade</code>, <code>overlay</code>, <code>pip</code> and <code>stack</code> build an edit with Egami.Video's editing library (see
+<a href="../guides/video-editing.html">Video editing</a>) and encode it again, so their clips may differ in size, frame rate, pixel format
+and audio: every clip is fitted to one canvas (<code>--size</code>, <code>--rate</code> and <code>--fit</code>, from the first clip by default) and its sound
+resampled. <code>--transition</code> joins clips with <code>fade</code>, <code>fadeblack</code>, <code>dissolve</code>, <code>wipeleft</code>, <code>slideup</code>, <code>circleopen</code>, <code>clock</code>,
+<code>zoom</code>, <code>pixelize</code>, <code>blur</code> and others, as <code>kind:duration</code>, with an equal-power crossfade of the sound. <code>overlay --key green</code>
+keys out a green screen and takes the spill out of its edges. <code>--save-edit</code> writes the edit as JSON, which <code>edit</code> renders,
+and which can be changed by hand: effects in it are egami run steps, such as <code>&quot;blur 8&quot;</code>.</p>
+<pre><code class="lang-sh">egami-video join in.avi in.webm in.mkv --transition dissolve:0.5 --size 320x240 -o joined.mkv
+egami-video fade in.webm --in 0.5 --out 1 -o faded.webm
+egami-video overlay in.avi in.webm --at right-8,top-8 --scale 0.3 --opacity 0.8 --from 0.5 --to 1.5 -o overlay.mkv
+egami-video overlay in.avi in.mkv --key green --similarity 0.12 --despill 0.6 -o keyed.mkv
+egami-video pip in.avi in.webm --corner bottom-left --scale 0.25 --fade-in 0.2 -o pip.mkv
+egami-video stack in.avi in.mkv --gap 4 -o side-by-side.mkv --save-edit side-by-side.json
+egami-video edit side-by-side.json --codec raw -o again.avi
 </code></pre>
 <h2 id="checking">Checking</h2>
 <p><code>hash</code> writes a hash of every decoded frame (or every packet with <code>--packets</code>) in the layout of <code>ffmpeg -f framemd5</code>, and the

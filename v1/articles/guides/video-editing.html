@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Video editing | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Video editing | Egami ">
+      
+      
+      <link rel="icon" href="../../images/favicon.ico">
+      <link rel="stylesheet" href="../../public/docfx.min.css">
+      <link rel="stylesheet" href="../../public/main.css">
+      <meta name="docfx:navrel" content="../../toc.html">
+      <meta name="docfx:tocrel" content="../toc.html">
+      
+      <meta name="docfx:rel" content="../../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/blob/main/docs/articles/guides/video-editing.md/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../../index.html">
+            <img id="logo" class="svg" src="../../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="video-editing">Video editing</h1>
+
+<p>Egami.Video's editing library, in <code>Egami.Video.Editing</code>, joins clips with transitions, draws clips over clips, keys out green
+screens, lays clips side by side and runs Egami operations on the result, encoding it all again in one pass. An edit is a
+description: <code>VideoEdit</code> holds an <code>EditCanvas</code>, a main <code>EditTrack</code> of <code>Clip</code>s with a <code>Transition</code> between each two, <code>Layer</code>s
+drawn over it and <code>EditEffect</code>s. Nothing is decoded until it renders, and then only the frames in use are held. The
+<code>egami-video</code> commands <code>join</code>, <code>fade</code>, <code>overlay</code>, <code>pip</code>, <code>stack</code> and <code>edit</code> build the same edits (see
+<a href="../video-cli/index.html#editing">the command line</a>).</p>
+<h2 id="joining-clips">Joining clips</h2>
+<p>Clips play one after another; each <code>TrackItem</code> on the track is a clip and the transition into it. They may differ in size, frame rate, pixel format and sound: the canvas sets the output's size,
+frame rate and audio format (from the first clip when there is no canvas), each clip is fitted with <code>ClipFit</code> (<code>Contain</code>
+with bars by default, <code>Cover</code>, <code>Stretch</code> or <code>None</code>) over the canvas <code>Background</code>, each output frame shows the source frame
+nearest its time, and the sound is resampled and remixed; a clip without sound adds silence. <code>Clip.Trim</code> cuts a clip on the
+exact frame and sample, and <code>FadeIn</code> and <code>FadeOut</code> fade the picture from and to a colour and the sound from and to silence.
+<code>Render</code> writes the result with a <code>VideoWriter</code>, whose settings <code>EditRenderOptions.Writer</code> carries; the sound goes into Opus
+unless another audio codec is set.</p>
+<pre><code class="lang-csharp">// Three clips of different sizes and rates, fitted to one 320x180 canvas at 25 fps, with fades at both ends.
+VideoEdit edit = new(new EditCanvas(320, 180, new Rational(25, 1)) { Fit = ClipFit.Contain });
+edit.Track
+    .Add(Clip.Open(&quot;intro.avi&quot;).FadeIn(MediaTime.FromSeconds(0.5)))
+    .Add(Clip.Open(&quot;talk.avi&quot;).Trim(MediaTime.FromSeconds(0.5), MediaTime.FromSeconds(1.5)))
+    .Add(Clip.Open(&quot;outro.avi&quot;).FadeOut(MediaTime.FromSeconds(0.5)));
+EditPlan plan = edit.Render(&quot;joined.mkv&quot;, new EditRenderOptions { Writer = new VideoWriterOptions { Codec = MotionJpegCodec.Instance, Quality = 80 } });
+Console.WriteLine($&quot;{plan.FrameCount} frames, {plan.Duration.Seconds} s&quot;);
+</code></pre>
+<p><code>Plan</code> lays the timeline out in whole frames before anything is decoded and returns an <code>EditPlan</code>: every <code>PlannedClip</code> and
+<code>PlannedLayer</code> with its frames, the length, and warnings about what it fixed up. An edit that cannot render, such as one with
+a trim past a clip's end or a transition longer than a clip, throws with every reason. <code>ToJson</code> and <code>VideoEdit.FromJson</code>
+save and load an edit as the JSON file the command line's <code>edit</code> runs.</p>
+<pre><code class="lang-csharp">// Lay out the timeline before rendering, and save the edit as the JSON file 'egami-video edit' runs.
+VideoEdit edit = new(new EditCanvas(320, 180, new Rational(25, 1)));
+edit.Track.Add(Clip.Open(&quot;intro.avi&quot;)).Add(Clip.Open(&quot;talk.avi&quot;), Transition.Fade(MediaTime.FromSeconds(1)));
+EditPlan plan = edit.Plan();
+foreach (PlannedClip clip in plan.Clips)
+{
+    Console.WriteLine($&quot;clip {clip.Index}: frames {clip.StartFrame} to {clip.StartFrame + clip.FrameCount - 1}, {clip.SourceSize.Width}x{clip.SourceSize.Height}&quot;);
+}
+
+foreach (string warning in plan.Warnings)
+{
+    Console.WriteLine(warning);
+}
+
+File.WriteAllText(&quot;edit.json&quot;, edit.ToJson());
+VideoEdit again = VideoEdit.FromJson(File.ReadAllText(&quot;edit.json&quot;));
+</code></pre><h2 id="transitions">Transitions</h2>
+<p>A <code>Transition</code> overlaps the two clips it joins by its <code>Duration</code>, so the edit gets shorter by it, and crossfades their sound
+over the same time (<code>AudioCurve</code>, equal power by default). <code>TransitionKind</code> has ten built-in kinds: <code>Fade</code> (a cross-dissolve),
+<code>FadeThroughColor</code>, <code>Dissolve</code>, <code>Wipe</code> and <code>Slide</code> in a <code>TransitionDirection</code>, <code>CircleOpen</code>, <code>CircleClose</code>, <code>Clock</code>, <code>Zoom</code>,
+<code>Pixelize</code> and <code>Blur</code>. A wipe can have a soft edge (<code>Softness</code>), and any transition can ease its progress (<code>Easing</code>). The
+fades and wipes match FFmpeg's <code>xfade</code> to within its rounding and one pixel of the edge.</p>
+<pre><code class="lang-csharp">// A dissolve, then a soft wipe with eased progress: each overlaps the two clips by its length, sound crossfading too.
+VideoEdit edit = new(new EditCanvas(320, 180, new Rational(25, 1)));
+edit.Track.Add(Clip.Open(&quot;intro.avi&quot;))
+    .Add(Clip.Open(&quot;talk.avi&quot;), Transition.Dissolve(MediaTime.FromSeconds(0.5)))
+    .Add(Clip.Open(&quot;outro.avi&quot;), Transition.Wipe(TransitionDirection.Left, MediaTime.FromSeconds(0.5)) with { Softness = 0.1, Easing = Easing.EaseInOut });
+EditPlan plan = edit.Render(&quot;transitions.mkv&quot;);
+</code></pre>
+<p>An app's own transition implements <code>ITransition</code>, which draws one frame from the two clips' frames and the progress:</p>
+<pre><code class="lang-csharp">// An app's own transition: the incoming clip appears from the top down.
+VideoEdit edit = new(new EditCanvas(320, 180, new Rational(25, 1)));
+edit.Track.Add(Clip.Open(&quot;intro.avi&quot;)).Add(Clip.Open(&quot;outro.avi&quot;), Transition.Custom(new Blinds(), MediaTime.FromSeconds(1)));
+edit.Render(&quot;blinds.mkv&quot;);
+</code></pre><pre><code class="lang-csharp">private sealed class Blinds : ITransition
+{
+    public void Render(Raster&lt;Rgba8&gt; outgoing, Raster&lt;Rgba8&gt; incoming, double progress, Raster&lt;Rgba8&gt; target)
+    {
+        int rows = (int)Math.Round(progress * target.Height);
+        for (int y = 0; y &lt; target.Height; y++)
+        {
+            (y &lt; rows ? incoming : outgoing).Row(y).CopyTo(target.Row(y));
+        }
+    }
+}
+</code></pre><h2 id="layers">Layers</h2>
+<p>A <code>Layer</code> draws a clip over the main track: placed in a rectangle (<code>Place(Rect)</code>) or at an <code>Anchor</code> with a margin and a scale,
+with an opacity and an Egami <code>BlendMode</code>, inside a time window (<code>Between</code>), with fades. <code>Animate</code> moves its <code>LayerProperty</code>
+values (<code>X</code>, <code>Y</code>, <code>Scale</code>, <code>Rotation</code> and <code>Opacity</code>) through <code>Keyframe</code>s, timed from the layer's start. A layer ends with its
+clip, or holds the last frame (<code>HoldLastFrame</code>). Its sound is mixed in unless its clip is muted.</p>
+<pre><code class="lang-csharp">// Picture-in-picture: talk.avi in the bottom-right corner from 0.5 s to 1.5 s, sliding in from the right as it fades in.
+VideoEdit edit = new(new EditCanvas(320, 180, new Rational(25, 1)));
+edit.Track.Add(Clip.Open(&quot;intro.avi&quot;));
+edit.Layers.Add(Layer.Of(Clip.Open(&quot;talk.avi&quot;).Muted())
+    .Place(Anchor.BottomRight, margin: 8, scale: 0.3)
+    .Between(MediaTime.FromSeconds(0.5), MediaTime.FromSeconds(1.5))
+    .FadeIn(MediaTime.FromSeconds(0.25))
+    .Animate(LayerProperty.X, new Keyframe(MediaTime.Zero, 60, Easing.EaseOut), new Keyframe(MediaTime.FromSeconds(0.25), 0)));
+edit.Render(&quot;pip.mkv&quot;);
+</code></pre>
+<p><code>Layer.Key</code> runs a <code>ChromaKey</code> on the layer's frames: Egami's chroma key takes out the pixels near the screen colour in the
+CbCr plane, so uneven lighting on the screen matters little, and despill takes the screen's colour out of hair and edges.</p>
+<pre><code class="lang-csharp">// A green-screen clip over another: the key takes the studio green out and despill cleans its edges.
+VideoEdit edit = new(new EditCanvas(320, 180, new Rational(25, 1)));
+edit.Track.Add(Clip.Open(&quot;intro.avi&quot;));
+edit.Layers.Add(Layer.Of(Clip.Open(&quot;presenter-green.avi&quot;))
+    .Key(new ChromaKey(Rgba8.FromHex(&quot;#00b140&quot;)) { Similarity = 0.12f, Blend = 0.06f, Despill = 0.6f })
+    .Place(new Rect(160, 90, 160, 90)));
+edit.Render(&quot;keyed.mkv&quot;);
+</code></pre><h2 id="stacks">Stacks</h2>
+<p><code>Stack.Horizontal</code>, <code>Stack.Vertical</code> and <code>Stack.Grid</code> (the three <code>StackLayout</code>s) make one clip of several shown at once, like FFmpeg's <code>hstack</code>,
+<code>vstack</code> and <code>xstack</code>. <code>StackOptions</code> sets a gap, the background, how grid cells fit, whether the stack ends with its
+shortest clip, and whether the sound is the first clip's or every clip's mixed. A stack is a clip, so it can be trimmed,
+faded and joined with a transition.</p>
+<pre><code class="lang-csharp">// Two clips side by side with a 4-pixel gap, each scaled to the first one's height; a stack is a clip like any other.
+VideoEdit edit = new();
+edit.Track.Add(Stack.Horizontal([Clip.Open(&quot;intro.avi&quot;), Clip.Open(&quot;talk.avi&quot;)], new StackOptions { Gap = 4, MixAudio = true }));
+EditPlan plan = edit.Render(&quot;side-by-side.mkv&quot;);
+Console.WriteLine($&quot;{plan.Canvas.Width}x{plan.Canvas.Height}&quot;);
+</code></pre><h2 id="effects">Effects</h2>
+<p><code>EditEffect.Apply</code> runs Egami operations or any <code>IRasterOperation</code> on each frame, and <code>EditEffect.Of</code> runs an app's own
+<code>IFrameEffect</code>, which gets the frame's time and its progress through the effect's window in a <code>FrameEffectContext</code>. Effects
+attach to the whole edit (<code>VideoEdit.Effects</code>), to a clip (<code>Clip.WithEffect</code>) or to a layer (<code>Layer.WithEffect</code>), and
+<code>Between</code> limits one to a time window. An effect keeps the frame size.</p>
+<pre><code class="lang-csharp">// Blur the whole edit from 0.5 s to 1 s, and darken one clip with an app's own effect that knows the time.
+VideoEdit edit = new(new EditCanvas(320, 180, new Rational(25, 1)));
+edit.Track.Add(Clip.Open(&quot;intro.avi&quot;).WithEffect(EditEffect.Of(new Darken())));
+edit.Effects.Add(EditEffect.Apply(ops =&gt; ops.Blur(4), &quot;blur 4&quot;).Between(MediaTime.FromSeconds(0.5), MediaTime.FromSeconds(1)));
+edit.Render(&quot;effects.mkv&quot;);
+</code></pre><pre><code class="lang-csharp">private sealed class Darken : IFrameEffect
+{
+    public void Apply(Raster&lt;Rgba8&gt; frame, FrameEffectContext context)
+    {
+        float keep = 1 - (0.5f * (float)context.Progress);
+        for (int y = 0; y &lt; frame.Height; y++)
+        {
+            foreach (ref Rgba8 p in frame.Row(y))
+            {
+                p = new Rgba8((byte)(p.R * keep), (byte)(p.G * keep), (byte)(p.B * keep), p.A);
+            }
+        }
+    }
+}
+</code></pre>
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/docs/articles/guides/video-editing.md/#L1" class="edit-link">Edit this page</a>
+        </div>
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

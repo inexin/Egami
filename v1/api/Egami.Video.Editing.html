@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Namespace Egami.Video.Editing | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Namespace Egami.Video.Editing | Egami ">
+      
+      
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.Video.Editing">
+
+  <h1 id="Egami_Video_Editing" data-uid="Egami.Video.Editing" class="text-break">Namespace Egami.Video.Editing</h1>
+  <div class="markdown level0 summary"></div>
+  <div class="markdown level0 conceptual"></div>
+  <div class="markdown level0 remarks"></div>
+
+    <h3 id="classes">
+Classes
+</h3>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Editing.ChromaKey.html">ChromaKey</a></dt>
+      <dd><p>A chroma key for <a class="xref" href="Egami.Video.Editing.Layer.html#Egami_Video_Editing_Layer_Key_Egami_Video_Editing_ChromaKey_">Key(ChromaKey)</a>: pixels near <a class="xref" href="Egami.Video.Editing.ChromaKey.html#Egami_Video_Editing_ChromaKey_Color">Color</a> in the CbCr plane become transparent with
+Egami's <a class="xref" href="Egami.Operations.RasterOps.html#Egami_Operations_RasterOps_ChromaKey_Egami_Pixels_Rgba8_System_Single_System_Single_">ChromaKey(Rgba8, float, float)</a>, then <a class="xref" href="Egami.Operations.RasterOps.html#Egami_Operations_RasterOps_Despill_Egami_Operations_DespillColor_System_Single_System_Single_">Despill(DespillColor, float, float)</a> takes the screen's colour out of the
+edges and see-through pixels that are left.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Editing.Clip.html">Clip</a></dt>
+      <dd><p>A piece of video, with its audio, as it goes into a <a class="xref" href="Egami.Video.Editing.VideoEdit.html">VideoEdit</a>: a file or stream, or a <a class="xref" href="Egami.Video.Editing.Stack.html">Stack</a> of
+clips. The methods return a changed copy, so they chain: <code>Clip.Open(&quot;a.mp4&quot;).Trim(start, end).FadeIn(duration)</code>.
+Nothing is decoded until the edit renders.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Editing.EditCanvas.html">EditCanvas</a></dt>
+      <dd><p>The output of a <a class="xref" href="Egami.Video.Editing.VideoEdit.html">VideoEdit</a>: picture size, frame rate, how clips are fitted, the background, and the audio
+format every clip's audio is resampled and remixed to. When an edit has no canvas, it takes the first clip's size and
+frame rate.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Editing.EditEffect.html">EditEffect</a></dt>
+      <dd><p>Egami operations or an app's own effect on the frames of a <a class="xref" href="Egami.Video.Editing.VideoEdit.html">VideoEdit</a>, a <a class="xref" href="Egami.Video.Editing.Clip.html">Clip</a> or a
+<a class="xref" href="Egami.Video.Editing.Layer.html">Layer</a>, optionally only inside a time window (<a class="xref" href="Egami.Video.Editing.EditEffect.html#Egami_Video_Editing_EditEffect_Between_Egami_Video_MediaTime_System_Nullable_Egami_Video_MediaTime__">Between(MediaTime, MediaTime?)</a>). Effects keep the frame size.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Editing.EditPlan.html">EditPlan</a></dt>
+      <dd><p>An edit's timeline worked out before rendering by <a class="xref" href="Egami.Video.Editing.VideoEdit.html#Egami_Video_Editing_VideoEdit_Plan_Egami_Video_MediaContext_">Plan(MediaContext?)</a>: the canvas, where every clip and layer
+falls in whole frames, the length, and warnings about things it fixed up, such as a trim past a clip's end.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Editing.EditRenderOptions.html">EditRenderOptions</a></dt>
+      <dd><p>How <a class="xref" href="Egami.Video.Editing.VideoEdit.html#Egami_Video_Editing_VideoEdit_Render_System_String_Egami_Video_Editing_EditRenderOptions_System_IProgress_Egami_Video_MediaProgress__System_Threading_CancellationToken_">Render(string, EditRenderOptions?, IProgress&lt;MediaProgress&gt;?, CancellationToken)</a> encodes.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Editing.EditTrack.html">EditTrack</a></dt>
+      <dd><p>The main track of a <a class="xref" href="Egami.Video.Editing.VideoEdit.html">VideoEdit</a>: clips that play one after another. A <a class="xref" href="Egami.Video.Editing.Transition.html">Transition</a> between two clips
+overlaps them by its length; without one, the next clip starts on the frame after the last one ends.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Editing.Layer.html">Layer</a></dt>
+      <dd><p>A clip drawn over the main track of a <a class="xref" href="Egami.Video.Editing.VideoEdit.html">VideoEdit</a> inside a time window: a logo, a picture-in-picture, a lower
+third or a keyed presenter. It has a place, an opacity, a blend mode, fades, an optional <a class="xref" href="Egami.Video.Editing.Layer.html#Egami_Video_Editing_Layer_ChromaKey">ChromaKey</a> and
+keyframed motion. Layers draw in order, the last on top. The methods return a changed copy, so they chain.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Editing.PlannedClip.html">PlannedClip</a></dt>
+      <dd><p>Where one clip of the main track falls in a planned edit, in whole output frames.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Editing.PlannedLayer.html">PlannedLayer</a></dt>
+      <dd><p>Where one layer falls in a planned edit, in whole output frames.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Editing.Stack.html">Stack</a></dt>
+      <dd><p>Builds one clip out of several shown at once: side by side, one above the other, or in a grid. A stack is an ordinary
+<a class="xref" href="Egami.Video.Editing.Clip.html">Clip</a>, so it can be trimmed, faded or joined with a transition.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Editing.StackOptions.html">StackOptions</a></dt>
+      <dd><p>How a <a class="xref" href="Egami.Video.Editing.Stack.html">Stack</a> is drawn and how long it lasts.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Editing.TrackItem.html">TrackItem</a></dt>
+      <dd><p>One clip on an <a class="xref" href="Egami.Video.Editing.EditTrack.html">EditTrack</a> and the transition into it from the clip before.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Editing.Transition.html">Transition</a></dt>
+      <dd><p>How one clip on an <a class="xref" href="Egami.Video.Editing.EditTrack.html">EditTrack</a> changes into the next. The two clips overlap by <a class="xref" href="Egami.Video.Editing.Transition.html#Egami_Video_Editing_Transition_Duration">Duration</a>, so the
+edit gets shorter by it; their audio crossfades over the same time, equal power by default. Make one with the static
+methods, such as <a class="xref" href="Egami.Video.Editing.Transition.html#Egami_Video_Editing_Transition_Dissolve_Egami_Video_MediaTime_">Dissolve(MediaTime)</a> or <a class="xref" href="Egami.Video.Editing.Transition.html#Egami_Video_Editing_Transition_Wipe_Egami_Video_Editing_TransitionDirection_Egami_Video_MediaTime_">Wipe(TransitionDirection, MediaTime)</a>.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Editing.VideoEdit.html">VideoEdit</a></dt>
+      <dd><p>An edit: clips on a main <a class="xref" href="Egami.Video.Editing.VideoEdit.html#Egami_Video_Editing_VideoEdit_Track">Track</a> with transitions between them, <a class="xref" href="Egami.Video.Editing.VideoEdit.html#Egami_Video_Editing_VideoEdit_Layers">Layers</a> drawn over it, and
+<a class="xref" href="Egami.Video.Editing.VideoEdit.html#Egami_Video_Editing_VideoEdit_Effects">Effects</a> on the result, all fitted to one <a class="xref" href="Egami.Video.Editing.VideoEdit.html#Egami_Video_Editing_VideoEdit_Canvas">Canvas</a>. It is a description: <a class="xref" href="Egami.Video.Editing.VideoEdit.html#Egami_Video_Editing_VideoEdit_Plan_Egami_Video_MediaContext_">Plan(MediaContext?)</a> lays
+out the timeline and checks it, and <a class="xref" href="Egami.Video.Editing.VideoEdit.html#Egami_Video_Editing_VideoEdit_Render_System_String_Egami_Video_Editing_EditRenderOptions_System_IProgress_Egami_Video_MediaProgress__System_Threading_CancellationToken_">Render(string, EditRenderOptions?, IProgress&lt;MediaProgress&gt;?, CancellationToken)</a>
+decodes, composes and encodes it in one pass, holding only the frames in use. Save it as JSON with <a class="xref" href="Egami.Video.Editing.VideoEdit.html#Egami_Video_Editing_VideoEdit_ToJson">ToJson()</a>.</p>
+</dd>
+    </dl>
+    <h3 id="structs">
+Structs
+</h3>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Editing.FrameEffectContext.html">FrameEffectContext</a></dt>
+      <dd><p>Where an <a class="xref" href="Egami.Video.Editing.IFrameEffect.html">IFrameEffect</a> is: the frame's time and how far through its window it is.</p>
+</dd>
+    </dl>
+    <h3 id="interfaces">
+Interfaces
+</h3>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Editing.IFrameEffect.html">IFrameEffect</a></dt>
+      <dd><p>An app's own effect for <a class="xref" href="Egami.Video.Editing.EditEffect.html#Egami_Video_Editing_EditEffect_Of_Egami_Video_Editing_IFrameEffect_System_String_">Of(IFrameEffect, string?)</a>, which knows each frame's time. It changes the frame in place. The same
+instance runs on every frame, so keep it stateless.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Editing.ITransition.html">ITransition</a></dt>
+      <dd><p>An app's own picture transition for <a class="xref" href="Egami.Video.Editing.Transition.html#Egami_Video_Editing_Transition_Custom_Egami_Video_Editing_ITransition_Egami_Video_MediaTime_">Custom(ITransition, MediaTime)</a>: it draws one frame of the change from one clip to the
+next. The two frames and the target have the canvas size. The same instance draws every frame, possibly on several threads,
+so keep it stateless.</p>
+</dd>
+    </dl>
+    <h3 id="enums">
+Enums
+</h3>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Editing.ClipFit.html">ClipFit</a></dt>
+      <dd><p>How a clip whose size differs from the canvas is fitted to it.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Editing.LayerProperty.html">LayerProperty</a></dt>
+      <dd><p>A property of a <a class="xref" href="Egami.Video.Editing.Layer.html">Layer</a> that <a class="xref" href="Egami.Video.Editing.Layer.html#Egami_Video_Editing_Layer_Animate_Egami_Video_Editing_LayerProperty_Egami_Video_Keyframe___">Animate(LayerProperty, params Keyframe[])</a> moves over time.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Editing.StackLayout.html">StackLayout</a></dt>
+      <dd><p>How a <a class="xref" href="Egami.Video.Editing.Stack.html">Stack</a> lays out its clips.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Editing.TransitionDirection.html">TransitionDirection</a></dt>
+      <dd><p>Which way a <a class="xref" href="Egami.Video.Editing.TransitionKind.html#Egami_Video_Editing_TransitionKind_Wipe">Wipe</a> edge or a <a class="xref" href="Egami.Video.Editing.TransitionKind.html#Egami_Video_Editing_TransitionKind_Slide">Slide</a> moves.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Editing.TransitionKind.html">TransitionKind</a></dt>
+      <dd><p>The built-in kinds of <a class="xref" href="Egami.Video.Editing.Transition.html">Transition</a>.</p>
+</dd>
+    </dl>
+
+
+</article>
+
+        <div class="contribution d-print-none">
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>
