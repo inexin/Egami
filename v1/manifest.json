@@ -13701,7 +13701,7 @@
       "Uid": null,
       "IsMRef": true,
       "Title": "Egami.Video.Editing.CameraMotion",
-      "Summary": "<p sourcefile=\"api/Egami.Video.Editing.CameraMotion.yml\" sourcestartlinenumber=\"1\">How the camera moved from one frame to the next, as <xref href=\"Egami.Video.Editing.Stabilizer.Analyze(System.String%2cEgami.Video.Editing.StabilizerOptions%2cSystem.IProgress%7bEgami.Video.MediaProgress%7d%2cSystem.Threading.CancellationToken)\" data-throw-if-not-resolved=\"false\"></xref>\nmeasures it: a shift, a rotation and a scale per frame, in the clip's own pixels. It is pass 1 of stabilization; pass 2,\n<xref href=\"Egami.Video.Editing.Clip.Stabilize(Egami.Video.Editing.CameraMotion%2cEgami.Video.Editing.StabilizeOptions)\" data-throw-if-not-resolved=\"false\"></xref>, smooths the path and warps the frames. Save it as JSON to stabilize again with other settings\nwithout measuring again.</p>\n"
+      "Summary": "<p sourcefile=\"api/Egami.Video.Editing.CameraMotion.yml\" sourcestartlinenumber=\"1\">How the camera moved from one frame to the next, as <xref href=\"Egami.Video.Editing.Stabilizer.Analyze(System.String%2cEgami.Video.Editing.MotionAnalysisOptions%2cSystem.IProgress%7bEgami.Video.MediaProgress%7d%2cSystem.Threading.CancellationToken)\" data-throw-if-not-resolved=\"false\"></xref>\nmeasures it: a shift, a rotation and a scale per frame, in the clip's own pixels. It is pass 1 of stabilization; pass 2,\n<xref href=\"Egami.Video.Editing.Clip.Stabilize(Egami.Video.Editing.CameraMotion%2cEgami.Video.Editing.StabilizeOptions)\" data-throw-if-not-resolved=\"false\"></xref>, smooths the path and warps the frames. Save it as JSON to stabilize again with other settings\nwithout measuring again.</p>\n"
     },
     {
       "type": "ManagedReference",
@@ -13943,6 +13943,20 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Editing.MotionAnalysisOptions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Editing.MotionAnalysisOptions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Editing.MotionAnalysisOptions",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Editing.MotionAnalysisOptions.yml\" sourcestartlinenumber=\"1\">How <xref href=\"Egami.Video.Editing.Stabilizer.Analyze(System.String%2cEgami.Video.Editing.MotionAnalysisOptions%2cSystem.IProgress%7bEgami.Video.MediaProgress%7d%2cSystem.Threading.CancellationToken)\" data-throw-if-not-resolved=\"false\"></xref> measures.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.Video.Editing.PanZoomPath.yml",
       "output": {
         ".html": {
@@ -14052,20 +14066,6 @@
       "IsMRef": true,
       "Title": "Egami.Video.Editing.Stabilizer",
       "Summary": "<p sourcefile=\"api/Egami.Video.Editing.Stabilizer.yml\" sourcestartlinenumber=\"1\">Pass 1 of two-pass stabilization: measures the camera's motion over a clip (<xref href=\"Egami.Video.Editing.CameraMotion\" data-throw-if-not-resolved=\"false\"></xref>). Pass 2 is\n<xref href=\"Egami.Video.Editing.Clip.Stabilize(Egami.Video.Editing.CameraMotion%2cEgami.Video.Editing.StabilizeOptions)\" data-throw-if-not-resolved=\"false\"></xref>, which smooths the camera path with a Gaussian and warps each frame onto it.</p>\n"
-    },
-    {
-      "type": "ManagedReference",
-      "source_relative_path": "api/Egami.Video.Editing.StabilizerOptions.yml",
-      "output": {
-        ".html": {
-          "relative_path": "api/Egami.Video.Editing.StabilizerOptions.html"
-        }
-      },
-      "version": "",
-      "Uid": null,
-      "IsMRef": true,
-      "Title": "Egami.Video.Editing.StabilizerOptions",
-      "Summary": "<p sourcefile=\"api/Egami.Video.Editing.StabilizerOptions.yml\" sourcestartlinenumber=\"1\">How <xref href=\"Egami.Video.Editing.Stabilizer.Analyze(System.String%2cEgami.Video.Editing.StabilizerOptions%2cSystem.IProgress%7bEgami.Video.MediaProgress%7d%2cSystem.Threading.CancellationToken)\" data-throw-if-not-resolved=\"false\"></xref> measures.</p>\n"
     },
     {
       "type": "ManagedReference",

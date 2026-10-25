@@ -97,7 +97,7 @@ Class CameraMotion  <a class="header-action link-secondary" title="View source" 
   <dl><dt>Assembly</dt><dd>Egami.Video.dll</dd></dl>
   </div>
 
-  <div class="markdown summary"><p>How the camera moved from one frame to the next, as <a class="xref" href="Egami.Video.Editing.Stabilizer.html#Egami_Video_Editing_Stabilizer_Analyze_System_String_Egami_Video_Editing_StabilizerOptions_System_IProgress_Egami_Video_MediaProgress__System_Threading_CancellationToken_">Analyze(string, StabilizerOptions?, IProgress&lt;MediaProgress&gt;?, CancellationToken)</a>
+  <div class="markdown summary"><p>How the camera moved from one frame to the next, as <a class="xref" href="Egami.Video.Editing.Stabilizer.html#Egami_Video_Editing_Stabilizer_Analyze_System_String_Egami_Video_Editing_MotionAnalysisOptions_System_IProgress_Egami_Video_MediaProgress__System_Threading_CancellationToken_">Analyze(string, MotionAnalysisOptions?, IProgress&lt;MediaProgress&gt;?, CancellationToken)</a>
 measures it: a shift, a rotation and a scale per frame, in the clip's own pixels. It is pass 1 of stabilization; pass 2,
 <a class="xref" href="Egami.Video.Editing.Clip.html#Egami_Video_Editing_Clip_Stabilize_Egami_Video_Editing_CameraMotion_Egami_Video_Editing_StabilizeOptions_">Stabilize(CameraMotion, StabilizeOptions?)</a>, smooths the path and warps the frames. Save it as JSON to stabilize again with other settings
 without measuring again.</p>

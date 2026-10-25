@@ -90544,6 +90544,38 @@ references:
   commentId: F:Egami.Video.Editing.LayerProperty.Y
   fullName: Egami.Video.Editing.LayerProperty.Y
   nameWithType: LayerProperty.Y
+- uid: Egami.Video.Editing.MotionAnalysisOptions
+  name: MotionAnalysisOptions
+  href: api/Egami.Video.Editing.MotionAnalysisOptions.html
+  commentId: T:Egami.Video.Editing.MotionAnalysisOptions
+  fullName: Egami.Video.Editing.MotionAnalysisOptions
+  nameWithType: MotionAnalysisOptions
+- uid: Egami.Video.Editing.MotionAnalysisOptions.AnalysisWidth
+  name: AnalysisWidth
+  href: api/Egami.Video.Editing.MotionAnalysisOptions.html#Egami_Video_Editing_MotionAnalysisOptions_AnalysisWidth
+  commentId: P:Egami.Video.Editing.MotionAnalysisOptions.AnalysisWidth
+  fullName: Egami.Video.Editing.MotionAnalysisOptions.AnalysisWidth
+  nameWithType: MotionAnalysisOptions.AnalysisWidth
+- uid: Egami.Video.Editing.MotionAnalysisOptions.AnalysisWidth*
+  name: AnalysisWidth
+  href: api/Egami.Video.Editing.MotionAnalysisOptions.html#Egami_Video_Editing_MotionAnalysisOptions_AnalysisWidth_
+  commentId: Overload:Egami.Video.Editing.MotionAnalysisOptions.AnalysisWidth
+  isSpec: "True"
+  fullName: Egami.Video.Editing.MotionAnalysisOptions.AnalysisWidth
+  nameWithType: MotionAnalysisOptions.AnalysisWidth
+- uid: Egami.Video.Editing.MotionAnalysisOptions.Default
+  name: Default
+  href: api/Egami.Video.Editing.MotionAnalysisOptions.html#Egami_Video_Editing_MotionAnalysisOptions_Default
+  commentId: P:Egami.Video.Editing.MotionAnalysisOptions.Default
+  fullName: Egami.Video.Editing.MotionAnalysisOptions.Default
+  nameWithType: MotionAnalysisOptions.Default
+- uid: Egami.Video.Editing.MotionAnalysisOptions.Default*
+  name: Default
+  href: api/Egami.Video.Editing.MotionAnalysisOptions.html#Egami_Video_Editing_MotionAnalysisOptions_Default_
+  commentId: Overload:Egami.Video.Editing.MotionAnalysisOptions.Default
+  isSpec: "True"
+  fullName: Egami.Video.Editing.MotionAnalysisOptions.Default
+  nameWithType: MotionAnalysisOptions.Default
 - uid: Egami.Video.Editing.PanZoomPath
   name: PanZoomPath
   href: api/Egami.Video.Editing.PanZoomPath.html
@@ -91015,6 +91047,19 @@ references:
   isSpec: "True"
   fullName: Egami.Video.Editing.StabilizeOptions.Edges
   nameWithType: StabilizeOptions.Edges
+- uid: Egami.Video.Editing.StabilizeOptions.MaxZoom
+  name: MaxZoom
+  href: api/Egami.Video.Editing.StabilizeOptions.html#Egami_Video_Editing_StabilizeOptions_MaxZoom
+  commentId: P:Egami.Video.Editing.StabilizeOptions.MaxZoom
+  fullName: Egami.Video.Editing.StabilizeOptions.MaxZoom
+  nameWithType: StabilizeOptions.MaxZoom
+- uid: Egami.Video.Editing.StabilizeOptions.MaxZoom*
+  name: MaxZoom
+  href: api/Egami.Video.Editing.StabilizeOptions.html#Egami_Video_Editing_StabilizeOptions_MaxZoom_
+  commentId: Overload:Egami.Video.Editing.StabilizeOptions.MaxZoom
+  isSpec: "True"
+  fullName: Egami.Video.Editing.StabilizeOptions.MaxZoom
+  nameWithType: StabilizeOptions.MaxZoom
 - uid: Egami.Video.Editing.StabilizeOptions.Smoothing
   name: Smoothing
   href: api/Egami.Video.Editing.StabilizeOptions.html#Egami_Video_Editing_StabilizeOptions_Smoothing
@@ -91034,24 +91079,24 @@ references:
   commentId: T:Egami.Video.Editing.Stabilizer
   fullName: Egami.Video.Editing.Stabilizer
   nameWithType: Stabilizer
-- uid: Egami.Video.Editing.Stabilizer.Analyze(System.IO.Stream,Egami.Video.Editing.StabilizerOptions,System.IProgress{Egami.Video.MediaProgress},System.Threading.CancellationToken)
-  name: Analyze(Stream, StabilizerOptions?, IProgress<MediaProgress>?, CancellationToken)
-  href: api/Egami.Video.Editing.Stabilizer.html#Egami_Video_Editing_Stabilizer_Analyze_System_IO_Stream_Egami_Video_Editing_StabilizerOptions_System_IProgress_Egami_Video_MediaProgress__System_Threading_CancellationToken_
-  commentId: M:Egami.Video.Editing.Stabilizer.Analyze(System.IO.Stream,Egami.Video.Editing.StabilizerOptions,System.IProgress{Egami.Video.MediaProgress},System.Threading.CancellationToken)
-  name.vb: Analyze(Stream, StabilizerOptions, IProgress(Of MediaProgress), CancellationToken)
-  fullName: Egami.Video.Editing.Stabilizer.Analyze(System.IO.Stream, Egami.Video.Editing.StabilizerOptions?, System.IProgress<Egami.Video.MediaProgress>?, System.Threading.CancellationToken)
-  fullName.vb: Egami.Video.Editing.Stabilizer.Analyze(System.IO.Stream, Egami.Video.Editing.StabilizerOptions, System.IProgress(Of Egami.Video.MediaProgress), System.Threading.CancellationToken)
-  nameWithType: Stabilizer.Analyze(Stream, StabilizerOptions?, IProgress<MediaProgress>?, CancellationToken)
-  nameWithType.vb: Stabilizer.Analyze(Stream, StabilizerOptions, IProgress(Of MediaProgress), CancellationToken)
-- uid: Egami.Video.Editing.Stabilizer.Analyze(System.String,Egami.Video.Editing.StabilizerOptions,System.IProgress{Egami.Video.MediaProgress},System.Threading.CancellationToken)
-  name: Analyze(string, StabilizerOptions?, IProgress<MediaProgress>?, CancellationToken)
-  href: api/Egami.Video.Editing.Stabilizer.html#Egami_Video_Editing_Stabilizer_Analyze_System_String_Egami_Video_Editing_StabilizerOptions_System_IProgress_Egami_Video_MediaProgress__System_Threading_CancellationToken_
-  commentId: M:Egami.Video.Editing.Stabilizer.Analyze(System.String,Egami.Video.Editing.StabilizerOptions,System.IProgress{Egami.Video.MediaProgress},System.Threading.CancellationToken)
-  name.vb: Analyze(String, StabilizerOptions, IProgress(Of MediaProgress), CancellationToken)
-  fullName: Egami.Video.Editing.Stabilizer.Analyze(string, Egami.Video.Editing.StabilizerOptions?, System.IProgress<Egami.Video.MediaProgress>?, System.Threading.CancellationToken)
-  fullName.vb: Egami.Video.Editing.Stabilizer.Analyze(String, Egami.Video.Editing.StabilizerOptions, System.IProgress(Of Egami.Video.MediaProgress), System.Threading.CancellationToken)
-  nameWithType: Stabilizer.Analyze(string, StabilizerOptions?, IProgress<MediaProgress>?, CancellationToken)
-  nameWithType.vb: Stabilizer.Analyze(String, StabilizerOptions, IProgress(Of MediaProgress), CancellationToken)
+- uid: Egami.Video.Editing.Stabilizer.Analyze(System.IO.Stream,Egami.Video.Editing.MotionAnalysisOptions,System.IProgress{Egami.Video.MediaProgress},System.Threading.CancellationToken)
+  name: Analyze(Stream, MotionAnalysisOptions?, IProgress<MediaProgress>?, CancellationToken)
+  href: api/Egami.Video.Editing.Stabilizer.html#Egami_Video_Editing_Stabilizer_Analyze_System_IO_Stream_Egami_Video_Editing_MotionAnalysisOptions_System_IProgress_Egami_Video_MediaProgress__System_Threading_CancellationToken_
+  commentId: M:Egami.Video.Editing.Stabilizer.Analyze(System.IO.Stream,Egami.Video.Editing.MotionAnalysisOptions,System.IProgress{Egami.Video.MediaProgress},System.Threading.CancellationToken)
+  name.vb: Analyze(Stream, MotionAnalysisOptions, IProgress(Of MediaProgress), CancellationToken)
+  fullName: Egami.Video.Editing.Stabilizer.Analyze(System.IO.Stream, Egami.Video.Editing.MotionAnalysisOptions?, System.IProgress<Egami.Video.MediaProgress>?, System.Threading.CancellationToken)
+  fullName.vb: Egami.Video.Editing.Stabilizer.Analyze(System.IO.Stream, Egami.Video.Editing.MotionAnalysisOptions, System.IProgress(Of Egami.Video.MediaProgress), System.Threading.CancellationToken)
+  nameWithType: Stabilizer.Analyze(Stream, MotionAnalysisOptions?, IProgress<MediaProgress>?, CancellationToken)
+  nameWithType.vb: Stabilizer.Analyze(Stream, MotionAnalysisOptions, IProgress(Of MediaProgress), CancellationToken)
+- uid: Egami.Video.Editing.Stabilizer.Analyze(System.String,Egami.Video.Editing.MotionAnalysisOptions,System.IProgress{Egami.Video.MediaProgress},System.Threading.CancellationToken)
+  name: Analyze(string, MotionAnalysisOptions?, IProgress<MediaProgress>?, CancellationToken)
+  href: api/Egami.Video.Editing.Stabilizer.html#Egami_Video_Editing_Stabilizer_Analyze_System_String_Egami_Video_Editing_MotionAnalysisOptions_System_IProgress_Egami_Video_MediaProgress__System_Threading_CancellationToken_
+  commentId: M:Egami.Video.Editing.Stabilizer.Analyze(System.String,Egami.Video.Editing.MotionAnalysisOptions,System.IProgress{Egami.Video.MediaProgress},System.Threading.CancellationToken)
+  name.vb: Analyze(String, MotionAnalysisOptions, IProgress(Of MediaProgress), CancellationToken)
+  fullName: Egami.Video.Editing.Stabilizer.Analyze(string, Egami.Video.Editing.MotionAnalysisOptions?, System.IProgress<Egami.Video.MediaProgress>?, System.Threading.CancellationToken)
+  fullName.vb: Egami.Video.Editing.Stabilizer.Analyze(String, Egami.Video.Editing.MotionAnalysisOptions, System.IProgress(Of Egami.Video.MediaProgress), System.Threading.CancellationToken)
+  nameWithType: Stabilizer.Analyze(string, MotionAnalysisOptions?, IProgress<MediaProgress>?, CancellationToken)
+  nameWithType.vb: Stabilizer.Analyze(String, MotionAnalysisOptions, IProgress(Of MediaProgress), CancellationToken)
 - uid: Egami.Video.Editing.Stabilizer.Analyze*
   name: Analyze
   href: api/Egami.Video.Editing.Stabilizer.html#Egami_Video_Editing_Stabilizer_Analyze_
@@ -91059,38 +91104,6 @@ references:
   isSpec: "True"
   fullName: Egami.Video.Editing.Stabilizer.Analyze
   nameWithType: Stabilizer.Analyze
-- uid: Egami.Video.Editing.StabilizerOptions
-  name: StabilizerOptions
-  href: api/Egami.Video.Editing.StabilizerOptions.html
-  commentId: T:Egami.Video.Editing.StabilizerOptions
-  fullName: Egami.Video.Editing.StabilizerOptions
-  nameWithType: StabilizerOptions
-- uid: Egami.Video.Editing.StabilizerOptions.AnalysisWidth
-  name: AnalysisWidth
-  href: api/Egami.Video.Editing.StabilizerOptions.html#Egami_Video_Editing_StabilizerOptions_AnalysisWidth
-  commentId: P:Egami.Video.Editing.StabilizerOptions.AnalysisWidth
-  fullName: Egami.Video.Editing.StabilizerOptions.AnalysisWidth
-  nameWithType: StabilizerOptions.AnalysisWidth
-- uid: Egami.Video.Editing.StabilizerOptions.AnalysisWidth*
-  name: AnalysisWidth
-  href: api/Egami.Video.Editing.StabilizerOptions.html#Egami_Video_Editing_StabilizerOptions_AnalysisWidth_
-  commentId: Overload:Egami.Video.Editing.StabilizerOptions.AnalysisWidth
-  isSpec: "True"
-  fullName: Egami.Video.Editing.StabilizerOptions.AnalysisWidth
-  nameWithType: StabilizerOptions.AnalysisWidth
-- uid: Egami.Video.Editing.StabilizerOptions.Default
-  name: Default
-  href: api/Egami.Video.Editing.StabilizerOptions.html#Egami_Video_Editing_StabilizerOptions_Default
-  commentId: P:Egami.Video.Editing.StabilizerOptions.Default
-  fullName: Egami.Video.Editing.StabilizerOptions.Default
-  nameWithType: StabilizerOptions.Default
-- uid: Egami.Video.Editing.StabilizerOptions.Default*
-  name: Default
-  href: api/Egami.Video.Editing.StabilizerOptions.html#Egami_Video_Editing_StabilizerOptions_Default_
-  commentId: Overload:Egami.Video.Editing.StabilizerOptions.Default
-  isSpec: "True"
-  fullName: Egami.Video.Editing.StabilizerOptions.Default
-  nameWithType: StabilizerOptions.Default
 - uid: Egami.Video.Editing.Stack
   name: Stack
   href: api/Egami.Video.Editing.Stack.html

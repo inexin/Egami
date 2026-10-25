@@ -96,7 +96,7 @@ Classes
 </h3>
     <dl class="jumplist">
       <dt><a class="xref" href="Egami.Video.Editing.CameraMotion.html">CameraMotion</a></dt>
-      <dd><p>How the camera moved from one frame to the next, as <a class="xref" href="Egami.Video.Editing.Stabilizer.html#Egami_Video_Editing_Stabilizer_Analyze_System_String_Egami_Video_Editing_StabilizerOptions_System_IProgress_Egami_Video_MediaProgress__System_Threading_CancellationToken_">Analyze(string, StabilizerOptions?, IProgress&lt;MediaProgress&gt;?, CancellationToken)</a>
+      <dd><p>How the camera moved from one frame to the next, as <a class="xref" href="Egami.Video.Editing.Stabilizer.html#Egami_Video_Editing_Stabilizer_Analyze_System_String_Egami_Video_Editing_MotionAnalysisOptions_System_IProgress_Egami_Video_MediaProgress__System_Threading_CancellationToken_">Analyze(string, MotionAnalysisOptions?, IProgress&lt;MediaProgress&gt;?, CancellationToken)</a>
 measures it: a shift, a rotation and a scale per frame, in the clip's own pixels. It is pass 1 of stabilization; pass 2,
 <a class="xref" href="Egami.Video.Editing.Clip.html#Egami_Video_Editing_Clip_Stabilize_Egami_Video_Editing_CameraMotion_Egami_Video_Editing_StabilizeOptions_">Stabilize(CameraMotion, StabilizeOptions?)</a>, smooths the path and warps the frames. Save it as JSON to stabilize again with other settings
 without measuring again.</p>
@@ -159,6 +159,11 @@ keyframed motion. Layers draw in order, the last on top. The methods return a ch
 </dd>
     </dl>
     <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Editing.MotionAnalysisOptions.html">MotionAnalysisOptions</a></dt>
+      <dd><p>How <a class="xref" href="Egami.Video.Editing.Stabilizer.html#Egami_Video_Editing_Stabilizer_Analyze_System_String_Egami_Video_Editing_MotionAnalysisOptions_System_IProgress_Egami_Video_MediaProgress__System_Threading_CancellationToken_">Analyze(string, MotionAnalysisOptions?, IProgress&lt;MediaProgress&gt;?, CancellationToken)</a> measures.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
       <dt><a class="xref" href="Egami.Video.Editing.PanZoomPath.html">PanZoomPath</a></dt>
       <dd><p>A pan and zoom for <a class="xref" href="Egami.Video.Editing.Clip.html#Egami_Video_Editing_Clip_PanZoom_System_Drawing_RectangleF_System_Drawing_RectangleF_Egami_Video_Easing_">PanZoom(RectangleF, RectangleF, Easing)</a>: the part of the picture shown at the start and at the end, as fractions of it.</p>
 </dd>
@@ -192,11 +197,6 @@ keyframed motion. Layers draw in order, the last on top. The methods return a ch
       <dt><a class="xref" href="Egami.Video.Editing.Stabilizer.html">Stabilizer</a></dt>
       <dd><p>Pass 1 of two-pass stabilization: measures the camera's motion over a clip (<a class="xref" href="Egami.Video.Editing.CameraMotion.html">CameraMotion</a>). Pass 2 is
 <a class="xref" href="Egami.Video.Editing.Clip.html#Egami_Video_Editing_Clip_Stabilize_Egami_Video_Editing_CameraMotion_Egami_Video_Editing_StabilizeOptions_">Stabilize(CameraMotion, StabilizeOptions?)</a>, which smooths the camera path with a Gaussian and warps each frame onto it.</p>
-</dd>
-    </dl>
-    <dl class="jumplist">
-      <dt><a class="xref" href="Egami.Video.Editing.StabilizerOptions.html">StabilizerOptions</a></dt>
-      <dd><p>How <a class="xref" href="Egami.Video.Editing.Stabilizer.html#Egami_Video_Editing_Stabilizer_Analyze_System_String_Egami_Video_Editing_StabilizerOptions_System_IProgress_Egami_Video_MediaProgress__System_Threading_CancellationToken_">Analyze(string, StabilizerOptions?, IProgress&lt;MediaProgress&gt;?, CancellationToken)</a> measures.</p>
 </dd>
     </dl>
     <dl class="jumplist">

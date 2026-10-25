@@ -2,9 +2,9 @@
 <html>
   <head>
     <meta charset="utf-8">
-      <title>Class StabilizerOptions | Egami </title>
+      <title>Class MotionAnalysisOptions | Egami </title>
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <meta name="title" content="Class StabilizerOptions | Egami ">
+      <meta name="title" content="Class MotionAnalysisOptions | Egami ">
       
       <meta name="description" content="How  measures.">
       <link rel="icon" href="../images/favicon.ico">
@@ -16,7 +16,7 @@
       <meta name="docfx:rel" content="../">
       
       
-      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_Video_Editing_StabilizerOptions.md&amp;value=---%0Auid%3A%20Egami.Video.Editing.StabilizerOptions%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_Video_Editing_MotionAnalysisOptions.md&amp;value=---%0Auid%3A%20Egami.Video.Editing.MotionAnalysisOptions%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
       <meta name="loc:inThisArticle" content="In this article">
       <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
       <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
@@ -84,12 +84,12 @@
           <nav id="breadcrumb"></nav>
         </div>
 
-        <article data-uid="Egami.Video.Editing.StabilizerOptions">
+        <article data-uid="Egami.Video.Editing.MotionAnalysisOptions">
 
 
 
-  <h1 id="Egami_Video_Editing_StabilizerOptions" data-uid="Egami.Video.Editing.StabilizerOptions" class="text-break">
-Class StabilizerOptions  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Editing/Stabilization/CameraMotion.cs/#L161"><i class="bi bi-code-slash"></i></a>
+  <h1 id="Egami_Video_Editing_MotionAnalysisOptions" data-uid="Egami.Video.Editing.MotionAnalysisOptions" class="text-break">
+Class MotionAnalysisOptions  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Editing/Stabilization/CameraMotion.cs/#L167"><i class="bi bi-code-slash"></i></a>
   </h1>
 
   <div class="facts text-secondary">
@@ -97,12 +97,12 @@ Class StabilizerOptions  <a class="header-action link-secondary" title="View sou
   <dl><dt>Assembly</dt><dd>Egami.Video.dll</dd></dl>
   </div>
 
-  <div class="markdown summary"><p>How <a class="xref" href="Egami.Video.Editing.Stabilizer.html#Egami_Video_Editing_Stabilizer_Analyze_System_String_Egami_Video_Editing_StabilizerOptions_System_IProgress_Egami_Video_MediaProgress__System_Threading_CancellationToken_">Analyze(string, StabilizerOptions?, IProgress&lt;MediaProgress&gt;?, CancellationToken)</a> measures.</p>
+  <div class="markdown summary"><p>How <a class="xref" href="Egami.Video.Editing.Stabilizer.html#Egami_Video_Editing_Stabilizer_Analyze_System_String_Egami_Video_Editing_MotionAnalysisOptions_System_IProgress_Egami_Video_MediaProgress__System_Threading_CancellationToken_">Analyze(string, MotionAnalysisOptions?, IProgress&lt;MediaProgress&gt;?, CancellationToken)</a> measures.</p>
 </div>
   <div class="markdown conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public sealed record StabilizerOptions : IEquatable&lt;StabilizerOptions&gt;</code></pre>
+    <pre><code class="lang-csharp hljs">public sealed record MotionAnalysisOptions : IEquatable&lt;MotionAnalysisOptions&gt;</code></pre>
   </div>
 
 
@@ -112,14 +112,14 @@ Class StabilizerOptions  <a class="header-action link-secondary" title="View sou
     <dt>Inheritance</dt>
     <dd>
       <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
-      <div><span class="xref">StabilizerOptions</span></div>
+      <div><span class="xref">MotionAnalysisOptions</span></div>
     </dd>
   </dl>
 
   <dl class="typelist implements">
     <dt>Implements</dt>
     <dd>
-      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.iequatable-1">IEquatable</a>&lt;<a class="xref" href="Egami.Video.Editing.StabilizerOptions.html">StabilizerOptions</a>&gt;</div>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.iequatable-1">IEquatable</a>&lt;<a class="xref" href="Egami.Video.Editing.MotionAnalysisOptions.html">MotionAnalysisOptions</a>&gt;</div>
     </dd>
   </dl>
 
@@ -149,7 +149,7 @@ Class StabilizerOptions  <a class="header-action link-secondary" title="View sou
 
 
 
-  <h2 id="Egami_Video_Editing_StabilizerOptions_examples">Examples</h2>
+  <h2 id="Egami_Video_Editing_MotionAnalysisOptions_examples">Examples</h2>
   <pre><code class="lang-csharp">// Two passes: measure the camera's motion, then render the clip warped onto a smoothed path, zoomed to hide the edges.
 CameraMotion motion = Stabilizer.Analyze("talk.avi");
 File.WriteAllText("talk.motion.json", motion.ToJson());
@@ -164,11 +164,11 @@ edit.Render("steady.mkv");</code></pre>
 </h2>
 
 
-  <a id="Egami_Video_Editing_StabilizerOptions_AnalysisWidth_" data-uid="Egami.Video.Editing.StabilizerOptions.AnalysisWidth*"></a>
+  <a id="Egami_Video_Editing_MotionAnalysisOptions_AnalysisWidth_" data-uid="Egami.Video.Editing.MotionAnalysisOptions.AnalysisWidth*"></a>
 
-  <h3 id="Egami_Video_Editing_StabilizerOptions_AnalysisWidth" data-uid="Egami.Video.Editing.StabilizerOptions.AnalysisWidth">
+  <h3 id="Egami_Video_Editing_MotionAnalysisOptions_AnalysisWidth" data-uid="Egami.Video.Editing.MotionAnalysisOptions.AnalysisWidth">
   AnalysisWidth
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Editing/Stabilization/CameraMotion.cs/#L167"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Editing/Stabilization/CameraMotion.cs/#L173"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the width the luma is downscaled to, at most, before measuring: smaller is faster, larger finer. Default 480.</p>
@@ -196,11 +196,11 @@ edit.Render("steady.mkv");</code></pre>
 
 
 
-  <a id="Egami_Video_Editing_StabilizerOptions_Default_" data-uid="Egami.Video.Editing.StabilizerOptions.Default*"></a>
+  <a id="Egami_Video_Editing_MotionAnalysisOptions_Default_" data-uid="Egami.Video.Editing.MotionAnalysisOptions.Default*"></a>
 
-  <h3 id="Egami_Video_Editing_StabilizerOptions_Default" data-uid="Egami.Video.Editing.StabilizerOptions.Default">
+  <h3 id="Egami_Video_Editing_MotionAnalysisOptions_Default" data-uid="Egami.Video.Editing.MotionAnalysisOptions.Default">
   Default
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Editing/Stabilization/CameraMotion.cs/#L164"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Editing/Stabilization/CameraMotion.cs/#L170"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the defaults.</p>
@@ -208,7 +208,7 @@ edit.Render("steady.mkv");</code></pre>
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public static StabilizerOptions Default { get; }</code></pre>
+    <pre><code class="lang-csharp hljs">public static MotionAnalysisOptions Default { get; }</code></pre>
   </div>
 
 
@@ -217,7 +217,7 @@ edit.Render("steady.mkv");</code></pre>
 
   <h4 class="section">Property Value</h4>
   <dl class="parameters">
-    <dt><a class="xref" href="Egami.Video.Editing.StabilizerOptions.html">StabilizerOptions</a></dt>
+    <dt><a class="xref" href="Egami.Video.Editing.MotionAnalysisOptions.html">MotionAnalysisOptions</a></dt>
     <dd></dd>
   </dl>
 
@@ -232,7 +232,7 @@ edit.Render("steady.mkv");</code></pre>
 </article>
 
         <div class="contribution d-print-none">
-          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Editing/Stabilization/CameraMotion.cs/#L161" class="edit-link">Edit this page</a>
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Editing/Stabilization/CameraMotion.cs/#L167" class="edit-link">Edit this page</a>
         </div>
 
 
