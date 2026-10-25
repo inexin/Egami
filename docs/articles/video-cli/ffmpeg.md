@@ -94,9 +94,9 @@ amix (of an overlay's inputs), atempo, volume, areverse and aloop. `enable` take
 `-loop 1` before an image makes a still clip.
 
 ```sh
-egami-video ffmpeg -i a.mkv -i b.mkv -filter_complex "[0:v][1:v]xfade=transition=wipeleft:duration=1:offset=4[v];[0:a][1:a]acrossfade=d=1[a]" -map [v] -map [a] out.mkv
-egami-video ffmpeg -i talk.mkv -i logo.png -filter_complex "overlay=W-w-10:10:enable='between(t,5,20)'" out.mkv
-egami-video ffmpeg -i in.mkv -vf setpts=PTS/2 -af atempo=2 fast.mkv
+egami-video ffmpeg -i in.avi -i in.mkv -filter_complex "[0:v][1:v]xfade=transition=wipeleft:duration=0.5:offset=1.5[v];[0:a][1:a]acrossfade=d=0.5[a]" -map [v] -map [a] joined.mkv
+egami-video ffmpeg -i in.avi -i in.mkv -filter_complex "[1:v]scale=64:-1[small];[0:v][small]overlay=W-w-10:10:enable='between(t,0.5,1.5)'" pip.mkv
+egami-video ffmpeg -i in.avi -vf setpts=PTS/2 -af atempo=2 fast.mkv
 ```
 
 An edit changes picture and sound together, so a line that changes one and not the other stops: setpts without the same
