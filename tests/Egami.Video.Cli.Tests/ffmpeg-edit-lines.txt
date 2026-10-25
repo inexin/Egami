@@ -1,0 +1,85 @@
+# The ffmpeg-mode editing set (V9 design Q14, Build Plan task 22): 60 ffmpeg command lines with editing filters, of the kinds
+# FFmpeg's filter documentation and wiki show (fades, speed, reverse, loops, xfade, concat, overlay, stacks, zoompan, keys,
+# stabilizing). Each runs for real on 2 s clips (a.avi and b.avi: 160x120, 25 fps, with sound; c.avi: 96x64, 10 fps, without sound;
+# logo.png and still.png: images). Each line is: what must happen | the line after the tool name.
+# "ok" runs with exit code 0, "ok 3.5" also gives a 3.5 s output, and "sound" or "silent" says whether it has an audio track
+# (as ffmpeg's own output would; a sound track must last as long as the picture); "!! words" stops with exit code 2 and an
+# error that holds the words. Written for this test from the filters' documented meaning; no FFmpeg code or test data.
+ok 2 sound | ffmpeg -i a.avi -vf fade=t=in:st=0:d=1 out.mkv
+ok 2 sound | ffmpeg -i a.avi -vf fade=in:0:25 out.mkv
+ok 2 sound | ffmpeg -i a.avi -vf fade=t=out:st=1.5:d=0.5 out.mkv
+ok 2 sound | ffmpeg -i a.avi -vf "fade=t=in:st=0:d=0.5,fade=t=out:st=1.5:d=0.5" -af "afade=t=in:st=0:d=0.5,afade=t=out:st=1.5:d=0.5" out.mkv
+ok 2 sound | ffmpeg -i a.avi -vf fade=t=in:d=0.5:color=white out.mkv
+!! egami-video fades in from the clip's start | ffmpeg -i a.avi -vf fade=t=in:st=0.5:d=0.5 out.mkv
+!! egami-video fades out to the clip's end | ffmpeg -i a.avi -vf fade=t=out:st=0.5:d=0.5 out.mkv
+!! fade and afade of different lengths | ffmpeg -i a.avi -vf fade=t=in:d=1 -af afade=t=in:d=0.5 out.mkv
+ok 1 sound | ffmpeg -i a.avi -vf setpts=PTS/2 -af atempo=2 out.mkv
+ok 1 silent | ffmpeg -i a.avi -filter:v "setpts=0.5*PTS" -an out.mkv
+ok 4 sound | ffmpeg -i a.avi -vf setpts=2.0*PTS -af atempo=0.5 out.mkv
+!! setpts and atempo | ffmpeg -i a.avi -vf setpts=PTS/2 out.mkv
+!! setpts=N/FRAME_RATE/TB | ffmpeg -i a.avi -vf setpts=N/FRAME_RATE/TB out.mkv
+!! from 0.1x to 10x | ffmpeg -i a.avi -vf setpts=PTS/20 -an out.mkv
+ok 2 sound | ffmpeg -i a.avi -vf reverse -af areverse out.mkv
+ok 2 silent | ffmpeg -i c.avi -vf reverse out.mkv
+!! reverse and areverse | ffmpeg -i a.avi -vf reverse out.mkv
+ok 6 sound | ffmpeg -i a.avi -vf loop=loop=2:size=50:start=0 -af aloop=loop=2:size=16000 out.mkv
+ok 4 silent | ffmpeg -i c.avi -vf loop=1:50:0 out.mkv
+!! egami-video loops whole clips | ffmpeg -i c.avi -vf loop=loop=3:size=10:start=0 out.mkv
+!! not forever | ffmpeg -i c.avi -vf loop=loop=-1:size=50 out.mkv
+ok 3 sound | ffmpeg -i a.avi -vf tpad=stop_mode=clone:stop_duration=1 out.mkv
+ok 3 silent | ffmpeg -i c.avi -vf tpad=stop_mode=clone:stop=10 out.mkv
+!! stop_mode=clone | ffmpeg -i c.avi -vf tpad=start_duration=1 out.mkv
+!! freezeframes | ffmpeg -i c.avi -i c.avi -filter_complex "[0][1]freezeframes=first=5:last=10:replace=5" out.mkv
+ok 2 sound | ffmpeg -i a.avi -vf "scale=320:240,fade=t=in:d=0.5" out.mkv
+ok 2 sound | ffmpeg -i a.avi -vf "fps=10,fade=t=in:d=0.5" out.mkv
+ok 2 sound | ffmpeg -i a.avi -vf "hflip=enable='between(t,0.5,1.5)'" out.mkv
+ok 2 sound | ffmpeg -i a.avi -vf "vflip=enable='gte(t,1)',fade=out:st=1.5:d=0.5" -af afade=t=out:st=1.5:d=0.5 out.mkv
+!! enable takes between(t,a,b) | ffmpeg -i a.avi -vf "hflip=enable='lt(mod(t,2),1)'" out.mkv
+ok 3 sound | ffmpeg -i a.avi -i b.avi -filter_complex "[0:v][1:v]xfade=transition=fade:duration=1:offset=1[v];[0:a][1:a]acrossfade=d=1[a]" -map [v] -map [a] out.mkv
+ok 3.5 silent | ffmpeg -i a.avi -i b.avi -filter_complex "[0][1]xfade=transition=wipeleft:duration=0.5:offset=1.5" -an out.mkv
+ok 3 silent | ffmpeg -i c.avi -i c.avi -filter_complex xfade=transition=dissolve:duration=1:offset=1 out.mkv
+ok 2.5 silent | ffmpeg -i c.avi -i c.avi -filter_complex "xfade=transition=slideup:duration=0.5:offset=0.5" out.mkv
+ok 5 silent | ffmpeg -i c.avi -i c.avi -i c.avi -filter_complex "[0][1]xfade=transition=circleopen:duration=0.5:offset=1.5[x];[x][2]xfade=transition=fadeblack:duration=0.5:offset=3" out.mkv
+!! the transitions taken are | ffmpeg -i c.avi -i c.avi -filter_complex xfade=transition=hrslice:duration=1:offset=1 out.mkv
+!! the first input lasts | ffmpeg -i c.avi -i c.avi -filter_complex xfade=duration=1:offset=1.5 out.mkv
+!! acrossfade | ffmpeg -i a.avi -i b.avi -filter_complex "[0:a][1:a]acrossfade=d=1" out.mkv
+ok 4 sound | ffmpeg -i a.avi -i b.avi -filter_complex "[0:v][0:a][1:v][1:a]concat=n=2:v=1:a=1[v][a]" -map [v] -map [a] out.mkv
+ok 6 silent | ffmpeg -i c.avi -i c.avi -i c.avi -filter_complex "concat=n=3:v=1:a=0" out.mkv
+!! one picture and at most one sound | ffmpeg -i a.avi -i b.avi -filter_complex "concat=n=2:v=0:a=1" out.mkv
+ok 2 sound | ffmpeg -i a.avi -i logo.png -filter_complex overlay=10:10 out.mkv
+ok 2 sound | ffmpeg -i a.avi -i logo.png -filter_complex "overlay=W-w-10:H-h-10" out.mkv
+ok 2 sound | ffmpeg -i a.avi -i logo.png -filter_complex "[0:v][1:v]overlay=(W-w)/2:(H-h)/2" out.mkv
+ok 2 sound | ffmpeg -i a.avi -i logo.png -filter_complex "[0][1]overlay=x=main_w-overlay_w-5:y=5:enable='between(t,0.5,1.5)'" out.mkv
+ok 2 sound | ffmpeg -i a.avi -i b.avi -filter_complex "[1:v]scale=80:-1[pip];[0:v][pip]overlay=W-w-4:4" out.mkv
+ok 2 sound | ffmpeg -i a.avi -i b.avi -filter_complex "[1]scale=iw/2:ih/2[p];[0][p]overlay=x=W/2:y=H/2;[0:a][1:a]amix=inputs=2" out.mkv
+ok 2 sound | ffmpeg -i a.avi -i b.avi -filter_complex "[1:v]chromakey=0x00FF00:0.1:0.05[k];[0:v][k]overlay" out.mkv
+ok 2 sound | ffmpeg -i a.avi -i b.avi -filter_complex "[1:v]colorkey=green:0.2:0.1,despill=type=green:mix=0.4[k];[0:v][k]overlay=0:0" out.mkv
+!! despills a chroma key | ffmpeg -i a.avi -filter_complex despill out.mkv
+!! eof_action=repeat | ffmpeg -i a.avi -i logo.png -filter_complex overlay=0:0:shortest=1 out.mkv
+!! is not a name egami-video takes | ffmpeg -i a.avi -i logo.png -filter_complex "overlay=x='if(gte(t,1),10,20)':y=0" out.mkv
+ok 2 sound | ffmpeg -i a.avi -i b.avi -filter_complex hstack=inputs=2 out.mkv
+ok 2 sound | ffmpeg -i a.avi -i b.avi -filter_complex "[0:v][1:v]vstack" out.mkv
+ok 2 sound | ffmpeg -i a.avi -i b.avi -i c.avi -i a.avi -filter_complex "[0][1][2][3]xstack=inputs=4:layout=0_0|w0_0|0_h0|w0_h0" out.mkv
+ok 2 sound | ffmpeg -i a.avi -i b.avi -i c.avi -filter_complex "xstack=inputs=3:grid=3x1" out.mkv
+ok 2 silent | ffmpeg -loop 1 -t 2 -i still.png -vf fade=t=in:d=0.5 out.mkv
+ok 3.6 silent | ffmpeg -i still.png -vf "zoompan=z='min(zoom+0.0015,1.5)':d=90:x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':s=320x240" out.mkv
+!! zoompan on a video | ffmpeg -i a.avi -vf zoompan=z=1.2:d=1 out.mkv
+!! loudnorm | ffmpeg -i a.avi -vf fade=in:0:10 -af loudnorm out.mkv
+ok 2 sound | ffmpeg -i a.avi -vf deshake out.mkv
+ok | ffmpeg -i a.avi -vf vidstabdetect=shakiness=8:accuracy=15:result=motion.trf -f null -
+ok 2 sound | ffmpeg -i a.avi -vf vidstabdetect=result=m.trf -f null - && ffmpeg -i a.avi -vf vidstabtransform=input=m.trf:smoothing=10 out.mkv
+!! tripod and zoom | ffmpeg -i a.avi -vf vidstabtransform=tripod=1 out.mkv
+!! without other filters | ffmpeg -i a.avi -vf deshake,fade=in:0:10 out.mkv
+ok 2 sound | ffmpeg -i a.avi -af volume=-6dB -vf fade=in:0:10 out.mkv
+ok 2 sound | ffmpeg -i a.avi -filter_complex "[0:v]fade=in:0:10[v];[0:a]volume=0.5[a]" -map [v] -map [a] out.mkv
+ok 2 sound | ffmpeg -i a.avi -filter_complex "[0:v]fade=in:0:10[v]" -map [v] -map 0:a out.mkv
+ok 2 silent | ffmpeg -i a.avi -filter_complex "[0:v]fade=in:0:10[v]" -map [v] out.mkv
+ok 2 sound | ffmpeg -i a.avi -i logo.png -filter_complex "[0:v][1:v]overlay=10:10[out]" -map [out] -map 0:a? out.mkv
+ok 2 sound | ffmpeg -i a.avi -i b.avi -filter_complex "[0:v][1:v]overlay=W-w:0[v];[0:a][1:a]amix=inputs=2[a]" -map [v] -map [a] out.mkv
+ok 3 sound | ffmpeg -i a.avi -i b.avi -filter_complex "[0][1]xfade=duration=1:offset=1[v];[0:a][1:a]acrossfade=d=1[a]" -map [v] -map [a] out.mkv
+ok 4 sound | ffmpeg -i a.avi -i b.avi -filter_complex "[0:v][0:a][1:v][1:a]concat=n=2:v=1:a=1" out.mkv
+ok 4 silent | ffmpeg -i a.avi -i b.avi -filter_complex "[0:v][0:a][1:v][1:a]concat=n=2:v=1:a=1[v][a]" -map [v] out.mkv
+ok 1 sound | ffmpeg -i a.avi -filter_complex "[0:v]setpts=PTS/2[v];[0:a]atempo=2[a]" -map [v] -map [a] out.mkv
+ok 2 sound | ffmpeg -i a.avi -vf fade=in:0:10 -map 0 out.mkv
+ok 2 sound | ffmpeg -i c.avi -i a.avi -filter_complex "[1:v]scale=48:-1[p];[0:v][p]overlay" out.mkv
+ok 2 silent | ffmpeg -i c.avi -i logo.png -filter_complex overlay=4:4 out.mkv

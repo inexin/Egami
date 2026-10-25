@@ -203,7 +203,7 @@ public sealed class FfmpegModeTests
         Assert.Equal(80, image.Height);
     }
 
-    private static string[] Split(string line)
+    internal static string[] Split(string line)
     {
         List<string> words = [];
         StringBuilder word = new();

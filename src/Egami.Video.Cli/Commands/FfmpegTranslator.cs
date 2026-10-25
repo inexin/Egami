@@ -8,6 +8,8 @@ namespace Egami.Video.Cli.Commands;
 /// <summary>Maps a parsed ffmpeg line onto egami-video command lines: the job each documented ffmpeg form does.</summary>
 internal static class FfmpegTranslator
 {
+    internal static bool IsImage(string extension) => ImageExtensions.Contains(extension);
+
     private static readonly string[] ImageExtensions = [".png", ".jpg", ".jpeg", ".webp", ".bmp", ".tif", ".tiff", ".avif", ".jxl", ".qoi", ".tga", ".ppm", ".pgm", ".pam"];
 
     private static readonly string[] AudioExtensions = [".wav", ".flac", ".w64", ".oga", ".opus"];
@@ -1150,14 +1152,14 @@ internal static class FfmpegTranslator
     }
 
     /// <summary>ffmpeg's MJPEG <c>-q:v</c> (2 best, 31 worst) as a JPEG quality from 100 down to 30.</summary>
-    private static string QualityFromQscale(string q)
+    internal static string QualityFromQscale(string q)
     {
         return double.TryParse(q, NumberStyles.Float, CultureInfo.InvariantCulture, out double scale) && scale >= 1 && scale <= 31
             ? ((int)Math.Round(100 - ((scale - 1) * 70 / 30))).ToString(CultureInfo.InvariantCulture)
             : throw FfmpegMode.Unsupported($"-q:v {q}", why: "give 1 to 31");
     }
 
-    private static string VideoCodec(string codec) => codec switch
+    internal static string VideoCodec(string codec) => codec switch
     {
         "mjpeg" => "mjpeg",
         "libvpx" or "vp8" => "vp8",

@@ -21,6 +21,7 @@
   <ItemGroup>
     <None Include="../video/corpus/**/*" LinkBase="corpus" CopyToOutputDirectory="PreserveNewest" />
     <None Include="ffmpeg-lines.txt" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="ffmpeg-edit-lines.txt" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>

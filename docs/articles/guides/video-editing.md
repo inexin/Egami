@@ -100,6 +100,56 @@ attach to the whole edit (`VideoEdit.Effects`), to a clip (`Clip.WithEffect`) or
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Editing.cs#edit-darken)]
 
+## Plug-in points
+
+An app adds its own pieces at five places, each an interface it implements: `ITransition` draws a transition between two
+clips' frames, `IFrameEffect` changes a frame knowing its time and progress, `IRasterOperation` (Egami's own operation
+interface) runs through `EditEffect.Apply` as an effect, `IFrameSource` makes a clip's frames, such as titles drawn by the
+app, and `ChromaKey` settings key a layer. All of them work on Egami rasters, so they need nothing from the video side.
+
+## A model on every frame
+
+A machine-learning model, such as a style transfer or a denoiser, plugs in as an `IRasterOperation`. The adapter below turns
+each frame into a 1x3xHxW tensor of red, green and blue from 0 to 1, hands it to a model, and writes the model's tensor back.
+Here the model is a stand-in written in C# (a sepia tone), so the sample runs with the tests:
+
+[!code-csharp[](../../../tests/Egami.DocSamples/EditingModel.cs#edit-model-adapter)]
+
+[!code-csharp[](../../../tests/Egami.DocSamples/EditingModel.cs#edit-model-standin)]
+
+[!code-csharp[](../../../tests/Egami.DocSamples/EditingModel.cs#edit-model)]
+
+With ONNX Runtime, an app's own reference to the `Microsoft.ML.OnnxRuntime` package (Egami.Video has none), the stand-in
+becomes a call into an `InferenceSession`. These lines are app code shown as a sketch: they are not compiled or run with
+Egami's tests, and the input name and shape depend on the model.
+
+```csharp
+// Untested app code: needs the Microsoft.ML.OnnxRuntime package and a model file.
+using Microsoft.ML.OnnxRuntime;
+using Microsoft.ML.OnnxRuntime.Tensors;
+
+using InferenceSession session = new("style.onnx");
+string inputName = session.InputMetadata.Keys.First();
+
+float[] RunModel(float[] tensor, int width, int height)
+{
+    DenseTensor<float> input = new(tensor, [1, 3, height, width]);
+    using IDisposableReadOnlyCollection<DisposableNamedOnnxValue> results = session.Run([NamedOnnxValue.CreateFromTensor(inputName, input)]);
+    return results.First().AsTensor<float>().ToArray();
+}
+
+edit.Effects.Add(EditEffect.Apply(new ModelOperation(RunModel), "style model"));
+```
+
+## Smart render
+
+`EditRenderOptions.SmartRender` (the command line's `--smart`) copies the untouched parts of clips instead of encoding them
+again. Where one clip fills the picture with no transition, fade, layer, effect or change of time, its source has the canvas's
+size and frame rate, and its stream matches what the encoder writes (VP8, VP9, AV1 or Motion JPEG with the same profile,
+bit depth, chroma, color and, for AV1, sequence header), its packets are copied byte for byte from the first keyframe on, and
+the encoder starts again with a keyframe after each copied part. A source that does not match is encoded as usual, with a
+`MediaWarning`. The sound is always mixed and encoded. It is off by default.
+
 ## Stabilizing
 
 Stabilizing takes two passes, like FFmpeg's vidstabdetect and vidstabtransform. `Stabilizer.Analyze` measures the camera's

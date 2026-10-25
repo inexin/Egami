@@ -98,6 +98,16 @@ public sealed class EditCommandTests : IDisposable
     }
 
     [Fact]
+    public void SmartRenderCopiesWhatItCan()
+    {
+        _tool.Copy("webm-vp8-opus.webm", "b.webm");
+        ToolRun run = _tool.Run("join", "b.webm", "b.webm", "--transition", "fade:0.5", "--codec", "vp8", "--smart", "-o", "s.webm");
+        Assert.True(run.Code == ExitCodes.Success, run.Error);
+        MediaInfo b = MediaFile.Probe(_tool.PathOf("b.webm"));
+        Assert.Equal((b.Duration!.Value.Seconds * 2) - 0.5, MediaFile.Probe(_tool.PathOf("s.webm")).Duration!.Value.Seconds, 0.15);
+    }
+
+    [Fact]
     public void RunStepsTakeTimeWindows()
     {
         _tool.Copy("avi-mjpeg-420-pcm.avi", "a.avi");

@@ -18,6 +18,8 @@ internal sealed class FfmpegInput
     public string? Offset { get; set; }
 
     public string? FrameRate { get; set; }
+
+    public string? Loop { get; set; }
 }
 
 /// <summary>An ffmpeg command line, parsed into inputs, one output and the output's options, as FFmpeg's documentation describes them.</summary>
@@ -129,6 +131,7 @@ internal sealed class FfmpegLine
                         Duration = pending.Duration,
                         Offset = pending.Offset,
                         FrameRate = pending.FrameRate,
+                        Loop = pending.Loop,
                     });
                     pending = new FfmpegInput { Path = string.Empty };
                     pendingUsed = false;
@@ -147,6 +150,7 @@ internal sealed class FfmpegLine
                 case "-to": line.To = Next(); break;
                 case "-t" when beforeInput: pending.Duration = Next(); pendingUsed = true; break;
                 case "-t": line.Duration = Next(); break;
+                case "-loop" when beforeInput: pending.Loop = Next(); pendingUsed = true; break;
                 case "-itsoffset" when beforeInput: pending.Offset = Next(); pendingUsed = true; break;
                 case "-framerate" or "-r" when beforeInput: pending.FrameRate = Next(); pendingUsed = true; break;
                 case "-map": line.Maps.Add(Next()); break;

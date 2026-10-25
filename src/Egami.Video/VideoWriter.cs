@@ -28,6 +28,9 @@ public sealed class VideoWriter : IDisposable
     private readonly Queue<EncodedPacket> _audioWaiting = new();
     private IVideoEncoder? _encoder;
     private IMuxer? _muxer;
+
+    // The video track as the first encoder described it, kept when a smart render restarts the encoder.
+    private VideoTrackInfo? _track;
     private long _frames;
     private bool _finished;
 
@@ -58,7 +61,10 @@ public sealed class VideoWriter : IDisposable
     public AudioTrackInfo? AudioTrack => _audio is null ? null : _audio.Track with { Number = _videoNumber + 1 };
 
     /// <summary>Gets the video track, once the first frame has been written.</summary>
-    public VideoTrackInfo? Track => _encoder is null ? null : _encoder.Track with { Number = _videoNumber };
+    public VideoTrackInfo? Track => (_encoder?.Track ?? _track) is { } track ? track with { Number = _videoNumber } : null;
+
+    /// <summary>Gets the video codec the writer encodes with.</summary>
+    internal VideoCodec Codec => _options.Codec;
 
     /// <summary>Gets how many frames have been written.</summary>
     public long FrameCount => _frames;
@@ -242,10 +248,15 @@ public sealed class VideoWriter : IDisposable
         }
 
         _finished = true;
-        if (_encoder is not null && _muxer is not null)
+        if (_muxer is not null)
         {
-            _encoder.Flush();
-            Drain();
+            // A smart render can end on copied packets, with no encoder running.
+            if (_encoder is not null)
+            {
+                _encoder.Flush();
+                Drain();
+            }
+
             if (_audio is not null)
             {
                 _audio.Flush();
@@ -278,40 +289,83 @@ public sealed class VideoWriter : IDisposable
 
     private MediaTime NextTime() => new(_frames, _options.FrameRate.Reciprocal());
 
+    /// <summary>An encoder with the writer's settings for frames of a size: the one it writes with, or one to compare streams with.</summary>
+    internal IVideoEncoder CreateEncoder(int width, int height) => _options.Codec.CreateEncoder(
+        new VideoEncoderOptions
+        {
+            Width = width,
+            Height = height,
+            FrameRate = _options.FrameRate,
+            Quality = _options.Quality,
+            ChromaFormat = _options.ChromaFormat,
+            Effort = _options.Effort,
+            RateControl = _options.RateControl,
+            Bitrate = _options.Bitrate,
+            MaxBitrate = _options.MaxBitrate,
+            BufferSize = _options.BufferSize,
+            Quantizer = _options.Quantizer,
+            LatencyMode = _options.LatencyMode,
+            KeyframeInterval = _options.KeyframeInterval,
+            SceneCutKeyframes = _options.SceneCutKeyframes,
+            FirstPassStats = _options.FirstPassStats,
+            Vp8 = _options.Vp8,
+            Vp9 = _options.Vp9,
+            Av1 = _options.Av1,
+        },
+        _context);
+
+    /// <summary>
+    /// Smart render: writes a video packet copied from a source whose stream matches the encoder's, timed for this file. The
+    /// encoder in use is flushed first, and a new one starts at the next frame, so it begins with a keyframe.
+    /// </summary>
+    internal void WriteCopiedPacket(EncodedPacket packet, int width, int height)
+    {
+        ObjectDisposedException.ThrowIf(_finished, this);
+        if (_muxer is null)
+        {
+            using IVideoEncoder describe = CreateEncoder(width, height);
+            _track = describe.Track;
+            OpenMuxer(_track);
+        }
+        else if (_encoder is not null)
+        {
+            _encoder.Flush();
+            Drain();
+            _track ??= _encoder.Track;
+            _encoder.Dispose();
+            _encoder = null;
+        }
+
+        packet.TrackNumber = _videoNumber;
+        _muxer!.WritePacket(packet);
+        _frames++;
+        if (_audio is not null && _audioWaiting.Count > 0)
+        {
+            DrainAudio();
+        }
+    }
+
+    private void OpenMuxer(VideoTrackInfo track)
+    {
+        _muxer = _createMuxer(AudioTrack is { } audioTrack
+            ? [.. _options.OtherTracks, track with { Number = _videoNumber }, audioTrack]
+            : [.. _options.OtherTracks, track with { Number = _videoNumber }]);
+    }
+
     private void Encode(VideoFrame frame)
     {
         ObjectDisposedException.ThrowIf(_finished, this);
         if (_encoder is null)
         {
-            _encoder = _options.Codec.CreateEncoder(
-                new VideoEncoderOptions
-                {
-                    Width = frame.Width,
-                    Height = frame.Height,
-                    FrameRate = _options.FrameRate,
-                    Quality = _options.Quality,
-                    ChromaFormat = _options.ChromaFormat,
-                    Effort = _options.Effort,
-                    RateControl = _options.RateControl,
-                    Bitrate = _options.Bitrate,
-                    MaxBitrate = _options.MaxBitrate,
-                    BufferSize = _options.BufferSize,
-                    Quantizer = _options.Quantizer,
-                    LatencyMode = _options.LatencyMode,
-                    KeyframeInterval = _options.KeyframeInterval,
-                    SceneCutKeyframes = _options.SceneCutKeyframes,
-                    FirstPassStats = _options.FirstPassStats,
-                    Vp8 = _options.Vp8,
-                    Vp9 = _options.Vp9,
-                    Av1 = _options.Av1,
-                },
-                _context);
+            _encoder = CreateEncoder(frame.Width, frame.Height);
             _encoder.Send(frame);
 
             // Some encoders (uncompressed video) learn their layout from the first frame.
-            _muxer = _createMuxer(AudioTrack is { } audioTrack
-                ? [.. _options.OtherTracks, _encoder.Track with { Number = _videoNumber }, audioTrack]
-                : [.. _options.OtherTracks, _encoder.Track with { Number = _videoNumber }]);
+            if (_muxer is null)
+            {
+                _track = _encoder.Track;
+                OpenMuxer(_encoder.Track);
+            }
         }
         else
         {

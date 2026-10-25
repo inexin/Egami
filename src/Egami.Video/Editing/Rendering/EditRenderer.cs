@@ -10,7 +10,7 @@ namespace Egami.Video.Editing;
 /// The pull renderer: walks the output one frame at a time, asks the main track which clip (or two clips, inside a
 /// transition) shows, draws the layers over it, runs the effects and hands the frame on. Only the frames in use are held.
 /// </summary>
-internal sealed class EditRenderer : IDisposable
+internal sealed partial class EditRenderer : IDisposable
 {
     private readonly EditPlan _plan;
     private readonly MediaContext _context;
@@ -41,9 +41,22 @@ internal sealed class EditRenderer : IDisposable
     {
         Stopwatch clock = Stopwatch.StartNew();
         long last = -1;
+        Queue<CopyRun> copies = Smart ? new(PlanCopies(writer)) : [];
         for (long n = 0; n < _plan.FrameCount; n++)
         {
             cancellationToken.ThrowIfCancellationRequested();
+            if (copies.TryPeek(out CopyRun? run) && run.Start == n)
+            {
+                copies.Dequeue();
+                long reached = Copy(run, writer, cancellationToken);
+                if (reached > n)
+                {
+                    _audio?.WriteUntil(_plan.TimeOf(reached), writer, final: false);
+                    n = reached - 1;
+                    continue;
+                }
+            }
+
             if (Planes(n) is { } planes)
             {
                 writer.WriteFrame(planes, _plan.TimeOf(n));

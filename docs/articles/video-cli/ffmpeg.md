@@ -82,12 +82,35 @@ showwavespic takes `s`, `split_channels`, `colors` (the first) and `scale` (lin 
 ffmpeg encodes again by default; egami-video copies streams where ffmpeg would encode with a codec it does not have, and says so
 in a warning. An output that exists needs `-y`, as in ffmpeg.
 
+## Editing filters
+
+A line with an editing filter becomes one edit file, rendered by `egami-video edit`; `--explain` prints the command with
+`edit.json` for the file, then the file. `-vf`, `-af` and `-filter_complex` graphs take fade (in from the start, out to the end),
+setpts with a constant factor (0.1x to 10x), reverse, loop (whole clips), tpad (`stop_mode=clone`), fps, scale, xfade (with
+V9's transitions), concat, overlay (numbers and the `W`, `H`, `w` and `h` placement forms), hstack, vstack, xstack (grids),
+zoompan on an image (a constant zoom, or `zoom+k` with an optional cap, from the corner or the centre), chromakey, colorkey,
+despill, and hflip and vflip with a time window; and of the sound afade, acrossfade (where an xfade joins the same inputs),
+amix (of an overlay's inputs), atempo, volume, areverse and aloop. `enable` takes `between(t,a,b)`, `gte(t,a)` and `lte(t,b)`.
+`-loop 1` before an image makes a still clip.
+
+```sh
+egami-video ffmpeg -i in.avi -i in.mkv -filter_complex "[0:v][1:v]xfade=transition=wipeleft:duration=0.5:offset=1.5[v];[0:a][1:a]acrossfade=d=0.5[a]" -map [v] -map [a] joined.mkv
+egami-video ffmpeg -i in.avi -i in.mkv -filter_complex "[1:v]scale=64:-1[small];[0:v][small]overlay=W-w-10:10:enable='between(t,0.5,1.5)'" pip.mkv
+egami-video ffmpeg -i in.avi -vf setpts=PTS/2 -af atempo=2 fast.mkv
+```
+
+An edit changes picture and sound together, so a line that changes one and not the other stops: setpts without the same
+atempo, reverse without areverse and loop without aloop, unless the sound is dropped with `-an`. A fade fades the sound with
+the picture. freezeframes stops, since it replaces frames where V9's freeze adds time (`tpad=stop_mode=clone` or
+`egami-video freeze` hold a frame), and loudnorm stops too. `deshake`, `vidstabdetect` (to `-f null`, writing its `result`
+file as Egami.Video's camera motion) and `vidstabtransform` (its `input` and `smoothing`) become `egami-video stabilize`.
+
 ## The options
 
 ffmpeg mode takes `-i`, `-f`, `-y`, `-n`, `-ss`, `-to`, `-t`, `-itsoffset`, `-framerate`, `-safe`, `-map`, `-c`, `-codec`, `-c:v`,
 `-c:a`, `-c:s`, `-vcodec`, `-acodec`, `-scodec`, `-an`, `-vn`, `-sn`, `-dn`, `-r`, `-s`, `-frames:v`, `-vframes`, `-q:v`,
 `-qscale:v`, `-ar`, `-b:a`, `-ab`, `-ac`, `-sample_fmt`, `-metadata`, `-map_metadata`, `-map_chapters`, `-vf`, `-filter:v`, `-lavfi` and
-`-filter_complex` (psnr, ssim, showwavespic and showspectrumpic), `-af` and `-filter:a` (detection filters), `-segment_time`, `-segment_times`, `-update`, `-progress`, `-stats`, `-nostats`,
+`-filter_complex` (psnr, ssim, showwavespic, showspectrumpic and the editing filters), `-af` and `-filter:a` (detection and editing filters), `-loop 1` before an image, `-segment_time`, `-segment_times`, `-update`, `-progress`, `-stats`, `-nostats`,
 `-stats_period`, `-hide_banner`, `-loglevel`, `-v` and `-nostdin`, with `pipe:` and `%d` patterns. The filters are scale, crop,
 pad, transpose, hflip, vflip, fps, thumbnail, select (scene) and tile, and with `-f null` the detection filters above; the
 `-f lavfi` sources are testsrc, testsrc2, smptebars, smptehdbars, color, sine, anullsrc and anoisesrc. Codecs: `copy`, `mjpeg` and `rawvideo` for video, `flac`,

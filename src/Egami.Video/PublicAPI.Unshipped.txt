@@ -256,6 +256,8 @@ Egami.Video.Editing.EditRenderOptions.<Clone>$() -> Egami.Video.Editing.EditRend
 Egami.Video.Editing.EditRenderOptions.Audio.get -> bool
 Egami.Video.Editing.EditRenderOptions.Audio.init -> void
 Egami.Video.Editing.EditRenderOptions.Context.get -> Egami.Video.MediaContext?
+Egami.Video.Editing.EditRenderOptions.SmartRender.get -> bool
+Egami.Video.Editing.EditRenderOptions.SmartRender.init -> void
 Egami.Video.Editing.EditRenderOptions.Context.init -> void
 Egami.Video.Editing.EditRenderOptions.EditRenderOptions() -> void
 Egami.Video.Editing.EditRenderOptions.Equals(Egami.Video.Editing.EditRenderOptions? other) -> bool
