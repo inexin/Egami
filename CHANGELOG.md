@@ -24,7 +24,8 @@ comes after stage D.
   a gain, fade, pan and envelope chain runs 520 times real time, `Tempo` 610 times and `Speed` 500 times
   (`AudioFilterBenchmarks`).
 
-V9 Editing stage D: ffmpeg mode's editing filters and smart render (Build Plan tasks 22 and 23).
+V9 Editing stage D: ffmpeg mode's editing filters, smart render and the editing guide (Build Plan tasks 22 to 24). All
+additive; the API review for stages C and D comes next (task 25).
 
 - `egami-video ffmpeg` renders `-vf`, `-af` and `-filter_complex` graphs of fade, setpts, reverse, loop, tpad, fps, scale, xfade,
   concat, overlay, hstack, vstack, xstack, zoompan, chromakey, colorkey, despill, hflip and vflip, with afade, acrossfade,
@@ -38,6 +39,8 @@ V9 Editing stage D: ffmpeg mode's editing filters and smart render (Build Plan t
   encoder's) packet for packet from the first keyframe on, with V5.6's stream checks; the encoder starts again with a keyframe
   after each copied part. Gate: VP8, VP9 and AV1 edits with a fade, a dissolve and a layer decode cleanly to the full render's
   frame count, within 28 dB of it, with 60 to 72 of 90 packets copied byte for byte.
+- The editing guide gains plug-in points and a model on every frame: a tested `IRasterOperation` adapter that runs a model
+  on a planar float tensor, with a stand-in model, and the ONNX Runtime lines an app would use, marked as untested app code.
 
 V9 Editing stage C: stabilization (Build Plan tasks 20 and 21). All additive; the API review for stages C and D comes after
 stage D (task 25).
