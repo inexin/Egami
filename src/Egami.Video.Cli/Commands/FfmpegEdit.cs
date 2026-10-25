@@ -542,6 +542,13 @@ internal static class FfmpegEdit
             }
 
             Value video = Final();
+
+            // Whether the output has sound depends on the sources, which a graph of filters that need no probing never read.
+            foreach ((_, _, Source source, _) in video.Items)
+            {
+                Probe(source);
+            }
+
             bool audio = !line.NoAudio && AudioMapped() && (video.HasAudio || video.Layers.Count > 0);
             if (audio)
             {

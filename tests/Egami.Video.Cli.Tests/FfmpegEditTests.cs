@@ -62,6 +62,21 @@ public sealed class FfmpegEditTests
         }
     }
 
+    [Theory]
+    [InlineData("-af", "volume=0.5")]
+    [InlineData("-af", "atempo=1")]
+    [InlineData("-vf", "hflip=enable='between(t,0.5,1)'")]
+    [InlineData("-vf", "fps=10,fade=t=in:d=0.5")]
+    public void SoundComesThroughFiltersThatNeedNoProbing(string option, string graph)
+    {
+        using Tool tool = new();
+        tool.Copy("avi-mjpeg-420-pcm.avi", "a.avi");
+        ToolRun run = tool.Run("ffmpeg", "-i", "a.avi", option, graph, "out.mkv");
+        Assert.True(run.Code == 0, run.Error);
+        AudioTrackInfo sound = Assert.Single(MediaFile.Probe(tool.PathOf("out.mkv")).Tracks.OfType<AudioTrackInfo>());
+        Assert.Equal(2, sound.Duration?.Seconds ?? MediaFile.Probe(tool.PathOf("out.mkv")).Duration!.Value.Seconds, 0.15);
+    }
+
     [Fact]
     public void ExplainPrintsTheEditFile()
     {
