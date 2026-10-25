@@ -337,4 +337,23 @@ public class Editing
         Assert.Equal(75, plan.FrameCount);
         Assert.Equal(2, again.Track.Count);
     }
+
+    [Fact]
+    public void Stabilizing()
+    {
+        using SampleFiles files = new();
+        MakeClips();
+
+        #region edit-stabilize
+        // Two passes: measure the camera's motion, then render the clip warped onto a smoothed path, zoomed to hide the edges.
+        CameraMotion motion = Stabilizer.Analyze("talk.avi");
+        File.WriteAllText("talk.motion.json", motion.ToJson());
+        VideoEdit edit = new();
+        edit.Track.Add(Clip.Open("talk.avi").Stabilize(motion, new StabilizeOptions { Smoothing = 20, Edges = StabilizeEdges.Zoom }));
+        edit.Render("steady.mkv");
+        #endregion
+
+        Assert.Equal(motion.Frames.Count, CameraMotion.FromJson(File.ReadAllText("talk.motion.json")).Frames.Count);
+        Assert.True(File.Exists("steady.mkv"));
+    }
 }

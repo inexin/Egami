@@ -12,6 +12,9 @@ internal abstract class ClipFrames(ClipTiming timing) : IDisposable
     /// <summary>Gets the clip's timing.</summary>
     protected ClipTiming Timing { get; } = timing;
 
+    /// <summary>Gets the source timestamp of the frame handed out last, where the source has one.</summary>
+    public MediaTime? FrameTime { get; protected set; }
+
     /// <summary>Returns the frame to show at a time from the clip's start, or <see langword="null"/> when the clip has no picture. The frame stays the provider's.</summary>
     /// <param name="limit">The middle of the output frame's slot, from the clip's start.</param>
     public Raster<Rgba8>? FrameBefore(MediaTime limit) => SourceFrame(Timing.SourceAt(limit.Seconds));
@@ -165,6 +168,7 @@ internal sealed class FileFrames : ClipFrames
         {
             // Converted once a source frame, however many output frames show it.
             _current ??= planes.ToRaster<Rgba8>(_context.Egami);
+            FrameTime = planes.Timestamp;
         }
 
         return _current;
@@ -249,6 +253,7 @@ internal sealed class FileFrames : ClipFrames
             _currentTime = pick.Timestamp;
         }
 
+        FrameTime = pick.Timestamp;
         return _current;
     }
 

@@ -24,6 +24,19 @@ comes after stage D.
   a gain, fade, pan and envelope chain runs 520 times real time, `Tempo` 610 times and `Speed` 500 times
   (`AudioFilterBenchmarks`).
 
+V9 Editing stage C: stabilization (Build Plan tasks 20 and 21). All additive; the API review for stages C and D comes after
+stage D (task 25).
+
+- `Stabilizer.Analyze` measures a clip's `CameraMotion` (a `FrameMotion` per frame: move, turn and zoom from the frame before)
+  with Shi-Tomasi corners, pyramidal Lucas-Kanade tracking and a RANSAC similarity fit on a downscaled luma copy
+  (`StabilizerOptions.AnalysisWidth`, 480 by default); it saves as JSON. Known synthetic shakes up to 6 px and 1 degree are
+  recovered within 0.18 px at the frame's corners (gate 0.25 px).
+- `Clip.Stabilize` with `StabilizeOptions` (`Smoothing`, `Edges`: `StabilizeEdges.Zoom`, `Black` or `Blur`) smooths the camera
+  path with a Gaussian and warps each frame onto it; the edit file stores it with the motion.
+- egami-video `stabilize` (also an MCP tool), with `--smoothing`, `--edges`, `--zoom auto|none`, `--save-motion` and `--motion`.
+- Gate in egami-compare: on 10 shaky clips the shake left is within 1.2 times what FFmpeg's vidstab two passes leave at the
+  same smoothing (10 of 10; 0.10 to 1.16 times).
+
 V9 Editing API review for stages A and B (task 19), accepted 2026-10-25 (all as recommended), with task 18's gates.
 
 - The V9.1 audio filter `Fade` is now `AudioFade`, so it no longer clashes with `Egami.Video.Analysis.Fade`.

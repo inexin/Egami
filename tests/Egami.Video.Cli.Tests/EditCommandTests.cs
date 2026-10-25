@@ -82,6 +82,22 @@ public sealed class EditCommandTests : IDisposable
     }
 
     [Fact]
+    public void StabilizeInTwoPasses()
+    {
+        _tool.Copy("avi-mjpeg-420-pcm.avi", "a.avi");
+        ToolRun measure = _tool.Run("stabilize", "a.avi", "--save-motion", "m.json");
+        Assert.True(measure.Code == ExitCodes.Success, measure.Error);
+        Assert.False(File.Exists(_tool.PathOf("out.mkv")));
+        Assert.Contains("\"frames\"", File.ReadAllText(_tool.PathOf("m.json")), StringComparison.Ordinal);
+        ToolRun run = _tool.Run("stabilize", "a.avi", "--motion", "m.json", "--smoothing", "5", "--edges", "blur", "-o", "s.mkv");
+        Assert.True(run.Code == ExitCodes.Success, run.Error);
+        VideoTrackInfo a = MediaFile.Probe(_tool.PathOf("a.avi")).VideoTrack!;
+        Assert.Equal(a.Width, MediaFile.Probe(_tool.PathOf("s.mkv")).VideoTrack!.Width);
+        File.WriteAllText(_tool.PathOf("bad.json"), "{\"width\":1}");
+        Assert.Equal(ExitCodes.Usage, _tool.Run("stabilize", "a.avi", "--motion", "bad.json", "-o", "x.mkv").Code);
+    }
+
+    [Fact]
     public void RunStepsTakeTimeWindows()
     {
         _tool.Copy("avi-mjpeg-420-pcm.avi", "a.avi");
@@ -103,6 +119,8 @@ public sealed class EditCommandTests : IDisposable
     [InlineData("pip a.avi a.avi --corner centre -o x.mkv", "is not top-left")]
     [InlineData("join a.avi a.avi -o x.wav", "cannot hold both")]
     [InlineData("join a.avi a.avi", "No output")]
+    [InlineData("stabilize a.avi --edges spin -o x.mkv", "is not zoom, black or blur")]
+    [InlineData("stabilize a.avi --edges black --zoom none -o x.mkv", "not both")]
     public void UsageErrorsSayWhatIsWrong(string line, string message)
     {
         _tool.Copy("avi-mjpeg-420-pcm.avi", "a.avi");

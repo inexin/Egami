@@ -67,6 +67,9 @@ public sealed record Clip
     /// <summary>Gets the pan and zoom over the clip's picture (Ken Burns), or <see langword="null"/> for none.</summary>
     public PanZoomPath? Motion { get; init; }
 
+    /// <summary>Gets the stabilization of the clip's picture, or <see langword="null"/> for none.</summary>
+    public ClipStabilization? Stabilization { get; init; }
+
     internal ClipSource Source { get; init; }
 
     /// <summary>Returns a clip that reads a file's first video track and its first audio track.</summary>
@@ -270,6 +273,24 @@ public sealed record Clip
     /// <returns>The clip.</returns>
     public Clip PanZoom(System.Drawing.RectangleF from, System.Drawing.RectangleF to, Easing easing = Easing.Linear) => this with { Motion = new PanZoomPath(from, to, easing) };
 
+    /// <summary>
+    /// Returns the clip stabilized (pass 2): the camera path <paramref name="motion"/> measured is smoothed with a Gaussian, and
+    /// each frame is warped onto the smooth path with a sub-pixel transform, zooming in to hide the edges or filling them.
+    /// </summary>
+    /// <param name="motion">The camera motion of this clip's source, from <see cref="Stabilizer.Analyze(string, StabilizerOptions?, IProgress{MediaProgress}?, CancellationToken)"/>.</param>
+    /// <param name="options">The smoothing and edges, or <see langword="null"/> for the defaults.</param>
+    /// <returns>The clip.</returns>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/Editing.cs" region="edit-stabilize"/>
+    /// </example>
+    public Clip Stabilize(CameraMotion motion, StabilizeOptions? options = null)
+    {
+        ArgumentNullException.ThrowIfNull(motion);
+        options ??= StabilizeOptions.Default;
+        ArgumentOutOfRangeException.ThrowIfNegative(options.Smoothing, nameof(options));
+        return this with { Stabilization = new ClipStabilization(motion, options) };
+    }
+
     internal static Clip FromSource(ClipSource source) => new(source);
 
     private static void CheckDuration(MediaTime duration)
@@ -279,6 +300,33 @@ public sealed record Clip
             throw new ArgumentOutOfRangeException(nameof(duration), duration, "The duration must be above zero.");
         }
     }
+}
+
+/// <summary>A clip's stabilization, set by <see cref="Clip.Stabilize"/>: the measured camera motion and how it is smoothed.</summary>
+/// <example>
+/// <code language="csharp" source="../../../tests/Egami.DocSamples/Editing.cs" region="edit-stabilize"/>
+/// </example>
+public sealed record ClipStabilization
+{
+    /// <summary>Initializes a new instance of the <see cref="ClipStabilization"/> class.</summary>
+    /// <param name="motion">The camera motion of the clip's source.</param>
+    /// <param name="options">The smoothing and edges.</param>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/Editing.cs" region="edit-stabilize"/>
+    /// </example>
+    public ClipStabilization(CameraMotion motion, StabilizeOptions options)
+    {
+        ArgumentNullException.ThrowIfNull(motion);
+        ArgumentNullException.ThrowIfNull(options);
+        Motion = motion;
+        Options = options;
+    }
+
+    /// <summary>Gets the camera motion of the clip's source.</summary>
+    public CameraMotion Motion { get; }
+
+    /// <summary>Gets the smoothing and edges.</summary>
+    public StabilizeOptions Options { get; }
 }
 
 /// <summary>A frame of a <see cref="Clip"/> held still for a time by <see cref="Clip.Freeze"/>.</summary>

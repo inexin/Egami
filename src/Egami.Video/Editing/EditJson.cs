@@ -263,6 +263,20 @@ internal static class EditJson
             json.WriteEndObject();
         }
 
+        if (clip.Stabilization is ClipStabilization stabilization)
+        {
+            json.WriteStartObject("stabilize");
+            json.WriteNumber("smoothing", stabilization.Options.Smoothing);
+            if (stabilization.Options.Edges != StabilizeEdges.Zoom)
+            {
+                json.WriteString("edges", Name(stabilization.Options.Edges));
+            }
+
+            json.WritePropertyName("motion");
+            stabilization.Motion.Write(json);
+            json.WriteEndObject();
+        }
+
         WriteEffects(json, clip.Effects);
         json.WriteEndObject();
     }
@@ -580,6 +594,27 @@ internal static class EditJson
 
                     clip = clip.Freeze(MediaTime.FromSeconds(pair[0]), MediaTime.FromSeconds(pair[1]));
                 }
+            }
+
+            if (e.TryGetProperty("stabilize", out JsonElement stabilize))
+            {
+                string at = where + ".stabilize";
+                if (!stabilize.TryGetProperty("motion", out JsonElement motion))
+                {
+                    throw Missing(at, "motion");
+                }
+
+                CameraMotion camera;
+                try
+                {
+                    camera = CameraMotion.FromElement(motion);
+                }
+                catch (Exception ex) when (ex is KeyNotFoundException or InvalidOperationException)
+                {
+                    throw new FormatException($"{at}.motion is not a camera motion: {ex.Message}", ex);
+                }
+
+                clip = clip.Stabilize(camera, new StabilizeOptions { Smoothing = Int(stabilize, "smoothing", at) ?? 15, Edges = Enum<StabilizeEdges>(stabilize, "edges", at) ?? StabilizeEdges.Zoom });
             }
 
             if (e.TryGetProperty("panZoom", out JsonElement panZoom))
