@@ -104,6 +104,7 @@ internal static class Cli
         root.Subcommands.Add(RunCommand.Create(session));
         root.Subcommands.Add(AnalysisCommands.Compare(session));
         root.Subcommands.Add(AnalysisCommands.Stats(session));
+        root.Subcommands.Add(OcrCommand.Create(session));
         root.Subcommands.Add(FrameCommands.Create(session));
         root.Subcommands.Add(MetadataCommands.Create(session));
         root.Subcommands.Add(MetadataCommands.Color(session));

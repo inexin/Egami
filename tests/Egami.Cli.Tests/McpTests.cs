@@ -47,6 +47,9 @@ public sealed class McpTests : IAsyncDisposable
             "frames_join", "metadata_show", "metadata_strip", "metadata_copy", "color", "text", "overlay", "montage", "formats",
         ];
         Assert.Equal(expected, tools.Select(t => t.Name));
+
+        // ocr runs the program a call names, so it is never a tool.
+        Assert.DoesNotContain(tools, t => t.Name == "ocr");
         foreach (McpClientTool tool in tools)
         {
             Assert.Equal("object", tool.ProtocolTool.InputSchema.GetProperty("type").GetString());

@@ -1,0 +1,25 @@
+Description:
+  Read the text of images with an OCR program (Tesseract or any that writes hOCR or ALTO), as plain text, hOCR or ALTO.
+
+Usage:
+  egami ocr <inputs>... [options]
+
+Arguments:
+  <inputs>  Image files, globs (*, ?, **) expanded the same way in every shell, folders with --recursive, or - for standard input.
+
+Options:
+  --engine-command <command> (REQUIRED)  The OCR program and its arguments, run once per image: {image} is the image (PNG), {output} the result file without extension, {langs} the languages, {dpi} the resolution. It must write hOCR or ALTO, such as "tesseract {image} {output} -l {langs} --dpi {dpi} hocr".
+  -o, --output <path>                    Where to write: a file, a folder, a template with {name}, {ext}, {dir} and {index}, or - (the default) for standard output.
+  --as <text|hocr|alto>                  text, hocr or alto; by default from -o's extension (.txt, .hocr or .html, .xml), else text.
+  -l, --lang <languages>                 The languages to read, as the program names them, joined by + or commas, such as eng+nor.
+  --dpi <dpi>                            The image's resolution, which programs use to judge text size; by default the image's own, else 300.
+  --engine-timeout <seconds>             Seconds one run of the program may take; 300 by default.
+  -r, --recursive                        Take every image in folders given as inputs, at any depth.
+  -j, --jobs <count>                     How many files to work on at once; 0 (the default) for one per processor.
+  --fail-fast                            Stop at the first file that fails.
+  -?, -h, --help                         Show help and usage information
+  -v, --verbose                          Write information to standard error.
+  -vv, --debug                           Write debugging detail to standard error.
+  -q, --quiet                            Write only errors to standard error.
+  --limit <name=value,...>               Safety limits, such as pixels=100M,memory=2GB,frames=500 (names: pixels, width, height, frames, memory, metadata). EGAMI_LIMITS sets them too.
+
