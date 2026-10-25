@@ -150,6 +150,8 @@
       href: guides/h264.md
     - name: Audio
       href: guides/audio.md
+    - name: Audio filters
+      href: guides/audio-filters.md
     - name: Encoding Opus
       href: guides/opus-encoding.md
     - name: Subtitles
