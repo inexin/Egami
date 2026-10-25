@@ -30,6 +30,7 @@ Commands:
   run <inputs-and-steps>            Run steps over images, separated by +: 'egami run in.jpg auto-orient + resize 1200x + sharpen 0.6 + save out.webp --quality 82'. Every Egami operation is a step ('egami run --list'); save writes, and may come more than once.
   compare <image> <other>           Compare two images: print a metric and exit with 1 when they differ more than --threshold.
   stats <inputs>                    Measure images: per-channel minimum, maximum, mean, deviation, skewness, kurtosis and entropy, as ImageMagick's identify -verbose.
+  ocr <inputs>                      Read the text of images with an OCR program (Tesseract or any that writes hOCR or ALTO), as plain text, hOCR or ALTO.
   frames                            Split an animation (GIF, APNG, WebP) into still images, or join stills into one.
   metadata                          Show, strip or copy metadata: color profile, EXIF, XMP, IPTC, text and resolution.
   color <inputs>                    Convert images to another color profile (ICC, 2.1.2), tone mapping HDR to SDR where needed (2.9.1).
@@ -352,6 +353,30 @@ Options:
   --json                    Write JSON instead of text.
   --frame <index>           The frame to measure, from 0.
   -a, --all                 Also count the colors and give perceptual hashes and the pixel signature.
+```
+
+## ocr
+
+```text
+Description:
+  Read the text of images with an OCR program (Tesseract or any that writes hOCR or ALTO), as plain text, hOCR or ALTO.
+
+Usage:
+  egami ocr <inputs>... [options]
+
+Arguments:
+  <inputs>  Image files, globs (*, ?, **) expanded the same way in every shell, folders with --recursive, or - for standard input.
+
+Options:
+  --engine-command <command> (REQUIRED)  The OCR program and its arguments, run once per image: {image} is the image (PNG), {output} the result file without extension, {langs} the languages, {dpi} the resolution. It must write hOCR or ALTO, such as "tesseract {image} {output} -l {langs} --dpi {dpi} hocr".
+  -o, --output <path>                    Where to write: a file, a folder, a template with {name}, {ext}, {dir} and {index}, or - (the default) for standard output.
+  --as <text|hocr|alto>                  text, hocr or alto; by default from -o's extension (.txt, .hocr or .html, .xml), else text.
+  -l, --lang <languages>                 The languages to read, as the program names them, joined by + or commas, such as eng+nor.
+  --dpi <dpi>                            The image's resolution, which programs use to judge text size; by default the image's own, else 300.
+  --engine-timeout <seconds>             Seconds one run of the program may take; 300 by default.
+  -r, --recursive                        Take every image in folders given as inputs, at any depth.
+  -j, --jobs <count>                     How many files to work on at once; 0 (the default) for one per processor.
+  --fail-fast                            Stop at the first file that fails.
 ```
 
 ## frames

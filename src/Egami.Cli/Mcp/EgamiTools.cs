@@ -16,7 +16,8 @@ namespace Egami.Cli.Mcp;
 /// </summary>
 internal static class EgamiTools
 {
-    private static readonly Lazy<McpCatalog> All = new(() => McpCatalog.Build(Set));
+    // ocr runs the program a call names (--engine-command), which an assistant could turn into any command: never a tool.
+    private static readonly Lazy<McpCatalog> All = new(() => McpCatalog.Build(Set).Where(tool => tool.Name != "ocr"));
 
     /// <summary>Gets egami's tool set.</summary>
     public static McpToolSet Set => SetValue.Value;

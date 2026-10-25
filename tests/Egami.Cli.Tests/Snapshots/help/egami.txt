@@ -24,6 +24,7 @@ Commands:
   run <inputs-and-steps>            Run steps over images, separated by +: 'egami run in.jpg auto-orient + resize 1200x + sharpen 0.6 + save out.webp --quality 82'. Every Egami operation is a step ('egami run --list'); save writes, and may come more than once.
   compare <image> <other>           Compare two images: print a metric and exit with 1 when they differ more than --threshold.
   stats <inputs>                    Measure images: per-channel minimum, maximum, mean, deviation, skewness, kurtosis and entropy, as ImageMagick's identify -verbose.
+  ocr <inputs>                      Read the text of images with an OCR program (Tesseract or any that writes hOCR or ALTO), as plain text, hOCR or ALTO.
   frames                            Split an animation (GIF, APNG, WebP) into still images, or join stills into one.
   metadata                          Show, strip or copy metadata: color profile, EXIF, XMP, IPTC, text and resolution.
   color <inputs>                    Convert images to another color profile (ICC, 2.1.2), tone mapping HDR to SDR where needed (2.9.1).

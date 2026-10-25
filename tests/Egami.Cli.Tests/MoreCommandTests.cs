@@ -22,6 +22,46 @@ public sealed class MoreCommandTests : IDisposable
     public void Dispose() => _tool.Dispose();
 
     [Fact]
+    public void OcrWritesTextHocrAndAltoFromTheEngineCommand()
+    {
+        using (Raster<Rgb8> page = Raster.Create<Rgb8>(400, 200, new Rgb8(255, 255, 255)))
+        {
+            page.Save(_tool.PathOf("page.png"));
+        }
+
+        // A stand-in OCR program: it copies a fixed hOCR file to where the engine reads it.
+        File.WriteAllText(_tool.PathOf("fixed.hocr"), """
+            <html><body><div class="ocr_page" title="bbox 0 0 400 200">
+            <span class="ocr_line" title="bbox 20 20 300 60"><span class="ocrx_word" title="bbox 20 20 120 60; x_wconf 96">Hello</span> <span class="ocrx_word" title="bbox 140 20 300 60; x_wconf 90">scanner</span></span>
+            </div></body></html>
+            """);
+        string hocr = _tool.PathOf("fixed.hocr");
+        string engine = OperatingSystem.IsWindows() ? $"cmd /c copy /y \"{hocr}\" {{output}}.hocr" : $"cp \"{hocr}\" {{output}}.hocr";
+
+        ToolRun text = _tool.Run("ocr", "page.png", "--engine-command", engine);
+        Assert.True(text.Code == 0, text.Error);
+        Assert.Equal("Hello scanner\n", text.Text.Lines());
+
+        Expect(0, _tool.Run("ocr", "page.png", "--engine-command", engine, "-o", "out/{name}.hocr"));
+        using (FileStream read = File.OpenRead(_tool.PathOf("out/page.hocr")))
+        {
+            Ocr.OcrResult page = Assert.Single(Ocr.Hocr.Read(read));
+            Assert.Equal("Hello scanner", page.Text);
+            Assert.Equal(0.96, page.Lines[0].Words[0].Confidence!.Value, 3);
+        }
+
+        Expect(0, _tool.Run("ocr", "page.png", "--engine-command", engine, "-o", "page-alto.xml"));
+        using (FileStream read = File.OpenRead(_tool.PathOf("page-alto.xml")))
+        {
+            Assert.Equal("Hello scanner", Assert.Single(Ocr.Alto.Read(read)).Text);
+        }
+
+        Expect(ExitCodes.Usage, _tool.Run("ocr", "page.png"));
+        Expect(ExitCodes.Usage, _tool.Run("ocr", "page.png", "--engine-command", engine, "--as", "pdf"));
+        Expect(ExitCodes.Failed, _tool.Run("ocr", "page.png", "--engine-command", "no-such-ocr-program-here {image} {output}"));
+    }
+
+    [Fact]
     public void CompareExitsWithOneOnADifference()
     {
         string duck = _tool.Copy(Duck);

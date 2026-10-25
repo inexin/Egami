@@ -3,6 +3,12 @@
 All notable changes to Egami are listed here. Egami follows [Semantic Versioning](https://semver.org): from 1.0, public API
 changes that break code come only in a new major version.
 
+## Egami.Cli, unreleased
+
+- `egami ocr`: the text of images through an OCR program you name with `--engine-command`, such as Tesseract, as plain
+  text, hOCR or ALTO (`--as`, or `-o`'s extension), with `--lang`, `--dpi` (the image's own by default) and
+  `--engine-timeout`. `egami mcp` does not offer it, since it runs the program a call names.
+
 ## Egami.Video, unreleased
 
 V9.1 stage A: streaming audio filters in `Egami.Video.Audio.Filters` (Build Plan tasks 1 to 7). All additive; the API review

@@ -197,6 +197,18 @@ With `--all`, each file also has `metadata`: the blocks it holds (`icc`, `exif`,
 profile's name and size, resolution, gamma, EXIF's camera, date, orientation and location, the XMP size, IPTC datasets and
 text entries. `info` never decodes pixels; `--all` reads the metadata, which may decode a pixel.
 
+## Text in images
+
+`ocr` reads the text of images through an OCR program you install, such as Tesseract, run once per image as
+`CommandOcrEngine` runs it ([OCR](../guides/ocr.md)). It writes plain text to standard output by default, or text, hOCR or
+ALTO files by `-o`'s extension (`.txt`, `.hocr`, `.xml`) or `--as`. `egami mcp` does not offer it, since it runs the program
+the call names.
+
+```sh
+egami ocr scan.png --engine-command "tesseract {image} {output} -l {langs} --dpi {dpi} hocr" --lang eng
+egami ocr "scans/*.png" --engine-command "tesseract {image} {output} -l {langs} hocr" --lang eng+nor -o "text/{name}.hocr"
+```
+
 ## Other tools
 
 A command egami does not know runs the program `egami-<name>` from the PATH with the rest of the arguments, as git does, so
