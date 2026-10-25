@@ -642,12 +642,13 @@ internal static class FfmpegEdit
             double length;
             if (source.Image)
             {
-                length = input.Duration is { } t ? Seconds(t, "-t") : input.Loop is not null ? double.NaN : 1 / source.Rate;
                 if (input.FrameRate is { } fr)
                 {
                     source.FrameRate = EncodeCommand.ParseRate(fr);
                     source.Rate = source.FrameRate.ToDouble();
                 }
+
+                length = input.Duration is { } t ? Seconds(t, "-t") : input.Loop is not null ? double.NaN : 1 / source.Rate;
 
                 clip = Clip.Still(source.Path, MediaTime.FromSeconds(double.IsNaN(length) ? 1 : length));
                 if (input.Loop is { } loop && loop != "1")
@@ -1426,7 +1427,7 @@ internal static class FfmpegEdit
             (int? Edge, bool Centre)? Side(string text, string big, string small, string bigLong, string smallLong)
             {
                 string t = text.Replace(bigLong, big, StringComparison.Ordinal).Replace(smallLong, small, StringComparison.Ordinal);
-                if (int.TryParse(t, CultureInfo.InvariantCulture, out int near))
+                if (int.TryParse(t, CultureInfo.InvariantCulture, out int near) && near >= 0)
                 {
                     return (near, false);
                 }

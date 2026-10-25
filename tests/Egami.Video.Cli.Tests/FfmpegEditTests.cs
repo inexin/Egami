@@ -78,6 +78,31 @@ public sealed class FfmpegEditTests
     }
 
     [Fact]
+    public void ANegativeOverlayPositionIsAPlaceNotAnAnchor()
+    {
+        // overlay=x=-5:y=-5 puts the overlay 5 px past the top-left corner, not 4 px in from the bottom right.
+        using Tool tool = new();
+        tool.Copy("avi-mjpeg-420-pcm.avi", "a.avi");
+        tool.CopyImage("ops/shapes.png", "logo.png");
+        ToolRun run = tool.Run("ffmpeg", "-i", "a.avi", "-i", "logo.png", "-filter_complex", "overlay=x=-5:y=-5", "out.mkv", "--explain");
+        Assert.True(run.Code == 0, run.Error);
+        string compact = string.Concat(run.Text.Where(c => !char.IsWhiteSpace(c)));
+        Assert.Contains("\"area\":[-5,-5,", compact, StringComparison.Ordinal);
+        Assert.DoesNotContain("\"anchor\"", compact, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void AnImageTakesItsFrameRateBeforeItsLength()
+    {
+        // One frame of -framerate 10 lasts 0.1 s.
+        using Tool tool = new();
+        tool.CopyImage("ops/duck.png", "still.png");
+        ToolRun run = tool.Run("ffmpeg", "-framerate", "10", "-i", "still.png", "-vf", "fade=in:0:1", "out.mkv", "--explain");
+        Assert.True(run.Code == 0, run.Error);
+        Assert.Contains("\"duration\": 0.1,", run.Text, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void ExplainPrintsTheEditFile()
     {
         using Tool tool = new();
