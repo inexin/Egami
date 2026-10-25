@@ -3,6 +3,27 @@
 All notable changes to Egami are listed here. Egami follows [Semantic Versioning](https://semver.org): from 1.0, public API
 changes that break code come only in a new major version.
 
+## Egami.Video, unreleased
+
+V9.1 stage A: streaming audio filters in `Egami.Video.Audio.Filters` (Build Plan tasks 1 to 7). All additive; the API review
+comes after stage D.
+
+- `IAudioFilter` (`Send`, `TryReceive`, `Flush`, `Reset`, `Latency`), the `Resampler` shape, and `AudioFilterChain`, which runs
+  filters on one input in one pass. Frames of any format go in, F32 planar frames with exact timestamps come out; filters that
+  keep the length work in place, so a steady chain allocates no sample memory (130 bytes of frame object per frame).
+- `Gain` (decibels or a factor, 5 ms ramp on changes) with `GainEnvelope`, built of `Keyframe`s with an `Easing`.
+- `Fade` with `FadeDirection` and five `FadeCurve`s, and the two-input `Crossfade`, matching FFmpeg's `afade` and
+  `acrossfade` curves.
+- `AudioMixer` (per-input weights, `Normalize` off by default, `MixDuration`, inputs placed by timestamp and resampled and
+  remixed on entry) and `Pan` (constant-power position, balance, swap, invert).
+- `Delay` (per channel), `Pad`, `Trim` and `Retime`.
+- `Tempo` (WSOLA, 0.25 to 4, `TempoPreset.Music` and `Speech`, pitch and exact length kept) and `Speed` (resampled, pitch
+  follows).
+- Gates: gain, fades, crossfades, pan, mix and delay within -144 to -152 dBFS RMS of FFmpeg's output (gate -90 dBFS, references
+  from `tools/video/make-audio-filter-references.py`); tempo length exact and pitch within 1 % from 0.25 to 4. On 48 kHz stereo
+  a gain, fade, pan and envelope chain runs 520 times real time, `Tempo` 610 times and `Speed` 500 times
+  (`AudioFilterBenchmarks`).
+
 ## Egami.Video 1.0.0 (2026-10-25)
 
 The first release of Egami.Video on NuGet, with Egami.Video.H264 and Egami.Video.Cli at the same version. From 1.0 its

@@ -8,6 +8,8 @@ Egami.Video decodes and encodes audio with the same send and receive loop as vid
 - Containers: WAV with RF64 and BW64 for files over 4 GB, Sony Wave64, native FLAC, Ogg, MP3, AIFF and AIFF-C, Apple CAF
   and raw AC-3 and E-AC-3, read and written; these codecs in Matroska, WebM and MP4 too.
 - A resampler between any two rates, sample format conversion with dither, and channel layouts with downmix and upmix.
+- Streaming filters for gain, fades and crossfades, mixing and panning, delay and trimming, and tempo and speed: see
+  [Audio filters](audio-filters.md).
 
 Other audio tracks, such as AAC and E-AC-3, are copied through untouched.
 
