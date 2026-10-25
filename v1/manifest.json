@@ -13733,6 +13733,20 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Editing.ClipFreeze.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Editing.ClipFreeze.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Editing.ClipFreeze",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Editing.ClipFreeze.yml\" sourcestartlinenumber=\"1\">A frame of a <xref href=\"Egami.Video.Editing.Clip\" data-throw-if-not-resolved=\"false\"></xref> held still for a time by <xref href=\"Egami.Video.Editing.Clip.Freeze(Egami.Video.MediaTime%2cEgami.Video.MediaTime)\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.Video.Editing.EditCanvas.yml",
       "output": {
         ".html": {
@@ -13831,6 +13845,20 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Editing.IFrameSource.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Editing.IFrameSource.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Editing.IFrameSource",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Editing.IFrameSource.yml\" sourcestartlinenumber=\"1\">An app's own frames for <xref href=\"Egami.Video.Editing.Clip.FromSource(Egami.Video.Editing.IFrameSource)\" data-throw-if-not-resolved=\"false\"></xref>, such as titles drawn with Egami.Drawing or generated\ngraphics. The renderer asks for the frames in time order, once per output frame.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.Video.Editing.ITransition.yml",
       "output": {
         ".html": {
@@ -13873,6 +13901,20 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Editing.PanZoomPath.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Editing.PanZoomPath.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Editing.PanZoomPath",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Editing.PanZoomPath.yml\" sourcestartlinenumber=\"1\">A pan and zoom for <xref href=\"Egami.Video.Editing.Clip.PanZoom(System.Drawing.RectangleF%2cSystem.Drawing.RectangleF%2cEgami.Video.Easing)\" data-throw-if-not-resolved=\"false\"></xref>: the part of the picture shown at the start and at the end, as fractions of it.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.Video.Editing.PlannedClip.yml",
       "output": {
         ".html": {
@@ -13898,6 +13940,34 @@
       "IsMRef": true,
       "Title": "Egami.Video.Editing.PlannedLayer",
       "Summary": "<p sourcefile=\"api/Egami.Video.Editing.PlannedLayer.yml\" sourcestartlinenumber=\"1\">Where one layer falls in a planned edit, in whole output frames.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Editing.Slideshow.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Editing.Slideshow.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Editing.Slideshow",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Editing.Slideshow.yml\" sourcestartlinenumber=\"1\">Builds a <xref href=\"Egami.Video.Editing.VideoEdit\" data-throw-if-not-resolved=\"false\"></xref> that shows images one after another, with transitions and an optional pan and zoom.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Editing.SlideshowOptions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Editing.SlideshowOptions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Editing.SlideshowOptions",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Editing.SlideshowOptions.yml\" sourcestartlinenumber=\"1\">How <xref href=\"Egami.Video.Editing.Slideshow.Create(System.Collections.Generic.IEnumerable%7bSystem.String%7d%2cEgami.Video.Editing.SlideshowOptions)\" data-throw-if-not-resolved=\"false\"></xref> builds a slideshow.</p>\n"
     },
     {
       "type": "ManagedReference",

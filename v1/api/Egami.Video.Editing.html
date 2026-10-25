@@ -146,6 +146,11 @@ keyframed motion. Layers draw in order, the last on top. The methods return a ch
 </dd>
     </dl>
     <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Editing.PanZoomPath.html">PanZoomPath</a></dt>
+      <dd><p>A pan and zoom for <a class="xref" href="Egami.Video.Editing.Clip.html#Egami_Video_Editing_Clip_PanZoom_System_Drawing_RectangleF_System_Drawing_RectangleF_Egami_Video_Easing_">PanZoom(RectangleF, RectangleF, Easing)</a>: the part of the picture shown at the start and at the end, as fractions of it.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
       <dt><a class="xref" href="Egami.Video.Editing.PlannedClip.html">PlannedClip</a></dt>
       <dd><p>Where one clip of the main track falls in a planned edit, in whole output frames.</p>
 </dd>
@@ -153,6 +158,16 @@ keyframed motion. Layers draw in order, the last on top. The methods return a ch
     <dl class="jumplist">
       <dt><a class="xref" href="Egami.Video.Editing.PlannedLayer.html">PlannedLayer</a></dt>
       <dd><p>Where one layer falls in a planned edit, in whole output frames.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Editing.Slideshow.html">Slideshow</a></dt>
+      <dd><p>Builds a <a class="xref" href="Egami.Video.Editing.VideoEdit.html">VideoEdit</a> that shows images one after another, with transitions and an optional pan and zoom.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Editing.SlideshowOptions.html">SlideshowOptions</a></dt>
+      <dd><p>How <a class="xref" href="Egami.Video.Editing.Slideshow.html#Egami_Video_Editing_Slideshow_Create_System_Collections_Generic_IEnumerable_System_String__Egami_Video_Editing_SlideshowOptions_">Create(IEnumerable&lt;string&gt;, SlideshowOptions?)</a> builds a slideshow.</p>
 </dd>
     </dl>
     <dl class="jumplist">
@@ -190,6 +205,11 @@ decodes, composes and encodes it in one pass, holding only the frames in use. Sa
 Structs
 </h3>
     <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Editing.ClipFreeze.html">ClipFreeze</a></dt>
+      <dd><p>A frame of a <a class="xref" href="Egami.Video.Editing.Clip.html">Clip</a> held still for a time by <a class="xref" href="Egami.Video.Editing.Clip.html#Egami_Video_Editing_Clip_Freeze_Egami_Video_MediaTime_Egami_Video_MediaTime_">Freeze(MediaTime, MediaTime)</a>.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
       <dt><a class="xref" href="Egami.Video.Editing.FrameEffectContext.html">FrameEffectContext</a></dt>
       <dd><p>Where an <a class="xref" href="Egami.Video.Editing.IFrameEffect.html">IFrameEffect</a> is: the frame's time and how far through its window it is.</p>
 </dd>
@@ -201,6 +221,12 @@ Interfaces
       <dt><a class="xref" href="Egami.Video.Editing.IFrameEffect.html">IFrameEffect</a></dt>
       <dd><p>An app's own effect for <a class="xref" href="Egami.Video.Editing.EditEffect.html#Egami_Video_Editing_EditEffect_Of_Egami_Video_Editing_IFrameEffect_System_String_">Of(IFrameEffect, string?)</a>, which knows each frame's time. It changes the frame in place. The same
 instance runs on every frame, so keep it stateless.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Editing.IFrameSource.html">IFrameSource</a></dt>
+      <dd><p>An app's own frames for <a class="xref" href="Egami.Video.Editing.Clip.html#Egami_Video_Editing_Clip_FromSource_Egami_Video_Editing_IFrameSource_">FromSource(IFrameSource)</a>, such as titles drawn with Egami.Drawing or generated
+graphics. The renderer asks for the frames in time order, once per output frame.</p>
 </dd>
     </dl>
     <dl class="jumplist">

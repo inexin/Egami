@@ -88679,6 +88679,35 @@ references:
   commentId: T:Egami.Video.Editing.Clip
   fullName: Egami.Video.Editing.Clip
   nameWithType: Clip
+- uid: Egami.Video.Editing.Clip.Animation(System.String)
+  name: Animation(string)
+  href: api/Egami.Video.Editing.Clip.html#Egami_Video_Editing_Clip_Animation_System_String_
+  commentId: M:Egami.Video.Editing.Clip.Animation(System.String)
+  name.vb: Animation(String)
+  fullName: Egami.Video.Editing.Clip.Animation(string)
+  fullName.vb: Egami.Video.Editing.Clip.Animation(String)
+  nameWithType: Clip.Animation(string)
+  nameWithType.vb: Clip.Animation(String)
+- uid: Egami.Video.Editing.Clip.Animation*
+  name: Animation
+  href: api/Egami.Video.Editing.Clip.html#Egami_Video_Editing_Clip_Animation_
+  commentId: Overload:Egami.Video.Editing.Clip.Animation
+  isSpec: "True"
+  fullName: Egami.Video.Editing.Clip.Animation
+  nameWithType: Clip.Animation
+- uid: Egami.Video.Editing.Clip.Color(Egami.Pixels.Rgba8,Egami.Video.MediaTime)
+  name: Color(Rgba8, MediaTime)
+  href: api/Egami.Video.Editing.Clip.html#Egami_Video_Editing_Clip_Color_Egami_Pixels_Rgba8_Egami_Video_MediaTime_
+  commentId: M:Egami.Video.Editing.Clip.Color(Egami.Pixels.Rgba8,Egami.Video.MediaTime)
+  fullName: Egami.Video.Editing.Clip.Color(Egami.Pixels.Rgba8, Egami.Video.MediaTime)
+  nameWithType: Clip.Color(Rgba8, MediaTime)
+- uid: Egami.Video.Editing.Clip.Color*
+  name: Color
+  href: api/Egami.Video.Editing.Clip.html#Egami_Video_Editing_Clip_Color_
+  commentId: Overload:Egami.Video.Editing.Clip.Color
+  isSpec: "True"
+  fullName: Egami.Video.Editing.Clip.Color
+  nameWithType: Clip.Color
 - uid: Egami.Video.Editing.Clip.Effects
   name: Effects
   href: api/Egami.Video.Editing.Clip.html#Egami_Video_Editing_Clip_Effects
@@ -88757,6 +88786,71 @@ references:
   isSpec: "True"
   fullName: Egami.Video.Editing.Clip.FadeOutDuration
   nameWithType: Clip.FadeOutDuration
+- uid: Egami.Video.Editing.Clip.Freeze(Egami.Video.MediaTime,Egami.Video.MediaTime)
+  name: Freeze(MediaTime, MediaTime)
+  href: api/Egami.Video.Editing.Clip.html#Egami_Video_Editing_Clip_Freeze_Egami_Video_MediaTime_Egami_Video_MediaTime_
+  commentId: M:Egami.Video.Editing.Clip.Freeze(Egami.Video.MediaTime,Egami.Video.MediaTime)
+  fullName: Egami.Video.Editing.Clip.Freeze(Egami.Video.MediaTime, Egami.Video.MediaTime)
+  nameWithType: Clip.Freeze(MediaTime, MediaTime)
+- uid: Egami.Video.Editing.Clip.Freeze*
+  name: Freeze
+  href: api/Egami.Video.Editing.Clip.html#Egami_Video_Editing_Clip_Freeze_
+  commentId: Overload:Egami.Video.Editing.Clip.Freeze
+  isSpec: "True"
+  fullName: Egami.Video.Editing.Clip.Freeze
+  nameWithType: Clip.Freeze
+- uid: Egami.Video.Editing.Clip.Freezes
+  name: Freezes
+  href: api/Egami.Video.Editing.Clip.html#Egami_Video_Editing_Clip_Freezes
+  commentId: P:Egami.Video.Editing.Clip.Freezes
+  fullName: Egami.Video.Editing.Clip.Freezes
+  nameWithType: Clip.Freezes
+- uid: Egami.Video.Editing.Clip.Freezes*
+  name: Freezes
+  href: api/Egami.Video.Editing.Clip.html#Egami_Video_Editing_Clip_Freezes_
+  commentId: Overload:Egami.Video.Editing.Clip.Freezes
+  isSpec: "True"
+  fullName: Egami.Video.Editing.Clip.Freezes
+  nameWithType: Clip.Freezes
+- uid: Egami.Video.Editing.Clip.FromSource(Egami.Video.Editing.IFrameSource)
+  name: FromSource(IFrameSource)
+  href: api/Egami.Video.Editing.Clip.html#Egami_Video_Editing_Clip_FromSource_Egami_Video_Editing_IFrameSource_
+  commentId: M:Egami.Video.Editing.Clip.FromSource(Egami.Video.Editing.IFrameSource)
+  fullName: Egami.Video.Editing.Clip.FromSource(Egami.Video.Editing.IFrameSource)
+  nameWithType: Clip.FromSource(IFrameSource)
+- uid: Egami.Video.Editing.Clip.FromSource*
+  name: FromSource
+  href: api/Egami.Video.Editing.Clip.html#Egami_Video_Editing_Clip_FromSource_
+  commentId: Overload:Egami.Video.Editing.Clip.FromSource
+  isSpec: "True"
+  fullName: Egami.Video.Editing.Clip.FromSource
+  nameWithType: Clip.FromSource
+- uid: Egami.Video.Editing.Clip.Hold(Egami.Video.MediaTime)
+  name: Hold(MediaTime)
+  href: api/Egami.Video.Editing.Clip.html#Egami_Video_Editing_Clip_Hold_Egami_Video_MediaTime_
+  commentId: M:Egami.Video.Editing.Clip.Hold(Egami.Video.MediaTime)
+  fullName: Egami.Video.Editing.Clip.Hold(Egami.Video.MediaTime)
+  nameWithType: Clip.Hold(MediaTime)
+- uid: Egami.Video.Editing.Clip.Hold*
+  name: Hold
+  href: api/Egami.Video.Editing.Clip.html#Egami_Video_Editing_Clip_Hold_
+  commentId: Overload:Egami.Video.Editing.Clip.Hold
+  isSpec: "True"
+  fullName: Egami.Video.Editing.Clip.Hold
+  nameWithType: Clip.Hold
+- uid: Egami.Video.Editing.Clip.HoldDuration
+  name: HoldDuration
+  href: api/Egami.Video.Editing.Clip.html#Egami_Video_Editing_Clip_HoldDuration
+  commentId: P:Egami.Video.Editing.Clip.HoldDuration
+  fullName: Egami.Video.Editing.Clip.HoldDuration
+  nameWithType: Clip.HoldDuration
+- uid: Egami.Video.Editing.Clip.HoldDuration*
+  name: HoldDuration
+  href: api/Egami.Video.Editing.Clip.html#Egami_Video_Editing_Clip_HoldDuration_
+  commentId: Overload:Egami.Video.Editing.Clip.HoldDuration
+  isSpec: "True"
+  fullName: Egami.Video.Editing.Clip.HoldDuration
+  nameWithType: Clip.HoldDuration
 - uid: Egami.Video.Editing.Clip.In
   name: In
   href: api/Egami.Video.Editing.Clip.html#Egami_Video_Editing_Clip_In
@@ -88783,6 +88877,74 @@ references:
   isSpec: "True"
   fullName: Egami.Video.Editing.Clip.IsMuted
   nameWithType: Clip.IsMuted
+- uid: Egami.Video.Editing.Clip.IsReversed
+  name: IsReversed
+  href: api/Egami.Video.Editing.Clip.html#Egami_Video_Editing_Clip_IsReversed
+  commentId: P:Egami.Video.Editing.Clip.IsReversed
+  fullName: Egami.Video.Editing.Clip.IsReversed
+  nameWithType: Clip.IsReversed
+- uid: Egami.Video.Editing.Clip.IsReversed*
+  name: IsReversed
+  href: api/Egami.Video.Editing.Clip.html#Egami_Video_Editing_Clip_IsReversed_
+  commentId: Overload:Egami.Video.Editing.Clip.IsReversed
+  isSpec: "True"
+  fullName: Egami.Video.Editing.Clip.IsReversed
+  nameWithType: Clip.IsReversed
+- uid: Egami.Video.Editing.Clip.KeepsPitch
+  name: KeepsPitch
+  href: api/Egami.Video.Editing.Clip.html#Egami_Video_Editing_Clip_KeepsPitch
+  commentId: P:Egami.Video.Editing.Clip.KeepsPitch
+  fullName: Egami.Video.Editing.Clip.KeepsPitch
+  nameWithType: Clip.KeepsPitch
+- uid: Egami.Video.Editing.Clip.KeepsPitch*
+  name: KeepsPitch
+  href: api/Egami.Video.Editing.Clip.html#Egami_Video_Editing_Clip_KeepsPitch_
+  commentId: Overload:Egami.Video.Editing.Clip.KeepsPitch
+  isSpec: "True"
+  fullName: Egami.Video.Editing.Clip.KeepsPitch
+  nameWithType: Clip.KeepsPitch
+- uid: Egami.Video.Editing.Clip.Loop(System.Int32)
+  name: Loop(int)
+  href: api/Egami.Video.Editing.Clip.html#Egami_Video_Editing_Clip_Loop_System_Int32_
+  commentId: M:Egami.Video.Editing.Clip.Loop(System.Int32)
+  name.vb: Loop(Integer)
+  fullName: Egami.Video.Editing.Clip.Loop(int)
+  fullName.vb: Egami.Video.Editing.Clip.Loop(Integer)
+  nameWithType: Clip.Loop(int)
+  nameWithType.vb: Clip.Loop(Integer)
+- uid: Egami.Video.Editing.Clip.Loop*
+  name: Loop
+  href: api/Egami.Video.Editing.Clip.html#Egami_Video_Editing_Clip_Loop_
+  commentId: Overload:Egami.Video.Editing.Clip.Loop
+  isSpec: "True"
+  fullName: Egami.Video.Editing.Clip.Loop
+  nameWithType: Clip.Loop
+- uid: Egami.Video.Editing.Clip.LoopCount
+  name: LoopCount
+  href: api/Egami.Video.Editing.Clip.html#Egami_Video_Editing_Clip_LoopCount
+  commentId: P:Egami.Video.Editing.Clip.LoopCount
+  fullName: Egami.Video.Editing.Clip.LoopCount
+  nameWithType: Clip.LoopCount
+- uid: Egami.Video.Editing.Clip.LoopCount*
+  name: LoopCount
+  href: api/Egami.Video.Editing.Clip.html#Egami_Video_Editing_Clip_LoopCount_
+  commentId: Overload:Egami.Video.Editing.Clip.LoopCount
+  isSpec: "True"
+  fullName: Egami.Video.Editing.Clip.LoopCount
+  nameWithType: Clip.LoopCount
+- uid: Egami.Video.Editing.Clip.Motion
+  name: Motion
+  href: api/Egami.Video.Editing.Clip.html#Egami_Video_Editing_Clip_Motion
+  commentId: P:Egami.Video.Editing.Clip.Motion
+  fullName: Egami.Video.Editing.Clip.Motion
+  nameWithType: Clip.Motion
+- uid: Egami.Video.Editing.Clip.Motion*
+  name: Motion
+  href: api/Egami.Video.Editing.Clip.html#Egami_Video_Editing_Clip_Motion_
+  commentId: Overload:Egami.Video.Editing.Clip.Motion
+  isSpec: "True"
+  fullName: Egami.Video.Editing.Clip.Motion
+  nameWithType: Clip.Motion
 - uid: Egami.Video.Editing.Clip.Muted
   name: Muted()
   href: api/Egami.Video.Editing.Clip.html#Egami_Video_Editing_Clip_Muted
@@ -88831,6 +88993,19 @@ references:
   isSpec: "True"
   fullName: Egami.Video.Editing.Clip.Out
   nameWithType: Clip.Out
+- uid: Egami.Video.Editing.Clip.PanZoom(System.Drawing.RectangleF,System.Drawing.RectangleF,Egami.Video.Easing)
+  name: PanZoom(RectangleF, RectangleF, Easing)
+  href: api/Egami.Video.Editing.Clip.html#Egami_Video_Editing_Clip_PanZoom_System_Drawing_RectangleF_System_Drawing_RectangleF_Egami_Video_Easing_
+  commentId: M:Egami.Video.Editing.Clip.PanZoom(System.Drawing.RectangleF,System.Drawing.RectangleF,Egami.Video.Easing)
+  fullName: Egami.Video.Editing.Clip.PanZoom(System.Drawing.RectangleF, System.Drawing.RectangleF, Egami.Video.Easing)
+  nameWithType: Clip.PanZoom(RectangleF, RectangleF, Easing)
+- uid: Egami.Video.Editing.Clip.PanZoom*
+  name: PanZoom
+  href: api/Egami.Video.Editing.Clip.html#Egami_Video_Editing_Clip_PanZoom_
+  commentId: Overload:Egami.Video.Editing.Clip.PanZoom
+  isSpec: "True"
+  fullName: Egami.Video.Editing.Clip.PanZoom
+  nameWithType: Clip.PanZoom
 - uid: Egami.Video.Editing.Clip.Path
   name: Path
   href: api/Egami.Video.Editing.Clip.html#Egami_Video_Editing_Clip_Path
@@ -88844,6 +89019,73 @@ references:
   isSpec: "True"
   fullName: Egami.Video.Editing.Clip.Path
   nameWithType: Clip.Path
+- uid: Egami.Video.Editing.Clip.Reverse
+  name: Reverse()
+  href: api/Egami.Video.Editing.Clip.html#Egami_Video_Editing_Clip_Reverse
+  commentId: M:Egami.Video.Editing.Clip.Reverse
+  fullName: Egami.Video.Editing.Clip.Reverse()
+  nameWithType: Clip.Reverse()
+- uid: Egami.Video.Editing.Clip.Reverse*
+  name: Reverse
+  href: api/Egami.Video.Editing.Clip.html#Egami_Video_Editing_Clip_Reverse_
+  commentId: Overload:Egami.Video.Editing.Clip.Reverse
+  isSpec: "True"
+  fullName: Egami.Video.Editing.Clip.Reverse
+  nameWithType: Clip.Reverse
+- uid: Egami.Video.Editing.Clip.Speed(System.Double,System.Boolean)
+  name: Speed(double, bool)
+  href: api/Egami.Video.Editing.Clip.html#Egami_Video_Editing_Clip_Speed_System_Double_System_Boolean_
+  commentId: M:Egami.Video.Editing.Clip.Speed(System.Double,System.Boolean)
+  name.vb: Speed(Double, Boolean)
+  fullName: Egami.Video.Editing.Clip.Speed(double, bool)
+  fullName.vb: Egami.Video.Editing.Clip.Speed(Double, Boolean)
+  nameWithType: Clip.Speed(double, bool)
+  nameWithType.vb: Clip.Speed(Double, Boolean)
+- uid: Egami.Video.Editing.Clip.Speed*
+  name: Speed
+  href: api/Egami.Video.Editing.Clip.html#Egami_Video_Editing_Clip_Speed_
+  commentId: Overload:Egami.Video.Editing.Clip.Speed
+  isSpec: "True"
+  fullName: Egami.Video.Editing.Clip.Speed
+  nameWithType: Clip.Speed
+- uid: Egami.Video.Editing.Clip.SpeedFactor
+  name: SpeedFactor
+  href: api/Egami.Video.Editing.Clip.html#Egami_Video_Editing_Clip_SpeedFactor
+  commentId: P:Egami.Video.Editing.Clip.SpeedFactor
+  fullName: Egami.Video.Editing.Clip.SpeedFactor
+  nameWithType: Clip.SpeedFactor
+- uid: Egami.Video.Editing.Clip.SpeedFactor*
+  name: SpeedFactor
+  href: api/Egami.Video.Editing.Clip.html#Egami_Video_Editing_Clip_SpeedFactor_
+  commentId: Overload:Egami.Video.Editing.Clip.SpeedFactor
+  isSpec: "True"
+  fullName: Egami.Video.Editing.Clip.SpeedFactor
+  nameWithType: Clip.SpeedFactor
+- uid: Egami.Video.Editing.Clip.Still(Egami.Raster{Egami.Pixels.Rgba8},Egami.Video.MediaTime)
+  name: Still(Raster<Rgba8>, MediaTime)
+  href: api/Egami.Video.Editing.Clip.html#Egami_Video_Editing_Clip_Still_Egami_Raster_Egami_Pixels_Rgba8__Egami_Video_MediaTime_
+  commentId: M:Egami.Video.Editing.Clip.Still(Egami.Raster{Egami.Pixels.Rgba8},Egami.Video.MediaTime)
+  name.vb: Still(Raster(Of Rgba8), MediaTime)
+  fullName: Egami.Video.Editing.Clip.Still(Egami.Raster<Egami.Pixels.Rgba8>, Egami.Video.MediaTime)
+  fullName.vb: Egami.Video.Editing.Clip.Still(Egami.Raster(Of Egami.Pixels.Rgba8), Egami.Video.MediaTime)
+  nameWithType: Clip.Still(Raster<Rgba8>, MediaTime)
+  nameWithType.vb: Clip.Still(Raster(Of Rgba8), MediaTime)
+- uid: Egami.Video.Editing.Clip.Still(System.String,Egami.Video.MediaTime)
+  name: Still(string, MediaTime)
+  href: api/Egami.Video.Editing.Clip.html#Egami_Video_Editing_Clip_Still_System_String_Egami_Video_MediaTime_
+  commentId: M:Egami.Video.Editing.Clip.Still(System.String,Egami.Video.MediaTime)
+  name.vb: Still(String, MediaTime)
+  fullName: Egami.Video.Editing.Clip.Still(string, Egami.Video.MediaTime)
+  fullName.vb: Egami.Video.Editing.Clip.Still(String, Egami.Video.MediaTime)
+  nameWithType: Clip.Still(string, MediaTime)
+  nameWithType.vb: Clip.Still(String, MediaTime)
+- uid: Egami.Video.Editing.Clip.Still*
+  name: Still
+  href: api/Egami.Video.Editing.Clip.html#Egami_Video_Editing_Clip_Still_
+  commentId: Overload:Egami.Video.Editing.Clip.Still
+  isSpec: "True"
+  fullName: Egami.Video.Editing.Clip.Still
+  nameWithType: Clip.Still
 - uid: Egami.Video.Editing.Clip.Trim(Egami.Video.MediaTime,System.Nullable{Egami.Video.MediaTime})
   name: Trim(MediaTime, MediaTime?)
   href: api/Egami.Video.Editing.Clip.html#Egami_Video_Editing_Clip_Trim_Egami_Video_MediaTime_System_Nullable_Egami_Video_MediaTime__
@@ -88929,6 +89171,57 @@ references:
   commentId: F:Egami.Video.Editing.ClipFit.Stretch
   fullName: Egami.Video.Editing.ClipFit.Stretch
   nameWithType: ClipFit.Stretch
+- uid: Egami.Video.Editing.ClipFreeze
+  name: ClipFreeze
+  href: api/Egami.Video.Editing.ClipFreeze.html
+  commentId: T:Egami.Video.Editing.ClipFreeze
+  fullName: Egami.Video.Editing.ClipFreeze
+  nameWithType: ClipFreeze
+- uid: Egami.Video.Editing.ClipFreeze.#ctor(Egami.Video.MediaTime,Egami.Video.MediaTime)
+  name: ClipFreeze(MediaTime, MediaTime)
+  href: api/Egami.Video.Editing.ClipFreeze.html#Egami_Video_Editing_ClipFreeze__ctor_Egami_Video_MediaTime_Egami_Video_MediaTime_
+  commentId: M:Egami.Video.Editing.ClipFreeze.#ctor(Egami.Video.MediaTime,Egami.Video.MediaTime)
+  name.vb: New(MediaTime, MediaTime)
+  fullName: Egami.Video.Editing.ClipFreeze.ClipFreeze(Egami.Video.MediaTime, Egami.Video.MediaTime)
+  fullName.vb: Egami.Video.Editing.ClipFreeze.New(Egami.Video.MediaTime, Egami.Video.MediaTime)
+  nameWithType: ClipFreeze.ClipFreeze(MediaTime, MediaTime)
+  nameWithType.vb: ClipFreeze.New(MediaTime, MediaTime)
+- uid: Egami.Video.Editing.ClipFreeze.#ctor*
+  name: ClipFreeze
+  href: api/Egami.Video.Editing.ClipFreeze.html#Egami_Video_Editing_ClipFreeze__ctor_
+  commentId: Overload:Egami.Video.Editing.ClipFreeze.#ctor
+  isSpec: "True"
+  name.vb: New
+  fullName: Egami.Video.Editing.ClipFreeze.ClipFreeze
+  fullName.vb: Egami.Video.Editing.ClipFreeze.New
+  nameWithType: ClipFreeze.ClipFreeze
+  nameWithType.vb: ClipFreeze.New
+- uid: Egami.Video.Editing.ClipFreeze.At
+  name: At
+  href: api/Egami.Video.Editing.ClipFreeze.html#Egami_Video_Editing_ClipFreeze_At
+  commentId: P:Egami.Video.Editing.ClipFreeze.At
+  fullName: Egami.Video.Editing.ClipFreeze.At
+  nameWithType: ClipFreeze.At
+- uid: Egami.Video.Editing.ClipFreeze.At*
+  name: At
+  href: api/Egami.Video.Editing.ClipFreeze.html#Egami_Video_Editing_ClipFreeze_At_
+  commentId: Overload:Egami.Video.Editing.ClipFreeze.At
+  isSpec: "True"
+  fullName: Egami.Video.Editing.ClipFreeze.At
+  nameWithType: ClipFreeze.At
+- uid: Egami.Video.Editing.ClipFreeze.Duration
+  name: Duration
+  href: api/Egami.Video.Editing.ClipFreeze.html#Egami_Video_Editing_ClipFreeze_Duration
+  commentId: P:Egami.Video.Editing.ClipFreeze.Duration
+  fullName: Egami.Video.Editing.ClipFreeze.Duration
+  nameWithType: ClipFreeze.Duration
+- uid: Egami.Video.Editing.ClipFreeze.Duration*
+  name: Duration
+  href: api/Egami.Video.Editing.ClipFreeze.html#Egami_Video_Editing_ClipFreeze_Duration_
+  commentId: Overload:Egami.Video.Editing.ClipFreeze.Duration
+  isSpec: "True"
+  fullName: Egami.Video.Editing.ClipFreeze.Duration
+  nameWithType: ClipFreeze.Duration
 - uid: Egami.Video.Editing.EditCanvas
   name: EditCanvas
   href: api/Egami.Video.Editing.EditCanvas.html
@@ -89484,6 +89777,54 @@ references:
   isSpec: "True"
   fullName: Egami.Video.Editing.IFrameEffect.Apply
   nameWithType: IFrameEffect.Apply
+- uid: Egami.Video.Editing.IFrameSource
+  name: IFrameSource
+  href: api/Egami.Video.Editing.IFrameSource.html
+  commentId: T:Egami.Video.Editing.IFrameSource
+  fullName: Egami.Video.Editing.IFrameSource
+  nameWithType: IFrameSource
+- uid: Egami.Video.Editing.IFrameSource.Duration
+  name: Duration
+  href: api/Egami.Video.Editing.IFrameSource.html#Egami_Video_Editing_IFrameSource_Duration
+  commentId: P:Egami.Video.Editing.IFrameSource.Duration
+  fullName: Egami.Video.Editing.IFrameSource.Duration
+  nameWithType: IFrameSource.Duration
+- uid: Egami.Video.Editing.IFrameSource.Duration*
+  name: Duration
+  href: api/Egami.Video.Editing.IFrameSource.html#Egami_Video_Editing_IFrameSource_Duration_
+  commentId: Overload:Egami.Video.Editing.IFrameSource.Duration
+  isSpec: "True"
+  fullName: Egami.Video.Editing.IFrameSource.Duration
+  nameWithType: IFrameSource.Duration
+- uid: Egami.Video.Editing.IFrameSource.Render(Egami.Video.MediaTime,Egami.Raster{Egami.Pixels.Rgba8})
+  name: Render(MediaTime, Raster<Rgba8>)
+  href: api/Egami.Video.Editing.IFrameSource.html#Egami_Video_Editing_IFrameSource_Render_Egami_Video_MediaTime_Egami_Raster_Egami_Pixels_Rgba8__
+  commentId: M:Egami.Video.Editing.IFrameSource.Render(Egami.Video.MediaTime,Egami.Raster{Egami.Pixels.Rgba8})
+  name.vb: Render(MediaTime, Raster(Of Rgba8))
+  fullName: Egami.Video.Editing.IFrameSource.Render(Egami.Video.MediaTime, Egami.Raster<Egami.Pixels.Rgba8>)
+  fullName.vb: Egami.Video.Editing.IFrameSource.Render(Egami.Video.MediaTime, Egami.Raster(Of Egami.Pixels.Rgba8))
+  nameWithType: IFrameSource.Render(MediaTime, Raster<Rgba8>)
+  nameWithType.vb: IFrameSource.Render(MediaTime, Raster(Of Rgba8))
+- uid: Egami.Video.Editing.IFrameSource.Render*
+  name: Render
+  href: api/Egami.Video.Editing.IFrameSource.html#Egami_Video_Editing_IFrameSource_Render_
+  commentId: Overload:Egami.Video.Editing.IFrameSource.Render
+  isSpec: "True"
+  fullName: Egami.Video.Editing.IFrameSource.Render
+  nameWithType: IFrameSource.Render
+- uid: Egami.Video.Editing.IFrameSource.Size
+  name: Size
+  href: api/Egami.Video.Editing.IFrameSource.html#Egami_Video_Editing_IFrameSource_Size
+  commentId: P:Egami.Video.Editing.IFrameSource.Size
+  fullName: Egami.Video.Editing.IFrameSource.Size
+  nameWithType: IFrameSource.Size
+- uid: Egami.Video.Editing.IFrameSource.Size*
+  name: Size
+  href: api/Egami.Video.Editing.IFrameSource.html#Egami_Video_Editing_IFrameSource_Size_
+  commentId: Overload:Egami.Video.Editing.IFrameSource.Size
+  isSpec: "True"
+  fullName: Egami.Video.Editing.IFrameSource.Size
+  nameWithType: IFrameSource.Size
 - uid: Egami.Video.Editing.ITransition
   name: ITransition
   href: api/Egami.Video.Editing.ITransition.html
@@ -89901,6 +90242,70 @@ references:
   commentId: F:Egami.Video.Editing.LayerProperty.Y
   fullName: Egami.Video.Editing.LayerProperty.Y
   nameWithType: LayerProperty.Y
+- uid: Egami.Video.Editing.PanZoomPath
+  name: PanZoomPath
+  href: api/Egami.Video.Editing.PanZoomPath.html
+  commentId: T:Egami.Video.Editing.PanZoomPath
+  fullName: Egami.Video.Editing.PanZoomPath
+  nameWithType: PanZoomPath
+- uid: Egami.Video.Editing.PanZoomPath.#ctor(System.Drawing.RectangleF,System.Drawing.RectangleF,Egami.Video.Easing)
+  name: PanZoomPath(RectangleF, RectangleF, Easing)
+  href: api/Egami.Video.Editing.PanZoomPath.html#Egami_Video_Editing_PanZoomPath__ctor_System_Drawing_RectangleF_System_Drawing_RectangleF_Egami_Video_Easing_
+  commentId: M:Egami.Video.Editing.PanZoomPath.#ctor(System.Drawing.RectangleF,System.Drawing.RectangleF,Egami.Video.Easing)
+  name.vb: New(RectangleF, RectangleF, Easing)
+  fullName: Egami.Video.Editing.PanZoomPath.PanZoomPath(System.Drawing.RectangleF, System.Drawing.RectangleF, Egami.Video.Easing)
+  fullName.vb: Egami.Video.Editing.PanZoomPath.New(System.Drawing.RectangleF, System.Drawing.RectangleF, Egami.Video.Easing)
+  nameWithType: PanZoomPath.PanZoomPath(RectangleF, RectangleF, Easing)
+  nameWithType.vb: PanZoomPath.New(RectangleF, RectangleF, Easing)
+- uid: Egami.Video.Editing.PanZoomPath.#ctor*
+  name: PanZoomPath
+  href: api/Egami.Video.Editing.PanZoomPath.html#Egami_Video_Editing_PanZoomPath__ctor_
+  commentId: Overload:Egami.Video.Editing.PanZoomPath.#ctor
+  isSpec: "True"
+  name.vb: New
+  fullName: Egami.Video.Editing.PanZoomPath.PanZoomPath
+  fullName.vb: Egami.Video.Editing.PanZoomPath.New
+  nameWithType: PanZoomPath.PanZoomPath
+  nameWithType.vb: PanZoomPath.New
+- uid: Egami.Video.Editing.PanZoomPath.Easing
+  name: Easing
+  href: api/Egami.Video.Editing.PanZoomPath.html#Egami_Video_Editing_PanZoomPath_Easing
+  commentId: P:Egami.Video.Editing.PanZoomPath.Easing
+  fullName: Egami.Video.Editing.PanZoomPath.Easing
+  nameWithType: PanZoomPath.Easing
+- uid: Egami.Video.Editing.PanZoomPath.Easing*
+  name: Easing
+  href: api/Egami.Video.Editing.PanZoomPath.html#Egami_Video_Editing_PanZoomPath_Easing_
+  commentId: Overload:Egami.Video.Editing.PanZoomPath.Easing
+  isSpec: "True"
+  fullName: Egami.Video.Editing.PanZoomPath.Easing
+  nameWithType: PanZoomPath.Easing
+- uid: Egami.Video.Editing.PanZoomPath.From
+  name: From
+  href: api/Egami.Video.Editing.PanZoomPath.html#Egami_Video_Editing_PanZoomPath_From
+  commentId: P:Egami.Video.Editing.PanZoomPath.From
+  fullName: Egami.Video.Editing.PanZoomPath.From
+  nameWithType: PanZoomPath.From
+- uid: Egami.Video.Editing.PanZoomPath.From*
+  name: From
+  href: api/Egami.Video.Editing.PanZoomPath.html#Egami_Video_Editing_PanZoomPath_From_
+  commentId: Overload:Egami.Video.Editing.PanZoomPath.From
+  isSpec: "True"
+  fullName: Egami.Video.Editing.PanZoomPath.From
+  nameWithType: PanZoomPath.From
+- uid: Egami.Video.Editing.PanZoomPath.To
+  name: To
+  href: api/Egami.Video.Editing.PanZoomPath.html#Egami_Video_Editing_PanZoomPath_To
+  commentId: P:Egami.Video.Editing.PanZoomPath.To
+  fullName: Egami.Video.Editing.PanZoomPath.To
+  nameWithType: PanZoomPath.To
+- uid: Egami.Video.Editing.PanZoomPath.To*
+  name: To
+  href: api/Egami.Video.Editing.PanZoomPath.html#Egami_Video_Editing_PanZoomPath_To_
+  commentId: Overload:Egami.Video.Editing.PanZoomPath.To
+  isSpec: "True"
+  fullName: Egami.Video.Editing.PanZoomPath.To
+  nameWithType: PanZoomPath.To
 - uid: Egami.Video.Editing.PlannedClip
   name: PlannedClip
   href: api/Egami.Video.Editing.PlannedClip.html
@@ -90146,6 +90551,112 @@ references:
   isSpec: "True"
   fullName: Egami.Video.Editing.PlannedLayer.StartFrame
   nameWithType: PlannedLayer.StartFrame
+- uid: Egami.Video.Editing.Slideshow
+  name: Slideshow
+  href: api/Egami.Video.Editing.Slideshow.html
+  commentId: T:Egami.Video.Editing.Slideshow
+  fullName: Egami.Video.Editing.Slideshow
+  nameWithType: Slideshow
+- uid: Egami.Video.Editing.Slideshow.Create(System.Collections.Generic.IEnumerable{System.String},Egami.Video.Editing.SlideshowOptions)
+  name: Create(IEnumerable<string>, SlideshowOptions?)
+  href: api/Egami.Video.Editing.Slideshow.html#Egami_Video_Editing_Slideshow_Create_System_Collections_Generic_IEnumerable_System_String__Egami_Video_Editing_SlideshowOptions_
+  commentId: M:Egami.Video.Editing.Slideshow.Create(System.Collections.Generic.IEnumerable{System.String},Egami.Video.Editing.SlideshowOptions)
+  name.vb: Create(IEnumerable(Of String), SlideshowOptions)
+  fullName: Egami.Video.Editing.Slideshow.Create(System.Collections.Generic.IEnumerable<string>, Egami.Video.Editing.SlideshowOptions?)
+  fullName.vb: Egami.Video.Editing.Slideshow.Create(System.Collections.Generic.IEnumerable(Of String), Egami.Video.Editing.SlideshowOptions)
+  nameWithType: Slideshow.Create(IEnumerable<string>, SlideshowOptions?)
+  nameWithType.vb: Slideshow.Create(IEnumerable(Of String), SlideshowOptions)
+- uid: Egami.Video.Editing.Slideshow.Create*
+  name: Create
+  href: api/Egami.Video.Editing.Slideshow.html#Egami_Video_Editing_Slideshow_Create_
+  commentId: Overload:Egami.Video.Editing.Slideshow.Create
+  isSpec: "True"
+  fullName: Egami.Video.Editing.Slideshow.Create
+  nameWithType: Slideshow.Create
+- uid: Egami.Video.Editing.SlideshowOptions
+  name: SlideshowOptions
+  href: api/Egami.Video.Editing.SlideshowOptions.html
+  commentId: T:Egami.Video.Editing.SlideshowOptions
+  fullName: Egami.Video.Editing.SlideshowOptions
+  nameWithType: SlideshowOptions
+- uid: Egami.Video.Editing.SlideshowOptions.Canvas
+  name: Canvas
+  href: api/Egami.Video.Editing.SlideshowOptions.html#Egami_Video_Editing_SlideshowOptions_Canvas
+  commentId: P:Egami.Video.Editing.SlideshowOptions.Canvas
+  fullName: Egami.Video.Editing.SlideshowOptions.Canvas
+  nameWithType: SlideshowOptions.Canvas
+- uid: Egami.Video.Editing.SlideshowOptions.Canvas*
+  name: Canvas
+  href: api/Egami.Video.Editing.SlideshowOptions.html#Egami_Video_Editing_SlideshowOptions_Canvas_
+  commentId: Overload:Egami.Video.Editing.SlideshowOptions.Canvas
+  isSpec: "True"
+  fullName: Egami.Video.Editing.SlideshowOptions.Canvas
+  nameWithType: SlideshowOptions.Canvas
+- uid: Egami.Video.Editing.SlideshowOptions.Default
+  name: Default
+  href: api/Egami.Video.Editing.SlideshowOptions.html#Egami_Video_Editing_SlideshowOptions_Default
+  commentId: P:Egami.Video.Editing.SlideshowOptions.Default
+  fullName: Egami.Video.Editing.SlideshowOptions.Default
+  nameWithType: SlideshowOptions.Default
+- uid: Egami.Video.Editing.SlideshowOptions.Default*
+  name: Default
+  href: api/Egami.Video.Editing.SlideshowOptions.html#Egami_Video_Editing_SlideshowOptions_Default_
+  commentId: Overload:Egami.Video.Editing.SlideshowOptions.Default
+  isSpec: "True"
+  fullName: Egami.Video.Editing.SlideshowOptions.Default
+  nameWithType: SlideshowOptions.Default
+- uid: Egami.Video.Editing.SlideshowOptions.Each
+  name: Each
+  href: api/Egami.Video.Editing.SlideshowOptions.html#Egami_Video_Editing_SlideshowOptions_Each
+  commentId: P:Egami.Video.Editing.SlideshowOptions.Each
+  fullName: Egami.Video.Editing.SlideshowOptions.Each
+  nameWithType: SlideshowOptions.Each
+- uid: Egami.Video.Editing.SlideshowOptions.Each*
+  name: Each
+  href: api/Egami.Video.Editing.SlideshowOptions.html#Egami_Video_Editing_SlideshowOptions_Each_
+  commentId: Overload:Egami.Video.Editing.SlideshowOptions.Each
+  isSpec: "True"
+  fullName: Egami.Video.Editing.SlideshowOptions.Each
+  nameWithType: SlideshowOptions.Each
+- uid: Egami.Video.Editing.SlideshowOptions.PanZoom
+  name: PanZoom
+  href: api/Egami.Video.Editing.SlideshowOptions.html#Egami_Video_Editing_SlideshowOptions_PanZoom
+  commentId: P:Egami.Video.Editing.SlideshowOptions.PanZoom
+  fullName: Egami.Video.Editing.SlideshowOptions.PanZoom
+  nameWithType: SlideshowOptions.PanZoom
+- uid: Egami.Video.Editing.SlideshowOptions.PanZoom*
+  name: PanZoom
+  href: api/Egami.Video.Editing.SlideshowOptions.html#Egami_Video_Editing_SlideshowOptions_PanZoom_
+  commentId: Overload:Egami.Video.Editing.SlideshowOptions.PanZoom
+  isSpec: "True"
+  fullName: Egami.Video.Editing.SlideshowOptions.PanZoom
+  nameWithType: SlideshowOptions.PanZoom
+- uid: Egami.Video.Editing.SlideshowOptions.Seed
+  name: Seed
+  href: api/Egami.Video.Editing.SlideshowOptions.html#Egami_Video_Editing_SlideshowOptions_Seed
+  commentId: P:Egami.Video.Editing.SlideshowOptions.Seed
+  fullName: Egami.Video.Editing.SlideshowOptions.Seed
+  nameWithType: SlideshowOptions.Seed
+- uid: Egami.Video.Editing.SlideshowOptions.Seed*
+  name: Seed
+  href: api/Egami.Video.Editing.SlideshowOptions.html#Egami_Video_Editing_SlideshowOptions_Seed_
+  commentId: Overload:Egami.Video.Editing.SlideshowOptions.Seed
+  isSpec: "True"
+  fullName: Egami.Video.Editing.SlideshowOptions.Seed
+  nameWithType: SlideshowOptions.Seed
+- uid: Egami.Video.Editing.SlideshowOptions.Transition
+  name: Transition
+  href: api/Egami.Video.Editing.SlideshowOptions.html#Egami_Video_Editing_SlideshowOptions_Transition
+  commentId: P:Egami.Video.Editing.SlideshowOptions.Transition
+  fullName: Egami.Video.Editing.SlideshowOptions.Transition
+  nameWithType: SlideshowOptions.Transition
+- uid: Egami.Video.Editing.SlideshowOptions.Transition*
+  name: Transition
+  href: api/Egami.Video.Editing.SlideshowOptions.html#Egami_Video_Editing_SlideshowOptions_Transition_
+  commentId: Overload:Egami.Video.Editing.SlideshowOptions.Transition
+  isSpec: "True"
+  fullName: Egami.Video.Editing.SlideshowOptions.Transition
+  nameWithType: SlideshowOptions.Transition
 - uid: Egami.Video.Editing.Stack
   name: Stack
   href: api/Egami.Video.Editing.Stack.html

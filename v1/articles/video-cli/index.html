@@ -255,6 +255,31 @@ egami-video audio in.mkv -o sound.flac
 <td><code>hstack</code>, <code>vstack</code>, <code>xstack</code></td>
 </tr>
 <tr>
+<td><code>speed</code></td>
+<td>Faster or slower, the sound's pitch kept</td>
+<td><code>setpts</code> with <code>atempo</code></td>
+</tr>
+<tr>
+<td><code>reverse</code></td>
+<td>Backwards, picture and sound</td>
+<td><code>reverse</code>, <code>areverse</code></td>
+</tr>
+<tr>
+<td><code>loop</code></td>
+<td>A clip several times in a row</td>
+<td><code>loop</code>, <code>aloop</code></td>
+</tr>
+<tr>
+<td><code>freeze</code></td>
+<td>One frame held for a while, or the last one at the end</td>
+<td><code>tpad</code>, <code>freezeframes</code></td>
+</tr>
+<tr>
+<td><code>slideshow</code></td>
+<td>Images one after another, with transitions and pan and zoom</td>
+<td><code>loop=1</code>, <code>zoompan</code>, <code>xfade</code></td>
+</tr>
+<tr>
 <td><code>edit</code></td>
 <td>Render an edit file: clips, transitions, layers and effects</td>
 <td><code>-filter_complex</code></td>
@@ -411,6 +436,16 @@ egami-video overlay in.avi in.mkv --key green --similarity 0.12 --despill 0.6 -o
 egami-video pip in.avi in.webm --corner bottom-left --scale 0.25 --fade-in 0.2 -o pip.mkv
 egami-video stack in.avi in.mkv --gap 4 -o side-by-side.mkv --save-edit side-by-side.json
 egami-video edit side-by-side.json --codec raw -o again.avi
+egami-video speed in.webm 1.5 -o fast.webm
+egami-video reverse in.avi -o backwards.mkv
+egami-video loop in.avi --count 3 -o looped.mkv
+egami-video freeze in.avi --at 0.5 --for 1 -o frozen.mkv
+egami-video slideshow shots/*.jpg --each 2 --transition fade:0.5 --pan-zoom --size 320x240 -o show.mkv
+</code></pre>
+<p><code>speed</code>, <code>reverse</code>, <code>loop</code> and <code>freeze</code> change a clip's timing, picture and sound together; <code>freeze --at end</code> holds the
+last frame. <code>slideshow</code> takes images in order (globs sort by name) and moves each with a slow pan and zoom drawn at sub-pixel
+accuracy. A step of <code>run</code> can take a time window, <code>@start-end</code> right after it: <code>blur 8 @0:05-0:12</code> blurs only that part.</p>
+<pre><code class="lang-sh">egami-video run in.avi grayscale @0.2-0.6 + blur 2 @0.4- + save windowed.mkv
 </code></pre>
 <h2 id="checking">Checking</h2>
 <p><code>hash</code> writes a hash of every decoded frame (or every packet with <code>--packets</code>) in the layout of <code>ffmpeg -f framemd5</code>, and the

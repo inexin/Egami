@@ -193,6 +193,60 @@ VideoEdit edit = new();
 edit.Track.Add(Stack.Horizontal([Clip.Open(&quot;intro.avi&quot;), Clip.Open(&quot;talk.avi&quot;)], new StackOptions { Gap = 4, MixAudio = true }));
 EditPlan plan = edit.Render(&quot;side-by-side.mkv&quot;);
 Console.WriteLine($&quot;{plan.Canvas.Width}x{plan.Canvas.Height}&quot;);
+</code></pre><h2 id="speed-reverse-loops-and-freezes">Speed, reverse, loops and freezes</h2>
+<p><code>Clip.Speed</code> plays a clip faster or slower, from a tenth of its speed to ten times: the picture takes the nearest frame, and
+the sound keeps its pitch through V9.1's <code>Tempo</code> (or follows it, like a tape, with <code>keepPitch: false</code>). <code>Reverse</code> plays a
+clip backwards, picture and sound, decoding one keyframe interval at a time, so memory stays bounded however long the clip
+is. <code>Loop</code> plays it several times, <code>Freeze</code> holds the frame at a time for a while (a <code>ClipFreeze</code>, with silence), and <code>Hold</code>
+keeps the last frame after the end. They apply in that order: speed, reverse, loops, freezes, then the hold. Frame counts
+and timestamps match FFmpeg's <code>setpts</code> with <code>fps</code>, <code>reverse</code>, <code>loop</code> and <code>tpad</code>.</p>
+<pre><code class="lang-csharp">// Twice as fast with the pitch kept, then backwards, then twice in a row with a frame frozen for half a second.
+VideoEdit edit = new(new EditCanvas(320, 180, new Rational(25, 1)));
+edit.Track
+    .Add(Clip.Open(&quot;talk.avi&quot;).Speed(2))
+    .Add(Clip.Open(&quot;intro.avi&quot;).Reverse())
+    .Add(Clip.Open(&quot;outro.avi&quot;).Trim(MediaTime.Zero, MediaTime.FromSeconds(1)).Loop(2).Freeze(MediaTime.FromSeconds(0.5), MediaTime.FromSeconds(0.5)).Hold(MediaTime.FromSeconds(1)));
+EditPlan plan = edit.Render(&quot;timing.mkv&quot;);
+</code></pre><h2 id="stills-colours-and-an-apps-own-frames">Stills, colours and an app's own frames</h2>
+<p><code>Clip.Still</code> shows an image for a time, <code>Clip.Animation</code> plays an animated GIF, WebP or APNG at its own delays, and
+<code>Clip.Color</code> is one colour the canvas size. <code>PanZoom</code> moves the part of the picture shown from one rectangle to another (a
+<code>PanZoomPath</code>, in fractions of the picture), drawn with a sub-pixel transform from the full picture on every frame, so slow
+zooms do not jitter as whole-pixel crops do. <code>Slideshow.Create</code> builds an edit of images with transitions and, optionally, a
+pan and zoom for each from a seed (<code>SlideshowOptions</code>). <code>Clip.FromSource</code> takes an app's own <code>IFrameSource</code>, such as titles
+drawn with Egami.Drawing.</p>
+<pre><code class="lang-csharp">// Photos as a slideshow with fades and a slow pan and zoom, then a title an app draws, on black.
+VideoEdit show = Slideshow.Create([&quot;duck.png&quot;, &quot;egret.png&quot;], new SlideshowOptions
+{
+    Each = MediaTime.FromSeconds(3),
+    PanZoom = true,
+    Canvas = new EditCanvas(320, 180, new Rational(25, 1)) { Fit = ClipFit.Cover },
+});
+show.Track.Add(Clip.Color(Rgba8.Black, MediaTime.FromSeconds(0.5)), Transition.Fade(MediaTime.FromSeconds(0.5)));
+show.Track.Add(Clip.FromSource(new Title()));
+show.Track.Add(Clip.Still(&quot;duck.png&quot;, MediaTime.FromSeconds(2))
+    .PanZoom(new System.Drawing.RectangleF(0, 0, 1, 1), new System.Drawing.RectangleF(0.3f, 0.3f, 0.4f, 0.4f), Easing.EaseInOut));
+show.Render(&quot;slideshow.mkv&quot;);
+</code></pre><pre><code class="lang-csharp">private sealed class Title : IFrameSource
+{
+    public Size Size =&gt; new(320, 180);
+
+    public MediaTime Duration =&gt; MediaTime.FromSeconds(1);
+
+    public void Render(MediaTime time, Raster&lt;Rgba8&gt; target)
+    {
+        // A bar that grows across the frame: draw anything here, such as text with Egami.Drawing.
+        int width = (int)(target.Width * time.Seconds / Duration.Seconds);
+        for (int y = 0; y &lt; target.Height; y++)
+        {
+            Span&lt;Rgba8&gt; row = target.Row(y);
+            row.Fill(Rgba8.Black);
+            if (y is &gt; 80 and &lt; 100)
+            {
+                row[..width].Fill(Rgba8.White);
+            }
+        }
+    }
+}
 </code></pre><h2 id="effects">Effects</h2>
 <p><code>EditEffect.Apply</code> runs Egami operations or any <code>IRasterOperation</code> on each frame, and <code>EditEffect.Of</code> runs an app's own
 <code>IFrameEffect</code>, which gets the frame's time and its progress through the effect's window in a <code>FrameEffectContext</code>. Effects
