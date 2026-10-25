@@ -30,7 +30,8 @@ V9 Editing task 18: the gates in egami-compare, and what they needed.
   without going through RGBA, as FFmpeg's filters do; a 1080p dissolve renders in 0.31 times FFmpeg's time at one thread.
 - `EditRenderOptions.Context` sets the context an edit renders with, such as one with fewer threads.
 - A seekable YUV4MPEG2 file of plain FRAME lines now reports its duration (`MediaInfo.Duration` and the track's), and the
-  editor counts packets for a source that reports none.
+  editor counts packets for a source that reports none. `egami-video sheet` of such a file now spaces its frames over that
+  duration (its reference picture was made again).
 
 V9 Editing stage B: speed, reverse, loops, freezes, stills and Ken Burns, and time windows on run steps (Build Plan tasks 12
 to 17). All additive; the API review for stages A and B comes next (task 19).
