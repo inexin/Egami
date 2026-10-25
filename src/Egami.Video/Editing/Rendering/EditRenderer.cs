@@ -22,6 +22,7 @@ internal sealed class EditRenderer : IDisposable
     private readonly Raster<Rgba8> _from;
     private readonly Raster<Rgba8> _to;
     private readonly Dictionary<int, YuvRaster<byte>> _scaled = [];
+    private readonly Dictionary<int, StabilizationPath> _paths = [];
     private YuvRaster<byte>? _mixed;
 
     public EditRenderer(EditPlan plan, bool audio, MediaContext context)
@@ -221,7 +222,7 @@ internal sealed class EditRenderer : IDisposable
         Clip c = layer.Clip;
         if (layer.ChromaKey is not null || layer.Effects.Count > 0 || layer.Animations.Count > 0 || layer.OpacityAmount < 1 || layer.BlendMode != BlendMode.SourceOver
             || local < EditPlanner.Frames(layer.FadeInDuration, _canvas) || (layer.FadeOutDuration > MediaTime.Zero && local >= planned.FrameCount - EditPlanner.Frames(layer.FadeOutDuration, _canvas))
-            || c.Effects.Count > 0 || c.Motion is not null || c.IsReversed || c.Source is not (FileClipSource or StreamClipSource))
+            || c.Effects.Count > 0 || c.Motion is not null || c.Stabilization is not null || c.IsReversed || c.Source is not (FileClipSource or StreamClipSource))
         {
             return null;
         }
@@ -308,7 +309,7 @@ internal sealed class EditRenderer : IDisposable
     private YuvRaster<byte>? SimplePlanes(PlannedClip clip, long local)
     {
         Clip c = clip.Clip;
-        if (c.Effects.Count > 0 || c.Motion is not null || c.Source is not (FileClipSource or StreamClipSource) || c.IsReversed
+        if (c.Effects.Count > 0 || c.Motion is not null || c.Stabilization is not null || c.Source is not (FileClipSource or StreamClipSource) || c.IsReversed
             || local < EditPlanner.Frames(c.FadeInDuration, _canvas) || (c.FadeOutDuration > MediaTime.Zero && local >= clip.FrameCount - EditPlanner.Frames(c.FadeOutDuration, _canvas)))
         {
             return null;
@@ -423,6 +424,9 @@ internal sealed class EditRenderer : IDisposable
         }
 
         Raster<Rgba8>? source = frames.FrameBefore(Limit(local));
+        using Raster<Rgba8>? steady = source is not null && clip.Clip.Stabilization is { } stabilization && frames.FrameTime is MediaTime shown
+            ? Stabilize(clip.Index, stabilization, source, shown) : null;
+        source = steady ?? source;
         if (source is null)
         {
             ClipFrames.Fill(target, _canvas.Background);
@@ -562,6 +566,43 @@ internal sealed class EditRenderer : IDisposable
         using Raster<Rgba8> moved = source.Derive(ops => ops.Transform(matrix, new TransformOptions { Viewport = new Rect(0, 0, target.Width, target.Height) }));
         ClipFrames.Fill(target, _canvas.Background);
         target.Apply(ops => ops.DrawImage(moved, new Point(0, 0)));
+    }
+
+    /// <summary>Warps a source frame onto the clip's smooth camera path; the uncovered edges zoomed away, black or blurred.</summary>
+    private Raster<Rgba8> Stabilize(int clip, ClipStabilization stabilization, Raster<Rgba8> source, MediaTime time)
+    {
+        if (!_paths.TryGetValue(clip, out StabilizationPath? path))
+        {
+            path = new StabilizationPath(stabilization.Motion, stabilization.Options);
+            _paths[clip] = path;
+        }
+
+        // The motion was measured at its own size; the frame may be another (a smaller proxy measured, say).
+        Matrix3x2 correction = path.CorrectionAt(time);
+        float kx = (float)source.Width / stabilization.Motion.Width, ky = (float)source.Height / stabilization.Motion.Height;
+        if (kx != 1 || ky != 1)
+        {
+            correction = Matrix3x2.CreateScale(1 / kx, 1 / ky) * correction * Matrix3x2.CreateScale(kx, ky);
+        }
+
+        Raster<Rgba8> warped = source.Derive(ops => ops.Transform(correction, new TransformOptions { Viewport = new Rect(0, 0, source.Width, source.Height) }));
+        if (stabilization.Options.Edges != StabilizeEdges.Blur)
+        {
+            if (stabilization.Options.Edges == StabilizeEdges.Black)
+            {
+                Raster<Rgba8> black = Raster.Create(source.Width, source.Height, Rgba8.Black, _context.Egami);
+                black.Apply(ops => ops.DrawImage(warped, new Point(0, 0)));
+                warped.Dispose();
+                return black;
+            }
+
+            return warped;
+        }
+
+        Raster<Rgba8> blurred = source.Derive(ops => ops.Blur(Math.Max(source.Width, source.Height) / 40f));
+        blurred.Apply(ops => ops.DrawImage(warped, new Point(0, 0)));
+        warped.Dispose();
+        return blurred;
     }
 
     private static Raster<Rgba8> Rotate(Raster<Rgba8> image, double degrees)

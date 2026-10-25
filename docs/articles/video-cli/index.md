@@ -62,6 +62,7 @@ With the `egami` tool installed too, `egami video info clip.mkv` runs `egami-vid
 | `loop` | A clip several times in a row | `loop`, `aloop` |
 | `freeze` | One frame held for a while, or the last one at the end | `tpad`, `freezeframes` |
 | `slideshow` | Images one after another, with transitions and pan and zoom | `loop=1`, `zoompan`, `xfade` |
+| `stabilize` | Take the shake out of a clip, in two passes | `vidstabdetect`, `vidstabtransform` |
 | `edit` | Render an edit file: clips, transitions, layers and effects | `-filter_complex` |
 | `formats` | The containers and codecs this build reads and writes | `ffmpeg -formats` |
 

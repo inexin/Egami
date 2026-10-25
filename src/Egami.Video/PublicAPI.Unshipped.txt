@@ -122,6 +122,12 @@ Egami.Video.Easing.EaseInOut = 3 -> Egami.Video.Easing
 Egami.Video.Easing.EaseOut = 2 -> Egami.Video.Easing
 Egami.Video.Easing.Hold = 4 -> Egami.Video.Easing
 Egami.Video.Easing.Linear = 0 -> Egami.Video.Easing
+Egami.Video.Editing.CameraMotion
+Egami.Video.Editing.CameraMotion.CameraMotion(int width, int height, System.Collections.Generic.IEnumerable<Egami.Video.Editing.FrameMotion>! frames) -> void
+Egami.Video.Editing.CameraMotion.Frames.get -> System.Collections.Generic.IReadOnlyList<Egami.Video.Editing.FrameMotion>!
+Egami.Video.Editing.CameraMotion.Height.get -> int
+Egami.Video.Editing.CameraMotion.ToJson() -> string!
+Egami.Video.Editing.CameraMotion.Width.get -> int
 Egami.Video.Editing.ChromaKey
 Egami.Video.Editing.ChromaKey.<Clone>$() -> Egami.Video.Editing.ChromaKey!
 Egami.Video.Editing.ChromaKey.Blend.get -> float
@@ -180,6 +186,9 @@ Egami.Video.Editing.Clip.Reverse() -> Egami.Video.Editing.Clip!
 Egami.Video.Editing.Clip.Speed(double factor, bool keepPitch = true) -> Egami.Video.Editing.Clip!
 Egami.Video.Editing.Clip.SpeedFactor.get -> double
 Egami.Video.Editing.Clip.SpeedFactor.init -> void
+Egami.Video.Editing.Clip.Stabilization.get -> Egami.Video.Editing.ClipStabilization?
+Egami.Video.Editing.Clip.Stabilization.init -> void
+Egami.Video.Editing.Clip.Stabilize(Egami.Video.Editing.CameraMotion! motion, Egami.Video.Editing.StabilizeOptions? options = null) -> Egami.Video.Editing.Clip!
 Egami.Video.Editing.Clip.Trim(Egami.Video.MediaTime start, Egami.Video.MediaTime? end = null) -> Egami.Video.Editing.Clip!
 Egami.Video.Editing.Clip.Volume(double decibels) -> Egami.Video.Editing.Clip!
 Egami.Video.Editing.Clip.VolumeDecibels.get -> double
@@ -199,6 +208,12 @@ Egami.Video.Editing.ClipFreeze.Deconstruct(out Egami.Video.MediaTime At, out Ega
 Egami.Video.Editing.ClipFreeze.Duration.get -> Egami.Video.MediaTime
 Egami.Video.Editing.ClipFreeze.Duration.init -> void
 Egami.Video.Editing.ClipFreeze.Equals(Egami.Video.Editing.ClipFreeze other) -> bool
+Egami.Video.Editing.ClipStabilization
+Egami.Video.Editing.ClipStabilization.<Clone>$() -> Egami.Video.Editing.ClipStabilization!
+Egami.Video.Editing.ClipStabilization.ClipStabilization(Egami.Video.Editing.CameraMotion! motion, Egami.Video.Editing.StabilizeOptions! options) -> void
+Egami.Video.Editing.ClipStabilization.Equals(Egami.Video.Editing.ClipStabilization? other) -> bool
+Egami.Video.Editing.ClipStabilization.Motion.get -> Egami.Video.Editing.CameraMotion!
+Egami.Video.Editing.ClipStabilization.Options.get -> Egami.Video.Editing.StabilizeOptions!
 Egami.Video.Editing.EditCanvas
 Egami.Video.Editing.EditCanvas.<Clone>$() -> Egami.Video.Editing.EditCanvas!
 Egami.Video.Editing.EditCanvas.AudioLayout.get -> Egami.Video.Audio.ChannelLayout
@@ -266,6 +281,21 @@ Egami.Video.Editing.FrameEffectContext.Progress.get -> double
 Egami.Video.Editing.FrameEffectContext.Progress.init -> void
 Egami.Video.Editing.FrameEffectContext.Time.get -> Egami.Video.MediaTime
 Egami.Video.Editing.FrameEffectContext.Time.init -> void
+Egami.Video.Editing.FrameMotion
+Egami.Video.Editing.FrameMotion.Angle.get -> double
+Egami.Video.Editing.FrameMotion.Angle.init -> void
+Egami.Video.Editing.FrameMotion.Deconstruct(out Egami.Video.MediaTime Time, out double Dx, out double Dy, out double Angle, out double Scale) -> void
+Egami.Video.Editing.FrameMotion.Dx.get -> double
+Egami.Video.Editing.FrameMotion.Dx.init -> void
+Egami.Video.Editing.FrameMotion.Dy.get -> double
+Egami.Video.Editing.FrameMotion.Dy.init -> void
+Egami.Video.Editing.FrameMotion.Equals(Egami.Video.Editing.FrameMotion other) -> bool
+Egami.Video.Editing.FrameMotion.FrameMotion() -> void
+Egami.Video.Editing.FrameMotion.FrameMotion(Egami.Video.MediaTime Time, double Dx, double Dy, double Angle, double Scale) -> void
+Egami.Video.Editing.FrameMotion.Scale.get -> double
+Egami.Video.Editing.FrameMotion.Scale.init -> void
+Egami.Video.Editing.FrameMotion.Time.get -> Egami.Video.MediaTime
+Egami.Video.Editing.FrameMotion.Time.init -> void
 Egami.Video.Editing.IFrameEffect
 Egami.Video.Editing.IFrameEffect.Apply(Egami.Raster<Egami.Pixels.Rgba8>! frame, Egami.Video.Editing.FrameEffectContext context) -> void
 Egami.Video.Editing.IFrameSource
@@ -390,6 +420,25 @@ Egami.Video.Editing.SlideshowOptions.Seed.init -> void
 Egami.Video.Editing.SlideshowOptions.SlideshowOptions() -> void
 Egami.Video.Editing.SlideshowOptions.Transition.get -> Egami.Video.Editing.Transition?
 Egami.Video.Editing.SlideshowOptions.Transition.init -> void
+Egami.Video.Editing.StabilizeEdges
+Egami.Video.Editing.StabilizeEdges.Black = 1 -> Egami.Video.Editing.StabilizeEdges
+Egami.Video.Editing.StabilizeEdges.Blur = 2 -> Egami.Video.Editing.StabilizeEdges
+Egami.Video.Editing.StabilizeEdges.Zoom = 0 -> Egami.Video.Editing.StabilizeEdges
+Egami.Video.Editing.StabilizeOptions
+Egami.Video.Editing.StabilizeOptions.<Clone>$() -> Egami.Video.Editing.StabilizeOptions!
+Egami.Video.Editing.StabilizeOptions.Edges.get -> Egami.Video.Editing.StabilizeEdges
+Egami.Video.Editing.StabilizeOptions.Edges.init -> void
+Egami.Video.Editing.StabilizeOptions.Equals(Egami.Video.Editing.StabilizeOptions? other) -> bool
+Egami.Video.Editing.StabilizeOptions.Smoothing.get -> int
+Egami.Video.Editing.StabilizeOptions.Smoothing.init -> void
+Egami.Video.Editing.StabilizeOptions.StabilizeOptions() -> void
+Egami.Video.Editing.Stabilizer
+Egami.Video.Editing.StabilizerOptions
+Egami.Video.Editing.StabilizerOptions.<Clone>$() -> Egami.Video.Editing.StabilizerOptions!
+Egami.Video.Editing.StabilizerOptions.AnalysisWidth.get -> int
+Egami.Video.Editing.StabilizerOptions.AnalysisWidth.init -> void
+Egami.Video.Editing.StabilizerOptions.Equals(Egami.Video.Editing.StabilizerOptions? other) -> bool
+Egami.Video.Editing.StabilizerOptions.StabilizerOptions() -> void
 Egami.Video.Editing.Stack
 Egami.Video.Editing.StackLayout
 Egami.Video.Editing.StackLayout.Grid = 2 -> Egami.Video.Editing.StackLayout
@@ -475,6 +524,7 @@ Egami.Video.Keyframe.Time.get -> Egami.Video.MediaTime
 Egami.Video.Keyframe.Time.init -> void
 Egami.Video.Keyframe.Value.get -> double
 Egami.Video.Keyframe.Value.init -> void
+override Egami.Video.Editing.CameraMotion.ToString() -> string!
 override Egami.Video.Editing.ChromaKey.Equals(object? obj) -> bool
 override Egami.Video.Editing.ChromaKey.GetHashCode() -> int
 override Egami.Video.Editing.ChromaKey.ToString() -> string!
@@ -482,6 +532,9 @@ override Egami.Video.Editing.Clip.Equals(object? obj) -> bool
 override Egami.Video.Editing.Clip.GetHashCode() -> int
 override Egami.Video.Editing.Clip.ToString() -> string!
 override Egami.Video.Editing.ClipFreeze.GetHashCode() -> int
+override Egami.Video.Editing.ClipStabilization.Equals(object? obj) -> bool
+override Egami.Video.Editing.ClipStabilization.GetHashCode() -> int
+override Egami.Video.Editing.ClipStabilization.ToString() -> string!
 override Egami.Video.Editing.EditCanvas.Equals(object? obj) -> bool
 override Egami.Video.Editing.EditCanvas.GetHashCode() -> int
 override Egami.Video.Editing.EditCanvas.ToString() -> string!
@@ -492,6 +545,7 @@ override Egami.Video.Editing.EditRenderOptions.Equals(object? obj) -> bool
 override Egami.Video.Editing.EditRenderOptions.GetHashCode() -> int
 override Egami.Video.Editing.EditRenderOptions.ToString() -> string!
 override Egami.Video.Editing.FrameEffectContext.GetHashCode() -> int
+override Egami.Video.Editing.FrameMotion.GetHashCode() -> int
 override Egami.Video.Editing.Layer.Equals(object? obj) -> bool
 override Egami.Video.Editing.Layer.GetHashCode() -> int
 override Egami.Video.Editing.Layer.ToString() -> string!
@@ -507,6 +561,12 @@ override Egami.Video.Editing.PlannedLayer.ToString() -> string!
 override Egami.Video.Editing.SlideshowOptions.Equals(object? obj) -> bool
 override Egami.Video.Editing.SlideshowOptions.GetHashCode() -> int
 override Egami.Video.Editing.SlideshowOptions.ToString() -> string!
+override Egami.Video.Editing.StabilizeOptions.Equals(object? obj) -> bool
+override Egami.Video.Editing.StabilizeOptions.GetHashCode() -> int
+override Egami.Video.Editing.StabilizeOptions.ToString() -> string!
+override Egami.Video.Editing.StabilizerOptions.Equals(object? obj) -> bool
+override Egami.Video.Editing.StabilizerOptions.GetHashCode() -> int
+override Egami.Video.Editing.StabilizerOptions.ToString() -> string!
 override Egami.Video.Editing.StackOptions.Equals(object? obj) -> bool
 override Egami.Video.Editing.StackOptions.GetHashCode() -> int
 override Egami.Video.Editing.StackOptions.ToString() -> string!
@@ -519,6 +579,7 @@ override Egami.Video.Editing.Transition.ToString() -> string!
 override Egami.Video.Keyframe.GetHashCode() -> int
 static Egami.Video.Audio.Filters.Gain.FromFactor(double factor) -> Egami.Video.Audio.Filters.Gain!
 static Egami.Video.Audio.Filters.Pad.ToLength(Egami.Video.MediaTime length) -> Egami.Video.Audio.Filters.Pad!
+static Egami.Video.Editing.CameraMotion.FromJson(string! json) -> Egami.Video.Editing.CameraMotion!
 static Egami.Video.Editing.ChromaKey.operator !=(Egami.Video.Editing.ChromaKey? left, Egami.Video.Editing.ChromaKey? right) -> bool
 static Egami.Video.Editing.ChromaKey.operator ==(Egami.Video.Editing.ChromaKey? left, Egami.Video.Editing.ChromaKey? right) -> bool
 static Egami.Video.Editing.Clip.Animation(string! path) -> Egami.Video.Editing.Clip!
@@ -532,6 +593,8 @@ static Egami.Video.Editing.Clip.Still(Egami.Raster<Egami.Pixels.Rgba8>! image, E
 static Egami.Video.Editing.Clip.Still(string! path, Egami.Video.MediaTime duration) -> Egami.Video.Editing.Clip!
 static Egami.Video.Editing.ClipFreeze.operator !=(Egami.Video.Editing.ClipFreeze left, Egami.Video.Editing.ClipFreeze right) -> bool
 static Egami.Video.Editing.ClipFreeze.operator ==(Egami.Video.Editing.ClipFreeze left, Egami.Video.Editing.ClipFreeze right) -> bool
+static Egami.Video.Editing.ClipStabilization.operator !=(Egami.Video.Editing.ClipStabilization? left, Egami.Video.Editing.ClipStabilization? right) -> bool
+static Egami.Video.Editing.ClipStabilization.operator ==(Egami.Video.Editing.ClipStabilization? left, Egami.Video.Editing.ClipStabilization? right) -> bool
 static Egami.Video.Editing.EditCanvas.operator !=(Egami.Video.Editing.EditCanvas? left, Egami.Video.Editing.EditCanvas? right) -> bool
 static Egami.Video.Editing.EditCanvas.operator ==(Egami.Video.Editing.EditCanvas? left, Egami.Video.Editing.EditCanvas? right) -> bool
 static Egami.Video.Editing.EditEffect.Apply(Egami.Operations.IRasterOperation! operation, string? name = null) -> Egami.Video.Editing.EditEffect!
@@ -544,6 +607,8 @@ static Egami.Video.Editing.EditRenderOptions.operator !=(Egami.Video.Editing.Edi
 static Egami.Video.Editing.EditRenderOptions.operator ==(Egami.Video.Editing.EditRenderOptions? left, Egami.Video.Editing.EditRenderOptions? right) -> bool
 static Egami.Video.Editing.FrameEffectContext.operator !=(Egami.Video.Editing.FrameEffectContext left, Egami.Video.Editing.FrameEffectContext right) -> bool
 static Egami.Video.Editing.FrameEffectContext.operator ==(Egami.Video.Editing.FrameEffectContext left, Egami.Video.Editing.FrameEffectContext right) -> bool
+static Egami.Video.Editing.FrameMotion.operator !=(Egami.Video.Editing.FrameMotion left, Egami.Video.Editing.FrameMotion right) -> bool
+static Egami.Video.Editing.FrameMotion.operator ==(Egami.Video.Editing.FrameMotion left, Egami.Video.Editing.FrameMotion right) -> bool
 static Egami.Video.Editing.Layer.Of(Egami.Video.Editing.Clip! clip) -> Egami.Video.Editing.Layer!
 static Egami.Video.Editing.Layer.operator !=(Egami.Video.Editing.Layer? left, Egami.Video.Editing.Layer? right) -> bool
 static Egami.Video.Editing.Layer.operator ==(Egami.Video.Editing.Layer? left, Egami.Video.Editing.Layer? right) -> bool
@@ -557,6 +622,14 @@ static Egami.Video.Editing.Slideshow.Create(System.Collections.Generic.IEnumerab
 static Egami.Video.Editing.SlideshowOptions.Default.get -> Egami.Video.Editing.SlideshowOptions!
 static Egami.Video.Editing.SlideshowOptions.operator !=(Egami.Video.Editing.SlideshowOptions? left, Egami.Video.Editing.SlideshowOptions? right) -> bool
 static Egami.Video.Editing.SlideshowOptions.operator ==(Egami.Video.Editing.SlideshowOptions? left, Egami.Video.Editing.SlideshowOptions? right) -> bool
+static Egami.Video.Editing.StabilizeOptions.Default.get -> Egami.Video.Editing.StabilizeOptions!
+static Egami.Video.Editing.StabilizeOptions.operator !=(Egami.Video.Editing.StabilizeOptions? left, Egami.Video.Editing.StabilizeOptions? right) -> bool
+static Egami.Video.Editing.StabilizeOptions.operator ==(Egami.Video.Editing.StabilizeOptions? left, Egami.Video.Editing.StabilizeOptions? right) -> bool
+static Egami.Video.Editing.Stabilizer.Analyze(string! path, Egami.Video.Editing.StabilizerOptions? options = null, System.IProgress<Egami.Video.MediaProgress>? progress = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> Egami.Video.Editing.CameraMotion!
+static Egami.Video.Editing.Stabilizer.Analyze(System.IO.Stream! stream, Egami.Video.Editing.StabilizerOptions? options = null, System.IProgress<Egami.Video.MediaProgress>? progress = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> Egami.Video.Editing.CameraMotion!
+static Egami.Video.Editing.StabilizerOptions.Default.get -> Egami.Video.Editing.StabilizerOptions!
+static Egami.Video.Editing.StabilizerOptions.operator !=(Egami.Video.Editing.StabilizerOptions? left, Egami.Video.Editing.StabilizerOptions? right) -> bool
+static Egami.Video.Editing.StabilizerOptions.operator ==(Egami.Video.Editing.StabilizerOptions? left, Egami.Video.Editing.StabilizerOptions? right) -> bool
 static Egami.Video.Editing.Stack.Grid(int columns, int rows, System.Collections.Generic.IEnumerable<Egami.Video.Editing.Clip!>! clips, Egami.Video.Editing.StackOptions? options = null) -> Egami.Video.Editing.Clip!
 static Egami.Video.Editing.Stack.Horizontal(params Egami.Video.Editing.Clip![]! clips) -> Egami.Video.Editing.Clip!
 static Egami.Video.Editing.Stack.Horizontal(System.Collections.Generic.IEnumerable<Egami.Video.Editing.Clip!>! clips, Egami.Video.Editing.StackOptions? options = null) -> Egami.Video.Editing.Clip!
@@ -588,5 +661,7 @@ static Egami.Video.Keyframe.operator ==(Egami.Video.Keyframe left, Egami.Video.K
 ~override Egami.Video.Editing.ClipFreeze.ToString() -> string
 ~override Egami.Video.Editing.FrameEffectContext.Equals(object obj) -> bool
 ~override Egami.Video.Editing.FrameEffectContext.ToString() -> string
+~override Egami.Video.Editing.FrameMotion.Equals(object obj) -> bool
+~override Egami.Video.Editing.FrameMotion.ToString() -> string
 ~override Egami.Video.Keyframe.Equals(object obj) -> bool
 ~override Egami.Video.Keyframe.ToString() -> string

@@ -360,6 +360,82 @@ internal static class EditCommands
         return command;
     }
 
+    public static Command StabilizeCommand(VideoSession session)
+    {
+        Common common = new();
+        Argument<string> input = new("input") { Description = "The shaky clip." };
+        Option<int?> smoothing = new("--smoothing") { Description = "How many frames either way the camera path is smoothed over: more keeps only slow intended motion. Default 15.", HelpName = "frames" };
+        Option<string?> edges = new("--edges") { Description = "What fills the edges a correction uncovers: zoom (the default, the least zoom that hides them), black or blur.", HelpName = "mode" };
+        Option<string?> zoom = new("--zoom") { Description = "auto (the default) zooms to hide the edges, the same as --edges zoom; none keeps the size and fills them with black.", HelpName = "auto|none" };
+        Option<string?> motion = new("--motion") { Description = "Use a camera motion saved by --save-motion instead of measuring it again.", HelpName = "file.json" };
+        Option<string?> saveMotion = new("--save-motion") { Description = "Write the measured camera motion (pass 1) to a JSON file; with no -o, only that.", HelpName = "file.json" };
+        Command command = new("stabilize", "Take the shake out of a clip in two passes: measure the camera's motion (corners tracked with Lucas-Kanade, a RANSAC fit), smooth its path with a Gaussian, and warp each frame onto it; like ffmpeg's vidstabdetect and vidstabtransform.");
+        command.Arguments.Add(input);
+        command.Options.Add(smoothing);
+        command.Options.Add(edges);
+        command.Options.Add(zoom);
+        command.Options.Add(motion);
+        command.Options.Add(saveMotion);
+        common.AddTo(command);
+        command.SetAction(result =>
+        {
+            string path = session.ResolvePath(result.GetValue(input)!);
+            StabilizeEdges mode = (result.GetValue(edges), result.GetValue(zoom)) switch
+            {
+                (null, null or "auto") => StabilizeEdges.Zoom,
+                (null, "none") => StabilizeEdges.Black,
+                (null, string z) => throw new UsageException($"--zoom '{z}' is not auto or none."),
+                (string e, null) => e.ToLowerInvariant() switch
+                {
+                    "zoom" => StabilizeEdges.Zoom,
+                    "black" => StabilizeEdges.Black,
+                    "blur" => StabilizeEdges.Blur,
+                    _ => throw new UsageException($"--edges '{e}' is not zoom, black or blur."),
+                },
+                _ => throw new UsageException("Give --edges or --zoom, not both."),
+            };
+            int frames = result.GetValue(smoothing) ?? 15;
+            if (frames < 0)
+            {
+                throw new UsageException("--smoothing must be 0 or more.");
+            }
+
+            CameraMotion camera;
+            if (result.GetValue(motion) is { } saved)
+            {
+                try
+                {
+                    camera = CameraMotion.FromJson(File.ReadAllText(session.ResolvePath(saved)));
+                }
+                catch (FormatException error)
+                {
+                    throw new UsageException($"--motion {saved}: {error.Message}");
+                }
+            }
+            else
+            {
+                InputFile display = new(path, result.GetValue(input)!, Path.GetDirectoryName(path) ?? ".", 0);
+                camera = Stabilizer.Analyze(path, progress: session.ProgressSink?.For(display, 0, 1), cancellationToken: session.Cancellation);
+                session.Info($"measured the camera's motion over {camera.Frames.Count} frames");
+            }
+
+            if (result.GetValue(saveMotion) is { } file)
+            {
+                string target = session.ResolvePath(file);
+                File.WriteAllText(target, camera.ToJson());
+                session.Written.Enqueue(target);
+                session.Info($"wrote {file}");
+                if (result.GetValue(common.OutputOption) is null && result.GetValue(common.SaveEditOption) is null)
+                {
+                    return ExitCodes.Success;
+                }
+            }
+
+            return One(session, result, common, Clip.Open(path).Stabilize(camera, new StabilizeOptions { Smoothing = frames, Edges = mode }));
+        });
+        return command;
+    }
+
     public static Command Edit(VideoSession session)
     {
         Common common = new();
@@ -598,6 +674,10 @@ internal static class EditCommands
         private readonly Option<string?> _codec = new("--codec", "-c") { Description = "The video codec: vp9 (the default for webm), vp8, av1, mjpeg (the default otherwise) or raw.", HelpName = "codec" };
         private readonly Option<int?> _quality = new("--quality") { Description = "Quality from 0 to 100.", HelpName = "0-100" };
         private readonly Option<bool> _noAudio = new("--no-audio", "-an") { Description = "Write no audio track." };
+        public Option<string?> OutputOption => _output;
+
+        public Option<string?> SaveEditOption => _saveEdit;
+
         private readonly Option<string?> _saveEdit = new("--save-edit") { Description = "Also write the edit as a JSON file that 'egami-video edit' renders; with no -o, write only the file.", HelpName = "file.json" };
 
         public void AddTo(Command command)
