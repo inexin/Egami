@@ -248,10 +248,15 @@ public sealed class VideoWriter : IDisposable
         }
 
         _finished = true;
-        if (_encoder is not null && _muxer is not null)
+        if (_muxer is not null)
         {
-            _encoder.Flush();
-            Drain();
+            // A smart render can end on copied packets, with no encoder running.
+            if (_encoder is not null)
+            {
+                _encoder.Flush();
+                Drain();
+            }
+
             if (_audio is not null)
             {
                 _audio.Flush();

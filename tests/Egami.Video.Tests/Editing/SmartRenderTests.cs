@@ -98,6 +98,51 @@ public class SmartRenderTests
     }
 
     [Fact]
+    public void AnEditEndingOnCopiedPacketsKeepsItsSoundToTheEnd()
+    {
+        // One keyframe, no changes: the whole clip is copied, so the edit ends with no encoder running.
+        string source = Path.Combine(AppContext.BaseDirectory, "corpus", "webm-vp8-opus.webm");
+        string output = Path.Combine(Path.GetTempPath(), $"egami-smart-tail-{Environment.ProcessId}.webm"), full = Path.ChangeExtension(output, ".full.webm");
+        try
+        {
+            VideoEdit edit = new();
+            edit.Track.Add(Clip.Open(source));
+            edit.Render(output, new EditRenderOptions { Writer = new VideoWriterOptions { Codec = Vp8Codec.Instance }, SmartRender = true }, null, TestContext.Current.CancellationToken);
+            Assert.Equal(Packets(source).Count, Packets(output).Count);
+            Assert.Equal(Packets(source), Packets(output));
+
+            // The sound is encoded either way: the same packets as a full render's, the encoder's tail included.
+            edit.Render(full, new EditRenderOptions { Writer = new VideoWriterOptions { Codec = Vp8Codec.Instance } }, null, TestContext.Current.CancellationToken);
+            Assert.Equal(Sound(full), Sound(output));
+            Assert.NotNull(MediaFile.Probe(output).Duration);
+        }
+        finally
+        {
+            File.Delete(output);
+            File.Delete(full);
+        }
+
+        static List<string> Sound(string path)
+        {
+            using IDemuxer demuxer = MediaFile.OpenDemuxer(path);
+            int audio = demuxer.Tracks.OfType<AudioTrackInfo>().Single().Number;
+            List<string> packets = [];
+            while (demuxer.ReadPacket() is { } packet)
+            {
+                using (packet)
+                {
+                    if (packet.TrackNumber == audio)
+                    {
+                        packets.Add($"{packet.Timestamp.Seconds:F3} {Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(packet.Data.Span))}");
+                    }
+                }
+            }
+
+            return packets;
+        }
+    }
+
+    [Fact]
     public void ASourceOfAnotherCodecIsEncodedWithAWarning()
     {
         string a = Source("mismatch", Vp9Codec.Instance, 3), output = Path.ChangeExtension(a, ".out.webm");
