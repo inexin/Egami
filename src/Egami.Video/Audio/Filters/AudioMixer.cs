@@ -39,6 +39,7 @@ public sealed class AudioMixer : IDisposable
     private readonly Queue<AudioFrame> _ready = new();
     private readonly int _ramp;
     private long _position;
+    private long? _origin;
     private bool _started;
     private bool _ended;
 
@@ -155,6 +156,20 @@ public sealed class AudioMixer : IDisposable
         Produce();
     }
 
+    /// <summary>Starts the output at a time instead of at the earliest input's first sample.</summary>
+    internal void StartAt(MediaTime time) => _origin = time.Rescale(new Rational(1, SampleRate)).Ticks;
+
+    /// <summary>Says an input that has not sent anything yet has no samples before a time, so the mix need not wait for it.</summary>
+    internal void Hold(int input, MediaTime until)
+    {
+        Input state = _inputs[CheckInput(input)];
+        if (state.Start is null)
+        {
+            state.HeldUntil = until.Rescale(new Rational(1, SampleRate)).Ticks;
+            Produce();
+        }
+    }
+
     /// <summary>Ends one input.</summary>
     /// <param name="input">The input.</param>
     public void Complete(int input)
@@ -256,15 +271,15 @@ public sealed class AudioMixer : IDisposable
 
         if (!_started)
         {
-            long? origin = null;
+            long? origin = _origin;
             foreach (Input state in _inputs)
             {
-                if (state.Start is null && !state.Done)
+                if (state.Start is null && !state.Done && (_origin is null || state.HeldUntil is null))
                 {
                     return;
                 }
 
-                if (state.Start is long start)
+                if (state.Start is long start && _origin is null)
                 {
                     origin = origin is null ? start : Math.Min(origin.Value, start);
                 }
@@ -288,7 +303,7 @@ public sealed class AudioMixer : IDisposable
             if (!state.Done)
             {
                 allDone = false;
-                known = Math.Min(known, state.Start is null ? _position : end);
+                known = Math.Min(known, state.Start is null ? Math.Max(_position, state.HeldUntil ?? _position) : end);
             }
             else
             {
@@ -415,6 +430,9 @@ public sealed class AudioMixer : IDisposable
 
         public bool Done { get; set; }
 
+        /// <summary>Gets or sets the output sample index before which an input that has not started has no samples.</summary>
+        public long? HeldUntil { get; set; }
+
         public float[] Gains(int count)
         {
             if (_gains.Length < count)
@@ -430,6 +448,7 @@ public sealed class AudioMixer : IDisposable
             Buffer.Clear();
             Resampler?.Reset();
             Start = null;
+            HeldUntil = null;
             Done = false;
         }
     }

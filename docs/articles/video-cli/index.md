@@ -52,6 +52,12 @@ With the `egami` tool installed too, `egami video info clip.mkv` runs `egami-vid
 | `hash` | Hashes of every frame or packet | `-f framemd5` |
 | `compare` | PSNR and SSIM between clips | `-lavfi psnr`, `-lavfi ssim` |
 | `audio` | Audio to WAV, FLAC, Opus, AIFF, CAF or ALAC; audio again while copying video | `-vn -c:a flac`, `-c:a libopus -b:a`, `-ar`, `-ac` |
+| `join` | Clips of any size, rate and audio fitted to one canvas and joined, with transitions | `concat` filter with `scale`, `pad`, `fps`; `xfade` and `acrossfade` |
+| `fade` | Fade in from and out to a colour, picture and sound | `-vf fade -af afade` |
+| `overlay` | One clip over another, with `--key` for a chroma key | `overlay`, `chromakey`, `despill` |
+| `pip` | A second clip small in a corner | `scale` and `overlay` |
+| `stack` | Clips side by side, above each other or in a grid | `hstack`, `vstack`, `xstack` |
+| `edit` | Render an edit file: clips, transitions, layers and effects | `-filter_complex` |
 | `formats` | The containers and codecs this build reads and writes | `ffmpeg -formats` |
 
 Commands that copy packets (`remux`, `trim`, `concat`, `segment`, `timestamps`, `extract`, `embed`, `metadata`) never decode, so
@@ -202,6 +208,26 @@ egami-video audio sound.flac --bitrate 96k -o sound.opus
 egami-video audio in.mp4 --bitrate 64k -o opus-audio.webm
 egami-video audio sound.flac -o sound.m4a
 egami-video audio sound.wav --sample-format s24 -o sound.aiff
+```
+
+## Editing
+
+`join`, `fade`, `overlay`, `pip` and `stack` build an edit with Egami.Video's editing library (see
+[Video editing](../guides/video-editing.md)) and encode it again, so their clips may differ in size, frame rate, pixel format
+and audio: every clip is fitted to one canvas (`--size`, `--rate` and `--fit`, from the first clip by default) and its sound
+resampled. `--transition` joins clips with `fade`, `fadeblack`, `dissolve`, `wipeleft`, `slideup`, `circleopen`, `clock`,
+`zoom`, `pixelize`, `blur` and others, as `kind:duration`, with an equal-power crossfade of the sound. `overlay --key green`
+keys out a green screen and takes the spill out of its edges. `--save-edit` writes the edit as JSON, which `edit` renders,
+and which can be changed by hand: effects in it are egami run steps, such as `"blur 8"`.
+
+```sh
+egami-video join in.avi in.webm in.mkv --transition dissolve:0.5 --size 320x240 -o joined.mkv
+egami-video fade in.webm --in 0.5 --out 1 -o faded.webm
+egami-video overlay in.avi in.webm --at right-8,top-8 --scale 0.3 --opacity 0.8 --from 0.5 --to 1.5 -o overlay.mkv
+egami-video overlay in.avi in.mkv --key green --similarity 0.12 --despill 0.6 -o keyed.mkv
+egami-video pip in.avi in.webm --corner bottom-left --scale 0.25 --fade-in 0.2 -o pip.mkv
+egami-video stack in.avi in.mkv --gap 4 -o side-by-side.mkv --save-edit side-by-side.json
+egami-video edit side-by-side.json --codec raw -o again.avi
 ```
 
 ## Checking

@@ -1,0 +1,198 @@
+{
+  "tool": "FFmpeg (run as a tool only)",
+  "canvas": [
+    96,
+    64,
+    10
+  ],
+  "clips": {
+    "e1": "testsrc2=s=96x64:r=10:d=2",
+    "e2": "smptebars=s=96x64:r=10:d=2",
+    "e3": "testsrc=s=128x72:r=25:d=1.5",
+    "e4": "mandelbrot=s=80x80:r=15",
+    "e5": "rgbtestsrc=s=64x96:r=30:d=1.2",
+    "logo": "testsrc2=s=32x24:r=10:d=2"
+  },
+  "joins": [
+    {
+      "clips": [
+        "e1",
+        "e2"
+      ],
+      "frames": 40
+    },
+    {
+      "clips": [
+        "e1",
+        "e3"
+      ],
+      "frames": 35
+    },
+    {
+      "clips": [
+        "e3",
+        "e1"
+      ],
+      "frames": 35
+    },
+    {
+      "clips": [
+        "e1",
+        "e4"
+      ],
+      "frames": 30
+    },
+    {
+      "clips": [
+        "e4",
+        "e3"
+      ],
+      "frames": 25
+    },
+    {
+      "clips": [
+        "e1",
+        "e5"
+      ],
+      "frames": 32
+    },
+    {
+      "clips": [
+        "e5",
+        "e2",
+        "e3"
+      ],
+      "frames": 47
+    },
+    {
+      "clips": [
+        "e3",
+        "e4",
+        "e5"
+      ],
+      "frames": 37
+    },
+    {
+      "clips": [
+        "e1",
+        "e2",
+        "e3",
+        "e4"
+      ],
+      "frames": 65
+    },
+    {
+      "clips": [
+        "e5",
+        "e4",
+        "e3",
+        "e2",
+        "e1"
+      ],
+      "frames": 77
+    }
+  ],
+  "pictures": {
+    "fade": {
+      "inputs": [
+        "e1"
+      ],
+      "filter": "[0:v]fade=t=in:st=0:d=0.5,fade=t=out:st=1.5:d=0.5[out]",
+      "width": 96,
+      "height": 64,
+      "frames": 20
+    },
+    "xfade-fade": {
+      "inputs": [
+        "e1",
+        "e2"
+      ],
+      "filter": "[0:v]format=gbrp[a];[1:v]format=gbrp[b];[a][b]xfade=transition=fade:duration=0.5:offset=1.5[out]",
+      "width": 96,
+      "height": 64,
+      "frames": 35
+    },
+    "xfade-wipeleft": {
+      "inputs": [
+        "e1",
+        "e2"
+      ],
+      "filter": "[0:v]format=gbrp[a];[1:v]format=gbrp[b];[a][b]xfade=transition=wipeleft:duration=0.5:offset=1.5[out]",
+      "width": 96,
+      "height": 64,
+      "frames": 35
+    },
+    "xfade-wiperight": {
+      "inputs": [
+        "e1",
+        "e2"
+      ],
+      "filter": "[0:v]format=gbrp[a];[1:v]format=gbrp[b];[a][b]xfade=transition=wiperight:duration=0.5:offset=1.5[out]",
+      "width": 96,
+      "height": 64,
+      "frames": 35
+    },
+    "xfade-wipeup": {
+      "inputs": [
+        "e1",
+        "e2"
+      ],
+      "filter": "[0:v]format=gbrp[a];[1:v]format=gbrp[b];[a][b]xfade=transition=wipeup:duration=0.5:offset=1.5[out]",
+      "width": 96,
+      "height": 64,
+      "frames": 35
+    },
+    "xfade-wipedown": {
+      "inputs": [
+        "e1",
+        "e2"
+      ],
+      "filter": "[0:v]format=gbrp[a];[1:v]format=gbrp[b];[a][b]xfade=transition=wipedown:duration=0.5:offset=1.5[out]",
+      "width": 96,
+      "height": 64,
+      "frames": 35
+    },
+    "overlay": {
+      "inputs": [
+        "e1",
+        "logo"
+      ],
+      "filter": "[0:v][1:v]overlay=x=10:y=5:format=rgb[out]",
+      "width": 96,
+      "height": 64,
+      "frames": 20
+    },
+    "hstack": {
+      "inputs": [
+        "e1",
+        "e2"
+      ],
+      "filter": "[0:v][1:v]hstack=inputs=2[out]",
+      "width": 192,
+      "height": 64,
+      "frames": 20
+    },
+    "vstack": {
+      "inputs": [
+        "e1",
+        "e2"
+      ],
+      "filter": "[0:v][1:v]vstack=inputs=2[out]",
+      "width": 96,
+      "height": 128,
+      "frames": 20
+    },
+    "xstack": {
+      "inputs": [
+        "e1",
+        "e2",
+        "e2",
+        "e1"
+      ],
+      "filter": "[0:v][1:v][2:v][3:v]xstack=inputs=4:grid=2x2[out]",
+      "width": 192,
+      "height": 128,
+      "frames": 20
+    }
+  }
+}

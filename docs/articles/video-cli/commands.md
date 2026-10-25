@@ -45,6 +45,12 @@ Commands:
   hash <inputs>                 Hash every decoded frame or packet of each track, in the layout of ffmpeg -f framemd5, to check that decoding matches.
   compare <reference> <inputs>  Measure PSNR and SSIM per plane between a reference clip and others, frame by frame in presentation order, as ffmpeg's psnr and ssim filters do.
   audio <inputs>                Decode audio to WAV, FLAC, Ogg FLAC, Opus, AIFF, CAF or ALAC in .m4a, or encode a video file's audio again while copying its video unchanged: resample, remix and change the sample format.
+  join <inputs>                 Join clips of any size, frame rate and audio into one, fitted to one canvas, with an optional transition between them; everything is encoded again. For clips that already match, concat copies without decoding.
+  fade <input>                  Fade a clip in from a colour and out to it, picture and sound together; like ffmpeg's fade and afade.
+  overlay <main> <over>         Draw one clip over another, such as a logo or a keyed presenter, with an opacity and a time window; like ffmpeg's overlay (with chromakey and despill for --key).
+  pip <main> <inset>            Show a second clip small in a corner of the first (picture-in-picture), with a time window and fades.
+  stack <inputs>                Show clips side by side, one above the other, or in a grid; like ffmpeg's hstack, vstack and xstack.
+  edit <file>                   Render an edit file: clips on a track with transitions, layers over it and effects with time windows. Every other editing command writes one with --save-edit.
   formats                       List the containers and codecs egami-video reads and writes, like ffmpeg -formats and -codecs.
   ffmpeg <arguments>            Run an ffmpeg command line with egami-video: 'egami-video ffmpeg -i in.avi -c copy out.mkv'. --explain prints the native command instead. Takes -i, -f, -y, -n, -ss, -to, -t, -itsoffset, -framerate, -map, -c, -codec, -c:v, -c:a, -c:s, -vcodec, -acodec, -scodec, -an, -vn, -sn, -dn, -r, -s, -frames:v, -vframes, -q:v, -qscale:v, -ar, -ac, -sample_fmt, -metadata, -map_metadata, -map_chapters, -vf, -filter:v, -af, -filter:a, -lavfi, -filter_complex (psnr, ssim, showwavespic, showspectrumpic), -segment_time, -segment_times, -update, -progress, -stats, -nostats, -stats_period, -hide_banner, -loglevel, -v, -nostdin, %d patterns and pipe:; filters scale, crop, pad, transpose, hflip, vflip, fps, thumbnail, select (scene), tile; to -f null the detection filters blackdetect, freezedetect, cropdetect, idet, signalstats, blurdetect, blockdetect, silencedetect, volumedetect, astats and ebur128; -f lavfi sources testsrc, testsrc2, smptebars, smptehdbars, color, sine, anullsrc and anoisesrc; anything else stops with exit code 2.
   ffprobe <arguments>           Run an ffprobe command line with egami-video: 'egami-video ffprobe -of json -show_streams in.mkv'. --explain prints the native command instead. Takes -i, -show_streams, -show_format, -show_packets, -show_frames, -show_chapters, -select_streams, -show_entries, -of, -print_format, -output_format (json, csv, compact, default, flat, xml), -v, -loglevel, -hide_banner, -pretty; anything else stops with exit code 2.
@@ -743,6 +749,184 @@ Options:
   --level <0-8>                     FLAC's compression level, from 0 (fastest) to 8 (smallest), 5 by default; ALAC's, 0 (fast) or 1 (the default).
   -b, --bitrate <bits/s>            Opus's bitrate for all channels together, such as 96k; 64k a channel by default.
   -vn, --no-video                   Leave out video tracks, keeping only audio (and subtitles) in a Matroska or MP4 output.
+```
+
+## join
+
+```text
+Description:
+  Join clips of any size, frame rate and audio into one, fitted to one canvas, with an optional transition between them; everything is encoded again. For clips that already match, concat copies without decoding.
+
+Usage:
+  egami-video join <inputs>... [options]
+
+Arguments:
+  <inputs>  The clips, in order.
+
+Options:
+  --transition <kind:time>       The transition between clips, as kind:duration, such as dissolve:1s or wipeleft:0.5; kinds: fade, fadeblack, fadewhite, dissolve, wipeleft, wiperight, wipeup, wipedown, slideleft, slideright, slideup, slidedown, circleopen, circleclose, clock, zoom, pixelize, blur. A cut by default.
+  -o, --output <path>            The file to write; its extension names the container (webm, mkv, mp4, avi).
+  --size <WxH>                   The canvas size, such as 1920x1080. Default the first clip's.
+  --rate <fps>                   The frame rate, such as 30 or 30000/1001. Default the first clip's.
+  --fit <mode>                   How clips of another size fit the canvas: contain (the default, with bars), cover (cropped), stretch or none.
+  --background <color>           The colour behind clips that do not cover the canvas. Default black.
+  -c, --codec <codec>            The video codec: vp9 (the default for webm), vp8, av1, mjpeg (the default otherwise) or raw.
+  --quality <0-100>              Quality from 0 to 100.
+  -an, --no-audio                Write no audio track.
+  --save-edit <file.json>        Also write the edit as a JSON file that 'egami-video edit' renders; with no -o, write only the file.
+```
+
+## fade
+
+```text
+Description:
+  Fade a clip in from a colour and out to it, picture and sound together; like ffmpeg's fade and afade.
+
+Usage:
+  egami-video fade <input> [options]
+
+Arguments:
+  <input>  The clip.
+
+Options:
+  --in <time>                    Fade in from the colour over this long at the start, such as 1s.
+  --out <time>                   Fade out to the colour over this long at the end.
+  --color <color>                The colour, as a name or hex such as #000000. Default black.
+  -o, --output <path>            The file to write; its extension names the container (webm, mkv, mp4, avi).
+  --size <WxH>                   The canvas size, such as 1920x1080. Default the first clip's.
+  --rate <fps>                   The frame rate, such as 30 or 30000/1001. Default the first clip's.
+  --fit <mode>                   How clips of another size fit the canvas: contain (the default, with bars), cover (cropped), stretch or none.
+  --background <color>           The colour behind clips that do not cover the canvas. Default black.
+  -c, --codec <codec>            The video codec: vp9 (the default for webm), vp8, av1, mjpeg (the default otherwise) or raw.
+  --quality <0-100>              Quality from 0 to 100.
+  -an, --no-audio                Write no audio track.
+  --save-edit <file.json>        Also write the edit as a JSON file that 'egami-video edit' renders; with no -o, write only the file.
+```
+
+## overlay
+
+```text
+Description:
+  Draw one clip over another, such as a logo or a keyed presenter, with an opacity and a time window; like ffmpeg's overlay (with chromakey and despill for --key).
+
+Usage:
+  egami-video overlay <main> <over> [options]
+
+Arguments:
+  <main>  The clip underneath, or a still image's video.
+  <over>  The clip drawn over it.
+
+Options:
+  --at <x,y>                     Where the top-left corner goes, as x,y in pixels, or right-N,top-N and the like from the edges (left, right, top, bottom, center). Centred by default.
+  --scale <factor>               The overlay's size as a factor of its own. Default 1.
+  --key <color>                  Chroma key the overlay: green, blue or a hex colour such as #00b140.
+  --similarity <0-1>             With --key: how close to the colour is keyed out, from 0 to 1. Default 0.1.
+  --blend <0-1>                  With --key: the soft edge beyond --similarity, from 0 to 1. Default 0.05.
+  --despill <0-1>                With --key: how much of the screen's colour to take out of the edges, from 0 to 1. Default 0.5.
+  --from <time>                  When the layer appears, in the main clip's time: seconds or [HH:]MM:SS[.mmm]. Default the start.
+  --to <time>                    When it disappears. Default when its clip ends.
+  --opacity <0-1>                Its opacity, from 0 to 1. Default 1.
+  --fade-in <time>               Fade it in over this long.
+  --fade-out <time>              Fade it out over this long.
+  --hold                         Keep showing its last frame until --to or the end, when its clip is shorter.
+  --mute                         Leave out its audio.
+  -o, --output <path>            The file to write; its extension names the container (webm, mkv, mp4, avi).
+  --size <WxH>                   The canvas size, such as 1920x1080. Default the first clip's.
+  --rate <fps>                   The frame rate, such as 30 or 30000/1001. Default the first clip's.
+  --fit <mode>                   How clips of another size fit the canvas: contain (the default, with bars), cover (cropped), stretch or none.
+  --background <color>           The colour behind clips that do not cover the canvas. Default black.
+  -c, --codec <codec>            The video codec: vp9 (the default for webm), vp8, av1, mjpeg (the default otherwise) or raw.
+  --quality <0-100>              Quality from 0 to 100.
+  -an, --no-audio                Write no audio track.
+  --save-edit <file.json>        Also write the edit as a JSON file that 'egami-video edit' renders; with no -o, write only the file.
+```
+
+## pip
+
+```text
+Description:
+  Show a second clip small in a corner of the first (picture-in-picture), with a time window and fades.
+
+Usage:
+  egami-video pip <main> <inset> [options]
+
+Arguments:
+  <main>   The main clip.
+  <inset>  The clip shown small in a corner.
+
+Options:
+  --corner <corner>              The corner: top-left, top-right, bottom-left or bottom-right (the default).
+  --scale <fraction>             The inset's width as a fraction of the canvas. Default 0.3.
+  --margin <pixels>              The space to the canvas edges in pixels. Default 16.
+  --from <time>                  When the layer appears, in the main clip's time: seconds or [HH:]MM:SS[.mmm]. Default the start.
+  --to <time>                    When it disappears. Default when its clip ends.
+  --opacity <0-1>                Its opacity, from 0 to 1. Default 1.
+  --fade-in <time>               Fade it in over this long.
+  --fade-out <time>              Fade it out over this long.
+  --hold                         Keep showing its last frame until --to or the end, when its clip is shorter.
+  --mute                         Leave out its audio.
+  -o, --output <path>            The file to write; its extension names the container (webm, mkv, mp4, avi).
+  --size <WxH>                   The canvas size, such as 1920x1080. Default the first clip's.
+  --rate <fps>                   The frame rate, such as 30 or 30000/1001. Default the first clip's.
+  --fit <mode>                   How clips of another size fit the canvas: contain (the default, with bars), cover (cropped), stretch or none.
+  --background <color>           The colour behind clips that do not cover the canvas. Default black.
+  -c, --codec <codec>            The video codec: vp9 (the default for webm), vp8, av1, mjpeg (the default otherwise) or raw.
+  --quality <0-100>              Quality from 0 to 100.
+  -an, --no-audio                Write no audio track.
+  --save-edit <file.json>        Also write the edit as a JSON file that 'egami-video edit' renders; with no -o, write only the file.
+```
+
+## stack
+
+```text
+Description:
+  Show clips side by side, one above the other, or in a grid; like ffmpeg's hstack, vstack and xstack.
+
+Usage:
+  egami-video stack <inputs>... [options]
+
+Arguments:
+  <inputs>  The clips, in order.
+
+Options:
+  --vertical                     One above the other, like vstack, instead of side by side.
+  --grid <CxR>                   A grid of columns by rows, such as 2x2, filled row by row.
+  --gap <pixels>                 The gap between clips in pixels. Default 0.
+  --shortest                     End with the shortest clip instead of the longest.
+  --mix-audio                    Mix every clip's audio instead of keeping the first clip's.
+  -o, --output <path>            The file to write; its extension names the container (webm, mkv, mp4, avi).
+  --size <WxH>                   The canvas size, such as 1920x1080. Default the first clip's.
+  --rate <fps>                   The frame rate, such as 30 or 30000/1001. Default the first clip's.
+  --fit <mode>                   How clips of another size fit the canvas: contain (the default, with bars), cover (cropped), stretch or none.
+  --background <color>           The colour behind clips that do not cover the canvas. Default black.
+  -c, --codec <codec>            The video codec: vp9 (the default for webm), vp8, av1, mjpeg (the default otherwise) or raw.
+  --quality <0-100>              Quality from 0 to 100.
+  -an, --no-audio                Write no audio track.
+  --save-edit <file.json>        Also write the edit as a JSON file that 'egami-video edit' renders; with no -o, write only the file.
+```
+
+## edit
+
+```text
+Description:
+  Render an edit file: clips on a track with transitions, layers over it and effects with time windows. Every other editing command writes one with --save-edit.
+
+Usage:
+  egami-video edit <file> [options]
+
+Arguments:
+  <file>  The edit file: JSON as --save-edit writes it, with effects as egami run steps such as "blur 8".
+
+Options:
+  -o, --output <path>            The file to write; its extension names the container (webm, mkv, mp4, avi).
+  --size <WxH>                   The canvas size, such as 1920x1080. Default the first clip's.
+  --rate <fps>                   The frame rate, such as 30 or 30000/1001. Default the first clip's.
+  --fit <mode>                   How clips of another size fit the canvas: contain (the default, with bars), cover (cropped), stretch or none.
+  --background <color>           The colour behind clips that do not cover the canvas. Default black.
+  -c, --codec <codec>            The video codec: vp9 (the default for webm), vp8, av1, mjpeg (the default otherwise) or raw.
+  --quality <0-100>              Quality from 0 to 100.
+  -an, --no-audio                Write no audio track.
+  --save-edit <file.json>        Also write the edit as a JSON file that 'egami-video edit' renders; with no -o, write only the file.
 ```
 
 ## formats

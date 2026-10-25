@@ -24,6 +24,27 @@ comes after stage D.
   a gain, fade, pan and envelope chain runs 520 times real time, `Tempo` 610 times and `Speed` 500 times
   (`AudioFilterBenchmarks`).
 
+V9 Editing stage A: joins, fades, transitions, layers, chroma key, stacks and effects in `Egami.Video.Editing` (Build Plan
+tasks 3 to 11). All additive; the API review comes after stage B (task 19).
+
+- `VideoEdit` (an `EditCanvas`, an `EditTrack` of `TrackItem`s, `Layers` and `Effects`), `Plan` to an `EditPlan` of
+  `PlannedClip`s and `PlannedLayer`s in whole frames with warnings, `Render` to a file or stream, and `ToJson` and `FromJson`
+  (the CLI's edit file; effects are stored by `EditEffect.Name`).
+- `Clip.Open` (file or seekable stream), `Trim`, `FadeIn`, `FadeOut`, `Volume`, `Muted`, `WithEffect`; clips of any size, rate
+  and audio are fitted with `ClipFit`, take the nearest source frame, and have their sound resampled and remixed.
+- `Transition` with ten kinds (`TransitionKind`), `TransitionDirection`, soft wipes, easing, `ITransition` for an app's own,
+  and an equal-power audio crossfade through V9.1.
+- `Layer` with `Place` (a rectangle or an anchor), `Opacity`, `Blend`, `Between`, fades, `HoldLastFrame`, `Animate` over
+  `LayerProperty` keyframes, and `Key` with a `ChromaKey` (Egami 2.5.8's chroma key and despill).
+- `Stack.Horizontal`, `Vertical` and `Grid` with `StackOptions`; `EditEffect.Apply`, `Of` and `Between`, `IFrameEffect` and
+  `FrameEffectContext`.
+- egami-video `join`, `fade`, `overlay` (with `--key`), `pip`, `stack` and `edit`, with `--save-edit`, and the same as MCP tools.
+- Gates against FFmpeg on raw clips (`tools/video/make-edit-references.py`): join frame counts equal on 10 joins; `fade`,
+  `overlay`, `hstack`, `vstack` and `xstack` matched exactly and `xfade=fade` at 51.6 dB (gate 40 dB); wipes within 1 px of
+  `xfade`'s edge. The chroma key recovers a synthetic known alpha within 0.75 % (gate 3 %).
+- V9.1: a `Fade` that starts at `MediaTime.Zero` now lasts its duration (it used to round to a cut, since `MediaTime`'s `+`
+  keeps the left side's whole-second time base).
+
 ## Egami.Video 1.0.0 (2026-10-25)
 
 The first release of Egami.Video on NuGet, with Egami.Video.H264 and Egami.Video.Cli at the same version. From 1.0 its

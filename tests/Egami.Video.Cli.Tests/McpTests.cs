@@ -43,7 +43,8 @@ public sealed class McpTests : IAsyncDisposable
         string[] expected =
         [
             "info", "remux", "trim", "concat", "segment", "timestamps", "extract", "embed", "metadata", "frames", "encode", "run",
-            "thumbnail", "scenes", "analyze", "waveform", "spectrum", "generate", "sheet", "animate", "hash", "compare", "audio", "formats",
+            "thumbnail", "scenes", "analyze", "waveform", "spectrum", "generate", "sheet", "animate", "hash", "compare", "audio",
+            "join", "fade", "overlay", "pip", "stack", "edit", "formats",
         ];
         Assert.Equal(expected, tools.Select(t => t.Name));
         foreach (McpClientTool tool in tools)

@@ -97,7 +97,7 @@ public sealed class Fade : AudioFilter
     private protected override void OnStart()
     {
         _start = IndexOf(Start);
-        _length = IndexOf(Start + Duration) - _start;
+        _length = IndexOf(Duration);
     }
 
     private protected override void Process(AudioFrame frame)
