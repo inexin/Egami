@@ -141,6 +141,11 @@ internal static class VideoCli
         root.Subcommands.Add(EditCommands.Overlay(session));
         root.Subcommands.Add(EditCommands.Pip(session));
         root.Subcommands.Add(EditCommands.StackCommand(session));
+        root.Subcommands.Add(EditCommands.SpeedCommand(session));
+        root.Subcommands.Add(EditCommands.ReverseCommand(session));
+        root.Subcommands.Add(EditCommands.LoopCommand(session));
+        root.Subcommands.Add(EditCommands.FreezeCommand(session));
+        root.Subcommands.Add(EditCommands.SlideshowCommand(session));
         root.Subcommands.Add(EditCommands.Edit(session));
 
         root.Subcommands.Add(FormatsCommand.Create(session));

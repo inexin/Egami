@@ -33,7 +33,7 @@ internal static class EditPlanner
         {
             TrackItem item = edit.Track[i];
             SourceInfo info = sources[item.Clip];
-            long frames = Frames(Times.Sub(info.Out, info.In), canvas);
+            long frames = Frames(MediaTime.FromSeconds(new ClipTiming(item.Clip, info).Length), canvas);
             if (frames < 1)
             {
                 errors.Add($"Clip {i + 1} is shorter than one frame.");
@@ -73,7 +73,7 @@ internal static class EditPlanner
             Layer layer = edit.Layers[i];
             SourceInfo info = sources[layer.Clip];
             long start = Frames(layer.Start, canvas);
-            long clipFrames = Frames(Times.Sub(info.Out, info.In), canvas);
+            long clipFrames = Frames(MediaTime.FromSeconds(new ClipTiming(layer.Clip, info).Length), canvas);
             long end = layer.End is MediaTime e ? Frames(e, canvas) : layer.HoldsLastFrame ? total : start + clipFrames;
             if (!layer.HoldsLastFrame && end > start + clipFrames)
             {
@@ -129,6 +129,10 @@ internal static class EditPlanner
                 FileClipSource file => FromMedia(MediaFile.Probe(file.Path, context), clip),
                 StreamClipSource stream => FromStream(stream.Stream, clip, context),
                 StackClipSource stack => FromStack(stack, clip, sources, context, errors),
+                StillClipSource still => Trimmed(clip, still.Image is { } image ? new Size(image.Width, image.Height) : ImageSize(still.Path!, context), new Rational(30, 1), still.Duration, true, false),
+                AnimationClipSource animation => FromAnimation(animation.Path, clip, context),
+                ColorClipSource color => Trimmed(clip, new Size(0, 0), new Rational(30, 1), color.Duration, true, false),
+                AppClipSource app => Trimmed(clip, app.Source.Size, new Rational(30, 1), app.Source.Duration, true, false),
                 _ => throw new InvalidOperationException("Unknown clip source."),
             };
         }
@@ -176,10 +180,23 @@ internal static class EditPlanner
             StackLayout.Vertical => new Size(firstSize.Width, children.Sum(c => ScaledHeight(c.Size, firstSize.Width)) + (gap * (children.Length - 1))),
             _ => new Size((firstSize.Width * stack.Columns) + (gap * (stack.Columns - 1)), (firstSize.Height * stack.Rows) + (gap * (stack.Rows - 1))),
         };
-        IEnumerable<MediaTime> lengths = children.Select(c => Times.Sub(c.Out, c.In));
+        IEnumerable<MediaTime> lengths = stack.Clips.Select((c, i) => MediaTime.FromSeconds(new ClipTiming(c, children[i]).Length));
         MediaTime duration = stack.Options.Shortest ? lengths.Min() : lengths.Max();
         bool audio = stack.Options.MixAudio ? children.Any(c => c.HasAudio) : children[0].HasAudio;
         return Trimmed(clip, size, children[0].FrameRate, duration, true, audio);
+    }
+
+    private static Size ImageSize(string path, MediaContext context)
+    {
+        using Raster image = Raster.Load(path, context.Egami, new Egami.Formats.ReaderOptions { Frames = ..1 });
+        return new Size(image.Width, image.Height);
+    }
+
+    private static SourceInfo FromAnimation(string path, Clip clip, MediaContext context)
+    {
+        using Raster<Egami.Pixels.Rgba8> animation = Raster.Load<Egami.Pixels.Rgba8>(path, context.Egami);
+        double[] starts = AnimationFrames.Starts(animation);
+        return Trimmed(clip, new Size(animation.Width, animation.Height), new Rational(30, 1), MediaTime.FromSeconds(starts[^1]), true, false);
     }
 
     private static SourceInfo Trimmed(Clip clip, Size size, Rational rate, MediaTime duration, bool video, bool audio)
@@ -216,6 +233,8 @@ internal static class EditPlanner
     private static string Name(Clip clip) => clip.Source switch
     {
         FileClipSource file => $"\"{file.Path}\"",
+        StillClipSource { Path: string still } => $"\"{still}\"",
+        AnimationClipSource animation => $"\"{animation.Path}\"",
         StackClipSource => "A stack",
         _ => "A stream clip",
     };

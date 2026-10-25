@@ -193,6 +193,60 @@
       "width": 192,
       "height": 128,
       "frames": 20
+    },
+    "reverse": {
+      "inputs": [
+        "e1"
+      ],
+      "filter": "[0:v]reverse[out]",
+      "width": 96,
+      "height": 64,
+      "frames": 20
+    },
+    "loop": {
+      "inputs": [
+        "e1"
+      ],
+      "filter": "[0:v]loop=loop=2:size=20:start=0[out]",
+      "width": 96,
+      "height": 64,
+      "frames": 60
+    },
+    "tpad": {
+      "inputs": [
+        "e1"
+      ],
+      "filter": "[0:v]tpad=stop_mode=clone:stop_duration=0.5[out]",
+      "width": 96,
+      "height": 64,
+      "frames": 25
+    },
+    "freeze": {
+      "inputs": [
+        "e1"
+      ],
+      "filter": "[0:v]split[a][b];[a]trim=end_frame=6,tpad=stop_mode=clone:stop_duration=0.5[x];[b]trim=start_frame=6,setpts=PTS-STARTPTS[y];[x][y]concat=n=2:v=1:a=0[out]",
+      "width": 96,
+      "height": 64,
+      "frames": 25
+    },
+    "speed-2x": {
+      "inputs": [
+        "e1"
+      ],
+      "filter": "[0:v]setpts=0.5*PTS,fps=10[out]",
+      "width": 96,
+      "height": 64,
+      "frames": 10
+    },
+    "speed-half": {
+      "inputs": [
+        "e1"
+      ],
+      "filter": "[0:v]setpts=2*PTS,fps=10[out]",
+      "width": 96,
+      "height": 64,
+      "frames": 40
     }
   }
 }

@@ -133,68 +133,106 @@ internal sealed class AudioTimeline : IDisposable
     private void AddSegments(EditPlan plan, Clip clip, MediaTime start, MediaTime length, MediaTime fadeIn, FadeCurve inCurve, MediaTime fadeOut, FadeCurve outCurve, double gain)
     {
         SourceInfo info = plan.Sources[clip];
+        ClipTiming timing = new(clip, info);
+        Fades fades = new(start, length, fadeIn, inCurve, fadeOut, outCurve);
         if (clip.Source is StackClipSource stack)
         {
-            // A stack's sound is its first clip's, or all of them mixed; each child keeps the stack's timing and fades.
+            // A stack's sound is its first clip's, or all of them mixed, on the stack's own timing.
             IEnumerable<Clip> children = stack.Options.MixAudio ? stack.Clips : stack.Clips.Take(1);
             foreach (Clip child in children.Where(c => plan.Sources[c].HasAudio && !c.IsMuted))
             {
                 SourceInfo childInfo = plan.Sources[child];
-                MediaTime childLength = Min(length, Times.Sub(Times.Sub(childInfo.Out, childInfo.In), info.In));
-                if (childLength > MediaTime.Zero)
-                {
-                    _segments.Add(new Segment(child, Times.Add(childInfo.In, info.In), start, childLength, fadeIn, inCurve, Min(fadeOut, childLength), outCurve, gain + child.VolumeDecibels, _canvas, _context));
-                }
+                double childLength = new ClipTiming(child, childInfo).Length;
+                AddPieces(child, Times.Add(childInfo.In, info.In).Seconds, childLength - info.In.Seconds, clip, timing, start, length, fades, gain + child.VolumeDecibels);
             }
 
             return;
         }
 
-        _segments.Add(new Segment(clip, info.In, start, Min(length, Times.Sub(info.Out, info.In)), fadeIn, inCurve, fadeOut, outCurve, gain, _canvas, _context));
+        AddPieces(clip, info.In.Seconds, double.PositiveInfinity, clip, timing, start, length, fades, gain);
     }
 
-    private static MediaTime Min(MediaTime a, MediaTime b) => a < b ? a : b;
+    /// <summary>Adds a segment for each piece of a clip's timing: loops, the parts between freezes, read backwards when reversed.</summary>
+    private void AddPieces(Clip source, double sourceIn, double sourceLimit, Clip clip, ClipTiming timing, MediaTime start, MediaTime length, Fades fades, double gain)
+    {
+        double total = length.Seconds;
+        foreach ((double a, double b, double at) in timing.Pieces())
+        {
+            double from = Math.Max(0, a), to = Math.Min(b, sourceLimit);
+            double play = (to - from) / clip.SpeedFactor;
+            play = Math.Min(play, total - at);
+            if (play <= 1e-6)
+            {
+                continue;
+            }
 
-    /// <summary>One source's audio in its place on the timeline: read, trimmed, faded, then moved to its edit time.</summary>
+            to = from + (play * clip.SpeedFactor);
+            _segments.Add(new Segment(source, sourceIn + from, to - from, Times.Add(start, MediaTime.FromSeconds(at)), clip.SpeedFactor, clip.KeepsPitch, clip.IsReversed, fades, gain, _canvas, _context));
+        }
+    }
+
+    /// <summary>A clip's fades on the edit's time line: in from its start, out to its end.</summary>
+    private sealed record Fades(MediaTime Start, MediaTime Length, MediaTime In, FadeCurve InCurve, MediaTime Out, FadeCurve OutCurve);
+
+    /// <summary>
+    /// One piece of a source's audio in its place on the timeline: read (backwards when reversed), cut, sped up or slowed down,
+    /// moved to its edit time, and faded with its clip.
+    /// </summary>
     private sealed class Segment : IDisposable
     {
+        private const double Window = 1;
+
         private readonly Clip _clip;
-        private readonly MediaTime _in;
-        private readonly MediaTime _length;
+        private readonly double _in;
+        private readonly double _length;
+        private readonly bool _reversed;
         private readonly EditCanvas _canvas;
         private readonly MediaContext _context;
         private readonly AudioFilterChain _chain;
         private readonly long _endSample;
         private AudioReader? _reader;
+        private double _readEnd;
         private long _sent;
         private bool _done;
 
-        public Segment(Clip clip, MediaTime sourceIn, MediaTime start, MediaTime length, MediaTime fadeIn, FadeCurve inCurve, MediaTime fadeOut, FadeCurve outCurve,
-            double gain, EditCanvas canvas, MediaContext context)
+        public Segment(Clip clip, double sourceIn, double sourceLength, MediaTime start, double speed, bool keepPitch, bool reversed, Fades fades, double gain,
+            EditCanvas canvas, MediaContext context)
         {
             _clip = clip;
             _in = sourceIn;
+            _length = sourceLength;
+            _reversed = reversed;
+            _readEnd = sourceIn + sourceLength;
             Start = start;
-            _length = length;
             _canvas = canvas;
             _context = context;
-            _endSample = (long)Math.Round(Times.Add(start, length).Seconds * canvas.SampleRate);
+            _endSample = (long)Math.Round((start.Seconds + (sourceLength / speed)) * canvas.SampleRate);
             _sent = (long)Math.Round(start.Seconds * canvas.SampleRate);
-            _chain = new AudioFilterChain(canvas.SampleRate, canvas.AudioLayout, context)
-                .Add(new AudioTrim(sourceIn, Times.Add(sourceIn, length)));
+            _chain = new AudioFilterChain(canvas.SampleRate, canvas.AudioLayout, context);
+            if (!reversed)
+            {
+                _chain.Add(new AudioTrim(MediaTime.FromSeconds(sourceIn), MediaTime.FromSeconds(sourceIn + sourceLength)));
+            }
+
+            foreach (double step in Steps(speed))
+            {
+                _chain.Add(keepPitch ? new Tempo(step) : new Egami.Video.Audio.Filters.Speed(step));
+            }
+
+            _chain.Add(new Retime(start));
             if (gain != 0)
             {
                 _chain.Add(new Gain(gain));
             }
 
-            if (fadeIn > MediaTime.Zero)
+            if (fades.In > MediaTime.Zero)
             {
-                _chain.Add(new AudioFade(FadeDirection.In, sourceIn, fadeIn, inCurve));
+                _chain.Add(new AudioFade(FadeDirection.In, fades.Start, fades.In, fades.InCurve));
             }
 
-            if (fadeOut > MediaTime.Zero)
+            if (fades.Out > MediaTime.Zero)
             {
-                _chain.Add(new AudioFade(FadeDirection.Out, Times.Sub(Times.Add(sourceIn, length), fadeOut), fadeOut, outCurve));
+                _chain.Add(new AudioFade(FadeDirection.Out, Times.Sub(Times.Add(fades.Start, fades.Length), fades.Out), fades.Out, fades.OutCurve));
             }
         }
 
@@ -217,19 +255,19 @@ internal sealed class AudioTimeline : IDisposable
                     FileClipSource f => AudioReader.Open(f.Path, options, _context),
                     _ => throw new InvalidOperationException(),
                 };
-                if (_in > MediaTime.Zero)
+                if (_in > 0 && !_reversed)
                 {
-                    _reader.Seek(_in);
+                    _reader.Seek(MediaTime.FromSeconds(_in));
                 }
             }
 
-            MediaTime shift = Times.Sub(Start, _in);
             while (final || _sent < until)
             {
-                if (!_reader.TryRead(out AudioFrame? frame))
+                AudioFrame? frame = _reversed ? ReadBackwards() : _reader.TryRead(out AudioFrame? next) ? next : null;
+                if (frame is null)
                 {
                     _chain.Flush();
-                    Drain(mixer, input, shift);
+                    Drain(mixer, input);
                     End(mixer, input);
                     return;
                 }
@@ -239,7 +277,7 @@ internal sealed class AudioTimeline : IDisposable
                     _chain.Send(frame);
                 }
 
-                Drain(mixer, input, shift);
+                Drain(mixer, input);
                 if (_sent >= _endSample)
                 {
                     End(mixer, input);
@@ -254,15 +292,97 @@ internal sealed class AudioTimeline : IDisposable
             _reader?.Dispose();
         }
 
-        private void Drain(AudioMixer mixer, int input, MediaTime shift)
+        /// <summary>Splits a speed into steps the tempo and speed filters take (0.25 to 4 each).</summary>
+        private static IEnumerable<double> Steps(double speed)
+        {
+            while (speed > 4 + 1e-9)
+            {
+                yield return 4;
+                speed /= 4;
+            }
+
+            while (speed < 0.25 - 1e-9)
+            {
+                yield return 0.25;
+                speed /= 0.25;
+            }
+
+            if (Math.Abs(speed - 1) > 1e-9)
+            {
+                yield return speed;
+            }
+        }
+
+        /// <summary>The next window of the piece read from its end towards its start, its samples reversed, timed in playing order.</summary>
+        private AudioFrame? ReadBackwards()
+        {
+            double end = _readEnd, begin = Math.Max(_in, end - Window);
+            if (end - begin <= 1e-9)
+            {
+                return null;
+            }
+
+            _readEnd = begin;
+            int rate = _canvas.SampleRate, channels = _canvas.AudioLayout.ChannelCount;
+            long first = (long)Math.Round(begin * rate), last = (long)Math.Round(end * rate);
+            float[][] samples = [.. Enumerable.Range(0, channels).Select(_ => new float[last - first])];
+            _reader!.Seek(MediaTime.FromSeconds(begin));
+            while (_reader.TryRead(out AudioFrame? frame))
+            {
+                using (frame)
+                {
+                    long at = frame.Timestamp.Rescale(new Rational(1, rate)).Ticks;
+                    if (at >= last)
+                    {
+                        break;
+                    }
+
+                    int skip = (int)Math.Max(0, first - at), offset = (int)Math.Max(0, at - first);
+                    int count = (int)Math.Min(frame.SampleCount - skip, last - first - offset);
+                    for (int c = 0; c < channels && count > 0; c++)
+                    {
+                        frame.AsSpan<float>(c).Slice(skip, count).CopyTo(samples[c].AsSpan(offset));
+                    }
+                }
+            }
+
+            // Played order: this window comes after the windows nearer the end.
+            double played = (_in + _length) - end;
+            AudioFrame output = new(SampleFormat.F32Planar, _canvas.AudioLayout, rate, (int)(last - first), new MediaTime((long)Math.Round((_in + played) * rate), new Rational(1, rate)), _context);
+            for (int c = 0; c < channels; c++)
+            {
+                Span<float> target = output.GetSpan<float>(c);
+                samples[c].CopyTo(target);
+                target.Reverse();
+            }
+
+            return output;
+        }
+
+        private void Drain(AudioMixer mixer, int input)
         {
             while (_chain.TryReceive(out AudioFrame? output))
             {
                 using (output)
                 {
-                    output.Timestamp = Times.Add(output.Timestamp, shift);
-                    mixer.Send(input, output);
-                    _sent = output.Timestamp.Rescale(new Rational(1, _canvas.SampleRate)).Ticks + output.SampleCount;
+                    long first = output.Timestamp.Rescale(new Rational(1, _canvas.SampleRate)).Ticks;
+                    long keep = Math.Min(output.SampleCount, _endSample - first);
+                    if (keep <= 0)
+                    {
+                        continue;
+                    }
+
+                    if (keep < output.SampleCount)
+                    {
+                        using AudioFrame part = output.Slice(0, (int)keep, _context);
+                        mixer.Send(input, part);
+                    }
+                    else
+                    {
+                        mixer.Send(input, output);
+                    }
+
+                    _sent = first + keep;
                 }
             }
         }

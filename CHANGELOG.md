@@ -24,6 +24,20 @@ comes after stage D.
   a gain, fade, pan and envelope chain runs 520 times real time, `Tempo` 610 times and `Speed` 500 times
   (`AudioFilterBenchmarks`).
 
+V9 Editing stage B: speed, reverse, loops, freezes, stills and Ken Burns, and time windows on run steps (Build Plan tasks 12
+to 17). All additive; the API review for stages A and B comes next (task 19).
+
+- `Clip.Speed` (0.1 to 10, the sound's pitch kept with V9.1's `Tempo` or following it with `Speed`), `Reverse` (one keyframe
+  interval decoded at a time, sound reversed in 1 s windows), `Loop`, `Hold` and `Freeze` with `ClipFreeze`.
+- `Clip.Still` (a file or a raster), `Clip.Animation` (GIF, WebP, APNG at their delays), `Clip.Color`, `Clip.FromSource` with an
+  app's own `IFrameSource`, `Clip.PanZoom` with a `PanZoomPath` drawn by a sub-pixel transform, and `Slideshow.Create` with
+  `SlideshowOptions` (seeded pan and zoom).
+- egami-video `speed`, `reverse`, `loop`, `freeze` and `slideshow` (also MCP tools), and `@start-end` time windows on `run`
+  steps, such as `blur 8 @0:05-0:12`. The edit file stores the new clip settings.
+- Gates against FFmpeg on raw clips: `reverse`, `loop`, `tpad`, a freeze (trim, tpad and concat) and `setpts` with `fps` at 2x
+  and 0.5x give the same frames; durations are exact from 0.1x to 10x. Frames exactly at an output slot's middle now count as
+  before it, as FFmpeg's `fps` filter does.
+
 V9 Editing stage A: joins, fades, transitions, layers, chroma key, stacks and effects in `Egami.Video.Editing` (Build Plan
 tasks 3 to 11). All additive; the API review comes after stage B (task 19).
 

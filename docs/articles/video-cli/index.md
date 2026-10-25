@@ -57,6 +57,11 @@ With the `egami` tool installed too, `egami video info clip.mkv` runs `egami-vid
 | `overlay` | One clip over another, with `--key` for a chroma key | `overlay`, `chromakey`, `despill` |
 | `pip` | A second clip small in a corner | `scale` and `overlay` |
 | `stack` | Clips side by side, above each other or in a grid | `hstack`, `vstack`, `xstack` |
+| `speed` | Faster or slower, the sound's pitch kept | `setpts` with `atempo` |
+| `reverse` | Backwards, picture and sound | `reverse`, `areverse` |
+| `loop` | A clip several times in a row | `loop`, `aloop` |
+| `freeze` | One frame held for a while, or the last one at the end | `tpad`, `freezeframes` |
+| `slideshow` | Images one after another, with transitions and pan and zoom | `loop=1`, `zoompan`, `xfade` |
 | `edit` | Render an edit file: clips, transitions, layers and effects | `-filter_complex` |
 | `formats` | The containers and codecs this build reads and writes | `ffmpeg -formats` |
 
@@ -228,6 +233,19 @@ egami-video overlay in.avi in.mkv --key green --similarity 0.12 --despill 0.6 -o
 egami-video pip in.avi in.webm --corner bottom-left --scale 0.25 --fade-in 0.2 -o pip.mkv
 egami-video stack in.avi in.mkv --gap 4 -o side-by-side.mkv --save-edit side-by-side.json
 egami-video edit side-by-side.json --codec raw -o again.avi
+egami-video speed in.webm 1.5 -o fast.webm
+egami-video reverse in.avi -o backwards.mkv
+egami-video loop in.avi --count 3 -o looped.mkv
+egami-video freeze in.avi --at 0.5 --for 1 -o frozen.mkv
+egami-video slideshow shots/*.jpg --each 2 --transition fade:0.5 --pan-zoom --size 320x240 -o show.mkv
+```
+
+`speed`, `reverse`, `loop` and `freeze` change a clip's timing, picture and sound together; `freeze --at end` holds the
+last frame. `slideshow` takes images in order (globs sort by name) and moves each with a slow pan and zoom drawn at sub-pixel
+accuracy. A step of `run` can take a time window, `@start-end` right after it: `blur 8 @0:05-0:12` blurs only that part.
+
+```sh
+egami-video run in.avi grayscale @0.2-0.6 + blur 2 @0.4- + save windowed.mkv
 ```
 
 ## Checking

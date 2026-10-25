@@ -53,6 +53,47 @@ public sealed class EditCommandTests : IDisposable
         Assert.Equal(a.Width * 2, MediaFile.Probe(_tool.PathOf("s.mkv")).VideoTrack!.Width);
     }
 
+    [Fact]
+    public void SpeedReverseLoopAndFreeze()
+    {
+        _tool.Copy("avi-mjpeg-420-pcm.avi", "a.avi");
+        double length = MediaFile.Probe(_tool.PathOf("a.avi")).Duration!.Value.Seconds;
+        Assert.Equal(ExitCodes.Success, _tool.Run("speed", "a.avi", "2", "-o", "fast.mkv").Code);
+        Assert.Equal(length / 2, MediaFile.Probe(_tool.PathOf("fast.mkv")).Duration!.Value.Seconds, 0.1);
+        Assert.Equal(ExitCodes.Success, _tool.Run("speed", "a.avi", "0.5", "--pitch", "-o", "slow.mkv").Code);
+        Assert.Equal(length * 2, MediaFile.Probe(_tool.PathOf("slow.mkv")).Duration!.Value.Seconds, 0.1);
+        Assert.Equal(ExitCodes.Success, _tool.Run("reverse", "a.avi", "-o", "back.mkv").Code);
+        Assert.Equal(ExitCodes.Success, _tool.Run("loop", "a.avi", "--count", "3", "-o", "three.mkv").Code);
+        Assert.Equal(length * 3, MediaFile.Probe(_tool.PathOf("three.mkv")).Duration!.Value.Seconds, 0.1);
+        Assert.Equal(ExitCodes.Success, _tool.Run("freeze", "a.avi", "--at", "0.2", "--for", "0.5", "-o", "held.mkv").Code);
+        Assert.Equal(ExitCodes.Success, _tool.Run("freeze", "a.avi", "--at", "end", "--for", "1", "-o", "end.mkv").Code);
+        Assert.Equal(length + 1, MediaFile.Probe(_tool.PathOf("end.mkv")).Duration!.Value.Seconds, 0.1);
+        Assert.Equal(ExitCodes.Usage, _tool.Run("speed", "a.avi", "20", "-o", "x.mkv").Code);
+    }
+
+    [Fact]
+    public void SlideshowOfImages()
+    {
+        _tool.CopyImage("ops/duck.png", "slides/1.png");
+        _tool.CopyImage("ops/egret.png", "slides/2.png");
+        ToolRun run = _tool.Run("slideshow", "slides/*.png", "--each", "1", "--transition", "dissolve:0.25", "--pan-zoom", "--size", "160x120", "--rate", "10", "-o", "show.mkv");
+        Assert.True(run.Code == ExitCodes.Success, run.Error);
+        Assert.Equal(1.75, MediaFile.Probe(_tool.PathOf("show.mkv")).Duration!.Value.Seconds, 0.1);
+    }
+
+    [Fact]
+    public void RunStepsTakeTimeWindows()
+    {
+        _tool.Copy("avi-mjpeg-420-pcm.avi", "a.avi");
+        ToolRun dry = _tool.Run("run", "a.avi", "grayscale", "@0.1-0.3", "+", "blur", "1", "@0.2-", "+", "save", "out.mkv", "--dry-run");
+        Assert.True(dry.Code == ExitCodes.Success, dry.Error);
+        Assert.Contains("@0.1-0.3", dry.Text, StringComparison.Ordinal);
+        ToolRun run = _tool.Run("run", "a.avi", "grayscale", "@0.1-0.3", "+", "save", "out.mkv");
+        Assert.True(run.Code == ExitCodes.Success, run.Error);
+        Assert.Equal(ExitCodes.Usage, _tool.Run("run", "a.avi", "resize", "50%", "@0-1", "+", "save", "x.mkv").Code);
+        Assert.Equal(ExitCodes.Usage, _tool.Run("run", "a.avi", "grayscale", "@0.3-0.1", "+", "save", "x.mkv").Code);
+    }
+
     [Theory]
     [InlineData("join a.avi -o x.mkv", "two or more clips")]
     [InlineData("join a.avi a.avi --transition spin -o x.mkv", "is not a transition")]

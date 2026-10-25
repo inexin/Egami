@@ -77,6 +77,7 @@ internal static class RunVideoCommand
         }
 
         Dictionary<string, List<string>> own = TakeOwnOptions(args, out string[] rest);
+        rest = TakeWindows(rest, out Dictionary<int, StepWindow> windows);
         RunCommand.Parsed parsed;
         try
         {
@@ -122,6 +123,22 @@ internal static class RunVideoCommand
             }
         }
 
+        Dictionary<BoundStep, StepWindow> stepWindows = [];
+        foreach ((int index, StepWindow window) in windows)
+        {
+            if (index >= steps.Count)
+            {
+                throw new UsageException($"The time window {window.Text} follows no step; put it right after the step it limits, such as blur 8 @0:05-0:12.");
+            }
+
+            if (!StepCatalog.KeepsSize(steps[index].Info))
+            {
+                throw new UsageException($"{steps[index].Info.Name} changes the frame size, so it cannot have a time window ({window.Text}): every frame must keep one size.");
+            }
+
+            stepWindows[steps[index]] = window;
+        }
+
         save = WithDefaults(save ?? SaveSpec.Default, parsed);
         int? quality = Quality(session, save);
         if (parsed.Value("--save-workflow") is { } workflowPath)
@@ -156,14 +173,17 @@ internal static class RunVideoCommand
             Last(own, "--rate") is { } rate ? PictureFrames.ParseRate(rate, "--rate") : null,
             quality,
             autoCrop,
-            TrackSelection.Parse(own.GetValueOrDefault("--track"), own.ContainsKey("--no-audio"), own.ContainsKey("--no-subtitles")));
+            TrackSelection.Parse(own.GetValueOrDefault("--track"), own.ContainsKey("--no-audio"), own.ContainsKey("--no-subtitles")))
+        {
+            Windows = stepWindows,
+        };
 
         if (parsed.Flags.Contains("--dry-run"))
         {
             TextWriter text = session.Console.Text;
             foreach (BoundStep step in steps)
             {
-                text.WriteLine(step.ToString());
+                text.WriteLine(stepWindows.TryGetValue(step, out StepWindow window) ? $"{step} {window.Text}" : step.ToString());
             }
 
             foreach (InputFile input in inputs)
@@ -182,6 +202,58 @@ internal static class RunVideoCommand
             job.Run(session, input, target, inputs.Count);
             return [target.Path];
         });
+    }
+
+    /// <summary>
+    /// Takes the time windows out of the step tokens: <c>@start-end</c> right after a step limits it to that part of the clip,
+    /// such as <c>blur 8 @0:05-0:12</c>; either end may be left out (<c>@1:00-</c>, <c>@-0:10</c>). The key is the step's
+    /// position, counted by the <c>+</c> separators before it.
+    /// </summary>
+    private static string[] TakeWindows(string[] tokens, out Dictionary<int, StepWindow> windows)
+    {
+        windows = [];
+        List<string> rest = [];
+        int index = 0;
+        foreach (string token in tokens)
+        {
+            if (token == "+")
+            {
+                index++;
+            }
+
+            if (token.Length > 1 && token[0] == '@' && (char.IsAsciiDigit(token[1]) || token[1] is '-' or '#'))
+            {
+                string body = token[1..];
+                int dash = body.IndexOf('-', 1);
+                if (body[0] == '-')
+                {
+                    dash = 0;
+                }
+
+                if (dash < 0)
+                {
+                    throw new UsageException($"The time window {token} is not @start-end, such as @0:05-0:12, @1:00- or @-0:10.");
+                }
+
+                double from = dash == 0 ? 0 : TimeValue.Parse(body[..dash], token).Seconds;
+                double to = dash == body.Length - 1 ? double.PositiveInfinity : TimeValue.Parse(body[(dash + 1)..], token).Seconds;
+                if (to <= from)
+                {
+                    throw new UsageException($"The time window {token} ends before it starts.");
+                }
+
+                if (!windows.TryAdd(index, new StepWindow(from, to, token)))
+                {
+                    throw new UsageException($"A step has one time window; {token} is a second one.");
+                }
+
+                continue;
+            }
+
+            rest.Add(token);
+        }
+
+        return [.. rest];
     }
 
     /// <summary>The steps from the command line or a workflow file.</summary>
@@ -347,8 +419,17 @@ internal static class RunVideoCommand
     }
 
     /// <summary>The steps and encoder settings of a run, applied to one input at a time.</summary>
+    /// <summary>A step's time window: it runs on frames from <paramref name="Start"/> up to <paramref name="End"/> seconds.</summary>
+    private readonly record struct StepWindow(double Start, double End, string Text)
+    {
+        public bool Contains(MediaTime time) => time.Seconds >= Start && time.Seconds < End;
+    }
+
     private sealed class RunJob(List<BoundStep> allSteps, VideoCodec? codec, Rational? rate, int? quality, bool autoCrop, TrackSelection selection)
     {
+        /// <summary>Gets the steps that run only inside a time window.</summary>
+        public IReadOnlyDictionary<BoundStep, StepWindow> Windows { get; init; } = new Dictionary<BoundStep, StepWindow>();
+
         /// <summary>Decodes an input's video, runs the steps over every frame and encodes the frames into <paramref name="target"/>.</summary>
         public void Run(VideoSession session, InputFile input, MediaTarget target, int count)
         {
@@ -380,7 +461,7 @@ internal static class RunVideoCommand
                 CountingStream counted = new(stream);
                 using VideoWriter writer = VideoWriter.Create(counted, target.Container.Name, options, session.Context, leaveOpen: true);
                 JobProgress progress = new(session.ProgressSink?.For(input, input.Index, count), source.Info.Duration, [track], session.Cancellation, counted);
-                FrameSteps frames = new(session, input.Display, steps);
+                FrameSteps frames = new(session, input.Display, steps, Windows);
                 if (rate is { } fps)
                 {
                     Resample(source, writer, frames, others, progress, fps);
@@ -500,7 +581,7 @@ internal static class RunVideoCommand
     }
 
     /// <summary>Runs the steps over frames, checking that every frame comes out the size of the first, which the encoder took.</summary>
-    private sealed class FrameSteps(VideoSession session, string display, List<BoundStep> steps)
+    private sealed class FrameSteps(VideoSession session, string display, List<BoundStep> allSteps, IReadOnlyDictionary<BoundStep, StepWindow> windows)
     {
         private Size? _first;
         private List<Size>? _firstSizes;
@@ -512,12 +593,13 @@ internal static class RunVideoCommand
         public Raster<Rgba8> Run(YuvVideoFrame frame)
         {
             long index = Count++;
+            List<BoundStep> steps = windows.Count == 0 ? allSteps : [.. allSteps.Where(s => !windows.TryGetValue(s, out StepWindow w) || w.Contains(frame.Timestamp))];
             Raster<Rgba8> image = FrameSource.ToImage(session, frame);
             try
             {
                 if (_first is null && RunSteps.ChangesSize(steps))
                 {
-                    _firstSizes = RunSteps.SizesAfterEach(image, steps);
+                    _firstSizes = RunSteps.SizesAfterEach(image, allSteps);
                 }
 
                 RunSteps.Apply(image, steps);
@@ -544,12 +626,12 @@ internal static class RunVideoCommand
             if (_firstSizes is { } firstSizes)
             {
                 using Raster<Rgba8> again = FrameSource.ToImage(session, frame);
-                List<Size> sizes = RunSteps.SizesAfterEach(again, steps);
-                for (int i = 0; i < steps.Count; i++)
+                List<Size> sizes = RunSteps.SizesAfterEach(again, allSteps);
+                for (int i = 0; i < allSteps.Count; i++)
                 {
                     if (sizes[i] != firstSizes[i])
                     {
-                        return new InvalidDataException($"{where}: '{steps[i]}' gives frames of different sizes. Give it a fixed size, or add a step such as 'resize {first.Width}x{first.Height}!' after it.");
+                        return new InvalidDataException($"{where}: '{allSteps[i]}' gives frames of different sizes. Give it a fixed size, or add a step such as 'resize {first.Width}x{first.Height}!' after it.");
                     }
                 }
             }

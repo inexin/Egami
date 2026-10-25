@@ -1,4 +1,4 @@
-"""Makes the V9 Editing stage A references: small test clips and FFmpeg's output of the matching edits, in
+"""Makes the V9 Editing stage A and B references: small test clips and FFmpeg's output of the matching edits, in
 tests/video/corpus/editing (checked in), with manifest.json. FFmpeg runs only as a black-box tool in Egami's audio reference
 image (it has FFmpeg); its source is never read, only its filter documentation.
 
@@ -49,6 +49,13 @@ PICTURES = {
     "hstack": (["e1", "e2"], "[0:v][1:v]hstack=inputs=2[out]"),
     "vstack": (["e1", "e2"], "[0:v][1:v]vstack=inputs=2[out]"),
     "xstack": (["e1", "e2", "e2", "e1"], "[0:v][1:v][2:v][3:v]xstack=inputs=4:grid=2x2[out]"),
+    # Stage B. Freeze adds time, so it is trim, tpad and concat here: freezeframes replaces frames instead.
+    "reverse": (["e1"], "[0:v]reverse[out]"),
+    "loop": (["e1"], "[0:v]loop=loop=2:size=20:start=0[out]"),
+    "tpad": (["e1"], "[0:v]tpad=stop_mode=clone:stop_duration=0.5[out]"),
+    "freeze": (["e1"], "[0:v]split[a][b];[a]trim=end_frame=6,tpad=stop_mode=clone:stop_duration=0.5[x];[b]trim=start_frame=6,setpts=PTS-STARTPTS[y];[x][y]concat=n=2:v=1:a=0[out]"),
+    "speed-2x": (["e1"], "[0:v]setpts=0.5*PTS,fps=10[out]"),
+    "speed-half": (["e1"], "[0:v]setpts=2*PTS,fps=10[out]"),
 }
 
 
