@@ -322,6 +322,8 @@ recommended).
 - `segment --scenes --exact` starts every part on its scene's first frame, by smart cut.
 - `egami-video ffmpeg` maps a cut that does not copy the video (`ffmpeg -ss 5 -to 9 -i in.webm out.webm`) to `trim --smart`.
 - `#n` frame numbers no longer count a VP8 hidden frame, which shares the time of the frame after it.
+- `info` names MP1 tracks (`mp1`, MP1 (MPEG audio layer 1)) and gives them the `fltp` sample format, as MP2 and MP3 (V5.8 API
+  review Q13).
 
 ## Egami.Video.H264 0.6.0 (unreleased)
 
@@ -413,7 +415,7 @@ V5.7: Opus encoding, translated from libopus 1.5.2. API reviewed in the combined
 
 ### MP3 (V5.8)
 
-V5.8: MPEG audio decoding and .mp3 files. The API review is still to come.
+V5.8: MPEG audio decoding and .mp3 files. API reviewed and accepted 2026-10-25 (all as recommended).
 
 - `Mp3Codec` (and `AudioCodecs.Mp3`, decode only), registered by default, translated from minimp3 (CC0): Layers I, II and III
   of MPEG-1, MPEG-2 and MPEG-2.5, 8 to 48 kHz, every channel mode and free-format bit rates, as planar float. It passes the

@@ -698,7 +698,7 @@ internal static class InfoCommand
             CodecIds.Alac => bits is > 0 and <= 16 ? "s16p" : "s32p",
             CodecIds.G711MuLaw or CodecIds.G711ALaw => "s16",
             CodecIds.Opus or CodecIds.Vorbis or CodecIds.Aac or CodecIds.Ac3 => "fltp",
-            CodecIds.Mp3 or CodecIds.Mp2 => "fltp",
+            CodecIds.Mp3 or CodecIds.Mp2 or CodecIds.Mp1 => "fltp",
             _ => null,
         };
     }
