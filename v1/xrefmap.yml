@@ -89765,6 +89765,19 @@ references:
   isSpec: "True"
   fullName: Egami.Video.Editing.EditRenderOptions.Default
   nameWithType: EditRenderOptions.Default
+- uid: Egami.Video.Editing.EditRenderOptions.SmartRender
+  name: SmartRender
+  href: api/Egami.Video.Editing.EditRenderOptions.html#Egami_Video_Editing_EditRenderOptions_SmartRender
+  commentId: P:Egami.Video.Editing.EditRenderOptions.SmartRender
+  fullName: Egami.Video.Editing.EditRenderOptions.SmartRender
+  nameWithType: EditRenderOptions.SmartRender
+- uid: Egami.Video.Editing.EditRenderOptions.SmartRender*
+  name: SmartRender
+  href: api/Egami.Video.Editing.EditRenderOptions.html#Egami_Video_Editing_EditRenderOptions_SmartRender_
+  commentId: Overload:Egami.Video.Editing.EditRenderOptions.SmartRender
+  isSpec: "True"
+  fullName: Egami.Video.Editing.EditRenderOptions.SmartRender
+  nameWithType: EditRenderOptions.SmartRender
 - uid: Egami.Video.Editing.EditRenderOptions.Writer
   name: Writer
   href: api/Egami.Video.Editing.EditRenderOptions.html#Egami_Video_Editing_EditRenderOptions_Writer

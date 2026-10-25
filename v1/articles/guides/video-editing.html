@@ -271,7 +271,108 @@ edit.Render(&quot;effects.mkv&quot;);
         }
     }
 }
-</code></pre><h2 id="stabilizing">Stabilizing</h2>
+</code></pre><h2 id="plug-in-points">Plug-in points</h2>
+<p>An app adds its own pieces at five places, each an interface it implements: <code>ITransition</code> draws a transition between two
+clips' frames, <code>IFrameEffect</code> changes a frame knowing its time and progress, <code>IRasterOperation</code> (Egami's own operation
+interface) runs through <code>EditEffect.Apply</code> as an effect, <code>IFrameSource</code> makes a clip's frames, such as titles drawn by the
+app, and <code>ChromaKey</code> settings key a layer. All of them work on Egami rasters, so they need nothing from the video side.</p>
+<h2 id="a-model-on-every-frame">A model on every frame</h2>
+<p>A machine-learning model, such as a style transfer or a denoiser, plugs in as an <code>IRasterOperation</code>. The adapter below turns
+each frame into a 1x3xHxW tensor of red, green and blue from 0 to 1, hands it to a model, and writes the model's tensor back.
+Here the model is a stand-in written in C# (a sepia tone), so the sample runs with the tests:</p>
+<pre><code class="lang-csharp">/// &lt;summary&gt;
+/// Runs a model on each frame: the frame goes in as a 1x3xHxW tensor of red, green and blue from 0 to 1, and the model's
+/// tensor of the same shape comes back into the frame. Alpha is kept.
+/// &lt;/summary&gt;
+public sealed class ModelOperation(Func&lt;float[], int, int, float[]&gt; model) : IRasterOperation
+{
+    public Size OutputSize(Size input) =&gt; input;
+
+    public void Run&lt;TPixel&gt;(OperationInput&lt;TPixel&gt; input)
+        where TPixel : unmanaged, IPixelType&lt;TPixel&gt;
+    {
+        int width = input.Source.Width, height = input.Source.Height, plane = width * height;
+        float[] tensor = new float[3 * plane];
+        float[] alpha = new float[plane];
+        for (int y = 0; y &lt; height; y++)
+        {
+            Span&lt;TPixel&gt; row = input.Source.Row(y);
+            for (int x = 0; x &lt; width; x++)
+            {
+                Vector4 v = row[x].ToScaled();
+                int i = (y * width) + x;
+                tensor[i] = v.X;
+                tensor[plane + i] = v.Y;
+                tensor[(2 * plane) + i] = v.Z;
+                alpha[i] = v.W;
+            }
+        }
+
+        float[] result = model(tensor, width, height);
+        if (result.Length != tensor.Length)
+        {
+            throw new InvalidOperationException($&quot;The model returned {result.Length} values, not {tensor.Length}.&quot;);
+        }
+
+        for (int y = 0; y &lt; height; y++)
+        {
+            Span&lt;TPixel&gt; row = input.Destination.Row(y);
+            for (int x = 0; x &lt; width; x++)
+            {
+                int i = (y * width) + x;
+                row[x] = TPixel.FromScaled(Vector4.Clamp(new Vector4(result[i], result[plane + i], result[(2 * plane) + i], alpha[i]), Vector4.Zero, Vector4.One));
+            }
+        }
+    }
+}
+</code></pre><pre><code class="lang-csharp">/// &lt;summary&gt;A stand-in for a style model: a sepia tone, as a tensor in and a tensor out.&lt;/summary&gt;
+public static float[] Sepia(float[] tensor, int width, int height)
+{
+    int plane = width * height;
+    float[] output = new float[tensor.Length];
+    for (int i = 0; i &lt; plane; i++)
+    {
+        float r = tensor[i], g = tensor[plane + i], b = tensor[(2 * plane) + i];
+        output[i] = (0.393f * r) + (0.769f * g) + (0.189f * b);
+        output[plane + i] = (0.349f * r) + (0.686f * g) + (0.168f * b);
+        output[(2 * plane) + i] = (0.272f * r) + (0.534f * g) + (0.131f * b);
+    }
+
+    return output;
+}
+</code></pre><pre><code class="lang-csharp">// A model as an effect: every frame of the edit from 0.2 s goes through it.
+VideoEdit edit = new();
+edit.Track.Add(Clip.Open(&quot;clip.mkv&quot;));
+edit.Effects.Add(EditEffect.Apply(new ModelOperation(Sepia), &quot;sepia model&quot;).Between(MediaTime.FromSeconds(0.2)));
+edit.Render(&quot;styled.mkv&quot;);
+</code></pre>
+<p>With ONNX Runtime, an app's own reference to the <code>Microsoft.ML.OnnxRuntime</code> package (Egami.Video has none), the stand-in
+becomes a call into an <code>InferenceSession</code>. These lines are app code shown as a sketch: they are not compiled or run with
+Egami's tests, and the input name and shape depend on the model.</p>
+<pre><code class="lang-csharp">// Untested app code: needs the Microsoft.ML.OnnxRuntime package and a model file.
+using Microsoft.ML.OnnxRuntime;
+using Microsoft.ML.OnnxRuntime.Tensors;
+
+using InferenceSession session = new(&quot;style.onnx&quot;);
+string inputName = session.InputMetadata.Keys.First();
+
+float[] RunModel(float[] tensor, int width, int height)
+{
+    DenseTensor&lt;float&gt; input = new(tensor, [1, 3, height, width]);
+    using IDisposableReadOnlyCollection&lt;DisposableNamedOnnxValue&gt; results = session.Run([NamedOnnxValue.CreateFromTensor(inputName, input)]);
+    return results.First().AsTensor&lt;float&gt;().ToArray();
+}
+
+edit.Effects.Add(EditEffect.Apply(new ModelOperation(RunModel), &quot;style model&quot;));
+</code></pre>
+<h2 id="smart-render">Smart render</h2>
+<p><code>EditRenderOptions.SmartRender</code> (the command line's <code>--smart</code>) copies the untouched parts of clips instead of encoding them
+again. Where one clip fills the picture with no transition, fade, layer, effect or change of time, its source has the canvas's
+size and frame rate, and its stream matches what the encoder writes (VP8, VP9, AV1 or Motion JPEG with the same profile,
+bit depth, chroma, color and, for AV1, sequence header), its packets are copied byte for byte from the first keyframe on, and
+the encoder starts again with a keyframe after each copied part. A source that does not match is encoded as usual, with a
+<code>MediaWarning</code>. The sound is always mixed and encoded. It is off by default.</p>
+<h2 id="stabilizing">Stabilizing</h2>
 <p>Stabilizing takes two passes, like FFmpeg's vidstabdetect and vidstabtransform. <code>Stabilizer.Analyze</code> measures the camera's
 motion from each frame to the next: it tracks corners with pyramidal Lucas-Kanade on a copy of the luma no wider than
 <code>StabilizerOptions.AnalysisWidth</code> and fits a turn, a zoom and a move to them with RANSAC. The <code>CameraMotion</code> it returns saves

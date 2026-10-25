@@ -211,11 +211,29 @@ egami-video ffmpeg -i in.mkv -lavfi showspectrumpic=s=1024x512:fscale=log spectr
 <code>color</code> (magma), <code>scale</code> (log), <code>fscale</code> and <code>legend</code>, and draws a legend unless <code>legend=0</code>, as ffmpeg does.</p>
 <p>ffmpeg encodes again by default; egami-video copies streams where ffmpeg would encode with a codec it does not have, and says so
 in a warning. An output that exists needs <code>-y</code>, as in ffmpeg.</p>
+<h2 id="editing-filters">Editing filters</h2>
+<p>A line with an editing filter becomes one edit file, rendered by <code>egami-video edit</code>; <code>--explain</code> prints the command with
+<code>edit.json</code> for the file, then the file. <code>-vf</code>, <code>-af</code> and <code>-filter_complex</code> graphs take fade (in from the start, out to the end),
+setpts with a constant factor (0.1x to 10x), reverse, loop (whole clips), tpad (<code>stop_mode=clone</code>), fps, scale, xfade (with
+V9's transitions), concat, overlay (numbers and the <code>W</code>, <code>H</code>, <code>w</code> and <code>h</code> placement forms), hstack, vstack, xstack (grids),
+zoompan on an image (a constant zoom, or <code>zoom+k</code> with an optional cap, from the corner or the centre), chromakey, colorkey,
+despill, and hflip and vflip with a time window; and of the sound afade, acrossfade (where an xfade joins the same inputs),
+amix (of an overlay's inputs), atempo, volume, areverse and aloop. <code>enable</code> takes <code>between(t,a,b)</code>, <code>gte(t,a)</code> and <code>lte(t,b)</code>.
+<code>-loop 1</code> before an image makes a still clip.</p>
+<pre><code class="lang-sh">egami-video ffmpeg -i in.avi -i in.mkv -filter_complex &quot;[0:v][1:v]xfade=transition=wipeleft:duration=0.5:offset=1.5[v];[0:a][1:a]acrossfade=d=0.5[a]&quot; -map [v] -map [a] joined.mkv
+egami-video ffmpeg -i in.avi -i in.mkv -filter_complex &quot;[1:v]scale=64:-1[small];[0:v][small]overlay=W-w-10:10:enable='between(t,0.5,1.5)'&quot; pip.mkv
+egami-video ffmpeg -i in.avi -vf setpts=PTS/2 -af atempo=2 fast.mkv
+</code></pre>
+<p>An edit changes picture and sound together, so a line that changes one and not the other stops: setpts without the same
+atempo, reverse without areverse and loop without aloop, unless the sound is dropped with <code>-an</code>. A fade fades the sound with
+the picture. freezeframes stops, since it replaces frames where V9's freeze adds time (<code>tpad=stop_mode=clone</code> or
+<code>egami-video freeze</code> hold a frame), and loudnorm stops too. <code>deshake</code>, <code>vidstabdetect</code> (to <code>-f null</code>, writing its <code>result</code>
+file as Egami.Video's camera motion) and <code>vidstabtransform</code> (its <code>input</code> and <code>smoothing</code>) become <code>egami-video stabilize</code>.</p>
 <h2 id="the-options">The options</h2>
 <p>ffmpeg mode takes <code>-i</code>, <code>-f</code>, <code>-y</code>, <code>-n</code>, <code>-ss</code>, <code>-to</code>, <code>-t</code>, <code>-itsoffset</code>, <code>-framerate</code>, <code>-safe</code>, <code>-map</code>, <code>-c</code>, <code>-codec</code>, <code>-c:v</code>,
 <code>-c:a</code>, <code>-c:s</code>, <code>-vcodec</code>, <code>-acodec</code>, <code>-scodec</code>, <code>-an</code>, <code>-vn</code>, <code>-sn</code>, <code>-dn</code>, <code>-r</code>, <code>-s</code>, <code>-frames:v</code>, <code>-vframes</code>, <code>-q:v</code>,
 <code>-qscale:v</code>, <code>-ar</code>, <code>-b:a</code>, <code>-ab</code>, <code>-ac</code>, <code>-sample_fmt</code>, <code>-metadata</code>, <code>-map_metadata</code>, <code>-map_chapters</code>, <code>-vf</code>, <code>-filter:v</code>, <code>-lavfi</code> and
-<code>-filter_complex</code> (psnr, ssim, showwavespic and showspectrumpic), <code>-af</code> and <code>-filter:a</code> (detection filters), <code>-segment_time</code>, <code>-segment_times</code>, <code>-update</code>, <code>-progress</code>, <code>-stats</code>, <code>-nostats</code>,
+<code>-filter_complex</code> (psnr, ssim, showwavespic, showspectrumpic and the editing filters), <code>-af</code> and <code>-filter:a</code> (detection and editing filters), <code>-loop 1</code> before an image, <code>-segment_time</code>, <code>-segment_times</code>, <code>-update</code>, <code>-progress</code>, <code>-stats</code>, <code>-nostats</code>,
 <code>-stats_period</code>, <code>-hide_banner</code>, <code>-loglevel</code>, <code>-v</code> and <code>-nostdin</code>, with <code>pipe:</code> and <code>%d</code> patterns. The filters are scale, crop,
 pad, transpose, hflip, vflip, fps, thumbnail, select (scene) and tile, and with <code>-f null</code> the detection filters above; the
 <code>-f lavfi</code> sources are testsrc, testsrc2, smptebars, smptehdbars, color, sine, anullsrc and anoisesrc. Codecs: <code>copy</code>, <code>mjpeg</code> and <code>rawvideo</code> for video, <code>flac</code>,

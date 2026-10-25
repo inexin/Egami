@@ -143,7 +143,7 @@ Commands:
   stabilize &lt;input&gt;             Take the shake out of a clip in two passes: measure the camera's motion (corners tracked with Lucas-Kanade, a RANSAC fit), smooth its path with a Gaussian, and warp each frame onto it; like ffmpeg's vidstabdetect and vidstabtransform.
   edit &lt;file&gt;                   Render an edit file: clips on a track with transitions, layers over it and effects with time windows. Every other editing command writes one with --save-edit.
   formats                       List the containers and codecs egami-video reads and writes, like ffmpeg -formats and -codecs.
-  ffmpeg &lt;arguments&gt;            Run an ffmpeg command line with egami-video: 'egami-video ffmpeg -i in.avi -c copy out.mkv'. --explain prints the native command instead. Takes -i, -f, -y, -n, -ss, -to, -t, -itsoffset, -framerate, -map, -c, -codec, -c:v, -c:a, -c:s, -vcodec, -acodec, -scodec, -an, -vn, -sn, -dn, -r, -s, -frames:v, -vframes, -q:v, -qscale:v, -ar, -ac, -sample_fmt, -metadata, -map_metadata, -map_chapters, -vf, -filter:v, -af, -filter:a, -lavfi, -filter_complex (psnr, ssim, showwavespic, showspectrumpic), -segment_time, -segment_times, -update, -progress, -stats, -nostats, -stats_period, -hide_banner, -loglevel, -v, -nostdin, %d patterns and pipe:; filters scale, crop, pad, transpose, hflip, vflip, fps, thumbnail, select (scene), tile; to -f null the detection filters blackdetect, freezedetect, cropdetect, idet, signalstats, blurdetect, blockdetect, silencedetect, volumedetect, astats and ebur128; -f lavfi sources testsrc, testsrc2, smptebars, smptehdbars, color, sine, anullsrc and anoisesrc; anything else stops with exit code 2.
+  ffmpeg &lt;arguments&gt;            Run an ffmpeg command line with egami-video: 'egami-video ffmpeg -i in.avi -c copy out.mkv'. --explain prints the native command instead. Takes -i, -f, -y, -n, -ss, -to, -t, -itsoffset, -framerate, -map, -c, -codec, -c:v, -c:a, -c:s, -vcodec, -acodec, -scodec, -an, -vn, -sn, -dn, -r, -s, -frames:v, -vframes, -q:v, -qscale:v, -ar, -ac, -sample_fmt, -metadata, -map_metadata, -map_chapters, -vf, -filter:v, -af, -filter:a, -lavfi, -filter_complex (psnr, ssim, showwavespic, showspectrumpic, and the editing filters), -loop 1 on an image, -segment_time, -segment_times, -update, -progress, -stats, -nostats, -stats_period, -hide_banner, -loglevel, -v, -nostdin, %d patterns and pipe:; filters scale, crop, pad, transpose, hflip, vflip, fps, thumbnail, select (scene), tile; to -f null the detection filters blackdetect, freezedetect, cropdetect, idet, signalstats, blurdetect, blockdetect, silencedetect, volumedetect, astats and ebur128; the editing filters fade, setpts (a constant factor), reverse, loop, tpad (clone), fps, scale, xfade, concat, overlay, hstack, vstack, xstack (grid), zoompan, chromakey, colorkey, despill, hflip and vflip (with enable), deshake, vidstabdetect and vidstabtransform; audio afade, acrossfade, amix, atempo, volume, areverse and aloop, with enable='between(t,a,b)', rendered as one edit; -f lavfi sources testsrc, testsrc2, smptebars, smptehdbars, color, sine, anullsrc and anoisesrc; anything else stops with exit code 2.
   ffprobe &lt;arguments&gt;           Run an ffprobe command line with egami-video: 'egami-video ffprobe -of json -show_streams in.mkv'. --explain prints the native command instead. Takes -i, -show_streams, -show_format, -show_packets, -show_frames, -show_chapters, -select_streams, -show_entries, -of, -print_format, -output_format (json, csv, compact, default, flat, xml), -v, -loglevel, -hide_banner, -pretty; anything else stops with exit code 2.
   mcp                           Serve egami-video's commands as tools to an AI assistant over the Model Context Protocol, on standard input and output. Tools read and write only inside the folders the assistant opened and those given with --allow, and never replace an input unless asked.
 </code></pre>
@@ -792,6 +792,7 @@ Options:
   -c, --codec &lt;codec&gt;            The video codec: vp9 (the default for webm), vp8, av1, mjpeg (the default otherwise) or raw.
   --quality &lt;0-100&gt;              Quality from 0 to 100.
   -an, --no-audio                Write no audio track.
+  --smart                        Copy the untouched parts of clips instead of encoding them again (smart render), where the source matches the canvas and the encoder's stream.
   --save-edit &lt;file.json&gt;        Also write the edit as a JSON file that 'egami-video edit' renders; with no -o, write only the file.
 </code></pre>
 <h2 id="fade">fade</h2>
@@ -816,6 +817,7 @@ Options:
   -c, --codec &lt;codec&gt;            The video codec: vp9 (the default for webm), vp8, av1, mjpeg (the default otherwise) or raw.
   --quality &lt;0-100&gt;              Quality from 0 to 100.
   -an, --no-audio                Write no audio track.
+  --smart                        Copy the untouched parts of clips instead of encoding them again (smart render), where the source matches the canvas and the encoder's stream.
   --save-edit &lt;file.json&gt;        Also write the edit as a JSON file that 'egami-video edit' renders; with no -o, write only the file.
 </code></pre>
 <h2 id="overlay">overlay</h2>
@@ -851,6 +853,7 @@ Options:
   -c, --codec &lt;codec&gt;            The video codec: vp9 (the default for webm), vp8, av1, mjpeg (the default otherwise) or raw.
   --quality &lt;0-100&gt;              Quality from 0 to 100.
   -an, --no-audio                Write no audio track.
+  --smart                        Copy the untouched parts of clips instead of encoding them again (smart render), where the source matches the canvas and the encoder's stream.
   --save-edit &lt;file.json&gt;        Also write the edit as a JSON file that 'egami-video edit' renders; with no -o, write only the file.
 </code></pre>
 <h2 id="pip">pip</h2>
@@ -883,6 +886,7 @@ Options:
   -c, --codec &lt;codec&gt;            The video codec: vp9 (the default for webm), vp8, av1, mjpeg (the default otherwise) or raw.
   --quality &lt;0-100&gt;              Quality from 0 to 100.
   -an, --no-audio                Write no audio track.
+  --smart                        Copy the untouched parts of clips instead of encoding them again (smart render), where the source matches the canvas and the encoder's stream.
   --save-edit &lt;file.json&gt;        Also write the edit as a JSON file that 'egami-video edit' renders; with no -o, write only the file.
 </code></pre>
 <h2 id="stack">stack</h2>
@@ -909,6 +913,7 @@ Options:
   -c, --codec &lt;codec&gt;            The video codec: vp9 (the default for webm), vp8, av1, mjpeg (the default otherwise) or raw.
   --quality &lt;0-100&gt;              Quality from 0 to 100.
   -an, --no-audio                Write no audio track.
+  --smart                        Copy the untouched parts of clips instead of encoding them again (smart render), where the source matches the canvas and the encoder's stream.
   --save-edit &lt;file.json&gt;        Also write the edit as a JSON file that 'egami-video edit' renders; with no -o, write only the file.
 </code></pre>
 <h2 id="speed">speed</h2>
@@ -932,6 +937,7 @@ Options:
   -c, --codec &lt;codec&gt;            The video codec: vp9 (the default for webm), vp8, av1, mjpeg (the default otherwise) or raw.
   --quality &lt;0-100&gt;              Quality from 0 to 100.
   -an, --no-audio                Write no audio track.
+  --smart                        Copy the untouched parts of clips instead of encoding them again (smart render), where the source matches the canvas and the encoder's stream.
   --save-edit &lt;file.json&gt;        Also write the edit as a JSON file that 'egami-video edit' renders; with no -o, write only the file.
 </code></pre>
 <h2 id="reverse">reverse</h2>
@@ -953,6 +959,7 @@ Options:
   -c, --codec &lt;codec&gt;            The video codec: vp9 (the default for webm), vp8, av1, mjpeg (the default otherwise) or raw.
   --quality &lt;0-100&gt;              Quality from 0 to 100.
   -an, --no-audio                Write no audio track.
+  --smart                        Copy the untouched parts of clips instead of encoding them again (smart render), where the source matches the canvas and the encoder's stream.
   --save-edit &lt;file.json&gt;        Also write the edit as a JSON file that 'egami-video edit' renders; with no -o, write only the file.
 </code></pre>
 <h2 id="loop">loop</h2>
@@ -975,6 +982,7 @@ Options:
   -c, --codec &lt;codec&gt;            The video codec: vp9 (the default for webm), vp8, av1, mjpeg (the default otherwise) or raw.
   --quality &lt;0-100&gt;              Quality from 0 to 100.
   -an, --no-audio                Write no audio track.
+  --smart                        Copy the untouched parts of clips instead of encoding them again (smart render), where the source matches the canvas and the encoder's stream.
   --save-edit &lt;file.json&gt;        Also write the edit as a JSON file that 'egami-video edit' renders; with no -o, write only the file.
 </code></pre>
 <h2 id="freeze">freeze</h2>
@@ -998,6 +1006,7 @@ Options:
   -c, --codec &lt;codec&gt;            The video codec: vp9 (the default for webm), vp8, av1, mjpeg (the default otherwise) or raw.
   --quality &lt;0-100&gt;              Quality from 0 to 100.
   -an, --no-audio                Write no audio track.
+  --smart                        Copy the untouched parts of clips instead of encoding them again (smart render), where the source matches the canvas and the encoder's stream.
   --save-edit &lt;file.json&gt;        Also write the edit as a JSON file that 'egami-video edit' renders; with no -o, write only the file.
 </code></pre>
 <h2 id="slideshow">slideshow</h2>
@@ -1023,6 +1032,7 @@ Options:
   -c, --codec &lt;codec&gt;            The video codec: vp9 (the default for webm), vp8, av1, mjpeg (the default otherwise) or raw.
   --quality &lt;0-100&gt;              Quality from 0 to 100.
   -an, --no-audio                Write no audio track.
+  --smart                        Copy the untouched parts of clips instead of encoding them again (smart render), where the source matches the canvas and the encoder's stream.
   --save-edit &lt;file.json&gt;        Also write the edit as a JSON file that 'egami-video edit' renders; with no -o, write only the file.
 </code></pre>
 <h2 id="stabilize">stabilize</h2>
@@ -1049,6 +1059,7 @@ Options:
   -c, --codec &lt;codec&gt;            The video codec: vp9 (the default for webm), vp8, av1, mjpeg (the default otherwise) or raw.
   --quality &lt;0-100&gt;              Quality from 0 to 100.
   -an, --no-audio                Write no audio track.
+  --smart                        Copy the untouched parts of clips instead of encoding them again (smart render), where the source matches the canvas and the encoder's stream.
   --save-edit &lt;file.json&gt;        Also write the edit as a JSON file that 'egami-video edit' renders; with no -o, write only the file.
 </code></pre>
 <h2 id="edit">edit</h2>
@@ -1070,6 +1081,7 @@ Options:
   -c, --codec &lt;codec&gt;            The video codec: vp9 (the default for webm), vp8, av1, mjpeg (the default otherwise) or raw.
   --quality &lt;0-100&gt;              Quality from 0 to 100.
   -an, --no-audio                Write no audio track.
+  --smart                        Copy the untouched parts of clips instead of encoding them again (smart render), where the source matches the canvas and the encoder's stream.
   --save-edit &lt;file.json&gt;        Also write the edit as a JSON file that 'egami-video edit' renders; with no -o, write only the file.
 </code></pre>
 <h2 id="formats">formats</h2>
@@ -1084,7 +1096,7 @@ Options:
 </code></pre>
 <h2 id="ffmpeg">ffmpeg</h2>
 <pre><code class="lang-text">Description:
-  Run an ffmpeg command line with egami-video: 'egami-video ffmpeg -i in.avi -c copy out.mkv'. --explain prints the native command instead. Takes -i, -f, -y, -n, -ss, -to, -t, -itsoffset, -framerate, -map, -c, -codec, -c:v, -c:a, -c:s, -vcodec, -acodec, -scodec, -an, -vn, -sn, -dn, -r, -s, -frames:v, -vframes, -q:v, -qscale:v, -ar, -ac, -sample_fmt, -metadata, -map_metadata, -map_chapters, -vf, -filter:v, -af, -filter:a, -lavfi, -filter_complex (psnr, ssim, showwavespic, showspectrumpic), -segment_time, -segment_times, -update, -progress, -stats, -nostats, -stats_period, -hide_banner, -loglevel, -v, -nostdin, %d patterns and pipe:; filters scale, crop, pad, transpose, hflip, vflip, fps, thumbnail, select (scene), tile; to -f null the detection filters blackdetect, freezedetect, cropdetect, idet, signalstats, blurdetect, blockdetect, silencedetect, volumedetect, astats and ebur128; -f lavfi sources testsrc, testsrc2, smptebars, smptehdbars, color, sine, anullsrc and anoisesrc; anything else stops with exit code 2.
+  Run an ffmpeg command line with egami-video: 'egami-video ffmpeg -i in.avi -c copy out.mkv'. --explain prints the native command instead. Takes -i, -f, -y, -n, -ss, -to, -t, -itsoffset, -framerate, -map, -c, -codec, -c:v, -c:a, -c:s, -vcodec, -acodec, -scodec, -an, -vn, -sn, -dn, -r, -s, -frames:v, -vframes, -q:v, -qscale:v, -ar, -ac, -sample_fmt, -metadata, -map_metadata, -map_chapters, -vf, -filter:v, -af, -filter:a, -lavfi, -filter_complex (psnr, ssim, showwavespic, showspectrumpic, and the editing filters), -loop 1 on an image, -segment_time, -segment_times, -update, -progress, -stats, -nostats, -stats_period, -hide_banner, -loglevel, -v, -nostdin, %d patterns and pipe:; filters scale, crop, pad, transpose, hflip, vflip, fps, thumbnail, select (scene), tile; to -f null the detection filters blackdetect, freezedetect, cropdetect, idet, signalstats, blurdetect, blockdetect, silencedetect, volumedetect, astats and ebur128; the editing filters fade, setpts (a constant factor), reverse, loop, tpad (clone), fps, scale, xfade, concat, overlay, hstack, vstack, xstack (grid), zoompan, chromakey, colorkey, despill, hflip and vflip (with enable), deshake, vidstabdetect and vidstabtransform; audio afade, acrossfade, amix, atempo, volume, areverse and aloop, with enable='between(t,a,b)', rendered as one edit; -f lavfi sources testsrc, testsrc2, smptebars, smptehdbars, color, sine, anullsrc and anoisesrc; anything else stops with exit code 2.
 
 Usage:
   egami-video ffmpeg [&lt;arguments&gt;...] [options] [[--] &lt;additional arguments&gt;...]]

@@ -168,7 +168,7 @@ foreach (Raster&lt;Rgb8&gt; image in images)
 
   <h3 id="Egami_Video_VideoWriter_AudioTrack" data-uid="Egami.Video.VideoWriter.AudioTrack">
   AudioTrack
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/VideoWriter.cs/#L58"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/VideoWriter.cs/#L61"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the audio track that <a class="xref" href="Egami.Video.VideoWriter.html#Egami_Video_VideoWriter_WriteAudio_Egami_Video_Audio_AudioFrame_">WriteAudio(AudioFrame)</a> encodes, numbered after the video, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> without <a class="xref" href="Egami.Video.VideoWriterOptions.html#Egami_Video_VideoWriterOptions_AudioCodec">AudioCodec</a>.</p>
@@ -200,7 +200,7 @@ foreach (Raster&lt;Rgb8&gt; image in images)
 
   <h3 id="Egami_Video_VideoWriter_FrameCount" data-uid="Egami.Video.VideoWriter.FrameCount">
   FrameCount
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/VideoWriter.cs/#L64"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/VideoWriter.cs/#L70"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets how many frames have been written.</p>
@@ -232,7 +232,7 @@ foreach (Raster&lt;Rgb8&gt; image in images)
 
   <h3 id="Egami_Video_VideoWriter_Track" data-uid="Egami.Video.VideoWriter.Track">
   Track
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/VideoWriter.cs/#L61"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/VideoWriter.cs/#L64"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the video track, once the first frame has been written.</p>
@@ -268,7 +268,7 @@ foreach (Raster&lt;Rgb8&gt; image in images)
 
   <h3 id="Egami_Video_VideoWriter_AnalyzeFirstPass_System_Collections_Generic_IEnumerable_Egami_Video_VideoFrame__System_IProgress_Egami_Video_MediaProgress__System_Threading_CancellationToken_" data-uid="Egami.Video.VideoWriter.AnalyzeFirstPass(System.Collections.Generic.IEnumerable{Egami.Video.VideoFrame},System.IProgress{Egami.Video.MediaProgress},System.Threading.CancellationToken)">
   AnalyzeFirstPass(IEnumerable&lt;VideoFrame&gt;, IProgress&lt;MediaProgress&gt;?, CancellationToken)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/VideoWriter.cs/#L116"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/VideoWriter.cs/#L122"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Runs the first pass of a two-pass encode over frames: it learns how hard each one is to code, so the second pass, with
@@ -346,7 +346,7 @@ using (VideoWriter writer = VideoWriter.Create("clip.webm", options))
 
   <h3 id="Egami_Video_VideoWriter_AnalyzeFirstPass_System_String_Egami_Video_MediaContext_System_IProgress_Egami_Video_MediaProgress__System_Threading_CancellationToken_" data-uid="Egami.Video.VideoWriter.AnalyzeFirstPass(System.String,Egami.Video.MediaContext,System.IProgress{Egami.Video.MediaProgress},System.Threading.CancellationToken)">
   AnalyzeFirstPass(string, MediaContext?, IProgress&lt;MediaProgress&gt;?, CancellationToken)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/VideoWriter.cs/#L141"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/VideoWriter.cs/#L147"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Runs the first pass of a two-pass encode over a video file's first video track: it reads the file once, decoding every frame.</p>
@@ -419,7 +419,7 @@ using (VideoWriter writer = VideoWriter.Create("clip.webm", options))
 
   <h3 id="Egami_Video_VideoWriter_Create_System_IO_Stream_System_String_Egami_Video_VideoWriterOptions_Egami_Video_MediaContext_System_Boolean_" data-uid="Egami.Video.VideoWriter.Create(System.IO.Stream,System.String,Egami.Video.VideoWriterOptions,Egami.Video.MediaContext,System.Boolean)">
   Create(Stream, string, VideoWriterOptions?, MediaContext?, bool)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/VideoWriter.cs/#L94"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/VideoWriter.cs/#L100"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Creates a writer to a stream in the named container.</p>
@@ -488,7 +488,7 @@ using (VideoWriter writer = VideoWriter.Create(avi, "avi", options, leaveOpen: t
 
   <h3 id="Egami_Video_VideoWriter_Create_System_String_Egami_Video_VideoWriterOptions_Egami_Video_MediaContext_" data-uid="Egami.Video.VideoWriter.Create(System.String,Egami.Video.VideoWriterOptions,Egami.Video.MediaContext)">
   Create(string, VideoWriterOptions?, MediaContext?)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/VideoWriter.cs/#L75"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/VideoWriter.cs/#L81"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Creates a video file, choosing the container by the extension. An existing file is replaced.</p>
@@ -557,7 +557,7 @@ using (VideoWriter writer = VideoWriter.Create(avi, "avi", options, leaveOpen: t
 
   <h3 id="Egami_Video_VideoWriter_Dispose" data-uid="Egami.Video.VideoWriter.Dispose">
   Dispose()
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/VideoWriter.cs/#L260"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/VideoWriter.cs/#L271"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Finishes the file and closes it.</p>
@@ -584,7 +584,7 @@ using (VideoWriter writer = VideoWriter.Create(avi, "avi", options, leaveOpen: t
 
   <h3 id="Egami_Video_VideoWriter_Finish" data-uid="Egami.Video.VideoWriter.Finish">
   Finish()
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/VideoWriter.cs/#L237"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/VideoWriter.cs/#L243"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Flushes the encoder and finishes the file. Called by <a class="xref" href="Egami.Video.VideoWriter.html#Egami_Video_VideoWriter_Dispose">Dispose()</a>.</p>
@@ -611,7 +611,7 @@ using (VideoWriter writer = VideoWriter.Create(avi, "avi", options, leaveOpen: t
 
   <h3 id="Egami_Video_VideoWriter_WriteAudio_Egami_Video_Audio_AudioFrame_" data-uid="Egami.Video.VideoWriter.WriteAudio(Egami.Video.Audio.AudioFrame)">
   WriteAudio(AudioFrame)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/VideoWriter.cs/#L223"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/VideoWriter.cs/#L229"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Encodes audio into the track <a class="xref" href="Egami.Video.VideoWriterOptions.html#Egami_Video_VideoWriterOptions_AudioCodec">AudioCodec</a> sets up. Its samples follow the ones before; keep
@@ -664,7 +664,7 @@ using (VideoWriter writer = VideoWriter.Create("clip.mkv", options))
 
   <h3 id="Egami_Video_VideoWriter_WriteFrame_Egami_Video_VideoFrame_" data-uid="Egami.Video.VideoWriter.WriteFrame(Egami.Video.VideoFrame)">
   WriteFrame(VideoFrame)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/VideoWriter.cs/#L191"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/VideoWriter.cs/#L197"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Writes a decoded frame at its own timestamp, for example one read from a <a class="xref" href="Egami.Video.VideoReader.html">VideoReader</a>.</p>
@@ -697,7 +697,7 @@ using (VideoWriter writer = VideoWriter.Create("clip.mkv", options))
 
   <h3 id="Egami_Video_VideoWriter_WriteFrame_Egami_YuvRaster_" data-uid="Egami.Video.VideoWriter.WriteFrame(Egami.YuvRaster)">
   WriteFrame(YuvRaster)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/VideoWriter.cs/#L178"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/VideoWriter.cs/#L184"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Writes a frame given as planes at the next frame time.</p>
@@ -730,7 +730,7 @@ using (VideoWriter writer = VideoWriter.Create("clip.mkv", options))
 
   <h3 id="Egami_Video_VideoWriter_WriteFrame_Egami_YuvRaster_Egami_Video_MediaTime_" data-uid="Egami.Video.VideoWriter.WriteFrame(Egami.YuvRaster,Egami.Video.MediaTime)">
   WriteFrame(YuvRaster, MediaTime)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/VideoWriter.cs/#L183"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/VideoWriter.cs/#L189"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Writes a frame given as planes at a given time.</p>
@@ -766,7 +766,7 @@ using (VideoWriter writer = VideoWriter.Create("clip.mkv", options))
 
   <h3 id="Egami_Video_VideoWriter_WriteFrame__1_Egami_Raster___0__" data-uid="Egami.Video.VideoWriter.WriteFrame``1(Egami.Raster{``0})">
   WriteFrame&lt;TPixel&gt;(Raster&lt;TPixel&gt;)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/VideoWriter.cs/#L162"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/VideoWriter.cs/#L168"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Writes a frame at the next frame time (frame count over the frame rate).</p>
@@ -805,7 +805,7 @@ using (VideoWriter writer = VideoWriter.Create("clip.mkv", options))
 
   <h3 id="Egami_Video_VideoWriter_WriteFrame__1_Egami_Raster___0__Egami_Video_MediaTime_" data-uid="Egami.Video.VideoWriter.WriteFrame``1(Egami.Raster{``0},Egami.Video.MediaTime)">
   WriteFrame&lt;TPixel&gt;(Raster&lt;TPixel&gt;, MediaTime)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/VideoWriter.cs/#L169"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/VideoWriter.cs/#L175"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Writes a frame at a given time.</p>
@@ -847,7 +847,7 @@ using (VideoWriter writer = VideoWriter.Create("clip.mkv", options))
 
   <h3 id="Egami_Video_VideoWriter_WritePacket_Egami_Video_EncodedPacket_" data-uid="Egami.Video.VideoWriter.WritePacket(Egami.Video.EncodedPacket)">
   WritePacket(EncodedPacket)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/VideoWriter.cs/#L203"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/VideoWriter.cs/#L209"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Writes a packet of one of <a class="xref" href="Egami.Video.VideoWriterOptions.html#Egami_Video_VideoWriterOptions_OtherTracks">OtherTracks</a>, numbered as there. Keep packets roughly in

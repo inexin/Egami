@@ -263,6 +263,43 @@ set, Opus is used, or PCM in AVI. Default <a href="https://learn.microsoft.com/d
 
 
 
+  <a id="Egami_Video_Editing_EditRenderOptions_SmartRender_" data-uid="Egami.Video.Editing.EditRenderOptions.SmartRender*"></a>
+
+  <h3 id="Egami_Video_Editing_EditRenderOptions_SmartRender" data-uid="Egami.Video.Editing.EditRenderOptions.SmartRender">
+  SmartRender
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Editing/VideoEdit.cs/#L99"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether to copy the untouched parts of clips instead of encoding them again (smart render). Where one clip fills the
+picture with no transition, fade, layer, effect or change of time, its source has the canvas's size and frame rate, and
+its stream matches what the encoder writes (codec, profile, size, bit depth, chroma and color, and for AV1 the sequence
+header), its packets are copied byte for byte from the first keyframe on; the encoder starts again with a keyframe after
+each copied part. A source that does not match is encoded as usual, with a <a class="xref" href="Egami.Video.MediaWarning.html">MediaWarning</a>. The sound is always
+mixed and encoded. Default <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool SmartRender { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
   <a id="Egami_Video_Editing_EditRenderOptions_Writer_" data-uid="Egami.Video.Editing.EditRenderOptions.Writer*"></a>
 
   <h3 id="Egami_Video_Editing_EditRenderOptions_Writer" data-uid="Egami.Video.Editing.EditRenderOptions.Writer">
