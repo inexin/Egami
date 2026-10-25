@@ -33,8 +33,17 @@ internal abstract class ClipFrames(ClipTiming timing) : IDisposable
         };
     }
 
+    /// <summary>
+    /// Returns the decoded frame to show at a time, in the codec's own planes, for the renderer's fast path; <see langword="null"/>
+    /// when the clip has no such frames (stills, stacks, reversed clips).
+    /// </summary>
+    public YuvVideoFrame? PlanesBefore(MediaTime limit) => SourcePlanes(Timing.SourceAt(limit.Seconds));
+
     /// <summary>Returns the frame for a source time from the trimmed source's start.</summary>
     protected abstract Raster<Rgba8>? SourceFrame(double source);
+
+    /// <summary>Returns the decoded planes for a source time, or <see langword="null"/>.</summary>
+    protected virtual YuvVideoFrame? SourcePlanes(double source) => null;
 
     /// <summary>Copies one raster's pixels into another of the same size.</summary>
     public static void Copy(Raster<Rgba8> source, Raster<Rgba8> target)
@@ -101,6 +110,7 @@ internal sealed class FileFrames : ClipFrames
     private readonly MediaTime _in;
     private readonly List<YuvVideoFrame> _window = [];
     private YuvVideoFrame? _next;
+    private YuvVideoFrame? _planes;
     private Raster<Rgba8>? _current;
     private MediaTime _currentTime;
     private bool _ended;
@@ -132,6 +142,7 @@ internal sealed class FileFrames : ClipFrames
     public override void Dispose()
     {
         _next?.Dispose();
+        _planes?.Dispose();
         _current?.Dispose();
         ClearWindow();
         _reader?.Dispose();
@@ -145,18 +156,31 @@ internal sealed class FileFrames : ClipFrames
         }
 
         MediaTime target = Times.Add(_in, MediaTime.FromSeconds(source));
-        return Timing.Reversed ? Backwards(target) : Forwards(target);
+        if (Timing.Reversed)
+        {
+            return Backwards(target);
+        }
+
+        if (Forwards(target) is { } planes)
+        {
+            // Converted once a source frame, however many output frames show it.
+            _current ??= planes.ToRaster<Rgba8>(_context.Egami);
+        }
+
+        return _current;
     }
 
-    private Raster<Rgba8>? Forwards(MediaTime target)
+    protected override YuvVideoFrame? SourcePlanes(double source) =>
+        _reader is null || Timing.Reversed ? null : Forwards(Times.Add(_in, MediaTime.FromSeconds(source)));
+
+    private YuvVideoFrame? Forwards(MediaTime target)
     {
-        if (_current is not null && target < _currentTime)
+        if (_planes is not null && target < _currentTime)
         {
             // A jump back, as a loop starts again: seek, and take the frames from there.
             _next?.Dispose();
             _next = null;
-            _current.Dispose();
-            _current = null;
+            Drop();
             _ended = false;
             _reader!.Seek(target);
         }
@@ -171,22 +195,27 @@ internal sealed class FileFrames : ClipFrames
             }
 
             // A frame exactly at the slot's middle counts as before it, as in FFmpeg's fps filter.
-            if (_current is not null && _next.Timestamp > target)
+            if (_planes is not null && _next.Timestamp > target)
             {
                 break;
             }
 
             // The next frame is due (or nothing is shown yet): it becomes the current one.
-            _current?.Dispose();
-            using (YuvVideoFrame frame = _next)
-            {
-                _next = null;
-                _currentTime = frame.Timestamp;
-                _current = frame.ToRaster<Rgba8>(_context.Egami);
-            }
+            Drop();
+            _planes = _next;
+            _next = null;
+            _currentTime = _planes.Timestamp;
         }
 
-        return _current;
+        return _planes;
+    }
+
+    private void Drop()
+    {
+        _planes?.Dispose();
+        _planes = null;
+        _current?.Dispose();
+        _current = null;
     }
 
     private Raster<Rgba8>? Backwards(MediaTime target)

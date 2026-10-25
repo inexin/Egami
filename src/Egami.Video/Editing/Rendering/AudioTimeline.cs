@@ -1,7 +1,6 @@
 using Egami.Video.Audio;
 using Egami.Video.Audio.Filters;
 
-using AudioFade = Egami.Video.Audio.Filters.Fade;
 using AudioTrim = Egami.Video.Audio.Filters.Trim;
 
 namespace Egami.Video.Editing;

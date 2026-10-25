@@ -29,7 +29,7 @@ in, ease out, ease in and out, or hold) to the next. The same `Keyframe` type an
 
 ## Fades and crossfades
 
-`Fade` fades in (`FadeDirection.In`, silent before its start) or out (`FadeDirection.Out`, silent after its end) over a
+`AudioFade` fades in (`FadeDirection.In`, silent before its start) or out (`FadeDirection.Out`, silent after its end) over a
 stretch of the time line, and reaches full level or silence on the exact sample. `FadeCurve` has five shapes with the same
 gains as FFmpeg's `afade` curves: `Linear` (`tri`, the default), `EqualPower` (`qsin`), `Logarithmic` (`log`),
 `Exponential` (`exp`) and `SCurve` (`hsin`).

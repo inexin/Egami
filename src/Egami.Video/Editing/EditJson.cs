@@ -662,8 +662,8 @@ internal static class EditJson
                 string at = where + ".key";
                 layer = layer.Key(new ChromaKey(Color(key, "color", at) ?? throw Missing(at, "color"))
                 {
-                    Similarity = (float)(Number(key, "similarity", at) ?? 0.1),
-                    Blend = (float)(Number(key, "blend", at) ?? 0.05),
+                    Similarity = (float)(Number(key, "similarity", at) ?? 0.05),
+                    Blend = (float)(Number(key, "blend", at) ?? 0.35),
                     Despill = (float)(Number(key, "despill", at) ?? 0.5),
                     SpillColor = Enum<DespillColor>(key, "spill", at),
                     Expand = (float)(Number(key, "expand", at) ?? 0),

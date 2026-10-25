@@ -97,8 +97,8 @@ internal static class EditCommands
         Option<string?> at = new("--at") { Description = "Where the top-left corner goes, as x,y in pixels, or right-N,top-N and the like from the edges (left, right, top, bottom, center). Centred by default.", HelpName = "x,y" };
         Option<double?> scale = new("--scale") { Description = "The overlay's size as a factor of its own. Default 1.", HelpName = "factor" };
         Option<string?> key = new("--key") { Description = "Chroma key the overlay: green, blue or a hex colour such as #00b140.", HelpName = "color" };
-        Option<float?> similarity = new("--similarity") { Description = "With --key: how close to the colour is keyed out, from 0 to 1. Default 0.1.", HelpName = "0-1" };
-        Option<float?> blend = new("--blend") { Description = "With --key: the soft edge beyond --similarity, from 0 to 1. Default 0.05.", HelpName = "0-1" };
+        Option<float?> similarity = new("--similarity") { Description = "With --key: how close to the colour is keyed out, from 0 to 1. Default 0.05.", HelpName = "0-1" };
+        Option<float?> blend = new("--blend") { Description = "With --key: the soft edge beyond --similarity, from 0 to 1. Default 0.35.", HelpName = "0-1" };
         Option<float?> despill = new("--despill") { Description = "With --key: how much of the screen's colour to take out of the edges, from 0 to 1. Default 0.5.", HelpName = "0-1" };
         Command command = new("overlay", "Draw one clip over another, such as a logo or a keyed presenter, with an opacity and a time window; like ffmpeg's overlay (with chromakey and despill for --key).");
         command.Arguments.Add(main);
@@ -125,8 +125,8 @@ internal static class EditCommands
             {
                 l = l.Key(new ChromaKey(KeyColor(k))
                 {
-                    Similarity = Fraction(result.GetValue(similarity), 0.1f, "--similarity"),
-                    Blend = Fraction(result.GetValue(blend), 0.05f, "--blend"),
+                    Similarity = Fraction(result.GetValue(similarity), 0.05f, "--similarity"),
+                    Blend = Fraction(result.GetValue(blend), 0.35f, "--blend"),
                     Despill = Fraction(result.GetValue(despill), 0.5f, "--despill"),
                 });
             }

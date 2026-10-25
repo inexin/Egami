@@ -12,7 +12,7 @@ comes after stage D.
   filters on one input in one pass. Frames of any format go in, F32 planar frames with exact timestamps come out; filters that
   keep the length work in place, so a steady chain allocates no sample memory (130 bytes of frame object per frame).
 - `Gain` (decibels or a factor, 5 ms ramp on changes) with `GainEnvelope`, built of `Keyframe`s with an `Easing`.
-- `Fade` with `FadeDirection` and five `FadeCurve`s, and the two-input `Crossfade`, matching FFmpeg's `afade` and
+- `AudioFade` (named `Fade` before the V9 review) with `FadeDirection` and five `FadeCurve`s, and the two-input `Crossfade`, matching FFmpeg's `afade` and
   `acrossfade` curves.
 - `AudioMixer` (per-input weights, `Normalize` off by default, `MixDuration`, inputs placed by timestamp and resampled and
   remixed on entry) and `Pan` (constant-power position, balance, swap, invert).
@@ -23,6 +23,23 @@ comes after stage D.
   from `tools/video/make-audio-filter-references.py`); tempo length exact and pitch within 1 % from 0.25 to 4. On 48 kHz stereo
   a gain, fade, pan and envelope chain runs 520 times real time, `Tempo` 610 times and `Speed` 500 times
   (`AudioFilterBenchmarks`).
+
+V9 Editing API review for stages A and B (task 19), accepted 2026-10-25 (all as recommended), with task 18's gates.
+
+- The V9.1 audio filter `Fade` is now `AudioFade`, so it no longer clashes with `Egami.Video.Analysis.Fade`.
+- `VideoEdit.ReadFrames` renders an edit's pictures as `VideoFrame<Rgba8>`s without encoding, for a preview or an app's own encoder.
+- `ChromaKey` defaults to `Similarity` 0.05 and `Blend` 0.35 (they were 0.1 and 0.05), which recovers a synthetic soft-edged
+  alpha within 0.75 % instead of 3.9 %; `egami-video overlay --key` and edit files take the same defaults.
+- The overlay's speed (2.2 times FFmpeg's at one thread, its plane resize) is accepted below the 1.5x gate for now.
+
+V9 Editing task 18: the gates in egami-compare, and what they needed.
+
+- Edits render cuts, fades, hard wipes and opaque, unkeyed layers straight from the decoded planes when they match the canvas,
+  without going through RGBA, as FFmpeg's filters do; a 1080p dissolve renders in 0.31 times FFmpeg's time at one thread.
+- `EditRenderOptions.Context` sets the context an edit renders with, such as one with fewer threads.
+- A seekable YUV4MPEG2 file of plain FRAME lines now reports its duration (`MediaInfo.Duration` and the track's), and the
+  editor counts packets for a source that reports none. `egami-video sheet` of such a file now spaces its frames over that
+  duration (its reference picture was made again).
 
 V9 Editing stage B: speed, reverse, loops, freezes, stills and Ken Burns, and time windows on run steps (Build Plan tasks 12
 to 17). All additive; the API review for stages A and B comes next (task 19).
@@ -56,7 +73,7 @@ tasks 3 to 11). All additive; the API review comes after stage B (task 19).
 - Gates against FFmpeg on raw clips (`tools/video/make-edit-references.py`): join frame counts equal on 10 joins; `fade`,
   `overlay`, `hstack`, `vstack` and `xstack` matched exactly and `xfade=fade` at 51.6 dB (gate 40 dB); wipes within 1 px of
   `xfade`'s edge. The chroma key recovers a synthetic known alpha within 0.75 % (gate 3 %).
-- V9.1: a `Fade` that starts at `MediaTime.Zero` now lasts its duration (it used to round to a cut, since `MediaTime`'s `+`
+- V9.1: an `AudioFade` that starts at `MediaTime.Zero` now lasts its duration (it used to round to a cut, since `MediaTime`'s `+`
   keeps the left side's whole-second time base).
 
 ## Egami.Video 1.0.0 (2026-10-25)

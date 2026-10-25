@@ -1,4 +1,10 @@
 #nullable enable
+Egami.Video.Audio.Filters.AudioFade
+Egami.Video.Audio.Filters.AudioFade.AudioFade(Egami.Video.Audio.Filters.FadeDirection direction, Egami.Video.MediaTime start, Egami.Video.MediaTime duration, Egami.Video.Audio.Filters.FadeCurve curve = Egami.Video.Audio.Filters.FadeCurve.Linear) -> void
+Egami.Video.Audio.Filters.AudioFade.Curve.get -> Egami.Video.Audio.Filters.FadeCurve
+Egami.Video.Audio.Filters.AudioFade.Direction.get -> Egami.Video.Audio.Filters.FadeDirection
+Egami.Video.Audio.Filters.AudioFade.Duration.get -> Egami.Video.MediaTime
+Egami.Video.Audio.Filters.AudioFade.Start.get -> Egami.Video.MediaTime
 Egami.Video.Audio.Filters.AudioFilter
 Egami.Video.Audio.Filters.AudioFilter.Dispose() -> void
 Egami.Video.Audio.Filters.AudioFilter.Flush() -> void
@@ -43,12 +49,6 @@ Egami.Video.Audio.Filters.Delay
 Egami.Video.Audio.Filters.Delay.Delay(Egami.Video.MediaTime delay) -> void
 Egami.Video.Audio.Filters.Delay.Delay(System.Collections.Generic.IReadOnlyList<Egami.Video.MediaTime>! delays) -> void
 Egami.Video.Audio.Filters.Delay.Delays.get -> System.Collections.Generic.IReadOnlyList<Egami.Video.MediaTime>!
-Egami.Video.Audio.Filters.Fade
-Egami.Video.Audio.Filters.Fade.Curve.get -> Egami.Video.Audio.Filters.FadeCurve
-Egami.Video.Audio.Filters.Fade.Direction.get -> Egami.Video.Audio.Filters.FadeDirection
-Egami.Video.Audio.Filters.Fade.Duration.get -> Egami.Video.MediaTime
-Egami.Video.Audio.Filters.Fade.Fade(Egami.Video.Audio.Filters.FadeDirection direction, Egami.Video.MediaTime start, Egami.Video.MediaTime duration, Egami.Video.Audio.Filters.FadeCurve curve = Egami.Video.Audio.Filters.FadeCurve.Linear) -> void
-Egami.Video.Audio.Filters.Fade.Start.get -> Egami.Video.MediaTime
 Egami.Video.Audio.Filters.FadeCurve
 Egami.Video.Audio.Filters.FadeCurve.EqualPower = 1 -> Egami.Video.Audio.Filters.FadeCurve
 Egami.Video.Audio.Filters.FadeCurve.Exponential = 3 -> Egami.Video.Audio.Filters.FadeCurve
@@ -240,6 +240,8 @@ Egami.Video.Editing.EditRenderOptions
 Egami.Video.Editing.EditRenderOptions.<Clone>$() -> Egami.Video.Editing.EditRenderOptions!
 Egami.Video.Editing.EditRenderOptions.Audio.get -> bool
 Egami.Video.Editing.EditRenderOptions.Audio.init -> void
+Egami.Video.Editing.EditRenderOptions.Context.get -> Egami.Video.MediaContext?
+Egami.Video.Editing.EditRenderOptions.Context.init -> void
 Egami.Video.Editing.EditRenderOptions.EditRenderOptions() -> void
 Egami.Video.Editing.EditRenderOptions.Equals(Egami.Video.Editing.EditRenderOptions? other) -> bool
 Egami.Video.Editing.EditRenderOptions.Writer.get -> Egami.Video.VideoWriterOptions!
@@ -456,6 +458,7 @@ Egami.Video.Editing.VideoEdit.Canvas.set -> void
 Egami.Video.Editing.VideoEdit.Effects.get -> System.Collections.Generic.IList<Egami.Video.Editing.EditEffect!>!
 Egami.Video.Editing.VideoEdit.Layers.get -> System.Collections.Generic.IList<Egami.Video.Editing.Layer!>!
 Egami.Video.Editing.VideoEdit.Plan(Egami.Video.MediaContext? context = null) -> Egami.Video.Editing.EditPlan!
+Egami.Video.Editing.VideoEdit.ReadFrames(Egami.Video.MediaContext? context = null) -> System.Collections.Generic.IEnumerable<Egami.Video.VideoFrame<Egami.Pixels.Rgba8>!>!
 Egami.Video.Editing.VideoEdit.Render(string! path, Egami.Video.Editing.EditRenderOptions? options = null, System.IProgress<Egami.Video.MediaProgress>? progress = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> Egami.Video.Editing.EditPlan!
 Egami.Video.Editing.VideoEdit.Render(System.IO.Stream! stream, string! formatNameOrExtension, Egami.Video.Editing.EditRenderOptions? options = null, System.IProgress<Egami.Video.MediaProgress>? progress = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> Egami.Video.Editing.EditPlan!
 Egami.Video.Editing.VideoEdit.ToJson() -> string!

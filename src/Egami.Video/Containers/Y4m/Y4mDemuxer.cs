@@ -36,8 +36,13 @@ internal sealed class Y4mDemuxer : IDemuxer
                 throw new LimitExceededException("MaxPacketBytes", context.Limits.MaxPacketBytes, _frameSize);
             }
 
+            // A seekable file of plain FRAME lines holds a whole number of frames: that gives the duration without reading them.
+            long body = _input.CanSeek && _input.Length > 0 ? _input.Length - _firstFrame : -1;
+            long frame = _frameSize + 6; // "FRAME" and a newline
+            MediaTime? duration = body >= 0 && body % frame == 0 ? new MediaTime(body / frame, _track.TimeBase) : null;
+            _track = _track with { Duration = duration };
             Tracks = [_track];
-            Info = new MediaInfo { FormatName = Y4mFormat.Instance.Name, Tracks = Tracks };
+            Info = new MediaInfo { FormatName = Y4mFormat.Instance.Name, Tracks = Tracks, Duration = duration };
         }
         catch
         {

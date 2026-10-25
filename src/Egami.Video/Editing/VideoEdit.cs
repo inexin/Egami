@@ -84,6 +84,9 @@ public sealed record EditRenderOptions
     /// set, Opus is used, or PCM in AVI. Default <see langword="true"/>.
     /// </summary>
     public bool Audio { get; init; } = true;
+
+    /// <summary>Gets the context frames are decoded, composed and encoded with, such as one with fewer threads, or <see langword="null"/> for <see cref="MediaContext.Default"/>.</summary>
+    public MediaContext? Context { get; init; }
 }
 
 /// <summary>
@@ -171,6 +174,27 @@ public sealed class VideoEdit
     /// <exception cref="FormatException">The JSON is not an edit; the message names the place.</exception>
     public static VideoEdit FromJson(string json, Func<string, EditEffect>? effects = null, string? folder = null) => EditJson.Read(json, effects, folder);
 
+    /// <summary>
+    /// Renders the edit's pictures one at a time without encoding, for a preview or an app's own encoder: each comes as a new
+    /// frame with its time, which the caller disposes. The sound is left out; <see cref="Render(Stream, string, EditRenderOptions?, IProgress{MediaProgress}?, CancellationToken)"/> writes both.
+    /// </summary>
+    /// <param name="context">The context, or <see langword="null"/> for <see cref="MediaContext.Default"/>.</param>
+    /// <returns>The frames, in order.</returns>
+    /// <exception cref="InvalidOperationException">The edit cannot render; the message lists why.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/Editing.cs" region="edit-read-frames"/>
+    /// </example>
+    public IEnumerable<VideoFrame<Egami.Pixels.Rgba8>> ReadFrames(MediaContext? context = null)
+    {
+        EditPlan plan = Plan(context);
+        long n = 0;
+        foreach (Egami.Raster<Egami.Pixels.Rgba8> frame in RenderFrames(context))
+        {
+            yield return new VideoFrame<Egami.Pixels.Rgba8>(frame.Derive(_ => { }), plan.TimeOf(n), plan.TimeOf(1));
+            n++;
+        }
+    }
+
     /// <summary>Renders the frames without encoding, for tests: each raster is valid until the next one.</summary>
     internal IEnumerable<Egami.Raster<Egami.Pixels.Rgba8>> RenderFrames(MediaContext? context = null)
     {
@@ -185,7 +209,7 @@ public sealed class VideoEdit
     private EditPlan Render(string? path, Stream? stream, string? format, EditRenderOptions? options, IProgress<MediaProgress>? progress, CancellationToken cancellationToken)
     {
         options ??= EditRenderOptions.Default;
-        MediaContext context = MediaContext.Default;
+        MediaContext context = options.Context ?? MediaContext.Default;
         EditPlan plan = Plan(context);
         EditCanvas canvas = plan.Canvas;
         bool audio = options.Audio && plan.HasAudio;

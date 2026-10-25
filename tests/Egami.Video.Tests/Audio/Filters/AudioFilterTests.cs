@@ -2,8 +2,6 @@ using Egami.Video.Analysis;
 using Egami.Video.Audio;
 using Egami.Video.Audio.Filters;
 
-using Fade = Egami.Video.Audio.Filters.Fade;
-
 namespace Egami.Video.Tests.Audio.Filters;
 
 /// <summary>V9.1 stage A: the filter model, gain, fades, crossfade, mixer, pan, timing filters, tempo and speed.</summary>
@@ -115,7 +113,7 @@ public class AudioFilterTests
     public void FadesHitTheirEndLevelOnTheExactSample(FadeCurve curve)
     {
         float[][] ones = [Enumerable.Repeat(1f, Rate).ToArray()];
-        using Fade fadeIn = new(FadeDirection.In, MediaTime.FromSeconds(0.25), MediaTime.FromSeconds(0.5), curve);
+        using AudioFade fadeIn = new(FadeDirection.In, MediaTime.FromSeconds(0.25), MediaTime.FromSeconds(0.5), curve);
         float[][] a = FilterHarness.Run(fadeIn, ones, Rate, 1000);
         Assert.Equal(0f, a[0][11999]);
         Assert.True(a[0][12001] > 0f && a[0][35999] <= 1f);
@@ -125,7 +123,7 @@ public class AudioFilterTests
             Assert.True(a[0][i] >= a[0][i - 1], $"{curve} falls at {i}");
         }
 
-        using Fade fadeOut = new(FadeDirection.Out, MediaTime.FromSeconds(0.25), MediaTime.FromSeconds(0.5), curve);
+        using AudioFade fadeOut = new(FadeDirection.Out, MediaTime.FromSeconds(0.25), MediaTime.FromSeconds(0.5), curve);
         float[][] b = FilterHarness.Run(fadeOut, ones, Rate, 1000);
         Assert.Equal(1f, b[0][11999]);
         Assert.Equal(1f, b[0][12000]);
@@ -378,11 +376,11 @@ public class AudioFilterTests
     public void TestSourcesRunThroughAChain()
     {
         using AudioFilterChain chain = new AudioFilterChain(Rate, ChannelLayout.Stereo)
-            .Add(new Fade(FadeDirection.In, MediaTime.Zero, MediaTime.FromSeconds(0.1)))
+            .Add(new AudioFade(FadeDirection.In, MediaTime.Zero, MediaTime.FromSeconds(0.1)))
             .Add(new Gain(-3))
             .Add(new Tempo(1.1))
             .Add(new Pan { Balance = -0.2 })
-            .Add(new Fade(FadeDirection.Out, MediaTime.FromSeconds(0.8), MediaTime.FromSeconds(0.1)));
+            .Add(new AudioFade(FadeDirection.Out, MediaTime.FromSeconds(0.8), MediaTime.FromSeconds(0.1)));
         float[][] output = FilterHarness.Run(chain, TestSources.Noise(TestAudioFormat.Default, MediaTime.FromSeconds(1)), out _);
         Assert.Equal((int)Math.Round(Rate / 1.1), output[0].Length);
         Assert.All(output[0], s => Assert.True(float.IsFinite(s)));
@@ -395,10 +393,10 @@ public class AudioFilterTests
         // never sample memory (which comes from the pool), once it runs.
         using AudioFilterChain chain = new AudioFilterChain(Rate, ChannelLayout.Stereo)
             .Add(new Gain(-3))
-            .Add(new Fade(FadeDirection.In, MediaTime.Zero, MediaTime.FromSeconds(1)))
+            .Add(new AudioFade(FadeDirection.In, MediaTime.Zero, MediaTime.FromSeconds(1)))
             .Add(new Pan { Balance = 0.1 })
             .Add(new Delay(MediaTime.FromSeconds(0.01)))
-            .Add(new Fade(FadeDirection.Out, MediaTime.FromSeconds(58), MediaTime.FromSeconds(2), FadeCurve.EqualPower));
+            .Add(new AudioFade(FadeDirection.Out, MediaTime.FromSeconds(58), MediaTime.FromSeconds(2), FadeCurve.EqualPower));
         using AudioFrame input = new(SampleFormat.F32Planar, ChannelLayout.Stereo, Rate, 1024, MediaTime.Zero);
         long allocated = 0;
         int frames = 60 * Rate / 1024;

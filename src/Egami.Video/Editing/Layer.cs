@@ -14,11 +14,11 @@ namespace Egami.Video.Editing;
 /// </example>
 public sealed record ChromaKey(Rgba8 Color)
 {
-    /// <summary>Gets how close to the colour a pixel must be to be keyed out, as a CbCr distance from 0 to 1. Default 0.1.</summary>
-    public float Similarity { get; init; } = 0.1f;
+    /// <summary>Gets how close to the colour a pixel must be to be keyed out, as a CbCr distance from 0 to 1. Default 0.05.</summary>
+    public float Similarity { get; init; } = 0.05f;
 
-    /// <summary>Gets the width of the soft edge beyond <see cref="Similarity"/>, from 0 (hard) to 1. Default 0.05.</summary>
-    public float Blend { get; init; } = 0.05f;
+    /// <summary>Gets the width of the soft edge beyond <see cref="Similarity"/>, from 0 (hard) to 1. Default 0.35, which follows soft edges and see-through parts closely.</summary>
+    public float Blend { get; init; } = 0.35f;
 
     /// <summary>Gets how much spill to remove, from 0 (no despill) to 1. Default 0.5.</summary>
     public float Despill { get; init; } = 0.5f;
