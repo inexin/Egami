@@ -1,12 +1,12 @@
 namespace Egami.Video.Audio.Filters;
 
-/// <summary>The shape of a <see cref="Fade"/> or <see cref="Crossfade"/>, as the gain of a fade in over its length.</summary>
+/// <summary>The shape of a <see cref="AudioFade"/> or <see cref="Crossfade"/>, as the gain of a fade in over its length.</summary>
 /// <example>
 /// <code language="csharp" source="../../../../tests/Egami.DocSamples/AudioFilters.cs" region="audio-fades"/>
 /// </example>
 public enum FadeCurve
 {
-    /// <summary>A straight line in amplitude, ffmpeg's <c>tri</c>. The default for <see cref="Fade"/>.</summary>
+    /// <summary>A straight line in amplitude, ffmpeg's <c>tri</c>. The default for <see cref="AudioFade"/>.</summary>
     Linear,
 
     /// <summary>
@@ -25,7 +25,7 @@ public enum FadeCurve
     SCurve,
 }
 
-/// <summary>Whether a <see cref="Fade"/> brings the sound in or takes it out.</summary>
+/// <summary>Whether a <see cref="AudioFade"/> brings the sound in or takes it out.</summary>
 /// <example>
 /// <code language="csharp" source="../../../../tests/Egami.DocSamples/AudioFilters.cs" region="audio-fades"/>
 /// </example>
@@ -47,7 +47,7 @@ public enum FadeDirection
 /// <example>
 /// <code language="csharp" source="../../../../tests/Egami.DocSamples/AudioFilters.cs" region="audio-fades"/>
 /// </example>
-public sealed class Fade : AudioFilter
+public sealed class AudioFade : AudioFilter
 {
     private long _start;
     private long _length;
@@ -59,7 +59,7 @@ public sealed class Fade : AudioFilter
     /// <param name="duration">How long it lasts; 0 for a cut.</param>
     /// <param name="curve">The shape. Default <see cref="FadeCurve.Linear"/>.</param>
     /// <exception cref="ArgumentOutOfRangeException">The duration is negative.</exception>
-    public Fade(FadeDirection direction, MediaTime start, MediaTime duration, FadeCurve curve = FadeCurve.Linear)
+    public AudioFade(FadeDirection direction, MediaTime start, MediaTime duration, FadeCurve curve = FadeCurve.Linear)
     {
         ArgumentOutOfRangeException.ThrowIfLessThan(duration, MediaTime.Zero);
         Direction = direction;

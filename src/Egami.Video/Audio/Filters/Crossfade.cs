@@ -193,7 +193,7 @@ public sealed class Crossfade : IDisposable
                     // As ffmpeg's acrossfade: the second input rises from 0 on the overlap's first sample, and the first input
                     // reaches 0 on its last, one step ahead of the rise.
                     double rise = (double)i / length, fall = (double)(i + 1) / length;
-                    output[i] = (float)((a[i] * Fade.CurveGain(Curve, 1 - fall)) + (b[i] * Fade.CurveGain(Curve, rise)));
+                    output[i] = (float)((a[i] * AudioFade.CurveGain(Curve, 1 - fall)) + (b[i] * AudioFade.CurveGain(Curve, rise)));
                 }
             }
 

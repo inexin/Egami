@@ -3,8 +3,6 @@ using Egami.Video.Analysis;
 using Egami.Video.Audio;
 using Egami.Video.Audio.Filters;
 
-using Fade = Egami.Video.Audio.Filters.Fade;
-
 namespace Egami.DocSamples;
 
 [Collection("Samples")]
@@ -34,7 +32,7 @@ public class AudioFilters
         #region audio-filter-chain
         // Fade in over 2 s, then turn down 3 dB: frames of any format go in, F32 planar frames come out.
         using AudioFilterChain chain = new AudioFilterChain(48000, ChannelLayout.Stereo)
-            .Add(new Fade(FadeDirection.In, MediaTime.Zero, MediaTime.FromSeconds(2)))
+            .Add(new AudioFade(FadeDirection.In, MediaTime.Zero, MediaTime.FromSeconds(2)))
             .Add(new Gain(-3));
         foreach (AudioFrame frame in frames)
         {
@@ -85,7 +83,7 @@ public class AudioFilters
 
         #region audio-fades
         // A 3 s clip: fade out over its last second along an S curve.
-        using Fade fadeOut = new(FadeDirection.Out, MediaTime.FromSeconds(2), MediaTime.FromSeconds(1), FadeCurve.SCurve);
+        using AudioFade fadeOut = new(FadeDirection.Out, MediaTime.FromSeconds(2), MediaTime.FromSeconds(1), FadeCurve.SCurve);
         #endregion
         foreach (AudioFrame frame in frames)
         {

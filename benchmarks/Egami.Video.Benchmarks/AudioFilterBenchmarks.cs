@@ -30,7 +30,7 @@ public class AudioFilterBenchmarks
     {
         using AudioFilterChain chain = new AudioFilterChain(48000, ChannelLayout.Stereo)
             .Add(new Gain(-3))
-            .Add(new Egami.Video.Audio.Filters.Fade(FadeDirection.In, MediaTime.Zero, MediaTime.FromSeconds(2), FadeCurve.EqualPower))
+            .Add(new AudioFade(FadeDirection.In, MediaTime.Zero, MediaTime.FromSeconds(2), FadeCurve.EqualPower))
             .Add(new Pan { Balance = 0.2 })
             .Add(new Gain { Envelope = new GainEnvelope(new Keyframe(MediaTime.Zero, 0), new Keyframe(MediaTime.FromSeconds(60), -6)) });
         return Run(chain);

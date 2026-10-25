@@ -287,6 +287,29 @@ public class Editing
     #endregion
 
     [Fact]
+    public void ReadingFrames()
+    {
+        using SampleFiles files = new();
+        MakeClips();
+        int count = 0;
+
+        #region edit-read-frames
+        // The rendered pictures, for a preview: each is a new frame with its time, to dispose.
+        VideoEdit edit = new(new EditCanvas(320, 180, new Rational(25, 1)));
+        edit.Track.Add(Clip.Open("intro.avi")).Add(Clip.Open("outro.avi"), Transition.Dissolve(MediaTime.FromSeconds(0.5)));
+        foreach (VideoFrame<Rgba8> frame in edit.ReadFrames())
+        {
+            using (frame)
+            {
+                count++; // show frame.Raster, or encode it
+            }
+        }
+        #endregion
+
+        Assert.Equal(87, count);
+    }
+
+    [Fact]
     public void Planning()
     {
         using SampleFiles files = new();

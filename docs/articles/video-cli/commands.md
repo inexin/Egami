@@ -825,8 +825,8 @@ Options:
   --at <x,y>                     Where the top-left corner goes, as x,y in pixels, or right-N,top-N and the like from the edges (left, right, top, bottom, center). Centred by default.
   --scale <factor>               The overlay's size as a factor of its own. Default 1.
   --key <color>                  Chroma key the overlay: green, blue or a hex colour such as #00b140.
-  --similarity <0-1>             With --key: how close to the colour is keyed out, from 0 to 1. Default 0.1.
-  --blend <0-1>                  With --key: the soft edge beyond --similarity, from 0 to 1. Default 0.05.
+  --similarity <0-1>             With --key: how close to the colour is keyed out, from 0 to 1. Default 0.05.
+  --blend <0-1>                  With --key: the soft edge beyond --similarity, from 0 to 1. Default 0.35.
   --despill <0-1>                With --key: how much of the screen's colour to take out of the edges, from 0 to 1. Default 0.5.
   --from <time>                  When the layer appears, in the main clip's time: seconds or [HH:]MM:SS[.mmm]. Default the start.
   --to <time>                    When it disappears. Default when its clip ends.
