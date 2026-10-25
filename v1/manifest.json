@@ -12445,6 +12445,286 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Audio.Filters.AudioFilter.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Audio.Filters.AudioFilter.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Audio.Filters.AudioFilter",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Audio.Filters.AudioFilter.yml\" sourcestartlinenumber=\"1\">The base of Egami.Video's own audio filters. It takes the rate and channels from the first frame, converts every frame to\n<xref href=\"Egami.Video.Audio.SampleFormat.F32Planar\" data-throw-if-not-resolved=\"false\"></xref> once on the way in, and queues the output. Inside an <xref href=\"Egami.Video.Audio.Filters.AudioFilterChain\" data-throw-if-not-resolved=\"false\"></xref>\nthe converted frames pass from filter to filter without another copy, and filters that keep the length (gain, fades, pan)\nwork on them in place. To write a filter of your own, implement <xref href=\"Egami.Video.Audio.Filters.IAudioFilter\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Audio.Filters.AudioFilterChain.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Audio.Filters.AudioFilterChain.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Audio.Filters.AudioFilterChain",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Audio.Filters.AudioFilterChain.yml\" sourcestartlinenumber=\"1\">Runs several filters on one input in a single pass: each frame is converted to <xref href=\"Egami.Video.Audio.SampleFormat.F32Planar\" data-throw-if-not-resolved=\"false\"></xref> once,\nthen handed from filter to filter in order, in place where the filter keeps the length. The chain is itself an\n<xref href=\"Egami.Video.Audio.Filters.IAudioFilter\" data-throw-if-not-resolved=\"false\"></xref>, owns the filters added to it and disposes them with itself.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Audio.Filters.AudioMixer.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Audio.Filters.AudioMixer.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Audio.Filters.AudioMixer",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Audio.Filters.AudioMixer.yml\" sourcestartlinenumber=\"1\">Mixes several streams into one by adding them, each times its weight, like ffmpeg's <code>amix</code> with\n<code>normalize=0</code>. Inputs are placed on the output by their timestamps, so one that starts later comes in at its time;\na gap inside an input is silence. Inputs at another rate or with other channels are resampled with <xref href=\"Egami.Video.Audio.Resampler\" data-throw-if-not-resolved=\"false\"></xref>\nand remixed with <xref href=\"Egami.Video.Audio.ChannelMixer\" data-throw-if-not-resolved=\"false\"></xref>'s default matrix on the way in. The sum is not divided by the number of inputs\nunless <xref href=\"Egami.Video.Audio.Filters.AudioMixer.Normalize\" data-throw-if-not-resolved=\"false\"></xref> is set, so a voice over music keeps its level; put a limiter after it if the sum can clip.\nSend each input's frames with <xref href=\"Egami.Video.Audio.Filters.AudioMixer.Send(System.Int32%2cEgami.Video.Audio.AudioFrame)\" data-throw-if-not-resolved=\"false\"></xref> and end each with <xref href=\"Egami.Video.Audio.Filters.AudioMixer.Complete(System.Int32)\" data-throw-if-not-resolved=\"false\"></xref>: output waits until every input\nhas either sent something or ended.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Audio.Filters.Crossfade.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Audio.Filters.Crossfade.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Audio.Filters.Crossfade",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Audio.Filters.Crossfade.yml\" sourcestartlinenumber=\"1\">Joins two streams with an overlap: the end of the first fades out while the start of the second fades in, like ffmpeg's\n<code>acrossfade</code>. The output is the first stream up to its last <xref href=\"Egami.Video.Audio.Filters.Crossfade.Duration\" data-throw-if-not-resolved=\"false\"></xref>, then the overlap mixed, then the\nrest of the second stream, so it lasts the two lengths minus the overlap. The overlap shortens to the shorter stream's\nlength when one is shorter. Send each input's frames with <xref href=\"Egami.Video.Audio.Filters.Crossfade.Send(System.Int32%2cEgami.Video.Audio.AudioFrame)\" data-throw-if-not-resolved=\"false\"></xref> and end each with <xref href=\"Egami.Video.Audio.Filters.Crossfade.Complete(System.Int32)\" data-throw-if-not-resolved=\"false\"></xref>;\nframes of the second input wait until the first has ended. Both inputs must have the same rate and channels. Output\nstarts at the first input's first timestamp and runs on without gaps.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Audio.Filters.Delay.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Audio.Filters.Delay.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Audio.Filters.Delay",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Audio.Filters.Delay.yml\" sourcestartlinenumber=\"1\">Delays channels by putting silence in front of them, like ffmpeg's <code>adelay</code>: each channel can have its own delay, for\nexample to line up microphones or fix lip sync. The output keeps the input's timestamps and gets longer by the longest\ndelay; <xref href=\"Egami.Video.Audio.Filters.AudioFilter.Flush\" data-throw-if-not-resolved=\"false\"></xref> hands out the tail, so no input is lost.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Audio.Filters.Fade.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Audio.Filters.Fade.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Audio.Filters.Fade",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Audio.Filters.Fade.yml\" sourcestartlinenumber=\"1\">Fades the sound in or out over a stretch of the stream's time line. A fade in is silent before <xref href=\"Egami.Video.Audio.Filters.Fade.Start\" data-throw-if-not-resolved=\"false\"></xref> and\nreaches full level on the exact sample at <xref href=\"Egami.Video.Audio.Filters.Fade.Start\" data-throw-if-not-resolved=\"false\"></xref> plus <xref href=\"Egami.Video.Audio.Filters.Fade.Duration\" data-throw-if-not-resolved=\"false\"></xref>; a fade out is full level before\n<xref href=\"Egami.Video.Audio.Filters.Fade.Start\" data-throw-if-not-resolved=\"false\"></xref> and silent from its end on. Times are on the frames' time line, rounded to whole samples. The curves\ngive the same gains as ffmpeg's <code>afade</code> with the curve each value names. Works in place.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Audio.Filters.FadeCurve.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Audio.Filters.FadeCurve.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Audio.Filters.FadeCurve",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Audio.Filters.FadeCurve.yml\" sourcestartlinenumber=\"1\">The shape of a <xref href=\"Egami.Video.Audio.Filters.Fade\" data-throw-if-not-resolved=\"false\"></xref> or <xref href=\"Egami.Video.Audio.Filters.Crossfade\" data-throw-if-not-resolved=\"false\"></xref>, as the gain of a fade in over its length.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Audio.Filters.FadeDirection.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Audio.Filters.FadeDirection.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Audio.Filters.FadeDirection",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Audio.Filters.FadeDirection.yml\" sourcestartlinenumber=\"1\">Whether a <xref href=\"Egami.Video.Audio.Filters.Fade\" data-throw-if-not-resolved=\"false\"></xref> brings the sound in or takes it out.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Audio.Filters.Gain.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Audio.Filters.Gain.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Audio.Filters.Gain",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Audio.Filters.Gain.yml\" sourcestartlinenumber=\"1\">Changes the level, by a fixed gain and, optionally, an <xref href=\"Egami.Video.Audio.Filters.Gain.Envelope\" data-throw-if-not-resolved=\"false\"></xref> that changes over time. A change to\n<xref href=\"Egami.Video.Audio.Filters.Gain.Decibels\" data-throw-if-not-resolved=\"false\"></xref> or <xref href=\"Egami.Video.Audio.Filters.Gain.Factor\" data-throw-if-not-resolved=\"false\"></xref> between frames moves to the new gain over 5 ms, so it does not click. Unity\ngain with no envelope passes samples through unchanged. Works in place; nothing is clipped, so a gain above 0 dB can take\nsamples past full scale until an encoder or a limiter clamps them.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Audio.Filters.GainEnvelope.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Audio.Filters.GainEnvelope.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Audio.Filters.GainEnvelope",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Audio.Filters.GainEnvelope.yml\" sourcestartlinenumber=\"1\">A gain that changes over time, in decibels, for <xref href=\"Egami.Video.Audio.Filters.Gain.Envelope\" data-throw-if-not-resolved=\"false\"></xref>: a list of <xref href=\"Egami.Video.Keyframe\" data-throw-if-not-resolved=\"false\"></xref>s whose\nvalues are decibels. Before the first keyframe the gain is the first value, after the last one the last value, and between\ntwo the value eases from one to the next in decibels. A value of <xref href=\"System.Double.NegativeInfinity\" data-throw-if-not-resolved=\"false\"></xref> is silence; a\nsegment to or from it moves in linear amplitude instead, so the fade still sounds smooth.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Audio.Filters.IAudioFilter.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Audio.Filters.IAudioFilter.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Audio.Filters.IAudioFilter",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Audio.Filters.IAudioFilter.yml\" sourcestartlinenumber=\"1\">A streaming audio filter: frames go in through <xref href=\"Egami.Video.Audio.Filters.IAudioFilter.Send(Egami.Video.Audio.AudioFrame)\" data-throw-if-not-resolved=\"false\"></xref> and come out through <xref href=\"Egami.Video.Audio.Filters.IAudioFilter.TryReceive(Egami.Video.Audio.AudioFrame%40)\" data-throw-if-not-resolved=\"false\"></xref>, the same\nshape as <xref href=\"Egami.Video.Audio.Resampler\" data-throw-if-not-resolved=\"false\"></xref>, decoders and encoders, so filters, the resampler and encoders plug together. Frames of any\nsample format go in; frames come out as <xref href=\"Egami.Video.Audio.SampleFormat.F32Planar\" data-throw-if-not-resolved=\"false\"></xref> with exact timestamps. Implement it to put a\nfilter of your own in an <xref href=\"Egami.Video.Audio.Filters.AudioFilterChain\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Audio.Filters.MixDuration.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Audio.Filters.MixDuration.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Audio.Filters.MixDuration",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Audio.Filters.MixDuration.yml\" sourcestartlinenumber=\"1\">When an <xref href=\"Egami.Video.Audio.Filters.AudioMixer\" data-throw-if-not-resolved=\"false\"></xref>'s output ends.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Audio.Filters.Pad.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Audio.Filters.Pad.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Audio.Filters.Pad",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Audio.Filters.Pad.yml\" sourcestartlinenumber=\"1\">Adds silence at the end of a stream, like ffmpeg's <code>apad</code>: a fixed amount, or as much as it takes for the stream to\nlast at least a total length. The silence comes out on <xref href=\"Egami.Video.Audio.Filters.AudioFilter.Flush\" data-throw-if-not-resolved=\"false\"></xref>; the input passes through.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Audio.Filters.Pan.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Audio.Filters.Pan.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Audio.Filters.Pan",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Audio.Filters.Pan.yml\" sourcestartlinenumber=\"1\">Places a mono or stereo input in a stereo output. <xref href=\"Egami.Video.Audio.Filters.Pan.Position\" data-throw-if-not-resolved=\"false\"></xref> pans a mono input with the constant-power law\n(-3 dB in each channel at the centre, like ffmpeg's <code>pan=stereo|c0=0.7071<em sourcefile=\"api/Egami.Video.Audio.Filters.Pan.yml\" sourcestartlinenumber=\"2\">c0|c1=0.7071</em>c0</code>); on a stereo input it\nturns one side down along the same law, scaled so the centre is unchanged. <xref href=\"Egami.Video.Audio.Filters.Pan.Balance\" data-throw-if-not-resolved=\"false\"></xref> turns one side down\nin a straight line. <xref href=\"Egami.Video.Audio.Filters.Pan.Swap\" data-throw-if-not-resolved=\"false\"></xref> exchanges left and right, and <xref href=\"Egami.Video.Audio.Filters.Pan.InvertLeft\" data-throw-if-not-resolved=\"false\"></xref> and\n<xref href=\"Egami.Video.Audio.Filters.Pan.InvertRight\" data-throw-if-not-resolved=\"false\"></xref> flip a channel's polarity. Changes to the position or balance between frames move over 5 ms.\nFor any other channel matrix use <xref href=\"Egami.Video.Audio.ChannelMixer\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Audio.Filters.Retime.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Audio.Filters.Retime.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Audio.Filters.Retime",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Audio.Filters.Retime.yml\" sourcestartlinenumber=\"1\">Gives a stream new timestamps, like ffmpeg's <code>asetpts=PTS-STARTPTS</code>: the first sample gets <xref href=\"Egami.Video.Audio.Filters.Retime.Start\" data-throw-if-not-resolved=\"false\"></xref> and\nevery later one follows on at the sample rate, so gaps and jitter in the input's timestamps go away.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Audio.Filters.Speed.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Audio.Filters.Speed.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Audio.Filters.Speed",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Audio.Filters.Speed.yml\" sourcestartlinenumber=\"1\">Plays a stream faster or slower with the pitch following, like a tape or ffmpeg's <code>asetrate</code> followed by\n<code>aresample</code>: the samples are resampled with <xref href=\"Egami.Video.Audio.Resampler\" data-throw-if-not-resolved=\"false\"></xref> as if they had been recorded at the rate times\n<xref href=\"Egami.Video.Audio.Filters.Speed.Factor\" data-throw-if-not-resolved=\"false\"></xref>. The output keeps the sample rate and lasts the input's length divided by the factor; it starts at\nthe input's first timestamp. Cheaper than <xref href=\"Egami.Video.Audio.Filters.Tempo\" data-throw-if-not-resolved=\"false\"></xref>, which keeps the pitch. The factor is used as a fraction\nwith a denominator up to 1000.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Audio.Filters.Tempo.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Audio.Filters.Tempo.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Audio.Filters.Tempo",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Audio.Filters.Tempo.yml\" sourcestartlinenumber=\"1\">Changes the tempo and keeps the pitch, with WSOLA (waveform similarity overlap-add, after Verhelst and Roelands, 1993): the\noutput is built of overlapping Hann windows of the input, each taken at the place near its ideal position whose waveform\nbest continues the window before it. The output keeps the sample rate, starts at the input's first timestamp and lasts the\ninput's length divided by <xref href=\"Egami.Video.Audio.Filters.Tempo.Factor\" data-throw-if-not-resolved=\"false\"></xref>, rounded to the nearest sample. A factor of 1 passes samples through. For a\nspeed change where the pitch follows, <xref href=\"Egami.Video.Audio.Filters.Speed\" data-throw-if-not-resolved=\"false\"></xref> is cheaper.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Audio.Filters.TempoPreset.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Audio.Filters.TempoPreset.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Audio.Filters.TempoPreset",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Audio.Filters.TempoPreset.yml\" sourcestartlinenumber=\"1\">What a <xref href=\"Egami.Video.Audio.Filters.Tempo\" data-throw-if-not-resolved=\"false\"></xref> is tuned for: the length of its windows and how far it searches.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Audio.Filters.Trim.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Audio.Filters.Trim.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Audio.Filters.Trim",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Audio.Filters.Trim.yml\" sourcestartlinenumber=\"1\">Keeps the part of a stream between two times on its time line, like ffmpeg's <code>atrim</code>, cut on the exact sample. The\nsamples kept keep their timestamps; follow with <xref href=\"Egami.Video.Audio.Filters.Retime\" data-throw-if-not-resolved=\"false\"></xref> to start the result at zero.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Audio.Filters.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Audio.Filters.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Audio.Filters",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.Video.Audio.IAudioDecoder.yml",
       "output": {
         ".html": {
@@ -13397,6 +13677,20 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Easing.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Easing.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Easing",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Easing.yml\" sourcestartlinenumber=\"1\">How an animated value moves from a <xref href=\"Egami.Video.Keyframe\" data-throw-if-not-resolved=\"false\"></xref> to the next one.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.Video.EncodedPacket.yml",
       "output": {
         ".html": {
@@ -13464,6 +13758,20 @@
       "IsMRef": true,
       "Title": "Egami.Video.Hdr10PlusToneCurve",
       "Summary": "<p sourcefile=\"api/Egami.Video.Hdr10PlusToneCurve.yml\" sourcestartlinenumber=\"1\">An HDR10+ tone mapping curve for the target display: a knee point, then a Bezier curve through its anchors.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Keyframe.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Keyframe.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Keyframe",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Keyframe.yml\" sourcestartlinenumber=\"1\">A value at a time on a stream's time line, one point of an animation such as a <xref href=\"Egami.Video.Audio.Filters.GainEnvelope\" data-throw-if-not-resolved=\"false\"></xref>.\n<xref href=\"Egami.Video.Keyframe.Easing\" data-throw-if-not-resolved=\"false\"></xref> says how the value moves on to the next keyframe.</p>\n"
     },
     {
       "type": "ManagedReference",
@@ -14546,6 +14854,16 @@
       "output": {
         ".html": {
           "relative_path": "articles/guides/animation.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "articles/guides/audio-filters.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/guides/audio-filters.html"
         }
       },
       "version": ""

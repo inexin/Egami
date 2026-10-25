@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class AudioMixer | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class AudioMixer | Egami ">
+      
+      <meta name="description" content="Mixes several streams into one by adding them, each times its weight, like ffmpeg&#39;s amix with normalize=0. Inputs are placed on the output by their timestamps, so one that starts later comes in at its time; a gap inside an input is silence. Inputs at another rate or with other channels are resampled with  and remixed with &#39;s default matrix on the way in. The sum is not divided by the number of inputs unless  is set, so a voice over music keeps its level; put a limiter after it if the sum can clip. Send each input&#39;s frames with  and end each with : output waits until every input has either sent something or ended.">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_Video_Audio_Filters_AudioMixer.md&amp;value=---%0Auid%3A%20Egami.Video.Audio.Filters.AudioMixer%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.Video.Audio.Filters.AudioMixer">
+
+
+
+  <h1 id="Egami_Video_Audio_Filters_AudioMixer" data-uid="Egami.Video.Audio.Filters.AudioMixer" class="text-break">
+Class AudioMixer  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/Filters/AudioMixer.cs/#L33"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a>.<a class="xref" href="Egami.Video.html">Video</a>.<a class="xref" href="Egami.Video.Audio.html">Audio</a>.<a class="xref" href="Egami.Video.Audio.Filters.html">Filters</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.Video.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>Mixes several streams into one by adding them, each times its weight, like ffmpeg's <code>amix</code> with
+<code>normalize=0</code>. Inputs are placed on the output by their timestamps, so one that starts later comes in at its time;
+a gap inside an input is silence. Inputs at another rate or with other channels are resampled with <a class="xref" href="Egami.Video.Audio.Resampler.html">Resampler</a>
+and remixed with <a class="xref" href="Egami.Video.Audio.ChannelMixer.html">ChannelMixer</a>'s default matrix on the way in. The sum is not divided by the number of inputs
+unless <a class="xref" href="Egami.Video.Audio.Filters.AudioMixer.html#Egami_Video_Audio_Filters_AudioMixer_Normalize">Normalize</a> is set, so a voice over music keeps its level; put a limiter after it if the sum can clip.
+Send each input's frames with <a class="xref" href="Egami.Video.Audio.Filters.AudioMixer.html#Egami_Video_Audio_Filters_AudioMixer_Send_System_Int32_Egami_Video_Audio_AudioFrame_">Send(int, AudioFrame)</a> and end each with <a class="xref" href="Egami.Video.Audio.Filters.AudioMixer.html#Egami_Video_Audio_Filters_AudioMixer_Complete_System_Int32_">Complete(int)</a>: output waits until every input
+has either sent something or ended.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public sealed class AudioMixer : IDisposable</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><span class="xref">AudioMixer</span></div>
+    </dd>
+  </dl>
+
+  <dl class="typelist implements">
+    <dt>Implements</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.idisposable">IDisposable</a></div>
+    </dd>
+  </dl>
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+  </dd></dl>
+
+
+
+  <h2 id="Egami_Video_Audio_Filters_AudioMixer_examples">Examples</h2>
+  <pre><code class="lang-csharp">// A mono voice at 44.1 kHz over stereo music at 48 kHz, the music at half level: the voice is panned a little left,
+// then resampled and placed by its timestamps on the way into the mixer.
+using Pan pan = new(-0.3);
+using AudioMixer mixer = new(48000, ChannelLayout.Stereo, inputs: 2);
+mixer.SetWeight(0, 0.5);
+foreach (AudioFrame frame in music)
+{
+    mixer.Send(0, frame);
+}
+
+foreach (AudioFrame frame in voice)
+{
+    pan.Send(frame);
+    while (pan.TryReceive(out AudioFrame? panned))
+    {
+        mixer.Send(1, panned);
+        panned.Dispose();
+    }
+}
+
+mixer.Flush();</code></pre>
+
+
+
+
+  <h2 class="section" id="constructors">Constructors
+</h2>
+
+
+  <a id="Egami_Video_Audio_Filters_AudioMixer__ctor_" data-uid="Egami.Video.Audio.Filters.AudioMixer.#ctor*"></a>
+
+  <h3 id="Egami_Video_Audio_Filters_AudioMixer__ctor_System_Int32_Egami_Video_Audio_ChannelLayout_System_Int32_Egami_Video_MediaContext_" data-uid="Egami.Video.Audio.Filters.AudioMixer.#ctor(System.Int32,Egami.Video.Audio.ChannelLayout,System.Int32,Egami.Video.MediaContext)">
+  AudioMixer(int, ChannelLayout, int, MediaContext?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/Filters/AudioMixer.cs/#L51"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Creates a mixer.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public AudioMixer(int sampleRate, ChannelLayout layout, int inputs, MediaContext? context = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>sampleRate</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The output sample rate in hertz.</p>
+</dd>
+    <dt><code>layout</code> <a class="xref" href="Egami.Video.Audio.ChannelLayout.html">ChannelLayout</a></dt>
+    <dd><p>The output channels.</p>
+</dd>
+    <dt><code>inputs</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The number of inputs, at least 1.</p>
+</dd>
+    <dt><code>context</code> <a class="xref" href="Egami.Video.MediaContext.html">MediaContext</a></dt>
+    <dd><p>The context frames are allocated from, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.Video.MediaContext.html#Egami_Video_MediaContext_Default">Default</a>.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>The rate is not positive, the layout has no channels, or there are no inputs.</p>
+</dd>
+  </dl>
+
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="Egami_Video_Audio_Filters_AudioMixer_Duration_" data-uid="Egami.Video.Audio.Filters.AudioMixer.Duration*"></a>
+
+  <h3 id="Egami_Video_Audio_Filters_AudioMixer_Duration" data-uid="Egami.Video.Audio.Filters.AudioMixer.Duration">
+  Duration
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/Filters/AudioMixer.cs/#L80"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets when the output ends. Default <a class="xref" href="Egami.Video.Audio.Filters.MixDuration.html#Egami_Video_Audio_Filters_MixDuration_Longest">Longest</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public MixDuration Duration { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Video.Audio.Filters.MixDuration.html">MixDuration</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Audio_Filters_AudioMixer_InputCount_" data-uid="Egami.Video.Audio.Filters.AudioMixer.InputCount*"></a>
+
+  <h3 id="Egami_Video_Audio_Filters_AudioMixer_InputCount" data-uid="Egami.Video.Audio.Filters.AudioMixer.InputCount">
+  InputCount
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/Filters/AudioMixer.cs/#L74"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the number of inputs.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int InputCount { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Audio_Filters_AudioMixer_Layout_" data-uid="Egami.Video.Audio.Filters.AudioMixer.Layout*"></a>
+
+  <h3 id="Egami_Video_Audio_Filters_AudioMixer_Layout" data-uid="Egami.Video.Audio.Filters.AudioMixer.Layout">
+  Layout
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/Filters/AudioMixer.cs/#L71"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the output channels.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public ChannelLayout Layout { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Video.Audio.ChannelLayout.html">ChannelLayout</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Audio_Filters_AudioMixer_Normalize_" data-uid="Egami.Video.Audio.Filters.AudioMixer.Normalize*"></a>
+
+  <h3 id="Egami_Video_Audio_Filters_AudioMixer_Normalize" data-uid="Egami.Video.Audio.Filters.AudioMixer.Normalize">
+  Normalize
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/Filters/AudioMixer.cs/#L77"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether to divide the sum by the sum of the weights, so the mix cannot be louder than its loudest input. Off by default.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool Normalize { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Audio_Filters_AudioMixer_SampleRate_" data-uid="Egami.Video.Audio.Filters.AudioMixer.SampleRate*"></a>
+
+  <h3 id="Egami_Video_Audio_Filters_AudioMixer_SampleRate" data-uid="Egami.Video.Audio.Filters.AudioMixer.SampleRate">
+  SampleRate
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/Filters/AudioMixer.cs/#L68"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the output sample rate.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int SampleRate { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="Egami_Video_Audio_Filters_AudioMixer_Complete_" data-uid="Egami.Video.Audio.Filters.AudioMixer.Complete*"></a>
+
+  <h3 id="Egami_Video_Audio_Filters_AudioMixer_Complete_System_Int32_" data-uid="Egami.Video.Audio.Filters.AudioMixer.Complete(System.Int32)">
+  Complete(int)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/Filters/AudioMixer.cs/#L160"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Ends one input.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Complete(int input)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>input</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The input.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Audio_Filters_AudioMixer_Dispose_" data-uid="Egami.Video.Audio.Filters.AudioMixer.Dispose*"></a>
+
+  <h3 id="Egami_Video_Audio_Filters_AudioMixer_Dispose" data-uid="Egami.Video.Audio.Filters.AudioMixer.Dispose">
+  Dispose()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/Filters/AudioMixer.cs/#L207"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Drops the frames ready.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Dispose()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Audio_Filters_AudioMixer_Flush_" data-uid="Egami.Video.Audio.Filters.AudioMixer.Flush*"></a>
+
+  <h3 id="Egami_Video_Audio_Filters_AudioMixer_Flush" data-uid="Egami.Video.Audio.Filters.AudioMixer.Flush">
+  Flush()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/Filters/AudioMixer.cs/#L179"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Ends every input, so the rest of the mix comes out.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Flush()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Audio_Filters_AudioMixer_GetWeight_" data-uid="Egami.Video.Audio.Filters.AudioMixer.GetWeight*"></a>
+
+  <h3 id="Egami_Video_Audio_Filters_AudioMixer_GetWeight_System_Int32_" data-uid="Egami.Video.Audio.Filters.AudioMixer.GetWeight(System.Int32)">
+  GetWeight(int)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/Filters/AudioMixer.cs/#L85"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns an input's weight.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public double GetWeight(int input)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>input</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The input.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></dt>
+    <dd><p>The linear weight; 1 unless set.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Audio_Filters_AudioMixer_Reset_" data-uid="Egami.Video.Audio.Filters.AudioMixer.Reset*"></a>
+
+  <h3 id="Egami_Video_Audio_Filters_AudioMixer_Reset" data-uid="Egami.Video.Audio.Filters.AudioMixer.Reset">
+  Reset()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/Filters/AudioMixer.cs/#L193"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Drops everything held, for example after a seek; the inputs start again. The weights stay.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Reset()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Audio_Filters_AudioMixer_Send_" data-uid="Egami.Video.Audio.Filters.AudioMixer.Send*"></a>
+
+  <h3 id="Egami_Video_Audio_Filters_AudioMixer_Send_System_Int32_Egami_Video_Audio_AudioFrame_" data-uid="Egami.Video.Audio.Filters.AudioMixer.Send(System.Int32,Egami.Video.Audio.AudioFrame)">
+  Send(int, AudioFrame)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/Filters/AudioMixer.cs/#L108"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gives a frame of one input, in any sample format, rate and channels. The caller keeps the frame.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Send(int input, AudioFrame frame)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>input</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The input.</p>
+</dd>
+    <dt><code>frame</code> <a class="xref" href="Egami.Video.Audio.AudioFrame.html">AudioFrame</a></dt>
+    <dd><p>The frame.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>The input does not exist.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>The frame's rate or channels differ from the input's first frame.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.invalidoperationexception">InvalidOperationException</a></dt>
+    <dd><p>The input has been completed.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Video_Audio_Filters_AudioMixer_SetWeight_" data-uid="Egami.Video.Audio.Filters.AudioMixer.SetWeight*"></a>
+
+  <h3 id="Egami_Video_Audio_Filters_AudioMixer_SetWeight_System_Int32_System_Double_" data-uid="Egami.Video.Audio.Filters.AudioMixer.SetWeight(System.Int32,System.Double)">
+  SetWeight(int, double)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/Filters/AudioMixer.cs/#L91"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Sets an input's weight, its linear gain in the mix. A change after mixing has started moves over 5 ms.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void SetWeight(int input, double weight)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>input</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The input.</p>
+</dd>
+    <dt><code>weight</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></dt>
+    <dd><p>The linear weight: 1 as it is, 0.5 at half level, 0 muted.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>The input does not exist, or the weight is NaN or infinite.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Video_Audio_Filters_AudioMixer_TryReceive_" data-uid="Egami.Video.Audio.Filters.AudioMixer.TryReceive*"></a>
+
+  <h3 id="Egami_Video_Audio_Filters_AudioMixer_TryReceive_Egami_Video_Audio_AudioFrame__" data-uid="Egami.Video.Audio.Filters.AudioMixer.TryReceive(Egami.Video.Audio.AudioFrame@)">
+  TryReceive(out AudioFrame?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/Filters/AudioMixer.cs/#L190"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Takes the next mixed frame.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool TryReceive(out AudioFrame? frame)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>frame</code> <a class="xref" href="Egami.Video.Audio.AudioFrame.html">AudioFrame</a></dt>
+    <dd><p>The frame, F32 planar, which the caller must dispose.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>Whether a frame was ready.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/Filters/AudioMixer.cs/#L33" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

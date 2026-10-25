@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Interface IAudioFilter | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Interface IAudioFilter | Egami ">
+      
+      <meta name="description" content="A streaming audio filter: frames go in through  and come out through , the same shape as , decoders and encoders, so filters, the resampler and encoders plug together. Frames of any sample format go in; frames come out as  with exact timestamps. Implement it to put a filter of your own in an .">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_Video_Audio_Filters_IAudioFilter.md&amp;value=---%0Auid%3A%20Egami.Video.Audio.Filters.IAudioFilter%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.Video.Audio.Filters.IAudioFilter">
+
+
+
+  <h1 id="Egami_Video_Audio_Filters_IAudioFilter" data-uid="Egami.Video.Audio.Filters.IAudioFilter" class="text-break">
+Interface IAudioFilter  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/Filters/IAudioFilter.cs/#L14"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a>.<a class="xref" href="Egami.Video.html">Video</a>.<a class="xref" href="Egami.Video.Audio.html">Audio</a>.<a class="xref" href="Egami.Video.Audio.Filters.html">Filters</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.Video.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>A streaming audio filter: frames go in through <a class="xref" href="Egami.Video.Audio.Filters.IAudioFilter.html#Egami_Video_Audio_Filters_IAudioFilter_Send_Egami_Video_Audio_AudioFrame_">Send(AudioFrame)</a> and come out through <a class="xref" href="Egami.Video.Audio.Filters.IAudioFilter.html#Egami_Video_Audio_Filters_IAudioFilter_TryReceive_Egami_Video_Audio_AudioFrame__">TryReceive(out AudioFrame?)</a>, the same
+shape as <a class="xref" href="Egami.Video.Audio.Resampler.html">Resampler</a>, decoders and encoders, so filters, the resampler and encoders plug together. Frames of any
+sample format go in; frames come out as <a class="xref" href="Egami.Video.Audio.SampleFormat.html#Egami_Video_Audio_SampleFormat_F32Planar">F32Planar</a> with exact timestamps. Implement it to put a
+filter of your own in an <a class="xref" href="Egami.Video.Audio.Filters.AudioFilterChain.html">AudioFilterChain</a>.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public interface IAudioFilter : IDisposable</code></pre>
+  </div>
+
+
+
+
+
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.idisposable.dispose">IDisposable.Dispose()</a>
+    </div>
+  </dd></dl>
+
+
+
+  <h2 id="Egami_Video_Audio_Filters_IAudioFilter_examples">Examples</h2>
+  <pre><code class="lang-csharp">// Fade in over 2 s, then turn down 3 dB: frames of any format go in, F32 planar frames come out.
+using AudioFilterChain chain = new AudioFilterChain(48000, ChannelLayout.Stereo)
+    .Add(new Fade(FadeDirection.In, MediaTime.Zero, MediaTime.FromSeconds(2)))
+    .Add(new Gain(-3));
+foreach (AudioFrame frame in frames)
+{
+    chain.Send(frame);
+    while (chain.TryReceive(out AudioFrame? output))
+    {
+        samples += output.SampleCount; // write it to an AudioWriter or encoder here
+        output.Dispose();
+    }
+}
+
+chain.Flush();</code></pre>
+
+
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="Egami_Video_Audio_Filters_IAudioFilter_Latency_" data-uid="Egami.Video.Audio.Filters.IAudioFilter.Latency*"></a>
+
+  <h3 id="Egami_Video_Audio_Filters_IAudioFilter_Latency" data-uid="Egami.Video.Audio.Filters.IAudioFilter.Latency">
+  Latency
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/Filters/IAudioFilter.cs/#L17"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the time the filter holds input back before the output for it is ready, such as a lookahead.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">MediaTime Latency { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Video.MediaTime.html">MediaTime</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="Egami_Video_Audio_Filters_IAudioFilter_Flush_" data-uid="Egami.Video.Audio.Filters.IAudioFilter.Flush*"></a>
+
+  <h3 id="Egami_Video_Audio_Filters_IAudioFilter_Flush" data-uid="Egami.Video.Audio.Filters.IAudioFilter.Flush">
+  Flush()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/Filters/IAudioFilter.cs/#L29"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Tells the filter no more input comes, so it hands out what it still holds, such as a lookahead or a tail.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">void Flush()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Audio_Filters_IAudioFilter_Reset_" data-uid="Egami.Video.Audio.Filters.IAudioFilter.Reset*"></a>
+
+  <h3 id="Egami_Video_Audio_Filters_IAudioFilter_Reset" data-uid="Egami.Video.Audio.Filters.IAudioFilter.Reset">
+  Reset()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/Filters/IAudioFilter.cs/#L32"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Drops the input held and the frames ready, for example after a seek; the next frame starts the stream again.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">void Reset()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Audio_Filters_IAudioFilter_Send_" data-uid="Egami.Video.Audio.Filters.IAudioFilter.Send*"></a>
+
+  <h3 id="Egami_Video_Audio_Filters_IAudioFilter_Send_Egami_Video_Audio_AudioFrame_" data-uid="Egami.Video.Audio.Filters.IAudioFilter.Send(Egami.Video.Audio.AudioFrame)">
+  Send(AudioFrame)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/Filters/IAudioFilter.cs/#L21"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gives the filter a frame. The caller keeps the frame.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">void Send(AudioFrame frame)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>frame</code> <a class="xref" href="Egami.Video.Audio.AudioFrame.html">AudioFrame</a></dt>
+    <dd><p>The frame, in any sample format.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Audio_Filters_IAudioFilter_TryReceive_" data-uid="Egami.Video.Audio.Filters.IAudioFilter.TryReceive*"></a>
+
+  <h3 id="Egami_Video_Audio_Filters_IAudioFilter_TryReceive_Egami_Video_Audio_AudioFrame__" data-uid="Egami.Video.Audio.Filters.IAudioFilter.TryReceive(Egami.Video.Audio.AudioFrame@)">
+  TryReceive(out AudioFrame?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/Filters/IAudioFilter.cs/#L26"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Takes the next filtered frame.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">bool TryReceive(out AudioFrame? frame)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>frame</code> <a class="xref" href="Egami.Video.Audio.AudioFrame.html">AudioFrame</a></dt>
+    <dd><p>The frame, which the caller must dispose.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>Whether a frame was ready.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/Filters/IAudioFilter.cs/#L14" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

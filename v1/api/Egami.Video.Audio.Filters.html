@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Namespace Egami.Video.Audio.Filters | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Namespace Egami.Video.Audio.Filters | Egami ">
+      
+      
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.Video.Audio.Filters">
+
+  <h1 id="Egami_Video_Audio_Filters" data-uid="Egami.Video.Audio.Filters" class="text-break">Namespace Egami.Video.Audio.Filters</h1>
+  <div class="markdown level0 summary"></div>
+  <div class="markdown level0 conceptual"></div>
+  <div class="markdown level0 remarks"></div>
+
+    <h3 id="classes">
+Classes
+</h3>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Audio.Filters.AudioFilter.html">AudioFilter</a></dt>
+      <dd><p>The base of Egami.Video's own audio filters. It takes the rate and channels from the first frame, converts every frame to
+<a class="xref" href="Egami.Video.Audio.SampleFormat.html#Egami_Video_Audio_SampleFormat_F32Planar">F32Planar</a> once on the way in, and queues the output. Inside an <a class="xref" href="Egami.Video.Audio.Filters.AudioFilterChain.html">AudioFilterChain</a>
+the converted frames pass from filter to filter without another copy, and filters that keep the length (gain, fades, pan)
+work on them in place. To write a filter of your own, implement <a class="xref" href="Egami.Video.Audio.Filters.IAudioFilter.html">IAudioFilter</a>.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Audio.Filters.AudioFilterChain.html">AudioFilterChain</a></dt>
+      <dd><p>Runs several filters on one input in a single pass: each frame is converted to <a class="xref" href="Egami.Video.Audio.SampleFormat.html#Egami_Video_Audio_SampleFormat_F32Planar">F32Planar</a> once,
+then handed from filter to filter in order, in place where the filter keeps the length. The chain is itself an
+<a class="xref" href="Egami.Video.Audio.Filters.IAudioFilter.html">IAudioFilter</a>, owns the filters added to it and disposes them with itself.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Audio.Filters.AudioMixer.html">AudioMixer</a></dt>
+      <dd><p>Mixes several streams into one by adding them, each times its weight, like ffmpeg's <code>amix</code> with
+<code>normalize=0</code>. Inputs are placed on the output by their timestamps, so one that starts later comes in at its time;
+a gap inside an input is silence. Inputs at another rate or with other channels are resampled with <a class="xref" href="Egami.Video.Audio.Resampler.html">Resampler</a>
+and remixed with <a class="xref" href="Egami.Video.Audio.ChannelMixer.html">ChannelMixer</a>'s default matrix on the way in. The sum is not divided by the number of inputs
+unless <a class="xref" href="Egami.Video.Audio.Filters.AudioMixer.html#Egami_Video_Audio_Filters_AudioMixer_Normalize">Normalize</a> is set, so a voice over music keeps its level; put a limiter after it if the sum can clip.
+Send each input's frames with <a class="xref" href="Egami.Video.Audio.Filters.AudioMixer.html#Egami_Video_Audio_Filters_AudioMixer_Send_System_Int32_Egami_Video_Audio_AudioFrame_">Send(int, AudioFrame)</a> and end each with <a class="xref" href="Egami.Video.Audio.Filters.AudioMixer.html#Egami_Video_Audio_Filters_AudioMixer_Complete_System_Int32_">Complete(int)</a>: output waits until every input
+has either sent something or ended.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Audio.Filters.Crossfade.html">Crossfade</a></dt>
+      <dd><p>Joins two streams with an overlap: the end of the first fades out while the start of the second fades in, like ffmpeg's
+<code>acrossfade</code>. The output is the first stream up to its last <a class="xref" href="Egami.Video.Audio.Filters.Crossfade.html#Egami_Video_Audio_Filters_Crossfade_Duration">Duration</a>, then the overlap mixed, then the
+rest of the second stream, so it lasts the two lengths minus the overlap. The overlap shortens to the shorter stream's
+length when one is shorter. Send each input's frames with <a class="xref" href="Egami.Video.Audio.Filters.Crossfade.html#Egami_Video_Audio_Filters_Crossfade_Send_System_Int32_Egami_Video_Audio_AudioFrame_">Send(int, AudioFrame)</a> and end each with <a class="xref" href="Egami.Video.Audio.Filters.Crossfade.html#Egami_Video_Audio_Filters_Crossfade_Complete_System_Int32_">Complete(int)</a>;
+frames of the second input wait until the first has ended. Both inputs must have the same rate and channels. Output
+starts at the first input's first timestamp and runs on without gaps.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Audio.Filters.Delay.html">Delay</a></dt>
+      <dd><p>Delays channels by putting silence in front of them, like ffmpeg's <code>adelay</code>: each channel can have its own delay, for
+example to line up microphones or fix lip sync. The output keeps the input's timestamps and gets longer by the longest
+delay; <a class="xref" href="Egami.Video.Audio.Filters.AudioFilter.html#Egami_Video_Audio_Filters_AudioFilter_Flush">Flush()</a> hands out the tail, so no input is lost.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Audio.Filters.Fade.html">Fade</a></dt>
+      <dd><p>Fades the sound in or out over a stretch of the stream's time line. A fade in is silent before <a class="xref" href="Egami.Video.Audio.Filters.Fade.html#Egami_Video_Audio_Filters_Fade_Start">Start</a> and
+reaches full level on the exact sample at <a class="xref" href="Egami.Video.Audio.Filters.Fade.html#Egami_Video_Audio_Filters_Fade_Start">Start</a> plus <a class="xref" href="Egami.Video.Audio.Filters.Fade.html#Egami_Video_Audio_Filters_Fade_Duration">Duration</a>; a fade out is full level before
+<a class="xref" href="Egami.Video.Audio.Filters.Fade.html#Egami_Video_Audio_Filters_Fade_Start">Start</a> and silent from its end on. Times are on the frames' time line, rounded to whole samples. The curves
+give the same gains as ffmpeg's <code>afade</code> with the curve each value names. Works in place.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Audio.Filters.Gain.html">Gain</a></dt>
+      <dd><p>Changes the level, by a fixed gain and, optionally, an <a class="xref" href="Egami.Video.Audio.Filters.Gain.html#Egami_Video_Audio_Filters_Gain_Envelope">Envelope</a> that changes over time. A change to
+<a class="xref" href="Egami.Video.Audio.Filters.Gain.html#Egami_Video_Audio_Filters_Gain_Decibels">Decibels</a> or <a class="xref" href="Egami.Video.Audio.Filters.Gain.html#Egami_Video_Audio_Filters_Gain_Factor">Factor</a> between frames moves to the new gain over 5 ms, so it does not click. Unity
+gain with no envelope passes samples through unchanged. Works in place; nothing is clipped, so a gain above 0 dB can take
+samples past full scale until an encoder or a limiter clamps them.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Audio.Filters.GainEnvelope.html">GainEnvelope</a></dt>
+      <dd><p>A gain that changes over time, in decibels, for <a class="xref" href="Egami.Video.Audio.Filters.Gain.html#Egami_Video_Audio_Filters_Gain_Envelope">Envelope</a>: a list of <a class="xref" href="Egami.Video.Keyframe.html">Keyframe</a>s whose
+values are decibels. Before the first keyframe the gain is the first value, after the last one the last value, and between
+two the value eases from one to the next in decibels. A value of <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double.negativeinfinity">NegativeInfinity</a> is silence; a
+segment to or from it moves in linear amplitude instead, so the fade still sounds smooth.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Audio.Filters.Pad.html">Pad</a></dt>
+      <dd><p>Adds silence at the end of a stream, like ffmpeg's <code>apad</code>: a fixed amount, or as much as it takes for the stream to
+last at least a total length. The silence comes out on <a class="xref" href="Egami.Video.Audio.Filters.AudioFilter.html#Egami_Video_Audio_Filters_AudioFilter_Flush">Flush()</a>; the input passes through.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Audio.Filters.Pan.html">Pan</a></dt>
+      <dd><p>Places a mono or stereo input in a stereo output. <a class="xref" href="Egami.Video.Audio.Filters.Pan.html#Egami_Video_Audio_Filters_Pan_Position">Position</a> pans a mono input with the constant-power law
+(-3 dB in each channel at the centre, like ffmpeg's <code>pan=stereo|c0=0.7071<em>c0|c1=0.7071</em>c0</code>); on a stereo input it
+turns one side down along the same law, scaled so the centre is unchanged. <a class="xref" href="Egami.Video.Audio.Filters.Pan.html#Egami_Video_Audio_Filters_Pan_Balance">Balance</a> turns one side down
+in a straight line. <a class="xref" href="Egami.Video.Audio.Filters.Pan.html#Egami_Video_Audio_Filters_Pan_Swap">Swap</a> exchanges left and right, and <a class="xref" href="Egami.Video.Audio.Filters.Pan.html#Egami_Video_Audio_Filters_Pan_InvertLeft">InvertLeft</a> and
+<a class="xref" href="Egami.Video.Audio.Filters.Pan.html#Egami_Video_Audio_Filters_Pan_InvertRight">InvertRight</a> flip a channel's polarity. Changes to the position or balance between frames move over 5 ms.
+For any other channel matrix use <a class="xref" href="Egami.Video.Audio.ChannelMixer.html">ChannelMixer</a>.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Audio.Filters.Retime.html">Retime</a></dt>
+      <dd><p>Gives a stream new timestamps, like ffmpeg's <code>asetpts=PTS-STARTPTS</code>: the first sample gets <a class="xref" href="Egami.Video.Audio.Filters.Retime.html#Egami_Video_Audio_Filters_Retime_Start">Start</a> and
+every later one follows on at the sample rate, so gaps and jitter in the input's timestamps go away.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Audio.Filters.Speed.html">Speed</a></dt>
+      <dd><p>Plays a stream faster or slower with the pitch following, like a tape or ffmpeg's <code>asetrate</code> followed by
+<code>aresample</code>: the samples are resampled with <a class="xref" href="Egami.Video.Audio.Resampler.html">Resampler</a> as if they had been recorded at the rate times
+<a class="xref" href="Egami.Video.Audio.Filters.Speed.html#Egami_Video_Audio_Filters_Speed_Factor">Factor</a>. The output keeps the sample rate and lasts the input's length divided by the factor; it starts at
+the input's first timestamp. Cheaper than <a class="xref" href="Egami.Video.Audio.Filters.Tempo.html">Tempo</a>, which keeps the pitch. The factor is used as a fraction
+with a denominator up to 1000.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Audio.Filters.Tempo.html">Tempo</a></dt>
+      <dd><p>Changes the tempo and keeps the pitch, with WSOLA (waveform similarity overlap-add, after Verhelst and Roelands, 1993): the
+output is built of overlapping Hann windows of the input, each taken at the place near its ideal position whose waveform
+best continues the window before it. The output keeps the sample rate, starts at the input's first timestamp and lasts the
+input's length divided by <a class="xref" href="Egami.Video.Audio.Filters.Tempo.html#Egami_Video_Audio_Filters_Tempo_Factor">Factor</a>, rounded to the nearest sample. A factor of 1 passes samples through. For a
+speed change where the pitch follows, <a class="xref" href="Egami.Video.Audio.Filters.Speed.html">Speed</a> is cheaper.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Audio.Filters.Trim.html">Trim</a></dt>
+      <dd><p>Keeps the part of a stream between two times on its time line, like ffmpeg's <code>atrim</code>, cut on the exact sample. The
+samples kept keep their timestamps; follow with <a class="xref" href="Egami.Video.Audio.Filters.Retime.html">Retime</a> to start the result at zero.</p>
+</dd>
+    </dl>
+    <h3 id="interfaces">
+Interfaces
+</h3>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Audio.Filters.IAudioFilter.html">IAudioFilter</a></dt>
+      <dd><p>A streaming audio filter: frames go in through <a class="xref" href="Egami.Video.Audio.Filters.IAudioFilter.html#Egami_Video_Audio_Filters_IAudioFilter_Send_Egami_Video_Audio_AudioFrame_">Send(AudioFrame)</a> and come out through <a class="xref" href="Egami.Video.Audio.Filters.IAudioFilter.html#Egami_Video_Audio_Filters_IAudioFilter_TryReceive_Egami_Video_Audio_AudioFrame__">TryReceive(out AudioFrame?)</a>, the same
+shape as <a class="xref" href="Egami.Video.Audio.Resampler.html">Resampler</a>, decoders and encoders, so filters, the resampler and encoders plug together. Frames of any
+sample format go in; frames come out as <a class="xref" href="Egami.Video.Audio.SampleFormat.html#Egami_Video_Audio_SampleFormat_F32Planar">F32Planar</a> with exact timestamps. Implement it to put a
+filter of your own in an <a class="xref" href="Egami.Video.Audio.Filters.AudioFilterChain.html">AudioFilterChain</a>.</p>
+</dd>
+    </dl>
+    <h3 id="enums">
+Enums
+</h3>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Audio.Filters.FadeCurve.html">FadeCurve</a></dt>
+      <dd><p>The shape of a <a class="xref" href="Egami.Video.Audio.Filters.Fade.html">Fade</a> or <a class="xref" href="Egami.Video.Audio.Filters.Crossfade.html">Crossfade</a>, as the gain of a fade in over its length.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Audio.Filters.FadeDirection.html">FadeDirection</a></dt>
+      <dd><p>Whether a <a class="xref" href="Egami.Video.Audio.Filters.Fade.html">Fade</a> brings the sound in or takes it out.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Audio.Filters.MixDuration.html">MixDuration</a></dt>
+      <dd><p>When an <a class="xref" href="Egami.Video.Audio.Filters.AudioMixer.html">AudioMixer</a>'s output ends.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Audio.Filters.TempoPreset.html">TempoPreset</a></dt>
+      <dd><p>What a <a class="xref" href="Egami.Video.Audio.Filters.Tempo.html">Tempo</a> is tuned for: the length of its windows and how far it searches.</p>
+</dd>
+    </dl>
+
+
+</article>
+
+        <div class="contribution d-print-none">
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

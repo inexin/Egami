@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Audio filters | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Audio filters | Egami ">
+      
+      
+      <link rel="icon" href="../../images/favicon.ico">
+      <link rel="stylesheet" href="../../public/docfx.min.css">
+      <link rel="stylesheet" href="../../public/main.css">
+      <meta name="docfx:navrel" content="../../toc.html">
+      <meta name="docfx:tocrel" content="../toc.html">
+      
+      <meta name="docfx:rel" content="../../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/blob/main/docs/articles/guides/audio-filters.md/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../../index.html">
+            <img id="logo" class="svg" src="../../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="audio-filters">Audio filters</h1>
+
+<p>Egami.Video's audio filters change level, time and placement of decoded audio as it streams: gain and gain envelopes, fades
+and crossfades, mixing and panning, delay, padding, trimming and new timestamps, and tempo and speed changes. They live in
+<code>Egami.Video.Audio.Filters</code> and work on the <code>AudioFrame</code>s that <code>AudioReader</code> and the decoders hand out (see <a href="audio.html">Audio</a>).</p>
+<h2 id="the-filter-loop">The filter loop</h2>
+<p>Every filter is an <code>IAudioFilter</code> with the same calls as <code>Resampler</code>: <code>Send</code> a frame, <code>TryReceive</code> the frames that are ready,
+<code>Flush</code> at the end of the input and <code>Reset</code> after a seek. <code>Latency</code> says how much input a filter holds back, such as the
+lookahead of <code>Tempo</code>. Frames of any sample format go in and are converted once to planar float; frames come out as
+<code>SampleFormat.F32Planar</code> with exact timestamps. The filters that keep the length work on the frame in place, so a steady
+stream allocates no sample memory.</p>
+<p><code>AudioFilterChain</code> runs several filters on one input in one pass and is itself a filter. It owns the filters added to it.
+Egami.Video's filters derive from <code>AudioFilter</code>, which takes the rate and channels from the first frame and refuses frames
+that differ; to put a filter of your own in a chain, implement <code>IAudioFilter</code>.</p>
+<pre><code class="lang-csharp">// Fade in over 2 s, then turn down 3 dB: frames of any format go in, F32 planar frames come out.
+using AudioFilterChain chain = new AudioFilterChain(48000, ChannelLayout.Stereo)
+    .Add(new Fade(FadeDirection.In, MediaTime.Zero, MediaTime.FromSeconds(2)))
+    .Add(new Gain(-3));
+foreach (AudioFrame frame in frames)
+{
+    chain.Send(frame);
+    while (chain.TryReceive(out AudioFrame? output))
+    {
+        samples += output.SampleCount; // write it to an AudioWriter or encoder here
+        output.Dispose();
+    }
+}
+
+chain.Flush();
+</code></pre><h2 id="gain">Gain</h2>
+<p><code>Gain</code> changes the level by a fixed number of <code>Decibels</code> or a linear <code>Factor</code>. Changing either between frames moves to the new
+gain over 5 ms, so it does not click; unity gain passes samples through unchanged. Its <code>Envelope</code>, a <code>GainEnvelope</code>, changes
+the gain over time: a list of <code>Keyframe</code>s on the frames' time line, values in decibels, each with an <code>Easing</code> (linear, ease
+in, ease out, ease in and out, or hold) to the next. The same <code>Keyframe</code> type animates layers in video editing.</p>
+<pre><code class="lang-csharp">// Duck to -12 dB from 1 s to 2 s, easing down and back up over a quarter second.
+using Gain duck = new()
+{
+    Envelope = new GainEnvelope(
+        new Keyframe(MediaTime.FromSeconds(0.75), 0, Easing.EaseInOut),
+        new Keyframe(MediaTime.FromSeconds(1), -12),
+        new Keyframe(MediaTime.FromSeconds(2), -12, Easing.EaseInOut),
+        new Keyframe(MediaTime.FromSeconds(2.25), 0)),
+};
+</code></pre><h2 id="fades-and-crossfades">Fades and crossfades</h2>
+<p><code>Fade</code> fades in (<code>FadeDirection.In</code>, silent before its start) or out (<code>FadeDirection.Out</code>, silent after its end) over a
+stretch of the time line, and reaches full level or silence on the exact sample. <code>FadeCurve</code> has five shapes with the same
+gains as FFmpeg's <code>afade</code> curves: <code>Linear</code> (<code>tri</code>, the default), <code>EqualPower</code> (<code>qsin</code>), <code>Logarithmic</code> (<code>log</code>),
+<code>Exponential</code> (<code>exp</code>) and <code>SCurve</code> (<code>hsin</code>).</p>
+<pre><code class="lang-csharp">// A 3 s clip: fade out over its last second along an S curve.
+using Fade fadeOut = new(FadeDirection.Out, MediaTime.FromSeconds(2), MediaTime.FromSeconds(1), FadeCurve.SCurve);
+</code></pre>
+<p><code>Crossfade</code> joins two streams with an overlap, like FFmpeg's <code>acrossfade</code>: the first stream's end fades out as the second's
+start fades in, <code>EqualPower</code> by default so unrelated material keeps its loudness. It has two inputs, so it takes
+<code>Send(input, frame)</code> and <code>Complete(input)</code> instead of the single-input calls.</p>
+<pre><code class="lang-csharp">// Join two clips with a 1 s equal-power overlap: 3 s + 2 s - 1 s = 4 s of output.
+using Crossfade crossfade = new(MediaTime.FromSeconds(1));
+foreach (AudioFrame frame in first)
+{
+    crossfade.Send(0, frame);
+}
+
+crossfade.Complete(0);
+foreach (AudioFrame frame in second)
+{
+    crossfade.Send(1, frame);
+}
+
+crossfade.Complete(1);
+int samples = 0;
+while (crossfade.TryReceive(out AudioFrame? output))
+{
+    samples += output.SampleCount;
+    output.Dispose();
+}
+</code></pre><h2 id="mixing-and-panning">Mixing and panning</h2>
+<p><code>AudioMixer</code> adds several inputs, each times its weight (<code>SetWeight</code>), and places each by its timestamps, so a clip that starts
+later comes in at its time. Inputs at another rate or with other channels are resampled and remixed on the way in. It does not
+divide by the number of inputs unless <code>Normalize</code> is set, so a voice over music keeps its level. <code>MixDuration</code> says when the
+mix ends: with the longest input (the default), the shortest, or input 0.</p>
+<p><code>Pan</code> places a mono input in stereo with the constant-power law (-3 dB in each channel at the centre), turns one side of a
+stereo input down with <code>Position</code> or <code>Balance</code>, swaps the channels and flips their polarity. For any other channel matrix use
+<code>ChannelMixer</code>.</p>
+<pre><code class="lang-csharp">// A mono voice at 44.1 kHz over stereo music at 48 kHz, the music at half level: the voice is panned a little left,
+// then resampled and placed by its timestamps on the way into the mixer.
+using Pan pan = new(-0.3);
+using AudioMixer mixer = new(48000, ChannelLayout.Stereo, inputs: 2);
+mixer.SetWeight(0, 0.5);
+foreach (AudioFrame frame in music)
+{
+    mixer.Send(0, frame);
+}
+
+foreach (AudioFrame frame in voice)
+{
+    pan.Send(frame);
+    while (pan.TryReceive(out AudioFrame? panned))
+    {
+        mixer.Send(1, panned);
+        panned.Dispose();
+    }
+}
+
+mixer.Flush();
+</code></pre><h2 id="timing">Timing</h2>
+<p><code>Delay</code> puts silence in front of each channel, by one delay or one per channel, and hands out the delayed tail on <code>Flush</code>.
+<code>Pad</code> adds silence at the end, a fixed amount or up to a length (<code>Pad.ToLength</code>). <code>Trim</code> keeps the part between two times, cut
+on the exact sample, and keeps its timestamps; <code>Retime</code> gives the stream new timestamps that start at a time and run on without
+gaps.</p>
+<pre><code class="lang-csharp">// Keep 0.5 s to 2.5 s, start it at zero, delay the right channel 20 ms and add half a second of silence.
+using AudioFilterChain chain = new AudioFilterChain(48000, ChannelLayout.Stereo)
+    .Add(new Trim(MediaTime.FromSeconds(0.5), MediaTime.FromSeconds(2.5)))
+    .Add(new Retime())
+    .Add(new Delay([MediaTime.Zero, MediaTime.FromSeconds(0.02)]))
+    .Add(new Pad(MediaTime.FromSeconds(0.5)));
+</code></pre><h2 id="tempo-and-speed">Tempo and speed</h2>
+<p><code>Tempo</code> plays faster or slower and keeps the pitch, from a quarter of the speed to four times, with WSOLA (waveform similarity
+overlap-add). <code>TempoPreset.Music</code> uses longer windows for steady rhythm and low notes, <code>TempoPreset.Speech</code> shorter ones for
+speech. The output lasts the input's length divided by the factor, to the sample. <code>Speed</code> changes speed and pitch together by
+resampling, like a tape played faster, and costs less.</p>
+<pre><code class="lang-csharp">// A quarter faster with the pitch kept (3 s becomes 2.4 s); Speed would raise the pitch too, like a tape.
+using Tempo tempo = new(1.25, TempoPreset.Speech);
+using Speed speed = new(1.25);
+</code></pre>
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/docs/articles/guides/audio-filters.md/#L1" class="edit-link">Edit this page</a>
+        </div>
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>
