@@ -153,7 +153,7 @@
 !! -preset | ffmpeg -i in.mp4 -preset slow out.mkv
 !! -f hls | ffmpeg -i in.mp4 -c copy -f hls out.m3u8
 !! -movflags | ffmpeg -i in.mkv -c copy -movflags +faststart out.mp4
-!! -lavfi overlay | ffmpeg -i a.mkv -i logo.png -lavfi overlay out.mkv
+!! -lavfi blend | ffmpeg -i a.mkv -i b.mkv -lavfi blend out.mkv
 => info in.mp4 --format ffprobe | ffprobe -v quiet -print_format json -show_format -show_streams in.mp4
 => info in.mkv --format ffprobe --packets --track v:0 | ffprobe -select_streams v:0 -show_packets -of csv in.mkv
 => info in.mkv --format ffprobe --track v:0 | ffprobe -v error -select_streams v:0 -show_entries stream=width,height -of csv=s=x:p=0 in.mkv

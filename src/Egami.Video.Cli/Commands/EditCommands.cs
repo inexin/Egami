@@ -494,7 +494,7 @@ internal static class EditCommands
 
     private static string TransitionNames => "fade, fadeblack, fadewhite, dissolve, wipeleft, wiperight, wipeup, wipedown, slideleft, slideright, slideup, slidedown, circleopen, circleclose, clock, zoom, pixelize, blur";
 
-    private static Transition ParseTransition(string text)
+    internal static Transition ParseTransition(string text)
     {
         string[] parts = text.Split(':', 2);
         MediaTime duration = parts.Length == 2 ? Duration(parts[1], "--transition") : MediaTime.FromSeconds(1);
@@ -528,7 +528,7 @@ internal static class EditCommands
         return MediaTime.FromSeconds(value.Seconds);
     }
 
-    private static Rgba8 ParseColor(string text, string option) => Rgba8.TryFromHex(text, out Rgba8 hex)
+    internal static Rgba8 ParseColor(string text, string option) => Rgba8.TryFromHex(text, out Rgba8 hex)
         ? hex
         : text.ToLowerInvariant() switch
         {

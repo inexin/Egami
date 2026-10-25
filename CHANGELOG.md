@@ -24,6 +24,16 @@ comes after stage D.
   a gain, fade, pan and envelope chain runs 520 times real time, `Tempo` 610 times and `Speed` 500 times
   (`AudioFilterBenchmarks`).
 
+V9 Editing stage D: ffmpeg mode's editing filters (Build Plan task 22).
+
+- `egami-video ffmpeg` renders `-vf`, `-af` and `-filter_complex` graphs of fade, setpts, reverse, loop, tpad, fps, scale, xfade,
+  concat, overlay, hstack, vstack, xstack, zoompan, chromakey, colorkey, despill, hflip and vflip, with afade, acrossfade,
+  amix, atempo, volume, areverse and aloop, as one edit (`--explain` prints the edit file); `enable='between(t,a,b)'` sets a
+  layer's or an effect's time window, `-loop 1` takes an image, and deshake and the vidstab pair run `stabilize`. Lines the
+  edit cannot match stop with exit code 2 and the reason: freezeframes (it adds no time), loudnorm, setpts without the same
+  atempo, and expressions beyond the documented forms.
+- Gate: 67 copied ffmpeg lines run on real clips with the right length, or stop with the right message (`ffmpeg-edit-lines.txt`).
+
 V9 Editing stage C: stabilization (Build Plan tasks 20 and 21). All additive; the API review for stages C and D comes after
 stage D (task 25).
 

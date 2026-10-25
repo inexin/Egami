@@ -14,7 +14,7 @@ internal static class FfmpegMode
 {
     /// <summary>The option words ffmpeg mode takes, for help and the documentation.</summary>
     public const string FfmpegOptions =
-        "-i, -f, -y, -n, -ss, -to, -t, -itsoffset, -framerate, -map, -c, -codec, -c:v, -c:a, -c:s, -vcodec, -acodec, -scodec, -an, -vn, -sn, -dn, -r, -s, -frames:v, -vframes, -q:v, -qscale:v, -ar, -ac, -sample_fmt, -metadata, -map_metadata, -map_chapters, -vf, -filter:v, -af, -filter:a, -lavfi, -filter_complex (psnr, ssim, showwavespic, showspectrumpic), -segment_time, -segment_times, -update, -progress, -stats, -nostats, -stats_period, -hide_banner, -loglevel, -v, -nostdin, %d patterns and pipe:; filters scale, crop, pad, transpose, hflip, vflip, fps, thumbnail, select (scene), tile; to -f null the detection filters blackdetect, freezedetect, cropdetect, idet, signalstats, blurdetect, blockdetect, silencedetect, volumedetect, astats and ebur128; -f lavfi sources testsrc, testsrc2, smptebars, smptehdbars, color, sine, anullsrc and anoisesrc";
+        "-i, -f, -y, -n, -ss, -to, -t, -itsoffset, -framerate, -map, -c, -codec, -c:v, -c:a, -c:s, -vcodec, -acodec, -scodec, -an, -vn, -sn, -dn, -r, -s, -frames:v, -vframes, -q:v, -qscale:v, -ar, -ac, -sample_fmt, -metadata, -map_metadata, -map_chapters, -vf, -filter:v, -af, -filter:a, -lavfi, -filter_complex (psnr, ssim, showwavespic, showspectrumpic, and the editing filters), -loop 1 on an image, -segment_time, -segment_times, -update, -progress, -stats, -nostats, -stats_period, -hide_banner, -loglevel, -v, -nostdin, %d patterns and pipe:; filters scale, crop, pad, transpose, hflip, vflip, fps, thumbnail, select (scene), tile; to -f null the detection filters blackdetect, freezedetect, cropdetect, idet, signalstats, blurdetect, blockdetect, silencedetect, volumedetect, astats and ebur128; the editing filters " + FfmpegEdit.FilterList + ", with enable='between(t,a,b)', rendered as one edit; -f lavfi sources testsrc, testsrc2, smptebars, smptehdbars, color, sine, anullsrc and anoisesrc";
 
     /// <summary>The option words ffprobe mode takes.</summary>
     public const string FfprobeOptions =
@@ -51,7 +51,13 @@ internal static class FfmpegMode
     {
         bool explain = args.Contains("--explain");
         args = [.. args.Where(a => a != "--explain")];
-        IReadOnlyList<string[]> commands = FfmpegTranslator.Translate(FfmpegLine.Parse(args), session, explain);
+        FfmpegLine parsed = FfmpegLine.Parse(args);
+        if (FfmpegEdit.Wants(parsed))
+        {
+            return ExecuteEdit(session, parsed, explain);
+        }
+
+        IReadOnlyList<string[]> commands = FfmpegTranslator.Translate(parsed, session, explain);
         if (explain)
         {
             foreach (string[] command in commands)
@@ -64,15 +70,7 @@ internal static class FfmpegMode
 
         foreach (string[] command in commands)
         {
-            session.Info($"ffmpeg: {Quote(["egami-video", .. command])}");
-            int code = VideoCli.Run(command, session.Console, session.WorkingDirectory, session.Environment, inner =>
-            {
-                inner.Cancellation = session.Cancellation;
-                inner.Paths = session.Paths;
-                inner.MaxInputs = session.MaxInputs;
-                inner.ProgressNote = session.ProgressNote;
-                inner.Progress = session.Progress;
-            });
+            int code = RunNative(session, command, command);
             if (code != ExitCodes.Success)
             {
                 return code;
@@ -80,6 +78,62 @@ internal static class FfmpegMode
         }
 
         return ExitCodes.Success;
+    }
+
+    /// <summary>
+    /// A line with editing filters: one edit file rendered by <c>egami-video edit</c>, or <c>egami-video stabilize</c>. --explain
+    /// prints the command with <c>edit.json</c> for the file, then the file.
+    /// </summary>
+    private static int ExecuteEdit(VideoSession session, FfmpegLine line, bool explain)
+    {
+        if (!explain && line.Format != "null" && File.Exists(session.ResolvePath(line.Output!)) && !line.Overwrite)
+        {
+            throw new UsageException($"{line.Output} exists; ffmpeg -y overwrites it.");
+        }
+
+        FfmpegEdit.Mapped mapped = FfmpegEdit.Translate(line, session);
+        string[] shown = [.. mapped.Words.Select(w => w == FfmpegEdit.EditFile ? "edit.json" : w)];
+        if (explain)
+        {
+            session.Console.Text.WriteLine(Quote(["egami-video", .. shown]));
+            if (mapped.Json is { } text)
+            {
+                session.Console.Text.WriteLine("edit.json:");
+                session.Console.Text.WriteLine(text);
+            }
+
+            return ExitCodes.Success;
+        }
+
+        if (mapped.Json is not { } json)
+        {
+            return RunNative(session, mapped.Words, shown);
+        }
+
+        // The edit file goes in the working folder, so the clip paths in it read as the line gave them.
+        string file = Path.Combine(session.WorkingDirectory, $".egami-ffmpeg-{Guid.NewGuid():N}.json");
+        File.WriteAllText(file, json);
+        try
+        {
+            return RunNative(session, [.. mapped.Words.Select(w => w == FfmpegEdit.EditFile ? file : w)], shown);
+        }
+        finally
+        {
+            File.Delete(file);
+        }
+    }
+
+    private static int RunNative(VideoSession session, string[] command, string[] shown)
+    {
+        session.Info($"ffmpeg: {Quote(["egami-video", .. shown])}");
+        return VideoCli.Run(command, session.Console, session.WorkingDirectory, session.Environment, inner =>
+        {
+            inner.Cancellation = session.Cancellation;
+            inner.Paths = session.Paths;
+            inner.MaxInputs = session.MaxInputs;
+            inner.ProgressNote = session.ProgressNote;
+            inner.Progress = session.Progress;
+        });
     }
 
     /// <summary>Runs an ffprobe command line.</summary>
