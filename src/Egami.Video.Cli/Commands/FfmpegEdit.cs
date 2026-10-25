@@ -460,6 +460,9 @@ internal static class FfmpegEdit
 
         public List<Layer> Layers { get; } = [];
 
+        /// <summary>Gets the source each layer comes from, in the order of <see cref="Layers"/>.</summary>
+        public List<Source> LayerSources { get; } = [];
+
         public List<EditEffect> Effects { get; } = [];
 
         public (int Width, int Height)? Scale { get; set; }
@@ -493,6 +496,7 @@ internal static class FfmpegEdit
         private readonly Dictionary<string, Value> _labels = new(StringComparer.Ordinal);
         private readonly Dictionary<int, Value> _inputs = [];
         private readonly HashSet<string> _used = new(StringComparer.Ordinal);
+        private readonly HashSet<string> _audioLabels = new(StringComparer.Ordinal);
         private string? _videoOut, _audioOut;
 
         public Mapped Build()
@@ -549,7 +553,21 @@ internal static class FfmpegEdit
                 Probe(source);
             }
 
-            bool audio = !line.NoAudio && AudioMapped() && (video.HasAudio || video.Layers.Count > 0);
+            // With no -map, ffmpeg takes the sound of the first input that has any: an overlay's, when the main clip has none.
+            if (line.Maps.Count == 0 && !video.HasAudio && !video.Layers.Any(l => !l.Clip.IsMuted))
+            {
+                for (int i = 0; i < video.Layers.Count; i++)
+                {
+                    Probe(video.LayerSources[i]);
+                    if (video.LayerSources[i].HasAudio)
+                    {
+                        video.Layers[i] = video.Layers[i] with { Clip = video.Layers[i].Clip with { IsMuted = false } };
+                        break;
+                    }
+                }
+            }
+
+            bool audio = !line.NoAudio && AudioMapped() && (video.HasAudio || video.Layers.Any(l => !l.Clip.IsMuted));
             if (audio)
             {
                 Check(video.VideoSpeed, video.AudioSpeed, "setpts and atempo", "egami-video changes the speed of picture and sound together; give setpts and atempo the same factor, or -an");
@@ -610,7 +628,8 @@ internal static class FfmpegEdit
                 return true;
             }
 
-            return line.Maps.Any(m => (_audioOut is not null && m.Trim('[', ']') == _audioOut) || m.Contains(":a", StringComparison.Ordinal));
+            // A graph's sound output by its label, an input's sound (0:a, 1:a:0) or a whole input (-map 0).
+            return line.Maps.Any(m => _audioLabels.Contains(m.Trim('[', ']')) || System.Text.RegularExpressions.Regex.IsMatch(m, @"^\d+(:a(:\d+)?)?\??$"));
         }
 
         /// <summary>The stream the output takes: the graph's one unconnected video output, or input 0.</summary>
@@ -846,6 +865,17 @@ internal static class FfmpegEdit
 
                 List<Value> inputs = [.. filter.Inputs.Select(Get)];
                 Value result = Apply(filter, inputs, option);
+
+                // The labels that carry sound: an audio filter's, and concat's sound output after its picture.
+                if (option == "-af" || IsAudioFilter(filter.Name))
+                {
+                    _audioLabels.UnionWith(filter.Outputs);
+                }
+                else if (filter.Name == "concat" && filter.Outputs.Count > 1)
+                {
+                    _audioLabels.UnionWith(filter.Outputs.Skip(1));
+                    _audioOut = filter.Outputs[1];
+                }
                 foreach (string output in filter.Outputs)
                 {
                     _labels[output] = result;
@@ -1416,6 +1446,7 @@ internal static class FfmpegEdit
             }
 
             main.Layers.Add(layer);
+            main.LayerSources.Add(source);
             main.Effects.AddRange(top.Effects);
             Merge(main, top);
             return main;

@@ -49,10 +49,22 @@ public sealed class FfmpegEditTests
         if (expected.StartsWith("ok", StringComparison.Ordinal))
         {
             Assert.True(run.Code == 0, $"{command}\n{run.Error}");
-            if (expected.Length > 3)
+            string[] words = expected.Split(' ');
+            if (words.Length > 1)
             {
-                double seconds = double.Parse(expected[3..], System.Globalization.CultureInfo.InvariantCulture);
-                Assert.Equal(seconds, MediaFile.Probe(tool.PathOf("out.mkv")).Duration!.Value.Seconds, 0.15);
+                MediaInfo info = MediaFile.Probe(tool.PathOf("out.mkv"));
+                double seconds = double.Parse(words[1], System.Globalization.CultureInfo.InvariantCulture);
+                Assert.Equal(seconds, info.Duration!.Value.Seconds, 0.15);
+                AudioTrackInfo? sound = info.Tracks.OfType<AudioTrackInfo>().SingleOrDefault();
+                if (words[2] == "sound")
+                {
+                    Assert.True(sound is not null, $"{command}: no audio track");
+                    Assert.Equal(seconds, sound.Duration?.Seconds ?? seconds, 0.15);
+                }
+                else
+                {
+                    Assert.True(sound is null, $"{command}: an audio track ffmpeg would not write");
+                }
             }
         }
         else

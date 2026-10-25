@@ -33,7 +33,8 @@ additive; the API review for stages C and D comes next (task 25).
   layer's or an effect's time window, `-loop 1` takes an image, and deshake and the vidstab pair run `stabilize`. Lines the
   edit cannot match stop with exit code 2 and the reason: freezeframes (it adds no time), loudnorm, setpts without the same
   atempo, and expressions beyond the documented forms.
-- Gate: 67 copied ffmpeg lines run on real clips with the right length, or stop with the right message (`ffmpeg-edit-lines.txt`).
+- Gate: 78 copied ffmpeg lines run on real clips with the right length and, where ffmpeg would write one, a sound track as
+  long as the picture, or stop with the right message (`ffmpeg-edit-lines.txt`).
 - Smart render (task 23): `EditRenderOptions.SmartRender` and `--smart` on the editing commands copy the untouched parts of
   clips (no transition, fade, layer, effect or change of time, the canvas's size and rate, and a stream that matches the
   encoder's) packet for packet from the first keyframe on, with V5.6's stream checks; the encoder starts again with a keyframe
