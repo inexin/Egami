@@ -9,13 +9,13 @@
     "source": "github",
     "subfolder": "src/Egami.Video.Cli"
   },
-  "version": "0.5.0",
+  "version": "1.0.0",
   "packages": [
     {
       "registryType": "nuget",
       "registryBaseUrl": "https://api.nuget.org",
       "identifier": "Egami.Video.Cli",
-      "version": "0.5.0",
+      "version": "1.0.0",
       "transport": {
         "type": "stdio"
       },

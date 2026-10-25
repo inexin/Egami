@@ -3,6 +3,740 @@
 All notable changes to Egami are listed here. Egami follows [Semantic Versioning](https://semver.org): from 1.0, public API
 changes that break code come only in a new major version.
 
+## Egami.Video 1.0.0 (2026-10-25)
+
+The first release of Egami.Video on NuGet, with Egami.Video.H264 and Egami.Video.Cli at the same version. From 1.0 its
+public API follows Semantic Versioning. Every step's API was reviewed; the previews 0.1 to 0.6 were never published, and
+their notes are folded in below, newest first. It needs Egami 1.2.0.
+
+- `Hdr10PlusMetadata.Parse` is public, so codec packages such as Egami.Video.H264 read HDR10+ T.35 payloads with Egami.Video's
+  parser (internals are made public as outside packages need them).
+
+V4.3: fragmented MP4 writing, and HLS and DASH segments. API reviewed and accepted 2026-10-23 (all as recommended).
+
+- `Mp4Format.Fragments` and `Mp4FragmentOptions`: fragmented MP4 (ISO/IEC 14496-12 8.8), moov with mvex and then a moof and
+  mdat pair a fragment as packets come, cut at the first video keyframe after `Duration` (2 s) or at `MaxBytes` (32 MB), with
+  mfra at the end. A seekable output gets its durations written back; tags, cover art and Nero chapters are kept (the
+  QuickTime chapter track is left out, with an mp4-chapter-track warning). Setting it with `MoovAtEnd` throws.
+- `Mp4Format.NonSeekable` and `Mp4NonSeekableLayout`: an output that cannot seek and read back now gets fragmented MP4 with an
+  mp4-fragmented warning, so `MediaFile.Remux` and `MediaFile.Transcode` with a `Stream` output use no temporary file;
+  `TempFile` keeps the flat layout.
+- `Mp4SegmentWriter`, `Mp4SegmentOptions` and `SegmentPlaylists`: CMAF init and media segments a track (styp, sidx, moof and
+  mdat), cut at a keyframe after `SegmentDuration` (6 s), to a folder or a `Func<string, Stream>`, with an HLS multivariant
+  playlist and media playlists (RFC 8216) and a static DASH MPD (ISO/IEC 23009-1).
+- Writing fragmented MP4 takes 0.69 times as long as flat MP4 on 720p Motion JPEG and allocates no memory per packet or
+  fragment in steady state; Chromium and Chrome (Media Source Extensions), hls.js, dash.js, ffprobe, MP4Box and Bento4 read
+  the files (egami-compare).
+
+V5.2: VP8 encoding, on an encoder core that VP9 and AV1 encoding will share. The V5 encoder steps had one combined API review
+after V5.6 (Design Q17), accepted 2026-10-24.
+
+### VP8 encoding
+
+- `Vp8Codec.CreateEncoder` and `VideoWriterOptions.Codec = VideoCodecs.Vp8`: VP8 into WebM, Matroska and IVF through Egami's
+  `Vp8StreamEncoder`, with WebM alpha as a second VP8 stream in each packet's addition 1. 8-bit 4:2:0 planes are coded as
+  they are; other frames are converted to BT.601 limited range.
+- `Vp8EncoderOptions` (`VideoEncoderOptions.Vp8`): quantizer limits, alternate references, golden frame spacing, temporal
+  filter frames and strength, token partitions, error resilience, alpha.
+- `egami-video encode --codec vp8` with `--effort` and `--bitrate`, and `run` keeps VP8 sources VP8; `egami-video ffmpeg`
+  takes `-c:v libvpx`.
+
+### Encoder settings
+
+- `VideoEncoderOptions` (and `VideoWriterOptions`) gain `Effort`, `RateControl` (`RateControlMode.Quality`, the default,
+  `Bitrate`, `ConstantBitrate`, `Quantizer`), `Bitrate`, `MaxBitrate`, `BufferSize`, `Quantizer`, `LatencyMode` (`Quality`
+  with a 25-frame lookahead, or `Realtime`), `KeyframeInterval` (10 seconds by default), `SceneCutKeyframes` and
+  `FirstPassStats`.
+- `IVideoEncoder.Send(VideoFrame, EncodeFrameOptions)` with `EncodeFrameOptions.ForceKeyframe`; Motion JPEG and uncompressed
+  video treat it as `Send(VideoFrame)`.
+- Two passes: `VideoWriter.AnalyzeFirstPass` over frames or a file gives `FirstPassStats`, which `Save` and `Load` keep in a
+  file.
+- The lookahead places keyframes at scene cuts, plans groups with hidden, temporally filtered alternate references where the
+  group's first frame still predicts its last well, and gives each frame its quantizer. Output bytes do not depend on the thread count.
+
+V5.7: Opus encoding, translated from libopus 1.5.2. API reviewed in the combined V5 encoders review, accepted 2026-10-24.
+
+### Opus encoding
+
+- `OpusCodec.CanEncode` and `CreateEncoder`: SILK, CELT and hybrid in every mode, 1 to 8 channels (mapping family 0 for mono
+  and stereo, 1 with libopus's surround masking and stream split above), 8, 12, 16, 24 and 48 kHz with other rates resampled
+  to 48 kHz and kept in the header. The packets are byte for byte libopus 1.5.2's in 46 reference settings (every application,
+  rate mode, frame duration from 2.5 to 120 ms, FEC, DTX, forced modes and bandwidths, multistream up to 7.1).
+- `OpusEncoderOptions` (`AudioEncoderOptions.Opus`, `AudioWriterOptions.Opus`): `Bitrate` (64 kbit/s per channel by default),
+  `RateMode` (`OpusRateMode.Vbr`, `ConstrainedVbr`, `Cbr`), `Application` (`OpusApplication.Audio`, `Voice`, `LowDelay`),
+  `FrameDuration` (20 ms), `Effort` (0 to 10, libopus's complexity, default 10), `Bandwidth` (`OpusBandwidth`), `InbandFec`,
+  `ExpectedLoss` and `Dtx`.
+- The pre-skip is the encoder's look-ahead (312 samples at 48 kHz) in OpusHead and `CodecDelay`, and the last packet's
+  duration trims the end, so .opus, WebM, Matroska and MP4 files decode to exactly the samples written in `AudioReader`,
+  opusdec and FFmpeg (which keeps the end padding of MP4).
+- `AudioWriter` writes Opus by default for Ogg (.opus, .ogg, .oga) and WebM files, and `MediaFile.Transcode` with no codec
+  and a WebM output encodes the audio in Opus unless it is Opus or Vorbis.
+- 60 s of stereo at 128 kbit/s encodes in 0.70 s, 1.4 times libopus 1.5.2's plain C build on the same machine, and
+  steady-state encoding allocates nothing per packet.
+
+### MP3 (V5.8)
+
+V5.8: MPEG audio decoding and .mp3 files. API reviewed and accepted 2026-10-25 (all as recommended).
+
+- `Mp3Codec` (and `AudioCodecs.Mp3`, decode only), registered by default, translated from minimp3 (CC0): Layers I, II and III
+  of MPEG-1, MPEG-2 and MPEG-2.5, 8 to 48 kHz, every channel mode and free-format bit rates, as planar float. It passes the
+  ISO/IEC 11172-4 compliance streams at full accuracy (maximum error at most 2^-14, PSNR about 101 dB) and matches FFmpeg's
+  float decoder within 2e-7 on LAME files. Frames are found by three matching headers; damaged frames and CRC-16 mismatches
+  (`Mp3.CorruptFrame`, `Mp3.BadCrc`) become silence of their own length with `DecodeErrorMode.Conceal`. `CodecIds.Mp1` is new.
+- `Mp3Format` (.mp3, .mp2, .mp1, .mpa), registered by default, read and written. ID3v2.2 to 2.4 tags (text frames, APIC cover
+  art, CHAP chapters), ID3v1, APEv2 and Lyrics3 tags are read; Xing, Info and VBRI frames give the frame count, and the LAME
+  tag's delay and padding become `CodecDelay` and the last packet's duration, so LAME files decode to the source's exact
+  sample count. Seeks land on the exact sample (output equals a straight decode); `Mp3Format.FastSeek` seeks by the Xing table.
+  The writer stores ID3v2.4 and, on a seekable stream, a Xing header and LAME tag that FFmpeg reads gaplessly.
+- MP3 in Matroska gets sample-exact packet durations and its DiscardPadding; WAV's id3 chunk now reads ID3v2.2 too.
+- On 37 clips (CBR, VBR and free-format at MPEG-1, 2 and 2.5 rates, Layer II, CRC-protected and damaged files) the decode is
+  within 1e-7 of minimp3's, and Chromium plays the .mp3 files Egami.Video writes (egami-compare `video/native/mp3-gate.py`).
+  Decoding takes 2.1 to 2.6 times minimp3's time on one thread, short of the 1.5x gate (accepted for 1.0; speed work follows in
+  1.0.x).
+
+### Text subtitles (V1.2)
+
+API reviewed and accepted 2026-10-23 (Q1 applies ASS styles in SRT and WebVTT; the rest as recommended).
+
+- `SubtitleDocument` in `Egami.Video.Subtitles` reads and writes SRT, WebVTT and ASS, and reads SSA v4: `Load`, `Parse`,
+  `Save`, `ToText` and `DetectFormat`. Cues (`SubtitleCue`) are spans of styled text (`SubtitleSpan`) with exact `MediaTime`
+  times, a keypad `SubtitleAlignment` and an exact `SubtitlePosition`; ASS styles, layers, margins, embedded fonts and every
+  override tag are kept, and WebVTT cue settings, regions, voices, classes, ruby and karaoke timestamps.
+- An unchanged file saved in its own format gives back the same bytes. Reading is lenient, with `Subtitle.Repaired` warnings
+  (`SubtitleReaderOptions.Strict` throws instead); encodings are found from the byte order mark and UTF-8, then
+  `SubtitleReaderOptions.Encoding`, then a reported guess (`Subtitle.Encoding`). Converting reports what the target cannot
+  hold as `Subtitle.Dropped`, once per kind.
+- WebVTT is parsed as the W3C spec says and passes the web-platform-tests parsing suite (pinned to a commit by
+  tools/video/fetch-webvtt-tests.py), with the full HTML named character references.
+- `Shift`, `Scale`, `Sync`, `Clip`, `Sort` and `FixOverlaps` retime without rounding; times are rounded only when written.
+- Subtitle tracks: `SubtitleDocument.ReadTrack`, `FromPackets` and `IsTextCodec` read them, and `SubtitleTrackWriter` writes them.
+  Matroska takes `S_TEXT/UTF8`, `S_TEXT/WEBVTT` and `S_TEXT/ASS`, and reads `S_TEXT/SSA`. WebM takes `D_WEBVTT/SUBTITLES`.
+  MP4 takes mov_text and WebVTT (`wvtt`, ISO/IEC 14496-30, on a `text` track). New `CodecIds` constants name them.
+- Matroska subtitle blocks carry their BlockDuration, so cue durations survive a remux. Files from FFmpeg, MKVToolNix and
+  MP4Box read back to their source cues (tools/video/make-subtitle-tracks.py). ffprobe, mkvmerge and MP4Box read Egami's
+  files cleanly (tools/video/check-subtitle-tracks.py).
+- egami-video `trim` keeps subtitle cues shown across the cut, clipped to it (ffmpeg's stream copy drops a cue that starts
+  before the cut and lets the last one run past it); `concat` keeps each clip's cues inside the clip; `timestamps --fix`
+  leaves cues that start together alone.
+- Conversions give FFmpeg's cues on a 50-conversion set (tools/video/make-subtitle-references.py); the guide lists the three
+  places where they differ. An ASS style's bold, italics, underline and strikeout show in SRT and WebVTT as tags, as in
+  FFmpeg; ASS comment events are left out of them and reported (API review Q1). Reading and writing is 8 to 12 times faster than FFmpeg's (tools/video/time-subtitles.py).
+- Fuzz targets `subs` and `subtrack`. Their first runs found times too late to hold, karaoke past them, an ASS file cut off
+  in its header saved with a line end added, ASS events after a changed format line, and bad UTF-8 in WebVTT read without a
+  report; all fixed, with tests.
+
+V1.4 stage A: scene detection and the analysis pass, in the new `Egami.Video.Analysis` namespace. The API review comes once the
+whole step is built (V1.4 Build Plan).
+
+### Scene detection
+
+- `SceneDetector`: cuts from a 16 by 9 grid of mean Y, Cb and Cr and a 64-bin luma histogram per frame, read from the planes
+  with no RGB conversion. `SceneMethod.Adaptive` (the default) weighs each frame's change against the frames around it, so
+  pans and fast motion are not taken for cuts; `Content` scores against the mean of the last frames, as ffmpeg's scene score
+  does; `Histogram` compares luma histograms. A cut within `MinSceneLength` (0.6 s) of the last is not taken, and with
+  `FlashMode.Merge` a flash that comes back to the picture before it is no scene.
+- Fades: a fade or cut through black (or white, with `FadeToWhite`) starts the next scene inside the dark run (`FadeBias`
+  moves it), and `Fades` lists each fade out and fade in.
+- `Scenes` (`Scene` with first and last frame, start, end, middle and how it starts), `Cuts`, `Scores` with `KeepSeries`, and
+  `SettledFrames` for callers that hold recent frames. No memory is allocated per frame.
+
+### The analysis pass
+
+- `MediaAnalysis.Run` reads a file once and feeds the scene detector and any `IVideoDetector` and `IAudioDetector` of the
+  caller's, video and audio interleaved by time, over an optional `Start` and `Duration`, with progress and cancellation.
+- `SceneFrames.Read`: the first, middle or last frame of each scene, by seeking.
+
+### Test sources
+
+- `TestSources`: SMPTE RP 219 HD bars (with the -2%, +2% and +4% pluge bars) and SMPTE EG 1 SD bars at their code values in
+  any bit depth, a moving pattern with a frame counter, solid colors and gradients as video; sine tones, silence, white and
+  pink noise and log sweeps as audio, at a level in dBFS.
+
+V1.4 stage B: the video detectors. Each keeps ffmpeg's documented measure and defaults, with thresholds as fractions of the
+stream's range so 8-bit and 10-bit video behave alike; they run in `MediaAnalysis.Run` or on frames of the caller's own.
+
+- `BlackDetector` (as blackdetect: 10 % pixel threshold, 98 % of the picture, 2 s) and `FreezeDetector` (as freezedetect:
+  mean absolute difference over Y, Cb and Cr against the frame that froze, -60 dB, 2 s) return `DetectedRange`s.
+- `CropDetector` (as cropdetect's black mode, limit 24/255, even sizes): a `CropReport` with the rectangle that keeps every
+  frame's picture, the most common one and the runs of frames that share one.
+- `InterlaceDetector` (as idet, ratios 1.04, 1.5 and 3): `InterlaceReport` with top field first, bottom field first,
+  progressive and undetermined frames, repeated fields and an `InterlaceVerdict` that names 3:2 telecine.
+- `DuplicateDetector`: mpdecimate's 8 by 8 block test without dropping, as runs of repeated frames; its thresholds are
+  12/255 and 5/255 of the range per sample (mpdecimate's 768 and 320) and 0.33.
+- `SignalMeter` (as signalstats and colordetect): `PlaneLevels` for Y, Cb, Cr and saturation, the share of pixels outside
+  broadcast range, the `SignalRange` really used and `AlphaUse`; with `Blur` the mean edge width (blurdetect's thresholds) and
+  with `Blockiness` how much a block grid stands out (blockdetect's periods). Per-frame `SignalFrame`s with `KeepSeries`.
+
+V1.4 stage C: audio detectors and the loudness meter.
+
+- `SilenceDetector` (as silencedetect: under -60 dBFS for 2 s) returns silent stretches exact to the sample, over all channels
+  together or, with `PerChannel`, for each channel.
+- `AudioLevelMeter` (as volumedetect and astats): an `AudioLevelReport` with `ChannelLevels` per channel and overall: peak,
+  RMS, DC offset, crest factor, clipped samples, peak count, noise floor, zero crossings and a 1 dB histogram.
+- `LoudnessMeter` in `Egami.Video.Audio` (ITU-R BS.1770-5, EBU R 128): momentary and short-term loudness every 100 ms, gated
+  integrated loudness, loudness range (EBU Tech 3342), 4x oversampled true peak and sample peak, at any rate from 8 to 384 kHz
+  with the surround channels weighted and LFE left out. It passes the EBU Tech 3341 and 3342 tone cases, runs about 200 times
+  faster than real time on 48 kHz stereo, and is the meter V9.1's loudness normalization will use.
+- No detector allocates memory per frame once running.
+
+V1.4 stage D: audio pictures.
+
+- `AudioPictures.Waveform` draws each column's min-to-max outline with the RMS level shaded inside, linear or in dB, with the
+  channels together or stacked (`WaveformOptions`); about 800 times faster than real time on 48 kHz stereo.
+- `AudioPictures.Spectrogram` draws a Hann-windowed FFT per column (2048 samples by default) from -120 to 0 dBFS in magma or
+  grayscale, on a linear or logarithmic frequency axis, mixed or per channel (`SpectrogramOptions`); a row that spans several
+  bins shows the strongest, so pure tones never fall between rows. About 400 times faster than real time at 1800 x 512.
+- Both read a file or any run of `AudioFrame`s once with constant memory: three hours of audio cost no more than three
+  seconds. Both take a cancellation token, and the file overloads report progress. The pictures carry no text; the CLI adds
+  axes and legends.
+
+V1.4 stage E: the command line.
+
+- `egami-video analyze`: every detector in one pass (`--detect` or `--all`: scenes, black, freeze, crop, interlace, duplicates,
+  signal, blur, blockiness, silence, levels, loudness), with each ffmpeg filter's settings under its own names
+  (`--black-min`, `--silence-noise -50dB`, `--crop-limit` …), `--start` and `--duration`, text, `--json` or `--csv`, and
+  `--series` for per-frame and per-100 ms values. It is a read-only tool in `egami-video mcp`.
+- `scenes`: `--min-length` (`--min-gap` still works), `--fades`, `--flash merge|suppress`, `--frame first|middle|last` and
+  `--series`.
+- `waveform` and `spectrum` draw audio pictures, with `--legend` for a time axis and level or frequency labels;
+  `generate` writes test clips and sounds (pattern, bars, solid, gradient; sine, silence, noise, sweep).
+- `segment --scenes` splits at scene changes, each part from the keyframe at or before its scene, reporting the gap and
+  warning past a second; `--exact` starts each part on its first frame by smart cut (V5.6). `run --crop auto` crops black bars off before the steps.
+- `egami-video ffmpeg`: blackdetect, freezedetect, cropdetect, idet, signalstats, blurdetect, blockdetect, silencedetect,
+  volumedetect, astats and ebur128 with `-f null -` run `analyze` and print ffmpeg's log lines (`analyze --ffmpeg-log`);
+  `-f lavfi` testsrc, testsrc2, smptebars, smptehdbars, color, sine, anullsrc and anoisesrc run `generate`; showwavespic and
+  showspectrumpic run `waveform` and `spectrum`. `-af` is parsed; filters outside these stop with exit code 2.
+
+V1.4 gates (tasks 5, 14 and 21, egami-compare).
+
+- Scenes: on hand-labeled cuts of the first 10 minutes of Big Buck Bunny, Sintel and Tears of Steel, `SceneDetector` scores F1
+  0.953 (0.939 with the old FadeLevel), against PySceneDetect 0.7.2's AdaptiveDetector 0.935 and V1.1's detector 0.886.
+- Loudness: `LoudnessMeter` passes every EBU Tech 3341 and 3342 case of the EBU test set v05 and matches ffmpeg's ebur128
+  within 0.05 LU on 69 of its 70 files; on the 70th (1.78 s long) a plain BS.1770 computation agrees with Egami, 0.5 LU from
+  ffmpeg. `MaxMomentary` and `MaxShortTerm` now take every window that starts on a 10 ms boundary, so a burst that starts between
+  100 ms steps reads its full level (Tech 3341 cases 10 and 13; ffmpeg's ebur128 reads 0.2 to 0.5 LU low there).
+- `SceneOptions.FadeLevel` defaults to 0.02 (was 0.06): dark shots are no longer taken for black, which made fades that were
+  not there and hid real cuts. On the scene gate's films F1 goes from 0.939 to 0.953, Sintel's dark scenes from 0.866 to
+  0.903.
+- `analyze --ffmpeg-log` matches ffmpeg 7.1's log lines: cropdetect lines carry `pts`, a six-decimal `t` and `limit`;
+  volumedetect lists its `histogram_<n>db` lines; the ebur128 summary lists both gate thresholds and prefixes only its first
+  line. In `egami-video ffmpeg`, cropdetect rounds to 16 by default, as ffmpeg's does.
+- Speed: scenes, black and freeze in `MediaAnalysis.Run` cost little next to decoding (the scene grid adds rows column by column
+  with vector adds; black and freeze stop measuring a frame once the answer is known, so `BlackDetector.LastRatio` and
+  `FreezeDetector.LastDifference` are bounds for such frames; `MediaAnalysis.Run` hands the freeze detector the frame it keeps
+  instead of a copy). `InterlaceDetector`, `DuplicateDetector` and `SignalMeter` run 2 to 6 times faster.
+- QuickTime files whose user data ends with a 32-bit zero (QuickTime 7 wrote them so) open; they failed as cut off.
+
+V5.3: VP9 encoding. API reviewed in the combined V5 encoders review, accepted 2026-10-24.
+
+### VP9 encoding
+
+- `Vp9Codec.CanEncode` is true and `Vp9Codec.CreateEncoder` encodes VP9 into WebM, Matroska, IVF and MP4, with the encoder
+  core's keyframes, groups, hidden alternate references and rate control modes, on VP8's `Quality` (0 to 100, default 60) and
+  `Effort` (0 to 10, default 4) scales; `Quantizer` is VP9's 0 to 255 (0 lossless). Hidden frames go out in a superframe with
+  the next shown frame, so every packet shows one frame.
+- The search: partitions from 64x64 down to 4x4 with libvpx's breakout and a partition range from the previous frame, all ten
+  intra modes with ADST and DCT transforms to 32x32 and the transform size chosen by rate and distortion, motion search to 1/8
+  pixel, NEARESTMV, NEARMV, ZEROMV and NEWMV from LAST, GOLDEN and ALTREF, compound prediction, the regular, sharp and smooth
+  filters, libvpx's trellis, forward probability updates, a loop filter level search, tile columns and adaptive quantization
+  by segments. The encoder decodes what it writes, so its references are what every decoder holds.
+- Profiles 0 to 3: 8, 10 and 12 bits, 4:2:0, 4:2:2 and 4:4:4, from the frames' planes or `Vp9EncoderOptions.BitDepth`; the
+  frames' color code points and static HDR metadata go into the track (WebM and Matroska Colour, MP4 colr, mdcv and clli).
+  Frames with alpha get a second VP9 stream in each packet's addition 1, as WebM carries it.
+- `egami-video encode --codec vp9` (with `--effort` and `--bitrate`), `run` keeps VP9 sources VP9, and `egami-video ffmpeg`
+  takes `-c:v libvpx-vp9`.
+- `Vp9EncoderOptions` (`VideoEncoderOptions.Vp9`, `VideoWriterOptions.Vp9`): quantizer limits, alternate references, golden
+  frame spacing, temporal filter, tile columns, adaptive quantization, error resilience, bit depth and alpha.
+- The output is the same at any thread count and with or without hardware intrinsics: tile columns depend only on the width
+  and the options, and superblock rows run as a wavefront. Forward transforms run on Vector128 and Vector256 lanes, sums of
+  absolute differences, squared errors and residuals on AVX2.
+- libvpx 1.14.1's vpxdec decodes every test stream (33, all profiles and options) exactly as Egami does
+  (`tools/video/check-vp9-encoder.py`); 10 minutes of AFL++ on the vp9enc target found nothing.
+- Against libvpx 1.14.1 `vpxenc --good` (one-pass VBR, 25 frames of lag, alternate references; `tools/video/time-vp9-encoder.py`),
+  at effort 4: one thread at 1080p codes 1.6 to 2.4 s a frame, between `--cpu-used=1` and `=3` (about `=2`); all 24 cores
+  0.39 to 0.51 s, about `--cpu-used=1`. BD-rate against `--cpu-used=2` (720p, 60 frames, PSNR-Y / SSIM): crowd_run +6.1 % /
+  +19.9 %, ducks_take_off +0.4 % / -9.3 %, park_joy +3.9 % / +10.3 %, old_town_cross +24.5 % / +34.9 %. The +15 % gate is met on
+  PSNR-Y by three clips of four and on SSIM by two; static, grainy content (old_town_cross) and SSIM are where libvpx is still
+  ahead. Egami matches libvpx's PSNR-Y BD-rate at about `--cpu-used=4` on crowd_run, park_joy and old_town_cross and `=2` on
+  ducks_take_off, taking 0.65 to 1.8 times its time there on one thread and 1.1 to 2.0 times on all cores.
+
+V5.9 stage A: AIFF and AIFF-C, and G.711. V5.9 (stages A to D and the CLI) API reviewed and accepted 2026-10-24 (all as
+recommended).
+
+### AIFF
+
+- `AiffFormat`: .aif, .aiff and .aifc files. Reads big-endian PCM, AIFF-C's sowt, in24, in32, fl32 and fl64 and G.711 (ulaw,
+  alaw), at the sample count COMM gives; other AIFF-C compressions (ima4, MACE, QDesign) pass through as `X_AIFC/<type>`
+  packets. NAME, AUTH, "(c) " and ANNO become tags, an ID3 chunk adds tags, cover art and chapters, MARK markers become
+  chapters and a CHAN chunk gives the channel layout. Seeking is sample exact.
+- Writes integer PCM (8 to 32 bits, either byte order in) as AIFF and float as AIFF-C, with text chunks, ID3, MARK and CHAN,
+  through a temporary file when the output cannot seek. `AudioWriter` defaults to big-endian PCM for .aiff, and ffmpeg reads
+  the files sample for sample with their layout and tags.
+
+### G.711
+
+- `G711Codec.MuLaw` and `G711Codec.ALaw` (`CodecIds.G711MuLaw`, `CodecIds.G711ALaw`) decode ITU-T G.711 to 16-bit samples, from
+  AIFF-C, WAV, AVI (format tags 6 and 7) and MP4 and MOV (ulaw, alaw). Matroska has no G.711 id, so it does not take them.
+- Fuzz target `aiff`.
+
+V5.9 stage B: CAF.
+
+### CAF
+
+- `CafFormat`: Apple's Core Audio Format (.caf). Reads PCM (integer and float, either byte order), G.711, ALAC, Opus, AAC, MP3,
+  MP2, AC-3 and FLAC; other formats pass through as `X_CAF/<format>` packets. The packet table cuts variable-size packets and
+  gives the priming frames (`CodecDelay`) and the end padding (the last packets' durations); the magic cookie becomes
+  `CodecPrivate` (ALAC's 24-byte config, AAC's AudioSpecificConfig, FLAC's metadata blocks; Opus gets an OpusHead). The info
+  chunk becomes tags, markers and regions (named from strg) become chapters, and chan gives the layout. Sample-exact seeking
+  for PCM, packet-exact for the rest.
+- Writes one track of any of those codecs. PCM and G.711 stream, with a data chunk sized -1 on a non-seekable output; other
+  codecs get their packet table after the samples, or before them through a temporary file on a non-seekable output.
+  ffmpeg reads the files with their tags and layout. `CodecIds.Alac` names ALAC tracks (decoding comes in stage C).
+- Fuzz target `caf`; `tools/video/fuzz-afl.py` now knows the `aiff` and `caf` targets. A CHAN or chan chunk whose bitmap names
+  more or fewer speakers than the file has channels is now ignored instead of throwing (AIFF-C too).
+
+V5.9 stage C: ALAC.
+
+### ALAC
+
+- `AlacCodec` (`AudioCodecs.Alac`): Apple Lossless decoding and encoding, translated from Apple's Apache-2.0 reference codec.
+  16, 20, 24 and 32 bits, 1 to 8 channels in ALAC's layouts, partial last frames. The encoder's packets equal Apple's byte for
+  byte at level 1 (the default, full stereo and predictor search) and level 0 (Apple's fast mode), with 4096 samples per
+  packet unless `FrameSize` is set; the track's `CodecPrivate` is the 24-byte ALACSpecificConfig with the largest packet and
+  average bit rate filled in. `tools/video/alacref` builds Apple's code as the reference, and
+  `tools/video/make-alac-references.py` makes the gate streams.
+- MP4 reads and writes the `alac` sample entry and box, and reads QuickTime's `wave` atom; the rate, channels and bit depth come
+  from the config (so 96 kHz and up work). Matroska `A_ALAC` and CAF (already in stage B) decode too. FFmpeg's ALAC files in
+  all four decode to FFmpeg's samples.
+- `AudioWriter` keeps 20-bit samples at 20 bits for ALAC and writes float as 24-bit ALAC. A track with no layout gets ALAC's
+  layout for its channel count. The CLI extracts ALAC tracks to .m4a. ALAC decoding trims a packet to its duration, so
+  Matroska DiscardPadding and CAF remainder frames apply, and stays sample exact across Matroska's millisecond block times.
+- Fuzz target `alac`.
+
+V5.9 stage D (container part): AC-3 and E-AC-3.
+
+### AC-3 and E-AC-3
+
+- `Ac3Format`: raw AC-3 and E-AC-3 streams (.ac3, .eac3, .ec3). Each packet is one AC-3 frame, or an E-AC-3 independent frame
+  with its dependent substreams; rate, channels and layout from the first frame; junk between frames is skipped (a frame found
+  after junk must be followed by another); duration from the frame size and seeking through a frame index. Writes the packets
+  back to back. New `CodecIds.EAc3` (`A_EAC3`), passed through.
+- MP4 reads ac-3 and ec-3 sample entries as `CodecIds.Ac3` and `CodecIds.EAc3` (they used to come through as `A_QUICKTIME`)
+  and writes them, with a dac3 or dec3 box made from the first packet's headers; the boxes match FFmpeg's. CAF maps ec-3 too.
+- Fuzz target `ac3`.
+
+V5.9 tasks 14, 15 and 17: AC-3 decoding.
+
+### AC-3 decoding
+
+- `Ac3Codec` (`AudioCodecs.Ac3`, registered by default) decodes AC-3, written from ATSC A/52:2018 alone: every channel mode
+  (1/0 to 3/2 and dual mono) with or without the LFE, 32, 44.1 and 48 kHz, 32 to 640 kbit/s, coupling, rematrixing, block
+  switching, delta bit allocation and dither, with both frame CRCs checked (`Ac3.BadCrc`, `Ac3.CorruptFrame`, handled as
+  `AudioDecoderOptions.Errors` says). Frames are 1536 samples of planar float in Egami.Video's channel order, so AudioReader
+  reads AC-3 from .ac3 files and from MP4, Matroska, AVI and CAF tracks. E-AC-3 still passes through.
+- `AudioDecoderOptions.Ac3` takes an `Ac3DecoderOptions`: `DynamicRange` (1 by default, the stream's dynamic range control in
+  full; 0 turns it off) and `Downmix`, a layout to mix to with the stream's center and surround mix levels (A/52's LoRo
+  equations, scaled so the mix cannot clip). AudioReader hands out frames in the downmix layout, and an
+  `AudioReaderOptions.Layout` of mono or stereo on a wider AC-3 track uses this downmix too unless `Downmix` is set. Dialogue
+  normalization is not applied.
+- Within 2^-14 and at 90 dB SNR or more of FFmpeg's float decode on 24 FFmpeg-encoded streams (every mode FFmpeg writes, 32 to
+  640 kbit/s, LFE and coupling on and off, dual mono), made by `tools/video/make-audio-corpus.py --ac3-decode`.
+- Fuzz target `ac3raw`.
+
+V5.9 task 19: the CLI.
+
+### egami-video
+
+- `audio --codec alac` writes Apple Lossless (`--level` 0 or 1) to .m4a, .mov, .mka and .caf; .m4a outputs get ALAC by
+  default. `audio` also writes .aiff (PCM) and .caf (PCM by default, or FLAC, ALAC or Opus).
+- `extract` writes ALAC tracks to .m4a and AC-3 and E-AC-3 tracks to raw .ac3 and .eac3 files; `remux` writes .ac3, .aiff and .caf.
+- ffmpeg mode maps `-c:a alac` and the big-endian `pcm_s16be`, `pcm_s24be` and `pcm_s32be`, and sends .aiff and .caf outputs
+  to `audio` unless the audio is copied. `info` and ffprobe mode name ALAC, E-AC-3, G.711, AIFF, CAF and raw AC-3 as ffprobe
+  does.
+
+V5.4: AV1 encoding, through Egami's `Av1StreamEncoder` (Egami 2.9.9). API reviewed in the combined V5 encoders review, accepted 2026-10-24.
+
+### AV1 encoding
+
+- `Av1Codec.CanEncode` is true and `Av1Codec.CreateEncoder` encodes AV1 into WebM, Matroska, MP4, IVF, raw OBU and Annex B,
+  with the encoder core's keyframes, groups and rate control modes on the shared `Quality` (0 to 100, default 60, the same
+  quantizer steps as VP9) and `Effort` (0 to 10, default 4) scales; `Quantizer` is AV1's base_q_idx, 0 to 255 (0 lossless).
+  Each packet is a temporal unit; the track's av1C is built from the sequence header.
+- Hierarchical groups: each group of 16 frames is a five-layer pyramid (Phase 2.9.11 stage B). Its hidden alternate reference,
+  then hidden frames halfway to it, halfway again and down to pairs, are coded ahead, lead the next shown frame's temporal unit,
+  and are shown at their own place with `show_existing_frame`, a packet of a few bytes, instead of an overlay frame. The frames
+  left between them (the leaves) predict from both sides and refresh no slot. Every frame reads its three nearest past frames as
+  LAST to LAST3, the golden frame and the hidden frames ahead as BWDREF, ALTREF2 and ALTREF. Each frame's layer goes to the AV1
+  encoder, which weighs rate more the deeper the layer; the steps fall from the leaves' halfway toward the alternate reference's
+  at each layer up.
+- Before a group is coded, it and the group after it (AV1 looks 40 frames ahead) run through `Av1StreamEncoder.Analyze`: the
+  keyframe's and the alternate reference's steps fall with the square root of how much the frames after them reuse them, the
+  base frames get superblock quantizers and the frames above them block multipliers from the same analysis. Keyframes and
+  alternate references are blended by the temporal filter, whose strength follows each picture's noise and the frame's
+  quantizer (`TemporalFilterStrength` null, the default). `AdaptiveQuantization` also gives the other frames Variance Boost.
+- Main, High and Professional profiles: 8, 10 and 12 bits, 4:2:0, 4:2:2 and 4:4:4, from the frames' planes or
+  `Av1EncoderOptions.BitDepth`. The frames' color code points and 4:2:0 chroma siting go into the sequence header and the
+  container; static HDR metadata into content light level and mastering display metadata OBUs on every keyframe and into the
+  container (Matroska Colour, MP4 mdcv and clli); HDR10+ from a frame into its temporal unit as an ITU-T T.35 metadata OBU.
+  The level is the smallest whose picture size, dimensions and sample rate hold the stream. No alpha (AV1 has no alpha in
+  Matroska or MP4; animated AVIF has it).
+- `Av1EncoderOptions` (`VideoEncoderOptions.Av1`, `VideoWriterOptions.Av1`): quantizer limits, alternate references and the
+  pyramid, golden frame spacing, temporal filter, adaptive quantization (delta q per superblock), screen content tools, error
+  resilience and bit depth.
+- Rate control plans later groups with their hidden frames, and a real-time constant bitrate stream plans its first inter frame
+  from the keyframe probe (both for AV1 only; VP8 and VP9 output is unchanged).
+- `egami-video encode --codec av1` (with `--effort` and `--bitrate`), `run --codec av1` (and AV1 sources stay AV1), and
+  `egami-video ffmpeg` takes `-c:v libaom-av1`, `libsvtav1`, `librav1e` and `av1`.
+- dav1d 1.5.4 and libaom 3.15.2's aomdec decode every test stream (28: every effort from 0 to 8, the pyramid, real time, the
+  bitrate modes, keyframes at cuts and the interval, quantizers 0 and 255, error resilience, sizes down to 1x1, all three
+  profiles at 8, 10 and 12 bits, HDR metadata) exactly as Egami does (`tools/video/check-av1-encoder.py`); each is the same
+  bytes at one thread and at all cores, and with hardware intrinsics off. 10 minutes of AFL++ on the av1enc target found no
+  crash (two inputs at effort 10 ran past AFL++'s 5 s limit: 5.5 s each).
+- Against libaom 3.15.2 `aomenc --good` (one-pass VBR, 25 frames of lag, alternate references) and SVT-AV1 3.0.2
+  (`tools/video/time-av1-encoder.py`), at effort 4, 720p, 60 frames, BD-rate on PSNR-Y / SSIM, with stage B's pyramid,
+  temporal model and filters: against `--cpu-used=4` crowd_run +18.4 % / +17.3 %, ducks_take_off +15.4 % / -8.8 %, park_joy
+  +21.4 % / +17.0 %, old_town_cross +42.8 % / +13.3 %; against `--cpu-used=5` +16.2 % / +8.3 %, +13.5 % / -10.3 %, +14.2 % /
+  +7.1 %, +37.0 % / -1.5 %; against `--cpu-used=6` +7.9 % / +3.4 %, +12.4 % / -11.1 %, +13.8 % / +6.3 %, +25.7 % / -1.5 % (stage
+  A: +26.7 % / +7.6 %, +31.9 % / -4.0 %, +34.5 % / +13.8 %, +131 % / -3.5 %). SVT-AV1 preset 6: -9.8 % / -8.0 %, -5.3 % /
+  -19.8 %, -4.4 % / -4.4 %, +9.5 % / -6.2 %. The +15 % gate is met on both metrics against `--cpu-used=6` by three clips of
+  four and against `=5` by two (crowd_run misses PSNR-Y by 1.2 points); old_town_cross misses PSNR-Y at every setting, and
+  against `=4` PSNR-Y is met by none but ducks_take_off's +15.4 % is close.
+- Speed (1080p, 10 frames, effort 4, crowd_run and park_joy, best of two runs): one thread 6.3 and 4.9 s a frame (stage A:
+  8.3 and 5.4 s), between libaom's `--cpu-used=4` (8.3 and 7.2 s) and `=5` (3.3 and 2.8 s); all 24 cores 1.6 and 1.4 s (stage A
+  1.8 and 2.2 s) against 2.5 and 2.3 s at `=4`, 0.76 and 0.66 s at `=5`, 0.63 and 0.55 s at `=6`. So the setting matched by
+  time is `=4`, where the BD-rate gate is missed, and the setting matched by BD-rate is faster than `=6`, against which Egami
+  takes 2.3 to 2.4 times as long on one thread and 2.5 to 2.6 times on all cores: the 2x speed gate is missed, by much less
+  than before stage A (12 to 14 times and 48 to 57 times).
+- Rate control (720p, 100 frames, 3 Mbit/s, effort 0): one-pass bitrate +0.8 % to +2.1 % of the target and two-pass +1.0 % to
+  +3.1 %, within the 5 % gate; constant bitrate -6.4 % to +2.2 %, its one-second buffer never below 55 %.
+
+V5.6: smart cut. API reviewed in the combined V5 encoders review, accepted 2026-10-24.
+
+### Trimming
+
+- `MediaFile.Trim` (a file or a `Stream` in and out, with progress and a cancellation token) cuts from a start up to an end,
+  with timestamps from 0, and returns a `TrimResult`: the mode that ran, where the cut starts in the input, the frames written
+  and encoded again, the packets, and the warnings. The first frame is the first at or after the start, within half of the
+  container's tick; the video ends after the packet that shows the last frame before the end, and a hidden frame after it
+  that nothing shows is dropped.
+- `TrimMode.Smart`, the default, is frame-exact: it decodes from the keyframe before the start and encodes the frames up to
+  the next keyframe again as a closed group starting with a keyframe, then copies every packet from that keyframe byte for
+  byte. VP8, VP9 and AV1; the group matches the stream (codec, profile, size, bit depth, chroma, VP9's color_space and range,
+  AV1's sequence header byte for byte through `Av1SequenceOptions.FromSequenceHeader`) and is coded at the average quantizer
+  of the packets it replaces. Motion JPEG, uncompressed video and starts on a keyframe are a plain copy. A stream the encoder
+  cannot match is encoded again whole (a `trim-reencode` warning); a codec Egami.Video cannot encode, or frames that change
+  size, start at the keyframe (`trim-keyframe`).
+- `TrimMode.Keyframe` copies from the keyframe at or before the start; `TrimMode.Reencode` encodes the whole cut again at the
+  source's quantizer.
+- Audio is cut at the sample for PCM (packets sliced), MP4 (the edit list) and Opus in Matroska and WebM (CodecDelay with 80 ms
+  of pre-roll, DiscardPadding), else at the nearest packet (`trim-audio-packet`); subtitle cues and chapters are clipped to
+  the cut; tags and attachments are kept.
+- Matroska writes DiscardPadding as the signed element it is: a padding whose top bit was set (14 ms, for one) read back as
+  none, so the last Opus packet kept its padding.
+- Matroska reads each Vorbis packet laced in one block at its own time, where the samples before it end: all of them had the
+  block's time, so a trimmed or remuxed laced Vorbis track lost about a fifth of its samples.
+- vpxdec, dav1d and FFmpeg decode the cuts without errors, to the same frames as Egami (`tools/video/check-smart-cut.py`).
+- 10 minutes of AFL++ on the new trim target found no crash once broken timestamps were rejected (two inputs that overflowed
+  are regression tests).
+
+V5.0 audio core: decoded audio, PCM and FLAC, WAV and FLAC files, resampling and channel mixing; V5.1: Opus decoding and Ogg;
+V5.5: Vorbis decoding. V5 audio API reviewed and accepted 2026-10-22 (all as recommended).
+
+V4.2, API reviewed and accepted 2026-10-22 (all as recommended): AV1 decode, through Egami's AV1 stream decoder (Egami 1.1.0).
+
+### Frames and conversion
+
+- `AudioFrame`: samples for every channel with a timestamp, rate, `ChannelLayout` and `SampleFormat`, from the context's
+  memory source. Twelve sample formats: unsigned 8-bit, signed 16, 32 and 64-bit, 32 and 64-bit float, each interleaved or
+  planar; `ValidBits` says how many bits an integer sample uses (24-bit audio is `S32` with 24).
+- `Convert` and `CopyTo` change the format, with optional triangular dither (`AudioConvertOptions.Dither`).
+- `ChannelLayout` and `Speakers`: channels in WAVE_FORMAT_EXTENSIBLE order, presets from mono to 7.1.4, unpositioned channels.
+- `ChannelMixer`: ITU-R BS.775 downmix and upmix matrices, or one of your own.
+- `Resampler`: polyphase windowed-sinc (Kaiser) between any two rates, `ResamplerQuality.Fast`, `Good` (default: under 0.1 dB
+  ripple to 0.9 of Nyquist, 100 dB stopband) and `Best` (140 dB), with exact timestamps.
+
+### Codecs
+
+- `AudioCodec`, `IAudioDecoder` (with `SendLoss`), `IAudioEncoder`, `AudioDecoderOptions`, `AudioEncoderOptions` and
+  `AudioCodecs`, registered in `MediaContext.AudioCodecs` with `MediaContext.WithCodec(AudioCodec)`.
+- `PcmCodec`: 8 to 32-bit integer PCM, little and big-endian, and 32 and 64-bit float, decoded and encoded.
+- `FlacCodec`: all of RFC 9639 decoded, bit-exact with libFLAC on every IETF FLAC test file it decodes, with CRC and MD5
+  checks (`Flac.BadCrc`, `Flac.Md5Mismatch`); encoding at levels 0 to 8 (default 5), 4 to 32 bits, 1 to 8 channels, files
+  within 1 % of libFLAC's size at every level and accepted by `flac -t`.
+- `AudioTrackInfo.Layout` and `AudioTrackInfo.SeekPreRoll`.
+
+### Containers
+
+- `WavFormat`: WAV, RF64 and BW64 (`WavFormat.Instance`) and Sony Wave64 (`WavFormat.Wave64`), read and written:
+  WAVE_FORMAT_EXTENSIBLE, streamed files with unfilled sizes, LIST/INFO and id3 tags, cue points as chapters, and RF64 by
+  itself past 4 GB.
+- `FlacFormat`: native FLAC read and written, with Vorbis comments, pictures as attachments, seek tables and the channel mask.
+- FLAC and PCM in Matroska and MP4 decode and encode through the existing containers.
+
+### Reading and writing
+
+- `AudioReader` and `AudioReaderOptions`: the first audio track of any file as planar float, or the format, rate and layout
+  asked for; codec delay and edit lists trimmed (`KeepAllSamples` keeps them); sample-exact `Seek`.
+- `AudioWriter` and `AudioWriterOptions`: frames of any length and format into WAV, Wave64, FLAC, Matroska or MP4.
+- `MediaFile.Transcode`: copies a file and encodes its audio again with another codec, for example FLAC in Matroska. Opus
+  sources are encoded at the 48 kHz Opus decodes to, not the source rate its header names.
+- `VideoWriterOptions.AudioCodec` (with `AudioSampleRate`, `AudioLayout` and `AudioBitsPerSample`) and
+  `VideoWriter.WriteAudio`: an audio track encoded next to the video.
+- AFL++ fuzz targets `wav` and `flac`.
+
+### Opus and Ogg (V5.1)
+
+- `OpusCodec` (decode only), registered by default: SILK, CELT and hybrid frames at every bandwidth, mono, stereo and the RFC
+  7845 multichannel mappings 0, 1 and 255, translated from libopus 1.5.2. All twelve RFC 8251 test vectors pass opus_compare
+  in mono and stereo (96.2 to 100 %), with libopus's final range on every packet; files from opusenc decode within one 16-bit
+  step of opusdec. Output is planar float at 48 kHz in the canonical channel order (5.1 and 7.1 remapped from Vorbis order).
+- Lost packets, reported with `IAudioDecoder.SendLoss` or seen as a gap in timestamps, are concealed, or recovered from the
+  next packet's in-band FEC. Ambisonic mappings (families 2 and 3) are reported as `Opus.UnsupportedMapping`.
+- `AudioDecoderOptions.KeepPadding`: end padding past a packet's stated duration is trimmed by default (Ogg's last granule
+  position, Matroska's DiscardPadding); `AudioReaderOptions.KeepAllSamples` keeps it.
+- `OggFormat`: Ogg (.ogg, .opus, .oga) read and written with Opus, Vorbis and FLAC; CRC-checked pages,
+  timestamps from granule positions, seeking from a one-pass index, and chained files joined into one track with each
+  link's title as a chapter (`ogg-chained-stream` when a link changes the settings).
+- Opus in Matroska and WebM gains SeekPreRoll and DiscardPadding, read and written; Opus in MP4 gets its 80 ms pre-roll.
+- Decoding the twelve test vectors in stereo takes 0.72 s on one thread, against 0.89 s for libopus's opus_demo.
+- AFL++ fuzz targets `ogg` and `opusraw`.
+
+### Vorbis (V5.5)
+
+- `VorbisCodec` (and `AudioCodecs.Vorbis`, decode only), registered by default, written from the Vorbis I specification:
+  1 to 255 channels, floors 0 and 1, residues 0, 1 and 2 (floor 0 untested: no current encoder writes it). On eleven oggenc clips (8 to 48 kHz, mono to 7.1, q-1 to q10) every
+  sample is within 2^-22 of libvorbisfile's float output, with the same sample count. Output is planar float in the
+  canonical channel order (3 to 8 channels remapped from Vorbis order, as for Opus).
+- Packet durations from the setup header's modes, in Ogg, Matroska and WebM, and MP4 (esds object type 0xDD, as FFmpeg
+  writes it). The end is trimmed to Ogg's last granule position, Matroska's DiscardPadding (now read and written for Vorbis
+  too) or a shorter last MP4 sample; Ogg's granule positions are written in samples when remuxing from Matroska.
+- A corrupt packet is reported as `Vorbis.CorruptPacket`; with `DecodeErrorMode.Conceal` it becomes silence.
+- Decoding 60 s of stereo 44.1 kHz takes 75 ms on one thread, against 227 ms for a libvorbisfile run (vorbisref, which also
+  starts a process and writes its output).
+- AFL++ fuzz target `vorbisraw`.
+
+### AV1
+
+- `Av1Codec` (and `VideoCodecs.Av1`), registered in `MediaContext.Codecs` by default: AV1 from WebM, Matroska, MP4 and IVF, 8, 10
+  and 12 bit, 4:0:0 to 4:4:4, film grain, every frame equal to libaom's on our clips and libaom's size-changing Matroska vectors.
+  Hidden frames give no frame; frames shown with show_existing_frame come out. The sequence header's color wins over the
+  container's.
+- Exact and keyframe seeks in IVF, WebM, Matroska and raw AV1 land on shown key frames; 100 random exact seeks per container
+  match decoding from the start.
+- Broken data: `Skip` (the default) reports `Av1.CorruptFrame`, or `Av1.MissingReference` for a unit that needs frames from
+  before the first key frame, and resumes at the next shown key frame; `Conceal` repeats the last good frame in between (mid-gray
+  before the first); `Throw` throws.
+- `VideoDecoderOptions.ApplyFilmGrain` turns film grain off.
+- HDR: content light level and mastering display metadata OBUs (in the units, or in av1C's configOBUs) give `VideoFrame.Hdr`,
+  equal to ffprobe's side data on an SVT-AV1 HDR10 clip; an ITU-T T.35 metadata OBU with HDR10+ gives `VideoFrame.Hdr10Plus`.
+- Keyframes are units that start with a shown key frame (forward key frames are not); `Av1.KeyframeFlagMismatch` when a
+  container disagrees. The sequence header comes from the track's av1C when a unit has none.
+- IVF AV1 tracks get their bit depth, chroma format and av1C from the first sequence header; the Matroska writer builds av1C
+  from the first packet for a track that has none.
+- `Av1Packets`: `SplitFrames`, `MergeFrames` and `ExtractConfig` (av1C from a sequence header, equal to FFmpeg's on every clip).
+- `CodecHeaders.Describe` for AV1: each OBU, the sequence header, metadata (content light level, mastering display, ITU-T T.35,
+  scalability, timecode) and the start of each frame header, under the specification's names. `CodecHeaderReader` reads a
+  track's packets in order and lists each frame header whole, as the decoder read it.
+
+### Raw AV1
+
+- `Av1ObuFormat` (.obu, low-overhead OBUs as aomdec and dav1d read them) and `Av1AnnexBFormat` (the specification's Annex B,
+  as the conformance streams use), registered by default and detected from their first bytes, read and written. Frames are timed
+  at a `FrameRate` you set (30 a second by default). Reading and writing back gives the same bytes; packets match ffprobe's,
+  and aomdec and dav1d decode the files the writers make to libaom's frames.
+
+### Progress, cancellation and streams
+
+V1.3, API reviewed and accepted 2026-10-22 (all as recommended).
+
+- `MediaFile.Remux` and `MediaFile.Transcode` take `IProgress<MediaProgress>? progress` and `CancellationToken
+  cancellationToken` as their last parameters. Reports come once the output is open, then at most every 250 ms, then a final
+  one with `IsFinal` and `Fraction` 1. A cancelled job throws `OperationCanceledException` within a packet, without finishing
+  the output, and deletes a file it created. Without a handler and a token the jobs run as before.
+- `MediaProgress`: position, duration, fraction (from the time, else the bytes read, else `null`; never backwards), frames,
+  packets, bytes read and written, elapsed time and speed.
+- `Stream` overloads of `Remux` and `Transcode` with the output container named and `leaveOpen`, to read from and write to
+  cloud storage without a local copy. Non-seekable input works (except MP4 with moov at the end); Matroska, WebM, IVF and
+  YUV4MPEG2 write to non-seekable output as they go, MP4 through a temporary file, and AVI refuses it.
+
+V4.1, API reviewed and accepted 2026-10-22 (all as recommended): MP4 and QuickTime. Built on Egami's public ISO BMFF box
+walker (Egami 1.1.0).
+
+### MP4 and QuickTime
+
+- `Mp4Format` (registered by default) reads .mp4, .m4v, .m4a and .mov files: moov before or after the media, 64-bit sizes and
+  chunk offsets, compact sample sizes, composition offsets, several sample descriptions, and fragmented files (moof, traf,
+  tfhd, tfdt, trun) read one fragment at a time. Packets, times, flags and bytes equal ffprobe's on the test files.
+- Codecs: AV1 (av1C), VP9 and VP8 (vpcC), Motion JPEG (jpeg, mjpa, mp4v 0x6C), Opus (dOps), FLAC (dfLa), PCM (sowt, twos,
+  lpcm, ipcm, fpcm), and mov_text map to their codec ids; H.264 and HEVC (`CodecIds.Avc`, `CodecIds.Hevc`), MPEG-4 Part 2, AAC
+  and MP3 pass through with the setup Matroska stores; any other sample description passes through whole
+  (`CodecIds.QuickTimeVideo`, `QuickTimeAudio`, `QuickTimeOther`).
+- Edit lists are applied as FFmpeg shows them; `EncodedPacket.IsDiscardable` marks packets before the shown part, and readers
+  drop their frames. `Mp4Format.IgnoreEditLists` turns this off.
+- `VideoTrackInfo.Orientation` from the display matrix, and `VideoReaderOptions.AutoOrient` to turn frames upright.
+- `MediaInfo.Timecode` from a timecode track; colr, pasp, fiel, clli, mdcv, SmDm and CoLL into the track info.
+- Tags (iTunes items, QuickTime keys and udta text), cover art as attachments, and chapters from Nero chpl or a QuickTime chapter
+  track.
+- `MovTextSample`, `MovTextStyle` and `MovTextFace`: mov_text subtitles read and written with their style runs.
+- Writing ISO MP4: half-second chunks interleaved by time, moov first by default (or last with `Mp4Format.MoovAtEnd`), edit
+  lists, the display matrix, color and HDR boxes, each codec's config box, tags, cover art, and chapters both as Nero chpl
+  and as a QuickTime chapter track. FFmpeg and MP4Box read the files without a warning they do not give for the originals.
+- Seeking by sync samples in flat and fragmented files; exact seeks match decoding from the start.
+- Broken files are read up to the damage, with `mp4-*` warnings; sample tables count against `MediaLimits.MaxIndexEntries`.
+- AFL++ fuzz targets `mp4` (demux, seek, non-seekable) and `mp4mux` (read, write three ways, read back).
+
+Egami.Video now lives in the Egami repository (it was inexin/Egami.Video), built and tested with the other packages; its
+version and NuGet package are its own.
+
+V3, API reviewed and accepted 2026-10-22: VP9 decode in all four profiles, equal to libvpx 1.14.1 on the test vectors (the
+decoder is translated closely from libvpx, notice in THIRD-PARTY-NOTICES.md); WebM alpha; HDR10 and HDR10+ metadata
+(`Hdr10PlusMetadata`, `VideoFrame.Hdr10Plus`); `VideoFrame.RenderSize`; color-managed `YuvVideoFrame.ToRaster`; SIMD kernels
+and threads within 1.5x libvpx's decode time.
+
+### VP9 decoding
+
+- `Vp9Codec` (and `VideoCodecs.Vp9`), registered in `MediaContext.Codecs` by default: VP9 from WebM, Matroska and IVF in all four
+  profiles, 8, 10 and 12 bit, 4:2:0, 4:2:2, 4:4:4 and RGB, with superframes, hidden frames, show-existing frames, intra-only
+  frames, tiles, lossless coding, compound prediction and references of another size. Every frame of libvpx's VP9 test vectors
+  equals libvpx 1.14.1's. Frames come out as `YuvRaster<byte>` at 8 bits and `YuvRaster<ushort>` above, at their own coded size.
+  4:4:0 streams are reported (`Vp9.UnsupportedSubsampling`) and not decoded.
+- WebM VP9 with alpha (AlphaMode 1): the second VP9 stream in each packet's addition 1 decodes into the frame's alpha plane, as
+  for VP8, unless `VideoDecoderOptions.DecodeAlpha` is off.
+- `CodecHeaders.Describe` lists VP9 header fields: the superframe index, each frame's uncompressed header and the compressed
+  header's modes with probability updates as counts.
+- Streams that change size come out frame by frame at each frame's coded size; `VideoFrame.RenderSize` reports VP9's
+  render_size without scaling to it, as libvpx and FFmpeg do. Exact seeks land on the same frames as decoding from the start,
+  over hidden and show-existing frames.
+- Broken VP9 data follows `VideoReaderOptions.Errors`: `Throw` throws, `Skip` drops frames up to the next keyframe, and
+  `Conceal` repeats the last good frame (mid-gray before the first). Diagnostics: `Vp9.CorruptFrame` (a broken frame or alpha
+  frame), `Vp9.MissingReference` (an inter frame with no keyframe before it), `Vp9.UnsupportedSubsampling`,
+  `Vp9.KeyframeFlagMismatch` (the container's keyframe flag disagrees with the frame; the frame wins) and
+  `Vp9.CodecPrivateMismatch` (the track's CodecPrivate disagrees with the stream; the stream wins).
+
+### Safety
+
+- VP9 frame sizes are checked against `EgamiContext.Limits` (width, height, pixels, and the memory of the nine frame buffers a
+  stream can hold) before anything is allocated. A stream holds at most nine frame buffers, eighteen with alpha.
+- AFL++ fuzz targets `vp9` (files through VideoReader in each error mode) and `vp9raw` (packets, superframes and CodecPrivate
+  straight into the decoder).
+
+### Speed
+
+- VP9 decoding uses SSE2, SSSE3 and AVX2 vectors for the sub-pixel filters, the inverse transforms and the loop filter, at 8 bits
+  and above, with the same output. One thread decodes 8-bit 720p, 1080p and 2160p within 1.5 times libvpx 1.14.1's time.
+- VP9 frames decode their tile columns in parallel and loop filter their superblock rows as a wavefront, on up to
+  `EgamiContext.MaxParallelism` threads, with the same output at any thread count.
+
+### Color and HDR
+
+- VP9 frames carry their color code points (the bitstream's color space and range, or the container's Colour element when it
+  says more) and the track's mastering display and light level metadata, on the frame and in the raster's metadata.
+- `YuvVideoFrame.ToRaster<TPixel>(ColorProfile, ColorTransformOptions?)` converts a frame to another encoding through Egami's
+  color pipeline, tone mapping PQ and HLG to SDR from the static HDR metadata.
+- `Hdr10PlusMetadata` and `VideoFrame.Hdr10Plus`: HDR10+ dynamic metadata (SMPTE ST 2094-40) from WebM's BlockAdditional 4,
+  read per frame and kept unchanged when remuxing.
+
+### Containers
+
+- WebM and Matroska VP9 tracks take their bit depth and subsampling from the CodecPrivate feature records; IVF VP9 tracks from
+  the first keyframe.
+- Writing Matroska or WebM joins VP9 hidden frames that arrive as packets of their own into a superframe with the next shown
+  frame, as WebM players expect.
+
+Built on the Egami with faster VP8 decoding; no API changes, and every frame is the same as before. Single-thread VP8 decode
+through Egami.Video now takes 1.40 times libvpx 1.14.1's time on the 720p grain clip and 1.52 times on the 1080p one, down from
+1.60–1.67; all-core decode takes 1.23–1.27 times. Egami's own decoder takes 1.43 times on both; Egami.Video's per-frame copy into
+its frames adds the rest.
+
+V2, API reviewed and accepted 2026-10-15: VP8 decode through Egami's Vp8StreamDecoder, equal to libvpx on the test vectors;
+WebM alpha (packet additions, DecodeAlpha); IVF read and write; exact seek by default with SeekMode.Keyframe; CodecHeaders.Describe
+for VP8 header fields; DecodeErrorMode (Throw, Skip, Conceal) with Skip the reader's default, replacing
+VideoReaderOptions.SkipCorruptFrames. Single-thread VP8 decode is 1.6x libvpx's (accepted; an Egami step to speed it up follows).
+
+First release (V1), API reviewed and accepted 2026-10-11: frame and packet model with bit depths to 12, alpha, packed
+layouts, HDR and color carried end to end; AVI (with OpenDML), Matroska/WebM and YUV4MPEG2 read and write, and headerless raw
+video; Motion JPEG and uncompressed video decode and encode; audio passthrough, keyframe seeking, tags, chapters and
+attachments; PSNR, SSIM and framemd5-style hashes.
+
+## Egami.Video.H264 1.0.0 (2026-10-25)
+
+The first release: V7, H.264 decoding, in an opt-in package that ships at Egami.Video's version. API review questions decided 2026-10-23 (all as
+recommended): the raw reader is named "H.264 Annex B", `FrameRate` stays nullable, and broken data reports `H264.CorruptFrame`.
+
+- `H264Codec` and `WithH264()`: a managed H.264 decoder written from ITU-T H.264 for progressive Constrained Baseline, Main,
+  High, High 10 and High 4:2:2 streams, 8 and 10 bit, 4:0:0, 4:2:0 and 4:2:2, and their Intra profiles: CAVLC and CABAC, B
+  slices with spatial and temporal direct prediction, explicit and implicit weighted prediction, the 8x8 transform and scaling
+  matrices, long-term references and memory management, and several slices per frame. Frames equal FFmpeg's decode on all 31
+  corpus clips. Interlaced streams, 4:4:4, lossless, FMO, ASO, SP and SI slices and data partitions give
+  `UnsupportedFormatException`.
+- Decoding starts at the first IDR or recovery point; a broken slice reports `H264.CorruptFrame` and its macroblocks are
+  concealed from the frame before (`Skip` and `Conceal`) or the frame is finished and the error thrown (`Throw`); a missing
+  reference reports `H264.MissingReference`. Colour comes from the VUI, then the container, then BT.601 or BT.709 by size; HDR10
+  mastering display and content light level SEI become `Hdr`, HDR10+ (T.35 user data SEI) `Hdr10Plus`.
+- Slices of a frame decode in parallel and deblocking runs as a wavefront on `MaxParallelism` threads, with the same frames as
+  one thread. Motion compensation, deblocking and the output copy use Vector128 with a scalar reference the tests compare.
+- `H264Format`: raw Annex B streams (.h264, .264, .avc), read with a keyframe index for seeking, timed by the VUI frame rate,
+  25 fps, or `FrameRate`.
+- The CABAC initialisation values and CAVLC tables are transcribed from OpenH264 (BSD-2), see THIRD-PARTY-NOTICES.md.
+
+## Egami.Video.Cli 1.0.0 (2026-10-25)
+
+The first release of the `egami-video` command-line tool (Video V1.1), a .NET tool built on Egami.Video's public API that
+carries Egami.Video's version. Command and tool review accepted 2026-10-23 (all as recommended). The subtitle commands
+follow in 1.1.
+
+### Package icon
+
+- The package has its own icon on NuGet: a play mark and a prompt on a magenta tile.
+
+### Commands
+
+- `info`: container, duration, tracks, codecs, tags, chapters and attachments from the headers; `--all` adds packet and keyframe
+  counts and bit rates, `--headers` the codec headers, `--packets` and `--frames` every packet and decoded frame. `--format`
+  writes text, JSON (schema `egami-video-info-1.json`), CSV, XML with the JSON's fields, or JSON with ffprobe's field names.
+  Track counts, packet counts and timestamps equal ffprobe's on the corpus.
+- Stream copy, never decoding: `remux` (another container, chosen tracks, tags, chapters and attachments kept), `trim` (from the
+  keyframe at or before `--from`, exactly to `--to`, reporting the shift), `concat`, `segment` (`--every`, `--at`),
+  `timestamps` (`--shift`, `--rate`, `--fix`, `--start-at-zero`), `extract` (a track, attachments or cover art to their own
+  files), `embed` (tracks from other files, attachments, cover art, track languages, names and defaults) and `metadata` (tags,
+  chapters and track fields as JSON with schema `egami-video-metadata-1.json`, and loading them back).
+- Frames: `frames` (every frame, `--every`, `--at`, `--keyframes`, `--count`, ranges; Motion JPEG frames to JPEG byte for byte),
+  `encode` (images, image sequences or Y4M into Motion JPEG or uncompressed clips), `run` (egami's steps and `+` syntax on every
+  frame, the same pixels as `egami run`), `thumbnail`, `scenes`, `sheet` (a contact sheet with times) and `animate` (GIF, WebP,
+  APNG).
+- Checks: `hash` (per frame or packet, framemd5's layout and hashes) and `compare` (PSNR and SSIM per plane, within 0.01 dB of
+  ffmpeg's psnr filter; `--min-psnr`, `--min-ssim`).
+- `audio`: a track to WAV, Wave64, FLAC, Ogg FLAC or Opus with resampling, remixing and sample format conversion, or the audio
+  of a video file encoded again while its video is copied. `--codec opus` (the default for .opus and WebM outputs) encodes Opus
+  with `--bitrate`; ffmpeg mode maps `-c:a libopus` and `-b:a` onto it.
+- `formats`: the containers and codecs this build reads and writes.
+- `ffmpeg` and `ffprobe`: a documented subset of their command lines, mapped onto the commands above; anything else stops with
+  exit code 2 and names the option. `--explain` prints the native command.
+- `mcp`: the commands as tools for AI assistants over the Model Context Protocol, inside the folders allowed, with progress
+  notifications and cancellation.
+
+### Conventions
+
+- Tracks with `--track` (`v`, `a:1`, `s:eng`, a track number), `--no-audio` and `--no-subtitles`; times as seconds,
+  `[HH:]MM:SS[.mmm]` or `#frame`.
+- Globs, batches, output templates and `-` for standard input and output, read and written as they go.
+- A live progress line on a terminal; `--progress <file|->` writes ffmpeg's `-progress` keys, or JSON lines with
+  `--progress-format json`. Ctrl+C stops between packets, deletes the output it was writing and exits with 130.
+- `egami video <command>` runs it from the `egami` tool.
+- `scenes` uses Egami.Video's `SceneDetector` (V1.4): `--method adaptive|content|histogram` (adaptive by default), each
+  method's own default `--threshold`, and `--min-gap` 0.6 s by default; `ffmpeg -vf select='gt(scene,X)'` maps to
+  `--method content`.
+
+### Smart cut (V5.6)
+
+- `trim --smart` cuts on the exact frame, encoding again only the frames from `--from` up to the next keyframe; `trim
+  --reencode` encodes the whole cut again. Both read a file, not standard input.
+- `segment --scenes --exact` starts every part on its scene's first frame, by smart cut.
+- `egami-video ffmpeg` maps a cut that does not copy the video (`ffmpeg -ss 5 -to 9 -i in.webm out.webm`) to `trim --smart`.
+- `#n` frame numbers no longer count a VP8 hidden frame, which shares the time of the frame after it.
+- `info` names MP1 tracks (`mp1`, MP1 (MPEG audio layer 1)) and gives them the `fltp` sample format, as MP2 and MP3 (V5.8 API
+  review Q13).
+
 ## Egami 1.2.0 (2026-10-24)
 
 The release train: Egami, Egami.Drawing, Egami.Fonts, Egami.Svg, Egami.Css, Egami.Heic, Egami.Cli and Egami.Cli.Host move
@@ -266,744 +1000,6 @@ which needs no .NET runtime.
 - `Barcode.Code128` takes about 0.6 times ZXing.Net 0.16.10's time (1.6 times before): the code set search runs on the
   stack, and the symbol characters and bars are built without lists or copies. Code 128 and Code 39 no longer copy
   text without control characters for the human-readable text.
-
-## Egami.Video.Cli 0.5.0 (unreleased)
-
-A new package: the `egami-video` command-line tool (Video V1.1), a .NET tool built on Egami.Video's public API that carries
-Egami.Video's version. It ships with the next Egami.Video release. Command and tool review accepted 2026-10-23 (all as
-recommended).
-
-### Package icon
-
-- The package has its own icon on NuGet: a play mark and a prompt on a magenta tile.
-
-### Commands
-
-- `info`: container, duration, tracks, codecs, tags, chapters and attachments from the headers; `--all` adds packet and keyframe
-  counts and bit rates, `--headers` the codec headers, `--packets` and `--frames` every packet and decoded frame. `--format`
-  writes text, JSON (schema `egami-video-info-1.json`), CSV, XML with the JSON's fields, or JSON with ffprobe's field names.
-  Track counts, packet counts and timestamps equal ffprobe's on the corpus.
-- Stream copy, never decoding: `remux` (another container, chosen tracks, tags, chapters and attachments kept), `trim` (from the
-  keyframe at or before `--from`, exactly to `--to`, reporting the shift), `concat`, `segment` (`--every`, `--at`),
-  `timestamps` (`--shift`, `--rate`, `--fix`, `--start-at-zero`), `extract` (a track, attachments or cover art to their own
-  files), `embed` (tracks from other files, attachments, cover art, track languages, names and defaults) and `metadata` (tags,
-  chapters and track fields as JSON with schema `egami-video-metadata-1.json`, and loading them back).
-- Frames: `frames` (every frame, `--every`, `--at`, `--keyframes`, `--count`, ranges; Motion JPEG frames to JPEG byte for byte),
-  `encode` (images, image sequences or Y4M into Motion JPEG or uncompressed clips), `run` (egami's steps and `+` syntax on every
-  frame, the same pixels as `egami run`), `thumbnail`, `scenes`, `sheet` (a contact sheet with times) and `animate` (GIF, WebP,
-  APNG).
-- Checks: `hash` (per frame or packet, framemd5's layout and hashes) and `compare` (PSNR and SSIM per plane, within 0.01 dB of
-  ffmpeg's psnr filter; `--min-psnr`, `--min-ssim`).
-- `audio`: a track to WAV, Wave64, FLAC, Ogg FLAC or Opus with resampling, remixing and sample format conversion, or the audio
-  of a video file encoded again while its video is copied. `--codec opus` (the default for .opus and WebM outputs) encodes Opus
-  with `--bitrate`; ffmpeg mode maps `-c:a libopus` and `-b:a` onto it.
-- `formats`: the containers and codecs this build reads and writes.
-- `ffmpeg` and `ffprobe`: a documented subset of their command lines, mapped onto the commands above; anything else stops with
-  exit code 2 and names the option. `--explain` prints the native command.
-- `mcp`: the commands as tools for AI assistants over the Model Context Protocol, inside the folders allowed, with progress
-  notifications and cancellation.
-
-### Conventions
-
-- Tracks with `--track` (`v`, `a:1`, `s:eng`, a track number), `--no-audio` and `--no-subtitles`; times as seconds,
-  `[HH:]MM:SS[.mmm]` or `#frame`.
-- Globs, batches, output templates and `-` for standard input and output, read and written as they go.
-- A live progress line on a terminal; `--progress <file|->` writes ffmpeg's `-progress` keys, or JSON lines with
-  `--progress-format json`. Ctrl+C stops between packets, deletes the output it was writing and exits with 130.
-- `egami video <command>` runs it from the `egami` tool.
-- `scenes` uses Egami.Video's `SceneDetector` (V1.4): `--method adaptive|content|histogram` (adaptive by default), each
-  method's own default `--threshold`, and `--min-gap` 0.6 s by default; `ffmpeg -vf select='gt(scene,X)'` maps to
-  `--method content`.
-
-### Smart cut (V5.6)
-
-- `trim --smart` cuts on the exact frame, encoding again only the frames from `--from` up to the next keyframe; `trim
-  --reencode` encodes the whole cut again. Both read a file, not standard input.
-- `segment --scenes --exact` starts every part on its scene's first frame, by smart cut.
-- `egami-video ffmpeg` maps a cut that does not copy the video (`ffmpeg -ss 5 -to 9 -i in.webm out.webm`) to `trim --smart`.
-- `#n` frame numbers no longer count a VP8 hidden frame, which shares the time of the frame after it.
-- `info` names MP1 tracks (`mp1`, MP1 (MPEG audio layer 1)) and gives them the `fltp` sample format, as MP2 and MP3 (V5.8 API
-  review Q13).
-
-## Egami.Video.H264 0.6.0 (unreleased)
-
-V7: H.264 decoding, in a new opt-in package that ships at Egami.Video's version. API review questions decided 2026-10-23 (all as
-recommended): the raw reader is named "H.264 Annex B", `FrameRate` stays nullable, and broken data reports `H264.CorruptFrame`.
-
-- `H264Codec` and `WithH264()`: a managed H.264 decoder written from ITU-T H.264 for progressive Constrained Baseline, Main,
-  High, High 10 and High 4:2:2 streams, 8 and 10 bit, 4:0:0, 4:2:0 and 4:2:2, and their Intra profiles: CAVLC and CABAC, B
-  slices with spatial and temporal direct prediction, explicit and implicit weighted prediction, the 8x8 transform and scaling
-  matrices, long-term references and memory management, and several slices per frame. Frames equal FFmpeg's decode on all 31
-  corpus clips. Interlaced streams, 4:4:4, lossless, FMO, ASO, SP and SI slices and data partitions give
-  `UnsupportedFormatException`.
-- Decoding starts at the first IDR or recovery point; a broken slice reports `H264.CorruptFrame` and its macroblocks are
-  concealed from the frame before (`Skip` and `Conceal`) or the frame is finished and the error thrown (`Throw`); a missing
-  reference reports `H264.MissingReference`. Colour comes from the VUI, then the container, then BT.601 or BT.709 by size; HDR10
-  mastering display and content light level SEI become `Hdr`, HDR10+ (T.35 user data SEI) `Hdr10Plus`.
-- Slices of a frame decode in parallel and deblocking runs as a wavefront on `MaxParallelism` threads, with the same frames as
-  one thread. Motion compensation, deblocking and the output copy use Vector128 with a scalar reference the tests compare.
-- `H264Format`: raw Annex B streams (.h264, .264, .avc), read with a keyframe index for seeking, timed by the VUI frame rate,
-  25 fps, or `FrameRate`.
-- The CABAC initialisation values and CAVLC tables are transcribed from OpenH264 (BSD-2), see THIRD-PARTY-NOTICES.md.
-
-## Egami.Video 0.6.0 (unreleased)
-
-- `Hdr10PlusMetadata.Parse` is public, so codec packages such as Egami.Video.H264 read HDR10+ T.35 payloads with Egami.Video's
-  parser (internals are made public as outside packages need them).
-
-V4.3: fragmented MP4 writing, and HLS and DASH segments. API reviewed and accepted 2026-10-23 (all as recommended).
-
-- `Mp4Format.Fragments` and `Mp4FragmentOptions`: fragmented MP4 (ISO/IEC 14496-12 8.8), moov with mvex and then a moof and
-  mdat pair a fragment as packets come, cut at the first video keyframe after `Duration` (2 s) or at `MaxBytes` (32 MB), with
-  mfra at the end. A seekable output gets its durations written back; tags, cover art and Nero chapters are kept (the
-  QuickTime chapter track is left out, with an mp4-chapter-track warning). Setting it with `MoovAtEnd` throws.
-- `Mp4Format.NonSeekable` and `Mp4NonSeekableLayout`: an output that cannot seek and read back now gets fragmented MP4 with an
-  mp4-fragmented warning, so `MediaFile.Remux` and `MediaFile.Transcode` with a `Stream` output use no temporary file;
-  `TempFile` keeps the flat layout of 0.5.0.
-- `Mp4SegmentWriter`, `Mp4SegmentOptions` and `SegmentPlaylists`: CMAF init and media segments a track (styp, sidx, moof and
-  mdat), cut at a keyframe after `SegmentDuration` (6 s), to a folder or a `Func<string, Stream>`, with an HLS multivariant
-  playlist and media playlists (RFC 8216) and a static DASH MPD (ISO/IEC 23009-1).
-- Writing fragmented MP4 takes 0.69 times as long as flat MP4 on 720p Motion JPEG and allocates no memory per packet or
-  fragment in steady state; Chromium and Chrome (Media Source Extensions), hls.js, dash.js, ffprobe, MP4Box and Bento4 read
-  the files (egami-compare).
-
-V5.2: VP8 encoding, on an encoder core that VP9 and AV1 encoding will share. The V5 encoder steps had one combined API review
-after V5.6 (Design Q17), accepted 2026-10-24.
-
-### VP8 encoding
-
-- `Vp8Codec.CreateEncoder` and `VideoWriterOptions.Codec = VideoCodecs.Vp8`: VP8 into WebM, Matroska and IVF through Egami's
-  `Vp8StreamEncoder`, with WebM alpha as a second VP8 stream in each packet's addition 1. 8-bit 4:2:0 planes are coded as
-  they are; other frames are converted to BT.601 limited range.
-- `Vp8EncoderOptions` (`VideoEncoderOptions.Vp8`): quantizer limits, alternate references, golden frame spacing, temporal
-  filter frames and strength, token partitions, error resilience, alpha.
-- `egami-video encode --codec vp8` with `--effort` and `--bitrate`, and `run` keeps VP8 sources VP8; `egami-video ffmpeg`
-  takes `-c:v libvpx`.
-
-### Encoder settings
-
-- `VideoEncoderOptions` (and `VideoWriterOptions`) gain `Effort`, `RateControl` (`RateControlMode.Quality`, the default,
-  `Bitrate`, `ConstantBitrate`, `Quantizer`), `Bitrate`, `MaxBitrate`, `BufferSize`, `Quantizer`, `LatencyMode` (`Quality`
-  with a 25-frame lookahead, or `Realtime`), `KeyframeInterval` (10 seconds by default), `SceneCutKeyframes` and
-  `FirstPassStats`.
-- `IVideoEncoder.Send(VideoFrame, EncodeFrameOptions)` with `EncodeFrameOptions.ForceKeyframe`; Motion JPEG and uncompressed
-  video treat it as `Send(VideoFrame)`.
-- Two passes: `VideoWriter.AnalyzeFirstPass` over frames or a file gives `FirstPassStats`, which `Save` and `Load` keep in a
-  file.
-- The lookahead places keyframes at scene cuts, plans groups with hidden, temporally filtered alternate references where the
-  group's first frame still predicts its last well, and gives each frame its quantizer. Output bytes do not depend on the thread count.
-
-V5.7: Opus encoding, translated from libopus 1.5.2. API reviewed in the combined V5 encoders review, accepted 2026-10-24.
-
-### Opus encoding
-
-- `OpusCodec.CanEncode` and `CreateEncoder`: SILK, CELT and hybrid in every mode, 1 to 8 channels (mapping family 0 for mono
-  and stereo, 1 with libopus's surround masking and stream split above), 8, 12, 16, 24 and 48 kHz with other rates resampled
-  to 48 kHz and kept in the header. The packets are byte for byte libopus 1.5.2's in 46 reference settings (every application,
-  rate mode, frame duration from 2.5 to 120 ms, FEC, DTX, forced modes and bandwidths, multistream up to 7.1).
-- `OpusEncoderOptions` (`AudioEncoderOptions.Opus`, `AudioWriterOptions.Opus`): `Bitrate` (64 kbit/s per channel by default),
-  `RateMode` (`OpusRateMode.Vbr`, `ConstrainedVbr`, `Cbr`), `Application` (`OpusApplication.Audio`, `Voice`, `LowDelay`),
-  `FrameDuration` (20 ms), `Effort` (0 to 10, libopus's complexity, default 10), `Bandwidth` (`OpusBandwidth`), `InbandFec`,
-  `ExpectedLoss` and `Dtx`.
-- The pre-skip is the encoder's look-ahead (312 samples at 48 kHz) in OpusHead and `CodecDelay`, and the last packet's
-  duration trims the end, so .opus, WebM, Matroska and MP4 files decode to exactly the samples written in `AudioReader`,
-  opusdec and FFmpeg (which keeps the end padding of MP4).
-- `AudioWriter` writes Opus by default for Ogg (.opus, .ogg, .oga) and WebM files, and `MediaFile.Transcode` with no codec
-  and a WebM output encodes the audio in Opus unless it is Opus or Vorbis.
-- 60 s of stereo at 128 kbit/s encodes in 0.70 s, 1.4 times libopus 1.5.2's plain C build on the same machine, and
-  steady-state encoding allocates nothing per packet.
-
-### MP3 (V5.8)
-
-V5.8: MPEG audio decoding and .mp3 files. API reviewed and accepted 2026-10-25 (all as recommended).
-
-- `Mp3Codec` (and `AudioCodecs.Mp3`, decode only), registered by default, translated from minimp3 (CC0): Layers I, II and III
-  of MPEG-1, MPEG-2 and MPEG-2.5, 8 to 48 kHz, every channel mode and free-format bit rates, as planar float. It passes the
-  ISO/IEC 11172-4 compliance streams at full accuracy (maximum error at most 2^-14, PSNR about 101 dB) and matches FFmpeg's
-  float decoder within 2e-7 on LAME files. Frames are found by three matching headers; damaged frames and CRC-16 mismatches
-  (`Mp3.CorruptFrame`, `Mp3.BadCrc`) become silence of their own length with `DecodeErrorMode.Conceal`. `CodecIds.Mp1` is new.
-- `Mp3Format` (.mp3, .mp2, .mp1, .mpa), registered by default, read and written. ID3v2.2 to 2.4 tags (text frames, APIC cover
-  art, CHAP chapters), ID3v1, APEv2 and Lyrics3 tags are read; Xing, Info and VBRI frames give the frame count, and the LAME
-  tag's delay and padding become `CodecDelay` and the last packet's duration, so LAME files decode to the source's exact
-  sample count. Seeks land on the exact sample (output equals a straight decode); `Mp3Format.FastSeek` seeks by the Xing table.
-  The writer stores ID3v2.4 and, on a seekable stream, a Xing header and LAME tag that FFmpeg reads gaplessly.
-- MP3 in Matroska gets sample-exact packet durations and its DiscardPadding; WAV's id3 chunk now reads ID3v2.2 too.
-
-### Text subtitles (V1.2)
-
-API reviewed and accepted 2026-10-23 (Q1 applies ASS styles in SRT and WebVTT; the rest as recommended).
-
-- `SubtitleDocument` in `Egami.Video.Subtitles` reads and writes SRT, WebVTT and ASS, and reads SSA v4: `Load`, `Parse`,
-  `Save`, `ToText` and `DetectFormat`. Cues (`SubtitleCue`) are spans of styled text (`SubtitleSpan`) with exact `MediaTime`
-  times, a keypad `SubtitleAlignment` and an exact `SubtitlePosition`; ASS styles, layers, margins, embedded fonts and every
-  override tag are kept, and WebVTT cue settings, regions, voices, classes, ruby and karaoke timestamps.
-- An unchanged file saved in its own format gives back the same bytes. Reading is lenient, with `Subtitle.Repaired` warnings
-  (`SubtitleReaderOptions.Strict` throws instead); encodings are found from the byte order mark and UTF-8, then
-  `SubtitleReaderOptions.Encoding`, then a reported guess (`Subtitle.Encoding`). Converting reports what the target cannot
-  hold as `Subtitle.Dropped`, once per kind.
-- WebVTT is parsed as the W3C spec says and passes the web-platform-tests parsing suite (pinned to a commit by
-  tools/video/fetch-webvtt-tests.py), with the full HTML named character references.
-- `Shift`, `Scale`, `Sync`, `Clip`, `Sort` and `FixOverlaps` retime without rounding; times are rounded only when written.
-- Subtitle tracks: `SubtitleDocument.ReadTrack`, `FromPackets` and `IsTextCodec` read them, and `SubtitleTrackWriter` writes them.
-  Matroska takes `S_TEXT/UTF8`, `S_TEXT/WEBVTT` and `S_TEXT/ASS`, and reads `S_TEXT/SSA`. WebM takes `D_WEBVTT/SUBTITLES`.
-  MP4 takes mov_text and WebVTT (`wvtt`, ISO/IEC 14496-30, on a `text` track). New `CodecIds` constants name them.
-- Matroska subtitle blocks carry their BlockDuration, so cue durations survive a remux. Files from FFmpeg, MKVToolNix and
-  MP4Box read back to their source cues (tools/video/make-subtitle-tracks.py). ffprobe, mkvmerge and MP4Box read Egami's
-  files cleanly (tools/video/check-subtitle-tracks.py).
-- egami-video `trim` keeps subtitle cues shown across the cut, clipped to it (ffmpeg's stream copy drops a cue that starts
-  before the cut and lets the last one run past it); `concat` keeps each clip's cues inside the clip; `timestamps --fix`
-  leaves cues that start together alone.
-- Conversions give FFmpeg's cues on a 50-conversion set (tools/video/make-subtitle-references.py); the guide lists the three
-  places where they differ. An ASS style's bold, italics, underline and strikeout show in SRT and WebVTT as tags, as in
-  FFmpeg; ASS comment events are left out of them and reported (API review Q1). Reading and writing is 8 to 12 times faster than FFmpeg's (tools/video/time-subtitles.py).
-- Fuzz targets `subs` and `subtrack`. Their first runs found times too late to hold, karaoke past them, an ASS file cut off
-  in its header saved with a line end added, ASS events after a changed format line, and bad UTF-8 in WebVTT read without a
-  report; all fixed, with tests.
-
-V1.4 stage A: scene detection and the analysis pass, in the new `Egami.Video.Analysis` namespace. The API review comes once the
-whole step is built (V1.4 Build Plan).
-
-### Scene detection
-
-- `SceneDetector`: cuts from a 16 by 9 grid of mean Y, Cb and Cr and a 64-bin luma histogram per frame, read from the planes
-  with no RGB conversion. `SceneMethod.Adaptive` (the default) weighs each frame's change against the frames around it, so
-  pans and fast motion are not taken for cuts; `Content` scores against the mean of the last frames, as ffmpeg's scene score
-  does; `Histogram` compares luma histograms. A cut within `MinSceneLength` (0.6 s) of the last is not taken, and with
-  `FlashMode.Merge` a flash that comes back to the picture before it is no scene.
-- Fades: a fade or cut through black (or white, with `FadeToWhite`) starts the next scene inside the dark run (`FadeBias`
-  moves it), and `Fades` lists each fade out and fade in.
-- `Scenes` (`Scene` with first and last frame, start, end, middle and how it starts), `Cuts`, `Scores` with `KeepSeries`, and
-  `SettledFrames` for callers that hold recent frames. No memory is allocated per frame.
-
-### The analysis pass
-
-- `MediaAnalysis.Run` reads a file once and feeds the scene detector and any `IVideoDetector` and `IAudioDetector` of the
-  caller's, video and audio interleaved by time, over an optional `Start` and `Duration`, with progress and cancellation.
-- `SceneFrames.Read`: the first, middle or last frame of each scene, by seeking.
-
-### Test sources
-
-- `TestSources`: SMPTE RP 219 HD bars (with the -2%, +2% and +4% pluge bars) and SMPTE EG 1 SD bars at their code values in
-  any bit depth, a moving pattern with a frame counter, solid colors and gradients as video; sine tones, silence, white and
-  pink noise and log sweeps as audio, at a level in dBFS.
-
-V1.4 stage B: the video detectors. Each keeps ffmpeg's documented measure and defaults, with thresholds as fractions of the
-stream's range so 8-bit and 10-bit video behave alike; they run in `MediaAnalysis.Run` or on frames of the caller's own.
-
-- `BlackDetector` (as blackdetect: 10 % pixel threshold, 98 % of the picture, 2 s) and `FreezeDetector` (as freezedetect:
-  mean absolute difference over Y, Cb and Cr against the frame that froze, -60 dB, 2 s) return `DetectedRange`s.
-- `CropDetector` (as cropdetect's black mode, limit 24/255, even sizes): a `CropReport` with the rectangle that keeps every
-  frame's picture, the most common one and the runs of frames that share one.
-- `InterlaceDetector` (as idet, ratios 1.04, 1.5 and 3): `InterlaceReport` with top field first, bottom field first,
-  progressive and undetermined frames, repeated fields and an `InterlaceVerdict` that names 3:2 telecine.
-- `DuplicateDetector`: mpdecimate's 8 by 8 block test without dropping, as runs of repeated frames; its thresholds are
-  12/255 and 5/255 of the range per sample (mpdecimate's 768 and 320) and 0.33.
-- `SignalMeter` (as signalstats and colordetect): `PlaneLevels` for Y, Cb, Cr and saturation, the share of pixels outside
-  broadcast range, the `SignalRange` really used and `AlphaUse`; with `Blur` the mean edge width (blurdetect's thresholds) and
-  with `Blockiness` how much a block grid stands out (blockdetect's periods). Per-frame `SignalFrame`s with `KeepSeries`.
-
-V1.4 stage C: audio detectors and the loudness meter.
-
-- `SilenceDetector` (as silencedetect: under -60 dBFS for 2 s) returns silent stretches exact to the sample, over all channels
-  together or, with `PerChannel`, for each channel.
-- `AudioLevelMeter` (as volumedetect and astats): an `AudioLevelReport` with `ChannelLevels` per channel and overall: peak,
-  RMS, DC offset, crest factor, clipped samples, peak count, noise floor, zero crossings and a 1 dB histogram.
-- `LoudnessMeter` in `Egami.Video.Audio` (ITU-R BS.1770-5, EBU R 128): momentary and short-term loudness every 100 ms, gated
-  integrated loudness, loudness range (EBU Tech 3342), 4x oversampled true peak and sample peak, at any rate from 8 to 384 kHz
-  with the surround channels weighted and LFE left out. It passes the EBU Tech 3341 and 3342 tone cases, runs about 200 times
-  faster than real time on 48 kHz stereo, and is the meter V9.1's loudness normalization will use.
-- No detector allocates memory per frame once running.
-
-V1.4 stage D: audio pictures.
-
-- `AudioPictures.Waveform` draws each column's min-to-max outline with the RMS level shaded inside, linear or in dB, with the
-  channels together or stacked (`WaveformOptions`); about 800 times faster than real time on 48 kHz stereo.
-- `AudioPictures.Spectrogram` draws a Hann-windowed FFT per column (2048 samples by default) from -120 to 0 dBFS in magma or
-  grayscale, on a linear or logarithmic frequency axis, mixed or per channel (`SpectrogramOptions`); a row that spans several
-  bins shows the strongest, so pure tones never fall between rows. About 400 times faster than real time at 1800 x 512.
-- Both read a file or any run of `AudioFrame`s once with constant memory: three hours of audio cost no more than three
-  seconds. Both take a cancellation token, and the file overloads report progress. The pictures carry no text; the CLI adds
-  axes and legends.
-
-V1.4 stage E: the command line.
-
-- `egami-video analyze`: every detector in one pass (`--detect` or `--all`: scenes, black, freeze, crop, interlace, duplicates,
-  signal, blur, blockiness, silence, levels, loudness), with each ffmpeg filter's settings under its own names
-  (`--black-min`, `--silence-noise -50dB`, `--crop-limit` …), `--start` and `--duration`, text, `--json` or `--csv`, and
-  `--series` for per-frame and per-100 ms values. It is a read-only tool in `egami-video mcp`.
-- `scenes`: `--min-length` (`--min-gap` still works), `--fades`, `--flash merge|suppress`, `--frame first|middle|last` and
-  `--series`.
-- `waveform` and `spectrum` draw audio pictures, with `--legend` for a time axis and level or frequency labels;
-  `generate` writes test clips and sounds (pattern, bars, solid, gradient; sine, silence, noise, sweep).
-- `segment --scenes` splits at scene changes, each part from the keyframe at or before its scene, reporting the gap and
-  warning past a second; `--exact` starts each part on its first frame by smart cut (V5.6). `run --crop auto` crops black bars off before the steps.
-- `egami-video ffmpeg`: blackdetect, freezedetect, cropdetect, idet, signalstats, blurdetect, blockdetect, silencedetect,
-  volumedetect, astats and ebur128 with `-f null -` run `analyze` and print ffmpeg's log lines (`analyze --ffmpeg-log`);
-  `-f lavfi` testsrc, testsrc2, smptebars, smptehdbars, color, sine, anullsrc and anoisesrc run `generate`; showwavespic and
-  showspectrumpic run `waveform` and `spectrum`. `-af` is parsed; filters outside these stop with exit code 2.
-
-V1.4 gates (tasks 5, 14 and 21, egami-compare).
-
-- Scenes: on hand-labeled cuts of the first 10 minutes of Big Buck Bunny, Sintel and Tears of Steel, `SceneDetector` scores F1
-  0.953 (0.939 with the old FadeLevel), against PySceneDetect 0.7.2's AdaptiveDetector 0.935 and V1.1's detector 0.886.
-- Loudness: `LoudnessMeter` passes every EBU Tech 3341 and 3342 case of the EBU test set v05 and matches ffmpeg's ebur128
-  within 0.05 LU on 69 of its 70 files; on the 70th (1.78 s long) a plain BS.1770 computation agrees with Egami, 0.5 LU from
-  ffmpeg. `MaxMomentary` and `MaxShortTerm` now take every window that starts on a 10 ms boundary, so a burst that starts between
-  100 ms steps reads its full level (Tech 3341 cases 10 and 13; ffmpeg's ebur128 reads 0.2 to 0.5 LU low there).
-- `SceneOptions.FadeLevel` defaults to 0.02 (was 0.06): dark shots are no longer taken for black, which made fades that were
-  not there and hid real cuts. On the scene gate's films F1 goes from 0.939 to 0.953, Sintel's dark scenes from 0.866 to
-  0.903.
-- `analyze --ffmpeg-log` matches ffmpeg 7.1's log lines: cropdetect lines carry `pts`, a six-decimal `t` and `limit`;
-  volumedetect lists its `histogram_<n>db` lines; the ebur128 summary lists both gate thresholds and prefixes only its first
-  line. In `egami-video ffmpeg`, cropdetect rounds to 16 by default, as ffmpeg's does.
-- Speed: scenes, black and freeze in `MediaAnalysis.Run` cost little next to decoding (the scene grid adds rows column by column
-  with vector adds; black and freeze stop measuring a frame once the answer is known, so `BlackDetector.LastRatio` and
-  `FreezeDetector.LastDifference` are bounds for such frames; `MediaAnalysis.Run` hands the freeze detector the frame it keeps
-  instead of a copy). `InterlaceDetector`, `DuplicateDetector` and `SignalMeter` run 2 to 6 times faster.
-- QuickTime files whose user data ends with a 32-bit zero (QuickTime 7 wrote them so) open; they failed as cut off.
-
-V5.3: VP9 encoding. API reviewed in the combined V5 encoders review, accepted 2026-10-24.
-
-### VP9 encoding
-
-- `Vp9Codec.CanEncode` is true and `Vp9Codec.CreateEncoder` encodes VP9 into WebM, Matroska, IVF and MP4, with the encoder
-  core's keyframes, groups, hidden alternate references and rate control modes, on VP8's `Quality` (0 to 100, default 60) and
-  `Effort` (0 to 10, default 4) scales; `Quantizer` is VP9's 0 to 255 (0 lossless). Hidden frames go out in a superframe with
-  the next shown frame, so every packet shows one frame.
-- The search: partitions from 64x64 down to 4x4 with libvpx's breakout and a partition range from the previous frame, all ten
-  intra modes with ADST and DCT transforms to 32x32 and the transform size chosen by rate and distortion, motion search to 1/8
-  pixel, NEARESTMV, NEARMV, ZEROMV and NEWMV from LAST, GOLDEN and ALTREF, compound prediction, the regular, sharp and smooth
-  filters, libvpx's trellis, forward probability updates, a loop filter level search, tile columns and adaptive quantization
-  by segments. The encoder decodes what it writes, so its references are what every decoder holds.
-- Profiles 0 to 3: 8, 10 and 12 bits, 4:2:0, 4:2:2 and 4:4:4, from the frames' planes or `Vp9EncoderOptions.BitDepth`; the
-  frames' color code points and static HDR metadata go into the track (WebM and Matroska Colour, MP4 colr, mdcv and clli).
-  Frames with alpha get a second VP9 stream in each packet's addition 1, as WebM carries it.
-- `egami-video encode --codec vp9` (with `--effort` and `--bitrate`), `run` keeps VP9 sources VP9, and `egami-video ffmpeg`
-  takes `-c:v libvpx-vp9`.
-- `Vp9EncoderOptions` (`VideoEncoderOptions.Vp9`, `VideoWriterOptions.Vp9`): quantizer limits, alternate references, golden
-  frame spacing, temporal filter, tile columns, adaptive quantization, error resilience, bit depth and alpha.
-- The output is the same at any thread count and with or without hardware intrinsics: tile columns depend only on the width
-  and the options, and superblock rows run as a wavefront. Forward transforms run on Vector128 and Vector256 lanes, sums of
-  absolute differences, squared errors and residuals on AVX2.
-- libvpx 1.14.1's vpxdec decodes every test stream (33, all profiles and options) exactly as Egami does
-  (`tools/video/check-vp9-encoder.py`); 10 minutes of AFL++ on the vp9enc target found nothing.
-- Against libvpx 1.14.1 `vpxenc --good` (one-pass VBR, 25 frames of lag, alternate references; `tools/video/time-vp9-encoder.py`),
-  at effort 4: one thread at 1080p codes 1.6 to 2.4 s a frame, between `--cpu-used=1` and `=3` (about `=2`); all 24 cores
-  0.39 to 0.51 s, about `--cpu-used=1`. BD-rate against `--cpu-used=2` (720p, 60 frames, PSNR-Y / SSIM): crowd_run +6.1 % /
-  +19.9 %, ducks_take_off +0.4 % / -9.3 %, park_joy +3.9 % / +10.3 %, old_town_cross +24.5 % / +34.9 %. The +15 % gate is met on
-  PSNR-Y by three clips of four and on SSIM by two; static, grainy content (old_town_cross) and SSIM are where libvpx is still
-  ahead. Egami matches libvpx's PSNR-Y BD-rate at about `--cpu-used=4` on crowd_run, park_joy and old_town_cross and `=2` on
-  ducks_take_off, taking 0.65 to 1.8 times its time there on one thread and 1.1 to 2.0 times on all cores.
-
-V5.9 stage A: AIFF and AIFF-C, and G.711. V5.9 (stages A to D and the CLI) API reviewed and accepted 2026-10-24 (all as
-recommended); it ships in this release with the rest of 0.6.0.
-
-### AIFF
-
-- `AiffFormat`: .aif, .aiff and .aifc files. Reads big-endian PCM, AIFF-C's sowt, in24, in32, fl32 and fl64 and G.711 (ulaw,
-  alaw), at the sample count COMM gives; other AIFF-C compressions (ima4, MACE, QDesign) pass through as `X_AIFC/<type>`
-  packets. NAME, AUTH, "(c) " and ANNO become tags, an ID3 chunk adds tags, cover art and chapters, MARK markers become
-  chapters and a CHAN chunk gives the channel layout. Seeking is sample exact.
-- Writes integer PCM (8 to 32 bits, either byte order in) as AIFF and float as AIFF-C, with text chunks, ID3, MARK and CHAN,
-  through a temporary file when the output cannot seek. `AudioWriter` defaults to big-endian PCM for .aiff, and ffmpeg reads
-  the files sample for sample with their layout and tags.
-
-### G.711
-
-- `G711Codec.MuLaw` and `G711Codec.ALaw` (`CodecIds.G711MuLaw`, `CodecIds.G711ALaw`) decode ITU-T G.711 to 16-bit samples, from
-  AIFF-C, WAV, AVI (format tags 6 and 7) and MP4 and MOV (ulaw, alaw). Matroska has no G.711 id, so it does not take them.
-- Fuzz target `aiff`.
-
-V5.9 stage B: CAF.
-
-### CAF
-
-- `CafFormat`: Apple's Core Audio Format (.caf). Reads PCM (integer and float, either byte order), G.711, ALAC, Opus, AAC, MP3,
-  MP2, AC-3 and FLAC; other formats pass through as `X_CAF/<format>` packets. The packet table cuts variable-size packets and
-  gives the priming frames (`CodecDelay`) and the end padding (the last packets' durations); the magic cookie becomes
-  `CodecPrivate` (ALAC's 24-byte config, AAC's AudioSpecificConfig, FLAC's metadata blocks; Opus gets an OpusHead). The info
-  chunk becomes tags, markers and regions (named from strg) become chapters, and chan gives the layout. Sample-exact seeking
-  for PCM, packet-exact for the rest.
-- Writes one track of any of those codecs. PCM and G.711 stream, with a data chunk sized -1 on a non-seekable output; other
-  codecs get their packet table after the samples, or before them through a temporary file on a non-seekable output.
-  ffmpeg reads the files with their tags and layout. `CodecIds.Alac` names ALAC tracks (decoding comes in stage C).
-- Fuzz target `caf`; `tools/video/fuzz-afl.py` now knows the `aiff` and `caf` targets. A CHAN or chan chunk whose bitmap names
-  more or fewer speakers than the file has channels is now ignored instead of throwing (AIFF-C too).
-
-V5.9 stage C: ALAC.
-
-### ALAC
-
-- `AlacCodec` (`AudioCodecs.Alac`): Apple Lossless decoding and encoding, translated from Apple's Apache-2.0 reference codec.
-  16, 20, 24 and 32 bits, 1 to 8 channels in ALAC's layouts, partial last frames. The encoder's packets equal Apple's byte for
-  byte at level 1 (the default, full stereo and predictor search) and level 0 (Apple's fast mode), with 4096 samples per
-  packet unless `FrameSize` is set; the track's `CodecPrivate` is the 24-byte ALACSpecificConfig with the largest packet and
-  average bit rate filled in. `tools/video/alacref` builds Apple's code as the reference, and
-  `tools/video/make-alac-references.py` makes the gate streams.
-- MP4 reads and writes the `alac` sample entry and box, and reads QuickTime's `wave` atom; the rate, channels and bit depth come
-  from the config (so 96 kHz and up work). Matroska `A_ALAC` and CAF (already in stage B) decode too. FFmpeg's ALAC files in
-  all four decode to FFmpeg's samples.
-- `AudioWriter` keeps 20-bit samples at 20 bits for ALAC and writes float as 24-bit ALAC. A track with no layout gets ALAC's
-  layout for its channel count. The CLI extracts ALAC tracks to .m4a. ALAC decoding trims a packet to its duration, so
-  Matroska DiscardPadding and CAF remainder frames apply, and stays sample exact across Matroska's millisecond block times.
-- Fuzz target `alac`.
-
-V5.9 stage D (container part): AC-3 and E-AC-3.
-
-### AC-3 and E-AC-3
-
-- `Ac3Format`: raw AC-3 and E-AC-3 streams (.ac3, .eac3, .ec3). Each packet is one AC-3 frame, or an E-AC-3 independent frame
-  with its dependent substreams; rate, channels and layout from the first frame; junk between frames is skipped (a frame found
-  after junk must be followed by another); duration from the frame size and seeking through a frame index. Writes the packets
-  back to back. New `CodecIds.EAc3` (`A_EAC3`), passed through.
-- MP4 reads ac-3 and ec-3 sample entries as `CodecIds.Ac3` and `CodecIds.EAc3` (they used to come through as `A_QUICKTIME`)
-  and writes them, with a dac3 or dec3 box made from the first packet's headers; the boxes match FFmpeg's. CAF maps ec-3 too.
-- Fuzz target `ac3`.
-
-V5.9 tasks 14, 15 and 17: AC-3 decoding.
-
-### AC-3 decoding
-
-- `Ac3Codec` (`AudioCodecs.Ac3`, registered by default) decodes AC-3, written from ATSC A/52:2018 alone: every channel mode
-  (1/0 to 3/2 and dual mono) with or without the LFE, 32, 44.1 and 48 kHz, 32 to 640 kbit/s, coupling, rematrixing, block
-  switching, delta bit allocation and dither, with both frame CRCs checked (`Ac3.BadCrc`, `Ac3.CorruptFrame`, handled as
-  `AudioDecoderOptions.Errors` says). Frames are 1536 samples of planar float in Egami.Video's channel order, so AudioReader
-  reads AC-3 from .ac3 files and from MP4, Matroska, AVI and CAF tracks. E-AC-3 still passes through.
-- `AudioDecoderOptions.Ac3` takes an `Ac3DecoderOptions`: `DynamicRange` (1 by default, the stream's dynamic range control in
-  full; 0 turns it off) and `Downmix`, a layout to mix to with the stream's center and surround mix levels (A/52's LoRo
-  equations, scaled so the mix cannot clip). AudioReader hands out frames in the downmix layout, and an
-  `AudioReaderOptions.Layout` of mono or stereo on a wider AC-3 track uses this downmix too unless `Downmix` is set. Dialogue
-  normalization is not applied.
-- Within 2^-14 and at 90 dB SNR or more of FFmpeg's float decode on 24 FFmpeg-encoded streams (every mode FFmpeg writes, 32 to
-  640 kbit/s, LFE and coupling on and off, dual mono), made by `tools/video/make-audio-corpus.py --ac3-decode`.
-- Fuzz target `ac3raw`.
-
-V5.9 task 19: the CLI.
-
-### egami-video
-
-- `audio --codec alac` writes Apple Lossless (`--level` 0 or 1) to .m4a, .mov, .mka and .caf; .m4a outputs get ALAC by
-  default. `audio` also writes .aiff (PCM) and .caf (PCM by default, or FLAC, ALAC or Opus).
-- `extract` writes ALAC tracks to .m4a and AC-3 and E-AC-3 tracks to raw .ac3 and .eac3 files; `remux` writes .ac3, .aiff and .caf.
-- ffmpeg mode maps `-c:a alac` and the big-endian `pcm_s16be`, `pcm_s24be` and `pcm_s32be`, and sends .aiff and .caf outputs
-  to `audio` unless the audio is copied. `info` and ffprobe mode name ALAC, E-AC-3, G.711, AIFF, CAF and raw AC-3 as ffprobe
-  does.
-
-V5.4: AV1 encoding, through Egami's `Av1StreamEncoder` (Egami 2.9.9). API reviewed in the combined V5 encoders review, accepted 2026-10-24.
-
-### AV1 encoding
-
-- `Av1Codec.CanEncode` is true and `Av1Codec.CreateEncoder` encodes AV1 into WebM, Matroska, MP4, IVF, raw OBU and Annex B,
-  with the encoder core's keyframes, groups and rate control modes on the shared `Quality` (0 to 100, default 60, the same
-  quantizer steps as VP9) and `Effort` (0 to 10, default 4) scales; `Quantizer` is AV1's base_q_idx, 0 to 255 (0 lossless).
-  Each packet is a temporal unit; the track's av1C is built from the sequence header.
-- Hierarchical groups: each group of 16 frames is a five-layer pyramid (Phase 2.9.11 stage B). Its hidden alternate reference,
-  then hidden frames halfway to it, halfway again and down to pairs, are coded ahead, lead the next shown frame's temporal unit,
-  and are shown at their own place with `show_existing_frame`, a packet of a few bytes, instead of an overlay frame. The frames
-  left between them (the leaves) predict from both sides and refresh no slot. Every frame reads its three nearest past frames as
-  LAST to LAST3, the golden frame and the hidden frames ahead as BWDREF, ALTREF2 and ALTREF. Each frame's layer goes to the AV1
-  encoder, which weighs rate more the deeper the layer; the steps fall from the leaves' halfway toward the alternate reference's
-  at each layer up.
-- Before a group is coded, it and the group after it (AV1 looks 40 frames ahead) run through `Av1StreamEncoder.Analyze`: the
-  keyframe's and the alternate reference's steps fall with the square root of how much the frames after them reuse them, the
-  base frames get superblock quantizers and the frames above them block multipliers from the same analysis. Keyframes and
-  alternate references are blended by the temporal filter, whose strength follows each picture's noise and the frame's
-  quantizer (`TemporalFilterStrength` null, the default). `AdaptiveQuantization` also gives the other frames Variance Boost.
-- Main, High and Professional profiles: 8, 10 and 12 bits, 4:2:0, 4:2:2 and 4:4:4, from the frames' planes or
-  `Av1EncoderOptions.BitDepth`. The frames' color code points and 4:2:0 chroma siting go into the sequence header and the
-  container; static HDR metadata into content light level and mastering display metadata OBUs on every keyframe and into the
-  container (Matroska Colour, MP4 mdcv and clli); HDR10+ from a frame into its temporal unit as an ITU-T T.35 metadata OBU.
-  The level is the smallest whose picture size, dimensions and sample rate hold the stream. No alpha (AV1 has no alpha in
-  Matroska or MP4; animated AVIF has it).
-- `Av1EncoderOptions` (`VideoEncoderOptions.Av1`, `VideoWriterOptions.Av1`): quantizer limits, alternate references and the
-  pyramid, golden frame spacing, temporal filter, adaptive quantization (delta q per superblock), screen content tools, error
-  resilience and bit depth.
-- Rate control plans later groups with their hidden frames, and a real-time constant bitrate stream plans its first inter frame
-  from the keyframe probe (both for AV1 only; VP8 and VP9 output is unchanged).
-- `egami-video encode --codec av1` (with `--effort` and `--bitrate`), `run --codec av1` (and AV1 sources stay AV1), and
-  `egami-video ffmpeg` takes `-c:v libaom-av1`, `libsvtav1`, `librav1e` and `av1`.
-- dav1d 1.5.4 and libaom 3.15.2's aomdec decode every test stream (28: every effort from 0 to 8, the pyramid, real time, the
-  bitrate modes, keyframes at cuts and the interval, quantizers 0 and 255, error resilience, sizes down to 1x1, all three
-  profiles at 8, 10 and 12 bits, HDR metadata) exactly as Egami does (`tools/video/check-av1-encoder.py`); each is the same
-  bytes at one thread and at all cores, and with hardware intrinsics off. 10 minutes of AFL++ on the av1enc target found no
-  crash (two inputs at effort 10 ran past AFL++'s 5 s limit: 5.5 s each).
-- Against libaom 3.15.2 `aomenc --good` (one-pass VBR, 25 frames of lag, alternate references) and SVT-AV1 3.0.2
-  (`tools/video/time-av1-encoder.py`), at effort 4, 720p, 60 frames, BD-rate on PSNR-Y / SSIM, with stage B's pyramid,
-  temporal model and filters: against `--cpu-used=4` crowd_run +18.4 % / +17.3 %, ducks_take_off +15.4 % / -8.8 %, park_joy
-  +21.4 % / +17.0 %, old_town_cross +42.8 % / +13.3 %; against `--cpu-used=5` +16.2 % / +8.3 %, +13.5 % / -10.3 %, +14.2 % /
-  +7.1 %, +37.0 % / -1.5 %; against `--cpu-used=6` +7.9 % / +3.4 %, +12.4 % / -11.1 %, +13.8 % / +6.3 %, +25.7 % / -1.5 % (stage
-  A: +26.7 % / +7.6 %, +31.9 % / -4.0 %, +34.5 % / +13.8 %, +131 % / -3.5 %). SVT-AV1 preset 6: -9.8 % / -8.0 %, -5.3 % /
-  -19.8 %, -4.4 % / -4.4 %, +9.5 % / -6.2 %. The +15 % gate is met on both metrics against `--cpu-used=6` by three clips of
-  four and against `=5` by two (crowd_run misses PSNR-Y by 1.2 points); old_town_cross misses PSNR-Y at every setting, and
-  against `=4` PSNR-Y is met by none but ducks_take_off's +15.4 % is close.
-- Speed (1080p, 10 frames, effort 4, crowd_run and park_joy, best of two runs): one thread 6.3 and 4.9 s a frame (stage A:
-  8.3 and 5.4 s), between libaom's `--cpu-used=4` (8.3 and 7.2 s) and `=5` (3.3 and 2.8 s); all 24 cores 1.6 and 1.4 s (stage A
-  1.8 and 2.2 s) against 2.5 and 2.3 s at `=4`, 0.76 and 0.66 s at `=5`, 0.63 and 0.55 s at `=6`. So the setting matched by
-  time is `=4`, where the BD-rate gate is missed, and the setting matched by BD-rate is faster than `=6`, against which Egami
-  takes 2.3 to 2.4 times as long on one thread and 2.5 to 2.6 times on all cores: the 2x speed gate is missed, by much less
-  than before stage A (12 to 14 times and 48 to 57 times).
-- Rate control (720p, 100 frames, 3 Mbit/s, effort 0): one-pass bitrate +0.8 % to +2.1 % of the target and two-pass +1.0 % to
-  +3.1 %, within the 5 % gate; constant bitrate -6.4 % to +2.2 %, its one-second buffer never below 55 %.
-
-V5.6: smart cut. API reviewed in the combined V5 encoders review, accepted 2026-10-24.
-
-### Trimming
-
-- `MediaFile.Trim` (a file or a `Stream` in and out, with progress and a cancellation token) cuts from a start up to an end,
-  with timestamps from 0, and returns a `TrimResult`: the mode that ran, where the cut starts in the input, the frames written
-  and encoded again, the packets, and the warnings. The first frame is the first at or after the start, within half of the
-  container's tick; the video ends after the packet that shows the last frame before the end, and a hidden frame after it
-  that nothing shows is dropped.
-- `TrimMode.Smart`, the default, is frame-exact: it decodes from the keyframe before the start and encodes the frames up to
-  the next keyframe again as a closed group starting with a keyframe, then copies every packet from that keyframe byte for
-  byte. VP8, VP9 and AV1; the group matches the stream (codec, profile, size, bit depth, chroma, VP9's color_space and range,
-  AV1's sequence header byte for byte through `Av1SequenceOptions.FromSequenceHeader`) and is coded at the average quantizer
-  of the packets it replaces. Motion JPEG, uncompressed video and starts on a keyframe are a plain copy. A stream the encoder
-  cannot match is encoded again whole (a `trim-reencode` warning); a codec Egami.Video cannot encode, or frames that change
-  size, start at the keyframe (`trim-keyframe`).
-- `TrimMode.Keyframe` copies from the keyframe at or before the start; `TrimMode.Reencode` encodes the whole cut again at the
-  source's quantizer.
-- Audio is cut at the sample for PCM (packets sliced), MP4 (the edit list) and Opus in Matroska and WebM (CodecDelay with 80 ms
-  of pre-roll, DiscardPadding), else at the nearest packet (`trim-audio-packet`); subtitle cues and chapters are clipped to
-  the cut; tags and attachments are kept.
-- Matroska writes DiscardPadding as the signed element it is: a padding whose top bit was set (14 ms, for one) read back as
-  none, so the last Opus packet kept its padding.
-- Matroska reads each Vorbis packet laced in one block at its own time, where the samples before it end: all of them had the
-  block's time, so a trimmed or remuxed laced Vorbis track lost about a fifth of its samples.
-- vpxdec, dav1d and FFmpeg decode the cuts without errors, to the same frames as Egami (`tools/video/check-smart-cut.py`).
-- 10 minutes of AFL++ on the new trim target found no crash once broken timestamps were rejected (two inputs that overflowed
-  are regression tests).
-
-## Egami.Video 0.5.0 (unreleased)
-
-V5.0 audio core: decoded audio, PCM and FLAC, WAV and FLAC files, resampling and channel mixing; V5.1: Opus decoding and Ogg;
-V5.5: Vorbis decoding. V5 audio API reviewed and accepted 2026-10-22 (all as recommended).
-
-V4.2, API reviewed and accepted 2026-10-22 (all as recommended): AV1 decode, through Egami's AV1 stream decoder (Egami 1.1.0).
-
-### Frames and conversion
-
-- `AudioFrame`: samples for every channel with a timestamp, rate, `ChannelLayout` and `SampleFormat`, from the context's
-  memory source. Twelve sample formats: unsigned 8-bit, signed 16, 32 and 64-bit, 32 and 64-bit float, each interleaved or
-  planar; `ValidBits` says how many bits an integer sample uses (24-bit audio is `S32` with 24).
-- `Convert` and `CopyTo` change the format, with optional triangular dither (`AudioConvertOptions.Dither`).
-- `ChannelLayout` and `Speakers`: channels in WAVE_FORMAT_EXTENSIBLE order, presets from mono to 7.1.4, unpositioned channels.
-- `ChannelMixer`: ITU-R BS.775 downmix and upmix matrices, or one of your own.
-- `Resampler`: polyphase windowed-sinc (Kaiser) between any two rates, `ResamplerQuality.Fast`, `Good` (default: under 0.1 dB
-  ripple to 0.9 of Nyquist, 100 dB stopband) and `Best` (140 dB), with exact timestamps.
-
-### Codecs
-
-- `AudioCodec`, `IAudioDecoder` (with `SendLoss`), `IAudioEncoder`, `AudioDecoderOptions`, `AudioEncoderOptions` and
-  `AudioCodecs`, registered in `MediaContext.AudioCodecs` with `MediaContext.WithCodec(AudioCodec)`.
-- `PcmCodec`: 8 to 32-bit integer PCM, little and big-endian, and 32 and 64-bit float, decoded and encoded.
-- `FlacCodec`: all of RFC 9639 decoded, bit-exact with libFLAC on every IETF FLAC test file it decodes, with CRC and MD5
-  checks (`Flac.BadCrc`, `Flac.Md5Mismatch`); encoding at levels 0 to 8 (default 5), 4 to 32 bits, 1 to 8 channels, files
-  within 1 % of libFLAC's size at every level and accepted by `flac -t`.
-- `AudioTrackInfo.Layout` and `AudioTrackInfo.SeekPreRoll`.
-
-### Containers
-
-- `WavFormat`: WAV, RF64 and BW64 (`WavFormat.Instance`) and Sony Wave64 (`WavFormat.Wave64`), read and written:
-  WAVE_FORMAT_EXTENSIBLE, streamed files with unfilled sizes, LIST/INFO and id3 tags, cue points as chapters, and RF64 by
-  itself past 4 GB.
-- `FlacFormat`: native FLAC read and written, with Vorbis comments, pictures as attachments, seek tables and the channel mask.
-- FLAC and PCM in Matroska and MP4 decode and encode through the existing containers.
-
-### Reading and writing
-
-- `AudioReader` and `AudioReaderOptions`: the first audio track of any file as planar float, or the format, rate and layout
-  asked for; codec delay and edit lists trimmed (`KeepAllSamples` keeps them); sample-exact `Seek`.
-- `AudioWriter` and `AudioWriterOptions`: frames of any length and format into WAV, Wave64, FLAC, Matroska or MP4.
-- `MediaFile.Transcode`: copies a file and encodes its audio again with another codec, for example FLAC in Matroska. Opus
-  sources are encoded at the 48 kHz Opus decodes to, not the source rate its header names.
-- `VideoWriterOptions.AudioCodec` (with `AudioSampleRate`, `AudioLayout` and `AudioBitsPerSample`) and
-  `VideoWriter.WriteAudio`: an audio track encoded next to the video.
-- AFL++ fuzz targets `wav` and `flac`.
-
-### Opus and Ogg (V5.1)
-
-- `OpusCodec` (decode only), registered by default: SILK, CELT and hybrid frames at every bandwidth, mono, stereo and the RFC
-  7845 multichannel mappings 0, 1 and 255, translated from libopus 1.5.2. All twelve RFC 8251 test vectors pass opus_compare
-  in mono and stereo (96.2 to 100 %), with libopus's final range on every packet; files from opusenc decode within one 16-bit
-  step of opusdec. Output is planar float at 48 kHz in the canonical channel order (5.1 and 7.1 remapped from Vorbis order).
-- Lost packets, reported with `IAudioDecoder.SendLoss` or seen as a gap in timestamps, are concealed, or recovered from the
-  next packet's in-band FEC. Ambisonic mappings (families 2 and 3) are reported as `Opus.UnsupportedMapping`.
-- `AudioDecoderOptions.KeepPadding`: end padding past a packet's stated duration is trimmed by default (Ogg's last granule
-  position, Matroska's DiscardPadding); `AudioReaderOptions.KeepAllSamples` keeps it.
-- `OggFormat`: Ogg (.ogg, .opus, .oga) read and written with Opus, Vorbis and FLAC; CRC-checked pages,
-  timestamps from granule positions, seeking from a one-pass index, and chained files joined into one track with each
-  link's title as a chapter (`ogg-chained-stream` when a link changes the settings).
-- Opus in Matroska and WebM gains SeekPreRoll and DiscardPadding, read and written; Opus in MP4 gets its 80 ms pre-roll.
-- Decoding the twelve test vectors in stereo takes 0.72 s on one thread, against 0.89 s for libopus's opus_demo.
-- AFL++ fuzz targets `ogg` and `opusraw`.
-
-### Vorbis (V5.5)
-
-- `VorbisCodec` (and `AudioCodecs.Vorbis`, decode only), registered by default, written from the Vorbis I specification:
-  1 to 255 channels, floors 0 and 1, residues 0, 1 and 2 (floor 0 untested: no current encoder writes it). On eleven oggenc clips (8 to 48 kHz, mono to 7.1, q-1 to q10) every
-  sample is within 2^-22 of libvorbisfile's float output, with the same sample count. Output is planar float in the
-  canonical channel order (3 to 8 channels remapped from Vorbis order, as for Opus).
-- Packet durations from the setup header's modes, in Ogg, Matroska and WebM, and MP4 (esds object type 0xDD, as FFmpeg
-  writes it). The end is trimmed to Ogg's last granule position, Matroska's DiscardPadding (now read and written for Vorbis
-  too) or a shorter last MP4 sample; Ogg's granule positions are written in samples when remuxing from Matroska.
-- A corrupt packet is reported as `Vorbis.CorruptPacket`; with `DecodeErrorMode.Conceal` it becomes silence.
-- Decoding 60 s of stereo 44.1 kHz takes 75 ms on one thread, against 227 ms for a libvorbisfile run (vorbisref, which also
-  starts a process and writes its output).
-- AFL++ fuzz target `vorbisraw`.
-
-### AV1
-
-- `Av1Codec` (and `VideoCodecs.Av1`), registered in `MediaContext.Codecs` by default: AV1 from WebM, Matroska, MP4 and IVF, 8, 10
-  and 12 bit, 4:0:0 to 4:4:4, film grain, every frame equal to libaom's on our clips and libaom's size-changing Matroska vectors.
-  Hidden frames give no frame; frames shown with show_existing_frame come out. The sequence header's color wins over the
-  container's.
-- Exact and keyframe seeks in IVF, WebM, Matroska and raw AV1 land on shown key frames; 100 random exact seeks per container
-  match decoding from the start.
-- Broken data: `Skip` (the default) reports `Av1.CorruptFrame`, or `Av1.MissingReference` for a unit that needs frames from
-  before the first key frame, and resumes at the next shown key frame; `Conceal` repeats the last good frame in between (mid-gray
-  before the first); `Throw` throws.
-- `VideoDecoderOptions.ApplyFilmGrain` turns film grain off.
-- HDR: content light level and mastering display metadata OBUs (in the units, or in av1C's configOBUs) give `VideoFrame.Hdr`,
-  equal to ffprobe's side data on an SVT-AV1 HDR10 clip; an ITU-T T.35 metadata OBU with HDR10+ gives `VideoFrame.Hdr10Plus`.
-- Keyframes are units that start with a shown key frame (forward key frames are not); `Av1.KeyframeFlagMismatch` when a
-  container disagrees. The sequence header comes from the track's av1C when a unit has none.
-- IVF AV1 tracks get their bit depth, chroma format and av1C from the first sequence header; the Matroska writer builds av1C
-  from the first packet for a track that has none.
-- `Av1Packets`: `SplitFrames`, `MergeFrames` and `ExtractConfig` (av1C from a sequence header, equal to FFmpeg's on every clip).
-- `CodecHeaders.Describe` for AV1: each OBU, the sequence header, metadata (content light level, mastering display, ITU-T T.35,
-  scalability, timecode) and the start of each frame header, under the specification's names. `CodecHeaderReader` reads a
-  track's packets in order and lists each frame header whole, as the decoder read it.
-
-### Raw AV1
-
-- `Av1ObuFormat` (.obu, low-overhead OBUs as aomdec and dav1d read them) and `Av1AnnexBFormat` (the specification's Annex B,
-  as the conformance streams use), registered by default and detected from their first bytes, read and written. Frames are timed
-  at a `FrameRate` you set (30 a second by default). Reading and writing back gives the same bytes; packets match ffprobe's,
-  and aomdec and dav1d decode the files the writers make to libaom's frames.
-
-### Progress, cancellation and streams
-
-V1.3, API reviewed and accepted 2026-10-22 (all as recommended); it ships in this release. Breaking: `MediaFile.Remux` and `MediaFile.Transcode` take two more optional parameters, so callers recompile.
-
-- `MediaFile.Remux` and `MediaFile.Transcode` take `IProgress<MediaProgress>? progress` and `CancellationToken
-  cancellationToken` as their last parameters. Reports come once the output is open, then at most every 250 ms, then a final
-  one with `IsFinal` and `Fraction` 1. A cancelled job throws `OperationCanceledException` within a packet, without finishing
-  the output, and deletes a file it created. Without a handler and a token the jobs run as before.
-- `MediaProgress`: position, duration, fraction (from the time, else the bytes read, else `null`; never backwards), frames,
-  packets, bytes read and written, elapsed time and speed.
-- `Stream` overloads of `Remux` and `Transcode` with the output container named and `leaveOpen`, to read from and write to
-  cloud storage without a local copy. Non-seekable input works (except MP4 with moov at the end); Matroska, WebM, IVF and
-  YUV4MPEG2 write to non-seekable output as they go, MP4 through a temporary file, and AVI refuses it.
-
-## Egami.Video 0.4.0 (unreleased)
-
-V4.1, API reviewed and accepted 2026-10-22 (all as recommended): MP4 and QuickTime. Built on Egami's public ISO BMFF box
-walker (Egami 1.1.0).
-
-### MP4 and QuickTime
-
-- `Mp4Format` (registered by default) reads .mp4, .m4v, .m4a and .mov files: moov before or after the media, 64-bit sizes and
-  chunk offsets, compact sample sizes, composition offsets, several sample descriptions, and fragmented files (moof, traf,
-  tfhd, tfdt, trun) read one fragment at a time. Packets, times, flags and bytes equal ffprobe's on the test files.
-- Codecs: AV1 (av1C), VP9 and VP8 (vpcC), Motion JPEG (jpeg, mjpa, mp4v 0x6C), Opus (dOps), FLAC (dfLa), PCM (sowt, twos,
-  lpcm, ipcm, fpcm), and mov_text map to their codec ids; H.264 and HEVC (`CodecIds.Avc`, `CodecIds.Hevc`), MPEG-4 Part 2, AAC
-  and MP3 pass through with the setup Matroska stores; any other sample description passes through whole
-  (`CodecIds.QuickTimeVideo`, `QuickTimeAudio`, `QuickTimeOther`).
-- Edit lists are applied as FFmpeg shows them; `EncodedPacket.IsDiscardable` marks packets before the shown part, and readers
-  drop their frames. `Mp4Format.IgnoreEditLists` turns this off.
-- `VideoTrackInfo.Orientation` from the display matrix, and `VideoReaderOptions.AutoOrient` to turn frames upright.
-- `MediaInfo.Timecode` from a timecode track; colr, pasp, fiel, clli, mdcv, SmDm and CoLL into the track info.
-- Tags (iTunes items, QuickTime keys and udta text), cover art as attachments, and chapters from Nero chpl or a QuickTime chapter
-  track.
-- `MovTextSample`, `MovTextStyle` and `MovTextFace`: mov_text subtitles read and written with their style runs.
-- Writing ISO MP4: half-second chunks interleaved by time, moov first by default (or last with `Mp4Format.MoovAtEnd`), edit
-  lists, the display matrix, color and HDR boxes, each codec's config box, tags, cover art, and chapters both as Nero chpl
-  and as a QuickTime chapter track. FFmpeg and MP4Box read the files without a warning they do not give for the originals.
-- Seeking by sync samples in flat and fragmented files; exact seeks match decoding from the start.
-- Broken files are read up to the damage, with `mp4-*` warnings; sample tables count against `MediaLimits.MaxIndexEntries`.
-- AFL++ fuzz targets `mp4` (demux, seek, non-seekable) and `mp4mux` (read, write three ways, read back).
-
-## Egami.Video 0.3.0 (unreleased)
-
-Egami.Video now lives in the Egami repository (it was inexin/Egami.Video), built and tested with the other packages; its
-version and NuGet package are its own.
-
-V3, API reviewed and accepted 2026-10-22: VP9 decode in all four profiles, equal to libvpx 1.14.1 on the test vectors (the
-decoder is translated closely from libvpx, notice in THIRD-PARTY-NOTICES.md); WebM alpha; HDR10 and HDR10+ metadata
-(`Hdr10PlusMetadata`, `VideoFrame.Hdr10Plus`); `VideoFrame.RenderSize`; color-managed `YuvVideoFrame.ToRaster`; SIMD kernels
-and threads within 1.5x libvpx's decode time.
-
-### VP9 decoding
-
-- `Vp9Codec` (and `VideoCodecs.Vp9`), registered in `MediaContext.Codecs` by default: VP9 from WebM, Matroska and IVF in all four
-  profiles, 8, 10 and 12 bit, 4:2:0, 4:2:2, 4:4:4 and RGB, with superframes, hidden frames, show-existing frames, intra-only
-  frames, tiles, lossless coding, compound prediction and references of another size. Every frame of libvpx's VP9 test vectors
-  equals libvpx 1.14.1's. Frames come out as `YuvRaster<byte>` at 8 bits and `YuvRaster<ushort>` above, at their own coded size.
-  4:4:0 streams are reported (`Vp9.UnsupportedSubsampling`) and not decoded.
-- WebM VP9 with alpha (AlphaMode 1): the second VP9 stream in each packet's addition 1 decodes into the frame's alpha plane, as
-  for VP8, unless `VideoDecoderOptions.DecodeAlpha` is off.
-- `CodecHeaders.Describe` lists VP9 header fields: the superframe index, each frame's uncompressed header and the compressed
-  header's modes with probability updates as counts.
-- Streams that change size come out frame by frame at each frame's coded size; `VideoFrame.RenderSize` reports VP9's
-  render_size without scaling to it, as libvpx and FFmpeg do. Exact seeks land on the same frames as decoding from the start,
-  over hidden and show-existing frames.
-- Broken VP9 data follows `VideoReaderOptions.Errors`: `Throw` throws, `Skip` drops frames up to the next keyframe, and
-  `Conceal` repeats the last good frame (mid-gray before the first). Diagnostics: `Vp9.CorruptFrame` (a broken frame or alpha
-  frame), `Vp9.MissingReference` (an inter frame with no keyframe before it), `Vp9.UnsupportedSubsampling`,
-  `Vp9.KeyframeFlagMismatch` (the container's keyframe flag disagrees with the frame; the frame wins) and
-  `Vp9.CodecPrivateMismatch` (the track's CodecPrivate disagrees with the stream; the stream wins).
-
-### Safety
-
-- VP9 frame sizes are checked against `EgamiContext.Limits` (width, height, pixels, and the memory of the nine frame buffers a
-  stream can hold) before anything is allocated. A stream holds at most nine frame buffers, eighteen with alpha.
-- AFL++ fuzz targets `vp9` (files through VideoReader in each error mode) and `vp9raw` (packets, superframes and CodecPrivate
-  straight into the decoder).
-
-### Speed
-
-- VP9 decoding uses SSE2, SSSE3 and AVX2 vectors for the sub-pixel filters, the inverse transforms and the loop filter, at 8 bits
-  and above, with the same output. One thread decodes 8-bit 720p, 1080p and 2160p within 1.5 times libvpx 1.14.1's time.
-- VP9 frames decode their tile columns in parallel and loop filter their superblock rows as a wavefront, on up to
-  `EgamiContext.MaxParallelism` threads, with the same output at any thread count.
-
-### Color and HDR
-
-- VP9 frames carry their color code points (the bitstream's color space and range, or the container's Colour element when it
-  says more) and the track's mastering display and light level metadata, on the frame and in the raster's metadata.
-- `YuvVideoFrame.ToRaster<TPixel>(ColorProfile, ColorTransformOptions?)` converts a frame to another encoding through Egami's
-  color pipeline, tone mapping PQ and HLG to SDR from the static HDR metadata.
-- `Hdr10PlusMetadata` and `VideoFrame.Hdr10Plus`: HDR10+ dynamic metadata (SMPTE ST 2094-40) from WebM's BlockAdditional 4,
-  read per frame and kept unchanged when remuxing.
-
-### Containers
-
-- WebM and Matroska VP9 tracks take their bit depth and subsampling from the CodecPrivate feature records; IVF VP9 tracks from
-  the first keyframe.
-- Writing Matroska or WebM joins VP9 hidden frames that arrive as packets of their own into a superframe with the next shown
-  frame, as WebM players expect.
-
-## Egami.Video 0.2.1 (unreleased)
-
-Built on the Egami with faster VP8 decoding; no API changes, and every frame is the same as before. Single-thread VP8 decode
-through Egami.Video now takes 1.40 times libvpx 1.14.1's time on the 720p grain clip and 1.52 times on the 1080p one, down from
-1.60–1.67; all-core decode takes 1.23–1.27 times. Egami's own decoder takes 1.43 times on both; Egami.Video's per-frame copy into
-its frames adds the rest.
-
-## Egami.Video 0.2.0 (unreleased)
-
-V2, API reviewed and accepted 2026-10-15: VP8 decode through Egami's Vp8StreamDecoder, equal to libvpx on the test vectors;
-WebM alpha (packet additions, DecodeAlpha); IVF read and write; exact seek by default with SeekMode.Keyframe; CodecHeaders.Describe
-for VP8 header fields; DecodeErrorMode (Throw, Skip, Conceal) with Skip the reader's default, replacing
-VideoReaderOptions.SkipCorruptFrames. Single-thread VP8 decode is 1.6x libvpx's (accepted; an Egami step to speed it up follows).
-
-## Egami.Video 0.1.0 (unreleased)
-
-First release (V1), API reviewed and accepted 2026-10-11: frame and packet model with bit depths to 12, alpha, packed
-layouts, HDR and color carried end to end; AVI (with OpenDML), Matroska/WebM and YUV4MPEG2 read and write, and headerless raw
-video; Motion JPEG and uncompressed video decode and encode; audio passthrough, keyframe seeking, tags, chapters and
-attachments; PSNR, SSIM and framemd5-style hashes.
 
 ## Egami.Barcodes 1.0.0 (2026-10-19)
 
