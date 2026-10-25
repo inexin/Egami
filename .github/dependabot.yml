@@ -17,3 +17,8 @@ updates:
     groups:
       nuget:
         patterns: ['*']
+    ignore:
+      # Egami.Cli.Generators is a source generator: built on a newer Roslyn it won't load in the older compilers that
+      # global.json still allows (SDK 10.0.100 and later), so its Roslyn version stays low on purpose.
+      - dependency-name: Microsoft.CodeAnalysis.CSharp
+        update-types: ['version-update:semver-major']
