@@ -20,7 +20,8 @@ public class EditReferenceTests
 
     public static TheoryData<int> Joins => [.. Enumerable.Range(0, 10)];
 
-    public static TheoryData<string> Pictures => ["fade", "xfade-fade", "xfade-wipeleft", "xfade-wiperight", "xfade-wipeup", "xfade-wipedown", "overlay", "hstack", "vstack", "xstack"];
+    public static TheoryData<string> Pictures => ["fade", "xfade-fade", "xfade-wipeleft", "xfade-wiperight", "xfade-wipeup", "xfade-wipedown", "overlay", "hstack", "vstack", "xstack",
+        "reverse", "loop", "tpad", "freeze", "speed-2x", "speed-half"];
 
     [Theory]
     [MemberData(nameof(Joins))]
@@ -65,6 +66,25 @@ public class EditReferenceTests
                 break;
             case "xstack":
                 edit.Track.Add(Stack.Grid(2, 2, [e1, e2, e2, e1]));
+                break;
+            case "reverse":
+                edit.Track.Add(e1.Reverse());
+                break;
+            case "loop":
+                // FFmpeg's loop=2 plays the frames twice more: three times in all.
+                edit.Track.Add(e1.Loop(3));
+                break;
+            case "tpad":
+                edit.Track.Add(e1.Hold(half));
+                break;
+            case "freeze":
+                edit.Track.Add(e1.Freeze(MediaTime.FromSeconds(0.5), half));
+                break;
+            case "speed-2x":
+                edit.Track.Add(e1.Speed(2));
+                break;
+            case "speed-half":
+                edit.Track.Add(e1.Speed(0.5));
                 break;
             default:
                 TransitionDirection direction = Enum.Parse<TransitionDirection>(name["xfade-wipe".Length..], ignoreCase: true);

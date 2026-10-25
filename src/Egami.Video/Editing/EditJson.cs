@@ -178,6 +178,21 @@ internal static class EditJson
                 }
 
                 break;
+            case StillClipSource { Path: string still } source:
+                json.WriteString("still", still);
+                json.WriteNumber("duration", Math.Round(source.Duration.Seconds, 9));
+                break;
+            case AnimationClipSource animation:
+                json.WriteString("animation", animation.Path);
+                break;
+            case ColorClipSource color:
+                json.WriteString("color", color.Color.ToHex());
+                json.WriteNumber("duration", Math.Round(color.Duration.Seconds, 9));
+                break;
+            case StillClipSource:
+                throw new NotSupportedException("A still made from an image in memory cannot be saved as JSON; make it from a file.");
+            case AppClipSource:
+                throw new NotSupportedException("A clip of an app's own frames cannot be saved as JSON.");
             default:
                 throw new NotSupportedException("A clip that reads a stream cannot be saved as JSON; open it from a file.");
         }
@@ -199,6 +214,53 @@ internal static class EditJson
         if (clip.IsMuted)
         {
             json.WriteBoolean("muted", true);
+        }
+
+        if (clip.SpeedFactor != 1)
+        {
+            json.WriteNumber("speed", clip.SpeedFactor);
+            if (!clip.KeepsPitch)
+            {
+                json.WriteBoolean("keepPitch", false);
+            }
+        }
+
+        if (clip.IsReversed)
+        {
+            json.WriteBoolean("reverse", true);
+        }
+
+        if (clip.LoopCount != 1)
+        {
+            json.WriteNumber("loop", clip.LoopCount);
+        }
+
+        Time(json, "hold", clip.HoldDuration, skipZero: true);
+        if (clip.Freezes.Count > 0)
+        {
+            json.WriteStartArray("freeze");
+            foreach (ClipFreeze freeze in clip.Freezes)
+            {
+                json.WriteStartArray();
+                json.WriteNumberValue(Math.Round(freeze.At.Seconds, 9));
+                json.WriteNumberValue(Math.Round(freeze.Duration.Seconds, 9));
+                json.WriteEndArray();
+            }
+
+            json.WriteEndArray();
+        }
+
+        if (clip.Motion is PanZoomPath motion)
+        {
+            json.WriteStartObject("panZoom");
+            Rectangle(json, "from", motion.From);
+            Rectangle(json, "to", motion.To);
+            if (motion.Easing != Easing.Linear)
+            {
+                json.WriteString("easing", Name(motion.Easing));
+            }
+
+            json.WriteEndObject();
         }
 
         WriteEffects(json, clip.Effects);
@@ -365,6 +427,16 @@ internal static class EditJson
         json.WriteEndArray();
     }
 
+    private static void Rectangle(Utf8JsonWriter json, string name, System.Drawing.RectangleF r)
+    {
+        json.WriteStartArray(name);
+        json.WriteNumberValue(r.X);
+        json.WriteNumberValue(r.Y);
+        json.WriteNumberValue(r.Width);
+        json.WriteNumberValue(r.Height);
+        json.WriteEndArray();
+    }
+
     private static void Time(Utf8JsonWriter json, string name, MediaTime? time, bool skipZero = false)
     {
         if (time is MediaTime t && !(skipZero && t == MediaTime.Zero))
@@ -429,9 +501,21 @@ internal static class EditJson
                     _ => Stack.Grid(Int(e, "columns", where) ?? throw Missing(where, "columns"), Int(e, "rows", where) ?? throw Missing(where, "rows"), clips, options),
                 };
             }
+            else if (Text(e, "still", where) is string still)
+            {
+                clip = Editing.Clip.Still(Rooted(still), Seconds(e, "duration", where) ?? throw Missing(where, "duration"));
+            }
+            else if (Text(e, "animation", where) is string animation)
+            {
+                clip = Editing.Clip.Animation(Rooted(animation));
+            }
+            else if (Color(e, "color", where) is Rgba8 color)
+            {
+                clip = Editing.Clip.Color(color, Seconds(e, "duration", where) ?? throw Missing(where, "duration"));
+            }
             else
             {
-                throw new FormatException($"{where} needs \"open\" (a file) or \"stack\" (horizontal, vertical or grid).");
+                throw new FormatException($"{where} needs \"open\" (a file), \"still\", \"animation\", \"color\" or \"stack\" (horizontal, vertical or grid).");
             }
 
             if (Seconds(e, "in", where) is MediaTime start)
@@ -462,6 +546,46 @@ internal static class EditJson
             if (Bool(e, "muted", where) == true)
             {
                 clip = clip.Muted();
+            }
+
+            if (Number(e, "speed", where) is double speed)
+            {
+                clip = clip.Speed(speed, Bool(e, "keepPitch", where) ?? true);
+            }
+
+            if (Bool(e, "reverse", where) == true)
+            {
+                clip = clip.Reverse();
+            }
+
+            if (Int(e, "loop", where) is int loop)
+            {
+                clip = clip.Loop(loop);
+            }
+
+            if (Seconds(e, "hold", where) is MediaTime hold)
+            {
+                clip = clip.Hold(hold);
+            }
+
+            if (e.TryGetProperty("freeze", out JsonElement freezes))
+            {
+                foreach (JsonElement freeze in freezes.EnumerateArray())
+                {
+                    double[] pair = [.. freeze.EnumerateArray().Select(v => v.GetDouble())];
+                    if (pair.Length != 2)
+                    {
+                        throw new FormatException($"{where}.freeze: each freeze is [at, duration] in seconds.");
+                    }
+
+                    clip = clip.Freeze(MediaTime.FromSeconds(pair[0]), MediaTime.FromSeconds(pair[1]));
+                }
+            }
+
+            if (e.TryGetProperty("panZoom", out JsonElement panZoom))
+            {
+                string at = where + ".panZoom";
+                clip = clip.PanZoom(RectangleOf(panZoom, "from", at), RectangleOf(panZoom, "to", at), Enum<Easing>(panZoom, "easing", at) ?? Easing.Linear);
             }
 
             return clip with { Effects = [.. Effects(e, where)] };
@@ -598,6 +722,19 @@ internal static class EditJson
             {
                 throw new FormatException($"{where} must be a JSON {kind.ToString().ToLowerInvariant()}.");
             }
+        }
+
+        private string Rooted(string path) => folder is null || System.IO.Path.IsPathRooted(path) ? path : System.IO.Path.Combine(folder, path);
+
+        private static System.Drawing.RectangleF RectangleOf(JsonElement e, string name, string where)
+        {
+            if (!e.TryGetProperty(name, out JsonElement value))
+            {
+                throw Missing(where, name);
+            }
+
+            float[] r = [.. value.EnumerateArray().Select(v => (float)v.GetDouble())];
+            return r.Length == 4 ? new System.Drawing.RectangleF(r[0], r[1], r[2], r[3]) : throw new FormatException($"{where}.{name} must be [x, y, width, height] as fractions of the picture.");
         }
 
         private static FormatException Missing(string where, string name) => new($"{where} needs \"{name}\".");

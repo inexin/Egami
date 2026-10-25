@@ -65,6 +65,30 @@ faded and joined with a transition.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Editing.cs#edit-stack)]
 
+## Speed, reverse, loops and freezes
+
+`Clip.Speed` plays a clip faster or slower, from a tenth of its speed to ten times: the picture takes the nearest frame, and
+the sound keeps its pitch through V9.1's `Tempo` (or follows it, like a tape, with `keepPitch: false`). `Reverse` plays a
+clip backwards, picture and sound, decoding one keyframe interval at a time, so memory stays bounded however long the clip
+is. `Loop` plays it several times, `Freeze` holds the frame at a time for a while (a `ClipFreeze`, with silence), and `Hold`
+keeps the last frame after the end. They apply in that order: speed, reverse, loops, freezes, then the hold. Frame counts
+and timestamps match FFmpeg's `setpts` with `fps`, `reverse`, `loop` and `tpad`.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Editing.cs#edit-timing)]
+
+## Stills, colours and an app's own frames
+
+`Clip.Still` shows an image for a time, `Clip.Animation` plays an animated GIF, WebP or APNG at its own delays, and
+`Clip.Color` is one colour the canvas size. `PanZoom` moves the part of the picture shown from one rectangle to another (a
+`PanZoomPath`, in fractions of the picture), drawn with a sub-pixel transform from the full picture on every frame, so slow
+zooms do not jitter as whole-pixel crops do. `Slideshow.Create` builds an edit of images with transitions and, optionally, a
+pan and zoom for each from a seed (`SlideshowOptions`). `Clip.FromSource` takes an app's own `IFrameSource`, such as titles
+drawn with Egami.Drawing.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Editing.cs#edit-stills)]
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Editing.cs#edit-title)]
+
 ## Effects
 
 `EditEffect.Apply` runs Egami operations or any `IRasterOperation` on each frame, and `EditEffect.Of` runs an app's own

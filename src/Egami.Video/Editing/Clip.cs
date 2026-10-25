@@ -1,3 +1,5 @@
+
+
 using Egami.Pixels;
 
 namespace Egami.Video.Editing;
@@ -43,6 +45,27 @@ public sealed record Clip
 
     /// <summary>Gets the effects that run on the clip's frames, after it is fitted to the canvas, timed from the clip's start.</summary>
     public IReadOnlyList<EditEffect> Effects { get; init; } = [];
+
+    /// <summary>Gets how much faster the clip plays: 2 is twice as fast and half as long. Default 1.</summary>
+    public double SpeedFactor { get; init; } = 1;
+
+    /// <summary>Gets whether a speed change keeps the sound's pitch (V9.1's <see cref="Audio.Filters.Tempo"/>) instead of letting it follow (<see cref="Audio.Filters.Speed"/>). Default <see langword="true"/>.</summary>
+    public bool KeepsPitch { get; init; } = true;
+
+    /// <summary>Gets whether the clip plays backwards, picture and sound.</summary>
+    public bool IsReversed { get; init; }
+
+    /// <summary>Gets how many times the clip plays in a row. Default 1.</summary>
+    public int LoopCount { get; init; } = 1;
+
+    /// <summary>Gets how long the last frame is held after the clip ends, with silence. Zero for none.</summary>
+    public MediaTime HoldDuration { get; init; } = MediaTime.Zero;
+
+    /// <summary>Gets the frames frozen in place, each for a time, with silence; their times are on the clip's time line after speed and loops.</summary>
+    public IReadOnlyList<ClipFreeze> Freezes { get; init; } = [];
+
+    /// <summary>Gets the pan and zoom over the clip's picture (Ken Burns), or <see langword="null"/> for none.</summary>
+    public PanZoomPath? Motion { get; init; }
 
     internal ClipSource Source { get; init; }
 
@@ -134,7 +157,174 @@ public sealed record Clip
         return this with { Effects = [.. Effects, effect] };
     }
 
+    /// <summary>Returns a clip that shows a still image for a time, without sound.</summary>
+    /// <param name="path">The image file, in any format Egami reads.</param>
+    /// <param name="duration">How long it shows.</param>
+    /// <returns>The clip.</returns>
+    public static Clip Still(string path, MediaTime duration)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(path);
+        CheckDuration(duration);
+        return new Clip(new StillClipSource(path, null, duration));
+    }
+
+    /// <summary>Returns a clip that shows an image for a time, without sound. The clip keeps a reference: do not dispose the image before the edit renders.</summary>
+    /// <param name="image">The image.</param>
+    /// <param name="duration">How long it shows.</param>
+    /// <returns>The clip. It cannot be saved as JSON.</returns>
+    public static Clip Still(Raster<Rgba8> image, MediaTime duration)
+    {
+        ArgumentNullException.ThrowIfNull(image);
+        CheckDuration(duration);
+        return new Clip(new StillClipSource(null, image, duration));
+    }
+
+    /// <summary>Returns a clip of an animated image (GIF, WebP or APNG) at its own frame delays, once through; use <see cref="Loop"/> for more.</summary>
+    /// <param name="path">The image file.</param>
+    /// <returns>The clip.</returns>
+    public static Clip Animation(string path)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(path);
+        return new Clip(new AnimationClipSource(path));
+    }
+
+    /// <summary>Returns a clip of one colour, such as black between scenes. It takes the canvas size.</summary>
+    /// <param name="color">The colour.</param>
+    /// <param name="duration">How long it lasts.</param>
+    /// <returns>The clip.</returns>
+    public static Clip Color(Rgba8 color, MediaTime duration)
+    {
+        CheckDuration(duration);
+        return new Clip(new ColorClipSource(color, duration));
+    }
+
+    /// <summary>Returns a clip whose frames an app draws, such as titles or generated graphics.</summary>
+    /// <param name="source">The app's frames.</param>
+    /// <returns>The clip. It cannot be saved as JSON.</returns>
+    public static Clip FromSource(IFrameSource source)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+        CheckDuration(source.Duration);
+        if (source.Size.Width < 1 || source.Size.Height < 1)
+        {
+            throw new ArgumentException($"The source's size must be at least 1 by 1, not {source.Size.Width} by {source.Size.Height}.", nameof(source));
+        }
+
+        return new Clip(new AppClipSource(source));
+    }
+
+    /// <summary>Returns the clip played faster or slower. The picture takes the nearest frame; the sound keeps its pitch unless told otherwise.</summary>
+    /// <param name="factor">How much faster: 2 is twice as fast, 0.5 half as fast; from 0.1 to 10. The sound keeps its pitch from 0.25 to 4, and changes speed like a tape outside that.</param>
+    /// <param name="keepPitch">Whether the sound keeps its pitch.</param>
+    /// <returns>The clip.</returns>
+    public Clip Speed(double factor, bool keepPitch = true)
+    {
+        if (!(factor >= 0.1 && factor <= 10))
+        {
+            throw new ArgumentOutOfRangeException(nameof(factor), factor, "The speed must be from 0.1 to 10.");
+        }
+
+        return this with { SpeedFactor = factor, KeepsPitch = keepPitch };
+    }
+
+    /// <summary>Returns the clip played backwards. Frames are decoded one keyframe interval at a time, so memory stays bounded however long the clip is.</summary>
+    /// <returns>The clip.</returns>
+    public Clip Reverse() => this with { IsReversed = !IsReversed };
+
+    /// <summary>Returns the clip played several times in a row.</summary>
+    /// <param name="count">How many times; at least 1.</param>
+    /// <returns>The clip.</returns>
+    public Clip Loop(int count)
+    {
+        ArgumentOutOfRangeException.ThrowIfLessThan(count, 1);
+        return this with { LoopCount = count };
+    }
+
+    /// <summary>Returns the clip with its last frame held after it ends.</summary>
+    /// <param name="duration">How long the frame holds.</param>
+    /// <returns>The clip.</returns>
+    public Clip Hold(MediaTime duration)
+    {
+        ArgumentOutOfRangeException.ThrowIfLessThan(duration, MediaTime.Zero);
+        return this with { HoldDuration = duration };
+    }
+
+    /// <summary>Returns the clip with the frame at a time frozen for a while; the clip goes on after.</summary>
+    /// <param name="at">The time in the clip, after speed and loops, of the frame to freeze.</param>
+    /// <param name="duration">How long it stays.</param>
+    /// <returns>The clip.</returns>
+    public Clip Freeze(MediaTime at, MediaTime duration)
+    {
+        ArgumentOutOfRangeException.ThrowIfLessThan(at, MediaTime.Zero);
+        ArgumentOutOfRangeException.ThrowIfLessThan(duration, MediaTime.Zero);
+        return this with { Freezes = [.. Freezes.Append(new ClipFreeze(at, duration)).OrderBy(f => f.At)] };
+    }
+
+    /// <summary>
+    /// Returns the clip with a pan and zoom (Ken Burns): the part of the picture shown moves from one rectangle to another over
+    /// the clip, drawn with sub-pixel accuracy from the full picture on every frame, so slow zooms do not jitter.
+    /// </summary>
+    /// <param name="from">The part shown at the start, as fractions of the picture: (0, 0, 1, 1) is all of it.</param>
+    /// <param name="to">The part shown at the end.</param>
+    /// <param name="easing">How it moves between them.</param>
+    /// <returns>The clip.</returns>
+    public Clip PanZoom(System.Drawing.RectangleF from, System.Drawing.RectangleF to, Easing easing = Easing.Linear) => this with { Motion = new PanZoomPath(from, to, easing) };
+
     internal static Clip FromSource(ClipSource source) => new(source);
+
+    private static void CheckDuration(MediaTime duration)
+    {
+        if (duration <= MediaTime.Zero)
+        {
+            throw new ArgumentOutOfRangeException(nameof(duration), duration, "The duration must be above zero.");
+        }
+    }
+}
+
+/// <summary>A frame of a <see cref="Clip"/> held still for a time by <see cref="Clip.Freeze"/>.</summary>
+/// <param name="At">The time in the clip, after speed and loops, of the frame.</param>
+/// <param name="Duration">How long it stays.</param>
+/// <example>
+/// <code language="csharp" source="../../../tests/Egami.DocSamples/Editing.cs" region="edit-timing"/>
+/// </example>
+public readonly record struct ClipFreeze(MediaTime At, MediaTime Duration);
+
+/// <summary>A pan and zoom for <see cref="Clip.PanZoom"/>: the part of the picture shown at the start and at the end, as fractions of it.</summary>
+/// <param name="From">The part shown at the start: (0, 0, 1, 1) is the whole picture.</param>
+/// <param name="To">The part shown at the end.</param>
+/// <param name="Easing">How it moves between them.</param>
+/// <example>
+/// <code language="csharp" source="../../../tests/Egami.DocSamples/Editing.cs" region="edit-stills"/>
+/// </example>
+public sealed record PanZoomPath(System.Drawing.RectangleF From, System.Drawing.RectangleF To, Easing Easing = Easing.Linear)
+{
+    /// <summary>Returns the part shown a fraction of the way through, from 0 to 1.</summary>
+    internal System.Drawing.RectangleF At(double t)
+    {
+        float e = (float)Keyframe.Ease(Easing, Math.Clamp(t, 0, 1));
+        return new System.Drawing.RectangleF(From.X + ((To.X - From.X) * e), From.Y + ((To.Y - From.Y) * e), From.Width + ((To.Width - From.Width) * e), From.Height + ((To.Height - From.Height) * e));
+    }
+}
+
+/// <summary>
+/// An app's own frames for <see cref="Clip.FromSource(IFrameSource)"/>, such as titles drawn with Egami.Drawing or generated
+/// graphics. The renderer asks for the frames in time order, once per output frame.
+/// </summary>
+/// <example>
+/// <code language="csharp" source="../../../tests/Egami.DocSamples/Editing.cs" region="edit-stills"/>
+/// </example>
+public interface IFrameSource
+{
+    /// <summary>Gets the size of the frames.</summary>
+    Egami.Size Size { get; }
+
+    /// <summary>Gets how long the clip lasts.</summary>
+    MediaTime Duration { get; }
+
+    /// <summary>Draws the frame at a time from the clip's start.</summary>
+    /// <param name="time">The time, from zero to <see cref="Duration"/>.</param>
+    /// <param name="target">The frame to draw, of <see cref="Size"/>; every pixel must be written.</param>
+    void Render(MediaTime time, Raster<Rgba8> target);
 }
 
 /// <summary>How a <see cref="Stack"/> lays out its clips.</summary>
@@ -260,6 +450,32 @@ internal sealed class FileClipSource(string path) : ClipSource
 internal sealed class StreamClipSource(Stream stream) : ClipSource
 {
     public Stream Stream { get; } = stream;
+}
+
+internal sealed class StillClipSource(string? path, Raster<Rgba8>? image, MediaTime duration) : ClipSource
+{
+    public string? Path { get; } = path;
+
+    public Raster<Rgba8>? Image { get; } = image;
+
+    public MediaTime Duration { get; } = duration;
+}
+
+internal sealed class AnimationClipSource(string path) : ClipSource
+{
+    public string Path { get; } = path;
+}
+
+internal sealed class ColorClipSource(Rgba8 color, MediaTime duration) : ClipSource
+{
+    public Rgba8 Color { get; } = color;
+
+    public MediaTime Duration { get; } = duration;
+}
+
+internal sealed class AppClipSource(IFrameSource source) : ClipSource
+{
+    public IFrameSource Source { get; } = source;
 }
 
 internal sealed class StackClipSource(StackLayout layout, int columns, int rows, IReadOnlyList<Clip> clips, StackOptions options) : ClipSource

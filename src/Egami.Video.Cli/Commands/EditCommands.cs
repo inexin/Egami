@@ -14,8 +14,8 @@ using Egami.Video.Editing;
 namespace Egami.Video.Cli.Commands;
 
 /// <summary>
-/// V9 stage A's commands (Build Plan task 11, Design Q13): <c>join</c>, <c>fade</c>, <c>overlay</c>, <c>pip</c>,
-/// <c>stack</c> and <c>edit</c>. Each builds a <see cref="VideoEdit"/> and renders it, so the CLI and the library always
+/// V9's commands (Build Plan tasks 11 and 17, Design Q13): <c>join</c>, <c>fade</c>, <c>overlay</c>, <c>pip</c>,
+/// <c>stack</c>, <c>speed</c>, <c>reverse</c>, <c>loop</c>, <c>freeze</c>, <c>slideshow</c> and <c>edit</c>. Each builds a <see cref="VideoEdit"/> and renders it, so the CLI and the library always
 /// match; <c>--save-edit</c> writes that edit as the JSON file <c>edit</c> runs.
 /// </summary>
 internal static class EditCommands
@@ -232,6 +232,134 @@ internal static class EditCommands
         return command;
     }
 
+    public static Command SpeedCommand(VideoSession session)
+    {
+        Common common = new();
+        Argument<string> input = new("input") { Description = "The clip." };
+        Argument<double> factor = new("factor") { Description = "How much faster, from 0.1 to 10: 2 is twice as fast, 0.5 half as fast." };
+        Option<bool> pitch = new("--pitch") { Description = "Let the sound's pitch follow the speed, like a tape, instead of keeping it." };
+        Command command = new("speed", "Play a clip faster or slower: the picture takes the nearest frames, and the sound keeps its pitch; like ffmpeg's setpts with atempo.");
+        command.Arguments.Add(input);
+        command.Arguments.Add(factor);
+        command.Options.Add(pitch);
+        common.AddTo(command);
+        command.SetAction(result =>
+        {
+            double f = result.GetValue(factor);
+            if (!(f >= 0.1 && f <= 10))
+            {
+                throw new UsageException($"The speed {f.ToString(CultureInfo.InvariantCulture)} is not from 0.1 to 10.");
+            }
+
+            return One(session, result, common, Clip.Open(session.ResolvePath(result.GetValue(input)!)).Speed(f, keepPitch: !result.GetValue(pitch)));
+        });
+        return command;
+    }
+
+    public static Command ReverseCommand(VideoSession session)
+    {
+        Common common = new();
+        Argument<string> input = new("input") { Description = "The clip." };
+        Command command = new("reverse", "Play a clip backwards, picture and sound, holding only one keyframe interval at a time; like ffmpeg's reverse and areverse, which hold the whole clip.");
+        command.Arguments.Add(input);
+        common.AddTo(command);
+        command.SetAction(result => One(session, result, common, Clip.Open(session.ResolvePath(result.GetValue(input)!)).Reverse()));
+        return command;
+    }
+
+    public static Command LoopCommand(VideoSession session)
+    {
+        Common common = new();
+        Argument<string> input = new("input") { Description = "The clip." };
+        Option<int> count = new("--count") { Description = "How many times it plays in all. Default 2.", DefaultValueFactory = _ => 2, HelpName = "times" };
+        Command command = new("loop", "Play a clip several times in a row; like ffmpeg's loop and aloop.");
+        command.Arguments.Add(input);
+        command.Options.Add(count);
+        common.AddTo(command);
+        command.SetAction(result =>
+        {
+            int n = result.GetValue(count);
+            if (n < 1)
+            {
+                throw new UsageException("--count must be 1 or more.");
+            }
+
+            return One(session, result, common, Clip.Open(session.ResolvePath(result.GetValue(input)!)).Loop(n));
+        });
+        return command;
+    }
+
+    public static Command FreezeCommand(VideoSession session)
+    {
+        Common common = new();
+        Argument<string> input = new("input") { Description = "The clip." };
+        Option<string?> at = new("--at") { Description = "The time of the frame to freeze, or end for the last one.", HelpName = "time" };
+        Option<string?> length = new("--for") { Description = "How long it stays, such as 2s. Default 1s.", HelpName = "time" };
+        Command command = new("freeze", "Hold one frame of a clip still for a while, with silence, then go on; --at end holds the last frame, like ffmpeg's tpad.");
+        command.Arguments.Add(input);
+        command.Options.Add(at);
+        command.Options.Add(length);
+        common.AddTo(command);
+        command.SetAction(result =>
+        {
+            MediaTime duration = result.GetValue(length) is { } l ? Duration(l, "--for") : MediaTime.FromSeconds(1);
+            Clip clip = Clip.Open(session.ResolvePath(result.GetValue(input)!));
+            string where = result.GetValue(at) ?? throw new UsageException("freeze needs --at, such as --at 0:12 or --at end.");
+            clip = where.Equals("end", StringComparison.OrdinalIgnoreCase)
+                ? clip.Hold(duration)
+                : clip.Freeze(MediaTime.FromSeconds(TimeValue.Parse(where, "--at").Seconds), duration);
+            return One(session, result, common, clip);
+        });
+        return command;
+    }
+
+    public static Command SlideshowCommand(VideoSession session)
+    {
+        Common common = new();
+        Argument<string[]> images = new("images") { Description = "The images, in order (files or globs, sorted by name).", Arity = ArgumentArity.OneOrMore };
+        Option<string?> each = new("--each") { Description = "How long each image shows, its transitions included. Default 4s.", HelpName = "time" };
+        Option<string?> transition = new("--transition") { Description = "The transition between images, as kind:duration; fade:0.5 by default, cut for none.", HelpName = "kind:time" };
+        Option<bool> panZoom = new("--pan-zoom") { Description = "Slowly pan and zoom each image (Ken Burns)." };
+        Option<int> seed = new("--seed") { Description = "The seed the pan and zoom directions come from. Default 1.", DefaultValueFactory = _ => 1, HelpName = "number" };
+        Command command = new("slideshow", "Make a video of images shown one after another, with transitions and an optional pan and zoom; like ffmpeg's loop=1, zoompan and xfade, but with sub-pixel motion.");
+        command.Arguments.Add(images);
+        command.Options.Add(each);
+        command.Options.Add(transition);
+        command.Options.Add(panZoom);
+        command.Options.Add(seed);
+        common.AddTo(command);
+        command.SetAction(result =>
+        {
+            List<InputFile> files = Globber.Expand(session.Images, result.GetValue(images) ?? [], recursive: false);
+            Transition? between = result.GetValue(transition) switch
+            {
+                null => Transition.Fade(MediaTime.FromSeconds(0.5)),
+                "cut" => null,
+                string t => ParseTransition(t),
+            };
+            SlideshowOptions options = new()
+            {
+                Each = result.GetValue(each) is { } e ? Duration(e, "--each") : MediaTime.FromSeconds(4),
+                Transition = between,
+                PanZoom = result.GetValue(panZoom),
+                Seed = result.GetValue(seed),
+            };
+            VideoEdit edit;
+            try
+            {
+                edit = Slideshow.Create(files.Select(f => f.Path!), options);
+            }
+            catch (ArgumentException error)
+            {
+                throw new UsageException(error.Message);
+            }
+
+            // The canvas comes from --size and --rate when given; the slideshow's own is the first image's size at 30 fps.
+            return common.Run(session, result, edit);
+        });
+        return command;
+    }
+
     public static Command Edit(VideoSession session)
     {
         Common common = new();
@@ -256,6 +384,13 @@ internal static class EditCommands
             return common.Run(session, result, edit);
         });
         return command;
+    }
+
+    private static int One(VideoSession session, ParseResult result, Common common, Clip clip)
+    {
+        VideoEdit edit = new();
+        edit.Track.Add(clip);
+        return common.Run(session, result, edit);
     }
 
     /// <summary>Turns an effect's name, egami run step text such as <c>blur 8 + sharpen</c>, into an effect that runs the steps.</summary>

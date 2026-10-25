@@ -221,6 +221,72 @@ public class Editing
     #endregion
 
     [Fact]
+    public void Timing()
+    {
+        using SampleFiles files = new();
+        MakeClips();
+
+        #region edit-timing
+        // Twice as fast with the pitch kept, then backwards, then twice in a row with a frame frozen for half a second.
+        VideoEdit edit = new(new EditCanvas(320, 180, new Rational(25, 1)));
+        edit.Track
+            .Add(Clip.Open("talk.avi").Speed(2))
+            .Add(Clip.Open("intro.avi").Reverse())
+            .Add(Clip.Open("outro.avi").Trim(MediaTime.Zero, MediaTime.FromSeconds(1)).Loop(2).Freeze(MediaTime.FromSeconds(0.5), MediaTime.FromSeconds(0.5)).Hold(MediaTime.FromSeconds(1)));
+        EditPlan plan = edit.Render("timing.mkv");
+        #endregion
+
+        Assert.Equal(25 + 50 + 50 + 13 + 25, plan.FrameCount);
+    }
+
+    [Fact]
+    public void Stills()
+    {
+        using SampleFiles files = new();
+
+        #region edit-stills
+        // Photos as a slideshow with fades and a slow pan and zoom, then a title an app draws, on black.
+        VideoEdit show = Slideshow.Create(["duck.png", "egret.png"], new SlideshowOptions
+        {
+            Each = MediaTime.FromSeconds(3),
+            PanZoom = true,
+            Canvas = new EditCanvas(320, 180, new Rational(25, 1)) { Fit = ClipFit.Cover },
+        });
+        show.Track.Add(Clip.Color(Rgba8.Black, MediaTime.FromSeconds(0.5)), Transition.Fade(MediaTime.FromSeconds(0.5)));
+        show.Track.Add(Clip.FromSource(new Title()));
+        show.Track.Add(Clip.Still("duck.png", MediaTime.FromSeconds(2))
+            .PanZoom(new System.Drawing.RectangleF(0, 0, 1, 1), new System.Drawing.RectangleF(0.3f, 0.3f, 0.4f, 0.4f), Easing.EaseInOut));
+        show.Render("slideshow.mkv");
+        #endregion
+
+        Assert.True(File.Exists("slideshow.mkv"));
+    }
+
+    #region edit-title
+    private sealed class Title : IFrameSource
+    {
+        public Size Size => new(320, 180);
+
+        public MediaTime Duration => MediaTime.FromSeconds(1);
+
+        public void Render(MediaTime time, Raster<Rgba8> target)
+        {
+            // A bar that grows across the frame: draw anything here, such as text with Egami.Drawing.
+            int width = (int)(target.Width * time.Seconds / Duration.Seconds);
+            for (int y = 0; y < target.Height; y++)
+            {
+                Span<Rgba8> row = target.Row(y);
+                row.Fill(Rgba8.Black);
+                if (y is > 80 and < 100)
+                {
+                    row[..width].Fill(Rgba8.White);
+                }
+            }
+        }
+    }
+    #endregion
+
+    [Fact]
     public void Planning()
     {
         using SampleFiles files = new();

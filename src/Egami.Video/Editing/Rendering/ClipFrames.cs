@@ -3,22 +3,38 @@ using Egami.Pixels;
 namespace Egami.Video.Editing;
 
 /// <summary>
-/// Hands out a clip's frames in time order, decoded and converted to RGBA once each: the latest source frame before a time,
+/// Hands out a clip's frames, decoded and converted to RGBA once each. A time in the clip maps through its speed, reverse,
+/// loops, freezes and hold (<see cref="ClipTiming"/>) to a source time; the frame shown is the latest source frame before it,
 /// which picks the nearest frame when the canvas rate differs (dropping or repeating, like ffmpeg's <c>fps</c> filter).
 /// </summary>
-internal abstract class ClipFrames : IDisposable
+internal abstract class ClipFrames(ClipTiming timing) : IDisposable
 {
+    /// <summary>Gets the clip's timing.</summary>
+    protected ClipTiming Timing { get; } = timing;
+
     /// <summary>Returns the frame to show at a time from the clip's start, or <see langword="null"/> when the clip has no picture. The frame stays the provider's.</summary>
-    /// <param name="limit">The frame shown is the latest whose time from the clip's start is before this.</param>
-    public abstract Raster<Rgba8>? FrameBefore(MediaTime limit);
+    /// <param name="limit">The middle of the output frame's slot, from the clip's start.</param>
+    public Raster<Rgba8>? FrameBefore(MediaTime limit) => SourceFrame(Timing.SourceAt(limit.Seconds));
 
     public abstract void Dispose();
 
-    public static ClipFrames Open(Clip clip, EditPlan plan, MediaContext context) => clip.Source switch
+    public static ClipFrames Open(Clip clip, EditPlan plan, EditCanvas canvas, MediaContext context)
     {
-        StackClipSource stack => new StackFrames(clip, stack, plan, context),
-        _ => new FileFrames(clip, plan.Sources[clip], context),
-    };
+        SourceInfo info = plan.Sources[clip];
+        ClipTiming timing = new(clip, info);
+        return clip.Source switch
+        {
+            StackClipSource stack => new StackFrames(clip, stack, plan, canvas, timing, context),
+            StillClipSource still => new StillFrames(still, timing, context),
+            AnimationClipSource animation => new AnimationFrames(animation, timing, context),
+            ColorClipSource color => new ColorFrames(color, canvas, timing, context),
+            AppClipSource app => new AppFrames(app.Source, canvas, timing, context),
+            _ => new FileFrames(clip, info, timing, context),
+        };
+    }
+
+    /// <summary>Returns the frame for a source time from the trimmed source's start.</summary>
+    protected abstract Raster<Rgba8>? SourceFrame(double source);
 
     /// <summary>Copies one raster's pixels into another of the same size.</summary>
     public static void Copy(Raster<Rgba8> source, Raster<Rgba8> target)
@@ -74,17 +90,23 @@ internal abstract class ClipFrames : IDisposable
     }
 }
 
-/// <summary>A file or stream clip's frames.</summary>
+/// <summary>
+/// A file or stream clip's frames. Forwards it decodes on; a jump back (a loop) seeks. Backwards it decodes one keyframe
+/// interval at a time and hands its frames out from the end, so only one interval is held.
+/// </summary>
 internal sealed class FileFrames : ClipFrames
 {
     private readonly VideoReader? _reader;
     private readonly MediaContext _context;
     private readonly MediaTime _in;
+    private readonly List<YuvVideoFrame> _window = [];
     private YuvVideoFrame? _next;
     private Raster<Rgba8>? _current;
+    private MediaTime _currentTime;
     private bool _ended;
 
-    public FileFrames(Clip clip, SourceInfo info, MediaContext context)
+    public FileFrames(Clip clip, SourceInfo info, ClipTiming timing, MediaContext context)
+        : base(timing)
     {
         _context = context;
         _in = info.In;
@@ -101,15 +123,44 @@ internal sealed class FileFrames : ClipFrames
             FileClipSource f => VideoReader.Open(f.Path, options, context),
             _ => throw new InvalidOperationException(),
         };
-        if (_in > MediaTime.Zero)
+        if (_in > MediaTime.Zero && !timing.Reversed)
         {
             _reader.Seek(_in);
         }
     }
 
-    public override Raster<Rgba8>? FrameBefore(MediaTime limit)
+    public override void Dispose()
     {
-        MediaTime target = Times.Add(_in, limit);
+        _next?.Dispose();
+        _current?.Dispose();
+        ClearWindow();
+        _reader?.Dispose();
+    }
+
+    protected override Raster<Rgba8>? SourceFrame(double source)
+    {
+        if (_reader is null)
+        {
+            return null;
+        }
+
+        MediaTime target = Times.Add(_in, MediaTime.FromSeconds(source));
+        return Timing.Reversed ? Backwards(target) : Forwards(target);
+    }
+
+    private Raster<Rgba8>? Forwards(MediaTime target)
+    {
+        if (_current is not null && target < _currentTime)
+        {
+            // A jump back, as a loop starts again: seek, and take the frames from there.
+            _next?.Dispose();
+            _next = null;
+            _current.Dispose();
+            _current = null;
+            _ended = false;
+            _reader!.Seek(target);
+        }
+
         while (!_ended)
         {
             _next ??= _reader!.ReadFrame();
@@ -119,7 +170,8 @@ internal sealed class FileFrames : ClipFrames
                 break;
             }
 
-            if (_current is not null && _next.Timestamp >= target)
+            // A frame exactly at the slot's middle counts as before it, as in FFmpeg's fps filter.
+            if (_current is not null && _next.Timestamp > target)
             {
                 break;
             }
@@ -129,6 +181,7 @@ internal sealed class FileFrames : ClipFrames
             using (YuvVideoFrame frame = _next)
             {
                 _next = null;
+                _currentTime = frame.Timestamp;
                 _current = frame.ToRaster<Rgba8>(_context.Egami);
             }
         }
@@ -136,11 +189,167 @@ internal sealed class FileFrames : ClipFrames
         return _current;
     }
 
+    private Raster<Rgba8>? Backwards(MediaTime target)
+    {
+        if (_window.Count == 0 || target < _window[0].Timestamp || target > Times.Add(_window[^1].Timestamp, Spacing()))
+        {
+            Fill(target);
+        }
+
+        // The latest frame at or before the target; before the window's first, the first.
+        YuvVideoFrame? pick = null;
+        foreach (YuvVideoFrame frame in _window)
+        {
+            if (frame.Timestamp > target && pick is not null)
+            {
+                break;
+            }
+
+            pick = frame;
+        }
+
+        if (pick is null)
+        {
+            return _current;
+        }
+
+        if (_current is null || pick.Timestamp != _currentTime)
+        {
+            _current?.Dispose();
+            _current = pick.ToRaster<Rgba8>(_context.Egami);
+            _currentTime = pick.Timestamp;
+        }
+
+        return _current;
+    }
+
+    /// <summary>Decodes the keyframe interval that holds a time: from the keyframe at or before it up to it.</summary>
+    private void Fill(MediaTime target)
+    {
+        ClearWindow();
+        _next?.Dispose();
+        _next = null;
+        _reader!.Seek(target, SeekMode.Keyframe);
+        while (_reader.ReadFrame() is { } frame)
+        {
+            if (frame.Timestamp > target && _window.Count > 0)
+            {
+                frame.Dispose();
+                break;
+            }
+
+            _window.Add(frame);
+        }
+    }
+
+    private MediaTime Spacing() => _window.Count > 1 ? Times.Sub(_window[^1].Timestamp, _window[^2].Timestamp) : MediaTime.Zero;
+
+    private void ClearWindow()
+    {
+        foreach (YuvVideoFrame frame in _window)
+        {
+            frame.Dispose();
+        }
+
+        _window.Clear();
+    }
+}
+
+/// <summary>A still image's frames: the image, the same at every time.</summary>
+internal sealed class StillFrames : ClipFrames
+{
+    private readonly Raster<Rgba8> _image;
+    private readonly bool _owned;
+
+    public StillFrames(StillClipSource still, ClipTiming timing, MediaContext context)
+        : base(timing)
+    {
+        _owned = still.Image is null;
+        _image = still.Image ?? Raster.Load<Rgba8>(still.Path!, context.Egami);
+    }
+
     public override void Dispose()
     {
-        _next?.Dispose();
+        if (_owned)
+        {
+            _image.Dispose();
+        }
+    }
+
+    protected override Raster<Rgba8> SourceFrame(double source) => _image;
+}
+
+/// <summary>An animated image's frames at their delays.</summary>
+internal sealed class AnimationFrames : ClipFrames
+{
+    private readonly Raster<Rgba8> _animation;
+    private readonly double[] _starts;
+    private Raster<Rgba8>? _current;
+    private int _index = -1;
+
+    public AnimationFrames(AnimationClipSource animation, ClipTiming timing, MediaContext context)
+        : base(timing)
+    {
+        _animation = Raster.Load<Rgba8>(animation.Path, context.Egami);
+        _starts = Starts(_animation);
+    }
+
+    /// <summary>The start time of each frame, from the delays (0.1 s where a frame has none).</summary>
+    public static double[] Starts(Raster<Rgba8> animation)
+    {
+        double[] starts = new double[animation.FrameCount + 1];
+        for (int i = 0; i < animation.FrameCount; i++)
+        {
+            TimeSpan delay = animation.Frames[i].Metadata.Delay;
+            starts[i + 1] = starts[i] + (delay > TimeSpan.Zero ? delay.TotalSeconds : 0.1);
+        }
+
+        return starts;
+    }
+
+    public override void Dispose()
+    {
         _current?.Dispose();
-        _reader?.Dispose();
+        _animation.Dispose();
+    }
+
+    protected override Raster<Rgba8> SourceFrame(double source)
+    {
+        int index = Math.Clamp(Array.BinarySearch(_starts, source) is int i && i >= 0 ? i : ~i - 1, 0, _animation.FrameCount - 1);
+        if (index != _index)
+        {
+            _current?.Dispose();
+            _current = _animation.CopyFrame(index);
+            _index = index;
+        }
+
+        return _current!;
+    }
+}
+
+/// <summary>A colour clip's frames, the canvas size.</summary>
+internal sealed class ColorFrames(ColorClipSource color, EditCanvas canvas, ClipTiming timing, MediaContext context) : ClipFrames(timing)
+{
+    private readonly Raster<Rgba8> _frame = Raster.Create(canvas.Width, canvas.Height, color.Color, context.Egami);
+
+    public override void Dispose() => _frame.Dispose();
+
+    protected override Raster<Rgba8> SourceFrame(double source) => _frame;
+}
+
+/// <summary>An app's frames.</summary>
+internal sealed class AppFrames(IFrameSource source, EditCanvas canvas, ClipTiming timing, MediaContext context) : ClipFrames(timing)
+{
+    private readonly Raster<Rgba8> _frame = Raster.Create<Rgba8>(source.Size.Width, source.Size.Height, context.Egami);
+
+    public override void Dispose() => _frame.Dispose();
+
+    protected override Raster<Rgba8> SourceFrame(double time)
+    {
+        // The renderer asks for the middle of an output frame's slot; the app draws the frame at its start.
+        double start = time - (0.5 * canvas.FrameRate.Denominator / canvas.FrameRate.Numerator);
+        source.Render(MediaTime.FromSeconds(Math.Clamp(start, 0, source.Duration.Seconds)), _frame);
+        return _frame;
     }
 }
 
@@ -150,19 +359,20 @@ internal sealed class StackFrames : ClipFrames
     private readonly StackClipSource _stack;
     private readonly ClipFrames[] _children;
     private readonly Rect[] _cells;
-    private readonly MediaTime[] _lengths;
+    private readonly double[] _lengths;
     private readonly Raster<Rgba8> _frame;
-    private readonly MediaTime _in;
+    private readonly double _in;
     private Raster<Rgba8>[] _scratch;
 
-    public StackFrames(Clip clip, StackClipSource stack, EditPlan plan, MediaContext context)
+    public StackFrames(Clip clip, StackClipSource stack, EditPlan plan, EditCanvas canvas, ClipTiming timing, MediaContext context)
+        : base(timing)
     {
         _stack = stack;
         SourceInfo info = plan.Sources[clip];
-        _in = info.In;
+        _in = info.In.Seconds;
         _frame = Raster.Create<Rgba8>(info.Size.Width, info.Size.Height, stack.Options.Background, context.Egami);
-        _children = [.. stack.Clips.Select(c => Open(c, plan, context))];
-        _lengths = [.. stack.Clips.Select(c => Times.Sub(plan.Sources[c].Out, plan.Sources[c].In))];
+        _children = [.. stack.Clips.Select(c => Open(c, plan, canvas, context))];
+        _lengths = [.. stack.Clips.Select(c => new ClipTiming(c, plan.Sources[c]).Length)];
         _cells = new Rect[_children.Length];
         SourceInfo first = plan.Sources[stack.Clips[0]];
         int gap = stack.Options.Gap, x = 0, y = 0;
@@ -191,14 +401,13 @@ internal sealed class StackFrames : ClipFrames
         _scratch = [.. _cells.Select(c => Raster.Create<Rgba8>(c.Width, c.Height, context.Egami))];
     }
 
-    public override Raster<Rgba8>? FrameBefore(MediaTime limit)
+    protected override Raster<Rgba8>? SourceFrame(double source)
     {
-        MediaTime local = Times.Add(_in, limit);
+        double local = _in + source;
         for (int i = 0; i < _children.Length; i++)
         {
             // A clip that has ended holds its last frame.
-            MediaTime child = local < _lengths[i] ? local : _lengths[i];
-            Raster<Rgba8>? frame = _children[i].FrameBefore(child);
+            Raster<Rgba8>? frame = _children[i].FrameBefore(MediaTime.FromSeconds(Math.Min(local, Math.Max(0, _lengths[i] - 1e-6))));
             Rect cell = _cells[i];
             if (frame is null)
             {

@@ -155,7 +155,7 @@ internal sealed class EditRenderer : IDisposable
     {
         if (!_clips.TryGetValue(clip.Index, out ClipFrames? frames))
         {
-            frames = ClipFrames.Open(clip.Clip, _plan, _context);
+            frames = ClipFrames.Open(clip.Clip, _plan, _canvas, _context);
             _clips[clip.Index] = frames;
         }
 
@@ -163,6 +163,10 @@ internal sealed class EditRenderer : IDisposable
         if (source is null)
         {
             ClipFrames.Fill(target, _canvas.Background);
+        }
+        else if (clip.Clip.Motion is PanZoomPath motion)
+        {
+            PanZoom(source, target, motion.At(clip.FrameCount <= 1 ? 0 : (double)local / (clip.FrameCount - 1)));
         }
         else
         {
@@ -207,7 +211,7 @@ internal sealed class EditRenderer : IDisposable
 
         if (!_layers.TryGetValue(planned.Index, out ClipFrames? frames))
         {
-            frames = ClipFrames.Open(layer.Clip, _plan, _context);
+            frames = ClipFrames.Open(layer.Clip, _plan, _canvas, _context);
             _layers[planned.Index] = frames;
         }
 
@@ -274,6 +278,27 @@ internal sealed class EditRenderer : IDisposable
                 placed.Dispose();
             }
         }
+    }
+
+    /// <summary>
+    /// Draws a part of a frame (fractions of it) fitted to the canvas, as the canvas fit says, with a sub-pixel bicubic
+    /// transform from the whole frame, so a slow pan or zoom moves smoothly.
+    /// </summary>
+    private void PanZoom(Raster<Rgba8> source, Raster<Rgba8> target, System.Drawing.RectangleF part)
+    {
+        double x = part.X * source.Width, y = part.Y * source.Height;
+        double w = Math.Max(1e-3, part.Width * source.Width), h = Math.Max(1e-3, part.Height * source.Height);
+        double sx = target.Width / w, sy = target.Height / h;
+        if (_canvas.Fit is ClipFit.Contain or ClipFit.Cover)
+        {
+            sx = sy = _canvas.Fit == ClipFit.Contain ? Math.Min(sx, sy) : Math.Max(sx, sy);
+        }
+
+        double ox = (target.Width - (w * sx)) / 2, oy = (target.Height - (h * sy)) / 2;
+        Matrix3x2 matrix = Matrix3x2.CreateTranslation((float)-x, (float)-y) * Matrix3x2.CreateScale((float)sx, (float)sy) * Matrix3x2.CreateTranslation((float)ox, (float)oy);
+        using Raster<Rgba8> moved = source.Derive(ops => ops.Transform(matrix, new TransformOptions { Viewport = new Rect(0, 0, target.Width, target.Height) }));
+        ClipFrames.Fill(target, _canvas.Background);
+        target.Apply(ops => ops.DrawImage(moved, new Point(0, 0)));
     }
 
     private static Raster<Rgba8> Rotate(Raster<Rgba8> image, double degrees)
