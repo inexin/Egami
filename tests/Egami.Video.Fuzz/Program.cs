@@ -94,7 +94,10 @@ static Action<Stream> Target(string name) => name switch
     "vp9enc" => stream => EncodeVp9OrAv1(stream, VideoCodecs.Vp9),
     "av1enc" => stream => EncodeVp9OrAv1(stream, VideoCodecs.Av1),
     "trim" => Trim,
-    _ => throw new ArgumentException($"Unknown fuzz target '{name}'. Targets: avi, mkv, y4m, ivf, webm, mp4, obu, ac3, mp4mux, mjpeg, vp8, vp9, vp9raw, h264, av1, av1raw, wav, flac, ogg, aiff, caf, opusraw, vorbisraw, vp8enc, mp3, mp3raw, ac3raw, alac, opusenc, subs, subtrack, vp9enc, av1enc."),
+    "ffv1" => ReadFfv1,
+    "ffv1raw" => DecodeFfv1Packets,
+    "ffv1enc" => EncodeFfv1,
+    _ => throw new ArgumentException($"Unknown fuzz target '{name}'. Targets: avi, mkv, y4m, ivf, webm, mp4, obu, ac3, mp4mux, mjpeg, vp8, vp9, vp9raw, h264, av1, av1raw, wav, flac, ogg, aiff, caf, opusraw, vorbisraw, vp8enc, mp3, mp3raw, ac3raw, alac, opusenc, subs, subtrack, vp9enc, av1enc, trim, ffv1, ffv1raw, ffv1enc."),
 };
 
 static MediaContext Context() => MediaContext.Default with
@@ -1021,6 +1024,364 @@ static void ReadVideo(Stream stream, string codec, MediaContext? baseContext = n
         {
             // Broken containers, unsupported files and safety limits, in any mode; broken frames only in Throw mode.
         }
+    }
+}
+
+// An FFV1 file (Matroska or AVI) read through VideoReader with Skip, Conceal and Throw, as for VP9; then checked with
+// Ffv1Codec.Verify and every packet's headers described. Only a broken configuration record or container may fail outside
+// Throw mode: damaged frames must be skipped or concealed.
+static void ReadFfv1(Stream stream)
+{
+    byte[] data = ReadAll(stream);
+    MediaContext context = Context() with { Egami = Context().Egami with { Diagnostics = _ => { } } };
+    foreach (DecodeErrorMode mode in (DecodeErrorMode[])[DecodeErrorMode.Skip, DecodeErrorMode.Conceal, DecodeErrorMode.Throw])
+    {
+        VideoReader reader;
+        try
+        {
+            reader = VideoReader.Open(new MemoryStream(data), new VideoReaderOptions { Errors = mode }, context);
+        }
+        catch (EgamiException)
+        {
+            return;
+        }
+
+        using (reader)
+        {
+            if (reader.Track.Width > 2048 || reader.Track.Height > 2048)
+            {
+                return;
+            }
+
+            try
+            {
+                int frames = 0;
+                while (frames++ < 40 && reader.ReadFrame() is { } frame)
+                {
+                    using (frame)
+                    {
+                        if (frames == 1)
+                        {
+                            using Raster<Rgba8> rgb = frame.ToRaster<Rgba8>(context.Egami);
+                        }
+                    }
+                }
+            }
+            catch (EgamiException) when (mode == DecodeErrorMode.Throw)
+            {
+            }
+            catch (EgamiException e) when (!(e is CorruptDataException corrupt && corrupt.FormatName == "FFV1"))
+            {
+            }
+        }
+    }
+
+    try
+    {
+        _ = Ffv1Codec.Verify(new MemoryStream(data), context).Errors.Count;
+    }
+    catch (EgamiException)
+    {
+    }
+
+    try
+    {
+        using IDemuxer demuxer = MediaFile.OpenDemuxer(new MemoryStream(data), context);
+        TrackInfo? track = demuxer.Tracks.FirstOrDefault(t => Ffv1Codec.Instance.CanDecode(t));
+        for (int i = 0; track is not null && i < 20 && demuxer.ReadPacket() is { } packet; i++)
+        {
+            using (packet)
+            {
+                if (packet.TrackNumber == track.Number)
+                {
+                    try
+                    {
+                        _ = CodecHeaders.Describe(track, packet).Sum(f => f.Value);
+                    }
+                    catch (EgamiException)
+                    {
+                    }
+                }
+            }
+        }
+    }
+    catch (EgamiException)
+    {
+    }
+}
+
+// FFV1 frames without a container, straight into the decoder: a byte each for the width and height, a 2-byte little-endian
+// length and the configuration record (empty for versions 0 and 1), then frames of a 3-byte little-endian length and the data.
+// Decoded with Skip and with Conceal on one thread and on two, which must give the same frames; a damaged frame must never
+// throw outside Throw mode.
+static void DecodeFfv1Packets(Stream stream)
+{
+    byte[] data = ReadAll(stream);
+    if (data.Length < 4)
+    {
+        return;
+    }
+
+    int width = 1 + data[0], height = 1 + data[1];
+    int recordLength = Math.Min(data[2] | (data[3] << 8), data.Length - 4);
+    byte[] record = data.AsSpan(4, recordLength).ToArray();
+    List<byte[]> packets = [];
+    for (int at = 4 + recordLength; at + 3 <= data.Length && packets.Count < 20;)
+    {
+        int length = Math.Min(data[at] | (data[at + 1] << 8) | (data[at + 2] << 16), data.Length - at - 3);
+        packets.Add(data.AsSpan(at + 3, length).ToArray());
+        at += 3 + length;
+    }
+
+    VideoTrackInfo track = new() { Number = 1, Kind = TrackKind.Video, CodecId = CodecIds.Ffv1, TimeBase = new Rational(1, 25), Width = width, Height = height, CodecPrivate = record };
+    foreach (DecodeErrorMode mode in (DecodeErrorMode[])[DecodeErrorMode.Skip, DecodeErrorMode.Conceal])
+    {
+        List<byte[]>? first = null;
+        foreach (int threads in (int[])[1, 2])
+        {
+            MediaContext context = Context() with { Egami = Context().Egami with { MaxParallelism = threads, Diagnostics = _ => { } } };
+            IVideoDecoder decoder;
+            try
+            {
+                decoder = VideoCodecs.Ffv1.CreateDecoder(track, new VideoDecoderOptions { Errors = mode }, context);
+            }
+            catch (EgamiException)
+            {
+                return;
+            }
+
+            List<byte[]> frames = [];
+            using (decoder)
+            {
+                for (int i = 0; i < packets.Count; i++)
+                {
+                    using EncodedPacket packet = new(1, packets[i], new MediaTime(i, track.TimeBase));
+                    try
+                    {
+                        decoder.Send(packet);
+                    }
+                    catch (EgamiException e) when (e is not CorruptDataException { FormatName: "FFV1" })
+                    {
+                        // An unsupported layout or a safety limit.
+                        return;
+                    }
+
+                    while (decoder.TryReceive(out YuvVideoFrame? frame))
+                    {
+                        using (frame)
+                        {
+                            frames.Add(Bytes(frame.Raster));
+                        }
+                    }
+                }
+            }
+
+            if (first is null)
+            {
+                first = frames;
+            }
+            else if (first.Count != frames.Count || first.Zip(frames).Any(p => !p.First.AsSpan().SequenceEqual(p.Second)))
+            {
+                throw new InvalidOperationException("FFV1 frames differ between one thread and two.");
+            }
+        }
+    }
+
+    static byte[] Bytes(YuvRaster raster)
+    {
+        MemoryStream bytes = new();
+        if (raster is YuvRaster<byte> b)
+        {
+            foreach (YuvPlane<byte>? plane in (YuvPlane<byte>?[])[b.Y, b.U, b.V, b.A])
+            {
+                for (int y = 0; plane is not null && y < plane.Height; y++)
+                {
+                    bytes.Write(plane.Row(y));
+                }
+            }
+        }
+        else if (raster is YuvRaster<ushort> w)
+        {
+            foreach (YuvPlane<ushort>? plane in (YuvPlane<ushort>?[])[w.Y, w.U, w.V, w.A])
+            {
+                for (int y = 0; plane is not null && y < plane.Height; y++)
+                {
+                    bytes.Write(System.Runtime.InteropServices.MemoryMarshal.AsBytes(plane.Row(y)));
+                }
+            }
+        }
+
+        return bytes.ToArray();
+    }
+}
+
+// The FFV1 encoder: the first bytes pick the size, layout, depth, coder, context model, slices, CRCs and keyframe spacing;
+// the rest fills the frames. Every frame must come back out of the decoder unchanged, and nothing may throw, since every
+// setting it can pick is valid.
+static void EncodeFfv1(Stream stream)
+{
+    byte[] data = ReadAll(stream);
+    if (data.Length < 8)
+    {
+        return;
+    }
+
+    int width = 1 + (data[0] % 64), height = 1 + (data[1] % 48), frames = 1 + (data[2] % 4);
+    ChromaFormat chroma = (data[3] % 6) switch
+    {
+        1 => ChromaFormat.Yuv422,
+        2 => ChromaFormat.Yuv444,
+        3 => ChromaFormat.Yuv400,
+        4 => ChromaFormat.Yuv411,
+        5 => ChromaFormat.Yuv410,
+        _ => ChromaFormat.Yuv420,
+    };
+    bool rgb = (data[3] & 64) != 0;
+    if (rgb)
+    {
+        chroma = ChromaFormat.Yuv444;
+    }
+
+    int depth = ((data[4] >> 2) & 3) switch { 1 => 10, 2 => 12, 3 => 16, _ => 8 };
+    int bits = depth == 8 ? 8 : depth - ((data[4] >> 4) & 1);
+    Ffv1Coder coder = depth == 8 && (data[4] & 3) == 2 ? Ffv1Coder.GolombRice : (data[4] & 1) == 1 ? Ffv1Coder.RangeDefaultTable : Ffv1Coder.RangeCustomTable;
+    bool alpha = (data[3] & 128) != 0;
+    VideoEncoderOptions options = new()
+    {
+        Width = width,
+        Height = height,
+        KeyframeInterval = 1 + (data[5] % 3),
+        Ffv1 = new Ffv1EncoderOptions
+        {
+            Coder = coder,
+            ContextModel = (data[5] & 8) != 0 ? Ffv1ContextModel.Large : Ffv1ContextModel.Small,
+            Slices = 1 + (data[6] % 12),
+            SliceCrc = (data[5] & 16) == 0,
+            BitDepth = bits,
+        },
+    };
+    MediaContext context = Context();
+    YuvColor color = rgb ? new YuvColor(YuvMatrix.Identity, YuvRange.Full, ChromaSiting.Center) : YuvColor.Bt601Limited;
+    List<YuvRaster> sources = [];
+    int at = 0;
+    try
+    {
+        for (int f = 0; f < frames; f++)
+        {
+            if (depth == 8)
+            {
+                YuvRaster<byte> bytes = YuvRaster.Create(width, height, chroma, color, alpha);
+                foreach (YuvPlane<byte>? plane in (YuvPlane<byte>?[])[bytes.Y, bytes.U, bytes.V, bytes.A])
+                {
+                    for (int y = 0; plane is not null && y < plane.Height; y++)
+                    {
+                        Span<byte> row = plane.Row(y);
+                        for (int x = 0; x < row.Length; x++)
+                        {
+                            row[x] = data[7 + (at++ % (data.Length - 7))];
+                        }
+                    }
+                }
+
+                sources.Add(bytes);
+            }
+            else
+            {
+                YuvRaster<ushort> words = YuvRaster.Create(width, height, chroma, depth, color, alpha);
+                int shift = depth - bits;
+                foreach (YuvPlane<ushort>? plane in (YuvPlane<ushort>?[])[words.Y, words.U, words.V, words.A])
+                {
+                    for (int y = 0; plane is not null && y < plane.Height; y++)
+                    {
+                        Span<ushort> row = plane.Row(y);
+                        for (int x = 0; x < row.Length; x++)
+                        {
+                            int v = data[7 + (at++ % (data.Length - 7))] | (data[7 + (at++ % (data.Length - 7))] << 8);
+                            row[x] = (ushort)((v & ((1 << bits) - 1)) << shift);
+                        }
+                    }
+                }
+
+                sources.Add(words);
+            }
+        }
+
+        using IVideoEncoder encoder = VideoCodecs.Ffv1.CreateEncoder(options, context);
+        List<EncodedPacket> packets = [];
+        for (int f = 0; f < frames; f++)
+        {
+            // The frame would own the planes; they are disposed at the end instead, after the comparison.
+            encoder.Send(new YuvVideoFrame(sources[f], new MediaTime(f, new Rational(1, 30))));
+            while (encoder.TryReceive(out EncodedPacket? packet))
+            {
+                packets.Add(packet);
+            }
+        }
+
+        using IVideoDecoder check = VideoCodecs.Ffv1.CreateDecoder(encoder.Track, new VideoDecoderOptions { Errors = DecodeErrorMode.Throw }, context);
+        for (int f = 0; f < packets.Count; f++)
+        {
+            using (packets[f])
+            {
+                check.Send(packets[f]);
+            }
+
+            if (!check.TryReceive(out YuvVideoFrame? back))
+            {
+                throw new InvalidOperationException($"FFV1 frame {f} did not decode.");
+            }
+
+            using (back)
+            {
+                if (!Same(sources[f], back.Raster))
+                {
+                    throw new InvalidOperationException($"FFV1 frame {f} came back different.");
+                }
+            }
+        }
+    }
+    finally
+    {
+        foreach (YuvRaster source in sources)
+        {
+            source.Dispose();
+        }
+    }
+
+    static bool Same(YuvRaster a, YuvRaster b)
+    {
+        if (a.ChromaFormat != b.ChromaFormat || a.BitDepth != b.BitDepth || a.HasAlpha != b.HasAlpha)
+        {
+            return false;
+        }
+
+        if (a is YuvRaster<byte> ab && b is YuvRaster<byte> bb)
+        {
+            return Planes(ab.Y, bb.Y) && Planes(ab.U, bb.U) && Planes(ab.V, bb.V) && Planes(ab.A, bb.A);
+        }
+
+        var aw = (YuvRaster<ushort>)a;
+        var bw = (YuvRaster<ushort>)b;
+        return Planes(aw.Y, bw.Y) && Planes(aw.U, bw.U) && Planes(aw.V, bw.V) && Planes(aw.A, bw.A);
+    }
+
+    static bool Planes<T>(YuvPlane<T>? a, YuvPlane<T>? b)
+        where T : unmanaged, IEquatable<T>
+    {
+        if (a is null || b is null)
+        {
+            return a is null && b is null;
+        }
+
+        for (int y = 0; y < a.Height; y++)
+        {
+            if (!a.Row(y).SequenceEqual(b.Row(y)))
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 }
 

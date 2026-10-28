@@ -208,6 +208,9 @@ file, or one written without slice CRCs, has `HasSliceCrcs` false.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Video.cs#video-ffv1-verify)]
 
+Writing FFV1 is in [Encoding video](video-encoding.md#writing-ffv1); [Lossless archiving with FFV1](lossless-archiving.md) puts
+writing, fixity checks and restores together.
+
 ## HDR
 
 A frame's `Color` and `Hdr` carry its color code points and static HDR metadata. `YuvVideoFrame.ToRaster` with a target

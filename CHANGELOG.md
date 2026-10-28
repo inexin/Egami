@@ -18,7 +18,7 @@ A new package of format plugins (Build Plan tasks 1 to 12). It depends on core E
   palette. Loading and saving the 12-megapixel files is faster than ImageMagick in every case, at 1 thread and on all cores.
 - The format's name for Sun raster is `Sun raster` (it was `SUN`), so it matches `SunRasterWriterOptions`.
 - A page per format in the docs, a Package column in the formats overview, and the `EGAMIX` diagnostic ids for formats in
-  preview (none yet). The package has its own icon.
+  preview (none yet). The package has its own icon and lockups.
 
 ## Egami.Cli and Egami.Video.Cli, unreleased
 
@@ -61,6 +61,9 @@ V7.1: interlaced H.264 (Build Plan tasks 16 to 18). All additive.
   interlaced_frame, top_field_first and repeat_pict. `VideoReader.ReadFrames` keeps them.
 - A field picture without its second field reports `H264.UnpairedField` and fills the frame from its own rows.
 
+V6 FFV1 API review (Build Plan task 17), accepted 2026-10-28 with every question as recommended: `Ffv1EncoderOptions.BitsPerSample`
+is now `BitDepth`, matching `Vp9EncoderOptions` and `Av1EncoderOptions`; everything else stays as built.
+
 V6 FFV1 stage C: the FFV1 encoder (Build Plan tasks 11 to 14). All additive.
 
 - `Ffv1Codec` now encodes (`CanEncode`): version 3 in Matroska and AVI, through `VideoWriter` (`VideoWriterOptions.Ffv1`) or
@@ -68,7 +71,7 @@ V6 FFV1 stage C: the FFV1 encoder (Build Plan tasks 11 to 14). All additive.
   without alpha, 8 to 16 bits); RGB rasters and Identity-tagged 4:4:4 planes are coded as RGB through the reversible color
   transform. Defaults: every frame a keyframe, slice CRCs, the range coder with a custom state table, slices picked from the
   frame size. Slices are coded in parallel with the same file at any thread count.
-- `Ffv1EncoderOptions` (`Slices`, `SliceCrc`, `Coder`, `ContextModel`, `BitsPerSample`) with `Ffv1Coder` and
+- `Ffv1EncoderOptions` (`Slices`, `SliceCrc`, `Coder`, `ContextModel`, `BitDepth`) with `Ffv1Coder` and
   `Ffv1ContextModel`. `KeyframeInterval` spaces keyframes; `Effort` 7 and up picks the large context model; `Quality` is
   ignored and reported as `Ffv1.QualityIgnored`.
 - Gates: all 51 corpus clips round trip in every coder; FFmpeg decodes 294 re-encoded files (every clip in five or six settings,
