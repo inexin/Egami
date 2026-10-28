@@ -1,3 +1,4 @@
+using System.Buffers.Binary;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
@@ -287,13 +288,14 @@ internal sealed class Mp3FrameDecoder
     private int DequantizeGranule(int start, ref Bits bs, int groupSize)
     {
         float[] g = _grbuf;
+        ReadOnlySpan<byte> bitAlloc = _bitAlloc.AsSpan(0, 2 * _totalBands);
         for (int j = 0; j < 4; j++)
         {
             int dst = start + (groupSize * j);
             int choff = 576;
-            for (int i = 0; i < 2 * _totalBands; i++)
+            for (int i = 0; i < bitAlloc.Length; i++)
             {
-                int ba = _bitAlloc[i];
+                int ba = bitAlloc[i];
                 if (ba != 0)
                 {
                     if (ba < 17)
@@ -306,11 +308,16 @@ internal sealed class Mp3FrameDecoder
                     }
                     else
                     {
+                        // 3, 5 or 9 levels, three samples to a code; the division by the level count is a multiply by its
+                        // 16-bit reciprocal, exact for every code the field width allows.
                         uint mod = (2u << (ba - 17)) + 1;
+                        uint reciprocal = (65536 + mod - 1) / mod;
                         uint code = bs.Get((int)(mod + 2 - (mod >> 3)));
-                        for (int k = 0; k < groupSize; k++, code /= mod)
+                        for (int k = 0; k < groupSize; k++)
                         {
-                            g[dst + k] = (int)(code % mod) - (int)(mod / 2);
+                            uint quotient = (code * reciprocal) >> 16;
+                            g[dst + k] = (int)(code - (quotient * mod)) - (int)(mod / 2);
+                            code = quotient;
                         }
                     }
                 }
@@ -334,10 +341,12 @@ internal sealed class Mp3FrameDecoder
         {
             float l = _l12Scf[scf];
             float r = _l12Scf[scf + 3];
-            for (int k = 0; k < 12; k++)
+            ref float x = ref MemoryMarshal.GetReference(g.AsSpan(dst, 12));
+            ref float y = ref MemoryMarshal.GetReference(g.AsSpan(dst + 576, 12));
+            for (int k = 0; k < 12; k += 4)
             {
-                g[dst + k] *= l;
-                g[dst + k + 576] *= r;
+                (Vector128.LoadUnsafe(ref x, (nuint)k) * l).StoreUnsafe(ref x, (nuint)k);
+                (Vector128.LoadUnsafe(ref y, (nuint)k) * r).StoreUnsafe(ref y, (nuint)k);
             }
         }
     }
@@ -1254,16 +1263,25 @@ internal sealed class Mp3FrameDecoder
 
         public int Limit { get; }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public uint Get(int n)
         {
-            int s = Pos & 7;
-            int shl = n + s;
-            int p = Pos >> 3;
-            if (n == 0 || (Pos += n) > Limit)
+            int pos = Pos;
+            int s = pos & 7;
+            int p = pos >> 3;
+            if (n == 0 || (Pos = pos + n) > Limit)
             {
                 return 0;
             }
 
+            if (n <= 25 && p + 4 <= _buf.Length)
+            {
+                // One big-endian word holds the field: 25 bits at most, after up to 7 already read.
+                uint word = BinaryPrimitives.ReverseEndianness(Unsafe.ReadUnaligned<uint>(ref Unsafe.Add(ref MemoryMarshal.GetReference(_buf), p)));
+                return (word << s) >> (32 - n);
+            }
+
+            int shl = n + s;
             uint cache = 0;
             uint next = (uint)(_buf[p++] & (255 >> s));
             while ((shl -= 8) > 0)
