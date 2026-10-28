@@ -23,6 +23,11 @@ internal sealed partial class H264SliceDecoder
     private readonly sbyte[] _modeCond = new sbyte[8];
     private readonly int[] _cbpCondA = new int[2];
 
+    // Which rows of the left neighbour (bit y) may be used for intra prediction, luma and chroma, once worked out.
+    private bool _leftIntraKnown;
+    private int _leftIntraLuma;
+    private int _leftIntraChroma;
+
     private bool _mbaff;
     private H264Picture _frame = null!;
     private H264MbState _real = null!;
@@ -477,6 +482,8 @@ internal sealed partial class H264SliceDecoder
         int dd = Locate(-1, -1, 16, out int yDd);
         LoadBlock(dd, 3, ((yDd + 16) >> 2) & 3, _b0 - _w4 - 1, rw4);
 
+        _leftIntraKnown = false;
+
         // coded_block_pattern's condTermFlagA for the left 8x8 blocks (9.3.3.1.1.4).
         for (int row = 0; row < 2; row++)
         {
@@ -521,6 +528,28 @@ internal sealed partial class H264SliceDecoder
         _neighbors = (_mbX > 0 && Available(cur - 1) ? NeighborA : 0) | (_mbY > 0 && Available(cur - w) ? NeighborB : 0)
             | (_mbY > 0 && _mbX < w - 1 && Available(cur - w + 1) ? NeighborC : 0) | (_mbY > 0 && _mbX > 0 && Available(cur - w - 1) ? NeighborD : 0);
     }
+
+    /// <summary>
+    /// Works out, for an intra macroblock, which rows of left samples are in a macroblock it may predict from (8.3.1.2: inter
+    /// ones are not available with constrained intra prediction).
+    /// </summary>
+    private void FindLeftIntra()
+    {
+        _leftIntraKnown = true;
+        _leftIntraLuma = _leftIntraChroma = 0;
+        int chromaRows = _chromaArrayType == 0 ? 0 : _chromaArrayType == 1 ? 8 : 16;
+        for (int y = 0; y < 16; y++)
+        {
+            _leftIntraLuma |= LeftRowIntra(Locate(-1, y, 16, out _)) ? 1 << y : 0;
+            if (y < chromaRows)
+            {
+                _leftIntraChroma |= LeftRowIntra(Locate(-1, y, chromaRows, out _)) ? 1 << y : 0;
+            }
+        }
+    }
+
+    private bool LeftRowIntra(int mb) =>
+        mb >= 0 && _real.Slice[mb] == _slice && (!_pps.ConstrainedIntraPred || H264MbState.IsIntra(_real.Kind[mb]));
 
     /// <summary>Copies a neighbouring macroblock's macroblock-level state into a window slot, or marks the slot unavailable.</summary>
     private void LoadMb(int slot, int mb)

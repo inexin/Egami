@@ -374,7 +374,7 @@ internal sealed class H264Decoder
             pic = Allocate(sps);
             pic.Sps = sps;
             pic.FrameNum = h.FrameNum;
-            pic.DecodedFields = 0;
+            pic.DecodedFields = h.FieldPic ? 0 : 3;
             pic.CodedAs = h.FieldPic ? H264Coding.Fields : h.Mbaff ? H264Coding.Mbaff : H264Coding.Frame;
             pic.Tag = tag;
             _curDamaged = false;
