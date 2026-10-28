@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>SGI | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="SGI | Egami ">
+      
+      
+      <link rel="icon" href="../../images/favicon.ico">
+      <link rel="stylesheet" href="../../public/docfx.min.css">
+      <link rel="stylesheet" href="../../public/main.css">
+      <meta name="docfx:navrel" content="../../toc.html">
+      <meta name="docfx:tocrel" content="../toc.html">
+      
+      <meta name="docfx:rel" content="../../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/blob/main/docs/articles/formats/sgi.md/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../../index.html">
+            <img id="logo" class="svg" src="../../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="sgi">SGI</h1>
+
+<p>SGI is Silicon Graphics' image format (.rgb, .rgba, .bw, .sgi): a 512-byte header, then one to four channels of 8 or 16-bit
+samples, each channel a plane of bottom-up rows, plain or run-length coded. It reads and writes through the
+Egami.Formats.Extended package: register it with <code>WithSgi()</code> or <code>WithExtendedFormats()</code> (<a href="extended.html">Extended formats</a>).</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Reads</td>
+<td>1 to 4 channels (gray, gray and alpha, RGB, RGBA) of 8 or 16 bits, plain or coded, dimension 1, 2 or 3; coded rows in any order in the file; further channels are skipped with a <code>Sgi.ChannelsSkipped</code> warning</td>
+</tr>
+<tr>
+<td>Writes</td>
+<td>The raster's own channels (gray, gray and alpha, RGB or RGBA) and depth (16-bit above 8 bits a channel), coded unless <code>SgiWriterOptions.Rle</code> is off, with the image name from <code>SgiDetails</code></td>
+</tr>
+<tr>
+<td>Natural pixel type</td>
+<td><code>Gray8</code>, <code>GrayAlpha8</code>, <code>Rgb8</code> or <code>Rgba8</code>, or their 16-bit forms</td>
+</tr>
+<tr>
+<td><code>FormatInfo</code></td>
+<td><code>SgiFormat.Info</code>: name <code>SGI</code>, extensions <code>.sgi</code>, <code>.rgb</code>, <code>.rgba</code>, <code>.bw</code>, <code>.int</code>, <code>.inta</code>, MIME types <code>image/sgi</code> and <code>image/x-rgb</code></td>
+</tr>
+</tbody>
+</table>
+<pre><code class="lang-csharp">// SGI codes its rows by default; Sun raster writes them plain unless asked.
+using (FileStream sgi = File.Create(&quot;duck.rgb&quot;))
+{
+    image.Save(sgi, SgiFormat.Info, new SgiWriterOptions { Rle = false });
+}
+
+using (FileStream sun = File.Create(&quot;duck.ras&quot;))
+{
+    image.Save(sun, SunRasterFormat.Info, new SunRasterWriterOptions { Rle = true });
+}
+</code></pre>
+<p>The planes are stored bottom-up and the coded rows may lie anywhere, so a decode reads the file whole and then hands out rows,
+and the writer keeps the coded rows in memory until the last one. A file that ends early leaves the rows it lacks transparent
+black with the warning <code>Sgi.RowsMissing</code>, and a damaged coded row is cut short with <code>Sgi.RowDamaged</code>. SGI keeps alpha and 16-bit
+samples but no metadata. Images are at most 65,535 pixels on a side.</p>
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/docs/articles/formats/sgi.md/#L1" class="edit-link">Edit this page</a>
+        </div>
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

@@ -129,43 +129,43 @@ Console.WriteLine($&quot;{info.Format.Name} {info.Width}×{info.Height} {info.La
 </thead>
 <tbody>
 <tr>
-<td>PCX</td>
+<td><a href="pcx.html">PCX</a></td>
 <td><code>PcxFormat</code></td>
 <td>1, 2, 4 and 8-bit indexed, 1-bit EGA planes, 24-bit and 32-bit, run-length coded or not</td>
 <td>8-bit gray with a gray palette, or 24-bit RGB, run-length coded</td>
 </tr>
 <tr>
-<td>SGI</td>
+<td><a href="sgi.html">SGI</a></td>
 <td><code>SgiFormat</code></td>
 <td>1 to 4 channels of 8 or 16 bits, plain or run-length coded</td>
 <td>the raster's channels and depth, run-length coded unless <code>SgiWriterOptions.Rle</code> is off</td>
 </tr>
 <tr>
-<td>Sun raster</td>
+<td><a href="sun-raster.html">Sun raster</a></td>
 <td><code>SunRasterFormat</code></td>
 <td>1, 8, 24 and 32 bits, with or without a colormap, plain or run-length coded</td>
 <td>8-bit gray or 24-bit, run-length coded when <code>SunRasterWriterOptions.Rle</code> is set</td>
 </tr>
 <tr>
-<td>XBM</td>
+<td><a href="xbm.html">XBM</a></td>
 <td><code>XbmFormat</code></td>
 <td>X11 files of bytes and X10 files of 16-bit words</td>
 <td>X11, black where gray is below half</td>
 </tr>
 <tr>
-<td>XPM</td>
+<td><a href="xpm.html">XPM</a></td>
 <td><code>XpmFormat</code></td>
 <td>version 3, any number of characters a pixel, None, hex colors and X11 color names</td>
 <td>every color of the raster, None below half alpha</td>
 </tr>
 <tr>
-<td>WBMP</td>
+<td><a href="wbmp.html">WBMP</a></td>
 <td><code>WbmpFormat</code></td>
 <td>type 0, extension headers skipped</td>
 <td>type 0, white where gray is at least half</td>
 </tr>
 <tr>
-<td>Farbfeld</td>
+<td><a href="farbfeld.html">Farbfeld</a></td>
 <td><code>FarbfeldFormat</code></td>
 <td>16-bit RGBA</td>
 <td>16-bit RGBA</td>
@@ -204,6 +204,14 @@ image.Save(&quot;pointer.xbm&quot;);
 reads to its end, where its palette is. SGI stores each channel as its own plane of bottom-up rows, and XBM and XPM are C
 source, so those three read the file whole. A lenient read of a file that ends early keeps the rows it has and leaves the rest
 transparent black, with a <code>RowsMissing</code> warning such as <code>Pcx.RowsMissing</code>; a strict read throws <code>CorruptDataException</code>.</p>
+<h2 id="formats-in-preview">Formats in preview</h2>
+<p>The package also holds formats still in development, as previews. A preview is never part of <code>WithExtendedFormats()</code>: its own
+<code>With&lt;Format&gt;()</code> method and its <code>FormatInfo</code> carry .NET's <code>[Experimental]</code> attribute with a diagnostic id of its own, so a call
+to it does not compile until the app suppresses that id, which is the opt-in. A preview may change, change its output or be
+removed in any minor release; it becomes stable after an API review, comparison gates and fuzzing, and the attribute comes off.</p>
+<p>The ids are <code>EGAMIX</code> and three digits, one per format, given out in order from <code>EGAMIX001</code> and never reused. Suppress one in the
+project file (<code>&lt;NoWarn&gt;$(NoWarn);EGAMIX001&lt;/NoWarn&gt;</code>) or around the call (<code>#pragma warning disable EGAMIX001</code>). There are no
+formats in preview in this release. The <code>egami</code> command reads and writes them only with <code>--preview-formats</code>.</p>
 
 </article>
 

@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Sun raster | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Sun raster | Egami ">
+      
+      
+      <link rel="icon" href="../../images/favicon.ico">
+      <link rel="stylesheet" href="../../public/docfx.min.css">
+      <link rel="stylesheet" href="../../public/main.css">
+      <meta name="docfx:navrel" content="../../toc.html">
+      <meta name="docfx:tocrel" content="../toc.html">
+      
+      <meta name="docfx:rel" content="../../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/blob/main/docs/articles/formats/sun-raster.md/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../../index.html">
+            <img id="logo" class="svg" src="../../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="sun-raster">Sun raster</h1>
+
+<p>Sun raster is the rasterfile format of SunOS: a 32-byte big-endian header, an optional colormap, then rows of 1, 8, 24 or 32
+bits, plain or byte-encoded. It reads and writes through the Egami.Formats.Extended package: register it with <code>WithSunRaster()</code>
+or <code>WithExtendedFormats()</code> (<a href="extended.html">Extended formats</a>).</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Reads</td>
+<td>Types 0 (old), 1 (standard), 2 (byte-encoded) and 3 (RGB order); 1, 8, 24 and 32 bits; colormaps of equal red, green and blue planes, and raw colormaps skipped</td>
+</tr>
+<tr>
+<td>Writes</td>
+<td>Gray rasters as 8-bit gray levels without a colormap, everything else as 24-bit pixels, blue first (type 1), or byte-encoded (type 2) when <code>SunRasterWriterOptions.Rle</code> is set</td>
+</tr>
+<tr>
+<td>Natural pixel type</td>
+<td><code>Gray8</code> for 1-bit and 8-bit images without a colormap or with a gray one, <code>Rgb8</code> otherwise</td>
+</tr>
+<tr>
+<td><code>FormatInfo</code></td>
+<td><code>SunRasterFormat.Info</code>: name <code>Sun raster</code>, extensions <code>.ras</code> and <code>.sun</code>, MIME type <code>image/x-sun-raster</code></td>
+</tr>
+</tbody>
+</table>
+<p>Without a colormap, 1-bit pixels are black where set and 8-bit pixels are gray levels. The pad byte of 32-bit pixels is not read
+as alpha. <code>SunRasterDetails</code> keeps the depth, the colormap, the coding and the byte order.</p>
+<pre><code class="lang-csharp">// SGI codes its rows by default; Sun raster writes them plain unless asked.
+using (FileStream sgi = File.Create(&quot;duck.rgb&quot;))
+{
+    image.Save(sgi, SgiFormat.Info, new SgiWriterOptions { Rle = false });
+}
+
+using (FileStream sun = File.Create(&quot;duck.ras&quot;))
+{
+    image.Save(sun, SunRasterFormat.Info, new SunRasterWriterOptions { Rle = true });
+}
+</code></pre>
+<p>Rows stream from the input as they are asked for. Sun raster has no alpha and no metadata: a save that drops them says so in the
+Warnings.</p>
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/docs/articles/formats/sun-raster.md/#L1" class="edit-link">Edit this page</a>
+        </div>
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

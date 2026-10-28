@@ -89,7 +89,7 @@
 
 <p><code>egami</code> converts, inspects, resizes and edits images from a shell or a build script, with no C# to write. It is the
 <code>Egami.Cli</code> package, a .NET tool built on Egami's public API, and reads every format Egami and its packages read: SVG,
-WMF and EMF included. It has three layers:</p>
+WMF, EMF and <a href="../formats/extended.html">Egami.Formats.Extended</a>'s PCX, SGI, Sun raster, XBM, XPM, WBMP and Farbfeld included. It has three layers:</p>
 <ul>
 <li><strong>Single commands</strong> for everyday jobs: <code>info</code>, <code>convert</code>, <code>resize</code>, <code>thumbnail</code>, <code>crop</code>, <code>rotate</code>, <code>flip</code>, <code>auto-orient</code>,
 <code>compare</code>, <code>stats</code>, <code>frames</code>, <code>metadata</code>, <code>color</code>, <code>text</code>, <code>overlay</code>, <code>montage</code> and <code>formats</code>.</li>
@@ -157,7 +157,9 @@ setting is <code>--set fmt.key=value</code>, where the keys are the format's <co
 egami convert in.tif -o out.png --set png.compression-level=9 --set png.filter=paeth
 </code></pre>
 <p><code>egami formats</code> lists what egami reads and writes. The keys come straight from the library, so the tool never lags it. HEIC is
-not part of the tool, since HEVC is covered by patents.</p>
+not part of the tool, since HEVC is covered by patents. Formats Egami.Formats.Extended has in preview are read and written only
+with <code>--preview-formats</code>, which every command takes; they may change or go in any minor release, and there are none in this
+release.</p>
 <h2 id="sizes">Sizes</h2>
 <p><code>resize</code>, <code>thumbnail</code> and the <code>resize</code> step take the size syntax, the common subset of ImageMagick's geometry:</p>
 <table>

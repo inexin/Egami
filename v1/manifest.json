@@ -15574,6 +15574,16 @@
     },
     {
       "type": "Conceptual",
+      "source_relative_path": "articles/formats/farbfeld.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/formats/farbfeld.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
       "source_relative_path": "articles/formats/gif.md",
       "output": {
         ".html": {
@@ -15674,6 +15684,16 @@
     },
     {
       "type": "Conceptual",
+      "source_relative_path": "articles/formats/pcx.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/formats/pcx.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
       "source_relative_path": "articles/formats/png.md",
       "output": {
         ".html": {
@@ -15724,6 +15744,26 @@
     },
     {
       "type": "Conceptual",
+      "source_relative_path": "articles/formats/sgi.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/formats/sgi.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "articles/formats/sun-raster.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/formats/sun-raster.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
       "source_relative_path": "articles/formats/tga.md",
       "output": {
         ".html": {
@@ -15754,10 +15794,40 @@
     },
     {
       "type": "Conceptual",
+      "source_relative_path": "articles/formats/wbmp.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/formats/wbmp.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
       "source_relative_path": "articles/formats/webp.md",
       "output": {
         ".html": {
           "relative_path": "articles/formats/webp.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "articles/formats/xbm.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/formats/xbm.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "articles/formats/xpm.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/formats/xpm.html"
         }
       },
       "version": ""

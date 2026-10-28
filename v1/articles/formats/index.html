@@ -91,7 +91,8 @@
 map), TIFF, Radiance .hdr, OpenEXR, JPEG XL, AVIF, and Windows icons and cursors, and reads JBIG2, raw CCITT fax data, JPEG
 2000, Windows animated cursors (ANI) and Photoshop's PSD and PSB. HEIC phone photos load through the separate, opt-in Egami.Heic
 package; core Egami detects and probes them. SVG and Windows metafiles (WMF, EMF) load through the separate
-<a href="../guides/svg.html">Egami.Svg</a> and <a href="../guides/metafiles.html">Egami.Metafiles</a> packages. Every reader checks sizes against the
+<a href="../guides/svg.html">Egami.Svg</a> and <a href="../guides/metafiles.html">Egami.Metafiles</a> packages, and PCX, SGI, Sun raster, XBM, XPM, WBMP
+and Farbfeld through <a href="extended.html">Egami.Formats.Extended</a>. The Package column says which package holds each format. Every reader checks sizes against the
 safety limits before it allocates, and every reader has been fuzzed.</p>
 <p>Each format has its own page with its options and what it keeps from the file; the table below links them. VP8 and AV1 video frames decode
 through <a href="vp8.html"><code>Vp8StreamDecoder</code></a> and <a href="av1.html"><code>Av1StreamDecoder</code></a>, VP8 and AV1 frames encode through <a href="vp8.html#encoding"><code>Vp8StreamEncoder</code></a> and <a href="av1.html#encoding"><code>Av1StreamEncoder</code></a>, and the boxes of MP4, QuickTime and HEIF files can be walked with <a href="iso-boxes.html"><code>IsoBoxReader</code></a>. This page covers what all formats share: natural pixel types, detection, files with several images, and what writers drop.</p>
@@ -103,6 +104,7 @@ through <a href="vp8.html"><code>Vp8StreamDecoder</code></a> and <a href="av1.ht
 <th>Reads</th>
 <th>Writes</th>
 <th>Natural pixel type</th>
+<th>Package</th>
 </tr>
 </thead>
 <tbody>
@@ -111,126 +113,196 @@ through <a href="vp8.html"><code>Vp8StreamDecoder</code></a> and <a href="av1.ht
 <td>Every color type and bit depth, interlaced, transparency, text, EXIF, XMP, ICC</td>
 <td>Every color type and bit depth, adaptive filtering, built palettes, Adam7 interlacing, compression on several cores</td>
 <td>The file's own: <code>Gray8</code>, <code>Gray16</code>, <code>GrayAlpha8</code>, <code>Rgb8</code>, <code>Rgba8</code> or <code>Rgba16</code></td>
+<td>Egami</td>
 </tr>
 <tr>
 <td><a href="png.html">APNG</a></td>
 <td>Every PNG color type and depth, every disposal and blend</td>
 <td>Any raster with more than one frame, changed rectangles only</td>
 <td><code>Rgba8</code>, or <code>Rgba16</code> for 16-bit</td>
+<td>Egami</td>
 </tr>
 <tr>
 <td><a href="jpeg.html">JPEG</a></td>
 <td>Baseline, extended and progressive, Huffman or arithmetic, 8 and 12-bit, lossless at 2 to 16 bits, any subsampling, gray, CMYK, YCCK, scaled decode, EXIF, XMP, ICC</td>
 <td>Baseline or progressive, 8 or 12-bit, quality 1 to 100, 4:4:4, 4:2:2, 4:2:0, gray, CMYK or YCCK, optimized Huffman tables</td>
 <td><code>Gray8</code> or <code>Rgb8</code>; <code>Gray16</code>, <code>Rgb16</code> or <code>Cmyk16</code> above 8 bits</td>
+<td>Egami</td>
 </tr>
 <tr>
 <td><a href="gif.html">GIF</a></td>
 <td>87a and 89a, every disposal, interlaced, transparency, loop count, comments, XMP, ICC</td>
 <td>89a, exact or quantized palettes, global or per frame, dithering, frame optimization</td>
 <td><code>Rgba8</code></td>
+<td>Egami</td>
 </tr>
 <tr>
 <td><a href="webp.html">WebP</a></td>
 <td>Lossless (VP8L) with every transform; lossy (VP8) with alpha, as RGB or as YUV planes; ICC, EXIF, XMP</td>
 <td>Lossless at effort 0 to 6, exact transparent colors; ICC, EXIF with resolution, XMP</td>
 <td><code>Rgb8</code>, or <code>Rgba8</code> with alpha</td>
+<td>Egami</td>
 </tr>
 <tr>
 <td><a href="bmp.html">BMP</a></td>
 <td>Core, info, V2 to V5 and OS/2 2.x headers; 1 to 32 bits; RLE4, RLE8, RLE24; bit fields; embedded PNG and JPEG; V5 ICC</td>
 <td>24-bit, 32-bit with alpha, 1, 2, 4 or 8-bit palettes; resolution and ICC</td>
 <td><code>Bgr8</code>, or <code>Bgra8</code> with alpha</td>
+<td>Egami</td>
 </tr>
 <tr>
 <td><a href="tga.html">TGA</a></td>
 <td>Color-mapped, true-color and gray, raw and RLE, 8 to 32 bits, all origins, TGA 2.0 footer and extension area</td>
 <td>8-bit gray, 24 and 32-bit, 8-bit palette, raw or RLE, TGA 2.0 footer</td>
 <td><code>Bgr8</code>, <code>Bgra8</code>, <code>Gray8</code> or <code>GrayAlpha8</code></td>
+<td>Egami</td>
 </tr>
 <tr>
 <td><a href="qoi.html">QOI</a></td>
 <td>The whole format, 3 or 4 channels, both colorspaces</td>
 <td>3 or 4 channels, byte-identical to the reference encoder</td>
 <td><code>Rgb8</code> or <code>Rgba8</code></td>
+<td>Egami</td>
 </tr>
 <tr>
 <td><a href="tiff.html">TIFF</a></td>
 <td>Every page, strips and tiles, chunky and planar, classic and BigTIFF; None, LZW, Deflate, PackBits, CCITT G3 and G4, JPEG, old-style JPEG, ThunderScan, SGILog, WebP, JPEG XL; gray, palette, RGB, CMYK, YCbCr, Lab and LogLuv at 1 to 64 bits</td>
 <td>Every pixel type at its own depth, strips or tiles, classic or BigTIFF; None, LZW, Deflate, PackBits, CCITT G3 and G4, JPEG, WebP</td>
 <td>The page's own: <code>Gray8</code>, <code>Gray16</code>, <code>Rgb8</code>, <code>Rgb16</code>, <code>Cmyk8</code>, <code>Cmyk16</code>, float types and more</td>
+<td>Egami</td>
 </tr>
 <tr>
 <td><a href="ccitt.html">CCITT</a></td>
 <td>Raw Group 3 and Group 4 data (T.4, T.6) with PDF's eight CCITTFaxDecode parameters, byte-aligned rows included</td>
 <td>No</td>
 <td><code>Gray8</code>, black 0 and white 255</td>
+<td>Egami</td>
 </tr>
 <tr>
 <td><a href="jbig2.html">JBIG2</a></td>
 <td>Every T.88 region and dictionary but the colour extension; standalone files (sequential and random-access, many pages) and the embedded form a PDF holds, with its globals</td>
 <td>No</td>
 <td><code>Gray8</code>, black 0 and white 255</td>
+<td>Egami</td>
 </tr>
 <tr>
 <td><a href="jpeg2000.html">JPEG 2000</a></td>
 <td>All of Part 1 (T.800): every progression order, code-block style, tiling and precinct size, reversible and irreversible; JP2 and JPX boxes, palettes, channel definitions, sYCC, CIELab, ICC; reduced and region decodes</td>
 <td>No</td>
 <td><code>Gray8</code>, <code>Rgb8</code>, <code>Rgba8</code>, <code>Cmyk8</code> or their 16-bit forms, by depth and color space</td>
+<td>Egami</td>
 </tr>
 <tr>
 <td><a href="ico.html">ICO, CUR</a></td>
 <td>Every entry: PNG, and BMP at 1 to 32 bits with the AND mask; the best entry, or one by <code>MinimumSize</code> or index; cursor hotspots</td>
 <td>One entry a raster, or sets resized to favicon or Windows sizes; PNG at 256 and 32-bit BMP below; hotspots</td>
 <td><code>Rgba8</code></td>
+<td>Egami</td>
 </tr>
 <tr>
 <td><a href="ani.html">ANI</a></td>
 <td>Animated cursors: every step as a frame with its delay, one size for all frames or every size with LoadAll; cursor, icon and raw-bitmap frames; hotspots, title and artist</td>
 <td>Yes: frames stored once as cursors, at their own size or a set of sizes, with hotspots, delays, title and artist</td>
 <td><code>Rgba8</code></td>
+<td>Egami</td>
 </tr>
 <tr>
 <td><a href="psd.html">PSD, PSB</a></td>
 <td>The flattened image in every color mode (bitmap, gray, indexed, RGB, CMYK, Lab, duotone, multichannel) at 1 to 32 bits, raw, PackBits and Deflate; layer records and resources as metadata</td>
 <td>No</td>
 <td>By mode and depth: <code>Gray8</code>, <code>Rgb8</code>, <code>Rgba8</code>, <code>Cmyk8</code>, their 16-bit forms, float types</td>
+<td>Egami</td>
 </tr>
 <tr>
 <td><a href="radiance.html">Radiance</a></td>
 <td>RGBE and XYZE, every scan order, flat, old repeat-pixel and per-channel run-length scanlines</td>
 <td>RGBE, run-length encoded or flat, optional EXPOSURE line</td>
 <td><code>RgbF32</code>, linear</td>
+<td>Egami</td>
 </tr>
 <tr>
 <td><a href="openexr.html">OpenEXR</a></td>
 <td>Scanline and tiled, single and multi-part, every OpenEXR 3 compression but HTJ2K, half, float and uint channels, luminance-chroma; any part, layer or channel</td>
 <td>One scanline part, R, G, B and A, ZIP, ZIPS, RLE, PIZ or none, in half or float</td>
 <td><code>RgbaF16</code> when the channels are half, <code>RgbaF32</code> otherwise, <code>GrayF32</code> for luminance alone; linear</td>
+<td>Egami</td>
 </tr>
 <tr>
 <td><a href="jxl.html">JPEG XL</a></td>
 <td>Every still, lossless Modular and lossy VarDCT or Modular, at 1 to 31 bits and float, with alpha, CMYK, extra channels, animations and layers, previews, PQ and HLG, gain maps, and recompressed JPEGs (given back byte for byte)</td>
 <td>Lossless in the raster's own precision, or lossy VarDCT in XYB, at cjxl's effort and quality scales; JPEGs recompressed losslessly</td>
 <td>By bit depth: <code>Rgb8</code>, <code>Rgba8</code>, <code>Gray8</code>, their 16-bit forms, <code>RgbaF16</code> for 16-bit float, <code>RgbF32</code>, <code>RgbaF32</code> or <code>GrayF32</code> beyond</td>
+<td>Egami</td>
 </tr>
 <tr>
 <td><a href="avif.html">AVIF</a></td>
 <td>Still images: AV1 intra frames with every coding tool, equal to dav1d's decode and converted to RGB as libavif does; alpha, grids, overlays, clean aperture, orientation, ICC, CICP, HDR, gain maps, every item, and animated sequences</td>
 <td>Yes: lossy and lossless still images and animations with alpha, 8, 10 and 12 bits, 4:2:0, 4:2:2, 4:4:4 and 4:0:0</td>
 <td>By bit depth: <code>Rgb8</code> or <code>Rgba8</code> for 8-bit files, <code>Rgb16</code> or <code>Rgba16</code> for 10 and 12 bits, <code>Gray8</code> or <code>Gray16</code> (with alpha, <code>GrayAlpha8</code> or <code>GrayAlpha16</code>) for monochrome</td>
+<td>Egami</td>
 </tr>
 <tr>
 <td><a href="heic.html">HEIC</a></td>
 <td>With Egami.Heic: HEVC intra pictures up to 12 bits, grids, alpha, gain maps, depth maps, mattes and all-intra sequences; core Egami probes them</td>
 <td>No</td>
 <td><code>Rgb8</code> for 8-bit files, <code>Rgb16</code> for 10 and 12 bits, with alpha when the file has it, gray for monochrome</td>
+<td>Egami.Heic</td>
 </tr>
 <tr>
 <td><a href="pnm.html">PNM</a></td>
 <td>P1 to P6 plain and binary, maxval 1 to 65,535, P7 PAM with alpha, PF and Pf float maps</td>
 <td>P1 to P7, plain or binary; PF and Pf</td>
 <td><code>Gray8</code>, <code>Gray16</code>, <code>GrayAlpha8</code>, <code>Rgb8</code>, <code>Rgba8</code> or <code>Rgba16</code>; <code>RgbF32</code> or <code>GrayF32</code> for PFM</td>
+<td>Egami</td>
+</tr>
+<tr>
+<td><a href="pcx.html">PCX</a></td>
+<td>1 to 8-bit indexed, EGA planes, 24 and 32-bit, coded or not</td>
+<td>8-bit gray or 24-bit, run-length coded</td>
+<td><code>Gray8</code>, <code>Rgb8</code> or <code>Rgba8</code></td>
+<td>Egami.Formats.Extended</td>
+</tr>
+<tr>
+<td><a href="sgi.html">SGI</a></td>
+<td>1 to 4 channels of 8 or 16 bits, plain or run-length coded</td>
+<td>The raster's channels and depth, coded or not</td>
+<td><code>Gray8</code>, <code>GrayAlpha8</code>, <code>Rgb8</code>, <code>Rgba8</code> or their 16-bit forms</td>
+<td>Egami.Formats.Extended</td>
+</tr>
+<tr>
+<td><a href="sun-raster.html">Sun raster</a></td>
+<td>1, 8, 24 and 32 bits, colormaps, byte-encoded</td>
+<td>8-bit gray or 24-bit, plain or byte-encoded</td>
+<td><code>Gray8</code> or <code>Rgb8</code></td>
+<td>Egami.Formats.Extended</td>
+</tr>
+<tr>
+<td><a href="xbm.html">XBM</a></td>
+<td>X11 and X10 bitmaps</td>
+<td>X11 bitmaps</td>
+<td><code>Gray8</code>, black 0 and white 255</td>
+<td>Egami.Formats.Extended</td>
+</tr>
+<tr>
+<td><a href="xpm.html">XPM</a></td>
+<td>Version 3, any color keys, None, hex colors and X11 names</td>
+<td>Version 3 with every color of the raster</td>
+<td><code>Rgba8</code></td>
+<td>Egami.Formats.Extended</td>
+</tr>
+<tr>
+<td><a href="wbmp.html">WBMP</a></td>
+<td>Type 0</td>
+<td>Type 0</td>
+<td><code>Gray8</code>, black 0 and white 255</td>
+<td>Egami.Formats.Extended</td>
+</tr>
+<tr>
+<td><a href="farbfeld.html">Farbfeld</a></td>
+<td>The whole format</td>
+<td>16-bit RGBA</td>
+<td><code>Rgba16</code></td>
+<td>Egami.Formats.Extended</td>
 </tr>
 </tbody>
 </table>
@@ -250,7 +322,7 @@ switch (image)
 }
 </code></pre><h2 id="detection">Detection</h2>
 <p>Loading never trusts the file extension: the format comes from the first bytes, in the order PNG, JPEG, GIF, WebP, BMP, QOI, PNM,
-TIFF, JBIG2, JPEG 2000, ICO, CUR, ANI, PSD, Radiance, OpenEXR, JPEG XL (FF 0A or its signature box), AVIF (an ftyp box with the avif or avis brand), HEIC (an ftyp box with a HEVC brand such as heic or heix), then TGA. TGA has no signature, so it is matched only when its whole 18-byte header is consistent. No file of another format in
+TIFF, JBIG2, JPEG 2000, ICO, CUR, ANI, PSD, Radiance, OpenEXR, JPEG XL (FF 0A or its signature box), AVIF (an ftyp box with the avif or avis brand), HEIC (an ftyp box with a HEVC brand such as heic or heix), then TGA, then the formats a plugin package registers, such as Egami.Formats.Extended's. TGA has no signature, so it is matched only when its whole 18-byte header is consistent. No file of another format in
 Egami's test corpora is taken for TGA, and neither is any of a million random headers. When you know the format, register only
 that one:</p>
 <pre><code class="lang-csharp">// TGA has no signature, so it is detected last. When you know a file is TGA, register only that format.
