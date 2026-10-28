@@ -177,7 +177,7 @@ internal static partial class Codecs
         if (codec.FormatID == ImageFormat.Jpeg.Guid)
         {
             list.Param[0] = new EncoderParameter(Encoder.Transformation, [(long)EncoderValue.TransformRotate90, (long)EncoderValue.TransformRotate180, (long)EncoderValue.TransformRotate270, (long)EncoderValue.TransformFlipHorizontal, (long)EncoderValue.TransformFlipVertical]);
-            list.Param[1] = new EncoderParameter(Encoder.Quality, 0, 100);
+            list.Param[1] = new EncoderParameter(Encoder.Quality, 0L, 100L);
             list.Param[2] = new EncoderParameter(Encoder.LuminanceTable, Array.Empty<short>());
             list.Param[3] = new EncoderParameter(Encoder.ChrominanceTable, Array.Empty<short>());
             list.Param[4] = new EncoderParameter(Encoder.ImageItems, 0, EncoderParameterValueType.ValueTypePointer, new IntPtr(1));
@@ -818,7 +818,8 @@ internal static partial class Codecs
     /// <summary>Reverses each value's bytes, by the size of the TIFF type.</summary>
     private static void Swap(byte[] value, ExifType type)
     {
-        int size = (int)type switch { 3 or 8 => 2, 4 or 9 or 11 => 4, 5 or 10 or 12 => 4, _ => 1 };
+        // Rationals swap each 4-byte half; doubles swap all 8 bytes.
+        int size = (int)type switch { 3 or 8 => 2, 4 or 9 or 11 => 4, 5 or 10 => 4, 12 => 8, _ => 1 };
         if (size == 1)
         {
             return;

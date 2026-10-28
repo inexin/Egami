@@ -358,7 +358,9 @@ public sealed class Bitmap : Image
         {
             GdiPixels.ConvertRow(buffer.Format, buffer.Row(y), buffer.Palette, target.Format, converted, table, state.Area.Width);
             Span<byte> row = target.Row(state.Area.Y + y);
-            if ((state.Area.X * bits) % 8 == 0)
+            // Whole bytes copy; a sub-byte format whose area starts or ends inside a byte sets pixels one by one, so the pixels
+            // around the area in the same byte keep their values.
+            if ((state.Area.X * bits) % 8 == 0 && (state.Area.Width * bits) % 8 == 0)
             {
                 converted.CopyTo(row[(state.Area.X * bits / 8)..]);
             }
