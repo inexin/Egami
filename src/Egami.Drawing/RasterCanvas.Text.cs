@@ -3,6 +3,7 @@ using System.Numerics;
 using Egami.Drawing.Rasterization;
 using Egami.Fonts;
 using Egami.Fonts.Hinting;
+using Egami.Fonts.Parsing;
 using Egami.Operations;
 using Egami.Pixels;
 
@@ -347,6 +348,9 @@ public sealed partial class RasterCanvas<TPixel>
         return new GlyphMask(bounds, coverage, 1);
     }
 
+    [ThreadStatic]
+    private static OutlineRecorder? t_lightOutline;
+
     /// <summary>A glyph's device outline relative to its pixel origin: scaled, slanted, hinted and outset as the style asks.</summary>
     internal static Path GlyphOutline(Typeface face, ushort glyph, float sx, float sy, float dx, GlyphStyle style)
     {
@@ -360,8 +364,20 @@ public sealed partial class RasterCanvas<TPixel>
         else
         {
             // Light hinting, also where full hinting does not apply (CFF, unhinted, variable, gasp).
-            HintMap? hint = style.Hint ? HintMap.For(face, sy) : null;
-            face.GetGlyphOutline(glyph, new DeviceSink(builder, sx, sy, dx, skew, hint));
+            if (style.Hint)
+            {
+                // The outline is decoded once, into the thread's own recorder: light hinting reads its horizontal stems, then it
+                // is drawn through the map. (The shared recorder stays free for the face's own decoding.)
+                OutlineRecorder recorder = t_lightOutline ??= new OutlineRecorder();
+                recorder.Clear();
+                face.GetGlyphOutline(glyph, recorder);
+                HintMap? hint = HintMap.For(face, sy, recorder);
+                recorder.ReplayTo(new DeviceSink(builder, sx, sy, dx, skew, hint));
+            }
+            else
+            {
+                face.GetGlyphOutline(glyph, new DeviceSink(builder, sx, sy, dx, skew, null));
+            }
         }
 
         Path path = builder.ToPath();
@@ -621,8 +637,11 @@ internal readonly struct SolidTextPaint(Rgba8 color, float alpha, bool linear, T
 }
 
 /// <summary>
-/// Light hinting's y mapping at one scale: each zone's flat edge rounded to a whole pixel and its overshoot to whole pixels beyond
-/// it, points between zones interpolated linearly and points beyond the outer zones moved with the nearest.
+/// Light hinting's y mapping at one scale, after the light autohinter the 2.7.5 study describes: the scale is first nudged so the
+/// x-height lands on a whole pixel (when that moves the tallest zone by under 2 pixels); each zone shorter than 3/4 pixel has its
+/// flat edge rounded to a whole pixel and its overshoot to whole pixels beyond it, taller zones are left alone; the glyph's own
+/// horizontal stems between zones keep their width with their lower edge on a whole pixel; points in between are interpolated
+/// linearly and points beyond the outer control points move with the nearest.
 /// </summary>
 internal sealed class HintMap
 {
@@ -637,7 +656,15 @@ internal sealed class HintMap
         _scale = scale;
     }
 
-    public static HintMap? For(Typeface face, float sy)
+    /// <summary>The map for one glyph, its outline decoded here (for tests; drawing passes the outline it decoded already).</summary>
+    public static HintMap? ForGlyph(Typeface face, float sy, ushort glyph)
+    {
+        var recorder = new OutlineRecorder();
+        face.GetGlyphOutline(glyph, recorder);
+        return For(face, sy, recorder);
+    }
+
+    public static HintMap? For(Typeface face, float sy, OutlineRecorder? outline = null)
     {
         HintZone[] zones = face.HintZones;
         if (zones.Length == 0)
@@ -645,9 +672,16 @@ internal sealed class HintMap
             return null;
         }
 
+        sy = XHeightScale(face, zones, sy);
         var points = new List<(float From, float To)>();
         foreach (HintZone zone in zones)
         {
+            // A zone 3/4 pixel tall or more is not snapped: at that size its overshoot is drawn as it is.
+            if (MathF.Abs((zone.Overshoot - zone.Flat) * sy) >= 0.75f)
+            {
+                continue;
+            }
+
             float flat = MathF.Round(zone.Flat * sy);
             points.Add((zone.Flat, flat));
             if (zone.Overshoot != zone.Flat)
@@ -657,7 +691,131 @@ internal sealed class HintMap
         }
 
         points.Sort((a, b) => a.From.CompareTo(b.From));
+        if (points.Count == 0)
+        {
+            return new HintMap([0], [0], sy);
+        }
 
+        if (outline is not null)
+        {
+            // The glyph's horizontal stems (crossbars) between zones: where the zone mapping would put the lower edge, rounded to a
+            // pixel, and the upper edge the stem's own height above it.
+            int zonePoints = points.Count;
+            float tolerance = face.UnitsPerEm / 60f;
+            foreach ((float low, float high) in Stems(face, outline))
+            {
+                if (NearZone(zones, low, tolerance) || NearZone(zones, high, tolerance))
+                {
+                    continue;
+                }
+
+                float bottom = MathF.Round(Interpolate(points, zonePoints, low, sy));
+                points.Add((low, bottom));
+                points.Add((high, bottom + ((high - low) * sy)));
+            }
+
+            points.Sort((a, b) => a.From.CompareTo(b.From));
+        }
+
+        return Build(points, sy);
+    }
+
+    // The scale nudged so the x-height (OS/2 sxHeight, else the top of 'x') lands on a whole pixel: up when its fraction is 40/64
+    // or more, else down, unless that moves the tallest zone by 2 pixels or more.
+    private static float XHeightScale(Typeface face, HintZone[] zones, float sy)
+    {
+        float xHeight = face.XHeightForHinting;
+        float scaled = MathF.Abs(xHeight * sy);
+        if (xHeight <= 0 || scaled < 1)
+        {
+            return sy;
+        }
+
+        float fraction = scaled - MathF.Floor(scaled);
+        float target = fraction >= 40 / 64f ? MathF.Ceiling(scaled) : MathF.Floor(scaled);
+        float tweaked = sy * target / scaled;
+        float tallest = 0;
+        foreach (HintZone z in zones)
+        {
+            tallest = MathF.Max(tallest, MathF.Abs(z.Flat));
+        }
+
+        return MathF.Abs(tallest * (tweaked - sy)) < 2 ? tweaked : sy;
+    }
+
+    private static bool NearZone(HintZone[] zones, float y, float tolerance)
+    {
+        foreach (HintZone z in zones)
+        {
+            if (MathF.Abs(z.Flat - y) < tolerance || MathF.Abs(z.Overshoot - y) < tolerance)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    // The zone mapping of y through the first `count` control points (sorted by font units), as Map does, without building a map.
+    private static float Interpolate(List<(float From, float To)> points, int count, float y, float sy)
+    {
+        if (y <= points[0].From)
+        {
+            return points[0].To + ((y - points[0].From) * sy);
+        }
+
+        for (int i = 1; i < count; i++)
+        {
+            (float f0, float t0) = points[i - 1];
+            (float f1, float t1) = points[i];
+            if (y <= f1)
+            {
+                return f1 == f0 ? t1 : t0 + ((t1 - t0) * (y - f0) / (f1 - f0));
+            }
+        }
+
+        return points[count - 1].To + ((y - points[count - 1].From) * sy);
+    }
+
+    [ThreadStatic]
+    private static SegmentSink? t_segments;
+
+    [ThreadStatic]
+    private static List<(float Low, float High)>? t_stems;
+
+    // Horizontal stems of a glyph in font units: pairs of horizontal outline segments that overlap in x by half the shorter one,
+    // between 1/60 and 1/6 em apart; each segment pairs with the nearest one above it. The list is the thread's own, reused.
+    private static List<(float Low, float High)> Stems(Typeface face, OutlineRecorder outline)
+    {
+        SegmentSink sink = t_segments ??= new SegmentSink();
+        sink.Reset(face.UnitsPerEm);
+        outline.ReplayTo(sink);
+        float min = face.UnitsPerEm / 60f, max = face.UnitsPerEm / 6f;
+        List<(float Low, float High)> stems = t_stems ??= [];
+        stems.Clear();
+        foreach ((float y, float x0, float x1) in sink.Horizontals)
+        {
+            float best = float.MaxValue;
+            foreach ((float y2, float a0, float a1) in sink.Horizontals)
+            {
+                float d = y2 - y, overlap = MathF.Min(x1, a1) - MathF.Max(x0, a0);
+                if (d >= min && d <= max && d < best && overlap >= 0.5f * MathF.Min(x1 - x0, a1 - a0))
+                {
+                    best = d;
+                }
+            }
+
+            if (best != float.MaxValue && !stems.Contains((y, y + best)))
+            {
+                stems.Add((y, y + best));
+            }
+        }
+
+        return stems;
+    }
+
+    private static HintMap Build(List<(float From, float To)> points, float sy)
+    {
         // Keep the mapping monotonic: a point that would land below its predecessor is dropped.
         var from = new List<float>();
         var to = new List<float>();
@@ -697,6 +855,45 @@ internal sealed class HintMap
 
         float f0 = _from[i - 1], f1 = _from[i];
         return _to[i - 1] + ((_to[i] - _to[i - 1]) * (y - f0) / (f1 - f0));
+    }
+}
+
+/// <summary>Records an outline's horizontal straight segments in font units: y, and the x range, longer than 1/40 em.</summary>
+internal sealed class SegmentSink : IGlyphOutlineSink
+{
+    private int _unitsPerEm = 1000;
+    private float _x;
+    private float _y;
+    private float _startX;
+    private float _startY;
+
+    public List<(float Y, float X0, float X1)> Horizontals { get; } = [];
+
+    /// <summary>Clears the segments for an outline of a face with this many units per em.</summary>
+    public void Reset(int unitsPerEm)
+    {
+        _unitsPerEm = unitsPerEm;
+        Horizontals.Clear();
+    }
+
+    public void MoveTo(float x, float y) => (_x, _y, _startX, _startY) = (x, y, x, y);
+
+    public void LineTo(float x, float y) => Segment(x, y);
+
+    public void QuadTo(float cx, float cy, float x, float y) => (_x, _y) = (x, y);
+
+    public void CubicTo(float c1x, float c1y, float c2x, float c2y, float x, float y) => (_x, _y) = (x, y);
+
+    public void Close() => Segment(_startX, _startY);
+
+    private void Segment(float x, float y)
+    {
+        if (MathF.Abs(y - _y) <= _unitsPerEm / 200f && MathF.Abs(x - _x) >= _unitsPerEm / 40f)
+        {
+            Horizontals.Add(((y + _y) / 2, MathF.Min(x, _x), MathF.Max(x, _x)));
+        }
+
+        (_x, _y) = (x, y);
     }
 }
 
