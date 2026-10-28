@@ -28,6 +28,20 @@ For a white Trebuchet MS label at 16 pixels on a black or a #0078d4 button, the 
 mean per-pixel difference is 0.67 levels out of 255 on black and 0.38 on blue, against 9.5 and 5.4 for Egami's default text.
 Fonts that GDI+ draws from embedded bitmaps at small sizes, such as Calibri, still differ: Egami draws their outlines.
 
+## Gradients
+
+Egami's gradients already match GDI+'s within a fraction of a level when they mix in the stored values, as `LinearGradientBrush`
+does by default. Its `Blend`, `InterpolationColors` and `WrapMode` (Tile is `TileMode.Repeat`, TileFlipX is `Mirror`) map to
+stops and tile modes.
+
+- `GammaCorrection = true` is `GradientInterpolation.GdiPlusGamma`: 16 steps between each pair of colors, each mixed in
+  gamma-2.2 light and rounded to 8 bits.
+- A `PathGradientBrush` is a fan of triangles from its `CenterPoint` to the flattened path, with the surround colors at the
+  path's points and the center color at the center: draw it as a `Mesh`. GDI+'s default `CenterPoint` is the mean of the path's
+  points, which for an ellipse is not its middle.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/SystemDrawing.cs#gdiplus-gradients)]
+
 ## GDI ClearType
 
 For `TextRenderer` or GDI's `ExtTextOut`:

@@ -25,3 +25,5 @@ static Egami.Drawing.LcdFilter.Default.get -> Egami.Drawing.LcdFilter!
 static Egami.Drawing.LcdFilter.Gdi.get -> Egami.Drawing.LcdFilter!
 static Egami.Drawing.LcdFilter.Light.get -> Egami.Drawing.LcdFilter!
 static Egami.Drawing.CanvasOptions.GdiPlusClearType.get -> Egami.Drawing.CanvasOptions!
+Egami.Drawing.InterpolationSpace.GdiPlusGamma = 4 -> Egami.Drawing.InterpolationSpace
+static Egami.Drawing.GradientInterpolation.GdiPlusGamma.get -> Egami.Drawing.GradientInterpolation!
