@@ -1,10 +1,10 @@
-namespace Egami.Metafiles.Playback;
+namespace Egami.GdiPlus;
 
 /// <summary>
 /// The 8 by 8 tiles of GDI+'s 53 hatch styles (HatchStyleHorizontal to HatchStyleSolidDiamond), one byte per row with the high bit
 /// leftmost, a set bit in the fore color. Read from what GDI+ draws (a black-box measurement in egami-compare).
 /// </summary>
-internal static class PlusHatches
+internal static class GdiPlusHatches
 {
     public static readonly byte[][] Tiles =
     [

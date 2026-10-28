@@ -1,6 +1,7 @@
 using System.Numerics;
 
 using Egami.Drawing;
+using Egami.GdiPlus;
 using Egami.Metafiles.Reading;
 using Egami.Pixels;
 
@@ -232,7 +233,7 @@ internal sealed partial class EmfPlusPlayer
             return;
         }
 
-        _state = _state with { Clip = PlusObjectReader.Combine(_state.Clip, device, mode) };
+        _state = _state with { Clip = GdiPlusRegions.Combine(_state.Clip, device, mode) };
         if (mode == 0 && world is null)
         {
             _state = _state with { Clip = null };

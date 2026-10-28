@@ -73,10 +73,10 @@ egami-compare repository (`video/`). Benchmarks: `dotnet run -c Release --projec
 | --- | --- |
 | `src/Egami/` | The core library |
 | `src/Egami.Drawing/`, `src/Egami.Fonts/`, `src/Egami.Fonts.Substitutes/`, `src/Egami.Svg/`, `src/Egami.Css/`, `src/Egami.Metafiles/`, `src/Egami.Barcodes/`, `src/Egami.Heic/`, `src/Egami.Video/`, `src/Egami.Video.H264/` | The other packages ([Packages](docs/articles/packages.md)) |
-| `src/Shared/` | Internal source compiled into more than one package as linked files: `src/Shared/Nal/` is the NAL code H.264 and HEVC share (its README says how) |
+| `src/Shared/` | Internal source compiled into more than one package as linked files: `src/Shared/Nal/` is the NAL code H.264 and HEVC share, `src/Shared/GdiPlus/` the GDI+ semantics Egami.Metafiles and Egami.SystemDrawing share (their READMEs say how) |
 | `tests/Egami.Tests/` | Unit, conformance, round-trip and SIMD equivalence tests (xUnit) for core Egami |
 | `tests/Egami.<Package>.Tests/` | The tests of each other package |
-| `tests/Egami.Nal.Tests/` | The tests of the shared NAL code in `src/Shared/Nal/` |
+| `tests/Egami.Nal.Tests/`, `tests/Egami.GdiPlus.Tests/` | The tests of the shared code in `src/Shared/Nal/` and `src/Shared/GdiPlus/` |
 | `tests/Egami.Fuzz/` | Fuzzing harness (SharpFuzz and AFL++) |
 | `tests/Egami.Video.Fuzz/`, `tests/video/` | Egami.Video's fuzzing harness, and its clips, ffprobe dumps, fuzz seeds and regressions |
 | `tests/Egami.AotSmoke/` | Console app published with Native AOT in CI |
