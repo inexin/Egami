@@ -258,6 +258,13 @@ internal sealed partial class H264SliceDecoder
 
     private int NeighborIntraMode(int bx, int by, out bool available)
     {
+        if (_mbaff && (bx < 0 || by < 0))
+        {
+            int mode = _modeCond[bx < 0 ? by : 4 + bx];
+            available = mode >= 0;
+            return available ? mode : 2;
+        }
+
         int addr = bx < 0 ? LeftMb : by < 0 ? TopMb : _mbAddr;
         available = Available(addr);
         if (!available)
@@ -326,6 +333,7 @@ internal sealed partial class H264SliceDecoder
         {
             int bx = b8 & 1, by = b8 >> 1;
             int condA = bx > 0 ? (((cbp >> (b8 - 1)) & 1) == 0 ? 1 : 0)
+                : _mbaff ? _cbpCondA[by]
                 : availableLeft ? (((_mb.Cbp[left] >> (b8 + 1)) & 1) == 0 ? 1 : 0) : 0;
             int condB = by > 0 ? (((cbp >> (b8 - 2)) & 1) == 0 ? 1 : 0)
                 : availableTop ? (((_mb.Cbp[top] >> (b8 + 2)) & 1) == 0 ? 1 : 0) : 0;
@@ -397,6 +405,12 @@ internal sealed partial class H264SliceDecoder
     /// <summary>condTermFlagN of ref_idx (9.3.3.1.1.6): the neighbour has refIdx above 0 in the list and is not skipped or direct.</summary>
     private bool RefIdxCond(int list, int bx, int by)
     {
+        if (_mbaff && (bx < 0 || by < 0))
+        {
+            // Worked out when the window was filled, from the macroblock the neighbouring block is in.
+            return _refCond[(list * 8) + (bx < 0 ? by : 4 + bx)];
+        }
+
         int addr = bx < 0 ? LeftMb : by < 0 ? TopMb : _mbAddr;
         if (!Available(addr))
         {
@@ -415,7 +429,7 @@ internal sealed partial class H264SliceDecoder
             return false;
         }
 
-        return _pic.RefIdx[list][Block(bx, by)] > 0;
+        return _mo.RefIdx[list][Block(bx, by)] > 0;
     }
 
     /// <summary>Reads one mvd_lX component for the partition whose top-left 4x4 block is (bx, by).</summary>

@@ -677,6 +677,10 @@ override Egami.Video.Codecs.Ffv1Codec.CreateDecoder(Egami.Video.VideoTrackInfo! 
 override Egami.Video.Codecs.Ffv1Codec.Name.get -> string!
 static Egami.Video.Codecs.Ffv1Codec.Instance.get -> Egami.Video.Codecs.Ffv1Codec!
 static Egami.Video.Codecs.VideoCodecs.Ffv1.get -> Egami.Video.Codecs.VideoCodec!
+Egami.Video.VideoFrame.FieldOrder.get -> Egami.Video.FieldOrder
+Egami.Video.VideoFrame.FieldOrder.init -> void
+Egami.Video.VideoFrame.RepeatFields.get -> int
+Egami.Video.VideoFrame.RepeatFields.init -> void
 static Egami.Video.Codecs.Ffv1Codec.Verify(string! path, Egami.Video.MediaContext? context = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> Egami.Video.Codecs.Ffv1VerifyResult!
 static Egami.Video.Codecs.Ffv1Codec.Verify(System.IO.Stream! stream, Egami.Video.MediaContext? context = null, bool leaveOpen = false, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> Egami.Video.Codecs.Ffv1VerifyResult!
 Egami.Video.Codecs.Ffv1VerifyResult

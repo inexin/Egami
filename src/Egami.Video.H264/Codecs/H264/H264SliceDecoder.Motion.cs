@@ -10,6 +10,12 @@ internal sealed partial class H264SliceDecoder
     // Which 4x4 blocks of the current macroblock (bit bx + 4 * by) have their motion for the list being derived.
     private int _decodedMask;
 
+    // Whether the co-located picture is coded otherwise than the current one, so its blocks are found through Colocated.
+    private bool _colMapped;
+
+    // Whether RefPicList1[0] is a short-term reference, which colZeroFlag needs (8.4.1.2.2).
+    private bool _colShortTerm;
+
     // Whether the last direct prediction of a whole macroblock gave all 16 blocks the same motion: 1 yes, 0 no, -1 not known.
     private int _directUniform = -1;
 
@@ -33,7 +39,7 @@ internal sealed partial class H264SliceDecoder
         int parts = _partShape switch { 0 => 1, 3 => 4, _ => 2 };
         for (int list = 0; list < lists; list++)
         {
-            int count = list == 0 ? _h.NumRefIdxL0 : _h.NumRefIdxL1;
+            int count = list == 0 ? _refCount0 : _refCount1;
             H264Picture[] refs = list == 0 ? _list0 : _list1;
             for (int p = 0; p < parts; p++)
             {
@@ -153,7 +159,7 @@ internal sealed partial class H264SliceDecoder
         int w4 = _w4;
         int b = Block(bx, by);
         sbyte[] refIdxs = list == 0 ? _refIdx0 : _refIdx1;
-        int[] ids = _pic.RefPicId[list];
+        int[] ids = _mo.RefPicId[list];
         if (b < 0 || b + ((h - 1) * w4) + w > Math.Min(refIdxs.Length, ids.Length))
         {
             throw H264Errors.Corrupt("A macroblock lies outside the picture.");
@@ -254,7 +260,7 @@ internal sealed partial class H264SliceDecoder
         bool availableC = Neighbor(list, bx + w, by - 1, out int refC, out int mvC);
         if (!availableC)
         {
-            availableC = Neighbor(list, bx - 1, by - 1, out refC, out mvC);
+            availableC = _mbaff && bx == 0 && by > 0 ? LeftD(list, by, out refC, out mvC) : Neighbor(list, bx - 1, by - 1, out refC, out mvC);
         }
 
         if (w == 4 && h == 2)
@@ -283,6 +289,24 @@ internal sealed partial class H264SliceDecoder
         }
 
         return Median(availableA, availableB, availableC, refA, refB, refC, mvA, mvB, mvC, refIdx);
+    }
+
+    /// <summary>
+    /// D of a partition at row by of an MBAFF macroblock's left column: the location (-1, 4 by - 1), which can lie in the other
+    /// macroblock of the left pair than block (-1, by - 1) does.
+    /// </summary>
+    private bool LeftD(int list, int by, out int refIdx, out int mv)
+    {
+        refIdx = -1;
+        mv = 0;
+        if ((_neighbors & NeighborA) == 0)
+        {
+            return false;
+        }
+
+        refIdx = _leftDRef[(list * 4) + by];
+        mv = _leftDMv[(list * 4) + by];
+        return true;
     }
 
     private static int Median(bool availableA, bool availableB, bool availableC, int refA, int refB, int refC, int mvA, int mvB, int mvC, int refIdx)
@@ -373,9 +397,15 @@ internal sealed partial class H264SliceDecoder
         Span<int> mvp = [mvp0, mvp1];
 
         H264Picture col = _list1[0];
-        bool colShortTerm = !col.IsLongTermReference;
+        bool colShortTerm = _colShortTerm;
         bool inferred = _sps.Direct8x8Inference;
         int colZero8 = 0;
+        if (_colMapped)
+        {
+            SpatialDirectMapped(mask, refIdx, mvp, zero, colShortTerm);
+            return;
+        }
+
         if (mask == 15 && inferred)
         {
             // A whole macroblock with 8x8 inference: one colZero test per 8x8 block, on its corner block, and only the first
@@ -443,6 +473,173 @@ internal sealed partial class H264SliceDecoder
         }
     }
 
+    /// <summary>
+    /// Spatial direct prediction when the co-located picture is coded otherwise than the current one (a frame against a field
+    /// pair, or an MBAFF frame): each 4x4 block's colZeroFlag from the block <see cref="Colocated"/> finds.
+    /// </summary>
+    private void SpatialDirectMapped(int mask, Span<int> refIdx, Span<int> mvp, bool zero, bool colShortTerm)
+    {
+        for (int blk = 0; blk < 16; blk++)
+        {
+            int bx = blk & 3, by = blk >> 2, quarter = ((by >> 1) * 2) + (bx >> 1);
+            if ((mask & (1 << quarter)) == 0)
+            {
+                continue;
+            }
+
+            bool colZero = false;
+            if (colShortTerm && !zero)
+            {
+                // Worked out here: ColZero holds only the corner blocks, and a frame and a field read other rows.
+                Colocated(bx, by, out H264Picture colPic, out int b, out int mb, out _);
+                int list = colPic.RefIdx[0][b] >= 0 ? 0 : 1;
+                int mvCol = colPic.Mv[list][b];
+                colZero = !colPic.MbIntra[mb] && colPic.RefIdx[list][b] == 0 && (uint)(MvX(mvCol) + 1) <= 2 && (uint)(MvY(mvCol) + 1) <= 2;
+            }
+
+            for (int list = 0; list < 2; list++)
+            {
+                _directRefBlock[(list * 16) + blk] = (sbyte)refIdx[list];
+                _directMv[(list * 16) + blk] = refIdx[list] < 0 || (refIdx[list] == 0 && colZero) ? 0 : mvp[list];
+            }
+        }
+    }
+
+    /// <summary>
+    /// Works out how the co-located picture's motion is found for this slice (8.4.1.2.1): directly at the current macroblock's
+    /// blocks when it is coded as the current picture is, else through <see cref="Colocated"/>.
+    /// </summary>
+    private void SetColocated()
+    {
+        _colMapped = false;
+        if (!_h.IsB || _list1.Length == 0)
+        {
+            return;
+        }
+
+        _colShortTerm = !_list1[0].IsLongTermReference;
+
+        H264Picture first = _list1[0];
+        H264Coding coded = first.Frame.CodedAs;
+        _colMapped = _h.Mbaff || (_h.FieldPic ? coded != H264Coding.Fields : coded != H264Coding.Frame);
+    }
+
+    /// <summary>
+    /// The co-located 4x4 block (8.4.1.2.1, Tables 8-6 and 8-8) of block (bx, by) of the current macroblock, with
+    /// direct_8x8_inference: the picture whose motion arrays hold it, the block's index there, the macroblock's index for its
+    /// intra flag, and vertMvScale (0 One_To_One, 1 Frm_To_Fld, 2 Fld_To_Frm).
+    /// </summary>
+    private void Colocated(int bx, int by, out H264Picture colPic, out int block, out int mb, out int vertScale)
+    {
+        int w = _sps.WidthInMbs;
+        int xCol = (bx >> 1) * 12, yCol = (by >> 1) * 12;
+        H264Picture first = _list1[0];
+        H264Picture g = first.Frame;
+        int yM;
+        int curr;
+        if (_h.FieldPic)
+        {
+            curr = (_mbY * w) + _mbX;
+            int pairTop = (2 * w * (curr / w)) + (curr % w);
+            if (g.CodedAs == H264Coding.Fields)
+            {
+                colPic = first;
+                mb = curr;
+                yM = yCol;
+                vertScale = 0;
+            }
+            else if (g.CodedAs == H264Coding.Mbaff && IsFieldPair(g, pairTop))
+            {
+                colPic = g;
+                mb = pairTop + (_h.BottomField ? w : 0);
+                yM = yCol;
+                vertScale = 0;
+            }
+            else
+            {
+                colPic = g;
+                mb = pairTop + (w * (yCol / 8));
+                yM = (2 * yCol) % 16;
+                vertScale = 1;
+            }
+        }
+        else if (!_h.Mbaff)
+        {
+            curr = (_mbY * w) + _mbX;
+            if (g.CodedAs == H264Coding.Fields)
+            {
+                colPic = g.Field(CloserField(g));
+                mb = (w * (curr / (2 * w))) + (curr % w);
+                yM = (8 * ((curr / w) % 2)) + (4 * (yCol / 8));
+                vertScale = 2;
+            }
+            else
+            {
+                colPic = g;
+                mb = curr;
+                yM = yCol;
+                vertScale = 0;
+            }
+        }
+        else
+        {
+            int pair = _mbaffAddr >> 1, pairTop = _pairTop;
+            int bottom = _mbaffAddr & 1;
+            if (g.CodedAs == H264Coding.Fields)
+            {
+                colPic = g.Field(_fieldMb ? bottom : CloserField(g));
+                mb = pair;
+                yM = _fieldMb ? yCol : (8 * bottom) + (4 * (yCol / 8));
+                vertScale = _fieldMb ? 0 : 2;
+            }
+            else
+            {
+                colPic = g;
+                bool fieldX = g.CodedAs == H264Coding.Mbaff && IsFieldPair(g, pairTop);
+                if (!_fieldMb && !fieldX)
+                {
+                    mb = pairTop + (w * bottom);
+                    yM = yCol;
+                    vertScale = 0;
+                }
+                else if (!_fieldMb)
+                {
+                    mb = pairTop + (w * CloserField(g));
+                    yM = (8 * bottom) + (4 * (yCol / 8));
+                    vertScale = 2;
+                }
+                else if (!fieldX)
+                {
+                    mb = pairTop + (w * (yCol / 8));
+                    yM = (2 * yCol) % 16;
+                    vertScale = 1;
+                }
+                else
+                {
+                    mb = pairTop + (w * bottom);
+                    yM = yCol;
+                    vertScale = 0;
+                }
+            }
+        }
+
+        int cw4 = colPic.WidthMbs * 4;
+        block = ((((mb / w) * 4) + (yM >> 2)) * cw4) + ((mb % w) * 4) + (xCol >> 2);
+    }
+
+    /// <summary>Gets whether the pair whose top macroblock is at a raster index of an MBAFF frame was coded as fields.</summary>
+    private static bool IsFieldPair(H264Picture frame, int pairTop) => frame.FieldPairs is { } pairs && pairs[pairTop];
+
+    /// <summary>
+    /// The field of a co-located field pair a frame macroblock reads (Table 8-6): the one nearer the current frame in order
+    /// count, the bottom on a tie.
+    /// </summary>
+    private int CloserField(H264Picture g)
+    {
+        int curPoc = _mbaff ? _frame.Poc : _pic.Poc;
+        return Math.Abs(g.TopPoc - curPoc) < Math.Abs(g.BottomPoc - curPoc) ? 0 : 1;
+    }
+
     /// <summary>Works out <see cref="H264Picture.ColZero"/> for the current macroblock's blocks.</summary>
     private void StoreColZero()
     {
@@ -479,7 +676,7 @@ internal sealed partial class H264SliceDecoder
             mv = _mv1[b];
         }
 
-        _pic.ColZero[b] = r == 0 && (uint)(MvX(mv) + 1) <= 2 && (uint)(MvY(mv) + 1) <= 2;
+        _mo.ColZero[b] = r == 0 && (uint)(MvX(mv) + 1) <= 2 && (uint)(MvY(mv) + 1) <= 2;
     }
 
     /// <summary>Neighbours A, B and C (D when C is missing) of the whole macroblock in a list.</summary>
@@ -506,6 +703,12 @@ internal sealed partial class H264SliceDecoder
     /// </summary>
     private void ColocatedMotion(int bx, int by, out int refCol, out int mvCol, out int refPicId)
     {
+        if (_colMapped)
+        {
+            ColocatedMotionMapped(bx, by, out refCol, out mvCol, out refPicId);
+            return;
+        }
+
         H264Picture col = _list1[0];
         if (_sps.Direct8x8Inference)
         {
@@ -528,6 +731,38 @@ internal sealed partial class H264SliceDecoder
         refPicId = col.RefPicId[list][b];
     }
 
+    /// <summary>
+    /// The co-located motion through <see cref="Colocated"/>, in the current macroblock's units: the vertical vector halved
+    /// from a frame to a field or doubled from a field to a frame (8.4.1.2.3), and refPicId the picture the current macroblock
+    /// refers to: the field of the co-located frame reference with the current parity, or the frame of a co-located field one.
+    /// </summary>
+    private void ColocatedMotionMapped(int bx, int by, out int refCol, out int mvCol, out int refPicId)
+    {
+        Colocated(bx, by, out H264Picture col, out int b, out int mb, out int vertScale);
+        if (col.MbIntra[mb])
+        {
+            refCol = -1;
+            mvCol = 0;
+            refPicId = -1;
+            return;
+        }
+
+        int list = col.RefIdx[0][b] >= 0 ? 0 : 1;
+        refCol = col.RefIdx[list][b];
+        mvCol = col.Mv[list][b];
+        refPicId = col.RefPicId[list][b];
+        if (vertScale == 1)
+        {
+            mvCol = PackMv(MvX(mvCol), MvY(mvCol) / 2);
+            refPicId = (refPicId & ~3) + 1 + _pic.Parity;
+        }
+        else if (vertScale == 2)
+        {
+            mvCol = PackMv(MvX(mvCol), MvY(mvCol) * 2);
+            refPicId &= ~3;
+        }
+    }
+
     private void PredictTemporalDirect(int mask)
     {
         H264Picture pic1 = _list1[0];
@@ -545,7 +780,7 @@ internal sealed partial class H264SliceDecoder
             if (refCol >= 0)
             {
                 refIdxL0 = -1;
-                for (int i = 0; i < _list0.Length && i < _h.NumRefIdxL0; i++)
+                for (int i = 0; i < _list0.Length && i < _refCount0; i++)
                 {
                     if (_list0[i].Id == refPicId)
                     {
@@ -598,7 +833,7 @@ internal sealed partial class H264SliceDecoder
         {
             H264Picture[] refs = list == 0 ? _list0 : _list1;
             sbyte[] refIdxs = list == 0 ? _refIdx0 : _refIdx1;
-            int[] ids = _pic.RefPicId[list], mvs = _pic.Mv[list];
+            int[] ids = _mo.RefPicId[list], mvs = _mo.Mv[list];
             byte[] mvds = _mb.Mvd[list];
             for (int blk = 0; blk < 16; blk++)
             {
@@ -633,7 +868,7 @@ internal sealed partial class H264SliceDecoder
     /// </summary>
     private void WriteDirectRows(int w4, int b0)
     {
-        if (b0 + (3 * w4) + 4 > _pic.Mv[0].Length)
+        if (b0 + (3 * w4) + 4 > _mo.Mv[0].Length)
         {
             throw H264Errors.Corrupt("A macroblock lies outside the picture.");
         }
@@ -643,9 +878,9 @@ internal sealed partial class H264SliceDecoder
             H264Picture[] refs = list == 0 ? _list0 : _list1;
             int r = _directRefBlock[list * 16];
             int id = r >= 0 && r < refs.Length ? refs[r].Id : -1;
-            ref sbyte refIdxs = ref MemoryMarshal.GetArrayDataReference(_pic.RefIdx[list]);
-            ref int ids = ref MemoryMarshal.GetArrayDataReference(_pic.RefPicId[list]);
-            ref int mvs = ref MemoryMarshal.GetArrayDataReference(_pic.Mv[list]);
+            ref sbyte refIdxs = ref MemoryMarshal.GetArrayDataReference(_mo.RefIdx[list]);
+            ref int ids = ref MemoryMarshal.GetArrayDataReference(_mo.RefPicId[list]);
+            ref int mvs = ref MemoryMarshal.GetArrayDataReference(_mo.Mv[list]);
             ref byte mvds = ref MemoryMarshal.GetArrayDataReference(_mb.Mvd[list]);
             uint refRow = (byte)r * 0x01010101u;
             Vector128<int> idRow = Vector128.Create(id);
@@ -675,7 +910,7 @@ internal sealed partial class H264SliceDecoder
     {
         H264Picture[] refs = list == 0 ? _list0 : _list1;
         sbyte[] refIdxs = list == 0 ? _refIdx0 : _refIdx1;
-        int[] ids = _pic.RefPicId[list];
+        int[] ids = _mo.RefPicId[list];
         for (int y = by; y < by + 2; y++)
         {
             for (int x = bx; x < bx + 2; x++)

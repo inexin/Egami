@@ -4,13 +4,17 @@ using Egami.Nal;
 namespace Egami.Video.Codecs.H264;
 
 /// <summary>
-/// The SEI messages of one access unit the decoder uses (H.264 D.1): recovery point, mastering display colour volume, content
-/// light level, alternative transfer characteristics and ITU-T T.35 user data (HDR10+). Other messages are skipped.
+/// The SEI messages of one access unit the decoder uses (H.264 D.1): picture timing (its pic_struct), recovery point, mastering
+/// display colour volume, content light level, alternative transfer characteristics and ITU-T T.35 user data (HDR10+). Other
+/// messages are skipped.
 /// </summary>
 internal sealed class H264Sei
 {
     /// <summary>Gets recovery_frame_cnt of a recovery point SEI, or -1 when the access unit has none.</summary>
     internal int RecoveryFrameCount { get; private set; } = -1;
+
+    /// <summary>Gets pic_struct of a picture timing SEI (Table D-1), or -1 when the access unit has none.</summary>
+    internal int PicStruct { get; private set; } = -1;
 
     internal HdrMetadata? Hdr { get; private set; }
 
@@ -20,9 +24,13 @@ internal sealed class H264Sei
     /// <summary>Gets the HDR10+ metadata of the first ITU-T T.35 message that holds it, or null.</summary>
     internal Hdr10PlusMetadata? Hdr10Plus { get; private set; }
 
-    /// <summary>Reads the SEI messages of a NAL unit into this access unit's set. A broken message ends the walk quietly.</summary>
-    internal void Read(byte[] rbsp)
+    /// <summary>
+    /// Reads the SEI messages of a NAL unit into this access unit's set. A broken message ends the walk quietly. The picture
+    /// timing SEI is read with the SPS the stream gave last, whose VUI says which of its fields are there.
+    /// </summary>
+    internal void Read(byte[] rbsp, H264Sps? sps)
     {
+        _sps = sps;
         try
         {
             NalSei.Read(new NalBitReader(rbsp, 1), this, static (r, type, size, sei) => sei.ReadPayload(r, type, size));
@@ -33,10 +41,25 @@ internal sealed class H264Sei
         }
     }
 
+    private H264Sps? _sps;
+
     private void ReadPayload(NalBitReader r, int type, int size)
     {
         switch (type)
         {
+            case 1 when _sps?.Vui is { } vui:
+                if (vui.HrdPresent)
+                {
+                    r.U(vui.CpbRemovalDelayLength, "cpb_removal_delay");
+                    r.U(vui.DpbOutputDelayLength, "dpb_output_delay");
+                }
+
+                if (vui.PicStructPresent)
+                {
+                    PicStruct = (int)r.U(4, "pic_struct");
+                }
+
+                break;
             case 4 when size >= 3:
                 byte[] payload = new byte[size];
                 for (int i = 0; i < size; i++)

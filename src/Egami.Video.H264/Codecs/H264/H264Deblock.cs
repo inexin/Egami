@@ -17,7 +17,7 @@ internal readonly record struct H264FilterParams(int DisableIdc, int OffsetA, in
 /// + 4, is below 32768); vertical edges go through an 8 by 8 transpose. The scalar form is the reference.
 /// </summary>
 [SkipLocalsInit]
-internal sealed class H264Deblock
+internal sealed partial class H264Deblock
 {
     // Boundary strengths of the macroblock: [direction 0 vertical, 1 horizontal][edge 0..3][segment 0..3].
     private readonly int[] _bs = new int[2 * 4 * 4];
@@ -48,6 +48,18 @@ internal sealed class H264Deblock
     private int _bitDepthC;
     private int _chroma;
 
+    // Whether the macroblocks are field macroblocks (a field picture): vertical vectors count in field rows.
+    private bool _fieldMbs;
+
+    // The largest vector difference per 16-bit component that still gives bS 0: 3, and vertically 1 between field macroblocks
+    // (vectors 4 quarter samples apart differ, and a field row is two frame rows).
+    private Vector128<short> _far = FarLimit(false);
+
+    // The bS of an intra macroblock's top edge: 4, or 3 in a field picture, whose rows across it are a field row apart (8.7.2.1).
+    private int _topIntra = 4;
+
+    private static Vector128<short> FarLimit(bool field) => field ? Vector128.Create(3 | (1 << 16)).AsInt16() : Vector128.Create((short)3);
+
     /// <summary>Filters the macroblock rows from <paramref name="firstRow"/> to before <paramref name="endRow"/>.</summary>
     internal void Filter(H264Picture pic, H264MbState mb, List<H264FilterParams> slices, int bitDepthY, int bitDepthC, int firstRow, int endRow)
     {
@@ -71,6 +83,9 @@ internal sealed class H264Deblock
             _mv0 = pic.Mv[0];
             _mv1 = pic.Mv[1];
             _blocks = Math.Min(Math.Min(_ref0.Length, _ref1.Length), Math.Min(Math.Min(_mv0.Length, _mv1.Length), _nonzero.Length));
+            _fieldMbs = mb.FieldPicture;
+            _far = FarLimit(_fieldMbs);
+            _topIntra = _fieldMbs ? 3 : 4;
         }
 
         _pic = pic;
@@ -550,6 +565,13 @@ internal sealed class H264Deblock
             return;
         }
 
+        FilterEdgeScalar(plane, at, stride, dir, length, qpAv, p, edge, chroma, segment, bitDepth);
+    }
+
+    /// <summary>The scalar form of <see cref="FilterEdge"/>, the reference the vector form matches.</summary>
+    private void FilterEdgeScalar<T>(T[] plane, int at, int stride, int dir, int length, int qpAv, H264FilterParams p, int edge, bool chroma, int segment, int bitDepth)
+        where T : unmanaged
+    {
         int indexA = Math.Clamp(qpAv + p.OffsetA, 0, 51);
         int indexB = Math.Clamp(qpAv + p.OffsetB, 0, 51);
         int scale = 1 << (bitDepth - 8);
@@ -902,7 +924,7 @@ internal sealed class H264Deblock
             // An intra macroblock: 4 on its own edges, 3 inside.
             _bs.AsSpan().Fill(3);
             _bs.AsSpan(0, 4).Fill(4);
-            _bs.AsSpan(16, 4).Fill(4);
+            _bs.AsSpan(16, 4).Fill(_topIntra);
             return;
         }
 
@@ -947,7 +969,7 @@ internal sealed class H264Deblock
             if (top)
             {
                 int above = addr - _widthMbs;
-                (mbIntra[above] ? Vector128.Create(4) : flat[above] ? Vector128.Create(MotionStrength(b0 - w4, b0)) : Strengths(b0, w4)).StoreUnsafe(ref bs, 16);
+                (mbIntra[above] ? Vector128.Create(_topIntra) : flat[above] ? Vector128.Create(MotionStrength(b0 - w4, b0)) : Strengths(b0, w4)).StoreUnsafe(ref bs, 16);
             }
 
             return;
@@ -965,7 +987,7 @@ internal sealed class H264Deblock
         // Horizontal edges: row e of blocks against the row above it is edge e.
         if (top)
         {
-            (mbIntra[addr - _widthMbs] ? Vector128.Create(4) : Strengths(b0, w4)).StoreUnsafe(ref bs, 16);
+            (mbIntra[addr - _widthMbs] ? Vector128.Create(_topIntra) : Strengths(b0, w4)).StoreUnsafe(ref bs, 16);
         }
 
         Strengths(b0 + w4, w4).StoreUnsafe(ref bs, 20);
@@ -1062,7 +1084,7 @@ internal sealed class H264Deblock
         Vector128<int> none1 = Vector128.LessThan(rp1, Vector128<int>.Zero) | Vector128.LessThan(rq1, Vector128<int>.Zero);
         Vector128<int> only0 = ~none0 & Vector128.LessThan(rp1, Vector128<int>.Zero) & Vector128.LessThan(rq1, Vector128<int>.Zero);
         Vector128<int> only1 = ~none1 & Vector128.LessThan(rp0, Vector128<int>.Zero) & Vector128.LessThan(rq0, Vector128<int>.Zero);
-        Vector128<short> three = Vector128.Create((short)3);
+        Vector128<short> three = _far;
         Vector128<int> far0 = ~Vector128.Equals(Vector128.GreaterThan(Vector128.Abs(mq0.AsInt16() - mp0.AsInt16()), three).AsInt32(), Vector128<int>.Zero);
         Vector128<int> far1 = ~Vector128.Equals(Vector128.GreaterThan(Vector128.Abs(mq1.AsInt16() - mp1.AsInt16()), three).AsInt32(), Vector128<int>.Zero);
         Vector128<int> differ = (only0 & (~Vector128.Equals(rq0, rp0) | far0)) | (only1 & (~Vector128.Equals(rq1, rp1) | far1));
@@ -1107,7 +1129,7 @@ internal sealed class H264Deblock
 
                 if (intraQ || mbIntra[!mbEdge ? addr : dir == 0 ? addr - 1 : addr - _widthMbs])
                 {
-                    int v = mbEdge ? 4 : 3;
+                    int v = !mbEdge ? 3 : dir == 0 ? 4 : _topIntra;
                     bsOut[o] = bsOut[o + 1] = bsOut[o + 2] = bsOut[o + 3] = v;
                     continue;
                 }
@@ -1155,7 +1177,7 @@ internal sealed class H264Deblock
                 return true;
             }
 
-            return Far((p0 >= 0 ? _mv0 : _mv1)[p], (q0 >= 0 ? _mv0 : _mv1)[q]);
+            return Far((p0 >= 0 ? _mv0 : _mv1)[p], (q0 >= 0 ? _mv0 : _mv1)[q], _fieldMbs);
         }
 
         if (!((p0 == q0 && p1 == q1) || (p0 == q1 && p1 == q0)))
@@ -1167,13 +1189,14 @@ internal sealed class H264Deblock
         if (p0 != p1)
         {
             // Two different pictures: compare the vectors for the same picture.
-            return p0 == q0 ? Far(mvP0, mvQ0) || Far(mvP1, mvQ1) : Far(mvP0, mvQ1) || Far(mvP1, mvQ0);
+            return p0 == q0 ? Far(mvP0, mvQ0, _fieldMbs) || Far(mvP1, mvQ1, _fieldMbs) : Far(mvP0, mvQ1, _fieldMbs) || Far(mvP1, mvQ0, _fieldMbs);
         }
 
         // Both vectors name the same picture: either pairing may match.
-        return (Far(mvP0, mvQ0) || Far(mvP1, mvQ1)) && (Far(mvP0, mvQ1) || Far(mvP1, mvQ0));
+        bool f = _fieldMbs;
+        return (Far(mvP0, mvQ0, f) || Far(mvP1, mvQ1, f)) && (Far(mvP0, mvQ1, f) || Far(mvP1, mvQ0, f));
     }
 
-    private static bool Far(int a, int b) =>
-        Math.Abs(H264SliceDecoder.MvX(a) - H264SliceDecoder.MvX(b)) >= 4 || Math.Abs(H264SliceDecoder.MvY(a) - H264SliceDecoder.MvY(b)) >= 4;
+    private static bool Far(int a, int b, bool field) =>
+        Math.Abs(H264SliceDecoder.MvX(a) - H264SliceDecoder.MvX(b)) >= 4 || Math.Abs(H264SliceDecoder.MvY(a) - H264SliceDecoder.MvY(b)) >= (field ? 2 : 4);
 }

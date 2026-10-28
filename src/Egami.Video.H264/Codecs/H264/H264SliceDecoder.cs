@@ -47,10 +47,34 @@ internal sealed partial class H264SliceDecoder
     private int _qpBdOffsetY;
     private int _qpBdOffsetC;
 
+    // Whether the macroblock is a field macroblock (in a field picture, or a field pair of an MBAFF frame), and its scans.
+    private bool _fieldMb;
+    private byte[] _scan4 = H264ScalingLists.Zigzag4x4;
+    private byte[] _scan8 = H264ScalingLists.Zigzag8x8;
+
+    // The active reference indices per list: a field macroblock of an MBAFF frame indexes the fields of the frame
+    // references, twice as many (8.4.2.1).
+    private int _refCount0;
+    private int _refCount1;
+
+    // The first CABAC contexts of significant_coeff_flag and last_significant_coeff_flag for 4x4 blocks (Table 9-34).
+    private int _sigBase = 105;
+    private int _lastBase = 166;
+    private int _sigBase8 = 402;
+    private int _lastBase8 = 417;
+    private byte[] _sigInc8 = Significant8x8;
+
+    private static readonly byte[] Significant8x8 = H264Tables.Significant8x8.ToArray();
+    private static readonly byte[] Significant8x8Field = H264Tables.Significant8x8Field.ToArray();
+
+    // The picture whose motion arrays and intra flags the macroblock reads and writes: the picture, or the MBAFF window.
+    private H264Picture _mo = null!;
+
     // The macroblock being decoded.
     private int _mbAddr;
     private int _mbX;
     private int _mbY;
+
     private int _qp;
     private bool _prevQpDeltaNonZero;
     private H264MbKind _kind;
@@ -110,24 +134,36 @@ internal sealed partial class H264SliceDecoder
         _implicitWeights = implicitWeights;
         _cabac = _pps.Cabac;
         _widthMbs = _sps.WidthInMbs;
-        _mbCount = _sps.WidthInMbs * _sps.HeightInMbs;
+        _mbCount = _sps.WidthInMbs * h.PicHeightInMbs;
         _chromaArrayType = _sps.ChromaArrayType;
         _bitDepthY = _sps.BitDepthLuma;
         _bitDepthC = _sps.BitDepthChroma;
         _qpBdOffsetY = 6 * (_bitDepthY - 8);
         _qpBdOffsetC = 6 * (_bitDepthC - 8);
         _qp = h.SliceQp;
+        _refCount0 = h.NumRefIdxL0;
+        _refCount1 = h.NumRefIdxL1;
         _prevQpDeltaNonZero = false;
+        SetFieldMb(h.FieldPic);
         _inter.Setup(pic, h, list0, list1, implicitWeights);
+        _mo = pic;
         _refIdx0 = pic.RefIdx[0];
         _refIdx1 = pic.RefIdx[1];
         _mv0 = pic.Mv[0];
         _mv1 = pic.Mv[1];
         _w4 = _mb.W4;
+        _mbaff = false;
         Decoded = 0;
         LastMb = -1;
         _mbAddr = -2;
         _chromaQpOf = -1000;
+        SetColocated();
+        if (h.Mbaff)
+        {
+            StartMbaff(pic, mb, list0, list1, implicitWeights);
+            DecodeMbaffSlice(h, padded, length);
+            return;
+        }
 
         int mbAddr = h.FirstMb;
         if (_cabac)
@@ -193,6 +229,19 @@ internal sealed partial class H264SliceDecoder
                 mbAddr++;
             }
         }
+    }
+
+    /// <summary>Makes the macroblocks that follow field or frame macroblocks: their scans and CABAC significance contexts.</summary>
+    private void SetFieldMb(bool field)
+    {
+        _fieldMb = field;
+        _scan4 = field ? H264ScalingLists.Field4x4 : H264ScalingLists.Zigzag4x4;
+        _scan8 = field ? H264ScalingLists.Field8x8 : H264ScalingLists.Zigzag8x8;
+        _sigBase = field ? 277 : 105;
+        _lastBase = field ? 338 : 166;
+        _sigBase8 = field ? 436 : 402;
+        _lastBase8 = field ? 451 : 417;
+        _sigInc8 = field ? Significant8x8Field : Significant8x8;
     }
 
     private void CheckAddress(int mbAddr)
@@ -273,7 +322,7 @@ internal sealed partial class H264SliceDecoder
 
         _mb.QpC[0][addr] = _chromaQp0;
         _mb.QpC[1][addr] = _chromaQp1;
-        _pic.MbIntra[addr] = H264MbState.IsIntra(_kind);
+        _mo.MbIntra[addr] = H264MbState.IsIntra(_kind);
         _mb.FlatInside[addr] = IsFlatInside();
         if (_h.NalRefIdc != 0 && !H264MbState.IsIntra(_kind))
         {
@@ -400,8 +449,8 @@ internal sealed partial class H264SliceDecoder
         int w4 = _w4, b0 = _b0;
         int id = _list0.Length > 0 ? _list0[0].Id : -1;
         sbyte[] ref0 = _refIdx0, ref1 = _refIdx1;
-        int[] ids0 = _pic.RefPicId[0], ids1 = _pic.RefPicId[1], mv0 = _mv0, mv1 = _mv1;
-        bool[] colZero = _pic.ColZero;
+        int[] ids0 = _mo.RefPicId[0], ids1 = _mo.RefPicId[1], mv0 = _mv0, mv1 = _mv1;
+        bool[] colZero = _mo.ColZero;
         int last = b0 + (3 * w4) + 4;
         if (b0 < 0 || last > Math.Min(Math.Min(ref0.Length, ref1.Length), Math.Min(Math.Min(ids0.Length, ids1.Length), Math.Min(Math.Min(mv0.Length, mv1.Length), colZero.Length))))
         {
@@ -442,7 +491,7 @@ internal sealed partial class H264SliceDecoder
         _mb.Qp[addr] = (sbyte)qp;
         _mb.QpC[0][addr] = _chromaQp0;
         _mb.QpC[1][addr] = _chromaQp1;
-        _pic.MbIntra[addr] = false;
+        _mo.MbIntra[addr] = false;
         _mb.FlatInside[addr] = true;
         if (_h.NalRefIdc != 0)
         {
@@ -486,12 +535,12 @@ internal sealed partial class H264SliceDecoder
             {
                 // Intra modes are read only from Intra4x4 and Intra8x8 macroblocks, which write their own.
                 Unsafe.WriteUnaligned(ref Unsafe.As<sbyte, byte>(ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(intraModes), b)), uint.MaxValue);
-                _pic.RefIdx[0].AsSpan(b, 4).Fill(-1);
-                _pic.RefIdx[1].AsSpan(b, 4).Fill(-1);
-                _pic.RefPicId[0].AsSpan(b, 4).Fill(-1);
-                _pic.RefPicId[1].AsSpan(b, 4).Fill(-1);
-                _pic.Mv[0].AsSpan(b, 4).Clear();
-                _pic.Mv[1].AsSpan(b, 4).Clear();
+                _mo.RefIdx[0].AsSpan(b, 4).Fill(-1);
+                _mo.RefIdx[1].AsSpan(b, 4).Fill(-1);
+                _mo.RefPicId[0].AsSpan(b, 4).Fill(-1);
+                _mo.RefPicId[1].AsSpan(b, 4).Fill(-1);
+                _mo.Mv[0].AsSpan(b, 4).Clear();
+                _mo.Mv[1].AsSpan(b, 4).Clear();
             }
         }
 

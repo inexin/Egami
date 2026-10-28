@@ -47,6 +47,19 @@ Helpers a format plugin needs, made public for Egami.Formats.Extended. All addit
 
 ## Egami.Video, unreleased
 
+V7.1: interlaced H.264 (Build Plan tasks 16 to 18). All additive.
+
+- Egami.Video.H264 decodes interlaced streams: field pictures (PAFF) with field reference lists, marking and order counts,
+  and MBAFF frames, whose macroblock pairs are frame or field macroblocks, with MBAFF neighbours, co-located motion, context
+  selection and deblocking. A frame's fields come out woven. All 15 new MBAFF clips of the corpus (x264 interlaced, CAVLC and
+  CABAC, P and B slices, spatial and temporal direct, weighted prediction, the 8x8 transform, several slices, High 10 and
+  4:2:2) equal FFmpeg's decode frame for frame. Progressive decoding is as fast as before (1080p: 60.9 M instructions a
+  frame before and after).
+- `VideoFrame.FieldOrder` and `VideoFrame.RepeatFields`: whether a frame is interlaced and which field comes first, and the
+  fields it is repeated for, from the picture timing SEI's pic_struct or from how the frame was coded, matching ffprobe's
+  interlaced_frame, top_field_first and repeat_pict. `VideoReader.ReadFrames` keeps them.
+- A field picture without its second field reports `H264.UnpairedField` and fills the frame from its own rows.
+
 V6 FFV1 stage C: the FFV1 encoder (Build Plan tasks 11 to 14). All additive.
 
 - `Ffv1Codec` now encodes (`CanEncode`): version 3 in Matroska and AVI, through `VideoWriter` (`VideoWriterOptions.Ffv1`) or

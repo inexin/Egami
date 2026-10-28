@@ -52,6 +52,30 @@ public class VideoH264
     }
 
     [Fact]
+    public void Fields()
+    {
+        using SampleFiles files = new();
+        MediaContext context = MediaContext.Default.WithH264();
+        List<FieldOrder> orders = [];
+
+        #region fields
+        // An interlaced frame comes out with its two fields woven; FieldOrder says which was filmed first.
+        using VideoReader reader = VideoReader.Open("interlaced.h264", context: context);
+        foreach (VideoFrame frame in reader.ReadFrames())
+        {
+            using (frame)
+            {
+                Console.WriteLine($"{frame.Timestamp}: {frame.FieldOrder}, {frame.RepeatFields} repeated fields");
+                orders.Add(frame.FieldOrder);
+            }
+        }
+        #endregion
+
+        Assert.Equal(8, orders.Count);
+        Assert.All(orders, o => Assert.Equal(FieldOrder.BottomFieldFirst, o));
+    }
+
+    [Fact]
     public void Raw()
     {
         using SampleFiles files = new();

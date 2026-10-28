@@ -17,6 +17,15 @@ public sealed class DecodeTests
         "cabac-slices", "high-8x8", "high-8x8-cavlc", "high-cqm", "high-crop", "high10", "high10-intra", "high422", "high422-cavlc",
         "high422-10", "gray", "open-gop", "intra-refresh", "constrained-intra", "many-refs", "slice-max", "weighted-cavlc",
         "deblock-offsets", "qp-low", "qp-high", "tiny-motion", "high10-qp-low", "high422-10-intra",
+
+        // Interlaced: MBAFF frames from x264.
+        "mbaff-fake", "mbaff-intra", "mbaff-intra-cavlc", "mbaff-p", "mbaff-p-cavlc", "mbaff-b-spatial", "mbaff-b-temporal",
+        "mbaff-b-cavlc", "mbaff-weighted", "mbaff-bff", "mbaff-8x8", "mbaff-slices", "mbaff-high10", "mbaff-high422", "mbaff-pic-struct",
+    ];
+
+    public static TheoryData<string> InterlacedClips =>
+    [
+        "mbaff-fake", "mbaff-intra", "mbaff-p", "mbaff-b-spatial", "mbaff-bff", "mbaff-slices", "mbaff-pic-struct",
     ];
 
     private static string PathOf(string file) => Path.Combine(AppContext.BaseDirectory, "corpus", "h264", file);
@@ -73,6 +82,77 @@ public sealed class DecodeTests
             Codecs.H264.H264Inter.UseWideVectors = System.Runtime.Intrinsics.X86.Avx2.IsSupported;
             Codecs.H264.H264Deblock.UseWideVectors = System.Runtime.Intrinsics.X86.Avx2.IsSupported;
         }
+    }
+
+    [Theory]
+    [MemberData(nameof(InterlacedClips))]
+    public void FieldOrderMatchesFfprobe(string clip)
+    {
+        // ffprobe's interlaced_frame, top_field_first and repeat_pict of each frame, in output order.
+        using JsonDocument json = JsonDocument.Parse(File.ReadAllText(PathOf(clip + ".frames.json")));
+        string[] expected = [.. json.RootElement.GetProperty("fields").EnumerateArray().Select(e => string.Join(",", e.GetString()!.Split(',').Take(3)))];
+        List<string> actual = [];
+        foreach (YuvVideoFrame frame in Frames(File.ReadAllBytes(PathOf(clip + ".h264"))))
+        {
+            using (frame)
+            {
+                int interlaced = frame.FieldOrder == FieldOrder.Progressive ? 0 : 1, topFirst = frame.FieldOrder == FieldOrder.TopFieldFirst ? 1 : 0;
+                actual.Add($"{interlaced},{topFirst},{frame.RepeatFields}");
+            }
+        }
+
+        Assert.Equal(expected, actual);
+    }
+
+    [Fact]
+    public void PicStructRepeatsFields()
+    {
+        // mbaff-pic-struct's picture timing SEIs give pic_struct 3 in the first payload bits (no HRD delays); 5 (top, bottom,
+        // top) shows each frame for three fields.
+        byte[] data = File.ReadAllBytes(PathOf("mbaff-pic-struct.h264"));
+        int patched = 0;
+        for (int i = 0; i + 6 < data.Length; i++)
+        {
+            if (data[i] == 0 && data[i + 1] == 0 && data[i + 2] == 1 && (data[i + 3] & 31) == 6 && data[i + 4] == 1 && (data[i + 6] >> 4) == 3)
+            {
+                data[i + 6] = (byte)((5 << 4) | (data[i + 6] & 15));
+                patched++;
+            }
+        }
+
+        Assert.Equal(8, patched);
+        List<YuvVideoFrame> frames = Frames(data);
+        Assert.All(frames, f => Assert.Equal(1, f.RepeatFields));
+        Assert.All(frames, f => Assert.NotEqual(FieldOrder.Progressive, f.FieldOrder));
+        frames.ForEach(f => f.Dispose());
+    }
+
+    private static List<YuvVideoFrame> Frames(byte[] stream)
+    {
+        using MemoryStream input = new(stream);
+        using IDemuxer demuxer = H264Format.Instance.OpenDemuxer(input, MediaContext.Default, leaveOpen: true);
+        using IVideoDecoder decoder = H264Codec.Instance.CreateDecoder(demuxer.Info.VideoTrack!, null, MediaContext.Default.WithH264());
+        List<YuvVideoFrame> frames = [];
+        while (demuxer.ReadPacket() is { } packet)
+        {
+            using (packet)
+            {
+                decoder.Send(packet);
+            }
+
+            while (decoder.TryReceive(out YuvVideoFrame? frame))
+            {
+                frames.Add(frame);
+            }
+        }
+
+        decoder.Flush();
+        while (decoder.TryReceive(out YuvVideoFrame? frame))
+        {
+            frames.Add(frame);
+        }
+
+        return frames;
     }
 
     [Theory]

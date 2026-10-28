@@ -5,15 +5,16 @@ using Egami.Video.Codecs.H264;
 namespace Egami.Video.Codecs;
 
 /// <summary>
-/// H.264 (AVC), as MP4, MOV, Matroska, AVI and raw .h264 files carry it, decoded in the progressive Constrained Baseline, Main,
-/// High, High 10 and High 4:2:2 profiles and their Intra profiles: 4:2:0, 4:2:2 and monochrome, 8 to 10 bits. Frames come out in
+/// H.264 (AVC), as MP4, MOV, Matroska, AVI and raw .h264 files carry it, decoded in the Constrained Baseline, Main, High, High
+/// 10 and High 4:2:2 profiles and their Intra profiles, progressive or interlaced (field pictures and MBAFF frames, woven, with
+/// <see cref="VideoFrame.FieldOrder"/>): 4:2:0, 4:2:2 and monochrome, 8 to 10 bits. Frames come out in
 /// presentation order at the stream's cropped size, as 8-bit planes, or 16-bit planes holding 9 or 10 bits; monochrome streams
 /// give a luma plane only (<see cref="Egami.Pixels.ChromaFormat.Yuv400"/>). Register it with <see cref="H264MediaContextExtensions.WithH264"/>. Decode only.
 /// </summary>
 /// <remarks>
 /// <para>
-/// Interlaced streams (field pictures and MBAFF), 4:4:4, lossless coding, slice groups, arbitrary slice order, redundant slices
-/// and Extended profile data partitioning and SP/SI slices are not decoded; SVC and MVC streams decode as their base layer.
+/// 4:4:4, lossless coding, slice groups, arbitrary slice order, redundant slices and Extended profile data partitioning and
+/// SP/SI slices are not decoded; SVC and MVC streams decode as their base layer.
 /// Decoding starts at an IDR picture or at a recovery point SEI.
 /// </para>
 /// <para>
@@ -21,8 +22,8 @@ namespace Egami.Video.Codecs;
 /// display, content light level and HDR10+ SEI messages fill <see cref="VideoFrame.Hdr"/> and <see cref="VideoFrame.Hdr10Plus"/>.
 /// Broken data follows <see cref="VideoDecoderOptions.Errors"/> and is reported through the Egami context's diagnostics as
 /// <c>H264.CorruptFrame</c> (a slice cannot be decoded) or <c>H264.MissingReference</c> (a picture refers to one that is not
-/// there). In <see cref="DecodeErrorMode.Conceal"/> mode the macroblocks a broken slice leaves are copied from the previous
-/// picture.
+/// there), and <c>H264.UnpairedField</c> (a field picture has no second field; its rows fill the frame). In
+/// <see cref="DecodeErrorMode.Conceal"/> mode the macroblocks a broken slice leaves are copied from the previous picture.
 /// </para>
 /// <para>
 /// H.264 is covered by patents. Egami's authors grant no patent rights and are not lawyers. Whether you need a patent licence

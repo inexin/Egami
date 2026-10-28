@@ -1,0 +1,34 @@
+{
+ "width": 176,
+ "height": 160,
+ "pixelFormat": "yuv420p",
+ "bitDepth": 8,
+ "md5": [
+  "bfa47f281debf6b8076ad0d40ba73b51",
+  "77841022b8df5f4e6e7407c1efa511be",
+  "820ee34c14ac30cd843420a36d0be60b",
+  "36c818e6253e54cf1e65f3ac318aad53",
+  "e73d9375ba431761d0ab793345590129",
+  "1c587b90f452a1fe4579f561b429fd7e",
+  "a4204a6f2b431c3b5f69d4ca93ea437d",
+  "d8b10aeb3e9edde9818bbc6bab6a096c",
+  "bfdb67d700086520fdbcc9e7ef728f6c",
+  "49028a7c9fa489434097efb202e10b73",
+  "a0e2ec41fdb000ece4e1e455a663e264",
+  "b4ffb64bf39e6a309c90f886fb4b4c13"
+ ],
+ "fields": [
+  "1,0,0",
+  "1,0,0",
+  "1,0,0",
+  "1,0,0",
+  "1,0,0",
+  "1,0,0",
+  "1,0,0",
+  "1,0,0",
+  "1,0,0",
+  "1,0,0",
+  "1,0,0",
+  "1,0,0"
+ ]
+}

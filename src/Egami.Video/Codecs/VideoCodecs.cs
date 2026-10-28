@@ -97,7 +97,7 @@ public static class VideoCodecs
 
             using (yuv)
             {
-                frame = new VideoFrame<TPixel>(yuv.ToRaster<TPixel>(egami), yuv.Timestamp, yuv.Duration, yuv.Color) { Hdr = yuv.Hdr, Hdr10Plus = yuv.Hdr10Plus, RenderSize = yuv.RenderSize };
+                frame = new VideoFrame<TPixel>(yuv.ToRaster<TPixel>(egami), yuv.Timestamp, yuv.Duration, yuv.Color) { Hdr = yuv.Hdr, Hdr10Plus = yuv.Hdr10Plus, RenderSize = yuv.RenderSize, FieldOrder = yuv.FieldOrder, RepeatFields = yuv.RepeatFields };
                 return true;
             }
         }
