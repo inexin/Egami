@@ -75,6 +75,22 @@ public sealed record class CanvasOptions
     public static CanvasOptions Default { get; } = new();
 
     /// <summary>
+    /// Gets the canvas settings of System.Drawing's ClearTypeGridFit text, as measured on Windows in 2.7.5: an RGB stripe,
+    /// <see cref="LcdFilter.Gdi"/>, <see cref="LcdSampling.Gdi"/> and a <see cref="TextGamma"/> of 1.4 (GDI+'s
+    /// 1 + Graphics.TextContrast / 10 at its default contrast of 4). Use it with fonts from <see cref="Fonts.Font.WithGdiPlusLook"/>.
+    /// </summary>
+    /// <example>
+    /// <code language="csharp" source="../../tests/Egami.DocSamples/SystemDrawing.cs" region="gdiplus"/>
+    /// </example>
+    public static CanvasOptions GdiPlusClearType { get; } = new()
+    {
+        PixelGeometry = PixelGeometry.RgbHorizontal,
+        LcdFilter = LcdFilter.Gdi,
+        LcdSampling = LcdSampling.Gdi,
+        TextGamma = 1.4f,
+    };
+
+    /// <summary>
     /// Gets where edges and paints blend. <see cref="ColorSpace.Encoded"/> (the default) blends the stored values, as Egami's other
     /// operations and SkiaSharp do; <see cref="ColorSpace.Linear"/> blends in linear light, which keeps
     /// antialiased edges and translucent colors from darkening.
