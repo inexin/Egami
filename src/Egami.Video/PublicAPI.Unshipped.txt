@@ -717,3 +717,36 @@ static Egami.Video.Codecs.Ffv1VerifyError.operator !=(Egami.Video.Codecs.Ffv1Ver
 static Egami.Video.Codecs.Ffv1VerifyError.operator ==(Egami.Video.Codecs.Ffv1VerifyError? left, Egami.Video.Codecs.Ffv1VerifyError? right) -> bool
 static Egami.Video.Codecs.Ffv1VerifyResult.operator !=(Egami.Video.Codecs.Ffv1VerifyResult? left, Egami.Video.Codecs.Ffv1VerifyResult? right) -> bool
 static Egami.Video.Codecs.Ffv1VerifyResult.operator ==(Egami.Video.Codecs.Ffv1VerifyResult? left, Egami.Video.Codecs.Ffv1VerifyResult? right) -> bool
+Egami.Video.Codecs.Ffv1Coder
+Egami.Video.Codecs.Ffv1Coder.GolombRice = 2 -> Egami.Video.Codecs.Ffv1Coder
+Egami.Video.Codecs.Ffv1Coder.RangeCustomTable = 0 -> Egami.Video.Codecs.Ffv1Coder
+Egami.Video.Codecs.Ffv1Coder.RangeDefaultTable = 1 -> Egami.Video.Codecs.Ffv1Coder
+Egami.Video.Codecs.Ffv1ContextModel
+Egami.Video.Codecs.Ffv1ContextModel.Large = 1 -> Egami.Video.Codecs.Ffv1ContextModel
+Egami.Video.Codecs.Ffv1ContextModel.Small = 0 -> Egami.Video.Codecs.Ffv1ContextModel
+Egami.Video.Codecs.Ffv1EncoderOptions
+Egami.Video.Codecs.Ffv1EncoderOptions.<Clone>$() -> Egami.Video.Codecs.Ffv1EncoderOptions!
+Egami.Video.Codecs.Ffv1EncoderOptions.BitsPerSample.get -> int?
+Egami.Video.Codecs.Ffv1EncoderOptions.BitsPerSample.init -> void
+Egami.Video.Codecs.Ffv1EncoderOptions.Coder.get -> Egami.Video.Codecs.Ffv1Coder
+Egami.Video.Codecs.Ffv1EncoderOptions.Coder.init -> void
+Egami.Video.Codecs.Ffv1EncoderOptions.ContextModel.get -> Egami.Video.Codecs.Ffv1ContextModel?
+Egami.Video.Codecs.Ffv1EncoderOptions.ContextModel.init -> void
+Egami.Video.Codecs.Ffv1EncoderOptions.Equals(Egami.Video.Codecs.Ffv1EncoderOptions? other) -> bool
+Egami.Video.Codecs.Ffv1EncoderOptions.Ffv1EncoderOptions() -> void
+Egami.Video.Codecs.Ffv1EncoderOptions.SliceCrc.get -> bool
+Egami.Video.Codecs.Ffv1EncoderOptions.SliceCrc.init -> void
+Egami.Video.Codecs.Ffv1EncoderOptions.Slices.get -> int?
+Egami.Video.Codecs.Ffv1EncoderOptions.Slices.init -> void
+Egami.Video.Codecs.VideoEncoderOptions.Ffv1.get -> Egami.Video.Codecs.Ffv1EncoderOptions?
+Egami.Video.Codecs.VideoEncoderOptions.Ffv1.init -> void
+Egami.Video.VideoWriterOptions.Ffv1.get -> Egami.Video.Codecs.Ffv1EncoderOptions?
+Egami.Video.VideoWriterOptions.Ffv1.init -> void
+override Egami.Video.Codecs.Ffv1Codec.CanEncode.get -> bool
+override Egami.Video.Codecs.Ffv1Codec.CreateEncoder(Egami.Video.Codecs.VideoEncoderOptions! options, Egami.Video.MediaContext! context) -> Egami.Video.Codecs.IVideoEncoder!
+override Egami.Video.Codecs.Ffv1EncoderOptions.Equals(object? obj) -> bool
+override Egami.Video.Codecs.Ffv1EncoderOptions.GetHashCode() -> int
+override Egami.Video.Codecs.Ffv1EncoderOptions.ToString() -> string!
+static Egami.Video.Codecs.Ffv1EncoderOptions.Default.get -> Egami.Video.Codecs.Ffv1EncoderOptions!
+static Egami.Video.Codecs.Ffv1EncoderOptions.operator !=(Egami.Video.Codecs.Ffv1EncoderOptions? left, Egami.Video.Codecs.Ffv1EncoderOptions? right) -> bool
+static Egami.Video.Codecs.Ffv1EncoderOptions.operator ==(Egami.Video.Codecs.Ffv1EncoderOptions? left, Egami.Video.Codecs.Ffv1EncoderOptions? right) -> bool

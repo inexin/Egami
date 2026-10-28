@@ -311,6 +311,7 @@ public sealed class VideoWriter : IDisposable
             Vp8 = _options.Vp8,
             Vp9 = _options.Vp9,
             Av1 = _options.Av1,
+            Ffv1 = _options.Ffv1,
         },
         _context);
 
@@ -486,6 +487,9 @@ public sealed record VideoWriterOptions
 
     /// <summary>Gets the AV1 expert settings, or <see langword="null"/> for <see cref="Av1EncoderOptions.Default"/>.</summary>
     public Av1EncoderOptions? Av1 { get; init; }
+
+    /// <summary>Gets the FFV1 expert settings, or <see langword="null"/> for <see cref="Ffv1EncoderOptions.Default"/>.</summary>
+    public Ffv1EncoderOptions? Ffv1 { get; init; }
 
     /// <summary>
     /// Gets tracks written alongside the video, such as audio from the source file, whose packets go through

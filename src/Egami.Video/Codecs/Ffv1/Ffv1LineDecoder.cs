@@ -124,6 +124,23 @@ internal static class Ffv1Lines
     public static int Context(Ffv1PlaneCoding c, int bigL, int l, int tl, int t, int bigT, int tr) =>
         c.Q0[(l - tl) & 255] + c.Q1[(tl - t) & 255] + c.Q2[(t - tr) & 255] + c.Q3[(bigL - l) & 255] + c.Q4[(bigT - t) & 255];
 
+    /// <summary>
+    /// The Golomb-Rice parameter of a context (RFC 9043 section 3.8.2.4): the fewest doublings of <paramref name="count"/> that
+    /// reach <paramref name="errorSum"/>, worked out with a logarithm instead of a loop.
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static int GolombParameter(int count, int errorSum)
+    {
+        if (errorSum <= count)
+        {
+            return 0;
+        }
+
+        // count * 2^k >= errorSum exactly when 2^k >= ceil(errorSum / count).
+        uint ratio = (uint)(((long)errorSum + count - 1) / count);
+        return System.Numerics.BitOperations.Log2(ratio - 1) + 1;
+    }
+
     /// <summary>Sets the left borders of a line before it is decoded (RFC 9043 section 3.1).</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void StartLine(int[] cur, int[] top)
@@ -317,13 +334,10 @@ internal struct Ffv1GolombLineDecoder(Ffv1BitReader reader) : IFfv1LineDecoder
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static int ReadVlc(ref Ffv1BitReader reader, ref Ffv1VlcState state, int bits)
     {
-        int k = 0;
-        for (int i = state.Count; i < state.ErrorSum; i += i)
+        int k = Ffv1Lines.GolombParameter(state.Count, state.ErrorSum);
+        if (k > 30)
         {
-            if (++k > 30)
-            {
-                ThrowStatistics();
-            }
+            ThrowStatistics();
         }
 
         int u = reader.ReadUnsignedGolomb(k, bits);

@@ -16,6 +16,13 @@ if (args is ["--time-ffv1", .. string[] ffv1])
     return;
 }
 
+// Time and size an FFV1 encode (V6 gates): -- --encode-ffv1 <file.mkv>... [--slices=N --context=small --coder=tab --threads=N]
+if (args is ["--encode-ffv1", .. string[] ffv1Encode])
+{
+    Ffv1EncodeTiming.Run(ffv1Encode);
+    return;
+}
+
 // Time H.264 decoding (V7 speed gate): -- --time-h264 <file.h264>...
 if (args is ["--time-h264", .. string[] h264])
 {
