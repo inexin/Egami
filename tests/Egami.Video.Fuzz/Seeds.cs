@@ -117,6 +117,56 @@ internal static class Seeds
     }
 
     /// <summary>
+    /// FFV1 seeds from the corpus (tests/video/corpus/ffv1): small clips whole for the file target, their first frames as raw
+    /// packets for the decoder target, and settings bytes over a little picture data for the encoder target.
+    /// </summary>
+    public static void WriteFfv1(string directory)
+    {
+        string files = Directory.CreateDirectory(Path.Combine(directory, "ffv1")).FullName;
+        string raw = Directory.CreateDirectory(Path.Combine(directory, "ffv1raw")).FullName;
+        string encode = Directory.CreateDirectory(Path.Combine(directory, "ffv1enc")).FullName;
+        foreach (string clip in (string[])["v0-420-rice.mkv", "v1-gop.mkv", "v1-bgra-range.avi", "v3-420.mkv", "v3-420-rice.mkv", "v3-gop.mkv", "v3-ya8.mkv",
+            "v3-gbrp10.mkv", "v3-411.mkv", "v3-2pass.mkv", "v3-qtable.mkv", "v3-nocrc.mkv", "v3-420-avi.avi"])
+        {
+            string path = Path.Combine("tests", "video", "corpus", "ffv1", clip);
+            File.WriteAllBytes(Path.Combine(files, clip), File.ReadAllBytes(path));
+            using IDemuxer demuxer = MediaFile.OpenDemuxer(path);
+            VideoTrackInfo track = demuxer.Info.VideoTrack!;
+            if (track.Width > 256 || track.Height > 256)
+            {
+                continue;
+            }
+
+            byte[] record = Egami.Video.Codecs.Ffv1Codec.ConfigurationRecord(track).ToArray();
+            MemoryStream output = new();
+            output.Write([(byte)(track.Width - 1), (byte)(track.Height - 1), (byte)record.Length, (byte)(record.Length >> 8)]);
+            output.Write(record);
+            for (int i = 0; i < 2 && demuxer.ReadPacket() is { } packet; i++)
+            {
+                using (packet)
+                {
+                    int length = packet.Data.Length;
+                    output.Write([(byte)length, (byte)(length >> 8), (byte)(length >> 16)]);
+                    output.Write(packet.Data.Span);
+                }
+            }
+
+            File.WriteAllBytes(Path.Combine(raw, Path.ChangeExtension(clip, ".bin")), output.ToArray());
+        }
+
+        byte[] picture = new byte[600];
+        for (int i = 0; i < picture.Length; i++)
+        {
+            picture[i] = (byte)((i * 7) ^ (i >> 3));
+        }
+
+        File.WriteAllBytes(Path.Combine(encode, "420-8.bin"), [15, 11, 1, 0, 0, 0, 3, .. picture]);
+        File.WriteAllBytes(Path.Combine(encode, "rice-alpha.bin"), [20, 9, 2, 129, 2, 16, 1, .. picture]);
+        File.WriteAllBytes(Path.Combine(encode, "rgb-10.bin"), [12, 12, 1, 66, 4, 8, 5, .. picture]);
+        File.WriteAllBytes(Path.Combine(encode, "411-16.bin"), [33, 7, 3, 4, 12, 1, 2, .. picture]);
+    }
+
+    /// <summary>
     /// AV1 seeds from the corpus (tests/video/corpus/av1): the first units of a few clips in IVF and WebM and as raw units, and the
     /// small OBU and Annex B files whole.
     /// </summary>
@@ -188,6 +238,7 @@ internal static class Seeds
         WriteAc3(directory);
         WriteSubtitles(directory);
         WriteTrim(directory);
+        WriteFfv1(directory);
         File.WriteAllBytes(Path.Combine(y4m, "420.y4m"), [.. "YUV4MPEG2 W4 H2 F25:1 Ip A1:1 C420jpeg XCOLORRANGE=FULL\n"u8, .. "FRAME\n"u8, .. new byte[12], .. "FRAME\n"u8, .. new byte[12]]);
         File.WriteAllBytes(Path.Combine(y4m, "444p10.y4m"), [.. "YUV4MPEG2 W2 H2 F30000:1001 It A4:3 C444p10\n"u8, .. "FRAME\n"u8, .. new byte[24]]);
 

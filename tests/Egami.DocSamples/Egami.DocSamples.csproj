@@ -65,6 +65,7 @@
     <None Include="../video/corpus/av1/tools-8bit.ivf" Link="images/clip-av1.ivf" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../video/corpus/av1/tools-10bit.webm" Link="images/av1.webm" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../video/corpus/ffv1/v3-422p10.mkv" Link="images/master.mkv" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../video/corpus/y4m-444p10.y4m" Link="images/capture.y4m" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../images/metafiles/synthetic/gdi-shapes-basic.emf" Link="images/chart.emf" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../images/icc/compact/DisplayP3-v4.icc" Link="images/DisplayP3.icc" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../video/corpus/avi-mjpeg-420-pcm.avi" Link="images/camera.avi" CopyToOutputDirectory="PreserveNewest" />

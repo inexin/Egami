@@ -170,13 +170,10 @@ internal sealed class Ffv1VideoEncoder : IVideoEncoder
         bool large = _ffv1.ContextModel is { } model ? model == Ffv1ContextModel.Large : (_options.Effort ?? 4) >= 7;
         int bits = layout.Rgb ? layout.Bits + 1 : layout.Bits;
         int slices = _ffv1.Slices ?? DefaultSlices(_options.Width, _options.Height);
-        if ((long)_options.Width * _options.Height > 352 * 288)
-        {
-            // Above CIF a slice may cover at most a quarter of the grid (RFC 9043 section 5).
-            slices = Math.Max(slices, 4);
-        }
 
-        (int h, int v) = SliceGrid(slices, _options.Width, _options.Height);
+        // Above CIF a slice may cover at most a quarter of the grid (RFC 9043 section 5).
+        int least = (long)_options.Width * _options.Height > 352 * 288 ? 4 : 1;
+        (int h, int v) = SliceGrid(Math.Max(slices, least), least, _options.Width, _options.Height, layout.Rgb ? 0 : hs, layout.Rgb ? 0 : vs);
         Ffv1Parameters p = Ffv1Parameters.ForEncoding(
             coder switch { Ffv1Coder.GolombRice => 0, Ffv1Coder.RangeDefaultTable => 1, _ => 2 },
             layout.Rgb ? 1 : 0,
@@ -217,23 +214,55 @@ internal sealed class Ffv1VideoEncoder : IVideoEncoder
         return pixels <= 352 * 288 ? 1 : pixels <= 1280 * 720 ? 4 : pixels <= 2560 * 1440 ? 16 : 24;
     }
 
-    /// <summary>Splits a slice count into columns and rows as square as it goes, wider than tall, each slice at least 16 samples a side.</summary>
-    internal static (int Columns, int Rows) SliceGrid(int slices, int width, int height)
+    /// <summary>
+    /// Splits a slice count into columns and rows, as square as it goes and wider than tall, each slice at least 16 samples a
+    /// side. Every slice must start on a whole chroma sample, since RFC 9043 sizes a slice's chroma from its own width: a grid
+    /// whose edges fall mid-sample would leave chroma columns or rows that no slice codes. When the count asked for has no such
+    /// grid, the nearest count that has one is taken, never fewer than <paramref name="least"/> when one exists.
+    /// </summary>
+    internal static (int Columns, int Rows) SliceGrid(int slices, int least, int width, int height, int hs, int vs)
     {
-        int count = Math.Max(1, Math.Min(slices, Math.Max(1, width / 16) * Math.Max(1, height / 16)));
-        for (; count > 1; count--)
+        int most = Math.Max(1, Math.Min(1024, Math.Max(1, width / 16) * Math.Max(1, height / 16)));
+        slices = Math.Clamp(slices, 1, most);
+        for (int step = 0; step <= most; step++)
         {
-            for (int rows = (int)Math.Sqrt(count); rows >= 1; rows--)
+            foreach (int count in (int[])[slices - step, slices + step])
             {
-                int columns = count / rows;
-                if (columns * rows == count && width / columns >= 16 && height / rows >= 16)
+                if (count >= Math.Min(least, most) && count <= most && Grid(count) is { } grid)
                 {
-                    return (columns, rows);
+                    return grid;
                 }
             }
         }
 
         return (1, 1);
+
+        (int, int)? Grid(int count)
+        {
+            for (int rows = (int)Math.Sqrt(count); rows >= 1; rows--)
+            {
+                int columns = count / rows;
+                if (columns * rows == count && width / columns >= 16 && height / rows >= 16 && Aligned(columns, width, hs) && Aligned(rows, height, vs))
+                {
+                    return (columns, rows);
+                }
+            }
+
+            return count == 1 ? (1, 1) : null;
+        }
+
+        static bool Aligned(int parts, int size, int shift)
+        {
+            for (int i = 1; i < parts; i++)
+            {
+                if (((long)i * size / parts) % (1 << shift) != 0)
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
     }
 
     private static string Name(Layout l) =>

@@ -150,6 +150,8 @@
       href: guides/video-encoding.md
     - name: Video editing
       href: guides/video-editing.md
+    - name: Lossless archiving with FFV1
+      href: guides/lossless-archiving.md
     - name: H.264
       href: guides/h264.md
     - name: Audio
