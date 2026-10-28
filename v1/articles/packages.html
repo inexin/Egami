@@ -90,7 +90,8 @@
 <p>Egami is a family of packages. Each is fully managed C# with no dependencies outside the family, and you add only the ones you
 use. Packages at 1.0 or above keep their public API compatible within the major version; packages at 0.x may still change.
 Egami, Egami.Drawing, Egami.Fonts, Egami.Svg, Egami.Css, Egami.Heic, Egami.Cli and Egami.Cli.Host share one version and
-release together; the other packages have versions of their own.</p>
+release together; the other packages have versions of their own. Each package name links to its source code.</p>
+<h2 id="images">Images</h2>
 <table>
 <thead>
 <tr>
@@ -103,102 +104,158 @@ release together; the other packages have versions of their own.</p>
 </thead>
 <tbody>
 <tr>
-<td>Egami</td>
+<td><a href="https://github.com/inexin/Egami/tree/main/src/Egami">Egami</a></td>
 <td>1.x</td>
 <td>Rasters and pixel types, every format reader and writer, operations, color management, metadata, streaming decode</td>
 <td>Nothing</td>
 <td><a href="getting-started.html">Getting started</a>, <a href="formats/index.html">formats</a>, <a href="guides/index.html">all guides</a></td>
 </tr>
 <tr>
-<td>Egami.Drawing</td>
+<td><a href="https://github.com/inexin/Egami/tree/main/src/Egami.Heic">Egami.Heic</a></td>
+<td>1.x</td>
+<td>Reads HEIC phone photos (HEVC-coded HEIF), opt-in because HEVC is covered by patents</td>
+<td>Egami, the same version</td>
+<td><a href="formats/heic.html">HEIC</a></td>
+</tr>
+</tbody>
+</table>
+<h2 id="drawing-and-text">Drawing and text</h2>
+<table>
+<thead>
+<tr>
+<th>Package</th>
+<th>Version</th>
+<th>What it does</th>
+<th>Needs</th>
+<th>Docs</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="https://github.com/inexin/Egami/tree/main/src/Egami.Drawing">Egami.Drawing</a></td>
 <td>1.x</td>
 <td>Antialiased paths, shapes, strokes, clips, paints, layers, meshes and recorded drawings on a canvas</td>
 <td>Egami, Egami.Fonts</td>
 <td><a href="guides/drawing.html">Drawing</a>, <a href="guides/egdr-format.html">The .egdr format</a></td>
 </tr>
 <tr>
-<td>Egami.Fonts</td>
+<td><a href="https://github.com/inexin/Egami/tree/main/src/Egami.Fonts">Egami.Fonts</a></td>
 <td>1.x</td>
 <td>TrueType and OpenType fonts, glyph outlines and metrics, subsetting, text shaping and paragraph layout</td>
 <td>Egami</td>
 <td><a href="guides/text.html">Fonts and text</a>, <a href="guides/unicode-text.html">Unicode text and shaping</a>, <a href="guides/paragraph-layout.html">Paragraph layout</a></td>
 </tr>
 <tr>
-<td>Egami.Fonts.Substitutes</td>
+<td><a href="https://github.com/inexin/Egami/tree/main/src/Egami.Fonts.Substitutes">Egami.Fonts.Substitutes</a></td>
 <td>1.0</td>
 <td>Bundled open fonts, metric-compatible with Arial, Helvetica, Times, Courier, Calibri and Cambria, for when those are not installed</td>
 <td>Egami.Fonts</td>
 <td><a href="guides/text.html#substitute-fonts">Fonts and text</a></td>
 </tr>
 <tr>
-<td>Egami.Svg</td>
+<td><a href="https://github.com/inexin/Egami/tree/main/src/Egami.Barcodes">Egami.Barcodes</a></td>
+<td>1.0</td>
+<td>Writes and reads 1D and 2D barcodes</td>
+<td>Egami, Egami.Drawing, Egami.Fonts</td>
+<td><a href="guides/barcodes.html">Barcodes</a>, <a href="guides/barcode-reading.html">Reading barcodes</a></td>
+</tr>
+</tbody>
+</table>
+<h2 id="vector-graphics">Vector graphics</h2>
+<table>
+<thead>
+<tr>
+<th>Package</th>
+<th>Version</th>
+<th>What it does</th>
+<th>Needs</th>
+<th>Docs</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="https://github.com/inexin/Egami/tree/main/src/Egami.Svg">Egami.Svg</a></td>
 <td>1.x</td>
 <td>Reads SVG 1.1 and SVG 2 into an editable element tree, saves it back, and draws it onto any canvas</td>
 <td>Egami, Egami.Drawing, Egami.Fonts, Egami.Css</td>
 <td><a href="guides/svg.html">SVG</a></td>
 </tr>
 <tr>
-<td>Egami.Css</td>
+<td><a href="https://github.com/inexin/Egami/tree/main/src/Egami.Css">Egami.Css</a></td>
 <td>1.x</td>
 <td>CSS syntax, selectors, the cascade, media queries and value parsers</td>
 <td>Nothing</td>
 <td><a href="guides/css.html">CSS</a></td>
 </tr>
 <tr>
-<td>Egami.Metafiles</td>
+<td><a href="https://github.com/inexin/Egami/tree/main/src/Egami.Metafiles">Egami.Metafiles</a></td>
 <td>1.0</td>
 <td>Plays WMF, EMF and EMF+ pictures onto a canvas</td>
 <td>Egami, Egami.Drawing, Egami.Fonts</td>
 <td><a href="guides/metafiles.html">Windows metafiles</a></td>
 </tr>
+</tbody>
+</table>
+<h2 id="video-and-audio">Video and audio</h2>
+<table>
+<thead>
 <tr>
-<td>Egami.Barcodes</td>
-<td>1.0</td>
-<td>Writes and reads 1D and 2D barcodes</td>
-<td>Egami, Egami.Drawing, Egami.Fonts</td>
-<td><a href="guides/barcodes.html">Barcodes</a>, <a href="guides/barcode-reading.html">Reading barcodes</a></td>
+<th>Package</th>
+<th>Version</th>
+<th>What it does</th>
+<th>Needs</th>
+<th>Docs</th>
 </tr>
+</thead>
+<tbody>
 <tr>
-<td>Egami.Video</td>
+<td><a href="https://github.com/inexin/Egami/tree/main/src/Egami.Video">Egami.Video</a></td>
 <td>1.0</td>
 <td>Reads and writes video and audio with Egami rasters as frames: MP4, WebM, Matroska, AVI, IVF, YUV4MPEG2, Ogg, WAV, FLAC, MP3, AIFF and CAF; AV1, VP9 and VP8 decode and encode, Motion JPEG, Opus, Vorbis, FLAC, MP3, AC-3 and ALAC; subtitles, smart cut and scene detection</td>
 <td>Egami</td>
 <td><a href="guides/video.html">Video</a></td>
 </tr>
 <tr>
-<td>Egami.Cli</td>
+<td><a href="https://github.com/inexin/Egami/tree/main/src/Egami.Video.H264">Egami.Video.H264</a></td>
+<td>1.0</td>
+<td>H.264 (AVC) decoding for Egami.Video: progressive Constrained Baseline, Main, High, High 10 and High 4:2:2 in MP4, MOV, Matroska, AVI and raw .h264 files. Opt-in because H.264 is covered by patents</td>
+<td>Egami.Video, the same version</td>
+<td><a href="guides/h264.html">H.264</a></td>
+</tr>
+</tbody>
+</table>
+<h2 id="command-line-tools">Command-line tools</h2>
+<table>
+<thead>
+<tr>
+<th>Package</th>
+<th>Version</th>
+<th>What it does</th>
+<th>Needs</th>
+<th>Docs</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="https://github.com/inexin/Egami/tree/main/src/Egami.Cli">Egami.Cli</a></td>
 <td>1.x</td>
 <td>The <code>egami</code> command: convert, inspect, resize and edit images from a shell, chain steps, run workflow files and batches. A .NET tool, not a library, and the one package with a dependency outside the family: System.CommandLine</td>
 <td>Egami, Egami.Drawing, Egami.Fonts, Egami.Fonts.Substitutes, Egami.Svg, Egami.Css, Egami.Metafiles</td>
 <td><a href="cli/index.html">The egami command</a></td>
 </tr>
 <tr>
-<td>Egami.Cli.Host</td>
-<td>1.x</td>
-<td>The command host of Egami's command-line tools as source: exit codes, globs, output templates, batches and an MCP server, compiled into a tool with internal types only. For tool authors, not for apps</td>
-<td>System.CommandLine, ModelContextProtocol.Core</td>
-<td><a href="https://github.com/inexin/Egami/tree/main/src/Egami.Cli.Host">Source on GitHub</a></td>
-</tr>
-<tr>
-<td>Egami.Video.H264</td>
-<td>1.0</td>
-<td>H.264 (AVC) decoding for Egami.Video: progressive Constrained Baseline, Main, High, High 10 and High 4:2:2 in MP4, MOV, Matroska, AVI and raw .h264 files. Opt-in because H.264 is covered by patents</td>
-<td>Egami.Video, the same version</td>
-<td><a href="guides/h264.html">H.264</a></td>
-</tr>
-<tr>
-<td>Egami.Video.Cli</td>
+<td><a href="https://github.com/inexin/Egami/tree/main/src/Egami.Video.Cli">Egami.Video.Cli</a></td>
 <td>1.0</td>
 <td>The <code>egami-video</code> command: inspect, remux, cut, join, export frames, make clips and convert audio from a shell, with ffmpeg and ffprobe command lines and an MCP server. A .NET tool that carries Egami.Video's version</td>
 <td>Egami.Video, Egami, Egami.Drawing, Egami.Fonts, Egami.Fonts.Substitutes, Egami.Svg, Egami.Metafiles, System.CommandLine, ModelContextProtocol.Core</td>
 <td><a href="video-cli/index.html">The egami-video command</a></td>
 </tr>
 <tr>
-<td>Egami.Heic</td>
+<td><a href="https://github.com/inexin/Egami/tree/main/src/Egami.Cli.Host">Egami.Cli.Host</a></td>
 <td>1.x</td>
-<td>Reads HEIC phone photos (HEVC-coded HEIF), opt-in because HEVC is covered by patents</td>
-<td>Egami, the same version</td>
-<td><a href="formats/heic.html">HEIC</a></td>
+<td>The command host of Egami's command-line tools as source: exit codes, globs, output templates, batches and an MCP server, compiled into a tool with internal types only. For tool authors, not for apps</td>
+<td>System.CommandLine, ModelContextProtocol.Core</td>
+<td><a href="https://github.com/inexin/Egami/tree/main/src/Egami.Cli.Host">Source on GitHub</a></td>
 </tr>
 </tbody>
 </table>
