@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>System.Drawing drop-in | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="System.Drawing drop-in | Egami ">
+      
+      
+      <link rel="icon" href="../../images/favicon.ico">
+      <link rel="stylesheet" href="../../public/docfx.min.css">
+      <link rel="stylesheet" href="../../public/main.css">
+      <meta name="docfx:navrel" content="../../toc.html">
+      <meta name="docfx:tocrel" content="../toc.html">
+      
+      <meta name="docfx:rel" content="../../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/blob/main/docs/articles/guides/system-drawing.md/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../../index.html">
+            <img id="logo" class="svg" src="../../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="systemdrawing-drop-in">System.Drawing drop-in</h1>
+
+<p>Egami.SystemDrawing gives code written for System.Drawing.Common its API on every OS, in managed code: <code>Bitmap</code>, <code>Image</code>,
+<code>Icon</code>, pixel formats, <code>LockBits</code>, the codecs and their encoder parameters, frames and property items. System.Drawing.Common
+runs only on Windows since .NET 6; with this package the same code runs on Linux, macOS and in containers, drawn by Egami.</p>
+<p>The package is a preview (1.0.0-preview.1). This release has bitmaps, pixel access, codecs and icons. <code>Graphics</code>, pens,
+brushes, paths, regions, fonts and text follow in the next previews.</p>
+<h2 id="moving-code-over">Moving code over</h2>
+<p>Replace the System.Drawing.Common package reference with Egami.SystemDrawing. With implicit usings on, the package adds
+<code>System.Drawing</code> and <code>Egami.SystemDrawing</code> as implicit usings, so most files compile unchanged; files that name
+<code>System.Drawing.Imaging</code> types change that line to <code>using Egami.SystemDrawing.Imaging;</code>. Set <code>EgamiSystemDrawingImplicitUsings</code>
+to <code>false</code> in the project file to leave the implicit usings out.</p>
+<p><code>Color</code>, <code>Point</code>, <code>Size</code>, <code>Rectangle</code>, their float forms, <code>KnownColor</code>, <code>SystemColors</code> and <code>ColorTranslator</code> are .NET's own
+System.Drawing.Primitives types, which every OS has, so values pass between your code, other libraries and Egami unchanged.
+Everything else (<code>Bitmap</code>, <code>Image</code>, <code>PixelFormat</code>, <code>ImageFormat</code> and the rest) is defined by the package with
+System.Drawing's names, members, overloads, defaults and exceptions: <code>ArgumentException</code> for &quot;Parameter is not valid&quot;,
+<code>ExternalException</code> for GDI+'s generic error, <code>OutOfMemoryException</code> from <code>Image.FromFile</code> for a file it cannot read.</p>
+<p>The package is source-compatible, not binary-compatible: your code recompiles against it, while a DLL built against
+System.Drawing.Common keeps using System.Drawing.Common.</p>
+<pre><code class="lang-csharp">// The same code as with System.Drawing.Common: only the using lines name Egami.SystemDrawing.
+using Bitmap bitmap = new(64, 32);
+for (int x = 0; x &lt; 64; x++)
+{
+    bitmap.SetPixel(x, 16, Color.FromArgb(255, x * 4, 0, 255 - (x * 4)));
+}
+
+Color middle = bitmap.GetPixel(32, 16);  // ARGB(255, 128, 0, 127)
+bitmap.SetResolution(300, 300);
+bitmap.RotateFlip(RotateFlipType.Rotate90FlipNone);
+bitmap.Save(output, ImageFormat.Png);
+
+GraphicsUnit unit = GraphicsUnit.Inch;
+RectangleF bounds = bitmap.GetBounds(ref unit);  // 32 by 64, in pixels
+</code></pre>
+<p><code>GraphicsUnit</code> and <code>RotateFlipType</code> (with System.Drawing's shared values, such as <code>RotateNoneFlipY</code> equal to <code>Rotate180FlipX</code>)
+live in <code>Egami.SystemDrawing</code>, as they do in <code>System.Drawing</code>.</p>
+<h2 id="bitmaps-and-pixel-formats">Bitmaps and pixel formats</h2>
+<p>A <code>Bitmap</code> holds its pixels in GDI+'s own memory layout for each <code>PixelFormat</code>: rows of the format's bits, each padded to a
+multiple of four bytes. The 14 bitmap formats are all there, and pixels convert exactly as GDI+ converts them, measured on
+Windows for every 8-bit value and every color and alpha pair:</p>
+<ul>
+<li>5 and 6-bit channels (<code>Format16bppRgb555</code>, <code>Format16bppRgb565</code>, <code>Format16bppArgb1555</code>) truncate when written and repeat their
+high bits when read; 1555's alpha bit is set from alpha 128.</li>
+<li><code>Format32bppPArgb</code> premultiplies with rounding and divides out through GDI+'s 16-bit reciprocal of alpha.</li>
+<li><code>Format32bppRgb</code> keeps the fourth byte it is given and reads as opaque.</li>
+<li><code>Format48bppRgb</code>, <code>Format64bppArgb</code> and <code>Format64bppPArgb</code> hold linear light from 0 to 8192 through the sRGB curve, as GDI+
+does, so 8-bit colors round-trip.</li>
+<li>Indexed formats look up their palette; <code>SetPixel</code> on them throws <code>InvalidOperationException</code>, and <code>Format16bppGrayScale</code>
+bitmaps exist but <code>GetPixel</code> and <code>SetPixel</code> throw, as in GDI+.</li>
+</ul>
+<p><code>Image.GetPixelFormatSize</code>, <code>IsAlphaPixelFormat</code>, <code>IsExtendedPixelFormat</code> and <code>IsCanonicalPixelFormat</code> read the format's bits,
+and <code>Image.Flags</code> holds <code>ImageFlags</code> values: alpha, color space, and for a file, read-only and a stated resolution.</p>
+<pre><code class="lang-csharp">// Every GDI+ pixel format, with GDI+'s conversions: 5-bit channels truncate when written and repeat their high bits when read.
+using Bitmap rgb555 = new(1, 1, PixelFormat.Format16bppRgb555);
+rgb555.SetPixel(0, 0, Color.FromArgb(10, 20, 30));
+Color read = rgb555.GetPixel(0, 0);  // ARGB(255, 8, 16, 24)
+
+// 48 and 64-bit formats hold linear light from 0 to 8192, as in GDI+.
+using Bitmap deep = new(1, 1, PixelFormat.Format48bppRgb);
+deep.SetPixel(0, 0, Color.FromArgb(255, 200, 100, 50));
+int bits = Image.GetPixelFormatSize(deep.PixelFormat);                                   // 48
+bool alpha = Image.IsAlphaPixelFormat(PixelFormat.Format64bppArgb);                      // true
+ImageFlags flags = (ImageFlags)new Bitmap(1, 1, PixelFormat.Format32bppArgb).Flags;     // HasAlpha
+</code></pre>
+<p><code>Clone(rect, format)</code> copies an area into another format, <code>ConvertFormat</code> converts in place, <code>MakeTransparent</code> keys out a color
+(the bottom-left pixel's by default) into 32-bit ARGB, <code>RotateFlip</code> turns and mirrors, and <code>GetThumbnailImage</code> makes a 32-bit
+premultiplied copy. <code>new Bitmap(image, size)</code> draws another image at a size, bilinearly, as GDI+'s DrawImage does. A bitmap made
+with <code>new Bitmap(width, height, stride, format, scan0)</code> reads and writes the caller's memory in place.</p>
+<h2 id="locking-pixels">Locking pixels</h2>
+<p><code>LockBits</code> with an <code>ImageLockMode</code> returns a <code>BitmapData</code>: where the first locked row is, the bytes from one row to the next, and
+the size and format. Locked in the bitmap's own format, the pointer is into the bitmap's memory. Locked in another format, it is
+a converted copy, written back on <code>UnlockBits</code> when the lock writes. <code>ImageLockMode.UserInputBuffer</code> locks into a buffer the
+caller's <code>BitmapData</code> points to. While a bitmap is locked, <code>GetPixel</code>, <code>SetPixel</code> and a second lock throw <code>ExternalException</code>, as
+in GDI+.</p>
+<pre><code class="lang-csharp">// Locked in its own format, the bitmap's pixels are its own memory; in another format they are a converted copy that
+// goes back into the bitmap on UnlockBits.
+BitmapData data = bitmap.LockBits(new Rectangle(0, 0, 16, 8), ImageLockMode.ReadWrite, PixelFormat.Format32bppArgb);
+byte[] row = new byte[data.Stride];
+for (int y = 0; y &lt; data.Height; y++)
+{
+    Marshal.Copy(data.Scan0 + (y * data.Stride), row, 0, row.Length);
+    for (int x = 0; x &lt; data.Width; x++)
+    {
+        row[(x * 4) + 2] = 255;  // red
+    }
+
+    Marshal.Copy(row, 0, data.Scan0 + (y * data.Stride), row.Length);
+}
+
+bitmap.UnlockBits(data);
+</code></pre><h2 id="palettes">Palettes</h2>
+<p>Indexed bitmaps start with GDI+'s default palettes: black and white, the 16 VGA colors, or for 8 bits the VGA colors, 24
+transparent entries and a 6 by 6 by 6 cube. <code>Image.Palette</code> hands out a copy as a <code>ColorPalette</code>; set it back to change it. Its
+<code>Flags</code> hold <code>PaletteFlags</code>. <code>new ColorPalette(PaletteType)</code> builds GDI+'s fixed halftone palettes, and
+<code>ColorPalette.CreateOptimalPalette</code> builds one from a bitmap's colors with Egami's palette builder.</p>
+<p>Converting to an indexed format maps each color as GDI+ does, through a table of 16 levels a channel: <code>Clone</code> uses GDI+'s
+halftone palettes (2, 16 or 224 colors), a lock uses the format's default palette, and <code>ConvertFormat</code> the palette or
+<code>PaletteType</code> it is given. Every <code>DitherType</code> maps to the nearest color; Egami does not dither yet.</p>
+<pre><code class="lang-csharp">// Indexed bitmaps keep GDI+'s default palettes; Palette hands out a copy to change and set back.
+using Bitmap indexed = new(4, 4, PixelFormat.Format8bppIndexed);
+ColorPalette palette = indexed.Palette;
+palette.Entries[0] = Color.Navy;
+indexed.Palette = palette;
+bool halftone = (palette.Flags &amp; (int)PaletteFlags.Halftone) != 0;  // true
+
+// ConvertFormat maps to a fixed palette, and Clone to an indexed format uses GDI+'s halftone palettes.
+using Bitmap photo = new(System.IO.Path.Combine(Images, &quot;duck.png&quot;));
+photo.ConvertFormat(PixelFormat.Format8bppIndexed, DitherType.None, PaletteType.FixedHalftone252);
+using Bitmap bilevel = photo.Clone(new Rectangle(0, 0, photo.Width, photo.Height), PixelFormat.Format1bppIndexed);
+</code></pre><h2 id="loading-and-saving">Loading and saving</h2>
+<p><code>Image.FromFile</code>, <code>Image.FromStream</code> and the <code>Bitmap</code> constructors read through Egami's codecs, which read every format Egami
+does, more than GDI+. Images come in the pixel format GDI+ gives each file type: 24-bit PNG and JPEG as <code>Format24bppRgb</code>,
+palette PNG, GIF and BMP files as their indexed formats with their palettes, gray PNG and 16-bit gray TIFF as <code>Format32bppArgb</code>,
+gray JPEG and 8-bit gray TIFF as <code>Format8bppIndexed</code> with a gray palette, plain 32-bit BMP as <code>Format32bppRgb</code>, 16-bit RGB TIFF
+as <code>Format48bppRgb</code>, icons and animated GIFs as <code>Format32bppArgb</code>. The resolution is the file's, computed as GDI+ computes it
+(3780 pixels a meter is 96.01199), or 96. <code>RawFormat</code> is the file's <code>ImageFormat</code>.</p>
+<p><code>Save</code> writes BMP, PNG, GIF, TIFF and JPEG, the encoders <code>ImageCodecInfo.GetImageEncoders</code> lists with GDI+'s class ids, MIME
+types and <code>ImageCodecFlags</code>. An <code>EncoderParameters</code> holds <code>EncoderParameter</code> settings, by <code>Encoder</code>: <code>Encoder.Quality</code> sets
+JPEG quality (75 by default), <code>Encoder.Compression</code> with an <code>EncoderValue</code> sets TIFF compression (LZW by default),
+<code>Encoder.ColorDepth</code> writes 1, 4 or 8-bit TIFF, and <code>Encoder.SaveFlag</code> with <code>SaveAdd</code> writes a multipage TIFF.
+<code>EncoderParameterValueType</code> says what type a setting's values have. <code>GetEncoderParameterList</code> lists what each encoder takes,
+as GDI+ lists it.</p>
+<pre><code class="lang-csharp">// The encoders GDI+ lists, by MIME type, with encoder parameters for JPEG quality and TIFF compression.
+ImageCodecInfo jpeg = ImageCodecInfo.GetImageEncoders().First(c =&gt; c.MimeType == &quot;image/jpeg&quot;);
+using EncoderParameters settings = new(1);
+settings.Param[0] = new EncoderParameter(Encoder.Quality, 85L);
+using MemoryStream file = new();
+photo.Save(file, jpeg, settings);
+
+file.Position = 0;
+using Image loaded = Image.FromStream(file);
+bool fromJpeg = loaded.RawFormat.Equals(ImageFormat.Jpeg);                           // true
+PixelFormat format = loaded.PixelFormat;                                             // Format24bppRgb
+bool readOnly = ((ImageFlags)loaded.Flags).HasFlag(ImageFlags.ReadOnly);             // true
+ImageCodecFlags can = jpeg.Flags;                                                    // Encoder, Decoder, SupportBitmap, Builtin
+EncoderParameterValueType type = settings.Param[0].ValueType;                        // ValueTypeLong
+EncoderValue lzw = EncoderValue.CompressionLZW;                                      // for Encoder.Compression and TIFF
+</code></pre>
+<p>BMP is written as GDI+ writes it, with the bitmap's own rows, so a 32-bit bitmap reads back as <code>Format32bppRgb</code>. GIF is written
+with the default 8-bit palette.</p>
+<h2 id="frames-and-properties">Frames and properties</h2>
+<p>A multipage TIFF counts its pages in <code>FrameDimension.Page</code> and an animated GIF its frames in <code>FrameDimension.Time</code>;
+<code>GetFrameCount</code> and <code>SelectActiveFrame</code> choose one. <code>PropertyItems</code>, <code>GetPropertyItem</code>, <code>SetPropertyItem</code> and
+<code>RemovePropertyItem</code> hold what GDI+ reports as <code>PropertyItem</code> values: the EXIF tags, every tag of a TIFF's first directory, a
+JPEG's quantization tables (0x5090 and 0x5091), a PNG's gamma and pixel size, and a GIF's frame delays, loop count, global
+palette, background and transparent index and comment, each with its tag id, type and little-endian bytes.</p>
+<pre><code class="lang-csharp">// An animated GIF counts its frames in time; property items hold its delays (0x5100) and loop count (0x5101).
+using Image animation = Image.FromFile(System.IO.Path.Combine(Images, &quot;loop.gif&quot;));
+FrameDimension time = new(animation.FrameDimensionsList[0]);  // FrameDimension.Time
+int frames = animation.GetFrameCount(time);
+PropertyItem delays = animation.GetPropertyItem(0x5100)!;     // 4 bytes a frame, in hundredths of a second
+animation.SelectActiveFrame(time, frames - 1);
+
+// Thumbnails are 32-bit premultiplied.
+using Image thumbnail = animation.GetThumbnailImage(16, 12, null, IntPtr.Zero);
+</code></pre>
+<p><code>GetThumbnailImage</code> takes an <code>Image.GetThumbnailImageAbort</code> callback, which, as in GDI+, is never called.</p>
+<h2 id="icons">Icons</h2>
+<p><code>Icon</code> loads an ICO file and shows the image nearest the size asked for, 32 by 32 by default, chosen as System.Drawing chooses:
+the smallest difference in width plus height, then the most bits a pixel. <code>ToBitmap</code> gives it as 32-bit ARGB, and <code>Save</code> writes
+the file it came from. <code>Image.FromFile</code> on an icon takes the last image of the file, as GDI+'s decoder does.</p>
+<pre><code class="lang-csharp">// An icon shows the image nearest the size asked for, as System.Drawing chooses it, and saves the file it came from.
+using Icon icon = new(System.IO.Path.Combine(Images, &quot;app.ico&quot;), 24, 24);
+using Bitmap image = icon.ToBitmap();  // 24 by 24, 32-bit ARGB
+using MemoryStream copy = new();
+icon.Save(copy);
+</code></pre><h2 id="what-throws-on-every-os">What throws on every OS</h2>
+<p>Members that need Windows handles exist so code compiles, throw <code>PlatformNotSupportedException</code> with a message naming what to
+use instead, and carry <code>[Obsolete]</code> with one diagnostic id per group, so the compiler warns at each use. Suppress an id in the
+project file (<code>&lt;NoWarn&gt;$(NoWarn);EGSD0001&lt;/NoWarn&gt;</code>), around a call (<code>#pragma warning disable EGSD0001</code>), or raise it to an
+error in <code>.editorconfig</code>.</p>
+<p><a id="egsd0001"></a></p>
+<ul>
+<li><strong>EGSD0001, Windows handles</strong>: <code>Bitmap.GetHbitmap</code>, <code>GetHicon</code>, <code>FromHicon</code> and <code>FromResource</code>, <code>Image.FromHbitmap</code>,
+<code>Icon.Handle</code> and <code>Icon.FromHandle</code>. Use <code>LockBits</code> for the pixels and <code>new Icon(path)</code> for icons.</li>
+</ul>
+<p><a id="egsd0002"></a></p>
+<ul>
+<li><strong>EGSD0002, screen capture</strong>: <code>Graphics.CopyFromScreen</code>, which comes with <code>Graphics</code>.</li>
+</ul>
+<p><a id="egsd0003"></a></p>
+<ul>
+<li><strong>EGSD0003, Windows' own icons</strong>: <code>Icon.ExtractAssociatedIcon</code> and <code>Icon.ExtractIcon</code>. Load an icon file instead.</li>
+</ul>
+<h2 id="known-differences">Known differences</h2>
+<p>The package is measured against System.Drawing on Windows with the same probe programs compiled against both (egami-compare,
+<code>sysdrawing/</code>). Pixel formats, conversions, palettes, strides, locks and the codec list match GDI+ exactly. Where it differs:</p>
+<ul>
+<li>JPEG and GIF files Egami writes differ from GDI+'s in their pixels: the JPEG encoder and GIF color mapping are Egami's.</li>
+<li><code>CreateOptimalPalette</code> chooses different colors.</li>
+<li>CMYK JPEG and TIFF files load as <code>Format24bppRgb</code>; GDI+ gives them a CMYK format System.Drawing has no name for.</li>
+<li>Egami reads BMP files GDI+ rejects (OS/2, 2-bit, RLE24, embedded PNG and JPEG).</li>
+</ul>
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/docs/articles/guides/system-drawing.md/#L1" class="edit-link">Edit this page</a>
+        </div>
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

@@ -1,0 +1,1492 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class Bitmap | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class Bitmap | Egami ">
+      
+      <meta name="description" content="An image made of pixels, as System.Drawing&#39;s Bitmap: any of GDI+&#39;s 14 pixel formats, with GetPixel, SetPixel, LockBits, Clone, MakeTransparent and the codecs. Pixels are kept in GDI+&#39;s own memory layout and converted exactly as GDI+ converts them, so LockBits code and pixel values carry over.">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_SystemDrawing_Bitmap.md&amp;value=---%0Auid%3A%20Egami.SystemDrawing.Bitmap%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.SystemDrawing.Bitmap">
+
+
+
+  <h1 id="Egami_SystemDrawing_Bitmap" data-uid="Egami.SystemDrawing.Bitmap" class="text-break">
+Class Bitmap  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Bitmap.cs/#L20"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a>.<a class="xref" href="Egami.SystemDrawing.html">SystemDrawing</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.SystemDrawing.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>An image made of pixels, as System.Drawing's Bitmap: any of GDI+'s 14 pixel formats, with GetPixel, SetPixel, LockBits,
+Clone, MakeTransparent and the codecs. Pixels are kept in GDI+'s own memory layout and converted exactly as GDI+ converts
+them, so LockBits code and pixel values carry over.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public sealed class Bitmap : Image, IDisposable, ICloneable</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.marshalbyrefobject">MarshalByRefObject</a></div>
+      <div><a class="xref" href="Egami.SystemDrawing.Image.html">Image</a></div>
+      <div><span class="xref">Bitmap</span></div>
+    </dd>
+  </dl>
+
+  <dl class="typelist implements">
+    <dt>Implements</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.idisposable">IDisposable</a></div>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.icloneable">ICloneable</a></div>
+    </dd>
+  </dl>
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_Tag">Image.Tag</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_Width">Image.Width</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_Height">Image.Height</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_Size">Image.Size</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_PhysicalDimension">Image.PhysicalDimension</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_HorizontalResolution">Image.HorizontalResolution</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_VerticalResolution">Image.VerticalResolution</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_Flags">Image.Flags</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_PixelFormat">Image.PixelFormat</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_RawFormat">Image.RawFormat</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_Palette">Image.Palette</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_FrameDimensionsList">Image.FrameDimensionsList</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_PropertyIdList">Image.PropertyIdList</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_PropertyItems">Image.PropertyItems</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_FromFile_System_String_">Image.FromFile(string)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_FromFile_System_String_System_Boolean_">Image.FromFile(string, bool)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_FromStream_System_IO_Stream_">Image.FromStream(Stream)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_FromStream_System_IO_Stream_System_Boolean_">Image.FromStream(Stream, bool)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_FromStream_System_IO_Stream_System_Boolean_System_Boolean_">Image.FromStream(Stream, bool, bool)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_FromHbitmap_System_IntPtr_">Image.FromHbitmap(nint)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_FromHbitmap_System_IntPtr_System_IntPtr_">Image.FromHbitmap(nint, nint)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_GetPixelFormatSize_Egami_SystemDrawing_Imaging_PixelFormat_">Image.GetPixelFormatSize(PixelFormat)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_IsAlphaPixelFormat_Egami_SystemDrawing_Imaging_PixelFormat_">Image.IsAlphaPixelFormat(PixelFormat)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_IsExtendedPixelFormat_Egami_SystemDrawing_Imaging_PixelFormat_">Image.IsExtendedPixelFormat(PixelFormat)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_IsCanonicalPixelFormat_Egami_SystemDrawing_Imaging_PixelFormat_">Image.IsCanonicalPixelFormat(PixelFormat)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_GetBounds_Egami_SystemDrawing_GraphicsUnit__">Image.GetBounds(ref GraphicsUnit)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_GetFrameCount_Egami_SystemDrawing_Imaging_FrameDimension_">Image.GetFrameCount(FrameDimension)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_SelectActiveFrame_Egami_SystemDrawing_Imaging_FrameDimension_System_Int32_">Image.SelectActiveFrame(FrameDimension, int)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_GetPropertyItem_System_Int32_">Image.GetPropertyItem(int)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_SetPropertyItem_Egami_SystemDrawing_Imaging_PropertyItem_">Image.SetPropertyItem(PropertyItem)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_RemovePropertyItem_System_Int32_">Image.RemovePropertyItem(int)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_GetEncoderParameterList_System_Guid_">Image.GetEncoderParameterList(Guid)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_Save_System_String_">Image.Save(string)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_Save_System_String_Egami_SystemDrawing_Imaging_ImageFormat_">Image.Save(string, ImageFormat)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_Save_System_String_Egami_SystemDrawing_Imaging_ImageCodecInfo_Egami_SystemDrawing_Imaging_EncoderParameters_">Image.Save(string, ImageCodecInfo, EncoderParameters)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_Save_System_IO_Stream_Egami_SystemDrawing_Imaging_ImageFormat_">Image.Save(Stream, ImageFormat)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_Save_System_IO_Stream_Egami_SystemDrawing_Imaging_ImageCodecInfo_Egami_SystemDrawing_Imaging_EncoderParameters_">Image.Save(Stream, ImageCodecInfo, EncoderParameters)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_SaveAdd_Egami_SystemDrawing_Imaging_EncoderParameters_">Image.SaveAdd(EncoderParameters)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_SaveAdd_Egami_SystemDrawing_Image_Egami_SystemDrawing_Imaging_EncoderParameters_">Image.SaveAdd(Image, EncoderParameters)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_RotateFlip_Egami_SystemDrawing_RotateFlipType_">Image.RotateFlip(RotateFlipType)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_GetThumbnailImage_System_Int32_System_Int32_Egami_SystemDrawing_Image_GetThumbnailImageAbort_System_IntPtr_">Image.GetThumbnailImage(int, int, Image.GetThumbnailImageAbort, nint)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_Dispose">Image.Dispose()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.marshalbyrefobject.getlifetimeservice">MarshalByRefObject.GetLifetimeService()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.marshalbyrefobject.initializelifetimeservice">MarshalByRefObject.InitializeLifetimeService()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+  </dd></dl>
+
+
+
+  <h2 id="Egami_SystemDrawing_Bitmap_examples">Examples</h2>
+  <pre><code class="lang-csharp">// The same code as with System.Drawing.Common: only the using lines name Egami.SystemDrawing.
+using Bitmap bitmap = new(64, 32);
+for (int x = 0; x &lt; 64; x++)
+{
+    bitmap.SetPixel(x, 16, Color.FromArgb(255, x * 4, 0, 255 - (x * 4)));
+}
+
+Color middle = bitmap.GetPixel(32, 16);  // ARGB(255, 128, 0, 127)
+bitmap.SetResolution(300, 300);
+bitmap.RotateFlip(RotateFlipType.Rotate90FlipNone);
+bitmap.Save(output, ImageFormat.Png);
+
+GraphicsUnit unit = GraphicsUnit.Inch;
+RectangleF bounds = bitmap.GetBounds(ref unit);  // 32 by 64, in pixels</code></pre>
+
+
+
+
+  <h2 class="section" id="constructors">Constructors
+</h2>
+
+
+  <a id="Egami_SystemDrawing_Bitmap__ctor_" data-uid="Egami.SystemDrawing.Bitmap.#ctor*"></a>
+
+  <h3 id="Egami_SystemDrawing_Bitmap__ctor_Egami_SystemDrawing_Image_" data-uid="Egami.SystemDrawing.Bitmap.#ctor(Egami.SystemDrawing.Image)">
+  Bitmap(Image)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Bitmap.cs/#L110"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Initializes a new instance of the <a class="xref" href="Egami.SystemDrawing.Bitmap.html">Bitmap</a> class drawn from another image, as 32-bit ARGB.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Bitmap(Image original)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>original</code> <a class="xref" href="Egami.SystemDrawing.Image.html">Image</a></dt>
+    <dd><p>The image.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Bitmap__ctor_" data-uid="Egami.SystemDrawing.Bitmap.#ctor*"></a>
+
+  <h3 id="Egami_SystemDrawing_Bitmap__ctor_Egami_SystemDrawing_Image_System_Drawing_Size_" data-uid="Egami.SystemDrawing.Bitmap.#ctor(Egami.SystemDrawing.Image,System.Drawing.Size)">
+  Bitmap(Image, Size)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Bitmap.cs/#L118"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Initializes a new instance of the <a class="xref" href="Egami.SystemDrawing.Bitmap.html">Bitmap</a> class drawn from another image at a size, as 32-bit ARGB.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Bitmap(Image original, Size newSize)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>original</code> <a class="xref" href="Egami.SystemDrawing.Image.html">Image</a></dt>
+    <dd><p>The image.</p>
+</dd>
+    <dt><code>newSize</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.size">Size</a></dt>
+    <dd><p>The size.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Bitmap__ctor_" data-uid="Egami.SystemDrawing.Bitmap.#ctor*"></a>
+
+  <h3 id="Egami_SystemDrawing_Bitmap__ctor_Egami_SystemDrawing_Image_System_Int32_System_Int32_" data-uid="Egami.SystemDrawing.Bitmap.#ctor(Egami.SystemDrawing.Image,System.Int32,System.Int32)">
+  Bitmap(Image, int, int)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Bitmap.cs/#L127"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Initializes a new instance of the <a class="xref" href="Egami.SystemDrawing.Bitmap.html">Bitmap</a> class drawn from another image at a size, as 32-bit ARGB.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Bitmap(Image original, int width, int height)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>original</code> <a class="xref" href="Egami.SystemDrawing.Image.html">Image</a></dt>
+    <dd><p>The image.</p>
+</dd>
+    <dt><code>width</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The width.</p>
+</dd>
+    <dt><code>height</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The height.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Bitmap__ctor_" data-uid="Egami.SystemDrawing.Bitmap.#ctor*"></a>
+
+  <h3 id="Egami_SystemDrawing_Bitmap__ctor_System_IO_Stream_" data-uid="Egami.SystemDrawing.Bitmap.#ctor(System.IO.Stream)">
+  Bitmap(Stream)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Bitmap.cs/#L87"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Initializes a new instance of the <a class="xref" href="Egami.SystemDrawing.Bitmap.html">Bitmap</a> class from image data in a stream.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Bitmap(Stream stream)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>stream</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.io.stream">Stream</a></dt>
+    <dd><p>The stream.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Bitmap__ctor_" data-uid="Egami.SystemDrawing.Bitmap.#ctor*"></a>
+
+  <h3 id="Egami_SystemDrawing_Bitmap__ctor_System_IO_Stream_System_Boolean_" data-uid="Egami.SystemDrawing.Bitmap.#ctor(System.IO.Stream,System.Boolean)">
+  Bitmap(Stream, bool)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Bitmap.cs/#L95"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Initializes a new instance of the <a class="xref" href="Egami.SystemDrawing.Bitmap.html">Bitmap</a> class from image data in a stream.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Bitmap(Stream stream, bool useIcm)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>stream</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.io.stream">Stream</a></dt>
+    <dd><p>The stream.</p>
+</dd>
+    <dt><code>useIcm</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>Whether to apply the file's color profile; Egami leaves colors as stored.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Bitmap__ctor_" data-uid="Egami.SystemDrawing.Bitmap.#ctor*"></a>
+
+  <h3 id="Egami_SystemDrawing_Bitmap__ctor_System_Int32_System_Int32_" data-uid="Egami.SystemDrawing.Bitmap.#ctor(System.Int32,System.Int32)">
+  Bitmap(int, int)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Bitmap.cs/#L28"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Initializes a new instance of the <a class="xref" href="Egami.SystemDrawing.Bitmap.html">Bitmap</a> class: transparent black, 32-bit ARGB.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Bitmap(int width, int height)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>width</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The width in pixels.</p>
+</dd>
+    <dt><code>height</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The height in pixels.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>A size is zero or negative.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_SystemDrawing_Bitmap__ctor_" data-uid="Egami.SystemDrawing.Bitmap.#ctor*"></a>
+
+  <h3 id="Egami_SystemDrawing_Bitmap__ctor_System_Int32_System_Int32_Egami_SystemDrawing_Imaging_PixelFormat_" data-uid="Egami.SystemDrawing.Bitmap.#ctor(System.Int32,System.Int32,Egami.SystemDrawing.Imaging.PixelFormat)">
+  Bitmap(int, int, PixelFormat)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Bitmap.cs/#L38"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Initializes a new instance of the <a class="xref" href="Egami.SystemDrawing.Bitmap.html">Bitmap</a> class in a pixel format, all zero bits.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Bitmap(int width, int height, PixelFormat format)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>width</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The width in pixels.</p>
+</dd>
+    <dt><code>height</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The height in pixels.</p>
+</dd>
+    <dt><code>format</code> <a class="xref" href="Egami.SystemDrawing.Imaging.PixelFormat.html">PixelFormat</a></dt>
+    <dd><p>The pixel format.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>A size is zero or negative, or the format is not a bitmap format.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_SystemDrawing_Bitmap__ctor_" data-uid="Egami.SystemDrawing.Bitmap.#ctor*"></a>
+
+  <h3 id="Egami_SystemDrawing_Bitmap__ctor_System_Int32_System_Int32_System_Int32_Egami_SystemDrawing_Imaging_PixelFormat_System_IntPtr_" data-uid="Egami.SystemDrawing.Bitmap.#ctor(System.Int32,System.Int32,System.Int32,Egami.SystemDrawing.Imaging.PixelFormat,System.IntPtr)">
+  Bitmap(int, int, int, PixelFormat, nint)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Bitmap.cs/#L53"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Initializes a new instance of the <a class="xref" href="Egami.SystemDrawing.Bitmap.html">Bitmap</a> class over pixels in the caller's memory, which the bitmap reads and
+writes in place and which must outlive it. A zero address gets the bitmap its own memory.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Bitmap(int width, int height, int stride, PixelFormat format, nint scan0)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>width</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The width in pixels.</p>
+</dd>
+    <dt><code>height</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The height in pixels.</p>
+</dd>
+    <dt><code>stride</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The bytes from one row to the next; negative for bottom-up rows.</p>
+</dd>
+    <dt><code>format</code> <a class="xref" href="Egami.SystemDrawing.Imaging.PixelFormat.html">PixelFormat</a></dt>
+    <dd><p>The pixel format.</p>
+</dd>
+    <dt><code>scan0</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.intptr">nint</a></dt>
+    <dd><p>The address of the first row, or zero.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Bitmap__ctor_" data-uid="Egami.SystemDrawing.Bitmap.#ctor*"></a>
+
+  <h3 id="Egami_SystemDrawing_Bitmap__ctor_System_String_" data-uid="Egami.SystemDrawing.Bitmap.#ctor(System.String)">
+  Bitmap(string)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Bitmap.cs/#L72"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Initializes a new instance of the <a class="xref" href="Egami.SystemDrawing.Bitmap.html">Bitmap</a> class from an image file.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Bitmap(string filename)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>filename</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The file.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Bitmap__ctor_" data-uid="Egami.SystemDrawing.Bitmap.#ctor*"></a>
+
+  <h3 id="Egami_SystemDrawing_Bitmap__ctor_System_String_System_Boolean_" data-uid="Egami.SystemDrawing.Bitmap.#ctor(System.String,System.Boolean)">
+  Bitmap(string, bool)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Bitmap.cs/#L80"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Initializes a new instance of the <a class="xref" href="Egami.SystemDrawing.Bitmap.html">Bitmap</a> class from an image file.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Bitmap(string filename, bool useIcm)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>filename</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The file.</p>
+</dd>
+    <dt><code>useIcm</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>Whether to apply the file's color profile; Egami leaves colors as stored.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Bitmap__ctor_" data-uid="Egami.SystemDrawing.Bitmap.#ctor*"></a>
+
+  <h3 id="Egami_SystemDrawing_Bitmap__ctor_System_Type_System_String_" data-uid="Egami.SystemDrawing.Bitmap.#ctor(System.Type,System.String)">
+  Bitmap(Type, string)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Bitmap.cs/#L103"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Initializes a new instance of the <a class="xref" href="Egami.SystemDrawing.Bitmap.html">Bitmap</a> class from an image embedded in an assembly.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Bitmap(Type type, string resource)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>type</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.type">Type</a></dt>
+    <dd><p>A type whose assembly and namespace hold the resource.</p>
+</dd>
+    <dt><code>resource</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The resource's name within the type's namespace.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="Egami_SystemDrawing_Bitmap_Clone_" data-uid="Egami.SystemDrawing.Bitmap.Clone*"></a>
+
+  <h3 id="Egami_SystemDrawing_Bitmap_Clone" data-uid="Egami.SystemDrawing.Bitmap.Clone">
+  Clone()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Bitmap.cs/#L244"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>A copy with every frame, the palette, resolution and properties.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public override object Clone()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></dt>
+    <dd><p>The copy.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Bitmap_Clone_" data-uid="Egami.SystemDrawing.Bitmap.Clone*"></a>
+
+  <h3 id="Egami_SystemDrawing_Bitmap_Clone_System_Drawing_Rectangle_Egami_SystemDrawing_Imaging_PixelFormat_" data-uid="Egami.SystemDrawing.Bitmap.Clone(System.Drawing.Rectangle,Egami.SystemDrawing.Imaging.PixelFormat)">
+  Clone(Rectangle, PixelFormat)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Bitmap.cs/#L217"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>A copy of an area in a pixel format, converted as GDI+ converts.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Bitmap Clone(Rectangle rect, PixelFormat format)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>rect</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.rectangle">Rectangle</a></dt>
+    <dd><p>The area.</p>
+</dd>
+    <dt><code>format</code> <a class="xref" href="Egami.SystemDrawing.Imaging.PixelFormat.html">PixelFormat</a></dt>
+    <dd><p>The format.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Bitmap.html">Bitmap</a></dt>
+    <dd><p>The copy.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.runtime.interopservices.externalexception">ExternalException</a></dt>
+    <dd><p>The area is not inside the bitmap.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_SystemDrawing_Bitmap_Clone_" data-uid="Egami.SystemDrawing.Bitmap.Clone*"></a>
+
+  <h3 id="Egami_SystemDrawing_Bitmap_Clone_System_Drawing_RectangleF_Egami_SystemDrawing_Imaging_PixelFormat_" data-uid="Egami.SystemDrawing.Bitmap.Clone(System.Drawing.RectangleF,Egami.SystemDrawing.Imaging.PixelFormat)">
+  Clone(RectangleF, PixelFormat)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Bitmap.cs/#L239"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>A copy of an area in a pixel format; the area's position and size are rounded to whole pixels.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Bitmap Clone(RectangleF rect, PixelFormat format)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>rect</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.rectanglef">RectangleF</a></dt>
+    <dd><p>The area.</p>
+</dd>
+    <dt><code>format</code> <a class="xref" href="Egami.SystemDrawing.Imaging.PixelFormat.html">PixelFormat</a></dt>
+    <dd><p>The format.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Bitmap.html">Bitmap</a></dt>
+    <dd><p>The copy.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Bitmap_ConvertFormat_" data-uid="Egami.SystemDrawing.Bitmap.ConvertFormat*"></a>
+
+  <h3 id="Egami_SystemDrawing_Bitmap_ConvertFormat_Egami_SystemDrawing_Imaging_PixelFormat_" data-uid="Egami.SystemDrawing.Bitmap.ConvertFormat(Egami.SystemDrawing.Imaging.PixelFormat)">
+  ConvertFormat(PixelFormat)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Bitmap.cs/#L394"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Converts the bitmap to another pixel format in place.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void ConvertFormat(PixelFormat format)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>format</code> <a class="xref" href="Egami.SystemDrawing.Imaging.PixelFormat.html">PixelFormat</a></dt>
+    <dd><p>The format.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Bitmap_ConvertFormat_" data-uid="Egami.SystemDrawing.Bitmap.ConvertFormat*"></a>
+
+  <h3 id="Egami_SystemDrawing_Bitmap_ConvertFormat_Egami_SystemDrawing_Imaging_PixelFormat_Egami_SystemDrawing_Imaging_DitherType_Egami_SystemDrawing_Imaging_PaletteType_Egami_SystemDrawing_Imaging_ColorPalette_System_Single_" data-uid="Egami.SystemDrawing.Bitmap.ConvertFormat(Egami.SystemDrawing.Imaging.PixelFormat,Egami.SystemDrawing.Imaging.DitherType,Egami.SystemDrawing.Imaging.PaletteType,Egami.SystemDrawing.Imaging.ColorPalette,System.Single)">
+  ConvertFormat(PixelFormat, DitherType, PaletteType, ColorPalette?, float)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Bitmap.cs/#L411"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Converts the bitmap to another pixel format in place, to a palette for an indexed format.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void ConvertFormat(PixelFormat format, DitherType ditherType, PaletteType paletteType = PaletteType.Custom, ColorPalette? palette = null, float alphaThresholdPercent = 0)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>format</code> <a class="xref" href="Egami.SystemDrawing.Imaging.PixelFormat.html">PixelFormat</a></dt>
+    <dd><p>The format.</p>
+</dd>
+    <dt><code>ditherType</code> <a class="xref" href="Egami.SystemDrawing.Imaging.DitherType.html">DitherType</a></dt>
+    <dd><p>The dithering; Egami maps each pixel to the nearest color for every type.</p>
+</dd>
+    <dt><code>paletteType</code> <a class="xref" href="Egami.SystemDrawing.Imaging.PaletteType.html">PaletteType</a></dt>
+    <dd><p>The fixed palette when <code class="paramref">palette</code> is null.</p>
+</dd>
+    <dt><code>palette</code> <a class="xref" href="Egami.SystemDrawing.Imaging.ColorPalette.html">ColorPalette</a></dt>
+    <dd><p>The palette for an indexed format, or null.</p>
+</dd>
+    <dt><code>alphaThresholdPercent</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>The alpha, 0 to 100 percent, below which a pixel takes a transparent palette entry.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Bitmap_FromHicon_" data-uid="Egami.SystemDrawing.Bitmap.FromHicon*"></a>
+
+  <h3 id="Egami_SystemDrawing_Bitmap_FromHicon_System_IntPtr_" data-uid="Egami.SystemDrawing.Bitmap.FromHicon(System.IntPtr)">
+  FromHicon(nint)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Bitmap.cs/#L146"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Not supported: Windows icon handles. Always throws.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Obsolete(&quot;Windows GDI handles are not available in Egami.SystemDrawing; it always throws PlatformNotSupportedException. Use Bitmap.LockBits to reach the pixels.&quot;, DiagnosticId = &quot;EGSD0001&quot;, UrlFormat = &quot;https://inexin.github.io/Egami/v1/articles/guides/system-drawing.html#{0}&quot;)]
+public static Bitmap FromHicon(nint hicon)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>hicon</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.intptr">nint</a></dt>
+    <dd><p>The handle.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Bitmap.html">Bitmap</a></dt>
+    <dd><p>Never returns.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Bitmap_FromResource_" data-uid="Egami.SystemDrawing.Bitmap.FromResource*"></a>
+
+  <h3 id="Egami_SystemDrawing_Bitmap_FromResource_System_IntPtr_System_String_" data-uid="Egami.SystemDrawing.Bitmap.FromResource(System.IntPtr,System.String)">
+  FromResource(nint, string)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Bitmap.cs/#L153"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Not supported: Windows module resources. Always throws.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Obsolete(&quot;Windows GDI handles are not available in Egami.SystemDrawing; it always throws PlatformNotSupportedException. Use Bitmap.LockBits to reach the pixels.&quot;, DiagnosticId = &quot;EGSD0001&quot;, UrlFormat = &quot;https://inexin.github.io/Egami/v1/articles/guides/system-drawing.html#{0}&quot;)]
+public static Bitmap FromResource(nint hinstance, string bitmapName)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>hinstance</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.intptr">nint</a></dt>
+    <dd><p>The module handle.</p>
+</dd>
+    <dt><code>bitmapName</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The resource.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Bitmap.html">Bitmap</a></dt>
+    <dd><p>Never returns.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Bitmap_GetHbitmap_" data-uid="Egami.SystemDrawing.Bitmap.GetHbitmap*"></a>
+
+  <h3 id="Egami_SystemDrawing_Bitmap_GetHbitmap" data-uid="Egami.SystemDrawing.Bitmap.GetHbitmap">
+  GetHbitmap()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Bitmap.cs/#L451"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Not supported: Windows bitmap handles. Always throws.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Obsolete(&quot;Windows GDI handles are not available in Egami.SystemDrawing; it always throws PlatformNotSupportedException. Use Bitmap.LockBits to reach the pixels.&quot;, DiagnosticId = &quot;EGSD0001&quot;, UrlFormat = &quot;https://inexin.github.io/Egami/v1/articles/guides/system-drawing.html#{0}&quot;)]
+public nint GetHbitmap()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.intptr">nint</a></dt>
+    <dd><p>Never returns.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Bitmap_GetHbitmap_" data-uid="Egami.SystemDrawing.Bitmap.GetHbitmap*"></a>
+
+  <h3 id="Egami_SystemDrawing_Bitmap_GetHbitmap_System_Drawing_Color_" data-uid="Egami.SystemDrawing.Bitmap.GetHbitmap(System.Drawing.Color)">
+  GetHbitmap(Color)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Bitmap.cs/#L458"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Not supported: Windows bitmap handles. Always throws.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Obsolete(&quot;Windows GDI handles are not available in Egami.SystemDrawing; it always throws PlatformNotSupportedException. Use Bitmap.LockBits to reach the pixels.&quot;, DiagnosticId = &quot;EGSD0001&quot;, UrlFormat = &quot;https://inexin.github.io/Egami/v1/articles/guides/system-drawing.html#{0}&quot;)]
+public nint GetHbitmap(Color background)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>background</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.color">Color</a></dt>
+    <dd><p>The color under transparent pixels.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.intptr">nint</a></dt>
+    <dd><p>Never returns.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Bitmap_GetHicon_" data-uid="Egami.SystemDrawing.Bitmap.GetHicon*"></a>
+
+  <h3 id="Egami_SystemDrawing_Bitmap_GetHicon" data-uid="Egami.SystemDrawing.Bitmap.GetHicon">
+  GetHicon()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Bitmap.cs/#L464"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Not supported: Windows icon handles. Always throws.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Obsolete(&quot;Windows GDI handles are not available in Egami.SystemDrawing; it always throws PlatformNotSupportedException. Use Bitmap.LockBits to reach the pixels.&quot;, DiagnosticId = &quot;EGSD0001&quot;, UrlFormat = &quot;https://inexin.github.io/Egami/v1/articles/guides/system-drawing.html#{0}&quot;)]
+public nint GetHicon()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.intptr">nint</a></dt>
+    <dd><p>Never returns.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Bitmap_GetPixel_" data-uid="Egami.SystemDrawing.Bitmap.GetPixel*"></a>
+
+  <h3 id="Egami_SystemDrawing_Bitmap_GetPixel_System_Int32_System_Int32_" data-uid="Egami.SystemDrawing.Bitmap.GetPixel(System.Int32,System.Int32)">
+  GetPixel(int, int)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Bitmap.cs/#L162"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Reads a pixel as a color, as GDI+ converts it from the pixel format.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Color GetPixel(int x, int y)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>x</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The column.</p>
+</dd>
+    <dt><code>y</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The row.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.color">Color</a></dt>
+    <dd><p>The color.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>The pixel is outside the bitmap.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>The format is 16-bit gray.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_SystemDrawing_Bitmap_LockBits_" data-uid="Egami.SystemDrawing.Bitmap.LockBits*"></a>
+
+  <h3 id="Egami_SystemDrawing_Bitmap_LockBits_System_Drawing_Rectangle_Egami_SystemDrawing_Imaging_ImageLockMode_Egami_SystemDrawing_Imaging_PixelFormat_" data-uid="Egami.SystemDrawing.Bitmap.LockBits(System.Drawing.Rectangle,Egami.SystemDrawing.Imaging.ImageLockMode,Egami.SystemDrawing.Imaging.PixelFormat)">
+  LockBits(Rectangle, ImageLockMode, PixelFormat)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Bitmap.cs/#L260"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Locks an area of the pixels in a format for direct access: in the bitmap's own format the pixels are the bitmap's own
+memory; in another format they are a converted copy, written back on unlock.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public BitmapData LockBits(Rectangle rect, ImageLockMode flags, PixelFormat format)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>rect</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.rectangle">Rectangle</a></dt>
+    <dd><p>The area.</p>
+</dd>
+    <dt><code>flags</code> <a class="xref" href="Egami.SystemDrawing.Imaging.ImageLockMode.html">ImageLockMode</a></dt>
+    <dd><p>Read, write or both.</p>
+</dd>
+    <dt><code>format</code> <a class="xref" href="Egami.SystemDrawing.Imaging.PixelFormat.html">PixelFormat</a></dt>
+    <dd><p>The format to see the pixels in.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Imaging.BitmapData.html">BitmapData</a></dt>
+    <dd><p>Where the pixels are.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Bitmap_LockBits_" data-uid="Egami.SystemDrawing.Bitmap.LockBits*"></a>
+
+  <h3 id="Egami_SystemDrawing_Bitmap_LockBits_System_Drawing_Rectangle_Egami_SystemDrawing_Imaging_ImageLockMode_Egami_SystemDrawing_Imaging_PixelFormat_Egami_SystemDrawing_Imaging_BitmapData_" data-uid="Egami.SystemDrawing.Bitmap.LockBits(System.Drawing.Rectangle,Egami.SystemDrawing.Imaging.ImageLockMode,Egami.SystemDrawing.Imaging.PixelFormat,Egami.SystemDrawing.Imaging.BitmapData)">
+  LockBits(Rectangle, ImageLockMode, PixelFormat, BitmapData)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Bitmap.cs/#L273"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Locks an area of the pixels in a format, into <code class="paramref">bitmapData</code>; with <a class="xref" href="Egami.SystemDrawing.Imaging.ImageLockMode.html#Egami_SystemDrawing_Imaging_ImageLockMode_UserInputBuffer">UserInputBuffer</a>
+the pixels go to the buffer it points to.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public BitmapData LockBits(Rectangle rect, ImageLockMode flags, PixelFormat format, BitmapData bitmapData)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>rect</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.rectangle">Rectangle</a></dt>
+    <dd><p>The area.</p>
+</dd>
+    <dt><code>flags</code> <a class="xref" href="Egami.SystemDrawing.Imaging.ImageLockMode.html">ImageLockMode</a></dt>
+    <dd><p>Read, write or both, and the user buffer flag.</p>
+</dd>
+    <dt><code>format</code> <a class="xref" href="Egami.SystemDrawing.Imaging.PixelFormat.html">PixelFormat</a></dt>
+    <dd><p>The format to see the pixels in.</p>
+</dd>
+    <dt><code>bitmapData</code> <a class="xref" href="Egami.SystemDrawing.Imaging.BitmapData.html">BitmapData</a></dt>
+    <dd><p>The data to fill in, and with the user buffer flag, the buffer.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Imaging.BitmapData.html">BitmapData</a></dt>
+    <dd><p><code class="paramref">bitmapData</code>.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>The area is empty or outside the bitmap, or the format is not a bitmap format.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.runtime.interopservices.externalexception">ExternalException</a></dt>
+    <dd><p>The bitmap is already locked.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_SystemDrawing_Bitmap_MakeTransparent_" data-uid="Egami.SystemDrawing.Bitmap.MakeTransparent*"></a>
+
+  <h3 id="Egami_SystemDrawing_Bitmap_MakeTransparent" data-uid="Egami.SystemDrawing.Bitmap.MakeTransparent">
+  MakeTransparent()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Bitmap.cs/#L378"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Makes the color of the bottom-left pixel transparent; the bitmap becomes 32-bit ARGB.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void MakeTransparent()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Bitmap_MakeTransparent_" data-uid="Egami.SystemDrawing.Bitmap.MakeTransparent*"></a>
+
+  <h3 id="Egami_SystemDrawing_Bitmap_MakeTransparent_System_Drawing_Color_" data-uid="Egami.SystemDrawing.Bitmap.MakeTransparent(System.Drawing.Color)">
+  MakeTransparent(Color)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Bitmap.cs/#L386"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Makes a color transparent; the bitmap becomes 32-bit ARGB, drawn as GDI+ draws it, through premultiplied color.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void MakeTransparent(Color transparentColor)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>transparentColor</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.color">Color</a></dt>
+    <dd><p>The color.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Bitmap_SetPixel_" data-uid="Egami.SystemDrawing.Bitmap.SetPixel*"></a>
+
+  <h3 id="Egami_SystemDrawing_Bitmap_SetPixel_System_Int32_System_Int32_System_Drawing_Color_" data-uid="Egami.SystemDrawing.Bitmap.SetPixel(System.Int32,System.Int32,System.Drawing.Color)">
+  SetPixel(int, int, Color)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Bitmap.cs/#L180"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Writes a pixel, as GDI+ converts the color to the pixel format.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void SetPixel(int x, int y, Color color)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>x</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The column.</p>
+</dd>
+    <dt><code>y</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The row.</p>
+</dd>
+    <dt><code>color</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.color">Color</a></dt>
+    <dd><p>The color.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.invalidoperationexception">InvalidOperationException</a></dt>
+    <dd><p>The format is indexed.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>The pixel is outside the bitmap.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_SystemDrawing_Bitmap_SetResolution_" data-uid="Egami.SystemDrawing.Bitmap.SetResolution*"></a>
+
+  <h3 id="Egami_SystemDrawing_Bitmap_SetResolution_System_Single_System_Single_" data-uid="Egami.SystemDrawing.Bitmap.SetResolution(System.Single,System.Single)">
+  SetResolution(float, float)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Bitmap.cs/#L201"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Sets the resolution.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void SetResolution(float xDpi, float yDpi)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>xDpi</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>The horizontal resolution in pixels per inch.</p>
+</dd>
+    <dt><code>yDpi</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>The vertical resolution in pixels per inch.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>A resolution is zero or negative.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_SystemDrawing_Bitmap_UnlockBits_" data-uid="Egami.SystemDrawing.Bitmap.UnlockBits*"></a>
+
+  <h3 id="Egami_SystemDrawing_Bitmap_UnlockBits_Egami_SystemDrawing_Imaging_BitmapData_" data-uid="Egami.SystemDrawing.Bitmap.UnlockBits(Egami.SystemDrawing.Imaging.BitmapData)">
+  UnlockBits(BitmapData)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Bitmap.cs/#L334"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Unlocks pixels <a class="xref" href="Egami.SystemDrawing.Bitmap.html#Egami_SystemDrawing_Bitmap_LockBits_System_Drawing_Rectangle_Egami_SystemDrawing_Imaging_ImageLockMode_Egami_SystemDrawing_Imaging_PixelFormat_">LockBits(Rectangle, ImageLockMode, PixelFormat)</a> locked, writing a converted copy back when the lock writes.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void UnlockBits(BitmapData bitmapdata)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>bitmapdata</code> <a class="xref" href="Egami.SystemDrawing.Imaging.BitmapData.html">BitmapData</a></dt>
+    <dd><p>What LockBits returned.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.runtime.interopservices.externalexception">ExternalException</a></dt>
+    <dd><p>The data is not this bitmap's current lock.</p>
+</dd>
+  </dl>
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Bitmap.cs/#L20" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

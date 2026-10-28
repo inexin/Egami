@@ -11689,6 +11689,370 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Bitmap.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Bitmap.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Bitmap",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Bitmap.yml\" sourcestartlinenumber=\"1\">An image made of pixels, as System.Drawing's Bitmap: any of GDI+'s 14 pixel formats, with GetPixel, SetPixel, LockBits,\nClone, MakeTransparent and the codecs. Pixels are kept in GDI+'s own memory layout and converted exactly as GDI+ converts\nthem, so LockBits code and pixel values carry over.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.GraphicsUnit.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.GraphicsUnit.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.GraphicsUnit",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.GraphicsUnit.yml\" sourcestartlinenumber=\"1\">The unit of a measure: the world's, the display's, pixels, points, inches, document units or millimeters.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Icon.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Icon.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Icon",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Icon.yml\" sourcestartlinenumber=\"1\">A Windows icon: an ICO file with images at several sizes, of which the icon shows the one nearest the size asked for (32 by\n32 when none is), as System.Drawing chooses it. <xref href=\"Egami.SystemDrawing.Icon.Save(System.IO.Stream)\" data-throw-if-not-resolved=\"false\"></xref> writes the file it was loaded from.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Image.GetThumbnailImageAbort.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Image.GetThumbnailImageAbort.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Image.GetThumbnailImageAbort",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Image.GetThumbnailImageAbort.yml\" sourcestartlinenumber=\"1\">Called when <xref href=\"Egami.SystemDrawing.Image.GetThumbnailImage(System.Int32%2cSystem.Int32%2cEgami.SystemDrawing.Image.GetThumbnailImageAbort%2cSystem.IntPtr)\" data-throw-if-not-resolved=\"false\"></xref> may stop early; GDI+ never calls it.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Image.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Image.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Image",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Image.yml\" sourcestartlinenumber=\"1\">The base of <xref href=\"Egami.SystemDrawing.Bitmap\" data-throw-if-not-resolved=\"false\"></xref> and the metafile type: size, resolution, pixel format, palette, frames, metadata and saving,\nas in System.Drawing. Load one with <xref href=\"Egami.SystemDrawing.Image.FromFile(System.String)\" data-throw-if-not-resolved=\"false\"></xref> or <xref href=\"Egami.SystemDrawing.Image.FromStream(System.IO.Stream)\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Imaging.BitmapData.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Imaging.BitmapData.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Imaging.BitmapData",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Imaging.BitmapData.yml\" sourcestartlinenumber=\"1\">A locked area of a bitmap's pixels, from <xref href=\"Egami.SystemDrawing.Bitmap.LockBits(System.Drawing.Rectangle%2cEgami.SystemDrawing.Imaging.ImageLockMode%2cEgami.SystemDrawing.Imaging.PixelFormat)\" data-throw-if-not-resolved=\"false\"></xref>:\nwhere the first row starts, the bytes from one row to the next, and the size and format of the pixels.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Imaging.ColorPalette.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Imaging.ColorPalette.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Imaging.ColorPalette",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Imaging.ColorPalette.yml\" sourcestartlinenumber=\"1\">The colors an indexed bitmap's pixels point into. <xref href=\"Egami.SystemDrawing.Image.Palette\" data-throw-if-not-resolved=\"false\"></xref> hands out a copy: change its entries and set it\nback to change the bitmap's palette.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Imaging.DitherType.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Imaging.DitherType.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Imaging.DitherType",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Imaging.DitherType.yml\" sourcestartlinenumber=\"1\">How <xref href=\"Egami.SystemDrawing.Bitmap.ConvertFormat(Egami.SystemDrawing.Imaging.PixelFormat%2cEgami.SystemDrawing.Imaging.DitherType%2cEgami.SystemDrawing.Imaging.PaletteType%2cEgami.SystemDrawing.Imaging.ColorPalette%2cSystem.Single)\" data-throw-if-not-resolved=\"false\"></xref> dithers to fewer colors.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Imaging.Encoder.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Imaging.Encoder.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Imaging.Encoder",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Imaging.Encoder.yml\" sourcestartlinenumber=\"1\">An encoder setting, by the GUID GDI+ gives it: quality, compression, color depth, save flags and the rest.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Imaging.EncoderParameter.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Imaging.EncoderParameter.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Imaging.EncoderParameter",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Imaging.EncoderParameter.yml\" sourcestartlinenumber=\"1\">One encoder setting and its values, passed to a save in <xref href=\"Egami.SystemDrawing.Imaging.EncoderParameters\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Imaging.EncoderParameterValueType.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Imaging.EncoderParameterValueType.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Imaging.EncoderParameterValueType",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Imaging.EncoderParameterValueType.yml\" sourcestartlinenumber=\"1\">The type of an <xref href=\"Egami.SystemDrawing.Imaging.EncoderParameter\" data-throw-if-not-resolved=\"false\"></xref>'s values.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Imaging.EncoderParameters.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Imaging.EncoderParameters.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Imaging.EncoderParameters",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Imaging.EncoderParameters.yml\" sourcestartlinenumber=\"1\">The encoder settings of one save.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Imaging.EncoderValue.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Imaging.EncoderValue.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Imaging.EncoderValue",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Imaging.EncoderValue.yml\" sourcestartlinenumber=\"1\">The values of the <xref href=\"Egami.SystemDrawing.Imaging.Encoder\" data-throw-if-not-resolved=\"false\"></xref> parameters that take a choice.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Imaging.FrameDimension.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Imaging.FrameDimension.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Imaging.FrameDimension",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Imaging.FrameDimension.yml\" sourcestartlinenumber=\"1\">How an image's frames are counted: as pages (TIFF), as moments in time (an animated GIF) or as resolutions.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Imaging.ImageCodecFlags.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Imaging.ImageCodecFlags.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Imaging.ImageCodecFlags",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Imaging.ImageCodecFlags.yml\" sourcestartlinenumber=\"1\">What an <xref href=\"Egami.SystemDrawing.Imaging.ImageCodecInfo\" data-throw-if-not-resolved=\"false\"></xref> can do.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Imaging.ImageCodecInfo.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Imaging.ImageCodecInfo.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Imaging.ImageCodecInfo",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Imaging.ImageCodecInfo.yml\" sourcestartlinenumber=\"1\">One of the codecs <xref href=\"Egami.SystemDrawing.Image.Save(System.IO.Stream%2cEgami.SystemDrawing.Imaging.ImageCodecInfo%2cEgami.SystemDrawing.Imaging.EncoderParameters)\" data-throw-if-not-resolved=\"false\"></xref> writes with, as GDI+ lists them:\nBMP, JPEG, GIF, TIFF and PNG encoders, and those plus EMF, WMF and ICO decoders. Egami reads many more formats than the\ndecoders listed; the list matches GDI+'s so code that looks a codec up by its MIME type or GUID finds the same one.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Imaging.ImageFlags.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Imaging.ImageFlags.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Imaging.ImageFlags",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Imaging.ImageFlags.yml\" sourcestartlinenumber=\"1\">What an image's <xref href=\"Egami.SystemDrawing.Image.Flags\" data-throw-if-not-resolved=\"false\"></xref> say about it.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Imaging.ImageFormat.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Imaging.ImageFormat.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Imaging.ImageFormat",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Imaging.ImageFormat.yml\" sourcestartlinenumber=\"1\">An image file format, by the GUID GDI+ gives it: what <xref href=\"Egami.SystemDrawing.Image.RawFormat\" data-throw-if-not-resolved=\"false\"></xref> reports and what\n<xref href=\"Egami.SystemDrawing.Image.Save(System.IO.Stream%2cEgami.SystemDrawing.Imaging.ImageFormat)\" data-throw-if-not-resolved=\"false\"></xref> writes.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Imaging.ImageLockMode.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Imaging.ImageLockMode.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Imaging.ImageLockMode",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Imaging.ImageLockMode.yml\" sourcestartlinenumber=\"1\">How <xref href=\"Egami.SystemDrawing.Bitmap.LockBits(System.Drawing.Rectangle%2cEgami.SystemDrawing.Imaging.ImageLockMode%2cEgami.SystemDrawing.Imaging.PixelFormat)\" data-throw-if-not-resolved=\"false\"></xref> may use the locked pixels.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Imaging.PaletteFlags.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Imaging.PaletteFlags.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Imaging.PaletteFlags",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Imaging.PaletteFlags.yml\" sourcestartlinenumber=\"1\">What a <xref href=\"Egami.SystemDrawing.Imaging.ColorPalette\" data-throw-if-not-resolved=\"false\"></xref>'s <xref href=\"Egami.SystemDrawing.Imaging.ColorPalette.Flags\" data-throw-if-not-resolved=\"false\"></xref> say about its colors.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Imaging.PaletteType.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Imaging.PaletteType.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Imaging.PaletteType",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Imaging.PaletteType.yml\" sourcestartlinenumber=\"1\">The fixed palettes a <xref href=\"Egami.SystemDrawing.Imaging.ColorPalette\" data-throw-if-not-resolved=\"false\"></xref> can be built from.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Imaging.PixelFormat.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Imaging.PixelFormat.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Imaging.PixelFormat",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Imaging.PixelFormat.yml\" sourcestartlinenumber=\"1\">The memory layout of a bitmap's pixels, with System.Drawing's values: bits 8 to 15 hold the bits a pixel, bits 0 to 7 an\nindex, and the high bits the flags below.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Imaging.PropertyItem.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Imaging.PropertyItem.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Imaging.PropertyItem",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Imaging.PropertyItem.yml\" sourcestartlinenumber=\"1\">One metadata tag of an image, as EXIF and TIFF store it: its id, type and raw bytes. <xref href=\"Egami.SystemDrawing.Image.PropertyItems\" data-throw-if-not-resolved=\"false\"></xref> and\n<xref href=\"Egami.SystemDrawing.Image.GetPropertyItem(System.Int32)\" data-throw-if-not-resolved=\"false\"></xref> read them from the image's EXIF data, and <xref href=\"Egami.SystemDrawing.Image.SetPropertyItem(Egami.SystemDrawing.Imaging.PropertyItem)\" data-throw-if-not-resolved=\"false\"></xref>\nwrites one back. There is no public constructor, as in System.Drawing: change an item read from an image.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Imaging.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Imaging.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Imaging",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.RotateFlipType.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.RotateFlipType.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.RotateFlipType",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.RotateFlipType.yml\" sourcestartlinenumber=\"1\">A rotation clockwise and a flip for <xref href=\"Egami.SystemDrawing.Image.RotateFlip(Egami.SystemDrawing.RotateFlipType)\" data-throw-if-not-resolved=\"false\"></xref>. Several names mean the same\ntransformation and share a value, as in System.Drawing.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.UnsupportedFormatException.yml",
       "output": {
         ".html": {
@@ -15527,11 +15891,11 @@
       "type": "Toc",
       "source_relative_path": "api/toc.yml",
       "output": {
-        ".html": {
-          "relative_path": "api/toc.html"
-        },
         ".json": {
           "relative_path": "api/toc.json"
+        },
+        ".html": {
+          "relative_path": "api/toc.html"
         }
       },
       "version": ""
@@ -16308,6 +16672,16 @@
     },
     {
       "type": "Conceptual",
+      "source_relative_path": "articles/guides/system-drawing.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/guides/system-drawing.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
       "source_relative_path": "articles/guides/text.md",
       "output": {
         ".html": {
@@ -16390,11 +16764,11 @@
       "type": "Toc",
       "source_relative_path": "articles/toc.yml",
       "output": {
-        ".html": {
-          "relative_path": "articles/toc.html"
-        },
         ".json": {
           "relative_path": "articles/toc.json"
+        },
+        ".html": {
+          "relative_path": "articles/toc.html"
         }
       },
       "version": ""
@@ -16483,11 +16857,11 @@
       "type": "Toc",
       "source_relative_path": "toc.yml",
       "output": {
-        ".html": {
-          "relative_path": "toc.html"
-        },
         ".json": {
           "relative_path": "toc.json"
+        },
+        ".html": {
+          "relative_path": "toc.html"
         }
       },
       "version": ""

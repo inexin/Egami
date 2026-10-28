@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Enum PixelFormat | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Enum PixelFormat | Egami ">
+      
+      <meta name="description" content="The memory layout of a bitmap&#39;s pixels, with System.Drawing&#39;s values: bits 8 to 15 hold the bits a pixel, bits 0 to 7 an index, and the high bits the flags below.">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_SystemDrawing_Imaging_PixelFormat.md&amp;value=---%0Auid%3A%20Egami.SystemDrawing.Imaging.PixelFormat%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.SystemDrawing.Imaging.PixelFormat">
+
+
+
+
+  <h1 id="Egami_SystemDrawing_Imaging_PixelFormat" data-uid="Egami.SystemDrawing.Imaging.PixelFormat" class="text-break">
+Enum PixelFormat  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/PixelFormat.cs/#L10"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a>.<a class="xref" href="Egami.SystemDrawing.html">SystemDrawing</a>.<a class="xref" href="Egami.SystemDrawing.Imaging.html">Imaging</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.SystemDrawing.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>The memory layout of a bitmap's pixels, with System.Drawing's values: bits 8 to 15 hold the bits a pixel, bits 0 to 7 an
+index, and the high bits the flags below.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public enum PixelFormat</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+  <h2 id="fields">Fields
+</h2>
+  <dl class="parameters">
+    <dt id="Egami_SystemDrawing_Imaging_PixelFormat_Alpha"><code>Alpha = 262144</code></dt>
+  
+  <dd><p>The pixels hold alpha.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_PixelFormat_Canonical"><code>Canonical = 2097152</code></dt>
+  
+  <dd><p>The default format, 32-bit ARGB.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_PixelFormat_DontCare"><code>DontCare = 0</code></dt>
+  
+  <dd><p>No format; the same as <a class="xref" href="Egami.SystemDrawing.Imaging.PixelFormat.html#Egami_SystemDrawing_Imaging_PixelFormat_Undefined">Undefined</a>.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_PixelFormat_Extended"><code>Extended = 1048576</code></dt>
+  
+  <dd><p>The pixels hold 16 bits a channel.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_PixelFormat_Format16bppArgb1555"><code>Format16bppArgb1555 = 397319</code></dt>
+  
+  <dd><p>16 bits a pixel, 5 each of blue, green and red from the lowest bit and 1 bit of alpha. <a class="xref" href="Egami.Pixels.Bgra5551.html">Bgra5551</a>'s memory.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_PixelFormat_Format16bppGrayScale"><code>Format16bppGrayScale = 1052676</code></dt>
+  
+  <dd><p>16 bits of gray a pixel. Bitmaps hold it, but drawing on one and reading its pixels throw, as in GDI+.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_PixelFormat_Format16bppRgb555"><code>Format16bppRgb555 = 135173</code></dt>
+  
+  <dd><p>16 bits a pixel, 5 each of blue, green and red from the lowest bit; the top bit unused. <a class="xref" href="Egami.Pixels.Bgr555.html">Bgr555</a>'s memory.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_PixelFormat_Format16bppRgb565"><code>Format16bppRgb565 = 135174</code></dt>
+  
+  <dd><p>16 bits a pixel, 5 of blue, 6 of green and 5 of red from the lowest bit. <a class="xref" href="Egami.Pixels.Bgr565.html">Bgr565</a>'s memory.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_PixelFormat_Format1bppIndexed"><code>Format1bppIndexed = 196865</code></dt>
+  
+  <dd><p>1 bit a pixel, an index into a 2-color palette.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_PixelFormat_Format24bppRgb"><code>Format24bppRgb = 137224</code></dt>
+  
+  <dd><p>24 bits a pixel: blue, green and red bytes. <a class="xref" href="Egami.Pixels.Bgr8.html">Bgr8</a>'s memory.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_PixelFormat_Format32bppArgb"><code>Format32bppArgb = 2498570</code></dt>
+  
+  <dd><p>32 bits a pixel: blue, green, red and alpha bytes. <a class="xref" href="Egami.Pixels.Bgra8.html">Bgra8</a>'s memory; the default.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_PixelFormat_Format32bppPArgb"><code>Format32bppPArgb = 925707</code></dt>
+  
+  <dd><p>32 bits a pixel: blue, green and red premultiplied by alpha, then alpha. <a class="xref" href="Egami.Pixels.PremulBgra8.html">PremulBgra8</a>'s memory.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_PixelFormat_Format32bppRgb"><code>Format32bppRgb = 139273</code></dt>
+  
+  <dd><p>32 bits a pixel: blue, green and red bytes and one unused byte.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_PixelFormat_Format48bppRgb"><code>Format48bppRgb = 1060876</code></dt>
+  
+  <dd><p>48 bits a pixel: blue, green and red in 16 bits each, linear light from 0 to 8192.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_PixelFormat_Format4bppIndexed"><code>Format4bppIndexed = 197634</code></dt>
+  
+  <dd><p>4 bits a pixel, an index into a 16-color palette.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_PixelFormat_Format64bppArgb"><code>Format64bppArgb = 3424269</code></dt>
+  
+  <dd><p>64 bits a pixel: blue, green, red and alpha in 16 bits each, linear light from 0 to 8192.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_PixelFormat_Format64bppPArgb"><code>Format64bppPArgb = 1851406</code></dt>
+  
+  <dd><p>64 bits a pixel: linear blue, green and red premultiplied by alpha, then alpha, in 16 bits each from 0 to 8192.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_PixelFormat_Format8bppIndexed"><code>Format8bppIndexed = 198659</code></dt>
+  
+  <dd><p>8 bits a pixel, an index into a 256-color palette.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_PixelFormat_Gdi"><code>Gdi = 131072</code></dt>
+  
+  <dd><p>The pixels hold colors GDI can show.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_PixelFormat_Indexed"><code>Indexed = 65536</code></dt>
+  
+  <dd><p>The pixels hold indices into the bitmap's palette.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_PixelFormat_Max"><code>Max = 15</code></dt>
+  
+  <dd><p>The number of formats, one past the highest index.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_PixelFormat_PAlpha"><code>PAlpha = 524288</code></dt>
+  
+  <dd><p>The pixels hold color premultiplied by alpha.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_PixelFormat_Undefined"><code>Undefined = 0</code></dt>
+  
+  <dd><p>No format.</p>
+</dd>
+  </dl>
+
+  <h2 id="Egami_SystemDrawing_Imaging_PixelFormat_examples">Examples</h2>
+  <pre><code class="lang-csharp">// Every GDI+ pixel format, with GDI+'s conversions: 5-bit channels truncate when written and repeat their high bits when read.
+using Bitmap rgb555 = new(1, 1, PixelFormat.Format16bppRgb555);
+rgb555.SetPixel(0, 0, Color.FromArgb(10, 20, 30));
+Color read = rgb555.GetPixel(0, 0);  // ARGB(255, 8, 16, 24)
+
+// 48 and 64-bit formats hold linear light from 0 to 8192, as in GDI+.
+using Bitmap deep = new(1, 1, PixelFormat.Format48bppRgb);
+deep.SetPixel(0, 0, Color.FromArgb(255, 200, 100, 50));
+int bits = Image.GetPixelFormatSize(deep.PixelFormat);                                   // 48
+bool alpha = Image.IsAlphaPixelFormat(PixelFormat.Format64bppArgb);                      // true
+ImageFlags flags = (ImageFlags)new Bitmap(1, 1, PixelFormat.Format32bppArgb).Flags;     // HasAlpha</code></pre>
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/PixelFormat.cs/#L10" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

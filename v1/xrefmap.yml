@@ -75903,6 +75903,3184 @@ references:
   isSpec: "True"
   fullName: Egami.Svg.SvgWriteOptions.Text
   nameWithType: SvgWriteOptions.Text
+- uid: Egami.SystemDrawing
+  name: Egami.SystemDrawing
+  href: api/Egami.SystemDrawing.html
+  commentId: N:Egami.SystemDrawing
+  fullName: Egami.SystemDrawing
+  nameWithType: Egami.SystemDrawing
+- uid: Egami.SystemDrawing.Bitmap
+  name: Bitmap
+  href: api/Egami.SystemDrawing.Bitmap.html
+  commentId: T:Egami.SystemDrawing.Bitmap
+  fullName: Egami.SystemDrawing.Bitmap
+  nameWithType: Bitmap
+- uid: Egami.SystemDrawing.Bitmap.#ctor(Egami.SystemDrawing.Image)
+  name: Bitmap(Image)
+  href: api/Egami.SystemDrawing.Bitmap.html#Egami_SystemDrawing_Bitmap__ctor_Egami_SystemDrawing_Image_
+  commentId: M:Egami.SystemDrawing.Bitmap.#ctor(Egami.SystemDrawing.Image)
+  name.vb: New(Image)
+  fullName: Egami.SystemDrawing.Bitmap.Bitmap(Egami.SystemDrawing.Image)
+  fullName.vb: Egami.SystemDrawing.Bitmap.New(Egami.SystemDrawing.Image)
+  nameWithType: Bitmap.Bitmap(Image)
+  nameWithType.vb: Bitmap.New(Image)
+- uid: Egami.SystemDrawing.Bitmap.#ctor(Egami.SystemDrawing.Image,System.Drawing.Size)
+  name: Bitmap(Image, Size)
+  href: api/Egami.SystemDrawing.Bitmap.html#Egami_SystemDrawing_Bitmap__ctor_Egami_SystemDrawing_Image_System_Drawing_Size_
+  commentId: M:Egami.SystemDrawing.Bitmap.#ctor(Egami.SystemDrawing.Image,System.Drawing.Size)
+  name.vb: New(Image, Size)
+  fullName: Egami.SystemDrawing.Bitmap.Bitmap(Egami.SystemDrawing.Image, System.Drawing.Size)
+  fullName.vb: Egami.SystemDrawing.Bitmap.New(Egami.SystemDrawing.Image, System.Drawing.Size)
+  nameWithType: Bitmap.Bitmap(Image, Size)
+  nameWithType.vb: Bitmap.New(Image, Size)
+- uid: Egami.SystemDrawing.Bitmap.#ctor(Egami.SystemDrawing.Image,System.Int32,System.Int32)
+  name: Bitmap(Image, int, int)
+  href: api/Egami.SystemDrawing.Bitmap.html#Egami_SystemDrawing_Bitmap__ctor_Egami_SystemDrawing_Image_System_Int32_System_Int32_
+  commentId: M:Egami.SystemDrawing.Bitmap.#ctor(Egami.SystemDrawing.Image,System.Int32,System.Int32)
+  name.vb: New(Image, Integer, Integer)
+  fullName: Egami.SystemDrawing.Bitmap.Bitmap(Egami.SystemDrawing.Image, int, int)
+  fullName.vb: Egami.SystemDrawing.Bitmap.New(Egami.SystemDrawing.Image, Integer, Integer)
+  nameWithType: Bitmap.Bitmap(Image, int, int)
+  nameWithType.vb: Bitmap.New(Image, Integer, Integer)
+- uid: Egami.SystemDrawing.Bitmap.#ctor(System.IO.Stream)
+  name: Bitmap(Stream)
+  href: api/Egami.SystemDrawing.Bitmap.html#Egami_SystemDrawing_Bitmap__ctor_System_IO_Stream_
+  commentId: M:Egami.SystemDrawing.Bitmap.#ctor(System.IO.Stream)
+  name.vb: New(Stream)
+  fullName: Egami.SystemDrawing.Bitmap.Bitmap(System.IO.Stream)
+  fullName.vb: Egami.SystemDrawing.Bitmap.New(System.IO.Stream)
+  nameWithType: Bitmap.Bitmap(Stream)
+  nameWithType.vb: Bitmap.New(Stream)
+- uid: Egami.SystemDrawing.Bitmap.#ctor(System.IO.Stream,System.Boolean)
+  name: Bitmap(Stream, bool)
+  href: api/Egami.SystemDrawing.Bitmap.html#Egami_SystemDrawing_Bitmap__ctor_System_IO_Stream_System_Boolean_
+  commentId: M:Egami.SystemDrawing.Bitmap.#ctor(System.IO.Stream,System.Boolean)
+  name.vb: New(Stream, Boolean)
+  fullName: Egami.SystemDrawing.Bitmap.Bitmap(System.IO.Stream, bool)
+  fullName.vb: Egami.SystemDrawing.Bitmap.New(System.IO.Stream, Boolean)
+  nameWithType: Bitmap.Bitmap(Stream, bool)
+  nameWithType.vb: Bitmap.New(Stream, Boolean)
+- uid: Egami.SystemDrawing.Bitmap.#ctor(System.Int32,System.Int32)
+  name: Bitmap(int, int)
+  href: api/Egami.SystemDrawing.Bitmap.html#Egami_SystemDrawing_Bitmap__ctor_System_Int32_System_Int32_
+  commentId: M:Egami.SystemDrawing.Bitmap.#ctor(System.Int32,System.Int32)
+  name.vb: New(Integer, Integer)
+  fullName: Egami.SystemDrawing.Bitmap.Bitmap(int, int)
+  fullName.vb: Egami.SystemDrawing.Bitmap.New(Integer, Integer)
+  nameWithType: Bitmap.Bitmap(int, int)
+  nameWithType.vb: Bitmap.New(Integer, Integer)
+- uid: Egami.SystemDrawing.Bitmap.#ctor(System.Int32,System.Int32,Egami.SystemDrawing.Imaging.PixelFormat)
+  name: Bitmap(int, int, PixelFormat)
+  href: api/Egami.SystemDrawing.Bitmap.html#Egami_SystemDrawing_Bitmap__ctor_System_Int32_System_Int32_Egami_SystemDrawing_Imaging_PixelFormat_
+  commentId: M:Egami.SystemDrawing.Bitmap.#ctor(System.Int32,System.Int32,Egami.SystemDrawing.Imaging.PixelFormat)
+  name.vb: New(Integer, Integer, PixelFormat)
+  fullName: Egami.SystemDrawing.Bitmap.Bitmap(int, int, Egami.SystemDrawing.Imaging.PixelFormat)
+  fullName.vb: Egami.SystemDrawing.Bitmap.New(Integer, Integer, Egami.SystemDrawing.Imaging.PixelFormat)
+  nameWithType: Bitmap.Bitmap(int, int, PixelFormat)
+  nameWithType.vb: Bitmap.New(Integer, Integer, PixelFormat)
+- uid: Egami.SystemDrawing.Bitmap.#ctor(System.Int32,System.Int32,System.Int32,Egami.SystemDrawing.Imaging.PixelFormat,System.IntPtr)
+  name: Bitmap(int, int, int, PixelFormat, nint)
+  href: api/Egami.SystemDrawing.Bitmap.html#Egami_SystemDrawing_Bitmap__ctor_System_Int32_System_Int32_System_Int32_Egami_SystemDrawing_Imaging_PixelFormat_System_IntPtr_
+  commentId: M:Egami.SystemDrawing.Bitmap.#ctor(System.Int32,System.Int32,System.Int32,Egami.SystemDrawing.Imaging.PixelFormat,System.IntPtr)
+  name.vb: New(Integer, Integer, Integer, PixelFormat, IntPtr)
+  fullName: Egami.SystemDrawing.Bitmap.Bitmap(int, int, int, Egami.SystemDrawing.Imaging.PixelFormat, nint)
+  fullName.vb: Egami.SystemDrawing.Bitmap.New(Integer, Integer, Integer, Egami.SystemDrawing.Imaging.PixelFormat, System.IntPtr)
+  nameWithType: Bitmap.Bitmap(int, int, int, PixelFormat, nint)
+  nameWithType.vb: Bitmap.New(Integer, Integer, Integer, PixelFormat, IntPtr)
+- uid: Egami.SystemDrawing.Bitmap.#ctor(System.String)
+  name: Bitmap(string)
+  href: api/Egami.SystemDrawing.Bitmap.html#Egami_SystemDrawing_Bitmap__ctor_System_String_
+  commentId: M:Egami.SystemDrawing.Bitmap.#ctor(System.String)
+  name.vb: New(String)
+  fullName: Egami.SystemDrawing.Bitmap.Bitmap(string)
+  fullName.vb: Egami.SystemDrawing.Bitmap.New(String)
+  nameWithType: Bitmap.Bitmap(string)
+  nameWithType.vb: Bitmap.New(String)
+- uid: Egami.SystemDrawing.Bitmap.#ctor(System.String,System.Boolean)
+  name: Bitmap(string, bool)
+  href: api/Egami.SystemDrawing.Bitmap.html#Egami_SystemDrawing_Bitmap__ctor_System_String_System_Boolean_
+  commentId: M:Egami.SystemDrawing.Bitmap.#ctor(System.String,System.Boolean)
+  name.vb: New(String, Boolean)
+  fullName: Egami.SystemDrawing.Bitmap.Bitmap(string, bool)
+  fullName.vb: Egami.SystemDrawing.Bitmap.New(String, Boolean)
+  nameWithType: Bitmap.Bitmap(string, bool)
+  nameWithType.vb: Bitmap.New(String, Boolean)
+- uid: Egami.SystemDrawing.Bitmap.#ctor(System.Type,System.String)
+  name: Bitmap(Type, string)
+  href: api/Egami.SystemDrawing.Bitmap.html#Egami_SystemDrawing_Bitmap__ctor_System_Type_System_String_
+  commentId: M:Egami.SystemDrawing.Bitmap.#ctor(System.Type,System.String)
+  name.vb: New(Type, String)
+  fullName: Egami.SystemDrawing.Bitmap.Bitmap(System.Type, string)
+  fullName.vb: Egami.SystemDrawing.Bitmap.New(System.Type, String)
+  nameWithType: Bitmap.Bitmap(Type, string)
+  nameWithType.vb: Bitmap.New(Type, String)
+- uid: Egami.SystemDrawing.Bitmap.#ctor*
+  name: Bitmap
+  href: api/Egami.SystemDrawing.Bitmap.html#Egami_SystemDrawing_Bitmap__ctor_
+  commentId: Overload:Egami.SystemDrawing.Bitmap.#ctor
+  isSpec: "True"
+  name.vb: New
+  fullName: Egami.SystemDrawing.Bitmap.Bitmap
+  fullName.vb: Egami.SystemDrawing.Bitmap.New
+  nameWithType: Bitmap.Bitmap
+  nameWithType.vb: Bitmap.New
+- uid: Egami.SystemDrawing.Bitmap.Clone
+  name: Clone()
+  href: api/Egami.SystemDrawing.Bitmap.html#Egami_SystemDrawing_Bitmap_Clone
+  commentId: M:Egami.SystemDrawing.Bitmap.Clone
+  fullName: Egami.SystemDrawing.Bitmap.Clone()
+  nameWithType: Bitmap.Clone()
+- uid: Egami.SystemDrawing.Bitmap.Clone(System.Drawing.Rectangle,Egami.SystemDrawing.Imaging.PixelFormat)
+  name: Clone(Rectangle, PixelFormat)
+  href: api/Egami.SystemDrawing.Bitmap.html#Egami_SystemDrawing_Bitmap_Clone_System_Drawing_Rectangle_Egami_SystemDrawing_Imaging_PixelFormat_
+  commentId: M:Egami.SystemDrawing.Bitmap.Clone(System.Drawing.Rectangle,Egami.SystemDrawing.Imaging.PixelFormat)
+  fullName: Egami.SystemDrawing.Bitmap.Clone(System.Drawing.Rectangle, Egami.SystemDrawing.Imaging.PixelFormat)
+  nameWithType: Bitmap.Clone(Rectangle, PixelFormat)
+- uid: Egami.SystemDrawing.Bitmap.Clone(System.Drawing.RectangleF,Egami.SystemDrawing.Imaging.PixelFormat)
+  name: Clone(RectangleF, PixelFormat)
+  href: api/Egami.SystemDrawing.Bitmap.html#Egami_SystemDrawing_Bitmap_Clone_System_Drawing_RectangleF_Egami_SystemDrawing_Imaging_PixelFormat_
+  commentId: M:Egami.SystemDrawing.Bitmap.Clone(System.Drawing.RectangleF,Egami.SystemDrawing.Imaging.PixelFormat)
+  fullName: Egami.SystemDrawing.Bitmap.Clone(System.Drawing.RectangleF, Egami.SystemDrawing.Imaging.PixelFormat)
+  nameWithType: Bitmap.Clone(RectangleF, PixelFormat)
+- uid: Egami.SystemDrawing.Bitmap.Clone*
+  name: Clone
+  href: api/Egami.SystemDrawing.Bitmap.html#Egami_SystemDrawing_Bitmap_Clone_
+  commentId: Overload:Egami.SystemDrawing.Bitmap.Clone
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Bitmap.Clone
+  nameWithType: Bitmap.Clone
+- uid: Egami.SystemDrawing.Bitmap.ConvertFormat(Egami.SystemDrawing.Imaging.PixelFormat)
+  name: ConvertFormat(PixelFormat)
+  href: api/Egami.SystemDrawing.Bitmap.html#Egami_SystemDrawing_Bitmap_ConvertFormat_Egami_SystemDrawing_Imaging_PixelFormat_
+  commentId: M:Egami.SystemDrawing.Bitmap.ConvertFormat(Egami.SystemDrawing.Imaging.PixelFormat)
+  fullName: Egami.SystemDrawing.Bitmap.ConvertFormat(Egami.SystemDrawing.Imaging.PixelFormat)
+  nameWithType: Bitmap.ConvertFormat(PixelFormat)
+- uid: Egami.SystemDrawing.Bitmap.ConvertFormat(Egami.SystemDrawing.Imaging.PixelFormat,Egami.SystemDrawing.Imaging.DitherType,Egami.SystemDrawing.Imaging.PaletteType,Egami.SystemDrawing.Imaging.ColorPalette,System.Single)
+  name: ConvertFormat(PixelFormat, DitherType, PaletteType, ColorPalette?, float)
+  href: api/Egami.SystemDrawing.Bitmap.html#Egami_SystemDrawing_Bitmap_ConvertFormat_Egami_SystemDrawing_Imaging_PixelFormat_Egami_SystemDrawing_Imaging_DitherType_Egami_SystemDrawing_Imaging_PaletteType_Egami_SystemDrawing_Imaging_ColorPalette_System_Single_
+  commentId: M:Egami.SystemDrawing.Bitmap.ConvertFormat(Egami.SystemDrawing.Imaging.PixelFormat,Egami.SystemDrawing.Imaging.DitherType,Egami.SystemDrawing.Imaging.PaletteType,Egami.SystemDrawing.Imaging.ColorPalette,System.Single)
+  name.vb: ConvertFormat(PixelFormat, DitherType, PaletteType, ColorPalette, Single)
+  fullName: Egami.SystemDrawing.Bitmap.ConvertFormat(Egami.SystemDrawing.Imaging.PixelFormat, Egami.SystemDrawing.Imaging.DitherType, Egami.SystemDrawing.Imaging.PaletteType, Egami.SystemDrawing.Imaging.ColorPalette?, float)
+  fullName.vb: Egami.SystemDrawing.Bitmap.ConvertFormat(Egami.SystemDrawing.Imaging.PixelFormat, Egami.SystemDrawing.Imaging.DitherType, Egami.SystemDrawing.Imaging.PaletteType, Egami.SystemDrawing.Imaging.ColorPalette, Single)
+  nameWithType: Bitmap.ConvertFormat(PixelFormat, DitherType, PaletteType, ColorPalette?, float)
+  nameWithType.vb: Bitmap.ConvertFormat(PixelFormat, DitherType, PaletteType, ColorPalette, Single)
+- uid: Egami.SystemDrawing.Bitmap.ConvertFormat*
+  name: ConvertFormat
+  href: api/Egami.SystemDrawing.Bitmap.html#Egami_SystemDrawing_Bitmap_ConvertFormat_
+  commentId: Overload:Egami.SystemDrawing.Bitmap.ConvertFormat
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Bitmap.ConvertFormat
+  nameWithType: Bitmap.ConvertFormat
+- uid: Egami.SystemDrawing.Bitmap.FromHicon(System.IntPtr)
+  name: FromHicon(nint)
+  href: api/Egami.SystemDrawing.Bitmap.html#Egami_SystemDrawing_Bitmap_FromHicon_System_IntPtr_
+  commentId: M:Egami.SystemDrawing.Bitmap.FromHicon(System.IntPtr)
+  name.vb: FromHicon(IntPtr)
+  fullName: Egami.SystemDrawing.Bitmap.FromHicon(nint)
+  fullName.vb: Egami.SystemDrawing.Bitmap.FromHicon(System.IntPtr)
+  nameWithType: Bitmap.FromHicon(nint)
+  nameWithType.vb: Bitmap.FromHicon(IntPtr)
+- uid: Egami.SystemDrawing.Bitmap.FromHicon*
+  name: FromHicon
+  href: api/Egami.SystemDrawing.Bitmap.html#Egami_SystemDrawing_Bitmap_FromHicon_
+  commentId: Overload:Egami.SystemDrawing.Bitmap.FromHicon
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Bitmap.FromHicon
+  nameWithType: Bitmap.FromHicon
+- uid: Egami.SystemDrawing.Bitmap.FromResource(System.IntPtr,System.String)
+  name: FromResource(nint, string)
+  href: api/Egami.SystemDrawing.Bitmap.html#Egami_SystemDrawing_Bitmap_FromResource_System_IntPtr_System_String_
+  commentId: M:Egami.SystemDrawing.Bitmap.FromResource(System.IntPtr,System.String)
+  name.vb: FromResource(IntPtr, String)
+  fullName: Egami.SystemDrawing.Bitmap.FromResource(nint, string)
+  fullName.vb: Egami.SystemDrawing.Bitmap.FromResource(System.IntPtr, String)
+  nameWithType: Bitmap.FromResource(nint, string)
+  nameWithType.vb: Bitmap.FromResource(IntPtr, String)
+- uid: Egami.SystemDrawing.Bitmap.FromResource*
+  name: FromResource
+  href: api/Egami.SystemDrawing.Bitmap.html#Egami_SystemDrawing_Bitmap_FromResource_
+  commentId: Overload:Egami.SystemDrawing.Bitmap.FromResource
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Bitmap.FromResource
+  nameWithType: Bitmap.FromResource
+- uid: Egami.SystemDrawing.Bitmap.GetHbitmap
+  name: GetHbitmap()
+  href: api/Egami.SystemDrawing.Bitmap.html#Egami_SystemDrawing_Bitmap_GetHbitmap
+  commentId: M:Egami.SystemDrawing.Bitmap.GetHbitmap
+  fullName: Egami.SystemDrawing.Bitmap.GetHbitmap()
+  nameWithType: Bitmap.GetHbitmap()
+- uid: Egami.SystemDrawing.Bitmap.GetHbitmap(System.Drawing.Color)
+  name: GetHbitmap(Color)
+  href: api/Egami.SystemDrawing.Bitmap.html#Egami_SystemDrawing_Bitmap_GetHbitmap_System_Drawing_Color_
+  commentId: M:Egami.SystemDrawing.Bitmap.GetHbitmap(System.Drawing.Color)
+  fullName: Egami.SystemDrawing.Bitmap.GetHbitmap(System.Drawing.Color)
+  nameWithType: Bitmap.GetHbitmap(Color)
+- uid: Egami.SystemDrawing.Bitmap.GetHbitmap*
+  name: GetHbitmap
+  href: api/Egami.SystemDrawing.Bitmap.html#Egami_SystemDrawing_Bitmap_GetHbitmap_
+  commentId: Overload:Egami.SystemDrawing.Bitmap.GetHbitmap
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Bitmap.GetHbitmap
+  nameWithType: Bitmap.GetHbitmap
+- uid: Egami.SystemDrawing.Bitmap.GetHicon
+  name: GetHicon()
+  href: api/Egami.SystemDrawing.Bitmap.html#Egami_SystemDrawing_Bitmap_GetHicon
+  commentId: M:Egami.SystemDrawing.Bitmap.GetHicon
+  fullName: Egami.SystemDrawing.Bitmap.GetHicon()
+  nameWithType: Bitmap.GetHicon()
+- uid: Egami.SystemDrawing.Bitmap.GetHicon*
+  name: GetHicon
+  href: api/Egami.SystemDrawing.Bitmap.html#Egami_SystemDrawing_Bitmap_GetHicon_
+  commentId: Overload:Egami.SystemDrawing.Bitmap.GetHicon
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Bitmap.GetHicon
+  nameWithType: Bitmap.GetHicon
+- uid: Egami.SystemDrawing.Bitmap.GetPixel(System.Int32,System.Int32)
+  name: GetPixel(int, int)
+  href: api/Egami.SystemDrawing.Bitmap.html#Egami_SystemDrawing_Bitmap_GetPixel_System_Int32_System_Int32_
+  commentId: M:Egami.SystemDrawing.Bitmap.GetPixel(System.Int32,System.Int32)
+  name.vb: GetPixel(Integer, Integer)
+  fullName: Egami.SystemDrawing.Bitmap.GetPixel(int, int)
+  fullName.vb: Egami.SystemDrawing.Bitmap.GetPixel(Integer, Integer)
+  nameWithType: Bitmap.GetPixel(int, int)
+  nameWithType.vb: Bitmap.GetPixel(Integer, Integer)
+- uid: Egami.SystemDrawing.Bitmap.GetPixel*
+  name: GetPixel
+  href: api/Egami.SystemDrawing.Bitmap.html#Egami_SystemDrawing_Bitmap_GetPixel_
+  commentId: Overload:Egami.SystemDrawing.Bitmap.GetPixel
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Bitmap.GetPixel
+  nameWithType: Bitmap.GetPixel
+- uid: Egami.SystemDrawing.Bitmap.LockBits(System.Drawing.Rectangle,Egami.SystemDrawing.Imaging.ImageLockMode,Egami.SystemDrawing.Imaging.PixelFormat)
+  name: LockBits(Rectangle, ImageLockMode, PixelFormat)
+  href: api/Egami.SystemDrawing.Bitmap.html#Egami_SystemDrawing_Bitmap_LockBits_System_Drawing_Rectangle_Egami_SystemDrawing_Imaging_ImageLockMode_Egami_SystemDrawing_Imaging_PixelFormat_
+  commentId: M:Egami.SystemDrawing.Bitmap.LockBits(System.Drawing.Rectangle,Egami.SystemDrawing.Imaging.ImageLockMode,Egami.SystemDrawing.Imaging.PixelFormat)
+  fullName: Egami.SystemDrawing.Bitmap.LockBits(System.Drawing.Rectangle, Egami.SystemDrawing.Imaging.ImageLockMode, Egami.SystemDrawing.Imaging.PixelFormat)
+  nameWithType: Bitmap.LockBits(Rectangle, ImageLockMode, PixelFormat)
+- uid: Egami.SystemDrawing.Bitmap.LockBits(System.Drawing.Rectangle,Egami.SystemDrawing.Imaging.ImageLockMode,Egami.SystemDrawing.Imaging.PixelFormat,Egami.SystemDrawing.Imaging.BitmapData)
+  name: LockBits(Rectangle, ImageLockMode, PixelFormat, BitmapData)
+  href: api/Egami.SystemDrawing.Bitmap.html#Egami_SystemDrawing_Bitmap_LockBits_System_Drawing_Rectangle_Egami_SystemDrawing_Imaging_ImageLockMode_Egami_SystemDrawing_Imaging_PixelFormat_Egami_SystemDrawing_Imaging_BitmapData_
+  commentId: M:Egami.SystemDrawing.Bitmap.LockBits(System.Drawing.Rectangle,Egami.SystemDrawing.Imaging.ImageLockMode,Egami.SystemDrawing.Imaging.PixelFormat,Egami.SystemDrawing.Imaging.BitmapData)
+  fullName: Egami.SystemDrawing.Bitmap.LockBits(System.Drawing.Rectangle, Egami.SystemDrawing.Imaging.ImageLockMode, Egami.SystemDrawing.Imaging.PixelFormat, Egami.SystemDrawing.Imaging.BitmapData)
+  nameWithType: Bitmap.LockBits(Rectangle, ImageLockMode, PixelFormat, BitmapData)
+- uid: Egami.SystemDrawing.Bitmap.LockBits*
+  name: LockBits
+  href: api/Egami.SystemDrawing.Bitmap.html#Egami_SystemDrawing_Bitmap_LockBits_
+  commentId: Overload:Egami.SystemDrawing.Bitmap.LockBits
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Bitmap.LockBits
+  nameWithType: Bitmap.LockBits
+- uid: Egami.SystemDrawing.Bitmap.MakeTransparent
+  name: MakeTransparent()
+  href: api/Egami.SystemDrawing.Bitmap.html#Egami_SystemDrawing_Bitmap_MakeTransparent
+  commentId: M:Egami.SystemDrawing.Bitmap.MakeTransparent
+  fullName: Egami.SystemDrawing.Bitmap.MakeTransparent()
+  nameWithType: Bitmap.MakeTransparent()
+- uid: Egami.SystemDrawing.Bitmap.MakeTransparent(System.Drawing.Color)
+  name: MakeTransparent(Color)
+  href: api/Egami.SystemDrawing.Bitmap.html#Egami_SystemDrawing_Bitmap_MakeTransparent_System_Drawing_Color_
+  commentId: M:Egami.SystemDrawing.Bitmap.MakeTransparent(System.Drawing.Color)
+  fullName: Egami.SystemDrawing.Bitmap.MakeTransparent(System.Drawing.Color)
+  nameWithType: Bitmap.MakeTransparent(Color)
+- uid: Egami.SystemDrawing.Bitmap.MakeTransparent*
+  name: MakeTransparent
+  href: api/Egami.SystemDrawing.Bitmap.html#Egami_SystemDrawing_Bitmap_MakeTransparent_
+  commentId: Overload:Egami.SystemDrawing.Bitmap.MakeTransparent
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Bitmap.MakeTransparent
+  nameWithType: Bitmap.MakeTransparent
+- uid: Egami.SystemDrawing.Bitmap.SetPixel(System.Int32,System.Int32,System.Drawing.Color)
+  name: SetPixel(int, int, Color)
+  href: api/Egami.SystemDrawing.Bitmap.html#Egami_SystemDrawing_Bitmap_SetPixel_System_Int32_System_Int32_System_Drawing_Color_
+  commentId: M:Egami.SystemDrawing.Bitmap.SetPixel(System.Int32,System.Int32,System.Drawing.Color)
+  name.vb: SetPixel(Integer, Integer, Color)
+  fullName: Egami.SystemDrawing.Bitmap.SetPixel(int, int, System.Drawing.Color)
+  fullName.vb: Egami.SystemDrawing.Bitmap.SetPixel(Integer, Integer, System.Drawing.Color)
+  nameWithType: Bitmap.SetPixel(int, int, Color)
+  nameWithType.vb: Bitmap.SetPixel(Integer, Integer, Color)
+- uid: Egami.SystemDrawing.Bitmap.SetPixel*
+  name: SetPixel
+  href: api/Egami.SystemDrawing.Bitmap.html#Egami_SystemDrawing_Bitmap_SetPixel_
+  commentId: Overload:Egami.SystemDrawing.Bitmap.SetPixel
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Bitmap.SetPixel
+  nameWithType: Bitmap.SetPixel
+- uid: Egami.SystemDrawing.Bitmap.SetResolution(System.Single,System.Single)
+  name: SetResolution(float, float)
+  href: api/Egami.SystemDrawing.Bitmap.html#Egami_SystemDrawing_Bitmap_SetResolution_System_Single_System_Single_
+  commentId: M:Egami.SystemDrawing.Bitmap.SetResolution(System.Single,System.Single)
+  name.vb: SetResolution(Single, Single)
+  fullName: Egami.SystemDrawing.Bitmap.SetResolution(float, float)
+  fullName.vb: Egami.SystemDrawing.Bitmap.SetResolution(Single, Single)
+  nameWithType: Bitmap.SetResolution(float, float)
+  nameWithType.vb: Bitmap.SetResolution(Single, Single)
+- uid: Egami.SystemDrawing.Bitmap.SetResolution*
+  name: SetResolution
+  href: api/Egami.SystemDrawing.Bitmap.html#Egami_SystemDrawing_Bitmap_SetResolution_
+  commentId: Overload:Egami.SystemDrawing.Bitmap.SetResolution
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Bitmap.SetResolution
+  nameWithType: Bitmap.SetResolution
+- uid: Egami.SystemDrawing.Bitmap.UnlockBits(Egami.SystemDrawing.Imaging.BitmapData)
+  name: UnlockBits(BitmapData)
+  href: api/Egami.SystemDrawing.Bitmap.html#Egami_SystemDrawing_Bitmap_UnlockBits_Egami_SystemDrawing_Imaging_BitmapData_
+  commentId: M:Egami.SystemDrawing.Bitmap.UnlockBits(Egami.SystemDrawing.Imaging.BitmapData)
+  fullName: Egami.SystemDrawing.Bitmap.UnlockBits(Egami.SystemDrawing.Imaging.BitmapData)
+  nameWithType: Bitmap.UnlockBits(BitmapData)
+- uid: Egami.SystemDrawing.Bitmap.UnlockBits*
+  name: UnlockBits
+  href: api/Egami.SystemDrawing.Bitmap.html#Egami_SystemDrawing_Bitmap_UnlockBits_
+  commentId: Overload:Egami.SystemDrawing.Bitmap.UnlockBits
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Bitmap.UnlockBits
+  nameWithType: Bitmap.UnlockBits
+- uid: Egami.SystemDrawing.GraphicsUnit
+  name: GraphicsUnit
+  href: api/Egami.SystemDrawing.GraphicsUnit.html
+  commentId: T:Egami.SystemDrawing.GraphicsUnit
+  fullName: Egami.SystemDrawing.GraphicsUnit
+  nameWithType: GraphicsUnit
+- uid: Egami.SystemDrawing.GraphicsUnit.Display
+  name: Display
+  href: api/Egami.SystemDrawing.GraphicsUnit.html#Egami_SystemDrawing_GraphicsUnit_Display
+  commentId: F:Egami.SystemDrawing.GraphicsUnit.Display
+  fullName: Egami.SystemDrawing.GraphicsUnit.Display
+  nameWithType: GraphicsUnit.Display
+- uid: Egami.SystemDrawing.GraphicsUnit.Document
+  name: Document
+  href: api/Egami.SystemDrawing.GraphicsUnit.html#Egami_SystemDrawing_GraphicsUnit_Document
+  commentId: F:Egami.SystemDrawing.GraphicsUnit.Document
+  fullName: Egami.SystemDrawing.GraphicsUnit.Document
+  nameWithType: GraphicsUnit.Document
+- uid: Egami.SystemDrawing.GraphicsUnit.Inch
+  name: Inch
+  href: api/Egami.SystemDrawing.GraphicsUnit.html#Egami_SystemDrawing_GraphicsUnit_Inch
+  commentId: F:Egami.SystemDrawing.GraphicsUnit.Inch
+  fullName: Egami.SystemDrawing.GraphicsUnit.Inch
+  nameWithType: GraphicsUnit.Inch
+- uid: Egami.SystemDrawing.GraphicsUnit.Millimeter
+  name: Millimeter
+  href: api/Egami.SystemDrawing.GraphicsUnit.html#Egami_SystemDrawing_GraphicsUnit_Millimeter
+  commentId: F:Egami.SystemDrawing.GraphicsUnit.Millimeter
+  fullName: Egami.SystemDrawing.GraphicsUnit.Millimeter
+  nameWithType: GraphicsUnit.Millimeter
+- uid: Egami.SystemDrawing.GraphicsUnit.Pixel
+  name: Pixel
+  href: api/Egami.SystemDrawing.GraphicsUnit.html#Egami_SystemDrawing_GraphicsUnit_Pixel
+  commentId: F:Egami.SystemDrawing.GraphicsUnit.Pixel
+  fullName: Egami.SystemDrawing.GraphicsUnit.Pixel
+  nameWithType: GraphicsUnit.Pixel
+- uid: Egami.SystemDrawing.GraphicsUnit.Point
+  name: Point
+  href: api/Egami.SystemDrawing.GraphicsUnit.html#Egami_SystemDrawing_GraphicsUnit_Point
+  commentId: F:Egami.SystemDrawing.GraphicsUnit.Point
+  fullName: Egami.SystemDrawing.GraphicsUnit.Point
+  nameWithType: GraphicsUnit.Point
+- uid: Egami.SystemDrawing.GraphicsUnit.World
+  name: World
+  href: api/Egami.SystemDrawing.GraphicsUnit.html#Egami_SystemDrawing_GraphicsUnit_World
+  commentId: F:Egami.SystemDrawing.GraphicsUnit.World
+  fullName: Egami.SystemDrawing.GraphicsUnit.World
+  nameWithType: GraphicsUnit.World
+- uid: Egami.SystemDrawing.Icon
+  name: Icon
+  href: api/Egami.SystemDrawing.Icon.html
+  commentId: T:Egami.SystemDrawing.Icon
+  fullName: Egami.SystemDrawing.Icon
+  nameWithType: Icon
+- uid: Egami.SystemDrawing.Icon.#ctor(Egami.SystemDrawing.Icon,System.Drawing.Size)
+  name: Icon(Icon, Size)
+  href: api/Egami.SystemDrawing.Icon.html#Egami_SystemDrawing_Icon__ctor_Egami_SystemDrawing_Icon_System_Drawing_Size_
+  commentId: M:Egami.SystemDrawing.Icon.#ctor(Egami.SystemDrawing.Icon,System.Drawing.Size)
+  name.vb: New(Icon, Size)
+  fullName: Egami.SystemDrawing.Icon.Icon(Egami.SystemDrawing.Icon, System.Drawing.Size)
+  fullName.vb: Egami.SystemDrawing.Icon.New(Egami.SystemDrawing.Icon, System.Drawing.Size)
+  nameWithType: Icon.Icon(Icon, Size)
+  nameWithType.vb: Icon.New(Icon, Size)
+- uid: Egami.SystemDrawing.Icon.#ctor(Egami.SystemDrawing.Icon,System.Int32,System.Int32)
+  name: Icon(Icon, int, int)
+  href: api/Egami.SystemDrawing.Icon.html#Egami_SystemDrawing_Icon__ctor_Egami_SystemDrawing_Icon_System_Int32_System_Int32_
+  commentId: M:Egami.SystemDrawing.Icon.#ctor(Egami.SystemDrawing.Icon,System.Int32,System.Int32)
+  name.vb: New(Icon, Integer, Integer)
+  fullName: Egami.SystemDrawing.Icon.Icon(Egami.SystemDrawing.Icon, int, int)
+  fullName.vb: Egami.SystemDrawing.Icon.New(Egami.SystemDrawing.Icon, Integer, Integer)
+  nameWithType: Icon.Icon(Icon, int, int)
+  nameWithType.vb: Icon.New(Icon, Integer, Integer)
+- uid: Egami.SystemDrawing.Icon.#ctor(System.IO.Stream)
+  name: Icon(Stream)
+  href: api/Egami.SystemDrawing.Icon.html#Egami_SystemDrawing_Icon__ctor_System_IO_Stream_
+  commentId: M:Egami.SystemDrawing.Icon.#ctor(System.IO.Stream)
+  name.vb: New(Stream)
+  fullName: Egami.SystemDrawing.Icon.Icon(System.IO.Stream)
+  fullName.vb: Egami.SystemDrawing.Icon.New(System.IO.Stream)
+  nameWithType: Icon.Icon(Stream)
+  nameWithType.vb: Icon.New(Stream)
+- uid: Egami.SystemDrawing.Icon.#ctor(System.IO.Stream,System.Drawing.Size)
+  name: Icon(Stream, Size)
+  href: api/Egami.SystemDrawing.Icon.html#Egami_SystemDrawing_Icon__ctor_System_IO_Stream_System_Drawing_Size_
+  commentId: M:Egami.SystemDrawing.Icon.#ctor(System.IO.Stream,System.Drawing.Size)
+  name.vb: New(Stream, Size)
+  fullName: Egami.SystemDrawing.Icon.Icon(System.IO.Stream, System.Drawing.Size)
+  fullName.vb: Egami.SystemDrawing.Icon.New(System.IO.Stream, System.Drawing.Size)
+  nameWithType: Icon.Icon(Stream, Size)
+  nameWithType.vb: Icon.New(Stream, Size)
+- uid: Egami.SystemDrawing.Icon.#ctor(System.IO.Stream,System.Int32,System.Int32)
+  name: Icon(Stream, int, int)
+  href: api/Egami.SystemDrawing.Icon.html#Egami_SystemDrawing_Icon__ctor_System_IO_Stream_System_Int32_System_Int32_
+  commentId: M:Egami.SystemDrawing.Icon.#ctor(System.IO.Stream,System.Int32,System.Int32)
+  name.vb: New(Stream, Integer, Integer)
+  fullName: Egami.SystemDrawing.Icon.Icon(System.IO.Stream, int, int)
+  fullName.vb: Egami.SystemDrawing.Icon.New(System.IO.Stream, Integer, Integer)
+  nameWithType: Icon.Icon(Stream, int, int)
+  nameWithType.vb: Icon.New(Stream, Integer, Integer)
+- uid: Egami.SystemDrawing.Icon.#ctor(System.String)
+  name: Icon(string)
+  href: api/Egami.SystemDrawing.Icon.html#Egami_SystemDrawing_Icon__ctor_System_String_
+  commentId: M:Egami.SystemDrawing.Icon.#ctor(System.String)
+  name.vb: New(String)
+  fullName: Egami.SystemDrawing.Icon.Icon(string)
+  fullName.vb: Egami.SystemDrawing.Icon.New(String)
+  nameWithType: Icon.Icon(string)
+  nameWithType.vb: Icon.New(String)
+- uid: Egami.SystemDrawing.Icon.#ctor(System.String,System.Drawing.Size)
+  name: Icon(string, Size)
+  href: api/Egami.SystemDrawing.Icon.html#Egami_SystemDrawing_Icon__ctor_System_String_System_Drawing_Size_
+  commentId: M:Egami.SystemDrawing.Icon.#ctor(System.String,System.Drawing.Size)
+  name.vb: New(String, Size)
+  fullName: Egami.SystemDrawing.Icon.Icon(string, System.Drawing.Size)
+  fullName.vb: Egami.SystemDrawing.Icon.New(String, System.Drawing.Size)
+  nameWithType: Icon.Icon(string, Size)
+  nameWithType.vb: Icon.New(String, Size)
+- uid: Egami.SystemDrawing.Icon.#ctor(System.String,System.Int32,System.Int32)
+  name: Icon(string, int, int)
+  href: api/Egami.SystemDrawing.Icon.html#Egami_SystemDrawing_Icon__ctor_System_String_System_Int32_System_Int32_
+  commentId: M:Egami.SystemDrawing.Icon.#ctor(System.String,System.Int32,System.Int32)
+  name.vb: New(String, Integer, Integer)
+  fullName: Egami.SystemDrawing.Icon.Icon(string, int, int)
+  fullName.vb: Egami.SystemDrawing.Icon.New(String, Integer, Integer)
+  nameWithType: Icon.Icon(string, int, int)
+  nameWithType.vb: Icon.New(String, Integer, Integer)
+- uid: Egami.SystemDrawing.Icon.#ctor(System.Type,System.String)
+  name: Icon(Type, string)
+  href: api/Egami.SystemDrawing.Icon.html#Egami_SystemDrawing_Icon__ctor_System_Type_System_String_
+  commentId: M:Egami.SystemDrawing.Icon.#ctor(System.Type,System.String)
+  name.vb: New(Type, String)
+  fullName: Egami.SystemDrawing.Icon.Icon(System.Type, string)
+  fullName.vb: Egami.SystemDrawing.Icon.New(System.Type, String)
+  nameWithType: Icon.Icon(Type, string)
+  nameWithType.vb: Icon.New(Type, String)
+- uid: Egami.SystemDrawing.Icon.#ctor*
+  name: Icon
+  href: api/Egami.SystemDrawing.Icon.html#Egami_SystemDrawing_Icon__ctor_
+  commentId: Overload:Egami.SystemDrawing.Icon.#ctor
+  isSpec: "True"
+  name.vb: New
+  fullName: Egami.SystemDrawing.Icon.Icon
+  fullName.vb: Egami.SystemDrawing.Icon.New
+  nameWithType: Icon.Icon
+  nameWithType.vb: Icon.New
+- uid: Egami.SystemDrawing.Icon.Clone
+  name: Clone()
+  href: api/Egami.SystemDrawing.Icon.html#Egami_SystemDrawing_Icon_Clone
+  commentId: M:Egami.SystemDrawing.Icon.Clone
+  fullName: Egami.SystemDrawing.Icon.Clone()
+  nameWithType: Icon.Clone()
+- uid: Egami.SystemDrawing.Icon.Clone*
+  name: Clone
+  href: api/Egami.SystemDrawing.Icon.html#Egami_SystemDrawing_Icon_Clone_
+  commentId: Overload:Egami.SystemDrawing.Icon.Clone
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Icon.Clone
+  nameWithType: Icon.Clone
+- uid: Egami.SystemDrawing.Icon.Dispose
+  name: Dispose()
+  href: api/Egami.SystemDrawing.Icon.html#Egami_SystemDrawing_Icon_Dispose
+  commentId: M:Egami.SystemDrawing.Icon.Dispose
+  fullName: Egami.SystemDrawing.Icon.Dispose()
+  nameWithType: Icon.Dispose()
+- uid: Egami.SystemDrawing.Icon.Dispose*
+  name: Dispose
+  href: api/Egami.SystemDrawing.Icon.html#Egami_SystemDrawing_Icon_Dispose_
+  commentId: Overload:Egami.SystemDrawing.Icon.Dispose
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Icon.Dispose
+  nameWithType: Icon.Dispose
+- uid: Egami.SystemDrawing.Icon.ExtractAssociatedIcon(System.String)
+  name: ExtractAssociatedIcon(string)
+  href: api/Egami.SystemDrawing.Icon.html#Egami_SystemDrawing_Icon_ExtractAssociatedIcon_System_String_
+  commentId: M:Egami.SystemDrawing.Icon.ExtractAssociatedIcon(System.String)
+  name.vb: ExtractAssociatedIcon(String)
+  fullName: Egami.SystemDrawing.Icon.ExtractAssociatedIcon(string)
+  fullName.vb: Egami.SystemDrawing.Icon.ExtractAssociatedIcon(String)
+  nameWithType: Icon.ExtractAssociatedIcon(string)
+  nameWithType.vb: Icon.ExtractAssociatedIcon(String)
+- uid: Egami.SystemDrawing.Icon.ExtractAssociatedIcon*
+  name: ExtractAssociatedIcon
+  href: api/Egami.SystemDrawing.Icon.html#Egami_SystemDrawing_Icon_ExtractAssociatedIcon_
+  commentId: Overload:Egami.SystemDrawing.Icon.ExtractAssociatedIcon
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Icon.ExtractAssociatedIcon
+  nameWithType: Icon.ExtractAssociatedIcon
+- uid: Egami.SystemDrawing.Icon.ExtractIcon(System.String,System.Int32,System.Boolean)
+  name: ExtractIcon(string, int, bool)
+  href: api/Egami.SystemDrawing.Icon.html#Egami_SystemDrawing_Icon_ExtractIcon_System_String_System_Int32_System_Boolean_
+  commentId: M:Egami.SystemDrawing.Icon.ExtractIcon(System.String,System.Int32,System.Boolean)
+  name.vb: ExtractIcon(String, Integer, Boolean)
+  fullName: Egami.SystemDrawing.Icon.ExtractIcon(string, int, bool)
+  fullName.vb: Egami.SystemDrawing.Icon.ExtractIcon(String, Integer, Boolean)
+  nameWithType: Icon.ExtractIcon(string, int, bool)
+  nameWithType.vb: Icon.ExtractIcon(String, Integer, Boolean)
+- uid: Egami.SystemDrawing.Icon.ExtractIcon(System.String,System.Int32,System.Int32)
+  name: ExtractIcon(string, int, int)
+  href: api/Egami.SystemDrawing.Icon.html#Egami_SystemDrawing_Icon_ExtractIcon_System_String_System_Int32_System_Int32_
+  commentId: M:Egami.SystemDrawing.Icon.ExtractIcon(System.String,System.Int32,System.Int32)
+  name.vb: ExtractIcon(String, Integer, Integer)
+  fullName: Egami.SystemDrawing.Icon.ExtractIcon(string, int, int)
+  fullName.vb: Egami.SystemDrawing.Icon.ExtractIcon(String, Integer, Integer)
+  nameWithType: Icon.ExtractIcon(string, int, int)
+  nameWithType.vb: Icon.ExtractIcon(String, Integer, Integer)
+- uid: Egami.SystemDrawing.Icon.ExtractIcon*
+  name: ExtractIcon
+  href: api/Egami.SystemDrawing.Icon.html#Egami_SystemDrawing_Icon_ExtractIcon_
+  commentId: Overload:Egami.SystemDrawing.Icon.ExtractIcon
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Icon.ExtractIcon
+  nameWithType: Icon.ExtractIcon
+- uid: Egami.SystemDrawing.Icon.FromHandle(System.IntPtr)
+  name: FromHandle(nint)
+  href: api/Egami.SystemDrawing.Icon.html#Egami_SystemDrawing_Icon_FromHandle_System_IntPtr_
+  commentId: M:Egami.SystemDrawing.Icon.FromHandle(System.IntPtr)
+  name.vb: FromHandle(IntPtr)
+  fullName: Egami.SystemDrawing.Icon.FromHandle(nint)
+  fullName.vb: Egami.SystemDrawing.Icon.FromHandle(System.IntPtr)
+  nameWithType: Icon.FromHandle(nint)
+  nameWithType.vb: Icon.FromHandle(IntPtr)
+- uid: Egami.SystemDrawing.Icon.FromHandle*
+  name: FromHandle
+  href: api/Egami.SystemDrawing.Icon.html#Egami_SystemDrawing_Icon_FromHandle_
+  commentId: Overload:Egami.SystemDrawing.Icon.FromHandle
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Icon.FromHandle
+  nameWithType: Icon.FromHandle
+- uid: Egami.SystemDrawing.Icon.Handle
+  name: Handle
+  href: api/Egami.SystemDrawing.Icon.html#Egami_SystemDrawing_Icon_Handle
+  commentId: P:Egami.SystemDrawing.Icon.Handle
+  fullName: Egami.SystemDrawing.Icon.Handle
+  nameWithType: Icon.Handle
+- uid: Egami.SystemDrawing.Icon.Handle*
+  name: Handle
+  href: api/Egami.SystemDrawing.Icon.html#Egami_SystemDrawing_Icon_Handle_
+  commentId: Overload:Egami.SystemDrawing.Icon.Handle
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Icon.Handle
+  nameWithType: Icon.Handle
+- uid: Egami.SystemDrawing.Icon.Height
+  name: Height
+  href: api/Egami.SystemDrawing.Icon.html#Egami_SystemDrawing_Icon_Height
+  commentId: P:Egami.SystemDrawing.Icon.Height
+  fullName: Egami.SystemDrawing.Icon.Height
+  nameWithType: Icon.Height
+- uid: Egami.SystemDrawing.Icon.Height*
+  name: Height
+  href: api/Egami.SystemDrawing.Icon.html#Egami_SystemDrawing_Icon_Height_
+  commentId: Overload:Egami.SystemDrawing.Icon.Height
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Icon.Height
+  nameWithType: Icon.Height
+- uid: Egami.SystemDrawing.Icon.Save(System.IO.Stream)
+  name: Save(Stream)
+  href: api/Egami.SystemDrawing.Icon.html#Egami_SystemDrawing_Icon_Save_System_IO_Stream_
+  commentId: M:Egami.SystemDrawing.Icon.Save(System.IO.Stream)
+  fullName: Egami.SystemDrawing.Icon.Save(System.IO.Stream)
+  nameWithType: Icon.Save(Stream)
+- uid: Egami.SystemDrawing.Icon.Save*
+  name: Save
+  href: api/Egami.SystemDrawing.Icon.html#Egami_SystemDrawing_Icon_Save_
+  commentId: Overload:Egami.SystemDrawing.Icon.Save
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Icon.Save
+  nameWithType: Icon.Save
+- uid: Egami.SystemDrawing.Icon.Size
+  name: Size
+  href: api/Egami.SystemDrawing.Icon.html#Egami_SystemDrawing_Icon_Size
+  commentId: P:Egami.SystemDrawing.Icon.Size
+  fullName: Egami.SystemDrawing.Icon.Size
+  nameWithType: Icon.Size
+- uid: Egami.SystemDrawing.Icon.Size*
+  name: Size
+  href: api/Egami.SystemDrawing.Icon.html#Egami_SystemDrawing_Icon_Size_
+  commentId: Overload:Egami.SystemDrawing.Icon.Size
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Icon.Size
+  nameWithType: Icon.Size
+- uid: Egami.SystemDrawing.Icon.ToBitmap
+  name: ToBitmap()
+  href: api/Egami.SystemDrawing.Icon.html#Egami_SystemDrawing_Icon_ToBitmap
+  commentId: M:Egami.SystemDrawing.Icon.ToBitmap
+  fullName: Egami.SystemDrawing.Icon.ToBitmap()
+  nameWithType: Icon.ToBitmap()
+- uid: Egami.SystemDrawing.Icon.ToBitmap*
+  name: ToBitmap
+  href: api/Egami.SystemDrawing.Icon.html#Egami_SystemDrawing_Icon_ToBitmap_
+  commentId: Overload:Egami.SystemDrawing.Icon.ToBitmap
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Icon.ToBitmap
+  nameWithType: Icon.ToBitmap
+- uid: Egami.SystemDrawing.Icon.ToString
+  name: ToString()
+  href: api/Egami.SystemDrawing.Icon.html#Egami_SystemDrawing_Icon_ToString
+  commentId: M:Egami.SystemDrawing.Icon.ToString
+  fullName: Egami.SystemDrawing.Icon.ToString()
+  nameWithType: Icon.ToString()
+- uid: Egami.SystemDrawing.Icon.ToString*
+  name: ToString
+  href: api/Egami.SystemDrawing.Icon.html#Egami_SystemDrawing_Icon_ToString_
+  commentId: Overload:Egami.SystemDrawing.Icon.ToString
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Icon.ToString
+  nameWithType: Icon.ToString
+- uid: Egami.SystemDrawing.Icon.Width
+  name: Width
+  href: api/Egami.SystemDrawing.Icon.html#Egami_SystemDrawing_Icon_Width
+  commentId: P:Egami.SystemDrawing.Icon.Width
+  fullName: Egami.SystemDrawing.Icon.Width
+  nameWithType: Icon.Width
+- uid: Egami.SystemDrawing.Icon.Width*
+  name: Width
+  href: api/Egami.SystemDrawing.Icon.html#Egami_SystemDrawing_Icon_Width_
+  commentId: Overload:Egami.SystemDrawing.Icon.Width
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Icon.Width
+  nameWithType: Icon.Width
+- uid: Egami.SystemDrawing.Image
+  name: Image
+  href: api/Egami.SystemDrawing.Image.html
+  commentId: T:Egami.SystemDrawing.Image
+  fullName: Egami.SystemDrawing.Image
+  nameWithType: Image
+- uid: Egami.SystemDrawing.Image.Clone
+  name: Clone()
+  href: api/Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_Clone
+  commentId: M:Egami.SystemDrawing.Image.Clone
+  fullName: Egami.SystemDrawing.Image.Clone()
+  nameWithType: Image.Clone()
+- uid: Egami.SystemDrawing.Image.Clone*
+  name: Clone
+  href: api/Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_Clone_
+  commentId: Overload:Egami.SystemDrawing.Image.Clone
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Image.Clone
+  nameWithType: Image.Clone
+- uid: Egami.SystemDrawing.Image.Dispose
+  name: Dispose()
+  href: api/Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_Dispose
+  commentId: M:Egami.SystemDrawing.Image.Dispose
+  fullName: Egami.SystemDrawing.Image.Dispose()
+  nameWithType: Image.Dispose()
+- uid: Egami.SystemDrawing.Image.Dispose(System.Boolean)
+  name: Dispose(bool)
+  href: api/Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_Dispose_System_Boolean_
+  commentId: M:Egami.SystemDrawing.Image.Dispose(System.Boolean)
+  name.vb: Dispose(Boolean)
+  fullName: Egami.SystemDrawing.Image.Dispose(bool)
+  fullName.vb: Egami.SystemDrawing.Image.Dispose(Boolean)
+  nameWithType: Image.Dispose(bool)
+  nameWithType.vb: Image.Dispose(Boolean)
+- uid: Egami.SystemDrawing.Image.Dispose*
+  name: Dispose
+  href: api/Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_Dispose_
+  commentId: Overload:Egami.SystemDrawing.Image.Dispose
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Image.Dispose
+  nameWithType: Image.Dispose
+- uid: Egami.SystemDrawing.Image.Finalize
+  name: ~Image()
+  href: api/Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_Finalize
+  commentId: M:Egami.SystemDrawing.Image.Finalize
+  name.vb: ''
+  fullName: Egami.SystemDrawing.Image.~Image()
+  fullName.vb: ''
+  nameWithType: Image.~Image()
+  nameWithType.vb: ''
+- uid: Egami.SystemDrawing.Image.Finalize*
+  name: ~Image
+  href: api/Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_Finalize_
+  commentId: Overload:Egami.SystemDrawing.Image.Finalize
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Image.~Image
+  nameWithType: Image.~Image
+- uid: Egami.SystemDrawing.Image.Flags
+  name: Flags
+  href: api/Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_Flags
+  commentId: P:Egami.SystemDrawing.Image.Flags
+  fullName: Egami.SystemDrawing.Image.Flags
+  nameWithType: Image.Flags
+- uid: Egami.SystemDrawing.Image.Flags*
+  name: Flags
+  href: api/Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_Flags_
+  commentId: Overload:Egami.SystemDrawing.Image.Flags
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Image.Flags
+  nameWithType: Image.Flags
+- uid: Egami.SystemDrawing.Image.FrameDimensionsList
+  name: FrameDimensionsList
+  href: api/Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_FrameDimensionsList
+  commentId: P:Egami.SystemDrawing.Image.FrameDimensionsList
+  fullName: Egami.SystemDrawing.Image.FrameDimensionsList
+  nameWithType: Image.FrameDimensionsList
+- uid: Egami.SystemDrawing.Image.FrameDimensionsList*
+  name: FrameDimensionsList
+  href: api/Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_FrameDimensionsList_
+  commentId: Overload:Egami.SystemDrawing.Image.FrameDimensionsList
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Image.FrameDimensionsList
+  nameWithType: Image.FrameDimensionsList
+- uid: Egami.SystemDrawing.Image.FromFile(System.String)
+  name: FromFile(string)
+  href: api/Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_FromFile_System_String_
+  commentId: M:Egami.SystemDrawing.Image.FromFile(System.String)
+  name.vb: FromFile(String)
+  fullName: Egami.SystemDrawing.Image.FromFile(string)
+  fullName.vb: Egami.SystemDrawing.Image.FromFile(String)
+  nameWithType: Image.FromFile(string)
+  nameWithType.vb: Image.FromFile(String)
+- uid: Egami.SystemDrawing.Image.FromFile(System.String,System.Boolean)
+  name: FromFile(string, bool)
+  href: api/Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_FromFile_System_String_System_Boolean_
+  commentId: M:Egami.SystemDrawing.Image.FromFile(System.String,System.Boolean)
+  name.vb: FromFile(String, Boolean)
+  fullName: Egami.SystemDrawing.Image.FromFile(string, bool)
+  fullName.vb: Egami.SystemDrawing.Image.FromFile(String, Boolean)
+  nameWithType: Image.FromFile(string, bool)
+  nameWithType.vb: Image.FromFile(String, Boolean)
+- uid: Egami.SystemDrawing.Image.FromFile*
+  name: FromFile
+  href: api/Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_FromFile_
+  commentId: Overload:Egami.SystemDrawing.Image.FromFile
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Image.FromFile
+  nameWithType: Image.FromFile
+- uid: Egami.SystemDrawing.Image.FromHbitmap(System.IntPtr)
+  name: FromHbitmap(nint)
+  href: api/Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_FromHbitmap_System_IntPtr_
+  commentId: M:Egami.SystemDrawing.Image.FromHbitmap(System.IntPtr)
+  name.vb: FromHbitmap(IntPtr)
+  fullName: Egami.SystemDrawing.Image.FromHbitmap(nint)
+  fullName.vb: Egami.SystemDrawing.Image.FromHbitmap(System.IntPtr)
+  nameWithType: Image.FromHbitmap(nint)
+  nameWithType.vb: Image.FromHbitmap(IntPtr)
+- uid: Egami.SystemDrawing.Image.FromHbitmap(System.IntPtr,System.IntPtr)
+  name: FromHbitmap(nint, nint)
+  href: api/Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_FromHbitmap_System_IntPtr_System_IntPtr_
+  commentId: M:Egami.SystemDrawing.Image.FromHbitmap(System.IntPtr,System.IntPtr)
+  name.vb: FromHbitmap(IntPtr, IntPtr)
+  fullName: Egami.SystemDrawing.Image.FromHbitmap(nint, nint)
+  fullName.vb: Egami.SystemDrawing.Image.FromHbitmap(System.IntPtr, System.IntPtr)
+  nameWithType: Image.FromHbitmap(nint, nint)
+  nameWithType.vb: Image.FromHbitmap(IntPtr, IntPtr)
+- uid: Egami.SystemDrawing.Image.FromHbitmap*
+  name: FromHbitmap
+  href: api/Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_FromHbitmap_
+  commentId: Overload:Egami.SystemDrawing.Image.FromHbitmap
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Image.FromHbitmap
+  nameWithType: Image.FromHbitmap
+- uid: Egami.SystemDrawing.Image.FromStream(System.IO.Stream)
+  name: FromStream(Stream)
+  href: api/Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_FromStream_System_IO_Stream_
+  commentId: M:Egami.SystemDrawing.Image.FromStream(System.IO.Stream)
+  fullName: Egami.SystemDrawing.Image.FromStream(System.IO.Stream)
+  nameWithType: Image.FromStream(Stream)
+- uid: Egami.SystemDrawing.Image.FromStream(System.IO.Stream,System.Boolean)
+  name: FromStream(Stream, bool)
+  href: api/Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_FromStream_System_IO_Stream_System_Boolean_
+  commentId: M:Egami.SystemDrawing.Image.FromStream(System.IO.Stream,System.Boolean)
+  name.vb: FromStream(Stream, Boolean)
+  fullName: Egami.SystemDrawing.Image.FromStream(System.IO.Stream, bool)
+  fullName.vb: Egami.SystemDrawing.Image.FromStream(System.IO.Stream, Boolean)
+  nameWithType: Image.FromStream(Stream, bool)
+  nameWithType.vb: Image.FromStream(Stream, Boolean)
+- uid: Egami.SystemDrawing.Image.FromStream(System.IO.Stream,System.Boolean,System.Boolean)
+  name: FromStream(Stream, bool, bool)
+  href: api/Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_FromStream_System_IO_Stream_System_Boolean_System_Boolean_
+  commentId: M:Egami.SystemDrawing.Image.FromStream(System.IO.Stream,System.Boolean,System.Boolean)
+  name.vb: FromStream(Stream, Boolean, Boolean)
+  fullName: Egami.SystemDrawing.Image.FromStream(System.IO.Stream, bool, bool)
+  fullName.vb: Egami.SystemDrawing.Image.FromStream(System.IO.Stream, Boolean, Boolean)
+  nameWithType: Image.FromStream(Stream, bool, bool)
+  nameWithType.vb: Image.FromStream(Stream, Boolean, Boolean)
+- uid: Egami.SystemDrawing.Image.FromStream*
+  name: FromStream
+  href: api/Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_FromStream_
+  commentId: Overload:Egami.SystemDrawing.Image.FromStream
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Image.FromStream
+  nameWithType: Image.FromStream
+- uid: Egami.SystemDrawing.Image.GetBounds(Egami.SystemDrawing.GraphicsUnit@)
+  name: GetBounds(ref GraphicsUnit)
+  href: api/Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_GetBounds_Egami_SystemDrawing_GraphicsUnit__
+  commentId: M:Egami.SystemDrawing.Image.GetBounds(Egami.SystemDrawing.GraphicsUnit@)
+  name.vb: GetBounds(GraphicsUnit)
+  fullName: Egami.SystemDrawing.Image.GetBounds(ref Egami.SystemDrawing.GraphicsUnit)
+  fullName.vb: Egami.SystemDrawing.Image.GetBounds(Egami.SystemDrawing.GraphicsUnit)
+  nameWithType: Image.GetBounds(ref GraphicsUnit)
+  nameWithType.vb: Image.GetBounds(GraphicsUnit)
+- uid: Egami.SystemDrawing.Image.GetBounds*
+  name: GetBounds
+  href: api/Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_GetBounds_
+  commentId: Overload:Egami.SystemDrawing.Image.GetBounds
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Image.GetBounds
+  nameWithType: Image.GetBounds
+- uid: Egami.SystemDrawing.Image.GetEncoderParameterList(System.Guid)
+  name: GetEncoderParameterList(Guid)
+  href: api/Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_GetEncoderParameterList_System_Guid_
+  commentId: M:Egami.SystemDrawing.Image.GetEncoderParameterList(System.Guid)
+  fullName: Egami.SystemDrawing.Image.GetEncoderParameterList(System.Guid)
+  nameWithType: Image.GetEncoderParameterList(Guid)
+- uid: Egami.SystemDrawing.Image.GetEncoderParameterList*
+  name: GetEncoderParameterList
+  href: api/Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_GetEncoderParameterList_
+  commentId: Overload:Egami.SystemDrawing.Image.GetEncoderParameterList
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Image.GetEncoderParameterList
+  nameWithType: Image.GetEncoderParameterList
+- uid: Egami.SystemDrawing.Image.GetFrameCount(Egami.SystemDrawing.Imaging.FrameDimension)
+  name: GetFrameCount(FrameDimension)
+  href: api/Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_GetFrameCount_Egami_SystemDrawing_Imaging_FrameDimension_
+  commentId: M:Egami.SystemDrawing.Image.GetFrameCount(Egami.SystemDrawing.Imaging.FrameDimension)
+  fullName: Egami.SystemDrawing.Image.GetFrameCount(Egami.SystemDrawing.Imaging.FrameDimension)
+  nameWithType: Image.GetFrameCount(FrameDimension)
+- uid: Egami.SystemDrawing.Image.GetFrameCount*
+  name: GetFrameCount
+  href: api/Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_GetFrameCount_
+  commentId: Overload:Egami.SystemDrawing.Image.GetFrameCount
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Image.GetFrameCount
+  nameWithType: Image.GetFrameCount
+- uid: Egami.SystemDrawing.Image.GetPixelFormatSize(Egami.SystemDrawing.Imaging.PixelFormat)
+  name: GetPixelFormatSize(PixelFormat)
+  href: api/Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_GetPixelFormatSize_Egami_SystemDrawing_Imaging_PixelFormat_
+  commentId: M:Egami.SystemDrawing.Image.GetPixelFormatSize(Egami.SystemDrawing.Imaging.PixelFormat)
+  fullName: Egami.SystemDrawing.Image.GetPixelFormatSize(Egami.SystemDrawing.Imaging.PixelFormat)
+  nameWithType: Image.GetPixelFormatSize(PixelFormat)
+- uid: Egami.SystemDrawing.Image.GetPixelFormatSize*
+  name: GetPixelFormatSize
+  href: api/Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_GetPixelFormatSize_
+  commentId: Overload:Egami.SystemDrawing.Image.GetPixelFormatSize
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Image.GetPixelFormatSize
+  nameWithType: Image.GetPixelFormatSize
+- uid: Egami.SystemDrawing.Image.GetPropertyItem(System.Int32)
+  name: GetPropertyItem(int)
+  href: api/Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_GetPropertyItem_System_Int32_
+  commentId: M:Egami.SystemDrawing.Image.GetPropertyItem(System.Int32)
+  name.vb: GetPropertyItem(Integer)
+  fullName: Egami.SystemDrawing.Image.GetPropertyItem(int)
+  fullName.vb: Egami.SystemDrawing.Image.GetPropertyItem(Integer)
+  nameWithType: Image.GetPropertyItem(int)
+  nameWithType.vb: Image.GetPropertyItem(Integer)
+- uid: Egami.SystemDrawing.Image.GetPropertyItem*
+  name: GetPropertyItem
+  href: api/Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_GetPropertyItem_
+  commentId: Overload:Egami.SystemDrawing.Image.GetPropertyItem
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Image.GetPropertyItem
+  nameWithType: Image.GetPropertyItem
+- uid: Egami.SystemDrawing.Image.GetThumbnailImage(System.Int32,System.Int32,Egami.SystemDrawing.Image.GetThumbnailImageAbort,System.IntPtr)
+  name: GetThumbnailImage(int, int, GetThumbnailImageAbort?, nint)
+  href: api/Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_GetThumbnailImage_System_Int32_System_Int32_Egami_SystemDrawing_Image_GetThumbnailImageAbort_System_IntPtr_
+  commentId: M:Egami.SystemDrawing.Image.GetThumbnailImage(System.Int32,System.Int32,Egami.SystemDrawing.Image.GetThumbnailImageAbort,System.IntPtr)
+  name.vb: GetThumbnailImage(Integer, Integer, GetThumbnailImageAbort, IntPtr)
+  fullName: Egami.SystemDrawing.Image.GetThumbnailImage(int, int, Egami.SystemDrawing.Image.GetThumbnailImageAbort?, nint)
+  fullName.vb: Egami.SystemDrawing.Image.GetThumbnailImage(Integer, Integer, Egami.SystemDrawing.Image.GetThumbnailImageAbort, System.IntPtr)
+  nameWithType: Image.GetThumbnailImage(int, int, Image.GetThumbnailImageAbort?, nint)
+  nameWithType.vb: Image.GetThumbnailImage(Integer, Integer, Image.GetThumbnailImageAbort, IntPtr)
+- uid: Egami.SystemDrawing.Image.GetThumbnailImage*
+  name: GetThumbnailImage
+  href: api/Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_GetThumbnailImage_
+  commentId: Overload:Egami.SystemDrawing.Image.GetThumbnailImage
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Image.GetThumbnailImage
+  nameWithType: Image.GetThumbnailImage
+- uid: Egami.SystemDrawing.Image.GetThumbnailImageAbort
+  name: Image.GetThumbnailImageAbort
+  href: api/Egami.SystemDrawing.Image.GetThumbnailImageAbort.html
+  commentId: T:Egami.SystemDrawing.Image.GetThumbnailImageAbort
+  fullName: Egami.SystemDrawing.Image.GetThumbnailImageAbort
+  nameWithType: Image.GetThumbnailImageAbort
+- uid: Egami.SystemDrawing.Image.Height
+  name: Height
+  href: api/Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_Height
+  commentId: P:Egami.SystemDrawing.Image.Height
+  fullName: Egami.SystemDrawing.Image.Height
+  nameWithType: Image.Height
+- uid: Egami.SystemDrawing.Image.Height*
+  name: Height
+  href: api/Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_Height_
+  commentId: Overload:Egami.SystemDrawing.Image.Height
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Image.Height
+  nameWithType: Image.Height
+- uid: Egami.SystemDrawing.Image.HorizontalResolution
+  name: HorizontalResolution
+  href: api/Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_HorizontalResolution
+  commentId: P:Egami.SystemDrawing.Image.HorizontalResolution
+  fullName: Egami.SystemDrawing.Image.HorizontalResolution
+  nameWithType: Image.HorizontalResolution
+- uid: Egami.SystemDrawing.Image.HorizontalResolution*
+  name: HorizontalResolution
+  href: api/Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_HorizontalResolution_
+  commentId: Overload:Egami.SystemDrawing.Image.HorizontalResolution
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Image.HorizontalResolution
+  nameWithType: Image.HorizontalResolution
+- uid: Egami.SystemDrawing.Image.IsAlphaPixelFormat(Egami.SystemDrawing.Imaging.PixelFormat)
+  name: IsAlphaPixelFormat(PixelFormat)
+  href: api/Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_IsAlphaPixelFormat_Egami_SystemDrawing_Imaging_PixelFormat_
+  commentId: M:Egami.SystemDrawing.Image.IsAlphaPixelFormat(Egami.SystemDrawing.Imaging.PixelFormat)
+  fullName: Egami.SystemDrawing.Image.IsAlphaPixelFormat(Egami.SystemDrawing.Imaging.PixelFormat)
+  nameWithType: Image.IsAlphaPixelFormat(PixelFormat)
+- uid: Egami.SystemDrawing.Image.IsAlphaPixelFormat*
+  name: IsAlphaPixelFormat
+  href: api/Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_IsAlphaPixelFormat_
+  commentId: Overload:Egami.SystemDrawing.Image.IsAlphaPixelFormat
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Image.IsAlphaPixelFormat
+  nameWithType: Image.IsAlphaPixelFormat
+- uid: Egami.SystemDrawing.Image.IsCanonicalPixelFormat(Egami.SystemDrawing.Imaging.PixelFormat)
+  name: IsCanonicalPixelFormat(PixelFormat)
+  href: api/Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_IsCanonicalPixelFormat_Egami_SystemDrawing_Imaging_PixelFormat_
+  commentId: M:Egami.SystemDrawing.Image.IsCanonicalPixelFormat(Egami.SystemDrawing.Imaging.PixelFormat)
+  fullName: Egami.SystemDrawing.Image.IsCanonicalPixelFormat(Egami.SystemDrawing.Imaging.PixelFormat)
+  nameWithType: Image.IsCanonicalPixelFormat(PixelFormat)
+- uid: Egami.SystemDrawing.Image.IsCanonicalPixelFormat*
+  name: IsCanonicalPixelFormat
+  href: api/Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_IsCanonicalPixelFormat_
+  commentId: Overload:Egami.SystemDrawing.Image.IsCanonicalPixelFormat
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Image.IsCanonicalPixelFormat
+  nameWithType: Image.IsCanonicalPixelFormat
+- uid: Egami.SystemDrawing.Image.IsExtendedPixelFormat(Egami.SystemDrawing.Imaging.PixelFormat)
+  name: IsExtendedPixelFormat(PixelFormat)
+  href: api/Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_IsExtendedPixelFormat_Egami_SystemDrawing_Imaging_PixelFormat_
+  commentId: M:Egami.SystemDrawing.Image.IsExtendedPixelFormat(Egami.SystemDrawing.Imaging.PixelFormat)
+  fullName: Egami.SystemDrawing.Image.IsExtendedPixelFormat(Egami.SystemDrawing.Imaging.PixelFormat)
+  nameWithType: Image.IsExtendedPixelFormat(PixelFormat)
+- uid: Egami.SystemDrawing.Image.IsExtendedPixelFormat*
+  name: IsExtendedPixelFormat
+  href: api/Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_IsExtendedPixelFormat_
+  commentId: Overload:Egami.SystemDrawing.Image.IsExtendedPixelFormat
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Image.IsExtendedPixelFormat
+  nameWithType: Image.IsExtendedPixelFormat
+- uid: Egami.SystemDrawing.Image.Palette
+  name: Palette
+  href: api/Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_Palette
+  commentId: P:Egami.SystemDrawing.Image.Palette
+  fullName: Egami.SystemDrawing.Image.Palette
+  nameWithType: Image.Palette
+- uid: Egami.SystemDrawing.Image.Palette*
+  name: Palette
+  href: api/Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_Palette_
+  commentId: Overload:Egami.SystemDrawing.Image.Palette
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Image.Palette
+  nameWithType: Image.Palette
+- uid: Egami.SystemDrawing.Image.PhysicalDimension
+  name: PhysicalDimension
+  href: api/Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_PhysicalDimension
+  commentId: P:Egami.SystemDrawing.Image.PhysicalDimension
+  fullName: Egami.SystemDrawing.Image.PhysicalDimension
+  nameWithType: Image.PhysicalDimension
+- uid: Egami.SystemDrawing.Image.PhysicalDimension*
+  name: PhysicalDimension
+  href: api/Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_PhysicalDimension_
+  commentId: Overload:Egami.SystemDrawing.Image.PhysicalDimension
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Image.PhysicalDimension
+  nameWithType: Image.PhysicalDimension
+- uid: Egami.SystemDrawing.Image.PixelFormat
+  name: PixelFormat
+  href: api/Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_PixelFormat
+  commentId: P:Egami.SystemDrawing.Image.PixelFormat
+  fullName: Egami.SystemDrawing.Image.PixelFormat
+  nameWithType: Image.PixelFormat
+- uid: Egami.SystemDrawing.Image.PixelFormat*
+  name: PixelFormat
+  href: api/Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_PixelFormat_
+  commentId: Overload:Egami.SystemDrawing.Image.PixelFormat
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Image.PixelFormat
+  nameWithType: Image.PixelFormat
+- uid: Egami.SystemDrawing.Image.PropertyIdList
+  name: PropertyIdList
+  href: api/Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_PropertyIdList
+  commentId: P:Egami.SystemDrawing.Image.PropertyIdList
+  fullName: Egami.SystemDrawing.Image.PropertyIdList
+  nameWithType: Image.PropertyIdList
+- uid: Egami.SystemDrawing.Image.PropertyIdList*
+  name: PropertyIdList
+  href: api/Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_PropertyIdList_
+  commentId: Overload:Egami.SystemDrawing.Image.PropertyIdList
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Image.PropertyIdList
+  nameWithType: Image.PropertyIdList
+- uid: Egami.SystemDrawing.Image.PropertyItems
+  name: PropertyItems
+  href: api/Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_PropertyItems
+  commentId: P:Egami.SystemDrawing.Image.PropertyItems
+  fullName: Egami.SystemDrawing.Image.PropertyItems
+  nameWithType: Image.PropertyItems
+- uid: Egami.SystemDrawing.Image.PropertyItems*
+  name: PropertyItems
+  href: api/Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_PropertyItems_
+  commentId: Overload:Egami.SystemDrawing.Image.PropertyItems
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Image.PropertyItems
+  nameWithType: Image.PropertyItems
+- uid: Egami.SystemDrawing.Image.RawFormat
+  name: RawFormat
+  href: api/Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_RawFormat
+  commentId: P:Egami.SystemDrawing.Image.RawFormat
+  fullName: Egami.SystemDrawing.Image.RawFormat
+  nameWithType: Image.RawFormat
+- uid: Egami.SystemDrawing.Image.RawFormat*
+  name: RawFormat
+  href: api/Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_RawFormat_
+  commentId: Overload:Egami.SystemDrawing.Image.RawFormat
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Image.RawFormat
+  nameWithType: Image.RawFormat
+- uid: Egami.SystemDrawing.Image.RemovePropertyItem(System.Int32)
+  name: RemovePropertyItem(int)
+  href: api/Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_RemovePropertyItem_System_Int32_
+  commentId: M:Egami.SystemDrawing.Image.RemovePropertyItem(System.Int32)
+  name.vb: RemovePropertyItem(Integer)
+  fullName: Egami.SystemDrawing.Image.RemovePropertyItem(int)
+  fullName.vb: Egami.SystemDrawing.Image.RemovePropertyItem(Integer)
+  nameWithType: Image.RemovePropertyItem(int)
+  nameWithType.vb: Image.RemovePropertyItem(Integer)
+- uid: Egami.SystemDrawing.Image.RemovePropertyItem*
+  name: RemovePropertyItem
+  href: api/Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_RemovePropertyItem_
+  commentId: Overload:Egami.SystemDrawing.Image.RemovePropertyItem
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Image.RemovePropertyItem
+  nameWithType: Image.RemovePropertyItem
+- uid: Egami.SystemDrawing.Image.RotateFlip(Egami.SystemDrawing.RotateFlipType)
+  name: RotateFlip(RotateFlipType)
+  href: api/Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_RotateFlip_Egami_SystemDrawing_RotateFlipType_
+  commentId: M:Egami.SystemDrawing.Image.RotateFlip(Egami.SystemDrawing.RotateFlipType)
+  fullName: Egami.SystemDrawing.Image.RotateFlip(Egami.SystemDrawing.RotateFlipType)
+  nameWithType: Image.RotateFlip(RotateFlipType)
+- uid: Egami.SystemDrawing.Image.RotateFlip*
+  name: RotateFlip
+  href: api/Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_RotateFlip_
+  commentId: Overload:Egami.SystemDrawing.Image.RotateFlip
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Image.RotateFlip
+  nameWithType: Image.RotateFlip
+- uid: Egami.SystemDrawing.Image.Save(System.IO.Stream,Egami.SystemDrawing.Imaging.ImageCodecInfo,Egami.SystemDrawing.Imaging.EncoderParameters)
+  name: Save(Stream, ImageCodecInfo, EncoderParameters?)
+  href: api/Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_Save_System_IO_Stream_Egami_SystemDrawing_Imaging_ImageCodecInfo_Egami_SystemDrawing_Imaging_EncoderParameters_
+  commentId: M:Egami.SystemDrawing.Image.Save(System.IO.Stream,Egami.SystemDrawing.Imaging.ImageCodecInfo,Egami.SystemDrawing.Imaging.EncoderParameters)
+  name.vb: Save(Stream, ImageCodecInfo, EncoderParameters)
+  fullName: Egami.SystemDrawing.Image.Save(System.IO.Stream, Egami.SystemDrawing.Imaging.ImageCodecInfo, Egami.SystemDrawing.Imaging.EncoderParameters?)
+  fullName.vb: Egami.SystemDrawing.Image.Save(System.IO.Stream, Egami.SystemDrawing.Imaging.ImageCodecInfo, Egami.SystemDrawing.Imaging.EncoderParameters)
+  nameWithType: Image.Save(Stream, ImageCodecInfo, EncoderParameters?)
+  nameWithType.vb: Image.Save(Stream, ImageCodecInfo, EncoderParameters)
+- uid: Egami.SystemDrawing.Image.Save(System.IO.Stream,Egami.SystemDrawing.Imaging.ImageFormat)
+  name: Save(Stream, ImageFormat)
+  href: api/Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_Save_System_IO_Stream_Egami_SystemDrawing_Imaging_ImageFormat_
+  commentId: M:Egami.SystemDrawing.Image.Save(System.IO.Stream,Egami.SystemDrawing.Imaging.ImageFormat)
+  fullName: Egami.SystemDrawing.Image.Save(System.IO.Stream, Egami.SystemDrawing.Imaging.ImageFormat)
+  nameWithType: Image.Save(Stream, ImageFormat)
+- uid: Egami.SystemDrawing.Image.Save(System.String)
+  name: Save(string)
+  href: api/Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_Save_System_String_
+  commentId: M:Egami.SystemDrawing.Image.Save(System.String)
+  name.vb: Save(String)
+  fullName: Egami.SystemDrawing.Image.Save(string)
+  fullName.vb: Egami.SystemDrawing.Image.Save(String)
+  nameWithType: Image.Save(string)
+  nameWithType.vb: Image.Save(String)
+- uid: Egami.SystemDrawing.Image.Save(System.String,Egami.SystemDrawing.Imaging.ImageCodecInfo,Egami.SystemDrawing.Imaging.EncoderParameters)
+  name: Save(string, ImageCodecInfo, EncoderParameters?)
+  href: api/Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_Save_System_String_Egami_SystemDrawing_Imaging_ImageCodecInfo_Egami_SystemDrawing_Imaging_EncoderParameters_
+  commentId: M:Egami.SystemDrawing.Image.Save(System.String,Egami.SystemDrawing.Imaging.ImageCodecInfo,Egami.SystemDrawing.Imaging.EncoderParameters)
+  name.vb: Save(String, ImageCodecInfo, EncoderParameters)
+  fullName: Egami.SystemDrawing.Image.Save(string, Egami.SystemDrawing.Imaging.ImageCodecInfo, Egami.SystemDrawing.Imaging.EncoderParameters?)
+  fullName.vb: Egami.SystemDrawing.Image.Save(String, Egami.SystemDrawing.Imaging.ImageCodecInfo, Egami.SystemDrawing.Imaging.EncoderParameters)
+  nameWithType: Image.Save(string, ImageCodecInfo, EncoderParameters?)
+  nameWithType.vb: Image.Save(String, ImageCodecInfo, EncoderParameters)
+- uid: Egami.SystemDrawing.Image.Save(System.String,Egami.SystemDrawing.Imaging.ImageFormat)
+  name: Save(string, ImageFormat)
+  href: api/Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_Save_System_String_Egami_SystemDrawing_Imaging_ImageFormat_
+  commentId: M:Egami.SystemDrawing.Image.Save(System.String,Egami.SystemDrawing.Imaging.ImageFormat)
+  name.vb: Save(String, ImageFormat)
+  fullName: Egami.SystemDrawing.Image.Save(string, Egami.SystemDrawing.Imaging.ImageFormat)
+  fullName.vb: Egami.SystemDrawing.Image.Save(String, Egami.SystemDrawing.Imaging.ImageFormat)
+  nameWithType: Image.Save(string, ImageFormat)
+  nameWithType.vb: Image.Save(String, ImageFormat)
+- uid: Egami.SystemDrawing.Image.Save*
+  name: Save
+  href: api/Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_Save_
+  commentId: Overload:Egami.SystemDrawing.Image.Save
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Image.Save
+  nameWithType: Image.Save
+- uid: Egami.SystemDrawing.Image.SaveAdd(Egami.SystemDrawing.Image,Egami.SystemDrawing.Imaging.EncoderParameters)
+  name: SaveAdd(Image, EncoderParameters)
+  href: api/Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_SaveAdd_Egami_SystemDrawing_Image_Egami_SystemDrawing_Imaging_EncoderParameters_
+  commentId: M:Egami.SystemDrawing.Image.SaveAdd(Egami.SystemDrawing.Image,Egami.SystemDrawing.Imaging.EncoderParameters)
+  fullName: Egami.SystemDrawing.Image.SaveAdd(Egami.SystemDrawing.Image, Egami.SystemDrawing.Imaging.EncoderParameters)
+  nameWithType: Image.SaveAdd(Image, EncoderParameters)
+- uid: Egami.SystemDrawing.Image.SaveAdd(Egami.SystemDrawing.Imaging.EncoderParameters)
+  name: SaveAdd(EncoderParameters)
+  href: api/Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_SaveAdd_Egami_SystemDrawing_Imaging_EncoderParameters_
+  commentId: M:Egami.SystemDrawing.Image.SaveAdd(Egami.SystemDrawing.Imaging.EncoderParameters)
+  fullName: Egami.SystemDrawing.Image.SaveAdd(Egami.SystemDrawing.Imaging.EncoderParameters)
+  nameWithType: Image.SaveAdd(EncoderParameters)
+- uid: Egami.SystemDrawing.Image.SaveAdd*
+  name: SaveAdd
+  href: api/Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_SaveAdd_
+  commentId: Overload:Egami.SystemDrawing.Image.SaveAdd
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Image.SaveAdd
+  nameWithType: Image.SaveAdd
+- uid: Egami.SystemDrawing.Image.SelectActiveFrame(Egami.SystemDrawing.Imaging.FrameDimension,System.Int32)
+  name: SelectActiveFrame(FrameDimension, int)
+  href: api/Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_SelectActiveFrame_Egami_SystemDrawing_Imaging_FrameDimension_System_Int32_
+  commentId: M:Egami.SystemDrawing.Image.SelectActiveFrame(Egami.SystemDrawing.Imaging.FrameDimension,System.Int32)
+  name.vb: SelectActiveFrame(FrameDimension, Integer)
+  fullName: Egami.SystemDrawing.Image.SelectActiveFrame(Egami.SystemDrawing.Imaging.FrameDimension, int)
+  fullName.vb: Egami.SystemDrawing.Image.SelectActiveFrame(Egami.SystemDrawing.Imaging.FrameDimension, Integer)
+  nameWithType: Image.SelectActiveFrame(FrameDimension, int)
+  nameWithType.vb: Image.SelectActiveFrame(FrameDimension, Integer)
+- uid: Egami.SystemDrawing.Image.SelectActiveFrame*
+  name: SelectActiveFrame
+  href: api/Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_SelectActiveFrame_
+  commentId: Overload:Egami.SystemDrawing.Image.SelectActiveFrame
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Image.SelectActiveFrame
+  nameWithType: Image.SelectActiveFrame
+- uid: Egami.SystemDrawing.Image.SetPropertyItem(Egami.SystemDrawing.Imaging.PropertyItem)
+  name: SetPropertyItem(PropertyItem)
+  href: api/Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_SetPropertyItem_Egami_SystemDrawing_Imaging_PropertyItem_
+  commentId: M:Egami.SystemDrawing.Image.SetPropertyItem(Egami.SystemDrawing.Imaging.PropertyItem)
+  fullName: Egami.SystemDrawing.Image.SetPropertyItem(Egami.SystemDrawing.Imaging.PropertyItem)
+  nameWithType: Image.SetPropertyItem(PropertyItem)
+- uid: Egami.SystemDrawing.Image.SetPropertyItem*
+  name: SetPropertyItem
+  href: api/Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_SetPropertyItem_
+  commentId: Overload:Egami.SystemDrawing.Image.SetPropertyItem
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Image.SetPropertyItem
+  nameWithType: Image.SetPropertyItem
+- uid: Egami.SystemDrawing.Image.Size
+  name: Size
+  href: api/Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_Size
+  commentId: P:Egami.SystemDrawing.Image.Size
+  fullName: Egami.SystemDrawing.Image.Size
+  nameWithType: Image.Size
+- uid: Egami.SystemDrawing.Image.Size*
+  name: Size
+  href: api/Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_Size_
+  commentId: Overload:Egami.SystemDrawing.Image.Size
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Image.Size
+  nameWithType: Image.Size
+- uid: Egami.SystemDrawing.Image.Tag
+  name: Tag
+  href: api/Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_Tag
+  commentId: P:Egami.SystemDrawing.Image.Tag
+  fullName: Egami.SystemDrawing.Image.Tag
+  nameWithType: Image.Tag
+- uid: Egami.SystemDrawing.Image.Tag*
+  name: Tag
+  href: api/Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_Tag_
+  commentId: Overload:Egami.SystemDrawing.Image.Tag
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Image.Tag
+  nameWithType: Image.Tag
+- uid: Egami.SystemDrawing.Image.VerticalResolution
+  name: VerticalResolution
+  href: api/Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_VerticalResolution
+  commentId: P:Egami.SystemDrawing.Image.VerticalResolution
+  fullName: Egami.SystemDrawing.Image.VerticalResolution
+  nameWithType: Image.VerticalResolution
+- uid: Egami.SystemDrawing.Image.VerticalResolution*
+  name: VerticalResolution
+  href: api/Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_VerticalResolution_
+  commentId: Overload:Egami.SystemDrawing.Image.VerticalResolution
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Image.VerticalResolution
+  nameWithType: Image.VerticalResolution
+- uid: Egami.SystemDrawing.Image.Width
+  name: Width
+  href: api/Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_Width
+  commentId: P:Egami.SystemDrawing.Image.Width
+  fullName: Egami.SystemDrawing.Image.Width
+  nameWithType: Image.Width
+- uid: Egami.SystemDrawing.Image.Width*
+  name: Width
+  href: api/Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_Width_
+  commentId: Overload:Egami.SystemDrawing.Image.Width
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Image.Width
+  nameWithType: Image.Width
+- uid: Egami.SystemDrawing.Imaging
+  name: Egami.SystemDrawing.Imaging
+  href: api/Egami.SystemDrawing.Imaging.html
+  commentId: N:Egami.SystemDrawing.Imaging
+  fullName: Egami.SystemDrawing.Imaging
+  nameWithType: Egami.SystemDrawing.Imaging
+- uid: Egami.SystemDrawing.Imaging.BitmapData
+  name: BitmapData
+  href: api/Egami.SystemDrawing.Imaging.BitmapData.html
+  commentId: T:Egami.SystemDrawing.Imaging.BitmapData
+  fullName: Egami.SystemDrawing.Imaging.BitmapData
+  nameWithType: BitmapData
+- uid: Egami.SystemDrawing.Imaging.BitmapData.Height
+  name: Height
+  href: api/Egami.SystemDrawing.Imaging.BitmapData.html#Egami_SystemDrawing_Imaging_BitmapData_Height
+  commentId: P:Egami.SystemDrawing.Imaging.BitmapData.Height
+  fullName: Egami.SystemDrawing.Imaging.BitmapData.Height
+  nameWithType: BitmapData.Height
+- uid: Egami.SystemDrawing.Imaging.BitmapData.Height*
+  name: Height
+  href: api/Egami.SystemDrawing.Imaging.BitmapData.html#Egami_SystemDrawing_Imaging_BitmapData_Height_
+  commentId: Overload:Egami.SystemDrawing.Imaging.BitmapData.Height
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Imaging.BitmapData.Height
+  nameWithType: BitmapData.Height
+- uid: Egami.SystemDrawing.Imaging.BitmapData.PixelFormat
+  name: PixelFormat
+  href: api/Egami.SystemDrawing.Imaging.BitmapData.html#Egami_SystemDrawing_Imaging_BitmapData_PixelFormat
+  commentId: P:Egami.SystemDrawing.Imaging.BitmapData.PixelFormat
+  fullName: Egami.SystemDrawing.Imaging.BitmapData.PixelFormat
+  nameWithType: BitmapData.PixelFormat
+- uid: Egami.SystemDrawing.Imaging.BitmapData.PixelFormat*
+  name: PixelFormat
+  href: api/Egami.SystemDrawing.Imaging.BitmapData.html#Egami_SystemDrawing_Imaging_BitmapData_PixelFormat_
+  commentId: Overload:Egami.SystemDrawing.Imaging.BitmapData.PixelFormat
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Imaging.BitmapData.PixelFormat
+  nameWithType: BitmapData.PixelFormat
+- uid: Egami.SystemDrawing.Imaging.BitmapData.Reserved
+  name: Reserved
+  href: api/Egami.SystemDrawing.Imaging.BitmapData.html#Egami_SystemDrawing_Imaging_BitmapData_Reserved
+  commentId: P:Egami.SystemDrawing.Imaging.BitmapData.Reserved
+  fullName: Egami.SystemDrawing.Imaging.BitmapData.Reserved
+  nameWithType: BitmapData.Reserved
+- uid: Egami.SystemDrawing.Imaging.BitmapData.Reserved*
+  name: Reserved
+  href: api/Egami.SystemDrawing.Imaging.BitmapData.html#Egami_SystemDrawing_Imaging_BitmapData_Reserved_
+  commentId: Overload:Egami.SystemDrawing.Imaging.BitmapData.Reserved
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Imaging.BitmapData.Reserved
+  nameWithType: BitmapData.Reserved
+- uid: Egami.SystemDrawing.Imaging.BitmapData.Scan0
+  name: Scan0
+  href: api/Egami.SystemDrawing.Imaging.BitmapData.html#Egami_SystemDrawing_Imaging_BitmapData_Scan0
+  commentId: P:Egami.SystemDrawing.Imaging.BitmapData.Scan0
+  fullName: Egami.SystemDrawing.Imaging.BitmapData.Scan0
+  nameWithType: BitmapData.Scan0
+- uid: Egami.SystemDrawing.Imaging.BitmapData.Scan0*
+  name: Scan0
+  href: api/Egami.SystemDrawing.Imaging.BitmapData.html#Egami_SystemDrawing_Imaging_BitmapData_Scan0_
+  commentId: Overload:Egami.SystemDrawing.Imaging.BitmapData.Scan0
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Imaging.BitmapData.Scan0
+  nameWithType: BitmapData.Scan0
+- uid: Egami.SystemDrawing.Imaging.BitmapData.Stride
+  name: Stride
+  href: api/Egami.SystemDrawing.Imaging.BitmapData.html#Egami_SystemDrawing_Imaging_BitmapData_Stride
+  commentId: P:Egami.SystemDrawing.Imaging.BitmapData.Stride
+  fullName: Egami.SystemDrawing.Imaging.BitmapData.Stride
+  nameWithType: BitmapData.Stride
+- uid: Egami.SystemDrawing.Imaging.BitmapData.Stride*
+  name: Stride
+  href: api/Egami.SystemDrawing.Imaging.BitmapData.html#Egami_SystemDrawing_Imaging_BitmapData_Stride_
+  commentId: Overload:Egami.SystemDrawing.Imaging.BitmapData.Stride
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Imaging.BitmapData.Stride
+  nameWithType: BitmapData.Stride
+- uid: Egami.SystemDrawing.Imaging.BitmapData.Width
+  name: Width
+  href: api/Egami.SystemDrawing.Imaging.BitmapData.html#Egami_SystemDrawing_Imaging_BitmapData_Width
+  commentId: P:Egami.SystemDrawing.Imaging.BitmapData.Width
+  fullName: Egami.SystemDrawing.Imaging.BitmapData.Width
+  nameWithType: BitmapData.Width
+- uid: Egami.SystemDrawing.Imaging.BitmapData.Width*
+  name: Width
+  href: api/Egami.SystemDrawing.Imaging.BitmapData.html#Egami_SystemDrawing_Imaging_BitmapData_Width_
+  commentId: Overload:Egami.SystemDrawing.Imaging.BitmapData.Width
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Imaging.BitmapData.Width
+  nameWithType: BitmapData.Width
+- uid: Egami.SystemDrawing.Imaging.ColorPalette
+  name: ColorPalette
+  href: api/Egami.SystemDrawing.Imaging.ColorPalette.html
+  commentId: T:Egami.SystemDrawing.Imaging.ColorPalette
+  fullName: Egami.SystemDrawing.Imaging.ColorPalette
+  nameWithType: ColorPalette
+- uid: Egami.SystemDrawing.Imaging.ColorPalette.#ctor(Egami.SystemDrawing.Imaging.PaletteType)
+  name: ColorPalette(PaletteType)
+  href: api/Egami.SystemDrawing.Imaging.ColorPalette.html#Egami_SystemDrawing_Imaging_ColorPalette__ctor_Egami_SystemDrawing_Imaging_PaletteType_
+  commentId: M:Egami.SystemDrawing.Imaging.ColorPalette.#ctor(Egami.SystemDrawing.Imaging.PaletteType)
+  name.vb: New(PaletteType)
+  fullName: Egami.SystemDrawing.Imaging.ColorPalette.ColorPalette(Egami.SystemDrawing.Imaging.PaletteType)
+  fullName.vb: Egami.SystemDrawing.Imaging.ColorPalette.New(Egami.SystemDrawing.Imaging.PaletteType)
+  nameWithType: ColorPalette.ColorPalette(PaletteType)
+  nameWithType.vb: ColorPalette.New(PaletteType)
+- uid: Egami.SystemDrawing.Imaging.ColorPalette.#ctor(System.Drawing.Color[])
+  name: ColorPalette(Color[])
+  href: api/Egami.SystemDrawing.Imaging.ColorPalette.html#Egami_SystemDrawing_Imaging_ColorPalette__ctor_System_Drawing_Color___
+  commentId: M:Egami.SystemDrawing.Imaging.ColorPalette.#ctor(System.Drawing.Color[])
+  name.vb: New(Color())
+  fullName: Egami.SystemDrawing.Imaging.ColorPalette.ColorPalette(System.Drawing.Color[])
+  fullName.vb: Egami.SystemDrawing.Imaging.ColorPalette.New(System.Drawing.Color())
+  nameWithType: ColorPalette.ColorPalette(Color[])
+  nameWithType.vb: ColorPalette.New(Color())
+- uid: Egami.SystemDrawing.Imaging.ColorPalette.#ctor*
+  name: ColorPalette
+  href: api/Egami.SystemDrawing.Imaging.ColorPalette.html#Egami_SystemDrawing_Imaging_ColorPalette__ctor_
+  commentId: Overload:Egami.SystemDrawing.Imaging.ColorPalette.#ctor
+  isSpec: "True"
+  name.vb: New
+  fullName: Egami.SystemDrawing.Imaging.ColorPalette.ColorPalette
+  fullName.vb: Egami.SystemDrawing.Imaging.ColorPalette.New
+  nameWithType: ColorPalette.ColorPalette
+  nameWithType.vb: ColorPalette.New
+- uid: Egami.SystemDrawing.Imaging.ColorPalette.CreateOptimalPalette(System.Int32,System.Boolean,Egami.SystemDrawing.Bitmap)
+  name: CreateOptimalPalette(int, bool, Bitmap)
+  href: api/Egami.SystemDrawing.Imaging.ColorPalette.html#Egami_SystemDrawing_Imaging_ColorPalette_CreateOptimalPalette_System_Int32_System_Boolean_Egami_SystemDrawing_Bitmap_
+  commentId: M:Egami.SystemDrawing.Imaging.ColorPalette.CreateOptimalPalette(System.Int32,System.Boolean,Egami.SystemDrawing.Bitmap)
+  name.vb: CreateOptimalPalette(Integer, Boolean, Bitmap)
+  fullName: Egami.SystemDrawing.Imaging.ColorPalette.CreateOptimalPalette(int, bool, Egami.SystemDrawing.Bitmap)
+  fullName.vb: Egami.SystemDrawing.Imaging.ColorPalette.CreateOptimalPalette(Integer, Boolean, Egami.SystemDrawing.Bitmap)
+  nameWithType: ColorPalette.CreateOptimalPalette(int, bool, Bitmap)
+  nameWithType.vb: ColorPalette.CreateOptimalPalette(Integer, Boolean, Bitmap)
+- uid: Egami.SystemDrawing.Imaging.ColorPalette.CreateOptimalPalette*
+  name: CreateOptimalPalette
+  href: api/Egami.SystemDrawing.Imaging.ColorPalette.html#Egami_SystemDrawing_Imaging_ColorPalette_CreateOptimalPalette_
+  commentId: Overload:Egami.SystemDrawing.Imaging.ColorPalette.CreateOptimalPalette
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Imaging.ColorPalette.CreateOptimalPalette
+  nameWithType: ColorPalette.CreateOptimalPalette
+- uid: Egami.SystemDrawing.Imaging.ColorPalette.Entries
+  name: Entries
+  href: api/Egami.SystemDrawing.Imaging.ColorPalette.html#Egami_SystemDrawing_Imaging_ColorPalette_Entries
+  commentId: P:Egami.SystemDrawing.Imaging.ColorPalette.Entries
+  fullName: Egami.SystemDrawing.Imaging.ColorPalette.Entries
+  nameWithType: ColorPalette.Entries
+- uid: Egami.SystemDrawing.Imaging.ColorPalette.Entries*
+  name: Entries
+  href: api/Egami.SystemDrawing.Imaging.ColorPalette.html#Egami_SystemDrawing_Imaging_ColorPalette_Entries_
+  commentId: Overload:Egami.SystemDrawing.Imaging.ColorPalette.Entries
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Imaging.ColorPalette.Entries
+  nameWithType: ColorPalette.Entries
+- uid: Egami.SystemDrawing.Imaging.ColorPalette.Flags
+  name: Flags
+  href: api/Egami.SystemDrawing.Imaging.ColorPalette.html#Egami_SystemDrawing_Imaging_ColorPalette_Flags
+  commentId: P:Egami.SystemDrawing.Imaging.ColorPalette.Flags
+  fullName: Egami.SystemDrawing.Imaging.ColorPalette.Flags
+  nameWithType: ColorPalette.Flags
+- uid: Egami.SystemDrawing.Imaging.ColorPalette.Flags*
+  name: Flags
+  href: api/Egami.SystemDrawing.Imaging.ColorPalette.html#Egami_SystemDrawing_Imaging_ColorPalette_Flags_
+  commentId: Overload:Egami.SystemDrawing.Imaging.ColorPalette.Flags
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Imaging.ColorPalette.Flags
+  nameWithType: ColorPalette.Flags
+- uid: Egami.SystemDrawing.Imaging.DitherType
+  name: DitherType
+  href: api/Egami.SystemDrawing.Imaging.DitherType.html
+  commentId: T:Egami.SystemDrawing.Imaging.DitherType
+  fullName: Egami.SystemDrawing.Imaging.DitherType
+  nameWithType: DitherType
+- uid: Egami.SystemDrawing.Imaging.DitherType.DualSpiral4x4
+  name: DualSpiral4x4
+  href: api/Egami.SystemDrawing.Imaging.DitherType.html#Egami_SystemDrawing_Imaging_DitherType_DualSpiral4x4
+  commentId: F:Egami.SystemDrawing.Imaging.DitherType.DualSpiral4x4
+  fullName: Egami.SystemDrawing.Imaging.DitherType.DualSpiral4x4
+  nameWithType: DitherType.DualSpiral4x4
+- uid: Egami.SystemDrawing.Imaging.DitherType.DualSpiral8x8
+  name: DualSpiral8x8
+  href: api/Egami.SystemDrawing.Imaging.DitherType.html#Egami_SystemDrawing_Imaging_DitherType_DualSpiral8x8
+  commentId: F:Egami.SystemDrawing.Imaging.DitherType.DualSpiral8x8
+  fullName: Egami.SystemDrawing.Imaging.DitherType.DualSpiral8x8
+  nameWithType: DitherType.DualSpiral8x8
+- uid: Egami.SystemDrawing.Imaging.DitherType.ErrorDiffusion
+  name: ErrorDiffusion
+  href: api/Egami.SystemDrawing.Imaging.DitherType.html#Egami_SystemDrawing_Imaging_DitherType_ErrorDiffusion
+  commentId: F:Egami.SystemDrawing.Imaging.DitherType.ErrorDiffusion
+  fullName: Egami.SystemDrawing.Imaging.DitherType.ErrorDiffusion
+  nameWithType: DitherType.ErrorDiffusion
+- uid: Egami.SystemDrawing.Imaging.DitherType.None
+  name: None
+  href: api/Egami.SystemDrawing.Imaging.DitherType.html#Egami_SystemDrawing_Imaging_DitherType_None
+  commentId: F:Egami.SystemDrawing.Imaging.DitherType.None
+  fullName: Egami.SystemDrawing.Imaging.DitherType.None
+  nameWithType: DitherType.None
+- uid: Egami.SystemDrawing.Imaging.DitherType.Ordered16x16
+  name: Ordered16x16
+  href: api/Egami.SystemDrawing.Imaging.DitherType.html#Egami_SystemDrawing_Imaging_DitherType_Ordered16x16
+  commentId: F:Egami.SystemDrawing.Imaging.DitherType.Ordered16x16
+  fullName: Egami.SystemDrawing.Imaging.DitherType.Ordered16x16
+  nameWithType: DitherType.Ordered16x16
+- uid: Egami.SystemDrawing.Imaging.DitherType.Ordered4x4
+  name: Ordered4x4
+  href: api/Egami.SystemDrawing.Imaging.DitherType.html#Egami_SystemDrawing_Imaging_DitherType_Ordered4x4
+  commentId: F:Egami.SystemDrawing.Imaging.DitherType.Ordered4x4
+  fullName: Egami.SystemDrawing.Imaging.DitherType.Ordered4x4
+  nameWithType: DitherType.Ordered4x4
+- uid: Egami.SystemDrawing.Imaging.DitherType.Ordered8x8
+  name: Ordered8x8
+  href: api/Egami.SystemDrawing.Imaging.DitherType.html#Egami_SystemDrawing_Imaging_DitherType_Ordered8x8
+  commentId: F:Egami.SystemDrawing.Imaging.DitherType.Ordered8x8
+  fullName: Egami.SystemDrawing.Imaging.DitherType.Ordered8x8
+  nameWithType: DitherType.Ordered8x8
+- uid: Egami.SystemDrawing.Imaging.DitherType.Solid
+  name: Solid
+  href: api/Egami.SystemDrawing.Imaging.DitherType.html#Egami_SystemDrawing_Imaging_DitherType_Solid
+  commentId: F:Egami.SystemDrawing.Imaging.DitherType.Solid
+  fullName: Egami.SystemDrawing.Imaging.DitherType.Solid
+  nameWithType: DitherType.Solid
+- uid: Egami.SystemDrawing.Imaging.DitherType.Spiral4x4
+  name: Spiral4x4
+  href: api/Egami.SystemDrawing.Imaging.DitherType.html#Egami_SystemDrawing_Imaging_DitherType_Spiral4x4
+  commentId: F:Egami.SystemDrawing.Imaging.DitherType.Spiral4x4
+  fullName: Egami.SystemDrawing.Imaging.DitherType.Spiral4x4
+  nameWithType: DitherType.Spiral4x4
+- uid: Egami.SystemDrawing.Imaging.DitherType.Spiral8x8
+  name: Spiral8x8
+  href: api/Egami.SystemDrawing.Imaging.DitherType.html#Egami_SystemDrawing_Imaging_DitherType_Spiral8x8
+  commentId: F:Egami.SystemDrawing.Imaging.DitherType.Spiral8x8
+  fullName: Egami.SystemDrawing.Imaging.DitherType.Spiral8x8
+  nameWithType: DitherType.Spiral8x8
+- uid: Egami.SystemDrawing.Imaging.Encoder
+  name: Encoder
+  href: api/Egami.SystemDrawing.Imaging.Encoder.html
+  commentId: T:Egami.SystemDrawing.Imaging.Encoder
+  fullName: Egami.SystemDrawing.Imaging.Encoder
+  nameWithType: Encoder
+- uid: Egami.SystemDrawing.Imaging.Encoder.#ctor(System.Guid)
+  name: Encoder(Guid)
+  href: api/Egami.SystemDrawing.Imaging.Encoder.html#Egami_SystemDrawing_Imaging_Encoder__ctor_System_Guid_
+  commentId: M:Egami.SystemDrawing.Imaging.Encoder.#ctor(System.Guid)
+  name.vb: New(Guid)
+  fullName: Egami.SystemDrawing.Imaging.Encoder.Encoder(System.Guid)
+  fullName.vb: Egami.SystemDrawing.Imaging.Encoder.New(System.Guid)
+  nameWithType: Encoder.Encoder(Guid)
+  nameWithType.vb: Encoder.New(Guid)
+- uid: Egami.SystemDrawing.Imaging.Encoder.#ctor*
+  name: Encoder
+  href: api/Egami.SystemDrawing.Imaging.Encoder.html#Egami_SystemDrawing_Imaging_Encoder__ctor_
+  commentId: Overload:Egami.SystemDrawing.Imaging.Encoder.#ctor
+  isSpec: "True"
+  name.vb: New
+  fullName: Egami.SystemDrawing.Imaging.Encoder.Encoder
+  fullName.vb: Egami.SystemDrawing.Imaging.Encoder.New
+  nameWithType: Encoder.Encoder
+  nameWithType.vb: Encoder.New
+- uid: Egami.SystemDrawing.Imaging.Encoder.ChrominanceTable
+  name: ChrominanceTable
+  href: api/Egami.SystemDrawing.Imaging.Encoder.html#Egami_SystemDrawing_Imaging_Encoder_ChrominanceTable
+  commentId: F:Egami.SystemDrawing.Imaging.Encoder.ChrominanceTable
+  fullName: Egami.SystemDrawing.Imaging.Encoder.ChrominanceTable
+  nameWithType: Encoder.ChrominanceTable
+- uid: Egami.SystemDrawing.Imaging.Encoder.ColorDepth
+  name: ColorDepth
+  href: api/Egami.SystemDrawing.Imaging.Encoder.html#Egami_SystemDrawing_Imaging_Encoder_ColorDepth
+  commentId: F:Egami.SystemDrawing.Imaging.Encoder.ColorDepth
+  fullName: Egami.SystemDrawing.Imaging.Encoder.ColorDepth
+  nameWithType: Encoder.ColorDepth
+- uid: Egami.SystemDrawing.Imaging.Encoder.ColorSpace
+  name: ColorSpace
+  href: api/Egami.SystemDrawing.Imaging.Encoder.html#Egami_SystemDrawing_Imaging_Encoder_ColorSpace
+  commentId: F:Egami.SystemDrawing.Imaging.Encoder.ColorSpace
+  fullName: Egami.SystemDrawing.Imaging.Encoder.ColorSpace
+  nameWithType: Encoder.ColorSpace
+- uid: Egami.SystemDrawing.Imaging.Encoder.Compression
+  name: Compression
+  href: api/Egami.SystemDrawing.Imaging.Encoder.html#Egami_SystemDrawing_Imaging_Encoder_Compression
+  commentId: F:Egami.SystemDrawing.Imaging.Encoder.Compression
+  fullName: Egami.SystemDrawing.Imaging.Encoder.Compression
+  nameWithType: Encoder.Compression
+- uid: Egami.SystemDrawing.Imaging.Encoder.Guid
+  name: Guid
+  href: api/Egami.SystemDrawing.Imaging.Encoder.html#Egami_SystemDrawing_Imaging_Encoder_Guid
+  commentId: P:Egami.SystemDrawing.Imaging.Encoder.Guid
+  fullName: Egami.SystemDrawing.Imaging.Encoder.Guid
+  nameWithType: Encoder.Guid
+- uid: Egami.SystemDrawing.Imaging.Encoder.Guid*
+  name: Guid
+  href: api/Egami.SystemDrawing.Imaging.Encoder.html#Egami_SystemDrawing_Imaging_Encoder_Guid_
+  commentId: Overload:Egami.SystemDrawing.Imaging.Encoder.Guid
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Imaging.Encoder.Guid
+  nameWithType: Encoder.Guid
+- uid: Egami.SystemDrawing.Imaging.Encoder.ImageItems
+  name: ImageItems
+  href: api/Egami.SystemDrawing.Imaging.Encoder.html#Egami_SystemDrawing_Imaging_Encoder_ImageItems
+  commentId: F:Egami.SystemDrawing.Imaging.Encoder.ImageItems
+  fullName: Egami.SystemDrawing.Imaging.Encoder.ImageItems
+  nameWithType: Encoder.ImageItems
+- uid: Egami.SystemDrawing.Imaging.Encoder.LuminanceTable
+  name: LuminanceTable
+  href: api/Egami.SystemDrawing.Imaging.Encoder.html#Egami_SystemDrawing_Imaging_Encoder_LuminanceTable
+  commentId: F:Egami.SystemDrawing.Imaging.Encoder.LuminanceTable
+  fullName: Egami.SystemDrawing.Imaging.Encoder.LuminanceTable
+  nameWithType: Encoder.LuminanceTable
+- uid: Egami.SystemDrawing.Imaging.Encoder.Quality
+  name: Quality
+  href: api/Egami.SystemDrawing.Imaging.Encoder.html#Egami_SystemDrawing_Imaging_Encoder_Quality
+  commentId: F:Egami.SystemDrawing.Imaging.Encoder.Quality
+  fullName: Egami.SystemDrawing.Imaging.Encoder.Quality
+  nameWithType: Encoder.Quality
+- uid: Egami.SystemDrawing.Imaging.Encoder.RenderMethod
+  name: RenderMethod
+  href: api/Egami.SystemDrawing.Imaging.Encoder.html#Egami_SystemDrawing_Imaging_Encoder_RenderMethod
+  commentId: F:Egami.SystemDrawing.Imaging.Encoder.RenderMethod
+  fullName: Egami.SystemDrawing.Imaging.Encoder.RenderMethod
+  nameWithType: Encoder.RenderMethod
+- uid: Egami.SystemDrawing.Imaging.Encoder.SaveAsCmyk
+  name: SaveAsCmyk
+  href: api/Egami.SystemDrawing.Imaging.Encoder.html#Egami_SystemDrawing_Imaging_Encoder_SaveAsCmyk
+  commentId: F:Egami.SystemDrawing.Imaging.Encoder.SaveAsCmyk
+  fullName: Egami.SystemDrawing.Imaging.Encoder.SaveAsCmyk
+  nameWithType: Encoder.SaveAsCmyk
+- uid: Egami.SystemDrawing.Imaging.Encoder.SaveFlag
+  name: SaveFlag
+  href: api/Egami.SystemDrawing.Imaging.Encoder.html#Egami_SystemDrawing_Imaging_Encoder_SaveFlag
+  commentId: F:Egami.SystemDrawing.Imaging.Encoder.SaveFlag
+  fullName: Egami.SystemDrawing.Imaging.Encoder.SaveFlag
+  nameWithType: Encoder.SaveFlag
+- uid: Egami.SystemDrawing.Imaging.Encoder.ScanMethod
+  name: ScanMethod
+  href: api/Egami.SystemDrawing.Imaging.Encoder.html#Egami_SystemDrawing_Imaging_Encoder_ScanMethod
+  commentId: F:Egami.SystemDrawing.Imaging.Encoder.ScanMethod
+  fullName: Egami.SystemDrawing.Imaging.Encoder.ScanMethod
+  nameWithType: Encoder.ScanMethod
+- uid: Egami.SystemDrawing.Imaging.Encoder.Transformation
+  name: Transformation
+  href: api/Egami.SystemDrawing.Imaging.Encoder.html#Egami_SystemDrawing_Imaging_Encoder_Transformation
+  commentId: F:Egami.SystemDrawing.Imaging.Encoder.Transformation
+  fullName: Egami.SystemDrawing.Imaging.Encoder.Transformation
+  nameWithType: Encoder.Transformation
+- uid: Egami.SystemDrawing.Imaging.Encoder.Version
+  name: Version
+  href: api/Egami.SystemDrawing.Imaging.Encoder.html#Egami_SystemDrawing_Imaging_Encoder_Version
+  commentId: F:Egami.SystemDrawing.Imaging.Encoder.Version
+  fullName: Egami.SystemDrawing.Imaging.Encoder.Version
+  nameWithType: Encoder.Version
+- uid: Egami.SystemDrawing.Imaging.EncoderParameter
+  name: EncoderParameter
+  href: api/Egami.SystemDrawing.Imaging.EncoderParameter.html
+  commentId: T:Egami.SystemDrawing.Imaging.EncoderParameter
+  fullName: Egami.SystemDrawing.Imaging.EncoderParameter
+  nameWithType: EncoderParameter
+- uid: Egami.SystemDrawing.Imaging.EncoderParameter.#ctor(Egami.SystemDrawing.Imaging.Encoder,System.Byte)
+  name: EncoderParameter(Encoder, byte)
+  href: api/Egami.SystemDrawing.Imaging.EncoderParameter.html#Egami_SystemDrawing_Imaging_EncoderParameter__ctor_Egami_SystemDrawing_Imaging_Encoder_System_Byte_
+  commentId: M:Egami.SystemDrawing.Imaging.EncoderParameter.#ctor(Egami.SystemDrawing.Imaging.Encoder,System.Byte)
+  name.vb: New(Encoder, Byte)
+  fullName: Egami.SystemDrawing.Imaging.EncoderParameter.EncoderParameter(Egami.SystemDrawing.Imaging.Encoder, byte)
+  fullName.vb: Egami.SystemDrawing.Imaging.EncoderParameter.New(Egami.SystemDrawing.Imaging.Encoder, Byte)
+  nameWithType: EncoderParameter.EncoderParameter(Encoder, byte)
+  nameWithType.vb: EncoderParameter.New(Encoder, Byte)
+- uid: Egami.SystemDrawing.Imaging.EncoderParameter.#ctor(Egami.SystemDrawing.Imaging.Encoder,System.Byte,System.Boolean)
+  name: EncoderParameter(Encoder, byte, bool)
+  href: api/Egami.SystemDrawing.Imaging.EncoderParameter.html#Egami_SystemDrawing_Imaging_EncoderParameter__ctor_Egami_SystemDrawing_Imaging_Encoder_System_Byte_System_Boolean_
+  commentId: M:Egami.SystemDrawing.Imaging.EncoderParameter.#ctor(Egami.SystemDrawing.Imaging.Encoder,System.Byte,System.Boolean)
+  name.vb: New(Encoder, Byte, Boolean)
+  fullName: Egami.SystemDrawing.Imaging.EncoderParameter.EncoderParameter(Egami.SystemDrawing.Imaging.Encoder, byte, bool)
+  fullName.vb: Egami.SystemDrawing.Imaging.EncoderParameter.New(Egami.SystemDrawing.Imaging.Encoder, Byte, Boolean)
+  nameWithType: EncoderParameter.EncoderParameter(Encoder, byte, bool)
+  nameWithType.vb: EncoderParameter.New(Encoder, Byte, Boolean)
+- uid: Egami.SystemDrawing.Imaging.EncoderParameter.#ctor(Egami.SystemDrawing.Imaging.Encoder,System.Byte[])
+  name: EncoderParameter(Encoder, byte[])
+  href: api/Egami.SystemDrawing.Imaging.EncoderParameter.html#Egami_SystemDrawing_Imaging_EncoderParameter__ctor_Egami_SystemDrawing_Imaging_Encoder_System_Byte___
+  commentId: M:Egami.SystemDrawing.Imaging.EncoderParameter.#ctor(Egami.SystemDrawing.Imaging.Encoder,System.Byte[])
+  name.vb: New(Encoder, Byte())
+  fullName: Egami.SystemDrawing.Imaging.EncoderParameter.EncoderParameter(Egami.SystemDrawing.Imaging.Encoder, byte[])
+  fullName.vb: Egami.SystemDrawing.Imaging.EncoderParameter.New(Egami.SystemDrawing.Imaging.Encoder, Byte())
+  nameWithType: EncoderParameter.EncoderParameter(Encoder, byte[])
+  nameWithType.vb: EncoderParameter.New(Encoder, Byte())
+- uid: Egami.SystemDrawing.Imaging.EncoderParameter.#ctor(Egami.SystemDrawing.Imaging.Encoder,System.Byte[],System.Boolean)
+  name: EncoderParameter(Encoder, byte[], bool)
+  href: api/Egami.SystemDrawing.Imaging.EncoderParameter.html#Egami_SystemDrawing_Imaging_EncoderParameter__ctor_Egami_SystemDrawing_Imaging_Encoder_System_Byte___System_Boolean_
+  commentId: M:Egami.SystemDrawing.Imaging.EncoderParameter.#ctor(Egami.SystemDrawing.Imaging.Encoder,System.Byte[],System.Boolean)
+  name.vb: New(Encoder, Byte(), Boolean)
+  fullName: Egami.SystemDrawing.Imaging.EncoderParameter.EncoderParameter(Egami.SystemDrawing.Imaging.Encoder, byte[], bool)
+  fullName.vb: Egami.SystemDrawing.Imaging.EncoderParameter.New(Egami.SystemDrawing.Imaging.Encoder, Byte(), Boolean)
+  nameWithType: EncoderParameter.EncoderParameter(Encoder, byte[], bool)
+  nameWithType.vb: EncoderParameter.New(Encoder, Byte(), Boolean)
+- uid: Egami.SystemDrawing.Imaging.EncoderParameter.#ctor(Egami.SystemDrawing.Imaging.Encoder,System.Int16)
+  name: EncoderParameter(Encoder, short)
+  href: api/Egami.SystemDrawing.Imaging.EncoderParameter.html#Egami_SystemDrawing_Imaging_EncoderParameter__ctor_Egami_SystemDrawing_Imaging_Encoder_System_Int16_
+  commentId: M:Egami.SystemDrawing.Imaging.EncoderParameter.#ctor(Egami.SystemDrawing.Imaging.Encoder,System.Int16)
+  name.vb: New(Encoder, Short)
+  fullName: Egami.SystemDrawing.Imaging.EncoderParameter.EncoderParameter(Egami.SystemDrawing.Imaging.Encoder, short)
+  fullName.vb: Egami.SystemDrawing.Imaging.EncoderParameter.New(Egami.SystemDrawing.Imaging.Encoder, Short)
+  nameWithType: EncoderParameter.EncoderParameter(Encoder, short)
+  nameWithType.vb: EncoderParameter.New(Encoder, Short)
+- uid: Egami.SystemDrawing.Imaging.EncoderParameter.#ctor(Egami.SystemDrawing.Imaging.Encoder,System.Int16[])
+  name: EncoderParameter(Encoder, short[])
+  href: api/Egami.SystemDrawing.Imaging.EncoderParameter.html#Egami_SystemDrawing_Imaging_EncoderParameter__ctor_Egami_SystemDrawing_Imaging_Encoder_System_Int16___
+  commentId: M:Egami.SystemDrawing.Imaging.EncoderParameter.#ctor(Egami.SystemDrawing.Imaging.Encoder,System.Int16[])
+  name.vb: New(Encoder, Short())
+  fullName: Egami.SystemDrawing.Imaging.EncoderParameter.EncoderParameter(Egami.SystemDrawing.Imaging.Encoder, short[])
+  fullName.vb: Egami.SystemDrawing.Imaging.EncoderParameter.New(Egami.SystemDrawing.Imaging.Encoder, Short())
+  nameWithType: EncoderParameter.EncoderParameter(Encoder, short[])
+  nameWithType.vb: EncoderParameter.New(Encoder, Short())
+- uid: Egami.SystemDrawing.Imaging.EncoderParameter.#ctor(Egami.SystemDrawing.Imaging.Encoder,System.Int32,Egami.SystemDrawing.Imaging.EncoderParameterValueType,System.IntPtr)
+  name: EncoderParameter(Encoder, int, EncoderParameterValueType, nint)
+  href: api/Egami.SystemDrawing.Imaging.EncoderParameter.html#Egami_SystemDrawing_Imaging_EncoderParameter__ctor_Egami_SystemDrawing_Imaging_Encoder_System_Int32_Egami_SystemDrawing_Imaging_EncoderParameterValueType_System_IntPtr_
+  commentId: M:Egami.SystemDrawing.Imaging.EncoderParameter.#ctor(Egami.SystemDrawing.Imaging.Encoder,System.Int32,Egami.SystemDrawing.Imaging.EncoderParameterValueType,System.IntPtr)
+  name.vb: New(Encoder, Integer, EncoderParameterValueType, IntPtr)
+  fullName: Egami.SystemDrawing.Imaging.EncoderParameter.EncoderParameter(Egami.SystemDrawing.Imaging.Encoder, int, Egami.SystemDrawing.Imaging.EncoderParameterValueType, nint)
+  fullName.vb: Egami.SystemDrawing.Imaging.EncoderParameter.New(Egami.SystemDrawing.Imaging.Encoder, Integer, Egami.SystemDrawing.Imaging.EncoderParameterValueType, System.IntPtr)
+  nameWithType: EncoderParameter.EncoderParameter(Encoder, int, EncoderParameterValueType, nint)
+  nameWithType.vb: EncoderParameter.New(Encoder, Integer, EncoderParameterValueType, IntPtr)
+- uid: Egami.SystemDrawing.Imaging.EncoderParameter.#ctor(Egami.SystemDrawing.Imaging.Encoder,System.Int32,System.Int32)
+  name: EncoderParameter(Encoder, int, int)
+  href: api/Egami.SystemDrawing.Imaging.EncoderParameter.html#Egami_SystemDrawing_Imaging_EncoderParameter__ctor_Egami_SystemDrawing_Imaging_Encoder_System_Int32_System_Int32_
+  commentId: M:Egami.SystemDrawing.Imaging.EncoderParameter.#ctor(Egami.SystemDrawing.Imaging.Encoder,System.Int32,System.Int32)
+  name.vb: New(Encoder, Integer, Integer)
+  fullName: Egami.SystemDrawing.Imaging.EncoderParameter.EncoderParameter(Egami.SystemDrawing.Imaging.Encoder, int, int)
+  fullName.vb: Egami.SystemDrawing.Imaging.EncoderParameter.New(Egami.SystemDrawing.Imaging.Encoder, Integer, Integer)
+  nameWithType: EncoderParameter.EncoderParameter(Encoder, int, int)
+  nameWithType.vb: EncoderParameter.New(Encoder, Integer, Integer)
+- uid: Egami.SystemDrawing.Imaging.EncoderParameter.#ctor(Egami.SystemDrawing.Imaging.Encoder,System.Int32,System.Int32,System.Int32)
+  name: EncoderParameter(Encoder, int, int, int)
+  href: api/Egami.SystemDrawing.Imaging.EncoderParameter.html#Egami_SystemDrawing_Imaging_EncoderParameter__ctor_Egami_SystemDrawing_Imaging_Encoder_System_Int32_System_Int32_System_Int32_
+  commentId: M:Egami.SystemDrawing.Imaging.EncoderParameter.#ctor(Egami.SystemDrawing.Imaging.Encoder,System.Int32,System.Int32,System.Int32)
+  name.vb: New(Encoder, Integer, Integer, Integer)
+  fullName: Egami.SystemDrawing.Imaging.EncoderParameter.EncoderParameter(Egami.SystemDrawing.Imaging.Encoder, int, int, int)
+  fullName.vb: Egami.SystemDrawing.Imaging.EncoderParameter.New(Egami.SystemDrawing.Imaging.Encoder, Integer, Integer, Integer)
+  nameWithType: EncoderParameter.EncoderParameter(Encoder, int, int, int)
+  nameWithType.vb: EncoderParameter.New(Encoder, Integer, Integer, Integer)
+- uid: Egami.SystemDrawing.Imaging.EncoderParameter.#ctor(Egami.SystemDrawing.Imaging.Encoder,System.Int32,System.Int32,System.Int32,System.Int32)
+  name: EncoderParameter(Encoder, int, int, int, int)
+  href: api/Egami.SystemDrawing.Imaging.EncoderParameter.html#Egami_SystemDrawing_Imaging_EncoderParameter__ctor_Egami_SystemDrawing_Imaging_Encoder_System_Int32_System_Int32_System_Int32_System_Int32_
+  commentId: M:Egami.SystemDrawing.Imaging.EncoderParameter.#ctor(Egami.SystemDrawing.Imaging.Encoder,System.Int32,System.Int32,System.Int32,System.Int32)
+  name.vb: New(Encoder, Integer, Integer, Integer, Integer)
+  fullName: Egami.SystemDrawing.Imaging.EncoderParameter.EncoderParameter(Egami.SystemDrawing.Imaging.Encoder, int, int, int, int)
+  fullName.vb: Egami.SystemDrawing.Imaging.EncoderParameter.New(Egami.SystemDrawing.Imaging.Encoder, Integer, Integer, Integer, Integer)
+  nameWithType: EncoderParameter.EncoderParameter(Encoder, int, int, int, int)
+  nameWithType.vb: EncoderParameter.New(Encoder, Integer, Integer, Integer, Integer)
+- uid: Egami.SystemDrawing.Imaging.EncoderParameter.#ctor(Egami.SystemDrawing.Imaging.Encoder,System.Int32[],System.Int32[])
+  name: EncoderParameter(Encoder, int[], int[])
+  href: api/Egami.SystemDrawing.Imaging.EncoderParameter.html#Egami_SystemDrawing_Imaging_EncoderParameter__ctor_Egami_SystemDrawing_Imaging_Encoder_System_Int32___System_Int32___
+  commentId: M:Egami.SystemDrawing.Imaging.EncoderParameter.#ctor(Egami.SystemDrawing.Imaging.Encoder,System.Int32[],System.Int32[])
+  name.vb: New(Encoder, Integer(), Integer())
+  fullName: Egami.SystemDrawing.Imaging.EncoderParameter.EncoderParameter(Egami.SystemDrawing.Imaging.Encoder, int[], int[])
+  fullName.vb: Egami.SystemDrawing.Imaging.EncoderParameter.New(Egami.SystemDrawing.Imaging.Encoder, Integer(), Integer())
+  nameWithType: EncoderParameter.EncoderParameter(Encoder, int[], int[])
+  nameWithType.vb: EncoderParameter.New(Encoder, Integer(), Integer())
+- uid: Egami.SystemDrawing.Imaging.EncoderParameter.#ctor(Egami.SystemDrawing.Imaging.Encoder,System.Int32[],System.Int32[],System.Int32[],System.Int32[])
+  name: EncoderParameter(Encoder, int[], int[], int[], int[])
+  href: api/Egami.SystemDrawing.Imaging.EncoderParameter.html#Egami_SystemDrawing_Imaging_EncoderParameter__ctor_Egami_SystemDrawing_Imaging_Encoder_System_Int32___System_Int32___System_Int32___System_Int32___
+  commentId: M:Egami.SystemDrawing.Imaging.EncoderParameter.#ctor(Egami.SystemDrawing.Imaging.Encoder,System.Int32[],System.Int32[],System.Int32[],System.Int32[])
+  name.vb: New(Encoder, Integer(), Integer(), Integer(), Integer())
+  fullName: Egami.SystemDrawing.Imaging.EncoderParameter.EncoderParameter(Egami.SystemDrawing.Imaging.Encoder, int[], int[], int[], int[])
+  fullName.vb: Egami.SystemDrawing.Imaging.EncoderParameter.New(Egami.SystemDrawing.Imaging.Encoder, Integer(), Integer(), Integer(), Integer())
+  nameWithType: EncoderParameter.EncoderParameter(Encoder, int[], int[], int[], int[])
+  nameWithType.vb: EncoderParameter.New(Encoder, Integer(), Integer(), Integer(), Integer())
+- uid: Egami.SystemDrawing.Imaging.EncoderParameter.#ctor(Egami.SystemDrawing.Imaging.Encoder,System.Int64)
+  name: EncoderParameter(Encoder, long)
+  href: api/Egami.SystemDrawing.Imaging.EncoderParameter.html#Egami_SystemDrawing_Imaging_EncoderParameter__ctor_Egami_SystemDrawing_Imaging_Encoder_System_Int64_
+  commentId: M:Egami.SystemDrawing.Imaging.EncoderParameter.#ctor(Egami.SystemDrawing.Imaging.Encoder,System.Int64)
+  name.vb: New(Encoder, Long)
+  fullName: Egami.SystemDrawing.Imaging.EncoderParameter.EncoderParameter(Egami.SystemDrawing.Imaging.Encoder, long)
+  fullName.vb: Egami.SystemDrawing.Imaging.EncoderParameter.New(Egami.SystemDrawing.Imaging.Encoder, Long)
+  nameWithType: EncoderParameter.EncoderParameter(Encoder, long)
+  nameWithType.vb: EncoderParameter.New(Encoder, Long)
+- uid: Egami.SystemDrawing.Imaging.EncoderParameter.#ctor(Egami.SystemDrawing.Imaging.Encoder,System.Int64,System.Int64)
+  name: EncoderParameter(Encoder, long, long)
+  href: api/Egami.SystemDrawing.Imaging.EncoderParameter.html#Egami_SystemDrawing_Imaging_EncoderParameter__ctor_Egami_SystemDrawing_Imaging_Encoder_System_Int64_System_Int64_
+  commentId: M:Egami.SystemDrawing.Imaging.EncoderParameter.#ctor(Egami.SystemDrawing.Imaging.Encoder,System.Int64,System.Int64)
+  name.vb: New(Encoder, Long, Long)
+  fullName: Egami.SystemDrawing.Imaging.EncoderParameter.EncoderParameter(Egami.SystemDrawing.Imaging.Encoder, long, long)
+  fullName.vb: Egami.SystemDrawing.Imaging.EncoderParameter.New(Egami.SystemDrawing.Imaging.Encoder, Long, Long)
+  nameWithType: EncoderParameter.EncoderParameter(Encoder, long, long)
+  nameWithType.vb: EncoderParameter.New(Encoder, Long, Long)
+- uid: Egami.SystemDrawing.Imaging.EncoderParameter.#ctor(Egami.SystemDrawing.Imaging.Encoder,System.Int64[])
+  name: EncoderParameter(Encoder, long[])
+  href: api/Egami.SystemDrawing.Imaging.EncoderParameter.html#Egami_SystemDrawing_Imaging_EncoderParameter__ctor_Egami_SystemDrawing_Imaging_Encoder_System_Int64___
+  commentId: M:Egami.SystemDrawing.Imaging.EncoderParameter.#ctor(Egami.SystemDrawing.Imaging.Encoder,System.Int64[])
+  name.vb: New(Encoder, Long())
+  fullName: Egami.SystemDrawing.Imaging.EncoderParameter.EncoderParameter(Egami.SystemDrawing.Imaging.Encoder, long[])
+  fullName.vb: Egami.SystemDrawing.Imaging.EncoderParameter.New(Egami.SystemDrawing.Imaging.Encoder, Long())
+  nameWithType: EncoderParameter.EncoderParameter(Encoder, long[])
+  nameWithType.vb: EncoderParameter.New(Encoder, Long())
+- uid: Egami.SystemDrawing.Imaging.EncoderParameter.#ctor(Egami.SystemDrawing.Imaging.Encoder,System.Int64[],System.Int64[])
+  name: EncoderParameter(Encoder, long[], long[])
+  href: api/Egami.SystemDrawing.Imaging.EncoderParameter.html#Egami_SystemDrawing_Imaging_EncoderParameter__ctor_Egami_SystemDrawing_Imaging_Encoder_System_Int64___System_Int64___
+  commentId: M:Egami.SystemDrawing.Imaging.EncoderParameter.#ctor(Egami.SystemDrawing.Imaging.Encoder,System.Int64[],System.Int64[])
+  name.vb: New(Encoder, Long(), Long())
+  fullName: Egami.SystemDrawing.Imaging.EncoderParameter.EncoderParameter(Egami.SystemDrawing.Imaging.Encoder, long[], long[])
+  fullName.vb: Egami.SystemDrawing.Imaging.EncoderParameter.New(Egami.SystemDrawing.Imaging.Encoder, Long(), Long())
+  nameWithType: EncoderParameter.EncoderParameter(Encoder, long[], long[])
+  nameWithType.vb: EncoderParameter.New(Encoder, Long(), Long())
+- uid: Egami.SystemDrawing.Imaging.EncoderParameter.#ctor(Egami.SystemDrawing.Imaging.Encoder,System.String)
+  name: EncoderParameter(Encoder, string)
+  href: api/Egami.SystemDrawing.Imaging.EncoderParameter.html#Egami_SystemDrawing_Imaging_EncoderParameter__ctor_Egami_SystemDrawing_Imaging_Encoder_System_String_
+  commentId: M:Egami.SystemDrawing.Imaging.EncoderParameter.#ctor(Egami.SystemDrawing.Imaging.Encoder,System.String)
+  name.vb: New(Encoder, String)
+  fullName: Egami.SystemDrawing.Imaging.EncoderParameter.EncoderParameter(Egami.SystemDrawing.Imaging.Encoder, string)
+  fullName.vb: Egami.SystemDrawing.Imaging.EncoderParameter.New(Egami.SystemDrawing.Imaging.Encoder, String)
+  nameWithType: EncoderParameter.EncoderParameter(Encoder, string)
+  nameWithType.vb: EncoderParameter.New(Encoder, String)
+- uid: Egami.SystemDrawing.Imaging.EncoderParameter.#ctor*
+  name: EncoderParameter
+  href: api/Egami.SystemDrawing.Imaging.EncoderParameter.html#Egami_SystemDrawing_Imaging_EncoderParameter__ctor_
+  commentId: Overload:Egami.SystemDrawing.Imaging.EncoderParameter.#ctor
+  isSpec: "True"
+  name.vb: New
+  fullName: Egami.SystemDrawing.Imaging.EncoderParameter.EncoderParameter
+  fullName.vb: Egami.SystemDrawing.Imaging.EncoderParameter.New
+  nameWithType: EncoderParameter.EncoderParameter
+  nameWithType.vb: EncoderParameter.New
+- uid: Egami.SystemDrawing.Imaging.EncoderParameter.Dispose
+  name: Dispose()
+  href: api/Egami.SystemDrawing.Imaging.EncoderParameter.html#Egami_SystemDrawing_Imaging_EncoderParameter_Dispose
+  commentId: M:Egami.SystemDrawing.Imaging.EncoderParameter.Dispose
+  fullName: Egami.SystemDrawing.Imaging.EncoderParameter.Dispose()
+  nameWithType: EncoderParameter.Dispose()
+- uid: Egami.SystemDrawing.Imaging.EncoderParameter.Dispose*
+  name: Dispose
+  href: api/Egami.SystemDrawing.Imaging.EncoderParameter.html#Egami_SystemDrawing_Imaging_EncoderParameter_Dispose_
+  commentId: Overload:Egami.SystemDrawing.Imaging.EncoderParameter.Dispose
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Imaging.EncoderParameter.Dispose
+  nameWithType: EncoderParameter.Dispose
+- uid: Egami.SystemDrawing.Imaging.EncoderParameter.Encoder
+  name: Encoder
+  href: api/Egami.SystemDrawing.Imaging.EncoderParameter.html#Egami_SystemDrawing_Imaging_EncoderParameter_Encoder
+  commentId: P:Egami.SystemDrawing.Imaging.EncoderParameter.Encoder
+  fullName: Egami.SystemDrawing.Imaging.EncoderParameter.Encoder
+  nameWithType: EncoderParameter.Encoder
+- uid: Egami.SystemDrawing.Imaging.EncoderParameter.Encoder*
+  name: Encoder
+  href: api/Egami.SystemDrawing.Imaging.EncoderParameter.html#Egami_SystemDrawing_Imaging_EncoderParameter_Encoder_
+  commentId: Overload:Egami.SystemDrawing.Imaging.EncoderParameter.Encoder
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Imaging.EncoderParameter.Encoder
+  nameWithType: EncoderParameter.Encoder
+- uid: Egami.SystemDrawing.Imaging.EncoderParameter.NumberOfValues
+  name: NumberOfValues
+  href: api/Egami.SystemDrawing.Imaging.EncoderParameter.html#Egami_SystemDrawing_Imaging_EncoderParameter_NumberOfValues
+  commentId: P:Egami.SystemDrawing.Imaging.EncoderParameter.NumberOfValues
+  fullName: Egami.SystemDrawing.Imaging.EncoderParameter.NumberOfValues
+  nameWithType: EncoderParameter.NumberOfValues
+- uid: Egami.SystemDrawing.Imaging.EncoderParameter.NumberOfValues*
+  name: NumberOfValues
+  href: api/Egami.SystemDrawing.Imaging.EncoderParameter.html#Egami_SystemDrawing_Imaging_EncoderParameter_NumberOfValues_
+  commentId: Overload:Egami.SystemDrawing.Imaging.EncoderParameter.NumberOfValues
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Imaging.EncoderParameter.NumberOfValues
+  nameWithType: EncoderParameter.NumberOfValues
+- uid: Egami.SystemDrawing.Imaging.EncoderParameter.Type
+  name: Type
+  href: api/Egami.SystemDrawing.Imaging.EncoderParameter.html#Egami_SystemDrawing_Imaging_EncoderParameter_Type
+  commentId: P:Egami.SystemDrawing.Imaging.EncoderParameter.Type
+  fullName: Egami.SystemDrawing.Imaging.EncoderParameter.Type
+  nameWithType: EncoderParameter.Type
+- uid: Egami.SystemDrawing.Imaging.EncoderParameter.Type*
+  name: Type
+  href: api/Egami.SystemDrawing.Imaging.EncoderParameter.html#Egami_SystemDrawing_Imaging_EncoderParameter_Type_
+  commentId: Overload:Egami.SystemDrawing.Imaging.EncoderParameter.Type
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Imaging.EncoderParameter.Type
+  nameWithType: EncoderParameter.Type
+- uid: Egami.SystemDrawing.Imaging.EncoderParameter.ValueType
+  name: ValueType
+  href: api/Egami.SystemDrawing.Imaging.EncoderParameter.html#Egami_SystemDrawing_Imaging_EncoderParameter_ValueType
+  commentId: P:Egami.SystemDrawing.Imaging.EncoderParameter.ValueType
+  fullName: Egami.SystemDrawing.Imaging.EncoderParameter.ValueType
+  nameWithType: EncoderParameter.ValueType
+- uid: Egami.SystemDrawing.Imaging.EncoderParameter.ValueType*
+  name: ValueType
+  href: api/Egami.SystemDrawing.Imaging.EncoderParameter.html#Egami_SystemDrawing_Imaging_EncoderParameter_ValueType_
+  commentId: Overload:Egami.SystemDrawing.Imaging.EncoderParameter.ValueType
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Imaging.EncoderParameter.ValueType
+  nameWithType: EncoderParameter.ValueType
+- uid: Egami.SystemDrawing.Imaging.EncoderParameterValueType
+  name: EncoderParameterValueType
+  href: api/Egami.SystemDrawing.Imaging.EncoderParameterValueType.html
+  commentId: T:Egami.SystemDrawing.Imaging.EncoderParameterValueType
+  fullName: Egami.SystemDrawing.Imaging.EncoderParameterValueType
+  nameWithType: EncoderParameterValueType
+- uid: Egami.SystemDrawing.Imaging.EncoderParameterValueType.ValueTypeAscii
+  name: ValueTypeAscii
+  href: api/Egami.SystemDrawing.Imaging.EncoderParameterValueType.html#Egami_SystemDrawing_Imaging_EncoderParameterValueType_ValueTypeAscii
+  commentId: F:Egami.SystemDrawing.Imaging.EncoderParameterValueType.ValueTypeAscii
+  fullName: Egami.SystemDrawing.Imaging.EncoderParameterValueType.ValueTypeAscii
+  nameWithType: EncoderParameterValueType.ValueTypeAscii
+- uid: Egami.SystemDrawing.Imaging.EncoderParameterValueType.ValueTypeByte
+  name: ValueTypeByte
+  href: api/Egami.SystemDrawing.Imaging.EncoderParameterValueType.html#Egami_SystemDrawing_Imaging_EncoderParameterValueType_ValueTypeByte
+  commentId: F:Egami.SystemDrawing.Imaging.EncoderParameterValueType.ValueTypeByte
+  fullName: Egami.SystemDrawing.Imaging.EncoderParameterValueType.ValueTypeByte
+  nameWithType: EncoderParameterValueType.ValueTypeByte
+- uid: Egami.SystemDrawing.Imaging.EncoderParameterValueType.ValueTypeLong
+  name: ValueTypeLong
+  href: api/Egami.SystemDrawing.Imaging.EncoderParameterValueType.html#Egami_SystemDrawing_Imaging_EncoderParameterValueType_ValueTypeLong
+  commentId: F:Egami.SystemDrawing.Imaging.EncoderParameterValueType.ValueTypeLong
+  fullName: Egami.SystemDrawing.Imaging.EncoderParameterValueType.ValueTypeLong
+  nameWithType: EncoderParameterValueType.ValueTypeLong
+- uid: Egami.SystemDrawing.Imaging.EncoderParameterValueType.ValueTypeLongRange
+  name: ValueTypeLongRange
+  href: api/Egami.SystemDrawing.Imaging.EncoderParameterValueType.html#Egami_SystemDrawing_Imaging_EncoderParameterValueType_ValueTypeLongRange
+  commentId: F:Egami.SystemDrawing.Imaging.EncoderParameterValueType.ValueTypeLongRange
+  fullName: Egami.SystemDrawing.Imaging.EncoderParameterValueType.ValueTypeLongRange
+  nameWithType: EncoderParameterValueType.ValueTypeLongRange
+- uid: Egami.SystemDrawing.Imaging.EncoderParameterValueType.ValueTypePointer
+  name: ValueTypePointer
+  href: api/Egami.SystemDrawing.Imaging.EncoderParameterValueType.html#Egami_SystemDrawing_Imaging_EncoderParameterValueType_ValueTypePointer
+  commentId: F:Egami.SystemDrawing.Imaging.EncoderParameterValueType.ValueTypePointer
+  fullName: Egami.SystemDrawing.Imaging.EncoderParameterValueType.ValueTypePointer
+  nameWithType: EncoderParameterValueType.ValueTypePointer
+- uid: Egami.SystemDrawing.Imaging.EncoderParameterValueType.ValueTypeRational
+  name: ValueTypeRational
+  href: api/Egami.SystemDrawing.Imaging.EncoderParameterValueType.html#Egami_SystemDrawing_Imaging_EncoderParameterValueType_ValueTypeRational
+  commentId: F:Egami.SystemDrawing.Imaging.EncoderParameterValueType.ValueTypeRational
+  fullName: Egami.SystemDrawing.Imaging.EncoderParameterValueType.ValueTypeRational
+  nameWithType: EncoderParameterValueType.ValueTypeRational
+- uid: Egami.SystemDrawing.Imaging.EncoderParameterValueType.ValueTypeRationalRange
+  name: ValueTypeRationalRange
+  href: api/Egami.SystemDrawing.Imaging.EncoderParameterValueType.html#Egami_SystemDrawing_Imaging_EncoderParameterValueType_ValueTypeRationalRange
+  commentId: F:Egami.SystemDrawing.Imaging.EncoderParameterValueType.ValueTypeRationalRange
+  fullName: Egami.SystemDrawing.Imaging.EncoderParameterValueType.ValueTypeRationalRange
+  nameWithType: EncoderParameterValueType.ValueTypeRationalRange
+- uid: Egami.SystemDrawing.Imaging.EncoderParameterValueType.ValueTypeShort
+  name: ValueTypeShort
+  href: api/Egami.SystemDrawing.Imaging.EncoderParameterValueType.html#Egami_SystemDrawing_Imaging_EncoderParameterValueType_ValueTypeShort
+  commentId: F:Egami.SystemDrawing.Imaging.EncoderParameterValueType.ValueTypeShort
+  fullName: Egami.SystemDrawing.Imaging.EncoderParameterValueType.ValueTypeShort
+  nameWithType: EncoderParameterValueType.ValueTypeShort
+- uid: Egami.SystemDrawing.Imaging.EncoderParameterValueType.ValueTypeUndefined
+  name: ValueTypeUndefined
+  href: api/Egami.SystemDrawing.Imaging.EncoderParameterValueType.html#Egami_SystemDrawing_Imaging_EncoderParameterValueType_ValueTypeUndefined
+  commentId: F:Egami.SystemDrawing.Imaging.EncoderParameterValueType.ValueTypeUndefined
+  fullName: Egami.SystemDrawing.Imaging.EncoderParameterValueType.ValueTypeUndefined
+  nameWithType: EncoderParameterValueType.ValueTypeUndefined
+- uid: Egami.SystemDrawing.Imaging.EncoderParameters
+  name: EncoderParameters
+  href: api/Egami.SystemDrawing.Imaging.EncoderParameters.html
+  commentId: T:Egami.SystemDrawing.Imaging.EncoderParameters
+  fullName: Egami.SystemDrawing.Imaging.EncoderParameters
+  nameWithType: EncoderParameters
+- uid: Egami.SystemDrawing.Imaging.EncoderParameters.#ctor
+  name: EncoderParameters()
+  href: api/Egami.SystemDrawing.Imaging.EncoderParameters.html#Egami_SystemDrawing_Imaging_EncoderParameters__ctor
+  commentId: M:Egami.SystemDrawing.Imaging.EncoderParameters.#ctor
+  name.vb: New()
+  fullName: Egami.SystemDrawing.Imaging.EncoderParameters.EncoderParameters()
+  fullName.vb: Egami.SystemDrawing.Imaging.EncoderParameters.New()
+  nameWithType: EncoderParameters.EncoderParameters()
+  nameWithType.vb: EncoderParameters.New()
+- uid: Egami.SystemDrawing.Imaging.EncoderParameters.#ctor(System.Int32)
+  name: EncoderParameters(int)
+  href: api/Egami.SystemDrawing.Imaging.EncoderParameters.html#Egami_SystemDrawing_Imaging_EncoderParameters__ctor_System_Int32_
+  commentId: M:Egami.SystemDrawing.Imaging.EncoderParameters.#ctor(System.Int32)
+  name.vb: New(Integer)
+  fullName: Egami.SystemDrawing.Imaging.EncoderParameters.EncoderParameters(int)
+  fullName.vb: Egami.SystemDrawing.Imaging.EncoderParameters.New(Integer)
+  nameWithType: EncoderParameters.EncoderParameters(int)
+  nameWithType.vb: EncoderParameters.New(Integer)
+- uid: Egami.SystemDrawing.Imaging.EncoderParameters.#ctor*
+  name: EncoderParameters
+  href: api/Egami.SystemDrawing.Imaging.EncoderParameters.html#Egami_SystemDrawing_Imaging_EncoderParameters__ctor_
+  commentId: Overload:Egami.SystemDrawing.Imaging.EncoderParameters.#ctor
+  isSpec: "True"
+  name.vb: New
+  fullName: Egami.SystemDrawing.Imaging.EncoderParameters.EncoderParameters
+  fullName.vb: Egami.SystemDrawing.Imaging.EncoderParameters.New
+  nameWithType: EncoderParameters.EncoderParameters
+  nameWithType.vb: EncoderParameters.New
+- uid: Egami.SystemDrawing.Imaging.EncoderParameters.Dispose
+  name: Dispose()
+  href: api/Egami.SystemDrawing.Imaging.EncoderParameters.html#Egami_SystemDrawing_Imaging_EncoderParameters_Dispose
+  commentId: M:Egami.SystemDrawing.Imaging.EncoderParameters.Dispose
+  fullName: Egami.SystemDrawing.Imaging.EncoderParameters.Dispose()
+  nameWithType: EncoderParameters.Dispose()
+- uid: Egami.SystemDrawing.Imaging.EncoderParameters.Dispose*
+  name: Dispose
+  href: api/Egami.SystemDrawing.Imaging.EncoderParameters.html#Egami_SystemDrawing_Imaging_EncoderParameters_Dispose_
+  commentId: Overload:Egami.SystemDrawing.Imaging.EncoderParameters.Dispose
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Imaging.EncoderParameters.Dispose
+  nameWithType: EncoderParameters.Dispose
+- uid: Egami.SystemDrawing.Imaging.EncoderParameters.Param
+  name: Param
+  href: api/Egami.SystemDrawing.Imaging.EncoderParameters.html#Egami_SystemDrawing_Imaging_EncoderParameters_Param
+  commentId: P:Egami.SystemDrawing.Imaging.EncoderParameters.Param
+  fullName: Egami.SystemDrawing.Imaging.EncoderParameters.Param
+  nameWithType: EncoderParameters.Param
+- uid: Egami.SystemDrawing.Imaging.EncoderParameters.Param*
+  name: Param
+  href: api/Egami.SystemDrawing.Imaging.EncoderParameters.html#Egami_SystemDrawing_Imaging_EncoderParameters_Param_
+  commentId: Overload:Egami.SystemDrawing.Imaging.EncoderParameters.Param
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Imaging.EncoderParameters.Param
+  nameWithType: EncoderParameters.Param
+- uid: Egami.SystemDrawing.Imaging.EncoderValue
+  name: EncoderValue
+  href: api/Egami.SystemDrawing.Imaging.EncoderValue.html
+  commentId: T:Egami.SystemDrawing.Imaging.EncoderValue
+  fullName: Egami.SystemDrawing.Imaging.EncoderValue
+  nameWithType: EncoderValue
+- uid: Egami.SystemDrawing.Imaging.EncoderValue.ColorTypeCMYK
+  name: ColorTypeCMYK
+  href: api/Egami.SystemDrawing.Imaging.EncoderValue.html#Egami_SystemDrawing_Imaging_EncoderValue_ColorTypeCMYK
+  commentId: F:Egami.SystemDrawing.Imaging.EncoderValue.ColorTypeCMYK
+  fullName: Egami.SystemDrawing.Imaging.EncoderValue.ColorTypeCMYK
+  nameWithType: EncoderValue.ColorTypeCMYK
+- uid: Egami.SystemDrawing.Imaging.EncoderValue.ColorTypeYCCK
+  name: ColorTypeYCCK
+  href: api/Egami.SystemDrawing.Imaging.EncoderValue.html#Egami_SystemDrawing_Imaging_EncoderValue_ColorTypeYCCK
+  commentId: F:Egami.SystemDrawing.Imaging.EncoderValue.ColorTypeYCCK
+  fullName: Egami.SystemDrawing.Imaging.EncoderValue.ColorTypeYCCK
+  nameWithType: EncoderValue.ColorTypeYCCK
+- uid: Egami.SystemDrawing.Imaging.EncoderValue.CompressionCCITT3
+  name: CompressionCCITT3
+  href: api/Egami.SystemDrawing.Imaging.EncoderValue.html#Egami_SystemDrawing_Imaging_EncoderValue_CompressionCCITT3
+  commentId: F:Egami.SystemDrawing.Imaging.EncoderValue.CompressionCCITT3
+  fullName: Egami.SystemDrawing.Imaging.EncoderValue.CompressionCCITT3
+  nameWithType: EncoderValue.CompressionCCITT3
+- uid: Egami.SystemDrawing.Imaging.EncoderValue.CompressionCCITT4
+  name: CompressionCCITT4
+  href: api/Egami.SystemDrawing.Imaging.EncoderValue.html#Egami_SystemDrawing_Imaging_EncoderValue_CompressionCCITT4
+  commentId: F:Egami.SystemDrawing.Imaging.EncoderValue.CompressionCCITT4
+  fullName: Egami.SystemDrawing.Imaging.EncoderValue.CompressionCCITT4
+  nameWithType: EncoderValue.CompressionCCITT4
+- uid: Egami.SystemDrawing.Imaging.EncoderValue.CompressionLZW
+  name: CompressionLZW
+  href: api/Egami.SystemDrawing.Imaging.EncoderValue.html#Egami_SystemDrawing_Imaging_EncoderValue_CompressionLZW
+  commentId: F:Egami.SystemDrawing.Imaging.EncoderValue.CompressionLZW
+  fullName: Egami.SystemDrawing.Imaging.EncoderValue.CompressionLZW
+  nameWithType: EncoderValue.CompressionLZW
+- uid: Egami.SystemDrawing.Imaging.EncoderValue.CompressionNone
+  name: CompressionNone
+  href: api/Egami.SystemDrawing.Imaging.EncoderValue.html#Egami_SystemDrawing_Imaging_EncoderValue_CompressionNone
+  commentId: F:Egami.SystemDrawing.Imaging.EncoderValue.CompressionNone
+  fullName: Egami.SystemDrawing.Imaging.EncoderValue.CompressionNone
+  nameWithType: EncoderValue.CompressionNone
+- uid: Egami.SystemDrawing.Imaging.EncoderValue.CompressionRle
+  name: CompressionRle
+  href: api/Egami.SystemDrawing.Imaging.EncoderValue.html#Egami_SystemDrawing_Imaging_EncoderValue_CompressionRle
+  commentId: F:Egami.SystemDrawing.Imaging.EncoderValue.CompressionRle
+  fullName: Egami.SystemDrawing.Imaging.EncoderValue.CompressionRle
+  nameWithType: EncoderValue.CompressionRle
+- uid: Egami.SystemDrawing.Imaging.EncoderValue.Flush
+  name: Flush
+  href: api/Egami.SystemDrawing.Imaging.EncoderValue.html#Egami_SystemDrawing_Imaging_EncoderValue_Flush
+  commentId: F:Egami.SystemDrawing.Imaging.EncoderValue.Flush
+  fullName: Egami.SystemDrawing.Imaging.EncoderValue.Flush
+  nameWithType: EncoderValue.Flush
+- uid: Egami.SystemDrawing.Imaging.EncoderValue.FrameDimensionPage
+  name: FrameDimensionPage
+  href: api/Egami.SystemDrawing.Imaging.EncoderValue.html#Egami_SystemDrawing_Imaging_EncoderValue_FrameDimensionPage
+  commentId: F:Egami.SystemDrawing.Imaging.EncoderValue.FrameDimensionPage
+  fullName: Egami.SystemDrawing.Imaging.EncoderValue.FrameDimensionPage
+  nameWithType: EncoderValue.FrameDimensionPage
+- uid: Egami.SystemDrawing.Imaging.EncoderValue.FrameDimensionResolution
+  name: FrameDimensionResolution
+  href: api/Egami.SystemDrawing.Imaging.EncoderValue.html#Egami_SystemDrawing_Imaging_EncoderValue_FrameDimensionResolution
+  commentId: F:Egami.SystemDrawing.Imaging.EncoderValue.FrameDimensionResolution
+  fullName: Egami.SystemDrawing.Imaging.EncoderValue.FrameDimensionResolution
+  nameWithType: EncoderValue.FrameDimensionResolution
+- uid: Egami.SystemDrawing.Imaging.EncoderValue.FrameDimensionTime
+  name: FrameDimensionTime
+  href: api/Egami.SystemDrawing.Imaging.EncoderValue.html#Egami_SystemDrawing_Imaging_EncoderValue_FrameDimensionTime
+  commentId: F:Egami.SystemDrawing.Imaging.EncoderValue.FrameDimensionTime
+  fullName: Egami.SystemDrawing.Imaging.EncoderValue.FrameDimensionTime
+  nameWithType: EncoderValue.FrameDimensionTime
+- uid: Egami.SystemDrawing.Imaging.EncoderValue.LastFrame
+  name: LastFrame
+  href: api/Egami.SystemDrawing.Imaging.EncoderValue.html#Egami_SystemDrawing_Imaging_EncoderValue_LastFrame
+  commentId: F:Egami.SystemDrawing.Imaging.EncoderValue.LastFrame
+  fullName: Egami.SystemDrawing.Imaging.EncoderValue.LastFrame
+  nameWithType: EncoderValue.LastFrame
+- uid: Egami.SystemDrawing.Imaging.EncoderValue.MultiFrame
+  name: MultiFrame
+  href: api/Egami.SystemDrawing.Imaging.EncoderValue.html#Egami_SystemDrawing_Imaging_EncoderValue_MultiFrame
+  commentId: F:Egami.SystemDrawing.Imaging.EncoderValue.MultiFrame
+  fullName: Egami.SystemDrawing.Imaging.EncoderValue.MultiFrame
+  nameWithType: EncoderValue.MultiFrame
+- uid: Egami.SystemDrawing.Imaging.EncoderValue.RenderNonProgressive
+  name: RenderNonProgressive
+  href: api/Egami.SystemDrawing.Imaging.EncoderValue.html#Egami_SystemDrawing_Imaging_EncoderValue_RenderNonProgressive
+  commentId: F:Egami.SystemDrawing.Imaging.EncoderValue.RenderNonProgressive
+  fullName: Egami.SystemDrawing.Imaging.EncoderValue.RenderNonProgressive
+  nameWithType: EncoderValue.RenderNonProgressive
+- uid: Egami.SystemDrawing.Imaging.EncoderValue.RenderProgressive
+  name: RenderProgressive
+  href: api/Egami.SystemDrawing.Imaging.EncoderValue.html#Egami_SystemDrawing_Imaging_EncoderValue_RenderProgressive
+  commentId: F:Egami.SystemDrawing.Imaging.EncoderValue.RenderProgressive
+  fullName: Egami.SystemDrawing.Imaging.EncoderValue.RenderProgressive
+  nameWithType: EncoderValue.RenderProgressive
+- uid: Egami.SystemDrawing.Imaging.EncoderValue.ScanMethodInterlaced
+  name: ScanMethodInterlaced
+  href: api/Egami.SystemDrawing.Imaging.EncoderValue.html#Egami_SystemDrawing_Imaging_EncoderValue_ScanMethodInterlaced
+  commentId: F:Egami.SystemDrawing.Imaging.EncoderValue.ScanMethodInterlaced
+  fullName: Egami.SystemDrawing.Imaging.EncoderValue.ScanMethodInterlaced
+  nameWithType: EncoderValue.ScanMethodInterlaced
+- uid: Egami.SystemDrawing.Imaging.EncoderValue.ScanMethodNonInterlaced
+  name: ScanMethodNonInterlaced
+  href: api/Egami.SystemDrawing.Imaging.EncoderValue.html#Egami_SystemDrawing_Imaging_EncoderValue_ScanMethodNonInterlaced
+  commentId: F:Egami.SystemDrawing.Imaging.EncoderValue.ScanMethodNonInterlaced
+  fullName: Egami.SystemDrawing.Imaging.EncoderValue.ScanMethodNonInterlaced
+  nameWithType: EncoderValue.ScanMethodNonInterlaced
+- uid: Egami.SystemDrawing.Imaging.EncoderValue.TransformFlipHorizontal
+  name: TransformFlipHorizontal
+  href: api/Egami.SystemDrawing.Imaging.EncoderValue.html#Egami_SystemDrawing_Imaging_EncoderValue_TransformFlipHorizontal
+  commentId: F:Egami.SystemDrawing.Imaging.EncoderValue.TransformFlipHorizontal
+  fullName: Egami.SystemDrawing.Imaging.EncoderValue.TransformFlipHorizontal
+  nameWithType: EncoderValue.TransformFlipHorizontal
+- uid: Egami.SystemDrawing.Imaging.EncoderValue.TransformFlipVertical
+  name: TransformFlipVertical
+  href: api/Egami.SystemDrawing.Imaging.EncoderValue.html#Egami_SystemDrawing_Imaging_EncoderValue_TransformFlipVertical
+  commentId: F:Egami.SystemDrawing.Imaging.EncoderValue.TransformFlipVertical
+  fullName: Egami.SystemDrawing.Imaging.EncoderValue.TransformFlipVertical
+  nameWithType: EncoderValue.TransformFlipVertical
+- uid: Egami.SystemDrawing.Imaging.EncoderValue.TransformRotate180
+  name: TransformRotate180
+  href: api/Egami.SystemDrawing.Imaging.EncoderValue.html#Egami_SystemDrawing_Imaging_EncoderValue_TransformRotate180
+  commentId: F:Egami.SystemDrawing.Imaging.EncoderValue.TransformRotate180
+  fullName: Egami.SystemDrawing.Imaging.EncoderValue.TransformRotate180
+  nameWithType: EncoderValue.TransformRotate180
+- uid: Egami.SystemDrawing.Imaging.EncoderValue.TransformRotate270
+  name: TransformRotate270
+  href: api/Egami.SystemDrawing.Imaging.EncoderValue.html#Egami_SystemDrawing_Imaging_EncoderValue_TransformRotate270
+  commentId: F:Egami.SystemDrawing.Imaging.EncoderValue.TransformRotate270
+  fullName: Egami.SystemDrawing.Imaging.EncoderValue.TransformRotate270
+  nameWithType: EncoderValue.TransformRotate270
+- uid: Egami.SystemDrawing.Imaging.EncoderValue.TransformRotate90
+  name: TransformRotate90
+  href: api/Egami.SystemDrawing.Imaging.EncoderValue.html#Egami_SystemDrawing_Imaging_EncoderValue_TransformRotate90
+  commentId: F:Egami.SystemDrawing.Imaging.EncoderValue.TransformRotate90
+  fullName: Egami.SystemDrawing.Imaging.EncoderValue.TransformRotate90
+  nameWithType: EncoderValue.TransformRotate90
+- uid: Egami.SystemDrawing.Imaging.EncoderValue.VersionGif87
+  name: VersionGif87
+  href: api/Egami.SystemDrawing.Imaging.EncoderValue.html#Egami_SystemDrawing_Imaging_EncoderValue_VersionGif87
+  commentId: F:Egami.SystemDrawing.Imaging.EncoderValue.VersionGif87
+  fullName: Egami.SystemDrawing.Imaging.EncoderValue.VersionGif87
+  nameWithType: EncoderValue.VersionGif87
+- uid: Egami.SystemDrawing.Imaging.EncoderValue.VersionGif89
+  name: VersionGif89
+  href: api/Egami.SystemDrawing.Imaging.EncoderValue.html#Egami_SystemDrawing_Imaging_EncoderValue_VersionGif89
+  commentId: F:Egami.SystemDrawing.Imaging.EncoderValue.VersionGif89
+  fullName: Egami.SystemDrawing.Imaging.EncoderValue.VersionGif89
+  nameWithType: EncoderValue.VersionGif89
+- uid: Egami.SystemDrawing.Imaging.FrameDimension
+  name: FrameDimension
+  href: api/Egami.SystemDrawing.Imaging.FrameDimension.html
+  commentId: T:Egami.SystemDrawing.Imaging.FrameDimension
+  fullName: Egami.SystemDrawing.Imaging.FrameDimension
+  nameWithType: FrameDimension
+- uid: Egami.SystemDrawing.Imaging.FrameDimension.#ctor(System.Guid)
+  name: FrameDimension(Guid)
+  href: api/Egami.SystemDrawing.Imaging.FrameDimension.html#Egami_SystemDrawing_Imaging_FrameDimension__ctor_System_Guid_
+  commentId: M:Egami.SystemDrawing.Imaging.FrameDimension.#ctor(System.Guid)
+  name.vb: New(Guid)
+  fullName: Egami.SystemDrawing.Imaging.FrameDimension.FrameDimension(System.Guid)
+  fullName.vb: Egami.SystemDrawing.Imaging.FrameDimension.New(System.Guid)
+  nameWithType: FrameDimension.FrameDimension(Guid)
+  nameWithType.vb: FrameDimension.New(Guid)
+- uid: Egami.SystemDrawing.Imaging.FrameDimension.#ctor*
+  name: FrameDimension
+  href: api/Egami.SystemDrawing.Imaging.FrameDimension.html#Egami_SystemDrawing_Imaging_FrameDimension__ctor_
+  commentId: Overload:Egami.SystemDrawing.Imaging.FrameDimension.#ctor
+  isSpec: "True"
+  name.vb: New
+  fullName: Egami.SystemDrawing.Imaging.FrameDimension.FrameDimension
+  fullName.vb: Egami.SystemDrawing.Imaging.FrameDimension.New
+  nameWithType: FrameDimension.FrameDimension
+  nameWithType.vb: FrameDimension.New
+- uid: Egami.SystemDrawing.Imaging.FrameDimension.Equals(System.Object)
+  name: Equals(object?)
+  href: api/Egami.SystemDrawing.Imaging.FrameDimension.html#Egami_SystemDrawing_Imaging_FrameDimension_Equals_System_Object_
+  commentId: M:Egami.SystemDrawing.Imaging.FrameDimension.Equals(System.Object)
+  name.vb: Equals(Object)
+  fullName: Egami.SystemDrawing.Imaging.FrameDimension.Equals(object?)
+  fullName.vb: Egami.SystemDrawing.Imaging.FrameDimension.Equals(Object)
+  nameWithType: FrameDimension.Equals(object?)
+  nameWithType.vb: FrameDimension.Equals(Object)
+- uid: Egami.SystemDrawing.Imaging.FrameDimension.Equals*
+  name: Equals
+  href: api/Egami.SystemDrawing.Imaging.FrameDimension.html#Egami_SystemDrawing_Imaging_FrameDimension_Equals_
+  commentId: Overload:Egami.SystemDrawing.Imaging.FrameDimension.Equals
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Imaging.FrameDimension.Equals
+  nameWithType: FrameDimension.Equals
+- uid: Egami.SystemDrawing.Imaging.FrameDimension.GetHashCode
+  name: GetHashCode()
+  href: api/Egami.SystemDrawing.Imaging.FrameDimension.html#Egami_SystemDrawing_Imaging_FrameDimension_GetHashCode
+  commentId: M:Egami.SystemDrawing.Imaging.FrameDimension.GetHashCode
+  fullName: Egami.SystemDrawing.Imaging.FrameDimension.GetHashCode()
+  nameWithType: FrameDimension.GetHashCode()
+- uid: Egami.SystemDrawing.Imaging.FrameDimension.GetHashCode*
+  name: GetHashCode
+  href: api/Egami.SystemDrawing.Imaging.FrameDimension.html#Egami_SystemDrawing_Imaging_FrameDimension_GetHashCode_
+  commentId: Overload:Egami.SystemDrawing.Imaging.FrameDimension.GetHashCode
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Imaging.FrameDimension.GetHashCode
+  nameWithType: FrameDimension.GetHashCode
+- uid: Egami.SystemDrawing.Imaging.FrameDimension.Guid
+  name: Guid
+  href: api/Egami.SystemDrawing.Imaging.FrameDimension.html#Egami_SystemDrawing_Imaging_FrameDimension_Guid
+  commentId: P:Egami.SystemDrawing.Imaging.FrameDimension.Guid
+  fullName: Egami.SystemDrawing.Imaging.FrameDimension.Guid
+  nameWithType: FrameDimension.Guid
+- uid: Egami.SystemDrawing.Imaging.FrameDimension.Guid*
+  name: Guid
+  href: api/Egami.SystemDrawing.Imaging.FrameDimension.html#Egami_SystemDrawing_Imaging_FrameDimension_Guid_
+  commentId: Overload:Egami.SystemDrawing.Imaging.FrameDimension.Guid
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Imaging.FrameDimension.Guid
+  nameWithType: FrameDimension.Guid
+- uid: Egami.SystemDrawing.Imaging.FrameDimension.Page
+  name: Page
+  href: api/Egami.SystemDrawing.Imaging.FrameDimension.html#Egami_SystemDrawing_Imaging_FrameDimension_Page
+  commentId: P:Egami.SystemDrawing.Imaging.FrameDimension.Page
+  fullName: Egami.SystemDrawing.Imaging.FrameDimension.Page
+  nameWithType: FrameDimension.Page
+- uid: Egami.SystemDrawing.Imaging.FrameDimension.Page*
+  name: Page
+  href: api/Egami.SystemDrawing.Imaging.FrameDimension.html#Egami_SystemDrawing_Imaging_FrameDimension_Page_
+  commentId: Overload:Egami.SystemDrawing.Imaging.FrameDimension.Page
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Imaging.FrameDimension.Page
+  nameWithType: FrameDimension.Page
+- uid: Egami.SystemDrawing.Imaging.FrameDimension.Resolution
+  name: Resolution
+  href: api/Egami.SystemDrawing.Imaging.FrameDimension.html#Egami_SystemDrawing_Imaging_FrameDimension_Resolution
+  commentId: P:Egami.SystemDrawing.Imaging.FrameDimension.Resolution
+  fullName: Egami.SystemDrawing.Imaging.FrameDimension.Resolution
+  nameWithType: FrameDimension.Resolution
+- uid: Egami.SystemDrawing.Imaging.FrameDimension.Resolution*
+  name: Resolution
+  href: api/Egami.SystemDrawing.Imaging.FrameDimension.html#Egami_SystemDrawing_Imaging_FrameDimension_Resolution_
+  commentId: Overload:Egami.SystemDrawing.Imaging.FrameDimension.Resolution
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Imaging.FrameDimension.Resolution
+  nameWithType: FrameDimension.Resolution
+- uid: Egami.SystemDrawing.Imaging.FrameDimension.Time
+  name: Time
+  href: api/Egami.SystemDrawing.Imaging.FrameDimension.html#Egami_SystemDrawing_Imaging_FrameDimension_Time
+  commentId: P:Egami.SystemDrawing.Imaging.FrameDimension.Time
+  fullName: Egami.SystemDrawing.Imaging.FrameDimension.Time
+  nameWithType: FrameDimension.Time
+- uid: Egami.SystemDrawing.Imaging.FrameDimension.Time*
+  name: Time
+  href: api/Egami.SystemDrawing.Imaging.FrameDimension.html#Egami_SystemDrawing_Imaging_FrameDimension_Time_
+  commentId: Overload:Egami.SystemDrawing.Imaging.FrameDimension.Time
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Imaging.FrameDimension.Time
+  nameWithType: FrameDimension.Time
+- uid: Egami.SystemDrawing.Imaging.FrameDimension.ToString
+  name: ToString()
+  href: api/Egami.SystemDrawing.Imaging.FrameDimension.html#Egami_SystemDrawing_Imaging_FrameDimension_ToString
+  commentId: M:Egami.SystemDrawing.Imaging.FrameDimension.ToString
+  fullName: Egami.SystemDrawing.Imaging.FrameDimension.ToString()
+  nameWithType: FrameDimension.ToString()
+- uid: Egami.SystemDrawing.Imaging.FrameDimension.ToString*
+  name: ToString
+  href: api/Egami.SystemDrawing.Imaging.FrameDimension.html#Egami_SystemDrawing_Imaging_FrameDimension_ToString_
+  commentId: Overload:Egami.SystemDrawing.Imaging.FrameDimension.ToString
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Imaging.FrameDimension.ToString
+  nameWithType: FrameDimension.ToString
+- uid: Egami.SystemDrawing.Imaging.ImageCodecFlags
+  name: ImageCodecFlags
+  href: api/Egami.SystemDrawing.Imaging.ImageCodecFlags.html
+  commentId: T:Egami.SystemDrawing.Imaging.ImageCodecFlags
+  fullName: Egami.SystemDrawing.Imaging.ImageCodecFlags
+  nameWithType: ImageCodecFlags
+- uid: Egami.SystemDrawing.Imaging.ImageCodecFlags.BlockingDecode
+  name: BlockingDecode
+  href: api/Egami.SystemDrawing.Imaging.ImageCodecFlags.html#Egami_SystemDrawing_Imaging_ImageCodecFlags_BlockingDecode
+  commentId: F:Egami.SystemDrawing.Imaging.ImageCodecFlags.BlockingDecode
+  fullName: Egami.SystemDrawing.Imaging.ImageCodecFlags.BlockingDecode
+  nameWithType: ImageCodecFlags.BlockingDecode
+- uid: Egami.SystemDrawing.Imaging.ImageCodecFlags.Builtin
+  name: Builtin
+  href: api/Egami.SystemDrawing.Imaging.ImageCodecFlags.html#Egami_SystemDrawing_Imaging_ImageCodecFlags_Builtin
+  commentId: F:Egami.SystemDrawing.Imaging.ImageCodecFlags.Builtin
+  fullName: Egami.SystemDrawing.Imaging.ImageCodecFlags.Builtin
+  nameWithType: ImageCodecFlags.Builtin
+- uid: Egami.SystemDrawing.Imaging.ImageCodecFlags.Decoder
+  name: Decoder
+  href: api/Egami.SystemDrawing.Imaging.ImageCodecFlags.html#Egami_SystemDrawing_Imaging_ImageCodecFlags_Decoder
+  commentId: F:Egami.SystemDrawing.Imaging.ImageCodecFlags.Decoder
+  fullName: Egami.SystemDrawing.Imaging.ImageCodecFlags.Decoder
+  nameWithType: ImageCodecFlags.Decoder
+- uid: Egami.SystemDrawing.Imaging.ImageCodecFlags.Encoder
+  name: Encoder
+  href: api/Egami.SystemDrawing.Imaging.ImageCodecFlags.html#Egami_SystemDrawing_Imaging_ImageCodecFlags_Encoder
+  commentId: F:Egami.SystemDrawing.Imaging.ImageCodecFlags.Encoder
+  fullName: Egami.SystemDrawing.Imaging.ImageCodecFlags.Encoder
+  nameWithType: ImageCodecFlags.Encoder
+- uid: Egami.SystemDrawing.Imaging.ImageCodecFlags.SeekableEncode
+  name: SeekableEncode
+  href: api/Egami.SystemDrawing.Imaging.ImageCodecFlags.html#Egami_SystemDrawing_Imaging_ImageCodecFlags_SeekableEncode
+  commentId: F:Egami.SystemDrawing.Imaging.ImageCodecFlags.SeekableEncode
+  fullName: Egami.SystemDrawing.Imaging.ImageCodecFlags.SeekableEncode
+  nameWithType: ImageCodecFlags.SeekableEncode
+- uid: Egami.SystemDrawing.Imaging.ImageCodecFlags.SupportBitmap
+  name: SupportBitmap
+  href: api/Egami.SystemDrawing.Imaging.ImageCodecFlags.html#Egami_SystemDrawing_Imaging_ImageCodecFlags_SupportBitmap
+  commentId: F:Egami.SystemDrawing.Imaging.ImageCodecFlags.SupportBitmap
+  fullName: Egami.SystemDrawing.Imaging.ImageCodecFlags.SupportBitmap
+  nameWithType: ImageCodecFlags.SupportBitmap
+- uid: Egami.SystemDrawing.Imaging.ImageCodecFlags.SupportVector
+  name: SupportVector
+  href: api/Egami.SystemDrawing.Imaging.ImageCodecFlags.html#Egami_SystemDrawing_Imaging_ImageCodecFlags_SupportVector
+  commentId: F:Egami.SystemDrawing.Imaging.ImageCodecFlags.SupportVector
+  fullName: Egami.SystemDrawing.Imaging.ImageCodecFlags.SupportVector
+  nameWithType: ImageCodecFlags.SupportVector
+- uid: Egami.SystemDrawing.Imaging.ImageCodecFlags.System
+  name: System
+  href: api/Egami.SystemDrawing.Imaging.ImageCodecFlags.html#Egami_SystemDrawing_Imaging_ImageCodecFlags_System
+  commentId: F:Egami.SystemDrawing.Imaging.ImageCodecFlags.System
+  fullName: Egami.SystemDrawing.Imaging.ImageCodecFlags.System
+  nameWithType: ImageCodecFlags.System
+- uid: Egami.SystemDrawing.Imaging.ImageCodecFlags.User
+  name: User
+  href: api/Egami.SystemDrawing.Imaging.ImageCodecFlags.html#Egami_SystemDrawing_Imaging_ImageCodecFlags_User
+  commentId: F:Egami.SystemDrawing.Imaging.ImageCodecFlags.User
+  fullName: Egami.SystemDrawing.Imaging.ImageCodecFlags.User
+  nameWithType: ImageCodecFlags.User
+- uid: Egami.SystemDrawing.Imaging.ImageCodecInfo
+  name: ImageCodecInfo
+  href: api/Egami.SystemDrawing.Imaging.ImageCodecInfo.html
+  commentId: T:Egami.SystemDrawing.Imaging.ImageCodecInfo
+  fullName: Egami.SystemDrawing.Imaging.ImageCodecInfo
+  nameWithType: ImageCodecInfo
+- uid: Egami.SystemDrawing.Imaging.ImageCodecInfo.Clsid
+  name: Clsid
+  href: api/Egami.SystemDrawing.Imaging.ImageCodecInfo.html#Egami_SystemDrawing_Imaging_ImageCodecInfo_Clsid
+  commentId: P:Egami.SystemDrawing.Imaging.ImageCodecInfo.Clsid
+  fullName: Egami.SystemDrawing.Imaging.ImageCodecInfo.Clsid
+  nameWithType: ImageCodecInfo.Clsid
+- uid: Egami.SystemDrawing.Imaging.ImageCodecInfo.Clsid*
+  name: Clsid
+  href: api/Egami.SystemDrawing.Imaging.ImageCodecInfo.html#Egami_SystemDrawing_Imaging_ImageCodecInfo_Clsid_
+  commentId: Overload:Egami.SystemDrawing.Imaging.ImageCodecInfo.Clsid
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Imaging.ImageCodecInfo.Clsid
+  nameWithType: ImageCodecInfo.Clsid
+- uid: Egami.SystemDrawing.Imaging.ImageCodecInfo.CodecName
+  name: CodecName
+  href: api/Egami.SystemDrawing.Imaging.ImageCodecInfo.html#Egami_SystemDrawing_Imaging_ImageCodecInfo_CodecName
+  commentId: P:Egami.SystemDrawing.Imaging.ImageCodecInfo.CodecName
+  fullName: Egami.SystemDrawing.Imaging.ImageCodecInfo.CodecName
+  nameWithType: ImageCodecInfo.CodecName
+- uid: Egami.SystemDrawing.Imaging.ImageCodecInfo.CodecName*
+  name: CodecName
+  href: api/Egami.SystemDrawing.Imaging.ImageCodecInfo.html#Egami_SystemDrawing_Imaging_ImageCodecInfo_CodecName_
+  commentId: Overload:Egami.SystemDrawing.Imaging.ImageCodecInfo.CodecName
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Imaging.ImageCodecInfo.CodecName
+  nameWithType: ImageCodecInfo.CodecName
+- uid: Egami.SystemDrawing.Imaging.ImageCodecInfo.DllName
+  name: DllName
+  href: api/Egami.SystemDrawing.Imaging.ImageCodecInfo.html#Egami_SystemDrawing_Imaging_ImageCodecInfo_DllName
+  commentId: P:Egami.SystemDrawing.Imaging.ImageCodecInfo.DllName
+  fullName: Egami.SystemDrawing.Imaging.ImageCodecInfo.DllName
+  nameWithType: ImageCodecInfo.DllName
+- uid: Egami.SystemDrawing.Imaging.ImageCodecInfo.DllName*
+  name: DllName
+  href: api/Egami.SystemDrawing.Imaging.ImageCodecInfo.html#Egami_SystemDrawing_Imaging_ImageCodecInfo_DllName_
+  commentId: Overload:Egami.SystemDrawing.Imaging.ImageCodecInfo.DllName
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Imaging.ImageCodecInfo.DllName
+  nameWithType: ImageCodecInfo.DllName
+- uid: Egami.SystemDrawing.Imaging.ImageCodecInfo.FilenameExtension
+  name: FilenameExtension
+  href: api/Egami.SystemDrawing.Imaging.ImageCodecInfo.html#Egami_SystemDrawing_Imaging_ImageCodecInfo_FilenameExtension
+  commentId: P:Egami.SystemDrawing.Imaging.ImageCodecInfo.FilenameExtension
+  fullName: Egami.SystemDrawing.Imaging.ImageCodecInfo.FilenameExtension
+  nameWithType: ImageCodecInfo.FilenameExtension
+- uid: Egami.SystemDrawing.Imaging.ImageCodecInfo.FilenameExtension*
+  name: FilenameExtension
+  href: api/Egami.SystemDrawing.Imaging.ImageCodecInfo.html#Egami_SystemDrawing_Imaging_ImageCodecInfo_FilenameExtension_
+  commentId: Overload:Egami.SystemDrawing.Imaging.ImageCodecInfo.FilenameExtension
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Imaging.ImageCodecInfo.FilenameExtension
+  nameWithType: ImageCodecInfo.FilenameExtension
+- uid: Egami.SystemDrawing.Imaging.ImageCodecInfo.Flags
+  name: Flags
+  href: api/Egami.SystemDrawing.Imaging.ImageCodecInfo.html#Egami_SystemDrawing_Imaging_ImageCodecInfo_Flags
+  commentId: P:Egami.SystemDrawing.Imaging.ImageCodecInfo.Flags
+  fullName: Egami.SystemDrawing.Imaging.ImageCodecInfo.Flags
+  nameWithType: ImageCodecInfo.Flags
+- uid: Egami.SystemDrawing.Imaging.ImageCodecInfo.Flags*
+  name: Flags
+  href: api/Egami.SystemDrawing.Imaging.ImageCodecInfo.html#Egami_SystemDrawing_Imaging_ImageCodecInfo_Flags_
+  commentId: Overload:Egami.SystemDrawing.Imaging.ImageCodecInfo.Flags
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Imaging.ImageCodecInfo.Flags
+  nameWithType: ImageCodecInfo.Flags
+- uid: Egami.SystemDrawing.Imaging.ImageCodecInfo.FormatDescription
+  name: FormatDescription
+  href: api/Egami.SystemDrawing.Imaging.ImageCodecInfo.html#Egami_SystemDrawing_Imaging_ImageCodecInfo_FormatDescription
+  commentId: P:Egami.SystemDrawing.Imaging.ImageCodecInfo.FormatDescription
+  fullName: Egami.SystemDrawing.Imaging.ImageCodecInfo.FormatDescription
+  nameWithType: ImageCodecInfo.FormatDescription
+- uid: Egami.SystemDrawing.Imaging.ImageCodecInfo.FormatDescription*
+  name: FormatDescription
+  href: api/Egami.SystemDrawing.Imaging.ImageCodecInfo.html#Egami_SystemDrawing_Imaging_ImageCodecInfo_FormatDescription_
+  commentId: Overload:Egami.SystemDrawing.Imaging.ImageCodecInfo.FormatDescription
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Imaging.ImageCodecInfo.FormatDescription
+  nameWithType: ImageCodecInfo.FormatDescription
+- uid: Egami.SystemDrawing.Imaging.ImageCodecInfo.FormatID
+  name: FormatID
+  href: api/Egami.SystemDrawing.Imaging.ImageCodecInfo.html#Egami_SystemDrawing_Imaging_ImageCodecInfo_FormatID
+  commentId: P:Egami.SystemDrawing.Imaging.ImageCodecInfo.FormatID
+  fullName: Egami.SystemDrawing.Imaging.ImageCodecInfo.FormatID
+  nameWithType: ImageCodecInfo.FormatID
+- uid: Egami.SystemDrawing.Imaging.ImageCodecInfo.FormatID*
+  name: FormatID
+  href: api/Egami.SystemDrawing.Imaging.ImageCodecInfo.html#Egami_SystemDrawing_Imaging_ImageCodecInfo_FormatID_
+  commentId: Overload:Egami.SystemDrawing.Imaging.ImageCodecInfo.FormatID
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Imaging.ImageCodecInfo.FormatID
+  nameWithType: ImageCodecInfo.FormatID
+- uid: Egami.SystemDrawing.Imaging.ImageCodecInfo.GetImageDecoders
+  name: GetImageDecoders()
+  href: api/Egami.SystemDrawing.Imaging.ImageCodecInfo.html#Egami_SystemDrawing_Imaging_ImageCodecInfo_GetImageDecoders
+  commentId: M:Egami.SystemDrawing.Imaging.ImageCodecInfo.GetImageDecoders
+  fullName: Egami.SystemDrawing.Imaging.ImageCodecInfo.GetImageDecoders()
+  nameWithType: ImageCodecInfo.GetImageDecoders()
+- uid: Egami.SystemDrawing.Imaging.ImageCodecInfo.GetImageDecoders*
+  name: GetImageDecoders
+  href: api/Egami.SystemDrawing.Imaging.ImageCodecInfo.html#Egami_SystemDrawing_Imaging_ImageCodecInfo_GetImageDecoders_
+  commentId: Overload:Egami.SystemDrawing.Imaging.ImageCodecInfo.GetImageDecoders
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Imaging.ImageCodecInfo.GetImageDecoders
+  nameWithType: ImageCodecInfo.GetImageDecoders
+- uid: Egami.SystemDrawing.Imaging.ImageCodecInfo.GetImageEncoders
+  name: GetImageEncoders()
+  href: api/Egami.SystemDrawing.Imaging.ImageCodecInfo.html#Egami_SystemDrawing_Imaging_ImageCodecInfo_GetImageEncoders
+  commentId: M:Egami.SystemDrawing.Imaging.ImageCodecInfo.GetImageEncoders
+  fullName: Egami.SystemDrawing.Imaging.ImageCodecInfo.GetImageEncoders()
+  nameWithType: ImageCodecInfo.GetImageEncoders()
+- uid: Egami.SystemDrawing.Imaging.ImageCodecInfo.GetImageEncoders*
+  name: GetImageEncoders
+  href: api/Egami.SystemDrawing.Imaging.ImageCodecInfo.html#Egami_SystemDrawing_Imaging_ImageCodecInfo_GetImageEncoders_
+  commentId: Overload:Egami.SystemDrawing.Imaging.ImageCodecInfo.GetImageEncoders
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Imaging.ImageCodecInfo.GetImageEncoders
+  nameWithType: ImageCodecInfo.GetImageEncoders
+- uid: Egami.SystemDrawing.Imaging.ImageCodecInfo.MimeType
+  name: MimeType
+  href: api/Egami.SystemDrawing.Imaging.ImageCodecInfo.html#Egami_SystemDrawing_Imaging_ImageCodecInfo_MimeType
+  commentId: P:Egami.SystemDrawing.Imaging.ImageCodecInfo.MimeType
+  fullName: Egami.SystemDrawing.Imaging.ImageCodecInfo.MimeType
+  nameWithType: ImageCodecInfo.MimeType
+- uid: Egami.SystemDrawing.Imaging.ImageCodecInfo.MimeType*
+  name: MimeType
+  href: api/Egami.SystemDrawing.Imaging.ImageCodecInfo.html#Egami_SystemDrawing_Imaging_ImageCodecInfo_MimeType_
+  commentId: Overload:Egami.SystemDrawing.Imaging.ImageCodecInfo.MimeType
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Imaging.ImageCodecInfo.MimeType
+  nameWithType: ImageCodecInfo.MimeType
+- uid: Egami.SystemDrawing.Imaging.ImageCodecInfo.SignatureMasks
+  name: SignatureMasks
+  href: api/Egami.SystemDrawing.Imaging.ImageCodecInfo.html#Egami_SystemDrawing_Imaging_ImageCodecInfo_SignatureMasks
+  commentId: P:Egami.SystemDrawing.Imaging.ImageCodecInfo.SignatureMasks
+  fullName: Egami.SystemDrawing.Imaging.ImageCodecInfo.SignatureMasks
+  nameWithType: ImageCodecInfo.SignatureMasks
+- uid: Egami.SystemDrawing.Imaging.ImageCodecInfo.SignatureMasks*
+  name: SignatureMasks
+  href: api/Egami.SystemDrawing.Imaging.ImageCodecInfo.html#Egami_SystemDrawing_Imaging_ImageCodecInfo_SignatureMasks_
+  commentId: Overload:Egami.SystemDrawing.Imaging.ImageCodecInfo.SignatureMasks
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Imaging.ImageCodecInfo.SignatureMasks
+  nameWithType: ImageCodecInfo.SignatureMasks
+- uid: Egami.SystemDrawing.Imaging.ImageCodecInfo.SignaturePatterns
+  name: SignaturePatterns
+  href: api/Egami.SystemDrawing.Imaging.ImageCodecInfo.html#Egami_SystemDrawing_Imaging_ImageCodecInfo_SignaturePatterns
+  commentId: P:Egami.SystemDrawing.Imaging.ImageCodecInfo.SignaturePatterns
+  fullName: Egami.SystemDrawing.Imaging.ImageCodecInfo.SignaturePatterns
+  nameWithType: ImageCodecInfo.SignaturePatterns
+- uid: Egami.SystemDrawing.Imaging.ImageCodecInfo.SignaturePatterns*
+  name: SignaturePatterns
+  href: api/Egami.SystemDrawing.Imaging.ImageCodecInfo.html#Egami_SystemDrawing_Imaging_ImageCodecInfo_SignaturePatterns_
+  commentId: Overload:Egami.SystemDrawing.Imaging.ImageCodecInfo.SignaturePatterns
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Imaging.ImageCodecInfo.SignaturePatterns
+  nameWithType: ImageCodecInfo.SignaturePatterns
+- uid: Egami.SystemDrawing.Imaging.ImageCodecInfo.Version
+  name: Version
+  href: api/Egami.SystemDrawing.Imaging.ImageCodecInfo.html#Egami_SystemDrawing_Imaging_ImageCodecInfo_Version
+  commentId: P:Egami.SystemDrawing.Imaging.ImageCodecInfo.Version
+  fullName: Egami.SystemDrawing.Imaging.ImageCodecInfo.Version
+  nameWithType: ImageCodecInfo.Version
+- uid: Egami.SystemDrawing.Imaging.ImageCodecInfo.Version*
+  name: Version
+  href: api/Egami.SystemDrawing.Imaging.ImageCodecInfo.html#Egami_SystemDrawing_Imaging_ImageCodecInfo_Version_
+  commentId: Overload:Egami.SystemDrawing.Imaging.ImageCodecInfo.Version
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Imaging.ImageCodecInfo.Version
+  nameWithType: ImageCodecInfo.Version
+- uid: Egami.SystemDrawing.Imaging.ImageFlags
+  name: ImageFlags
+  href: api/Egami.SystemDrawing.Imaging.ImageFlags.html
+  commentId: T:Egami.SystemDrawing.Imaging.ImageFlags
+  fullName: Egami.SystemDrawing.Imaging.ImageFlags
+  nameWithType: ImageFlags
+- uid: Egami.SystemDrawing.Imaging.ImageFlags.Caching
+  name: Caching
+  href: api/Egami.SystemDrawing.Imaging.ImageFlags.html#Egami_SystemDrawing_Imaging_ImageFlags_Caching
+  commentId: F:Egami.SystemDrawing.Imaging.ImageFlags.Caching
+  fullName: Egami.SystemDrawing.Imaging.ImageFlags.Caching
+  nameWithType: ImageFlags.Caching
+- uid: Egami.SystemDrawing.Imaging.ImageFlags.ColorSpaceCmyk
+  name: ColorSpaceCmyk
+  href: api/Egami.SystemDrawing.Imaging.ImageFlags.html#Egami_SystemDrawing_Imaging_ImageFlags_ColorSpaceCmyk
+  commentId: F:Egami.SystemDrawing.Imaging.ImageFlags.ColorSpaceCmyk
+  fullName: Egami.SystemDrawing.Imaging.ImageFlags.ColorSpaceCmyk
+  nameWithType: ImageFlags.ColorSpaceCmyk
+- uid: Egami.SystemDrawing.Imaging.ImageFlags.ColorSpaceGray
+  name: ColorSpaceGray
+  href: api/Egami.SystemDrawing.Imaging.ImageFlags.html#Egami_SystemDrawing_Imaging_ImageFlags_ColorSpaceGray
+  commentId: F:Egami.SystemDrawing.Imaging.ImageFlags.ColorSpaceGray
+  fullName: Egami.SystemDrawing.Imaging.ImageFlags.ColorSpaceGray
+  nameWithType: ImageFlags.ColorSpaceGray
+- uid: Egami.SystemDrawing.Imaging.ImageFlags.ColorSpaceRgb
+  name: ColorSpaceRgb
+  href: api/Egami.SystemDrawing.Imaging.ImageFlags.html#Egami_SystemDrawing_Imaging_ImageFlags_ColorSpaceRgb
+  commentId: F:Egami.SystemDrawing.Imaging.ImageFlags.ColorSpaceRgb
+  fullName: Egami.SystemDrawing.Imaging.ImageFlags.ColorSpaceRgb
+  nameWithType: ImageFlags.ColorSpaceRgb
+- uid: Egami.SystemDrawing.Imaging.ImageFlags.ColorSpaceYcbcr
+  name: ColorSpaceYcbcr
+  href: api/Egami.SystemDrawing.Imaging.ImageFlags.html#Egami_SystemDrawing_Imaging_ImageFlags_ColorSpaceYcbcr
+  commentId: F:Egami.SystemDrawing.Imaging.ImageFlags.ColorSpaceYcbcr
+  fullName: Egami.SystemDrawing.Imaging.ImageFlags.ColorSpaceYcbcr
+  nameWithType: ImageFlags.ColorSpaceYcbcr
+- uid: Egami.SystemDrawing.Imaging.ImageFlags.ColorSpaceYcck
+  name: ColorSpaceYcck
+  href: api/Egami.SystemDrawing.Imaging.ImageFlags.html#Egami_SystemDrawing_Imaging_ImageFlags_ColorSpaceYcck
+  commentId: F:Egami.SystemDrawing.Imaging.ImageFlags.ColorSpaceYcck
+  fullName: Egami.SystemDrawing.Imaging.ImageFlags.ColorSpaceYcck
+  nameWithType: ImageFlags.ColorSpaceYcck
+- uid: Egami.SystemDrawing.Imaging.ImageFlags.HasAlpha
+  name: HasAlpha
+  href: api/Egami.SystemDrawing.Imaging.ImageFlags.html#Egami_SystemDrawing_Imaging_ImageFlags_HasAlpha
+  commentId: F:Egami.SystemDrawing.Imaging.ImageFlags.HasAlpha
+  fullName: Egami.SystemDrawing.Imaging.ImageFlags.HasAlpha
+  nameWithType: ImageFlags.HasAlpha
+- uid: Egami.SystemDrawing.Imaging.ImageFlags.HasRealDpi
+  name: HasRealDpi
+  href: api/Egami.SystemDrawing.Imaging.ImageFlags.html#Egami_SystemDrawing_Imaging_ImageFlags_HasRealDpi
+  commentId: F:Egami.SystemDrawing.Imaging.ImageFlags.HasRealDpi
+  fullName: Egami.SystemDrawing.Imaging.ImageFlags.HasRealDpi
+  nameWithType: ImageFlags.HasRealDpi
+- uid: Egami.SystemDrawing.Imaging.ImageFlags.HasRealPixelSize
+  name: HasRealPixelSize
+  href: api/Egami.SystemDrawing.Imaging.ImageFlags.html#Egami_SystemDrawing_Imaging_ImageFlags_HasRealPixelSize
+  commentId: F:Egami.SystemDrawing.Imaging.ImageFlags.HasRealPixelSize
+  fullName: Egami.SystemDrawing.Imaging.ImageFlags.HasRealPixelSize
+  nameWithType: ImageFlags.HasRealPixelSize
+- uid: Egami.SystemDrawing.Imaging.ImageFlags.HasTranslucent
+  name: HasTranslucent
+  href: api/Egami.SystemDrawing.Imaging.ImageFlags.html#Egami_SystemDrawing_Imaging_ImageFlags_HasTranslucent
+  commentId: F:Egami.SystemDrawing.Imaging.ImageFlags.HasTranslucent
+  fullName: Egami.SystemDrawing.Imaging.ImageFlags.HasTranslucent
+  nameWithType: ImageFlags.HasTranslucent
+- uid: Egami.SystemDrawing.Imaging.ImageFlags.None
+  name: None
+  href: api/Egami.SystemDrawing.Imaging.ImageFlags.html#Egami_SystemDrawing_Imaging_ImageFlags_None
+  commentId: F:Egami.SystemDrawing.Imaging.ImageFlags.None
+  fullName: Egami.SystemDrawing.Imaging.ImageFlags.None
+  nameWithType: ImageFlags.None
+- uid: Egami.SystemDrawing.Imaging.ImageFlags.PartiallyScalable
+  name: PartiallyScalable
+  href: api/Egami.SystemDrawing.Imaging.ImageFlags.html#Egami_SystemDrawing_Imaging_ImageFlags_PartiallyScalable
+  commentId: F:Egami.SystemDrawing.Imaging.ImageFlags.PartiallyScalable
+  fullName: Egami.SystemDrawing.Imaging.ImageFlags.PartiallyScalable
+  nameWithType: ImageFlags.PartiallyScalable
+- uid: Egami.SystemDrawing.Imaging.ImageFlags.ReadOnly
+  name: ReadOnly
+  href: api/Egami.SystemDrawing.Imaging.ImageFlags.html#Egami_SystemDrawing_Imaging_ImageFlags_ReadOnly
+  commentId: F:Egami.SystemDrawing.Imaging.ImageFlags.ReadOnly
+  fullName: Egami.SystemDrawing.Imaging.ImageFlags.ReadOnly
+  nameWithType: ImageFlags.ReadOnly
+- uid: Egami.SystemDrawing.Imaging.ImageFlags.Scalable
+  name: Scalable
+  href: api/Egami.SystemDrawing.Imaging.ImageFlags.html#Egami_SystemDrawing_Imaging_ImageFlags_Scalable
+  commentId: F:Egami.SystemDrawing.Imaging.ImageFlags.Scalable
+  fullName: Egami.SystemDrawing.Imaging.ImageFlags.Scalable
+  nameWithType: ImageFlags.Scalable
+- uid: Egami.SystemDrawing.Imaging.ImageFormat
+  name: ImageFormat
+  href: api/Egami.SystemDrawing.Imaging.ImageFormat.html
+  commentId: T:Egami.SystemDrawing.Imaging.ImageFormat
+  fullName: Egami.SystemDrawing.Imaging.ImageFormat
+  nameWithType: ImageFormat
+- uid: Egami.SystemDrawing.Imaging.ImageFormat.#ctor(System.Guid)
+  name: ImageFormat(Guid)
+  href: api/Egami.SystemDrawing.Imaging.ImageFormat.html#Egami_SystemDrawing_Imaging_ImageFormat__ctor_System_Guid_
+  commentId: M:Egami.SystemDrawing.Imaging.ImageFormat.#ctor(System.Guid)
+  name.vb: New(Guid)
+  fullName: Egami.SystemDrawing.Imaging.ImageFormat.ImageFormat(System.Guid)
+  fullName.vb: Egami.SystemDrawing.Imaging.ImageFormat.New(System.Guid)
+  nameWithType: ImageFormat.ImageFormat(Guid)
+  nameWithType.vb: ImageFormat.New(Guid)
+- uid: Egami.SystemDrawing.Imaging.ImageFormat.#ctor*
+  name: ImageFormat
+  href: api/Egami.SystemDrawing.Imaging.ImageFormat.html#Egami_SystemDrawing_Imaging_ImageFormat__ctor_
+  commentId: Overload:Egami.SystemDrawing.Imaging.ImageFormat.#ctor
+  isSpec: "True"
+  name.vb: New
+  fullName: Egami.SystemDrawing.Imaging.ImageFormat.ImageFormat
+  fullName.vb: Egami.SystemDrawing.Imaging.ImageFormat.New
+  nameWithType: ImageFormat.ImageFormat
+  nameWithType.vb: ImageFormat.New
+- uid: Egami.SystemDrawing.Imaging.ImageFormat.Bmp
+  name: Bmp
+  href: api/Egami.SystemDrawing.Imaging.ImageFormat.html#Egami_SystemDrawing_Imaging_ImageFormat_Bmp
+  commentId: P:Egami.SystemDrawing.Imaging.ImageFormat.Bmp
+  fullName: Egami.SystemDrawing.Imaging.ImageFormat.Bmp
+  nameWithType: ImageFormat.Bmp
+- uid: Egami.SystemDrawing.Imaging.ImageFormat.Bmp*
+  name: Bmp
+  href: api/Egami.SystemDrawing.Imaging.ImageFormat.html#Egami_SystemDrawing_Imaging_ImageFormat_Bmp_
+  commentId: Overload:Egami.SystemDrawing.Imaging.ImageFormat.Bmp
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Imaging.ImageFormat.Bmp
+  nameWithType: ImageFormat.Bmp
+- uid: Egami.SystemDrawing.Imaging.ImageFormat.Emf
+  name: Emf
+  href: api/Egami.SystemDrawing.Imaging.ImageFormat.html#Egami_SystemDrawing_Imaging_ImageFormat_Emf
+  commentId: P:Egami.SystemDrawing.Imaging.ImageFormat.Emf
+  fullName: Egami.SystemDrawing.Imaging.ImageFormat.Emf
+  nameWithType: ImageFormat.Emf
+- uid: Egami.SystemDrawing.Imaging.ImageFormat.Emf*
+  name: Emf
+  href: api/Egami.SystemDrawing.Imaging.ImageFormat.html#Egami_SystemDrawing_Imaging_ImageFormat_Emf_
+  commentId: Overload:Egami.SystemDrawing.Imaging.ImageFormat.Emf
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Imaging.ImageFormat.Emf
+  nameWithType: ImageFormat.Emf
+- uid: Egami.SystemDrawing.Imaging.ImageFormat.Equals(System.Object)
+  name: Equals(object?)
+  href: api/Egami.SystemDrawing.Imaging.ImageFormat.html#Egami_SystemDrawing_Imaging_ImageFormat_Equals_System_Object_
+  commentId: M:Egami.SystemDrawing.Imaging.ImageFormat.Equals(System.Object)
+  name.vb: Equals(Object)
+  fullName: Egami.SystemDrawing.Imaging.ImageFormat.Equals(object?)
+  fullName.vb: Egami.SystemDrawing.Imaging.ImageFormat.Equals(Object)
+  nameWithType: ImageFormat.Equals(object?)
+  nameWithType.vb: ImageFormat.Equals(Object)
+- uid: Egami.SystemDrawing.Imaging.ImageFormat.Equals*
+  name: Equals
+  href: api/Egami.SystemDrawing.Imaging.ImageFormat.html#Egami_SystemDrawing_Imaging_ImageFormat_Equals_
+  commentId: Overload:Egami.SystemDrawing.Imaging.ImageFormat.Equals
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Imaging.ImageFormat.Equals
+  nameWithType: ImageFormat.Equals
+- uid: Egami.SystemDrawing.Imaging.ImageFormat.Exif
+  name: Exif
+  href: api/Egami.SystemDrawing.Imaging.ImageFormat.html#Egami_SystemDrawing_Imaging_ImageFormat_Exif
+  commentId: P:Egami.SystemDrawing.Imaging.ImageFormat.Exif
+  fullName: Egami.SystemDrawing.Imaging.ImageFormat.Exif
+  nameWithType: ImageFormat.Exif
+- uid: Egami.SystemDrawing.Imaging.ImageFormat.Exif*
+  name: Exif
+  href: api/Egami.SystemDrawing.Imaging.ImageFormat.html#Egami_SystemDrawing_Imaging_ImageFormat_Exif_
+  commentId: Overload:Egami.SystemDrawing.Imaging.ImageFormat.Exif
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Imaging.ImageFormat.Exif
+  nameWithType: ImageFormat.Exif
+- uid: Egami.SystemDrawing.Imaging.ImageFormat.GetHashCode
+  name: GetHashCode()
+  href: api/Egami.SystemDrawing.Imaging.ImageFormat.html#Egami_SystemDrawing_Imaging_ImageFormat_GetHashCode
+  commentId: M:Egami.SystemDrawing.Imaging.ImageFormat.GetHashCode
+  fullName: Egami.SystemDrawing.Imaging.ImageFormat.GetHashCode()
+  nameWithType: ImageFormat.GetHashCode()
+- uid: Egami.SystemDrawing.Imaging.ImageFormat.GetHashCode*
+  name: GetHashCode
+  href: api/Egami.SystemDrawing.Imaging.ImageFormat.html#Egami_SystemDrawing_Imaging_ImageFormat_GetHashCode_
+  commentId: Overload:Egami.SystemDrawing.Imaging.ImageFormat.GetHashCode
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Imaging.ImageFormat.GetHashCode
+  nameWithType: ImageFormat.GetHashCode
+- uid: Egami.SystemDrawing.Imaging.ImageFormat.Gif
+  name: Gif
+  href: api/Egami.SystemDrawing.Imaging.ImageFormat.html#Egami_SystemDrawing_Imaging_ImageFormat_Gif
+  commentId: P:Egami.SystemDrawing.Imaging.ImageFormat.Gif
+  fullName: Egami.SystemDrawing.Imaging.ImageFormat.Gif
+  nameWithType: ImageFormat.Gif
+- uid: Egami.SystemDrawing.Imaging.ImageFormat.Gif*
+  name: Gif
+  href: api/Egami.SystemDrawing.Imaging.ImageFormat.html#Egami_SystemDrawing_Imaging_ImageFormat_Gif_
+  commentId: Overload:Egami.SystemDrawing.Imaging.ImageFormat.Gif
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Imaging.ImageFormat.Gif
+  nameWithType: ImageFormat.Gif
+- uid: Egami.SystemDrawing.Imaging.ImageFormat.Guid
+  name: Guid
+  href: api/Egami.SystemDrawing.Imaging.ImageFormat.html#Egami_SystemDrawing_Imaging_ImageFormat_Guid
+  commentId: P:Egami.SystemDrawing.Imaging.ImageFormat.Guid
+  fullName: Egami.SystemDrawing.Imaging.ImageFormat.Guid
+  nameWithType: ImageFormat.Guid
+- uid: Egami.SystemDrawing.Imaging.ImageFormat.Guid*
+  name: Guid
+  href: api/Egami.SystemDrawing.Imaging.ImageFormat.html#Egami_SystemDrawing_Imaging_ImageFormat_Guid_
+  commentId: Overload:Egami.SystemDrawing.Imaging.ImageFormat.Guid
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Imaging.ImageFormat.Guid
+  nameWithType: ImageFormat.Guid
+- uid: Egami.SystemDrawing.Imaging.ImageFormat.Heif
+  name: Heif
+  href: api/Egami.SystemDrawing.Imaging.ImageFormat.html#Egami_SystemDrawing_Imaging_ImageFormat_Heif
+  commentId: P:Egami.SystemDrawing.Imaging.ImageFormat.Heif
+  fullName: Egami.SystemDrawing.Imaging.ImageFormat.Heif
+  nameWithType: ImageFormat.Heif
+- uid: Egami.SystemDrawing.Imaging.ImageFormat.Heif*
+  name: Heif
+  href: api/Egami.SystemDrawing.Imaging.ImageFormat.html#Egami_SystemDrawing_Imaging_ImageFormat_Heif_
+  commentId: Overload:Egami.SystemDrawing.Imaging.ImageFormat.Heif
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Imaging.ImageFormat.Heif
+  nameWithType: ImageFormat.Heif
+- uid: Egami.SystemDrawing.Imaging.ImageFormat.Icon
+  name: Icon
+  href: api/Egami.SystemDrawing.Imaging.ImageFormat.html#Egami_SystemDrawing_Imaging_ImageFormat_Icon
+  commentId: P:Egami.SystemDrawing.Imaging.ImageFormat.Icon
+  fullName: Egami.SystemDrawing.Imaging.ImageFormat.Icon
+  nameWithType: ImageFormat.Icon
+- uid: Egami.SystemDrawing.Imaging.ImageFormat.Icon*
+  name: Icon
+  href: api/Egami.SystemDrawing.Imaging.ImageFormat.html#Egami_SystemDrawing_Imaging_ImageFormat_Icon_
+  commentId: Overload:Egami.SystemDrawing.Imaging.ImageFormat.Icon
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Imaging.ImageFormat.Icon
+  nameWithType: ImageFormat.Icon
+- uid: Egami.SystemDrawing.Imaging.ImageFormat.Jpeg
+  name: Jpeg
+  href: api/Egami.SystemDrawing.Imaging.ImageFormat.html#Egami_SystemDrawing_Imaging_ImageFormat_Jpeg
+  commentId: P:Egami.SystemDrawing.Imaging.ImageFormat.Jpeg
+  fullName: Egami.SystemDrawing.Imaging.ImageFormat.Jpeg
+  nameWithType: ImageFormat.Jpeg
+- uid: Egami.SystemDrawing.Imaging.ImageFormat.Jpeg*
+  name: Jpeg
+  href: api/Egami.SystemDrawing.Imaging.ImageFormat.html#Egami_SystemDrawing_Imaging_ImageFormat_Jpeg_
+  commentId: Overload:Egami.SystemDrawing.Imaging.ImageFormat.Jpeg
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Imaging.ImageFormat.Jpeg
+  nameWithType: ImageFormat.Jpeg
+- uid: Egami.SystemDrawing.Imaging.ImageFormat.MemoryBmp
+  name: MemoryBmp
+  href: api/Egami.SystemDrawing.Imaging.ImageFormat.html#Egami_SystemDrawing_Imaging_ImageFormat_MemoryBmp
+  commentId: P:Egami.SystemDrawing.Imaging.ImageFormat.MemoryBmp
+  fullName: Egami.SystemDrawing.Imaging.ImageFormat.MemoryBmp
+  nameWithType: ImageFormat.MemoryBmp
+- uid: Egami.SystemDrawing.Imaging.ImageFormat.MemoryBmp*
+  name: MemoryBmp
+  href: api/Egami.SystemDrawing.Imaging.ImageFormat.html#Egami_SystemDrawing_Imaging_ImageFormat_MemoryBmp_
+  commentId: Overload:Egami.SystemDrawing.Imaging.ImageFormat.MemoryBmp
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Imaging.ImageFormat.MemoryBmp
+  nameWithType: ImageFormat.MemoryBmp
+- uid: Egami.SystemDrawing.Imaging.ImageFormat.Png
+  name: Png
+  href: api/Egami.SystemDrawing.Imaging.ImageFormat.html#Egami_SystemDrawing_Imaging_ImageFormat_Png
+  commentId: P:Egami.SystemDrawing.Imaging.ImageFormat.Png
+  fullName: Egami.SystemDrawing.Imaging.ImageFormat.Png
+  nameWithType: ImageFormat.Png
+- uid: Egami.SystemDrawing.Imaging.ImageFormat.Png*
+  name: Png
+  href: api/Egami.SystemDrawing.Imaging.ImageFormat.html#Egami_SystemDrawing_Imaging_ImageFormat_Png_
+  commentId: Overload:Egami.SystemDrawing.Imaging.ImageFormat.Png
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Imaging.ImageFormat.Png
+  nameWithType: ImageFormat.Png
+- uid: Egami.SystemDrawing.Imaging.ImageFormat.Tiff
+  name: Tiff
+  href: api/Egami.SystemDrawing.Imaging.ImageFormat.html#Egami_SystemDrawing_Imaging_ImageFormat_Tiff
+  commentId: P:Egami.SystemDrawing.Imaging.ImageFormat.Tiff
+  fullName: Egami.SystemDrawing.Imaging.ImageFormat.Tiff
+  nameWithType: ImageFormat.Tiff
+- uid: Egami.SystemDrawing.Imaging.ImageFormat.Tiff*
+  name: Tiff
+  href: api/Egami.SystemDrawing.Imaging.ImageFormat.html#Egami_SystemDrawing_Imaging_ImageFormat_Tiff_
+  commentId: Overload:Egami.SystemDrawing.Imaging.ImageFormat.Tiff
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Imaging.ImageFormat.Tiff
+  nameWithType: ImageFormat.Tiff
+- uid: Egami.SystemDrawing.Imaging.ImageFormat.ToString
+  name: ToString()
+  href: api/Egami.SystemDrawing.Imaging.ImageFormat.html#Egami_SystemDrawing_Imaging_ImageFormat_ToString
+  commentId: M:Egami.SystemDrawing.Imaging.ImageFormat.ToString
+  fullName: Egami.SystemDrawing.Imaging.ImageFormat.ToString()
+  nameWithType: ImageFormat.ToString()
+- uid: Egami.SystemDrawing.Imaging.ImageFormat.ToString*
+  name: ToString
+  href: api/Egami.SystemDrawing.Imaging.ImageFormat.html#Egami_SystemDrawing_Imaging_ImageFormat_ToString_
+  commentId: Overload:Egami.SystemDrawing.Imaging.ImageFormat.ToString
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Imaging.ImageFormat.ToString
+  nameWithType: ImageFormat.ToString
+- uid: Egami.SystemDrawing.Imaging.ImageFormat.Webp
+  name: Webp
+  href: api/Egami.SystemDrawing.Imaging.ImageFormat.html#Egami_SystemDrawing_Imaging_ImageFormat_Webp
+  commentId: P:Egami.SystemDrawing.Imaging.ImageFormat.Webp
+  fullName: Egami.SystemDrawing.Imaging.ImageFormat.Webp
+  nameWithType: ImageFormat.Webp
+- uid: Egami.SystemDrawing.Imaging.ImageFormat.Webp*
+  name: Webp
+  href: api/Egami.SystemDrawing.Imaging.ImageFormat.html#Egami_SystemDrawing_Imaging_ImageFormat_Webp_
+  commentId: Overload:Egami.SystemDrawing.Imaging.ImageFormat.Webp
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Imaging.ImageFormat.Webp
+  nameWithType: ImageFormat.Webp
+- uid: Egami.SystemDrawing.Imaging.ImageFormat.Wmf
+  name: Wmf
+  href: api/Egami.SystemDrawing.Imaging.ImageFormat.html#Egami_SystemDrawing_Imaging_ImageFormat_Wmf
+  commentId: P:Egami.SystemDrawing.Imaging.ImageFormat.Wmf
+  fullName: Egami.SystemDrawing.Imaging.ImageFormat.Wmf
+  nameWithType: ImageFormat.Wmf
+- uid: Egami.SystemDrawing.Imaging.ImageFormat.Wmf*
+  name: Wmf
+  href: api/Egami.SystemDrawing.Imaging.ImageFormat.html#Egami_SystemDrawing_Imaging_ImageFormat_Wmf_
+  commentId: Overload:Egami.SystemDrawing.Imaging.ImageFormat.Wmf
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Imaging.ImageFormat.Wmf
+  nameWithType: ImageFormat.Wmf
+- uid: Egami.SystemDrawing.Imaging.ImageLockMode
+  name: ImageLockMode
+  href: api/Egami.SystemDrawing.Imaging.ImageLockMode.html
+  commentId: T:Egami.SystemDrawing.Imaging.ImageLockMode
+  fullName: Egami.SystemDrawing.Imaging.ImageLockMode
+  nameWithType: ImageLockMode
+- uid: Egami.SystemDrawing.Imaging.ImageLockMode.ReadOnly
+  name: ReadOnly
+  href: api/Egami.SystemDrawing.Imaging.ImageLockMode.html#Egami_SystemDrawing_Imaging_ImageLockMode_ReadOnly
+  commentId: F:Egami.SystemDrawing.Imaging.ImageLockMode.ReadOnly
+  fullName: Egami.SystemDrawing.Imaging.ImageLockMode.ReadOnly
+  nameWithType: ImageLockMode.ReadOnly
+- uid: Egami.SystemDrawing.Imaging.ImageLockMode.ReadWrite
+  name: ReadWrite
+  href: api/Egami.SystemDrawing.Imaging.ImageLockMode.html#Egami_SystemDrawing_Imaging_ImageLockMode_ReadWrite
+  commentId: F:Egami.SystemDrawing.Imaging.ImageLockMode.ReadWrite
+  fullName: Egami.SystemDrawing.Imaging.ImageLockMode.ReadWrite
+  nameWithType: ImageLockMode.ReadWrite
+- uid: Egami.SystemDrawing.Imaging.ImageLockMode.UserInputBuffer
+  name: UserInputBuffer
+  href: api/Egami.SystemDrawing.Imaging.ImageLockMode.html#Egami_SystemDrawing_Imaging_ImageLockMode_UserInputBuffer
+  commentId: F:Egami.SystemDrawing.Imaging.ImageLockMode.UserInputBuffer
+  fullName: Egami.SystemDrawing.Imaging.ImageLockMode.UserInputBuffer
+  nameWithType: ImageLockMode.UserInputBuffer
+- uid: Egami.SystemDrawing.Imaging.ImageLockMode.WriteOnly
+  name: WriteOnly
+  href: api/Egami.SystemDrawing.Imaging.ImageLockMode.html#Egami_SystemDrawing_Imaging_ImageLockMode_WriteOnly
+  commentId: F:Egami.SystemDrawing.Imaging.ImageLockMode.WriteOnly
+  fullName: Egami.SystemDrawing.Imaging.ImageLockMode.WriteOnly
+  nameWithType: ImageLockMode.WriteOnly
+- uid: Egami.SystemDrawing.Imaging.PaletteFlags
+  name: PaletteFlags
+  href: api/Egami.SystemDrawing.Imaging.PaletteFlags.html
+  commentId: T:Egami.SystemDrawing.Imaging.PaletteFlags
+  fullName: Egami.SystemDrawing.Imaging.PaletteFlags
+  nameWithType: PaletteFlags
+- uid: Egami.SystemDrawing.Imaging.PaletteFlags.GrayScale
+  name: GrayScale
+  href: api/Egami.SystemDrawing.Imaging.PaletteFlags.html#Egami_SystemDrawing_Imaging_PaletteFlags_GrayScale
+  commentId: F:Egami.SystemDrawing.Imaging.PaletteFlags.GrayScale
+  fullName: Egami.SystemDrawing.Imaging.PaletteFlags.GrayScale
+  nameWithType: PaletteFlags.GrayScale
+- uid: Egami.SystemDrawing.Imaging.PaletteFlags.Halftone
+  name: Halftone
+  href: api/Egami.SystemDrawing.Imaging.PaletteFlags.html#Egami_SystemDrawing_Imaging_PaletteFlags_Halftone
+  commentId: F:Egami.SystemDrawing.Imaging.PaletteFlags.Halftone
+  fullName: Egami.SystemDrawing.Imaging.PaletteFlags.Halftone
+  nameWithType: PaletteFlags.Halftone
+- uid: Egami.SystemDrawing.Imaging.PaletteFlags.HasAlpha
+  name: HasAlpha
+  href: api/Egami.SystemDrawing.Imaging.PaletteFlags.html#Egami_SystemDrawing_Imaging_PaletteFlags_HasAlpha
+  commentId: F:Egami.SystemDrawing.Imaging.PaletteFlags.HasAlpha
+  fullName: Egami.SystemDrawing.Imaging.PaletteFlags.HasAlpha
+  nameWithType: PaletteFlags.HasAlpha
+- uid: Egami.SystemDrawing.Imaging.PaletteType
+  name: PaletteType
+  href: api/Egami.SystemDrawing.Imaging.PaletteType.html
+  commentId: T:Egami.SystemDrawing.Imaging.PaletteType
+  fullName: Egami.SystemDrawing.Imaging.PaletteType
+  nameWithType: PaletteType
+- uid: Egami.SystemDrawing.Imaging.PaletteType.Custom
+  name: Custom
+  href: api/Egami.SystemDrawing.Imaging.PaletteType.html#Egami_SystemDrawing_Imaging_PaletteType_Custom
+  commentId: F:Egami.SystemDrawing.Imaging.PaletteType.Custom
+  fullName: Egami.SystemDrawing.Imaging.PaletteType.Custom
+  nameWithType: PaletteType.Custom
+- uid: Egami.SystemDrawing.Imaging.PaletteType.FixedBlackAndWhite
+  name: FixedBlackAndWhite
+  href: api/Egami.SystemDrawing.Imaging.PaletteType.html#Egami_SystemDrawing_Imaging_PaletteType_FixedBlackAndWhite
+  commentId: F:Egami.SystemDrawing.Imaging.PaletteType.FixedBlackAndWhite
+  fullName: Egami.SystemDrawing.Imaging.PaletteType.FixedBlackAndWhite
+  nameWithType: PaletteType.FixedBlackAndWhite
+- uid: Egami.SystemDrawing.Imaging.PaletteType.FixedHalftone125
+  name: FixedHalftone125
+  href: api/Egami.SystemDrawing.Imaging.PaletteType.html#Egami_SystemDrawing_Imaging_PaletteType_FixedHalftone125
+  commentId: F:Egami.SystemDrawing.Imaging.PaletteType.FixedHalftone125
+  fullName: Egami.SystemDrawing.Imaging.PaletteType.FixedHalftone125
+  nameWithType: PaletteType.FixedHalftone125
+- uid: Egami.SystemDrawing.Imaging.PaletteType.FixedHalftone216
+  name: FixedHalftone216
+  href: api/Egami.SystemDrawing.Imaging.PaletteType.html#Egami_SystemDrawing_Imaging_PaletteType_FixedHalftone216
+  commentId: F:Egami.SystemDrawing.Imaging.PaletteType.FixedHalftone216
+  fullName: Egami.SystemDrawing.Imaging.PaletteType.FixedHalftone216
+  nameWithType: PaletteType.FixedHalftone216
+- uid: Egami.SystemDrawing.Imaging.PaletteType.FixedHalftone252
+  name: FixedHalftone252
+  href: api/Egami.SystemDrawing.Imaging.PaletteType.html#Egami_SystemDrawing_Imaging_PaletteType_FixedHalftone252
+  commentId: F:Egami.SystemDrawing.Imaging.PaletteType.FixedHalftone252
+  fullName: Egami.SystemDrawing.Imaging.PaletteType.FixedHalftone252
+  nameWithType: PaletteType.FixedHalftone252
+- uid: Egami.SystemDrawing.Imaging.PaletteType.FixedHalftone256
+  name: FixedHalftone256
+  href: api/Egami.SystemDrawing.Imaging.PaletteType.html#Egami_SystemDrawing_Imaging_PaletteType_FixedHalftone256
+  commentId: F:Egami.SystemDrawing.Imaging.PaletteType.FixedHalftone256
+  fullName: Egami.SystemDrawing.Imaging.PaletteType.FixedHalftone256
+  nameWithType: PaletteType.FixedHalftone256
+- uid: Egami.SystemDrawing.Imaging.PaletteType.FixedHalftone27
+  name: FixedHalftone27
+  href: api/Egami.SystemDrawing.Imaging.PaletteType.html#Egami_SystemDrawing_Imaging_PaletteType_FixedHalftone27
+  commentId: F:Egami.SystemDrawing.Imaging.PaletteType.FixedHalftone27
+  fullName: Egami.SystemDrawing.Imaging.PaletteType.FixedHalftone27
+  nameWithType: PaletteType.FixedHalftone27
+- uid: Egami.SystemDrawing.Imaging.PaletteType.FixedHalftone64
+  name: FixedHalftone64
+  href: api/Egami.SystemDrawing.Imaging.PaletteType.html#Egami_SystemDrawing_Imaging_PaletteType_FixedHalftone64
+  commentId: F:Egami.SystemDrawing.Imaging.PaletteType.FixedHalftone64
+  fullName: Egami.SystemDrawing.Imaging.PaletteType.FixedHalftone64
+  nameWithType: PaletteType.FixedHalftone64
+- uid: Egami.SystemDrawing.Imaging.PaletteType.FixedHalftone8
+  name: FixedHalftone8
+  href: api/Egami.SystemDrawing.Imaging.PaletteType.html#Egami_SystemDrawing_Imaging_PaletteType_FixedHalftone8
+  commentId: F:Egami.SystemDrawing.Imaging.PaletteType.FixedHalftone8
+  fullName: Egami.SystemDrawing.Imaging.PaletteType.FixedHalftone8
+  nameWithType: PaletteType.FixedHalftone8
+- uid: Egami.SystemDrawing.Imaging.PixelFormat
+  name: PixelFormat
+  href: api/Egami.SystemDrawing.Imaging.PixelFormat.html
+  commentId: T:Egami.SystemDrawing.Imaging.PixelFormat
+  fullName: Egami.SystemDrawing.Imaging.PixelFormat
+  nameWithType: PixelFormat
+- uid: Egami.SystemDrawing.Imaging.PixelFormat.Alpha
+  name: Alpha
+  href: api/Egami.SystemDrawing.Imaging.PixelFormat.html#Egami_SystemDrawing_Imaging_PixelFormat_Alpha
+  commentId: F:Egami.SystemDrawing.Imaging.PixelFormat.Alpha
+  fullName: Egami.SystemDrawing.Imaging.PixelFormat.Alpha
+  nameWithType: PixelFormat.Alpha
+- uid: Egami.SystemDrawing.Imaging.PixelFormat.Canonical
+  name: Canonical
+  href: api/Egami.SystemDrawing.Imaging.PixelFormat.html#Egami_SystemDrawing_Imaging_PixelFormat_Canonical
+  commentId: F:Egami.SystemDrawing.Imaging.PixelFormat.Canonical
+  fullName: Egami.SystemDrawing.Imaging.PixelFormat.Canonical
+  nameWithType: PixelFormat.Canonical
+- uid: Egami.SystemDrawing.Imaging.PixelFormat.DontCare
+  name: DontCare
+  href: api/Egami.SystemDrawing.Imaging.PixelFormat.html#Egami_SystemDrawing_Imaging_PixelFormat_DontCare
+  commentId: F:Egami.SystemDrawing.Imaging.PixelFormat.DontCare
+  fullName: Egami.SystemDrawing.Imaging.PixelFormat.DontCare
+  nameWithType: PixelFormat.DontCare
+- uid: Egami.SystemDrawing.Imaging.PixelFormat.Extended
+  name: Extended
+  href: api/Egami.SystemDrawing.Imaging.PixelFormat.html#Egami_SystemDrawing_Imaging_PixelFormat_Extended
+  commentId: F:Egami.SystemDrawing.Imaging.PixelFormat.Extended
+  fullName: Egami.SystemDrawing.Imaging.PixelFormat.Extended
+  nameWithType: PixelFormat.Extended
+- uid: Egami.SystemDrawing.Imaging.PixelFormat.Format16bppArgb1555
+  name: Format16bppArgb1555
+  href: api/Egami.SystemDrawing.Imaging.PixelFormat.html#Egami_SystemDrawing_Imaging_PixelFormat_Format16bppArgb1555
+  commentId: F:Egami.SystemDrawing.Imaging.PixelFormat.Format16bppArgb1555
+  fullName: Egami.SystemDrawing.Imaging.PixelFormat.Format16bppArgb1555
+  nameWithType: PixelFormat.Format16bppArgb1555
+- uid: Egami.SystemDrawing.Imaging.PixelFormat.Format16bppGrayScale
+  name: Format16bppGrayScale
+  href: api/Egami.SystemDrawing.Imaging.PixelFormat.html#Egami_SystemDrawing_Imaging_PixelFormat_Format16bppGrayScale
+  commentId: F:Egami.SystemDrawing.Imaging.PixelFormat.Format16bppGrayScale
+  fullName: Egami.SystemDrawing.Imaging.PixelFormat.Format16bppGrayScale
+  nameWithType: PixelFormat.Format16bppGrayScale
+- uid: Egami.SystemDrawing.Imaging.PixelFormat.Format16bppRgb555
+  name: Format16bppRgb555
+  href: api/Egami.SystemDrawing.Imaging.PixelFormat.html#Egami_SystemDrawing_Imaging_PixelFormat_Format16bppRgb555
+  commentId: F:Egami.SystemDrawing.Imaging.PixelFormat.Format16bppRgb555
+  fullName: Egami.SystemDrawing.Imaging.PixelFormat.Format16bppRgb555
+  nameWithType: PixelFormat.Format16bppRgb555
+- uid: Egami.SystemDrawing.Imaging.PixelFormat.Format16bppRgb565
+  name: Format16bppRgb565
+  href: api/Egami.SystemDrawing.Imaging.PixelFormat.html#Egami_SystemDrawing_Imaging_PixelFormat_Format16bppRgb565
+  commentId: F:Egami.SystemDrawing.Imaging.PixelFormat.Format16bppRgb565
+  fullName: Egami.SystemDrawing.Imaging.PixelFormat.Format16bppRgb565
+  nameWithType: PixelFormat.Format16bppRgb565
+- uid: Egami.SystemDrawing.Imaging.PixelFormat.Format1bppIndexed
+  name: Format1bppIndexed
+  href: api/Egami.SystemDrawing.Imaging.PixelFormat.html#Egami_SystemDrawing_Imaging_PixelFormat_Format1bppIndexed
+  commentId: F:Egami.SystemDrawing.Imaging.PixelFormat.Format1bppIndexed
+  fullName: Egami.SystemDrawing.Imaging.PixelFormat.Format1bppIndexed
+  nameWithType: PixelFormat.Format1bppIndexed
+- uid: Egami.SystemDrawing.Imaging.PixelFormat.Format24bppRgb
+  name: Format24bppRgb
+  href: api/Egami.SystemDrawing.Imaging.PixelFormat.html#Egami_SystemDrawing_Imaging_PixelFormat_Format24bppRgb
+  commentId: F:Egami.SystemDrawing.Imaging.PixelFormat.Format24bppRgb
+  fullName: Egami.SystemDrawing.Imaging.PixelFormat.Format24bppRgb
+  nameWithType: PixelFormat.Format24bppRgb
+- uid: Egami.SystemDrawing.Imaging.PixelFormat.Format32bppArgb
+  name: Format32bppArgb
+  href: api/Egami.SystemDrawing.Imaging.PixelFormat.html#Egami_SystemDrawing_Imaging_PixelFormat_Format32bppArgb
+  commentId: F:Egami.SystemDrawing.Imaging.PixelFormat.Format32bppArgb
+  fullName: Egami.SystemDrawing.Imaging.PixelFormat.Format32bppArgb
+  nameWithType: PixelFormat.Format32bppArgb
+- uid: Egami.SystemDrawing.Imaging.PixelFormat.Format32bppPArgb
+  name: Format32bppPArgb
+  href: api/Egami.SystemDrawing.Imaging.PixelFormat.html#Egami_SystemDrawing_Imaging_PixelFormat_Format32bppPArgb
+  commentId: F:Egami.SystemDrawing.Imaging.PixelFormat.Format32bppPArgb
+  fullName: Egami.SystemDrawing.Imaging.PixelFormat.Format32bppPArgb
+  nameWithType: PixelFormat.Format32bppPArgb
+- uid: Egami.SystemDrawing.Imaging.PixelFormat.Format32bppRgb
+  name: Format32bppRgb
+  href: api/Egami.SystemDrawing.Imaging.PixelFormat.html#Egami_SystemDrawing_Imaging_PixelFormat_Format32bppRgb
+  commentId: F:Egami.SystemDrawing.Imaging.PixelFormat.Format32bppRgb
+  fullName: Egami.SystemDrawing.Imaging.PixelFormat.Format32bppRgb
+  nameWithType: PixelFormat.Format32bppRgb
+- uid: Egami.SystemDrawing.Imaging.PixelFormat.Format48bppRgb
+  name: Format48bppRgb
+  href: api/Egami.SystemDrawing.Imaging.PixelFormat.html#Egami_SystemDrawing_Imaging_PixelFormat_Format48bppRgb
+  commentId: F:Egami.SystemDrawing.Imaging.PixelFormat.Format48bppRgb
+  fullName: Egami.SystemDrawing.Imaging.PixelFormat.Format48bppRgb
+  nameWithType: PixelFormat.Format48bppRgb
+- uid: Egami.SystemDrawing.Imaging.PixelFormat.Format4bppIndexed
+  name: Format4bppIndexed
+  href: api/Egami.SystemDrawing.Imaging.PixelFormat.html#Egami_SystemDrawing_Imaging_PixelFormat_Format4bppIndexed
+  commentId: F:Egami.SystemDrawing.Imaging.PixelFormat.Format4bppIndexed
+  fullName: Egami.SystemDrawing.Imaging.PixelFormat.Format4bppIndexed
+  nameWithType: PixelFormat.Format4bppIndexed
+- uid: Egami.SystemDrawing.Imaging.PixelFormat.Format64bppArgb
+  name: Format64bppArgb
+  href: api/Egami.SystemDrawing.Imaging.PixelFormat.html#Egami_SystemDrawing_Imaging_PixelFormat_Format64bppArgb
+  commentId: F:Egami.SystemDrawing.Imaging.PixelFormat.Format64bppArgb
+  fullName: Egami.SystemDrawing.Imaging.PixelFormat.Format64bppArgb
+  nameWithType: PixelFormat.Format64bppArgb
+- uid: Egami.SystemDrawing.Imaging.PixelFormat.Format64bppPArgb
+  name: Format64bppPArgb
+  href: api/Egami.SystemDrawing.Imaging.PixelFormat.html#Egami_SystemDrawing_Imaging_PixelFormat_Format64bppPArgb
+  commentId: F:Egami.SystemDrawing.Imaging.PixelFormat.Format64bppPArgb
+  fullName: Egami.SystemDrawing.Imaging.PixelFormat.Format64bppPArgb
+  nameWithType: PixelFormat.Format64bppPArgb
+- uid: Egami.SystemDrawing.Imaging.PixelFormat.Format8bppIndexed
+  name: Format8bppIndexed
+  href: api/Egami.SystemDrawing.Imaging.PixelFormat.html#Egami_SystemDrawing_Imaging_PixelFormat_Format8bppIndexed
+  commentId: F:Egami.SystemDrawing.Imaging.PixelFormat.Format8bppIndexed
+  fullName: Egami.SystemDrawing.Imaging.PixelFormat.Format8bppIndexed
+  nameWithType: PixelFormat.Format8bppIndexed
+- uid: Egami.SystemDrawing.Imaging.PixelFormat.Gdi
+  name: Gdi
+  href: api/Egami.SystemDrawing.Imaging.PixelFormat.html#Egami_SystemDrawing_Imaging_PixelFormat_Gdi
+  commentId: F:Egami.SystemDrawing.Imaging.PixelFormat.Gdi
+  fullName: Egami.SystemDrawing.Imaging.PixelFormat.Gdi
+  nameWithType: PixelFormat.Gdi
+- uid: Egami.SystemDrawing.Imaging.PixelFormat.Indexed
+  name: Indexed
+  href: api/Egami.SystemDrawing.Imaging.PixelFormat.html#Egami_SystemDrawing_Imaging_PixelFormat_Indexed
+  commentId: F:Egami.SystemDrawing.Imaging.PixelFormat.Indexed
+  fullName: Egami.SystemDrawing.Imaging.PixelFormat.Indexed
+  nameWithType: PixelFormat.Indexed
+- uid: Egami.SystemDrawing.Imaging.PixelFormat.Max
+  name: Max
+  href: api/Egami.SystemDrawing.Imaging.PixelFormat.html#Egami_SystemDrawing_Imaging_PixelFormat_Max
+  commentId: F:Egami.SystemDrawing.Imaging.PixelFormat.Max
+  fullName: Egami.SystemDrawing.Imaging.PixelFormat.Max
+  nameWithType: PixelFormat.Max
+- uid: Egami.SystemDrawing.Imaging.PixelFormat.PAlpha
+  name: PAlpha
+  href: api/Egami.SystemDrawing.Imaging.PixelFormat.html#Egami_SystemDrawing_Imaging_PixelFormat_PAlpha
+  commentId: F:Egami.SystemDrawing.Imaging.PixelFormat.PAlpha
+  fullName: Egami.SystemDrawing.Imaging.PixelFormat.PAlpha
+  nameWithType: PixelFormat.PAlpha
+- uid: Egami.SystemDrawing.Imaging.PixelFormat.Undefined
+  name: Undefined
+  href: api/Egami.SystemDrawing.Imaging.PixelFormat.html#Egami_SystemDrawing_Imaging_PixelFormat_Undefined
+  commentId: F:Egami.SystemDrawing.Imaging.PixelFormat.Undefined
+  fullName: Egami.SystemDrawing.Imaging.PixelFormat.Undefined
+  nameWithType: PixelFormat.Undefined
+- uid: Egami.SystemDrawing.Imaging.PropertyItem
+  name: PropertyItem
+  href: api/Egami.SystemDrawing.Imaging.PropertyItem.html
+  commentId: T:Egami.SystemDrawing.Imaging.PropertyItem
+  fullName: Egami.SystemDrawing.Imaging.PropertyItem
+  nameWithType: PropertyItem
+- uid: Egami.SystemDrawing.Imaging.PropertyItem.Id
+  name: Id
+  href: api/Egami.SystemDrawing.Imaging.PropertyItem.html#Egami_SystemDrawing_Imaging_PropertyItem_Id
+  commentId: P:Egami.SystemDrawing.Imaging.PropertyItem.Id
+  fullName: Egami.SystemDrawing.Imaging.PropertyItem.Id
+  nameWithType: PropertyItem.Id
+- uid: Egami.SystemDrawing.Imaging.PropertyItem.Id*
+  name: Id
+  href: api/Egami.SystemDrawing.Imaging.PropertyItem.html#Egami_SystemDrawing_Imaging_PropertyItem_Id_
+  commentId: Overload:Egami.SystemDrawing.Imaging.PropertyItem.Id
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Imaging.PropertyItem.Id
+  nameWithType: PropertyItem.Id
+- uid: Egami.SystemDrawing.Imaging.PropertyItem.Len
+  name: Len
+  href: api/Egami.SystemDrawing.Imaging.PropertyItem.html#Egami_SystemDrawing_Imaging_PropertyItem_Len
+  commentId: P:Egami.SystemDrawing.Imaging.PropertyItem.Len
+  fullName: Egami.SystemDrawing.Imaging.PropertyItem.Len
+  nameWithType: PropertyItem.Len
+- uid: Egami.SystemDrawing.Imaging.PropertyItem.Len*
+  name: Len
+  href: api/Egami.SystemDrawing.Imaging.PropertyItem.html#Egami_SystemDrawing_Imaging_PropertyItem_Len_
+  commentId: Overload:Egami.SystemDrawing.Imaging.PropertyItem.Len
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Imaging.PropertyItem.Len
+  nameWithType: PropertyItem.Len
+- uid: Egami.SystemDrawing.Imaging.PropertyItem.Type
+  name: Type
+  href: api/Egami.SystemDrawing.Imaging.PropertyItem.html#Egami_SystemDrawing_Imaging_PropertyItem_Type
+  commentId: P:Egami.SystemDrawing.Imaging.PropertyItem.Type
+  fullName: Egami.SystemDrawing.Imaging.PropertyItem.Type
+  nameWithType: PropertyItem.Type
+- uid: Egami.SystemDrawing.Imaging.PropertyItem.Type*
+  name: Type
+  href: api/Egami.SystemDrawing.Imaging.PropertyItem.html#Egami_SystemDrawing_Imaging_PropertyItem_Type_
+  commentId: Overload:Egami.SystemDrawing.Imaging.PropertyItem.Type
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Imaging.PropertyItem.Type
+  nameWithType: PropertyItem.Type
+- uid: Egami.SystemDrawing.Imaging.PropertyItem.Value
+  name: Value
+  href: api/Egami.SystemDrawing.Imaging.PropertyItem.html#Egami_SystemDrawing_Imaging_PropertyItem_Value
+  commentId: P:Egami.SystemDrawing.Imaging.PropertyItem.Value
+  fullName: Egami.SystemDrawing.Imaging.PropertyItem.Value
+  nameWithType: PropertyItem.Value
+- uid: Egami.SystemDrawing.Imaging.PropertyItem.Value*
+  name: Value
+  href: api/Egami.SystemDrawing.Imaging.PropertyItem.html#Egami_SystemDrawing_Imaging_PropertyItem_Value_
+  commentId: Overload:Egami.SystemDrawing.Imaging.PropertyItem.Value
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Imaging.PropertyItem.Value
+  nameWithType: PropertyItem.Value
+- uid: Egami.SystemDrawing.RotateFlipType
+  name: RotateFlipType
+  href: api/Egami.SystemDrawing.RotateFlipType.html
+  commentId: T:Egami.SystemDrawing.RotateFlipType
+  fullName: Egami.SystemDrawing.RotateFlipType
+  nameWithType: RotateFlipType
+- uid: Egami.SystemDrawing.RotateFlipType.Rotate180FlipNone
+  name: Rotate180FlipNone
+  href: api/Egami.SystemDrawing.RotateFlipType.html#Egami_SystemDrawing_RotateFlipType_Rotate180FlipNone
+  commentId: F:Egami.SystemDrawing.RotateFlipType.Rotate180FlipNone
+  fullName: Egami.SystemDrawing.RotateFlipType.Rotate180FlipNone
+  nameWithType: RotateFlipType.Rotate180FlipNone
+- uid: Egami.SystemDrawing.RotateFlipType.Rotate180FlipX
+  name: Rotate180FlipX
+  href: api/Egami.SystemDrawing.RotateFlipType.html#Egami_SystemDrawing_RotateFlipType_Rotate180FlipX
+  commentId: F:Egami.SystemDrawing.RotateFlipType.Rotate180FlipX
+  fullName: Egami.SystemDrawing.RotateFlipType.Rotate180FlipX
+  nameWithType: RotateFlipType.Rotate180FlipX
+- uid: Egami.SystemDrawing.RotateFlipType.Rotate180FlipXY
+  name: Rotate180FlipXY
+  href: api/Egami.SystemDrawing.RotateFlipType.html#Egami_SystemDrawing_RotateFlipType_Rotate180FlipXY
+  commentId: F:Egami.SystemDrawing.RotateFlipType.Rotate180FlipXY
+  fullName: Egami.SystemDrawing.RotateFlipType.Rotate180FlipXY
+  nameWithType: RotateFlipType.Rotate180FlipXY
+- uid: Egami.SystemDrawing.RotateFlipType.Rotate180FlipY
+  name: Rotate180FlipY
+  href: api/Egami.SystemDrawing.RotateFlipType.html#Egami_SystemDrawing_RotateFlipType_Rotate180FlipY
+  commentId: F:Egami.SystemDrawing.RotateFlipType.Rotate180FlipY
+  fullName: Egami.SystemDrawing.RotateFlipType.Rotate180FlipY
+  nameWithType: RotateFlipType.Rotate180FlipY
+- uid: Egami.SystemDrawing.RotateFlipType.Rotate270FlipNone
+  name: Rotate270FlipNone
+  href: api/Egami.SystemDrawing.RotateFlipType.html#Egami_SystemDrawing_RotateFlipType_Rotate270FlipNone
+  commentId: F:Egami.SystemDrawing.RotateFlipType.Rotate270FlipNone
+  fullName: Egami.SystemDrawing.RotateFlipType.Rotate270FlipNone
+  nameWithType: RotateFlipType.Rotate270FlipNone
+- uid: Egami.SystemDrawing.RotateFlipType.Rotate270FlipX
+  name: Rotate270FlipX
+  href: api/Egami.SystemDrawing.RotateFlipType.html#Egami_SystemDrawing_RotateFlipType_Rotate270FlipX
+  commentId: F:Egami.SystemDrawing.RotateFlipType.Rotate270FlipX
+  fullName: Egami.SystemDrawing.RotateFlipType.Rotate270FlipX
+  nameWithType: RotateFlipType.Rotate270FlipX
+- uid: Egami.SystemDrawing.RotateFlipType.Rotate270FlipXY
+  name: Rotate270FlipXY
+  href: api/Egami.SystemDrawing.RotateFlipType.html#Egami_SystemDrawing_RotateFlipType_Rotate270FlipXY
+  commentId: F:Egami.SystemDrawing.RotateFlipType.Rotate270FlipXY
+  fullName: Egami.SystemDrawing.RotateFlipType.Rotate270FlipXY
+  nameWithType: RotateFlipType.Rotate270FlipXY
+- uid: Egami.SystemDrawing.RotateFlipType.Rotate270FlipY
+  name: Rotate270FlipY
+  href: api/Egami.SystemDrawing.RotateFlipType.html#Egami_SystemDrawing_RotateFlipType_Rotate270FlipY
+  commentId: F:Egami.SystemDrawing.RotateFlipType.Rotate270FlipY
+  fullName: Egami.SystemDrawing.RotateFlipType.Rotate270FlipY
+  nameWithType: RotateFlipType.Rotate270FlipY
+- uid: Egami.SystemDrawing.RotateFlipType.Rotate90FlipNone
+  name: Rotate90FlipNone
+  href: api/Egami.SystemDrawing.RotateFlipType.html#Egami_SystemDrawing_RotateFlipType_Rotate90FlipNone
+  commentId: F:Egami.SystemDrawing.RotateFlipType.Rotate90FlipNone
+  fullName: Egami.SystemDrawing.RotateFlipType.Rotate90FlipNone
+  nameWithType: RotateFlipType.Rotate90FlipNone
+- uid: Egami.SystemDrawing.RotateFlipType.Rotate90FlipX
+  name: Rotate90FlipX
+  href: api/Egami.SystemDrawing.RotateFlipType.html#Egami_SystemDrawing_RotateFlipType_Rotate90FlipX
+  commentId: F:Egami.SystemDrawing.RotateFlipType.Rotate90FlipX
+  fullName: Egami.SystemDrawing.RotateFlipType.Rotate90FlipX
+  nameWithType: RotateFlipType.Rotate90FlipX
+- uid: Egami.SystemDrawing.RotateFlipType.Rotate90FlipXY
+  name: Rotate90FlipXY
+  href: api/Egami.SystemDrawing.RotateFlipType.html#Egami_SystemDrawing_RotateFlipType_Rotate90FlipXY
+  commentId: F:Egami.SystemDrawing.RotateFlipType.Rotate90FlipXY
+  fullName: Egami.SystemDrawing.RotateFlipType.Rotate90FlipXY
+  nameWithType: RotateFlipType.Rotate90FlipXY
+- uid: Egami.SystemDrawing.RotateFlipType.Rotate90FlipY
+  name: Rotate90FlipY
+  href: api/Egami.SystemDrawing.RotateFlipType.html#Egami_SystemDrawing_RotateFlipType_Rotate90FlipY
+  commentId: F:Egami.SystemDrawing.RotateFlipType.Rotate90FlipY
+  fullName: Egami.SystemDrawing.RotateFlipType.Rotate90FlipY
+  nameWithType: RotateFlipType.Rotate90FlipY
+- uid: Egami.SystemDrawing.RotateFlipType.RotateNoneFlipNone
+  name: RotateNoneFlipNone
+  href: api/Egami.SystemDrawing.RotateFlipType.html#Egami_SystemDrawing_RotateFlipType_RotateNoneFlipNone
+  commentId: F:Egami.SystemDrawing.RotateFlipType.RotateNoneFlipNone
+  fullName: Egami.SystemDrawing.RotateFlipType.RotateNoneFlipNone
+  nameWithType: RotateFlipType.RotateNoneFlipNone
+- uid: Egami.SystemDrawing.RotateFlipType.RotateNoneFlipX
+  name: RotateNoneFlipX
+  href: api/Egami.SystemDrawing.RotateFlipType.html#Egami_SystemDrawing_RotateFlipType_RotateNoneFlipX
+  commentId: F:Egami.SystemDrawing.RotateFlipType.RotateNoneFlipX
+  fullName: Egami.SystemDrawing.RotateFlipType.RotateNoneFlipX
+  nameWithType: RotateFlipType.RotateNoneFlipX
+- uid: Egami.SystemDrawing.RotateFlipType.RotateNoneFlipXY
+  name: RotateNoneFlipXY
+  href: api/Egami.SystemDrawing.RotateFlipType.html#Egami_SystemDrawing_RotateFlipType_RotateNoneFlipXY
+  commentId: F:Egami.SystemDrawing.RotateFlipType.RotateNoneFlipXY
+  fullName: Egami.SystemDrawing.RotateFlipType.RotateNoneFlipXY
+  nameWithType: RotateFlipType.RotateNoneFlipXY
+- uid: Egami.SystemDrawing.RotateFlipType.RotateNoneFlipY
+  name: RotateNoneFlipY
+  href: api/Egami.SystemDrawing.RotateFlipType.html#Egami_SystemDrawing_RotateFlipType_RotateNoneFlipY
+  commentId: F:Egami.SystemDrawing.RotateFlipType.RotateNoneFlipY
+  fullName: Egami.SystemDrawing.RotateFlipType.RotateNoneFlipY
+  nameWithType: RotateFlipType.RotateNoneFlipY
 - uid: Egami.UnsupportedFormatException
   name: UnsupportedFormatException
   href: api/Egami.UnsupportedFormatException.html

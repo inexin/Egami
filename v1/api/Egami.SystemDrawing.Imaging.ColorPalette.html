@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class ColorPalette | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class ColorPalette | Egami ">
+      
+      <meta name="description" content="The colors an indexed bitmap&#39;s pixels point into.  hands out a copy: change its entries and set it back to change the bitmap&#39;s palette.">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_SystemDrawing_Imaging_ColorPalette.md&amp;value=---%0Auid%3A%20Egami.SystemDrawing.Imaging.ColorPalette%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.SystemDrawing.Imaging.ColorPalette">
+
+
+
+  <h1 id="Egami_SystemDrawing_Imaging_ColorPalette" data-uid="Egami.SystemDrawing.Imaging.ColorPalette" class="text-break">
+Class ColorPalette  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/ColorPalette.cs/#L12"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a>.<a class="xref" href="Egami.SystemDrawing.html">SystemDrawing</a>.<a class="xref" href="Egami.SystemDrawing.Imaging.html">Imaging</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.SystemDrawing.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>The colors an indexed bitmap's pixels point into. <a class="xref" href="Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_Palette">Palette</a> hands out a copy: change its entries and set it
+back to change the bitmap's palette.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public sealed class ColorPalette</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><span class="xref">ColorPalette</span></div>
+    </dd>
+  </dl>
+
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+  </dd></dl>
+
+
+
+  <h2 id="Egami_SystemDrawing_Imaging_ColorPalette_examples">Examples</h2>
+  <pre><code class="lang-csharp">// Indexed bitmaps keep GDI+'s default palettes; Palette hands out a copy to change and set back.
+using Bitmap indexed = new(4, 4, PixelFormat.Format8bppIndexed);
+ColorPalette palette = indexed.Palette;
+palette.Entries[0] = Color.Navy;
+indexed.Palette = palette;
+bool halftone = (palette.Flags &amp; (int)PaletteFlags.Halftone) != 0;  // true
+
+// ConvertFormat maps to a fixed palette, and Clone to an indexed format uses GDI+'s halftone palettes.
+using Bitmap photo = new(System.IO.Path.Combine(Images, "duck.png"));
+photo.ConvertFormat(PixelFormat.Format8bppIndexed, DitherType.None, PaletteType.FixedHalftone252);
+using Bitmap bilevel = photo.Clone(new Rectangle(0, 0, photo.Width, photo.Height), PixelFormat.Format1bppIndexed);</code></pre>
+
+
+
+
+  <h2 class="section" id="constructors">Constructors
+</h2>
+
+
+  <a id="Egami_SystemDrawing_Imaging_ColorPalette__ctor_" data-uid="Egami.SystemDrawing.Imaging.ColorPalette.#ctor*"></a>
+
+  <h3 id="Egami_SystemDrawing_Imaging_ColorPalette__ctor_Egami_SystemDrawing_Imaging_PaletteType_" data-uid="Egami.SystemDrawing.Imaging.ColorPalette.#ctor(Egami.SystemDrawing.Imaging.PaletteType)">
+  ColorPalette(PaletteType)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/ColorPalette.cs/#L24"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Initializes a new instance of the <a class="xref" href="Egami.SystemDrawing.Imaging.ColorPalette.html">ColorPalette</a> class with one of the fixed palettes.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public ColorPalette(PaletteType fixedPaletteType)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>fixedPaletteType</code> <a class="xref" href="Egami.SystemDrawing.Imaging.PaletteType.html">PaletteType</a></dt>
+    <dd><p>The palette.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>The type is not a palette type. <a class="xref" href="Egami.SystemDrawing.Imaging.PaletteType.html#Egami_SystemDrawing_Imaging_PaletteType_Custom">Custom</a> gives 256 transparent black entries.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_SystemDrawing_Imaging_ColorPalette__ctor_" data-uid="Egami.SystemDrawing.Imaging.ColorPalette.#ctor*"></a>
+
+  <h3 id="Egami_SystemDrawing_Imaging_ColorPalette__ctor_System_Drawing_Color___" data-uid="Egami.SystemDrawing.Imaging.ColorPalette.#ctor(System.Drawing.Color[])">
+  ColorPalette(Color[])
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/ColorPalette.cs/#L16"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Initializes a new instance of the <a class="xref" href="Egami.SystemDrawing.Imaging.ColorPalette.html">ColorPalette</a> class with the given colors.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public ColorPalette(Color[] customColors)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>customColors</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.color">Color</a>[]</dt>
+    <dd><p>The colors, at most 256.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="Egami_SystemDrawing_Imaging_ColorPalette_Entries_" data-uid="Egami.SystemDrawing.Imaging.ColorPalette.Entries*"></a>
+
+  <h3 id="Egami_SystemDrawing_Imaging_ColorPalette_Entries" data-uid="Egami.SystemDrawing.Imaging.ColorPalette.Entries">
+  Entries
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/ColorPalette.cs/#L40"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the colors.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Color[] Entries { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.color">Color</a>[]</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Imaging_ColorPalette_Flags_" data-uid="Egami.SystemDrawing.Imaging.ColorPalette.Flags*"></a>
+
+  <h3 id="Egami_SystemDrawing_Imaging_ColorPalette_Flags" data-uid="Egami.SystemDrawing.Imaging.ColorPalette.Flags">
+  Flags
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/ColorPalette.cs/#L37"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the palette's flags, a combination of <a class="xref" href="Egami.SystemDrawing.Imaging.PaletteFlags.html">PaletteFlags</a> values.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int Flags { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="Egami_SystemDrawing_Imaging_ColorPalette_CreateOptimalPalette_" data-uid="Egami.SystemDrawing.Imaging.ColorPalette.CreateOptimalPalette*"></a>
+
+  <h3 id="Egami_SystemDrawing_Imaging_ColorPalette_CreateOptimalPalette_System_Int32_System_Boolean_Egami_SystemDrawing_Bitmap_" data-uid="Egami.SystemDrawing.Imaging.ColorPalette.CreateOptimalPalette(System.Int32,System.Boolean,Egami.SystemDrawing.Bitmap)">
+  CreateOptimalPalette(int, bool, Bitmap)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/ColorPalette.cs/#L47"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Builds a palette of at most <code class="paramref">colors</code> colors that suits a bitmap's pixels.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static ColorPalette CreateOptimalPalette(int colors, bool useTransparentColor, Bitmap bitmap)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>colors</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The number of colors, 2 to 256.</p>
+</dd>
+    <dt><code>useTransparentColor</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>Whether the first entry is transparent.</p>
+</dd>
+    <dt><code>bitmap</code> <a class="xref" href="Egami.SystemDrawing.Bitmap.html">Bitmap</a></dt>
+    <dd><p>The bitmap whose colors the palette is for.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Imaging.ColorPalette.html">ColorPalette</a></dt>
+    <dd><p>The palette.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/ColorPalette.cs/#L12" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

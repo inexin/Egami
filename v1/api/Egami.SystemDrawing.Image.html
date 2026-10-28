@@ -1,0 +1,1885 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class Image | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class Image | Egami ">
+      
+      <meta name="description" content="The base of  and the metafile type: size, resolution, pixel format, palette, frames, metadata and saving, as in System.Drawing. Load one with  or .">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_SystemDrawing_Image.md&amp;value=---%0Auid%3A%20Egami.SystemDrawing.Image%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.SystemDrawing.Image">
+
+
+
+  <h1 id="Egami_SystemDrawing_Image" data-uid="Egami.SystemDrawing.Image" class="text-break">
+Class Image  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L17"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a>.<a class="xref" href="Egami.SystemDrawing.html">SystemDrawing</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.SystemDrawing.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>The base of <a class="xref" href="Egami.SystemDrawing.Bitmap.html">Bitmap</a> and the metafile type: size, resolution, pixel format, palette, frames, metadata and saving,
+as in System.Drawing. Load one with <a class="xref" href="Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_FromFile_System_String_">FromFile(string)</a> or <a class="xref" href="Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_FromStream_System_IO_Stream_">FromStream(Stream)</a>.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public abstract class Image : MarshalByRefObject, IDisposable, ICloneable</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.marshalbyrefobject">MarshalByRefObject</a></div>
+      <div><span class="xref">Image</span></div>
+    </dd>
+  </dl>
+
+  <dl class="typelist implements">
+    <dt>Implements</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.idisposable">IDisposable</a></div>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.icloneable">ICloneable</a></div>
+    </dd>
+  </dl>
+
+  <dl class="typelist derived">
+    <dt>Derived</dt>
+    <dd>
+      <div><a class="xref" href="Egami.SystemDrawing.Bitmap.html">Bitmap</a></div>
+    </dd>
+  </dl>
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.marshalbyrefobject.getlifetimeservice">MarshalByRefObject.GetLifetimeService()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.marshalbyrefobject.initializelifetimeservice">MarshalByRefObject.InitializeLifetimeService()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.marshalbyrefobject.memberwiseclone">MarshalByRefObject.MemberwiseClone(bool)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone">object.MemberwiseClone()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+  </dd></dl>
+
+
+
+  <h2 id="Egami_SystemDrawing_Image_examples">Examples</h2>
+  <pre><code class="lang-csharp">// The encoders GDI+ lists, by MIME type, with encoder parameters for JPEG quality and TIFF compression.
+ImageCodecInfo jpeg = ImageCodecInfo.GetImageEncoders().First(c =&gt; c.MimeType == "image/jpeg");
+using EncoderParameters settings = new(1);
+settings.Param[0] = new EncoderParameter(Encoder.Quality, 85L);
+using MemoryStream file = new();
+photo.Save(file, jpeg, settings);
+
+file.Position = 0;
+using Image loaded = Image.FromStream(file);
+bool fromJpeg = loaded.RawFormat.Equals(ImageFormat.Jpeg);                           // true
+PixelFormat format = loaded.PixelFormat;                                             // Format24bppRgb
+bool readOnly = ((ImageFlags)loaded.Flags).HasFlag(ImageFlags.ReadOnly);             // true
+ImageCodecFlags can = jpeg.Flags;                                                    // Encoder, Decoder, SupportBitmap, Builtin
+EncoderParameterValueType type = settings.Param[0].ValueType;                        // ValueTypeLong
+EncoderValue lzw = EncoderValue.CompressionLZW;                                      // for Encoder.Compression and TIFF</code></pre>
+
+
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="Egami_SystemDrawing_Image_Flags_" data-uid="Egami.SystemDrawing.Image.Flags*"></a>
+
+  <h3 id="Egami_SystemDrawing_Image_Flags" data-uid="Egami.SystemDrawing.Image.Flags">
+  Flags
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L71"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the image's <a class="xref" href="Egami.SystemDrawing.Imaging.ImageFlags.html">ImageFlags</a> as an integer.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int Flags { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Image_FrameDimensionsList_" data-uid="Egami.SystemDrawing.Image.FrameDimensionsList*"></a>
+
+  <h3 id="Egami_SystemDrawing_Image_FrameDimensionsList" data-uid="Egami.SystemDrawing.Image.FrameDimensionsList">
+  FrameDimensionsList
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L108"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the GUIDs of the dimensions the image's frames are counted in: one, Page, Time or Resolution.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Guid[] FrameDimensionsList { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.guid">Guid</a>[]</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Image_Height_" data-uid="Egami.SystemDrawing.Image.Height*"></a>
+
+  <h3 id="Egami_SystemDrawing_Image_Height" data-uid="Egami.SystemDrawing.Image.Height">
+  Height
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L42"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the height in pixels.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int Height { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Image_HorizontalResolution_" data-uid="Egami.SystemDrawing.Image.HorizontalResolution*"></a>
+
+  <h3 id="Egami_SystemDrawing_Image_HorizontalResolution" data-uid="Egami.SystemDrawing.Image.HorizontalResolution">
+  HorizontalResolution
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L51"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the horizontal resolution in pixels per inch; 96 unless the file or <a class="xref" href="Egami.SystemDrawing.Bitmap.html#Egami_SystemDrawing_Bitmap_SetResolution_System_Single_System_Single_">SetResolution(float, float)</a> says otherwise.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float HorizontalResolution { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Image_Palette_" data-uid="Egami.SystemDrawing.Image.Palette*"></a>
+
+  <h3 id="Egami_SystemDrawing_Image_Palette" data-uid="Egami.SystemDrawing.Image.Palette">
+  Palette
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L97"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets the palette. Getting gives a copy: change its entries, then set it to change the image. A non-indexed image
+has an empty palette.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public ColorPalette Palette { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Imaging.ColorPalette.html">ColorPalette</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Image_PhysicalDimension_" data-uid="Egami.SystemDrawing.Image.PhysicalDimension*"></a>
+
+  <h3 id="Egami_SystemDrawing_Image_PhysicalDimension" data-uid="Egami.SystemDrawing.Image.PhysicalDimension">
+  PhysicalDimension
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L48"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the size: in pixels for a bitmap, in hundredths of a millimeter for a metafile.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public SizeF PhysicalDimension { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.sizef">SizeF</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Image_PixelFormat_" data-uid="Egami.SystemDrawing.Image.PixelFormat*"></a>
+
+  <h3 id="Egami_SystemDrawing_Image_PixelFormat" data-uid="Egami.SystemDrawing.Image.PixelFormat">
+  PixelFormat
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L81"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the pixel format.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public PixelFormat PixelFormat { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Imaging.PixelFormat.html">PixelFormat</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Image_PropertyIdList_" data-uid="Egami.SystemDrawing.Image.PropertyIdList*"></a>
+
+  <h3 id="Egami_SystemDrawing_Image_PropertyIdList" data-uid="Egami.SystemDrawing.Image.PropertyIdList">
+  PropertyIdList
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L118"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the ids of the image's property items.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int[] PropertyIdList { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a>[]</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Image_PropertyItems_" data-uid="Egami.SystemDrawing.Image.PropertyItems*"></a>
+
+  <h3 id="Egami_SystemDrawing_Image_PropertyItems" data-uid="Egami.SystemDrawing.Image.PropertyItems">
+  PropertyItems
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L128"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets copies of the image's property items: its EXIF tags, a GIF's frame delays and loop count, a JPEG's quantization tables.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public PropertyItem[] PropertyItems { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Imaging.PropertyItem.html">PropertyItem</a>[]</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Image_RawFormat_" data-uid="Egami.SystemDrawing.Image.RawFormat*"></a>
+
+  <h3 id="Egami_SystemDrawing_Image_RawFormat" data-uid="Egami.SystemDrawing.Image.RawFormat">
+  RawFormat
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L84"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the format of the file the image came from, or <a class="xref" href="Egami.SystemDrawing.Imaging.ImageFormat.html#Egami_SystemDrawing_Imaging_ImageFormat_MemoryBmp">MemoryBmp</a> for one made in memory.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public ImageFormat RawFormat { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Imaging.ImageFormat.html">ImageFormat</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Image_Size_" data-uid="Egami.SystemDrawing.Image.Size*"></a>
+
+  <h3 id="Egami_SystemDrawing_Image_Size" data-uid="Egami.SystemDrawing.Image.Size">
+  Size
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L45"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the size in pixels.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Size Size { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.size">Size</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Image_Tag_" data-uid="Egami.SystemDrawing.Image.Tag*"></a>
+
+  <h3 id="Egami_SystemDrawing_Image_Tag" data-uid="Egami.SystemDrawing.Image.Tag">
+  Tag
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L36"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets an object the caller keeps with the image.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public object? Tag { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Image_VerticalResolution_" data-uid="Egami.SystemDrawing.Image.VerticalResolution*"></a>
+
+  <h3 id="Egami_SystemDrawing_Image_VerticalResolution" data-uid="Egami.SystemDrawing.Image.VerticalResolution">
+  VerticalResolution
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L61"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the vertical resolution in pixels per inch.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float VerticalResolution { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Image_Width_" data-uid="Egami.SystemDrawing.Image.Width*"></a>
+
+  <h3 id="Egami_SystemDrawing_Image_Width" data-uid="Egami.SystemDrawing.Image.Width">
+  Width
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L39"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the width in pixels.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int Width { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="Egami_SystemDrawing_Image_Clone_" data-uid="Egami.SystemDrawing.Image.Clone*"></a>
+
+  <h3 id="Egami_SystemDrawing_Image_Clone" data-uid="Egami.SystemDrawing.Image.Clone">
+  Clone()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L435"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>A copy of the image with all its frames and properties.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public abstract object Clone()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></dt>
+    <dd><p>The copy.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Image_Dispose_" data-uid="Egami.SystemDrawing.Image.Dispose*"></a>
+
+  <h3 id="Egami_SystemDrawing_Image_Dispose" data-uid="Egami.SystemDrawing.Image.Dispose">
+  Dispose()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L438"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Releases the image's pixels.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Dispose()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Image_Dispose_" data-uid="Egami.SystemDrawing.Image.Dispose*"></a>
+
+  <h3 id="Egami_SystemDrawing_Image_Dispose_System_Boolean_" data-uid="Egami.SystemDrawing.Image.Dispose(System.Boolean)">
+  Dispose(bool)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L446"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Releases the image's pixels and finishes a multi-frame save it started.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">protected virtual void Dispose(bool disposing)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>disposing</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>Whether <a class="xref" href="Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_Dispose">Dispose()</a> was called.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Image_Finalize_" data-uid="Egami.SystemDrawing.Image.Finalize*"></a>
+
+  <h3 id="Egami_SystemDrawing_Image_Finalize" data-uid="Egami.SystemDrawing.Image.Finalize">
+  ~Image()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L463"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Finishes nothing: the pixels are managed memory.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">protected ~Image()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Image_FromFile_" data-uid="Egami.SystemDrawing.Image.FromFile*"></a>
+
+  <h3 id="Egami_SystemDrawing_Image_FromFile_System_String_" data-uid="Egami.SystemDrawing.Image.FromFile(System.String)">
+  FromFile(string)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L176"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Loads an image from a file.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Image FromFile(string filename)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>filename</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The file.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Image.html">Image</a></dt>
+    <dd><p>A <a class="xref" href="Egami.SystemDrawing.Bitmap.html">Bitmap</a>, or a metafile for WMF and EMF files.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.io.filenotfoundexception">FileNotFoundException</a></dt>
+    <dd><p>The file does not exist.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.outofmemoryexception">OutOfMemoryException</a></dt>
+    <dd><p>The file is not an image Egami can read, as GDI+ reports it.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_SystemDrawing_Image_FromFile_" data-uid="Egami.SystemDrawing.Image.FromFile*"></a>
+
+  <h3 id="Egami_SystemDrawing_Image_FromFile_System_String_System_Boolean_" data-uid="Egami.SystemDrawing.Image.FromFile(System.String,System.Boolean)">
+  FromFile(string, bool)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L182"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Loads an image from a file.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Image FromFile(string filename, bool useEmbeddedColorManagement)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>filename</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The file.</p>
+</dd>
+    <dt><code>useEmbeddedColorManagement</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>Whether to apply the file's color profile; Egami leaves colors as stored, as GDI+ does by default.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Image.html">Image</a></dt>
+    <dd><p>A <a class="xref" href="Egami.SystemDrawing.Bitmap.html">Bitmap</a>, or a metafile for WMF and EMF files.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Image_FromHbitmap_" data-uid="Egami.SystemDrawing.Image.FromHbitmap*"></a>
+
+  <h3 id="Egami_SystemDrawing_Image_FromHbitmap_System_IntPtr_" data-uid="Egami.SystemDrawing.Image.FromHbitmap(System.IntPtr)">
+  FromHbitmap(nint)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L223"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Not supported: Windows bitmap handles. Always throws.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Obsolete(&quot;Windows GDI handles are not available in Egami.SystemDrawing; it always throws PlatformNotSupportedException. Use Bitmap.LockBits to reach the pixels.&quot;, DiagnosticId = &quot;EGSD0001&quot;, UrlFormat = &quot;https://inexin.github.io/Egami/v1/articles/guides/system-drawing.html#{0}&quot;)]
+public static Bitmap FromHbitmap(nint hbitmap)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>hbitmap</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.intptr">nint</a></dt>
+    <dd><p>The handle.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Bitmap.html">Bitmap</a></dt>
+    <dd><p>Never returns.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Image_FromHbitmap_" data-uid="Egami.SystemDrawing.Image.FromHbitmap*"></a>
+
+  <h3 id="Egami_SystemDrawing_Image_FromHbitmap_System_IntPtr_System_IntPtr_" data-uid="Egami.SystemDrawing.Image.FromHbitmap(System.IntPtr,System.IntPtr)">
+  FromHbitmap(nint, nint)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L231"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Not supported: Windows bitmap and palette handles. Always throws.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Obsolete(&quot;Windows GDI handles are not available in Egami.SystemDrawing; it always throws PlatformNotSupportedException. Use Bitmap.LockBits to reach the pixels.&quot;, DiagnosticId = &quot;EGSD0001&quot;, UrlFormat = &quot;https://inexin.github.io/Egami/v1/articles/guides/system-drawing.html#{0}&quot;)]
+public static Bitmap FromHbitmap(nint hbitmap, nint hpalette)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>hbitmap</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.intptr">nint</a></dt>
+    <dd><p>The bitmap handle.</p>
+</dd>
+    <dt><code>hpalette</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.intptr">nint</a></dt>
+    <dd><p>The palette handle.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Bitmap.html">Bitmap</a></dt>
+    <dd><p>Never returns.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Image_FromStream_" data-uid="Egami.SystemDrawing.Image.FromStream*"></a>
+
+  <h3 id="Egami_SystemDrawing_Image_FromStream_System_IO_Stream_" data-uid="Egami.SystemDrawing.Image.FromStream(System.IO.Stream)">
+  FromStream(Stream)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L199"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Loads an image from a stream, read to its end.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Image FromStream(Stream stream)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>stream</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.io.stream">Stream</a></dt>
+    <dd><p>The stream.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Image.html">Image</a></dt>
+    <dd><p>A <a class="xref" href="Egami.SystemDrawing.Bitmap.html">Bitmap</a>, or a metafile for WMF and EMF data.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>The data is not an image Egami can read, as GDI+ reports it.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_SystemDrawing_Image_FromStream_" data-uid="Egami.SystemDrawing.Image.FromStream*"></a>
+
+  <h3 id="Egami_SystemDrawing_Image_FromStream_System_IO_Stream_System_Boolean_" data-uid="Egami.SystemDrawing.Image.FromStream(System.IO.Stream,System.Boolean)">
+  FromStream(Stream, bool)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L205"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Loads an image from a stream, read to its end.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Image FromStream(Stream stream, bool useEmbeddedColorManagement)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>stream</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.io.stream">Stream</a></dt>
+    <dd><p>The stream.</p>
+</dd>
+    <dt><code>useEmbeddedColorManagement</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>Whether to apply the file's color profile; Egami leaves colors as stored.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Image.html">Image</a></dt>
+    <dd><p>A <a class="xref" href="Egami.SystemDrawing.Bitmap.html">Bitmap</a>, or a metafile for WMF and EMF data.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Image_FromStream_" data-uid="Egami.SystemDrawing.Image.FromStream*"></a>
+
+  <h3 id="Egami_SystemDrawing_Image_FromStream_System_IO_Stream_System_Boolean_System_Boolean_" data-uid="Egami.SystemDrawing.Image.FromStream(System.IO.Stream,System.Boolean,System.Boolean)">
+  FromStream(Stream, bool, bool)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L212"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Loads an image from a stream, read to its end.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Image FromStream(Stream stream, bool useEmbeddedColorManagement, bool validateImageData)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>stream</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.io.stream">Stream</a></dt>
+    <dd><p>The stream.</p>
+</dd>
+    <dt><code>useEmbeddedColorManagement</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>Whether to apply the file's color profile; Egami leaves colors as stored.</p>
+</dd>
+    <dt><code>validateImageData</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>Whether to check the data; Egami always decodes it whole.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Image.html">Image</a></dt>
+    <dd><p>A <a class="xref" href="Egami.SystemDrawing.Bitmap.html">Bitmap</a>, or a metafile for WMF and EMF data.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Image_GetBounds_" data-uid="Egami.SystemDrawing.Image.GetBounds*"></a>
+
+  <h3 id="Egami_SystemDrawing_Image_GetBounds_Egami_SystemDrawing_GraphicsUnit__" data-uid="Egami.SystemDrawing.Image.GetBounds(Egami.SystemDrawing.GraphicsUnit@)">
+  GetBounds(ref GraphicsUnit)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L258"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the bounds in a unit; for a bitmap, its size in pixels.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public RectangleF GetBounds(ref GraphicsUnit pageUnit)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>pageUnit</code> <a class="xref" href="Egami.SystemDrawing.GraphicsUnit.html">GraphicsUnit</a></dt>
+    <dd><p>Set to the unit of the bounds.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.rectanglef">RectangleF</a></dt>
+    <dd><p>The bounds.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Image_GetEncoderParameterList_" data-uid="Egami.SystemDrawing.Image.GetEncoderParameterList*"></a>
+
+  <h3 id="Egami_SystemDrawing_Image_GetEncoderParameterList_System_Guid_" data-uid="Egami.SystemDrawing.Image.GetEncoderParameterList(System.Guid)">
+  GetEncoderParameterList(Guid)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L335"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the settings an encoder takes.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public EncoderParameters? GetEncoderParameterList(Guid encoder)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>encoder</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.guid">Guid</a></dt>
+    <dd><p>The encoder's <a class="xref" href="Egami.SystemDrawing.Imaging.ImageCodecInfo.html#Egami_SystemDrawing_Imaging_ImageCodecInfo_Clsid">Clsid</a>.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Imaging.EncoderParameters.html">EncoderParameters</a></dt>
+    <dd><p>The settings, or null when the encoder takes none.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.notimplementedexception">NotImplementedException</a></dt>
+    <dd><p>The BMP encoder, as in GDI+.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_SystemDrawing_Image_GetFrameCount_" data-uid="Egami.SystemDrawing.Image.GetFrameCount*"></a>
+
+  <h3 id="Egami_SystemDrawing_Image_GetFrameCount_Egami_SystemDrawing_Imaging_FrameDimension_" data-uid="Egami.SystemDrawing.Image.GetFrameCount(Egami.SystemDrawing.Imaging.FrameDimension)">
+  GetFrameCount(FrameDimension)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L268"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the number of frames in a dimension: pages, animation frames or resolutions.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int GetFrameCount(FrameDimension dimension)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>dimension</code> <a class="xref" href="Egami.SystemDrawing.Imaging.FrameDimension.html">FrameDimension</a></dt>
+    <dd><p>The dimension.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The number of frames.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.runtime.interopservices.externalexception">ExternalException</a></dt>
+    <dd><p>The image has no frames in that dimension.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_SystemDrawing_Image_GetPixelFormatSize_" data-uid="Egami.SystemDrawing.Image.GetPixelFormatSize*"></a>
+
+  <h3 id="Egami_SystemDrawing_Image_GetPixelFormatSize_Egami_SystemDrawing_Imaging_PixelFormat_" data-uid="Egami.SystemDrawing.Image.GetPixelFormatSize(Egami.SystemDrawing.Imaging.PixelFormat)">
+  GetPixelFormatSize(PixelFormat)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L238"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the bits a pixel of a format takes.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static int GetPixelFormatSize(PixelFormat pixfmt)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>pixfmt</code> <a class="xref" href="Egami.SystemDrawing.Imaging.PixelFormat.html">PixelFormat</a></dt>
+    <dd><p>The format.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The bits, 1 to 64.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Image_GetPropertyItem_" data-uid="Egami.SystemDrawing.Image.GetPropertyItem*"></a>
+
+  <h3 id="Egami_SystemDrawing_Image_GetPropertyItem_System_Int32_" data-uid="Egami.SystemDrawing.Image.GetPropertyItem(System.Int32)">
+  GetPropertyItem(int)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L296"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets a copy of a property item.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public PropertyItem? GetPropertyItem(int propid)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>propid</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The id.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Imaging.PropertyItem.html">PropertyItem</a></dt>
+    <dd><p>The item.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>The image has no item with that id.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_SystemDrawing_Image_GetThumbnailImage_" data-uid="Egami.SystemDrawing.Image.GetThumbnailImage*"></a>
+
+  <h3 id="Egami_SystemDrawing_Image_GetThumbnailImage_System_Int32_System_Int32_Egami_SystemDrawing_Image_GetThumbnailImageAbort_System_IntPtr_" data-uid="Egami.SystemDrawing.Image.GetThumbnailImage(System.Int32,System.Int32,Egami.SystemDrawing.Image.GetThumbnailImageAbort,System.IntPtr)">
+  GetThumbnailImage(int, int, GetThumbnailImageAbort?, nint)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L422"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>A small copy of the image, as 32-bit premultiplied ARGB.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Image GetThumbnailImage(int thumbWidth, int thumbHeight, Image.GetThumbnailImageAbort? callback, nint callbackData)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>thumbWidth</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The width.</p>
+</dd>
+    <dt><code>thumbHeight</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The height.</p>
+</dd>
+    <dt><code>callback</code> <a class="xref" href="Egami.SystemDrawing.Image.html">Image</a>.<a class="xref" href="Egami.SystemDrawing.Image.GetThumbnailImageAbort.html">GetThumbnailImageAbort</a></dt>
+    <dd><p>Ignored, as in GDI+.</p>
+</dd>
+    <dt><code>callbackData</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.intptr">nint</a></dt>
+    <dd><p>Ignored; must be zero.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Image.html">Image</a></dt>
+    <dd><p>The thumbnail.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Image_IsAlphaPixelFormat_" data-uid="Egami.SystemDrawing.Image.IsAlphaPixelFormat*"></a>
+
+  <h3 id="Egami_SystemDrawing_Image_IsAlphaPixelFormat_Egami_SystemDrawing_Imaging_PixelFormat_" data-uid="Egami.SystemDrawing.Image.IsAlphaPixelFormat(Egami.SystemDrawing.Imaging.PixelFormat)">
+  IsAlphaPixelFormat(PixelFormat)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L243"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether a format holds alpha.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static bool IsAlphaPixelFormat(PixelFormat pixfmt)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>pixfmt</code> <a class="xref" href="Egami.SystemDrawing.Imaging.PixelFormat.html">PixelFormat</a></dt>
+    <dd><p>The format.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p><a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a> when it does.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Image_IsCanonicalPixelFormat_" data-uid="Egami.SystemDrawing.Image.IsCanonicalPixelFormat*"></a>
+
+  <h3 id="Egami_SystemDrawing_Image_IsCanonicalPixelFormat_Egami_SystemDrawing_Imaging_PixelFormat_" data-uid="Egami.SystemDrawing.Image.IsCanonicalPixelFormat(Egami.SystemDrawing.Imaging.PixelFormat)">
+  IsCanonicalPixelFormat(PixelFormat)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L253"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether a format is the default 32-bit ARGB.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static bool IsCanonicalPixelFormat(PixelFormat pixfmt)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>pixfmt</code> <a class="xref" href="Egami.SystemDrawing.Imaging.PixelFormat.html">PixelFormat</a></dt>
+    <dd><p>The format.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p><a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a> when it is.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Image_IsExtendedPixelFormat_" data-uid="Egami.SystemDrawing.Image.IsExtendedPixelFormat*"></a>
+
+  <h3 id="Egami_SystemDrawing_Image_IsExtendedPixelFormat_Egami_SystemDrawing_Imaging_PixelFormat_" data-uid="Egami.SystemDrawing.Image.IsExtendedPixelFormat(Egami.SystemDrawing.Imaging.PixelFormat)">
+  IsExtendedPixelFormat(PixelFormat)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L248"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether a format holds 16 bits a channel.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static bool IsExtendedPixelFormat(PixelFormat pixfmt)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>pixfmt</code> <a class="xref" href="Egami.SystemDrawing.Imaging.PixelFormat.html">PixelFormat</a></dt>
+    <dd><p>The format.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p><a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a> when it does.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Image_RemovePropertyItem_" data-uid="Egami.SystemDrawing.Image.RemovePropertyItem*"></a>
+
+  <h3 id="Egami_SystemDrawing_Image_RemovePropertyItem_System_Int32_" data-uid="Egami.SystemDrawing.Image.RemovePropertyItem(System.Int32)">
+  RemovePropertyItem(int)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L322"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Removes a property item.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void RemovePropertyItem(int propid)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>propid</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The id.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.runtime.interopservices.externalexception">ExternalException</a></dt>
+    <dd><p>The image has no item with that id.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_SystemDrawing_Image_RotateFlip_" data-uid="Egami.SystemDrawing.Image.RotateFlip*"></a>
+
+  <h3 id="Egami_SystemDrawing_Image_RotateFlip_Egami_SystemDrawing_RotateFlipType_" data-uid="Egami.SystemDrawing.Image.RotateFlip(Egami.SystemDrawing.RotateFlipType)">
+  RotateFlip(RotateFlipType)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L410"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Rotates and flips the image in place.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void RotateFlip(RotateFlipType rotateFlipType)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>rotateFlipType</code> <a class="xref" href="Egami.SystemDrawing.RotateFlipType.html">RotateFlipType</a></dt>
+    <dd><p>The rotation and flip.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Image_Save_" data-uid="Egami.SystemDrawing.Image.Save*"></a>
+
+  <h3 id="Egami_SystemDrawing_Image_Save_System_IO_Stream_Egami_SystemDrawing_Imaging_ImageCodecInfo_Egami_SystemDrawing_Imaging_EncoderParameters_" data-uid="Egami.SystemDrawing.Image.Save(System.IO.Stream,Egami.SystemDrawing.Imaging.ImageCodecInfo,Egami.SystemDrawing.Imaging.EncoderParameters)">
+  Save(Stream, ImageCodecInfo, EncoderParameters?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L380"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Saves the image to a stream with an encoder and its settings.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Save(Stream stream, ImageCodecInfo encoder, EncoderParameters? encoderParams)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>stream</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.io.stream">Stream</a></dt>
+    <dd><p>The stream.</p>
+</dd>
+    <dt><code>encoder</code> <a class="xref" href="Egami.SystemDrawing.Imaging.ImageCodecInfo.html">ImageCodecInfo</a></dt>
+    <dd><p>The encoder.</p>
+</dd>
+    <dt><code>encoderParams</code> <a class="xref" href="Egami.SystemDrawing.Imaging.EncoderParameters.html">EncoderParameters</a></dt>
+    <dd><p>The settings, or null.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Image_Save_" data-uid="Egami.SystemDrawing.Image.Save*"></a>
+
+  <h3 id="Egami_SystemDrawing_Image_Save_System_IO_Stream_Egami_SystemDrawing_Imaging_ImageFormat_" data-uid="Egami.SystemDrawing.Image.Save(System.IO.Stream,Egami.SystemDrawing.Imaging.ImageFormat)">
+  Save(Stream, ImageFormat)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L370"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Saves the image to a stream in a format.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Save(Stream stream, ImageFormat format)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>stream</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.io.stream">Stream</a></dt>
+    <dd><p>The stream.</p>
+</dd>
+    <dt><code>format</code> <a class="xref" href="Egami.SystemDrawing.Imaging.ImageFormat.html">ImageFormat</a></dt>
+    <dd><p>The format.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentnullexception">ArgumentNullException</a></dt>
+    <dd><p>No encoder writes the format, as in GDI+.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_SystemDrawing_Image_Save_" data-uid="Egami.SystemDrawing.Image.Save*"></a>
+
+  <h3 id="Egami_SystemDrawing_Image_Save_System_String_" data-uid="Egami.SystemDrawing.Image.Save(System.String)">
+  Save(string)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L343"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Saves the image in the format it was loaded from, or as PNG when it was made in memory or no encoder writes its format.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Save(string filename)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>filename</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The file.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Image_Save_" data-uid="Egami.SystemDrawing.Image.Save*"></a>
+
+  <h3 id="Egami_SystemDrawing_Image_Save_System_String_Egami_SystemDrawing_Imaging_ImageCodecInfo_Egami_SystemDrawing_Imaging_EncoderParameters_" data-uid="Egami.SystemDrawing.Image.Save(System.String,Egami.SystemDrawing.Imaging.ImageCodecInfo,Egami.SystemDrawing.Imaging.EncoderParameters)">
+  Save(string, ImageCodecInfo, EncoderParameters?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L358"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Saves the image with an encoder and its settings.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Save(string filename, ImageCodecInfo encoder, EncoderParameters? encoderParams)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>filename</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The file.</p>
+</dd>
+    <dt><code>encoder</code> <a class="xref" href="Egami.SystemDrawing.Imaging.ImageCodecInfo.html">ImageCodecInfo</a></dt>
+    <dd><p>The encoder.</p>
+</dd>
+    <dt><code>encoderParams</code> <a class="xref" href="Egami.SystemDrawing.Imaging.EncoderParameters.html">EncoderParameters</a></dt>
+    <dd><p>The settings, or null.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Image_Save_" data-uid="Egami.SystemDrawing.Image.Save*"></a>
+
+  <h3 id="Egami_SystemDrawing_Image_Save_System_String_Egami_SystemDrawing_Imaging_ImageFormat_" data-uid="Egami.SystemDrawing.Image.Save(System.String,Egami.SystemDrawing.Imaging.ImageFormat)">
+  Save(string, ImageFormat)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L348"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Saves the image in a format.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Save(string filename, ImageFormat format)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>filename</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The file.</p>
+</dd>
+    <dt><code>format</code> <a class="xref" href="Egami.SystemDrawing.Imaging.ImageFormat.html">ImageFormat</a></dt>
+    <dd><p>The format.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Image_SaveAdd_" data-uid="Egami.SystemDrawing.Image.SaveAdd*"></a>
+
+  <h3 id="Egami_SystemDrawing_Image_SaveAdd_Egami_SystemDrawing_Image_Egami_SystemDrawing_Imaging_EncoderParameters_" data-uid="Egami.SystemDrawing.Image.SaveAdd(Egami.SystemDrawing.Image,Egami.SystemDrawing.Imaging.EncoderParameters)">
+  SaveAdd(Image, EncoderParameters)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L400"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Adds another image as the next frame of a multi-frame save this image started.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void SaveAdd(Image image, EncoderParameters encoderParams)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>image</code> <a class="xref" href="Egami.SystemDrawing.Image.html">Image</a></dt>
+    <dd><p>The image to add.</p>
+</dd>
+    <dt><code>encoderParams</code> <a class="xref" href="Egami.SystemDrawing.Imaging.EncoderParameters.html">EncoderParameters</a></dt>
+    <dd><p>The settings: <a class="xref" href="Egami.SystemDrawing.Imaging.Encoder.html#Egami_SystemDrawing_Imaging_Encoder_SaveFlag">SaveFlag</a> with <a class="xref" href="Egami.SystemDrawing.Imaging.EncoderValue.html#Egami_SystemDrawing_Imaging_EncoderValue_FrameDimensionPage">FrameDimensionPage</a>.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Image_SaveAdd_" data-uid="Egami.SystemDrawing.Image.SaveAdd*"></a>
+
+  <h3 id="Egami_SystemDrawing_Image_SaveAdd_Egami_SystemDrawing_Imaging_EncoderParameters_" data-uid="Egami.SystemDrawing.Image.SaveAdd(Egami.SystemDrawing.Imaging.EncoderParameters)">
+  SaveAdd(EncoderParameters)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L390"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Adds this image as the next frame of a multi-frame save, or with <a class="xref" href="Egami.SystemDrawing.Imaging.EncoderValue.html#Egami_SystemDrawing_Imaging_EncoderValue_Flush">Flush</a> finishes it.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void SaveAdd(EncoderParameters encoderParams)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>encoderParams</code> <a class="xref" href="Egami.SystemDrawing.Imaging.EncoderParameters.html">EncoderParameters</a></dt>
+    <dd><p>The settings: <a class="xref" href="Egami.SystemDrawing.Imaging.Encoder.html#Egami_SystemDrawing_Imaging_Encoder_SaveFlag">SaveFlag</a> with <a class="xref" href="Egami.SystemDrawing.Imaging.EncoderValue.html#Egami_SystemDrawing_Imaging_EncoderValue_FrameDimensionPage">FrameDimensionPage</a> or <a class="xref" href="Egami.SystemDrawing.Imaging.EncoderValue.html#Egami_SystemDrawing_Imaging_EncoderValue_Flush">Flush</a>.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Image_SelectActiveFrame_" data-uid="Egami.SystemDrawing.Image.SelectActiveFrame*"></a>
+
+  <h3 id="Egami_SystemDrawing_Image_SelectActiveFrame_Egami_SystemDrawing_Imaging_FrameDimension_System_Int32_" data-uid="Egami.SystemDrawing.Image.SelectActiveFrame(Egami.SystemDrawing.Imaging.FrameDimension,System.Int32)">
+  SelectActiveFrame(FrameDimension, int)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L279"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Makes a frame the one the image shows, draws and saves.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int SelectActiveFrame(FrameDimension dimension, int frameIndex)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>dimension</code> <a class="xref" href="Egami.SystemDrawing.Imaging.FrameDimension.html">FrameDimension</a></dt>
+    <dd><p>The dimension.</p>
+</dd>
+    <dt><code>frameIndex</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The frame, from 0.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><ol start="0">
+<li></li>
+</ol>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Image_SetPropertyItem_" data-uid="Egami.SystemDrawing.Image.SetPropertyItem*"></a>
+
+  <h3 id="Egami_SystemDrawing_Image_SetPropertyItem_Egami_SystemDrawing_Imaging_PropertyItem_" data-uid="Egami.SystemDrawing.Image.SetPropertyItem(Egami.SystemDrawing.Imaging.PropertyItem)">
+  SetPropertyItem(PropertyItem)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L304"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Adds a property item, or replaces the one with its id.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void SetPropertyItem(PropertyItem propitem)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>propitem</code> <a class="xref" href="Egami.SystemDrawing.Imaging.PropertyItem.html">PropertyItem</a></dt>
+    <dd><p>The item.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L17" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

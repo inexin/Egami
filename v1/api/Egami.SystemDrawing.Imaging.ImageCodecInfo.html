@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class ImageCodecInfo | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class ImageCodecInfo | Egami ">
+      
+      <meta name="description" content="One of the codecs  writes with, as GDI+ lists them: BMP, JPEG, GIF, TIFF and PNG encoders, and those plus EMF, WMF and ICO decoders. Egami reads many more formats than the decoders listed; the list matches GDI+&#39;s so code that looks a codec up by its MIME type or GUID finds the same one.">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_SystemDrawing_Imaging_ImageCodecInfo.md&amp;value=---%0Auid%3A%20Egami.SystemDrawing.Imaging.ImageCodecInfo%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.SystemDrawing.Imaging.ImageCodecInfo">
+
+
+
+  <h1 id="Egami_SystemDrawing_Imaging_ImageCodecInfo" data-uid="Egami.SystemDrawing.Imaging.ImageCodecInfo" class="text-break">
+Class ImageCodecInfo  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/ImageCodecInfo.cs/#L11"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a>.<a class="xref" href="Egami.SystemDrawing.html">SystemDrawing</a>.<a class="xref" href="Egami.SystemDrawing.Imaging.html">Imaging</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.SystemDrawing.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>One of the codecs <a class="xref" href="Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_Save_System_IO_Stream_Egami_SystemDrawing_Imaging_ImageCodecInfo_Egami_SystemDrawing_Imaging_EncoderParameters_">Save(Stream, ImageCodecInfo, EncoderParameters?)</a> writes with, as GDI+ lists them:
+BMP, JPEG, GIF, TIFF and PNG encoders, and those plus EMF, WMF and ICO decoders. Egami reads many more formats than the
+decoders listed; the list matches GDI+'s so code that looks a codec up by its MIME type or GUID finds the same one.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public sealed class ImageCodecInfo</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><span class="xref">ImageCodecInfo</span></div>
+    </dd>
+  </dl>
+
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+  </dd></dl>
+
+
+
+  <h2 id="Egami_SystemDrawing_Imaging_ImageCodecInfo_examples">Examples</h2>
+  <pre><code class="lang-csharp">// The encoders GDI+ lists, by MIME type, with encoder parameters for JPEG quality and TIFF compression.
+ImageCodecInfo jpeg = ImageCodecInfo.GetImageEncoders().First(c =&gt; c.MimeType == "image/jpeg");
+using EncoderParameters settings = new(1);
+settings.Param[0] = new EncoderParameter(Encoder.Quality, 85L);
+using MemoryStream file = new();
+photo.Save(file, jpeg, settings);
+
+file.Position = 0;
+using Image loaded = Image.FromStream(file);
+bool fromJpeg = loaded.RawFormat.Equals(ImageFormat.Jpeg);                           // true
+PixelFormat format = loaded.PixelFormat;                                             // Format24bppRgb
+bool readOnly = ((ImageFlags)loaded.Flags).HasFlag(ImageFlags.ReadOnly);             // true
+ImageCodecFlags can = jpeg.Flags;                                                    // Encoder, Decoder, SupportBitmap, Builtin
+EncoderParameterValueType type = settings.Param[0].ValueType;                        // ValueTypeLong
+EncoderValue lzw = EncoderValue.CompressionLZW;                                      // for Encoder.Compression and TIFF</code></pre>
+
+
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="Egami_SystemDrawing_Imaging_ImageCodecInfo_Clsid_" data-uid="Egami.SystemDrawing.Imaging.ImageCodecInfo.Clsid*"></a>
+
+  <h3 id="Egami_SystemDrawing_Imaging_ImageCodecInfo_Clsid" data-uid="Egami.SystemDrawing.Imaging.ImageCodecInfo.Clsid">
+  Clsid
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/ImageCodecInfo.cs/#L22"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets the codec's class id, which <a class="xref" href="Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_Save_System_IO_Stream_Egami_SystemDrawing_Imaging_ImageCodecInfo_Egami_SystemDrawing_Imaging_EncoderParameters_">Save(Stream, ImageCodecInfo, EncoderParameters?)</a> and <a class="xref" href="Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_GetEncoderParameterList_System_Guid_">GetEncoderParameterList(Guid)</a> look the codec up by.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Guid Clsid { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.guid">Guid</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Imaging_ImageCodecInfo_CodecName_" data-uid="Egami.SystemDrawing.Imaging.ImageCodecInfo.CodecName*"></a>
+
+  <h3 id="Egami_SystemDrawing_Imaging_ImageCodecInfo_CodecName" data-uid="Egami.SystemDrawing.Imaging.ImageCodecInfo.CodecName">
+  CodecName
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/ImageCodecInfo.cs/#L28"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets the codec's name, such as &quot;Built-in PNG Codec&quot;.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public string? CodecName { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Imaging_ImageCodecInfo_DllName_" data-uid="Egami.SystemDrawing.Imaging.ImageCodecInfo.DllName*"></a>
+
+  <h3 id="Egami_SystemDrawing_Imaging_ImageCodecInfo_DllName" data-uid="Egami.SystemDrawing.Imaging.ImageCodecInfo.DllName">
+  DllName
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/ImageCodecInfo.cs/#L31"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets the file that holds the codec; empty for the built-in ones.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public string? DllName { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Imaging_ImageCodecInfo_FilenameExtension_" data-uid="Egami.SystemDrawing.Imaging.ImageCodecInfo.FilenameExtension*"></a>
+
+  <h3 id="Egami_SystemDrawing_Imaging_ImageCodecInfo_FilenameExtension" data-uid="Egami.SystemDrawing.Imaging.ImageCodecInfo.FilenameExtension">
+  FilenameExtension
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/ImageCodecInfo.cs/#L37"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets the file name extensions, such as &quot;<em>.JPG;</em>.JPEG;<em>.JPE;</em>.JFIF&quot;.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public string? FilenameExtension { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Imaging_ImageCodecInfo_Flags_" data-uid="Egami.SystemDrawing.Imaging.ImageCodecInfo.Flags*"></a>
+
+  <h3 id="Egami_SystemDrawing_Imaging_ImageCodecInfo_Flags" data-uid="Egami.SystemDrawing.Imaging.ImageCodecInfo.Flags">
+  Flags
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/ImageCodecInfo.cs/#L43"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets what the codec does.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public ImageCodecFlags Flags { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Imaging.ImageCodecFlags.html">ImageCodecFlags</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Imaging_ImageCodecInfo_FormatDescription_" data-uid="Egami.SystemDrawing.Imaging.ImageCodecInfo.FormatDescription*"></a>
+
+  <h3 id="Egami_SystemDrawing_Imaging_ImageCodecInfo_FormatDescription" data-uid="Egami.SystemDrawing.Imaging.ImageCodecInfo.FormatDescription">
+  FormatDescription
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/ImageCodecInfo.cs/#L34"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets the format's name, such as &quot;PNG&quot;.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public string? FormatDescription { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Imaging_ImageCodecInfo_FormatID_" data-uid="Egami.SystemDrawing.Imaging.ImageCodecInfo.FormatID*"></a>
+
+  <h3 id="Egami_SystemDrawing_Imaging_ImageCodecInfo_FormatID" data-uid="Egami.SystemDrawing.Imaging.ImageCodecInfo.FormatID">
+  FormatID
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/ImageCodecInfo.cs/#L25"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets the GUID of the codec's format, the same as its <a class="xref" href="Egami.SystemDrawing.Imaging.ImageFormat.html#Egami_SystemDrawing_Imaging_ImageFormat_Guid">Guid</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Guid FormatID { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.guid">Guid</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Imaging_ImageCodecInfo_MimeType_" data-uid="Egami.SystemDrawing.Imaging.ImageCodecInfo.MimeType*"></a>
+
+  <h3 id="Egami_SystemDrawing_Imaging_ImageCodecInfo_MimeType" data-uid="Egami.SystemDrawing.Imaging.ImageCodecInfo.MimeType">
+  MimeType
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/ImageCodecInfo.cs/#L40"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets the MIME type, such as &quot;image/png&quot;.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public string? MimeType { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Imaging_ImageCodecInfo_SignatureMasks_" data-uid="Egami.SystemDrawing.Imaging.ImageCodecInfo.SignatureMasks*"></a>
+
+  <h3 id="Egami_SystemDrawing_Imaging_ImageCodecInfo_SignatureMasks" data-uid="Egami.SystemDrawing.Imaging.ImageCodecInfo.SignatureMasks">
+  SignatureMasks
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/ImageCodecInfo.cs/#L52"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets the masks the <a class="xref" href="Egami.SystemDrawing.Imaging.ImageCodecInfo.html#Egami_SystemDrawing_Imaging_ImageCodecInfo_SignaturePatterns">SignaturePatterns</a> are compared through.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public byte[][]? SignatureMasks { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.byte">byte</a>[][]</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Imaging_ImageCodecInfo_SignaturePatterns_" data-uid="Egami.SystemDrawing.Imaging.ImageCodecInfo.SignaturePatterns*"></a>
+
+  <h3 id="Egami_SystemDrawing_Imaging_ImageCodecInfo_SignaturePatterns" data-uid="Egami.SystemDrawing.Imaging.ImageCodecInfo.SignaturePatterns">
+  SignaturePatterns
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/ImageCodecInfo.cs/#L49"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets the bytes files of the format start with.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public byte[][]? SignaturePatterns { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.byte">byte</a>[][]</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Imaging_ImageCodecInfo_Version_" data-uid="Egami.SystemDrawing.Imaging.ImageCodecInfo.Version*"></a>
+
+  <h3 id="Egami_SystemDrawing_Imaging_ImageCodecInfo_Version" data-uid="Egami.SystemDrawing.Imaging.ImageCodecInfo.Version">
+  Version
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/ImageCodecInfo.cs/#L46"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets the codec's version.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int Version { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="Egami_SystemDrawing_Imaging_ImageCodecInfo_GetImageDecoders_" data-uid="Egami.SystemDrawing.Imaging.ImageCodecInfo.GetImageDecoders*"></a>
+
+  <h3 id="Egami_SystemDrawing_Imaging_ImageCodecInfo_GetImageDecoders" data-uid="Egami.SystemDrawing.Imaging.ImageCodecInfo.GetImageDecoders">
+  GetImageDecoders()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/ImageCodecInfo.cs/#L56"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns the decoders.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static ImageCodecInfo[] GetImageDecoders()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Imaging.ImageCodecInfo.html">ImageCodecInfo</a>[]</dt>
+    <dd><p>A new array of the decoders.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Imaging_ImageCodecInfo_GetImageEncoders_" data-uid="Egami.SystemDrawing.Imaging.ImageCodecInfo.GetImageEncoders*"></a>
+
+  <h3 id="Egami_SystemDrawing_Imaging_ImageCodecInfo_GetImageEncoders" data-uid="Egami.SystemDrawing.Imaging.ImageCodecInfo.GetImageEncoders">
+  GetImageEncoders()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/ImageCodecInfo.cs/#L61"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns the encoders.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static ImageCodecInfo[] GetImageEncoders()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Imaging.ImageCodecInfo.html">ImageCodecInfo</a>[]</dt>
+    <dd><p>A new array of the encoders.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/ImageCodecInfo.cs/#L11" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>
