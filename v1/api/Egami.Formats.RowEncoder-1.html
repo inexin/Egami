@@ -89,7 +89,7 @@
 
 
   <h1 id="Egami_Formats_RowEncoder_1" data-uid="Egami.Formats.RowEncoder`1" class="text-break">
-Class RowEncoder&lt;TPixel&gt;  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/RowEncoder.cs/#L105"><i class="bi bi-code-slash"></i></a>
+Class RowEncoder&lt;TPixel&gt;  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/RowEncoder.cs/#L118"><i class="bi bi-code-slash"></i></a>
   </h1>
 
   <div class="facts text-secondary">
@@ -181,7 +181,11 @@ public static class StreamingRaw8Format
         {
             input.Skip(4);
             int width = (int)input.ReadUInt32BigEndian();
-            return new Rows(input, width, (int)input.ReadUInt32BigEndian());
+            int height = (int)input.ReadUInt32BigEndian();
+
+            // No raster checks the size here, so check it before the row buffer is allocated.
+            input.CheckFrameSize(width, height);
+            return new Rows(input, width, height);
         }
     }
 
@@ -226,7 +230,12 @@ public static class StreamingRaw8Format
 
         // Save, SaveAsync, RasterEncoder and Transcode all write through the encoder.
         public RowEncoder&lt;TPixel&gt; Start&lt;TPixel&gt;(Stream output, EncodeStart&lt;TPixel&gt; start)
-            where TPixel : unmanaged, IPixelType&lt;TPixel&gt; =&gt; new Encoder&lt;TPixel&gt;(output, start.Width, start.Height);
+            where TPixel : unmanaged, IPixelType&lt;TPixel&gt;
+        {
+            // RAW8 keeps 8-bit RGBA and nothing else: deeper samples or metadata are reported as lost.
+            start.ReportLosses("RAW8", SaveKeeps.Alpha);
+            return new Encoder&lt;TPixel&gt;(output, start.Width, start.Height);
+        }
     }
 
     private sealed class Encoder&lt;TPixel&gt; : RowEncoder&lt;TPixel&gt;
@@ -269,7 +278,7 @@ public static class StreamingRaw8Format
 
   <h3 id="Egami_Formats_RowEncoder_1_Animates" data-uid="Egami.Formats.RowEncoder`1.Animates">
   Animates
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/RowEncoder.cs/#L112"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/RowEncoder.cs/#L125"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets whether the format holds more than one frame, so <a class="xref" href="Egami.Formats.RowEncoder-1.html#Egami_Formats_RowEncoder_1_WriteFrame_Egami_Frame__0__">WriteFrame(Frame&lt;TPixel&gt;)</a> takes them all. Otherwise one frame is
@@ -306,7 +315,7 @@ written as the still image, through <a class="xref" href="Egami.Formats.RowEncod
 
   <h3 id="Egami_Formats_RowEncoder_1_Complete" data-uid="Egami.Formats.RowEncoder`1.Complete">
   Complete()
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/RowEncoder.cs/#L124"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/RowEncoder.cs/#L137"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Writes what follows the image data. Every row or frame has been written.</p>
@@ -333,7 +342,7 @@ written as the still image, through <a class="xref" href="Egami.Formats.RowEncod
 
   <h3 id="Egami_Formats_RowEncoder_1_Dispose" data-uid="Egami.Formats.RowEncoder`1.Dispose">
   Dispose()
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/RowEncoder.cs/#L139"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/RowEncoder.cs/#L152"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.</p>
@@ -360,7 +369,7 @@ written as the still image, through <a class="xref" href="Egami.Formats.RowEncod
 
   <h3 id="Egami_Formats_RowEncoder_1_Dispose_System_Boolean_" data-uid="Egami.Formats.RowEncoder`1.Dispose(System.Boolean)">
   Dispose(bool)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/RowEncoder.cs/#L147"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/RowEncoder.cs/#L160"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Returns the encoder's buffers.</p>
@@ -393,7 +402,7 @@ written as the still image, through <a class="xref" href="Egami.Formats.RowEncod
 
   <h3 id="Egami_Formats_RowEncoder_1_WriteFrame_Egami_Frame__0__" data-uid="Egami.Formats.RowEncoder`1.WriteFrame(Egami.Frame{`0})">
   WriteFrame(Frame&lt;TPixel&gt;)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/RowEncoder.cs/#L121"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/RowEncoder.cs/#L134"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Writes the next frame of an animation. Only called when <a class="xref" href="Egami.Formats.RowEncoder-1.html#Egami_Formats_RowEncoder_1_Animates">Animates</a>.</p>
@@ -432,7 +441,7 @@ written as the still image, through <a class="xref" href="Egami.Formats.RowEncod
 
   <h3 id="Egami_Formats_RowEncoder_1_WriteRow_System_ReadOnlySpan__0__" data-uid="Egami.Formats.RowEncoder`1.WriteRow(System.ReadOnlySpan{`0})">
   WriteRow(ReadOnlySpan&lt;TPixel&gt;)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/RowEncoder.cs/#L116"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/RowEncoder.cs/#L129"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Writes the next row of the still image, top-down.</p>
@@ -465,7 +474,7 @@ written as the still image, through <a class="xref" href="Egami.Formats.RowEncod
 
   <h3 id="Egami_Formats_RowEncoder_1_WriteWhole_Egami_Raster__0__" data-uid="Egami.Formats.RowEncoder`1.WriteWhole(Egami.Raster{`0})">
   WriteWhole(Raster&lt;TPixel&gt;)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/RowEncoder.cs/#L132"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/RowEncoder.cs/#L145"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Writes the whole image Save was given, in steps: SaveAsync writes out the bytes so far at each one. By default the rows of
@@ -505,7 +514,7 @@ the first frame, top-down, 64 at a time; a format with bottom-up rows or frames 
 </article>
 
         <div class="contribution d-print-none">
-          <a href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/RowEncoder.cs/#L105" class="edit-link">Edit this page</a>
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/RowEncoder.cs/#L118" class="edit-link">Edit this page</a>
         </div>
 
 

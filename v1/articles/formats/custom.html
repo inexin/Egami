@@ -195,12 +195,12 @@ using Raster back = Raster.Load(&quot;duck.raw8&quot;, context);
 <td>Working memory counted against the same budget</td>
 </tr>
 <tr>
-<td><code>CheckMemory</code>, <code>CheckFrameCount</code>, <code>CheckMetadataBytes</code></td>
+<td><code>CheckFrameSize</code>, <code>CheckMemory</code>, <code>CheckFrameCount</code>, <code>CheckMetadataBytes</code></td>
 <td>Check a number from the header before acting on it</td>
 </tr>
 <tr>
 <td><code>Warn(raster, id, text)</code></td>
-<td>Note something a lenient read recovered from, with a stable id such as <code>Pcx.PaletteMissing</code></td>
+<td>Note something a lenient read recovered from, with a stable id such as <code>Pcx.PaletteMissing</code>; <code>Warn(metadata, id, text)</code> does the same for an open <code>RowReader</code>'s metadata</td>
 </tr>
 <tr>
 <td><code>Corrupt(offset, problem)</code></td>
@@ -216,7 +216,10 @@ from <code>Open</code>: the open image hands out rows as <code>RasterDecoder</co
 moves through frames with <code>NextFrame</code>. The decoder applies <code>Region</code>, <code>MinimumSize</code> and the pixel conversion after it. A writer
 that also implements <code>IRowFormatWriter</code> returns a <code>RowEncoder&lt;TPixel&gt;</code> from <code>Start</code>, which takes rows (or frames, for an
 animation) one at a time; <code>Save</code>, <code>SaveAsync</code>, <code>RasterEncoder</code> and <code>Transcode</code> then all write through it. When streaming,
-<code>EncodeStart.Whole</code> is <code>null</code>: an option that needs every pixel before the first byte should call <code>EncodeStart.Refuse</code>.</p>
+<code>EncodeStart.Whole</code> is <code>null</code>: an option that needs every pixel before the first byte should call <code>EncodeStart.Refuse</code>.
+An open image checks the header's size with <code>CheckFrameSize</code> before it rents its row buffers, since it creates no raster. An
+encoder calls <code>EncodeStart.ReportLosses</code> with the <code>SaveKeeps</code> flags for what it writes, so a save that drops alpha, depth,
+frames or metadata says so in the Warnings, as Egami's own writers do.</p>
 <pre><code class="lang-csharp">/// &lt;summary&gt;The same RAW8 format, streaming: rows go in and out one at a time, so RasterDecoder, RasterEncoder and Transcode stream it.&lt;/summary&gt;
 public static class StreamingRaw8Format
 {
@@ -238,7 +241,11 @@ public static class StreamingRaw8Format
         {
             input.Skip(4);
             int width = (int)input.ReadUInt32BigEndian();
-            return new Rows(input, width, (int)input.ReadUInt32BigEndian());
+            int height = (int)input.ReadUInt32BigEndian();
+
+            // No raster checks the size here, so check it before the row buffer is allocated.
+            input.CheckFrameSize(width, height);
+            return new Rows(input, width, height);
         }
     }
 
@@ -283,7 +290,12 @@ public static class StreamingRaw8Format
 
         // Save, SaveAsync, RasterEncoder and Transcode all write through the encoder.
         public RowEncoder&lt;TPixel&gt; Start&lt;TPixel&gt;(Stream output, EncodeStart&lt;TPixel&gt; start)
-            where TPixel : unmanaged, IPixelType&lt;TPixel&gt; =&gt; new Encoder&lt;TPixel&gt;(output, start.Width, start.Height);
+            where TPixel : unmanaged, IPixelType&lt;TPixel&gt;
+        {
+            // RAW8 keeps 8-bit RGBA and nothing else: deeper samples or metadata are reported as lost.
+            start.ReportLosses(&quot;RAW8&quot;, SaveKeeps.Alpha);
+            return new Encoder&lt;TPixel&gt;(output, start.Width, start.Height);
+        }
     }
 
     private sealed class Encoder&lt;TPixel&gt; : RowEncoder&lt;TPixel&gt;

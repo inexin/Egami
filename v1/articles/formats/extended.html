@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Extended formats | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Extended formats | Egami ">
+      
+      
+      <link rel="icon" href="../../images/favicon.ico">
+      <link rel="stylesheet" href="../../public/docfx.min.css">
+      <link rel="stylesheet" href="../../public/main.css">
+      <meta name="docfx:navrel" content="../../toc.html">
+      <meta name="docfx:tocrel" content="../toc.html">
+      
+      <meta name="docfx:rel" content="../../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/blob/main/docs/articles/formats/extended.md/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../../index.html">
+            <img id="logo" class="svg" src="../../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="extended-formats">Extended formats</h1>
+
+<p>Egami.Formats.Extended reads and writes image formats that most apps never meet but some still need: PCX, SGI, Sun raster,
+XBM, XPM, WBMP and Farbfeld. They are plugins on core Egami's public format API, the one <a href="custom.html">your own format</a> uses,
+so they load, probe, stream and save as the core formats do, inside the same safety limits. The package depends on core
+Egami only and ships with every Egami release.</p>
+<h2 id="registering-the-formats">Registering the formats</h2>
+<p>Nothing registers them on their own. <code>WithExtendedFormats()</code>, an extension method in <code>ExtendedContextExtensions</code>, returns a
+context with every stable format of the package, detected after core Egami's own; pass it to the calls, or make it the default
+once at startup with <code>EgamiContext.SetDefault(new EgamiContext().WithExtendedFormats())</code>.</p>
+<pre><code class="lang-csharp">// Every stable format of Egami.Formats.Extended, once at startup before any other Egami call:
+// EgamiContext.SetDefault(new EgamiContext().WithExtendedFormats());
+
+// ...or in a context of its own.
+EgamiContext context = EgamiContext.Default.WithExtendedFormats();
+using Raster image = Raster.Load(&quot;duck.png&quot;, context);
+
+// A raster saves to a path through the context it was loaded with, so the extension picks PCX.
+image.Save(&quot;duck.pcx&quot;);
+using Raster back = Raster.Load(&quot;duck.pcx&quot;, context);
+string format = back.Metadata.FormatName!;               // &quot;PCX&quot;
+</code></pre>
+<p>Each format also has its own method and its own <code>FormatInfo</code>, for an app that wants only one:</p>
+<pre><code class="lang-csharp">// One format at a time: each has its own method and its own FormatInfo.
+EgamiContext context = EgamiContext.Default.WithSgi().WithSunRaster();
+using (FileStream output = File.Create(&quot;duck.sgi&quot;))
+{
+    image.Save(output, SgiFormat.Info);
+}
+
+RasterInfo info = Raster.Probe(&quot;duck.sgi&quot;, context);
+Console.WriteLine($&quot;{info.Format.Name} {info.Width}×{info.Height} {info.Layout.ChannelOrder}&quot;);
+</code></pre><h2 id="the-formats">The formats</h2>
+<table>
+<thead>
+<tr>
+<th>Format</th>
+<th><code>FormatInfo</code></th>
+<th>Reads</th>
+<th>Writes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PCX</td>
+<td><code>PcxFormat</code></td>
+<td>1, 2, 4 and 8-bit indexed, 1-bit EGA planes, 24-bit and 32-bit, run-length coded or not</td>
+<td>8-bit gray with a gray palette, or 24-bit RGB, run-length coded</td>
+</tr>
+<tr>
+<td>SGI</td>
+<td><code>SgiFormat</code></td>
+<td>1 to 4 channels of 8 or 16 bits, plain or run-length coded</td>
+<td>the raster's channels and depth, run-length coded unless <code>SgiWriterOptions.Rle</code> is off</td>
+</tr>
+<tr>
+<td>Sun raster</td>
+<td><code>SunRasterFormat</code></td>
+<td>1, 8, 24 and 32 bits, with or without a colormap, plain or run-length coded</td>
+<td>8-bit gray or 24-bit, run-length coded when <code>SunRasterWriterOptions.Rle</code> is set</td>
+</tr>
+<tr>
+<td>XBM</td>
+<td><code>XbmFormat</code></td>
+<td>X11 files of bytes and X10 files of 16-bit words</td>
+<td>X11, black where gray is below half</td>
+</tr>
+<tr>
+<td>XPM</td>
+<td><code>XpmFormat</code></td>
+<td>version 3, any number of characters a pixel, None, hex colors and X11 color names</td>
+<td>every color of the raster, None below half alpha</td>
+</tr>
+<tr>
+<td>WBMP</td>
+<td><code>WbmpFormat</code></td>
+<td>type 0, extension headers skipped</td>
+<td>type 0, white where gray is at least half</td>
+</tr>
+<tr>
+<td>Farbfeld</td>
+<td><code>FarbfeldFormat</code></td>
+<td>16-bit RGBA</td>
+<td>16-bit RGBA</td>
+</tr>
+</tbody>
+</table>
+<p>SGI and Farbfeld keep 16-bit samples and alpha. PCX, Sun raster and WBMP have no alpha, XPM only on or off, and a save that
+loses something the raster has says so in the Warnings, as Egami's own writers do. The formats with a run-length option take
+it from their writer options:</p>
+<pre><code class="lang-csharp">// SGI codes its rows by default; Sun raster writes them plain unless asked.
+using (FileStream sgi = File.Create(&quot;duck.rgb&quot;))
+{
+    image.Save(sgi, SgiFormat.Info, new SgiWriterOptions { Rle = false });
+}
+
+using (FileStream sun = File.Create(&quot;duck.ras&quot;))
+{
+    image.Save(sun, SunRasterFormat.Info, new SunRasterWriterOptions { Rle = true });
+}
+</code></pre>
+<p>What a header says that the pixels do not is kept in <code>RasterMetadata.FormatDetails</code>: <code>PcxDetails</code> (version, planes, palette),
+<code>SgiDetails</code> (image name, channels, depth), <code>SunRasterDetails</code> (depth, colormap, coding), <code>XbmDetails</code> and <code>XpmDetails</code> (the
+C name and the cursor hotspot). The SGI, XBM and XPM writers take the name and hotspot back from them.</p>
+<pre><code class="lang-csharp">// What the header said that the pixels do not: PcxDetails, SgiDetails, SunRasterDetails, XbmDetails and XpmDetails.
+using Raster image = Raster.Load(&quot;arrow.xbm&quot;, context);
+if (image.Metadata.FormatDetails is XbmDetails xbm)
+{
+    Console.WriteLine($&quot;{xbm.Name}, hotspot {xbm.Hotspot}&quot;);
+}
+
+// Writers take the name and hotspot back from the details.
+image.Metadata.FormatDetails = new XbmDetails { Name = &quot;pointer&quot;, Hotspot = new Point(0, 0) };
+image.Save(&quot;pointer.xbm&quot;);
+</code></pre><h2 id="streaming-and-damaged-files">Streaming and damaged files</h2>
+<p>PCX, Sun raster, WBMP and Farbfeld decode their rows from the input as <code>RasterDecoder</code> asks for them; an 8-bit PCX first
+reads to its end, where its palette is. SGI stores each channel as its own plane of bottom-up rows, and XBM and XPM are C
+source, so those three read the file whole. A lenient read of a file that ends early keeps the rows it has and leaves the rest
+transparent black, with a <code>RowsMissing</code> warning such as <code>Pcx.RowsMissing</code>; a strict read throws <code>CorruptDataException</code>.</p>
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/docs/articles/formats/extended.md/#L1" class="edit-link">Edit this page</a>
+        </div>
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

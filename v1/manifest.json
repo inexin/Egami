@@ -6103,6 +6103,328 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Extended.ExtendedContextExtensions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Extended.ExtendedContextExtensions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Extended.ExtendedContextExtensions",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Extended.ExtendedContextExtensions.yml\" sourcestartlinenumber=\"1\">Registers Egami.Formats.Extended's formats with an <xref href=\"Egami.EgamiContext\" data-throw-if-not-resolved=\"false\"></xref>. Nothing registers them on their own: an app\ncalls <xref href=\"Egami.Formats.Extended.ExtendedContextExtensions.WithExtendedFormats(Egami.EgamiContext)\" data-throw-if-not-resolved=\"false\"></xref> for every stable format, or one method per format.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Extended.Farbfeld.FarbfeldFormat.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Extended.Farbfeld.FarbfeldFormat.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Extended.Farbfeld.FarbfeldFormat",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Extended.Farbfeld.FarbfeldFormat.yml\" sourcestartlinenumber=\"1\">Farbfeld, suckless.org's lossless format: &quot;farbfeld&quot;, the width and height as big-endian 32-bit numbers, then 16-bit\nbig-endian RGBA pixels, row by row. Registered with <xref href=\"Egami.Formats.Extended.ExtendedContextExtensions.WithFarbfeld(Egami.EgamiContext)\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Extended.Farbfeld.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Extended.Farbfeld.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Extended.Farbfeld",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Extended.Pcx.PcxDetails.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Extended.Pcx.PcxDetails.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Extended.Pcx.PcxDetails",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Extended.Pcx.PcxDetails.yml\" sourcestartlinenumber=\"1\">Details only PCX has, kept in <xref href=\"Egami.Metadata.RasterMetadata.FormatDetails\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Extended.Pcx.PcxFormat.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Extended.Pcx.PcxFormat.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Extended.Pcx.PcxFormat",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Extended.Pcx.PcxFormat.yml\" sourcestartlinenumber=\"1\">PCX, ZSoft's PC Paintbrush format: a 128-byte header, then run-length coded scanlines of one to four color planes. Registered\nwith <xref href=\"Egami.Formats.Extended.ExtendedContextExtensions.WithPcx(Egami.EgamiContext)\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Extended.Pcx.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Extended.Pcx.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Extended.Pcx",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Extended.Sgi.SgiDetails.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Extended.Sgi.SgiDetails.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Extended.Sgi.SgiDetails",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Extended.Sgi.SgiDetails.yml\" sourcestartlinenumber=\"1\">Details only SGI has, kept in <xref href=\"Egami.Metadata.RasterMetadata.FormatDetails\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Extended.Sgi.SgiFormat.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Extended.Sgi.SgiFormat.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Extended.Sgi.SgiFormat",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Extended.Sgi.SgiFormat.yml\" sourcestartlinenumber=\"1\">SGI, Silicon Graphics' image format (.rgb, .sgi): a 512-byte header, then one to four channels of 8-bit or 16-bit samples\nstored as separate planes of bottom-up rows, plain or run-length coded. Registered with\n<xref href=\"Egami.Formats.Extended.ExtendedContextExtensions.WithSgi(Egami.EgamiContext)\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Extended.Sgi.SgiWriterOptions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Extended.Sgi.SgiWriterOptions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Extended.Sgi.SgiWriterOptions",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Extended.Sgi.SgiWriterOptions.yml\" sourcestartlinenumber=\"1\">Options for writing SGI.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Extended.Sgi.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Extended.Sgi.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Extended.Sgi",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Extended.SunRaster.SunRasterDetails.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Extended.SunRaster.SunRasterDetails.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Extended.SunRaster.SunRasterDetails",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Extended.SunRaster.SunRasterDetails.yml\" sourcestartlinenumber=\"1\">Details only Sun raster has, kept in <xref href=\"Egami.Metadata.RasterMetadata.FormatDetails\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Extended.SunRaster.SunRasterFormat.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Extended.SunRaster.SunRasterFormat.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Extended.SunRaster.SunRasterFormat",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Extended.SunRaster.SunRasterFormat.yml\" sourcestartlinenumber=\"1\">Sun raster, the rasterfile format of SunOS: a 32-byte big-endian header, an optional colormap, then rows of 1, 8, 24 or 32 bits,\nplain or run-length coded. Registered with <xref href=\"Egami.Formats.Extended.ExtendedContextExtensions.WithSunRaster(Egami.EgamiContext)\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Extended.SunRaster.SunRasterWriterOptions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Extended.SunRaster.SunRasterWriterOptions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Extended.SunRaster.SunRasterWriterOptions",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Extended.SunRaster.SunRasterWriterOptions.yml\" sourcestartlinenumber=\"1\">Options for writing Sun raster.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Extended.SunRaster.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Extended.SunRaster.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Extended.SunRaster",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Extended.Wbmp.WbmpFormat.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Extended.Wbmp.WbmpFormat.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Extended.Wbmp.WbmpFormat",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Extended.Wbmp.WbmpFormat.yml\" sourcestartlinenumber=\"1\">WBMP, the Wireless Application Protocol's one-bit bitmap, type 0: a type and a header byte, the width and height as WAP\nmulti-byte integers, then rows of bits, white 1 and black 0. Registered with <xref href=\"Egami.Formats.Extended.ExtendedContextExtensions.WithWbmp(Egami.EgamiContext)\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Extended.Wbmp.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Extended.Wbmp.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Extended.Wbmp",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Extended.Xbm.XbmDetails.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Extended.Xbm.XbmDetails.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Extended.Xbm.XbmDetails",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Extended.Xbm.XbmDetails.yml\" sourcestartlinenumber=\"1\">Details only XBM has, kept in <xref href=\"Egami.Metadata.RasterMetadata.FormatDetails\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Extended.Xbm.XbmFormat.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Extended.Xbm.XbmFormat.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Extended.Xbm.XbmFormat",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Extended.Xbm.XbmFormat.yml\" sourcestartlinenumber=\"1\">XBM, the X Window System's one-bit bitmap: C source with the width and height as #define lines and the bits as an array,\nblack where set. Registered with <xref href=\"Egami.Formats.Extended.ExtendedContextExtensions.WithXbm(Egami.EgamiContext)\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Extended.Xbm.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Extended.Xbm.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Extended.Xbm",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Extended.Xpm.XpmDetails.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Extended.Xpm.XpmDetails.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Extended.Xpm.XpmDetails",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Extended.Xpm.XpmDetails.yml\" sourcestartlinenumber=\"1\">Details only XPM has, kept in <xref href=\"Egami.Metadata.RasterMetadata.FormatDetails\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Extended.Xpm.XpmFormat.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Extended.Xpm.XpmFormat.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Extended.Xpm.XpmFormat",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Extended.Xpm.XpmFormat.yml\" sourcestartlinenumber=\"1\">XPM, the X PixMap format (version 3): C source holding an array of strings, the size and color count, a color table keyed by\none or more characters, then a string of characters per row. Registered with <xref href=\"Egami.Formats.Extended.ExtendedContextExtensions.WithXpm(Egami.EgamiContext)\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Extended.Xpm.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Extended.Xpm.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Extended.Xpm",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Extended.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Extended.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Extended",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.Formats.FormatInfo.yml",
       "output": {
         ".html": {
@@ -7696,6 +8018,20 @@
       "IsMRef": true,
       "Title": "Egami.Formats.RowReader",
       "Summary": "<p sourcefile=\"api/Egami.Formats.RowReader.yml\" sourcestartlinenumber=\"1\">One open image, as a format reader streams it: frames of rows at the stored size. Derive from <xref href=\"Egami.Formats.RowReader%601\" data-throw-if-not-resolved=\"false\"></xref>,\nwhich names the natural pixel type.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.SaveKeeps.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.SaveKeeps.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.SaveKeeps",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.SaveKeeps.yml\" sourcestartlinenumber=\"1\">What a writer keeps of a raster, as it is about to write it, for <xref href=\"Egami.Formats.EncodeStart%601.ReportLosses(System.String%2cEgami.Formats.SaveKeeps)\" data-throw-if-not-resolved=\"false\"></xref>: everything\nthe raster has that is not named here is reported as lost.</p>\n"
     },
     {
       "type": "ManagedReference",
@@ -15180,6 +15516,16 @@
       "output": {
         ".html": {
           "relative_path": "articles/formats/custom.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "articles/formats/extended.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/formats/extended.html"
         }
       },
       "version": ""
