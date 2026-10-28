@@ -248,14 +248,36 @@ public class InterpreterTests
     public void Vectors()
     {
         TrueTypeInterpreter t = Ready();
-        // SPVTL from point 0 (0,0) to point 2 (200,200): the diagonal.
-        Assert.Equal([11585, 11585], Stack(Code([0, 2], 0x06, 0x0C), t));
+        // SPVTL pops p1 (top) then p2 and points from p1 to p2: from point 0 (0,0) to point 2 (200,200) is the diagonal up.
+        Assert.Equal([11585, 11585], Stack(Code([2, 0], 0x06, 0x0C), t));
+        // The other order points the other way.
+        Assert.Equal([-11585, -11585], Stack(Code([0, 2], 0x06, 0x0C), t));
         // Perpendicular: rotated 90° counter-clockwise.
-        Assert.Equal([-11585, 11585], Stack(Code([0, 2], 0x07, 0x0C), t));
+        Assert.Equal([-11585, 11585], Stack(Code([2, 0], 0x07, 0x0C), t));
+        // SFVTL the same for the freedom vector, from point 0 to point 3 (200,0): the x axis.
+        Assert.Equal([16384, 0], Stack(Code([3, 0], 0x08, 0x0D), t));
         // SFVFS normalises; GFV reads it back.
         Assert.Equal([0, 16384], Stack(Code([0, 5], 0x0B, 0x0D), t));
         // Coinciding points give the x axis.
         Assert.Equal([16384, 0], Stack(Code([0, 0], 0x06, 0x0C), t));
+    }
+
+    [Fact]
+    public void VectorToLineReadsP1FromZp2AndP2FromZp1()
+    {
+        // p1 = twilight point 3 (at the origin after the reset) through zp2 = 0; p2 = glyph point 2 (200,200) through zp1 = 1.
+        // Read with the zones swapped, the points would be glyph point 3 (200,0) and twilight point 2 (0,0): a different line.
+        TrueTypeInterpreter t = Ready();
+        Assert.Equal([11585, 11585], Stack(Code([2, 3, 0], 0x15, 0x06, 0x0C), t));
+
+        // SDPVTL: the dual vector from original positions, the projection from current ones. Point 2 moved right by 200 after
+        // loading: the projection follows the move, the dual vector keeps the original diagonal.
+        Zone z = Square();
+        z.CurX[2] = 400;
+        var s = new GraphicsState();
+        Assert.True(t.RunForTest(Code([2, 0], 0x86), z, s));
+        Assert.Equal((14654, 7327), (t.LastState.ProjX, t.LastState.ProjY));
+        Assert.Equal((11585, 11585), (t.LastState.DualX, t.LastState.DualY));
     }
 
     private static (TrueTypeInterpreter T, Zone Z) Move(byte[] code, InterpreterTarget? target = null, GraphicsState? state = null)
@@ -448,13 +470,65 @@ public class InterpreterTests
     {
         // GC[0] current y of point 1 (200), GC[1] original.
         Assert.Equal([200, 200], Stack(Code([1, 1], 0x00, 0x46, 0x23, 0x47)));
-        // MD[1] current: point 1 (zp0) less point 0 (zp1).
-        Assert.Equal([200], Stack(Code([0, 1], 0x00, 0x4A)));
-        // MD[0] original from unscaled positions.
-        Assert.Equal([200], Stack(Code([0, 1], 0x00, 0x49)));
+        // MD pops p1 (top, zp1) then p2 (zp0) and measures p2 less p1, as GDI and GDI+ do: point 0 less point 1 is -200.
+        Assert.Equal([-200], Stack(Code([0, 1], 0x00, 0x49)));
+        Assert.Equal([200], Stack(Code([1, 0], 0x00, 0x49)));
+
         // SCFS sets point 2's y to 300.
         (_, Zone z) = Move(Code([2, 300], 0x00, 0x48));
         Assert.Equal(300, z.CurY[2]);
+    }
+
+    [Fact]
+    public void MeasureDistanceTakesTheGridFittedOutlineWithFlagZero()
+    {
+        // As egami-compare's probe-measure.ttf showed on GDI and GDI+: MD[0] (0x49) measures the moved outline, MD[1] (0x4A) the
+        // original. Point 1 is at y 200 originally and moved to 300.
+        foreach ((byte op, int expected) in new[] { ((byte)0x49, -300), ((byte)0x4A, -200) })
+        {
+            Zone z = Square();
+            z.CurY[1] = 300;
+            TrueTypeInterpreter t = Ready();
+            Assert.True(t.RunForTest(Code([0, 1], 0x00, op), z, new GraphicsState()));
+            Assert.Equal([expected], t.LastStack);
+        }
+    }
+
+    [Fact]
+    public void MeasureDistanceReadsP1FromZp1AndP2FromZp0()
+    {
+        // zp1 = twilight (point 1 at the origin after the reset), zp0 = glyph: glyph point 2 (x 200) less twilight point 1 (x 0).
+        TrueTypeInterpreter t = Ready();
+        Assert.Equal([200], Stack(Code([2, 1, 0], 0x14, 0x01, 0x49), t));
+
+        // Out-of-range points measure 0 rather than failing.
+        Assert.Equal([0], Stack(Code([2, 500], 0x01, 0x49), t));
+    }
+
+    [Fact]
+    public void ArithmeticWrapsAtTheEdgesOfInt32()
+    {
+        // int.MinValue built as 2^14 × 2^14 × 2^14 × 2^7 in 26.6 MULs (2^31 wraps to int.MinValue); ABS of it wraps, no exception.
+        byte[] min = [0xB8, 0x40, 0x00, 0xB8, 0x40, 0x00, 0x63, 0xB8, 0x40, 0x00, 0x63, 0xB0, 128, 0x63];
+        Assert.Equal([int.MinValue], Stack([.. min, 0x64]));
+        Assert.Equal([int.MinValue], Stack([.. min, 0x65]));
+
+        // A control value of int.MinValue: MIAP's cut-in test measures in 64 bits rather than overflowing.
+        TrueTypeInterpreter t = Ready();
+        Assert.True(t.RunForTest([0xB0, 0, .. min, 0x44, 0xB1, 1, 0, 0x00, 0x3F], Square(), new GraphicsState()));
+
+        // And MIRP's single-width test with extreme settings.
+        Assert.True(Ready().RunForTest(Code([1, 0, 0], 0x00, 0x10, 0xE4), Square(), new GraphicsState { SingleWidth = int.MinValue, SingleWidthCutIn = int.MaxValue }));
+    }
+
+    [Fact]
+    public void DeltaCountsCannotOutrunTheStack()
+    {
+        // A count larger than the stack holds pairs for fails at once, rather than looping 2^31 times.
+        TrueTypeInterpreter t = Ready();
+        Assert.False(t.RunForTest(Code([1, 2, 32767], 0x00, 0x5D), Square(), new GraphicsState()));
+        Assert.False(t.RunForTest(Code([1, 2, -1], 0x00, 0x73), Square(), new GraphicsState()));
+        Assert.True(t.RunForTest([0x5D], Square(), new GraphicsState())); // an empty stack: 0 pairs, nothing to do
     }
 
     [Fact]

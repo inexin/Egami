@@ -148,11 +148,12 @@ internal sealed partial class TrueTypeInterpreter
         }
     }
 
-    // SPVTL, SFVTL and SDPVTL: the vector from p1 (zp2) to p2 (zp1), or perpendicular to it (rotated 90° counter-clockwise).
-    // Coinciding points give the x axis. SDPVTL takes the dual vector from the original positions, the projection from the current.
+    // SPVTL, SFVTL and SDPVTL pop p1 (the top of the stack, in zp2) and then p2 (in zp1), and set the vector from p1 to p2, or
+    // perpendicular to it (rotated 90° counter-clockwise). Coinciding points give the x axis. SDPVTL takes the dual vector from
+    // the original positions, the projection from the current.
     private void VectorToLine(int perpendicular, bool projection, bool dual)
     {
-        int p2 = Pop(), p1 = Pop();
+        int p1 = Pop(), p2 = Pop();
         Zone a = Z(_gs.Zp2), b = Z(_gs.Zp1);
         CheckPoint(a, p1);
         CheckPoint(b, p2);
@@ -313,7 +314,7 @@ internal sealed partial class TrueTypeInterpreter
         int original = Project(z.CurX[p], z.CurY[p]);
         if (round)
         {
-            if (!z.IsTwilight && Math.Abs(distance - original) > _gs.CvtCutIn)
+            if (!z.IsTwilight && Math.Abs((long)distance - original) > _gs.CvtCutIn)
             {
                 distance = original;
             }
@@ -327,7 +328,7 @@ internal sealed partial class TrueTypeInterpreter
 
     private int SingleWidth(int distance)
     {
-        if (Math.Abs(distance - _gs.SingleWidth) < _gs.SingleWidthCutIn)
+        if (Math.Abs((long)distance - _gs.SingleWidth) < _gs.SingleWidthCutIn)
         {
             return distance >= 0 ? _gs.SingleWidth : -_gs.SingleWidth;
         }
@@ -394,7 +395,7 @@ internal sealed partial class TrueTypeInterpreter
         int distance;
         if ((flags & 0x04) != 0)
         {
-            if (_gs.Zp0 == _gs.Zp1 && Math.Abs(cvt - original) > _gs.CvtCutIn)
+            if (_gs.Zp0 == _gs.Zp1 && Math.Abs((long)cvt - original) > _gs.CvtCutIn)
             {
                 cvt = original;
             }
@@ -756,7 +757,7 @@ internal sealed partial class TrueTypeInterpreter
     // nibble is the step: 0-7 for -8 to -1, 8-15 for 1 to 8, each 1/2^shift pixel. Out-of-range points are skipped.
     private void DeltaP(int offset)
     {
-        int n = Pop();
+        int n = DeltaCount();
         Zone z = Z(_gs.Zp0);
         for (int i = 0; i < n; i++)
         {
@@ -779,7 +780,7 @@ internal sealed partial class TrueTypeInterpreter
 
     private void DeltaC(int offset)
     {
-        int n = Pop();
+        int n = DeltaCount();
         for (int i = 0; i < n; i++)
         {
             int c = Pop(), arg = Pop();
@@ -788,6 +789,20 @@ internal sealed partial class TrueTypeInterpreter
                 _cvt[c] += step;
             }
         }
+    }
+
+    // The pair count of a DELTA instruction: each pair takes two values off the stack, so a count beyond half the stack is an
+    // error, and the pairs are charged to the instruction budget.
+    private int DeltaCount()
+    {
+        int n = Pop();
+        if (n < 0 || n > _sp / 2)
+        {
+            throw Error($"DELTA with {n} pairs and {_sp} values on the stack.");
+        }
+
+        _budget -= n;
+        return n;
     }
 
     private int? DeltaStep(int arg, int offset)

@@ -403,14 +403,20 @@ internal sealed partial class TrueTypeInterpreter
                         break;
                     }
 
-                case 0x49: // MD[0]: original outline
-                case 0x4A: // MD[1]: current outline
+                case 0x49: // MD[0]: the grid-fitted outline
+                case 0x4A: // MD[1]: the original outline
                     {
-                        int l = Pop(), k = Pop();
-                        Zone a = Z(_gs.Zp0), b = Z(_gs.Zp1);
-                        CheckPoint(a, l);
-                        CheckPoint(b, k);
-                        Push(op == 0x4A ? Project(a.CurX[l] - b.CurX[k], a.CurY[l] - b.CurY[k]) : OriginalDistance(a, l, b, k));
+                        // p1 (the top) is in zp1 and p2 in zp0; the distance is p2 less p1. GDI and GDI+ measure the moved outline
+                        // with MD[0] and the original with MD[1], as the specification's text says (egami-compare probe-measure.ttf).
+                        int p1 = Pop(), p2 = Pop();
+                        Zone z0 = Z(_gs.Zp0), z1 = Z(_gs.Zp1);
+                        if ((uint)p2 >= (uint)z0.Count || (uint)p1 >= (uint)z1.Count)
+                        {
+                            Push(0);
+                            break;
+                        }
+
+                        Push(op == 0x49 ? Project(z0.CurX[p2] - z1.CurX[p1], z0.CurY[p2] - z1.CurY[p1]) : OriginalDistance(z0, p2, z1, p1));
                         break;
                     }
 
@@ -544,7 +550,7 @@ internal sealed partial class TrueTypeInterpreter
                     }
 
                 case 0x64:
-                    Push(Math.Abs(Pop()));
+                    Push(Abs(Pop())); // wrapping: int.MinValue stays, as the other arithmetic wraps
                     break;
                 case 0x65:
                     Push(unchecked(-Pop()));
@@ -694,6 +700,9 @@ internal sealed partial class TrueTypeInterpreter
     }
 
     private int Pop() => _sp > 0 ? _stack[--_sp] : 0;
+
+    // |v| wrapping like the rest of the arithmetic: int.MinValue stays as it is instead of throwing.
+    internal static int Abs(int v) => v < 0 ? unchecked(-v) : v;
 
     private void Push(int value)
     {

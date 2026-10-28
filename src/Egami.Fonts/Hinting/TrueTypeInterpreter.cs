@@ -216,6 +216,10 @@ internal sealed partial class TrueTypeInterpreter
         {
             return false;
         }
+        catch (ArithmeticException)
+        {
+            return false;
+        }
     }
 
     // The glyph zone while the font and control value programs run: no points.
