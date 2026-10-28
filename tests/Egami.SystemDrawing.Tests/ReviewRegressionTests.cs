@@ -95,4 +95,26 @@ public class ReviewRegressionTests
 
         Assert.Equal(255, target.GetPixel(6, 6).A);
     }
+
+    [Fact]
+    public void FillRegionWithAnInfiniteRegionFillsTheClip()
+    {
+        // GDI+ (PathProbes.Regions): an infinite region fills the whole bitmap, or what the clip lets through.
+        using Bitmap b = new(16, 12);
+        using Graphics g = Graphics.FromImage(b);
+        using SolidBrush red = new(Color.Red);
+        using Region infinite = new();
+        g.FillRegion(red, infinite);
+        Assert.Equal(Color.Red.ToArgb(), b.GetPixel(0, 0).ToArgb());
+        Assert.Equal(Color.Red.ToArgb(), b.GetPixel(15, 11).ToArgb());
+
+        g.Clear(Color.Transparent);
+        g.SetClip(new Rectangle(2, 2, 4, 4));
+        g.TranslateTransform(100, 100);
+        g.FillRegion(red, g.Clip);
+        Assert.Equal(0, b.GetPixel(1, 1).A);
+        Assert.Equal(Color.Red.ToArgb(), b.GetPixel(2, 2).ToArgb());
+        Assert.Equal(Color.Red.ToArgb(), b.GetPixel(5, 5).ToArgb());
+        Assert.Equal(0, b.GetPixel(6, 6).A);
+    }
 }

@@ -45,6 +45,10 @@ public sealed partial class Graphics
     /// <summary>Device pixels back to world coordinates.</summary>
     private Matrix3x2 ToWorld => Matrix3x2.Invert(ImageTransform, out Matrix3x2 back) ? back : Matrix3x2.Identity;
 
+    /// <summary>The bitmap's area, a pixel wider each way, in world coordinates as shapes are mapped.</summary>
+    private Path DeviceInWorld => Path.Rect(new RectF(-1, -1, _image.Width + 2, _image.Height + 2))
+        .Transform(Matrix3x2.Invert(ShapeTransform, out Matrix3x2 back) ? back : Matrix3x2.Identity);
+
     /// <summary>The bitmap's area in device pixels.</summary>
     private Path Device => Path.Rect(new RectF(0, 0, _image.Width, _image.Height));
 

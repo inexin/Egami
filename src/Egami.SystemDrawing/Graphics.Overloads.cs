@@ -991,7 +991,8 @@ public sealed partial class Graphics
     public void FillRegion(Brush brush, Region region)
     {
         ArgumentNullException.ThrowIfNull(region);
-        Fill(brush, region.Shape ?? Path.Rect(new RectF(-4194304, -4194304, 8388608, 8388608)));
+        // An infinite region fills everything the clip lets through, as in GDI+: the bitmap, mapped back to world coordinates.
+        Fill(brush, region.Shape ?? DeviceInWorld);
     }
 
     /// <summary>Gets whether a point is inside the bitmap and the clip.</summary>
