@@ -130,13 +130,13 @@ public class TextQualityTests
     {
         Typeface face = cff ? Source : Noto;
         var plain = new GlyphStyle(FontEdging.Antialias, false, FontSynthesis.None, PixelGeometry.Unknown);
-        GlyphStyle hinted = plain with { Hint = true };
+        var hinted = new GlyphStyle(FontEdging.Antialias, true, FontSynthesis.None, PixelGeometry.Unknown);
         float sy = 13f / face.UnitsPerEm;
         foreach (char ch in "xHoOpgAa&")
         {
             ushort glyph = face.GetGlyph(ch);
-            Path a = RasterCanvas<Rgba8>.GlyphOutline(face, glyph, sy, sy, 0, plain, 13);
-            Path b = RasterCanvas<Rgba8>.GlyphOutline(face, glyph, sy, sy, 0, hinted, 13);
+            Path a = RasterCanvas<Rgba8>.GlyphOutline(face, glyph, sy, sy, 0, plain);
+            Path b = RasterCanvas<Rgba8>.GlyphOutline(face, glyph, sy, sy, 0, hinted);
             Assert.Equal(a.Verbs.ToArray(), b.Verbs.ToArray());
             Assert.Equal(a.Points.ToArray().Select(p => p.X), b.Points.ToArray().Select(p => p.X));
         }
@@ -144,7 +144,7 @@ public class TextQualityTests
         // The flat edges of x and H land on whole pixels: the baseline and the x-height or cap height.
         foreach (char ch in "xH")
         {
-            Path b = RasterCanvas<Rgba8>.GlyphOutline(face, face.GetGlyph(ch), sy, sy, 0, hinted, 13);
+            Path b = RasterCanvas<Rgba8>.GlyphOutline(face, face.GetGlyph(ch), sy, sy, 0, hinted);
             RectF bounds = b.Bounds;
             Assert.Equal(MathF.Round(bounds.Bottom), bounds.Bottom, 3);
             Assert.Equal(MathF.Round(bounds.Top), bounds.Top, 3);

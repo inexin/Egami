@@ -19,6 +19,26 @@ public sealed partial class RasterCanvas<TPixel>
     internal const float GlyphTolerance = 0.01f;
 
     private bool _lcdFallbackReported;
+    private LcdLook? _lcdLook;
+    private bool _lcdLookMade;
+
+    // The canvas's LCD filter, sampling and level as one cache-key part, or null for the defaults.
+    private LcdLook? LcdLook
+    {
+        get
+        {
+            if (!_lcdLookMade)
+            {
+                CanvasOptions o = Options;
+                _lcdLook = o.LcdFilter.Equals(LcdFilter.Default) && o.LcdSampling == LcdSampling.Smooth && o.ClearTypeLevel == 1
+                    ? null
+                    : new LcdLook(o.LcdFilter, o.LcdSampling, o.ClearTypeLevel);
+                _lcdLookMade = true;
+            }
+
+            return _lcdLook;
+        }
+    }
 
     /// <inheritdoc/>
     protected override IColorGlyphRenderer? ColorGlyphRenderer => Options.ColorGlyphRenderer;
@@ -91,11 +111,16 @@ public sealed partial class RasterCanvas<TPixel>
         bool color = font.ColorGlyphs && (face.ColorFormats & ~ColorGlyphFormats.Svg) != 0;
         ColorKey? colorKey = color && paint is SolidPaint solid ? new ColorKey(font.Palette, solid.Color with { A = 1 }) : null;
         List<int>? uncachedColor = null;
+        bool lcdEdging = edging == FontEdging.Lcd;
         var style = new GlyphStyle(
             edging,
             font.Hinting == FontHinting.Light && MathF.Abs(emY) <= MaxHintedEm,
             font.AppliedSynthesis,
-            edging == FontEdging.Lcd ? Options.PixelGeometry : PixelGeometry.Unknown);
+            lcdEdging ? Options.PixelGeometry : PixelGeometry.Unknown)
+        {
+            Outset = font.Outset(emY, true),
+            Look = lcdEdging ? LcdLook : null,
+        };
         float sx = emX / face.UnitsPerEm, sy = emY / face.UnitsPerEm;
         Rect clip = _clip.Bounds;
         byte[]? scratch = null;
@@ -150,7 +175,7 @@ public sealed partial class RasterCanvas<TPixel>
             var key = new GlyphKey(face, glyph, emX, emY, style, phase);
             if (!GlyphCache.TryGet(key, out GlyphMask? mask))
             {
-                mask = RenderMask(face, glyph, sx, sy, phase, style, emY);
+                mask = RenderMask(face, glyph, sx, sy, phase, style);
                 GlyphCache.Add(key, mask);
             }
 
@@ -289,25 +314,23 @@ public sealed partial class RasterCanvas<TPixel>
     }
 
     // A glyph's coverage with its origin at a pixel corner plus its phase, through the same flattener and rasterizer as paths:
-    // slanted for synthetic italic, its y snapped to the hint zones, outset for synthetic bold, and for LCD edging at three times
-    // the resolution along the pixel geometry, filtered into one coverage per color channel.
-    private GlyphMask RenderMask(Typeface face, ushort glyph, float sx, float sy, int phase, GlyphStyle style, float emY)
+    // slanted for synthetic italic, its y snapped to the hint zones, outset for synthetic bold and embolden, and for LCD edging at
+    // three times the resolution along the pixel geometry, filtered into one coverage per color channel.
+    private GlyphMask RenderMask(Typeface face, ushort glyph, float sx, float sy, int phase, GlyphStyle style)
     {
-        Path path = GlyphOutline(face, glyph, sx, sy, phase / 4f, style, emY);
+        Path path = GlyphOutline(face, glyph, sx, sy, phase / 4f, style);
         if (path.IsEmpty)
         {
             return GlyphMask.Empty;
         }
 
         float tolerance = MathF.Min(Options.Tolerance, GlyphTolerance);
-        var edges = new EdgeList();
         if (style.Edging == FontEdging.Lcd)
         {
-            bool vertical = style.Geometry is PixelGeometry.RgbVertical or PixelGeometry.BgrVertical;
-            Flattener.Flatten(path, vertical ? Matrix3x2.CreateScale(1, 3) : Matrix3x2.CreateScale(3, 1), tolerance, edges);
-            return Lcd.Render(edges, vertical, style.Geometry is PixelGeometry.BgrHorizontal or PixelGeometry.BgrVertical, _rasterizer);
+            return Lcd.Render(path, tolerance, style, _rasterizer);
         }
 
+        var edges = new EdgeList();
         Flattener.Flatten(path, Matrix3x2.Identity, tolerance, edges);
         Rect bounds = edges.Bounds.RoundOut();
         if (bounds.IsEmpty)
@@ -321,17 +344,17 @@ public sealed partial class RasterCanvas<TPixel>
     }
 
     /// <summary>A glyph's device outline relative to its pixel origin: scaled, slanted, hinted and outset as the style asks.</summary>
-    internal static Path GlyphOutline(Typeface face, ushort glyph, float sx, float sy, float dx, GlyphStyle style, float emY)
+    internal static Path GlyphOutline(Typeface face, ushort glyph, float sx, float sy, float dx, GlyphStyle style)
     {
         var builder = new PathBuilder();
         float skew = (style.Synthesis & FontSynthesis.Italic) != 0 ? Synthesis.Skew : 0;
         HintMap? hint = style.Hint ? HintMap.For(face, sy) : null;
         face.GetGlyphOutline(glyph, new DeviceSink(builder, sx, sy, dx, skew, hint));
         Path path = builder.ToPath();
-        if ((style.Synthesis & FontSynthesis.Bold) != 0 && !path.IsEmpty)
+        if (style.Outset > 0 && !path.IsEmpty)
         {
             // The outset merges the contours too.
-            path = path.Inflate(Synthesis.BoldOutset(emY));
+            path = path.Inflate(style.Outset);
         }
         else if (!path.IsEmpty && face.MayOverlap(glyph))
         {
@@ -453,10 +476,41 @@ public sealed partial class RasterCanvas<TPixel>
 }
 
 /// <summary>What a glyph mask is drawn with besides the face, glyph, size and phase; for a color glyph, its palette and foreground too.</summary>
-internal readonly record struct GlyphStyle(FontEdging Edging, bool Hint, FontSynthesis Synthesis, PixelGeometry Geometry)
+/// <remarks>Packed into 24 bytes, as many as before 2.7.5, since every cached glyph keeps one.</remarks>
+internal readonly record struct GlyphStyle
 {
+    private readonly byte _edging;
+    private readonly byte _synthesis;
+    private readonly byte _geometry;
+    private readonly bool _hint;
+
+    public GlyphStyle(FontEdging edging, bool hint, FontSynthesis synthesis, PixelGeometry geometry)
+    {
+        _edging = (byte)edging;
+        _hint = hint;
+        _synthesis = (byte)synthesis;
+        _geometry = (byte)geometry;
+    }
+
+    public FontEdging Edging => (FontEdging)_edging;
+
+    public bool Hint => _hint;
+
+    public FontSynthesis Synthesis => (FontSynthesis)_synthesis;
+
+    public PixelGeometry Geometry => (PixelGeometry)_geometry;
+
     public ColorKey? Color { get; init; }
+
+    /// <summary>Gets how far the outline grows, in device pixels: synthetic bold, embolden and stem darkening together.</summary>
+    public float Outset { get; init; }
+
+    /// <summary>Gets an LCD mask's filter, sampling and level, or null for the defaults (and for masks that are not LCD).</summary>
+    public LcdLook? Look { get; init; }
 }
+
+/// <summary>The LCD settings of a canvas that change its masks.</summary>
+internal sealed record class LcdLook(LcdFilter Filter, LcdSampling Sampling, float Level);
 
 /// <summary>What a cached color glyph depends on besides its shape: the palette and the opaque foreground color.</summary>
 internal sealed record class ColorKey(FontPalette Palette, RgbaF32 Foreground);
@@ -605,50 +659,111 @@ internal sealed class HintMap
     }
 }
 
-/// <summary>LCD edging: coverage at three times the resolution along one axis, filtered by [1, 4, 6, 4, 1] / 16 into three channels.</summary>
+/// <summary>
+/// LCD edging: coverage at three times the resolution along one axis, spread by the canvas's <see cref="LcdFilter"/> (five taps
+/// adding up to 256) into three channels and mixed with the pixel's grayscale coverage by the ClearType level. Smooth sampling
+/// takes each subpixel's exact area; Gdi sampling takes, along the other axis, only a thin strip at each pixel's centre line.
+/// </summary>
 internal static class Lcd
 {
-    public static GlyphMask Render(EdgeList edges, bool vertical, bool bgr, CoverageRasterizer rasterizer)
+    // Gdi sampling stretches the axis across the stripes by this much and keeps the middle row of each pixel's rows.
+    private const int Strip = 64;
+
+    public static GlyphMask Render(Path path, float tolerance, GlyphStyle style, CoverageRasterizer rasterizer)
     {
-        Rect sub = edges.Bounds.RoundOut();
-        if (sub.IsEmpty)
+        bool vertical = style.Geometry is PixelGeometry.RgbVertical or PixelGeometry.BgrVertical;
+        bool bgr = style.Geometry is PixelGeometry.BgrHorizontal or PixelGeometry.BgrVertical;
+        var edges = new EdgeList();
+        byte[] samples;
+        int lineStride, subStride, l0, lines, p0, pixels;
+        if (style.Look?.Sampling == LcdSampling.Gdi)
         {
-            return GlyphMask.Empty;
+            // Subpixels along x and the pixels' centre lines as rows; a vertical stripe swaps the axes first.
+            Matrix3x2 m = vertical ? new Matrix3x2(0, Strip, 3, 0, 0, 0) : Matrix3x2.CreateScale(3, Strip);
+            Flattener.Flatten(path, m, tolerance, edges);
+            Rect sub = edges.Bounds.RoundOut();
+            if (sub.IsEmpty)
+            {
+                return GlyphMask.Empty;
+            }
+
+            l0 = FloorDiv(sub.Y, Strip);
+            lines = -FloorDiv(-sub.Bottom, Strip) - l0;
+            p0 = FloorDiv(sub.X - 2, 3);
+            pixels = -FloorDiv(-(sub.Right + 2), 3) - p0;
+            int width = pixels * 3;
+            samples = new byte[lines * width];
+            for (int l = 0; l < lines; l++)
+            {
+                var row = new Rect(p0 * 3, ((l0 + l) * Strip) + (Strip / 2), width, 1);
+                rasterizer.Fill(edges, row, FillRule.NonZero, true, new BufferSink(samples.AsMemory(l * width, width), row), 1);
+            }
+
+            (lineStride, subStride) = (width, 1);
+        }
+        else
+        {
+            Flattener.Flatten(path, vertical ? Matrix3x2.CreateScale(1, 3) : Matrix3x2.CreateScale(3, 1), tolerance, edges);
+            Rect sub = edges.Bounds.RoundOut();
+            if (sub.IsEmpty)
+            {
+                return GlyphMask.Empty;
+            }
+
+            // Pixel bounds along the tripled axis, wide enough for the filter's two subpixels each side.
+            int lo = vertical ? sub.Y : sub.X, hi = vertical ? sub.Bottom : sub.Right;
+            p0 = FloorDiv(lo - 2, 3);
+            pixels = -FloorDiv(-(hi + 2), 3) - p0;
+            l0 = vertical ? sub.X : sub.Y;
+            lines = vertical ? sub.Width : sub.Height;
+            Rect hiRes = vertical ? new Rect(sub.X, p0 * 3, sub.Width, pixels * 3) : new Rect(p0 * 3, sub.Y, pixels * 3, sub.Height);
+            samples = new byte[hiRes.Width * hiRes.Height];
+            rasterizer.Fill(edges, hiRes, FillRule.NonZero, true, new BufferSink(samples, hiRes), 1);
+            (lineStride, subStride) = vertical ? (1, hiRes.Width) : (hiRes.Width, 1);
         }
 
-        // Pixel bounds along the tripled axis, wide enough for the filter's two subpixels each side.
-        int lo = vertical ? sub.Y : sub.X, hi = vertical ? sub.Bottom : sub.Right;
-        int p0 = FloorDiv(lo - 2, 3), p1 = -FloorDiv(-(hi + 2), 3);
-        Rect hiRes = vertical ? new Rect(sub.X, p0 * 3, sub.Width, (p1 - p0) * 3) : new Rect(p0 * 3, sub.Y, (p1 - p0) * 3, sub.Height);
-        byte[] coverage = new byte[hiRes.Width * hiRes.Height];
-        rasterizer.Fill(edges, hiRes, FillRule.NonZero, true, new BufferSink(coverage, hiRes), 1);
-
-        Rect bounds = vertical ? new Rect(sub.X, p0, sub.Width, p1 - p0) : new Rect(p0, sub.Y, p1 - p0, sub.Height);
-        byte[] rgb = new byte[bounds.Width * bounds.Height * 3];
-        int stride = hiRes.Width;
-        for (int y = 0; y < bounds.Height; y++)
+        LcdFilter filter = style.Look?.Filter ?? LcdFilter.Default;
+        int level = style.Look is LcdLook look ? (int)MathF.Round(Math.Clamp(look.Level, 0, 1) * 256) : 256;
+        int count = pixels * 3;
+        byte[] rgb = new byte[lines * pixels * 3];
+        for (int l = 0; l < lines; l++)
         {
-            for (int x = 0; x < bounds.Width; x++)
+            int line = l * lineStride;
+            for (int p = 0; p < pixels; p++)
             {
+                int gray = 0;
+                if (level < 256)
+                {
+                    int s0 = line + (p * 3 * subStride);
+                    gray = samples[s0] + samples[s0 + subStride] + samples[s0 + (2 * subStride)];
+                }
+
+                int at = (vertical ? (p * lines) + l : (l * pixels) + p) * 3;
                 for (int c = 0; c < 3; c++)
                 {
                     int sum = 0;
                     for (int t = -2; t <= 2; t++)
                     {
-                        int weight = t is -2 or 2 ? 1 : t is -1 or 1 ? 4 : 6;
-                        int sx = vertical ? x : (x * 3) + c + t, sy = vertical ? (y * 3) + c + t : y;
-                        if ((uint)sx < (uint)hiRes.Width && (uint)sy < (uint)hiRes.Height)
+                        int s = (p * 3) + c + t;
+                        if ((uint)s < (uint)count)
                         {
-                            sum += weight * coverage[(sy * stride) + sx];
+                            sum += filter[t + 2] * samples[line + (s * subStride)];
                         }
                     }
 
-                    int channel = bgr ? 2 - c : c;
-                    rgb[(((y * bounds.Width) + x) * 3) + channel] = (byte)((sum + 8) >> 4);
+                    int value = (sum + 128) >> 8;
+                    if (level < 256)
+                    {
+                        // Both in 1/768ths: the filtered value times 3 against the three samples' sum.
+                        value = (((value * 3 * level) + (gray * (256 - level))) + 384) / 768;
+                    }
+
+                    rgb[at + (bgr ? 2 - c : c)] = (byte)value;
                 }
             }
         }
 
+        Rect bounds = vertical ? new Rect(l0, p0, lines, pixels) : new Rect(p0, l0, pixels, lines);
         return new GlyphMask(bounds, rgb, 3);
     }
 

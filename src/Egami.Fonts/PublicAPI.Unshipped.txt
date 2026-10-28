@@ -1,1 +1,5 @@
 #nullable enable
+Egami.Fonts.Font.Embolden.get -> float
+Egami.Fonts.Font.Embolden.init -> void
+Egami.Fonts.Font.StemDarkening.get -> bool
+Egami.Fonts.Font.StemDarkening.init -> void

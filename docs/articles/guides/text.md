@@ -133,7 +133,30 @@ whatever the colours.
 - With `ColorSpace.Linear` the gamma is ignored, since that blend is already gamma-correct; the contrast still applies.
 - To look like GDI+ `ClearTypeGridFit` (its default TextContrast of 4) with LCD edging, light hinting and whole-pixel origins,
   use a gamma of 1.15 and no contrast: the brightness a white Trebuchet MS label adds to a black or a #0078d4 button is then
-  within 1% of GDI+'s. Letter shapes and spacing still differ, since TrueType instructions are not run.
+  within 1% of GDI+'s. With the GDI filter and sampling below, use 1.25. Letter shapes and spacing still differ, since
+  TrueType instructions are not run.
+
+### LCD filter, sampling and ClearType level
+
+Three more canvas settings shape LCD text. `CanvasOptions.LcdFilter` spreads each subpixel's coverage over five taps that add
+up to 256: `LcdFilter.Default` (16, 64, 96, 64, 16, Egami's filter since 2.7.2), `Balanced` (8, 77, 86, 77, 8), `Light` (0, 85,
+86, 85, 0), `Gdi` (the even three-subpixel spread measured from GDI and GDI+, the weights of `Light`) or `LcdFilter.Custom`.
+`CanvasOptions.LcdSampling` = `LcdSampling.Gdi` takes, across the stripes, only each pixel's centre line, so edges along the
+stripes stay sharp as in GDI+ ClearType; `Smooth`, the default, takes exact areas. `CanvasOptions.ClearTypeLevel` (0 to 1,
+default 1) mixes the filtered coverage with the pixel's grayscale coverage, as Windows' ClearType level does.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Text.cs#lcd-look)]
+
+With all three at their defaults LCD text is drawn as in Egami 1.2.0.
+
+### Embolden and stem darkening
+
+`Font.Embolden` grows outlines on every side by an amount in the font's units (pixels on a raster), with round joins, on top
+of synthetic bold; advances never change, and glyph paths and ink bounds include it. `Font.StemDarkening` grows small text by
+0.15 device pixels on each side at 8 pixels per em and below, fading to nothing at 32, so thin stems keep their weight; it
+follows the device size, so only drawing on a raster applies it.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Text.cs#embolden)]
 
 ## Color fonts
 

@@ -94,10 +94,10 @@ public sealed partial class SvgCanvas
         Font font = run.Font;
         Typeface face = font.EffectiveTypeface;
         FontSynthesis synthesis = Applied(font);
-        bool bold = (synthesis & FontSynthesis.Bold) != 0;
+        bool bold = (synthesis & FontSynthesis.Bold) != 0 || font.Embolden > 0;
         float size = bold ? font.Size : face.UnitsPerEm;
         float s = font.Size / size;
-        Font outlineFont = new(face, size) { OpticalSizing = OpticalSizing.None, Synthesis = synthesis };
+        Font outlineFont = new(face, size) { OpticalSizing = OpticalSizing.None, Synthesis = synthesis, Embolden = font.Embolden };
         bool transformed = !run.Transforms.IsEmpty;
         float opacity = Math.Clamp(solid.Color.A, 0, 1) * paint.Opacity;
         bool clipped = OpenClip();
@@ -210,7 +210,8 @@ public sealed partial class SvgCanvas
         bool slanted = italic && baseline is not null;
         string? slant = (italic && !slanted) || style.Slant == FontSlant.Italic ? "italic" : style.Slant == FontSlant.Oblique ? "oblique" : null;
         Matrix3x2 transform = slanted ? new Matrix3x2(1, 0, -ItalicSkew, 1, ItalicSkew * baseline!.Value, 0) * Matrix : Matrix;
-        float? outset = (synthesis & FontSynthesis.Bold) != 0 ? BoldOutset(font.Size) : null;
+        float grow = ((synthesis & FontSynthesis.Bold) != 0 ? BoldOutset(font.Size) : 0) + font.Embolden;
+        float? outset = grow > 0 ? grow : null;
         string family = CssString(face.FamilyName);
         if (embedded is { Embeddable: true })
         {
