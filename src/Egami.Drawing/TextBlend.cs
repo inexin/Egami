@@ -7,7 +7,8 @@ namespace Egami.Drawing;
 /// <summary>
 /// <see cref="CanvasOptions.TextGamma"/> and <see cref="CanvasOptions.TextContrast"/> as tables, made once per value pair: the
 /// contrast boost of each coverage, and each stored value raised to the gamma with the inverse, so the power-law blend costs table
-/// reads and no <see cref="MathF.Pow"/> per pixel.
+/// reads and no <see cref="MathF.Pow"/> per pixel. With <see cref="LcdSampling.Gdi"/> the blend is GDI+'s instead, measured in
+/// egami-compare (2.7.6): coverage in sixths, and both gamma tables rounded to 8 bits.
 /// </summary>
 internal sealed class TextBlend
 {
@@ -16,14 +17,18 @@ internal sealed class TextBlend
     private const int EncodeSteps = 4096;
 
     // Value pairs in use; cleared if a caller cycles through many, since each pair is a few kilobytes.
-    private static readonly ConcurrentDictionary<(float Gamma, float Contrast), TextBlend> Cache = new();
+    private static readonly ConcurrentDictionary<(float Gamma, float Contrast, bool Sixths), TextBlend> Cache = new();
 
     private readonly byte[]? _boost;
     private readonly float[]? _decode;
     private readonly float[]? _midpoints;
     private readonly byte[]? _encode;
 
-    private TextBlend(float gamma, float contrast)
+    // GDI+'s blend: each value raised to the gamma and its inverse, both rounded to 8 bits.
+    private readonly byte[]? _decode8;
+    private readonly byte[]? _encode8;
+
+    private TextBlend(float gamma, float contrast, bool sixths)
     {
         if (contrast > 0)
         {
@@ -35,7 +40,17 @@ internal sealed class TextBlend
             }
         }
 
-        if (gamma != 1)
+        if (gamma != 1 && sixths)
+        {
+            _decode8 = new byte[256];
+            _encode8 = new byte[256];
+            for (int i = 0; i < 256; i++)
+            {
+                _decode8[i] = (byte)Math.Floor((Math.Pow(i / 255.0, gamma) * 255) + 0.5);
+                _encode8[i] = (byte)Math.Floor((Math.Pow(i / 255.0, 1 / gamma) * 255) + 0.5);
+            }
+        }
+        else if (gamma != 1)
         {
             _decode = new float[256];
             _midpoints = new float[255];
@@ -58,7 +73,7 @@ internal sealed class TextBlend
     }
 
     /// <summary>Gets a value indicating whether the blend has a gamma other than 1, so it needs the destination.</summary>
-    public bool HasGamma => _decode is not null;
+    public bool HasGamma => _decode is not null || _decode8 is not null;
 
     /// <summary>Gets a value indicating whether the blend boosts coverage.</summary>
     public bool HasBoost => _boost is not null;
@@ -78,7 +93,7 @@ internal sealed class TextBlend
             Cache.Clear();
         }
 
-        return Cache.GetOrAdd((gamma, contrast), static key => new TextBlend(key.Gamma, key.Contrast));
+        return Cache.GetOrAdd((gamma, contrast, options.LcdSampling == LcdSampling.Gdi), static key => new TextBlend(key.Gamma, key.Contrast, key.Sixths));
     }
 
     /// <summary>A coverage after the contrast boost.</summary>
@@ -101,6 +116,11 @@ internal sealed class TextBlend
     /// <summary>One channel of the power-law blend: <paramref name="src"/> over <paramref name="dst"/> by the weight <paramref name="k"/>.</summary>
     public byte Mix(byte dst, byte src, float k)
     {
+        if (_decode8 is not null)
+        {
+            return MixSixths(dst, src, k);
+        }
+
         if (k <= 0)
         {
             return dst;
@@ -113,6 +133,20 @@ internal sealed class TextBlend
 
         float d = _decode![dst];
         return Encode(d + ((_decode[src] - d) * k));
+    }
+
+    // GDI+'s blend: the weight to the nearest sixth, none leaving the pixel as it is, and the mix of the 8-bit raised values
+    // rounded half up before the inverse table.
+    private byte MixSixths(byte dst, byte src, float k)
+    {
+        int sixths = (int)((k * 6) + 0.5f);
+        if (sixths <= 0)
+        {
+            return dst;
+        }
+
+        sixths = Math.Min(sixths, 6);
+        return _encode8![((sixths * _decode8![src]) + ((6 - sixths) * _decode8[dst]) + 3) / 6];
     }
 
     // The stored value whose raised value is nearest in its own scale: the inverse rounded, from a table guess and a few steps.

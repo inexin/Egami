@@ -141,8 +141,9 @@ whatever the colours.
 Three more canvas settings shape LCD text. `CanvasOptions.LcdFilter` spreads each subpixel's coverage over five taps that add
 up to 256: `LcdFilter.Default` (16, 64, 96, 64, 16, Egami's filter since 2.7.2), `Balanced` (8, 77, 86, 77, 8), `Light` (0, 85,
 86, 85, 0), `Gdi` (the even three-subpixel spread measured from GDI and GDI+, the weights of `Light`) or `LcdFilter.Custom`.
-`CanvasOptions.LcdSampling` = `LcdSampling.Gdi` takes, across the stripes, only each pixel's centre line, so edges along the
-stripes stay sharp as in GDI+ ClearType; `Smooth`, the default, takes exact areas. `CanvasOptions.ClearTypeLevel` (0 to 1,
+`CanvasOptions.LcdSampling` = `LcdSampling.Gdi` samples as GDI+ ClearType does: six on-or-off samples per pixel across the
+stripes, on each pixel's centre line, so edges along the stripes stay sharp and each channel of the `Gdi` filter is a whole
+number of sixths; `Smooth`, the default, takes exact areas. `CanvasOptions.ClearTypeLevel` (0 to 1,
 default 1) mixes the filtered coverage with the pixel's grayscale coverage, as Windows' ClearType level does.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Text.cs#lcd-look)]
@@ -157,7 +158,9 @@ the answers measured from Windows and Microsoft's ClearType compatibility rules 
 (FreeType's minimal rules: x left alone). CFF faces, faces without instructions, variable faces and sizes the gasp table leaves unhinted fall back to
 `FontHinting.Light`. So does text under a transform that scales x and y differently or turns it.
 
-`Font.Metrics = FontMetrics.GridFitted` takes each glyph's advance from its hinted phantom points at that size, and
+`Font.Metrics = FontMetrics.GridFitted` takes each glyph's advance from its hinted phantom points at that size,
+`FontMetrics.GridFittedToDesign` does the same but keeps design advances for a run they would widen by more than 2.1 pixels
+(GDI+'s GenericTypographic layout), and
 `FontMetrics.Compatible` takes GDI's compatible widths: the hdmx table's widths, the rounded design advance where the LTSH table
 says the glyph scales linearly, or the advance of a black-and-white run of the glyph's instructions. On the six Windows UI fonts
 from 8 to 24 pixels per em, these equal GDI's `GetCharABCWidths` for 9,688 of 9,690 glyph sizes. Shaping,
@@ -167,7 +170,7 @@ always matches drawn text.
 [!code-csharp[](../../../tests/Egami.DocSamples/Text.cs#full-hinting)]
 
 With the GDI+ settings in that sample, a white Trebuchet MS label on a button has the brightness GDI+'s `ClearTypeGridFit`
-gives it to within 0.5%, and the mean per-pixel difference from GDI+ falls from 9.5 levels (light hinting) to 1.9 on a black
+gives it to within 0.5%, and the mean per-pixel difference from GDI+ falls from 9.5 levels (light hinting) to 0.67 on a black
 button: for that label the two are nearly pixel for pixel the same.
 
 ### Embolden and stem darkening

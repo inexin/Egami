@@ -55,9 +55,8 @@ public enum FontMetrics
     /// <summary>
     /// The hinted advances at a whole number of pixels per em: each glyph's right phantom point less its left after the font's
     /// instructions run for <see cref="Font.HintingTarget"/>. Measuring and drawing both use them, and glyph origins snap to whole
-    /// pixels. Faces that cannot be hinted keep their design advances, rounded. For <see cref="TrueTypeTarget.GdiPlus"/>, a run
-    /// that the hinted advances would make more than 2.1 pixels wider than designed keeps its design advances instead, as GDI+
-    /// lays out such lines (its glyph origins still snap to whole pixels).
+    /// pixels. Faces that cannot be hinted keep their design advances, rounded. With <see cref="TrueTypeTarget.GdiPlus"/> these
+    /// are the advances Graphics.DrawString draws with its default StringFormat.
     /// </summary>
     GridFitted,
 
@@ -68,6 +67,13 @@ public enum FontMetrics
     /// rounded. Glyph origins snap to whole pixels.
     /// </summary>
     Compatible,
+
+    /// <summary>
+    /// <see cref="GridFitted"/> advances, except that a run they would make more than 2.1 pixels wider than designed keeps its
+    /// design advances, rounded up to sixteenths of a pixel, as Graphics.DrawString lays out such lines with
+    /// StringFormat.GenericTypographic (glyph origins still snap to whole pixels).
+    /// </summary>
+    GridFittedToDesign,
 }
 
 /// <summary>How a glyph's edges are turned into pixels.</summary>
