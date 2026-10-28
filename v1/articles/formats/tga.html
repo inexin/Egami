@@ -88,7 +88,8 @@
 <h1 id="tga">TGA</h1>
 
 <p>Egami reads Truevision TGA files: color-mapped, true-color and gray, raw and RLE, 8 to 32 bits, every origin, and the TGA 2.0
-footer and extension area. It writes 8-bit gray, 24 and 32-bit, and 8-bit palettes, raw or RLE, with a TGA 2.0 footer.</p>
+footer and extension area. It writes 8-bit gray, 16-bit 5-5-5 with or without a 1-bit alpha, 24 and 32-bit, and 8-bit palettes, raw or
+RLE, with a TGA 2.0 footer.</p>
 <p>A TGA loads as <code>Bgr8</code>, <code>Bgra8</code>, <code>Gray8</code> or <code>GrayAlpha8</code>. TGA has no signature, so detection takes a file as TGA only when its whole
 18-byte header is consistent; see <a href="index.html#detection">Detection</a>.</p>
 <pre><code class="lang-csharp">// Run-length encoded by default, bottom-left origin, with a TGA 2.0 footer that states the alpha type.
@@ -97,7 +98,8 @@ image.Save(&quot;duck-raw.tga&quot;, new TgaWriterOptions { Rle = false });
 </code></pre>
 <p>The descriptor's attribute bits say whether the extra bits are alpha, and a TGA 2.0 alpha type of &quot;none&quot; overrides them;
 premultiplied alpha is divided out on load. The extension area's author and comments become <code>Author</code> and <code>Comment</code> text entries,
-and the writer stores them back. <code>TgaPixelFormat.Bgr24</code> drops alpha rather than blending it onto a background.</p>
+and the writer stores them back. <code>TgaPixelFormat.Bgr24</code> and <code>Bgr555</code> drop alpha rather than blending it onto a background. 15 and 16-bit
+files load straight into <code>Bgr555</code> and <code>Bgra5551</code>.</p>
 <p>The writer's pixel format and run-length coding, and the origin and alpha type a file states, read back through <code>TgaDetails</code>:</p>
 <pre><code class="lang-csharp">image.Save(&quot;duck-gray.tga&quot;, new TgaWriterOptions { PixelFormat = TgaPixelFormat.Gray8, Rle = false });
 using Raster back = Raster.Load(&quot;duck-gray.tga&quot;);

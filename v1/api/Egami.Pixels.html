@@ -119,6 +119,13 @@ to it keeps only the alpha, so a type without alpha gives 255.</p>
 </dd>
     </dl>
     <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Pixels.Bgr555.html">Bgr555</a></dt>
+      <dd><p>A 16-bit packed pixel: blue in bits 0 to 4, green in bits 5 to 9, red in bits 10 to 14, and no alpha; bit 15 is unused and
+written as 0. The same memory as the default 16-bit BMP, 15-bit TGA and the GDI+ 16-bit RGB 555 format. Widening and narrowing
+both round to the nearest value, so every value with bit 15 clear survives a round trip through <a class="xref" href="Egami.Pixels.Rgba8.html">Rgba8</a>.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
       <dt><a class="xref" href="Egami.Pixels.Bgr565.html">Bgr565</a></dt>
       <dd><p>A 16-bit packed pixel: blue in bits 0 to 4, green in bits 5 to 10, red in bits 11 to 15, and no alpha. The same memory as
 Skia's and Android's RGB 565 and the 16-bit BMP 5-6-5 bit field. Widening and narrowing both round to the nearest value, so
@@ -134,6 +141,14 @@ every 16-bit value survives a round trip through <a class="xref" href="Egami.Pix
       <dt><a class="xref" href="Egami.Pixels.Bgra4444.html">Bgra4444</a></dt>
       <dd><p>A 16-bit packed pixel: blue in bits 0 to 3, green in 4 to 7, red in 8 to 11 and straight alpha in 12 to 15. The same memory
 as the DXGI and Vulkan B4G4R4A4 formats. Each level widens to 8 bits by multiplying by 17, and narrowing rounds to nearest.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Pixels.Bgra5551.html">Bgra5551</a></dt>
+      <dd><p>A 16-bit packed pixel: blue in bits 0 to 4, green in bits 5 to 9, red in bits 10 to 14 and a 1-bit straight alpha in bit 15
+(1 is opaque). The same memory as 16-bit TGA with one attribute bit, the BMP 1-5-5-5 bit field and the GDI+ 16-bit ARGB 1555
+format. Color levels round to the nearest value; alpha 128 and above narrows to opaque. Every 16-bit value survives a round
+trip through <a class="xref" href="Egami.Pixels.Rgba8.html">Rgba8</a>.</p>
 </dd>
     </dl>
     <dl class="jumplist">

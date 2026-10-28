@@ -149,6 +149,7 @@ Alpha8 mask = Alpha8.FromRgba8(orange);                 // alpha only; reads bac
 RgbaF16 hdr = RgbaF16.FromScaled(new Vector4(4f, 2f, 0.5f, 1f)); // half floats keep values above 1
 GrayF32 depth = new(12.5f);                              // floats hold any value until written to an integer type
 Bgr565 packed = Bgr565.FromRgba8(orange);                // 5-6-5 levels in one ushort; rounds to the nearest level
+Bgra5551 gdi16 = Bgra5551.FromRgba8(orange);             // 5-5-5 levels and a 1-bit alpha, the GDI+ 16-bit ARGB layout
 Cmyk8 ink = Cmyk8.FromRgba8(orange);                     // inks by the plain formula: (0, 127, 255, 0)
 PremulRgba8 glass = PremulRgba8.FromRgba8(new Rgba8(255, 128, 0, 128)); // stored (128, 64, 0, 128); converts back straight
 RgbaF32 linear = RgbaF32.FromScaled(orange.ToScaled());

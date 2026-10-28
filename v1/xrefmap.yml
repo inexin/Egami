@@ -40101,12 +40101,30 @@ references:
   commentId: F:Egami.Formats.Bmp.BmpPixelFormat.Bgr24
   fullName: Egami.Formats.Bmp.BmpPixelFormat.Bgr24
   nameWithType: BmpPixelFormat.Bgr24
+- uid: Egami.Formats.Bmp.BmpPixelFormat.Bgr555
+  name: Bgr555
+  href: api/Egami.Formats.Bmp.BmpPixelFormat.html#Egami_Formats_Bmp_BmpPixelFormat_Bgr555
+  commentId: F:Egami.Formats.Bmp.BmpPixelFormat.Bgr555
+  fullName: Egami.Formats.Bmp.BmpPixelFormat.Bgr555
+  nameWithType: BmpPixelFormat.Bgr555
+- uid: Egami.Formats.Bmp.BmpPixelFormat.Bgr565
+  name: Bgr565
+  href: api/Egami.Formats.Bmp.BmpPixelFormat.html#Egami_Formats_Bmp_BmpPixelFormat_Bgr565
+  commentId: F:Egami.Formats.Bmp.BmpPixelFormat.Bgr565
+  fullName: Egami.Formats.Bmp.BmpPixelFormat.Bgr565
+  nameWithType: BmpPixelFormat.Bgr565
 - uid: Egami.Formats.Bmp.BmpPixelFormat.Bgra32
   name: Bgra32
   href: api/Egami.Formats.Bmp.BmpPixelFormat.html#Egami_Formats_Bmp_BmpPixelFormat_Bgra32
   commentId: F:Egami.Formats.Bmp.BmpPixelFormat.Bgra32
   fullName: Egami.Formats.Bmp.BmpPixelFormat.Bgra32
   nameWithType: BmpPixelFormat.Bgra32
+- uid: Egami.Formats.Bmp.BmpPixelFormat.Bgra5551
+  name: Bgra5551
+  href: api/Egami.Formats.Bmp.BmpPixelFormat.html#Egami_Formats_Bmp_BmpPixelFormat_Bgra5551
+  commentId: F:Egami.Formats.Bmp.BmpPixelFormat.Bgra5551
+  fullName: Egami.Formats.Bmp.BmpPixelFormat.Bgra5551
+  nameWithType: BmpPixelFormat.Bgra5551
 - uid: Egami.Formats.Bmp.BmpPixelFormat.Indexed1
   name: Indexed1
   href: api/Egami.Formats.Bmp.BmpPixelFormat.html#Egami_Formats_Bmp_BmpPixelFormat_Indexed1
@@ -49418,12 +49436,24 @@ references:
   commentId: F:Egami.Formats.Tga.TgaPixelFormat.Bgr24
   fullName: Egami.Formats.Tga.TgaPixelFormat.Bgr24
   nameWithType: TgaPixelFormat.Bgr24
+- uid: Egami.Formats.Tga.TgaPixelFormat.Bgr555
+  name: Bgr555
+  href: api/Egami.Formats.Tga.TgaPixelFormat.html#Egami_Formats_Tga_TgaPixelFormat_Bgr555
+  commentId: F:Egami.Formats.Tga.TgaPixelFormat.Bgr555
+  fullName: Egami.Formats.Tga.TgaPixelFormat.Bgr555
+  nameWithType: TgaPixelFormat.Bgr555
 - uid: Egami.Formats.Tga.TgaPixelFormat.Bgra32
   name: Bgra32
   href: api/Egami.Formats.Tga.TgaPixelFormat.html#Egami_Formats_Tga_TgaPixelFormat_Bgra32
   commentId: F:Egami.Formats.Tga.TgaPixelFormat.Bgra32
   fullName: Egami.Formats.Tga.TgaPixelFormat.Bgra32
   nameWithType: TgaPixelFormat.Bgra32
+- uid: Egami.Formats.Tga.TgaPixelFormat.Bgra5551
+  name: Bgra5551
+  href: api/Egami.Formats.Tga.TgaPixelFormat.html#Egami_Formats_Tga_TgaPixelFormat_Bgra5551
+  commentId: F:Egami.Formats.Tga.TgaPixelFormat.Bgra5551
+  fullName: Egami.Formats.Tga.TgaPixelFormat.Bgra5551
+  nameWithType: TgaPixelFormat.Bgra5551
 - uid: Egami.Formats.Tga.TgaPixelFormat.Gray8
   name: Gray8
   href: api/Egami.Formats.Tga.TgaPixelFormat.html#Egami_Formats_Tga_TgaPixelFormat_Gray8
@@ -63648,6 +63678,236 @@ references:
   fullName.vb: Egami.Pixels.Argb8.<>
   nameWithType: Argb8.operator !=
   nameWithType.vb: Argb8.<>
+- uid: Egami.Pixels.Bgr555
+  name: Bgr555
+  href: api/Egami.Pixels.Bgr555.html
+  commentId: T:Egami.Pixels.Bgr555
+  fullName: Egami.Pixels.Bgr555
+  nameWithType: Bgr555
+- uid: Egami.Pixels.Bgr555.#ctor(System.Int32,System.Int32,System.Int32)
+  name: Bgr555(int, int, int)
+  href: api/Egami.Pixels.Bgr555.html#Egami_Pixels_Bgr555__ctor_System_Int32_System_Int32_System_Int32_
+  commentId: M:Egami.Pixels.Bgr555.#ctor(System.Int32,System.Int32,System.Int32)
+  name.vb: New(Integer, Integer, Integer)
+  fullName: Egami.Pixels.Bgr555.Bgr555(int, int, int)
+  fullName.vb: Egami.Pixels.Bgr555.New(Integer, Integer, Integer)
+  nameWithType: Bgr555.Bgr555(int, int, int)
+  nameWithType.vb: Bgr555.New(Integer, Integer, Integer)
+- uid: Egami.Pixels.Bgr555.#ctor(System.UInt16)
+  name: Bgr555(ushort)
+  href: api/Egami.Pixels.Bgr555.html#Egami_Pixels_Bgr555__ctor_System_UInt16_
+  commentId: M:Egami.Pixels.Bgr555.#ctor(System.UInt16)
+  name.vb: New(UShort)
+  fullName: Egami.Pixels.Bgr555.Bgr555(ushort)
+  fullName.vb: Egami.Pixels.Bgr555.New(UShort)
+  nameWithType: Bgr555.Bgr555(ushort)
+  nameWithType.vb: Bgr555.New(UShort)
+- uid: Egami.Pixels.Bgr555.#ctor*
+  name: Bgr555
+  href: api/Egami.Pixels.Bgr555.html#Egami_Pixels_Bgr555__ctor_
+  commentId: Overload:Egami.Pixels.Bgr555.#ctor
+  isSpec: "True"
+  name.vb: New
+  fullName: Egami.Pixels.Bgr555.Bgr555
+  fullName.vb: Egami.Pixels.Bgr555.New
+  nameWithType: Bgr555.Bgr555
+  nameWithType.vb: Bgr555.New
+- uid: Egami.Pixels.Bgr555.B
+  name: B
+  href: api/Egami.Pixels.Bgr555.html#Egami_Pixels_Bgr555_B
+  commentId: P:Egami.Pixels.Bgr555.B
+  fullName: Egami.Pixels.Bgr555.B
+  nameWithType: Bgr555.B
+- uid: Egami.Pixels.Bgr555.B*
+  name: B
+  href: api/Egami.Pixels.Bgr555.html#Egami_Pixels_Bgr555_B_
+  commentId: Overload:Egami.Pixels.Bgr555.B
+  isSpec: "True"
+  fullName: Egami.Pixels.Bgr555.B
+  nameWithType: Bgr555.B
+- uid: Egami.Pixels.Bgr555.Equals(Egami.Pixels.Bgr555)
+  name: Equals(Bgr555)
+  href: api/Egami.Pixels.Bgr555.html#Egami_Pixels_Bgr555_Equals_Egami_Pixels_Bgr555_
+  commentId: M:Egami.Pixels.Bgr555.Equals(Egami.Pixels.Bgr555)
+  fullName: Egami.Pixels.Bgr555.Equals(Egami.Pixels.Bgr555)
+  nameWithType: Bgr555.Equals(Bgr555)
+- uid: Egami.Pixels.Bgr555.Equals(System.Object)
+  name: Equals(object?)
+  href: api/Egami.Pixels.Bgr555.html#Egami_Pixels_Bgr555_Equals_System_Object_
+  commentId: M:Egami.Pixels.Bgr555.Equals(System.Object)
+  name.vb: Equals(Object)
+  fullName: Egami.Pixels.Bgr555.Equals(object?)
+  fullName.vb: Egami.Pixels.Bgr555.Equals(Object)
+  nameWithType: Bgr555.Equals(object?)
+  nameWithType.vb: Bgr555.Equals(Object)
+- uid: Egami.Pixels.Bgr555.Equals*
+  name: Equals
+  href: api/Egami.Pixels.Bgr555.html#Egami_Pixels_Bgr555_Equals_
+  commentId: Overload:Egami.Pixels.Bgr555.Equals
+  isSpec: "True"
+  fullName: Egami.Pixels.Bgr555.Equals
+  nameWithType: Bgr555.Equals
+- uid: Egami.Pixels.Bgr555.FromRgba8(Egami.Pixels.Rgba8)
+  name: FromRgba8(Rgba8)
+  href: api/Egami.Pixels.Bgr555.html#Egami_Pixels_Bgr555_FromRgba8_Egami_Pixels_Rgba8_
+  commentId: M:Egami.Pixels.Bgr555.FromRgba8(Egami.Pixels.Rgba8)
+  fullName: Egami.Pixels.Bgr555.FromRgba8(Egami.Pixels.Rgba8)
+  nameWithType: Bgr555.FromRgba8(Rgba8)
+- uid: Egami.Pixels.Bgr555.FromRgba8*
+  name: FromRgba8
+  href: api/Egami.Pixels.Bgr555.html#Egami_Pixels_Bgr555_FromRgba8_
+  commentId: Overload:Egami.Pixels.Bgr555.FromRgba8
+  isSpec: "True"
+  fullName: Egami.Pixels.Bgr555.FromRgba8
+  nameWithType: Bgr555.FromRgba8
+- uid: Egami.Pixels.Bgr555.FromScaled(System.Numerics.Vector4)
+  name: FromScaled(Vector4)
+  href: api/Egami.Pixels.Bgr555.html#Egami_Pixels_Bgr555_FromScaled_System_Numerics_Vector4_
+  commentId: M:Egami.Pixels.Bgr555.FromScaled(System.Numerics.Vector4)
+  fullName: Egami.Pixels.Bgr555.FromScaled(System.Numerics.Vector4)
+  nameWithType: Bgr555.FromScaled(Vector4)
+- uid: Egami.Pixels.Bgr555.FromScaled*
+  name: FromScaled
+  href: api/Egami.Pixels.Bgr555.html#Egami_Pixels_Bgr555_FromScaled_
+  commentId: Overload:Egami.Pixels.Bgr555.FromScaled
+  isSpec: "True"
+  fullName: Egami.Pixels.Bgr555.FromScaled
+  nameWithType: Bgr555.FromScaled
+- uid: Egami.Pixels.Bgr555.G
+  name: G
+  href: api/Egami.Pixels.Bgr555.html#Egami_Pixels_Bgr555_G
+  commentId: P:Egami.Pixels.Bgr555.G
+  fullName: Egami.Pixels.Bgr555.G
+  nameWithType: Bgr555.G
+- uid: Egami.Pixels.Bgr555.G*
+  name: G
+  href: api/Egami.Pixels.Bgr555.html#Egami_Pixels_Bgr555_G_
+  commentId: Overload:Egami.Pixels.Bgr555.G
+  isSpec: "True"
+  fullName: Egami.Pixels.Bgr555.G
+  nameWithType: Bgr555.G
+- uid: Egami.Pixels.Bgr555.GetHashCode
+  name: GetHashCode()
+  href: api/Egami.Pixels.Bgr555.html#Egami_Pixels_Bgr555_GetHashCode
+  commentId: M:Egami.Pixels.Bgr555.GetHashCode
+  fullName: Egami.Pixels.Bgr555.GetHashCode()
+  nameWithType: Bgr555.GetHashCode()
+- uid: Egami.Pixels.Bgr555.GetHashCode*
+  name: GetHashCode
+  href: api/Egami.Pixels.Bgr555.html#Egami_Pixels_Bgr555_GetHashCode_
+  commentId: Overload:Egami.Pixels.Bgr555.GetHashCode
+  isSpec: "True"
+  fullName: Egami.Pixels.Bgr555.GetHashCode
+  nameWithType: Bgr555.GetHashCode
+- uid: Egami.Pixels.Bgr555.Layout
+  name: Layout
+  href: api/Egami.Pixels.Bgr555.html#Egami_Pixels_Bgr555_Layout
+  commentId: P:Egami.Pixels.Bgr555.Layout
+  fullName: Egami.Pixels.Bgr555.Layout
+  nameWithType: Bgr555.Layout
+- uid: Egami.Pixels.Bgr555.Layout*
+  name: Layout
+  href: api/Egami.Pixels.Bgr555.html#Egami_Pixels_Bgr555_Layout_
+  commentId: Overload:Egami.Pixels.Bgr555.Layout
+  isSpec: "True"
+  fullName: Egami.Pixels.Bgr555.Layout
+  nameWithType: Bgr555.Layout
+- uid: Egami.Pixels.Bgr555.R
+  name: R
+  href: api/Egami.Pixels.Bgr555.html#Egami_Pixels_Bgr555_R
+  commentId: P:Egami.Pixels.Bgr555.R
+  fullName: Egami.Pixels.Bgr555.R
+  nameWithType: Bgr555.R
+- uid: Egami.Pixels.Bgr555.R*
+  name: R
+  href: api/Egami.Pixels.Bgr555.html#Egami_Pixels_Bgr555_R_
+  commentId: Overload:Egami.Pixels.Bgr555.R
+  isSpec: "True"
+  fullName: Egami.Pixels.Bgr555.R
+  nameWithType: Bgr555.R
+- uid: Egami.Pixels.Bgr555.ToRgba8
+  name: ToRgba8()
+  href: api/Egami.Pixels.Bgr555.html#Egami_Pixels_Bgr555_ToRgba8
+  commentId: M:Egami.Pixels.Bgr555.ToRgba8
+  fullName: Egami.Pixels.Bgr555.ToRgba8()
+  nameWithType: Bgr555.ToRgba8()
+- uid: Egami.Pixels.Bgr555.ToRgba8*
+  name: ToRgba8
+  href: api/Egami.Pixels.Bgr555.html#Egami_Pixels_Bgr555_ToRgba8_
+  commentId: Overload:Egami.Pixels.Bgr555.ToRgba8
+  isSpec: "True"
+  fullName: Egami.Pixels.Bgr555.ToRgba8
+  nameWithType: Bgr555.ToRgba8
+- uid: Egami.Pixels.Bgr555.ToScaled
+  name: ToScaled()
+  href: api/Egami.Pixels.Bgr555.html#Egami_Pixels_Bgr555_ToScaled
+  commentId: M:Egami.Pixels.Bgr555.ToScaled
+  fullName: Egami.Pixels.Bgr555.ToScaled()
+  nameWithType: Bgr555.ToScaled()
+- uid: Egami.Pixels.Bgr555.ToScaled*
+  name: ToScaled
+  href: api/Egami.Pixels.Bgr555.html#Egami_Pixels_Bgr555_ToScaled_
+  commentId: Overload:Egami.Pixels.Bgr555.ToScaled
+  isSpec: "True"
+  fullName: Egami.Pixels.Bgr555.ToScaled
+  nameWithType: Bgr555.ToScaled
+- uid: Egami.Pixels.Bgr555.ToString
+  name: ToString()
+  href: api/Egami.Pixels.Bgr555.html#Egami_Pixels_Bgr555_ToString
+  commentId: M:Egami.Pixels.Bgr555.ToString
+  fullName: Egami.Pixels.Bgr555.ToString()
+  nameWithType: Bgr555.ToString()
+- uid: Egami.Pixels.Bgr555.ToString*
+  name: ToString
+  href: api/Egami.Pixels.Bgr555.html#Egami_Pixels_Bgr555_ToString_
+  commentId: Overload:Egami.Pixels.Bgr555.ToString
+  isSpec: "True"
+  fullName: Egami.Pixels.Bgr555.ToString
+  nameWithType: Bgr555.ToString
+- uid: Egami.Pixels.Bgr555.Value
+  name: Value
+  href: api/Egami.Pixels.Bgr555.html#Egami_Pixels_Bgr555_Value
+  commentId: F:Egami.Pixels.Bgr555.Value
+  fullName: Egami.Pixels.Bgr555.Value
+  nameWithType: Bgr555.Value
+- uid: Egami.Pixels.Bgr555.op_Equality(Egami.Pixels.Bgr555,Egami.Pixels.Bgr555)
+  name: operator ==(Bgr555, Bgr555)
+  href: api/Egami.Pixels.Bgr555.html#Egami_Pixels_Bgr555_op_Equality_Egami_Pixels_Bgr555_Egami_Pixels_Bgr555_
+  commentId: M:Egami.Pixels.Bgr555.op_Equality(Egami.Pixels.Bgr555,Egami.Pixels.Bgr555)
+  name.vb: =(Bgr555, Bgr555)
+  fullName: Egami.Pixels.Bgr555.operator ==(Egami.Pixels.Bgr555, Egami.Pixels.Bgr555)
+  fullName.vb: Egami.Pixels.Bgr555.=(Egami.Pixels.Bgr555, Egami.Pixels.Bgr555)
+  nameWithType: Bgr555.operator ==(Bgr555, Bgr555)
+  nameWithType.vb: Bgr555.=(Bgr555, Bgr555)
+- uid: Egami.Pixels.Bgr555.op_Equality*
+  name: operator ==
+  href: api/Egami.Pixels.Bgr555.html#Egami_Pixels_Bgr555_op_Equality_
+  commentId: Overload:Egami.Pixels.Bgr555.op_Equality
+  isSpec: "True"
+  name.vb: =
+  fullName: Egami.Pixels.Bgr555.operator ==
+  fullName.vb: Egami.Pixels.Bgr555.=
+  nameWithType: Bgr555.operator ==
+  nameWithType.vb: Bgr555.=
+- uid: Egami.Pixels.Bgr555.op_Inequality(Egami.Pixels.Bgr555,Egami.Pixels.Bgr555)
+  name: operator !=(Bgr555, Bgr555)
+  href: api/Egami.Pixels.Bgr555.html#Egami_Pixels_Bgr555_op_Inequality_Egami_Pixels_Bgr555_Egami_Pixels_Bgr555_
+  commentId: M:Egami.Pixels.Bgr555.op_Inequality(Egami.Pixels.Bgr555,Egami.Pixels.Bgr555)
+  name.vb: <>(Bgr555, Bgr555)
+  fullName: Egami.Pixels.Bgr555.operator !=(Egami.Pixels.Bgr555, Egami.Pixels.Bgr555)
+  fullName.vb: Egami.Pixels.Bgr555.<>(Egami.Pixels.Bgr555, Egami.Pixels.Bgr555)
+  nameWithType: Bgr555.operator !=(Bgr555, Bgr555)
+  nameWithType.vb: Bgr555.<>(Bgr555, Bgr555)
+- uid: Egami.Pixels.Bgr555.op_Inequality*
+  name: operator !=
+  href: api/Egami.Pixels.Bgr555.html#Egami_Pixels_Bgr555_op_Inequality_
+  commentId: Overload:Egami.Pixels.Bgr555.op_Inequality
+  isSpec: "True"
+  name.vb: <>
+  fullName: Egami.Pixels.Bgr555.operator !=
+  fullName.vb: Egami.Pixels.Bgr555.<>
+  nameWithType: Bgr555.operator !=
+  nameWithType.vb: Bgr555.<>
 - uid: Egami.Pixels.Bgr565
   name: Bgr565
   href: api/Egami.Pixels.Bgr565.html
@@ -64315,6 +64575,249 @@ references:
   fullName.vb: Egami.Pixels.Bgra4444.<>
   nameWithType: Bgra4444.operator !=
   nameWithType.vb: Bgra4444.<>
+- uid: Egami.Pixels.Bgra5551
+  name: Bgra5551
+  href: api/Egami.Pixels.Bgra5551.html
+  commentId: T:Egami.Pixels.Bgra5551
+  fullName: Egami.Pixels.Bgra5551
+  nameWithType: Bgra5551
+- uid: Egami.Pixels.Bgra5551.#ctor(System.Int32,System.Int32,System.Int32,System.Int32)
+  name: Bgra5551(int, int, int, int)
+  href: api/Egami.Pixels.Bgra5551.html#Egami_Pixels_Bgra5551__ctor_System_Int32_System_Int32_System_Int32_System_Int32_
+  commentId: M:Egami.Pixels.Bgra5551.#ctor(System.Int32,System.Int32,System.Int32,System.Int32)
+  name.vb: New(Integer, Integer, Integer, Integer)
+  fullName: Egami.Pixels.Bgra5551.Bgra5551(int, int, int, int)
+  fullName.vb: Egami.Pixels.Bgra5551.New(Integer, Integer, Integer, Integer)
+  nameWithType: Bgra5551.Bgra5551(int, int, int, int)
+  nameWithType.vb: Bgra5551.New(Integer, Integer, Integer, Integer)
+- uid: Egami.Pixels.Bgra5551.#ctor(System.UInt16)
+  name: Bgra5551(ushort)
+  href: api/Egami.Pixels.Bgra5551.html#Egami_Pixels_Bgra5551__ctor_System_UInt16_
+  commentId: M:Egami.Pixels.Bgra5551.#ctor(System.UInt16)
+  name.vb: New(UShort)
+  fullName: Egami.Pixels.Bgra5551.Bgra5551(ushort)
+  fullName.vb: Egami.Pixels.Bgra5551.New(UShort)
+  nameWithType: Bgra5551.Bgra5551(ushort)
+  nameWithType.vb: Bgra5551.New(UShort)
+- uid: Egami.Pixels.Bgra5551.#ctor*
+  name: Bgra5551
+  href: api/Egami.Pixels.Bgra5551.html#Egami_Pixels_Bgra5551__ctor_
+  commentId: Overload:Egami.Pixels.Bgra5551.#ctor
+  isSpec: "True"
+  name.vb: New
+  fullName: Egami.Pixels.Bgra5551.Bgra5551
+  fullName.vb: Egami.Pixels.Bgra5551.New
+  nameWithType: Bgra5551.Bgra5551
+  nameWithType.vb: Bgra5551.New
+- uid: Egami.Pixels.Bgra5551.A
+  name: A
+  href: api/Egami.Pixels.Bgra5551.html#Egami_Pixels_Bgra5551_A
+  commentId: P:Egami.Pixels.Bgra5551.A
+  fullName: Egami.Pixels.Bgra5551.A
+  nameWithType: Bgra5551.A
+- uid: Egami.Pixels.Bgra5551.A*
+  name: A
+  href: api/Egami.Pixels.Bgra5551.html#Egami_Pixels_Bgra5551_A_
+  commentId: Overload:Egami.Pixels.Bgra5551.A
+  isSpec: "True"
+  fullName: Egami.Pixels.Bgra5551.A
+  nameWithType: Bgra5551.A
+- uid: Egami.Pixels.Bgra5551.B
+  name: B
+  href: api/Egami.Pixels.Bgra5551.html#Egami_Pixels_Bgra5551_B
+  commentId: P:Egami.Pixels.Bgra5551.B
+  fullName: Egami.Pixels.Bgra5551.B
+  nameWithType: Bgra5551.B
+- uid: Egami.Pixels.Bgra5551.B*
+  name: B
+  href: api/Egami.Pixels.Bgra5551.html#Egami_Pixels_Bgra5551_B_
+  commentId: Overload:Egami.Pixels.Bgra5551.B
+  isSpec: "True"
+  fullName: Egami.Pixels.Bgra5551.B
+  nameWithType: Bgra5551.B
+- uid: Egami.Pixels.Bgra5551.Equals(Egami.Pixels.Bgra5551)
+  name: Equals(Bgra5551)
+  href: api/Egami.Pixels.Bgra5551.html#Egami_Pixels_Bgra5551_Equals_Egami_Pixels_Bgra5551_
+  commentId: M:Egami.Pixels.Bgra5551.Equals(Egami.Pixels.Bgra5551)
+  fullName: Egami.Pixels.Bgra5551.Equals(Egami.Pixels.Bgra5551)
+  nameWithType: Bgra5551.Equals(Bgra5551)
+- uid: Egami.Pixels.Bgra5551.Equals(System.Object)
+  name: Equals(object?)
+  href: api/Egami.Pixels.Bgra5551.html#Egami_Pixels_Bgra5551_Equals_System_Object_
+  commentId: M:Egami.Pixels.Bgra5551.Equals(System.Object)
+  name.vb: Equals(Object)
+  fullName: Egami.Pixels.Bgra5551.Equals(object?)
+  fullName.vb: Egami.Pixels.Bgra5551.Equals(Object)
+  nameWithType: Bgra5551.Equals(object?)
+  nameWithType.vb: Bgra5551.Equals(Object)
+- uid: Egami.Pixels.Bgra5551.Equals*
+  name: Equals
+  href: api/Egami.Pixels.Bgra5551.html#Egami_Pixels_Bgra5551_Equals_
+  commentId: Overload:Egami.Pixels.Bgra5551.Equals
+  isSpec: "True"
+  fullName: Egami.Pixels.Bgra5551.Equals
+  nameWithType: Bgra5551.Equals
+- uid: Egami.Pixels.Bgra5551.FromRgba8(Egami.Pixels.Rgba8)
+  name: FromRgba8(Rgba8)
+  href: api/Egami.Pixels.Bgra5551.html#Egami_Pixels_Bgra5551_FromRgba8_Egami_Pixels_Rgba8_
+  commentId: M:Egami.Pixels.Bgra5551.FromRgba8(Egami.Pixels.Rgba8)
+  fullName: Egami.Pixels.Bgra5551.FromRgba8(Egami.Pixels.Rgba8)
+  nameWithType: Bgra5551.FromRgba8(Rgba8)
+- uid: Egami.Pixels.Bgra5551.FromRgba8*
+  name: FromRgba8
+  href: api/Egami.Pixels.Bgra5551.html#Egami_Pixels_Bgra5551_FromRgba8_
+  commentId: Overload:Egami.Pixels.Bgra5551.FromRgba8
+  isSpec: "True"
+  fullName: Egami.Pixels.Bgra5551.FromRgba8
+  nameWithType: Bgra5551.FromRgba8
+- uid: Egami.Pixels.Bgra5551.FromScaled(System.Numerics.Vector4)
+  name: FromScaled(Vector4)
+  href: api/Egami.Pixels.Bgra5551.html#Egami_Pixels_Bgra5551_FromScaled_System_Numerics_Vector4_
+  commentId: M:Egami.Pixels.Bgra5551.FromScaled(System.Numerics.Vector4)
+  fullName: Egami.Pixels.Bgra5551.FromScaled(System.Numerics.Vector4)
+  nameWithType: Bgra5551.FromScaled(Vector4)
+- uid: Egami.Pixels.Bgra5551.FromScaled*
+  name: FromScaled
+  href: api/Egami.Pixels.Bgra5551.html#Egami_Pixels_Bgra5551_FromScaled_
+  commentId: Overload:Egami.Pixels.Bgra5551.FromScaled
+  isSpec: "True"
+  fullName: Egami.Pixels.Bgra5551.FromScaled
+  nameWithType: Bgra5551.FromScaled
+- uid: Egami.Pixels.Bgra5551.G
+  name: G
+  href: api/Egami.Pixels.Bgra5551.html#Egami_Pixels_Bgra5551_G
+  commentId: P:Egami.Pixels.Bgra5551.G
+  fullName: Egami.Pixels.Bgra5551.G
+  nameWithType: Bgra5551.G
+- uid: Egami.Pixels.Bgra5551.G*
+  name: G
+  href: api/Egami.Pixels.Bgra5551.html#Egami_Pixels_Bgra5551_G_
+  commentId: Overload:Egami.Pixels.Bgra5551.G
+  isSpec: "True"
+  fullName: Egami.Pixels.Bgra5551.G
+  nameWithType: Bgra5551.G
+- uid: Egami.Pixels.Bgra5551.GetHashCode
+  name: GetHashCode()
+  href: api/Egami.Pixels.Bgra5551.html#Egami_Pixels_Bgra5551_GetHashCode
+  commentId: M:Egami.Pixels.Bgra5551.GetHashCode
+  fullName: Egami.Pixels.Bgra5551.GetHashCode()
+  nameWithType: Bgra5551.GetHashCode()
+- uid: Egami.Pixels.Bgra5551.GetHashCode*
+  name: GetHashCode
+  href: api/Egami.Pixels.Bgra5551.html#Egami_Pixels_Bgra5551_GetHashCode_
+  commentId: Overload:Egami.Pixels.Bgra5551.GetHashCode
+  isSpec: "True"
+  fullName: Egami.Pixels.Bgra5551.GetHashCode
+  nameWithType: Bgra5551.GetHashCode
+- uid: Egami.Pixels.Bgra5551.Layout
+  name: Layout
+  href: api/Egami.Pixels.Bgra5551.html#Egami_Pixels_Bgra5551_Layout
+  commentId: P:Egami.Pixels.Bgra5551.Layout
+  fullName: Egami.Pixels.Bgra5551.Layout
+  nameWithType: Bgra5551.Layout
+- uid: Egami.Pixels.Bgra5551.Layout*
+  name: Layout
+  href: api/Egami.Pixels.Bgra5551.html#Egami_Pixels_Bgra5551_Layout_
+  commentId: Overload:Egami.Pixels.Bgra5551.Layout
+  isSpec: "True"
+  fullName: Egami.Pixels.Bgra5551.Layout
+  nameWithType: Bgra5551.Layout
+- uid: Egami.Pixels.Bgra5551.R
+  name: R
+  href: api/Egami.Pixels.Bgra5551.html#Egami_Pixels_Bgra5551_R
+  commentId: P:Egami.Pixels.Bgra5551.R
+  fullName: Egami.Pixels.Bgra5551.R
+  nameWithType: Bgra5551.R
+- uid: Egami.Pixels.Bgra5551.R*
+  name: R
+  href: api/Egami.Pixels.Bgra5551.html#Egami_Pixels_Bgra5551_R_
+  commentId: Overload:Egami.Pixels.Bgra5551.R
+  isSpec: "True"
+  fullName: Egami.Pixels.Bgra5551.R
+  nameWithType: Bgra5551.R
+- uid: Egami.Pixels.Bgra5551.ToRgba8
+  name: ToRgba8()
+  href: api/Egami.Pixels.Bgra5551.html#Egami_Pixels_Bgra5551_ToRgba8
+  commentId: M:Egami.Pixels.Bgra5551.ToRgba8
+  fullName: Egami.Pixels.Bgra5551.ToRgba8()
+  nameWithType: Bgra5551.ToRgba8()
+- uid: Egami.Pixels.Bgra5551.ToRgba8*
+  name: ToRgba8
+  href: api/Egami.Pixels.Bgra5551.html#Egami_Pixels_Bgra5551_ToRgba8_
+  commentId: Overload:Egami.Pixels.Bgra5551.ToRgba8
+  isSpec: "True"
+  fullName: Egami.Pixels.Bgra5551.ToRgba8
+  nameWithType: Bgra5551.ToRgba8
+- uid: Egami.Pixels.Bgra5551.ToScaled
+  name: ToScaled()
+  href: api/Egami.Pixels.Bgra5551.html#Egami_Pixels_Bgra5551_ToScaled
+  commentId: M:Egami.Pixels.Bgra5551.ToScaled
+  fullName: Egami.Pixels.Bgra5551.ToScaled()
+  nameWithType: Bgra5551.ToScaled()
+- uid: Egami.Pixels.Bgra5551.ToScaled*
+  name: ToScaled
+  href: api/Egami.Pixels.Bgra5551.html#Egami_Pixels_Bgra5551_ToScaled_
+  commentId: Overload:Egami.Pixels.Bgra5551.ToScaled
+  isSpec: "True"
+  fullName: Egami.Pixels.Bgra5551.ToScaled
+  nameWithType: Bgra5551.ToScaled
+- uid: Egami.Pixels.Bgra5551.ToString
+  name: ToString()
+  href: api/Egami.Pixels.Bgra5551.html#Egami_Pixels_Bgra5551_ToString
+  commentId: M:Egami.Pixels.Bgra5551.ToString
+  fullName: Egami.Pixels.Bgra5551.ToString()
+  nameWithType: Bgra5551.ToString()
+- uid: Egami.Pixels.Bgra5551.ToString*
+  name: ToString
+  href: api/Egami.Pixels.Bgra5551.html#Egami_Pixels_Bgra5551_ToString_
+  commentId: Overload:Egami.Pixels.Bgra5551.ToString
+  isSpec: "True"
+  fullName: Egami.Pixels.Bgra5551.ToString
+  nameWithType: Bgra5551.ToString
+- uid: Egami.Pixels.Bgra5551.Value
+  name: Value
+  href: api/Egami.Pixels.Bgra5551.html#Egami_Pixels_Bgra5551_Value
+  commentId: F:Egami.Pixels.Bgra5551.Value
+  fullName: Egami.Pixels.Bgra5551.Value
+  nameWithType: Bgra5551.Value
+- uid: Egami.Pixels.Bgra5551.op_Equality(Egami.Pixels.Bgra5551,Egami.Pixels.Bgra5551)
+  name: operator ==(Bgra5551, Bgra5551)
+  href: api/Egami.Pixels.Bgra5551.html#Egami_Pixels_Bgra5551_op_Equality_Egami_Pixels_Bgra5551_Egami_Pixels_Bgra5551_
+  commentId: M:Egami.Pixels.Bgra5551.op_Equality(Egami.Pixels.Bgra5551,Egami.Pixels.Bgra5551)
+  name.vb: =(Bgra5551, Bgra5551)
+  fullName: Egami.Pixels.Bgra5551.operator ==(Egami.Pixels.Bgra5551, Egami.Pixels.Bgra5551)
+  fullName.vb: Egami.Pixels.Bgra5551.=(Egami.Pixels.Bgra5551, Egami.Pixels.Bgra5551)
+  nameWithType: Bgra5551.operator ==(Bgra5551, Bgra5551)
+  nameWithType.vb: Bgra5551.=(Bgra5551, Bgra5551)
+- uid: Egami.Pixels.Bgra5551.op_Equality*
+  name: operator ==
+  href: api/Egami.Pixels.Bgra5551.html#Egami_Pixels_Bgra5551_op_Equality_
+  commentId: Overload:Egami.Pixels.Bgra5551.op_Equality
+  isSpec: "True"
+  name.vb: =
+  fullName: Egami.Pixels.Bgra5551.operator ==
+  fullName.vb: Egami.Pixels.Bgra5551.=
+  nameWithType: Bgra5551.operator ==
+  nameWithType.vb: Bgra5551.=
+- uid: Egami.Pixels.Bgra5551.op_Inequality(Egami.Pixels.Bgra5551,Egami.Pixels.Bgra5551)
+  name: operator !=(Bgra5551, Bgra5551)
+  href: api/Egami.Pixels.Bgra5551.html#Egami_Pixels_Bgra5551_op_Inequality_Egami_Pixels_Bgra5551_Egami_Pixels_Bgra5551_
+  commentId: M:Egami.Pixels.Bgra5551.op_Inequality(Egami.Pixels.Bgra5551,Egami.Pixels.Bgra5551)
+  name.vb: <>(Bgra5551, Bgra5551)
+  fullName: Egami.Pixels.Bgra5551.operator !=(Egami.Pixels.Bgra5551, Egami.Pixels.Bgra5551)
+  fullName.vb: Egami.Pixels.Bgra5551.<>(Egami.Pixels.Bgra5551, Egami.Pixels.Bgra5551)
+  nameWithType: Bgra5551.operator !=(Bgra5551, Bgra5551)
+  nameWithType.vb: Bgra5551.<>(Bgra5551, Bgra5551)
+- uid: Egami.Pixels.Bgra5551.op_Inequality*
+  name: operator !=
+  href: api/Egami.Pixels.Bgra5551.html#Egami_Pixels_Bgra5551_op_Inequality_
+  commentId: Overload:Egami.Pixels.Bgra5551.op_Inequality
+  isSpec: "True"
+  name.vb: <>
+  fullName: Egami.Pixels.Bgra5551.operator !=
+  fullName.vb: Egami.Pixels.Bgra5551.<>
+  nameWithType: Bgra5551.operator !=
+  nameWithType.vb: Bgra5551.<>
 - uid: Egami.Pixels.Bgra8
   name: Bgra8
   href: api/Egami.Pixels.Bgra8.html

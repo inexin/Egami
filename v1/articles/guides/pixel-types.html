@@ -168,6 +168,12 @@ using Raster&lt;Bgr565&gt; display = deep.As&lt;Bgr565&gt;();
 <td>Embedded displays, legacy textures, 10-bit displays</td>
 </tr>
 <tr>
+<td><code>Bgr555</code>, <code>Bgra5551</code></td>
+<td>2, 2</td>
+<td>Packed 5-5-5 color, with a 1-bit alpha</td>
+<td>16-bit BMP and TGA, GDI+ 16-bit bitmaps</td>
+</tr>
+<tr>
 <td><code>Cmyk8</code>, <code>Cmyk16</code></td>
 <td>4, 8</td>
 <td>Ink amounts</td>
@@ -238,8 +244,9 @@ screen.Apply(ops =&gt; ops.DrawImage(photo, new Point(0, 0)));
 Bgr565 pixel = screen.Row(60)[120];
 Console.WriteLine($&quot;Levels: red {pixel.R} of 31, green {pixel.G} of 63, blue {pixel.B} of 31&quot;);
 </code></pre>
-<p><code>Bgr565</code>, <code>Bgra4444</code> and <code>Rgb10A2</code> keep their bits in <code>Value</code>, with level constructors and properties for each channel. BMP
-files with 5-6-5 or 4-4-4-4 bit fields read straight into them.</p>
+<p><code>Bgr565</code>, <code>Bgra4444</code>, <code>Bgr555</code>, <code>Bgra5551</code> and <code>Rgb10A2</code> keep their bits in <code>Value</code>, with level constructors and properties
+for each channel. BMP files with 5-6-5, 5-5-5, 1-5-5-5 or 4-4-4-4 bit fields and 15 and 16-bit TGA files read straight into them.
+<code>Bgr555</code> leaves its top bit 0; <code>Bgra5551</code> keeps alpha in it, 1 for opaque, and alpha 128 and above narrows to opaque.</p>
 <h2 id="your-own-pixel-type">Your own pixel type</h2>
 <p>Implement <code>IPixelType&lt;TSelf&gt;</code> on an unmanaged struct. <code>Layout</code> says how it is stored: a packed layout gives its pixel size and
 channel widths with <code>new PixelLayoutInfo(order, PixelChannelType.Packed, alpha, bitsPerPixel, widths...)</code>, and a layout Egami
