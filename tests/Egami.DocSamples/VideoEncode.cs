@@ -65,6 +65,48 @@ public class VideoEncode
     }
 
     [Fact]
+    public void Ffv1()
+    {
+        using SampleFiles files = new();
+        using Raster<Rgb8> duck = Raster.Load<Rgb8>("duck.png");
+
+        #region video-encode-ffv1
+        // FFV1 keeps every sample: RGB frames are coded as RGB and planes keep their layout and depth. The defaults are the
+        // archival profile (version 3, every frame a keyframe, slice CRCs, the range coder with a custom table).
+        VideoWriterOptions options = new() { Codec = VideoCodecs.Ffv1, FrameRate = new Rational(25, 1) };
+        using (VideoWriter writer = VideoWriter.Create("master.mkv", options))
+        {
+            for (int i = 0; i < 5; i++)
+            {
+                using Raster<Rgb8> frame = duck.Derive(ops => ops.Crop(new Rect(i * 4, i * 2, 320, 240)));
+                writer.WriteFrame(frame);
+            }
+        }
+
+        // Expert settings: more slices for more threads, Golomb-Rice for speed, a keyframe every 10 frames for smaller files.
+        VideoWriterOptions fast = options with
+        {
+            KeyframeInterval = 10,
+            Ffv1 = new Ffv1EncoderOptions { Slices = 16, Coder = Ffv1Coder.GolombRice, ContextModel = Ffv1ContextModel.Small },
+        };
+
+        // Check the archive without decoding it.
+        bool intact = Ffv1Codec.Verify("master.mkv").IsIntact;
+        #endregion
+
+        Assert.True(intact);
+        Assert.Equal(16, fast.Ffv1!.Slices);
+        using VideoReader reader = VideoReader.Open("master.mkv");
+        using YuvVideoFrame first = reader.ReadFrame()!;
+        using Raster<Rgb8> back = first.ToRaster<Rgb8>();
+        using Raster<Rgb8> expected = duck.Derive(ops => ops.Crop(new Rect(0, 0, 320, 240)));
+        for (int y = 0; y < back.Height; y++)
+        {
+            Assert.True(expected.Row(y).SequenceEqual(back.Row(y)));
+        }
+    }
+
+    [Fact]
     public void Vp9Deep()
     {
         using SampleFiles files = new();

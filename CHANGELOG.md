@@ -17,6 +17,23 @@ changes that break code come only in a new major version.
 
 ## Egami.Video, unreleased
 
+V6 FFV1 stage C: the FFV1 encoder (Build Plan tasks 11 to 14). All additive.
+
+- `Ffv1Codec` now encodes (`CanEncode`): version 3 in Matroska and AVI, through `VideoWriter` (`VideoWriterOptions.Ffv1`) or
+  `CreateEncoder` (`VideoEncoderOptions.Ffv1`). Planes keep their layout (4:2:0, 4:2:2, 4:4:4, 4:1:1, 4:1:0, gray, with or
+  without alpha, 8 to 16 bits); RGB rasters and Identity-tagged 4:4:4 planes are coded as RGB through the reversible color
+  transform. Defaults: every frame a keyframe, slice CRCs, the range coder with a custom state table, slices picked from the
+  frame size. Slices are coded in parallel with the same file at any thread count.
+- `Ffv1EncoderOptions` (`Slices`, `SliceCrc`, `Coder`, `ContextModel`, `BitsPerSample`) with `Ffv1Coder` and
+  `Ffv1ContextModel`. `KeyframeInterval` spaces keyframes; `Effort` 7 and up picks the large context model; `Quality` is
+  ignored and reported as `Ffv1.QualityIgnored`.
+- Gates: all 51 corpus clips round trip in every coder; FFmpeg decodes 294 re-encoded files (every clip in five or six settings,
+  Matroska and AVI) to the same samples (`tools/video/check-ffv1-encoder.py`). At matched settings files are -0.17 % to +0.59 %
+  of FFmpeg's size at 1080p and 2160p, 8 and 10 bits; encoding takes 0.94 to 1.26 times FFmpeg's time on one thread and 0.79 to
+  1.05 times on all cores (`tools/video/time-ffv1.py`, benchmarks `--encode-ffv1`). Steady-state encoding allocates 168 bytes a
+  frame beyond the packet on one thread.
+- The decoder's Golomb-Rice parameter is now worked out with a logarithm instead of a loop.
+
 V6 FFV1 stage B: decode speed and fixity checks (Build Plan tasks 9 and 10). All additive.
 
 - FFV1 slices decode in parallel up to `EgamiContext.MaxParallelism`, the same frame at any thread count, and the line decoders

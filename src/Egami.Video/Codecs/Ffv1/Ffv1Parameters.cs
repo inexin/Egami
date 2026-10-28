@@ -100,6 +100,131 @@ internal sealed class Ffv1Parameters
         return parameters;
     }
 
+    /// <summary>Builds the parameters a version 3 encoder writes.</summary>
+    public static Ffv1Parameters ForEncoding(
+        int coderType, int colorSpace, int bits, bool chromaPlanes, int log2H, int log2V, bool extraPlane, int horizontalSlices,
+        int verticalSlices, short[][][] quantTables, byte[]?[] initialStates, bool sliceCrc, bool intraOnly)
+    {
+        var p = new Ffv1Parameters
+        {
+            Version = 3,
+            MicroVersion = 4,
+            CoderType = coderType,
+            StateTable = coderType == 2 ? new Ffv1StateTable(Ffv1StateTable.AlternativeOne()) : Ffv1StateTable.Default,
+            ColorSpace = colorSpace,
+            BitsPerRawSample = bits,
+            ChromaPlanes = chromaPlanes,
+            Log2HChromaSubsample = log2H,
+            Log2VChromaSubsample = log2V,
+            ExtraPlane = extraPlane,
+            HorizontalSlices = horizontalSlices,
+            VerticalSlices = verticalSlices,
+            QuantTables = quantTables,
+            ContextCounts = [.. quantTables.Select(ContextCount)],
+            InitialStates = initialStates,
+            SliceCrc = sliceCrc,
+            IntraOnly = intraOnly,
+        };
+        return p;
+    }
+
+    /// <summary>Writes these parameters as a version 3 configuration record, its CRC parity last (RFC 9043 section 4.3).</summary>
+    public byte[] WriteConfigurationRecord()
+    {
+        var rc = new Ffv1RangeEncoder();
+        rc.Reset();
+        Span<byte> state = stackalloc byte[ContextSize];
+        state.Fill(128);
+        rc.WriteSymbol(state, Version, false);
+        rc.WriteSymbol(state, MicroVersion, false);
+        rc.WriteSymbol(state, CoderType, false);
+        if (CoderType == 2)
+        {
+            byte[] baseline = Ffv1StateTable.DefaultOne();
+            for (int i = 1; i < 256; i++)
+            {
+                rc.WriteSymbol(state, StateTable.One[i] - baseline[i], true);
+            }
+        }
+
+        rc.WriteSymbol(state, ColorSpace, false);
+        rc.WriteSymbol(state, BitsPerRawSample, false);
+        rc.WriteFlag(state, ChromaPlanes);
+        rc.WriteSymbol(state, Log2HChromaSubsample, false);
+        rc.WriteSymbol(state, Log2VChromaSubsample, false);
+        rc.WriteFlag(state, ExtraPlane);
+        rc.WriteSymbol(state, HorizontalSlices - 1, false);
+        rc.WriteSymbol(state, VerticalSlices - 1, false);
+        rc.WriteSymbol(state, QuantTables.Length, false);
+        Span<byte> tableState = stackalloc byte[ContextSize];
+        foreach (short[][] set in QuantTables)
+        {
+            foreach (short[] table in set)
+            {
+                // Runs of equal values over the first half; the second half mirrors it.
+                tableState.Fill(128);
+                for (int k = 0; k < 128;)
+                {
+                    int run = 1;
+                    while (k + run < 128 && table[k + run] == table[k])
+                    {
+                        run++;
+                    }
+
+                    rc.WriteSymbol(tableState, run - 1, false);
+                    k += run;
+                }
+            }
+        }
+
+        byte[] deltaStates = new byte[ContextSize * ContextSize];
+        deltaStates.AsSpan().Fill(128);
+        for (int i = 0; i < QuantTables.Length; i++)
+        {
+            byte[]? initial = InitialStates[i];
+            rc.WriteFlag(state, initial is not null);
+            if (initial is null)
+            {
+                continue;
+            }
+
+            for (int j = 0; j < ContextCounts[i]; j++)
+            {
+                for (int k = 0; k < ContextSize; k++)
+                {
+                    int pred = j > 0 ? initial[((j - 1) * ContextSize) + k] : 128;
+                    rc.WriteSymbol(deltaStates.AsSpan(k * ContextSize, ContextSize), (sbyte)(byte)(initial[(j * ContextSize) + k] - pred), true);
+                }
+            }
+        }
+
+        rc.WriteSymbol(state, SliceCrc ? 1 : 0, false);
+        rc.WriteSymbol(state, IntraOnly ? 1 : 0, false);
+        rc.Finish();
+        uint crc = Ffv1Crc.Compute(rc.Written);
+        Span<byte> parity = [(byte)(crc >> 24), (byte)(crc >> 16), (byte)(crc >> 8), (byte)crc];
+        rc.Append(parity);
+        return rc.Written.ToArray();
+    }
+
+    /// <summary>Returns the contexts a quantization table set gives: half the product of its tables' value counts, rounded up.</summary>
+    public static int ContextCount(short[][] set)
+    {
+        long scale = 1;
+        foreach (short[] table in set)
+        {
+            int values = 1;
+            for (int k = 1; k < 128; k++)
+            {
+                values += table[k] != table[k - 1] ? 1 : 0;
+            }
+
+            scale *= (2 * values) - 1;
+        }
+
+        return (int)((scale + 1) / 2);
+    }
+
     private void Read(ref Ffv1RangeDecoder rc)
     {
         Span<byte> state = stackalloc byte[ContextSize];

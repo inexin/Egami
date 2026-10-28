@@ -42,6 +42,9 @@ public sealed class Ffv1Codec : VideoCodec
     /// <inheritdoc/>
     public override string CodecId => CodecIds.Ffv1;
 
+    /// <inheritdoc/>
+    public override bool CanEncode => true;
+
     /// <summary>Decodes <see cref="CodecIds.Ffv1"/> tracks, and Matroska's <see cref="CodecIds.VfwFourCC"/> tracks whose BITMAPINFOHEADER names FFV1.</summary>
     /// <param name="track">The track.</param>
     /// <returns>Whether this codec decodes it.</returns>
@@ -66,6 +69,31 @@ public sealed class Ffv1Codec : VideoCodec
         }
 
         return new Ffv1VideoDecoder(track, options, context);
+    }
+
+    /// <summary>
+    /// Creates an FFV1 encoder: version 3, every frame equal to its input after a decode. Frames given as planes keep their
+    /// layout (4:2:0, 4:2:2, 4:4:4, 4:1:1, 4:1:0 or gray, with or without alpha, 8 to 16 bits); a 4:4:4 raster tagged
+    /// <see cref="Pixels.YuvMatrix.Identity"/>, and any RGB raster, is coded as RGB. The first frame sets the stream's layout,
+    /// which the track then describes (its configuration record in <see cref="TrackInfo.CodecPrivate"/>). By default every
+    /// frame is a keyframe, slices end in CRCs and the range coder uses a custom state table: the profile archives use.
+    /// <see cref="VideoEncoderOptions.KeyframeInterval"/> spaces keyframes further apart, <see cref="VideoEncoderOptions.Effort"/>
+    /// picks the context model and <see cref="VideoEncoderOptions.Ffv1"/> holds the rest. FFV1 is lossless, so
+    /// <see cref="VideoEncoderOptions.Quality"/> is ignored and reported as <c>Ffv1.QualityIgnored</c>. Slices are coded in
+    /// parallel, and the output is the same at any thread count.
+    /// </summary>
+    /// <param name="options">The picture size, frame rate and FFV1 settings.</param>
+    /// <param name="context">The context.</param>
+    /// <returns>The encoder.</returns>
+    /// <exception cref="ArgumentOutOfRangeException">An option is out of range.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/VideoEncode.cs" region="video-encode-ffv1"/>
+    /// </example>
+    public override IVideoEncoder CreateEncoder(VideoEncoderOptions options, MediaContext context)
+    {
+        ArgumentNullException.ThrowIfNull(options);
+        ArgumentNullException.ThrowIfNull(context);
+        return new Ffv1VideoEncoder(options, context);
     }
 
     /// <summary>
