@@ -2,6 +2,7 @@ using System.Drawing;
 using System.Runtime.InteropServices;
 
 using Egami.SystemDrawing;
+using Egami.SystemDrawing.Drawing2D;
 using Egami.SystemDrawing.Imaging;
 
 namespace Egami.DocSamples;
@@ -178,5 +179,123 @@ public class SystemDrawingPackage
 
         Assert.Equal(24, image.Width);
         Assert.True(copy.Length > 0);
+    }
+
+    [Fact]
+    public void GraphicsBasics()
+    {
+        #region graphics
+        // Draw on a bitmap as with System.Drawing: GDI+'s defaults are aliased shapes and whole-pixel centers.
+        using Bitmap bitmap = new(80, 60);
+        using (Graphics g = Graphics.FromImage(bitmap))
+        {
+            g.Clear(Color.White);
+            g.SmoothingMode = SmoothingMode.AntiAlias;
+            g.PageUnit = GraphicsUnit.Millimeter;  // 1 mm is 96 / 25.4 pixels at the bitmap's 96 dpi
+            using Pen pen = new(Color.Navy, 0.5f);
+            g.DrawEllipse(pen, 2, 2, 15, 10);
+        }
+
+        Color corner = bitmap.GetPixel(0, 0);  // white
+        #endregion
+
+        Assert.Equal(Color.White.ToArgb(), corner.ToArgb());
+    }
+
+    [Fact]
+    public void GraphicsTransforms()
+    {
+        #region transforms
+        // Transforms prepend by default, so the last call applies first; Save and Restore bring settings back.
+        using Bitmap bitmap = new(64, 64);
+        using Graphics g = Graphics.FromImage(bitmap);
+        g.TranslateTransform(32, 32);
+        g.RotateTransform(45);
+        GraphicsState saved = g.Save();
+        g.ScaleTransform(2, 2);
+        PointF[] points = [new(1, 0)];
+        g.TransformPoints(CoordinateSpace.Device, CoordinateSpace.World, points);  // (33.41, 33.41)
+        g.Restore(saved);
+
+        using Matrix matrix = new();
+        matrix.Rotate(90);
+        matrix.Translate(10, 0, MatrixOrder.Append);
+        float[] elements = matrix.Elements;  // 0, 1, -1, 0, 10, 0
+        #endregion
+
+        Assert.Equal(33.414, points[0].X, 2);
+        Assert.Equal(10f, elements[4]);
+    }
+
+    [Fact]
+    public void GraphicsClipping()
+    {
+        #region clipping
+        // The clip is kept in device pixels, as GDI+ keeps it: changing the transform afterwards does not move it.
+        using Bitmap bitmap = new(64, 48);
+        using Graphics g = Graphics.FromImage(bitmap);
+        g.SetClip(new Rectangle(10, 10, 20, 20));
+        g.ExcludeClip(new Rectangle(15, 15, 5, 5));
+        g.TranslateTransform(100, 0);
+        RectangleF bounds = g.ClipBounds;  // (-90, 10, 20, 20) in the new world coordinates
+        g.ResetTransform();
+        using SolidBrush brush = new(Color.Red);
+        g.FillRectangle(brush, 0, 0, 64, 48);  // paints only inside the clip
+        using Region region = new(new Rectangle(0, 0, 4, 4));
+        region.Union(new RectangleF(2.5f, 2.5f, 4, 4));
+        RectangleF[] scans = region.GetRegionScans(new Matrix());  // the pixels, as rectangles
+        #endregion
+
+        Assert.Equal(-90f, bounds.X);
+        Assert.Equal(Color.Red.ToArgb(), bitmap.GetPixel(10, 10).ToArgb());
+        Assert.Equal(0, bitmap.GetPixel(16, 16).A);
+        Assert.NotEmpty(scans);
+    }
+
+    [Fact]
+    public void GraphicsShapes()
+    {
+        #region shapes
+        // Lines, rectangles, arcs, pies, polygons, Beziers and cardinal splines, stroked with a pen or filled with a brush.
+        using Bitmap bitmap = new(64, 48);
+        using Graphics g = Graphics.FromImage(bitmap);
+        using Pen pen = new(Color.Black, 2);
+        using SolidBrush brush = new(Color.FromArgb(128, 255, 0, 0));
+        g.DrawLine(pen, 2, 2, 60, 2);
+        g.FillRectangle(brush, 4, 6, 20, 12);
+        g.DrawArc(pen, 30, 6, 30, 20, 0, 180);
+        g.FillPie(brush, 4, 20, 24, 24, 30, 120);
+        g.DrawCurve(pen, [new PointF(30, 40), new PointF(40, 30), new PointF(50, 44), new PointF(60, 34)], 0.5f);
+        g.FillPolygon(brush, [new PointF(40, 4), new PointF(48, 16), new PointF(32, 16)], FillMode.Winding);
+        #endregion
+
+        Assert.Equal(255, bitmap.GetPixel(10, 2).A);
+    }
+
+    [Fact]
+    public void GraphicsImages()
+    {
+        #region images
+        // DrawImage at a point draws at the image's physical size; ImageAttributes adjust its colors and tile it.
+        using Bitmap source = new(8, 8);
+        source.SetResolution(48, 48);  // half the 96 dpi of the bitmap drawn on, so it is drawn twice as large
+        using (Graphics s = Graphics.FromImage(source))
+        {
+            s.Clear(Color.Orange);
+        }
+
+        using Bitmap bitmap = new(64, 48);
+        using Graphics g = Graphics.FromImage(bitmap);
+        g.DrawImage(source, 0, 0);  // 16 by 16 pixels
+        g.InterpolationMode = InterpolationMode.NearestNeighbor;
+        using ImageAttributes attributes = new();
+        attributes.SetColorMatrix(new ColorMatrix { Matrix33 = 0.5f });  // half the alpha
+        attributes.SetWrapMode(WrapMode.Tile);
+        g.DrawImage(source, new Rectangle(20, 0, 40, 40), 0, 0, 16, 16, GraphicsUnit.Pixel, attributes);
+        #endregion
+
+        Assert.Equal(255, bitmap.GetPixel(14, 14).A);
+        Assert.Equal(0, bitmap.GetPixel(18, 18).A);
+        Assert.InRange(bitmap.GetPixel(40, 20).A, 120, 135);
     }
 }

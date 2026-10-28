@@ -1,4 +1,5 @@
 #nullable enable
+abstract Egami.SystemDrawing.Brush.Clone() -> object!
 abstract Egami.SystemDrawing.Image.Clone() -> object!
 Egami.SystemDrawing.Bitmap
 Egami.SystemDrawing.Bitmap.Bitmap(Egami.SystemDrawing.Image! original) -> void
@@ -27,6 +28,370 @@ Egami.SystemDrawing.Bitmap.MakeTransparent(System.Drawing.Color transparentColor
 Egami.SystemDrawing.Bitmap.SetPixel(int x, int y, System.Drawing.Color color) -> void
 Egami.SystemDrawing.Bitmap.SetResolution(float xDpi, float yDpi) -> void
 Egami.SystemDrawing.Bitmap.UnlockBits(Egami.SystemDrawing.Imaging.BitmapData! bitmapdata) -> void
+Egami.SystemDrawing.Brush
+Egami.SystemDrawing.Brush.Brush() -> void
+Egami.SystemDrawing.Brush.Dispose() -> void
+Egami.SystemDrawing.Brush.SetNativeBrush(nint brush) -> void
+Egami.SystemDrawing.Brush.~Brush() -> void
+Egami.SystemDrawing.CopyPixelOperation
+Egami.SystemDrawing.CopyPixelOperation.Blackness = 66 -> Egami.SystemDrawing.CopyPixelOperation
+Egami.SystemDrawing.CopyPixelOperation.CaptureBlt = 1073741824 -> Egami.SystemDrawing.CopyPixelOperation
+Egami.SystemDrawing.CopyPixelOperation.DestinationInvert = 5570569 -> Egami.SystemDrawing.CopyPixelOperation
+Egami.SystemDrawing.CopyPixelOperation.MergeCopy = 12583114 -> Egami.SystemDrawing.CopyPixelOperation
+Egami.SystemDrawing.CopyPixelOperation.MergePaint = 12255782 -> Egami.SystemDrawing.CopyPixelOperation
+Egami.SystemDrawing.CopyPixelOperation.NoMirrorBitmap = -2147483648 -> Egami.SystemDrawing.CopyPixelOperation
+Egami.SystemDrawing.CopyPixelOperation.NotSourceCopy = 3342344 -> Egami.SystemDrawing.CopyPixelOperation
+Egami.SystemDrawing.CopyPixelOperation.NotSourceErase = 1114278 -> Egami.SystemDrawing.CopyPixelOperation
+Egami.SystemDrawing.CopyPixelOperation.PatCopy = 15728673 -> Egami.SystemDrawing.CopyPixelOperation
+Egami.SystemDrawing.CopyPixelOperation.PatInvert = 5898313 -> Egami.SystemDrawing.CopyPixelOperation
+Egami.SystemDrawing.CopyPixelOperation.PatPaint = 16452105 -> Egami.SystemDrawing.CopyPixelOperation
+Egami.SystemDrawing.CopyPixelOperation.SourceAnd = 8913094 -> Egami.SystemDrawing.CopyPixelOperation
+Egami.SystemDrawing.CopyPixelOperation.SourceCopy = 13369376 -> Egami.SystemDrawing.CopyPixelOperation
+Egami.SystemDrawing.CopyPixelOperation.SourceErase = 4457256 -> Egami.SystemDrawing.CopyPixelOperation
+Egami.SystemDrawing.CopyPixelOperation.SourceInvert = 6684742 -> Egami.SystemDrawing.CopyPixelOperation
+Egami.SystemDrawing.CopyPixelOperation.SourcePaint = 15597702 -> Egami.SystemDrawing.CopyPixelOperation
+Egami.SystemDrawing.CopyPixelOperation.Whiteness = 16711778 -> Egami.SystemDrawing.CopyPixelOperation
+Egami.SystemDrawing.Drawing2D.CombineMode
+Egami.SystemDrawing.Drawing2D.CombineMode.Complement = 5 -> Egami.SystemDrawing.Drawing2D.CombineMode
+Egami.SystemDrawing.Drawing2D.CombineMode.Exclude = 4 -> Egami.SystemDrawing.Drawing2D.CombineMode
+Egami.SystemDrawing.Drawing2D.CombineMode.Intersect = 1 -> Egami.SystemDrawing.Drawing2D.CombineMode
+Egami.SystemDrawing.Drawing2D.CombineMode.Replace = 0 -> Egami.SystemDrawing.Drawing2D.CombineMode
+Egami.SystemDrawing.Drawing2D.CombineMode.Union = 2 -> Egami.SystemDrawing.Drawing2D.CombineMode
+Egami.SystemDrawing.Drawing2D.CombineMode.Xor = 3 -> Egami.SystemDrawing.Drawing2D.CombineMode
+Egami.SystemDrawing.Drawing2D.CompositingMode
+Egami.SystemDrawing.Drawing2D.CompositingMode.SourceCopy = 1 -> Egami.SystemDrawing.Drawing2D.CompositingMode
+Egami.SystemDrawing.Drawing2D.CompositingMode.SourceOver = 0 -> Egami.SystemDrawing.Drawing2D.CompositingMode
+Egami.SystemDrawing.Drawing2D.CompositingQuality
+Egami.SystemDrawing.Drawing2D.CompositingQuality.AssumeLinear = 4 -> Egami.SystemDrawing.Drawing2D.CompositingQuality
+Egami.SystemDrawing.Drawing2D.CompositingQuality.Default = 0 -> Egami.SystemDrawing.Drawing2D.CompositingQuality
+Egami.SystemDrawing.Drawing2D.CompositingQuality.GammaCorrected = 3 -> Egami.SystemDrawing.Drawing2D.CompositingQuality
+Egami.SystemDrawing.Drawing2D.CompositingQuality.HighQuality = 2 -> Egami.SystemDrawing.Drawing2D.CompositingQuality
+Egami.SystemDrawing.Drawing2D.CompositingQuality.HighSpeed = 1 -> Egami.SystemDrawing.Drawing2D.CompositingQuality
+Egami.SystemDrawing.Drawing2D.CompositingQuality.Invalid = -1 -> Egami.SystemDrawing.Drawing2D.CompositingQuality
+Egami.SystemDrawing.Drawing2D.CoordinateSpace
+Egami.SystemDrawing.Drawing2D.CoordinateSpace.Device = 2 -> Egami.SystemDrawing.Drawing2D.CoordinateSpace
+Egami.SystemDrawing.Drawing2D.CoordinateSpace.Page = 1 -> Egami.SystemDrawing.Drawing2D.CoordinateSpace
+Egami.SystemDrawing.Drawing2D.CoordinateSpace.World = 0 -> Egami.SystemDrawing.Drawing2D.CoordinateSpace
+Egami.SystemDrawing.Drawing2D.FillMode
+Egami.SystemDrawing.Drawing2D.FillMode.Alternate = 0 -> Egami.SystemDrawing.Drawing2D.FillMode
+Egami.SystemDrawing.Drawing2D.FillMode.Winding = 1 -> Egami.SystemDrawing.Drawing2D.FillMode
+Egami.SystemDrawing.Drawing2D.FlushIntention
+Egami.SystemDrawing.Drawing2D.FlushIntention.Flush = 0 -> Egami.SystemDrawing.Drawing2D.FlushIntention
+Egami.SystemDrawing.Drawing2D.FlushIntention.Sync = 1 -> Egami.SystemDrawing.Drawing2D.FlushIntention
+Egami.SystemDrawing.Drawing2D.GraphicsContainer
+Egami.SystemDrawing.Drawing2D.GraphicsState
+Egami.SystemDrawing.Drawing2D.InterpolationMode
+Egami.SystemDrawing.Drawing2D.InterpolationMode.Bicubic = 4 -> Egami.SystemDrawing.Drawing2D.InterpolationMode
+Egami.SystemDrawing.Drawing2D.InterpolationMode.Bilinear = 3 -> Egami.SystemDrawing.Drawing2D.InterpolationMode
+Egami.SystemDrawing.Drawing2D.InterpolationMode.Default = 0 -> Egami.SystemDrawing.Drawing2D.InterpolationMode
+Egami.SystemDrawing.Drawing2D.InterpolationMode.High = 2 -> Egami.SystemDrawing.Drawing2D.InterpolationMode
+Egami.SystemDrawing.Drawing2D.InterpolationMode.HighQualityBicubic = 7 -> Egami.SystemDrawing.Drawing2D.InterpolationMode
+Egami.SystemDrawing.Drawing2D.InterpolationMode.HighQualityBilinear = 6 -> Egami.SystemDrawing.Drawing2D.InterpolationMode
+Egami.SystemDrawing.Drawing2D.InterpolationMode.Invalid = -1 -> Egami.SystemDrawing.Drawing2D.InterpolationMode
+Egami.SystemDrawing.Drawing2D.InterpolationMode.Low = 1 -> Egami.SystemDrawing.Drawing2D.InterpolationMode
+Egami.SystemDrawing.Drawing2D.InterpolationMode.NearestNeighbor = 5 -> Egami.SystemDrawing.Drawing2D.InterpolationMode
+Egami.SystemDrawing.Drawing2D.Matrix
+Egami.SystemDrawing.Drawing2D.Matrix.Clone() -> Egami.SystemDrawing.Drawing2D.Matrix!
+Egami.SystemDrawing.Drawing2D.Matrix.Dispose() -> void
+Egami.SystemDrawing.Drawing2D.Matrix.Elements.get -> float[]!
+Egami.SystemDrawing.Drawing2D.Matrix.Invert() -> void
+Egami.SystemDrawing.Drawing2D.Matrix.IsIdentity.get -> bool
+Egami.SystemDrawing.Drawing2D.Matrix.IsInvertible.get -> bool
+Egami.SystemDrawing.Drawing2D.Matrix.Matrix() -> void
+Egami.SystemDrawing.Drawing2D.Matrix.Matrix(float m11, float m12, float m21, float m22, float dx, float dy) -> void
+Egami.SystemDrawing.Drawing2D.Matrix.Matrix(System.Drawing.Rectangle rect, System.Drawing.Point[]! plgpts) -> void
+Egami.SystemDrawing.Drawing2D.Matrix.Matrix(System.Drawing.RectangleF rect, System.Drawing.PointF[]! plgpts) -> void
+Egami.SystemDrawing.Drawing2D.Matrix.Matrix(System.Numerics.Matrix3x2 matrix) -> void
+Egami.SystemDrawing.Drawing2D.Matrix.MatrixElements.get -> System.Numerics.Matrix3x2
+Egami.SystemDrawing.Drawing2D.Matrix.MatrixElements.set -> void
+Egami.SystemDrawing.Drawing2D.Matrix.Multiply(Egami.SystemDrawing.Drawing2D.Matrix! matrix) -> void
+Egami.SystemDrawing.Drawing2D.Matrix.Multiply(Egami.SystemDrawing.Drawing2D.Matrix! matrix, Egami.SystemDrawing.Drawing2D.MatrixOrder order) -> void
+Egami.SystemDrawing.Drawing2D.Matrix.OffsetX.get -> float
+Egami.SystemDrawing.Drawing2D.Matrix.OffsetY.get -> float
+Egami.SystemDrawing.Drawing2D.Matrix.Reset() -> void
+Egami.SystemDrawing.Drawing2D.Matrix.Rotate(float angle) -> void
+Egami.SystemDrawing.Drawing2D.Matrix.Rotate(float angle, Egami.SystemDrawing.Drawing2D.MatrixOrder order) -> void
+Egami.SystemDrawing.Drawing2D.Matrix.RotateAt(float angle, System.Drawing.PointF point) -> void
+Egami.SystemDrawing.Drawing2D.Matrix.RotateAt(float angle, System.Drawing.PointF point, Egami.SystemDrawing.Drawing2D.MatrixOrder order) -> void
+Egami.SystemDrawing.Drawing2D.Matrix.Scale(float scaleX, float scaleY) -> void
+Egami.SystemDrawing.Drawing2D.Matrix.Scale(float scaleX, float scaleY, Egami.SystemDrawing.Drawing2D.MatrixOrder order) -> void
+Egami.SystemDrawing.Drawing2D.Matrix.Shear(float shearX, float shearY) -> void
+Egami.SystemDrawing.Drawing2D.Matrix.Shear(float shearX, float shearY, Egami.SystemDrawing.Drawing2D.MatrixOrder order) -> void
+Egami.SystemDrawing.Drawing2D.Matrix.TransformPoints(System.Drawing.Point[]! pts) -> void
+Egami.SystemDrawing.Drawing2D.Matrix.TransformPoints(System.Drawing.PointF[]! pts) -> void
+Egami.SystemDrawing.Drawing2D.Matrix.TransformPoints(System.ReadOnlySpan<System.Drawing.Point> pts) -> void
+Egami.SystemDrawing.Drawing2D.Matrix.TransformPoints(System.ReadOnlySpan<System.Drawing.PointF> pts) -> void
+Egami.SystemDrawing.Drawing2D.Matrix.TransformVectors(System.Drawing.Point[]! pts) -> void
+Egami.SystemDrawing.Drawing2D.Matrix.TransformVectors(System.Drawing.PointF[]! pts) -> void
+Egami.SystemDrawing.Drawing2D.Matrix.TransformVectors(System.ReadOnlySpan<System.Drawing.Point> pts) -> void
+Egami.SystemDrawing.Drawing2D.Matrix.TransformVectors(System.ReadOnlySpan<System.Drawing.PointF> pts) -> void
+Egami.SystemDrawing.Drawing2D.Matrix.Translate(float offsetX, float offsetY) -> void
+Egami.SystemDrawing.Drawing2D.Matrix.Translate(float offsetX, float offsetY, Egami.SystemDrawing.Drawing2D.MatrixOrder order) -> void
+Egami.SystemDrawing.Drawing2D.Matrix.VectorTransformPoints(System.Drawing.Point[]! pts) -> void
+Egami.SystemDrawing.Drawing2D.Matrix.VectorTransformPoints(System.ReadOnlySpan<System.Drawing.Point> pts) -> void
+Egami.SystemDrawing.Drawing2D.MatrixOrder
+Egami.SystemDrawing.Drawing2D.MatrixOrder.Append = 1 -> Egami.SystemDrawing.Drawing2D.MatrixOrder
+Egami.SystemDrawing.Drawing2D.MatrixOrder.Prepend = 0 -> Egami.SystemDrawing.Drawing2D.MatrixOrder
+Egami.SystemDrawing.Drawing2D.PixelOffsetMode
+Egami.SystemDrawing.Drawing2D.PixelOffsetMode.Default = 0 -> Egami.SystemDrawing.Drawing2D.PixelOffsetMode
+Egami.SystemDrawing.Drawing2D.PixelOffsetMode.Half = 4 -> Egami.SystemDrawing.Drawing2D.PixelOffsetMode
+Egami.SystemDrawing.Drawing2D.PixelOffsetMode.HighQuality = 2 -> Egami.SystemDrawing.Drawing2D.PixelOffsetMode
+Egami.SystemDrawing.Drawing2D.PixelOffsetMode.HighSpeed = 1 -> Egami.SystemDrawing.Drawing2D.PixelOffsetMode
+Egami.SystemDrawing.Drawing2D.PixelOffsetMode.Invalid = -1 -> Egami.SystemDrawing.Drawing2D.PixelOffsetMode
+Egami.SystemDrawing.Drawing2D.PixelOffsetMode.None = 3 -> Egami.SystemDrawing.Drawing2D.PixelOffsetMode
+Egami.SystemDrawing.Drawing2D.QualityMode
+Egami.SystemDrawing.Drawing2D.QualityMode.Default = 0 -> Egami.SystemDrawing.Drawing2D.QualityMode
+Egami.SystemDrawing.Drawing2D.QualityMode.High = 2 -> Egami.SystemDrawing.Drawing2D.QualityMode
+Egami.SystemDrawing.Drawing2D.QualityMode.Invalid = -1 -> Egami.SystemDrawing.Drawing2D.QualityMode
+Egami.SystemDrawing.Drawing2D.QualityMode.Low = 1 -> Egami.SystemDrawing.Drawing2D.QualityMode
+Egami.SystemDrawing.Drawing2D.RegionData
+Egami.SystemDrawing.Drawing2D.RegionData.Data.get -> byte[]!
+Egami.SystemDrawing.Drawing2D.RegionData.Data.set -> void
+Egami.SystemDrawing.Drawing2D.SmoothingMode
+Egami.SystemDrawing.Drawing2D.SmoothingMode.AntiAlias = 4 -> Egami.SystemDrawing.Drawing2D.SmoothingMode
+Egami.SystemDrawing.Drawing2D.SmoothingMode.Default = 0 -> Egami.SystemDrawing.Drawing2D.SmoothingMode
+Egami.SystemDrawing.Drawing2D.SmoothingMode.HighQuality = 2 -> Egami.SystemDrawing.Drawing2D.SmoothingMode
+Egami.SystemDrawing.Drawing2D.SmoothingMode.HighSpeed = 1 -> Egami.SystemDrawing.Drawing2D.SmoothingMode
+Egami.SystemDrawing.Drawing2D.SmoothingMode.Invalid = -1 -> Egami.SystemDrawing.Drawing2D.SmoothingMode
+Egami.SystemDrawing.Drawing2D.SmoothingMode.None = 3 -> Egami.SystemDrawing.Drawing2D.SmoothingMode
+Egami.SystemDrawing.Drawing2D.WrapMode
+Egami.SystemDrawing.Drawing2D.WrapMode.Clamp = 4 -> Egami.SystemDrawing.Drawing2D.WrapMode
+Egami.SystemDrawing.Drawing2D.WrapMode.Tile = 0 -> Egami.SystemDrawing.Drawing2D.WrapMode
+Egami.SystemDrawing.Drawing2D.WrapMode.TileFlipX = 1 -> Egami.SystemDrawing.Drawing2D.WrapMode
+Egami.SystemDrawing.Drawing2D.WrapMode.TileFlipXY = 3 -> Egami.SystemDrawing.Drawing2D.WrapMode
+Egami.SystemDrawing.Drawing2D.WrapMode.TileFlipY = 2 -> Egami.SystemDrawing.Drawing2D.WrapMode
+Egami.SystemDrawing.Graphics
+Egami.SystemDrawing.Graphics.BeginContainer() -> Egami.SystemDrawing.Drawing2D.GraphicsContainer!
+Egami.SystemDrawing.Graphics.BeginContainer(System.Drawing.Rectangle dstrect, System.Drawing.Rectangle srcrect, Egami.SystemDrawing.GraphicsUnit unit) -> Egami.SystemDrawing.Drawing2D.GraphicsContainer!
+Egami.SystemDrawing.Graphics.BeginContainer(System.Drawing.RectangleF dstrect, System.Drawing.RectangleF srcrect, Egami.SystemDrawing.GraphicsUnit unit) -> Egami.SystemDrawing.Drawing2D.GraphicsContainer!
+Egami.SystemDrawing.Graphics.Clear(System.Drawing.Color color) -> void
+Egami.SystemDrawing.Graphics.Clip.get -> Egami.SystemDrawing.Region!
+Egami.SystemDrawing.Graphics.Clip.set -> void
+Egami.SystemDrawing.Graphics.ClipBounds.get -> System.Drawing.RectangleF
+Egami.SystemDrawing.Graphics.CompositingMode.get -> Egami.SystemDrawing.Drawing2D.CompositingMode
+Egami.SystemDrawing.Graphics.CompositingMode.set -> void
+Egami.SystemDrawing.Graphics.CompositingQuality.get -> Egami.SystemDrawing.Drawing2D.CompositingQuality
+Egami.SystemDrawing.Graphics.CompositingQuality.set -> void
+Egami.SystemDrawing.Graphics.CopyFromScreen(int sourceX, int sourceY, int destinationX, int destinationY, System.Drawing.Size blockRegionSize) -> void
+Egami.SystemDrawing.Graphics.CopyFromScreen(int sourceX, int sourceY, int destinationX, int destinationY, System.Drawing.Size blockRegionSize, Egami.SystemDrawing.CopyPixelOperation copyPixelOperation) -> void
+Egami.SystemDrawing.Graphics.CopyFromScreen(System.Drawing.Point upperLeftSource, System.Drawing.Point upperLeftDestination, System.Drawing.Size blockRegionSize) -> void
+Egami.SystemDrawing.Graphics.CopyFromScreen(System.Drawing.Point upperLeftSource, System.Drawing.Point upperLeftDestination, System.Drawing.Size blockRegionSize, Egami.SystemDrawing.CopyPixelOperation copyPixelOperation) -> void
+Egami.SystemDrawing.Graphics.Dispose() -> void
+Egami.SystemDrawing.Graphics.DpiX.get -> float
+Egami.SystemDrawing.Graphics.DpiY.get -> float
+Egami.SystemDrawing.Graphics.DrawArc(Egami.SystemDrawing.Pen! pen, float x, float y, float width, float height, float startAngle, float sweepAngle) -> void
+Egami.SystemDrawing.Graphics.DrawArc(Egami.SystemDrawing.Pen! pen, int x, int y, int width, int height, int startAngle, int sweepAngle) -> void
+Egami.SystemDrawing.Graphics.DrawArc(Egami.SystemDrawing.Pen! pen, System.Drawing.Rectangle rect, float startAngle, float sweepAngle) -> void
+Egami.SystemDrawing.Graphics.DrawArc(Egami.SystemDrawing.Pen! pen, System.Drawing.RectangleF rect, float startAngle, float sweepAngle) -> void
+Egami.SystemDrawing.Graphics.DrawBezier(Egami.SystemDrawing.Pen! pen, float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4) -> void
+Egami.SystemDrawing.Graphics.DrawBezier(Egami.SystemDrawing.Pen! pen, System.Drawing.Point pt1, System.Drawing.Point pt2, System.Drawing.Point pt3, System.Drawing.Point pt4) -> void
+Egami.SystemDrawing.Graphics.DrawBezier(Egami.SystemDrawing.Pen! pen, System.Drawing.PointF pt1, System.Drawing.PointF pt2, System.Drawing.PointF pt3, System.Drawing.PointF pt4) -> void
+Egami.SystemDrawing.Graphics.DrawBeziers(Egami.SystemDrawing.Pen! pen, params System.Drawing.Point[]! points) -> void
+Egami.SystemDrawing.Graphics.DrawBeziers(Egami.SystemDrawing.Pen! pen, params System.Drawing.PointF[]! points) -> void
+Egami.SystemDrawing.Graphics.DrawBeziers(Egami.SystemDrawing.Pen! pen, params System.ReadOnlySpan<System.Drawing.Point> points) -> void
+Egami.SystemDrawing.Graphics.DrawBeziers(Egami.SystemDrawing.Pen! pen, params System.ReadOnlySpan<System.Drawing.PointF> points) -> void
+Egami.SystemDrawing.Graphics.DrawClosedCurve(Egami.SystemDrawing.Pen! pen, params System.Drawing.Point[]! points) -> void
+Egami.SystemDrawing.Graphics.DrawClosedCurve(Egami.SystemDrawing.Pen! pen, params System.Drawing.PointF[]! points) -> void
+Egami.SystemDrawing.Graphics.DrawClosedCurve(Egami.SystemDrawing.Pen! pen, params System.ReadOnlySpan<System.Drawing.Point> points) -> void
+Egami.SystemDrawing.Graphics.DrawClosedCurve(Egami.SystemDrawing.Pen! pen, params System.ReadOnlySpan<System.Drawing.PointF> points) -> void
+Egami.SystemDrawing.Graphics.DrawClosedCurve(Egami.SystemDrawing.Pen! pen, System.Drawing.Point[]! points, float tension, Egami.SystemDrawing.Drawing2D.FillMode fillmode) -> void
+Egami.SystemDrawing.Graphics.DrawClosedCurve(Egami.SystemDrawing.Pen! pen, System.Drawing.PointF[]! points, float tension, Egami.SystemDrawing.Drawing2D.FillMode fillmode) -> void
+Egami.SystemDrawing.Graphics.DrawClosedCurve(Egami.SystemDrawing.Pen! pen, System.ReadOnlySpan<System.Drawing.Point> points, float tension, Egami.SystemDrawing.Drawing2D.FillMode fillmode) -> void
+Egami.SystemDrawing.Graphics.DrawClosedCurve(Egami.SystemDrawing.Pen! pen, System.ReadOnlySpan<System.Drawing.PointF> points, float tension, Egami.SystemDrawing.Drawing2D.FillMode fillmode) -> void
+Egami.SystemDrawing.Graphics.DrawCurve(Egami.SystemDrawing.Pen! pen, params System.Drawing.Point[]! points) -> void
+Egami.SystemDrawing.Graphics.DrawCurve(Egami.SystemDrawing.Pen! pen, params System.Drawing.PointF[]! points) -> void
+Egami.SystemDrawing.Graphics.DrawCurve(Egami.SystemDrawing.Pen! pen, params System.ReadOnlySpan<System.Drawing.Point> points) -> void
+Egami.SystemDrawing.Graphics.DrawCurve(Egami.SystemDrawing.Pen! pen, params System.ReadOnlySpan<System.Drawing.PointF> points) -> void
+Egami.SystemDrawing.Graphics.DrawCurve(Egami.SystemDrawing.Pen! pen, System.Drawing.Point[]! points, float tension) -> void
+Egami.SystemDrawing.Graphics.DrawCurve(Egami.SystemDrawing.Pen! pen, System.Drawing.Point[]! points, int offset, int numberOfSegments, float tension) -> void
+Egami.SystemDrawing.Graphics.DrawCurve(Egami.SystemDrawing.Pen! pen, System.Drawing.PointF[]! points, float tension) -> void
+Egami.SystemDrawing.Graphics.DrawCurve(Egami.SystemDrawing.Pen! pen, System.Drawing.PointF[]! points, int offset, int numberOfSegments) -> void
+Egami.SystemDrawing.Graphics.DrawCurve(Egami.SystemDrawing.Pen! pen, System.Drawing.PointF[]! points, int offset, int numberOfSegments, float tension) -> void
+Egami.SystemDrawing.Graphics.DrawCurve(Egami.SystemDrawing.Pen! pen, System.ReadOnlySpan<System.Drawing.Point> points, float tension) -> void
+Egami.SystemDrawing.Graphics.DrawCurve(Egami.SystemDrawing.Pen! pen, System.ReadOnlySpan<System.Drawing.Point> points, int offset, int numberOfSegments, float tension) -> void
+Egami.SystemDrawing.Graphics.DrawCurve(Egami.SystemDrawing.Pen! pen, System.ReadOnlySpan<System.Drawing.PointF> points, float tension) -> void
+Egami.SystemDrawing.Graphics.DrawCurve(Egami.SystemDrawing.Pen! pen, System.ReadOnlySpan<System.Drawing.PointF> points, int offset, int numberOfSegments) -> void
+Egami.SystemDrawing.Graphics.DrawCurve(Egami.SystemDrawing.Pen! pen, System.ReadOnlySpan<System.Drawing.PointF> points, int offset, int numberOfSegments, float tension) -> void
+Egami.SystemDrawing.Graphics.DrawEllipse(Egami.SystemDrawing.Pen! pen, float x, float y, float width, float height) -> void
+Egami.SystemDrawing.Graphics.DrawEllipse(Egami.SystemDrawing.Pen! pen, int x, int y, int width, int height) -> void
+Egami.SystemDrawing.Graphics.DrawEllipse(Egami.SystemDrawing.Pen! pen, System.Drawing.Rectangle rect) -> void
+Egami.SystemDrawing.Graphics.DrawEllipse(Egami.SystemDrawing.Pen! pen, System.Drawing.RectangleF rect) -> void
+Egami.SystemDrawing.Graphics.DrawIcon(Egami.SystemDrawing.Icon! icon, int x, int y) -> void
+Egami.SystemDrawing.Graphics.DrawIcon(Egami.SystemDrawing.Icon! icon, System.Drawing.Rectangle targetRect) -> void
+Egami.SystemDrawing.Graphics.DrawIconUnstretched(Egami.SystemDrawing.Icon! icon, System.Drawing.Rectangle targetRect) -> void
+Egami.SystemDrawing.Graphics.DrawImage(Egami.SystemDrawing.Image! image, float x, float y) -> void
+Egami.SystemDrawing.Graphics.DrawImage(Egami.SystemDrawing.Image! image, float x, float y, float width, float height) -> void
+Egami.SystemDrawing.Graphics.DrawImage(Egami.SystemDrawing.Image! image, float x, float y, System.Drawing.RectangleF srcRect, Egami.SystemDrawing.GraphicsUnit srcUnit) -> void
+Egami.SystemDrawing.Graphics.DrawImage(Egami.SystemDrawing.Image! image, int x, int y) -> void
+Egami.SystemDrawing.Graphics.DrawImage(Egami.SystemDrawing.Image! image, int x, int y, int width, int height) -> void
+Egami.SystemDrawing.Graphics.DrawImage(Egami.SystemDrawing.Image! image, int x, int y, System.Drawing.Rectangle srcRect, Egami.SystemDrawing.GraphicsUnit srcUnit) -> void
+Egami.SystemDrawing.Graphics.DrawImage(Egami.SystemDrawing.Image! image, System.Drawing.Point point) -> void
+Egami.SystemDrawing.Graphics.DrawImage(Egami.SystemDrawing.Image! image, System.Drawing.Point[]! destPoints) -> void
+Egami.SystemDrawing.Graphics.DrawImage(Egami.SystemDrawing.Image! image, System.Drawing.Point[]! destPoints, System.Drawing.Rectangle srcRect, Egami.SystemDrawing.GraphicsUnit srcUnit) -> void
+Egami.SystemDrawing.Graphics.DrawImage(Egami.SystemDrawing.Image! image, System.Drawing.Point[]! destPoints, System.Drawing.Rectangle srcRect, Egami.SystemDrawing.GraphicsUnit srcUnit, Egami.SystemDrawing.Imaging.ImageAttributes? imageAttr) -> void
+Egami.SystemDrawing.Graphics.DrawImage(Egami.SystemDrawing.Image! image, System.Drawing.Point[]! destPoints, System.Drawing.Rectangle srcRect, Egami.SystemDrawing.GraphicsUnit srcUnit, Egami.SystemDrawing.Imaging.ImageAttributes? imageAttr, Egami.SystemDrawing.Graphics.DrawImageAbort? callback) -> void
+Egami.SystemDrawing.Graphics.DrawImage(Egami.SystemDrawing.Image! image, System.Drawing.Point[]! destPoints, System.Drawing.Rectangle srcRect, Egami.SystemDrawing.GraphicsUnit srcUnit, Egami.SystemDrawing.Imaging.ImageAttributes? imageAttr, Egami.SystemDrawing.Graphics.DrawImageAbort? callback, int callbackData) -> void
+Egami.SystemDrawing.Graphics.DrawImage(Egami.SystemDrawing.Image! image, System.Drawing.PointF point) -> void
+Egami.SystemDrawing.Graphics.DrawImage(Egami.SystemDrawing.Image! image, System.Drawing.PointF[]! destPoints) -> void
+Egami.SystemDrawing.Graphics.DrawImage(Egami.SystemDrawing.Image! image, System.Drawing.PointF[]! destPoints, System.Drawing.RectangleF srcRect, Egami.SystemDrawing.GraphicsUnit srcUnit) -> void
+Egami.SystemDrawing.Graphics.DrawImage(Egami.SystemDrawing.Image! image, System.Drawing.PointF[]! destPoints, System.Drawing.RectangleF srcRect, Egami.SystemDrawing.GraphicsUnit srcUnit, Egami.SystemDrawing.Imaging.ImageAttributes? imageAttr) -> void
+Egami.SystemDrawing.Graphics.DrawImage(Egami.SystemDrawing.Image! image, System.Drawing.PointF[]! destPoints, System.Drawing.RectangleF srcRect, Egami.SystemDrawing.GraphicsUnit srcUnit, Egami.SystemDrawing.Imaging.ImageAttributes? imageAttr, Egami.SystemDrawing.Graphics.DrawImageAbort? callback) -> void
+Egami.SystemDrawing.Graphics.DrawImage(Egami.SystemDrawing.Image! image, System.Drawing.PointF[]! destPoints, System.Drawing.RectangleF srcRect, Egami.SystemDrawing.GraphicsUnit srcUnit, Egami.SystemDrawing.Imaging.ImageAttributes? imageAttr, Egami.SystemDrawing.Graphics.DrawImageAbort? callback, int callbackData) -> void
+Egami.SystemDrawing.Graphics.DrawImage(Egami.SystemDrawing.Image! image, System.Drawing.Rectangle destRect, float srcX, float srcY, float srcWidth, float srcHeight, Egami.SystemDrawing.GraphicsUnit srcUnit) -> void
+Egami.SystemDrawing.Graphics.DrawImage(Egami.SystemDrawing.Image! image, System.Drawing.Rectangle destRect, float srcX, float srcY, float srcWidth, float srcHeight, Egami.SystemDrawing.GraphicsUnit srcUnit, Egami.SystemDrawing.Imaging.ImageAttributes? imageAttrs) -> void
+Egami.SystemDrawing.Graphics.DrawImage(Egami.SystemDrawing.Image! image, System.Drawing.Rectangle destRect, float srcX, float srcY, float srcWidth, float srcHeight, Egami.SystemDrawing.GraphicsUnit srcUnit, Egami.SystemDrawing.Imaging.ImageAttributes? imageAttrs, Egami.SystemDrawing.Graphics.DrawImageAbort? callback) -> void
+Egami.SystemDrawing.Graphics.DrawImage(Egami.SystemDrawing.Image! image, System.Drawing.Rectangle destRect, float srcX, float srcY, float srcWidth, float srcHeight, Egami.SystemDrawing.GraphicsUnit srcUnit, Egami.SystemDrawing.Imaging.ImageAttributes? imageAttrs, Egami.SystemDrawing.Graphics.DrawImageAbort? callback, nint callbackData) -> void
+Egami.SystemDrawing.Graphics.DrawImage(Egami.SystemDrawing.Image! image, System.Drawing.Rectangle destRect, int srcX, int srcY, int srcWidth, int srcHeight, Egami.SystemDrawing.GraphicsUnit srcUnit) -> void
+Egami.SystemDrawing.Graphics.DrawImage(Egami.SystemDrawing.Image! image, System.Drawing.Rectangle destRect, int srcX, int srcY, int srcWidth, int srcHeight, Egami.SystemDrawing.GraphicsUnit srcUnit, Egami.SystemDrawing.Imaging.ImageAttributes? imageAttr) -> void
+Egami.SystemDrawing.Graphics.DrawImage(Egami.SystemDrawing.Image! image, System.Drawing.Rectangle destRect, int srcX, int srcY, int srcWidth, int srcHeight, Egami.SystemDrawing.GraphicsUnit srcUnit, Egami.SystemDrawing.Imaging.ImageAttributes? imageAttr, Egami.SystemDrawing.Graphics.DrawImageAbort? callback) -> void
+Egami.SystemDrawing.Graphics.DrawImage(Egami.SystemDrawing.Image! image, System.Drawing.Rectangle destRect, int srcX, int srcY, int srcWidth, int srcHeight, Egami.SystemDrawing.GraphicsUnit srcUnit, Egami.SystemDrawing.Imaging.ImageAttributes? imageAttrs, Egami.SystemDrawing.Graphics.DrawImageAbort? callback, nint callbackData) -> void
+Egami.SystemDrawing.Graphics.DrawImage(Egami.SystemDrawing.Image! image, System.Drawing.Rectangle destRect, System.Drawing.Rectangle srcRect, Egami.SystemDrawing.GraphicsUnit srcUnit) -> void
+Egami.SystemDrawing.Graphics.DrawImage(Egami.SystemDrawing.Image! image, System.Drawing.Rectangle rect) -> void
+Egami.SystemDrawing.Graphics.DrawImage(Egami.SystemDrawing.Image! image, System.Drawing.RectangleF destRect, System.Drawing.RectangleF srcRect, Egami.SystemDrawing.GraphicsUnit srcUnit) -> void
+Egami.SystemDrawing.Graphics.DrawImage(Egami.SystemDrawing.Image! image, System.Drawing.RectangleF rect) -> void
+Egami.SystemDrawing.Graphics.DrawImageAbort
+Egami.SystemDrawing.Graphics.DrawImageUnscaled(Egami.SystemDrawing.Image! image, int x, int y) -> void
+Egami.SystemDrawing.Graphics.DrawImageUnscaled(Egami.SystemDrawing.Image! image, int x, int y, int width, int height) -> void
+Egami.SystemDrawing.Graphics.DrawImageUnscaled(Egami.SystemDrawing.Image! image, System.Drawing.Point point) -> void
+Egami.SystemDrawing.Graphics.DrawImageUnscaled(Egami.SystemDrawing.Image! image, System.Drawing.Rectangle rect) -> void
+Egami.SystemDrawing.Graphics.DrawImageUnscaledAndClipped(Egami.SystemDrawing.Image! image, System.Drawing.Rectangle rect) -> void
+Egami.SystemDrawing.Graphics.DrawLine(Egami.SystemDrawing.Pen! pen, float x1, float y1, float x2, float y2) -> void
+Egami.SystemDrawing.Graphics.DrawLine(Egami.SystemDrawing.Pen! pen, int x1, int y1, int x2, int y2) -> void
+Egami.SystemDrawing.Graphics.DrawLine(Egami.SystemDrawing.Pen! pen, System.Drawing.Point pt1, System.Drawing.Point pt2) -> void
+Egami.SystemDrawing.Graphics.DrawLine(Egami.SystemDrawing.Pen! pen, System.Drawing.PointF pt1, System.Drawing.PointF pt2) -> void
+Egami.SystemDrawing.Graphics.DrawLines(Egami.SystemDrawing.Pen! pen, params System.Drawing.Point[]! points) -> void
+Egami.SystemDrawing.Graphics.DrawLines(Egami.SystemDrawing.Pen! pen, params System.Drawing.PointF[]! points) -> void
+Egami.SystemDrawing.Graphics.DrawLines(Egami.SystemDrawing.Pen! pen, params System.ReadOnlySpan<System.Drawing.Point> points) -> void
+Egami.SystemDrawing.Graphics.DrawLines(Egami.SystemDrawing.Pen! pen, params System.ReadOnlySpan<System.Drawing.PointF> points) -> void
+Egami.SystemDrawing.Graphics.DrawPie(Egami.SystemDrawing.Pen! pen, float x, float y, float width, float height, float startAngle, float sweepAngle) -> void
+Egami.SystemDrawing.Graphics.DrawPie(Egami.SystemDrawing.Pen! pen, int x, int y, int width, int height, int startAngle, int sweepAngle) -> void
+Egami.SystemDrawing.Graphics.DrawPie(Egami.SystemDrawing.Pen! pen, System.Drawing.Rectangle rect, float startAngle, float sweepAngle) -> void
+Egami.SystemDrawing.Graphics.DrawPie(Egami.SystemDrawing.Pen! pen, System.Drawing.RectangleF rect, float startAngle, float sweepAngle) -> void
+Egami.SystemDrawing.Graphics.DrawPolygon(Egami.SystemDrawing.Pen! pen, params System.Drawing.Point[]! points) -> void
+Egami.SystemDrawing.Graphics.DrawPolygon(Egami.SystemDrawing.Pen! pen, params System.Drawing.PointF[]! points) -> void
+Egami.SystemDrawing.Graphics.DrawPolygon(Egami.SystemDrawing.Pen! pen, params System.ReadOnlySpan<System.Drawing.Point> points) -> void
+Egami.SystemDrawing.Graphics.DrawPolygon(Egami.SystemDrawing.Pen! pen, params System.ReadOnlySpan<System.Drawing.PointF> points) -> void
+Egami.SystemDrawing.Graphics.DrawRectangle(Egami.SystemDrawing.Pen! pen, float x, float y, float width, float height) -> void
+Egami.SystemDrawing.Graphics.DrawRectangle(Egami.SystemDrawing.Pen! pen, int x, int y, int width, int height) -> void
+Egami.SystemDrawing.Graphics.DrawRectangle(Egami.SystemDrawing.Pen! pen, System.Drawing.Rectangle rect) -> void
+Egami.SystemDrawing.Graphics.DrawRectangle(Egami.SystemDrawing.Pen! pen, System.Drawing.RectangleF rect) -> void
+Egami.SystemDrawing.Graphics.DrawRectangles(Egami.SystemDrawing.Pen! pen, params System.Drawing.Rectangle[]! rects) -> void
+Egami.SystemDrawing.Graphics.DrawRectangles(Egami.SystemDrawing.Pen! pen, params System.Drawing.RectangleF[]! rects) -> void
+Egami.SystemDrawing.Graphics.DrawRectangles(Egami.SystemDrawing.Pen! pen, params System.ReadOnlySpan<System.Drawing.Rectangle> rects) -> void
+Egami.SystemDrawing.Graphics.DrawRectangles(Egami.SystemDrawing.Pen! pen, params System.ReadOnlySpan<System.Drawing.RectangleF> rects) -> void
+Egami.SystemDrawing.Graphics.DrawRoundedRectangle(Egami.SystemDrawing.Pen! pen, System.Drawing.Rectangle rect, System.Drawing.Size radius) -> void
+Egami.SystemDrawing.Graphics.DrawRoundedRectangle(Egami.SystemDrawing.Pen! pen, System.Drawing.RectangleF rect, System.Drawing.SizeF radius) -> void
+Egami.SystemDrawing.Graphics.EndContainer(Egami.SystemDrawing.Drawing2D.GraphicsContainer! container) -> void
+Egami.SystemDrawing.Graphics.ExcludeClip(Egami.SystemDrawing.Region! region) -> void
+Egami.SystemDrawing.Graphics.ExcludeClip(System.Drawing.Rectangle rect) -> void
+Egami.SystemDrawing.Graphics.FillClosedCurve(Egami.SystemDrawing.Brush! brush, params System.Drawing.Point[]! points) -> void
+Egami.SystemDrawing.Graphics.FillClosedCurve(Egami.SystemDrawing.Brush! brush, params System.Drawing.PointF[]! points) -> void
+Egami.SystemDrawing.Graphics.FillClosedCurve(Egami.SystemDrawing.Brush! brush, params System.ReadOnlySpan<System.Drawing.Point> points) -> void
+Egami.SystemDrawing.Graphics.FillClosedCurve(Egami.SystemDrawing.Brush! brush, params System.ReadOnlySpan<System.Drawing.PointF> points) -> void
+Egami.SystemDrawing.Graphics.FillClosedCurve(Egami.SystemDrawing.Brush! brush, System.Drawing.Point[]! points, Egami.SystemDrawing.Drawing2D.FillMode fillmode) -> void
+Egami.SystemDrawing.Graphics.FillClosedCurve(Egami.SystemDrawing.Brush! brush, System.Drawing.Point[]! points, Egami.SystemDrawing.Drawing2D.FillMode fillmode, float tension) -> void
+Egami.SystemDrawing.Graphics.FillClosedCurve(Egami.SystemDrawing.Brush! brush, System.Drawing.PointF[]! points, Egami.SystemDrawing.Drawing2D.FillMode fillmode) -> void
+Egami.SystemDrawing.Graphics.FillClosedCurve(Egami.SystemDrawing.Brush! brush, System.Drawing.PointF[]! points, Egami.SystemDrawing.Drawing2D.FillMode fillmode, float tension) -> void
+Egami.SystemDrawing.Graphics.FillClosedCurve(Egami.SystemDrawing.Brush! brush, System.ReadOnlySpan<System.Drawing.Point> points, Egami.SystemDrawing.Drawing2D.FillMode fillmode) -> void
+Egami.SystemDrawing.Graphics.FillClosedCurve(Egami.SystemDrawing.Brush! brush, System.ReadOnlySpan<System.Drawing.Point> points, Egami.SystemDrawing.Drawing2D.FillMode fillmode, float tension) -> void
+Egami.SystemDrawing.Graphics.FillClosedCurve(Egami.SystemDrawing.Brush! brush, System.ReadOnlySpan<System.Drawing.PointF> points, Egami.SystemDrawing.Drawing2D.FillMode fillmode) -> void
+Egami.SystemDrawing.Graphics.FillClosedCurve(Egami.SystemDrawing.Brush! brush, System.ReadOnlySpan<System.Drawing.PointF> points, Egami.SystemDrawing.Drawing2D.FillMode fillmode, float tension) -> void
+Egami.SystemDrawing.Graphics.FillEllipse(Egami.SystemDrawing.Brush! brush, float x, float y, float width, float height) -> void
+Egami.SystemDrawing.Graphics.FillEllipse(Egami.SystemDrawing.Brush! brush, int x, int y, int width, int height) -> void
+Egami.SystemDrawing.Graphics.FillEllipse(Egami.SystemDrawing.Brush! brush, System.Drawing.Rectangle rect) -> void
+Egami.SystemDrawing.Graphics.FillEllipse(Egami.SystemDrawing.Brush! brush, System.Drawing.RectangleF rect) -> void
+Egami.SystemDrawing.Graphics.FillPie(Egami.SystemDrawing.Brush! brush, float x, float y, float width, float height, float startAngle, float sweepAngle) -> void
+Egami.SystemDrawing.Graphics.FillPie(Egami.SystemDrawing.Brush! brush, int x, int y, int width, int height, int startAngle, int sweepAngle) -> void
+Egami.SystemDrawing.Graphics.FillPie(Egami.SystemDrawing.Brush! brush, System.Drawing.Rectangle rect, float startAngle, float sweepAngle) -> void
+Egami.SystemDrawing.Graphics.FillPie(Egami.SystemDrawing.Brush! brush, System.Drawing.RectangleF rect, float startAngle, float sweepAngle) -> void
+Egami.SystemDrawing.Graphics.FillPolygon(Egami.SystemDrawing.Brush! brush, params System.Drawing.PointF[]! points) -> void
+Egami.SystemDrawing.Graphics.FillPolygon(Egami.SystemDrawing.Brush! brush, params System.ReadOnlySpan<System.Drawing.Point> points) -> void
+Egami.SystemDrawing.Graphics.FillPolygon(Egami.SystemDrawing.Brush! brush, params System.ReadOnlySpan<System.Drawing.PointF> points) -> void
+Egami.SystemDrawing.Graphics.FillPolygon(Egami.SystemDrawing.Brush! brush, System.Drawing.Point[]! points) -> void
+Egami.SystemDrawing.Graphics.FillPolygon(Egami.SystemDrawing.Brush! brush, System.Drawing.Point[]! points, Egami.SystemDrawing.Drawing2D.FillMode fillMode) -> void
+Egami.SystemDrawing.Graphics.FillPolygon(Egami.SystemDrawing.Brush! brush, System.Drawing.PointF[]! points, Egami.SystemDrawing.Drawing2D.FillMode fillMode) -> void
+Egami.SystemDrawing.Graphics.FillPolygon(Egami.SystemDrawing.Brush! brush, System.ReadOnlySpan<System.Drawing.Point> points, Egami.SystemDrawing.Drawing2D.FillMode fillMode) -> void
+Egami.SystemDrawing.Graphics.FillPolygon(Egami.SystemDrawing.Brush! brush, System.ReadOnlySpan<System.Drawing.PointF> points, Egami.SystemDrawing.Drawing2D.FillMode fillMode) -> void
+Egami.SystemDrawing.Graphics.FillRectangle(Egami.SystemDrawing.Brush! brush, float x, float y, float width, float height) -> void
+Egami.SystemDrawing.Graphics.FillRectangle(Egami.SystemDrawing.Brush! brush, int x, int y, int width, int height) -> void
+Egami.SystemDrawing.Graphics.FillRectangle(Egami.SystemDrawing.Brush! brush, System.Drawing.Rectangle rect) -> void
+Egami.SystemDrawing.Graphics.FillRectangle(Egami.SystemDrawing.Brush! brush, System.Drawing.RectangleF rect) -> void
+Egami.SystemDrawing.Graphics.FillRectangles(Egami.SystemDrawing.Brush! brush, params System.Drawing.Rectangle[]! rects) -> void
+Egami.SystemDrawing.Graphics.FillRectangles(Egami.SystemDrawing.Brush! brush, params System.Drawing.RectangleF[]! rects) -> void
+Egami.SystemDrawing.Graphics.FillRectangles(Egami.SystemDrawing.Brush! brush, params System.ReadOnlySpan<System.Drawing.Rectangle> rects) -> void
+Egami.SystemDrawing.Graphics.FillRectangles(Egami.SystemDrawing.Brush! brush, params System.ReadOnlySpan<System.Drawing.RectangleF> rects) -> void
+Egami.SystemDrawing.Graphics.FillRegion(Egami.SystemDrawing.Brush! brush, Egami.SystemDrawing.Region! region) -> void
+Egami.SystemDrawing.Graphics.FillRoundedRectangle(Egami.SystemDrawing.Brush! brush, System.Drawing.Rectangle rect, System.Drawing.Size radius) -> void
+Egami.SystemDrawing.Graphics.FillRoundedRectangle(Egami.SystemDrawing.Brush! brush, System.Drawing.RectangleF rect, System.Drawing.SizeF radius) -> void
+Egami.SystemDrawing.Graphics.Flush() -> void
+Egami.SystemDrawing.Graphics.Flush(Egami.SystemDrawing.Drawing2D.FlushIntention intention) -> void
+Egami.SystemDrawing.Graphics.GetContextInfo() -> object!
+Egami.SystemDrawing.Graphics.GetContextInfo(out System.Drawing.PointF offset) -> void
+Egami.SystemDrawing.Graphics.GetContextInfo(out System.Drawing.PointF offset, out Egami.SystemDrawing.Region? clip) -> void
+Egami.SystemDrawing.Graphics.GetHdc() -> nint
+Egami.SystemDrawing.Graphics.GetNearestColor(System.Drawing.Color color) -> System.Drawing.Color
+Egami.SystemDrawing.Graphics.InterpolationMode.get -> Egami.SystemDrawing.Drawing2D.InterpolationMode
+Egami.SystemDrawing.Graphics.InterpolationMode.set -> void
+Egami.SystemDrawing.Graphics.IntersectClip(Egami.SystemDrawing.Region! region) -> void
+Egami.SystemDrawing.Graphics.IntersectClip(System.Drawing.Rectangle rect) -> void
+Egami.SystemDrawing.Graphics.IntersectClip(System.Drawing.RectangleF rect) -> void
+Egami.SystemDrawing.Graphics.IsClipEmpty.get -> bool
+Egami.SystemDrawing.Graphics.IsVisible(float x, float y) -> bool
+Egami.SystemDrawing.Graphics.IsVisible(float x, float y, float width, float height) -> bool
+Egami.SystemDrawing.Graphics.IsVisible(int x, int y) -> bool
+Egami.SystemDrawing.Graphics.IsVisible(int x, int y, int width, int height) -> bool
+Egami.SystemDrawing.Graphics.IsVisible(System.Drawing.Point point) -> bool
+Egami.SystemDrawing.Graphics.IsVisible(System.Drawing.PointF point) -> bool
+Egami.SystemDrawing.Graphics.IsVisible(System.Drawing.Rectangle rect) -> bool
+Egami.SystemDrawing.Graphics.IsVisible(System.Drawing.RectangleF rect) -> bool
+Egami.SystemDrawing.Graphics.IsVisibleClipEmpty.get -> bool
+Egami.SystemDrawing.Graphics.MultiplyTransform(Egami.SystemDrawing.Drawing2D.Matrix! matrix) -> void
+Egami.SystemDrawing.Graphics.MultiplyTransform(Egami.SystemDrawing.Drawing2D.Matrix! matrix, Egami.SystemDrawing.Drawing2D.MatrixOrder order) -> void
+Egami.SystemDrawing.Graphics.PageScale.get -> float
+Egami.SystemDrawing.Graphics.PageScale.set -> void
+Egami.SystemDrawing.Graphics.PageUnit.get -> Egami.SystemDrawing.GraphicsUnit
+Egami.SystemDrawing.Graphics.PageUnit.set -> void
+Egami.SystemDrawing.Graphics.PixelOffsetMode.get -> Egami.SystemDrawing.Drawing2D.PixelOffsetMode
+Egami.SystemDrawing.Graphics.PixelOffsetMode.set -> void
+Egami.SystemDrawing.Graphics.ReleaseHdc() -> void
+Egami.SystemDrawing.Graphics.ReleaseHdc(nint hdc) -> void
+Egami.SystemDrawing.Graphics.ReleaseHdcInternal(nint hdc) -> void
+Egami.SystemDrawing.Graphics.RenderingOrigin.get -> System.Drawing.Point
+Egami.SystemDrawing.Graphics.RenderingOrigin.set -> void
+Egami.SystemDrawing.Graphics.ResetClip() -> void
+Egami.SystemDrawing.Graphics.ResetTransform() -> void
+Egami.SystemDrawing.Graphics.Restore(Egami.SystemDrawing.Drawing2D.GraphicsState! gstate) -> void
+Egami.SystemDrawing.Graphics.RotateTransform(float angle) -> void
+Egami.SystemDrawing.Graphics.RotateTransform(float angle, Egami.SystemDrawing.Drawing2D.MatrixOrder order) -> void
+Egami.SystemDrawing.Graphics.Save() -> Egami.SystemDrawing.Drawing2D.GraphicsState!
+Egami.SystemDrawing.Graphics.ScaleTransform(float sx, float sy) -> void
+Egami.SystemDrawing.Graphics.ScaleTransform(float sx, float sy, Egami.SystemDrawing.Drawing2D.MatrixOrder order) -> void
+Egami.SystemDrawing.Graphics.SetClip(Egami.SystemDrawing.Graphics! g) -> void
+Egami.SystemDrawing.Graphics.SetClip(Egami.SystemDrawing.Graphics! g, Egami.SystemDrawing.Drawing2D.CombineMode combineMode) -> void
+Egami.SystemDrawing.Graphics.SetClip(Egami.SystemDrawing.Region! region, Egami.SystemDrawing.Drawing2D.CombineMode combineMode) -> void
+Egami.SystemDrawing.Graphics.SetClip(System.Drawing.Rectangle rect) -> void
+Egami.SystemDrawing.Graphics.SetClip(System.Drawing.Rectangle rect, Egami.SystemDrawing.Drawing2D.CombineMode combineMode) -> void
+Egami.SystemDrawing.Graphics.SetClip(System.Drawing.RectangleF rect) -> void
+Egami.SystemDrawing.Graphics.SetClip(System.Drawing.RectangleF rect, Egami.SystemDrawing.Drawing2D.CombineMode combineMode) -> void
+Egami.SystemDrawing.Graphics.SmoothingMode.get -> Egami.SystemDrawing.Drawing2D.SmoothingMode
+Egami.SystemDrawing.Graphics.SmoothingMode.set -> void
+Egami.SystemDrawing.Graphics.TextContrast.get -> int
+Egami.SystemDrawing.Graphics.TextContrast.set -> void
+Egami.SystemDrawing.Graphics.TextRenderingHint.get -> Egami.SystemDrawing.Text.TextRenderingHint
+Egami.SystemDrawing.Graphics.TextRenderingHint.set -> void
+Egami.SystemDrawing.Graphics.Transform.get -> Egami.SystemDrawing.Drawing2D.Matrix!
+Egami.SystemDrawing.Graphics.Transform.set -> void
+Egami.SystemDrawing.Graphics.TransformElements.get -> System.Numerics.Matrix3x2
+Egami.SystemDrawing.Graphics.TransformElements.set -> void
+Egami.SystemDrawing.Graphics.TransformPoints(Egami.SystemDrawing.Drawing2D.CoordinateSpace destSpace, Egami.SystemDrawing.Drawing2D.CoordinateSpace srcSpace, params System.Drawing.Point[]! pts) -> void
+Egami.SystemDrawing.Graphics.TransformPoints(Egami.SystemDrawing.Drawing2D.CoordinateSpace destSpace, Egami.SystemDrawing.Drawing2D.CoordinateSpace srcSpace, params System.Drawing.PointF[]! pts) -> void
+Egami.SystemDrawing.Graphics.TransformPoints(Egami.SystemDrawing.Drawing2D.CoordinateSpace destSpace, Egami.SystemDrawing.Drawing2D.CoordinateSpace srcSpace, params System.ReadOnlySpan<System.Drawing.Point> pts) -> void
+Egami.SystemDrawing.Graphics.TransformPoints(Egami.SystemDrawing.Drawing2D.CoordinateSpace destSpace, Egami.SystemDrawing.Drawing2D.CoordinateSpace srcSpace, params System.ReadOnlySpan<System.Drawing.PointF> pts) -> void
+Egami.SystemDrawing.Graphics.TranslateClip(float dx, float dy) -> void
+Egami.SystemDrawing.Graphics.TranslateClip(int dx, int dy) -> void
+Egami.SystemDrawing.Graphics.TranslateTransform(float dx, float dy) -> void
+Egami.SystemDrawing.Graphics.TranslateTransform(float dx, float dy, Egami.SystemDrawing.Drawing2D.MatrixOrder order) -> void
+Egami.SystemDrawing.Graphics.VisibleClipBounds.get -> System.Drawing.RectangleF
 Egami.SystemDrawing.GraphicsUnit
 Egami.SystemDrawing.GraphicsUnit.Display = 1 -> Egami.SystemDrawing.GraphicsUnit
 Egami.SystemDrawing.GraphicsUnit.Document = 5 -> Egami.SystemDrawing.GraphicsUnit
@@ -102,6 +467,89 @@ Egami.SystemDrawing.Imaging.BitmapData.Stride.get -> int
 Egami.SystemDrawing.Imaging.BitmapData.Stride.set -> void
 Egami.SystemDrawing.Imaging.BitmapData.Width.get -> int
 Egami.SystemDrawing.Imaging.BitmapData.Width.set -> void
+Egami.SystemDrawing.Imaging.ColorAdjustType
+Egami.SystemDrawing.Imaging.ColorAdjustType.Any = 6 -> Egami.SystemDrawing.Imaging.ColorAdjustType
+Egami.SystemDrawing.Imaging.ColorAdjustType.Bitmap = 1 -> Egami.SystemDrawing.Imaging.ColorAdjustType
+Egami.SystemDrawing.Imaging.ColorAdjustType.Brush = 2 -> Egami.SystemDrawing.Imaging.ColorAdjustType
+Egami.SystemDrawing.Imaging.ColorAdjustType.Count = 5 -> Egami.SystemDrawing.Imaging.ColorAdjustType
+Egami.SystemDrawing.Imaging.ColorAdjustType.Default = 0 -> Egami.SystemDrawing.Imaging.ColorAdjustType
+Egami.SystemDrawing.Imaging.ColorAdjustType.Pen = 3 -> Egami.SystemDrawing.Imaging.ColorAdjustType
+Egami.SystemDrawing.Imaging.ColorAdjustType.Text = 4 -> Egami.SystemDrawing.Imaging.ColorAdjustType
+Egami.SystemDrawing.Imaging.ColorChannelFlag
+Egami.SystemDrawing.Imaging.ColorChannelFlag.ColorChannelC = 0 -> Egami.SystemDrawing.Imaging.ColorChannelFlag
+Egami.SystemDrawing.Imaging.ColorChannelFlag.ColorChannelK = 3 -> Egami.SystemDrawing.Imaging.ColorChannelFlag
+Egami.SystemDrawing.Imaging.ColorChannelFlag.ColorChannelLast = 4 -> Egami.SystemDrawing.Imaging.ColorChannelFlag
+Egami.SystemDrawing.Imaging.ColorChannelFlag.ColorChannelM = 1 -> Egami.SystemDrawing.Imaging.ColorChannelFlag
+Egami.SystemDrawing.Imaging.ColorChannelFlag.ColorChannelY = 2 -> Egami.SystemDrawing.Imaging.ColorChannelFlag
+Egami.SystemDrawing.Imaging.ColorMap
+Egami.SystemDrawing.Imaging.ColorMap.ColorMap() -> void
+Egami.SystemDrawing.Imaging.ColorMap.NewColor.get -> System.Drawing.Color
+Egami.SystemDrawing.Imaging.ColorMap.NewColor.set -> void
+Egami.SystemDrawing.Imaging.ColorMap.OldColor.get -> System.Drawing.Color
+Egami.SystemDrawing.Imaging.ColorMap.OldColor.set -> void
+Egami.SystemDrawing.Imaging.ColorMapType
+Egami.SystemDrawing.Imaging.ColorMapType.Brush = 1 -> Egami.SystemDrawing.Imaging.ColorMapType
+Egami.SystemDrawing.Imaging.ColorMapType.Default = 0 -> Egami.SystemDrawing.Imaging.ColorMapType
+Egami.SystemDrawing.Imaging.ColorMatrix
+Egami.SystemDrawing.Imaging.ColorMatrix.ColorMatrix() -> void
+Egami.SystemDrawing.Imaging.ColorMatrix.ColorMatrix(float[]![]! newColorMatrix) -> void
+Egami.SystemDrawing.Imaging.ColorMatrix.ColorMatrix(System.ReadOnlySpan<float> newColorMatrix) -> void
+Egami.SystemDrawing.Imaging.ColorMatrix.Matrix00.get -> float
+Egami.SystemDrawing.Imaging.ColorMatrix.Matrix00.set -> void
+Egami.SystemDrawing.Imaging.ColorMatrix.Matrix01.get -> float
+Egami.SystemDrawing.Imaging.ColorMatrix.Matrix01.set -> void
+Egami.SystemDrawing.Imaging.ColorMatrix.Matrix02.get -> float
+Egami.SystemDrawing.Imaging.ColorMatrix.Matrix02.set -> void
+Egami.SystemDrawing.Imaging.ColorMatrix.Matrix03.get -> float
+Egami.SystemDrawing.Imaging.ColorMatrix.Matrix03.set -> void
+Egami.SystemDrawing.Imaging.ColorMatrix.Matrix04.get -> float
+Egami.SystemDrawing.Imaging.ColorMatrix.Matrix04.set -> void
+Egami.SystemDrawing.Imaging.ColorMatrix.Matrix10.get -> float
+Egami.SystemDrawing.Imaging.ColorMatrix.Matrix10.set -> void
+Egami.SystemDrawing.Imaging.ColorMatrix.Matrix11.get -> float
+Egami.SystemDrawing.Imaging.ColorMatrix.Matrix11.set -> void
+Egami.SystemDrawing.Imaging.ColorMatrix.Matrix12.get -> float
+Egami.SystemDrawing.Imaging.ColorMatrix.Matrix12.set -> void
+Egami.SystemDrawing.Imaging.ColorMatrix.Matrix13.get -> float
+Egami.SystemDrawing.Imaging.ColorMatrix.Matrix13.set -> void
+Egami.SystemDrawing.Imaging.ColorMatrix.Matrix14.get -> float
+Egami.SystemDrawing.Imaging.ColorMatrix.Matrix14.set -> void
+Egami.SystemDrawing.Imaging.ColorMatrix.Matrix20.get -> float
+Egami.SystemDrawing.Imaging.ColorMatrix.Matrix20.set -> void
+Egami.SystemDrawing.Imaging.ColorMatrix.Matrix21.get -> float
+Egami.SystemDrawing.Imaging.ColorMatrix.Matrix21.set -> void
+Egami.SystemDrawing.Imaging.ColorMatrix.Matrix22.get -> float
+Egami.SystemDrawing.Imaging.ColorMatrix.Matrix22.set -> void
+Egami.SystemDrawing.Imaging.ColorMatrix.Matrix23.get -> float
+Egami.SystemDrawing.Imaging.ColorMatrix.Matrix23.set -> void
+Egami.SystemDrawing.Imaging.ColorMatrix.Matrix24.get -> float
+Egami.SystemDrawing.Imaging.ColorMatrix.Matrix24.set -> void
+Egami.SystemDrawing.Imaging.ColorMatrix.Matrix30.get -> float
+Egami.SystemDrawing.Imaging.ColorMatrix.Matrix30.set -> void
+Egami.SystemDrawing.Imaging.ColorMatrix.Matrix31.get -> float
+Egami.SystemDrawing.Imaging.ColorMatrix.Matrix31.set -> void
+Egami.SystemDrawing.Imaging.ColorMatrix.Matrix32.get -> float
+Egami.SystemDrawing.Imaging.ColorMatrix.Matrix32.set -> void
+Egami.SystemDrawing.Imaging.ColorMatrix.Matrix33.get -> float
+Egami.SystemDrawing.Imaging.ColorMatrix.Matrix33.set -> void
+Egami.SystemDrawing.Imaging.ColorMatrix.Matrix34.get -> float
+Egami.SystemDrawing.Imaging.ColorMatrix.Matrix34.set -> void
+Egami.SystemDrawing.Imaging.ColorMatrix.Matrix40.get -> float
+Egami.SystemDrawing.Imaging.ColorMatrix.Matrix40.set -> void
+Egami.SystemDrawing.Imaging.ColorMatrix.Matrix41.get -> float
+Egami.SystemDrawing.Imaging.ColorMatrix.Matrix41.set -> void
+Egami.SystemDrawing.Imaging.ColorMatrix.Matrix42.get -> float
+Egami.SystemDrawing.Imaging.ColorMatrix.Matrix42.set -> void
+Egami.SystemDrawing.Imaging.ColorMatrix.Matrix43.get -> float
+Egami.SystemDrawing.Imaging.ColorMatrix.Matrix43.set -> void
+Egami.SystemDrawing.Imaging.ColorMatrix.Matrix44.get -> float
+Egami.SystemDrawing.Imaging.ColorMatrix.Matrix44.set -> void
+Egami.SystemDrawing.Imaging.ColorMatrix.this[int row, int column].get -> float
+Egami.SystemDrawing.Imaging.ColorMatrix.this[int row, int column].set -> void
+Egami.SystemDrawing.Imaging.ColorMatrixFlag
+Egami.SystemDrawing.Imaging.ColorMatrixFlag.AltGrays = 2 -> Egami.SystemDrawing.Imaging.ColorMatrixFlag
+Egami.SystemDrawing.Imaging.ColorMatrixFlag.Default = 0 -> Egami.SystemDrawing.Imaging.ColorMatrixFlag
+Egami.SystemDrawing.Imaging.ColorMatrixFlag.SkipGrays = 1 -> Egami.SystemDrawing.Imaging.ColorMatrixFlag
 Egami.SystemDrawing.Imaging.ColorPalette
 Egami.SystemDrawing.Imaging.ColorPalette.ColorPalette(Egami.SystemDrawing.Imaging.PaletteType fixedPaletteType) -> void
 Egami.SystemDrawing.Imaging.ColorPalette.ColorPalette(System.Drawing.Color[]! customColors) -> void
@@ -189,6 +637,58 @@ Egami.SystemDrawing.Imaging.EncoderValue.VersionGif89 = 10 -> Egami.SystemDrawin
 Egami.SystemDrawing.Imaging.FrameDimension
 Egami.SystemDrawing.Imaging.FrameDimension.FrameDimension(System.Guid guid) -> void
 Egami.SystemDrawing.Imaging.FrameDimension.Guid.get -> System.Guid
+Egami.SystemDrawing.Imaging.ImageAttributes
+Egami.SystemDrawing.Imaging.ImageAttributes.ClearBrushRemapTable() -> void
+Egami.SystemDrawing.Imaging.ImageAttributes.ClearColorKey() -> void
+Egami.SystemDrawing.Imaging.ImageAttributes.ClearColorKey(Egami.SystemDrawing.Imaging.ColorAdjustType type) -> void
+Egami.SystemDrawing.Imaging.ImageAttributes.ClearColorMatrix() -> void
+Egami.SystemDrawing.Imaging.ImageAttributes.ClearColorMatrix(Egami.SystemDrawing.Imaging.ColorAdjustType type) -> void
+Egami.SystemDrawing.Imaging.ImageAttributes.ClearGamma() -> void
+Egami.SystemDrawing.Imaging.ImageAttributes.ClearGamma(Egami.SystemDrawing.Imaging.ColorAdjustType type) -> void
+Egami.SystemDrawing.Imaging.ImageAttributes.ClearNoOp() -> void
+Egami.SystemDrawing.Imaging.ImageAttributes.ClearNoOp(Egami.SystemDrawing.Imaging.ColorAdjustType type) -> void
+Egami.SystemDrawing.Imaging.ImageAttributes.ClearOutputChannel() -> void
+Egami.SystemDrawing.Imaging.ImageAttributes.ClearOutputChannel(Egami.SystemDrawing.Imaging.ColorAdjustType type) -> void
+Egami.SystemDrawing.Imaging.ImageAttributes.ClearOutputChannelColorProfile() -> void
+Egami.SystemDrawing.Imaging.ImageAttributes.ClearOutputChannelColorProfile(Egami.SystemDrawing.Imaging.ColorAdjustType type) -> void
+Egami.SystemDrawing.Imaging.ImageAttributes.ClearRemapTable() -> void
+Egami.SystemDrawing.Imaging.ImageAttributes.ClearRemapTable(Egami.SystemDrawing.Imaging.ColorAdjustType type) -> void
+Egami.SystemDrawing.Imaging.ImageAttributes.ClearThreshold() -> void
+Egami.SystemDrawing.Imaging.ImageAttributes.ClearThreshold(Egami.SystemDrawing.Imaging.ColorAdjustType type) -> void
+Egami.SystemDrawing.Imaging.ImageAttributes.Clone() -> object!
+Egami.SystemDrawing.Imaging.ImageAttributes.Dispose() -> void
+Egami.SystemDrawing.Imaging.ImageAttributes.GetAdjustedPalette(Egami.SystemDrawing.Imaging.ColorPalette! palette, Egami.SystemDrawing.Imaging.ColorAdjustType type) -> void
+Egami.SystemDrawing.Imaging.ImageAttributes.ImageAttributes() -> void
+Egami.SystemDrawing.Imaging.ImageAttributes.SetBrushRemapTable(Egami.SystemDrawing.Imaging.ColorMap![]! map) -> void
+Egami.SystemDrawing.Imaging.ImageAttributes.SetBrushRemapTable(System.ReadOnlySpan<(System.Drawing.Color OldColor, System.Drawing.Color NewColor)> map) -> void
+Egami.SystemDrawing.Imaging.ImageAttributes.SetBrushRemapTable(System.ReadOnlySpan<Egami.SystemDrawing.Imaging.ColorMap!> map) -> void
+Egami.SystemDrawing.Imaging.ImageAttributes.SetColorKey(System.Drawing.Color colorLow, System.Drawing.Color colorHigh) -> void
+Egami.SystemDrawing.Imaging.ImageAttributes.SetColorKey(System.Drawing.Color colorLow, System.Drawing.Color colorHigh, Egami.SystemDrawing.Imaging.ColorAdjustType type) -> void
+Egami.SystemDrawing.Imaging.ImageAttributes.SetColorMatrices(Egami.SystemDrawing.Imaging.ColorMatrix! newColorMatrix, Egami.SystemDrawing.Imaging.ColorMatrix? grayMatrix) -> void
+Egami.SystemDrawing.Imaging.ImageAttributes.SetColorMatrices(Egami.SystemDrawing.Imaging.ColorMatrix! newColorMatrix, Egami.SystemDrawing.Imaging.ColorMatrix? grayMatrix, Egami.SystemDrawing.Imaging.ColorMatrixFlag flags) -> void
+Egami.SystemDrawing.Imaging.ImageAttributes.SetColorMatrices(Egami.SystemDrawing.Imaging.ColorMatrix! newColorMatrix, Egami.SystemDrawing.Imaging.ColorMatrix? grayMatrix, Egami.SystemDrawing.Imaging.ColorMatrixFlag mode, Egami.SystemDrawing.Imaging.ColorAdjustType type) -> void
+Egami.SystemDrawing.Imaging.ImageAttributes.SetColorMatrix(Egami.SystemDrawing.Imaging.ColorMatrix! newColorMatrix) -> void
+Egami.SystemDrawing.Imaging.ImageAttributes.SetColorMatrix(Egami.SystemDrawing.Imaging.ColorMatrix! newColorMatrix, Egami.SystemDrawing.Imaging.ColorMatrixFlag flags) -> void
+Egami.SystemDrawing.Imaging.ImageAttributes.SetColorMatrix(Egami.SystemDrawing.Imaging.ColorMatrix! newColorMatrix, Egami.SystemDrawing.Imaging.ColorMatrixFlag mode, Egami.SystemDrawing.Imaging.ColorAdjustType type) -> void
+Egami.SystemDrawing.Imaging.ImageAttributes.SetGamma(float gamma) -> void
+Egami.SystemDrawing.Imaging.ImageAttributes.SetGamma(float gamma, Egami.SystemDrawing.Imaging.ColorAdjustType type) -> void
+Egami.SystemDrawing.Imaging.ImageAttributes.SetNoOp() -> void
+Egami.SystemDrawing.Imaging.ImageAttributes.SetNoOp(Egami.SystemDrawing.Imaging.ColorAdjustType type) -> void
+Egami.SystemDrawing.Imaging.ImageAttributes.SetOutputChannel(Egami.SystemDrawing.Imaging.ColorChannelFlag flags) -> void
+Egami.SystemDrawing.Imaging.ImageAttributes.SetOutputChannel(Egami.SystemDrawing.Imaging.ColorChannelFlag flags, Egami.SystemDrawing.Imaging.ColorAdjustType type) -> void
+Egami.SystemDrawing.Imaging.ImageAttributes.SetOutputChannelColorProfile(string! colorProfileFilename) -> void
+Egami.SystemDrawing.Imaging.ImageAttributes.SetOutputChannelColorProfile(string! colorProfileFilename, Egami.SystemDrawing.Imaging.ColorAdjustType type) -> void
+Egami.SystemDrawing.Imaging.ImageAttributes.SetRemapTable(Egami.SystemDrawing.Imaging.ColorAdjustType type, System.ReadOnlySpan<(System.Drawing.Color OldColor, System.Drawing.Color NewColor)> map) -> void
+Egami.SystemDrawing.Imaging.ImageAttributes.SetRemapTable(Egami.SystemDrawing.Imaging.ColorAdjustType type, System.ReadOnlySpan<Egami.SystemDrawing.Imaging.ColorMap!> map) -> void
+Egami.SystemDrawing.Imaging.ImageAttributes.SetRemapTable(Egami.SystemDrawing.Imaging.ColorMap![]! map) -> void
+Egami.SystemDrawing.Imaging.ImageAttributes.SetRemapTable(Egami.SystemDrawing.Imaging.ColorMap![]! map, Egami.SystemDrawing.Imaging.ColorAdjustType type) -> void
+Egami.SystemDrawing.Imaging.ImageAttributes.SetRemapTable(System.ReadOnlySpan<(System.Drawing.Color OldColor, System.Drawing.Color NewColor)> map) -> void
+Egami.SystemDrawing.Imaging.ImageAttributes.SetRemapTable(System.ReadOnlySpan<Egami.SystemDrawing.Imaging.ColorMap!> map) -> void
+Egami.SystemDrawing.Imaging.ImageAttributes.SetThreshold(float threshold) -> void
+Egami.SystemDrawing.Imaging.ImageAttributes.SetThreshold(float threshold, Egami.SystemDrawing.Imaging.ColorAdjustType type) -> void
+Egami.SystemDrawing.Imaging.ImageAttributes.SetWrapMode(Egami.SystemDrawing.Drawing2D.WrapMode mode) -> void
+Egami.SystemDrawing.Imaging.ImageAttributes.SetWrapMode(Egami.SystemDrawing.Drawing2D.WrapMode mode, System.Drawing.Color color) -> void
+Egami.SystemDrawing.Imaging.ImageAttributes.SetWrapMode(Egami.SystemDrawing.Drawing2D.WrapMode mode, System.Drawing.Color color, bool clamp) -> void
 Egami.SystemDrawing.Imaging.ImageCodecFlags
 Egami.SystemDrawing.Imaging.ImageCodecFlags.BlockingDecode = 32 -> Egami.SystemDrawing.Imaging.ImageCodecFlags
 Egami.SystemDrawing.Imaging.ImageCodecFlags.Builtin = 65536 -> Egami.SystemDrawing.Imaging.ImageCodecFlags
@@ -292,6 +792,69 @@ Egami.SystemDrawing.Imaging.PropertyItem.Type.get -> short
 Egami.SystemDrawing.Imaging.PropertyItem.Type.set -> void
 Egami.SystemDrawing.Imaging.PropertyItem.Value.get -> byte[]?
 Egami.SystemDrawing.Imaging.PropertyItem.Value.set -> void
+Egami.SystemDrawing.Pen
+Egami.SystemDrawing.Pen.Brush.get -> Egami.SystemDrawing.Brush!
+Egami.SystemDrawing.Pen.Brush.set -> void
+Egami.SystemDrawing.Pen.Clone() -> object!
+Egami.SystemDrawing.Pen.Color.get -> System.Drawing.Color
+Egami.SystemDrawing.Pen.Color.set -> void
+Egami.SystemDrawing.Pen.Dispose() -> void
+Egami.SystemDrawing.Pen.Pen(Egami.SystemDrawing.Brush! brush) -> void
+Egami.SystemDrawing.Pen.Pen(Egami.SystemDrawing.Brush! brush, float width) -> void
+Egami.SystemDrawing.Pen.Pen(System.Drawing.Color color) -> void
+Egami.SystemDrawing.Pen.Pen(System.Drawing.Color color, float width) -> void
+Egami.SystemDrawing.Pen.Width.get -> float
+Egami.SystemDrawing.Pen.Width.set -> void
+Egami.SystemDrawing.Region
+Egami.SystemDrawing.Region.Clone() -> Egami.SystemDrawing.Region!
+Egami.SystemDrawing.Region.Complement(Egami.SystemDrawing.Region! region) -> void
+Egami.SystemDrawing.Region.Complement(System.Drawing.Rectangle rect) -> void
+Egami.SystemDrawing.Region.Complement(System.Drawing.RectangleF rect) -> void
+Egami.SystemDrawing.Region.Dispose() -> void
+Egami.SystemDrawing.Region.Equals(Egami.SystemDrawing.Region! region, Egami.SystemDrawing.Graphics! g) -> bool
+Egami.SystemDrawing.Region.Exclude(Egami.SystemDrawing.Region! region) -> void
+Egami.SystemDrawing.Region.Exclude(System.Drawing.Rectangle rect) -> void
+Egami.SystemDrawing.Region.Exclude(System.Drawing.RectangleF rect) -> void
+Egami.SystemDrawing.Region.GetBounds(Egami.SystemDrawing.Graphics! g) -> System.Drawing.RectangleF
+Egami.SystemDrawing.Region.GetHrgn(Egami.SystemDrawing.Graphics! g) -> nint
+Egami.SystemDrawing.Region.GetRegionData() -> Egami.SystemDrawing.Drawing2D.RegionData!
+Egami.SystemDrawing.Region.GetRegionScans(Egami.SystemDrawing.Drawing2D.Matrix! matrix) -> System.Drawing.RectangleF[]!
+Egami.SystemDrawing.Region.Intersect(Egami.SystemDrawing.Region! region) -> void
+Egami.SystemDrawing.Region.Intersect(System.Drawing.Rectangle rect) -> void
+Egami.SystemDrawing.Region.Intersect(System.Drawing.RectangleF rect) -> void
+Egami.SystemDrawing.Region.IsEmpty(Egami.SystemDrawing.Graphics! g) -> bool
+Egami.SystemDrawing.Region.IsInfinite(Egami.SystemDrawing.Graphics! g) -> bool
+Egami.SystemDrawing.Region.IsVisible(Egami.Point point) -> bool
+Egami.SystemDrawing.Region.IsVisible(Egami.Point point, Egami.SystemDrawing.Graphics? g) -> bool
+Egami.SystemDrawing.Region.IsVisible(float x, float y) -> bool
+Egami.SystemDrawing.Region.IsVisible(float x, float y, Egami.SystemDrawing.Graphics? g) -> bool
+Egami.SystemDrawing.Region.IsVisible(float x, float y, float width, float height) -> bool
+Egami.SystemDrawing.Region.IsVisible(float x, float y, float width, float height, Egami.SystemDrawing.Graphics? g) -> bool
+Egami.SystemDrawing.Region.IsVisible(int x, int y, Egami.SystemDrawing.Graphics? g) -> bool
+Egami.SystemDrawing.Region.IsVisible(int x, int y, int width, int height) -> bool
+Egami.SystemDrawing.Region.IsVisible(int x, int y, int width, int height, Egami.SystemDrawing.Graphics? g) -> bool
+Egami.SystemDrawing.Region.IsVisible(System.Drawing.PointF point) -> bool
+Egami.SystemDrawing.Region.IsVisible(System.Drawing.PointF point, Egami.SystemDrawing.Graphics? g) -> bool
+Egami.SystemDrawing.Region.IsVisible(System.Drawing.Rectangle rect) -> bool
+Egami.SystemDrawing.Region.IsVisible(System.Drawing.Rectangle rect, Egami.SystemDrawing.Graphics? g) -> bool
+Egami.SystemDrawing.Region.IsVisible(System.Drawing.RectangleF rect) -> bool
+Egami.SystemDrawing.Region.IsVisible(System.Drawing.RectangleF rect, Egami.SystemDrawing.Graphics? g) -> bool
+Egami.SystemDrawing.Region.MakeEmpty() -> void
+Egami.SystemDrawing.Region.MakeInfinite() -> void
+Egami.SystemDrawing.Region.Region() -> void
+Egami.SystemDrawing.Region.Region(Egami.SystemDrawing.Drawing2D.RegionData! rgnData) -> void
+Egami.SystemDrawing.Region.Region(System.Drawing.Rectangle rect) -> void
+Egami.SystemDrawing.Region.Region(System.Drawing.RectangleF rect) -> void
+Egami.SystemDrawing.Region.ReleaseHrgn(nint regionHandle) -> void
+Egami.SystemDrawing.Region.Transform(Egami.SystemDrawing.Drawing2D.Matrix! matrix) -> void
+Egami.SystemDrawing.Region.Translate(float dx, float dy) -> void
+Egami.SystemDrawing.Region.Translate(int dx, int dy) -> void
+Egami.SystemDrawing.Region.Union(Egami.SystemDrawing.Region! region) -> void
+Egami.SystemDrawing.Region.Union(System.Drawing.Rectangle rect) -> void
+Egami.SystemDrawing.Region.Union(System.Drawing.RectangleF rect) -> void
+Egami.SystemDrawing.Region.Xor(Egami.SystemDrawing.Region! region) -> void
+Egami.SystemDrawing.Region.Xor(System.Drawing.Rectangle rect) -> void
+Egami.SystemDrawing.Region.Xor(System.Drawing.RectangleF rect) -> void
 Egami.SystemDrawing.RotateFlipType
 Egami.SystemDrawing.RotateFlipType.Rotate180FlipNone = 2 -> Egami.SystemDrawing.RotateFlipType
 Egami.SystemDrawing.RotateFlipType.Rotate180FlipX = 6 -> Egami.SystemDrawing.RotateFlipType
@@ -309,7 +872,20 @@ Egami.SystemDrawing.RotateFlipType.RotateNoneFlipNone = 0 -> Egami.SystemDrawing
 Egami.SystemDrawing.RotateFlipType.RotateNoneFlipX = 4 -> Egami.SystemDrawing.RotateFlipType
 Egami.SystemDrawing.RotateFlipType.RotateNoneFlipXY = 2 -> Egami.SystemDrawing.RotateFlipType
 Egami.SystemDrawing.RotateFlipType.RotateNoneFlipY = 6 -> Egami.SystemDrawing.RotateFlipType
+Egami.SystemDrawing.SolidBrush
+Egami.SystemDrawing.SolidBrush.Color.get -> System.Drawing.Color
+Egami.SystemDrawing.SolidBrush.Color.set -> void
+Egami.SystemDrawing.SolidBrush.SolidBrush(System.Drawing.Color color) -> void
+Egami.SystemDrawing.Text.TextRenderingHint
+Egami.SystemDrawing.Text.TextRenderingHint.AntiAlias = 4 -> Egami.SystemDrawing.Text.TextRenderingHint
+Egami.SystemDrawing.Text.TextRenderingHint.AntiAliasGridFit = 3 -> Egami.SystemDrawing.Text.TextRenderingHint
+Egami.SystemDrawing.Text.TextRenderingHint.ClearTypeGridFit = 5 -> Egami.SystemDrawing.Text.TextRenderingHint
+Egami.SystemDrawing.Text.TextRenderingHint.SingleBitPerPixel = 2 -> Egami.SystemDrawing.Text.TextRenderingHint
+Egami.SystemDrawing.Text.TextRenderingHint.SingleBitPerPixelGridFit = 1 -> Egami.SystemDrawing.Text.TextRenderingHint
+Egami.SystemDrawing.Text.TextRenderingHint.SystemDefault = 0 -> Egami.SystemDrawing.Text.TextRenderingHint
 override Egami.SystemDrawing.Bitmap.Clone() -> object!
+override Egami.SystemDrawing.Drawing2D.Matrix.Equals(object? obj) -> bool
+override Egami.SystemDrawing.Drawing2D.Matrix.GetHashCode() -> int
 override Egami.SystemDrawing.Icon.ToString() -> string!
 override Egami.SystemDrawing.Imaging.FrameDimension.Equals(object? o) -> bool
 override Egami.SystemDrawing.Imaging.FrameDimension.GetHashCode() -> int
@@ -317,8 +893,16 @@ override Egami.SystemDrawing.Imaging.FrameDimension.ToString() -> string!
 override Egami.SystemDrawing.Imaging.ImageFormat.Equals(object? o) -> bool
 override Egami.SystemDrawing.Imaging.ImageFormat.GetHashCode() -> int
 override Egami.SystemDrawing.Imaging.ImageFormat.ToString() -> string!
+override Egami.SystemDrawing.SolidBrush.Clone() -> object!
 static Egami.SystemDrawing.Bitmap.FromHicon(nint hicon) -> Egami.SystemDrawing.Bitmap!
 static Egami.SystemDrawing.Bitmap.FromResource(nint hinstance, string! bitmapName) -> Egami.SystemDrawing.Bitmap!
+static Egami.SystemDrawing.Graphics.FromHdc(nint hdc) -> Egami.SystemDrawing.Graphics!
+static Egami.SystemDrawing.Graphics.FromHdc(nint hdc, nint hdevice) -> Egami.SystemDrawing.Graphics!
+static Egami.SystemDrawing.Graphics.FromHdcInternal(nint hdc) -> Egami.SystemDrawing.Graphics!
+static Egami.SystemDrawing.Graphics.FromHwnd(nint hwnd) -> Egami.SystemDrawing.Graphics!
+static Egami.SystemDrawing.Graphics.FromHwndInternal(nint hwnd) -> Egami.SystemDrawing.Graphics!
+static Egami.SystemDrawing.Graphics.FromImage(Egami.SystemDrawing.Image! image) -> Egami.SystemDrawing.Graphics!
+static Egami.SystemDrawing.Graphics.GetHalftonePalette() -> nint
 static Egami.SystemDrawing.Icon.ExtractAssociatedIcon(string! filePath) -> Egami.SystemDrawing.Icon?
 static Egami.SystemDrawing.Icon.ExtractIcon(string! filePath, int id, bool smallIcon = false) -> Egami.SystemDrawing.Icon?
 static Egami.SystemDrawing.Icon.ExtractIcon(string! filePath, int id, int size) -> Egami.SystemDrawing.Icon?
@@ -352,6 +936,7 @@ static Egami.SystemDrawing.Imaging.ImageFormat.Png.get -> Egami.SystemDrawing.Im
 static Egami.SystemDrawing.Imaging.ImageFormat.Tiff.get -> Egami.SystemDrawing.Imaging.ImageFormat!
 static Egami.SystemDrawing.Imaging.ImageFormat.Webp.get -> Egami.SystemDrawing.Imaging.ImageFormat!
 static Egami.SystemDrawing.Imaging.ImageFormat.Wmf.get -> Egami.SystemDrawing.Imaging.ImageFormat!
+static Egami.SystemDrawing.Region.FromHrgn(nint hrgn) -> Egami.SystemDrawing.Region!
 static readonly Egami.SystemDrawing.Imaging.Encoder.ChrominanceTable -> Egami.SystemDrawing.Imaging.Encoder!
 static readonly Egami.SystemDrawing.Imaging.Encoder.ColorDepth -> Egami.SystemDrawing.Imaging.Encoder!
 static readonly Egami.SystemDrawing.Imaging.Encoder.ColorSpace -> Egami.SystemDrawing.Imaging.Encoder!
@@ -365,4 +950,6 @@ static readonly Egami.SystemDrawing.Imaging.Encoder.SaveFlag -> Egami.SystemDraw
 static readonly Egami.SystemDrawing.Imaging.Encoder.ScanMethod -> Egami.SystemDrawing.Imaging.Encoder!
 static readonly Egami.SystemDrawing.Imaging.Encoder.Transformation -> Egami.SystemDrawing.Imaging.Encoder!
 static readonly Egami.SystemDrawing.Imaging.Encoder.Version -> Egami.SystemDrawing.Imaging.Encoder!
+virtual Egami.SystemDrawing.Brush.Dispose(bool disposing) -> void
+virtual Egami.SystemDrawing.Graphics.DrawImageAbort.Invoke(nint callbackdata) -> bool
 virtual Egami.SystemDrawing.Image.GetThumbnailImageAbort.Invoke() -> bool
