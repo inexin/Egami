@@ -116,6 +116,25 @@ are.
   advances unchanged, and italic slants 14 degrees, CSS's default oblique. Glyph paths and ink bounds include it;
   `Font.AllowSynthesis = false` turns it off.
 
+### Text gamma and contrast
+
+Two canvas settings change how heavy small text looks without touching its shapes. `CanvasOptions.TextGamma` (0.5 to 3,
+default 1) blends glyph coverage per channel as (a·src^γ + (1 − a)·dst^γ)^(1/γ) on the stored values, as GDI ClearType does:
+above 1, light text on a dark ground gets heavier and dark text on a light ground lighter. `CanvasOptions.TextContrast` (0 to 1,
+default 0) first boosts coverage a to a + (1 − a)·c·a, the contrast boost of Skia and DirectWrite, which thickens thin edges
+whatever the colours.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Text.cs#text-gamma)]
+
+- Only glyphs drawn from the glyph cache (up to 256 pixels per em, under a scale-and-translate transform) take them; shapes,
+  images, blurred text and text drawn as paths never do. The defaults draw exactly what Egami 1.2.0 drew.
+- The gamma needs to read the canvas, so it applies to solid source-over text on an 8-bit RGB canvas outside layers, the text
+  LCD edging can draw too; other text takes the contrast only.
+- With `ColorSpace.Linear` the gamma is ignored, since that blend is already gamma-correct; the contrast still applies.
+- To look like GDI+ `ClearTypeGridFit` (its default TextContrast of 4) with LCD edging, light hinting and whole-pixel origins,
+  use a gamma of 1.15 and no contrast: the brightness a white Trebuchet MS label adds to a black or a #0078d4 button is then
+  within 1% of GDI+'s. Letter shapes and spacing still differ, since TrueType instructions are not run.
+
 ## Color fonts
 
 Emoji and other color glyphs draw in color by themselves. Per glyph, the first format the font has wins: COLR version 1 (a

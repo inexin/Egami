@@ -65,6 +65,8 @@ public sealed record class CanvasOptions
 
     private readonly float _tolerance = DefaultTolerance;
     private readonly PixelGeometry _pixelGeometry;
+    private readonly float _textGamma = 1;
+    private readonly float _textContrast;
 
     /// <summary>Gets the options every canvas starts with.</summary>
     public static CanvasOptions Default { get; } = new();
@@ -110,5 +112,40 @@ public sealed record class CanvasOptions
     {
         get => _tolerance;
         init => _tolerance = value is >= 0.001f and <= 10 ? value : throw new ArgumentOutOfRangeException(nameof(value), value, "The tolerance must be from 0.001 to 10 pixels.");
+    }
+
+    /// <summary>
+    /// Gets the gamma of the blend that draws glyph coverage, from 0.5 to 3. Defaults to 1, today's blend. Each channel blends as
+    /// (a·src^γ + (1 − a)·dst^γ)^(1/γ) on the stored values, as GDI ClearType does (its default is 1.4); above 1 light text on a
+    /// dark ground gets heavier and dark text on a light ground lighter. Shapes and images never pass through it.
+    /// </summary>
+    /// <remarks>
+    /// The gamma applies to solid source-over text on an 8-bit RGB canvas outside a layer, the text LCD edging can draw; other text
+    /// takes <see cref="TextContrast"/> only. With <see cref="ColorSpace.Linear"/> the gamma is ignored: that blend is already a
+    /// gamma-correct one.
+    /// </remarks>
+    /// <example>
+    /// <code language="csharp" source="../../tests/Egami.DocSamples/Text.cs" region="text-gamma"/>
+    /// </example>
+    /// <exception cref="ArgumentOutOfRangeException">The value is not between 0.5 and 3.</exception>
+    public float TextGamma
+    {
+        get => _textGamma;
+        init => _textGamma = value is >= 0.5f and <= 3 ? value : throw new ArgumentOutOfRangeException(nameof(value), value, "The text gamma must be from 0.5 to 3.");
+    }
+
+    /// <summary>
+    /// Gets how much thin glyph coverage is boosted before it blends, from 0 to 1. Defaults to 0, none. Coverage a becomes
+    /// a + (1 − a)·c·a, the contrast boost of Skia and DirectWrite: it thickens antialiased edges and leaves full coverage alone.
+    /// It applies to all cached glyphs, whatever the paint, canvas or <see cref="ColorSpace"/>.
+    /// </summary>
+    /// <example>
+    /// <code language="csharp" source="../../tests/Egami.DocSamples/Text.cs" region="text-gamma"/>
+    /// </example>
+    /// <exception cref="ArgumentOutOfRangeException">The value is not between 0 and 1.</exception>
+    public float TextContrast
+    {
+        get => _textContrast;
+        init => _textContrast = value is >= 0 and <= 1 ? value : throw new ArgumentOutOfRangeException(nameof(value), value, "The text contrast must be from 0 to 1.");
     }
 }

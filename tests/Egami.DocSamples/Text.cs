@@ -122,6 +122,36 @@ public class Text
     }
 
     [Fact]
+    public void TextGamma()
+    {
+        Typeface face = Typeface.FromFile(FontFile);
+        using Raster<Rgb8> button = Raster.Create(200, 40, new Rgb8(0x00, 0x78, 0xd4));
+
+        #region text-gamma
+        // A white label on a blue button, weighted like GDI+'s ClearTypeGridFit text: a text gamma of 1.15 matched the brightness
+        // GDI+ adds to within 1% for Trebuchet MS at 16 pixels. Shapes and images on this canvas blend as before.
+        var options = new CanvasOptions { PixelGeometry = PixelGeometry.RgbHorizontal, TextGamma = 1.15f };
+        var label = new Font(face, 16) { Hinting = FontHinting.Light, Edging = FontEdging.Lcd, Subpixel = false };
+        using (RasterCanvas<Rgb8> canvas = button.CreateCanvas(options))
+        {
+            canvas.DrawText("Start the course", new Vector2(40, 26), label, Rgba8.White);
+        }
+
+        // Thin dark text on a light page can take a contrast boost instead, as Skia and DirectWrite do.
+        var boosted = new CanvasOptions { TextContrast = 0.25f };
+        #endregion
+
+        Assert.Equal(0.25f, boosted.TextContrast);
+        int lit = 0;
+        for (int x = 0; x < button.Width; x++)
+        {
+            lit += button.GetPixel(x, 22).R > 128 ? 1 : 0;
+        }
+
+        Assert.True(lit > 10);
+    }
+
+    [Fact]
     public void TextAlongAPath()
     {
         Typeface face = Typeface.FromFile(FontFile);
