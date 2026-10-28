@@ -29,23 +29,45 @@ image.Save("photo-small.png");
 
 ## Packages
 
-Add only the packages you use. Each one has its own guides.
+Add only the packages you use. Each one has its own guides, and its name links to its source code.
 
-| Package | What it does | Docs |
-| --- | --- | --- |
-| [Egami](https://www.nuget.org/packages/Egami) | Rasters and pixel types; PNG, JPEG, GIF, WebP, TIFF, JPEG XL, AVIF and more; resizing, color management, filters, metadata | [Getting started](https://inexin.github.io/Egami/v1/articles/getting-started.html), [formats](https://inexin.github.io/Egami/v1/articles/formats/index.html), [all guides](https://inexin.github.io/Egami/v1/articles/guides/index.html) |
-| [Egami.Drawing](https://www.nuget.org/packages/Egami.Drawing) | Antialiased paths, shapes, text, gradients, layers and recorded drawings on a canvas | [Drawing](https://inexin.github.io/Egami/v1/articles/guides/drawing.html), [.egdr format](https://inexin.github.io/Egami/v1/articles/guides/egdr-format.html) |
-| [Egami.Fonts](https://www.nuget.org/packages/Egami.Fonts) | TrueType and OpenType fonts, text shaping and paragraph layout | [Fonts and text](https://inexin.github.io/Egami/v1/articles/guides/text.html), [Unicode text](https://inexin.github.io/Egami/v1/articles/guides/unicode-text.html), [Paragraph layout](https://inexin.github.io/Egami/v1/articles/guides/paragraph-layout.html) |
-| [Egami.Fonts.Substitutes](https://www.nuget.org/packages/Egami.Fonts.Substitutes) | Open fonts that stand in for Arial, Helvetica, Times, Courier, Calibri and Cambria | [Guide](https://inexin.github.io/Egami/v1/articles/guides/text.html#substitute-fonts) |
-| [Egami.Svg](https://www.nuget.org/packages/Egami.Svg) | Reads, edits, saves and draws SVG | [Guide](https://inexin.github.io/Egami/v1/articles/guides/svg.html) |
-| [Egami.Css](https://www.nuget.org/packages/Egami.Css) | CSS parsing, selectors and the cascade | [Guide](https://inexin.github.io/Egami/v1/articles/guides/css.html) |
-| [Egami.Metafiles](https://www.nuget.org/packages/Egami.Metafiles) | Plays WMF, EMF and EMF+ pictures | [Guide](https://inexin.github.io/Egami/v1/articles/guides/metafiles.html) |
-| [Egami.Barcodes](https://www.nuget.org/packages/Egami.Barcodes) | Writes and reads 1D and 2D barcodes | [Writing](https://inexin.github.io/Egami/v1/articles/guides/barcodes.html), [reading](https://inexin.github.io/Egami/v1/articles/guides/barcode-reading.html) |
-| [Egami.Cli](https://www.nuget.org/packages/Egami.Cli) | The `egami` command: convert, resize, inspect and edit images from a shell, with chained steps, workflow files and batches | [The egami command](https://inexin.github.io/Egami/v1/articles/cli/index.html) |
-| [Egami.Video](https://www.nuget.org/packages/Egami.Video) | Reads and writes video and audio with Egami rasters as frames: MP4, WebM, Matroska, AVI; AV1, VP9 and VP8 decode and encode; Opus, Vorbis, FLAC, MP3 and more | [Guide](https://inexin.github.io/Egami/v1/articles/guides/video.html) |
-| [Egami.Video.H264](https://www.nuget.org/packages/Egami.Video.H264) | H.264 decoding for Egami.Video; opt-in because H.264 is covered by patents | [Guide](https://inexin.github.io/Egami/v1/articles/guides/h264.html) |
-| [Egami.Video.Cli](https://www.nuget.org/packages/Egami.Video.Cli) | The `egami-video` command: inspect, remux, cut, join and convert video and audio from a shell, with ffmpeg and ffprobe command lines | [The egami-video command](https://inexin.github.io/Egami/v1/articles/video-cli/index.html) |
-| [Egami.Heic](https://www.nuget.org/packages/Egami.Heic) | Reads HEIC phone photos; opt-in because HEVC is covered by patents | [Guide](https://inexin.github.io/Egami/v1/articles/formats/heic.html) |
+### Images
+
+| Package | What it does | Docs | NuGet |
+| --- | --- | --- | --- |
+| [Egami](src/Egami) | Rasters and pixel types; PNG, JPEG, GIF, WebP, TIFF, JPEG XL, AVIF and more; resizing, color management, filters, metadata | [Getting started](https://inexin.github.io/Egami/v1/articles/getting-started.html), [formats](https://inexin.github.io/Egami/v1/articles/formats/index.html), [all guides](https://inexin.github.io/Egami/v1/articles/guides/index.html) | [![NuGet](https://img.shields.io/nuget/v/Egami.svg)](https://www.nuget.org/packages/Egami) |
+| [Egami.Heic](src/Egami.Heic) | Reads HEIC phone photos; opt-in because HEVC is covered by patents | [Guide](https://inexin.github.io/Egami/v1/articles/formats/heic.html) | [![NuGet](https://img.shields.io/nuget/v/Egami.Heic.svg)](https://www.nuget.org/packages/Egami.Heic) |
+
+### Drawing and text
+
+| Package | What it does | Docs | NuGet |
+| --- | --- | --- | --- |
+| [Egami.Drawing](src/Egami.Drawing) | Antialiased paths, shapes, text, gradients, layers and recorded drawings on a canvas | [Drawing](https://inexin.github.io/Egami/v1/articles/guides/drawing.html), [.egdr format](https://inexin.github.io/Egami/v1/articles/guides/egdr-format.html) | [![NuGet](https://img.shields.io/nuget/v/Egami.Drawing.svg)](https://www.nuget.org/packages/Egami.Drawing) |
+| [Egami.Fonts](src/Egami.Fonts) | TrueType and OpenType fonts, text shaping and paragraph layout | [Fonts and text](https://inexin.github.io/Egami/v1/articles/guides/text.html), [Unicode text](https://inexin.github.io/Egami/v1/articles/guides/unicode-text.html), [Paragraph layout](https://inexin.github.io/Egami/v1/articles/guides/paragraph-layout.html) | [![NuGet](https://img.shields.io/nuget/v/Egami.Fonts.svg)](https://www.nuget.org/packages/Egami.Fonts) |
+| [Egami.Fonts.Substitutes](src/Egami.Fonts.Substitutes) | Open fonts that stand in for Arial, Helvetica, Times, Courier, Calibri and Cambria | [Guide](https://inexin.github.io/Egami/v1/articles/guides/text.html#substitute-fonts) | [![NuGet](https://img.shields.io/nuget/v/Egami.Fonts.Substitutes.svg)](https://www.nuget.org/packages/Egami.Fonts.Substitutes) |
+| [Egami.Barcodes](src/Egami.Barcodes) | Writes and reads 1D and 2D barcodes | [Writing](https://inexin.github.io/Egami/v1/articles/guides/barcodes.html), [reading](https://inexin.github.io/Egami/v1/articles/guides/barcode-reading.html) | [![NuGet](https://img.shields.io/nuget/v/Egami.Barcodes.svg)](https://www.nuget.org/packages/Egami.Barcodes) |
+
+### Vector graphics
+
+| Package | What it does | Docs | NuGet |
+| --- | --- | --- | --- |
+| [Egami.Svg](src/Egami.Svg) | Reads, edits, saves and draws SVG | [Guide](https://inexin.github.io/Egami/v1/articles/guides/svg.html) | [![NuGet](https://img.shields.io/nuget/v/Egami.Svg.svg)](https://www.nuget.org/packages/Egami.Svg) |
+| [Egami.Css](src/Egami.Css) | CSS parsing, selectors and the cascade | [Guide](https://inexin.github.io/Egami/v1/articles/guides/css.html) | [![NuGet](https://img.shields.io/nuget/v/Egami.Css.svg)](https://www.nuget.org/packages/Egami.Css) |
+| [Egami.Metafiles](src/Egami.Metafiles) | Plays WMF, EMF and EMF+ pictures | [Guide](https://inexin.github.io/Egami/v1/articles/guides/metafiles.html) | [![NuGet](https://img.shields.io/nuget/v/Egami.Metafiles.svg)](https://www.nuget.org/packages/Egami.Metafiles) |
+
+### Video and audio
+
+| Package | What it does | Docs | NuGet |
+| --- | --- | --- | --- |
+| [Egami.Video](src/Egami.Video) | Reads and writes video and audio with Egami rasters as frames: MP4, WebM, Matroska, AVI; AV1, VP9 and VP8 decode and encode; Opus, Vorbis, FLAC, MP3 and more | [Guide](https://inexin.github.io/Egami/v1/articles/guides/video.html) | [![NuGet](https://img.shields.io/nuget/v/Egami.Video.svg)](https://www.nuget.org/packages/Egami.Video) |
+| [Egami.Video.H264](src/Egami.Video.H264) | H.264 decoding for Egami.Video; opt-in because H.264 is covered by patents | [Guide](https://inexin.github.io/Egami/v1/articles/guides/h264.html) | [![NuGet](https://img.shields.io/nuget/v/Egami.Video.H264.svg)](https://www.nuget.org/packages/Egami.Video.H264) |
+
+### Command-line tools
+
+| Package | What it does | Docs | NuGet |
+| --- | --- | --- | --- |
+| [Egami.Cli](src/Egami.Cli) | The `egami` command: convert, resize, inspect and edit images from a shell, with chained steps, workflow files and batches | [The egami command](https://inexin.github.io/Egami/v1/articles/cli/index.html) | [![NuGet](https://img.shields.io/nuget/v/Egami.Cli.svg)](https://www.nuget.org/packages/Egami.Cli) |
+| [Egami.Video.Cli](src/Egami.Video.Cli) | The `egami-video` command: inspect, remux, cut, join and convert video and audio from a shell, with ffmpeg and ffprobe command lines | [The egami-video command](https://inexin.github.io/Egami/v1/articles/video-cli/index.html) | [![NuGet](https://img.shields.io/nuget/v/Egami.Video.Cli.svg)](https://www.nuget.org/packages/Egami.Video.Cli) |
 
 All packages are 1.0 or later and on [NuGet](https://www.nuget.org/packages?q=Egami).
 [Packages](https://inexin.github.io/Egami/v1/articles/packages.html) lists what each one needs.
