@@ -97,20 +97,20 @@ internal static class Surface
 
         return ((uint)a << 24) | ((uint)GdiPixels.Unpremultiply((byte)(argb >> 16), a) << 16) | ((uint)GdiPixels.Unpremultiply((byte)(argb >> 8), a) << 8) | GdiPixels.Unpremultiply((byte)argb, a);
     }
+}
 
-    /// <summary>Memory over a pointer to pinned or caller-owned pixels.</summary>
-    private sealed unsafe class PointerMemory(IntPtr pointer, int length) : MemoryManager<byte>
+/// <summary>Memory over a pointer to pinned or caller-owned pixels.</summary>
+internal sealed unsafe class PointerMemory(IntPtr pointer, int length) : MemoryManager<byte>
+{
+    public override Span<byte> GetSpan() => new((void*)pointer, length);
+
+    public override MemoryHandle Pin(int elementIndex = 0) => new((byte*)pointer + elementIndex);
+
+    public override void Unpin()
     {
-        public override Span<byte> GetSpan() => new((void*)pointer, length);
+    }
 
-        public override MemoryHandle Pin(int elementIndex = 0) => new((byte*)pointer + elementIndex);
-
-        public override void Unpin()
-        {
-        }
-
-        protected override void Dispose(bool disposing)
-        {
-        }
+    protected override void Dispose(bool disposing)
+    {
     }
 }

@@ -17,7 +17,7 @@ using Size = System.Drawing.Size;
 /// <example>
 /// <code language="csharp" source="../../tests/Egami.DocSamples/SystemDrawingPackage.cs" region="bitmap"/>
 /// </example>
-public sealed class Bitmap : Image
+public sealed partial class Bitmap : Image
 {
     private Lock? _lock;
 

@@ -22,7 +22,7 @@ using Size = System.Drawing.Size;
 /// <example>
 /// <code language="csharp" source="../../tests/Egami.DocSamples/SystemDrawingPackage.cs" region="graphics"/>
 /// </example>
-public sealed partial class Graphics : MarshalByRefObject, IDisposable
+public sealed partial class Graphics : MarshalByRefObject, IDisposable, IDeviceContext
 {
     private readonly Bitmap _image;
     private readonly List<(int Id, Settings State, bool Container)> _stack = [];
@@ -178,7 +178,8 @@ public sealed partial class Graphics : MarshalByRefObject, IDisposable
         ArgumentNullException.ThrowIfNull(image);
         if (image is not Bitmap bitmap)
         {
-            throw new NotSupportedException("Egami.SystemDrawing draws on bitmaps; draw a metafile onto a bitmap with DrawImage.");
+            // GDI+ would record into a metafile; Egami does not record, so it fails as GDI+ does for a metafile it cannot record to.
+            throw GdiErrors.Generic();
         }
 
         if (GdiPixels.IsIndexed(bitmap.PixelFormat))
@@ -294,6 +295,8 @@ public sealed partial class Graphics : MarshalByRefObject, IDisposable
     public void Dispose()
     {
         _disposed = true;
+        _canvas?.Dispose();
+        _premultipliedCanvas?.Dispose();
     }
 
     /// <summary>Does nothing: Egami draws each call at once.</summary>

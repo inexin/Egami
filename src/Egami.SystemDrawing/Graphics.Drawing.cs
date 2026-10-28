@@ -281,9 +281,9 @@ public sealed partial class Graphics
     {
         ArgumentNullException.ThrowIfNull(image);
         Alive();
-        if (image is not Bitmap bitmap)
+        if (image is not (Bitmap or Metafile))
         {
-            throw new NotSupportedException("Egami.SystemDrawing draws bitmaps.");
+            throw new NotSupportedException("Egami.SystemDrawing draws bitmaps and metafiles.");
         }
 
         if (unit is < GraphicsUnit.World or > GraphicsUnit.Millimeter)
@@ -313,7 +313,13 @@ public sealed partial class Graphics
             return;
         }
 
-        using Raster<Rgba8> pixels = bitmap.ToRgba8();
+        if (image is Metafile metafile)
+        {
+            DrawMetafile(metafile, map, src);
+            return;
+        }
+
+        using Raster<Rgba8> pixels = ((Bitmap)image).ToRgba8();
         Raster<Rgba8> drawn = attributes?.State.Apply(pixels, GdiPlusImageAttributes.TypeBitmap) ?? pixels;
         try
         {
@@ -346,6 +352,28 @@ public sealed partial class Graphics
                 drawn.Dispose();
             }
         }
+    }
+
+    /// <summary>
+    /// Plays a metafile as vectors: its frame (in pixels at its own resolution) mapped by the source-to-destination map, cut to
+    /// the source rectangle. Metafile records follow GDI's own pixel rules, which the player keeps, so no pixel offset is added.
+    /// </summary>
+    private void DrawMetafile(Metafile metafile, Matrix3x2 map, RectF src)
+    {
+        Matrix3x2 full = map * ImageTransform;
+        RectF bounds = Path.Rect(src).Transform(full).Bounds;
+        if (!Sane(bounds))
+        {
+            return;
+        }
+
+        RectangleF frame = metafile.FrameBounds;
+        Draw(bounds, canvas =>
+        {
+            canvas.Concat(full);
+            canvas.ClipRect(src, ClipOp.Intersect, antialias: false);
+            metafile.Picture.Draw(canvas, new RectF(frame.X, frame.Y, frame.Width, frame.Height));
+        });
     }
 
     /// <summary>

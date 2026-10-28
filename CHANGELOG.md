@@ -5,8 +5,9 @@ changes that break code come only in a new major version.
 
 ## Egami.SystemDrawing 1.0.0-preview.1, unreleased
 
-A new package: System.Drawing.Common's API on every OS, in managed code (step 2.13, stages A, C and D). Bitmaps, pixel access,
-codecs, icons, Graphics, pens, brushes and paths; fonts and text follow in later previews.
+A new package: System.Drawing.Common's API on every OS, in managed code (step 2.13, stages A, C, D and F). Bitmaps, pixel
+access, codecs, icons, Graphics, pens, brushes, paths, metafiles, effects and the rest of the API but text; fonts and text follow
+in the next preview.
 
 - `Bitmap`, `Image` and `Icon` in the `Egami.SystemDrawing` namespace, and `PixelFormat`, `BitmapData`, `ColorPalette`,
   `ImageFormat`, `ImageCodecInfo`, `Encoder`, `EncoderParameters`, `FrameDimension` and `PropertyItem` in
@@ -30,7 +31,13 @@ codecs, icons, Graphics, pens, brushes and paths; fonts and text follow in later
   `SystemBrushes`.
 - `GraphicsPath` with every builder but `AddString`, GDI+'s point and type arrays, `Flatten`, `Widen`, `Warp`, `Reverse`,
   bounds, hit tests and markers; `GraphicsPathIterator`; regions, clips, `DrawPath` and `FillPath` from paths.
-- Members that need Windows handles throw PlatformNotSupportedException and warn at compile time (EGSD0001 to EGSD0003).
+- `Metafile` over Egami.Metafiles: GDI+'s sizes, headers (`MetafileHeader`, `MetaHeader`, `WmfPlaceableFileHeader`) and
+  record enumeration (`EnumerateMetafile`, `EmfPlusRecordType`), drawn as vectors by `DrawImage`; the recording constructors
+  throw (EGSD0004).
+- The GDI+ 1.1 effects (`Bitmap.ApplyEffect`, `DrawImage(image, effect)`), most of them matching GDI+'s measured results;
+  `BufferedGraphics`, `CachedBitmap`, `ImageAnimator`, the type converters and designer attributes, `SystemIcons` (which
+  throws, EGSD0003), and the escape hatches `Bitmap.AsRaster`, `Bitmap.FromRaster` and `Graphics.Canvas`.
+- Members that need Windows handles throw PlatformNotSupportedException and warn at compile time (EGSD0001 to EGSD0004).
 - With implicit usings on, the package adds `System.Drawing` and `Egami.SystemDrawing` as implicit usings.
 
 ## Egami.Drawing and Egami.Fonts, unreleased
