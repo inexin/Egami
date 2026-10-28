@@ -47,6 +47,16 @@ Helpers a format plugin needs, made public for Egami.Formats.Extended. All addit
 
 ## Egami.Video, unreleased
 
+MP3 decode speed (the V5.8 speed gate, left for 1.0.x). No API changes.
+
+- `Mp3Codec` decodes 2.3 to 3 times faster and now meets its gate of 1.5 times minimp3's time on one thread: 0.93x on CBR
+  128 kbit/s joint stereo, 0.92x on VBR V2, 1.01x on MPEG-2 64 kbit/s mono and 0.86x on Layer II 192 kbit/s (minimp3's SIMD
+  build; egami-compare `video/native/mp3-gate.py`, whose timing now warms up for a second so tiered compilation settles).
+  The output is bit for bit what 1.0.0 decodes (81 clips and compliance streams compared). The synthesis filterbank, its
+  DCT-II, the IMDCT windows, the antialias butterflies and the sign changes run four lanes at a time in the layout of
+  minimp3's SIMD build (CC0), with the same products and sums in the same order; Huffman decoding sets signs without
+  branches and reads its code tables unchecked; Layers I and II read whole words and divide grouped codes by a reciprocal.
+
 V7.1: interlaced H.264 (Build Plan tasks 16 to 18). All additive.
 
 - Egami.Video.H264 decodes interlaced streams: field pictures (PAFF) with field reference lists, marking and order counts,
