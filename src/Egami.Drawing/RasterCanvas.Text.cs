@@ -54,20 +54,28 @@ public sealed partial class RasterCanvas<TPixel>
             return;
         }
 
+        // Text gamma needs the destination, so gamma text is drawn as LCD text is, by reading and writing pixels; contrast alone
+        // only changes coverage and also goes through the sink.
         FontEdging edging = paint.Antialias ? font.Edging : FontEdging.Alias;
-        LcdPaint? lcd = null;
+        TextBlend? blend = TextBlend.For(Options);
+        SolidTextPaint? solidText = null;
         if (edging == FontEdging.Lcd)
         {
-            lcd = LcdPaintFor(paint);
-            if (lcd is null)
+            solidText = Options.PixelGeometry == PixelGeometry.Unknown ? null : SolidTextPaintFor(paint, blend);
+            if (solidText is null)
             {
                 edging = FontEdging.Antialias;
                 ReportLcdFallback();
             }
         }
 
+        if (solidText is null && blend is { HasGamma: true })
+        {
+            solidText = SolidTextPaintFor(paint, blend);
+        }
+
         ISpanSink? sink = null;
-        if (lcd is null && (sink = _target.CreateSink(paint, m, Options.ColorSpace, _clip.Mask, 255)) is null)
+        if (solidText is null && (sink = _target.CreateSink(paint, m, Options.ColorSpace, _clip.Mask, 255)) is null)
         {
             return;
         }
@@ -158,13 +166,13 @@ public sealed partial class RasterCanvas<TPixel>
                 continue;
             }
 
-            if (lcd is not null)
+            if (solidText is not null)
             {
-                BlendLcd(mask, placed, visible, lcd);
+                BlendSolid(mask, placed, visible, solidText.Value, blend);
             }
             else
             {
-                BlendMask(mask, placed, visible, sink!, ref scratch);
+                BlendMask(mask, placed, visible, sink!, blend, ref scratch);
             }
         }
 
@@ -174,8 +182,8 @@ public sealed partial class RasterCanvas<TPixel>
         }
     }
 
-    // A coverage mask blended through the sink row by row; rows with no coverage are skipped.
-    private static void BlendMask(GlyphMask mask, Rect placed, Rect visible, ISpanSink sink, ref byte[]? scratch)
+    // A coverage mask blended through the sink row by row, after the text contrast boost; rows with no coverage are skipped.
+    private static void BlendMask(GlyphMask mask, Rect placed, Rect visible, ISpanSink sink, TextBlend? blend, ref byte[]? scratch)
     {
         if (scratch is null || scratch.Length < visible.Width)
         {
@@ -188,6 +196,7 @@ public sealed partial class RasterCanvas<TPixel>
             mask.Coverage.AsSpan(((y - placed.Y) * placed.Width) + (visible.X - placed.X), visible.Width).CopyTo(row);
             if (row.ContainsAnyExcept((byte)0))
             {
+                blend?.Boost(row);
                 sink.Blend(y, visible.X, row);
             }
         }
@@ -334,11 +343,11 @@ public sealed partial class RasterCanvas<TPixel>
         return path;
     }
 
-    // The paint LCD edging can draw: a solid color drawn source-over onto an 8-bit target with red, green and blue, with a known
-    // pixel geometry. Anything else falls back to grayscale.
-    private LcdPaint? LcdPaintFor(Paint paint)
+    // The paint LCD edging and text gamma can draw: a solid color drawn source-over onto an 8-bit target with red, green and blue.
+    // Anything else goes through the sink: in grayscale, without the gamma.
+    private SolidTextPaint? SolidTextPaintFor(Paint paint, TextBlend? blend)
     {
-        if (Options.PixelGeometry == PixelGeometry.Unknown || paint is not SolidPaint solid || solid.BlendMode != Operations.BlendMode.SourceOver)
+        if (paint is not SolidPaint solid || solid.BlendMode != Operations.BlendMode.SourceOver)
         {
             return null;
         }
@@ -353,7 +362,7 @@ public sealed partial class RasterCanvas<TPixel>
 
         Rgba8 color = solid.Color.ToRgba8();
         float alpha = solid.Color.A * solid.Opacity;
-        return alpha <= 0 ? null : new LcdPaint(color, Math.Clamp(alpha, 0, 1), Options.ColorSpace == Operations.ColorSpace.Linear);
+        return alpha <= 0 ? null : new SolidTextPaint(color, Math.Clamp(alpha, 0, 1), Options.ColorSpace == Operations.ColorSpace.Linear, blend is { HasGamma: true } ? blend : null);
     }
 
     private void ReportLcdFallback()
@@ -373,27 +382,50 @@ public sealed partial class RasterCanvas<TPixel>
         reporter.Report(DiagnosticLevel.Warning, "Text.LcdFallback", "LCD edging needs a known pixel geometry, an 8-bit RGB canvas outside a layer and a solid source-over paint; text is drawn with grayscale antialiasing.", null);
     }
 
-    // Blends a three-channel mask onto the canvas, each channel by its own coverage; a pixel whose alpha is not opaque takes the
-    // channels' mean as one coverage.
-    private void BlendLcd(GlyphMask mask, Rect placed, Rect visible, LcdPaint paint)
+    // Blends a mask onto the canvas by reading and writing pixels: a three-channel mask each channel by its own coverage, a
+    // grayscale one every channel by the same; a pixel whose alpha is not opaque takes the channels' mean as one coverage. The
+    // text contrast boosts the coverage first.
+    private void BlendSolid(GlyphMask mask, Rect placed, Rect visible, in SolidTextPaint paint, TextBlend? blend)
     {
         Span<Rgba8> row = visible.Width <= 256 ? stackalloc Rgba8[visible.Width] : new Rgba8[visible.Width];
         ClipMask? clip = _clip.Mask;
+        int n = mask.Channels;
+        Span<byte> boosted = blend is not { HasBoost: true } ? default : visible.Width * n <= 768 ? stackalloc byte[visible.Width * n] : new byte[visible.Width * n];
         for (int y = visible.Y; y < visible.Bottom; y++)
         {
-            ReadOnlySpan<byte> cov = mask.Coverage.AsSpan((((y - placed.Y) * placed.Width) + (visible.X - placed.X)) * 3, visible.Width * 3);
-            if (!cov.ContainsAnyExcept((byte)0))
+            ReadOnlySpan<byte> mapped = mask.Coverage.AsSpan((((y - placed.Y) * placed.Width) + (visible.X - placed.X)) * n, visible.Width * n);
+            if (!mapped.ContainsAnyExcept((byte)0))
             {
                 continue;
             }
 
+            if (!boosted.IsEmpty)
+            {
+                mapped.CopyTo(boosted);
+                blend!.Boost(boosted);
+            }
+
+            ReadOnlySpan<byte> cov = boosted.IsEmpty ? mapped : boosted;
+
             ReadOnlySpan<byte> clipRow = clip is null ? default : clip.Row(y).Slice(visible.X - clip.Bounds.X, visible.Width);
             _target.ReadRow(y, visible.X, row);
-            for (int i = 0; i < row.Length; i++)
+            if (n == 1)
             {
-                float k = clip is null ? paint.Alpha : paint.Alpha * clipRow[i] / 255f;
-                float r = cov[i * 3] * k / 255f, g = cov[(i * 3) + 1] * k / 255f, b = cov[(i * 3) + 2] * k / 255f;
-                row[i] = paint.Blend(row[i], r, g, b);
+                for (int i = 0; i < row.Length; i++)
+                {
+                    float k = clip is null ? paint.Alpha : paint.Alpha * clipRow[i] / 255f;
+                    float a = cov[i] * k / 255f;
+                    row[i] = paint.Blend(row[i], a, a, a);
+                }
+            }
+            else
+            {
+                for (int i = 0; i < row.Length; i++)
+                {
+                    float k = clip is null ? paint.Alpha : paint.Alpha * clipRow[i] / 255f;
+                    float r = cov[i * 3] * k / 255f, g = cov[(i * 3) + 1] * k / 255f, b = cov[(i * 3) + 2] * k / 255f;
+                    row[i] = paint.Blend(row[i], r, g, b);
+                }
             }
 
             _target.WriteRow<Rgba8>(y, visible.X, row);
@@ -429,14 +461,19 @@ internal readonly record struct GlyphStyle(FontEdging Edging, bool Hint, FontSyn
 /// <summary>What a cached color glyph depends on besides its shape: the palette and the opaque foreground color.</summary>
 internal sealed record class ColorKey(FontPalette Palette, RgbaF32 Foreground);
 
-/// <summary>A solid color and alpha that LCD edging blends per channel, in encoded or linear values.</summary>
-internal sealed class LcdPaint(Rgba8 color, float alpha, bool linear)
+/// <summary>A solid color and alpha that LCD edging and text gamma blend per channel: in encoded values, linear ones or through the gamma.</summary>
+internal readonly struct SolidTextPaint(Rgba8 color, float alpha, bool linear, TextBlend? gamma)
 {
     public float Alpha { get; } = alpha;
 
     /// <summary>Source-over of the color onto a pixel with a coverage per channel.</summary>
     public Rgba8 Blend(Rgba8 dst, float r, float g, float b)
     {
+        if (gamma is not null)
+        {
+            return BlendGamma(dst, r, g, b);
+        }
+
         if (dst.A != 255)
         {
             float k = (r + g + b) / 3;
@@ -460,6 +497,18 @@ internal sealed class LcdPaint(Rgba8 color, float alpha, bool linear)
 
         float d = Decode(dst), s = Decode(src);
         return Encode(d + ((s - d) * k));
+    }
+
+    // The same through the text gamma, which is only set for encoded blending.
+    private Rgba8 BlendGamma(Rgba8 dst, float r, float g, float b)
+    {
+        if (dst.A != 255)
+        {
+            float k = (r + g + b) / 3;
+            return new Rgba8(gamma!.Mix(dst.R, color.R, k), gamma.Mix(dst.G, color.G, k), gamma.Mix(dst.B, color.B, k), (byte)MathF.Round(dst.A + ((255 - dst.A) * k)));
+        }
+
+        return new Rgba8(gamma!.Mix(dst.R, color.R, r), gamma.Mix(dst.G, color.G, g), gamma.Mix(dst.B, color.B, b), 255);
     }
 
     private static float Decode(byte v)

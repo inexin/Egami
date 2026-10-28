@@ -1,1 +1,5 @@
 #nullable enable
+Egami.Drawing.CanvasOptions.TextContrast.get -> float
+Egami.Drawing.CanvasOptions.TextContrast.init -> void
+Egami.Drawing.CanvasOptions.TextGamma.get -> float
+Egami.Drawing.CanvasOptions.TextGamma.init -> void
