@@ -13,6 +13,9 @@ internal ref struct CSource
     /// <summary>Gets or sets the byte offset of the cursor.</summary>
     public int Position { get; set; }
 
+    /// <summary>Gets the length of the text.</summary>
+    public readonly int Length => _text.Length;
+
     /// <summary>Gets whether the cursor is at the end of the text.</summary>
     public readonly bool AtEnd => Position >= _text.Length;
 

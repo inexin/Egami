@@ -262,7 +262,8 @@ internal sealed class XbmWriter : ExtendedWriter
         {
             PixelConvert.Convert<TPixel, Gray8>(row, _row);
             Bits.Pack(_row, _bits, msbFirst: false, oneIsLight: false);
-            Span<byte> span = _output.GetSpan(_bits.Length * 8);
+            // At most nine bytes a value: "0x", two digits, a comma, and a line break with its indent and a space.
+            Span<byte> span = _output.GetSpan(_bits.Length * 9);
             int n = 0;
             foreach (byte b in _bits)
             {

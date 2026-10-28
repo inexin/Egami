@@ -252,6 +252,34 @@ public class FormatFileTests
         TestImages.AssertEqual(many, back);
     }
 
+    [Fact]
+    public void ReadsXpmEndingInABackslash()
+    {
+        // In the values string, which is read from a span that ends exactly at the end of the file.
+        byte[] values = [.. "/* XPM */\nstatic char *b[] = {\n\"1 1 1"u8, (byte)'\\'];
+        Assert.Throws<CorruptDataException>(() => Raster.Probe(values, TestImages.Context));
+        Assert.Throws<CorruptDataException>(() => Raster.Load(values, TestImages.Context));
+
+        // In a row, where it ends the file early.
+        byte[] row = [.. "/* XPM */\nstatic char *b[] = {\n\"1 1 1 1\",\n\". c #000000\",\n\""u8, (byte)'\\'];
+        using Raster raster = Raster.Load(row, TestImages.Context);
+        Assert.Equal((1, 1), (raster.Width, raster.Height));
+    }
+
+    [Fact]
+    public void WritesNarrowXbmRows()
+    {
+        // A one-byte row whose value takes a line break writes nine bytes; over many rows the write buffer ends at every offset.
+        // Names of different lengths shift the header, so some line break lands where the buffer ends.
+        using Raster<Gray8> narrow = TestImages.Bitmap(8, 30000);
+        for (int length = 1; length <= 12; length++)
+        {
+            narrow.Metadata.FormatDetails = new XbmDetails { Name = new string('n', length) };
+            using Raster<Gray8> back = Raster.Load<Gray8>(TestImages.Save(narrow, "XBM"), TestImages.Context);
+            TestImages.AssertEqual(narrow, back);
+        }
+    }
+
     private static byte[] PcxHeader(int width, int height, int bits, int planes, int lineBytes, Rgb8[] palette)
     {
         byte[] header = new byte[128];

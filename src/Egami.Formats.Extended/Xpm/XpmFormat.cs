@@ -106,7 +106,9 @@ internal sealed class XpmReader : ExtendedReader
             source.Position += source.Current == '\\' ? 2 : 1;
         }
 
-        length = Math.Min(source.Position, int.MaxValue) - start;
+        // A backslash as the last byte steps past the end.
+        source.Position = Math.Min(source.Position, source.Length);
+        length = source.Position - start;
         if (!source.AtEnd)
         {
             source.Position++;
