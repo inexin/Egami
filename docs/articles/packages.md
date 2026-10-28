@@ -11,7 +11,7 @@ one version and release together; the other packages have versions of their own.
 | --- | --- | --- | --- | --- |
 | [Egami](https://github.com/inexin/Egami/tree/main/src/Egami) | 1.x | Rasters and pixel types, every format reader and writer, operations, color management, metadata, streaming decode | Nothing | [Getting started](getting-started.md), [formats](formats/index.md), [all guides](guides/index.md) |
 | [Egami.Heic](https://github.com/inexin/Egami/tree/main/src/Egami.Heic) | 1.x | Reads HEIC phone photos (HEVC-coded HEIF), opt-in because HEVC is covered by patents | Egami, the same version | [HEIC](formats/heic.md) |
-| [Egami.Formats.Extended](https://github.com/inexin/Egami/tree/main/src/Egami.Formats.Extended) | 1.x | Reads and writes PCX, SGI, Sun raster, XBM, XPM, WBMP and Farbfeld as format plugins, and will hold formats in preview | Egami | [Extended formats](formats/extended.md) |
+| [Egami.Formats.Extended](https://github.com/inexin/Egami/tree/main/src/Egami.Formats.Extended) | 1.x | Extra image formats as plugins on core Egami's format API: PCX, SGI, Sun raster, XBM, XPM, WBMP and Farbfeld, read and written | Egami, the same version | [Extended formats](formats/extended.md) |
 
 ## Drawing and text
 

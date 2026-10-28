@@ -82,6 +82,22 @@ stream.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/VideoEncode.cs#video-encode-av1-hdr)]
 
+## Writing FFV1
+
+`VideoCodecs.Ffv1` writes FFV1 version 3 (RFC 9043), the lossless codec archives use, in Matroska or AVI: a decode gives back
+every sample. Frames given as planes keep their layout (4:2:0, 4:2:2, 4:4:4, 4:1:1, 4:1:0 or gray, with or without alpha, 8 to
+16 bits); RGB rasters, and 4:4:4 planes tagged `YuvMatrix.Identity`, are coded as RGB. The first frame sets the stream's layout.
+
+The defaults are the archival profile: every frame a keyframe, slice CRCs on (so `Ffv1Codec.Verify` can check the file), the range
+coder with a custom state table, and a slice grid picked from the frame size (16 slices at 1080p). `KeyframeInterval` spaces
+keyframes further apart, `Effort` 7 and up picks the large context model, and `Ffv1EncoderOptions` sets the slices, the coder
+(`Ffv1Coder.GolombRice` is faster and larger), the context model and `BitsPerSample` for planes that hold a 9, 11, 13, 14 or 15-bit
+source shifted up. `Quality` does not apply, and setting it reports `Ffv1.QualityIgnored`. Slices are coded in parallel, with the
+same file at any thread count. Files come within 1 % of FFmpeg's size at the same settings, and FFmpeg decodes them to the same
+samples.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/VideoEncode.cs#video-encode-ffv1)]
+
 ## How bits are spent
 
 `RateControl` picks one of four modes:

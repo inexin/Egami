@@ -177,6 +177,9 @@ public sealed record VideoEncoderOptions
     /// <summary>Gets the AV1 expert settings, or <see langword="null"/> for <see cref="Av1EncoderOptions.Default"/>.</summary>
     public Av1EncoderOptions? Av1 { get; init; }
 
+    /// <summary>Gets the FFV1 expert settings, or <see langword="null"/> for <see cref="Ffv1EncoderOptions.Default"/>.</summary>
+    public Ffv1EncoderOptions? Ffv1 { get; init; }
+
     /// <summary>
     /// Gets the largest packet size in bytes to aim for, or <see langword="null"/> for none. Motion JPEG then picks, per frame,
     /// the highest quality up to <see cref="Quality"/> (100 when unset) whose frame fits, by a binary search of about seven
