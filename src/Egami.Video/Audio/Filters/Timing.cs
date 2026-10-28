@@ -76,7 +76,8 @@ public sealed class Pad : AudioFilter
 
 /// <summary>
 /// Keeps the part of a stream between two times on its time line, like ffmpeg's <c>atrim</c>, cut on the exact sample. The
-/// samples kept keep their timestamps; follow with <see cref="Retime"/> to start the result at zero.
+/// times are the frames' own timestamps, not counted from the first sample, so put a <see cref="Retime"/> first to count
+/// from zero. The samples kept keep their timestamps; follow with <see cref="Retime"/> to start the result at zero.
 /// </summary>
 /// <example>
 /// <code language="csharp" source="../../../../tests/Egami.DocSamples/AudioFilters.cs" region="audio-timing"/>

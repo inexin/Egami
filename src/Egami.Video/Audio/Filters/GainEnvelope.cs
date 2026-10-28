@@ -4,7 +4,8 @@ namespace Egami.Video.Audio.Filters;
 /// A gain that changes over time, in decibels, for <see cref="Gain.Envelope"/>: a list of <see cref="Keyframe"/>s whose
 /// values are decibels. Before the first keyframe the gain is the first value, after the last one the last value, and between
 /// two the value eases from one to the next in decibels. A value of <see cref="double.NegativeInfinity"/> is silence; a
-/// segment to or from it moves in linear amplitude instead, so the fade still sounds smooth.
+/// segment to or from it moves in linear amplitude instead, so the fade still sounds smooth. Keyframe times are the frames'
+/// own timestamps, not counted from the first sample.
 /// </summary>
 /// <example>
 /// <code language="csharp" source="../../../../tests/Egami.DocSamples/AudioFilters.cs" region="audio-gain-envelope"/>
