@@ -9,6 +9,13 @@ if (args is ["--time-vp9", .. string[] files])
     return;
 }
 
+// Time FFV1 decoding (V6 speed gate): -- --time-ffv1 <file.mkv>...
+if (args is ["--time-ffv1", .. string[] ffv1])
+{
+    Ffv1Timing.Run(ffv1);
+    return;
+}
+
 // Time H.264 decoding (V7 speed gate): -- --time-h264 <file.h264>...
 if (args is ["--time-h264", .. string[] h264])
 {

@@ -22,7 +22,16 @@ internal sealed class Ffv1Decoder
     private readonly int _height;
     private readonly Ffv1Parameters? _config;
     private Ffv1Parameters? _parameters;
+    private readonly List<(int Start, int End, int FooterEnd)> _spans = [];
+    private readonly ParallelOptions _options = new();
+    private readonly Action<int> _checkSlice;
+    private readonly Action<int> _decodeSlice;
     private SliceContext[] _slices = [];
+    private SliceJob[] _jobs = [];
+    private bool[] _crcOk = [];
+    private bool[] _used = [];
+    private byte[]? _frame;
+    private Ffv1Target? _target;
     private bool _haveKeyframe;
 
     /// <summary>Creates a decoder for frames of the given size.</summary>
@@ -39,6 +48,8 @@ internal sealed class Ffv1Decoder
 
         _width = width;
         _height = height;
+        _checkSlice = CheckSlice;
+        _decodeSlice = DecodeSlice;
         configCrcOk = true;
         if (HasConfigurationRecord(configurationRecord))
         {
@@ -195,7 +206,8 @@ internal sealed class Ffv1Decoder
     private YuvRaster DecodeVersion3(byte[] frame, int length, YuvColor color, EgamiContext context, List<Ffv1SliceError> errors, out Ffv1FrameInfo info)
     {
         Ffv1Parameters p = _config!;
-        List<(int Start, int End, int FooterEnd)> spans = FindSlices(frame, length, p);
+        List<(int Start, int End, int FooterEnd)> spans = _spans;
+        FindSlices(frame, length, p, spans);
         var first = new Ffv1RangeDecoder(frame, 0, spans[0].End, Ffv1StateTable.Default);
         byte keyState = 128;
         bool keyframe = first.ReadBit(ref keyState) != 0;
@@ -215,41 +227,91 @@ internal sealed class Ffv1Decoder
         YuvRaster raster = Allocate(p, color, context);
         try
         {
-            var target = new Ffv1Target(raster, p);
             int structure = 0, sarNum = 0, sarDen = 0;
-            for (int s = 0; s < spans.Count; s++)
+            int count = spans.Count;
+            if (_jobs.Length < count)
+            {
+                _jobs = new SliceJob[count];
+                _crcOk = new bool[count];
+            }
+
+            if (_used.Length != _slices.Length)
+            {
+                _used = new bool[_slices.Length];
+            }
+
+            Array.Clear(_used);
+            (_frame, _target) = (frame, new Ffv1Target(raster, p));
+            SliceJob[] jobs = _jobs;
+            int workers = Math.Min(Math.Max(1, context.MaxParallelism), count);
+            _options.MaxDegreeOfParallelism = workers;
+
+            // CRCs first, so a damaged slice's header is never trusted to place it or reset states.
+            if (!p.SliceCrc)
+            {
+                _crcOk.AsSpan(0, count).Fill(true);
+            }
+            else if (workers > 1)
+            {
+                Parallel.For(0, count, _options, _checkSlice);
+            }
+            else
+            {
+                for (int s = 0; s < count; s++)
+                {
+                    CheckSlice(s);
+                }
+            }
+
+            // Headers next, in order: they place each slice and reset its states on a keyframe. The slices' contents then decode
+            // on their own, in parallel; each writes only the samples it owns, so the frame is the same at any thread count.
+            for (int s = 0; s < count; s++)
             {
                 (int start, int end, int footerEnd) = spans[s];
-                if (p.SliceCrc)
+                if (!_crcOk[s] || (p.SliceCrc && frame[end + 3] != 0))
                 {
-                    int status = frame[end + 3];
-                    bool crcOk = Ffv1Crc.Compute(frame.AsSpan(start, footerEnd - start)) == 0;
-                    if (!crcOk || status != 0)
-                    {
-                        SliceGeometry g = GuessGeometry(p, frame, start, end, s == 0);
-                        string reason = crcOk ? $"slice {s}'s footer reports error status {status}" : $"slice {s}'s CRC does not match";
-                        errors.Add(new Ffv1SliceError(s, g.X, g.Y, g.Width, g.Height, reason, !crcOk));
-                        continue;
-                    }
+                    SliceGeometry damaged = GuessGeometry(p, frame, start, end, s == 0);
+                    jobs[s] = new SliceJob(null, default, start, end, footerEnd, CrcError(p, frame, s, end, damaged, _crcOk[s]));
+                    continue;
                 }
 
                 Ffv1RangeDecoder rc = s == 0 ? first : new Ffv1RangeDecoder(frame, start, end, p.StateTable);
-                SliceContext? slice = null;
                 try
                 {
-                    slice = ReadSliceHeader(p, ref rc, keyframe, out int sliceStructure, out int num, out int den);
+                    SliceContext slice = ReadSliceHeader(p, ref rc, keyframe, _used, out int sliceStructure, out int num, out int den);
                     if (s == 0)
                     {
                         (structure, sarNum, sarDen) = (sliceStructure, num, den);
                     }
 
-                    DecodeContent(p, slice, ref rc, frame, start, end, target);
+                    jobs[s] = new SliceJob(slice, rc, start, end, footerEnd, null);
                 }
                 catch (CorruptDataException e)
                 {
-                    SliceGeometry g = slice?.Geometry ?? default;
-                    errors.Add(new Ffv1SliceError(s, g.X, g.Y, g.Width, g.Height, $"slice {s}: {e.Message}", false));
+                    jobs[s] = new SliceJob(null, default, start, end, footerEnd, new Ffv1SliceError(s, 0, 0, 0, 0, $"slice {s}: {e.Message}", false));
                 }
+            }
+
+            if (workers > 1)
+            {
+                Parallel.For(0, count, _options, _decodeSlice);
+            }
+            else
+            {
+                for (int s = 0; s < count; s++)
+                {
+                    DecodeSlice(s);
+                }
+            }
+
+            for (int s = 0; s < count; s++)
+            {
+                if (jobs[s].Error is { } error)
+                {
+                    errors.Add(error);
+                }
+
+                jobs[s] = default;
             }
 
             info = new Ffv1FrameInfo(keyframe, structure, sarDen == 0 ? 0 : sarNum, sarNum == 0 ? 0 : sarDen);
@@ -260,12 +322,45 @@ internal sealed class Ffv1Decoder
             raster.Dispose();
             throw;
         }
+        finally
+        {
+            (_frame, _target) = (null, null);
+        }
+    }
+
+    private void CheckSlice(int s) => _crcOk[s] = CrcOk(_frame!, _spans[s].Start, _spans[s].FooterEnd);
+
+    private void DecodeSlice(int s)
+    {
+        ref SliceJob job = ref _jobs[s];
+        if (job.Slice is not { } slice)
+        {
+            return;
+        }
+
+        try
+        {
+            DecodeContent(_config!, slice, ref job.Decoder, _frame!, job.Start, job.End, _target!);
+        }
+        catch (CorruptDataException e)
+        {
+            SliceGeometry g = slice.Geometry;
+            job.Error = new Ffv1SliceError(s, g.X, g.Y, g.Width, g.Height, $"slice {s}: {e.Message}", false);
+        }
+    }
+
+    /// <summary>Finds a version 3 frame's slices, first to last.</summary>
+    internal static List<(int Start, int End, int FooterEnd)> FindSlices(byte[] frame, int length, Ffv1Parameters p)
+    {
+        List<(int, int, int)> spans = [];
+        FindSlices(frame, length, p, spans);
+        return spans;
     }
 
     /// <summary>Finds a version 3 frame's slices from the footers at their ends, last to first (RFC 9043 section 4.9).</summary>
-    internal static List<(int Start, int End, int FooterEnd)> FindSlices(byte[] frame, int length, Ffv1Parameters p)
+    private static void FindSlices(byte[] frame, int length, Ffv1Parameters p, List<(int Start, int End, int FooterEnd)> spans)
     {
-        var spans = new List<(int, int, int)>();
+        spans.Clear();
         int footer = p.FooterSize;
         int pos = length;
         while (pos > 0)
@@ -291,7 +386,25 @@ internal sealed class Ffv1Decoder
         }
 
         spans.Reverse();
-        return spans;
+    }
+
+    private static bool CrcOk(byte[] frame, int start, int footerEnd) => Ffv1Crc.Compute(frame.AsSpan(start, footerEnd - start)) == 0;
+
+    /// <summary>The error of a slice whose CRC does not match or whose footer reports an error, or null when it is sound.</summary>
+    private static Ffv1SliceError? CrcError(Ffv1Parameters p, byte[] frame, int s, int end, SliceGeometry g, bool crcOk)
+    {
+        if (!p.SliceCrc)
+        {
+            return null;
+        }
+
+        if (!crcOk)
+        {
+            return new Ffv1SliceError(s, g.X, g.Y, g.Width, g.Height, $"slice {s}'s CRC does not match", true);
+        }
+
+        int status = frame[end + 3];
+        return status == 0 ? null : new Ffv1SliceError(s, g.X, g.Y, g.Width, g.Height, $"slice {s}'s footer reports error status {status}", false);
     }
 
     /// <summary>Where a damaged slice says it is, if its header can still be read; else nowhere (width 0).</summary>
@@ -325,13 +438,20 @@ internal sealed class Ffv1Decoder
         return new SliceGeometry((int)x0, (int)y0, (int)(x1 - x0), (int)(y1 - y0));
     }
 
-    private SliceContext ReadSliceHeader(Ffv1Parameters p, ref Ffv1RangeDecoder rc, bool keyframe, out int structure, out int sarNum, out int sarDen)
+    private SliceContext ReadSliceHeader(Ffv1Parameters p, ref Ffv1RangeDecoder rc, bool keyframe, bool[] used, out int structure, out int sarNum, out int sarDen)
     {
         Ffv1SliceHeader header = Ffv1SliceHeader.Read(p, ref rc);
         (int sx, int sy) = (header.X, header.Y);
         ReadOnlySpan<int> quant = [header.QuantY, header.QuantChroma, header.QuantExtra];
         (structure, sarNum, sarDen) = (header.PictureStructure, header.SarNumerator, header.SarDenominator);
-        SliceContext slice = _slices[(sy * p.HorizontalSlices) + sx];
+        int index = (sy * p.HorizontalSlices) + sx;
+        if (used[index])
+        {
+            throw new CorruptDataException("FFV1", -1, $"Two FFV1 slices in one frame start at ({sx}, {sy}).");
+        }
+
+        used[index] = true;
+        SliceContext slice = _slices[index];
         slice.Geometry = Geometry(p, header);
         if (slice.Geometry.Width < 1 || slice.Geometry.Height < 1)
         {
@@ -406,6 +526,17 @@ internal sealed class Ffv1Decoder
             : YuvRaster.Create(_width, _height, format, depth, color, p.ExtraPlane, context);
     }
 
+    /// <summary>A slice to decode: its context, its range decoder after the header, its bytes, and what went wrong.</summary>
+    private struct SliceJob(SliceContext? slice, Ffv1RangeDecoder decoder, int start, int end, int footerEnd, Ffv1SliceError? error)
+    {
+        public SliceContext? Slice = slice;
+        public Ffv1RangeDecoder Decoder = decoder;
+        public int Start = start;
+        public int End = end;
+        public int FooterEnd = footerEnd;
+        public Ffv1SliceError? Error = error;
+    }
+
     /// <summary>Where a slice sits in the frame, in luma samples.</summary>
     internal readonly record struct SliceGeometry(int X, int Y, int Width, int Height);
 
@@ -473,6 +604,11 @@ internal sealed class Ffv1Decoder
                 int y = chroma ? g.Y >> vs : g.Y;
                 int w = chroma ? -(-g.Width >> hs) : g.Width;
                 int h = chroma ? -(-g.Height >> vs) : g.Height;
+
+                // Where subsampled slices meet mid-sample, the slice after owns the shared chroma column or row, as when slices
+                // are decoded in order; so slices decoded in parallel write the same frame.
+                int ownW = chroma && g.X + g.Width < target.Width ? ((g.X + g.Width) >> hs) - x : w;
+                int ownH = chroma && g.Y + g.Height < target.Height ? ((g.Y + g.Height) >> vs) - y : h;
                 int[] cur = _lines[0], top = _lines[1], top2 = _lines[2];
                 Array.Clear(top, 0, stride);
                 Array.Clear(top2, 0, stride);
@@ -480,7 +616,11 @@ internal sealed class Ffv1Decoder
                 for (int row = 0; row < h; row++)
                 {
                     decoder.DecodeLine(cur, top, top2, w, _coding[coding], bits, signed16);
-                    target.Store(output, y + row, x, cur.AsSpan(Ffv1Lines.Offset, w));
+                    if (row < ownH)
+                    {
+                        target.Store(output, y + row, x, cur.AsSpan(Ffv1Lines.Offset, ownW));
+                    }
+
                     (top2, top, cur) = (top, cur, top2);
                 }
             }

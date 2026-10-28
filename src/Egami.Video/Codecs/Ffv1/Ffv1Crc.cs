@@ -7,15 +7,25 @@ namespace Egami.Video.Codecs.Ffv1;
 /// </summary>
 internal static class Ffv1Crc
 {
-    private static readonly uint[] Table = Build();
+    // Eight tables of 256: table k gives the remainder of a byte followed by k zero bytes, so eight bytes are folded at a time.
+    private static readonly uint[] Tables = Build();
 
     /// <summary>Returns the CRC remainder of <paramref name="data"/>.</summary>
     public static uint Compute(ReadOnlySpan<byte> data, uint crc = 0)
     {
-        uint[] table = Table;
-        foreach (byte b in data)
+        uint[] t = Tables;
+        int i = 0;
+        for (; i + 8 <= data.Length; i += 8)
         {
-            crc = (crc << 8) ^ table[(crc >> 24) ^ b];
+            uint high = crc ^ System.Buffers.Binary.BinaryPrimitives.ReadUInt32BigEndian(data[i..]);
+            uint low = System.Buffers.Binary.BinaryPrimitives.ReadUInt32BigEndian(data[(i + 4)..]);
+            crc = t[(7 * 256) + (high >> 24)] ^ t[(6 * 256) + ((high >> 16) & 255)] ^ t[(5 * 256) + ((high >> 8) & 255)] ^ t[(4 * 256) + (high & 255)]
+                ^ t[(3 * 256) + (low >> 24)] ^ t[(2 * 256) + ((low >> 16) & 255)] ^ t[256 + ((low >> 8) & 255)] ^ t[low & 255];
+        }
+
+        for (; i < data.Length; i++)
+        {
+            crc = (crc << 8) ^ t[(crc >> 24) ^ data[i]];
         }
 
         return crc;
@@ -23,7 +33,7 @@ internal static class Ffv1Crc
 
     private static uint[] Build()
     {
-        uint[] table = new uint[256];
+        uint[] tables = new uint[8 * 256];
         for (uint i = 0; i < 256; i++)
         {
             uint c = i << 24;
@@ -32,9 +42,18 @@ internal static class Ffv1Crc
                 c = (c & 0x80000000) != 0 ? (c << 1) ^ 0x04C11DB7 : c << 1;
             }
 
-            table[i] = c;
+            tables[i] = c;
         }
 
-        return table;
+        for (int k = 1; k < 8; k++)
+        {
+            for (int i = 0; i < 256; i++)
+            {
+                uint previous = tables[((k - 1) * 256) + i];
+                tables[(k * 256) + i] = (previous << 8) ^ tables[previous >> 24];
+            }
+        }
+
+        return tables;
     }
 }
