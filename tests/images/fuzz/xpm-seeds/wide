@@ -1,0 +1,18 @@
+/* XPM */
+static char *image[] = {
+/* columns rows colors chars-per-pixel */
+"3 3 9 1",
+"  c #000000",
+". c #750000",
+"X c #E90000",
+"o c #000400",
+"O c #750400",
+"+ c #E90400",
+"@ c #000800",
+"# c #750800",
+"$ c #E90800",
+/* pixels */
+" .X",
+"oO+",
+"@#$"
+};

@@ -269,7 +269,7 @@ public sealed class RasterMetadata
     /// </example>
     public IReadOnlyList<EgamiDiagnostic> Warnings => WarningList;
 
-    /// <summary>Gets the warnings for readers to add to; outside readers use <see cref="Formats.EgamiInput.Warn"/>.</summary>
+    /// <summary>Gets the warnings for readers to add to; outside readers use <see cref="Formats.EgamiInput.Warn(Raster, string, string, long?)"/>.</summary>
     internal WarningList WarningList { get; } = new();
 
     /// <summary>

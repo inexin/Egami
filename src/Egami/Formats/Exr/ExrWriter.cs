@@ -29,7 +29,7 @@ internal sealed class ExrWriter : IFormatWriter
             throw new NotSupportedException($"Egami writes OpenEXR with None, Rle, Zips, Zip or Piz compression, not {exr.Compression}.");
         }
 
-        SaveLosses.Report(RowEncoding.Whole(raster, options), "OpenEXR", SaveKeeps.Alpha | SaveKeeps.Wide | SaveKeeps.Float);
+        SaveLosses.Report(RowEncoding.Whole(raster, options), "OpenEXR", SaveKeeps.Alpha | SaveKeeps.Wide | SaveKeeps.FloatingPoint);
         PixelLayoutInfo layout = TPixel.Layout;
         ExrPixelType type = exr.PixelType ?? (layout.ChannelType is PixelChannelType.Float16 or PixelChannelType.Unorm8 ? ExrPixelType.Half : ExrPixelType.Float);
         if (type == ExrPixelType.UInt)

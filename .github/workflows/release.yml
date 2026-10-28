@@ -1,12 +1,13 @@
 name: Release
 
-# A tag v<version>, the shared version of the Egami release train (EgamiVersion in Directory.Build.props), publishes its seven
-# packages: Egami, Egami.Drawing, Egami.Fonts, Egami.Svg, Egami.Css, Egami.Heic and Egami.Cli, all at that version. A tag
-# <package>-v<version>, for example Egami.Barcodes-v1.0.1, publishes that one package, which must be at that version; that is
-# how the packages with their own version release: Egami.Barcodes, Egami.Metafiles, Egami.Fonts.Substitutes and Egami.Video,
-# as Egami.Barcodes-v1.0.0 did. The push uses nuget.org trusted publishing: NuGet/login trades the job's OIDC token for a
-# short-lived API key, so the repository keeps no NuGet key. The trusted publishing policy on nuget.org names this repository,
-# this workflow file and the nuget environment, and the nuget environment requires Lars's approval before the job starts.
+# A tag v<version>, the shared version of the Egami release train (EgamiVersion in Directory.Build.props), publishes its eight
+# packages: Egami, Egami.Drawing, Egami.Fonts, Egami.Svg, Egami.Css, Egami.Heic, Egami.Formats.Extended and Egami.Cli, all at
+# that version. A tag <package>-v<version>, for example Egami.Barcodes-v1.0.1, publishes that one package, which must be at
+# that version; that is how the packages with their own version release: Egami.Barcodes, Egami.Metafiles,
+# Egami.Fonts.Substitutes and Egami.Video, as Egami.Barcodes-v1.0.0 did. The push uses nuget.org trusted publishing:
+# NuGet/login trades the job's OIDC token for a short-lived API key, so the repository keeps no NuGet key. The trusted
+# publishing policy on nuget.org names this repository, this workflow file and the nuget environment, and the nuget
+# environment requires Lars's approval before the job starts.
 # The secret NUGET_USER is the nuget.org account name. After the NuGet push, a v* tag also builds the egami command as a
 # native program for win-x64, linux-x64 and osx-arm64 and attaches the three to a GitHub release named after the tag.
 
@@ -37,7 +38,7 @@ jobs:
       - name: Pick the packages from the tag
         run: |
           case "$GITHUB_REF_NAME" in
-            v*) project=Egami; packages="Egami Egami.Drawing Egami.Fonts Egami.Svg Egami.Css Egami.Heic Egami.Cli"; tag_version=${GITHUB_REF_NAME#v} ;;
+            v*) project=Egami; packages="Egami Egami.Drawing Egami.Fonts Egami.Svg Egami.Css Egami.Heic Egami.Formats.Extended Egami.Cli"; tag_version=${GITHUB_REF_NAME#v} ;;
             *-v*) project=${GITHUB_REF_NAME%-v*}; packages=$project; tag_version=${GITHUB_REF_NAME##*-v} ;;
           esac
           if [ ! -f "src/$project/$project.csproj" ]; then
@@ -136,4 +137,4 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release create "$GITHUB_REF_NAME" release/* --repo "$GITHUB_REPOSITORY" --title "Egami ${GITHUB_REF_NAME#v}" \
-            --notes "Egami, Egami.Drawing, Egami.Fonts, Egami.Svg, Egami.Css, Egami.Heic and Egami.Cli ${GITHUB_REF_NAME#v} are on NuGet. The files here are the egami command as a native program that needs no .NET runtime: unpack it and run egami --help. CHANGELOG.md lists what changed."
+            --notes "Egami, Egami.Drawing, Egami.Fonts, Egami.Svg, Egami.Css, Egami.Heic, Egami.Formats.Extended and Egami.Cli ${GITHUB_REF_NAME#v} are on NuGet. The files here are the egami command as a native program that needs no .NET runtime: unpack it and run egami --help. CHANGELOG.md lists what changed."

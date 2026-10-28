@@ -61,7 +61,7 @@ internal sealed class TiffPageEncoder<TPixel> : RowEncoder<TPixel>
         }
 
         _plan = TiffPlan.For(start.Metadata, start.Options, start.Whole);
-        SaveKeeps depth = _plan.Compression is TiffCodes.Jpeg or TiffCodes.Webp ? SaveKeeps.None : SaveKeeps.Wide | SaveKeeps.Float;
+        SaveKeeps depth = _plan.Compression is TiffCodes.Jpeg or TiffCodes.Webp ? SaveKeeps.None : SaveKeeps.Wide | SaveKeeps.FloatingPoint;
         SaveKeeps pages = pageCount > 1 ? SaveKeeps.Frames : SaveKeeps.None;
         SaveLosses.Report(start, "TIFF", depth | pages | SaveKeeps.Alpha | SaveKeeps.Cmyk | SaveKeeps.Exif | SaveKeeps.Xmp | SaveKeeps.Iptc | SaveKeeps.Icc | SaveKeeps.Resolution);
         _rowBytes = _plan.RowBytes(_width);

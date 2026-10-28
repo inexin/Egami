@@ -31,6 +31,7 @@
     <Project Path="src/Egami.Drawing/Egami.Drawing.csproj" />
     <Project Path="src/Egami.Fonts/Egami.Fonts.csproj" />
     <Project Path="src/Egami.Fonts.Substitutes/Egami.Fonts.Substitutes.csproj" />
+    <Project Path="src/Egami.Formats.Extended/Egami.Formats.Extended.csproj" />
     <Project Path="src/Egami.Heic/Egami.Heic.csproj" />
     <Project Path="src/Egami.Metafiles/Egami.Metafiles.csproj" />
     <Project Path="src/Egami.Svg/Egami.Svg.csproj" />
@@ -46,6 +47,7 @@
     <Project Path="tests/Egami.DocSamples/Egami.DocSamples.csproj" />
     <Project Path="tests/Egami.Drawing.Tests/Egami.Drawing.Tests.csproj" />
     <Project Path="tests/Egami.Fonts.Tests/Egami.Fonts.Tests.csproj" />
+    <Project Path="tests/Egami.Formats.Extended.Tests/Egami.Formats.Extended.Tests.csproj" />
     <Project Path="tests/Egami.Fuzz/Egami.Fuzz.csproj" />
     <Project Path="tests/Egami.Heic.Tests/Egami.Heic.Tests.csproj" />
     <Project Path="tests/Egami.Metafiles.Tests/Egami.Metafiles.Tests.csproj" />

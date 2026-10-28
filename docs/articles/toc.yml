@@ -32,6 +32,8 @@
       href: formats/bmp.md
     - name: CCITT fax
       href: formats/ccitt.md
+    - name: Extended formats
+      href: formats/extended.md
     - name: GIF
       href: formats/gif.md
     - name: HEIC
