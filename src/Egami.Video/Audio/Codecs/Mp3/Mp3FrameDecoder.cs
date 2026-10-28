@@ -1,5 +1,6 @@
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Runtime.Intrinsics;
 
 namespace Egami.Video.Audio.Codecs.Mp3;
 
@@ -1002,23 +1003,38 @@ internal sealed class Mp3FrameDecoder
 
     private void Antialias(int buf, int nbands)
     {
-        ReadOnlySpan<float> aa = Mp3Tables.Antialias;
-        float[] g = _grbuf;
-        for (; nbands > 0; nbands--, buf += 18)
+        // Eight butterflies across each band boundary, four at a time (minimp3's SIMD build): the values below the boundary
+        // are read and written in reverse.
+        if (nbands <= 0)
         {
-            for (int i = 0; i < 8; i++)
-            {
-                float u = g[buf + 18 + i];
-                float d = g[buf + 17 - i];
-                g[buf + 18 + i] = (u * aa[i]) - (d * aa[8 + i]);
-                g[buf + 17 - i] = (u * aa[8 + i]) + (d * aa[i]);
-            }
+            return;
+        }
+
+        ref float aa = ref MemoryMarshal.GetReference(Mp3Tables.Antialias);
+        Vector128<float> c0 = Vector128.LoadUnsafe(ref aa), c1 = Vector128.LoadUnsafe(ref aa, 4);
+        Vector128<float> s0 = Vector128.LoadUnsafe(ref aa, 8), s1 = Vector128.LoadUnsafe(ref aa, 12);
+        Span<float> g = _grbuf.AsSpan(buf, (nbands * 18) + 18);
+        ref float x = ref MemoryMarshal.GetReference(g);
+        for (; nbands > 0; nbands--, x = ref Unsafe.Add(ref x, 18))
+        {
+            Vector128<float> u = Vector128.LoadUnsafe(ref x, 18);
+            Vector128<float> d = Reverse(Vector128.LoadUnsafe(ref x, 14));
+            ((u * c0) - (d * s0)).StoreUnsafe(ref x, 18);
+            Reverse((u * s0) + (d * c0)).StoreUnsafe(ref x, 14);
+            u = Vector128.LoadUnsafe(ref x, 22);
+            d = Reverse(Vector128.LoadUnsafe(ref x, 10));
+            ((u * c1) - (d * s1)).StoreUnsafe(ref x, 22);
+            Reverse((u * s1) + (d * c1)).StoreUnsafe(ref x, 10);
         }
     }
 
-    private static void Dct3x9(Span<float> y)
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static Vector128<float> Reverse(Vector128<float> v) => Vector128.Shuffle(v, Vector128.Create(3, 2, 1, 0));
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static void Dct3x9(ref float y)
     {
-        float s0 = y[0], s2 = y[2], s4 = y[4], s6 = y[6], s8 = y[8];
+        float s0 = y, s2 = Unsafe.Add(ref y, 2), s4 = Unsafe.Add(ref y, 4), s6 = Unsafe.Add(ref y, 6), s8 = Unsafe.Add(ref y, 8);
         float t0 = s0 + (s6 * 0.5f);
         s0 -= s6;
         float t4 = (s4 + s2) * 0.93969262f;
@@ -1027,12 +1043,12 @@ internal sealed class Mp3FrameDecoder
         s4 += s8 - s2;
 
         s2 = s0 - (s4 * 0.5f);
-        y[4] = s4 + s0;
+        Unsafe.Add(ref y, 4) = s4 + s0;
         s8 = t0 - t2 + s6;
         s0 = t0 - t4 + t2;
         s4 = t0 + t4 - s6;
 
-        float s1 = y[1], s3 = y[3], s5 = y[5], s7 = y[7];
+        float s1 = Unsafe.Add(ref y, 1), s3 = Unsafe.Add(ref y, 3), s5 = Unsafe.Add(ref y, 5), s7 = Unsafe.Add(ref y, 7);
 
         s3 *= 0.86602540f;
         t0 = (s5 + s1) * 0.98480775f;
@@ -1044,50 +1060,72 @@ internal sealed class Mp3FrameDecoder
         s7 = t4 - s3 - t0;
         s3 = t4 + s3 - t2;
 
-        y[0] = s4 - s7;
-        y[1] = s2 + s1;
-        y[2] = s0 - s3;
-        y[3] = s8 + s5;
-        y[5] = s8 - s5;
-        y[6] = s0 + s3;
-        y[7] = s2 - s1;
-        y[8] = s4 + s7;
+        y = s4 - s7;
+        Unsafe.Add(ref y, 1) = s2 + s1;
+        Unsafe.Add(ref y, 2) = s0 - s3;
+        Unsafe.Add(ref y, 3) = s8 + s5;
+        Unsafe.Add(ref y, 5) = s8 - s5;
+        Unsafe.Add(ref y, 6) = s0 + s3;
+        Unsafe.Add(ref y, 7) = s2 - s1;
+        Unsafe.Add(ref y, 8) = s4 + s7;
     }
 
     private void Imdct36(int buf, int overlap, ReadOnlySpan<float> window, int nbands)
     {
-        ReadOnlySpan<float> twid = Mp3Tables.Twiddle9;
-        float[] g = _grbuf;
-        float[] ov = _overlap;
-        Span<float> co = stackalloc float[9];
-        Span<float> si = stackalloc float[9];
-        for (int j = 0; j < nbands; j++, buf += 18, overlap += 9)
+        ref float twid = ref MemoryMarshal.GetReference(Mp3Tables.Twiddle9);
+        ref float win = ref MemoryMarshal.GetReference(window[..18]);
+        Span<float> gs = _grbuf.AsSpan(buf, nbands * 18);
+        Span<float> os = _overlap.AsSpan(overlap, nbands * 9);
+        ref float g = ref MemoryMarshal.GetReference(gs);
+        ref float ov = ref MemoryMarshal.GetReference(os);
+        Span<float> cs = stackalloc float[2 * 9];
+        ref float co = ref MemoryMarshal.GetReference(cs);
+        ref float si = ref Unsafe.Add(ref co, 9);
+        for (int j = 0; j < nbands; j++, g = ref Unsafe.Add(ref g, 18), ov = ref Unsafe.Add(ref ov, 9))
         {
-            co[0] = -g[buf];
-            si[0] = g[buf + 17];
+            co = -g;
+            si = Unsafe.Add(ref g, 17);
             for (int i = 0; i < 4; i++)
             {
-                si[8 - (2 * i)] = g[buf + (4 * i) + 1] - g[buf + (4 * i) + 2];
-                co[1 + (2 * i)] = g[buf + (4 * i) + 1] + g[buf + (4 * i) + 2];
-                si[7 - (2 * i)] = g[buf + (4 * i) + 4] - g[buf + (4 * i) + 3];
-                co[2 + (2 * i)] = -(g[buf + (4 * i) + 3] + g[buf + (4 * i) + 4]);
+                float g1 = Unsafe.Add(ref g, (4 * i) + 1), g2 = Unsafe.Add(ref g, (4 * i) + 2);
+                float g3 = Unsafe.Add(ref g, (4 * i) + 3), g4 = Unsafe.Add(ref g, (4 * i) + 4);
+                Unsafe.Add(ref si, 8 - (2 * i)) = g1 - g2;
+                Unsafe.Add(ref co, 1 + (2 * i)) = g1 + g2;
+                Unsafe.Add(ref si, 7 - (2 * i)) = g4 - g3;
+                Unsafe.Add(ref co, 2 + (2 * i)) = -(g3 + g4);
             }
 
-            Dct3x9(co);
-            Dct3x9(si);
+            Dct3x9(ref co);
+            Dct3x9(ref si);
 
-            si[1] = -si[1];
-            si[3] = -si[3];
-            si[5] = -si[5];
-            si[7] = -si[7];
+            Unsafe.Add(ref si, 1) = -Unsafe.Add(ref si, 1);
+            Unsafe.Add(ref si, 3) = -Unsafe.Add(ref si, 3);
+            Unsafe.Add(ref si, 5) = -Unsafe.Add(ref si, 5);
+            Unsafe.Add(ref si, 7) = -Unsafe.Add(ref si, 7);
 
-            for (int i = 0; i < 9; i++)
+            // Eight of the nine outputs four at a time (minimp3's SIMD build), the upper half stored in reverse.
+            for (int i = 0; i < 8; i += 4)
             {
-                float ovl = ov[overlap + i];
-                float sum = (co[i] * twid[9 + i]) + (si[i] * twid[i]);
-                ov[overlap + i] = (co[i] * twid[i]) - (si[i] * twid[9 + i]);
-                g[buf + i] = (ovl * window[i]) - (sum * window[9 + i]);
-                g[buf + 17 - i] = (ovl * window[9 + i]) + (sum * window[i]);
+                Vector128<float> ovl = Vector128.LoadUnsafe(ref ov, (nuint)i);
+                Vector128<float> c = Vector128.LoadUnsafe(ref co, (nuint)i);
+                Vector128<float> s = Vector128.LoadUnsafe(ref si, (nuint)i);
+                Vector128<float> t0 = Vector128.LoadUnsafe(ref twid, (nuint)i);
+                Vector128<float> t9 = Vector128.LoadUnsafe(ref twid, (nuint)(9 + i));
+                Vector128<float> w0 = Vector128.LoadUnsafe(ref win, (nuint)i);
+                Vector128<float> w9 = Vector128.LoadUnsafe(ref win, (nuint)(9 + i));
+                Vector128<float> sum = (c * t9) + (s * t0);
+                ((c * t0) - (s * t9)).StoreUnsafe(ref ov, (nuint)i);
+                ((ovl * w0) - (sum * w9)).StoreUnsafe(ref g, (nuint)i);
+                Reverse((ovl * w9) + (sum * w0)).StoreUnsafe(ref g, (nuint)(14 - i));
+            }
+
+            {
+                float ovl = Unsafe.Add(ref ov, 8);
+                float c = Unsafe.Add(ref co, 8), s = Unsafe.Add(ref si, 8);
+                float sum = (c * Unsafe.Add(ref twid, 17)) + (s * Unsafe.Add(ref twid, 8));
+                Unsafe.Add(ref ov, 8) = (c * Unsafe.Add(ref twid, 8)) - (s * Unsafe.Add(ref twid, 17));
+                Unsafe.Add(ref g, 8) = (ovl * Unsafe.Add(ref win, 8)) - (sum * Unsafe.Add(ref win, 17));
+                Unsafe.Add(ref g, 9) = (ovl * Unsafe.Add(ref win, 17)) + (sum * Unsafe.Add(ref win, 8));
             }
         }
     }
@@ -1137,14 +1175,18 @@ internal sealed class Mp3FrameDecoder
 
     private void ChangeSign(int buf)
     {
-        float[] g = _grbuf;
-        buf += 18;
-        for (int b = 0; b < 32; b += 2, buf += 36)
+        // Every odd value of every odd band changes sign: an XOR of the sign bit, so -x exactly.
+        Vector128<float> odd = Vector128.Create(0f, -0f, 0f, -0f);
+        ref float g = ref MemoryMarshal.GetReference(_grbuf.AsSpan(buf, 576));
+        for (int b = 1; b < 32; b += 2)
         {
-            for (int i = 1; i < 18; i += 2)
+            ref float x = ref Unsafe.Add(ref g, b * 18);
+            for (int i = 0; i < 16; i += 4)
             {
-                g[buf + i] = -g[buf + i];
+                (Vector128.LoadUnsafe(ref x, (nuint)i) ^ odd).StoreUnsafe(ref x, (nuint)i);
             }
+
+            Unsafe.Add(ref x, 17) = -Unsafe.Add(ref x, 17);
         }
     }
 
