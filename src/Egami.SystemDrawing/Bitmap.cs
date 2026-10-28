@@ -510,6 +510,9 @@ public sealed partial class Bitmap : Image
     }
 
     /// <summary>The current frame, after checking the bitmap is alive and not locked.</summary>
+    internal Frame UnlockedFrame() => Unlocked();
+
+    /// <summary>The current frame, after checking the bitmap is alive and not locked.</summary>
     private Frame Unlocked()
     {
         Frame frame = Current;

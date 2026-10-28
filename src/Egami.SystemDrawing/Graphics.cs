@@ -296,7 +296,6 @@ public sealed partial class Graphics : MarshalByRefObject, IDisposable, IDeviceC
     {
         _disposed = true;
         _canvas?.Dispose();
-        _premultipliedCanvas?.Dispose();
     }
 
     /// <summary>Does nothing: Egami draws each call at once.</summary>

@@ -161,7 +161,8 @@ internal sealed class MetafileScan
         {
             int words = I32(d, pos);
             int function = U16(d, pos + 4);
-            if (words < 3 || function == 0)
+            // A record that runs past the end of the file ends the walk, as does the end record.
+            if (words < 3 || function == 0 || (long)words * 2 > d.Length - pos)
             {
                 break;
             }
@@ -203,7 +204,7 @@ internal sealed class MetafileScan
         while (pos + 8 <= d.Length)
         {
             int type = I32(d, pos), size = I32(d, pos + 4);
-            if (size < 8 || pos + size > d.Length)
+            if (size < 8 || size > d.Length - pos)
             {
                 break;
             }
@@ -220,7 +221,7 @@ internal sealed class MetafileScan
 
             if (type == 70 && size >= 16 && (uint)I32(d, pos + 12) == EmfPlusComment)
             {
-                ReadPlus(pos + 16, pos + 12 + I32(d, pos + 8), plus, ref dual);
+                ReadPlus(pos + 16, (int)Math.Min(pos + size, pos + 12L + I32(d, pos + 8)), plus, ref dual);
             }
             else
             {
@@ -261,10 +262,13 @@ internal sealed class MetafileScan
         while (at + 12 <= stop && at + 12 <= d.Length)
         {
             int type = U16(d, at), flags = U16(d, at + 2), size = I32(d, at + 4), dataSize = I32(d, at + 8);
-            if (size < 12 || at + size > d.Length)
+            // A record must fit its comment and the file, and its data must fit the record.
+            if (size < 12 || size > stop - at || size > d.Length - at)
             {
                 break;
             }
+
+            dataSize = Math.Clamp(dataSize, 0, size - 12);
 
             if (type == 0x4001 && dataSize >= 16)
             {
