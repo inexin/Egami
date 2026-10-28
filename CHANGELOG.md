@@ -18,7 +18,7 @@ A new package of format plugins (Build Plan tasks 1 to 12). It depends on core E
   palette. Loading and saving the 12-megapixel files is faster than ImageMagick in every case, at 1 thread and on all cores.
 - The format's name for Sun raster is `Sun raster` (it was `SUN`), so it matches `SunRasterWriterOptions`.
 - A page per format in the docs, a Package column in the formats overview, and the `EGAMIX` diagnostic ids for formats in
-  preview (none yet). The package has its own icon.
+  preview (none yet). The package has its own icon and lockups.
 
 ## Egami.Cli and Egami.Video.Cli, unreleased
 
