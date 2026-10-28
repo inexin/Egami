@@ -417,8 +417,11 @@ internal sealed partial class TgaReader : IFormatReader
         public void Run(Raster<TPixel> raster)
         {
             int bpp = header.BytesPerPixel;
+            // 15 and 16-bit pixels are the memory of Bgr555 and Bgra5551, whose top bit is cleared or set when it is not alpha.
+            bool packed = header.Depth is 15 or 16 && header.AlphaType != TgaAlphaType.Premultiplied
+                && (typeof(TPixel) == typeof(Bgr555) || typeof(TPixel) == typeof(Bgra5551));
             bool direct = !header.Gray && !header.Mapped && !header.RightToLeft
-                && ((header.Depth == 32 && (typeof(TPixel) == typeof(Bgra8) || typeof(TPixel) == typeof(Rgba8))) || (header.Depth == 24 && typeof(TPixel) == typeof(Bgr8)));
+                && ((header.Depth == 32 && (typeof(TPixel) == typeof(Bgra8) || typeof(TPixel) == typeof(Rgba8))) || (header.Depth == 24 && typeof(TPixel) == typeof(Bgr8)) || packed);
             int row = 0;
             try
             {
@@ -431,7 +434,11 @@ internal sealed partial class TgaReader : IFormatReader
                         Span<TPixel> row0 = raster.Row(header.TopDown ? row : header.Height - 1 - row);
                         Span<byte> into = MemoryMarshal.AsBytes(row0);
                         ReadStored(into);
-                        if (bpp == 4)
+                        if (packed)
+                        {
+                            TopBits(MemoryMarshal.Cast<byte, ushort>(into), typeof(TPixel) == typeof(Bgra5551) && !header.UsesAlpha, typeof(TPixel) == typeof(Bgr555));
+                        }
+                        else if (bpp == 4)
                         {
                             Span<Bgra8> pixels = MemoryMarshal.Cast<byte, Bgra8>(into);
                             if (!header.UsesAlpha)
@@ -472,6 +479,25 @@ internal sealed partial class TgaReader : IFormatReader
             {
                 // Hand back the bytes read ahead, so a footer after the pixels is found.
                 _bytes?.Finish();
+            }
+        }
+
+        /// <summary>Sets or clears bit 15 of every pixel when it does not hold alpha.</summary>
+        private static void TopBits(Span<ushort> values, bool set, bool clear)
+        {
+            if (set)
+            {
+                foreach (ref ushort v in values)
+                {
+                    v |= 0x8000;
+                }
+            }
+            else if (clear)
+            {
+                foreach (ref ushort v in values)
+                {
+                    v &= 0x7FFF;
+                }
             }
         }
 

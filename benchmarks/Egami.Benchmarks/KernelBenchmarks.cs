@@ -100,6 +100,18 @@ public class PixelConvertBenchmarks
     }
 
     [Benchmark]
+    public void Bgra5551ToBgra8()
+    {
+        PixelConvert.Convert(Source<Bgra5551>(), Destination<Bgra8>());
+    }
+
+    [Benchmark]
+    public void Bgra8ToBgra5551()
+    {
+        PixelConvert.Convert(Source<Bgra8>(), Destination<Bgra5551>());
+    }
+
+    [Benchmark]
     public void Rgba8ToRgb10A2()
     {
         PixelConvert.Convert(Source<Rgba8>(), Destination<Rgb10A2>());

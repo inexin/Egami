@@ -1,6 +1,7 @@
 using System.Numerics;
 
 using Egami.Drawing;
+using Egami.GdiPlus;
 using Egami.Operations;
 using Egami.Pixels;
 
@@ -63,14 +64,14 @@ internal sealed partial class EmfPlusPlayer
             return;
         }
 
-        PlusImageAttributes? attributes = U32(d, 0) < 64 ? _objects[U32(d, 0)] as PlusImageAttributes : null;
+        GdiPlusImageAttributes? attributes = U32(d, 0) < 64 ? (_objects[U32(d, 0)] as PlusImageAttributes)?.Attributes : null;
         int srcUnit = I32(d, 4);
         RectF src = new(F32(d, 8), F32(d, 12), F32(d, 16), F32(d, 20));
         Matrix3x2 map;
         int at = 24;
         if (type == 0x401A)
         {
-            RectF dest = PlusObjectReader.Rect(d, ref at, (flags & Compressed) != 0);
+            RectF dest = GdiPlusData.Rect(d, ref at, (flags & Compressed) != 0);
             if (src.Width == 0 || src.Height == 0)
             {
                 return;
@@ -81,7 +82,7 @@ internal sealed partial class EmfPlusPlayer
         else
         {
             at = 28; // after the point count
-            Vector2[] p = PlusObjectReader.ReadPoints(d, ref at, I32(d, 24) is 3 ? 3 : throw new ArgumentException("DrawImagePoints needs three points."), (flags & Compressed) != 0, (flags & Relative) != 0);
+            Vector2[] p = GdiPlusData.ReadPoints(d, ref at, I32(d, 24) is 3 ? 3 : throw new ArgumentException("DrawImagePoints needs three points."), (flags & Compressed) != 0, (flags & Relative) != 0);
             if (src.Width == 0 || src.Height == 0)
             {
                 return;
@@ -132,7 +133,7 @@ internal sealed partial class EmfPlusPlayer
                 Raster<Rgba8> drawn = effect is null ? bitmap : effect(bitmap);
                 if (tiled)
                 {
-                    (TileMode tx, TileMode ty) = Wrap(attributes!.WrapMode);
+                    (TileMode tx, TileMode ty) = GdiPlusBrushes.Wrap(attributes!.WrapMode);
                     _canvas.FillRect(src, new ImagePaint(drawn, tx, ty, Sampling) { Antialias = Smooth, BlendMode = Blend });
                 }
                 else
@@ -186,19 +187,13 @@ internal sealed partial class EmfPlusPlayer
     /// <summary>A GDI+ 5 by 5 color matrix (row vectors: a color times the matrix) as Egami's four rows of five.</summary>
     private static ColorMatrix Matrix5(byte[] p)
     {
-        float M(int row, int col) => F32(p, ((row * 5) + col) * 4);
-        float[] v = new float[20];
-        for (int output = 0; output < 4; output++)
+        float[] m = new float[25];
+        for (int i = 0; i < 25; i++)
         {
-            for (int input = 0; input < 4; input++)
-            {
-                v[(output * 5) + input] = M(input, output);
-            }
-
-            v[(output * 5) + 4] = M(4, output);
+            m[i] = F32(p, i * 4);
         }
 
-        return new ColorMatrix(v);
+        return GdiPlusImageAttributes.ToColorMatrix(m);
     }
 
     private static Rgba8 HueColor(int degrees)

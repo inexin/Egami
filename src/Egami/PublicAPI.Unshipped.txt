@@ -1,4 +1,7 @@
 #nullable enable
+Egami.Formats.Bmp.BmpPixelFormat.Bgr555 = 7 -> Egami.Formats.Bmp.BmpPixelFormat
+Egami.Formats.Bmp.BmpPixelFormat.Bgr565 = 8 -> Egami.Formats.Bmp.BmpPixelFormat
+Egami.Formats.Bmp.BmpPixelFormat.Bgra5551 = 9 -> Egami.Formats.Bmp.BmpPixelFormat
 Egami.Formats.EgamiInput.CheckFrameSize(long width, long height) -> void
 Egami.Formats.EgamiInput.Warn(Egami.Metadata.RasterMetadata! metadata, string! id, string! warning, long? offset = null) -> void
 Egami.Formats.EncodeStart<TPixel>.ReportLosses(string! format, Egami.Formats.SaveKeeps keeps) -> void
@@ -18,3 +21,44 @@ Egami.Formats.SaveKeeps.Resolution = 2048 -> Egami.Formats.SaveKeeps
 Egami.Formats.SaveKeeps.Text = 512 -> Egami.Formats.SaveKeeps
 Egami.Formats.SaveKeeps.Wide = 2 -> Egami.Formats.SaveKeeps
 Egami.Formats.SaveKeeps.Xmp = 64 -> Egami.Formats.SaveKeeps
+Egami.Formats.Tga.TgaPixelFormat.Bgr555 = 5 -> Egami.Formats.Tga.TgaPixelFormat
+Egami.Formats.Tga.TgaPixelFormat.Bgra5551 = 6 -> Egami.Formats.Tga.TgaPixelFormat
+Egami.Pixels.Bgr555
+Egami.Pixels.Bgr555.B.get -> int
+Egami.Pixels.Bgr555.Bgr555() -> void
+Egami.Pixels.Bgr555.Bgr555(int r, int g, int b) -> void
+Egami.Pixels.Bgr555.Bgr555(ushort value) -> void
+Egami.Pixels.Bgr555.Equals(Egami.Pixels.Bgr555 other) -> bool
+Egami.Pixels.Bgr555.G.get -> int
+Egami.Pixels.Bgr555.R.get -> int
+Egami.Pixels.Bgr555.ToRgba8() -> Egami.Pixels.Rgba8
+Egami.Pixels.Bgr555.ToScaled() -> System.Numerics.Vector4
+Egami.Pixels.Bgr555.Value -> ushort
+Egami.Pixels.Bgra5551
+Egami.Pixels.Bgra5551.A.get -> int
+Egami.Pixels.Bgra5551.B.get -> int
+Egami.Pixels.Bgra5551.Bgra5551() -> void
+Egami.Pixels.Bgra5551.Bgra5551(int r, int g, int b, int a) -> void
+Egami.Pixels.Bgra5551.Bgra5551(ushort value) -> void
+Egami.Pixels.Bgra5551.Equals(Egami.Pixels.Bgra5551 other) -> bool
+Egami.Pixels.Bgra5551.G.get -> int
+Egami.Pixels.Bgra5551.R.get -> int
+Egami.Pixels.Bgra5551.ToRgba8() -> Egami.Pixels.Rgba8
+Egami.Pixels.Bgra5551.ToScaled() -> System.Numerics.Vector4
+Egami.Pixels.Bgra5551.Value -> ushort
+override Egami.Pixels.Bgr555.Equals(object? obj) -> bool
+override Egami.Pixels.Bgr555.GetHashCode() -> int
+override Egami.Pixels.Bgr555.ToString() -> string!
+override Egami.Pixels.Bgra5551.Equals(object? obj) -> bool
+override Egami.Pixels.Bgra5551.GetHashCode() -> int
+override Egami.Pixels.Bgra5551.ToString() -> string!
+static Egami.Pixels.Bgr555.FromRgba8(Egami.Pixels.Rgba8 value) -> Egami.Pixels.Bgr555
+static Egami.Pixels.Bgr555.FromScaled(System.Numerics.Vector4 rgba) -> Egami.Pixels.Bgr555
+static Egami.Pixels.Bgr555.Layout.get -> Egami.Pixels.PixelLayoutInfo
+static Egami.Pixels.Bgr555.operator !=(Egami.Pixels.Bgr555 left, Egami.Pixels.Bgr555 right) -> bool
+static Egami.Pixels.Bgr555.operator ==(Egami.Pixels.Bgr555 left, Egami.Pixels.Bgr555 right) -> bool
+static Egami.Pixels.Bgra5551.FromRgba8(Egami.Pixels.Rgba8 value) -> Egami.Pixels.Bgra5551
+static Egami.Pixels.Bgra5551.FromScaled(System.Numerics.Vector4 rgba) -> Egami.Pixels.Bgra5551
+static Egami.Pixels.Bgra5551.Layout.get -> Egami.Pixels.PixelLayoutInfo
+static Egami.Pixels.Bgra5551.operator !=(Egami.Pixels.Bgra5551 left, Egami.Pixels.Bgra5551 right) -> bool
+static Egami.Pixels.Bgra5551.operator ==(Egami.Pixels.Bgra5551 left, Egami.Pixels.Bgra5551 right) -> bool

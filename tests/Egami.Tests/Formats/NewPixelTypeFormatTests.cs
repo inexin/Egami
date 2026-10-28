@@ -1,13 +1,17 @@
 using System.Runtime.InteropServices;
 
+using Egami.Formats;
+using Egami.Formats.Bmp;
 using Egami.Formats.Png;
+using Egami.Formats.Tga;
 using Egami.Pixels;
 
 namespace Egami.Tests.Formats;
 
 /// <summary>
 /// Phase 2.1.1 task 9: PNG and PNM read and write Rgb16 and GrayAlpha16 directly, and BMP reads 5-6-5 and 4-4-4-4 bit fields
-/// directly. Every corpus file must load exactly as loading the 1.0 way and converting does.
+/// directly; step 2.13 task 2 adds BMP and TGA 5-5-5 and 1-5-5-5. Every corpus file must load exactly as loading the 1.0 way and
+/// converting does.
 /// </summary>
 public class NewPixelTypeFormatTests
 {
@@ -18,6 +22,8 @@ public class NewPixelTypeFormatTests
     public static TheoryData<string> PnmFiles() => [.. Files("pnm", "*")];
 
     public static TheoryData<string> BmpFiles() => [.. Files("bmp", "*")];
+
+    public static TheoryData<string> TgaFiles() => [.. Files("tga", "*.tga")];
 
     [Theory]
     [MemberData(nameof(PngFiles))]
@@ -41,6 +47,80 @@ public class NewPixelTypeFormatTests
     {
         AssertDirectEqualsConverted<Bgra8, Bgr565>(file);
         AssertDirectEqualsConverted<Bgra8, Bgra4444>(file);
+        AssertDirectEqualsConverted<Bgra8, Bgr555>(file);
+        AssertDirectEqualsConverted<Bgra8, Bgra5551>(file);
+    }
+
+    [Theory]
+    [MemberData(nameof(TgaFiles))]
+    public void TgaLoadsFiveFiveFiveTypesAsTheConversionDoes(string file)
+    {
+        AssertDirectEqualsConverted<Bgra8, Bgr555>(file);
+        AssertDirectEqualsConverted<Bgra8, Bgra5551>(file);
+    }
+
+    [Theory]
+    [InlineData(BmpPixelFormat.Bgr555)]
+    [InlineData(BmpPixelFormat.Bgr565)]
+    [InlineData(BmpPixelFormat.Bgra5551)]
+    public void BmpSixteenBitLayoutsRoundTripExactly(BmpPixelFormat layout)
+    {
+        BmpWriterOptions options = new() { PixelFormat = layout };
+        switch (layout)
+        {
+            case BmpPixelFormat.Bgr555:
+                RoundTrip<Bgr555>(0x7FFF, BmpFormat.Info, options);
+                break;
+            case BmpPixelFormat.Bgr565:
+                RoundTrip<Bgr565>(0xFFFF, BmpFormat.Info, options);
+                break;
+            default:
+                RoundTrip<Bgra5551>(0xFFFF, BmpFormat.Info, options);
+                break;
+        }
+    }
+
+    [Theory]
+    [InlineData(TgaPixelFormat.Bgr555, false)]
+    [InlineData(TgaPixelFormat.Bgra5551, false)]
+    [InlineData(TgaPixelFormat.Bgr555, true)]
+    [InlineData(TgaPixelFormat.Bgra5551, true)]
+    public void TgaSixteenBitLayoutsRoundTripExactly(TgaPixelFormat layout, bool rle)
+    {
+        TgaWriterOptions options = new() { PixelFormat = layout, Rle = rle };
+        if (layout == TgaPixelFormat.Bgr555)
+        {
+            RoundTrip<Bgr555>(0x7FFF, TgaFormat.Info, options);
+        }
+        else
+        {
+            RoundTrip<Bgra5551>(0xFFFF, TgaFormat.Info, options);
+        }
+    }
+
+    /// <summary>Saves every value the type keeps, 255 pixels a row so the rows end at odd widths, and loads it back.</summary>
+    private static void RoundTrip<T>(int mask, FormatInfo format, WriterOptions options)
+        where T : unmanaged, IPixelType<T>
+    {
+        using Raster<T> raster = Raster.Create<T>(255, (mask + 255) / 255);
+        int i = 0;
+        for (int y = 0; y < raster.Height; y++)
+        {
+            foreach (ref ushort v in MemoryMarshal.Cast<T, ushort>(raster.Row(y)))
+            {
+                v = (ushort)(i++ & mask);
+            }
+        }
+
+        using MemoryStream stream = new();
+        raster.Save(stream, format, options);
+        stream.Position = 0;
+        using Raster<T> back = Raster.Load<T>(stream);
+        AssertSame(raster, back);
+        stream.Position = 0;
+        using Raster<Bgra8> natural = Raster.Load<Bgra8>(stream);
+        using Raster<T> converted = natural.As<T>();
+        AssertSame(raster, converted);
     }
 
     [Theory]

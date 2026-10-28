@@ -26,7 +26,7 @@ public class PixelConvertTests
         typeof(Rgba8), typeof(Bgra8), typeof(Rgb8), typeof(Bgr8), typeof(Gray8),
         typeof(Gray16), typeof(GrayAlpha8), typeof(Rgba16), typeof(RgbaF32), typeof(Rgb16), typeof(GrayAlpha16),
         typeof(Argb8), typeof(Abgr8), typeof(Alpha8), typeof(RgbaF16), typeof(RgbF32), typeof(GrayF32),
-        typeof(Bgr565), typeof(Bgra4444), typeof(Rgb10A2), typeof(Cmyk8), typeof(Cmyk16),
+        typeof(Bgr565), typeof(Bgra4444), typeof(Rgb10A2), typeof(Cmyk8), typeof(Cmyk16), typeof(Bgr555), typeof(Bgra5551),
         typeof(PremulRgba8), typeof(PremulBgra8), typeof(PremulRgbaF32),
     ];
 
@@ -47,7 +47,7 @@ public class PixelConvertTests
     [Fact]
     public void AllPairsCoversEveryCombination()
     {
-        Assert.Equal(625, AllPairs().Count);
+        Assert.Equal(729, AllPairs().Count);
     }
 
     [Theory]
@@ -80,6 +80,8 @@ public class PixelConvertTests
         Assert.Equal(4, Size<GrayF32>());
         Assert.Equal(2, Size<Bgr565>());
         Assert.Equal(2, Size<Bgra4444>());
+        Assert.Equal(2, Size<Bgr555>());
+        Assert.Equal(2, Size<Bgra5551>());
         Assert.Equal(4, Size<Rgb10A2>());
         Assert.Equal(4, Size<Cmyk8>());
         Assert.Equal(8, Size<Cmyk16>());
@@ -282,6 +284,8 @@ public class PixelConvertTests
         {
             nameof(Bgr565) => c == 1 ? 63 : c == 3 ? 1 : 31,
             nameof(Bgra4444) => 15,
+            nameof(Bgr555) => c == 3 ? 1 : 31,
+            nameof(Bgra5551) => c == 3 ? 1 : 31,
             nameof(Rgb10A2) => c == 3 ? 3 : 1023,
             _ => max,
         };
@@ -321,7 +325,7 @@ public class PixelConvertTests
 
     private static bool T_HasAlpha<T>()
     {
-        return typeof(T) != typeof(Rgb8) && typeof(T) != typeof(Bgr8) && typeof(T) != typeof(Gray8) && typeof(T) != typeof(Gray16) && typeof(T) != typeof(Rgb16) && typeof(T) != typeof(RgbF32) && typeof(T) != typeof(GrayF32) && typeof(T) != typeof(Bgr565) && typeof(T) != typeof(Cmyk8) && typeof(T) != typeof(Cmyk16);
+        return typeof(T) != typeof(Rgb8) && typeof(T) != typeof(Bgr8) && typeof(T) != typeof(Gray8) && typeof(T) != typeof(Gray16) && typeof(T) != typeof(Rgb16) && typeof(T) != typeof(RgbF32) && typeof(T) != typeof(GrayF32) && typeof(T) != typeof(Bgr565) && typeof(T) != typeof(Bgr555) && typeof(T) != typeof(Cmyk8) && typeof(T) != typeof(Cmyk16);
     }
 
     private static double LumaExact(double r, double g, double b)
@@ -364,6 +368,8 @@ public class PixelConvertTests
             nameof(GrayF32) => new GrayF32(c.Luma / 255f),
             nameof(Bgr565) => new Bgr565(Level(c.R, 31), Level(c.G, 63), Level(c.B, 31)),
             nameof(Bgra4444) => new Bgra4444(Level(c.R, 15), Level(c.G, 15), Level(c.B, 15), Level(c.A, 15)),
+            nameof(Bgr555) => new Bgr555(Level(c.R, 31), Level(c.G, 31), Level(c.B, 31)),
+            nameof(Bgra5551) => new Bgra5551(Level(c.R, 31), Level(c.G, 31), Level(c.B, 31), Level(c.A, 1)),
             nameof(Rgb10A2) => new Rgb10A2(Level(c.R, 1023), Level(c.G, 1023), Level(c.B, 1023), Level(c.A, 3)),
             nameof(PremulRgba8) => new PremulRgba8(Times(c.R, c.A), Times(c.G, c.A), Times(c.B, c.A), c.A),
             nameof(PremulBgra8) => new PremulBgra8(Times(c.B, c.A), Times(c.G, c.A), Times(c.R, c.A), c.A),
@@ -399,6 +405,8 @@ public class PixelConvertTests
             GrayF32 p => [p.L, p.L, p.L, 1],
             Bgr565 p => [p.R / 31.0, p.G / 63.0, p.B / 31.0, 1],
             Bgra4444 p => [p.R / 15.0, p.G / 15.0, p.B / 15.0, p.A / 15.0],
+            Bgr555 p => [p.R / 31.0, p.G / 31.0, p.B / 31.0, 1],
+            Bgra5551 p => [p.R / 31.0, p.G / 31.0, p.B / 31.0, p.A],
             Rgb10A2 p => [p.R / 1023.0, p.G / 1023.0, p.B / 1023.0, p.A / 3.0],
             PremulRgba8 p => p.A == 0 ? [0, 0, 0, 0] : [Over(p.R, p.A), Over(p.G, p.A), Over(p.B, p.A), p.A / 255.0],
             PremulBgra8 p => p.A == 0 ? [0, 0, 0, 0] : [Over(p.R, p.A), Over(p.G, p.A), Over(p.B, p.A), p.A / 255.0],

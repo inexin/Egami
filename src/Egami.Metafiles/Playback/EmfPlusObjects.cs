@@ -2,6 +2,7 @@ using System.Numerics;
 using System.Text;
 
 using Egami.Drawing;
+using Egami.GdiPlus;
 using Egami.Pixels;
 
 using static Egami.Metafiles.Reading.MetafileReader;
@@ -56,60 +57,12 @@ internal sealed class PlusBrush : PlusObject
     public Vector2 Focus { get; init; }
 }
 
-/// <summary>An EMF+ pen ([MS-EMFPLUS] 2.2.1.7): width, unit, caps, joins, dashes, compound lines, alignment and its brush.</summary>
+/// <summary>An EMF+ pen ([MS-EMFPLUS] 2.2.1.7): its GDI+ geometry and its brush.</summary>
 internal sealed class PlusPen : PlusObject
 {
-    public float Width { get; init; } = 1;
-
-    public int Unit { get; init; }
-
-    public Matrix3x2 Transform { get; init; } = Matrix3x2.Identity;
-
-    public int StartCap { get; init; }
-
-    public int EndCap { get; init; }
-
-    public int Join { get; init; }
-
-    public float MiterLimit { get; init; } = 10;
-
-    public int LineStyle { get; init; }
-
-    public int DashCap { get; init; }
-
-    public float DashOffset { get; init; }
-
-    public float[]? Dashes { get; init; }
-
-    public int Alignment { get; init; }
-
-    public float[]? Compound { get; init; }
-
-    public PlusCap? CustomStartCap { get; init; }
-
-    public PlusCap? CustomEndCap { get; init; }
+    public required GdiPlusPen Pen { get; init; }
 
     public required PlusBrush Brush { get; init; }
-}
-
-/// <summary>A custom line cap ([MS-EMFPLUS] 2.2.2.11): an adjustable arrow, or a path to fill or stroke.</summary>
-internal sealed class PlusCap
-{
-    /// <summary>Gets a value indicating whether the cap is an adjustable arrow.</summary>
-    public bool Arrow { get; init; }
-
-    public float Width { get; init; }
-
-    public float Height { get; init; }
-
-    public float MiddleInset { get; init; }
-
-    public bool Filled { get; init; }
-
-    /// <summary>Gets a path cap's outline, in units of the pen width, pointing up the y axis.</summary>
-    public Path? Shape { get; init; }
-
-    public float BaseInset { get; init; }
 }
 
 /// <summary>An EMF+ path ([MS-EMFPLUS] 2.2.1.6), as an Egami path in world units.</summary>
@@ -155,33 +108,13 @@ internal sealed class PlusFont : PlusObject
 /// <summary>An EMF+ string format ([MS-EMFPLUS] 2.2.1.9).</summary>
 internal sealed class PlusStringFormat : PlusObject
 {
-    public int Flags { get; init; }
-
-    public int Alignment { get; init; }
-
-    public int LineAlignment { get; init; }
-
-    public int HotkeyPrefix { get; init; }
-
-    public float LeadingMargin { get; init; }
-
-    public float TrailingMargin { get; init; }
-
-    public float Tracking { get; init; } = 1;
-
-    public int Trimming { get; init; }
-
-    public float FirstTabOffset { get; init; }
-
-    public float[] TabStops { get; init; } = [];
+    public GdiPlusStringFormat Format { get; init; } = new();
 }
 
 /// <summary>EMF+ image attributes ([MS-EMFPLUS] 2.2.1.5): the wrap mode and clamp color.</summary>
 internal sealed class PlusImageAttributes : PlusObject
 {
-    public int WrapMode { get; init; }
-
-    public Rgba8 ClampColor { get; init; }
+    public required GdiPlusImageAttributes Attributes { get; init; }
 }
 
 /// <summary>Reads EMF+ objects from their serialized form; every read is bounded by the data and throws on a short object.</summary>
@@ -195,12 +128,12 @@ internal static class PlusObjectReader
         {
             1 => Brush(d, ref at, loadMetafile, loadImage),
             2 => Pen(d, ref at, loadMetafile, loadImage),
-            3 => new PlusPath { Path = PathData(d, ref at) },
-            4 => Region(d, ref at),
+            3 => new PlusPath { Path = GdiPlusData.PathData(d, ref at) },
+            4 => new PlusRegion { Path = GdiPlusData.Region(d, ref at) },
             5 => Image(d, ref at, loadMetafile, loadImage),
             6 => Font(d, ref at),
             7 => StringFormat(d, ref at),
-            8 => new PlusImageAttributes { WrapMode = I32(d, 8), ClampColor = Argb(U32(d, 12)) },
+            8 => new PlusImageAttributes { Attributes = new GdiPlusImageAttributes { WrapMode = I32(d, 8), ClampColor = Argb(U32(d, 12)) } },
             _ => null,
         };
     }
@@ -303,7 +236,7 @@ internal static class PlusObjectReader
                     {
                         int size = I(d, ref at);
                         int end = at + size;
-                        boundary = PathData(d, ref at);
+                        boundary = GdiPlusData.PathData(d, ref at);
                         at = end;
                     }
                     else
@@ -365,7 +298,7 @@ internal static class PlusObjectReader
         GradientStop[] stops = new GradientStop[n];
         for (int i = 0; i < n; i++)
         {
-            stops[i] = new GradientStop(Math.Clamp(F32(d, at + (i * 4)), 0, 1), Argb(U32(d, at + (n * 4) + (i * 4))));
+            stops[i] = GdiPlusBrushes.PresetStop(F32(d, at + (i * 4)), Argb(U32(d, at + (n * 4) + (i * 4))));
         }
 
         at += n * 8;
@@ -382,24 +315,12 @@ internal static class PlusObjectReader
         GradientStop[] stops = new GradientStop[n];
         for (int i = 0; i < n; i++)
         {
-            float position = Math.Clamp(F32(d, at + (i * 4)), 0, 1);
-            float t = Math.Clamp(F32(d, at + (n * 4) + (i * 4)), 0, 1);
-            stops[i] = new GradientStop(position, gamma ? LinearLerp(start, end, t) : Lerp(start, end, t));
+            stops[i] = GdiPlusBrushes.BlendStop(F32(d, at + (i * 4)), F32(d, at + (n * 4) + (i * 4)), start, end, gamma);
         }
 
         at += n * 8;
         return stops;
     }
-
-    private static Rgba8 LinearLerp(Rgba8 a, Rgba8 b, float t)
-    {
-        static byte Mix(byte x, byte y, float t) =>
-            (byte)((MathF.Pow((MathF.Pow(x / 255f, 2.2f) * (1 - t)) + (MathF.Pow(y / 255f, 2.2f) * t), 1 / 2.2f) * 255) + 0.5f);
-        return new(Mix(a.R, b.R, t), Mix(a.G, b.G, t), Mix(a.B, b.B, t), (byte)(a.A + ((b.A - a.A) * t) + 0.5f));
-    }
-
-    public static Rgba8 Lerp(Rgba8 a, Rgba8 b, float t) =>
-        new((byte)(a.R + ((b.R - a.R) * t) + 0.5f), (byte)(a.G + ((b.G - a.G) * t) + 0.5f), (byte)(a.B + ((b.B - a.B) * t) + 0.5f), (byte)(a.A + ((b.A - a.A) * t) + 0.5f));
 
     private static PlusPen Pen(ReadOnlySpan<byte> d, ref int at, Func<byte[], Metafile?> loadMetafile, Func<byte[], Raster<Rgba8>?> loadImage)
     {
@@ -437,7 +358,7 @@ internal static class PlusObjectReader
             }
         }
 
-        PlusCap? customStart = null, customEnd = null;
+        GdiPlusCustomCap? customStart = null, customEnd = null;
         if ((flags & 0x0800) != 0)
         {
             int size = I(d, ref at);
@@ -453,7 +374,7 @@ internal static class PlusObjectReader
         }
 
         PlusBrush brush = Brush(d, ref at, loadMetafile, loadImage);
-        return new PlusPen
+        GdiPlusPen pen = new()
         {
             Width = width,
             Unit = unit,
@@ -462,7 +383,7 @@ internal static class PlusObjectReader
             EndCap = endCap,
             Join = join,
             MiterLimit = miter,
-            LineStyle = style,
+            DashStyle = style,
             DashCap = dashCap,
             DashOffset = dashOffset,
             Dashes = dashes,
@@ -470,12 +391,12 @@ internal static class PlusObjectReader
             Compound = compound,
             CustomStartCap = customStart,
             CustomEndCap = customEnd,
-            Brush = brush,
         };
+        return new PlusPen { Pen = pen, Brush = brush };
     }
 
     /// <summary>EmfPlusCustomLineCap: version, type (0 default with path data, 1 adjustable arrow), then its data.</summary>
-    private static PlusCap? Cap(ReadOnlySpan<byte> d)
+    private static GdiPlusCustomCap? Cap(ReadOnlySpan<byte> d)
     {
         if (d.Length < 8)
         {
@@ -486,7 +407,7 @@ internal static class PlusObjectReader
         if (type == 1 && d.Length >= 8 + 16)
         {
             // Width, Height, MiddleInset, FillState, then the line cap fields.
-            return new PlusCap { Arrow = true, Width = F32(d, 8), Height = F32(d, 12), MiddleInset = F32(d, 16), Filled = I32(d, 20) != 0 };
+            return new GdiPlusCustomCap { Arrow = true, Width = F32(d, 8), Height = F32(d, 12), MiddleInset = F32(d, 16), Filled = I32(d, 20) != 0 };
         }
 
         if (type == 0 && d.Length >= 8 + 32)
@@ -504,209 +425,14 @@ internal static class PlusObjectReader
                 if (size > 0 && at + size <= d.Length)
                 {
                     int p = at;
-                    shape = PathData(d, ref p);
+                    shape = GdiPlusData.PathData(d, ref p);
                 }
             }
 
-            return new PlusCap { Filled = (flags & 1) != 0, Shape = shape, BaseInset = baseInset };
+            return new GdiPlusCustomCap { Filled = (flags & 1) != 0, Shape = shape, BaseInset = baseInset };
         }
 
         return null;
-    }
-
-    /// <summary>
-    /// EmfPlusPath: version, count, flags (C: 16-bit points, R: run-length point types, P: relative points), the points, the
-    /// types (start 0, line 1, Bezier 3; close-subpath 0x80).
-    /// </summary>
-    public static Path PathData(ReadOnlySpan<byte> d, ref int at)
-    {
-        at += 4; // version
-        int count = I(d, ref at), flags = I(d, ref at);
-        if (count < 0 || count > (d.Length - at))
-        {
-            throw new ArgumentException("An EMF+ path's point count does not fit its data.");
-        }
-
-        Vector2[] points = ReadPoints(d, ref at, count, (flags & 0x4000) != 0, (flags & 0x0800) != 0);
-        byte[] types = new byte[count];
-        if ((flags & 0x1000) != 0)
-        {
-            int filled = 0;
-            while (filled < count && at + 2 <= d.Length)
-            {
-                int run = d[at] & 0x3F;
-                byte value = d[at + 1];
-                at += 2;
-                for (int i = 0; i < run && filled < count; i++)
-                {
-                    types[filled++] = value;
-                }
-            }
-        }
-        else
-        {
-            d.Slice(at, count).CopyTo(types);
-            at += count;
-        }
-
-        at = (at + 3) & ~3;
-        return BuildPath(points, types);
-    }
-
-    /// <summary>Builds a path from GDI+ points and point types.</summary>
-    public static Path BuildPath(ReadOnlySpan<Vector2> points, ReadOnlySpan<byte> types, FillRule rule = FillRule.EvenOdd)
-    {
-        PathBuilder b = new();
-        int i = 0;
-        while (i < points.Length)
-        {
-            int kind = types[i] & 0x07;
-            if (kind == 0 || b.IsEmpty)
-            {
-                b.MoveTo(points[i]);
-                i++;
-            }
-            else if (kind == 3 && i + 2 < points.Length)
-            {
-                b.CubicTo(points[i], points[i + 1], points[i + 2]);
-                i += 3;
-            }
-            else
-            {
-                b.LineTo(points[i]);
-                i++;
-            }
-
-            if ((types[i - 1] & 0x80) != 0)
-            {
-                b.Close();
-            }
-        }
-
-        return b.ToPath(rule);
-    }
-
-    /// <summary>EmfPlusPointF, EmfPlusPoint (16-bit) or EmfPlusPointR (relative, 7- or 15-bit) points.</summary>
-    public static Vector2[] ReadPoints(ReadOnlySpan<byte> d, ref int at, int count, bool compressed, bool relative)
-    {
-        if (count < 0 || count > d.Length - at)
-        {
-            throw new ArgumentException("An EMF+ point count does not fit its data.");
-        }
-
-        Vector2[] points = new Vector2[count];
-        if (relative)
-        {
-            Vector2 last = Vector2.Zero;
-            for (int i = 0; i < count; i++)
-            {
-                float x = Relative(d, ref at), y = Relative(d, ref at);
-                last += new Vector2(x, y);
-                points[i] = last;
-            }
-
-            at = (at + 3) & ~3;
-            return points;
-        }
-
-        int size = compressed ? 4 : 8;
-        if (count > (d.Length - at) / size)
-        {
-            throw new ArgumentException("EMF+ points do not fit their data.");
-        }
-
-        for (int i = 0; i < count; i++)
-        {
-            points[i] = compressed ? new Vector2(I16(d, at), I16(d, at + 2)) : new Vector2(F32(d, at), F32(d, at + 4));
-            at += size;
-        }
-
-        return points;
-    }
-
-    /// <summary>EmfPlusInteger7 or EmfPlusInteger15: a byte with its top bit clear holds a signed 7-bit value, else two bytes a 15-bit one.</summary>
-    private static float Relative(ReadOnlySpan<byte> d, ref int at)
-    {
-        byte first = d[at++];
-        if ((first & 0x80) == 0)
-        {
-            return (sbyte)(first << 1) >> 1;
-        }
-
-        int value = ((first & 0x7F) << 8) | d[at++];
-        return (short)(value << 1) >> 1;
-    }
-
-    /// <summary>EmfPlusRectF or, compressed, EmfPlusRect (16-bit).</summary>
-    public static RectF Rect(ReadOnlySpan<byte> d, ref int at, bool compressed)
-    {
-        RectF r = compressed
-            ? new RectF(I16(d, at), I16(d, at + 2), I16(d, at + 4), I16(d, at + 6))
-            : new RectF(F32(d, at), F32(d, at + 4), F32(d, at + 8), F32(d, at + 12));
-        at += compressed ? 8 : 16;
-        return r;
-    }
-
-    private static PlusRegion Region(ReadOnlySpan<byte> d, ref int at)
-    {
-        at += 8; // version, node count
-        return new PlusRegion { Path = RegionNode(d, ref at, 0) };
-    }
-
-    /// <summary>A region node: a combine of two children, a rectangle, a path, empty, or infinite (null).</summary>
-    private static Path? RegionNode(ReadOnlySpan<byte> d, ref int at, int depth)
-    {
-        if (depth > 64)
-        {
-            throw new ArgumentException("An EMF+ region is nested too deeply.");
-        }
-
-        uint type = U32(d, at);
-        at += 4;
-        switch (type)
-        {
-            case 0x10000000:
-                return Path.Rect(Rect(d, ref at, false));
-            case 0x10000001:
-                {
-                    int size = I(d, ref at), end = at + size;
-                    Path p = PathData(d, ref at);
-                    at = end;
-                    return p;
-                }
-
-            case 0x10000002:
-                return Path.Empty;
-            case 0x10000003:
-                return null;
-            case >= 1 and <= 6:
-                {
-                    Path? left = RegionNode(d, ref at, depth + 1), right = RegionNode(d, ref at, depth + 1);
-                    return Combine(left, right, (int)type);
-                }
-
-            default:
-                throw new ArgumentException($"EMF+ region node type 0x{type:X8} is not known.");
-        }
-    }
-
-    /// <summary>
-    /// Combines two regions (null is infinite): 0 Replace, 1 Intersect, 2 Union, 3 Xor, 4 Exclude, 5 Complement.
-    /// </summary>
-    public static Path? Combine(Path? left, Path? right, int mode)
-    {
-        Path huge = Path.Rect(new RectF(-1e6f, -1e6f, 2e6f, 2e6f));
-        Path l = left ?? huge, r = right ?? huge;
-        return mode switch
-        {
-            0 => right,
-            1 => left is null ? right : right is null ? left : l.Intersect(r),
-            2 => left is null || right is null ? null : l.Union(r),
-            3 => l.Xor(r),
-            4 => l.Difference(r),
-            5 => r.Difference(l),
-            _ => right,
-        };
     }
 
     public static PlusImage Image(ReadOnlySpan<byte> d, ref int at, Func<byte[], Metafile?> loadMetafile, Func<byte[], Raster<Rgba8>?> loadImage)
@@ -823,16 +549,19 @@ internal static class PlusObjectReader
 
         return new PlusStringFormat
         {
-            Flags = flags,
-            Alignment = alignment,
-            LineAlignment = lineAlignment,
-            HotkeyPrefix = hotkey,
-            LeadingMargin = leading,
-            TrailingMargin = trailing,
-            Tracking = tracking,
-            Trimming = trimming,
-            FirstTabOffset = firstTab,
-            TabStops = tabs,
+            Format = new GdiPlusStringFormat
+            {
+                Flags = flags,
+                Alignment = alignment,
+                LineAlignment = lineAlignment,
+                HotkeyPrefix = hotkey,
+                LeadingMargin = leading,
+                TrailingMargin = trailing,
+                Tracking = tracking,
+                Trimming = trimming,
+                FirstTabOffset = firstTab,
+                TabStops = tabs,
+            },
         };
     }
 }

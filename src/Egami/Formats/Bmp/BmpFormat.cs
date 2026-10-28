@@ -178,6 +178,15 @@ public enum BmpPixelFormat
 
     /// <summary>32-bit blue, green, red and alpha, with a V4 header and bit-field masks.</summary>
     Bgra32,
+
+    /// <summary>16-bit 5-5-5 blue, green and red, the default 16-bit layout every reader opens. Alpha is dropped.</summary>
+    Bgr555,
+
+    /// <summary>16-bit 5-6-5 blue, green and red, with a V4 header and bit-field masks. Alpha is dropped.</summary>
+    Bgr565,
+
+    /// <summary>16-bit 5-5-5 blue, green and red and a 1-bit alpha, with a V4 header and bit-field masks.</summary>
+    Bgra5551,
 }
 
 /// <summary>Options for writing BMP.</summary>

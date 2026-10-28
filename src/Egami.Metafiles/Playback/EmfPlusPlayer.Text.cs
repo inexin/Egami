@@ -4,6 +4,7 @@ using System.Text;
 using Egami.Drawing;
 using Egami.Fonts;
 using Egami.Fonts.Layout;
+using Egami.GdiPlus;
 using Egami.Pixels;
 
 using static Egami.Metafiles.Reading.MetafileReader;
@@ -51,13 +52,10 @@ internal sealed partial class EmfPlusPlayer
         }
 
         string text = Encoding.Unicode.GetString(d.Slice(28, length * 2));
-        PlusStringFormat format = formatId < 64 && _objects[formatId] is PlusStringFormat f ? f : new PlusStringFormat();
-        text = format.HotkeyPrefix switch
-        {
-            // Show and Hide both drop the '&' marks ("&&" stays one '&'); Show's underline is not drawn.
-            1 or 2 => text.Replace("&&", "\u0001").Replace("&", "").Replace('\u0001', '&'),
-            _ => text,
-        };
+        GdiPlusStringFormat format = formatId < 64 && _objects[formatId] is PlusStringFormat f ? f.Format : new GdiPlusStringFormat();
+
+        // Show's underline is not drawn.
+        text = format.DisplayText(text);
 
         MetafileFonts.Resolved? resolved = Fonts.Resolve(font.Family, (font.Style & 1) != 0 ? 700 : 400, (font.Style & 2) != 0);
         if (resolved is null || !Fonts.Collection.TryGetFamily(resolved.Typeface.FamilyName, out FontFamily family))
@@ -66,7 +64,7 @@ internal sealed partial class EmfPlusPlayer
         }
 
         float em = EmWorld(font);
-        bool noWrap = (format.Flags & 0x1000) != 0, noClip = (format.Flags & 0x4000) != 0, vertical = (format.Flags & 0x2) != 0;
+        bool noWrap = (format.Flags & GdiPlusStringFormat.NoWrap) != 0, noClip = (format.Flags & GdiPlusStringFormat.NoClip) != 0, vertical = (format.Flags & GdiPlusStringFormat.DirectionVertical) != 0;
         TextDecoration? decoration = (font.Style & 12) switch
         {
             4 => new TextDecoration { Lines = TextDecorationLines.Underline },
@@ -84,11 +82,11 @@ internal sealed partial class EmfPlusPlayer
                 Paint = TextPaint(flags, brush),
                 Decoration = decoration,
             },
-            Align = format.Alignment switch { 1 => TextAlign.Center, 2 => TextAlign.End, _ => TextAlign.Start },
-            Direction = (format.Flags & 0x1) != 0 ? Egami.Fonts.Unicode.TextDirection.RightToLeft : Egami.Fonts.Unicode.TextDirection.LeftToRight,
+            Align = format.Alignment switch { GdiPlusStringFormat.AlignCenter => TextAlign.Center, GdiPlusStringFormat.AlignFar => TextAlign.End, _ => TextAlign.Start },
+            Direction = (format.Flags & GdiPlusStringFormat.DirectionRightToLeft) != 0 ? Egami.Fonts.Unicode.TextDirection.RightToLeft : Egami.Fonts.Unicode.TextDirection.LeftToRight,
             MaxLines = noWrap ? 1 : null,
             MaxHeight = layout.Height > 0 && !noClip ? layout.Height : null,
-            Ellipsis = format.Trimming is 3 or 4 or 5 ? "…" : null,
+            Ellipsis = format.Ellipsis ? "…" : null,
             TabStops = Tabs(format, em),
         };
 
@@ -96,7 +94,7 @@ internal sealed partial class EmfPlusPlayer
         float margin = em / 6;
         float width = layout.Width > 0 && !noWrap ? Math.Max(1, layout.Width - (2 * margin)) : 1e6f;
         RectF box = new(layout.X + margin, layout.Y, width, layout.Height);
-        VerticalAlign align = format.LineAlignment switch { 1 => VerticalAlign.Center, 2 => VerticalAlign.Bottom, _ => VerticalAlign.Top };
+        VerticalAlign align = format.LineAlignment switch { GdiPlusStringFormat.AlignCenter => VerticalAlign.Center, GdiPlusStringFormat.AlignFar => VerticalAlign.Bottom, _ => VerticalAlign.Top };
         if (layout.Width <= 0 && format.Alignment != 0)
         {
             WarnOnce("Metafile.TextApproximated", "A DrawString without a layout width is aligned from its origin.", "text-nowidth");
@@ -127,23 +125,15 @@ internal sealed partial class EmfPlusPlayer
     }
 
     /// <summary>GDI+ tab stops: the first offset, then intervals, each from the last; the default is four ems.</summary>
-    private static List<TabStop>? Tabs(PlusStringFormat format, float em)
+    private static List<TabStop>? Tabs(GdiPlusStringFormat format, float em)
     {
         if (format.TabStops.Length == 0)
         {
             return null;
         }
 
-        List<TabStop> stops = [];
-        float at = format.FirstTabOffset;
-        foreach (float interval in format.TabStops)
-        {
-            at += interval;
-            stops.Add(new TabStop(at));
-        }
-
         _ = em;
-        return stops;
+        return [.. format.TabPositions().Select(at => new TabStop(at))];
     }
 
     /// <summary>
