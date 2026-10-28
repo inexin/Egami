@@ -10,7 +10,8 @@ GDI+ on Windows; [Fonts and text](text.md) explains each of them.
 
 - The font's TrueType instructions run for GDI+, with Microsoft's ClearType compatibility rules (`FontHinting.Full`,
   `TrueTypeTarget.GdiPlus`).
-- Advances are grid-fitted (`FontMetrics.GridFitted`) and glyph origins sit on whole pixels.
+- Advances are grid-fitted (`FontMetrics.GridFitted`) and glyph origins sit on whole pixels. As in GDI+, a run that hinted
+  advances would make more than 2.1 pixels wider than designed keeps its design advances.
 - LCD edging uses GDI+'s filter (`LcdFilter.Gdi`) and sampling (`LcdSampling.Gdi`, no smoothing along the stripes).
 - The blend uses GDI+'s gamma: `TextGamma` 1.4, which is 1 + `Graphics.TextContrast` / 10 at the default contrast of 4.
 
