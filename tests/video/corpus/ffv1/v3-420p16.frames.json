@@ -1,0 +1,13 @@
+{
+ "file": "v3-420p16.mkv",
+ "width": 96,
+ "height": 64,
+ "pixelFormat": "yuv420p16le",
+ "bitDepth": 16,
+ "fieldOrder": "progressive",
+ "sampleAspectRatio": "1:1",
+ "md5": [
+  "38f0118f1f51fe9da82aeb081546d56d",
+  "30ea1b29468656416172099bcb8582bf"
+ ]
+}

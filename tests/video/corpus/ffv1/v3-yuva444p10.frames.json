@@ -1,0 +1,13 @@
+{
+ "file": "v3-yuva444p10.mkv",
+ "width": 64,
+ "height": 48,
+ "pixelFormat": "yuva444p10le",
+ "bitDepth": 10,
+ "fieldOrder": "progressive",
+ "sampleAspectRatio": "1:1",
+ "md5": [
+  "75b11e15c20ddb7d1ff3d358865f5871",
+  "7a68d4e88ef4b5c1480ad2ef9ab3f2d0"
+ ]
+}

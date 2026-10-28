@@ -1,0 +1,14 @@
+{
+ "file": "v3-odd-97x61.mkv",
+ "width": 97,
+ "height": 61,
+ "pixelFormat": "yuv420p",
+ "bitDepth": 8,
+ "fieldOrder": "progressive",
+ "sampleAspectRatio": "2989:3007",
+ "md5": [
+  "a4e832d30e4d53c80e45eaf73fe8550f",
+  "5b856dd21795de1cd331ae36068d8895",
+  "e4b0fbd6a9d2b0037d21da303f672c49"
+ ]
+}

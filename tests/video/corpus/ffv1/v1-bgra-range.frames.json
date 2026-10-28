@@ -1,0 +1,13 @@
+{
+ "file": "v1-bgra-range.avi",
+ "width": 64,
+ "height": 48,
+ "pixelFormat": "bgra",
+ "bitDepth": 8,
+ "fieldOrder": null,
+ "sampleAspectRatio": "1:1",
+ "md5": [
+  "76b1713eb9c99ec6619faec2e14b1e2d",
+  "76b1713eb9c99ec6619faec2e14b1e2d"
+ ]
+}

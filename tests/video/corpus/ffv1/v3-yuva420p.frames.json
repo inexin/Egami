@@ -1,0 +1,13 @@
+{
+ "file": "v3-yuva420p.mkv",
+ "width": 96,
+ "height": 64,
+ "pixelFormat": "yuva420p",
+ "bitDepth": 8,
+ "fieldOrder": "progressive",
+ "sampleAspectRatio": "1:1",
+ "md5": [
+  "24a7cdecb8837d19bd90cd37ac3e5ee3",
+  "26e169223ba494acd3e5c71f0dbafa87"
+ ]
+}

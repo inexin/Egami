@@ -1,0 +1,18 @@
+{
+ "file": "v3-gop-rice.mkv",
+ "width": 96,
+ "height": 64,
+ "pixelFormat": "yuv422p",
+ "bitDepth": 8,
+ "fieldOrder": "progressive",
+ "sampleAspectRatio": "1:1",
+ "md5": [
+  "53fe8732c4da447f28cbf3d80c76c931",
+  "a195e51d88555c53a60eed0039ce4ed2",
+  "337a93ab2a6456b7b2de9ba412dfa1d2",
+  "9fcf793a9f27442167129b1a9e534b71",
+  "86329b8a9cd1bb7c1c02368f0f56b52a",
+  "7aba6bcc625559bdc6f870c8e085efff",
+  "6ce9cbe3a24445db983398548f54bc97"
+ ]
+}

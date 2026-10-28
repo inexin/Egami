@@ -1,0 +1,14 @@
+{
+ "file": "v3-2pass-rgb.mkv",
+ "width": 64,
+ "height": 48,
+ "pixelFormat": "gbrp10le",
+ "bitDepth": 10,
+ "fieldOrder": "progressive",
+ "sampleAspectRatio": "1:1",
+ "md5": [
+  "48f5b53daa512ee266000af258b2b5dd",
+  "48f5b53daa512ee266000af258b2b5dd",
+  "48f5b53daa512ee266000af258b2b5dd"
+ ]
+}

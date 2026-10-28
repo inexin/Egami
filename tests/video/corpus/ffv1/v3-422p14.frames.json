@@ -1,0 +1,13 @@
+{
+ "file": "v3-422p14.mkv",
+ "width": 96,
+ "height": 64,
+ "pixelFormat": "yuv422p14le",
+ "bitDepth": 14,
+ "fieldOrder": "progressive",
+ "sampleAspectRatio": "1:1",
+ "md5": [
+  "ba4400080616a1c74f5978156557bde5",
+  "71d23d5678dbb379a0856c3e9de898ba"
+ ]
+}

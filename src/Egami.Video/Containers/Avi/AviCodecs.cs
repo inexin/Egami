@@ -27,6 +27,17 @@ internal static class AviCodecs
 
     public static bool IsMotionJpeg(uint compression) => Array.IndexOf(MotionJpegFourCCs, compression) >= 0;
 
+    /// <summary>The FourCC FFV1 is stored under, its configuration record after the BITMAPINFOHEADER (RFC 9043 section 4.3.3.1).</summary>
+    public static readonly uint Ffv1 = FourCC.FromString("FFV1");
+
+    /// <summary>Returns the codec data after a BITMAPINFOHEADER: up to its biSize when that is set, else to the end of the format.</summary>
+    public static ReadOnlySpan<byte> ExtraData(ReadOnlySpan<byte> strf)
+    {
+        int size = BinaryPrimitives.ReadInt32LittleEndian(strf);
+        int end = size > BitmapInfoHeaderSize && size <= strf.Length ? size : strf.Length;
+        return strf[BitmapInfoHeaderSize..end];
+    }
+
     /// <summary>Uncompressed layouts AVI names by FourCC, with their bits per pixel.</summary>
     private static readonly Dictionary<string, int> UncompressedBits = new()
     {
@@ -68,6 +79,11 @@ internal static class AviCodecs
             return (CodecIds.MotionJpeg, [], width, height, compression);
         }
 
+        if (compression == Ffv1)
+        {
+            return (CodecIds.Ffv1, ExtraData(strf).ToArray(), width, height, compression);
+        }
+
         return UncompressedFourCC(compression) is not null
             ? (CodecIds.Uncompressed, [], width, height, compression)
             : (CodecIds.VfwFourCC, strf.ToArray(), width, height, compression);
@@ -96,6 +112,20 @@ internal static class AviCodecs
             BinaryPrimitives.WriteUInt32LittleEndian(raw.AsSpan(16), code);
             BinaryPrimitives.WriteInt32LittleEndian(raw.AsSpan(20), checked((int)(Codecs.Raw.RawLayout.FromFourCC(layout)!.FrameSize(track.Width, track.Height))));
             return raw;
+        }
+
+        if (track.CodecId == CodecIds.Ffv1)
+        {
+            handler = Ffv1;
+            byte[] ffv1 = new byte[BitmapInfoHeaderSize + track.CodecPrivate.Length];
+            BinaryPrimitives.WriteInt32LittleEndian(ffv1, ffv1.Length);
+            BinaryPrimitives.WriteInt32LittleEndian(ffv1.AsSpan(4), track.Width);
+            BinaryPrimitives.WriteInt32LittleEndian(ffv1.AsSpan(8), track.Height);
+            BinaryPrimitives.WriteInt16LittleEndian(ffv1.AsSpan(12), 1);
+            BinaryPrimitives.WriteInt16LittleEndian(ffv1.AsSpan(14), 24);
+            BinaryPrimitives.WriteUInt32LittleEndian(ffv1.AsSpan(16), Ffv1);
+            track.CodecPrivate.Span.CopyTo(ffv1.AsSpan(BitmapInfoHeaderSize));
+            return ffv1;
         }
 
         if (track.CodecId != CodecIds.MotionJpeg)

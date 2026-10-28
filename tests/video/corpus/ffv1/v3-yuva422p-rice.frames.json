@@ -1,0 +1,13 @@
+{
+ "file": "v3-yuva422p-rice.mkv",
+ "width": 64,
+ "height": 48,
+ "pixelFormat": "yuva422p",
+ "bitDepth": 8,
+ "fieldOrder": "progressive",
+ "sampleAspectRatio": "1:1",
+ "md5": [
+  "750a6a0304ff75dd70a56b781520ea0a",
+  "750a6a0304ff75dd70a56b781520ea0a"
+ ]
+}

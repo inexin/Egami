@@ -1,0 +1,13 @@
+{
+ "file": "v3-slices-1.mkv",
+ "width": 64,
+ "height": 48,
+ "pixelFormat": "yuv444p",
+ "bitDepth": 8,
+ "fieldOrder": "progressive",
+ "sampleAspectRatio": "1:1",
+ "md5": [
+  "ec27ceb72d4aa148375ac66d6da42f58",
+  "ec27ceb72d4aa148375ac66d6da42f58"
+ ]
+}

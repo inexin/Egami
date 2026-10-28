@@ -1,0 +1,13 @@
+{
+ "file": "v3-444p12-large.mkv",
+ "width": 96,
+ "height": 64,
+ "pixelFormat": "yuv444p12le",
+ "bitDepth": 12,
+ "fieldOrder": "progressive",
+ "sampleAspectRatio": "1:1",
+ "md5": [
+  "a1c6f5e379dae1dc06768f04926bc773",
+  "ca5ba148c36adaaf259b4f8ffc39c0cc"
+ ]
+}

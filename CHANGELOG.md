@@ -11,6 +11,21 @@ changes that break code come only in a new major version.
 
 ## Egami.Video, unreleased
 
+V6 FFV1 stage A: the FFV1 decoder (Build Plan tasks 1 and 3 to 8). All additive; speed, the fixity check, the encoder and the
+API review come in later stages.
+
+- `Ffv1Codec` (`VideoCodecs.Ffv1`, `CodecIds.Ffv1`, registered by default) decodes FFV1 (RFC 9043) versions 0, 1 and 3:
+  Golomb-Rice and the range coder with the default or a custom state table, both context models, coded initial states and
+  quantization tables, non-keyframes, YCbCr 4:2:0, 4:2:2, 4:4:4, 4:1:1, 4:1:0 and gray with or without alpha, and RGB with or
+  without alpha through the reversible color transform, at 8 to 16 bits. All 51 clips of the new corpus
+  (`tools/video/make-ffv1-references.py`) equal FFmpeg's decode frame for frame. Depths 9, 11, 13, 14 and 15 sit in the next
+  supported depth with the samples shifted up; RGB comes out as G, B and R planes with `YuvMatrix.Identity`.
+- Slice CRCs are checked: `Ffv1.SliceCrc`, `Ffv1.ConfigCrc`, `Ffv1.CorruptFrame` and `Ffv1.MissingReference` follow
+  `DecodeErrorMode`, and `Conceal` fills a damaged slice from the last good frame.
+- AVI tracks with FourCC `FFV1` are now `V_FFV1` with the configuration record as `CodecPrivate` (they were
+  `V_MS/VFW/FOURCC`), and the AVI writer stores `V_FFV1` tracks, so FFV1 remuxes between Matroska and AVI. Version 3 tracks
+  give `BitDepth` and `ChromaFormat` from the record. `CodecHeaders.Describe` lists FFV1 parameters and slice headers.
+
 V9.1 stage A: streaming audio filters in `Egami.Video.Audio.Filters` (Build Plan tasks 1 to 7). All additive; the API review
 comes after stage D.
 

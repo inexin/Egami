@@ -669,3 +669,11 @@ static Egami.Video.Keyframe.operator ==(Egami.Video.Keyframe left, Egami.Video.K
 ~override Egami.Video.Editing.FrameMotion.ToString() -> string
 ~override Egami.Video.Keyframe.Equals(object obj) -> bool
 ~override Egami.Video.Keyframe.ToString() -> string
+const Egami.Video.CodecIds.Ffv1 = "V_FFV1" -> string!
+Egami.Video.Codecs.Ffv1Codec
+override Egami.Video.Codecs.Ffv1Codec.CanDecode(Egami.Video.TrackInfo! track) -> bool
+override Egami.Video.Codecs.Ffv1Codec.CodecId.get -> string!
+override Egami.Video.Codecs.Ffv1Codec.CreateDecoder(Egami.Video.VideoTrackInfo! track, Egami.Video.Codecs.VideoDecoderOptions? options, Egami.Video.MediaContext! context) -> Egami.Video.Codecs.IVideoDecoder!
+override Egami.Video.Codecs.Ffv1Codec.Name.get -> string!
+static Egami.Video.Codecs.Ffv1Codec.Instance.get -> Egami.Video.Codecs.Ffv1Codec!
+static Egami.Video.Codecs.VideoCodecs.Ffv1.get -> Egami.Video.Codecs.VideoCodec!
