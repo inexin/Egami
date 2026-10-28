@@ -237,6 +237,39 @@ public class TextTests
     }
 
     [Fact]
+    public void ClearTypeBlendsPerChannelAndAntiAliasInGray()
+    {
+        using Graphics g = NewGraphics(out Bitmap b, 120, 30);
+        using (b)
+        {
+            using Font font = DejaVu12;
+            g.Clear(Color.White);
+            g.DrawString("Clear type", font, Brushes.Black, 2, 2);  // SystemDefault: ClearType, as on Windows
+            Assert.True(Fringes(b) > 10);
+            g.Clear(Color.White);
+            g.TextRenderingHint = TextRenderingHint.AntiAlias;
+            g.DrawString("Clear type", font, Brushes.Black, 2, 2);
+            Assert.Equal(0, Fringes(b));
+            Assert.NotEqual(-1, Ink(b).X0);
+        }
+
+        static int Fringes(Bitmap b)
+        {
+            int n = 0;
+            for (int y = 0; y < b.Height; y++)
+            {
+                for (int x = 0; x < b.Width; x++)
+                {
+                    Color c = b.GetPixel(x, y);
+                    n += Math.Max(c.R, Math.Max(c.G, c.B)) - Math.Min(c.R, Math.Min(c.G, c.B)) > 30 ? 1 : 0;
+                }
+            }
+
+            return n;
+        }
+    }
+
+    [Fact]
     public void AddStringAddsClosedFigures()
     {
         using GraphicsPath path = new();

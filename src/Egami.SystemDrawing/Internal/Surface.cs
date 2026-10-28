@@ -76,6 +76,63 @@ internal static class Surface
         }
     }
 
+    /// <summary>
+    /// Runs a drawing call on an opaque 8-bit RGB copy of an area, for ClearType text, which Egami blends per channel only onto
+    /// opaque RGB; the copy is written back opaque. Nothing is drawn, and false returned, when a pixel of the area is not opaque.
+    /// </summary>
+    /// <param name="frame">The frame to draw on.</param>
+    /// <param name="bounds">The device area the call can touch.</param>
+    /// <param name="options">The canvas options, such as Egami.Drawing's GDI+ ClearType preset.</param>
+    /// <param name="draw">The call.</param>
+    /// <returns>Whether the area was opaque and the call ran.</returns>
+    public static bool DrawOpaque(Frame frame, RectF bounds, CanvasOptions options, Action<Canvas> draw)
+    {
+        int x0 = Math.Clamp((int)MathF.Floor(bounds.X) - 2, 0, frame.Width);
+        int y0 = Math.Clamp((int)MathF.Floor(bounds.Y) - 2, 0, frame.Height);
+        int x1 = Math.Clamp((int)MathF.Ceiling(bounds.Right) + 2, 0, frame.Width);
+        int y1 = Math.Clamp((int)MathF.Ceiling(bounds.Bottom) + 2, 0, frame.Height);
+        if (x1 <= x0 || y1 <= y0)
+        {
+            return true;
+        }
+
+        using Raster<Rgb8> shadow = Raster.Create<Rgb8>(x1 - x0, y1 - y0);
+        for (int y = y0; y < y1; y++)
+        {
+            ReadOnlySpan<byte> row = frame.Row(y);
+            Span<Rgb8> target = shadow.Row(y - y0);
+            for (int x = x0; x < x1; x++)
+            {
+                uint v = GdiPixels.Read(frame.Format, row, x, frame.Palette);
+                if (v >> 24 != 255)
+                {
+                    return false;
+                }
+
+                target[x - x0] = new Rgb8((byte)(v >> 16), (byte)(v >> 8), (byte)v);
+            }
+        }
+
+        using (RasterCanvas<Rgb8> canvas = new(shadow, options))
+        {
+            canvas.Translate(-x0, -y0);
+            draw(canvas);
+        }
+
+        for (int y = y0; y < y1; y++)
+        {
+            Span<byte> row = frame.Row(y);
+            ReadOnlySpan<Rgb8> source = shadow.Row(y - y0);
+            for (int x = x0; x < x1; x++)
+            {
+                Rgb8 c = source[x - x0];
+                GdiPixels.Write(frame.Format, row, x, 0xFF000000u | ((uint)c.R << 16) | ((uint)c.G << 8) | c.B);
+            }
+        }
+
+        return true;
+    }
+
     private static uint Premultiply(uint argb)
     {
         byte a = (byte)(argb >> 24);

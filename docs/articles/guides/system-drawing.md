@@ -250,7 +250,10 @@ path's start and end); of the `StringFormatFlags`, `LineLimit` draws only whole 
 place the lines, `DirectionRightToLeft` aligns them from the right, `DirectionVertical` turns them a quarter clockwise, tab stops
 default to every four ems, and `HotkeyPrefix` hides ampersands and underlines the marked letters. `MeasureCharacterRanges`
 returns whole-pixel regions placed by the glyphs' hinted advances at the device size, as GDI+ places them.
-`TextRenderingHint.SingleBitPerPixel` and `SingleBitPerPixelGridFit` draw aliased text; the other hints draw it antialiased.
+`TextRenderingHint.SingleBitPerPixel` and `SingleBitPerPixelGridFit` draw aliased text, and `AntiAlias` and `AntiAliasGridFit`
+grayscale text. `ClearTypeGridFit` and `SystemDefault` (ClearType, as on a Windows desktop) draw a solid brush's text with
+Egami.Drawing's GDI+ ClearType preset: the font's hints for GDI+, grid-fitted advances, GDI+'s LCD filter and a gamma of
+1 + `TextContrast` / 10; other brushes, rotated or vertical text and translucent pixels fall back to grayscale.
 `StringDigitSubstitute` and `StringUnit` are kept and reported; digits are drawn as written.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/SystemDrawingPackage.cs#text)]
@@ -358,7 +361,8 @@ The package is measured against System.Drawing on Windows with the same probe pr
   versions; `PlayRecord` plays the whole metafile, not one record.
 - Text is laid out as GDI+ lays it out (line breaks, trimming and alignment match), and `MeasureString` agrees with GDI+ to
   about a hundredth of a pixel for Arial, Times New Roman, Courier New, Segoe UI and Microsoft Sans Serif. Glyphs are Egami's
-  unhinted outlines: about 90 percent of the pixels of drawn text match GDI+, and `ClearTypeGridFit` draws grayscale.
+  outlines: about 96 percent of the pixels of ClearType text and 90 percent of grayscale text match GDI+, and grayscale and
+  aliased glyphs are not hinted.
   Characters a font lacks are not taken from fallback fonts, and digits are not substituted.
 - `Flatten` takes as many steps as GDI+ but evaluates the curve exactly, so its points differ from GDI+'s, which are rounded to
   sixteenths of a pixel. Rounded rectangles have no zero-length segments, which GDI+'s float arithmetic adds.
