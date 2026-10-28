@@ -24436,6 +24436,19 @@ references:
   isSpec: "True"
   fullName: Egami.Fonts.Font.Hinting
   nameWithType: Font.Hinting
+- uid: Egami.Fonts.Font.HintingTarget
+  name: HintingTarget
+  href: api/Egami.Fonts.Font.html#Egami_Fonts_Font_HintingTarget
+  commentId: P:Egami.Fonts.Font.HintingTarget
+  fullName: Egami.Fonts.Font.HintingTarget
+  nameWithType: Font.HintingTarget
+- uid: Egami.Fonts.Font.HintingTarget*
+  name: HintingTarget
+  href: api/Egami.Fonts.Font.html#Egami_Fonts_Font_HintingTarget_
+  commentId: Overload:Egami.Fonts.Font.HintingTarget
+  isSpec: "True"
+  fullName: Egami.Fonts.Font.HintingTarget
+  nameWithType: Font.HintingTarget
 - uid: Egami.Fonts.Font.Kerning
   name: Kerning
   href: api/Egami.Fonts.Font.html#Egami_Fonts_Font_Kerning
@@ -24487,6 +24500,19 @@ references:
   isSpec: "True"
   fullName: Egami.Fonts.Font.MeasureText
   nameWithType: Font.MeasureText
+- uid: Egami.Fonts.Font.Metrics
+  name: Metrics
+  href: api/Egami.Fonts.Font.html#Egami_Fonts_Font_Metrics
+  commentId: P:Egami.Fonts.Font.Metrics
+  fullName: Egami.Fonts.Font.Metrics
+  nameWithType: Font.Metrics
+- uid: Egami.Fonts.Font.Metrics*
+  name: Metrics
+  href: api/Egami.Fonts.Font.html#Egami_Fonts_Font_Metrics_
+  commentId: Overload:Egami.Fonts.Font.Metrics
+  isSpec: "True"
+  fullName: Egami.Fonts.Font.Metrics
+  nameWithType: Font.Metrics
 - uid: Egami.Fonts.Font.OpticalSizing
   name: OpticalSizing
   href: api/Egami.Fonts.Font.html#Egami_Fonts_Font_OpticalSizing
@@ -25204,6 +25230,12 @@ references:
   commentId: T:Egami.Fonts.FontHinting
   fullName: Egami.Fonts.FontHinting
   nameWithType: FontHinting
+- uid: Egami.Fonts.FontHinting.Full
+  name: Full
+  href: api/Egami.Fonts.FontHinting.html#Egami_Fonts_FontHinting_Full
+  commentId: F:Egami.Fonts.FontHinting.Full
+  fullName: Egami.Fonts.FontHinting.Full
+  nameWithType: FontHinting.Full
 - uid: Egami.Fonts.FontHinting.Light
   name: Light
   href: api/Egami.Fonts.FontHinting.html#Egami_Fonts_FontHinting_Light
@@ -25375,6 +25407,30 @@ references:
   isSpec: "True"
   fullName: Egami.Fonts.FontMatch.Typeface
   nameWithType: FontMatch.Typeface
+- uid: Egami.Fonts.FontMetrics
+  name: FontMetrics
+  href: api/Egami.Fonts.FontMetrics.html
+  commentId: T:Egami.Fonts.FontMetrics
+  fullName: Egami.Fonts.FontMetrics
+  nameWithType: FontMetrics
+- uid: Egami.Fonts.FontMetrics.Compatible
+  name: Compatible
+  href: api/Egami.Fonts.FontMetrics.html#Egami_Fonts_FontMetrics_Compatible
+  commentId: F:Egami.Fonts.FontMetrics.Compatible
+  fullName: Egami.Fonts.FontMetrics.Compatible
+  nameWithType: FontMetrics.Compatible
+- uid: Egami.Fonts.FontMetrics.Design
+  name: Design
+  href: api/Egami.Fonts.FontMetrics.html#Egami_Fonts_FontMetrics_Design
+  commentId: F:Egami.Fonts.FontMetrics.Design
+  fullName: Egami.Fonts.FontMetrics.Design
+  nameWithType: FontMetrics.Design
+- uid: Egami.Fonts.FontMetrics.GridFitted
+  name: GridFitted
+  href: api/Egami.Fonts.FontMetrics.html#Egami_Fonts_FontMetrics_GridFitted
+  commentId: F:Egami.Fonts.FontMetrics.GridFitted
+  fullName: Egami.Fonts.FontMetrics.GridFitted
+  nameWithType: FontMetrics.GridFitted
 - uid: Egami.Fonts.FontNameRecord
   name: FontNameRecord
   href: api/Egami.Fonts.FontNameRecord.html
@@ -32257,6 +32313,30 @@ references:
   isSpec: "True"
   fullName: Egami.Fonts.TextMeasure.LineHeight
   nameWithType: TextMeasure.LineHeight
+- uid: Egami.Fonts.TrueTypeTarget
+  name: TrueTypeTarget
+  href: api/Egami.Fonts.TrueTypeTarget.html
+  commentId: T:Egami.Fonts.TrueTypeTarget
+  fullName: Egami.Fonts.TrueTypeTarget
+  nameWithType: TrueTypeTarget
+- uid: Egami.Fonts.TrueTypeTarget.FreeType
+  name: FreeType
+  href: api/Egami.Fonts.TrueTypeTarget.html#Egami_Fonts_TrueTypeTarget_FreeType
+  commentId: F:Egami.Fonts.TrueTypeTarget.FreeType
+  fullName: Egami.Fonts.TrueTypeTarget.FreeType
+  nameWithType: TrueTypeTarget.FreeType
+- uid: Egami.Fonts.TrueTypeTarget.Gdi
+  name: Gdi
+  href: api/Egami.Fonts.TrueTypeTarget.html#Egami_Fonts_TrueTypeTarget_Gdi
+  commentId: F:Egami.Fonts.TrueTypeTarget.Gdi
+  fullName: Egami.Fonts.TrueTypeTarget.Gdi
+  nameWithType: TrueTypeTarget.Gdi
+- uid: Egami.Fonts.TrueTypeTarget.GdiPlus
+  name: GdiPlus
+  href: api/Egami.Fonts.TrueTypeTarget.html#Egami_Fonts_TrueTypeTarget_GdiPlus
+  commentId: F:Egami.Fonts.TrueTypeTarget.GdiPlus
+  fullName: Egami.Fonts.TrueTypeTarget.GdiPlus
+  nameWithType: TrueTypeTarget.GdiPlus
 - uid: Egami.Fonts.Typeface
   name: Typeface
   href: api/Egami.Fonts.Typeface.html

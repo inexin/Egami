@@ -3765,6 +3765,20 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Fonts.FontMetrics.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Fonts.FontMetrics.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Fonts.FontMetrics",
+      "Summary": "<p sourcefile=\"api/Egami.Fonts.FontMetrics.yml\" sourcestartlinenumber=\"1\">Where a font's advances come from.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.Fonts.FontNameRecord.yml",
       "output": {
         ".html": {
@@ -5078,6 +5092,20 @@
       "IsMRef": true,
       "Title": "Egami.Fonts.TextMeasure",
       "Summary": "<p sourcefile=\"api/Egami.Fonts.TextMeasure.yml\" sourcestartlinenumber=\"1\">The size of text as <xref href=\"Egami.Fonts.Font.MeasureText(System.String%2cEgami.Fonts.Shaping.ShapingOptions)\" data-throw-if-not-resolved=\"false\"></xref> lays it out, in canvas units.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Fonts.TrueTypeTarget.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Fonts.TrueTypeTarget.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Fonts.TrueTypeTarget",
+      "Summary": "<p sourcefile=\"api/Egami.Fonts.TrueTypeTarget.yml\" sourcestartlinenumber=\"1\">Which rasterizer the TrueType interpreter answers for: what GETINFO tells the font and how instructions are softened.</p>\n"
     },
     {
       "type": "ManagedReference",

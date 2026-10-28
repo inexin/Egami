@@ -117,6 +117,13 @@ Enum FontHinting  <a class="header-action link-secondary" title="View source" hr
   <h2 id="fields">Fields
 </h2>
   <dl class="parameters">
+    <dt id="Egami_Fonts_FontHinting_Full"><code>Full = 2</code></dt>
+  
+  <dd><p>The font's own TrueType instructions, run by Egami's interpreter for <a class="xref" href="Egami.Fonts.Font.html#Egami_Fonts_Font_HintingTarget">HintingTarget</a> (in ClearType
+compatibility mode, as Windows runs them for ClearType), at a whole number of pixels per em, up to 256, under
+scale-and-translate transforms with equal x and y scales. Faces without instructions, CFF faces, variable faces and sizes the
+gasp table leaves unhinted fall back to <a class="xref" href="Egami.Fonts.FontHinting.html#Egami_Fonts_FontHinting_Light">Light</a>.</p>
+</dd>
     <dt id="Egami_Fonts_FontHinting_Light"><code>Light = 1</code></dt>
   
   <dd><p>Vertical only: the baseline, x-height and cap-height zones snap to whole pixels (from a CFF font's blue zones, else zones
