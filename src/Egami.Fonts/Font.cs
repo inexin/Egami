@@ -238,24 +238,6 @@ public readonly record struct Font
 
     private Typeface Face => EffectiveTypeface;
 
-    /// <summary>
-    /// This font as System.Drawing draws ClearTypeGridFit text: the font's TrueType instructions for GDI+
-    /// (<see cref="FontHinting.Full"/>, <see cref="TrueTypeTarget.GdiPlus"/>), <see cref="FontMetrics.GridFitted"/> advances and
-    /// LCD edging. Draw it on a canvas with Egami.Drawing's <c>CanvasOptions.GdiPlusClearType</c>.
-    /// </summary>
-    /// <returns>The font with those settings.</returns>
-    /// <example>
-    /// <code language="csharp" source="../../tests/Egami.DocSamples/SystemDrawing.cs" region="gdiplus"/>
-    /// </example>
-    public Font WithGdiPlusLook() => this with
-    {
-        Hinting = FontHinting.Full,
-        HintingTarget = TrueTypeTarget.GdiPlus,
-        Metrics = FontMetrics.GridFitted,
-        Edging = FontEdging.Lcd,
-        Subpixel = false,
-    };
-
     /// <summary>Creates a font sized in points at a resolution: <c>points * dpi / 72</c> canvas units per em.</summary>
     /// <param name="typeface">The face.</param>
     /// <param name="points">The size in points.</param>

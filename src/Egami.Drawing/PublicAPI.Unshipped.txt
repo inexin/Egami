@@ -24,4 +24,3 @@ static Egami.Drawing.LcdFilter.Custom(float outerLeft, float left, float center,
 static Egami.Drawing.LcdFilter.Default.get -> Egami.Drawing.LcdFilter!
 static Egami.Drawing.LcdFilter.Gdi.get -> Egami.Drawing.LcdFilter!
 static Egami.Drawing.LcdFilter.Light.get -> Egami.Drawing.LcdFilter!
-static Egami.Drawing.CanvasOptions.GdiPlusClearType.get -> Egami.Drawing.CanvasOptions!
