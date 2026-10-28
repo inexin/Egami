@@ -27,6 +27,7 @@ package. fontTools' reading of each is in tests/reference/fonts, written by `pyt
 | derived/SourceSerif4-VF-subset.otf, SourceSans3-VF-subset.otf | Source Serif 4 and Source Sans 3 variable CFF2 (adobe-fonts, release branches) cut to Latin-1 | SIL OFL 1.1 (LICENSES/SourceSerif4-OFL.md, SourceSans3-OFL.md) |
 | derived/NotoColorEmoji-COLRv1-subset.ttf, -CBDT-subset.ttf | Noto Color Emoji (google/fonts ofl/notocoloremoji, COLR v1; googlefonts/noto-emoji v2.047, CBDT) cut to 25 emoji | SIL OFL 1.1 (LICENSES/NotoColorEmoji-OFL.txt) |
 | derived/Twemoji-COLRv0-subset.ttf | Twemoji Mozilla 0.7.0 (COLR v0) cut to 25 emoji | CC-BY 4.0 graphics (LICENSES/Twemoji-CC-BY-4.0.txt, Twemoji-Mozilla-LICENSE.md) |
+| hinting/probe-info.ttf, probe-measure.ttf, probe-delta.ttf, probe-bars.ttf | Written by egami-compare's GDI text harness (2.7.5): rectangle glyphs whose TrueType programs report GETINFO, MPPEM, MPS, GC and MD by moving points, and 1/6-pixel bars | MIT, as Egami (made for Egami) |
 | derived/Twemoji-sbix.ttf | An sbix font built with fontTools from eight Twemoji 72-pixel PNGs (jdecked/twemoji) | CC-BY 4.0 graphics (LICENSES/Twemoji-CC-BY-4.0.txt) |
 | derived/NotoSansCJK-fd2048.cff, -fdmatrix.cff | NotoSansCJK-subset.cff with Font DICT FontMatrix values: 1/2048 in all, or none, 1/2048 and a slant | SIL OFL 1.1 (LICENSES/NotoCJK-OFL.txt) |
 | derived/NotoSans-format2.ttf | NotoSans-mac.ttf with a (1,1) format 2 cmap subtable added | SIL OFL 1.1 |

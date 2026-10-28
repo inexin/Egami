@@ -149,6 +149,27 @@ default 1) mixes the filtered coverage with the pixel's grayscale coverage, as W
 
 With all three at their defaults LCD text is drawn as in Egami 1.2.0.
 
+### TrueType hinting
+
+`FontHinting.Full` runs the font's own TrueType instructions, with Egami's interpreter, at a whole number of pixels per em.
+`Font.HintingTarget` picks what the interpreter tells the font it is: `TrueTypeTarget.GdiPlus` (the default) or `Gdi`, both with
+the answers measured from Windows and Microsoft's ClearType compatibility rules (x hinted on a 1/16-pixel grid), or `FreeType`
+(FreeType's minimal rules: x left alone). CFF faces, faces without instructions, variable faces and sizes the gasp table leaves unhinted fall back to
+`FontHinting.Light`. So does text under a transform that scales x and y differently or turns it.
+
+`Font.Metrics = FontMetrics.GridFitted` takes each glyph's advance from its hinted phantom points at that size, and
+`FontMetrics.Compatible` takes GDI's compatible widths: the hdmx table's widths, the rounded design advance where the LTSH table
+says the glyph scales linearly, or the advance of a black-and-white run of the glyph's instructions. On the six Windows UI fonts
+from 8 to 24 pixels per em, these equal GDI's `GetCharABCWidths` for 9,688 of 9,690 glyph sizes. Shaping,
+measuring and layout use these whole-pixel advances, and drawing puts every glyph origin on a whole pixel, so measured text
+always matches drawn text.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Text.cs#full-hinting)]
+
+With the GDI+ settings in that sample, a white Trebuchet MS label on a button has the brightness GDI+'s `ClearTypeGridFit`
+gives it to within 0.5%, and the mean per-pixel difference from GDI+ falls from 9.5 levels (light hinting) to 1.9 on a black
+button: for that label the two are nearly pixel for pixel the same.
+
 ### Embolden and stem darkening
 
 `Font.Embolden` grows outlines on every side by an amount in the font's units (pixels on a raster), with round joins, on top

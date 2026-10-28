@@ -171,6 +171,7 @@ static Action<Stream> Target(string name) => name switch
     "jpeg2000" => LoadJpeg2000,
     "jpeg2000codec" => DecodeJpeg2000Codec,
     "font" => LoadFont,
+    "hinting" => HintFont,
     "cff" => LoadCff,
     "fontdata" => FontData,
     "subset" => SubsetFont,
@@ -223,7 +224,7 @@ static Action<Stream> Target(string name) => name switch
         => stream => Egami.Fuzz.BarcodeFuzzTarget.Encode(name["barcode-".Length..], ReadAll(stream)),
     "barcode-read" => stream => Egami.Fuzz.BarcodeFuzzTarget.Read(ReadAll(stream)),
     "paragraph" => stream => Egami.Fuzz.ParagraphFuzzTarget.Run(ReadAll(stream), ParagraphFaces(), DrawParagraph),
-    _ => throw new ArgumentException($"Unknown fuzz target '{name}'. Targets: radiance, exr, gainmap, avif, avifbox, av1, av1stream, avif-write, heic, heicbox, hevc, isobox, jxl, jxlbox, jxlentropy, jxl-write, jxl-jpeg, jxl-lossy, png, jpeg, jpeg-depth, jpeg-write, jpeg-transform, exif, icc, iptc, psd, xmp, rawprofile, gif, apng, lzw, bmp, tga, qoi, pnm, pfm, detect, stream, tiff, tiffcodec, webp, webpcodec, vp8video, jbig2, jbig2codec, ccitt, cube, jpeg2000, jpeg2000codec, font, cff, subset, woff2, gvar, cff2, colr, instance, svgpath, ico, icoentry, psdfile, psddata, egdr, inktiff, shaping, bidi, css, hocr, alto, paragraph, svg, wmf, emf, emfplus, barcode-qr, barcode-datamatrix, barcode-pdf417, barcode-aztec, barcode-code128, barcode-code39, barcode-itf, barcode-eanupc, barcode-read."),
+    _ => throw new ArgumentException($"Unknown fuzz target '{name}'. Targets: hinting, radiance, exr, gainmap, avif, avifbox, av1, av1stream, avif-write, heic, heicbox, hevc, isobox, jxl, jxlbox, jxlentropy, jxl-write, jxl-jpeg, jxl-lossy, png, jpeg, jpeg-depth, jpeg-write, jpeg-transform, exif, icc, iptc, psd, xmp, rawprofile, gif, apng, lzw, bmp, tga, qoi, pnm, pfm, detect, stream, tiff, tiffcodec, webp, webpcodec, vp8video, jbig2, jbig2codec, ccitt, cube, jpeg2000, jpeg2000codec, font, cff, subset, woff2, gvar, cff2, colr, instance, svgpath, ico, icoentry, psdfile, psddata, egdr, inktiff, shaping, bidi, css, hocr, alto, paragraph, svg, wmf, emf, emfplus, barcode-qr, barcode-datamatrix, barcode-pdf417, barcode-aztec, barcode-code128, barcode-code39, barcode-itf, barcode-eanupc, barcode-read."),
 };
 
 static EgamiContext Context()
@@ -2107,6 +2108,53 @@ static void LoadFont(Stream stream)
             catch (EgamiException) when (strict)
             {
             }
+        }
+    }
+}
+
+// TrueType hinting (Phase 2.7.5): the first glyphs of every face hinted for each target at a few sizes, GDI's compatible widths,
+// and text shaped and measured with grid-fitted metrics. The interpreter must stop broken programs itself: only EgamiExceptions
+// may escape, and no glyph may hang.
+static void HintFont(Stream stream)
+{
+    byte[] data = ReadAll(stream);
+    IReadOnlyList<Egami.Fonts.Typeface> faces;
+    try
+    {
+        faces = Egami.Fonts.FontLoader.LoadAll(data, new Egami.Fonts.FontLoadOptions { Context = Context() });
+    }
+    catch (EgamiException)
+    {
+        return;
+    }
+
+    foreach (Egami.Fonts.Typeface face in faces)
+    {
+        try
+        {
+            int glyphs = Math.Min(face.GlyphCount, 48);
+            foreach (int ppem in new[] { 9, 16, 37 })
+            {
+                foreach (Egami.Fonts.TrueTypeTarget target in new[] { Egami.Fonts.TrueTypeTarget.GdiPlus, Egami.Fonts.TrueTypeTarget.Gdi, Egami.Fonts.TrueTypeTarget.FreeType })
+                {
+                    for (int g = 0; g < glyphs; g++)
+                    {
+                        _ = face.GetHintedGlyph((ushort)g, ppem, target);
+                    }
+                }
+
+                for (int g = 0; g < glyphs; g++)
+                {
+                    _ = face.GetCompatibleAdvance((ushort)g, ppem);
+                }
+
+                var font = new Egami.Fonts.Font(face, ppem) { Hinting = Egami.Fonts.FontHinting.Full, Metrics = Egami.Fonts.FontMetrics.GridFitted };
+                _ = font.MeasureText("Hamburgefonstiv 0123");
+                _ = (font with { Metrics = Egami.Fonts.FontMetrics.Compatible }).MeasureText("Hamburgefonstiv 0123");
+            }
+        }
+        catch (EgamiException)
+        {
         }
     }
 }

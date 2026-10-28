@@ -544,23 +544,65 @@ public class InterpreterTests
     [Fact]
     public void CompatibilityModeAFreezesXAndAllAfterIup()
     {
-        // GDI+ target (mode A): SHPIX in x does nothing; an MDAP x move does nothing but touches.
-        (_, Zone z) = Move(Code([2, 64], 0x01, 0x38), InterpreterTarget.GdiPlus);
+        // The FreeType-like target (mode A): SHPIX in x does nothing; an MDAP x move does nothing but touches.
+        (_, Zone z) = Move(Code([2, 64], 0x01, 0x38), InterpreterTarget.FreeType);
         Assert.Equal(200, z.CurX[2]);
         Zone start = Square();
         start.CurX[2] = start.OrgX[2] = start.UnscaledX[2] = 220;
-        TrueTypeInterpreter t = Ready(target: InterpreterTarget.GdiPlus);
+        TrueTypeInterpreter t = Ready(target: InterpreterTarget.FreeType);
         Assert.True(t.RunForTest(Code([2], 0x01, 0x2F), start, new GraphicsState()));
         Assert.Equal(220, start.CurX[2]);
         Assert.Equal(Zone.TouchX, start.Touched[2]);
 
         // After IUP[y] and IUP[x], a y move is ignored.
-        (_, z) = Move(Code([1, 0], 0x30, 0x31, 0x00, 0x10, 0xB0, 0, 0x10, 0xB0, 1, 0xC4), InterpreterTarget.GdiPlus);
+        (_, z) = Move(Code([1, 0], 0x30, 0x31, 0x00, 0x10, 0xB0, 0, 0x10, 0xB0, 1, 0xC4), InterpreterTarget.FreeType);
         Assert.Equal(200, z.CurY[1]);
 
         // Before IUP, a y move works.
-        (_, z) = Move(Code([1, 0], 0x00, 0x10, 0xC4), InterpreterTarget.GdiPlus);
+        (_, z) = Move(Code([1, 0], 0x00, 0x10, 0xC4), InterpreterTarget.FreeType);
         Assert.Equal(192, z.CurY[1]);
+    }
+
+    [Fact]
+    public void VirtualGridRoundsXToSixteenthsAndKeepsXMoves()
+    {
+        // GDI+ (mode B): SHPIX in x moves, as the probes showed on Windows.
+        (_, Zone z) = Move(Code([2, 64], 0x01, 0x38), InterpreterTarget.GdiPlus);
+        Assert.Equal(264, z.CurX[2]);
+
+        // MDAP[round] in x rounds to 1/16 pixel (222 -> 224), in y to whole pixels (222 -> 192).
+        Zone start = Square();
+        start.CurX[2] = start.OrgX[2] = start.UnscaledX[2] = 222;
+        start.CurY[2] = start.OrgY[2] = start.UnscaledY[2] = 222;
+        TrueTypeInterpreter t = Ready(target: InterpreterTarget.GdiPlus);
+        Assert.True(t.RunForTest(Code([2, 2], 0x01, 0x2F, 0x00, 0x2F), start, new GraphicsState()));
+        Assert.Equal(224, start.CurX[2]);
+        Assert.Equal(192, start.CurY[2]);
+
+        // Moves after both IUPs still count.
+        (_, z) = Move(Code([1, 0], 0x30, 0x31, 0x00, 0x10, 0xB0, 1, 0xC4), InterpreterTarget.GdiPlus);
+        Assert.Equal(192, z.CurY[1]);
+    }
+
+    [Fact]
+    public void VirtualGridAppliesTheCutInWithoutRoundingAndShrinksItInX()
+    {
+        // MIRP[no round] from point 0 to point 3 (x 200) by cvt[0] = 100: the outline differs by more than the x cut-in
+        // (68 / 16 = 4), so the outline's 200 stays. As written (no compatibility mode), the control value's 100 is used.
+        (_, Zone z) = Move(Code([3, 0, 0], 0x01, 0x10, 0xE0), InterpreterTarget.GdiPlus);
+        Assert.Equal(200, z.CurX[3]);
+        (_, z) = Move(Code([3, 0, 0], 0x01, 0x10, 0xE0));
+        Assert.Equal(100, z.CurX[3]);
+    }
+
+    [Fact]
+    public void VirtualGridDeltasNeedAPointTouchedInY()
+    {
+        // DELTAP1 +1 px at 16 ppem on point 1: skipped while untouched in y, applied once MDAP[0] has touched it.
+        (_, Zone z) = Move(Code([0x7F, 1, 1], 0x00, 0x5D), InterpreterTarget.GdiPlus);
+        Assert.Equal(200, z.CurY[1]);
+        (_, z) = Move(Code([0x7F, 1, 1, 1], 0x00, 0x2E, 0x5D), InterpreterTarget.GdiPlus);
+        Assert.Equal(264, z.CurY[1]);
     }
 
     [Fact]

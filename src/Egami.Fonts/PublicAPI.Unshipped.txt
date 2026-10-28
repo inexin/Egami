@@ -3,3 +3,16 @@ Egami.Fonts.Font.Embolden.get -> float
 Egami.Fonts.Font.Embolden.init -> void
 Egami.Fonts.Font.StemDarkening.get -> bool
 Egami.Fonts.Font.StemDarkening.init -> void
+Egami.Fonts.Font.HintingTarget.get -> Egami.Fonts.TrueTypeTarget
+Egami.Fonts.Font.HintingTarget.init -> void
+Egami.Fonts.Font.Metrics.get -> Egami.Fonts.FontMetrics
+Egami.Fonts.Font.Metrics.init -> void
+Egami.Fonts.FontHinting.Full = 2 -> Egami.Fonts.FontHinting
+Egami.Fonts.FontMetrics
+Egami.Fonts.FontMetrics.Design = 0 -> Egami.Fonts.FontMetrics
+Egami.Fonts.FontMetrics.GridFitted = 1 -> Egami.Fonts.FontMetrics
+Egami.Fonts.TrueTypeTarget
+Egami.Fonts.TrueTypeTarget.FreeType = 2 -> Egami.Fonts.TrueTypeTarget
+Egami.Fonts.TrueTypeTarget.Gdi = 1 -> Egami.Fonts.TrueTypeTarget
+Egami.Fonts.TrueTypeTarget.GdiPlus = 0 -> Egami.Fonts.TrueTypeTarget
+Egami.Fonts.FontMetrics.Compatible = 2 -> Egami.Fonts.FontMetrics
