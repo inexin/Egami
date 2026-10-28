@@ -6,7 +6,7 @@
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <meta name="title" content="Class CodecHeaders | Egami ">
       
-      <meta name="description" content="Lists what a compressed frame&#39;s header says, field by field under the codec specification&#39;s names, for tools such as egami-video info --headers and for checking an encoder&#39;s output. VP8 (RFC 6386 sections 9 and 19), VP9 (VP9 bitstream specification sections 6.2 and 6.3) and AV1 (AV1 specification section 5) are described; later codecs add theirs to the same call. An AV1 frame header depends on the reference frames, so  reads a track&#39;s packets in order to list them whole.">
+      <meta name="description" content="Lists what a compressed frame&#39;s header says, field by field under the codec specification&#39;s names, for tools such as egami-video info --headers and for checking an encoder&#39;s output. VP8 (RFC 6386 sections 9 and 19), VP9 (VP9 bitstream specification sections 6.2 and 6.3), AV1 (AV1 specification section 5) and FFV1 (RFC 9043 section 4) are described; later codecs add theirs to the same call. An AV1 frame header depends on the reference frames, so  reads a track&#39;s packets in order to list them whole.">
       <link rel="icon" href="../images/favicon.ico">
       <link rel="stylesheet" href="../public/docfx.min.css">
       <link rel="stylesheet" href="../public/main.css">
@@ -99,7 +99,7 @@ Class CodecHeaders  <a class="header-action link-secondary" title="View source" 
 
   <div class="markdown summary"><p>Lists what a compressed frame's header says, field by field under the codec specification's names, for tools such as
 <code>egami-video info --headers</code> and for checking an encoder's output. VP8 (RFC 6386 sections 9 and 19), VP9 (VP9
-bitstream specification sections 6.2 and 6.3) and AV1 (AV1 specification section 5) are described; later codecs add theirs to
+bitstream specification sections 6.2 and 6.3), AV1 (AV1 specification section 5) and FFV1 (RFC 9043 section 4) are described; later codecs add theirs to
 the same call. An AV1 frame header depends on the reference frames, so <a class="xref" href="Egami.Video.Codecs.CodecHeaderReader.html">CodecHeaderReader</a> reads a track's packets
 in order to list them whole.</p>
 </div>
@@ -213,7 +213,7 @@ while (demuxer.ReadPacket() is { } packet)
 
   <h3 id="Egami_Video_Codecs_CodecHeaders_Describe_Egami_Video_TrackInfo_Egami_Video_EncodedPacket_" data-uid="Egami.Video.Codecs.CodecHeaders.Describe(Egami.Video.TrackInfo,Egami.Video.EncodedPacket)">
   Describe(TrackInfo, EncodedPacket)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Codecs/CodecHeaders.cs/#L60"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Codecs/CodecHeaders.cs/#L63"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Lists the header fields of one packet of <code class="paramref">track</code>, in bitstream order. Lists in the header give one field
@@ -227,7 +227,10 @@ read with the track's size, which decides how many tile bits it has. For AV1, ea
 <code>temporal_id</code> and <code>spatial_id</code> when it has an extension) and <code>obu_size</code>, then a sequence header its coded
 fields, a metadata OBU <code>metadata_type</code> and its fields (content light level, mastering display, scalability,
 timecode; ITU-T T.35 as its country code and <code>itu_t_t35_payload_bytes</code>, the payload's length), and a frame header
-its start up to <code>error_resilient_mode</code>; the rest needs the reference frames, which <a class="xref" href="Egami.Video.Codecs.CodecHeaderReader.html">CodecHeaderReader</a> keeps.</p>
+its start up to <code>error_resilient_mode</code>; the rest needs the reference frames, which <a class="xref" href="Egami.Video.Codecs.CodecHeaderReader.html">CodecHeaderReader</a> keeps.
+For FFV1, the configuration record's parameters come first when the track has one (version 3), then <code>keyframe</code>; a
+version 0 or 1 keyframe follows with its parameters, a version 3 frame with each slice's header and footer after a
+<code>slice</code> field with its index.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
 

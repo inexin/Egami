@@ -337,7 +337,7 @@ while (demuxer.ReadPacket() is { } packet)
 
 decoder.Flush();
 </code></pre>
-<p>Each codec is a <code>VideoCodec</code>: <code>Av1Codec</code>, <code>Vp9Codec</code>, <code>Vp8Codec</code>, <code>MotionJpegCodec</code> and <code>RawVideoCodec</code>.</p>
+<p>Each codec is a <code>VideoCodec</code>: <code>Av1Codec</code>, <code>Vp9Codec</code>, <code>Vp8Codec</code>, <code>Ffv1Codec</code>, <code>MotionJpegCodec</code> and <code>RawVideoCodec</code>.</p>
 <pre><code class="lang-csharp">// The built-in codecs, for a MediaContext of your own or to create decoders directly.
 VideoCodec vp9 = Vp9Codec.Instance, vp8 = Vp8Codec.Instance, mjpeg = MotionJpegCodec.Instance, raw = RawVideoCodec.Instance;
 using IVideoDecoder decoder = vp9.CreateDecoder(track, VideoDecoderOptions.Default, MediaContext.Default);
@@ -364,8 +364,8 @@ while (encoder.TryReceive(out EncodedPacket? packet))
 // Uncompressed frames go the same way, losslessly.
 using IVideoEncoder rawEncoder = RawVideoCodec.Instance.CreateEncoder(options with { ChromaFormat = ChromaFormat.Yuv444 }, MediaContext.Default);
 </code></pre>
-<p><code>CodecHeaders.Describe</code> lists a packet's header fields as <code>CodecHeaderField</code>s under the codec's own names, for VP8, VP9, AV1 and
-Motion JPEG.</p>
+<p><code>CodecHeaders.Describe</code> lists a packet's header fields as <code>CodecHeaderField</code>s under the codec's own names, for VP8, VP9, AV1,
+FFV1 and Motion JPEG.</p>
 <pre><code class="lang-csharp">// A packet's header fields under the codec's own names, as a hex dump with meaning.
 using IDemuxer demuxer = MediaFile.OpenDemuxer(&quot;movie.webm&quot;);
 TrackInfo track = demuxer.Tracks[0];
@@ -466,6 +466,34 @@ while (demuxer.ReadPacket() is { } packet)
         Console.WriteLine(string.Join(&quot;, &quot;, fields.Where(f =&gt; f.Name is &quot;frame_type&quot; or &quot;order_hint&quot; or &quot;base_q_idx&quot;).Select(f =&gt; $&quot;{f.Name} = {f.Value}&quot;)));
     }
 }
+</code></pre><h2 id="ffv1">FFV1</h2>
+<p><code>Ffv1Codec</code> decodes FFV1, the lossless codec archives use (RFC 9043), from Matroska (<code>V_FFV1</code>) and AVI (FourCC <code>FFV1</code>):
+versions 0, 1 and 3, Golomb-Rice and the range coder, YCbCr 4:2:0, 4:2:2, 4:4:4, 4:1:1, 4:1:0 and gray, RGB, each with or
+without alpha, at 8 to 16 bits. Every frame equals FFmpeg's sample for sample.</p>
+<ul>
+<li>Frames keep their planes: 8-bit planes, or 16-bit planes holding 10, 12 or 16 bits. Depths 9, 11, 13, 14 and 15 sit in the
+next of those with their samples shifted up, so nothing is lost; the track's <code>BitDepth</code> gives the source depth. RGB comes out
+as G, B and R planes tagged <code>YuvMatrix.Identity</code>, which <code>ToRaster</code> turns back into RGB exactly.</li>
+<li>A version 3 track's configuration record (its <code>CodecPrivate</code>) gives the depth and subsampling before any frame is decoded.</li>
+<li>Every slice CRC is checked. Broken data follows <code>VideoReaderOptions.Errors</code>: a damaged slice is reported as <code>Ffv1.SliceCrc</code>
+(or <code>Ffv1.CorruptFrame</code> when it cannot be read), a frame with no keyframe before it as <code>Ffv1.MissingReference</code> and a damaged
+configuration record as <code>Ffv1.ConfigCrc</code>. <code>Skip</code> drops the frame, <code>Conceal</code> shows the last good frame where the slice was.</li>
+<li><code>CodecHeaders.Describe</code> lists the parameters, the keyframe flag and each slice's header and footer.</li>
+</ul>
+<pre><code class="lang-csharp">// FFV1 archives from Matroska or AVI read like any other video. A 10-bit master gives 16-bit planes holding 10 bits;
+// the track says the depth and subsampling before any frame is decoded.
+using VideoReader reader = VideoReader.Open(&quot;master.mkv&quot;, new VideoReaderOptions { Errors = DecodeErrorMode.Conceal }, context);
+Console.WriteLine($&quot;{reader.Track.CodecId}: {reader.Track.BitDepth} bit {reader.Track.ChromaFormat}&quot;);
+foreach (YuvVideoFrame frame in reader.ReadFrames())
+{
+    using (frame)
+    {
+        Console.WriteLine($&quot;{frame.Timestamp}: {frame.Raster.BitDepth} bit {frame.Raster.ChromaFormat}&quot;);
+    }
+}
+
+// Every slice's CRC is checked: a damaged one is reported as Ffv1.SliceCrc and, with Conceal, shows the last good frame.
+Console.WriteLine($&quot;{reported.Count(d =&gt; d.Id == &quot;Ffv1.SliceCrc&quot;)} damaged slices&quot;);
 </code></pre><h2 id="hdr">HDR</h2>
 <p>A frame's <code>Color</code> and <code>Hdr</code> carry its color code points and static HDR metadata. <code>YuvVideoFrame.ToRaster</code> with a target
 <code>ColorProfile</code> converts through Egami's color pipeline and tone maps PQ and HLG to SDR. VP9 frames in WebM carry HDR10+

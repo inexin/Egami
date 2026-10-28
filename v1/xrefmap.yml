@@ -84037,6 +84037,12 @@ references:
   commentId: F:Egami.Video.CodecIds.EAc3
   fullName: Egami.Video.CodecIds.EAc3
   nameWithType: CodecIds.EAc3
+- uid: Egami.Video.CodecIds.Ffv1
+  name: Ffv1
+  href: api/Egami.Video.CodecIds.html#Egami_Video_CodecIds_Ffv1
+  commentId: F:Egami.Video.CodecIds.Ffv1
+  fullName: Egami.Video.CodecIds.Ffv1
+  nameWithType: CodecIds.Ffv1
 - uid: Egami.Video.CodecIds.Flac
   name: Flac
   href: api/Egami.Video.CodecIds.html#Egami_Video_CodecIds_Flac
@@ -84687,6 +84693,80 @@ references:
   isSpec: "True"
   fullName: Egami.Video.Codecs.EncodeFrameOptions.ForceKeyframe
   nameWithType: EncodeFrameOptions.ForceKeyframe
+- uid: Egami.Video.Codecs.Ffv1Codec
+  name: Ffv1Codec
+  href: api/Egami.Video.Codecs.Ffv1Codec.html
+  commentId: T:Egami.Video.Codecs.Ffv1Codec
+  fullName: Egami.Video.Codecs.Ffv1Codec
+  nameWithType: Ffv1Codec
+- uid: Egami.Video.Codecs.Ffv1Codec.CanDecode(Egami.Video.TrackInfo)
+  name: CanDecode(TrackInfo)
+  href: api/Egami.Video.Codecs.Ffv1Codec.html#Egami_Video_Codecs_Ffv1Codec_CanDecode_Egami_Video_TrackInfo_
+  commentId: M:Egami.Video.Codecs.Ffv1Codec.CanDecode(Egami.Video.TrackInfo)
+  fullName: Egami.Video.Codecs.Ffv1Codec.CanDecode(Egami.Video.TrackInfo)
+  nameWithType: Ffv1Codec.CanDecode(TrackInfo)
+- uid: Egami.Video.Codecs.Ffv1Codec.CanDecode*
+  name: CanDecode
+  href: api/Egami.Video.Codecs.Ffv1Codec.html#Egami_Video_Codecs_Ffv1Codec_CanDecode_
+  commentId: Overload:Egami.Video.Codecs.Ffv1Codec.CanDecode
+  isSpec: "True"
+  fullName: Egami.Video.Codecs.Ffv1Codec.CanDecode
+  nameWithType: Ffv1Codec.CanDecode
+- uid: Egami.Video.Codecs.Ffv1Codec.CodecId
+  name: CodecId
+  href: api/Egami.Video.Codecs.Ffv1Codec.html#Egami_Video_Codecs_Ffv1Codec_CodecId
+  commentId: P:Egami.Video.Codecs.Ffv1Codec.CodecId
+  fullName: Egami.Video.Codecs.Ffv1Codec.CodecId
+  nameWithType: Ffv1Codec.CodecId
+- uid: Egami.Video.Codecs.Ffv1Codec.CodecId*
+  name: CodecId
+  href: api/Egami.Video.Codecs.Ffv1Codec.html#Egami_Video_Codecs_Ffv1Codec_CodecId_
+  commentId: Overload:Egami.Video.Codecs.Ffv1Codec.CodecId
+  isSpec: "True"
+  fullName: Egami.Video.Codecs.Ffv1Codec.CodecId
+  nameWithType: Ffv1Codec.CodecId
+- uid: Egami.Video.Codecs.Ffv1Codec.CreateDecoder(Egami.Video.VideoTrackInfo,Egami.Video.Codecs.VideoDecoderOptions,Egami.Video.MediaContext)
+  name: CreateDecoder(VideoTrackInfo, VideoDecoderOptions?, MediaContext)
+  href: api/Egami.Video.Codecs.Ffv1Codec.html#Egami_Video_Codecs_Ffv1Codec_CreateDecoder_Egami_Video_VideoTrackInfo_Egami_Video_Codecs_VideoDecoderOptions_Egami_Video_MediaContext_
+  commentId: M:Egami.Video.Codecs.Ffv1Codec.CreateDecoder(Egami.Video.VideoTrackInfo,Egami.Video.Codecs.VideoDecoderOptions,Egami.Video.MediaContext)
+  name.vb: CreateDecoder(VideoTrackInfo, VideoDecoderOptions, MediaContext)
+  fullName: Egami.Video.Codecs.Ffv1Codec.CreateDecoder(Egami.Video.VideoTrackInfo, Egami.Video.Codecs.VideoDecoderOptions?, Egami.Video.MediaContext)
+  fullName.vb: Egami.Video.Codecs.Ffv1Codec.CreateDecoder(Egami.Video.VideoTrackInfo, Egami.Video.Codecs.VideoDecoderOptions, Egami.Video.MediaContext)
+  nameWithType: Ffv1Codec.CreateDecoder(VideoTrackInfo, VideoDecoderOptions?, MediaContext)
+  nameWithType.vb: Ffv1Codec.CreateDecoder(VideoTrackInfo, VideoDecoderOptions, MediaContext)
+- uid: Egami.Video.Codecs.Ffv1Codec.CreateDecoder*
+  name: CreateDecoder
+  href: api/Egami.Video.Codecs.Ffv1Codec.html#Egami_Video_Codecs_Ffv1Codec_CreateDecoder_
+  commentId: Overload:Egami.Video.Codecs.Ffv1Codec.CreateDecoder
+  isSpec: "True"
+  fullName: Egami.Video.Codecs.Ffv1Codec.CreateDecoder
+  nameWithType: Ffv1Codec.CreateDecoder
+- uid: Egami.Video.Codecs.Ffv1Codec.Instance
+  name: Instance
+  href: api/Egami.Video.Codecs.Ffv1Codec.html#Egami_Video_Codecs_Ffv1Codec_Instance
+  commentId: P:Egami.Video.Codecs.Ffv1Codec.Instance
+  fullName: Egami.Video.Codecs.Ffv1Codec.Instance
+  nameWithType: Ffv1Codec.Instance
+- uid: Egami.Video.Codecs.Ffv1Codec.Instance*
+  name: Instance
+  href: api/Egami.Video.Codecs.Ffv1Codec.html#Egami_Video_Codecs_Ffv1Codec_Instance_
+  commentId: Overload:Egami.Video.Codecs.Ffv1Codec.Instance
+  isSpec: "True"
+  fullName: Egami.Video.Codecs.Ffv1Codec.Instance
+  nameWithType: Ffv1Codec.Instance
+- uid: Egami.Video.Codecs.Ffv1Codec.Name
+  name: Name
+  href: api/Egami.Video.Codecs.Ffv1Codec.html#Egami_Video_Codecs_Ffv1Codec_Name
+  commentId: P:Egami.Video.Codecs.Ffv1Codec.Name
+  fullName: Egami.Video.Codecs.Ffv1Codec.Name
+  nameWithType: Ffv1Codec.Name
+- uid: Egami.Video.Codecs.Ffv1Codec.Name*
+  name: Name
+  href: api/Egami.Video.Codecs.Ffv1Codec.html#Egami_Video_Codecs_Ffv1Codec_Name_
+  commentId: Overload:Egami.Video.Codecs.Ffv1Codec.Name
+  isSpec: "True"
+  fullName: Egami.Video.Codecs.Ffv1Codec.Name
+  nameWithType: Ffv1Codec.Name
 - uid: Egami.Video.Codecs.FirstPassStats
   name: FirstPassStats
   href: api/Egami.Video.Codecs.FirstPassStats.html
@@ -85374,6 +85454,19 @@ references:
   fullName.vb: Egami.Video.Codecs.VideoCodecs.CreateDecoder(Of TPixel)(Egami.Video.VideoTrackInfo, Egami.Video.Codecs.VideoDecoderOptions, Egami.Video.MediaContext)
   nameWithType: VideoCodecs.CreateDecoder<TPixel>(VideoTrackInfo, VideoDecoderOptions?, MediaContext?)
   nameWithType.vb: VideoCodecs.CreateDecoder(Of TPixel)(VideoTrackInfo, VideoDecoderOptions, MediaContext)
+- uid: Egami.Video.Codecs.VideoCodecs.Ffv1
+  name: Ffv1
+  href: api/Egami.Video.Codecs.VideoCodecs.html#Egami_Video_Codecs_VideoCodecs_Ffv1
+  commentId: P:Egami.Video.Codecs.VideoCodecs.Ffv1
+  fullName: Egami.Video.Codecs.VideoCodecs.Ffv1
+  nameWithType: VideoCodecs.Ffv1
+- uid: Egami.Video.Codecs.VideoCodecs.Ffv1*
+  name: Ffv1
+  href: api/Egami.Video.Codecs.VideoCodecs.html#Egami_Video_Codecs_VideoCodecs_Ffv1_
+  commentId: Overload:Egami.Video.Codecs.VideoCodecs.Ffv1
+  isSpec: "True"
+  fullName: Egami.Video.Codecs.VideoCodecs.Ffv1
+  nameWithType: VideoCodecs.Ffv1
 - uid: Egami.Video.Codecs.VideoCodecs.Get(System.String,Egami.Video.MediaContext)
   name: Get(string, MediaContext?)
   href: api/Egami.Video.Codecs.VideoCodecs.html#Egami_Video_Codecs_VideoCodecs_Get_System_String_Egami_Video_MediaContext_

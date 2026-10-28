@@ -129,7 +129,7 @@ of the start <a class="xref" href="Egami.Video.Codecs.CodecHeaders.html#Egami_Vi
       <dt><a class="xref" href="Egami.Video.Codecs.CodecHeaders.html">CodecHeaders</a></dt>
       <dd><p>Lists what a compressed frame's header says, field by field under the codec specification's names, for tools such as
 <code>egami-video info --headers</code> and for checking an encoder's output. VP8 (RFC 6386 sections 9 and 19), VP9 (VP9
-bitstream specification sections 6.2 and 6.3) and AV1 (AV1 specification section 5) are described; later codecs add theirs to
+bitstream specification sections 6.2 and 6.3), AV1 (AV1 specification section 5) and FFV1 (RFC 9043 section 4) are described; later codecs add theirs to
 the same call. An AV1 frame header depends on the reference frames, so <a class="xref" href="Egami.Video.Codecs.CodecHeaderReader.html">CodecHeaderReader</a> reads a track's packets
 in order to list them whole.</p>
 </dd>
@@ -137,6 +137,16 @@ in order to list them whole.</p>
     <dl class="jumplist">
       <dt><a class="xref" href="Egami.Video.Codecs.EncodeFrameOptions.html">EncodeFrameOptions</a></dt>
       <dd><p>What one <a class="xref" href="Egami.Video.Codecs.IVideoEncoder.html#Egami_Video_Codecs_IVideoEncoder_Send_Egami_Video_VideoFrame_Egami_Video_Codecs_EncodeFrameOptions_">Send(VideoFrame, EncodeFrameOptions)</a> call asks for beyond the frame.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Codecs.Ffv1Codec.html">Ffv1Codec</a></dt>
+      <dd><p>FFV1, the lossless video codec archives use (RFC 9043), as Matroska and AVI carry it: versions 0, 1 and 3, Golomb-Rice and
+the range coder with the default or a custom state table, YCbCr 4:2:0, 4:2:2, 4:4:4, 4:1:1, 4:1:0 and gray with or without
+alpha, and RGB with or without alpha, at 8 to 16 bits, every frame equal to FFmpeg's sample for sample. Frames come out as
+their own planes: 8-bit planes, or 16-bit planes holding 10, 12 or 16 bits, where depths 9, 11, 13, 14 and 15 sit in the
+next of those with their samples shifted up. RGB comes out as G, B and R planes tagged <a class="xref" href="Egami.Pixels.YuvMatrix.html#Egami_Pixels_YuvMatrix_Identity">Identity</a>.
+Version 2, which was experimental, and 4:4:0 streams are not decoded.</p>
 </dd>
     </dl>
     <dl class="jumplist">
