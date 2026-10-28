@@ -58,6 +58,8 @@ internal sealed class GrowableBuffer<T>(IPixelMemorySource source) : IDisposable
 /// <summary>One band's scratch: its cells, row heads, coverage row and crossings. One per thread at a time; reused across calls.</summary>
 internal sealed class Workspace(IPixelMemorySource source) : IDisposable
 {
+    private GrowableBuffer<int>? _samples;
+
     internal GrowableBuffer<Cell> Cells { get; } = new(source);
 
     internal GrowableBuffer<int> RowHeads { get; } = new(source);
@@ -68,6 +70,10 @@ internal sealed class Workspace(IPixelMemorySource source) : IDisposable
 
     internal GrowableBuffer<Crossing> Crossings { get; } = new(source);
 
+    /// <summary>Per sample column, how many covered spans start there less how many end there (<see cref="SampledRasterizer"/>).</summary>
+    /// <remarks>Made on first use, so the exact rasterizer's workspaces allocate nothing more.</remarks>
+    internal GrowableBuffer<int> Samples => _samples ??= new(source);
+
     public void Dispose()
     {
         Cells.Dispose();
@@ -75,6 +81,7 @@ internal sealed class Workspace(IPixelMemorySource source) : IDisposable
         Coverage.Dispose();
         RowCells.Dispose();
         Crossings.Dispose();
+        _samples?.Dispose();
     }
 }
 

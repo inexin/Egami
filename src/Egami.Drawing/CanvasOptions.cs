@@ -53,6 +53,40 @@ public enum PixelGeometry
     BgrVertical,
 }
 
+/// <summary>Where a canvas puts its pixel centres, for paths and unhinted text: GDI+'s <c>PixelOffsetMode</c>.</summary>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/SystemDrawing.cs" region="gdiplus-shapes"/>
+/// </example>
+public enum PixelOffset
+{
+    /// <summary>Whole coordinates fall on pixel edges and pixel centres at half coordinates: Egami's default, GDI+'s <c>Half</c>.</summary>
+    Half,
+
+    /// <summary>
+    /// Whole coordinates fall on pixel centres, as GDI+ draws by default (<c>PixelOffsetMode.None</c>, <c>Default</c> and
+    /// <c>HighSpeed</c>): paths, their paints and unhinted text move half a pixel right and down. Hinted text and images do not move.
+    /// </summary>
+    None,
+}
+
+/// <summary>How a canvas antialiases shapes.</summary>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/SystemDrawing.cs" region="gdiplus-shapes"/>
+/// </example>
+public enum Antialiasing
+{
+    /// <summary>The exact area each pixel has inside the shape, in 256 levels: Egami's default.</summary>
+    Exact,
+
+    /// <summary>
+    /// As measured from GDI+'s <c>SmoothingMode.AntiAlias</c> and <c>HighQuality</c>: 8 by 4 point samples a pixel, at eighths
+    /// across and quarters down from its top-left corner, so coverage comes in 32 steps. A sample on a shape's left or top edge is
+    /// inside and one on its right or bottom edge is outside. Pens whose device width is 1.5 pixels or less draw as GDI+'s thin
+    /// lines: one pixel thick across the line's major axis, with pointed ends and no caps.
+    /// </summary>
+    GdiPlus,
+}
+
 /// <summary>Settings for a raster canvas.</summary>
 /// <example>
 /// <code language="csharp" source="../../tests/Egami.DocSamples/Drawing.cs" region="canvas"/>
@@ -70,6 +104,8 @@ public sealed record class CanvasOptions
     private readonly LcdFilter _lcdFilter = LcdFilter.Default;
     private readonly LcdSampling _lcdSampling;
     private readonly float _clearTypeLevel = 1;
+    private readonly PixelOffset _pixelOffset;
+    private readonly Antialiasing _antialiasing;
 
     /// <summary>Gets the options every canvas starts with.</summary>
     public static CanvasOptions Default { get; } = new();
@@ -77,7 +113,8 @@ public sealed record class CanvasOptions
     /// <summary>
     /// Gets the canvas settings of System.Drawing's ClearTypeGridFit text, as measured on Windows in 2.7.5 and 2.7.6: an RGB stripe,
     /// <see cref="LcdFilter.Gdi"/>, <see cref="LcdSampling.Gdi"/> (coverage in sixths, blended through GDI+'s 8-bit gamma tables)
-    /// and a <see cref="TextGamma"/> of 1.4 (GDI+'s 1 + Graphics.TextContrast / 10 at its default contrast of 4). Use it with fonts from <see cref="Fonts.Font.WithGdiPlusLook"/>.
+    /// a <see cref="TextGamma"/> of 1.4 (GDI+'s 1 + Graphics.TextContrast / 10 at its default contrast of 4), and GDI+'s default
+    /// <see cref="PixelOffset.None"/> with its <see cref="Antialiasing.GdiPlus"/> shapes (2.7.6). Use it with fonts from <see cref="Fonts.Font.WithGdiPlusLook"/>.
     /// </summary>
     /// <example>
     /// <code language="csharp" source="../../tests/Egami.DocSamples/SystemDrawing.cs" region="gdiplus"/>
@@ -88,6 +125,8 @@ public sealed record class CanvasOptions
         LcdFilter = LcdFilter.Gdi,
         LcdSampling = LcdSampling.Gdi,
         TextGamma = 1.4f,
+        PixelOffset = PixelOffset.None,
+        Antialiasing = Antialiasing.GdiPlus,
     };
 
     /// <summary>
@@ -209,5 +248,34 @@ public sealed record class CanvasOptions
     {
         get => _clearTypeLevel;
         init => _clearTypeLevel = value is >= 0 and <= 1 ? value : throw new ArgumentOutOfRangeException(nameof(value), value, "The ClearType level must be from 0 to 1.");
+    }
+
+    /// <summary>
+    /// Gets where pixel centres are. Defaults to <see cref="Drawing.PixelOffset.Half"/>; <see cref="Drawing.PixelOffset.None"/> is
+    /// GDI+'s default, which moves paths and unhinted text half a pixel.
+    /// </summary>
+    /// <example>
+    /// <code language="csharp" source="../../tests/Egami.DocSamples/SystemDrawing.cs" region="gdiplus-shapes"/>
+    /// </example>
+    /// <exception cref="ArgumentOutOfRangeException">The value is not defined.</exception>
+    public PixelOffset PixelOffset
+    {
+        get => _pixelOffset;
+        init => _pixelOffset = Enum.IsDefined(value) ? value : throw new ArgumentOutOfRangeException(nameof(value), value, null);
+    }
+
+    /// <summary>
+    /// Gets how shapes are antialiased. Defaults to <see cref="Drawing.Antialiasing.Exact"/>; <see cref="Drawing.Antialiasing.GdiPlus"/>
+    /// samples as GDI+ does and draws its thin pens. Text and images are not affected, nor are paints with
+    /// <see cref="Paint.Antialias"/> off.
+    /// </summary>
+    /// <example>
+    /// <code language="csharp" source="../../tests/Egami.DocSamples/SystemDrawing.cs" region="gdiplus-shapes"/>
+    /// </example>
+    /// <exception cref="ArgumentOutOfRangeException">The value is not defined.</exception>
+    public Antialiasing Antialiasing
+    {
+        get => _antialiasing;
+        init => _antialiasing = Enum.IsDefined(value) ? value : throw new ArgumentOutOfRangeException(nameof(value), value, null);
     }
 }

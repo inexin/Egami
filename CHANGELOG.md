@@ -36,6 +36,18 @@ Closer GDI+ text (2.7.6 stage 1), measured against GDI+ on Windows in egami-comp
 - Lars's button test against GDI+: a mean difference of 0.67 levels on black and 0.38 on #0078d4, down from 1.92 and 1.06.
   95.8% of glyph sizes in the six-font advance test match GDI+'s drawn widths, up from 90.6%.
 
+Closer GDI+ shapes (2.7.6 stage 2), measured the same way. These are opt-in too.
+
+- `CanvasOptions.PixelOffset`: `Half` is Egami's grid. `None`, GDI+'s default, puts whole coordinates on pixel centres, so paths,
+  their paints, clips and unhinted text move half a pixel; hinted text and images stay put, as they do in GDI+.
+- `CanvasOptions.Antialiasing`: `Exact` is Egami's coverage. `GdiPlus` samples as GDI+'s `SmoothingMode.AntiAlias` does,
+  with 8 by 4 point samples a pixel and a top-left fill rule. It also draws pens of 1.5 device pixels or less as GDI+'s thin
+  lines, one pixel thick with pointed ends. Each row is computed on its own, so the result is the same at any core count.
+- `CanvasOptions.GdiPlusClearType` sets `PixelOffset.None` and `Antialiasing.GdiPlus` too.
+- Against GDI+ at its defaults (AntiAlias, PixelOffsetMode.None), the stage 0 shape probes' mean difference drops from 1.94
+  levels (Egami's closest settings before) to 0.12: rects 1.60 to 0.00, polygons 2.17 to 0.01, ovals 0.85 to 0.32, lines 3.15
+  to 0.16.
+
 ## Egami.Formats.Extended, unreleased
 
 A new package of format plugins (Build Plan tasks 1 to 12). It depends on core Egami only and rides the Egami release train.
