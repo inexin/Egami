@@ -57,6 +57,13 @@ internal static class Synthesis
         float factor = em <= 9 ? 1 / 24f : em >= 36 ? 1 / 32f : (1 / 24f) + (((1 / 32f) - (1 / 24f)) * (em - 9) / 27);
         return em * factor;
     }
+
+    /// <summary>Stem darkening's outset in device pixels: 0.15 at 8 pixels per em and below, none at 32 and above, linear between.</summary>
+    public static float DarkeningOutset(float pixelsPerEm)
+    {
+        float em = MathF.Abs(pixelsPerEm);
+        return em <= 8 ? 0.15f : em >= 32 ? 0 : 0.15f * (32 - em) / 24;
+    }
 }
 
 /// <summary>

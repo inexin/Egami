@@ -67,6 +67,9 @@ public sealed record class CanvasOptions
     private readonly PixelGeometry _pixelGeometry;
     private readonly float _textGamma = 1;
     private readonly float _textContrast;
+    private readonly LcdFilter _lcdFilter = LcdFilter.Default;
+    private readonly LcdSampling _lcdSampling;
+    private readonly float _clearTypeLevel = 1;
 
     /// <summary>Gets the options every canvas starts with.</summary>
     public static CanvasOptions Default { get; } = new();
@@ -147,5 +150,48 @@ public sealed record class CanvasOptions
     {
         get => _textContrast;
         init => _textContrast = value is >= 0 and <= 1 ? value : throw new ArgumentOutOfRangeException(nameof(value), value, "The text contrast must be from 0 to 1.");
+    }
+
+    /// <summary>
+    /// Gets the filter <see cref="Fonts.FontEdging.Lcd"/> text spreads subpixel coverage with. Defaults to
+    /// <see cref="LcdFilter.Default"/>; <see cref="LcdFilter.Gdi"/> is the one measured from GDI and GDI+.
+    /// </summary>
+    /// <example>
+    /// <code language="csharp" source="../../tests/Egami.DocSamples/Text.cs" region="lcd-look"/>
+    /// </example>
+    /// <exception cref="ArgumentNullException">The value is <see langword="null"/>.</exception>
+    public LcdFilter LcdFilter
+    {
+        get => _lcdFilter;
+        init => _lcdFilter = value ?? throw new ArgumentNullException(nameof(value));
+    }
+
+    /// <summary>
+    /// Gets how <see cref="Fonts.FontEdging.Lcd"/> text samples glyphs. Defaults to <see cref="Drawing.LcdSampling.Smooth"/>;
+    /// <see cref="Drawing.LcdSampling.Gdi"/> leaves edges along the stripes unsmoothed, as GDI+ ClearType does.
+    /// </summary>
+    /// <example>
+    /// <code language="csharp" source="../../tests/Egami.DocSamples/Text.cs" region="lcd-look"/>
+    /// </example>
+    /// <exception cref="ArgumentOutOfRangeException">The value is not defined.</exception>
+    public LcdSampling LcdSampling
+    {
+        get => _lcdSampling;
+        init => _lcdSampling = Enum.IsDefined(value) ? value : throw new ArgumentOutOfRangeException(nameof(value), value, null);
+    }
+
+    /// <summary>
+    /// Gets how much of the LCD mask <see cref="Fonts.FontEdging.Lcd"/> text uses, from 0 (the grayscale coverage of the same
+    /// samples, no colour fringes) to 1 (the default, the filtered subpixel coverage), as Windows' ClearType level. Values between
+    /// mix the two, trading fringes for sharpness.
+    /// </summary>
+    /// <example>
+    /// <code language="csharp" source="../../tests/Egami.DocSamples/Text.cs" region="lcd-look"/>
+    /// </example>
+    /// <exception cref="ArgumentOutOfRangeException">The value is not between 0 and 1.</exception>
+    public float ClearTypeLevel
+    {
+        get => _clearTypeLevel;
+        init => _clearTypeLevel = value is >= 0 and <= 1 ? value : throw new ArgumentOutOfRangeException(nameof(value), value, "The ClearType level must be from 0 to 1.");
     }
 }

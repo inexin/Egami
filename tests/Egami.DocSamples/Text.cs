@@ -152,6 +152,63 @@ public class Text
     }
 
     [Fact]
+    public void LcdLook()
+    {
+        Typeface face = Typeface.FromFile(FontFile);
+        using Raster<Rgb8> button = Raster.Create(200, 40, new Rgb8(0x00, 0x78, 0xd4));
+
+        #region lcd-look
+        // GDI+ ClearType's look: its filter (an even spread over three subpixels), no smoothing along the stripes, and the text
+        // gamma that then matched GDI+'s weight for a white Trebuchet MS label at 16 pixels.
+        var gdiPlus = new CanvasOptions
+        {
+            PixelGeometry = PixelGeometry.RgbHorizontal,
+            LcdFilter = LcdFilter.Gdi,
+            LcdSampling = LcdSampling.Gdi,
+            TextGamma = 1.25f,
+        };
+        var label = new Font(face, 16) { Hinting = FontHinting.Light, Edging = FontEdging.Lcd, Subpixel = false };
+        using (RasterCanvas<Rgb8> canvas = button.CreateCanvas(gdiPlus))
+        {
+            canvas.DrawText("Start the course", new Vector2(40, 26), label, Rgba8.White);
+        }
+
+        // Softer fringes: a balanced filter and half the colour of full ClearType.
+        var soft = new CanvasOptions { PixelGeometry = PixelGeometry.RgbHorizontal, LcdFilter = LcdFilter.Balanced, ClearTypeLevel = 0.5f };
+
+        // Or weights of your own, normalised to add up to 256.
+        var custom = new CanvasOptions { PixelGeometry = PixelGeometry.RgbHorizontal, LcdFilter = LcdFilter.Custom(1, 3, 4, 3, 1) };
+        #endregion
+
+        Assert.Equal(256, soft.LcdFilter.Weights.Sum());
+        Assert.Equal(256, custom.LcdFilter.Weights.Sum());
+        Assert.Contains(Enumerable.Range(0, button.Width), x => button.GetPixel(x, 22).R > 128);
+    }
+
+    [Fact]
+    public void Embolden()
+    {
+        Typeface face = Typeface.FromFile(FontFile);
+        using Raster<Rgba8> image = Raster.Create(300, 60, Rgba8.White);
+
+        #region embolden
+        // A little more weight without a bold face: outlines grow 0.2 pixels on each side, advances stay as they are.
+        var heavier = new Font(face, 14) { Embolden = 0.2f };
+
+        // Darkening for small sizes only: full at 8 pixels per em, none from 32 up.
+        var caption = new Font(face, 9) { StemDarkening = true };
+        using (RasterCanvas<Rgba8> canvas = image.CreateCanvas())
+        {
+            canvas.DrawText("Slightly heavier", new Vector2(8, 24), heavier, Rgba8.Black);
+            canvas.DrawText("A darkened caption", new Vector2(8, 48), caption, Rgba8.Black);
+        }
+        #endregion
+
+        Assert.Equal(new Font(face, 14).MeasureText("Slightly heavier").Advance, heavier.MeasureText("Slightly heavier").Advance);
+        Assert.Contains(Enumerable.Range(0, image.Width), x => image.GetPixel(x, 20) != Rgba8.White);
+    }
+
+    [Fact]
     public void TextAlongAPath()
     {
         Typeface face = Typeface.FromFile(FontFile);

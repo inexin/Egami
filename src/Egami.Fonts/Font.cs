@@ -48,10 +48,13 @@ public readonly record struct Font
     private readonly bool _noOpticalSizing;
     private readonly bool _noSubpixel;
     private readonly bool _noSynthesis;
-    private readonly FontHinting _hinting;
-    private readonly FontEdging _edging;
+    // Stored as bytes so Font stays 40 bytes with Embolden and StemDarkening (2.7.5).
+    private readonly byte _hinting;
+    private readonly byte _edging;
     private readonly bool _noColorGlyphs;
     private readonly FontPalette? _palette;
+    private readonly float _embolden;
+    private readonly bool _stemDarkening;
 
     /// <summary>Initializes a font.</summary>
     /// <param name="typeface">The face.</param>
@@ -86,6 +89,31 @@ public readonly record struct Font
     /// </summary>
     public FontSynthesis Synthesis { get; init; }
 
+    /// <summary>
+    /// Gets how far outlines grow on every side, in canvas units at this size (pixels on a raster): 0.15 makes each stem 0.3 pixels
+    /// heavier. Defaults to 0. Applied as synthetic bold is, with round joins, on top of it; advances do not change. Drawn, measured
+    /// as ink and returned by glyph paths.
+    /// </summary>
+    /// <example>
+    /// <code language="csharp" source="../../tests/Egami.DocSamples/Text.cs" region="embolden"/>
+    /// </example>
+    /// <exception cref="ArgumentOutOfRangeException">The value is negative, infinite or NaN.</exception>
+    public float Embolden
+    {
+        get => _embolden;
+        init => _embolden = float.IsFinite(value) && value >= 0 ? value : throw new ArgumentOutOfRangeException(nameof(value), value, "Embolden must be finite and at least 0.");
+    }
+
+    /// <summary>
+    /// Gets whether small text is darkened: outlines grow by 0.15 device pixels on every side at 8 pixels per em and below, fading
+    /// linearly to none at 32 and above, so thin stems keep their weight where antialiasing would wash them out. Defaults to false.
+    /// It follows the device size, so it applies when drawing on a raster and not to glyph paths or ink bounds.
+    /// </summary>
+    /// <example>
+    /// <code language="csharp" source="../../tests/Egami.DocSamples/Text.cs" region="embolden"/>
+    /// </example>
+    public bool StemDarkening { get => _stemDarkening; init => _stemDarkening = value; }
+
     /// <summary>Gets whether <see cref="Synthesis"/> is applied. Defaults to true.</summary>
     public bool AllowSynthesis { get => !_noSynthesis; init => _noSynthesis = !value; }
 
@@ -93,8 +121,8 @@ public readonly record struct Font
     /// <exception cref="ArgumentOutOfRangeException">The value is not defined.</exception>
     public FontHinting Hinting
     {
-        get => _hinting;
-        init => _hinting = Enum.IsDefined(value) ? value : throw new ArgumentOutOfRangeException(nameof(value), value, null);
+        get => (FontHinting)_hinting;
+        init => _hinting = Enum.IsDefined(value) ? (byte)value : throw new ArgumentOutOfRangeException(nameof(value), value, null);
     }
 
     /// <summary>
@@ -107,8 +135,8 @@ public readonly record struct Font
     /// <exception cref="ArgumentOutOfRangeException">The value is not defined.</exception>
     public FontEdging Edging
     {
-        get => _edging;
-        init => _edging = Enum.IsDefined(value) ? value : throw new ArgumentOutOfRangeException(nameof(value), value, null);
+        get => (FontEdging)_edging;
+        init => _edging = Enum.IsDefined(value) ? (byte)value : throw new ArgumentOutOfRangeException(nameof(value), value, null);
     }
 
     /// <summary>
@@ -122,6 +150,21 @@ public readonly record struct Font
 
     /// <summary>Gets the synthesis drawn: <see cref="Synthesis"/>, or none when <see cref="AllowSynthesis"/> is off.</summary>
     internal FontSynthesis AppliedSynthesis => _noSynthesis ? FontSynthesis.None : Synthesis;
+
+    /// <summary>
+    /// The outset outlines grow by at a device size of <paramref name="pixelsPerEm"/>, in device units: synthetic bold's curve, plus
+    /// <see cref="Embolden"/> scaled from canvas to device units, plus stem darkening when <paramref name="device"/>.
+    /// </summary>
+    internal float Outset(float pixelsPerEm, bool device)
+    {
+        float outset = (AppliedSynthesis & FontSynthesis.Bold) != 0 ? Fonts.Synthesis.BoldOutset(pixelsPerEm) : 0;
+        if (_embolden > 0 && Size > 0)
+        {
+            outset += _embolden * MathF.Abs(pixelsPerEm) / Size;
+        }
+
+        return device && _stemDarkening ? outset + Fonts.Synthesis.DarkeningOutset(pixelsPerEm) : outset;
+    }
 
     /// <summary>
     /// Gets whether a variable face's optical size axis follows <see cref="Size"/>: <see cref="Fonts.OpticalSizing.Auto"/> (the
@@ -190,16 +233,16 @@ public readonly record struct Font
     public GlyphExtents GetGlyphExtents(ushort glyph)
     {
         FontSynthesis synthesis = AppliedSynthesis;
-        if (synthesis == FontSynthesis.None)
+        if (synthesis == FontSynthesis.None && _embolden == 0)
         {
             return Face.GetGlyphExtents(glyph).Scale(Scale);
         }
 
         GlyphExtents e = (synthesis & FontSynthesis.Italic) != 0 ? Face.GetSkewedExtents(glyph, Fonts.Synthesis.Skew) : Face.GetGlyphExtents(glyph);
         e = e.Scale(Scale);
-        if ((synthesis & FontSynthesis.Bold) != 0 && !e.IsEmpty)
+        float d = Outset(Size, false);
+        if (d > 0 && !e.IsEmpty)
         {
-            float d = Fonts.Synthesis.BoldOutset(Size);
             e = new GlyphExtents(e.XMin - d, e.YMin - d, e.XMax + d, e.YMax + d);
         }
 

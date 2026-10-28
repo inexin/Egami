@@ -92,9 +92,13 @@ public static partial class FontExtensions
         face.GetGlyphOutline(glyph, new PathSink(builder, font.Scale, at.X, at.Y, skew));
     }
 
-    // Synthetic bold outsets the whole outline with round joins, by em/24 at 9 units per em down to em/32 at 36 and above.
+    // Synthetic bold and Font.Embolden outset the whole outline with round joins: bold by em/24 at 9 units per em down to em/32
+    // at 36 and above, embolden by its own amount.
     private static Path Synthesize(Path path, Font font)
-        => (font.AppliedSynthesis & FontSynthesis.Bold) != 0 && !path.IsEmpty ? path.Inflate(Synthesis.BoldOutset(font.Size)) : path;
+    {
+        float outset = font.Outset(font.Size, false);
+        return outset > 0 && !path.IsEmpty ? path.Inflate(outset) : path;
+    }
 
     /// <summary>Converts text bounds to a rectangle.</summary>
     /// <param name="bounds">The bounds.</param>
