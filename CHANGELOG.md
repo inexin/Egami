@@ -9,6 +9,12 @@ changes that break code come only in a new major version.
   text, hOCR or ALTO (`--as`, or `-o`'s extension), with `--lang`, `--dpi` (the image's own by default) and
   `--engine-timeout`. `egami mcp` does not offer it, since it runs the program a call names.
 
+## Egami, unreleased
+
+- `CommandOcrEngine` hands the program a gray PNG when the image is gray and opaque, and an RGB PNG when it is opaque, instead
+  of RGBA. Tesseract reads a scanned page about a quarter faster that way: 100 scanned pages at 4 at a time took 35 s instead
+  of 45 to 56 s, with the same words.
+
 ## Egami.Video, unreleased
 
 V9.1 stage A: streaming audio filters in `Egami.Video.Audio.Filters` (Build Plan tasks 1 to 7). All additive; the API review
