@@ -729,11 +729,11 @@ internal sealed class Mp3FrameDecoder
                         {
                             int lsb = leaf & 0x0F;
                             g[dst] = Unsafe.Add(ref pow43, 16 + lsb - (16 * (int)(cache >> 31))) * one;
-                            if (lsb != 0)
-                            {
-                                cache <<= 1;
-                                sh += 1;
-                            }
+
+                            // A sign bit follows a nonzero value; (lsb + 15) >> 4 is 1 for 1 to 15 without a branch.
+                            int signed = (lsb + 15) >> 4;
+                            cache <<= signed;
+                            sh += signed;
                         }
 
                         while (sh >= 0)
@@ -775,17 +775,16 @@ internal sealed class Mp3FrameDecoder
                                 sh -= 8;
                             }
 
-                            g[dst] = one * Pow43(lsb) * ((int)cache < 0 ? -1 : 1);
+                            g[dst] = WithSign(one * Pow43(lsb), cache);
+                            cache <<= 1;
+                            sh += 1;
                         }
                         else
                         {
                             g[dst] = Unsafe.Add(ref pow43, 16 + lsb - (16 * (int)(cache >> 31))) * one;
-                        }
-
-                        if (lsb != 0)
-                        {
-                            cache <<= 1;
-                            sh += 1;
+                            int signed = (lsb + 15) >> 4;
+                            cache <<= signed;
+                            sh += signed;
                         }
                     }
 
@@ -827,19 +826,15 @@ internal sealed class Mp3FrameDecoder
                 one = scfs[scf++];
             }
 
-            if ((leaf & 128) != 0)
-            {
-                g[dst] = (int)cache < 0 ? -one : one;
-                cache <<= 1;
-                sh++;
-            }
+            int has128 = (leaf >> 7) & 1;
+            g[dst] = Count1Value(one, cache, has128);
+            cache <<= has128;
+            sh += has128;
 
-            if ((leaf & 64) != 0)
-            {
-                g[dst + 1] = (int)cache < 0 ? -one : one;
-                cache <<= 1;
-                sh++;
-            }
+            int has64 = (leaf >> 6) & 1;
+            g[dst + 1] = Count1Value(one, cache, has64);
+            cache <<= has64;
+            sh += has64;
 
             if (--np == 0)
             {
@@ -852,19 +847,15 @@ internal sealed class Mp3FrameDecoder
                 one = scfs[scf++];
             }
 
-            if ((leaf & 32) != 0)
-            {
-                g[dst + 2] = (int)cache < 0 ? -one : one;
-                cache <<= 1;
-                sh++;
-            }
+            int has32 = (leaf >> 5) & 1;
+            g[dst + 2] = Count1Value(one, cache, has32);
+            cache <<= has32;
+            sh += has32;
 
-            if ((leaf & 16) != 0)
-            {
-                g[dst + 3] = (int)cache < 0 ? -one : one;
-                cache <<= 1;
-                sh++;
-            }
+            int has16 = (leaf >> 4) & 1;
+            g[dst + 3] = Count1Value(one, cache, has16);
+            cache <<= has16;
+            sh += has16;
 
             while (sh >= 0)
             {
@@ -875,6 +866,16 @@ internal sealed class Mp3FrameDecoder
 
         _mainPos = limit;
     }
+
+    /// <summary>Gives <paramref name="value"/> the sign of the cache's top bit (minus when set), without a branch.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static float WithSign(float value, uint cache) =>
+        BitConverter.Int32BitsToSingle(BitConverter.SingleToInt32Bits(value) ^ (int)(cache & 0x80000000));
+
+    /// <summary>A count1 value: ±<paramref name="one"/> by the cache's top bit when <paramref name="present"/> is 1, else +0.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static float Count1Value(float one, uint cache, int present) =>
+        BitConverter.Int32BitsToSingle((BitConverter.SingleToInt32Bits(one) ^ (int)(cache & 0x80000000)) & -present);
 
     private void MidSide(int left, int n)
     {
