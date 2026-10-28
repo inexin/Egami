@@ -85,6 +85,7 @@
     <None Include="../video/corpus/vp9/hdr10.mkv" Link="images/hdr10.mkv" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../video/corpus/vp9/hdr10plus.webm" Link="images/hdr10plus.webm" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../fonts/NotoSans-Regular.ttf" Link="fonts/NotoSans-Regular.ttf" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../fonts/DejaVuSans.ttf" Link="fonts/DejaVuSans.ttf" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../fonts/SourceSans3-Regular.otf" Link="fonts/SourceSans3-Regular.otf" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../fonts/shaping/NotoSansHebrew-Regular.ttf" Link="fonts/NotoSansHebrew-Regular.ttf" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../fonts/shaping/NotoSansArabic-Regular.ttf" Link="fonts/NotoSansArabic-Regular.ttf" CopyToOutputDirectory="PreserveNewest" />

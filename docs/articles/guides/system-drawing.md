@@ -5,8 +5,8 @@ Egami.SystemDrawing gives code written for System.Drawing.Common its API on ever
 runs only on Windows since .NET 6; with this package the same code runs on Linux, macOS and in containers, drawn by Egami.
 
 The package is a preview (1.0.0-preview.1). This release has bitmaps, pixel access, codecs, icons, and `Graphics` with pens,
-brushes, paths, transforms, clipping, regions and images, metafiles, effects, off-screen buffers and the image animator. Fonts
-and text follow in the next preview.
+brushes, paths, transforms, clipping, regions and images, fonts and text, metafiles, effects, off-screen buffers and the image
+animator.
 
 ## Moving code over
 
@@ -219,6 +219,42 @@ and `DrawIconUnstretched` draws it at its size.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/SystemDrawingPackage.cs#images)]
 
+### Fonts
+
+`FontFamily` finds a family among the installed fonts, scanned without native calls (on Linux the fontconfig folders and the
+usual share/fonts folders), or in a `PrivateFontCollection` filled from files or memory; `InstalledFontCollection` and
+`FontFamily.Families` list them. Where a Windows core font is missing, a metric-compatible open font stands in under the
+requested name: Liberation Sans or Arimo for Arial, Liberation Serif or Tinos for Times New Roman, Liberation Mono or Cousine for
+Courier New, Carlito for Calibri and Caladea for Cambria. `GetEmHeight`, `GetCellAscent`, `GetCellDescent` and
+`GetLineSpacing` are GDI+'s: the units per em, the OS/2 Windows ascent and descent, and the hhea ascender, descender and line
+gap. A `Font` converts its size at 96 dpi for `SizeInPoints`, `GetHeight()` and `Height` (the line spacing rounded up), at a
+resolution for `GetHeight(dpi)` and in the page units for `GetHeight(Graphics)`; sizes of zero and the `Display` unit throw
+`ArgumentException`. A family that cannot be found falls back to Microsoft Sans Serif, with `OriginalFontName` keeping the name.
+Missing bold and italic faces are synthesized. `ToLogFont` and `FromLogFont` read and write the `Interop.LOGFONT` struct, with no
+GDI handle; `SystemFonts` gives Windows 10 and 11's interface fonts, `GenericFontFamilies` names the serif, sans-serif and
+monospace families, and `FontConverter` converts fonts to and from strings such as "Arial, 10pt, style=Bold", with
+`FontConverter.FontNameConverter` and `FontConverter.FontUnitConverter` for the name and unit properties.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/SystemDrawingPackage.cs#fonts)]
+
+### Text
+
+`DrawString`, `MeasureString`, `MeasureCharacterRanges` and `GraphicsPath.AddString` share one layout, GDI+'s as measured on
+Windows. With the default `StringFormat` the text starts 1/6 em in from the origin or the rectangle's side, advances are 3 %
+wider than designed, and `MeasureString` adds the padding on both sides and 1/8 em to the height: one line measures the font's
+ascent and descent, more lines one line spacing each. `StringFormat.GenericTypographic` drops the padding and the widening and
+measures the glyphs alone. In a rectangle, lines break after spaces and hyphens (mid-word when a word is too long), and the last
+line that fits takes the rest of its paragraph, cut by `StringTrimming` (at a character or word, with an ellipsis, or keeping a
+path's start and end); of the `StringFormatFlags`, `LineLimit` draws only whole lines, `NoClip` draws past the rectangle,
+`NoWrap` keeps one line per line break and `MeasureTrailingSpaces` counts trailing spaces. `Alignment` and `LineAlignment`
+place the lines, `DirectionRightToLeft` aligns them from the right, `DirectionVertical` turns them a quarter clockwise, tab stops
+default to every four ems, and `HotkeyPrefix` hides ampersands and underlines the marked letters. `MeasureCharacterRanges`
+returns whole-pixel regions placed by the glyphs' hinted advances at the device size, as GDI+ places them.
+`TextRenderingHint.SingleBitPerPixel` and `SingleBitPerPixelGridFit` draw aliased text; the other hints draw it antialiased.
+`StringDigitSubstitute` and `StringUnit` are kept and reported; digits are drawn as written.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/SystemDrawingPackage.cs#text)]
+
 ## Metafiles
 
 `Metafile` reads WMF, EMF and EMF+ (and `Image.FromFile` returns one for them) through Egami.Metafiles. It is an `Image` sized by
@@ -281,7 +317,8 @@ error in `.editorconfig`.
 
 - **EGSD0001, Windows handles**: `Bitmap.GetHbitmap`, `GetHicon`, `FromHicon` and `FromResource`, `Image.FromHbitmap`,
   `Icon.Handle` and `Icon.FromHandle`, `Graphics.FromHdc`, `FromHwnd`, `GetHdc`, `ReleaseHdc` and `GetHalftonePalette`, and
-  `Region.FromHrgn` and `GetHrgn`, the `Metafile` handle constructors and `GetHenhmetafile`, and the device-context overloads of
+  `Region.FromHrgn` and `GetHrgn`, `Font.FromHdc`, `FromHfont`, `ToHfont` and the device-context overloads of `FromLogFont`,
+  the `Metafile` handle constructors and `GetHenhmetafile`, and the device-context overloads of
   `BufferedGraphicsContext.Allocate` and `BufferedGraphics.Render`. Use `LockBits` for the pixels, `new Icon(path)` for icons and
   `Graphics.FromImage` to draw.
 
@@ -319,5 +356,9 @@ The package is measured against System.Drawing on Windows with the same probe pr
   size, header and records differ. Metafiles are drawn by Egami.Metafiles, which is close to GDI+ but not equal to it.
 - `BlurEffect`, `SharpenEffect`, `TintEffect`, `VividEffect` and the highlight, shadow and contrast curves are Egami's own
   versions; `PlayRecord` plays the whole metafile, not one record.
+- Text is laid out as GDI+ lays it out (line breaks, trimming and alignment match), and `MeasureString` agrees with GDI+ to
+  about a hundredth of a pixel for Arial, Times New Roman, Courier New, Segoe UI and Microsoft Sans Serif. Glyphs are Egami's
+  unhinted outlines: about 90 percent of the pixels of drawn text match GDI+, and `ClearTypeGridFit` draws grayscale.
+  Characters a font lacks are not taken from fallback fonts, and digits are not substituted.
 - `Flatten` takes as many steps as GDI+ but evaluates the curve exactly, so its points differ from GDI+'s, which are rounded to
   sixteenths of a pixel. Rounded rectangles have no zero-length segments, which GDI+'s float arithmetic adds.

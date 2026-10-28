@@ -16,4 +16,7 @@ internal static class TestFiles
 
     /// <summary>Returns a file under tests/images.</summary>
     public static string Image(string folder, string name) => System.IO.Path.Combine(s_root.Value, "tests", "images", folder, name);
+
+    /// <summary>Returns a font under tests/fonts.</summary>
+    public static string Font(string name) => System.IO.Path.Combine(s_root.Value, "tests", "fonts", name);
 }

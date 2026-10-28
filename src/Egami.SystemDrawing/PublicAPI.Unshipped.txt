@@ -56,6 +56,14 @@ Egami.SystemDrawing.BufferedGraphicsContext.Invalidate() -> void
 Egami.SystemDrawing.BufferedGraphicsContext.MaximumBuffer.get -> System.Drawing.Size
 Egami.SystemDrawing.BufferedGraphicsContext.MaximumBuffer.set -> void
 Egami.SystemDrawing.BufferedGraphicsManager
+Egami.SystemDrawing.CharacterRange
+Egami.SystemDrawing.CharacterRange.CharacterRange() -> void
+Egami.SystemDrawing.CharacterRange.CharacterRange(int First, int Length) -> void
+Egami.SystemDrawing.CharacterRange.Equals(Egami.SystemDrawing.CharacterRange other) -> bool
+Egami.SystemDrawing.CharacterRange.First.get -> int
+Egami.SystemDrawing.CharacterRange.First.set -> void
+Egami.SystemDrawing.CharacterRange.Length.get -> int
+Egami.SystemDrawing.CharacterRange.Length.set -> void
 Egami.SystemDrawing.ContentAlignment
 Egami.SystemDrawing.ContentAlignment.BottomCenter = 512 -> Egami.SystemDrawing.ContentAlignment
 Egami.SystemDrawing.ContentAlignment.BottomLeft = 256 -> Egami.SystemDrawing.ContentAlignment
@@ -230,6 +238,10 @@ Egami.SystemDrawing.Drawing2D.GraphicsPath.AddRectangles(params System.ReadOnlyS
 Egami.SystemDrawing.Drawing2D.GraphicsPath.AddRectangles(params System.ReadOnlySpan<System.Drawing.RectangleF> rects) -> void
 Egami.SystemDrawing.Drawing2D.GraphicsPath.AddRoundedRectangle(System.Drawing.Rectangle rect, System.Drawing.Size radius) -> void
 Egami.SystemDrawing.Drawing2D.GraphicsPath.AddRoundedRectangle(System.Drawing.RectangleF rect, System.Drawing.SizeF radius) -> void
+Egami.SystemDrawing.Drawing2D.GraphicsPath.AddString(string! s, Egami.SystemDrawing.FontFamily! family, int style, float emSize, System.Drawing.Point origin, Egami.SystemDrawing.StringFormat? format) -> void
+Egami.SystemDrawing.Drawing2D.GraphicsPath.AddString(string! s, Egami.SystemDrawing.FontFamily! family, int style, float emSize, System.Drawing.PointF origin, Egami.SystemDrawing.StringFormat? format) -> void
+Egami.SystemDrawing.Drawing2D.GraphicsPath.AddString(string! s, Egami.SystemDrawing.FontFamily! family, int style, float emSize, System.Drawing.Rectangle layoutRect, Egami.SystemDrawing.StringFormat? format) -> void
+Egami.SystemDrawing.Drawing2D.GraphicsPath.AddString(string! s, Egami.SystemDrawing.FontFamily! family, int style, float emSize, System.Drawing.RectangleF layoutRect, Egami.SystemDrawing.StringFormat? format) -> void
 Egami.SystemDrawing.Drawing2D.GraphicsPath.ClearMarkers() -> void
 Egami.SystemDrawing.Drawing2D.GraphicsPath.Clone() -> object!
 Egami.SystemDrawing.Drawing2D.GraphicsPath.CloseAllFigures() -> void
@@ -574,6 +586,71 @@ Egami.SystemDrawing.Drawing2D.WrapMode.Tile = 0 -> Egami.SystemDrawing.Drawing2D
 Egami.SystemDrawing.Drawing2D.WrapMode.TileFlipX = 1 -> Egami.SystemDrawing.Drawing2D.WrapMode
 Egami.SystemDrawing.Drawing2D.WrapMode.TileFlipXY = 3 -> Egami.SystemDrawing.Drawing2D.WrapMode
 Egami.SystemDrawing.Drawing2D.WrapMode.TileFlipY = 2 -> Egami.SystemDrawing.Drawing2D.WrapMode
+Egami.SystemDrawing.Font
+Egami.SystemDrawing.Font.Bold.get -> bool
+Egami.SystemDrawing.Font.Clone() -> object!
+Egami.SystemDrawing.Font.Dispose() -> void
+Egami.SystemDrawing.Font.Font(Egami.SystemDrawing.Font! prototype, Egami.SystemDrawing.FontStyle newStyle) -> void
+Egami.SystemDrawing.Font.Font(Egami.SystemDrawing.FontFamily! family, float emSize) -> void
+Egami.SystemDrawing.Font.Font(Egami.SystemDrawing.FontFamily! family, float emSize, Egami.SystemDrawing.FontStyle style) -> void
+Egami.SystemDrawing.Font.Font(Egami.SystemDrawing.FontFamily! family, float emSize, Egami.SystemDrawing.FontStyle style, Egami.SystemDrawing.GraphicsUnit unit) -> void
+Egami.SystemDrawing.Font.Font(Egami.SystemDrawing.FontFamily! family, float emSize, Egami.SystemDrawing.FontStyle style, Egami.SystemDrawing.GraphicsUnit unit, byte gdiCharSet) -> void
+Egami.SystemDrawing.Font.Font(Egami.SystemDrawing.FontFamily! family, float emSize, Egami.SystemDrawing.FontStyle style, Egami.SystemDrawing.GraphicsUnit unit, byte gdiCharSet, bool gdiVerticalFont) -> void
+Egami.SystemDrawing.Font.Font(Egami.SystemDrawing.FontFamily! family, float emSize, Egami.SystemDrawing.GraphicsUnit unit) -> void
+Egami.SystemDrawing.Font.Font(string! familyName, float emSize) -> void
+Egami.SystemDrawing.Font.Font(string! familyName, float emSize, Egami.SystemDrawing.FontStyle style) -> void
+Egami.SystemDrawing.Font.Font(string! familyName, float emSize, Egami.SystemDrawing.FontStyle style, Egami.SystemDrawing.GraphicsUnit unit) -> void
+Egami.SystemDrawing.Font.Font(string! familyName, float emSize, Egami.SystemDrawing.FontStyle style, Egami.SystemDrawing.GraphicsUnit unit, byte gdiCharSet) -> void
+Egami.SystemDrawing.Font.Font(string! familyName, float emSize, Egami.SystemDrawing.FontStyle style, Egami.SystemDrawing.GraphicsUnit unit, byte gdiCharSet, bool gdiVerticalFont) -> void
+Egami.SystemDrawing.Font.Font(string! familyName, float emSize, Egami.SystemDrawing.GraphicsUnit unit) -> void
+Egami.SystemDrawing.Font.FontFamily.get -> Egami.SystemDrawing.FontFamily!
+Egami.SystemDrawing.Font.GdiCharSet.get -> byte
+Egami.SystemDrawing.Font.GdiVerticalFont.get -> bool
+Egami.SystemDrawing.Font.GetHeight() -> float
+Egami.SystemDrawing.Font.GetHeight(Egami.SystemDrawing.Graphics! graphics) -> float
+Egami.SystemDrawing.Font.GetHeight(float dpi) -> float
+Egami.SystemDrawing.Font.Height.get -> int
+Egami.SystemDrawing.Font.IsSystemFont.get -> bool
+Egami.SystemDrawing.Font.Italic.get -> bool
+Egami.SystemDrawing.Font.Name.get -> string!
+Egami.SystemDrawing.Font.OriginalFontName.get -> string!
+Egami.SystemDrawing.Font.Size.get -> float
+Egami.SystemDrawing.Font.SizeInPoints.get -> float
+Egami.SystemDrawing.Font.Strikeout.get -> bool
+Egami.SystemDrawing.Font.Style.get -> Egami.SystemDrawing.FontStyle
+Egami.SystemDrawing.Font.SystemFontName.get -> string!
+Egami.SystemDrawing.Font.ToEgamiFont(float dpi = 96) -> Egami.Fonts.Font
+Egami.SystemDrawing.Font.ToHfont() -> nint
+Egami.SystemDrawing.Font.ToLogFont(object! logFont) -> void
+Egami.SystemDrawing.Font.ToLogFont(object! logFont, Egami.SystemDrawing.Graphics! graphics) -> void
+Egami.SystemDrawing.Font.ToLogFont(out Egami.SystemDrawing.Interop.LOGFONT logFont) -> void
+Egami.SystemDrawing.Font.ToLogFont(out Egami.SystemDrawing.Interop.LOGFONT logFont, Egami.SystemDrawing.Graphics! graphics) -> void
+Egami.SystemDrawing.Font.Underline.get -> bool
+Egami.SystemDrawing.Font.Unit.get -> Egami.SystemDrawing.GraphicsUnit
+Egami.SystemDrawing.FontConverter
+Egami.SystemDrawing.FontConverter.FontConverter() -> void
+Egami.SystemDrawing.FontConverter.FontNameConverter
+Egami.SystemDrawing.FontConverter.FontNameConverter.FontNameConverter() -> void
+Egami.SystemDrawing.FontConverter.FontUnitConverter
+Egami.SystemDrawing.FontConverter.FontUnitConverter.FontUnitConverter() -> void
+Egami.SystemDrawing.FontFamily
+Egami.SystemDrawing.FontFamily.Dispose() -> void
+Egami.SystemDrawing.FontFamily.FontFamily(Egami.SystemDrawing.Text.GenericFontFamilies genericFamily) -> void
+Egami.SystemDrawing.FontFamily.FontFamily(string! name) -> void
+Egami.SystemDrawing.FontFamily.FontFamily(string! name, Egami.SystemDrawing.Text.FontCollection? fontCollection) -> void
+Egami.SystemDrawing.FontFamily.GetCellAscent(Egami.SystemDrawing.FontStyle style) -> int
+Egami.SystemDrawing.FontFamily.GetCellDescent(Egami.SystemDrawing.FontStyle style) -> int
+Egami.SystemDrawing.FontFamily.GetEmHeight(Egami.SystemDrawing.FontStyle style) -> int
+Egami.SystemDrawing.FontFamily.GetLineSpacing(Egami.SystemDrawing.FontStyle style) -> int
+Egami.SystemDrawing.FontFamily.GetName(int language) -> string!
+Egami.SystemDrawing.FontFamily.IsStyleAvailable(Egami.SystemDrawing.FontStyle style) -> bool
+Egami.SystemDrawing.FontFamily.Name.get -> string!
+Egami.SystemDrawing.FontStyle
+Egami.SystemDrawing.FontStyle.Bold = 1 -> Egami.SystemDrawing.FontStyle
+Egami.SystemDrawing.FontStyle.Italic = 2 -> Egami.SystemDrawing.FontStyle
+Egami.SystemDrawing.FontStyle.Regular = 0 -> Egami.SystemDrawing.FontStyle
+Egami.SystemDrawing.FontStyle.Strikeout = 8 -> Egami.SystemDrawing.FontStyle
+Egami.SystemDrawing.FontStyle.Underline = 4 -> Egami.SystemDrawing.FontStyle
 Egami.SystemDrawing.Graphics
 Egami.SystemDrawing.Graphics.AddMetafileComment(byte[]! data) -> void
 Egami.SystemDrawing.Graphics.BeginContainer() -> Egami.SystemDrawing.Drawing2D.GraphicsContainer!
@@ -701,6 +778,18 @@ Egami.SystemDrawing.Graphics.DrawRectangles(Egami.SystemDrawing.Pen! pen, params
 Egami.SystemDrawing.Graphics.DrawRectangles(Egami.SystemDrawing.Pen! pen, params System.ReadOnlySpan<System.Drawing.RectangleF> rects) -> void
 Egami.SystemDrawing.Graphics.DrawRoundedRectangle(Egami.SystemDrawing.Pen! pen, System.Drawing.Rectangle rect, System.Drawing.Size radius) -> void
 Egami.SystemDrawing.Graphics.DrawRoundedRectangle(Egami.SystemDrawing.Pen! pen, System.Drawing.RectangleF rect, System.Drawing.SizeF radius) -> void
+Egami.SystemDrawing.Graphics.DrawString(string? s, Egami.SystemDrawing.Font! font, Egami.SystemDrawing.Brush! brush, float x, float y) -> void
+Egami.SystemDrawing.Graphics.DrawString(string? s, Egami.SystemDrawing.Font! font, Egami.SystemDrawing.Brush! brush, float x, float y, Egami.SystemDrawing.StringFormat? format) -> void
+Egami.SystemDrawing.Graphics.DrawString(string? s, Egami.SystemDrawing.Font! font, Egami.SystemDrawing.Brush! brush, System.Drawing.PointF point) -> void
+Egami.SystemDrawing.Graphics.DrawString(string? s, Egami.SystemDrawing.Font! font, Egami.SystemDrawing.Brush! brush, System.Drawing.PointF point, Egami.SystemDrawing.StringFormat? format) -> void
+Egami.SystemDrawing.Graphics.DrawString(string? s, Egami.SystemDrawing.Font! font, Egami.SystemDrawing.Brush! brush, System.Drawing.RectangleF layoutRectangle) -> void
+Egami.SystemDrawing.Graphics.DrawString(string? s, Egami.SystemDrawing.Font! font, Egami.SystemDrawing.Brush! brush, System.Drawing.RectangleF layoutRectangle, Egami.SystemDrawing.StringFormat? format) -> void
+Egami.SystemDrawing.Graphics.DrawString(System.ReadOnlySpan<char> s, Egami.SystemDrawing.Font! font, Egami.SystemDrawing.Brush! brush, float x, float y) -> void
+Egami.SystemDrawing.Graphics.DrawString(System.ReadOnlySpan<char> s, Egami.SystemDrawing.Font! font, Egami.SystemDrawing.Brush! brush, float x, float y, Egami.SystemDrawing.StringFormat? format) -> void
+Egami.SystemDrawing.Graphics.DrawString(System.ReadOnlySpan<char> s, Egami.SystemDrawing.Font! font, Egami.SystemDrawing.Brush! brush, System.Drawing.PointF point) -> void
+Egami.SystemDrawing.Graphics.DrawString(System.ReadOnlySpan<char> s, Egami.SystemDrawing.Font! font, Egami.SystemDrawing.Brush! brush, System.Drawing.PointF point, Egami.SystemDrawing.StringFormat? format) -> void
+Egami.SystemDrawing.Graphics.DrawString(System.ReadOnlySpan<char> s, Egami.SystemDrawing.Font! font, Egami.SystemDrawing.Brush! brush, System.Drawing.RectangleF layoutRectangle) -> void
+Egami.SystemDrawing.Graphics.DrawString(System.ReadOnlySpan<char> s, Egami.SystemDrawing.Font! font, Egami.SystemDrawing.Brush! brush, System.Drawing.RectangleF layoutRectangle, Egami.SystemDrawing.StringFormat? format) -> void
 Egami.SystemDrawing.Graphics.EndContainer(Egami.SystemDrawing.Drawing2D.GraphicsContainer! container) -> void
 Egami.SystemDrawing.Graphics.EnumerateMetafile(Egami.SystemDrawing.Imaging.Metafile! metafile, System.Drawing.Point destPoint, Egami.SystemDrawing.Graphics.EnumerateMetafileProc! callback) -> void
 Egami.SystemDrawing.Graphics.EnumerateMetafile(Egami.SystemDrawing.Imaging.Metafile! metafile, System.Drawing.Point destPoint, Egami.SystemDrawing.Graphics.EnumerateMetafileProc! callback, nint callbackData) -> void
@@ -803,6 +892,23 @@ Egami.SystemDrawing.Graphics.IsVisible(System.Drawing.PointF point) -> bool
 Egami.SystemDrawing.Graphics.IsVisible(System.Drawing.Rectangle rect) -> bool
 Egami.SystemDrawing.Graphics.IsVisible(System.Drawing.RectangleF rect) -> bool
 Egami.SystemDrawing.Graphics.IsVisibleClipEmpty.get -> bool
+Egami.SystemDrawing.Graphics.MeasureCharacterRanges(string? text, Egami.SystemDrawing.Font! font, System.Drawing.RectangleF layoutRect, Egami.SystemDrawing.StringFormat? stringFormat) -> Egami.SystemDrawing.Region![]!
+Egami.SystemDrawing.Graphics.MeasureCharacterRanges(System.ReadOnlySpan<char> text, Egami.SystemDrawing.Font! font, System.Drawing.RectangleF layoutRect, Egami.SystemDrawing.StringFormat? stringFormat) -> Egami.SystemDrawing.Region![]!
+Egami.SystemDrawing.Graphics.MeasureString(string? text, Egami.SystemDrawing.Font! font) -> System.Drawing.SizeF
+Egami.SystemDrawing.Graphics.MeasureString(string? text, Egami.SystemDrawing.Font! font, int width) -> System.Drawing.SizeF
+Egami.SystemDrawing.Graphics.MeasureString(string? text, Egami.SystemDrawing.Font! font, int width, Egami.SystemDrawing.StringFormat? format) -> System.Drawing.SizeF
+Egami.SystemDrawing.Graphics.MeasureString(string? text, Egami.SystemDrawing.Font! font, System.Drawing.PointF origin, Egami.SystemDrawing.StringFormat? stringFormat) -> System.Drawing.SizeF
+Egami.SystemDrawing.Graphics.MeasureString(string? text, Egami.SystemDrawing.Font! font, System.Drawing.SizeF layoutArea) -> System.Drawing.SizeF
+Egami.SystemDrawing.Graphics.MeasureString(string? text, Egami.SystemDrawing.Font! font, System.Drawing.SizeF layoutArea, Egami.SystemDrawing.StringFormat? stringFormat) -> System.Drawing.SizeF
+Egami.SystemDrawing.Graphics.MeasureString(string? text, Egami.SystemDrawing.Font! font, System.Drawing.SizeF layoutArea, Egami.SystemDrawing.StringFormat? stringFormat, out int charactersFitted, out int linesFilled) -> System.Drawing.SizeF
+Egami.SystemDrawing.Graphics.MeasureString(System.ReadOnlySpan<char> text, Egami.SystemDrawing.Font! font) -> System.Drawing.SizeF
+Egami.SystemDrawing.Graphics.MeasureString(System.ReadOnlySpan<char> text, Egami.SystemDrawing.Font! font, int width) -> System.Drawing.SizeF
+Egami.SystemDrawing.Graphics.MeasureString(System.ReadOnlySpan<char> text, Egami.SystemDrawing.Font! font, int width, Egami.SystemDrawing.StringFormat? format) -> System.Drawing.SizeF
+Egami.SystemDrawing.Graphics.MeasureString(System.ReadOnlySpan<char> text, Egami.SystemDrawing.Font! font, System.Drawing.PointF origin, Egami.SystemDrawing.StringFormat? stringFormat) -> System.Drawing.SizeF
+Egami.SystemDrawing.Graphics.MeasureString(System.ReadOnlySpan<char> text, Egami.SystemDrawing.Font! font, System.Drawing.SizeF layoutArea) -> System.Drawing.SizeF
+Egami.SystemDrawing.Graphics.MeasureString(System.ReadOnlySpan<char> text, Egami.SystemDrawing.Font! font, System.Drawing.SizeF layoutArea, Egami.SystemDrawing.StringFormat? stringFormat) -> System.Drawing.SizeF
+Egami.SystemDrawing.Graphics.MeasureString(System.ReadOnlySpan<char> text, Egami.SystemDrawing.Font! font, System.Drawing.SizeF layoutArea, Egami.SystemDrawing.StringFormat? stringFormat, out int charactersFitted, out int linesFilled) -> System.Drawing.SizeF
+Egami.SystemDrawing.Graphics.MeasureStringInternal(System.ReadOnlySpan<char> text, Egami.SystemDrawing.Font! font, System.Drawing.RectangleF layoutArea, Egami.SystemDrawing.StringFormat? stringFormat, out int charactersFitted, out int linesFilled) -> System.Drawing.SizeF
 Egami.SystemDrawing.Graphics.MultiplyTransform(Egami.SystemDrawing.Drawing2D.Matrix! matrix) -> void
 Egami.SystemDrawing.Graphics.MultiplyTransform(Egami.SystemDrawing.Drawing2D.Matrix! matrix, Egami.SystemDrawing.Drawing2D.MatrixOrder order) -> void
 Egami.SystemDrawing.Graphics.PageScale.get -> float
@@ -1717,6 +1823,22 @@ Egami.SystemDrawing.Imaging.WmfPlaceableFileHeader.Key.set -> void
 Egami.SystemDrawing.Imaging.WmfPlaceableFileHeader.Reserved.get -> int
 Egami.SystemDrawing.Imaging.WmfPlaceableFileHeader.Reserved.set -> void
 Egami.SystemDrawing.Imaging.WmfPlaceableFileHeader.WmfPlaceableFileHeader() -> void
+Egami.SystemDrawing.Interop.LOGFONT
+Egami.SystemDrawing.Interop.LOGFONT.lfCharSet -> byte
+Egami.SystemDrawing.Interop.LOGFONT.lfClipPrecision -> byte
+Egami.SystemDrawing.Interop.LOGFONT.lfEscapement -> int
+Egami.SystemDrawing.Interop.LOGFONT.lfFaceName.get -> System.Span<char>
+Egami.SystemDrawing.Interop.LOGFONT.lfHeight -> int
+Egami.SystemDrawing.Interop.LOGFONT.lfItalic -> byte
+Egami.SystemDrawing.Interop.LOGFONT.lfOrientation -> int
+Egami.SystemDrawing.Interop.LOGFONT.lfOutPrecision -> byte
+Egami.SystemDrawing.Interop.LOGFONT.lfPitchAndFamily -> byte
+Egami.SystemDrawing.Interop.LOGFONT.lfQuality -> byte
+Egami.SystemDrawing.Interop.LOGFONT.lfStrikeOut -> byte
+Egami.SystemDrawing.Interop.LOGFONT.lfUnderline -> byte
+Egami.SystemDrawing.Interop.LOGFONT.lfWeight -> int
+Egami.SystemDrawing.Interop.LOGFONT.lfWidth -> int
+Egami.SystemDrawing.Interop.LOGFONT.LOGFONT() -> void
 Egami.SystemDrawing.Pen
 Egami.SystemDrawing.Pen.Alignment.get -> Egami.SystemDrawing.Drawing2D.PenAlignment
 Egami.SystemDrawing.Pen.Alignment.set -> void
@@ -1945,9 +2067,85 @@ Egami.SystemDrawing.StockIconOptions.LinkOverlay = 32768 -> Egami.SystemDrawing.
 Egami.SystemDrawing.StockIconOptions.Selected = 65536 -> Egami.SystemDrawing.StockIconOptions
 Egami.SystemDrawing.StockIconOptions.ShellIconSize = 4 -> Egami.SystemDrawing.StockIconOptions
 Egami.SystemDrawing.StockIconOptions.SmallIcon = 1 -> Egami.SystemDrawing.StockIconOptions
+Egami.SystemDrawing.StringAlignment
+Egami.SystemDrawing.StringAlignment.Center = 1 -> Egami.SystemDrawing.StringAlignment
+Egami.SystemDrawing.StringAlignment.Far = 2 -> Egami.SystemDrawing.StringAlignment
+Egami.SystemDrawing.StringAlignment.Near = 0 -> Egami.SystemDrawing.StringAlignment
+Egami.SystemDrawing.StringDigitSubstitute
+Egami.SystemDrawing.StringDigitSubstitute.National = 2 -> Egami.SystemDrawing.StringDigitSubstitute
+Egami.SystemDrawing.StringDigitSubstitute.None = 1 -> Egami.SystemDrawing.StringDigitSubstitute
+Egami.SystemDrawing.StringDigitSubstitute.Traditional = 3 -> Egami.SystemDrawing.StringDigitSubstitute
+Egami.SystemDrawing.StringDigitSubstitute.User = 0 -> Egami.SystemDrawing.StringDigitSubstitute
+Egami.SystemDrawing.StringFormat
+Egami.SystemDrawing.StringFormat.Alignment.get -> Egami.SystemDrawing.StringAlignment
+Egami.SystemDrawing.StringFormat.Alignment.set -> void
+Egami.SystemDrawing.StringFormat.Clone() -> object!
+Egami.SystemDrawing.StringFormat.DigitSubstitutionLanguage.get -> int
+Egami.SystemDrawing.StringFormat.DigitSubstitutionMethod.get -> Egami.SystemDrawing.StringDigitSubstitute
+Egami.SystemDrawing.StringFormat.Dispose() -> void
+Egami.SystemDrawing.StringFormat.FormatFlags.get -> Egami.SystemDrawing.StringFormatFlags
+Egami.SystemDrawing.StringFormat.FormatFlags.set -> void
+Egami.SystemDrawing.StringFormat.GetTabStops(out float firstTabOffset) -> float[]!
+Egami.SystemDrawing.StringFormat.HotkeyPrefix.get -> Egami.SystemDrawing.Text.HotkeyPrefix
+Egami.SystemDrawing.StringFormat.HotkeyPrefix.set -> void
+Egami.SystemDrawing.StringFormat.LineAlignment.get -> Egami.SystemDrawing.StringAlignment
+Egami.SystemDrawing.StringFormat.LineAlignment.set -> void
+Egami.SystemDrawing.StringFormat.SetDigitSubstitution(int language, Egami.SystemDrawing.StringDigitSubstitute substitute) -> void
+Egami.SystemDrawing.StringFormat.SetMeasurableCharacterRanges(Egami.SystemDrawing.CharacterRange[]! ranges) -> void
+Egami.SystemDrawing.StringFormat.SetTabStops(float firstTabOffset, float[]! tabStops) -> void
+Egami.SystemDrawing.StringFormat.StringFormat() -> void
+Egami.SystemDrawing.StringFormat.StringFormat(Egami.SystemDrawing.StringFormat! format) -> void
+Egami.SystemDrawing.StringFormat.StringFormat(Egami.SystemDrawing.StringFormatFlags options) -> void
+Egami.SystemDrawing.StringFormat.StringFormat(Egami.SystemDrawing.StringFormatFlags options, int language) -> void
+Egami.SystemDrawing.StringFormat.Trimming.get -> Egami.SystemDrawing.StringTrimming
+Egami.SystemDrawing.StringFormat.Trimming.set -> void
+Egami.SystemDrawing.StringFormatFlags
+Egami.SystemDrawing.StringFormatFlags.DirectionRightToLeft = 1 -> Egami.SystemDrawing.StringFormatFlags
+Egami.SystemDrawing.StringFormatFlags.DirectionVertical = 2 -> Egami.SystemDrawing.StringFormatFlags
+Egami.SystemDrawing.StringFormatFlags.DisplayFormatControl = 32 -> Egami.SystemDrawing.StringFormatFlags
+Egami.SystemDrawing.StringFormatFlags.FitBlackBox = 4 -> Egami.SystemDrawing.StringFormatFlags
+Egami.SystemDrawing.StringFormatFlags.LineLimit = 8192 -> Egami.SystemDrawing.StringFormatFlags
+Egami.SystemDrawing.StringFormatFlags.MeasureTrailingSpaces = 2048 -> Egami.SystemDrawing.StringFormatFlags
+Egami.SystemDrawing.StringFormatFlags.NoClip = 16384 -> Egami.SystemDrawing.StringFormatFlags
+Egami.SystemDrawing.StringFormatFlags.NoFontFallback = 1024 -> Egami.SystemDrawing.StringFormatFlags
+Egami.SystemDrawing.StringFormatFlags.NoWrap = 4096 -> Egami.SystemDrawing.StringFormatFlags
+Egami.SystemDrawing.StringTrimming
+Egami.SystemDrawing.StringTrimming.Character = 1 -> Egami.SystemDrawing.StringTrimming
+Egami.SystemDrawing.StringTrimming.EllipsisCharacter = 3 -> Egami.SystemDrawing.StringTrimming
+Egami.SystemDrawing.StringTrimming.EllipsisPath = 5 -> Egami.SystemDrawing.StringTrimming
+Egami.SystemDrawing.StringTrimming.EllipsisWord = 4 -> Egami.SystemDrawing.StringTrimming
+Egami.SystemDrawing.StringTrimming.None = 0 -> Egami.SystemDrawing.StringTrimming
+Egami.SystemDrawing.StringTrimming.Word = 2 -> Egami.SystemDrawing.StringTrimming
+Egami.SystemDrawing.StringUnit
+Egami.SystemDrawing.StringUnit.Display = 1 -> Egami.SystemDrawing.StringUnit
+Egami.SystemDrawing.StringUnit.Document = 5 -> Egami.SystemDrawing.StringUnit
+Egami.SystemDrawing.StringUnit.Em = 32 -> Egami.SystemDrawing.StringUnit
+Egami.SystemDrawing.StringUnit.Inch = 4 -> Egami.SystemDrawing.StringUnit
+Egami.SystemDrawing.StringUnit.Millimeter = 6 -> Egami.SystemDrawing.StringUnit
+Egami.SystemDrawing.StringUnit.Pixel = 2 -> Egami.SystemDrawing.StringUnit
+Egami.SystemDrawing.StringUnit.Point = 3 -> Egami.SystemDrawing.StringUnit
+Egami.SystemDrawing.StringUnit.World = 0 -> Egami.SystemDrawing.StringUnit
 Egami.SystemDrawing.SystemBrushes
+Egami.SystemDrawing.SystemFonts
 Egami.SystemDrawing.SystemIcons
 Egami.SystemDrawing.SystemPens
+Egami.SystemDrawing.Text.FontCollection
+Egami.SystemDrawing.Text.FontCollection.Dispose() -> void
+Egami.SystemDrawing.Text.FontCollection.Families.get -> Egami.SystemDrawing.FontFamily![]!
+Egami.SystemDrawing.Text.GenericFontFamilies
+Egami.SystemDrawing.Text.GenericFontFamilies.Monospace = 2 -> Egami.SystemDrawing.Text.GenericFontFamilies
+Egami.SystemDrawing.Text.GenericFontFamilies.SansSerif = 1 -> Egami.SystemDrawing.Text.GenericFontFamilies
+Egami.SystemDrawing.Text.GenericFontFamilies.Serif = 0 -> Egami.SystemDrawing.Text.GenericFontFamilies
+Egami.SystemDrawing.Text.HotkeyPrefix
+Egami.SystemDrawing.Text.HotkeyPrefix.Hide = 2 -> Egami.SystemDrawing.Text.HotkeyPrefix
+Egami.SystemDrawing.Text.HotkeyPrefix.None = 0 -> Egami.SystemDrawing.Text.HotkeyPrefix
+Egami.SystemDrawing.Text.HotkeyPrefix.Show = 1 -> Egami.SystemDrawing.Text.HotkeyPrefix
+Egami.SystemDrawing.Text.InstalledFontCollection
+Egami.SystemDrawing.Text.InstalledFontCollection.InstalledFontCollection() -> void
+Egami.SystemDrawing.Text.PrivateFontCollection
+Egami.SystemDrawing.Text.PrivateFontCollection.AddFontFile(string! filename) -> void
+Egami.SystemDrawing.Text.PrivateFontCollection.AddMemoryFont(nint memory, int length) -> void
+Egami.SystemDrawing.Text.PrivateFontCollection.PrivateFontCollection() -> void
 Egami.SystemDrawing.Text.TextRenderingHint
 Egami.SystemDrawing.Text.TextRenderingHint.AntiAlias = 4 -> Egami.SystemDrawing.Text.TextRenderingHint
 Egami.SystemDrawing.Text.TextRenderingHint.AntiAliasGridFit = 3 -> Egami.SystemDrawing.Text.TextRenderingHint
@@ -1988,11 +2186,33 @@ Egami.SystemDrawing.ToolboxBitmapAttribute.ToolboxBitmapAttribute(string! imageF
 Egami.SystemDrawing.ToolboxBitmapAttribute.ToolboxBitmapAttribute(System.Type! t) -> void
 Egami.SystemDrawing.ToolboxBitmapAttribute.ToolboxBitmapAttribute(System.Type? t, string? name) -> void
 override Egami.SystemDrawing.Bitmap.Clone() -> object!
+override Egami.SystemDrawing.CharacterRange.Equals(object? obj) -> bool
+override Egami.SystemDrawing.CharacterRange.GetHashCode() -> int
 override Egami.SystemDrawing.Drawing2D.HatchBrush.Clone() -> object!
 override Egami.SystemDrawing.Drawing2D.LinearGradientBrush.Clone() -> object!
 override Egami.SystemDrawing.Drawing2D.Matrix.Equals(object? obj) -> bool
 override Egami.SystemDrawing.Drawing2D.Matrix.GetHashCode() -> int
 override Egami.SystemDrawing.Drawing2D.PathGradientBrush.Clone() -> object!
+override Egami.SystemDrawing.Font.Equals(object? obj) -> bool
+override Egami.SystemDrawing.Font.GetHashCode() -> int
+override Egami.SystemDrawing.Font.ToString() -> string!
+override Egami.SystemDrawing.FontConverter.CanConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Type! sourceType) -> bool
+override Egami.SystemDrawing.FontConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Type? destinationType) -> bool
+override Egami.SystemDrawing.FontConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object! value) -> object?
+override Egami.SystemDrawing.FontConverter.ConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object? value, System.Type! destinationType) -> object?
+override Egami.SystemDrawing.FontConverter.CreateInstance(System.ComponentModel.ITypeDescriptorContext? context, System.Collections.IDictionary! propertyValues) -> object!
+override Egami.SystemDrawing.FontConverter.FontNameConverter.CanConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Type! sourceType) -> bool
+override Egami.SystemDrawing.FontConverter.FontNameConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object! value) -> object?
+override Egami.SystemDrawing.FontConverter.FontNameConverter.GetStandardValues(System.ComponentModel.ITypeDescriptorContext? context) -> System.ComponentModel.TypeConverter.StandardValuesCollection!
+override Egami.SystemDrawing.FontConverter.FontNameConverter.GetStandardValuesExclusive(System.ComponentModel.ITypeDescriptorContext? context) -> bool
+override Egami.SystemDrawing.FontConverter.FontNameConverter.GetStandardValuesSupported(System.ComponentModel.ITypeDescriptorContext? context) -> bool
+override Egami.SystemDrawing.FontConverter.FontUnitConverter.GetStandardValues(System.ComponentModel.ITypeDescriptorContext? context) -> System.ComponentModel.TypeConverter.StandardValuesCollection!
+override Egami.SystemDrawing.FontConverter.GetCreateInstanceSupported(System.ComponentModel.ITypeDescriptorContext? context) -> bool
+override Egami.SystemDrawing.FontConverter.GetProperties(System.ComponentModel.ITypeDescriptorContext? context, object? value, System.Attribute![]? attributes) -> System.ComponentModel.PropertyDescriptorCollection!
+override Egami.SystemDrawing.FontConverter.GetPropertiesSupported(System.ComponentModel.ITypeDescriptorContext? context) -> bool
+override Egami.SystemDrawing.FontFamily.Equals(object? obj) -> bool
+override Egami.SystemDrawing.FontFamily.GetHashCode() -> int
+override Egami.SystemDrawing.FontFamily.ToString() -> string!
 override Egami.SystemDrawing.Icon.ToString() -> string!
 override Egami.SystemDrawing.IconConverter.CanConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Type! sourceType) -> bool
 override Egami.SystemDrawing.IconConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Type? destinationType) -> bool
@@ -2018,6 +2238,7 @@ override Egami.SystemDrawing.Imaging.ImageFormat.GetHashCode() -> int
 override Egami.SystemDrawing.Imaging.ImageFormat.ToString() -> string!
 override Egami.SystemDrawing.Imaging.Metafile.Clone() -> object!
 override Egami.SystemDrawing.SolidBrush.Clone() -> object!
+override Egami.SystemDrawing.StringFormat.ToString() -> string!
 override Egami.SystemDrawing.TextureBrush.Clone() -> object!
 override Egami.SystemDrawing.ToolboxBitmapAttribute.Equals(object? value) -> bool
 override Egami.SystemDrawing.ToolboxBitmapAttribute.GetHashCode() -> int
@@ -2166,6 +2387,19 @@ static Egami.SystemDrawing.Brushes.WhiteSmoke.get -> Egami.SystemDrawing.Brush!
 static Egami.SystemDrawing.Brushes.Yellow.get -> Egami.SystemDrawing.Brush!
 static Egami.SystemDrawing.Brushes.YellowGreen.get -> Egami.SystemDrawing.Brush!
 static Egami.SystemDrawing.BufferedGraphicsManager.Current.get -> Egami.SystemDrawing.BufferedGraphicsContext!
+static Egami.SystemDrawing.CharacterRange.operator !=(Egami.SystemDrawing.CharacterRange cr1, Egami.SystemDrawing.CharacterRange cr2) -> bool
+static Egami.SystemDrawing.CharacterRange.operator ==(Egami.SystemDrawing.CharacterRange cr1, Egami.SystemDrawing.CharacterRange cr2) -> bool
+static Egami.SystemDrawing.Font.FromHdc(nint hdc) -> Egami.SystemDrawing.Font!
+static Egami.SystemDrawing.Font.FromHfont(nint hfont) -> Egami.SystemDrawing.Font!
+static Egami.SystemDrawing.Font.FromLogFont(object! lf) -> Egami.SystemDrawing.Font!
+static Egami.SystemDrawing.Font.FromLogFont(object! lf, nint hdc) -> Egami.SystemDrawing.Font!
+static Egami.SystemDrawing.Font.FromLogFont(ref Egami.SystemDrawing.Interop.LOGFONT logFont) -> Egami.SystemDrawing.Font!
+static Egami.SystemDrawing.Font.FromLogFont(ref Egami.SystemDrawing.Interop.LOGFONT logFont, nint hdc) -> Egami.SystemDrawing.Font!
+static Egami.SystemDrawing.FontFamily.Families.get -> Egami.SystemDrawing.FontFamily![]!
+static Egami.SystemDrawing.FontFamily.GenericMonospace.get -> Egami.SystemDrawing.FontFamily!
+static Egami.SystemDrawing.FontFamily.GenericSansSerif.get -> Egami.SystemDrawing.FontFamily!
+static Egami.SystemDrawing.FontFamily.GenericSerif.get -> Egami.SystemDrawing.FontFamily!
+static Egami.SystemDrawing.FontFamily.GetFamilies(Egami.SystemDrawing.Graphics! graphics) -> Egami.SystemDrawing.FontFamily![]!
 static Egami.SystemDrawing.Graphics.FromHdc(nint hdc) -> Egami.SystemDrawing.Graphics!
 static Egami.SystemDrawing.Graphics.FromHdc(nint hdc, nint hdevice) -> Egami.SystemDrawing.Graphics!
 static Egami.SystemDrawing.Graphics.FromHdcInternal(nint hdc) -> Egami.SystemDrawing.Graphics!
@@ -2357,6 +2591,8 @@ static Egami.SystemDrawing.Pens.WhiteSmoke.get -> Egami.SystemDrawing.Pen!
 static Egami.SystemDrawing.Pens.Yellow.get -> Egami.SystemDrawing.Pen!
 static Egami.SystemDrawing.Pens.YellowGreen.get -> Egami.SystemDrawing.Pen!
 static Egami.SystemDrawing.Region.FromHrgn(nint hrgn) -> Egami.SystemDrawing.Region!
+static Egami.SystemDrawing.StringFormat.GenericDefault.get -> Egami.SystemDrawing.StringFormat!
+static Egami.SystemDrawing.StringFormat.GenericTypographic.get -> Egami.SystemDrawing.StringFormat!
 static Egami.SystemDrawing.SystemBrushes.ActiveBorder.get -> Egami.SystemDrawing.Brush!
 static Egami.SystemDrawing.SystemBrushes.ActiveCaption.get -> Egami.SystemDrawing.Brush!
 static Egami.SystemDrawing.SystemBrushes.ActiveCaptionText.get -> Egami.SystemDrawing.Brush!
@@ -2391,6 +2627,15 @@ static Egami.SystemDrawing.SystemBrushes.ScrollBar.get -> Egami.SystemDrawing.Br
 static Egami.SystemDrawing.SystemBrushes.Window.get -> Egami.SystemDrawing.Brush!
 static Egami.SystemDrawing.SystemBrushes.WindowFrame.get -> Egami.SystemDrawing.Brush!
 static Egami.SystemDrawing.SystemBrushes.WindowText.get -> Egami.SystemDrawing.Brush!
+static Egami.SystemDrawing.SystemFonts.CaptionFont.get -> Egami.SystemDrawing.Font!
+static Egami.SystemDrawing.SystemFonts.DefaultFont.get -> Egami.SystemDrawing.Font!
+static Egami.SystemDrawing.SystemFonts.DialogFont.get -> Egami.SystemDrawing.Font!
+static Egami.SystemDrawing.SystemFonts.GetFontByName(string! systemFontName) -> Egami.SystemDrawing.Font?
+static Egami.SystemDrawing.SystemFonts.IconTitleFont.get -> Egami.SystemDrawing.Font!
+static Egami.SystemDrawing.SystemFonts.MenuFont.get -> Egami.SystemDrawing.Font!
+static Egami.SystemDrawing.SystemFonts.MessageBoxFont.get -> Egami.SystemDrawing.Font!
+static Egami.SystemDrawing.SystemFonts.SmallCaptionFont.get -> Egami.SystemDrawing.Font!
+static Egami.SystemDrawing.SystemFonts.StatusFont.get -> Egami.SystemDrawing.Font!
 static Egami.SystemDrawing.SystemIcons.Application.get -> Egami.SystemDrawing.Icon!
 static Egami.SystemDrawing.SystemIcons.Asterisk.get -> Egami.SystemDrawing.Icon!
 static Egami.SystemDrawing.SystemIcons.Error.get -> Egami.SystemDrawing.Icon!
