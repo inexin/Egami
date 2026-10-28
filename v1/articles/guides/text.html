@@ -262,6 +262,34 @@ so LCD is opt-in.</li>
 advances unchanged, and italic slants 14 degrees, CSS's default oblique. Glyph paths and ink bounds include it;
 <code>Font.AllowSynthesis = false</code> turns it off.</li>
 </ul>
+<h3 id="text-gamma-and-contrast">Text gamma and contrast</h3>
+<p>Two canvas settings change how heavy small text looks without touching its shapes. <code>CanvasOptions.TextGamma</code> (0.5 to 3,
+default 1) blends glyph coverage per channel as (a·src^γ + (1 − a)·dst^γ)^(1/γ) on the stored values, as GDI ClearType does:
+above 1, light text on a dark ground gets heavier and dark text on a light ground lighter. <code>CanvasOptions.TextContrast</code> (0 to 1,
+default 0) first boosts coverage a to a + (1 − a)·c·a, the contrast boost of Skia and DirectWrite, which thickens thin edges
+whatever the colours.</p>
+<pre><code class="lang-csharp">// A white label on a blue button, weighted like GDI+'s ClearTypeGridFit text: a text gamma of 1.15 matched the brightness
+// GDI+ adds to within 1% for Trebuchet MS at 16 pixels. Shapes and images on this canvas blend as before.
+var options = new CanvasOptions { PixelGeometry = PixelGeometry.RgbHorizontal, TextGamma = 1.15f };
+var label = new Font(face, 16) { Hinting = FontHinting.Light, Edging = FontEdging.Lcd, Subpixel = false };
+using (RasterCanvas&lt;Rgb8&gt; canvas = button.CreateCanvas(options))
+{
+    canvas.DrawText(&quot;Start the course&quot;, new Vector2(40, 26), label, Rgba8.White);
+}
+
+// Thin dark text on a light page can take a contrast boost instead, as Skia and DirectWrite do.
+var boosted = new CanvasOptions { TextContrast = 0.25f };
+</code></pre>
+<ul>
+<li>Only glyphs drawn from the glyph cache (up to 256 pixels per em, under a scale-and-translate transform) take them; shapes,
+images, blurred text and text drawn as paths never do. The defaults draw exactly what Egami 1.2.0 drew.</li>
+<li>The gamma needs to read the canvas, so it applies to solid source-over text on an 8-bit RGB canvas outside layers, the text
+LCD edging can draw too; other text takes the contrast only.</li>
+<li>With <code>ColorSpace.Linear</code> the gamma is ignored, since that blend is already gamma-correct; the contrast still applies.</li>
+<li>To look like GDI+ <code>ClearTypeGridFit</code> (its default TextContrast of 4) with LCD edging, light hinting and whole-pixel origins,
+use a gamma of 1.15 and no contrast: the brightness a white Trebuchet MS label adds to a black or a #0078d4 button is then
+within 1% of GDI+'s. Letter shapes and spacing still differ, since TrueType instructions are not run.</li>
+</ul>
 <h2 id="color-fonts">Color fonts</h2>
 <p>Emoji and other color glyphs draw in color by themselves. Per glyph, the first format the font has wins: COLR version 1 (a
 graph of layers, gradients, transforms and compositing), COLR version 0 (layers of solid outlines), sbix, then CBDT and CBLC

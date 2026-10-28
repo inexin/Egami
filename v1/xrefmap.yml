@@ -15435,6 +15435,32 @@ references:
   isSpec: "True"
   fullName: Egami.Drawing.CanvasOptions.PixelGeometry
   nameWithType: CanvasOptions.PixelGeometry
+- uid: Egami.Drawing.CanvasOptions.TextContrast
+  name: TextContrast
+  href: api/Egami.Drawing.CanvasOptions.html#Egami_Drawing_CanvasOptions_TextContrast
+  commentId: P:Egami.Drawing.CanvasOptions.TextContrast
+  fullName: Egami.Drawing.CanvasOptions.TextContrast
+  nameWithType: CanvasOptions.TextContrast
+- uid: Egami.Drawing.CanvasOptions.TextContrast*
+  name: TextContrast
+  href: api/Egami.Drawing.CanvasOptions.html#Egami_Drawing_CanvasOptions_TextContrast_
+  commentId: Overload:Egami.Drawing.CanvasOptions.TextContrast
+  isSpec: "True"
+  fullName: Egami.Drawing.CanvasOptions.TextContrast
+  nameWithType: CanvasOptions.TextContrast
+- uid: Egami.Drawing.CanvasOptions.TextGamma
+  name: TextGamma
+  href: api/Egami.Drawing.CanvasOptions.html#Egami_Drawing_CanvasOptions_TextGamma
+  commentId: P:Egami.Drawing.CanvasOptions.TextGamma
+  fullName: Egami.Drawing.CanvasOptions.TextGamma
+  nameWithType: CanvasOptions.TextGamma
+- uid: Egami.Drawing.CanvasOptions.TextGamma*
+  name: TextGamma
+  href: api/Egami.Drawing.CanvasOptions.html#Egami_Drawing_CanvasOptions_TextGamma_
+  commentId: Overload:Egami.Drawing.CanvasOptions.TextGamma
+  isSpec: "True"
+  fullName: Egami.Drawing.CanvasOptions.TextGamma
+  nameWithType: CanvasOptions.TextGamma
 - uid: Egami.Drawing.CanvasOptions.Tolerance
   name: Tolerance
   href: api/Egami.Drawing.CanvasOptions.html#Egami_Drawing_CanvasOptions_Tolerance
