@@ -145,6 +145,31 @@ public class GlyphHintingTests
     }
 
     [Fact]
+    public void GdiPlusKeepsDesignAdvancesWhenARunWouldWidenTooMuch()
+    {
+        // A glyph whose hinted advance is wider than its design: a few copies keep whole-pixel hinted steps, but once the run would
+        // be more than 2.1 pixels wider than designed, GDI+ (and GridFitted for it) lays it out with design advances.
+        Typeface face = TestFonts.Load("DejaVuSans.ttf");
+        var font = new Font(face, 13) { Hinting = FontHinting.Full, Metrics = FontMetrics.GridFitted, Kerning = false };
+        float scale = 13f / face.UnitsPerEm;
+        // (Not f: repeated, it forms ligatures.)
+        char c = "abcdeghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ".First(ch =>
+        {
+            ushort g = face.GetGlyph(ch);
+            float d = face.GetAdvance(g) * scale, h = MathF.Round(face.GetHintedGlyph(g, 13, TrueTypeTarget.GdiPlus)!.Advance);
+            return h - d is > 0.2f and < 0.5f;
+        });
+        ushort glyph = face.GetGlyph(c);
+        float design = face.GetAdvance(glyph) * scale, hinted = MathF.Round(face.GetHintedGlyph(glyph, 13, TrueTypeTarget.GdiPlus)!.Advance);
+        int few = (int)(2.1f / (hinted - design)), many = few + 3;
+        Assert.Equal(few * hinted, font.MeasureText(new string(c, few)).Advance, 3);
+        Assert.Equal(many * design, font.MeasureText(new string(c, many)).Advance, 2);
+
+        // Other targets keep whole pixels however long the run.
+        Assert.Equal(many * hinted, (font with { HintingTarget = TrueTypeTarget.FreeType }).MeasureText(new string(c, many)).Advance, 0);
+    }
+
+    [Fact]
     public void NewPropertiesValidateAndKeepFontSmall()
     {
         var font = new Font(TestFonts.Load("DejaVuSans.ttf"), 12);

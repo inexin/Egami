@@ -125,14 +125,43 @@ public sealed class GlyphBuffer
     }
 
     /// <summary>
+    /// How much wider than its design width GDI+ lets a run of hinted advances grow, in pixels, before it lays the whole run out
+    /// with design advances instead (measured in egami-compare: whole-pixel steps up to about 2.1 pixels of widening, then
+    /// fractional ones).
+    /// </summary>
+    internal static float GdiPlusLineWidening { get; set; } = 2.1f;
+
+    /// <summary>
     /// Replaces each horizontal advance with the glyph's hinted advance at the font's size (or its design advance, rounded, when it
     /// cannot be hinted) rounded to whole units, plus what shaping added to it (kerning, positioning) rounded, and rounds the
     /// offsets, for <see cref="FontMetrics.GridFitted"/>; <see cref="FontMetrics.Compatible"/> takes GDI's compatible widths
-    /// instead. Zero advances (marks) stay zero; vertical runs are left as they are.
+    /// instead. As GDI+ does, a <see cref="TrueTypeTarget.GdiPlus"/> run whose hinted advances would make it more than
+    /// <see cref="GdiPlusLineWidening"/> wider than its design advances keeps its design advances (fractional; glyph origins
+    /// still land on whole pixels when drawn). Zero advances (marks) stay zero; vertical runs are left as they are.
     /// </summary>
     internal void GridFit(Typeface face, Font font)
     {
         float scale = font.Size / face.UnitsPerEm;
+        Span<float> fitted = Count <= 256 ? stackalloc float[Count] : new float[Count];
+        float widening = 0;
+        for (int i = 0; i < Count; i++)
+        {
+            GlyphPosition p = _positions[i];
+            fitted[i] = p.XAdvance;
+            if (p.YAdvance != 0 || p.XAdvance == 0)
+            {
+                continue;
+            }
+
+            float design = face.GetAdvance(_glyphs[i]) * scale;
+            float hinted = font.Metrics == FontMetrics.Compatible
+                ? face.GetCompatibleAdvance(_glyphs[i], font.Size) ?? MathF.Round(design)
+                : MathF.Round(face.GetHintedGlyph(_glyphs[i], font.Size, font.HintingTarget)?.Advance ?? design);
+            fitted[i] = hinted + MathF.Round(p.XAdvance - design);
+            widening += hinted - design;
+        }
+
+        bool keepDesign = font.Metrics == FontMetrics.GridFitted && font.HintingTarget == TrueTypeTarget.GdiPlus && widening > GdiPlusLineWidening;
         for (int i = 0; i < Count; i++)
         {
             GlyphPosition p = _positions[i];
@@ -141,17 +170,7 @@ public sealed class GlyphBuffer
                 continue;
             }
 
-            float advance = p.XAdvance;
-            if (advance != 0)
-            {
-                float design = face.GetAdvance(_glyphs[i]) * scale;
-                float hinted = font.Metrics == FontMetrics.Compatible
-                    ? face.GetCompatibleAdvance(_glyphs[i], font.Size) ?? MathF.Round(design)
-                    : MathF.Round(face.GetHintedGlyph(_glyphs[i], font.Size, font.HintingTarget)?.Advance ?? design);
-                advance = hinted + MathF.Round(advance - design);
-            }
-
-            _positions[i] = new GlyphPosition(advance, 0, MathF.Round(p.XOffset), MathF.Round(p.YOffset));
+            _positions[i] = new GlyphPosition(keepDesign ? p.XAdvance : fitted[i], 0, MathF.Round(p.XOffset), MathF.Round(p.YOffset));
         }
     }
 }
