@@ -8,6 +8,24 @@ public sealed partial class Typeface
     private const int OpOtherBlues = 7;
 
     private HintZone[]? _hintZones;
+    private float _stemWidth = -1;
+
+    /// <summary>
+    /// Gets the face's vertical stem width in font units, which stem darkening follows: a CFF font's StdVW, else the narrowest ink
+    /// run across the middle of 'l' (or 'I'), else a twelfth of the em.
+    /// </summary>
+    internal float StemWidth
+    {
+        get
+        {
+            if (_stemWidth < 0)
+            {
+                _stemWidth = MeasureStem();
+            }
+
+            return _stemWidth;
+        }
+    }
 
     /// <summary>
     /// Gets the alignment zones light hinting snaps, sorted by flat edge: a CFF font's BlueValues and OtherBlues (Adobe Technical
@@ -89,6 +107,94 @@ public sealed partial class Typeface
             ushort x = GetGlyph('x');
             GlyphExtents e = x == 0 ? GlyphExtents.Empty : GetGlyphExtents(x);
             return e.IsEmpty ? 0 : e.YMax;
+        }
+    }
+
+    private const int OpStdVW = 11;
+
+    private float MeasureStem()
+    {
+        if (_cff is not null && !_cff.IsCff2 && _instance is null && _cff.Privates.Length > 0 && _cff.Privates[0].Dict.Get(OpStdVW) is { Length: > 0 } std && std[0] > 0)
+        {
+            return (float)std[0];
+        }
+
+        foreach (char c in "lI")
+        {
+            ushort glyph = GetGlyph(c);
+            GlyphExtents e = glyph == 0 ? GlyphExtents.Empty : GetGlyphExtents(glyph);
+            if (e.IsEmpty)
+            {
+                continue;
+            }
+
+            var sink = new CrossingSink((e.YMin + e.YMax) / 2);
+            GetGlyphOutline(glyph, sink);
+            if (sink.Narrowest() is float width)
+            {
+                return width;
+            }
+        }
+
+        return UnitsPerEm / 12f;
+    }
+
+    /// <summary>Where an outline crosses a horizontal line, curves taken by their control polygons (exact for straight stems).</summary>
+    private sealed class CrossingSink(float y) : IGlyphOutlineSink
+    {
+        private readonly List<float> _crossings = [];
+        private float _x;
+        private float _y;
+        private float _startX;
+        private float _startY;
+
+        public void MoveTo(float x, float y)
+        {
+            Close();
+            (_x, _y, _startX, _startY) = (x, y, x, y);
+        }
+
+        public void LineTo(float x, float y) => Segment(x, y);
+
+        public void QuadTo(float cx, float cy, float x, float y)
+        {
+            Segment(cx, cy);
+            Segment(x, y);
+        }
+
+        public void CubicTo(float c1x, float c1y, float c2x, float c2y, float x, float y)
+        {
+            Segment(c1x, c1y);
+            Segment(c2x, c2y);
+            Segment(x, y);
+        }
+
+        public void Close() => Segment(_startX, _startY);
+
+        public float? Narrowest()
+        {
+            _crossings.Sort();
+            float? narrowest = null;
+            for (int i = 0; i + 1 < _crossings.Count; i += 2)
+            {
+                float w = _crossings[i + 1] - _crossings[i];
+                if (w > 0 && (narrowest is null || w < narrowest))
+                {
+                    narrowest = w;
+                }
+            }
+
+            return narrowest;
+        }
+
+        private void Segment(float x, float y1)
+        {
+            if ((_y <= y && y1 > y) || (_y > y && y1 <= y))
+            {
+                _crossings.Add(_x + ((y - _y) * (x - _x) / (y1 - _y)));
+            }
+
+            (_x, _y) = (x, y1);
         }
     }
 

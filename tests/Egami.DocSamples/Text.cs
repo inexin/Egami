@@ -230,7 +230,7 @@ public class Text
         // A little more weight without a bold face: outlines grow 0.2 pixels on each side, advances stay as they are.
         var heavier = new Font(face, 14) { Embolden = 0.2f };
 
-        // Darkening for small sizes only: full at 8 pixels per em, none from 32 up.
+        // Darkening for thin stems only: it fades out as the face's stems grow past 1.667 pixels.
         var caption = new Font(face, 9) { StemDarkening = true };
         using (RasterCanvas<Rgba8> canvas = image.CreateCanvas())
         {
