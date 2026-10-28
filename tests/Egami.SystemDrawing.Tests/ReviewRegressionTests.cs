@@ -117,4 +117,14 @@ public class ReviewRegressionTests
         Assert.Equal(Color.Red.ToArgb(), b.GetPixel(5, 5).ToArgb());
         Assert.Equal(0, b.GetPixel(6, 6).A);
     }
+
+    [Fact]
+    public void RegionIsVisibleTakesSystemDrawingPoints()
+    {
+        // Inside an Egami namespace Point names Egami.Point; the public overload must take System.Drawing.Point.
+        using Region region = new(new Rectangle(0, 0, 10, 10));
+        Assert.True(region.IsVisible(new System.Drawing.Point(5, 5)));
+        Assert.False(region.IsVisible(new System.Drawing.Point(20, 5), null));
+        Assert.NotNull(typeof(Region).GetMethod(nameof(Region.IsVisible), [typeof(System.Drawing.Point)]));
+    }
 }

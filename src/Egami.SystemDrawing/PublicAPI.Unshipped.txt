@@ -824,8 +824,6 @@ Egami.SystemDrawing.Region.Intersect(System.Drawing.Rectangle rect) -> void
 Egami.SystemDrawing.Region.Intersect(System.Drawing.RectangleF rect) -> void
 Egami.SystemDrawing.Region.IsEmpty(Egami.SystemDrawing.Graphics! g) -> bool
 Egami.SystemDrawing.Region.IsInfinite(Egami.SystemDrawing.Graphics! g) -> bool
-Egami.SystemDrawing.Region.IsVisible(Egami.Point point) -> bool
-Egami.SystemDrawing.Region.IsVisible(Egami.Point point, Egami.SystemDrawing.Graphics? g) -> bool
 Egami.SystemDrawing.Region.IsVisible(float x, float y) -> bool
 Egami.SystemDrawing.Region.IsVisible(float x, float y, Egami.SystemDrawing.Graphics? g) -> bool
 Egami.SystemDrawing.Region.IsVisible(float x, float y, float width, float height) -> bool
@@ -833,6 +831,8 @@ Egami.SystemDrawing.Region.IsVisible(float x, float y, float width, float height
 Egami.SystemDrawing.Region.IsVisible(int x, int y, Egami.SystemDrawing.Graphics? g) -> bool
 Egami.SystemDrawing.Region.IsVisible(int x, int y, int width, int height) -> bool
 Egami.SystemDrawing.Region.IsVisible(int x, int y, int width, int height, Egami.SystemDrawing.Graphics? g) -> bool
+Egami.SystemDrawing.Region.IsVisible(System.Drawing.Point point) -> bool
+Egami.SystemDrawing.Region.IsVisible(System.Drawing.Point point, Egami.SystemDrawing.Graphics? g) -> bool
 Egami.SystemDrawing.Region.IsVisible(System.Drawing.PointF point) -> bool
 Egami.SystemDrawing.Region.IsVisible(System.Drawing.PointF point, Egami.SystemDrawing.Graphics? g) -> bool
 Egami.SystemDrawing.Region.IsVisible(System.Drawing.Rectangle rect) -> bool

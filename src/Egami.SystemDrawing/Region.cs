@@ -9,6 +9,8 @@ using Egami.SystemDrawing.Internal;
 
 namespace Egami.SystemDrawing;
 
+using Point = System.Drawing.Point;
+
 /// <summary>
 /// An area made of rectangles and shapes combined with <see cref="Union(Region)"/>, <see cref="Intersect(Region)"/>,
 /// <see cref="Xor(Region)"/>, <see cref="Exclude(Region)"/> and <see cref="Complement(Region)"/>, as System.Drawing's Region:
