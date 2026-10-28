@@ -106,8 +106,9 @@ API review come in later stages.
   `V_MS/VFW/FOURCC`), and the AVI writer stores `V_FFV1` tracks, so FFV1 remuxes between Matroska and AVI. Version 3 tracks
   give `BitDepth` and `ChromaFormat` from the record. `CodecHeaders.Describe` lists FFV1 parameters and slice headers.
 
-V9.1 stage A: streaming audio filters in `Egami.Video.Audio.Filters` (Build Plan tasks 1 to 7). All additive; the API review
-comes after stage D.
+V9.1 stage A: streaming audio filters in `Egami.Video.Audio.Filters` (Build Plan tasks 1 to 7). All additive; the stage A
+API review was accepted on 2026-10-28 with no API changes, and the docs now say that filter times are the frames' own
+timestamps.
 
 - `IAudioFilter` (`Send`, `TryReceive`, `Flush`, `Reset`, `Latency`), the `Resampler` shape, and `AudioFilterChain`, which runs
   filters on one input in one pass. Frames of any format go in, F32 planar frames with exact timestamps come out; filters that

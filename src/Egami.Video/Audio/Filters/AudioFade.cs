@@ -41,8 +41,9 @@ public enum FadeDirection
 /// <summary>
 /// Fades the sound in or out over a stretch of the stream's time line. A fade in is silent before <see cref="Start"/> and
 /// reaches full level on the exact sample at <see cref="Start"/> plus <see cref="Duration"/>; a fade out is full level before
-/// <see cref="Start"/> and silent from its end on. Times are on the frames' time line, rounded to whole samples. The curves
-/// give the same gains as ffmpeg's <c>afade</c> with the curve each value names. Works in place.
+/// <see cref="Start"/> and silent from its end on. Times are on the frames' own timestamps, not counted from the first
+/// sample, and are rounded to whole samples; put a <see cref="Retime"/> first to count from zero. The curves give the same
+/// gains as ffmpeg's <c>afade</c> with the curve each value names. Works in place.
 /// </summary>
 /// <example>
 /// <code language="csharp" source="../../../../tests/Egami.DocSamples/AudioFilters.cs" region="audio-fades"/>

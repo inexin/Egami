@@ -10,7 +10,9 @@ Every filter is an `IAudioFilter` with the same calls as `Resampler`: `Send` a f
 `Flush` at the end of the input and `Reset` after a seek. `Latency` says how much input a filter holds back, such as the
 lookahead of `Tempo`. Frames of any sample format go in and are converted once to planar float; frames come out as
 `SampleFormat.F32Planar` with exact timestamps. The filters that keep the length work on the frame in place, so a steady
-stream allocates no sample memory.
+stream allocates no sample memory. Times you give a filter, such as where a fade starts or a trim cuts, are the frames' own
+timestamps, not counted from the first sample, as in FFmpeg: audio that starts at 1.4 s fades at 1.4 s only if you say so.
+Put a `Retime` first to count from zero.
 
 `AudioFilterChain` runs several filters on one input in one pass and is itself a filter. It owns the filters added to it.
 Egami.Video's filters derive from `AudioFilter`, which takes the rate and channels from the first frame and refuses frames
