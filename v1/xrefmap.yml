@@ -25457,6 +25457,12 @@ references:
   commentId: F:Egami.Fonts.FontMetrics.GridFitted
   fullName: Egami.Fonts.FontMetrics.GridFitted
   nameWithType: FontMetrics.GridFitted
+- uid: Egami.Fonts.FontMetrics.GridFittedToDesign
+  name: GridFittedToDesign
+  href: api/Egami.Fonts.FontMetrics.html#Egami_Fonts_FontMetrics_GridFittedToDesign
+  commentId: F:Egami.Fonts.FontMetrics.GridFittedToDesign
+  fullName: Egami.Fonts.FontMetrics.GridFittedToDesign
+  nameWithType: FontMetrics.GridFittedToDesign
 - uid: Egami.Fonts.FontNameRecord
   name: FontNameRecord
   href: api/Egami.Fonts.FontNameRecord.html

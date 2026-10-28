@@ -357,9 +357,9 @@ antialiased edges and translucent colors from darkening.</p>
   <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/CanvasOptions.cs/#L85"><i class="bi bi-code-slash"></i></a>
   </h3>
 
-  <div class="markdown level1 summary"><p>Gets the canvas settings of System.Drawing's ClearTypeGridFit text, as measured on Windows in 2.7.5: an RGB stripe,
-<a class="xref" href="Egami.Drawing.LcdFilter.html#Egami_Drawing_LcdFilter_Gdi">Gdi</a>, <a class="xref" href="Egami.Drawing.LcdSampling.html#Egami_Drawing_LcdSampling_Gdi">Gdi</a> and a <a class="xref" href="Egami.Drawing.CanvasOptions.html#Egami_Drawing_CanvasOptions_TextGamma">TextGamma</a> of 1.4 (GDI+'s
-1 + Graphics.TextContrast / 10 at its default contrast of 4). Use it with fonts from <a class="xref" href="Egami.Fonts.Font.html#Egami_Fonts_Font_WithGdiPlusLook">WithGdiPlusLook()</a>.</p>
+  <div class="markdown level1 summary"><p>Gets the canvas settings of System.Drawing's ClearTypeGridFit text, as measured on Windows in 2.7.5 and 2.7.6: an RGB stripe,
+<a class="xref" href="Egami.Drawing.LcdFilter.html#Egami_Drawing_LcdFilter_Gdi">Gdi</a>, <a class="xref" href="Egami.Drawing.LcdSampling.html#Egami_Drawing_LcdSampling_Gdi">Gdi</a> (coverage in sixths, blended through GDI+'s 8-bit gamma tables)
+and a <a class="xref" href="Egami.Drawing.CanvasOptions.html#Egami_Drawing_CanvasOptions_TextGamma">TextGamma</a> of 1.4 (GDI+'s 1 + Graphics.TextContrast / 10 at its default contrast of 4). Use it with fonts from <a class="xref" href="Egami.Fonts.Font.html#Egami_Fonts_Font_WithGdiPlusLook">WithGdiPlusLook()</a>.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
 

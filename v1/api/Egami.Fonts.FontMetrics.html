@@ -132,9 +132,14 @@ rounded. Glyph origins snap to whole pixels.</p>
   
   <dd><p>The hinted advances at a whole number of pixels per em: each glyph's right phantom point less its left after the font's
 instructions run for <a class="xref" href="Egami.Fonts.Font.html#Egami_Fonts_Font_HintingTarget">HintingTarget</a>. Measuring and drawing both use them, and glyph origins snap to whole
-pixels. Faces that cannot be hinted keep their design advances, rounded. For <a class="xref" href="Egami.Fonts.TrueTypeTarget.html#Egami_Fonts_TrueTypeTarget_GdiPlus">GdiPlus</a>, a run
-that the hinted advances would make more than 2.1 pixels wider than designed keeps its design advances instead, as GDI+
-lays out such lines (its glyph origins still snap to whole pixels).</p>
+pixels. Faces that cannot be hinted keep their design advances, rounded. With <a class="xref" href="Egami.Fonts.TrueTypeTarget.html#Egami_Fonts_TrueTypeTarget_GdiPlus">GdiPlus</a> these
+are the advances Graphics.DrawString draws with its default StringFormat.</p>
+</dd>
+    <dt id="Egami_Fonts_FontMetrics_GridFittedToDesign"><code>GridFittedToDesign = 3</code></dt>
+  
+  <dd><p><a class="xref" href="Egami.Fonts.FontMetrics.html#Egami_Fonts_FontMetrics_GridFitted">GridFitted</a> advances, except that a run they would make more than 2.1 pixels wider than designed keeps its
+design advances, rounded up to sixteenths of a pixel, as Graphics.DrawString lays out such lines with
+StringFormat.GenericTypographic (glyph origins still snap to whole pixels).</p>
 </dd>
   </dl>
 

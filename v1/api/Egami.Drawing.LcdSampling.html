@@ -119,8 +119,10 @@ Enum LcdSampling  <a class="header-action link-secondary" title="View source" hr
   <dl class="parameters">
     <dt id="Egami_Drawing_LcdSampling_Gdi"><code>Gdi = 1</code></dt>
   
-  <dd><p>As measured from GDI+ ClearType: exact coverage across the subpixels, but along the other axis each pixel takes the outline
-where it crosses the pixel's centre line, so edges along the stripes are not smoothed.</p>
+  <dd><p>As measured from GDI+ ClearType: six on-or-off samples per pixel across the stripes, two per subpixel, on each pixel's
+centre line, so edges along the stripes are not smoothed and a channel of the <a class="xref" href="Egami.Drawing.LcdFilter.html#Egami_Drawing_LcdFilter_Gdi">Gdi</a> filter is a whole
+number of sixths. With a <a class="xref" href="Egami.Drawing.CanvasOptions.html#Egami_Drawing_CanvasOptions_TextGamma">TextGamma</a> other than 1, text then blends through GDI+'s 8-bit gamma
+tables in those sixths.</p>
 </dd>
     <dt id="Egami_Drawing_LcdSampling_Smooth"><code>Smooth = 0</code></dt>
   
