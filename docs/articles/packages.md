@@ -2,8 +2,8 @@
 
 Egami is a family of packages. Each is fully managed C# with no dependencies outside the family, and you add only the ones you
 use. Packages at 1.0 or above keep their public API compatible within the major version; packages at 0.x may still change.
-Egami, Egami.Drawing, Egami.Fonts, Egami.Svg, Egami.Css, Egami.Heic, Egami.Cli and Egami.Cli.Host share one version and
-release together; the other packages have versions of their own. Each package name links to its source code.
+Egami, Egami.Drawing, Egami.Fonts, Egami.Svg, Egami.Css, Egami.Heic, Egami.Formats.Extended, Egami.Cli and Egami.Cli.Host share
+one version and release together; the other packages have versions of their own. Each package name links to its source code.
 
 ## Images
 
@@ -11,6 +11,7 @@ release together; the other packages have versions of their own. Each package na
 | --- | --- | --- | --- | --- |
 | [Egami](https://github.com/inexin/Egami/tree/main/src/Egami) | 1.x | Rasters and pixel types, every format reader and writer, operations, color management, metadata, streaming decode | Nothing | [Getting started](getting-started.md), [formats](formats/index.md), [all guides](guides/index.md) |
 | [Egami.Heic](https://github.com/inexin/Egami/tree/main/src/Egami.Heic) | 1.x | Reads HEIC phone photos (HEVC-coded HEIF), opt-in because HEVC is covered by patents | Egami, the same version | [HEIC](formats/heic.md) |
+| [Egami.Formats.Extended](https://github.com/inexin/Egami/tree/main/src/Egami.Formats.Extended) | 1.x | Extra image formats as plugins on core Egami's format API: PCX, SGI, Sun raster, XBM, XPM, WBMP and Farbfeld, read and written | Egami, the same version | [Extended formats](formats/extended.md) |
 
 ## Drawing and text
 

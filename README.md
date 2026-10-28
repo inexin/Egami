@@ -37,6 +37,7 @@ Add only the packages you use. Each one has its own guides, and its name links t
 | --- | --- | --- | --- |
 | [Egami](src/Egami) | Rasters and pixel types; PNG, JPEG, GIF, WebP, TIFF, JPEG XL, AVIF and more; resizing, color management, filters, metadata | [Getting started](https://inexin.github.io/Egami/v1/articles/getting-started.html), [formats](https://inexin.github.io/Egami/v1/articles/formats/index.html), [all guides](https://inexin.github.io/Egami/v1/articles/guides/index.html) | [![NuGet](https://img.shields.io/nuget/v/Egami.svg)](https://www.nuget.org/packages/Egami) |
 | [Egami.Heic](src/Egami.Heic) | Reads HEIC phone photos; opt-in because HEVC is covered by patents | [Guide](https://inexin.github.io/Egami/v1/articles/formats/heic.html) | [![NuGet](https://img.shields.io/nuget/v/Egami.Heic.svg)](https://www.nuget.org/packages/Egami.Heic) |
+| [Egami.Formats.Extended](src/Egami.Formats.Extended) | Extra image formats as plugins: PCX, SGI, Sun raster, XBM, XPM, WBMP and Farbfeld | [Guide](https://inexin.github.io/Egami/v1/articles/formats/extended.html) | [![NuGet](https://img.shields.io/nuget/v/Egami.Formats.Extended.svg)](https://www.nuget.org/packages/Egami.Formats.Extended) |
 
 ### Drawing and text
 
