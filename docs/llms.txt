@@ -35,6 +35,8 @@ settings, safety limits and registered formats a call uses.
 - [AV1 video frames](https://inexin.github.io/Egami/v1/articles/formats/av1.html): `Av1StreamDecoder` decodes AV1 video a temporal unit at a time and `Av1StreamEncoder` encodes it; both work on frames, and Egami.Video uses them for its containers.
 - [BMP](https://inexin.github.io/Egami/v1/articles/formats/bmp.html): Egami reads Windows bitmaps with core, info, V2 to V5 and OS/2 2.x headers at 1 to 32 bits, RLE4, RLE8 and RLE24, bit fields, embedded PNG and JPEG and V5 ICC profiles.
 - [CCITT fax](https://inexin.github.io/Egami/v1/articles/formats/ccitt.html): Egami decodes raw CCITT fax data.
+- [Extended formats](https://inexin.github.io/Egami/v1/articles/formats/extended.html): Egami.Formats.Extended reads and writes image formats that most apps never meet but some still need.
+- [Farbfeld](https://inexin.github.io/Egami/v1/articles/formats/farbfeld.html): Farbfeld is suckless.org's lossless format.
 - [GIF](https://inexin.github.io/Egami/v1/articles/formats/gif.html): Egami reads GIF 87a and 89a files, with every disposal method, interlaced images, transparency, the loop count, comments, XMP and ICC profiles, and writes GIF 89a.
 - [HEIC](https://inexin.github.io/Egami/v1/articles/formats/heic.html): HEIC is the format iPhones and most Android phones save photos in.
 - [ICO and CUR](https://inexin.github.io/Egami/v1/articles/formats/ico.html): Egami reads and writes Windows icons (.ico) and cursors (.cur), written from Microsoft's documentation of the icon directory.
@@ -45,14 +47,20 @@ settings, safety limits and registered formats a call uses.
 - [JPEG XL](https://inexin.github.io/Egami/v1/articles/formats/jxl.html): Egami reads and writes JPEG XL (ISO/IEC 18181), written from the specification with no native code.
 - [Netpbm](https://inexin.github.io/Egami/v1/articles/formats/pnm.html): Egami reads and writes the Netpbm formats.
 - [OpenEXR](https://inexin.github.io/Egami/v1/articles/formats/openexr.html): `ExrFormat` reads scanline and tiled files, single and multi-part (`ExrPartKind`), with every compression of OpenEXR 3 (`ExrCompression`.
+- [PCX](https://inexin.github.io/Egami/v1/articles/formats/pcx.html): PCX is ZSoft's PC Paintbrush format.
 - [PNG and APNG](https://inexin.github.io/Egami/v1/articles/formats/png.html): Egami reads and writes PNG and its animated form, APNG.
 - [PSD and PSB](https://inexin.github.io/Egami/v1/articles/formats/psd.html): Egami reads Adobe Photoshop documents (.psd) and large documents (.psb), written from Adobe's Photoshop File Format Specification.
 - [QOI](https://inexin.github.io/Egami/v1/articles/formats/qoi.html): Egami reads and writes the whole Quite OK Image format, with 3 or 4 channels and both colorspaces.
 - [Radiance](https://inexin.github.io/Egami/v1/articles/formats/radiance.html): Radiance pictures hold three 8-bit mantissas and a shared exponent per pixel (RGBE), or CIE X, Y and Z the same way (XYZE).
+- [SGI](https://inexin.github.io/Egami/v1/articles/formats/sgi.html): SGI is Silicon Graphics' image format (.rgb, .rgba, .bw, .sgi).
+- [Sun raster](https://inexin.github.io/Egami/v1/articles/formats/sun-raster.html): Sun raster is the rasterfile format of SunOS.
 - [TGA](https://inexin.github.io/Egami/v1/articles/formats/tga.html): Egami reads Truevision TGA files.
 - [TIFF](https://inexin.github.io/Egami/v1/articles/formats/tiff.html): Egami reads and writes TIFF and BigTIFF, written from the TIFF 6.0 specification, Adobe's technical notes and supplements and the BigTIFF design note, starting from the reader in Lars's ClassicMac.
 - [VP8 video frames](https://inexin.github.io/Egami/v1/articles/formats/vp8.html): `Vp8StreamDecoder` decodes VP8 video frame by frame and `Vp8StreamEncoder` encodes it; both work on frames, and Egami.Video uses them for WebM, Matroska and IVF files.
+- [WBMP](https://inexin.github.io/Egami/v1/articles/formats/wbmp.html): WBMP is the Wireless Application Protocol's one-bit bitmap.
 - [WebP](https://inexin.github.io/Egami/v1/articles/formats/webp.html): Egami reads and writes WebP.
+- [XBM](https://inexin.github.io/Egami/v1/articles/formats/xbm.html): XBM is the X Window System's one-bit bitmap, written as C source.
+- [XPM](https://inexin.github.io/Egami/v1/articles/formats/xpm.html): XPM, the X PixMap format, is C source holding an array of strings.
 - [Your own format](https://inexin.github.io/Egami/v1/articles/formats/custom.html): Egami's formats are plug-ins like any other.
 
 ## Egami: editing images
@@ -95,6 +103,7 @@ settings, safety limits and registered formats a call uses.
 - [Fonts and text](https://inexin.github.io/Egami/v1/articles/guides/text.html): Egami.Fonts is a separate package that reads TrueType, OpenType, WOFF, WOFF2 and variable fonts in managed code.
 - [Paragraph layout](https://inexin.github.io/Egami/v1/articles/guides/paragraph-layout.html): Egami.Fonts lays out paragraphs in the `Egami.Fonts.Layout` namespace.
 - [Unicode text and shaping](https://inexin.github.io/Egami/v1/articles/guides/unicode-text.html): Egami.Fonts carries its own Unicode 17.0 data and the Unicode algorithms text shaping builds on.
+- [Matching System.Drawing text](https://inexin.github.io/Egami/v1/articles/guides/system-drawing-text.html): Egami can draw small UI text the way System.Drawing does on Windows, for images that replace ones made with `Graphics.DrawString` (GDI+) or `TextRenderer` (GDI), such as buttons in emails.
 
 ## Egami.Svg and Egami.Css
 
@@ -105,13 +114,22 @@ settings, safety limits and registered formats a call uses.
 
 - [Windows metafiles](https://inexin.github.io/Egami/v1/articles/guides/metafiles.html): Egami.Metafiles plays Windows metafiles, the vector pictures Office and Windows programs exchange.
 
+## Egami.SystemDrawing
+
+- [System.Drawing drop-in](https://inexin.github.io/Egami/v1/articles/guides/system-drawing.html): Egami.SystemDrawing gives code written for System.Drawing.Common its API on every OS, in managed code.
+
 ## Egami.Video
 
 - [Video](https://inexin.github.io/Egami/v1/articles/guides/video.html): Egami.Video reads and writes video with Egami rasters as frames, so resizing, color and drawing from Egami work on video with no copying.
 - [Streaming MP4](https://inexin.github.io/Egami/v1/articles/guides/streaming-mp4.html): Flat MP4 needs its index (moov) before or after all of the media, so a writer must either seek back or hold the media somewhere until the end.
-- [Encoding video](https://inexin.github.io/Egami/v1/articles/guides/video-encoding.html): Egami.Video encodes VP8 into WebM, Matroska and IVF, with alpha in WebM and Matroska.
+- [Encoding video](https://inexin.github.io/Egami/v1/articles/guides/video-encoding.html): Egami.Video encodes VP8 and VP9 into WebM, Matroska and IVF (VP9 into MP4 too), with alpha in WebM and Matroska, and AV1 into WebM, Matroska, MP4, IVF, raw OBU and Annex B files.
+- [Video editing](https://inexin.github.io/Egami/v1/articles/guides/video-editing.html): Egami.Video's editing library, in `Egami.Video.Editing`, joins clips with transitions, draws clips over clips, keys out green screens, lays clips side by side and runs Egami operations on the result …
+- [Lossless archiving with FFV1](https://inexin.github.io/Egami/v1/articles/guides/lossless-archiving.html): FFV1 (RFC 9043) is the lossless video codec memory institutions archive with.
+- [H.264](https://inexin.github.io/Egami/v1/articles/guides/h264.html): Egami.Video.H264 decodes H.264 (AVC), the codec of most MP4 and MOV files from phones, cameras and the web.
 - [Audio](https://inexin.github.io/Egami/v1/articles/guides/audio.html): Egami.Video decodes and encodes audio with the same send and receive loop as video.
+- [Audio filters](https://inexin.github.io/Egami/v1/articles/guides/audio-filters.html): Egami.Video's audio filters change level, time and placement of decoded audio as it streams.
 - [Encoding Opus](https://inexin.github.io/Egami/v1/articles/guides/opus-encoding.html): Opus (RFC 6716) is the audio codec of WebM and of .opus files, and the best general-purpose lossy codec for both speech and music.
+- [Subtitles](https://inexin.github.io/Egami/v1/articles/guides/subtitles.html): Egami.Video reads and writes text subtitle files in the `Egami.Video.Subtitles` namespace.
 
 ## Egami.Video.Cli
 

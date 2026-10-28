@@ -99,6 +99,10 @@ Operations that run on a raster through `Apply` and `Derive`.
 
 - [Windows metafiles](metafiles.md): play WMF, EMF and EMF+ pictures onto a canvas.
 
+## Egami.SystemDrawing
+
+- [System.Drawing drop-in](system-drawing.md): System.Drawing's Bitmap, Image and codec API on every OS.
+
 ## Egami.Video
 
 - [Video](video.md): probe, read, write and remux video, with Egami rasters as frames.
