@@ -36,6 +36,7 @@ Licenses were checked on 2026-10-07 (the HEVC libraries on 2026-10-15, the barco
 | [libhevc](https://android.googlesource.com/platform/external/libhevc) | C | Apache 2.0 | Fast SIMD structure of an HEVC decoder | 2.9.4 |
 | [CrabbyAvif](https://github.com/webmproject/CrabbyAvif) | Rust | Apache 2.0 | HEIF item handling, including HEIC | 2.9.4 |
 | [libebur128](https://github.com/jiixyj/libebur128) | C | MIT | EBU R 128 loudness: K-weighting at any rate, gating, loudness range | Video V1.4 |
+| [skrifa](https://github.com/googlefonts/fontations/tree/main/skrifa) (Google fontations) | Rust | MIT or Apache 2.0 | A complete TrueType interpreter with ClearType compatibility and an autohinter; read under MIT (2.7.5 Q2, Lars 2026-10-28). A close translation gets a THIRD-PARTY-NOTICES entry | 2.7.5 |
 
 Specifications, textbooks and papers are always fine. Code under GPL, LGPL or AGPL, and code with no license, is never used.
 
@@ -50,6 +51,10 @@ For OCR (2.12), Egami ships no engine. The hOCR 1.2 specification (kba/hocr-spec
 (versions 2 to 4) are the references for the readers and writers. Tesseract (Apache-2.0) runs only as an outside program, through
 `CommandOcrEngine` or the samples; Windows.Media.Ocr and Azure AI Document Intelligence are used through their public APIs in the
 samples only. OCRmyPDF (MPL-2.0) and iText pdfOCR (AGPL) were looked at for behaviour only, never read.
+
+For TrueType hinting (2.7.5), FreeType (FreeType License or GPLv2) is never read; its behaviour comes from the 2.7.5 FreeType
+Hinting Study and FreeType's public documentation pages. The OpenType and Apple TrueType specifications, Microsoft's ClearType
+backward-compatibility page and *The Raster Tragedy* are the references, with skrifa as the listed library.
 
 For HEIC, libheif and libde265 (LGPL-3), FFmpeg's HEVC decoder and openHEVC (LGPL-2.1) and x265 (GPL-2) are never read; they
 only run as black-box tools in Docker to make test files and references. Nokia's HEIF code (non-commercial licence) is never
