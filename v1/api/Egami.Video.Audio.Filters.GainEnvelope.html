@@ -6,7 +6,7 @@
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <meta name="title" content="Class GainEnvelope | Egami ">
       
-      <meta name="description" content="A gain that changes over time, in decibels, for : a list of s whose values are decibels. Before the first keyframe the gain is the first value, after the last one the last value, and between two the value eases from one to the next in decibels. A value of  is silence; a segment to or from it moves in linear amplitude instead, so the fade still sounds smooth.">
+      <meta name="description" content="A gain that changes over time, in decibels, for : a list of s whose values are decibels. Before the first keyframe the gain is the first value, after the last one the last value, and between two the value eases from one to the next in decibels. A value of  is silence; a segment to or from it moves in linear amplitude instead, so the fade still sounds smooth. Keyframe times are the frames&#39; own timestamps, not counted from the first sample.">
       <link rel="icon" href="../images/favicon.ico">
       <link rel="stylesheet" href="../public/docfx.min.css">
       <link rel="stylesheet" href="../public/main.css">
@@ -89,7 +89,7 @@
 
 
   <h1 id="Egami_Video_Audio_Filters_GainEnvelope" data-uid="Egami.Video.Audio.Filters.GainEnvelope" class="text-break">
-Class GainEnvelope  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/Filters/GainEnvelope.cs/#L12"><i class="bi bi-code-slash"></i></a>
+Class GainEnvelope  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/Filters/GainEnvelope.cs/#L13"><i class="bi bi-code-slash"></i></a>
   </h1>
 
   <div class="facts text-secondary">
@@ -100,7 +100,8 @@ Class GainEnvelope  <a class="header-action link-secondary" title="View source" 
   <div class="markdown summary"><p>A gain that changes over time, in decibels, for <a class="xref" href="Egami.Video.Audio.Filters.Gain.html#Egami_Video_Audio_Filters_Gain_Envelope">Envelope</a>: a list of <a class="xref" href="Egami.Video.Keyframe.html">Keyframe</a>s whose
 values are decibels. Before the first keyframe the gain is the first value, after the last one the last value, and between
 two the value eases from one to the next in decibels. A value of <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double.negativeinfinity">NegativeInfinity</a> is silence; a
-segment to or from it moves in linear amplitude instead, so the fade still sounds smooth.</p>
+segment to or from it moves in linear amplitude instead, so the fade still sounds smooth. Keyframe times are the frames'
+own timestamps, not counted from the first sample.</p>
 </div>
   <div class="markdown conceptual"></div>
 
@@ -168,7 +169,7 @@ using Gain duck = new()
 
   <h3 id="Egami_Video_Audio_Filters_GainEnvelope__ctor_Egami_Video_Keyframe___" data-uid="Egami.Video.Audio.Filters.GainEnvelope.#ctor(Egami.Video.Keyframe[])">
   GainEnvelope(params Keyframe[])
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/Filters/GainEnvelope.cs/#L48"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/Filters/GainEnvelope.cs/#L49"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Creates an envelope.</p>
@@ -201,7 +202,7 @@ using Gain duck = new()
 
   <h3 id="Egami_Video_Audio_Filters_GainEnvelope__ctor_System_Collections_Generic_IEnumerable_Egami_Video_Keyframe__" data-uid="Egami.Video.Audio.Filters.GainEnvelope.#ctor(System.Collections.Generic.IEnumerable{Egami.Video.Keyframe})">
   GainEnvelope(IEnumerable&lt;Keyframe&gt;)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/Filters/GainEnvelope.cs/#L20"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/Filters/GainEnvelope.cs/#L21"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Creates an envelope.</p>
@@ -244,7 +245,7 @@ using Gain duck = new()
 
   <h3 id="Egami_Video_Audio_Filters_GainEnvelope_Keyframes" data-uid="Egami.Video.Audio.Filters.GainEnvelope.Keyframes">
   Keyframes
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/Filters/GainEnvelope.cs/#L54"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/Filters/GainEnvelope.cs/#L55"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the keyframes, in time order.</p>
@@ -280,7 +281,7 @@ using Gain duck = new()
 
   <h3 id="Egami_Video_Audio_Filters_GainEnvelope_DecibelsAt_Egami_Video_MediaTime_" data-uid="Egami.Video.Audio.Filters.GainEnvelope.DecibelsAt(Egami.Video.MediaTime)">
   DecibelsAt(MediaTime)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/Filters/GainEnvelope.cs/#L59"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/Filters/GainEnvelope.cs/#L60"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Returns the gain at a time in decibels.</p>
@@ -319,7 +320,7 @@ using Gain duck = new()
 </article>
 
         <div class="contribution d-print-none">
-          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/Filters/GainEnvelope.cs/#L12" class="edit-link">Edit this page</a>
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/Filters/GainEnvelope.cs/#L13" class="edit-link">Edit this page</a>
         </div>
 
 

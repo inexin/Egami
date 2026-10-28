@@ -95,7 +95,9 @@ and crossfades, mixing and panning, delay, padding, trimming and new timestamps,
 <code>Flush</code> at the end of the input and <code>Reset</code> after a seek. <code>Latency</code> says how much input a filter holds back, such as the
 lookahead of <code>Tempo</code>. Frames of any sample format go in and are converted once to planar float; frames come out as
 <code>SampleFormat.F32Planar</code> with exact timestamps. The filters that keep the length work on the frame in place, so a steady
-stream allocates no sample memory.</p>
+stream allocates no sample memory. Times you give a filter, such as where a fade starts or a trim cuts, are the frames' own
+timestamps, not counted from the first sample, as in FFmpeg: audio that starts at 1.4 s fades at 1.4 s only if you say so.
+Put a <code>Retime</code> first to count from zero.</p>
 <p><code>AudioFilterChain</code> runs several filters on one input in one pass and is itself a filter. It owns the filters added to it.
 Egami.Video's filters derive from <code>AudioFilter</code>, which takes the rate and channels from the first frame and refuses frames
 that differ; to put a filter of your own in a chain, implement <code>IAudioFilter</code>.</p>

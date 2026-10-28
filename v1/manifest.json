@@ -12791,7 +12791,7 @@
       "Uid": null,
       "IsMRef": true,
       "Title": "Egami.Video.Audio.Filters.AudioFade",
-      "Summary": "<p sourcefile=\"api/Egami.Video.Audio.Filters.AudioFade.yml\" sourcestartlinenumber=\"1\">Fades the sound in or out over a stretch of the stream's time line. A fade in is silent before <xref href=\"Egami.Video.Audio.Filters.AudioFade.Start\" data-throw-if-not-resolved=\"false\"></xref> and\nreaches full level on the exact sample at <xref href=\"Egami.Video.Audio.Filters.AudioFade.Start\" data-throw-if-not-resolved=\"false\"></xref> plus <xref href=\"Egami.Video.Audio.Filters.AudioFade.Duration\" data-throw-if-not-resolved=\"false\"></xref>; a fade out is full level before\n<xref href=\"Egami.Video.Audio.Filters.AudioFade.Start\" data-throw-if-not-resolved=\"false\"></xref> and silent from its end on. Times are on the frames' time line, rounded to whole samples. The curves\ngive the same gains as ffmpeg's <code>afade</code> with the curve each value names. Works in place.</p>\n"
+      "Summary": "<p sourcefile=\"api/Egami.Video.Audio.Filters.AudioFade.yml\" sourcestartlinenumber=\"1\">Fades the sound in or out over a stretch of the stream's time line. A fade in is silent before <xref href=\"Egami.Video.Audio.Filters.AudioFade.Start\" data-throw-if-not-resolved=\"false\"></xref> and\nreaches full level on the exact sample at <xref href=\"Egami.Video.Audio.Filters.AudioFade.Start\" data-throw-if-not-resolved=\"false\"></xref> plus <xref href=\"Egami.Video.Audio.Filters.AudioFade.Duration\" data-throw-if-not-resolved=\"false\"></xref>; a fade out is full level before\n<xref href=\"Egami.Video.Audio.Filters.AudioFade.Start\" data-throw-if-not-resolved=\"false\"></xref> and silent from its end on. Times are on the frames' own timestamps, not counted from the first\nsample, and are rounded to whole samples; put a <xref href=\"Egami.Video.Audio.Filters.Retime\" data-throw-if-not-resolved=\"false\"></xref> first to count from zero. The curves give the same\ngains as ffmpeg's <code>afade</code> with the curve each value names. Works in place.</p>\n"
     },
     {
       "type": "ManagedReference",
@@ -12917,7 +12917,7 @@
       "Uid": null,
       "IsMRef": true,
       "Title": "Egami.Video.Audio.Filters.GainEnvelope",
-      "Summary": "<p sourcefile=\"api/Egami.Video.Audio.Filters.GainEnvelope.yml\" sourcestartlinenumber=\"1\">A gain that changes over time, in decibels, for <xref href=\"Egami.Video.Audio.Filters.Gain.Envelope\" data-throw-if-not-resolved=\"false\"></xref>: a list of <xref href=\"Egami.Video.Keyframe\" data-throw-if-not-resolved=\"false\"></xref>s whose\nvalues are decibels. Before the first keyframe the gain is the first value, after the last one the last value, and between\ntwo the value eases from one to the next in decibels. A value of <xref href=\"System.Double.NegativeInfinity\" data-throw-if-not-resolved=\"false\"></xref> is silence; a\nsegment to or from it moves in linear amplitude instead, so the fade still sounds smooth.</p>\n"
+      "Summary": "<p sourcefile=\"api/Egami.Video.Audio.Filters.GainEnvelope.yml\" sourcestartlinenumber=\"1\">A gain that changes over time, in decibels, for <xref href=\"Egami.Video.Audio.Filters.Gain.Envelope\" data-throw-if-not-resolved=\"false\"></xref>: a list of <xref href=\"Egami.Video.Keyframe\" data-throw-if-not-resolved=\"false\"></xref>s whose\nvalues are decibels. Before the first keyframe the gain is the first value, after the last one the last value, and between\ntwo the value eases from one to the next in decibels. A value of <xref href=\"System.Double.NegativeInfinity\" data-throw-if-not-resolved=\"false\"></xref> is silence; a\nsegment to or from it moves in linear amplitude instead, so the fade still sounds smooth. Keyframe times are the frames'\nown timestamps, not counted from the first sample.</p>\n"
     },
     {
       "type": "ManagedReference",
@@ -13043,7 +13043,7 @@
       "Uid": null,
       "IsMRef": true,
       "Title": "Egami.Video.Audio.Filters.Trim",
-      "Summary": "<p sourcefile=\"api/Egami.Video.Audio.Filters.Trim.yml\" sourcestartlinenumber=\"1\">Keeps the part of a stream between two times on its time line, like ffmpeg's <code>atrim</code>, cut on the exact sample. The\nsamples kept keep their timestamps; follow with <xref href=\"Egami.Video.Audio.Filters.Retime\" data-throw-if-not-resolved=\"false\"></xref> to start the result at zero.</p>\n"
+      "Summary": "<p sourcefile=\"api/Egami.Video.Audio.Filters.Trim.yml\" sourcestartlinenumber=\"1\">Keeps the part of a stream between two times on its time line, like ffmpeg's <code>atrim</code>, cut on the exact sample. The\ntimes are the frames' own timestamps, not counted from the first sample, so put a <xref href=\"Egami.Video.Audio.Filters.Retime\" data-throw-if-not-resolved=\"false\"></xref> first to count\nfrom zero. The samples kept keep their timestamps; follow with <xref href=\"Egami.Video.Audio.Filters.Retime\" data-throw-if-not-resolved=\"false\"></xref> to start the result at zero.</p>\n"
     },
     {
       "type": "ManagedReference",

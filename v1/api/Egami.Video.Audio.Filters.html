@@ -98,8 +98,9 @@ Classes
       <dt><a class="xref" href="Egami.Video.Audio.Filters.AudioFade.html">AudioFade</a></dt>
       <dd><p>Fades the sound in or out over a stretch of the stream's time line. A fade in is silent before <a class="xref" href="Egami.Video.Audio.Filters.AudioFade.html#Egami_Video_Audio_Filters_AudioFade_Start">Start</a> and
 reaches full level on the exact sample at <a class="xref" href="Egami.Video.Audio.Filters.AudioFade.html#Egami_Video_Audio_Filters_AudioFade_Start">Start</a> plus <a class="xref" href="Egami.Video.Audio.Filters.AudioFade.html#Egami_Video_Audio_Filters_AudioFade_Duration">Duration</a>; a fade out is full level before
-<a class="xref" href="Egami.Video.Audio.Filters.AudioFade.html#Egami_Video_Audio_Filters_AudioFade_Start">Start</a> and silent from its end on. Times are on the frames' time line, rounded to whole samples. The curves
-give the same gains as ffmpeg's <code>afade</code> with the curve each value names. Works in place.</p>
+<a class="xref" href="Egami.Video.Audio.Filters.AudioFade.html#Egami_Video_Audio_Filters_AudioFade_Start">Start</a> and silent from its end on. Times are on the frames' own timestamps, not counted from the first
+sample, and are rounded to whole samples; put a <a class="xref" href="Egami.Video.Audio.Filters.Retime.html">Retime</a> first to count from zero. The curves give the same
+gains as ffmpeg's <code>afade</code> with the curve each value names. Works in place.</p>
 </dd>
     </dl>
     <dl class="jumplist">
@@ -158,7 +159,8 @@ samples past full scale until an encoder or a limiter clamps them.</p>
       <dd><p>A gain that changes over time, in decibels, for <a class="xref" href="Egami.Video.Audio.Filters.Gain.html#Egami_Video_Audio_Filters_Gain_Envelope">Envelope</a>: a list of <a class="xref" href="Egami.Video.Keyframe.html">Keyframe</a>s whose
 values are decibels. Before the first keyframe the gain is the first value, after the last one the last value, and between
 two the value eases from one to the next in decibels. A value of <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double.negativeinfinity">NegativeInfinity</a> is silence; a
-segment to or from it moves in linear amplitude instead, so the fade still sounds smooth.</p>
+segment to or from it moves in linear amplitude instead, so the fade still sounds smooth. Keyframe times are the frames'
+own timestamps, not counted from the first sample.</p>
 </dd>
     </dl>
     <dl class="jumplist">
@@ -204,7 +206,8 @@ speed change where the pitch follows, <a class="xref" href="Egami.Video.Audio.Fi
     <dl class="jumplist">
       <dt><a class="xref" href="Egami.Video.Audio.Filters.Trim.html">Trim</a></dt>
       <dd><p>Keeps the part of a stream between two times on its time line, like ffmpeg's <code>atrim</code>, cut on the exact sample. The
-samples kept keep their timestamps; follow with <a class="xref" href="Egami.Video.Audio.Filters.Retime.html">Retime</a> to start the result at zero.</p>
+times are the frames' own timestamps, not counted from the first sample, so put a <a class="xref" href="Egami.Video.Audio.Filters.Retime.html">Retime</a> first to count
+from zero. The samples kept keep their timestamps; follow with <a class="xref" href="Egami.Video.Audio.Filters.Retime.html">Retime</a> to start the result at zero.</p>
 </dd>
     </dl>
     <h3 id="interfaces">
