@@ -14,7 +14,7 @@ public static class SunRasterFormat
     /// <summary>Gets the format's registration: name, MIME type, extensions, signature, reader and writer.</summary>
     public static FormatInfo Info { get; } = new()
     {
-        Name = "SUN",
+        Name = "Sun raster",
         MimeTypes = ["image/x-sun-raster"],
         Extensions = ["ras", "sun"],
         SignatureLength = 4,

@@ -6,7 +6,7 @@ using Egami.Cli.Pipeline;
 namespace Egami.Cli.Host;
 
 /// <summary>
-/// The options every command shares (CLI design Q13): verbosity, quiet and safety limits. One set per command tree, since an
+/// The options every command shares (CLI design Q13): verbosity, quiet, safety limits and formats in preview. One set per command tree, since an
 /// option belongs to the commands it is added to.
 /// </summary>
 internal sealed class GlobalOptions
@@ -24,6 +24,12 @@ internal sealed class GlobalOptions
         Recursive = true,
     };
 
+    public Option<bool> PreviewFormats { get; } = new("--preview-formats")
+    {
+        Description = "Also read and write the formats in preview (none in this release); they may change or go in any minor release.",
+        Recursive = true,
+    };
+
     /// <summary>Adds the shared options to the root command and keeps them on the session.</summary>
     public static void AddTo(Command root, CliSession session)
     {
@@ -32,6 +38,7 @@ internal sealed class GlobalOptions
         root.Options.Add(options.Debug);
         root.Options.Add(options.Quiet);
         root.Options.Add(options.Limit);
+        root.Options.Add(options.PreviewFormats);
         session.Globals = options;
     }
 
@@ -43,7 +50,7 @@ internal sealed class GlobalOptions
             : result.GetValue(options.Debug) ? Verbosity.Debug
             : result.GetValue(options.Verbose) ? Verbosity.Verbose
             : Verbosity.Normal;
-        session.Configure(verbosity, result.GetValue(options.Limit), maxParallelism);
+        session.Configure(verbosity, result.GetValue(options.Limit), maxParallelism, result.GetValue(options.PreviewFormats));
     }
 }
 

@@ -269,7 +269,7 @@ internal sealed class SunRasterWriter : ExtendedWriter
     public override RowEncoder<TPixel> Start<TPixel>(Stream output, EncodeStart<TPixel> start)
     {
         SunRasterWriterOptions sun = start.Options as SunRasterWriterOptions ?? SunRasterWriterOptions.Default;
-        start.ReportLosses("SUN", SaveKeeps.None);
+        start.ReportLosses("Sun raster", SaveKeeps.None);
         return IsGray<TPixel>() ? new Encoder<TPixel, Gray8>(output, start, sun.Rle) : new Encoder<TPixel, Bgr8>(output, start, sun.Rle);
     }
 

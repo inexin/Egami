@@ -1,5 +1,6 @@
 using Egami.Cli.Hosting;
 using Egami.Formats;
+using Egami.Formats.Extended;
 using Egami.Metafiles;
 using Egami.Svg;
 
@@ -7,11 +8,13 @@ namespace Egami.Cli.Host;
 
 /// <summary>
 /// One run of the tool: its console, working folder, verbosity, safety limits and the Egami context every command reads and
-/// writes through, with SVG and metafiles registered (CLI design Q2) and diagnostics going to standard error.
+/// writes through, with SVG, metafiles (CLI design Q2) and Egami.Formats.Extended's stable formats registered (its design, Q10)
+/// and diagnostics going to standard error.
 /// </summary>
 internal sealed class CliSession : CliHostSession
 {
-    private static readonly EgamiContext Base = EgamiContext.Default.WithFormat(SvgFormat.Info).WithFormat(MetafileFormat.Info);
+    /// <summary>Gets the formats every command reads and writes.</summary>
+    internal static EgamiContext Base { get; } = EgamiContext.Default.WithFormat(SvgFormat.Info).WithFormat(MetafileFormat.Info).WithExtendedFormats();
 
     public CliSession(CliConsole console, string workingDirectory, Func<string, string?> environment)
         : base("egami", console, workingDirectory, environment)
@@ -34,8 +37,11 @@ internal sealed class CliSession : CliHostSession
     /// <summary>Gets the formats the tool reads and writes.</summary>
     public IReadOnlyList<FormatInfo> Formats => Context.Formats;
 
-    /// <summary>Sets the verbosity, the limits (from <c>EGAMI_LIMITS</c> and then <c>--limit</c>) and how many cores one image may use.</summary>
-    public void Configure(Verbosity verbosity, string? limits, int maxParallelism)
+    /// <summary>
+    /// Sets the verbosity, the limits (from <c>EGAMI_LIMITS</c> and then <c>--limit</c>), how many cores one image may use and
+    /// whether <c>--preview-formats</c> adds the formats in preview.
+    /// </summary>
+    public void Configure(Verbosity verbosity, string? limits, int maxParallelism, bool previewFormats = false)
     {
         Verbosity = verbosity;
         SafetyLimits safety = LimitSpec.Apply(SafetyLimits.Default, Environment("EGAMI_LIMITS"), "EGAMI_LIMITS");
@@ -45,7 +51,7 @@ internal sealed class CliSession : CliHostSession
             Verbosity.Debug => DiagnosticLevel.Debug,
             _ => DiagnosticLevel.Warning,
         };
-        Context = Base with
+        Context = (previewFormats ? PreviewFormats.Register(Base) : Base) with
         {
             Limits = Limits,
             DiagnosticLevel = level,

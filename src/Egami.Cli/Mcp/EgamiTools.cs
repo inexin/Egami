@@ -67,7 +67,7 @@ internal static class EgamiTools
     private static ImageContentBlock Preview(string path)
     {
         const int Fit = 1024;
-        EgamiContext context = EgamiContext.Default.WithFormat(Svg.SvgFormat.Info).WithFormat(Metafiles.MetafileFormat.Info);
+        EgamiContext context = Host.CliSession.Base;
         RasterInfo info = Raster.Probe(path, context);
         double scale = Math.Min(1, (double)Fit / Math.Max(info.Width, info.Height));
         int width = Math.Max(1, (int)Math.Round(info.Width * scale)), height = Math.Max(1, (int)Math.Round(info.Height * scale));

@@ -10,7 +10,7 @@ internal static class TestImages
     public static EgamiContext Context { get; } = new EgamiContext().WithExtendedFormats();
 
     /// <summary>Gets the package's formats.</summary>
-    public static TheoryData<string> Formats => ["PCX", "SGI", "SUN", "XBM", "XPM", "WBMP", "Farbfeld"];
+    public static TheoryData<string> Formats => ["PCX", "SGI", "Sun raster", "XBM", "XPM", "WBMP", "Farbfeld"];
 
     public static FormatInfo Format(string name) => Context.Formats.Single(f => f.Name == name);
 

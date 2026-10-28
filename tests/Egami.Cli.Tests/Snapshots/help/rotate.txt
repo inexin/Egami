@@ -31,4 +31,5 @@ Options:
   -vv, --debug              Write debugging detail to standard error.
   -q, --quiet               Write only errors to standard error.
   --limit <name=value,...>  Safety limits, such as pixels=100M,memory=2GB,frames=500 (names: pixels, width, height, frames, memory, metadata). EGAMI_LIMITS sets them too.
+  --preview-formats         Also read and write the formats in preview (none in this release); they may change or go in any minor release.
 
