@@ -23,12 +23,16 @@ public sealed class LcdFilter : IEquatable<LcdFilter>
     /// <summary>Gets a colour-balanced filter: 8, 77, 86, 77, 8, as FreeType's default LCD filter is described.</summary>
     public static LcdFilter Balanced { get; } = new(nameof(Balanced), [8, 77, 86, 77, 8]);
 
-    /// <summary>Gets a light three-tap filter: 0, 85, 86, 85, 0, a box over the subpixel and its two neighbours.</summary>
+    /// <summary>
+    /// Gets a light three-tap filter: 0, 85, 86, 85, 0, a box over the subpixel and its two neighbours. <see cref="Gdi"/> has the
+    /// same weights, and equals it.
+    /// </summary>
     public static LcdFilter Light { get; } = new(nameof(Light), [0, 85, 86, 85, 0]);
 
     /// <summary>
-    /// Gets the filter measured from GDI and GDI+ ClearType: each subpixel's coverage spread evenly over it and its two
-    /// neighbours, the weights of <see cref="Light"/>.
+    /// Gets the filter that matches GDI and GDI+ ClearType as measured in 2.7.5: each subpixel's coverage spread evenly over it and
+    /// its two neighbours. It has the same weights as <see cref="Light"/> (0, 85, 86, 85, 0) and equals it; the two names say why
+    /// the weights are chosen.
     /// </summary>
     public static LcdFilter Gdi { get; } = new(nameof(Gdi), [0, 85, 86, 85, 0]);
 

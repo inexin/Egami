@@ -58,11 +58,21 @@ internal static class Synthesis
         return em * factor;
     }
 
-    /// <summary>Stem darkening's outset in device pixels: 0.15 at 8 pixels per em and below, none at 32 and above, linear between.</summary>
-    public static float DarkeningOutset(float pixelsPerEm)
+    /// <summary>
+    /// Stem darkening's outset in device pixels for stems <paramref name="stemPixels"/> wide: half the darkening amount of the curve
+    /// FreeType documents as the default of its CFF engine (the darkening-parameters property,
+    /// https://freetype.org/freetype2/docs/reference/ft2-properties.html): 0.4 pixel for stems up to 0.5 pixel wide, 0.275 from 1
+    /// to 1.667, none from 2.333, linear between. The amount is read as the stem's total growth, half on each side.
+    /// </summary>
+    public static float DarkeningOutset(float stemPixels)
     {
-        float em = MathF.Abs(pixelsPerEm);
-        return em <= 8 ? 0.15f : em >= 32 ? 0 : 0.15f * (32 - em) / 24;
+        float w = MathF.Abs(stemPixels);
+        float amount = w <= 0.5f ? 0.4f
+            : w <= 1 ? 0.4f + ((0.275f - 0.4f) * (w - 0.5f) / 0.5f)
+            : w <= 1.667f ? 0.275f
+            : w < 2.333f ? 0.275f * (2.333f - w) / (2.333f - 1.667f)
+            : 0;
+        return amount / 2;
     }
 }
 
