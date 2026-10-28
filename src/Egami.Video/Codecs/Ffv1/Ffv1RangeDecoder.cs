@@ -1,4 +1,5 @@
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace Egami.Video.Codecs.Ffv1;
 
@@ -14,6 +15,8 @@ internal struct Ffv1RangeDecoder
     private uint _low;
     private uint _range;
     private Ffv1StateTable _table;
+    private byte[] _one;
+    private byte[] _zero;
 
     /// <summary>Starts decoding <paramref name="data"/> from <paramref name="start"/> up to <paramref name="end"/>.</summary>
     public Ffv1RangeDecoder(byte[] data, int start, int end, Ffv1StateTable table)
@@ -22,6 +25,8 @@ internal struct Ffv1RangeDecoder
         _pos = start;
         _end = end;
         _table = table;
+        _one = table.One;
+        _zero = table.Zero;
         _range = 0xFF00;
         _low = (uint)(Next() << 8);
         _low |= (uint)Next();
@@ -38,7 +43,12 @@ internal struct Ffv1RangeDecoder
     public Ffv1StateTable Table
     {
         readonly get => _table;
-        set => _table = value;
+        set
+        {
+            _table = value;
+            _one = value.One;
+            _zero = value.Zero;
+        }
     }
 
     /// <summary>Reads one bit with an adaptive state (get_rac).</summary>
@@ -50,14 +60,14 @@ internal struct Ffv1RangeDecoder
         int bit;
         if (_low < _range)
         {
-            state = _table.Zero[state];
+            state = Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(_zero), state);
             bit = 0;
         }
         else
         {
             _low -= _range;
             _range = split;
-            state = _table.One[state];
+            state = Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(_one), state);
             bit = 1;
         }
 
@@ -99,6 +109,41 @@ internal struct Ffv1RangeDecoder
         }
 
         return signed && ReadBit(ref states[11 + Math.Min(e, 10)]) != 0 ? -a : a;
+    }
+
+    /// <summary>
+    /// Reads a signed scalar with the 32 adaptive states starting at <paramref name="states"/>, as <see cref="ReadSymbol"/> does,
+    /// without bounds checks: the caller passes the first of 32 states it owns.
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public int ReadSigned(ref byte states)
+    {
+        if (ReadBit(ref states) != 0)
+        {
+            return 0;
+        }
+
+        return ReadSignedTail(ref states);
+    }
+
+    private int ReadSignedTail(ref byte states)
+    {
+        int e = 0;
+        while (ReadBit(ref Unsafe.Add(ref states, 1 + Math.Min(e, 9))) != 0)
+        {
+            if (++e > 31)
+            {
+                throw new CorruptDataException("FFV1", -1, "An FFV1 range-coded number is too large.");
+            }
+        }
+
+        int a = 1;
+        for (int i = e - 1; i >= 0; i--)
+        {
+            a = (a << 1) | ReadBit(ref Unsafe.Add(ref states, 22 + Math.Min(i, 9)));
+        }
+
+        return ReadBit(ref Unsafe.Add(ref states, 11 + Math.Min(e, 10))) != 0 ? -a : a;
     }
 
     /// <summary>Reads an unsigned header field and checks it is at most <paramref name="max"/>.</summary>

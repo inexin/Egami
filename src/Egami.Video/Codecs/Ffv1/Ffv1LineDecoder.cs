@@ -1,4 +1,5 @@
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace Egami.Video.Codecs.Ffv1;
 
@@ -22,12 +23,16 @@ internal sealed class Ffv1PlaneCoding
 
     public int QuantIndex = -1;
 
+    /// <summary>Whether the context uses L and T (the large context model); the small one's last two tables are all zero.</summary>
+    public bool UsesFarNeighbours = true;
+
     /// <summary>Sets every state to its initial value for quantization table set <paramref name="set"/>.</summary>
     public void Reset(Ffv1Parameters parameters, int set)
     {
         short[][] tables = parameters.QuantTables[set];
         (Q0, Q1, Q2, Q3, Q4) = (tables[0], tables[1], tables[2], tables[3], tables[4]);
         QuantIndex = set;
+        UsesFarNeighbours = Array.Exists(Q3, v => v != 0) || Array.Exists(Q4, v => v != 0);
         int contexts = parameters.ContextCounts[set];
         if (parameters.CoderType == 0)
         {
@@ -91,12 +96,15 @@ internal static class Ffv1Lines
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int Median(int a, int b, int c)
     {
-        if (a > b)
-        {
-            (a, b) = (b, a);
-        }
-
-        return c < a ? a : c > b ? b : c;
+        // Without branches: on noisy pictures the order of the three is random, and mispredicted branches cost more than this.
+        int d = a - b;
+        int m = d >> 31;
+        int lo = b + (d & m);
+        int hi = a - (d & m);
+        d = hi - c;
+        hi = c + (d & (d >> 31));
+        d = lo - hi;
+        return lo - (d & (d >> 31));
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -138,27 +146,50 @@ internal struct Ffv1RangeLineDecoder(Ffv1RangeDecoder decoder) : IFfv1LineDecode
     {
         const int o = Ffv1Lines.Offset;
         Ffv1Lines.StartLine(cur, top);
-        int mask = (1 << bits) - 1;
-        Span<byte> states = coding.States;
-        for (int x = o; x < o + width; x++)
+        if ((uint)(width + o + 1) > (uint)cur.Length || (uint)(width + o + 1) > (uint)top.Length || (uint)(width + o + 1) > (uint)top2.Length)
         {
-            int l = cur[x - 1];
-            int t = top[x];
-            int tl = top[x - 1];
-            int context = Ffv1Lines.Context(coding, cur[x - 2], l, tl, t, top2[x], top[x + 1]);
-            int diff;
-            if (context < 0)
-            {
-                diff = -Decoder.ReadSymbol(states.Slice(-context * Ffv1Parameters.ContextSize, Ffv1Parameters.ContextSize), true);
-            }
-            else
-            {
-                diff = Decoder.ReadSymbol(states.Slice(context * Ffv1Parameters.ContextSize, Ffv1Parameters.ContextSize), true);
-            }
-
-            cur[x] = (Ffv1Lines.Predict(l, t, tl, signed16) + diff) & mask;
+            throw new ArgumentOutOfRangeException(nameof(width));
         }
 
+        int mask = (1 << bits) - 1;
+        ref byte states = ref MemoryMarshal.GetArrayDataReference(coding.States);
+        ref short q0 = ref MemoryMarshal.GetArrayDataReference(coding.Q0);
+        ref short q1 = ref MemoryMarshal.GetArrayDataReference(coding.Q1);
+        ref short q2 = ref MemoryMarshal.GetArrayDataReference(coding.Q2);
+        ref short q3 = ref MemoryMarshal.GetArrayDataReference(coding.Q3);
+        ref short q4 = ref MemoryMarshal.GetArrayDataReference(coding.Q4);
+        bool wide = coding.UsesFarNeighbours;
+        ref int c = ref MemoryMarshal.GetArrayDataReference(cur);
+        ref int up = ref MemoryMarshal.GetArrayDataReference(top);
+        ref int up2 = ref MemoryMarshal.GetArrayDataReference(top2);
+        Ffv1RangeDecoder rc = Decoder;
+
+        // The neighbours slide along the line in registers: l and L from this line, tl, t and tr from the line above.
+        int bigL = Unsafe.Add(ref c, o - 2);
+        int l = Unsafe.Add(ref c, o - 1);
+        int tl = Unsafe.Add(ref up, o - 1);
+        int t = Unsafe.Add(ref up, o);
+        for (int x = o; x < o + width; x++)
+        {
+            int tr = Unsafe.Add(ref up, x + 1);
+            int context = Unsafe.Add(ref q0, (l - tl) & 255) + Unsafe.Add(ref q1, (tl - t) & 255) + Unsafe.Add(ref q2, (t - tr) & 255);
+            if (wide)
+            {
+                context += Unsafe.Add(ref q3, (bigL - l) & 255) + Unsafe.Add(ref q4, (Unsafe.Add(ref up2, x) - t) & 255);
+            }
+
+            int sign = context >> 31;
+            int diff = rc.ReadSigned(ref Unsafe.Add(ref states, ((context ^ sign) - sign) * Ffv1Parameters.ContextSize));
+            diff = (diff ^ sign) - sign;
+            int sample = (Ffv1Lines.Predict(l, t, tl, signed16) + diff) & mask;
+            Unsafe.Add(ref c, x) = sample;
+            bigL = l;
+            l = sample;
+            tl = t;
+            t = tr;
+        }
+
+        Decoder = rc;
         cur[o + width] = cur[o + width - 1];
     }
 }
@@ -182,23 +213,42 @@ internal struct Ffv1GolombLineDecoder(Ffv1BitReader reader) : IFfv1LineDecoder
     {
         const int o = Ffv1Lines.Offset;
         Ffv1Lines.StartLine(cur, top);
+        if ((uint)(width + o + 1) > (uint)cur.Length || (uint)(width + o + 1) > (uint)top.Length || (uint)(width + o + 1) > (uint)top2.Length)
+        {
+            throw new ArgumentOutOfRangeException(nameof(width));
+        }
+
         int mask = (1 << bits) - 1;
-        Ffv1VlcState[] vlc = coding.Vlc;
+        ref Ffv1VlcState vlc = ref MemoryMarshal.GetArrayDataReference(coding.Vlc);
+        ref short q0 = ref MemoryMarshal.GetArrayDataReference(coding.Q0);
+        ref short q1 = ref MemoryMarshal.GetArrayDataReference(coding.Q1);
+        ref short q2 = ref MemoryMarshal.GetArrayDataReference(coding.Q2);
+        ref short q3 = ref MemoryMarshal.GetArrayDataReference(coding.Q3);
+        ref short q4 = ref MemoryMarshal.GetArrayDataReference(coding.Q4);
+        bool wide = coding.UsesFarNeighbours;
+        ref int c = ref MemoryMarshal.GetArrayDataReference(cur);
+        ref int up = ref MemoryMarshal.GetArrayDataReference(top);
+        ref int up2 = ref MemoryMarshal.GetArrayDataReference(top2);
+        Ffv1BitReader reader = Reader;
+        int runIndex = _runIndex;
         int runMode = 0;
         int runCount = 0;
+        int bigL = Unsafe.Add(ref c, o - 2);
+        int l = Unsafe.Add(ref c, o - 1);
+        int tl = Unsafe.Add(ref up, o - 1);
+        int t = Unsafe.Add(ref up, o);
         for (int x = 0; x < width; x++)
         {
             int i = o + x;
-            int l = cur[i - 1];
-            int t = top[i];
-            int tl = top[i - 1];
-            int context = Ffv1Lines.Context(coding, cur[i - 2], l, tl, t, top2[i], top[i + 1]);
-            bool negative = context < 0;
-            if (negative)
+            int tr = Unsafe.Add(ref up, i + 1);
+            int context = Unsafe.Add(ref q0, (l - tl) & 255) + Unsafe.Add(ref q1, (tl - t) & 255) + Unsafe.Add(ref q2, (t - tr) & 255);
+            if (wide)
             {
-                context = -context;
+                context += Unsafe.Add(ref q3, (bigL - l) & 255) + Unsafe.Add(ref q4, (Unsafe.Add(ref up2, i) - t) & 255);
             }
 
+            int sign = context >> 31;
+            context = (context ^ sign) - sign;
             int diff;
             if (context == 0 && runMode == 0)
             {
@@ -209,20 +259,20 @@ internal struct Ffv1GolombLineDecoder(Ffv1BitReader reader) : IFfv1LineDecoder
             {
                 if (runCount == 0 && runMode == 1)
                 {
-                    if (Reader.ReadBits(1) != 0)
+                    if (reader.ReadBits(1) != 0)
                     {
-                        runCount = 1 << Log2Run[_runIndex];
-                        if (x + runCount <= width && _runIndex < Log2Run.Length - 1)
+                        runCount = 1 << Log2Run[runIndex];
+                        if (x + runCount <= width && runIndex < Log2Run.Length - 1)
                         {
-                            _runIndex++;
+                            runIndex++;
                         }
                     }
                     else
                     {
-                        runCount = Reader.ReadBits(Log2Run[_runIndex]);
-                        if (_runIndex > 0)
+                        runCount = reader.ReadBits(Log2Run[runIndex]);
+                        if (runIndex > 0)
                         {
-                            _runIndex--;
+                            runIndex--;
                         }
 
                         runMode = 2;
@@ -234,7 +284,7 @@ internal struct Ffv1GolombLineDecoder(Ffv1BitReader reader) : IFfv1LineDecoder
                 {
                     runMode = 0;
                     runCount = 0;
-                    diff = ReadVlc(ref vlc[context], bits);
+                    diff = ReadVlc(ref reader, ref Unsafe.Add(ref vlc, context), bits);
                     if (diff >= 0)
                     {
                         diff++;
@@ -247,32 +297,36 @@ internal struct Ffv1GolombLineDecoder(Ffv1BitReader reader) : IFfv1LineDecoder
             }
             else
             {
-                diff = ReadVlc(ref vlc[context], bits);
+                diff = ReadVlc(ref reader, ref Unsafe.Add(ref vlc, context), bits);
             }
 
-            if (negative)
-            {
-                diff = -diff;
-            }
-
-            cur[i] = (Ffv1Lines.Predict(l, t, tl, signed16) + diff) & mask;
+            diff = (diff ^ sign) - sign;
+            int sample = (Ffv1Lines.Predict(l, t, tl, signed16) + diff) & mask;
+            Unsafe.Add(ref c, i) = sample;
+            bigL = l;
+            l = sample;
+            tl = t;
+            t = tr;
         }
 
+        Reader = reader;
+        _runIndex = runIndex;
         cur[o + width] = cur[o + width - 1];
     }
 
-    private int ReadVlc(ref Ffv1VlcState state, int bits)
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static int ReadVlc(ref Ffv1BitReader reader, ref Ffv1VlcState state, int bits)
     {
         int k = 0;
         for (int i = state.Count; i < state.ErrorSum; i += i)
         {
             if (++k > 30)
             {
-                throw new CorruptDataException("FFV1", -1, "An FFV1 Golomb-Rice context's statistics are out of range.");
+                ThrowStatistics();
             }
         }
 
-        int u = Reader.ReadUnsignedGolomb(k, bits);
+        int u = reader.ReadUnsignedGolomb(k, bits);
         int v = (u & 1) != 0 ? -(u >> 1) - 1 : u >> 1;
         if (2 * state.Drift < -state.Count)
         {
@@ -305,4 +359,6 @@ internal struct Ffv1GolombLineDecoder(Ffv1BitReader reader) : IFfv1LineDecoder
 
         return result;
     }
+
+    private static void ThrowStatistics() => throw new CorruptDataException("FFV1", -1, "An FFV1 Golomb-Rice context's statistics are out of range.");
 }

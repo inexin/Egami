@@ -646,6 +646,25 @@ public class Video
     }
 
     [Fact]
+    public void VerifyFfv1()
+    {
+        using SampleFiles files = new();
+
+        #region video-ffv1-verify
+        // Check an archive's fixity without decoding pictures: the configuration record's CRC and every slice's.
+        Ffv1VerifyResult result = Ffv1Codec.Verify("master.mkv");
+        Console.WriteLine($"{result.Frames} frames, {result.Slices} slices checked: {(result.IsIntact ? "intact" : "damaged")}");
+        foreach (Ffv1VerifyError error in result.Errors)
+        {
+            Console.WriteLine($"frame {error.Frame} at {error.Timestamp}, slice {error.Slice}: {error.Problem}");
+        }
+        #endregion
+
+        Assert.True(result.IsIntact);
+        Assert.True(result.HasSliceCrcs);
+    }
+
+    [Fact]
     public void SplitAv1Packets()
     {
         using SampleFiles files = new();

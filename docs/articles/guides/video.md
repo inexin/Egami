@@ -200,6 +200,14 @@ without alpha, at 8 to 16 bits. Every frame equals FFmpeg's sample for sample.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Video.cs#video-ffv1)]
 
+Slices decode in parallel up to `EgamiContext.MaxParallelism`, with the same frame at any thread count.
+
+`Ffv1Codec.Verify` checks a file's fixity without decoding pictures: the configuration record's CRC and every slice's, far faster
+than a decode. The `Ffv1VerifyResult` says how many frames and slices it checked and lists each `Ffv1VerifyError`; a version 0 or 1
+file, or one written without slice CRCs, has `HasSliceCrcs` false.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Video.cs#video-ffv1-verify)]
+
 ## HDR
 
 A frame's `Color` and `Hdr` carry its color code points and static HDR metadata. `YuvVideoFrame.ToRaster` with a target
