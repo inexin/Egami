@@ -82,7 +82,7 @@ internal sealed class XbmReader : ExtendedReader
     }
 
     /// <summary>Returns the most text a file within the limits can have: under a byte a pixel, plus room for the header.</summary>
-    private static long MaxText(EgamiInput input) => Math.Min(input.Limits.MaxPixels + (1 << 20), Array.MaxLength);
+    private static long MaxText(EgamiInput input) => Math.Min(Math.Min(input.Limits.MaxPixels, Array.MaxLength) + (1 << 20), Array.MaxLength);
 
     private static Parsed Parse(EgamiInput input, ReadOnlySpan<byte> text, bool headerOnly)
     {

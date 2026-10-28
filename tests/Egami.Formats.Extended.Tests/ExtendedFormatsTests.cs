@@ -214,6 +214,19 @@ public class ExtendedFormatsTests
         Assert.Throws<LimitExceededException>(() => RasterDecoder.Open(new MemoryStream(file), context).NextFrame());
     }
 
+    [Theory]
+    [MemberData(nameof(Formats))]
+    public void LoadsWithoutLimits(string format)
+    {
+        using Raster<Gray8> bitmap = TestImages.Bitmap();
+        EgamiContext unlimited = TestImages.Context with
+        {
+            Limits = new SafetyLimits { MaxPixels = long.MaxValue, MaxWidth = int.MaxValue, MaxHeight = int.MaxValue, MaxTotalBytes = long.MaxValue },
+        };
+        using Raster<Gray8> back = Raster.Load<Gray8>(TestImages.Save(bitmap, format), unlimited);
+        TestImages.AssertEqual(bitmap, back);
+    }
+
     [Fact]
     public void ReportsWhatASaveLoses()
     {

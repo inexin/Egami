@@ -69,7 +69,8 @@ internal sealed class XpmReader : ExtendedReader
 
     public override RowReader Open(EgamiInput input, ReaderOptions options)
     {
-        long max = Math.Min((input.Limits.MaxPixels * MaxCharactersPerPixel) + (1 << 20), Array.MaxLength);
+        // Clamped first, so a limit of long.MaxValue cannot overflow.
+        long max = Math.Min((Math.Min(input.Limits.MaxPixels, Array.MaxLength) * MaxCharactersPerPixel) + (1 << 20), Array.MaxLength);
         byte[] text = InputData.ReadToEnd(input, max, out int length);
         Values values = ReadValues(input, text.AsSpan(0, length), out int next);
         input.CheckFrameSize(values.Width, values.Height);
