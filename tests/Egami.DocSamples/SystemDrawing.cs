@@ -11,6 +11,31 @@ public class SystemDrawing
 {
     private static string FontFile => System.IO.Path.Combine(AppContext.BaseDirectory, "fonts", "NotoSans-Regular.ttf");
 
+    [Fact]
+    public void GdiPlusLook()
+    {
+        Typeface face = Typeface.FromFile(FontFile);
+        using Raster<Rgb8> button = Raster.Create(200, 40, new Rgb8(0x00, 0x78, 0xd4));
+
+        #region gdiplus
+        // Text that looks like System.Drawing's Graphics.DrawString with TextRenderingHint.ClearTypeGridFit: the font's own hints
+        // and grid-fitted advances, GDI+'s ClearType filter, sampling and gamma.
+        Font label = new Font(face, 16).WithGdiPlusLook();
+        using (RasterCanvas<Rgb8> canvas = button.CreateCanvas(CanvasOptions.GdiPlusClearType))
+        {
+            float width = label.MeasureText("Start the course").Advance;
+            canvas.DrawText("Start the course", new Vector2(MathF.Round((200 - width) / 2), 26), label, Rgba8.White);
+        }
+
+        // A different Graphics.TextContrast (0 to 12) is a different text gamma: 1 + contrast / 10.
+        CanvasOptions contrast8 = CanvasOptions.GdiPlusClearType with { TextGamma = 1 + (8 / 10f) };
+        #endregion
+
+        Assert.Equal(1.8f, contrast8.TextGamma, 3);
+        Assert.Equal(FontHinting.Full, label.Hinting);
+        Assert.Contains(Enumerable.Range(0, button.Width), x => button.GetPixel(x, 22).R > 128);
+    }
+
     #region drawstring
     // Graphics.DrawString(text, font, brush, x, y) with the default StringFormat starts the text 1/6 em right of the point (to a
     // whole pixel) with the first baseline the font's ascent below it; StringFormat.GenericTypographic drops that padding.
