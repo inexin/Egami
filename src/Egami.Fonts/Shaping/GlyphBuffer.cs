@@ -126,8 +126,9 @@ public sealed class GlyphBuffer
 
     /// <summary>
     /// Replaces each horizontal advance with the glyph's hinted advance at the font's size (or its design advance, rounded, when it
-    /// cannot be hinted) plus what shaping added to it (kerning, positioning) rounded to whole units, and rounds the offsets, for
-    /// <see cref="FontMetrics.GridFitted"/>. Zero advances (marks) stay zero; vertical runs are left as they are.
+    /// cannot be hinted) rounded to whole units, plus what shaping added to it (kerning, positioning) rounded, and rounds the
+    /// offsets, for <see cref="FontMetrics.GridFitted"/>; <see cref="FontMetrics.Compatible"/> takes GDI's compatible widths
+    /// instead. Zero advances (marks) stay zero; vertical runs are left as they are.
     /// </summary>
     internal void GridFit(Typeface face, Font font)
     {
@@ -144,7 +145,9 @@ public sealed class GlyphBuffer
             if (advance != 0)
             {
                 float design = face.GetAdvance(_glyphs[i]) * scale;
-                float hinted = face.GetHintedGlyph(_glyphs[i], font.Size, font.HintingTarget)?.Advance ?? MathF.Round(design);
+                float hinted = font.Metrics == FontMetrics.Compatible
+                    ? face.GetCompatibleAdvance(_glyphs[i], font.Size) ?? MathF.Round(design)
+                    : MathF.Round(face.GetHintedGlyph(_glyphs[i], font.Size, font.HintingTarget)?.Advance ?? design);
                 advance = hinted + MathF.Round(advance - design);
             }
 

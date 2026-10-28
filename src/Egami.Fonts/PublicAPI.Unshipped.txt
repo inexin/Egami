@@ -15,3 +15,4 @@ Egami.Fonts.TrueTypeTarget
 Egami.Fonts.TrueTypeTarget.FreeType = 2 -> Egami.Fonts.TrueTypeTarget
 Egami.Fonts.TrueTypeTarget.Gdi = 1 -> Egami.Fonts.TrueTypeTarget
 Egami.Fonts.TrueTypeTarget.GdiPlus = 0 -> Egami.Fonts.TrueTypeTarget
+Egami.Fonts.FontMetrics.Compatible = 2 -> Egami.Fonts.FontMetrics

@@ -11,6 +11,9 @@ namespace Egami.Fonts.Hinting;
 /// <param name="Advance">The hinted advance in pixels: the right phantom point less the left, after the glyph's program.</param>
 internal sealed record HintedGlyph(float[] X, float[] Y, bool[] OnCurve, int[] ContourEnds, float Advance)
 {
+    /// <summary>Gets a value indicating whether the glyph's program moved or touched its advance phantom point in x.</summary>
+    public bool AdvanceTouched { get; init; }
+
     /// <summary>Records the contours as lines and quadratic curves, as the TrueType specification defines its outlines.</summary>
     public void Emit(IGlyphOutlineSink sink)
     {
@@ -98,11 +101,14 @@ internal sealed class GlyphHinter
             y[i] = g.Y[i] / 64f;
         }
 
-        return new HintedGlyph(x, y, g.On[..n], g.Ends, (g.X[n + 1] - g.X[n]) / 64f);
+        return new HintedGlyph(x, y, g.On[..n], g.Ends, (g.X[n + 1] - g.X[n]) / 64f) { AdvanceTouched = g.AdvanceTouched };
     }
 
     // A loaded glyph: current positions in 26.6 with its four phantom points last.
-    private sealed record Loaded(int[] X, int[] Y, bool[] On, int[] Ends);
+    private sealed record Loaded(int[] X, int[] Y, bool[] On, int[] Ends)
+    {
+        public bool AdvanceTouched { get; init; }
+    }
 
     private Loaded Load(ushort glyph, int depth)
     {
@@ -138,7 +144,7 @@ internal sealed class GlyphHinter
             _interpreter.RunGlyph(zone, program);
         }
 
-        return new Loaded(zone.CurX, zone.CurY, zone.OnCurve, zone.ContourEnds);
+        return new Loaded(zone.CurX, zone.CurY, zone.OnCurve, zone.ContourEnds) { AdvanceTouched = (zone.Touched[zone.Count - 3] & Zone.TouchX) != 0 };
     }
 
     private Loaded LoadComposite(ushort glyph, ReadOnlySpan<byte> data, long offset, int xMin, int depth)
@@ -281,7 +287,7 @@ internal sealed class GlyphHinter
             _interpreter.RunGlyph(zone, program, composite: true);
         }
 
-        return new Loaded(zone.CurX, zone.CurY, zone.OnCurve, zone.ContourEnds);
+        return new Loaded(zone.CurX, zone.CurY, zone.OnCurve, zone.ContourEnds) { AdvanceTouched = (zone.Touched[zone.Count - 3] & Zone.TouchX) != 0 };
     }
 
     // A zone of `count` outline points from font units plus the phantom points: pp1 at xMin − lsb and pp2 an advance to its right,

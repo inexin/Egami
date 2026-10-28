@@ -11,6 +11,8 @@ public sealed partial class Typeface
     private HintingData? _hintingData;
     private GlyphHinter?[]? _hinters;
     private Dictionary<(TrueTypeTarget Target, int Ppem, ushort Glyph), HintedGlyph?>? _hinted;
+    private GlyphHinter? _monochrome;
+    private Dictionary<(int Ppem, ushort Glyph), float?>? _compatible;
 
     /// <summary>Gets the face's TrueType hinting tables, read once.</summary>
     internal HintingData HintingData
@@ -32,6 +34,62 @@ public sealed partial class Typeface
 
     /// <summary>The whole ppem a size hints at: rounded, at least 1.</summary>
     internal static int HintingPpem(float pixelsPerEm) => Math.Max(1, (int)MathF.Round(MathF.Abs(pixelsPerEm)));
+
+    /// <summary>
+    /// GDI's compatible width of a glyph at a size, in whole pixels: hdmx when it holds the ppem; else, where LTSH says the glyph
+    /// scales linearly from this ppem, its phantom points rounded (round(pp2) − round(pp1)); else the advance its instructions give
+    /// for a monochrome rasterizer. Null when the face cannot be hinted. Cached per ppem.
+    /// </summary>
+    internal float? GetCompatibleAdvance(ushort glyph, float pixelsPerEm)
+    {
+        if (!CanRunInstructions || glyph >= GlyphCount)
+        {
+            return null;
+        }
+
+        int ppem = HintingPpem(pixelsPerEm);
+        HintingData data = HintingData;
+        if (data.Hdmx.TryGetValue(ppem, out byte[]? widths) && glyph < widths.Length)
+        {
+            return widths[glyph];
+        }
+
+        float em = data.IntegerPpem ? ppem : MathF.Abs(pixelsPerEm);
+        if (glyph < data.Ltsh.Length && data.Ltsh[glyph] != 0 && ppem >= data.Ltsh[glyph])
+        {
+            float scale = em / UnitsPerEm;
+            float pp1 = (GetGlyphExtents(glyph).XMin - GetLeftSideBearing(glyph)) * scale;
+            return MathF.Round(pp1 + (GetAdvance(glyph) * scale)) - MathF.Round(pp1);
+        }
+
+        lock (_hintingLock)
+        {
+            _compatible ??= [];
+            if (_compatible.TryGetValue((ppem, glyph), out float? cached))
+            {
+                return cached;
+            }
+
+            if (_compatible.Count >= MaxHintedGlyphs)
+            {
+                _compatible.Clear();
+            }
+
+            _monochrome ??= new GlyphHinter(this, _glyf!, data, InterpreterTarget.Monochrome);
+            float? advance;
+            try
+            {
+                advance = _monochrome.Hint(glyph, ppem, (long)Math.Round(em * 64 * 65536 / UnitsPerEm))?.Advance is float a ? MathF.Round(a) : null;
+            }
+            catch (CorruptDataException)
+            {
+                advance = null;
+            }
+
+            _compatible[(ppem, glyph)] = advance;
+            return advance;
+        }
+    }
 
     /// <summary>
     /// A glyph hinted by its instructions for a target at a size in pixels per em, or null when the face, the size (gasp) or its

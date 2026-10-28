@@ -11,10 +11,9 @@ public class GlyphHintingTests
 {
     private const int ProbePpem = 16;
 
-    // GDI+'s and GDI's GETINFO answers without compatibility mode A, which would drop the probes' SHPIX moves of untouched points;
-    // Windows applies them (its mode B, task 20).
-    private static readonly InterpreterTarget PlusAsWritten = InterpreterTarget.GdiPlus with { Compatibility = CompatibilityMode.None };
-    private static readonly InterpreterTarget GdiAsWritten = InterpreterTarget.Gdi with { Compatibility = CompatibilityMode.None };
+    // GDI+ and GDI as Egami answers for them: their GETINFO and the virtual grid (mode B), which keeps the probes' SHPIX moves.
+    private static readonly InterpreterTarget PlusAsWritten = InterpreterTarget.GdiPlus;
+    private static readonly InterpreterTarget GdiAsWritten = InterpreterTarget.Gdi;
 
     // A probe font's bit glyphs: 'height 8 px' is a set bit, as the harness reads them on Windows.
     private static long Bits(Typeface face, InterpreterTarget target, int first, int count)
@@ -118,6 +117,31 @@ public class GlyphHintingTests
         // A face that cannot be hinted keeps its design advances, rounded.
         var cff = new Font(TestFonts.Load("SourceSans3-Regular.otf"), 13) { Metrics = FontMetrics.GridFitted };
         Assert.All(cff.Shape("Hamburg").Positions.ToArray(), p => Assert.Equal(MathF.Round(p.X), p.X));
+    }
+
+    [Fact]
+    public void CompatibleWidthsComeFromHdmxLtshOrAMonochromeRun()
+    {
+        // Roboto has hdmx: its widths at a ppem it holds are hdmx's bytes.
+        Typeface roboto = TestFonts.Load("Roboto-Regular.ttf");
+        int ppem = roboto.HintingData.Hdmx.Keys.First();
+        ushort a = roboto.GetGlyph('a');
+        Assert.Equal(roboto.HintingData.Hdmx[ppem][a], roboto.GetCompatibleAdvance(a, ppem));
+
+        // DejaVu has neither hdmx nor LTSH: the width of a monochrome run of the glyph's instructions, whole pixels.
+        Typeface dejaVu = TestFonts.Load("DejaVuSans.ttf");
+        Assert.Empty(dejaVu.HintingData.Hdmx);
+        for (ushort g = 1; g < 100; g++)
+        {
+            float? w = dejaVu.GetCompatibleAdvance(g, 13);
+            Assert.NotNull(w);
+            Assert.Equal(MathF.Round(w.Value), w.Value);
+        }
+
+        // Shaping with compatible metrics uses them, whole pixels.
+        var font = new Font(dejaVu, 13) { Metrics = FontMetrics.Compatible };
+        Assert.All(font.Shape("Hamburgefonstiv").Positions.ToArray(), p => Assert.Equal(MathF.Round(p.X), p.X));
+        Assert.Null(TestFonts.Load("SourceSans3-Regular.otf").GetCompatibleAdvance(5, 13));
     }
 
     [Fact]

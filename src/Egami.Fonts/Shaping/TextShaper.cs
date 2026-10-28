@@ -65,7 +65,7 @@ public static class TextShaper
         Typeface face = font.EffectiveTypeface;
         Shape(text, start, length, face, properties, font.Kerning, layout);
         buffer.Load(layout, font.Size / face.UnitsPerEm);
-        if (font.Metrics == FontMetrics.GridFitted)
+        if (font.Metrics != FontMetrics.Design)
         {
             buffer.GridFit(face, font);
         }

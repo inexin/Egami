@@ -8,6 +8,18 @@ internal sealed partial class TrueTypeInterpreter
 
     private bool AfterIup => _iupX && _iupY;
 
+    private bool VirtualGrid => _target.Compatibility == CompatibilityMode.VirtualGrid && (_gs.InstructControl & 4) == 0;
+
+    // Whether a distance is measured in the ClearType direction (mostly along x), outside the control value program.
+    private bool ClearTypeDirection => VirtualGrid && _range != Prep && Math.Abs(_gs.ProjX) >= Math.Abs(_gs.ProjY);
+
+    // The grid rounding snaps to: a whole pixel, or a sixteenth in the ClearType direction under the virtual grid.
+    private int GridUnit => ClearTypeDirection ? 4 : 64;
+
+    private int CvtCutIn => ClearTypeDirection ? _gs.CvtCutIn / 16 : _gs.CvtCutIn;
+
+    private int MinDistanceNow => ClearTypeDirection ? _gs.MinDistance / 2 : _gs.MinDistance;
+
     // ---- Fixed-point arithmetic ----
 
     /// <summary>a × b / c with the quotient rounded half away from zero, in 64 bits.</summary>
@@ -72,24 +84,24 @@ internal sealed partial class TrueTypeInterpreter
 
     private int Round(int d)
     {
-        int r;
+        int r, unit = GridUnit;
         switch (_gs.Round)
         {
             case RoundMode.Off:
                 return d;
             case RoundMode.Grid:
-                r = d >= 0 ? (d + 32) & ~63 : -((-d + 32) & ~63);
+                r = d >= 0 ? (d + (unit / 2)) & -unit : -((-d + (unit / 2)) & -unit);
                 break;
             case RoundMode.HalfGrid:
-                return d >= 0 ? (d & ~63) + 32 : -((-d & ~63) + 32);
+                return d >= 0 ? (d & -unit) + (unit / 2) : -((-d & -unit) + (unit / 2));
             case RoundMode.DoubleGrid:
-                r = d >= 0 ? (d + 16) & ~31 : -((-d + 16) & ~31);
+                r = d >= 0 ? (d + (unit / 4)) & -(unit / 2) : -((-d + (unit / 4)) & -(unit / 2));
                 break;
             case RoundMode.DownToGrid:
-                r = d >= 0 ? d & ~63 : -(-d & ~63);
+                r = d >= 0 ? d & -unit : -(-d & -unit);
                 break;
             case RoundMode.UpToGrid:
-                r = d >= 0 ? (d + 63) & ~63 : -((-d + 63) & ~63);
+                r = d >= 0 ? (d + unit - 1) & -unit : -((-d + unit - 1) & -unit);
                 break;
             default:
                 return SuperRound(d);
@@ -314,7 +326,7 @@ internal sealed partial class TrueTypeInterpreter
         int original = Project(z.CurX[p], z.CurY[p]);
         if (round)
         {
-            if (!z.IsTwilight && Math.Abs((long)distance - original) > _gs.CvtCutIn)
+            if (!z.IsTwilight && Math.Abs((long)distance - original) > CvtCutIn)
             {
                 distance = original;
             }
@@ -338,12 +350,13 @@ internal sealed partial class TrueTypeInterpreter
 
     private int MinimumDistance(int distance, int original)
     {
+        int min = MinDistanceNow;
         if (original >= 0)
         {
-            return distance < _gs.MinDistance ? _gs.MinDistance : distance;
+            return distance < min ? min : distance;
         }
 
-        return distance > -_gs.MinDistance ? -_gs.MinDistance : distance;
+        return distance > -min ? -min : distance;
     }
 
     // MDRP[abcde]: 0x10 sets rp0, 0x08 keeps the minimum distance, 0x04 rounds; the distance type bits are ignored.
@@ -392,20 +405,13 @@ internal sealed partial class TrueTypeInterpreter
             cvt = -cvt;
         }
 
-        int distance;
-        if ((flags & 0x04) != 0)
+        // The cut-in applies with the round flag, and under the virtual grid always.
+        if (((flags & 0x04) != 0 || VirtualGrid) && _gs.Zp0 == _gs.Zp1 && Math.Abs((long)cvt - original) > CvtCutIn)
         {
-            if (_gs.Zp0 == _gs.Zp1 && Math.Abs((long)cvt - original) > _gs.CvtCutIn)
-            {
-                cvt = original;
-            }
+            cvt = original;
+        }
 
-            distance = Round(cvt);
-        }
-        else
-        {
-            distance = cvt;
-        }
+        int distance = (flags & 0x04) != 0 ? Round(cvt) : cvt;
 
         if ((flags & 0x08) != 0)
         {
@@ -768,8 +774,14 @@ internal sealed partial class TrueTypeInterpreter
                 continue;
             }
 
-            // Compatibility mode A: only before both IUPs, along y, on a point touched in y or in a composite.
+            // Compatibility mode A: only before both IUPs, along y, on a point touched in y or in a composite. The virtual grid
+            // (mode B): only on a point already touched in y, the non-ClearType direction.
             if (Compat && (AfterIup || _gs.FreeY == 0 || !(_composite || (z.Touched[p] & Zone.TouchY) != 0)))
+            {
+                continue;
+            }
+
+            if (VirtualGrid && (z.Touched[p] & Zone.TouchY) == 0)
             {
                 continue;
             }

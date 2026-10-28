@@ -56,6 +56,14 @@ public enum FontMetrics
     /// pixels. Faces that cannot be hinted keep their design advances, rounded.
     /// </summary>
     GridFitted,
+
+    /// <summary>
+    /// GDI's compatible widths: the advances black-and-white hinting gives, from the hdmx table when it has the size, else the
+    /// rounded design advance where the LTSH table says the glyph scales linearly, else the glyph's instructions run for a
+    /// monochrome rasterizer. Whole pixels, cached per face and size; faces that cannot be hinted keep their design advances,
+    /// rounded. Glyph origins snap to whole pixels.
+    /// </summary>
+    Compatible,
 }
 
 /// <summary>How a glyph's edges are turned into pixels.</summary>

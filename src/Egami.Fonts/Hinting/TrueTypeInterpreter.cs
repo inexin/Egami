@@ -7,10 +7,10 @@ namespace Egami.Fonts.Hinting;
 internal sealed record InterpreterTarget(int Version, int InfoFlags, CompatibilityMode Compatibility)
 {
     /// <summary>GDI+ ClearTypeGridFit as the 2.7.5 probes measured it: version 42, bits 10, 11 and 13 (GETINFO 0x2C2A).</summary>
-    public static InterpreterTarget GdiPlus { get; } = new(42, 0x2C00, CompatibilityMode.FrozenX);
+    public static InterpreterTarget GdiPlus { get; } = new(42, 0x2C00, CompatibilityMode.VirtualGrid);
 
     /// <summary>GDI ClearType as measured: version 42, bits 10, 11, 13, 14 and 18 (GETINFO 0x46C2A).</summary>
-    public static InterpreterTarget Gdi { get; } = new(42, 0x46C00, CompatibilityMode.FrozenX);
+    public static InterpreterTarget Gdi { get; } = new(42, 0x46C00, CompatibilityMode.VirtualGrid);
 
     /// <summary>A FreeType-v40-like target: version 40, ClearType (13) and subpixel positioned (17).</summary>
     public static InterpreterTarget FreeType { get; } = new(40, 0x22000, CompatibilityMode.FrozenX);
@@ -25,8 +25,15 @@ internal enum CompatibilityMode
     /// <summary>Instructions run as written.</summary>
     None,
 
-    /// <summary>Stage A: no moves in x, nothing after both IUPs, SHPIX and DELTAP limited.</summary>
+    /// <summary>Stage A, FreeType's minimal set: no moves in x, nothing after both IUPs, SHPIX and DELTAP limited.</summary>
     FrozenX,
+
+    /// <summary>
+    /// Stage B, Microsoft's ClearType backward compatibility as GDI and GDI+ show it: in the ClearType direction (x) rounding is to
+    /// a 1/16-pixel virtual grid, the control value cut-in is a sixteenth and the minimum distance half as large, MIRP always
+    /// applies the cut-in, and DELTAP acts only on points already touched in y. The control value program rounds to whole pixels.
+    /// </summary>
+    VirtualGrid,
 }
 
 /// <summary>Why a program stopped.</summary>
