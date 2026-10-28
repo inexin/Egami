@@ -127,7 +127,7 @@ public sealed class GlyphBuffer
     /// <summary>
     /// How much wider than its design width GDI+ lets a run of hinted advances grow, in pixels, before it lays the whole run out
     /// with design advances instead (measured in egami-compare: whole-pixel steps up to about 2.1 pixels of widening, then
-    /// fractional ones).
+    /// fractional ones in sixteenths of a pixel; 2.7.6 checked the cut-off on mixed strings).
     /// </summary>
     internal static float GdiPlusLineWidening { get; set; } = 2.1f;
 
@@ -135,9 +135,10 @@ public sealed class GlyphBuffer
     /// Replaces each horizontal advance with the glyph's hinted advance at the font's size (or its design advance, rounded, when it
     /// cannot be hinted) rounded to whole units, plus what shaping added to it (kerning, positioning) rounded, and rounds the
     /// offsets, for <see cref="FontMetrics.GridFitted"/>; <see cref="FontMetrics.Compatible"/> takes GDI's compatible widths
-    /// instead. As GDI+ does, a <see cref="TrueTypeTarget.GdiPlus"/> run whose hinted advances would make it more than
-    /// <see cref="GdiPlusLineWidening"/> wider than its design advances keeps its design advances (fractional; glyph origins
-    /// still land on whole pixels when drawn). Zero advances (marks) stay zero; vertical runs are left as they are.
+    /// instead. For <see cref="FontMetrics.GridFittedToDesign"/>, as GDI+ lays out GenericTypographic lines, a run whose hinted
+    /// advances would make it more than <see cref="GdiPlusLineWidening"/> wider than its design advances keeps its design advances,
+    /// rounded up to sixteenths of a pixel (fractional; glyph origins still land on whole pixels when drawn). Zero advances (marks)
+    /// stay zero; vertical runs are left as they are.
     /// </summary>
     internal void GridFit(Typeface face, Font font)
     {
@@ -161,7 +162,7 @@ public sealed class GlyphBuffer
             widening += hinted - design;
         }
 
-        bool keepDesign = font.Metrics == FontMetrics.GridFitted && font.HintingTarget == TrueTypeTarget.GdiPlus && widening > GdiPlusLineWidening;
+        bool keepDesign = font.Metrics == FontMetrics.GridFittedToDesign && widening > GdiPlusLineWidening;
         for (int i = 0; i < Count; i++)
         {
             GlyphPosition p = _positions[i];
@@ -170,7 +171,7 @@ public sealed class GlyphBuffer
                 continue;
             }
 
-            _positions[i] = new GlyphPosition(keepDesign ? p.XAdvance : fitted[i], 0, MathF.Round(p.XOffset), MathF.Round(p.YOffset));
+            _positions[i] = new GlyphPosition(keepDesign ? MathF.Ceiling(p.XAdvance * 16) / 16 : fitted[i], 0, MathF.Round(p.XOffset), MathF.Round(p.YOffset));
         }
     }
 }

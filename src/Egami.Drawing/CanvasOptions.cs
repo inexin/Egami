@@ -75,9 +75,9 @@ public sealed record class CanvasOptions
     public static CanvasOptions Default { get; } = new();
 
     /// <summary>
-    /// Gets the canvas settings of System.Drawing's ClearTypeGridFit text, as measured on Windows in 2.7.5: an RGB stripe,
-    /// <see cref="LcdFilter.Gdi"/>, <see cref="LcdSampling.Gdi"/> and a <see cref="TextGamma"/> of 1.4 (GDI+'s
-    /// 1 + Graphics.TextContrast / 10 at its default contrast of 4). Use it with fonts from <see cref="Fonts.Font.WithGdiPlusLook"/>.
+    /// Gets the canvas settings of System.Drawing's ClearTypeGridFit text, as measured on Windows in 2.7.5 and 2.7.6: an RGB stripe,
+    /// <see cref="LcdFilter.Gdi"/>, <see cref="LcdSampling.Gdi"/> (coverage in sixths, blended through GDI+'s 8-bit gamma tables)
+    /// and a <see cref="TextGamma"/> of 1.4 (GDI+'s 1 + Graphics.TextContrast / 10 at its default contrast of 4). Use it with fonts from <see cref="Fonts.Font.WithGdiPlusLook"/>.
     /// </summary>
     /// <example>
     /// <code language="csharp" source="../../tests/Egami.DocSamples/SystemDrawing.cs" region="gdiplus"/>

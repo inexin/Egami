@@ -21,6 +21,19 @@ icons; Graphics, pens, brushes, paths, fonts and text follow in later previews.
 - Icons choose the image nearest a size as System.Drawing does and save the file they came from.
 - Members that need Windows handles throw PlatformNotSupportedException and warn at compile time (EGSD0001 to EGSD0003).
 - With implicit usings on, the package adds `System.Drawing` and `Egami.SystemDrawing` as implicit usings.
+## Egami.Drawing and Egami.Fonts, unreleased
+
+Closer GDI+ text (2.7.6 stage 1), measured against GDI+ on Windows in egami-compare. Egami's default output does not change.
+
+- `LcdSampling.Gdi` samples as GDI+ does: six on-or-off samples per pixel across the stripes, so each channel is a whole
+  number of sixths. With a `TextGamma`, that text blends through GDI+'s 8-bit gamma tables, which reproduce GDI+'s drawn value
+  for every coverage on every gray background measured. `CanvasOptions.GdiPlusClearType` gets both.
+- The GDI+ hinting target rounds an advance its instructions leave alone up from about 0.458 of a pixel, as GDI+ does.
+- `FontMetrics.GridFitted` keeps hinted advances for every run, as `DrawString` does with the default `StringFormat`. The new
+  `FontMetrics.GridFittedToDesign` has the 2.1-pixel line rule for `GenericTypographic` lines, with design advances rounded
+  up to sixteenths of a pixel.
+- Lars's button test against GDI+: a mean difference of 0.67 levels on black and 0.38 on #0078d4, down from 1.92 and 1.06.
+  95.8% of glyph sizes in the six-font advance test match GDI+'s drawn widths, up from 90.6%.
 
 ## Egami.Formats.Extended, unreleased
 

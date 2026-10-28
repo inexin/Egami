@@ -4,10 +4,17 @@ namespace Egami.Fonts.Hinting;
 /// <param name="Version">The rasterizer version, GETINFO's bits 0 to 7.</param>
 /// <param name="InfoFlags">The GETINFO result bits 8 and up this target sets; a program sees those its selector asks for.</param>
 /// <param name="Compatibility">The ClearType backward-compatibility mode.</param>
-internal sealed record InterpreterTarget(int Version, int InfoFlags, CompatibilityMode Compatibility)
+/// <param name="AdvanceBias">
+/// How far, in pixels, the advance phantom point's scaled position is moved before it rounds to a whole pixel; 0 rounds it as
+/// the TrueType specification does.
+/// </param>
+internal sealed record InterpreterTarget(int Version, int InfoFlags, CompatibilityMode Compatibility, float AdvanceBias = 0)
 {
-    /// <summary>GDI+ ClearTypeGridFit as the 2.7.5 probes measured it: version 42, bits 10, 11 and 13 (GETINFO 0x2C2A).</summary>
-    public static InterpreterTarget GdiPlus { get; } = new(42, 0x2C00, CompatibilityMode.VirtualGrid);
+    /// <summary>
+    /// GDI+ ClearTypeGridFit as the 2.7.5 probes measured it: version 42, bits 10, 11 and 13 (GETINFO 0x2C2A). Its advances round
+    /// up from about 0.458 of a pixel, not 0.5 (measured in 2.7.6 from glyph origins in drawn lines), an advance bias of 0.042.
+    /// </summary>
+    public static InterpreterTarget GdiPlus { get; } = new(42, 0x2C00, CompatibilityMode.VirtualGrid, 0.042f);
 
     /// <summary>GDI ClearType as measured: version 42, bits 10, 11, 13, 14 and 18 (GETINFO 0x46C2A).</summary>
     public static InterpreterTarget Gdi { get; } = new(42, 0x46C00, CompatibilityMode.VirtualGrid);
