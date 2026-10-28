@@ -194,9 +194,11 @@ public class FormatFileTests
         Assert.Equal([0, 255, 0], words.Row(0).ToArray().Select(p => (int)p.L));
 
         // A name or comment that holds the letters "short" is not the type word.
-        string named = "#define shortcut_width 3\n#define shortcut_height 1\nstatic /* not short */ char shortcut_bits[] = { 0x05 };\n";
+        // Read as 16-bit words, these four bytes would be two rows' worth short.
+        string named = "#define shortcut_width 9\n#define shortcut_height 2\nstatic /* not short */ char shortcut_bits[] = { 0x05, 0x01, 0x02, 0x00 };\n";
         using Raster<Gray8> notWords = Raster.Load<Gray8>(Encoding.ASCII.GetBytes(named), TestImages.Context);
-        Assert.Equal([0, 255, 0], notWords.Row(0).ToArray().Select(p => (int)p.L));
+        Assert.Equal([0, 255, 0, 255, 255, 255, 255, 255, 0], notWords.Row(0).ToArray().Select(p => (int)p.L));
+        Assert.Equal([255, 0, 255, 255, 255, 255, 255, 255, 255], notWords.Row(1).ToArray().Select(p => (int)p.L));
         Assert.Empty(notWords.Metadata.Warnings);
 
         // The writer keeps the name and hotspot.
