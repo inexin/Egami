@@ -85676,19 +85676,19 @@ references:
   commentId: T:Egami.Video.Codecs.Ffv1EncoderOptions
   fullName: Egami.Video.Codecs.Ffv1EncoderOptions
   nameWithType: Ffv1EncoderOptions
-- uid: Egami.Video.Codecs.Ffv1EncoderOptions.BitsPerSample
-  name: BitsPerSample
-  href: api/Egami.Video.Codecs.Ffv1EncoderOptions.html#Egami_Video_Codecs_Ffv1EncoderOptions_BitsPerSample
-  commentId: P:Egami.Video.Codecs.Ffv1EncoderOptions.BitsPerSample
-  fullName: Egami.Video.Codecs.Ffv1EncoderOptions.BitsPerSample
-  nameWithType: Ffv1EncoderOptions.BitsPerSample
-- uid: Egami.Video.Codecs.Ffv1EncoderOptions.BitsPerSample*
-  name: BitsPerSample
-  href: api/Egami.Video.Codecs.Ffv1EncoderOptions.html#Egami_Video_Codecs_Ffv1EncoderOptions_BitsPerSample_
-  commentId: Overload:Egami.Video.Codecs.Ffv1EncoderOptions.BitsPerSample
+- uid: Egami.Video.Codecs.Ffv1EncoderOptions.BitDepth
+  name: BitDepth
+  href: api/Egami.Video.Codecs.Ffv1EncoderOptions.html#Egami_Video_Codecs_Ffv1EncoderOptions_BitDepth
+  commentId: P:Egami.Video.Codecs.Ffv1EncoderOptions.BitDepth
+  fullName: Egami.Video.Codecs.Ffv1EncoderOptions.BitDepth
+  nameWithType: Ffv1EncoderOptions.BitDepth
+- uid: Egami.Video.Codecs.Ffv1EncoderOptions.BitDepth*
+  name: BitDepth
+  href: api/Egami.Video.Codecs.Ffv1EncoderOptions.html#Egami_Video_Codecs_Ffv1EncoderOptions_BitDepth_
+  commentId: Overload:Egami.Video.Codecs.Ffv1EncoderOptions.BitDepth
   isSpec: "True"
-  fullName: Egami.Video.Codecs.Ffv1EncoderOptions.BitsPerSample
-  nameWithType: Ffv1EncoderOptions.BitsPerSample
+  fullName: Egami.Video.Codecs.Ffv1EncoderOptions.BitDepth
+  nameWithType: Ffv1EncoderOptions.BitDepth
 - uid: Egami.Video.Codecs.Ffv1EncoderOptions.Coder
   name: Coder
   href: api/Egami.Video.Codecs.Ffv1EncoderOptions.html#Egami_Video_Codecs_Ffv1EncoderOptions_Coder

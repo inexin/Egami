@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Lossless archiving with FFV1 | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Lossless archiving with FFV1 | Egami ">
+      
+      
+      <link rel="icon" href="../../images/favicon.ico">
+      <link rel="stylesheet" href="../../public/docfx.min.css">
+      <link rel="stylesheet" href="../../public/main.css">
+      <meta name="docfx:navrel" content="../../toc.html">
+      <meta name="docfx:tocrel" content="../toc.html">
+      
+      <meta name="docfx:rel" content="../../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/blob/main/docs/articles/guides/lossless-archiving.md/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../../index.html">
+            <img id="logo" class="svg" src="../../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="lossless-archiving-with-ffv1">Lossless archiving with FFV1</h1>
+
+<p>FFV1 (RFC 9043) is the lossless video codec memory institutions archive with: a decode gives back every sample, each slice of
+every frame carries a CRC, and every frame can stand on its own. Egami.Video reads and writes it in Matroska and AVI with no
+native code, frame for frame equal to FFmpeg's decoder, and FFmpeg decodes Egami.Video's files to the same samples.</p>
+<h2 id="writing-a-master">Writing a master</h2>
+<p>Pick <code>VideoCodecs.Ffv1</code> and write frames as you would with any codec. Planes keep their layout and depth (4:2:0, 4:2:2, 4:4:4,
+4:1:1, 4:1:0 or gray, with or without alpha, 8 to 16 bits), so a 10-bit 4:2:2 capture stays 10-bit 4:2:2. Write Matroska (<code>.mkv</code>),
+the usual archival pairing; AVI works too.</p>
+<pre><code class="lang-csharp">// An uncompressed 10-bit 4:4:4 capture into an FFV1 master: the planes keep their layout and depth, and the defaults are
+// the archival profile (version 3, every frame a keyframe, a CRC on every slice).
+using (VideoReader capture = VideoReader.Open(&quot;capture.y4m&quot;))
+using (VideoWriter master = VideoWriter.Create(&quot;master.mkv&quot;, new VideoWriterOptions
+{
+    Codec = VideoCodecs.Ffv1,
+    FrameRate = capture.Track.FrameRate ?? new Rational(25, 1),
+}))
+{
+    foreach (YuvVideoFrame frame in capture.ReadFrames())
+    {
+        using (frame)
+        {
+            master.WriteFrame(frame);
+        }
+    }
+}
+</code></pre>
+<p>The defaults are the profile archives use, which FFmpeg users get by adding <code>-level 3 -g 1 -slicecrc 1 -slices 16</code>:</p>
+<table>
+<thead>
+<tr>
+<th>Setting</th>
+<th>Default</th>
+<th>FFmpeg flag</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Version</td>
+<td>3, with a configuration record in the container</td>
+<td><code>-level 3</code></td>
+</tr>
+<tr>
+<td>Keyframes</td>
+<td>every frame (<code>KeyframeInterval</code> 1)</td>
+<td><code>-g 1</code></td>
+</tr>
+<tr>
+<td>Slice CRCs</td>
+<td>on (<code>Ffv1EncoderOptions.SliceCrc</code>)</td>
+<td><code>-slicecrc 1</code></td>
+</tr>
+<tr>
+<td>Slices</td>
+<td>1 up to 352×288, 4 up to 720p, 16 up to 1440p, 24 above</td>
+<td><code>-slices</code></td>
+</tr>
+<tr>
+<td>Coder</td>
+<td>range coder with a custom state table</td>
+<td><code>-coder range_tab</code></td>
+</tr>
+<tr>
+<td>Context model</td>
+<td>small (<code>Effort</code> up to 6)</td>
+<td><code>-context 0</code></td>
+</tr>
+</tbody>
+</table>
+<p>Files come within 1 % of FFmpeg's size at the same settings, and slices are coded in parallel on <code>EgamiContext.MaxParallelism</code>
+threads with the same file at any thread count.</p>
+<h2 id="checking-fixity">Checking fixity</h2>
+<p><code>Ffv1Codec.Verify</code> checks the configuration record's CRC and every slice's without decoding a picture, about 50 times faster than a
+decode, so it suits routine checks of a whole collection. <code>Ffv1VerifyResult.Errors</code> names each damaged frame and slice. A decode
+with <code>Errors = DecodeErrorMode.Conceal</code> reports the same damage as <code>Ffv1.SliceCrc</code> and shows the last good frame in the damaged
+slice's place. After a migration, a full check decodes the master and compares it with the source:</p>
+<pre><code class="lang-csharp">// A routine fixity check: every slice's CRC, without decoding a picture.
+Ffv1VerifyResult check = Ffv1Codec.Verify(&quot;master.mkv&quot;);
+Console.WriteLine($&quot;{check.Frames} frames, {check.Slices} slices: {(check.IsIntact ? &quot;intact&quot; : $&quot;{check.Errors.Count} damaged&quot;)}&quot;);
+
+// A full check after migration: decode the master and compare every sample with the source.
+using VideoReader source = VideoReader.Open(&quot;capture.y4m&quot;);
+using VideoReader master = VideoReader.Open(&quot;master.mkv&quot;);
+int frames = 0, different = 0;
+foreach (YuvVideoFrame original in source.ReadFrames())
+{
+    using (original)
+    using (YuvVideoFrame copy = master.ReadFrame()!)
+    {
+        frames++;
+        different += SamePlanes(original.Raster, copy.Raster) ? 0 : 1;
+    }
+}
+
+Console.WriteLine($&quot;{frames} frames compared, {different} differ&quot;);
+</code></pre>
+<p>Version 0 and 1 files, and version 3 files written without slice CRCs, have nothing to check per slice: <code>HasSliceCrcs</code> is false.</p>
+<h2 id="rgb-sources">RGB sources</h2>
+<p>Scanned film, graphics and screen captures in RGB stay RGB: frames given as RGB rasters (8 or 16 bits a channel) are coded through
+FFV1's reversible color transform, and decode as G, B and R planes tagged <code>YuvMatrix.Identity</code>, which convert back to RGB exactly.</p>
+<pre><code class="lang-csharp">// Scanned film or graphics in RGB stays RGB: frames given as RGB rasters are coded through FFV1's reversible color
+// transform and come back exactly, here as 16-bit RGB for a restoration tool.
+using (VideoWriter writer = VideoWriter.Create(&quot;scan.mkv&quot;, new VideoWriterOptions { Codec = VideoCodecs.Ffv1, FrameRate = new Rational(24, 1) }))
+{
+    writer.WriteFrame(duck);
+}
+
+using VideoReader reader = VideoReader.Open(&quot;scan.mkv&quot;);
+using VideoFrame&lt;Rgb16&gt; restored = reader.ReadFrames&lt;Rgb16&gt;().First();
+</code></pre>
+<p>Planes decoded from a 9, 11, 13, 14 or 15-bit source sit in 10, 12 or 16-bit planes with their samples shifted up; set
+<code>Ffv1EncoderOptions.BitDepth</code> to write them back at the source depth. The track's <code>BitDepth</code> gives the depth a file holds.</p>
+<h2 id="working-copies">Working copies</h2>
+<p>For copies made to work on rather than to keep, Golomb-Rice coding is faster than the range coder, spacing keyframes makes files
+smaller, and more slices use more cores. <code>Quality</code> does not apply to FFV1, and setting it reports <code>Ffv1.QualityIgnored</code>.</p>
+<pre><code class="lang-csharp">// Smaller and faster masters for a working copy: Golomb-Rice coding, a keyframe every second, more slices for more cores.
+// Slice CRCs stay on, so Ffv1Codec.Verify still checks every frame.
+VideoWriterOptions mezzanine = new()
+{
+    Codec = VideoCodecs.Ffv1,
+    FrameRate = new Rational(25, 1),
+    KeyframeInterval = 25,
+    Ffv1 = new Ffv1EncoderOptions { Coder = Ffv1Coder.GolombRice, Slices = 24 },
+};
+</code></pre>
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/docs/articles/guides/lossless-archiving.md/#L1" class="edit-link">Edit this page</a>
+        </div>
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

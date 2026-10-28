@@ -506,7 +506,10 @@ foreach (Ffv1VerifyError error in result.Errors)
 {
     Console.WriteLine($&quot;frame {error.Frame} at {error.Timestamp}, slice {error.Slice}: {error.Problem}&quot;);
 }
-</code></pre><h2 id="hdr">HDR</h2>
+</code></pre>
+<p>Writing FFV1 is in <a href="video-encoding.html#writing-ffv1">Encoding video</a>; <a href="lossless-archiving.html">Lossless archiving with FFV1</a> puts
+writing, fixity checks and restores together.</p>
+<h2 id="hdr">HDR</h2>
 <p>A frame's <code>Color</code> and <code>Hdr</code> carry its color code points and static HDR metadata. <code>YuvVideoFrame.ToRaster</code> with a target
 <code>ColorProfile</code> converts through Egami's color pipeline and tone maps PQ and HLG to SDR. VP9 frames in WebM carry HDR10+
 dynamic metadata as <code>Hdr10PlusMetadata</code>, with its <code>Hdr10PlusPercentile</code> distribution and <code>Hdr10PlusToneCurve</code>. AV1 frames take
