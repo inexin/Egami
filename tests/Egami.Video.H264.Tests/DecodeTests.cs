@@ -16,7 +16,7 @@ public sealed class DecodeTests
         "cavlc-intra", "cavlc-p", "cavlc-slices", "cavlc-b", "cabac-p", "cabac-b-spatial", "cabac-b-temporal", "cabac-weighted",
         "cabac-slices", "high-8x8", "high-8x8-cavlc", "high-cqm", "high-crop", "high10", "high10-intra", "high422", "high422-cavlc",
         "high422-10", "gray", "open-gop", "intra-refresh", "constrained-intra", "many-refs", "slice-max", "weighted-cavlc",
-        "deblock-offsets", "qp-low", "qp-high", "tiny-motion", "high10-qp-low", "high422-10-intra",
+        "deblock-offsets", "qp-low", "qp-high", "tiny-motion", "high10-qp-low", "high422-10-intra", "cif-intra",
 
         // Interlaced: MBAFF frames from x264.
         "mbaff-fake", "mbaff-intra", "mbaff-intra-cavlc", "mbaff-p", "mbaff-p-cavlc", "mbaff-b-spatial", "mbaff-b-temporal",

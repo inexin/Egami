@@ -81,6 +81,8 @@ CLIPS = {
     "mbaff-slices": (WOVEN, "yuv420p", "-profile:v high -x264-params interlaced=1:tff=1:slices=3:bframes=2:ref=2", "176x160", 10),
     "mbaff-high10": (WOVEN_MANDEL, "yuv420p10le", "-profile:v high10 -x264-params interlaced=1:tff=1:bframes=2:ref=2", "176x160", 10),
     "mbaff-high422": (WOVEN_MANDEL, "yuv422p", "-profile:v high422 -x264-params interlaced=1:tff=1:bframes=2", "176x160", 10),
+    # Progressive CIF frames, which ConformanceTests puts before a CIF field-picture stream: interlaced at the same size.
+    "cif-intra": (TESTSRC, "yuv420p", "-profile:v main -x264-params keyint=1", "352x288", 2),
     # Picture timing SEI with pic_struct on interlaced frames.
     "mbaff-pic-struct": (WOVEN, "yuv420p", "-profile:v high -x264-params interlaced=1:tff=1:pic-struct=1:bframes=2", "176x144", 8),
 }

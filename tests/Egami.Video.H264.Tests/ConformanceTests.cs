@@ -64,6 +64,35 @@ public sealed class ConformanceTests
         }
     }
 
+    [Fact]
+    public void FieldPicturesFollowProgressiveFramesOfTheSameSize()
+    {
+        // Progressive CIF frames, then CVPA1_TOSHIBA_B's CIF field pictures: the SPS turns interlaced at the same coded size.
+        const string paff = "x/CVPA1_TOSHIBA_B/CVPA1_TOSHIBA_B.264";
+        Assert.SkipWhen(Root is null, "The conformance streams are not fetched (python tools/video/make-h264-conformance.py).");
+        using JsonDocument refs = JsonDocument.Parse(File.ReadAllText(Path.Combine(Root!, "refs.json")));
+        string[] expected = [.. refs.RootElement.GetProperty(paff).EnumerateArray().Select(e => e.GetString()!)];
+        byte[] progressive = File.ReadAllBytes(Path.Combine(AppContext.BaseDirectory, "corpus", "h264", "cif-intra.h264"));
+        using MemoryStream input = new([.. progressive, .. File.ReadAllBytes(Path.Combine(Root!, paff))]);
+        using IDemuxer demuxer = H264Format.Instance.OpenDemuxer(input, MediaContext.Default, leaveOpen: true);
+        using IVideoDecoder decoder = H264Codec.Instance.CreateDecoder(demuxer.Info.VideoTrack!, null, MediaContext.Default.WithH264());
+        List<string> actual = [];
+        while (demuxer.ReadPacket() is { } packet)
+        {
+            using (packet)
+            {
+                decoder.Send(packet);
+            }
+
+            Receive(decoder, actual);
+        }
+
+        decoder.Flush();
+        Receive(decoder, actual);
+        Assert.Equal(2 + expected.Length, actual.Count);
+        Assert.Equal(expected, actual.Skip(2));
+    }
+
     private static void Receive(IVideoDecoder decoder, List<string> hashes)
     {
         while (decoder.TryReceive(out YuvVideoFrame? frame))

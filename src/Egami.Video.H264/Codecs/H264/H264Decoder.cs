@@ -350,7 +350,13 @@ internal sealed class H264Decoder
             _pending = null;
             second = false;
             _mb = new H264MbState(sps.WidthInMbs, sps.HeightInMbs, sps.ChromaFormatIdc);
-            _fieldMb = sps.FrameMbsOnly ? null : new H264MbState(sps.WidthInMbs, sps.HeightInMbs / 2, sps.ChromaFormatIdc, fieldPicture: true);
+            _fieldMb = null;
+        }
+
+        if (h.FieldPic && _fieldMb is null)
+        {
+            // Made when the first field picture comes: a stream can turn interlaced at the same size without a new buffer set.
+            _fieldMb = new H264MbState(sps.WidthInMbs, sps.HeightInMbs / 2, sps.ChromaFormatIdc, fieldPicture: true);
         }
 
         _active = sps;
