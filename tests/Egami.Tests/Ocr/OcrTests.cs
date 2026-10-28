@@ -283,6 +283,38 @@ public class OcrTests
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() => new CommandOcrEngine(Shell("sleep 30")).RecognizeAsync(new OcrRequest(image), cancel.Token));
     }
 
+    [Theory]
+    [InlineData("gray", 1)]
+    [InlineData("color", 3)]
+    [InlineData("alpha", 4)]
+    public async Task TheProgramGetsThePngWithTheChannelsTheImageNeeds(string kind, int channels)
+    {
+        // A gray scan goes out as a gray PNG, which Tesseract reads about a quarter faster than RGBA.
+        using Raster<Rgba8> image = Raster.Create<Rgba8>(16, 8, new Rgba8(200, 200, 200, 255));
+        image.Row(3)[5] = kind switch
+        {
+            "color" => new Rgba8(200, 20, 20, 255),
+            "alpha" => new Rgba8(200, 200, 200, 128),
+            _ => new Rgba8(30, 30, 30, 255),
+        };
+        string folder = Directory.CreateTempSubdirectory("egami-ocr-test-").FullName;
+        try
+        {
+            string kept = Path.Combine(folder, "kept.png"), hocr = Path.Combine(folder, "page.hocr");
+            File.WriteAllText(hocr, "<html><body><div class='ocr_page' title='bbox 0 0 16 8'></div></body></html>");
+            string command = OperatingSystem.IsWindows()
+                ? $"cmd /c copy /y {{image}} \"{kept}\" >NUL & type \"{hocr}\""
+                : Shell($"cp \"$0\" '{kept}' && cat '{hocr}'");
+            await new CommandOcrEngine(command, new CommandOcrOptions { Output = OcrOutputFormat.Hocr }).RecognizeAsync(new OcrRequest(image), Ct);
+
+            Assert.Equal(channels, Raster.Probe(kept).Layout.ChannelCount);
+        }
+        finally
+        {
+            Directory.Delete(folder, recursive: true);
+        }
+    }
+
     /// <summary>A command that runs a script through sh with the placeholders as its arguments, from $0; without {output} the engine reads standard output.</summary>
     private static string Shell(string script, string arguments = "{image}")
     {

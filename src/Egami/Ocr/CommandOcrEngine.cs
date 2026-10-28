@@ -2,6 +2,8 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Text;
 
+using Egami.Pixels;
+
 namespace Egami.Ocr;
 
 /// <summary>What an OCR program writes, for <see cref="CommandOcrOptions.Output"/>.</summary>
@@ -146,7 +148,7 @@ public sealed class CommandOcrEngine : IOcrEngine
         {
             string image = Path.Combine(folder.FullName, "image.png");
             string output = Path.Combine(folder.FullName, "output");
-            await request.Image.SaveAsync(image, cancellationToken: cancellationToken).ConfigureAwait(false);
+            await SaveForEngineAsync(request.Image, image, cancellationToken).ConfigureAwait(false);
             string Value(string name) => name switch
             {
                 "image" => image,
@@ -440,5 +442,21 @@ public sealed class CommandOcrEngine : IOcrEngine
         }
 
         return result.ToString();
+    }
+
+    /// <summary>
+    /// Writes the image as the program reads it fastest: gray PNG when every pixel is gray and opaque (scans, mostly), RGB
+    /// when it is opaque, else RGBA. Tesseract reads a gray PNG of a page about a quarter faster than the same page in RGBA.
+    /// </summary>
+    private static async Task SaveForEngineAsync(Raster<Rgba8> image, string path, CancellationToken cancellationToken)
+    {
+        if (!image.IsOpaque())
+        {
+            await image.SaveAsync(path, cancellationToken: cancellationToken).ConfigureAwait(false);
+            return;
+        }
+
+        using Raster narrow = image.IsGray() ? image.As<Gray8>() : image.As<Rgb8>();
+        await narrow.SaveAsync(path, cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 }
