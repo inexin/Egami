@@ -1,0 +1,13 @@
+{
+ "file": "v3-420-def.mkv",
+ "width": 128,
+ "height": 96,
+ "pixelFormat": "yuv420p",
+ "bitDepth": 8,
+ "fieldOrder": "progressive",
+ "sampleAspectRatio": "1:1",
+ "md5": [
+  "bcfb444aab81820165b019f96ecc7f93",
+  "cf2db69541cde675938db98412db95e1"
+ ]
+}

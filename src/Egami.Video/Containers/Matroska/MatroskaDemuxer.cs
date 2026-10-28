@@ -1446,6 +1446,12 @@ internal sealed class MatroskaDemuxer : IDemuxer
                             _ => null,
                         };
                     }
+                    else if (_codecId == CodecIds.Ffv1 && Codecs.Ffv1Codec.Layout(_codecPrivate) is { } ffv1)
+                    {
+                        // A version 3 FFV1 track's configuration record gives its depth and subsampling.
+                        bitDepth = bitDepth == 0 ? ffv1.BitDepth : bitDepth;
+                        chromaFormat ??= ffv1.ChromaFormat;
+                    }
 
                     Track = new VideoTrackInfo
                     {

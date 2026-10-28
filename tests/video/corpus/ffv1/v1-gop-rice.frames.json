@@ -1,0 +1,17 @@
+{
+ "file": "v1-gop-rice.avi",
+ "width": 64,
+ "height": 48,
+ "pixelFormat": "yuv420p",
+ "bitDepth": 8,
+ "fieldOrder": null,
+ "sampleAspectRatio": "1:1",
+ "md5": [
+  "3615caf157cebbaea8cf271708402b75",
+  "3615caf157cebbaea8cf271708402b75",
+  "3615caf157cebbaea8cf271708402b75",
+  "c4e50111a123143e257b0eef8f9b1e7f",
+  "c4e50111a123143e257b0eef8f9b1e7f",
+  "c4e50111a123143e257b0eef8f9b1e7f"
+ ]
+}

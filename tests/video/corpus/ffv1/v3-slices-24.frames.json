@@ -1,0 +1,12 @@
+{
+ "file": "v3-slices-24.mkv",
+ "width": 384,
+ "height": 288,
+ "pixelFormat": "yuv420p10le",
+ "bitDepth": 10,
+ "fieldOrder": "progressive",
+ "sampleAspectRatio": "1:1",
+ "md5": [
+  "8d9a3ff84a3e1e804195884224a04713"
+ ]
+}

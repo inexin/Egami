@@ -1,0 +1,13 @@
+{
+ "file": "v3-411.mkv",
+ "width": 100,
+ "height": 60,
+ "pixelFormat": "yuv411p",
+ "bitDepth": 8,
+ "fieldOrder": "progressive",
+ "sampleAspectRatio": "1:1",
+ "md5": [
+  "d7463ea222a9974c67425dc81063929c",
+  "165221d9c423b542d4b0f7c40aa8cb61"
+ ]
+}

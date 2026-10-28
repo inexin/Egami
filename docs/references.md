@@ -88,6 +88,7 @@ LGPL code is never read.
 | ITU-T T.81 (JPEG), Annex K.3 | Standard Huffman tables for frames without DHT |
 | VP9 Bitstream and Decoding Process Specification v0.7 | VP9 decoder, superframes, header field names |
 | WebM codec mapping: VP9 CodecPrivate feature records | V_VP9 CodecPrivate |
+| FFV1, IETF RFC 9043 (code parts Simplified BSD) | FFV1 decoder, the configuration record in Matroska (`V_FFV1`) and AVI, header field names |
 | FLAC, IETF RFC 9639 | FLAC decoder, encoder and .flac files |
 | Microsoft WAVEFORMATEXTENSIBLE; EBU Tech 3306 (RF64); Sony Wave64 GUIDs | WAV, RF64 and Wave64 |
 | ITU-R BS.775 | Downmix levels |
@@ -116,6 +117,7 @@ LGPL code is never read.
 | libwebp, libvpx (the VP8 encoder: mode decision, loop filter deltas), dav1d, libaom | BSD |
 | libass (how ASS override tags behave), pysubs2 (subtitle edge cases) | ISC, MIT |
 | OpenH264 (Cisco), libavc (Android) | BSD-2, Apache-2.0 |
+| go-ffv1, rust-av ffv1 (FFV1 decoders) | ISC, MIT |
 
 ### Translated code (notice in THIRD-PARTY-NOTICES.md)
 

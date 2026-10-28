@@ -1,0 +1,13 @@
+{
+ "file": "v3-odd-rgb-33x17.mkv",
+ "width": 33,
+ "height": 17,
+ "pixelFormat": "bgr0",
+ "bitDepth": 8,
+ "fieldOrder": "progressive",
+ "sampleAspectRatio": "289:297",
+ "md5": [
+  "670e2062e1a48bf8b7e59bed3502d28d",
+  "670e2062e1a48bf8b7e59bed3502d28d"
+ ]
+}

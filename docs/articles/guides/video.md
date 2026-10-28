@@ -131,7 +131,7 @@ gives an `IVideoDecoder<TPixel>` that hands out RGB frames.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Video.cs#video-decode)]
 
-Each codec is a `VideoCodec`: `Av1Codec`, `Vp9Codec`, `Vp8Codec`, `MotionJpegCodec` and `RawVideoCodec`.
+Each codec is a `VideoCodec`: `Av1Codec`, `Vp9Codec`, `Vp8Codec`, `Ffv1Codec`, `MotionJpegCodec` and `RawVideoCodec`.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Video.cs#video-codecs)]
 
@@ -139,8 +139,8 @@ An `IVideoEncoder` takes frames and gives packets, with `VideoEncoderOptions` fo
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Video.cs#video-encode)]
 
-`CodecHeaders.Describe` lists a packet's header fields as `CodecHeaderField`s under the codec's own names, for VP8, VP9, AV1 and
-Motion JPEG.
+`CodecHeaders.Describe` lists a packet's header fields as `CodecHeaderField`s under the codec's own names, for VP8, VP9, AV1,
+FFV1 and Motion JPEG.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Video.cs#video-headers)]
 
@@ -182,6 +182,23 @@ the same bytes, and IVF, WebM, Matroska and MP4 tracks write to them.
 packets in order, decoding them, and lists each frame header whole.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Video.cs#video-av1-headers)]
+
+## FFV1
+
+`Ffv1Codec` decodes FFV1, the lossless codec archives use (RFC 9043), from Matroska (`V_FFV1`) and AVI (FourCC `FFV1`):
+versions 0, 1 and 3, Golomb-Rice and the range coder, YCbCr 4:2:0, 4:2:2, 4:4:4, 4:1:1, 4:1:0 and gray, RGB, each with or
+without alpha, at 8 to 16 bits. Every frame equals FFmpeg's sample for sample.
+
+- Frames keep their planes: 8-bit planes, or 16-bit planes holding 10, 12 or 16 bits. Depths 9, 11, 13, 14 and 15 sit in the
+  next of those with their samples shifted up, so nothing is lost; the track's `BitDepth` gives the source depth. RGB comes out
+  as G, B and R planes tagged `YuvMatrix.Identity`, which `ToRaster` turns back into RGB exactly.
+- A version 3 track's configuration record (its `CodecPrivate`) gives the depth and subsampling before any frame is decoded.
+- Every slice CRC is checked. Broken data follows `VideoReaderOptions.Errors`: a damaged slice is reported as `Ffv1.SliceCrc`
+  (or `Ffv1.CorruptFrame` when it cannot be read), a frame with no keyframe before it as `Ffv1.MissingReference` and a damaged
+  configuration record as `Ffv1.ConfigCrc`. `Skip` drops the frame, `Conceal` shows the last good frame where the slice was.
+- `CodecHeaders.Describe` lists the parameters, the keyframe flag and each slice's header and footer.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Video.cs#video-ffv1)]
 
 ## HDR
 

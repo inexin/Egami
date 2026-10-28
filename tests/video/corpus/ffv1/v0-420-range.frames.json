@@ -1,0 +1,14 @@
+{
+ "file": "v0-420-range.mkv",
+ "width": 96,
+ "height": 64,
+ "pixelFormat": "yuv420p",
+ "bitDepth": 8,
+ "fieldOrder": "progressive",
+ "sampleAspectRatio": "1:1",
+ "md5": [
+  "91c7f90580956be8864e5889356788bc",
+  "41194f6f26961cdc4423a02b8819ab32",
+  "93920ca38ce97bee5ecc172bdba7cd1a"
+ ]
+}

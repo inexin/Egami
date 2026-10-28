@@ -617,6 +617,35 @@ public class Video
     }
 
     [Fact]
+    public void ReadFfv1()
+    {
+        using SampleFiles files = new();
+        List<EgamiDiagnostic> reported = [];
+        MediaContext context = MediaContext.Default with { Egami = EgamiContext.Default with { Diagnostics = reported.Add } };
+
+        #region video-ffv1
+        // FFV1 archives from Matroska or AVI read like any other video. A 10-bit master gives 16-bit planes holding 10 bits;
+        // the track says the depth and subsampling before any frame is decoded.
+        using VideoReader reader = VideoReader.Open("master.mkv", new VideoReaderOptions { Errors = DecodeErrorMode.Conceal }, context);
+        Console.WriteLine($"{reader.Track.CodecId}: {reader.Track.BitDepth} bit {reader.Track.ChromaFormat}");
+        foreach (YuvVideoFrame frame in reader.ReadFrames())
+        {
+            using (frame)
+            {
+                Console.WriteLine($"{frame.Timestamp}: {frame.Raster.BitDepth} bit {frame.Raster.ChromaFormat}");
+            }
+        }
+
+        // Every slice's CRC is checked: a damaged one is reported as Ffv1.SliceCrc and, with Conceal, shows the last good frame.
+        Console.WriteLine($"{reported.Count(d => d.Id == "Ffv1.SliceCrc")} damaged slices");
+        #endregion
+
+        Assert.Equal(CodecIds.Ffv1, reader.Track.CodecId);
+        Assert.Equal(10, reader.Track.BitDepth);
+        Assert.Empty(reported);
+    }
+
+    [Fact]
     public void SplitAv1Packets()
     {
         using SampleFiles files = new();

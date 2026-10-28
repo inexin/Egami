@@ -1,0 +1,13 @@
+{
+ "file": "v3-nocrc.mkv",
+ "width": 96,
+ "height": 64,
+ "pixelFormat": "yuv420p",
+ "bitDepth": 8,
+ "fieldOrder": "progressive",
+ "sampleAspectRatio": "1:1",
+ "md5": [
+  "c6ed0146cbd6e0b0dbc525af6b76e407",
+  "53909d44b8984c2ef18bf0b119c3f096"
+ ]
+}

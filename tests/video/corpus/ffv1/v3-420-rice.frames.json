@@ -1,0 +1,14 @@
+{
+ "file": "v3-420-rice.mkv",
+ "width": 128,
+ "height": 96,
+ "pixelFormat": "yuv420p",
+ "bitDepth": 8,
+ "fieldOrder": "progressive",
+ "sampleAspectRatio": "1:1",
+ "md5": [
+  "f9db7bbaf792b693d4c88d3039a68d75",
+  "a8bce33ce1568f64e1c3c6f842968353",
+  "7c7d06834289190603c16b13d63a931e"
+ ]
+}

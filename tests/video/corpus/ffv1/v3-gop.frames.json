@@ -1,0 +1,18 @@
+{
+ "file": "v3-gop.mkv",
+ "width": 96,
+ "height": 64,
+ "pixelFormat": "yuv420p",
+ "bitDepth": 8,
+ "fieldOrder": "progressive",
+ "sampleAspectRatio": "1:1",
+ "md5": [
+  "91c7f90580956be8864e5889356788bc",
+  "41194f6f26961cdc4423a02b8819ab32",
+  "93920ca38ce97bee5ecc172bdba7cd1a",
+  "591f550303cc383bbc716ea293a7b067",
+  "54d4060f98d9346fbc727f9722856b68",
+  "469c6e4e9e48fd31a632c3958f80dfb2",
+  "6ce26a4846067e9a58b0c57790660657"
+ ]
+}

@@ -1,0 +1,13 @@
+{
+ "file": "v3-gbrp10.mkv",
+ "width": 96,
+ "height": 64,
+ "pixelFormat": "gbrp10le",
+ "bitDepth": 10,
+ "fieldOrder": "progressive",
+ "sampleAspectRatio": "1:1",
+ "md5": [
+  "abd74aa12a8a415ca3ffdc0f784ee1a3",
+  "8aa0637a104657d3fc48cb3c674bfa50"
+ ]
+}

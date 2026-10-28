@@ -27,6 +27,9 @@ public static class CodecIds
     /// <summary>AV1.</summary>
     public const string Av1 = "V_AV1";
 
+    /// <summary>FFV1 (RFC 9043); for version 3 <see cref="TrackInfo.CodecPrivate"/> holds its configuration record.</summary>
+    public const string Ffv1 = "V_FFV1";
+
     /// <summary>H.264 (MPEG-4 AVC); <see cref="TrackInfo.CodecPrivate"/> holds its decoder configuration record (avcC). Passed through, not decoded.</summary>
     public const string Avc = "V_MPEG4/ISO/AVC";
 
