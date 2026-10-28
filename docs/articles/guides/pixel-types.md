@@ -19,6 +19,7 @@ loading straight into it converts row by row while decoding, with no full-size c
 | `RgbaF32`, `RgbF32`, `GrayF32` | 16, 12, 4 | 32-bit float | Precise processing, PFM, depth and height maps |
 | `RgbaF16` | 8 | 16-bit half float | HDR, GPU textures |
 | `Bgr565`, `Bgra4444`, `Rgb10A2` | 2, 2, 4 | Packed color | Embedded displays, legacy textures, 10-bit displays |
+| `Bgr555`, `Bgra5551` | 2, 2 | Packed 5-5-5 color, with a 1-bit alpha | 16-bit BMP and TGA, GDI+ 16-bit bitmaps |
 | `Cmyk8`, `Cmyk16` | 4, 8 | Ink amounts | CMYK JPEG, TIFF and PSD |
 | `PremulRgba8`, `PremulBgra8`, `PremulRgbaF32` | 4, 4, 16 | Color premultiplied by alpha | Compositing, Windows and GPU surfaces |
 
@@ -68,8 +69,9 @@ will edit color by color.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/PixelTypes.cs#packed-framebuffer)]
 
-`Bgr565`, `Bgra4444` and `Rgb10A2` keep their bits in `Value`, with level constructors and properties for each channel. BMP
-files with 5-6-5 or 4-4-4-4 bit fields read straight into them.
+`Bgr565`, `Bgra4444`, `Bgr555`, `Bgra5551` and `Rgb10A2` keep their bits in `Value`, with level constructors and properties
+for each channel. BMP files with 5-6-5, 5-5-5, 1-5-5-5 or 4-4-4-4 bit fields and 15 and 16-bit TGA files read straight into them.
+`Bgr555` leaves its top bit 0; `Bgra5551` keeps alpha in it, 1 for opaque, and alpha 128 and above narrows to opaque.
 
 ## Your own pixel type
 

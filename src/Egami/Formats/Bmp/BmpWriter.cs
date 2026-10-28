@@ -10,8 +10,8 @@ using Egami.Streaming;
 namespace Egami.Formats.Bmp;
 
 /// <summary>
-/// Writes BMP with bottom-up rows: 24-bit with a BITMAPINFOHEADER, 32-bit BGRA with a BITMAPV4HEADER and bit-field masks, or a
-/// 1, 2, 4 or 8-bit palette. An ICC profile switches to a BITMAPV5HEADER with the profile after the pixels. Only the first frame
+/// Writes BMP with bottom-up rows: 24-bit or 16-bit 5-5-5 with a BITMAPINFOHEADER, 32-bit BGRA and 16-bit 5-6-5 or 1-5-5-5 with
+/// a BITMAPV4HEADER and bit-field masks, or a 1, 2, 4 or 8-bit palette. An ICC profile switches to a BITMAPV5HEADER with the profile after the pixels. Only the first frame
 /// is written.
 /// </summary>
 internal sealed class BmpWriter : IFormatWriter, IRowFormatWriter
@@ -52,6 +52,7 @@ internal sealed class BmpWriter : IFormatWriter, IRowFormatWriter
         private readonly StreamBufferWriter _writer;
         private readonly int _width;
         private readonly int _bits;
+        private readonly BmpPixelFormat _layout;
         private readonly int _stride;
         private readonly bool _topDown;
         private readonly ReadOnlyMemory<byte> _profile;
@@ -65,7 +66,8 @@ internal sealed class BmpWriter : IFormatWriter, IRowFormatWriter
             _output = output;
             SaveLosses.Report(start, "BMP", SaveKeeps.Alpha | SaveKeeps.Icc | SaveKeeps.Resolution);
             Raster<TPixel>? raster = start.Whole;
-            BmpPixelFormat layout = bmp.PixelFormat != BmpPixelFormat.Auto ? bmp.PixelFormat : !TPixel.Layout.HasAlpha || IsOpaque(raster!) ? BmpPixelFormat.Bgr24 : BmpPixelFormat.Bgra32;
+            BmpPixelFormat layout = _layout = bmp.PixelFormat != BmpPixelFormat.Auto ? bmp.PixelFormat : !TPixel.Layout.HasAlpha || IsOpaque(raster!) ? BmpPixelFormat.Bgr24 : BmpPixelFormat.Bgra32;
+            bool masked = layout is BmpPixelFormat.Bgra32 or BmpPixelFormat.Bgr565 or BmpPixelFormat.Bgra5551;
             _bits = layout switch
             {
                 BmpPixelFormat.Indexed1 => 1,
@@ -73,6 +75,7 @@ internal sealed class BmpWriter : IFormatWriter, IRowFormatWriter
                 BmpPixelFormat.Indexed4 => 4,
                 BmpPixelFormat.Indexed8 => 8,
                 BmpPixelFormat.Bgr24 => 24,
+                BmpPixelFormat.Bgr555 or BmpPixelFormat.Bgr565 or BmpPixelFormat.Bgra5551 => 16,
                 _ => 32,
             };
 
@@ -81,7 +84,7 @@ internal sealed class BmpWriter : IFormatWriter, IRowFormatWriter
             long stride = (((long)width * _bits) + 31) / 32 * 4;
             long imageSize = stride * height;
             _profile = bmp.StripMetadata ? default : start.Options.ProfileToWrite(start.Metadata);
-            int headerSize = !_profile.IsEmpty ? 124 : layout == BmpPixelFormat.Bgra32 ? 108 : 40;
+            int headerSize = !_profile.IsEmpty ? 124 : masked ? 108 : 40;
             _topDown = start.Streaming && !start.Seekable;
 
             if (_bits <= 8)
@@ -111,7 +114,7 @@ internal sealed class BmpWriter : IFormatWriter, IRowFormatWriter
             BinaryPrimitives.WriteInt32LittleEndian(info[8..], _topDown ? -height : height);
             BinaryPrimitives.WriteUInt16LittleEndian(info[12..], 1);
             BinaryPrimitives.WriteUInt16LittleEndian(info[14..], (ushort)_bits);
-            BinaryPrimitives.WriteUInt32LittleEndian(info[16..], layout == BmpPixelFormat.Bgra32 ? 3u : 0u);
+            BinaryPrimitives.WriteUInt32LittleEndian(info[16..], masked ? 3u : 0u);
             BinaryPrimitives.WriteUInt32LittleEndian(info[20..], (uint)imageSize);
             (int xppm, int yppm) = PixelsPerMeter(start.Metadata.Resolution);
             BinaryPrimitives.WriteInt32LittleEndian(info[24..], xppm);
@@ -119,12 +122,19 @@ internal sealed class BmpWriter : IFormatWriter, IRowFormatWriter
             BinaryPrimitives.WriteUInt32LittleEndian(info[32..], (uint)(_palette?.Colors.Length ?? 0));
             if (headerSize >= 108)
             {
-                if (layout == BmpPixelFormat.Bgra32)
+                (uint Red, uint Green, uint Blue, uint Alpha) masks = layout switch
                 {
-                    BinaryPrimitives.WriteUInt32LittleEndian(info[40..], 0x00FF_0000);
-                    BinaryPrimitives.WriteUInt32LittleEndian(info[44..], 0x0000_FF00);
-                    BinaryPrimitives.WriteUInt32LittleEndian(info[48..], 0x0000_00FF);
-                    BinaryPrimitives.WriteUInt32LittleEndian(info[52..], 0xFF00_0000);
+                    BmpPixelFormat.Bgra32 => (0x00FF_0000, 0x0000_FF00, 0x0000_00FF, 0xFF00_0000),
+                    BmpPixelFormat.Bgr565 => (0xF800, 0x07E0, 0x001F, 0),
+                    BmpPixelFormat.Bgra5551 => (0x7C00, 0x03E0, 0x001F, 0x8000),
+                    _ => default,
+                };
+                if (masked)
+                {
+                    BinaryPrimitives.WriteUInt32LittleEndian(info[40..], masks.Red);
+                    BinaryPrimitives.WriteUInt32LittleEndian(info[44..], masks.Green);
+                    BinaryPrimitives.WriteUInt32LittleEndian(info[48..], masks.Blue);
+                    BinaryPrimitives.WriteUInt32LittleEndian(info[52..], masks.Alpha);
                 }
 
                 BinaryPrimitives.WriteUInt32LittleEndian(info[56..], _profile.IsEmpty ? BmpReader.SpaceSrgb : BmpReader.SpaceEmbedded);
@@ -216,6 +226,23 @@ internal sealed class BmpWriter : IFormatWriter, IRowFormatWriter
                     break;
                 case 32:
                     PixelConvert.Convert<TPixel, Bgra8>(source, MemoryMarshal.Cast<byte, Bgra8>(row));
+                    break;
+                case 16:
+                    Span<byte> used = row[..(width * 2)];
+                    switch (_layout)
+                    {
+                        case BmpPixelFormat.Bgr555:
+                            PixelConvert.Convert<TPixel, Bgr555>(source, MemoryMarshal.Cast<byte, Bgr555>(used));
+                            break;
+                        case BmpPixelFormat.Bgr565:
+                            PixelConvert.Convert<TPixel, Bgr565>(source, MemoryMarshal.Cast<byte, Bgr565>(used));
+                            break;
+                        default:
+                            PixelConvert.Convert<TPixel, Bgra5551>(source, MemoryMarshal.Cast<byte, Bgra5551>(used));
+                            break;
+                    }
+
+                    row[(width * 2)..].Clear();
                     break;
                 default:
                     // Only Save maps to a palette, so the row's place in the image is known.

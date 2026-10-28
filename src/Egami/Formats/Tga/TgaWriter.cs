@@ -92,8 +92,14 @@ internal sealed class TgaWriter : IFormatWriter, IRowFormatWriter
                 mapEntry = _palette.Colors.Any(c => c.A != 255) ? 32 : 24;
             }
 
-            _alpha = bits == TgaPixelFormat.Bgra32 || mapEntry == 32;
-            _bpp = bits switch { TgaPixelFormat.Gray8 or TgaPixelFormat.Indexed8 => 1, TgaPixelFormat.Bgr24 => 3, _ => 4 };
+            _alpha = bits is TgaPixelFormat.Bgra32 or TgaPixelFormat.Bgra5551 || mapEntry == 32;
+            _bpp = bits switch
+            {
+                TgaPixelFormat.Gray8 or TgaPixelFormat.Indexed8 => 1,
+                TgaPixelFormat.Bgr555 or TgaPixelFormat.Bgra5551 => 2,
+                TgaPixelFormat.Bgr24 => 3,
+                _ => 4,
+            };
             ReadOnlySpan<byte> imageId = !tga.StripMetadata && start.Metadata.FormatDetails is TgaDetails details ? details.ImageId.Span : default;
             imageId = imageId[..Math.Min(imageId.Length, 255)];
 
@@ -110,7 +116,7 @@ internal sealed class TgaWriter : IFormatWriter, IRowFormatWriter
             BinaryPrimitives.WriteUInt16LittleEndian(header[12..], (ushort)width);
             BinaryPrimitives.WriteUInt16LittleEndian(header[14..], (ushort)height);
             header[16] = (byte)(_bpp * 8);
-            header[17] = (byte)((bits == TgaPixelFormat.Bgra32 ? 8 : mapEntry == 32 ? 8 : 0) | (topDown ? 0x20 : 0));
+            header[17] = (byte)((bits == TgaPixelFormat.Bgra32 ? 8 : bits == TgaPixelFormat.Bgra5551 ? 1 : mapEntry == 32 ? 8 : 0) | (topDown ? 0x20 : 0));
             _writer.Advance(TgaReader.HeaderLength);
             _position += TgaReader.HeaderLength;
             Put(_writer, imageId, ref _position);
@@ -157,6 +163,12 @@ internal sealed class TgaWriter : IFormatWriter, IRowFormatWriter
                     break;
                 case TgaPixelFormat.Bgr24:
                     PixelConvert.Convert<TPixel, Bgr8>(source, MemoryMarshal.Cast<byte, Bgr8>(pixels));
+                    break;
+                case TgaPixelFormat.Bgr555:
+                    PixelConvert.Convert<TPixel, Bgr555>(source, MemoryMarshal.Cast<byte, Bgr555>(pixels));
+                    break;
+                case TgaPixelFormat.Bgra5551:
+                    PixelConvert.Convert<TPixel, Bgra5551>(source, MemoryMarshal.Cast<byte, Bgra5551>(pixels));
                     break;
                 default:
                     PixelConvert.Convert<TPixel, Bgra8>(source, MemoryMarshal.Cast<byte, Bgra8>(pixels));
@@ -284,6 +296,13 @@ internal sealed class TgaWriter : IFormatWriter, IRowFormatWriter
                 for (int i = 0; i < keys.Length; i++)
                 {
                     keys[i] = pixels[i];
+                }
+
+                break;
+            case 2:
+                for (int i = 0; i < keys.Length; i++)
+                {
+                    keys[i] = BinaryPrimitives.ReadUInt16LittleEndian(pixels[(2 * i)..]);
                 }
 
                 break;

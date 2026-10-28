@@ -27,6 +27,19 @@ A new package of format plugins (Build Plan tasks 1 to 12). It depends on core E
 
 ## Egami, unreleased
 
+Packed 5-5-5 pixel types (step 2.13 task 2), for 16-bit BMP and TGA and the GDI+ 16-bit bitmaps of Egami.SystemDrawing. All
+additive.
+
+- `Bgr555` and `Bgra5551`: blue in bits 0 to 4, green in 5 to 9, red in 10 to 14, and in `Bgra5551` a 1-bit alpha in bit 15.
+  Every value survives a round trip through `Rgba8` (with the unused top bit clear for `Bgr555`), and converting to and from
+  `Rgba8` and `Bgra8` runs eight or sixteen pixels at a time.
+- `BmpPixelFormat.Bgr555`, `Bgr565` and `Bgra5551` write 16-bit BMP, and 16-bit files with matching bit fields load straight
+  into `Bgr555`, `Bgr565` and `Bgra5551`.
+- `TgaPixelFormat.Bgr555` and `Bgra5551` write 16-bit TGA, raw or RLE, and 15 and 16-bit files load straight into the two
+  types.
+
+## Egami, unreleased
+
 Helpers a format plugin needs, made public for Egami.Formats.Extended. All additive.
 
 - `EgamiInput.CheckFrameSize`, for a row reader that rents its buffers before any raster exists.

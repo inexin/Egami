@@ -36,6 +36,7 @@ to work in, and rows come back as spans of it.
 | `RgbaF32`, `RgbF32`, `GrayF32` | 32-bit float color or gray | High-precision processing, PFM, depth maps |
 | `RgbaF16` | 16-bit half-float color with alpha | HDR and GPU textures |
 | `Bgr565`, `Bgra4444`, `Rgb10A2` | Packed 16 and 32-bit color | Embedded displays, legacy textures, 10-bit displays |
+| `Bgr555`, `Bgra5551` | Packed 5-5-5 color, with a 1-bit alpha | 16-bit BMP and TGA, GDI+ 16-bit bitmaps |
 | `Cmyk8`, `Cmyk16` | Cyan, magenta, yellow and black ink | CMYK JPEG, TIFF and PSD |
 | `PremulRgba8`, `PremulBgra8`, `PremulRgbaF32` | Color premultiplied by alpha | Compositing; Windows and GPU surfaces |
 
