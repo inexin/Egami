@@ -1,0 +1,13 @@
+{
+ "file": "v3-bgr0-rice.mkv",
+ "width": 96,
+ "height": 64,
+ "pixelFormat": "bgr0",
+ "bitDepth": 8,
+ "fieldOrder": "progressive",
+ "sampleAspectRatio": "1:1",
+ "md5": [
+  "6f37e2e2695ad097650ceb2a65dc2e0b",
+  "784f5a53f23b04427e057984ed01df3b"
+ ]
+}

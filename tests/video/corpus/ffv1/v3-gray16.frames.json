@@ -1,0 +1,13 @@
+{
+ "file": "v3-gray16.mkv",
+ "width": 96,
+ "height": 64,
+ "pixelFormat": "gray16le",
+ "bitDepth": 16,
+ "fieldOrder": "progressive",
+ "sampleAspectRatio": "1:1",
+ "md5": [
+  "bddd674872f1817bae5b6a8b25fa899d",
+  "53fe862466c79204ec281b641686c3a2"
+ ]
+}

@@ -7,7 +7,7 @@ namespace Egami.Video.Codecs;
 /// <summary>
 /// Lists what a compressed frame's header says, field by field under the codec specification's names, for tools such as
 /// <c>egami-video info --headers</c> and for checking an encoder's output. VP8 (RFC 6386 sections 9 and 19), VP9 (VP9
-/// bitstream specification sections 6.2 and 6.3) and AV1 (AV1 specification section 5) are described; later codecs add theirs to
+/// bitstream specification sections 6.2 and 6.3), AV1 (AV1 specification section 5) and FFV1 (RFC 9043 section 4) are described; later codecs add theirs to
 /// the same call. An AV1 frame header depends on the reference frames, so <see cref="CodecHeaderReader"/> reads a track's packets
 /// in order to list them whole.
 /// </summary>
@@ -36,7 +36,7 @@ public static class CodecHeaders
     public static bool CanDescribe(TrackInfo track)
     {
         ArgumentNullException.ThrowIfNull(track);
-        return track.CodecId is CodecIds.Vp8 or CodecIds.Vp9 or CodecIds.Av1;
+        return track.CodecId is CodecIds.Vp8 or CodecIds.Vp9 or CodecIds.Av1 or CodecIds.Ffv1;
     }
 
     /// <summary>
@@ -52,6 +52,9 @@ public static class CodecHeaders
     /// fields, a metadata OBU <c>metadata_type</c> and its fields (content light level, mastering display, scalability,
     /// timecode; ITU-T T.35 as its country code and <c>itu_t_t35_payload_bytes</c>, the payload's length), and a frame header
     /// its start up to <c>error_resilient_mode</c>; the rest needs the reference frames, which <see cref="CodecHeaderReader"/> keeps.
+    /// For FFV1, the configuration record's parameters come first when the track has one (version 3), then <c>keyframe</c>; a
+    /// version 0 or 1 keyframe follows with its parameters, a version 3 frame with each slice's header and footer after a
+    /// <c>slice</c> field with its index.
     /// </summary>
     /// <param name="track">The packet's track.</param>
     /// <param name="packet">The packet.</param>
@@ -66,6 +69,7 @@ public static class CodecHeaders
             CodecIds.Vp8 => Vp8HeaderReader.Read(packet.Data.Span),
             CodecIds.Vp9 => Vp9HeaderReader.Read(packet.Data.Span, (track as VideoTrackInfo)?.Width ?? 0, (track as VideoTrackInfo)?.Height ?? 0),
             CodecIds.Av1 => DescribeAv1(packet.Data.Span, ConfigSequence(track), null),
+            CodecIds.Ffv1 => Ffv1HeaderReader.Read(track, packet.Data.Span),
             _ => [],
         };
     }

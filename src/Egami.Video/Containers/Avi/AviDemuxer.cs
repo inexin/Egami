@@ -801,6 +801,7 @@ internal sealed class AviDemuxer : IDemuxer
             {
                 (string codecId, byte[] codecPrivate, int width, int height, uint compression) = AviCodecs.ReadBitmapInfo(Format, Handler);
                 Codecs.Raw.RawLayout? raw = codecId == CodecIds.Uncompressed ? Codecs.Raw.RawLayout.FromFourCC(AviCodecs.UncompressedFourCC(compression)!) : null;
+                (int BitDepth, Pixels.ChromaFormat? ChromaFormat)? ffv1 = codecId == CodecIds.Ffv1 ? Codecs.Ffv1Codec.Layout(codecPrivate) : null;
                 TimeBase = Scale > 0 && Rate > 0 ? new Rational(Scale, Rate) : new Rational(1, 25);
                 if (totalFramesOpenDml > length)
                 {
@@ -820,8 +821,8 @@ internal sealed class AviDemuxer : IDemuxer
                     Duration = new MediaTime(Start + length, TimeBase),
                     Name = Name,
                     FourCC = raw?.FourCC,
-                    ChromaFormat = raw?.Chroma,
-                    BitDepth = raw?.BitDepth ?? 0,
+                    ChromaFormat = raw?.Chroma ?? ffv1?.ChromaFormat,
+                    BitDepth = raw?.BitDepth ?? ffv1?.BitDepth ?? 0,
                 };
             }
             else if (Type == FourCC.Auds)

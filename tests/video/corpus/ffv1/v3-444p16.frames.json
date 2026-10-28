@@ -1,0 +1,13 @@
+{
+ "file": "v3-444p16.mkv",
+ "width": 96,
+ "height": 64,
+ "pixelFormat": "yuv444p16le",
+ "bitDepth": 16,
+ "fieldOrder": "progressive",
+ "sampleAspectRatio": "1:1",
+ "md5": [
+  "5630cb619c0c69ebfdcfa0af19a9b48b",
+  "05e39b457dc76ad64b0c25a4de4e565c"
+ ]
+}

@@ -19,3 +19,7 @@ fetched into .cache/audio/flac-test-files by make-audio-corpus.py --ietf rather 
 The files in h264/ were generated the same way by tools/video/make-h264-corpus.py: FFmpeg with libx264 on synthetic lavfi
 sources (testsrc2 and mandelbrot); each .frames.json holds the MD5 of every frame FFmpeg decodes. They too contain no
 third-party content.
+
+The files in ffv1/ were generated the same way by tools/video/make-ffv1-references.py: FFmpeg's FFV1 encoder on synthetic lavfi
+sources (testsrc2 and mandelbrot); each .frames.json holds the MD5 of every frame FFmpeg decodes. They too contain no
+third-party content.

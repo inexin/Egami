@@ -168,6 +168,17 @@ forced modes and bandwidths, 8 to 48 kHz, and multistream up to 7.1), the length
 libopus 1.5.2 makes from a synthetic signal. `tools/video/opusref/make-opus-encoder-reference.c` makes it in the
 `egami-opusref` image; `OpusEncoderTests` encodes the same signal and compares.
 
+## FFV1 (V6)
+
+`tests/video/corpus/ffv1` is made by `python tools/video/make-ffv1-references.py` (FFmpeg in `tools/video/docker`, or `--local`
+for the ffmpeg on the PATH). Each clip is FFmpeg's FFV1 encoder on testsrc2 or mandelbrot, in Matroska or AVI, named for what it
+covers: the version (`v0`, `v1`, `v3`), the layout and depth, the coder (`rice` for Golomb-Rice, `def` for the range coder's
+default table, the custom table otherwise), `large` for the large context model, `gop` for non-keyframes, `2pass` for coded
+initial states, `qtable` for coded quantization tables, `nocrc`, `interlaced` (field order and aspect ratio in the slice
+headers), odd sizes and slice counts. `<clip>.frames.json` holds the source depth, FFmpeg's pixel format and the MD5 of every
+frame FFmpeg decodes: the planes in Y, U, V, alpha order (G, B, R, alpha for RGB) at the source depth, one byte per sample at 8
+bits and two (little-endian) above.
+
 ## AV1 (V4.2)
 
 `tests/video/corpus/av1` holds our own AV1 clips, encoded by libaom 3.15.2's aomenc (`tools/avifref/av1corpus.py`, through

@@ -1,0 +1,13 @@
+{
+ "file": "v3-bgr0.mkv",
+ "width": 96,
+ "height": 64,
+ "pixelFormat": "bgr0",
+ "bitDepth": 8,
+ "fieldOrder": "progressive",
+ "sampleAspectRatio": "1:1",
+ "md5": [
+  "8ef2ec3d3c780ad6b54f97e9cb727876",
+  "02ba3ca06127ffe7405aa6f38d62f6ee"
+ ]
+}

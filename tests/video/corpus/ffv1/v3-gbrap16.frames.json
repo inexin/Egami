@@ -1,0 +1,13 @@
+{
+ "file": "v3-gbrap16.mkv",
+ "width": 64,
+ "height": 48,
+ "pixelFormat": "gbrap16le",
+ "bitDepth": 16,
+ "fieldOrder": "progressive",
+ "sampleAspectRatio": "1:1",
+ "md5": [
+  "f14dd1f5e8f6cdd73c2cc672efb75dd7",
+  "f14dd1f5e8f6cdd73c2cc672efb75dd7"
+ ]
+}
