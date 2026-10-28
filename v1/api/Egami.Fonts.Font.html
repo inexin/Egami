@@ -189,7 +189,7 @@ fonts with the constructor or <a class="xref" href="Egami.Fonts.Font.html#Egami_
 
   <h3 id="Egami_Fonts_Font__ctor_Egami_Fonts_Typeface_System_Single_" data-uid="Egami.Fonts.Font.#ctor(Egami.Fonts.Typeface,System.Single)">
   Font(Typeface, float)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Font.cs/#L61"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Font.cs/#L64"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Initializes a font.</p>
@@ -238,7 +238,7 @@ fonts with the constructor or <a class="xref" href="Egami.Fonts.Font.html#Egami_
 
   <h3 id="Egami_Fonts_Font_AllowSynthesis" data-uid="Egami.Fonts.Font.AllowSynthesis">
   AllowSynthesis
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Font.cs/#L90"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Font.cs/#L118"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets whether <a class="xref" href="Egami.Fonts.Font.html#Egami_Fonts_Font_Synthesis">Synthesis</a> is applied. Defaults to true.</p>
@@ -270,7 +270,7 @@ fonts with the constructor or <a class="xref" href="Egami.Fonts.Font.html#Egami_
 
   <h3 id="Egami_Fonts_Font_ColorGlyphs" data-uid="Egami.Fonts.Font.ColorGlyphs">
   ColorGlyphs
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Font.cs/#L117"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Font.cs/#L145"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets whether color glyphs (COLR, sbix, CBDT) draw in color; false draws every glyph's outline in the paint. Defaults to true.</p>
@@ -302,7 +302,7 @@ fonts with the constructor or <a class="xref" href="Egami.Fonts.Font.html#Egami_
 
   <h3 id="Egami_Fonts_Font_Edging" data-uid="Egami.Fonts.Font.Edging">
   Edging
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Font.cs/#L108"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Font.cs/#L136"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets how glyph edges become pixels on a raster. Defaults to <a class="xref" href="Egami.Fonts.FontEdging.html#Egami_Fonts_FontEdging_Antialias">Antialias</a>.</p>
@@ -340,7 +340,7 @@ fonts with the constructor or <a class="xref" href="Egami.Fonts.Font.html#Egami_
 
   <h3 id="Egami_Fonts_Font_EffectiveTypeface" data-uid="Egami.Fonts.Font.EffectiveTypeface">
   EffectiveTypeface
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Font.cs/#L142"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Font.cs/#L185"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the face glyphs are drawn and measured from: <a class="xref" href="Egami.Fonts.Font.html#Egami_Fonts_Font_Typeface">Typeface</a>, or with <a class="xref" href="Egami.Fonts.Font.html#Egami_Fonts_Font_OpticalSizing">OpticalSizing</a> on a face with
@@ -375,11 +375,63 @@ an opsz axis it does not set, the face at opsz = <a class="xref" href="Egami.Fon
 
 
 
+  <a id="Egami_Fonts_Font_Embolden_" data-uid="Egami.Fonts.Font.Embolden*"></a>
+
+  <h3 id="Egami_Fonts_Font_Embolden" data-uid="Egami.Fonts.Font.Embolden">
+  Embolden
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Font.cs/#L101"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets how far outlines grow on every side, in canvas units at this size (pixels on a raster): 0.15 makes each stem 0.3 pixels
+heavier. Defaults to 0. Applied as synthetic bold is, with round joins, on top of it; advances do not change. Drawn, measured
+as ink and returned by glyph paths.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float Embolden { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+  <h4 class="section" id="Egami_Fonts_Font_Embolden_examples">Examples</h4>
+  <pre><code class="lang-csharp">// A little more weight without a bold face: outlines grow 0.2 pixels on each side, advances stay as they are.
+var heavier = new Font(face, 14) { Embolden = 0.2f };
+
+// Darkening for small sizes only: full at 8 pixels per em, none from 32 up.
+var caption = new Font(face, 9) { StemDarkening = true };
+using (RasterCanvas&lt;Rgba8&gt; canvas = image.CreateCanvas())
+{
+    canvas.DrawText("Slightly heavier", new Vector2(8, 24), heavier, Rgba8.Black);
+    canvas.DrawText("A darkened caption", new Vector2(8, 48), caption, Rgba8.Black);
+}</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>The value is negative, infinite or NaN.</p>
+</dd>
+  </dl>
+
+
+
   <a id="Egami_Fonts_Font_Extents_" data-uid="Egami.Fonts.Font.Extents*"></a>
 
   <h3 id="Egami_Fonts_Font_Extents" data-uid="Egami.Fonts.Font.Extents">
   Extents
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Font.cs/#L156"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Font.cs/#L199"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the face's extents at this size, y up.</p>
@@ -417,7 +469,7 @@ an opsz axis it does not set, the face at opsz = <a class="xref" href="Egami.Fon
 
   <h3 id="Egami_Fonts_Font_Hinting" data-uid="Egami.Fonts.Font.Hinting">
   Hinting
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Font.cs/#L94"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Font.cs/#L122"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets how outlines are fitted to the pixel grid on a raster. Defaults to <a class="xref" href="Egami.Fonts.FontHinting.html#Egami_Fonts_FontHinting_None">None</a>.</p>
@@ -455,7 +507,7 @@ an opsz axis it does not set, the face at opsz = <a class="xref" href="Egami.Fon
 
   <h3 id="Egami_Fonts_Font_Kerning" data-uid="Egami.Fonts.Font.Kerning">
   Kerning
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Font.cs/#L80"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Font.cs/#L83"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets whether pair kerning is applied when shaping. Defaults to true.</p>
@@ -487,7 +539,7 @@ an opsz axis it does not set, the face at opsz = <a class="xref" href="Egami.Fon
 
   <h3 id="Egami_Fonts_Font_LineHeight" data-uid="Egami.Fonts.Font.LineHeight">
   LineHeight
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Font.cs/#L160"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Font.cs/#L203"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the distance from one baseline to the next at this size.</p>
@@ -525,7 +577,7 @@ an opsz axis it does not set, the face at opsz = <a class="xref" href="Egami.Fon
 
   <h3 id="Egami_Fonts_Font_OpticalSizing" data-uid="Egami.Fonts.Font.OpticalSizing">
   OpticalSizing
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Font.cs/#L131"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Font.cs/#L174"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets whether a variable face's optical size axis follows <a class="xref" href="Egami.Fonts.Font.html#Egami_Fonts_Font_Size">Size</a>: <a class="xref" href="Egami.Fonts.OpticalSizing.html#Egami_Fonts_OpticalSizing_Auto">Auto</a> (the
@@ -564,7 +616,7 @@ default) sets opsz to the size in canvas units, clamped to the axis, unless the 
 
   <h3 id="Egami_Fonts_Font_Palette" data-uid="Egami.Fonts.Font.Palette">
   Palette
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Font.cs/#L121"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Font.cs/#L149"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the palette color glyphs draw with. Defaults to <a class="xref" href="Egami.Fonts.FontPalette.html#Egami_Fonts_FontPalette_Default">Default</a>.</p>
@@ -602,7 +654,7 @@ default) sets opsz to the size in canvas units, clamped to the axis, unless the 
 
   <h3 id="Egami_Fonts_Font_Scale" data-uid="Egami.Fonts.Font.Scale">
   Scale
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Font.cs/#L152"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Font.cs/#L195"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the factor from font units to canvas units: <a class="xref" href="Egami.Fonts.Font.html#Egami_Fonts_Font_Size">Size</a> over units per em.</p>
@@ -634,7 +686,7 @@ default) sets opsz to the size in canvas units, clamped to the axis, unless the 
 
   <h3 id="Egami_Fonts_Font_Size" data-uid="Egami.Fonts.Font.Size">
   Size
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Font.cs/#L77"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Font.cs/#L80"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the em size in canvas units.</p>
@@ -662,11 +714,57 @@ default) sets opsz to the size in canvas units, clamped to the axis, unless the 
 
 
 
+  <a id="Egami_Fonts_Font_StemDarkening_" data-uid="Egami.Fonts.Font.StemDarkening*"></a>
+
+  <h3 id="Egami_Fonts_Font_StemDarkening" data-uid="Egami.Fonts.Font.StemDarkening">
+  StemDarkening
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Font.cs/#L115"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether small text is darkened: outlines grow by 0.15 device pixels on every side at 8 pixels per em and below, fading
+linearly to none at 32 and above, so thin stems keep their weight where antialiasing would wash them out. Defaults to false.
+It follows the device size, so it applies when drawing on a raster and not to glyph paths or ink bounds.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool StemDarkening { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+  <h4 class="section" id="Egami_Fonts_Font_StemDarkening_examples">Examples</h4>
+  <pre><code class="lang-csharp">// A little more weight without a bold face: outlines grow 0.2 pixels on each side, advances stay as they are.
+var heavier = new Font(face, 14) { Embolden = 0.2f };
+
+// Darkening for small sizes only: full at 8 pixels per em, none from 32 up.
+var caption = new Font(face, 9) { StemDarkening = true };
+using (RasterCanvas&lt;Rgba8&gt; canvas = image.CreateCanvas())
+{
+    canvas.DrawText("Slightly heavier", new Vector2(8, 24), heavier, Rgba8.Black);
+    canvas.DrawText("A darkened caption", new Vector2(8, 48), caption, Rgba8.Black);
+}</code></pre>
+
+
+
+
+
+
   <a id="Egami_Fonts_Font_Subpixel_" data-uid="Egami.Fonts.Font.Subpixel*"></a>
 
   <h3 id="Egami_Fonts_Font_Subpixel" data-uid="Egami.Fonts.Font.Subpixel">
   Subpixel
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Font.cs/#L104"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Font.cs/#L132"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets whether glyph origins keep quarter-pixel x positions on a raster (four cached phases; y snaps to whole pixels), or
@@ -699,7 +797,7 @@ snap to whole pixels as in 2.7.1. Defaults to true. Measuring never depends on i
 
   <h3 id="Egami_Fonts_Font_Synthesis" data-uid="Egami.Fonts.Font.Synthesis">
   Synthesis
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Font.cs/#L87"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Font.cs/#L90"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the styling the face lacks and matching asked for: bold outsets the outline (em/24 at 9 pixels per em down to em/32 at
@@ -733,7 +831,7 @@ snap to whole pixels as in 2.7.1. Defaults to true. Measuring never depends on i
 
   <h3 id="Egami_Fonts_Font_Typeface" data-uid="Egami.Fonts.Font.Typeface">
   Typeface
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Font.cs/#L74"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Font.cs/#L77"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the face; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> only for <code>default(Font)</code>.</p>
@@ -769,7 +867,7 @@ snap to whole pixels as in 2.7.1. Defaults to true. Measuring never depends on i
 
   <h3 id="Egami_Fonts_Font_FromPoints_Egami_Fonts_Typeface_System_Single_System_Single_" data-uid="Egami.Fonts.Font.FromPoints(Egami.Fonts.Typeface,System.Single,System.Single)">
   FromPoints(Typeface, float, float)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Font.cs/#L170"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Font.cs/#L213"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Creates a font sized in points at a resolution: <code>points * dpi / 72</code> canvas units per em.</p>
@@ -820,7 +918,7 @@ snap to whole pixels as in 2.7.1. Defaults to true. Measuring never depends on i
 
   <h3 id="Egami_Fonts_Font_GetAdvance_System_UInt16_" data-uid="Egami.Fonts.Font.GetAdvance(System.UInt16)">
   GetAdvance(ushort)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Font.cs/#L184"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Font.cs/#L227"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets a glyph's advance at this size.</p>
@@ -865,7 +963,7 @@ snap to whole pixels as in 2.7.1. Defaults to true. Measuring never depends on i
 
   <h3 id="Egami_Fonts_Font_GetGlyphExtents_System_UInt16_" data-uid="Egami.Fonts.Font.GetGlyphExtents(System.UInt16)">
   GetGlyphExtents(ushort)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Font.cs/#L190"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Font.cs/#L233"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the box around a glyph's ink at this size, y up from the baseline, synthetic bold and italic included.</p>
@@ -910,7 +1008,7 @@ snap to whole pixels as in 2.7.1. Defaults to true. Measuring never depends on i
 
   <h3 id="Egami_Fonts_Font_MeasureText_System_ReadOnlySpan_System_Char__Egami_Fonts_Shaping_ShapingOptions_" data-uid="Egami.Fonts.Font.MeasureText(System.ReadOnlySpan{System.Char},Egami.Fonts.Shaping.ShapingOptions)">
   MeasureText(ReadOnlySpan&lt;char&gt;, ShapingOptions?)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Font.cs/#L316"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Font.cs/#L359"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Measures text as <a class="xref" href="Egami.Fonts.Font.html#Egami_Fonts_Font_Shape_System_String_Egami_Fonts_Shaping_ShapingOptions_">Shape(string, ShapingOptions?)</a> lays it out, as <a class="xref" href="Egami.Fonts.Font.html#Egami_Fonts_Font_MeasureText_System_String_Egami_Fonts_Shaping_ShapingOptions_">MeasureText(string, ShapingOptions?)</a>
@@ -972,7 +1070,7 @@ foreach (Range word in text.Split(' '))
 
   <h3 id="Egami_Fonts_Font_MeasureText_System_String_Egami_Fonts_Shaping_ShapingOptions_" data-uid="Egami.Fonts.Font.MeasureText(System.String,Egami.Fonts.Shaping.ShapingOptions)">
   MeasureText(string, ShapingOptions?)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Font.cs/#L297"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Font.cs/#L340"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Measures text as <a class="xref" href="Egami.Fonts.Font.html#Egami_Fonts_Font_Shape_System_String_Egami_Fonts_Shaping_ShapingOptions_">Shape(string, ShapingOptions?)</a> lays it out, so a measured width always equals the drawn advance.</p>
@@ -1047,7 +1145,7 @@ using (RasterCanvas&lt;Rgba8&gt; canvas = image.CreateCanvas())
 
   <h3 id="Egami_Fonts_Font_Shape_System_String_Egami_Fonts_Shaping_ShapingOptions_" data-uid="Egami.Fonts.Font.Shape(System.String,Egami.Fonts.Shaping.ShapingOptions)">
   Shape(string, ShapingOptions?)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Font.cs/#L226"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Font.cs/#L269"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Turns text into a glyph run with the full shaper (<a class="xref" href="Egami.Fonts.Shaping.TextShaper.html#Egami_Fonts_Shaping_TextShaper_Shape_System_String_Egami_Fonts_Font_Egami_Fonts_Shaping_ShapingOptions_">Shape(string, Font, ShapingOptions?)</a>): ligatures,

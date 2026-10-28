@@ -15383,6 +15383,19 @@ references:
   commentId: T:Egami.Drawing.CanvasOptions
   fullName: Egami.Drawing.CanvasOptions
   nameWithType: CanvasOptions
+- uid: Egami.Drawing.CanvasOptions.ClearTypeLevel
+  name: ClearTypeLevel
+  href: api/Egami.Drawing.CanvasOptions.html#Egami_Drawing_CanvasOptions_ClearTypeLevel
+  commentId: P:Egami.Drawing.CanvasOptions.ClearTypeLevel
+  fullName: Egami.Drawing.CanvasOptions.ClearTypeLevel
+  nameWithType: CanvasOptions.ClearTypeLevel
+- uid: Egami.Drawing.CanvasOptions.ClearTypeLevel*
+  name: ClearTypeLevel
+  href: api/Egami.Drawing.CanvasOptions.html#Egami_Drawing_CanvasOptions_ClearTypeLevel_
+  commentId: Overload:Egami.Drawing.CanvasOptions.ClearTypeLevel
+  isSpec: "True"
+  fullName: Egami.Drawing.CanvasOptions.ClearTypeLevel
+  nameWithType: CanvasOptions.ClearTypeLevel
 - uid: Egami.Drawing.CanvasOptions.ColorGlyphRenderer
   name: ColorGlyphRenderer
   href: api/Egami.Drawing.CanvasOptions.html#Egami_Drawing_CanvasOptions_ColorGlyphRenderer
@@ -15422,6 +15435,32 @@ references:
   isSpec: "True"
   fullName: Egami.Drawing.CanvasOptions.Default
   nameWithType: CanvasOptions.Default
+- uid: Egami.Drawing.CanvasOptions.LcdFilter
+  name: LcdFilter
+  href: api/Egami.Drawing.CanvasOptions.html#Egami_Drawing_CanvasOptions_LcdFilter
+  commentId: P:Egami.Drawing.CanvasOptions.LcdFilter
+  fullName: Egami.Drawing.CanvasOptions.LcdFilter
+  nameWithType: CanvasOptions.LcdFilter
+- uid: Egami.Drawing.CanvasOptions.LcdFilter*
+  name: LcdFilter
+  href: api/Egami.Drawing.CanvasOptions.html#Egami_Drawing_CanvasOptions_LcdFilter_
+  commentId: Overload:Egami.Drawing.CanvasOptions.LcdFilter
+  isSpec: "True"
+  fullName: Egami.Drawing.CanvasOptions.LcdFilter
+  nameWithType: CanvasOptions.LcdFilter
+- uid: Egami.Drawing.CanvasOptions.LcdSampling
+  name: LcdSampling
+  href: api/Egami.Drawing.CanvasOptions.html#Egami_Drawing_CanvasOptions_LcdSampling
+  commentId: P:Egami.Drawing.CanvasOptions.LcdSampling
+  fullName: Egami.Drawing.CanvasOptions.LcdSampling
+  nameWithType: CanvasOptions.LcdSampling
+- uid: Egami.Drawing.CanvasOptions.LcdSampling*
+  name: LcdSampling
+  href: api/Egami.Drawing.CanvasOptions.html#Egami_Drawing_CanvasOptions_LcdSampling_
+  commentId: Overload:Egami.Drawing.CanvasOptions.LcdSampling
+  isSpec: "True"
+  fullName: Egami.Drawing.CanvasOptions.LcdSampling
+  nameWithType: CanvasOptions.LcdSampling
 - uid: Egami.Drawing.CanvasOptions.PixelGeometry
   name: PixelGeometry
   href: api/Egami.Drawing.CanvasOptions.html#Egami_Drawing_CanvasOptions_PixelGeometry
@@ -17594,6 +17633,175 @@ references:
   isSpec: "True"
   fullName: Egami.Drawing.LayerOptions.Opacity
   nameWithType: LayerOptions.Opacity
+- uid: Egami.Drawing.LcdFilter
+  name: LcdFilter
+  href: api/Egami.Drawing.LcdFilter.html
+  commentId: T:Egami.Drawing.LcdFilter
+  fullName: Egami.Drawing.LcdFilter
+  nameWithType: LcdFilter
+- uid: Egami.Drawing.LcdFilter.Balanced
+  name: Balanced
+  href: api/Egami.Drawing.LcdFilter.html#Egami_Drawing_LcdFilter_Balanced
+  commentId: P:Egami.Drawing.LcdFilter.Balanced
+  fullName: Egami.Drawing.LcdFilter.Balanced
+  nameWithType: LcdFilter.Balanced
+- uid: Egami.Drawing.LcdFilter.Balanced*
+  name: Balanced
+  href: api/Egami.Drawing.LcdFilter.html#Egami_Drawing_LcdFilter_Balanced_
+  commentId: Overload:Egami.Drawing.LcdFilter.Balanced
+  isSpec: "True"
+  fullName: Egami.Drawing.LcdFilter.Balanced
+  nameWithType: LcdFilter.Balanced
+- uid: Egami.Drawing.LcdFilter.Custom(System.Single,System.Single,System.Single,System.Single,System.Single)
+  name: Custom(float, float, float, float, float)
+  href: api/Egami.Drawing.LcdFilter.html#Egami_Drawing_LcdFilter_Custom_System_Single_System_Single_System_Single_System_Single_System_Single_
+  commentId: M:Egami.Drawing.LcdFilter.Custom(System.Single,System.Single,System.Single,System.Single,System.Single)
+  name.vb: Custom(Single, Single, Single, Single, Single)
+  fullName: Egami.Drawing.LcdFilter.Custom(float, float, float, float, float)
+  fullName.vb: Egami.Drawing.LcdFilter.Custom(Single, Single, Single, Single, Single)
+  nameWithType: LcdFilter.Custom(float, float, float, float, float)
+  nameWithType.vb: LcdFilter.Custom(Single, Single, Single, Single, Single)
+- uid: Egami.Drawing.LcdFilter.Custom*
+  name: Custom
+  href: api/Egami.Drawing.LcdFilter.html#Egami_Drawing_LcdFilter_Custom_
+  commentId: Overload:Egami.Drawing.LcdFilter.Custom
+  isSpec: "True"
+  fullName: Egami.Drawing.LcdFilter.Custom
+  nameWithType: LcdFilter.Custom
+- uid: Egami.Drawing.LcdFilter.Default
+  name: Default
+  href: api/Egami.Drawing.LcdFilter.html#Egami_Drawing_LcdFilter_Default
+  commentId: P:Egami.Drawing.LcdFilter.Default
+  fullName: Egami.Drawing.LcdFilter.Default
+  nameWithType: LcdFilter.Default
+- uid: Egami.Drawing.LcdFilter.Default*
+  name: Default
+  href: api/Egami.Drawing.LcdFilter.html#Egami_Drawing_LcdFilter_Default_
+  commentId: Overload:Egami.Drawing.LcdFilter.Default
+  isSpec: "True"
+  fullName: Egami.Drawing.LcdFilter.Default
+  nameWithType: LcdFilter.Default
+- uid: Egami.Drawing.LcdFilter.Equals(Egami.Drawing.LcdFilter)
+  name: Equals(LcdFilter?)
+  href: api/Egami.Drawing.LcdFilter.html#Egami_Drawing_LcdFilter_Equals_Egami_Drawing_LcdFilter_
+  commentId: M:Egami.Drawing.LcdFilter.Equals(Egami.Drawing.LcdFilter)
+  name.vb: Equals(LcdFilter)
+  fullName: Egami.Drawing.LcdFilter.Equals(Egami.Drawing.LcdFilter?)
+  fullName.vb: Egami.Drawing.LcdFilter.Equals(Egami.Drawing.LcdFilter)
+  nameWithType: LcdFilter.Equals(LcdFilter?)
+  nameWithType.vb: LcdFilter.Equals(LcdFilter)
+- uid: Egami.Drawing.LcdFilter.Equals(System.Object)
+  name: Equals(object?)
+  href: api/Egami.Drawing.LcdFilter.html#Egami_Drawing_LcdFilter_Equals_System_Object_
+  commentId: M:Egami.Drawing.LcdFilter.Equals(System.Object)
+  name.vb: Equals(Object)
+  fullName: Egami.Drawing.LcdFilter.Equals(object?)
+  fullName.vb: Egami.Drawing.LcdFilter.Equals(Object)
+  nameWithType: LcdFilter.Equals(object?)
+  nameWithType.vb: LcdFilter.Equals(Object)
+- uid: Egami.Drawing.LcdFilter.Equals*
+  name: Equals
+  href: api/Egami.Drawing.LcdFilter.html#Egami_Drawing_LcdFilter_Equals_
+  commentId: Overload:Egami.Drawing.LcdFilter.Equals
+  isSpec: "True"
+  fullName: Egami.Drawing.LcdFilter.Equals
+  nameWithType: LcdFilter.Equals
+- uid: Egami.Drawing.LcdFilter.Gdi
+  name: Gdi
+  href: api/Egami.Drawing.LcdFilter.html#Egami_Drawing_LcdFilter_Gdi
+  commentId: P:Egami.Drawing.LcdFilter.Gdi
+  fullName: Egami.Drawing.LcdFilter.Gdi
+  nameWithType: LcdFilter.Gdi
+- uid: Egami.Drawing.LcdFilter.Gdi*
+  name: Gdi
+  href: api/Egami.Drawing.LcdFilter.html#Egami_Drawing_LcdFilter_Gdi_
+  commentId: Overload:Egami.Drawing.LcdFilter.Gdi
+  isSpec: "True"
+  fullName: Egami.Drawing.LcdFilter.Gdi
+  nameWithType: LcdFilter.Gdi
+- uid: Egami.Drawing.LcdFilter.GetHashCode
+  name: GetHashCode()
+  href: api/Egami.Drawing.LcdFilter.html#Egami_Drawing_LcdFilter_GetHashCode
+  commentId: M:Egami.Drawing.LcdFilter.GetHashCode
+  fullName: Egami.Drawing.LcdFilter.GetHashCode()
+  nameWithType: LcdFilter.GetHashCode()
+- uid: Egami.Drawing.LcdFilter.GetHashCode*
+  name: GetHashCode
+  href: api/Egami.Drawing.LcdFilter.html#Egami_Drawing_LcdFilter_GetHashCode_
+  commentId: Overload:Egami.Drawing.LcdFilter.GetHashCode
+  isSpec: "True"
+  fullName: Egami.Drawing.LcdFilter.GetHashCode
+  nameWithType: LcdFilter.GetHashCode
+- uid: Egami.Drawing.LcdFilter.Light
+  name: Light
+  href: api/Egami.Drawing.LcdFilter.html#Egami_Drawing_LcdFilter_Light
+  commentId: P:Egami.Drawing.LcdFilter.Light
+  fullName: Egami.Drawing.LcdFilter.Light
+  nameWithType: LcdFilter.Light
+- uid: Egami.Drawing.LcdFilter.Light*
+  name: Light
+  href: api/Egami.Drawing.LcdFilter.html#Egami_Drawing_LcdFilter_Light_
+  commentId: Overload:Egami.Drawing.LcdFilter.Light
+  isSpec: "True"
+  fullName: Egami.Drawing.LcdFilter.Light
+  nameWithType: LcdFilter.Light
+- uid: Egami.Drawing.LcdFilter.Name
+  name: Name
+  href: api/Egami.Drawing.LcdFilter.html#Egami_Drawing_LcdFilter_Name
+  commentId: P:Egami.Drawing.LcdFilter.Name
+  fullName: Egami.Drawing.LcdFilter.Name
+  nameWithType: LcdFilter.Name
+- uid: Egami.Drawing.LcdFilter.Name*
+  name: Name
+  href: api/Egami.Drawing.LcdFilter.html#Egami_Drawing_LcdFilter_Name_
+  commentId: Overload:Egami.Drawing.LcdFilter.Name
+  isSpec: "True"
+  fullName: Egami.Drawing.LcdFilter.Name
+  nameWithType: LcdFilter.Name
+- uid: Egami.Drawing.LcdFilter.ToString
+  name: ToString()
+  href: api/Egami.Drawing.LcdFilter.html#Egami_Drawing_LcdFilter_ToString
+  commentId: M:Egami.Drawing.LcdFilter.ToString
+  fullName: Egami.Drawing.LcdFilter.ToString()
+  nameWithType: LcdFilter.ToString()
+- uid: Egami.Drawing.LcdFilter.ToString*
+  name: ToString
+  href: api/Egami.Drawing.LcdFilter.html#Egami_Drawing_LcdFilter_ToString_
+  commentId: Overload:Egami.Drawing.LcdFilter.ToString
+  isSpec: "True"
+  fullName: Egami.Drawing.LcdFilter.ToString
+  nameWithType: LcdFilter.ToString
+- uid: Egami.Drawing.LcdFilter.Weights
+  name: Weights
+  href: api/Egami.Drawing.LcdFilter.html#Egami_Drawing_LcdFilter_Weights
+  commentId: P:Egami.Drawing.LcdFilter.Weights
+  fullName: Egami.Drawing.LcdFilter.Weights
+  nameWithType: LcdFilter.Weights
+- uid: Egami.Drawing.LcdFilter.Weights*
+  name: Weights
+  href: api/Egami.Drawing.LcdFilter.html#Egami_Drawing_LcdFilter_Weights_
+  commentId: Overload:Egami.Drawing.LcdFilter.Weights
+  isSpec: "True"
+  fullName: Egami.Drawing.LcdFilter.Weights
+  nameWithType: LcdFilter.Weights
+- uid: Egami.Drawing.LcdSampling
+  name: LcdSampling
+  href: api/Egami.Drawing.LcdSampling.html
+  commentId: T:Egami.Drawing.LcdSampling
+  fullName: Egami.Drawing.LcdSampling
+  nameWithType: LcdSampling
+- uid: Egami.Drawing.LcdSampling.Gdi
+  name: Gdi
+  href: api/Egami.Drawing.LcdSampling.html#Egami_Drawing_LcdSampling_Gdi
+  commentId: F:Egami.Drawing.LcdSampling.Gdi
+  fullName: Egami.Drawing.LcdSampling.Gdi
+  nameWithType: LcdSampling.Gdi
+- uid: Egami.Drawing.LcdSampling.Smooth
+  name: Smooth
+  href: api/Egami.Drawing.LcdSampling.html#Egami_Drawing_LcdSampling_Smooth
+  commentId: F:Egami.Drawing.LcdSampling.Smooth
+  fullName: Egami.Drawing.LcdSampling.Smooth
+  nameWithType: LcdSampling.Smooth
 - uid: Egami.Drawing.LineCap
   name: LineCap
   href: api/Egami.Drawing.LineCap.html
@@ -24141,6 +24349,19 @@ references:
   isSpec: "True"
   fullName: Egami.Fonts.Font.EffectiveTypeface
   nameWithType: Font.EffectiveTypeface
+- uid: Egami.Fonts.Font.Embolden
+  name: Embolden
+  href: api/Egami.Fonts.Font.html#Egami_Fonts_Font_Embolden
+  commentId: P:Egami.Fonts.Font.Embolden
+  fullName: Egami.Fonts.Font.Embolden
+  nameWithType: Font.Embolden
+- uid: Egami.Fonts.Font.Embolden*
+  name: Embolden
+  href: api/Egami.Fonts.Font.html#Egami_Fonts_Font_Embolden_
+  commentId: Overload:Egami.Fonts.Font.Embolden
+  isSpec: "True"
+  fullName: Egami.Fonts.Font.Embolden
+  nameWithType: Font.Embolden
 - uid: Egami.Fonts.Font.Extents
   name: Extents
   href: api/Egami.Fonts.Font.html#Egami_Fonts_Font_Extents
@@ -24334,6 +24555,19 @@ references:
   isSpec: "True"
   fullName: Egami.Fonts.Font.Size
   nameWithType: Font.Size
+- uid: Egami.Fonts.Font.StemDarkening
+  name: StemDarkening
+  href: api/Egami.Fonts.Font.html#Egami_Fonts_Font_StemDarkening
+  commentId: P:Egami.Fonts.Font.StemDarkening
+  fullName: Egami.Fonts.Font.StemDarkening
+  nameWithType: Font.StemDarkening
+- uid: Egami.Fonts.Font.StemDarkening*
+  name: StemDarkening
+  href: api/Egami.Fonts.Font.html#Egami_Fonts_Font_StemDarkening_
+  commentId: Overload:Egami.Fonts.Font.StemDarkening
+  isSpec: "True"
+  fullName: Egami.Fonts.Font.StemDarkening
+  nameWithType: Font.StemDarkening
 - uid: Egami.Fonts.Font.Subpixel
   name: Subpixel
   href: api/Egami.Fonts.Font.html#Egami_Fonts_Font_Subpixel

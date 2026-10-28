@@ -288,9 +288,54 @@ LCD edging can draw too; other text takes the contrast only.</li>
 <li>With <code>ColorSpace.Linear</code> the gamma is ignored, since that blend is already gamma-correct; the contrast still applies.</li>
 <li>To look like GDI+ <code>ClearTypeGridFit</code> (its default TextContrast of 4) with LCD edging, light hinting and whole-pixel origins,
 use a gamma of 1.15 and no contrast: the brightness a white Trebuchet MS label adds to a black or a #0078d4 button is then
-within 1% of GDI+'s. Letter shapes and spacing still differ, since TrueType instructions are not run.</li>
+within 1% of GDI+'s. With the GDI filter and sampling below, use 1.25. Letter shapes and spacing still differ, since
+TrueType instructions are not run.</li>
 </ul>
-<h2 id="color-fonts">Color fonts</h2>
+<h3 id="lcd-filter-sampling-and-cleartype-level">LCD filter, sampling and ClearType level</h3>
+<p>Three more canvas settings shape LCD text. <code>CanvasOptions.LcdFilter</code> spreads each subpixel's coverage over five taps that add
+up to 256: <code>LcdFilter.Default</code> (16, 64, 96, 64, 16, Egami's filter since 2.7.2), <code>Balanced</code> (8, 77, 86, 77, 8), <code>Light</code> (0, 85,
+86, 85, 0), <code>Gdi</code> (the even three-subpixel spread measured from GDI and GDI+, the weights of <code>Light</code>) or <code>LcdFilter.Custom</code>.
+<code>CanvasOptions.LcdSampling</code> = <code>LcdSampling.Gdi</code> takes, across the stripes, only each pixel's centre line, so edges along the
+stripes stay sharp as in GDI+ ClearType; <code>Smooth</code>, the default, takes exact areas. <code>CanvasOptions.ClearTypeLevel</code> (0 to 1,
+default 1) mixes the filtered coverage with the pixel's grayscale coverage, as Windows' ClearType level does.</p>
+<pre><code class="lang-csharp">// GDI+ ClearType's look: its filter (an even spread over three subpixels), no smoothing along the stripes, and the text
+// gamma that then matched GDI+'s weight for a white Trebuchet MS label at 16 pixels.
+var gdiPlus = new CanvasOptions
+{
+    PixelGeometry = PixelGeometry.RgbHorizontal,
+    LcdFilter = LcdFilter.Gdi,
+    LcdSampling = LcdSampling.Gdi,
+    TextGamma = 1.25f,
+};
+var label = new Font(face, 16) { Hinting = FontHinting.Light, Edging = FontEdging.Lcd, Subpixel = false };
+using (RasterCanvas&lt;Rgb8&gt; canvas = button.CreateCanvas(gdiPlus))
+{
+    canvas.DrawText(&quot;Start the course&quot;, new Vector2(40, 26), label, Rgba8.White);
+}
+
+// Softer fringes: a balanced filter and half the colour of full ClearType.
+var soft = new CanvasOptions { PixelGeometry = PixelGeometry.RgbHorizontal, LcdFilter = LcdFilter.Balanced, ClearTypeLevel = 0.5f };
+
+// Or weights of your own, normalised to add up to 256.
+var custom = new CanvasOptions { PixelGeometry = PixelGeometry.RgbHorizontal, LcdFilter = LcdFilter.Custom(1, 3, 4, 3, 1) };
+</code></pre>
+<p>With all three at their defaults LCD text is drawn as in Egami 1.2.0.</p>
+<h3 id="embolden-and-stem-darkening">Embolden and stem darkening</h3>
+<p><code>Font.Embolden</code> grows outlines on every side by an amount in the font's units (pixels on a raster), with round joins, on top
+of synthetic bold; advances never change, and glyph paths and ink bounds include it. <code>Font.StemDarkening</code> grows small text by
+0.15 device pixels on each side at 8 pixels per em and below, fading to nothing at 32, so thin stems keep their weight; it
+follows the device size, so only drawing on a raster applies it.</p>
+<pre><code class="lang-csharp">// A little more weight without a bold face: outlines grow 0.2 pixels on each side, advances stay as they are.
+var heavier = new Font(face, 14) { Embolden = 0.2f };
+
+// Darkening for small sizes only: full at 8 pixels per em, none from 32 up.
+var caption = new Font(face, 9) { StemDarkening = true };
+using (RasterCanvas&lt;Rgba8&gt; canvas = image.CreateCanvas())
+{
+    canvas.DrawText(&quot;Slightly heavier&quot;, new Vector2(8, 24), heavier, Rgba8.Black);
+    canvas.DrawText(&quot;A darkened caption&quot;, new Vector2(8, 48), caption, Rgba8.Black);
+}
+</code></pre><h2 id="color-fonts">Color fonts</h2>
 <p>Emoji and other color glyphs draw in color by themselves. Per glyph, the first format the font has wins: COLR version 1 (a
 graph of layers, gradients, transforms and compositing), COLR version 0 (layers of solid outlines), sbix, then CBDT and CBLC
 (images); anything else draws its outline in the paint. <code>Typeface.ColorFormats</code> says what a face holds.</p>

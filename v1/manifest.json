@@ -2561,6 +2561,34 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Drawing.LcdFilter.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Drawing.LcdFilter.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Drawing.LcdFilter",
+      "Summary": "<p sourcefile=\"api/Egami.Drawing.LcdFilter.yml\" sourcestartlinenumber=\"1\">The five-tap filter LCD text spreads each subpixel's coverage with, across the subpixel and its two neighbours on each side.\nThe weights add up to 256. A wider filter has softer colour fringes; a narrower one is sharper and more coloured.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Drawing.LcdSampling.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Drawing.LcdSampling.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Drawing.LcdSampling",
+      "Summary": "<p sourcefile=\"api/Egami.Drawing.LcdSampling.yml\" sourcestartlinenumber=\"1\">How LCD text samples a glyph before filtering.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.Drawing.LineCap.yml",
       "output": {
         ".html": {
@@ -15443,11 +15471,11 @@
       "type": "Toc",
       "source_relative_path": "api/toc.yml",
       "output": {
-        ".html": {
-          "relative_path": "api/toc.html"
-        },
         ".json": {
           "relative_path": "api/toc.json"
+        },
+        ".html": {
+          "relative_path": "api/toc.html"
         }
       },
       "version": ""
@@ -16296,11 +16324,11 @@
       "type": "Toc",
       "source_relative_path": "articles/toc.yml",
       "output": {
-        ".html": {
-          "relative_path": "articles/toc.html"
-        },
         ".json": {
           "relative_path": "articles/toc.json"
+        },
+        ".html": {
+          "relative_path": "articles/toc.html"
         }
       },
       "version": ""
@@ -16389,11 +16417,11 @@
       "type": "Toc",
       "source_relative_path": "toc.yml",
       "output": {
-        ".html": {
-          "relative_path": "toc.html"
-        },
         ".json": {
           "relative_path": "toc.json"
+        },
+        ".html": {
+          "relative_path": "toc.html"
         }
       },
       "version": ""
