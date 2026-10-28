@@ -5,8 +5,8 @@ changes that break code come only in a new major version.
 
 ## Egami.SystemDrawing 1.0.0-preview.1, unreleased
 
-A new package: System.Drawing.Common's API on every OS, in managed code (step 2.13, stages A and C). Bitmaps, pixel access,
-codecs, icons and Graphics; the other pens and brushes, paths, fonts and text follow in later previews.
+A new package: System.Drawing.Common's API on every OS, in managed code (step 2.13, stages A, C and D). Bitmaps, pixel access,
+codecs, icons, Graphics, pens, brushes and paths; fonts and text follow in later previews.
 
 - `Bitmap`, `Image` and `Icon` in the `Egami.SystemDrawing` namespace, and `PixelFormat`, `BitmapData`, `ColorPalette`,
   `ImageFormat`, `ImageCodecInfo`, `Encoder`, `EncoderParameters`, `FrameDimension` and `PropertyItem` in
@@ -24,6 +24,12 @@ codecs, icons and Graphics; the other pens and brushes, paths, fonts and text fo
   Fill and DrawImage overload for lines, rectangles, ellipses, arcs, pies, polygons, Beziers, cardinal splines, rounded
   rectangles, regions, images and icons; `Matrix`, `Region`, `RegionData`, `ImageAttributes`, `ColorMatrix`, `ColorMap`, `Pen`
   and `SolidBrush`.
+- Pens with every cap, join, dash style, compound line, inset alignment, arrow and stroke cap, and a nib-shaping transform;
+  `Pens` and `SystemPens`. `HatchBrush` (all 53 styles as GDI+ draws them), `TextureBrush`, `LinearGradientBrush` and
+  `PathGradientBrush` with GDI+'s brush transforms, blends, sigma bell and triangular shapes and preset colors; `Brushes` and
+  `SystemBrushes`.
+- `GraphicsPath` with every builder but `AddString`, GDI+'s point and type arrays, `Flatten`, `Widen`, `Warp`, `Reverse`,
+  bounds, hit tests and markers; `GraphicsPathIterator`; regions, clips, `DrawPath` and `FillPath` from paths.
 - Members that need Windows handles throw PlatformNotSupportedException and warn at compile time (EGSD0001 to EGSD0003).
 - With implicit usings on, the package adds `System.Drawing` and `Egami.SystemDrawing` as implicit usings.
 

@@ -90,15 +90,20 @@ internal sealed class GdiShapes
 
     /// <summary>
     /// An arc of the ellipse in a rectangle, from <paramref name="startAngle"/> through <paramref name="sweepAngle"/> degrees,
-    /// clockwise for positive sweeps, as cubic Beziers of at most 90 degrees each. <paramref name="start"/> begins a new figure;
-    /// otherwise the arc's first point joins the figure with a line.
+    /// clockwise for positive sweeps, as GDI+ builds it: angles measured on the ellipse, cubic Beziers of 90 degrees of the
+    /// ellipse's own (parametric) angle from the start, the remainder last, nothing for a zero sweep. <paramref name="start"/>
+    /// begins a new figure; otherwise the arc's first point joins the figure with a line.
     /// </summary>
     public void Arc(float x, float y, float width, float height, float startAngle, float sweepAngle, bool start)
     {
+        if (sweepAngle == 0)
+        {
+            return;
+        }
+
         float rx = width / 2, ry = height / 2;
         Vector2 center = new(x + rx, y + ry);
         sweepAngle = Math.Clamp(sweepAngle, -360, 360);
-        int segments = Math.Max(1, (int)MathF.Ceiling(MathF.Abs(sweepAngle) / 90 - 1e-4f));
         double from = Parametric(startAngle, rx, ry);
         double to = Parametric(startAngle + sweepAngle, rx, ry);
         if (sweepAngle > 0 && to < from)
@@ -121,16 +126,17 @@ internal sealed class GdiShapes
         {
             Start(first);
         }
-        else
+        else if (first != _points[^1])
         {
             Line(first);
         }
 
-        double step = (to - from) / segments;
-        double k = 4.0 / 3 * Math.Tan(step / 4);
+        double sweep = to - from, quarter = Math.Sign(sweep) * Math.PI / 2;
+        int segments = Math.Max(1, (int)Math.Ceiling((Math.Abs(sweep) / (Math.PI / 2)) - 1e-6));
         for (int i = 0; i < segments; i++)
         {
-            double a = from + (i * step), b = a + step;
+            double a = from + (i * quarter), b = i + 1 == segments ? to : a + quarter;
+            double k = 4.0 / 3 * Math.Tan((b - a) / 4);
             Vector2 p0 = Point(a), p3 = Point(b);
             Vector2 d0 = new((float)(-rx * Math.Sin(a)), (float)(ry * Math.Cos(a)));
             Vector2 d3 = new((float)(-rx * Math.Sin(b)), (float)(ry * Math.Cos(b)));

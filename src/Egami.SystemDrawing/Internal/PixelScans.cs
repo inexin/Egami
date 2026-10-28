@@ -65,6 +65,26 @@ internal static class PixelScans
         return result;
     }
 
+    /// <summary>Whether the pixel at whole coordinates is one of the shape's, as GDI+ hit-tests a point.</summary>
+    public static bool Contains(Path shape, int x, int y)
+    {
+        if (shape.IsEmpty)
+        {
+            return false;
+        }
+
+        List<(Vector2 A, Vector2 B)> edges = Edges(shape);
+        foreach ((int start, int end) in Spans(edges, y, shape.FillRule == FillRule.NonZero, []))
+        {
+            if (x >= start && x < end)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     /// <summary>The pixel rectangles as a path, or the shape itself when it is too tall to scan.</summary>
     public static Path Snap(Path shape)
     {

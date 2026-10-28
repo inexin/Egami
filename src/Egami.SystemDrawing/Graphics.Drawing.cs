@@ -83,6 +83,37 @@ public sealed partial class Graphics
     /// <param name="combineMode">How to combine.</param>
     public void SetClip(RectangleF rect, CombineMode combineMode) => Combine(Region.Rect(rect).Transform(ImageTransform), combineMode);
 
+    /// <summary>Makes the clip a path's area.</summary>
+    /// <param name="path">The path, in world coordinates.</param>
+    public void SetClip(GraphicsPath path) => SetClip(path, CombineMode.Replace);
+
+    /// <summary>Combines the clip with a path's area.</summary>
+    /// <param name="path">The path, in world coordinates.</param>
+    /// <param name="combineMode">How to combine.</param>
+    public void SetClip(GraphicsPath path, CombineMode combineMode)
+    {
+        ArgumentNullException.ThrowIfNull(path);
+        Combine(path.ToPath(ImageTransform), combineMode);
+    }
+
+    /// <summary>Strokes a path with a pen; each figure is stroked on its own, closed ones joined all round.</summary>
+    /// <param name="pen">The pen.</param>
+    /// <param name="path">The path.</param>
+    public void DrawPath(Pen pen, GraphicsPath path)
+    {
+        ArgumentNullException.ThrowIfNull(path);
+        Stroke(pen, path.ToPath());
+    }
+
+    /// <summary>Fills a path with a brush, by its fill mode.</summary>
+    /// <param name="brush">The brush.</param>
+    /// <param name="path">The path.</param>
+    public void FillPath(Brush brush, GraphicsPath path)
+    {
+        ArgumentNullException.ThrowIfNull(path);
+        Fill(brush, path.ToPath());
+    }
+
     /// <summary>Combines the clip with a region.</summary>
     /// <param name="region">The region, in world coordinates.</param>
     /// <param name="combineMode">How to combine.</param>
@@ -180,8 +211,18 @@ public sealed partial class Graphics
 
         Matrix3x2 full = ShapeTransform;
         GdiPlusPen geometry = pen.Geometry();
+
+        // The pen's own transform shapes its nib: the line is stroked in pen space and the outline mapped back, so a pen scaled
+        // 3 by 1 draws three times as wide across vertical lines as across horizontal ones.
+        Matrix3x2 nib = geometry.Transform with { M31 = 0, M32 = 0 };
+        if (!nib.IsIdentity && Matrix3x2.Invert(nib, out Matrix3x2 toPen))
+        {
+            world = world.Transform(toPen);
+            full = nib * full;
+        }
+
         float scale = MathF.Sqrt(MathF.Abs(full.GetDeterminant()));
-        float width = GdiPlusPens.DeviceWidth(geometry.Width * MathF.Sqrt(MathF.Abs(geometry.Transform.GetDeterminant())), scale);
+        float width = GdiPlusPens.DeviceWidth(geometry.Width, scale);
         GdiPlusPenOutline outline = GdiPlusPens.Outline(world, geometry, width);
         Path body = outline.Outline.WithFillRule(FillRule.NonZero).Transform(full);
         Path? clip = outline.Clip?.Transform(full);
@@ -386,7 +427,7 @@ public sealed partial class Graphics
     }
 
     /// <summary>The sampling filter for the interpolation mode: nearest, bilinear or bicubic.</summary>
-    private ResampleFilter Filter => State.Interpolation switch
+    internal ResampleFilter Filter => State.Interpolation switch
     {
         InterpolationMode.NearestNeighbor => ResampleFilter.Nearest,
         InterpolationMode.Bicubic or InterpolationMode.HighQualityBicubic or InterpolationMode.High => ResampleFilter.Bicubic,

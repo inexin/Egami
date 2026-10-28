@@ -1,4 +1,5 @@
 using Egami.GdiPlus;
+using Egami.SystemDrawing.Internal;
 
 namespace Egami.SystemDrawing;
 
@@ -46,9 +47,10 @@ public sealed partial class Pen : MarshalByRefObject, ICloneable, IDisposable
     }
 
     /// <summary>Gets or sets the color; setting it makes the brush a solid brush of that color.</summary>
+    /// <exception cref="ArgumentException">The pen paints with a brush other than a solid one, as in GDI+.</exception>
     public Color Color
     {
-        get => _brush is SolidBrush solid ? solid.Color : Color.Empty;
+        get => _brush is SolidBrush solid ? solid.Color : throw GdiErrors.InvalidParameter();
         set
         {
             CheckMutable();
@@ -115,7 +117,7 @@ public sealed partial class Pen : MarshalByRefObject, ICloneable, IDisposable
         }
     }
 
-    /// <summary>Adds the settings beyond width and brush; the pen's other settings come in a later stage.</summary>
+    /// <summary>Adds the settings beyond width and brush.</summary>
     private partial GdiPlusPen GeometryCore(GdiPlusPen pen);
 
     /// <summary>Copies the settings beyond width and brush.</summary>
