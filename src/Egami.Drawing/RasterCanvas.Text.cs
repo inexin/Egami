@@ -3,6 +3,7 @@ using System.Numerics;
 using Egami.Drawing.Rasterization;
 using Egami.Fonts;
 using Egami.Fonts.Hinting;
+using Egami.Fonts.Parsing;
 using Egami.Operations;
 using Egami.Pixels;
 
@@ -347,6 +348,9 @@ public sealed partial class RasterCanvas<TPixel>
         return new GlyphMask(bounds, coverage, 1);
     }
 
+    [ThreadStatic]
+    private static OutlineRecorder? t_lightOutline;
+
     /// <summary>A glyph's device outline relative to its pixel origin: scaled, slanted, hinted and outset as the style asks.</summary>
     internal static Path GlyphOutline(Typeface face, ushort glyph, float sx, float sy, float dx, GlyphStyle style)
     {
@@ -360,8 +364,20 @@ public sealed partial class RasterCanvas<TPixel>
         else
         {
             // Light hinting, also where full hinting does not apply (CFF, unhinted, variable, gasp).
-            HintMap? hint = style.Hint ? HintMap.For(face, sy, glyph) : null;
-            face.GetGlyphOutline(glyph, new DeviceSink(builder, sx, sy, dx, skew, hint));
+            if (style.Hint)
+            {
+                // The outline is decoded once, into the thread's own recorder: light hinting reads its horizontal stems, then it
+                // is drawn through the map. (The shared recorder stays free for the face's own decoding.)
+                OutlineRecorder recorder = t_lightOutline ??= new OutlineRecorder();
+                recorder.Clear();
+                face.GetGlyphOutline(glyph, recorder);
+                HintMap? hint = HintMap.For(face, sy, recorder);
+                recorder.ReplayTo(new DeviceSink(builder, sx, sy, dx, skew, hint));
+            }
+            else
+            {
+                face.GetGlyphOutline(glyph, new DeviceSink(builder, sx, sy, dx, skew, null));
+            }
         }
 
         Path path = builder.ToPath();
@@ -640,7 +656,15 @@ internal sealed class HintMap
         _scale = scale;
     }
 
-    public static HintMap? For(Typeface face, float sy, ushort? glyph = null)
+    /// <summary>The map for one glyph, its outline decoded here (for tests; drawing passes the outline it decoded already).</summary>
+    public static HintMap? ForGlyph(Typeface face, float sy, ushort glyph)
+    {
+        var recorder = new OutlineRecorder();
+        face.GetGlyphOutline(glyph, recorder);
+        return For(face, sy, recorder);
+    }
+
+    public static HintMap? For(Typeface face, float sy, OutlineRecorder? outline = null)
     {
         HintZone[] zones = face.HintZones;
         if (zones.Length == 0)
@@ -672,21 +696,20 @@ internal sealed class HintMap
             return new HintMap([0], [0], sy);
         }
 
-        if (glyph is ushort g)
+        if (outline is not null)
         {
             // The glyph's horizontal stems (crossbars) between zones: where the zone mapping would put the lower edge, rounded to a
             // pixel, and the upper edge the stem's own height above it.
-            HintMap zonesOnly = Build(points, sy);
+            int zonePoints = points.Count;
             float tolerance = face.UnitsPerEm / 60f;
-            foreach ((float low, float high) in Stems(face, g))
+            foreach ((float low, float high) in Stems(face, outline))
             {
-                if (zones.Any(z => MathF.Abs(z.Flat - low) < tolerance || MathF.Abs(z.Flat - high) < tolerance
-                    || MathF.Abs(z.Overshoot - low) < tolerance || MathF.Abs(z.Overshoot - high) < tolerance))
+                if (NearZone(zones, low, tolerance) || NearZone(zones, high, tolerance))
                 {
                     continue;
                 }
 
-                float bottom = MathF.Round(zonesOnly.Map(low));
+                float bottom = MathF.Round(Interpolate(points, zonePoints, low, sy));
                 points.Add((low, bottom));
                 points.Add((high, bottom + ((high - low) * sy)));
             }
@@ -711,18 +734,65 @@ internal sealed class HintMap
         float fraction = scaled - MathF.Floor(scaled);
         float target = fraction >= 40 / 64f ? MathF.Ceiling(scaled) : MathF.Floor(scaled);
         float tweaked = sy * target / scaled;
-        float tallest = zones.Max(z => MathF.Abs(z.Flat));
+        float tallest = 0;
+        foreach (HintZone z in zones)
+        {
+            tallest = MathF.Max(tallest, MathF.Abs(z.Flat));
+        }
+
         return MathF.Abs(tallest * (tweaked - sy)) < 2 ? tweaked : sy;
     }
 
-    // Horizontal stems of a glyph in font units: pairs of horizontal outline segments that overlap in x by half the shorter one,
-    // between 1/60 and 1/6 em apart; each segment pairs with the nearest one above it.
-    private static List<(float Low, float High)> Stems(Typeface face, ushort glyph)
+    private static bool NearZone(HintZone[] zones, float y, float tolerance)
     {
-        var sink = new SegmentSink(face.UnitsPerEm);
-        face.GetGlyphOutline(glyph, sink);
+        foreach (HintZone z in zones)
+        {
+            if (MathF.Abs(z.Flat - y) < tolerance || MathF.Abs(z.Overshoot - y) < tolerance)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    // The zone mapping of y through the first `count` control points (sorted by font units), as Map does, without building a map.
+    private static float Interpolate(List<(float From, float To)> points, int count, float y, float sy)
+    {
+        if (y <= points[0].From)
+        {
+            return points[0].To + ((y - points[0].From) * sy);
+        }
+
+        for (int i = 1; i < count; i++)
+        {
+            (float f0, float t0) = points[i - 1];
+            (float f1, float t1) = points[i];
+            if (y <= f1)
+            {
+                return f1 == f0 ? t1 : t0 + ((t1 - t0) * (y - f0) / (f1 - f0));
+            }
+        }
+
+        return points[count - 1].To + ((y - points[count - 1].From) * sy);
+    }
+
+    [ThreadStatic]
+    private static SegmentSink? t_segments;
+
+    [ThreadStatic]
+    private static List<(float Low, float High)>? t_stems;
+
+    // Horizontal stems of a glyph in font units: pairs of horizontal outline segments that overlap in x by half the shorter one,
+    // between 1/60 and 1/6 em apart; each segment pairs with the nearest one above it. The list is the thread's own, reused.
+    private static List<(float Low, float High)> Stems(Typeface face, OutlineRecorder outline)
+    {
+        SegmentSink sink = t_segments ??= new SegmentSink();
+        sink.Reset(face.UnitsPerEm);
+        outline.ReplayTo(sink);
         float min = face.UnitsPerEm / 60f, max = face.UnitsPerEm / 6f;
-        var stems = new List<(float, float)>();
+        List<(float Low, float High)> stems = t_stems ??= [];
+        stems.Clear();
         foreach ((float y, float x0, float x1) in sink.Horizontals)
         {
             float best = float.MaxValue;
@@ -789,14 +859,22 @@ internal sealed class HintMap
 }
 
 /// <summary>Records an outline's horizontal straight segments in font units: y, and the x range, longer than 1/40 em.</summary>
-internal sealed class SegmentSink(int unitsPerEm) : IGlyphOutlineSink
+internal sealed class SegmentSink : IGlyphOutlineSink
 {
+    private int _unitsPerEm = 1000;
     private float _x;
     private float _y;
     private float _startX;
     private float _startY;
 
     public List<(float Y, float X0, float X1)> Horizontals { get; } = [];
+
+    /// <summary>Clears the segments for an outline of a face with this many units per em.</summary>
+    public void Reset(int unitsPerEm)
+    {
+        _unitsPerEm = unitsPerEm;
+        Horizontals.Clear();
+    }
 
     public void MoveTo(float x, float y) => (_x, _y, _startX, _startY) = (x, y, x, y);
 
@@ -810,7 +888,7 @@ internal sealed class SegmentSink(int unitsPerEm) : IGlyphOutlineSink
 
     private void Segment(float x, float y)
     {
-        if (MathF.Abs(y - _y) <= unitsPerEm / 200f && MathF.Abs(x - _x) >= unitsPerEm / 40f)
+        if (MathF.Abs(y - _y) <= _unitsPerEm / 200f && MathF.Abs(x - _x) >= _unitsPerEm / 40f)
         {
             Horizontals.Add(((y + _y) / 2, MathF.Min(x, _x), MathF.Max(x, _x)));
         }

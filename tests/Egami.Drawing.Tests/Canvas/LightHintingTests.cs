@@ -39,9 +39,10 @@ public class LightHintingTests
     {
         ushort glyph = Noto.GetGlyph(c);
         float sy = 13f / Noto.UnitsPerEm;
-        var sink = new SegmentSink(Noto.UnitsPerEm);
+        var sink = new SegmentSink();
+        sink.Reset(Noto.UnitsPerEm);
         Noto.GetGlyphOutline(glyph, sink);
-        HintMap map = HintMap.For(Noto, sy, glyph)!;
+        HintMap map = HintMap.ForGlyph(Noto, sy, glyph)!;
 
         // The crossbar: the lowest pair of horizontal edges between the baseline and the x-height (or, for H, the cap height).
         float top = c == 'H' ? Noto.GetGlyphExtents(glyph).YMax : Noto.GetGlyphExtents(Noto.GetGlyph('x')).YMax;
