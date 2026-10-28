@@ -97874,6 +97874,19 @@ references:
   isSpec: "True"
   fullName: Egami.Video.VideoFrame.Duration
   nameWithType: VideoFrame.Duration
+- uid: Egami.Video.VideoFrame.FieldOrder
+  name: FieldOrder
+  href: api/Egami.Video.VideoFrame.html#Egami_Video_VideoFrame_FieldOrder
+  commentId: P:Egami.Video.VideoFrame.FieldOrder
+  fullName: Egami.Video.VideoFrame.FieldOrder
+  nameWithType: VideoFrame.FieldOrder
+- uid: Egami.Video.VideoFrame.FieldOrder*
+  name: FieldOrder
+  href: api/Egami.Video.VideoFrame.html#Egami_Video_VideoFrame_FieldOrder_
+  commentId: Overload:Egami.Video.VideoFrame.FieldOrder
+  isSpec: "True"
+  fullName: Egami.Video.VideoFrame.FieldOrder
+  nameWithType: VideoFrame.FieldOrder
 - uid: Egami.Video.VideoFrame.Hdr
   name: Hdr
   href: api/Egami.Video.VideoFrame.html#Egami_Video_VideoFrame_Hdr
@@ -97952,6 +97965,19 @@ references:
   isSpec: "True"
   fullName: Egami.Video.VideoFrame.RenderSize
   nameWithType: VideoFrame.RenderSize
+- uid: Egami.Video.VideoFrame.RepeatFields
+  name: RepeatFields
+  href: api/Egami.Video.VideoFrame.html#Egami_Video_VideoFrame_RepeatFields
+  commentId: P:Egami.Video.VideoFrame.RepeatFields
+  fullName: Egami.Video.VideoFrame.RepeatFields
+  nameWithType: VideoFrame.RepeatFields
+- uid: Egami.Video.VideoFrame.RepeatFields*
+  name: RepeatFields
+  href: api/Egami.Video.VideoFrame.html#Egami_Video_VideoFrame_RepeatFields_
+  commentId: Overload:Egami.Video.VideoFrame.RepeatFields
+  isSpec: "True"
+  fullName: Egami.Video.VideoFrame.RepeatFields
+  nameWithType: VideoFrame.RepeatFields
 - uid: Egami.Video.VideoFrame.Timestamp
   name: Timestamp
   href: api/Egami.Video.VideoFrame.html#Egami_Video_VideoFrame_Timestamp

@@ -89,7 +89,7 @@
 
 
   <h1 id="Egami_Video_YuvVideoFrame" data-uid="Egami.Video.YuvVideoFrame" class="text-break">
-Class YuvVideoFrame  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/VideoFrame.cs/#L92"><i class="bi bi-code-slash"></i></a>
+Class YuvVideoFrame  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/VideoFrame.cs/#L108"><i class="bi bi-code-slash"></i></a>
   </h1>
 
   <div class="facts text-secondary">
@@ -148,6 +148,12 @@ planes at their own subsampling, with no color conversion.</p>
       <a class="xref" href="Egami.Video.VideoFrame.html#Egami_Video_VideoFrame_RenderSize">VideoFrame.RenderSize</a>
     </div>
     <div>
+      <a class="xref" href="Egami.Video.VideoFrame.html#Egami_Video_VideoFrame_FieldOrder">VideoFrame.FieldOrder</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Video.VideoFrame.html#Egami_Video_VideoFrame_RepeatFields">VideoFrame.RepeatFields</a>
+    </div>
+    <div>
       <a class="xref" href="Egami.Video.VideoFrame.html#Egami_Video_VideoFrame_Pixels">VideoFrame.Pixels</a>
     </div>
     <div>
@@ -195,7 +201,7 @@ while (decoder.TryReceive(out YuvVideoFrame? frame))
 
   <h3 id="Egami_Video_YuvVideoFrame__ctor_Egami_YuvRaster_Egami_Video_MediaTime_System_Nullable_Egami_Video_MediaTime__System_Nullable_Egami_Colors_ColorCodePoints__" data-uid="Egami.Video.YuvVideoFrame.#ctor(Egami.YuvRaster,Egami.Video.MediaTime,System.Nullable{Egami.Video.MediaTime},System.Nullable{Egami.Colors.ColorCodePoints})">
   YuvVideoFrame(YuvRaster, MediaTime, MediaTime?, ColorCodePoints?)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/VideoFrame.cs/#L100"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/VideoFrame.cs/#L116"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Creates a frame that takes ownership of <code class="paramref">raster</code>.</p>
@@ -247,7 +253,7 @@ while (decoder.TryReceive(out YuvVideoFrame? frame))
 
   <h3 id="Egami_Video_YuvVideoFrame_Height" data-uid="Egami.Video.YuvVideoFrame.Height">
   Height
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/VideoFrame.cs/#L114"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/VideoFrame.cs/#L130"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the height in pixels.</p>
@@ -279,7 +285,7 @@ while (decoder.TryReceive(out YuvVideoFrame? frame))
 
   <h3 id="Egami_Video_YuvVideoFrame_Planes" data-uid="Egami.Video.YuvVideoFrame.Planes">
   Planes
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/VideoFrame.cs/#L117"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/VideoFrame.cs/#L133"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the planes of a <a class="xref" href="Egami.Video.YuvVideoFrame.html">YuvVideoFrame</a>, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for other frames. Lets encoders take any frame.</p>
@@ -311,7 +317,7 @@ while (decoder.TryReceive(out YuvVideoFrame? frame))
 
   <h3 id="Egami_Video_YuvVideoFrame_Raster" data-uid="Egami.Video.YuvVideoFrame.Raster">
   Raster
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/VideoFrame.cs/#L108"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/VideoFrame.cs/#L124"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the planes.</p>
@@ -343,7 +349,7 @@ while (decoder.TryReceive(out YuvVideoFrame? frame))
 
   <h3 id="Egami_Video_YuvVideoFrame_Width" data-uid="Egami.Video.YuvVideoFrame.Width">
   Width
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/VideoFrame.cs/#L111"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/VideoFrame.cs/#L127"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the width in pixels.</p>
@@ -379,7 +385,7 @@ while (decoder.TryReceive(out YuvVideoFrame? frame))
 
   <h3 id="Egami_Video_YuvVideoFrame_CopyToPacked_Egami_Pixels_YuvPackedFormat_System_Span_System_Byte__System_Int32_System_Span_System_Byte__System_Int32_" data-uid="Egami.Video.YuvVideoFrame.CopyToPacked(Egami.Pixels.YuvPackedFormat,System.Span{System.Byte},System.Int32,System.Span{System.Byte},System.Int32)">
   CopyToPacked(YuvPackedFormat, Span&lt;byte&gt;, int, Span&lt;byte&gt;, int)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/VideoFrame.cs/#L164"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/VideoFrame.cs/#L180"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Copies the planes into an interleaved YUV layout. See <a class="xref" href="Egami.YuvRaster.html#Egami_YuvRaster_CopyToPacked_Egami_Pixels_YuvPackedFormat_System_Span_System_Byte__System_Int32_System_Span_System_Byte__System_Int32_">CopyToPacked(YuvPackedFormat, Span&lt;byte&gt;, int, Span&lt;byte&gt;, int)</a>.</p>
@@ -424,7 +430,7 @@ while (decoder.TryReceive(out YuvVideoFrame? frame))
 
   <h3 id="Egami_Video_YuvVideoFrame_CopyTo__1_Egami_Raster___0__" data-uid="Egami.Video.YuvVideoFrame.CopyTo``1(Egami.Raster{``0})">
   CopyTo&lt;TPixel&gt;(Raster&lt;TPixel&gt;)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/VideoFrame.cs/#L227"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/VideoFrame.cs/#L243"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Converts the planes to RGB pixels into an existing raster of the same size, so a frame loop reuses its memory.</p>
@@ -469,7 +475,7 @@ while (decoder.TryReceive(out YuvVideoFrame? frame))
 
   <h3 id="Egami_Video_YuvVideoFrame_Dispose_System_Boolean_" data-uid="Egami.Video.YuvVideoFrame.Dispose(System.Boolean)">
   Dispose(bool)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/VideoFrame.cs/#L235"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/VideoFrame.cs/#L251"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Releases the frame's pixel memory.</p>
@@ -502,7 +508,7 @@ while (decoder.TryReceive(out YuvVideoFrame? frame))
 
   <h3 id="Egami_Video_YuvVideoFrame_FromPacked_Egami_Pixels_YuvPackedFormat_System_ReadOnlySpan_System_Byte__System_Int32_System_Int32_Egami_Pixels_YuvColor_Egami_Video_MediaTime_System_Int32_System_Int32_System_ReadOnlySpan_System_Byte__System_Int32_Egami_EgamiContext_" data-uid="Egami.Video.YuvVideoFrame.FromPacked(Egami.Pixels.YuvPackedFormat,System.ReadOnlySpan{System.Byte},System.Int32,System.Int32,Egami.Pixels.YuvColor,Egami.Video.MediaTime,System.Int32,System.Int32,System.ReadOnlySpan{System.Byte},System.Int32,Egami.EgamiContext)">
   FromPacked(YuvPackedFormat, ReadOnlySpan&lt;byte&gt;, int, int, YuvColor, MediaTime, int, int, ReadOnlySpan&lt;byte&gt;, int, EgamiContext?)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/VideoFrame.cs/#L135"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/VideoFrame.cs/#L151"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Creates a frame from an interleaved YUV layout such as NV12, P010 or YUY2, as operating system decoders, GPUs and
@@ -572,7 +578,7 @@ webcams hand them out. The planes are copied, so the caller keeps <code class="p
 
   <h3 id="Egami_Video_YuvVideoFrame_ToRaster__1_Egami_Colors_ColorProfile_Egami_Colors_ColorTransformOptions_" data-uid="Egami.Video.YuvVideoFrame.ToRaster``1(Egami.Colors.ColorProfile,Egami.Colors.ColorTransformOptions)">
   ToRaster&lt;TPixel&gt;(ColorProfile, ColorTransformOptions?)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/VideoFrame.cs/#L209"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/VideoFrame.cs/#L225"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Converts the planes to RGB in <code class="paramref">target</code>'s encoding: the frame's <a class="xref" href="Egami.Video.VideoFrame.html#Egami_Video_VideoFrame_Color">Color</a> says what it
@@ -636,7 +642,7 @@ foreach (YuvVideoFrame frame in reader.ReadFrames())
 
   <h3 id="Egami_Video_YuvVideoFrame_ToRaster__1_Egami_EgamiContext_" data-uid="Egami.Video.YuvVideoFrame.ToRaster``1(Egami.EgamiContext)">
   ToRaster&lt;TPixel&gt;(EgamiContext?)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/VideoFrame.cs/#L173"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/VideoFrame.cs/#L189"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Converts the planes to RGB pixels in a new raster, with the planes' matrix and range (<a class="xref" href="Egami.YuvRaster.html#Egami_YuvRaster_Color">Color</a>).</p>
@@ -681,7 +687,7 @@ foreach (YuvVideoFrame frame in reader.ReadFrames())
 </article>
 
         <div class="contribution d-print-none">
-          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/VideoFrame.cs/#L92" class="edit-link">Edit this page</a>
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/VideoFrame.cs/#L108" class="edit-link">Edit this page</a>
         </div>
 
 

@@ -91,13 +91,16 @@
 opt-in package because H.264 is covered by patents (see <a href="#patents">Patents</a>); Egami.Video itself contains no H.264 decoder and
 copies H.264 tracks through untouched when this package is not registered.</p>
 <ul>
-<li>Profiles: progressive Constrained Baseline, Main, High, High 10 and High 4:2:2, at 8 and 10 bits, 4:0:0, 4:2:0 and 4:2:2,
-and their Intra profiles. CAVLC and CABAC, B-frames with spatial and temporal direct prediction, weighted prediction, the
-8x8 transform and scaling matrices, long-term references and several slices per frame.</li>
+<li>Profiles: Constrained Baseline, Main, High, High 10 and High 4:2:2, at 8 and 10 bits, 4:0:0, 4:2:0 and 4:2:2, and their
+Intra profiles. CAVLC and CABAC, B-frames with spatial and temporal direct prediction, weighted prediction, the 8x8
+transform and scaling matrices, long-term references and several slices per frame.</li>
+<li>Interlaced streams: field pictures (PAFF) and MBAFF frames, whose macroblock pairs are each two frame or two field
+macroblocks. A frame's two fields come out woven into one frame, as FFmpeg gives them; see <a href="#interlaced-video">Interlaced video</a>.</li>
 <li>Containers: MP4, MOV, Matroska and AVI through Egami.Video's readers, and raw Annex B <code>.h264</code> files through <code>H264Format</code>.</li>
-<li>Frames equal FFmpeg's decode sample for sample on every clip in the test corpus.</li>
-<li>Not decoded: interlaced streams (field and MBAFF pictures), 4:4:4 and lossless (High 4:4:4), and the Extended profile's
-data partitions, FMO, ASO and SP and SI slices. They give <code>UnsupportedFormatException</code>.</li>
+<li>Frames equal FFmpeg's decode sample for sample on every clip in the test corpus and on the interlaced and FRExt
+conformance bitstreams of ITU-T H.264.1.</li>
+<li>Not decoded: 4:4:4 and lossless (High 4:4:4), and the Extended profile's data partitions, FMO, ASO and SP and SI slices.
+They give <code>UnsupportedFormatException</code>.</li>
 </ul>
 <h2 id="registering">Registering</h2>
 <p><code>WithH264()</code> (from <code>H264MediaContextExtensions</code>) adds the decoder, <code>H264Codec</code>, and the raw stream reader, <code>H264Format</code>, to a
@@ -133,6 +136,26 @@ thrown (<code>Throw</code>). Decoding that starts in the middle of a stream wait
 that is missing is replaced by the nearest one.</p>
 <p>Slices decode in parallel when a frame has several, and deblocking runs on <code>EgamiContext.MaxParallelism</code> threads as a wave
 down the frame.</p>
+<h2 id="interlaced-video">Interlaced video</h2>
+<p>An interlaced frame holds two fields, every other row each, filmed one after the other. The decoder gives the frame with both
+fields woven together and says how on the frame: <code>FieldOrder</code> is <code>TopFieldFirst</code> or <code>BottomFieldFirst</code> for an interlaced
+frame and <code>Progressive</code> otherwise, and <code>RepeatFields</code> counts the fields a frame is shown for beyond its two (3:2 pulldown and
+frame doubling). Both come from the picture timing SEI's <code>pic_struct</code> when the stream has it, else from how the frame was coded
+(two field pictures or an MBAFF frame) and the order of its fields, as ffprobe reports them. Deinterlacing is up to you;
+<code>InterlaceDetector</code> finds interlaced stretches in decoded video.</p>
+<pre><code class="lang-csharp">// An interlaced frame comes out with its two fields woven; FieldOrder says which was filmed first.
+using VideoReader reader = VideoReader.Open(&quot;interlaced.h264&quot;, context: context);
+foreach (VideoFrame frame in reader.ReadFrames())
+{
+    using (frame)
+    {
+        Console.WriteLine($&quot;{frame.Timestamp}: {frame.FieldOrder}, {frame.RepeatFields} repeated fields&quot;);
+        orders.Add(frame.FieldOrder);
+    }
+}
+</code></pre>
+<p>A field without its second field, as a cut stream can end, comes out with its rows doubled into the missing field and reports
+<code>H264.UnpairedField</code>.</p>
 <h2 id="raw-h264-files">Raw .h264 files</h2>
 <p><code>H264Format</code> reads raw Annex B streams (<code>.h264</code>, <code>.264</code> and <code>.avc</code>), as encoders and <code>ffmpeg -f h264</code> write them. Such a stream
 has no timestamps, so frames are timed by the stream's VUI frame rate, or 25 frames a second, unless <code>FrameRate</code> is set.

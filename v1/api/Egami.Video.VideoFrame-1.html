@@ -89,7 +89,7 @@
 
 
   <h1 id="Egami_Video_VideoFrame_1" data-uid="Egami.Video.VideoFrame`1" class="text-break">
-Class VideoFrame&lt;TPixel&gt;  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/VideoFrame.cs/#L256"><i class="bi bi-code-slash"></i></a>
+Class VideoFrame&lt;TPixel&gt;  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/VideoFrame.cs/#L272"><i class="bi bi-code-slash"></i></a>
   </h1>
 
   <div class="facts text-secondary">
@@ -153,6 +153,12 @@ Class VideoFrame&lt;TPixel&gt;  <a class="header-action link-secondary" title="V
       <a class="xref" href="Egami.Video.VideoFrame.html#Egami_Video_VideoFrame_RenderSize">VideoFrame.RenderSize</a>
     </div>
     <div>
+      <a class="xref" href="Egami.Video.VideoFrame.html#Egami_Video_VideoFrame_FieldOrder">VideoFrame.FieldOrder</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Video.VideoFrame.html#Egami_Video_VideoFrame_RepeatFields">VideoFrame.RepeatFields</a>
+    </div>
+    <div>
       <a class="xref" href="Egami.Video.VideoFrame.html#Egami_Video_VideoFrame_Planes">VideoFrame.Planes</a>
     </div>
     <div>
@@ -199,7 +205,7 @@ foreach (VideoFrame&lt;Rgb8&gt; frame in reader.ReadFrames&lt;Rgb8&gt;())
 
   <h3 id="Egami_Video_VideoFrame_1__ctor_Egami_Raster__0__Egami_Video_MediaTime_System_Nullable_Egami_Video_MediaTime__System_Nullable_Egami_Colors_ColorCodePoints__" data-uid="Egami.Video.VideoFrame`1.#ctor(Egami.Raster{`0},Egami.Video.MediaTime,System.Nullable{Egami.Video.MediaTime},System.Nullable{Egami.Colors.ColorCodePoints})">
   VideoFrame(Raster&lt;TPixel&gt;, MediaTime, MediaTime?, ColorCodePoints?)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/VideoFrame.cs/#L265"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/VideoFrame.cs/#L281"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Creates a frame that takes ownership of <code class="paramref">raster</code>.</p>
@@ -251,7 +257,7 @@ foreach (VideoFrame&lt;Rgb8&gt; frame in reader.ReadFrames&lt;Rgb8&gt;())
 
   <h3 id="Egami_Video_VideoFrame_1_Height" data-uid="Egami.Video.VideoFrame`1.Height">
   Height
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/VideoFrame.cs/#L279"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/VideoFrame.cs/#L295"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the height in pixels.</p>
@@ -283,7 +289,7 @@ foreach (VideoFrame&lt;Rgb8&gt; frame in reader.ReadFrames&lt;Rgb8&gt;())
 
   <h3 id="Egami_Video_VideoFrame_1_Pixels" data-uid="Egami.Video.VideoFrame`1.Pixels">
   Pixels
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/VideoFrame.cs/#L282"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/VideoFrame.cs/#L298"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the pixels of a <a class="xref" href="Egami.Video.VideoFrame-1.html">VideoFrame&lt;TPixel&gt;</a>, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for other frames. Lets encoders take any frame.</p>
@@ -315,7 +321,7 @@ foreach (VideoFrame&lt;Rgb8&gt; frame in reader.ReadFrames&lt;Rgb8&gt;())
 
   <h3 id="Egami_Video_VideoFrame_1_Raster" data-uid="Egami.Video.VideoFrame`1.Raster">
   Raster
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/VideoFrame.cs/#L273"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/VideoFrame.cs/#L289"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the pixels.</p>
@@ -347,7 +353,7 @@ foreach (VideoFrame&lt;Rgb8&gt; frame in reader.ReadFrames&lt;Rgb8&gt;())
 
   <h3 id="Egami_Video_VideoFrame_1_Width" data-uid="Egami.Video.VideoFrame`1.Width">
   Width
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/VideoFrame.cs/#L276"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/VideoFrame.cs/#L292"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the width in pixels.</p>
@@ -383,7 +389,7 @@ foreach (VideoFrame&lt;Rgb8&gt; frame in reader.ReadFrames&lt;Rgb8&gt;())
 
   <h3 id="Egami_Video_VideoFrame_1_Dispose_System_Boolean_" data-uid="Egami.Video.VideoFrame`1.Dispose(System.Boolean)">
   Dispose(bool)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/VideoFrame.cs/#L285"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/VideoFrame.cs/#L301"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Releases the frame's pixel memory.</p>
@@ -416,7 +422,7 @@ foreach (VideoFrame&lt;Rgb8&gt; frame in reader.ReadFrames&lt;Rgb8&gt;())
 </article>
 
         <div class="contribution d-print-none">
-          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/VideoFrame.cs/#L256" class="edit-link">Edit this page</a>
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/VideoFrame.cs/#L272" class="edit-link">Edit this page</a>
         </div>
 
 
