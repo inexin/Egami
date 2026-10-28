@@ -152,9 +152,11 @@ With all three at their defaults LCD text is drawn as in Egami 1.2.0.
 ### Embolden and stem darkening
 
 `Font.Embolden` grows outlines on every side by an amount in the font's units (pixels on a raster), with round joins, on top
-of synthetic bold; advances never change, and glyph paths and ink bounds include it. `Font.StemDarkening` grows small text by
-0.15 device pixels on each side at 8 pixels per em and below, fading to nothing at 32, so thin stems keep their weight; it
-follows the device size, so only drawing on a raster applies it.
+of synthetic bold; advances never change, and glyph paths and ink bounds include it. `Font.StemDarkening` grows thin stems by
+the default darkening curve FreeType documents for its CFF engine (its darkening-parameters property): 0.4 pixel for stems up
+to 0.5 pixel wide, 0.275 from 1 to 1.667 pixels, nothing from 2.333, half on each side. The stem width is the face's own (a CFF
+font's StdVW, else measured across 'l'), so darkening fades as text grows. It follows the device size, so only drawing on a
+raster applies it.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Text.cs#embolden)]
 

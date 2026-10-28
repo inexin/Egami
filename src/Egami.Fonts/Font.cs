@@ -105,9 +105,11 @@ public readonly record struct Font
     }
 
     /// <summary>
-    /// Gets whether small text is darkened: outlines grow by 0.15 device pixels on every side at 8 pixels per em and below, fading
-    /// linearly to none at 32 and above, so thin stems keep their weight where antialiasing would wash them out. Defaults to false.
-    /// It follows the device size, so it applies when drawing on a raster and not to glyph paths or ink bounds.
+    /// Gets whether small text is darkened: outlines grow by half the darkening amount of FreeType's documented default CFF curve
+    /// on every side, the amount set by how wide the face's vertical stems are in device pixels (0.4 pixel for stems up to 0.5
+    /// pixel, 0.275 from 1 to 1.667, none from 2.333, linear between), so thin stems keep their weight where antialiasing would
+    /// wash them out. Defaults to false. It follows the device size, so it applies when drawing on a raster and not to glyph paths or
+    /// ink bounds.
     /// </summary>
     /// <example>
     /// <code language="csharp" source="../../tests/Egami.DocSamples/Text.cs" region="embolden"/>
@@ -163,7 +165,7 @@ public readonly record struct Font
             outset += _embolden * MathF.Abs(pixelsPerEm) / Size;
         }
 
-        return device && _stemDarkening ? outset + Fonts.Synthesis.DarkeningOutset(pixelsPerEm) : outset;
+        return device && _stemDarkening ? outset + Fonts.Synthesis.DarkeningOutset(Face.StemWidth * MathF.Abs(pixelsPerEm) / Face.UnitsPerEm) : outset;
     }
 
     /// <summary>
