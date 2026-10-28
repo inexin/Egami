@@ -1,6 +1,7 @@
 using System.Numerics;
 
 using Egami.Drawing;
+using Egami.GdiPlus;
 using Egami.Pixels;
 
 using static Egami.Metafiles.Reading.MetafileReader;
@@ -47,7 +48,7 @@ internal sealed partial class EmfPlusPlayer
                     PathBuilder b = new();
                     for (int i = 0; i < n; i++)
                     {
-                        b.AddRect(PlusObjectReader.Rect(d, ref at, (flags & Compressed) != 0));
+                        b.AddRect(GdiPlusData.Rect(d, ref at, (flags & Compressed) != 0));
                     }
 
                     Fill(b.ToPath(FillRule.NonZero), paint);
@@ -61,7 +62,7 @@ internal sealed partial class EmfPlusPlayer
                     PathBuilder b = new();
                     for (int i = 0; i < n; i++)
                     {
-                        b.AddRect(PlusObjectReader.Rect(d, ref at, (flags & Compressed) != 0));
+                        b.AddRect(GdiPlusData.Rect(d, ref at, (flags & Compressed) != 0));
                     }
 
                     Stroke(b.ToPath(), Pen(flags));
@@ -72,7 +73,7 @@ internal sealed partial class EmfPlusPlayer
                 {
                     PlusFill paint = BrushPaint(flags, U32(d, 0));
                     at = 8;
-                    Vector2[] points = PlusObjectReader.ReadPoints(d, ref at, I32(d, 4), (flags & Compressed) != 0, (flags & Relative) != 0);
+                    Vector2[] points = GdiPlusData.ReadPoints(d, ref at, I32(d, 4), (flags & Compressed) != 0, (flags & Relative) != 0);
                     Fill(Path.Polygon(points).WithFillRule((flags & 0x2000) != 0 ? FillRule.NonZero : FillRule.EvenOdd), paint);
                     break;
                 }
@@ -80,7 +81,7 @@ internal sealed partial class EmfPlusPlayer
             case 0x400D: // DrawLines
                 {
                     at = 4;
-                    Vector2[] points = PlusObjectReader.ReadPoints(d, ref at, I32(d, 0), (flags & Compressed) != 0, (flags & Relative) != 0);
+                    Vector2[] points = GdiPlusData.ReadPoints(d, ref at, I32(d, 0), (flags & Compressed) != 0, (flags & Relative) != 0);
                     Stroke(Path.Polygon(points, close: (flags & 0x2000) != 0), Pen(flags));
                     break;
                 }
@@ -125,7 +126,7 @@ internal sealed partial class EmfPlusPlayer
                 {
                     PlusFill paint = BrushPaint(flags, U32(d, 0));
                     at = 12;
-                    Vector2[] points = PlusObjectReader.ReadPoints(d, ref at, I32(d, 8), (flags & Compressed) != 0, (flags & Relative) != 0);
+                    Vector2[] points = GdiPlusData.ReadPoints(d, ref at, I32(d, 8), (flags & Compressed) != 0, (flags & Relative) != 0);
                     Fill(Cardinal(points, F32(d, 4), closed: true).WithFillRule((flags & 0x2000) != 0 ? FillRule.NonZero : FillRule.EvenOdd), paint);
                     break;
                 }
@@ -133,7 +134,7 @@ internal sealed partial class EmfPlusPlayer
             case 0x4017: // DrawClosedCurve
                 {
                     at = 8;
-                    Vector2[] points = PlusObjectReader.ReadPoints(d, ref at, I32(d, 4), (flags & Compressed) != 0, (flags & Relative) != 0);
+                    Vector2[] points = GdiPlusData.ReadPoints(d, ref at, I32(d, 4), (flags & Compressed) != 0, (flags & Relative) != 0);
                     Stroke(Cardinal(points, F32(d, 0), closed: true), Pen(flags));
                     break;
                 }
@@ -141,7 +142,7 @@ internal sealed partial class EmfPlusPlayer
             case 0x4018: // DrawCurve: Tension, Offset, NumSegments, Count, points
                 {
                     at = 16;
-                    Vector2[] points = PlusObjectReader.ReadPoints(d, ref at, I32(d, 12), (flags & Compressed) != 0, (flags & Relative) != 0);
+                    Vector2[] points = GdiPlusData.ReadPoints(d, ref at, I32(d, 12), (flags & Compressed) != 0, (flags & Relative) != 0);
                     int offset = Math.Clamp(I32(d, 4), 0, Math.Max(0, points.Length - 1)), segments = Math.Clamp(I32(d, 8), 0, Math.Max(0, points.Length - 1 - offset));
                     Stroke(Cardinal(points, F32(d, 0), closed: false, offset, segments), Pen(flags));
                     break;
@@ -150,7 +151,7 @@ internal sealed partial class EmfPlusPlayer
             case 0x4019: // DrawBeziers
                 {
                     at = 4;
-                    Vector2[] points = PlusObjectReader.ReadPoints(d, ref at, I32(d, 0), (flags & Compressed) != 0, (flags & Relative) != 0);
+                    Vector2[] points = GdiPlusData.ReadPoints(d, ref at, I32(d, 0), (flags & Compressed) != 0, (flags & Relative) != 0);
                     if (points.Length >= 4)
                     {
                         PathBuilder b = new PathBuilder().MoveTo(points[0]);
@@ -294,7 +295,7 @@ internal sealed partial class EmfPlusPlayer
     private static int Bounded(int count, int available, int size) =>
         count < 0 || count > available / size ? throw new ArgumentException("A count does not fit the record.") : count;
 
-    private static RectF Rect(ReadOnlySpan<byte> d, int at, ushort flags) => PlusObjectReader.Rect(d, ref at, (flags & Compressed) != 0);
+    private static RectF Rect(ReadOnlySpan<byte> d, int at, ushort flags) => GdiPlusData.Rect(d, ref at, (flags & Compressed) != 0);
 
     private PlusPen? Pen(ushort flags) => _objects[flags & 0xFF] as PlusPen;
 

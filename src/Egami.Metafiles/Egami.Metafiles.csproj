@@ -26,6 +26,12 @@
     <ProjectReference Include="..\Egami.Fonts\Egami.Fonts.csproj" />
   </ItemGroup>
 
+  <!-- The GDI+ pen, brush, region, string format and image attribute semantics, shared with Egami.SystemDrawing as internal
+       source (step 2.13, question 7). -->
+  <ItemGroup>
+    <Compile Include="..\Shared\GdiPlus\**\*.cs" Link="Shared\GdiPlus\%(RecursiveDir)%(Filename)%(Extension)" />
+  </ItemGroup>
+
   <ItemGroup>
     <InternalsVisibleTo Include="Egami.Metafiles.Tests" />
     <InternalsVisibleTo Include="Egami.Fuzz" />
