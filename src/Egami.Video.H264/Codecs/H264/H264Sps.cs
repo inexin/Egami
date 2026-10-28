@@ -50,6 +50,9 @@ internal sealed class H264Sps
 
     internal bool FrameMbsOnly { get; private set; }
 
+    /// <summary>Gets mb_adaptive_frame_field_flag: frame pictures may mix frame and field macroblock pairs (MBAFF).</summary>
+    internal bool MbAdaptiveFrameField { get; private set; }
+
     internal bool Direct8x8Inference { get; private set; }
 
     internal int CropLeft { get; private set; }
@@ -87,7 +90,7 @@ internal sealed class H264Sps
 
     internal int CropUnitX => ChromaFormatIdc == 0 ? 1 : SubWidthC;
 
-    internal int CropUnitY => ChromaFormatIdc == 0 ? 1 : SubHeightC;
+    internal int CropUnitY => (ChromaFormatIdc == 0 ? 1 : SubHeightC) * (FrameMbsOnly ? 1 : 2);
 
     internal int MaxFrameNum => 1 << Log2MaxFrameNum;
 
@@ -183,10 +186,16 @@ internal sealed class H264Sps
         s.FrameMbsOnly = r.Flag("frame_mbs_only_flag");
         if (!s.FrameMbsOnly)
         {
-            throw H264Errors.Unsupported("The stream is interlaced (frame_mbs_only_flag is 0).");
+            s.MbAdaptiveFrameField = r.Flag("mb_adaptive_frame_field_flag");
         }
 
-        s.HeightInMbs = mapUnits;
+        // A map unit is a macroblock pair when fields may be coded (7-18).
+        s.HeightInMbs = s.FrameMbsOnly ? mapUnits : mapUnits * 2;
+        if (s.HeightInMbs > MaxSideInMbs)
+        {
+            throw H264Errors.Corrupt($"The picture is {s.HeightInMbs} macroblocks high.");
+        }
+
         s.Direct8x8Inference = r.Flag("direct_8x8_inference_flag");
         if (r.Flag("frame_cropping_flag"))
         {

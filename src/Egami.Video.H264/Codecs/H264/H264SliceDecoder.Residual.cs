@@ -33,7 +33,7 @@ internal sealed partial class H264SliceDecoder
                 _mb.CbfDc[_mbAddr] |= 1;
                 for (int k = 0; k < 16; k++)
                 {
-                    _dcY[H264ScalingLists.Zigzag4x4[k]] = _levels[k];
+                    _dcY[_scan4[k]] = _levels[k];
                 }
             }
 
@@ -73,7 +73,7 @@ internal sealed partial class H264SliceDecoder
                     int first = ac ? 1 : 0;
                     if (_cabac)
                     {
-                        Place(count, first, qpY, scale4, 4, H264ScalingLists.Zigzag4x4, _coef, blk * 16);
+                        Place(count, first, qpY, scale4, 4, _scan4, _coef, blk * 16);
                     }
                     else
                     {
@@ -82,7 +82,7 @@ internal sealed partial class H264SliceDecoder
                             int level = _levels[k];
                             if (level != 0)
                             {
-                                int pos = H264ScalingLists.Zigzag4x4[k + first];
+                                int pos = _scan4[k + first];
                                 dest[pos] = Scale4x4(level, qpY, scale4, pos);
                             }
                         }
@@ -106,7 +106,7 @@ internal sealed partial class H264SliceDecoder
         if (_cabac)
         {
             total = ResidualCabac(5, -1, 64, _levels, clear: false);
-            Place(total, 0, qpY, scale8, 6, H264ScalingLists.Zigzag8x8, _coef, i8 * 64);
+            Place(total, 0, qpY, scale8, 6, _scan8, _coef, i8 * 64);
 
             for (int i4 = 0; i4 < 4; i4++)
             {
@@ -126,7 +126,7 @@ internal sealed partial class H264SliceDecoder
                 {
                     if (_levels[k] != 0)
                     {
-                        int pos = H264ScalingLists.Zigzag8x8[(4 * k) + i4];
+                        int pos = _scan8[(4 * k) + i4];
                         dest[pos] = Scale8x8(_levels[k], qpY, scale8, pos);
                     }
                 }
@@ -190,7 +190,7 @@ internal sealed partial class H264SliceDecoder
                         Span<int> dest = _coefC.AsSpan(((c * 8) + blk) * 16, 16);
                         if (_cabac)
                         {
-                            Place(count, 1, qpc, scale, 4, H264ScalingLists.Zigzag4x4, _coefC, ((c * 8) + blk) * 16);
+                            Place(count, 1, qpc, scale, 4, _scan4, _coefC, ((c * 8) + blk) * 16);
                         }
                         else
                         {
@@ -198,7 +198,7 @@ internal sealed partial class H264SliceDecoder
                             {
                                 if (_levels[k] != 0)
                                 {
-                                    int pos = H264ScalingLists.Zigzag4x4[k + 1];
+                                    int pos = _scan4[k + 1];
                                     dest[pos] = Scale4x4(_levels[k], qpc, scale, pos);
                                 }
                             }
@@ -573,14 +573,15 @@ internal sealed partial class H264SliceDecoder
         int sigBase, lastBase, absBase;
         if (cat == 5)
         {
-            sigBase = 402;
-            lastBase = 417;
+            // Field macroblocks have their own significance contexts (Table 9-34).
+            sigBase = _sigBase8;
+            lastBase = _lastBase8;
             absBase = 426;
         }
         else
         {
-            sigBase = 105 + sigOffset[cat];
-            lastBase = 166 + sigOffset[cat];
+            sigBase = _sigBase + sigOffset[cat];
+            lastBase = _lastBase + sigOffset[cat];
             absBase = 227 + absOffset[cat];
         }
 
@@ -596,7 +597,7 @@ internal sealed partial class H264SliceDecoder
         CabacEngine.State st = engine.Save();
         if (cat == 5)
         {
-            ReadOnlySpan<byte> sigInc = H264Tables.Significant8x8, lastInc = H264Tables.Last8x8;
+            ReadOnlySpan<byte> sigInc = _sigInc8, lastInc = H264Tables.Last8x8;
             for (int i = 0; i < 63; i++)
             {
                 if (engine.Decode(ref st, ref Unsafe.Add(ref sig, sigInc[i])) != 0)

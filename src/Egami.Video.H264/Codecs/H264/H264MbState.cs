@@ -30,8 +30,9 @@ internal enum H264MbKind : byte
 /// </summary>
 internal sealed class H264MbState
 {
-    internal H264MbState(int widthMbs, int heightMbs, int chromaFormatIdc)
+    internal H264MbState(int widthMbs, int heightMbs, int chromaFormatIdc, bool fieldPicture = false)
     {
+        FieldPicture = fieldPicture;
         WidthMbs = widthMbs;
         HeightMbs = heightMbs;
         int mbs = widthMbs * heightMbs;
@@ -56,9 +57,16 @@ internal sealed class H264MbState
         Mvd = [new byte[blocks * 2], new byte[blocks * 2]];
         Nonzero = new byte[blocks];
         FlatInside = new bool[mbs];
+        FieldMb = new bool[mbs];
     }
 
+    /// <summary>Gets whether each macroblock of an MBAFF frame is a field macroblock (both of a pair hold the pair's flag).</summary>
+    internal bool[] FieldMb { get; }
+
     internal int WidthMbs { get; }
+
+    /// <summary>Gets whether the state is a field picture's, whose macroblocks are all field macroblocks.</summary>
+    internal bool FieldPicture { get; }
 
     internal int HeightMbs { get; }
 

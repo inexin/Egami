@@ -59,6 +59,15 @@ internal sealed class H264Inter
     private bool _explicit;
     private bool _implicitMode;
 
+    // The parity of the field being predicted (0 top, 1 bottom), or -1 for a frame macroblock.
+    private int _parity = -1;
+
+    // Whether 4:2:0 chroma of a field is predicted, whose vector moves with the reference field's parity.
+    private bool _fieldChroma;
+
+    // How far reference indices shift to index the explicit weights: 1 for an MBAFF field macroblock.
+    private int _weightShift;
+
     /// <summary>Gets the edge buffer of the sample type.</summary>
     private T[] Edge<T>()
         where T : unmanaged => H264Samples.Narrow<T>() ? Unsafe.As<T[]>(_edge8) : Unsafe.As<T[]>(_edge);
@@ -88,17 +97,41 @@ internal sealed class H264Inter
         _chroma = h.Sps.ChromaArrayType;
         _explicit = h.ExplicitWeights;
         _implicitMode = h.IsB && h.Pps.WeightedBipredIdc == 2;
+        _parity = pic.Parity;
+        _fieldChroma = _parity >= 0 && _chroma == 1;
+        _weightShift = 0;
+    }
+
+    /// <summary>
+    /// Points an MBAFF macroblock's prediction at its picture (the frame, or the field of a field macroblock), the reference
+    /// lists and implicit weights for it, and the window its motion is in, w4 blocks a row. Explicit weights of a field
+    /// macroblock are its frame reference's (8.4.2.3).
+    /// </summary>
+    internal void SetMacroblock(H264Picture pic, H264Picture[] list0, H264Picture[] list1, int[] implicitWeights, H264Picture motion, int w4)
+    {
+        _pic = pic;
+        _list0 = list0;
+        _list1 = list1;
+        _implicit = implicitWeights;
+        _parity = pic.Parity;
+        _fieldChroma = _parity >= 0 && _chroma == 1;
+        _weightShift = pic.Parity >= 0 ? 1 : 0;
+        _refIdx0 = motion.RefIdx[0];
+        _refIdx1 = motion.RefIdx[1];
+        _mv0 = motion.Mv[0];
+        _mv1 = motion.Mv[1];
+        _w4 = w4;
     }
 
     /// <summary>Gets whether all 16 blocks of the macroblock at 4x4 block (x0, y0) have the same motion in both lists.</summary>
     internal bool Uniform(int x0, int y0)
     {
-        int w4 = _pic.WidthMbs * 4;
+        int w4 = _w4;
         int first = (y0 * w4) + x0;
         for (int list = 0; list < 2; list++)
         {
-            sbyte[] refIdx = _pic.RefIdx[list];
-            int[] mvs = _pic.Mv[list];
+            sbyte[] refIdx = list == 0 ? _refIdx0 : _refIdx1;
+            int[] mvs = list == 0 ? _mv0 : _mv1;
             sbyte r = refIdx[first];
             int mv = mvs[first];
             for (int y = 0; y < 4; y++)
@@ -164,7 +197,7 @@ internal sealed class H264Inter
         if (bytes && _explicit)
         {
             // One list with explicit weights: a reference without them (weight 2^logWD, offset 0) predicts as it is.
-            int r = p0 is not null ? r0 : r1;
+            int r = (p0 is not null ? r0 : r1) >> _weightShift;
             int[] wt = _h.Weights[p0 is not null ? 0 : 1];
             int logWD = _h.LumaLog2WeightDenom;
             if (wt[r * 6] != 1 << logWD || wt[(r * 6) + 1] != 0)
@@ -211,12 +244,19 @@ internal sealed class H264Inter
             return;
         }
 
+        if (_fieldChroma)
+        {
+            // A field predicted from the field of the other parity: the chroma vector moves a quarter row (8.4.1.4, Table 8-10).
+            mv0 += p0 is not null ? (2 * (_parity - p0.Parity)) << 16 : 0;
+            mv1 += p1 is not null ? (2 * (_parity - p1.Parity)) << 16 : 0;
+        }
+
         int cw = w / 2, ch = _chroma == 1 ? h / 2 : h, cx = x / 2, cy = _chroma == 1 ? y / 2 : y;
         if (_chroma == 1)
         {
             if (bytes && _explicit)
             {
-                int r = p0 is not null ? r0 : r1;
+                int r = (p0 is not null ? r0 : r1) >> _weightShift;
                 int[] wt = _h.Weights[p0 is not null ? 0 : 1];
                 int logWD = _h.ChromaLog2WeightDenom, unit = 1 << logWD;
                 if (wt[(r * 6) + 2] != unit || wt[(r * 6) + 3] != 0 || wt[(r * 6) + 4] != unit || wt[(r * 6) + 5] != 0)
@@ -303,11 +343,11 @@ internal sealed class H264Inter
     {
         int mvx = H264SliceDecoder.MvX(mv), mvy = H264SliceDecoder.MvY(mv);
         int xInt = x + (mvx >> 3), xFrac = mvx & 7, yInt = y + (mvy >> 3), yFrac = mvy & 7;
-        int pad = H264Picture.Pad, stride = refPic.ChromaStride;
+        int pad = H264Picture.Pad, padY = refPic.PadY, stride = refPic.ChromaStride;
         int at = refPic.ChromaOrigin + (yInt * stride) + xInt;
         // One unsigned compare per axis tests both sides: the block and its extra row and column lie in the padded plane.
         if (w < 4 || !UseVectors || !UseWideVectors
-            || (uint)(xInt + pad) > (uint)(refPic.ChromaWidth + (2 * pad) - w - 1) || (uint)(yInt + pad) > (uint)(refPic.ChromaHeight + (2 * pad) - h - 1))
+            || (uint)(xInt + pad) > (uint)(refPic.ChromaWidth + (2 * pad) - w - 1) || (uint)(yInt + padY) > (uint)(refPic.ChromaSpanY - h - 1))
         {
             Chroma(refPic.Cb<T>(), refPic, x, y, w, h, mv, pred, 0);
             Chroma(refPic.Cr<T>(), refPic, x, y, w, h, mv, pred, CrRows);
@@ -375,8 +415,8 @@ internal sealed class H264Inter
     /// <summary>Whether an 8-wide 4:2:0 block at (x, y) moved by mv, with its extra row and column, lies in the padded planes.</summary>
     private static bool ChromaInside(H264Picture refPic, int x, int y, int h, int mv)
     {
-        int xInt = x + (H264SliceDecoder.MvX(mv) >> 3), yInt = y + (H264SliceDecoder.MvY(mv) >> 3), pad = H264Picture.Pad;
-        return (uint)(xInt + pad) <= (uint)(refPic.ChromaWidth + (2 * pad) - 9) && (uint)(yInt + pad) <= (uint)(refPic.ChromaHeight + (2 * pad) - h - 1);
+        int xInt = x + (H264SliceDecoder.MvX(mv) >> 3), yInt = y + (H264SliceDecoder.MvY(mv) >> 3), pad = H264Picture.Pad, padY = refPic.PadY;
+        return (uint)(xInt + pad) <= (uint)(refPic.ChromaWidth + (2 * pad) - 9) && (uint)(yInt + padY) <= (uint)(refPic.ChromaSpanY - h - 1);
     }
 
     /// <summary>
@@ -464,7 +504,7 @@ internal sealed class H264Inter
 
         int pad = H264Picture.Pad;
         int xs = Math.Clamp(x + (H264SliceDecoder.MvX(mv) >> 2) - 2, -pad, refPic.Width + pad - 24);
-        int ys = Math.Clamp(y + (H264SliceDecoder.MvY(mv) >> 2) - 2, -pad, refPic.Height + pad - 21);
+        int ys = Math.Clamp(y + (H264SliceDecoder.MvY(mv) >> 2) - 2, refPic.PrefetchTop, refPic.PrefetchBottom);
         // Byte addresses, so each prefetch takes its address as an operand. A prefetch never faults: if the collector moves
         // the plane meanwhile, the hint is only wasted.
         byte* luma = (byte*)Unsafe.AsPointer(ref H264Samples.At(refPic.Y<T>(), refPic.Origin + (ys * refPic.Stride) + xs));
@@ -482,7 +522,7 @@ internal sealed class H264Inter
         }
 
         int cx = Math.Clamp((x >> 1) + (H264SliceDecoder.MvX(mv) >> 3), -pad, refPic.ChromaWidth + pad - 9);
-        int cy = Math.Clamp((y >> 1) + (H264SliceDecoder.MvY(mv) >> 3), -pad, refPic.ChromaHeight + pad - 9);
+        int cy = Math.Clamp((y >> 1) + (H264SliceDecoder.MvY(mv) >> 3), refPic.PrefetchTop, refPic.PrefetchChromaBottom);
         int c = refPic.ChromaOrigin + (cy * refPic.ChromaStride) + cx;
         byte* cb = (byte*)Unsafe.AsPointer(ref H264Samples.At(refPic.Cb<T>(), c));
         byte* cr = (byte*)Unsafe.AsPointer(ref H264Samples.At(refPic.Cr<T>(), c));
@@ -509,13 +549,14 @@ internal sealed class H264Inter
             int[] wt0 = _h.Weights[0], wt1 = _h.Weights[1];
             if (bi)
             {
-                int w0 = wt0[(r0 * 6) + (component * 2)], o0 = wt0[(r0 * 6) + (component * 2) + 1] << bitShift;
-                int w1 = wt1[(r1 * 6) + (component * 2)], o1 = wt1[(r1 * 6) + (component * 2) + 1] << bitShift;
+                int e0 = r0 >> _weightShift, e1 = r1 >> _weightShift;
+                int w0 = wt0[(e0 * 6) + (component * 2)], o0 = wt0[(e0 * 6) + (component * 2) + 1] << bitShift;
+                int w1 = wt1[(e1 * 6) + (component * 2)], o1 = wt1[(e1 * 6) + (component * 2) + 1] << bitShift;
                 Weighted(plane, at, stride, w, h, w0, w1, 1 << logWD, logWD + 1, (o0 + o1 + 1) >> 1, max, po);
             }
             else
             {
-                int r = r0 >= 0 ? r0 : r1;
+                int r = (r0 >= 0 ? r0 : r1) >> _weightShift;
                 int[] wt = r0 >= 0 ? wt0 : wt1;
                 int wgt = wt[(r * 6) + (component * 2)], o = wt[(r * 6) + (component * 2) + 1] << bitShift;
                 if (r0 < 0)
@@ -836,8 +877,8 @@ internal sealed class H264Inter
         int frac = ((mvx & 3) << 2) | (mvy & 3);
         T[] src = refPic.Y<T>();
         int stride = refPic.Stride, at = refPic.Origin + (yInt * stride) + xInt;
-        int pad = H264Picture.Pad;
-        if ((uint)(xInt - 2 + pad) > (uint)(refPic.Width + (2 * pad) - w - 5) || (uint)(yInt - 2 + pad) > (uint)(refPic.Height + (2 * pad) - h - 5))
+        int pad = H264Picture.Pad, padY = refPic.PadY;
+        if ((uint)(xInt - 2 + pad) > (uint)(refPic.Width + (2 * pad) - w - 5) || (uint)(yInt - 2 + padY) > (uint)(refPic.SpanY - h - 5))
         {
             // Past the border: a clamped copy, wide enough for the vector loads to read past the block.
             FetchEdge(src, refPic.Origin, stride, refPic.Width, refPic.Height, xInt - 2, yInt - 2, Math.Min(w + 13, EdgeStride), h + 6);
@@ -943,8 +984,8 @@ internal sealed class H264Inter
         int frac = ((mvx & 3) << 2) | (mvy & 3);
         byte[] src = refPic.Y<byte>();
         int stride = refPic.Stride, at = refPic.Origin + (yInt * stride) + xInt;
-        int pad = H264Picture.Pad;
-        if ((uint)(xInt - 2 + pad) > (uint)(refPic.Width + (2 * pad) - 21) || (uint)(yInt - 2 + pad) > (uint)(refPic.Height + (2 * pad) - h - 5))
+        int pad = H264Picture.Pad, padY = refPic.PadY;
+        if ((uint)(xInt - 2 + pad) > (uint)(refPic.Width + (2 * pad) - 21) || (uint)(yInt - 2 + padY) > (uint)(refPic.SpanY - h - 5))
         {
             FetchEdge(src, refPic.Origin, stride, refPic.Width, refPic.Height, xInt - 2, yInt - 2, EdgeStride, h + 6);
             src = _edge8;
@@ -1425,8 +1466,8 @@ internal sealed class H264Inter
 
         T[] src = plane;
         int stride = refPic.ChromaStride, at = refPic.ChromaOrigin + (yInt * stride) + xInt;
-        int pad = H264Picture.Pad;
-        if ((uint)(xInt + pad) > (uint)(refPic.ChromaWidth + (2 * pad) - w - 1) || (uint)(yInt + pad) > (uint)(refPic.ChromaHeight + (2 * pad) - h - 1))
+        int pad = H264Picture.Pad, padY = refPic.PadY;
+        if ((uint)(xInt + pad) > (uint)(refPic.ChromaWidth + (2 * pad) - w - 1) || (uint)(yInt + padY) > (uint)(refPic.ChromaSpanY - h - 1))
         {
             FetchEdge(plane, refPic.ChromaOrigin, stride, refPic.ChromaWidth, refPic.ChromaHeight, xInt, yInt, Math.Min(w + 9, EdgeStride), h + 1);
             src = Edge<T>();

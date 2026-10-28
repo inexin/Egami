@@ -4,11 +4,12 @@ Egami.Video.H264 decodes H.264 (AVC) video for Egami.Video, in managed code.
 
 - Register it once with `WithH264()`; nothing registers it on its own. Without it, Egami.Video reads H.264 tracks' packets and
   copies them through untouched, but does not decode them.
-- Progressive Constrained Baseline, Main, High, High 10 and High 4:2:2 streams, 8 and 10 bit, and their Intra profiles, from
-  MP4, MOV, Matroska, AVI and raw Annex B `.h264` files (`H264Format`). Frames equal FFmpeg's decode.
+- Constrained Baseline, Main, High, High 10 and High 4:2:2 streams, 8 and 10 bit, and their Intra profiles, progressive or
+  interlaced (field pictures and MBAFF, woven frames with their field order), from MP4, MOV, Matroska, AVI and raw Annex B
+  `.h264` files (`H264Format`). Frames equal FFmpeg's decode.
 - Slices decode in parallel and deblocking runs on several threads; broken slices are concealed from the frame before.
 
-Interlaced streams, 4:4:4, lossless and the Extended profile are not decoded.
+4:4:4, lossless and the Extended profile are not decoded.
 
 ## Patents
 

@@ -23,6 +23,9 @@ internal sealed class H264VideoDecoder : IVideoDecoder
     private readonly PriorityQueue<(MediaTime Time, MediaTime? Duration), MediaTime> _times = new();
     private DiagnosticReporter? _diagnostics;
     private HdrMetadata? _hdr;
+
+    // Whether the frame before was interlaced, which pic_struct 3 to 6 of a frame picture keeps (as FFmpeg reports it).
+    private bool _prevInterlaced;
     private int _packet = -1;
     private bool _disposed;
 
@@ -198,7 +201,37 @@ internal sealed class H264VideoDecoder : IVideoDecoder
 
         raster.Metadata.CodePoints = color;
         raster.Metadata.Hdr = _hdr;
-        return new YuvVideoFrame(raster, time, duration, color) { Hdr = _hdr, Hdr10Plus = picture.Sei?.Hdr10Plus };
+        (FieldOrder order, int repeat) = FieldsOf(picture, ref _prevInterlaced);
+        return new YuvVideoFrame(raster, time, duration, color) { Hdr = _hdr, Hdr10Plus = picture.Sei?.Hdr10Plus, FieldOrder = order, RepeatFields = repeat };
+    }
+
+    /// <summary>
+    /// The frame's field order and repeated fields: from pic_struct (Table D-1) when a picture timing SEI gives it, else from how
+    /// the frame was coded, two field pictures or an MBAFF frame being interlaced. The field with the smaller order count comes
+    /// first; with equal counts pic_struct decides, and an interlaced frame without it is top field first, as FFmpeg reports it.
+    /// </summary>
+    internal static (FieldOrder Order, int Repeat) FieldsOf(H264Picture picture, ref bool prevInterlaced)
+    {
+        int ps = picture.Sei?.PicStruct ?? -1;
+        bool coded = picture.CodedAs != H264Coding.Frame;
+        bool interlaced = ps switch
+        {
+            < 0 => coded,
+            1 or 2 => true,
+            >= 3 and <= 6 => coded || prevInterlaced,
+            _ => false,
+        };
+        prevInterlaced = interlaced;
+        int repeat = ps switch { 5 or 6 => 1, 7 => 2, 8 => 4, _ => 0 };
+        if (!interlaced)
+        {
+            return (FieldOrder.Progressive, repeat);
+        }
+
+        bool topFirst = picture.DecodedFields != 3 ? picture.DecodedFields == 1
+            : picture.TopPoc != picture.BottomPoc ? picture.TopPoc < picture.BottomPoc
+            : ps < 0 || ps is 3 or 5;
+        return (topFirst ? FieldOrder.TopFieldFirst : FieldOrder.BottomFieldFirst, repeat);
     }
 
     private static void Copy(H264Picture picture, H264Sps sps, YuvRaster<byte> target) => Copy<byte>(picture, sps, target.Y, target.U, target.V);

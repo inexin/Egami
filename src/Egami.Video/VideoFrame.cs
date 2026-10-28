@@ -50,6 +50,22 @@ public abstract class VideoFrame : IDisposable
     /// </summary>
     public Size? RenderSize { get; init; }
 
+    /// <summary>
+    /// Gets whether the frame is two interlaced fields woven together, and which of them comes first in time, or
+    /// <see cref="FieldOrder.Progressive"/>. H.264 tells it per frame: from the picture timing SEI's pic_struct, else from how
+    /// the frame was coded (two field pictures or an MBAFF frame) and its fields' order counts, as FFmpeg reports it. Other
+    /// decoders give <see cref="FieldOrder.Progressive"/>; the track's <see cref="VideoTrackInfo.FieldOrder"/> says what the
+    /// container states.
+    /// </summary>
+    public FieldOrder FieldOrder { get; init; }
+
+    /// <summary>
+    /// Gets how many fields longer than its two the frame is shown (H.264 pic_struct): 1 for top, bottom, top or bottom, top,
+    /// bottom (3:2 pulldown), 2 for frame doubling, 4 for frame tripling, else 0. A frame lasts (2 + RepeatFields) / 2 frame
+    /// periods; <see cref="Duration"/> is the container's and does not count them.
+    /// </summary>
+    public int RepeatFields { get; init; }
+
     /// <summary>Gets the width in pixels.</summary>
     public abstract int Width { get; }
 

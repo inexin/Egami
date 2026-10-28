@@ -18,7 +18,7 @@ internal readonly record struct H264Mmco(int Op, int DifferenceOfPicNums, int Lo
 /// <summary>One reference list modification (H.264 7.4.3.1): modification_of_pic_nums_idc and its value.</summary>
 internal readonly record struct H264ListModification(int Idc, int Value);
 
-/// <summary>A slice header (H.264 7.3.3), for frame pictures.</summary>
+/// <summary>A slice header (H.264 7.3.3).</summary>
 internal sealed class H264SliceHeader
 {
     internal int NalRefIdc { get; private set; }
@@ -38,6 +38,24 @@ internal sealed class H264SliceHeader
     internal int FrameNum { get; private set; }
 
     internal int IdrPicId { get; private set; }
+
+    /// <summary>Gets field_pic_flag: the slice belongs to a field picture.</summary>
+    internal bool FieldPic { get; private set; }
+
+    /// <summary>Gets bottom_field_flag: the field picture is the bottom field.</summary>
+    internal bool BottomField { get; private set; }
+
+    /// <summary>Gets MbaffFrameFlag (7-25): a frame picture whose macroblock pairs are each coded as frame or field macroblocks.</summary>
+    internal bool Mbaff { get; private set; }
+
+    /// <summary>Gets the picture's height in macroblocks: the frame's, or half of it for a field.</summary>
+    internal int PicHeightInMbs => FieldPic ? Sps.HeightInMbs / 2 : Sps.HeightInMbs;
+
+    /// <summary>Gets MaxPicNum (7.4.3): MaxFrameNum for frames, twice it for fields.</summary>
+    internal int MaxPicNum => FieldPic ? 2 * Sps.MaxFrameNum : Sps.MaxFrameNum;
+
+    /// <summary>Gets CurrPicNum (7.4.3): frame_num for frames, 2 * frame_num + 1 for fields.</summary>
+    internal int CurrPicNum => FieldPic ? (2 * FrameNum) + 1 : FrameNum;
 
     internal int PocLsb { get; private set; }
 
@@ -118,17 +136,33 @@ internal sealed class H264SliceHeader
         int ppsId = (int)r.Ue("pic_parameter_set_id", 255);
         h.Pps = findPps(ppsId) ?? throw H264Errors.Corrupt($"A slice refers to picture parameter set {ppsId}, which the stream has not given.");
         H264Sps sps = h.Sps;
-        if (h.FirstMb >= sps.WidthInMbs * sps.HeightInMbs)
-        {
-            throw H264Errors.Corrupt($"first_mb_in_slice {h.FirstMb} is outside the picture.");
-        }
-
         if (h.Idr && h.Type != H264SliceType.I)
         {
             throw H264Errors.Corrupt("An IDR picture has a P or B slice.");
         }
 
         h.FrameNum = (int)r.U(sps.Log2MaxFrameNum, "frame_num");
+        if (!sps.FrameMbsOnly)
+        {
+            h.FieldPic = r.Flag("field_pic_flag");
+            if (h.FieldPic)
+            {
+                h.BottomField = r.Flag("bottom_field_flag");
+            }
+        }
+
+        h.Mbaff = sps.MbAdaptiveFrameField && !h.FieldPic;
+        if (h.Mbaff)
+        {
+            // first_mb_in_slice counts macroblock pairs (7-26).
+            h.FirstMb *= 2;
+        }
+
+        if (h.FirstMb >= sps.WidthInMbs * h.PicHeightInMbs)
+        {
+            throw H264Errors.Corrupt($"first_mb_in_slice {h.FirstMb} is outside the picture.");
+        }
+
         if (h.Idr)
         {
             h.IdrPicId = (int)r.Ue("idr_pic_id", 65535);
@@ -137,7 +171,7 @@ internal sealed class H264SliceHeader
         if (sps.PocType == 0)
         {
             h.PocLsb = (int)r.U(sps.Log2MaxPocLsb, "pic_order_cnt_lsb");
-            if (h.Pps.BottomFieldPicOrderInFramePresent)
+            if (h.Pps.BottomFieldPicOrderInFramePresent && !h.FieldPic)
             {
                 h.DeltaPocBottom = r.Se("delta_pic_order_cnt_bottom");
             }
@@ -145,7 +179,7 @@ internal sealed class H264SliceHeader
         else if (sps.PocType == 1 && !sps.DeltaPicOrderAlwaysZero)
         {
             h.DeltaPoc0 = r.Se("delta_pic_order_cnt[0]");
-            if (h.Pps.BottomFieldPicOrderInFramePresent)
+            if (h.Pps.BottomFieldPicOrderInFramePresent && !h.FieldPic)
             {
                 h.DeltaPoc1 = r.Se("delta_pic_order_cnt[1]");
             }
@@ -174,10 +208,11 @@ internal sealed class H264SliceHeader
                 }
             }
 
-            // Frames allow 16 references a list (7.4.3).
-            if (h.NumRefIdxL0 > 16 || h.NumRefIdxL1 > 16)
+            // Frames allow 16 references a list, fields 32 (7.4.3).
+            int most = h.FieldPic ? 32 : 16;
+            if (h.NumRefIdxL0 > most || h.NumRefIdxL1 > most)
             {
-                throw H264Errors.Corrupt("A frame slice has more than 16 active references in a list.");
+                throw H264Errors.Corrupt($"A slice has more than {most} active references in a list.");
             }
 
             h.ModificationsL0 = ReadModifications(r);

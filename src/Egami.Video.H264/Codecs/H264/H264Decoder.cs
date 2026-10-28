@@ -3,9 +3,10 @@ using Egami.Nal;
 namespace Egami.Video.Codecs.H264;
 
 /// <summary>
-/// The H.264 decoding process for frames (clause 8): parameter sets, picture boundaries, picture order count, reference marking,
-/// reference lists, the slices of each picture, deblocking and the decoded picture buffer with its output order. Access units go
-/// in; decoded frames come out in <see cref="Output"/> in output order, to be copied before the next call.
+/// The H.264 decoding process (clause 8): parameter sets, picture boundaries, picture order count, reference marking, reference
+/// lists, the slices of each picture, deblocking and the decoded picture buffer with its output order. A picture is a frame or
+/// a field; the two fields of a frame are decoded into the same frame buffer, woven. Access units go in; decoded frames come out
+/// in <see cref="Output"/> in output order, to be copied before the next call.
 /// </summary>
 internal sealed class H264Decoder
 {
@@ -30,8 +31,19 @@ internal sealed class H264Decoder
     private int _deblockedRows;
 
     private H264Sps? _active;
+    private H264Sps? _lastSps;
     private H264MbState? _mb;
+    private H264MbState? _fieldMb;
+
+    // The frame being decoded, and the picture its slices decode into: the frame, or a view of the field being decoded.
     private H264Picture? _cur;
+    private H264Picture? _curPic;
+    private H264MbState? _curMb;
+    private bool _curSecondField;
+
+    // A frame whose first field is decoded and whose second field may follow, and that field's slice header.
+    private H264Picture? _pending;
+    private H264SliceHeader? _pendingHeader;
     private H264SliceHeader? _first;
     private H264Sei _sei = new();
     private object? _tag;
@@ -43,6 +55,7 @@ internal sealed class H264Decoder
     // Picture order count and frame_num state of the pictures before (8.2.1, 8.2.5.2).
     private int _prevPocMsb;
     private int _prevPocLsb;
+    private bool _prevRefBottomField;
     private int _prevFrameNumOffset;
     private int _prevFrameNum;
     private int _prevRefFrameNum;
@@ -135,6 +148,7 @@ internal sealed class H264Decoder
     {
         Output.Clear();
         FinishPicture();
+        FinishUnpairedField();
         while (_dpb.TryFlush(out H264Picture picture, out _))
         {
             Emit(picture);
@@ -146,7 +160,10 @@ internal sealed class H264Decoder
     {
         Output.Clear();
         _cur = null;
+        _curPic = null;
         _first = null;
+        _pending = null;
+        _pendingHeader = null;
         _dpb.Clear();
         _started = false;
         _recoveryFrameNum = -1;
@@ -171,7 +188,7 @@ internal sealed class H264Decoder
                 break;
             case 6:
                 FinishPictureBeforeNonVcl();
-                _sei.Read(NalFraming.Unescape(span));
+                _sei.Read(NalFraming.Unescape(span), _lastSps ?? _active);
                 break;
             case 7:
                 {
@@ -180,10 +197,12 @@ internal sealed class H264Decoder
                     H264Sps sps = H264Sps.Read(rbsp, Limits);
                     if (_sps[sps.Id] is { } old && old.Rbsp.AsSpan().SequenceEqual(rbsp))
                     {
+                        _lastSps = old;
                         break;
                     }
 
                     _sps[sps.Id] = sps;
+                    _lastSps = sps;
                     break;
                 }
 
@@ -285,12 +304,19 @@ internal sealed class H264Decoder
     /// <summary>Whether a slice starts a new picture (7.4.1.2.4).</summary>
     internal static bool IsNewPicture(H264SliceHeader a, H264SliceHeader b) =>
         b.FirstMb == 0 || a.FrameNum != b.FrameNum || a.Pps.Id != b.Pps.Id || (a.NalRefIdc == 0) != (b.NalRefIdc == 0)
+        || a.FieldPic != b.FieldPic || a.BottomField != b.BottomField
         || a.PocLsb != b.PocLsb || a.DeltaPocBottom != b.DeltaPocBottom || a.DeltaPoc0 != b.DeltaPoc0 || a.DeltaPoc1 != b.DeltaPoc1
         || a.Idr != b.Idr || (a.Idr && a.IdrPicId != b.IdrPicId);
 
     private bool StartPicture(H264SliceHeader h, object? tag)
     {
         H264Sps sps = h.Sps;
+        bool second = _pending is not null && IsSecondField(_pendingHeader!, h);
+        if (_pending is not null && !second)
+        {
+            FinishUnpairedField();
+        }
+
         if (!_started)
         {
             if (!h.Idr && _sei.RecoveryFrameCount < 0)
@@ -321,39 +347,112 @@ internal sealed class H264Decoder
             _dpb.Clear();
             _all.Clear();
             _lastDecoded = null;
+            _pending = null;
+            second = false;
             _mb = new H264MbState(sps.WidthInMbs, sps.HeightInMbs, sps.ChromaFormatIdc);
+            _fieldMb = null;
+        }
+
+        if (h.FieldPic && _fieldMb is null)
+        {
+            // Made when the first field picture comes: a stream can turn interlaced at the same size without a new buffer set.
+            _fieldMb = new H264MbState(sps.WidthInMbs, sps.HeightInMbs / 2, sps.ChromaFormatIdc, fieldPicture: true);
         }
 
         _active = sps;
         _dpb.Capacity = sps.DpbFrames;
         _dpb.MaxNumReorder = sps.MaxNumReorderFrames;
-        if (!h.Idr && h.FrameNum != _prevRefFrameNum && h.FrameNum != (_prevRefFrameNum + 1) % sps.MaxFrameNum)
+        H264Picture pic;
+        if (second)
         {
-            FillFrameNumGap(h);
+            // The second field of the frame whose first field came last (7.4.1.2.4): it decodes into the same frame.
+            pic = _pending!;
+            _pending = null;
+            _pendingHeader = null;
+        }
+        else
+        {
+            if (!h.Idr && h.FrameNum != _prevRefFrameNum && h.FrameNum != (_prevRefFrameNum + 1) % sps.MaxFrameNum)
+            {
+                FillFrameNumGap(h);
+            }
+
+            pic = Allocate(sps);
+            pic.Sps = sps;
+            pic.FrameNum = h.FrameNum;
+            pic.DecodedFields = h.FieldPic ? 0 : 3;
+            pic.CodedAs = h.FieldPic ? H264Coding.Fields : h.Mbaff ? H264Coding.Mbaff : H264Coding.Frame;
+            pic.Tag = tag;
+            _curDamaged = false;
+            _curMissingReference = false;
         }
 
-        H264Picture pic = Allocate(sps);
-        pic.Sps = sps;
-        pic.FrameNum = h.FrameNum;
         ComputePoc(h, pic);
-        pic.Tag = tag;
         _cur = pic;
+        _curSecondField = second;
+        _curPic = h.FieldPic ? pic.Field(h.BottomField ? 1 : 0) : pic;
+        _curMb = h.FieldPic ? _fieldMb! : _mb!;
         _first = h;
         PicturesStarted++;
-        _curDamaged = false;
-        _curMissingReference = false;
         _sliceParams.Clear();
-        _mb!.Clear();
+        _curMb.Clear();
         _decodedRows = 0;
         _deblockedRows = 0;
         return true;
+    }
+
+    /// <summary>
+    /// Whether a field picture is the second field of the frame whose first field is pending (7.4.1.2.4): the other parity, the
+    /// same frame_num, not an IDR picture, and a reference field when the first is one.
+    /// </summary>
+    private static bool IsSecondField(H264SliceHeader first, H264SliceHeader h) =>
+        h.FieldPic && first.BottomField != h.BottomField && first.FrameNum == h.FrameNum && !h.Idr
+        && (first.NalRefIdc != 0) == (h.NalRefIdc != 0) && ReferenceEquals(first.Sps, h.Sps);
+
+    /// <summary>
+    /// Stores a frame of which only one field was decoded: the missing field's rows are copied from the decoded field's, as a
+    /// frame needs both.
+    /// </summary>
+    private void FinishUnpairedField()
+    {
+        if (_pending is not { } pic)
+        {
+            return;
+        }
+
+        _pending = null;
+        _pendingHeader = null;
+        int decoded = pic.DecodedFields == 1 ? 0 : 1;
+        Report?.Invoke("H264.UnpairedField", $"The {(decoded == 0 ? "top" : "bottom")} field of frame_num {pic.FrameNum} has no second field; its rows fill the frame.");
+        CopyField(pic, decoded);
+        pic.ExtendEdges();
+        StoreFrame(pic);
+    }
+
+    /// <summary>Copies each row of one field of a frame into the row of the other field below or above it.</summary>
+    private static void CopyField(H264Picture pic, int from)
+    {
+        CopyRows(pic.YPlane, pic.Origin, pic.Stride, pic.Height, from);
+        if (pic.ChromaFormatIdc != 0)
+        {
+            CopyRows(pic.CbPlane, pic.ChromaOrigin, pic.ChromaStride, pic.ChromaHeight, from);
+            CopyRows(pic.CrPlane, pic.ChromaOrigin, pic.ChromaStride, pic.ChromaHeight, from);
+        }
+
+        static void CopyRows(Array plane, int origin, int stride, int height, int from)
+        {
+            for (int y = 0; y < height; y += 2)
+            {
+                Array.Copy(plane, origin + ((y + from) * stride), plane, origin + ((y + 1 - from) * stride), stride - (2 * H264Picture.Pad));
+            }
+        }
     }
 
     private H264Picture Allocate(H264Sps sps)
     {
         foreach (H264Picture candidate in _all)
         {
-            if (candidate == _cur || Output.Contains(candidate) || InDpb(candidate))
+            if (candidate == _cur || candidate == _pending || Output.Contains(candidate) || InDpb(candidate))
             {
                 continue;
             }
@@ -381,10 +480,11 @@ internal sealed class H264Decoder
         return false;
     }
 
-    /// <summary>The picture order count (8.2.1) of a frame.</summary>
+    /// <summary>The picture order count (8.2.1) of a frame, or of the field being decoded.</summary>
     private void ComputePoc(H264SliceHeader h, H264Picture pic)
     {
         H264Sps sps = h.Sps;
+        bool top = !h.FieldPic || !h.BottomField, bottom = !h.FieldPic || h.BottomField;
         if (h.Idr)
         {
             _prevPocMsb = _prevPocLsb = 0;
@@ -403,8 +503,20 @@ internal sealed class H264Decoder
                         : lsb > _prevPocLsb && lsb - _prevPocLsb > maxLsb / 2 ? _prevPocMsb - maxLsb
                         : _prevPocMsb;
                     _curPocMsb = msb;
-                    pic.TopPoc = msb + lsb;
-                    pic.BottomPoc = pic.TopPoc + h.DeltaPocBottom;
+                    if (!h.FieldPic)
+                    {
+                        pic.TopPoc = msb + lsb;
+                        pic.BottomPoc = pic.TopPoc + h.DeltaPocBottom;
+                    }
+                    else if (h.BottomField)
+                    {
+                        pic.BottomPoc = msb + lsb;
+                    }
+                    else
+                    {
+                        pic.TopPoc = msb + lsb;
+                    }
+
                     break;
                 }
 
@@ -439,15 +551,36 @@ internal sealed class H264Decoder
                         expected += sps.OffsetForNonRefPic;
                     }
 
-                    pic.TopPoc = (int)(expected + h.DeltaPoc0);
-                    pic.BottomPoc = pic.TopPoc + sps.OffsetForTopToBottomField + h.DeltaPoc1;
+                    if (!h.FieldPic)
+                    {
+                        pic.TopPoc = (int)(expected + h.DeltaPoc0);
+                        pic.BottomPoc = pic.TopPoc + sps.OffsetForTopToBottomField + h.DeltaPoc1;
+                    }
+                    else if (h.BottomField)
+                    {
+                        pic.BottomPoc = (int)(expected + sps.OffsetForTopToBottomField + h.DeltaPoc0);
+                    }
+                    else
+                    {
+                        pic.TopPoc = (int)(expected + h.DeltaPoc0);
+                    }
+
                     break;
                 }
 
             default:
                 {
                     int temp = h.Idr ? 0 : h.NalRefIdc == 0 ? (2 * (frameNumOffset + h.FrameNum)) - 1 : 2 * (frameNumOffset + h.FrameNum);
-                    pic.TopPoc = pic.BottomPoc = temp;
+                    if (top)
+                    {
+                        pic.TopPoc = temp;
+                    }
+
+                    if (bottom)
+                    {
+                        pic.BottomPoc = temp;
+                    }
+
                     break;
                 }
         }
@@ -468,6 +601,7 @@ internal sealed class H264Decoder
         {
             H264Picture gap = Allocate(sps);
             gap.NonExisting = true;
+            gap.CodedAs = H264Coding.Frame;
             gap.Sps = sps;
             gap.FrameNum = frameNum;
             Array.Fill(gap.MbIntra, true);
@@ -514,7 +648,7 @@ internal sealed class H264Decoder
 
     private void DecodeSliceData(H264SliceHeader h, byte[] rbsp)
     {
-        H264Picture pic = _cur!;
+        H264Picture pic = _curPic!;
         int sliceNum = _sliceParams.Count;
         _sliceParams.Add(new H264FilterParams(h.DisableDeblockingFilterIdc, h.FilterOffsetA, h.FilterOffsetB));
         H264Picture[] list0 = [], list1 = [];
@@ -523,10 +657,10 @@ internal sealed class H264Decoder
         {
             if (!h.IsI)
             {
-                list0 = BuildList(h, 0);
+                list0 = h.FieldPic ? BuildFieldList(h, 0) : BuildList(h, 0);
                 if (h.IsB)
                 {
-                    list1 = BuildList(h, 1);
+                    list1 = h.FieldPic ? BuildFieldList(h, 1) : BuildList(h, 1);
                     if (h.Pps.WeightedBipredIdc == 2)
                     {
                         implicitWeights = ImplicitWeights(pic, list0, list1);
@@ -542,10 +676,11 @@ internal sealed class H264Decoder
             }
 
             byte[] padded = Pad(0, rbsp);
-            _slices.RowFinished = _deblockBehind ??= DeblockBehind;
+            // An MBAFF frame is deblocked once it is decoded, pair by pair.
+            _slices.RowFinished = h.Mbaff ? null : _deblockBehind ??= DeblockBehind;
             try
             {
-                _slices.Decode(h, padded, rbsp.Length, pic, _mb!, sliceNum, list0, list1, implicitWeights);
+                _slices.Decode(h, padded, rbsp.Length, pic, _curMb!, sliceNum, list0, list1, implicitWeights);
             }
             finally
             {
@@ -593,8 +728,8 @@ internal sealed class H264Decoder
         }
 
         Exception?[] errors = new Exception?[_jobs.Count];
-        H264Picture pic = _cur!;
-        H264MbState mb = _mb!;
+        H264Picture pic = _curPic!;
+        H264MbState mb = _curMb!;
         if (_jobs.Count == 1)
         {
             errors[0] = Run(_slices, _jobs[0], pic, mb);
@@ -653,7 +788,7 @@ internal sealed class H264Decoder
     /// </summary>
     private void DeblockBehind(int row)
     {
-        H264MbState mb = _mb!;
+        H264MbState mb = _curMb!;
         int cols = mb.WidthMbs;
         int[] slice = mb.Slice;
         while (_decodedRows <= row && slice.AsSpan(_decodedRows * cols, cols).IndexOf(-1) < 0)
@@ -664,14 +799,20 @@ internal sealed class H264Decoder
         if (_deblockedRows < _decodedRows - 1)
         {
             H264Sps sps = _first!.Sps;
-            _deblock.Filter(_cur!, mb, _sliceParams, sps.BitDepthLuma, sps.BitDepthChroma, _deblockedRows, _decodedRows - 1);
+            _deblock.Filter(_curPic!, mb, _sliceParams, sps.BitDepthLuma, sps.BitDepthChroma, _deblockedRows, _decodedRows - 1);
             _deblockedRows = _decodedRows - 1;
         }
     }
 
     private void Deblock(H264Picture pic, H264MbState mb, H264Sps sps)
     {
-        int rows = sps.HeightInMbs, cols = sps.WidthInMbs;
+        if (_first!.Mbaff)
+        {
+            _deblock.FilterMbaff(pic, mb, _sliceParams, sps.BitDepthLuma, sps.BitDepthChroma);
+            return;
+        }
+
+        int rows = mb.HeightMbs, cols = sps.WidthInMbs;
         int workers = Math.Min(MaxParallelism, rows - _deblockedRows);
         if (workers <= 1)
         {
@@ -787,7 +928,7 @@ internal sealed class H264Decoder
         H264ListModification[] mods = list == 0 ? h.ModificationsL0 : h.ModificationsL1;
         if (mods.Length > 0)
         {
-            Modify(h, initial, mods, count, shortTerm, longTerm);
+            Modify(h, initial, mods, count);
         }
 
         if (initial.Count < count || initial.Contains(null!))
@@ -816,11 +957,150 @@ internal sealed class H264Decoder
         return [.. initial];
     }
 
-    /// <summary>The modification process for reference picture lists (8.2.4.3) for frames.</summary>
-    private void Modify(H264SliceHeader h, List<H264Picture> refs, H264ListModification[] mods, int count, List<H264Picture> shortTerm, List<H264Picture> longTerm)
+    /// <summary>
+    /// Builds RefPicList0 or 1 of a field (8.2.4.2.2, 8.2.4.2.4, 8.2.4.2.5): the reference frames in frame order, by FrameNumWrap
+    /// for P and by order count for B, then long-term by LongTermFrameIdx, each split into fields alternating between the
+    /// current parity and the other; then the modifications, padded when pictures are missing.
+    /// </summary>
+    private H264Picture[] BuildFieldList(H264SliceHeader h, int list)
     {
-        int maxPicNum = h.Sps.MaxFrameNum;
-        int currPicNum = h.FrameNum;
+        H264Sps sps = h.Sps;
+        int count = list == 0 ? h.NumRefIdxL0 : h.NumRefIdxL1;
+        int parity = h.BottomField ? 1 : 0;
+        List<H264Picture> shortTerm = [], longTerm = [];
+        foreach (H264Picture p in ReferenceFrames())
+        {
+            if (p.HasShortTermField)
+            {
+                p.FrameNumWrap = p.FrameNum > h.FrameNum ? p.FrameNum - sps.MaxFrameNum : p.FrameNum;
+                shortTerm.Add(p);
+            }
+
+            if (p.HasLongTermField)
+            {
+                longTerm.Add(p);
+            }
+        }
+
+        longTerm.Sort(static (a, b) => a.LongTermFrameIdx.CompareTo(b.LongTermFrameIdx));
+        if (!h.IsB)
+        {
+            shortTerm.Sort(static (a, b) => b.FrameNumWrap.CompareTo(a.FrameNumWrap));
+        }
+        else
+        {
+            // Entries at or before the current field's order count, nearest first, then those after, nearest first; list 1 the
+            // other way round. An entry's order count is that of its fields marked for short-term reference.
+            int poc = _curPic!.Poc;
+            List<H264Picture> before = [.. shortTerm.Where(p => ShortTermPoc(p) <= poc).OrderByDescending(ShortTermPoc)];
+            List<H264Picture> after = [.. shortTerm.Where(p => ShortTermPoc(p) > poc).OrderBy(ShortTermPoc)];
+            shortTerm = list == 0 ? [.. before, .. after] : [.. after, .. before];
+        }
+
+        List<H264Picture> initial = [];
+        SplitFields(shortTerm, parity, false, initial);
+        SplitFields(longTerm, parity, true, initial);
+        if (list == 1 && initial.Count > 1)
+        {
+            // List 1 is list 0 with its first two entries swapped when the two would be the same (8.2.4.2.4).
+            int poc = _curPic!.Poc;
+            List<H264Picture> frames0 = [.. shortTerm.Where(p => ShortTermPoc(p) <= poc).OrderByDescending(ShortTermPoc)];
+            frames0.AddRange(shortTerm.Where(p => ShortTermPoc(p) > poc).OrderBy(ShortTermPoc));
+            List<H264Picture> l0 = [];
+            SplitFields(frames0, parity, false, l0);
+            SplitFields(longTerm, parity, true, l0);
+            if (l0.SequenceEqual(initial))
+            {
+                (initial[0], initial[1]) = (initial[1], initial[0]);
+            }
+        }
+
+        if (initial.Count > count)
+        {
+            initial.RemoveRange(count, initial.Count - count);
+        }
+
+        H264ListModification[] mods = list == 0 ? h.ModificationsL0 : h.ModificationsL1;
+        if (mods.Length > 0)
+        {
+            Modify(h, initial, mods, count);
+        }
+
+        if (initial.Count < count || initial.Contains(null!))
+        {
+            _curMissingReference = true;
+            H264Picture? stand = initial.FirstOrDefault(p => p is not null) ?? _lastDecoded?.Field(parity) ?? shortTerm.FirstOrDefault()?.Field(parity) ?? longTerm.FirstOrDefault()?.Field(parity);
+            if (stand is null)
+            {
+                H264Picture gray = Allocate(sps);
+                FillGray(gray, sps);
+                Array.Fill(gray.MbIntra, true);
+                gray.ExtendEdges();
+                stand = gray.Field(parity);
+                Array.Fill(stand.MbIntra, true);
+            }
+
+            for (int i = 0; i < initial.Count; i++)
+            {
+                initial[i] ??= stand;
+            }
+
+            while (initial.Count < count)
+            {
+                initial.Add(stand);
+            }
+        }
+
+        return [.. initial];
+    }
+
+    /// <summary>The order count of a frame's fields marked for short-term reference (8.2.4.2.4): the smaller when both are.</summary>
+    private static int ShortTermPoc(H264Picture frame)
+    {
+        bool top = frame.Field(0).IsShortTermReference && (frame.DecodedFields & 1) != 0;
+        bool bottom = frame.Field(1).IsShortTermReference && (frame.DecodedFields & 2) != 0;
+        return top && bottom ? Math.Min(frame.TopPoc, frame.BottomPoc) : top ? frame.TopPoc : frame.BottomPoc;
+    }
+
+    /// <summary>
+    /// Appends the fields of the frames (8.2.4.2.5), alternating between the parity given and the other, starting with it, each
+    /// taken in frame order from the frames that have that field marked; when one parity runs out the rest of the other follow.
+    /// </summary>
+    private static void SplitFields(List<H264Picture> frames, int parity, bool longTerm, List<H264Picture> into)
+    {
+        List<H264Picture> same = [], other = [];
+        foreach (H264Picture frame in frames)
+        {
+            for (int f = 0; f < 2; f++)
+            {
+                H264Picture field = frame.Field(f);
+                if ((frame.DecodedFields & (1 << f)) != 0 && (longTerm ? field.IsLongTermReference : field.IsShortTermReference))
+                {
+                    (f == parity ? same : other).Add(field);
+                }
+            }
+        }
+
+        int a = 0, b = 0;
+        while (a < same.Count || b < other.Count)
+        {
+            if (a < same.Count)
+            {
+                into.Add(same[a++]);
+            }
+
+            if (b < other.Count)
+            {
+                into.Add(other[b++]);
+            }
+        }
+    }
+
+    /// <summary>The modification process for reference picture lists (8.2.4.3), for frames and fields.</summary>
+    private void Modify(H264SliceHeader h, List<H264Picture> refs, H264ListModification[] mods, int count)
+    {
+        int maxPicNum = h.MaxPicNum;
+        int currPicNum = h.CurrPicNum;
         int picNumPred = currPicNum;
         while (refs.Count < count + 1)
         {
@@ -853,12 +1133,12 @@ internal sealed class H264Decoder
 
                 picNumPred = noWrap;
                 num = noWrap > currPicNum ? noWrap - maxPicNum : noWrap;
-                pic = shortTerm.FirstOrDefault(p => p.FrameNumWrap == num);
+                pic = FindShortTerm(h, num);
             }
             else
             {
                 num = mod.Value;
-                pic = longTerm.FirstOrDefault(p => p.LongTermFrameIdx == num);
+                pic = FindLongTerm(h, num);
             }
 
             if (pic is null)
@@ -889,7 +1169,7 @@ internal sealed class H264Decoder
     }
 
     /// <summary>The implicit bi-prediction weights w0 per (refIdxL0, refIdxL1) pair (8.4.2.3.1), w1 being 64 - w0.</summary>
-    private static int[] ImplicitWeights(H264Picture cur, H264Picture[] list0, H264Picture[] list1)
+    internal static int[] ImplicitWeights(H264Picture cur, H264Picture[] list0, H264Picture[] list1)
     {
         int[] w = new int[32 * 32];
         Array.Fill(w, 32);
@@ -919,19 +1199,23 @@ internal sealed class H264Decoder
         return w;
     }
 
-    /// <summary>Ends the current picture: conceals what is missing, deblocks, marks references and stores it for output.</summary>
+    /// <summary>
+    /// Ends the current picture: conceals what is missing, deblocks, marks references and stores the frame for output. A first
+    /// field waits for its second field before the frame is stored.
+    /// </summary>
     private void FinishPicture()
     {
-        if (_cur is not { } pic || _first is not { } h)
+        if (_cur is not { } frame || _first is not { } h)
         {
             _sei = new H264Sei();
             return;
         }
 
+        H264Picture pic = _curPic!;
         CorruptDataException? pending = RunJobs();
         pending = Errors == DecodeErrorMode.Throw ? pending : null;
         H264Sps sps = h.Sps;
-        H264MbState mb = _mb!;
+        H264MbState mb = _curMb!;
         int missing = 0;
         for (int i = 0; i < mb.Slice.Length; i++)
         {
@@ -954,10 +1238,23 @@ internal sealed class H264Decoder
             _curDamaged = true;
         }
 
+        if (h.Mbaff)
+        {
+            // Direct prediction of later pictures reads which pairs are fields.
+            bool[] pairs = frame.FieldPairs is { } kept && kept.Length == mb.FieldMb.Length ? kept : new bool[mb.FieldMb.Length];
+            mb.FieldMb.CopyTo(pairs, 0);
+            frame.FieldPairs = pairs;
+        }
+
         Deblock(pic, mb, sps);
-        pic.ExtendEdges();
-        pic.Damaged = _curDamaged;
-        pic.Sei = _sei;
+        frame.ExtendEdges();
+        frame.DecodedFields |= h.FieldPic ? 1 << pic.Parity : 3;
+        frame.Damaged = _curDamaged;
+        if (!_curSecondField)
+        {
+            frame.Sei = _sei;
+        }
+
         _sei = new H264Sei();
 
         bool mmco5 = false;
@@ -985,18 +1282,33 @@ internal sealed class H264Decoder
 
         if (mmco5)
         {
-            int temp = Math.Min(pic.TopPoc, pic.BottomPoc);
-            pic.TopPoc -= temp;
-            pic.BottomPoc -= temp;
+            // tempPicOrderCnt (8.2.1): the picture's order count becomes 0.
+            if (!h.FieldPic)
+            {
+                int temp = Math.Min(frame.TopPoc, frame.BottomPoc);
+                frame.TopPoc -= temp;
+                frame.BottomPoc -= temp;
+            }
+            else if (h.BottomField)
+            {
+                frame.BottomPoc = 0;
+            }
+            else
+            {
+                frame.TopPoc = 0;
+            }
         }
 
-        bool output = _recoveryFrameNum < 0 || h.Idr || pic.FrameNum == _recoveryFrameNum;
-        if (output)
+        if (!_curSecondField)
         {
-            _recoveryFrameNum = -1;
-        }
+            bool output = _recoveryFrameNum < 0 || h.Idr || frame.FrameNum == _recoveryFrameNum;
+            if (output)
+            {
+                _recoveryFrameNum = -1;
+            }
 
-        Store(pic, output && !(pic.Damaged && Errors == DecodeErrorMode.Skip));
+            frame.Output = output;
+        }
 
         _prevFrameNum = mmco5 ? 0 : h.FrameNum;
         _prevFrameNumOffset = mmco5 ? 0 : _curFrameNumOffset;
@@ -1004,16 +1316,35 @@ internal sealed class H264Decoder
         {
             _prevRefFrameNum = mmco5 ? 0 : h.FrameNum;
             _prevPocMsb = mmco5 ? 0 : _curPocMsb;
-            _prevPocLsb = mmco5 ? pic.TopPoc : h.PocLsb;
+            _prevPocLsb = mmco5 ? (h.FieldPic && h.BottomField ? 0 : frame.TopPoc) : h.PocLsb;
+            _prevRefBottomField = h.FieldPic && h.BottomField;
         }
 
-        _lastDecoded = pic;
         _cur = null;
+        _curPic = null;
         _first = null;
+        if (h.FieldPic && !_curSecondField)
+        {
+            // The first field: the frame waits for its second field.
+            _pending = frame;
+            _pendingHeader = h;
+        }
+        else
+        {
+            StoreFrame(frame);
+        }
+
         if (pending is not null)
         {
             throw pending;
         }
+    }
+
+    /// <summary>Stores a finished frame for output, unless it is damaged in Skip mode or before a recovery point.</summary>
+    private void StoreFrame(H264Picture frame)
+    {
+        Store(frame, frame.Output && !(frame.Damaged && Errors == DecodeErrorMode.Skip));
+        _lastDecoded = frame;
     }
 
     /// <summary>Stores a decoded frame in the buffer and outputs what the bumping process lets go (C.4.4, C.4.5).</summary>
@@ -1050,7 +1381,27 @@ internal sealed class H264Decoder
         }
     }
 
-    /// <summary>The decoded reference picture marking process (8.2.5). Returns whether a memory_management_control_operation 5 came.</summary>
+    /// <summary>
+    /// The frames that hold reference pictures for the current picture: those in the buffer, and the current frame while its
+    /// second field is decoded, whose first field it may refer to.
+    /// </summary>
+    private IEnumerable<H264Picture> ReferenceFrames()
+    {
+        foreach (H264Picture p in _dpb.Pictures())
+        {
+            yield return p;
+        }
+
+        if (_curSecondField && _cur is { } frame)
+        {
+            yield return frame;
+        }
+    }
+
+    /// <summary>
+    /// The decoded reference picture marking process (8.2.5) for the current frame or field. Returns whether a
+    /// memory_management_control_operation 5 came.
+    /// </summary>
     private bool MarkReferences(H264SliceHeader h, H264Picture pic)
     {
         H264Sps sps = h.Sps;
@@ -1078,6 +1429,7 @@ internal sealed class H264Decoder
 
         bool mmco5 = false;
         bool currentLong = false;
+        H264Picture frame = pic.Frame;
         if (h.AdaptiveRefPicMarking)
         {
             foreach (H264Mmco op in h.Mmcos)
@@ -1085,27 +1437,23 @@ internal sealed class H264Decoder
                 switch (op.Op)
                 {
                     case 1:
-                        if (FindShortTerm(sps, h.FrameNum, h.FrameNum - op.DifferenceOfPicNums) is { } unmarked)
+                        if (FindShortTerm(h, h.CurrPicNum - op.DifferenceOfPicNums) is { } unmarked)
                         {
                             unmarked.IsShortTermReference = false;
                         }
 
                         break;
                     case 2:
-                        if (FindLongTerm(op.LongTermPicNum) is { } lt)
+                        if (FindLongTerm(h, op.LongTermPicNum) is { } lt)
                         {
                             lt.IsLongTermReference = false;
                         }
 
                         break;
                     case 3:
-                        if (FindShortTerm(sps, h.FrameNum, h.FrameNum - op.DifferenceOfPicNums) is { } made)
+                        if (FindShortTerm(h, h.CurrPicNum - op.DifferenceOfPicNums) is { } made)
                         {
-                            if (FindLongTerm(op.LongTermFrameIdx) is { } old && old != made)
-                            {
-                                old.IsLongTermReference = false;
-                            }
-
+                            UnmarkLongTermIdx(op.LongTermFrameIdx, made.Frame);
                             made.IsShortTermReference = false;
                             made.IsLongTermReference = true;
                             made.LongTermFrameIdx = op.LongTermFrameIdx;
@@ -1114,9 +1462,9 @@ internal sealed class H264Decoder
                         break;
                     case 4:
                         _maxLongTermFrameIdx = op.MaxLongTermFrameIdxPlus1 - 1;
-                        foreach (H264Picture p in _dpb.Pictures())
+                        foreach (H264Picture p in ReferenceFrames())
                         {
-                            if (p.IsLongTermReference && p.LongTermFrameIdx > _maxLongTermFrameIdx)
+                            if (p.HasLongTermField && p.LongTermFrameIdx > _maxLongTermFrameIdx)
                             {
                                 p.IsLongTermReference = false;
                             }
@@ -1124,20 +1472,20 @@ internal sealed class H264Decoder
 
                         break;
                     case 5:
-                        foreach (H264Picture p in _dpb.Pictures())
+                        foreach (H264Picture p in ReferenceFrames())
                         {
-                            p.IsShortTermReference = p.IsLongTermReference = false;
+                            if (p != frame)
+                            {
+                                p.IsShortTermReference = p.IsLongTermReference = false;
+                            }
                         }
 
                         _maxLongTermFrameIdx = -1;
                         mmco5 = true;
                         break;
                     case 6:
-                        if (FindLongTerm(op.LongTermFrameIdx) is { } prior)
-                        {
-                            prior.IsLongTermReference = false;
-                        }
-
+                        UnmarkLongTermIdx(op.LongTermFrameIdx, frame);
+                        pic.IsShortTermReference = false;
                         pic.IsLongTermReference = true;
                         pic.LongTermFrameIdx = op.LongTermFrameIdx;
                         currentLong = true;
@@ -1145,25 +1493,50 @@ internal sealed class H264Decoder
                 }
             }
         }
-        else
+        else if (!_curSecondField || !frame.HasShortTermField)
         {
+            // The sliding window, except for the second field of a pair whose first field is a short-term reference (8.2.5.3).
             SlidingWindow(sps, h.FrameNum);
         }
 
         if (!currentLong)
         {
-            pic.IsShortTermReference = true;
+            if (_curSecondField && frame.HasLongTermField)
+            {
+                // The second field joins its first field as a long-term reference (8.2.5.1).
+                pic.IsLongTermReference = true;
+            }
+            else
+            {
+                pic.IsShortTermReference = true;
+            }
         }
 
         // A stream that keeps more references than it may (8.2.5.4 overflow) loses its oldest short-term frames.
-        while (CountReferences() > Math.Max(sps.MaxNumRefFrames, 1) && DropOldestShortTerm(h.FrameNum, sps, pic))
+        while (CountReferences() > Math.Max(sps.MaxNumRefFrames, 1) && DropOldestShortTerm(h.FrameNum, sps, frame))
         {
         }
 
-        pic.HadMmco5 = mmco5;
+        frame.HadMmco5 |= mmco5;
         return mmco5;
     }
 
+    /// <summary>
+    /// Frees a LongTermFrameIdx for a field or frame of <paramref name="keep"/> (operations 3 and 6): a long-term frame or field
+    /// pair holding it is unmarked, and so is a long-term field holding it unless it is <paramref name="keep"/>'s other field.
+    /// </summary>
+    private void UnmarkLongTermIdx(int idx, H264Picture keep)
+    {
+        foreach (H264Picture p in ReferenceFrames())
+        {
+            if (p.HasLongTermField && p.LongTermFrameIdx == idx && p != keep)
+            {
+                p.IsLongTermReference = false;
+            }
+        }
+    }
+
+    /// <summary>Counts the reference frames, the current one included: a frame counts once whichever of its fields are marked.</summary>
     private int CountReferences()
     {
         int n = 1;
@@ -1181,8 +1554,8 @@ internal sealed class H264Decoder
         int shortCount = 0, longCount = 0;
         foreach (H264Picture p in _dpb.Pictures())
         {
-            shortCount += p.IsShortTermReference ? 1 : 0;
-            longCount += p.IsLongTermReference ? 1 : 0;
+            shortCount += p.HasShortTermField ? 1 : 0;
+            longCount += p.HasLongTermField && !p.HasShortTermField ? 1 : 0;
         }
 
         if (shortCount > 0 && shortCount + longCount >= Math.Max(sps.MaxNumRefFrames, 1))
@@ -1197,7 +1570,7 @@ internal sealed class H264Decoder
         int oldestWrap = int.MaxValue;
         foreach (H264Picture p in _dpb.Pictures())
         {
-            if (p.IsShortTermReference && p != except)
+            if (p.HasShortTermField && p != except)
             {
                 int wrap = p.FrameNum > frameNum ? p.FrameNum - sps.MaxFrameNum : p.FrameNum;
                 if (wrap < oldestWrap)
@@ -1213,30 +1586,68 @@ internal sealed class H264Decoder
             return false;
         }
 
+        // Both fields of the frame or field pair go.
         oldest.IsShortTermReference = false;
         return true;
     }
 
-    private H264Picture? FindShortTerm(H264Sps sps, int currFrameNum, int picNum)
+    /// <summary>
+    /// The short-term frame (for a frame picture) or field (for a field picture) with PicNum <paramref name="picNum"/> (8.2.4.1):
+    /// a field of the current parity has PicNum 2 FrameNumWrap + 1, one of the other parity 2 FrameNumWrap.
+    /// </summary>
+    private H264Picture? FindShortTerm(H264SliceHeader h, int picNum)
     {
-        foreach (H264Picture p in _dpb.Pictures())
+        int maxFrameNum = h.Sps.MaxFrameNum;
+        foreach (H264Picture p in ReferenceFrames())
         {
-            if (p.IsShortTermReference && (p.FrameNum > currFrameNum ? p.FrameNum - sps.MaxFrameNum : p.FrameNum) == picNum)
+            int wrap = p.FrameNum > h.FrameNum ? p.FrameNum - maxFrameNum : p.FrameNum;
+            if (!h.FieldPic)
             {
-                return p;
+                if (p.IsShortTermReference && wrap == picNum)
+                {
+                    return p;
+                }
+
+                continue;
+            }
+
+            int parity = h.BottomField ? 1 : 0;
+            for (int f = 0; f < 2; f++)
+            {
+                H264Picture field = p.Field(f);
+                if (field.IsShortTermReference && (2 * wrap) + (f == parity ? 1 : 0) == picNum)
+                {
+                    return field;
+                }
             }
         }
 
         return null;
     }
 
-    private H264Picture? FindLongTerm(int longTermPicNum)
+    /// <summary>The long-term frame or field with LongTermPicNum <paramref name="longTermPicNum"/>, as <see cref="FindShortTerm"/>.</summary>
+    private H264Picture? FindLongTerm(H264SliceHeader h, int longTermPicNum)
     {
-        foreach (H264Picture p in _dpb.Pictures())
+        foreach (H264Picture p in ReferenceFrames())
         {
-            if (p.IsLongTermReference && p.LongTermFrameIdx == longTermPicNum)
+            if (!h.FieldPic)
             {
-                return p;
+                if (p.IsLongTermReference && p.LongTermFrameIdx == longTermPicNum)
+                {
+                    return p;
+                }
+
+                continue;
+            }
+
+            int parity = h.BottomField ? 1 : 0;
+            for (int f = 0; f < 2; f++)
+            {
+                H264Picture field = p.Field(f);
+                if (field.IsLongTermReference && (2 * p.LongTermFrameIdx) + (f == parity ? 1 : 0) == longTermPicNum)
+                {
+                    return field;
+                }
             }
         }
 
@@ -1246,7 +1657,7 @@ internal sealed class H264Decoder
     /// <summary>Fills the macroblocks no slice decoded from the last decoded frame, or gray before any.</summary>
     private void Conceal(H264Picture pic, H264MbState mb, H264Sps sps)
     {
-        H264Picture? source = _lastDecoded;
+        H264Picture? source = pic.Parity >= 0 ? _lastDecoded?.Field(pic.Parity) : _lastDecoded;
         int w4 = mb.W4;
         for (int addr = 0; addr < mb.Slice.Length; addr++)
         {

@@ -279,7 +279,7 @@ public sealed class VideoReader : IDisposable
                     raster.Apply(x => x.AutoOrient());
                 }
 
-                yield return new VideoFrame<TPixel>(raster, frame.Timestamp, frame.Duration, frame.Color) { Hdr = frame.Hdr, Hdr10Plus = frame.Hdr10Plus, RenderSize = frame.RenderSize };
+                yield return new VideoFrame<TPixel>(raster, frame.Timestamp, frame.Duration, frame.Color) { Hdr = frame.Hdr, Hdr10Plus = frame.Hdr10Plus, RenderSize = frame.RenderSize, FieldOrder = frame.FieldOrder, RepeatFields = frame.RepeatFields };
             }
         }
     }

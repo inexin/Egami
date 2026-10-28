@@ -29,6 +29,9 @@ IMAGE = "egami-video-tools"
 OUT = "tests/video/corpus/h264"
 TESTSRC = "-f lavfi -i testsrc2=size={size}:rate=25,format={fmt} -frames:v {frames}"
 MANDEL = "-f lavfi -i mandelbrot=size={size}:rate=25,format={fmt} -frames:v {frames}"
+# Interlaced content: a 50 frames a second source woven into 25 frames of two fields each, so each field moves.
+WOVEN = "-f lavfi -i testsrc2=size={size}:rate=50,tinterlace=mode=interleave_top,format={fmt} -frames:v {frames}"
+WOVEN_MANDEL = "-f lavfi -i mandelbrot=size={size}:rate=50,tinterlace=mode=interleave_top,format={fmt} -frames:v {frames}"
 
 # name: (source, pixel format, x264 settings, size, frames). Every clip is coded by libx264 into a raw Annex B stream.
 CLIPS = {
@@ -63,7 +66,31 @@ CLIPS = {
     "tiny-motion": (TESTSRC, "yuv420p", "-profile:v high -x264-params bframes=3:ref=4:me=esa:merange=32:partitions=all", "48x32", 16),
     "high10-qp-low": (MANDEL, "yuv420p10le", "-profile:v high10 -x264-params qp=1:bframes=2", "176x144", 4),
     "high422-10-intra": (MANDEL, "yuv422p10le", "-profile:v high422 -x264-params keyint=1", "176x144", 3),
+    # V7.1: interlaced streams. x264 codes interlaced video as MBAFF frames, choosing frame or field per macroblock pair.
+    "mbaff-fake": (TESTSRC, "yuv420p", "-profile:v high -x264-params fake-interlaced=1:bframes=2", "176x144", 8),
+    "mbaff-intra": (WOVEN, "yuv420p", "-profile:v high -x264-params interlaced=1:tff=1:keyint=1", "176x144", 3),
+    "mbaff-intra-cavlc": (WOVEN, "yuv420p", "-profile:v high -x264-params interlaced=1:tff=1:keyint=1:cabac=0", "176x144", 3),
+    "mbaff-p": (WOVEN, "yuv420p", "-profile:v main -x264-params interlaced=1:tff=1:bframes=0:ref=3:weightp=0", "176x160", 10),
+    "mbaff-p-cavlc": (WOVEN, "yuv420p", "-profile:v main -x264-params interlaced=1:tff=1:bframes=0:ref=3:weightp=0:cabac=0", "176x160", 10),
+    "mbaff-b-spatial": (WOVEN_MANDEL, "yuv420p", "-profile:v main -x264-params interlaced=1:tff=1:bframes=3:b-pyramid=normal:direct=spatial:ref=3:weightp=0:weightb=0", "176x160", 14),
+    "mbaff-b-temporal": (WOVEN_MANDEL, "yuv420p", "-profile:v main -x264-params interlaced=1:tff=1:bframes=3:b-pyramid=none:direct=temporal:ref=3:weightp=0:weightb=0", "176x160", 14),
+    "mbaff-b-cavlc": (WOVEN_MANDEL, "yuv420p", "-profile:v main -x264-params interlaced=1:tff=1:bframes=2:ref=2:cabac=0:weightp=0", "176x160", 12),
+    "mbaff-weighted": (WOVEN_MANDEL, "yuv420p", "-profile:v main -x264-params interlaced=1:tff=1:bframes=2:weightp=2:weightb=1:ref=3", "176x160", 12),
+    "mbaff-bff": (WOVEN, "yuv420p", "-profile:v high -x264-params interlaced=1:bff=1:bframes=2:8x8dct=1:ref=2", "176x144", 10),
+    "mbaff-8x8": (WOVEN_MANDEL, "yuv420p", "-profile:v high -x264-params interlaced=1:tff=1:bframes=2:8x8dct=1:ref=2:partitions=all", "176x160", 12),
+    "mbaff-slices": (WOVEN, "yuv420p", "-profile:v high -x264-params interlaced=1:tff=1:slices=3:bframes=2:ref=2", "176x160", 10),
+    "mbaff-high10": (WOVEN_MANDEL, "yuv420p10le", "-profile:v high10 -x264-params interlaced=1:tff=1:bframes=2:ref=2", "176x160", 10),
+    "mbaff-high422": (WOVEN_MANDEL, "yuv422p", "-profile:v high422 -x264-params interlaced=1:tff=1:bframes=2", "176x160", 10),
+    # Progressive CIF frames, which ConformanceTests puts before a CIF field-picture stream: interlaced at the same size.
+    "cif-intra": (TESTSRC, "yuv420p", "-profile:v main -x264-params keyint=1", "352x288", 2),
+    # Picture timing SEI with pic_struct on interlaced frames.
+    "mbaff-pic-struct": (WOVEN, "yuv420p", "-profile:v high -x264-params interlaced=1:tff=1:pic-struct=1:bframes=2", "176x144", 8),
 }
+
+# Clips that keep their SEI (the others have it removed, so x264's version string does not change them), and clips whose
+# frames.json also holds each frame's interlacing as ffprobe reports it: interlaced_frame, top_field_first, repeat_pict.
+KEEP_SEI = ["mbaff-pic-struct"]
+FIELDS = [name for name in CLIPS if name.startswith("mbaff") or name in KEEP_SEI]
 
 # Clips also written into MP4, so the avcC path is checked.
 MP4 = ["cabac-b-spatial", "high10"]
@@ -86,7 +113,8 @@ def output(command, local):
 def make(name, local):
     source, fmt, settings, size, frames = CLIPS[name]
     src = source.format(size=size, fmt=fmt, frames=frames)
-    run(f"ffmpeg -y -v error -nostdin {src} -c:v libx264 -pix_fmt {fmt} {settings} -bsf:v filter_units=remove_types=6 {name}.h264", local)
+    strip = "" if name in KEEP_SEI else "-bsf:v filter_units=remove_types=6 "
+    run(f"ffmpeg -y -v error -nostdin {src} -c:v libx264 -pix_fmt {fmt} {settings} {strip}{name}.h264", local)
     if name in MP4:
         run(f"ffmpeg -y -v error -nostdin -r 25 -i {name}.h264 -c copy {name}.mp4", local)
     probe = json.loads(output(f"ffprobe -v error -select_streams v:0 -show_entries stream=width,height,pix_fmt -of json {name}.h264", local))
@@ -94,8 +122,12 @@ def make(name, local):
     md5 = output(f"ffmpeg -v error -nostdin -i {name}.h264 -f framemd5 -", local)
     hashes = [line.split(",")[-1].strip() for line in md5.splitlines() if line and not line.startswith("#")]
     depth = 10 if "10" in stream["pix_fmt"] else 8
+    frames = {"width": stream["width"], "height": stream["height"], "pixelFormat": stream["pix_fmt"], "bitDepth": depth, "md5": hashes}
+    if name in FIELDS:
+        flags = output(f"ffprobe -v error -show_entries frame=interlaced_frame,top_field_first,repeat_pict -of csv=p=0 {name}.h264", local)
+        frames["fields"] = [line.strip() for line in flags.splitlines() if line.strip()]
     with open(os.path.join(OUT, name + ".frames.json"), "w", encoding="utf-8", newline="\n") as f:
-        json.dump({"width": stream["width"], "height": stream["height"], "pixelFormat": stream["pix_fmt"], "bitDepth": depth, "md5": hashes}, f, indent=1)
+        json.dump(frames, f, indent=1)
         f.write("\n")
     print(f"{name}: {os.path.getsize(os.path.join(OUT, name + '.h264'))} bytes, {len(hashes)} frames")
 

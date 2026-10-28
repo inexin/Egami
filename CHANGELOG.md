@@ -47,6 +47,20 @@ Helpers a format plugin needs, made public for Egami.Formats.Extended. All addit
 
 ## Egami.Video, unreleased
 
+V7.1: interlaced H.264 (Build Plan tasks 16 to 18). All additive.
+
+- Egami.Video.H264 decodes interlaced streams: field pictures (PAFF) with field reference lists, marking and order counts,
+  and MBAFF frames, whose macroblock pairs are frame or field macroblocks, with MBAFF neighbours, co-located motion, context
+  selection and deblocking. A frame's fields come out woven. All 15 new MBAFF clips of the corpus (x264 interlaced, CAVLC and
+  CABAC, P and B slices, spatial and temporal direct, weighted prediction, the 8x8 transform, several slices, High 10 and
+  4:2:2) equal FFmpeg's decode frame for frame, and so do all 84 interlaced and FRExt conformance bitstreams of H.264.1
+  (`tools/video/make-h264-conformance.py` fetches them into `.cache`; `ConformanceTests` runs them when they are there).
+  Progressive decoding is as fast as before (1080p: 60.9 M instructions a frame before and after).
+- `VideoFrame.FieldOrder` and `VideoFrame.RepeatFields`: whether a frame is interlaced and which field comes first, and the
+  fields it is repeated for, from the picture timing SEI's pic_struct or from how the frame was coded, matching ffprobe's
+  interlaced_frame, top_field_first and repeat_pict. `VideoReader.ReadFrames` keeps them.
+- A field picture without its second field reports `H264.UnpairedField` and fills the frame from its own rows.
+
 V6 FFV1 API review (Build Plan task 17), accepted 2026-10-28 with every question as recommended: `Ffv1EncoderOptions.BitsPerSample`
 is now `BitDepth`, matching `Vp9EncoderOptions` and `Av1EncoderOptions`; everything else stays as built.
 

@@ -10,6 +10,26 @@ internal sealed partial class H264SliceDecoder
     private readonly int[] _left = new int[16];
     private int _topLeft;
 
+    /// <summary>
+    /// Whether the left neighbour's rows first to first + count - 1 may be used for intra prediction: in an MBAFF frame the
+    /// rows can be in the two macroblocks of the left pair, each of which may be inter with constrained intra prediction.
+    /// </summary>
+    private bool LeftIntra(int first, int count)
+    {
+        if (!_mbaff)
+        {
+            return IntraAvailable(LeftMb);
+        }
+
+        if (!_leftIntraKnown)
+        {
+            FindLeftIntra();
+        }
+
+        int mask = ((1 << count) - 1) << first;
+        return (_leftIntraLuma & mask) == mask;
+    }
+
     private bool IntraAvailable(int addr) =>
         Available(addr) && (!_pps.ConstrainedIntraPred || H264MbState.IsIntra(_mb.Kind[addr]));
 
@@ -166,11 +186,11 @@ internal sealed partial class H264SliceDecoder
         where TSample : unmanaged
     {
         int bx4 = bx, by4 = by;
-        bool left = bx4 > 0 || IntraAvailable(LeftMb);
+        bool left = bx4 > 0 || LeftIntra(by4 * 4, n);
         bool top = by4 > 0 || IntraAvailable(TopMb);
         bool topLeft = bx4 > 0 && by4 > 0 ? true
             : bx4 > 0 ? IntraAvailable(TopMb)
-            : by4 > 0 ? IntraAvailable(LeftMb)
+            : by4 > 0 ? LeftIntra((by4 * 4) - 1, 1)
             : IntraAvailable(_mbX > 0 && _mbY > 0 ? _mbAddr - _widthMbs - 1 : -1);
         int step = n / 4;
         bool topRight;
@@ -362,7 +382,7 @@ internal sealed partial class H264SliceDecoder
     private void PredictIntra16x16<TSample>(TSample[] plane, int at, int stride)
         where TSample : unmanaged
     {
-        bool left = IntraAvailable(LeftMb), top = IntraAvailable(TopMb);
+        bool left = LeftIntra(0, 16), top = IntraAvailable(TopMb);
         bool topLeft = IntraAvailable(_mbX > 0 && _mbY > 0 ? _mbAddr - _widthMbs - 1 : -1);
         for (int i = 0; i < 16; i++)
         {
@@ -433,7 +453,12 @@ internal sealed partial class H264SliceDecoder
         int stride = _pic.ChromaStride;
         int w = _sps.MbWidthC, h = _sps.MbHeightC;
         int at = _pic.ChromaOrigin + (_mbY * h * stride) + (_mbX * w);
-        bool left = IntraAvailable(LeftMb), top = IntraAvailable(TopMb);
+        if (_mbaff && !_leftIntraKnown)
+        {
+            FindLeftIntra();
+        }
+
+        bool left = _mbaff ? (_leftIntraChroma & ((1 << h) - 1)) == (1 << h) - 1 : IntraAvailable(LeftMb), top = IntraAvailable(TopMb);
         bool topLeft = IntraAvailable(_mbX > 0 && _mbY > 0 ? _mbAddr - _widthMbs - 1 : -1);
         for (int i = 0; i < w; i++)
         {
@@ -442,7 +467,7 @@ internal sealed partial class H264SliceDecoder
 
         for (int i = 0; i < h; i++)
         {
-            _left[i] = left ? H264Samples.Get(plane, at + (i * stride) - 1) : 0;
+            _left[i] = left || (_mbaff && (_leftIntraChroma & (1 << i)) != 0) ? H264Samples.Get(plane, at + (i * stride) - 1) : 0;
         }
 
         _topLeft = topLeft ? H264Samples.Get(plane, at - stride - 1) : 0;
@@ -462,18 +487,21 @@ internal sealed partial class H264SliceDecoder
                             sumL += _left[yo + i];
                         }
 
+                        // DC takes the left samples of its own four rows, which an MBAFF frame may have when others are not.
+                        bool rowsLeft = _mbaff ? ((_leftIntraChroma >> yo) & 15) == 15 : left;
+
                         int v;
                         if ((xo == 0 && yo == 0) || (xo > 0 && yo > 0))
                         {
-                            v = top && left ? (sumT + sumL + 4) >> 3 : left ? (sumL + 2) >> 2 : top ? (sumT + 2) >> 2 : dcDefault;
+                            v = top && rowsLeft ? (sumT + sumL + 4) >> 3 : rowsLeft ? (sumL + 2) >> 2 : top ? (sumT + 2) >> 2 : dcDefault;
                         }
                         else if (xo > 0)
                         {
-                            v = top ? (sumT + 2) >> 2 : left ? (sumL + 2) >> 2 : dcDefault;
+                            v = top ? (sumT + 2) >> 2 : rowsLeft ? (sumL + 2) >> 2 : dcDefault;
                         }
                         else
                         {
-                            v = left ? (sumL + 2) >> 2 : top ? (sumT + 2) >> 2 : dcDefault;
+                            v = rowsLeft ? (sumL + 2) >> 2 : top ? (sumT + 2) >> 2 : dcDefault;
                         }
 
                         for (int y = 0; y < 4; y++)
