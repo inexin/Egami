@@ -32,7 +32,7 @@ public class Ffv1EncoderTests
     public void CorpusFramesRoundTrip(string clip, Ffv1Coder coder)
     {
         (string file, int depth, List<string> expected) = Ffv1Tests.ReadReference(clip);
-        byte[] encoded = Reencode(Ffv1Tests.PathOf(file), new Ffv1EncoderOptions { Coder = coder, BitsPerSample = depth });
+        byte[] encoded = Reencode(Ffv1Tests.PathOf(file), new Ffv1EncoderOptions { Coder = coder, BitDepth = depth });
         Assert.Equal(expected, Decode(encoded, depth));
     }
 
@@ -45,7 +45,7 @@ public class Ffv1EncoderTests
         foreach (string clip in (string[])["v3-odd-97x61", "v3-gop", "v3-bgra", "v3-422p10", "v3-411", "v3-ya8"])
         {
             (string file, int depth, List<string> expected) = Ffv1Tests.ReadReference(clip);
-            byte[] encoded = Reencode(Ffv1Tests.PathOf(file), new Ffv1EncoderOptions { Slices = slices, ContextModel = model, BitsPerSample = depth }, keyframeInterval);
+            byte[] encoded = Reencode(Ffv1Tests.PathOf(file), new Ffv1EncoderOptions { Slices = slices, ContextModel = model, BitDepth = depth }, keyframeInterval);
             Assert.Equal(expected, Decode(encoded, depth));
         }
     }
@@ -99,7 +99,7 @@ public class Ffv1EncoderTests
     public void AviFilesRoundTrip(string clip)
     {
         (string file, int depth, List<string> expected) = Ffv1Tests.ReadReference(clip);
-        byte[] avi = Reencode(Ffv1Tests.PathOf(file), new Ffv1EncoderOptions { BitsPerSample = depth }, container: "avi");
+        byte[] avi = Reencode(Ffv1Tests.PathOf(file), new Ffv1EncoderOptions { BitDepth = depth }, container: "avi");
         Assert.Equal(expected, Decode(avi, depth));
         using VideoReader reader = VideoReader.Open(new MemoryStream(avi));
         Assert.Equal(CodecIds.Ffv1, reader.Track.CodecId);
@@ -158,6 +158,41 @@ public class Ffv1EncoderTests
         using IVideoEncoder encoder = VideoCodecs.Ffv1.CreateEncoder(new VideoEncoderOptions { Width = first.Width, Height = first.Height }, MediaContext.Default);
         encoder.Send(first);
         Assert.Throws<ArgumentException>(() => encoder.Send(second));
+    }
+
+    [Theory]
+    [InlineData(57, 41, ChromaFormat.Yuv411, 6)]
+    [InlineData(57, 41, ChromaFormat.Yuv410, 9)]
+    [InlineData(99, 35, ChromaFormat.Yuv420, 12)]
+    [InlineData(1, 1, ChromaFormat.Yuv420, 4)]
+    public void SliceGridsLeaveNoChromaUncoded(int width, int height, ChromaFormat chroma, int slices)
+    {
+        // Found by the ffv1enc fuzz target: three slices across 57 samples of 4:1:1 left the last chroma column in none of them.
+        Random random = new(width * height);
+        using YuvRaster<byte> source = YuvRaster.Create(width, height, chroma, YuvColor.Bt601Limited, alpha: true);
+        foreach (YuvPlane<byte>? plane in new[] { source.Y, source.U, source.V, source.A })
+        {
+            for (int y = 0; plane is not null && y < plane.Height; y++)
+            {
+                random.NextBytes(plane.Row(y));
+            }
+        }
+
+        using IVideoEncoder encoder = VideoCodecs.Ffv1.CreateEncoder(
+            new VideoEncoderOptions { Width = width, Height = height, Ffv1 = new Ffv1EncoderOptions { Slices = slices } }, MediaContext.Default);
+        encoder.Send(new YuvVideoFrame(source, MediaTime.Zero));
+        Assert.True(encoder.TryReceive(out EncodedPacket? packet));
+        using IVideoDecoder decoder = VideoCodecs.Ffv1.CreateDecoder(encoder.Track, new VideoDecoderOptions { Errors = DecodeErrorMode.Throw }, MediaContext.Default);
+        using (packet)
+        {
+            decoder.Send(packet);
+        }
+
+        Assert.True(decoder.TryReceive(out YuvVideoFrame? back));
+        using (back)
+        {
+            Assert.Equal(Ffv1Tests.Md5(source, 8), Ffv1Tests.Md5(back.Raster, 8));
+        }
     }
 
     [Theory]

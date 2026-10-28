@@ -726,8 +726,8 @@ Egami.Video.Codecs.Ffv1ContextModel.Large = 1 -> Egami.Video.Codecs.Ffv1ContextM
 Egami.Video.Codecs.Ffv1ContextModel.Small = 0 -> Egami.Video.Codecs.Ffv1ContextModel
 Egami.Video.Codecs.Ffv1EncoderOptions
 Egami.Video.Codecs.Ffv1EncoderOptions.<Clone>$() -> Egami.Video.Codecs.Ffv1EncoderOptions!
-Egami.Video.Codecs.Ffv1EncoderOptions.BitsPerSample.get -> int?
-Egami.Video.Codecs.Ffv1EncoderOptions.BitsPerSample.init -> void
+Egami.Video.Codecs.Ffv1EncoderOptions.BitDepth.get -> int?
+Egami.Video.Codecs.Ffv1EncoderOptions.BitDepth.init -> void
 Egami.Video.Codecs.Ffv1EncoderOptions.Coder.get -> Egami.Video.Codecs.Ffv1Coder
 Egami.Video.Codecs.Ffv1EncoderOptions.Coder.init -> void
 Egami.Video.Codecs.Ffv1EncoderOptions.ContextModel.get -> Egami.Video.Codecs.Ffv1ContextModel?

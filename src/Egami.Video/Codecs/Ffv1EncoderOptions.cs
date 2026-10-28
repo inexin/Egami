@@ -38,7 +38,7 @@ public sealed record Ffv1EncoderOptions
     /// planes' takes the samples' high bits, which suits planes decoded from a 9, 11, 13, 14 or 15-bit source, held shifted up in
     /// 10, 12 or 16 bits, so the file keeps the source depth.
     /// </summary>
-    public int? BitsPerSample { get; init; }
+    public int? BitDepth { get; init; }
 }
 
 /// <summary>The entropy coder FFV1 codes samples with (RFC 9043 section 4.2.3).</summary>
