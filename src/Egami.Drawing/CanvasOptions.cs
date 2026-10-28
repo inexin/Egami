@@ -74,6 +74,7 @@ public sealed record class CanvasOptions
     /// <summary>Gets the options every canvas starts with.</summary>
     public static CanvasOptions Default { get; } = new();
 
+
     /// <summary>
     /// Gets where edges and paints blend. <see cref="ColorSpace.Encoded"/> (the default) blends the stored values, as Egami's other
     /// operations and SkiaSharp do; <see cref="ColorSpace.Linear"/> blends in linear light, which keeps

@@ -10,9 +10,11 @@ public enum FontHinting
     None,
 
     /// <summary>
-    /// Vertical only: the baseline, x-height and cap-height zones snap to whole pixels (from a CFF font's blue zones, else zones
-    /// measured from the font's own flat glyphs), points between them following; x values and advances never move. Applies up to
-    /// 48 pixels per em under scale-and-translate transforms.
+    /// Vertical only, after a light autohinter: the scale is nudged so the x-height lands on a whole pixel; the baseline,
+    /// x-height and cap-height zones (from a CFF font's blue zones, else measured from the font's own flat glyphs) snap to whole
+    /// pixels while they are under 3/4 pixel tall; each glyph's horizontal stems between them sit on whole pixels with their height
+    /// kept; other points follow. x values and advances never move. Applies up to 48 pixels per em under scale-and-translate
+    /// transforms.
     /// </summary>
     Light,
 

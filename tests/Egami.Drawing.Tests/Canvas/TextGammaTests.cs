@@ -19,8 +19,9 @@ public class TextGammaTests
     private static Typeface Source => TextTests.Source.Value;
 
     // SHA-256 of Scenes(CanvasOptions.Default) and its linear twin as Egami 1.2.0 (v1.2.0, unchanged on main until 2.7.5) drew them.
-    private const string Encoded120 = "19C18E36337861C8F50D929D2D4490A8A9FFE594D59A42B51ECEA4353619A0C3";
-    private const string Linear120 = "ADE5FDF28EE203EF2678920E47299C7CC12561630F95A3796B5C05CD0649CD22";
+    // The scenes draw without hinting: light hinting is opt-in, and 2.7.5 stage 4 upgrades it.
+    private const string Encoded120 = "BFB29C18F28A999B8BCD9BCEF910D75E57E9FC193250068B45A968979B4F49CA";
+    private const string Linear120 = "8386B0A96EB32D3547128D29F85DDD8B7841E1D76F8CA3EEB67BE0CE33C5A9E2";
 
     [Fact]
     public void DefaultsDrawAsEgami120()
@@ -203,7 +204,7 @@ public class TextGammaTests
         using var hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
         CanvasOptions lcd = options with { PixelGeometry = PixelGeometry.RgbHorizontal };
         var gray = new Font(Noto, 13);
-        var light = new Font(Source, 16) { Hinting = FontHinting.Light, Subpixel = false };
+        var light = new Font(Source, 16) { Subpixel = false };
         var lcdFont = light with { Edging = FontEdging.Lcd };
         var gradient = new LinearGradient(Vector2.Zero, new Vector2(200, 0), new RgbaF32(0.8f, 0.1f, 0.1f, 1), new RgbaF32(0.1f, 0.2f, 0.9f, 1));
 

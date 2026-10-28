@@ -94,6 +94,22 @@ public sealed partial class Typeface
         }
     }
 
+    /// <summary>Gets the x-height light hinting aligns, in font units: OS/2 sxHeight, else the top of 'x', else 0.</summary>
+    internal float XHeightForHinting
+    {
+        get
+        {
+            if (Os2.XHeight > 0)
+            {
+                return Os2.XHeight;
+            }
+
+            ushort x = GetGlyph('x');
+            GlyphExtents e = x == 0 ? GlyphExtents.Empty : GetGlyphExtents(x);
+            return e.IsEmpty ? 0 : e.YMax;
+        }
+    }
+
     private const int OpStdVW = 11;
 
     private float MeasureStem()
