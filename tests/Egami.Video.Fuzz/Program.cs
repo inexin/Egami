@@ -1257,7 +1257,7 @@ static void EncodeFfv1(Stream stream)
             ContextModel = (data[5] & 8) != 0 ? Ffv1ContextModel.Large : Ffv1ContextModel.Small,
             Slices = 1 + (data[6] % 12),
             SliceCrc = (data[5] & 16) == 0,
-            BitsPerSample = bits,
+            BitDepth = bits,
         },
     };
     MediaContext context = Context();

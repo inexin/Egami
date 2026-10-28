@@ -45,7 +45,7 @@ FFV1's reversible color transform, and decode as G, B and R planes tagged `YuvMa
 [!code-csharp[](../../../tests/Egami.DocSamples/Archiving.cs#archive-rgb)]
 
 Planes decoded from a 9, 11, 13, 14 or 15-bit source sit in 10, 12 or 16-bit planes with their samples shifted up; set
-`Ffv1EncoderOptions.BitsPerSample` to write them back at the source depth. The track's `BitDepth` gives the depth a file holds.
+`Ffv1EncoderOptions.BitDepth` to write them back at the source depth. The track's `BitDepth` gives the depth a file holds.
 
 ## Working copies
 

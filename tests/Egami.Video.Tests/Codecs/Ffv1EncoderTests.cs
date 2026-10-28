@@ -32,7 +32,7 @@ public class Ffv1EncoderTests
     public void CorpusFramesRoundTrip(string clip, Ffv1Coder coder)
     {
         (string file, int depth, List<string> expected) = Ffv1Tests.ReadReference(clip);
-        byte[] encoded = Reencode(Ffv1Tests.PathOf(file), new Ffv1EncoderOptions { Coder = coder, BitsPerSample = depth });
+        byte[] encoded = Reencode(Ffv1Tests.PathOf(file), new Ffv1EncoderOptions { Coder = coder, BitDepth = depth });
         Assert.Equal(expected, Decode(encoded, depth));
     }
 
@@ -45,7 +45,7 @@ public class Ffv1EncoderTests
         foreach (string clip in (string[])["v3-odd-97x61", "v3-gop", "v3-bgra", "v3-422p10", "v3-411", "v3-ya8"])
         {
             (string file, int depth, List<string> expected) = Ffv1Tests.ReadReference(clip);
-            byte[] encoded = Reencode(Ffv1Tests.PathOf(file), new Ffv1EncoderOptions { Slices = slices, ContextModel = model, BitsPerSample = depth }, keyframeInterval);
+            byte[] encoded = Reencode(Ffv1Tests.PathOf(file), new Ffv1EncoderOptions { Slices = slices, ContextModel = model, BitDepth = depth }, keyframeInterval);
             Assert.Equal(expected, Decode(encoded, depth));
         }
     }
@@ -99,7 +99,7 @@ public class Ffv1EncoderTests
     public void AviFilesRoundTrip(string clip)
     {
         (string file, int depth, List<string> expected) = Ffv1Tests.ReadReference(clip);
-        byte[] avi = Reencode(Ffv1Tests.PathOf(file), new Ffv1EncoderOptions { BitsPerSample = depth }, container: "avi");
+        byte[] avi = Reencode(Ffv1Tests.PathOf(file), new Ffv1EncoderOptions { BitDepth = depth }, container: "avi");
         Assert.Equal(expected, Decode(avi, depth));
         using VideoReader reader = VideoReader.Open(new MemoryStream(avi));
         Assert.Equal(CodecIds.Ffv1, reader.Track.CodecId);

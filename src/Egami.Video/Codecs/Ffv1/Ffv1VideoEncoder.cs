@@ -42,7 +42,7 @@ internal sealed class Ffv1VideoEncoder : IVideoEncoder
             ArgumentOutOfRangeException.ThrowIfGreaterThan(slices, 1024, nameof(options));
         }
 
-        if (_ffv1.BitsPerSample is { } bits)
+        if (_ffv1.BitDepth is { } bits)
         {
             ArgumentOutOfRangeException.ThrowIfLessThan(bits, 8, nameof(options));
             ArgumentOutOfRangeException.ThrowIfGreaterThan(bits, 16, nameof(options));
@@ -132,10 +132,10 @@ internal sealed class Ffv1VideoEncoder : IVideoEncoder
     private Layout LayoutOf(YuvRaster planes)
     {
         bool rgb = planes.Color.Matrix == YuvMatrix.Identity && planes.ChromaFormat == ChromaFormat.Yuv444;
-        int bits = _ffv1.BitsPerSample ?? planes.BitDepth;
+        int bits = _ffv1.BitDepth ?? planes.BitDepth;
         if (bits > planes.BitDepth)
         {
-            throw new ArgumentException($"Ffv1EncoderOptions.BitsPerSample is {bits}, more than the frame's {planes.BitDepth}-bit planes hold.");
+            throw new ArgumentException($"Ffv1EncoderOptions.BitDepth is {bits}, more than the frame's {planes.BitDepth}-bit planes hold.");
         }
 
         return new Layout(planes.ChromaFormat, planes.BitDepth, bits, planes.HasAlpha, rgb);
