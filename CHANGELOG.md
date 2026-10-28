@@ -3,6 +3,26 @@
 All notable changes to Egami are listed here. Egami follows [Semantic Versioning](https://semver.org): from 1.0, public API
 changes that break code come only in a new major version.
 
+## Egami.Formats.Extended, unreleased
+
+A new package of format plugins, stage A of its Build Plan (tasks 1 to 7). It depends on core Egami only and rides the Egami
+release train; the API review comes in stage B.
+
+- PCX, SGI, Sun raster, XBM, XPM, WBMP and Farbfeld, each read and written, registered with `WithExtendedFormats()` or one
+  `With<Format>()` each (`WithPcx`, `WithSgi`, `WithSunRaster`, `WithXbm`, `WithXpm`, `WithWbmp`, `WithFarbfeld`).
+- Every format probes, streams through `RasterDecoder`, saves through `RasterEncoder` and `Transcode`, keeps the safety limits,
+  and in a lenient read of a damaged file keeps what decoded with a warning such as `Pcx.RowsMissing`.
+- `PcxDetails`, `SgiDetails`, `SunRasterDetails`, `XbmDetails` and `XpmDetails` keep what the headers say; `SgiWriterOptions.Rle`
+  and `SunRasterWriterOptions.Rle` choose run-length coding.
+
+## Egami, unreleased
+
+Helpers a format plugin needs, made public for Egami.Formats.Extended. All additive.
+
+- `EgamiInput.CheckFrameSize`, for a row reader that rents its buffers before any raster exists.
+- `EgamiInput.Warn(RasterMetadata, ...)`, for warnings from an open `RowReader`.
+- `SaveKeeps` and `EncodeStart<TPixel>.ReportLosses`, so a plugin's writer reports what a save loses as Egami's own writers do.
+
 ## Egami.Cli, unreleased
 
 - `egami ocr`: the text of images through an OCR program you name with `--engine-command`, such as Tesseract, as plain

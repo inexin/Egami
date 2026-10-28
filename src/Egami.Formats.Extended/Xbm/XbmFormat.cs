@@ -131,9 +131,37 @@ internal sealed class XbmReader : ExtendedReader
             throw input.Corrupt(declaration, "The XBM bits array is missing.");
         }
 
-        bool words = source.Since(declaration).IndexOf("short"u8) >= 0;
+        bool words = DeclaresShort(source.Since(declaration));
         Point? hotspot = hotX >= 0 && hotY >= 0 && hotX <= int.MaxValue && hotY <= int.MaxValue ? new Point((int)hotX, (int)hotY) : null;
         return new Parsed((int)width, (int)height, words, source.Position, name, hotspot);
+    }
+
+    /// <summary>
+    /// Returns whether the array's declaration has the type word short (X10), as a whole word outside comments, so a name such as
+    /// shortcut_bits does not count.
+    /// </summary>
+    private static bool DeclaresShort(ReadOnlySpan<byte> declaration)
+    {
+        CSource source = new(declaration);
+        while (true)
+        {
+            source.SkipSpace();
+            if (source.AtEnd)
+            {
+                return false;
+            }
+
+            ReadOnlySpan<byte> word = source.Identifier();
+            if (word.SequenceEqual("short"u8))
+            {
+                return true;
+            }
+
+            if (word.IsEmpty)
+            {
+                source.Position++;
+            }
+        }
     }
 
     /// <summary>What the header says, and where the numbers start.</summary>

@@ -40,6 +40,10 @@
           "files": [ "Egami.Heic.csproj" ]
         },
         {
+          "src": "../src/Egami.Formats.Extended",
+          "files": [ "Egami.Formats.Extended.csproj" ]
+        },
+        {
           "src": "../src/Egami.Video",
           "files": [ "Egami.Video.csproj" ]
         }
