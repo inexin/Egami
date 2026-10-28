@@ -2,6 +2,7 @@ using System.Numerics;
 
 using Egami.Drawing.Rasterization;
 using Egami.Fonts;
+using Egami.Fonts.Hinting;
 using Egami.Operations;
 using Egami.Pixels;
 
@@ -112,15 +113,18 @@ public sealed partial class RasterCanvas<TPixel>
         ColorKey? colorKey = color && paint is SolidPaint solid ? new ColorKey(font.Palette, solid.Color with { A = 1 }) : null;
         List<int>? uncachedColor = null;
         bool lcdEdging = edging == FontEdging.Lcd;
+        bool full = font.Hinting == FontHinting.Full && MathF.Abs(emX) == MathF.Abs(emY) && face.CanRunInstructions;
         var style = new GlyphStyle(
             edging,
-            font.Hinting == FontHinting.Light && MathF.Abs(emY) <= MaxHintedEm,
+            font.Hinting is FontHinting.Light or FontHinting.Full && MathF.Abs(emY) <= MaxHintedEm,
             font.AppliedSynthesis,
             lcdEdging ? Options.PixelGeometry : PixelGeometry.Unknown)
         {
             Outset = font.Outset(emY, true),
             Look = lcdEdging ? LcdLook : null,
+            Full = full ? font.HintingTarget : null,
         };
+        bool subpixel = font.Subpixel && font.Metrics == FontMetrics.Design;
         float sx = emX / face.UnitsPerEm, sy = emY / face.UnitsPerEm;
         Rect clip = _clip.Bounds;
         byte[]? scratch = null;
@@ -139,7 +143,7 @@ public sealed partial class RasterCanvas<TPixel>
                 continue;
             }
 
-            (int ox, int phase) = Snap(device.X, font.Subpixel);
+            (int ox, int phase) = Snap(device.X, subpixel);
             int oy = (int)MathF.Floor(device.Y + 0.5f);
             ushort glyph = glyphs[i];
             if (color && face.HasColorGlyph(glyph))
@@ -348,8 +352,18 @@ public sealed partial class RasterCanvas<TPixel>
     {
         var builder = new PathBuilder();
         float skew = (style.Synthesis & FontSynthesis.Italic) != 0 ? Synthesis.Skew : 0;
-        HintMap? hint = style.Hint ? HintMap.For(face, sy) : null;
-        face.GetGlyphOutline(glyph, new DeviceSink(builder, sx, sy, dx, skew, hint));
+        if (style.Full is TrueTypeTarget target && face.GetHintedGlyph(glyph, sy * face.UnitsPerEm, target) is HintedGlyph hinted)
+        {
+            // The font's instructions placed the points in pixels at the whole ppem; synthetic italic slants them after.
+            hinted.Emit(new PixelSink(builder, MathF.Sign(sx), MathF.Sign(sy), dx, skew));
+        }
+        else
+        {
+            // Light hinting, also where full hinting does not apply (CFF, unhinted, variable, gasp).
+            HintMap? hint = style.Hint ? HintMap.For(face, sy) : null;
+            face.GetGlyphOutline(glyph, new DeviceSink(builder, sx, sy, dx, skew, hint));
+        }
+
         Path path = builder.ToPath();
         if (style.Outset > 0 && !path.IsEmpty)
         {
@@ -455,6 +469,25 @@ public sealed partial class RasterCanvas<TPixel>
         }
     }
 
+    /// <summary>Hinted pixels (y up) to device pixels relative to the glyph origin: mirrored with the scale's signs, slanted and flipped.</summary>
+    private sealed class PixelSink(PathBuilder builder, float signX, float signY, float dx, float skew) : IGlyphOutlineSink
+    {
+        public void MoveTo(float x, float y) => builder.MoveTo(X(x, y), Y(y));
+
+        public void LineTo(float x, float y) => builder.LineTo(X(x, y), Y(y));
+
+        public void QuadTo(float cx, float cy, float x, float y) => builder.QuadTo(X(cx, cy), Y(cy), X(x, y), Y(y));
+
+        public void CubicTo(float c1x, float c1y, float c2x, float c2y, float x, float y)
+            => builder.CubicTo(X(c1x, c1y), Y(c1y), X(c2x, c2y), Y(c2y), X(x, y), Y(y));
+
+        public void Close() => builder.Close();
+
+        private float X(float x, float y) => ((x + (skew * y)) * signX) + dx;
+
+        private float Y(float y) => -y * signY;
+    }
+
     /// <summary>Font units to device pixels relative to the glyph origin: scaled per axis, slanted, y hinted and flipped.</summary>
     private sealed class DeviceSink(PathBuilder builder, float sx, float sy, float dx, float skew, HintMap? hint) : IGlyphOutlineSink
     {
@@ -482,19 +515,27 @@ internal readonly record struct GlyphStyle
     private readonly byte _edging;
     private readonly byte _synthesis;
     private readonly byte _geometry;
-    private readonly bool _hint;
+    // Bit 0: light hinting; bits 1 to 3: full hinting's target plus one.
+    private readonly byte _hint;
 
     public GlyphStyle(FontEdging edging, bool hint, FontSynthesis synthesis, PixelGeometry geometry)
     {
         _edging = (byte)edging;
-        _hint = hint;
+        _hint = hint ? (byte)1 : (byte)0;
         _synthesis = (byte)synthesis;
         _geometry = (byte)geometry;
     }
 
     public FontEdging Edging => (FontEdging)_edging;
 
-    public bool Hint => _hint;
+    public bool Hint => (_hint & 1) != 0;
+
+    /// <summary>Gets the target the font's instructions run for, or null when they do not.</summary>
+    public TrueTypeTarget? Full
+    {
+        get => _hint >> 1 is int t and > 0 ? (TrueTypeTarget)(t - 1) : null;
+        init => _hint = (byte)((_hint & 1) | (value is TrueTypeTarget t ? ((int)t + 1) << 1 : 0));
+    }
 
     public FontSynthesis Synthesis => (FontSynthesis)_synthesis;
 

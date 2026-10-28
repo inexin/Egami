@@ -186,6 +186,41 @@ public class Text
     }
 
     [Fact]
+    public void FullHinting()
+    {
+        Typeface face = Typeface.FromFile(FontFile);
+        using Raster<Rgb8> button = Raster.Create(200, 40, new Rgb8(0x00, 0x78, 0xd4));
+
+        #region full-hinting
+        // The font's own TrueType instructions, run for GDI+, with its hinted advances: glyphs on whole pixels, spacing as Windows
+        // lays out ClearType text. Together with GDI+'s filter, sampling and gamma (1 + TextContrast/10 = 1.4), this is the closest
+        // Egami gets to System.Drawing's ClearTypeGridFit.
+        var label = new Font(face, 16)
+        {
+            Hinting = FontHinting.Full,
+            HintingTarget = TrueTypeTarget.GdiPlus,
+            Metrics = FontMetrics.GridFitted,
+            Edging = FontEdging.Lcd,
+        };
+        var gdiPlus = new CanvasOptions
+        {
+            PixelGeometry = PixelGeometry.RgbHorizontal,
+            LcdFilter = LcdFilter.Gdi,
+            LcdSampling = LcdSampling.Gdi,
+            TextGamma = 1.4f,
+        };
+        using (RasterCanvas<Rgb8> canvas = button.CreateCanvas(gdiPlus))
+        {
+            // Measuring uses the same hinted advances, so centring is exact.
+            float width = label.MeasureText("Start the course").Advance;
+            canvas.DrawText("Start the course", new Vector2(MathF.Round((200 - width) / 2), 26), label, Rgba8.White);
+        }
+        #endregion
+
+        Assert.Contains(Enumerable.Range(0, button.Width), x => button.GetPixel(x, 22).R > 128);
+    }
+
+    [Fact]
     public void Embolden()
     {
         Typeface face = Typeface.FromFile(FontFile);

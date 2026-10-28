@@ -123,4 +123,32 @@ public sealed class GlyphBuffer
 
         Count = n;
     }
+
+    /// <summary>
+    /// Replaces each horizontal advance with the glyph's hinted advance at the font's size (or its design advance, rounded, when it
+    /// cannot be hinted) plus what shaping added to it (kerning, positioning) rounded to whole units, and rounds the offsets, for
+    /// <see cref="FontMetrics.GridFitted"/>. Zero advances (marks) stay zero; vertical runs are left as they are.
+    /// </summary>
+    internal void GridFit(Typeface face, Font font)
+    {
+        float scale = font.Size / face.UnitsPerEm;
+        for (int i = 0; i < Count; i++)
+        {
+            GlyphPosition p = _positions[i];
+            if (p.YAdvance != 0)
+            {
+                continue;
+            }
+
+            float advance = p.XAdvance;
+            if (advance != 0)
+            {
+                float design = face.GetAdvance(_glyphs[i]) * scale;
+                float hinted = face.GetHintedGlyph(_glyphs[i], font.Size, font.HintingTarget)?.Advance ?? MathF.Round(design);
+                advance = hinted + MathF.Round(advance - design);
+            }
+
+            _positions[i] = new GlyphPosition(advance, 0, MathF.Round(p.XOffset), MathF.Round(p.YOffset));
+        }
+    }
 }

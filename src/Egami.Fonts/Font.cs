@@ -55,6 +55,8 @@ public readonly record struct Font
     private readonly FontPalette? _palette;
     private readonly float _embolden;
     private readonly bool _stemDarkening;
+    private readonly byte _hintingTarget;
+    private readonly byte _metrics;
 
     /// <summary>Initializes a font.</summary>
     /// <param name="typeface">The face.</param>
@@ -113,6 +115,36 @@ public readonly record struct Font
     /// <code language="csharp" source="../../tests/Egami.DocSamples/Text.cs" region="embolden"/>
     /// </example>
     public bool StemDarkening { get => _stemDarkening; init => _stemDarkening = value; }
+
+    /// <summary>
+    /// Gets the rasterizer <see cref="FontHinting.Full"/> hints for and <see cref="FontMetrics.GridFitted"/> measures with.
+    /// Defaults to <see cref="TrueTypeTarget.GdiPlus"/>.
+    /// </summary>
+    /// <example>
+    /// <code language="csharp" source="../../tests/Egami.DocSamples/Text.cs" region="full-hinting"/>
+    /// </example>
+    /// <exception cref="ArgumentOutOfRangeException">The value is not defined.</exception>
+    public TrueTypeTarget HintingTarget
+    {
+        get => (TrueTypeTarget)_hintingTarget;
+        init => _hintingTarget = Enum.IsDefined(value) ? (byte)value : throw new ArgumentOutOfRangeException(nameof(value), value, null);
+    }
+
+    /// <summary>
+    /// Gets where advances come from: <see cref="FontMetrics.Design"/> (the default) or <see cref="FontMetrics.GridFitted"/>, the
+    /// hinted advances at the font's size rounded to a whole number of pixels per em, with whole-pixel glyph origins when drawn.
+    /// Shaping, measuring and layout all follow it, so measured text always matches drawn text. Subpixel origins do not apply when
+    /// it is not <see cref="FontMetrics.Design"/>.
+    /// </summary>
+    /// <example>
+    /// <code language="csharp" source="../../tests/Egami.DocSamples/Text.cs" region="full-hinting"/>
+    /// </example>
+    /// <exception cref="ArgumentOutOfRangeException">The value is not defined.</exception>
+    public FontMetrics Metrics
+    {
+        get => (FontMetrics)_metrics;
+        init => _metrics = Enum.IsDefined(value) ? (byte)value : throw new ArgumentOutOfRangeException(nameof(value), value, null);
+    }
 
     /// <summary>Gets whether <see cref="Synthesis"/> is applied. Defaults to true.</summary>
     public bool AllowSynthesis { get => !_noSynthesis; init => _noSynthesis = !value; }

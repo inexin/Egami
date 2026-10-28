@@ -15,6 +15,47 @@ public enum FontHinting
     /// 48 pixels per em under scale-and-translate transforms.
     /// </summary>
     Light,
+
+    /// <summary>
+    /// The font's own TrueType instructions, run by Egami's interpreter for <see cref="Font.HintingTarget"/> (in ClearType
+    /// compatibility mode, as Windows runs them for ClearType), at a whole number of pixels per em, up to 256, under
+    /// scale-and-translate transforms with equal x and y scales. Faces without instructions, CFF faces, variable faces and sizes the
+    /// gasp table leaves unhinted fall back to <see cref="Light"/>.
+    /// </summary>
+    Full,
+}
+
+/// <summary>Which rasterizer the TrueType interpreter answers for: what GETINFO tells the font and how instructions are softened.</summary>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Text.cs" region="full-hinting"/>
+/// </example>
+public enum TrueTypeTarget
+{
+    /// <summary>GDI+ with ClearTypeGridFit, as measured on Windows: rasterizer version 42 with ClearType (GETINFO 0x2C2A).</summary>
+    GdiPlus,
+
+    /// <summary>GDI ClearType, as measured: version 42 with ClearType, compatible widths and symmetric rendering (GETINFO 0x46C2A).</summary>
+    Gdi,
+
+    /// <summary>A FreeType-like target: version 40 with ClearType and subpixel positioning.</summary>
+    FreeType,
+}
+
+/// <summary>Where a font's advances come from.</summary>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Text.cs" region="full-hinting"/>
+/// </example>
+public enum FontMetrics
+{
+    /// <summary>The design advances, scaled: fractional pixels, the same at every size.</summary>
+    Design,
+
+    /// <summary>
+    /// The hinted advances at a whole number of pixels per em: each glyph's right phantom point less its left after the font's
+    /// instructions run for <see cref="Font.HintingTarget"/>. Measuring and drawing both use them, and glyph origins snap to whole
+    /// pixels. Faces that cannot be hinted keep their design advances, rounded.
+    /// </summary>
+    GridFitted,
 }
 
 /// <summary>How a glyph's edges are turned into pixels.</summary>

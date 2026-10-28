@@ -21,8 +21,8 @@ public class TextBenchmarks
     private Font _gray;
     private Font _lcd;
 
-    /// <summary>Gets or sets the text blend: Default, Gamma (gamma 1.4, contrast 0.25) or GdiLook (Gdi filter and sampling, gamma 1.25).</summary>
-    [Params("Default", "Gamma", "GdiLook")]
+    /// <summary>Gets or sets the text blend: Default, Gamma (gamma 1.4, contrast 0.25), GdiLook (Gdi filter and sampling, gamma 1.25) or Full (the GDI look with the font's TrueType instructions and grid-fitted metrics, gamma 1.4).</summary>
+    [Params("Default", "Gamma", "GdiLook", "Full")]
     public string Blend { get; set; } = "Default";
 
     [GlobalSetup]
@@ -39,6 +39,12 @@ public class TextBenchmarks
         else if (Blend == "GdiLook")
         {
             options = options with { LcdFilter = LcdFilter.Gdi, LcdSampling = LcdSampling.Gdi, TextGamma = 1.25f };
+        }
+        else if (Blend == "Full")
+        {
+            options = options with { LcdFilter = LcdFilter.Gdi, LcdSampling = LcdSampling.Gdi, TextGamma = 1.4f };
+            _gray = _gray with { Hinting = FontHinting.Full, Metrics = FontMetrics.GridFitted };
+            _lcd = _lcd with { Hinting = FontHinting.Full, Metrics = FontMetrics.GridFitted };
         }
 
         _raster = Raster.Create(720, 400, new Rgb8(0, 0x78, 0xd4));
