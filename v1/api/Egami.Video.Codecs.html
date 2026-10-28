@@ -150,6 +150,18 @@ Version 2, which was experimental, and 4:4:0 streams are not decoded.</p>
 </dd>
     </dl>
     <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Codecs.Ffv1VerifyError.html">Ffv1VerifyError</a></dt>
+      <dd><p>One problem <a class="xref" href="Egami.Video.Codecs.Ffv1Codec.html#Egami_Video_Codecs_Ffv1Codec_Verify_System_String_Egami_Video_MediaContext_System_Threading_CancellationToken_">Verify(string, MediaContext?, CancellationToken)</a> found.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Codecs.Ffv1VerifyResult.html">Ffv1VerifyResult</a></dt>
+      <dd><p>What <a class="xref" href="Egami.Video.Codecs.Ffv1Codec.html#Egami_Video_Codecs_Ffv1Codec_Verify_System_String_Egami_Video_MediaContext_System_Threading_CancellationToken_">Verify(string, MediaContext?, CancellationToken)</a> found: how much it checked and every CRC that did
+not match. A version 3 stream with slice CRCs is checked whole; versions 0 and 1, and version 3 written without slice CRCs,
+have only what can be checked without decoding (the configuration record and the slice layout).</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
       <dt><a class="xref" href="Egami.Video.Codecs.FirstPassStats.html">FirstPassStats</a></dt>
       <dd><p>What the first pass of a two-pass encode learned about each frame: how hard it is to code. Pass it as
 <a class="xref" href="Egami.Video.Codecs.VideoEncoderOptions.html#Egami_Video_Codecs_VideoEncoderOptions_FirstPassStats">FirstPassStats</a> with <a class="xref" href="Egami.Video.Codecs.RateControlMode.html#Egami_Video_Codecs_RateControlMode_Bitrate">Bitrate</a>, and the second pass spreads the

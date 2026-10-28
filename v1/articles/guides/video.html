@@ -494,6 +494,18 @@ foreach (YuvVideoFrame frame in reader.ReadFrames())
 
 // Every slice's CRC is checked: a damaged one is reported as Ffv1.SliceCrc and, with Conceal, shows the last good frame.
 Console.WriteLine($&quot;{reported.Count(d =&gt; d.Id == &quot;Ffv1.SliceCrc&quot;)} damaged slices&quot;);
+</code></pre>
+<p>Slices decode in parallel up to <code>EgamiContext.MaxParallelism</code>, with the same frame at any thread count.</p>
+<p><code>Ffv1Codec.Verify</code> checks a file's fixity without decoding pictures: the configuration record's CRC and every slice's, far faster
+than a decode. The <code>Ffv1VerifyResult</code> says how many frames and slices it checked and lists each <code>Ffv1VerifyError</code>; a version 0 or 1
+file, or one written without slice CRCs, has <code>HasSliceCrcs</code> false.</p>
+<pre><code class="lang-csharp">// Check an archive's fixity without decoding pictures: the configuration record's CRC and every slice's.
+Ffv1VerifyResult result = Ffv1Codec.Verify(&quot;master.mkv&quot;);
+Console.WriteLine($&quot;{result.Frames} frames, {result.Slices} slices checked: {(result.IsIntact ? &quot;intact&quot; : &quot;damaged&quot;)}&quot;);
+foreach (Ffv1VerifyError error in result.Errors)
+{
+    Console.WriteLine($&quot;frame {error.Frame} at {error.Timestamp}, slice {error.Slice}: {error.Problem}&quot;);
+}
 </code></pre><h2 id="hdr">HDR</h2>
 <p>A frame's <code>Color</code> and <code>Hdr</code> carry its color code points and static HDR metadata. <code>YuvVideoFrame.ToRaster</code> with a target
 <code>ColorProfile</code> converts through Egami's color pipeline and tone maps PQ and HLG to SDR. VP9 frames in WebM carry HDR10+

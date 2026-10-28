@@ -84767,6 +84767,192 @@ references:
   isSpec: "True"
   fullName: Egami.Video.Codecs.Ffv1Codec.Name
   nameWithType: Ffv1Codec.Name
+- uid: Egami.Video.Codecs.Ffv1Codec.Verify(System.IO.Stream,Egami.Video.MediaContext,System.Boolean,System.Threading.CancellationToken)
+  name: Verify(Stream, MediaContext?, bool, CancellationToken)
+  href: api/Egami.Video.Codecs.Ffv1Codec.html#Egami_Video_Codecs_Ffv1Codec_Verify_System_IO_Stream_Egami_Video_MediaContext_System_Boolean_System_Threading_CancellationToken_
+  commentId: M:Egami.Video.Codecs.Ffv1Codec.Verify(System.IO.Stream,Egami.Video.MediaContext,System.Boolean,System.Threading.CancellationToken)
+  name.vb: Verify(Stream, MediaContext, Boolean, CancellationToken)
+  fullName: Egami.Video.Codecs.Ffv1Codec.Verify(System.IO.Stream, Egami.Video.MediaContext?, bool, System.Threading.CancellationToken)
+  fullName.vb: Egami.Video.Codecs.Ffv1Codec.Verify(System.IO.Stream, Egami.Video.MediaContext, Boolean, System.Threading.CancellationToken)
+  nameWithType: Ffv1Codec.Verify(Stream, MediaContext?, bool, CancellationToken)
+  nameWithType.vb: Ffv1Codec.Verify(Stream, MediaContext, Boolean, CancellationToken)
+- uid: Egami.Video.Codecs.Ffv1Codec.Verify(System.String,Egami.Video.MediaContext,System.Threading.CancellationToken)
+  name: Verify(string, MediaContext?, CancellationToken)
+  href: api/Egami.Video.Codecs.Ffv1Codec.html#Egami_Video_Codecs_Ffv1Codec_Verify_System_String_Egami_Video_MediaContext_System_Threading_CancellationToken_
+  commentId: M:Egami.Video.Codecs.Ffv1Codec.Verify(System.String,Egami.Video.MediaContext,System.Threading.CancellationToken)
+  name.vb: Verify(String, MediaContext, CancellationToken)
+  fullName: Egami.Video.Codecs.Ffv1Codec.Verify(string, Egami.Video.MediaContext?, System.Threading.CancellationToken)
+  fullName.vb: Egami.Video.Codecs.Ffv1Codec.Verify(String, Egami.Video.MediaContext, System.Threading.CancellationToken)
+  nameWithType: Ffv1Codec.Verify(string, MediaContext?, CancellationToken)
+  nameWithType.vb: Ffv1Codec.Verify(String, MediaContext, CancellationToken)
+- uid: Egami.Video.Codecs.Ffv1Codec.Verify*
+  name: Verify
+  href: api/Egami.Video.Codecs.Ffv1Codec.html#Egami_Video_Codecs_Ffv1Codec_Verify_
+  commentId: Overload:Egami.Video.Codecs.Ffv1Codec.Verify
+  isSpec: "True"
+  fullName: Egami.Video.Codecs.Ffv1Codec.Verify
+  nameWithType: Ffv1Codec.Verify
+- uid: Egami.Video.Codecs.Ffv1VerifyError
+  name: Ffv1VerifyError
+  href: api/Egami.Video.Codecs.Ffv1VerifyError.html
+  commentId: T:Egami.Video.Codecs.Ffv1VerifyError
+  fullName: Egami.Video.Codecs.Ffv1VerifyError
+  nameWithType: Ffv1VerifyError
+- uid: Egami.Video.Codecs.Ffv1VerifyError.#ctor(System.Int32,Egami.Video.MediaTime,System.Int32,System.String)
+  name: Ffv1VerifyError(int, MediaTime, int, string)
+  href: api/Egami.Video.Codecs.Ffv1VerifyError.html#Egami_Video_Codecs_Ffv1VerifyError__ctor_System_Int32_Egami_Video_MediaTime_System_Int32_System_String_
+  commentId: M:Egami.Video.Codecs.Ffv1VerifyError.#ctor(System.Int32,Egami.Video.MediaTime,System.Int32,System.String)
+  name.vb: New(Integer, MediaTime, Integer, String)
+  fullName: Egami.Video.Codecs.Ffv1VerifyError.Ffv1VerifyError(int, Egami.Video.MediaTime, int, string)
+  fullName.vb: Egami.Video.Codecs.Ffv1VerifyError.New(Integer, Egami.Video.MediaTime, Integer, String)
+  nameWithType: Ffv1VerifyError.Ffv1VerifyError(int, MediaTime, int, string)
+  nameWithType.vb: Ffv1VerifyError.New(Integer, MediaTime, Integer, String)
+- uid: Egami.Video.Codecs.Ffv1VerifyError.#ctor*
+  name: Ffv1VerifyError
+  href: api/Egami.Video.Codecs.Ffv1VerifyError.html#Egami_Video_Codecs_Ffv1VerifyError__ctor_
+  commentId: Overload:Egami.Video.Codecs.Ffv1VerifyError.#ctor
+  isSpec: "True"
+  name.vb: New
+  fullName: Egami.Video.Codecs.Ffv1VerifyError.Ffv1VerifyError
+  fullName.vb: Egami.Video.Codecs.Ffv1VerifyError.New
+  nameWithType: Ffv1VerifyError.Ffv1VerifyError
+  nameWithType.vb: Ffv1VerifyError.New
+- uid: Egami.Video.Codecs.Ffv1VerifyError.Frame
+  name: Frame
+  href: api/Egami.Video.Codecs.Ffv1VerifyError.html#Egami_Video_Codecs_Ffv1VerifyError_Frame
+  commentId: P:Egami.Video.Codecs.Ffv1VerifyError.Frame
+  fullName: Egami.Video.Codecs.Ffv1VerifyError.Frame
+  nameWithType: Ffv1VerifyError.Frame
+- uid: Egami.Video.Codecs.Ffv1VerifyError.Frame*
+  name: Frame
+  href: api/Egami.Video.Codecs.Ffv1VerifyError.html#Egami_Video_Codecs_Ffv1VerifyError_Frame_
+  commentId: Overload:Egami.Video.Codecs.Ffv1VerifyError.Frame
+  isSpec: "True"
+  fullName: Egami.Video.Codecs.Ffv1VerifyError.Frame
+  nameWithType: Ffv1VerifyError.Frame
+- uid: Egami.Video.Codecs.Ffv1VerifyError.Problem
+  name: Problem
+  href: api/Egami.Video.Codecs.Ffv1VerifyError.html#Egami_Video_Codecs_Ffv1VerifyError_Problem
+  commentId: P:Egami.Video.Codecs.Ffv1VerifyError.Problem
+  fullName: Egami.Video.Codecs.Ffv1VerifyError.Problem
+  nameWithType: Ffv1VerifyError.Problem
+- uid: Egami.Video.Codecs.Ffv1VerifyError.Problem*
+  name: Problem
+  href: api/Egami.Video.Codecs.Ffv1VerifyError.html#Egami_Video_Codecs_Ffv1VerifyError_Problem_
+  commentId: Overload:Egami.Video.Codecs.Ffv1VerifyError.Problem
+  isSpec: "True"
+  fullName: Egami.Video.Codecs.Ffv1VerifyError.Problem
+  nameWithType: Ffv1VerifyError.Problem
+- uid: Egami.Video.Codecs.Ffv1VerifyError.Slice
+  name: Slice
+  href: api/Egami.Video.Codecs.Ffv1VerifyError.html#Egami_Video_Codecs_Ffv1VerifyError_Slice
+  commentId: P:Egami.Video.Codecs.Ffv1VerifyError.Slice
+  fullName: Egami.Video.Codecs.Ffv1VerifyError.Slice
+  nameWithType: Ffv1VerifyError.Slice
+- uid: Egami.Video.Codecs.Ffv1VerifyError.Slice*
+  name: Slice
+  href: api/Egami.Video.Codecs.Ffv1VerifyError.html#Egami_Video_Codecs_Ffv1VerifyError_Slice_
+  commentId: Overload:Egami.Video.Codecs.Ffv1VerifyError.Slice
+  isSpec: "True"
+  fullName: Egami.Video.Codecs.Ffv1VerifyError.Slice
+  nameWithType: Ffv1VerifyError.Slice
+- uid: Egami.Video.Codecs.Ffv1VerifyError.Timestamp
+  name: Timestamp
+  href: api/Egami.Video.Codecs.Ffv1VerifyError.html#Egami_Video_Codecs_Ffv1VerifyError_Timestamp
+  commentId: P:Egami.Video.Codecs.Ffv1VerifyError.Timestamp
+  fullName: Egami.Video.Codecs.Ffv1VerifyError.Timestamp
+  nameWithType: Ffv1VerifyError.Timestamp
+- uid: Egami.Video.Codecs.Ffv1VerifyError.Timestamp*
+  name: Timestamp
+  href: api/Egami.Video.Codecs.Ffv1VerifyError.html#Egami_Video_Codecs_Ffv1VerifyError_Timestamp_
+  commentId: Overload:Egami.Video.Codecs.Ffv1VerifyError.Timestamp
+  isSpec: "True"
+  fullName: Egami.Video.Codecs.Ffv1VerifyError.Timestamp
+  nameWithType: Ffv1VerifyError.Timestamp
+- uid: Egami.Video.Codecs.Ffv1VerifyResult
+  name: Ffv1VerifyResult
+  href: api/Egami.Video.Codecs.Ffv1VerifyResult.html
+  commentId: T:Egami.Video.Codecs.Ffv1VerifyResult
+  fullName: Egami.Video.Codecs.Ffv1VerifyResult
+  nameWithType: Ffv1VerifyResult
+- uid: Egami.Video.Codecs.Ffv1VerifyResult.ConfigurationCrcOk
+  name: ConfigurationCrcOk
+  href: api/Egami.Video.Codecs.Ffv1VerifyResult.html#Egami_Video_Codecs_Ffv1VerifyResult_ConfigurationCrcOk
+  commentId: P:Egami.Video.Codecs.Ffv1VerifyResult.ConfigurationCrcOk
+  fullName: Egami.Video.Codecs.Ffv1VerifyResult.ConfigurationCrcOk
+  nameWithType: Ffv1VerifyResult.ConfigurationCrcOk
+- uid: Egami.Video.Codecs.Ffv1VerifyResult.ConfigurationCrcOk*
+  name: ConfigurationCrcOk
+  href: api/Egami.Video.Codecs.Ffv1VerifyResult.html#Egami_Video_Codecs_Ffv1VerifyResult_ConfigurationCrcOk_
+  commentId: Overload:Egami.Video.Codecs.Ffv1VerifyResult.ConfigurationCrcOk
+  isSpec: "True"
+  fullName: Egami.Video.Codecs.Ffv1VerifyResult.ConfigurationCrcOk
+  nameWithType: Ffv1VerifyResult.ConfigurationCrcOk
+- uid: Egami.Video.Codecs.Ffv1VerifyResult.Errors
+  name: Errors
+  href: api/Egami.Video.Codecs.Ffv1VerifyResult.html#Egami_Video_Codecs_Ffv1VerifyResult_Errors
+  commentId: P:Egami.Video.Codecs.Ffv1VerifyResult.Errors
+  fullName: Egami.Video.Codecs.Ffv1VerifyResult.Errors
+  nameWithType: Ffv1VerifyResult.Errors
+- uid: Egami.Video.Codecs.Ffv1VerifyResult.Errors*
+  name: Errors
+  href: api/Egami.Video.Codecs.Ffv1VerifyResult.html#Egami_Video_Codecs_Ffv1VerifyResult_Errors_
+  commentId: Overload:Egami.Video.Codecs.Ffv1VerifyResult.Errors
+  isSpec: "True"
+  fullName: Egami.Video.Codecs.Ffv1VerifyResult.Errors
+  nameWithType: Ffv1VerifyResult.Errors
+- uid: Egami.Video.Codecs.Ffv1VerifyResult.Frames
+  name: Frames
+  href: api/Egami.Video.Codecs.Ffv1VerifyResult.html#Egami_Video_Codecs_Ffv1VerifyResult_Frames
+  commentId: P:Egami.Video.Codecs.Ffv1VerifyResult.Frames
+  fullName: Egami.Video.Codecs.Ffv1VerifyResult.Frames
+  nameWithType: Ffv1VerifyResult.Frames
+- uid: Egami.Video.Codecs.Ffv1VerifyResult.Frames*
+  name: Frames
+  href: api/Egami.Video.Codecs.Ffv1VerifyResult.html#Egami_Video_Codecs_Ffv1VerifyResult_Frames_
+  commentId: Overload:Egami.Video.Codecs.Ffv1VerifyResult.Frames
+  isSpec: "True"
+  fullName: Egami.Video.Codecs.Ffv1VerifyResult.Frames
+  nameWithType: Ffv1VerifyResult.Frames
+- uid: Egami.Video.Codecs.Ffv1VerifyResult.HasSliceCrcs
+  name: HasSliceCrcs
+  href: api/Egami.Video.Codecs.Ffv1VerifyResult.html#Egami_Video_Codecs_Ffv1VerifyResult_HasSliceCrcs
+  commentId: P:Egami.Video.Codecs.Ffv1VerifyResult.HasSliceCrcs
+  fullName: Egami.Video.Codecs.Ffv1VerifyResult.HasSliceCrcs
+  nameWithType: Ffv1VerifyResult.HasSliceCrcs
+- uid: Egami.Video.Codecs.Ffv1VerifyResult.HasSliceCrcs*
+  name: HasSliceCrcs
+  href: api/Egami.Video.Codecs.Ffv1VerifyResult.html#Egami_Video_Codecs_Ffv1VerifyResult_HasSliceCrcs_
+  commentId: Overload:Egami.Video.Codecs.Ffv1VerifyResult.HasSliceCrcs
+  isSpec: "True"
+  fullName: Egami.Video.Codecs.Ffv1VerifyResult.HasSliceCrcs
+  nameWithType: Ffv1VerifyResult.HasSliceCrcs
+- uid: Egami.Video.Codecs.Ffv1VerifyResult.IsIntact
+  name: IsIntact
+  href: api/Egami.Video.Codecs.Ffv1VerifyResult.html#Egami_Video_Codecs_Ffv1VerifyResult_IsIntact
+  commentId: P:Egami.Video.Codecs.Ffv1VerifyResult.IsIntact
+  fullName: Egami.Video.Codecs.Ffv1VerifyResult.IsIntact
+  nameWithType: Ffv1VerifyResult.IsIntact
+- uid: Egami.Video.Codecs.Ffv1VerifyResult.IsIntact*
+  name: IsIntact
+  href: api/Egami.Video.Codecs.Ffv1VerifyResult.html#Egami_Video_Codecs_Ffv1VerifyResult_IsIntact_
+  commentId: Overload:Egami.Video.Codecs.Ffv1VerifyResult.IsIntact
+  isSpec: "True"
+  fullName: Egami.Video.Codecs.Ffv1VerifyResult.IsIntact
+  nameWithType: Ffv1VerifyResult.IsIntact
+- uid: Egami.Video.Codecs.Ffv1VerifyResult.Slices
+  name: Slices
+  href: api/Egami.Video.Codecs.Ffv1VerifyResult.html#Egami_Video_Codecs_Ffv1VerifyResult_Slices
+  commentId: P:Egami.Video.Codecs.Ffv1VerifyResult.Slices
+  fullName: Egami.Video.Codecs.Ffv1VerifyResult.Slices
+  nameWithType: Ffv1VerifyResult.Slices
+- uid: Egami.Video.Codecs.Ffv1VerifyResult.Slices*
+  name: Slices
+  href: api/Egami.Video.Codecs.Ffv1VerifyResult.html#Egami_Video_Codecs_Ffv1VerifyResult_Slices_
+  commentId: Overload:Egami.Video.Codecs.Ffv1VerifyResult.Slices
+  isSpec: "True"
+  fullName: Egami.Video.Codecs.Ffv1VerifyResult.Slices
+  nameWithType: Ffv1VerifyResult.Slices
 - uid: Egami.Video.Codecs.FirstPassStats
   name: FirstPassStats
   href: api/Egami.Video.Codecs.FirstPassStats.html

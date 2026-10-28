@@ -13103,6 +13103,34 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Codecs.Ffv1VerifyError.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Codecs.Ffv1VerifyError.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Codecs.Ffv1VerifyError",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Codecs.Ffv1VerifyError.yml\" sourcestartlinenumber=\"1\">One problem <xref href=\"Egami.Video.Codecs.Ffv1Codec.Verify(System.String%2cEgami.Video.MediaContext%2cSystem.Threading.CancellationToken)\" data-throw-if-not-resolved=\"false\"></xref> found.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Codecs.Ffv1VerifyResult.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Codecs.Ffv1VerifyResult.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Codecs.Ffv1VerifyResult",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Codecs.Ffv1VerifyResult.yml\" sourcestartlinenumber=\"1\">What <xref href=\"Egami.Video.Codecs.Ffv1Codec.Verify(System.String%2cEgami.Video.MediaContext%2cSystem.Threading.CancellationToken)\" data-throw-if-not-resolved=\"false\"></xref> found: how much it checked and every CRC that did\nnot match. A version 3 stream with slice CRCs is checked whole; versions 0 and 1, and version 3 written without slice CRCs,\nhave only what can be checked without decoding (the configuration record and the slice layout).</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.Video.Codecs.FirstPassStats.yml",
       "output": {
         ".html": {
