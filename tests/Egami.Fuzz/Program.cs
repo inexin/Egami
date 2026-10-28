@@ -2352,6 +2352,23 @@ static void LoadColor(Stream stream)
         foreach (Egami.Fonts.Typeface at in Positions(face, data).Take(2))
         {
             int drawn = 0;
+
+            // Embedded black-and-white and gray strikes (EBLC and EBDT), decoded and drawn at each strike size up to 24 ppem.
+            if (at.EmbeddedBitmaps is not null)
+            {
+                for (int ppem = 8; ppem <= 24; ppem++)
+                {
+                    for (int g = 0; g < Math.Min(at.GlyphCount, 64); g++)
+                    {
+                        _ = at.GetEmbeddedBitmap((ushort)g, ppem);
+                    }
+
+                    using Raster<Rgba8> strike = Raster.Create<Rgba8>(64, 32, Context());
+                    using Egami.Drawing.RasterCanvas<Rgba8> strikeCanvas = new(strike);
+                    strikeCanvas.DrawText("AaBb19", new System.Numerics.Vector2(2, 24), new Egami.Fonts.Font(at, ppem) { EmbeddedBitmaps = true, Metrics = Egami.Fonts.FontMetrics.GridFitted }, Rgba8.Black);
+                }
+            }
+
             for (int g = 0; g < Math.Min(at.GlyphCount, 300); g++)
             {
                 _ = at.TryGetSvgDocument((ushort)g, out _, out _, out _);

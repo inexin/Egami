@@ -26,7 +26,9 @@ GDI+ on Windows; [Fonts and text](text.md) explains each of them.
 
 For a white Trebuchet MS label at 16 pixels on a black or a #0078d4 button, the result is within 0.5% of GDI+'s brightness. The
 mean per-pixel difference is 0.67 levels out of 255 on black and 0.38 on blue, against 9.5 and 5.4 for Egami's default text.
-Fonts that GDI+ draws from embedded bitmaps at small sizes, such as Calibri, still differ: Egami draws their outlines.
+Some fonts carry black-and-white bitmaps for small sizes, such as Calibri at 12, 13, 15, 16, 17 and 19 pixels, and GDI+ draws
+those instead of the outlines. `Font.WithGdiPlusLook()` turns on `Font.EmbeddedBitmaps`, so Egami does too: Calibri's glyphs at
+those sizes equal GDI+'s pixel for pixel.
 
 ## GDI ClearType
 
