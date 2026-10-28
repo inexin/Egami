@@ -90,12 +90,35 @@
 <p>Egami can draw small UI text the way System.Drawing does on Windows, for images that replace ones made with
 <code>Graphics.DrawString</code> (GDI+) or <code>TextRenderer</code> (GDI), such as buttons in emails. The settings come from measurements of GDI and
 GDI+ on Windows; <a href="text.html">Fonts and text</a> explains each of them.</p>
+<h2 id="gdi-cleartypegridfit">GDI+ ClearTypeGridFit</h2>
+<p><code>Font.WithGdiPlusLook()</code> and <code>CanvasOptions.GdiPlusClearType</code> together give GDI+'s ClearTypeGridFit look.</p>
+<ul>
+<li>The font's TrueType instructions run for GDI+, with Microsoft's ClearType compatibility rules (<code>FontHinting.Full</code>,
+<code>TrueTypeTarget.GdiPlus</code>).</li>
+<li>Advances are grid-fitted (<code>FontMetrics.GridFitted</code>) and glyph origins sit on whole pixels. As in GDI+, a run that hinted
+advances would make more than 2.1 pixels wider than designed keeps its design advances.</li>
+<li>LCD edging uses GDI+'s filter (<code>LcdFilter.Gdi</code>) and sampling (<code>LcdSampling.Gdi</code>, no smoothing along the stripes).</li>
+<li>The blend uses GDI+'s gamma: <code>TextGamma</code> 1.4, which is 1 + <code>Graphics.TextContrast</code> / 10 at the default contrast of 4.</li>
+</ul>
+<pre><code class="lang-csharp">// Text that looks like System.Drawing's Graphics.DrawString with TextRenderingHint.ClearTypeGridFit: the font's own hints
+// and grid-fitted advances, GDI+'s ClearType filter, sampling and gamma.
+Font label = new Font(face, 16).WithGdiPlusLook();
+using (RasterCanvas&lt;Rgb8&gt; canvas = button.CreateCanvas(CanvasOptions.GdiPlusClearType))
+{
+    float width = label.MeasureText(&quot;Start the course&quot;).Advance;
+    canvas.DrawText(&quot;Start the course&quot;, new Vector2(MathF.Round((200 - width) / 2), 26), label, Rgba8.White);
+}
+
+// A different Graphics.TextContrast (0 to 12) is a different text gamma: 1 + contrast / 10.
+CanvasOptions contrast8 = CanvasOptions.GdiPlusClearType with { TextGamma = 1 + (8 / 10f) };
+</code></pre>
+<p>For a white Trebuchet MS label at 16 pixels on a black or a #0078d4 button, the result is within 0.5% of GDI+'s brightness. The
+mean per-pixel difference is under 2 levels out of 255, against 9.5 for Egami's default text.</p>
 <h2 id="gdi-cleartype">GDI ClearType</h2>
 <p>For <code>TextRenderer</code> or GDI's <code>ExtTextOut</code>:</p>
 <ul>
-<li>Set <code>Font.Hinting = FontHinting.Full</code>, <code>Font.HintingTarget = TrueTypeTarget.Gdi</code> and <code>Font.Metrics = FontMetrics.Compatible</code>.
-GDI's compatible widths equal <code>GetCharABCWidths</code> for 9,688 of 9,690 glyph sizes measured.</li>
-<li>Draw with LCD edging, <code>LcdFilter.Gdi</code> and <code>LcdSampling.Gdi</code>.</li>
+<li>Set <code>Font.HintingTarget = TrueTypeTarget.Gdi</code> and <code>Font.Metrics = FontMetrics.Compatible</code>. GDI's compatible widths equal
+<code>GetCharABCWidths</code> for 9,688 of 9,690 glyph sizes measured.</li>
 <li>Set <code>TextGamma</code> to the system's ClearType contrast divided by 1000. That is 1.2 when it is 1200, and Windows' default is 1.4.</li>
 </ul>
 <h2 id="drawstrings-layout">DrawString's layout</h2>
