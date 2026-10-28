@@ -85522,6 +85522,19 @@ references:
   isSpec: "True"
   fullName: Egami.Video.Codecs.Ffv1Codec.CanDecode
   nameWithType: Ffv1Codec.CanDecode
+- uid: Egami.Video.Codecs.Ffv1Codec.CanEncode
+  name: CanEncode
+  href: api/Egami.Video.Codecs.Ffv1Codec.html#Egami_Video_Codecs_Ffv1Codec_CanEncode
+  commentId: P:Egami.Video.Codecs.Ffv1Codec.CanEncode
+  fullName: Egami.Video.Codecs.Ffv1Codec.CanEncode
+  nameWithType: Ffv1Codec.CanEncode
+- uid: Egami.Video.Codecs.Ffv1Codec.CanEncode*
+  name: CanEncode
+  href: api/Egami.Video.Codecs.Ffv1Codec.html#Egami_Video_Codecs_Ffv1Codec_CanEncode_
+  commentId: Overload:Egami.Video.Codecs.Ffv1Codec.CanEncode
+  isSpec: "True"
+  fullName: Egami.Video.Codecs.Ffv1Codec.CanEncode
+  nameWithType: Ffv1Codec.CanEncode
 - uid: Egami.Video.Codecs.Ffv1Codec.CodecId
   name: CodecId
   href: api/Egami.Video.Codecs.Ffv1Codec.html#Egami_Video_Codecs_Ffv1Codec_CodecId
@@ -85551,6 +85564,19 @@ references:
   isSpec: "True"
   fullName: Egami.Video.Codecs.Ffv1Codec.CreateDecoder
   nameWithType: Ffv1Codec.CreateDecoder
+- uid: Egami.Video.Codecs.Ffv1Codec.CreateEncoder(Egami.Video.Codecs.VideoEncoderOptions,Egami.Video.MediaContext)
+  name: CreateEncoder(VideoEncoderOptions, MediaContext)
+  href: api/Egami.Video.Codecs.Ffv1Codec.html#Egami_Video_Codecs_Ffv1Codec_CreateEncoder_Egami_Video_Codecs_VideoEncoderOptions_Egami_Video_MediaContext_
+  commentId: M:Egami.Video.Codecs.Ffv1Codec.CreateEncoder(Egami.Video.Codecs.VideoEncoderOptions,Egami.Video.MediaContext)
+  fullName: Egami.Video.Codecs.Ffv1Codec.CreateEncoder(Egami.Video.Codecs.VideoEncoderOptions, Egami.Video.MediaContext)
+  nameWithType: Ffv1Codec.CreateEncoder(VideoEncoderOptions, MediaContext)
+- uid: Egami.Video.Codecs.Ffv1Codec.CreateEncoder*
+  name: CreateEncoder
+  href: api/Egami.Video.Codecs.Ffv1Codec.html#Egami_Video_Codecs_Ffv1Codec_CreateEncoder_
+  commentId: Overload:Egami.Video.Codecs.Ffv1Codec.CreateEncoder
+  isSpec: "True"
+  fullName: Egami.Video.Codecs.Ffv1Codec.CreateEncoder
+  nameWithType: Ffv1Codec.CreateEncoder
 - uid: Egami.Video.Codecs.Ffv1Codec.Instance
   name: Instance
   href: api/Egami.Video.Codecs.Ffv1Codec.html#Egami_Video_Codecs_Ffv1Codec_Instance
@@ -85602,6 +85628,132 @@ references:
   isSpec: "True"
   fullName: Egami.Video.Codecs.Ffv1Codec.Verify
   nameWithType: Ffv1Codec.Verify
+- uid: Egami.Video.Codecs.Ffv1Coder
+  name: Ffv1Coder
+  href: api/Egami.Video.Codecs.Ffv1Coder.html
+  commentId: T:Egami.Video.Codecs.Ffv1Coder
+  fullName: Egami.Video.Codecs.Ffv1Coder
+  nameWithType: Ffv1Coder
+- uid: Egami.Video.Codecs.Ffv1Coder.GolombRice
+  name: GolombRice
+  href: api/Egami.Video.Codecs.Ffv1Coder.html#Egami_Video_Codecs_Ffv1Coder_GolombRice
+  commentId: F:Egami.Video.Codecs.Ffv1Coder.GolombRice
+  fullName: Egami.Video.Codecs.Ffv1Coder.GolombRice
+  nameWithType: Ffv1Coder.GolombRice
+- uid: Egami.Video.Codecs.Ffv1Coder.RangeCustomTable
+  name: RangeCustomTable
+  href: api/Egami.Video.Codecs.Ffv1Coder.html#Egami_Video_Codecs_Ffv1Coder_RangeCustomTable
+  commentId: F:Egami.Video.Codecs.Ffv1Coder.RangeCustomTable
+  fullName: Egami.Video.Codecs.Ffv1Coder.RangeCustomTable
+  nameWithType: Ffv1Coder.RangeCustomTable
+- uid: Egami.Video.Codecs.Ffv1Coder.RangeDefaultTable
+  name: RangeDefaultTable
+  href: api/Egami.Video.Codecs.Ffv1Coder.html#Egami_Video_Codecs_Ffv1Coder_RangeDefaultTable
+  commentId: F:Egami.Video.Codecs.Ffv1Coder.RangeDefaultTable
+  fullName: Egami.Video.Codecs.Ffv1Coder.RangeDefaultTable
+  nameWithType: Ffv1Coder.RangeDefaultTable
+- uid: Egami.Video.Codecs.Ffv1ContextModel
+  name: Ffv1ContextModel
+  href: api/Egami.Video.Codecs.Ffv1ContextModel.html
+  commentId: T:Egami.Video.Codecs.Ffv1ContextModel
+  fullName: Egami.Video.Codecs.Ffv1ContextModel
+  nameWithType: Ffv1ContextModel
+- uid: Egami.Video.Codecs.Ffv1ContextModel.Large
+  name: Large
+  href: api/Egami.Video.Codecs.Ffv1ContextModel.html#Egami_Video_Codecs_Ffv1ContextModel_Large
+  commentId: F:Egami.Video.Codecs.Ffv1ContextModel.Large
+  fullName: Egami.Video.Codecs.Ffv1ContextModel.Large
+  nameWithType: Ffv1ContextModel.Large
+- uid: Egami.Video.Codecs.Ffv1ContextModel.Small
+  name: Small
+  href: api/Egami.Video.Codecs.Ffv1ContextModel.html#Egami_Video_Codecs_Ffv1ContextModel_Small
+  commentId: F:Egami.Video.Codecs.Ffv1ContextModel.Small
+  fullName: Egami.Video.Codecs.Ffv1ContextModel.Small
+  nameWithType: Ffv1ContextModel.Small
+- uid: Egami.Video.Codecs.Ffv1EncoderOptions
+  name: Ffv1EncoderOptions
+  href: api/Egami.Video.Codecs.Ffv1EncoderOptions.html
+  commentId: T:Egami.Video.Codecs.Ffv1EncoderOptions
+  fullName: Egami.Video.Codecs.Ffv1EncoderOptions
+  nameWithType: Ffv1EncoderOptions
+- uid: Egami.Video.Codecs.Ffv1EncoderOptions.BitsPerSample
+  name: BitsPerSample
+  href: api/Egami.Video.Codecs.Ffv1EncoderOptions.html#Egami_Video_Codecs_Ffv1EncoderOptions_BitsPerSample
+  commentId: P:Egami.Video.Codecs.Ffv1EncoderOptions.BitsPerSample
+  fullName: Egami.Video.Codecs.Ffv1EncoderOptions.BitsPerSample
+  nameWithType: Ffv1EncoderOptions.BitsPerSample
+- uid: Egami.Video.Codecs.Ffv1EncoderOptions.BitsPerSample*
+  name: BitsPerSample
+  href: api/Egami.Video.Codecs.Ffv1EncoderOptions.html#Egami_Video_Codecs_Ffv1EncoderOptions_BitsPerSample_
+  commentId: Overload:Egami.Video.Codecs.Ffv1EncoderOptions.BitsPerSample
+  isSpec: "True"
+  fullName: Egami.Video.Codecs.Ffv1EncoderOptions.BitsPerSample
+  nameWithType: Ffv1EncoderOptions.BitsPerSample
+- uid: Egami.Video.Codecs.Ffv1EncoderOptions.Coder
+  name: Coder
+  href: api/Egami.Video.Codecs.Ffv1EncoderOptions.html#Egami_Video_Codecs_Ffv1EncoderOptions_Coder
+  commentId: P:Egami.Video.Codecs.Ffv1EncoderOptions.Coder
+  fullName: Egami.Video.Codecs.Ffv1EncoderOptions.Coder
+  nameWithType: Ffv1EncoderOptions.Coder
+- uid: Egami.Video.Codecs.Ffv1EncoderOptions.Coder*
+  name: Coder
+  href: api/Egami.Video.Codecs.Ffv1EncoderOptions.html#Egami_Video_Codecs_Ffv1EncoderOptions_Coder_
+  commentId: Overload:Egami.Video.Codecs.Ffv1EncoderOptions.Coder
+  isSpec: "True"
+  fullName: Egami.Video.Codecs.Ffv1EncoderOptions.Coder
+  nameWithType: Ffv1EncoderOptions.Coder
+- uid: Egami.Video.Codecs.Ffv1EncoderOptions.ContextModel
+  name: ContextModel
+  href: api/Egami.Video.Codecs.Ffv1EncoderOptions.html#Egami_Video_Codecs_Ffv1EncoderOptions_ContextModel
+  commentId: P:Egami.Video.Codecs.Ffv1EncoderOptions.ContextModel
+  fullName: Egami.Video.Codecs.Ffv1EncoderOptions.ContextModel
+  nameWithType: Ffv1EncoderOptions.ContextModel
+- uid: Egami.Video.Codecs.Ffv1EncoderOptions.ContextModel*
+  name: ContextModel
+  href: api/Egami.Video.Codecs.Ffv1EncoderOptions.html#Egami_Video_Codecs_Ffv1EncoderOptions_ContextModel_
+  commentId: Overload:Egami.Video.Codecs.Ffv1EncoderOptions.ContextModel
+  isSpec: "True"
+  fullName: Egami.Video.Codecs.Ffv1EncoderOptions.ContextModel
+  nameWithType: Ffv1EncoderOptions.ContextModel
+- uid: Egami.Video.Codecs.Ffv1EncoderOptions.Default
+  name: Default
+  href: api/Egami.Video.Codecs.Ffv1EncoderOptions.html#Egami_Video_Codecs_Ffv1EncoderOptions_Default
+  commentId: P:Egami.Video.Codecs.Ffv1EncoderOptions.Default
+  fullName: Egami.Video.Codecs.Ffv1EncoderOptions.Default
+  nameWithType: Ffv1EncoderOptions.Default
+- uid: Egami.Video.Codecs.Ffv1EncoderOptions.Default*
+  name: Default
+  href: api/Egami.Video.Codecs.Ffv1EncoderOptions.html#Egami_Video_Codecs_Ffv1EncoderOptions_Default_
+  commentId: Overload:Egami.Video.Codecs.Ffv1EncoderOptions.Default
+  isSpec: "True"
+  fullName: Egami.Video.Codecs.Ffv1EncoderOptions.Default
+  nameWithType: Ffv1EncoderOptions.Default
+- uid: Egami.Video.Codecs.Ffv1EncoderOptions.SliceCrc
+  name: SliceCrc
+  href: api/Egami.Video.Codecs.Ffv1EncoderOptions.html#Egami_Video_Codecs_Ffv1EncoderOptions_SliceCrc
+  commentId: P:Egami.Video.Codecs.Ffv1EncoderOptions.SliceCrc
+  fullName: Egami.Video.Codecs.Ffv1EncoderOptions.SliceCrc
+  nameWithType: Ffv1EncoderOptions.SliceCrc
+- uid: Egami.Video.Codecs.Ffv1EncoderOptions.SliceCrc*
+  name: SliceCrc
+  href: api/Egami.Video.Codecs.Ffv1EncoderOptions.html#Egami_Video_Codecs_Ffv1EncoderOptions_SliceCrc_
+  commentId: Overload:Egami.Video.Codecs.Ffv1EncoderOptions.SliceCrc
+  isSpec: "True"
+  fullName: Egami.Video.Codecs.Ffv1EncoderOptions.SliceCrc
+  nameWithType: Ffv1EncoderOptions.SliceCrc
+- uid: Egami.Video.Codecs.Ffv1EncoderOptions.Slices
+  name: Slices
+  href: api/Egami.Video.Codecs.Ffv1EncoderOptions.html#Egami_Video_Codecs_Ffv1EncoderOptions_Slices
+  commentId: P:Egami.Video.Codecs.Ffv1EncoderOptions.Slices
+  fullName: Egami.Video.Codecs.Ffv1EncoderOptions.Slices
+  nameWithType: Ffv1EncoderOptions.Slices
+- uid: Egami.Video.Codecs.Ffv1EncoderOptions.Slices*
+  name: Slices
+  href: api/Egami.Video.Codecs.Ffv1EncoderOptions.html#Egami_Video_Codecs_Ffv1EncoderOptions_Slices_
+  commentId: Overload:Egami.Video.Codecs.Ffv1EncoderOptions.Slices
+  isSpec: "True"
+  fullName: Egami.Video.Codecs.Ffv1EncoderOptions.Slices
+  nameWithType: Ffv1EncoderOptions.Slices
 - uid: Egami.Video.Codecs.Ffv1VerifyError
   name: Ffv1VerifyError
   href: api/Egami.Video.Codecs.Ffv1VerifyError.html
@@ -86660,6 +86812,19 @@ references:
   isSpec: "True"
   fullName: Egami.Video.Codecs.VideoEncoderOptions.Effort
   nameWithType: VideoEncoderOptions.Effort
+- uid: Egami.Video.Codecs.VideoEncoderOptions.Ffv1
+  name: Ffv1
+  href: api/Egami.Video.Codecs.VideoEncoderOptions.html#Egami_Video_Codecs_VideoEncoderOptions_Ffv1
+  commentId: P:Egami.Video.Codecs.VideoEncoderOptions.Ffv1
+  fullName: Egami.Video.Codecs.VideoEncoderOptions.Ffv1
+  nameWithType: VideoEncoderOptions.Ffv1
+- uid: Egami.Video.Codecs.VideoEncoderOptions.Ffv1*
+  name: Ffv1
+  href: api/Egami.Video.Codecs.VideoEncoderOptions.html#Egami_Video_Codecs_VideoEncoderOptions_Ffv1_
+  commentId: Overload:Egami.Video.Codecs.VideoEncoderOptions.Ffv1
+  isSpec: "True"
+  fullName: Egami.Video.Codecs.VideoEncoderOptions.Ffv1
+  nameWithType: VideoEncoderOptions.Ffv1
 - uid: Egami.Video.Codecs.VideoEncoderOptions.FirstPassStats
   name: FirstPassStats
   href: api/Egami.Video.Codecs.VideoEncoderOptions.html#Egami_Video_Codecs_VideoEncoderOptions_FirstPassStats
@@ -98741,6 +98906,19 @@ references:
   isSpec: "True"
   fullName: Egami.Video.VideoWriterOptions.Effort
   nameWithType: VideoWriterOptions.Effort
+- uid: Egami.Video.VideoWriterOptions.Ffv1
+  name: Ffv1
+  href: api/Egami.Video.VideoWriterOptions.html#Egami_Video_VideoWriterOptions_Ffv1
+  commentId: P:Egami.Video.VideoWriterOptions.Ffv1
+  fullName: Egami.Video.VideoWriterOptions.Ffv1
+  nameWithType: VideoWriterOptions.Ffv1
+- uid: Egami.Video.VideoWriterOptions.Ffv1*
+  name: Ffv1
+  href: api/Egami.Video.VideoWriterOptions.html#Egami_Video_VideoWriterOptions_Ffv1_
+  commentId: Overload:Egami.Video.VideoWriterOptions.Ffv1
+  isSpec: "True"
+  fullName: Egami.Video.VideoWriterOptions.Ffv1
+  nameWithType: VideoWriterOptions.Ffv1
 - uid: Egami.Video.VideoWriterOptions.FirstPassStats
   name: FirstPassStats
   href: api/Egami.Video.VideoWriterOptions.html#Egami_Video_VideoWriterOptions_FirstPassStats

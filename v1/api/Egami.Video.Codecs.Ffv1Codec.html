@@ -128,12 +128,6 @@ Version 2, which was experimental, and 4:4:0 streams are not decoded.</p>
     <dt>Inherited Members</dt>
     <dd>
     <div>
-      <a class="xref" href="Egami.Video.Codecs.VideoCodec.html#Egami_Video_Codecs_VideoCodec_CanEncode">VideoCodec.CanEncode</a>
-    </div>
-    <div>
-      <a class="xref" href="Egami.Video.Codecs.VideoCodec.html#Egami_Video_Codecs_VideoCodec_CreateEncoder_Egami_Video_Codecs_VideoEncoderOptions_Egami_Video_MediaContext_">VideoCodec.CreateEncoder(VideoEncoderOptions, MediaContext)</a>
-    </div>
-    <div>
       <a class="xref" href="Egami.Video.Codecs.VideoCodec.html#Egami_Video_Codecs_VideoCodec_ToString">VideoCodec.ToString()</a>
     </div>
     <div>
@@ -173,6 +167,38 @@ damaged slice shows the last good frame there.</p>
 
   <h2 class="section" id="properties">Properties
 </h2>
+
+
+  <a id="Egami_Video_Codecs_Ffv1Codec_CanEncode_" data-uid="Egami.Video.Codecs.Ffv1Codec.CanEncode*"></a>
+
+  <h3 id="Egami_Video_Codecs_Ffv1Codec_CanEncode" data-uid="Egami.Video.Codecs.Ffv1Codec.CanEncode">
+  CanEncode
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Codecs/Ffv1Codec.cs/#L46"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether <a class="xref" href="Egami.Video.Codecs.VideoCodec.html#Egami_Video_Codecs_VideoCodec_CreateEncoder_Egami_Video_Codecs_VideoEncoderOptions_Egami_Video_MediaContext_">CreateEncoder(VideoEncoderOptions, MediaContext)</a> is supported.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public override bool CanEncode { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
 
 
   <a id="Egami_Video_Codecs_Ffv1Codec_CodecId_" data-uid="Egami.Video.Codecs.Ffv1Codec.CodecId*"></a>
@@ -279,7 +305,7 @@ damaged slice shows the last good frame there.</p>
 
   <h3 id="Egami_Video_Codecs_Ffv1Codec_CanDecode_Egami_Video_TrackInfo_" data-uid="Egami.Video.Codecs.Ffv1Codec.CanDecode(Egami.Video.TrackInfo)">
   CanDecode(TrackInfo)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Codecs/Ffv1Codec.cs/#L48"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Codecs/Ffv1Codec.cs/#L51"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Decodes <a class="xref" href="Egami.Video.CodecIds.html#Egami_Video_CodecIds_Ffv1">Ffv1</a> tracks, and Matroska's <a class="xref" href="Egami.Video.CodecIds.html#Egami_Video_CodecIds_VfwFourCC">VfwFourCC</a> tracks whose BITMAPINFOHEADER names FFV1.</p>
@@ -318,7 +344,7 @@ damaged slice shows the last good frame there.</p>
 
   <h3 id="Egami_Video_Codecs_Ffv1Codec_CreateDecoder_Egami_Video_VideoTrackInfo_Egami_Video_Codecs_VideoDecoderOptions_Egami_Video_MediaContext_" data-uid="Egami.Video.Codecs.Ffv1Codec.CreateDecoder(Egami.Video.VideoTrackInfo,Egami.Video.Codecs.VideoDecoderOptions,Egami.Video.MediaContext)">
   CreateDecoder(VideoTrackInfo, VideoDecoderOptions?, MediaContext)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Codecs/Ffv1Codec.cs/#L58"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Codecs/Ffv1Codec.cs/#L61"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Creates a decoder for a track.</p>
@@ -374,11 +400,90 @@ using IVideoDecoder&lt;Rgba8&gt; rgb = VideoCodecs.CreateDecoder&lt;Rgba8&gt;(tr
 
 
 
+  <a id="Egami_Video_Codecs_Ffv1Codec_CreateEncoder_" data-uid="Egami.Video.Codecs.Ffv1Codec.CreateEncoder*"></a>
+
+  <h3 id="Egami_Video_Codecs_Ffv1Codec_CreateEncoder_Egami_Video_Codecs_VideoEncoderOptions_Egami_Video_MediaContext_" data-uid="Egami.Video.Codecs.Ffv1Codec.CreateEncoder(Egami.Video.Codecs.VideoEncoderOptions,Egami.Video.MediaContext)">
+  CreateEncoder(VideoEncoderOptions, MediaContext)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Codecs/Ffv1Codec.cs/#L92"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Creates an FFV1 encoder: version 3, every frame equal to its input after a decode. Frames given as planes keep their
+layout (4:2:0, 4:2:2, 4:4:4, 4:1:1, 4:1:0 or gray, with or without alpha, 8 to 16 bits); a 4:4:4 raster tagged
+<a class="xref" href="Egami.Pixels.YuvMatrix.html#Egami_Pixels_YuvMatrix_Identity">Identity</a>, and any RGB raster, is coded as RGB. The first frame sets the stream's layout,
+which the track then describes (its configuration record in <a class="xref" href="Egami.Video.TrackInfo.html#Egami_Video_TrackInfo_CodecPrivate">CodecPrivate</a>). By default every
+frame is a keyframe, slices end in CRCs and the range coder uses a custom state table: the profile archives use.
+<a class="xref" href="Egami.Video.Codecs.VideoEncoderOptions.html#Egami_Video_Codecs_VideoEncoderOptions_KeyframeInterval">KeyframeInterval</a> spaces keyframes further apart, <a class="xref" href="Egami.Video.Codecs.VideoEncoderOptions.html#Egami_Video_Codecs_VideoEncoderOptions_Effort">Effort</a>
+picks the context model and <a class="xref" href="Egami.Video.Codecs.VideoEncoderOptions.html#Egami_Video_Codecs_VideoEncoderOptions_Ffv1">Ffv1</a> holds the rest. FFV1 is lossless, so
+<a class="xref" href="Egami.Video.Codecs.VideoEncoderOptions.html#Egami_Video_Codecs_VideoEncoderOptions_Quality">Quality</a> is ignored and reported as <code>Ffv1.QualityIgnored</code>. Slices are coded in
+parallel, and the output is the same at any thread count.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public override IVideoEncoder CreateEncoder(VideoEncoderOptions options, MediaContext context)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>options</code> <a class="xref" href="Egami.Video.Codecs.VideoEncoderOptions.html">VideoEncoderOptions</a></dt>
+    <dd><p>The picture size, frame rate and FFV1 settings.</p>
+</dd>
+    <dt><code>context</code> <a class="xref" href="Egami.Video.MediaContext.html">MediaContext</a></dt>
+    <dd><p>The context.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Video.Codecs.IVideoEncoder.html">IVideoEncoder</a></dt>
+    <dd><p>The encoder.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Video_Codecs_Ffv1Codec_CreateEncoder_Egami_Video_Codecs_VideoEncoderOptions_Egami_Video_MediaContext__examples">Examples</h4>
+  <pre><code class="lang-csharp">// FFV1 keeps every sample: RGB frames are coded as RGB and planes keep their layout and depth. The defaults are the
+// archival profile (version 3, every frame a keyframe, slice CRCs, the range coder with a custom table).
+VideoWriterOptions options = new() { Codec = VideoCodecs.Ffv1, FrameRate = new Rational(25, 1) };
+using (VideoWriter writer = VideoWriter.Create("master.mkv", options))
+{
+    for (int i = 0; i &lt; 5; i++)
+    {
+        using Raster&lt;Rgb8&gt; frame = duck.Derive(ops =&gt; ops.Crop(new Rect(i * 4, i * 2, 320, 240)));
+        writer.WriteFrame(frame);
+    }
+}
+
+// Expert settings: more slices for more threads, Golomb-Rice for speed, a keyframe every 10 frames for smaller files.
+VideoWriterOptions fast = options with
+{
+    KeyframeInterval = 10,
+    Ffv1 = new Ffv1EncoderOptions { Slices = 16, Coder = Ffv1Coder.GolombRice, ContextModel = Ffv1ContextModel.Small },
+};
+
+// Check the archive without decoding it.
+bool intact = Ffv1Codec.Verify("master.mkv").IsIntact;</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>An option is out of range.</p>
+</dd>
+  </dl>
+
+
+
   <a id="Egami_Video_Codecs_Ffv1Codec_Verify_" data-uid="Egami.Video.Codecs.Ffv1Codec.Verify*"></a>
 
   <h3 id="Egami_Video_Codecs_Ffv1Codec_Verify_System_IO_Stream_Egami_Video_MediaContext_System_Boolean_System_Threading_CancellationToken_" data-uid="Egami.Video.Codecs.Ffv1Codec.Verify(System.IO.Stream,Egami.Video.MediaContext,System.Boolean,System.Threading.CancellationToken)">
   Verify(Stream, MediaContext?, bool, CancellationToken)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Codecs/Ffv1Codec.cs/#L102"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Codecs/Ffv1Codec.cs/#L130"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Checks an FFV1 stream's fixity without decoding pictures. See <a class="xref" href="Egami.Video.Codecs.Ffv1Codec.html#Egami_Video_Codecs_Ffv1Codec_Verify_System_String_Egami_Video_MediaContext_System_Threading_CancellationToken_">Verify(string, MediaContext?, CancellationToken)</a>.</p>
@@ -441,7 +546,7 @@ foreach (Ffv1VerifyError error in result.Errors)
 
   <h3 id="Egami_Video_Codecs_Ffv1Codec_Verify_System_String_Egami_Video_MediaContext_System_Threading_CancellationToken_" data-uid="Egami.Video.Codecs.Ffv1Codec.Verify(System.String,Egami.Video.MediaContext,System.Threading.CancellationToken)">
   Verify(string, MediaContext?, CancellationToken)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Codecs/Ffv1Codec.cs/#L85"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Codecs/Ffv1Codec.cs/#L113"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Checks an FFV1 file's fixity without decoding pictures: the configuration record's CRC, and in every frame of the first FFV1

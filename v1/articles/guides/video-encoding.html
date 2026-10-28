@@ -222,6 +222,38 @@ using (VideoWriter writer = VideoWriter.Create(&quot;hdr-av1.mkv&quot;, options)
         writer.WriteFrame(frame);
     }
 }
+</code></pre><h2 id="writing-ffv1">Writing FFV1</h2>
+<p><code>VideoCodecs.Ffv1</code> writes FFV1 version 3 (RFC 9043), the lossless codec archives use, in Matroska or AVI: a decode gives back
+every sample. Frames given as planes keep their layout (4:2:0, 4:2:2, 4:4:4, 4:1:1, 4:1:0 or gray, with or without alpha, 8 to
+16 bits); RGB rasters, and 4:4:4 planes tagged <code>YuvMatrix.Identity</code>, are coded as RGB. The first frame sets the stream's layout.</p>
+<p>The defaults are the archival profile: every frame a keyframe, slice CRCs on (so <code>Ffv1Codec.Verify</code> can check the file), the range
+coder with a custom state table, and a slice grid picked from the frame size (16 slices at 1080p). <code>KeyframeInterval</code> spaces
+keyframes further apart, <code>Effort</code> 7 and up picks the large context model, and <code>Ffv1EncoderOptions</code> sets the slices, the coder
+(<code>Ffv1Coder.GolombRice</code> is faster and larger), the context model and <code>BitsPerSample</code> for planes that hold a 9, 11, 13, 14 or 15-bit
+source shifted up. <code>Quality</code> does not apply, and setting it reports <code>Ffv1.QualityIgnored</code>. Slices are coded in parallel, with the
+same file at any thread count. Files come within 1 % of FFmpeg's size at the same settings, and FFmpeg decodes them to the same
+samples.</p>
+<pre><code class="lang-csharp">// FFV1 keeps every sample: RGB frames are coded as RGB and planes keep their layout and depth. The defaults are the
+// archival profile (version 3, every frame a keyframe, slice CRCs, the range coder with a custom table).
+VideoWriterOptions options = new() { Codec = VideoCodecs.Ffv1, FrameRate = new Rational(25, 1) };
+using (VideoWriter writer = VideoWriter.Create(&quot;master.mkv&quot;, options))
+{
+    for (int i = 0; i &lt; 5; i++)
+    {
+        using Raster&lt;Rgb8&gt; frame = duck.Derive(ops =&gt; ops.Crop(new Rect(i * 4, i * 2, 320, 240)));
+        writer.WriteFrame(frame);
+    }
+}
+
+// Expert settings: more slices for more threads, Golomb-Rice for speed, a keyframe every 10 frames for smaller files.
+VideoWriterOptions fast = options with
+{
+    KeyframeInterval = 10,
+    Ffv1 = new Ffv1EncoderOptions { Slices = 16, Coder = Ffv1Coder.GolombRice, ContextModel = Ffv1ContextModel.Small },
+};
+
+// Check the archive without decoding it.
+bool intact = Ffv1Codec.Verify(&quot;master.mkv&quot;).IsIntact;
 </code></pre><h2 id="how-bits-are-spent">How bits are spent</h2>
 <p><code>RateControl</code> picks one of four modes:</p>
 <table>

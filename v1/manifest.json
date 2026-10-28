@@ -13439,6 +13439,48 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Codecs.Ffv1Coder.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Codecs.Ffv1Coder.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Codecs.Ffv1Coder",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Codecs.Ffv1Coder.yml\" sourcestartlinenumber=\"1\">The entropy coder FFV1 codes samples with (RFC 9043 section 4.2.3).</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Codecs.Ffv1ContextModel.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Codecs.Ffv1ContextModel.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Codecs.Ffv1ContextModel",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Codecs.Ffv1ContextModel.yml\" sourcestartlinenumber=\"1\">How many neighbours FFV1's contexts look at.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Codecs.Ffv1EncoderOptions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Codecs.Ffv1EncoderOptions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Codecs.Ffv1EncoderOptions",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Codecs.Ffv1EncoderOptions.yml\" sourcestartlinenumber=\"1\">FFV1's expert encoder settings (<xref href=\"Egami.Video.Codecs.VideoEncoderOptions.Ffv1\" data-throw-if-not-resolved=\"false\"></xref>, <xref href=\"Egami.Video.VideoWriterOptions.Ffv1\" data-throw-if-not-resolved=\"false\"></xref>). The defaults are\nthe archival profile: version 3, the range coder with a custom state table, slice CRCs on, and a slice grid picked from the\nframe size.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.Video.Codecs.Ffv1VerifyError.yml",
       "output": {
         ".html": {
