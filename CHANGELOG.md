@@ -21,6 +21,7 @@ icons; Graphics, pens, brushes, paths, fonts and text follow in later previews.
 - Icons choose the image nearest a size as System.Drawing does and save the file they came from.
 - Members that need Windows handles throw PlatformNotSupportedException and warn at compile time (EGSD0001 to EGSD0003).
 - With implicit usings on, the package adds `System.Drawing` and `Egami.SystemDrawing` as implicit usings.
+
 ## Egami.Drawing and Egami.Fonts, unreleased
 
 Closer GDI+ text (2.7.6 stage 1), measured against GDI+ on Windows in egami-compare. Egami's default output does not change.
