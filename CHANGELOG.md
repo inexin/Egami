@@ -3,6 +3,25 @@
 All notable changes to Egami are listed here. Egami follows [Semantic Versioning](https://semver.org): from 1.0, public API
 changes that break code come only in a new major version.
 
+## Egami.SystemDrawing 1.0.0-preview.1, unreleased
+
+A new package: System.Drawing.Common's API on every OS, in managed code (step 2.13, stage A). Bitmaps, pixel access, codecs and
+icons; Graphics, pens, brushes, paths, fonts and text follow in later previews.
+
+- `Bitmap`, `Image` and `Icon` in the `Egami.SystemDrawing` namespace, and `PixelFormat`, `BitmapData`, `ColorPalette`,
+  `ImageFormat`, `ImageCodecInfo`, `Encoder`, `EncoderParameters`, `FrameDimension` and `PropertyItem` in
+  `Egami.SystemDrawing.Imaging`, with System.Drawing's members, defaults and exceptions. Color, Point, Rectangle and the other
+  primitives are .NET's own System.Drawing types.
+- All 14 pixel formats in GDI+'s memory layout, with GetPixel, SetPixel, LockBits (including user buffers), Clone,
+  ConvertFormat, MakeTransparent, RotateFlip and GetThumbnailImage converting exactly as GDI+ does, measured on Windows for
+  every 8-bit value and every color and alpha pair; GDI+'s default and halftone palettes and its indexed color mapping.
+- Image.FromFile, FromStream and Save through Egami's codecs: GDI+'s pixel format, flags and resolution for each file type,
+  multipage TIFF and animated GIF frames, property items (EXIF, TIFF tags, JPEG quantization tables, PNG and GIF fields),
+  GDI+'s codec list, JPEG quality, TIFF compression and depth, and SaveAdd.
+- Icons choose the image nearest a size as System.Drawing does and save the file they came from.
+- Members that need Windows handles throw PlatformNotSupportedException and warn at compile time (EGSD0001 to EGSD0003).
+- With implicit usings on, the package adds `System.Drawing` and `Egami.SystemDrawing` as implicit usings.
+
 ## Egami.Formats.Extended, unreleased
 
 A new package of format plugins (Build Plan tasks 1 to 12). It depends on core Egami only and rides the Egami release train.

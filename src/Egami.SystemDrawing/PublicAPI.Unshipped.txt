@@ -1,0 +1,368 @@
+#nullable enable
+abstract Egami.SystemDrawing.Image.Clone() -> object!
+Egami.SystemDrawing.Bitmap
+Egami.SystemDrawing.Bitmap.Bitmap(Egami.SystemDrawing.Image! original) -> void
+Egami.SystemDrawing.Bitmap.Bitmap(Egami.SystemDrawing.Image! original, int width, int height) -> void
+Egami.SystemDrawing.Bitmap.Bitmap(Egami.SystemDrawing.Image! original, System.Drawing.Size newSize) -> void
+Egami.SystemDrawing.Bitmap.Bitmap(int width, int height) -> void
+Egami.SystemDrawing.Bitmap.Bitmap(int width, int height, Egami.SystemDrawing.Imaging.PixelFormat format) -> void
+Egami.SystemDrawing.Bitmap.Bitmap(int width, int height, int stride, Egami.SystemDrawing.Imaging.PixelFormat format, nint scan0) -> void
+Egami.SystemDrawing.Bitmap.Bitmap(string! filename) -> void
+Egami.SystemDrawing.Bitmap.Bitmap(string! filename, bool useIcm) -> void
+Egami.SystemDrawing.Bitmap.Bitmap(System.IO.Stream! stream) -> void
+Egami.SystemDrawing.Bitmap.Bitmap(System.IO.Stream! stream, bool useIcm) -> void
+Egami.SystemDrawing.Bitmap.Bitmap(System.Type! type, string! resource) -> void
+Egami.SystemDrawing.Bitmap.Clone(System.Drawing.Rectangle rect, Egami.SystemDrawing.Imaging.PixelFormat format) -> Egami.SystemDrawing.Bitmap!
+Egami.SystemDrawing.Bitmap.Clone(System.Drawing.RectangleF rect, Egami.SystemDrawing.Imaging.PixelFormat format) -> Egami.SystemDrawing.Bitmap!
+Egami.SystemDrawing.Bitmap.ConvertFormat(Egami.SystemDrawing.Imaging.PixelFormat format) -> void
+Egami.SystemDrawing.Bitmap.ConvertFormat(Egami.SystemDrawing.Imaging.PixelFormat format, Egami.SystemDrawing.Imaging.DitherType ditherType, Egami.SystemDrawing.Imaging.PaletteType paletteType = Egami.SystemDrawing.Imaging.PaletteType.Custom, Egami.SystemDrawing.Imaging.ColorPalette? palette = null, float alphaThresholdPercent = 0) -> void
+Egami.SystemDrawing.Bitmap.GetHbitmap() -> nint
+Egami.SystemDrawing.Bitmap.GetHbitmap(System.Drawing.Color background) -> nint
+Egami.SystemDrawing.Bitmap.GetHicon() -> nint
+Egami.SystemDrawing.Bitmap.GetPixel(int x, int y) -> System.Drawing.Color
+Egami.SystemDrawing.Bitmap.LockBits(System.Drawing.Rectangle rect, Egami.SystemDrawing.Imaging.ImageLockMode flags, Egami.SystemDrawing.Imaging.PixelFormat format) -> Egami.SystemDrawing.Imaging.BitmapData!
+Egami.SystemDrawing.Bitmap.LockBits(System.Drawing.Rectangle rect, Egami.SystemDrawing.Imaging.ImageLockMode flags, Egami.SystemDrawing.Imaging.PixelFormat format, Egami.SystemDrawing.Imaging.BitmapData! bitmapData) -> Egami.SystemDrawing.Imaging.BitmapData!
+Egami.SystemDrawing.Bitmap.MakeTransparent() -> void
+Egami.SystemDrawing.Bitmap.MakeTransparent(System.Drawing.Color transparentColor) -> void
+Egami.SystemDrawing.Bitmap.SetPixel(int x, int y, System.Drawing.Color color) -> void
+Egami.SystemDrawing.Bitmap.SetResolution(float xDpi, float yDpi) -> void
+Egami.SystemDrawing.Bitmap.UnlockBits(Egami.SystemDrawing.Imaging.BitmapData! bitmapdata) -> void
+Egami.SystemDrawing.GraphicsUnit
+Egami.SystemDrawing.GraphicsUnit.Display = 1 -> Egami.SystemDrawing.GraphicsUnit
+Egami.SystemDrawing.GraphicsUnit.Document = 5 -> Egami.SystemDrawing.GraphicsUnit
+Egami.SystemDrawing.GraphicsUnit.Inch = 4 -> Egami.SystemDrawing.GraphicsUnit
+Egami.SystemDrawing.GraphicsUnit.Millimeter = 6 -> Egami.SystemDrawing.GraphicsUnit
+Egami.SystemDrawing.GraphicsUnit.Pixel = 2 -> Egami.SystemDrawing.GraphicsUnit
+Egami.SystemDrawing.GraphicsUnit.Point = 3 -> Egami.SystemDrawing.GraphicsUnit
+Egami.SystemDrawing.GraphicsUnit.World = 0 -> Egami.SystemDrawing.GraphicsUnit
+Egami.SystemDrawing.Icon
+Egami.SystemDrawing.Icon.Clone() -> object!
+Egami.SystemDrawing.Icon.Dispose() -> void
+Egami.SystemDrawing.Icon.Handle.get -> nint
+Egami.SystemDrawing.Icon.Height.get -> int
+Egami.SystemDrawing.Icon.Icon(Egami.SystemDrawing.Icon! original, int width, int height) -> void
+Egami.SystemDrawing.Icon.Icon(Egami.SystemDrawing.Icon! original, System.Drawing.Size size) -> void
+Egami.SystemDrawing.Icon.Icon(string! fileName) -> void
+Egami.SystemDrawing.Icon.Icon(string! fileName, int width, int height) -> void
+Egami.SystemDrawing.Icon.Icon(string! fileName, System.Drawing.Size size) -> void
+Egami.SystemDrawing.Icon.Icon(System.IO.Stream! stream) -> void
+Egami.SystemDrawing.Icon.Icon(System.IO.Stream! stream, int width, int height) -> void
+Egami.SystemDrawing.Icon.Icon(System.IO.Stream! stream, System.Drawing.Size size) -> void
+Egami.SystemDrawing.Icon.Icon(System.Type! type, string! resource) -> void
+Egami.SystemDrawing.Icon.Save(System.IO.Stream! outputStream) -> void
+Egami.SystemDrawing.Icon.Size.get -> System.Drawing.Size
+Egami.SystemDrawing.Icon.ToBitmap() -> Egami.SystemDrawing.Bitmap!
+Egami.SystemDrawing.Icon.Width.get -> int
+Egami.SystemDrawing.Image
+Egami.SystemDrawing.Image.Dispose() -> void
+Egami.SystemDrawing.Image.Flags.get -> int
+Egami.SystemDrawing.Image.FrameDimensionsList.get -> System.Guid[]!
+Egami.SystemDrawing.Image.GetBounds(ref Egami.SystemDrawing.GraphicsUnit pageUnit) -> System.Drawing.RectangleF
+Egami.SystemDrawing.Image.GetEncoderParameterList(System.Guid encoder) -> Egami.SystemDrawing.Imaging.EncoderParameters?
+Egami.SystemDrawing.Image.GetFrameCount(Egami.SystemDrawing.Imaging.FrameDimension! dimension) -> int
+Egami.SystemDrawing.Image.GetPropertyItem(int propid) -> Egami.SystemDrawing.Imaging.PropertyItem?
+Egami.SystemDrawing.Image.GetThumbnailImage(int thumbWidth, int thumbHeight, Egami.SystemDrawing.Image.GetThumbnailImageAbort? callback, nint callbackData) -> Egami.SystemDrawing.Image!
+Egami.SystemDrawing.Image.GetThumbnailImageAbort
+Egami.SystemDrawing.Image.Height.get -> int
+Egami.SystemDrawing.Image.HorizontalResolution.get -> float
+Egami.SystemDrawing.Image.Palette.get -> Egami.SystemDrawing.Imaging.ColorPalette!
+Egami.SystemDrawing.Image.Palette.set -> void
+Egami.SystemDrawing.Image.PhysicalDimension.get -> System.Drawing.SizeF
+Egami.SystemDrawing.Image.PixelFormat.get -> Egami.SystemDrawing.Imaging.PixelFormat
+Egami.SystemDrawing.Image.PropertyIdList.get -> int[]!
+Egami.SystemDrawing.Image.PropertyItems.get -> Egami.SystemDrawing.Imaging.PropertyItem![]!
+Egami.SystemDrawing.Image.RawFormat.get -> Egami.SystemDrawing.Imaging.ImageFormat!
+Egami.SystemDrawing.Image.RemovePropertyItem(int propid) -> void
+Egami.SystemDrawing.Image.RotateFlip(Egami.SystemDrawing.RotateFlipType rotateFlipType) -> void
+Egami.SystemDrawing.Image.Save(string! filename) -> void
+Egami.SystemDrawing.Image.Save(string! filename, Egami.SystemDrawing.Imaging.ImageCodecInfo! encoder, Egami.SystemDrawing.Imaging.EncoderParameters? encoderParams) -> void
+Egami.SystemDrawing.Image.Save(string! filename, Egami.SystemDrawing.Imaging.ImageFormat! format) -> void
+Egami.SystemDrawing.Image.Save(System.IO.Stream! stream, Egami.SystemDrawing.Imaging.ImageCodecInfo! encoder, Egami.SystemDrawing.Imaging.EncoderParameters? encoderParams) -> void
+Egami.SystemDrawing.Image.Save(System.IO.Stream! stream, Egami.SystemDrawing.Imaging.ImageFormat! format) -> void
+Egami.SystemDrawing.Image.SaveAdd(Egami.SystemDrawing.Image! image, Egami.SystemDrawing.Imaging.EncoderParameters! encoderParams) -> void
+Egami.SystemDrawing.Image.SaveAdd(Egami.SystemDrawing.Imaging.EncoderParameters! encoderParams) -> void
+Egami.SystemDrawing.Image.SelectActiveFrame(Egami.SystemDrawing.Imaging.FrameDimension! dimension, int frameIndex) -> int
+Egami.SystemDrawing.Image.SetPropertyItem(Egami.SystemDrawing.Imaging.PropertyItem! propitem) -> void
+Egami.SystemDrawing.Image.Size.get -> System.Drawing.Size
+Egami.SystemDrawing.Image.Tag.get -> object?
+Egami.SystemDrawing.Image.Tag.set -> void
+Egami.SystemDrawing.Image.VerticalResolution.get -> float
+Egami.SystemDrawing.Image.Width.get -> int
+Egami.SystemDrawing.Imaging.BitmapData
+Egami.SystemDrawing.Imaging.BitmapData.BitmapData() -> void
+Egami.SystemDrawing.Imaging.BitmapData.Height.get -> int
+Egami.SystemDrawing.Imaging.BitmapData.Height.set -> void
+Egami.SystemDrawing.Imaging.BitmapData.PixelFormat.get -> Egami.SystemDrawing.Imaging.PixelFormat
+Egami.SystemDrawing.Imaging.BitmapData.PixelFormat.set -> void
+Egami.SystemDrawing.Imaging.BitmapData.Reserved.get -> int
+Egami.SystemDrawing.Imaging.BitmapData.Reserved.set -> void
+Egami.SystemDrawing.Imaging.BitmapData.Scan0.get -> nint
+Egami.SystemDrawing.Imaging.BitmapData.Scan0.set -> void
+Egami.SystemDrawing.Imaging.BitmapData.Stride.get -> int
+Egami.SystemDrawing.Imaging.BitmapData.Stride.set -> void
+Egami.SystemDrawing.Imaging.BitmapData.Width.get -> int
+Egami.SystemDrawing.Imaging.BitmapData.Width.set -> void
+Egami.SystemDrawing.Imaging.ColorPalette
+Egami.SystemDrawing.Imaging.ColorPalette.ColorPalette(Egami.SystemDrawing.Imaging.PaletteType fixedPaletteType) -> void
+Egami.SystemDrawing.Imaging.ColorPalette.ColorPalette(System.Drawing.Color[]! customColors) -> void
+Egami.SystemDrawing.Imaging.ColorPalette.Entries.get -> System.Drawing.Color[]!
+Egami.SystemDrawing.Imaging.ColorPalette.Flags.get -> int
+Egami.SystemDrawing.Imaging.DitherType
+Egami.SystemDrawing.Imaging.DitherType.DualSpiral4x4 = 7 -> Egami.SystemDrawing.Imaging.DitherType
+Egami.SystemDrawing.Imaging.DitherType.DualSpiral8x8 = 8 -> Egami.SystemDrawing.Imaging.DitherType
+Egami.SystemDrawing.Imaging.DitherType.ErrorDiffusion = 9 -> Egami.SystemDrawing.Imaging.DitherType
+Egami.SystemDrawing.Imaging.DitherType.None = 0 -> Egami.SystemDrawing.Imaging.DitherType
+Egami.SystemDrawing.Imaging.DitherType.Ordered16x16 = 4 -> Egami.SystemDrawing.Imaging.DitherType
+Egami.SystemDrawing.Imaging.DitherType.Ordered4x4 = 2 -> Egami.SystemDrawing.Imaging.DitherType
+Egami.SystemDrawing.Imaging.DitherType.Ordered8x8 = 3 -> Egami.SystemDrawing.Imaging.DitherType
+Egami.SystemDrawing.Imaging.DitherType.Solid = 1 -> Egami.SystemDrawing.Imaging.DitherType
+Egami.SystemDrawing.Imaging.DitherType.Spiral4x4 = 5 -> Egami.SystemDrawing.Imaging.DitherType
+Egami.SystemDrawing.Imaging.DitherType.Spiral8x8 = 6 -> Egami.SystemDrawing.Imaging.DitherType
+Egami.SystemDrawing.Imaging.Encoder
+Egami.SystemDrawing.Imaging.Encoder.Encoder(System.Guid guid) -> void
+Egami.SystemDrawing.Imaging.Encoder.Guid.get -> System.Guid
+Egami.SystemDrawing.Imaging.EncoderParameter
+Egami.SystemDrawing.Imaging.EncoderParameter.Dispose() -> void
+Egami.SystemDrawing.Imaging.EncoderParameter.Encoder.get -> Egami.SystemDrawing.Imaging.Encoder!
+Egami.SystemDrawing.Imaging.EncoderParameter.Encoder.set -> void
+Egami.SystemDrawing.Imaging.EncoderParameter.EncoderParameter(Egami.SystemDrawing.Imaging.Encoder! encoder, byte value) -> void
+Egami.SystemDrawing.Imaging.EncoderParameter.EncoderParameter(Egami.SystemDrawing.Imaging.Encoder! encoder, byte value, bool undefined) -> void
+Egami.SystemDrawing.Imaging.EncoderParameter.EncoderParameter(Egami.SystemDrawing.Imaging.Encoder! encoder, byte[]! value) -> void
+Egami.SystemDrawing.Imaging.EncoderParameter.EncoderParameter(Egami.SystemDrawing.Imaging.Encoder! encoder, byte[]! value, bool undefined) -> void
+Egami.SystemDrawing.Imaging.EncoderParameter.EncoderParameter(Egami.SystemDrawing.Imaging.Encoder! encoder, int NumberOfValues, int Type, int Value) -> void
+Egami.SystemDrawing.Imaging.EncoderParameter.EncoderParameter(Egami.SystemDrawing.Imaging.Encoder! encoder, int numberValues, Egami.SystemDrawing.Imaging.EncoderParameterValueType type, nint value) -> void
+Egami.SystemDrawing.Imaging.EncoderParameter.EncoderParameter(Egami.SystemDrawing.Imaging.Encoder! encoder, int numerator, int denominator) -> void
+Egami.SystemDrawing.Imaging.EncoderParameter.EncoderParameter(Egami.SystemDrawing.Imaging.Encoder! encoder, int numerator1, int demoninator1, int numerator2, int demoninator2) -> void
+Egami.SystemDrawing.Imaging.EncoderParameter.EncoderParameter(Egami.SystemDrawing.Imaging.Encoder! encoder, int[]! numerator, int[]! denominator) -> void
+Egami.SystemDrawing.Imaging.EncoderParameter.EncoderParameter(Egami.SystemDrawing.Imaging.Encoder! encoder, int[]! numerator1, int[]! denominator1, int[]! numerator2, int[]! denominator2) -> void
+Egami.SystemDrawing.Imaging.EncoderParameter.EncoderParameter(Egami.SystemDrawing.Imaging.Encoder! encoder, long rangebegin, long rangeend) -> void
+Egami.SystemDrawing.Imaging.EncoderParameter.EncoderParameter(Egami.SystemDrawing.Imaging.Encoder! encoder, long value) -> void
+Egami.SystemDrawing.Imaging.EncoderParameter.EncoderParameter(Egami.SystemDrawing.Imaging.Encoder! encoder, long[]! rangebegin, long[]! rangeend) -> void
+Egami.SystemDrawing.Imaging.EncoderParameter.EncoderParameter(Egami.SystemDrawing.Imaging.Encoder! encoder, long[]! value) -> void
+Egami.SystemDrawing.Imaging.EncoderParameter.EncoderParameter(Egami.SystemDrawing.Imaging.Encoder! encoder, short value) -> void
+Egami.SystemDrawing.Imaging.EncoderParameter.EncoderParameter(Egami.SystemDrawing.Imaging.Encoder! encoder, short[]! value) -> void
+Egami.SystemDrawing.Imaging.EncoderParameter.EncoderParameter(Egami.SystemDrawing.Imaging.Encoder! encoder, string! value) -> void
+Egami.SystemDrawing.Imaging.EncoderParameter.NumberOfValues.get -> int
+Egami.SystemDrawing.Imaging.EncoderParameter.Type.get -> Egami.SystemDrawing.Imaging.EncoderParameterValueType
+Egami.SystemDrawing.Imaging.EncoderParameter.ValueType.get -> Egami.SystemDrawing.Imaging.EncoderParameterValueType
+Egami.SystemDrawing.Imaging.EncoderParameters
+Egami.SystemDrawing.Imaging.EncoderParameters.Dispose() -> void
+Egami.SystemDrawing.Imaging.EncoderParameters.EncoderParameters() -> void
+Egami.SystemDrawing.Imaging.EncoderParameters.EncoderParameters(int count) -> void
+Egami.SystemDrawing.Imaging.EncoderParameters.Param.get -> Egami.SystemDrawing.Imaging.EncoderParameter![]!
+Egami.SystemDrawing.Imaging.EncoderParameters.Param.set -> void
+Egami.SystemDrawing.Imaging.EncoderParameterValueType
+Egami.SystemDrawing.Imaging.EncoderParameterValueType.ValueTypeAscii = 2 -> Egami.SystemDrawing.Imaging.EncoderParameterValueType
+Egami.SystemDrawing.Imaging.EncoderParameterValueType.ValueTypeByte = 1 -> Egami.SystemDrawing.Imaging.EncoderParameterValueType
+Egami.SystemDrawing.Imaging.EncoderParameterValueType.ValueTypeLong = 4 -> Egami.SystemDrawing.Imaging.EncoderParameterValueType
+Egami.SystemDrawing.Imaging.EncoderParameterValueType.ValueTypeLongRange = 6 -> Egami.SystemDrawing.Imaging.EncoderParameterValueType
+Egami.SystemDrawing.Imaging.EncoderParameterValueType.ValueTypePointer = 9 -> Egami.SystemDrawing.Imaging.EncoderParameterValueType
+Egami.SystemDrawing.Imaging.EncoderParameterValueType.ValueTypeRational = 5 -> Egami.SystemDrawing.Imaging.EncoderParameterValueType
+Egami.SystemDrawing.Imaging.EncoderParameterValueType.ValueTypeRationalRange = 8 -> Egami.SystemDrawing.Imaging.EncoderParameterValueType
+Egami.SystemDrawing.Imaging.EncoderParameterValueType.ValueTypeShort = 3 -> Egami.SystemDrawing.Imaging.EncoderParameterValueType
+Egami.SystemDrawing.Imaging.EncoderParameterValueType.ValueTypeUndefined = 7 -> Egami.SystemDrawing.Imaging.EncoderParameterValueType
+Egami.SystemDrawing.Imaging.EncoderValue
+Egami.SystemDrawing.Imaging.EncoderValue.ColorTypeCMYK = 0 -> Egami.SystemDrawing.Imaging.EncoderValue
+Egami.SystemDrawing.Imaging.EncoderValue.ColorTypeYCCK = 1 -> Egami.SystemDrawing.Imaging.EncoderValue
+Egami.SystemDrawing.Imaging.EncoderValue.CompressionCCITT3 = 3 -> Egami.SystemDrawing.Imaging.EncoderValue
+Egami.SystemDrawing.Imaging.EncoderValue.CompressionCCITT4 = 4 -> Egami.SystemDrawing.Imaging.EncoderValue
+Egami.SystemDrawing.Imaging.EncoderValue.CompressionLZW = 2 -> Egami.SystemDrawing.Imaging.EncoderValue
+Egami.SystemDrawing.Imaging.EncoderValue.CompressionNone = 6 -> Egami.SystemDrawing.Imaging.EncoderValue
+Egami.SystemDrawing.Imaging.EncoderValue.CompressionRle = 5 -> Egami.SystemDrawing.Imaging.EncoderValue
+Egami.SystemDrawing.Imaging.EncoderValue.Flush = 20 -> Egami.SystemDrawing.Imaging.EncoderValue
+Egami.SystemDrawing.Imaging.EncoderValue.FrameDimensionPage = 23 -> Egami.SystemDrawing.Imaging.EncoderValue
+Egami.SystemDrawing.Imaging.EncoderValue.FrameDimensionResolution = 22 -> Egami.SystemDrawing.Imaging.EncoderValue
+Egami.SystemDrawing.Imaging.EncoderValue.FrameDimensionTime = 21 -> Egami.SystemDrawing.Imaging.EncoderValue
+Egami.SystemDrawing.Imaging.EncoderValue.LastFrame = 19 -> Egami.SystemDrawing.Imaging.EncoderValue
+Egami.SystemDrawing.Imaging.EncoderValue.MultiFrame = 18 -> Egami.SystemDrawing.Imaging.EncoderValue
+Egami.SystemDrawing.Imaging.EncoderValue.RenderNonProgressive = 12 -> Egami.SystemDrawing.Imaging.EncoderValue
+Egami.SystemDrawing.Imaging.EncoderValue.RenderProgressive = 11 -> Egami.SystemDrawing.Imaging.EncoderValue
+Egami.SystemDrawing.Imaging.EncoderValue.ScanMethodInterlaced = 7 -> Egami.SystemDrawing.Imaging.EncoderValue
+Egami.SystemDrawing.Imaging.EncoderValue.ScanMethodNonInterlaced = 8 -> Egami.SystemDrawing.Imaging.EncoderValue
+Egami.SystemDrawing.Imaging.EncoderValue.TransformFlipHorizontal = 16 -> Egami.SystemDrawing.Imaging.EncoderValue
+Egami.SystemDrawing.Imaging.EncoderValue.TransformFlipVertical = 17 -> Egami.SystemDrawing.Imaging.EncoderValue
+Egami.SystemDrawing.Imaging.EncoderValue.TransformRotate180 = 14 -> Egami.SystemDrawing.Imaging.EncoderValue
+Egami.SystemDrawing.Imaging.EncoderValue.TransformRotate270 = 15 -> Egami.SystemDrawing.Imaging.EncoderValue
+Egami.SystemDrawing.Imaging.EncoderValue.TransformRotate90 = 13 -> Egami.SystemDrawing.Imaging.EncoderValue
+Egami.SystemDrawing.Imaging.EncoderValue.VersionGif87 = 9 -> Egami.SystemDrawing.Imaging.EncoderValue
+Egami.SystemDrawing.Imaging.EncoderValue.VersionGif89 = 10 -> Egami.SystemDrawing.Imaging.EncoderValue
+Egami.SystemDrawing.Imaging.FrameDimension
+Egami.SystemDrawing.Imaging.FrameDimension.FrameDimension(System.Guid guid) -> void
+Egami.SystemDrawing.Imaging.FrameDimension.Guid.get -> System.Guid
+Egami.SystemDrawing.Imaging.ImageCodecFlags
+Egami.SystemDrawing.Imaging.ImageCodecFlags.BlockingDecode = 32 -> Egami.SystemDrawing.Imaging.ImageCodecFlags
+Egami.SystemDrawing.Imaging.ImageCodecFlags.Builtin = 65536 -> Egami.SystemDrawing.Imaging.ImageCodecFlags
+Egami.SystemDrawing.Imaging.ImageCodecFlags.Decoder = 2 -> Egami.SystemDrawing.Imaging.ImageCodecFlags
+Egami.SystemDrawing.Imaging.ImageCodecFlags.Encoder = 1 -> Egami.SystemDrawing.Imaging.ImageCodecFlags
+Egami.SystemDrawing.Imaging.ImageCodecFlags.SeekableEncode = 16 -> Egami.SystemDrawing.Imaging.ImageCodecFlags
+Egami.SystemDrawing.Imaging.ImageCodecFlags.SupportBitmap = 4 -> Egami.SystemDrawing.Imaging.ImageCodecFlags
+Egami.SystemDrawing.Imaging.ImageCodecFlags.SupportVector = 8 -> Egami.SystemDrawing.Imaging.ImageCodecFlags
+Egami.SystemDrawing.Imaging.ImageCodecFlags.System = 131072 -> Egami.SystemDrawing.Imaging.ImageCodecFlags
+Egami.SystemDrawing.Imaging.ImageCodecFlags.User = 262144 -> Egami.SystemDrawing.Imaging.ImageCodecFlags
+Egami.SystemDrawing.Imaging.ImageCodecInfo
+Egami.SystemDrawing.Imaging.ImageCodecInfo.Clsid.get -> System.Guid
+Egami.SystemDrawing.Imaging.ImageCodecInfo.Clsid.set -> void
+Egami.SystemDrawing.Imaging.ImageCodecInfo.CodecName.get -> string?
+Egami.SystemDrawing.Imaging.ImageCodecInfo.CodecName.set -> void
+Egami.SystemDrawing.Imaging.ImageCodecInfo.DllName.get -> string?
+Egami.SystemDrawing.Imaging.ImageCodecInfo.DllName.set -> void
+Egami.SystemDrawing.Imaging.ImageCodecInfo.FilenameExtension.get -> string?
+Egami.SystemDrawing.Imaging.ImageCodecInfo.FilenameExtension.set -> void
+Egami.SystemDrawing.Imaging.ImageCodecInfo.Flags.get -> Egami.SystemDrawing.Imaging.ImageCodecFlags
+Egami.SystemDrawing.Imaging.ImageCodecInfo.Flags.set -> void
+Egami.SystemDrawing.Imaging.ImageCodecInfo.FormatDescription.get -> string?
+Egami.SystemDrawing.Imaging.ImageCodecInfo.FormatDescription.set -> void
+Egami.SystemDrawing.Imaging.ImageCodecInfo.FormatID.get -> System.Guid
+Egami.SystemDrawing.Imaging.ImageCodecInfo.FormatID.set -> void
+Egami.SystemDrawing.Imaging.ImageCodecInfo.MimeType.get -> string?
+Egami.SystemDrawing.Imaging.ImageCodecInfo.MimeType.set -> void
+Egami.SystemDrawing.Imaging.ImageCodecInfo.SignatureMasks.get -> byte[]![]?
+Egami.SystemDrawing.Imaging.ImageCodecInfo.SignatureMasks.set -> void
+Egami.SystemDrawing.Imaging.ImageCodecInfo.SignaturePatterns.get -> byte[]![]?
+Egami.SystemDrawing.Imaging.ImageCodecInfo.SignaturePatterns.set -> void
+Egami.SystemDrawing.Imaging.ImageCodecInfo.Version.get -> int
+Egami.SystemDrawing.Imaging.ImageCodecInfo.Version.set -> void
+Egami.SystemDrawing.Imaging.ImageFlags
+Egami.SystemDrawing.Imaging.ImageFlags.Caching = 131072 -> Egami.SystemDrawing.Imaging.ImageFlags
+Egami.SystemDrawing.Imaging.ImageFlags.ColorSpaceCmyk = 32 -> Egami.SystemDrawing.Imaging.ImageFlags
+Egami.SystemDrawing.Imaging.ImageFlags.ColorSpaceGray = 64 -> Egami.SystemDrawing.Imaging.ImageFlags
+Egami.SystemDrawing.Imaging.ImageFlags.ColorSpaceRgb = 16 -> Egami.SystemDrawing.Imaging.ImageFlags
+Egami.SystemDrawing.Imaging.ImageFlags.ColorSpaceYcbcr = 128 -> Egami.SystemDrawing.Imaging.ImageFlags
+Egami.SystemDrawing.Imaging.ImageFlags.ColorSpaceYcck = 256 -> Egami.SystemDrawing.Imaging.ImageFlags
+Egami.SystemDrawing.Imaging.ImageFlags.HasAlpha = 2 -> Egami.SystemDrawing.Imaging.ImageFlags
+Egami.SystemDrawing.Imaging.ImageFlags.HasRealDpi = 4096 -> Egami.SystemDrawing.Imaging.ImageFlags
+Egami.SystemDrawing.Imaging.ImageFlags.HasRealPixelSize = 8192 -> Egami.SystemDrawing.Imaging.ImageFlags
+Egami.SystemDrawing.Imaging.ImageFlags.HasTranslucent = 4 -> Egami.SystemDrawing.Imaging.ImageFlags
+Egami.SystemDrawing.Imaging.ImageFlags.None = 0 -> Egami.SystemDrawing.Imaging.ImageFlags
+Egami.SystemDrawing.Imaging.ImageFlags.PartiallyScalable = 8 -> Egami.SystemDrawing.Imaging.ImageFlags
+Egami.SystemDrawing.Imaging.ImageFlags.ReadOnly = 65536 -> Egami.SystemDrawing.Imaging.ImageFlags
+Egami.SystemDrawing.Imaging.ImageFlags.Scalable = 1 -> Egami.SystemDrawing.Imaging.ImageFlags
+Egami.SystemDrawing.Imaging.ImageFormat
+Egami.SystemDrawing.Imaging.ImageFormat.Guid.get -> System.Guid
+Egami.SystemDrawing.Imaging.ImageFormat.ImageFormat(System.Guid guid) -> void
+Egami.SystemDrawing.Imaging.ImageLockMode
+Egami.SystemDrawing.Imaging.ImageLockMode.ReadOnly = 1 -> Egami.SystemDrawing.Imaging.ImageLockMode
+Egami.SystemDrawing.Imaging.ImageLockMode.ReadWrite = Egami.SystemDrawing.Imaging.ImageLockMode.ReadOnly | Egami.SystemDrawing.Imaging.ImageLockMode.WriteOnly -> Egami.SystemDrawing.Imaging.ImageLockMode
+Egami.SystemDrawing.Imaging.ImageLockMode.UserInputBuffer = 4 -> Egami.SystemDrawing.Imaging.ImageLockMode
+Egami.SystemDrawing.Imaging.ImageLockMode.WriteOnly = 2 -> Egami.SystemDrawing.Imaging.ImageLockMode
+Egami.SystemDrawing.Imaging.PaletteFlags
+Egami.SystemDrawing.Imaging.PaletteFlags.GrayScale = 2 -> Egami.SystemDrawing.Imaging.PaletteFlags
+Egami.SystemDrawing.Imaging.PaletteFlags.Halftone = 4 -> Egami.SystemDrawing.Imaging.PaletteFlags
+Egami.SystemDrawing.Imaging.PaletteFlags.HasAlpha = 1 -> Egami.SystemDrawing.Imaging.PaletteFlags
+Egami.SystemDrawing.Imaging.PaletteType
+Egami.SystemDrawing.Imaging.PaletteType.Custom = 0 -> Egami.SystemDrawing.Imaging.PaletteType
+Egami.SystemDrawing.Imaging.PaletteType.FixedBlackAndWhite = 2 -> Egami.SystemDrawing.Imaging.PaletteType
+Egami.SystemDrawing.Imaging.PaletteType.FixedHalftone125 = 6 -> Egami.SystemDrawing.Imaging.PaletteType
+Egami.SystemDrawing.Imaging.PaletteType.FixedHalftone216 = 7 -> Egami.SystemDrawing.Imaging.PaletteType
+Egami.SystemDrawing.Imaging.PaletteType.FixedHalftone252 = 8 -> Egami.SystemDrawing.Imaging.PaletteType
+Egami.SystemDrawing.Imaging.PaletteType.FixedHalftone256 = 9 -> Egami.SystemDrawing.Imaging.PaletteType
+Egami.SystemDrawing.Imaging.PaletteType.FixedHalftone27 = 4 -> Egami.SystemDrawing.Imaging.PaletteType
+Egami.SystemDrawing.Imaging.PaletteType.FixedHalftone64 = 5 -> Egami.SystemDrawing.Imaging.PaletteType
+Egami.SystemDrawing.Imaging.PaletteType.FixedHalftone8 = 3 -> Egami.SystemDrawing.Imaging.PaletteType
+Egami.SystemDrawing.Imaging.PixelFormat
+Egami.SystemDrawing.Imaging.PixelFormat.Alpha = 262144 -> Egami.SystemDrawing.Imaging.PixelFormat
+Egami.SystemDrawing.Imaging.PixelFormat.Canonical = 2097152 -> Egami.SystemDrawing.Imaging.PixelFormat
+Egami.SystemDrawing.Imaging.PixelFormat.DontCare = 0 -> Egami.SystemDrawing.Imaging.PixelFormat
+Egami.SystemDrawing.Imaging.PixelFormat.Extended = 1048576 -> Egami.SystemDrawing.Imaging.PixelFormat
+Egami.SystemDrawing.Imaging.PixelFormat.Format16bppArgb1555 = 397319 -> Egami.SystemDrawing.Imaging.PixelFormat
+Egami.SystemDrawing.Imaging.PixelFormat.Format16bppGrayScale = 1052676 -> Egami.SystemDrawing.Imaging.PixelFormat
+Egami.SystemDrawing.Imaging.PixelFormat.Format16bppRgb555 = 135173 -> Egami.SystemDrawing.Imaging.PixelFormat
+Egami.SystemDrawing.Imaging.PixelFormat.Format16bppRgb565 = 135174 -> Egami.SystemDrawing.Imaging.PixelFormat
+Egami.SystemDrawing.Imaging.PixelFormat.Format1bppIndexed = 196865 -> Egami.SystemDrawing.Imaging.PixelFormat
+Egami.SystemDrawing.Imaging.PixelFormat.Format24bppRgb = 137224 -> Egami.SystemDrawing.Imaging.PixelFormat
+Egami.SystemDrawing.Imaging.PixelFormat.Format32bppArgb = 2498570 -> Egami.SystemDrawing.Imaging.PixelFormat
+Egami.SystemDrawing.Imaging.PixelFormat.Format32bppPArgb = 925707 -> Egami.SystemDrawing.Imaging.PixelFormat
+Egami.SystemDrawing.Imaging.PixelFormat.Format32bppRgb = 139273 -> Egami.SystemDrawing.Imaging.PixelFormat
+Egami.SystemDrawing.Imaging.PixelFormat.Format48bppRgb = 1060876 -> Egami.SystemDrawing.Imaging.PixelFormat
+Egami.SystemDrawing.Imaging.PixelFormat.Format4bppIndexed = 197634 -> Egami.SystemDrawing.Imaging.PixelFormat
+Egami.SystemDrawing.Imaging.PixelFormat.Format64bppArgb = 3424269 -> Egami.SystemDrawing.Imaging.PixelFormat
+Egami.SystemDrawing.Imaging.PixelFormat.Format64bppPArgb = 1851406 -> Egami.SystemDrawing.Imaging.PixelFormat
+Egami.SystemDrawing.Imaging.PixelFormat.Format8bppIndexed = 198659 -> Egami.SystemDrawing.Imaging.PixelFormat
+Egami.SystemDrawing.Imaging.PixelFormat.Gdi = 131072 -> Egami.SystemDrawing.Imaging.PixelFormat
+Egami.SystemDrawing.Imaging.PixelFormat.Indexed = 65536 -> Egami.SystemDrawing.Imaging.PixelFormat
+Egami.SystemDrawing.Imaging.PixelFormat.Max = 15 -> Egami.SystemDrawing.Imaging.PixelFormat
+Egami.SystemDrawing.Imaging.PixelFormat.PAlpha = 524288 -> Egami.SystemDrawing.Imaging.PixelFormat
+Egami.SystemDrawing.Imaging.PixelFormat.Undefined = 0 -> Egami.SystemDrawing.Imaging.PixelFormat
+Egami.SystemDrawing.Imaging.PropertyItem
+Egami.SystemDrawing.Imaging.PropertyItem.Id.get -> int
+Egami.SystemDrawing.Imaging.PropertyItem.Id.set -> void
+Egami.SystemDrawing.Imaging.PropertyItem.Len.get -> int
+Egami.SystemDrawing.Imaging.PropertyItem.Len.set -> void
+Egami.SystemDrawing.Imaging.PropertyItem.Type.get -> short
+Egami.SystemDrawing.Imaging.PropertyItem.Type.set -> void
+Egami.SystemDrawing.Imaging.PropertyItem.Value.get -> byte[]?
+Egami.SystemDrawing.Imaging.PropertyItem.Value.set -> void
+Egami.SystemDrawing.RotateFlipType
+Egami.SystemDrawing.RotateFlipType.Rotate180FlipNone = 2 -> Egami.SystemDrawing.RotateFlipType
+Egami.SystemDrawing.RotateFlipType.Rotate180FlipX = 6 -> Egami.SystemDrawing.RotateFlipType
+Egami.SystemDrawing.RotateFlipType.Rotate180FlipXY = 0 -> Egami.SystemDrawing.RotateFlipType
+Egami.SystemDrawing.RotateFlipType.Rotate180FlipY = 4 -> Egami.SystemDrawing.RotateFlipType
+Egami.SystemDrawing.RotateFlipType.Rotate270FlipNone = 3 -> Egami.SystemDrawing.RotateFlipType
+Egami.SystemDrawing.RotateFlipType.Rotate270FlipX = 7 -> Egami.SystemDrawing.RotateFlipType
+Egami.SystemDrawing.RotateFlipType.Rotate270FlipXY = 1 -> Egami.SystemDrawing.RotateFlipType
+Egami.SystemDrawing.RotateFlipType.Rotate270FlipY = 5 -> Egami.SystemDrawing.RotateFlipType
+Egami.SystemDrawing.RotateFlipType.Rotate90FlipNone = 1 -> Egami.SystemDrawing.RotateFlipType
+Egami.SystemDrawing.RotateFlipType.Rotate90FlipX = 5 -> Egami.SystemDrawing.RotateFlipType
+Egami.SystemDrawing.RotateFlipType.Rotate90FlipXY = 3 -> Egami.SystemDrawing.RotateFlipType
+Egami.SystemDrawing.RotateFlipType.Rotate90FlipY = 7 -> Egami.SystemDrawing.RotateFlipType
+Egami.SystemDrawing.RotateFlipType.RotateNoneFlipNone = 0 -> Egami.SystemDrawing.RotateFlipType
+Egami.SystemDrawing.RotateFlipType.RotateNoneFlipX = 4 -> Egami.SystemDrawing.RotateFlipType
+Egami.SystemDrawing.RotateFlipType.RotateNoneFlipXY = 2 -> Egami.SystemDrawing.RotateFlipType
+Egami.SystemDrawing.RotateFlipType.RotateNoneFlipY = 6 -> Egami.SystemDrawing.RotateFlipType
+override Egami.SystemDrawing.Bitmap.Clone() -> object!
+override Egami.SystemDrawing.Icon.ToString() -> string!
+override Egami.SystemDrawing.Imaging.FrameDimension.Equals(object? o) -> bool
+override Egami.SystemDrawing.Imaging.FrameDimension.GetHashCode() -> int
+override Egami.SystemDrawing.Imaging.FrameDimension.ToString() -> string!
+override Egami.SystemDrawing.Imaging.ImageFormat.Equals(object? o) -> bool
+override Egami.SystemDrawing.Imaging.ImageFormat.GetHashCode() -> int
+override Egami.SystemDrawing.Imaging.ImageFormat.ToString() -> string!
+static Egami.SystemDrawing.Bitmap.FromHicon(nint hicon) -> Egami.SystemDrawing.Bitmap!
+static Egami.SystemDrawing.Bitmap.FromResource(nint hinstance, string! bitmapName) -> Egami.SystemDrawing.Bitmap!
+static Egami.SystemDrawing.Icon.ExtractAssociatedIcon(string! filePath) -> Egami.SystemDrawing.Icon?
+static Egami.SystemDrawing.Icon.ExtractIcon(string! filePath, int id, bool smallIcon = false) -> Egami.SystemDrawing.Icon?
+static Egami.SystemDrawing.Icon.ExtractIcon(string! filePath, int id, int size) -> Egami.SystemDrawing.Icon?
+static Egami.SystemDrawing.Icon.FromHandle(nint handle) -> Egami.SystemDrawing.Icon!
+static Egami.SystemDrawing.Image.FromFile(string! filename) -> Egami.SystemDrawing.Image!
+static Egami.SystemDrawing.Image.FromFile(string! filename, bool useEmbeddedColorManagement) -> Egami.SystemDrawing.Image!
+static Egami.SystemDrawing.Image.FromHbitmap(nint hbitmap) -> Egami.SystemDrawing.Bitmap!
+static Egami.SystemDrawing.Image.FromHbitmap(nint hbitmap, nint hpalette) -> Egami.SystemDrawing.Bitmap!
+static Egami.SystemDrawing.Image.FromStream(System.IO.Stream! stream) -> Egami.SystemDrawing.Image!
+static Egami.SystemDrawing.Image.FromStream(System.IO.Stream! stream, bool useEmbeddedColorManagement) -> Egami.SystemDrawing.Image!
+static Egami.SystemDrawing.Image.FromStream(System.IO.Stream! stream, bool useEmbeddedColorManagement, bool validateImageData) -> Egami.SystemDrawing.Image!
+static Egami.SystemDrawing.Image.GetPixelFormatSize(Egami.SystemDrawing.Imaging.PixelFormat pixfmt) -> int
+static Egami.SystemDrawing.Image.IsAlphaPixelFormat(Egami.SystemDrawing.Imaging.PixelFormat pixfmt) -> bool
+static Egami.SystemDrawing.Image.IsCanonicalPixelFormat(Egami.SystemDrawing.Imaging.PixelFormat pixfmt) -> bool
+static Egami.SystemDrawing.Image.IsExtendedPixelFormat(Egami.SystemDrawing.Imaging.PixelFormat pixfmt) -> bool
+static Egami.SystemDrawing.Imaging.ColorPalette.CreateOptimalPalette(int colors, bool useTransparentColor, Egami.SystemDrawing.Bitmap! bitmap) -> Egami.SystemDrawing.Imaging.ColorPalette!
+static Egami.SystemDrawing.Imaging.FrameDimension.Page.get -> Egami.SystemDrawing.Imaging.FrameDimension!
+static Egami.SystemDrawing.Imaging.FrameDimension.Resolution.get -> Egami.SystemDrawing.Imaging.FrameDimension!
+static Egami.SystemDrawing.Imaging.FrameDimension.Time.get -> Egami.SystemDrawing.Imaging.FrameDimension!
+static Egami.SystemDrawing.Imaging.ImageCodecInfo.GetImageDecoders() -> Egami.SystemDrawing.Imaging.ImageCodecInfo![]!
+static Egami.SystemDrawing.Imaging.ImageCodecInfo.GetImageEncoders() -> Egami.SystemDrawing.Imaging.ImageCodecInfo![]!
+static Egami.SystemDrawing.Imaging.ImageFormat.Bmp.get -> Egami.SystemDrawing.Imaging.ImageFormat!
+static Egami.SystemDrawing.Imaging.ImageFormat.Emf.get -> Egami.SystemDrawing.Imaging.ImageFormat!
+static Egami.SystemDrawing.Imaging.ImageFormat.Exif.get -> Egami.SystemDrawing.Imaging.ImageFormat!
+static Egami.SystemDrawing.Imaging.ImageFormat.Gif.get -> Egami.SystemDrawing.Imaging.ImageFormat!
+static Egami.SystemDrawing.Imaging.ImageFormat.Heif.get -> Egami.SystemDrawing.Imaging.ImageFormat!
+static Egami.SystemDrawing.Imaging.ImageFormat.Icon.get -> Egami.SystemDrawing.Imaging.ImageFormat!
+static Egami.SystemDrawing.Imaging.ImageFormat.Jpeg.get -> Egami.SystemDrawing.Imaging.ImageFormat!
+static Egami.SystemDrawing.Imaging.ImageFormat.MemoryBmp.get -> Egami.SystemDrawing.Imaging.ImageFormat!
+static Egami.SystemDrawing.Imaging.ImageFormat.Png.get -> Egami.SystemDrawing.Imaging.ImageFormat!
+static Egami.SystemDrawing.Imaging.ImageFormat.Tiff.get -> Egami.SystemDrawing.Imaging.ImageFormat!
+static Egami.SystemDrawing.Imaging.ImageFormat.Webp.get -> Egami.SystemDrawing.Imaging.ImageFormat!
+static Egami.SystemDrawing.Imaging.ImageFormat.Wmf.get -> Egami.SystemDrawing.Imaging.ImageFormat!
+static readonly Egami.SystemDrawing.Imaging.Encoder.ChrominanceTable -> Egami.SystemDrawing.Imaging.Encoder!
+static readonly Egami.SystemDrawing.Imaging.Encoder.ColorDepth -> Egami.SystemDrawing.Imaging.Encoder!
+static readonly Egami.SystemDrawing.Imaging.Encoder.ColorSpace -> Egami.SystemDrawing.Imaging.Encoder!
+static readonly Egami.SystemDrawing.Imaging.Encoder.Compression -> Egami.SystemDrawing.Imaging.Encoder!
+static readonly Egami.SystemDrawing.Imaging.Encoder.ImageItems -> Egami.SystemDrawing.Imaging.Encoder!
+static readonly Egami.SystemDrawing.Imaging.Encoder.LuminanceTable -> Egami.SystemDrawing.Imaging.Encoder!
+static readonly Egami.SystemDrawing.Imaging.Encoder.Quality -> Egami.SystemDrawing.Imaging.Encoder!
+static readonly Egami.SystemDrawing.Imaging.Encoder.RenderMethod -> Egami.SystemDrawing.Imaging.Encoder!
+static readonly Egami.SystemDrawing.Imaging.Encoder.SaveAsCmyk -> Egami.SystemDrawing.Imaging.Encoder!
+static readonly Egami.SystemDrawing.Imaging.Encoder.SaveFlag -> Egami.SystemDrawing.Imaging.Encoder!
+static readonly Egami.SystemDrawing.Imaging.Encoder.ScanMethod -> Egami.SystemDrawing.Imaging.Encoder!
+static readonly Egami.SystemDrawing.Imaging.Encoder.Transformation -> Egami.SystemDrawing.Imaging.Encoder!
+static readonly Egami.SystemDrawing.Imaging.Encoder.Version -> Egami.SystemDrawing.Imaging.Encoder!
+virtual Egami.SystemDrawing.Image.GetThumbnailImageAbort.Invoke() -> bool

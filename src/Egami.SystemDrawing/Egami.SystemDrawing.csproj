@@ -1,0 +1,50 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>Egami.SystemDrawing</RootNamespace>
+    <PackageId>Egami.SystemDrawing</PackageId>
+    <!-- Its own version line, not the Egami train: 1.0.0-preview.N per merged stage until the gates pass (step 2.13, Q9). -->
+    <Version>1.0.0-preview.1</Version>
+    <Description>A System.Drawing drop-in for Egami: Bitmap, Graphics, pens, brushes, fonts and the rest of System.Drawing.Common's API, cross-platform and in managed code, drawn by Egami.</Description>
+    <PackageTags>$(EgamiPackageTags);system-drawing;gdi-plus;bitmap;graphics</PackageTags>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <IsTrimmable>true</IsTrimmable>
+    <IsAotCompatible>true</IsAotCompatible>
+    <!-- LockBits hands out pointers to pinned pixel memory, as System.Drawing does. -->
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <!--
+      The public names, values and exceptions are System.Drawing's, so code written for it compiles: Guid properties, Flags
+      type names, parameter names such as Equals(object o), enum members that share values (RotateFlipType, PixelFormat), and
+      the ExternalException and OutOfMemoryException GDI+ throws.
+    -->
+    <NoWarn>$(NoWarn);CA1069;CA1707;CA1711;CA1716;CA1720;CA1725;CA2201</NoWarn>
+  </PropertyGroup>
+
+  <!-- Build-time analyzer only; ships nothing. -->
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Egami\Egami.csproj" />
+    <ProjectReference Include="..\Egami.Drawing\Egami.Drawing.csproj" />
+    <ProjectReference Include="..\Egami.Fonts\Egami.Fonts.csproj" />
+    <ProjectReference Include="..\Egami.Metafiles\Egami.Metafiles.csproj" />
+  </ItemGroup>
+
+  <!-- The GDI+ pen, brush, region, string format and image attribute semantics, shared with Egami.Metafiles (step 2.13, Q7). -->
+  <ItemGroup>
+    <Compile Include="..\Shared\GdiPlus\**\*.cs" Link="Shared\GdiPlus\%(RecursiveDir)%(Filename)%(Extension)" />
+  </ItemGroup>
+
+  <!-- Turns on System.Drawing and Egami.SystemDrawing as implicit usings in projects that use the package. -->
+  <ItemGroup>
+    <None Include="build\Egami.SystemDrawing.props" Pack="true" PackagePath="build\;buildTransitive\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Egami.SystemDrawing.Tests" />
+    <InternalsVisibleTo Include="Egami.Fuzz" />
+  </ItemGroup>
+
+</Project>

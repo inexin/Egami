@@ -156,6 +156,10 @@
   items:
     - name: Windows metafiles
       href: guides/metafiles.md
+- name: Egami.SystemDrawing
+  items:
+    - name: System.Drawing drop-in
+      href: guides/system-drawing.md
 - name: Egami.Video
   items:
     - name: Video
