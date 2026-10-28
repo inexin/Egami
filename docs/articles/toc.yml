@@ -144,6 +144,8 @@
       href: guides/paragraph-layout.md
     - name: Unicode text and shaping
       href: guides/unicode-text.md
+    - name: Matching System.Drawing text
+      href: guides/system-drawing-text.md
 - name: Egami.Svg and Egami.Css
   items:
     - name: CSS
