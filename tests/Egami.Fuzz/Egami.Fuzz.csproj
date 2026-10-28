@@ -13,6 +13,7 @@
     <ProjectReference Include="..\..\src\Egami.Css\Egami.Css.csproj" />
     <ProjectReference Include="..\..\src\Egami.Svg\Egami.Svg.csproj" />
     <ProjectReference Include="..\..\src\Egami.Metafiles\Egami.Metafiles.csproj" />
+    <ProjectReference Include="..\..\src\Egami.Formats.Extended\Egami.Formats.Extended.csproj" />
     <ProjectReference Include="..\..\src\Egami.Heic\Egami.Heic.csproj" />
     <ProjectReference Include="..\..\src\Egami.Barcodes\Egami.Barcodes.csproj" />
     <ProjectReference Include="..\..\src\Egami.Cli\Egami.Cli.csproj" />

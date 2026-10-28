@@ -98,6 +98,7 @@
     <ProjectReference Include="..\..\src\Egami.Fonts.Substitutes\Egami.Fonts.Substitutes.csproj" />
     <ProjectReference Include="..\..\src\Egami.Svg\Egami.Svg.csproj" />
     <ProjectReference Include="..\..\src\Egami.Metafiles\Egami.Metafiles.csproj" />
+    <ProjectReference Include="..\..\src\Egami.Formats.Extended\Egami.Formats.Extended.csproj" />
     <ProjectReference Include="..\..\src\Egami.Heic\Egami.Heic.csproj" />
     <ProjectReference Include="..\..\src\Egami.Video\Egami.Video.csproj" />
     <ProjectReference Include="..\..\src\Egami.Video.H264\Egami.Video.H264.csproj" />

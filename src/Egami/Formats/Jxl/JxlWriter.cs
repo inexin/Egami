@@ -39,12 +39,12 @@ internal sealed class JxlWriter : IFormatWriter, IRowFormatWriter
                 start.Refuse("JPEG XL", "Lossy encoding of an image this small, at this distance, or with these options", "Save from a whole raster.");
             }
 
-            SaveLosses.Report(start, "JPEG XL", SaveKeeps.Alpha | SaveKeeps.Wide | SaveKeeps.Float | SaveKeeps.Cmyk | SaveKeeps.Exif | SaveKeeps.Xmp | SaveKeeps.Icc | SaveKeeps.GainMap);
+            SaveLosses.Report(start, "JPEG XL", SaveKeeps.Alpha | SaveKeeps.Wide | SaveKeeps.FloatingPoint | SaveKeeps.Cmyk | SaveKeeps.Exif | SaveKeeps.Xmp | SaveKeeps.Icc | SaveKeeps.GainMap);
             return chunked ? new ChunkedLossyEncoder<TPixel>(output, start, jxl, settings) : new LossyEncoder<TPixel>(output, start, jxl);
         }
 
         start.Refuse("JPEG XL", "Lossless encoding", "Save from a whole raster.");
-        SaveKeeps keeps = SaveKeeps.Alpha | SaveKeeps.Wide | SaveKeeps.Float | SaveKeeps.Exif | SaveKeeps.Xmp | SaveKeeps.Icc | SaveKeeps.GainMap;
+        SaveKeeps keeps = SaveKeeps.Alpha | SaveKeeps.Wide | SaveKeeps.FloatingPoint | SaveKeeps.Exif | SaveKeeps.Xmp | SaveKeeps.Icc | SaveKeeps.GainMap;
         SaveLosses.Report(start, "JPEG XL", keeps);
         return new Encoder<TPixel>(output, start, jxl);
     }

@@ -4,9 +4,15 @@ using Egami.Pixels;
 
 namespace Egami.Formats;
 
-/// <summary>What a writer keeps of a raster, as it is about to write it (Diagnostics Design, question 8).</summary>
+/// <summary>
+/// What a writer keeps of a raster, as it is about to write it, for <see cref="EncodeStart{TPixel}.ReportLosses"/>: everything
+/// the raster has that is not named here is reported as lost.
+/// </summary>
+/// <example>
+/// <code language="csharp" source="../../../tests/Egami.DocSamples/Extending.cs" region="row-format"/>
+/// </example>
 [Flags]
-internal enum SaveKeeps
+public enum SaveKeeps
 {
     /// <summary>Nothing beyond 8-bit RGB or gray pixels.</summary>
     None = 0,
@@ -18,7 +24,7 @@ internal enum SaveKeeps
     Wide = 1 << 1,
 
     /// <summary>Floating-point samples, values outside 0 to 1 included.</summary>
-    Float = 1 << 2,
+    FloatingPoint = 1 << 2,
 
     /// <summary>CMYK inks.</summary>
     Cmyk = 1 << 3,
@@ -91,7 +97,7 @@ internal static class SaveLosses
         }
 
         bool isFloat = layout.ChannelType is PixelChannelType.Float16 or PixelChannelType.Float32;
-        if (isFloat && (keeps & SaveKeeps.Float) == 0)
+        if (isFloat && (keeps & SaveKeeps.FloatingPoint) == 0)
         {
             string to = (keeps & SaveKeeps.Wide) != 0 ? "16-bit" : "8-bit";
             context.Emit(ref diagnostics, DiagnosticLevel.Warning, "Save.DepthReduced", $"{format} holds no floating-point samples here; they were written as {to} integers, values outside 0 to 1 clipped.");

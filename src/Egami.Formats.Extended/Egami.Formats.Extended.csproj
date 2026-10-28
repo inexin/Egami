@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>Egami.Formats.Extended</RootNamespace>
+    <PackageId>Egami.Formats.Extended</PackageId>
+    <!-- Egami.Formats.Extended rides the Egami release train at Egami's version (Egami.Formats.Extended design, question 2). It
+         uses only core Egami's public plugin API (question 9), so it depends on that version or later. -->
+    <Version>$(EgamiVersion)</Version>
+    <Description>Extra image formats for Egami, as plugins: PCX, SGI, Sun raster, XBM, XPM, WBMP and Farbfeld, read and written in managed code. Register them all with WithExtendedFormats(), or one at a time.</Description>
+    <PackageTags>$(EgamiPackageTags);pcx;sgi;sun-raster;xbm;xpm;wbmp;farbfeld</PackageTags>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <IsTrimmable>true</IsTrimmable>
+    <IsAotCompatible>true</IsAotCompatible>
+  </PropertyGroup>
+
+  <!-- Build-time analyzer only; ships nothing. -->
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Egami\Egami.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Egami.Formats.Extended.Tests" />
+    <InternalsVisibleTo Include="Egami.Fuzz" />
+  </ItemGroup>
+
+</Project>

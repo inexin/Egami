@@ -126,7 +126,11 @@ public static class StreamingRaw8Format
         {
             input.Skip(4);
             int width = (int)input.ReadUInt32BigEndian();
-            return new Rows(input, width, (int)input.ReadUInt32BigEndian());
+            int height = (int)input.ReadUInt32BigEndian();
+
+            // No raster checks the size here, so check it before the row buffer is allocated.
+            input.CheckFrameSize(width, height);
+            return new Rows(input, width, height);
         }
     }
 
@@ -171,7 +175,12 @@ public static class StreamingRaw8Format
 
         // Save, SaveAsync, RasterEncoder and Transcode all write through the encoder.
         public RowEncoder<TPixel> Start<TPixel>(Stream output, EncodeStart<TPixel> start)
-            where TPixel : unmanaged, IPixelType<TPixel> => new Encoder<TPixel>(output, start.Width, start.Height);
+            where TPixel : unmanaged, IPixelType<TPixel>
+        {
+            // RAW8 keeps 8-bit RGBA and nothing else: deeper samples or metadata are reported as lost.
+            start.ReportLosses("RAW8", SaveKeeps.Alpha);
+            return new Encoder<TPixel>(output, start.Width, start.Height);
+        }
     }
 
     private sealed class Encoder<TPixel> : RowEncoder<TPixel>

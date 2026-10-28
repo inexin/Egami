@@ -92,6 +92,19 @@ public sealed class EncodeStart<TPixel>
             throw new NotSupportedException($"{format}: {what} needs every pixel before the first byte, so it cannot be streamed. {instead}");
         }
     }
+
+    /// <summary>
+    /// Reports, as Warnings to <see cref="EgamiContext.Diagnostics"/>, what this encode loses without being asked: alpha, depth,
+    /// CMYK inks, frames or metadata that <paramref name="keeps"/> does not name. Nothing is examined unless a handler takes
+    /// Warnings. Core Egami's writers call it as they start; a format plugin calls it from <see cref="IRowFormatWriter.Start"/>.
+    /// </summary>
+    /// <param name="format">The format's name, which starts each message.</param>
+    /// <param name="keeps">What the writer keeps, as it will write this image.</param>
+    public void ReportLosses(string format, SaveKeeps keeps)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(format);
+        SaveLosses.Report(this, format, keeps);
+    }
 }
 
 /// <summary>

@@ -79,7 +79,7 @@ internal static class Pfm
 
         internal Encoder(Stream output, EncodeStart<TPixel> start)
         {
-            SaveLosses.Report(start, "PFM", SaveKeeps.Alpha | SaveKeeps.Wide | SaveKeeps.Float);
+            SaveLosses.Report(start, "PFM", SaveKeeps.Alpha | SaveKeeps.Wide | SaveKeeps.FloatingPoint);
             _gray = TPixel.Layout.ChannelOrder is PixelChannelOrder.Gray or PixelChannelOrder.GrayAlpha or PixelChannelOrder.Alpha;
             _width = start.Width;
             int channels = _gray ? 1 : 3;

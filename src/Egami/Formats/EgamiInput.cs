@@ -56,7 +56,7 @@ public sealed class EgamiInput
 
     /// <summary>
     /// Gets the load's link to <see cref="EgamiContext.Diagnostics"/>, for a reader's Info and Debug events. Warnings go through
-    /// <see cref="Warn"/>, so they are also listed in <see cref="RasterMetadata.Warnings"/>.
+    /// <see cref="Warn(Raster, string, string, long?)"/>, so they are also listed in <see cref="RasterMetadata.Warnings"/>.
     /// </summary>
     public DiagnosticReporter Diagnostics =>
         _diagnostics ?? Interlocked.CompareExchange(ref _diagnostics, DiagnosticReporter.Start(Context), null) ?? _diagnostics;
@@ -277,6 +277,19 @@ public sealed class EgamiInput
         _memory.Check(bytes);
     }
 
+    /// <summary>
+    /// Checks a frame size against <see cref="SafetyLimits.MaxWidth"/>, <see cref="SafetyLimits.MaxHeight"/> and
+    /// <see cref="SafetyLimits.MaxPixels"/>, as <see cref="CreateRaster"/> does, for a reader that allocates its own row buffers
+    /// before it creates a raster, such as an <see cref="IRowFormatReader"/>.
+    /// </summary>
+    /// <param name="width">The width the file says the image has.</param>
+    /// <param name="height">The height the file says the image has.</param>
+    /// <exception cref="LimitExceededException">The size breaks a limit.</exception>
+    public void CheckFrameSize(long width, long height)
+    {
+        Limits.CheckFrameSize(width, height);
+    }
+
     /// <summary>Checks a frame count against <see cref="SafetyLimits.MaxFrames"/>.</summary>
     /// <param name="frames">The frames the file says it has, or will have.</param>
     /// <exception cref="LimitExceededException">There are too many.</exception>
@@ -317,6 +330,30 @@ public sealed class EgamiInput
 
         ObjectDisposedException.ThrowIf(_buffer is null, this);
         raster.Metadata.WarningList.Add(id, warning, offset);
+    }
+
+    /// <summary>
+    /// Notes a problem a lenient read recovered from in <paramref name="metadata"/>'s <see cref="RasterMetadata.Warnings"/>, for an
+    /// <see cref="IRowFormatReader"/>'s open image, which has its metadata but no raster. The decoder sends the warnings to
+    /// <see cref="EgamiContext.Diagnostics"/> as it does for <see cref="Warn(Raster, string, string, long?)"/>.
+    /// </summary>
+    /// <param name="metadata">The open image's <see cref="RowReader.Metadata"/>.</param>
+    /// <param name="id">A stable id of the form <c>Source.Name</c>, such as <c>"Pcx.PaletteMissing"</c>.</param>
+    /// <param name="warning">What was wrong and what the reader did, as a sentence.</param>
+    /// <param name="offset">The byte offset in the input the problem is at, if known.</param>
+    /// <exception cref="ArgumentException"><paramref name="id"/> has no dot, or <paramref name="warning"/> is empty.</exception>
+    public void Warn(RasterMetadata metadata, string id, string warning, long? offset = null)
+    {
+        ArgumentNullException.ThrowIfNull(metadata);
+        ArgumentException.ThrowIfNullOrEmpty(id);
+        ArgumentException.ThrowIfNullOrEmpty(warning);
+        if (id.IndexOf('.', StringComparison.Ordinal) < 1)
+        {
+            throw new ArgumentException($"The id '{id}' is not of the form Source.Name.", nameof(id));
+        }
+
+        ObjectDisposedException.ThrowIf(_buffer is null, this);
+        metadata.WarningList.Add(id, warning, offset);
     }
 
     /// <summary>Has the Warnings of the raster a load returns sent to the handler, if any, as the load ends.</summary>

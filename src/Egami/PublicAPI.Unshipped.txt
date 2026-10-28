@@ -1,1 +1,20 @@
 #nullable enable
+Egami.Formats.EgamiInput.CheckFrameSize(long width, long height) -> void
+Egami.Formats.EgamiInput.Warn(Egami.Metadata.RasterMetadata! metadata, string! id, string! warning, long? offset = null) -> void
+Egami.Formats.EncodeStart<TPixel>.ReportLosses(string! format, Egami.Formats.SaveKeeps keeps) -> void
+Egami.Formats.SaveKeeps
+Egami.Formats.SaveKeeps.Alpha = 1 -> Egami.Formats.SaveKeeps
+Egami.Formats.SaveKeeps.Cmyk = 8 -> Egami.Formats.SaveKeeps
+Egami.Formats.SaveKeeps.Comment = 1024 -> Egami.Formats.SaveKeeps
+Egami.Formats.SaveKeeps.Exif = 32 -> Egami.Formats.SaveKeeps
+Egami.Formats.SaveKeeps.FloatingPoint = 4 -> Egami.Formats.SaveKeeps
+Egami.Formats.SaveKeeps.Frames = 16 -> Egami.Formats.SaveKeeps
+Egami.Formats.SaveKeeps.GainMap = 4096 -> Egami.Formats.SaveKeeps
+Egami.Formats.SaveKeeps.Icc = 256 -> Egami.Formats.SaveKeeps
+Egami.Formats.SaveKeeps.Iptc = 128 -> Egami.Formats.SaveKeeps
+Egami.Formats.SaveKeeps.Metadata = Egami.Formats.SaveKeeps.Exif | Egami.Formats.SaveKeeps.Xmp | Egami.Formats.SaveKeeps.Iptc | Egami.Formats.SaveKeeps.Icc | Egami.Formats.SaveKeeps.Text | Egami.Formats.SaveKeeps.Resolution -> Egami.Formats.SaveKeeps
+Egami.Formats.SaveKeeps.None = 0 -> Egami.Formats.SaveKeeps
+Egami.Formats.SaveKeeps.Resolution = 2048 -> Egami.Formats.SaveKeeps
+Egami.Formats.SaveKeeps.Text = 512 -> Egami.Formats.SaveKeeps
+Egami.Formats.SaveKeeps.Wide = 2 -> Egami.Formats.SaveKeeps
+Egami.Formats.SaveKeeps.Xmp = 64 -> Egami.Formats.SaveKeeps

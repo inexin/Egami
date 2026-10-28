@@ -1,0 +1,4 @@
+#define image_width 3
+#define image_height 3
+static unsigned char image_bits[] = {
+   0x07, 0x07, 0x07 };

@@ -248,7 +248,7 @@ internal sealed class RadianceWriter : IFormatWriter, IRowFormatWriter
         internal Encoder(Stream output, EncodeStart<TPixel> start)
         {
             RadianceWriterOptions options = start.Options as RadianceWriterOptions ?? RadianceWriterOptions.Default;
-            SaveLosses.Report(start, "Radiance", SaveKeeps.Wide | SaveKeeps.Float);
+            SaveLosses.Report(start, "Radiance", SaveKeeps.Wide | SaveKeeps.FloatingPoint);
             _width = start.Width;
             _rle = options.Compress && _width is >= 8 and <= 0x7FFF;
             _writer = new StreamBufferWriter(output);

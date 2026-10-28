@@ -208,6 +208,22 @@ public class DiagnosticsTests
         Assert.Throws<ArgumentException>(() => input.Warn(raster, ".Lead", "Problem."));
         input.Warn(raster, "Pcx.PaletteMissing", "The palette is missing.", 12);
         Assert.Equal(new EgamiDiagnostic(DiagnosticLevel.Warning, "Pcx", "Pcx.PaletteMissing", "The palette is missing.", 12, null), Assert.Single(raster.Metadata.Warnings));
+
+        // An open image has metadata but no raster.
+        Egami.Metadata.RasterMetadata open = new();
+        Assert.Throws<ArgumentException>(() => input.Warn(open, "NoDot", "Problem."));
+        input.Warn(open, "Sgi.RowsMissing", "Rows are missing.");
+        Assert.Equal("Sgi.RowsMissing", Assert.Single(open.Warnings).Id);
+        input.Dispose();
+    }
+
+    [Fact]
+    public void PluginsCheckFrameSizes()
+    {
+        EgamiInput input = new(new MemoryStream([1, 2, 3]), new EgamiContext { Limits = new SafetyLimits { MaxWidth = 100, MaxPixels = 1000 } }, default);
+        input.CheckFrameSize(100, 10);
+        Assert.Equal("MaxWidth", Assert.Throws<LimitExceededException>(() => input.CheckFrameSize(101, 1)).LimitName);
+        Assert.Equal("MaxPixels", Assert.Throws<LimitExceededException>(() => input.CheckFrameSize(100, 11)).LimitName);
         input.Dispose();
     }
 
@@ -342,6 +358,10 @@ public class DiagnosticsTests
         Assert.Equal(["Save.MetadataDropped"], Save(translucent, Egami.Formats.Qoi.QoiFormat.Info, new Egami.Formats.Qoi.QoiWriterOptions()).Where(id => id != "Save.DepthReduced"));
         Assert.Contains("XMP or text entries", seen.Single(d => d.Id == "Save.MetadataDropped").Message, StringComparison.Ordinal);
 
+        // A plugin writer reports through EncodeStart.ReportLosses, as core writers do.
+        Assert.Equal(["Save.AlphaDropped", "Save.DepthReduced", "Save.MetadataDropped"], Save(translucent, LossyPlugin.Info));
+        Assert.StartsWith("PLUG ", seen[0].Message, StringComparison.Ordinal);
+
         // Lossless saves report nothing; asking for the loss is not a loss either.
         Assert.Empty(Save(translucent, PngFormat.Info));
         Assert.Equal(["Save.MetadataDropped"], Save(translucent, Egami.Formats.Tiff.TiffFormat.Info));
@@ -394,5 +414,42 @@ public class DiagnosticsTests
     private sealed class NonSeekableStream(byte[] data) : MemoryStream(data)
     {
         public override bool CanSeek => false;
+    }
+}
+
+/// <summary>A writer that keeps 8-bit RGB only, for the plugin loss report.</summary>
+internal static class LossyPlugin
+{
+    public static Egami.Formats.FormatInfo Info { get; } = new()
+    {
+        Name = "PLUG",
+        SignatureLength = 0,
+        Matches = _ => false,
+        Writer = new Writer(),
+    };
+
+    private sealed class Writer : Egami.Formats.IFormatWriter, Egami.Formats.IRowFormatWriter
+    {
+        public void Write<TPixel>(Raster<TPixel> raster, Stream output, Egami.Formats.WriterOptions options)
+            where TPixel : unmanaged, IPixelType<TPixel> => raster.Save(output, Info, options);
+
+        public Egami.Formats.RowEncoder<TPixel> Start<TPixel>(Stream output, Egami.Formats.EncodeStart<TPixel> start)
+            where TPixel : unmanaged, IPixelType<TPixel>
+        {
+            start.ReportLosses("PLUG", Egami.Formats.SaveKeeps.None);
+            return new Encoder<TPixel>();
+        }
+    }
+
+    private sealed class Encoder<TPixel> : Egami.Formats.RowEncoder<TPixel>
+        where TPixel : unmanaged, IPixelType<TPixel>
+    {
+        public override void WriteRow(ReadOnlySpan<TPixel> row)
+        {
+        }
+
+        public override void Complete()
+        {
+        }
     }
 }
