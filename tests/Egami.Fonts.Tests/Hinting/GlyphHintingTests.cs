@@ -145,12 +145,13 @@ public class GlyphHintingTests
     }
 
     [Fact]
-    public void GdiPlusKeepsDesignAdvancesWhenARunWouldWidenTooMuch()
+    public void GridFittedToDesignKeepsDesignAdvancesWhenARunWouldWidenTooMuch()
     {
         // A glyph whose hinted advance is wider than its design: a few copies keep whole-pixel hinted steps, but once the run would
-        // be more than 2.1 pixels wider than designed, GDI+ (and GridFitted for it) lays it out with design advances.
+        // be more than 2.1 pixels wider than designed, GridFittedToDesign (GDI+'s GenericTypographic layout) keeps design advances
+        // rounded up to sixteenths of a pixel.
         Typeface face = TestFonts.Load("DejaVuSans.ttf");
-        var font = new Font(face, 13) { Hinting = FontHinting.Full, Metrics = FontMetrics.GridFitted, Kerning = false };
+        var font = new Font(face, 13) { Hinting = FontHinting.Full, Metrics = FontMetrics.GridFittedToDesign, Kerning = false };
         float scale = 13f / face.UnitsPerEm;
         // (Not f: repeated, it forms ligatures.)
         char c = "abcdeghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ".First(ch =>
@@ -163,10 +164,42 @@ public class GlyphHintingTests
         float design = face.GetAdvance(glyph) * scale, hinted = MathF.Round(face.GetHintedGlyph(glyph, 13, TrueTypeTarget.GdiPlus)!.Advance);
         int few = (int)(2.1f / (hinted - design)), many = few + 3;
         Assert.Equal(few * hinted, font.MeasureText(new string(c, few)).Advance, 3);
-        Assert.Equal(many * design, font.MeasureText(new string(c, many)).Advance, 2);
+        Assert.Equal(many * (MathF.Ceiling(design * 16) / 16), font.MeasureText(new string(c, many)).Advance, 2);
 
-        // Other targets keep whole pixels however long the run.
-        Assert.Equal(many * hinted, (font with { HintingTarget = TrueTypeTarget.FreeType }).MeasureText(new string(c, many)).Advance, 0);
+        // GridFitted (DrawString's default StringFormat) keeps whole pixels however long the run.
+        Assert.Equal(many * hinted, (font with { Metrics = FontMetrics.GridFitted }).MeasureText(new string(c, many)).Advance, 0);
+    }
+
+    [Fact]
+    public void GdiPlusAdvancesRoundUpFromJustUnderAHalf()
+    {
+        // GDI+ rounds an advance its instructions leave alone up from about 0.458 of a pixel (2.7.6); the other targets from 0.5.
+        Typeface face = TestFonts.Load("DejaVuSans.ttf");
+        int checkedUp = 0;
+        for (int ppem = 8; ppem <= 30; ppem++)
+        {
+            float scale = (float)ppem / face.UnitsPerEm;
+            for (char c = 'a'; c <= 'z'; c++)
+            {
+                ushort g = face.GetGlyph(c);
+                HintedGlyph? plus = face.GetHintedGlyph(g, ppem, TrueTypeTarget.GdiPlus), free = face.GetHintedGlyph(g, ppem, TrueTypeTarget.FreeType);
+                if (plus is null || free is null || plus.AdvanceTouched)
+                {
+                    continue;
+                }
+
+                // The phantom point is scaled to 26.6 first, so a fraction within 1/64 of the cut may go either way.
+                float design = face.GetAdvance(g) * scale, fraction = design - MathF.Floor(design);
+                if (MathF.Abs(fraction - 0.458f) >= 1 / 64f)
+                {
+                    Assert.Equal(MathF.Floor(design + 0.042f + 0.5f), plus.Advance);
+                }
+
+                checkedUp += fraction is >= 0.46f and < 0.5f && !free.AdvanceTouched && free.Advance < plus.Advance ? 1 : 0;
+            }
+        }
+
+        Assert.True(checkedUp > 0, "No glyph's advance fell between 0.458 and 0.5 of a pixel.");
     }
 
     [Fact]

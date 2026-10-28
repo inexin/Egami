@@ -10,15 +10,23 @@ GDI+ on Windows; [Fonts and text](text.md) explains each of them.
 
 - The font's TrueType instructions run for GDI+, with Microsoft's ClearType compatibility rules (`FontHinting.Full`,
   `TrueTypeTarget.GdiPlus`).
-- Advances are grid-fitted (`FontMetrics.GridFitted`) and glyph origins sit on whole pixels. As in GDI+, a run that hinted
-  advances would make more than 2.1 pixels wider than designed keeps its design advances.
-- LCD edging uses GDI+'s filter (`LcdFilter.Gdi`) and sampling (`LcdSampling.Gdi`, no smoothing along the stripes).
-- The blend uses GDI+'s gamma: `TextGamma` 1.4, which is 1 + `Graphics.TextContrast` / 10 at the default contrast of 4.
+- Advances are grid-fitted (`FontMetrics.GridFitted`), as `DrawString` lays out text with the default `StringFormat`, and
+  glyph origins sit on whole pixels. GDI+ rounds an advance up from about 0.458 of a pixel rather than 0.5, and the GDI+
+  target does the same.
+- With `StringFormat.GenericTypographic` GDI+ pulls lines back toward their design width. Use
+  `FontMetrics.GridFittedToDesign` for that: a run that hinted advances would make more than 2.1 pixels wider than designed
+  keeps its design advances, rounded up to sixteenths of a pixel.
+- LCD edging uses GDI+'s filter (`LcdFilter.Gdi`) and sampling (`LcdSampling.Gdi`): six on-or-off samples per pixel across
+  the stripes, on each pixel's centre line, so every channel's coverage is a whole number of sixths.
+- The blend uses GDI+'s gamma: `TextGamma` 1.4, which is 1 + `Graphics.TextContrast` / 10 at the default contrast of 4. With
+  `LcdSampling.Gdi` it goes through GDI+'s 8-bit gamma tables, as measured: the drawn values equal GDI+'s for every coverage
+  on every gray background tested.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/SystemDrawing.cs#gdiplus)]
 
 For a white Trebuchet MS label at 16 pixels on a black or a #0078d4 button, the result is within 0.5% of GDI+'s brightness. The
-mean per-pixel difference is under 2 levels out of 255, against 9.5 for Egami's default text.
+mean per-pixel difference is 0.67 levels out of 255 on black and 0.38 on blue, against 9.5 and 5.4 for Egami's default text.
+Fonts that GDI+ draws from embedded bitmaps at small sizes, such as Calibri, still differ: Egami draws their outlines.
 
 ## GDI ClearType
 

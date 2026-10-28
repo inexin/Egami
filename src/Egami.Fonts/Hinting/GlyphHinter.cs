@@ -66,12 +66,14 @@ internal sealed class GlyphHinter
     private readonly Typeface _face;
     private readonly GlyfTable _glyf;
     private readonly TrueTypeInterpreter _interpreter;
+    private readonly float _advanceBias;
 
     public GlyphHinter(Typeface face, GlyfTable glyf, HintingData data, InterpreterTarget target)
     {
         _face = face;
         _glyf = glyf;
         _interpreter = new TrueTypeInterpreter(data, target);
+        _advanceBias = target.AdvanceBias;
     }
 
     /// <summary>Gets the interpreter, for tests.</summary>
@@ -291,7 +293,8 @@ internal sealed class GlyphHinter
     }
 
     // A zone of `count` outline points from font units plus the phantom points: pp1 at xMin − lsb and pp2 an advance to its right,
-    // both rounded to whole pixels; pp3 and pp4 at the typographic ascender and descender, x 0.
+    // both rounded to whole pixels (pp2 after the target's advance bias); pp3 and pp4 at the typographic ascender and descender,
+    // x 0.
     private Zone MakeZone(ushort glyph, int count, int xMin, Func<int, (float X, float Y, bool On)> point)
     {
         var zone = new Zone(count + 4, twilight: false) { OutlineCount = count };
@@ -317,7 +320,8 @@ internal sealed class GlyphHinter
             int i = count + k;
             zone.UnscaledX[i] = phantoms[k].ux;
             zone.UnscaledY[i] = phantoms[k].uy;
-            zone.OrgX[i] = zone.CurX[i] = Round((int)TrueTypeInterpreter.MulFix(phantoms[k].ux, scale));
+            int x = (int)TrueTypeInterpreter.MulFix(phantoms[k].ux, scale);
+            zone.OrgX[i] = zone.CurX[i] = k == 1 && _advanceBias != 0 ? (int)Math.Floor((x / 64.0) + _advanceBias + 0.5) * 64 : Round(x);
             zone.OrgY[i] = zone.CurY[i] = Round((int)TrueTypeInterpreter.MulFix(phantoms[k].uy, scale));
         }
 

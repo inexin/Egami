@@ -900,65 +900,44 @@ internal sealed class SegmentSink : IGlyphOutlineSink
 /// <summary>
 /// LCD edging: coverage at three times the resolution along one axis, spread by the canvas's <see cref="LcdFilter"/> (five taps
 /// adding up to 256) into three channels and mixed with the pixel's grayscale coverage by the ClearType level. Smooth sampling
-/// takes each subpixel's exact area; Gdi sampling takes, along the other axis, only a thin strip at each pixel's centre line.
+/// takes each subpixel's exact area; Gdi sampling, as GDI+ ClearType does, takes two on-or-off samples per subpixel on each
+/// pixel's centre line, so a channel of the <see cref="LcdFilter.Gdi"/> filter counts 0 to 6 sixths.
 /// </summary>
 internal static class Lcd
 {
-    // Gdi sampling stretches the axis across the stripes by this much and keeps the middle row of each pixel's rows.
+    // Gdi sampling stretches the axis along the stripes by this much and keeps the middle row of each pixel's rows.
     private const int Strip = 64;
+
+    // Gdi sampling's on-or-off samples per pixel across the stripes.
+    private const int Samples = 6;
 
     public static GlyphMask Render(Path path, float tolerance, GlyphStyle style, CoverageRasterizer rasterizer)
     {
         bool vertical = style.Geometry is PixelGeometry.RgbVertical or PixelGeometry.BgrVertical;
         bool bgr = style.Geometry is PixelGeometry.BgrHorizontal or PixelGeometry.BgrVertical;
-        var edges = new EdgeList();
-        byte[] samples;
-        int lineStride, subStride, l0, lines, p0, pixels;
         if (style.Look?.Sampling == LcdSampling.Gdi)
         {
-            // Subpixels along x and the pixels' centre lines as rows; a vertical stripe swaps the axes first.
-            Matrix3x2 m = vertical ? new Matrix3x2(0, Strip, 3, 0, 0, 0) : Matrix3x2.CreateScale(3, Strip);
-            Flattener.Flatten(path, m, tolerance, edges);
-            Rect sub = edges.Bounds.RoundOut();
-            if (sub.IsEmpty)
-            {
-                return GlyphMask.Empty;
-            }
-
-            l0 = FloorDiv(sub.Y, Strip);
-            lines = -FloorDiv(-sub.Bottom, Strip) - l0;
-            p0 = FloorDiv(sub.X - 2, 3);
-            pixels = -FloorDiv(-(sub.Right + 2), 3) - p0;
-            int width = pixels * 3;
-            samples = new byte[lines * width];
-            for (int l = 0; l < lines; l++)
-            {
-                var row = new Rect(p0 * 3, ((l0 + l) * Strip) + (Strip / 2), width, 1);
-                rasterizer.Fill(edges, row, FillRule.NonZero, true, new BufferSink(samples.AsMemory(l * width, width), row), 1);
-            }
-
-            (lineStride, subStride) = (width, 1);
+            return RenderGdi(path, tolerance, style, rasterizer, vertical, bgr);
         }
-        else
+
+        var edges = new EdgeList();
+        Flattener.Flatten(path, vertical ? Matrix3x2.CreateScale(1, 3) : Matrix3x2.CreateScale(3, 1), tolerance, edges);
+        Rect sub = edges.Bounds.RoundOut();
+        if (sub.IsEmpty)
         {
-            Flattener.Flatten(path, vertical ? Matrix3x2.CreateScale(1, 3) : Matrix3x2.CreateScale(3, 1), tolerance, edges);
-            Rect sub = edges.Bounds.RoundOut();
-            if (sub.IsEmpty)
-            {
-                return GlyphMask.Empty;
-            }
-
-            // Pixel bounds along the tripled axis, wide enough for the filter's two subpixels each side.
-            int lo = vertical ? sub.Y : sub.X, hi = vertical ? sub.Bottom : sub.Right;
-            p0 = FloorDiv(lo - 2, 3);
-            pixels = -FloorDiv(-(hi + 2), 3) - p0;
-            l0 = vertical ? sub.X : sub.Y;
-            lines = vertical ? sub.Width : sub.Height;
-            Rect hiRes = vertical ? new Rect(sub.X, p0 * 3, sub.Width, pixels * 3) : new Rect(p0 * 3, sub.Y, pixels * 3, sub.Height);
-            samples = new byte[hiRes.Width * hiRes.Height];
-            rasterizer.Fill(edges, hiRes, FillRule.NonZero, true, new BufferSink(samples, hiRes), 1);
-            (lineStride, subStride) = vertical ? (1, hiRes.Width) : (hiRes.Width, 1);
+            return GlyphMask.Empty;
         }
+
+        // Pixel bounds along the tripled axis, wide enough for the filter's two subpixels each side.
+        int lo = vertical ? sub.Y : sub.X, hi = vertical ? sub.Bottom : sub.Right;
+        int p0 = FloorDiv(lo - 2, 3);
+        int pixels = -FloorDiv(-(hi + 2), 3) - p0;
+        int l0 = vertical ? sub.X : sub.Y;
+        int lines = vertical ? sub.Width : sub.Height;
+        Rect hiRes = vertical ? new Rect(sub.X, p0 * 3, sub.Width, pixels * 3) : new Rect(p0 * 3, sub.Y, pixels * 3, sub.Height);
+        byte[] samples = new byte[hiRes.Width * hiRes.Height];
+        rasterizer.Fill(edges, hiRes, FillRule.NonZero, true, new BufferSink(samples, hiRes), 1);
+        (int lineStride, int subStride) = vertical ? (1, hiRes.Width) : (hiRes.Width, 1);
 
         LcdFilter filter = style.Look?.Filter ?? LcdFilter.Default;
         int level = style.Look is LcdLook look ? (int)MathF.Round(Math.Clamp(look.Level, 0, 1) * 256) : 256;
@@ -993,6 +972,76 @@ internal static class Lcd
                     if (level < 256)
                     {
                         // Both in 1/768ths: the filtered value times 3 against the three samples' sum.
+                        value = (((value * 3 * level) + (gray * (256 - level))) + 384) / 768;
+                    }
+
+                    rgb[at + (bgr ? 2 - c : c)] = (byte)value;
+                }
+            }
+        }
+
+        Rect bounds = vertical ? new Rect(l0, p0, lines, pixels) : new Rect(p0, l0, pixels, lines);
+        return new GlyphMask(bounds, rgb, 3);
+    }
+
+    // Gdi sampling: six samples per pixel across the stripes and the pixels' centre lines as rows (a vertical stripe swaps the axes
+    // first); a sample is on when the outline covers at least half of its thin cell, which is where the outline crosses the cell's
+    // centre. Each subpixel then holds 0 to 2 samples, and the filter spreads those counts over three channels: with the Gdi
+    // filter a channel is the samples of its subpixel and its two neighbours, k of 6, stored as k × 255 / 6 to within a level.
+    private static GlyphMask RenderGdi(Path path, float tolerance, GlyphStyle style, CoverageRasterizer rasterizer, bool vertical, bool bgr)
+    {
+        var edges = new EdgeList();
+        Matrix3x2 m = vertical ? new Matrix3x2(0, Strip, Samples, 0, 0, 0) : Matrix3x2.CreateScale(Samples, Strip);
+        Flattener.Flatten(path, m, tolerance, edges);
+        Rect sub = edges.Bounds.RoundOut();
+        if (sub.IsEmpty)
+        {
+            return GlyphMask.Empty;
+        }
+
+        // Pixels wide enough for the filter's two subpixels (four samples) each side.
+        int l0 = FloorDiv(sub.Y, Strip);
+        int lines = -FloorDiv(-sub.Bottom, Strip) - l0;
+        int p0 = FloorDiv(sub.X - 4, Samples);
+        int pixels = -FloorDiv(-(sub.Right + 4), Samples) - p0;
+        int width = pixels * Samples, count = pixels * 3;
+        byte[] samples = new byte[width];
+        byte[] counts = new byte[count];
+        byte[] rgb = new byte[lines * count];
+        LcdFilter filter = style.Look?.Filter ?? LcdFilter.Gdi;
+        int level = style.Look is LcdLook look ? (int)MathF.Round(Math.Clamp(look.Level, 0, 1) * 256) : 256;
+        for (int l = 0; l < lines; l++)
+        {
+            var row = new Rect(p0 * Samples, ((l0 + l) * Strip) + (Strip / 2), width, 1);
+            Array.Clear(samples);
+            rasterizer.Fill(edges, row, FillRule.NonZero, true, new BufferSink(samples, row), 1);
+            for (int s = 0; s < count; s++)
+            {
+                counts[s] = (byte)((samples[2 * s] >= 128 ? 1 : 0) + (samples[(2 * s) + 1] >= 128 ? 1 : 0));
+            }
+
+            for (int p = 0; p < pixels; p++)
+            {
+                int at = (vertical ? (p * lines) + l : (l * pixels) + p) * 3;
+
+                // In 1/768ths: the pixel's six samples at 128 each.
+                int gray = (counts[p * 3] + counts[(p * 3) + 1] + counts[(p * 3) + 2]) * 128;
+                for (int c = 0; c < 3; c++)
+                {
+                    int sum = 0;
+                    for (int t = -2; t <= 2; t++)
+                    {
+                        int s = (p * 3) + c + t;
+                        if ((uint)s < (uint)count)
+                        {
+                            sum += filter[t + 2] * counts[s];
+                        }
+                    }
+
+                    // The counts are halves of a subpixel: the weights' 256 and the 2 together are 512.
+                    int value = ((sum * 255) + 256) / 512;
+                    if (level < 256)
+                    {
                         value = (((value * 3 * level) + (gray * (256 - level))) + 384) / 768;
                     }
 

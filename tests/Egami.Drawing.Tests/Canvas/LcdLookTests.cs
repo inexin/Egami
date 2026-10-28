@@ -108,6 +108,36 @@ public class LcdLookTests
     }
 
     [Fact]
+    public void GdiSamplingCountsSixthsOfAPixel()
+    {
+        // Two samples per subpixel and the Gdi filter's three subpixels: every channel is k of 6 (2.7.6, as GDI+ draws). Black
+        // on white without a gamma, so a channel is 255 less its coverage; only where two glyphs' masks meet may a value fall between.
+        Rgba8[] gdi = Draw(new CanvasOptions { LcdFilter = LcdFilter.Gdi, LcdSampling = LcdSampling.Gdi }, Lcd);
+        double[] sixths = [.. Enumerable.Range(0, 7).Select(k => 255 - (k * 255 / 6.0))];
+        int between = gdi.SelectMany(p => new[] { p.R, p.G, p.B }).Count(v => !sixths.Any(s => Math.Abs(s - v) <= 1));
+        Assert.InRange(between, 0, 6);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void GdiPlusClearTypeBlendsThroughGdiPlusTables(bool whiteOnBlack)
+    {
+        // GDI+'s drawn values for k of 6 at its default contrast (measured in egami-compare, 2.7.6): 8-bit gamma tables both ways,
+        // the same values for black on white in the other order. Only where two glyphs' masks meet may a value fall between.
+        byte[] drawn = [0, 72, 116, 156, 191, 224, 255];
+        using Raster<Rgba8> image = Raster.Create(240, 60, whiteOnBlack ? Rgba8.Black : Rgba8.White);
+        using (RasterCanvas<Rgba8> canvas = image.CreateCanvas(CanvasOptions.GdiPlusClearType))
+        {
+            canvas.DrawText("Hamburgefonstiv", new Vector2(4, 40), new Font(Noto, 13).WithGdiPlusLook(), whiteOnBlack ? Rgba8.White : Rgba8.Black);
+        }
+
+        Rgba8[] pixels = Pixels(image);
+        Assert.InRange(pixels.SelectMany(p => new[] { p.R, p.G, p.B }).Count(v => !drawn.Contains(v)), 0, 6);
+        Assert.Contains(pixels, p => p.G == (whiteOnBlack ? 72 : 224));
+    }
+
+    [Fact]
     public void SyntheticBoldDrawsAsInEgami120()
     {
         // Synthetic bold is now the bold curve of the general outset: masks and paths must not change. Hash from main before 2.7.5 stage 2.

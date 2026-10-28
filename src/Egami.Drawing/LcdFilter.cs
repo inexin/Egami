@@ -96,8 +96,10 @@ public enum LcdSampling
     Smooth,
 
     /// <summary>
-    /// As measured from GDI+ ClearType: exact coverage across the subpixels, but along the other axis each pixel takes the outline
-    /// where it crosses the pixel's centre line, so edges along the stripes are not smoothed.
+    /// As measured from GDI+ ClearType: six on-or-off samples per pixel across the stripes, two per subpixel, on each pixel's
+    /// centre line, so edges along the stripes are not smoothed and a channel of the <see cref="LcdFilter.Gdi"/> filter is a whole
+    /// number of sixths. With a <see cref="CanvasOptions.TextGamma"/> other than 1, text then blends through GDI+'s 8-bit gamma
+    /// tables in those sixths.
     /// </summary>
     Gdi,
 }
