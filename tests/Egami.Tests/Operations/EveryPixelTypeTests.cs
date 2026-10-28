@@ -21,7 +21,7 @@ public abstract class EveryPixelTypeTests<TPart> : IDisposable
     private static readonly Type[] NewTypes =
     [
         typeof(Rgb16), typeof(GrayAlpha16), typeof(Argb8), typeof(Abgr8), typeof(Alpha8), typeof(RgbaF16), typeof(RgbF32),
-        typeof(GrayF32), typeof(Bgr565), typeof(Bgra4444), typeof(Rgb10A2), typeof(Cmyk8), typeof(Cmyk16), typeof(PremulRgba8),
+        typeof(GrayF32), typeof(Bgr565), typeof(Bgra4444), typeof(Bgr555), typeof(Bgra5551), typeof(Rgb10A2), typeof(Cmyk8), typeof(Cmyk16), typeof(PremulRgba8),
         typeof(PremulBgra8), typeof(PremulRgbaF32),
     ];
 

@@ -141,6 +141,12 @@ public enum TgaPixelFormat
 
     /// <summary>32-bit blue, green, red and alpha.</summary>
     Bgra32,
+
+    /// <summary>16-bit 5-5-5 blue, green and red, with no attribute bits. Alpha is dropped.</summary>
+    Bgr555,
+
+    /// <summary>16-bit 5-5-5 blue, green and red and one attribute bit of alpha: 128 and above is opaque.</summary>
+    Bgra5551,
 }
 
 /// <summary>Options for writing TGA.</summary>

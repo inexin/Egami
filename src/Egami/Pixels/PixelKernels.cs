@@ -146,6 +146,17 @@ internal static class PixelKernels
             return PackedKernels.Narrow565(MemoryMarshal.Cast<byte, uint>(src), MemoryMarshal.Cast<byte, ushort>(dst), typeof(TFrom) == typeof(Bgra8), vectorBits);
         }
 
+        // 5-5-5 and 1-5-5-5 and the 8-bit four-channel layouts.
+        if ((typeof(TFrom) == typeof(Bgr555) || typeof(TFrom) == typeof(Bgra5551)) && (typeof(TTo) == typeof(Rgba8) || typeof(TTo) == typeof(Bgra8)))
+        {
+            return PackedKernels.Widen555(MemoryMarshal.Cast<byte, ushort>(src), MemoryMarshal.Cast<byte, uint>(dst), typeof(TTo) == typeof(Bgra8), typeof(TFrom) == typeof(Bgra5551), vectorBits);
+        }
+
+        if ((typeof(TTo) == typeof(Bgr555) || typeof(TTo) == typeof(Bgra5551)) && (typeof(TFrom) == typeof(Rgba8) || typeof(TFrom) == typeof(Bgra8)))
+        {
+            return PackedKernels.Narrow555(MemoryMarshal.Cast<byte, uint>(src), MemoryMarshal.Cast<byte, ushort>(dst), typeof(TFrom) == typeof(Bgra8), typeof(TTo) == typeof(Bgra5551), vectorBits);
+        }
+
         // Alpha-first layouts: one byte shuffle per pixel.
         Vector128<byte> mask4 = Mask4For<TFrom, TTo>();
         if (mask4 != default)
