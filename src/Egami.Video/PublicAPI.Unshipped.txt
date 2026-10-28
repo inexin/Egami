@@ -677,3 +677,43 @@ override Egami.Video.Codecs.Ffv1Codec.CreateDecoder(Egami.Video.VideoTrackInfo! 
 override Egami.Video.Codecs.Ffv1Codec.Name.get -> string!
 static Egami.Video.Codecs.Ffv1Codec.Instance.get -> Egami.Video.Codecs.Ffv1Codec!
 static Egami.Video.Codecs.VideoCodecs.Ffv1.get -> Egami.Video.Codecs.VideoCodec!
+static Egami.Video.Codecs.Ffv1Codec.Verify(string! path, Egami.Video.MediaContext? context = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> Egami.Video.Codecs.Ffv1VerifyResult!
+static Egami.Video.Codecs.Ffv1Codec.Verify(System.IO.Stream! stream, Egami.Video.MediaContext? context = null, bool leaveOpen = false, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> Egami.Video.Codecs.Ffv1VerifyResult!
+Egami.Video.Codecs.Ffv1VerifyResult
+Egami.Video.Codecs.Ffv1VerifyResult.ConfigurationCrcOk.get -> bool?
+Egami.Video.Codecs.Ffv1VerifyResult.ConfigurationCrcOk.init -> void
+Egami.Video.Codecs.Ffv1VerifyResult.Errors.get -> System.Collections.Generic.IReadOnlyList<Egami.Video.Codecs.Ffv1VerifyError!>!
+Egami.Video.Codecs.Ffv1VerifyResult.Errors.init -> void
+Egami.Video.Codecs.Ffv1VerifyResult.Frames.get -> int
+Egami.Video.Codecs.Ffv1VerifyResult.Frames.init -> void
+Egami.Video.Codecs.Ffv1VerifyResult.HasSliceCrcs.get -> bool
+Egami.Video.Codecs.Ffv1VerifyResult.HasSliceCrcs.init -> void
+Egami.Video.Codecs.Ffv1VerifyResult.IsIntact.get -> bool
+Egami.Video.Codecs.Ffv1VerifyResult.Slices.get -> long
+Egami.Video.Codecs.Ffv1VerifyResult.Slices.init -> void
+Egami.Video.Codecs.Ffv1VerifyError
+Egami.Video.Codecs.Ffv1VerifyError.Ffv1VerifyError(int Frame, Egami.Video.MediaTime Timestamp, int Slice, string! Problem) -> void
+Egami.Video.Codecs.Ffv1VerifyError.Frame.get -> int
+Egami.Video.Codecs.Ffv1VerifyError.Frame.init -> void
+Egami.Video.Codecs.Ffv1VerifyError.Problem.get -> string!
+Egami.Video.Codecs.Ffv1VerifyError.Problem.init -> void
+Egami.Video.Codecs.Ffv1VerifyError.Slice.get -> int
+Egami.Video.Codecs.Ffv1VerifyError.Slice.init -> void
+Egami.Video.Codecs.Ffv1VerifyError.Timestamp.get -> Egami.Video.MediaTime
+Egami.Video.Codecs.Ffv1VerifyError.Timestamp.init -> void
+Egami.Video.Codecs.Ffv1VerifyError.<Clone>$() -> Egami.Video.Codecs.Ffv1VerifyError!
+Egami.Video.Codecs.Ffv1VerifyError.Deconstruct(out int Frame, out Egami.Video.MediaTime Timestamp, out int Slice, out string! Problem) -> void
+Egami.Video.Codecs.Ffv1VerifyError.Equals(Egami.Video.Codecs.Ffv1VerifyError? other) -> bool
+Egami.Video.Codecs.Ffv1VerifyResult.<Clone>$() -> Egami.Video.Codecs.Ffv1VerifyResult!
+Egami.Video.Codecs.Ffv1VerifyResult.Equals(Egami.Video.Codecs.Ffv1VerifyResult? other) -> bool
+Egami.Video.Codecs.Ffv1VerifyResult.Ffv1VerifyResult() -> void
+override Egami.Video.Codecs.Ffv1VerifyError.Equals(object? obj) -> bool
+override Egami.Video.Codecs.Ffv1VerifyError.GetHashCode() -> int
+override Egami.Video.Codecs.Ffv1VerifyError.ToString() -> string!
+override Egami.Video.Codecs.Ffv1VerifyResult.Equals(object? obj) -> bool
+override Egami.Video.Codecs.Ffv1VerifyResult.GetHashCode() -> int
+override Egami.Video.Codecs.Ffv1VerifyResult.ToString() -> string!
+static Egami.Video.Codecs.Ffv1VerifyError.operator !=(Egami.Video.Codecs.Ffv1VerifyError? left, Egami.Video.Codecs.Ffv1VerifyError? right) -> bool
+static Egami.Video.Codecs.Ffv1VerifyError.operator ==(Egami.Video.Codecs.Ffv1VerifyError? left, Egami.Video.Codecs.Ffv1VerifyError? right) -> bool
+static Egami.Video.Codecs.Ffv1VerifyResult.operator !=(Egami.Video.Codecs.Ffv1VerifyResult? left, Egami.Video.Codecs.Ffv1VerifyResult? right) -> bool
+static Egami.Video.Codecs.Ffv1VerifyResult.operator ==(Egami.Video.Codecs.Ffv1VerifyResult? left, Egami.Video.Codecs.Ffv1VerifyResult? right) -> bool

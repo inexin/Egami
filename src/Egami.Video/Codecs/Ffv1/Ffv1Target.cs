@@ -17,6 +17,8 @@ internal sealed class Ffv1Target
 
     public Ffv1Target(YuvRaster raster, Ffv1Parameters p)
     {
+        Width = raster.Width;
+        Height = raster.Height;
         _bits = p.BitsPerRawSample;
         _max = (1 << _bits) - 1;
         _shift = raster.BitDepth - _bits;
@@ -33,6 +35,12 @@ internal sealed class Ffv1Target
             (_words[0], _words[1], _words[2], _words[3]) = (w.Y, w.U, w.V, w.A);
         }
     }
+
+    /// <summary>Gets the frame's width in luma samples.</summary>
+    public int Width { get; }
+
+    /// <summary>Gets the frame's height in luma samples.</summary>
+    public int Height { get; }
 
     /// <summary>Stores a line of plane <paramref name="plane"/> (0 Y, 1 Cb, 2 Cr, 3 alpha) at row <paramref name="y"/>, column <paramref name="x"/>.</summary>
     public void Store(int plane, int y, int x, ReadOnlySpan<int> samples)

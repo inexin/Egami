@@ -37,6 +37,16 @@ Helpers a format plugin needs, made public for Egami.Formats.Extended. All addit
 
 ## Egami.Video, unreleased
 
+V6 FFV1 stage B: decode speed and fixity checks (Build Plan tasks 9 and 10). All additive.
+
+- FFV1 slices decode in parallel up to `EgamiContext.MaxParallelism`, the same frame at any thread count, and the line decoders
+  were reworked (branch-free median and sign, neighbours kept in registers, no bounds checks). On 1080p camera-like clips one
+  thread now takes 0.80 to 0.86 times FFmpeg's time with the range coder and 1.18 times with Golomb-Rice (gate: 1.5); on all
+  cores 0.62 to 0.83 times. Steady-state decoding allocates 168 bytes a frame beyond the frame itself on one thread.
+- `Ffv1Codec.Verify` (a path or a stream) checks the configuration record's CRC and every slice's without decoding pictures, about
+  50 times faster than a decode, giving an `Ffv1VerifyResult` with each `Ffv1VerifyError`.
+- `tools/video/time-ffv1.py` makes the speed gate's clips and times FFmpeg; the benchmarks' `--time-ffv1` times Egami.Video.
+
 V6 FFV1 stage A: the FFV1 decoder (Build Plan tasks 1 and 3 to 8). All additive; speed, the fixity check, the encoder and the
 API review come in later stages.
 

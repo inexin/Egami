@@ -1,3 +1,4 @@
+using System.Buffers.Binary;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 
@@ -66,6 +67,17 @@ internal struct Ffv1BitReader
 
     private void Refill()
     {
+        if (_pos + 8 <= _end)
+        {
+            // Eight bytes at once: take as many whole bytes as fit below the bits still in the window.
+            ulong next = BinaryPrimitives.ReadUInt64BigEndian(_data.AsSpan(_pos, 8));
+            int take = (63 - _bits) >> 3;
+            _window |= (next >> _bits) & (ulong.MaxValue << (64 - _bits - (take * 8)));
+            _pos += take;
+            _bits += take * 8;
+            return;
+        }
+
         while (_bits <= 56)
         {
             ulong b = _pos < _end ? _data[_pos] : 0UL;

@@ -68,6 +68,133 @@ public sealed class Ffv1Codec : VideoCodec
         return new Ffv1VideoDecoder(track, options, context);
     }
 
+    /// <summary>
+    /// Checks an FFV1 file's fixity without decoding pictures: the configuration record's CRC, and in every frame of the first FFV1
+    /// track each slice's footer and CRC (RFC 9043 section 4.9). This is far faster than decoding, so archives can run it
+    /// routinely. Versions 0 and 1, and version 3 written without slice CRCs, have no slice CRCs to check; the result says so in
+    /// <see cref="Ffv1VerifyResult.HasSliceCrcs"/>.
+    /// </summary>
+    /// <param name="path">The Matroska or AVI file.</param>
+    /// <param name="context">The context, or <see langword="null"/> for <see cref="MediaContext.Default"/>.</param>
+    /// <param name="cancellationToken">Stops the check between frames.</param>
+    /// <returns>What was checked and every problem found.</returns>
+    /// <exception cref="UnsupportedFormatException">The file has no FFV1 track.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/Video.cs" region="video-ffv1-verify"/>
+    /// </example>
+    public static Ffv1VerifyResult Verify(string path, MediaContext? context = null, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(path);
+        using Containers.IDemuxer demuxer = MediaFile.OpenDemuxer(path, context);
+        return Verify(demuxer, cancellationToken);
+    }
+
+    /// <summary>Checks an FFV1 stream's fixity without decoding pictures. See <see cref="Verify(string, MediaContext?, CancellationToken)"/>.</summary>
+    /// <param name="stream">The Matroska or AVI file, from its start.</param>
+    /// <param name="context">The context, or <see langword="null"/> for <see cref="MediaContext.Default"/>.</param>
+    /// <param name="leaveOpen">Whether to leave <paramref name="stream"/> open afterwards.</param>
+    /// <param name="cancellationToken">Stops the check between frames.</param>
+    /// <returns>What was checked and every problem found.</returns>
+    /// <exception cref="UnsupportedFormatException">The file has no FFV1 track.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/Video.cs" region="video-ffv1-verify"/>
+    /// </example>
+    public static Ffv1VerifyResult Verify(Stream stream, MediaContext? context = null, bool leaveOpen = false, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(stream);
+        using Containers.IDemuxer demuxer = MediaFile.OpenDemuxer(stream, context, leaveOpen);
+        return Verify(demuxer, cancellationToken);
+    }
+
+    private static Ffv1VerifyResult Verify(Containers.IDemuxer demuxer, CancellationToken cancellationToken)
+    {
+        TrackInfo track = demuxer.Tracks.FirstOrDefault(t => t.Kind == TrackKind.Video && Instance.CanDecode(t))
+            ?? throw new UnsupportedFormatException("The file has no FFV1 track.");
+        ReadOnlySpan<byte> record = ConfigurationRecord(track).Span;
+        Ffv1Parameters? config = null;
+        bool? configOk = null;
+        List<Ffv1VerifyError> errors = [];
+        if (Ffv1Decoder.HasConfigurationRecord(record))
+        {
+            try
+            {
+                config = Ffv1Parameters.ReadConfigurationRecord(record, out bool ok);
+                configOk = ok;
+            }
+            catch (EgamiException)
+            {
+                configOk = false;
+            }
+        }
+
+        int frames = 0;
+        long slices = 0;
+        byte[] buffer = [];
+        while (demuxer.ReadPacket() is { } packet)
+        {
+            using (packet)
+            {
+                if (packet.TrackNumber != track.Number)
+                {
+                    continue;
+                }
+
+                cancellationToken.ThrowIfCancellationRequested();
+                int frame = frames++;
+                if (config is null)
+                {
+                    continue;
+                }
+
+                ReadOnlySpan<byte> data = packet.Data.Span;
+                if (buffer.Length < data.Length)
+                {
+                    buffer = new byte[data.Length];
+                }
+
+                data.CopyTo(buffer);
+                List<(int Start, int End, int FooterEnd)> spans;
+                try
+                {
+                    spans = Ffv1Decoder.FindSlices(buffer, data.Length, config);
+                }
+                catch (CorruptDataException e)
+                {
+                    errors.Add(new Ffv1VerifyError(frame, packet.Timestamp, -1, $"The frame's slices cannot be found: {e.Message}"));
+                    continue;
+                }
+
+                if (!config.SliceCrc)
+                {
+                    continue;
+                }
+
+                for (int s = 0; s < spans.Count; s++)
+                {
+                    (int start, int end, int footerEnd) = spans[s];
+                    slices++;
+                    if (Ffv1Crc.Compute(buffer.AsSpan(start, footerEnd - start)) != 0)
+                    {
+                        errors.Add(new Ffv1VerifyError(frame, packet.Timestamp, s, "The slice's CRC does not match."));
+                    }
+                    else if (buffer[end + 3] != 0)
+                    {
+                        errors.Add(new Ffv1VerifyError(frame, packet.Timestamp, s, $"The slice's footer reports error status {buffer[end + 3]}."));
+                    }
+                }
+            }
+        }
+
+        return new Ffv1VerifyResult
+        {
+            Frames = frames,
+            Slices = slices,
+            HasSliceCrcs = config?.SliceCrc ?? false,
+            ConfigurationCrcOk = configOk,
+            Errors = errors,
+        };
+    }
+
     /// <summary>Returns a track's FFV1 configuration record: its CodecPrivate, or what follows the BITMAPINFOHEADER of a VfW track.</summary>
     internal static ReadOnlyMemory<byte> ConfigurationRecord(TrackInfo track) =>
         IsVfwFfv1(track) ? Containers.Avi.AviCodecs.ExtraData(track.CodecPrivate.Span).ToArray() : track.CodecPrivate;
