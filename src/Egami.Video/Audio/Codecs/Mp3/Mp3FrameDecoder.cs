@@ -1,4 +1,5 @@
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace Egami.Video.Audio.Codecs.Mp3;
 
@@ -667,9 +668,10 @@ internal sealed class Mp3FrameDecoder
 
     private void Huffman(int dst, ref Granule gr, int limit)
     {
-        ReadOnlySpan<short> tabs = Mp3Tables.Huffman;
-        ReadOnlySpan<float> pow43 = Mp3Tables.Pow43;
-        ReadOnlySpan<byte> linbitsTable = Mp3Tables.LinBits;
+        // The code tables are complete, so every lookup stays inside its table and those reads skip the bounds checks; the
+        // reads of the main data and the writes of the granule stay checked.
+        ref short tabs = ref MemoryMarshal.GetReference(Mp3Tables.Huffman);
+        ref float pow43 = ref MemoryMarshal.GetReference(Mp3Tables.Pow43);
         byte[] buf = _mainData;
         float[] g = _grbuf;
         float[] scfs = _scf;
@@ -690,8 +692,8 @@ internal sealed class Mp3FrameDecoder
             int tabNum = ireg switch { 0 => gr.Table0, 1 => gr.Table1, _ => gr.Table2 };
             int sfbCnt = ireg switch { 0 => gr.Region0, 1 => gr.Region1, _ => gr.Region2 };
             ireg++;
-            int codebook = Mp3Tables.HuffmanIndex[tabNum];
-            int linbits = linbitsTable[tabNum];
+            ref short codebook = ref Unsafe.Add(ref tabs, Mp3Tables.HuffmanIndex[tabNum]);
+            int linbits = Mp3Tables.LinBits[tabNum];
             int np;
             do
             {
@@ -705,16 +707,55 @@ internal sealed class Mp3FrameDecoder
                     break;
                 }
 
+                if (linbits == 0)
+                {
+                    // Tables 0 to 15: no escape, so each value is a pow43 entry with its sign.
+                    do
+                    {
+                        int w = 5;
+                        int leaf = Unsafe.Add(ref codebook, (int)(cache >> (32 - w)));
+                        while (leaf < 0)
+                        {
+                            cache <<= w;
+                            sh += w;
+                            w = leaf & 7;
+                            leaf = Unsafe.Add(ref codebook, (int)(cache >> (32 - w)) - (leaf >> 3));
+                        }
+
+                        int length = leaf >> 8;
+                        cache <<= length;
+                        sh += length;
+                        for (int j = 0; j < 2; j++, dst++, leaf >>= 4)
+                        {
+                            int lsb = leaf & 0x0F;
+                            g[dst] = Unsafe.Add(ref pow43, 16 + lsb - (16 * (int)(cache >> 31))) * one;
+                            if (lsb != 0)
+                            {
+                                cache <<= 1;
+                                sh += 1;
+                            }
+                        }
+
+                        while (sh >= 0)
+                        {
+                            cache |= (uint)buf[next++] << sh;
+                            sh -= 8;
+                        }
+                    }
+                    while (--pairs != 0);
+                    continue;
+                }
+
                 do
                 {
                     int w = 5;
-                    int leaf = tabs[codebook + (int)(cache >> (32 - w))];
+                    int leaf = Unsafe.Add(ref codebook, (int)(cache >> (32 - w)));
                     while (leaf < 0)
                     {
                         cache <<= w;
                         sh += w;
                         w = leaf & 7;
-                        leaf = tabs[codebook + (int)(cache >> (32 - w)) - (leaf >> 3)];
+                        leaf = Unsafe.Add(ref codebook, (int)(cache >> (32 - w)) - (leaf >> 3));
                     }
 
                     int length = leaf >> 8;
@@ -723,7 +764,7 @@ internal sealed class Mp3FrameDecoder
                     for (int j = 0; j < 2; j++, dst++, leaf >>= 4)
                     {
                         int lsb = leaf & 0x0F;
-                        if (lsb == 15 && linbits != 0)
+                        if (lsb == 15)
                         {
                             lsb += (int)(cache >> (32 - linbits));
                             cache <<= linbits;
@@ -738,7 +779,7 @@ internal sealed class Mp3FrameDecoder
                         }
                         else
                         {
-                            g[dst] = pow43[16 + lsb - (16 * (int)(cache >> 31))] * one;
+                            g[dst] = Unsafe.Add(ref pow43, 16 + lsb - (16 * (int)(cache >> 31))) * one;
                         }
 
                         if (lsb != 0)
