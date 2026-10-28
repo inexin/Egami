@@ -5,8 +5,7 @@ changes that break code come only in a new major version.
 
 ## Egami.Formats.Extended, unreleased
 
-A new package of format plugins, stage A of its Build Plan (tasks 1 to 7). It depends on core Egami only and rides the Egami
-release train; the API review comes in stage B.
+A new package of format plugins (Build Plan tasks 1 to 12). It depends on core Egami only and rides the Egami release train.
 
 - PCX, SGI, Sun raster, XBM, XPM, WBMP and Farbfeld, each read and written, registered with `WithExtendedFormats()` or one
   `With<Format>()` each (`WithPcx`, `WithSgi`, `WithSunRaster`, `WithXbm`, `WithXpm`, `WithWbmp`, `WithFarbfeld`).
@@ -14,6 +13,17 @@ release train; the API review comes in stage B.
   and in a lenient read of a damaged file keeps what decoded with a warning such as `Pcx.RowsMissing`.
 - `PcxDetails`, `SgiDetails`, `SunRasterDetails`, `XbmDetails` and `XpmDetails` keep what the headers say; `SgiWriterOptions.Rle`
   and `SunRasterWriterOptions.Rle` choose run-length coding.
+- Egami reads every file ImageMagick 7.1.2 writes in these formats to ImageMagick's pixels, and ImageMagick reads every file
+  Egami writes to Egami's; ImageMagick's 1-bit PCX loads inverted, since it sets the bits of black pixels against its own
+  palette. Loading and saving the 12-megapixel files is faster than ImageMagick in every case, at 1 thread and on all cores.
+- The format's name for Sun raster is `Sun raster` (it was `SUN`), so it matches `SunRasterWriterOptions`.
+- A page per format in the docs, a Package column in the formats overview, and the `EGAMIX` diagnostic ids for formats in
+  preview (none yet). The package has its own icon and lockups.
+
+## Egami.Cli and Egami.Video.Cli, unreleased
+
+- `egami` (and `egami-video run`) read and write Egami.Formats.Extended's formats, with `--set sgi.rle=` and
+  `--set sunraster.rle=` for their writer options. `--preview-formats` adds the formats in preview; there are none yet.
 
 ## Egami, unreleased
 

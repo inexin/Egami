@@ -17,6 +17,7 @@ own color, with a white line glyph. The wordmark is lowercase Bricolage Grotesqu
 | Egami.Css | `#3767ee` |
 | Egami.Metafiles | `#8752e6` |
 | Egami.Heic | `#e5397a` |
+| Egami.Formats.Extended | `#8a9a1b` |
 | Egami.Video | `#e0458f` |
 | Egami.Barcodes | `#3d4656` |
 | Egami.Cli | `#4f5bd5` |

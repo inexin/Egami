@@ -18,7 +18,7 @@ public class ExtendedFormatsTests
         EgamiContext core = new();
         EgamiContext context = core.WithExtendedFormats();
         Assert.Equal(core.Formats, context.Formats.Take(core.Formats.Count));
-        Assert.Equal(["PCX", "SGI", "SUN", "XBM", "XPM", "WBMP", "Farbfeld"], context.Formats.Skip(core.Formats.Count).Select(f => f.Name));
+        Assert.Equal(["PCX", "SGI", "Sun raster", "XBM", "XPM", "WBMP", "Farbfeld"], context.Formats.Skip(core.Formats.Count).Select(f => f.Name));
 
         // Registering again replaces in place.
         Assert.Equal(context.Formats.Count, context.WithExtendedFormats().WithPcx().Formats.Count);
@@ -57,7 +57,7 @@ public class ExtendedFormatsTests
                 Rgba8 expected = format switch
                 {
                     "Farbfeld" or "SGI" => p,
-                    "PCX" or "SUN" => p with { A = 255 },
+                    "PCX" or "Sun raster" => p with { A = 255 },
                     "XPM" => p.A < 128 ? default : p,
                     _ => Gray(p) >= 128 ? new Rgba8(255, 255, 255, 255) : new Rgba8(0, 0, 0, 255),
                 };
@@ -202,7 +202,7 @@ public class ExtendedFormatsTests
             "Farbfeld" => [.. "farbfeld"u8, 0, 1, 0x86, 0xA0, 0, 1, 0x86, 0xA0],
             "WBMP" => [0, 0, 0x86, 0x8D, 0x20, 0x86, 0x8D, 0x20],
             "PCX" => Pcx(60000, 60000),
-            "SUN" => [0x59, 0xA6, 0x6A, 0x95, 0, 0, 0xEA, 0x60, 0, 0, 0xEA, 0x60, 0, 0, 0, 24, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+            "Sun raster" => [0x59, 0xA6, 0x6A, 0x95, 0, 0, 0xEA, 0x60, 0, 0, 0xEA, 0x60, 0, 0, 0, 24, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
             "SGI" => [.. (byte[])[0x01, 0xDA, 0, 1, 0, 3, 0xEA, 0x60, 0xEA, 0x60, 0, 3], .. new byte[500]],
             "XBM" => "#define a_width 60000\n#define a_height 60000\nstatic char a_bits[] = { 0x00 };\n"u8.ToArray(),
             _ => "/* XPM */\nstatic char *a[] = {\n\"60000 60000 1 1\",\n\". c #000000\",\n};\n"u8.ToArray(),
@@ -253,8 +253,8 @@ public class ExtendedFormatsTests
     public void WriterOptionsChooseRle()
     {
         using Raster<Rgb8> flat = Raster.Create<Rgb8>(64, 64);
-        byte[] plainSun = TestImages.Save(flat, "SUN");
-        byte[] rleSun = TestImages.Save(flat, "SUN", new SunRasterWriterOptions { Rle = true });
+        byte[] plainSun = TestImages.Save(flat, "Sun raster");
+        byte[] rleSun = TestImages.Save(flat, "Sun raster", new SunRasterWriterOptions { Rle = true });
         Assert.True(rleSun.Length < plainSun.Length / 10);
         byte[] plainSgi = TestImages.Save(flat, "SGI", new SgiWriterOptions { Rle = false });
         byte[] rleSgi = TestImages.Save(flat, "SGI");

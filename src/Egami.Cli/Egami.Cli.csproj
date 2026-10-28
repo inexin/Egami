@@ -43,6 +43,7 @@
     <ProjectReference Include="..\Egami.Fonts.Substitutes\Egami.Fonts.Substitutes.csproj" />
     <ProjectReference Include="..\Egami.Svg\Egami.Svg.csproj" />
     <ProjectReference Include="..\Egami.Metafiles\Egami.Metafiles.csproj" />
+    <ProjectReference Include="..\Egami.Formats.Extended\Egami.Formats.Extended.csproj" />
     <ProjectReference Include="..\Egami.Cli.Generators\Egami.Cli.Generators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" GlobalPropertiesToRemove="RuntimeIdentifier;SelfContained;EgamiNativeAot" />
   </ItemGroup>
 

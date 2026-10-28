@@ -1,4 +1,5 @@
 using System.Buffers.Binary;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -48,6 +49,7 @@ internal sealed class SgiWriter : ExtendedWriter
         private readonly TFile[] _row;
         private readonly byte[][] _planes;
         private readonly byte[] _scratch;
+        private readonly byte[] _line;
         private readonly int _width;
         private readonly int _height;
         private readonly int _channels;
@@ -72,6 +74,7 @@ internal sealed class SgiWriter : ExtendedWriter
             _row = new TFile[_width];
             _planes = new byte[_channels * _height][];
             _scratch = new byte[(_width * _size * 2) + (_size * 4)];
+            _line = new byte[_width];
             _name = start.Metadata.FormatDetails is SgiDetails details ? details.Name : "";
         }
 
@@ -81,7 +84,9 @@ internal sealed class SgiWriter : ExtendedWriter
             int fileRow = _height - 1 - _y;
             for (int c = 0; c < _channels; c++)
             {
-                int length = _size == 1
+                int length = _size == 1 && _rle
+                    ? CodeBytes(MemoryMarshal.AsBytes(_row.AsSpan()), c)
+                    : _size == 1
                     ? Plane(MemoryMarshal.AsBytes(_row.AsSpan()), c)
                     : Plane(MemoryMarshal.Cast<TFile, ushort>(_row.AsSpan()), c);
                 _planes[(c * _height) + fileRow] = _scratch.AsSpan(0, length).ToArray();
@@ -129,6 +134,68 @@ internal sealed class SgiWriter : ExtendedWriter
             }
 
             output.Flush();
+        }
+
+        /// <summary>
+        /// Codes channel <paramref name="channel"/> of an 8-bit row into the scratch row, as <see cref="Plane"/> does, gathered into a
+        /// contiguous line first so the run search reads it in order; returns its length.
+        /// </summary>
+        private int CodeBytes(ReadOnlySpan<byte> samples, int channel)
+        {
+            int width = _width;
+            int step = _channels;
+            ref byte source = ref MemoryMarshal.GetReference(samples);
+            ref byte line = ref MemoryMarshal.GetArrayDataReference(_line);
+            for (int x = 0, at = channel; x < width; x++, at += step)
+            {
+                Unsafe.Add(ref line, x) = Unsafe.Add(ref source, at);
+            }
+
+            ref byte dst = ref MemoryMarshal.GetArrayDataReference(_scratch);
+            int n = 0;
+            int i = 0;
+            while (i < width)
+            {
+                // Literal samples until three equal ones start, then the run of equal ones.
+                int start = i;
+                int last = width - 2;
+                while (i < last && !(Unsafe.Add(ref line, i) == Unsafe.Add(ref line, i + 1) && Unsafe.Add(ref line, i + 1) == Unsafe.Add(ref line, i + 2)))
+                {
+                    i++;
+                }
+
+                if (i >= last)
+                {
+                    i = width;
+                }
+
+                while (start < i)
+                {
+                    int count = Math.Min(126, i - start);
+                    Unsafe.Add(ref dst, n++) = (byte)(0x80 | count);
+                    Unsafe.CopyBlockUnaligned(ref Unsafe.Add(ref dst, n), ref Unsafe.Add(ref line, start), (uint)count);
+                    n += count;
+                    start += count;
+                }
+
+                if (i < width)
+                {
+                    byte value = Unsafe.Add(ref line, i);
+                    int end = Math.Min(i + 126, width);
+                    int next = i + 1;
+                    while (next < end && Unsafe.Add(ref line, next) == value)
+                    {
+                        next++;
+                    }
+
+                    Unsafe.Add(ref dst, n++) = (byte)(next - i);
+                    Unsafe.Add(ref dst, n++) = value;
+                    i = next;
+                }
+            }
+
+            Unsafe.Add(ref dst, n++) = 0;
+            return n;
         }
 
         /// <summary>Writes channel <paramref name="channel"/> of the row, coded or not, into the scratch row; returns its length.</summary>
@@ -220,11 +287,11 @@ internal sealed class SgiWriter : ExtendedWriter
         {
             if (_size == 1)
             {
-                _scratch[at] = System.Runtime.CompilerServices.Unsafe.As<T, byte>(ref value);
+                _scratch[at] = Unsafe.As<T, byte>(ref value);
             }
             else
             {
-                BinaryPrimitives.WriteUInt16BigEndian(_scratch.AsSpan(at), System.Runtime.CompilerServices.Unsafe.As<T, ushort>(ref value));
+                BinaryPrimitives.WriteUInt16BigEndian(_scratch.AsSpan(at), Unsafe.As<T, ushort>(ref value));
             }
         }
     }
