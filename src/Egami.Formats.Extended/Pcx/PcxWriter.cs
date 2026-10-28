@@ -1,4 +1,6 @@
 using System.Buffers.Binary;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 using Egami.Metadata;
 using Egami.Pixels;
@@ -60,12 +62,22 @@ internal sealed class PcxWriter : ExtendedWriter
         public override void WriteRow(ReadOnlySpan<TPixel> row)
         {
             PixelConvert.Convert<TPixel, TFile>(row, _row);
-            ReadOnlySpan<byte> pixels = System.Runtime.InteropServices.MemoryMarshal.AsBytes(_row.AsSpan());
+            ReadOnlySpan<byte> pixels = MemoryMarshal.AsBytes(_row.AsSpan());
+            if (_planes == 1)
+            {
+                pixels.CopyTo(_plane);
+                Encode(_plane);
+                return;
+            }
+
+            ref byte source = ref MemoryMarshal.GetReference(pixels);
+            ref byte plane = ref MemoryMarshal.GetArrayDataReference(_plane);
+            int width = _row.Length;
             for (int p = 0; p < _planes; p++)
             {
-                for (int x = 0; x < _row.Length; x++)
+                for (int x = 0, at = p; x < width; x++, at += _planes)
                 {
-                    _plane[x] = pixels[(x * _planes) + p];
+                    Unsafe.Add(ref plane, x) = Unsafe.Add(ref source, at);
                 }
 
                 Encode(_plane);
@@ -110,24 +122,29 @@ internal sealed class PcxWriter : ExtendedWriter
         private void Encode(ReadOnlySpan<byte> line)
         {
             Span<byte> span = _output.GetSpan(line.Length * 2);
+            ref byte dst = ref MemoryMarshal.GetReference(span);
+            ref byte src = ref MemoryMarshal.GetReference(line);
+            int length = line.Length;
             int n = 0;
             int i = 0;
-            while (i < line.Length)
+            while (i < length)
             {
-                byte value = line[i];
-                int run = 1;
-                while (run < 63 && i + run < line.Length && line[i + run] == value)
+                byte value = Unsafe.Add(ref src, i);
+                int end = Math.Min(i + 63, length);
+                int next = i + 1;
+                while (next < end && Unsafe.Add(ref src, next) == value)
                 {
-                    run++;
+                    next++;
                 }
 
+                int run = next - i;
                 if (run > 1 || value >= 0xC0)
                 {
-                    span[n++] = (byte)(0xC0 | run);
+                    Unsafe.Add(ref dst, n++) = (byte)(0xC0 | run);
                 }
 
-                span[n++] = value;
-                i += run;
+                Unsafe.Add(ref dst, n++) = value;
+                i = next;
             }
 
             _output.Advance(n);

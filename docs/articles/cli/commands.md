@@ -15,6 +15,7 @@ Options:
   -vv, --debug              Write debugging detail to standard error.
   -q, --quiet               Write only errors to standard error.
   --limit <name=value,...>  Safety limits, such as pixels=100M,memory=2GB,frames=500 (names: pixels, width, height, frames, memory, metadata). EGAMI_LIMITS sets them too.
+  --preview-formats         Also read and write the formats in preview (none in this release); they may change or go in any minor release.
   -?, -h, --help            Show help and usage information
   --version                 Show version information
 
@@ -59,6 +60,7 @@ Options:
   --fail-fast               Stop at the first file that fails.
   -a, --all                 Also read the metadata: color profile, EXIF, XMP, IPTC, text, resolution.
   --json                    Write JSON (schema 1, see the command reference) instead of text.
+  --preview-formats         Also read and write the formats in preview (none in this release); they may change or go in any minor release.
 ```
 
 ## convert
@@ -88,6 +90,7 @@ Options:
   -j, --jobs <count>        How many files to work on at once; 0 (the default) for one per processor.
   --in-place                Allow outputs to replace their inputs.
   --fail-fast               Stop at the first file that fails.
+  --preview-formats         Also read and write the formats in preview (none in this release); they may change or go in any minor release.
 ```
 
 ## resize
@@ -123,6 +126,7 @@ Options:
   --filter <filter>             The resampling kernel: bicubic (Catmull-Rom, the default), lanczos3, mitchell, bilinear, nearest, ...
   --linear                      Blend in linear light rather than in the encoded values.
   --background <color>          The color --fit pad fills with (transparent by default).
+  --preview-formats             Also read and write the formats in preview (none in this release); they may change or go in any minor release.
 ```
 
 ## thumbnail
@@ -159,6 +163,7 @@ Options:
   --linear                  Blend in linear light rather than in the encoded values.
   --background <color>      The color --fit pad fills with (transparent by default).
   --keep-metadata           Keep EXIF, XMP, IPTC and text, which thumbnails leave out by default.
+  --preview-formats         Also read and write the formats in preview (none in this release); they may change or go in any minor release.
 ```
 
 ## crop
@@ -189,6 +194,7 @@ Options:
   --in-place                   Allow outputs to replace their inputs.
   --fail-fast                  Stop at the first file that fails.
   --rect <x,y,w,h> (REQUIRED)  The area to keep: x,y,width,height in pixels.
+  --preview-formats            Also read and write the formats in preview (none in this release); they may change or go in any minor release.
 ```
 
 ## rotate
@@ -222,6 +228,7 @@ Options:
   --filter <filter>         The resampling kernel for angles that are not a multiple of 90.
   --background <color>      The color of the corners an angle uncovers (transparent by default).
   --reencode                Decode and encode a JPEG even when a lossless rotation is possible.
+  --preview-formats         Also read and write the formats in preview (none in this release); they may change or go in any minor release.
 ```
 
 ## flip
@@ -253,6 +260,7 @@ Options:
   --fail-fast                  Stop at the first file that fails.
   -d, --direction <direction>  horizontal (mirror left to right), vertical (top to bottom) or both; the last input may give it instead.
   --reencode                   Decode and encode a JPEG even when a lossless flip is possible.
+  --preview-formats            Also read and write the formats in preview (none in this release); they may change or go in any minor release.
 ```
 
 ## auto-orient
@@ -282,6 +290,7 @@ Options:
   --fail-fast               Stop at the first file that fails.
   --to <profile>            Convert colors to this profile while reading: srgb, display-p3, adobe-rgb, rec2020, ... or an ICC file.
   --reencode                Decode and encode a JPEG even when a lossless turn is possible.
+  --preview-formats         Also read and write the formats in preview (none in this release); they may change or go in any minor release.
 ```
 
 ## run
@@ -307,6 +316,7 @@ Options:
   -j, --jobs <count>        How many files to work on at once; 0 for one per processor.
   --in-place                Allow outputs to replace their inputs.
   --fail-fast               Stop at the first file that fails.
+  --preview-formats         Also read and write the formats in preview (none in this release); they may change or go in any minor release.
 
 Additional Arguments:
   Arguments passed to the application that is being run.
@@ -332,6 +342,7 @@ Options:
   -d, --diff <path>         Write a picture of the differences.
   --diff-style <style>      highlight (differing pixels in red, as ImageMagick's compare) or absolute (|a - b|). [default: highlight]
   --json                    Write every metric per channel as JSON.
+  --preview-formats         Also read and write the formats in preview (none in this release); they may change or go in any minor release.
 ```
 
 ## stats
@@ -353,6 +364,7 @@ Options:
   --json                    Write JSON instead of text.
   --frame <index>           The frame to measure, from 0.
   -a, --all                 Also count the colors and give perceptual hashes and the pixel signature.
+  --preview-formats         Also read and write the formats in preview (none in this release); they may change or go in any minor release.
 ```
 
 ## ocr
@@ -377,6 +389,7 @@ Options:
   -r, --recursive                        Take every image in folders given as inputs, at any depth.
   -j, --jobs <count>                     How many files to work on at once; 0 (the default) for one per processor.
   --fail-fast                            Stop at the first file that fails.
+  --preview-formats                      Also read and write the formats in preview (none in this release); they may change or go in any minor release.
 ```
 
 ## frames
@@ -389,6 +402,7 @@ Usage:
   egami frames [command] [options]
 
 Options:
+  --preview-formats         Also read and write the formats in preview (none in this release); they may change or go in any minor release.
 
 Commands:
   split <input>  Write every frame of an animation as its own image, each a full picture as the animation shows it.
@@ -412,6 +426,7 @@ Options:
   -f, --format <format>               The output format, when the template's extension does not say.
   --set <fmt.key=value>               Writer settings as fmt.key=value.
   --delays <path>                     Also write each frame's delay in milliseconds, one per line, to this file, so 'frames join --delays' can restore the timing.
+  --preview-formats                   Also read and write the formats in preview (none in this release); they may change or go in any minor release.
 ```
 
 ### frames join
@@ -436,6 +451,7 @@ Options:
   --set <fmt.key=value>           Writer settings as fmt.key=value.
   --quality <0-100>               Lossy quality for WebP.
   --lossless                      Lossless WebP.
+  --preview-formats               Also read and write the formats in preview (none in this release); they may change or go in any minor release.
 ```
 
 ## metadata
@@ -448,6 +464,7 @@ Usage:
   egami metadata [command] [options]
 
 Options:
+  --preview-formats         Also read and write the formats in preview (none in this release); they may change or go in any minor release.
 
 Commands:
   show <inputs>   Show every piece of metadata an image holds.
@@ -472,6 +489,7 @@ Options:
   -j, --jobs <count>        How many files to work on at once; 0 (the default) for one per processor.
   --fail-fast               Stop at the first file that fails.
   --json                    Write JSON, with every EXIF entry, IPTC dataset, text entry and the XMP packet.
+  --preview-formats         Also read and write the formats in preview (none in this release); they may change or go in any minor release.
 ```
 
 ### metadata strip
@@ -501,6 +519,7 @@ Options:
   --fail-fast               Stop at the first file that fails.
   --keep <blocks>           Blocks to keep, comma-separated: icc, exif, xmp, iptc, text, resolution.
   --reencode                Allow writing a lossy format (JPEG, lossy WebP, AVIF, JPEG XL) again, which costs a generation.
+  --preview-formats         Also read and write the formats in preview (none in this release); they may change or go in any minor release.
 ```
 
 ### metadata copy
@@ -531,6 +550,7 @@ Options:
   --from <image> (REQUIRED)  The image to copy metadata from.
   --only <blocks>            Blocks to copy, comma-separated: icc, exif, xmp, iptc, text, resolution; all by default.
   --reencode                 Allow writing a lossy format (JPEG, lossy WebP, AVIF, JPEG XL) again, which costs a generation.
+  --preview-formats          Also read and write the formats in preview (none in this release); they may change or go in any minor release.
 ```
 
 ## color
@@ -565,6 +585,7 @@ Options:
   --tone-map <method>         How HDR is brought into a standard range: bt2390 (the default), reinhard or clip.
   --peak <nits>               The HDR source's peak brightness in nits, when the file does not say.
   --reference-white <nits>    The brightness of SDR white in nits (203 by default).
+  --preview-formats           Also read and write the formats in preview (none in this release); they may change or go in any minor release.
 ```
 
 ## text
@@ -605,6 +626,7 @@ Options:
   --opacity <0-1>           From 0 (invisible) to 1 (the default). [default: 1]
   --width <pixels>          The width to wrap lines at, in pixels; the image's width less the margins by default.
   --shadow <color>          A drop shadow in this color, offset by a tenth of the size.
+  --preview-formats         Also read and write the formats in preview (none in this release); they may change or go in any minor release.
 ```
 
 ## overlay
@@ -641,6 +663,7 @@ Options:
   --opacity <0-1>           From 0 (invisible) to 1 (the default). [default: 1]
   --blend <mode>            The blend mode: normal (the default), multiply, screen, overlay, darken, lighten, ...
   -s, --size <size>         Resize the overlay first, in the size syntax (W, xH, WxH, P%).
+  --preview-formats         Also read and write the formats in preview (none in this release); they may change or go in any minor release.
 ```
 
 ## montage
@@ -667,6 +690,7 @@ Options:
   --label-size <pixels>           The label size in pixels. [default: 13]
   --set <fmt.key=value>           Writer settings as fmt.key=value.
   --quality <0-100>               Lossy quality from 0 to 100.
+  --preview-formats               Also read and write the formats in preview (none in this release); they may change or go in any minor release.
 ```
 
 ## formats
@@ -683,6 +707,7 @@ Arguments:
 
 Options:
   --json                    Write JSON instead of text.
+  --preview-formats         Also read and write the formats in preview (none in this release); they may change or go in any minor release.
 ```
 
 ## mcp
@@ -697,4 +722,5 @@ Usage:
 Options:
   --allow <folder>          A folder the tools may read and write, besides the folders the assistant opened; give it once per folder. With neither, the working folder.
   --max-inputs <count>      The most files one tool call may take; 1000 by default. [default: 1000]
+  --preview-formats         Also read and write the formats in preview (none in this release); they may change or go in any minor release.
 ```

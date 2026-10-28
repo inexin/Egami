@@ -37,6 +37,7 @@ internal static class RunCommand
         ["-q"] = false,
         ["--quiet"] = false,
         ["--limit"] = true,
+        ["--preview-formats"] = false,
     };
 
     /// <summary>The options of <c>save</c>: name → takes a value.</summary>
@@ -89,7 +90,7 @@ internal static class RunCommand
 
         Parsed parsed = Parse(args);
         Verbosity verbosity = parsed.Flags.Contains("-q") ? Verbosity.Quiet : parsed.Flags.Contains("-vv") ? Verbosity.Debug : parsed.Flags.Contains("-v") ? Verbosity.Verbose : Verbosity.Normal;
-        session.Configure(verbosity, parsed.Value("--limit"), 0);
+        session.Configure(verbosity, parsed.Value("--limit"), 0, parsed.Flags.Contains("--preview-formats"));
         session.InPlace = parsed.Flags.Contains("--in-place");
 
         List<PipelineItem> items;
@@ -171,7 +172,7 @@ internal static class RunCommand
         }
 
         List<InputFile> inputs = Globber.Expand(session, parsed.Inputs, parsed.Flags.Contains("-r"));
-        session.Configure(verbosity, parsed.Value("--limit"), inputs.Count > 1 && jobs != 1 ? 1 : 0);
+        session.Configure(verbosity, parsed.Value("--limit"), inputs.Count > 1 && jobs != 1 ? 1 : 0, parsed.Flags.Contains("--preview-formats"));
         OutputTemplate? output = parsed.Value("-o") is { } outputText ? OutputTemplate.Parse(outputText) : null;
         if (output is { IsStdout: true } && inputs.Count > 1)
         {

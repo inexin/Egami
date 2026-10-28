@@ -34,6 +34,8 @@
       href: formats/ccitt.md
     - name: Extended formats
       href: formats/extended.md
+    - name: Farbfeld
+      href: formats/farbfeld.md
     - name: GIF
       href: formats/gif.md
     - name: HEIC
@@ -54,6 +56,8 @@
       href: formats/pnm.md
     - name: OpenEXR
       href: formats/openexr.md
+    - name: PCX
+      href: formats/pcx.md
     - name: PNG and APNG
       href: formats/png.md
     - name: PSD and PSB
@@ -62,14 +66,24 @@
       href: formats/qoi.md
     - name: Radiance
       href: formats/radiance.md
+    - name: SGI
+      href: formats/sgi.md
+    - name: Sun raster
+      href: formats/sun-raster.md
     - name: TGA
       href: formats/tga.md
     - name: TIFF
       href: formats/tiff.md
     - name: VP8 video frames
       href: formats/vp8.md
+    - name: WBMP
+      href: formats/wbmp.md
     - name: WebP
       href: formats/webp.md
+    - name: XBM
+      href: formats/xbm.md
+    - name: XPM
+      href: formats/xpm.md
     - name: Your own format
       href: formats/custom.md
 - name: "Egami: editing images"
