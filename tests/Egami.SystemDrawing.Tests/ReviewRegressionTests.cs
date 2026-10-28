@@ -6,7 +6,7 @@ using Egami.Pixels;
 
 namespace Egami.SystemDrawing.Tests;
 
-/// <summary>Regressions found in review of the stage A pull request.</summary>
+/// <summary>Regressions found in review of the stage A and C pull requests.</summary>
 public class ReviewRegressionTests
 {
     [Theory]
@@ -69,5 +69,30 @@ public class ReviewRegressionTests
         PropertyItem item = image.GetPropertyItem(0x9999)!;
         Assert.Equal(12, item.Type);
         Assert.Equal(1.5, BinaryPrimitives.ReadDoubleLittleEndian(item.Value));
+    }
+
+    [Fact]
+    public void ClonedImageAttributesKeepTheirWrapMode()
+    {
+        using Bitmap source = new(2, 2);
+        for (int y = 0; y < 2; y++)
+        {
+            for (int x = 0; x < 2; x++)
+            {
+                source.SetPixel(x, y, Color.FromArgb(255, 255, 0, 0));
+            }
+        }
+
+        using ImageAttributes original = new();
+        original.SetWrapMode(Egami.SystemDrawing.Drawing2D.WrapMode.Tile);
+        using ImageAttributes clone = (ImageAttributes)original.Clone();
+        using Bitmap target = new(8, 8);
+        using (Graphics g = Graphics.FromImage(target))
+        {
+            // Drawn from a source rectangle four times the image: tiled, every pixel is red; clamped, most are transparent.
+            g.DrawImage(source, new Rectangle(0, 0, 8, 8), 0, 0, 8, 8, GraphicsUnit.Pixel, clone);
+        }
+
+        Assert.Equal(255, target.GetPixel(6, 6).A);
     }
 }

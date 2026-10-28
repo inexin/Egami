@@ -276,7 +276,7 @@ public sealed class ImageAttributes : ICloneable, IDisposable
     /// <returns>The copy.</returns>
     public object Clone()
     {
-        ImageAttributes copy = new() { State = new GdiPlusImageAttributes { WrapMode = State.WrapMode, ClampColor = State.ClampColor } };
+        ImageAttributes copy = new() { State = new GdiPlusImageAttributes { WrapMode = State.WrapMode, ClampColor = State.ClampColor }, WrapSet = WrapSet };
         for (int t = 0; t < 5; t++)
         {
             GdiPlusColorAdjust a = State[t], b = copy.State[t];
