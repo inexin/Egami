@@ -97,4 +97,81 @@ public class HevcSequenceTests
 
         Assert.True(failures.Count == 0, $"{checkedStreams} checked, {unsupported} unsupported, {failures.Count} failed:\n" + string.Join("\n", failures));
     }
+
+    /// <summary>
+    /// Tasks 20 to 22: with EGAMI_CORPUS=heic, every frame of every conformance stream equals HM's, in output order. The streams
+    /// that fail are listed with their first wrong frame, so the test shows progress.
+    /// </summary>
+    [Theory]
+    [MemberData(nameof(Suites))]
+    public void ConformanceFramesDecodeBitExact(string suite)
+    {
+        if (HevcTestFiles.Cache() is not string cache)
+        {
+            return;
+        }
+
+        using JsonDocument frames = JsonDocument.Parse(File.ReadAllBytes(Path.Combine(cache, "reference", suite, "frames.json")));
+        string[] files = [.. Directory.GetFiles(Path.Combine(cache, "hevc", suite), "*", SearchOption.AllDirectories)];
+        string? only = Environment.GetEnvironmentVariable("EGAMI_HEVC_STREAM");
+        List<string> failures = [];
+        int passed = 0, unsupported = 0;
+        foreach (JsonProperty stream in frames.RootElement.GetProperty("streams").EnumerateObject())
+        {
+            if (!stream.Value.TryGetProperty("frames", out JsonElement expected) || (only is not null && !stream.Name.Contains(only, StringComparison.Ordinal)))
+            {
+                continue;
+            }
+
+            string path = files.First(f => Path.GetFileName(f) == stream.Name);
+            try
+            {
+                HevcSequenceDecoder decoder = new(SafetyLimits.Default);
+                List<(HevcDpbPicture Picture, int Poc)> output = [];
+                List<string> md5s = [];
+                foreach (ReadOnlyMemory<byte> unit in NalFraming.SplitAnnexB(File.ReadAllBytes(path)))
+                {
+                    decoder.Send(HevcNal.Parse(unit.Span), output, TestContext.Current.CancellationToken);
+                    md5s.AddRange(output.Select(o => HevcDecodeTests.Md5(o.Picture.Picture)));
+                    output.Clear();
+                }
+
+                decoder.Flush(output, TestContext.Current.CancellationToken);
+                md5s.AddRange(output.Select(o => HevcDecodeTests.Md5(o.Picture.Picture)));
+                if (only is not null && Environment.GetEnvironmentVariable("EGAMI_HEVC_DUMP") is { Length: > 0 } dump)
+                {
+                    // For debugging one stream: its last output pictures as raw planes.
+                    using FileStream file = File.Create(dump);
+                    foreach ((HevcDpbPicture picture, _) in output)
+                    {
+                        foreach (ushort[] plane in picture.Picture.Planes)
+                        {
+                            file.Write(System.Runtime.InteropServices.MemoryMarshal.AsBytes(plane.AsSpan()));
+                        }
+                    }
+                }
+
+                string[] hm = [.. expected.EnumerateArray().Select(e => e.GetString()!)];
+                int first = Enumerable.Range(0, Math.Min(hm.Length, md5s.Count)).FirstOrDefault(i => hm[i] != md5s[i], -1);
+                if (first >= 0 || hm.Length != md5s.Count)
+                {
+                    failures.Add($"{stream.Name}: {md5s.Count} frames (HM {hm.Length}), first differing {first}");
+                }
+                else
+                {
+                    passed++;
+                }
+            }
+            catch (UnsupportedFormatException)
+            {
+                unsupported++;
+            }
+            catch (Exception e) when (e is CorruptDataException or IndexOutOfRangeException or InvalidOperationException or ArgumentException)
+            {
+                failures.Add($"{stream.Name}: {e.GetType().Name} {e.Message}");
+            }
+        }
+
+        Assert.True(failures.Count == 0, $"{passed} bit-exact, {unsupported} unsupported, {failures.Count} failed:\n" + string.Join("\n", failures));
+    }
 }

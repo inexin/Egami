@@ -11,6 +11,9 @@ internal sealed class HevcPicture
     internal const byte Bypass = 2;
     internal const byte EdgeLeft = 4;
     internal const byte EdgeTop = 8;
+    internal const byte Coded = 16;
+    internal const byte TransformLeft = 32;
+    internal const byte TransformTop = 64;
 
     internal HevcPicture(HevcSps sps, HevcPps pps)
     {
@@ -41,6 +44,12 @@ internal sealed class HevcPicture
         Array.Fill(CtbSlice, -1);
         CtbSliceHeader = new HevcSliceHeader?[ctbs];
         Sao = new HevcSaoParameters[ctbs];
+        PredFlags = new byte[blocks];
+        SkipFlags = new byte[blocks];
+        RefIdx = [new sbyte[blocks], new sbyte[blocks]];
+        Mv = [new int[blocks], new int[blocks]];
+        RefId = [new int[blocks], new int[blocks]];
+        CtbRefs = new HevcSliceRefs?[ctbs];
 
         // MinTbAddrZs (6-10) at 4x4 granularity: the tile scan address of the CTB, then the z-order inside it.
         int shift = sps.CtbLog2Size - 2;
@@ -91,7 +100,11 @@ internal sealed class HevcPicture
     /// <summary>Gets QpY of each 4x4 block.</summary>
     internal sbyte[] QpY { get; }
 
-    /// <summary>Gets the flags of each 4x4 block (<see cref="Pcm"/>, <see cref="Bypass"/>, the transform and prediction edges).</summary>
+    /// <summary>
+    /// Gets the flags of each 4x4 block: <see cref="Pcm"/>, <see cref="Bypass"/>, the block edges the deblocking filter looks at
+    /// (<see cref="EdgeLeft"/>, <see cref="EdgeTop"/>), which of them are transform block edges, and <see cref="Coded"/> for a
+    /// luma transform block with coefficients.
+    /// </summary>
     internal byte[] Flags { get; }
 
     /// <summary>Gets MinTbAddrZs of each 4x4 block.</summary>
@@ -105,6 +118,37 @@ internal sealed class HevcPicture
 
     /// <summary>Gets each CTB's SAO parameters.</summary>
     internal HevcSaoParameters[] Sao { get; }
+
+    /// <summary>Gets predFlagL0 (bit 0) and predFlagL1 (bit 1) of each 4x4 block: 0 for an intra block.</summary>
+    internal byte[] PredFlags { get; }
+
+    /// <summary>Gets cu_skip_flag of each 4x4 block.</summary>
+    internal byte[] SkipFlags { get; }
+
+    /// <summary>Gets refIdxL0 and refIdxL1 of each 4x4 block.</summary>
+    internal sbyte[][] RefIdx { get; }
+
+    /// <summary>Gets mvL0 and mvL1 of each 4x4 block: the horizontal component in the low 16 bits, the vertical one in the high.</summary>
+    internal int[][] Mv { get; }
+
+    /// <summary>Gets, per list, the <see cref="HevcDpbPicture.Id"/> of each 4x4 block's reference picture, which the deblocking filter compares.</summary>
+    internal int[][] RefId { get; }
+
+    /// <summary>Gets the reference pictures of the slice each CTB belongs to (null for an I slice).</summary>
+    internal HevcSliceRefs?[] CtbRefs { get; }
+
+    /// <summary>
+    /// Gets the motion a later picture's temporal motion vector prediction reads (8.5.3.2.8), one per 16x16 block, kept when the
+    /// picture is done: or null before.
+    /// </summary>
+    internal HevcColMotion? ColMotion { get; set; }
+
+    /// <summary>
+    /// Gets whether an intra block at (xC, yC) may predict from the samples at (xN, yN) (8.4.4.2.2): available, and with
+    /// constrained_intra_pred_flag not in an inter block.
+    /// </summary>
+    internal bool IntraReferenceAvailable(int xC, int yC, int xN, int yN) =>
+        Available(xC, yC, xN, yN) && (!Pps.ConstrainedIntraPred || PredFlags[((yN >> 2) * Width4) + (xN >> 2)] == 0);
 
     /// <summary>
     /// Gets whether the neighbouring luma location (xN, yN) is available to the current one (xC, yC) (6.4.1): inside the
@@ -153,4 +197,59 @@ internal struct HevcSaoParameters
     {
         private int _first;
     }
+}
+
+/// <summary>
+/// A decoded picture's motion as a co-located picture gives it (8.5.3.2.8, compressed to 16x16 blocks as its "((xColBr &gt;&gt; 4)
+/// &lt;&lt; 4)"): per 16x16 block and list, the vector, the order count of its reference picture and whether that was long-term.
+/// </summary>
+internal sealed class HevcColMotion
+{
+    /// <summary>Keeps the motion of each 16x16 block's top-left 4x4 block, with its slice's reference order counts.</summary>
+    internal HevcColMotion(HevcPicture picture)
+    {
+        HevcSps sps = picture.Sps;
+        Width16 = (sps.Width + 15) >> 4;
+        int height16 = (sps.Height + 15) >> 4, count = Width16 * height16;
+        PredFlags = new byte[count];
+        Mv = [new int[count], new int[count]];
+        RefPoc = [new int[count], new int[count]];
+        LongTerm = [new bool[count], new bool[count]];
+        for (int y = 0; y < height16; y++)
+        {
+            for (int x = 0; x < Width16; x++)
+            {
+                int i = (y * Width16) + x, b = (y * 4 * picture.Width4) + (x * 4);
+                int ctb = ((y << 4 >> sps.CtbLog2Size) * sps.WidthInCtbs) + (x << 4 >> sps.CtbLog2Size);
+                HevcSliceRefs? refs = picture.CtbRefs[ctb];
+                byte flags = picture.PredFlags[b];
+                PredFlags[i] = refs is null ? (byte)0 : flags;
+                for (int list = 0; list < 2 && refs is not null; list++)
+                {
+                    if ((flags & (1 << list)) != 0)
+                    {
+                        int r = picture.RefIdx[list][b];
+                        Mv[list][i] = picture.Mv[list][b];
+                        RefPoc[list][i] = refs.Lists[list][r].Poc;
+                        LongTerm[list][i] = refs.LongTerm[list][r];
+                    }
+                }
+            }
+        }
+    }
+
+    /// <summary>Gets the width in 16x16 blocks.</summary>
+    internal int Width16 { get; }
+
+    /// <summary>Gets predFlagL0 and predFlagL1 per 16x16 block, as <see cref="HevcPicture.PredFlags"/>.</summary>
+    internal byte[] PredFlags { get; }
+
+    /// <summary>Gets the vectors per list and 16x16 block.</summary>
+    internal int[][] Mv { get; }
+
+    /// <summary>Gets the order count of the reference picture per list and 16x16 block.</summary>
+    internal int[][] RefPoc { get; }
+
+    /// <summary>Gets whether the reference picture was a long-term one, per list and 16x16 block.</summary>
+    internal bool[][] LongTerm { get; }
 }

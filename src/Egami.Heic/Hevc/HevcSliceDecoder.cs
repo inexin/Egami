@@ -86,12 +86,13 @@ internal sealed partial class HevcSliceDecoder
         foreach ((HevcSegment segment, int substream, int firstTs, int endTs) in chain.Pieces)
         {
             HevcSliceHeader header = segment.Header;
-            if (header.SliceType != HevcSliceHeader.I)
+            if (header.SliceType != HevcSliceHeader.I && segment.Refs is null)
             {
-                throw HevcErrors.Unsupported("The picture has P or B slices (inter prediction).");
+                throw HevcErrors.Unsupported("The picture has P or B slices (inter prediction), which need the stream's earlier pictures.");
             }
 
             _slice = segment.Slice;
+            _refs = segment.Refs;
             _sliceAddrRs = segment.SliceAddrRs;
             byte[] rbsp = segment.Nal.Rbsp;
             int[] starts = segment.Starts;
@@ -146,6 +147,7 @@ internal sealed partial class HevcSliceDecoder
                 int xCtb = (ctbAddrRs % widthCtbs) << _sps.CtbLog2Size, yCtb = (ctbAddrRs / widthCtbs) << _sps.CtbLog2Size;
                 _picture.CtbSlice[ctbAddrRs] = _sliceAddrRs;
                 _picture.CtbSliceHeader[ctbAddrRs] = _slice;
+                _picture.CtbRefs[ctbAddrRs] = _refs;
                 CodingTreeUnit(xCtb, yCtb, ctbAddrRs, ctbAddrTs);
 
                 // Storage for wavefront synchronization after the second CTB of a row (of a tile).
@@ -499,11 +501,22 @@ internal sealed partial class HevcSliceDecoder
         _cuY = y0;
         _cuLog2 = log2CbSize;
         _cuBypass = _pps.TransquantBypassEnabled && _cabac.Decode(ref _contexts[HevcContexts.CuTransquantBypass]) == 1;
+        bool skip = _slice.SliceType != HevcSliceHeader.I && SkipFlag(x0, y0);
         UpdateQp();
 
         // Coding tree depth for the split_cu_flag contexts of later blocks.
         FillBlocks(_picture.CtDepth, x0, y0, size, size, (byte)depth);
         byte flags = (byte)(_cuBypass ? HevcPicture.Bypass : 0);
+        if (skip || (_slice.SliceType != HevcSliceHeader.I && _cabac.Decode(ref _contexts[HevcContexts.PredModeFlag]) == 0))
+        {
+            InterCodingUnit(x0, y0, log2CbSize, skip);
+            FillFlags(x0, y0, size, flags);
+            FillBlocks(_picture.QpY, x0, y0, size, size, (sbyte)_qpY);
+            _lastQpY = _qpY;
+            return;
+        }
+
+        _cuIntra = true;
         int partNxN = 0;
         if (log2CbSize == _sps.MinCbLog2Size)
         {
@@ -663,13 +676,16 @@ internal sealed partial class HevcSliceDecoder
         bool parentCb0, bool parentCb1, bool parentCr0, bool parentCr1)
     {
         bool split;
+
+        // interSplitFlag (7-36): an inter coding unit of several partitions with max_transform_hierarchy_depth_inter 0 splits once.
+        bool interSplit = !_cuIntra && _sps.MaxTransformHierarchyDepthInter == 0 && _partMode != Part2Nx2N && trafoDepth == 0;
         if (log2TrafoSize <= _sps.MaxTbLog2Size && log2TrafoSize > _sps.MinTbLog2Size && trafoDepth < maxTrafoDepth && !(_intraSplit && trafoDepth == 0))
         {
             split = _cabac.Decode(ref _contexts[HevcContexts.SplitTransform + 5 - log2TrafoSize]) == 1;
         }
         else
         {
-            split = log2TrafoSize > _sps.MaxTbLog2Size || (_intraSplit && trafoDepth == 0);
+            split = log2TrafoSize > _sps.MaxTbLog2Size || (_intraSplit && trafoDepth == 0) || interSplit;
         }
 
         int chroma = _sps.ChromaArrayType;
@@ -710,7 +726,10 @@ internal sealed partial class HevcSliceDecoder
         }
         else
         {
-            bool cbfLuma = _cabac.Decode(ref _contexts[HevcContexts.CbfLuma + (trafoDepth == 0 ? 1 : 0)]) == 1;
+            // cbf_luma of an inter coding unit's whole tree without chroma residual is inferred 1 (7.4.9.8).
+            bool cbfLuma = _cuIntra || trafoDepth != 0 || cb0 || cb1 || cr0 || cr1
+                ? _cabac.Decode(ref _contexts[HevcContexts.CbfLuma + (trafoDepth == 0 ? 1 : 0)]) == 1
+                : true;
             MarkTransformEdges(x0, y0, 1 << log2TrafoSize);
             TransformUnit(x0, y0, xBase, yBase, log2TrafoSize, trafoDepth, blkIdx, cbfLuma, cb0, cb1, cr0, cr1);
         }
@@ -775,15 +794,20 @@ internal sealed partial class HevcSliceDecoder
             }
         }
 
-        // Luma: predict, then add the residual.
-        int lumaMode = _lumaModes[PartIndex(x0, y0)];
+        // Luma: predict (intra blocks; inter ones were predicted with their prediction units), then add the residual.
+        int lumaMode = _cuIntra ? _lumaModes[PartIndex(x0, y0)] : -1;
         int log2 = log2TrafoSize;
-        _intra.Predict(_picture, 0, x0, y0, log2, lumaMode, _sps.ImplicitRdpcm && _cuBypass);
+        if (_cuIntra)
+        {
+            _intra.Predict(_picture, 0, x0, y0, log2, lumaMode, _sps.ImplicitRdpcm && _cuBypass);
+        }
+
         bool lumaHasResidual = false;
         if (cbfLuma)
         {
             Residual(x0, y0, log2, 0, lumaMode);
             lumaHasResidual = true;
+            FillFlags(x0, y0, 1 << log2, HevcPicture.Coded);
         }
 
         if (chroma == 0)
@@ -791,7 +815,7 @@ internal sealed partial class HevcSliceDecoder
             return;
         }
 
-        bool crossComponent = _pps.CrossComponentPrediction && cbfLuma && _chromaModeSyntax[ChromaPartIndex(x0, y0)] == 4;
+        bool crossComponent = _pps.CrossComponentPrediction && cbfLuma && (!_cuIntra || _chromaModeSyntax[ChromaPartIndex(x0, y0)] == 4);
         if (_pps.CrossComponentPrediction && crossComponent && lumaHasResidual)
         {
             Array.Copy(_residual, _lumaResidual, 1 << (2 * log2));
@@ -804,7 +828,7 @@ internal sealed partial class HevcSliceDecoder
             for (int c = 1; c <= 2; c++)
             {
                 int resScale = crossComponent ? CrossComponentPrediction(c - 1) : 0;
-                int mode = _chromaModes[ChromaPartIndex(x0, y0)];
+                int mode = _cuIntra ? _chromaModes[ChromaPartIndex(x0, y0)] : -1;
                 for (int t = 0; t < (chroma == 2 ? 2 : 1); t++)
                 {
                     bool cbf = c == 1 ? (t == 0 ? cb0 : cb1) : (t == 0 ? cr0 : cr1);
@@ -818,7 +842,7 @@ internal sealed partial class HevcSliceDecoder
             int xC = xBase / _sps.SubWidthC, yC = yBase / _sps.SubHeightC;
             for (int c = 1; c <= 2; c++)
             {
-                int mode = _chromaModes[0];
+                int mode = _cuIntra ? _chromaModes[0] : -1;
                 for (int t = 0; t < (chroma == 2 ? 2 : 1); t++)
                 {
                     bool cbf = c == 1 ? (t == 0 ? cb0 : cb1) : (t == 0 ? cr0 : cr1);
@@ -830,7 +854,11 @@ internal sealed partial class HevcSliceDecoder
 
     private void ChromaBlock(int c, int xC, int yC, int log2C, int mode, bool cbf, int resScale)
     {
-        _intra.Predict(_picture, c, xC, yC, log2C, mode, _sps.ImplicitRdpcm && _cuBypass);
+        if (mode >= 0)
+        {
+            _intra.Predict(_picture, c, xC, yC, log2C, mode, _sps.ImplicitRdpcm && _cuBypass);
+        }
+
         if (cbf)
         {
             Residual(xC, yC, log2C, c, mode, resScale);
@@ -916,18 +944,25 @@ internal sealed partial class HevcSliceDecoder
     private void MarkEdges(int x0, int y0, int width, int height) => MarkTransformEdges(x0, y0, Math.Max(width, height));
 
     /// <summary>Marks a transform block's left and top edges.</summary>
-    private void MarkTransformEdges(int x0, int y0, int size)
+    private void MarkTransformEdges(int x0, int y0, int size) =>
+        MarkBlockEdges(x0, y0, size, size, HevcPicture.EdgeLeft | HevcPicture.TransformLeft, HevcPicture.EdgeTop | HevcPicture.TransformTop);
+
+    /// <summary>Marks a prediction block's left and top edges.</summary>
+    private void MarkPredictionEdges(int x0, int y0, int width, int height) =>
+        MarkBlockEdges(x0, y0, width, height, HevcPicture.EdgeLeft, HevcPicture.EdgeTop);
+
+    private void MarkBlockEdges(int x0, int y0, int width, int height, int left, int top)
     {
         int x4 = x0 >> 2, y4 = y0 >> 2;
-        int w4 = Math.Min((x0 + size + 3) >> 2, _picture.Width4) - x4, h4 = Math.Min((y0 + size + 3) >> 2, _picture.Height4) - y4;
+        int w4 = Math.Min((x0 + width + 3) >> 2, _picture.Width4) - x4, h4 = Math.Min((y0 + height + 3) >> 2, _picture.Height4) - y4;
         for (int y = 0; y < h4; y++)
         {
-            _picture.Flags[((y4 + y) * _picture.Width4) + x4] |= HevcPicture.EdgeLeft;
+            _picture.Flags[((y4 + y) * _picture.Width4) + x4] |= (byte)left;
         }
 
         for (int x = 0; x < w4; x++)
         {
-            _picture.Flags[(y4 * _picture.Width4) + x4 + x] |= HevcPicture.EdgeTop;
+            _picture.Flags[(y4 * _picture.Width4) + x4 + x] |= (byte)top;
         }
     }
 

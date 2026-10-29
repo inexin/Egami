@@ -6,6 +6,7 @@ internal sealed partial class HevcSliceDecoder
     /// <summary>
     /// Parses the residual of a transform block of component <paramref name="c"/> at (x0, y0) in component samples, scales and
     /// transforms it into <see cref="_residual"/>, applies the range extensions' modifications and adds it to the prediction.
+    /// <paramref name="predMode"/> is the intra prediction mode, or -1 for an inter block.
     /// </summary>
     private void Residual(int x0, int y0, int log2, int c, int predMode, int resScale = 0)
     {
@@ -14,8 +15,17 @@ internal sealed partial class HevcSliceDecoder
         bool transformSkip = _pps.TransformSkipEnabled && !_cuBypass && log2 <= _pps.Log2MaxTransformSkipSize
             && _cabac.Decode(ref _contexts[HevcContexts.TransformSkip + (c == 0 ? 0 : 1)]) == 1;
 
-        // Residual DPCM of intra blocks (implicit) and sign data hiding (7.4.9.11).
+        // Residual DPCM: implicit for intra blocks, explicit_rdpcm_flag for inter ones (7.3.8.11); and sign data hiding (7.4.9.11).
+        bool inter = predMode < 0;
         bool rdpcm = _sps.ImplicitRdpcm && (transformSkip || _cuBypass) && (predMode == 10 || predMode == 26);
+        bool rdpcmVertical = predMode == 26;
+        if (inter && _sps.ExplicitRdpcm && (transformSkip || _cuBypass))
+        {
+            int cc = c == 0 ? 0 : 1;
+            rdpcm = _cabac.Decode(ref _contexts[HevcContexts.ExplicitRdpcm + cc]) == 1;
+            rdpcmVertical = rdpcm && _cabac.Decode(ref _contexts[HevcContexts.ExplicitRdpcmDir + cc]) == 1;
+        }
+
         bool signHidingAllowed = _pps.SignDataHiding && !_cuBypass && !rdpcm;
 
         // Scan order (7.4.9.11): horizontal or vertical for 4x4 and 8x8 luma (and 8x8 chroma of 4:4:4) near-vertical or
@@ -271,7 +281,7 @@ internal sealed partial class HevcSliceDecoder
             }
         }
 
-        Reconstruct(x0, y0, log2, c, predMode, transformSkip, rdpcm, maxRow, maxColumn, resScale);
+        Reconstruct(x0, y0, log2, c, predMode, transformSkip, rdpcm, rdpcmVertical, maxRow, maxColumn, resScale);
     }
 
     /// <summary>ctxIdxMap for sig_coeff_flag of 4x4 blocks (9.3.4.2.5); declared before <see cref="SigContexts"/>, built from it.</summary>
@@ -388,7 +398,8 @@ internal sealed partial class HevcSliceDecoder
     }
 
     /// <summary>Scales and transforms the levels (8.6.2), modifies the residual, and adds it to the predicted block.</summary>
-    private void Reconstruct(int x0, int y0, int log2, int c, int predMode, bool transformSkip, bool rdpcm, int maxRow, int maxColumn, int resScale)
+    private void Reconstruct(int x0, int y0, int log2, int c, int predMode, bool transformSkip, bool rdpcm, bool rdpcmVertical, int maxRow, int maxColumn,
+        int resScale)
     {
         int n = 1 << log2;
         int count = n * n;
@@ -408,8 +419,8 @@ internal sealed partial class HevcSliceDecoder
             int[]? factors = null;
             if (_sps.ScalingListEnabled && lists is not null && !(transformSkip && n > 4))
             {
-                // matrixId: intra Y, Cb, Cr (0 to 2); 32x32 chroma only exists for 4:4:4 and uses matrixId 1 and 2 too.
-                factors = lists.Factors[log2 - 2][c];
+                // matrixId: intra Y, Cb, Cr (0 to 2), inter ones (3 to 5); 32x32 chroma only exists for 4:4:4 and uses them too.
+                factors = lists.Factors[log2 - 2][c + (predMode < 0 ? 3 : 0)];
             }
 
             HevcTransform.Scale(_coefficients, log2, Qp(c), bitDepth, factors, maxRow, maxColumn);
@@ -424,7 +435,7 @@ internal sealed partial class HevcSliceDecoder
             }
             else
             {
-                bool dst = c == 0 && n == 4;
+                bool dst = c == 0 && n == 4 && predMode >= 0;
                 if (rotate)
                 {
                     maxRow = maxColumn = n - 1;
@@ -436,7 +447,7 @@ internal sealed partial class HevcSliceDecoder
 
         if (rdpcm)
         {
-            HevcTransform.Dpcm(_residual, log2, predMode == 26);
+            HevcTransform.Dpcm(_residual, log2, rdpcmVertical);
         }
 
         if (resScale != 0)

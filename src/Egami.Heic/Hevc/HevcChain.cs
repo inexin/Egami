@@ -21,6 +21,22 @@ internal sealed class HevcSegment(HevcNal nal, HevcSliceHeader header, HevcSlice
 
     /// <summary>Gets the tile-scan address after the last CTB: where the next segment starts.</summary>
     internal int EndTs { get; set; }
+
+    /// <summary>Gets or sets the slice's reference pictures (P and B slices): per list, the pictures and whether each is long-term.</summary>
+    internal HevcSliceRefs? Refs { get; set; }
+}
+
+/// <summary>What inter prediction of a slice needs from the decoded picture buffer.</summary>
+internal sealed class HevcSliceRefs(HevcDpbPicture[] list0, HevcDpbPicture[] list1, bool[] longTerm0, bool[] longTerm1, int poc)
+{
+    /// <summary>Gets RefPicList0 and RefPicList1.</summary>
+    internal HevcDpbPicture[][] Lists { get; } = [list0, list1];
+
+    /// <summary>Gets, per list and index, whether the reference is marked long-term for the current picture.</summary>
+    internal bool[][] LongTerm { get; } = [longTerm0, longTerm1];
+
+    /// <summary>Gets the current picture's order count.</summary>
+    internal int Poc { get; } = poc;
 }
 
 /// <summary>

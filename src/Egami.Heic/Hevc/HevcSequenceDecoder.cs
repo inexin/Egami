@@ -16,6 +16,7 @@ internal sealed class HevcSequenceDecoder(SafetyLimits limits, int parallelism =
     private int _sliceAddrRs;
     private bool _picOutput;
     private bool _skipping;
+    private HevcSliceRefs? _refs;
 
     /// <summary>
     /// Gets or sets whether samples are decoded. Without, only headers, order counts, reference marking and output order are
@@ -92,6 +93,8 @@ internal sealed class HevcSequenceDecoder(SafetyLimits limits, int parallelism =
             _slice = header;
             _sliceAddrRs = header.SegmentAddress;
             _dpb.BuildLists(header);
+            _refs = header.SliceType == HevcSliceHeader.I ? null
+                : new HevcSliceRefs(_dpb.List0, _dpb.List1, _dpb.LongTerm0, _dpb.LongTerm1, _current!.Poc);
         }
 
         int firstTs = _picture.Layout.RsToTs[header.SegmentAddress];
@@ -105,7 +108,7 @@ internal sealed class HevcSequenceDecoder(SafetyLimits limits, int parallelism =
             _segments[^1].EndTs = firstTs;
         }
 
-        _segments.Add(new HevcSegment(nal, header, _slice ?? header, _sliceAddrRs, HevcSliceDecoder.SubstreamStarts(nal, header), firstTs));
+        _segments.Add(new HevcSegment(nal, header, _slice ?? header, _sliceAddrRs, HevcSliceDecoder.SubstreamStarts(nal, header), firstTs) { Refs = _refs });
     }
 
     /// <summary>Completes the last picture and outputs every picture still waiting, at the end of the stream.</summary>
@@ -142,6 +145,7 @@ internal sealed class HevcSequenceDecoder(SafetyLimits limits, int parallelism =
                 _segments[^1].EndTs = picture.Layout.TsToRs.Length;
                 new HevcChainSet(HevcDecoder.Chains(picture, _segments), parallelism, cancellationToken).Decode(picture);
                 HevcLoopFilter.Apply(picture, parallelism, cancellationToken);
+                picture.ColMotion = new HevcColMotion(picture);
             }
         }
         finally
