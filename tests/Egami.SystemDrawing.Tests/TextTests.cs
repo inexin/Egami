@@ -329,7 +329,7 @@ public class TextTests
             RectangleF box = new(0, 0, 120, 30);
             SizeF size = g.MeasureString(text, font, box.Size, format, out int chars, out _);
             Assert.InRange(size.Width, 1, 120);
-            Assert.InRange(chars, 1, text.Length - 1);
+            Assert.InRange(chars, trimming == StringTrimming.EllipsisPath ? text.Length : 1, trimming == StringTrimming.EllipsisPath ? text.Length : text.Length - 1);
             Assert.Single(g.MeasureCharacterRanges(text, font, box, format));
             g.Clear(Color.White);
             g.TextRenderingHint = TextRenderingHint.AntiAlias;
@@ -439,6 +439,30 @@ public class TextTests
             Assert.Equal(new RectangleF(13, 5, 28, 18), regions[0].GetBounds(g));
             Assert.Equal(new RectangleF(45, 5, 39, 18), regions[1].GetBounds(g));
             Assert.Equal(new RectangleF(137, 5, 52, 18), regions[2].GetBounds(g));
+        }
+    }
+
+    [Theory]
+    [InlineData(StringTrimming.None, 25, 5, 43, 3)]
+    [InlineData(StringTrimming.Character, 6, 1, 36, 2)]
+    [InlineData(StringTrimming.Word, 4, 1, 35, 2)]
+    [InlineData(StringTrimming.EllipsisCharacter, 4, 1, 33, 2)]
+    [InlineData(StringTrimming.EllipsisWord, 4, 1, 31, 2)]
+    [InlineData(StringTrimming.EllipsisPath, 25, 1, 43, 2)]
+    public void CharactersFittedCountsAsGdiPlusForEachTrimming(StringTrimming trimming, int chars1, int lines1, int chars2, int lines2)
+    {
+        // GDI+'s numbers (TextProbes.Measure, Fitted.*): kept characters, all of them for a path ellipsis, every line for no
+        // trimming, and the size never past the box.
+        Assert.SkipUnless(HasArial, "Arial is not installed.");
+        using Graphics g = NewGraphics(out Bitmap b);
+        using (b)
+        {
+            using Font arial = new("Arial", 12);
+            using StringFormat cut = new() { Trimming = trimming };
+            SizeF one = g.MeasureString("The quick brown fox jumps", arial, new SizeF(60, 20), cut, out int c1, out int l1);
+            g.MeasureString(Sample, arial, new SizeF(150, 40), cut, out int c2, out int l2);
+            Assert.Equal((chars1, lines1, chars2, lines2), (c1, l1, c2, l2));
+            Assert.Equal(20, one.Height, 3);
         }
     }
 

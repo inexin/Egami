@@ -171,7 +171,9 @@ internal sealed class GdiTextLayout
             height = 0;
         }
 
+        // As GDI+, the size never passes the layout box where it has one.
         SizeF size = new(width + (2 * _pad), height);
+        size = new SizeF(Box.Width > 0 ? MathF.Min(size.Width, Box.Width) : size.Width, Box.Height > 0 ? MathF.Min(size.Height, Box.Height) : size.Height);
         return Vertical ? new SizeF(size.Height, size.Width) : size;
     }
 
@@ -328,7 +330,7 @@ internal sealed class GdiTextLayout
             {
                 maxLines = (int)MathF.Floor(fit + 1e-4f);
             }
-            else if ((flags & StringFormatFlags.NoClip) == 0)
+            else if ((flags & StringFormatFlags.NoClip) == 0 && _format.Trimming != StringTrimming.None)
             {
                 maxLines = Math.Max(1, (int)MathF.Round(fit));
             }
@@ -357,7 +359,9 @@ internal sealed class GdiTextLayout
                 }
 
                 Add(line);
-                CharactersFitted = line.End > 0 ? _source[line.End - 1] + 1 : CharactersFitted;
+                // GDI+ counts the characters kept, but all of them when a path ellipsis keeps the start and the end.
+                int fitted = _format.Trimming == StringTrimming.EllipsisPath ? line.Covers : line.End;
+                CharactersFitted = fitted > 0 ? _source[fitted - 1] + 1 : CharactersFitted;
                 i = end;
             }
             while (i < pe);
@@ -577,13 +581,14 @@ internal sealed class GdiTextLayout
             }
         }
 
-        return words && j < end && lastBreak > start ? lastBreak : j;
+        // A word cut keeps the space after the last word: it counts as fitted, though it is not drawn or measured.
+        return words && j < end && lastBreak > start ? lastBreak + 1 : j;
     }
 
     /// <summary>A line of the characters from <paramref name="start"/> to <paramref name="end"/>, covering the source up to <paramref name="covers"/>.</summary>
     private Line Chars(int start, int end, int covers)
     {
-        Line line = new() { End = end };
+        Line line = new() { End = end, Covers = covers };
         float x = 0;
         for (int j = start; j < end; j++)
         {
@@ -630,6 +635,9 @@ internal sealed class GdiTextLayout
 
         /// <summary>Gets the end of the characters it covers, a trimmed line covering the rest of its paragraph.</summary>
         public int End { get; init; }
+
+        /// <summary>Gets the end of the characters the line stands for: its whole paragraph when a path ellipsis cuts its middle.</summary>
+        public int Covers { get; init; }
     }
 
     /// <summary>A character on a line, or the ellipsis (character -1), at a pen position from the line's left.</summary>
