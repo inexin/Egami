@@ -3,6 +3,7 @@
     <Project Path="benchmarks/Egami.Benchmarks/Egami.Benchmarks.csproj" />
     <Project Path="benchmarks/Egami.Drawing.Benchmarks/Egami.Drawing.Benchmarks.csproj" />
     <Project Path="benchmarks/Egami.Fonts.Benchmarks/Egami.Fonts.Benchmarks.csproj" />
+    <Project Path="benchmarks/Egami.SystemDrawing.Benchmarks/Egami.SystemDrawing.Benchmarks.csproj" />
     <Project Path="benchmarks/Egami.Video.Benchmarks/Egami.Video.Benchmarks.csproj" />
   </Folder>
   <Folder Name="/samples/">

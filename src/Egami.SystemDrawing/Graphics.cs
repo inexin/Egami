@@ -29,10 +29,28 @@ public sealed partial class Graphics : MarshalByRefObject, IDisposable, IDeviceC
     private Settings _state = new();
     private int _nextId = 1;
     private bool _disposed;
+    private InPlaceCanvas? _inPlace;
+    private ArgbDrawing _argbDrawing;
 
     private Graphics(Bitmap image)
     {
         _image = image;
+        _argbDrawing = SystemDrawingOptions.ArgbDrawing;
+    }
+
+    /// <summary>
+    /// Gets or sets how this Graphics draws on a 32-bit ARGB bitmap: in place (the default, from
+    /// <see cref="SystemDrawingOptions.ArgbDrawing"/>), or through a premultiplied copy that rounds exactly as GDI+ does. Egami's
+    /// own setting; System.Drawing has none.
+    /// </summary>
+    /// <exception cref="ArgumentOutOfRangeException">The value is not an <see cref="SystemDrawing.ArgbDrawing"/>.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../tests/Egami.DocSamples/SystemDrawingPackage.cs" region="graphics"/>
+    /// </example>
+    public ArgbDrawing ArgbDrawing
+    {
+        get => _argbDrawing;
+        set => _argbDrawing = Enum.IsDefined(value) ? value : throw new ArgumentOutOfRangeException(nameof(value), value, null);
     }
 
     /// <summary>Called before a DrawImage draws; returning <see langword="true"/> stops it with an ExternalException, as in GDI+.</summary>
@@ -296,6 +314,8 @@ public sealed partial class Graphics : MarshalByRefObject, IDisposable, IDeviceC
     {
         _disposed = true;
         _canvas?.Dispose();
+        _inPlace?.Dispose();
+        _inPlace = null;
     }
 
     /// <summary>Does nothing: Egami draws each call at once.</summary>
@@ -518,19 +538,26 @@ public sealed partial class Graphics : MarshalByRefObject, IDisposable, IDeviceC
             area = area is RectF a ? Intersect(a, c) : c;
         }
 
-        Surface.Draw(_image.Current, area, CanvasOptionsFor(Smooth, State.CompositingQuality), canvas =>
-        {
-            if (clip is not null)
+        Surface.Draw(
+            _image.Current,
+            area,
+            CanvasOptionsFor(Smooth, State.CompositingQuality),
+            canvas =>
             {
-                canvas.ClipPath(clip, ClipOp.Intersect, antialias: false);
-            }
+                if (clip is not null)
+                {
+                    canvas.ClipPath(clip, ClipOp.Intersect, antialias: false);
+                }
 
-            draw(canvas);
-        });
+                draw(canvas);
+            },
+            ref _inPlace,
+            State.Compositing == CompositingMode.SourceCopy || _argbDrawing == ArgbDrawing.Exact);
     }
 
     // The canvas for a call: GDI+'s antialiasing when smoothing is on (Graphics applies the pixel offset itself), and linear light
-    // for the gamma-corrected compositing qualities, as measured in 2.7.6. One instance each, so a call allocates none.
+    // for the gamma-corrected compositing qualities, as measured in 2.7.6. One instance each, so a call allocates none and the kept
+    // canvas is renewed only when the settings change.
     private static readonly CanvasOptions[] CallOptions =
     [
         CanvasOptions.Default,

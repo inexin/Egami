@@ -72,31 +72,48 @@ public sealed partial class Graphics
             clip = Region.Rect(layoutRectangle).Transform(TextTransform);
         }
 
-        // ClearType draws the glyphs with GDI+'s hints, filter and gamma (Egami.Drawing's preset); the lines are filled.
-        clearType = clearType && DrawClearType(layout, corner, (SolidBrush)brush, clip);
-        FillText(brush, TextOutline(layout, font, corner, glyphs: !clearType), clip);
+        // A solid brush draws the glyphs through Egami's glyph renderer (ClearType with GDI+'s hints, filter and gamma); other
+        // brushes and skewed transforms fill the outlines. Underlines and strikeouts are always filled.
+        bool glyphs = brush is SolidBrush solid && Unskewed && DrawGlyphs(layout, corner, solid, clip, clearType);
+        FillText(brush, TextOutline(layout, font, corner, glyphs: !glyphs), clip);
+    }
+
+    /// <summary>Gets a value indicating whether the text transform is a scale with equal axes and a translation.</summary>
+    private bool Unskewed
+    {
+        get
+        {
+            Matrix3x2 m = TextTransform;
+            return m.M12 == 0 && m.M21 == 0 && m.M11 > 0 && MathF.Abs(m.M11 - m.M22) <= 1e-4f * m.M11;
+        }
     }
 
     /// <summary>Whether text draws as ClearType: the hint asks for it, the brush is opaque and solid, the text horizontal and unrotated.</summary>
     private bool ClearTypes(Brush brush, StringFormat format)
     {
-        Matrix3x2 m = TextTransform;
         return State.TextHint is TextRenderingHint.ClearTypeGridFit or TextRenderingHint.SystemDefault && brush is SolidBrush { Color.A: 255 }
-            && (format.FormatFlags & StringFormatFlags.DirectionVertical) == 0 && m.M12 == 0 && m.M21 == 0 && m.M11 > 0
-            && MathF.Abs(m.M11 - m.M22) <= 1e-4f * m.M11 && State.Compositing == Drawing2D.CompositingMode.SourceOver;
+            && (format.FormatFlags & StringFormatFlags.DirectionVertical) == 0 && Unskewed && State.Compositing == Drawing2D.CompositingMode.SourceOver;
     }
 
     /// <summary>
-    /// Draws a layout's glyphs as GDI+ draws ClearTypeGridFit text: hinted for GDI+, grid-fitted, LCD-filtered and blended per
-    /// channel with a gamma of 1 + TextContrast / 10. False when a pixel of the area is not opaque, and the caller fills the outlines
-    /// instead.
+    /// Draws a layout's glyphs with a solid brush through Egami's glyph renderer: aliased or antialiased as the hint says, or as
+    /// GDI+ draws ClearTypeGridFit text, hinted for GDI+, grid-fitted, LCD-filtered and blended per channel with a gamma of
+    /// 1 + TextContrast / 10. False for vertical text and, with ClearType, when a pixel of the area is not opaque; the caller
+    /// fills the outlines then.
     /// </summary>
-    private bool DrawClearType(GdiTextLayout layout, Vector2 corner, SolidBrush solid, Path? clip)
+    private bool DrawGlyphs(GdiTextLayout layout, Vector2 corner, SolidBrush solid, Path? clip, bool clearType)
     {
-        Matrix3x2 m = TextTransform;
-        float scale = m.M11;
-        Matrix3x2 place = Matrix3x2.CreateTranslation(corner) * m;
-        EgamiFonts.Font device = new EgamiFonts.Font(layout.Font.Typeface, layout.Font.Size * scale) { Synthesis = layout.Font.Synthesis, Kerning = false }.WithGdiPlusLook();
+        Matrix3x2 m = layout.Turn * Matrix3x2.CreateTranslation(corner) * TextTransform;
+        float scale = TextTransform.M11;
+        Matrix3x2 place = m;
+        EgamiFonts.Font device = new(layout.Font.Typeface, layout.Font.Size * scale) { Synthesis = layout.Font.Synthesis, Kerning = false };
+        bool aliased = State.TextHint is TextRenderingHint.SingleBitPerPixel or TextRenderingHint.SingleBitPerPixelGridFit;
+        device = clearType ? device.WithGdiPlusLook() : device with { Edging = aliased ? EgamiFonts.FontEdging.Alias : EgamiFonts.FontEdging.Antialias };
+        if (layout.Vertical)
+        {
+            // Turned glyphs: the run's transforms turn each glyph a quarter clockwise about its origin.
+            return false;
+        }
         List<EgamiFonts.GlyphRun> runs = [];
         float top = layout.Top, x0 = float.MaxValue, y0 = float.MaxValue, x1 = float.MinValue, y1 = float.MinValue;
         foreach (GdiTextLayout.Line line in layout.Lines)
@@ -136,11 +153,31 @@ public sealed partial class Graphics
             return true;
         }
 
+        Color c = solid.Color;
+        if (!clearType)
+        {
+            SolidPaint plain = new(new Pixels.Rgba8(c.R, c.G, c.B, c.A)) { BlendMode = Blend };
+            bounds = clip is null ? bounds : Intersect(bounds, clip.Bounds);
+            Draw(bounds, canvas =>
+            {
+                if (clip is not null)
+                {
+                    canvas.ClipPath(clip, ClipOp.Intersect, antialias: false);
+                }
+
+                foreach (EgamiFonts.GlyphRun run in runs)
+                {
+                    canvas.DrawGlyphRun(run, Vector2.Zero, plain);
+                }
+            });
+            return true;
+        }
+
         bounds = outer is null ? bounds : Intersect(bounds, outer.Bounds);
         bounds = clip is null ? bounds : Intersect(bounds, clip.Bounds);
         // Graphics places its device coordinates itself, so the preset's PixelOffset.None would move the clips a second time.
         CanvasOptions options = CanvasOptions.GdiPlusClearType with { TextGamma = 1 + (State.TextContrast / 10f), PixelOffset = PixelOffset.Half };
-        SolidPaint paint = new(new Pixels.Rgba8(solid.Color.R, solid.Color.G, solid.Color.B, 255));
+        SolidPaint paint = new(new Pixels.Rgba8(c.R, c.G, c.B, 255));
         return Surface.DrawOpaque(_image.Current, bounds, options, canvas =>
         {
             if (outer is not null)
@@ -172,7 +209,7 @@ public sealed partial class Graphics
             return SizeF.Empty;
         }
 
-        GdiTextLayout layout = GdiTextLayout.Create(s, font, font.EmIn(this), layoutArea, format);
+        GdiTextLayout layout = GdiTextLayout.Create(s, font, font.EmIn(this), layoutArea, format, glyphs: false);
         charactersFitted = layout.CharactersFitted;
         linesFilled = layout.Lines.Count;
         return layout.Measure();
@@ -191,7 +228,7 @@ public sealed partial class Graphics
         }
 
         // GDI+ measures ranges with the hinted advances at the device size.
-        GdiTextLayout layout = GdiTextLayout.Create(text, font, font.EmIn(this), layoutRect.Size, format, DeviceScale);
+        GdiTextLayout layout = GdiTextLayout.Create(text, font, font.EmIn(this), layoutRect.Size, format, DeviceScale, glyphs: false);
         Matrix3x2 place = layout.Turn * Matrix3x2.CreateTranslation(layoutRect.X, layoutRect.Y);
         Matrix3x2 toDevice = place * ImageTransform;
         Matrix3x2.Invert(ImageTransform, out Matrix3x2 toWorld);

@@ -270,7 +270,49 @@ public sealed partial class Graphics
         }
 
         BrushFill fill = brush.Fill(this);
+        if (fill.Paint is Paint plain && AxisRect(device) is RectF rect)
+        {
+            // An unrotated rectangle fills through the canvas' rectangle path, which needs no edge list.
+            Paint paint = plain with { Antialias = Smooth, BlendMode = Blend };
+            Draw(rect, canvas => canvas.FillRect(rect, paint));
+            return;
+        }
+
         Draw(device.Bounds, canvas => Paint(canvas, device, fill));
+    }
+
+    /// <summary>The rectangle a path is when it is one closed figure of four axis-aligned sides, else null.</summary>
+    private static RectF? AxisRect(Path path)
+    {
+        ReadOnlySpan<PathVerb> verbs = path.Verbs;
+        ReadOnlySpan<Vector2> p = path.Points;
+        if (verbs.Length is < 4 or > 6 || verbs[0] != PathVerb.Move || p.Length is < 4 or > 5)
+        {
+            return null;
+        }
+
+        for (int i = 1; i < verbs.Length; i++)
+        {
+            if (verbs[i] is not (PathVerb.Line or PathVerb.Close))
+            {
+                return null;
+            }
+        }
+
+        if (p.Length == 5 && p[4] != p[0])
+        {
+            return null;
+        }
+
+        bool horizontalFirst = p[0].Y == p[1].Y && p[1].X == p[2].X && p[2].Y == p[3].Y && p[3].X == p[0].X;
+        bool verticalFirst = p[0].X == p[1].X && p[1].Y == p[2].Y && p[2].X == p[3].X && p[3].Y == p[0].Y;
+        if (!horizontalFirst && !verticalFirst)
+        {
+            return null;
+        }
+
+        RectF b = path.Bounds;
+        return b.Width > 0 && b.Height > 0 ? b : null;
     }
 
     /// <summary>
@@ -319,8 +361,11 @@ public sealed partial class Graphics
             return;
         }
 
-        using Raster<Rgba8> pixels = ((Bitmap)image).ToRgba8();
-        Raster<Rgba8> drawn = attributes?.State.Apply(pixels, GdiPlusImageAttributes.TypeBitmap) ?? pixels;
+        // 32-bit and 24-bit bitmaps are sampled in place, no copy, unless attributes change their colors or the bitmap is the one drawn on.
+        Bitmap bitmap = (Bitmap)image;
+        bool view = attributes is null && !ReferenceEquals(bitmap, _image) && bitmap.PixelFormat is PixelFormat.Format32bppArgb or PixelFormat.Format32bppPArgb or PixelFormat.Format24bppRgb;
+        using Raster pixels = view ? bitmap.AsRaster() : bitmap.ToRgba8();
+        Raster drawn = attributes?.State.Apply((Raster<Rgba8>)pixels, GdiPlusImageAttributes.TypeBitmap) ?? pixels;
         try
         {
             // Without a wrap mode GDI+ samples transparency beyond the image, so its edges fade; a wrap mode tiles it instead.

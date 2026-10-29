@@ -116,6 +116,7 @@ settings, safety limits and registered formats a call uses.
 
 ## Egami.SystemDrawing
 
+- [Migrating from System.Drawing to Egami](https://inexin.github.io/Egami/v1/articles/guides/system-drawing-migration.html): Egami.SystemDrawing runs System.Drawing code unchanged; this guide moves that code to Egami's own API one piece at a time, with the escape hatches AsRaster, FromRaster, Graphics.Canvas and ToEgamiFont.
 - [System.Drawing drop-in](https://inexin.github.io/Egami/v1/articles/guides/system-drawing.html): Egami.SystemDrawing gives code written for System.Drawing.Common its API on every OS, in managed code.
 
 ## Egami.Video

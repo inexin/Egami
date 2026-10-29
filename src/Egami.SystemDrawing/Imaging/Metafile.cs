@@ -53,9 +53,10 @@ public sealed partial class Metafile : Image
             throw GdiErrors.Generic();
         }
 
+        // The pixels are drawn when something first needs them (Save, Clone, a Bitmap copy), as GDI+ draws them; until then the
+        // frame only holds the size.
         Rectangle bounds = scan.Bounds;
-        Frame frame = new(Math.Max(1, bounds.Width), Math.Max(1, bounds.Height), PixelFormat.Format32bppArgb);
-        Rasterize(frame);
+        Frame frame = new(Math.Max(1, bounds.Width), Math.Max(1, bounds.Height), PixelFormat.Format32bppArgb, 0, IntPtr.Zero);
         SetFrames([frame], FrameDimension.Page.Guid);
         SetFileState(scan.Type is MetafileType.Wmf or MetafileType.WmfPlaceable ? ImageFormat.Wmf.Guid : ImageFormat.Emf.Guid, MetafileFlags, scan.Dpi.X, scan.Dpi.Y);
     }
@@ -105,6 +106,25 @@ public sealed partial class Metafile : Image
     }
 
     /// <summary>Draws the picture into its frame-sized pixels, transparent around it, so the image can be saved and copied as GDI+ allows.</summary>
+    /// <inheritdoc/>
+    private protected override Frame Realize(Frame frame)
+    {
+        if (frame.Scan0 != IntPtr.Zero)
+        {
+            return frame;
+        }
+
+        // A size past Egami's pixel limit is refused, as GDI+ refuses images it cannot hold.
+        if ((long)frame.Width * frame.Height > SafetyLimits.Default.MaxPixels || (long)frame.Width * frame.Height * 4 > int.MaxValue)
+        {
+            throw GdiErrors.OutOfMemory();
+        }
+
+        Frame drawn = new(frame.Width, frame.Height, PixelFormat.Format32bppArgb);
+        Rasterize(drawn);
+        return drawn;
+    }
+
     private void Rasterize(Frame frame)
     {
         using Raster<Bgra8> pixels = Picture.Rasterize<Bgra8>(new Egami.Metafiles.MetafileRenderOptions { Width = frame.Width, Height = frame.Height });

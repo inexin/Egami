@@ -101,7 +101,8 @@ Operations that run on a raster through `Apply` and `Derive`.
 
 ## Egami.SystemDrawing
 
-- [System.Drawing drop-in](system-drawing.md): System.Drawing's Bitmap, Image and codec API on every OS.
+- [Migrating from System.Drawing to Egami](system-drawing-migration.md): move drop-in code to Egami's own API one piece at a time.
+- [System.Drawing drop-in](system-drawing.md): System.Drawing's API on every OS: bitmaps, codecs, Graphics, fonts and text.
 
 ## Egami.Video
 

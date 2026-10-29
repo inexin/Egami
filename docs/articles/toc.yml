@@ -158,6 +158,8 @@
       href: guides/metafiles.md
 - name: Egami.SystemDrawing
   items:
+    - name: Migrating from System.Drawing to Egami
+      href: guides/system-drawing-migration.md
     - name: System.Drawing drop-in
       href: guides/system-drawing.md
 - name: Egami.Video

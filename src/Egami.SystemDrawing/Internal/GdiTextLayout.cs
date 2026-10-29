@@ -35,7 +35,7 @@ internal sealed class GdiTextLayout
     private readonly StringFormat _format;
     private readonly EgamiFonts.Font _font;
 
-    private GdiTextLayout(string text, int[] source, bool[] hotkey, Font font, float em, SizeF box, StringFormat format, float gridScale)
+    private GdiTextLayout(string text, int[] source, bool[] hotkey, Font font, float em, SizeF box, StringFormat format, float gridScale, bool glyphs)
     {
         _text = text;
         _source = source;
@@ -73,10 +73,10 @@ internal sealed class GdiTextLayout
             {
                 if (i > start)
                 {
-                    Shape(_font, start, i, 1, widen, _advance, draw is null);
+                    Shape(_font, start, i, 1, widen, _advance, glyphs && draw is null);
                     if (draw is not null)
                     {
-                        Shape(draw.Value, start, i, 1 / gridScale, 1, _drawAdvance, true);
+                        Shape(draw.Value, start, i, 1 / gridScale, 1, _drawAdvance, glyphs);
                     }
                 }
 
@@ -119,8 +119,9 @@ internal sealed class GdiTextLayout
     /// <param name="box">The layout box; vertical formats swap its sides.</param>
     /// <param name="format">The format, or null for the default.</param>
     /// <param name="gridScale">Device pixels per world unit to place glyphs by hinted advances at, or 0 to place them as measured.</param>
+    /// <param name="glyphs">Whether the layout keeps the glyphs to draw; measuring needs only the advances.</param>
     /// <returns>The layout.</returns>
-    public static GdiTextLayout Create(ReadOnlySpan<char> text, Font font, float em, SizeF box, StringFormat? format, float gridScale = 0)
+    public static GdiTextLayout Create(ReadOnlySpan<char> text, Font font, float em, SizeF box, StringFormat? format, float gridScale = 0, bool glyphs = true)
     {
         format ??= StringFormat.GenericDefault;
         if ((format.FormatFlags & StringFormatFlags.DirectionVertical) != 0)
@@ -147,7 +148,7 @@ internal sealed class GdiTextLayout
             hotkey.Add(mark);
         }
 
-        return new GdiTextLayout(display.ToString(), [.. source], [.. hotkey], font, em, box, format, gridScale);
+        return new GdiTextLayout(display.ToString(), [.. source], [.. hotkey], font, em, box, format, gridScale, glyphs);
     }
 
     /// <summary>Gets the size MeasureString reports: the widest line and the padding, the lines and an eighth em.</summary>

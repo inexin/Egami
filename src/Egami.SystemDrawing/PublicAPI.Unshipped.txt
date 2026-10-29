@@ -1,6 +1,9 @@
 #nullable enable
 abstract Egami.SystemDrawing.Brush.Clone() -> object!
 abstract Egami.SystemDrawing.Image.Clone() -> object!
+Egami.SystemDrawing.ArgbDrawing
+Egami.SystemDrawing.ArgbDrawing.Exact = 1 -> Egami.SystemDrawing.ArgbDrawing
+Egami.SystemDrawing.ArgbDrawing.InPlace = 0 -> Egami.SystemDrawing.ArgbDrawing
 Egami.SystemDrawing.Bitmap
 Egami.SystemDrawing.Bitmap.ApplyEffect(Egami.SystemDrawing.Imaging.Effects.Effect! effect, System.Drawing.Rectangle area) -> void
 Egami.SystemDrawing.Bitmap.AsRaster() -> Egami.Raster!
@@ -653,6 +656,8 @@ Egami.SystemDrawing.FontStyle.Strikeout = 8 -> Egami.SystemDrawing.FontStyle
 Egami.SystemDrawing.FontStyle.Underline = 4 -> Egami.SystemDrawing.FontStyle
 Egami.SystemDrawing.Graphics
 Egami.SystemDrawing.Graphics.AddMetafileComment(byte[]! data) -> void
+Egami.SystemDrawing.Graphics.ArgbDrawing.get -> Egami.SystemDrawing.ArgbDrawing
+Egami.SystemDrawing.Graphics.ArgbDrawing.set -> void
 Egami.SystemDrawing.Graphics.BeginContainer() -> Egami.SystemDrawing.Drawing2D.GraphicsContainer!
 Egami.SystemDrawing.Graphics.BeginContainer(System.Drawing.Rectangle dstrect, System.Drawing.Rectangle srcrect, Egami.SystemDrawing.GraphicsUnit unit) -> Egami.SystemDrawing.Drawing2D.GraphicsContainer!
 Egami.SystemDrawing.Graphics.BeginContainer(System.Drawing.RectangleF dstrect, System.Drawing.RectangleF srcrect, Egami.SystemDrawing.GraphicsUnit unit) -> Egami.SystemDrawing.Drawing2D.GraphicsContainer!
@@ -2126,6 +2131,7 @@ Egami.SystemDrawing.StringUnit.Pixel = 2 -> Egami.SystemDrawing.StringUnit
 Egami.SystemDrawing.StringUnit.Point = 3 -> Egami.SystemDrawing.StringUnit
 Egami.SystemDrawing.StringUnit.World = 0 -> Egami.SystemDrawing.StringUnit
 Egami.SystemDrawing.SystemBrushes
+Egami.SystemDrawing.SystemDrawingOptions
 Egami.SystemDrawing.SystemFonts
 Egami.SystemDrawing.SystemIcons
 Egami.SystemDrawing.SystemPens
@@ -2627,6 +2633,10 @@ static Egami.SystemDrawing.SystemBrushes.ScrollBar.get -> Egami.SystemDrawing.Br
 static Egami.SystemDrawing.SystemBrushes.Window.get -> Egami.SystemDrawing.Brush!
 static Egami.SystemDrawing.SystemBrushes.WindowFrame.get -> Egami.SystemDrawing.Brush!
 static Egami.SystemDrawing.SystemBrushes.WindowText.get -> Egami.SystemDrawing.Brush!
+static Egami.SystemDrawing.SystemDrawingOptions.ArgbDrawing.get -> Egami.SystemDrawing.ArgbDrawing
+static Egami.SystemDrawing.SystemDrawingOptions.ArgbDrawing.set -> void
+static Egami.SystemDrawing.SystemDrawingOptions.FontSubstitutes.get -> System.Func<string!, Egami.Fonts.FontStyle, Egami.Fonts.Typeface?>?
+static Egami.SystemDrawing.SystemDrawingOptions.FontSubstitutes.set -> void
 static Egami.SystemDrawing.SystemFonts.CaptionFont.get -> Egami.SystemDrawing.Font!
 static Egami.SystemDrawing.SystemFonts.DefaultFont.get -> Egami.SystemDrawing.Font!
 static Egami.SystemDrawing.SystemFonts.DialogFont.get -> Egami.SystemDrawing.Font!
