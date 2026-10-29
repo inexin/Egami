@@ -27,7 +27,6 @@ changes that break code come only in a new major version.
   `--keyframe-interval` for every codec; `egami-video verify` (also an MCP tool) checks FFV1 files' slice and configuration CRCs
   without decoding; `info` names FFV1 tracks; ffmpeg mode takes `-c:v ffv1` with `-level 3`, `-coder`, `-context`, `-slices`,
   `-slicecrc` and `-g`.
-
 - `egami-video run` reads and writes Egami.Formats.Extended's formats, with `--set sgi.rle=` and `--set sunraster.rle=` for
   their writer options.
 - `egami-video subs convert`, `shift`, `sync`, `extract` and `embed` (also MCP tools): SRT, WebVTT and ASS files converted,
