@@ -308,6 +308,49 @@ public class TextTests
         }
     }
 
+    [Theory]
+    [InlineData(StringTrimming.EllipsisCharacter, false)]
+    [InlineData(StringTrimming.EllipsisWord, false)]
+    [InlineData(StringTrimming.EllipsisPath, false)]
+    [InlineData(StringTrimming.EllipsisCharacter, true)]
+    [InlineData(StringTrimming.EllipsisWord, true)]
+    [InlineData(StringTrimming.EllipsisPath, true)]
+    public void EllipsisTrimsDrawMeasureAndPlaceTheEllipsis(StringTrimming trimming, bool tabs)
+    {
+        // Review finding: the tab fix sliced the text with the ellipsis' character index (-1) and threw.
+        using Graphics g = NewGraphics(out Bitmap b, 200, 40);
+        using (b)
+        {
+            using Font font = DejaVu12;
+            string text = tabs ? "one\ttwo three four five six seven eight nine ten" : "one two three four five six seven eight nine ten";
+            StringFormat format = new(StringFormatFlags.NoWrap) { Trimming = trimming };
+            format.SetTabStops(0, [60]);
+            format.SetMeasurableCharacterRanges([new CharacterRange(0, 3)]);
+            RectangleF box = new(0, 0, 120, 30);
+            SizeF size = g.MeasureString(text, font, box.Size, format, out int chars, out _);
+            Assert.InRange(size.Width, 1, 120);
+            Assert.InRange(chars, 1, text.Length - 1);
+            Assert.Single(g.MeasureCharacterRanges(text, font, box, format));
+            g.Clear(Color.White);
+            g.TextRenderingHint = TextRenderingHint.AntiAlias;
+            g.DrawString(text, font, Brushes.Black, box, format);
+            int right = -1;
+            for (int y = 0; y < 30; y++)
+            {
+                for (int x = 0; x < 200; x++)
+                {
+                    if (b.GetPixel(x, y).R < 160)
+                    {
+                        right = Math.Max(right, x);
+                    }
+                }
+            }
+
+            // The ellipsis ends the line inside the box.
+            Assert.InRange(right, 60, 120);
+        }
+    }
+
     [Fact]
     public void FontCollectionsRefuseFilesThatAreNotFonts()
     {

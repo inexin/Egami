@@ -377,9 +377,12 @@ internal sealed class GdiTextLayout
         for (int k = 0; k < line.Items.Count; k++)
         {
             Item item = line.Items[k];
-            // A tab before a character, at the start of the line too, puts it at the stop the tab reached.
-            bool tabbed = previous >= 0 ? _text.AsSpan(previous, item.Char - previous).Contains('\t') : item.X > 0;
-            if (item.Char >= 0 && tabbed)
+            // A tab before a character, at the start of the line too, puts it at the stop the tab reached. The ellipsis (character
+            // -1) follows the pen, or its measured place where the drawing advances are the measuring ones, so a tab before it counts.
+            bool tabbed = item.Char >= 0
+                ? (previous >= 0 ? _text.AsSpan(previous, item.Char - previous).Contains('\t') : item.X > 0)
+                : ReferenceEquals(_drawAdvance, _advance);
+            if (tabbed)
             {
                 pen = MathF.Max(pen, item.X);
             }
