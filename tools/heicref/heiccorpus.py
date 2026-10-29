@@ -28,6 +28,7 @@
 import glob
 import hashlib
 import json
+import math
 import os
 import re
 import shutil
@@ -929,6 +930,30 @@ def extra():
     write_manifest(f"{folder}/manifest.json", manifest)
 
 
+def inter():
+    """The committed HEVC inter fixture (Phase 2.9.10): a moving pattern of our own, coded by Kvazaar with P and B pictures, and
+    the MD5 of each frame HM decodes: tests/images/heic/video/hevc-inter-kvazaar.h265 and tests/reference/heic/hevc-inter-kvazaar.json."""
+    os.makedirs(TMP, exist_ok=True)
+    os.makedirs(f"{OUT}/video", exist_ok=True)
+    w, h, n = 96, 64, 12
+    with open(f"{TMP}/inter.yuv", "wb") as f:
+        for t in range(n):
+            y = bytearray(w * h)
+            for j in range(h):
+                for i in range(w):
+                    y[j * w + i] = int(128 + 60 * math.sin((i + 2 * t) / 7.0) * math.cos((j - t) / 5.0)) & 255
+            f.write(bytes(y) + bytes(((i * 3 + t * 5) & 255) for i in range(w * h // 4)) + bytes(((i * 7 - t * 3) & 255) for i in range(w * h // 4)))
+    stream = f"{OUT}/video/hevc-inter-kvazaar.h265"
+    sh("kvazaar", "-i", f"{TMP}/inter.yuv", "--input-res", f"{w}x{h}", "-o", stream, "--gop", "8", "--period", "16", "--preset", "medium",
+       "--qp", "30", "--frames", str(n))
+    sh("TAppDecoder", "-b", stream, "-o", f"{TMP}/inter-hm.yuv", "-d", "0")
+    data = open(f"{TMP}/inter-hm.yuv", "rb").read()
+    size = w * h * 3 // 2
+    with open(f"{REF}/hevc-inter-kvazaar.json", "w") as f:
+        json.dump({"tools": tools(), "frames": [md5(data[i:i + size]) for i in range(0, len(data), size)]}, f, indent=1, sort_keys=True)
+        f.write(chr(10))
+
+
 def frames():
     """Per-frame MD5s of HM's whole decode of every conformance stream, in output order (Phase 2.9.10): {set}/frames.json."""
     os.makedirs(TMP, exist_ok=True)
@@ -1027,4 +1052,4 @@ def traces():
 
 if __name__ == "__main__":
     for step in sys.argv[1:]:
-        {"corpus": corpus, "conformance": conformance, "extra": extra, "suite": suite, "traces": traces, "frames": frames}[step]()
+        {"corpus": corpus, "conformance": conformance, "extra": extra, "suite": suite, "traces": traces, "frames": frames, "inter": inter}[step]()

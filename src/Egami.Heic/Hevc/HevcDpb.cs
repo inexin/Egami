@@ -21,6 +21,12 @@ internal sealed class HevcDpbPicture(HevcPicture picture, int poc, int id) : INa
     /// <summary>Gets or sets the marking: <see cref="Unused"/>, <see cref="ShortTerm"/> or <see cref="LongTerm"/>.</summary>
     internal int Marking { get; set; } = ShortTerm;
 
+    /// <summary>Gets or sets the type of the picture's NAL units.</summary>
+    internal HevcPictureKind Kind { get; set; }
+
+    /// <summary>Gets or sets the picture's TemporalId.</summary>
+    internal int TemporalId { get; set; }
+
     /// <summary>Gets or sets the picture's decoded picture hash SEI message, or null.</summary>
     internal HevcPictureHash? Hash { get; set; }
 
@@ -137,7 +143,16 @@ internal sealed class HevcDpb
         _first = false;
         _afterEndOfSequence = false;
         _sequence += noRaslOutput ? 1 : 0;
-        return new HevcDpbPicture(picture, poc, _nextId++) { Sequence = _sequence };
+        HevcPictureKind kind = nal.Type switch
+        {
+            HevcNal.IdrWRadl or HevcNal.IdrNLp => HevcPictureKind.Idr,
+            HevcNal.CraNut => HevcPictureKind.Cra,
+            >= HevcNal.BlaWLp and <= HevcNal.BlaNLp => HevcPictureKind.Bla,
+            6 or 7 => HevcPictureKind.DecodableLeading,
+            HevcNal.RaslN or HevcNal.RaslR => HevcPictureKind.SkippedLeading,
+            _ => HevcPictureKind.Trailing,
+        };
+        return new HevcDpbPicture(picture, poc, _nextId++) { Sequence = _sequence, Kind = kind, TemporalId = nal.TemporalIdPlus1 - 1 };
     }
 
     /// <summary>Stores a decoded picture (C.5.2.3), marked short-term, and outputs what must leave after it.</summary>

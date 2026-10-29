@@ -1,1 +1,55 @@
 #nullable enable
+Egami.Heic.HevcDecoderOptions
+Egami.Heic.HevcDecoderOptions.<Clone>$() -> Egami.Heic.HevcDecoderOptions!
+Egami.Heic.HevcDecoderOptions.CheckPictureHashes.get -> bool
+Egami.Heic.HevcDecoderOptions.CheckPictureHashes.init -> void
+Egami.Heic.HevcDecoderOptions.Equals(Egami.Heic.HevcDecoderOptions? other) -> bool
+Egami.Heic.HevcDecoderOptions.HevcDecoderOptions() -> void
+Egami.Heic.HevcFrameInfo
+Egami.Heic.HevcFrameInfo.BitDepth.get -> int
+Egami.Heic.HevcFrameInfo.BitDepth.init -> void
+Egami.Heic.HevcFrameInfo.Chroma.get -> Egami.Pixels.ChromaFormat
+Egami.Heic.HevcFrameInfo.Chroma.init -> void
+Egami.Heic.HevcFrameInfo.Color.get -> Egami.Colors.ColorCodePoints
+Egami.Heic.HevcFrameInfo.Color.init -> void
+Egami.Heic.HevcFrameInfo.Deconstruct(out Egami.Heic.HevcPictureKind Kind, out int PictureOrderCount, out int Width, out int Height, out int BitDepth, out Egami.Pixels.ChromaFormat Chroma, out int TemporalId, out Egami.Colors.ColorCodePoints Color) -> void
+Egami.Heic.HevcFrameInfo.Equals(Egami.Heic.HevcFrameInfo other) -> bool
+Egami.Heic.HevcFrameInfo.Height.get -> int
+Egami.Heic.HevcFrameInfo.Height.init -> void
+Egami.Heic.HevcFrameInfo.HevcFrameInfo() -> void
+Egami.Heic.HevcFrameInfo.HevcFrameInfo(Egami.Heic.HevcPictureKind Kind, int PictureOrderCount, int Width, int Height, int BitDepth, Egami.Pixels.ChromaFormat Chroma, int TemporalId, Egami.Colors.ColorCodePoints Color) -> void
+Egami.Heic.HevcFrameInfo.Kind.get -> Egami.Heic.HevcPictureKind
+Egami.Heic.HevcFrameInfo.Kind.init -> void
+Egami.Heic.HevcFrameInfo.PictureOrderCount.get -> int
+Egami.Heic.HevcFrameInfo.PictureOrderCount.init -> void
+Egami.Heic.HevcFrameInfo.TemporalId.get -> int
+Egami.Heic.HevcFrameInfo.TemporalId.init -> void
+Egami.Heic.HevcFrameInfo.Width.get -> int
+Egami.Heic.HevcFrameInfo.Width.init -> void
+Egami.Heic.HevcPictureKind
+Egami.Heic.HevcPictureKind.Bla = 2 -> Egami.Heic.HevcPictureKind
+Egami.Heic.HevcPictureKind.Cra = 1 -> Egami.Heic.HevcPictureKind
+Egami.Heic.HevcPictureKind.DecodableLeading = 4 -> Egami.Heic.HevcPictureKind
+Egami.Heic.HevcPictureKind.Idr = 0 -> Egami.Heic.HevcPictureKind
+Egami.Heic.HevcPictureKind.SkippedLeading = 5 -> Egami.Heic.HevcPictureKind
+Egami.Heic.HevcPictureKind.Trailing = 3 -> Egami.Heic.HevcPictureKind
+Egami.Heic.HevcStreamDecoder
+Egami.Heic.HevcStreamDecoder.Configure(System.ReadOnlySpan<byte> hvcC) -> void
+Egami.Heic.HevcStreamDecoder.Dispose() -> void
+Egami.Heic.HevcStreamDecoder.Flush() -> void
+Egami.Heic.HevcStreamDecoder.HevcStreamDecoder(Egami.Heic.HevcDecoderOptions? options = null, Egami.EgamiContext? context = null) -> void
+Egami.Heic.HevcStreamDecoder.NextFrame.get -> Egami.Heic.HevcFrameInfo?
+Egami.Heic.HevcStreamDecoder.Reset() -> void
+Egami.Heic.HevcStreamDecoder.Send(System.ReadOnlySpan<byte> data) -> void
+Egami.Heic.HevcStreamDecoder.TryReceiveFrame(Egami.YuvRaster! destination, out Egami.Heic.HevcFrameInfo info) -> bool
+override Egami.Heic.HevcDecoderOptions.Equals(object? obj) -> bool
+override Egami.Heic.HevcDecoderOptions.GetHashCode() -> int
+override Egami.Heic.HevcDecoderOptions.ToString() -> string!
+override Egami.Heic.HevcFrameInfo.GetHashCode() -> int
+static Egami.Heic.HevcDecoderOptions.Default.get -> Egami.Heic.HevcDecoderOptions!
+static Egami.Heic.HevcDecoderOptions.operator !=(Egami.Heic.HevcDecoderOptions? left, Egami.Heic.HevcDecoderOptions? right) -> bool
+static Egami.Heic.HevcDecoderOptions.operator ==(Egami.Heic.HevcDecoderOptions? left, Egami.Heic.HevcDecoderOptions? right) -> bool
+static Egami.Heic.HevcFrameInfo.operator !=(Egami.Heic.HevcFrameInfo left, Egami.Heic.HevcFrameInfo right) -> bool
+static Egami.Heic.HevcFrameInfo.operator ==(Egami.Heic.HevcFrameInfo left, Egami.Heic.HevcFrameInfo right) -> bool
+~override Egami.Heic.HevcFrameInfo.Equals(object obj) -> bool
+~override Egami.Heic.HevcFrameInfo.ToString() -> string

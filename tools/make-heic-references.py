@@ -26,6 +26,8 @@ Usage, from the repo root with Docker running:
   python tools/make-heic-references.py traces       HM's syntax traces: tests/reference/heic/hm-headers.json.gz and .cache
   python tools/make-heic-references.py frames       .cache/heic/reference/{HEVC_v1,RExt}/frames.json: the MD5 of every frame HM
                                                     outputs, in output order (2.9.10's inter decoding)
+  python tools/make-heic-references.py inter        the committed inter fixture: Kvazaar's coding of a pattern of our own and HM's
+                                                    frame MD5s (tests/images/heic/video, tests/reference/heic/hevc-inter-kvazaar.json)
 """
 import hashlib
 import json
@@ -128,6 +130,6 @@ if __name__ == "__main__":
     steps = sys.argv[1:] or ["fetch", "corpus", "conformance", "extra", "traces"]
     if "fetch" in steps:
         fetch()
-    for step in ("corpus", "conformance", "extra", "suite", "traces", "frames"):
+    for step in ("corpus", "conformance", "extra", "suite", "traces", "frames", "inter"):
         if step in steps:
             run(step)
