@@ -87,6 +87,75 @@ internal static class HeicFuzzTarget
         }
     }
 
+    /// <summary>
+    /// Phase 2.9.10: an Annex B stream through <see cref="Egami.Heic.HevcStreamDecoder"/>, inter pictures included, on one thread
+    /// and on four, which must give the same frames; then again with errors concealed, which must never throw for slice data.
+    /// </summary>
+    public static void DecodeHevcStream(byte[] data, EgamiContext context)
+    {
+        EgamiContext small = context with { Limits = context.Limits with { MaxPixels = 1 << 20 } };
+        List<byte[]>? one = null;
+        foreach (int threads in (ReadOnlySpan<int>)[1, 4])
+        {
+            List<byte[]> frames = [];
+            try
+            {
+                using Egami.Heic.HevcStreamDecoder decoder = new(context: small with { MaxParallelism = threads });
+                decoder.Send(data);
+                decoder.Flush();
+                while (decoder.NextFrame is { } info && frames.Count < 64)
+                {
+                    YuvRaster raster = info.BitDepth == 8
+                        ? YuvRaster.Create(info.Width, info.Height, info.Chroma, Pixels.YuvColor.Bt709Limited)
+                        : YuvRaster.Create(info.Width, info.Height, info.Chroma, info.BitDepth, Pixels.YuvColor.Bt709Limited);
+                    decoder.TryReceiveFrame(raster, out _);
+                    frames.Add(Samples(raster));
+                }
+            }
+            catch (EgamiException)
+            {
+                return;
+            }
+
+            if (one is null)
+            {
+                one = frames;
+            }
+            else if (one.Count != frames.Count || one.Zip(frames).Any(p => !p.First.AsSpan().SequenceEqual(p.Second)))
+            {
+                throw new InvalidOperationException("The frames differ on one thread and on four.");
+            }
+        }
+    }
+
+    /// <summary>A raster's planes, row after row, as bytes.</summary>
+    private static byte[] Samples(YuvRaster raster)
+    {
+        using MemoryStream bytes = new();
+        if (raster is YuvRaster<byte> b8)
+        {
+            foreach (YuvPlane<byte>? plane in new[] { b8.Y, b8.U, b8.V })
+            {
+                for (int y = 0; plane is not null && y < plane.Height; y++)
+                {
+                    bytes.Write(plane.Row(y));
+                }
+            }
+        }
+        else if (raster is YuvRaster<ushort> b16)
+        {
+            foreach (YuvPlane<ushort>? plane in new[] { b16.Y, b16.U, b16.V })
+            {
+                for (int y = 0; plane is not null && y < plane.Height; y++)
+                {
+                    bytes.Write(System.Runtime.InteropServices.MemoryMarshal.AsBytes(plane.Row(y)));
+                }
+            }
+        }
+
+        return bytes.ToArray();
+    }
+
     private static void Extras(byte[] data, EgamiContext context, Raster raster)
     {
         try
