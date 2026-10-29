@@ -73,7 +73,7 @@ public class GdiPlusShapeTests
         }
     }
 
-    /// <summary>PixelOffset.None moves paths half a pixel right and down, and leaves images where they are.</summary>
+    /// <summary>PixelOffset.None moves paths half a pixel right and down, and leaves images drawn 1:1 where they are.</summary>
     [Fact]
     public void PixelOffsetNoneMovesPathsNotImages()
     {
@@ -86,6 +86,33 @@ public class GdiPlusShapeTests
         byte[,] imageNone = Coverage(none, 16, 16, canvas => canvas.DrawImage(image, new RectF(3.25f, 5, 4, 4)));
         byte[,] imageHalf = Coverage(null, 16, 16, canvas => canvas.DrawImage(image, new RectF(3.25f, 5, 4, 4)));
         Assert.Equal(imageHalf, imageNone);
+    }
+
+    /// <summary>
+    /// With PixelOffset.None a scaled image sits on GDI+'s grid, source pixel centres on destination pixel centres: an impulse at
+    /// source column 16 enlarged 4× peaks at destination column 64 exactly, as GDI+'s DrawImage measured (64 128 191 255 191 128 64).
+    /// </summary>
+    [Fact]
+    public void PixelOffsetNonePutsScaledImagesOnGdiPlusGrid()
+    {
+        using Raster<Rgba8> image = Raster.Create(32, 8, new Rgba8(0, 0, 0, 255));
+        for (int y = 0; y < 8; y++)
+        {
+            image.SetPixel(16, y, Rgba8.White);
+        }
+
+        var sampling = new Operations.SamplingOptions { Filter = Operations.ResampleFilter.GdiPlusBilinear, Edges = Operations.EdgeMode.Mirror };
+        byte[,] none = Coverage(new CanvasOptions { PixelOffset = PixelOffset.None }, 128, 8, canvas => canvas.DrawImage(image, new RectF(0, 0, 32, 8), new RectF(0, 0, 128, 32), sampling));
+        int[] gdiPlus = [64, 128, 191, 255, 191, 128, 64];
+        for (int i = 0; i < gdiPlus.Length; i++)
+        {
+            Assert.InRange(none[61 + i, 2], gdiPlus[i] - 1, gdiPlus[i] + 1);
+        }
+
+        // Egami's own grid puts the peak between columns 65 and 66.
+        byte[,] half = Coverage(null, 128, 8, canvas => canvas.DrawImage(image, new RectF(0, 0, 32, 8), new RectF(0, 0, 128, 32), sampling));
+        Assert.Equal(half[65, 2], half[66, 2]);
+        Assert.True(half[64, 2] < 255);
     }
 
     /// <summary>Like GDI+'s grid-fitted text, hinted text does not move with PixelOffset.None; unhinted text does.</summary>

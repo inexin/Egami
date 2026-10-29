@@ -169,8 +169,22 @@ internal abstract class RasterTarget(Rect area) : IDisposable
     /// <summary>Multiplies a layer's premultiplied pixels from device (<paramref name="x"/>, <paramref name="y"/>) by mask values from 0 to 1.</summary>
     internal abstract void Multiply(int y, int x, ReadOnlySpan<float> mask);
 
-    /// <summary>Draws an image under a transform through the clip.</summary>
-    internal abstract void DrawImage(DrawTools tools, Raster image, RectF source, RectF destination, Matrix3x2 matrix, SamplingOptions sampling, Paint? paint, Rect clip, ClipMask? mask);
+    /// <summary>
+    /// Draws an image under a transform through the clip, its samples moved by <paramref name="shift"/> device pixels (GDI+'s grid
+    /// for <see cref="PixelOffset.None"/>) while the destination's outline stays.
+    /// </summary>
+    internal abstract void DrawImage(DrawTools tools, Raster image, RectF source, RectF destination, Matrix3x2 matrix, SamplingOptions sampling, Paint? paint, Rect clip, ClipMask? mask, Vector2 shift = default);
+
+    /// <summary>A device-space move of an image's samples as a translation before <paramref name="matrix"/>: identity for none.</summary>
+    internal static Matrix3x2 LocalShift(Matrix3x2 matrix, Vector2 shift)
+    {
+        if (shift == Vector2.Zero || !Matrix3x2.Invert(matrix with { M31 = 0, M32 = 0 }, out Matrix3x2 inverse))
+        {
+            return Matrix3x2.Identity;
+        }
+
+        return Matrix3x2.CreateTranslation(Vector2.TransformNormal(shift, inverse));
+    }
 
     public abstract void Dispose();
 }
@@ -349,11 +363,20 @@ internal sealed class RasterTarget<TPixel> : RasterTarget
         }
     }
 
-    internal override void DrawImage(DrawTools tools, Raster image, RectF source, RectF destination, Matrix3x2 matrix, SamplingOptions sampling, Paint? paint, Rect clip, ClipMask? mask)
+    internal override void DrawImage(DrawTools tools, Raster image, RectF source, RectF destination, Matrix3x2 matrix, SamplingOptions sampling, Paint? paint, Rect clip, ClipMask? mask, Vector2 shift = default)
     {
         if (KnockoutBackdrop is not null || GroupAlpha is not null || Shape is not null)
         {
-            DrawImageAsPaint(tools, image, source, destination, matrix, sampling, paint, clip, mask);
+            DrawImageAsPaint(tools, image, source, destination, matrix, sampling, paint, clip, mask, shift);
+            return;
+        }
+
+        // GDI+'s high-quality modes are separable kernels widened per axis, which the image shader samples exactly; the transform
+        // engine would take an elliptical average whenever the window is not a pure resize inside the image.
+        if (sampling.Filter is ResampleFilter.GdiPlusHighQualityBilinear or ResampleFilter.GdiPlusHighQualityBicubic)
+        {
+            TileMode tile = sampling.Edges switch { EdgeMode.Mirror => TileMode.Mirror, EdgeMode.Wrap => TileMode.Repeat, EdgeMode.Transparent => TileMode.Decal, _ => TileMode.Clamp };
+            DrawImageAsPaint(tools, image, source, destination, matrix, sampling, paint, clip, mask, shift, tile);
             return;
         }
 
@@ -366,6 +389,7 @@ internal sealed class RasterTarget<TPixel> : RasterTarget
         float sx = destination.Width / source.Width, sy = destination.Height / source.Height;
         Matrix3x2 toDevice = Matrix3x2.CreateTranslation(-source.X, -source.Y) * Matrix3x2.CreateScale(sx, sy)
             * Matrix3x2.CreateTranslation(destination.X, destination.Y) * matrix;
+        toDevice.Translation += shift;
 
         // A transform that collapses the image (a zero scale, or one that overflowed) covers no area: nothing to draw.
         float det = toDevice.GetDeterminant();
@@ -441,11 +465,11 @@ internal sealed class RasterTarget<TPixel> : RasterTarget
     }
 
     /// <summary>Draws an image as an image paint filling its destination, so it goes through <see cref="CreateSink"/>: a knockout layer's way.</summary>
-    private void DrawImageAsPaint(DrawTools tools, Raster image, RectF source, RectF destination, Matrix3x2 matrix, SamplingOptions sampling, Paint? paint, Rect clip, ClipMask? mask)
+    private void DrawImageAsPaint(DrawTools tools, Raster image, RectF source, RectF destination, Matrix3x2 matrix, SamplingOptions sampling, Paint? paint, Rect clip, ClipMask? mask, Vector2 shift, TileMode tile = TileMode.Clamp)
     {
         Matrix3x2 imageToLocal = Matrix3x2.CreateTranslation(-source.X, -source.Y) * Matrix3x2.CreateScale(destination.Width / source.Width, destination.Height / source.Height)
-            * Matrix3x2.CreateTranslation(destination.X, destination.Y);
-        ImagePaint fill = new(image, TileMode.Clamp, TileMode.Clamp, sampling)
+            * Matrix3x2.CreateTranslation(destination.X, destination.Y) * LocalShift(matrix, shift);
+        ImagePaint fill = new(image, tile, tile, sampling)
         {
             LocalMatrix = imageToLocal,
             BlendMode = paint?.BlendMode ?? BlendMode.SourceOver,

@@ -274,17 +274,17 @@ internal sealed class InkTarget : RasterTarget
     /// Draws an image as plates: converted to the process inks through its profile (CMYK in the canvas's own profile, or untagged,
     /// unchanged), then sampled and blended like an ink image.
     /// </summary>
-    internal override void DrawImage(DrawTools tools, Raster image, RectF source, RectF destination, Matrix3x2 matrix, SamplingOptions sampling, Paint? paint, Rect clip, ClipMask? mask)
+    internal override void DrawImage(DrawTools tools, Raster image, RectF source, RectF destination, Matrix3x2 matrix, SamplingOptions sampling, Paint? paint, Rect clip, ClipMask? mask, Vector2 shift = default)
     {
         using InkRaster plates = InkImages.ToPlates(image, Resolver, _raster.Depth, tools.Context);
-        DrawInks(tools, plates, source, destination, matrix, sampling, paint, clip, mask);
+        DrawInks(tools, plates, source, destination, matrix, sampling, paint, clip, mask, shift);
     }
 
     /// <summary>Draws an ink image's plates over a destination, mapped by name.</summary>
-    internal void DrawInks(DrawTools tools, InkRaster image, RectF source, RectF destination, Matrix3x2 matrix, SamplingOptions sampling, Paint? paint, Rect clip, ClipMask? mask)
+    internal void DrawInks(DrawTools tools, InkRaster image, RectF source, RectF destination, Matrix3x2 matrix, SamplingOptions sampling, Paint? paint, Rect clip, ClipMask? mask, Vector2 shift = default)
     {
         Matrix3x2 imageToLocal = Matrix3x2.CreateTranslation(-source.X, -source.Y) * Matrix3x2.CreateScale(destination.Width / source.Width, destination.Height / source.Height)
-            * Matrix3x2.CreateTranslation(destination.X, destination.Y);
+            * Matrix3x2.CreateTranslation(destination.X, destination.Y) * LocalShift(matrix, shift);
         InkImagePaint fill = new(image, sampling)
         {
             LocalMatrix = imageToLocal,

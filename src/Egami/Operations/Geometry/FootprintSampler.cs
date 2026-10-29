@@ -96,8 +96,9 @@ internal sealed class SamplerSettings
             return Footprint.Ewa(MaxScale, MaxScale, 1, 0, Support);
         }
 
-        // Nothing shrinks: the plain kernel, exactly as Rotate samples. The tolerance absorbs a float rotation's rounding.
-        if (major <= 1 + 1e-6 || Filter == ResampleFilter.Nearest)
+        // Nothing shrinks: the plain kernel, exactly as Rotate samples. The tolerance absorbs a float rotation's rounding. GDI+'s
+        // Bilinear and Bicubic keep their plain taps when shrinking too.
+        if (major <= 1 + 1e-6 || Filter is ResampleFilter.Nearest or ResampleFilter.GdiPlusBilinear or ResampleFilter.GdiPlusBicubic)
         {
             return Footprint.Plain;
         }

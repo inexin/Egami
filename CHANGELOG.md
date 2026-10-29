@@ -50,7 +50,8 @@ Closer GDI+ text (2.7.6 stage 1), measured against GDI+ on Windows in egami-comp
 Closer GDI+ shapes (2.7.6 stage 2), measured the same way. These are opt-in too.
 
 - `CanvasOptions.PixelOffset`: `Half` is Egami's grid. `None`, GDI+'s default, puts whole coordinates on pixel centres, so paths,
-  their paints, clips and unhinted text move half a pixel; hinted text and images stay put, as they do in GDI+.
+  their paints, clips and unhinted text move half a pixel, and hinted text stays put, as in GDI+. Images go onto GDI+'s grid,
+  source pixel centres on destination pixel centres (2.7.6 stage 4).
 - `CanvasOptions.Antialiasing`: `Exact` is Egami's coverage. `GdiPlus` samples as GDI+'s `SmoothingMode.AntiAlias` does,
   with 8 by 4 point samples a pixel and a top-left fill rule. It also draws pens of 1.5 device pixels or less as GDI+'s thin
   lines, one pixel thick with pointed ends. Each row is computed on its own, so the result is the same at any core count.
@@ -90,6 +91,8 @@ GDI+'s image scaling (2.7.6 stage 4), recovered from DrawImage's impulse respons
   - `GdiPlusBicubic` (Bicubic) is Keys cubic with a = −0.5 at every scale. Neither averages when shrinking, as GDI+'s don't.
   - `GdiPlusHighQualityBilinear` is the tent, widened by the reduction, convolved with a one-pixel box.
   - `GdiPlusHighQualityBicubic` (High, HighQualityBicubic) is the same with Keys cubic, a = −1.
+- With `CanvasOptions.PixelOffset.None`, `DrawImage` uses GDI+'s default grid, with source pixel centres on destination pixel
+  centres: an image scaled by s moves (1 − s) / 2 pixels, and one drawn 1:1 does not move.
 - Against DrawImage at PixelOffsetMode Default and Half, up and down, the mean difference over those modes drops from 2.53 levels
   (Egami's closest filter before) to 0.37. Bilinear and HighQualityBilinear are within 0.2 levels.
 
