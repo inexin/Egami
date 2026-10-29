@@ -137,6 +137,37 @@ them, so LockBits code and pixel values carry over.</p>
 </dd>
     </dl>
     <dl class="jumplist">
+      <dt><a class="xref" href="Egami.SystemDrawing.Font.html">Font</a></dt>
+      <dd><p>A family, size, style and unit for drawing and measuring text. A family that is not installed falls back to Microsoft Sans
+Serif (or its stand-in), with <a class="xref" href="Egami.SystemDrawing.Font.html#Egami_SystemDrawing_Font_OriginalFontName">OriginalFontName</a> keeping the name asked for; sizes convert at the target's
+resolution, 96 dpi for <a class="xref" href="Egami.SystemDrawing.Font.html#Egami_SystemDrawing_Font_GetHeight">GetHeight()</a> and <a class="xref" href="Egami.SystemDrawing.Font.html#Egami_SystemDrawing_Font_SizeInPoints">SizeInPoints</a>.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.SystemDrawing.FontConverter.html">FontConverter</a></dt>
+      <dd><p>Converts fonts to and from strings such as &quot;Arial, 10pt, style=Bold, Italic&quot; for designers and serializers, and to
+constructor calls for code generation.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.SystemDrawing.FontConverter.FontNameConverter.html">FontConverter.FontNameConverter</a></dt>
+      <dd><p>Converts family names, offering the installed families as the standard values.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.SystemDrawing.FontConverter.FontUnitConverter.html">FontConverter.FontUnitConverter</a></dt>
+      <dd><p>Converts font units, offering every <a class="xref" href="Egami.SystemDrawing.GraphicsUnit.html">GraphicsUnit</a> but Display as the standard values.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.SystemDrawing.FontFamily.html">FontFamily</a></dt>
+      <dd><p>A family of faces, such as Arial with its bold and italic faces, found among the installed fonts or a
+<a class="xref" href="Egami.SystemDrawing.Text.PrivateFontCollection.html">PrivateFontCollection</a>. Where a Windows core font is missing (on Linux and macOS), a metric-compatible open font
+stands in under the requested name: Liberation Sans or Arimo for Arial, Liberation Serif or Tinos for Times New Roman,
+Liberation Mono or Cousine for Courier New, Carlito for Calibri.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
       <dt><a class="xref" href="Egami.SystemDrawing.Graphics.html">Graphics</a></dt>
       <dd><p>The way from a graphics to Egami's own canvas.</p>
 </dd>
@@ -197,8 +228,20 @@ infinite when made with no arguments. Graphics clips to one.</p>
 </dd>
     </dl>
     <dl class="jumplist">
+      <dt><a class="xref" href="Egami.SystemDrawing.StringFormat.html">StringFormat</a></dt>
+      <dd><p>How DrawString and MeasureString lay text out: alignment along and across the lines, wrapping, trimming, clipping, tab stops,
+hotkey prefixes and the ranges MeasureCharacterRanges measures.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
       <dt><a class="xref" href="Egami.SystemDrawing.SystemBrushes.html">SystemBrushes</a></dt>
       <dd><p>Solid brushes of the system colors, which cannot be changed or disposed.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.SystemDrawing.SystemFonts.html">SystemFonts</a></dt>
+      <dd><p>The fonts Windows uses for its own interface, with Windows 10 and 11's defaults: Segoe UI 9 for captions, menus, message boxes,
+icon titles and the status bar, Microsoft Sans Serif 8.25 for <a class="xref" href="Egami.SystemDrawing.SystemFonts.html#Egami_SystemDrawing_SystemFonts_DefaultFont">DefaultFont</a> and Tahoma 8 for dialogs.</p>
 </dd>
     </dl>
     <dl class="jumplist">
@@ -219,6 +262,14 @@ infinite when made with no arguments. Graphics clips to one.</p>
     <dl class="jumplist">
       <dt><a class="xref" href="Egami.SystemDrawing.ToolboxBitmapAttribute.html">ToolboxBitmapAttribute</a></dt>
       <dd><p>Names a type's toolbox image: a bitmap or icon resource next to the type, as the Windows Forms designer looks it up.</p>
+</dd>
+    </dl>
+    <h3 id="structs">
+Structs
+</h3>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.SystemDrawing.CharacterRange.html">CharacterRange</a></dt>
+      <dd><p>A range of characters: where it starts and how many characters it holds.</p>
 </dd>
     </dl>
     <h3 id="interfaces">
@@ -243,6 +294,11 @@ Enums
 </dd>
     </dl>
     <dl class="jumplist">
+      <dt><a class="xref" href="Egami.SystemDrawing.FontStyle.html">FontStyle</a></dt>
+      <dd><p>A font's style: bold and italic choose or synthesize a face; underline and strikeout draw lines.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
       <dt><a class="xref" href="Egami.SystemDrawing.GraphicsUnit.html">GraphicsUnit</a></dt>
       <dd><p>The unit of a measure: the world's, the display's, pixels, points, inches, document units or millimeters.</p>
 </dd>
@@ -261,6 +317,31 @@ transformation and share a value, as in System.Drawing.</p>
     <dl class="jumplist">
       <dt><a class="xref" href="Egami.SystemDrawing.StockIconOptions.html">StockIconOptions</a></dt>
       <dd><p>How Windows would draw a stock icon.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.SystemDrawing.StringAlignment.html">StringAlignment</a></dt>
+      <dd><p>Where text lines up in its layout rectangle, along a line or across the lines.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.SystemDrawing.StringDigitSubstitute.html">StringDigitSubstitute</a></dt>
+      <dd><p>How digits would be substituted for a language; Egami keeps the digits as written.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.SystemDrawing.StringFormatFlags.html">StringFormatFlags</a></dt>
+      <dd><p>How DrawString and MeasureString lay text out.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.SystemDrawing.StringTrimming.html">StringTrimming</a></dt>
+      <dd><p>How a line that does not fit is cut.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.SystemDrawing.StringUnit.html">StringUnit</a></dt>
+      <dd><p>The unit of a string format's measurements.</p>
 </dd>
     </dl>
     <h3 id="delegates">

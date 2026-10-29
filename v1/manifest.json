@@ -11829,6 +11829,20 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.CharacterRange.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.CharacterRange.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.CharacterRange",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.CharacterRange.yml\" sourcestartlinenumber=\"1\">A range of characters: where it starts and how many characters it holds.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.SystemDrawing.ContentAlignment.yml",
       "output": {
         ".html": {
@@ -12400,6 +12414,90 @@
       "IsMRef": true,
       "Title": "Egami.SystemDrawing.Drawing2D",
       "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Font.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Font.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Font",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Font.yml\" sourcestartlinenumber=\"1\">A family, size, style and unit for drawing and measuring text. A family that is not installed falls back to Microsoft Sans\nSerif (or its stand-in), with <xref href=\"Egami.SystemDrawing.Font.OriginalFontName\" data-throw-if-not-resolved=\"false\"></xref> keeping the name asked for; sizes convert at the target's\nresolution, 96 dpi for <xref href=\"Egami.SystemDrawing.Font.GetHeight\" data-throw-if-not-resolved=\"false\"></xref> and <xref href=\"Egami.SystemDrawing.Font.SizeInPoints\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.FontConverter.FontNameConverter.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.FontConverter.FontNameConverter.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.FontConverter.FontNameConverter",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.FontConverter.FontNameConverter.yml\" sourcestartlinenumber=\"1\">Converts family names, offering the installed families as the standard values.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.FontConverter.FontUnitConverter.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.FontConverter.FontUnitConverter.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.FontConverter.FontUnitConverter",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.FontConverter.FontUnitConverter.yml\" sourcestartlinenumber=\"1\">Converts font units, offering every <xref href=\"Egami.SystemDrawing.GraphicsUnit\" data-throw-if-not-resolved=\"false\"></xref> but Display as the standard values.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.FontConverter.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.FontConverter.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.FontConverter",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.FontConverter.yml\" sourcestartlinenumber=\"1\">Converts fonts to and from strings such as &quot;Arial, 10pt, style=Bold, Italic&quot; for designers and serializers, and to\nconstructor calls for code generation.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.FontFamily.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.FontFamily.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.FontFamily",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.FontFamily.yml\" sourcestartlinenumber=\"1\">A family of faces, such as Arial with its bold and italic faces, found among the installed fonts or a\n<xref href=\"Egami.SystemDrawing.Text.PrivateFontCollection\" data-throw-if-not-resolved=\"false\"></xref>. Where a Windows core font is missing (on Linux and macOS), a metric-compatible open font\nstands in under the requested name: Liberation Sans or Arimo for Arial, Liberation Serif or Tinos for Times New Roman,\nLiberation Mono or Cousine for Courier New, Carlito for Calibri.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.FontStyle.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.FontStyle.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.FontStyle",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.FontStyle.yml\" sourcestartlinenumber=\"1\">A font's style: bold and italic choose or synthesize a face; underline and strikeout draw lines.</p>\n"
     },
     {
       "type": "ManagedReference",
@@ -13425,6 +13523,34 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Interop.LOGFONT.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Interop.LOGFONT.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Interop.LOGFONT",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Interop.LOGFONT.yml\" sourcestartlinenumber=\"1\">Windows' LOGFONT: a font described by height, weight, style and face name. <xref href=\"Egami.SystemDrawing.Font.ToLogFont(Egami.SystemDrawing.Interop.LOGFONT%40)\" data-throw-if-not-resolved=\"false\"></xref> fills\none and <xref href=\"Egami.SystemDrawing.Font.FromLogFont(Egami.SystemDrawing.Interop.LOGFONT%40)\" data-throw-if-not-resolved=\"false\"></xref> reads one; no GDI handle is involved.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Interop.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Interop.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Interop",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.SystemDrawing.Pen.yml",
       "output": {
         ".html": {
@@ -13523,6 +13649,90 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.StringAlignment.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.StringAlignment.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.StringAlignment",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.StringAlignment.yml\" sourcestartlinenumber=\"1\">Where text lines up in its layout rectangle, along a line or across the lines.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.StringDigitSubstitute.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.StringDigitSubstitute.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.StringDigitSubstitute",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.StringDigitSubstitute.yml\" sourcestartlinenumber=\"1\">How digits would be substituted for a language; Egami keeps the digits as written.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.StringFormat.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.StringFormat.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.StringFormat",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.StringFormat.yml\" sourcestartlinenumber=\"1\">How DrawString and MeasureString lay text out: alignment along and across the lines, wrapping, trimming, clipping, tab stops,\nhotkey prefixes and the ranges MeasureCharacterRanges measures.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.StringFormatFlags.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.StringFormatFlags.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.StringFormatFlags",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.StringFormatFlags.yml\" sourcestartlinenumber=\"1\">How DrawString and MeasureString lay text out.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.StringTrimming.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.StringTrimming.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.StringTrimming",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.StringTrimming.yml\" sourcestartlinenumber=\"1\">How a line that does not fit is cut.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.StringUnit.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.StringUnit.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.StringUnit",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.StringUnit.yml\" sourcestartlinenumber=\"1\">The unit of a string format's measurements.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.SystemDrawing.SystemBrushes.yml",
       "output": {
         ".html": {
@@ -13534,6 +13744,20 @@
       "IsMRef": true,
       "Title": "Egami.SystemDrawing.SystemBrushes",
       "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.SystemBrushes.yml\" sourcestartlinenumber=\"1\">Solid brushes of the system colors, which cannot be changed or disposed.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.SystemFonts.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.SystemFonts.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.SystemFonts",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.SystemFonts.yml\" sourcestartlinenumber=\"1\">The fonts Windows uses for its own interface, with Windows 10 and 11's defaults: Segoe UI 9 for captions, menus, message boxes,\nicon titles and the status bar, Microsoft Sans Serif 8.25 for <xref href=\"Egami.SystemDrawing.SystemFonts.DefaultFont\" data-throw-if-not-resolved=\"false\"></xref> and Tahoma 8 for dialogs.</p>\n"
     },
     {
       "type": "ManagedReference",
@@ -13562,6 +13786,76 @@
       "IsMRef": true,
       "Title": "Egami.SystemDrawing.SystemPens",
       "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.SystemPens.yml\" sourcestartlinenumber=\"1\">One-unit pens of the system colors, which cannot be changed or disposed.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Text.FontCollection.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Text.FontCollection.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Text.FontCollection",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Text.FontCollection.yml\" sourcestartlinenumber=\"1\">A set of font families: the installed fonts, or fonts an application loads itself.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Text.GenericFontFamilies.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Text.GenericFontFamilies.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Text.GenericFontFamilies",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Text.GenericFontFamilies.yml\" sourcestartlinenumber=\"1\">The generic families: <xref href=\"Egami.SystemDrawing.FontFamily.GenericSerif\" data-throw-if-not-resolved=\"false\"></xref>, <xref href=\"Egami.SystemDrawing.FontFamily.GenericSansSerif\" data-throw-if-not-resolved=\"false\"></xref> and <xref href=\"Egami.SystemDrawing.FontFamily.GenericMonospace\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Text.HotkeyPrefix.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Text.HotkeyPrefix.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Text.HotkeyPrefix",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Text.HotkeyPrefix.yml\" sourcestartlinenumber=\"1\">What an ampersand does in DrawString: nothing, underline the next character, or vanish.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Text.InstalledFontCollection.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Text.InstalledFontCollection.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Text.InstalledFontCollection",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Text.InstalledFontCollection.yml\" sourcestartlinenumber=\"1\">The fonts installed on this machine, found without native calls in the platform's font folders (on Linux, the fontconfig\nfolders and the usual share/fonts folders).</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Text.PrivateFontCollection.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Text.PrivateFontCollection.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Text.PrivateFontCollection",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Text.PrivateFontCollection.yml\" sourcestartlinenumber=\"1\">Fonts an application loads from files or memory: TrueType, OpenType, collections and WOFF.</p>\n"
     },
     {
       "type": "ManagedReference",

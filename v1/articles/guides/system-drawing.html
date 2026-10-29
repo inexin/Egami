@@ -91,8 +91,8 @@
 <code>Icon</code>, pixel formats, <code>LockBits</code>, the codecs and their encoder parameters, frames and property items. System.Drawing.Common
 runs only on Windows since .NET 6; with this package the same code runs on Linux, macOS and in containers, drawn by Egami.</p>
 <p>The package is a preview (1.0.0-preview.1). This release has bitmaps, pixel access, codecs, icons, and <code>Graphics</code> with pens,
-brushes, paths, transforms, clipping, regions and images, metafiles, effects, off-screen buffers and the image animator. Fonts
-and text follow in the next preview.</p>
+brushes, paths, transforms, clipping, regions and images, fonts and text, metafiles, effects, off-screen buffers and the image
+animator.</p>
 <h2 id="moving-code-over">Moving code over</h2>
 <p>Replace the System.Drawing.Common package reference with Egami.SystemDrawing. With implicit usings on, the package adds
 <code>System.Drawing</code> and <code>Egami.SystemDrawing</code> as implicit usings, so most files compile unchanged; files that name
@@ -432,6 +432,72 @@ using ImageAttributes attributes = new();
 attributes.SetColorMatrix(new ColorMatrix { Matrix33 = 0.5f });  // half the alpha
 attributes.SetWrapMode(WrapMode.Tile);
 g.DrawImage(source, new Rectangle(20, 0, 40, 40), 0, 0, 16, 16, GraphicsUnit.Pixel, attributes);
+</code></pre><h3 id="fonts">Fonts</h3>
+<p><code>FontFamily</code> finds a family among the installed fonts, scanned without native calls (on Linux the fontconfig folders and the
+usual share/fonts folders), or in a <code>PrivateFontCollection</code> filled from files or memory; <code>InstalledFontCollection</code> and
+<code>FontFamily.Families</code> list them. Where a Windows core font is missing, a metric-compatible open font stands in under the
+requested name: Liberation Sans or Arimo for Arial, Liberation Serif or Tinos for Times New Roman, Liberation Mono or Cousine for
+Courier New, Carlito for Calibri and Caladea for Cambria. <code>GetEmHeight</code>, <code>GetCellAscent</code>, <code>GetCellDescent</code> and
+<code>GetLineSpacing</code> are GDI+'s: the units per em, the OS/2 Windows ascent and descent, and the hhea ascender, descender and line
+gap. A <code>Font</code> converts its size at 96 dpi for <code>SizeInPoints</code>, <code>GetHeight()</code> and <code>Height</code> (the line spacing rounded up), at a
+resolution for <code>GetHeight(dpi)</code> and in the page units for <code>GetHeight(Graphics)</code>; sizes of zero and the <code>Display</code> unit throw
+<code>ArgumentException</code>. A family that cannot be found falls back to Microsoft Sans Serif, with <code>OriginalFontName</code> keeping the name.
+Missing bold and italic faces are synthesized. <code>ToLogFont</code> and <code>FromLogFont</code> read and write the <code>Interop.LOGFONT</code> struct, with no
+GDI handle; <code>SystemFonts</code> gives Windows 10 and 11's interface fonts, <code>GenericFontFamilies</code> names the serif, sans-serif and
+monospace families, and <code>FontConverter</code> converts fonts to and from strings such as &quot;Arial, 10pt, style=Bold&quot;, with
+<code>FontConverter.FontNameConverter</code> and <code>FontConverter.FontUnitConverter</code> for the name and unit properties.</p>
+<pre><code class="lang-csharp">// Fonts from the installed families, or from files an application brings along.
+using PrivateFontCollection fonts = new();
+fonts.AddFontFile(file);
+using FontFamily family = new(&quot;DejaVu Sans&quot;, fonts);
+using Font title = new(family, 12, FontStyle.Bold);    // 12 points: 16 pixels per em at 96 dpi
+float lineSpacing = title.GetHeight();                   // ascender + descender + line gap, in pixels
+int ascent = family.GetCellAscent(FontStyle.Regular);    // design units, of GetEmHeight per em
+
+// A family that is not installed falls back to Microsoft Sans Serif (or its stand-in), keeping the name asked for.
+using Font missing = new(&quot;No Such Font&quot;, 10);
+string asked = missing.OriginalFontName;                  // &quot;No Such Font&quot;
+
+title.ToLogFont(out LOGFONT logFont);                    // lfHeight -16, lfWeight 700
+Egami.Fonts.Font egami = title.ToEgamiFont();            // for Egami.Drawing's canvases
+</code></pre><h3 id="text">Text</h3>
+<p><code>DrawString</code>, <code>MeasureString</code>, <code>MeasureCharacterRanges</code> and <code>GraphicsPath.AddString</code> share one layout, GDI+'s as measured on
+Windows. With the default <code>StringFormat</code> the text starts 1/6 em in from the origin or the rectangle's side, advances are 3 %
+wider than designed, and <code>MeasureString</code> adds the padding on both sides and 1/8 em to the height: one line measures the font's
+ascent and descent, more lines one line spacing each. <code>StringFormat.GenericTypographic</code> drops the padding and the widening and
+measures the glyphs alone. In a rectangle, lines break after spaces and hyphens (mid-word when a word is too long), and the last
+line that fits takes the rest of its paragraph, cut by <code>StringTrimming</code> (at a character or word, with an ellipsis, or keeping a
+path's start and end); of the <code>StringFormatFlags</code>, <code>LineLimit</code> draws only whole lines, <code>NoClip</code> draws past the rectangle,
+<code>NoWrap</code> keeps one line per line break and <code>MeasureTrailingSpaces</code> counts trailing spaces. <code>Alignment</code> and <code>LineAlignment</code>
+place the lines, <code>DirectionRightToLeft</code> aligns them from the right, <code>DirectionVertical</code> turns them a quarter clockwise, tab stops
+default to every four ems, and <code>HotkeyPrefix</code> hides ampersands and underlines the marked letters. <code>MeasureCharacterRanges</code>
+returns whole-pixel regions placed by the glyphs' hinted advances at the device size, as GDI+ places them.
+<code>TextRenderingHint.SingleBitPerPixel</code> and <code>SingleBitPerPixelGridFit</code> draw aliased text, and <code>AntiAlias</code> and <code>AntiAliasGridFit</code>
+grayscale text. <code>ClearTypeGridFit</code> and <code>SystemDefault</code> (ClearType, as on a Windows desktop) draw a solid brush's text with
+Egami.Drawing's GDI+ ClearType preset: the font's hints for GDI+, grid-fitted advances, GDI+'s LCD filter and a gamma of
+1 + <code>TextContrast</code> / 10; other brushes, rotated or vertical text and translucent pixels fall back to grayscale.
+<code>StringDigitSubstitute</code> and <code>StringUnit</code> are kept and reported; digits are drawn as written.</p>
+<pre><code class="lang-csharp">using Bitmap bitmap = new(240, 80);
+using Graphics g = Graphics.FromImage(bitmap);
+g.Clear(Color.White);
+g.TextRenderingHint = Egami.SystemDrawing.Text.TextRenderingHint.AntiAlias;
+
+// From a point: the text starts 1/6 em right of it, the first baseline the font's ascent below it.
+g.DrawString(&quot;Save &amp;&amp; E&amp;xit&quot;, font, Brushes.Black, 4, 4, new StringFormat { HotkeyPrefix = HotkeyPrefix.Show });
+
+// In a rectangle: wrapped at words, aligned, the last line that fits trimmed with an ellipsis, clipped to the rectangle.
+using StringFormat format = new() { Alignment = StringAlignment.Center, Trimming = StringTrimming.EllipsisWord };
+RectangleF box = new(4, 24, 150, 34);
+g.DrawString(&quot;The quick brown fox jumps over the lazy dog again and again&quot;, font, Brushes.Navy, box, format);
+
+// Measuring: the default format pads 1/6 em on each side; GenericTypographic measures the glyphs alone.
+SizeF size = g.MeasureString(&quot;Save&quot;, font);
+SizeF tight = g.MeasureString(&quot;Save&quot;, font, PointF.Empty, StringFormat.GenericTypographic);
+g.MeasureString(&quot;The quick brown fox&quot;, font, new SizeF(80, 40), format, out int fitted, out int lines);
+
+// Where characters fall, in whole pixels.
+format.SetMeasurableCharacterRanges([new CharacterRange(4, 5)]);
+Region[] quick = g.MeasureCharacterRanges(&quot;The quick brown fox&quot;, font, box, format);
 </code></pre><h2 id="metafiles">Metafiles</h2>
 <p><code>Metafile</code> reads WMF, EMF and EMF+ (and <code>Image.FromFile</code> returns one for them) through Egami.Metafiles. It is an <code>Image</code> sized by
 its frame as GDI+ sizes it: an EMF's frame in pixels at the resolution of the device it was made for, one pixel more for the
@@ -534,7 +600,8 @@ error in <code>.editorconfig</code>.</p>
 <ul>
 <li><strong>EGSD0001, Windows handles</strong>: <code>Bitmap.GetHbitmap</code>, <code>GetHicon</code>, <code>FromHicon</code> and <code>FromResource</code>, <code>Image.FromHbitmap</code>,
 <code>Icon.Handle</code> and <code>Icon.FromHandle</code>, <code>Graphics.FromHdc</code>, <code>FromHwnd</code>, <code>GetHdc</code>, <code>ReleaseHdc</code> and <code>GetHalftonePalette</code>, and
-<code>Region.FromHrgn</code> and <code>GetHrgn</code>, the <code>Metafile</code> handle constructors and <code>GetHenhmetafile</code>, and the device-context overloads of
+<code>Region.FromHrgn</code> and <code>GetHrgn</code>, <code>Font.FromHdc</code>, <code>FromHfont</code>, <code>ToHfont</code> and the device-context overloads of <code>FromLogFont</code>,
+the <code>Metafile</code> handle constructors and <code>GetHenhmetafile</code>, and the device-context overloads of
 <code>BufferedGraphicsContext.Allocate</code> and <code>BufferedGraphics.Render</code>. Use <code>LockBits</code> for the pixels, <code>new Icon(path)</code> for icons and
 <code>Graphics.FromImage</code> to draw.</li>
 </ul>
@@ -571,6 +638,11 @@ making them transparent.</li>
 size, header and records differ. Metafiles are drawn by Egami.Metafiles, which is close to GDI+ but not equal to it.</li>
 <li><code>BlurEffect</code>, <code>SharpenEffect</code>, <code>TintEffect</code>, <code>VividEffect</code> and the highlight, shadow and contrast curves are Egami's own
 versions; <code>PlayRecord</code> plays the whole metafile, not one record.</li>
+<li>Text is laid out as GDI+ lays it out (line breaks, trimming and alignment match), and <code>MeasureString</code> agrees with GDI+ to
+about a hundredth of a pixel for Arial, Times New Roman, Courier New, Segoe UI and Microsoft Sans Serif. Glyphs are Egami's
+outlines: about 96 percent of the pixels of ClearType text and 90 percent of grayscale text match GDI+, and grayscale and
+aliased glyphs are not hinted.
+Characters a font lacks are not taken from fallback fonts, and digits are not substituted.</li>
 <li><code>Flatten</code> takes as many steps as GDI+ but evaluates the curve exactly, so its points differ from GDI+'s, which are rounded to
 sixteenths of a pixel. Rounded rectangles have no zero-length segments, which GDI+'s float arithmetic adds.</li>
 </ul>

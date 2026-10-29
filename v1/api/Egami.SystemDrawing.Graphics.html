@@ -89,7 +89,7 @@
 
 
   <h1 id="Egami_SystemDrawing_Graphics" data-uid="Egami.SystemDrawing.Graphics" class="text-break">
-Class Graphics  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.Overloads.cs/#L15"><i class="bi bi-code-slash"></i></a>
+Class Graphics  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.TextOverloads.cs/#L5"><i class="bi bi-code-slash"></i></a>
   </h1>
 
   <div class="facts text-secondary">
@@ -5632,6 +5632,816 @@ public void CopyFromScreen(int sourceX, int sourceY, int destinationX, int desti
 
 
 
+  <a id="Egami_SystemDrawing_Graphics_DrawString_" data-uid="Egami.SystemDrawing.Graphics.DrawString*"></a>
+
+  <h3 id="Egami_SystemDrawing_Graphics_DrawString_System_ReadOnlySpan_System_Char__Egami_SystemDrawing_Font_Egami_SystemDrawing_Brush_System_Drawing_PointF_" data-uid="Egami.SystemDrawing.Graphics.DrawString(System.ReadOnlySpan{System.Char},Egami.SystemDrawing.Font,Egami.SystemDrawing.Brush,System.Drawing.PointF)">
+  DrawString(ReadOnlySpan&lt;char&gt;, Font, Brush, PointF)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.TextOverloads.cs/#L91"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Draws text from a point.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void DrawString(ReadOnlySpan&lt;char&gt; s, Font font, Brush brush, PointF point)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>s</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.char">char</a>&gt;</dt>
+    <dd><p>The text.</p>
+</dd>
+    <dt><code>font</code> <a class="xref" href="Egami.SystemDrawing.Font.html">Font</a></dt>
+    <dd><p>The font.</p>
+</dd>
+    <dt><code>brush</code> <a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd><p>The brush.</p>
+</dd>
+    <dt><code>point</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.pointf">PointF</a></dt>
+    <dd><p>The layout origin: the text starts 1/6 em right of it with the default format.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section" id="Egami_SystemDrawing_Graphics_DrawString_System_ReadOnlySpan_System_Char__Egami_SystemDrawing_Font_Egami_SystemDrawing_Brush_System_Drawing_PointF__examples">Examples</h4>
+  <pre><code class="lang-csharp">using Bitmap bitmap = new(240, 80);
+using Graphics g = Graphics.FromImage(bitmap);
+g.Clear(Color.White);
+g.TextRenderingHint = Egami.SystemDrawing.Text.TextRenderingHint.AntiAlias;
+
+// From a point: the text starts 1/6 em right of it, the first baseline the font's ascent below it.
+g.DrawString("Save &amp;&amp; E&amp;xit", font, Brushes.Black, 4, 4, new StringFormat { HotkeyPrefix = HotkeyPrefix.Show });
+
+// In a rectangle: wrapped at words, aligned, the last line that fits trimmed with an ellipsis, clipped to the rectangle.
+using StringFormat format = new() { Alignment = StringAlignment.Center, Trimming = StringTrimming.EllipsisWord };
+RectangleF box = new(4, 24, 150, 34);
+g.DrawString("The quick brown fox jumps over the lazy dog again and again", font, Brushes.Navy, box, format);
+
+// Measuring: the default format pads 1/6 em on each side; GenericTypographic measures the glyphs alone.
+SizeF size = g.MeasureString("Save", font);
+SizeF tight = g.MeasureString("Save", font, PointF.Empty, StringFormat.GenericTypographic);
+g.MeasureString("The quick brown fox", font, new SizeF(80, 40), format, out int fitted, out int lines);
+
+// Where characters fall, in whole pixels.
+format.SetMeasurableCharacterRanges([new CharacterRange(4, 5)]);
+Region[] quick = g.MeasureCharacterRanges("The quick brown fox", font, box, format);</code></pre>
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Graphics_DrawString_" data-uid="Egami.SystemDrawing.Graphics.DrawString*"></a>
+
+  <h3 id="Egami_SystemDrawing_Graphics_DrawString_System_ReadOnlySpan_System_Char__Egami_SystemDrawing_Font_Egami_SystemDrawing_Brush_System_Drawing_PointF_Egami_SystemDrawing_StringFormat_" data-uid="Egami.SystemDrawing.Graphics.DrawString(System.ReadOnlySpan{System.Char},Egami.SystemDrawing.Font,Egami.SystemDrawing.Brush,System.Drawing.PointF,Egami.SystemDrawing.StringFormat)">
+  DrawString(ReadOnlySpan&lt;char&gt;, Font, Brush, PointF, StringFormat?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.TextOverloads.cs/#L114"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Draws text from a point with a format.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void DrawString(ReadOnlySpan&lt;char&gt; s, Font font, Brush brush, PointF point, StringFormat? format)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>s</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.char">char</a>&gt;</dt>
+    <dd><p>The text.</p>
+</dd>
+    <dt><code>font</code> <a class="xref" href="Egami.SystemDrawing.Font.html">Font</a></dt>
+    <dd><p>The font.</p>
+</dd>
+    <dt><code>brush</code> <a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd><p>The brush.</p>
+</dd>
+    <dt><code>point</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.pointf">PointF</a></dt>
+    <dd><p>The layout origin: the text starts 1/6 em right of it with the default format.</p>
+</dd>
+    <dt><code>format</code> <a class="xref" href="Egami.SystemDrawing.StringFormat.html">StringFormat</a></dt>
+    <dd><p>The layout, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for the default.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section" id="Egami_SystemDrawing_Graphics_DrawString_System_ReadOnlySpan_System_Char__Egami_SystemDrawing_Font_Egami_SystemDrawing_Brush_System_Drawing_PointF_Egami_SystemDrawing_StringFormat__examples">Examples</h4>
+  <pre><code class="lang-csharp">using Bitmap bitmap = new(240, 80);
+using Graphics g = Graphics.FromImage(bitmap);
+g.Clear(Color.White);
+g.TextRenderingHint = Egami.SystemDrawing.Text.TextRenderingHint.AntiAlias;
+
+// From a point: the text starts 1/6 em right of it, the first baseline the font's ascent below it.
+g.DrawString("Save &amp;&amp; E&amp;xit", font, Brushes.Black, 4, 4, new StringFormat { HotkeyPrefix = HotkeyPrefix.Show });
+
+// In a rectangle: wrapped at words, aligned, the last line that fits trimmed with an ellipsis, clipped to the rectangle.
+using StringFormat format = new() { Alignment = StringAlignment.Center, Trimming = StringTrimming.EllipsisWord };
+RectangleF box = new(4, 24, 150, 34);
+g.DrawString("The quick brown fox jumps over the lazy dog again and again", font, Brushes.Navy, box, format);
+
+// Measuring: the default format pads 1/6 em on each side; GenericTypographic measures the glyphs alone.
+SizeF size = g.MeasureString("Save", font);
+SizeF tight = g.MeasureString("Save", font, PointF.Empty, StringFormat.GenericTypographic);
+g.MeasureString("The quick brown fox", font, new SizeF(80, 40), format, out int fitted, out int lines);
+
+// Where characters fall, in whole pixels.
+format.SetMeasurableCharacterRanges([new CharacterRange(4, 5)]);
+Region[] quick = g.MeasureCharacterRanges("The quick brown fox", font, box, format);</code></pre>
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Graphics_DrawString_" data-uid="Egami.SystemDrawing.Graphics.DrawString*"></a>
+
+  <h3 id="Egami_SystemDrawing_Graphics_DrawString_System_ReadOnlySpan_System_Char__Egami_SystemDrawing_Font_Egami_SystemDrawing_Brush_System_Drawing_RectangleF_" data-uid="Egami.SystemDrawing.Graphics.DrawString(System.ReadOnlySpan{System.Char},Egami.SystemDrawing.Font,Egami.SystemDrawing.Brush,System.Drawing.RectangleF)">
+  DrawString(ReadOnlySpan&lt;char&gt;, Font, Brush, RectangleF)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.TextOverloads.cs/#L124"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Draws text in a rectangle, wrapped at its width.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void DrawString(ReadOnlySpan&lt;char&gt; s, Font font, Brush brush, RectangleF layoutRectangle)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>s</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.char">char</a>&gt;</dt>
+    <dd><p>The text.</p>
+</dd>
+    <dt><code>font</code> <a class="xref" href="Egami.SystemDrawing.Font.html">Font</a></dt>
+    <dd><p>The font.</p>
+</dd>
+    <dt><code>brush</code> <a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd><p>The brush.</p>
+</dd>
+    <dt><code>layoutRectangle</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.rectanglef">RectangleF</a></dt>
+    <dd><p>The rectangle the text is laid out, wrapped and clipped in.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section" id="Egami_SystemDrawing_Graphics_DrawString_System_ReadOnlySpan_System_Char__Egami_SystemDrawing_Font_Egami_SystemDrawing_Brush_System_Drawing_RectangleF__examples">Examples</h4>
+  <pre><code class="lang-csharp">using Bitmap bitmap = new(240, 80);
+using Graphics g = Graphics.FromImage(bitmap);
+g.Clear(Color.White);
+g.TextRenderingHint = Egami.SystemDrawing.Text.TextRenderingHint.AntiAlias;
+
+// From a point: the text starts 1/6 em right of it, the first baseline the font's ascent below it.
+g.DrawString("Save &amp;&amp; E&amp;xit", font, Brushes.Black, 4, 4, new StringFormat { HotkeyPrefix = HotkeyPrefix.Show });
+
+// In a rectangle: wrapped at words, aligned, the last line that fits trimmed with an ellipsis, clipped to the rectangle.
+using StringFormat format = new() { Alignment = StringAlignment.Center, Trimming = StringTrimming.EllipsisWord };
+RectangleF box = new(4, 24, 150, 34);
+g.DrawString("The quick brown fox jumps over the lazy dog again and again", font, Brushes.Navy, box, format);
+
+// Measuring: the default format pads 1/6 em on each side; GenericTypographic measures the glyphs alone.
+SizeF size = g.MeasureString("Save", font);
+SizeF tight = g.MeasureString("Save", font, PointF.Empty, StringFormat.GenericTypographic);
+g.MeasureString("The quick brown fox", font, new SizeF(80, 40), format, out int fitted, out int lines);
+
+// Where characters fall, in whole pixels.
+format.SetMeasurableCharacterRanges([new CharacterRange(4, 5)]);
+Region[] quick = g.MeasureCharacterRanges("The quick brown fox", font, box, format);</code></pre>
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Graphics_DrawString_" data-uid="Egami.SystemDrawing.Graphics.DrawString*"></a>
+
+  <h3 id="Egami_SystemDrawing_Graphics_DrawString_System_ReadOnlySpan_System_Char__Egami_SystemDrawing_Font_Egami_SystemDrawing_Brush_System_Drawing_RectangleF_Egami_SystemDrawing_StringFormat_" data-uid="Egami.SystemDrawing.Graphics.DrawString(System.ReadOnlySpan{System.Char},Egami.SystemDrawing.Font,Egami.SystemDrawing.Brush,System.Drawing.RectangleF,Egami.SystemDrawing.StringFormat)">
+  DrawString(ReadOnlySpan&lt;char&gt;, Font, Brush, RectangleF, StringFormat?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.TextOverloads.cs/#L135"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Draws text in a rectangle with a format.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void DrawString(ReadOnlySpan&lt;char&gt; s, Font font, Brush brush, RectangleF layoutRectangle, StringFormat? format)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>s</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.char">char</a>&gt;</dt>
+    <dd><p>The text.</p>
+</dd>
+    <dt><code>font</code> <a class="xref" href="Egami.SystemDrawing.Font.html">Font</a></dt>
+    <dd><p>The font.</p>
+</dd>
+    <dt><code>brush</code> <a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd><p>The brush.</p>
+</dd>
+    <dt><code>layoutRectangle</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.rectanglef">RectangleF</a></dt>
+    <dd><p>The rectangle the text is laid out, wrapped and clipped in.</p>
+</dd>
+    <dt><code>format</code> <a class="xref" href="Egami.SystemDrawing.StringFormat.html">StringFormat</a></dt>
+    <dd><p>The layout, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for the default.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section" id="Egami_SystemDrawing_Graphics_DrawString_System_ReadOnlySpan_System_Char__Egami_SystemDrawing_Font_Egami_SystemDrawing_Brush_System_Drawing_RectangleF_Egami_SystemDrawing_StringFormat__examples">Examples</h4>
+  <pre><code class="lang-csharp">using Bitmap bitmap = new(240, 80);
+using Graphics g = Graphics.FromImage(bitmap);
+g.Clear(Color.White);
+g.TextRenderingHint = Egami.SystemDrawing.Text.TextRenderingHint.AntiAlias;
+
+// From a point: the text starts 1/6 em right of it, the first baseline the font's ascent below it.
+g.DrawString("Save &amp;&amp; E&amp;xit", font, Brushes.Black, 4, 4, new StringFormat { HotkeyPrefix = HotkeyPrefix.Show });
+
+// In a rectangle: wrapped at words, aligned, the last line that fits trimmed with an ellipsis, clipped to the rectangle.
+using StringFormat format = new() { Alignment = StringAlignment.Center, Trimming = StringTrimming.EllipsisWord };
+RectangleF box = new(4, 24, 150, 34);
+g.DrawString("The quick brown fox jumps over the lazy dog again and again", font, Brushes.Navy, box, format);
+
+// Measuring: the default format pads 1/6 em on each side; GenericTypographic measures the glyphs alone.
+SizeF size = g.MeasureString("Save", font);
+SizeF tight = g.MeasureString("Save", font, PointF.Empty, StringFormat.GenericTypographic);
+g.MeasureString("The quick brown fox", font, new SizeF(80, 40), format, out int fitted, out int lines);
+
+// Where characters fall, in whole pixels.
+format.SetMeasurableCharacterRanges([new CharacterRange(4, 5)]);
+Region[] quick = g.MeasureCharacterRanges("The quick brown fox", font, box, format);</code></pre>
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Graphics_DrawString_" data-uid="Egami.SystemDrawing.Graphics.DrawString*"></a>
+
+  <h3 id="Egami_SystemDrawing_Graphics_DrawString_System_ReadOnlySpan_System_Char__Egami_SystemDrawing_Font_Egami_SystemDrawing_Brush_System_Single_System_Single_" data-uid="Egami.SystemDrawing.Graphics.DrawString(System.ReadOnlySpan{System.Char},Egami.SystemDrawing.Font,Egami.SystemDrawing.Brush,System.Single,System.Single)">
+  DrawString(ReadOnlySpan&lt;char&gt;, Font, Brush, float, float)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.TextOverloads.cs/#L81"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Draws text from a point.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void DrawString(ReadOnlySpan&lt;char&gt; s, Font font, Brush brush, float x, float y)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>s</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.char">char</a>&gt;</dt>
+    <dd><p>The text.</p>
+</dd>
+    <dt><code>font</code> <a class="xref" href="Egami.SystemDrawing.Font.html">Font</a></dt>
+    <dd><p>The font.</p>
+</dd>
+    <dt><code>brush</code> <a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd><p>The brush.</p>
+</dd>
+    <dt><code>x</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>The left of the layout origin.</p>
+</dd>
+    <dt><code>y</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>The top of the layout origin.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section" id="Egami_SystemDrawing_Graphics_DrawString_System_ReadOnlySpan_System_Char__Egami_SystemDrawing_Font_Egami_SystemDrawing_Brush_System_Single_System_Single__examples">Examples</h4>
+  <pre><code class="lang-csharp">using Bitmap bitmap = new(240, 80);
+using Graphics g = Graphics.FromImage(bitmap);
+g.Clear(Color.White);
+g.TextRenderingHint = Egami.SystemDrawing.Text.TextRenderingHint.AntiAlias;
+
+// From a point: the text starts 1/6 em right of it, the first baseline the font's ascent below it.
+g.DrawString("Save &amp;&amp; E&amp;xit", font, Brushes.Black, 4, 4, new StringFormat { HotkeyPrefix = HotkeyPrefix.Show });
+
+// In a rectangle: wrapped at words, aligned, the last line that fits trimmed with an ellipsis, clipped to the rectangle.
+using StringFormat format = new() { Alignment = StringAlignment.Center, Trimming = StringTrimming.EllipsisWord };
+RectangleF box = new(4, 24, 150, 34);
+g.DrawString("The quick brown fox jumps over the lazy dog again and again", font, Brushes.Navy, box, format);
+
+// Measuring: the default format pads 1/6 em on each side; GenericTypographic measures the glyphs alone.
+SizeF size = g.MeasureString("Save", font);
+SizeF tight = g.MeasureString("Save", font, PointF.Empty, StringFormat.GenericTypographic);
+g.MeasureString("The quick brown fox", font, new SizeF(80, 40), format, out int fitted, out int lines);
+
+// Where characters fall, in whole pixels.
+format.SetMeasurableCharacterRanges([new CharacterRange(4, 5)]);
+Region[] quick = g.MeasureCharacterRanges("The quick brown fox", font, box, format);</code></pre>
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Graphics_DrawString_" data-uid="Egami.SystemDrawing.Graphics.DrawString*"></a>
+
+  <h3 id="Egami_SystemDrawing_Graphics_DrawString_System_ReadOnlySpan_System_Char__Egami_SystemDrawing_Font_Egami_SystemDrawing_Brush_System_Single_System_Single_Egami_SystemDrawing_StringFormat_" data-uid="Egami.SystemDrawing.Graphics.DrawString(System.ReadOnlySpan{System.Char},Egami.SystemDrawing.Font,Egami.SystemDrawing.Brush,System.Single,System.Single,Egami.SystemDrawing.StringFormat)">
+  DrawString(ReadOnlySpan&lt;char&gt;, Font, Brush, float, float, StringFormat?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.TextOverloads.cs/#L103"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Draws text from a point with a format.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void DrawString(ReadOnlySpan&lt;char&gt; s, Font font, Brush brush, float x, float y, StringFormat? format)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>s</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.char">char</a>&gt;</dt>
+    <dd><p>The text.</p>
+</dd>
+    <dt><code>font</code> <a class="xref" href="Egami.SystemDrawing.Font.html">Font</a></dt>
+    <dd><p>The font.</p>
+</dd>
+    <dt><code>brush</code> <a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd><p>The brush.</p>
+</dd>
+    <dt><code>x</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>The left of the layout origin.</p>
+</dd>
+    <dt><code>y</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>The top of the layout origin.</p>
+</dd>
+    <dt><code>format</code> <a class="xref" href="Egami.SystemDrawing.StringFormat.html">StringFormat</a></dt>
+    <dd><p>The layout, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for the default.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section" id="Egami_SystemDrawing_Graphics_DrawString_System_ReadOnlySpan_System_Char__Egami_SystemDrawing_Font_Egami_SystemDrawing_Brush_System_Single_System_Single_Egami_SystemDrawing_StringFormat__examples">Examples</h4>
+  <pre><code class="lang-csharp">using Bitmap bitmap = new(240, 80);
+using Graphics g = Graphics.FromImage(bitmap);
+g.Clear(Color.White);
+g.TextRenderingHint = Egami.SystemDrawing.Text.TextRenderingHint.AntiAlias;
+
+// From a point: the text starts 1/6 em right of it, the first baseline the font's ascent below it.
+g.DrawString("Save &amp;&amp; E&amp;xit", font, Brushes.Black, 4, 4, new StringFormat { HotkeyPrefix = HotkeyPrefix.Show });
+
+// In a rectangle: wrapped at words, aligned, the last line that fits trimmed with an ellipsis, clipped to the rectangle.
+using StringFormat format = new() { Alignment = StringAlignment.Center, Trimming = StringTrimming.EllipsisWord };
+RectangleF box = new(4, 24, 150, 34);
+g.DrawString("The quick brown fox jumps over the lazy dog again and again", font, Brushes.Navy, box, format);
+
+// Measuring: the default format pads 1/6 em on each side; GenericTypographic measures the glyphs alone.
+SizeF size = g.MeasureString("Save", font);
+SizeF tight = g.MeasureString("Save", font, PointF.Empty, StringFormat.GenericTypographic);
+g.MeasureString("The quick brown fox", font, new SizeF(80, 40), format, out int fitted, out int lines);
+
+// Where characters fall, in whole pixels.
+format.SetMeasurableCharacterRanges([new CharacterRange(4, 5)]);
+Region[] quick = g.MeasureCharacterRanges("The quick brown fox", font, box, format);</code></pre>
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Graphics_DrawString_" data-uid="Egami.SystemDrawing.Graphics.DrawString*"></a>
+
+  <h3 id="Egami_SystemDrawing_Graphics_DrawString_System_String_Egami_SystemDrawing_Font_Egami_SystemDrawing_Brush_System_Drawing_PointF_" data-uid="Egami.SystemDrawing.Graphics.DrawString(System.String,Egami.SystemDrawing.Font,Egami.SystemDrawing.Brush,System.Drawing.PointF)">
+  DrawString(string?, Font, Brush, PointF)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.TextOverloads.cs/#L26"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Draws text from a point.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void DrawString(string? s, Font font, Brush brush, PointF point)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>s</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The text.</p>
+</dd>
+    <dt><code>font</code> <a class="xref" href="Egami.SystemDrawing.Font.html">Font</a></dt>
+    <dd><p>The font.</p>
+</dd>
+    <dt><code>brush</code> <a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd><p>The brush.</p>
+</dd>
+    <dt><code>point</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.pointf">PointF</a></dt>
+    <dd><p>The layout origin: the text starts 1/6 em right of it with the default format.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section" id="Egami_SystemDrawing_Graphics_DrawString_System_String_Egami_SystemDrawing_Font_Egami_SystemDrawing_Brush_System_Drawing_PointF__examples">Examples</h4>
+  <pre><code class="lang-csharp">using Bitmap bitmap = new(240, 80);
+using Graphics g = Graphics.FromImage(bitmap);
+g.Clear(Color.White);
+g.TextRenderingHint = Egami.SystemDrawing.Text.TextRenderingHint.AntiAlias;
+
+// From a point: the text starts 1/6 em right of it, the first baseline the font's ascent below it.
+g.DrawString("Save &amp;&amp; E&amp;xit", font, Brushes.Black, 4, 4, new StringFormat { HotkeyPrefix = HotkeyPrefix.Show });
+
+// In a rectangle: wrapped at words, aligned, the last line that fits trimmed with an ellipsis, clipped to the rectangle.
+using StringFormat format = new() { Alignment = StringAlignment.Center, Trimming = StringTrimming.EllipsisWord };
+RectangleF box = new(4, 24, 150, 34);
+g.DrawString("The quick brown fox jumps over the lazy dog again and again", font, Brushes.Navy, box, format);
+
+// Measuring: the default format pads 1/6 em on each side; GenericTypographic measures the glyphs alone.
+SizeF size = g.MeasureString("Save", font);
+SizeF tight = g.MeasureString("Save", font, PointF.Empty, StringFormat.GenericTypographic);
+g.MeasureString("The quick brown fox", font, new SizeF(80, 40), format, out int fitted, out int lines);
+
+// Where characters fall, in whole pixels.
+format.SetMeasurableCharacterRanges([new CharacterRange(4, 5)]);
+Region[] quick = g.MeasureCharacterRanges("The quick brown fox", font, box, format);</code></pre>
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Graphics_DrawString_" data-uid="Egami.SystemDrawing.Graphics.DrawString*"></a>
+
+  <h3 id="Egami_SystemDrawing_Graphics_DrawString_System_String_Egami_SystemDrawing_Font_Egami_SystemDrawing_Brush_System_Drawing_PointF_Egami_SystemDrawing_StringFormat_" data-uid="Egami.SystemDrawing.Graphics.DrawString(System.String,Egami.SystemDrawing.Font,Egami.SystemDrawing.Brush,System.Drawing.PointF,Egami.SystemDrawing.StringFormat)">
+  DrawString(string?, Font, Brush, PointF, StringFormat?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.TextOverloads.cs/#L49"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Draws text from a point with a format.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void DrawString(string? s, Font font, Brush brush, PointF point, StringFormat? format)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>s</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The text.</p>
+</dd>
+    <dt><code>font</code> <a class="xref" href="Egami.SystemDrawing.Font.html">Font</a></dt>
+    <dd><p>The font.</p>
+</dd>
+    <dt><code>brush</code> <a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd><p>The brush.</p>
+</dd>
+    <dt><code>point</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.pointf">PointF</a></dt>
+    <dd><p>The layout origin: the text starts 1/6 em right of it with the default format.</p>
+</dd>
+    <dt><code>format</code> <a class="xref" href="Egami.SystemDrawing.StringFormat.html">StringFormat</a></dt>
+    <dd><p>The layout, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for the default.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section" id="Egami_SystemDrawing_Graphics_DrawString_System_String_Egami_SystemDrawing_Font_Egami_SystemDrawing_Brush_System_Drawing_PointF_Egami_SystemDrawing_StringFormat__examples">Examples</h4>
+  <pre><code class="lang-csharp">using Bitmap bitmap = new(240, 80);
+using Graphics g = Graphics.FromImage(bitmap);
+g.Clear(Color.White);
+g.TextRenderingHint = Egami.SystemDrawing.Text.TextRenderingHint.AntiAlias;
+
+// From a point: the text starts 1/6 em right of it, the first baseline the font's ascent below it.
+g.DrawString("Save &amp;&amp; E&amp;xit", font, Brushes.Black, 4, 4, new StringFormat { HotkeyPrefix = HotkeyPrefix.Show });
+
+// In a rectangle: wrapped at words, aligned, the last line that fits trimmed with an ellipsis, clipped to the rectangle.
+using StringFormat format = new() { Alignment = StringAlignment.Center, Trimming = StringTrimming.EllipsisWord };
+RectangleF box = new(4, 24, 150, 34);
+g.DrawString("The quick brown fox jumps over the lazy dog again and again", font, Brushes.Navy, box, format);
+
+// Measuring: the default format pads 1/6 em on each side; GenericTypographic measures the glyphs alone.
+SizeF size = g.MeasureString("Save", font);
+SizeF tight = g.MeasureString("Save", font, PointF.Empty, StringFormat.GenericTypographic);
+g.MeasureString("The quick brown fox", font, new SizeF(80, 40), format, out int fitted, out int lines);
+
+// Where characters fall, in whole pixels.
+format.SetMeasurableCharacterRanges([new CharacterRange(4, 5)]);
+Region[] quick = g.MeasureCharacterRanges("The quick brown fox", font, box, format);</code></pre>
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Graphics_DrawString_" data-uid="Egami.SystemDrawing.Graphics.DrawString*"></a>
+
+  <h3 id="Egami_SystemDrawing_Graphics_DrawString_System_String_Egami_SystemDrawing_Font_Egami_SystemDrawing_Brush_System_Drawing_RectangleF_" data-uid="Egami.SystemDrawing.Graphics.DrawString(System.String,Egami.SystemDrawing.Font,Egami.SystemDrawing.Brush,System.Drawing.RectangleF)">
+  DrawString(string?, Font, Brush, RectangleF)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.TextOverloads.cs/#L59"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Draws text in a rectangle, wrapped at its width.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void DrawString(string? s, Font font, Brush brush, RectangleF layoutRectangle)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>s</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The text.</p>
+</dd>
+    <dt><code>font</code> <a class="xref" href="Egami.SystemDrawing.Font.html">Font</a></dt>
+    <dd><p>The font.</p>
+</dd>
+    <dt><code>brush</code> <a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd><p>The brush.</p>
+</dd>
+    <dt><code>layoutRectangle</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.rectanglef">RectangleF</a></dt>
+    <dd><p>The rectangle the text is laid out, wrapped and clipped in.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section" id="Egami_SystemDrawing_Graphics_DrawString_System_String_Egami_SystemDrawing_Font_Egami_SystemDrawing_Brush_System_Drawing_RectangleF__examples">Examples</h4>
+  <pre><code class="lang-csharp">using Bitmap bitmap = new(240, 80);
+using Graphics g = Graphics.FromImage(bitmap);
+g.Clear(Color.White);
+g.TextRenderingHint = Egami.SystemDrawing.Text.TextRenderingHint.AntiAlias;
+
+// From a point: the text starts 1/6 em right of it, the first baseline the font's ascent below it.
+g.DrawString("Save &amp;&amp; E&amp;xit", font, Brushes.Black, 4, 4, new StringFormat { HotkeyPrefix = HotkeyPrefix.Show });
+
+// In a rectangle: wrapped at words, aligned, the last line that fits trimmed with an ellipsis, clipped to the rectangle.
+using StringFormat format = new() { Alignment = StringAlignment.Center, Trimming = StringTrimming.EllipsisWord };
+RectangleF box = new(4, 24, 150, 34);
+g.DrawString("The quick brown fox jumps over the lazy dog again and again", font, Brushes.Navy, box, format);
+
+// Measuring: the default format pads 1/6 em on each side; GenericTypographic measures the glyphs alone.
+SizeF size = g.MeasureString("Save", font);
+SizeF tight = g.MeasureString("Save", font, PointF.Empty, StringFormat.GenericTypographic);
+g.MeasureString("The quick brown fox", font, new SizeF(80, 40), format, out int fitted, out int lines);
+
+// Where characters fall, in whole pixels.
+format.SetMeasurableCharacterRanges([new CharacterRange(4, 5)]);
+Region[] quick = g.MeasureCharacterRanges("The quick brown fox", font, box, format);</code></pre>
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Graphics_DrawString_" data-uid="Egami.SystemDrawing.Graphics.DrawString*"></a>
+
+  <h3 id="Egami_SystemDrawing_Graphics_DrawString_System_String_Egami_SystemDrawing_Font_Egami_SystemDrawing_Brush_System_Drawing_RectangleF_Egami_SystemDrawing_StringFormat_" data-uid="Egami.SystemDrawing.Graphics.DrawString(System.String,Egami.SystemDrawing.Font,Egami.SystemDrawing.Brush,System.Drawing.RectangleF,Egami.SystemDrawing.StringFormat)">
+  DrawString(string?, Font, Brush, RectangleF, StringFormat?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.TextOverloads.cs/#L70"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Draws text in a rectangle with a format.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void DrawString(string? s, Font font, Brush brush, RectangleF layoutRectangle, StringFormat? format)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>s</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The text.</p>
+</dd>
+    <dt><code>font</code> <a class="xref" href="Egami.SystemDrawing.Font.html">Font</a></dt>
+    <dd><p>The font.</p>
+</dd>
+    <dt><code>brush</code> <a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd><p>The brush.</p>
+</dd>
+    <dt><code>layoutRectangle</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.rectanglef">RectangleF</a></dt>
+    <dd><p>The rectangle the text is laid out, wrapped and clipped in.</p>
+</dd>
+    <dt><code>format</code> <a class="xref" href="Egami.SystemDrawing.StringFormat.html">StringFormat</a></dt>
+    <dd><p>The layout, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for the default.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section" id="Egami_SystemDrawing_Graphics_DrawString_System_String_Egami_SystemDrawing_Font_Egami_SystemDrawing_Brush_System_Drawing_RectangleF_Egami_SystemDrawing_StringFormat__examples">Examples</h4>
+  <pre><code class="lang-csharp">using Bitmap bitmap = new(240, 80);
+using Graphics g = Graphics.FromImage(bitmap);
+g.Clear(Color.White);
+g.TextRenderingHint = Egami.SystemDrawing.Text.TextRenderingHint.AntiAlias;
+
+// From a point: the text starts 1/6 em right of it, the first baseline the font's ascent below it.
+g.DrawString("Save &amp;&amp; E&amp;xit", font, Brushes.Black, 4, 4, new StringFormat { HotkeyPrefix = HotkeyPrefix.Show });
+
+// In a rectangle: wrapped at words, aligned, the last line that fits trimmed with an ellipsis, clipped to the rectangle.
+using StringFormat format = new() { Alignment = StringAlignment.Center, Trimming = StringTrimming.EllipsisWord };
+RectangleF box = new(4, 24, 150, 34);
+g.DrawString("The quick brown fox jumps over the lazy dog again and again", font, Brushes.Navy, box, format);
+
+// Measuring: the default format pads 1/6 em on each side; GenericTypographic measures the glyphs alone.
+SizeF size = g.MeasureString("Save", font);
+SizeF tight = g.MeasureString("Save", font, PointF.Empty, StringFormat.GenericTypographic);
+g.MeasureString("The quick brown fox", font, new SizeF(80, 40), format, out int fitted, out int lines);
+
+// Where characters fall, in whole pixels.
+format.SetMeasurableCharacterRanges([new CharacterRange(4, 5)]);
+Region[] quick = g.MeasureCharacterRanges("The quick brown fox", font, box, format);</code></pre>
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Graphics_DrawString_" data-uid="Egami.SystemDrawing.Graphics.DrawString*"></a>
+
+  <h3 id="Egami_SystemDrawing_Graphics_DrawString_System_String_Egami_SystemDrawing_Font_Egami_SystemDrawing_Brush_System_Single_System_Single_" data-uid="Egami.SystemDrawing.Graphics.DrawString(System.String,Egami.SystemDrawing.Font,Egami.SystemDrawing.Brush,System.Single,System.Single)">
+  DrawString(string?, Font, Brush, float, float)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.TextOverloads.cs/#L16"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Draws text from a point.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void DrawString(string? s, Font font, Brush brush, float x, float y)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>s</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The text.</p>
+</dd>
+    <dt><code>font</code> <a class="xref" href="Egami.SystemDrawing.Font.html">Font</a></dt>
+    <dd><p>The font.</p>
+</dd>
+    <dt><code>brush</code> <a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd><p>The brush.</p>
+</dd>
+    <dt><code>x</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>The left of the layout origin.</p>
+</dd>
+    <dt><code>y</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>The top of the layout origin.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section" id="Egami_SystemDrawing_Graphics_DrawString_System_String_Egami_SystemDrawing_Font_Egami_SystemDrawing_Brush_System_Single_System_Single__examples">Examples</h4>
+  <pre><code class="lang-csharp">using Bitmap bitmap = new(240, 80);
+using Graphics g = Graphics.FromImage(bitmap);
+g.Clear(Color.White);
+g.TextRenderingHint = Egami.SystemDrawing.Text.TextRenderingHint.AntiAlias;
+
+// From a point: the text starts 1/6 em right of it, the first baseline the font's ascent below it.
+g.DrawString("Save &amp;&amp; E&amp;xit", font, Brushes.Black, 4, 4, new StringFormat { HotkeyPrefix = HotkeyPrefix.Show });
+
+// In a rectangle: wrapped at words, aligned, the last line that fits trimmed with an ellipsis, clipped to the rectangle.
+using StringFormat format = new() { Alignment = StringAlignment.Center, Trimming = StringTrimming.EllipsisWord };
+RectangleF box = new(4, 24, 150, 34);
+g.DrawString("The quick brown fox jumps over the lazy dog again and again", font, Brushes.Navy, box, format);
+
+// Measuring: the default format pads 1/6 em on each side; GenericTypographic measures the glyphs alone.
+SizeF size = g.MeasureString("Save", font);
+SizeF tight = g.MeasureString("Save", font, PointF.Empty, StringFormat.GenericTypographic);
+g.MeasureString("The quick brown fox", font, new SizeF(80, 40), format, out int fitted, out int lines);
+
+// Where characters fall, in whole pixels.
+format.SetMeasurableCharacterRanges([new CharacterRange(4, 5)]);
+Region[] quick = g.MeasureCharacterRanges("The quick brown fox", font, box, format);</code></pre>
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Graphics_DrawString_" data-uid="Egami.SystemDrawing.Graphics.DrawString*"></a>
+
+  <h3 id="Egami_SystemDrawing_Graphics_DrawString_System_String_Egami_SystemDrawing_Font_Egami_SystemDrawing_Brush_System_Single_System_Single_Egami_SystemDrawing_StringFormat_" data-uid="Egami.SystemDrawing.Graphics.DrawString(System.String,Egami.SystemDrawing.Font,Egami.SystemDrawing.Brush,System.Single,System.Single,Egami.SystemDrawing.StringFormat)">
+  DrawString(string?, Font, Brush, float, float, StringFormat?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.TextOverloads.cs/#L38"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Draws text from a point with a format.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void DrawString(string? s, Font font, Brush brush, float x, float y, StringFormat? format)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>s</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The text.</p>
+</dd>
+    <dt><code>font</code> <a class="xref" href="Egami.SystemDrawing.Font.html">Font</a></dt>
+    <dd><p>The font.</p>
+</dd>
+    <dt><code>brush</code> <a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd><p>The brush.</p>
+</dd>
+    <dt><code>x</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>The left of the layout origin.</p>
+</dd>
+    <dt><code>y</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>The top of the layout origin.</p>
+</dd>
+    <dt><code>format</code> <a class="xref" href="Egami.SystemDrawing.StringFormat.html">StringFormat</a></dt>
+    <dd><p>The layout, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for the default.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section" id="Egami_SystemDrawing_Graphics_DrawString_System_String_Egami_SystemDrawing_Font_Egami_SystemDrawing_Brush_System_Single_System_Single_Egami_SystemDrawing_StringFormat__examples">Examples</h4>
+  <pre><code class="lang-csharp">using Bitmap bitmap = new(240, 80);
+using Graphics g = Graphics.FromImage(bitmap);
+g.Clear(Color.White);
+g.TextRenderingHint = Egami.SystemDrawing.Text.TextRenderingHint.AntiAlias;
+
+// From a point: the text starts 1/6 em right of it, the first baseline the font's ascent below it.
+g.DrawString("Save &amp;&amp; E&amp;xit", font, Brushes.Black, 4, 4, new StringFormat { HotkeyPrefix = HotkeyPrefix.Show });
+
+// In a rectangle: wrapped at words, aligned, the last line that fits trimmed with an ellipsis, clipped to the rectangle.
+using StringFormat format = new() { Alignment = StringAlignment.Center, Trimming = StringTrimming.EllipsisWord };
+RectangleF box = new(4, 24, 150, 34);
+g.DrawString("The quick brown fox jumps over the lazy dog again and again", font, Brushes.Navy, box, format);
+
+// Measuring: the default format pads 1/6 em on each side; GenericTypographic measures the glyphs alone.
+SizeF size = g.MeasureString("Save", font);
+SizeF tight = g.MeasureString("Save", font, PointF.Empty, StringFormat.GenericTypographic);
+g.MeasureString("The quick brown fox", font, new SizeF(80, 40), format, out int fitted, out int lines);
+
+// Where characters fall, in whole pixels.
+format.SetMeasurableCharacterRanges([new CharacterRange(4, 5)]);
+Region[] quick = g.MeasureCharacterRanges("The quick brown fox", font, box, format);</code></pre>
+
+
+
+
+
+
   <a id="Egami_SystemDrawing_Graphics_EndContainer_" data-uid="Egami.SystemDrawing.Graphics.EndContainer*"></a>
 
   <h3 id="Egami_SystemDrawing_Graphics_EndContainer_Egami_SystemDrawing_Drawing2D_GraphicsContainer_" data-uid="Egami.SystemDrawing.Graphics.EndContainer(Egami.SystemDrawing.Drawing2D.GraphicsContainer)">
@@ -9801,6 +10611,1207 @@ public nint GetHdc()</code></pre>
 
 
 
+  <a id="Egami_SystemDrawing_Graphics_MeasureCharacterRanges_" data-uid="Egami.SystemDrawing.Graphics.MeasureCharacterRanges*"></a>
+
+  <h3 id="Egami_SystemDrawing_Graphics_MeasureCharacterRanges_System_ReadOnlySpan_System_Char__Egami_SystemDrawing_Font_System_Drawing_RectangleF_Egami_SystemDrawing_StringFormat_" data-uid="Egami.SystemDrawing.Graphics.MeasureCharacterRanges(System.ReadOnlySpan{System.Char},Egami.SystemDrawing.Font,System.Drawing.RectangleF,Egami.SystemDrawing.StringFormat)">
+  MeasureCharacterRanges(ReadOnlySpan&lt;char&gt;, Font, RectangleF, StringFormat?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.TextOverloads.cs/#L320"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Measures where the format's character ranges fall: one region per range, in whole device pixels.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Region[] MeasureCharacterRanges(ReadOnlySpan&lt;char&gt; text, Font font, RectangleF layoutRect, StringFormat? stringFormat)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>text</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.char">char</a>&gt;</dt>
+    <dd><p>The text.</p>
+</dd>
+    <dt><code>font</code> <a class="xref" href="Egami.SystemDrawing.Font.html">Font</a></dt>
+    <dd><p>The font.</p>
+</dd>
+    <dt><code>layoutRect</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.rectanglef">RectangleF</a></dt>
+    <dd><p>The rectangle the text is laid out in.</p>
+</dd>
+    <dt><code>stringFormat</code> <a class="xref" href="Egami.SystemDrawing.StringFormat.html">StringFormat</a></dt>
+    <dd><p>The layout, with the ranges from <a class="xref" href="Egami.SystemDrawing.StringFormat.html#Egami_SystemDrawing_StringFormat_SetMeasurableCharacterRanges_Egami_SystemDrawing_CharacterRange___">SetMeasurableCharacterRanges(CharacterRange[])</a>.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Region.html">Region</a>[]</dt>
+    <dd><p>The regions, in world coordinates.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_SystemDrawing_Graphics_MeasureCharacterRanges_System_ReadOnlySpan_System_Char__Egami_SystemDrawing_Font_System_Drawing_RectangleF_Egami_SystemDrawing_StringFormat__examples">Examples</h4>
+  <pre><code class="lang-csharp">using Bitmap bitmap = new(240, 80);
+using Graphics g = Graphics.FromImage(bitmap);
+g.Clear(Color.White);
+g.TextRenderingHint = Egami.SystemDrawing.Text.TextRenderingHint.AntiAlias;
+
+// From a point: the text starts 1/6 em right of it, the first baseline the font's ascent below it.
+g.DrawString("Save &amp;&amp; E&amp;xit", font, Brushes.Black, 4, 4, new StringFormat { HotkeyPrefix = HotkeyPrefix.Show });
+
+// In a rectangle: wrapped at words, aligned, the last line that fits trimmed with an ellipsis, clipped to the rectangle.
+using StringFormat format = new() { Alignment = StringAlignment.Center, Trimming = StringTrimming.EllipsisWord };
+RectangleF box = new(4, 24, 150, 34);
+g.DrawString("The quick brown fox jumps over the lazy dog again and again", font, Brushes.Navy, box, format);
+
+// Measuring: the default format pads 1/6 em on each side; GenericTypographic measures the glyphs alone.
+SizeF size = g.MeasureString("Save", font);
+SizeF tight = g.MeasureString("Save", font, PointF.Empty, StringFormat.GenericTypographic);
+g.MeasureString("The quick brown fox", font, new SizeF(80, 40), format, out int fitted, out int lines);
+
+// Where characters fall, in whole pixels.
+format.SetMeasurableCharacterRanges([new CharacterRange(4, 5)]);
+Region[] quick = g.MeasureCharacterRanges("The quick brown fox", font, box, format);</code></pre>
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Graphics_MeasureCharacterRanges_" data-uid="Egami.SystemDrawing.Graphics.MeasureCharacterRanges*"></a>
+
+  <h3 id="Egami_SystemDrawing_Graphics_MeasureCharacterRanges_System_String_Egami_SystemDrawing_Font_System_Drawing_RectangleF_Egami_SystemDrawing_StringFormat_" data-uid="Egami.SystemDrawing.Graphics.MeasureCharacterRanges(System.String,Egami.SystemDrawing.Font,System.Drawing.RectangleF,Egami.SystemDrawing.StringFormat)">
+  MeasureCharacterRanges(string?, Font, RectangleF, StringFormat?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.TextOverloads.cs/#L309"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Measures where the format's character ranges fall: one region per range, in whole device pixels.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Region[] MeasureCharacterRanges(string? text, Font font, RectangleF layoutRect, StringFormat? stringFormat)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>text</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The text.</p>
+</dd>
+    <dt><code>font</code> <a class="xref" href="Egami.SystemDrawing.Font.html">Font</a></dt>
+    <dd><p>The font.</p>
+</dd>
+    <dt><code>layoutRect</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.rectanglef">RectangleF</a></dt>
+    <dd><p>The rectangle the text is laid out in.</p>
+</dd>
+    <dt><code>stringFormat</code> <a class="xref" href="Egami.SystemDrawing.StringFormat.html">StringFormat</a></dt>
+    <dd><p>The layout, with the ranges from <a class="xref" href="Egami.SystemDrawing.StringFormat.html#Egami_SystemDrawing_StringFormat_SetMeasurableCharacterRanges_Egami_SystemDrawing_CharacterRange___">SetMeasurableCharacterRanges(CharacterRange[])</a>.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Region.html">Region</a>[]</dt>
+    <dd><p>The regions, in world coordinates.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_SystemDrawing_Graphics_MeasureCharacterRanges_System_String_Egami_SystemDrawing_Font_System_Drawing_RectangleF_Egami_SystemDrawing_StringFormat__examples">Examples</h4>
+  <pre><code class="lang-csharp">using Bitmap bitmap = new(240, 80);
+using Graphics g = Graphics.FromImage(bitmap);
+g.Clear(Color.White);
+g.TextRenderingHint = Egami.SystemDrawing.Text.TextRenderingHint.AntiAlias;
+
+// From a point: the text starts 1/6 em right of it, the first baseline the font's ascent below it.
+g.DrawString("Save &amp;&amp; E&amp;xit", font, Brushes.Black, 4, 4, new StringFormat { HotkeyPrefix = HotkeyPrefix.Show });
+
+// In a rectangle: wrapped at words, aligned, the last line that fits trimmed with an ellipsis, clipped to the rectangle.
+using StringFormat format = new() { Alignment = StringAlignment.Center, Trimming = StringTrimming.EllipsisWord };
+RectangleF box = new(4, 24, 150, 34);
+g.DrawString("The quick brown fox jumps over the lazy dog again and again", font, Brushes.Navy, box, format);
+
+// Measuring: the default format pads 1/6 em on each side; GenericTypographic measures the glyphs alone.
+SizeF size = g.MeasureString("Save", font);
+SizeF tight = g.MeasureString("Save", font, PointF.Empty, StringFormat.GenericTypographic);
+g.MeasureString("The quick brown fox", font, new SizeF(80, 40), format, out int fitted, out int lines);
+
+// Where characters fall, in whole pixels.
+format.SetMeasurableCharacterRanges([new CharacterRange(4, 5)]);
+Region[] quick = g.MeasureCharacterRanges("The quick brown fox", font, box, format);</code></pre>
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Graphics_MeasureString_" data-uid="Egami.SystemDrawing.Graphics.MeasureString*"></a>
+
+  <h3 id="Egami_SystemDrawing_Graphics_MeasureString_System_ReadOnlySpan_System_Char__Egami_SystemDrawing_Font_" data-uid="Egami.SystemDrawing.Graphics.MeasureString(System.ReadOnlySpan{System.Char},Egami.SystemDrawing.Font)">
+  MeasureString(ReadOnlySpan&lt;char&gt;, Font)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.TextOverloads.cs/#L219"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Measures text on one line per line break.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public SizeF MeasureString(ReadOnlySpan&lt;char&gt; text, Font font)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>text</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.char">char</a>&gt;</dt>
+    <dd><p>The text.</p>
+</dd>
+    <dt><code>font</code> <a class="xref" href="Egami.SystemDrawing.Font.html">Font</a></dt>
+    <dd><p>The font.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.sizef">SizeF</a></dt>
+    <dd><p>The size: the widest line and the padding by the lines' height and an eighth em, in world units.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_SystemDrawing_Graphics_MeasureString_System_ReadOnlySpan_System_Char__Egami_SystemDrawing_Font__examples">Examples</h4>
+  <pre><code class="lang-csharp">using Bitmap bitmap = new(240, 80);
+using Graphics g = Graphics.FromImage(bitmap);
+g.Clear(Color.White);
+g.TextRenderingHint = Egami.SystemDrawing.Text.TextRenderingHint.AntiAlias;
+
+// From a point: the text starts 1/6 em right of it, the first baseline the font's ascent below it.
+g.DrawString("Save &amp;&amp; E&amp;xit", font, Brushes.Black, 4, 4, new StringFormat { HotkeyPrefix = HotkeyPrefix.Show });
+
+// In a rectangle: wrapped at words, aligned, the last line that fits trimmed with an ellipsis, clipped to the rectangle.
+using StringFormat format = new() { Alignment = StringAlignment.Center, Trimming = StringTrimming.EllipsisWord };
+RectangleF box = new(4, 24, 150, 34);
+g.DrawString("The quick brown fox jumps over the lazy dog again and again", font, Brushes.Navy, box, format);
+
+// Measuring: the default format pads 1/6 em on each side; GenericTypographic measures the glyphs alone.
+SizeF size = g.MeasureString("Save", font);
+SizeF tight = g.MeasureString("Save", font, PointF.Empty, StringFormat.GenericTypographic);
+g.MeasureString("The quick brown fox", font, new SizeF(80, 40), format, out int fitted, out int lines);
+
+// Where characters fall, in whole pixels.
+format.SetMeasurableCharacterRanges([new CharacterRange(4, 5)]);
+Region[] quick = g.MeasureCharacterRanges("The quick brown fox", font, box, format);</code></pre>
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Graphics_MeasureString_" data-uid="Egami.SystemDrawing.Graphics.MeasureString*"></a>
+
+  <h3 id="Egami_SystemDrawing_Graphics_MeasureString_System_ReadOnlySpan_System_Char__Egami_SystemDrawing_Font_System_Drawing_PointF_Egami_SystemDrawing_StringFormat_" data-uid="Egami.SystemDrawing.Graphics.MeasureString(System.ReadOnlySpan{System.Char},Egami.SystemDrawing.Font,System.Drawing.PointF,Egami.SystemDrawing.StringFormat)">
+  MeasureString(ReadOnlySpan&lt;char&gt;, Font, PointF, StringFormat?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.TextOverloads.cs/#L272"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Measures text laid out from a point with a format.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public SizeF MeasureString(ReadOnlySpan&lt;char&gt; text, Font font, PointF origin, StringFormat? stringFormat)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>text</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.char">char</a>&gt;</dt>
+    <dd><p>The text.</p>
+</dd>
+    <dt><code>font</code> <a class="xref" href="Egami.SystemDrawing.Font.html">Font</a></dt>
+    <dd><p>The font.</p>
+</dd>
+    <dt><code>origin</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.pointf">PointF</a></dt>
+    <dd><p>The layout origin; it does not change the size.</p>
+</dd>
+    <dt><code>stringFormat</code> <a class="xref" href="Egami.SystemDrawing.StringFormat.html">StringFormat</a></dt>
+    <dd><p>The layout, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for the default.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.sizef">SizeF</a></dt>
+    <dd><p>The size: the widest line and the padding by the lines' height and an eighth em, in world units.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_SystemDrawing_Graphics_MeasureString_System_ReadOnlySpan_System_Char__Egami_SystemDrawing_Font_System_Drawing_PointF_Egami_SystemDrawing_StringFormat__examples">Examples</h4>
+  <pre><code class="lang-csharp">using Bitmap bitmap = new(240, 80);
+using Graphics g = Graphics.FromImage(bitmap);
+g.Clear(Color.White);
+g.TextRenderingHint = Egami.SystemDrawing.Text.TextRenderingHint.AntiAlias;
+
+// From a point: the text starts 1/6 em right of it, the first baseline the font's ascent below it.
+g.DrawString("Save &amp;&amp; E&amp;xit", font, Brushes.Black, 4, 4, new StringFormat { HotkeyPrefix = HotkeyPrefix.Show });
+
+// In a rectangle: wrapped at words, aligned, the last line that fits trimmed with an ellipsis, clipped to the rectangle.
+using StringFormat format = new() { Alignment = StringAlignment.Center, Trimming = StringTrimming.EllipsisWord };
+RectangleF box = new(4, 24, 150, 34);
+g.DrawString("The quick brown fox jumps over the lazy dog again and again", font, Brushes.Navy, box, format);
+
+// Measuring: the default format pads 1/6 em on each side; GenericTypographic measures the glyphs alone.
+SizeF size = g.MeasureString("Save", font);
+SizeF tight = g.MeasureString("Save", font, PointF.Empty, StringFormat.GenericTypographic);
+g.MeasureString("The quick brown fox", font, new SizeF(80, 40), format, out int fitted, out int lines);
+
+// Where characters fall, in whole pixels.
+format.SetMeasurableCharacterRanges([new CharacterRange(4, 5)]);
+Region[] quick = g.MeasureCharacterRanges("The quick brown fox", font, box, format);</code></pre>
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Graphics_MeasureString_" data-uid="Egami.SystemDrawing.Graphics.MeasureString*"></a>
+
+  <h3 id="Egami_SystemDrawing_Graphics_MeasureString_System_ReadOnlySpan_System_Char__Egami_SystemDrawing_Font_System_Drawing_SizeF_" data-uid="Egami.SystemDrawing.Graphics.MeasureString(System.ReadOnlySpan{System.Char},Egami.SystemDrawing.Font,System.Drawing.SizeF)">
+  MeasureString(ReadOnlySpan&lt;char&gt;, Font, SizeF)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.TextOverloads.cs/#L250"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Measures text laid out in an area.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public SizeF MeasureString(ReadOnlySpan&lt;char&gt; text, Font font, SizeF layoutArea)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>text</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.char">char</a>&gt;</dt>
+    <dd><p>The text.</p>
+</dd>
+    <dt><code>font</code> <a class="xref" href="Egami.SystemDrawing.Font.html">Font</a></dt>
+    <dd><p>The font.</p>
+</dd>
+    <dt><code>layoutArea</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.sizef">SizeF</a></dt>
+    <dd><p>The area; zero for an unbounded side.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.sizef">SizeF</a></dt>
+    <dd><p>The size: the widest line and the padding by the lines' height and an eighth em, in world units.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_SystemDrawing_Graphics_MeasureString_System_ReadOnlySpan_System_Char__Egami_SystemDrawing_Font_System_Drawing_SizeF__examples">Examples</h4>
+  <pre><code class="lang-csharp">using Bitmap bitmap = new(240, 80);
+using Graphics g = Graphics.FromImage(bitmap);
+g.Clear(Color.White);
+g.TextRenderingHint = Egami.SystemDrawing.Text.TextRenderingHint.AntiAlias;
+
+// From a point: the text starts 1/6 em right of it, the first baseline the font's ascent below it.
+g.DrawString("Save &amp;&amp; E&amp;xit", font, Brushes.Black, 4, 4, new StringFormat { HotkeyPrefix = HotkeyPrefix.Show });
+
+// In a rectangle: wrapped at words, aligned, the last line that fits trimmed with an ellipsis, clipped to the rectangle.
+using StringFormat format = new() { Alignment = StringAlignment.Center, Trimming = StringTrimming.EllipsisWord };
+RectangleF box = new(4, 24, 150, 34);
+g.DrawString("The quick brown fox jumps over the lazy dog again and again", font, Brushes.Navy, box, format);
+
+// Measuring: the default format pads 1/6 em on each side; GenericTypographic measures the glyphs alone.
+SizeF size = g.MeasureString("Save", font);
+SizeF tight = g.MeasureString("Save", font, PointF.Empty, StringFormat.GenericTypographic);
+g.MeasureString("The quick brown fox", font, new SizeF(80, 40), format, out int fitted, out int lines);
+
+// Where characters fall, in whole pixels.
+format.SetMeasurableCharacterRanges([new CharacterRange(4, 5)]);
+Region[] quick = g.MeasureCharacterRanges("The quick brown fox", font, box, format);</code></pre>
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Graphics_MeasureString_" data-uid="Egami.SystemDrawing.Graphics.MeasureString*"></a>
+
+  <h3 id="Egami_SystemDrawing_Graphics_MeasureString_System_ReadOnlySpan_System_Char__Egami_SystemDrawing_Font_System_Drawing_SizeF_Egami_SystemDrawing_StringFormat_" data-uid="Egami.SystemDrawing.Graphics.MeasureString(System.ReadOnlySpan{System.Char},Egami.SystemDrawing.Font,System.Drawing.SizeF,Egami.SystemDrawing.StringFormat)">
+  MeasureString(ReadOnlySpan&lt;char&gt;, Font, SizeF, StringFormat?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.TextOverloads.cs/#L261"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Measures text laid out in an area with a format.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public SizeF MeasureString(ReadOnlySpan&lt;char&gt; text, Font font, SizeF layoutArea, StringFormat? stringFormat)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>text</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.char">char</a>&gt;</dt>
+    <dd><p>The text.</p>
+</dd>
+    <dt><code>font</code> <a class="xref" href="Egami.SystemDrawing.Font.html">Font</a></dt>
+    <dd><p>The font.</p>
+</dd>
+    <dt><code>layoutArea</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.sizef">SizeF</a></dt>
+    <dd><p>The area; zero for an unbounded side.</p>
+</dd>
+    <dt><code>stringFormat</code> <a class="xref" href="Egami.SystemDrawing.StringFormat.html">StringFormat</a></dt>
+    <dd><p>The layout, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for the default.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.sizef">SizeF</a></dt>
+    <dd><p>The size: the widest line and the padding by the lines' height and an eighth em, in world units.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_SystemDrawing_Graphics_MeasureString_System_ReadOnlySpan_System_Char__Egami_SystemDrawing_Font_System_Drawing_SizeF_Egami_SystemDrawing_StringFormat__examples">Examples</h4>
+  <pre><code class="lang-csharp">using Bitmap bitmap = new(240, 80);
+using Graphics g = Graphics.FromImage(bitmap);
+g.Clear(Color.White);
+g.TextRenderingHint = Egami.SystemDrawing.Text.TextRenderingHint.AntiAlias;
+
+// From a point: the text starts 1/6 em right of it, the first baseline the font's ascent below it.
+g.DrawString("Save &amp;&amp; E&amp;xit", font, Brushes.Black, 4, 4, new StringFormat { HotkeyPrefix = HotkeyPrefix.Show });
+
+// In a rectangle: wrapped at words, aligned, the last line that fits trimmed with an ellipsis, clipped to the rectangle.
+using StringFormat format = new() { Alignment = StringAlignment.Center, Trimming = StringTrimming.EllipsisWord };
+RectangleF box = new(4, 24, 150, 34);
+g.DrawString("The quick brown fox jumps over the lazy dog again and again", font, Brushes.Navy, box, format);
+
+// Measuring: the default format pads 1/6 em on each side; GenericTypographic measures the glyphs alone.
+SizeF size = g.MeasureString("Save", font);
+SizeF tight = g.MeasureString("Save", font, PointF.Empty, StringFormat.GenericTypographic);
+g.MeasureString("The quick brown fox", font, new SizeF(80, 40), format, out int fitted, out int lines);
+
+// Where characters fall, in whole pixels.
+format.SetMeasurableCharacterRanges([new CharacterRange(4, 5)]);
+Region[] quick = g.MeasureCharacterRanges("The quick brown fox", font, box, format);</code></pre>
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Graphics_MeasureString_" data-uid="Egami.SystemDrawing.Graphics.MeasureString*"></a>
+
+  <h3 id="Egami_SystemDrawing_Graphics_MeasureString_System_ReadOnlySpan_System_Char__Egami_SystemDrawing_Font_System_Drawing_SizeF_Egami_SystemDrawing_StringFormat_System_Int32__System_Int32__" data-uid="Egami.SystemDrawing.Graphics.MeasureString(System.ReadOnlySpan{System.Char},Egami.SystemDrawing.Font,System.Drawing.SizeF,Egami.SystemDrawing.StringFormat,System.Int32@,System.Int32@)">
+  MeasureString(ReadOnlySpan&lt;char&gt;, Font, SizeF, StringFormat?, out int, out int)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.TextOverloads.cs/#L285"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Measures text laid out in an area, with how much of it fits.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public SizeF MeasureString(ReadOnlySpan&lt;char&gt; text, Font font, SizeF layoutArea, StringFormat? stringFormat, out int charactersFitted, out int linesFilled)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>text</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.char">char</a>&gt;</dt>
+    <dd><p>The text.</p>
+</dd>
+    <dt><code>font</code> <a class="xref" href="Egami.SystemDrawing.Font.html">Font</a></dt>
+    <dd><p>The font.</p>
+</dd>
+    <dt><code>layoutArea</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.sizef">SizeF</a></dt>
+    <dd><p>The area; zero for an unbounded side.</p>
+</dd>
+    <dt><code>stringFormat</code> <a class="xref" href="Egami.SystemDrawing.StringFormat.html">StringFormat</a></dt>
+    <dd><p>The layout, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for the default.</p>
+</dd>
+    <dt><code>charactersFitted</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The number of characters on the lines that fit.</p>
+</dd>
+    <dt><code>linesFilled</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The number of lines that fit.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.sizef">SizeF</a></dt>
+    <dd><p>The size: the widest line and the padding by the lines' height and an eighth em, in world units.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_SystemDrawing_Graphics_MeasureString_System_ReadOnlySpan_System_Char__Egami_SystemDrawing_Font_System_Drawing_SizeF_Egami_SystemDrawing_StringFormat_System_Int32__System_Int32___examples">Examples</h4>
+  <pre><code class="lang-csharp">using Bitmap bitmap = new(240, 80);
+using Graphics g = Graphics.FromImage(bitmap);
+g.Clear(Color.White);
+g.TextRenderingHint = Egami.SystemDrawing.Text.TextRenderingHint.AntiAlias;
+
+// From a point: the text starts 1/6 em right of it, the first baseline the font's ascent below it.
+g.DrawString("Save &amp;&amp; E&amp;xit", font, Brushes.Black, 4, 4, new StringFormat { HotkeyPrefix = HotkeyPrefix.Show });
+
+// In a rectangle: wrapped at words, aligned, the last line that fits trimmed with an ellipsis, clipped to the rectangle.
+using StringFormat format = new() { Alignment = StringAlignment.Center, Trimming = StringTrimming.EllipsisWord };
+RectangleF box = new(4, 24, 150, 34);
+g.DrawString("The quick brown fox jumps over the lazy dog again and again", font, Brushes.Navy, box, format);
+
+// Measuring: the default format pads 1/6 em on each side; GenericTypographic measures the glyphs alone.
+SizeF size = g.MeasureString("Save", font);
+SizeF tight = g.MeasureString("Save", font, PointF.Empty, StringFormat.GenericTypographic);
+g.MeasureString("The quick brown fox", font, new SizeF(80, 40), format, out int fitted, out int lines);
+
+// Where characters fall, in whole pixels.
+format.SetMeasurableCharacterRanges([new CharacterRange(4, 5)]);
+Region[] quick = g.MeasureCharacterRanges("The quick brown fox", font, box, format);</code></pre>
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Graphics_MeasureString_" data-uid="Egami.SystemDrawing.Graphics.MeasureString*"></a>
+
+  <h3 id="Egami_SystemDrawing_Graphics_MeasureString_System_ReadOnlySpan_System_Char__Egami_SystemDrawing_Font_System_Int32_" data-uid="Egami.SystemDrawing.Graphics.MeasureString(System.ReadOnlySpan{System.Char},Egami.SystemDrawing.Font,System.Int32)">
+  MeasureString(ReadOnlySpan&lt;char&gt;, Font, int)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.TextOverloads.cs/#L229"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Measures text wrapped at a width.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public SizeF MeasureString(ReadOnlySpan&lt;char&gt; text, Font font, int width)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>text</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.char">char</a>&gt;</dt>
+    <dd><p>The text.</p>
+</dd>
+    <dt><code>font</code> <a class="xref" href="Egami.SystemDrawing.Font.html">Font</a></dt>
+    <dd><p>The font.</p>
+</dd>
+    <dt><code>width</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The width to wrap at.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.sizef">SizeF</a></dt>
+    <dd><p>The size: the widest line and the padding by the lines' height and an eighth em, in world units.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_SystemDrawing_Graphics_MeasureString_System_ReadOnlySpan_System_Char__Egami_SystemDrawing_Font_System_Int32__examples">Examples</h4>
+  <pre><code class="lang-csharp">using Bitmap bitmap = new(240, 80);
+using Graphics g = Graphics.FromImage(bitmap);
+g.Clear(Color.White);
+g.TextRenderingHint = Egami.SystemDrawing.Text.TextRenderingHint.AntiAlias;
+
+// From a point: the text starts 1/6 em right of it, the first baseline the font's ascent below it.
+g.DrawString("Save &amp;&amp; E&amp;xit", font, Brushes.Black, 4, 4, new StringFormat { HotkeyPrefix = HotkeyPrefix.Show });
+
+// In a rectangle: wrapped at words, aligned, the last line that fits trimmed with an ellipsis, clipped to the rectangle.
+using StringFormat format = new() { Alignment = StringAlignment.Center, Trimming = StringTrimming.EllipsisWord };
+RectangleF box = new(4, 24, 150, 34);
+g.DrawString("The quick brown fox jumps over the lazy dog again and again", font, Brushes.Navy, box, format);
+
+// Measuring: the default format pads 1/6 em on each side; GenericTypographic measures the glyphs alone.
+SizeF size = g.MeasureString("Save", font);
+SizeF tight = g.MeasureString("Save", font, PointF.Empty, StringFormat.GenericTypographic);
+g.MeasureString("The quick brown fox", font, new SizeF(80, 40), format, out int fitted, out int lines);
+
+// Where characters fall, in whole pixels.
+format.SetMeasurableCharacterRanges([new CharacterRange(4, 5)]);
+Region[] quick = g.MeasureCharacterRanges("The quick brown fox", font, box, format);</code></pre>
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Graphics_MeasureString_" data-uid="Egami.SystemDrawing.Graphics.MeasureString*"></a>
+
+  <h3 id="Egami_SystemDrawing_Graphics_MeasureString_System_ReadOnlySpan_System_Char__Egami_SystemDrawing_Font_System_Int32_Egami_SystemDrawing_StringFormat_" data-uid="Egami.SystemDrawing.Graphics.MeasureString(System.ReadOnlySpan{System.Char},Egami.SystemDrawing.Font,System.Int32,Egami.SystemDrawing.StringFormat)">
+  MeasureString(ReadOnlySpan&lt;char&gt;, Font, int, StringFormat?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.TextOverloads.cs/#L240"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Measures text wrapped at a width with a format.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public SizeF MeasureString(ReadOnlySpan&lt;char&gt; text, Font font, int width, StringFormat? format)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>text</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.char">char</a>&gt;</dt>
+    <dd><p>The text.</p>
+</dd>
+    <dt><code>font</code> <a class="xref" href="Egami.SystemDrawing.Font.html">Font</a></dt>
+    <dd><p>The font.</p>
+</dd>
+    <dt><code>width</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The width to wrap at.</p>
+</dd>
+    <dt><code>format</code> <a class="xref" href="Egami.SystemDrawing.StringFormat.html">StringFormat</a></dt>
+    <dd><p>The layout, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for the default.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.sizef">SizeF</a></dt>
+    <dd><p>The size: the widest line and the padding by the lines' height and an eighth em, in world units.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_SystemDrawing_Graphics_MeasureString_System_ReadOnlySpan_System_Char__Egami_SystemDrawing_Font_System_Int32_Egami_SystemDrawing_StringFormat__examples">Examples</h4>
+  <pre><code class="lang-csharp">using Bitmap bitmap = new(240, 80);
+using Graphics g = Graphics.FromImage(bitmap);
+g.Clear(Color.White);
+g.TextRenderingHint = Egami.SystemDrawing.Text.TextRenderingHint.AntiAlias;
+
+// From a point: the text starts 1/6 em right of it, the first baseline the font's ascent below it.
+g.DrawString("Save &amp;&amp; E&amp;xit", font, Brushes.Black, 4, 4, new StringFormat { HotkeyPrefix = HotkeyPrefix.Show });
+
+// In a rectangle: wrapped at words, aligned, the last line that fits trimmed with an ellipsis, clipped to the rectangle.
+using StringFormat format = new() { Alignment = StringAlignment.Center, Trimming = StringTrimming.EllipsisWord };
+RectangleF box = new(4, 24, 150, 34);
+g.DrawString("The quick brown fox jumps over the lazy dog again and again", font, Brushes.Navy, box, format);
+
+// Measuring: the default format pads 1/6 em on each side; GenericTypographic measures the glyphs alone.
+SizeF size = g.MeasureString("Save", font);
+SizeF tight = g.MeasureString("Save", font, PointF.Empty, StringFormat.GenericTypographic);
+g.MeasureString("The quick brown fox", font, new SizeF(80, 40), format, out int fitted, out int lines);
+
+// Where characters fall, in whole pixels.
+format.SetMeasurableCharacterRanges([new CharacterRange(4, 5)]);
+Region[] quick = g.MeasureCharacterRanges("The quick brown fox", font, box, format);</code></pre>
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Graphics_MeasureString_" data-uid="Egami.SystemDrawing.Graphics.MeasureString*"></a>
+
+  <h3 id="Egami_SystemDrawing_Graphics_MeasureString_System_String_Egami_SystemDrawing_Font_" data-uid="Egami.SystemDrawing.Graphics.MeasureString(System.String,Egami.SystemDrawing.Font)">
+  MeasureString(string?, Font)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.TextOverloads.cs/#L144"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Measures text on one line per line break.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public SizeF MeasureString(string? text, Font font)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>text</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The text.</p>
+</dd>
+    <dt><code>font</code> <a class="xref" href="Egami.SystemDrawing.Font.html">Font</a></dt>
+    <dd><p>The font.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.sizef">SizeF</a></dt>
+    <dd><p>The size: the widest line and the padding by the lines' height and an eighth em, in world units.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_SystemDrawing_Graphics_MeasureString_System_String_Egami_SystemDrawing_Font__examples">Examples</h4>
+  <pre><code class="lang-csharp">using Bitmap bitmap = new(240, 80);
+using Graphics g = Graphics.FromImage(bitmap);
+g.Clear(Color.White);
+g.TextRenderingHint = Egami.SystemDrawing.Text.TextRenderingHint.AntiAlias;
+
+// From a point: the text starts 1/6 em right of it, the first baseline the font's ascent below it.
+g.DrawString("Save &amp;&amp; E&amp;xit", font, Brushes.Black, 4, 4, new StringFormat { HotkeyPrefix = HotkeyPrefix.Show });
+
+// In a rectangle: wrapped at words, aligned, the last line that fits trimmed with an ellipsis, clipped to the rectangle.
+using StringFormat format = new() { Alignment = StringAlignment.Center, Trimming = StringTrimming.EllipsisWord };
+RectangleF box = new(4, 24, 150, 34);
+g.DrawString("The quick brown fox jumps over the lazy dog again and again", font, Brushes.Navy, box, format);
+
+// Measuring: the default format pads 1/6 em on each side; GenericTypographic measures the glyphs alone.
+SizeF size = g.MeasureString("Save", font);
+SizeF tight = g.MeasureString("Save", font, PointF.Empty, StringFormat.GenericTypographic);
+g.MeasureString("The quick brown fox", font, new SizeF(80, 40), format, out int fitted, out int lines);
+
+// Where characters fall, in whole pixels.
+format.SetMeasurableCharacterRanges([new CharacterRange(4, 5)]);
+Region[] quick = g.MeasureCharacterRanges("The quick brown fox", font, box, format);</code></pre>
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Graphics_MeasureString_" data-uid="Egami.SystemDrawing.Graphics.MeasureString*"></a>
+
+  <h3 id="Egami_SystemDrawing_Graphics_MeasureString_System_String_Egami_SystemDrawing_Font_System_Drawing_PointF_Egami_SystemDrawing_StringFormat_" data-uid="Egami.SystemDrawing.Graphics.MeasureString(System.String,Egami.SystemDrawing.Font,System.Drawing.PointF,Egami.SystemDrawing.StringFormat)">
+  MeasureString(string?, Font, PointF, StringFormat?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.TextOverloads.cs/#L197"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Measures text laid out from a point with a format.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public SizeF MeasureString(string? text, Font font, PointF origin, StringFormat? stringFormat)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>text</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The text.</p>
+</dd>
+    <dt><code>font</code> <a class="xref" href="Egami.SystemDrawing.Font.html">Font</a></dt>
+    <dd><p>The font.</p>
+</dd>
+    <dt><code>origin</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.pointf">PointF</a></dt>
+    <dd><p>The layout origin; it does not change the size.</p>
+</dd>
+    <dt><code>stringFormat</code> <a class="xref" href="Egami.SystemDrawing.StringFormat.html">StringFormat</a></dt>
+    <dd><p>The layout, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for the default.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.sizef">SizeF</a></dt>
+    <dd><p>The size: the widest line and the padding by the lines' height and an eighth em, in world units.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_SystemDrawing_Graphics_MeasureString_System_String_Egami_SystemDrawing_Font_System_Drawing_PointF_Egami_SystemDrawing_StringFormat__examples">Examples</h4>
+  <pre><code class="lang-csharp">using Bitmap bitmap = new(240, 80);
+using Graphics g = Graphics.FromImage(bitmap);
+g.Clear(Color.White);
+g.TextRenderingHint = Egami.SystemDrawing.Text.TextRenderingHint.AntiAlias;
+
+// From a point: the text starts 1/6 em right of it, the first baseline the font's ascent below it.
+g.DrawString("Save &amp;&amp; E&amp;xit", font, Brushes.Black, 4, 4, new StringFormat { HotkeyPrefix = HotkeyPrefix.Show });
+
+// In a rectangle: wrapped at words, aligned, the last line that fits trimmed with an ellipsis, clipped to the rectangle.
+using StringFormat format = new() { Alignment = StringAlignment.Center, Trimming = StringTrimming.EllipsisWord };
+RectangleF box = new(4, 24, 150, 34);
+g.DrawString("The quick brown fox jumps over the lazy dog again and again", font, Brushes.Navy, box, format);
+
+// Measuring: the default format pads 1/6 em on each side; GenericTypographic measures the glyphs alone.
+SizeF size = g.MeasureString("Save", font);
+SizeF tight = g.MeasureString("Save", font, PointF.Empty, StringFormat.GenericTypographic);
+g.MeasureString("The quick brown fox", font, new SizeF(80, 40), format, out int fitted, out int lines);
+
+// Where characters fall, in whole pixels.
+format.SetMeasurableCharacterRanges([new CharacterRange(4, 5)]);
+Region[] quick = g.MeasureCharacterRanges("The quick brown fox", font, box, format);</code></pre>
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Graphics_MeasureString_" data-uid="Egami.SystemDrawing.Graphics.MeasureString*"></a>
+
+  <h3 id="Egami_SystemDrawing_Graphics_MeasureString_System_String_Egami_SystemDrawing_Font_System_Drawing_SizeF_" data-uid="Egami.SystemDrawing.Graphics.MeasureString(System.String,Egami.SystemDrawing.Font,System.Drawing.SizeF)">
+  MeasureString(string?, Font, SizeF)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.TextOverloads.cs/#L175"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Measures text laid out in an area.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public SizeF MeasureString(string? text, Font font, SizeF layoutArea)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>text</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The text.</p>
+</dd>
+    <dt><code>font</code> <a class="xref" href="Egami.SystemDrawing.Font.html">Font</a></dt>
+    <dd><p>The font.</p>
+</dd>
+    <dt><code>layoutArea</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.sizef">SizeF</a></dt>
+    <dd><p>The area; zero for an unbounded side.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.sizef">SizeF</a></dt>
+    <dd><p>The size: the widest line and the padding by the lines' height and an eighth em, in world units.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_SystemDrawing_Graphics_MeasureString_System_String_Egami_SystemDrawing_Font_System_Drawing_SizeF__examples">Examples</h4>
+  <pre><code class="lang-csharp">using Bitmap bitmap = new(240, 80);
+using Graphics g = Graphics.FromImage(bitmap);
+g.Clear(Color.White);
+g.TextRenderingHint = Egami.SystemDrawing.Text.TextRenderingHint.AntiAlias;
+
+// From a point: the text starts 1/6 em right of it, the first baseline the font's ascent below it.
+g.DrawString("Save &amp;&amp; E&amp;xit", font, Brushes.Black, 4, 4, new StringFormat { HotkeyPrefix = HotkeyPrefix.Show });
+
+// In a rectangle: wrapped at words, aligned, the last line that fits trimmed with an ellipsis, clipped to the rectangle.
+using StringFormat format = new() { Alignment = StringAlignment.Center, Trimming = StringTrimming.EllipsisWord };
+RectangleF box = new(4, 24, 150, 34);
+g.DrawString("The quick brown fox jumps over the lazy dog again and again", font, Brushes.Navy, box, format);
+
+// Measuring: the default format pads 1/6 em on each side; GenericTypographic measures the glyphs alone.
+SizeF size = g.MeasureString("Save", font);
+SizeF tight = g.MeasureString("Save", font, PointF.Empty, StringFormat.GenericTypographic);
+g.MeasureString("The quick brown fox", font, new SizeF(80, 40), format, out int fitted, out int lines);
+
+// Where characters fall, in whole pixels.
+format.SetMeasurableCharacterRanges([new CharacterRange(4, 5)]);
+Region[] quick = g.MeasureCharacterRanges("The quick brown fox", font, box, format);</code></pre>
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Graphics_MeasureString_" data-uid="Egami.SystemDrawing.Graphics.MeasureString*"></a>
+
+  <h3 id="Egami_SystemDrawing_Graphics_MeasureString_System_String_Egami_SystemDrawing_Font_System_Drawing_SizeF_Egami_SystemDrawing_StringFormat_" data-uid="Egami.SystemDrawing.Graphics.MeasureString(System.String,Egami.SystemDrawing.Font,System.Drawing.SizeF,Egami.SystemDrawing.StringFormat)">
+  MeasureString(string?, Font, SizeF, StringFormat?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.TextOverloads.cs/#L186"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Measures text laid out in an area with a format.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public SizeF MeasureString(string? text, Font font, SizeF layoutArea, StringFormat? stringFormat)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>text</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The text.</p>
+</dd>
+    <dt><code>font</code> <a class="xref" href="Egami.SystemDrawing.Font.html">Font</a></dt>
+    <dd><p>The font.</p>
+</dd>
+    <dt><code>layoutArea</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.sizef">SizeF</a></dt>
+    <dd><p>The area; zero for an unbounded side.</p>
+</dd>
+    <dt><code>stringFormat</code> <a class="xref" href="Egami.SystemDrawing.StringFormat.html">StringFormat</a></dt>
+    <dd><p>The layout, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for the default.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.sizef">SizeF</a></dt>
+    <dd><p>The size: the widest line and the padding by the lines' height and an eighth em, in world units.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_SystemDrawing_Graphics_MeasureString_System_String_Egami_SystemDrawing_Font_System_Drawing_SizeF_Egami_SystemDrawing_StringFormat__examples">Examples</h4>
+  <pre><code class="lang-csharp">using Bitmap bitmap = new(240, 80);
+using Graphics g = Graphics.FromImage(bitmap);
+g.Clear(Color.White);
+g.TextRenderingHint = Egami.SystemDrawing.Text.TextRenderingHint.AntiAlias;
+
+// From a point: the text starts 1/6 em right of it, the first baseline the font's ascent below it.
+g.DrawString("Save &amp;&amp; E&amp;xit", font, Brushes.Black, 4, 4, new StringFormat { HotkeyPrefix = HotkeyPrefix.Show });
+
+// In a rectangle: wrapped at words, aligned, the last line that fits trimmed with an ellipsis, clipped to the rectangle.
+using StringFormat format = new() { Alignment = StringAlignment.Center, Trimming = StringTrimming.EllipsisWord };
+RectangleF box = new(4, 24, 150, 34);
+g.DrawString("The quick brown fox jumps over the lazy dog again and again", font, Brushes.Navy, box, format);
+
+// Measuring: the default format pads 1/6 em on each side; GenericTypographic measures the glyphs alone.
+SizeF size = g.MeasureString("Save", font);
+SizeF tight = g.MeasureString("Save", font, PointF.Empty, StringFormat.GenericTypographic);
+g.MeasureString("The quick brown fox", font, new SizeF(80, 40), format, out int fitted, out int lines);
+
+// Where characters fall, in whole pixels.
+format.SetMeasurableCharacterRanges([new CharacterRange(4, 5)]);
+Region[] quick = g.MeasureCharacterRanges("The quick brown fox", font, box, format);</code></pre>
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Graphics_MeasureString_" data-uid="Egami.SystemDrawing.Graphics.MeasureString*"></a>
+
+  <h3 id="Egami_SystemDrawing_Graphics_MeasureString_System_String_Egami_SystemDrawing_Font_System_Drawing_SizeF_Egami_SystemDrawing_StringFormat_System_Int32__System_Int32__" data-uid="Egami.SystemDrawing.Graphics.MeasureString(System.String,Egami.SystemDrawing.Font,System.Drawing.SizeF,Egami.SystemDrawing.StringFormat,System.Int32@,System.Int32@)">
+  MeasureString(string?, Font, SizeF, StringFormat?, out int, out int)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.TextOverloads.cs/#L210"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Measures text laid out in an area, with how much of it fits.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public SizeF MeasureString(string? text, Font font, SizeF layoutArea, StringFormat? stringFormat, out int charactersFitted, out int linesFilled)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>text</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The text.</p>
+</dd>
+    <dt><code>font</code> <a class="xref" href="Egami.SystemDrawing.Font.html">Font</a></dt>
+    <dd><p>The font.</p>
+</dd>
+    <dt><code>layoutArea</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.sizef">SizeF</a></dt>
+    <dd><p>The area; zero for an unbounded side.</p>
+</dd>
+    <dt><code>stringFormat</code> <a class="xref" href="Egami.SystemDrawing.StringFormat.html">StringFormat</a></dt>
+    <dd><p>The layout, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for the default.</p>
+</dd>
+    <dt><code>charactersFitted</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The number of characters on the lines that fit.</p>
+</dd>
+    <dt><code>linesFilled</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The number of lines that fit.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.sizef">SizeF</a></dt>
+    <dd><p>The size: the widest line and the padding by the lines' height and an eighth em, in world units.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_SystemDrawing_Graphics_MeasureString_System_String_Egami_SystemDrawing_Font_System_Drawing_SizeF_Egami_SystemDrawing_StringFormat_System_Int32__System_Int32___examples">Examples</h4>
+  <pre><code class="lang-csharp">using Bitmap bitmap = new(240, 80);
+using Graphics g = Graphics.FromImage(bitmap);
+g.Clear(Color.White);
+g.TextRenderingHint = Egami.SystemDrawing.Text.TextRenderingHint.AntiAlias;
+
+// From a point: the text starts 1/6 em right of it, the first baseline the font's ascent below it.
+g.DrawString("Save &amp;&amp; E&amp;xit", font, Brushes.Black, 4, 4, new StringFormat { HotkeyPrefix = HotkeyPrefix.Show });
+
+// In a rectangle: wrapped at words, aligned, the last line that fits trimmed with an ellipsis, clipped to the rectangle.
+using StringFormat format = new() { Alignment = StringAlignment.Center, Trimming = StringTrimming.EllipsisWord };
+RectangleF box = new(4, 24, 150, 34);
+g.DrawString("The quick brown fox jumps over the lazy dog again and again", font, Brushes.Navy, box, format);
+
+// Measuring: the default format pads 1/6 em on each side; GenericTypographic measures the glyphs alone.
+SizeF size = g.MeasureString("Save", font);
+SizeF tight = g.MeasureString("Save", font, PointF.Empty, StringFormat.GenericTypographic);
+g.MeasureString("The quick brown fox", font, new SizeF(80, 40), format, out int fitted, out int lines);
+
+// Where characters fall, in whole pixels.
+format.SetMeasurableCharacterRanges([new CharacterRange(4, 5)]);
+Region[] quick = g.MeasureCharacterRanges("The quick brown fox", font, box, format);</code></pre>
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Graphics_MeasureString_" data-uid="Egami.SystemDrawing.Graphics.MeasureString*"></a>
+
+  <h3 id="Egami_SystemDrawing_Graphics_MeasureString_System_String_Egami_SystemDrawing_Font_System_Int32_" data-uid="Egami.SystemDrawing.Graphics.MeasureString(System.String,Egami.SystemDrawing.Font,System.Int32)">
+  MeasureString(string?, Font, int)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.TextOverloads.cs/#L154"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Measures text wrapped at a width.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public SizeF MeasureString(string? text, Font font, int width)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>text</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The text.</p>
+</dd>
+    <dt><code>font</code> <a class="xref" href="Egami.SystemDrawing.Font.html">Font</a></dt>
+    <dd><p>The font.</p>
+</dd>
+    <dt><code>width</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The width to wrap at.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.sizef">SizeF</a></dt>
+    <dd><p>The size: the widest line and the padding by the lines' height and an eighth em, in world units.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_SystemDrawing_Graphics_MeasureString_System_String_Egami_SystemDrawing_Font_System_Int32__examples">Examples</h4>
+  <pre><code class="lang-csharp">using Bitmap bitmap = new(240, 80);
+using Graphics g = Graphics.FromImage(bitmap);
+g.Clear(Color.White);
+g.TextRenderingHint = Egami.SystemDrawing.Text.TextRenderingHint.AntiAlias;
+
+// From a point: the text starts 1/6 em right of it, the first baseline the font's ascent below it.
+g.DrawString("Save &amp;&amp; E&amp;xit", font, Brushes.Black, 4, 4, new StringFormat { HotkeyPrefix = HotkeyPrefix.Show });
+
+// In a rectangle: wrapped at words, aligned, the last line that fits trimmed with an ellipsis, clipped to the rectangle.
+using StringFormat format = new() { Alignment = StringAlignment.Center, Trimming = StringTrimming.EllipsisWord };
+RectangleF box = new(4, 24, 150, 34);
+g.DrawString("The quick brown fox jumps over the lazy dog again and again", font, Brushes.Navy, box, format);
+
+// Measuring: the default format pads 1/6 em on each side; GenericTypographic measures the glyphs alone.
+SizeF size = g.MeasureString("Save", font);
+SizeF tight = g.MeasureString("Save", font, PointF.Empty, StringFormat.GenericTypographic);
+g.MeasureString("The quick brown fox", font, new SizeF(80, 40), format, out int fitted, out int lines);
+
+// Where characters fall, in whole pixels.
+format.SetMeasurableCharacterRanges([new CharacterRange(4, 5)]);
+Region[] quick = g.MeasureCharacterRanges("The quick brown fox", font, box, format);</code></pre>
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Graphics_MeasureString_" data-uid="Egami.SystemDrawing.Graphics.MeasureString*"></a>
+
+  <h3 id="Egami_SystemDrawing_Graphics_MeasureString_System_String_Egami_SystemDrawing_Font_System_Int32_Egami_SystemDrawing_StringFormat_" data-uid="Egami.SystemDrawing.Graphics.MeasureString(System.String,Egami.SystemDrawing.Font,System.Int32,Egami.SystemDrawing.StringFormat)">
+  MeasureString(string?, Font, int, StringFormat?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.TextOverloads.cs/#L165"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Measures text wrapped at a width with a format.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public SizeF MeasureString(string? text, Font font, int width, StringFormat? format)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>text</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The text.</p>
+</dd>
+    <dt><code>font</code> <a class="xref" href="Egami.SystemDrawing.Font.html">Font</a></dt>
+    <dd><p>The font.</p>
+</dd>
+    <dt><code>width</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The width to wrap at.</p>
+</dd>
+    <dt><code>format</code> <a class="xref" href="Egami.SystemDrawing.StringFormat.html">StringFormat</a></dt>
+    <dd><p>The layout, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for the default.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.sizef">SizeF</a></dt>
+    <dd><p>The size: the widest line and the padding by the lines' height and an eighth em, in world units.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_SystemDrawing_Graphics_MeasureString_System_String_Egami_SystemDrawing_Font_System_Int32_Egami_SystemDrawing_StringFormat__examples">Examples</h4>
+  <pre><code class="lang-csharp">using Bitmap bitmap = new(240, 80);
+using Graphics g = Graphics.FromImage(bitmap);
+g.Clear(Color.White);
+g.TextRenderingHint = Egami.SystemDrawing.Text.TextRenderingHint.AntiAlias;
+
+// From a point: the text starts 1/6 em right of it, the first baseline the font's ascent below it.
+g.DrawString("Save &amp;&amp; E&amp;xit", font, Brushes.Black, 4, 4, new StringFormat { HotkeyPrefix = HotkeyPrefix.Show });
+
+// In a rectangle: wrapped at words, aligned, the last line that fits trimmed with an ellipsis, clipped to the rectangle.
+using StringFormat format = new() { Alignment = StringAlignment.Center, Trimming = StringTrimming.EllipsisWord };
+RectangleF box = new(4, 24, 150, 34);
+g.DrawString("The quick brown fox jumps over the lazy dog again and again", font, Brushes.Navy, box, format);
+
+// Measuring: the default format pads 1/6 em on each side; GenericTypographic measures the glyphs alone.
+SizeF size = g.MeasureString("Save", font);
+SizeF tight = g.MeasureString("Save", font, PointF.Empty, StringFormat.GenericTypographic);
+g.MeasureString("The quick brown fox", font, new SizeF(80, 40), format, out int fitted, out int lines);
+
+// Where characters fall, in whole pixels.
+format.SetMeasurableCharacterRanges([new CharacterRange(4, 5)]);
+Region[] quick = g.MeasureCharacterRanges("The quick brown fox", font, box, format);</code></pre>
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Graphics_MeasureStringInternal_" data-uid="Egami.SystemDrawing.Graphics.MeasureStringInternal*"></a>
+
+  <h3 id="Egami_SystemDrawing_Graphics_MeasureStringInternal_System_ReadOnlySpan_System_Char__Egami_SystemDrawing_Font_System_Drawing_RectangleF_Egami_SystemDrawing_StringFormat_System_Int32__System_Int32__" data-uid="Egami.SystemDrawing.Graphics.MeasureStringInternal(System.ReadOnlySpan{System.Char},Egami.SystemDrawing.Font,System.Drawing.RectangleF,Egami.SystemDrawing.StringFormat,System.Int32@,System.Int32@)">
+  MeasureStringInternal(ReadOnlySpan&lt;char&gt;, Font, RectangleF, StringFormat?, out int, out int)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.TextOverloads.cs/#L298"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Measures text laid out in a rectangle, with how much of it fits.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public SizeF MeasureStringInternal(ReadOnlySpan&lt;char&gt; text, Font font, RectangleF layoutArea, StringFormat? stringFormat, out int charactersFitted, out int linesFilled)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>text</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.char">char</a>&gt;</dt>
+    <dd><p>The text.</p>
+</dd>
+    <dt><code>font</code> <a class="xref" href="Egami.SystemDrawing.Font.html">Font</a></dt>
+    <dd><p>The font.</p>
+</dd>
+    <dt><code>layoutArea</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.rectanglef">RectangleF</a></dt>
+    <dd><p>The rectangle; only its size counts.</p>
+</dd>
+    <dt><code>stringFormat</code> <a class="xref" href="Egami.SystemDrawing.StringFormat.html">StringFormat</a></dt>
+    <dd><p>The layout, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for the default.</p>
+</dd>
+    <dt><code>charactersFitted</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The number of characters on the lines that fit.</p>
+</dd>
+    <dt><code>linesFilled</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The number of lines that fit.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.sizef">SizeF</a></dt>
+    <dd><p>The size: the widest line and the padding by the lines' height and an eighth em, in world units.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_SystemDrawing_Graphics_MeasureStringInternal_System_ReadOnlySpan_System_Char__Egami_SystemDrawing_Font_System_Drawing_RectangleF_Egami_SystemDrawing_StringFormat_System_Int32__System_Int32___examples">Examples</h4>
+  <pre><code class="lang-csharp">using Bitmap bitmap = new(240, 80);
+using Graphics g = Graphics.FromImage(bitmap);
+g.Clear(Color.White);
+g.TextRenderingHint = Egami.SystemDrawing.Text.TextRenderingHint.AntiAlias;
+
+// From a point: the text starts 1/6 em right of it, the first baseline the font's ascent below it.
+g.DrawString("Save &amp;&amp; E&amp;xit", font, Brushes.Black, 4, 4, new StringFormat { HotkeyPrefix = HotkeyPrefix.Show });
+
+// In a rectangle: wrapped at words, aligned, the last line that fits trimmed with an ellipsis, clipped to the rectangle.
+using StringFormat format = new() { Alignment = StringAlignment.Center, Trimming = StringTrimming.EllipsisWord };
+RectangleF box = new(4, 24, 150, 34);
+g.DrawString("The quick brown fox jumps over the lazy dog again and again", font, Brushes.Navy, box, format);
+
+// Measuring: the default format pads 1/6 em on each side; GenericTypographic measures the glyphs alone.
+SizeF size = g.MeasureString("Save", font);
+SizeF tight = g.MeasureString("Save", font, PointF.Empty, StringFormat.GenericTypographic);
+g.MeasureString("The quick brown fox", font, new SizeF(80, 40), format, out int fitted, out int lines);
+
+// Where characters fall, in whole pixels.
+format.SetMeasurableCharacterRanges([new CharacterRange(4, 5)]);
+Region[] quick = g.MeasureCharacterRanges("The quick brown fox", font, box, format);</code></pre>
+
+
+
+
+
+
   <a id="Egami_SystemDrawing_Graphics_MultiplyTransform_" data-uid="Egami.SystemDrawing.Graphics.MultiplyTransform*"></a>
 
   <h3 id="Egami_SystemDrawing_Graphics_MultiplyTransform_Egami_SystemDrawing_Drawing2D_Matrix_" data-uid="Egami.SystemDrawing.Graphics.MultiplyTransform(Egami.SystemDrawing.Drawing2D.Matrix)">
@@ -10815,7 +12826,7 @@ public void ReleaseHdc(nint hdc)</code></pre>
 </article>
 
         <div class="contribution d-print-none">
-          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.Overloads.cs/#L15" class="edit-link">Edit this page</a>
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.TextOverloads.cs/#L5" class="edit-link">Edit this page</a>
         </div>
 
 

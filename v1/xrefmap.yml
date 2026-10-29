@@ -78468,6 +78468,130 @@ references:
   isSpec: "True"
   fullName: Egami.SystemDrawing.BufferedGraphicsManager.Current
   nameWithType: BufferedGraphicsManager.Current
+- uid: Egami.SystemDrawing.CharacterRange
+  name: CharacterRange
+  href: api/Egami.SystemDrawing.CharacterRange.html
+  commentId: T:Egami.SystemDrawing.CharacterRange
+  fullName: Egami.SystemDrawing.CharacterRange
+  nameWithType: CharacterRange
+- uid: Egami.SystemDrawing.CharacterRange.#ctor(System.Int32,System.Int32)
+  name: CharacterRange(int, int)
+  href: api/Egami.SystemDrawing.CharacterRange.html#Egami_SystemDrawing_CharacterRange__ctor_System_Int32_System_Int32_
+  commentId: M:Egami.SystemDrawing.CharacterRange.#ctor(System.Int32,System.Int32)
+  name.vb: New(Integer, Integer)
+  fullName: Egami.SystemDrawing.CharacterRange.CharacterRange(int, int)
+  fullName.vb: Egami.SystemDrawing.CharacterRange.New(Integer, Integer)
+  nameWithType: CharacterRange.CharacterRange(int, int)
+  nameWithType.vb: CharacterRange.New(Integer, Integer)
+- uid: Egami.SystemDrawing.CharacterRange.#ctor*
+  name: CharacterRange
+  href: api/Egami.SystemDrawing.CharacterRange.html#Egami_SystemDrawing_CharacterRange__ctor_
+  commentId: Overload:Egami.SystemDrawing.CharacterRange.#ctor
+  isSpec: "True"
+  name.vb: New
+  fullName: Egami.SystemDrawing.CharacterRange.CharacterRange
+  fullName.vb: Egami.SystemDrawing.CharacterRange.New
+  nameWithType: CharacterRange.CharacterRange
+  nameWithType.vb: CharacterRange.New
+- uid: Egami.SystemDrawing.CharacterRange.Equals(Egami.SystemDrawing.CharacterRange)
+  name: Equals(CharacterRange)
+  href: api/Egami.SystemDrawing.CharacterRange.html#Egami_SystemDrawing_CharacterRange_Equals_Egami_SystemDrawing_CharacterRange_
+  commentId: M:Egami.SystemDrawing.CharacterRange.Equals(Egami.SystemDrawing.CharacterRange)
+  fullName: Egami.SystemDrawing.CharacterRange.Equals(Egami.SystemDrawing.CharacterRange)
+  nameWithType: CharacterRange.Equals(CharacterRange)
+- uid: Egami.SystemDrawing.CharacterRange.Equals(System.Object)
+  name: Equals(object?)
+  href: api/Egami.SystemDrawing.CharacterRange.html#Egami_SystemDrawing_CharacterRange_Equals_System_Object_
+  commentId: M:Egami.SystemDrawing.CharacterRange.Equals(System.Object)
+  name.vb: Equals(Object)
+  fullName: Egami.SystemDrawing.CharacterRange.Equals(object?)
+  fullName.vb: Egami.SystemDrawing.CharacterRange.Equals(Object)
+  nameWithType: CharacterRange.Equals(object?)
+  nameWithType.vb: CharacterRange.Equals(Object)
+- uid: Egami.SystemDrawing.CharacterRange.Equals*
+  name: Equals
+  href: api/Egami.SystemDrawing.CharacterRange.html#Egami_SystemDrawing_CharacterRange_Equals_
+  commentId: Overload:Egami.SystemDrawing.CharacterRange.Equals
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.CharacterRange.Equals
+  nameWithType: CharacterRange.Equals
+- uid: Egami.SystemDrawing.CharacterRange.First
+  name: First
+  href: api/Egami.SystemDrawing.CharacterRange.html#Egami_SystemDrawing_CharacterRange_First
+  commentId: P:Egami.SystemDrawing.CharacterRange.First
+  fullName: Egami.SystemDrawing.CharacterRange.First
+  nameWithType: CharacterRange.First
+- uid: Egami.SystemDrawing.CharacterRange.First*
+  name: First
+  href: api/Egami.SystemDrawing.CharacterRange.html#Egami_SystemDrawing_CharacterRange_First_
+  commentId: Overload:Egami.SystemDrawing.CharacterRange.First
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.CharacterRange.First
+  nameWithType: CharacterRange.First
+- uid: Egami.SystemDrawing.CharacterRange.GetHashCode
+  name: GetHashCode()
+  href: api/Egami.SystemDrawing.CharacterRange.html#Egami_SystemDrawing_CharacterRange_GetHashCode
+  commentId: M:Egami.SystemDrawing.CharacterRange.GetHashCode
+  fullName: Egami.SystemDrawing.CharacterRange.GetHashCode()
+  nameWithType: CharacterRange.GetHashCode()
+- uid: Egami.SystemDrawing.CharacterRange.GetHashCode*
+  name: GetHashCode
+  href: api/Egami.SystemDrawing.CharacterRange.html#Egami_SystemDrawing_CharacterRange_GetHashCode_
+  commentId: Overload:Egami.SystemDrawing.CharacterRange.GetHashCode
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.CharacterRange.GetHashCode
+  nameWithType: CharacterRange.GetHashCode
+- uid: Egami.SystemDrawing.CharacterRange.Length
+  name: Length
+  href: api/Egami.SystemDrawing.CharacterRange.html#Egami_SystemDrawing_CharacterRange_Length
+  commentId: P:Egami.SystemDrawing.CharacterRange.Length
+  fullName: Egami.SystemDrawing.CharacterRange.Length
+  nameWithType: CharacterRange.Length
+- uid: Egami.SystemDrawing.CharacterRange.Length*
+  name: Length
+  href: api/Egami.SystemDrawing.CharacterRange.html#Egami_SystemDrawing_CharacterRange_Length_
+  commentId: Overload:Egami.SystemDrawing.CharacterRange.Length
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.CharacterRange.Length
+  nameWithType: CharacterRange.Length
+- uid: Egami.SystemDrawing.CharacterRange.op_Equality(Egami.SystemDrawing.CharacterRange,Egami.SystemDrawing.CharacterRange)
+  name: operator ==(CharacterRange, CharacterRange)
+  href: api/Egami.SystemDrawing.CharacterRange.html#Egami_SystemDrawing_CharacterRange_op_Equality_Egami_SystemDrawing_CharacterRange_Egami_SystemDrawing_CharacterRange_
+  commentId: M:Egami.SystemDrawing.CharacterRange.op_Equality(Egami.SystemDrawing.CharacterRange,Egami.SystemDrawing.CharacterRange)
+  name.vb: =(CharacterRange, CharacterRange)
+  fullName: Egami.SystemDrawing.CharacterRange.operator ==(Egami.SystemDrawing.CharacterRange, Egami.SystemDrawing.CharacterRange)
+  fullName.vb: Egami.SystemDrawing.CharacterRange.=(Egami.SystemDrawing.CharacterRange, Egami.SystemDrawing.CharacterRange)
+  nameWithType: CharacterRange.operator ==(CharacterRange, CharacterRange)
+  nameWithType.vb: CharacterRange.=(CharacterRange, CharacterRange)
+- uid: Egami.SystemDrawing.CharacterRange.op_Equality*
+  name: operator ==
+  href: api/Egami.SystemDrawing.CharacterRange.html#Egami_SystemDrawing_CharacterRange_op_Equality_
+  commentId: Overload:Egami.SystemDrawing.CharacterRange.op_Equality
+  isSpec: "True"
+  name.vb: =
+  fullName: Egami.SystemDrawing.CharacterRange.operator ==
+  fullName.vb: Egami.SystemDrawing.CharacterRange.=
+  nameWithType: CharacterRange.operator ==
+  nameWithType.vb: CharacterRange.=
+- uid: Egami.SystemDrawing.CharacterRange.op_Inequality(Egami.SystemDrawing.CharacterRange,Egami.SystemDrawing.CharacterRange)
+  name: operator !=(CharacterRange, CharacterRange)
+  href: api/Egami.SystemDrawing.CharacterRange.html#Egami_SystemDrawing_CharacterRange_op_Inequality_Egami_SystemDrawing_CharacterRange_Egami_SystemDrawing_CharacterRange_
+  commentId: M:Egami.SystemDrawing.CharacterRange.op_Inequality(Egami.SystemDrawing.CharacterRange,Egami.SystemDrawing.CharacterRange)
+  name.vb: <>(CharacterRange, CharacterRange)
+  fullName: Egami.SystemDrawing.CharacterRange.operator !=(Egami.SystemDrawing.CharacterRange, Egami.SystemDrawing.CharacterRange)
+  fullName.vb: Egami.SystemDrawing.CharacterRange.<>(Egami.SystemDrawing.CharacterRange, Egami.SystemDrawing.CharacterRange)
+  nameWithType: CharacterRange.operator !=(CharacterRange, CharacterRange)
+  nameWithType.vb: CharacterRange.<>(CharacterRange, CharacterRange)
+- uid: Egami.SystemDrawing.CharacterRange.op_Inequality*
+  name: operator !=
+  href: api/Egami.SystemDrawing.CharacterRange.html#Egami_SystemDrawing_CharacterRange_op_Inequality_
+  commentId: Overload:Egami.SystemDrawing.CharacterRange.op_Inequality
+  isSpec: "True"
+  name.vb: <>
+  fullName: Egami.SystemDrawing.CharacterRange.operator !=
+  fullName.vb: Egami.SystemDrawing.CharacterRange.<>
+  nameWithType: CharacterRange.operator !=
+  nameWithType.vb: CharacterRange.<>
 - uid: Egami.SystemDrawing.ContentAlignment
   name: ContentAlignment
   href: api/Egami.SystemDrawing.ContentAlignment.html
@@ -80026,6 +80150,49 @@ references:
   isSpec: "True"
   fullName: Egami.SystemDrawing.Drawing2D.GraphicsPath.AddRoundedRectangle
   nameWithType: GraphicsPath.AddRoundedRectangle
+- uid: Egami.SystemDrawing.Drawing2D.GraphicsPath.AddString(System.String,Egami.SystemDrawing.FontFamily,System.Int32,System.Single,System.Drawing.Point,Egami.SystemDrawing.StringFormat)
+  name: AddString(string, FontFamily, int, float, Point, StringFormat?)
+  href: api/Egami.SystemDrawing.Drawing2D.GraphicsPath.html#Egami_SystemDrawing_Drawing2D_GraphicsPath_AddString_System_String_Egami_SystemDrawing_FontFamily_System_Int32_System_Single_System_Drawing_Point_Egami_SystemDrawing_StringFormat_
+  commentId: M:Egami.SystemDrawing.Drawing2D.GraphicsPath.AddString(System.String,Egami.SystemDrawing.FontFamily,System.Int32,System.Single,System.Drawing.Point,Egami.SystemDrawing.StringFormat)
+  name.vb: AddString(String, FontFamily, Integer, Single, Point, StringFormat)
+  fullName: Egami.SystemDrawing.Drawing2D.GraphicsPath.AddString(string, Egami.SystemDrawing.FontFamily, int, float, System.Drawing.Point, Egami.SystemDrawing.StringFormat?)
+  fullName.vb: Egami.SystemDrawing.Drawing2D.GraphicsPath.AddString(String, Egami.SystemDrawing.FontFamily, Integer, Single, System.Drawing.Point, Egami.SystemDrawing.StringFormat)
+  nameWithType: GraphicsPath.AddString(string, FontFamily, int, float, Point, StringFormat?)
+  nameWithType.vb: GraphicsPath.AddString(String, FontFamily, Integer, Single, Point, StringFormat)
+- uid: Egami.SystemDrawing.Drawing2D.GraphicsPath.AddString(System.String,Egami.SystemDrawing.FontFamily,System.Int32,System.Single,System.Drawing.PointF,Egami.SystemDrawing.StringFormat)
+  name: AddString(string, FontFamily, int, float, PointF, StringFormat?)
+  href: api/Egami.SystemDrawing.Drawing2D.GraphicsPath.html#Egami_SystemDrawing_Drawing2D_GraphicsPath_AddString_System_String_Egami_SystemDrawing_FontFamily_System_Int32_System_Single_System_Drawing_PointF_Egami_SystemDrawing_StringFormat_
+  commentId: M:Egami.SystemDrawing.Drawing2D.GraphicsPath.AddString(System.String,Egami.SystemDrawing.FontFamily,System.Int32,System.Single,System.Drawing.PointF,Egami.SystemDrawing.StringFormat)
+  name.vb: AddString(String, FontFamily, Integer, Single, PointF, StringFormat)
+  fullName: Egami.SystemDrawing.Drawing2D.GraphicsPath.AddString(string, Egami.SystemDrawing.FontFamily, int, float, System.Drawing.PointF, Egami.SystemDrawing.StringFormat?)
+  fullName.vb: Egami.SystemDrawing.Drawing2D.GraphicsPath.AddString(String, Egami.SystemDrawing.FontFamily, Integer, Single, System.Drawing.PointF, Egami.SystemDrawing.StringFormat)
+  nameWithType: GraphicsPath.AddString(string, FontFamily, int, float, PointF, StringFormat?)
+  nameWithType.vb: GraphicsPath.AddString(String, FontFamily, Integer, Single, PointF, StringFormat)
+- uid: Egami.SystemDrawing.Drawing2D.GraphicsPath.AddString(System.String,Egami.SystemDrawing.FontFamily,System.Int32,System.Single,System.Drawing.Rectangle,Egami.SystemDrawing.StringFormat)
+  name: AddString(string, FontFamily, int, float, Rectangle, StringFormat?)
+  href: api/Egami.SystemDrawing.Drawing2D.GraphicsPath.html#Egami_SystemDrawing_Drawing2D_GraphicsPath_AddString_System_String_Egami_SystemDrawing_FontFamily_System_Int32_System_Single_System_Drawing_Rectangle_Egami_SystemDrawing_StringFormat_
+  commentId: M:Egami.SystemDrawing.Drawing2D.GraphicsPath.AddString(System.String,Egami.SystemDrawing.FontFamily,System.Int32,System.Single,System.Drawing.Rectangle,Egami.SystemDrawing.StringFormat)
+  name.vb: AddString(String, FontFamily, Integer, Single, Rectangle, StringFormat)
+  fullName: Egami.SystemDrawing.Drawing2D.GraphicsPath.AddString(string, Egami.SystemDrawing.FontFamily, int, float, System.Drawing.Rectangle, Egami.SystemDrawing.StringFormat?)
+  fullName.vb: Egami.SystemDrawing.Drawing2D.GraphicsPath.AddString(String, Egami.SystemDrawing.FontFamily, Integer, Single, System.Drawing.Rectangle, Egami.SystemDrawing.StringFormat)
+  nameWithType: GraphicsPath.AddString(string, FontFamily, int, float, Rectangle, StringFormat?)
+  nameWithType.vb: GraphicsPath.AddString(String, FontFamily, Integer, Single, Rectangle, StringFormat)
+- uid: Egami.SystemDrawing.Drawing2D.GraphicsPath.AddString(System.String,Egami.SystemDrawing.FontFamily,System.Int32,System.Single,System.Drawing.RectangleF,Egami.SystemDrawing.StringFormat)
+  name: AddString(string, FontFamily, int, float, RectangleF, StringFormat?)
+  href: api/Egami.SystemDrawing.Drawing2D.GraphicsPath.html#Egami_SystemDrawing_Drawing2D_GraphicsPath_AddString_System_String_Egami_SystemDrawing_FontFamily_System_Int32_System_Single_System_Drawing_RectangleF_Egami_SystemDrawing_StringFormat_
+  commentId: M:Egami.SystemDrawing.Drawing2D.GraphicsPath.AddString(System.String,Egami.SystemDrawing.FontFamily,System.Int32,System.Single,System.Drawing.RectangleF,Egami.SystemDrawing.StringFormat)
+  name.vb: AddString(String, FontFamily, Integer, Single, RectangleF, StringFormat)
+  fullName: Egami.SystemDrawing.Drawing2D.GraphicsPath.AddString(string, Egami.SystemDrawing.FontFamily, int, float, System.Drawing.RectangleF, Egami.SystemDrawing.StringFormat?)
+  fullName.vb: Egami.SystemDrawing.Drawing2D.GraphicsPath.AddString(String, Egami.SystemDrawing.FontFamily, Integer, Single, System.Drawing.RectangleF, Egami.SystemDrawing.StringFormat)
+  nameWithType: GraphicsPath.AddString(string, FontFamily, int, float, RectangleF, StringFormat?)
+  nameWithType.vb: GraphicsPath.AddString(String, FontFamily, Integer, Single, RectangleF, StringFormat)
+- uid: Egami.SystemDrawing.Drawing2D.GraphicsPath.AddString*
+  name: AddString
+  href: api/Egami.SystemDrawing.Drawing2D.GraphicsPath.html#Egami_SystemDrawing_Drawing2D_GraphicsPath_AddString_
+  commentId: Overload:Egami.SystemDrawing.Drawing2D.GraphicsPath.AddString
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Drawing2D.GraphicsPath.AddString
+  nameWithType: GraphicsPath.AddString
 - uid: Egami.SystemDrawing.Drawing2D.GraphicsPath.ClearMarkers
   name: ClearMarkers()
   href: api/Egami.SystemDrawing.Drawing2D.GraphicsPath.html#Egami_SystemDrawing_Drawing2D_GraphicsPath_ClearMarkers
@@ -82957,6 +83124,1131 @@ references:
   commentId: F:Egami.SystemDrawing.Drawing2D.WrapMode.TileFlipY
   fullName: Egami.SystemDrawing.Drawing2D.WrapMode.TileFlipY
   nameWithType: WrapMode.TileFlipY
+- uid: Egami.SystemDrawing.Font
+  name: Font
+  href: api/Egami.SystemDrawing.Font.html
+  commentId: T:Egami.SystemDrawing.Font
+  fullName: Egami.SystemDrawing.Font
+  nameWithType: Font
+- uid: Egami.SystemDrawing.Font.#ctor(Egami.SystemDrawing.Font,Egami.SystemDrawing.FontStyle)
+  name: Font(Font, FontStyle)
+  href: api/Egami.SystemDrawing.Font.html#Egami_SystemDrawing_Font__ctor_Egami_SystemDrawing_Font_Egami_SystemDrawing_FontStyle_
+  commentId: M:Egami.SystemDrawing.Font.#ctor(Egami.SystemDrawing.Font,Egami.SystemDrawing.FontStyle)
+  name.vb: New(Font, FontStyle)
+  fullName: Egami.SystemDrawing.Font.Font(Egami.SystemDrawing.Font, Egami.SystemDrawing.FontStyle)
+  fullName.vb: Egami.SystemDrawing.Font.New(Egami.SystemDrawing.Font, Egami.SystemDrawing.FontStyle)
+  nameWithType: Font.Font(Font, FontStyle)
+  nameWithType.vb: Font.New(Font, FontStyle)
+- uid: Egami.SystemDrawing.Font.#ctor(Egami.SystemDrawing.FontFamily,System.Single)
+  name: Font(FontFamily, float)
+  href: api/Egami.SystemDrawing.Font.html#Egami_SystemDrawing_Font__ctor_Egami_SystemDrawing_FontFamily_System_Single_
+  commentId: M:Egami.SystemDrawing.Font.#ctor(Egami.SystemDrawing.FontFamily,System.Single)
+  name.vb: New(FontFamily, Single)
+  fullName: Egami.SystemDrawing.Font.Font(Egami.SystemDrawing.FontFamily, float)
+  fullName.vb: Egami.SystemDrawing.Font.New(Egami.SystemDrawing.FontFamily, Single)
+  nameWithType: Font.Font(FontFamily, float)
+  nameWithType.vb: Font.New(FontFamily, Single)
+- uid: Egami.SystemDrawing.Font.#ctor(Egami.SystemDrawing.FontFamily,System.Single,Egami.SystemDrawing.FontStyle)
+  name: Font(FontFamily, float, FontStyle)
+  href: api/Egami.SystemDrawing.Font.html#Egami_SystemDrawing_Font__ctor_Egami_SystemDrawing_FontFamily_System_Single_Egami_SystemDrawing_FontStyle_
+  commentId: M:Egami.SystemDrawing.Font.#ctor(Egami.SystemDrawing.FontFamily,System.Single,Egami.SystemDrawing.FontStyle)
+  name.vb: New(FontFamily, Single, FontStyle)
+  fullName: Egami.SystemDrawing.Font.Font(Egami.SystemDrawing.FontFamily, float, Egami.SystemDrawing.FontStyle)
+  fullName.vb: Egami.SystemDrawing.Font.New(Egami.SystemDrawing.FontFamily, Single, Egami.SystemDrawing.FontStyle)
+  nameWithType: Font.Font(FontFamily, float, FontStyle)
+  nameWithType.vb: Font.New(FontFamily, Single, FontStyle)
+- uid: Egami.SystemDrawing.Font.#ctor(Egami.SystemDrawing.FontFamily,System.Single,Egami.SystemDrawing.FontStyle,Egami.SystemDrawing.GraphicsUnit)
+  name: Font(FontFamily, float, FontStyle, GraphicsUnit)
+  href: api/Egami.SystemDrawing.Font.html#Egami_SystemDrawing_Font__ctor_Egami_SystemDrawing_FontFamily_System_Single_Egami_SystemDrawing_FontStyle_Egami_SystemDrawing_GraphicsUnit_
+  commentId: M:Egami.SystemDrawing.Font.#ctor(Egami.SystemDrawing.FontFamily,System.Single,Egami.SystemDrawing.FontStyle,Egami.SystemDrawing.GraphicsUnit)
+  name.vb: New(FontFamily, Single, FontStyle, GraphicsUnit)
+  fullName: Egami.SystemDrawing.Font.Font(Egami.SystemDrawing.FontFamily, float, Egami.SystemDrawing.FontStyle, Egami.SystemDrawing.GraphicsUnit)
+  fullName.vb: Egami.SystemDrawing.Font.New(Egami.SystemDrawing.FontFamily, Single, Egami.SystemDrawing.FontStyle, Egami.SystemDrawing.GraphicsUnit)
+  nameWithType: Font.Font(FontFamily, float, FontStyle, GraphicsUnit)
+  nameWithType.vb: Font.New(FontFamily, Single, FontStyle, GraphicsUnit)
+- uid: Egami.SystemDrawing.Font.#ctor(Egami.SystemDrawing.FontFamily,System.Single,Egami.SystemDrawing.FontStyle,Egami.SystemDrawing.GraphicsUnit,System.Byte)
+  name: Font(FontFamily, float, FontStyle, GraphicsUnit, byte)
+  href: api/Egami.SystemDrawing.Font.html#Egami_SystemDrawing_Font__ctor_Egami_SystemDrawing_FontFamily_System_Single_Egami_SystemDrawing_FontStyle_Egami_SystemDrawing_GraphicsUnit_System_Byte_
+  commentId: M:Egami.SystemDrawing.Font.#ctor(Egami.SystemDrawing.FontFamily,System.Single,Egami.SystemDrawing.FontStyle,Egami.SystemDrawing.GraphicsUnit,System.Byte)
+  name.vb: New(FontFamily, Single, FontStyle, GraphicsUnit, Byte)
+  fullName: Egami.SystemDrawing.Font.Font(Egami.SystemDrawing.FontFamily, float, Egami.SystemDrawing.FontStyle, Egami.SystemDrawing.GraphicsUnit, byte)
+  fullName.vb: Egami.SystemDrawing.Font.New(Egami.SystemDrawing.FontFamily, Single, Egami.SystemDrawing.FontStyle, Egami.SystemDrawing.GraphicsUnit, Byte)
+  nameWithType: Font.Font(FontFamily, float, FontStyle, GraphicsUnit, byte)
+  nameWithType.vb: Font.New(FontFamily, Single, FontStyle, GraphicsUnit, Byte)
+- uid: Egami.SystemDrawing.Font.#ctor(Egami.SystemDrawing.FontFamily,System.Single,Egami.SystemDrawing.FontStyle,Egami.SystemDrawing.GraphicsUnit,System.Byte,System.Boolean)
+  name: Font(FontFamily, float, FontStyle, GraphicsUnit, byte, bool)
+  href: api/Egami.SystemDrawing.Font.html#Egami_SystemDrawing_Font__ctor_Egami_SystemDrawing_FontFamily_System_Single_Egami_SystemDrawing_FontStyle_Egami_SystemDrawing_GraphicsUnit_System_Byte_System_Boolean_
+  commentId: M:Egami.SystemDrawing.Font.#ctor(Egami.SystemDrawing.FontFamily,System.Single,Egami.SystemDrawing.FontStyle,Egami.SystemDrawing.GraphicsUnit,System.Byte,System.Boolean)
+  name.vb: New(FontFamily, Single, FontStyle, GraphicsUnit, Byte, Boolean)
+  fullName: Egami.SystemDrawing.Font.Font(Egami.SystemDrawing.FontFamily, float, Egami.SystemDrawing.FontStyle, Egami.SystemDrawing.GraphicsUnit, byte, bool)
+  fullName.vb: Egami.SystemDrawing.Font.New(Egami.SystemDrawing.FontFamily, Single, Egami.SystemDrawing.FontStyle, Egami.SystemDrawing.GraphicsUnit, Byte, Boolean)
+  nameWithType: Font.Font(FontFamily, float, FontStyle, GraphicsUnit, byte, bool)
+  nameWithType.vb: Font.New(FontFamily, Single, FontStyle, GraphicsUnit, Byte, Boolean)
+- uid: Egami.SystemDrawing.Font.#ctor(Egami.SystemDrawing.FontFamily,System.Single,Egami.SystemDrawing.GraphicsUnit)
+  name: Font(FontFamily, float, GraphicsUnit)
+  href: api/Egami.SystemDrawing.Font.html#Egami_SystemDrawing_Font__ctor_Egami_SystemDrawing_FontFamily_System_Single_Egami_SystemDrawing_GraphicsUnit_
+  commentId: M:Egami.SystemDrawing.Font.#ctor(Egami.SystemDrawing.FontFamily,System.Single,Egami.SystemDrawing.GraphicsUnit)
+  name.vb: New(FontFamily, Single, GraphicsUnit)
+  fullName: Egami.SystemDrawing.Font.Font(Egami.SystemDrawing.FontFamily, float, Egami.SystemDrawing.GraphicsUnit)
+  fullName.vb: Egami.SystemDrawing.Font.New(Egami.SystemDrawing.FontFamily, Single, Egami.SystemDrawing.GraphicsUnit)
+  nameWithType: Font.Font(FontFamily, float, GraphicsUnit)
+  nameWithType.vb: Font.New(FontFamily, Single, GraphicsUnit)
+- uid: Egami.SystemDrawing.Font.#ctor(System.String,System.Single)
+  name: Font(string, float)
+  href: api/Egami.SystemDrawing.Font.html#Egami_SystemDrawing_Font__ctor_System_String_System_Single_
+  commentId: M:Egami.SystemDrawing.Font.#ctor(System.String,System.Single)
+  name.vb: New(String, Single)
+  fullName: Egami.SystemDrawing.Font.Font(string, float)
+  fullName.vb: Egami.SystemDrawing.Font.New(String, Single)
+  nameWithType: Font.Font(string, float)
+  nameWithType.vb: Font.New(String, Single)
+- uid: Egami.SystemDrawing.Font.#ctor(System.String,System.Single,Egami.SystemDrawing.FontStyle)
+  name: Font(string, float, FontStyle)
+  href: api/Egami.SystemDrawing.Font.html#Egami_SystemDrawing_Font__ctor_System_String_System_Single_Egami_SystemDrawing_FontStyle_
+  commentId: M:Egami.SystemDrawing.Font.#ctor(System.String,System.Single,Egami.SystemDrawing.FontStyle)
+  name.vb: New(String, Single, FontStyle)
+  fullName: Egami.SystemDrawing.Font.Font(string, float, Egami.SystemDrawing.FontStyle)
+  fullName.vb: Egami.SystemDrawing.Font.New(String, Single, Egami.SystemDrawing.FontStyle)
+  nameWithType: Font.Font(string, float, FontStyle)
+  nameWithType.vb: Font.New(String, Single, FontStyle)
+- uid: Egami.SystemDrawing.Font.#ctor(System.String,System.Single,Egami.SystemDrawing.FontStyle,Egami.SystemDrawing.GraphicsUnit)
+  name: Font(string, float, FontStyle, GraphicsUnit)
+  href: api/Egami.SystemDrawing.Font.html#Egami_SystemDrawing_Font__ctor_System_String_System_Single_Egami_SystemDrawing_FontStyle_Egami_SystemDrawing_GraphicsUnit_
+  commentId: M:Egami.SystemDrawing.Font.#ctor(System.String,System.Single,Egami.SystemDrawing.FontStyle,Egami.SystemDrawing.GraphicsUnit)
+  name.vb: New(String, Single, FontStyle, GraphicsUnit)
+  fullName: Egami.SystemDrawing.Font.Font(string, float, Egami.SystemDrawing.FontStyle, Egami.SystemDrawing.GraphicsUnit)
+  fullName.vb: Egami.SystemDrawing.Font.New(String, Single, Egami.SystemDrawing.FontStyle, Egami.SystemDrawing.GraphicsUnit)
+  nameWithType: Font.Font(string, float, FontStyle, GraphicsUnit)
+  nameWithType.vb: Font.New(String, Single, FontStyle, GraphicsUnit)
+- uid: Egami.SystemDrawing.Font.#ctor(System.String,System.Single,Egami.SystemDrawing.FontStyle,Egami.SystemDrawing.GraphicsUnit,System.Byte)
+  name: Font(string, float, FontStyle, GraphicsUnit, byte)
+  href: api/Egami.SystemDrawing.Font.html#Egami_SystemDrawing_Font__ctor_System_String_System_Single_Egami_SystemDrawing_FontStyle_Egami_SystemDrawing_GraphicsUnit_System_Byte_
+  commentId: M:Egami.SystemDrawing.Font.#ctor(System.String,System.Single,Egami.SystemDrawing.FontStyle,Egami.SystemDrawing.GraphicsUnit,System.Byte)
+  name.vb: New(String, Single, FontStyle, GraphicsUnit, Byte)
+  fullName: Egami.SystemDrawing.Font.Font(string, float, Egami.SystemDrawing.FontStyle, Egami.SystemDrawing.GraphicsUnit, byte)
+  fullName.vb: Egami.SystemDrawing.Font.New(String, Single, Egami.SystemDrawing.FontStyle, Egami.SystemDrawing.GraphicsUnit, Byte)
+  nameWithType: Font.Font(string, float, FontStyle, GraphicsUnit, byte)
+  nameWithType.vb: Font.New(String, Single, FontStyle, GraphicsUnit, Byte)
+- uid: Egami.SystemDrawing.Font.#ctor(System.String,System.Single,Egami.SystemDrawing.FontStyle,Egami.SystemDrawing.GraphicsUnit,System.Byte,System.Boolean)
+  name: Font(string, float, FontStyle, GraphicsUnit, byte, bool)
+  href: api/Egami.SystemDrawing.Font.html#Egami_SystemDrawing_Font__ctor_System_String_System_Single_Egami_SystemDrawing_FontStyle_Egami_SystemDrawing_GraphicsUnit_System_Byte_System_Boolean_
+  commentId: M:Egami.SystemDrawing.Font.#ctor(System.String,System.Single,Egami.SystemDrawing.FontStyle,Egami.SystemDrawing.GraphicsUnit,System.Byte,System.Boolean)
+  name.vb: New(String, Single, FontStyle, GraphicsUnit, Byte, Boolean)
+  fullName: Egami.SystemDrawing.Font.Font(string, float, Egami.SystemDrawing.FontStyle, Egami.SystemDrawing.GraphicsUnit, byte, bool)
+  fullName.vb: Egami.SystemDrawing.Font.New(String, Single, Egami.SystemDrawing.FontStyle, Egami.SystemDrawing.GraphicsUnit, Byte, Boolean)
+  nameWithType: Font.Font(string, float, FontStyle, GraphicsUnit, byte, bool)
+  nameWithType.vb: Font.New(String, Single, FontStyle, GraphicsUnit, Byte, Boolean)
+- uid: Egami.SystemDrawing.Font.#ctor(System.String,System.Single,Egami.SystemDrawing.GraphicsUnit)
+  name: Font(string, float, GraphicsUnit)
+  href: api/Egami.SystemDrawing.Font.html#Egami_SystemDrawing_Font__ctor_System_String_System_Single_Egami_SystemDrawing_GraphicsUnit_
+  commentId: M:Egami.SystemDrawing.Font.#ctor(System.String,System.Single,Egami.SystemDrawing.GraphicsUnit)
+  name.vb: New(String, Single, GraphicsUnit)
+  fullName: Egami.SystemDrawing.Font.Font(string, float, Egami.SystemDrawing.GraphicsUnit)
+  fullName.vb: Egami.SystemDrawing.Font.New(String, Single, Egami.SystemDrawing.GraphicsUnit)
+  nameWithType: Font.Font(string, float, GraphicsUnit)
+  nameWithType.vb: Font.New(String, Single, GraphicsUnit)
+- uid: Egami.SystemDrawing.Font.#ctor*
+  name: Font
+  href: api/Egami.SystemDrawing.Font.html#Egami_SystemDrawing_Font__ctor_
+  commentId: Overload:Egami.SystemDrawing.Font.#ctor
+  isSpec: "True"
+  name.vb: New
+  fullName: Egami.SystemDrawing.Font.Font
+  fullName.vb: Egami.SystemDrawing.Font.New
+  nameWithType: Font.Font
+  nameWithType.vb: Font.New
+- uid: Egami.SystemDrawing.Font.Bold
+  name: Bold
+  href: api/Egami.SystemDrawing.Font.html#Egami_SystemDrawing_Font_Bold
+  commentId: P:Egami.SystemDrawing.Font.Bold
+  fullName: Egami.SystemDrawing.Font.Bold
+  nameWithType: Font.Bold
+- uid: Egami.SystemDrawing.Font.Bold*
+  name: Bold
+  href: api/Egami.SystemDrawing.Font.html#Egami_SystemDrawing_Font_Bold_
+  commentId: Overload:Egami.SystemDrawing.Font.Bold
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Font.Bold
+  nameWithType: Font.Bold
+- uid: Egami.SystemDrawing.Font.Clone
+  name: Clone()
+  href: api/Egami.SystemDrawing.Font.html#Egami_SystemDrawing_Font_Clone
+  commentId: M:Egami.SystemDrawing.Font.Clone
+  fullName: Egami.SystemDrawing.Font.Clone()
+  nameWithType: Font.Clone()
+- uid: Egami.SystemDrawing.Font.Clone*
+  name: Clone
+  href: api/Egami.SystemDrawing.Font.html#Egami_SystemDrawing_Font_Clone_
+  commentId: Overload:Egami.SystemDrawing.Font.Clone
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Font.Clone
+  nameWithType: Font.Clone
+- uid: Egami.SystemDrawing.Font.Dispose
+  name: Dispose()
+  href: api/Egami.SystemDrawing.Font.html#Egami_SystemDrawing_Font_Dispose
+  commentId: M:Egami.SystemDrawing.Font.Dispose
+  fullName: Egami.SystemDrawing.Font.Dispose()
+  nameWithType: Font.Dispose()
+- uid: Egami.SystemDrawing.Font.Dispose*
+  name: Dispose
+  href: api/Egami.SystemDrawing.Font.html#Egami_SystemDrawing_Font_Dispose_
+  commentId: Overload:Egami.SystemDrawing.Font.Dispose
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Font.Dispose
+  nameWithType: Font.Dispose
+- uid: Egami.SystemDrawing.Font.Equals(System.Object)
+  name: Equals(object?)
+  href: api/Egami.SystemDrawing.Font.html#Egami_SystemDrawing_Font_Equals_System_Object_
+  commentId: M:Egami.SystemDrawing.Font.Equals(System.Object)
+  name.vb: Equals(Object)
+  fullName: Egami.SystemDrawing.Font.Equals(object?)
+  fullName.vb: Egami.SystemDrawing.Font.Equals(Object)
+  nameWithType: Font.Equals(object?)
+  nameWithType.vb: Font.Equals(Object)
+- uid: Egami.SystemDrawing.Font.Equals*
+  name: Equals
+  href: api/Egami.SystemDrawing.Font.html#Egami_SystemDrawing_Font_Equals_
+  commentId: Overload:Egami.SystemDrawing.Font.Equals
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Font.Equals
+  nameWithType: Font.Equals
+- uid: Egami.SystemDrawing.Font.FontFamily
+  name: FontFamily
+  href: api/Egami.SystemDrawing.Font.html#Egami_SystemDrawing_Font_FontFamily
+  commentId: P:Egami.SystemDrawing.Font.FontFamily
+  fullName: Egami.SystemDrawing.Font.FontFamily
+  nameWithType: Font.FontFamily
+- uid: Egami.SystemDrawing.Font.FontFamily*
+  name: FontFamily
+  href: api/Egami.SystemDrawing.Font.html#Egami_SystemDrawing_Font_FontFamily_
+  commentId: Overload:Egami.SystemDrawing.Font.FontFamily
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Font.FontFamily
+  nameWithType: Font.FontFamily
+- uid: Egami.SystemDrawing.Font.FromHdc(System.IntPtr)
+  name: FromHdc(nint)
+  href: api/Egami.SystemDrawing.Font.html#Egami_SystemDrawing_Font_FromHdc_System_IntPtr_
+  commentId: M:Egami.SystemDrawing.Font.FromHdc(System.IntPtr)
+  name.vb: FromHdc(IntPtr)
+  fullName: Egami.SystemDrawing.Font.FromHdc(nint)
+  fullName.vb: Egami.SystemDrawing.Font.FromHdc(System.IntPtr)
+  nameWithType: Font.FromHdc(nint)
+  nameWithType.vb: Font.FromHdc(IntPtr)
+- uid: Egami.SystemDrawing.Font.FromHdc*
+  name: FromHdc
+  href: api/Egami.SystemDrawing.Font.html#Egami_SystemDrawing_Font_FromHdc_
+  commentId: Overload:Egami.SystemDrawing.Font.FromHdc
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Font.FromHdc
+  nameWithType: Font.FromHdc
+- uid: Egami.SystemDrawing.Font.FromHfont(System.IntPtr)
+  name: FromHfont(nint)
+  href: api/Egami.SystemDrawing.Font.html#Egami_SystemDrawing_Font_FromHfont_System_IntPtr_
+  commentId: M:Egami.SystemDrawing.Font.FromHfont(System.IntPtr)
+  name.vb: FromHfont(IntPtr)
+  fullName: Egami.SystemDrawing.Font.FromHfont(nint)
+  fullName.vb: Egami.SystemDrawing.Font.FromHfont(System.IntPtr)
+  nameWithType: Font.FromHfont(nint)
+  nameWithType.vb: Font.FromHfont(IntPtr)
+- uid: Egami.SystemDrawing.Font.FromHfont*
+  name: FromHfont
+  href: api/Egami.SystemDrawing.Font.html#Egami_SystemDrawing_Font_FromHfont_
+  commentId: Overload:Egami.SystemDrawing.Font.FromHfont
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Font.FromHfont
+  nameWithType: Font.FromHfont
+- uid: Egami.SystemDrawing.Font.FromLogFont(Egami.SystemDrawing.Interop.LOGFONT@)
+  name: FromLogFont(ref LOGFONT)
+  href: api/Egami.SystemDrawing.Font.html#Egami_SystemDrawing_Font_FromLogFont_Egami_SystemDrawing_Interop_LOGFONT__
+  commentId: M:Egami.SystemDrawing.Font.FromLogFont(Egami.SystemDrawing.Interop.LOGFONT@)
+  name.vb: FromLogFont(LOGFONT)
+  fullName: Egami.SystemDrawing.Font.FromLogFont(ref Egami.SystemDrawing.Interop.LOGFONT)
+  fullName.vb: Egami.SystemDrawing.Font.FromLogFont(Egami.SystemDrawing.Interop.LOGFONT)
+  nameWithType: Font.FromLogFont(ref LOGFONT)
+  nameWithType.vb: Font.FromLogFont(LOGFONT)
+- uid: Egami.SystemDrawing.Font.FromLogFont(Egami.SystemDrawing.Interop.LOGFONT@,System.IntPtr)
+  name: FromLogFont(ref LOGFONT, nint)
+  href: api/Egami.SystemDrawing.Font.html#Egami_SystemDrawing_Font_FromLogFont_Egami_SystemDrawing_Interop_LOGFONT__System_IntPtr_
+  commentId: M:Egami.SystemDrawing.Font.FromLogFont(Egami.SystemDrawing.Interop.LOGFONT@,System.IntPtr)
+  name.vb: FromLogFont(LOGFONT, IntPtr)
+  fullName: Egami.SystemDrawing.Font.FromLogFont(ref Egami.SystemDrawing.Interop.LOGFONT, nint)
+  fullName.vb: Egami.SystemDrawing.Font.FromLogFont(Egami.SystemDrawing.Interop.LOGFONT, System.IntPtr)
+  nameWithType: Font.FromLogFont(ref LOGFONT, nint)
+  nameWithType.vb: Font.FromLogFont(LOGFONT, IntPtr)
+- uid: Egami.SystemDrawing.Font.FromLogFont(System.Object)
+  name: FromLogFont(object)
+  href: api/Egami.SystemDrawing.Font.html#Egami_SystemDrawing_Font_FromLogFont_System_Object_
+  commentId: M:Egami.SystemDrawing.Font.FromLogFont(System.Object)
+  name.vb: FromLogFont(Object)
+  fullName: Egami.SystemDrawing.Font.FromLogFont(object)
+  fullName.vb: Egami.SystemDrawing.Font.FromLogFont(Object)
+  nameWithType: Font.FromLogFont(object)
+  nameWithType.vb: Font.FromLogFont(Object)
+- uid: Egami.SystemDrawing.Font.FromLogFont(System.Object,System.IntPtr)
+  name: FromLogFont(object, nint)
+  href: api/Egami.SystemDrawing.Font.html#Egami_SystemDrawing_Font_FromLogFont_System_Object_System_IntPtr_
+  commentId: M:Egami.SystemDrawing.Font.FromLogFont(System.Object,System.IntPtr)
+  name.vb: FromLogFont(Object, IntPtr)
+  fullName: Egami.SystemDrawing.Font.FromLogFont(object, nint)
+  fullName.vb: Egami.SystemDrawing.Font.FromLogFont(Object, System.IntPtr)
+  nameWithType: Font.FromLogFont(object, nint)
+  nameWithType.vb: Font.FromLogFont(Object, IntPtr)
+- uid: Egami.SystemDrawing.Font.FromLogFont*
+  name: FromLogFont
+  href: api/Egami.SystemDrawing.Font.html#Egami_SystemDrawing_Font_FromLogFont_
+  commentId: Overload:Egami.SystemDrawing.Font.FromLogFont
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Font.FromLogFont
+  nameWithType: Font.FromLogFont
+- uid: Egami.SystemDrawing.Font.GdiCharSet
+  name: GdiCharSet
+  href: api/Egami.SystemDrawing.Font.html#Egami_SystemDrawing_Font_GdiCharSet
+  commentId: P:Egami.SystemDrawing.Font.GdiCharSet
+  fullName: Egami.SystemDrawing.Font.GdiCharSet
+  nameWithType: Font.GdiCharSet
+- uid: Egami.SystemDrawing.Font.GdiCharSet*
+  name: GdiCharSet
+  href: api/Egami.SystemDrawing.Font.html#Egami_SystemDrawing_Font_GdiCharSet_
+  commentId: Overload:Egami.SystemDrawing.Font.GdiCharSet
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Font.GdiCharSet
+  nameWithType: Font.GdiCharSet
+- uid: Egami.SystemDrawing.Font.GdiVerticalFont
+  name: GdiVerticalFont
+  href: api/Egami.SystemDrawing.Font.html#Egami_SystemDrawing_Font_GdiVerticalFont
+  commentId: P:Egami.SystemDrawing.Font.GdiVerticalFont
+  fullName: Egami.SystemDrawing.Font.GdiVerticalFont
+  nameWithType: Font.GdiVerticalFont
+- uid: Egami.SystemDrawing.Font.GdiVerticalFont*
+  name: GdiVerticalFont
+  href: api/Egami.SystemDrawing.Font.html#Egami_SystemDrawing_Font_GdiVerticalFont_
+  commentId: Overload:Egami.SystemDrawing.Font.GdiVerticalFont
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Font.GdiVerticalFont
+  nameWithType: Font.GdiVerticalFont
+- uid: Egami.SystemDrawing.Font.GetHashCode
+  name: GetHashCode()
+  href: api/Egami.SystemDrawing.Font.html#Egami_SystemDrawing_Font_GetHashCode
+  commentId: M:Egami.SystemDrawing.Font.GetHashCode
+  fullName: Egami.SystemDrawing.Font.GetHashCode()
+  nameWithType: Font.GetHashCode()
+- uid: Egami.SystemDrawing.Font.GetHashCode*
+  name: GetHashCode
+  href: api/Egami.SystemDrawing.Font.html#Egami_SystemDrawing_Font_GetHashCode_
+  commentId: Overload:Egami.SystemDrawing.Font.GetHashCode
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Font.GetHashCode
+  nameWithType: Font.GetHashCode
+- uid: Egami.SystemDrawing.Font.GetHeight
+  name: GetHeight()
+  href: api/Egami.SystemDrawing.Font.html#Egami_SystemDrawing_Font_GetHeight
+  commentId: M:Egami.SystemDrawing.Font.GetHeight
+  fullName: Egami.SystemDrawing.Font.GetHeight()
+  nameWithType: Font.GetHeight()
+- uid: Egami.SystemDrawing.Font.GetHeight(Egami.SystemDrawing.Graphics)
+  name: GetHeight(Graphics)
+  href: api/Egami.SystemDrawing.Font.html#Egami_SystemDrawing_Font_GetHeight_Egami_SystemDrawing_Graphics_
+  commentId: M:Egami.SystemDrawing.Font.GetHeight(Egami.SystemDrawing.Graphics)
+  fullName: Egami.SystemDrawing.Font.GetHeight(Egami.SystemDrawing.Graphics)
+  nameWithType: Font.GetHeight(Graphics)
+- uid: Egami.SystemDrawing.Font.GetHeight(System.Single)
+  name: GetHeight(float)
+  href: api/Egami.SystemDrawing.Font.html#Egami_SystemDrawing_Font_GetHeight_System_Single_
+  commentId: M:Egami.SystemDrawing.Font.GetHeight(System.Single)
+  name.vb: GetHeight(Single)
+  fullName: Egami.SystemDrawing.Font.GetHeight(float)
+  fullName.vb: Egami.SystemDrawing.Font.GetHeight(Single)
+  nameWithType: Font.GetHeight(float)
+  nameWithType.vb: Font.GetHeight(Single)
+- uid: Egami.SystemDrawing.Font.GetHeight*
+  name: GetHeight
+  href: api/Egami.SystemDrawing.Font.html#Egami_SystemDrawing_Font_GetHeight_
+  commentId: Overload:Egami.SystemDrawing.Font.GetHeight
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Font.GetHeight
+  nameWithType: Font.GetHeight
+- uid: Egami.SystemDrawing.Font.Height
+  name: Height
+  href: api/Egami.SystemDrawing.Font.html#Egami_SystemDrawing_Font_Height
+  commentId: P:Egami.SystemDrawing.Font.Height
+  fullName: Egami.SystemDrawing.Font.Height
+  nameWithType: Font.Height
+- uid: Egami.SystemDrawing.Font.Height*
+  name: Height
+  href: api/Egami.SystemDrawing.Font.html#Egami_SystemDrawing_Font_Height_
+  commentId: Overload:Egami.SystemDrawing.Font.Height
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Font.Height
+  nameWithType: Font.Height
+- uid: Egami.SystemDrawing.Font.IsSystemFont
+  name: IsSystemFont
+  href: api/Egami.SystemDrawing.Font.html#Egami_SystemDrawing_Font_IsSystemFont
+  commentId: P:Egami.SystemDrawing.Font.IsSystemFont
+  fullName: Egami.SystemDrawing.Font.IsSystemFont
+  nameWithType: Font.IsSystemFont
+- uid: Egami.SystemDrawing.Font.IsSystemFont*
+  name: IsSystemFont
+  href: api/Egami.SystemDrawing.Font.html#Egami_SystemDrawing_Font_IsSystemFont_
+  commentId: Overload:Egami.SystemDrawing.Font.IsSystemFont
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Font.IsSystemFont
+  nameWithType: Font.IsSystemFont
+- uid: Egami.SystemDrawing.Font.Italic
+  name: Italic
+  href: api/Egami.SystemDrawing.Font.html#Egami_SystemDrawing_Font_Italic
+  commentId: P:Egami.SystemDrawing.Font.Italic
+  fullName: Egami.SystemDrawing.Font.Italic
+  nameWithType: Font.Italic
+- uid: Egami.SystemDrawing.Font.Italic*
+  name: Italic
+  href: api/Egami.SystemDrawing.Font.html#Egami_SystemDrawing_Font_Italic_
+  commentId: Overload:Egami.SystemDrawing.Font.Italic
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Font.Italic
+  nameWithType: Font.Italic
+- uid: Egami.SystemDrawing.Font.Name
+  name: Name
+  href: api/Egami.SystemDrawing.Font.html#Egami_SystemDrawing_Font_Name
+  commentId: P:Egami.SystemDrawing.Font.Name
+  fullName: Egami.SystemDrawing.Font.Name
+  nameWithType: Font.Name
+- uid: Egami.SystemDrawing.Font.Name*
+  name: Name
+  href: api/Egami.SystemDrawing.Font.html#Egami_SystemDrawing_Font_Name_
+  commentId: Overload:Egami.SystemDrawing.Font.Name
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Font.Name
+  nameWithType: Font.Name
+- uid: Egami.SystemDrawing.Font.OriginalFontName
+  name: OriginalFontName
+  href: api/Egami.SystemDrawing.Font.html#Egami_SystemDrawing_Font_OriginalFontName
+  commentId: P:Egami.SystemDrawing.Font.OriginalFontName
+  fullName: Egami.SystemDrawing.Font.OriginalFontName
+  nameWithType: Font.OriginalFontName
+- uid: Egami.SystemDrawing.Font.OriginalFontName*
+  name: OriginalFontName
+  href: api/Egami.SystemDrawing.Font.html#Egami_SystemDrawing_Font_OriginalFontName_
+  commentId: Overload:Egami.SystemDrawing.Font.OriginalFontName
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Font.OriginalFontName
+  nameWithType: Font.OriginalFontName
+- uid: Egami.SystemDrawing.Font.Size
+  name: Size
+  href: api/Egami.SystemDrawing.Font.html#Egami_SystemDrawing_Font_Size
+  commentId: P:Egami.SystemDrawing.Font.Size
+  fullName: Egami.SystemDrawing.Font.Size
+  nameWithType: Font.Size
+- uid: Egami.SystemDrawing.Font.Size*
+  name: Size
+  href: api/Egami.SystemDrawing.Font.html#Egami_SystemDrawing_Font_Size_
+  commentId: Overload:Egami.SystemDrawing.Font.Size
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Font.Size
+  nameWithType: Font.Size
+- uid: Egami.SystemDrawing.Font.SizeInPoints
+  name: SizeInPoints
+  href: api/Egami.SystemDrawing.Font.html#Egami_SystemDrawing_Font_SizeInPoints
+  commentId: P:Egami.SystemDrawing.Font.SizeInPoints
+  fullName: Egami.SystemDrawing.Font.SizeInPoints
+  nameWithType: Font.SizeInPoints
+- uid: Egami.SystemDrawing.Font.SizeInPoints*
+  name: SizeInPoints
+  href: api/Egami.SystemDrawing.Font.html#Egami_SystemDrawing_Font_SizeInPoints_
+  commentId: Overload:Egami.SystemDrawing.Font.SizeInPoints
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Font.SizeInPoints
+  nameWithType: Font.SizeInPoints
+- uid: Egami.SystemDrawing.Font.Strikeout
+  name: Strikeout
+  href: api/Egami.SystemDrawing.Font.html#Egami_SystemDrawing_Font_Strikeout
+  commentId: P:Egami.SystemDrawing.Font.Strikeout
+  fullName: Egami.SystemDrawing.Font.Strikeout
+  nameWithType: Font.Strikeout
+- uid: Egami.SystemDrawing.Font.Strikeout*
+  name: Strikeout
+  href: api/Egami.SystemDrawing.Font.html#Egami_SystemDrawing_Font_Strikeout_
+  commentId: Overload:Egami.SystemDrawing.Font.Strikeout
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Font.Strikeout
+  nameWithType: Font.Strikeout
+- uid: Egami.SystemDrawing.Font.Style
+  name: Style
+  href: api/Egami.SystemDrawing.Font.html#Egami_SystemDrawing_Font_Style
+  commentId: P:Egami.SystemDrawing.Font.Style
+  fullName: Egami.SystemDrawing.Font.Style
+  nameWithType: Font.Style
+- uid: Egami.SystemDrawing.Font.Style*
+  name: Style
+  href: api/Egami.SystemDrawing.Font.html#Egami_SystemDrawing_Font_Style_
+  commentId: Overload:Egami.SystemDrawing.Font.Style
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Font.Style
+  nameWithType: Font.Style
+- uid: Egami.SystemDrawing.Font.SystemFontName
+  name: SystemFontName
+  href: api/Egami.SystemDrawing.Font.html#Egami_SystemDrawing_Font_SystemFontName
+  commentId: P:Egami.SystemDrawing.Font.SystemFontName
+  fullName: Egami.SystemDrawing.Font.SystemFontName
+  nameWithType: Font.SystemFontName
+- uid: Egami.SystemDrawing.Font.SystemFontName*
+  name: SystemFontName
+  href: api/Egami.SystemDrawing.Font.html#Egami_SystemDrawing_Font_SystemFontName_
+  commentId: Overload:Egami.SystemDrawing.Font.SystemFontName
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Font.SystemFontName
+  nameWithType: Font.SystemFontName
+- uid: Egami.SystemDrawing.Font.ToEgamiFont(System.Single)
+  name: ToEgamiFont(float)
+  href: api/Egami.SystemDrawing.Font.html#Egami_SystemDrawing_Font_ToEgamiFont_System_Single_
+  commentId: M:Egami.SystemDrawing.Font.ToEgamiFont(System.Single)
+  name.vb: ToEgamiFont(Single)
+  fullName: Egami.SystemDrawing.Font.ToEgamiFont(float)
+  fullName.vb: Egami.SystemDrawing.Font.ToEgamiFont(Single)
+  nameWithType: Font.ToEgamiFont(float)
+  nameWithType.vb: Font.ToEgamiFont(Single)
+- uid: Egami.SystemDrawing.Font.ToEgamiFont*
+  name: ToEgamiFont
+  href: api/Egami.SystemDrawing.Font.html#Egami_SystemDrawing_Font_ToEgamiFont_
+  commentId: Overload:Egami.SystemDrawing.Font.ToEgamiFont
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Font.ToEgamiFont
+  nameWithType: Font.ToEgamiFont
+- uid: Egami.SystemDrawing.Font.ToHfont
+  name: ToHfont()
+  href: api/Egami.SystemDrawing.Font.html#Egami_SystemDrawing_Font_ToHfont
+  commentId: M:Egami.SystemDrawing.Font.ToHfont
+  fullName: Egami.SystemDrawing.Font.ToHfont()
+  nameWithType: Font.ToHfont()
+- uid: Egami.SystemDrawing.Font.ToHfont*
+  name: ToHfont
+  href: api/Egami.SystemDrawing.Font.html#Egami_SystemDrawing_Font_ToHfont_
+  commentId: Overload:Egami.SystemDrawing.Font.ToHfont
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Font.ToHfont
+  nameWithType: Font.ToHfont
+- uid: Egami.SystemDrawing.Font.ToLogFont(Egami.SystemDrawing.Interop.LOGFONT@)
+  name: ToLogFont(out LOGFONT)
+  href: api/Egami.SystemDrawing.Font.html#Egami_SystemDrawing_Font_ToLogFont_Egami_SystemDrawing_Interop_LOGFONT__
+  commentId: M:Egami.SystemDrawing.Font.ToLogFont(Egami.SystemDrawing.Interop.LOGFONT@)
+  name.vb: ToLogFont(LOGFONT)
+  fullName: Egami.SystemDrawing.Font.ToLogFont(out Egami.SystemDrawing.Interop.LOGFONT)
+  fullName.vb: Egami.SystemDrawing.Font.ToLogFont(Egami.SystemDrawing.Interop.LOGFONT)
+  nameWithType: Font.ToLogFont(out LOGFONT)
+  nameWithType.vb: Font.ToLogFont(LOGFONT)
+- uid: Egami.SystemDrawing.Font.ToLogFont(Egami.SystemDrawing.Interop.LOGFONT@,Egami.SystemDrawing.Graphics)
+  name: ToLogFont(out LOGFONT, Graphics)
+  href: api/Egami.SystemDrawing.Font.html#Egami_SystemDrawing_Font_ToLogFont_Egami_SystemDrawing_Interop_LOGFONT__Egami_SystemDrawing_Graphics_
+  commentId: M:Egami.SystemDrawing.Font.ToLogFont(Egami.SystemDrawing.Interop.LOGFONT@,Egami.SystemDrawing.Graphics)
+  name.vb: ToLogFont(LOGFONT, Graphics)
+  fullName: Egami.SystemDrawing.Font.ToLogFont(out Egami.SystemDrawing.Interop.LOGFONT, Egami.SystemDrawing.Graphics)
+  fullName.vb: Egami.SystemDrawing.Font.ToLogFont(Egami.SystemDrawing.Interop.LOGFONT, Egami.SystemDrawing.Graphics)
+  nameWithType: Font.ToLogFont(out LOGFONT, Graphics)
+  nameWithType.vb: Font.ToLogFont(LOGFONT, Graphics)
+- uid: Egami.SystemDrawing.Font.ToLogFont(System.Object)
+  name: ToLogFont(object)
+  href: api/Egami.SystemDrawing.Font.html#Egami_SystemDrawing_Font_ToLogFont_System_Object_
+  commentId: M:Egami.SystemDrawing.Font.ToLogFont(System.Object)
+  name.vb: ToLogFont(Object)
+  fullName: Egami.SystemDrawing.Font.ToLogFont(object)
+  fullName.vb: Egami.SystemDrawing.Font.ToLogFont(Object)
+  nameWithType: Font.ToLogFont(object)
+  nameWithType.vb: Font.ToLogFont(Object)
+- uid: Egami.SystemDrawing.Font.ToLogFont(System.Object,Egami.SystemDrawing.Graphics)
+  name: ToLogFont(object, Graphics)
+  href: api/Egami.SystemDrawing.Font.html#Egami_SystemDrawing_Font_ToLogFont_System_Object_Egami_SystemDrawing_Graphics_
+  commentId: M:Egami.SystemDrawing.Font.ToLogFont(System.Object,Egami.SystemDrawing.Graphics)
+  name.vb: ToLogFont(Object, Graphics)
+  fullName: Egami.SystemDrawing.Font.ToLogFont(object, Egami.SystemDrawing.Graphics)
+  fullName.vb: Egami.SystemDrawing.Font.ToLogFont(Object, Egami.SystemDrawing.Graphics)
+  nameWithType: Font.ToLogFont(object, Graphics)
+  nameWithType.vb: Font.ToLogFont(Object, Graphics)
+- uid: Egami.SystemDrawing.Font.ToLogFont*
+  name: ToLogFont
+  href: api/Egami.SystemDrawing.Font.html#Egami_SystemDrawing_Font_ToLogFont_
+  commentId: Overload:Egami.SystemDrawing.Font.ToLogFont
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Font.ToLogFont
+  nameWithType: Font.ToLogFont
+- uid: Egami.SystemDrawing.Font.ToString
+  name: ToString()
+  href: api/Egami.SystemDrawing.Font.html#Egami_SystemDrawing_Font_ToString
+  commentId: M:Egami.SystemDrawing.Font.ToString
+  fullName: Egami.SystemDrawing.Font.ToString()
+  nameWithType: Font.ToString()
+- uid: Egami.SystemDrawing.Font.ToString*
+  name: ToString
+  href: api/Egami.SystemDrawing.Font.html#Egami_SystemDrawing_Font_ToString_
+  commentId: Overload:Egami.SystemDrawing.Font.ToString
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Font.ToString
+  nameWithType: Font.ToString
+- uid: Egami.SystemDrawing.Font.Underline
+  name: Underline
+  href: api/Egami.SystemDrawing.Font.html#Egami_SystemDrawing_Font_Underline
+  commentId: P:Egami.SystemDrawing.Font.Underline
+  fullName: Egami.SystemDrawing.Font.Underline
+  nameWithType: Font.Underline
+- uid: Egami.SystemDrawing.Font.Underline*
+  name: Underline
+  href: api/Egami.SystemDrawing.Font.html#Egami_SystemDrawing_Font_Underline_
+  commentId: Overload:Egami.SystemDrawing.Font.Underline
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Font.Underline
+  nameWithType: Font.Underline
+- uid: Egami.SystemDrawing.Font.Unit
+  name: Unit
+  href: api/Egami.SystemDrawing.Font.html#Egami_SystemDrawing_Font_Unit
+  commentId: P:Egami.SystemDrawing.Font.Unit
+  fullName: Egami.SystemDrawing.Font.Unit
+  nameWithType: Font.Unit
+- uid: Egami.SystemDrawing.Font.Unit*
+  name: Unit
+  href: api/Egami.SystemDrawing.Font.html#Egami_SystemDrawing_Font_Unit_
+  commentId: Overload:Egami.SystemDrawing.Font.Unit
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Font.Unit
+  nameWithType: Font.Unit
+- uid: Egami.SystemDrawing.FontConverter
+  name: FontConverter
+  href: api/Egami.SystemDrawing.FontConverter.html
+  commentId: T:Egami.SystemDrawing.FontConverter
+  fullName: Egami.SystemDrawing.FontConverter
+  nameWithType: FontConverter
+- uid: Egami.SystemDrawing.FontConverter.CanConvertFrom(System.ComponentModel.ITypeDescriptorContext,System.Type)
+  name: CanConvertFrom(ITypeDescriptorContext?, Type)
+  href: api/Egami.SystemDrawing.FontConverter.html#Egami_SystemDrawing_FontConverter_CanConvertFrom_System_ComponentModel_ITypeDescriptorContext_System_Type_
+  commentId: M:Egami.SystemDrawing.FontConverter.CanConvertFrom(System.ComponentModel.ITypeDescriptorContext,System.Type)
+  name.vb: CanConvertFrom(ITypeDescriptorContext, Type)
+  fullName: Egami.SystemDrawing.FontConverter.CanConvertFrom(System.ComponentModel.ITypeDescriptorContext?, System.Type)
+  fullName.vb: Egami.SystemDrawing.FontConverter.CanConvertFrom(System.ComponentModel.ITypeDescriptorContext, System.Type)
+  nameWithType: FontConverter.CanConvertFrom(ITypeDescriptorContext?, Type)
+  nameWithType.vb: FontConverter.CanConvertFrom(ITypeDescriptorContext, Type)
+- uid: Egami.SystemDrawing.FontConverter.CanConvertFrom*
+  name: CanConvertFrom
+  href: api/Egami.SystemDrawing.FontConverter.html#Egami_SystemDrawing_FontConverter_CanConvertFrom_
+  commentId: Overload:Egami.SystemDrawing.FontConverter.CanConvertFrom
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.FontConverter.CanConvertFrom
+  nameWithType: FontConverter.CanConvertFrom
+- uid: Egami.SystemDrawing.FontConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext,System.Type)
+  name: CanConvertTo(ITypeDescriptorContext?, Type?)
+  href: api/Egami.SystemDrawing.FontConverter.html#Egami_SystemDrawing_FontConverter_CanConvertTo_System_ComponentModel_ITypeDescriptorContext_System_Type_
+  commentId: M:Egami.SystemDrawing.FontConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext,System.Type)
+  name.vb: CanConvertTo(ITypeDescriptorContext, Type)
+  fullName: Egami.SystemDrawing.FontConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext?, System.Type?)
+  fullName.vb: Egami.SystemDrawing.FontConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext, System.Type)
+  nameWithType: FontConverter.CanConvertTo(ITypeDescriptorContext?, Type?)
+  nameWithType.vb: FontConverter.CanConvertTo(ITypeDescriptorContext, Type)
+- uid: Egami.SystemDrawing.FontConverter.CanConvertTo*
+  name: CanConvertTo
+  href: api/Egami.SystemDrawing.FontConverter.html#Egami_SystemDrawing_FontConverter_CanConvertTo_
+  commentId: Overload:Egami.SystemDrawing.FontConverter.CanConvertTo
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.FontConverter.CanConvertTo
+  nameWithType: FontConverter.CanConvertTo
+- uid: Egami.SystemDrawing.FontConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext,System.Globalization.CultureInfo,System.Object)
+  name: ConvertFrom(ITypeDescriptorContext?, CultureInfo?, object)
+  href: api/Egami.SystemDrawing.FontConverter.html#Egami_SystemDrawing_FontConverter_ConvertFrom_System_ComponentModel_ITypeDescriptorContext_System_Globalization_CultureInfo_System_Object_
+  commentId: M:Egami.SystemDrawing.FontConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext,System.Globalization.CultureInfo,System.Object)
+  name.vb: ConvertFrom(ITypeDescriptorContext, CultureInfo, Object)
+  fullName: Egami.SystemDrawing.FontConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext?, System.Globalization.CultureInfo?, object)
+  fullName.vb: Egami.SystemDrawing.FontConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext, System.Globalization.CultureInfo, Object)
+  nameWithType: FontConverter.ConvertFrom(ITypeDescriptorContext?, CultureInfo?, object)
+  nameWithType.vb: FontConverter.ConvertFrom(ITypeDescriptorContext, CultureInfo, Object)
+- uid: Egami.SystemDrawing.FontConverter.ConvertFrom*
+  name: ConvertFrom
+  href: api/Egami.SystemDrawing.FontConverter.html#Egami_SystemDrawing_FontConverter_ConvertFrom_
+  commentId: Overload:Egami.SystemDrawing.FontConverter.ConvertFrom
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.FontConverter.ConvertFrom
+  nameWithType: FontConverter.ConvertFrom
+- uid: Egami.SystemDrawing.FontConverter.ConvertTo(System.ComponentModel.ITypeDescriptorContext,System.Globalization.CultureInfo,System.Object,System.Type)
+  name: ConvertTo(ITypeDescriptorContext?, CultureInfo?, object?, Type)
+  href: api/Egami.SystemDrawing.FontConverter.html#Egami_SystemDrawing_FontConverter_ConvertTo_System_ComponentModel_ITypeDescriptorContext_System_Globalization_CultureInfo_System_Object_System_Type_
+  commentId: M:Egami.SystemDrawing.FontConverter.ConvertTo(System.ComponentModel.ITypeDescriptorContext,System.Globalization.CultureInfo,System.Object,System.Type)
+  name.vb: ConvertTo(ITypeDescriptorContext, CultureInfo, Object, Type)
+  fullName: Egami.SystemDrawing.FontConverter.ConvertTo(System.ComponentModel.ITypeDescriptorContext?, System.Globalization.CultureInfo?, object?, System.Type)
+  fullName.vb: Egami.SystemDrawing.FontConverter.ConvertTo(System.ComponentModel.ITypeDescriptorContext, System.Globalization.CultureInfo, Object, System.Type)
+  nameWithType: FontConverter.ConvertTo(ITypeDescriptorContext?, CultureInfo?, object?, Type)
+  nameWithType.vb: FontConverter.ConvertTo(ITypeDescriptorContext, CultureInfo, Object, Type)
+- uid: Egami.SystemDrawing.FontConverter.ConvertTo*
+  name: ConvertTo
+  href: api/Egami.SystemDrawing.FontConverter.html#Egami_SystemDrawing_FontConverter_ConvertTo_
+  commentId: Overload:Egami.SystemDrawing.FontConverter.ConvertTo
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.FontConverter.ConvertTo
+  nameWithType: FontConverter.ConvertTo
+- uid: Egami.SystemDrawing.FontConverter.CreateInstance(System.ComponentModel.ITypeDescriptorContext,System.Collections.IDictionary)
+  name: CreateInstance(ITypeDescriptorContext?, IDictionary)
+  href: api/Egami.SystemDrawing.FontConverter.html#Egami_SystemDrawing_FontConverter_CreateInstance_System_ComponentModel_ITypeDescriptorContext_System_Collections_IDictionary_
+  commentId: M:Egami.SystemDrawing.FontConverter.CreateInstance(System.ComponentModel.ITypeDescriptorContext,System.Collections.IDictionary)
+  name.vb: CreateInstance(ITypeDescriptorContext, IDictionary)
+  fullName: Egami.SystemDrawing.FontConverter.CreateInstance(System.ComponentModel.ITypeDescriptorContext?, System.Collections.IDictionary)
+  fullName.vb: Egami.SystemDrawing.FontConverter.CreateInstance(System.ComponentModel.ITypeDescriptorContext, System.Collections.IDictionary)
+  nameWithType: FontConverter.CreateInstance(ITypeDescriptorContext?, IDictionary)
+  nameWithType.vb: FontConverter.CreateInstance(ITypeDescriptorContext, IDictionary)
+- uid: Egami.SystemDrawing.FontConverter.CreateInstance*
+  name: CreateInstance
+  href: api/Egami.SystemDrawing.FontConverter.html#Egami_SystemDrawing_FontConverter_CreateInstance_
+  commentId: Overload:Egami.SystemDrawing.FontConverter.CreateInstance
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.FontConverter.CreateInstance
+  nameWithType: FontConverter.CreateInstance
+- uid: Egami.SystemDrawing.FontConverter.FontNameConverter
+  name: FontConverter.FontNameConverter
+  href: api/Egami.SystemDrawing.FontConverter.FontNameConverter.html
+  commentId: T:Egami.SystemDrawing.FontConverter.FontNameConverter
+  fullName: Egami.SystemDrawing.FontConverter.FontNameConverter
+  nameWithType: FontConverter.FontNameConverter
+- uid: Egami.SystemDrawing.FontConverter.FontNameConverter.CanConvertFrom(System.ComponentModel.ITypeDescriptorContext,System.Type)
+  name: CanConvertFrom(ITypeDescriptorContext?, Type)
+  href: api/Egami.SystemDrawing.FontConverter.FontNameConverter.html#Egami_SystemDrawing_FontConverter_FontNameConverter_CanConvertFrom_System_ComponentModel_ITypeDescriptorContext_System_Type_
+  commentId: M:Egami.SystemDrawing.FontConverter.FontNameConverter.CanConvertFrom(System.ComponentModel.ITypeDescriptorContext,System.Type)
+  name.vb: CanConvertFrom(ITypeDescriptorContext, Type)
+  fullName: Egami.SystemDrawing.FontConverter.FontNameConverter.CanConvertFrom(System.ComponentModel.ITypeDescriptorContext?, System.Type)
+  fullName.vb: Egami.SystemDrawing.FontConverter.FontNameConverter.CanConvertFrom(System.ComponentModel.ITypeDescriptorContext, System.Type)
+  nameWithType: FontConverter.FontNameConverter.CanConvertFrom(ITypeDescriptorContext?, Type)
+  nameWithType.vb: FontConverter.FontNameConverter.CanConvertFrom(ITypeDescriptorContext, Type)
+- uid: Egami.SystemDrawing.FontConverter.FontNameConverter.CanConvertFrom*
+  name: CanConvertFrom
+  href: api/Egami.SystemDrawing.FontConverter.FontNameConverter.html#Egami_SystemDrawing_FontConverter_FontNameConverter_CanConvertFrom_
+  commentId: Overload:Egami.SystemDrawing.FontConverter.FontNameConverter.CanConvertFrom
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.FontConverter.FontNameConverter.CanConvertFrom
+  nameWithType: FontConverter.FontNameConverter.CanConvertFrom
+- uid: Egami.SystemDrawing.FontConverter.FontNameConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext,System.Globalization.CultureInfo,System.Object)
+  name: ConvertFrom(ITypeDescriptorContext?, CultureInfo?, object)
+  href: api/Egami.SystemDrawing.FontConverter.FontNameConverter.html#Egami_SystemDrawing_FontConverter_FontNameConverter_ConvertFrom_System_ComponentModel_ITypeDescriptorContext_System_Globalization_CultureInfo_System_Object_
+  commentId: M:Egami.SystemDrawing.FontConverter.FontNameConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext,System.Globalization.CultureInfo,System.Object)
+  name.vb: ConvertFrom(ITypeDescriptorContext, CultureInfo, Object)
+  fullName: Egami.SystemDrawing.FontConverter.FontNameConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext?, System.Globalization.CultureInfo?, object)
+  fullName.vb: Egami.SystemDrawing.FontConverter.FontNameConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext, System.Globalization.CultureInfo, Object)
+  nameWithType: FontConverter.FontNameConverter.ConvertFrom(ITypeDescriptorContext?, CultureInfo?, object)
+  nameWithType.vb: FontConverter.FontNameConverter.ConvertFrom(ITypeDescriptorContext, CultureInfo, Object)
+- uid: Egami.SystemDrawing.FontConverter.FontNameConverter.ConvertFrom*
+  name: ConvertFrom
+  href: api/Egami.SystemDrawing.FontConverter.FontNameConverter.html#Egami_SystemDrawing_FontConverter_FontNameConverter_ConvertFrom_
+  commentId: Overload:Egami.SystemDrawing.FontConverter.FontNameConverter.ConvertFrom
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.FontConverter.FontNameConverter.ConvertFrom
+  nameWithType: FontConverter.FontNameConverter.ConvertFrom
+- uid: Egami.SystemDrawing.FontConverter.FontNameConverter.GetStandardValues(System.ComponentModel.ITypeDescriptorContext)
+  name: GetStandardValues(ITypeDescriptorContext?)
+  href: api/Egami.SystemDrawing.FontConverter.FontNameConverter.html#Egami_SystemDrawing_FontConverter_FontNameConverter_GetStandardValues_System_ComponentModel_ITypeDescriptorContext_
+  commentId: M:Egami.SystemDrawing.FontConverter.FontNameConverter.GetStandardValues(System.ComponentModel.ITypeDescriptorContext)
+  name.vb: GetStandardValues(ITypeDescriptorContext)
+  fullName: Egami.SystemDrawing.FontConverter.FontNameConverter.GetStandardValues(System.ComponentModel.ITypeDescriptorContext?)
+  fullName.vb: Egami.SystemDrawing.FontConverter.FontNameConverter.GetStandardValues(System.ComponentModel.ITypeDescriptorContext)
+  nameWithType: FontConverter.FontNameConverter.GetStandardValues(ITypeDescriptorContext?)
+  nameWithType.vb: FontConverter.FontNameConverter.GetStandardValues(ITypeDescriptorContext)
+- uid: Egami.SystemDrawing.FontConverter.FontNameConverter.GetStandardValues*
+  name: GetStandardValues
+  href: api/Egami.SystemDrawing.FontConverter.FontNameConverter.html#Egami_SystemDrawing_FontConverter_FontNameConverter_GetStandardValues_
+  commentId: Overload:Egami.SystemDrawing.FontConverter.FontNameConverter.GetStandardValues
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.FontConverter.FontNameConverter.GetStandardValues
+  nameWithType: FontConverter.FontNameConverter.GetStandardValues
+- uid: Egami.SystemDrawing.FontConverter.FontNameConverter.GetStandardValuesExclusive(System.ComponentModel.ITypeDescriptorContext)
+  name: GetStandardValuesExclusive(ITypeDescriptorContext?)
+  href: api/Egami.SystemDrawing.FontConverter.FontNameConverter.html#Egami_SystemDrawing_FontConverter_FontNameConverter_GetStandardValuesExclusive_System_ComponentModel_ITypeDescriptorContext_
+  commentId: M:Egami.SystemDrawing.FontConverter.FontNameConverter.GetStandardValuesExclusive(System.ComponentModel.ITypeDescriptorContext)
+  name.vb: GetStandardValuesExclusive(ITypeDescriptorContext)
+  fullName: Egami.SystemDrawing.FontConverter.FontNameConverter.GetStandardValuesExclusive(System.ComponentModel.ITypeDescriptorContext?)
+  fullName.vb: Egami.SystemDrawing.FontConverter.FontNameConverter.GetStandardValuesExclusive(System.ComponentModel.ITypeDescriptorContext)
+  nameWithType: FontConverter.FontNameConverter.GetStandardValuesExclusive(ITypeDescriptorContext?)
+  nameWithType.vb: FontConverter.FontNameConverter.GetStandardValuesExclusive(ITypeDescriptorContext)
+- uid: Egami.SystemDrawing.FontConverter.FontNameConverter.GetStandardValuesExclusive*
+  name: GetStandardValuesExclusive
+  href: api/Egami.SystemDrawing.FontConverter.FontNameConverter.html#Egami_SystemDrawing_FontConverter_FontNameConverter_GetStandardValuesExclusive_
+  commentId: Overload:Egami.SystemDrawing.FontConverter.FontNameConverter.GetStandardValuesExclusive
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.FontConverter.FontNameConverter.GetStandardValuesExclusive
+  nameWithType: FontConverter.FontNameConverter.GetStandardValuesExclusive
+- uid: Egami.SystemDrawing.FontConverter.FontNameConverter.GetStandardValuesSupported(System.ComponentModel.ITypeDescriptorContext)
+  name: GetStandardValuesSupported(ITypeDescriptorContext?)
+  href: api/Egami.SystemDrawing.FontConverter.FontNameConverter.html#Egami_SystemDrawing_FontConverter_FontNameConverter_GetStandardValuesSupported_System_ComponentModel_ITypeDescriptorContext_
+  commentId: M:Egami.SystemDrawing.FontConverter.FontNameConverter.GetStandardValuesSupported(System.ComponentModel.ITypeDescriptorContext)
+  name.vb: GetStandardValuesSupported(ITypeDescriptorContext)
+  fullName: Egami.SystemDrawing.FontConverter.FontNameConverter.GetStandardValuesSupported(System.ComponentModel.ITypeDescriptorContext?)
+  fullName.vb: Egami.SystemDrawing.FontConverter.FontNameConverter.GetStandardValuesSupported(System.ComponentModel.ITypeDescriptorContext)
+  nameWithType: FontConverter.FontNameConverter.GetStandardValuesSupported(ITypeDescriptorContext?)
+  nameWithType.vb: FontConverter.FontNameConverter.GetStandardValuesSupported(ITypeDescriptorContext)
+- uid: Egami.SystemDrawing.FontConverter.FontNameConverter.GetStandardValuesSupported*
+  name: GetStandardValuesSupported
+  href: api/Egami.SystemDrawing.FontConverter.FontNameConverter.html#Egami_SystemDrawing_FontConverter_FontNameConverter_GetStandardValuesSupported_
+  commentId: Overload:Egami.SystemDrawing.FontConverter.FontNameConverter.GetStandardValuesSupported
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.FontConverter.FontNameConverter.GetStandardValuesSupported
+  nameWithType: FontConverter.FontNameConverter.GetStandardValuesSupported
+- uid: Egami.SystemDrawing.FontConverter.FontUnitConverter
+  name: FontConverter.FontUnitConverter
+  href: api/Egami.SystemDrawing.FontConverter.FontUnitConverter.html
+  commentId: T:Egami.SystemDrawing.FontConverter.FontUnitConverter
+  fullName: Egami.SystemDrawing.FontConverter.FontUnitConverter
+  nameWithType: FontConverter.FontUnitConverter
+- uid: Egami.SystemDrawing.FontConverter.FontUnitConverter.#ctor
+  name: FontUnitConverter()
+  href: api/Egami.SystemDrawing.FontConverter.FontUnitConverter.html#Egami_SystemDrawing_FontConverter_FontUnitConverter__ctor
+  commentId: M:Egami.SystemDrawing.FontConverter.FontUnitConverter.#ctor
+  name.vb: New()
+  fullName: Egami.SystemDrawing.FontConverter.FontUnitConverter.FontUnitConverter()
+  fullName.vb: Egami.SystemDrawing.FontConverter.FontUnitConverter.New()
+  nameWithType: FontConverter.FontUnitConverter.FontUnitConverter()
+  nameWithType.vb: FontConverter.FontUnitConverter.New()
+- uid: Egami.SystemDrawing.FontConverter.FontUnitConverter.#ctor*
+  name: FontUnitConverter
+  href: api/Egami.SystemDrawing.FontConverter.FontUnitConverter.html#Egami_SystemDrawing_FontConverter_FontUnitConverter__ctor_
+  commentId: Overload:Egami.SystemDrawing.FontConverter.FontUnitConverter.#ctor
+  isSpec: "True"
+  name.vb: New
+  fullName: Egami.SystemDrawing.FontConverter.FontUnitConverter.FontUnitConverter
+  fullName.vb: Egami.SystemDrawing.FontConverter.FontUnitConverter.New
+  nameWithType: FontConverter.FontUnitConverter.FontUnitConverter
+  nameWithType.vb: FontConverter.FontUnitConverter.New
+- uid: Egami.SystemDrawing.FontConverter.FontUnitConverter.GetStandardValues(System.ComponentModel.ITypeDescriptorContext)
+  name: GetStandardValues(ITypeDescriptorContext?)
+  href: api/Egami.SystemDrawing.FontConverter.FontUnitConverter.html#Egami_SystemDrawing_FontConverter_FontUnitConverter_GetStandardValues_System_ComponentModel_ITypeDescriptorContext_
+  commentId: M:Egami.SystemDrawing.FontConverter.FontUnitConverter.GetStandardValues(System.ComponentModel.ITypeDescriptorContext)
+  name.vb: GetStandardValues(ITypeDescriptorContext)
+  fullName: Egami.SystemDrawing.FontConverter.FontUnitConverter.GetStandardValues(System.ComponentModel.ITypeDescriptorContext?)
+  fullName.vb: Egami.SystemDrawing.FontConverter.FontUnitConverter.GetStandardValues(System.ComponentModel.ITypeDescriptorContext)
+  nameWithType: FontConverter.FontUnitConverter.GetStandardValues(ITypeDescriptorContext?)
+  nameWithType.vb: FontConverter.FontUnitConverter.GetStandardValues(ITypeDescriptorContext)
+- uid: Egami.SystemDrawing.FontConverter.FontUnitConverter.GetStandardValues*
+  name: GetStandardValues
+  href: api/Egami.SystemDrawing.FontConverter.FontUnitConverter.html#Egami_SystemDrawing_FontConverter_FontUnitConverter_GetStandardValues_
+  commentId: Overload:Egami.SystemDrawing.FontConverter.FontUnitConverter.GetStandardValues
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.FontConverter.FontUnitConverter.GetStandardValues
+  nameWithType: FontConverter.FontUnitConverter.GetStandardValues
+- uid: Egami.SystemDrawing.FontConverter.GetCreateInstanceSupported(System.ComponentModel.ITypeDescriptorContext)
+  name: GetCreateInstanceSupported(ITypeDescriptorContext?)
+  href: api/Egami.SystemDrawing.FontConverter.html#Egami_SystemDrawing_FontConverter_GetCreateInstanceSupported_System_ComponentModel_ITypeDescriptorContext_
+  commentId: M:Egami.SystemDrawing.FontConverter.GetCreateInstanceSupported(System.ComponentModel.ITypeDescriptorContext)
+  name.vb: GetCreateInstanceSupported(ITypeDescriptorContext)
+  fullName: Egami.SystemDrawing.FontConverter.GetCreateInstanceSupported(System.ComponentModel.ITypeDescriptorContext?)
+  fullName.vb: Egami.SystemDrawing.FontConverter.GetCreateInstanceSupported(System.ComponentModel.ITypeDescriptorContext)
+  nameWithType: FontConverter.GetCreateInstanceSupported(ITypeDescriptorContext?)
+  nameWithType.vb: FontConverter.GetCreateInstanceSupported(ITypeDescriptorContext)
+- uid: Egami.SystemDrawing.FontConverter.GetCreateInstanceSupported*
+  name: GetCreateInstanceSupported
+  href: api/Egami.SystemDrawing.FontConverter.html#Egami_SystemDrawing_FontConverter_GetCreateInstanceSupported_
+  commentId: Overload:Egami.SystemDrawing.FontConverter.GetCreateInstanceSupported
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.FontConverter.GetCreateInstanceSupported
+  nameWithType: FontConverter.GetCreateInstanceSupported
+- uid: Egami.SystemDrawing.FontConverter.GetProperties(System.ComponentModel.ITypeDescriptorContext,System.Object,System.Attribute[])
+  name: GetProperties(ITypeDescriptorContext?, object?, Attribute[]?)
+  href: api/Egami.SystemDrawing.FontConverter.html#Egami_SystemDrawing_FontConverter_GetProperties_System_ComponentModel_ITypeDescriptorContext_System_Object_System_Attribute___
+  commentId: M:Egami.SystemDrawing.FontConverter.GetProperties(System.ComponentModel.ITypeDescriptorContext,System.Object,System.Attribute[])
+  name.vb: GetProperties(ITypeDescriptorContext, Object, Attribute())
+  fullName: Egami.SystemDrawing.FontConverter.GetProperties(System.ComponentModel.ITypeDescriptorContext?, object?, System.Attribute[]?)
+  fullName.vb: Egami.SystemDrawing.FontConverter.GetProperties(System.ComponentModel.ITypeDescriptorContext, Object, System.Attribute())
+  nameWithType: FontConverter.GetProperties(ITypeDescriptorContext?, object?, Attribute[]?)
+  nameWithType.vb: FontConverter.GetProperties(ITypeDescriptorContext, Object, Attribute())
+- uid: Egami.SystemDrawing.FontConverter.GetProperties*
+  name: GetProperties
+  href: api/Egami.SystemDrawing.FontConverter.html#Egami_SystemDrawing_FontConverter_GetProperties_
+  commentId: Overload:Egami.SystemDrawing.FontConverter.GetProperties
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.FontConverter.GetProperties
+  nameWithType: FontConverter.GetProperties
+- uid: Egami.SystemDrawing.FontConverter.GetPropertiesSupported(System.ComponentModel.ITypeDescriptorContext)
+  name: GetPropertiesSupported(ITypeDescriptorContext?)
+  href: api/Egami.SystemDrawing.FontConverter.html#Egami_SystemDrawing_FontConverter_GetPropertiesSupported_System_ComponentModel_ITypeDescriptorContext_
+  commentId: M:Egami.SystemDrawing.FontConverter.GetPropertiesSupported(System.ComponentModel.ITypeDescriptorContext)
+  name.vb: GetPropertiesSupported(ITypeDescriptorContext)
+  fullName: Egami.SystemDrawing.FontConverter.GetPropertiesSupported(System.ComponentModel.ITypeDescriptorContext?)
+  fullName.vb: Egami.SystemDrawing.FontConverter.GetPropertiesSupported(System.ComponentModel.ITypeDescriptorContext)
+  nameWithType: FontConverter.GetPropertiesSupported(ITypeDescriptorContext?)
+  nameWithType.vb: FontConverter.GetPropertiesSupported(ITypeDescriptorContext)
+- uid: Egami.SystemDrawing.FontConverter.GetPropertiesSupported*
+  name: GetPropertiesSupported
+  href: api/Egami.SystemDrawing.FontConverter.html#Egami_SystemDrawing_FontConverter_GetPropertiesSupported_
+  commentId: Overload:Egami.SystemDrawing.FontConverter.GetPropertiesSupported
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.FontConverter.GetPropertiesSupported
+  nameWithType: FontConverter.GetPropertiesSupported
+- uid: Egami.SystemDrawing.FontFamily
+  name: FontFamily
+  href: api/Egami.SystemDrawing.FontFamily.html
+  commentId: T:Egami.SystemDrawing.FontFamily
+  fullName: Egami.SystemDrawing.FontFamily
+  nameWithType: FontFamily
+- uid: Egami.SystemDrawing.FontFamily.#ctor(Egami.SystemDrawing.Text.GenericFontFamilies)
+  name: FontFamily(GenericFontFamilies)
+  href: api/Egami.SystemDrawing.FontFamily.html#Egami_SystemDrawing_FontFamily__ctor_Egami_SystemDrawing_Text_GenericFontFamilies_
+  commentId: M:Egami.SystemDrawing.FontFamily.#ctor(Egami.SystemDrawing.Text.GenericFontFamilies)
+  name.vb: New(GenericFontFamilies)
+  fullName: Egami.SystemDrawing.FontFamily.FontFamily(Egami.SystemDrawing.Text.GenericFontFamilies)
+  fullName.vb: Egami.SystemDrawing.FontFamily.New(Egami.SystemDrawing.Text.GenericFontFamilies)
+  nameWithType: FontFamily.FontFamily(GenericFontFamilies)
+  nameWithType.vb: FontFamily.New(GenericFontFamilies)
+- uid: Egami.SystemDrawing.FontFamily.#ctor(System.String)
+  name: FontFamily(string)
+  href: api/Egami.SystemDrawing.FontFamily.html#Egami_SystemDrawing_FontFamily__ctor_System_String_
+  commentId: M:Egami.SystemDrawing.FontFamily.#ctor(System.String)
+  name.vb: New(String)
+  fullName: Egami.SystemDrawing.FontFamily.FontFamily(string)
+  fullName.vb: Egami.SystemDrawing.FontFamily.New(String)
+  nameWithType: FontFamily.FontFamily(string)
+  nameWithType.vb: FontFamily.New(String)
+- uid: Egami.SystemDrawing.FontFamily.#ctor(System.String,Egami.SystemDrawing.Text.FontCollection)
+  name: FontFamily(string, FontCollection?)
+  href: api/Egami.SystemDrawing.FontFamily.html#Egami_SystemDrawing_FontFamily__ctor_System_String_Egami_SystemDrawing_Text_FontCollection_
+  commentId: M:Egami.SystemDrawing.FontFamily.#ctor(System.String,Egami.SystemDrawing.Text.FontCollection)
+  name.vb: New(String, FontCollection)
+  fullName: Egami.SystemDrawing.FontFamily.FontFamily(string, Egami.SystemDrawing.Text.FontCollection?)
+  fullName.vb: Egami.SystemDrawing.FontFamily.New(String, Egami.SystemDrawing.Text.FontCollection)
+  nameWithType: FontFamily.FontFamily(string, FontCollection?)
+  nameWithType.vb: FontFamily.New(String, FontCollection)
+- uid: Egami.SystemDrawing.FontFamily.#ctor*
+  name: FontFamily
+  href: api/Egami.SystemDrawing.FontFamily.html#Egami_SystemDrawing_FontFamily__ctor_
+  commentId: Overload:Egami.SystemDrawing.FontFamily.#ctor
+  isSpec: "True"
+  name.vb: New
+  fullName: Egami.SystemDrawing.FontFamily.FontFamily
+  fullName.vb: Egami.SystemDrawing.FontFamily.New
+  nameWithType: FontFamily.FontFamily
+  nameWithType.vb: FontFamily.New
+- uid: Egami.SystemDrawing.FontFamily.Dispose
+  name: Dispose()
+  href: api/Egami.SystemDrawing.FontFamily.html#Egami_SystemDrawing_FontFamily_Dispose
+  commentId: M:Egami.SystemDrawing.FontFamily.Dispose
+  fullName: Egami.SystemDrawing.FontFamily.Dispose()
+  nameWithType: FontFamily.Dispose()
+- uid: Egami.SystemDrawing.FontFamily.Dispose*
+  name: Dispose
+  href: api/Egami.SystemDrawing.FontFamily.html#Egami_SystemDrawing_FontFamily_Dispose_
+  commentId: Overload:Egami.SystemDrawing.FontFamily.Dispose
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.FontFamily.Dispose
+  nameWithType: FontFamily.Dispose
+- uid: Egami.SystemDrawing.FontFamily.Equals(System.Object)
+  name: Equals(object?)
+  href: api/Egami.SystemDrawing.FontFamily.html#Egami_SystemDrawing_FontFamily_Equals_System_Object_
+  commentId: M:Egami.SystemDrawing.FontFamily.Equals(System.Object)
+  name.vb: Equals(Object)
+  fullName: Egami.SystemDrawing.FontFamily.Equals(object?)
+  fullName.vb: Egami.SystemDrawing.FontFamily.Equals(Object)
+  nameWithType: FontFamily.Equals(object?)
+  nameWithType.vb: FontFamily.Equals(Object)
+- uid: Egami.SystemDrawing.FontFamily.Equals*
+  name: Equals
+  href: api/Egami.SystemDrawing.FontFamily.html#Egami_SystemDrawing_FontFamily_Equals_
+  commentId: Overload:Egami.SystemDrawing.FontFamily.Equals
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.FontFamily.Equals
+  nameWithType: FontFamily.Equals
+- uid: Egami.SystemDrawing.FontFamily.Families
+  name: Families
+  href: api/Egami.SystemDrawing.FontFamily.html#Egami_SystemDrawing_FontFamily_Families
+  commentId: P:Egami.SystemDrawing.FontFamily.Families
+  fullName: Egami.SystemDrawing.FontFamily.Families
+  nameWithType: FontFamily.Families
+- uid: Egami.SystemDrawing.FontFamily.Families*
+  name: Families
+  href: api/Egami.SystemDrawing.FontFamily.html#Egami_SystemDrawing_FontFamily_Families_
+  commentId: Overload:Egami.SystemDrawing.FontFamily.Families
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.FontFamily.Families
+  nameWithType: FontFamily.Families
+- uid: Egami.SystemDrawing.FontFamily.GenericMonospace
+  name: GenericMonospace
+  href: api/Egami.SystemDrawing.FontFamily.html#Egami_SystemDrawing_FontFamily_GenericMonospace
+  commentId: P:Egami.SystemDrawing.FontFamily.GenericMonospace
+  fullName: Egami.SystemDrawing.FontFamily.GenericMonospace
+  nameWithType: FontFamily.GenericMonospace
+- uid: Egami.SystemDrawing.FontFamily.GenericMonospace*
+  name: GenericMonospace
+  href: api/Egami.SystemDrawing.FontFamily.html#Egami_SystemDrawing_FontFamily_GenericMonospace_
+  commentId: Overload:Egami.SystemDrawing.FontFamily.GenericMonospace
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.FontFamily.GenericMonospace
+  nameWithType: FontFamily.GenericMonospace
+- uid: Egami.SystemDrawing.FontFamily.GenericSansSerif
+  name: GenericSansSerif
+  href: api/Egami.SystemDrawing.FontFamily.html#Egami_SystemDrawing_FontFamily_GenericSansSerif
+  commentId: P:Egami.SystemDrawing.FontFamily.GenericSansSerif
+  fullName: Egami.SystemDrawing.FontFamily.GenericSansSerif
+  nameWithType: FontFamily.GenericSansSerif
+- uid: Egami.SystemDrawing.FontFamily.GenericSansSerif*
+  name: GenericSansSerif
+  href: api/Egami.SystemDrawing.FontFamily.html#Egami_SystemDrawing_FontFamily_GenericSansSerif_
+  commentId: Overload:Egami.SystemDrawing.FontFamily.GenericSansSerif
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.FontFamily.GenericSansSerif
+  nameWithType: FontFamily.GenericSansSerif
+- uid: Egami.SystemDrawing.FontFamily.GenericSerif
+  name: GenericSerif
+  href: api/Egami.SystemDrawing.FontFamily.html#Egami_SystemDrawing_FontFamily_GenericSerif
+  commentId: P:Egami.SystemDrawing.FontFamily.GenericSerif
+  fullName: Egami.SystemDrawing.FontFamily.GenericSerif
+  nameWithType: FontFamily.GenericSerif
+- uid: Egami.SystemDrawing.FontFamily.GenericSerif*
+  name: GenericSerif
+  href: api/Egami.SystemDrawing.FontFamily.html#Egami_SystemDrawing_FontFamily_GenericSerif_
+  commentId: Overload:Egami.SystemDrawing.FontFamily.GenericSerif
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.FontFamily.GenericSerif
+  nameWithType: FontFamily.GenericSerif
+- uid: Egami.SystemDrawing.FontFamily.GetCellAscent(Egami.SystemDrawing.FontStyle)
+  name: GetCellAscent(FontStyle)
+  href: api/Egami.SystemDrawing.FontFamily.html#Egami_SystemDrawing_FontFamily_GetCellAscent_Egami_SystemDrawing_FontStyle_
+  commentId: M:Egami.SystemDrawing.FontFamily.GetCellAscent(Egami.SystemDrawing.FontStyle)
+  fullName: Egami.SystemDrawing.FontFamily.GetCellAscent(Egami.SystemDrawing.FontStyle)
+  nameWithType: FontFamily.GetCellAscent(FontStyle)
+- uid: Egami.SystemDrawing.FontFamily.GetCellAscent*
+  name: GetCellAscent
+  href: api/Egami.SystemDrawing.FontFamily.html#Egami_SystemDrawing_FontFamily_GetCellAscent_
+  commentId: Overload:Egami.SystemDrawing.FontFamily.GetCellAscent
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.FontFamily.GetCellAscent
+  nameWithType: FontFamily.GetCellAscent
+- uid: Egami.SystemDrawing.FontFamily.GetCellDescent(Egami.SystemDrawing.FontStyle)
+  name: GetCellDescent(FontStyle)
+  href: api/Egami.SystemDrawing.FontFamily.html#Egami_SystemDrawing_FontFamily_GetCellDescent_Egami_SystemDrawing_FontStyle_
+  commentId: M:Egami.SystemDrawing.FontFamily.GetCellDescent(Egami.SystemDrawing.FontStyle)
+  fullName: Egami.SystemDrawing.FontFamily.GetCellDescent(Egami.SystemDrawing.FontStyle)
+  nameWithType: FontFamily.GetCellDescent(FontStyle)
+- uid: Egami.SystemDrawing.FontFamily.GetCellDescent*
+  name: GetCellDescent
+  href: api/Egami.SystemDrawing.FontFamily.html#Egami_SystemDrawing_FontFamily_GetCellDescent_
+  commentId: Overload:Egami.SystemDrawing.FontFamily.GetCellDescent
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.FontFamily.GetCellDescent
+  nameWithType: FontFamily.GetCellDescent
+- uid: Egami.SystemDrawing.FontFamily.GetEmHeight(Egami.SystemDrawing.FontStyle)
+  name: GetEmHeight(FontStyle)
+  href: api/Egami.SystemDrawing.FontFamily.html#Egami_SystemDrawing_FontFamily_GetEmHeight_Egami_SystemDrawing_FontStyle_
+  commentId: M:Egami.SystemDrawing.FontFamily.GetEmHeight(Egami.SystemDrawing.FontStyle)
+  fullName: Egami.SystemDrawing.FontFamily.GetEmHeight(Egami.SystemDrawing.FontStyle)
+  nameWithType: FontFamily.GetEmHeight(FontStyle)
+- uid: Egami.SystemDrawing.FontFamily.GetEmHeight*
+  name: GetEmHeight
+  href: api/Egami.SystemDrawing.FontFamily.html#Egami_SystemDrawing_FontFamily_GetEmHeight_
+  commentId: Overload:Egami.SystemDrawing.FontFamily.GetEmHeight
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.FontFamily.GetEmHeight
+  nameWithType: FontFamily.GetEmHeight
+- uid: Egami.SystemDrawing.FontFamily.GetHashCode
+  name: GetHashCode()
+  href: api/Egami.SystemDrawing.FontFamily.html#Egami_SystemDrawing_FontFamily_GetHashCode
+  commentId: M:Egami.SystemDrawing.FontFamily.GetHashCode
+  fullName: Egami.SystemDrawing.FontFamily.GetHashCode()
+  nameWithType: FontFamily.GetHashCode()
+- uid: Egami.SystemDrawing.FontFamily.GetHashCode*
+  name: GetHashCode
+  href: api/Egami.SystemDrawing.FontFamily.html#Egami_SystemDrawing_FontFamily_GetHashCode_
+  commentId: Overload:Egami.SystemDrawing.FontFamily.GetHashCode
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.FontFamily.GetHashCode
+  nameWithType: FontFamily.GetHashCode
+- uid: Egami.SystemDrawing.FontFamily.GetLineSpacing(Egami.SystemDrawing.FontStyle)
+  name: GetLineSpacing(FontStyle)
+  href: api/Egami.SystemDrawing.FontFamily.html#Egami_SystemDrawing_FontFamily_GetLineSpacing_Egami_SystemDrawing_FontStyle_
+  commentId: M:Egami.SystemDrawing.FontFamily.GetLineSpacing(Egami.SystemDrawing.FontStyle)
+  fullName: Egami.SystemDrawing.FontFamily.GetLineSpacing(Egami.SystemDrawing.FontStyle)
+  nameWithType: FontFamily.GetLineSpacing(FontStyle)
+- uid: Egami.SystemDrawing.FontFamily.GetLineSpacing*
+  name: GetLineSpacing
+  href: api/Egami.SystemDrawing.FontFamily.html#Egami_SystemDrawing_FontFamily_GetLineSpacing_
+  commentId: Overload:Egami.SystemDrawing.FontFamily.GetLineSpacing
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.FontFamily.GetLineSpacing
+  nameWithType: FontFamily.GetLineSpacing
+- uid: Egami.SystemDrawing.FontFamily.GetName(System.Int32)
+  name: GetName(int)
+  href: api/Egami.SystemDrawing.FontFamily.html#Egami_SystemDrawing_FontFamily_GetName_System_Int32_
+  commentId: M:Egami.SystemDrawing.FontFamily.GetName(System.Int32)
+  name.vb: GetName(Integer)
+  fullName: Egami.SystemDrawing.FontFamily.GetName(int)
+  fullName.vb: Egami.SystemDrawing.FontFamily.GetName(Integer)
+  nameWithType: FontFamily.GetName(int)
+  nameWithType.vb: FontFamily.GetName(Integer)
+- uid: Egami.SystemDrawing.FontFamily.GetName*
+  name: GetName
+  href: api/Egami.SystemDrawing.FontFamily.html#Egami_SystemDrawing_FontFamily_GetName_
+  commentId: Overload:Egami.SystemDrawing.FontFamily.GetName
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.FontFamily.GetName
+  nameWithType: FontFamily.GetName
+- uid: Egami.SystemDrawing.FontFamily.IsStyleAvailable(Egami.SystemDrawing.FontStyle)
+  name: IsStyleAvailable(FontStyle)
+  href: api/Egami.SystemDrawing.FontFamily.html#Egami_SystemDrawing_FontFamily_IsStyleAvailable_Egami_SystemDrawing_FontStyle_
+  commentId: M:Egami.SystemDrawing.FontFamily.IsStyleAvailable(Egami.SystemDrawing.FontStyle)
+  fullName: Egami.SystemDrawing.FontFamily.IsStyleAvailable(Egami.SystemDrawing.FontStyle)
+  nameWithType: FontFamily.IsStyleAvailable(FontStyle)
+- uid: Egami.SystemDrawing.FontFamily.IsStyleAvailable*
+  name: IsStyleAvailable
+  href: api/Egami.SystemDrawing.FontFamily.html#Egami_SystemDrawing_FontFamily_IsStyleAvailable_
+  commentId: Overload:Egami.SystemDrawing.FontFamily.IsStyleAvailable
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.FontFamily.IsStyleAvailable
+  nameWithType: FontFamily.IsStyleAvailable
+- uid: Egami.SystemDrawing.FontFamily.Name
+  name: Name
+  href: api/Egami.SystemDrawing.FontFamily.html#Egami_SystemDrawing_FontFamily_Name
+  commentId: P:Egami.SystemDrawing.FontFamily.Name
+  fullName: Egami.SystemDrawing.FontFamily.Name
+  nameWithType: FontFamily.Name
+- uid: Egami.SystemDrawing.FontFamily.Name*
+  name: Name
+  href: api/Egami.SystemDrawing.FontFamily.html#Egami_SystemDrawing_FontFamily_Name_
+  commentId: Overload:Egami.SystemDrawing.FontFamily.Name
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.FontFamily.Name
+  nameWithType: FontFamily.Name
+- uid: Egami.SystemDrawing.FontFamily.ToString
+  name: ToString()
+  href: api/Egami.SystemDrawing.FontFamily.html#Egami_SystemDrawing_FontFamily_ToString
+  commentId: M:Egami.SystemDrawing.FontFamily.ToString
+  fullName: Egami.SystemDrawing.FontFamily.ToString()
+  nameWithType: FontFamily.ToString()
+- uid: Egami.SystemDrawing.FontFamily.ToString*
+  name: ToString
+  href: api/Egami.SystemDrawing.FontFamily.html#Egami_SystemDrawing_FontFamily_ToString_
+  commentId: Overload:Egami.SystemDrawing.FontFamily.ToString
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.FontFamily.ToString
+  nameWithType: FontFamily.ToString
+- uid: Egami.SystemDrawing.FontStyle
+  name: FontStyle
+  href: api/Egami.SystemDrawing.FontStyle.html
+  commentId: T:Egami.SystemDrawing.FontStyle
+  fullName: Egami.SystemDrawing.FontStyle
+  nameWithType: FontStyle
+- uid: Egami.SystemDrawing.FontStyle.Bold
+  name: Bold
+  href: api/Egami.SystemDrawing.FontStyle.html#Egami_SystemDrawing_FontStyle_Bold
+  commentId: F:Egami.SystemDrawing.FontStyle.Bold
+  fullName: Egami.SystemDrawing.FontStyle.Bold
+  nameWithType: FontStyle.Bold
+- uid: Egami.SystemDrawing.FontStyle.Italic
+  name: Italic
+  href: api/Egami.SystemDrawing.FontStyle.html#Egami_SystemDrawing_FontStyle_Italic
+  commentId: F:Egami.SystemDrawing.FontStyle.Italic
+  fullName: Egami.SystemDrawing.FontStyle.Italic
+  nameWithType: FontStyle.Italic
+- uid: Egami.SystemDrawing.FontStyle.Regular
+  name: Regular
+  href: api/Egami.SystemDrawing.FontStyle.html#Egami_SystemDrawing_FontStyle_Regular
+  commentId: F:Egami.SystemDrawing.FontStyle.Regular
+  fullName: Egami.SystemDrawing.FontStyle.Regular
+  nameWithType: FontStyle.Regular
+- uid: Egami.SystemDrawing.FontStyle.Strikeout
+  name: Strikeout
+  href: api/Egami.SystemDrawing.FontStyle.html#Egami_SystemDrawing_FontStyle_Strikeout
+  commentId: F:Egami.SystemDrawing.FontStyle.Strikeout
+  fullName: Egami.SystemDrawing.FontStyle.Strikeout
+  nameWithType: FontStyle.Strikeout
+- uid: Egami.SystemDrawing.FontStyle.Underline
+  name: Underline
+  href: api/Egami.SystemDrawing.FontStyle.html#Egami_SystemDrawing_FontStyle_Underline
+  commentId: F:Egami.SystemDrawing.FontStyle.Underline
+  fullName: Egami.SystemDrawing.FontStyle.Underline
+  nameWithType: FontStyle.Underline
 - uid: Egami.SystemDrawing.Graphics
   name: Graphics
   href: api/Egami.SystemDrawing.Graphics.html
@@ -84180,6 +85472,121 @@ references:
   isSpec: "True"
   fullName: Egami.SystemDrawing.Graphics.DrawRoundedRectangle
   nameWithType: Graphics.DrawRoundedRectangle
+- uid: Egami.SystemDrawing.Graphics.DrawString(System.ReadOnlySpan{System.Char},Egami.SystemDrawing.Font,Egami.SystemDrawing.Brush,System.Drawing.PointF)
+  name: DrawString(ReadOnlySpan<char>, Font, Brush, PointF)
+  href: api/Egami.SystemDrawing.Graphics.html#Egami_SystemDrawing_Graphics_DrawString_System_ReadOnlySpan_System_Char__Egami_SystemDrawing_Font_Egami_SystemDrawing_Brush_System_Drawing_PointF_
+  commentId: M:Egami.SystemDrawing.Graphics.DrawString(System.ReadOnlySpan{System.Char},Egami.SystemDrawing.Font,Egami.SystemDrawing.Brush,System.Drawing.PointF)
+  name.vb: DrawString(ReadOnlySpan(Of Char), Font, Brush, PointF)
+  fullName: Egami.SystemDrawing.Graphics.DrawString(System.ReadOnlySpan<char>, Egami.SystemDrawing.Font, Egami.SystemDrawing.Brush, System.Drawing.PointF)
+  fullName.vb: Egami.SystemDrawing.Graphics.DrawString(System.ReadOnlySpan(Of Char), Egami.SystemDrawing.Font, Egami.SystemDrawing.Brush, System.Drawing.PointF)
+  nameWithType: Graphics.DrawString(ReadOnlySpan<char>, Font, Brush, PointF)
+  nameWithType.vb: Graphics.DrawString(ReadOnlySpan(Of Char), Font, Brush, PointF)
+- uid: Egami.SystemDrawing.Graphics.DrawString(System.ReadOnlySpan{System.Char},Egami.SystemDrawing.Font,Egami.SystemDrawing.Brush,System.Drawing.PointF,Egami.SystemDrawing.StringFormat)
+  name: DrawString(ReadOnlySpan<char>, Font, Brush, PointF, StringFormat?)
+  href: api/Egami.SystemDrawing.Graphics.html#Egami_SystemDrawing_Graphics_DrawString_System_ReadOnlySpan_System_Char__Egami_SystemDrawing_Font_Egami_SystemDrawing_Brush_System_Drawing_PointF_Egami_SystemDrawing_StringFormat_
+  commentId: M:Egami.SystemDrawing.Graphics.DrawString(System.ReadOnlySpan{System.Char},Egami.SystemDrawing.Font,Egami.SystemDrawing.Brush,System.Drawing.PointF,Egami.SystemDrawing.StringFormat)
+  name.vb: DrawString(ReadOnlySpan(Of Char), Font, Brush, PointF, StringFormat)
+  fullName: Egami.SystemDrawing.Graphics.DrawString(System.ReadOnlySpan<char>, Egami.SystemDrawing.Font, Egami.SystemDrawing.Brush, System.Drawing.PointF, Egami.SystemDrawing.StringFormat?)
+  fullName.vb: Egami.SystemDrawing.Graphics.DrawString(System.ReadOnlySpan(Of Char), Egami.SystemDrawing.Font, Egami.SystemDrawing.Brush, System.Drawing.PointF, Egami.SystemDrawing.StringFormat)
+  nameWithType: Graphics.DrawString(ReadOnlySpan<char>, Font, Brush, PointF, StringFormat?)
+  nameWithType.vb: Graphics.DrawString(ReadOnlySpan(Of Char), Font, Brush, PointF, StringFormat)
+- uid: Egami.SystemDrawing.Graphics.DrawString(System.ReadOnlySpan{System.Char},Egami.SystemDrawing.Font,Egami.SystemDrawing.Brush,System.Drawing.RectangleF)
+  name: DrawString(ReadOnlySpan<char>, Font, Brush, RectangleF)
+  href: api/Egami.SystemDrawing.Graphics.html#Egami_SystemDrawing_Graphics_DrawString_System_ReadOnlySpan_System_Char__Egami_SystemDrawing_Font_Egami_SystemDrawing_Brush_System_Drawing_RectangleF_
+  commentId: M:Egami.SystemDrawing.Graphics.DrawString(System.ReadOnlySpan{System.Char},Egami.SystemDrawing.Font,Egami.SystemDrawing.Brush,System.Drawing.RectangleF)
+  name.vb: DrawString(ReadOnlySpan(Of Char), Font, Brush, RectangleF)
+  fullName: Egami.SystemDrawing.Graphics.DrawString(System.ReadOnlySpan<char>, Egami.SystemDrawing.Font, Egami.SystemDrawing.Brush, System.Drawing.RectangleF)
+  fullName.vb: Egami.SystemDrawing.Graphics.DrawString(System.ReadOnlySpan(Of Char), Egami.SystemDrawing.Font, Egami.SystemDrawing.Brush, System.Drawing.RectangleF)
+  nameWithType: Graphics.DrawString(ReadOnlySpan<char>, Font, Brush, RectangleF)
+  nameWithType.vb: Graphics.DrawString(ReadOnlySpan(Of Char), Font, Brush, RectangleF)
+- uid: Egami.SystemDrawing.Graphics.DrawString(System.ReadOnlySpan{System.Char},Egami.SystemDrawing.Font,Egami.SystemDrawing.Brush,System.Drawing.RectangleF,Egami.SystemDrawing.StringFormat)
+  name: DrawString(ReadOnlySpan<char>, Font, Brush, RectangleF, StringFormat?)
+  href: api/Egami.SystemDrawing.Graphics.html#Egami_SystemDrawing_Graphics_DrawString_System_ReadOnlySpan_System_Char__Egami_SystemDrawing_Font_Egami_SystemDrawing_Brush_System_Drawing_RectangleF_Egami_SystemDrawing_StringFormat_
+  commentId: M:Egami.SystemDrawing.Graphics.DrawString(System.ReadOnlySpan{System.Char},Egami.SystemDrawing.Font,Egami.SystemDrawing.Brush,System.Drawing.RectangleF,Egami.SystemDrawing.StringFormat)
+  name.vb: DrawString(ReadOnlySpan(Of Char), Font, Brush, RectangleF, StringFormat)
+  fullName: Egami.SystemDrawing.Graphics.DrawString(System.ReadOnlySpan<char>, Egami.SystemDrawing.Font, Egami.SystemDrawing.Brush, System.Drawing.RectangleF, Egami.SystemDrawing.StringFormat?)
+  fullName.vb: Egami.SystemDrawing.Graphics.DrawString(System.ReadOnlySpan(Of Char), Egami.SystemDrawing.Font, Egami.SystemDrawing.Brush, System.Drawing.RectangleF, Egami.SystemDrawing.StringFormat)
+  nameWithType: Graphics.DrawString(ReadOnlySpan<char>, Font, Brush, RectangleF, StringFormat?)
+  nameWithType.vb: Graphics.DrawString(ReadOnlySpan(Of Char), Font, Brush, RectangleF, StringFormat)
+- uid: Egami.SystemDrawing.Graphics.DrawString(System.ReadOnlySpan{System.Char},Egami.SystemDrawing.Font,Egami.SystemDrawing.Brush,System.Single,System.Single)
+  name: DrawString(ReadOnlySpan<char>, Font, Brush, float, float)
+  href: api/Egami.SystemDrawing.Graphics.html#Egami_SystemDrawing_Graphics_DrawString_System_ReadOnlySpan_System_Char__Egami_SystemDrawing_Font_Egami_SystemDrawing_Brush_System_Single_System_Single_
+  commentId: M:Egami.SystemDrawing.Graphics.DrawString(System.ReadOnlySpan{System.Char},Egami.SystemDrawing.Font,Egami.SystemDrawing.Brush,System.Single,System.Single)
+  name.vb: DrawString(ReadOnlySpan(Of Char), Font, Brush, Single, Single)
+  fullName: Egami.SystemDrawing.Graphics.DrawString(System.ReadOnlySpan<char>, Egami.SystemDrawing.Font, Egami.SystemDrawing.Brush, float, float)
+  fullName.vb: Egami.SystemDrawing.Graphics.DrawString(System.ReadOnlySpan(Of Char), Egami.SystemDrawing.Font, Egami.SystemDrawing.Brush, Single, Single)
+  nameWithType: Graphics.DrawString(ReadOnlySpan<char>, Font, Brush, float, float)
+  nameWithType.vb: Graphics.DrawString(ReadOnlySpan(Of Char), Font, Brush, Single, Single)
+- uid: Egami.SystemDrawing.Graphics.DrawString(System.ReadOnlySpan{System.Char},Egami.SystemDrawing.Font,Egami.SystemDrawing.Brush,System.Single,System.Single,Egami.SystemDrawing.StringFormat)
+  name: DrawString(ReadOnlySpan<char>, Font, Brush, float, float, StringFormat?)
+  href: api/Egami.SystemDrawing.Graphics.html#Egami_SystemDrawing_Graphics_DrawString_System_ReadOnlySpan_System_Char__Egami_SystemDrawing_Font_Egami_SystemDrawing_Brush_System_Single_System_Single_Egami_SystemDrawing_StringFormat_
+  commentId: M:Egami.SystemDrawing.Graphics.DrawString(System.ReadOnlySpan{System.Char},Egami.SystemDrawing.Font,Egami.SystemDrawing.Brush,System.Single,System.Single,Egami.SystemDrawing.StringFormat)
+  name.vb: DrawString(ReadOnlySpan(Of Char), Font, Brush, Single, Single, StringFormat)
+  fullName: Egami.SystemDrawing.Graphics.DrawString(System.ReadOnlySpan<char>, Egami.SystemDrawing.Font, Egami.SystemDrawing.Brush, float, float, Egami.SystemDrawing.StringFormat?)
+  fullName.vb: Egami.SystemDrawing.Graphics.DrawString(System.ReadOnlySpan(Of Char), Egami.SystemDrawing.Font, Egami.SystemDrawing.Brush, Single, Single, Egami.SystemDrawing.StringFormat)
+  nameWithType: Graphics.DrawString(ReadOnlySpan<char>, Font, Brush, float, float, StringFormat?)
+  nameWithType.vb: Graphics.DrawString(ReadOnlySpan(Of Char), Font, Brush, Single, Single, StringFormat)
+- uid: Egami.SystemDrawing.Graphics.DrawString(System.String,Egami.SystemDrawing.Font,Egami.SystemDrawing.Brush,System.Drawing.PointF)
+  name: DrawString(string?, Font, Brush, PointF)
+  href: api/Egami.SystemDrawing.Graphics.html#Egami_SystemDrawing_Graphics_DrawString_System_String_Egami_SystemDrawing_Font_Egami_SystemDrawing_Brush_System_Drawing_PointF_
+  commentId: M:Egami.SystemDrawing.Graphics.DrawString(System.String,Egami.SystemDrawing.Font,Egami.SystemDrawing.Brush,System.Drawing.PointF)
+  name.vb: DrawString(String, Font, Brush, PointF)
+  fullName: Egami.SystemDrawing.Graphics.DrawString(string?, Egami.SystemDrawing.Font, Egami.SystemDrawing.Brush, System.Drawing.PointF)
+  fullName.vb: Egami.SystemDrawing.Graphics.DrawString(String, Egami.SystemDrawing.Font, Egami.SystemDrawing.Brush, System.Drawing.PointF)
+  nameWithType: Graphics.DrawString(string?, Font, Brush, PointF)
+  nameWithType.vb: Graphics.DrawString(String, Font, Brush, PointF)
+- uid: Egami.SystemDrawing.Graphics.DrawString(System.String,Egami.SystemDrawing.Font,Egami.SystemDrawing.Brush,System.Drawing.PointF,Egami.SystemDrawing.StringFormat)
+  name: DrawString(string?, Font, Brush, PointF, StringFormat?)
+  href: api/Egami.SystemDrawing.Graphics.html#Egami_SystemDrawing_Graphics_DrawString_System_String_Egami_SystemDrawing_Font_Egami_SystemDrawing_Brush_System_Drawing_PointF_Egami_SystemDrawing_StringFormat_
+  commentId: M:Egami.SystemDrawing.Graphics.DrawString(System.String,Egami.SystemDrawing.Font,Egami.SystemDrawing.Brush,System.Drawing.PointF,Egami.SystemDrawing.StringFormat)
+  name.vb: DrawString(String, Font, Brush, PointF, StringFormat)
+  fullName: Egami.SystemDrawing.Graphics.DrawString(string?, Egami.SystemDrawing.Font, Egami.SystemDrawing.Brush, System.Drawing.PointF, Egami.SystemDrawing.StringFormat?)
+  fullName.vb: Egami.SystemDrawing.Graphics.DrawString(String, Egami.SystemDrawing.Font, Egami.SystemDrawing.Brush, System.Drawing.PointF, Egami.SystemDrawing.StringFormat)
+  nameWithType: Graphics.DrawString(string?, Font, Brush, PointF, StringFormat?)
+  nameWithType.vb: Graphics.DrawString(String, Font, Brush, PointF, StringFormat)
+- uid: Egami.SystemDrawing.Graphics.DrawString(System.String,Egami.SystemDrawing.Font,Egami.SystemDrawing.Brush,System.Drawing.RectangleF)
+  name: DrawString(string?, Font, Brush, RectangleF)
+  href: api/Egami.SystemDrawing.Graphics.html#Egami_SystemDrawing_Graphics_DrawString_System_String_Egami_SystemDrawing_Font_Egami_SystemDrawing_Brush_System_Drawing_RectangleF_
+  commentId: M:Egami.SystemDrawing.Graphics.DrawString(System.String,Egami.SystemDrawing.Font,Egami.SystemDrawing.Brush,System.Drawing.RectangleF)
+  name.vb: DrawString(String, Font, Brush, RectangleF)
+  fullName: Egami.SystemDrawing.Graphics.DrawString(string?, Egami.SystemDrawing.Font, Egami.SystemDrawing.Brush, System.Drawing.RectangleF)
+  fullName.vb: Egami.SystemDrawing.Graphics.DrawString(String, Egami.SystemDrawing.Font, Egami.SystemDrawing.Brush, System.Drawing.RectangleF)
+  nameWithType: Graphics.DrawString(string?, Font, Brush, RectangleF)
+  nameWithType.vb: Graphics.DrawString(String, Font, Brush, RectangleF)
+- uid: Egami.SystemDrawing.Graphics.DrawString(System.String,Egami.SystemDrawing.Font,Egami.SystemDrawing.Brush,System.Drawing.RectangleF,Egami.SystemDrawing.StringFormat)
+  name: DrawString(string?, Font, Brush, RectangleF, StringFormat?)
+  href: api/Egami.SystemDrawing.Graphics.html#Egami_SystemDrawing_Graphics_DrawString_System_String_Egami_SystemDrawing_Font_Egami_SystemDrawing_Brush_System_Drawing_RectangleF_Egami_SystemDrawing_StringFormat_
+  commentId: M:Egami.SystemDrawing.Graphics.DrawString(System.String,Egami.SystemDrawing.Font,Egami.SystemDrawing.Brush,System.Drawing.RectangleF,Egami.SystemDrawing.StringFormat)
+  name.vb: DrawString(String, Font, Brush, RectangleF, StringFormat)
+  fullName: Egami.SystemDrawing.Graphics.DrawString(string?, Egami.SystemDrawing.Font, Egami.SystemDrawing.Brush, System.Drawing.RectangleF, Egami.SystemDrawing.StringFormat?)
+  fullName.vb: Egami.SystemDrawing.Graphics.DrawString(String, Egami.SystemDrawing.Font, Egami.SystemDrawing.Brush, System.Drawing.RectangleF, Egami.SystemDrawing.StringFormat)
+  nameWithType: Graphics.DrawString(string?, Font, Brush, RectangleF, StringFormat?)
+  nameWithType.vb: Graphics.DrawString(String, Font, Brush, RectangleF, StringFormat)
+- uid: Egami.SystemDrawing.Graphics.DrawString(System.String,Egami.SystemDrawing.Font,Egami.SystemDrawing.Brush,System.Single,System.Single)
+  name: DrawString(string?, Font, Brush, float, float)
+  href: api/Egami.SystemDrawing.Graphics.html#Egami_SystemDrawing_Graphics_DrawString_System_String_Egami_SystemDrawing_Font_Egami_SystemDrawing_Brush_System_Single_System_Single_
+  commentId: M:Egami.SystemDrawing.Graphics.DrawString(System.String,Egami.SystemDrawing.Font,Egami.SystemDrawing.Brush,System.Single,System.Single)
+  name.vb: DrawString(String, Font, Brush, Single, Single)
+  fullName: Egami.SystemDrawing.Graphics.DrawString(string?, Egami.SystemDrawing.Font, Egami.SystemDrawing.Brush, float, float)
+  fullName.vb: Egami.SystemDrawing.Graphics.DrawString(String, Egami.SystemDrawing.Font, Egami.SystemDrawing.Brush, Single, Single)
+  nameWithType: Graphics.DrawString(string?, Font, Brush, float, float)
+  nameWithType.vb: Graphics.DrawString(String, Font, Brush, Single, Single)
+- uid: Egami.SystemDrawing.Graphics.DrawString(System.String,Egami.SystemDrawing.Font,Egami.SystemDrawing.Brush,System.Single,System.Single,Egami.SystemDrawing.StringFormat)
+  name: DrawString(string?, Font, Brush, float, float, StringFormat?)
+  href: api/Egami.SystemDrawing.Graphics.html#Egami_SystemDrawing_Graphics_DrawString_System_String_Egami_SystemDrawing_Font_Egami_SystemDrawing_Brush_System_Single_System_Single_Egami_SystemDrawing_StringFormat_
+  commentId: M:Egami.SystemDrawing.Graphics.DrawString(System.String,Egami.SystemDrawing.Font,Egami.SystemDrawing.Brush,System.Single,System.Single,Egami.SystemDrawing.StringFormat)
+  name.vb: DrawString(String, Font, Brush, Single, Single, StringFormat)
+  fullName: Egami.SystemDrawing.Graphics.DrawString(string?, Egami.SystemDrawing.Font, Egami.SystemDrawing.Brush, float, float, Egami.SystemDrawing.StringFormat?)
+  fullName.vb: Egami.SystemDrawing.Graphics.DrawString(String, Egami.SystemDrawing.Font, Egami.SystemDrawing.Brush, Single, Single, Egami.SystemDrawing.StringFormat)
+  nameWithType: Graphics.DrawString(string?, Font, Brush, float, float, StringFormat?)
+  nameWithType.vb: Graphics.DrawString(String, Font, Brush, Single, Single, StringFormat)
+- uid: Egami.SystemDrawing.Graphics.DrawString*
+  name: DrawString
+  href: api/Egami.SystemDrawing.Graphics.html#Egami_SystemDrawing_Graphics_DrawString_
+  commentId: Overload:Egami.SystemDrawing.Graphics.DrawString
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Graphics.DrawString
+  nameWithType: Graphics.DrawString
 - uid: Egami.SystemDrawing.Graphics.EndContainer(Egami.SystemDrawing.Drawing2D.GraphicsContainer)
   name: EndContainer(GraphicsContainer)
   href: api/Egami.SystemDrawing.Graphics.html#Egami_SystemDrawing_Graphics_EndContainer_Egami_SystemDrawing_Drawing2D_GraphicsContainer_
@@ -85192,6 +86599,180 @@ references:
   isSpec: "True"
   fullName: Egami.SystemDrawing.Graphics.IsVisibleClipEmpty
   nameWithType: Graphics.IsVisibleClipEmpty
+- uid: Egami.SystemDrawing.Graphics.MeasureCharacterRanges(System.ReadOnlySpan{System.Char},Egami.SystemDrawing.Font,System.Drawing.RectangleF,Egami.SystemDrawing.StringFormat)
+  name: MeasureCharacterRanges(ReadOnlySpan<char>, Font, RectangleF, StringFormat?)
+  href: api/Egami.SystemDrawing.Graphics.html#Egami_SystemDrawing_Graphics_MeasureCharacterRanges_System_ReadOnlySpan_System_Char__Egami_SystemDrawing_Font_System_Drawing_RectangleF_Egami_SystemDrawing_StringFormat_
+  commentId: M:Egami.SystemDrawing.Graphics.MeasureCharacterRanges(System.ReadOnlySpan{System.Char},Egami.SystemDrawing.Font,System.Drawing.RectangleF,Egami.SystemDrawing.StringFormat)
+  name.vb: MeasureCharacterRanges(ReadOnlySpan(Of Char), Font, RectangleF, StringFormat)
+  fullName: Egami.SystemDrawing.Graphics.MeasureCharacterRanges(System.ReadOnlySpan<char>, Egami.SystemDrawing.Font, System.Drawing.RectangleF, Egami.SystemDrawing.StringFormat?)
+  fullName.vb: Egami.SystemDrawing.Graphics.MeasureCharacterRanges(System.ReadOnlySpan(Of Char), Egami.SystemDrawing.Font, System.Drawing.RectangleF, Egami.SystemDrawing.StringFormat)
+  nameWithType: Graphics.MeasureCharacterRanges(ReadOnlySpan<char>, Font, RectangleF, StringFormat?)
+  nameWithType.vb: Graphics.MeasureCharacterRanges(ReadOnlySpan(Of Char), Font, RectangleF, StringFormat)
+- uid: Egami.SystemDrawing.Graphics.MeasureCharacterRanges(System.String,Egami.SystemDrawing.Font,System.Drawing.RectangleF,Egami.SystemDrawing.StringFormat)
+  name: MeasureCharacterRanges(string?, Font, RectangleF, StringFormat?)
+  href: api/Egami.SystemDrawing.Graphics.html#Egami_SystemDrawing_Graphics_MeasureCharacterRanges_System_String_Egami_SystemDrawing_Font_System_Drawing_RectangleF_Egami_SystemDrawing_StringFormat_
+  commentId: M:Egami.SystemDrawing.Graphics.MeasureCharacterRanges(System.String,Egami.SystemDrawing.Font,System.Drawing.RectangleF,Egami.SystemDrawing.StringFormat)
+  name.vb: MeasureCharacterRanges(String, Font, RectangleF, StringFormat)
+  fullName: Egami.SystemDrawing.Graphics.MeasureCharacterRanges(string?, Egami.SystemDrawing.Font, System.Drawing.RectangleF, Egami.SystemDrawing.StringFormat?)
+  fullName.vb: Egami.SystemDrawing.Graphics.MeasureCharacterRanges(String, Egami.SystemDrawing.Font, System.Drawing.RectangleF, Egami.SystemDrawing.StringFormat)
+  nameWithType: Graphics.MeasureCharacterRanges(string?, Font, RectangleF, StringFormat?)
+  nameWithType.vb: Graphics.MeasureCharacterRanges(String, Font, RectangleF, StringFormat)
+- uid: Egami.SystemDrawing.Graphics.MeasureCharacterRanges*
+  name: MeasureCharacterRanges
+  href: api/Egami.SystemDrawing.Graphics.html#Egami_SystemDrawing_Graphics_MeasureCharacterRanges_
+  commentId: Overload:Egami.SystemDrawing.Graphics.MeasureCharacterRanges
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Graphics.MeasureCharacterRanges
+  nameWithType: Graphics.MeasureCharacterRanges
+- uid: Egami.SystemDrawing.Graphics.MeasureString(System.ReadOnlySpan{System.Char},Egami.SystemDrawing.Font)
+  name: MeasureString(ReadOnlySpan<char>, Font)
+  href: api/Egami.SystemDrawing.Graphics.html#Egami_SystemDrawing_Graphics_MeasureString_System_ReadOnlySpan_System_Char__Egami_SystemDrawing_Font_
+  commentId: M:Egami.SystemDrawing.Graphics.MeasureString(System.ReadOnlySpan{System.Char},Egami.SystemDrawing.Font)
+  name.vb: MeasureString(ReadOnlySpan(Of Char), Font)
+  fullName: Egami.SystemDrawing.Graphics.MeasureString(System.ReadOnlySpan<char>, Egami.SystemDrawing.Font)
+  fullName.vb: Egami.SystemDrawing.Graphics.MeasureString(System.ReadOnlySpan(Of Char), Egami.SystemDrawing.Font)
+  nameWithType: Graphics.MeasureString(ReadOnlySpan<char>, Font)
+  nameWithType.vb: Graphics.MeasureString(ReadOnlySpan(Of Char), Font)
+- uid: Egami.SystemDrawing.Graphics.MeasureString(System.ReadOnlySpan{System.Char},Egami.SystemDrawing.Font,System.Drawing.PointF,Egami.SystemDrawing.StringFormat)
+  name: MeasureString(ReadOnlySpan<char>, Font, PointF, StringFormat?)
+  href: api/Egami.SystemDrawing.Graphics.html#Egami_SystemDrawing_Graphics_MeasureString_System_ReadOnlySpan_System_Char__Egami_SystemDrawing_Font_System_Drawing_PointF_Egami_SystemDrawing_StringFormat_
+  commentId: M:Egami.SystemDrawing.Graphics.MeasureString(System.ReadOnlySpan{System.Char},Egami.SystemDrawing.Font,System.Drawing.PointF,Egami.SystemDrawing.StringFormat)
+  name.vb: MeasureString(ReadOnlySpan(Of Char), Font, PointF, StringFormat)
+  fullName: Egami.SystemDrawing.Graphics.MeasureString(System.ReadOnlySpan<char>, Egami.SystemDrawing.Font, System.Drawing.PointF, Egami.SystemDrawing.StringFormat?)
+  fullName.vb: Egami.SystemDrawing.Graphics.MeasureString(System.ReadOnlySpan(Of Char), Egami.SystemDrawing.Font, System.Drawing.PointF, Egami.SystemDrawing.StringFormat)
+  nameWithType: Graphics.MeasureString(ReadOnlySpan<char>, Font, PointF, StringFormat?)
+  nameWithType.vb: Graphics.MeasureString(ReadOnlySpan(Of Char), Font, PointF, StringFormat)
+- uid: Egami.SystemDrawing.Graphics.MeasureString(System.ReadOnlySpan{System.Char},Egami.SystemDrawing.Font,System.Drawing.SizeF)
+  name: MeasureString(ReadOnlySpan<char>, Font, SizeF)
+  href: api/Egami.SystemDrawing.Graphics.html#Egami_SystemDrawing_Graphics_MeasureString_System_ReadOnlySpan_System_Char__Egami_SystemDrawing_Font_System_Drawing_SizeF_
+  commentId: M:Egami.SystemDrawing.Graphics.MeasureString(System.ReadOnlySpan{System.Char},Egami.SystemDrawing.Font,System.Drawing.SizeF)
+  name.vb: MeasureString(ReadOnlySpan(Of Char), Font, SizeF)
+  fullName: Egami.SystemDrawing.Graphics.MeasureString(System.ReadOnlySpan<char>, Egami.SystemDrawing.Font, System.Drawing.SizeF)
+  fullName.vb: Egami.SystemDrawing.Graphics.MeasureString(System.ReadOnlySpan(Of Char), Egami.SystemDrawing.Font, System.Drawing.SizeF)
+  nameWithType: Graphics.MeasureString(ReadOnlySpan<char>, Font, SizeF)
+  nameWithType.vb: Graphics.MeasureString(ReadOnlySpan(Of Char), Font, SizeF)
+- uid: Egami.SystemDrawing.Graphics.MeasureString(System.ReadOnlySpan{System.Char},Egami.SystemDrawing.Font,System.Drawing.SizeF,Egami.SystemDrawing.StringFormat)
+  name: MeasureString(ReadOnlySpan<char>, Font, SizeF, StringFormat?)
+  href: api/Egami.SystemDrawing.Graphics.html#Egami_SystemDrawing_Graphics_MeasureString_System_ReadOnlySpan_System_Char__Egami_SystemDrawing_Font_System_Drawing_SizeF_Egami_SystemDrawing_StringFormat_
+  commentId: M:Egami.SystemDrawing.Graphics.MeasureString(System.ReadOnlySpan{System.Char},Egami.SystemDrawing.Font,System.Drawing.SizeF,Egami.SystemDrawing.StringFormat)
+  name.vb: MeasureString(ReadOnlySpan(Of Char), Font, SizeF, StringFormat)
+  fullName: Egami.SystemDrawing.Graphics.MeasureString(System.ReadOnlySpan<char>, Egami.SystemDrawing.Font, System.Drawing.SizeF, Egami.SystemDrawing.StringFormat?)
+  fullName.vb: Egami.SystemDrawing.Graphics.MeasureString(System.ReadOnlySpan(Of Char), Egami.SystemDrawing.Font, System.Drawing.SizeF, Egami.SystemDrawing.StringFormat)
+  nameWithType: Graphics.MeasureString(ReadOnlySpan<char>, Font, SizeF, StringFormat?)
+  nameWithType.vb: Graphics.MeasureString(ReadOnlySpan(Of Char), Font, SizeF, StringFormat)
+- uid: Egami.SystemDrawing.Graphics.MeasureString(System.ReadOnlySpan{System.Char},Egami.SystemDrawing.Font,System.Drawing.SizeF,Egami.SystemDrawing.StringFormat,System.Int32@,System.Int32@)
+  name: MeasureString(ReadOnlySpan<char>, Font, SizeF, StringFormat?, out int, out int)
+  href: api/Egami.SystemDrawing.Graphics.html#Egami_SystemDrawing_Graphics_MeasureString_System_ReadOnlySpan_System_Char__Egami_SystemDrawing_Font_System_Drawing_SizeF_Egami_SystemDrawing_StringFormat_System_Int32__System_Int32__
+  commentId: M:Egami.SystemDrawing.Graphics.MeasureString(System.ReadOnlySpan{System.Char},Egami.SystemDrawing.Font,System.Drawing.SizeF,Egami.SystemDrawing.StringFormat,System.Int32@,System.Int32@)
+  name.vb: MeasureString(ReadOnlySpan(Of Char), Font, SizeF, StringFormat, Integer, Integer)
+  fullName: Egami.SystemDrawing.Graphics.MeasureString(System.ReadOnlySpan<char>, Egami.SystemDrawing.Font, System.Drawing.SizeF, Egami.SystemDrawing.StringFormat?, out int, out int)
+  fullName.vb: Egami.SystemDrawing.Graphics.MeasureString(System.ReadOnlySpan(Of Char), Egami.SystemDrawing.Font, System.Drawing.SizeF, Egami.SystemDrawing.StringFormat, Integer, Integer)
+  nameWithType: Graphics.MeasureString(ReadOnlySpan<char>, Font, SizeF, StringFormat?, out int, out int)
+  nameWithType.vb: Graphics.MeasureString(ReadOnlySpan(Of Char), Font, SizeF, StringFormat, Integer, Integer)
+- uid: Egami.SystemDrawing.Graphics.MeasureString(System.ReadOnlySpan{System.Char},Egami.SystemDrawing.Font,System.Int32)
+  name: MeasureString(ReadOnlySpan<char>, Font, int)
+  href: api/Egami.SystemDrawing.Graphics.html#Egami_SystemDrawing_Graphics_MeasureString_System_ReadOnlySpan_System_Char__Egami_SystemDrawing_Font_System_Int32_
+  commentId: M:Egami.SystemDrawing.Graphics.MeasureString(System.ReadOnlySpan{System.Char},Egami.SystemDrawing.Font,System.Int32)
+  name.vb: MeasureString(ReadOnlySpan(Of Char), Font, Integer)
+  fullName: Egami.SystemDrawing.Graphics.MeasureString(System.ReadOnlySpan<char>, Egami.SystemDrawing.Font, int)
+  fullName.vb: Egami.SystemDrawing.Graphics.MeasureString(System.ReadOnlySpan(Of Char), Egami.SystemDrawing.Font, Integer)
+  nameWithType: Graphics.MeasureString(ReadOnlySpan<char>, Font, int)
+  nameWithType.vb: Graphics.MeasureString(ReadOnlySpan(Of Char), Font, Integer)
+- uid: Egami.SystemDrawing.Graphics.MeasureString(System.ReadOnlySpan{System.Char},Egami.SystemDrawing.Font,System.Int32,Egami.SystemDrawing.StringFormat)
+  name: MeasureString(ReadOnlySpan<char>, Font, int, StringFormat?)
+  href: api/Egami.SystemDrawing.Graphics.html#Egami_SystemDrawing_Graphics_MeasureString_System_ReadOnlySpan_System_Char__Egami_SystemDrawing_Font_System_Int32_Egami_SystemDrawing_StringFormat_
+  commentId: M:Egami.SystemDrawing.Graphics.MeasureString(System.ReadOnlySpan{System.Char},Egami.SystemDrawing.Font,System.Int32,Egami.SystemDrawing.StringFormat)
+  name.vb: MeasureString(ReadOnlySpan(Of Char), Font, Integer, StringFormat)
+  fullName: Egami.SystemDrawing.Graphics.MeasureString(System.ReadOnlySpan<char>, Egami.SystemDrawing.Font, int, Egami.SystemDrawing.StringFormat?)
+  fullName.vb: Egami.SystemDrawing.Graphics.MeasureString(System.ReadOnlySpan(Of Char), Egami.SystemDrawing.Font, Integer, Egami.SystemDrawing.StringFormat)
+  nameWithType: Graphics.MeasureString(ReadOnlySpan<char>, Font, int, StringFormat?)
+  nameWithType.vb: Graphics.MeasureString(ReadOnlySpan(Of Char), Font, Integer, StringFormat)
+- uid: Egami.SystemDrawing.Graphics.MeasureString(System.String,Egami.SystemDrawing.Font)
+  name: MeasureString(string?, Font)
+  href: api/Egami.SystemDrawing.Graphics.html#Egami_SystemDrawing_Graphics_MeasureString_System_String_Egami_SystemDrawing_Font_
+  commentId: M:Egami.SystemDrawing.Graphics.MeasureString(System.String,Egami.SystemDrawing.Font)
+  name.vb: MeasureString(String, Font)
+  fullName: Egami.SystemDrawing.Graphics.MeasureString(string?, Egami.SystemDrawing.Font)
+  fullName.vb: Egami.SystemDrawing.Graphics.MeasureString(String, Egami.SystemDrawing.Font)
+  nameWithType: Graphics.MeasureString(string?, Font)
+  nameWithType.vb: Graphics.MeasureString(String, Font)
+- uid: Egami.SystemDrawing.Graphics.MeasureString(System.String,Egami.SystemDrawing.Font,System.Drawing.PointF,Egami.SystemDrawing.StringFormat)
+  name: MeasureString(string?, Font, PointF, StringFormat?)
+  href: api/Egami.SystemDrawing.Graphics.html#Egami_SystemDrawing_Graphics_MeasureString_System_String_Egami_SystemDrawing_Font_System_Drawing_PointF_Egami_SystemDrawing_StringFormat_
+  commentId: M:Egami.SystemDrawing.Graphics.MeasureString(System.String,Egami.SystemDrawing.Font,System.Drawing.PointF,Egami.SystemDrawing.StringFormat)
+  name.vb: MeasureString(String, Font, PointF, StringFormat)
+  fullName: Egami.SystemDrawing.Graphics.MeasureString(string?, Egami.SystemDrawing.Font, System.Drawing.PointF, Egami.SystemDrawing.StringFormat?)
+  fullName.vb: Egami.SystemDrawing.Graphics.MeasureString(String, Egami.SystemDrawing.Font, System.Drawing.PointF, Egami.SystemDrawing.StringFormat)
+  nameWithType: Graphics.MeasureString(string?, Font, PointF, StringFormat?)
+  nameWithType.vb: Graphics.MeasureString(String, Font, PointF, StringFormat)
+- uid: Egami.SystemDrawing.Graphics.MeasureString(System.String,Egami.SystemDrawing.Font,System.Drawing.SizeF)
+  name: MeasureString(string?, Font, SizeF)
+  href: api/Egami.SystemDrawing.Graphics.html#Egami_SystemDrawing_Graphics_MeasureString_System_String_Egami_SystemDrawing_Font_System_Drawing_SizeF_
+  commentId: M:Egami.SystemDrawing.Graphics.MeasureString(System.String,Egami.SystemDrawing.Font,System.Drawing.SizeF)
+  name.vb: MeasureString(String, Font, SizeF)
+  fullName: Egami.SystemDrawing.Graphics.MeasureString(string?, Egami.SystemDrawing.Font, System.Drawing.SizeF)
+  fullName.vb: Egami.SystemDrawing.Graphics.MeasureString(String, Egami.SystemDrawing.Font, System.Drawing.SizeF)
+  nameWithType: Graphics.MeasureString(string?, Font, SizeF)
+  nameWithType.vb: Graphics.MeasureString(String, Font, SizeF)
+- uid: Egami.SystemDrawing.Graphics.MeasureString(System.String,Egami.SystemDrawing.Font,System.Drawing.SizeF,Egami.SystemDrawing.StringFormat)
+  name: MeasureString(string?, Font, SizeF, StringFormat?)
+  href: api/Egami.SystemDrawing.Graphics.html#Egami_SystemDrawing_Graphics_MeasureString_System_String_Egami_SystemDrawing_Font_System_Drawing_SizeF_Egami_SystemDrawing_StringFormat_
+  commentId: M:Egami.SystemDrawing.Graphics.MeasureString(System.String,Egami.SystemDrawing.Font,System.Drawing.SizeF,Egami.SystemDrawing.StringFormat)
+  name.vb: MeasureString(String, Font, SizeF, StringFormat)
+  fullName: Egami.SystemDrawing.Graphics.MeasureString(string?, Egami.SystemDrawing.Font, System.Drawing.SizeF, Egami.SystemDrawing.StringFormat?)
+  fullName.vb: Egami.SystemDrawing.Graphics.MeasureString(String, Egami.SystemDrawing.Font, System.Drawing.SizeF, Egami.SystemDrawing.StringFormat)
+  nameWithType: Graphics.MeasureString(string?, Font, SizeF, StringFormat?)
+  nameWithType.vb: Graphics.MeasureString(String, Font, SizeF, StringFormat)
+- uid: Egami.SystemDrawing.Graphics.MeasureString(System.String,Egami.SystemDrawing.Font,System.Drawing.SizeF,Egami.SystemDrawing.StringFormat,System.Int32@,System.Int32@)
+  name: MeasureString(string?, Font, SizeF, StringFormat?, out int, out int)
+  href: api/Egami.SystemDrawing.Graphics.html#Egami_SystemDrawing_Graphics_MeasureString_System_String_Egami_SystemDrawing_Font_System_Drawing_SizeF_Egami_SystemDrawing_StringFormat_System_Int32__System_Int32__
+  commentId: M:Egami.SystemDrawing.Graphics.MeasureString(System.String,Egami.SystemDrawing.Font,System.Drawing.SizeF,Egami.SystemDrawing.StringFormat,System.Int32@,System.Int32@)
+  name.vb: MeasureString(String, Font, SizeF, StringFormat, Integer, Integer)
+  fullName: Egami.SystemDrawing.Graphics.MeasureString(string?, Egami.SystemDrawing.Font, System.Drawing.SizeF, Egami.SystemDrawing.StringFormat?, out int, out int)
+  fullName.vb: Egami.SystemDrawing.Graphics.MeasureString(String, Egami.SystemDrawing.Font, System.Drawing.SizeF, Egami.SystemDrawing.StringFormat, Integer, Integer)
+  nameWithType: Graphics.MeasureString(string?, Font, SizeF, StringFormat?, out int, out int)
+  nameWithType.vb: Graphics.MeasureString(String, Font, SizeF, StringFormat, Integer, Integer)
+- uid: Egami.SystemDrawing.Graphics.MeasureString(System.String,Egami.SystemDrawing.Font,System.Int32)
+  name: MeasureString(string?, Font, int)
+  href: api/Egami.SystemDrawing.Graphics.html#Egami_SystemDrawing_Graphics_MeasureString_System_String_Egami_SystemDrawing_Font_System_Int32_
+  commentId: M:Egami.SystemDrawing.Graphics.MeasureString(System.String,Egami.SystemDrawing.Font,System.Int32)
+  name.vb: MeasureString(String, Font, Integer)
+  fullName: Egami.SystemDrawing.Graphics.MeasureString(string?, Egami.SystemDrawing.Font, int)
+  fullName.vb: Egami.SystemDrawing.Graphics.MeasureString(String, Egami.SystemDrawing.Font, Integer)
+  nameWithType: Graphics.MeasureString(string?, Font, int)
+  nameWithType.vb: Graphics.MeasureString(String, Font, Integer)
+- uid: Egami.SystemDrawing.Graphics.MeasureString(System.String,Egami.SystemDrawing.Font,System.Int32,Egami.SystemDrawing.StringFormat)
+  name: MeasureString(string?, Font, int, StringFormat?)
+  href: api/Egami.SystemDrawing.Graphics.html#Egami_SystemDrawing_Graphics_MeasureString_System_String_Egami_SystemDrawing_Font_System_Int32_Egami_SystemDrawing_StringFormat_
+  commentId: M:Egami.SystemDrawing.Graphics.MeasureString(System.String,Egami.SystemDrawing.Font,System.Int32,Egami.SystemDrawing.StringFormat)
+  name.vb: MeasureString(String, Font, Integer, StringFormat)
+  fullName: Egami.SystemDrawing.Graphics.MeasureString(string?, Egami.SystemDrawing.Font, int, Egami.SystemDrawing.StringFormat?)
+  fullName.vb: Egami.SystemDrawing.Graphics.MeasureString(String, Egami.SystemDrawing.Font, Integer, Egami.SystemDrawing.StringFormat)
+  nameWithType: Graphics.MeasureString(string?, Font, int, StringFormat?)
+  nameWithType.vb: Graphics.MeasureString(String, Font, Integer, StringFormat)
+- uid: Egami.SystemDrawing.Graphics.MeasureString*
+  name: MeasureString
+  href: api/Egami.SystemDrawing.Graphics.html#Egami_SystemDrawing_Graphics_MeasureString_
+  commentId: Overload:Egami.SystemDrawing.Graphics.MeasureString
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Graphics.MeasureString
+  nameWithType: Graphics.MeasureString
+- uid: Egami.SystemDrawing.Graphics.MeasureStringInternal(System.ReadOnlySpan{System.Char},Egami.SystemDrawing.Font,System.Drawing.RectangleF,Egami.SystemDrawing.StringFormat,System.Int32@,System.Int32@)
+  name: MeasureStringInternal(ReadOnlySpan<char>, Font, RectangleF, StringFormat?, out int, out int)
+  href: api/Egami.SystemDrawing.Graphics.html#Egami_SystemDrawing_Graphics_MeasureStringInternal_System_ReadOnlySpan_System_Char__Egami_SystemDrawing_Font_System_Drawing_RectangleF_Egami_SystemDrawing_StringFormat_System_Int32__System_Int32__
+  commentId: M:Egami.SystemDrawing.Graphics.MeasureStringInternal(System.ReadOnlySpan{System.Char},Egami.SystemDrawing.Font,System.Drawing.RectangleF,Egami.SystemDrawing.StringFormat,System.Int32@,System.Int32@)
+  name.vb: MeasureStringInternal(ReadOnlySpan(Of Char), Font, RectangleF, StringFormat, Integer, Integer)
+  fullName: Egami.SystemDrawing.Graphics.MeasureStringInternal(System.ReadOnlySpan<char>, Egami.SystemDrawing.Font, System.Drawing.RectangleF, Egami.SystemDrawing.StringFormat?, out int, out int)
+  fullName.vb: Egami.SystemDrawing.Graphics.MeasureStringInternal(System.ReadOnlySpan(Of Char), Egami.SystemDrawing.Font, System.Drawing.RectangleF, Egami.SystemDrawing.StringFormat, Integer, Integer)
+  nameWithType: Graphics.MeasureStringInternal(ReadOnlySpan<char>, Font, RectangleF, StringFormat?, out int, out int)
+  nameWithType.vb: Graphics.MeasureStringInternal(ReadOnlySpan(Of Char), Font, RectangleF, StringFormat, Integer, Integer)
+- uid: Egami.SystemDrawing.Graphics.MeasureStringInternal*
+  name: MeasureStringInternal
+  href: api/Egami.SystemDrawing.Graphics.html#Egami_SystemDrawing_Graphics_MeasureStringInternal_
+  commentId: Overload:Egami.SystemDrawing.Graphics.MeasureStringInternal
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Graphics.MeasureStringInternal
+  nameWithType: Graphics.MeasureStringInternal
 - uid: Egami.SystemDrawing.Graphics.MultiplyTransform(Egami.SystemDrawing.Drawing2D.Matrix)
   name: MultiplyTransform(Matrix)
   href: api/Egami.SystemDrawing.Graphics.html#Egami_SystemDrawing_Graphics_MultiplyTransform_Egami_SystemDrawing_Drawing2D_Matrix_
@@ -93285,6 +94866,109 @@ references:
   isSpec: "True"
   fullName: Egami.SystemDrawing.Imaging.WmfPlaceableFileHeader.Reserved
   nameWithType: WmfPlaceableFileHeader.Reserved
+- uid: Egami.SystemDrawing.Interop
+  name: Egami.SystemDrawing.Interop
+  href: api/Egami.SystemDrawing.Interop.html
+  commentId: N:Egami.SystemDrawing.Interop
+  fullName: Egami.SystemDrawing.Interop
+  nameWithType: Egami.SystemDrawing.Interop
+- uid: Egami.SystemDrawing.Interop.LOGFONT
+  name: LOGFONT
+  href: api/Egami.SystemDrawing.Interop.LOGFONT.html
+  commentId: T:Egami.SystemDrawing.Interop.LOGFONT
+  fullName: Egami.SystemDrawing.Interop.LOGFONT
+  nameWithType: LOGFONT
+- uid: Egami.SystemDrawing.Interop.LOGFONT.lfCharSet
+  name: lfCharSet
+  href: api/Egami.SystemDrawing.Interop.LOGFONT.html#Egami_SystemDrawing_Interop_LOGFONT_lfCharSet
+  commentId: F:Egami.SystemDrawing.Interop.LOGFONT.lfCharSet
+  fullName: Egami.SystemDrawing.Interop.LOGFONT.lfCharSet
+  nameWithType: LOGFONT.lfCharSet
+- uid: Egami.SystemDrawing.Interop.LOGFONT.lfClipPrecision
+  name: lfClipPrecision
+  href: api/Egami.SystemDrawing.Interop.LOGFONT.html#Egami_SystemDrawing_Interop_LOGFONT_lfClipPrecision
+  commentId: F:Egami.SystemDrawing.Interop.LOGFONT.lfClipPrecision
+  fullName: Egami.SystemDrawing.Interop.LOGFONT.lfClipPrecision
+  nameWithType: LOGFONT.lfClipPrecision
+- uid: Egami.SystemDrawing.Interop.LOGFONT.lfEscapement
+  name: lfEscapement
+  href: api/Egami.SystemDrawing.Interop.LOGFONT.html#Egami_SystemDrawing_Interop_LOGFONT_lfEscapement
+  commentId: F:Egami.SystemDrawing.Interop.LOGFONT.lfEscapement
+  fullName: Egami.SystemDrawing.Interop.LOGFONT.lfEscapement
+  nameWithType: LOGFONT.lfEscapement
+- uid: Egami.SystemDrawing.Interop.LOGFONT.lfFaceName
+  name: lfFaceName
+  href: api/Egami.SystemDrawing.Interop.LOGFONT.html#Egami_SystemDrawing_Interop_LOGFONT_lfFaceName
+  commentId: P:Egami.SystemDrawing.Interop.LOGFONT.lfFaceName
+  fullName: Egami.SystemDrawing.Interop.LOGFONT.lfFaceName
+  nameWithType: LOGFONT.lfFaceName
+- uid: Egami.SystemDrawing.Interop.LOGFONT.lfFaceName*
+  name: lfFaceName
+  href: api/Egami.SystemDrawing.Interop.LOGFONT.html#Egami_SystemDrawing_Interop_LOGFONT_lfFaceName_
+  commentId: Overload:Egami.SystemDrawing.Interop.LOGFONT.lfFaceName
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Interop.LOGFONT.lfFaceName
+  nameWithType: LOGFONT.lfFaceName
+- uid: Egami.SystemDrawing.Interop.LOGFONT.lfHeight
+  name: lfHeight
+  href: api/Egami.SystemDrawing.Interop.LOGFONT.html#Egami_SystemDrawing_Interop_LOGFONT_lfHeight
+  commentId: F:Egami.SystemDrawing.Interop.LOGFONT.lfHeight
+  fullName: Egami.SystemDrawing.Interop.LOGFONT.lfHeight
+  nameWithType: LOGFONT.lfHeight
+- uid: Egami.SystemDrawing.Interop.LOGFONT.lfItalic
+  name: lfItalic
+  href: api/Egami.SystemDrawing.Interop.LOGFONT.html#Egami_SystemDrawing_Interop_LOGFONT_lfItalic
+  commentId: F:Egami.SystemDrawing.Interop.LOGFONT.lfItalic
+  fullName: Egami.SystemDrawing.Interop.LOGFONT.lfItalic
+  nameWithType: LOGFONT.lfItalic
+- uid: Egami.SystemDrawing.Interop.LOGFONT.lfOrientation
+  name: lfOrientation
+  href: api/Egami.SystemDrawing.Interop.LOGFONT.html#Egami_SystemDrawing_Interop_LOGFONT_lfOrientation
+  commentId: F:Egami.SystemDrawing.Interop.LOGFONT.lfOrientation
+  fullName: Egami.SystemDrawing.Interop.LOGFONT.lfOrientation
+  nameWithType: LOGFONT.lfOrientation
+- uid: Egami.SystemDrawing.Interop.LOGFONT.lfOutPrecision
+  name: lfOutPrecision
+  href: api/Egami.SystemDrawing.Interop.LOGFONT.html#Egami_SystemDrawing_Interop_LOGFONT_lfOutPrecision
+  commentId: F:Egami.SystemDrawing.Interop.LOGFONT.lfOutPrecision
+  fullName: Egami.SystemDrawing.Interop.LOGFONT.lfOutPrecision
+  nameWithType: LOGFONT.lfOutPrecision
+- uid: Egami.SystemDrawing.Interop.LOGFONT.lfPitchAndFamily
+  name: lfPitchAndFamily
+  href: api/Egami.SystemDrawing.Interop.LOGFONT.html#Egami_SystemDrawing_Interop_LOGFONT_lfPitchAndFamily
+  commentId: F:Egami.SystemDrawing.Interop.LOGFONT.lfPitchAndFamily
+  fullName: Egami.SystemDrawing.Interop.LOGFONT.lfPitchAndFamily
+  nameWithType: LOGFONT.lfPitchAndFamily
+- uid: Egami.SystemDrawing.Interop.LOGFONT.lfQuality
+  name: lfQuality
+  href: api/Egami.SystemDrawing.Interop.LOGFONT.html#Egami_SystemDrawing_Interop_LOGFONT_lfQuality
+  commentId: F:Egami.SystemDrawing.Interop.LOGFONT.lfQuality
+  fullName: Egami.SystemDrawing.Interop.LOGFONT.lfQuality
+  nameWithType: LOGFONT.lfQuality
+- uid: Egami.SystemDrawing.Interop.LOGFONT.lfStrikeOut
+  name: lfStrikeOut
+  href: api/Egami.SystemDrawing.Interop.LOGFONT.html#Egami_SystemDrawing_Interop_LOGFONT_lfStrikeOut
+  commentId: F:Egami.SystemDrawing.Interop.LOGFONT.lfStrikeOut
+  fullName: Egami.SystemDrawing.Interop.LOGFONT.lfStrikeOut
+  nameWithType: LOGFONT.lfStrikeOut
+- uid: Egami.SystemDrawing.Interop.LOGFONT.lfUnderline
+  name: lfUnderline
+  href: api/Egami.SystemDrawing.Interop.LOGFONT.html#Egami_SystemDrawing_Interop_LOGFONT_lfUnderline
+  commentId: F:Egami.SystemDrawing.Interop.LOGFONT.lfUnderline
+  fullName: Egami.SystemDrawing.Interop.LOGFONT.lfUnderline
+  nameWithType: LOGFONT.lfUnderline
+- uid: Egami.SystemDrawing.Interop.LOGFONT.lfWeight
+  name: lfWeight
+  href: api/Egami.SystemDrawing.Interop.LOGFONT.html#Egami_SystemDrawing_Interop_LOGFONT_lfWeight
+  commentId: F:Egami.SystemDrawing.Interop.LOGFONT.lfWeight
+  fullName: Egami.SystemDrawing.Interop.LOGFONT.lfWeight
+  nameWithType: LOGFONT.lfWeight
+- uid: Egami.SystemDrawing.Interop.LOGFONT.lfWidth
+  name: lfWidth
+  href: api/Egami.SystemDrawing.Interop.LOGFONT.html#Egami_SystemDrawing_Interop_LOGFONT_lfWidth
+  commentId: F:Egami.SystemDrawing.Interop.LOGFONT.lfWidth
+  fullName: Egami.SystemDrawing.Interop.LOGFONT.lfWidth
+  nameWithType: LOGFONT.lfWidth
 - uid: Egami.SystemDrawing.Pen
   name: Pen
   href: api/Egami.SystemDrawing.Pen.html
@@ -96871,6 +98555,488 @@ references:
   commentId: F:Egami.SystemDrawing.StockIconOptions.SmallIcon
   fullName: Egami.SystemDrawing.StockIconOptions.SmallIcon
   nameWithType: StockIconOptions.SmallIcon
+- uid: Egami.SystemDrawing.StringAlignment
+  name: StringAlignment
+  href: api/Egami.SystemDrawing.StringAlignment.html
+  commentId: T:Egami.SystemDrawing.StringAlignment
+  fullName: Egami.SystemDrawing.StringAlignment
+  nameWithType: StringAlignment
+- uid: Egami.SystemDrawing.StringAlignment.Center
+  name: Center
+  href: api/Egami.SystemDrawing.StringAlignment.html#Egami_SystemDrawing_StringAlignment_Center
+  commentId: F:Egami.SystemDrawing.StringAlignment.Center
+  fullName: Egami.SystemDrawing.StringAlignment.Center
+  nameWithType: StringAlignment.Center
+- uid: Egami.SystemDrawing.StringAlignment.Far
+  name: Far
+  href: api/Egami.SystemDrawing.StringAlignment.html#Egami_SystemDrawing_StringAlignment_Far
+  commentId: F:Egami.SystemDrawing.StringAlignment.Far
+  fullName: Egami.SystemDrawing.StringAlignment.Far
+  nameWithType: StringAlignment.Far
+- uid: Egami.SystemDrawing.StringAlignment.Near
+  name: Near
+  href: api/Egami.SystemDrawing.StringAlignment.html#Egami_SystemDrawing_StringAlignment_Near
+  commentId: F:Egami.SystemDrawing.StringAlignment.Near
+  fullName: Egami.SystemDrawing.StringAlignment.Near
+  nameWithType: StringAlignment.Near
+- uid: Egami.SystemDrawing.StringDigitSubstitute
+  name: StringDigitSubstitute
+  href: api/Egami.SystemDrawing.StringDigitSubstitute.html
+  commentId: T:Egami.SystemDrawing.StringDigitSubstitute
+  fullName: Egami.SystemDrawing.StringDigitSubstitute
+  nameWithType: StringDigitSubstitute
+- uid: Egami.SystemDrawing.StringDigitSubstitute.National
+  name: National
+  href: api/Egami.SystemDrawing.StringDigitSubstitute.html#Egami_SystemDrawing_StringDigitSubstitute_National
+  commentId: F:Egami.SystemDrawing.StringDigitSubstitute.National
+  fullName: Egami.SystemDrawing.StringDigitSubstitute.National
+  nameWithType: StringDigitSubstitute.National
+- uid: Egami.SystemDrawing.StringDigitSubstitute.None
+  name: None
+  href: api/Egami.SystemDrawing.StringDigitSubstitute.html#Egami_SystemDrawing_StringDigitSubstitute_None
+  commentId: F:Egami.SystemDrawing.StringDigitSubstitute.None
+  fullName: Egami.SystemDrawing.StringDigitSubstitute.None
+  nameWithType: StringDigitSubstitute.None
+- uid: Egami.SystemDrawing.StringDigitSubstitute.Traditional
+  name: Traditional
+  href: api/Egami.SystemDrawing.StringDigitSubstitute.html#Egami_SystemDrawing_StringDigitSubstitute_Traditional
+  commentId: F:Egami.SystemDrawing.StringDigitSubstitute.Traditional
+  fullName: Egami.SystemDrawing.StringDigitSubstitute.Traditional
+  nameWithType: StringDigitSubstitute.Traditional
+- uid: Egami.SystemDrawing.StringDigitSubstitute.User
+  name: User
+  href: api/Egami.SystemDrawing.StringDigitSubstitute.html#Egami_SystemDrawing_StringDigitSubstitute_User
+  commentId: F:Egami.SystemDrawing.StringDigitSubstitute.User
+  fullName: Egami.SystemDrawing.StringDigitSubstitute.User
+  nameWithType: StringDigitSubstitute.User
+- uid: Egami.SystemDrawing.StringFormat
+  name: StringFormat
+  href: api/Egami.SystemDrawing.StringFormat.html
+  commentId: T:Egami.SystemDrawing.StringFormat
+  fullName: Egami.SystemDrawing.StringFormat
+  nameWithType: StringFormat
+- uid: Egami.SystemDrawing.StringFormat.#ctor
+  name: StringFormat()
+  href: api/Egami.SystemDrawing.StringFormat.html#Egami_SystemDrawing_StringFormat__ctor
+  commentId: M:Egami.SystemDrawing.StringFormat.#ctor
+  name.vb: New()
+  fullName: Egami.SystemDrawing.StringFormat.StringFormat()
+  fullName.vb: Egami.SystemDrawing.StringFormat.New()
+  nameWithType: StringFormat.StringFormat()
+  nameWithType.vb: StringFormat.New()
+- uid: Egami.SystemDrawing.StringFormat.#ctor(Egami.SystemDrawing.StringFormat)
+  name: StringFormat(StringFormat)
+  href: api/Egami.SystemDrawing.StringFormat.html#Egami_SystemDrawing_StringFormat__ctor_Egami_SystemDrawing_StringFormat_
+  commentId: M:Egami.SystemDrawing.StringFormat.#ctor(Egami.SystemDrawing.StringFormat)
+  name.vb: New(StringFormat)
+  fullName: Egami.SystemDrawing.StringFormat.StringFormat(Egami.SystemDrawing.StringFormat)
+  fullName.vb: Egami.SystemDrawing.StringFormat.New(Egami.SystemDrawing.StringFormat)
+  nameWithType: StringFormat.StringFormat(StringFormat)
+  nameWithType.vb: StringFormat.New(StringFormat)
+- uid: Egami.SystemDrawing.StringFormat.#ctor(Egami.SystemDrawing.StringFormatFlags)
+  name: StringFormat(StringFormatFlags)
+  href: api/Egami.SystemDrawing.StringFormat.html#Egami_SystemDrawing_StringFormat__ctor_Egami_SystemDrawing_StringFormatFlags_
+  commentId: M:Egami.SystemDrawing.StringFormat.#ctor(Egami.SystemDrawing.StringFormatFlags)
+  name.vb: New(StringFormatFlags)
+  fullName: Egami.SystemDrawing.StringFormat.StringFormat(Egami.SystemDrawing.StringFormatFlags)
+  fullName.vb: Egami.SystemDrawing.StringFormat.New(Egami.SystemDrawing.StringFormatFlags)
+  nameWithType: StringFormat.StringFormat(StringFormatFlags)
+  nameWithType.vb: StringFormat.New(StringFormatFlags)
+- uid: Egami.SystemDrawing.StringFormat.#ctor(Egami.SystemDrawing.StringFormatFlags,System.Int32)
+  name: StringFormat(StringFormatFlags, int)
+  href: api/Egami.SystemDrawing.StringFormat.html#Egami_SystemDrawing_StringFormat__ctor_Egami_SystemDrawing_StringFormatFlags_System_Int32_
+  commentId: M:Egami.SystemDrawing.StringFormat.#ctor(Egami.SystemDrawing.StringFormatFlags,System.Int32)
+  name.vb: New(StringFormatFlags, Integer)
+  fullName: Egami.SystemDrawing.StringFormat.StringFormat(Egami.SystemDrawing.StringFormatFlags, int)
+  fullName.vb: Egami.SystemDrawing.StringFormat.New(Egami.SystemDrawing.StringFormatFlags, Integer)
+  nameWithType: StringFormat.StringFormat(StringFormatFlags, int)
+  nameWithType.vb: StringFormat.New(StringFormatFlags, Integer)
+- uid: Egami.SystemDrawing.StringFormat.#ctor*
+  name: StringFormat
+  href: api/Egami.SystemDrawing.StringFormat.html#Egami_SystemDrawing_StringFormat__ctor_
+  commentId: Overload:Egami.SystemDrawing.StringFormat.#ctor
+  isSpec: "True"
+  name.vb: New
+  fullName: Egami.SystemDrawing.StringFormat.StringFormat
+  fullName.vb: Egami.SystemDrawing.StringFormat.New
+  nameWithType: StringFormat.StringFormat
+  nameWithType.vb: StringFormat.New
+- uid: Egami.SystemDrawing.StringFormat.Alignment
+  name: Alignment
+  href: api/Egami.SystemDrawing.StringFormat.html#Egami_SystemDrawing_StringFormat_Alignment
+  commentId: P:Egami.SystemDrawing.StringFormat.Alignment
+  fullName: Egami.SystemDrawing.StringFormat.Alignment
+  nameWithType: StringFormat.Alignment
+- uid: Egami.SystemDrawing.StringFormat.Alignment*
+  name: Alignment
+  href: api/Egami.SystemDrawing.StringFormat.html#Egami_SystemDrawing_StringFormat_Alignment_
+  commentId: Overload:Egami.SystemDrawing.StringFormat.Alignment
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.StringFormat.Alignment
+  nameWithType: StringFormat.Alignment
+- uid: Egami.SystemDrawing.StringFormat.Clone
+  name: Clone()
+  href: api/Egami.SystemDrawing.StringFormat.html#Egami_SystemDrawing_StringFormat_Clone
+  commentId: M:Egami.SystemDrawing.StringFormat.Clone
+  fullName: Egami.SystemDrawing.StringFormat.Clone()
+  nameWithType: StringFormat.Clone()
+- uid: Egami.SystemDrawing.StringFormat.Clone*
+  name: Clone
+  href: api/Egami.SystemDrawing.StringFormat.html#Egami_SystemDrawing_StringFormat_Clone_
+  commentId: Overload:Egami.SystemDrawing.StringFormat.Clone
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.StringFormat.Clone
+  nameWithType: StringFormat.Clone
+- uid: Egami.SystemDrawing.StringFormat.DigitSubstitutionLanguage
+  name: DigitSubstitutionLanguage
+  href: api/Egami.SystemDrawing.StringFormat.html#Egami_SystemDrawing_StringFormat_DigitSubstitutionLanguage
+  commentId: P:Egami.SystemDrawing.StringFormat.DigitSubstitutionLanguage
+  fullName: Egami.SystemDrawing.StringFormat.DigitSubstitutionLanguage
+  nameWithType: StringFormat.DigitSubstitutionLanguage
+- uid: Egami.SystemDrawing.StringFormat.DigitSubstitutionLanguage*
+  name: DigitSubstitutionLanguage
+  href: api/Egami.SystemDrawing.StringFormat.html#Egami_SystemDrawing_StringFormat_DigitSubstitutionLanguage_
+  commentId: Overload:Egami.SystemDrawing.StringFormat.DigitSubstitutionLanguage
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.StringFormat.DigitSubstitutionLanguage
+  nameWithType: StringFormat.DigitSubstitutionLanguage
+- uid: Egami.SystemDrawing.StringFormat.DigitSubstitutionMethod
+  name: DigitSubstitutionMethod
+  href: api/Egami.SystemDrawing.StringFormat.html#Egami_SystemDrawing_StringFormat_DigitSubstitutionMethod
+  commentId: P:Egami.SystemDrawing.StringFormat.DigitSubstitutionMethod
+  fullName: Egami.SystemDrawing.StringFormat.DigitSubstitutionMethod
+  nameWithType: StringFormat.DigitSubstitutionMethod
+- uid: Egami.SystemDrawing.StringFormat.DigitSubstitutionMethod*
+  name: DigitSubstitutionMethod
+  href: api/Egami.SystemDrawing.StringFormat.html#Egami_SystemDrawing_StringFormat_DigitSubstitutionMethod_
+  commentId: Overload:Egami.SystemDrawing.StringFormat.DigitSubstitutionMethod
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.StringFormat.DigitSubstitutionMethod
+  nameWithType: StringFormat.DigitSubstitutionMethod
+- uid: Egami.SystemDrawing.StringFormat.Dispose
+  name: Dispose()
+  href: api/Egami.SystemDrawing.StringFormat.html#Egami_SystemDrawing_StringFormat_Dispose
+  commentId: M:Egami.SystemDrawing.StringFormat.Dispose
+  fullName: Egami.SystemDrawing.StringFormat.Dispose()
+  nameWithType: StringFormat.Dispose()
+- uid: Egami.SystemDrawing.StringFormat.Dispose*
+  name: Dispose
+  href: api/Egami.SystemDrawing.StringFormat.html#Egami_SystemDrawing_StringFormat_Dispose_
+  commentId: Overload:Egami.SystemDrawing.StringFormat.Dispose
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.StringFormat.Dispose
+  nameWithType: StringFormat.Dispose
+- uid: Egami.SystemDrawing.StringFormat.FormatFlags
+  name: FormatFlags
+  href: api/Egami.SystemDrawing.StringFormat.html#Egami_SystemDrawing_StringFormat_FormatFlags
+  commentId: P:Egami.SystemDrawing.StringFormat.FormatFlags
+  fullName: Egami.SystemDrawing.StringFormat.FormatFlags
+  nameWithType: StringFormat.FormatFlags
+- uid: Egami.SystemDrawing.StringFormat.FormatFlags*
+  name: FormatFlags
+  href: api/Egami.SystemDrawing.StringFormat.html#Egami_SystemDrawing_StringFormat_FormatFlags_
+  commentId: Overload:Egami.SystemDrawing.StringFormat.FormatFlags
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.StringFormat.FormatFlags
+  nameWithType: StringFormat.FormatFlags
+- uid: Egami.SystemDrawing.StringFormat.GenericDefault
+  name: GenericDefault
+  href: api/Egami.SystemDrawing.StringFormat.html#Egami_SystemDrawing_StringFormat_GenericDefault
+  commentId: P:Egami.SystemDrawing.StringFormat.GenericDefault
+  fullName: Egami.SystemDrawing.StringFormat.GenericDefault
+  nameWithType: StringFormat.GenericDefault
+- uid: Egami.SystemDrawing.StringFormat.GenericDefault*
+  name: GenericDefault
+  href: api/Egami.SystemDrawing.StringFormat.html#Egami_SystemDrawing_StringFormat_GenericDefault_
+  commentId: Overload:Egami.SystemDrawing.StringFormat.GenericDefault
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.StringFormat.GenericDefault
+  nameWithType: StringFormat.GenericDefault
+- uid: Egami.SystemDrawing.StringFormat.GenericTypographic
+  name: GenericTypographic
+  href: api/Egami.SystemDrawing.StringFormat.html#Egami_SystemDrawing_StringFormat_GenericTypographic
+  commentId: P:Egami.SystemDrawing.StringFormat.GenericTypographic
+  fullName: Egami.SystemDrawing.StringFormat.GenericTypographic
+  nameWithType: StringFormat.GenericTypographic
+- uid: Egami.SystemDrawing.StringFormat.GenericTypographic*
+  name: GenericTypographic
+  href: api/Egami.SystemDrawing.StringFormat.html#Egami_SystemDrawing_StringFormat_GenericTypographic_
+  commentId: Overload:Egami.SystemDrawing.StringFormat.GenericTypographic
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.StringFormat.GenericTypographic
+  nameWithType: StringFormat.GenericTypographic
+- uid: Egami.SystemDrawing.StringFormat.GetTabStops(System.Single@)
+  name: GetTabStops(out float)
+  href: api/Egami.SystemDrawing.StringFormat.html#Egami_SystemDrawing_StringFormat_GetTabStops_System_Single__
+  commentId: M:Egami.SystemDrawing.StringFormat.GetTabStops(System.Single@)
+  name.vb: GetTabStops(Single)
+  fullName: Egami.SystemDrawing.StringFormat.GetTabStops(out float)
+  fullName.vb: Egami.SystemDrawing.StringFormat.GetTabStops(Single)
+  nameWithType: StringFormat.GetTabStops(out float)
+  nameWithType.vb: StringFormat.GetTabStops(Single)
+- uid: Egami.SystemDrawing.StringFormat.GetTabStops*
+  name: GetTabStops
+  href: api/Egami.SystemDrawing.StringFormat.html#Egami_SystemDrawing_StringFormat_GetTabStops_
+  commentId: Overload:Egami.SystemDrawing.StringFormat.GetTabStops
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.StringFormat.GetTabStops
+  nameWithType: StringFormat.GetTabStops
+- uid: Egami.SystemDrawing.StringFormat.HotkeyPrefix
+  name: HotkeyPrefix
+  href: api/Egami.SystemDrawing.StringFormat.html#Egami_SystemDrawing_StringFormat_HotkeyPrefix
+  commentId: P:Egami.SystemDrawing.StringFormat.HotkeyPrefix
+  fullName: Egami.SystemDrawing.StringFormat.HotkeyPrefix
+  nameWithType: StringFormat.HotkeyPrefix
+- uid: Egami.SystemDrawing.StringFormat.HotkeyPrefix*
+  name: HotkeyPrefix
+  href: api/Egami.SystemDrawing.StringFormat.html#Egami_SystemDrawing_StringFormat_HotkeyPrefix_
+  commentId: Overload:Egami.SystemDrawing.StringFormat.HotkeyPrefix
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.StringFormat.HotkeyPrefix
+  nameWithType: StringFormat.HotkeyPrefix
+- uid: Egami.SystemDrawing.StringFormat.LineAlignment
+  name: LineAlignment
+  href: api/Egami.SystemDrawing.StringFormat.html#Egami_SystemDrawing_StringFormat_LineAlignment
+  commentId: P:Egami.SystemDrawing.StringFormat.LineAlignment
+  fullName: Egami.SystemDrawing.StringFormat.LineAlignment
+  nameWithType: StringFormat.LineAlignment
+- uid: Egami.SystemDrawing.StringFormat.LineAlignment*
+  name: LineAlignment
+  href: api/Egami.SystemDrawing.StringFormat.html#Egami_SystemDrawing_StringFormat_LineAlignment_
+  commentId: Overload:Egami.SystemDrawing.StringFormat.LineAlignment
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.StringFormat.LineAlignment
+  nameWithType: StringFormat.LineAlignment
+- uid: Egami.SystemDrawing.StringFormat.SetDigitSubstitution(System.Int32,Egami.SystemDrawing.StringDigitSubstitute)
+  name: SetDigitSubstitution(int, StringDigitSubstitute)
+  href: api/Egami.SystemDrawing.StringFormat.html#Egami_SystemDrawing_StringFormat_SetDigitSubstitution_System_Int32_Egami_SystemDrawing_StringDigitSubstitute_
+  commentId: M:Egami.SystemDrawing.StringFormat.SetDigitSubstitution(System.Int32,Egami.SystemDrawing.StringDigitSubstitute)
+  name.vb: SetDigitSubstitution(Integer, StringDigitSubstitute)
+  fullName: Egami.SystemDrawing.StringFormat.SetDigitSubstitution(int, Egami.SystemDrawing.StringDigitSubstitute)
+  fullName.vb: Egami.SystemDrawing.StringFormat.SetDigitSubstitution(Integer, Egami.SystemDrawing.StringDigitSubstitute)
+  nameWithType: StringFormat.SetDigitSubstitution(int, StringDigitSubstitute)
+  nameWithType.vb: StringFormat.SetDigitSubstitution(Integer, StringDigitSubstitute)
+- uid: Egami.SystemDrawing.StringFormat.SetDigitSubstitution*
+  name: SetDigitSubstitution
+  href: api/Egami.SystemDrawing.StringFormat.html#Egami_SystemDrawing_StringFormat_SetDigitSubstitution_
+  commentId: Overload:Egami.SystemDrawing.StringFormat.SetDigitSubstitution
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.StringFormat.SetDigitSubstitution
+  nameWithType: StringFormat.SetDigitSubstitution
+- uid: Egami.SystemDrawing.StringFormat.SetMeasurableCharacterRanges(Egami.SystemDrawing.CharacterRange[])
+  name: SetMeasurableCharacterRanges(CharacterRange[])
+  href: api/Egami.SystemDrawing.StringFormat.html#Egami_SystemDrawing_StringFormat_SetMeasurableCharacterRanges_Egami_SystemDrawing_CharacterRange___
+  commentId: M:Egami.SystemDrawing.StringFormat.SetMeasurableCharacterRanges(Egami.SystemDrawing.CharacterRange[])
+  name.vb: SetMeasurableCharacterRanges(CharacterRange())
+  fullName: Egami.SystemDrawing.StringFormat.SetMeasurableCharacterRanges(Egami.SystemDrawing.CharacterRange[])
+  fullName.vb: Egami.SystemDrawing.StringFormat.SetMeasurableCharacterRanges(Egami.SystemDrawing.CharacterRange())
+  nameWithType: StringFormat.SetMeasurableCharacterRanges(CharacterRange[])
+  nameWithType.vb: StringFormat.SetMeasurableCharacterRanges(CharacterRange())
+- uid: Egami.SystemDrawing.StringFormat.SetMeasurableCharacterRanges*
+  name: SetMeasurableCharacterRanges
+  href: api/Egami.SystemDrawing.StringFormat.html#Egami_SystemDrawing_StringFormat_SetMeasurableCharacterRanges_
+  commentId: Overload:Egami.SystemDrawing.StringFormat.SetMeasurableCharacterRanges
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.StringFormat.SetMeasurableCharacterRanges
+  nameWithType: StringFormat.SetMeasurableCharacterRanges
+- uid: Egami.SystemDrawing.StringFormat.SetTabStops(System.Single,System.Single[])
+  name: SetTabStops(float, float[])
+  href: api/Egami.SystemDrawing.StringFormat.html#Egami_SystemDrawing_StringFormat_SetTabStops_System_Single_System_Single___
+  commentId: M:Egami.SystemDrawing.StringFormat.SetTabStops(System.Single,System.Single[])
+  name.vb: SetTabStops(Single, Single())
+  fullName: Egami.SystemDrawing.StringFormat.SetTabStops(float, float[])
+  fullName.vb: Egami.SystemDrawing.StringFormat.SetTabStops(Single, Single())
+  nameWithType: StringFormat.SetTabStops(float, float[])
+  nameWithType.vb: StringFormat.SetTabStops(Single, Single())
+- uid: Egami.SystemDrawing.StringFormat.SetTabStops*
+  name: SetTabStops
+  href: api/Egami.SystemDrawing.StringFormat.html#Egami_SystemDrawing_StringFormat_SetTabStops_
+  commentId: Overload:Egami.SystemDrawing.StringFormat.SetTabStops
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.StringFormat.SetTabStops
+  nameWithType: StringFormat.SetTabStops
+- uid: Egami.SystemDrawing.StringFormat.ToString
+  name: ToString()
+  href: api/Egami.SystemDrawing.StringFormat.html#Egami_SystemDrawing_StringFormat_ToString
+  commentId: M:Egami.SystemDrawing.StringFormat.ToString
+  fullName: Egami.SystemDrawing.StringFormat.ToString()
+  nameWithType: StringFormat.ToString()
+- uid: Egami.SystemDrawing.StringFormat.ToString*
+  name: ToString
+  href: api/Egami.SystemDrawing.StringFormat.html#Egami_SystemDrawing_StringFormat_ToString_
+  commentId: Overload:Egami.SystemDrawing.StringFormat.ToString
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.StringFormat.ToString
+  nameWithType: StringFormat.ToString
+- uid: Egami.SystemDrawing.StringFormat.Trimming
+  name: Trimming
+  href: api/Egami.SystemDrawing.StringFormat.html#Egami_SystemDrawing_StringFormat_Trimming
+  commentId: P:Egami.SystemDrawing.StringFormat.Trimming
+  fullName: Egami.SystemDrawing.StringFormat.Trimming
+  nameWithType: StringFormat.Trimming
+- uid: Egami.SystemDrawing.StringFormat.Trimming*
+  name: Trimming
+  href: api/Egami.SystemDrawing.StringFormat.html#Egami_SystemDrawing_StringFormat_Trimming_
+  commentId: Overload:Egami.SystemDrawing.StringFormat.Trimming
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.StringFormat.Trimming
+  nameWithType: StringFormat.Trimming
+- uid: Egami.SystemDrawing.StringFormatFlags
+  name: StringFormatFlags
+  href: api/Egami.SystemDrawing.StringFormatFlags.html
+  commentId: T:Egami.SystemDrawing.StringFormatFlags
+  fullName: Egami.SystemDrawing.StringFormatFlags
+  nameWithType: StringFormatFlags
+- uid: Egami.SystemDrawing.StringFormatFlags.DirectionRightToLeft
+  name: DirectionRightToLeft
+  href: api/Egami.SystemDrawing.StringFormatFlags.html#Egami_SystemDrawing_StringFormatFlags_DirectionRightToLeft
+  commentId: F:Egami.SystemDrawing.StringFormatFlags.DirectionRightToLeft
+  fullName: Egami.SystemDrawing.StringFormatFlags.DirectionRightToLeft
+  nameWithType: StringFormatFlags.DirectionRightToLeft
+- uid: Egami.SystemDrawing.StringFormatFlags.DirectionVertical
+  name: DirectionVertical
+  href: api/Egami.SystemDrawing.StringFormatFlags.html#Egami_SystemDrawing_StringFormatFlags_DirectionVertical
+  commentId: F:Egami.SystemDrawing.StringFormatFlags.DirectionVertical
+  fullName: Egami.SystemDrawing.StringFormatFlags.DirectionVertical
+  nameWithType: StringFormatFlags.DirectionVertical
+- uid: Egami.SystemDrawing.StringFormatFlags.DisplayFormatControl
+  name: DisplayFormatControl
+  href: api/Egami.SystemDrawing.StringFormatFlags.html#Egami_SystemDrawing_StringFormatFlags_DisplayFormatControl
+  commentId: F:Egami.SystemDrawing.StringFormatFlags.DisplayFormatControl
+  fullName: Egami.SystemDrawing.StringFormatFlags.DisplayFormatControl
+  nameWithType: StringFormatFlags.DisplayFormatControl
+- uid: Egami.SystemDrawing.StringFormatFlags.FitBlackBox
+  name: FitBlackBox
+  href: api/Egami.SystemDrawing.StringFormatFlags.html#Egami_SystemDrawing_StringFormatFlags_FitBlackBox
+  commentId: F:Egami.SystemDrawing.StringFormatFlags.FitBlackBox
+  fullName: Egami.SystemDrawing.StringFormatFlags.FitBlackBox
+  nameWithType: StringFormatFlags.FitBlackBox
+- uid: Egami.SystemDrawing.StringFormatFlags.LineLimit
+  name: LineLimit
+  href: api/Egami.SystemDrawing.StringFormatFlags.html#Egami_SystemDrawing_StringFormatFlags_LineLimit
+  commentId: F:Egami.SystemDrawing.StringFormatFlags.LineLimit
+  fullName: Egami.SystemDrawing.StringFormatFlags.LineLimit
+  nameWithType: StringFormatFlags.LineLimit
+- uid: Egami.SystemDrawing.StringFormatFlags.MeasureTrailingSpaces
+  name: MeasureTrailingSpaces
+  href: api/Egami.SystemDrawing.StringFormatFlags.html#Egami_SystemDrawing_StringFormatFlags_MeasureTrailingSpaces
+  commentId: F:Egami.SystemDrawing.StringFormatFlags.MeasureTrailingSpaces
+  fullName: Egami.SystemDrawing.StringFormatFlags.MeasureTrailingSpaces
+  nameWithType: StringFormatFlags.MeasureTrailingSpaces
+- uid: Egami.SystemDrawing.StringFormatFlags.NoClip
+  name: NoClip
+  href: api/Egami.SystemDrawing.StringFormatFlags.html#Egami_SystemDrawing_StringFormatFlags_NoClip
+  commentId: F:Egami.SystemDrawing.StringFormatFlags.NoClip
+  fullName: Egami.SystemDrawing.StringFormatFlags.NoClip
+  nameWithType: StringFormatFlags.NoClip
+- uid: Egami.SystemDrawing.StringFormatFlags.NoFontFallback
+  name: NoFontFallback
+  href: api/Egami.SystemDrawing.StringFormatFlags.html#Egami_SystemDrawing_StringFormatFlags_NoFontFallback
+  commentId: F:Egami.SystemDrawing.StringFormatFlags.NoFontFallback
+  fullName: Egami.SystemDrawing.StringFormatFlags.NoFontFallback
+  nameWithType: StringFormatFlags.NoFontFallback
+- uid: Egami.SystemDrawing.StringFormatFlags.NoWrap
+  name: NoWrap
+  href: api/Egami.SystemDrawing.StringFormatFlags.html#Egami_SystemDrawing_StringFormatFlags_NoWrap
+  commentId: F:Egami.SystemDrawing.StringFormatFlags.NoWrap
+  fullName: Egami.SystemDrawing.StringFormatFlags.NoWrap
+  nameWithType: StringFormatFlags.NoWrap
+- uid: Egami.SystemDrawing.StringTrimming
+  name: StringTrimming
+  href: api/Egami.SystemDrawing.StringTrimming.html
+  commentId: T:Egami.SystemDrawing.StringTrimming
+  fullName: Egami.SystemDrawing.StringTrimming
+  nameWithType: StringTrimming
+- uid: Egami.SystemDrawing.StringTrimming.Character
+  name: Character
+  href: api/Egami.SystemDrawing.StringTrimming.html#Egami_SystemDrawing_StringTrimming_Character
+  commentId: F:Egami.SystemDrawing.StringTrimming.Character
+  fullName: Egami.SystemDrawing.StringTrimming.Character
+  nameWithType: StringTrimming.Character
+- uid: Egami.SystemDrawing.StringTrimming.EllipsisCharacter
+  name: EllipsisCharacter
+  href: api/Egami.SystemDrawing.StringTrimming.html#Egami_SystemDrawing_StringTrimming_EllipsisCharacter
+  commentId: F:Egami.SystemDrawing.StringTrimming.EllipsisCharacter
+  fullName: Egami.SystemDrawing.StringTrimming.EllipsisCharacter
+  nameWithType: StringTrimming.EllipsisCharacter
+- uid: Egami.SystemDrawing.StringTrimming.EllipsisPath
+  name: EllipsisPath
+  href: api/Egami.SystemDrawing.StringTrimming.html#Egami_SystemDrawing_StringTrimming_EllipsisPath
+  commentId: F:Egami.SystemDrawing.StringTrimming.EllipsisPath
+  fullName: Egami.SystemDrawing.StringTrimming.EllipsisPath
+  nameWithType: StringTrimming.EllipsisPath
+- uid: Egami.SystemDrawing.StringTrimming.EllipsisWord
+  name: EllipsisWord
+  href: api/Egami.SystemDrawing.StringTrimming.html#Egami_SystemDrawing_StringTrimming_EllipsisWord
+  commentId: F:Egami.SystemDrawing.StringTrimming.EllipsisWord
+  fullName: Egami.SystemDrawing.StringTrimming.EllipsisWord
+  nameWithType: StringTrimming.EllipsisWord
+- uid: Egami.SystemDrawing.StringTrimming.None
+  name: None
+  href: api/Egami.SystemDrawing.StringTrimming.html#Egami_SystemDrawing_StringTrimming_None
+  commentId: F:Egami.SystemDrawing.StringTrimming.None
+  fullName: Egami.SystemDrawing.StringTrimming.None
+  nameWithType: StringTrimming.None
+- uid: Egami.SystemDrawing.StringTrimming.Word
+  name: Word
+  href: api/Egami.SystemDrawing.StringTrimming.html#Egami_SystemDrawing_StringTrimming_Word
+  commentId: F:Egami.SystemDrawing.StringTrimming.Word
+  fullName: Egami.SystemDrawing.StringTrimming.Word
+  nameWithType: StringTrimming.Word
+- uid: Egami.SystemDrawing.StringUnit
+  name: StringUnit
+  href: api/Egami.SystemDrawing.StringUnit.html
+  commentId: T:Egami.SystemDrawing.StringUnit
+  fullName: Egami.SystemDrawing.StringUnit
+  nameWithType: StringUnit
+- uid: Egami.SystemDrawing.StringUnit.Display
+  name: Display
+  href: api/Egami.SystemDrawing.StringUnit.html#Egami_SystemDrawing_StringUnit_Display
+  commentId: F:Egami.SystemDrawing.StringUnit.Display
+  fullName: Egami.SystemDrawing.StringUnit.Display
+  nameWithType: StringUnit.Display
+- uid: Egami.SystemDrawing.StringUnit.Document
+  name: Document
+  href: api/Egami.SystemDrawing.StringUnit.html#Egami_SystemDrawing_StringUnit_Document
+  commentId: F:Egami.SystemDrawing.StringUnit.Document
+  fullName: Egami.SystemDrawing.StringUnit.Document
+  nameWithType: StringUnit.Document
+- uid: Egami.SystemDrawing.StringUnit.Em
+  name: Em
+  href: api/Egami.SystemDrawing.StringUnit.html#Egami_SystemDrawing_StringUnit_Em
+  commentId: F:Egami.SystemDrawing.StringUnit.Em
+  fullName: Egami.SystemDrawing.StringUnit.Em
+  nameWithType: StringUnit.Em
+- uid: Egami.SystemDrawing.StringUnit.Inch
+  name: Inch
+  href: api/Egami.SystemDrawing.StringUnit.html#Egami_SystemDrawing_StringUnit_Inch
+  commentId: F:Egami.SystemDrawing.StringUnit.Inch
+  fullName: Egami.SystemDrawing.StringUnit.Inch
+  nameWithType: StringUnit.Inch
+- uid: Egami.SystemDrawing.StringUnit.Millimeter
+  name: Millimeter
+  href: api/Egami.SystemDrawing.StringUnit.html#Egami_SystemDrawing_StringUnit_Millimeter
+  commentId: F:Egami.SystemDrawing.StringUnit.Millimeter
+  fullName: Egami.SystemDrawing.StringUnit.Millimeter
+  nameWithType: StringUnit.Millimeter
+- uid: Egami.SystemDrawing.StringUnit.Pixel
+  name: Pixel
+  href: api/Egami.SystemDrawing.StringUnit.html#Egami_SystemDrawing_StringUnit_Pixel
+  commentId: F:Egami.SystemDrawing.StringUnit.Pixel
+  fullName: Egami.SystemDrawing.StringUnit.Pixel
+  nameWithType: StringUnit.Pixel
+- uid: Egami.SystemDrawing.StringUnit.Point
+  name: Point
+  href: api/Egami.SystemDrawing.StringUnit.html#Egami_SystemDrawing_StringUnit_Point
+  commentId: F:Egami.SystemDrawing.StringUnit.Point
+  fullName: Egami.SystemDrawing.StringUnit.Point
+  nameWithType: StringUnit.Point
+- uid: Egami.SystemDrawing.StringUnit.World
+  name: World
+  href: api/Egami.SystemDrawing.StringUnit.html#Egami_SystemDrawing_StringUnit_World
+  commentId: F:Egami.SystemDrawing.StringUnit.World
+  fullName: Egami.SystemDrawing.StringUnit.World
+  nameWithType: StringUnit.World
 - uid: Egami.SystemDrawing.SystemBrushes
   name: SystemBrushes
   href: api/Egami.SystemDrawing.SystemBrushes.html
@@ -97319,6 +99485,132 @@ references:
   isSpec: "True"
   fullName: Egami.SystemDrawing.SystemBrushes.WindowText
   nameWithType: SystemBrushes.WindowText
+- uid: Egami.SystemDrawing.SystemFonts
+  name: SystemFonts
+  href: api/Egami.SystemDrawing.SystemFonts.html
+  commentId: T:Egami.SystemDrawing.SystemFonts
+  fullName: Egami.SystemDrawing.SystemFonts
+  nameWithType: SystemFonts
+- uid: Egami.SystemDrawing.SystemFonts.CaptionFont
+  name: CaptionFont
+  href: api/Egami.SystemDrawing.SystemFonts.html#Egami_SystemDrawing_SystemFonts_CaptionFont
+  commentId: P:Egami.SystemDrawing.SystemFonts.CaptionFont
+  fullName: Egami.SystemDrawing.SystemFonts.CaptionFont
+  nameWithType: SystemFonts.CaptionFont
+- uid: Egami.SystemDrawing.SystemFonts.CaptionFont*
+  name: CaptionFont
+  href: api/Egami.SystemDrawing.SystemFonts.html#Egami_SystemDrawing_SystemFonts_CaptionFont_
+  commentId: Overload:Egami.SystemDrawing.SystemFonts.CaptionFont
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.SystemFonts.CaptionFont
+  nameWithType: SystemFonts.CaptionFont
+- uid: Egami.SystemDrawing.SystemFonts.DefaultFont
+  name: DefaultFont
+  href: api/Egami.SystemDrawing.SystemFonts.html#Egami_SystemDrawing_SystemFonts_DefaultFont
+  commentId: P:Egami.SystemDrawing.SystemFonts.DefaultFont
+  fullName: Egami.SystemDrawing.SystemFonts.DefaultFont
+  nameWithType: SystemFonts.DefaultFont
+- uid: Egami.SystemDrawing.SystemFonts.DefaultFont*
+  name: DefaultFont
+  href: api/Egami.SystemDrawing.SystemFonts.html#Egami_SystemDrawing_SystemFonts_DefaultFont_
+  commentId: Overload:Egami.SystemDrawing.SystemFonts.DefaultFont
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.SystemFonts.DefaultFont
+  nameWithType: SystemFonts.DefaultFont
+- uid: Egami.SystemDrawing.SystemFonts.DialogFont
+  name: DialogFont
+  href: api/Egami.SystemDrawing.SystemFonts.html#Egami_SystemDrawing_SystemFonts_DialogFont
+  commentId: P:Egami.SystemDrawing.SystemFonts.DialogFont
+  fullName: Egami.SystemDrawing.SystemFonts.DialogFont
+  nameWithType: SystemFonts.DialogFont
+- uid: Egami.SystemDrawing.SystemFonts.DialogFont*
+  name: DialogFont
+  href: api/Egami.SystemDrawing.SystemFonts.html#Egami_SystemDrawing_SystemFonts_DialogFont_
+  commentId: Overload:Egami.SystemDrawing.SystemFonts.DialogFont
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.SystemFonts.DialogFont
+  nameWithType: SystemFonts.DialogFont
+- uid: Egami.SystemDrawing.SystemFonts.GetFontByName(System.String)
+  name: GetFontByName(string)
+  href: api/Egami.SystemDrawing.SystemFonts.html#Egami_SystemDrawing_SystemFonts_GetFontByName_System_String_
+  commentId: M:Egami.SystemDrawing.SystemFonts.GetFontByName(System.String)
+  name.vb: GetFontByName(String)
+  fullName: Egami.SystemDrawing.SystemFonts.GetFontByName(string)
+  fullName.vb: Egami.SystemDrawing.SystemFonts.GetFontByName(String)
+  nameWithType: SystemFonts.GetFontByName(string)
+  nameWithType.vb: SystemFonts.GetFontByName(String)
+- uid: Egami.SystemDrawing.SystemFonts.GetFontByName*
+  name: GetFontByName
+  href: api/Egami.SystemDrawing.SystemFonts.html#Egami_SystemDrawing_SystemFonts_GetFontByName_
+  commentId: Overload:Egami.SystemDrawing.SystemFonts.GetFontByName
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.SystemFonts.GetFontByName
+  nameWithType: SystemFonts.GetFontByName
+- uid: Egami.SystemDrawing.SystemFonts.IconTitleFont
+  name: IconTitleFont
+  href: api/Egami.SystemDrawing.SystemFonts.html#Egami_SystemDrawing_SystemFonts_IconTitleFont
+  commentId: P:Egami.SystemDrawing.SystemFonts.IconTitleFont
+  fullName: Egami.SystemDrawing.SystemFonts.IconTitleFont
+  nameWithType: SystemFonts.IconTitleFont
+- uid: Egami.SystemDrawing.SystemFonts.IconTitleFont*
+  name: IconTitleFont
+  href: api/Egami.SystemDrawing.SystemFonts.html#Egami_SystemDrawing_SystemFonts_IconTitleFont_
+  commentId: Overload:Egami.SystemDrawing.SystemFonts.IconTitleFont
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.SystemFonts.IconTitleFont
+  nameWithType: SystemFonts.IconTitleFont
+- uid: Egami.SystemDrawing.SystemFonts.MenuFont
+  name: MenuFont
+  href: api/Egami.SystemDrawing.SystemFonts.html#Egami_SystemDrawing_SystemFonts_MenuFont
+  commentId: P:Egami.SystemDrawing.SystemFonts.MenuFont
+  fullName: Egami.SystemDrawing.SystemFonts.MenuFont
+  nameWithType: SystemFonts.MenuFont
+- uid: Egami.SystemDrawing.SystemFonts.MenuFont*
+  name: MenuFont
+  href: api/Egami.SystemDrawing.SystemFonts.html#Egami_SystemDrawing_SystemFonts_MenuFont_
+  commentId: Overload:Egami.SystemDrawing.SystemFonts.MenuFont
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.SystemFonts.MenuFont
+  nameWithType: SystemFonts.MenuFont
+- uid: Egami.SystemDrawing.SystemFonts.MessageBoxFont
+  name: MessageBoxFont
+  href: api/Egami.SystemDrawing.SystemFonts.html#Egami_SystemDrawing_SystemFonts_MessageBoxFont
+  commentId: P:Egami.SystemDrawing.SystemFonts.MessageBoxFont
+  fullName: Egami.SystemDrawing.SystemFonts.MessageBoxFont
+  nameWithType: SystemFonts.MessageBoxFont
+- uid: Egami.SystemDrawing.SystemFonts.MessageBoxFont*
+  name: MessageBoxFont
+  href: api/Egami.SystemDrawing.SystemFonts.html#Egami_SystemDrawing_SystemFonts_MessageBoxFont_
+  commentId: Overload:Egami.SystemDrawing.SystemFonts.MessageBoxFont
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.SystemFonts.MessageBoxFont
+  nameWithType: SystemFonts.MessageBoxFont
+- uid: Egami.SystemDrawing.SystemFonts.SmallCaptionFont
+  name: SmallCaptionFont
+  href: api/Egami.SystemDrawing.SystemFonts.html#Egami_SystemDrawing_SystemFonts_SmallCaptionFont
+  commentId: P:Egami.SystemDrawing.SystemFonts.SmallCaptionFont
+  fullName: Egami.SystemDrawing.SystemFonts.SmallCaptionFont
+  nameWithType: SystemFonts.SmallCaptionFont
+- uid: Egami.SystemDrawing.SystemFonts.SmallCaptionFont*
+  name: SmallCaptionFont
+  href: api/Egami.SystemDrawing.SystemFonts.html#Egami_SystemDrawing_SystemFonts_SmallCaptionFont_
+  commentId: Overload:Egami.SystemDrawing.SystemFonts.SmallCaptionFont
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.SystemFonts.SmallCaptionFont
+  nameWithType: SystemFonts.SmallCaptionFont
+- uid: Egami.SystemDrawing.SystemFonts.StatusFont
+  name: StatusFont
+  href: api/Egami.SystemDrawing.SystemFonts.html#Egami_SystemDrawing_SystemFonts_StatusFont
+  commentId: P:Egami.SystemDrawing.SystemFonts.StatusFont
+  fullName: Egami.SystemDrawing.SystemFonts.StatusFont
+  nameWithType: SystemFonts.StatusFont
+- uid: Egami.SystemDrawing.SystemFonts.StatusFont*
+  name: StatusFont
+  href: api/Egami.SystemDrawing.SystemFonts.html#Egami_SystemDrawing_SystemFonts_StatusFont_
+  commentId: Overload:Egami.SystemDrawing.SystemFonts.StatusFont
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.SystemFonts.StatusFont
+  nameWithType: SystemFonts.StatusFont
 - uid: Egami.SystemDrawing.SystemIcons
   name: SystemIcons
   href: api/Egami.SystemDrawing.SystemIcons.html
@@ -97931,6 +100223,209 @@ references:
   commentId: N:Egami.SystemDrawing.Text
   fullName: Egami.SystemDrawing.Text
   nameWithType: Egami.SystemDrawing.Text
+- uid: Egami.SystemDrawing.Text.FontCollection
+  name: FontCollection
+  href: api/Egami.SystemDrawing.Text.FontCollection.html
+  commentId: T:Egami.SystemDrawing.Text.FontCollection
+  fullName: Egami.SystemDrawing.Text.FontCollection
+  nameWithType: FontCollection
+- uid: Egami.SystemDrawing.Text.FontCollection.Dispose
+  name: Dispose()
+  href: api/Egami.SystemDrawing.Text.FontCollection.html#Egami_SystemDrawing_Text_FontCollection_Dispose
+  commentId: M:Egami.SystemDrawing.Text.FontCollection.Dispose
+  fullName: Egami.SystemDrawing.Text.FontCollection.Dispose()
+  nameWithType: FontCollection.Dispose()
+- uid: Egami.SystemDrawing.Text.FontCollection.Dispose(System.Boolean)
+  name: Dispose(bool)
+  href: api/Egami.SystemDrawing.Text.FontCollection.html#Egami_SystemDrawing_Text_FontCollection_Dispose_System_Boolean_
+  commentId: M:Egami.SystemDrawing.Text.FontCollection.Dispose(System.Boolean)
+  name.vb: Dispose(Boolean)
+  fullName: Egami.SystemDrawing.Text.FontCollection.Dispose(bool)
+  fullName.vb: Egami.SystemDrawing.Text.FontCollection.Dispose(Boolean)
+  nameWithType: FontCollection.Dispose(bool)
+  nameWithType.vb: FontCollection.Dispose(Boolean)
+- uid: Egami.SystemDrawing.Text.FontCollection.Dispose*
+  name: Dispose
+  href: api/Egami.SystemDrawing.Text.FontCollection.html#Egami_SystemDrawing_Text_FontCollection_Dispose_
+  commentId: Overload:Egami.SystemDrawing.Text.FontCollection.Dispose
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Text.FontCollection.Dispose
+  nameWithType: FontCollection.Dispose
+- uid: Egami.SystemDrawing.Text.FontCollection.Families
+  name: Families
+  href: api/Egami.SystemDrawing.Text.FontCollection.html#Egami_SystemDrawing_Text_FontCollection_Families
+  commentId: P:Egami.SystemDrawing.Text.FontCollection.Families
+  fullName: Egami.SystemDrawing.Text.FontCollection.Families
+  nameWithType: FontCollection.Families
+- uid: Egami.SystemDrawing.Text.FontCollection.Families*
+  name: Families
+  href: api/Egami.SystemDrawing.Text.FontCollection.html#Egami_SystemDrawing_Text_FontCollection_Families_
+  commentId: Overload:Egami.SystemDrawing.Text.FontCollection.Families
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Text.FontCollection.Families
+  nameWithType: FontCollection.Families
+- uid: Egami.SystemDrawing.Text.GenericFontFamilies
+  name: GenericFontFamilies
+  href: api/Egami.SystemDrawing.Text.GenericFontFamilies.html
+  commentId: T:Egami.SystemDrawing.Text.GenericFontFamilies
+  fullName: Egami.SystemDrawing.Text.GenericFontFamilies
+  nameWithType: GenericFontFamilies
+- uid: Egami.SystemDrawing.Text.GenericFontFamilies.Monospace
+  name: Monospace
+  href: api/Egami.SystemDrawing.Text.GenericFontFamilies.html#Egami_SystemDrawing_Text_GenericFontFamilies_Monospace
+  commentId: F:Egami.SystemDrawing.Text.GenericFontFamilies.Monospace
+  fullName: Egami.SystemDrawing.Text.GenericFontFamilies.Monospace
+  nameWithType: GenericFontFamilies.Monospace
+- uid: Egami.SystemDrawing.Text.GenericFontFamilies.SansSerif
+  name: SansSerif
+  href: api/Egami.SystemDrawing.Text.GenericFontFamilies.html#Egami_SystemDrawing_Text_GenericFontFamilies_SansSerif
+  commentId: F:Egami.SystemDrawing.Text.GenericFontFamilies.SansSerif
+  fullName: Egami.SystemDrawing.Text.GenericFontFamilies.SansSerif
+  nameWithType: GenericFontFamilies.SansSerif
+- uid: Egami.SystemDrawing.Text.GenericFontFamilies.Serif
+  name: Serif
+  href: api/Egami.SystemDrawing.Text.GenericFontFamilies.html#Egami_SystemDrawing_Text_GenericFontFamilies_Serif
+  commentId: F:Egami.SystemDrawing.Text.GenericFontFamilies.Serif
+  fullName: Egami.SystemDrawing.Text.GenericFontFamilies.Serif
+  nameWithType: GenericFontFamilies.Serif
+- uid: Egami.SystemDrawing.Text.HotkeyPrefix
+  name: HotkeyPrefix
+  href: api/Egami.SystemDrawing.Text.HotkeyPrefix.html
+  commentId: T:Egami.SystemDrawing.Text.HotkeyPrefix
+  fullName: Egami.SystemDrawing.Text.HotkeyPrefix
+  nameWithType: HotkeyPrefix
+- uid: Egami.SystemDrawing.Text.HotkeyPrefix.Hide
+  name: Hide
+  href: api/Egami.SystemDrawing.Text.HotkeyPrefix.html#Egami_SystemDrawing_Text_HotkeyPrefix_Hide
+  commentId: F:Egami.SystemDrawing.Text.HotkeyPrefix.Hide
+  fullName: Egami.SystemDrawing.Text.HotkeyPrefix.Hide
+  nameWithType: HotkeyPrefix.Hide
+- uid: Egami.SystemDrawing.Text.HotkeyPrefix.None
+  name: None
+  href: api/Egami.SystemDrawing.Text.HotkeyPrefix.html#Egami_SystemDrawing_Text_HotkeyPrefix_None
+  commentId: F:Egami.SystemDrawing.Text.HotkeyPrefix.None
+  fullName: Egami.SystemDrawing.Text.HotkeyPrefix.None
+  nameWithType: HotkeyPrefix.None
+- uid: Egami.SystemDrawing.Text.HotkeyPrefix.Show
+  name: Show
+  href: api/Egami.SystemDrawing.Text.HotkeyPrefix.html#Egami_SystemDrawing_Text_HotkeyPrefix_Show
+  commentId: F:Egami.SystemDrawing.Text.HotkeyPrefix.Show
+  fullName: Egami.SystemDrawing.Text.HotkeyPrefix.Show
+  nameWithType: HotkeyPrefix.Show
+- uid: Egami.SystemDrawing.Text.InstalledFontCollection
+  name: InstalledFontCollection
+  href: api/Egami.SystemDrawing.Text.InstalledFontCollection.html
+  commentId: T:Egami.SystemDrawing.Text.InstalledFontCollection
+  fullName: Egami.SystemDrawing.Text.InstalledFontCollection
+  nameWithType: InstalledFontCollection
+- uid: Egami.SystemDrawing.Text.InstalledFontCollection.#ctor
+  name: InstalledFontCollection()
+  href: api/Egami.SystemDrawing.Text.InstalledFontCollection.html#Egami_SystemDrawing_Text_InstalledFontCollection__ctor
+  commentId: M:Egami.SystemDrawing.Text.InstalledFontCollection.#ctor
+  name.vb: New()
+  fullName: Egami.SystemDrawing.Text.InstalledFontCollection.InstalledFontCollection()
+  fullName.vb: Egami.SystemDrawing.Text.InstalledFontCollection.New()
+  nameWithType: InstalledFontCollection.InstalledFontCollection()
+  nameWithType.vb: InstalledFontCollection.New()
+- uid: Egami.SystemDrawing.Text.InstalledFontCollection.#ctor*
+  name: InstalledFontCollection
+  href: api/Egami.SystemDrawing.Text.InstalledFontCollection.html#Egami_SystemDrawing_Text_InstalledFontCollection__ctor_
+  commentId: Overload:Egami.SystemDrawing.Text.InstalledFontCollection.#ctor
+  isSpec: "True"
+  name.vb: New
+  fullName: Egami.SystemDrawing.Text.InstalledFontCollection.InstalledFontCollection
+  fullName.vb: Egami.SystemDrawing.Text.InstalledFontCollection.New
+  nameWithType: InstalledFontCollection.InstalledFontCollection
+  nameWithType.vb: InstalledFontCollection.New
+- uid: Egami.SystemDrawing.Text.InstalledFontCollection.Dispose(System.Boolean)
+  name: Dispose(bool)
+  href: api/Egami.SystemDrawing.Text.InstalledFontCollection.html#Egami_SystemDrawing_Text_InstalledFontCollection_Dispose_System_Boolean_
+  commentId: M:Egami.SystemDrawing.Text.InstalledFontCollection.Dispose(System.Boolean)
+  name.vb: Dispose(Boolean)
+  fullName: Egami.SystemDrawing.Text.InstalledFontCollection.Dispose(bool)
+  fullName.vb: Egami.SystemDrawing.Text.InstalledFontCollection.Dispose(Boolean)
+  nameWithType: InstalledFontCollection.Dispose(bool)
+  nameWithType.vb: InstalledFontCollection.Dispose(Boolean)
+- uid: Egami.SystemDrawing.Text.InstalledFontCollection.Dispose*
+  name: Dispose
+  href: api/Egami.SystemDrawing.Text.InstalledFontCollection.html#Egami_SystemDrawing_Text_InstalledFontCollection_Dispose_
+  commentId: Overload:Egami.SystemDrawing.Text.InstalledFontCollection.Dispose
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Text.InstalledFontCollection.Dispose
+  nameWithType: InstalledFontCollection.Dispose
+- uid: Egami.SystemDrawing.Text.PrivateFontCollection
+  name: PrivateFontCollection
+  href: api/Egami.SystemDrawing.Text.PrivateFontCollection.html
+  commentId: T:Egami.SystemDrawing.Text.PrivateFontCollection
+  fullName: Egami.SystemDrawing.Text.PrivateFontCollection
+  nameWithType: PrivateFontCollection
+- uid: Egami.SystemDrawing.Text.PrivateFontCollection.#ctor
+  name: PrivateFontCollection()
+  href: api/Egami.SystemDrawing.Text.PrivateFontCollection.html#Egami_SystemDrawing_Text_PrivateFontCollection__ctor
+  commentId: M:Egami.SystemDrawing.Text.PrivateFontCollection.#ctor
+  name.vb: New()
+  fullName: Egami.SystemDrawing.Text.PrivateFontCollection.PrivateFontCollection()
+  fullName.vb: Egami.SystemDrawing.Text.PrivateFontCollection.New()
+  nameWithType: PrivateFontCollection.PrivateFontCollection()
+  nameWithType.vb: PrivateFontCollection.New()
+- uid: Egami.SystemDrawing.Text.PrivateFontCollection.#ctor*
+  name: PrivateFontCollection
+  href: api/Egami.SystemDrawing.Text.PrivateFontCollection.html#Egami_SystemDrawing_Text_PrivateFontCollection__ctor_
+  commentId: Overload:Egami.SystemDrawing.Text.PrivateFontCollection.#ctor
+  isSpec: "True"
+  name.vb: New
+  fullName: Egami.SystemDrawing.Text.PrivateFontCollection.PrivateFontCollection
+  fullName.vb: Egami.SystemDrawing.Text.PrivateFontCollection.New
+  nameWithType: PrivateFontCollection.PrivateFontCollection
+  nameWithType.vb: PrivateFontCollection.New
+- uid: Egami.SystemDrawing.Text.PrivateFontCollection.AddFontFile(System.String)
+  name: AddFontFile(string)
+  href: api/Egami.SystemDrawing.Text.PrivateFontCollection.html#Egami_SystemDrawing_Text_PrivateFontCollection_AddFontFile_System_String_
+  commentId: M:Egami.SystemDrawing.Text.PrivateFontCollection.AddFontFile(System.String)
+  name.vb: AddFontFile(String)
+  fullName: Egami.SystemDrawing.Text.PrivateFontCollection.AddFontFile(string)
+  fullName.vb: Egami.SystemDrawing.Text.PrivateFontCollection.AddFontFile(String)
+  nameWithType: PrivateFontCollection.AddFontFile(string)
+  nameWithType.vb: PrivateFontCollection.AddFontFile(String)
+- uid: Egami.SystemDrawing.Text.PrivateFontCollection.AddFontFile*
+  name: AddFontFile
+  href: api/Egami.SystemDrawing.Text.PrivateFontCollection.html#Egami_SystemDrawing_Text_PrivateFontCollection_AddFontFile_
+  commentId: Overload:Egami.SystemDrawing.Text.PrivateFontCollection.AddFontFile
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Text.PrivateFontCollection.AddFontFile
+  nameWithType: PrivateFontCollection.AddFontFile
+- uid: Egami.SystemDrawing.Text.PrivateFontCollection.AddMemoryFont(System.IntPtr,System.Int32)
+  name: AddMemoryFont(nint, int)
+  href: api/Egami.SystemDrawing.Text.PrivateFontCollection.html#Egami_SystemDrawing_Text_PrivateFontCollection_AddMemoryFont_System_IntPtr_System_Int32_
+  commentId: M:Egami.SystemDrawing.Text.PrivateFontCollection.AddMemoryFont(System.IntPtr,System.Int32)
+  name.vb: AddMemoryFont(IntPtr, Integer)
+  fullName: Egami.SystemDrawing.Text.PrivateFontCollection.AddMemoryFont(nint, int)
+  fullName.vb: Egami.SystemDrawing.Text.PrivateFontCollection.AddMemoryFont(System.IntPtr, Integer)
+  nameWithType: PrivateFontCollection.AddMemoryFont(nint, int)
+  nameWithType.vb: PrivateFontCollection.AddMemoryFont(IntPtr, Integer)
+- uid: Egami.SystemDrawing.Text.PrivateFontCollection.AddMemoryFont*
+  name: AddMemoryFont
+  href: api/Egami.SystemDrawing.Text.PrivateFontCollection.html#Egami_SystemDrawing_Text_PrivateFontCollection_AddMemoryFont_
+  commentId: Overload:Egami.SystemDrawing.Text.PrivateFontCollection.AddMemoryFont
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Text.PrivateFontCollection.AddMemoryFont
+  nameWithType: PrivateFontCollection.AddMemoryFont
+- uid: Egami.SystemDrawing.Text.PrivateFontCollection.Dispose(System.Boolean)
+  name: Dispose(bool)
+  href: api/Egami.SystemDrawing.Text.PrivateFontCollection.html#Egami_SystemDrawing_Text_PrivateFontCollection_Dispose_System_Boolean_
+  commentId: M:Egami.SystemDrawing.Text.PrivateFontCollection.Dispose(System.Boolean)
+  name.vb: Dispose(Boolean)
+  fullName: Egami.SystemDrawing.Text.PrivateFontCollection.Dispose(bool)
+  fullName.vb: Egami.SystemDrawing.Text.PrivateFontCollection.Dispose(Boolean)
+  nameWithType: PrivateFontCollection.Dispose(bool)
+  nameWithType.vb: PrivateFontCollection.Dispose(Boolean)
+- uid: Egami.SystemDrawing.Text.PrivateFontCollection.Dispose*
+  name: Dispose
+  href: api/Egami.SystemDrawing.Text.PrivateFontCollection.html#Egami_SystemDrawing_Text_PrivateFontCollection_Dispose_
+  commentId: Overload:Egami.SystemDrawing.Text.PrivateFontCollection.Dispose
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Text.PrivateFontCollection.Dispose
+  nameWithType: PrivateFontCollection.Dispose
 - uid: Egami.SystemDrawing.Text.TextRenderingHint
   name: TextRenderingHint
   href: api/Egami.SystemDrawing.Text.TextRenderingHint.html
