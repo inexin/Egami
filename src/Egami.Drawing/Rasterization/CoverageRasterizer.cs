@@ -86,7 +86,7 @@ internal sealed class CoverageRasterizer : IDisposable
             return;
         }
 
-        int bands = BandCount(area, bytesPerPixel);
+        int bands = BandCount(area, bytesPerPixel, edges);
         if (antialias && GdiPlus)
         {
             _sampled ??= new SampledRasterizer();
@@ -142,19 +142,39 @@ internal sealed class CoverageRasterizer : IDisposable
         return right > left && bottom > top ? new Rect((int)left, (int)top, (int)(right - left), (int)(bottom - top)) : default;
     }
 
-    private int BandCount(Rect area, int bytesPerPixel)
+    private int BandCount(Rect area, int bytesPerPixel, EdgeList edges)
     {
         if (ForcedBands > 0)
         {
             return Math.Min(ForcedBands, area.Height);
         }
 
-        if (_maxParallelism == 1 || (long)area.Width * area.Height * bytesPerPixel <= ParallelBytes || area.Height < 32)
+        if (_maxParallelism == 1 || (long)area.Width * area.Height * bytesPerPixel <= ParallelBytes || area.Height < 32
+            || Work(edges) * bytesPerPixel <= ParallelBytes)
         {
             return 1;
         }
 
         return Math.Min(_maxParallelism * 4, area.Height / 16);
+    }
+
+    /// <summary>
+    /// The pixels a fill touches, roughly: the outline's enclosed area (by trapezoids, which the dropped horizontal edges do not
+    /// change) and its length. A thin shape across a large box, such as a
+    /// one-pixel line, is too little work to band, whatever its box; the bands give the same pixels either way.
+    /// </summary>
+    private static double Work(EdgeList edges)
+    {
+        ReadOnlySpan<float> c = edges.Coordinates;
+        double area = 0, length = 0;
+        for (int i = 0; i + 3 < c.Length; i += 4)
+        {
+            double x0 = c[i], y0 = c[i + 1], x1 = c[i + 2], y1 = c[i + 3];
+            area += (x0 + x1) * (y1 - y0);
+            length += Math.Abs(x1 - x0) + Math.Abs(y1 - y0);
+        }
+
+        return (Math.Abs(area) / 2) + length;
     }
 
     private void Run(int bands, int rows, Action<int, int> band)
