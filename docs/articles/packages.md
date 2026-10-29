@@ -34,7 +34,7 @@ one version and release together; the other packages have versions of their own.
 
 | Package | Version | What it does | Needs | Docs |
 | --- | --- | --- | --- | --- |
-| [Egami.SystemDrawing](https://github.com/inexin/Egami/tree/main/src/Egami.SystemDrawing) | 1.0 preview | System.Drawing.Common's API on every OS, in managed code: Bitmap, Image, Icon, pixel formats, LockBits and the codecs so far | Egami, Egami.Drawing, Egami.Fonts, Egami.Metafiles | [System.Drawing drop-in](guides/system-drawing.md) |
+| [Egami.SystemDrawing](https://github.com/inexin/Egami/tree/main/src/Egami.SystemDrawing) | 1.0 preview | System.Drawing.Common's API on every OS, in managed code: bitmaps, codecs, Graphics, pens, brushes, paths, fonts and text, metafiles and effects | Egami, Egami.Drawing, Egami.Fonts, Egami.Metafiles | [System.Drawing drop-in](guides/system-drawing.md) |
 
 ## Video and audio
 

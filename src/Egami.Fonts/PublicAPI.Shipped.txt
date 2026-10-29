@@ -194,6 +194,10 @@ Egami.Fonts.Font.ColorGlyphs.init -> void
 Egami.Fonts.Font.Edging.get -> Egami.Fonts.FontEdging
 Egami.Fonts.Font.Edging.init -> void
 Egami.Fonts.Font.EffectiveTypeface.get -> Egami.Fonts.Typeface!
+Egami.Fonts.Font.EmbeddedBitmaps.get -> bool
+Egami.Fonts.Font.EmbeddedBitmaps.init -> void
+Egami.Fonts.Font.Embolden.get -> float
+Egami.Fonts.Font.Embolden.init -> void
 Egami.Fonts.Font.Equals(Egami.Fonts.Font other) -> bool
 Egami.Fonts.Font.Extents.get -> Egami.Fonts.FontExtents
 Egami.Fonts.Font.Font() -> void
@@ -202,11 +206,15 @@ Egami.Fonts.Font.GetAdvance(ushort glyph) -> float
 Egami.Fonts.Font.GetGlyphExtents(ushort glyph) -> Egami.Fonts.GlyphExtents
 Egami.Fonts.Font.Hinting.get -> Egami.Fonts.FontHinting
 Egami.Fonts.Font.Hinting.init -> void
+Egami.Fonts.Font.HintingTarget.get -> Egami.Fonts.TrueTypeTarget
+Egami.Fonts.Font.HintingTarget.init -> void
 Egami.Fonts.Font.Kerning.get -> bool
 Egami.Fonts.Font.Kerning.init -> void
 Egami.Fonts.Font.LineHeight.get -> float
 Egami.Fonts.Font.MeasureText(string! text, Egami.Fonts.Shaping.ShapingOptions? options = null) -> Egami.Fonts.TextMeasure
 Egami.Fonts.Font.MeasureText(System.ReadOnlySpan<char> text, Egami.Fonts.Shaping.ShapingOptions? options = null) -> Egami.Fonts.TextMeasure
+Egami.Fonts.Font.Metrics.get -> Egami.Fonts.FontMetrics
+Egami.Fonts.Font.Metrics.init -> void
 Egami.Fonts.Font.OpticalSizing.get -> Egami.Fonts.OpticalSizing
 Egami.Fonts.Font.OpticalSizing.init -> void
 Egami.Fonts.Font.Palette.get -> Egami.Fonts.FontPalette!
@@ -214,11 +222,14 @@ Egami.Fonts.Font.Palette.init -> void
 Egami.Fonts.Font.Scale.get -> float
 Egami.Fonts.Font.Shape(string! text, Egami.Fonts.Shaping.ShapingOptions? options = null) -> Egami.Fonts.GlyphRun!
 Egami.Fonts.Font.Size.get -> float
+Egami.Fonts.Font.StemDarkening.get -> bool
+Egami.Fonts.Font.StemDarkening.init -> void
 Egami.Fonts.Font.Subpixel.get -> bool
 Egami.Fonts.Font.Subpixel.init -> void
 Egami.Fonts.Font.Synthesis.get -> Egami.Fonts.FontSynthesis
 Egami.Fonts.Font.Synthesis.init -> void
 Egami.Fonts.Font.Typeface.get -> Egami.Fonts.Typeface!
+Egami.Fonts.Font.WithGdiPlusLook() -> Egami.Fonts.Font
 Egami.Fonts.FontCollection
 Egami.Fonts.FontCollection.Add(Egami.Fonts.Typeface! typeface) -> void
 Egami.Fonts.FontCollection.AddDirectory(string! path, bool recursive = true) -> int
@@ -287,6 +298,7 @@ Egami.Fonts.FontFileKind.Unknown = 0 -> Egami.Fonts.FontFileKind
 Egami.Fonts.FontFileKind.Woff = 4 -> Egami.Fonts.FontFileKind
 Egami.Fonts.FontFileKind.Woff2 = 5 -> Egami.Fonts.FontFileKind
 Egami.Fonts.FontHinting
+Egami.Fonts.FontHinting.Full = 2 -> Egami.Fonts.FontHinting
 Egami.Fonts.FontHinting.Light = 1 -> Egami.Fonts.FontHinting
 Egami.Fonts.FontHinting.None = 0 -> Egami.Fonts.FontHinting
 Egami.Fonts.FontLoader
@@ -308,6 +320,11 @@ Egami.Fonts.FontMatch.Synthesis.init -> void
 Egami.Fonts.FontMatch.ToFont(float size) -> Egami.Fonts.Font
 Egami.Fonts.FontMatch.Typeface.get -> Egami.Fonts.Typeface!
 Egami.Fonts.FontMatch.Typeface.init -> void
+Egami.Fonts.FontMetrics
+Egami.Fonts.FontMetrics.Compatible = 2 -> Egami.Fonts.FontMetrics
+Egami.Fonts.FontMetrics.Design = 0 -> Egami.Fonts.FontMetrics
+Egami.Fonts.FontMetrics.GridFitted = 1 -> Egami.Fonts.FontMetrics
+Egami.Fonts.FontMetrics.GridFittedToDesign = 3 -> Egami.Fonts.FontMetrics
 Egami.Fonts.FontNameRecord
 Egami.Fonts.FontNameRecord.Deconstruct(out int NameId, out int PlatformId, out int EncodingId, out int LanguageId, out string! Value) -> void
 Egami.Fonts.FontNameRecord.EncodingId.get -> int
@@ -1133,6 +1150,10 @@ Egami.Fonts.TextMeasure.LineHeight.get -> float
 Egami.Fonts.TextMeasure.LineHeight.init -> void
 Egami.Fonts.TextMeasure.TextMeasure() -> void
 Egami.Fonts.TextMeasure.TextMeasure(float Advance, Egami.Fonts.TextBounds InkBounds, int LineCount, float Ascent, float Descent, float LineHeight) -> void
+Egami.Fonts.TrueTypeTarget
+Egami.Fonts.TrueTypeTarget.FreeType = 2 -> Egami.Fonts.TrueTypeTarget
+Egami.Fonts.TrueTypeTarget.Gdi = 1 -> Egami.Fonts.TrueTypeTarget
+Egami.Fonts.TrueTypeTarget.GdiPlus = 0 -> Egami.Fonts.TrueTypeTarget
 Egami.Fonts.Typeface
 Egami.Fonts.Typeface.BuiltInEncoding.get -> Egami.Fonts.CharacterMap?
 Egami.Fonts.Typeface.CharacterMaps.get -> System.Collections.Generic.IReadOnlyList<Egami.Fonts.CharacterMap!>!

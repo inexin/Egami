@@ -20,6 +20,9 @@ Egami.Drawing.AnnotationKind
 Egami.Drawing.AnnotationKind.LinkToDestination = 2 -> Egami.Drawing.AnnotationKind
 Egami.Drawing.AnnotationKind.NamedDestination = 1 -> Egami.Drawing.AnnotationKind
 Egami.Drawing.AnnotationKind.Url = 0 -> Egami.Drawing.AnnotationKind
+Egami.Drawing.Antialiasing
+Egami.Drawing.Antialiasing.Exact = 0 -> Egami.Drawing.Antialiasing
+Egami.Drawing.Antialiasing.GdiPlus = 1 -> Egami.Drawing.Antialiasing
 Egami.Drawing.BlendPaint
 Egami.Drawing.BlendPaint.BlendPaint(Egami.Drawing.Paint! destination, Egami.Drawing.Paint! source, Egami.Operations.BlendMode mode) -> void
 Egami.Drawing.BlendPaint.Destination.get -> Egami.Drawing.Paint!
@@ -109,14 +112,28 @@ Egami.Drawing.Canvas.Translate(float dx, float dy) -> void
 Egami.Drawing.Canvas.Width.get -> float
 Egami.Drawing.CanvasOptions
 Egami.Drawing.CanvasOptions.<Clone>$() -> Egami.Drawing.CanvasOptions!
+Egami.Drawing.CanvasOptions.Antialiasing.get -> Egami.Drawing.Antialiasing
+Egami.Drawing.CanvasOptions.Antialiasing.init -> void
 Egami.Drawing.CanvasOptions.CanvasOptions() -> void
+Egami.Drawing.CanvasOptions.ClearTypeLevel.get -> float
+Egami.Drawing.CanvasOptions.ClearTypeLevel.init -> void
 Egami.Drawing.CanvasOptions.ColorGlyphRenderer.get -> Egami.Drawing.IColorGlyphRenderer?
 Egami.Drawing.CanvasOptions.ColorGlyphRenderer.init -> void
 Egami.Drawing.CanvasOptions.ColorSpace.get -> Egami.Operations.ColorSpace
 Egami.Drawing.CanvasOptions.ColorSpace.init -> void
 Egami.Drawing.CanvasOptions.Equals(Egami.Drawing.CanvasOptions? other) -> bool
+Egami.Drawing.CanvasOptions.LcdFilter.get -> Egami.Drawing.LcdFilter!
+Egami.Drawing.CanvasOptions.LcdFilter.init -> void
+Egami.Drawing.CanvasOptions.LcdSampling.get -> Egami.Drawing.LcdSampling
+Egami.Drawing.CanvasOptions.LcdSampling.init -> void
 Egami.Drawing.CanvasOptions.PixelGeometry.get -> Egami.Drawing.PixelGeometry
 Egami.Drawing.CanvasOptions.PixelGeometry.init -> void
+Egami.Drawing.CanvasOptions.PixelOffset.get -> Egami.Drawing.PixelOffset
+Egami.Drawing.CanvasOptions.PixelOffset.init -> void
+Egami.Drawing.CanvasOptions.TextContrast.get -> float
+Egami.Drawing.CanvasOptions.TextContrast.init -> void
+Egami.Drawing.CanvasOptions.TextGamma.get -> float
+Egami.Drawing.CanvasOptions.TextGamma.init -> void
 Egami.Drawing.CanvasOptions.Tolerance.get -> float
 Egami.Drawing.CanvasOptions.Tolerance.init -> void
 Egami.Drawing.ClipOp
@@ -263,6 +280,7 @@ Egami.Drawing.InkCanvasOptions.RgbSource.get -> Egami.Colors.ColorProfile!
 Egami.Drawing.InkCanvasOptions.RgbSource.init -> void
 Egami.Drawing.InterpolationSpace
 Egami.Drawing.InterpolationSpace.Encoded = 0 -> Egami.Drawing.InterpolationSpace
+Egami.Drawing.InterpolationSpace.GdiPlusGamma = 4 -> Egami.Drawing.InterpolationSpace
 Egami.Drawing.InterpolationSpace.LinearSrgb = 1 -> Egami.Drawing.InterpolationSpace
 Egami.Drawing.InterpolationSpace.Oklab = 2 -> Egami.Drawing.InterpolationSpace
 Egami.Drawing.InterpolationSpace.Oklch = 3 -> Egami.Drawing.InterpolationSpace
@@ -305,6 +323,13 @@ Egami.Drawing.LayerOptions.Mask.get -> Egami.Drawing.SoftMask?
 Egami.Drawing.LayerOptions.Mask.init -> void
 Egami.Drawing.LayerOptions.Opacity.get -> float
 Egami.Drawing.LayerOptions.Opacity.init -> void
+Egami.Drawing.LcdFilter
+Egami.Drawing.LcdFilter.Equals(Egami.Drawing.LcdFilter? other) -> bool
+Egami.Drawing.LcdFilter.Name.get -> string!
+Egami.Drawing.LcdFilter.Weights.get -> System.Collections.Generic.IReadOnlyList<int>!
+Egami.Drawing.LcdSampling
+Egami.Drawing.LcdSampling.Gdi = 1 -> Egami.Drawing.LcdSampling
+Egami.Drawing.LcdSampling.Smooth = 0 -> Egami.Drawing.LcdSampling
 Egami.Drawing.LinearGradient
 Egami.Drawing.LinearGradient.End.get -> System.Numerics.Vector2
 Egami.Drawing.LinearGradient.End.init -> void
@@ -517,6 +542,9 @@ Egami.Drawing.PixelGeometry.BgrVertical = 4 -> Egami.Drawing.PixelGeometry
 Egami.Drawing.PixelGeometry.RgbHorizontal = 1 -> Egami.Drawing.PixelGeometry
 Egami.Drawing.PixelGeometry.RgbVertical = 3 -> Egami.Drawing.PixelGeometry
 Egami.Drawing.PixelGeometry.Unknown = 0 -> Egami.Drawing.PixelGeometry
+Egami.Drawing.PixelOffset
+Egami.Drawing.PixelOffset.Half = 0 -> Egami.Drawing.PixelOffset
+Egami.Drawing.PixelOffset.None = 1 -> Egami.Drawing.PixelOffset
 Egami.Drawing.PlaceholderPainter
 Egami.Drawing.PointMode
 Egami.Drawing.PointMode.Lines = 1 -> Egami.Drawing.PointMode
@@ -762,6 +790,9 @@ override Egami.Drawing.Lattice.ToString() -> string!
 override Egami.Drawing.LayerOptions.Equals(object? obj) -> bool
 override Egami.Drawing.LayerOptions.GetHashCode() -> int
 override Egami.Drawing.LayerOptions.ToString() -> string!
+override Egami.Drawing.LcdFilter.Equals(object? obj) -> bool
+override Egami.Drawing.LcdFilter.GetHashCode() -> int
+override Egami.Drawing.LcdFilter.ToString() -> string!
 override Egami.Drawing.LinearGradient.<Clone>$() -> Egami.Drawing.LinearGradient!
 override Egami.Drawing.LinearGradient.Equals(object? obj) -> bool
 override Egami.Drawing.LinearGradient.GetHashCode() -> int
@@ -839,6 +870,7 @@ static Egami.Drawing.Annotation.Url(string! url) -> Egami.Drawing.Annotation!
 static Egami.Drawing.BlendPaint.operator !=(Egami.Drawing.BlendPaint? left, Egami.Drawing.BlendPaint? right) -> bool
 static Egami.Drawing.BlendPaint.operator ==(Egami.Drawing.BlendPaint? left, Egami.Drawing.BlendPaint? right) -> bool
 static Egami.Drawing.CanvasOptions.Default.get -> Egami.Drawing.CanvasOptions!
+static Egami.Drawing.CanvasOptions.GdiPlusClearType.get -> Egami.Drawing.CanvasOptions!
 static Egami.Drawing.CanvasOptions.operator !=(Egami.Drawing.CanvasOptions? left, Egami.Drawing.CanvasOptions? right) -> bool
 static Egami.Drawing.CanvasOptions.operator ==(Egami.Drawing.CanvasOptions? left, Egami.Drawing.CanvasOptions? right) -> bool
 static Egami.Drawing.ColorMatrixPaint.operator !=(Egami.Drawing.ColorMatrixPaint? left, Egami.Drawing.ColorMatrixPaint? right) -> bool
@@ -873,6 +905,7 @@ static Egami.Drawing.GlyphCache.Clear() -> void
 static Egami.Drawing.Gradient.operator !=(Egami.Drawing.Gradient? left, Egami.Drawing.Gradient? right) -> bool
 static Egami.Drawing.Gradient.operator ==(Egami.Drawing.Gradient? left, Egami.Drawing.Gradient? right) -> bool
 static Egami.Drawing.GradientInterpolation.Encoded.get -> Egami.Drawing.GradientInterpolation!
+static Egami.Drawing.GradientInterpolation.GdiPlusGamma.get -> Egami.Drawing.GradientInterpolation!
 static Egami.Drawing.GradientInterpolation.LinearSrgb.get -> Egami.Drawing.GradientInterpolation!
 static Egami.Drawing.GradientInterpolation.Oklab.get -> Egami.Drawing.GradientInterpolation!
 static Egami.Drawing.GradientInterpolation.Oklch(Egami.Drawing.HueMethod hue = Egami.Drawing.HueMethod.Shorter) -> Egami.Drawing.GradientInterpolation!
@@ -890,6 +923,11 @@ static Egami.Drawing.Lattice.operator !=(Egami.Drawing.Lattice? left, Egami.Draw
 static Egami.Drawing.Lattice.operator ==(Egami.Drawing.Lattice? left, Egami.Drawing.Lattice? right) -> bool
 static Egami.Drawing.LayerOptions.operator !=(Egami.Drawing.LayerOptions? left, Egami.Drawing.LayerOptions? right) -> bool
 static Egami.Drawing.LayerOptions.operator ==(Egami.Drawing.LayerOptions? left, Egami.Drawing.LayerOptions? right) -> bool
+static Egami.Drawing.LcdFilter.Balanced.get -> Egami.Drawing.LcdFilter!
+static Egami.Drawing.LcdFilter.Custom(float outerLeft, float left, float center, float right, float outerRight) -> Egami.Drawing.LcdFilter!
+static Egami.Drawing.LcdFilter.Default.get -> Egami.Drawing.LcdFilter!
+static Egami.Drawing.LcdFilter.Gdi.get -> Egami.Drawing.LcdFilter!
+static Egami.Drawing.LcdFilter.Light.get -> Egami.Drawing.LcdFilter!
 static Egami.Drawing.LinearGradient.operator !=(Egami.Drawing.LinearGradient? left, Egami.Drawing.LinearGradient? right) -> bool
 static Egami.Drawing.LinearGradient.operator ==(Egami.Drawing.LinearGradient? left, Egami.Drawing.LinearGradient? right) -> bool
 static Egami.Drawing.MarkedContent.operator !=(Egami.Drawing.MarkedContent? left, Egami.Drawing.MarkedContent? right) -> bool
