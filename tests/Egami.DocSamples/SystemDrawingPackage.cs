@@ -200,6 +200,13 @@ public class SystemDrawingPackage
         }
 
         Color corner = bitmap.GetPixel(0, 0);  // white
+
+        // Egami's own setting: 32-bit ARGB bitmaps draw in place by default; Exact rounds blends exactly as GDI+ does, more slowly.
+        using (Graphics exact = Graphics.FromImage(bitmap))
+        {
+            exact.ArgbDrawing = ArgbDrawing.Exact;  // or SystemDrawingOptions.ArgbDrawing for every Graphics made afterwards
+            exact.FillRectangle(Brushes.Gold, 60, 40, 10, 10);
+        }
         #endregion
 
         Assert.Equal(Color.White.ToArgb(), corner.ToArgb());

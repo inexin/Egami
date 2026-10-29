@@ -18,7 +18,8 @@ internal static class Surface
     /// <param name="bounds">The device area the call can touch, or null for all of it.</param>
     /// <param name="draw">The call.</param>
     /// <param name="cache">The canvas kept between calls for formats drawn in place, renewed when the frame changes.</param>
-    /// <param name="copies">Whether the call copies its colors (SourceCopy), which GDI+ rounds through premultiplied ARGB.</param>
+    /// <param name="copies">Whether 32-bit ARGB must round as GDI+ does, through a premultiplied copy: for SourceCopy, and for
+    /// <see cref="ArgbDrawing.Exact"/>.</param>
     public static void Draw(Frame frame, RectF? bounds, Action<Canvas> draw, ref InPlaceCanvas? cache, bool copies = false)
     {
         // Premultiplied ARGB draws in place, and so does 32-bit ARGB, through Egami's blending of straight alpha: far faster than a
