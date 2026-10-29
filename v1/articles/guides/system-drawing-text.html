@@ -130,7 +130,8 @@ those sizes equal GDI+'s pixel for pixel.</p>
 <ul>
 <li><code>PixelOffset.None</code> puts whole coordinates on pixel centres, as GDI+'s <code>None</code>, <code>Default</code> and <code>HighSpeed</code> offset modes do. Paths,
 their paints and clips move half a pixel right and down. Text moves only when it is unhinted, just as GDI+ moves its
-<code>AntiAlias</code> text but not its grid-fitted text, and images do not move. <code>PixelOffset.Half</code>, Egami's default, is GDI+'s <code>Half</code>.</li>
+<code>AntiAlias</code> text but not its grid-fitted text. Images go onto GDI+'s grid, where source and destination pixel centres line up: an
+image scaled by s moves (1 − s) / 2 pixels, and one drawn 1:1 does not move. <code>PixelOffset.Half</code>, Egami's default, is GDI+'s <code>Half</code>.</li>
 <li><code>Antialiasing.GdiPlus</code> samples like <code>AntiAlias</code> and <code>HighQuality</code>, which are the same mode. Each pixel has 8 samples across
 and 4 down, and a sample on a left or top edge is inside. Pens of 1.5 device pixels or less draw as GDI+'s thin lines: one
 pixel thick across the line's major axis, at full strength, with pointed ends and no caps.</li>
@@ -168,7 +169,46 @@ using (RasterCanvas&lt;Rgb8&gt; canvas = raster.CreateCanvas())
 {
     canvas.FillRect(new RectF(0, 0, 256, 16), brush);
 }
-</code></pre><h2 id="gdi-cleartype">GDI ClearType</h2>
+</code></pre><h2 id="image-scaling">Image scaling</h2>
+<p><code>Graphics.DrawImage</code> scales with its <code>InterpolationMode</code>. Each mode has a <code>ResampleFilter</code> of its own, recovered from
+DrawImage's impulse responses:</p>
+<table>
+<thead>
+<tr>
+<th>InterpolationMode</th>
+<th>ResampleFilter</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Default, Low, Bilinear</td>
+<td><code>GdiPlusBilinear</code>: two pixels at every scale, so shrinking skips pixels</td>
+</tr>
+<tr>
+<td>Bicubic</td>
+<td><code>GdiPlusBicubic</code>: Keys cubic (a = −0.5), four pixels at every scale</td>
+</tr>
+<tr>
+<td>HighQualityBilinear</td>
+<td><code>GdiPlusHighQualityBilinear</code>: the tent, widened when shrinking, convolved with a one-pixel box</td>
+</tr>
+<tr>
+<td>High, HighQualityBicubic</td>
+<td><code>GdiPlusHighQualityBicubic</code>: Keys cubic (a = −1), widened when shrinking, convolved with a one-pixel box</td>
+</tr>
+<tr>
+<td>NearestNeighbor</td>
+<td><code>Nearest</code></td>
+</tr>
+</tbody>
+</table>
+<p>With <code>PixelOffsetMode.Half</code>, GDI+ uses Egami's grid. With its default offset, source and destination pixel centres sit on whole
+coordinates, so a scale s moves the image by (1 − s) / 2 destination pixels against Egami's grid; <code>CanvasOptions.PixelOffset.None</code>
+does the same. Over both offsets, DrawImage and Egami's canvas are 0.38 levels apart on average, down from 2.53 with Egami's
+closest filters before.</p>
+<p><code>CompositingQuality.HighQuality</code> and <code>GammaCorrected</code> blend in linear light, which is <code>CanvasOptions.ColorSpace = ColorSpace.Linear</code>
+(within 0.1 levels of GDI+). The other qualities blend the stored values, Egami's default.</p>
+<h2 id="gdi-cleartype">GDI ClearType</h2>
 <p>For <code>TextRenderer</code> or GDI's <code>ExtTextOut</code>:</p>
 <ul>
 <li>Set <code>Font.HintingTarget = TrueTypeTarget.Gdi</code> and <code>Font.Metrics = FontMetrics.Compatible</code>. GDI's compatible widths equal

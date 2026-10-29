@@ -124,7 +124,9 @@ Enum PixelOffset  <a class="header-action link-secondary" title="View source" hr
     <dt id="Egami_Drawing_PixelOffset_None"><code>None = 1</code></dt>
   
   <dd><p>Whole coordinates fall on pixel centres, as GDI+ draws by default (<code>PixelOffsetMode.None</code>, <code>Default</code> and
-<code>HighSpeed</code>): paths, their paints and unhinted text move half a pixel right and down. Hinted text and images do not move.</p>
+<code>HighSpeed</code>): paths, their paints and unhinted text move half a pixel right and down. Hinted text does not move,
+and images sit on GDI+'s grid, with source pixel centres on destination pixel centres: an image scaled by s moves (1 − s) / 2
+pixels, one drawn 1:1 not at all.</p>
 </dd>
   </dl>
 

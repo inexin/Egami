@@ -171,6 +171,8 @@ bright detail on dark backgrounds, such as text or stars.</p>
 <p>Four more filters follow ImageMagick's definitions: <code>Lanczos2</code> (a two-lobe windowed sinc, nearly as sharp as <code>Lanczos3</code> with less
 ringing), <code>Hermite</code> (a one-pixel cubic with no ringing), <code>Gaussian</code> (σ = ½, soft) and <code>Spline</code> (the cubic B-spline, the smoothest).
 They work everywhere a filter does: resizes, rotations, transforms and warps.</p>
+<p>Four filters reproduce GDI+'s <code>InterpolationMode</code>s, for images that must look like <code>Graphics.DrawImage</code>'s; see
+<a href="system-drawing-text.html#image-scaling">Matching System.Drawing text</a>.</p>
 <h3 id="many-sizes-from-one-image">Many sizes from one image</h3>
 <p><code>MipChain</code> halves an image again and again, averaging 2 × 2 blocks, and resizes each target from the smallest level at least twice
 its size, so a set of thumbnails reads each source pixel about once. Results stay within 40 dB of a direct resize.</p>

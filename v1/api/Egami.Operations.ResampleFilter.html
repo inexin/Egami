@@ -133,6 +133,26 @@ Enum ResampleFilter  <a class="header-action link-secondary" title="View source"
   
   <dd><p>A Gaussian with σ = ½, exp(−2x²), out to 2 pixels, as ImageMagick's Gaussian filter: soft, with no ringing at all.</p>
 </dd>
+    <dt id="Egami_Operations_ResampleFilter_GdiPlusBicubic"><code>GdiPlusBicubic = 11</code></dt>
+  
+  <dd><p>As GDI+'s <code>InterpolationMode.Bicubic</code>, measured in 2.7.6: Keys cubic with a = −0.5 over the four nearest source pixels
+at every scale, so shrinking skips pixels instead of averaging them.</p>
+</dd>
+    <dt id="Egami_Operations_ResampleFilter_GdiPlusBilinear"><code>GdiPlusBilinear = 10</code></dt>
+  
+  <dd><p>As GDI+'s <code>InterpolationMode.Bilinear</code> (and <code>Default</code> and <code>Low</code>), measured in 2.7.6: the tent between the
+two nearest source pixels at every scale, so shrinking skips pixels instead of averaging them.</p>
+</dd>
+    <dt id="Egami_Operations_ResampleFilter_GdiPlusHighQualityBicubic"><code>GdiPlusHighQualityBicubic = 13</code></dt>
+  
+  <dd><p>As GDI+'s <code>InterpolationMode.HighQualityBicubic</code> (and <code>High</code>), measured in 2.7.6: Keys cubic with a = −1, widened by
+the reduction when shrinking, convolved with a box one source pixel wide. Sharp, with slight ringing.</p>
+</dd>
+    <dt id="Egami_Operations_ResampleFilter_GdiPlusHighQualityBilinear"><code>GdiPlusHighQualityBilinear = 12</code></dt>
+  
+  <dd><p>As GDI+'s <code>InterpolationMode.HighQualityBilinear</code>, measured in 2.7.6: the tent, widened by the reduction when shrinking,
+convolved with a box one source pixel wide (the quadratic B-spline when enlarging). Soft, with no ringing.</p>
+</dd>
     <dt id="Egami_Operations_ResampleFilter_Hermite"><code>Hermite = 7</code></dt>
   
   <dd><p>The Hermite cubic (B = C = 0), 2|x|³ − 3|x|² + 1 out to 1 pixel: smooth like Bilinear when enlarging, without its corners,

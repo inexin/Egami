@@ -62284,6 +62284,30 @@ references:
   commentId: F:Egami.Operations.ResampleFilter.Gaussian
   fullName: Egami.Operations.ResampleFilter.Gaussian
   nameWithType: ResampleFilter.Gaussian
+- uid: Egami.Operations.ResampleFilter.GdiPlusBicubic
+  name: GdiPlusBicubic
+  href: api/Egami.Operations.ResampleFilter.html#Egami_Operations_ResampleFilter_GdiPlusBicubic
+  commentId: F:Egami.Operations.ResampleFilter.GdiPlusBicubic
+  fullName: Egami.Operations.ResampleFilter.GdiPlusBicubic
+  nameWithType: ResampleFilter.GdiPlusBicubic
+- uid: Egami.Operations.ResampleFilter.GdiPlusBilinear
+  name: GdiPlusBilinear
+  href: api/Egami.Operations.ResampleFilter.html#Egami_Operations_ResampleFilter_GdiPlusBilinear
+  commentId: F:Egami.Operations.ResampleFilter.GdiPlusBilinear
+  fullName: Egami.Operations.ResampleFilter.GdiPlusBilinear
+  nameWithType: ResampleFilter.GdiPlusBilinear
+- uid: Egami.Operations.ResampleFilter.GdiPlusHighQualityBicubic
+  name: GdiPlusHighQualityBicubic
+  href: api/Egami.Operations.ResampleFilter.html#Egami_Operations_ResampleFilter_GdiPlusHighQualityBicubic
+  commentId: F:Egami.Operations.ResampleFilter.GdiPlusHighQualityBicubic
+  fullName: Egami.Operations.ResampleFilter.GdiPlusHighQualityBicubic
+  nameWithType: ResampleFilter.GdiPlusHighQualityBicubic
+- uid: Egami.Operations.ResampleFilter.GdiPlusHighQualityBilinear
+  name: GdiPlusHighQualityBilinear
+  href: api/Egami.Operations.ResampleFilter.html#Egami_Operations_ResampleFilter_GdiPlusHighQualityBilinear
+  commentId: F:Egami.Operations.ResampleFilter.GdiPlusHighQualityBilinear
+  fullName: Egami.Operations.ResampleFilter.GdiPlusHighQualityBilinear
+  nameWithType: ResampleFilter.GdiPlusHighQualityBilinear
 - uid: Egami.Operations.ResampleFilter.Hermite
   name: Hermite
   href: api/Egami.Operations.ResampleFilter.html#Egami_Operations_ResampleFilter_Hermite
