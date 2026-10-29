@@ -90,9 +90,9 @@
 <p>HEIC is the format iPhones and most Android phones save photos in: HEIF files whose images are coded with HEVC (H.265). HEVC is
 covered by patents, so Egami reads HEIC through a separate package, Egami.Heic, that an app opts in to. The core Egami package
 contains no HEVC code and never depends on Egami.Heic.</p>
-<p>Egami.Heic decodes HEIC images with a managed HEVC decoder: the intra pictures of the Main, Main 10, Main Still Picture and
-format range extensions profiles, up to 12 bits and from 4:0:0 to 4:4:4. Gain maps, the photo's other images (thumbnails,
-depth maps, mattes) and image sequences whose frames are all intra are read too.</p>
+<p>Egami.Heic decodes HEIC images with a managed HEVC decoder: intra and inter pictures of the Main, Main 10, Main Still Picture
+and format range extensions profiles, up to 12 bits and from 4:0:0 to 4:4:4. Gain maps, the photo's other images (thumbnails,
+depth maps, mattes) and image sequences are read too, and <code>HevcStreamDecoder</code> decodes HEVC video streams.</p>
 <h2 id="without-egamiheic">Without Egami.Heic</h2>
 <p>Core Egami recognizes HEIC by its brands (heic, heix, hevc and the other HEVC brands) and reads the container, so
 <code>Raster.Probe</code> gives the size, the natural pixel type and the orientation. <code>Raster.Load</code> throws an <code>UnsupportedFormatException</code>
@@ -151,7 +151,8 @@ using YuvRaster planes = YuvRaster.Load(&quot;photo.heic&quot;, heic);
 ChromaFormat chroma = planes.ChromaFormat;          // Yuv420 for phone photos
 int depth = planes.BitDepth;                        // 8, or 10 for HDR photos
 </code></pre>
-<p>Every intra picture of the HEVC conformance streams in these profiles decodes bit-exact to HM, the reference decoder.</p>
+<p>Every picture of the HEVC conformance streams (JCT-VC HEVC_v1 and RExt) in these profiles decodes bit-exact to HM, the reference
+decoder, and matches its decoded picture hash.</p>
 <h2 id="hdr-photos">HDR photos</h2>
 <p>iPhones store an HDR photo as an SDR image with a gain map: Apple's HDRGainMap auxiliary image (its headroom in the maker note
 or the map's XMP), and on newer iPhones an ISO 21496-1 tone-map item as well, which is preferred. Load gives the SDR image with
@@ -176,10 +177,32 @@ using Raster matte = HeicImage.ReadItem(&quot;portrait.heic&quot;, sky.Id, conte
 matte.Apply(ops =&gt; ops.AutoOrient());
 matte.Save(&quot;sky-matte.png&quot;);
 </code></pre><h2 id="image-sequences">Image sequences</h2>
-<p>A HEIC image sequence (the hevc and hevx brands) whose frames are all intra loads every frame, as an animation; Egami.Heic does
-not decode inter frames. A sequence with inter frames gives its still image when the file has one, and otherwise its first frame
-with a <code>Heic.SequenceFirstFrame</code> warning.</p>
-<h2 id="patents">Patents</h2>
+<p>A HEIC image sequence (the hevc and hevx brands), such as a burst or an animation, loads every frame, as an animation: the
+track's pictures in output order, inter-coded ones too, equal to libheif's <code>heif-dec -S</code>.</p>
+<pre><code class="lang-csharp">// A burst or animated HEIC file: every frame, inter-coded ones too, in output order.
+using Raster burst = Raster.Load(&quot;burst.heic&quot;, heic);
+int frames = burst.FrameCount;
+</code></pre><h2 id="hevc-streams">HEVC streams</h2>
+<p><code>HevcStreamDecoder</code> decodes an HEVC video stream an access unit at a time, as Egami.Video's HEVC support does: an Annex B byte
+stream, or an MP4 or Matroska track's samples after <code>SetConfiguration</code> with its hvcC record. Pictures come out in output order
+into a <code>YuvRaster</code>, cropped to the stream's conformance window, with their order count, NAL unit type and color in
+<code>HevcFrameInfo</code> (with its <code>HevcPictureKind</code>); <code>Flush</code> lets the last ones out at the end of the stream. Decoding starts at an IRAP picture; leading pictures of
+a CRA picture that starts the stream are left out, and only the base layer of a layered stream decodes. In <code>HevcDecoderOptions</code>,
+<code>ConcealErrors</code> keeps a
+picture with damaged slice data as far as it decoded, and <code>CheckPictureHashes</code> checks each picture against its decoded picture
+hash.</p>
+<pre><code class="lang-csharp">// An HEVC stream from any source: Annex B here, or SetConfiguration with an MP4 track's hvcC and its samples.
+using HevcStreamDecoder decoder = new(context: heic);
+decoder.Send(File.ReadAllBytes(&quot;clip.h265&quot;));
+decoder.Flush();                                    // the end of the stream: the last pictures come out
+int shown = 0;
+while (decoder.NextFrame is HevcFrameInfo next)
+{
+    using YuvRaster&lt;byte&gt; frame = YuvRaster.Create(next.Width, next.Height, next.Chroma, YuvColor.Bt709Limited);
+    decoder.TryReceiveFrame(frame, out HevcFrameInfo info);     // info.Poc, info.Kind, info.Color
+    shown++;
+}
+</code></pre><h2 id="patents">Patents</h2>
 <p>Egami.Heic decodes HEVC (H.265), a format covered by patents. Egami's authors grant no patent rights and are not lawyers.
 Whether you need a patent licence depends on your country and on how you use and distribute this package; commercial products
 may need one from the HEVC patent pools or holders. The core Egami package contains no HEVC code and does not depend on this

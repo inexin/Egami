@@ -8735,6 +8735,62 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Heic.HevcDecoderOptions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Heic.HevcDecoderOptions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Heic.HevcDecoderOptions",
+      "Summary": "<p sourcefile=\"api/Egami.Heic.HevcDecoderOptions.yml\" sourcestartlinenumber=\"1\">How an <xref href=\"Egami.Heic.HevcStreamDecoder\" data-throw-if-not-resolved=\"false\"></xref> decodes.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Heic.HevcFrameInfo.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Heic.HevcFrameInfo.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Heic.HevcFrameInfo",
+      "Summary": "<p sourcefile=\"api/Egami.Heic.HevcFrameInfo.yml\" sourcestartlinenumber=\"1\">What an HEVC picture was, as <xref href=\"Egami.Heic.HevcStreamDecoder.TryReceiveFrame(Egami.YuvRaster%2cEgami.Heic.HevcFrameInfo%40)\" data-throw-if-not-resolved=\"false\"></xref> gives it.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Heic.HevcPictureKind.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Heic.HevcPictureKind.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Heic.HevcPictureKind",
+      "Summary": "<p sourcefile=\"api/Egami.Heic.HevcPictureKind.yml\" sourcestartlinenumber=\"1\">What an HEVC picture's coded slice NAL units are (nal_unit_type, H.265 Table 7-1).</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Heic.HevcStreamDecoder.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Heic.HevcStreamDecoder.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Heic.HevcStreamDecoder",
+      "Summary": "<p sourcefile=\"api/Egami.Heic.HevcStreamDecoder.yml\" sourcestartlinenumber=\"1\">Decodes an HEVC (H.265) video stream an access unit at a time, as MP4, Matroska and raw .h265 files carry it: intra and inter\npictures of the Main, Main 10, Main Still Picture, Main 12 and range extensions profiles to 12 bits, 4:0:0 to 4:4:4, with\ntiles, wavefronts and every inter tool. The pictures equal the HEVC reference decoder's (HM) sample for sample. Containers are\nnot read here: Egami.Video reads them and uses this decoder, and any other source of HEVC access units can too.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.Heic.yml",
       "output": {
         ".html": {

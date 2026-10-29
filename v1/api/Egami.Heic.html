@@ -112,6 +112,35 @@ does not load them.</p>
 such as an iPhone's portrait and sky mattes. <a class="xref" href="Egami.Formats.Heic.HeicDetails.html#Egami_Formats_Heic_HeicDetails_Items">Items</a> lists them.</p>
 </dd>
     </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Heic.HevcDecoderOptions.html">HevcDecoderOptions</a></dt>
+      <dd><p>How an <a class="xref" href="Egami.Heic.HevcStreamDecoder.html">HevcStreamDecoder</a> decodes.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Heic.HevcStreamDecoder.html">HevcStreamDecoder</a></dt>
+      <dd><p>Decodes an HEVC (H.265) video stream an access unit at a time, as MP4, Matroska and raw .h265 files carry it: intra and inter
+pictures of the Main, Main 10, Main Still Picture, Main 12 and range extensions profiles to 12 bits, 4:0:0 to 4:4:4, with
+tiles, wavefronts and every inter tool. The pictures equal the HEVC reference decoder's (HM) sample for sample. Containers are
+not read here: Egami.Video reads them and uses this decoder, and any other source of HEVC access units can too.</p>
+</dd>
+    </dl>
+    <h3 id="structs">
+Structs
+</h3>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Heic.HevcFrameInfo.html">HevcFrameInfo</a></dt>
+      <dd><p>What an HEVC picture was, as <a class="xref" href="Egami.Heic.HevcStreamDecoder.html#Egami_Heic_HevcStreamDecoder_TryReceiveFrame_Egami_YuvRaster_Egami_Heic_HevcFrameInfo__">TryReceiveFrame(YuvRaster, out HevcFrameInfo)</a> gives it.</p>
+</dd>
+    </dl>
+    <h3 id="enums">
+Enums
+</h3>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Heic.HevcPictureKind.html">HevcPictureKind</a></dt>
+      <dd><p>What an HEVC picture's coded slice NAL units are (nal_unit_type, H.265 Table 7-1).</p>
+</dd>
+    </dl>
 
 
 </article>
