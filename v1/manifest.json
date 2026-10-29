@@ -15189,6 +15189,62 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Audio.Filters.Biquad.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Audio.Filters.Biquad.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Audio.Filters.Biquad",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Audio.Filters.Biquad.yml\" sourcestartlinenumber=\"1\">A second-order filter from the Audio EQ Cookbook: low and high pass, band pass, notch, all pass, peaking and shelves. The\nwidth is a Q (0.7071, the default, is the flattest low and high pass) or, with <xref href=\"Egami.Video.Audio.Filters.Biquad.FromBandwidth(Egami.Video.Audio.Filters.BiquadKind%2cSystem.Double%2cSystem.Double%2cSystem.Double)\" data-throw-if-not-resolved=\"false\"></xref>, a bandwidth in\noctaves. The filter runs in transposed direct form II with its state in double, so it stays quiet at low frequencies. For\nsteeper low and high pass use <xref href=\"Egami.Video.Audio.Filters.Butterworth\" data-throw-if-not-resolved=\"false\"></xref>; for several bands in one filter, <xref href=\"Egami.Video.Audio.Filters.ParametricEqualizer\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Audio.Filters.BiquadKind.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Audio.Filters.BiquadKind.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Audio.Filters.BiquadKind",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Audio.Filters.BiquadKind.yml\" sourcestartlinenumber=\"1\">The response shapes of a <xref href=\"Egami.Video.Audio.Filters.Biquad\" data-throw-if-not-resolved=\"false\"></xref>, the eight of the Audio EQ Cookbook (Robert Bristow-Johnson).</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Audio.Filters.Butterworth.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Audio.Filters.Butterworth.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Audio.Filters.Butterworth",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Audio.Filters.Butterworth.yml\" sourcestartlinenumber=\"1\">A Butterworth low or high pass of order 2 to 8: maximally flat in the pass band, -3 dB at the corner and 6 dB more cut per\noctave for each order. It runs as a cascade of second-order sections (plus one first-order section for an odd order), each\ndesigned by the bilinear transform warped to the corner, so the corner is exact at any sample rate. Order 2 is the same as\na <xref href=\"Egami.Video.Audio.Filters.Biquad\" data-throw-if-not-resolved=\"false\"></xref> with <xref href=\"Egami.Video.Audio.Filters.Biquad.ButterworthQ\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Audio.Filters.Compressor.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Audio.Filters.Compressor.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Audio.Filters.Compressor",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Audio.Filters.Compressor.yml\" sourcestartlinenumber=\"1\">Turns the level down above a threshold, by <xref href=\"Egami.Video.Audio.Filters.Compressor.Ratio\" data-throw-if-not-resolved=\"false\"></xref>, like ffmpeg's <code>acompressor</code>: a level 12 dB over the\nthreshold comes out 3 dB over it at a ratio of 4. A soft <xref href=\"Egami.Video.Audio.Filters.Compressor.Knee\" data-throw-if-not-resolved=\"false\"></xref> eases into the ratio, <xref href=\"Egami.Video.Audio.Filters.Compressor.Attack\" data-throw-if-not-resolved=\"false\"></xref> and\n<xref href=\"Egami.Video.Audio.Filters.Compressor.Release\" data-throw-if-not-resolved=\"false\"></xref> set how fast the gain moves, and <xref href=\"Egami.Video.Audio.Filters.Compressor.Makeup\" data-throw-if-not-resolved=\"false\"></xref> turns the result back up. Every channel gets\nthe same gain, from the loudest one.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.Video.Audio.Filters.Crossfade.yml",
       "output": {
         ".html": {
@@ -15214,6 +15270,20 @@
       "IsMRef": true,
       "Title": "Egami.Video.Audio.Filters.Delay",
       "Summary": "<p sourcefile=\"api/Egami.Video.Audio.Filters.Delay.yml\" sourcestartlinenumber=\"1\">Delays channels by putting silence in front of them, like ffmpeg's <code>adelay</code>: each channel can have its own delay, for\nexample to line up microphones or fix lip sync. The output keeps the input's timestamps and gets longer by the longest\ndelay; <xref href=\"Egami.Video.Audio.Filters.AudioFilter.Flush\" data-throw-if-not-resolved=\"false\"></xref> hands out the tail, so no input is lost.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Audio.Filters.EqualizerBand.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Audio.Filters.EqualizerBand.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Audio.Filters.EqualizerBand",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Audio.Filters.EqualizerBand.yml\" sourcestartlinenumber=\"1\">One band of a <xref href=\"Egami.Video.Audio.Filters.ParametricEqualizer\" data-throw-if-not-resolved=\"false\"></xref>: a <xref href=\"Egami.Video.Audio.Filters.Biquad\" data-throw-if-not-resolved=\"false\"></xref> shape, frequency, gain and Q.</p>\n"
     },
     {
       "type": "ManagedReference",
@@ -15273,6 +15343,20 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Audio.Filters.Gate.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Audio.Filters.Gate.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Audio.Filters.Gate",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Audio.Filters.Gate.yml\" sourcestartlinenumber=\"1\">Turns the level down below a threshold, like ffmpeg's <code>agate</code>, to keep hiss and room noise out of the pauses: a level\n1 dB under the threshold comes out <xref href=\"Egami.Video.Audio.Filters.Gate.Ratio\" data-throw-if-not-resolved=\"false\"></xref> dB under it, but never more than <xref href=\"Egami.Video.Audio.Filters.Gate.Range\" data-throw-if-not-resolved=\"false\"></xref> down.\n<xref href=\"Egami.Video.Audio.Filters.Gate.Attack\" data-throw-if-not-resolved=\"false\"></xref> sets how fast the gate opens when the level rises and <xref href=\"Egami.Video.Audio.Filters.Gate.Release\" data-throw-if-not-resolved=\"false\"></xref> how fast it closes. Every\nchannel gets the same gain, from the loudest one.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.Video.Audio.Filters.IAudioFilter.yml",
       "output": {
         ".html": {
@@ -15284,6 +15368,34 @@
       "IsMRef": true,
       "Title": "Egami.Video.Audio.Filters.IAudioFilter",
       "Summary": "<p sourcefile=\"api/Egami.Video.Audio.Filters.IAudioFilter.yml\" sourcestartlinenumber=\"1\">A streaming audio filter: frames go in through <xref href=\"Egami.Video.Audio.Filters.IAudioFilter.Send(Egami.Video.Audio.AudioFrame)\" data-throw-if-not-resolved=\"false\"></xref> and come out through <xref href=\"Egami.Video.Audio.Filters.IAudioFilter.TryReceive(Egami.Video.Audio.AudioFrame%40)\" data-throw-if-not-resolved=\"false\"></xref>, the same\nshape as <xref href=\"Egami.Video.Audio.Resampler\" data-throw-if-not-resolved=\"false\"></xref>, decoders and encoders, so filters, the resampler and encoders plug together. Frames of any\nsample format go in; frames come out as <xref href=\"Egami.Video.Audio.SampleFormat.F32Planar\" data-throw-if-not-resolved=\"false\"></xref> with exact timestamps. Implement it to put a\nfilter of your own in an <xref href=\"Egami.Video.Audio.Filters.AudioFilterChain\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Audio.Filters.LevelDetection.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Audio.Filters.LevelDetection.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Audio.Filters.LevelDetection",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Audio.Filters.LevelDetection.yml\" sourcestartlinenumber=\"1\">How a dynamics filter measures the level it reacts to.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Audio.Filters.Limiter.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Audio.Filters.Limiter.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Audio.Filters.Limiter",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Audio.Filters.Limiter.yml\" sourcestartlinenumber=\"1\">Keeps the level under a <xref href=\"Egami.Video.Audio.Filters.Limiter.Ceiling\" data-throw-if-not-resolved=\"false\"></xref>, like ffmpeg's <code>alimiter</code>. It looks 5 ms ahead, so the gain is already\ndown when a peak arrives and no sample goes over; the gain then comes back up over <xref href=\"Egami.Video.Audio.Filters.Limiter.Release\" data-throw-if-not-resolved=\"false\"></xref>. With\n<xref href=\"Egami.Video.Audio.Filters.Limiter.TruePeak\" data-throw-if-not-resolved=\"false\"></xref> on, it also limits the peaks between samples, found by 4x oversampling as ITU-R BS.1770 measures\nthem, so a decoder or a sample rate converter downstream stays under the ceiling too. The output is held back by\n<xref href=\"Egami.Video.Audio.Filters.AudioFilter.Latency\" data-throw-if-not-resolved=\"false\"></xref> and keeps the input's timestamps; <xref href=\"Egami.Video.Audio.Filters.AudioFilter.Flush\" data-throw-if-not-resolved=\"false\"></xref> hands out the rest.</p>\n"
     },
     {
       "type": "ManagedReference",
@@ -15326,6 +15438,20 @@
       "IsMRef": true,
       "Title": "Egami.Video.Audio.Filters.Pan",
       "Summary": "<p sourcefile=\"api/Egami.Video.Audio.Filters.Pan.yml\" sourcestartlinenumber=\"1\">Places a mono or stereo input in a stereo output. <xref href=\"Egami.Video.Audio.Filters.Pan.Position\" data-throw-if-not-resolved=\"false\"></xref> pans a mono input with the constant-power law\n(-3 dB in each channel at the centre, like ffmpeg's <code>pan=stereo|c0=0.7071<em sourcefile=\"api/Egami.Video.Audio.Filters.Pan.yml\" sourcestartlinenumber=\"2\">c0|c1=0.7071</em>c0</code>); on a stereo input it\nturns one side down along the same law, scaled so the centre is unchanged. <xref href=\"Egami.Video.Audio.Filters.Pan.Balance\" data-throw-if-not-resolved=\"false\"></xref> turns one side down\nin a straight line. <xref href=\"Egami.Video.Audio.Filters.Pan.Swap\" data-throw-if-not-resolved=\"false\"></xref> exchanges left and right, and <xref href=\"Egami.Video.Audio.Filters.Pan.InvertLeft\" data-throw-if-not-resolved=\"false\"></xref> and\n<xref href=\"Egami.Video.Audio.Filters.Pan.InvertRight\" data-throw-if-not-resolved=\"false\"></xref> flip a channel's polarity. Changes to the position or balance between frames move over 5 ms.\nFor any other channel matrix use <xref href=\"Egami.Video.Audio.ChannelMixer\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Audio.Filters.ParametricEqualizer.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Audio.Filters.ParametricEqualizer.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Audio.Filters.ParametricEqualizer",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Audio.Filters.ParametricEqualizer.yml\" sourcestartlinenumber=\"1\">Several <xref href=\"Egami.Video.Audio.Filters.Biquad\" data-throw-if-not-resolved=\"false\"></xref> bands run as one filter, in the order given, like a mixing desk's EQ or a chain of ffmpeg's\n<code>equalizer</code>, <code>bass</code> and <code>treble</code>. Works in place.</p>\n"
     },
     {
       "type": "ManagedReference",

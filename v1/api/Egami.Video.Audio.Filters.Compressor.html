@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class Compressor | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class Compressor | Egami ">
+      
+      <meta name="description" content="Turns the level down above a threshold, by , like ffmpeg&#39;s acompressor: a level 12 dB over the threshold comes out 3 dB over it at a ratio of 4. A soft  eases into the ratio,  and  set how fast the gain moves, and  turns the result back up. Every channel gets the same gain, from the loudest one.">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_Video_Audio_Filters_Compressor.md&amp;value=---%0Auid%3A%20Egami.Video.Audio.Filters.Compressor%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.Video.Audio.Filters.Compressor">
+
+
+
+  <h1 id="Egami_Video_Audio_Filters_Compressor" data-uid="Egami.Video.Audio.Filters.Compressor" class="text-break">
+Class Compressor  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/Filters/Compressor.cs/#L18"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a>.<a class="xref" href="Egami.Video.html">Video</a>.<a class="xref" href="Egami.Video.Audio.html">Audio</a>.<a class="xref" href="Egami.Video.Audio.Filters.html">Filters</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.Video.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>Turns the level down above a threshold, by <a class="xref" href="Egami.Video.Audio.Filters.Compressor.html#Egami_Video_Audio_Filters_Compressor_Ratio">Ratio</a>, like ffmpeg's <code>acompressor</code>: a level 12 dB over the
+threshold comes out 3 dB over it at a ratio of 4. A soft <a class="xref" href="Egami.Video.Audio.Filters.Compressor.html#Egami_Video_Audio_Filters_Compressor_Knee">Knee</a> eases into the ratio, <a class="xref" href="Egami.Video.Audio.Filters.Compressor.html#Egami_Video_Audio_Filters_Compressor_Attack">Attack</a> and
+<a class="xref" href="Egami.Video.Audio.Filters.Compressor.html#Egami_Video_Audio_Filters_Compressor_Release">Release</a> set how fast the gain moves, and <a class="xref" href="Egami.Video.Audio.Filters.Compressor.html#Egami_Video_Audio_Filters_Compressor_Makeup">Makeup</a> turns the result back up. Every channel gets
+the same gain, from the loudest one.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public sealed class Compressor : AudioFilter, IAudioFilter, IDisposable</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><a class="xref" href="Egami.Video.Audio.Filters.AudioFilter.html">AudioFilter</a></div>
+      <div><span class="xref">Compressor</span></div>
+    </dd>
+  </dl>
+
+  <dl class="typelist implements">
+    <dt>Implements</dt>
+    <dd>
+      <div><a class="xref" href="Egami.Video.Audio.Filters.IAudioFilter.html">IAudioFilter</a></div>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.idisposable">IDisposable</a></div>
+    </dd>
+  </dl>
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="Egami.Video.Audio.Filters.AudioFilter.html#Egami_Video_Audio_Filters_AudioFilter_Latency">AudioFilter.Latency</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Video.Audio.Filters.AudioFilter.html#Egami_Video_Audio_Filters_AudioFilter_Send_Egami_Video_Audio_AudioFrame_">AudioFilter.Send(AudioFrame)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Video.Audio.Filters.AudioFilter.html#Egami_Video_Audio_Filters_AudioFilter_TryReceive_Egami_Video_Audio_AudioFrame__">AudioFilter.TryReceive(out AudioFrame)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Video.Audio.Filters.AudioFilter.html#Egami_Video_Audio_Filters_AudioFilter_Flush">AudioFilter.Flush()</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Video.Audio.Filters.AudioFilter.html#Egami_Video_Audio_Filters_AudioFilter_Reset">AudioFilter.Reset()</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Video.Audio.Filters.AudioFilter.html#Egami_Video_Audio_Filters_AudioFilter_Dispose">AudioFilter.Dispose()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+  </dd></dl>
+
+
+
+  <h2 id="Egami_Video_Audio_Filters_Compressor_examples">Examples</h2>
+  <pre><code class="lang-csharp">// Music ducks under a voice-over: the voice's level drives the music's compressor.
+using Compressor ducker = new() { Sidechain = true, Threshold = -30, Ratio = 8, Release = MediaTime.FromSeconds(0.4) };
+for (int i = 0; i &lt; music.Count; i++)
+{
+    ducker.SendSidechain(voice[i]);
+    ducker.Send(music[i]);
+    while (ducker.TryReceive(out AudioFrame? output))
+    {
+        samples += output.SampleCount; // mix it with the voice in an AudioMixer here
+        output.Dispose();
+    }
+}
+
+ducker.CompleteSidechain();
+ducker.Flush();</code></pre>
+
+
+  <h2 id="Egami_Video_Audio_Filters_Compressor_remarks">Remarks</h2>
+  <div class="markdown level0 remarks"><p>With <a class="xref" href="Egami.Video.Audio.Filters.Compressor.html#Egami_Video_Audio_Filters_Compressor_Sidechain">Sidechain</a> on, the level comes from another signal given to <a class="xref" href="Egami.Video.Audio.Filters.Compressor.html#Egami_Video_Audio_Filters_Compressor_SendSidechain_Egami_Video_Audio_AudioFrame_">SendSidechain(AudioFrame)</a> instead, like
+ffmpeg's <code>sidechaincompress</code>: music compressed by a voice's level ducks under it. The sidechain is lined up with the
+input by timestamps and must have the same sample rate; it may have other channels. Input waits until the sidechain
+covers it or <a class="xref" href="Egami.Video.Audio.Filters.Compressor.html#Egami_Video_Audio_Filters_Compressor_CompleteSidechain">CompleteSidechain()</a> says no more comes; where there is no sidechain, the level counts as silence.</p>
+</div>
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="Egami_Video_Audio_Filters_Compressor_Attack_" data-uid="Egami.Video.Audio.Filters.Compressor.Attack*"></a>
+
+  <h3 id="Egami_Video_Audio_Filters_Compressor_Attack" data-uid="Egami.Video.Audio.Filters.Compressor.Attack">
+  Attack
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/Filters/Compressor.cs/#L57"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets how fast the gain comes down when the level rises, 0 to 10 s; 20 ms by default.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public MediaTime Attack { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Video.MediaTime.html">MediaTime</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>The value is outside 0 to 10 seconds.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Video_Audio_Filters_Compressor_Detection_" data-uid="Egami.Video.Audio.Filters.Compressor.Detection*"></a>
+
+  <h3 id="Egami_Video_Audio_Filters_Compressor_Detection" data-uid="Egami.Video.Audio.Filters.Compressor.Detection">
+  Detection
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/Filters/Compressor.cs/#L68"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets how the level is measured; <a class="xref" href="Egami.Video.Audio.Filters.LevelDetection.html#Egami_Video_Audio_Filters_LevelDetection_Rms">Rms</a> by default.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public LevelDetection Detection { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Video.Audio.Filters.LevelDetection.html">LevelDetection</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Audio_Filters_Compressor_Knee_" data-uid="Egami.Video.Audio.Filters.Compressor.Knee*"></a>
+
+  <h3 id="Egami_Video_Audio_Filters_Compressor_Knee" data-uid="Egami.Video.Audio.Filters.Compressor.Knee">
+  Knee
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/Filters/Compressor.cs/#L53"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the width in decibels of the soft knee around the threshold, 0 (hard) to 24; 6 by default.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public double Knee { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>The value is outside 0 to 24.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Video_Audio_Filters_Compressor_Makeup_" data-uid="Egami.Video.Audio.Filters.Compressor.Makeup*"></a>
+
+  <h3 id="Egami_Video_Audio_Filters_Compressor_Makeup" data-uid="Egami.Video.Audio.Filters.Compressor.Makeup">
+  Makeup
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/Filters/Compressor.cs/#L65"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the gain in decibels after compression, 0 to 48; 0 by default.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public double Makeup { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>The value is outside 0 to 48.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Video_Audio_Filters_Compressor_Ratio_" data-uid="Egami.Video.Audio.Filters.Compressor.Ratio*"></a>
+
+  <h3 id="Egami_Video_Audio_Filters_Compressor_Ratio" data-uid="Egami.Video.Audio.Filters.Compressor.Ratio">
+  Ratio
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/Filters/Compressor.cs/#L37"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the ratio of level over the threshold in to level over it out, 1 to 100; 4 by default. 100 is close to a limiter.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public double Ratio { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>The value is outside 1 to 100.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Video_Audio_Filters_Compressor_Release_" data-uid="Egami.Video.Audio.Filters.Compressor.Release*"></a>
+
+  <h3 id="Egami_Video_Audio_Filters_Compressor_Release" data-uid="Egami.Video.Audio.Filters.Compressor.Release">
+  Release
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/Filters/Compressor.cs/#L61"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets how fast the gain goes back up when the level falls, 0 to 10 s; 250 ms by default.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public MediaTime Release { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Video.MediaTime.html">MediaTime</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>The value is outside 0 to 10 seconds.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Video_Audio_Filters_Compressor_Sidechain_" data-uid="Egami.Video.Audio.Filters.Compressor.Sidechain*"></a>
+
+  <h3 id="Egami_Video_Audio_Filters_Compressor_Sidechain" data-uid="Egami.Video.Audio.Filters.Compressor.Sidechain">
+  Sidechain
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/Filters/Compressor.cs/#L71"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether the level comes from <a class="xref" href="Egami.Video.Audio.Filters.Compressor.html#Egami_Video_Audio_Filters_Compressor_SendSidechain_Egami_Video_Audio_AudioFrame_">SendSidechain(AudioFrame)</a> rather than from the input itself.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool Sidechain { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Audio_Filters_Compressor_Threshold_" data-uid="Egami.Video.Audio.Filters.Compressor.Threshold*"></a>
+
+  <h3 id="Egami_Video_Audio_Filters_Compressor_Threshold" data-uid="Egami.Video.Audio.Filters.Compressor.Threshold">
+  Threshold
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/Filters/Compressor.cs/#L33"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the threshold in dBFS above which the level is turned down; -18 by default.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public double Threshold { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>The value is outside -120 to 0.</p>
+</dd>
+  </dl>
+
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="Egami_Video_Audio_Filters_Compressor_CompleteSidechain_" data-uid="Egami.Video.Audio.Filters.Compressor.CompleteSidechain*"></a>
+
+  <h3 id="Egami_Video_Audio_Filters_Compressor_CompleteSidechain" data-uid="Egami.Video.Audio.Filters.Compressor.CompleteSidechain">
+  CompleteSidechain()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/Filters/Compressor.cs/#L142"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Says no more sidechain comes, so input past its end is no longer held back.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void CompleteSidechain()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Audio_Filters_Compressor_Dispose_" data-uid="Egami.Video.Audio.Filters.Compressor.Dispose*"></a>
+
+  <h3 id="Egami_Video_Audio_Filters_Compressor_Dispose_System_Boolean_" data-uid="Egami.Video.Audio.Filters.Compressor.Dispose(System.Boolean)">
+  Dispose(bool)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/Filters/Compressor.cs/#L149"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Drops the frames ready and anything else the filter holds.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">protected override void Dispose(bool disposing)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>disposing</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>Whether this is called from <a class="xref" href="Egami.Video.Audio.Filters.AudioFilter.html#Egami_Video_Audio_Filters_AudioFilter_Dispose">Dispose()</a>.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Audio_Filters_Compressor_SendSidechain_" data-uid="Egami.Video.Audio.Filters.Compressor.SendSidechain*"></a>
+
+  <h3 id="Egami_Video_Audio_Filters_Compressor_SendSidechain_Egami_Video_Audio_AudioFrame_" data-uid="Egami.Video.Audio.Filters.Compressor.SendSidechain(Egami.Video.Audio.AudioFrame)">
+  SendSidechain(AudioFrame)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/Filters/Compressor.cs/#L77"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gives the sidechain a frame, of any sample format; the caller keeps the frame.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void SendSidechain(AudioFrame frame)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>frame</code> <a class="xref" href="Egami.Video.Audio.AudioFrame.html">AudioFrame</a></dt>
+    <dd><p>The frame, at the input's sample rate.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.invalidoperationexception">InvalidOperationException</a></dt>
+    <dd><p><a class="xref" href="Egami.Video.Audio.Filters.Compressor.html#Egami_Video_Audio_Filters_Compressor_Sidechain">Sidechain</a> is off, or <a class="xref" href="Egami.Video.Audio.Filters.Compressor.html#Egami_Video_Audio_Filters_Compressor_CompleteSidechain">CompleteSidechain()</a> was called.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>The frame's sample rate differs from the input's or the sidechain's first frame.</p>
+</dd>
+  </dl>
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/Filters/Compressor.cs/#L18" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

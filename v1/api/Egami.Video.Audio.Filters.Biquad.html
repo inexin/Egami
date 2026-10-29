@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class Biquad | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class Biquad | Egami ">
+      
+      <meta name="description" content="A second-order filter from the Audio EQ Cookbook: low and high pass, band pass, notch, all pass, peaking and shelves. The width is a Q (0.7071, the default, is the flattest low and high pass) or, with , a bandwidth in octaves. The filter runs in transposed direct form II with its state in double, so it stays quiet at low frequencies. For steeper low and high pass use ; for several bands in one filter, .">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_Video_Audio_Filters_Biquad.md&amp;value=---%0Auid%3A%20Egami.Video.Audio.Filters.Biquad%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.Video.Audio.Filters.Biquad">
+
+
+
+  <h1 id="Egami_Video_Audio_Filters_Biquad" data-uid="Egami.Video.Audio.Filters.Biquad" class="text-break">
+Class Biquad  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/Filters/Biquad.cs/#L43"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a>.<a class="xref" href="Egami.Video.html">Video</a>.<a class="xref" href="Egami.Video.Audio.html">Audio</a>.<a class="xref" href="Egami.Video.Audio.Filters.html">Filters</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.Video.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>A second-order filter from the Audio EQ Cookbook: low and high pass, band pass, notch, all pass, peaking and shelves. The
+width is a Q (0.7071, the default, is the flattest low and high pass) or, with <a class="xref" href="Egami.Video.Audio.Filters.Biquad.html#Egami_Video_Audio_Filters_Biquad_FromBandwidth_Egami_Video_Audio_Filters_BiquadKind_System_Double_System_Double_System_Double_">FromBandwidth(BiquadKind, double, double, double)</a>, a bandwidth in
+octaves. The filter runs in transposed direct form II with its state in double, so it stays quiet at low frequencies. For
+steeper low and high pass use <a class="xref" href="Egami.Video.Audio.Filters.Butterworth.html">Butterworth</a>; for several bands in one filter, <a class="xref" href="Egami.Video.Audio.Filters.ParametricEqualizer.html">ParametricEqualizer</a>.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public sealed class Biquad : AudioFilter, IAudioFilter, IDisposable</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><a class="xref" href="Egami.Video.Audio.Filters.AudioFilter.html">AudioFilter</a></div>
+      <div><span class="xref">Biquad</span></div>
+    </dd>
+  </dl>
+
+  <dl class="typelist implements">
+    <dt>Implements</dt>
+    <dd>
+      <div><a class="xref" href="Egami.Video.Audio.Filters.IAudioFilter.html">IAudioFilter</a></div>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.idisposable">IDisposable</a></div>
+    </dd>
+  </dl>
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="Egami.Video.Audio.Filters.AudioFilter.html#Egami_Video_Audio_Filters_AudioFilter_Latency">AudioFilter.Latency</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Video.Audio.Filters.AudioFilter.html#Egami_Video_Audio_Filters_AudioFilter_Send_Egami_Video_Audio_AudioFrame_">AudioFilter.Send(AudioFrame)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Video.Audio.Filters.AudioFilter.html#Egami_Video_Audio_Filters_AudioFilter_TryReceive_Egami_Video_Audio_AudioFrame__">AudioFilter.TryReceive(out AudioFrame)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Video.Audio.Filters.AudioFilter.html#Egami_Video_Audio_Filters_AudioFilter_Flush">AudioFilter.Flush()</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Video.Audio.Filters.AudioFilter.html#Egami_Video_Audio_Filters_AudioFilter_Reset">AudioFilter.Reset()</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Video.Audio.Filters.AudioFilter.html#Egami_Video_Audio_Filters_AudioFilter_Dispose">AudioFilter.Dispose()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+  </dd></dl>
+
+
+
+  <h2 id="Egami_Video_Audio_Filters_Biquad_examples">Examples</h2>
+  <pre><code class="lang-csharp">// Rumble out below 80 Hz (24 dB per octave), a little warmth, less harshness and some air.
+using AudioFilterChain chain = new AudioFilterChain(48000, ChannelLayout.Stereo)
+    .Add(new Butterworth(BiquadKind.HighPass, 80, order: 4))
+    .Add(new ParametricEqualizer(
+        new EqualizerBand(BiquadKind.LowShelf, 150, Gain: 2),
+        new EqualizerBand(BiquadKind.Peaking, 3000, Gain: -4, Q: 1.5),
+        new EqualizerBand(BiquadKind.HighShelf, 10000, Gain: 3)))
+    .Add(Biquad.FromBandwidth(BiquadKind.Notch, 50, octaves: 0.1)); // mains hum</code></pre>
+
+
+
+
+  <h2 class="section" id="constructors">Constructors
+</h2>
+
+
+  <a id="Egami_Video_Audio_Filters_Biquad__ctor_" data-uid="Egami.Video.Audio.Filters.Biquad.#ctor*"></a>
+
+  <h3 id="Egami_Video_Audio_Filters_Biquad__ctor_Egami_Video_Audio_Filters_BiquadKind_System_Double_System_Double_System_Double_" data-uid="Egami.Video.Audio.Filters.Biquad.#ctor(Egami.Video.Audio.Filters.BiquadKind,System.Double,System.Double,System.Double)">
+  Biquad(BiquadKind, double, double, double)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/Filters/Biquad.cs/#L56"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Creates a filter with its width as a Q.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Biquad(BiquadKind kind, double frequency, double q = 0.7071067811865476, double gain = 0)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>kind</code> <a class="xref" href="Egami.Video.Audio.Filters.BiquadKind.html">BiquadKind</a></dt>
+    <dd><p>The response shape.</p>
+</dd>
+    <dt><code>frequency</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></dt>
+    <dd><p>The corner or centre frequency in hertz, below half the sample rate.</p>
+</dd>
+    <dt><code>q</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></dt>
+    <dd><p>The Q: higher is narrower, or for low and high pass, a sharper corner with a peak.</p>
+</dd>
+    <dt><code>gain</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></dt>
+    <dd><p>The boost or cut in decibels of <a class="xref" href="Egami.Video.Audio.Filters.BiquadKind.html#Egami_Video_Audio_Filters_BiquadKind_Peaking">Peaking</a> and the shelves; the other kinds ignore it.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>The frequency or Q is not positive and finite, or the gain is not finite.</p>
+</dd>
+  </dl>
+
+
+
+  <h2 class="section" id="fields">Fields
+</h2>
+
+
+
+  <h3 id="Egami_Video_Audio_Filters_Biquad_ButterworthQ" data-uid="Egami.Video.Audio.Filters.Biquad.ButterworthQ">
+  ButterworthQ
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/Filters/Biquad.cs/#L46"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>The Q of the flattest low and high pass, 1 divided by the square root of 2.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const double ButterworthQ = 0.7071067811865476</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="Egami_Video_Audio_Filters_Biquad_Bandwidth_" data-uid="Egami.Video.Audio.Filters.Biquad.Bandwidth*"></a>
+
+  <h3 id="Egami_Video_Audio_Filters_Biquad_Bandwidth" data-uid="Egami.Video.Audio.Filters.Biquad.Bandwidth">
+  Bandwidth
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/Filters/Biquad.cs/#L86"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the bandwidth in octaves the filter was made with, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> when it was made with a Q.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public double? Bandwidth { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a>?</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Audio_Filters_Biquad_Frequency_" data-uid="Egami.Video.Audio.Filters.Biquad.Frequency*"></a>
+
+  <h3 id="Egami_Video_Audio_Filters_Biquad_Frequency" data-uid="Egami.Video.Audio.Filters.Biquad.Frequency">
+  Frequency
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/Filters/Biquad.cs/#L80"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the corner or centre frequency in hertz.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public double Frequency { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Audio_Filters_Biquad_Gain_" data-uid="Egami.Video.Audio.Filters.Biquad.Gain*"></a>
+
+  <h3 id="Egami_Video_Audio_Filters_Biquad_Gain" data-uid="Egami.Video.Audio.Filters.Biquad.Gain">
+  Gain
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/Filters/Biquad.cs/#L89"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the boost or cut in decibels of <a class="xref" href="Egami.Video.Audio.Filters.BiquadKind.html#Egami_Video_Audio_Filters_BiquadKind_Peaking">Peaking</a> and the shelves.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public double Gain { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Audio_Filters_Biquad_Kind_" data-uid="Egami.Video.Audio.Filters.Biquad.Kind*"></a>
+
+  <h3 id="Egami_Video_Audio_Filters_Biquad_Kind" data-uid="Egami.Video.Audio.Filters.Biquad.Kind">
+  Kind
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/Filters/Biquad.cs/#L77"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the response shape.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public BiquadKind Kind { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Video.Audio.Filters.BiquadKind.html">BiquadKind</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Audio_Filters_Biquad_Q_" data-uid="Egami.Video.Audio.Filters.Biquad.Q*"></a>
+
+  <h3 id="Egami_Video_Audio_Filters_Biquad_Q" data-uid="Egami.Video.Audio.Filters.Biquad.Q">
+  Q
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/Filters/Biquad.cs/#L83"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Q; for a filter made from a bandwidth, the Q of that bandwidth before the cookbook's warping correction.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public double Q { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="Egami_Video_Audio_Filters_Biquad_FromBandwidth_" data-uid="Egami.Video.Audio.Filters.Biquad.FromBandwidth*"></a>
+
+  <h3 id="Egami_Video_Audio_Filters_Biquad_FromBandwidth_Egami_Video_Audio_Filters_BiquadKind_System_Double_System_Double_System_Double_" data-uid="Egami.Video.Audio.Filters.Biquad.FromBandwidth(Egami.Video.Audio.Filters.BiquadKind,System.Double,System.Double,System.Double)">
+  FromBandwidth(BiquadKind, double, double, double)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/Filters/Biquad.cs/#L102"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Creates a filter with its width as a bandwidth in octaves, like ffmpeg's <code>width_type=o</code>. For band pass, notch,
+all pass and peaking it is the width between the -3 dB points (or the half-gain points), corrected for the digital
+filter's warping as the cookbook does; for the other kinds it is turned into a Q.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Biquad FromBandwidth(BiquadKind kind, double frequency, double octaves, double gain = 0)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>kind</code> <a class="xref" href="Egami.Video.Audio.Filters.BiquadKind.html">BiquadKind</a></dt>
+    <dd><p>The response shape.</p>
+</dd>
+    <dt><code>frequency</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></dt>
+    <dd><p>The corner or centre frequency in hertz, below half the sample rate.</p>
+</dd>
+    <dt><code>octaves</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></dt>
+    <dd><p>The bandwidth in octaves, such as 1.</p>
+</dd>
+    <dt><code>gain</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></dt>
+    <dd><p>The boost or cut in decibels of <a class="xref" href="Egami.Video.Audio.Filters.BiquadKind.html#Egami_Video_Audio_Filters_BiquadKind_Peaking">Peaking</a> and the shelves.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Video.Audio.Filters.Biquad.html">Biquad</a></dt>
+    <dd><p>The filter.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>The frequency or bandwidth is not positive and finite, or the gain is not finite.</p>
+</dd>
+  </dl>
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/Filters/Biquad.cs/#L43" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

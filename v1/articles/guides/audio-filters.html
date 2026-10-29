@@ -87,8 +87,9 @@
         <article data-uid="">
 <h1 id="audio-filters">Audio filters</h1>
 
-<p>Egami.Video's audio filters change level, time and placement of decoded audio as it streams: gain and gain envelopes, fades
-and crossfades, mixing and panning, delay, padding, trimming and new timestamps, and tempo and speed changes. They live in
+<p>Egami.Video's audio filters change level, time, tone and placement of decoded audio as it streams: gain and gain envelopes,
+fades and crossfades, mixing and panning, delay, padding, trimming and new timestamps, tempo and speed changes, EQ, and
+dynamics (compressor, gate and limiter). They live in
 <code>Egami.Video.Audio.Filters</code> and work on the <code>AudioFrame</code>s that <code>AudioReader</code> and the decoders hand out (see <a href="audio.html">Audio</a>).</p>
 <h2 id="the-filter-loop">The filter loop</h2>
 <p>Every filter is an <code>IAudioFilter</code> with the same calls as <code>Resampler</code>: <code>Send</code> a frame, <code>TryReceive</code> the frames that are ready,
@@ -209,6 +210,50 @@ resampling, like a tape played faster, and costs less.</p>
 <pre><code class="lang-csharp">// A quarter faster with the pitch kept (3 s becomes 2.4 s); Speed would raise the pitch too, like a tape.
 using Tempo tempo = new(1.25, TempoPreset.Speech);
 using Speed speed = new(1.25);
+</code></pre><h2 id="eq">EQ</h2>
+<p><code>Biquad</code> is a second-order filter from the Audio EQ Cookbook in one of eight <code>BiquadKind</code>s: low and high pass, band pass,
+notch, all pass, peaking and low and high shelves. Its width is a Q (0.7071, <code>Biquad.ButterworthQ</code>, by default) or, with
+<code>Biquad.FromBandwidth</code>, a bandwidth in octaves; peaking and shelves take a <code>Gain</code> in decibels. <code>Butterworth</code> is a steeper low
+or high pass, order 2 to 8 (12 to 48 dB per octave), flat in the pass band and -3 dB at its corner. <code>ParametricEqualizer</code> runs
+a list of <code>EqualizerBand</code>s as one filter. All of them run in double precision in place, and refuse a frequency at or above half
+the sample rate.</p>
+<pre><code class="lang-csharp">// Rumble out below 80 Hz (24 dB per octave), a little warmth, less harshness and some air.
+using AudioFilterChain chain = new AudioFilterChain(48000, ChannelLayout.Stereo)
+    .Add(new Butterworth(BiquadKind.HighPass, 80, order: 4))
+    .Add(new ParametricEqualizer(
+        new EqualizerBand(BiquadKind.LowShelf, 150, Gain: 2),
+        new EqualizerBand(BiquadKind.Peaking, 3000, Gain: -4, Q: 1.5),
+        new EqualizerBand(BiquadKind.HighShelf, 10000, Gain: 3)))
+    .Add(Biquad.FromBandwidth(BiquadKind.Notch, 50, octaves: 0.1)); // mains hum
+</code></pre><h2 id="dynamics">Dynamics</h2>
+<p><code>Compressor</code> turns the level down above a <code>Threshold</code> by a <code>Ratio</code>, with a soft <code>Knee</code>, <code>Attack</code> and <code>Release</code> times and
+<code>Makeup</code> gain; <code>Gate</code> turns it down below a threshold, by up to its <code>Range</code>, to keep noise out of the pauses. Both measure the
+loudest channel (<code>LevelDetection.Rms</code> by default, or <code>Peak</code>) and give every channel the same gain. <code>Limiter</code> looks 5 ms ahead,
+so no sample goes over its <code>Ceiling</code>; with <code>TruePeak</code> it also catches the peaks between samples by oversampling, as ITU-R
+BS.1770 measures them. Its output is held back by its <code>Latency</code> and keeps the input's timestamps.</p>
+<pre><code class="lang-csharp">// A voice chain: gate the room noise, even out the level 4:1 above -20 dBFS, then keep true peaks under -1 dBTP.
+using AudioFilterChain chain = new AudioFilterChain(48000, ChannelLayout.Stereo)
+    .Add(new Gate { Threshold = -50, Range = -20 })
+    .Add(new Compressor { Threshold = -20, Ratio = 4, Makeup = 4 })
+    .Add(new Limiter { Ceiling = -1, TruePeak = true });
+</code></pre>
+<p>With <code>Sidechain</code> on, a compressor takes its level from another signal given to <code>SendSidechain</code>, lined up by timestamps, so
+music ducks under a voice. Input waits until the sidechain covers it; <code>CompleteSidechain</code> says no more comes.</p>
+<pre><code class="lang-csharp">// Music ducks under a voice-over: the voice's level drives the music's compressor.
+using Compressor ducker = new() { Sidechain = true, Threshold = -30, Ratio = 8, Release = MediaTime.FromSeconds(0.4) };
+for (int i = 0; i &lt; music.Count; i++)
+{
+    ducker.SendSidechain(voice[i]);
+    ducker.Send(music[i]);
+    while (ducker.TryReceive(out AudioFrame? output))
+    {
+        samples += output.SampleCount; // mix it with the voice in an AudioMixer here
+        output.Dispose();
+    }
+}
+
+ducker.CompleteSidechain();
+ducker.Flush();
 </code></pre>
 </article>
 

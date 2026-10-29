@@ -130,6 +130,30 @@ has either sent something or ended.</p>
 </dd>
     </dl>
     <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Audio.Filters.Biquad.html">Biquad</a></dt>
+      <dd><p>A second-order filter from the Audio EQ Cookbook: low and high pass, band pass, notch, all pass, peaking and shelves. The
+width is a Q (0.7071, the default, is the flattest low and high pass) or, with <a class="xref" href="Egami.Video.Audio.Filters.Biquad.html#Egami_Video_Audio_Filters_Biquad_FromBandwidth_Egami_Video_Audio_Filters_BiquadKind_System_Double_System_Double_System_Double_">FromBandwidth(BiquadKind, double, double, double)</a>, a bandwidth in
+octaves. The filter runs in transposed direct form II with its state in double, so it stays quiet at low frequencies. For
+steeper low and high pass use <a class="xref" href="Egami.Video.Audio.Filters.Butterworth.html">Butterworth</a>; for several bands in one filter, <a class="xref" href="Egami.Video.Audio.Filters.ParametricEqualizer.html">ParametricEqualizer</a>.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Audio.Filters.Butterworth.html">Butterworth</a></dt>
+      <dd><p>A Butterworth low or high pass of order 2 to 8: maximally flat in the pass band, -3 dB at the corner and 6 dB more cut per
+octave for each order. It runs as a cascade of second-order sections (plus one first-order section for an odd order), each
+designed by the bilinear transform warped to the corner, so the corner is exact at any sample rate. Order 2 is the same as
+a <a class="xref" href="Egami.Video.Audio.Filters.Biquad.html">Biquad</a> with <a class="xref" href="Egami.Video.Audio.Filters.Biquad.html#Egami_Video_Audio_Filters_Biquad_ButterworthQ">ButterworthQ</a>.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Audio.Filters.Compressor.html">Compressor</a></dt>
+      <dd><p>Turns the level down above a threshold, by <a class="xref" href="Egami.Video.Audio.Filters.Compressor.html#Egami_Video_Audio_Filters_Compressor_Ratio">Ratio</a>, like ffmpeg's <code>acompressor</code>: a level 12 dB over the
+threshold comes out 3 dB over it at a ratio of 4. A soft <a class="xref" href="Egami.Video.Audio.Filters.Compressor.html#Egami_Video_Audio_Filters_Compressor_Knee">Knee</a> eases into the ratio, <a class="xref" href="Egami.Video.Audio.Filters.Compressor.html#Egami_Video_Audio_Filters_Compressor_Attack">Attack</a> and
+<a class="xref" href="Egami.Video.Audio.Filters.Compressor.html#Egami_Video_Audio_Filters_Compressor_Release">Release</a> set how fast the gain moves, and <a class="xref" href="Egami.Video.Audio.Filters.Compressor.html#Egami_Video_Audio_Filters_Compressor_Makeup">Makeup</a> turns the result back up. Every channel gets
+the same gain, from the loudest one.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
       <dt><a class="xref" href="Egami.Video.Audio.Filters.Crossfade.html">Crossfade</a></dt>
       <dd><p>Joins two streams with an overlap: the end of the first fades out while the start of the second fades in, like ffmpeg's
 <code>acrossfade</code>. The output is the first stream up to its last <a class="xref" href="Egami.Video.Audio.Filters.Crossfade.html#Egami_Video_Audio_Filters_Crossfade_Duration">Duration</a>, then the overlap mixed, then the
@@ -164,6 +188,23 @@ own timestamps, not counted from the first sample.</p>
 </dd>
     </dl>
     <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Audio.Filters.Gate.html">Gate</a></dt>
+      <dd><p>Turns the level down below a threshold, like ffmpeg's <code>agate</code>, to keep hiss and room noise out of the pauses: a level
+1 dB under the threshold comes out <a class="xref" href="Egami.Video.Audio.Filters.Gate.html#Egami_Video_Audio_Filters_Gate_Ratio">Ratio</a> dB under it, but never more than <a class="xref" href="Egami.Video.Audio.Filters.Gate.html#Egami_Video_Audio_Filters_Gate_Range">Range</a> down.
+<a class="xref" href="Egami.Video.Audio.Filters.Gate.html#Egami_Video_Audio_Filters_Gate_Attack">Attack</a> sets how fast the gate opens when the level rises and <a class="xref" href="Egami.Video.Audio.Filters.Gate.html#Egami_Video_Audio_Filters_Gate_Release">Release</a> how fast it closes. Every
+channel gets the same gain, from the loudest one.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Audio.Filters.Limiter.html">Limiter</a></dt>
+      <dd><p>Keeps the level under a <a class="xref" href="Egami.Video.Audio.Filters.Limiter.html#Egami_Video_Audio_Filters_Limiter_Ceiling">Ceiling</a>, like ffmpeg's <code>alimiter</code>. It looks 5 ms ahead, so the gain is already
+down when a peak arrives and no sample goes over; the gain then comes back up over <a class="xref" href="Egami.Video.Audio.Filters.Limiter.html#Egami_Video_Audio_Filters_Limiter_Release">Release</a>. With
+<a class="xref" href="Egami.Video.Audio.Filters.Limiter.html#Egami_Video_Audio_Filters_Limiter_TruePeak">TruePeak</a> on, it also limits the peaks between samples, found by 4x oversampling as ITU-R BS.1770 measures
+them, so a decoder or a sample rate converter downstream stays under the ceiling too. The output is held back by
+<a class="xref" href="Egami.Video.Audio.Filters.AudioFilter.html#Egami_Video_Audio_Filters_AudioFilter_Latency">Latency</a> and keeps the input's timestamps; <a class="xref" href="Egami.Video.Audio.Filters.AudioFilter.html#Egami_Video_Audio_Filters_AudioFilter_Flush">Flush()</a> hands out the rest.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
       <dt><a class="xref" href="Egami.Video.Audio.Filters.Pad.html">Pad</a></dt>
       <dd><p>Adds silence at the end of a stream, like ffmpeg's <code>apad</code>: a fixed amount, or as much as it takes for the stream to
 last at least a total length. The silence comes out on <a class="xref" href="Egami.Video.Audio.Filters.AudioFilter.html#Egami_Video_Audio_Filters_AudioFilter_Flush">Flush()</a>; the input passes through.</p>
@@ -177,6 +218,12 @@ turns one side down along the same law, scaled so the centre is unchanged. <a cl
 in a straight line. <a class="xref" href="Egami.Video.Audio.Filters.Pan.html#Egami_Video_Audio_Filters_Pan_Swap">Swap</a> exchanges left and right, and <a class="xref" href="Egami.Video.Audio.Filters.Pan.html#Egami_Video_Audio_Filters_Pan_InvertLeft">InvertLeft</a> and
 <a class="xref" href="Egami.Video.Audio.Filters.Pan.html#Egami_Video_Audio_Filters_Pan_InvertRight">InvertRight</a> flip a channel's polarity. Changes to the position or balance between frames move over 5 ms.
 For any other channel matrix use <a class="xref" href="Egami.Video.Audio.ChannelMixer.html">ChannelMixer</a>.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Audio.Filters.ParametricEqualizer.html">ParametricEqualizer</a></dt>
+      <dd><p>Several <a class="xref" href="Egami.Video.Audio.Filters.Biquad.html">Biquad</a> bands run as one filter, in the order given, like a mixing desk's EQ or a chain of ffmpeg's
+<code>equalizer</code>, <code>bass</code> and <code>treble</code>. Works in place.</p>
 </dd>
     </dl>
     <dl class="jumplist">
@@ -210,6 +257,14 @@ times are the frames' own timestamps, not counted from the first sample, so put 
 from zero. The samples kept keep their timestamps; follow with <a class="xref" href="Egami.Video.Audio.Filters.Retime.html">Retime</a> to start the result at zero.</p>
 </dd>
     </dl>
+    <h3 id="structs">
+Structs
+</h3>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Audio.Filters.EqualizerBand.html">EqualizerBand</a></dt>
+      <dd><p>One band of a <a class="xref" href="Egami.Video.Audio.Filters.ParametricEqualizer.html">ParametricEqualizer</a>: a <a class="xref" href="Egami.Video.Audio.Filters.Biquad.html">Biquad</a> shape, frequency, gain and Q.</p>
+</dd>
+    </dl>
     <h3 id="interfaces">
 Interfaces
 </h3>
@@ -225,6 +280,11 @@ filter of your own in an <a class="xref" href="Egami.Video.Audio.Filters.AudioFi
 Enums
 </h3>
     <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Audio.Filters.BiquadKind.html">BiquadKind</a></dt>
+      <dd><p>The response shapes of a <a class="xref" href="Egami.Video.Audio.Filters.Biquad.html">Biquad</a>, the eight of the Audio EQ Cookbook (Robert Bristow-Johnson).</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
       <dt><a class="xref" href="Egami.Video.Audio.Filters.FadeCurve.html">FadeCurve</a></dt>
       <dd><p>The shape of a <a class="xref" href="Egami.Video.Audio.Filters.AudioFade.html">AudioFade</a> or <a class="xref" href="Egami.Video.Audio.Filters.Crossfade.html">Crossfade</a>, as the gain of a fade in over its length.</p>
 </dd>
@@ -232,6 +292,11 @@ Enums
     <dl class="jumplist">
       <dt><a class="xref" href="Egami.Video.Audio.Filters.FadeDirection.html">FadeDirection</a></dt>
       <dd><p>Whether a <a class="xref" href="Egami.Video.Audio.Filters.AudioFade.html">AudioFade</a> brings the sound in or takes it out.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Audio.Filters.LevelDetection.html">LevelDetection</a></dt>
+      <dd><p>How a dynamics filter measures the level it reacts to.</p>
 </dd>
     </dl>
     <dl class="jumplist">
