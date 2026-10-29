@@ -161,7 +161,7 @@ public sealed partial class RasterCanvas<TPixel>
             return;
         }
 
-        Matrix3x2 m = Matrix;
+        Matrix3x2 m = GeometryMatrix;
         ReadOnlySpan<Vector2> positions = mesh.Positions.Span;
         Vector2[] device = ArrayPool<Vector2>.Shared.Rent(positions.Length);
         int[] kept = ArrayPool<int>.Shared.Rent(mesh.TriangleCount * 3);
