@@ -39,7 +39,7 @@ Where GDI+ puts text in a layout box (2.7.6 task 28), measured on Windows. Addit
   linked face's aliased bitmaps), and grid-fitted metrics apply to fallback runs too. Fonts that set none of these shape and
   draw as before.
 
-## Egami.Video.Cli, unreleased
+## Egami.Video.Cli 1.1.0 (2026-10-29)
 
 - `egami-video remux --fragment` and `encode --fragment` write fragmented MP4 (`--fragment=4s`, `--fragment=keyframe`), and
   `segment --hls --dash` writes CMAF segments with HLS and DASH playlists into a folder. ffmpeg mode takes `-movflags
@@ -54,7 +54,6 @@ Where GDI+ puts text in a layout box (2.7.6 task 28), measured on Windows. Addit
   `--keyframe-interval` for every codec; `egami-video verify` (also an MCP tool) checks FFV1 files' slice and configuration CRCs
   without decoding; `info` names FFV1 tracks; ffmpeg mode takes `-c:v ffv1` with `-level 3`, `-coder`, `-context`, `-slices`,
   `-slicecrc` and `-g`.
-
 - `egami-video run` reads and writes Egami.Formats.Extended's formats, with `--set sgi.rle=` and `--set sunraster.rle=` for
   their writer options.
 - `egami-video subs convert`, `shift`, `sync`, `extract` and `embed` (also MCP tools): SRT, WebVTT and ASS files converted,
@@ -62,7 +61,10 @@ Where GDI+ puts text in a layout box (2.7.6 task 28), measured on Windows. Addit
   file's text subtitle tracks written as files; subtitle files added to MKV, WebM or MP4 as tracks with languages, names and a
   default. `info` and `embed --add` take subtitle files as inputs.
 
-## Egami.Video, unreleased
+## Egami.Video 1.1.0 (2026-10-29)
+
+With Egami.Video.H264 1.1.0. All additive to 1.0. The V9.1 stages B to D API review was accepted on 2026-10-29 (all as
+recommended), with no API changes.
 
 MP3 decode speed (the V5.8 speed gate, left for 1.0.x). No API changes.
 
