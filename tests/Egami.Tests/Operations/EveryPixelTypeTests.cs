@@ -34,7 +34,7 @@ public abstract class EveryPixelTypeTests<TPart> : IDisposable
 
     public static TheoryData<string, string> Cases() => Rows(NewTypes);
 
-    public static TheoryData<string, string> BudgetCases() => Rows(BudgetTypes);
+    public static TheoryData<string, string> BudgetCases() => AllocationMeter.Rows(Rows(BudgetTypes));
 
     [Theory]
     [MemberData(nameof(Cases))]

@@ -24,6 +24,8 @@ public abstract class OperationCoverageTests<TPart> : IDisposable
 
     public static TheoryData<string> Operations() => Parts.Take(Chains.Keys, TPart.Index, PartCount);
 
+    public static TheoryData<string> BudgetOperations() => AllocationMeter.Rows(Operations());
+
     [Theory]
     [MemberData(nameof(Operations))]
     public void EveryPlaneShapeGivesTheSamePixels(string operation)
@@ -66,7 +68,7 @@ public abstract class OperationCoverageTests<TPart> : IDisposable
 
     [Trait("Category", AllocationMeter.Category)]
     [Theory]
-    [MemberData(nameof(Operations))]
+    [MemberData(nameof(BudgetOperations))]
     public void AllocationsDoNotGrowWithTheImage(string operation)
     {
         AllocationMeter.SkipUnlessOnDemand();

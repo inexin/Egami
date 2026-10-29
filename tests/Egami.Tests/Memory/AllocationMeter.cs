@@ -24,9 +24,42 @@ internal static class AllocationMeter
     /// <summary>Gets whether the allocation-budget tests run: <c>EGAMI_ALLOCATION_TESTS</c> is set to <c>1</c>.</summary>
     public static bool OnDemand => Environment.GetEnvironmentVariable("EGAMI_ALLOCATION_TESTS") == "1";
 
+    private const string SkipReason = "Allocation-budget test: set EGAMI_ALLOCATION_TESTS=1 to run it.";
+
     /// <summary>Skips the calling allocation-budget test unless <see cref="OnDemand"/>.</summary>
-    public static void SkipUnlessOnDemand() =>
-        Assert.SkipUnless(OnDemand, "Allocation-budget test: set EGAMI_ALLOCATION_TESTS=1 to run it.");
+    public static void SkipUnlessOnDemand() => Assert.SkipUnless(OnDemand, SkipReason);
+
+    /// <summary>
+    /// Gets a budget theory's rows when <see cref="OnDemand"/>, and otherwise one skipped row, so a normal run reports one skip for
+    /// the theory instead of one for each of its rows.
+    /// </summary>
+    public static TheoryData<T> Rows<T>(TheoryData<T> rows)
+    {
+        if (OnDemand)
+        {
+            return rows;
+        }
+
+        TheoryData<T> skipped = [];
+        skipped.Add(new TheoryDataRow<T>(default!) { Skip = SkipReason });
+        return skipped;
+    }
+
+    /// <summary>
+    /// Gets a budget theory's rows when <see cref="OnDemand"/>, and otherwise one skipped row, so a normal run reports one skip for
+    /// the theory instead of one for each of its rows.
+    /// </summary>
+    public static TheoryData<T1, T2> Rows<T1, T2>(TheoryData<T1, T2> rows)
+    {
+        if (OnDemand)
+        {
+            return rows;
+        }
+
+        TheoryData<T1, T2> skipped = [];
+        skipped.Add(new TheoryDataRow<T1, T2>(default!, default!) { Skip = SkipReason });
+        return skipped;
+    }
 
     /// <summary>Gets how many buffers the array pools allocated on the calling thread so far.</summary>
     public static int PoolMisses => PoolMissListener.Misses;
