@@ -35,3 +35,5 @@ Egami.Drawing.CanvasOptions.PixelOffset.init -> void
 Egami.Drawing.PixelOffset
 Egami.Drawing.PixelOffset.Half = 0 -> Egami.Drawing.PixelOffset
 Egami.Drawing.PixelOffset.None = 1 -> Egami.Drawing.PixelOffset
+Egami.Drawing.InterpolationSpace.GdiPlusGamma = 4 -> Egami.Drawing.InterpolationSpace
+static Egami.Drawing.GradientInterpolation.GdiPlusGamma.get -> Egami.Drawing.GradientInterpolation!

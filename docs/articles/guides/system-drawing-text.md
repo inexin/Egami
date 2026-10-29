@@ -49,6 +49,20 @@ On rectangles, polygons, ovals and lines at fractional positions, the mean diffe
 with Egami's closest settings before. Rectangles and polygons match to the level. Ovals and round caps still differ a little,
 because GDI+ flattens curves its own way.
 
+## Gradients
+
+Egami's gradients already match GDI+'s within a fraction of a level when they mix in the stored values, as `LinearGradientBrush`
+does by default. Its `Blend`, `InterpolationColors` and `WrapMode` (Tile is `TileMode.Repeat`, TileFlipX is `Mirror`) map to
+stops and tile modes.
+
+- `GammaCorrection = true` is `GradientInterpolation.GdiPlusGamma`: 16 steps between each pair of colors, each mixed in
+  gamma-2.2 light and rounded to 8 bits.
+- A `PathGradientBrush` is a fan of triangles from its `CenterPoint` to the flattened path, with the surround colors at the
+  path's points and the center color at the center: draw it as a `Mesh`. GDI+'s default `CenterPoint` is the mean of the path's
+  points, which for an ellipse is not its middle.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/SystemDrawing.cs#gdiplus-gradients)]
+
 ## Image scaling
 
 `Graphics.DrawImage` scales with its `InterpolationMode`. Each mode has a `ResampleFilter` of its own, recovered from

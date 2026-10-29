@@ -58,6 +58,26 @@ public class SystemDrawing
         Assert.Equal(new Rgb8(0, 90, 200), raster.GetPixel(14, 14));
     }
 
+    [Fact]
+    public void GdiPlusGradients()
+    {
+        using Raster<Rgb8> raster = Raster.Create(256, 16, new Rgb8(255, 255, 255));
+
+        #region gdiplus-gradients
+        // LinearGradientBrush with GammaCorrection = true: GDI+'s 16 gamma-2.2 steps between the colors.
+        var brush = new LinearGradient(new Vector2(0, 0), new Vector2(256, 0), new GradientStop(0, Rgba8.Black), new GradientStop(1, Rgba8.White))
+        {
+            Interpolation = GradientInterpolation.GdiPlusGamma,
+        };
+        using (RasterCanvas<Rgb8> canvas = raster.CreateCanvas())
+        {
+            canvas.FillRect(new RectF(0, 0, 256, 16), brush);
+        }
+        #endregion
+
+        Assert.InRange(raster.GetPixel(128, 8).G, 185, 187);
+    }
+
     #region drawstring
     // Graphics.DrawString(text, font, brush, x, y) with the default StringFormat starts the text 1/6 em right of the point (to a
     // whole pixel) with the first baseline the font's ascent below it; StringFormat.GenericTypographic drops that padding.
