@@ -16,14 +16,15 @@ internal static class Surface
     /// <summary>Runs a drawing call on a canvas whose coordinates are the bitmap's device pixels.</summary>
     /// <param name="frame">The frame to draw on.</param>
     /// <param name="bounds">The device area the call can touch, or null for all of it.</param>
+    /// <param name="options">The canvas settings: GDI+'s antialiasing and compositing as the Graphics has them.</param>
     /// <param name="draw">The call.</param>
-    public static void Draw(Frame frame, RectF? bounds, Action<Canvas> draw)
+    public static void Draw(Frame frame, RectF? bounds, CanvasOptions options, Action<Canvas> draw)
     {
         if (frame.Stride > 0 && frame.Format == PixelFormat.Format32bppPArgb)
         {
             using PointerMemory memory = new(frame.Scan0, frame.Stride * frame.Height, frame);
             using Raster<PremulBgra8> raster = Raster.Wrap<PremulBgra8>(memory.Memory, frame.Width, frame.Height, frame.Stride);
-            using RasterCanvas<PremulBgra8> canvas = new(raster);
+            using RasterCanvas<PremulBgra8> canvas = new(raster, options);
             draw(canvas);
             return;
         }
@@ -58,7 +59,7 @@ internal static class Surface
             }
         }
 
-        using (RasterCanvas<PremulBgra8> canvas = new(shadow))
+        using (RasterCanvas<PremulBgra8> canvas = new(shadow, options))
         {
             canvas.Translate(-x0, -y0);
             draw(canvas);

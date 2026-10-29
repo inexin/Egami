@@ -3,6 +3,21 @@
 All notable changes to Egami are listed here. Egami follows [Semantic Versioning](https://semver.org): from 1.0, public API
 changes that break code come only in a new major version.
 
+## Egami.SystemDrawing and Egami.Metafiles, unreleased
+
+GDI+'s measured settings from 2.7.6, wired in (task 20).
+
+- Egami.SystemDrawing: `Graphics.InterpolationMode` takes the `ResampleFilter.GdiPlus*` filters, `SmoothingMode` AntiAlias and
+  HighQuality take `Antialiasing.GdiPlus`, `CompositingQuality` HighQuality and GammaCorrected blend in linear light, and
+  `LinearGradientBrush.GammaCorrection` mixes with `GradientInterpolation.GdiPlusGamma`. ClearType text keeps its own pixel
+  offset instead of the preset's. Against GDI+ in the System.Drawing probes, AntiAlias goes from 94.5% to 96.5% of pixels
+  exact, WideAntiAlias from 94.0% to 96.6%, images from 89.2% to 91.4% (99.6% within 8 levels), gradients from 65.8% to 67.9%
+  and pen drawing from 95.2% to 96.7%.
+- Egami.Metafiles: the EMF+ player takes the `GdiPlus*` filters for each interpolation mode and `GdiPlusGamma` for
+  gamma-corrected linear brushes; against GDI+ the gradient brushes' mean goes from 1.15 to 1.11 levels and images' from 3.53
+  to 3.39. With `PixelOffset.None` in `MetafileRenderOptions.CanvasOptions`, it leaves the pixel offset to the canvas.
+- The shared GDI+ code's approximation of gamma-corrected gradients (eight unrounded stops per pair) is gone.
+
 ## Egami.SystemDrawing 1.0.0-preview.1, unreleased
 
 A new package: System.Drawing.Common's API on every OS, in managed code (step 2.13, stages A, C to F). Bitmaps, pixel access,

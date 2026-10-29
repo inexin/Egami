@@ -460,12 +460,14 @@ public sealed partial class Graphics
         return RectangleF.FromLTRB(min.X, min.Y, max.X, max.Y);
     }
 
-    /// <summary>The sampling filter for the interpolation mode: nearest, bilinear or bicubic.</summary>
+    /// <summary>The sampling filter for the interpolation mode: Egami's filters measured from GDI+'s modes (2.7.6 stage 4).</summary>
     internal ResampleFilter Filter => State.Interpolation switch
     {
         InterpolationMode.NearestNeighbor => ResampleFilter.Nearest,
-        InterpolationMode.Bicubic or InterpolationMode.HighQualityBicubic or InterpolationMode.High => ResampleFilter.Bicubic,
-        _ => ResampleFilter.Bilinear,
+        InterpolationMode.Bicubic => ResampleFilter.GdiPlusBicubic,
+        InterpolationMode.HighQualityBilinear => ResampleFilter.GdiPlusHighQualityBilinear,
+        InterpolationMode.HighQualityBicubic or InterpolationMode.High => ResampleFilter.GdiPlusHighQualityBicubic,
+        _ => ResampleFilter.GdiPlusBilinear,
     };
 
     private void Combine(Path? device, CombineMode mode)

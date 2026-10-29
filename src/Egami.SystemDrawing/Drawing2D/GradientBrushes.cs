@@ -273,7 +273,14 @@ public sealed partial class LinearGradientBrush : Brush
         RectangleF r = Rectangle;
         GradientStop[] stops = _settings.Stops(_start, _end, GammaCorrection);
         (TileMode tile, _) = GdiPlusBrushes.Wrap((int)_wrap);
-        return new(new LinearGradient(new Vector2(r.X, r.Y), new Vector2(r.Right, r.Y), stops) { LocalMatrix = Brushspace * graphics.ShapeTransform, Tile = tile }, null);
+        return new(
+            new LinearGradient(new Vector2(r.X, r.Y), new Vector2(r.Right, r.Y), stops)
+            {
+                LocalMatrix = Brushspace * graphics.ShapeTransform,
+                Tile = tile,
+                Interpolation = GammaCorrection ? GradientInterpolation.GdiPlusGamma : GradientInterpolation.Encoded,
+            },
+            null);
     }
 
     private static void Check(RectangleF rect)

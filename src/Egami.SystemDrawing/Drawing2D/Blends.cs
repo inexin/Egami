@@ -184,7 +184,8 @@ internal sealed class GradientSettings
             }
         }
 
-        return gamma ? GdiPlusBrushes.GammaStops(stops) : stops;
+        // A gamma-corrected brush mixes between the stops with GradientInterpolation.GdiPlusGamma (see LinearGradientBrush).
+        return stops;
     }
 
     private static void Check(float focus, float scale)

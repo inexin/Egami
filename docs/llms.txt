@@ -103,7 +103,7 @@ settings, safety limits and registered formats a call uses.
 - [Fonts and text](https://inexin.github.io/Egami/v1/articles/guides/text.html): Egami.Fonts is a separate package that reads TrueType, OpenType, WOFF, WOFF2 and variable fonts in managed code.
 - [Paragraph layout](https://inexin.github.io/Egami/v1/articles/guides/paragraph-layout.html): Egami.Fonts lays out paragraphs in the `Egami.Fonts.Layout` namespace.
 - [Unicode text and shaping](https://inexin.github.io/Egami/v1/articles/guides/unicode-text.html): Egami.Fonts carries its own Unicode 17.0 data and the Unicode algorithms text shaping builds on.
-- [Matching System.Drawing text](https://inexin.github.io/Egami/v1/articles/guides/system-drawing-text.html): Egami can draw small UI text the way System.Drawing does on Windows, for images that replace ones made with `Graphics.DrawString` (GDI+) or `TextRenderer` (GDI), such as buttons in emails.
+- [Matching System.Drawing](https://inexin.github.io/Egami/v1/articles/guides/system-drawing-text.html): Egami can draw the way System.Drawing does on Windows.
 
 ## Egami.Svg and Egami.Css
 

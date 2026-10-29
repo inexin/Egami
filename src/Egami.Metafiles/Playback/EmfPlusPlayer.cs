@@ -179,8 +179,15 @@ internal sealed partial class EmfPlusPlayer
         {
             Matrix3x2 m = Unshifted;
 
-            // Without PixelOffsetModeHalf (2 HighQuality, 4 Half), GDI+ puts integer coordinates on pixel centers.
-            if (_state.PixelOffset is not (2 or 4))
+            // Without PixelOffsetModeHalf (2 HighQuality, 4 Half), GDI+ puts integer coordinates on pixel centers. A canvas with
+            // CanvasOptions.PixelOffset None already does that, so then only the Half modes move back.
+            bool half = _state.PixelOffset is 2 or 4;
+            if (_options.CanvasOptions?.PixelOffset == PixelOffset.None)
+            {
+                return half ? m * Matrix3x2.CreateTranslation(-0.5f, -0.5f) : m;
+            }
+
+            if (!half)
             {
                 m *= Matrix3x2.CreateTranslation(0.5f, 0.5f);
             }
