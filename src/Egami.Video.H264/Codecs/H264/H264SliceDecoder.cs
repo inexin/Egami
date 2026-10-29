@@ -152,7 +152,7 @@ internal sealed partial class H264SliceDecoder
         _mv0 = pic.Mv[0];
         _mv1 = pic.Mv[1];
         _w4 = _mb.W4;
-        _mbaff = false;
+        _mbaff = _mixedLeft = _mixedTop = false;
         Decoded = 0;
         LastMb = -1;
         _mbAddr = -2;
