@@ -3,7 +3,15 @@
 All notable changes to Egami are listed here. Egami follows [Semantic Versioning](https://semver.org): from 1.0, public API
 changes that break code come only in a new major version.
 
-## Egami.Drawing, unreleased
+## Egami 1.3.1 (2026-10-29)
+
+A bug-fix release of the Egami train for GDI+-look text, with Egami.SystemDrawing 1.0.0-preview.2. Egami.Drawing and
+Egami.Fonts carry the fixes below; Egami, Egami.Svg, Egami.Css, Egami.Heic, Egami.Cli and Egami.Formats.Extended have no
+changes and ship as 1.3.1 to keep the train together. Two members are added (`GdiPlusText.Baseline` and
+`Font.GdiPlusAscent`); nothing is removed or changed.
+Egami.SystemDrawing 1.0.0-preview.2 needs Egami 1.3.1.
+
+## Egami.Drawing 1.3.1 (2026-10-29)
 
 - `Antialiasing.GdiPlus` draws two to three times faster and allocates nothing per fill once warm, with the same pixels: a
   filled ellipse through Egami.SystemDrawing with `SmoothingMode.AntiAlias` takes 78 µs instead of 255 µs, close to Egami's
@@ -15,7 +23,7 @@ changes that break code come only in a new major version.
   text matches GDI+ slightly closer. Egami's own sampling is unchanged. Egami.Fonts' hinter now reports each glyph's scan
   control, internally.
 
-## Egami.Drawing, Egami.Fonts and Egami.SystemDrawing, unreleased
+## Egami.Drawing and Egami.Fonts 1.3.1, Egami.SystemDrawing 1.0.0-preview.2 (2026-10-29)
 
 Where GDI+ puts text in a layout box (2.7.6 task 28), measured on Windows. Additive; Egami's own text output is unchanged.
 
@@ -31,7 +39,7 @@ Where GDI+ puts text in a layout box (2.7.6 task 28), measured on Windows. Addit
   shorter than a line, as GDI+ does. `FontFamily.GetCellAscent` and `GetCellDescent` use the typographic metrics of fonts that
   set USE_TYPO_METRICS, as GDI+ does.
 
-## Egami.Fonts, unreleased
+## Egami.Fonts 1.3.1 (2026-10-29)
 
 - A face that `FontFallback` picks now takes all of the font's rendering settings: `EmbeddedBitmaps`, `HintingTarget`,
   `Metrics`, `Embolden`, `StemDarkening` and `ColorGlyphs` were dropped before (the palette stays the face's own). So SimSun

@@ -22,7 +22,7 @@
     <!-- The shared version of the Egami release train: Egami, Egami.Drawing, Egami.Fonts, Egami.Svg, Egami.Css, Egami.Heic,
          Egami.Formats.Extended, Egami.Cli and Egami.Cli.Host. They release together on the tag v<version>. Egami.Heic depends on
          exactly this version of Egami. The other packages (Barcodes, Metafiles, Fonts.Substitutes, Video) set their own version in their project file. -->
-    <EgamiVersion>1.3.0</EgamiVersion>
+    <EgamiVersion>1.3.1</EgamiVersion>
     <!-- Egami.Video's own version, which Egami.Video.Cli (egami-video) carries too (Video CLI design Q1). -->
     <EgamiVideoVersion>1.0.0</EgamiVideoVersion>
     <IncludeSymbols>true</IncludeSymbols>

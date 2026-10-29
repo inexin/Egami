@@ -202,6 +202,7 @@ Egami.Fonts.Font.Equals(Egami.Fonts.Font other) -> bool
 Egami.Fonts.Font.Extents.get -> Egami.Fonts.FontExtents
 Egami.Fonts.Font.Font() -> void
 Egami.Fonts.Font.Font(Egami.Fonts.Typeface! typeface, float size) -> void
+Egami.Fonts.Font.GdiPlusAscent.get -> float
 Egami.Fonts.Font.GetAdvance(ushort glyph) -> float
 Egami.Fonts.Font.GetGlyphExtents(ushort glyph) -> Egami.Fonts.GlyphExtents
 Egami.Fonts.Font.Hinting.get -> Egami.Fonts.FontHinting

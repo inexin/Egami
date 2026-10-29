@@ -1,2 +1,1 @@
 #nullable enable
-Egami.Fonts.Font.GdiPlusAscent.get -> float

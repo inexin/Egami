@@ -4,7 +4,7 @@
     <RootNamespace>Egami.SystemDrawing</RootNamespace>
     <PackageId>Egami.SystemDrawing</PackageId>
     <!-- Its own version line, not the Egami train: 1.0.0-preview.N per merged stage until the gates pass (step 2.13, Q9). -->
-    <Version>1.0.0-preview.1</Version>
+    <Version>1.0.0-preview.2</Version>
     <Description>A System.Drawing drop-in for Egami: Bitmap, Graphics, pens, brushes, fonts and the rest of System.Drawing.Common's API, cross-platform and in managed code, drawn by Egami.</Description>
     <PackageTags>$(EgamiPackageTags);system-drawing;gdi-plus;bitmap;graphics</PackageTags>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>

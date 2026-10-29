@@ -212,6 +212,7 @@ Egami.Drawing.FillRule
 Egami.Drawing.FillRule.EvenOdd = 1 -> Egami.Drawing.FillRule
 Egami.Drawing.FillRule.NonZero = 0 -> Egami.Drawing.FillRule
 Egami.Drawing.FontExtensions
+Egami.Drawing.GdiPlusText
 Egami.Drawing.GlyphCache
 Egami.Drawing.Gradient
 Egami.Drawing.Gradient.ExtendEnd.get -> bool
@@ -899,6 +900,7 @@ static Egami.Drawing.FontExtensions.ToPath(this Egami.Fonts.GlyphRun! run, Syste
 static Egami.Drawing.FontExtensions.ToPath(this Egami.Fonts.Layout.DecorationShape! shape, System.Numerics.Vector2 origin) -> Egami.Drawing.Path!
 static Egami.Drawing.FontExtensions.ToPath(this Egami.Fonts.Layout.TextLayout! layout, System.Numerics.Vector2 origin) -> Egami.Drawing.Path!
 static Egami.Drawing.FontExtensions.ToRectF(this Egami.Fonts.TextBounds bounds) -> Egami.Drawing.RectF
+static Egami.Drawing.GdiPlusText.Baseline(Egami.Fonts.Font font, Egami.Drawing.RectF box, Egami.Drawing.VerticalAlign align, bool typographic = false) -> float
 static Egami.Drawing.GlyphCache.ByteLimit.get -> long
 static Egami.Drawing.GlyphCache.ByteLimit.set -> void
 static Egami.Drawing.GlyphCache.Clear() -> void
