@@ -64,6 +64,12 @@ Where GDI+ puts text in a layout box (2.7.6 task 28), measured on Windows. Addit
   linked face's aliased bitmaps), and grid-fitted metrics apply to fallback runs too. Fonts that set none of these shape and
   draw as before.
 
+## Egami.Video.Cli, unreleased
+
+- `egami-video overlay --key auto` reads the screen colour from the overlay's first frame: the median of its green or blue
+  pixels, whichever covers more of the frame (refused when neither covers 5 %). Without `--blend`, auto also picks a softer
+  edge for a pale screen, so grays and whites in front of it stay solid.
+
 ## Egami.Video.Cli 1.1.0 (2026-10-29)
 
 - `egami-video remux --fragment` and `encode --fragment` write fragmented MP4 (`--fragment=4s`, `--fragment=keyframe`), and

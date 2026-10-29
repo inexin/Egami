@@ -96,7 +96,7 @@ internal static class EditCommands
         Argument<string> over = new("over") { Description = "The clip drawn over it." };
         Option<string?> at = new("--at") { Description = "Where the top-left corner goes, as x,y in pixels, or right-N,top-N and the like from the edges (left, right, top, bottom, center). Centred by default.", HelpName = "x,y" };
         Option<double?> scale = new("--scale") { Description = "The overlay's size as a factor of its own. Default 1.", HelpName = "factor" };
-        Option<string?> key = new("--key") { Description = "Chroma key the overlay: green, blue or a hex colour such as #00b140.", HelpName = "color" };
+        Option<string?> key = new("--key") { Description = "Chroma key the overlay: auto (the screen colour read from its first frame), green, blue or a hex colour such as #00b140.", HelpName = "color" };
         Option<float?> similarity = new("--similarity") { Description = "With --key: how close to the colour is keyed out, from 0 to 1. Default 0.05.", HelpName = "0-1" };
         Option<float?> blend = new("--blend") { Description = "With --key: the soft edge beyond --similarity, from 0 to 1. Default 0.35.", HelpName = "0-1" };
         Option<float?> despill = new("--despill") { Description = "With --key: how much of the screen's colour to take out of the edges, from 0 to 1. Default 0.5.", HelpName = "0-1" };
@@ -123,10 +123,17 @@ internal static class EditCommands
             l = result.GetValue(at) is { } place ? Place(l, place, factor, session, result.GetValue(over)!) : l.Place(Anchor.Center, 0, factor);
             if (result.GetValue(key) is { } k)
             {
-                l = l.Key(new ChromaKey(KeyColor(k))
+                bool auto = k.Equals("auto", StringComparison.OrdinalIgnoreCase);
+                Rgba8 color = auto ? ScreenColor(session.ResolvePath(result.GetValue(over)!), session) : KeyColor(k);
+
+                // With the screen's own colour the soft edge ends short of gray, so grays and whites stay solid however pale the
+                // screen is; given values are taken as they are.
+                float s = Fraction(result.GetValue(similarity), 0.05f, "--similarity");
+                float b = Fraction(result.GetValue(blend), auto ? Math.Clamp((0.75f * NeutralDistance(color)) - s, 0.05f, 0.35f) : 0.35f, "--blend");
+                l = l.Key(new ChromaKey(color)
                 {
-                    Similarity = Fraction(result.GetValue(similarity), 0.05f, "--similarity"),
-                    Blend = Fraction(result.GetValue(blend), 0.35f, "--blend"),
+                    Similarity = s,
+                    Blend = b,
                     Despill = Fraction(result.GetValue(despill), 0.5f, "--despill"),
                 });
             }
@@ -547,6 +554,81 @@ internal static class EditCommands
         "blue" => Rgba8.FromHex("#0047bb"),
         _ => Rgba8.TryFromHex(text, out Rgba8 c) ? c : throw new UsageException($"--key '{text}' is not green, blue or a hex colour such as #00b140."),
     };
+
+    /// <summary>
+    /// The colour of a green or blue screen: the median, per channel, of the first frame's pixels whose green (or blue) stands
+    /// well above both other channels, from whichever of the two covers more of the frame. A real screen is seldom the pure
+    /// colour --key green names, and keying its actual colour keeps grays and whites solid.
+    /// </summary>
+    private static Rgba8 ScreenColor(string path, VideoSession session)
+    {
+        using VideoReader reader = VideoReader.Open(path, null, session.Context);
+        using YuvVideoFrame frame = reader.ReadFrame() ?? throw new UsageException($"--key auto: '{path}' has no frame to read the screen colour from.");
+        using Raster<Rgb8> rgb = frame.ToRaster<Rgb8>(session.Context.Egami);
+        int[][] green = [new int[256], new int[256], new int[256]], blue = [new int[256], new int[256], new int[256]];
+        int greens = 0, blues = 0;
+        for (int y = 0; y < rgb.Height; y++)
+        {
+            foreach (Rgb8 p in rgb.Row(y))
+            {
+                if (p.G - Math.Max(p.R, p.B) > 40)
+                {
+                    greens++;
+                    Count(green, p);
+                }
+                else if (p.B - Math.Max(p.R, p.G) > 40)
+                {
+                    blues++;
+                    Count(blue, p);
+                }
+            }
+        }
+
+        int count = Math.Max(greens, blues);
+        if (count < (long)rgb.Width * rgb.Height / 20)
+        {
+            throw new UsageException($"--key auto: the first frame of '{path}' shows no green or blue screen; give its colour, such as --key #00b140.");
+        }
+
+        int[][] histograms = greens >= blues ? green : blue;
+        return new Rgba8(Median(histograms[0], count), Median(histograms[1], count), Median(histograms[2], count), 255);
+
+        static void Count(int[][] h, Rgb8 p)
+        {
+            h[0][p.R]++;
+            h[1][p.G]++;
+            h[2][p.B]++;
+        }
+
+        static byte Median(int[] histogram, int count)
+        {
+            int seen = 0;
+            for (int v = 0; v < 256; v++)
+            {
+                seen += histogram[v];
+                if (2 * seen >= count)
+                {
+                    return (byte)v;
+                }
+            }
+
+            return 255;
+        }
+    }
+
+    /// <summary>
+    /// How far a colour's chroma lies from gray, as a fraction of the largest chroma distance (green to magenta), the scale
+    /// ChromaKey's similarity and blend use: Rec. 709 Cb and Cr.
+    /// </summary>
+    private static float NeutralDistance(Rgba8 color)
+    {
+        const float Kr = 0.2126f, Kb = 0.0722f, Kg = 1 - Kr - Kb;
+        const float CbScale = 1 / (2 * (1 - Kb)), CrScale = 1 / (2 * (1 - Kr));
+        float r = color.R / 255f, g = color.G / 255f, bl = color.B / 255f, y = (Kr * r) + (Kg * g) + (Kb * bl);
+        float cb = (bl - y) * CbScale, cr = (r - y) * CrScale;
+        float max = 2 * MathF.Sqrt((Kg * CbScale * Kg * CbScale) + (Kg * CrScale * Kg * CrScale));
+        return MathF.Sqrt((cb * cb) + (cr * cr)) / max;
+    }
 
     private static float Fraction(float? value, float fallback, string option) => value is null
         ? fallback
