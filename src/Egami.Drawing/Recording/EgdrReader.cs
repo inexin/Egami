@@ -791,6 +791,7 @@ internal sealed class EgdrReader
                 InterpolationSpace.LinearSrgb => GradientInterpolation.LinearSrgb,
                 InterpolationSpace.Oklab => GradientInterpolation.Oklab,
                 InterpolationSpace.Oklch => GradientInterpolation.Oklch(hue),
+                InterpolationSpace.GdiPlusGamma => GradientInterpolation.GdiPlusGamma,
                 _ => GradientInterpolation.Encoded,
             };
             return g with { Tile = tile, ExtendStart = (flags & 1) != 0, ExtendEnd = (flags & 2) != 0, Premultiplied = (flags & 4) != 0, Interpolation = interpolation };

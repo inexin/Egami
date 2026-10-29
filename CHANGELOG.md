@@ -46,6 +46,13 @@ codecs, icons, Graphics, pens, brushes, paths, fonts and text, metafiles, effect
 
 ## Egami.Drawing and Egami.Fonts, unreleased
 
+Closer GDI+ gradients (2.7.6 stage 3), measured on Windows in egami-compare and opt-in like the rest.
+
+- `InterpolationSpace.GdiPlusGamma` and `GradientInterpolation.GdiPlusGamma` mix as `LinearGradientBrush.GammaCorrection` does.
+  Each pair of stops is cut into 16 parts, the 17 colors where they meet are mixed in gamma-2.2 light and rounded to 8 bits,
+  and the gradient runs straight through them. On the stage 0 gamma probes the mean difference from GDI+ drops from 0.83 to
+  1.04 levels (Egami's closest, `LinearSrgb`) to 0.08 to 0.16.
+
 Closer GDI+ text (2.7.6 stage 1), measured against GDI+ on Windows in egami-compare. Egami's default output does not change.
 
 - `LcdSampling.Gdi` samples as GDI+ does: six on-or-off samples per pixel across the stripes, so each channel is a whole

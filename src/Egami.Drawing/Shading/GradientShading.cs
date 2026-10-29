@@ -27,7 +27,9 @@ internal sealed class GradientRamp
 
     private GradientRamp(Gradient gradient)
     {
-        _space = gradient.Interpolation.Space;
+        // GDI+'s gamma mixing is a ramp of encoded segments between colors mixed in gamma 2.2.
+        bool gdiPlusGamma = gradient.Interpolation.Space == InterpolationSpace.GdiPlusGamma;
+        _space = gdiPlusGamma ? InterpolationSpace.Encoded : gradient.Interpolation.Space;
         _premultiplied = gradient.Premultiplied;
         IReadOnlyList<GradientStop> stops = gradient.Stops;
 
@@ -48,6 +50,11 @@ internal sealed class GradientRamp
         if (list[^1].Offset < 1)
         {
             list.Add((1, list[^1].Color));
+        }
+
+        if (gdiPlusGamma)
+        {
+            list = GdiPlusGammaKnots(list);
         }
 
         List<Segment> segments = [];
@@ -117,6 +124,39 @@ internal sealed class GradientRamp
         Segment s = segments[lo];
         float u = (t - s.T0) / (s.T1 - s.T0);
         return ToOutput(Vector4.Lerp(s.A, s.B, u));
+    }
+
+    /// <summary>
+    /// GDI+'s gamma-corrected stops: 16 parts to each segment, the colors between them mixed in gamma 2.2 light and rounded to
+    /// 8 bits (alpha mixed straight), as measured from GDI+'s ramps.
+    /// </summary>
+    private static List<(float Offset, Vector4 Color)> GdiPlusGammaKnots(List<(float Offset, Vector4 Color)> list)
+    {
+        const int Parts = 16;
+        const float Gamma = 2.2f;
+        List<(float Offset, Vector4 Color)> knots = [list[0]];
+        for (int i = 0; i + 1 < list.Count; i++)
+        {
+            (float t0, Vector4 a) = list[i];
+            (float t1, Vector4 b) = list[i + 1];
+            if (t1 > t0)
+            {
+                Vector4 la = new(MathF.Pow(a.X, Gamma), MathF.Pow(a.Y, Gamma), MathF.Pow(a.Z, Gamma), a.W);
+                Vector4 lb = new(MathF.Pow(b.X, Gamma), MathF.Pow(b.Y, Gamma), MathF.Pow(b.Z, Gamma), b.W);
+                for (int k = 1; k < Parts; k++)
+                {
+                    float u = (float)k / Parts;
+                    Vector4 l = Vector4.Lerp(la, lb, u);
+                    knots.Add((t0 + ((t1 - t0) * u), new Vector4(Byte(MathF.Pow(l.X, 1 / Gamma)), Byte(MathF.Pow(l.Y, 1 / Gamma)), Byte(MathF.Pow(l.Z, 1 / Gamma)), l.W)));
+                }
+            }
+
+            knots.Add(list[i + 1]);
+        }
+
+        return knots;
+
+        static float Byte(float c) => MathF.Round(Math.Clamp(c, 0, 1) * 255) / 255;
     }
 
     /// <summary>A color in the interpolation space, straight: (c0, c1, c2, alpha), Oklch's hue in degrees as c2.</summary>
