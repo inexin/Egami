@@ -245,11 +245,6 @@ internal sealed partial class HevcSliceDecoder
         }
 
         StoreMotion(xPb, yPb, nPbW, nPbH, motion, refs);
-        if (Environment.GetEnvironmentVariable("ZZ_PU") is { })
-        {
-            System.Console.Error.WriteLine($"PU {refs.Poc} {xPb} {yPb} part {partIdx} dir {motion.Flags} r0 {motion.RefIdx0} mv0 {(short)motion.Mv0} {motion.Mv0 >> 16} r1 {motion.RefIdx1} mv1 {(short)motion.Mv1} {motion.Mv1 >> 16} merge {(skip ? 2 : merge ? 1 : 0)}");
-        }
-
         _inter.Predict(_picture, refs, _slice, xPb, yPb, nPbW, nPbH, motion.Flags, motion.RefIdx0, motion.RefIdx1, motion.Mv0, motion.Mv1);
         return merge;
     }
@@ -508,16 +503,6 @@ internal sealed partial class HevcSliceDecoder
         }
 
         Candidate chosen = list[mergeIdx];
-        if (Environment.GetEnvironmentVariable("ZZ_HEVC") is { } zz && xPb >= 128 && xPb < 160 && yPb >= 320 && yPb < 352)
-        {
-            System.Console.Error.WriteLine($"ZZ merge pb {xPb},{yPb} {nPbW}x{nPbH} part {partIdx} pm {_partMode} idx {mergeIdx} orig {origCount} avail A1 {availableA1} B1 {availableB1} B0 {availableB0} A0 {availableA0}");
-            for (int i = 0; i < count; i++)
-            {
-                Candidate c = list[i];
-                System.Console.Error.WriteLine($"ZZ   cand {i}: f{c.Flags} r{c.RefIdx0},{c.RefIdx1} mv0 {(short)c.Mv0},{c.Mv0 >> 16} mv1 {(short)c.Mv1},{c.Mv1 >> 16}");
-            }
-        }
-
         if (chosen.Flags == 3 && origW + origH == 12)
         {
             // 8x4 and 4x8 blocks predict from list 0 only (8-??).
@@ -619,11 +604,6 @@ internal sealed partial class HevcSliceDecoder
         if (count < 2 && _slice.TemporalMvp && TemporalMv(xPb, yPb, nPbW, nPbH, list, refIdx, out int mvCol))
         {
             mvp[count++] = mvCol;
-        }
-
-        if (Environment.GetEnvironmentVariable("ZZ_HEVC") is { } && xPb >= 128 && xPb < 160 && yPb >= 320 && yPb < 352)
-        {
-            System.Console.Error.WriteLine($"ZZ amvp pb {xPb},{yPb} {nPbW}x{nPbH} part {partIdx} list {list} ref {refIdx} flag {mvpFlag} A {availableA} {(short)mvA},{mvA >> 16} B {availableB} {(short)mvB},{mvB >> 16} isScaled {isScaled} count {count} -> {(short)mvp[0]},{mvp[0] >> 16} / {(short)mvp[1]},{mvp[1] >> 16}");
         }
 
         return mvpFlag < count ? mvp[mvpFlag] : 0;
