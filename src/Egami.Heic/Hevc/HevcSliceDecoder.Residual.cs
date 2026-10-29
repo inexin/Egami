@@ -404,7 +404,7 @@ internal sealed partial class HevcSliceDecoder
         int n = 1 << log2;
         int count = n * n;
         int bitDepth = c == 0 ? _sps.BitDepthLuma : _sps.BitDepthChroma;
-        bool rotate = _sps.TransformSkipRotation && n == 4 && (transformSkip || _cuBypass);
+        bool rotate = _sps.TransformSkipRotation && n == 4 && (transformSkip || _cuBypass) && predMode >= 0;
         if (_cuBypass)
         {
             Array.Copy(_coefficients, _residual, count);

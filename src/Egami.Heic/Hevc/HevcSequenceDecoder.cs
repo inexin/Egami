@@ -46,7 +46,13 @@ internal sealed class HevcSequenceDecoder(SafetyLimits limits, int parallelism =
                 _dpb.EndOfSequence();
             }
 
-            _store.Parse(nal, out _);
+            _store.Parse(nal, out HevcPictureHash? hash);
+            if (hash is not null && _current is not null && nal.Type == HevcNal.SuffixSei)
+            {
+                // The decoded picture hash of the picture whose slices came before (D.3.19).
+                _current.Hash = hash;
+            }
+
             return;
         }
 

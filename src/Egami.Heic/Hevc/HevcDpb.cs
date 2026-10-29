@@ -21,6 +21,9 @@ internal sealed class HevcDpbPicture(HevcPicture picture, int poc, int id) : INa
     /// <summary>Gets or sets the marking: <see cref="Unused"/>, <see cref="ShortTerm"/> or <see cref="LongTerm"/>.</summary>
     internal int Marking { get; set; } = ShortTerm;
 
+    /// <summary>Gets or sets the picture's decoded picture hash SEI message, or null.</summary>
+    internal HevcPictureHash? Hash { get; set; }
+
     /// <summary>Gets or sets the number of the coded video sequence the picture is in, from 0.</summary>
     internal int Sequence { get; set; }
 

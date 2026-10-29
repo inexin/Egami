@@ -115,7 +115,7 @@ public class HevcSequenceTests
         string[] files = [.. Directory.GetFiles(Path.Combine(cache, "hevc", suite), "*", SearchOption.AllDirectories)];
         string? only = Environment.GetEnvironmentVariable("EGAMI_HEVC_STREAM");
         List<string> failures = [];
-        int passed = 0, unsupported = 0;
+        int passed = 0, unsupported = 0, totalHashes = 0;
         foreach (JsonProperty stream in frames.RootElement.GetProperty("streams").EnumerateObject())
         {
             if (!stream.Value.TryGetProperty("frames", out JsonElement expected) || (only is not null && !stream.Name.Contains(only, StringComparison.Ordinal)))
@@ -129,15 +129,29 @@ public class HevcSequenceTests
                 HevcSequenceDecoder decoder = new(SafetyLimits.Default);
                 List<(HevcDpbPicture Picture, int Poc)> output = [];
                 List<string> md5s = [];
+                int hashes = 0, wrongHashes = 0;
+                void Take()
+                {
+                    foreach ((HevcDpbPicture picture, _) in output)
+                    {
+                        md5s.Add(HevcDecodeTests.Md5(picture.Picture));
+                        if (picture.Hash is { } hash)
+                        {
+                            hashes++;
+                            wrongHashes += HevcDecoder.Matches(picture.Picture, hash) ? 0 : 1;
+                        }
+                    }
+                }
+
                 foreach (ReadOnlyMemory<byte> unit in NalFraming.SplitAnnexB(File.ReadAllBytes(path)))
                 {
                     decoder.Send(HevcNal.Parse(unit.Span), output, TestContext.Current.CancellationToken);
-                    md5s.AddRange(output.Select(o => HevcDecodeTests.Md5(o.Picture.Picture)));
+                    Take();
                     output.Clear();
                 }
 
                 decoder.Flush(output, TestContext.Current.CancellationToken);
-                md5s.AddRange(output.Select(o => HevcDecodeTests.Md5(o.Picture.Picture)));
+                Take();
                 if (only is not null && Environment.GetEnvironmentVariable("EGAMI_HEVC_DUMP") is { Length: > 0 } dump)
                 {
                     // For debugging one stream: its last output pictures as raw planes.
@@ -153,9 +167,14 @@ public class HevcSequenceTests
 
                 string[] hm = [.. expected.EnumerateArray().Select(e => e.GetString()!)];
                 int first = Enumerable.Range(0, Math.Min(hm.Length, md5s.Count)).FirstOrDefault(i => hm[i] != md5s[i], -1);
+                totalHashes += hashes;
                 if (first >= 0 || hm.Length != md5s.Count)
                 {
                     failures.Add($"{stream.Name}: {md5s.Count} frames (HM {hm.Length}), first differing {first}");
+                }
+                else if (wrongHashes > 0)
+                {
+                    failures.Add($"{stream.Name}: {wrongHashes} of {hashes} picture hashes differ");
                 }
                 else
                 {
@@ -172,6 +191,7 @@ public class HevcSequenceTests
             }
         }
 
-        Assert.True(failures.Count == 0, $"{passed} bit-exact, {unsupported} unsupported, {failures.Count} failed:\n" + string.Join("\n", failures));
+        Assert.True(only is not null || totalHashes > 0, "No decoded picture hash SEI message was found.");
+        Assert.True(failures.Count == 0, $"{passed} bit-exact ({totalHashes} picture hashes checked), {unsupported} unsupported, {failures.Count} failed:\n" + string.Join("\n", failures));
     }
 }
