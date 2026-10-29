@@ -185,6 +185,13 @@ probed when the image is made and decoded at most once, on first need. Immutable
 </dd>
     </dl>
     <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Drawing.GdiPlusText.html">GdiPlusText</a></dt>
+      <dd><p>Text placement as GDI+ (System.Drawing) does it, for callers that put text in a box themselves and want it where
+Graphics.DrawString would put it. Measured from GDI+ on Windows; Egami's own layout (<a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_DrawText_System_String_Egami_Drawing_RectF_Egami_Fonts_Layout_ParagraphStyle_Egami_Drawing_VerticalAlign_">DrawText(string, RectF, ParagraphStyle, VerticalAlign)</a>)
+is unchanged.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
       <dt><a class="xref" href="Egami.Drawing.GlyphCache.html">GlyphCache</a></dt>
       <dd><p>The process-wide cache of glyph coverage masks the raster canvas draws small text from: one mask per typeface (each variation
 position its own), glyph, device em size, axis scales, subpixel phase, edging, hinting and synthesis, for glyphs up to 256

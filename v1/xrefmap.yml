@@ -16414,6 +16414,28 @@ references:
   isSpec: "True"
   fullName: Egami.Drawing.FontExtensions.ToRectF
   nameWithType: FontExtensions.ToRectF
+- uid: Egami.Drawing.GdiPlusText
+  name: GdiPlusText
+  href: api/Egami.Drawing.GdiPlusText.html
+  commentId: T:Egami.Drawing.GdiPlusText
+  fullName: Egami.Drawing.GdiPlusText
+  nameWithType: GdiPlusText
+- uid: Egami.Drawing.GdiPlusText.Baseline(Egami.Fonts.Font,Egami.Drawing.RectF,Egami.Drawing.VerticalAlign,System.Boolean)
+  name: Baseline(Font, RectF, VerticalAlign, bool)
+  href: api/Egami.Drawing.GdiPlusText.html#Egami_Drawing_GdiPlusText_Baseline_Egami_Fonts_Font_Egami_Drawing_RectF_Egami_Drawing_VerticalAlign_System_Boolean_
+  commentId: M:Egami.Drawing.GdiPlusText.Baseline(Egami.Fonts.Font,Egami.Drawing.RectF,Egami.Drawing.VerticalAlign,System.Boolean)
+  name.vb: Baseline(Font, RectF, VerticalAlign, Boolean)
+  fullName: Egami.Drawing.GdiPlusText.Baseline(Egami.Fonts.Font, Egami.Drawing.RectF, Egami.Drawing.VerticalAlign, bool)
+  fullName.vb: Egami.Drawing.GdiPlusText.Baseline(Egami.Fonts.Font, Egami.Drawing.RectF, Egami.Drawing.VerticalAlign, Boolean)
+  nameWithType: GdiPlusText.Baseline(Font, RectF, VerticalAlign, bool)
+  nameWithType.vb: GdiPlusText.Baseline(Font, RectF, VerticalAlign, Boolean)
+- uid: Egami.Drawing.GdiPlusText.Baseline*
+  name: Baseline
+  href: api/Egami.Drawing.GdiPlusText.html#Egami_Drawing_GdiPlusText_Baseline_
+  commentId: Overload:Egami.Drawing.GdiPlusText.Baseline
+  isSpec: "True"
+  fullName: Egami.Drawing.GdiPlusText.Baseline
+  nameWithType: GdiPlusText.Baseline
 - uid: Egami.Drawing.GlyphCache
   name: GlyphCache
   href: api/Egami.Drawing.GlyphCache.html
@@ -24498,6 +24520,19 @@ references:
   isSpec: "True"
   fullName: Egami.Fonts.Font.FromPoints
   nameWithType: Font.FromPoints
+- uid: Egami.Fonts.Font.GdiPlusAscent
+  name: GdiPlusAscent
+  href: api/Egami.Fonts.Font.html#Egami_Fonts_Font_GdiPlusAscent
+  commentId: P:Egami.Fonts.Font.GdiPlusAscent
+  fullName: Egami.Fonts.Font.GdiPlusAscent
+  nameWithType: Font.GdiPlusAscent
+- uid: Egami.Fonts.Font.GdiPlusAscent*
+  name: GdiPlusAscent
+  href: api/Egami.Fonts.Font.html#Egami_Fonts_Font_GdiPlusAscent_
+  commentId: Overload:Egami.Fonts.Font.GdiPlusAscent
+  isSpec: "True"
+  fullName: Egami.Fonts.Font.GdiPlusAscent
+  nameWithType: Font.GdiPlusAscent
 - uid: Egami.Fonts.Font.GetAdvance(System.UInt16)
   name: GetAdvance(ushort)
   href: api/Egami.Fonts.Font.html#Egami_Fonts_Font_GetAdvance_System_UInt16_

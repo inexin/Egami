@@ -514,6 +514,63 @@ using (RasterCanvas&lt;Rgba8&gt; canvas = image.CreateCanvas())
 
 
 
+  <a id="Egami_Fonts_Font_GdiPlusAscent_" data-uid="Egami.Fonts.Font.GdiPlusAscent*"></a>
+
+  <h3 id="Egami_Fonts_Font_GdiPlusAscent" data-uid="Egami.Fonts.Font.GdiPlusAscent">
+  GdiPlusAscent
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Font.cs/#L264"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets how far below a line's top GDI+ (System.Drawing's DrawString) puts the baseline, at this size: the cell ascent GDI+
+reports (FontFamily.GetCellAscent: the OS/2 Windows ascent, or the typographic one when the font sets USE_TYPO_METRICS).
+For a grid-fitted font (<a class="xref" href="Egami.Fonts.FontMetrics.html#Egami_Fonts_FontMetrics_GridFitted">GridFitted</a> with <a class="xref" href="Egami.Fonts.FontHinting.html#Egami_Fonts_FontHinting_Full">Full</a>, as
+<a class="xref" href="Egami.Fonts.Font.html#Egami_Fonts_Font_WithGdiPlusLook">WithGdiPlusLook()</a> sets) it is the whole pixels ClearTypeGridFit puts the first line's baseline below the line's
+rounded top: the cell ascent rounded, or the font's VDMX maximum at the size rounded to whole pixels per em when that is
+larger, as measured from GDI+.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float GdiPlusAscent { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+  <h4 class="section" id="Egami_Fonts_Font_GdiPlusAscent_examples">Examples</h4>
+  <pre><code class="lang-csharp">// Centred in a box as DrawString with StringFormat { Alignment = Center, LineAlignment = Center } puts it.
+Font label = new Font(face, 16).WithGdiPlusLook();
+var box = new RectF(0, 0, 200, 36);
+float baseline = GdiPlusText.Baseline(label, box, VerticalAlign.Center);
+using (RasterCanvas&lt;Rgb8&gt; canvas = button.CreateCanvas(CanvasOptions.GdiPlus))
+{
+    float width = label.MeasureText("Start the course").Advance;
+    canvas.DrawText("Start the course", new Vector2(MathF.Round((box.Width - width) / 2), baseline), label, Rgba8.White);
+}
+
+// The ascent it used: whole pixels for a grid-fitted font.
+float ascent = label.GdiPlusAscent;</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.invalidoperationexception">InvalidOperationException</a></dt>
+    <dd><p>The font is <code>default(Font)</code>, which has no typeface.</p>
+</dd>
+  </dl>
+
+
+
   <a id="Egami_Fonts_Font_Hinting_" data-uid="Egami.Fonts.Font.Hinting*"></a>
 
   <h3 id="Egami_Fonts_Font_Hinting" data-uid="Egami.Fonts.Font.Hinting">
@@ -1048,7 +1105,7 @@ snap to whole pixels as in 2.7.1. Defaults to true. Measuring never depends on i
 
   <h3 id="Egami_Fonts_Font_FromPoints_Egami_Fonts_Typeface_System_Single_System_Single_" data-uid="Egami.Fonts.Font.FromPoints(Egami.Fonts.Typeface,System.Single,System.Single)">
   FromPoints(Typeface, float, float)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Font.cs/#L279"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Font.cs/#L317"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Creates a font sized in points at a resolution: <code>points * dpi / 72</code> canvas units per em.</p>
@@ -1099,7 +1156,7 @@ snap to whole pixels as in 2.7.1. Defaults to true. Measuring never depends on i
 
   <h3 id="Egami_Fonts_Font_GetAdvance_System_UInt16_" data-uid="Egami.Fonts.Font.GetAdvance(System.UInt16)">
   GetAdvance(ushort)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Font.cs/#L293"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Font.cs/#L331"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets a glyph's advance at this size.</p>
@@ -1144,7 +1201,7 @@ snap to whole pixels as in 2.7.1. Defaults to true. Measuring never depends on i
 
   <h3 id="Egami_Fonts_Font_GetGlyphExtents_System_UInt16_" data-uid="Egami.Fonts.Font.GetGlyphExtents(System.UInt16)">
   GetGlyphExtents(ushort)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Font.cs/#L299"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Font.cs/#L337"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the box around a glyph's ink at this size, y up from the baseline, synthetic bold and italic included.</p>
@@ -1189,7 +1246,7 @@ snap to whole pixels as in 2.7.1. Defaults to true. Measuring never depends on i
 
   <h3 id="Egami_Fonts_Font_MeasureText_System_ReadOnlySpan_System_Char__Egami_Fonts_Shaping_ShapingOptions_" data-uid="Egami.Fonts.Font.MeasureText(System.ReadOnlySpan{System.Char},Egami.Fonts.Shaping.ShapingOptions)">
   MeasureText(ReadOnlySpan&lt;char&gt;, ShapingOptions?)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Font.cs/#L425"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Font.cs/#L463"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Measures text as <a class="xref" href="Egami.Fonts.Font.html#Egami_Fonts_Font_Shape_System_String_Egami_Fonts_Shaping_ShapingOptions_">Shape(string, ShapingOptions?)</a> lays it out, as <a class="xref" href="Egami.Fonts.Font.html#Egami_Fonts_Font_MeasureText_System_String_Egami_Fonts_Shaping_ShapingOptions_">MeasureText(string, ShapingOptions?)</a>
@@ -1251,7 +1308,7 @@ foreach (Range word in text.Split(' '))
 
   <h3 id="Egami_Fonts_Font_MeasureText_System_String_Egami_Fonts_Shaping_ShapingOptions_" data-uid="Egami.Fonts.Font.MeasureText(System.String,Egami.Fonts.Shaping.ShapingOptions)">
   MeasureText(string, ShapingOptions?)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Font.cs/#L406"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Font.cs/#L444"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Measures text as <a class="xref" href="Egami.Fonts.Font.html#Egami_Fonts_Font_Shape_System_String_Egami_Fonts_Shaping_ShapingOptions_">Shape(string, ShapingOptions?)</a> lays it out, so a measured width always equals the drawn advance.</p>
@@ -1326,7 +1383,7 @@ using (RasterCanvas&lt;Rgba8&gt; canvas = image.CreateCanvas())
 
   <h3 id="Egami_Fonts_Font_Shape_System_String_Egami_Fonts_Shaping_ShapingOptions_" data-uid="Egami.Fonts.Font.Shape(System.String,Egami.Fonts.Shaping.ShapingOptions)">
   Shape(string, ShapingOptions?)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Font.cs/#L335"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Font.cs/#L373"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Turns text into a glyph run with the full shaper (<a class="xref" href="Egami.Fonts.Shaping.TextShaper.html#Egami_Fonts_Shaping_TextShaper_Shape_System_String_Egami_Fonts_Font_Egami_Fonts_Shaping_ShapingOptions_">Shape(string, Font, ShapingOptions?)</a>): ligatures,
@@ -1396,7 +1453,7 @@ using (RasterCanvas&lt;Rgba8&gt; canvas = photo.CreateCanvas())
 
   <h3 id="Egami_Fonts_Font_WithGdiPlusLook" data-uid="Egami.Fonts.Font.WithGdiPlusLook">
   WithGdiPlusLook()
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Font.cs/#L263"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Font.cs/#L301"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>This font as System.Drawing draws ClearTypeGridFit text: the font's TrueType instructions for GDI+

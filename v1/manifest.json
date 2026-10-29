@@ -2393,6 +2393,20 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Drawing.GdiPlusText.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Drawing.GdiPlusText.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Drawing.GdiPlusText",
+      "Summary": "<p sourcefile=\"api/Egami.Drawing.GdiPlusText.yml\" sourcestartlinenumber=\"1\">Text placement as GDI+ (System.Drawing) does it, for callers that put text in a box themselves and want it where\nGraphics.DrawString would put it. Measured from GDI+ on Windows; Egami's own layout (<xref href=\"Egami.Drawing.Canvas.DrawText(System.String%2cEgami.Drawing.RectF%2cEgami.Fonts.Layout.ParagraphStyle%2cEgami.Drawing.VerticalAlign)\" data-throw-if-not-resolved=\"false\"></xref>)\nis unchanged.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.Drawing.GlyphCache.yml",
       "output": {
         ".html": {

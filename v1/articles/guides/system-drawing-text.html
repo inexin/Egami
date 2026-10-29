@@ -166,6 +166,35 @@ mean per-pixel difference is 0.67 levels out of 255 on black and 0.38 on blue, a
 Some fonts carry black-and-white bitmaps for small sizes, such as Calibri at 12, 13, 15, 16, 17 and 19 pixels, and GDI+ draws
 those instead of the outlines. <code>Font.WithGdiPlusLook()</code> turns on <code>Font.EmbeddedBitmaps</code>, so Egami does too: Calibri's glyphs at
 those sizes equal GDI+'s pixel for pixel.</p>
+<h3 id="placing-text-in-a-box">Placing text in a box</h3>
+<p><code>DrawString</code> with a layout rectangle and <code>StringFormat.LineAlignment</code> places a line by GDI+'s own rule, which can differ from
+centring on the font's ascent and descent by more than a pixel. <code>GdiPlusText.Baseline</code> gives the baseline it uses, for one line
+in a box:</p>
+<ul>
+<li>The line is a cell tall: the ascent and descent <code>FontFamily.GetCellAscent</code> and <code>GetCellDescent</code> report (the OS/2 Windows
+metrics, or the typographic ones when the font sets USE_TYPO_METRICS), plus 1/8 em with the default <code>StringFormat</code>. GDI+'s
+line spacing does not count for one line.</li>
+<li><code>LineAlignment</code> puts that cell at the box's top, middle or bottom.</li>
+<li>The baseline is <code>Font.GdiPlusAscent</code> below the cell's top. With <code>ClearTypeGridFit</code> the top is first rounded to a whole pixel,
+and the ascent is whole pixels too: the cell ascent rounded, or the font's VDMX maximum at the size when that is larger. For
+Trebuchet MS at 16 pixels that is 17 pixels, against a cell ascent of 15.02.</li>
+</ul>
+<pre><code class="lang-csharp">// Centred in a box as DrawString with StringFormat { Alignment = Center, LineAlignment = Center } puts it.
+Font label = new Font(face, 16).WithGdiPlusLook();
+var box = new RectF(0, 0, 200, 36);
+float baseline = GdiPlusText.Baseline(label, box, VerticalAlign.Center);
+using (RasterCanvas&lt;Rgb8&gt; canvas = button.CreateCanvas(CanvasOptions.GdiPlus))
+{
+    float width = label.MeasureText(&quot;Start the course&quot;).Advance;
+    canvas.DrawText(&quot;Start the course&quot;, new Vector2(MathF.Round((box.Width - width) / 2), baseline), label, Rgba8.White);
+}
+
+// The ascent it used: whole pixels for a grid-fitted font.
+float ascent = label.GdiPlusAscent;
+</code></pre>
+<p>Against GDI+, 9,720 of 9,720 baselines are equal (10 fonts, 11 to 24 pixels, nine box heights at three fractional positions,
+both formats and all three alignments), and the button above needs no vertical shift to match. Egami's own
+<code>Canvas.DrawText</code> with a rectangle and <code>VerticalAlign</code> keeps its own centring.</p>
 <h2 id="shapes">Shapes</h2>
 <p>Two canvas settings match what <code>Graphics</code> does with shapes at its defaults, <code>SmoothingMode.AntiAlias</code> and
 <code>PixelOffsetMode.None</code>. <code>CanvasOptions.GdiPlus</code> sets both.</p>
