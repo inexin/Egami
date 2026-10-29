@@ -126,6 +126,13 @@ public enum InterpolationSpace
 
     /// <summary>Oklch, Oklab's polar form: lightness, chroma and hue mix separately, the hue around the circle by a <see cref="HueMethod"/>.</summary>
     Oklch,
+
+    /// <summary>
+    /// As GDI+'s gamma-corrected gradients (<c>LinearGradientBrush.GammaCorrection</c>), measured on Windows in 2.7.6: each pair of
+    /// stops is cut into 16 equal parts, the 17 colors where they meet are mixed in light of gamma 2.2 and rounded to 8 bits, and the
+    /// gradient runs straight through them in the stored encoded values. Alpha mixes straight.
+    /// </summary>
+    GdiPlusGamma,
 }
 
 /// <summary>
@@ -151,6 +158,12 @@ public sealed record class GradientInterpolation
 
     /// <summary>Gets mixing in Oklab.</summary>
     public static GradientInterpolation Oklab { get; } = new(InterpolationSpace.Oklab, HueMethod.Shorter);
+
+    /// <summary>Gets GDI+'s gamma-corrected mixing (<see cref="InterpolationSpace.GdiPlusGamma"/>).</summary>
+    /// <example>
+    /// <code language="csharp" source="../../tests/Egami.DocSamples/SystemDrawing.cs" region="gdiplus-gradients"/>
+    /// </example>
+    public static GradientInterpolation GdiPlusGamma { get; } = new(InterpolationSpace.GdiPlusGamma, HueMethod.Shorter);
 
     /// <summary>Gets the color space.</summary>
     public InterpolationSpace Space { get; }
