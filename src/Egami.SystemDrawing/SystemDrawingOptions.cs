@@ -34,4 +34,16 @@ public static class SystemDrawingOptions
         get => s_argbDrawing;
         set => s_argbDrawing = Enum.IsDefined(value) ? value : throw new ArgumentOutOfRangeException(nameof(value), value, null);
     }
+
+    /// <summary>
+    /// Gets or sets where fonts that are not installed come from: a finder that gives a face for a family name and style, or
+    /// <see langword="null"/> (the default) for none, so a missing family falls back as in System.Drawing. Set it to Egami.Fonts.Substitutes'
+    /// <c>SubstituteFonts.Find</c> for metric-compatible stand-ins (Liberation Sans for Arial, Liberation Serif for Times New Roman,
+    /// Liberation Mono for Courier New, Carlito for Calibri, Caladea for Cambria), which keep text's line breaks and report the
+    /// requested name.
+    /// </summary>
+    /// <example>
+    /// <code language="csharp" source="../../tests/Egami.DocSamples/SystemDrawingPackage.cs" region="fonts"/>
+    /// </example>
+    public static Func<string, Egami.Fonts.FontStyle, Egami.Fonts.Typeface?>? FontSubstitutes { get; set; }
 }

@@ -2635,6 +2635,8 @@ static Egami.SystemDrawing.SystemBrushes.WindowFrame.get -> Egami.SystemDrawing.
 static Egami.SystemDrawing.SystemBrushes.WindowText.get -> Egami.SystemDrawing.Brush!
 static Egami.SystemDrawing.SystemDrawingOptions.ArgbDrawing.get -> Egami.SystemDrawing.ArgbDrawing
 static Egami.SystemDrawing.SystemDrawingOptions.ArgbDrawing.set -> void
+static Egami.SystemDrawing.SystemDrawingOptions.FontSubstitutes.get -> System.Func<string!, Egami.Fonts.FontStyle, Egami.Fonts.Typeface?>?
+static Egami.SystemDrawing.SystemDrawingOptions.FontSubstitutes.set -> void
 static Egami.SystemDrawing.SystemFonts.CaptionFont.get -> Egami.SystemDrawing.Font!
 static Egami.SystemDrawing.SystemFonts.DefaultFont.get -> Egami.SystemDrawing.Font!
 static Egami.SystemDrawing.SystemFonts.DialogFont.get -> Egami.SystemDrawing.Font!
