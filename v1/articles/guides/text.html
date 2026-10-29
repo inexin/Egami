@@ -251,8 +251,8 @@ using (RasterCanvas&lt;Rgba8&gt; canvas = image.CreateCanvas(new CanvasOptions {
 <li><code>Font.Subpixel</code> (on by default) keeps glyph origins at quarter pixels horizontally, each quarter its own cached mask, so small
 text is evenly spaced; off, origins snap to whole pixels as in 2.7.1. Vertical positions always snap to whole pixels.</li>
 <li><code>Font.Hinting</code> = <code>FontHinting.Light</code> snaps the baseline, x-height and cap-height zones (a CFF font's blue zones, else zones
-measured from the face's own glyphs) to whole pixels, up to 48 pixels per em; x values and advances never move. There is no
-TrueType bytecode hinting.</li>
+measured from the face's own glyphs) to whole pixels, up to 48 pixels per em; x values and advances never move.
+<code>FontHinting.Full</code> runs the font's TrueType instructions instead (see <a href="#truetype-hinting">TrueType hinting</a>).</li>
 <li><code>Font.Edging</code> picks <code>FontEdging.Antialias</code> (the default), <code>Alias</code> (one bit, pixel centres inside the outline) or <code>Lcd</code>: three
 samples per pixel along the canvas's <code>CanvasOptions.PixelGeometry</code>, filtered and blended per channel. LCD text draws only onto
 an 8-bit RGB canvas outside layers with a solid source-over paint; anything else falls back to grayscale with one
