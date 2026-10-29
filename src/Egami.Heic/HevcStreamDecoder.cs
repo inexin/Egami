@@ -27,6 +27,9 @@ namespace Egami.Heic;
 /// its size against the context's <see cref="EgamiContext.Limits"/>. An instance is not thread-safe.
 /// </para>
 /// </remarks>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Heic.cs" region="stream"/>
+/// </example>
 public sealed class HevcStreamDecoder : IDisposable
 {
     private readonly HevcSequenceDecoder _decoder;
@@ -39,6 +42,9 @@ public sealed class HevcStreamDecoder : IDisposable
     /// <summary>Starts a stream.</summary>
     /// <param name="options">How to decode; <see cref="HevcDecoderOptions.Default"/> when null.</param>
     /// <param name="context">The threads and limits to use; <see cref="EgamiContext.Default"/> when null.</param>
+    /// <example>
+    /// <code language="csharp" source="../../tests/Egami.DocSamples/Heic.cs" region="stream"/>
+    /// </example>
     public HevcStreamDecoder(HevcDecoderOptions? options = null, EgamiContext? context = null)
     {
         _options = options ?? HevcDecoderOptions.Default;
@@ -240,6 +246,9 @@ public sealed class HevcStreamDecoder : IDisposable
 }
 
 /// <summary>How an <see cref="HevcStreamDecoder"/> decodes.</summary>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Heic.cs" region="stream"/>
+/// </example>
 public sealed record HevcDecoderOptions
 {
     /// <summary>Gets the default options.</summary>
@@ -259,6 +268,9 @@ public sealed record HevcDecoderOptions
 }
 
 /// <summary>What an HEVC picture's coded slice NAL units are (nal_unit_type, H.265 Table 7-1).</summary>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Heic.cs" region="stream"/>
+/// </example>
 public enum HevcPictureKind
 {
     /// <summary>An IDR picture: decodes on its own and starts a coded video sequence.</summary>
@@ -290,5 +302,8 @@ public enum HevcPictureKind
 /// <param name="Chroma">Its chroma format.</param>
 /// <param name="TemporalId">Its temporal sub-layer (TemporalId).</param>
 /// <param name="Color">Its colour from the sequence's VUI, or the HD or SD default when the VUI leaves it unspecified.</param>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Heic.cs" region="stream"/>
+/// </example>
 public readonly record struct HevcFrameInfo(HevcPictureKind Kind, bool IsIrap, int Poc, int Width, int Height, int BitDepth, ChromaFormat Chroma,
     int TemporalId, ColorCodePoints Color);
