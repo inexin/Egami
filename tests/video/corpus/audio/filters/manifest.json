@@ -3,7 +3,8 @@
   "inputs": {
     "tone": "aevalsrc='0.5*sin(2*PI*440*t)+0.1*sin(2*PI*3100*t)|0.4*sin(2*PI*997*t)+0.05*sin(2*PI*7000*t)':s=48000:d=0.8",
     "tone2": "aevalsrc='0.3*sin(2*PI*660*t)|0.35*sin(2*PI*1320*t+1)':s=48000:d=0.6",
-    "voice": "aevalsrc='(0.4+0.2*sin(2*PI*3*t))*(sin(2*PI*220*t)+0.3*sin(2*PI*1760*t))/1.3':s=48000:d=0.8:c=mono"
+    "voice": "aevalsrc='(0.4+0.2*sin(2*PI*3*t))*(sin(2*PI*220*t)+0.3*sin(2*PI*1760*t))/1.3':s=48000:d=0.8:c=mono",
+    "noise": "anoisesrc=d=0.8:c=white:r=48000:a=0.25:seed=9,aformat=channel_layouts=stereo"
   },
   "references": {
     "gain-minus6db": {
@@ -80,6 +81,60 @@
         "tone"
       ],
       "filter": "adelay=delays=4800S|12000S"
+    },
+    "highpass-80": {
+      "inputs": [
+        "noise"
+      ],
+      "filter": "highpass=f=80:p=2:t=q:w=0.70710678:transform=tdii:precision=f64"
+    },
+    "lowpass-3000": {
+      "inputs": [
+        "noise"
+      ],
+      "filter": "lowpass=f=3000:p=2:t=q:w=0.70710678:transform=tdii:precision=f64"
+    },
+    "bandpass-1000": {
+      "inputs": [
+        "noise"
+      ],
+      "filter": "bandpass=f=1000:t=q:w=2:transform=tdii:precision=f64"
+    },
+    "bandreject-1000": {
+      "inputs": [
+        "noise"
+      ],
+      "filter": "bandreject=f=1000:t=q:w=2:transform=tdii:precision=f64"
+    },
+    "allpass-1500": {
+      "inputs": [
+        "noise"
+      ],
+      "filter": "allpass=f=1500:t=q:w=0.7:transform=tdii:precision=f64"
+    },
+    "equalizer-1000": {
+      "inputs": [
+        "noise"
+      ],
+      "filter": "equalizer=f=1000:t=q:w=1.5:g=6:transform=tdii:precision=f64"
+    },
+    "equalizer-octave": {
+      "inputs": [
+        "noise"
+      ],
+      "filter": "equalizer=f=2000:t=o:w=1:g=-8:transform=tdii:precision=f64"
+    },
+    "bass-200": {
+      "inputs": [
+        "noise"
+      ],
+      "filter": "bass=f=200:t=q:w=0.5:g=6:transform=tdii:precision=f64"
+    },
+    "treble-4000": {
+      "inputs": [
+        "noise"
+      ],
+      "filter": "treble=f=4000:t=q:w=0.5:g=-5:transform=tdii:precision=f64"
     }
   }
 }

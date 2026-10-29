@@ -89,6 +89,22 @@ API review come in later stages.
   `V_MS/VFW/FOURCC`), and the AVI writer stores `V_FFV1` tracks, so FFV1 remuxes between Matroska and AVI. Version 3 tracks
   give `BitDepth` and `ChromaFormat` from the record. `CodecHeaders.Describe` lists FFV1 parameters and slice headers.
 
+V9.1 stage B: EQ and dynamics in `Egami.Video.Audio.Filters` (Build Plan tasks 8 to 11). All additive.
+
+- `Biquad` with the eight Audio EQ Cookbook `BiquadKind`s (low and high pass, band pass, notch, all pass, peaking, low and high
+  shelf), its width a Q or, with `Biquad.FromBandwidth`, octaves; `Butterworth` low and high pass of order 2 to 8; and
+  `ParametricEqualizer` of `EqualizerBand`s. Transposed direct form II with double state, in place.
+- `Compressor` (threshold, ratio, soft knee, attack, release, makeup, `LevelDetection.Rms` or `Peak`) with an optional
+  sidechain (`Sidechain`, `SendSidechain`, `CompleteSidechain`) for ducking, and `Gate` (threshold, ratio, range).
+- `Limiter` with a 5 ms lookahead that keeps every sample under its ceiling, and optional `TruePeak` detection by 4x
+  oversampling (BS.1770).
+- Gates: every biquad kind, Butterworth order and the parametric EQ within 0.1 dB of the analytic curve; low and high pass, band
+  pass, band reject, all pass, equalizer (Q and octave widths), bass and treble within -90 dBFS RMS of FFmpeg's output (new
+  references from `tools/video/make-audio-filter-references.py`; FFmpeg's shelf `w=0.5` is the cookbook's Q of 0.7071). On
+  48 kHz stereo a gain, high pass and 3-band EQ chain runs 790 times real time (gate 200), an order 8 Butterworth 800 times, and
+  compressor, gate and true-peak limiter 134 times (`AudioFilterBenchmarks`). A steady EQ and dynamics chain allocates only
+  the chain's frame object (128 bytes per frame).
+
 V9.1 stage A: streaming audio filters in `Egami.Video.Audio.Filters` (Build Plan tasks 1 to 7). All additive; the stage A
 API review was accepted on 2026-10-28 with no API changes, and the docs now say that filter times are the frames' own
 timestamps.

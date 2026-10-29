@@ -25,6 +25,7 @@ INPUTS = {
     "tone": "aevalsrc='0.5*sin(2*PI*440*t)+0.1*sin(2*PI*3100*t)|0.4*sin(2*PI*997*t)+0.05*sin(2*PI*7000*t)':s=48000:d=0.8",
     "tone2": "aevalsrc='0.3*sin(2*PI*660*t)|0.35*sin(2*PI*1320*t+1)':s=48000:d=0.6",
     "voice": "aevalsrc='(0.4+0.2*sin(2*PI*3*t))*(sin(2*PI*220*t)+0.3*sin(2*PI*1760*t))/1.3':s=48000:d=0.8:c=mono",
+    "noise": "anoisesrc=d=0.8:c=white:r=48000:a=0.25:seed=9,aformat=channel_layouts=stereo",
 }
 
 # name: (inputs, filter). One input runs through -af, two through -filter_complex.
@@ -41,6 +42,17 @@ REFERENCES = {
     "pan-mono-centre": (["voice"], "pan=stereo|c0=0.70710678*c0|c1=0.70710678*c0"),
     "mix-weighted": (["tone", "tone2"], "amix=inputs=2:weights=1 0.5:normalize=0:duration=longest"),
     "delay-per-channel": (["tone"], "adelay=delays=4800S|12000S"),
+    # Stage B: the Audio EQ Cookbook biquads, in transposed direct form II with double state like Egami's. FFmpeg's shelves
+    # take a Q 1/sqrt(2) times the cookbook's, so its w=0.5 is the cookbook's Q of 0.7071.
+    "highpass-80": (["noise"], "highpass=f=80:p=2:t=q:w=0.70710678:transform=tdii:precision=f64"),
+    "lowpass-3000": (["noise"], "lowpass=f=3000:p=2:t=q:w=0.70710678:transform=tdii:precision=f64"),
+    "bandpass-1000": (["noise"], "bandpass=f=1000:t=q:w=2:transform=tdii:precision=f64"),
+    "bandreject-1000": (["noise"], "bandreject=f=1000:t=q:w=2:transform=tdii:precision=f64"),
+    "allpass-1500": (["noise"], "allpass=f=1500:t=q:w=0.7:transform=tdii:precision=f64"),
+    "equalizer-1000": (["noise"], "equalizer=f=1000:t=q:w=1.5:g=6:transform=tdii:precision=f64"),
+    "equalizer-octave": (["noise"], "equalizer=f=2000:t=o:w=1:g=-8:transform=tdii:precision=f64"),
+    "bass-200": (["noise"], "bass=f=200:t=q:w=0.5:g=6:transform=tdii:precision=f64"),
+    "treble-4000": (["noise"], "treble=f=4000:t=q:w=0.5:g=-5:transform=tdii:precision=f64"),
 }
 
 

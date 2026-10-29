@@ -212,4 +212,85 @@ public class AudioFilters
         Assert.Equal(115200, Drain(tempo));
         Assert.Equal(115200, Drain(speed));
     }
+
+    [Fact]
+    public void Equalizer()
+    {
+        List<AudioFrame> frames = Music();
+
+        #region audio-equalizer
+        // Rumble out below 80 Hz (24 dB per octave), a little warmth, less harshness and some air.
+        using AudioFilterChain chain = new AudioFilterChain(48000, ChannelLayout.Stereo)
+            .Add(new Butterworth(BiquadKind.HighPass, 80, order: 4))
+            .Add(new ParametricEqualizer(
+                new EqualizerBand(BiquadKind.LowShelf, 150, Gain: 2),
+                new EqualizerBand(BiquadKind.Peaking, 3000, Gain: -4, Q: 1.5),
+                new EqualizerBand(BiquadKind.HighShelf, 10000, Gain: 3)))
+            .Add(Biquad.FromBandwidth(BiquadKind.Notch, 50, octaves: 0.1)); // mains hum
+        #endregion
+        int samples = 0;
+        foreach (AudioFrame frame in frames)
+        {
+            chain.Send(frame);
+            frame.Dispose();
+            samples += Drain(chain);
+        }
+
+        Assert.Equal(3 * 48000, samples);
+    }
+
+    [Fact]
+    public void Dynamics()
+    {
+        List<AudioFrame> frames = Music();
+
+        #region audio-dynamics
+        // A voice chain: gate the room noise, even out the level 4:1 above -20 dBFS, then keep true peaks under -1 dBTP.
+        using AudioFilterChain chain = new AudioFilterChain(48000, ChannelLayout.Stereo)
+            .Add(new Gate { Threshold = -50, Range = -20 })
+            .Add(new Compressor { Threshold = -20, Ratio = 4, Makeup = 4 })
+            .Add(new Limiter { Ceiling = -1, TruePeak = true });
+        #endregion
+        int samples = 0;
+        foreach (AudioFrame frame in frames)
+        {
+            chain.Send(frame);
+            frame.Dispose();
+            samples += Drain(chain);
+        }
+
+        chain.Flush();
+        samples += Drain(chain);
+        Assert.Equal(3 * 48000, samples);
+    }
+
+    [Fact]
+    public void Ducking()
+    {
+        List<AudioFrame> music = Music();
+        List<AudioFrame> voice = [.. TestSources.Sine(TestAudioFormat.Default, MediaTime.FromSeconds(3), 220)];
+        int samples = 0;
+
+        #region audio-ducking
+        // Music ducks under a voice-over: the voice's level drives the music's compressor.
+        using Compressor ducker = new() { Sidechain = true, Threshold = -30, Ratio = 8, Release = MediaTime.FromSeconds(0.4) };
+        for (int i = 0; i < music.Count; i++)
+        {
+            ducker.SendSidechain(voice[i]);
+            ducker.Send(music[i]);
+            while (ducker.TryReceive(out AudioFrame? output))
+            {
+                samples += output.SampleCount; // mix it with the voice in an AudioMixer here
+                output.Dispose();
+            }
+        }
+
+        ducker.CompleteSidechain();
+        ducker.Flush();
+        #endregion
+        samples += Drain(ducker);
+        music.ForEach(f => f.Dispose());
+        voice.ForEach(f => f.Dispose());
+        Assert.Equal(3 * 48000, samples);
+    }
 }

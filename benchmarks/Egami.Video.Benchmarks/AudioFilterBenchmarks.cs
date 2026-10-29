@@ -9,7 +9,7 @@ namespace Egami.Video.Benchmarks;
 /// <summary>
 /// The V9.1 speed gates (Design Q15): a gain chain at least 200 times real time per core and tempo at least 20 times, on 48 kHz
 /// stereo. One operation filters 60 s of pink noise held in memory as float frames, so real time is 60 s divided by the mean.
-/// Stage B adds the EQ to the gain chain.
+/// Stage B adds a gain and EQ chain (the same 200 times gate) and the dynamics.
 /// </summary>
 [MemoryDiagnoser]
 public class AudioFilterBenchmarks
@@ -33,6 +33,36 @@ public class AudioFilterBenchmarks
             .Add(new AudioFade(FadeDirection.In, MediaTime.Zero, MediaTime.FromSeconds(2), FadeCurve.EqualPower))
             .Add(new Pan { Balance = 0.2 })
             .Add(new Gain { Envelope = new GainEnvelope(new Keyframe(MediaTime.Zero, 0), new Keyframe(MediaTime.FromSeconds(60), -6)) });
+        return Run(chain);
+    }
+
+    [Benchmark(Description = "Gain, high pass, 3-band EQ, 60 s of 48 kHz stereo")]
+    public long GainEqChain()
+    {
+        using AudioFilterChain chain = new AudioFilterChain(48000, ChannelLayout.Stereo)
+            .Add(new Gain(-3))
+            .Add(new Biquad(BiquadKind.HighPass, 80))
+            .Add(new ParametricEqualizer(
+                new EqualizerBand(BiquadKind.LowShelf, 150, 3),
+                new EqualizerBand(BiquadKind.Peaking, 2500, -4, 1.5),
+                new EqualizerBand(BiquadKind.HighShelf, 8000, 2)));
+        return Run(chain);
+    }
+
+    [Benchmark(Description = "Butterworth order 8 low pass, 60 s of 48 kHz stereo")]
+    public long Butterworth8()
+    {
+        using Butterworth filter = new(BiquadKind.LowPass, 5000, 8);
+        return Run(filter);
+    }
+
+    [Benchmark(Description = "Compressor, gate, true-peak limiter, 60 s of 48 kHz stereo")]
+    public long Dynamics()
+    {
+        using AudioFilterChain chain = new AudioFilterChain(48000, ChannelLayout.Stereo)
+            .Add(new Compressor { Makeup = 6 })
+            .Add(new Gate())
+            .Add(new Limiter { TruePeak = true });
         return Run(chain);
     }
 
