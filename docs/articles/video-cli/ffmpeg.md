@@ -91,8 +91,8 @@ and atempo is still an edit (below). loudnorm is linear in two passes unless `li
 `start_periods=1` with `stop_periods=1` (both ends) or `-1` (every pause too).
 
 ```sh
-egami-video ffmpeg -i in.flac -af "highpass=f=80,volume=-3dB" out.flac
-egami-video ffmpeg -i in.mkv -af loudnorm=I=-16:TP=-1.5 out.mkv
+egami-video ffmpeg -i in.mkv -af "highpass=f=80,volume=-3dB" filtered.mkv
+egami-video ffmpeg -i in.mkv -af loudnorm=I=-16:TP=-1.5 loud.mkv
 ```
 
 ## Editing filters

@@ -255,7 +255,7 @@ egami-video audio sound.flac --bitrate 96k -o sound.opus
 egami-video audio in.mp4 --bitrate 64k -o opus-audio.webm
 egami-video audio sound.flac -o sound.m4a
 egami-video audio sound.wav --sample-format s24 -o sound.aiff
-egami-video audio talk.wav --trim-silence --normalize podcast -o talk.flac
+egami-video audio sound.wav --trim-silence --normalize podcast -o talk.flac
 egami-video audio in.mkv --af "highpass=f=80,acompressor=threshold=-20dB:ratio=3" --fade-out 2 -o cleaner.mkv
 ```
 
