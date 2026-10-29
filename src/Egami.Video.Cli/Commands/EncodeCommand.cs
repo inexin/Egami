@@ -35,7 +35,8 @@ internal static class EncodeCommand
         Option<string?> bitrate = new("--bitrate", "-b") { Description = "VP8, VP9 and AV1: aim at this average bitrate instead of a quality, such as 2000k or 1.5M.", HelpName = "bits/s" };
         Option<string?> size = new("--size") { Description = "Fit every frame into this size, keeping its shape, with black around it; images take the first image's size by default.", HelpName = "WxH" };
         Option<string?> chroma = new("--chroma") { Description = "Chroma subsampling for frames made from images: 420 (the default), 422 or 444.", HelpName = "420|422|444" };
-        Option<string?> audio = new("--audio") { Description = "Add the first audio track of this file, copied without decoding, up to the end of the video.", HelpName = "file" };
+        Option<string?> audio = new("--audio") { Description = "Add the first audio track of this file, copied without decoding (or filtered and encoded again with the audio filter options), up to the end of the video.", HelpName = "file" };
+        AudioCommand.FilterOptions filters = new();
         Command command = new("encode", "Make a clip from images, an image sequence or a Y4M stream, with Motion JPEG, VP8 or uncompressed video, and audio from another file.");
         command.Arguments.Add(inputs);
         command.Options.Add(output);
@@ -48,6 +49,7 @@ internal static class EncodeCommand
         command.Options.Add(size);
         command.Options.Add(chroma);
         command.Options.Add(audio);
+        filters.AddTo(command);
         EncoderExtras.AddTo(command);
         command.SetAction(result =>
         {
@@ -62,8 +64,18 @@ internal static class EncodeCommand
                 Size = result.GetValue(size) is { } s ? ParseSize(s) : null,
                 Chroma = result.GetValue(chroma) is { } c ? ParseChroma(c) : null,
                 Audio = result.GetValue(audio),
+                AudioFilters = filters.Plan(result) is { IsEmpty: false } plan ? plan : null,
                 Extras = EncoderExtras.Parse(result),
             };
+            if (settings.AudioFilters is { } given && settings.Audio is null)
+            {
+                throw new UsageException($"{given.Describe()} filters the sound; give --audio with the file it comes from.");
+            }
+
+            if (settings.AudioFilters is { RemovesSilence: true })
+            {
+                throw new UsageException("--trim-silence would put the sound out of step with the video; use egami-video audio on the sound alone.");
+            }
             Source source = Source.Find(session, result.GetValue(inputs) ?? []);
             InputFile first = source.Display;
             MediaTarget target = MediaIO.Resolve(session, first, OutputTemplate.Parse(text), result.GetValue(format), "mkv");
@@ -118,6 +130,14 @@ internal static class EncodeCommand
                 ?? throw new UsageException($"--audio {settings.Audio} has no audio track; it has {TrackSelection.Describe(sound.Tracks)}.");
         }
 
+        using AudioCommand.AudioRecoder? recoder = audioTrack is not null && settings.AudioFilters is { } plan
+            ? AudioCommand.Filtered(session, settings.Audio!, () => File.OpenRead(session.ResolvePath(settings.Audio!)), audioTrack, plan, target.Container)
+            : null;
+        if (recoder is not null && settings.AudioFilters!.ChangesLength)
+        {
+            session.Warn($"{settings.AudioFilters.Describe()} changes the sound's length, so it no longer lines up with the video.");
+        }
+
         using IEnumerator<VideoFrame> frames = source.Frames(session, settings).GetEnumerator();
         MediaIO.Write(session, target.Path, stream =>
         {
@@ -132,7 +152,7 @@ internal static class EncodeCommand
                 Effort = settings.Effort,
                 RateControl = settings.Bitrate is null ? RateControlMode.Quality : RateControlMode.Bitrate,
                 Bitrate = settings.Bitrate,
-                OtherTracks = audioTrack is null ? [] : [audioTrack with { Number = 1 }],
+                OtherTracks = audioTrack is null ? [] : [(recoder?.Encoder.Track ?? audioTrack) with { Number = 1, Language = audioTrack.Language, Name = audioTrack.Name }],
             };
             options = settings.Extras.Apply(options);
             MediaTime? duration = source.Count is { } count ? new MediaTime(count, frameRate.Reciprocal()) : source.Duration;
@@ -169,7 +189,7 @@ internal static class EncodeCommand
                     progress.Frame(time);
                     if (sound is not null)
                     {
-                        waiting = CopyAudio(sound, audioTrack!.Number, writer, waiting, end);
+                        waiting = CopyAudio(sound, audioTrack!.Number, writer, waiting, end, recoder);
                     }
                 }
 
@@ -178,6 +198,7 @@ internal static class EncodeCommand
                     throw new UsageException($"{source.Display.Display}: no frames to encode.");
                 }
 
+                recoder?.Finish(p => Write(writer, p));
                 writer.Finish();
                 progress.Finish();
                 session.Info($"{index} frames at {frameRate} fps, {TimeValue.Format(end)}");
@@ -190,7 +211,7 @@ internal static class EncodeCommand
     }
 
     /// <summary>Copies the audio packets that start before <paramref name="until"/>; returns the first one that does not.</summary>
-    private static EncodedPacket? CopyAudio(IDemuxer sound, int track, VideoWriter writer, EncodedPacket? waiting, MediaTime until)
+    private static EncodedPacket? CopyAudio(IDemuxer sound, int track, VideoWriter writer, EncodedPacket? waiting, MediaTime until, AudioCommand.AudioRecoder? recoder)
     {
         while ((waiting ?? sound.ReadPacket()) is { } packet)
         {
@@ -208,12 +229,24 @@ internal static class EncodeCommand
 
             using (packet)
             {
-                packet.TrackNumber = 1;
-                writer.WritePacket(packet);
+                if (recoder is not null)
+                {
+                    recoder.Send(packet, p => Write(writer, p));
+                    continue;
+                }
+
+                Write(writer, packet);
             }
         }
 
         return null;
+    }
+
+    /// <summary>Writes an audio packet as the output's track 1.</summary>
+    private static void Write(VideoWriter writer, EncodedPacket packet)
+    {
+        packet.TrackNumber = 1;
+        writer.WritePacket(packet);
     }
 
     internal static VideoCodec FindCodec(VideoSession session, string? name, ContainerFormat container)
@@ -313,6 +346,9 @@ internal static class EncodeCommand
         public ChromaFormat? Chroma { get; init; }
 
         public string? Audio { get; init; }
+
+        /// <summary>Gets the filters the audio runs through, or <see langword="null"/> to copy it.</summary>
+        public AudioFilterPlan? AudioFilters { get; init; }
 
         public VideoCodec? Codec { get; init; }
 

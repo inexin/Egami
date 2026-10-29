@@ -17,6 +17,12 @@ changes that break code come only in a new major version.
 
 ## Egami.Video.Cli, unreleased
 
+- V9.1 stage D (Build Plan tasks 16 to 19): `egami-video audio` and `encode` (for its `--audio`) take `--gain`, `--fade-in`,
+  `--fade-out`, `--tempo`, `--normalize` (ebu, atsc, streaming, podcast or LUFS, two passes), `--trim-silence` (refused with
+  video) and `--af`, which parses ffmpeg's `-af` syntax for volume, afade, atempo, adelay, apad, atrim, asetpts, highpass,
+  lowpass, bandpass, bandreject, allpass, equalizer, bass, treble, acompressor, agate, alimiter, loudnorm and silenceremove;
+  `run` takes them all but the silence cut for the audio it copies, and ffmpeg mode turns an `-af` chain of them into
+  `audio --af`. A new `afilters` fuzz target runs random chains.
 - FFV1 in egami-video: `encode` and `run` take `--codec ffv1` with `--slices`, `--no-slice-crc`, `--coder` and `--context`, and
   `--keyframe-interval` for every codec; `egami-video verify` (also an MCP tool) checks FFV1 files' slice and configuration CRCs
   without decoding; `info` names FFV1 tracks; ffmpeg mode takes `-c:v ffv1` with `-level 3`, `-coder`, `-context`, `-slices`,

@@ -140,6 +140,12 @@
 => spectrum in.flac -o spec.png --channels stacked --scale log | ffmpeg -i in.flac -lavfi showspectrumpic=mode=separate:fscale=log:legend=0 spec.png
 !! -vf eq | ffmpeg -i in.mkv -vf eq=contrast=2,blackdetect -f null -
 !! -af loudnorm | ffmpeg -i in.mkv -af loudnorm=print_format=json -f null -
+=> audio in.flac -o out.flac --af highpass=f=80,volume=-3dB | ffmpeg -i in.flac -af highpass=f=80,volume=-3dB out.flac
+=> audio in.wav -o out.wav --af silenceremove=start_periods=1:stop_periods=-1:stop_threshold=-45dB | ffmpeg -i in.wav -af silenceremove=start_periods=1:stop_periods=-1:stop_threshold=-45dB out.wav
+=> audio in.mkv -o out.mkv --af loudnorm=I=-16:TP=-1.5 | ffmpeg -i in.mkv -af loudnorm=I=-16:TP=-1.5 out.mkv
+=> audio in.mp4 -o out.mkv --codec flac --af acompressor=threshold=-20dB:ratio=4,alimiter=limit=0.9 | ffmpeg -i in.mp4 -c:a flac -af acompressor=threshold=-20dB:ratio=4,alimiter=limit=0.9 out.mkv
+!! -af aecho | ffmpeg -i in.flac -af aecho=0.8:0.9:1000:0.3 out.flac
+!! -af highpass with -vf | ffmpeg -i in.mkv -vf hflip -af highpass=f=80 out.mkv
 !! blackdetect=0.5 | ffmpeg -i in.mkv -vf blackdetect=0.5 -f null -
 !! cropdetect option reset | ffmpeg -i in.mkv -vf cropdetect=reset=1 -f null -
 !! -f lavfi -i mandelbrot | ffmpeg -f lavfi -i mandelbrot -t 5 fractal.mkv

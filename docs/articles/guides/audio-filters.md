@@ -125,3 +125,10 @@ with the codec you give, else their own when the container holds it, else the co
 timestamps run on without gaps, so use it on audio alone, not on a track that has to stay in step with video.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/AudioFilters.cs#audio-silence)]
+
+## On the command line
+
+`egami-video audio` runs these filters with `--gain`, `--fade-in`, `--fade-out`, `--tempo`, `--normalize`, `--trim-silence`
+and `--af`, which takes ffmpeg's `-af` syntax (`highpass=f=80,acompressor=threshold=-20dB:ratio=3,loudnorm`); `encode` and
+`run` take them for the audio they add or copy, and `egami-video ffmpeg` turns an `-af` chain into the same command. See
+[the egami-video command](../video-cli/index.md#audio).
