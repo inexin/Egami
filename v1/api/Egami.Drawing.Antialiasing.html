@@ -133,7 +133,7 @@ lines: one pixel thick across the line's major axis, with pointed ends and no ca
   <h2 id="Egami_Drawing_Antialiasing_examples">Examples</h2>
   <pre><code class="lang-csharp">// Shapes as System.Drawing draws them at its defaults (SmoothingMode.AntiAlias, PixelOffsetMode.None): whole coordinates on
 // pixel centres, GDI+'s 8 by 4 samples a pixel, and pens up to 1.5 px drawn as its one-pixel thin lines.
-// CanvasOptions.GdiPlusClearType sets both too.
+// CanvasOptions.GdiPlus sets both too.
 var options = new CanvasOptions { PixelOffset = PixelOffset.None, Antialiasing = Antialiasing.GdiPlus };
 using (RasterCanvas&lt;Rgb8&gt; canvas = raster.CreateCanvas(options))
 {

@@ -410,14 +410,14 @@ strikes are not affected.</p>
   <pre><code class="lang-csharp">// Text that looks like System.Drawing's Graphics.DrawString with TextRenderingHint.ClearTypeGridFit: the font's own hints
 // and grid-fitted advances, GDI+'s ClearType filter, sampling and gamma.
 Font label = new Font(face, 16).WithGdiPlusLook();
-using (RasterCanvas&lt;Rgb8&gt; canvas = button.CreateCanvas(CanvasOptions.GdiPlusClearType))
+using (RasterCanvas&lt;Rgb8&gt; canvas = button.CreateCanvas(CanvasOptions.GdiPlus))
 {
     float width = label.MeasureText("Start the course").Advance;
     canvas.DrawText("Start the course", new Vector2(MathF.Round((200 - width) / 2), 26), label, Rgba8.White);
 }
 
 // A different Graphics.TextContrast (0 to 12) is a different text gamma: 1 + contrast / 10.
-CanvasOptions contrast8 = CanvasOptions.GdiPlusClearType with { TextGamma = 1 + (8 / 10f) };</code></pre>
+CanvasOptions contrast8 = CanvasOptions.GdiPlus with { TextGamma = 1 + (8 / 10f) };</code></pre>
 
 
 
@@ -1401,7 +1401,7 @@ using (RasterCanvas&lt;Rgba8&gt; canvas = photo.CreateCanvas())
 
   <div class="markdown level1 summary"><p>This font as System.Drawing draws ClearTypeGridFit text: the font's TrueType instructions for GDI+
 (<a class="xref" href="Egami.Fonts.FontHinting.html#Egami_Fonts_FontHinting_Full">Full</a>, <a class="xref" href="Egami.Fonts.TrueTypeTarget.html#Egami_Fonts_TrueTypeTarget_GdiPlus">GdiPlus</a>), <a class="xref" href="Egami.Fonts.FontMetrics.html#Egami_Fonts_FontMetrics_GridFitted">GridFitted</a> advances, LCD
-edging and the face's <a class="xref" href="Egami.Fonts.Font.html#Egami_Fonts_Font_EmbeddedBitmaps">EmbeddedBitmaps</a>. Draw it on a canvas with Egami.Drawing's <code>CanvasOptions.GdiPlusClearType</code>.</p>
+edging and the face's <a class="xref" href="Egami.Fonts.Font.html#Egami_Fonts_Font_EmbeddedBitmaps">EmbeddedBitmaps</a>. Draw it on a canvas with Egami.Drawing's <code>CanvasOptions.GdiPlus</code>.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
 
@@ -1426,14 +1426,14 @@ edging and the face's <a class="xref" href="Egami.Fonts.Font.html#Egami_Fonts_Fo
   <pre><code class="lang-csharp">// Text that looks like System.Drawing's Graphics.DrawString with TextRenderingHint.ClearTypeGridFit: the font's own hints
 // and grid-fitted advances, GDI+'s ClearType filter, sampling and gamma.
 Font label = new Font(face, 16).WithGdiPlusLook();
-using (RasterCanvas&lt;Rgb8&gt; canvas = button.CreateCanvas(CanvasOptions.GdiPlusClearType))
+using (RasterCanvas&lt;Rgb8&gt; canvas = button.CreateCanvas(CanvasOptions.GdiPlus))
 {
     float width = label.MeasureText("Start the course").Advance;
     canvas.DrawText("Start the course", new Vector2(MathF.Round((200 - width) / 2), 26), label, Rgba8.White);
 }
 
 // A different Graphics.TextContrast (0 to 12) is a different text gamma: 1 + contrast / 10.
-CanvasOptions contrast8 = CanvasOptions.GdiPlusClearType with { TextGamma = 1 + (8 / 10f) };</code></pre>
+CanvasOptions contrast8 = CanvasOptions.GdiPlus with { TextGamma = 1 + (8 / 10f) };</code></pre>
 
 
 

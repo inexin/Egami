@@ -2,9 +2,9 @@
 <html>
   <head>
     <meta charset="utf-8">
-      <title>Matching System.Drawing text | Egami </title>
+      <title>Matching System.Drawing | Egami </title>
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <meta name="title" content="Matching System.Drawing text | Egami ">
+      <meta name="title" content="Matching System.Drawing | Egami ">
       
       
       <link rel="icon" href="../../images/favicon.ico">
@@ -85,13 +85,55 @@
         </div>
 
         <article data-uid="">
-<h1 id="matching-systemdrawing-text">Matching System.Drawing text</h1>
+<h1 id="matching-systemdrawing">Matching System.Drawing</h1>
 
-<p>Egami can draw small UI text the way System.Drawing does on Windows, for images that replace ones made with
-<code>Graphics.DrawString</code> (GDI+) or <code>TextRenderer</code> (GDI), such as buttons in emails. The settings come from measurements of GDI and
-GDI+ on Windows; <a href="text.html">Fonts and text</a> explains each of them.</p>
+<p>Egami can draw the way System.Drawing does on Windows: UI text as <code>Graphics.DrawString</code> (GDI+) and <code>TextRenderer</code> (GDI) draw
+it, and shapes, gradients and scaled images as <code>Graphics</code> does, for images that replace ones made with them, such as buttons in
+emails. Every setting is opt-in, and each comes from measurements of GDI and GDI+ on Windows; <a href="text.html">Fonts and text</a> explains
+the text settings. Egami.SystemDrawing applies all of them for you.</p>
+<table>
+<thead>
+<tr>
+<th>GDI+</th>
+<th>Egami</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>TextRenderingHint.ClearTypeGridFit</code></td>
+<td><code>Font.WithGdiPlusLook()</code> with <code>CanvasOptions.GdiPlus</code></td>
+</tr>
+<tr>
+<td><code>PixelOffsetMode.None</code>, <code>Default</code>, <code>HighSpeed</code> / <code>Half</code>, <code>HighQuality</code></td>
+<td><code>CanvasOptions.PixelOffset.None</code> / <code>Half</code> (the default)</td>
+</tr>
+<tr>
+<td><code>SmoothingMode.AntiAlias</code>, <code>HighQuality</code></td>
+<td><code>CanvasOptions.Antialiasing.GdiPlus</code>; <code>SmoothingMode.None</code> is <code>Paint.Antialias = false</code></td>
+</tr>
+<tr>
+<td><code>LinearGradientBrush.GammaCorrection</code></td>
+<td><code>GradientInterpolation.GdiPlusGamma</code></td>
+</tr>
+<tr>
+<td><code>PathGradientBrush</code></td>
+<td>a <code>Mesh</code> fanned from the brush's <code>CenterPoint</code></td>
+</tr>
+<tr>
+<td><code>InterpolationMode</code></td>
+<td>the <code>ResampleFilter.GdiPlus*</code> members, per draw call (see <a href="#image-scaling">Image scaling</a>)</td>
+</tr>
+<tr>
+<td><code>CompositingQuality.HighQuality</code>, <code>GammaCorrected</code></td>
+<td><code>CanvasOptions.ColorSpace = ColorSpace.Linear</code></td>
+</tr>
+</tbody>
+</table>
+<p><code>CanvasOptions.GdiPlus</code> sets GDI+'s defaults for text, pixel offset and antialiasing. It does not choose a resample
+filter: that belongs to each <code>DrawImage</code> or <code>ImagePaint</code> call's <code>SamplingOptions</code>, so pass <code>ResampleFilter.GdiPlusBilinear</code> there for
+GDI+'s default <code>InterpolationMode</code>.</p>
 <h2 id="gdi-cleartypegridfit">GDI+ ClearTypeGridFit</h2>
-<p><code>Font.WithGdiPlusLook()</code> and <code>CanvasOptions.GdiPlusClearType</code> together give GDI+'s ClearTypeGridFit look.</p>
+<p><code>Font.WithGdiPlusLook()</code> and <code>CanvasOptions.GdiPlus</code> together give GDI+'s ClearTypeGridFit look.</p>
 <ul>
 <li>The font's TrueType instructions run for GDI+, with Microsoft's ClearType compatibility rules (<code>FontHinting.Full</code>,
 <code>TrueTypeTarget.GdiPlus</code>).</li>
@@ -110,14 +152,14 @@ on every gray background tested.</li>
 <pre><code class="lang-csharp">// Text that looks like System.Drawing's Graphics.DrawString with TextRenderingHint.ClearTypeGridFit: the font's own hints
 // and grid-fitted advances, GDI+'s ClearType filter, sampling and gamma.
 Font label = new Font(face, 16).WithGdiPlusLook();
-using (RasterCanvas&lt;Rgb8&gt; canvas = button.CreateCanvas(CanvasOptions.GdiPlusClearType))
+using (RasterCanvas&lt;Rgb8&gt; canvas = button.CreateCanvas(CanvasOptions.GdiPlus))
 {
     float width = label.MeasureText(&quot;Start the course&quot;).Advance;
     canvas.DrawText(&quot;Start the course&quot;, new Vector2(MathF.Round((200 - width) / 2), 26), label, Rgba8.White);
 }
 
 // A different Graphics.TextContrast (0 to 12) is a different text gamma: 1 + contrast / 10.
-CanvasOptions contrast8 = CanvasOptions.GdiPlusClearType with { TextGamma = 1 + (8 / 10f) };
+CanvasOptions contrast8 = CanvasOptions.GdiPlus with { TextGamma = 1 + (8 / 10f) };
 </code></pre>
 <p>For a white Trebuchet MS label at 16 pixels on a black or a #0078d4 button, the result is within 0.5% of GDI+'s brightness. The
 mean per-pixel difference is 0.67 levels out of 255 on black and 0.38 on blue, against 9.5 and 5.4 for Egami's default text.
@@ -126,7 +168,7 @@ those instead of the outlines. <code>Font.WithGdiPlusLook()</code> turns on <cod
 those sizes equal GDI+'s pixel for pixel.</p>
 <h2 id="shapes">Shapes</h2>
 <p>Two canvas settings match what <code>Graphics</code> does with shapes at its defaults, <code>SmoothingMode.AntiAlias</code> and
-<code>PixelOffsetMode.None</code>. <code>CanvasOptions.GdiPlusClearType</code> sets both.</p>
+<code>PixelOffsetMode.None</code>. <code>CanvasOptions.GdiPlus</code> sets both.</p>
 <ul>
 <li><code>PixelOffset.None</code> puts whole coordinates on pixel centres, as GDI+'s <code>None</code>, <code>Default</code> and <code>HighSpeed</code> offset modes do. Paths,
 their paints and clips move half a pixel right and down. Text moves only when it is unhinted, just as GDI+ moves its
@@ -138,7 +180,7 @@ pixel thick across the line's major axis, at full strength, with pointed ends an
 </ul>
 <pre><code class="lang-csharp">// Shapes as System.Drawing draws them at its defaults (SmoothingMode.AntiAlias, PixelOffsetMode.None): whole coordinates on
 // pixel centres, GDI+'s 8 by 4 samples a pixel, and pens up to 1.5 px drawn as its one-pixel thin lines.
-// CanvasOptions.GdiPlusClearType sets both too.
+// CanvasOptions.GdiPlus sets both too.
 var options = new CanvasOptions { PixelOffset = PixelOffset.None, Antialiasing = Antialiasing.GdiPlus };
 using (RasterCanvas&lt;Rgb8&gt; canvas = raster.CreateCanvas(options))
 {
@@ -208,6 +250,11 @@ does the same. Over both offsets, DrawImage and Egami's canvas are 0.38 levels a
 closest filters before.</p>
 <p><code>CompositingQuality.HighQuality</code> and <code>GammaCorrected</code> blend in linear light, which is <code>CanvasOptions.ColorSpace = ColorSpace.Linear</code>
 (within 0.1 levels of GDI+). The other qualities blend the stored values, Egami's default.</p>
+<h2 id="metafiles">Metafiles</h2>
+<p>Egami.Metafiles' EMF+ player follows the records' interpolation modes with the <code>GdiPlus*</code> filters and their gamma-corrected
+gradients with <code>GdiPlusGamma</code>. Smoothing and compositing apply to the whole canvas, so set them for the playback through
+<code>MetafileRenderOptions.CanvasOptions</code>, for example <code>CanvasOptions.GdiPlus</code>. With <code>PixelOffset.None</code> there, the player
+leaves the pixel offset to the canvas.</p>
 <h2 id="gdi-cleartype">GDI ClearType</h2>
 <p>For <code>TextRenderer</code> or GDI's <code>ExtTextOut</code>:</p>
 <ul>

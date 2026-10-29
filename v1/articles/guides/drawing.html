@@ -119,7 +119,7 @@ edges covers whole pixels and a rectangle from 2.5 covers pixel 2 by half.</li>
 <li><code>CanvasOptions</code> sets where edges blend (<code>ColorSpace.Encoded</code>, the default, or <code>Linear</code>) and the curve <code>Tolerance</code>
 (0.1 pixel by default).</li>
 <li><code>CanvasOptions.PixelOffset</code> and <code>CanvasOptions.Antialiasing</code> switch to GDI+'s pixel centres and antialiasing, for images
-that must look like System.Drawing's (see <a href="system-drawing-text.html#shapes">Matching System.Drawing text</a>).</li>
+that must look like System.Drawing's (see <a href="system-drawing-text.html#shapes">Matching System.Drawing</a>).</li>
 <li>A canvas is for one thread at a time. A large call spreads its rows over <code>EgamiContext.MaxParallelism</code> cores, with the same
 pixels at any core count.</li>
 </ul>

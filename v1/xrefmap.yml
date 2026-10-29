@@ -15466,19 +15466,19 @@ references:
   isSpec: "True"
   fullName: Egami.Drawing.CanvasOptions.Default
   nameWithType: CanvasOptions.Default
-- uid: Egami.Drawing.CanvasOptions.GdiPlusClearType
-  name: GdiPlusClearType
-  href: api/Egami.Drawing.CanvasOptions.html#Egami_Drawing_CanvasOptions_GdiPlusClearType
-  commentId: P:Egami.Drawing.CanvasOptions.GdiPlusClearType
-  fullName: Egami.Drawing.CanvasOptions.GdiPlusClearType
-  nameWithType: CanvasOptions.GdiPlusClearType
-- uid: Egami.Drawing.CanvasOptions.GdiPlusClearType*
-  name: GdiPlusClearType
-  href: api/Egami.Drawing.CanvasOptions.html#Egami_Drawing_CanvasOptions_GdiPlusClearType_
-  commentId: Overload:Egami.Drawing.CanvasOptions.GdiPlusClearType
+- uid: Egami.Drawing.CanvasOptions.GdiPlus
+  name: GdiPlus
+  href: api/Egami.Drawing.CanvasOptions.html#Egami_Drawing_CanvasOptions_GdiPlus
+  commentId: P:Egami.Drawing.CanvasOptions.GdiPlus
+  fullName: Egami.Drawing.CanvasOptions.GdiPlus
+  nameWithType: CanvasOptions.GdiPlus
+- uid: Egami.Drawing.CanvasOptions.GdiPlus*
+  name: GdiPlus
+  href: api/Egami.Drawing.CanvasOptions.html#Egami_Drawing_CanvasOptions_GdiPlus_
+  commentId: Overload:Egami.Drawing.CanvasOptions.GdiPlus
   isSpec: "True"
-  fullName: Egami.Drawing.CanvasOptions.GdiPlusClearType
-  nameWithType: CanvasOptions.GdiPlusClearType
+  fullName: Egami.Drawing.CanvasOptions.GdiPlus
+  nameWithType: CanvasOptions.GdiPlus
 - uid: Egami.Drawing.CanvasOptions.LcdFilter
   name: LcdFilter
   href: api/Egami.Drawing.CanvasOptions.html#Egami_Drawing_CanvasOptions_LcdFilter
