@@ -1,7 +1,8 @@
 # Audio filters
 
-Egami.Video's audio filters change level, time and placement of decoded audio as it streams: gain and gain envelopes, fades
-and crossfades, mixing and panning, delay, padding, trimming and new timestamps, and tempo and speed changes. They live in
+Egami.Video's audio filters change level, time, tone and placement of decoded audio as it streams: gain and gain envelopes,
+fades and crossfades, mixing and panning, delay, padding, trimming and new timestamps, tempo and speed changes, EQ, dynamics
+(compressor, gate and limiter), loudness normalization and silence removal. They live in
 `Egami.Video.Audio.Filters` and work on the `AudioFrame`s that `AudioReader` and the decoders hand out (see [Audio](audio.md)).
 
 ## The filter loop
@@ -74,3 +75,53 @@ speech. The output lasts the input's length divided by the factor, to the sample
 resampling, like a tape played faster, and costs less.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/AudioFilters.cs#audio-tempo)]
+
+## EQ
+
+`Biquad` is a second-order filter from the Audio EQ Cookbook in one of eight `BiquadKind`s: low and high pass, band pass,
+notch, all pass, peaking and low and high shelves. Its width is a Q (0.7071, `Biquad.ButterworthQ`, by default) or, with
+`Biquad.FromBandwidth`, a bandwidth in octaves; peaking and shelves take a `Gain` in decibels. `Butterworth` is a steeper low
+or high pass, order 2 to 8 (12 to 48 dB per octave), flat in the pass band and -3 dB at its corner. `ParametricEqualizer` runs
+a list of `EqualizerBand`s as one filter. All of them run in double precision in place, and refuse a frequency at or above half
+the sample rate.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/AudioFilters.cs#audio-equalizer)]
+
+## Dynamics
+
+`Compressor` turns the level down above a `Threshold` by a `Ratio`, with a soft `Knee`, `Attack` and `Release` times and
+`Makeup` gain; `Gate` turns it down below a threshold, by up to its `Range`, to keep noise out of the pauses. Both measure the
+loudest channel (`LevelDetection.Rms` by default, or `Peak`) and give every channel the same gain. `Limiter` looks 5 ms ahead,
+so no sample goes over its `Ceiling`; with `TruePeak` it also catches the peaks between samples by oversampling, as ITU-R
+BS.1770 measures them. Its output is held back by its `Latency` and keeps the input's timestamps.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/AudioFilters.cs#audio-dynamics)]
+
+With `Sidechain` on, a compressor takes its level from another signal given to `SendSidechain`, lined up by timestamps, so
+music ducks under a voice. Input waits until the sidechain covers it; `CompleteSidechain` says no more comes.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/AudioFilters.cs#audio-ducking)]
+
+## Loudness
+
+`LoudnessNormalizer` brings audio to a `LoudnessTarget`: an integrated loudness, a true-peak ceiling and, for the dynamic mode,
+a loudness range. The presets are `EbuR128` (-23 LUFS, -1 dBTP, the default), `AtscA85` (-24, -2), `Streaming` (-14, -1) and
+`Podcast` (-16, -1). Given a first pass's `LoudnessReport` from `LoudnessMeter`, it is linear: one gain, so the dynamics stay
+as they are, and a true-peak `Limiter` only when that gain would take the peaks over the ceiling. `AudioFilters.NormalizeLoudnessAsync`
+runs both passes over every audio track of a file, copying the video and other tracks. `LoudnessNormalizer.Dynamic` works in one
+pass, for input that cannot be read twice: it follows the loudness with 1.5 s of lookahead and keeps it within the target's
+range, so it changes the dynamics and lands less exactly on the target.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/AudioFilters.cs#audio-loudness)]
+
+`AudioFilters.ApplyAsync` runs filters of your own on every audio track of a file the same way. Filtered tracks are encoded
+with the codec you give, else their own when the container holds it, else the container's usual one.
+
+## Silence
+
+`SilenceRemover` cuts silence out: a sample is silent when the loudest channel's RMS over 20 ms is under its `Threshold`
+(-50 dBFS by default). `SilenceRemoval.Trim` cuts the start and the end; `SilenceRemoval.Shorten` also cuts pauses longer than
+`MaxGap` (1 s) to `KeepGap` (0.3 s). Every cut fades or crossfades over 10 ms. The result is shorter than the input and its
+timestamps run on without gaps, so use it on audio alone, not on a track that has to stay in step with video.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/AudioFilters.cs#audio-silence)]

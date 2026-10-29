@@ -29,7 +29,7 @@ internal static class EncodeCommand
         Option<string?> output = new("--output", "-o") { Description = "The clip to write, or - for standard output (with --format).", HelpName = "path" };
         Option<string?> format = new("--format", "-f") { Description = "The container by name or extension (mkv, avi, mp4, y4m), when -o's extension does not say; always for -o -.", HelpName = "container" };
         Option<string?> rate = new("--rate") { Description = "Frames per second, such as 25, 29.97 or 30000/1001; 25 for images, and a video's own rate for a video.", HelpName = "fps" };
-        Option<string?> codec = new("--codec", "-c") { Description = "The video codec: mjpeg (the default), vp8 or vp9 (for webm, mkv and ivf), av1 (also for mp4 and obu), or raw (uncompressed, the default for y4m).", HelpName = "codec" };
+        Option<string?> codec = new("--codec", "-c") { Description = "The video codec: mjpeg (the default), vp8 or vp9 (for webm, mkv and ivf), av1 (also for mp4 and obu), ffv1 (lossless, for mkv and avi), or raw (uncompressed, the default for y4m).", HelpName = "codec" };
         Option<int?> quality = new("--quality") { Description = "Quality from 0 to 100: 75 by default for Motion JPEG, 60 for VP8, VP9 and AV1.", HelpName = "0-100" };
         Option<int?> effort = new("--effort") { Description = "VP8, VP9 and AV1: how hard to work, 0 (fastest) to 10 (smallest); 4 by default.", HelpName = "0-10" };
         Option<string?> bitrate = new("--bitrate", "-b") { Description = "VP8, VP9 and AV1: aim at this average bitrate instead of a quality, such as 2000k or 1.5M.", HelpName = "bits/s" };
@@ -50,6 +50,7 @@ internal static class EncodeCommand
         command.Options.Add(audio);
         Option<string?> fragment = Fragments.CreateOption();
         command.Options.Add(fragment);
+        EncoderExtras.AddTo(command);
         command.SetAction(result =>
         {
             string text = result.GetValue(output)
@@ -63,6 +64,7 @@ internal static class EncodeCommand
                 Size = result.GetValue(size) is { } s ? ParseSize(s) : null,
                 Chroma = result.GetValue(chroma) is { } c ? ParseChroma(c) : null,
                 Audio = result.GetValue(audio),
+                Extras = EncoderExtras.Parse(result),
             };
             Source source = Source.Find(session, result.GetValue(inputs) ?? []);
             InputFile first = source.Display;
@@ -73,6 +75,7 @@ internal static class EncodeCommand
             }
 
             settings = settings with { Codec = FindCodec(session, result.GetValue(codec), target.Container) };
+            settings.Extras.Check(settings.Codec);
             if ((settings.Effort is not null || settings.Bitrate is not null) && settings.Codec != VideoCodecs.Vp8 && settings.Codec != VideoCodecs.Vp9 && settings.Codec != VideoCodecs.Av1)
             {
                 throw new UsageException("--effort and --bitrate are for --codec vp8, vp9 and av1.");
@@ -133,6 +136,7 @@ internal static class EncodeCommand
                 Bitrate = settings.Bitrate,
                 OtherTracks = audioTrack is null ? [] : [audioTrack with { Number = 1 }],
             };
+            options = settings.Extras.Apply(options);
             MediaTime? duration = source.Count is { } count ? new MediaTime(count, frameRate.Reciprocal()) : source.Duration;
             JobProgress progress = new(session.ProgressSink?.For(source.Display, 0, 1), duration, [], session.Cancellation, counted);
             MediaContext context = target.Container is Mp4Format { Fragments: not null } ? session.Context.WithContainer(target.Container) : session.Context;
@@ -223,11 +227,11 @@ internal static class EncodeCommand
             "mjpeg" or "mjpg" or "motion-jpeg" or "motionjpeg" => VideoCodecs.MotionJpeg,
             "raw" or "rawvideo" or "uncompressed" => RawVideoCodec.Instance,
             _ => session.Context.Codecs.FirstOrDefault(c => string.Equals(c.Name, key, StringComparison.OrdinalIgnoreCase) || string.Equals(CodecNames.Name(c.CodecId), key, StringComparison.OrdinalIgnoreCase))
-                ?? throw new UsageException($"'{name}' is not a codec egami-video knows; it encodes mjpeg, vp8, vp9, av1 and raw."),
+                ?? throw new UsageException($"'{name}' is not a codec egami-video knows; it encodes mjpeg, vp8, vp9, av1, ffv1 and raw."),
         };
         if (!codec.CanEncode)
         {
-            throw new UsageException($"egami-video can decode {codec.Name} but not encode it; it encodes mjpeg, vp8, vp9, av1 and raw.");
+            throw new UsageException($"egami-video can decode {codec.Name} but not encode it; it encodes mjpeg, vp8, vp9, av1, ffv1 and raw.");
         }
 
         return container is Y4mFormat && codec != RawVideoCodec.Instance
@@ -314,6 +318,8 @@ internal static class EncodeCommand
         public string? Audio { get; init; }
 
         public VideoCodec? Codec { get; init; }
+
+        public EncoderExtras Extras { get; init; } = new();
     }
 
     /// <summary>Where the frames come from: image files, an image sequence, or a video (a file or standard input).</summary>

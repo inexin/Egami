@@ -45,6 +45,7 @@ Commands:
   animate <inputs>              Make an animated GIF, WebP or PNG (APNG) from a stretch of video, at a frame rate and size of your choice.
   hash <inputs>                 Hash every decoded frame or packet of each track, in the layout of ffmpeg -f framemd5, to check that decoding matches.
   compare <reference> <inputs>  Measure PSNR and SSIM per plane between a reference clip and others, frame by frame in presentation order, as ffmpeg's psnr and ssim filters do.
+  verify <inputs>               Check FFV1 files for damage without decoding: every slice's CRC and footer and the configuration CRC. Exit code 1 when a file is damaged.
   audio <inputs>                Decode audio to WAV, FLAC, Ogg FLAC, Opus, AIFF, CAF or ALAC in .m4a, or encode a video file's audio again while copying its video unchanged: resample, remix and change the sample format.
   join <inputs>                 Join clips of any size, frame rate and audio into one, fitted to one canvas, with an optional transition between them; everything is encoded again. For clips that already match, concat copies without decoding.
   fade <input>                  Fade a clip in from a colour and out to it, picture and sound together; like ffmpeg's fade and afade.
@@ -518,17 +519,22 @@ Arguments:
   <inputs>  Images in order (files, or globs sorted by name), an image sequence such as shots/{frame:0000}.png or shots/%04d.png, a video such as a Y4M file, or - for Y4M or Matroska on standard input.
 
 Options:
-  -o, --output <path>            The clip to write, or - for standard output (with --format).
-  -f, --format <container>       The container by name or extension (mkv, avi, mp4, y4m), when -o's extension does not say; always for -o -.
-  --rate <fps>                   Frames per second, such as 25, 29.97 or 30000/1001; 25 for images, and a video's own rate for a video.
-  -c, --codec <codec>            The video codec: mjpeg (the default), vp8 or vp9 (for webm, mkv and ivf), av1 (also for mp4 and obu), or raw (uncompressed, the default for y4m).
-  --quality <0-100>              Quality from 0 to 100: 75 by default for Motion JPEG, 60 for VP8, VP9 and AV1.
-  --effort <0-10>                VP8, VP9 and AV1: how hard to work, 0 (fastest) to 10 (smallest); 4 by default.
-  -b, --bitrate <bits/s>         VP8, VP9 and AV1: aim at this average bitrate instead of a quality, such as 2000k or 1.5M.
-  --size <WxH>                   Fit every frame into this size, keeping its shape, with black around it; images take the first image's size by default.
-  --chroma <420|422|444>         Chroma subsampling for frames made from images: 420 (the default), 422 or 444.
-  --audio <file>                 Add the first audio track of this file, copied without decoding, up to the end of the video.
-  --fragment <length>            Write fragmented MP4, for streaming and browsers' Media Source Extensions: fragments start at the first video keyframe after this long (2s without a value), or at every one with --fragment=keyframe. Give a length as --fragment=4s.
+  -o, --output <path>                   The clip to write, or - for standard output (with --format).
+  -f, --format <container>              The container by name or extension (mkv, avi, mp4, y4m), when -o's extension does not say; always for -o -.
+  --rate <fps>                          Frames per second, such as 25, 29.97 or 30000/1001; 25 for images, and a video's own rate for a video.
+  -c, --codec <codec>                   The video codec: mjpeg (the default), vp8 or vp9 (for webm, mkv and ivf), av1 (also for mp4 and obu), ffv1 (lossless, for mkv and avi), or raw (uncompressed, the default for y4m).
+  --quality <0-100>                     Quality from 0 to 100: 75 by default for Motion JPEG, 60 for VP8, VP9 and AV1.
+  --effort <0-10>                       VP8, VP9 and AV1: how hard to work, 0 (fastest) to 10 (smallest); 4 by default.
+  -b, --bitrate <bits/s>                VP8, VP9 and AV1: aim at this average bitrate instead of a quality, such as 2000k or 1.5M.
+  --size <WxH>                          Fit every frame into this size, keeping its shape, with black around it; images take the first image's size by default.
+  --chroma <420|422|444>                Chroma subsampling for frames made from images: 420 (the default), 422 or 444.
+  --audio <file>                        Add the first audio track of this file, copied without decoding, up to the end of the video.
+  --fragment <length>                   Write fragmented MP4, for streaming and browsers' Media Source Extensions: fragments start at the first video keyframe after this long (2s without a value), or at every one with --fragment=keyframe. Give a length as --fragment=4s.
+  --keyframe-interval <frames>          The most frames from one keyframe to the next; FFV1 makes every frame a keyframe unless this is given.
+  --slices <count>                      FFV1: slices a frame is cut into, coded in parallel, 1 to 1024; picked from the frame size by default.
+  --no-slice-crc                        FFV1: leave out the slice CRCs that let verify check the file.
+  --coder <range|range-default|golomb>  FFV1: range (the default, smallest), range-default (the default state table) or golomb (faster, 8 bits at most).
+  --context <small|large>               FFV1: the context model, small or large; picked from --effort by default.
 ```
 
 ## run
@@ -544,23 +550,28 @@ Arguments:
   <inputs-and-steps>  Videos (files, globs, -), then steps separated by +, ending in save out.mkv if -o is not given.
 
 Options:
-  -o, --output <path>            Where the video goes when save has no path: a file, a folder, a template with {name}, or - with --format.
-  -f, --format <container>       The output container (mkv, avi …), when the output's extension does not say.
-  --codec <codec>                The video codec to encode with: mjpeg, vp8, vp9, av1 or raw. The input's codec when Egami.Video can encode it, else mjpeg.
-  --quality <1-100>              The encoder's quality from 1 to 100.
-  --crop <auto>                  auto finds the black bars of letterbox, pillarbox and windowbox video, as the analyze command's crop detector does, and crops them off before the other steps.
-  --rate <fps>                   Frames per second of the output, dropping or repeating frames to match; frames keep their own times by default.
-  -t, --track <track>            Which video track to run the steps over: v:1 for the second, or a track number; audio and subtitle tracks are copied.
-  -an, --no-audio                Leave out the audio tracks.
-  -sn, --no-subtitles            Leave out the subtitle tracks.
-  -w, --workflow <file>          Take the steps from an egami JSON workflow file.
-  --save-workflow <file>         Write the steps to a JSON workflow file (then run them, unless --dry-run).
-  --dry-run                      Print the steps and the file each input would write, and stop.
-  --list                         List every step with its arguments; --list <step> shows one.
-  -r, --recursive                Take every media file in folders given as inputs.
-  -j, --jobs <count>             How many files to work on at once; 0 for one per processor.
-  --in-place                     Allow outputs to replace their inputs.
-  --fail-fast                    Stop at the first file that fails.
+  -o, --output <path>                   Where the video goes when save has no path: a file, a folder, a template with {name}, or - with --format.
+  -f, --format <container>              The output container (mkv, avi …), when the output's extension does not say.
+  --codec <codec>                       The video codec to encode with: mjpeg, vp8, vp9, av1, ffv1 or raw. The input's codec when Egami.Video can encode it, else mjpeg.
+  --keyframe-interval <frames>          The most frames from one keyframe to the next; FFV1 makes every frame a keyframe unless this is given.
+  --slices <count>                      FFV1: slices a frame is cut into, coded in parallel, 1 to 1024; picked from the frame size by default.
+  --no-slice-crc                        FFV1: leave out the slice CRCs that let verify check the file.
+  --coder <range|range-default|golomb>  FFV1: range (the default, smallest), range-default (the default state table) or golomb (faster, 8 bits at most).
+  --context <small|large>               FFV1: the context model, small or large; picked from --effort by default.
+  --quality <1-100>                     The encoder's quality from 1 to 100.
+  --crop <auto>                         auto finds the black bars of letterbox, pillarbox and windowbox video, as the analyze command's crop detector does, and crops them off before the other steps.
+  --rate <fps>                          Frames per second of the output, dropping or repeating frames to match; frames keep their own times by default.
+  -t, --track <track>                   Which video track to run the steps over: v:1 for the second, or a track number; audio and subtitle tracks are copied.
+  -an, --no-audio                       Leave out the audio tracks.
+  -sn, --no-subtitles                   Leave out the subtitle tracks.
+  -w, --workflow <file>                 Take the steps from an egami JSON workflow file.
+  --save-workflow <file>                Write the steps to a JSON workflow file (then run them, unless --dry-run).
+  --dry-run                             Print the steps and the file each input would write, and stop.
+  --list                                List every step with its arguments; --list <step> shows one.
+  -r, --recursive                       Take every media file in folders given as inputs.
+  -j, --jobs <count>                    How many files to work on at once; 0 for one per processor.
+  --in-place                            Allow outputs to replace their inputs.
+  --fail-fast                           Stop at the first file that fails.
 
 Additional Arguments:
   Arguments passed to the application that is being run.
@@ -888,6 +899,25 @@ Options:
   -f, --format <text|json|csv>   How to write: text (the default), json or csv.
   --json                         Write JSON; the same as --format json.
   --csv                          Write CSV; the same as --format csv.
+```
+
+## verify
+
+```text
+Description:
+  Check FFV1 files for damage without decoding: every slice's CRC and footer and the configuration CRC. Exit code 1 when a file is damaged.
+
+Usage:
+  egami-video verify <inputs>... [options]
+
+Arguments:
+  <inputs>  Media files, globs (*, ?, **) expanded the same way in every shell, folders with --recursive, or - for standard input.
+
+Options:
+  -r, --recursive                Take every media file in folders given as inputs, at any depth.
+  -j, --jobs <count>             How many files to work on at once; 0 (the default) for one per processor.
+  --fail-fast                    Stop at the first file that fails.
+  --json                         Write the results as JSON.
 ```
 
 ## audio

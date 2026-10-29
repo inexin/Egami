@@ -3,11 +3,27 @@
 All notable changes to Egami are listed here. Egami follows [Semantic Versioning](https://semver.org): from 1.0, public API
 changes that break code come only in a new major version.
 
+## Egami.Drawing, unreleased
+
+- `Antialiasing.GdiPlus` draws two to three times faster and allocates nothing per fill once warm, with the same pixels: a
+  filled ellipse through Egami.SystemDrawing with `SmoothingMode.AntiAlias` takes 78 µs instead of 255 µs, close to Egami's
+  exact coverage.
+- `LcdSampling.Gdi` (the GDI+ look's ClearType) keeps a hinted TrueType font's dropout control (SCANCTRL and SCANTYPE), as
+  GDI+ does, so thin horizontal strokes no longer vanish: SimSun's bars at 18 to 24 px, about a third of a pixel thick, fell
+  between two rows' sample points. With embedded bitmaps off, SimSun at 18, 20 and 24 px now differs from GDI+ by 0.00 to
+  0.88 levels per pixel instead of 0.27 to 11.35; Microsoft YaHei, whose dropout leaves out stubs, stays within 0.08. Latin
+  text matches GDI+ slightly closer. Egami's own sampling is unchanged. Egami.Fonts' hinter now reports each glyph's scan
+  control, internally.
+
 ## Egami.Video.Cli, unreleased
 
 - `egami-video remux --fragment` and `encode --fragment` write fragmented MP4 (`--fragment=4s`, `--fragment=keyframe`), and
   `segment --hls --dash` writes CMAF segments with HLS and DASH playlists into a folder. ffmpeg mode takes `-movflags
   faststart`, `frag_keyframe`, `empty_moov` and `default_base_moof`, and `-frag_duration` with frag_keyframe.
+- FFV1 in egami-video: `encode` and `run` take `--codec ffv1` with `--slices`, `--no-slice-crc`, `--coder` and `--context`, and
+  `--keyframe-interval` for every codec; `egami-video verify` (also an MCP tool) checks FFV1 files' slice and configuration CRCs
+  without decoding; `info` names FFV1 tracks; ffmpeg mode takes `-c:v ffv1` with `-level 3`, `-coder`, `-context`, `-slices`,
+  `-slicecrc` and `-g`.
 
 - `egami-video run` reads and writes Egami.Formats.Extended's formats, with `--set sgi.rle=` and `--set sunraster.rle=` for
   their writer options.
@@ -86,6 +102,37 @@ API review come in later stages.
 - AVI tracks with FourCC `FFV1` are now `V_FFV1` with the configuration record as `CodecPrivate` (they were
   `V_MS/VFW/FOURCC`), and the AVI writer stores `V_FFV1` tracks, so FFV1 remuxes between Matroska and AVI. Version 3 tracks
   give `BitDepth` and `ChromaFormat` from the record. `CodecHeaders.Describe` lists FFV1 parameters and slice headers.
+
+V9.1 stage C: loudness normalization and silence removal in `Egami.Video.Audio.Filters` (Build Plan tasks 12 to 15). All
+additive.
+
+- `LoudnessTarget` (integrated, true peak, range) with the `EbuR128`, `AtscA85`, `Streaming` and `Podcast` presets, and
+  `LoudnessNormalizer`: linear from a first pass's `LoudnessReport` (one gain, a true-peak `Limiter` only when the gain would
+  take the peaks over the ceiling), or one pass with `LoudnessNormalizer.Dynamic` (1.5 s lookahead, kept within the range).
+- `AudioFilters.NormalizeLoudnessAsync` measures and normalizes every audio track of a file, copying the other tracks, and
+  returns a `LoudnessNormalization` per track; `AudioFilters.ApplyAsync` runs filters of your own over a file's audio tracks.
+- `SilenceRemover` with `SilenceRemoval.Trim` (start and end) and `Shorten` (pauses over 1 s cut to 0.3 s), -50 dBFS RMS over
+  20 ms, 10 ms fades and crossfades at the cuts.
+- Gates: on the EBU Tech 3341 cases 1 to 5 and Tech 3342 cases 1, 3 and 4 (generated from the specs' descriptions) the linear
+  normalizer lands within 0.5 LU of the EBU R 128, streaming and ATSC targets, under their true-peak ceilings, with the range
+  kept within 0.2 LU; a tone with clicks lifted 16 dB stays within 0.5 LU and under -0.9 dBTP. The dynamic mode lands within
+  0.5 LU on the 3341 cases and 1.5 LU on the 3342 steps, with the range within 1.5 LU of the target's.
+
+V9.1 stage B: EQ and dynamics in `Egami.Video.Audio.Filters` (Build Plan tasks 8 to 11). All additive.
+
+- `Biquad` with the eight Audio EQ Cookbook `BiquadKind`s (low and high pass, band pass, notch, all pass, peaking, low and high
+  shelf), its width a Q or, with `Biquad.FromBandwidth`, octaves; `Butterworth` low and high pass of order 2 to 8; and
+  `ParametricEqualizer` of `EqualizerBand`s. Transposed direct form II with double state, in place.
+- `Compressor` (threshold, ratio, soft knee, attack, release, makeup, `LevelDetection.Rms` or `Peak`) with an optional
+  sidechain (`Sidechain`, `SendSidechain`, `CompleteSidechain`) for ducking, and `Gate` (threshold, ratio, range).
+- `Limiter` with a 5 ms lookahead that keeps every sample under its ceiling, and optional `TruePeak` detection by 4x
+  oversampling (BS.1770).
+- Gates: every biquad kind, Butterworth order and the parametric EQ within 0.1 dB of the analytic curve; low and high pass, band
+  pass, band reject, all pass, equalizer (Q and octave widths), bass and treble within -90 dBFS RMS of FFmpeg's output (new
+  references from `tools/video/make-audio-filter-references.py`; FFmpeg's shelf `w=0.5` is the cookbook's Q of 0.7071). On
+  48 kHz stereo a gain, high pass and 3-band EQ chain runs 790 times real time (gate 200), an order 8 Butterworth 800 times, and
+  compressor, gate and true-peak limiter 134 times (`AudioFilterBenchmarks`). A steady EQ and dynamics chain allocates only
+  the chain's frame object (128 bytes per frame).
 
 V9.1 stage A: streaming audio filters in `Egami.Video.Audio.Filters` (Build Plan tasks 1 to 7). All additive; the stage A
 API review was accepted on 2026-10-28 with no API changes, and the docs now say that filter times are the frames' own

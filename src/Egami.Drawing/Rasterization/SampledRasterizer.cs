@@ -6,6 +6,11 @@ namespace Egami.Drawing.Rasterization;
 /// 1/255. A sample row keeps the edges whose half-open y range holds it; a sample is inside when its x lies in a covered span's
 /// half-open range [left, right), so shapes that share an edge never both count a sample. Every row is computed from the edges
 /// alone, so the result is the same in any band and at any core count.
+/// <para>
+/// One instance serves a canvas's fills: <see cref="Prepare"/> sorts a fill's edges into arrays kept between fills, and each band
+/// keeps its active edges and per-pixel counts in its workspace, so a warm fill allocates nothing. A span adds whole pixels through
+/// a running count and only its two end pixels sample by sample.
+/// </para>
 /// </summary>
 internal sealed class SampledRasterizer
 {
@@ -17,62 +22,102 @@ internal sealed class SampledRasterizer
 
     private const int Samples = Columns * Rows;
 
-    private readonly float[] _edges;
-    private readonly int[] _byTop;
-    private readonly Rect _area;
-    private readonly bool _evenOdd;
+    /// <summary>Constant runs at least this long go to <see cref="ISpanSink.Fill"/>, as the exact rasterizer sends them.</summary>
+    private const int FillRun = 16;
 
-    internal SampledRasterizer(EdgeList edges, Rect area, bool evenOdd)
+    /// <summary>Coverage for each count of samples inside, 0 to 32: n · 255 / 32, rounded half up.</summary>
+    private static readonly byte[] Alphas = BuildAlphas();
+
+    private float[] _edges = [];
+    private float[] _tops = [];
+    private float[] _bottoms = [];
+    private int[] _byTop = [];
+    private int _count;
+    private Rect _area;
+    private bool _evenOdd;
+
+    /// <summary>Takes a fill's edges, sorted by their tops, for the bands that follow.</summary>
+    internal void Prepare(EdgeList edges, Rect area, bool evenOdd)
     {
-        _edges = edges.Coordinates.ToArray();
         _area = area;
         _evenOdd = evenOdd;
-        _byTop = new int[edges.Count];
-        float[] tops = new float[edges.Count];
-        for (int i = 0; i < _byTop.Length; i++)
+        _count = edges.Count;
+        ReadOnlySpan<float> c = edges.Coordinates;
+        if (_edges.Length < c.Length)
         {
-            _byTop[i] = i;
-            tops[i] = MathF.Min(_edges[(4 * i) + 1], _edges[(4 * i) + 3]);
+            _edges = new float[c.Length];
         }
 
-        Array.Sort(tops, _byTop);
+        if (_byTop.Length < _count)
+        {
+            _byTop = new int[_count];
+            _tops = new float[_count];
+            _bottoms = new float[_count];
+        }
+
+        c.CopyTo(_edges);
+        for (int i = 0; i < _count; i++)
+        {
+            _byTop[i] = i;
+            _tops[i] = MathF.Min(_edges[(4 * i) + 1], _edges[(4 * i) + 3]);
+        }
+
+        Array.Sort(_tops, _byTop, 0, _count);
+        for (int i = 0; i < _count; i++)
+        {
+            _bottoms[i] = MathF.Max(_edges[(4 * i) + 1], _edges[(4 * i) + 3]);
+        }
     }
 
     internal void Band(int start, int end, Workspace workspace, ISpanSink sink)
     {
-        List<int> active = [];
-        int nextEdge = 0;
         int width = _area.Width, columns = width * Columns;
-        Span<int> starts = workspace.Samples.Get(columns + 1);
-        Span<byte> coverage = workspace.Coverage.Get(width);
-        starts.Clear();
+
+        // The band's scratch in one buffer: the active edges; per pixel the change in its count of fully covered sample rows (one
+        // past the last pixel too); and the samples of the pixels where a span starts or ends.
+        // A sample row of n active edges has at most n / 2 spans, and each span changes the counts of at most three pixels.
+        int maxPoints = (3 * Rows * ((_count / 2) + 1)) + 1;
+        Span<int> scratch = workspace.Samples.Get(_count + (2 * width) + 1 + maxPoints);
+        Span<int> active = scratch[.._count];
+        Span<int> full = scratch.Slice(_count, width + 1);
+        Span<int> part = scratch.Slice(_count + width + 1, width);
+        Span<int> points = scratch.Slice(_count + (2 * width) + 1, maxPoints);
+        full.Clear();
+        part.Clear();
+
+        // A row's coverage, then room for a fill's own scratch.
+        Span<byte> bytes = workspace.Coverage.Get((2 * width) + FillRun);
+        Span<byte> coverage = bytes[..width], fill = bytes[width..];
+        int activeCount = 0, nextEdge = 0;
         for (int row = start; row < end; row++)
         {
-            int first = columns, last = 0;
+            int pointCount = 0;
             for (int j = 0; j < Rows; j++)
             {
                 double y = _area.Y + row + ((double)j / Rows);
 
                 // Edges whose top is at or above the sample row join; those whose bottom is at or above it leave.
-                while (nextEdge < _byTop.Length && Top(_byTop[nextEdge]) <= y)
+                while (nextEdge < _count && _tops[nextEdge] <= y)
                 {
-                    active.Add(_byTop[nextEdge++]);
+                    active[activeCount++] = _byTop[nextEdge++];
                 }
 
                 int kept = 0;
-                for (int i = 0; i < active.Count; i++)
+                for (int i = 0; i < activeCount; i++)
                 {
-                    if (Bottom(active[i]) > y)
+                    int e = active[i];
+                    if (_bottoms[e] > y)
                     {
-                        active[kept++] = active[i];
+                        active[kept++] = e;
                     }
                 }
 
-                active.RemoveRange(kept, active.Count - kept);
-                Span<Crossing> crossings = workspace.Crossings.Get(Math.Max(1, active.Count));
+                activeCount = kept;
+                Span<Crossing> crossings = workspace.Crossings.Get(Math.Max(1, activeCount));
                 int n = 0;
-                foreach (int e in active)
+                for (int i = 0; i < activeCount; i++)
                 {
+                    int e = active[i];
                     double x0 = _edges[4 * e], y0 = _edges[(4 * e) + 1], x1 = _edges[(4 * e) + 2], y1 = _edges[(4 * e) + 3];
                     if (y < Math.Min(y0, y1))
                     {
@@ -85,7 +130,7 @@ internal sealed class SampledRasterizer
                 }
 
                 crossings = crossings[..n];
-                crossings.Sort(static (a, b) => a.X.CompareTo(b.X));
+                SortByX(crossings);
                 int winding = 0;
                 for (int i = 0; i < n - 1; i++)
                 {
@@ -103,16 +148,32 @@ internal sealed class SampledRasterizer
                         continue;
                     }
 
-                    starts[a]++;
-                    starts[b]--;
-                    first = Math.Min(first, a);
-                    last = Math.Max(last, b);
+                    int pa = a / Columns, pb = b / Columns;
+                    points[pointCount++] = pa;
+                    if (pa == pb)
+                    {
+                        part[pa] += b - a;
+                    }
+                    else
+                    {
+                        part[pa] += Columns - (a % Columns);
+                        full[pa + 1] += Columns;
+                        full[pb] -= Columns;
+                        points[pointCount++] = pa + 1;
+                        if (b % Columns != 0)
+                        {
+                            part[pb] += b % Columns;
+                        }
+
+                        // A span to the area's right edge ends at the marker one past the last pixel.
+                        points[pointCount++] = pb;
+                    }
                 }
             }
 
-            if (last > first)
+            if (pointCount > 0)
             {
-                Emit(starts, first, last, coverage, _area.Y + row, sink);
+                Emit(full, part, points[..pointCount], coverage, fill, _area.Y + row, sink);
             }
         }
     }
@@ -124,51 +185,139 @@ internal sealed class SampledRasterizer
         return (int)Math.Clamp(c, 0, columns);
     }
 
-    // Sums the row's samples per pixel from the span starts and ends, and sends the runs with any coverage.
-    private void Emit(Span<int> starts, int first, int last, Span<byte> coverage, int y, ISpanSink sink)
+    // Sends a row's coverage from the pixels whose counts changed: each holds its own count, and the pixels up to the next one all
+    // hold the running count of whole sample rows, so they are one constant run. Long constant runs go as fills, the rest as blends;
+    // the counts are cleared as they are read.
+    private void Emit(Span<int> full, Span<int> part, Span<int> points, Span<byte> coverage, Span<byte> fill, int y, ISpanSink sink)
     {
-        // Columns outside [first, last] hold no span ends, so the running count starts at 0 at the first pixel.
-        int px0 = first / Columns, px1 = (last + Columns - 1) / Columns;
+        SortInts(points);
+        Runs runs = new(coverage, fill, sink, y, _area.X);
         int running = 0;
-        int runStart = -1;
-        for (int px = px0; px < px1; px++)
+        for (int k = 0; k < points.Length; k++)
         {
-            int count = 0;
-            for (int c = px * Columns; c < (px + 1) * Columns; c++)
+            int px = points[k];
+            if (px == part.Length)
             {
-                running += starts[c];
-                count += running;
+                break;
             }
 
-            byte alpha = (byte)(((count * 255) + (Samples / 2)) / Samples);
-            if (alpha == 0)
-            {
-                if (runStart >= 0)
-                {
-                    sink.Blend(y, _area.X + runStart, coverage[runStart..px]);
-                    runStart = -1;
-                }
+            running += full[px];
+            byte alpha = Alphas[running + part[px]];
+            full[px] = 0;
+            part[px] = 0;
+            runs.Add(px, 1, alpha);
 
-                continue;
+            // Skip repeats of this point, then the pixels up to the next one share the running count.
+            while (k + 1 < points.Length && points[k + 1] == px)
+            {
+                k++;
             }
 
-            if (runStart < 0)
+            if (k + 1 < points.Length && points[k + 1] > px + 1)
             {
-                runStart = px;
+                runs.Add(px + 1, points[k + 1] - px - 1, Alphas[running]);
             }
-
-            coverage[px] = alpha;
         }
 
-        if (runStart >= 0)
-        {
-            sink.Blend(y, _area.X + runStart, coverage[runStart..px1]);
-        }
-
-        starts[first..(last + 1)].Clear();
+        runs.Flush();
+        full[^1] = 0;
     }
 
-    private float Top(int e) => MathF.Min(_edges[(4 * e) + 1], _edges[(4 * e) + 3]);
+    /// <summary>Collects a row's constant runs: zero ends the pending blend, a long run fills, the rest joins the blend.</summary>
+    private ref struct Runs(Span<byte> coverage, Span<byte> fill, ISpanSink sink, int y, int x0)
+    {
+        private readonly Span<byte> _coverage = coverage;
+        private readonly Span<byte> _fill = fill;
+        private int _pending = -1;
+        private int _length;
 
-    private float Bottom(int e) => MathF.Max(_edges[(4 * e) + 1], _edges[(4 * e) + 3]);
+        internal void Add(int at, int count, byte alpha)
+        {
+            if (alpha == 0 || (count >= FillRun && (alpha != 255 || sink.FillsDirectly)))
+            {
+                Flush();
+                if (alpha != 0)
+                {
+                    sink.Fill(y, x0 + at, count, alpha, _fill);
+                }
+
+                return;
+            }
+
+            if (_pending < 0)
+            {
+                _pending = at;
+            }
+
+            _coverage.Slice(_length, count).Fill(alpha);
+            _length += count;
+        }
+
+        internal void Flush()
+        {
+            if (_pending >= 0)
+            {
+                sink.Blend(y, x0 + _pending, _coverage[.._length]);
+            }
+
+            _pending = -1;
+            _length = 0;
+        }
+    }
+
+    private static void SortInts(Span<int> values)
+    {
+        if (values.Length > 32)
+        {
+            values.Sort();
+            return;
+        }
+
+        for (int i = 1; i < values.Length; i++)
+        {
+            int v = values[i];
+            int j = i - 1;
+            while (j >= 0 && values[j] > v)
+            {
+                values[j + 1] = values[j];
+                j--;
+            }
+
+            values[j + 1] = v;
+        }
+    }
+
+    // Insertion sort for the few crossings a sample row has; a library sort past that.
+    private static void SortByX(Span<Crossing> crossings)
+    {
+        if (crossings.Length > 32)
+        {
+            crossings.Sort(static (a, b) => a.X.CompareTo(b.X));
+            return;
+        }
+
+        for (int i = 1; i < crossings.Length; i++)
+        {
+            Crossing c = crossings[i];
+            int j = i - 1;
+            while (j >= 0 && crossings[j].X > c.X)
+            {
+                crossings[j + 1] = crossings[j];
+                j--;
+            }
+
+            crossings[j + 1] = c;
+        }
+    }
+
+    private static byte[] BuildAlphas()
+    {
+        byte[] alphas = new byte[Samples + 1];
+        for (int n = 0; n <= Samples; n++)
+        {
+            alphas[n] = (byte)(((n * 255) + (Samples / 2)) / Samples);
+        }
+
+        return alphas;
+    }
 }

@@ -80,6 +80,9 @@ internal sealed class FfmpegLine
 
     public string? ComplexFilter { get; set; }
 
+    /// <summary>Gets the encoder options that become egami-video's: -g, and FFV1's -level, -coder, -context, -slices and -slicecrc.</summary>
+    public Dictionary<string, string> EncoderOptions { get; } = new(StringComparer.Ordinal);
+
     public string? SegmentTime { get; set; }
 
     public string? SegmentTimes { get; set; }
@@ -175,6 +178,7 @@ internal sealed class FfmpegLine
                 case "-b:a" or "-ab": line.AudioBitrate = Next(); break;
                 case "-ac": line.Channels = Next(); break;
                 case "-sample_fmt": line.SampleFormat = Next(); break;
+                case "-g" or "-level" or "-coder" or "-context" or "-slices" or "-slicecrc": line.EncoderOptions[name] = Next(); break;
                 case "-metadata": line.Metadata.Add(Next()); break;
                 case "-map_metadata": line.MapMetadata = Next(); break;
                 case "-map_chapters": line.MapChapters = Next(); break;

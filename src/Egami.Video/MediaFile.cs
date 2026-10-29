@@ -1,5 +1,6 @@
 using Egami.Video.Audio;
 using Egami.Video.Audio.Codecs;
+using Egami.Video.Audio.Filters;
 using Egami.Video.Containers;
 using Egami.Video.Containers.Flac;
 
@@ -299,6 +300,29 @@ public static partial class MediaFile
         return RunJob(input, leaveOpen, new JobOutput(null, output, outputFormat, leaveOpen), webM ? OpusCodec.Instance : audio, audioLevel, tracks, context, progress, cancellationToken, webM);
     }
 
+    /// <summary>Copies a file, running the audio tracks <paramref name="filters"/> gives a filter for through it, encoded again.</summary>
+    internal static long Filter(string inputPath, string outputPath, Func<AudioTrackInfo, IAudioFilter?> filters, AudioCodec? audio, int? audioLevel, Func<TrackInfo, bool>? tracks, MediaContext context, IProgress<MediaProgress>? progress, CancellationToken cancellationToken)
+    {
+        ThrowIfCannotEncode(audio);
+        bool webM = FormatForPath(outputPath, context) == MatroskaFormat.WebM;
+        return RunJob(OpenRead(inputPath), false, new JobOutput(outputPath, null, null, false), audio, audioLevel, tracks, context, progress, cancellationToken, webM, filters);
+    }
+
+    /// <summary>
+    /// Picks the codec a filtered track is encoded with: in Matroska and MP4 its own when it encodes, else FLAC; in the other
+    /// containers their usual codec, or the track's own when that is the same kind (any PCM in WAV, say).
+    /// </summary>
+    internal static AudioCodec FilterCodec(AudioCodec own, ContainerFormat format)
+    {
+        if (format == MatroskaFormat.Instance || format == Mp4Format.Instance)
+        {
+            return own.CanEncode ? own : FlacCodec.Instance;
+        }
+
+        AudioCodec usual = AudioWriter.DefaultCodec(format);
+        return own.CanEncode && (own.CodecId == usual.CodecId || (own is PcmCodec && usual is PcmCodec)) ? own : usual;
+    }
+
     private static void ThrowIfCannotEncode(AudioCodec? audio)
     {
         if (audio is { CanEncode: false })
@@ -307,7 +331,7 @@ public static partial class MediaFile
         }
     }
 
-    private static readonly Dictionary<int, (IAudioDecoder Decoder, IAudioEncoder Encoder)> Empty = [];
+    private static readonly Dictionary<int, (IAudioDecoder Decoder, IAudioEncoder Encoder, IAudioFilter? Filter)> Empty = [];
 
     /// <summary>The rate Opus always decodes at, whatever rate its header says the source had.</summary>
     private const int OpusDecodeRate = 48000;
@@ -319,7 +343,7 @@ public static partial class MediaFile
     /// and with a token that cannot be cancelled it runs exactly as a plain demux-mux loop: no wrapper, no clock. With
     /// <paramref name="keepWebMAudio"/> Vorbis tracks are copied too, as WebM holds them.
     /// </summary>
-    private static long RunJob(Stream input, bool leaveInputOpen, JobOutput target, AudioCodec? audio, int? audioLevel, Func<TrackInfo, bool>? tracks, MediaContext context, IProgress<MediaProgress>? progress, CancellationToken cancellationToken, bool keepWebMAudio = false)
+    private static long RunJob(Stream input, bool leaveInputOpen, JobOutput target, AudioCodec? audio, int? audioLevel, Func<TrackInfo, bool>? tracks, MediaContext context, IProgress<MediaProgress>? progress, CancellationToken cancellationToken, bool keepWebMAudio = false, Func<AudioTrackInfo, IAudioFilter?>? filters = null)
     {
         try
         {
@@ -328,26 +352,59 @@ public static partial class MediaFile
             JobStream? counted = progress is null ? null : new JobStream(input);
             using IDemuxer demuxer = OpenDemuxer(counted ?? input, context, leaveOpen: true);
             TrackInfo[] kept = [.. demuxer.Tracks.Where(t => tracks?.Invoke(t) ?? true)];
-            Dictionary<int, (IAudioDecoder Decoder, IAudioEncoder Encoder)>? recoded = audio is null ? null : [];
+            Dictionary<int, (IAudioDecoder Decoder, IAudioEncoder Encoder, IAudioFilter? Filter)>? recoded = audio is null && filters is null ? null : [];
             try
             {
                 for (int i = 0; i < kept.Length && recoded is not null; i++)
                 {
-                    if (kept[i] is not AudioTrackInfo track || track.CodecId == audio!.CodecId || (keepWebMAudio && track.CodecId == CodecIds.Vorbis) || context.FindAudioCodec(track) is not { } codec)
+                    if (kept[i] is not AudioTrackInfo track || context.FindAudioCodec(track) is not { } codec)
                     {
                         continue;
                     }
 
-                    IAudioDecoder decoder = codec.CreateDecoder(track, new AudioDecoderOptions { Errors = DecodeErrorMode.Conceal }, context);
+                    // A filter job encodes every track it filters, with the codec given or else FilterCodec's choice; a plain
+                    // transcode copies the tracks already in its codec.
+                    IAudioFilter? filter = null;
+                    AudioCodec output;
+                    if (filters is not null)
+                    {
+                        if (filters(track) is not { } made)
+                        {
+                            continue;
+                        }
+
+                        filter = made;
+                        output = audio ?? FilterCodec(codec, target.Path is { } file ? FormatForPath(file, context) : context.FindContainer(target.Format!)!);
+                    }
+                    else if (track.CodecId == audio!.CodecId || (keepWebMAudio && track.CodecId == CodecIds.Vorbis))
+                    {
+                        continue;
+                    }
+                    else
+                    {
+                        output = audio;
+                    }
+
+                    IAudioDecoder decoder;
+                    try
+                    {
+                        decoder = codec.CreateDecoder(track, new AudioDecoderOptions { Errors = DecodeErrorMode.Conceal }, context);
+                    }
+                    catch
+                    {
+                        filter?.Dispose();
+                        throw;
+                    }
+
                     IAudioEncoder encoder;
                     try
                     {
-                        encoder = audio.CreateEncoder(
+                        encoder = output.CreateEncoder(
                             new AudioEncoderOptions
                             {
                                 SampleRate = track.CodecId == CodecIds.Opus ? OpusDecodeRate : track.SampleRate,
                                 Layout = track.EffectiveLayout,
-                                BitsPerSample = audio.CodecId == CodecIds.PcmFloat ? 32 : track.BitsPerSample is > 0 and <= 32 && track.CodecId != CodecIds.PcmFloat ? track.BitsPerSample : audio.CodecId == CodecIds.Flac ? 24 : 16,
+                                BitsPerSample = output.CodecId == CodecIds.PcmFloat ? 32 : track.BitsPerSample is > 0 and <= 32 && track.CodecId != CodecIds.PcmFloat ? track.BitsPerSample : output.CodecId == CodecIds.Flac ? 24 : 16,
                                 Level = audioLevel,
                             },
                             context);
@@ -355,10 +412,11 @@ public static partial class MediaFile
                     catch
                     {
                         decoder.Dispose();
+                        filter?.Dispose();
                         throw;
                     }
 
-                    recoded[track.Number] = (decoder, encoder);
+                    recoded[track.Number] = (decoder, encoder, filter);
                     kept[i] = encoder.Track with { Number = track.Number, Language = track.Language, Name = track.Name, IsDefault = track.IsDefault, Tags = track.Tags };
                 }
 
@@ -368,10 +426,11 @@ public static partial class MediaFile
             {
                 if (recoded is not null)
                 {
-                    foreach ((IAudioDecoder decoder, IAudioEncoder encoder) in recoded.Values)
+                    foreach ((IAudioDecoder decoder, IAudioEncoder encoder, IAudioFilter? filter) in recoded.Values)
                     {
                         decoder.Dispose();
                         encoder.Dispose();
+                        filter?.Dispose();
                     }
                 }
             }
@@ -390,7 +449,7 @@ public static partial class MediaFile
         }
     }
 
-    private static long Mux(IDemuxer demuxer, TrackInfo[] kept, Dictionary<int, (IAudioDecoder Decoder, IAudioEncoder Encoder)>? recoded, JobOutput target, MediaContext context, IProgress<MediaProgress>? progress, JobStream? input, long inputLength, CancellationToken cancellationToken)
+    private static long Mux(IDemuxer demuxer, TrackInfo[] kept, Dictionary<int, (IAudioDecoder Decoder, IAudioEncoder Encoder, IAudioFilter? Filter)>? recoded, JobOutput target, MediaContext context, IProgress<MediaProgress>? progress, JobStream? input, long inputLength, CancellationToken cancellationToken)
     {
         HashSet<int> numbers = [.. kept.Select(t => t.Number)];
         ContainerFormat format = target.Path is { } path
@@ -419,15 +478,40 @@ public static partial class MediaFile
             reporter?.Written(packet);
         }
 
-        void Drain(IMuxer muxer, int number, IAudioDecoder decoder, IAudioEncoder encoder)
+        void Drain(IMuxer muxer, int number, IAudioDecoder decoder, IAudioEncoder encoder, IAudioFilter? filter)
         {
             while (decoder.TryReceive(out AudioFrame? frame))
             {
                 using (frame)
                 {
-                    encoder.Send(frame);
+                    if (filter is null)
+                    {
+                        encoder.Send(frame);
+                        continue;
+                    }
+
+                    filter.Send(frame);
+                }
+
+                Filtered(filter, encoder);
+            }
+
+            Encoded(muxer, number, encoder);
+        }
+
+        static void Filtered(IAudioFilter filter, IAudioEncoder encoder)
+        {
+            while (filter.TryReceive(out AudioFrame? filtered))
+            {
+                using (filtered)
+                {
+                    encoder.Send(filtered);
                 }
             }
+        }
+
+        void Encoded(IMuxer muxer, int number, IAudioEncoder encoder)
+        {
 
             while (encoder.TryReceive(out EncodedPacket? packet))
             {
@@ -455,7 +539,7 @@ public static partial class MediaFile
                     if (recoded is not null && recoded.TryGetValue(packet.TrackNumber, out var pair))
                     {
                         pair.Decoder.Send(packet);
-                        Drain(muxer, packet.TrackNumber, pair.Decoder, pair.Encoder);
+                        Drain(muxer, packet.TrackNumber, pair.Decoder, pair.Encoder, pair.Filter);
                     }
                     else
                     {
@@ -464,13 +548,19 @@ public static partial class MediaFile
                 }
             }
 
-            foreach ((int number, (IAudioDecoder decoder, IAudioEncoder encoder)) in recoded ?? Empty)
+            foreach ((int number, (IAudioDecoder decoder, IAudioEncoder encoder, IAudioFilter? filter)) in recoded ?? Empty)
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 decoder.Flush();
-                Drain(muxer, number, decoder, encoder);
+                Drain(muxer, number, decoder, encoder, filter);
+                if (filter is not null)
+                {
+                    filter.Flush();
+                    Filtered(filter, encoder);
+                }
+
                 encoder.Flush();
-                Drain(muxer, number, decoder, encoder);
+                Encoded(muxer, number, encoder);
                 if (muxer is ITrackUpdatable updatable)
                 {
                     updatable.UpdateTrack(encoder.Track);

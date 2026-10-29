@@ -47,6 +47,9 @@ internal sealed class CoverageRasterizer : IDisposable
     private readonly WorkspacePool _workspaces;
     private readonly int _maxParallelism;
     private int[] _lines = new int[256];
+
+    // GDI+'s sampling (GdiPlus), made on the first such fill and reused, so its sorted edges keep their arrays.
+    private SampledRasterizer? _sampled;
     private int _lineCount;
 
     internal CoverageRasterizer(IPixelMemorySource source, int maxParallelism)
@@ -86,19 +89,16 @@ internal sealed class CoverageRasterizer : IDisposable
         int bands = BandCount(area, bytesPerPixel);
         if (antialias && GdiPlus)
         {
-            SampledRasterizer sampled = new(edges, area, rule == FillRule.EvenOdd);
-            Run(bands, area.Height, (start, end) =>
+            _sampled ??= new SampledRasterizer();
+            _sampled.Prepare(edges, area, rule == FillRule.EvenOdd);
+            if (bands <= 1)
             {
-                Workspace workspace = _workspaces.Rent();
-                try
-                {
-                    sampled.Band(start, end, workspace, sink);
-                }
-                finally
-                {
-                    _workspaces.Return(workspace);
-                }
-            });
+                SampledBand(0, area.Height, sink);
+            }
+            else
+            {
+                Run(bands, area.Height, (start, end) => SampledBand(start, end, sink));
+            }
         }
         else if (antialias)
         {
@@ -261,6 +261,19 @@ internal sealed class CoverageRasterizer : IDisposable
     }
 
     private static int Fixed(double v) => (int)Math.Round(v * 256);
+
+    private void SampledBand(int start, int end, ISpanSink sink)
+    {
+        Workspace workspace = _workspaces.Rent();
+        try
+        {
+            _sampled!.Band(start, end, workspace, sink);
+        }
+        finally
+        {
+            _workspaces.Return(workspace);
+        }
+    }
 
     /// <summary>Accumulates and sweeps rows <paramref name="start"/> to <paramref name="end"/> of the area.</summary>
     private void Band(Rect area, int start, int end, bool evenOdd, ISpanSink sink)

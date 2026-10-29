@@ -212,4 +212,155 @@ public class AudioFilters
         Assert.Equal(115200, Drain(tempo));
         Assert.Equal(115200, Drain(speed));
     }
+
+    [Fact]
+    public void Equalizer()
+    {
+        List<AudioFrame> frames = Music();
+
+        #region audio-equalizer
+        // Rumble out below 80 Hz (24 dB per octave), a little warmth, less harshness and some air.
+        using AudioFilterChain chain = new AudioFilterChain(48000, ChannelLayout.Stereo)
+            .Add(new Butterworth(BiquadKind.HighPass, 80, order: 4))
+            .Add(new ParametricEqualizer(
+                new EqualizerBand(BiquadKind.LowShelf, 150, Gain: 2),
+                new EqualizerBand(BiquadKind.Peaking, 3000, Gain: -4, Q: 1.5),
+                new EqualizerBand(BiquadKind.HighShelf, 10000, Gain: 3)))
+            .Add(Biquad.FromBandwidth(BiquadKind.Notch, 50, octaves: 0.1)); // mains hum
+        #endregion
+        int samples = 0;
+        foreach (AudioFrame frame in frames)
+        {
+            chain.Send(frame);
+            frame.Dispose();
+            samples += Drain(chain);
+        }
+
+        Assert.Equal(3 * 48000, samples);
+    }
+
+    [Fact]
+    public void Dynamics()
+    {
+        List<AudioFrame> frames = Music();
+
+        #region audio-dynamics
+        // A voice chain: gate the room noise, even out the level 4:1 above -20 dBFS, then keep true peaks under -1 dBTP.
+        using AudioFilterChain chain = new AudioFilterChain(48000, ChannelLayout.Stereo)
+            .Add(new Gate { Threshold = -50, Range = -20 })
+            .Add(new Compressor { Threshold = -20, Ratio = 4, Makeup = 4 })
+            .Add(new Limiter { Ceiling = -1, TruePeak = true });
+        #endregion
+        int samples = 0;
+        foreach (AudioFrame frame in frames)
+        {
+            chain.Send(frame);
+            frame.Dispose();
+            samples += Drain(chain);
+        }
+
+        chain.Flush();
+        samples += Drain(chain);
+        Assert.Equal(3 * 48000, samples);
+    }
+
+    [Fact]
+    public void Ducking()
+    {
+        List<AudioFrame> music = Music();
+        List<AudioFrame> voice = [.. TestSources.Sine(TestAudioFormat.Default, MediaTime.FromSeconds(3), 220)];
+        int samples = 0;
+
+        #region audio-ducking
+        // Music ducks under a voice-over: the voice's level drives the music's compressor.
+        using Compressor ducker = new() { Sidechain = true, Threshold = -30, Ratio = 8, Release = MediaTime.FromSeconds(0.4) };
+        for (int i = 0; i < music.Count; i++)
+        {
+            ducker.SendSidechain(voice[i]);
+            ducker.Send(music[i]);
+            while (ducker.TryReceive(out AudioFrame? output))
+            {
+                samples += output.SampleCount; // mix it with the voice in an AudioMixer here
+                output.Dispose();
+            }
+        }
+
+        ducker.CompleteSidechain();
+        ducker.Flush();
+        #endregion
+        samples += Drain(ducker);
+        music.ForEach(f => f.Dispose());
+        voice.ForEach(f => f.Dispose());
+        Assert.Equal(3 * 48000, samples);
+    }
+
+    [Fact]
+    public async Task Loudness()
+    {
+        string input = Path.Combine(Path.GetTempPath(), $"egami-loudness-{Guid.NewGuid():N}.wav");
+        string output = Path.ChangeExtension(input, ".flac");
+        using (AudioWriter writer = AudioWriter.Create(input))
+        {
+            foreach (AudioFrame frame in Music(5))
+            {
+                using (frame)
+                {
+                    writer.Write(frame);
+                }
+            }
+        }
+
+        try
+        {
+            #region audio-loudness
+            // Two passes over a file: measure each audio track, then apply one gain (and a true-peak limiter only if needed).
+            IReadOnlyList<LoudnessNormalization> done = await Egami.Video.Audio.Filters.AudioFilters.NormalizeLoudnessAsync(input, output, LoudnessTarget.Podcast);
+            Console.WriteLine($"{done[0].Measured.Integrated:F1} LUFS, {done[0].Gain:+0.0;-0.0} dB, limited: {done[0].Limited}");
+
+            // The same as a filter, from your own first pass; or one pass, following the loudness as it goes.
+            LoudnessMeter meter = new();
+            foreach (AudioFrame frame in Music())
+            {
+                using (frame)
+                {
+                    meter.Add(frame);
+                }
+            }
+
+            using LoudnessNormalizer linear = new(LoudnessTarget.EbuR128, meter.Report());
+            using LoudnessNormalizer live = LoudnessNormalizer.Dynamic(LoudnessTarget.Streaming);
+            #endregion
+            Assert.Single(done);
+            Assert.True(File.Exists(output));
+            Assert.False(linear.IsDynamic);
+            Assert.True(live.IsDynamic);
+        }
+        finally
+        {
+            File.Delete(input);
+            File.Delete(output);
+        }
+    }
+
+    [Fact]
+    public void Silence()
+    {
+        List<AudioFrame> frames = [.. TestSources.Silence(TestAudioFormat.Default, MediaTime.FromSeconds(1)), .. Music(2)];
+
+        #region audio-silence
+        // Cut a voice recording's lead-in and tail, and pauses over 1 s down to 0.3 s. Audio only: the result is shorter.
+        using SilenceRemover remover = new(SilenceRemoval.Shorten) { Threshold = -45 };
+        #endregion
+        int samples = 0;
+        foreach (AudioFrame frame in frames)
+        {
+            remover.Send(frame);
+            frame.Dispose();
+            samples += Drain(remover);
+        }
+
+        remover.Flush();
+        samples += Drain(remover);
+        Assert.InRange(samples, 2 * 48000, (2 * 48000) + 2000);
+    }
 }

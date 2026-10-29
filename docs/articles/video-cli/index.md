@@ -52,6 +52,7 @@ With the `egami` tool installed too, `egami video info clip.mkv` runs `egami-vid
 | `animate` | Animated GIF, WebP or APNG | `ffmpeg -i in.mp4 out.gif` |
 | `hash` | Hashes of every frame or packet | `-f framemd5` |
 | `compare` | PSNR and SSIM between clips | `-lavfi psnr`, `-lavfi ssim` |
+| `verify` | Check FFV1 files for damage without decoding | `-err_detect crccheck -f null -` |
 | `audio` | Audio to WAV, FLAC, Opus, AIFF, CAF or ALAC; audio again while copying video | `-vn -c:a flac`, `-c:a libopus -b:a`, `-ar`, `-ac` |
 | `join` | Clips of any size, rate and audio fitted to one canvas and joined, with transitions | `concat` filter with `scale`, `pad`, `fps`; `xfade` and `acrossfade` |
 | `fade` | Fade in from and out to a colour, picture and sound | `-vf fade -af afade` |
@@ -68,9 +69,13 @@ With the `egami` tool installed too, `egami video info clip.mkv` runs `egami-vid
 | `formats` | The containers and codecs this build reads and writes | `ffmpeg -formats` |
 
 Commands that copy packets (`remux`, `trim`, `concat`, `segment`, `timestamps`, `extract`, `embed`, `metadata`) never decode, so
-they work on any codec, H.264 and AAC included. Commands that decode need a codec Egami.Video decodes: Motion JPEG, VP8, VP9, AV1
-and uncompressed video, and PCM, FLAC, Opus and Vorbis audio. `encode` and `run` write Motion JPEG, VP8, VP9, AV1 or uncompressed video; `encode --codec vp8`, `vp9` or `av1` takes
-`--effort` and `--bitrate` (see [Encoding video](../guides/video-encoding.md)).
+they work on any codec, H.264 and AAC included. Commands that decode need a codec Egami.Video decodes: Motion JPEG, VP8, VP9, AV1,
+FFV1 and uncompressed video, and PCM, FLAC, Opus and Vorbis audio. `encode` and `run` write Motion JPEG, VP8, VP9, AV1, FFV1 or uncompressed video; `encode --codec vp8`, `vp9` or `av1` takes
+`--effort` and `--bitrate` (see [Encoding video](../guides/video-encoding.md)). `--keyframe-interval` spaces keyframes for any codec.
+
+`--codec ffv1` writes lossless FFV1 version 3 to Matroska or AVI, with the archival defaults: every frame a keyframe, slice CRCs
+on and a slice grid picked from the frame size. `--slices`, `--no-slice-crc`, `--coder range|range-default|golomb` and
+`--context small|large` change them. `run` keeps an FFV1 input in FFV1.
 
 ## Inspecting
 
@@ -300,11 +305,15 @@ egami-video run in.avi grayscale @0.2-0.6 + blur 2 @0.4- + save windowed.mkv
 
 `hash` writes a hash of every decoded frame (or every packet with `--packets`) in the layout of `ffmpeg -f framemd5`, and the
 hashes equal ffmpeg's for the same decoded planes. `compare` measures PSNR and SSIM per plane between a reference and other
-clips, and `--min-psnr` or `--min-ssim` turn it into a check that exits with 1.
+clips, and `--min-psnr` or `--min-ssim` turn it into a check that exits with 1. `verify` checks FFV1 files for damage without
+decoding a picture: every slice's CRC and footer and the configuration CRC, far faster than a decode, so an archive can run it
+routinely; it exits with 1 when a file is damaged and lists each damaged slice (`--json` for scripts).
 
 ```sh
 egami-video hash in.webm --total
 egami-video compare in.mkv small.mkv --scale --json
+egami-video encode in.mkv --codec ffv1 -o archive.mkv
+egami-video verify archive.mkv
 ```
 
 ## Files, batches and pipes

@@ -14,6 +14,41 @@ internal sealed record HintedGlyph(float[] X, float[] Y, bool[] OnCurve, int[] C
     /// <summary>Gets a value indicating whether the glyph's program moved or touched its advance phantom point in x.</summary>
     public bool AdvanceTouched { get; init; }
 
+    /// <summary>
+    /// Gets a value indicating whether the font's scan control asks for dropout control at this size (SCANCTRL, as the TrueType
+    /// specification defines it, for an upright, unstretched glyph) with a scan type that has it (0, 1, 4 or 5).
+    /// </summary>
+    public bool Dropout { get; init; }
+
+    /// <summary>Gets whether the scan type is a smart one (4 or 5): a dropout turns on the pixel nearer the stroke's middle.</summary>
+    public bool SmartDropout { get; init; }
+
+    /// <summary>Gets whether the scan type leaves out stubs (1 or 5): dropouts where a stroke ends.</summary>
+    public bool NoStubs { get; init; }
+
+    /// <summary>
+    /// Returns whether SCANCTRL's value turns dropout control on at a ppem: bit 8 on at or below the threshold in bits 0 to 7
+    /// (0xFF for every size), bit 11 off above it; bits 9 and 10 (rotated, stretched) do not apply and bits 12 and 13 (off unless
+    /// rotated, stretched) turn it off.
+    /// </summary>
+    internal static bool DropoutOn(int control, int ppem)
+    {
+        int threshold = control & 0xFF;
+        bool atOrBelow = threshold == 0xFF || ppem <= threshold;
+        bool on = (control & 0x100) != 0 && atOrBelow;
+        if ((control & 0x800) != 0 && !atOrBelow)
+        {
+            on = false;
+        }
+
+        if ((control & 0x3000) != 0)
+        {
+            on = false;
+        }
+
+        return on;
+    }
+
     /// <summary>Records the contours as lines and quadratic curves, as the TrueType specification defines its outlines.</summary>
     public void Emit(IGlyphOutlineSink sink)
     {
@@ -92,6 +127,7 @@ internal sealed class GlyphHinter
             return null;
         }
 
+        _interpreter.ResetScan();
         Loaded g = Load(glyph, 0);
         int n = g.X.Length - 4;
         float left = g.X[n] / 64f;
@@ -103,7 +139,14 @@ internal sealed class GlyphHinter
             y[i] = g.Y[i] / 64f;
         }
 
-        return new HintedGlyph(x, y, g.On[..n], g.Ends, (g.X[n + 1] - g.X[n]) / 64f) { AdvanceTouched = g.AdvanceTouched };
+        (int control, int type) = _interpreter.Scan;
+        return new HintedGlyph(x, y, g.On[..n], g.Ends, (g.X[n + 1] - g.X[n]) / 64f)
+        {
+            AdvanceTouched = g.AdvanceTouched,
+            Dropout = type is 0 or 1 or 4 or 5 && HintedGlyph.DropoutOn(control, ppem),
+            SmartDropout = type is 4 or 5,
+            NoStubs = type is 1 or 5,
+        };
     }
 
     // A loaded glyph: current positions in 26.6 with its four phantom points last.
