@@ -107879,6 +107879,44 @@ references:
   isSpec: "True"
   fullName: Egami.Video.Audio.Filters.AudioFilterChain.InputRate
   nameWithType: AudioFilterChain.InputRate
+- uid: Egami.Video.Audio.Filters.AudioFilters
+  name: AudioFilters
+  href: api/Egami.Video.Audio.Filters.AudioFilters.html
+  commentId: T:Egami.Video.Audio.Filters.AudioFilters
+  fullName: Egami.Video.Audio.Filters.AudioFilters
+  nameWithType: AudioFilters
+- uid: Egami.Video.Audio.Filters.AudioFilters.ApplyAsync(System.String,System.String,System.Func{Egami.Video.AudioTrackInfo,Egami.Video.Audio.Filters.IAudioFilter},Egami.Video.Audio.AudioCodec,System.Nullable{System.Int32},Egami.Video.MediaContext,System.IProgress{Egami.Video.MediaProgress},System.Threading.CancellationToken)
+  name: ApplyAsync(string, string, Func<AudioTrackInfo, IAudioFilter?>, AudioCodec?, int?, MediaContext?, IProgress<MediaProgress>?, CancellationToken)
+  href: api/Egami.Video.Audio.Filters.AudioFilters.html#Egami_Video_Audio_Filters_AudioFilters_ApplyAsync_System_String_System_String_System_Func_Egami_Video_AudioTrackInfo_Egami_Video_Audio_Filters_IAudioFilter__Egami_Video_Audio_AudioCodec_System_Nullable_System_Int32__Egami_Video_MediaContext_System_IProgress_Egami_Video_MediaProgress__System_Threading_CancellationToken_
+  commentId: M:Egami.Video.Audio.Filters.AudioFilters.ApplyAsync(System.String,System.String,System.Func{Egami.Video.AudioTrackInfo,Egami.Video.Audio.Filters.IAudioFilter},Egami.Video.Audio.AudioCodec,System.Nullable{System.Int32},Egami.Video.MediaContext,System.IProgress{Egami.Video.MediaProgress},System.Threading.CancellationToken)
+  name.vb: ApplyAsync(String, String, Func(Of AudioTrackInfo, IAudioFilter), AudioCodec, Integer?, MediaContext, IProgress(Of MediaProgress), CancellationToken)
+  fullName: Egami.Video.Audio.Filters.AudioFilters.ApplyAsync(string, string, System.Func<Egami.Video.AudioTrackInfo, Egami.Video.Audio.Filters.IAudioFilter?>, Egami.Video.Audio.AudioCodec?, int?, Egami.Video.MediaContext?, System.IProgress<Egami.Video.MediaProgress>?, System.Threading.CancellationToken)
+  fullName.vb: Egami.Video.Audio.Filters.AudioFilters.ApplyAsync(String, String, System.Func(Of Egami.Video.AudioTrackInfo, Egami.Video.Audio.Filters.IAudioFilter), Egami.Video.Audio.AudioCodec, Integer?, Egami.Video.MediaContext, System.IProgress(Of Egami.Video.MediaProgress), System.Threading.CancellationToken)
+  nameWithType: AudioFilters.ApplyAsync(string, string, Func<AudioTrackInfo, IAudioFilter?>, AudioCodec?, int?, MediaContext?, IProgress<MediaProgress>?, CancellationToken)
+  nameWithType.vb: AudioFilters.ApplyAsync(String, String, Func(Of AudioTrackInfo, IAudioFilter), AudioCodec, Integer?, MediaContext, IProgress(Of MediaProgress), CancellationToken)
+- uid: Egami.Video.Audio.Filters.AudioFilters.ApplyAsync*
+  name: ApplyAsync
+  href: api/Egami.Video.Audio.Filters.AudioFilters.html#Egami_Video_Audio_Filters_AudioFilters_ApplyAsync_
+  commentId: Overload:Egami.Video.Audio.Filters.AudioFilters.ApplyAsync
+  isSpec: "True"
+  fullName: Egami.Video.Audio.Filters.AudioFilters.ApplyAsync
+  nameWithType: AudioFilters.ApplyAsync
+- uid: Egami.Video.Audio.Filters.AudioFilters.NormalizeLoudnessAsync(System.String,System.String,Egami.Video.Audio.Filters.LoudnessTarget,Egami.Video.Audio.AudioCodec,System.Nullable{System.Int32},Egami.Video.MediaContext,System.IProgress{Egami.Video.MediaProgress},System.Threading.CancellationToken)
+  name: NormalizeLoudnessAsync(string, string, LoudnessTarget?, AudioCodec?, int?, MediaContext?, IProgress<MediaProgress>?, CancellationToken)
+  href: api/Egami.Video.Audio.Filters.AudioFilters.html#Egami_Video_Audio_Filters_AudioFilters_NormalizeLoudnessAsync_System_String_System_String_Egami_Video_Audio_Filters_LoudnessTarget_Egami_Video_Audio_AudioCodec_System_Nullable_System_Int32__Egami_Video_MediaContext_System_IProgress_Egami_Video_MediaProgress__System_Threading_CancellationToken_
+  commentId: M:Egami.Video.Audio.Filters.AudioFilters.NormalizeLoudnessAsync(System.String,System.String,Egami.Video.Audio.Filters.LoudnessTarget,Egami.Video.Audio.AudioCodec,System.Nullable{System.Int32},Egami.Video.MediaContext,System.IProgress{Egami.Video.MediaProgress},System.Threading.CancellationToken)
+  name.vb: NormalizeLoudnessAsync(String, String, LoudnessTarget, AudioCodec, Integer?, MediaContext, IProgress(Of MediaProgress), CancellationToken)
+  fullName: Egami.Video.Audio.Filters.AudioFilters.NormalizeLoudnessAsync(string, string, Egami.Video.Audio.Filters.LoudnessTarget?, Egami.Video.Audio.AudioCodec?, int?, Egami.Video.MediaContext?, System.IProgress<Egami.Video.MediaProgress>?, System.Threading.CancellationToken)
+  fullName.vb: Egami.Video.Audio.Filters.AudioFilters.NormalizeLoudnessAsync(String, String, Egami.Video.Audio.Filters.LoudnessTarget, Egami.Video.Audio.AudioCodec, Integer?, Egami.Video.MediaContext, System.IProgress(Of Egami.Video.MediaProgress), System.Threading.CancellationToken)
+  nameWithType: AudioFilters.NormalizeLoudnessAsync(string, string, LoudnessTarget?, AudioCodec?, int?, MediaContext?, IProgress<MediaProgress>?, CancellationToken)
+  nameWithType.vb: AudioFilters.NormalizeLoudnessAsync(String, String, LoudnessTarget, AudioCodec, Integer?, MediaContext, IProgress(Of MediaProgress), CancellationToken)
+- uid: Egami.Video.Audio.Filters.AudioFilters.NormalizeLoudnessAsync*
+  name: NormalizeLoudnessAsync
+  href: api/Egami.Video.Audio.Filters.AudioFilters.html#Egami_Video_Audio_Filters_AudioFilters_NormalizeLoudnessAsync_
+  commentId: Overload:Egami.Video.Audio.Filters.AudioFilters.NormalizeLoudnessAsync
+  isSpec: "True"
+  fullName: Egami.Video.Audio.Filters.AudioFilters.NormalizeLoudnessAsync
+  nameWithType: AudioFilters.NormalizeLoudnessAsync
 - uid: Egami.Video.Audio.Filters.AudioMixer
   name: AudioMixer
   href: api/Egami.Video.Audio.Filters.AudioMixer.html
@@ -109160,6 +109198,318 @@ references:
   isSpec: "True"
   fullName: Egami.Video.Audio.Filters.Limiter.TruePeak
   nameWithType: Limiter.TruePeak
+- uid: Egami.Video.Audio.Filters.LoudnessNormalization
+  name: LoudnessNormalization
+  href: api/Egami.Video.Audio.Filters.LoudnessNormalization.html
+  commentId: T:Egami.Video.Audio.Filters.LoudnessNormalization
+  fullName: Egami.Video.Audio.Filters.LoudnessNormalization
+  nameWithType: LoudnessNormalization
+- uid: Egami.Video.Audio.Filters.LoudnessNormalization.#ctor(System.Int32,Egami.Video.Audio.LoudnessReport,System.Double,System.Boolean)
+  name: LoudnessNormalization(int, LoudnessReport, double, bool)
+  href: api/Egami.Video.Audio.Filters.LoudnessNormalization.html#Egami_Video_Audio_Filters_LoudnessNormalization__ctor_System_Int32_Egami_Video_Audio_LoudnessReport_System_Double_System_Boolean_
+  commentId: M:Egami.Video.Audio.Filters.LoudnessNormalization.#ctor(System.Int32,Egami.Video.Audio.LoudnessReport,System.Double,System.Boolean)
+  name.vb: New(Integer, LoudnessReport, Double, Boolean)
+  fullName: Egami.Video.Audio.Filters.LoudnessNormalization.LoudnessNormalization(int, Egami.Video.Audio.LoudnessReport, double, bool)
+  fullName.vb: Egami.Video.Audio.Filters.LoudnessNormalization.New(Integer, Egami.Video.Audio.LoudnessReport, Double, Boolean)
+  nameWithType: LoudnessNormalization.LoudnessNormalization(int, LoudnessReport, double, bool)
+  nameWithType.vb: LoudnessNormalization.New(Integer, LoudnessReport, Double, Boolean)
+- uid: Egami.Video.Audio.Filters.LoudnessNormalization.#ctor*
+  name: LoudnessNormalization
+  href: api/Egami.Video.Audio.Filters.LoudnessNormalization.html#Egami_Video_Audio_Filters_LoudnessNormalization__ctor_
+  commentId: Overload:Egami.Video.Audio.Filters.LoudnessNormalization.#ctor
+  isSpec: "True"
+  name.vb: New
+  fullName: Egami.Video.Audio.Filters.LoudnessNormalization.LoudnessNormalization
+  fullName.vb: Egami.Video.Audio.Filters.LoudnessNormalization.New
+  nameWithType: LoudnessNormalization.LoudnessNormalization
+  nameWithType.vb: LoudnessNormalization.New
+- uid: Egami.Video.Audio.Filters.LoudnessNormalization.Gain
+  name: Gain
+  href: api/Egami.Video.Audio.Filters.LoudnessNormalization.html#Egami_Video_Audio_Filters_LoudnessNormalization_Gain
+  commentId: P:Egami.Video.Audio.Filters.LoudnessNormalization.Gain
+  fullName: Egami.Video.Audio.Filters.LoudnessNormalization.Gain
+  nameWithType: LoudnessNormalization.Gain
+- uid: Egami.Video.Audio.Filters.LoudnessNormalization.Gain*
+  name: Gain
+  href: api/Egami.Video.Audio.Filters.LoudnessNormalization.html#Egami_Video_Audio_Filters_LoudnessNormalization_Gain_
+  commentId: Overload:Egami.Video.Audio.Filters.LoudnessNormalization.Gain
+  isSpec: "True"
+  fullName: Egami.Video.Audio.Filters.LoudnessNormalization.Gain
+  nameWithType: LoudnessNormalization.Gain
+- uid: Egami.Video.Audio.Filters.LoudnessNormalization.Limited
+  name: Limited
+  href: api/Egami.Video.Audio.Filters.LoudnessNormalization.html#Egami_Video_Audio_Filters_LoudnessNormalization_Limited
+  commentId: P:Egami.Video.Audio.Filters.LoudnessNormalization.Limited
+  fullName: Egami.Video.Audio.Filters.LoudnessNormalization.Limited
+  nameWithType: LoudnessNormalization.Limited
+- uid: Egami.Video.Audio.Filters.LoudnessNormalization.Limited*
+  name: Limited
+  href: api/Egami.Video.Audio.Filters.LoudnessNormalization.html#Egami_Video_Audio_Filters_LoudnessNormalization_Limited_
+  commentId: Overload:Egami.Video.Audio.Filters.LoudnessNormalization.Limited
+  isSpec: "True"
+  fullName: Egami.Video.Audio.Filters.LoudnessNormalization.Limited
+  nameWithType: LoudnessNormalization.Limited
+- uid: Egami.Video.Audio.Filters.LoudnessNormalization.Measured
+  name: Measured
+  href: api/Egami.Video.Audio.Filters.LoudnessNormalization.html#Egami_Video_Audio_Filters_LoudnessNormalization_Measured
+  commentId: P:Egami.Video.Audio.Filters.LoudnessNormalization.Measured
+  fullName: Egami.Video.Audio.Filters.LoudnessNormalization.Measured
+  nameWithType: LoudnessNormalization.Measured
+- uid: Egami.Video.Audio.Filters.LoudnessNormalization.Measured*
+  name: Measured
+  href: api/Egami.Video.Audio.Filters.LoudnessNormalization.html#Egami_Video_Audio_Filters_LoudnessNormalization_Measured_
+  commentId: Overload:Egami.Video.Audio.Filters.LoudnessNormalization.Measured
+  isSpec: "True"
+  fullName: Egami.Video.Audio.Filters.LoudnessNormalization.Measured
+  nameWithType: LoudnessNormalization.Measured
+- uid: Egami.Video.Audio.Filters.LoudnessNormalization.TrackNumber
+  name: TrackNumber
+  href: api/Egami.Video.Audio.Filters.LoudnessNormalization.html#Egami_Video_Audio_Filters_LoudnessNormalization_TrackNumber
+  commentId: P:Egami.Video.Audio.Filters.LoudnessNormalization.TrackNumber
+  fullName: Egami.Video.Audio.Filters.LoudnessNormalization.TrackNumber
+  nameWithType: LoudnessNormalization.TrackNumber
+- uid: Egami.Video.Audio.Filters.LoudnessNormalization.TrackNumber*
+  name: TrackNumber
+  href: api/Egami.Video.Audio.Filters.LoudnessNormalization.html#Egami_Video_Audio_Filters_LoudnessNormalization_TrackNumber_
+  commentId: Overload:Egami.Video.Audio.Filters.LoudnessNormalization.TrackNumber
+  isSpec: "True"
+  fullName: Egami.Video.Audio.Filters.LoudnessNormalization.TrackNumber
+  nameWithType: LoudnessNormalization.TrackNumber
+- uid: Egami.Video.Audio.Filters.LoudnessNormalizer
+  name: LoudnessNormalizer
+  href: api/Egami.Video.Audio.Filters.LoudnessNormalizer.html
+  commentId: T:Egami.Video.Audio.Filters.LoudnessNormalizer
+  fullName: Egami.Video.Audio.Filters.LoudnessNormalizer
+  nameWithType: LoudnessNormalizer
+- uid: Egami.Video.Audio.Filters.LoudnessNormalizer.#ctor(Egami.Video.Audio.Filters.LoudnessTarget,Egami.Video.Audio.LoudnessReport)
+  name: LoudnessNormalizer(LoudnessTarget, LoudnessReport)
+  href: api/Egami.Video.Audio.Filters.LoudnessNormalizer.html#Egami_Video_Audio_Filters_LoudnessNormalizer__ctor_Egami_Video_Audio_Filters_LoudnessTarget_Egami_Video_Audio_LoudnessReport_
+  commentId: M:Egami.Video.Audio.Filters.LoudnessNormalizer.#ctor(Egami.Video.Audio.Filters.LoudnessTarget,Egami.Video.Audio.LoudnessReport)
+  name.vb: New(LoudnessTarget, LoudnessReport)
+  fullName: Egami.Video.Audio.Filters.LoudnessNormalizer.LoudnessNormalizer(Egami.Video.Audio.Filters.LoudnessTarget, Egami.Video.Audio.LoudnessReport)
+  fullName.vb: Egami.Video.Audio.Filters.LoudnessNormalizer.New(Egami.Video.Audio.Filters.LoudnessTarget, Egami.Video.Audio.LoudnessReport)
+  nameWithType: LoudnessNormalizer.LoudnessNormalizer(LoudnessTarget, LoudnessReport)
+  nameWithType.vb: LoudnessNormalizer.New(LoudnessTarget, LoudnessReport)
+- uid: Egami.Video.Audio.Filters.LoudnessNormalizer.#ctor*
+  name: LoudnessNormalizer
+  href: api/Egami.Video.Audio.Filters.LoudnessNormalizer.html#Egami_Video_Audio_Filters_LoudnessNormalizer__ctor_
+  commentId: Overload:Egami.Video.Audio.Filters.LoudnessNormalizer.#ctor
+  isSpec: "True"
+  name.vb: New
+  fullName: Egami.Video.Audio.Filters.LoudnessNormalizer.LoudnessNormalizer
+  fullName.vb: Egami.Video.Audio.Filters.LoudnessNormalizer.New
+  nameWithType: LoudnessNormalizer.LoudnessNormalizer
+  nameWithType.vb: LoudnessNormalizer.New
+- uid: Egami.Video.Audio.Filters.LoudnessNormalizer.Dispose(System.Boolean)
+  name: Dispose(bool)
+  href: api/Egami.Video.Audio.Filters.LoudnessNormalizer.html#Egami_Video_Audio_Filters_LoudnessNormalizer_Dispose_System_Boolean_
+  commentId: M:Egami.Video.Audio.Filters.LoudnessNormalizer.Dispose(System.Boolean)
+  name.vb: Dispose(Boolean)
+  fullName: Egami.Video.Audio.Filters.LoudnessNormalizer.Dispose(bool)
+  fullName.vb: Egami.Video.Audio.Filters.LoudnessNormalizer.Dispose(Boolean)
+  nameWithType: LoudnessNormalizer.Dispose(bool)
+  nameWithType.vb: LoudnessNormalizer.Dispose(Boolean)
+- uid: Egami.Video.Audio.Filters.LoudnessNormalizer.Dispose*
+  name: Dispose
+  href: api/Egami.Video.Audio.Filters.LoudnessNormalizer.html#Egami_Video_Audio_Filters_LoudnessNormalizer_Dispose_
+  commentId: Overload:Egami.Video.Audio.Filters.LoudnessNormalizer.Dispose
+  isSpec: "True"
+  fullName: Egami.Video.Audio.Filters.LoudnessNormalizer.Dispose
+  nameWithType: LoudnessNormalizer.Dispose
+- uid: Egami.Video.Audio.Filters.LoudnessNormalizer.Dynamic(Egami.Video.Audio.Filters.LoudnessTarget)
+  name: Dynamic(LoudnessTarget)
+  href: api/Egami.Video.Audio.Filters.LoudnessNormalizer.html#Egami_Video_Audio_Filters_LoudnessNormalizer_Dynamic_Egami_Video_Audio_Filters_LoudnessTarget_
+  commentId: M:Egami.Video.Audio.Filters.LoudnessNormalizer.Dynamic(Egami.Video.Audio.Filters.LoudnessTarget)
+  fullName: Egami.Video.Audio.Filters.LoudnessNormalizer.Dynamic(Egami.Video.Audio.Filters.LoudnessTarget)
+  nameWithType: LoudnessNormalizer.Dynamic(LoudnessTarget)
+- uid: Egami.Video.Audio.Filters.LoudnessNormalizer.Dynamic*
+  name: Dynamic
+  href: api/Egami.Video.Audio.Filters.LoudnessNormalizer.html#Egami_Video_Audio_Filters_LoudnessNormalizer_Dynamic_
+  commentId: Overload:Egami.Video.Audio.Filters.LoudnessNormalizer.Dynamic
+  isSpec: "True"
+  fullName: Egami.Video.Audio.Filters.LoudnessNormalizer.Dynamic
+  nameWithType: LoudnessNormalizer.Dynamic
+- uid: Egami.Video.Audio.Filters.LoudnessNormalizer.Gain
+  name: Gain
+  href: api/Egami.Video.Audio.Filters.LoudnessNormalizer.html#Egami_Video_Audio_Filters_LoudnessNormalizer_Gain
+  commentId: P:Egami.Video.Audio.Filters.LoudnessNormalizer.Gain
+  fullName: Egami.Video.Audio.Filters.LoudnessNormalizer.Gain
+  nameWithType: LoudnessNormalizer.Gain
+- uid: Egami.Video.Audio.Filters.LoudnessNormalizer.Gain*
+  name: Gain
+  href: api/Egami.Video.Audio.Filters.LoudnessNormalizer.html#Egami_Video_Audio_Filters_LoudnessNormalizer_Gain_
+  commentId: Overload:Egami.Video.Audio.Filters.LoudnessNormalizer.Gain
+  isSpec: "True"
+  fullName: Egami.Video.Audio.Filters.LoudnessNormalizer.Gain
+  nameWithType: LoudnessNormalizer.Gain
+- uid: Egami.Video.Audio.Filters.LoudnessNormalizer.IsDynamic
+  name: IsDynamic
+  href: api/Egami.Video.Audio.Filters.LoudnessNormalizer.html#Egami_Video_Audio_Filters_LoudnessNormalizer_IsDynamic
+  commentId: P:Egami.Video.Audio.Filters.LoudnessNormalizer.IsDynamic
+  fullName: Egami.Video.Audio.Filters.LoudnessNormalizer.IsDynamic
+  nameWithType: LoudnessNormalizer.IsDynamic
+- uid: Egami.Video.Audio.Filters.LoudnessNormalizer.IsDynamic*
+  name: IsDynamic
+  href: api/Egami.Video.Audio.Filters.LoudnessNormalizer.html#Egami_Video_Audio_Filters_LoudnessNormalizer_IsDynamic_
+  commentId: Overload:Egami.Video.Audio.Filters.LoudnessNormalizer.IsDynamic
+  isSpec: "True"
+  fullName: Egami.Video.Audio.Filters.LoudnessNormalizer.IsDynamic
+  nameWithType: LoudnessNormalizer.IsDynamic
+- uid: Egami.Video.Audio.Filters.LoudnessNormalizer.Limits
+  name: Limits
+  href: api/Egami.Video.Audio.Filters.LoudnessNormalizer.html#Egami_Video_Audio_Filters_LoudnessNormalizer_Limits
+  commentId: P:Egami.Video.Audio.Filters.LoudnessNormalizer.Limits
+  fullName: Egami.Video.Audio.Filters.LoudnessNormalizer.Limits
+  nameWithType: LoudnessNormalizer.Limits
+- uid: Egami.Video.Audio.Filters.LoudnessNormalizer.Limits*
+  name: Limits
+  href: api/Egami.Video.Audio.Filters.LoudnessNormalizer.html#Egami_Video_Audio_Filters_LoudnessNormalizer_Limits_
+  commentId: Overload:Egami.Video.Audio.Filters.LoudnessNormalizer.Limits
+  isSpec: "True"
+  fullName: Egami.Video.Audio.Filters.LoudnessNormalizer.Limits
+  nameWithType: LoudnessNormalizer.Limits
+- uid: Egami.Video.Audio.Filters.LoudnessNormalizer.Measured
+  name: Measured
+  href: api/Egami.Video.Audio.Filters.LoudnessNormalizer.html#Egami_Video_Audio_Filters_LoudnessNormalizer_Measured
+  commentId: P:Egami.Video.Audio.Filters.LoudnessNormalizer.Measured
+  fullName: Egami.Video.Audio.Filters.LoudnessNormalizer.Measured
+  nameWithType: LoudnessNormalizer.Measured
+- uid: Egami.Video.Audio.Filters.LoudnessNormalizer.Measured*
+  name: Measured
+  href: api/Egami.Video.Audio.Filters.LoudnessNormalizer.html#Egami_Video_Audio_Filters_LoudnessNormalizer_Measured_
+  commentId: Overload:Egami.Video.Audio.Filters.LoudnessNormalizer.Measured
+  isSpec: "True"
+  fullName: Egami.Video.Audio.Filters.LoudnessNormalizer.Measured
+  nameWithType: LoudnessNormalizer.Measured
+- uid: Egami.Video.Audio.Filters.LoudnessNormalizer.Target
+  name: Target
+  href: api/Egami.Video.Audio.Filters.LoudnessNormalizer.html#Egami_Video_Audio_Filters_LoudnessNormalizer_Target
+  commentId: P:Egami.Video.Audio.Filters.LoudnessNormalizer.Target
+  fullName: Egami.Video.Audio.Filters.LoudnessNormalizer.Target
+  nameWithType: LoudnessNormalizer.Target
+- uid: Egami.Video.Audio.Filters.LoudnessNormalizer.Target*
+  name: Target
+  href: api/Egami.Video.Audio.Filters.LoudnessNormalizer.html#Egami_Video_Audio_Filters_LoudnessNormalizer_Target_
+  commentId: Overload:Egami.Video.Audio.Filters.LoudnessNormalizer.Target
+  isSpec: "True"
+  fullName: Egami.Video.Audio.Filters.LoudnessNormalizer.Target
+  nameWithType: LoudnessNormalizer.Target
+- uid: Egami.Video.Audio.Filters.LoudnessTarget
+  name: LoudnessTarget
+  href: api/Egami.Video.Audio.Filters.LoudnessTarget.html
+  commentId: T:Egami.Video.Audio.Filters.LoudnessTarget
+  fullName: Egami.Video.Audio.Filters.LoudnessTarget
+  nameWithType: LoudnessTarget
+- uid: Egami.Video.Audio.Filters.LoudnessTarget.#ctor(System.Double,System.Double,System.Double)
+  name: LoudnessTarget(double, double, double)
+  href: api/Egami.Video.Audio.Filters.LoudnessTarget.html#Egami_Video_Audio_Filters_LoudnessTarget__ctor_System_Double_System_Double_System_Double_
+  commentId: M:Egami.Video.Audio.Filters.LoudnessTarget.#ctor(System.Double,System.Double,System.Double)
+  name.vb: New(Double, Double, Double)
+  fullName: Egami.Video.Audio.Filters.LoudnessTarget.LoudnessTarget(double, double, double)
+  fullName.vb: Egami.Video.Audio.Filters.LoudnessTarget.New(Double, Double, Double)
+  nameWithType: LoudnessTarget.LoudnessTarget(double, double, double)
+  nameWithType.vb: LoudnessTarget.New(Double, Double, Double)
+- uid: Egami.Video.Audio.Filters.LoudnessTarget.#ctor*
+  name: LoudnessTarget
+  href: api/Egami.Video.Audio.Filters.LoudnessTarget.html#Egami_Video_Audio_Filters_LoudnessTarget__ctor_
+  commentId: Overload:Egami.Video.Audio.Filters.LoudnessTarget.#ctor
+  isSpec: "True"
+  name.vb: New
+  fullName: Egami.Video.Audio.Filters.LoudnessTarget.LoudnessTarget
+  fullName.vb: Egami.Video.Audio.Filters.LoudnessTarget.New
+  nameWithType: LoudnessTarget.LoudnessTarget
+  nameWithType.vb: LoudnessTarget.New
+- uid: Egami.Video.Audio.Filters.LoudnessTarget.AtscA85
+  name: AtscA85
+  href: api/Egami.Video.Audio.Filters.LoudnessTarget.html#Egami_Video_Audio_Filters_LoudnessTarget_AtscA85
+  commentId: P:Egami.Video.Audio.Filters.LoudnessTarget.AtscA85
+  fullName: Egami.Video.Audio.Filters.LoudnessTarget.AtscA85
+  nameWithType: LoudnessTarget.AtscA85
+- uid: Egami.Video.Audio.Filters.LoudnessTarget.AtscA85*
+  name: AtscA85
+  href: api/Egami.Video.Audio.Filters.LoudnessTarget.html#Egami_Video_Audio_Filters_LoudnessTarget_AtscA85_
+  commentId: Overload:Egami.Video.Audio.Filters.LoudnessTarget.AtscA85
+  isSpec: "True"
+  fullName: Egami.Video.Audio.Filters.LoudnessTarget.AtscA85
+  nameWithType: LoudnessTarget.AtscA85
+- uid: Egami.Video.Audio.Filters.LoudnessTarget.EbuR128
+  name: EbuR128
+  href: api/Egami.Video.Audio.Filters.LoudnessTarget.html#Egami_Video_Audio_Filters_LoudnessTarget_EbuR128
+  commentId: P:Egami.Video.Audio.Filters.LoudnessTarget.EbuR128
+  fullName: Egami.Video.Audio.Filters.LoudnessTarget.EbuR128
+  nameWithType: LoudnessTarget.EbuR128
+- uid: Egami.Video.Audio.Filters.LoudnessTarget.EbuR128*
+  name: EbuR128
+  href: api/Egami.Video.Audio.Filters.LoudnessTarget.html#Egami_Video_Audio_Filters_LoudnessTarget_EbuR128_
+  commentId: Overload:Egami.Video.Audio.Filters.LoudnessTarget.EbuR128
+  isSpec: "True"
+  fullName: Egami.Video.Audio.Filters.LoudnessTarget.EbuR128
+  nameWithType: LoudnessTarget.EbuR128
+- uid: Egami.Video.Audio.Filters.LoudnessTarget.Integrated
+  name: Integrated
+  href: api/Egami.Video.Audio.Filters.LoudnessTarget.html#Egami_Video_Audio_Filters_LoudnessTarget_Integrated
+  commentId: P:Egami.Video.Audio.Filters.LoudnessTarget.Integrated
+  fullName: Egami.Video.Audio.Filters.LoudnessTarget.Integrated
+  nameWithType: LoudnessTarget.Integrated
+- uid: Egami.Video.Audio.Filters.LoudnessTarget.Integrated*
+  name: Integrated
+  href: api/Egami.Video.Audio.Filters.LoudnessTarget.html#Egami_Video_Audio_Filters_LoudnessTarget_Integrated_
+  commentId: Overload:Egami.Video.Audio.Filters.LoudnessTarget.Integrated
+  isSpec: "True"
+  fullName: Egami.Video.Audio.Filters.LoudnessTarget.Integrated
+  nameWithType: LoudnessTarget.Integrated
+- uid: Egami.Video.Audio.Filters.LoudnessTarget.Podcast
+  name: Podcast
+  href: api/Egami.Video.Audio.Filters.LoudnessTarget.html#Egami_Video_Audio_Filters_LoudnessTarget_Podcast
+  commentId: P:Egami.Video.Audio.Filters.LoudnessTarget.Podcast
+  fullName: Egami.Video.Audio.Filters.LoudnessTarget.Podcast
+  nameWithType: LoudnessTarget.Podcast
+- uid: Egami.Video.Audio.Filters.LoudnessTarget.Podcast*
+  name: Podcast
+  href: api/Egami.Video.Audio.Filters.LoudnessTarget.html#Egami_Video_Audio_Filters_LoudnessTarget_Podcast_
+  commentId: Overload:Egami.Video.Audio.Filters.LoudnessTarget.Podcast
+  isSpec: "True"
+  fullName: Egami.Video.Audio.Filters.LoudnessTarget.Podcast
+  nameWithType: LoudnessTarget.Podcast
+- uid: Egami.Video.Audio.Filters.LoudnessTarget.Range
+  name: Range
+  href: api/Egami.Video.Audio.Filters.LoudnessTarget.html#Egami_Video_Audio_Filters_LoudnessTarget_Range
+  commentId: P:Egami.Video.Audio.Filters.LoudnessTarget.Range
+  fullName: Egami.Video.Audio.Filters.LoudnessTarget.Range
+  nameWithType: LoudnessTarget.Range
+- uid: Egami.Video.Audio.Filters.LoudnessTarget.Range*
+  name: Range
+  href: api/Egami.Video.Audio.Filters.LoudnessTarget.html#Egami_Video_Audio_Filters_LoudnessTarget_Range_
+  commentId: Overload:Egami.Video.Audio.Filters.LoudnessTarget.Range
+  isSpec: "True"
+  fullName: Egami.Video.Audio.Filters.LoudnessTarget.Range
+  nameWithType: LoudnessTarget.Range
+- uid: Egami.Video.Audio.Filters.LoudnessTarget.Streaming
+  name: Streaming
+  href: api/Egami.Video.Audio.Filters.LoudnessTarget.html#Egami_Video_Audio_Filters_LoudnessTarget_Streaming
+  commentId: P:Egami.Video.Audio.Filters.LoudnessTarget.Streaming
+  fullName: Egami.Video.Audio.Filters.LoudnessTarget.Streaming
+  nameWithType: LoudnessTarget.Streaming
+- uid: Egami.Video.Audio.Filters.LoudnessTarget.Streaming*
+  name: Streaming
+  href: api/Egami.Video.Audio.Filters.LoudnessTarget.html#Egami_Video_Audio_Filters_LoudnessTarget_Streaming_
+  commentId: Overload:Egami.Video.Audio.Filters.LoudnessTarget.Streaming
+  isSpec: "True"
+  fullName: Egami.Video.Audio.Filters.LoudnessTarget.Streaming
+  nameWithType: LoudnessTarget.Streaming
+- uid: Egami.Video.Audio.Filters.LoudnessTarget.TruePeak
+  name: TruePeak
+  href: api/Egami.Video.Audio.Filters.LoudnessTarget.html#Egami_Video_Audio_Filters_LoudnessTarget_TruePeak
+  commentId: P:Egami.Video.Audio.Filters.LoudnessTarget.TruePeak
+  fullName: Egami.Video.Audio.Filters.LoudnessTarget.TruePeak
+  nameWithType: LoudnessTarget.TruePeak
+- uid: Egami.Video.Audio.Filters.LoudnessTarget.TruePeak*
+  name: TruePeak
+  href: api/Egami.Video.Audio.Filters.LoudnessTarget.html#Egami_Video_Audio_Filters_LoudnessTarget_TruePeak_
+  commentId: Overload:Egami.Video.Audio.Filters.LoudnessTarget.TruePeak
+  isSpec: "True"
+  fullName: Egami.Video.Audio.Filters.LoudnessTarget.TruePeak
+  nameWithType: LoudnessTarget.TruePeak
 - uid: Egami.Video.Audio.Filters.MixDuration
   name: MixDuration
   href: api/Egami.Video.Audio.Filters.MixDuration.html
@@ -109414,6 +109764,101 @@ references:
   isSpec: "True"
   fullName: Egami.Video.Audio.Filters.Retime.Start
   nameWithType: Retime.Start
+- uid: Egami.Video.Audio.Filters.SilenceRemoval
+  name: SilenceRemoval
+  href: api/Egami.Video.Audio.Filters.SilenceRemoval.html
+  commentId: T:Egami.Video.Audio.Filters.SilenceRemoval
+  fullName: Egami.Video.Audio.Filters.SilenceRemoval
+  nameWithType: SilenceRemoval
+- uid: Egami.Video.Audio.Filters.SilenceRemoval.Shorten
+  name: Shorten
+  href: api/Egami.Video.Audio.Filters.SilenceRemoval.html#Egami_Video_Audio_Filters_SilenceRemoval_Shorten
+  commentId: F:Egami.Video.Audio.Filters.SilenceRemoval.Shorten
+  fullName: Egami.Video.Audio.Filters.SilenceRemoval.Shorten
+  nameWithType: SilenceRemoval.Shorten
+- uid: Egami.Video.Audio.Filters.SilenceRemoval.Trim
+  name: Trim
+  href: api/Egami.Video.Audio.Filters.SilenceRemoval.html#Egami_Video_Audio_Filters_SilenceRemoval_Trim
+  commentId: F:Egami.Video.Audio.Filters.SilenceRemoval.Trim
+  fullName: Egami.Video.Audio.Filters.SilenceRemoval.Trim
+  nameWithType: SilenceRemoval.Trim
+- uid: Egami.Video.Audio.Filters.SilenceRemover
+  name: SilenceRemover
+  href: api/Egami.Video.Audio.Filters.SilenceRemover.html
+  commentId: T:Egami.Video.Audio.Filters.SilenceRemover
+  fullName: Egami.Video.Audio.Filters.SilenceRemover
+  nameWithType: SilenceRemover
+- uid: Egami.Video.Audio.Filters.SilenceRemover.#ctor(Egami.Video.Audio.Filters.SilenceRemoval)
+  name: SilenceRemover(SilenceRemoval)
+  href: api/Egami.Video.Audio.Filters.SilenceRemover.html#Egami_Video_Audio_Filters_SilenceRemover__ctor_Egami_Video_Audio_Filters_SilenceRemoval_
+  commentId: M:Egami.Video.Audio.Filters.SilenceRemover.#ctor(Egami.Video.Audio.Filters.SilenceRemoval)
+  name.vb: New(SilenceRemoval)
+  fullName: Egami.Video.Audio.Filters.SilenceRemover.SilenceRemover(Egami.Video.Audio.Filters.SilenceRemoval)
+  fullName.vb: Egami.Video.Audio.Filters.SilenceRemover.New(Egami.Video.Audio.Filters.SilenceRemoval)
+  nameWithType: SilenceRemover.SilenceRemover(SilenceRemoval)
+  nameWithType.vb: SilenceRemover.New(SilenceRemoval)
+- uid: Egami.Video.Audio.Filters.SilenceRemover.#ctor*
+  name: SilenceRemover
+  href: api/Egami.Video.Audio.Filters.SilenceRemover.html#Egami_Video_Audio_Filters_SilenceRemover__ctor_
+  commentId: Overload:Egami.Video.Audio.Filters.SilenceRemover.#ctor
+  isSpec: "True"
+  name.vb: New
+  fullName: Egami.Video.Audio.Filters.SilenceRemover.SilenceRemover
+  fullName.vb: Egami.Video.Audio.Filters.SilenceRemover.New
+  nameWithType: SilenceRemover.SilenceRemover
+  nameWithType.vb: SilenceRemover.New
+- uid: Egami.Video.Audio.Filters.SilenceRemover.KeepGap
+  name: KeepGap
+  href: api/Egami.Video.Audio.Filters.SilenceRemover.html#Egami_Video_Audio_Filters_SilenceRemover_KeepGap
+  commentId: P:Egami.Video.Audio.Filters.SilenceRemover.KeepGap
+  fullName: Egami.Video.Audio.Filters.SilenceRemover.KeepGap
+  nameWithType: SilenceRemover.KeepGap
+- uid: Egami.Video.Audio.Filters.SilenceRemover.KeepGap*
+  name: KeepGap
+  href: api/Egami.Video.Audio.Filters.SilenceRemover.html#Egami_Video_Audio_Filters_SilenceRemover_KeepGap_
+  commentId: Overload:Egami.Video.Audio.Filters.SilenceRemover.KeepGap
+  isSpec: "True"
+  fullName: Egami.Video.Audio.Filters.SilenceRemover.KeepGap
+  nameWithType: SilenceRemover.KeepGap
+- uid: Egami.Video.Audio.Filters.SilenceRemover.MaxGap
+  name: MaxGap
+  href: api/Egami.Video.Audio.Filters.SilenceRemover.html#Egami_Video_Audio_Filters_SilenceRemover_MaxGap
+  commentId: P:Egami.Video.Audio.Filters.SilenceRemover.MaxGap
+  fullName: Egami.Video.Audio.Filters.SilenceRemover.MaxGap
+  nameWithType: SilenceRemover.MaxGap
+- uid: Egami.Video.Audio.Filters.SilenceRemover.MaxGap*
+  name: MaxGap
+  href: api/Egami.Video.Audio.Filters.SilenceRemover.html#Egami_Video_Audio_Filters_SilenceRemover_MaxGap_
+  commentId: Overload:Egami.Video.Audio.Filters.SilenceRemover.MaxGap
+  isSpec: "True"
+  fullName: Egami.Video.Audio.Filters.SilenceRemover.MaxGap
+  nameWithType: SilenceRemover.MaxGap
+- uid: Egami.Video.Audio.Filters.SilenceRemover.Mode
+  name: Mode
+  href: api/Egami.Video.Audio.Filters.SilenceRemover.html#Egami_Video_Audio_Filters_SilenceRemover_Mode
+  commentId: P:Egami.Video.Audio.Filters.SilenceRemover.Mode
+  fullName: Egami.Video.Audio.Filters.SilenceRemover.Mode
+  nameWithType: SilenceRemover.Mode
+- uid: Egami.Video.Audio.Filters.SilenceRemover.Mode*
+  name: Mode
+  href: api/Egami.Video.Audio.Filters.SilenceRemover.html#Egami_Video_Audio_Filters_SilenceRemover_Mode_
+  commentId: Overload:Egami.Video.Audio.Filters.SilenceRemover.Mode
+  isSpec: "True"
+  fullName: Egami.Video.Audio.Filters.SilenceRemover.Mode
+  nameWithType: SilenceRemover.Mode
+- uid: Egami.Video.Audio.Filters.SilenceRemover.Threshold
+  name: Threshold
+  href: api/Egami.Video.Audio.Filters.SilenceRemover.html#Egami_Video_Audio_Filters_SilenceRemover_Threshold
+  commentId: P:Egami.Video.Audio.Filters.SilenceRemover.Threshold
+  fullName: Egami.Video.Audio.Filters.SilenceRemover.Threshold
+  nameWithType: SilenceRemover.Threshold
+- uid: Egami.Video.Audio.Filters.SilenceRemover.Threshold*
+  name: Threshold
+  href: api/Egami.Video.Audio.Filters.SilenceRemover.html#Egami_Video_Audio_Filters_SilenceRemover_Threshold_
+  commentId: Overload:Egami.Video.Audio.Filters.SilenceRemover.Threshold
+  isSpec: "True"
+  fullName: Egami.Video.Audio.Filters.SilenceRemover.Threshold
+  nameWithType: SilenceRemover.Threshold
 - uid: Egami.Video.Audio.Filters.Speed
   name: Speed
   href: api/Egami.Video.Audio.Filters.Speed.html

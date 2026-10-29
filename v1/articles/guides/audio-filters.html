@@ -88,8 +88,8 @@
 <h1 id="audio-filters">Audio filters</h1>
 
 <p>Egami.Video's audio filters change level, time, tone and placement of decoded audio as it streams: gain and gain envelopes,
-fades and crossfades, mixing and panning, delay, padding, trimming and new timestamps, tempo and speed changes, EQ, and
-dynamics (compressor, gate and limiter). They live in
+fades and crossfades, mixing and panning, delay, padding, trimming and new timestamps, tempo and speed changes, EQ, dynamics
+(compressor, gate and limiter), loudness normalization and silence removal. They live in
 <code>Egami.Video.Audio.Filters</code> and work on the <code>AudioFrame</code>s that <code>AudioReader</code> and the decoders hand out (see <a href="audio.html">Audio</a>).</p>
 <h2 id="the-filter-loop">The filter loop</h2>
 <p>Every filter is an <code>IAudioFilter</code> with the same calls as <code>Resampler</code>: <code>Send</code> a frame, <code>TryReceive</code> the frames that are ready,
@@ -254,6 +254,40 @@ for (int i = 0; i &lt; music.Count; i++)
 
 ducker.CompleteSidechain();
 ducker.Flush();
+</code></pre><h2 id="loudness">Loudness</h2>
+<p><code>LoudnessNormalizer</code> brings audio to a <code>LoudnessTarget</code>: an integrated loudness, a true-peak ceiling and, for the dynamic mode,
+a loudness range. The presets are <code>EbuR128</code> (-23 LUFS, -1 dBTP, the default), <code>AtscA85</code> (-24, -2), <code>Streaming</code> (-14, -1) and
+<code>Podcast</code> (-16, -1). Given a first pass's <code>LoudnessReport</code> from <code>LoudnessMeter</code>, it is linear: one gain, so the dynamics stay
+as they are, and a true-peak <code>Limiter</code> only when that gain would take the peaks over the ceiling. <code>AudioFilters.NormalizeLoudnessAsync</code>
+runs both passes over every audio track of a file, copying the video and other tracks. <code>LoudnessNormalizer.Dynamic</code> works in one
+pass, for input that cannot be read twice: it follows the loudness with 1.5 s of lookahead and keeps it within the target's
+range, so it changes the dynamics and lands less exactly on the target.</p>
+<pre><code class="lang-csharp">// Two passes over a file: measure each audio track, then apply one gain (and a true-peak limiter only if needed).
+IReadOnlyList&lt;LoudnessNormalization&gt; done = await Egami.Video.Audio.Filters.AudioFilters.NormalizeLoudnessAsync(input, output, LoudnessTarget.Podcast);
+Console.WriteLine($&quot;{done[0].Measured.Integrated:F1} LUFS, {done[0].Gain:+0.0;-0.0} dB, limited: {done[0].Limited}&quot;);
+
+// The same as a filter, from your own first pass; or one pass, following the loudness as it goes.
+LoudnessMeter meter = new();
+foreach (AudioFrame frame in Music())
+{
+    using (frame)
+    {
+        meter.Add(frame);
+    }
+}
+
+using LoudnessNormalizer linear = new(LoudnessTarget.EbuR128, meter.Report());
+using LoudnessNormalizer live = LoudnessNormalizer.Dynamic(LoudnessTarget.Streaming);
+</code></pre>
+<p><code>AudioFilters.ApplyAsync</code> runs filters of your own on every audio track of a file the same way. Filtered tracks are encoded
+with the codec you give, else their own when the container holds it, else the container's usual one.</p>
+<h2 id="silence">Silence</h2>
+<p><code>SilenceRemover</code> cuts silence out: a sample is silent when the loudest channel's RMS over 20 ms is under its <code>Threshold</code>
+(-50 dBFS by default). <code>SilenceRemoval.Trim</code> cuts the start and the end; <code>SilenceRemoval.Shorten</code> also cuts pauses longer than
+<code>MaxGap</code> (1 s) to <code>KeepGap</code> (0.3 s). Every cut fades or crossfades over 10 ms. The result is shorter than the input and its
+timestamps run on without gaps, so use it on audio alone, not on a track that has to stay in step with video.</p>
+<pre><code class="lang-csharp">// Cut a voice recording's lead-in and tail, and pauses over 1 s down to 0.3 s. Audio only: the result is shorter.
+using SilenceRemover remover = new(SilenceRemoval.Shorten) { Threshold = -45 };
 </code></pre>
 </article>
 

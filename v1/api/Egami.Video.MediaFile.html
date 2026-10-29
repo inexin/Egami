@@ -168,7 +168,7 @@ while (demuxer.ReadPacket() is { } packet)
 
   <h3 id="Egami_Video_MediaFile_CreateMuxer_System_IO_Stream_System_String_System_Collections_Generic_IReadOnlyList_Egami_Video_TrackInfo__Egami_Video_MediaContext_System_Boolean_Egami_Video_MediaMetadata_" data-uid="Egami.Video.MediaFile.CreateMuxer(System.IO.Stream,System.String,System.Collections.Generic.IReadOnlyList{Egami.Video.TrackInfo},Egami.Video.MediaContext,System.Boolean,Egami.Video.MediaMetadata)">
   CreateMuxer(Stream, string, IReadOnlyList&lt;TrackInfo&gt;, MediaContext?, bool, MediaMetadata?)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/MediaFile.cs/#L173"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/MediaFile.cs/#L174"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Creates a muxer that writes to a stream in the named container.</p>
@@ -231,7 +231,7 @@ while (demuxer.ReadPacket() is { } packet)
 
   <h3 id="Egami_Video_MediaFile_CreateMuxer_System_String_System_Collections_Generic_IReadOnlyList_Egami_Video_TrackInfo__Egami_Video_MediaContext_Egami_Video_MediaMetadata_" data-uid="Egami.Video.MediaFile.CreateMuxer(System.String,System.Collections.Generic.IReadOnlyList{Egami.Video.TrackInfo},Egami.Video.MediaContext,Egami.Video.MediaMetadata)">
   CreateMuxer(string, IReadOnlyList&lt;TrackInfo&gt;, MediaContext?, MediaMetadata?)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/MediaFile.cs/#L145"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/MediaFile.cs/#L146"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Creates a file and a muxer for it, choosing the container by the file's extension. An existing file is replaced.</p>
@@ -288,7 +288,7 @@ while (demuxer.ReadPacket() is { } packet)
 
   <h3 id="Egami_Video_MediaFile_OpenDemuxer_System_IO_Stream_Egami_Video_MediaContext_System_Boolean_" data-uid="Egami.Video.MediaFile.OpenDemuxer(System.IO.Stream,Egami.Video.MediaContext,System.Boolean)">
   OpenDemuxer(Stream, MediaContext?, bool)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/MediaFile.cs/#L118"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/MediaFile.cs/#L119"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Opens a stream for reading packets, from its current position. A non-seekable stream works too: its first bytes are
@@ -346,7 +346,7 @@ buffered for detection and replayed, and the demuxer cannot seek.</p>
 
   <h3 id="Egami_Video_MediaFile_OpenDemuxer_System_String_Egami_Video_MediaContext_" data-uid="Egami.Video.MediaFile.OpenDemuxer(System.String,Egami.Video.MediaContext)">
   OpenDemuxer(string, MediaContext?)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/MediaFile.cs/#L92"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/MediaFile.cs/#L93"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Opens a file for reading packets.</p>
@@ -400,7 +400,7 @@ buffered for detection and replayed, and the demuxer cannot seek.</p>
 
   <h3 id="Egami_Video_MediaFile_OpenDemuxerAsync_System_String_Egami_Video_MediaContext_System_Threading_CancellationToken_" data-uid="Egami.Video.MediaFile.OpenDemuxerAsync(System.String,Egami.Video.MediaContext,System.Threading.CancellationToken)">
   OpenDemuxerAsync(string, MediaContext?, CancellationToken)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/MediaFile.cs/#L131"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/MediaFile.cs/#L132"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Opens a file for reading packets on the thread pool. See <a class="xref" href="Egami.Video.MediaFile.html#Egami_Video_MediaFile_OpenDemuxer_System_String_Egami_Video_MediaContext_">OpenDemuxer(string, MediaContext?)</a>.</p>
@@ -445,7 +445,7 @@ buffered for detection and replayed, and the demuxer cannot seek.</p>
 
   <h3 id="Egami_Video_MediaFile_Probe_System_IO_Stream_Egami_Video_MediaContext_" data-uid="Egami.Video.MediaFile.Probe(System.IO.Stream,Egami.Video.MediaContext)">
   Probe(Stream, MediaContext?)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/MediaFile.cs/#L46"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/MediaFile.cs/#L47"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Reads a stream's headers. See <a class="xref" href="Egami.Video.MediaFile.html#Egami_Video_MediaFile_Probe_System_String_Egami_Video_MediaContext_">Probe(string, MediaContext?)</a>.</p>
@@ -499,7 +499,7 @@ buffered for detection and replayed, and the demuxer cannot seek.</p>
 
   <h3 id="Egami_Video_MediaFile_Probe_System_String_Egami_Video_MediaContext_" data-uid="Egami.Video.MediaFile.Probe(System.String,Egami.Video.MediaContext)">
   Probe(string, MediaContext?)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/MediaFile.cs/#L33"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/MediaFile.cs/#L34"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Reads a file's headers: format, duration, tracks and tags. No frame is decoded.</p>
@@ -553,7 +553,7 @@ buffered for detection and replayed, and the demuxer cannot seek.</p>
 
   <h3 id="Egami_Video_MediaFile_ProbeAsync_System_IO_Stream_Egami_Video_MediaContext_System_Threading_CancellationToken_" data-uid="Egami.Video.MediaFile.ProbeAsync(System.IO.Stream,Egami.Video.MediaContext,System.Threading.CancellationToken)">
   ProbeAsync(Stream, MediaContext?, CancellationToken)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/MediaFile.cs/#L71"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/MediaFile.cs/#L72"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Reads a stream's headers. A stream that is not a <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.io.filestream">FileStream</a> or <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.io.memorystream">MemoryStream</a> is first copied
@@ -599,7 +599,7 @@ into memory asynchronously, as Egami's <code>LoadAsync</code> does, so no thread
 
   <h3 id="Egami_Video_MediaFile_ProbeAsync_System_String_Egami_Video_MediaContext_System_Threading_CancellationToken_" data-uid="Egami.Video.MediaFile.ProbeAsync(System.String,Egami.Video.MediaContext,System.Threading.CancellationToken)">
   ProbeAsync(string, MediaContext?, CancellationToken)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/MediaFile.cs/#L57"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/MediaFile.cs/#L58"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Reads a file's headers on the thread pool. See <a class="xref" href="Egami.Video.MediaFile.html#Egami_Video_MediaFile_Probe_System_String_Egami_Video_MediaContext_">Probe(string, MediaContext?)</a>.</p>
@@ -644,7 +644,7 @@ into memory asynchronously, as Egami's <code>LoadAsync</code> does, so no thread
 
   <h3 id="Egami_Video_MediaFile_Remux_System_IO_Stream_System_IO_Stream_System_String_System_Func_Egami_Video_TrackInfo_System_Boolean__Egami_Video_MediaContext_System_Boolean_System_IProgress_Egami_Video_MediaProgress__System_Threading_CancellationToken_" data-uid="Egami.Video.MediaFile.Remux(System.IO.Stream,System.IO.Stream,System.String,System.Func{Egami.Video.TrackInfo,System.Boolean},Egami.Video.MediaContext,System.Boolean,System.IProgress{Egami.Video.MediaProgress},System.Threading.CancellationToken)">
   Remux(Stream, Stream, string, Func&lt;TrackInfo, bool&gt;?, MediaContext?, bool, IProgress&lt;MediaProgress&gt;?, CancellationToken)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/MediaFile.cs/#L232"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/MediaFile.cs/#L233"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Copies the packets of one stream into another container without decoding, as
@@ -728,7 +728,7 @@ long packets = MediaFile.Remux(source, upload, "mkv", leaveOpen: true, cancellat
 
   <h3 id="Egami_Video_MediaFile_Remux_System_String_System_String_System_Func_Egami_Video_TrackInfo_System_Boolean__Egami_Video_MediaContext_System_IProgress_Egami_Video_MediaProgress__System_Threading_CancellationToken_" data-uid="Egami.Video.MediaFile.Remux(System.String,System.String,System.Func{Egami.Video.TrackInfo,System.Boolean},Egami.Video.MediaContext,System.IProgress{Egami.Video.MediaProgress},System.Threading.CancellationToken)">
   Remux(string, string, Func&lt;TrackInfo, bool&gt;?, MediaContext?, IProgress&lt;MediaProgress&gt;?, CancellationToken)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/MediaFile.cs/#L202"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/MediaFile.cs/#L203"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Copies the packets of one file into another container without decoding, for example AVI to Matroska keeping the
@@ -803,7 +803,7 @@ long packets = MediaFile.Remux("camera.avi", "camera.mkv", progress: progress);<
 
   <h3 id="Egami_Video_MediaFile_Transcode_System_IO_Stream_System_IO_Stream_System_String_Egami_Video_Audio_AudioCodec_System_Nullable_System_Int32__System_Func_Egami_Video_TrackInfo_System_Boolean__Egami_Video_MediaContext_System_Boolean_System_IProgress_Egami_Video_MediaProgress__System_Threading_CancellationToken_" data-uid="Egami.Video.MediaFile.Transcode(System.IO.Stream,System.IO.Stream,System.String,Egami.Video.Audio.AudioCodec,System.Nullable{System.Int32},System.Func{Egami.Video.TrackInfo,System.Boolean},Egami.Video.MediaContext,System.Boolean,System.IProgress{Egami.Video.MediaProgress},System.Threading.CancellationToken)">
   Transcode(Stream, Stream, string, AudioCodec?, int?, Func&lt;TrackInfo, bool&gt;?, MediaContext?, bool, IProgress&lt;MediaProgress&gt;?, CancellationToken)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/MediaFile.cs/#L291"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/MediaFile.cs/#L292"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Copies a stream into another container, encoding its audio again, as
@@ -883,7 +883,7 @@ does for files. The streams work as for <a class="xref" href="Egami.Video.MediaF
 
   <h3 id="Egami_Video_MediaFile_Transcode_System_String_System_String_Egami_Video_Audio_AudioCodec_System_Nullable_System_Int32__System_Func_Egami_Video_TrackInfo_System_Boolean__Egami_Video_MediaContext_System_IProgress_Egami_Video_MediaProgress__System_Threading_CancellationToken_" data-uid="Egami.Video.MediaFile.Transcode(System.String,System.String,Egami.Video.Audio.AudioCodec,System.Nullable{System.Int32},System.Func{Egami.Video.TrackInfo,System.Boolean},Egami.Video.MediaContext,System.IProgress{Egami.Video.MediaProgress},System.Threading.CancellationToken)">
   Transcode(string, string, AudioCodec?, int?, Func&lt;TrackInfo, bool&gt;?, MediaContext?, IProgress&lt;MediaProgress&gt;?, CancellationToken)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/MediaFile.cs/#L262"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/MediaFile.cs/#L263"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Copies a file into another container like <a class="xref" href="Egami.Video.MediaFile.html#Egami_Video_MediaFile_Remux_System_String_System_String_System_Func_Egami_Video_TrackInfo_System_Boolean__Egami_Video_MediaContext_System_IProgress_Egami_Video_MediaProgress__System_Threading_CancellationToken_">Remux(string, string, Func&lt;TrackInfo, bool&gt;?, MediaContext?, IProgress&lt;MediaProgress&gt;?, CancellationToken)</a>,

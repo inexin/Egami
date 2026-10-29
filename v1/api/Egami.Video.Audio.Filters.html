@@ -119,6 +119,15 @@ then handed from filter to filter in order, in place where the filter keeps the 
 </dd>
     </dl>
     <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Audio.Filters.AudioFilters.html">AudioFilters</a></dt>
+      <dd><p>Whole-file jobs with audio filters: the audio tracks are decoded, filtered and encoded again while every other track is
+copied as it is, the way <a class="xref" href="Egami.Video.MediaFile.html#Egami_Video_MediaFile_Transcode_System_String_System_String_Egami_Video_Audio_AudioCodec_System_Nullable_System_Int32__System_Func_Egami_Video_TrackInfo_System_Boolean__Egami_Video_MediaContext_System_IProgress_Egami_Video_MediaProgress__System_Threading_CancellationToken_">Transcode(string, string, AudioCodec?, int?, Func&lt;TrackInfo, bool&gt;?, MediaContext?, IProgress&lt;MediaProgress&gt;?, CancellationToken)</a>
+copies them. Filtered tracks are encoded with the codec given; else, in Matroska and MP4, with their own codec when
+Egami.Video encodes it and FLAC when not, and in the other containers with the container's usual codec (FLAC in .flac,
+Opus in WebM and Ogg, PCM in WAV and AIFF) unless the track's own is of the same kind.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
       <dt><a class="xref" href="Egami.Video.Audio.Filters.AudioMixer.html">AudioMixer</a></dt>
       <dd><p>Mixes several streams into one by adding them, each times its weight, like ffmpeg's <code>amix</code> with
 <code>normalize=0</code>. Inputs are placed on the output by their timestamps, so one that starts later comes in at its time;
@@ -205,6 +214,27 @@ them, so a decoder or a sample rate converter downstream stays under the ceiling
 </dd>
     </dl>
     <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Audio.Filters.LoudnessNormalization.html">LoudnessNormalization</a></dt>
+      <dd><p>What <a class="xref" href="Egami.Video.Audio.Filters.AudioFilters.html#Egami_Video_Audio_Filters_AudioFilters_NormalizeLoudnessAsync_System_String_System_String_Egami_Video_Audio_Filters_LoudnessTarget_Egami_Video_Audio_AudioCodec_System_Nullable_System_Int32__Egami_Video_MediaContext_System_IProgress_Egami_Video_MediaProgress__System_Threading_CancellationToken_">NormalizeLoudnessAsync(string, string, LoudnessTarget?, AudioCodec?, int?, MediaContext?, IProgress&lt;MediaProgress&gt;?, CancellationToken)</a> did to one audio track.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Audio.Filters.LoudnessNormalizer.html">LoudnessNormalizer</a></dt>
+      <dd><p>Brings audio to a <a class="xref" href="Egami.Video.Audio.Filters.LoudnessTarget.html">LoudnessTarget</a>, as EBU R 128 and ffmpeg's <code>loudnorm</code> do. By default it is linear: given
+the input's <a class="xref" href="Egami.Video.Audio.LoudnessReport.html">LoudnessReport</a> from a first pass with <a class="xref" href="Egami.Video.Audio.LoudnessMeter.html">LoudnessMeter</a>, it applies one gain, so the
+dynamics stay as they are, and runs a true-peak <a class="xref" href="Egami.Video.Audio.Filters.Limiter.html">Limiter</a> only when that gain would take the peaks over the
+ceiling. <a class="xref" href="Egami.Video.Audio.Filters.AudioFilters.html#Egami_Video_Audio_Filters_AudioFilters_NormalizeLoudnessAsync_System_String_System_String_Egami_Video_Audio_Filters_LoudnessTarget_Egami_Video_Audio_AudioCodec_System_Nullable_System_Int32__Egami_Video_MediaContext_System_IProgress_Egami_Video_MediaProgress__System_Threading_CancellationToken_">NormalizeLoudnessAsync(string, string, LoudnessTarget?, AudioCodec?, int?, MediaContext?, IProgress&lt;MediaProgress&gt;?, CancellationToken)</a> runs both passes over a file. For input that cannot be read
+twice, <a class="xref" href="Egami.Video.Audio.Filters.LoudnessNormalizer.html#Egami_Video_Audio_Filters_LoudnessNormalizer_Dynamic_Egami_Video_Audio_Filters_LoudnessTarget_">Dynamic(LoudnessTarget)</a> makes a one-pass normalizer that follows the loudness with 1.5 s of lookahead and changes the
+dynamics to keep within the target's range.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Audio.Filters.LoudnessTarget.html">LoudnessTarget</a></dt>
+      <dd><p>The loudness a <a class="xref" href="Egami.Video.Audio.Filters.LoudnessNormalizer.html">LoudnessNormalizer</a> aims for: an integrated loudness in LUFS, a true-peak ceiling in dBTP and,
+for the dynamic mode, a loudness range in LU. The presets are the common delivery specs.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
       <dt><a class="xref" href="Egami.Video.Audio.Filters.Pad.html">Pad</a></dt>
       <dd><p>Adds silence at the end of a stream, like ffmpeg's <code>apad</code>: a fixed amount, or as much as it takes for the stream to
 last at least a total length. The silence comes out on <a class="xref" href="Egami.Video.Audio.Filters.AudioFilter.html#Egami_Video_Audio_Filters_AudioFilter_Flush">Flush()</a>; the input passes through.</p>
@@ -230,6 +260,15 @@ For any other channel matrix use <a class="xref" href="Egami.Video.Audio.Channel
       <dt><a class="xref" href="Egami.Video.Audio.Filters.Retime.html">Retime</a></dt>
       <dd><p>Gives a stream new timestamps, like ffmpeg's <code>asetpts=PTS-STARTPTS</code>: the first sample gets <a class="xref" href="Egami.Video.Audio.Filters.Retime.html#Egami_Video_Audio_Filters_Retime_Start">Start</a> and
 every later one follows on at the sample rate, so gaps and jitter in the input's timestamps go away.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Audio.Filters.SilenceRemover.html">SilenceRemover</a></dt>
+      <dd><p>Cuts silence out of audio, like ffmpeg's <code>silenceremove</code>: a sample is silent when the loudest channel's RMS over the
+20 ms around it is under <a class="xref" href="Egami.Video.Audio.Filters.SilenceRemover.html#Egami_Video_Audio_Filters_SilenceRemover_Threshold">Threshold</a>. <a class="xref" href="Egami.Video.Audio.Filters.SilenceRemoval.html#Egami_Video_Audio_Filters_SilenceRemoval_Trim">Trim</a> cuts the silence at the start and the
+end; <a class="xref" href="Egami.Video.Audio.Filters.SilenceRemoval.html#Egami_Video_Audio_Filters_SilenceRemoval_Shorten">Shorten</a> also cuts long pauses down, as for a voice recording. Each cut fades or crossfades
+over 10 ms, so it does not click. The output runs on from the input's first timestamp without gaps, so it is shorter than
+the input: use it on audio alone, never on a track that has to stay in sync with video.</p>
 </dd>
     </dl>
     <dl class="jumplist">
@@ -302,6 +341,11 @@ Enums
     <dl class="jumplist">
       <dt><a class="xref" href="Egami.Video.Audio.Filters.MixDuration.html">MixDuration</a></dt>
       <dd><p>When an <a class="xref" href="Egami.Video.Audio.Filters.AudioMixer.html">AudioMixer</a>'s output ends.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Audio.Filters.SilenceRemoval.html">SilenceRemoval</a></dt>
+      <dd><p>What a <a class="xref" href="Egami.Video.Audio.Filters.SilenceRemover.html">SilenceRemover</a> takes out.</p>
 </dd>
     </dl>
     <dl class="jumplist">

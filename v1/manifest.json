@@ -15175,6 +15175,20 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Audio.Filters.AudioFilters.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Audio.Filters.AudioFilters.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Audio.Filters.AudioFilters",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Audio.Filters.AudioFilters.yml\" sourcestartlinenumber=\"1\">Whole-file jobs with audio filters: the audio tracks are decoded, filtered and encoded again while every other track is\ncopied as it is, the way <xref href=\"Egami.Video.MediaFile.Transcode(System.String%2cSystem.String%2cEgami.Video.Audio.AudioCodec%2cSystem.Nullable%7bSystem.Int32%7d%2cSystem.Func%7bEgami.Video.TrackInfo%2cSystem.Boolean%7d%2cEgami.Video.MediaContext%2cSystem.IProgress%7bEgami.Video.MediaProgress%7d%2cSystem.Threading.CancellationToken)\" data-throw-if-not-resolved=\"false\"></xref>\ncopies them. Filtered tracks are encoded with the codec given; else, in Matroska and MP4, with their own codec when\nEgami.Video encodes it and FLAC when not, and in the other containers with the container's usual codec (FLAC in .flac,\nOpus in WebM and Ogg, PCM in WAV and AIFF) unless the track's own is of the same kind.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.Video.Audio.Filters.AudioMixer.yml",
       "output": {
         ".html": {
@@ -15399,6 +15413,48 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Audio.Filters.LoudnessNormalization.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Audio.Filters.LoudnessNormalization.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Audio.Filters.LoudnessNormalization",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Audio.Filters.LoudnessNormalization.yml\" sourcestartlinenumber=\"1\">What <xref href=\"Egami.Video.Audio.Filters.AudioFilters.NormalizeLoudnessAsync(System.String%2cSystem.String%2cEgami.Video.Audio.Filters.LoudnessTarget%2cEgami.Video.Audio.AudioCodec%2cSystem.Nullable%7bSystem.Int32%7d%2cEgami.Video.MediaContext%2cSystem.IProgress%7bEgami.Video.MediaProgress%7d%2cSystem.Threading.CancellationToken)\" data-throw-if-not-resolved=\"false\"></xref> did to one audio track.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Audio.Filters.LoudnessNormalizer.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Audio.Filters.LoudnessNormalizer.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Audio.Filters.LoudnessNormalizer",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Audio.Filters.LoudnessNormalizer.yml\" sourcestartlinenumber=\"1\">Brings audio to a <xref href=\"Egami.Video.Audio.Filters.LoudnessTarget\" data-throw-if-not-resolved=\"false\"></xref>, as EBU R 128 and ffmpeg's <code>loudnorm</code> do. By default it is linear: given\nthe input's <xref href=\"Egami.Video.Audio.LoudnessReport\" data-throw-if-not-resolved=\"false\"></xref> from a first pass with <xref href=\"Egami.Video.Audio.LoudnessMeter\" data-throw-if-not-resolved=\"false\"></xref>, it applies one gain, so the\ndynamics stay as they are, and runs a true-peak <xref href=\"Egami.Video.Audio.Filters.Limiter\" data-throw-if-not-resolved=\"false\"></xref> only when that gain would take the peaks over the\nceiling. <xref href=\"Egami.Video.Audio.Filters.AudioFilters.NormalizeLoudnessAsync(System.String%2cSystem.String%2cEgami.Video.Audio.Filters.LoudnessTarget%2cEgami.Video.Audio.AudioCodec%2cSystem.Nullable%7bSystem.Int32%7d%2cEgami.Video.MediaContext%2cSystem.IProgress%7bEgami.Video.MediaProgress%7d%2cSystem.Threading.CancellationToken)\" data-throw-if-not-resolved=\"false\"></xref> runs both passes over a file. For input that cannot be read\ntwice, <xref href=\"Egami.Video.Audio.Filters.LoudnessNormalizer.Dynamic(Egami.Video.Audio.Filters.LoudnessTarget)\" data-throw-if-not-resolved=\"false\"></xref> makes a one-pass normalizer that follows the loudness with 1.5 s of lookahead and changes the\ndynamics to keep within the target's range.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Audio.Filters.LoudnessTarget.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Audio.Filters.LoudnessTarget.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Audio.Filters.LoudnessTarget",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Audio.Filters.LoudnessTarget.yml\" sourcestartlinenumber=\"1\">The loudness a <xref href=\"Egami.Video.Audio.Filters.LoudnessNormalizer\" data-throw-if-not-resolved=\"false\"></xref> aims for: an integrated loudness in LUFS, a true-peak ceiling in dBTP and,\nfor the dynamic mode, a loudness range in LU. The presets are the common delivery specs.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.Video.Audio.Filters.MixDuration.yml",
       "output": {
         ".html": {
@@ -15466,6 +15522,34 @@
       "IsMRef": true,
       "Title": "Egami.Video.Audio.Filters.Retime",
       "Summary": "<p sourcefile=\"api/Egami.Video.Audio.Filters.Retime.yml\" sourcestartlinenumber=\"1\">Gives a stream new timestamps, like ffmpeg's <code>asetpts=PTS-STARTPTS</code>: the first sample gets <xref href=\"Egami.Video.Audio.Filters.Retime.Start\" data-throw-if-not-resolved=\"false\"></xref> and\nevery later one follows on at the sample rate, so gaps and jitter in the input's timestamps go away.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Audio.Filters.SilenceRemoval.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Audio.Filters.SilenceRemoval.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Audio.Filters.SilenceRemoval",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Audio.Filters.SilenceRemoval.yml\" sourcestartlinenumber=\"1\">What a <xref href=\"Egami.Video.Audio.Filters.SilenceRemover\" data-throw-if-not-resolved=\"false\"></xref> takes out.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Audio.Filters.SilenceRemover.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Audio.Filters.SilenceRemover.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Audio.Filters.SilenceRemover",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Audio.Filters.SilenceRemover.yml\" sourcestartlinenumber=\"1\">Cuts silence out of audio, like ffmpeg's <code>silenceremove</code>: a sample is silent when the loudest channel's RMS over the\n20 ms around it is under <xref href=\"Egami.Video.Audio.Filters.SilenceRemover.Threshold\" data-throw-if-not-resolved=\"false\"></xref>. <xref href=\"Egami.Video.Audio.Filters.SilenceRemoval.Trim\" data-throw-if-not-resolved=\"false\"></xref> cuts the silence at the start and the\nend; <xref href=\"Egami.Video.Audio.Filters.SilenceRemoval.Shorten\" data-throw-if-not-resolved=\"false\"></xref> also cuts long pauses down, as for a voice recording. Each cut fades or crossfades\nover 10 ms, so it does not click. The output runs on from the input's first timestamp without gaps, so it is shorter than\nthe input: use it on audio alone, never on a track that has to stay in sync with video.</p>\n"
     },
     {
       "type": "ManagedReference",
