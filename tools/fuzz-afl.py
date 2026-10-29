@@ -47,6 +47,7 @@ SEEDS = {"png": "tests/images/pngsuite/*.png tests/images/fuzz/png-seeds/*.png",
          "svg": "tests/images/fuzz/svg-seeds/*",
          "wmf": "tests/images/metafiles/synthetic/*.wmf", "emf": "tests/images/metafiles/synthetic/gdi-*.emf",
          "emfplus": "tests/images/fuzz/emfplus-seeds/*",
+         "sysdrawing": "tests/images/bmp/rgb24.bmp tests/images/gif/loop-3.gif tests/images/ico/set.ico tests/images/pngsuite/basn6a08.png tests/images/pngsuite/basn3p04.png tests/images/metafiles/synthetic/gdi-shapes-basic.emf tests/images/metafiles/synthetic/gdi-shapes-basic.wmf",
          **{f"barcode-{kind}": "tests/images/fuzz/barcode-text-seeds/*" for kind in ("qr", "datamatrix", "pdf417", "aztec", "code128", "code39")},
          "barcode-itf": "tests/images/fuzz/barcode-digit-seeds/*", "barcode-eanupc": "tests/images/fuzz/barcode-digit-seeds/*",
          "barcode-read": "tests/images/fuzz/barcode-read-seeds/*",
@@ -71,6 +72,7 @@ sharpfuzz /out/Egami.dll
 if [ -f /out/Egami.Drawing.dll ]; then sharpfuzz /out/Egami.Drawing.dll; fi
 if [ -f /out/Egami.Css.dll ]; then sharpfuzz /out/Egami.Css.dll; fi
 if [ -f /out/Egami.Metafiles.dll ]; then sharpfuzz /out/Egami.Metafiles.dll; fi
+if [ -f /out/Egami.SystemDrawing.dll ]; then sharpfuzz /out/Egami.SystemDrawing.dll; fi
 if [ -f /out/Egami.Barcodes.dll ]; then sharpfuzz /out/Egami.Barcodes.dll; fi
 if [ -f /out/Egami.Cli.dll ]; then sharpfuzz /out/Egami.Cli.dll; fi
 mkdir -p /seeds && cp {seeds} /seeds/

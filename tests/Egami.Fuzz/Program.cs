@@ -220,11 +220,12 @@ static Action<Stream> Target(string name) => name switch
     "svg" => stream => Egami.Fuzz.SvgFuzzTarget.Run(ReadAll(stream)),
     "wmf" or "emf" => stream => Egami.Fuzz.MetafileFuzzTarget.Run(ReadAll(stream)),
     "emfplus" => stream => Egami.Fuzz.MetafileFuzzTarget.RunPlus(ReadAll(stream)),
+    "sysdrawing" => stream => Egami.Fuzz.SystemDrawingFuzzTarget.Run(ReadAll(stream)),
     "barcode-qr" or "barcode-datamatrix" or "barcode-pdf417" or "barcode-aztec" or "barcode-code128" or "barcode-code39" or "barcode-itf" or "barcode-eanupc"
         => stream => Egami.Fuzz.BarcodeFuzzTarget.Encode(name["barcode-".Length..], ReadAll(stream)),
     "barcode-read" => stream => Egami.Fuzz.BarcodeFuzzTarget.Read(ReadAll(stream)),
     "paragraph" => stream => Egami.Fuzz.ParagraphFuzzTarget.Run(ReadAll(stream), ParagraphFaces(), DrawParagraph),
-    _ => throw new ArgumentException($"Unknown fuzz target '{name}'. Targets: hinting, radiance, exr, gainmap, avif, avifbox, av1, av1stream, avif-write, heic, heicbox, hevc, isobox, jxl, jxlbox, jxlentropy, jxl-write, jxl-jpeg, jxl-lossy, png, jpeg, jpeg-depth, jpeg-write, jpeg-transform, exif, icc, iptc, psd, xmp, rawprofile, gif, apng, lzw, bmp, tga, qoi, pnm, pfm, detect, stream, tiff, tiffcodec, webp, webpcodec, vp8video, jbig2, jbig2codec, ccitt, cube, jpeg2000, jpeg2000codec, font, cff, subset, woff2, gvar, cff2, colr, instance, svgpath, ico, icoentry, psdfile, psddata, egdr, inktiff, shaping, bidi, css, hocr, alto, paragraph, svg, wmf, emf, emfplus, barcode-qr, barcode-datamatrix, barcode-pdf417, barcode-aztec, barcode-code128, barcode-code39, barcode-itf, barcode-eanupc, barcode-read."),
+    _ => throw new ArgumentException($"Unknown fuzz target '{name}'. Targets: hinting, radiance, exr, gainmap, avif, avifbox, av1, av1stream, avif-write, heic, heicbox, hevc, isobox, jxl, jxlbox, jxlentropy, jxl-write, jxl-jpeg, jxl-lossy, png, jpeg, jpeg-depth, jpeg-write, jpeg-transform, exif, icc, iptc, psd, xmp, rawprofile, gif, apng, lzw, bmp, tga, qoi, pnm, pfm, detect, stream, tiff, tiffcodec, webp, webpcodec, vp8video, jbig2, jbig2codec, ccitt, cube, jpeg2000, jpeg2000codec, font, cff, subset, woff2, gvar, cff2, colr, instance, svgpath, ico, icoentry, psdfile, psddata, egdr, inktiff, shaping, bidi, css, hocr, alto, paragraph, svg, wmf, emf, emfplus, sysdrawing, barcode-qr, barcode-datamatrix, barcode-pdf417, barcode-aztec, barcode-code128, barcode-code39, barcode-itf, barcode-eanupc, barcode-read."),
 };
 
 static EgamiContext Context()
