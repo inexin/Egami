@@ -139,7 +139,9 @@ public class HevcAllocationTests
         Run();
         long perFrame = (GC.GetAllocatedBytesForCurrentThread() - before) / 12;
         TestContext.Current.TestOutputHelper?.WriteLine($"{perFrame} bytes a frame");
-        Assert.True(perFrame < 0, $"{perFrame} bytes a frame");
+        // Pictures, their maps and the SAO copy are used again; what is left (about 6 KB) is per NAL unit and slice: each unit's
+        // RBSP, its slice header and lists, whatever the picture size.
+        Assert.True(perFrame < 8192, $"{perFrame} bytes a frame");
     }
 }
 

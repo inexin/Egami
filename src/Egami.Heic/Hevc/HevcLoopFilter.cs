@@ -1,3 +1,5 @@
+using System.Buffers;
+
 namespace Egami.Heic.Hevc;
 
 /// <summary>
@@ -338,25 +340,34 @@ internal static class HevcLoopFilter
         for (int c = 0; c < components; c++)
         {
             // Each CTB reads the deblocked samples and writes only its own.
-            ushort[] deblocked = (ushort[])picture.Planes[c].Clone();
+            ushort[] plane = picture.Planes[c];
+            ushort[] deblocked = ArrayPool<ushort>.Shared.Rent(plane.Length);
+            plane.AsSpan().CopyTo(deblocked);
             int component = c;
-            HevcThreads.For(sps.HeightInCtbs, parallelism, row =>
+            try
             {
-                for (int ctb = row * sps.WidthInCtbs; ctb < (row + 1) * sps.WidthInCtbs; ctb++)
+                HevcThreads.For(sps.HeightInCtbs, parallelism, row =>
                 {
-                    HevcSliceHeader? slice = picture.CtbSliceHeader[ctb];
-                    if (slice is null || (component == 0 ? !slice.SaoLuma : !slice.SaoChroma))
+                    for (int ctb = row * sps.WidthInCtbs; ctb < (row + 1) * sps.WidthInCtbs; ctb++)
                     {
-                        continue;
-                    }
+                        HevcSliceHeader? slice = picture.CtbSliceHeader[ctb];
+                        if (slice is null || (component == 0 ? !slice.SaoLuma : !slice.SaoChroma))
+                        {
+                            continue;
+                        }
 
-                    HevcSaoParameters sao = picture.Sao[ctb];
-                    if (sao.Type(component) != 0)
-                    {
-                        SaoCtb(picture, component, ctb, sao, deblocked);
+                        HevcSaoParameters sao = picture.Sao[ctb];
+                        if (sao.Type(component) != 0)
+                        {
+                            SaoCtb(picture, component, ctb, sao, deblocked);
+                        }
                     }
-                }
-            }, cancellationToken);
+                }, cancellationToken);
+            }
+            finally
+            {
+                ArrayPool<ushort>.Shared.Return(deblocked);
+            }
         }
     }
 

@@ -37,6 +37,7 @@ public sealed class HevcStreamDecoder : IDisposable
     private readonly List<(HevcDpbPicture Picture, int Poc)> _output = [];
     private readonly Queue<(HevcDpbPicture Picture, int Poc)> _frames = new();
     private int _lengthSize;
+    private byte[] _input = [];
     private bool _disposed;
 
     /// <summary>Starts a stream.</summary>
@@ -112,7 +113,14 @@ public sealed class HevcStreamDecoder : IDisposable
     public void Send(ReadOnlySpan<byte> data)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
-        byte[] copy = data.ToArray();
+        // Into a buffer used again for every call: parsing copies each NAL unit out of it.
+        if (_input.Length < data.Length)
+        {
+            _input = new byte[Math.Max(data.Length, _input.Length * 2)];
+        }
+
+        data.CopyTo(_input);
+        ReadOnlyMemory<byte> copy = _input.AsMemory(0, data.Length);
         List<ReadOnlyMemory<byte>> units = _lengthSize == 0 ? NalFraming.SplitAnnexB(copy) : NalFraming.SplitLengthPrefixed(copy, _lengthSize);
         foreach (ReadOnlyMemory<byte> unit in units)
         {
