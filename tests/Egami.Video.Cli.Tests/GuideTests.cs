@@ -21,6 +21,7 @@ public sealed partial class GuideTests
         tool.Copy("mkv-mjpeg-pcm.mkv", "in.mkv");
         tool.Copy("webm-vp8-opus.webm", "in.webm");
         tool.Copy("mp4/mp4-vp9-opus.mp4", "in.mp4");
+        File.WriteAllText(tool.PathOf("in.srt"), "1\n00:00:01,000 --> 00:00:02,000\nFirst\n\n2\n00:00:03,000 --> 00:00:04,500\n<i>Second</i>\n\n3\n00:00:05,000 --> 00:00:06,000\nThird\n");
         int count = 0;
         foreach (string line in CommandLines(File.ReadAllText(Path.Combine(Docs, page))))
         {

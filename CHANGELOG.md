@@ -7,6 +7,10 @@ changes that break code come only in a new major version.
 
 - `egami-video run` reads and writes Egami.Formats.Extended's formats, with `--set sgi.rle=` and `--set sunraster.rle=` for
   their writer options.
+- `egami-video subs convert`, `shift`, `sync`, `extract` and `embed` (also MCP tools): SRT, WebVTT and ASS files converted,
+  cut to a range, sorted and with overlaps fixed; shifted, scaled (`--fps 23.976:25`) and synced by one or two points; a media
+  file's text subtitle tracks written as files; subtitle files added to MKV, WebM or MP4 as tracks with languages, names and a
+  default. `info` and `embed --add` take subtitle files as inputs.
 
 ## Egami.Video, unreleased
 

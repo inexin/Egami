@@ -14,7 +14,7 @@ egami-video audio in.mkv --track a:0 -o sound.flac
 egami-video ffmpeg -i in.avi -c copy out.mkv
 ```
 
-- Commands: info, remux, trim, concat, segment, timestamps, extract, embed, metadata, frames, encode, run, thumbnail, scenes,
+- Commands: info, remux, trim, concat, segment, timestamps, extract, embed, metadata, subs, frames, encode, run, thumbnail, scenes,
   sheet, animate, hash, compare, audio and formats.
 - Reads AVI, Matroska and WebM, MP4 and QuickTime, IVF, YUV4MPEG2, raw AV1, WAV, FLAC and Ogg; decodes Motion JPEG, VP8, VP9,
   AV1, PCM, FLAC, Opus and Vorbis; copies any track as packets.

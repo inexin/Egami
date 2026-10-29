@@ -42,7 +42,8 @@ public sealed class McpTests : IAsyncDisposable
         IList<McpClientTool> tools = await client.ListToolsAsync(cancellationToken: Token);
         string[] expected =
         [
-            "info", "remux", "trim", "concat", "segment", "timestamps", "extract", "embed", "metadata", "frames", "encode", "run",
+            "info", "remux", "trim", "concat", "segment", "timestamps", "extract", "embed", "metadata",
+            "subs_convert", "subs_shift", "subs_sync", "subs_extract", "subs_embed", "frames", "encode", "run",
             "thumbnail", "scenes", "analyze", "waveform", "spectrum", "generate", "sheet", "animate", "hash", "compare", "audio",
             "join", "fade", "overlay", "pip", "stack", "speed", "reverse", "loop", "freeze", "slideshow", "stabilize", "edit", "formats",
         ];

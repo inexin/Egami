@@ -116,6 +116,7 @@ internal static class VideoCli
         root.Subcommands.Add(TrackCommands.Extract(session));
         root.Subcommands.Add(TrackCommands.Embed(session));
         root.Subcommands.Add(MetadataCommand.Create(session));
+        root.Subcommands.Add(SubsCommand.Create(session));
         root.Subcommands.Add(FramesCommand.Create(session));
         root.Subcommands.Add(EncodeCommand.Create(session));
 
