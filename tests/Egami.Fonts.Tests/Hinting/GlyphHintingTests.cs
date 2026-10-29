@@ -212,4 +212,19 @@ public class GlyphHintingTests
         Assert.Throws<ArgumentOutOfRangeException>(() => font with { Metrics = (FontMetrics)9 });
         Assert.Equal(40, System.Runtime.CompilerServices.Unsafe.SizeOf<Font>());
     }
+
+    /// <summary>SCANCTRL's bits as the TrueType specification defines them, for an upright, unstretched glyph.</summary>
+    [Theory]
+    [InlineData(0x1FF, 8, true)]
+    [InlineData(0x1FF, 200, true)]
+    [InlineData(0x110, 16, true)]
+    [InlineData(0x110, 17, false)]
+    [InlineData(0x910, 17, false)]
+    [InlineData(0x0910, 12, true)]
+    [InlineData(0x11FF, 12, false)]
+    [InlineData(0x21FF, 12, false)]
+    [InlineData(0, 12, false)]
+    [InlineData(0x0FF, 12, false)]
+    public void ScanControlTurnsDropoutOnAsTheSpecificationSays(int control, int ppem, bool on)
+        => Assert.Equal(on, HintedGlyph.DropoutOn(control, ppem));
 }

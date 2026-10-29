@@ -99,7 +99,8 @@ public enum LcdSampling
     /// As measured from GDI+ ClearType: six on-or-off samples per pixel across the stripes, two per subpixel, on each pixel's
     /// centre line, so edges along the stripes are not smoothed and a channel of the <see cref="LcdFilter.Gdi"/> filter is a whole
     /// number of sixths. With a <see cref="CanvasOptions.TextGamma"/> other than 1, text then blends through GDI+'s 8-bit gamma
-    /// tables in those sixths.
+    /// tables in those sixths. Hinted TrueType glyphs keep the font's dropout control, as GDI+ does: a stroke along the stripes
+    /// that falls between two rows' centre lines still turns on a row.
     /// </summary>
     Gdi,
 }
