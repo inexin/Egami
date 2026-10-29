@@ -28,7 +28,7 @@ public class ColorBudgetTests
             }
         }
 
-        return data;
+        return AllocationMeter.Rows(data);
     }
 
     [Theory]
