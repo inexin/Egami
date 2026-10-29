@@ -281,9 +281,9 @@ public sealed partial class Graphics
     {
         ArgumentNullException.ThrowIfNull(image);
         Alive();
-        if (image is not Bitmap bitmap)
+        if (image is not (Bitmap or Metafile))
         {
-            throw new NotSupportedException("Egami.SystemDrawing draws bitmaps.");
+            throw new NotSupportedException("Egami.SystemDrawing draws bitmaps and metafiles.");
         }
 
         if (unit is < GraphicsUnit.World or > GraphicsUnit.Millimeter)
@@ -313,7 +313,13 @@ public sealed partial class Graphics
             return;
         }
 
-        using Raster<Rgba8> pixels = bitmap.ToRgba8();
+        if (image is Metafile metafile)
+        {
+            DrawMetafile(metafile, map, src);
+            return;
+        }
+
+        using Raster<Rgba8> pixels = ((Bitmap)image).ToRgba8();
         Raster<Rgba8> drawn = attributes?.State.Apply(pixels, GdiPlusImageAttributes.TypeBitmap) ?? pixels;
         try
         {
@@ -349,13 +355,35 @@ public sealed partial class Graphics
     }
 
     /// <summary>
+    /// Plays a metafile as vectors: its frame (in pixels at its own resolution) mapped by the source-to-destination map, cut to
+    /// the source rectangle. Metafile records follow GDI's own pixel rules, which the player keeps, so no pixel offset is added.
+    /// </summary>
+    private void DrawMetafile(Metafile metafile, Matrix3x2 map, RectF src)
+    {
+        Matrix3x2 full = map * ImageTransform;
+        RectF bounds = Path.Rect(src).Transform(full).Bounds;
+        if (!Sane(bounds))
+        {
+            return;
+        }
+
+        RectangleF frame = metafile.FrameBounds;
+        Draw(bounds, canvas =>
+        {
+            canvas.Concat(full);
+            canvas.ClipRect(src, ClipOp.Intersect, antialias: false);
+            metafile.Picture.Draw(canvas, new RectF(frame.X, frame.Y, frame.Width, frame.Height));
+        });
+    }
+
+    /// <summary>
     /// Draws a whole image at a world point at its physical size: its pixels at its resolution, in page units at the graphics'
     /// resolution, as GDI+ draws DrawImage(image, x, y).
     /// </summary>
     internal void DrawImageAt(Image image, float x, float y, RectangleF? source = null, GraphicsUnit unit = GraphicsUnit.Pixel)
     {
         ArgumentNullException.ThrowIfNull(image);
-        RectangleF src = source ?? new RectangleF(0, 0, image.Width, image.Height);
+        RectangleF src = source ?? WholeSource(image);
         float sx = SourceScale(unit, image.HorizontalResolution), sy = SourceScale(unit, image.VerticalResolution);
         float page = PageFactor;
         float w = src.Width * sx * DpiX / image.HorizontalResolution / page, h = src.Height * sy * DpiY / image.VerticalResolution / page;
@@ -366,7 +394,7 @@ public sealed partial class Graphics
     internal void DrawImageRect(Image image, RectangleF dest, RectangleF? source = null, GraphicsUnit unit = GraphicsUnit.Pixel, ImageAttributes? attributes = null, DrawImageAbort? abort = null, IntPtr data = default)
     {
         ArgumentNullException.ThrowIfNull(image);
-        DrawImageCore(image, new PointF(dest.X, dest.Y), new PointF(dest.Right, dest.Y), new PointF(dest.X, dest.Bottom), source ?? new RectangleF(0, 0, image.Width, image.Height), unit, attributes, abort, data);
+        DrawImageCore(image, new PointF(dest.X, dest.Y), new PointF(dest.Right, dest.Y), new PointF(dest.X, dest.Bottom), source ?? WholeSource(image), unit, attributes, abort, data);
     }
 
     /// <summary>Draws an image onto a parallelogram given by three world points: top-left, top-right and bottom-left.</summary>
@@ -378,8 +406,14 @@ public sealed partial class Graphics
             throw GdiErrors.InvalidParameter();
         }
 
-        DrawImageCore(image, points[0], points[1], points[2], source ?? new RectangleF(0, 0, image.Width, image.Height), unit, attributes, abort, data);
+        DrawImageCore(image, points[0], points[1], points[2], source ?? WholeSource(image), unit, attributes, abort, data);
     }
+
+    /// <summary>
+    /// The source rectangle of a whole image, as GDI+ takes it from GetBounds: a bitmap's pixels from (0, 0), a metafile's frame
+    /// where it lies, which need not start at (0, 0).
+    /// </summary>
+    private static RectangleF WholeSource(Image image) => image is Metafile metafile ? metafile.FrameBounds : new RectangleF(0, 0, image.Width, image.Height);
 
     /// <summary>Pixels per source unit at an image's resolution.</summary>
     private static float SourceScale(GraphicsUnit unit, float dpi) => unit switch

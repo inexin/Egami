@@ -4,6 +4,7 @@ using System.Runtime.InteropServices;
 using Egami.SystemDrawing;
 using Egami.SystemDrawing.Drawing2D;
 using Egami.SystemDrawing.Imaging;
+using Egami.SystemDrawing.Imaging.Effects;
 
 namespace Egami.DocSamples;
 
@@ -372,5 +373,103 @@ public class SystemDrawingPackage
         Assert.Equal(0f, bounds.X);
         Assert.True(inside);
         Assert.Equal(2, figures);
+    }
+
+    [Fact]
+    public void Metafiles()
+    {
+        #region metafiles
+        // A metafile is an Image sized by its frame; DrawImage plays it as vectors, EnumerateMetafile walks its records.
+        using Metafile metafile = new(System.IO.Path.Combine(Images, "shapes-plus.emf"));
+        MetafileHeader header = metafile.GetMetafileHeader();  // EmfPlusDual, its bounds and resolution
+        int records = 0;
+        using Bitmap bitmap = new(400, 300);
+        using (Graphics g = Graphics.FromImage(bitmap))
+        {
+            g.Clear(Color.White);
+            g.DrawImage(metafile, new Rectangle(0, 0, 400, 300));
+            g.EnumerateMetafile(metafile, new PointF(0, 0), (type, flags, size, data, play) =>
+            {
+                records++;
+                return true;
+            });
+        }
+        #endregion
+
+        Assert.True(header.IsEmfPlusDual());
+        Assert.True(records > 2);
+    }
+
+    [Fact]
+    public void Effects()
+    {
+        #region effects
+        // GDI+ 1.1's effects, computed with Egami's operations; the color effects match GDI+ to a level or so.
+        using Bitmap photo = new(System.IO.Path.Combine(Images, "duck.png"));
+        using (BrightnessContrastEffect brighter = new(30, 20))
+        {
+            photo.ApplyEffect(brighter, Rectangle.Empty);
+        }
+
+        using (GrayScaleEffect gray = new())
+        {
+            photo.ApplyEffect(gray, new Rectangle(0, 0, photo.Width / 2, photo.Height));
+        }
+
+        using BlurEffect blur = new(4, false);
+        using Bitmap target = new(photo.Width, photo.Height);
+        using Graphics g = Graphics.FromImage(target);
+        g.DrawImage(photo, blur);
+        #endregion
+
+        Color left = photo.GetPixel(2, photo.Height / 2);
+        Assert.Equal(left.R, left.G);
+    }
+
+    [Fact]
+    public void Extras()
+    {
+        #region extras
+        // Off-screen buffers, cached bitmaps and animated GIFs, as WinForms code uses them.
+        using Bitmap window = new(100, 80);
+        using Graphics screen = Graphics.FromImage(window);
+        using (BufferedGraphics buffer = BufferedGraphicsManager.Current.Allocate(screen, new Rectangle(10, 10, 80, 60)))
+        {
+            buffer.Graphics.Clear(Color.SteelBlue);
+            buffer.Render();
+        }
+
+        using Bitmap sprite = new(8, 8);
+        using CachedBitmap cached = new(sprite, screen);
+        screen.DrawCachedBitmap(cached, 2, 2);
+
+        using Image animation = Image.FromFile(System.IO.Path.Combine(Images, "loop.gif"));
+        bool animates = ImageAnimator.CanAnimate(animation);  // true: more than one timed frame
+        ImageAnimator.UpdateFrames(animation);
+        #endregion
+
+        Assert.Equal(Color.SteelBlue.ToArgb(), window.GetPixel(20, 20).ToArgb());
+        Assert.True(animates);
+    }
+
+    [Fact]
+    public void EscapeHatches()
+    {
+        #region escape-hatches
+        // Move to Egami's own API one call at a time: a bitmap's pixels as a raster (no copy for 32-bit ARGB), the graphics' canvas.
+        using Bitmap bitmap = new(64, 48);
+        Raster view = bitmap.AsRaster();  // Raster<Bgra8> over the bitmap's own pixels
+        using (Graphics g = Graphics.FromImage(bitmap))
+        {
+            g.TranslateTransform(10, 10);
+            Egami.Drawing.Canvas canvas = g.Canvas;  // drawn in the graphics' world coordinates
+            canvas.FillCircle(new System.Numerics.Vector2(5, 5), 4, new Egami.Pixels.Rgba8(255, 0, 0, 255));
+        }
+
+        using Bitmap back = Bitmap.FromRaster(view);  // a copy, 32-bit ARGB
+        #endregion
+
+        Assert.IsType<Raster<Egami.Pixels.Bgra8>>(view);
+        Assert.Equal(255, back.GetPixel(15, 15).R);
     }
 }

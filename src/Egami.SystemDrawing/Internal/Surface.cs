@@ -21,7 +21,7 @@ internal static class Surface
     {
         if (frame.Stride > 0 && frame.Format == PixelFormat.Format32bppPArgb)
         {
-            using PointerMemory memory = new(frame.Scan0, frame.Stride * frame.Height);
+            using PointerMemory memory = new(frame.Scan0, frame.Stride * frame.Height, frame);
             using Raster<PremulBgra8> raster = Raster.Wrap<PremulBgra8>(memory.Memory, frame.Width, frame.Height, frame.Stride);
             using RasterCanvas<PremulBgra8> canvas = new(raster);
             draw(canvas);
@@ -97,20 +97,26 @@ internal static class Surface
 
         return ((uint)a << 24) | ((uint)GdiPixels.Unpremultiply((byte)(argb >> 16), a) << 16) | ((uint)GdiPixels.Unpremultiply((byte)(argb >> 8), a) << 8) | GdiPixels.Unpremultiply((byte)argb, a);
     }
+}
 
-    /// <summary>Memory over a pointer to pinned or caller-owned pixels.</summary>
-    private sealed unsafe class PointerMemory(IntPtr pointer, int length) : MemoryManager<byte>
+/// <summary>
+/// Memory over a pointer to pinned or caller-owned pixels. It holds on to the object that owns them (a frame's pinned array lives
+/// only while the frame does), so the pointer stays valid for as long as the memory is in use.
+/// </summary>
+internal sealed unsafe class PointerMemory(IntPtr pointer, int length, object? owner = null) : MemoryManager<byte>
+{
+    /// <summary>Gets the object that keeps the pixels alive.</summary>
+    public object? Owner { get; } = owner;
+
+    public override Span<byte> GetSpan() => new((void*)pointer, length);
+
+    public override MemoryHandle Pin(int elementIndex = 0) => new((byte*)pointer + elementIndex);
+
+    public override void Unpin()
     {
-        public override Span<byte> GetSpan() => new((void*)pointer, length);
+    }
 
-        public override MemoryHandle Pin(int elementIndex = 0) => new((byte*)pointer + elementIndex);
-
-        public override void Unpin()
-        {
-        }
-
-        protected override void Dispose(bool disposing)
-        {
-        }
+    protected override void Dispose(bool disposing)
+    {
     }
 }

@@ -26,6 +26,18 @@ internal static partial class Codecs
     /// <summary>Decodes image data, or returns null when Egami cannot read it.</summary>
     public static Image? Load(byte[] data)
     {
+        if (MetafileScan.IsMetafile(data))
+        {
+            try
+            {
+                return new Metafile(data);
+            }
+            catch (System.Runtime.InteropServices.ExternalException)
+            {
+                return null;
+            }
+        }
+
         RasterInfo info;
         RasterList all;
         try

@@ -2,10 +2,13 @@
 abstract Egami.SystemDrawing.Brush.Clone() -> object!
 abstract Egami.SystemDrawing.Image.Clone() -> object!
 Egami.SystemDrawing.Bitmap
+Egami.SystemDrawing.Bitmap.ApplyEffect(Egami.SystemDrawing.Imaging.Effects.Effect! effect, System.Drawing.Rectangle area) -> void
+Egami.SystemDrawing.Bitmap.AsRaster() -> Egami.Raster!
 Egami.SystemDrawing.Bitmap.Bitmap(Egami.SystemDrawing.Image! original) -> void
 Egami.SystemDrawing.Bitmap.Bitmap(Egami.SystemDrawing.Image! original, int width, int height) -> void
 Egami.SystemDrawing.Bitmap.Bitmap(Egami.SystemDrawing.Image! original, System.Drawing.Size newSize) -> void
 Egami.SystemDrawing.Bitmap.Bitmap(int width, int height) -> void
+Egami.SystemDrawing.Bitmap.Bitmap(int width, int height, Egami.SystemDrawing.Graphics! g) -> void
 Egami.SystemDrawing.Bitmap.Bitmap(int width, int height, Egami.SystemDrawing.Imaging.PixelFormat format) -> void
 Egami.SystemDrawing.Bitmap.Bitmap(int width, int height, int stride, Egami.SystemDrawing.Imaging.PixelFormat format, nint scan0) -> void
 Egami.SystemDrawing.Bitmap.Bitmap(string! filename) -> void
@@ -28,12 +31,41 @@ Egami.SystemDrawing.Bitmap.MakeTransparent(System.Drawing.Color transparentColor
 Egami.SystemDrawing.Bitmap.SetPixel(int x, int y, System.Drawing.Color color) -> void
 Egami.SystemDrawing.Bitmap.SetResolution(float xDpi, float yDpi) -> void
 Egami.SystemDrawing.Bitmap.UnlockBits(Egami.SystemDrawing.Imaging.BitmapData! bitmapdata) -> void
+Egami.SystemDrawing.BitmapSuffixInSameAssemblyAttribute
+Egami.SystemDrawing.BitmapSuffixInSameAssemblyAttribute.BitmapSuffixInSameAssemblyAttribute() -> void
+Egami.SystemDrawing.BitmapSuffixInSatelliteAssemblyAttribute
+Egami.SystemDrawing.BitmapSuffixInSatelliteAssemblyAttribute.BitmapSuffixInSatelliteAssemblyAttribute() -> void
 Egami.SystemDrawing.Brush
 Egami.SystemDrawing.Brush.Brush() -> void
 Egami.SystemDrawing.Brush.Dispose() -> void
 Egami.SystemDrawing.Brush.SetNativeBrush(nint brush) -> void
 Egami.SystemDrawing.Brush.~Brush() -> void
 Egami.SystemDrawing.Brushes
+Egami.SystemDrawing.BufferedGraphics
+Egami.SystemDrawing.BufferedGraphics.Dispose() -> void
+Egami.SystemDrawing.BufferedGraphics.Graphics.get -> Egami.SystemDrawing.Graphics!
+Egami.SystemDrawing.BufferedGraphics.Render() -> void
+Egami.SystemDrawing.BufferedGraphics.Render(Egami.SystemDrawing.Graphics? target) -> void
+Egami.SystemDrawing.BufferedGraphics.Render(nint targetDC) -> void
+Egami.SystemDrawing.BufferedGraphicsContext
+Egami.SystemDrawing.BufferedGraphicsContext.Allocate(Egami.SystemDrawing.Graphics! targetGraphics, System.Drawing.Rectangle targetRectangle) -> Egami.SystemDrawing.BufferedGraphics!
+Egami.SystemDrawing.BufferedGraphicsContext.Allocate(nint targetDC, System.Drawing.Rectangle targetRectangle) -> Egami.SystemDrawing.BufferedGraphics!
+Egami.SystemDrawing.BufferedGraphicsContext.BufferedGraphicsContext() -> void
+Egami.SystemDrawing.BufferedGraphicsContext.Dispose() -> void
+Egami.SystemDrawing.BufferedGraphicsContext.Invalidate() -> void
+Egami.SystemDrawing.BufferedGraphicsContext.MaximumBuffer.get -> System.Drawing.Size
+Egami.SystemDrawing.BufferedGraphicsContext.MaximumBuffer.set -> void
+Egami.SystemDrawing.BufferedGraphicsManager
+Egami.SystemDrawing.ContentAlignment
+Egami.SystemDrawing.ContentAlignment.BottomCenter = 512 -> Egami.SystemDrawing.ContentAlignment
+Egami.SystemDrawing.ContentAlignment.BottomLeft = 256 -> Egami.SystemDrawing.ContentAlignment
+Egami.SystemDrawing.ContentAlignment.BottomRight = 1024 -> Egami.SystemDrawing.ContentAlignment
+Egami.SystemDrawing.ContentAlignment.MiddleCenter = 32 -> Egami.SystemDrawing.ContentAlignment
+Egami.SystemDrawing.ContentAlignment.MiddleLeft = 16 -> Egami.SystemDrawing.ContentAlignment
+Egami.SystemDrawing.ContentAlignment.MiddleRight = 64 -> Egami.SystemDrawing.ContentAlignment
+Egami.SystemDrawing.ContentAlignment.TopCenter = 2 -> Egami.SystemDrawing.ContentAlignment
+Egami.SystemDrawing.ContentAlignment.TopLeft = 1 -> Egami.SystemDrawing.ContentAlignment
+Egami.SystemDrawing.ContentAlignment.TopRight = 4 -> Egami.SystemDrawing.ContentAlignment
 Egami.SystemDrawing.CopyPixelOperation
 Egami.SystemDrawing.CopyPixelOperation.Blackness = 66 -> Egami.SystemDrawing.CopyPixelOperation
 Egami.SystemDrawing.CopyPixelOperation.CaptureBlt = 1073741824 -> Egami.SystemDrawing.CopyPixelOperation
@@ -52,6 +84,13 @@ Egami.SystemDrawing.CopyPixelOperation.SourceErase = 4457256 -> Egami.SystemDraw
 Egami.SystemDrawing.CopyPixelOperation.SourceInvert = 6684742 -> Egami.SystemDrawing.CopyPixelOperation
 Egami.SystemDrawing.CopyPixelOperation.SourcePaint = 15597702 -> Egami.SystemDrawing.CopyPixelOperation
 Egami.SystemDrawing.CopyPixelOperation.Whiteness = 16711778 -> Egami.SystemDrawing.CopyPixelOperation
+Egami.SystemDrawing.Design.CategoryNameCollection
+Egami.SystemDrawing.Design.CategoryNameCollection.CategoryNameCollection(Egami.SystemDrawing.Design.CategoryNameCollection! value) -> void
+Egami.SystemDrawing.Design.CategoryNameCollection.CategoryNameCollection(string![]! value) -> void
+Egami.SystemDrawing.Design.CategoryNameCollection.Contains(string? value) -> bool
+Egami.SystemDrawing.Design.CategoryNameCollection.CopyTo(string![]! array, int index) -> void
+Egami.SystemDrawing.Design.CategoryNameCollection.IndexOf(string? value) -> int
+Egami.SystemDrawing.Design.CategoryNameCollection.this[int index].get -> string!
 Egami.SystemDrawing.Drawing2D.AdjustableArrowCap
 Egami.SystemDrawing.Drawing2D.AdjustableArrowCap.AdjustableArrowCap(float width, float height) -> void
 Egami.SystemDrawing.Drawing2D.AdjustableArrowCap.AdjustableArrowCap(float width, float height, bool isFilled) -> void
@@ -536,9 +575,11 @@ Egami.SystemDrawing.Drawing2D.WrapMode.TileFlipX = 1 -> Egami.SystemDrawing.Draw
 Egami.SystemDrawing.Drawing2D.WrapMode.TileFlipXY = 3 -> Egami.SystemDrawing.Drawing2D.WrapMode
 Egami.SystemDrawing.Drawing2D.WrapMode.TileFlipY = 2 -> Egami.SystemDrawing.Drawing2D.WrapMode
 Egami.SystemDrawing.Graphics
+Egami.SystemDrawing.Graphics.AddMetafileComment(byte[]! data) -> void
 Egami.SystemDrawing.Graphics.BeginContainer() -> Egami.SystemDrawing.Drawing2D.GraphicsContainer!
 Egami.SystemDrawing.Graphics.BeginContainer(System.Drawing.Rectangle dstrect, System.Drawing.Rectangle srcrect, Egami.SystemDrawing.GraphicsUnit unit) -> Egami.SystemDrawing.Drawing2D.GraphicsContainer!
 Egami.SystemDrawing.Graphics.BeginContainer(System.Drawing.RectangleF dstrect, System.Drawing.RectangleF srcrect, Egami.SystemDrawing.GraphicsUnit unit) -> Egami.SystemDrawing.Drawing2D.GraphicsContainer!
+Egami.SystemDrawing.Graphics.Canvas.get -> Egami.Drawing.Canvas!
 Egami.SystemDrawing.Graphics.Clear(System.Drawing.Color color) -> void
 Egami.SystemDrawing.Graphics.Clip.get -> Egami.SystemDrawing.Region!
 Egami.SystemDrawing.Graphics.Clip.set -> void
@@ -565,6 +606,7 @@ Egami.SystemDrawing.Graphics.DrawBeziers(Egami.SystemDrawing.Pen! pen, params Sy
 Egami.SystemDrawing.Graphics.DrawBeziers(Egami.SystemDrawing.Pen! pen, params System.Drawing.PointF[]! points) -> void
 Egami.SystemDrawing.Graphics.DrawBeziers(Egami.SystemDrawing.Pen! pen, params System.ReadOnlySpan<System.Drawing.Point> points) -> void
 Egami.SystemDrawing.Graphics.DrawBeziers(Egami.SystemDrawing.Pen! pen, params System.ReadOnlySpan<System.Drawing.PointF> points) -> void
+Egami.SystemDrawing.Graphics.DrawCachedBitmap(Egami.SystemDrawing.Imaging.CachedBitmap! cachedBitmap, int x, int y) -> void
 Egami.SystemDrawing.Graphics.DrawClosedCurve(Egami.SystemDrawing.Pen! pen, params System.Drawing.Point[]! points) -> void
 Egami.SystemDrawing.Graphics.DrawClosedCurve(Egami.SystemDrawing.Pen! pen, params System.Drawing.PointF[]! points) -> void
 Egami.SystemDrawing.Graphics.DrawClosedCurve(Egami.SystemDrawing.Pen! pen, params System.ReadOnlySpan<System.Drawing.Point> points) -> void
@@ -594,6 +636,8 @@ Egami.SystemDrawing.Graphics.DrawEllipse(Egami.SystemDrawing.Pen! pen, System.Dr
 Egami.SystemDrawing.Graphics.DrawIcon(Egami.SystemDrawing.Icon! icon, int x, int y) -> void
 Egami.SystemDrawing.Graphics.DrawIcon(Egami.SystemDrawing.Icon! icon, System.Drawing.Rectangle targetRect) -> void
 Egami.SystemDrawing.Graphics.DrawIconUnstretched(Egami.SystemDrawing.Icon! icon, System.Drawing.Rectangle targetRect) -> void
+Egami.SystemDrawing.Graphics.DrawImage(Egami.SystemDrawing.Image! image, Egami.SystemDrawing.Imaging.Effects.Effect! effect) -> void
+Egami.SystemDrawing.Graphics.DrawImage(Egami.SystemDrawing.Image! image, Egami.SystemDrawing.Imaging.Effects.Effect! effect, System.Drawing.RectangleF srcRect = default(System.Drawing.RectangleF), Egami.SystemDrawing.Drawing2D.Matrix? transform = null, Egami.SystemDrawing.GraphicsUnit srcUnit = Egami.SystemDrawing.GraphicsUnit.Pixel, Egami.SystemDrawing.Imaging.ImageAttributes? imageAttr = null) -> void
 Egami.SystemDrawing.Graphics.DrawImage(Egami.SystemDrawing.Image! image, float x, float y) -> void
 Egami.SystemDrawing.Graphics.DrawImage(Egami.SystemDrawing.Image! image, float x, float y, float width, float height) -> void
 Egami.SystemDrawing.Graphics.DrawImage(Egami.SystemDrawing.Image! image, float x, float y, System.Drawing.RectangleF srcRect, Egami.SystemDrawing.GraphicsUnit srcUnit) -> void
@@ -658,6 +702,43 @@ Egami.SystemDrawing.Graphics.DrawRectangles(Egami.SystemDrawing.Pen! pen, params
 Egami.SystemDrawing.Graphics.DrawRoundedRectangle(Egami.SystemDrawing.Pen! pen, System.Drawing.Rectangle rect, System.Drawing.Size radius) -> void
 Egami.SystemDrawing.Graphics.DrawRoundedRectangle(Egami.SystemDrawing.Pen! pen, System.Drawing.RectangleF rect, System.Drawing.SizeF radius) -> void
 Egami.SystemDrawing.Graphics.EndContainer(Egami.SystemDrawing.Drawing2D.GraphicsContainer! container) -> void
+Egami.SystemDrawing.Graphics.EnumerateMetafile(Egami.SystemDrawing.Imaging.Metafile! metafile, System.Drawing.Point destPoint, Egami.SystemDrawing.Graphics.EnumerateMetafileProc! callback) -> void
+Egami.SystemDrawing.Graphics.EnumerateMetafile(Egami.SystemDrawing.Imaging.Metafile! metafile, System.Drawing.Point destPoint, Egami.SystemDrawing.Graphics.EnumerateMetafileProc! callback, nint callbackData) -> void
+Egami.SystemDrawing.Graphics.EnumerateMetafile(Egami.SystemDrawing.Imaging.Metafile! metafile, System.Drawing.Point destPoint, Egami.SystemDrawing.Graphics.EnumerateMetafileProc! callback, nint callbackData, Egami.SystemDrawing.Imaging.ImageAttributes? imageAttr) -> void
+Egami.SystemDrawing.Graphics.EnumerateMetafile(Egami.SystemDrawing.Imaging.Metafile! metafile, System.Drawing.Point destPoint, System.Drawing.Rectangle srcRect, Egami.SystemDrawing.GraphicsUnit srcUnit, Egami.SystemDrawing.Graphics.EnumerateMetafileProc! callback) -> void
+Egami.SystemDrawing.Graphics.EnumerateMetafile(Egami.SystemDrawing.Imaging.Metafile! metafile, System.Drawing.Point destPoint, System.Drawing.Rectangle srcRect, Egami.SystemDrawing.GraphicsUnit srcUnit, Egami.SystemDrawing.Graphics.EnumerateMetafileProc! callback, nint callbackData) -> void
+Egami.SystemDrawing.Graphics.EnumerateMetafile(Egami.SystemDrawing.Imaging.Metafile! metafile, System.Drawing.Point destPoint, System.Drawing.Rectangle srcRect, Egami.SystemDrawing.GraphicsUnit unit, Egami.SystemDrawing.Graphics.EnumerateMetafileProc! callback, nint callbackData, Egami.SystemDrawing.Imaging.ImageAttributes? imageAttr) -> void
+Egami.SystemDrawing.Graphics.EnumerateMetafile(Egami.SystemDrawing.Imaging.Metafile! metafile, System.Drawing.Point[]! destPoints, Egami.SystemDrawing.Graphics.EnumerateMetafileProc! callback) -> void
+Egami.SystemDrawing.Graphics.EnumerateMetafile(Egami.SystemDrawing.Imaging.Metafile! metafile, System.Drawing.Point[]! destPoints, Egami.SystemDrawing.Graphics.EnumerateMetafileProc! callback, nint callbackData) -> void
+Egami.SystemDrawing.Graphics.EnumerateMetafile(Egami.SystemDrawing.Imaging.Metafile! metafile, System.Drawing.Point[]! destPoints, Egami.SystemDrawing.Graphics.EnumerateMetafileProc! callback, nint callbackData, Egami.SystemDrawing.Imaging.ImageAttributes? imageAttr) -> void
+Egami.SystemDrawing.Graphics.EnumerateMetafile(Egami.SystemDrawing.Imaging.Metafile! metafile, System.Drawing.Point[]! destPoints, System.Drawing.Rectangle srcRect, Egami.SystemDrawing.GraphicsUnit srcUnit, Egami.SystemDrawing.Graphics.EnumerateMetafileProc! callback) -> void
+Egami.SystemDrawing.Graphics.EnumerateMetafile(Egami.SystemDrawing.Imaging.Metafile! metafile, System.Drawing.Point[]! destPoints, System.Drawing.Rectangle srcRect, Egami.SystemDrawing.GraphicsUnit srcUnit, Egami.SystemDrawing.Graphics.EnumerateMetafileProc! callback, nint callbackData) -> void
+Egami.SystemDrawing.Graphics.EnumerateMetafile(Egami.SystemDrawing.Imaging.Metafile! metafile, System.Drawing.Point[]! destPoints, System.Drawing.Rectangle srcRect, Egami.SystemDrawing.GraphicsUnit unit, Egami.SystemDrawing.Graphics.EnumerateMetafileProc! callback, nint callbackData, Egami.SystemDrawing.Imaging.ImageAttributes? imageAttr) -> void
+Egami.SystemDrawing.Graphics.EnumerateMetafile(Egami.SystemDrawing.Imaging.Metafile! metafile, System.Drawing.PointF destPoint, Egami.SystemDrawing.Graphics.EnumerateMetafileProc! callback) -> void
+Egami.SystemDrawing.Graphics.EnumerateMetafile(Egami.SystemDrawing.Imaging.Metafile! metafile, System.Drawing.PointF destPoint, Egami.SystemDrawing.Graphics.EnumerateMetafileProc! callback, nint callbackData) -> void
+Egami.SystemDrawing.Graphics.EnumerateMetafile(Egami.SystemDrawing.Imaging.Metafile! metafile, System.Drawing.PointF destPoint, Egami.SystemDrawing.Graphics.EnumerateMetafileProc! callback, nint callbackData, Egami.SystemDrawing.Imaging.ImageAttributes? imageAttr) -> void
+Egami.SystemDrawing.Graphics.EnumerateMetafile(Egami.SystemDrawing.Imaging.Metafile! metafile, System.Drawing.PointF destPoint, System.Drawing.RectangleF srcRect, Egami.SystemDrawing.GraphicsUnit srcUnit, Egami.SystemDrawing.Graphics.EnumerateMetafileProc! callback) -> void
+Egami.SystemDrawing.Graphics.EnumerateMetafile(Egami.SystemDrawing.Imaging.Metafile! metafile, System.Drawing.PointF destPoint, System.Drawing.RectangleF srcRect, Egami.SystemDrawing.GraphicsUnit srcUnit, Egami.SystemDrawing.Graphics.EnumerateMetafileProc! callback, nint callbackData) -> void
+Egami.SystemDrawing.Graphics.EnumerateMetafile(Egami.SystemDrawing.Imaging.Metafile! metafile, System.Drawing.PointF destPoint, System.Drawing.RectangleF srcRect, Egami.SystemDrawing.GraphicsUnit unit, Egami.SystemDrawing.Graphics.EnumerateMetafileProc! callback, nint callbackData, Egami.SystemDrawing.Imaging.ImageAttributes? imageAttr) -> void
+Egami.SystemDrawing.Graphics.EnumerateMetafile(Egami.SystemDrawing.Imaging.Metafile! metafile, System.Drawing.PointF[]! destPoints, Egami.SystemDrawing.Graphics.EnumerateMetafileProc! callback) -> void
+Egami.SystemDrawing.Graphics.EnumerateMetafile(Egami.SystemDrawing.Imaging.Metafile! metafile, System.Drawing.PointF[]! destPoints, Egami.SystemDrawing.Graphics.EnumerateMetafileProc! callback, nint callbackData) -> void
+Egami.SystemDrawing.Graphics.EnumerateMetafile(Egami.SystemDrawing.Imaging.Metafile! metafile, System.Drawing.PointF[]! destPoints, Egami.SystemDrawing.Graphics.EnumerateMetafileProc! callback, nint callbackData, Egami.SystemDrawing.Imaging.ImageAttributes? imageAttr) -> void
+Egami.SystemDrawing.Graphics.EnumerateMetafile(Egami.SystemDrawing.Imaging.Metafile! metafile, System.Drawing.PointF[]! destPoints, System.Drawing.RectangleF srcRect, Egami.SystemDrawing.GraphicsUnit srcUnit, Egami.SystemDrawing.Graphics.EnumerateMetafileProc! callback) -> void
+Egami.SystemDrawing.Graphics.EnumerateMetafile(Egami.SystemDrawing.Imaging.Metafile! metafile, System.Drawing.PointF[]! destPoints, System.Drawing.RectangleF srcRect, Egami.SystemDrawing.GraphicsUnit srcUnit, Egami.SystemDrawing.Graphics.EnumerateMetafileProc! callback, nint callbackData) -> void
+Egami.SystemDrawing.Graphics.EnumerateMetafile(Egami.SystemDrawing.Imaging.Metafile! metafile, System.Drawing.PointF[]! destPoints, System.Drawing.RectangleF srcRect, Egami.SystemDrawing.GraphicsUnit unit, Egami.SystemDrawing.Graphics.EnumerateMetafileProc! callback, nint callbackData, Egami.SystemDrawing.Imaging.ImageAttributes? imageAttr) -> void
+Egami.SystemDrawing.Graphics.EnumerateMetafile(Egami.SystemDrawing.Imaging.Metafile! metafile, System.Drawing.Rectangle destRect, Egami.SystemDrawing.Graphics.EnumerateMetafileProc! callback) -> void
+Egami.SystemDrawing.Graphics.EnumerateMetafile(Egami.SystemDrawing.Imaging.Metafile! metafile, System.Drawing.Rectangle destRect, Egami.SystemDrawing.Graphics.EnumerateMetafileProc! callback, nint callbackData) -> void
+Egami.SystemDrawing.Graphics.EnumerateMetafile(Egami.SystemDrawing.Imaging.Metafile! metafile, System.Drawing.Rectangle destRect, Egami.SystemDrawing.Graphics.EnumerateMetafileProc! callback, nint callbackData, Egami.SystemDrawing.Imaging.ImageAttributes? imageAttr) -> void
+Egami.SystemDrawing.Graphics.EnumerateMetafile(Egami.SystemDrawing.Imaging.Metafile! metafile, System.Drawing.Rectangle destRect, System.Drawing.Rectangle srcRect, Egami.SystemDrawing.GraphicsUnit srcUnit, Egami.SystemDrawing.Graphics.EnumerateMetafileProc! callback) -> void
+Egami.SystemDrawing.Graphics.EnumerateMetafile(Egami.SystemDrawing.Imaging.Metafile! metafile, System.Drawing.Rectangle destRect, System.Drawing.Rectangle srcRect, Egami.SystemDrawing.GraphicsUnit srcUnit, Egami.SystemDrawing.Graphics.EnumerateMetafileProc! callback, nint callbackData) -> void
+Egami.SystemDrawing.Graphics.EnumerateMetafile(Egami.SystemDrawing.Imaging.Metafile! metafile, System.Drawing.Rectangle destRect, System.Drawing.Rectangle srcRect, Egami.SystemDrawing.GraphicsUnit unit, Egami.SystemDrawing.Graphics.EnumerateMetafileProc! callback, nint callbackData, Egami.SystemDrawing.Imaging.ImageAttributes? imageAttr) -> void
+Egami.SystemDrawing.Graphics.EnumerateMetafile(Egami.SystemDrawing.Imaging.Metafile! metafile, System.Drawing.RectangleF destRect, Egami.SystemDrawing.Graphics.EnumerateMetafileProc! callback) -> void
+Egami.SystemDrawing.Graphics.EnumerateMetafile(Egami.SystemDrawing.Imaging.Metafile! metafile, System.Drawing.RectangleF destRect, Egami.SystemDrawing.Graphics.EnumerateMetafileProc! callback, nint callbackData) -> void
+Egami.SystemDrawing.Graphics.EnumerateMetafile(Egami.SystemDrawing.Imaging.Metafile! metafile, System.Drawing.RectangleF destRect, Egami.SystemDrawing.Graphics.EnumerateMetafileProc! callback, nint callbackData, Egami.SystemDrawing.Imaging.ImageAttributes? imageAttr) -> void
+Egami.SystemDrawing.Graphics.EnumerateMetafile(Egami.SystemDrawing.Imaging.Metafile! metafile, System.Drawing.RectangleF destRect, System.Drawing.RectangleF srcRect, Egami.SystemDrawing.GraphicsUnit srcUnit, Egami.SystemDrawing.Graphics.EnumerateMetafileProc! callback) -> void
+Egami.SystemDrawing.Graphics.EnumerateMetafile(Egami.SystemDrawing.Imaging.Metafile! metafile, System.Drawing.RectangleF destRect, System.Drawing.RectangleF srcRect, Egami.SystemDrawing.GraphicsUnit srcUnit, Egami.SystemDrawing.Graphics.EnumerateMetafileProc! callback, nint callbackData) -> void
+Egami.SystemDrawing.Graphics.EnumerateMetafile(Egami.SystemDrawing.Imaging.Metafile! metafile, System.Drawing.RectangleF destRect, System.Drawing.RectangleF srcRect, Egami.SystemDrawing.GraphicsUnit unit, Egami.SystemDrawing.Graphics.EnumerateMetafileProc! callback, nint callbackData, Egami.SystemDrawing.Imaging.ImageAttributes? imageAttr) -> void
+Egami.SystemDrawing.Graphics.EnumerateMetafileProc
 Egami.SystemDrawing.Graphics.ExcludeClip(Egami.SystemDrawing.Region! region) -> void
 Egami.SystemDrawing.Graphics.ExcludeClip(System.Drawing.Rectangle rect) -> void
 Egami.SystemDrawing.Graphics.FillClosedCurve(Egami.SystemDrawing.Brush! brush, params System.Drawing.Point[]! points) -> void
@@ -797,6 +878,11 @@ Egami.SystemDrawing.Icon.Save(System.IO.Stream! outputStream) -> void
 Egami.SystemDrawing.Icon.Size.get -> System.Drawing.Size
 Egami.SystemDrawing.Icon.ToBitmap() -> Egami.SystemDrawing.Bitmap!
 Egami.SystemDrawing.Icon.Width.get -> int
+Egami.SystemDrawing.IconConverter
+Egami.SystemDrawing.IconConverter.IconConverter() -> void
+Egami.SystemDrawing.IDeviceContext
+Egami.SystemDrawing.IDeviceContext.GetHdc() -> nint
+Egami.SystemDrawing.IDeviceContext.ReleaseHdc() -> void
 Egami.SystemDrawing.Image
 Egami.SystemDrawing.Image.Dispose() -> void
 Egami.SystemDrawing.Image.Flags.get -> int
@@ -832,6 +918,11 @@ Egami.SystemDrawing.Image.Tag.get -> object?
 Egami.SystemDrawing.Image.Tag.set -> void
 Egami.SystemDrawing.Image.VerticalResolution.get -> float
 Egami.SystemDrawing.Image.Width.get -> int
+Egami.SystemDrawing.ImageAnimator
+Egami.SystemDrawing.ImageConverter
+Egami.SystemDrawing.ImageConverter.ImageConverter() -> void
+Egami.SystemDrawing.ImageFormatConverter
+Egami.SystemDrawing.ImageFormatConverter.ImageFormatConverter() -> void
 Egami.SystemDrawing.Imaging.BitmapData
 Egami.SystemDrawing.Imaging.BitmapData.BitmapData() -> void
 Egami.SystemDrawing.Imaging.BitmapData.Height.get -> int
@@ -846,6 +937,9 @@ Egami.SystemDrawing.Imaging.BitmapData.Stride.get -> int
 Egami.SystemDrawing.Imaging.BitmapData.Stride.set -> void
 Egami.SystemDrawing.Imaging.BitmapData.Width.get -> int
 Egami.SystemDrawing.Imaging.BitmapData.Width.set -> void
+Egami.SystemDrawing.Imaging.CachedBitmap
+Egami.SystemDrawing.Imaging.CachedBitmap.CachedBitmap(Egami.SystemDrawing.Bitmap! bitmap, Egami.SystemDrawing.Graphics! graphics) -> void
+Egami.SystemDrawing.Imaging.CachedBitmap.Dispose() -> void
 Egami.SystemDrawing.Imaging.ColorAdjustType
 Egami.SystemDrawing.Imaging.ColorAdjustType.Any = 6 -> Egami.SystemDrawing.Imaging.ColorAdjustType
 Egami.SystemDrawing.Imaging.ColorAdjustType.Bitmap = 1 -> Egami.SystemDrawing.Imaging.ColorAdjustType
@@ -929,6 +1023,9 @@ Egami.SystemDrawing.Imaging.ColorMatrixFlag
 Egami.SystemDrawing.Imaging.ColorMatrixFlag.AltGrays = 2 -> Egami.SystemDrawing.Imaging.ColorMatrixFlag
 Egami.SystemDrawing.Imaging.ColorMatrixFlag.Default = 0 -> Egami.SystemDrawing.Imaging.ColorMatrixFlag
 Egami.SystemDrawing.Imaging.ColorMatrixFlag.SkipGrays = 1 -> Egami.SystemDrawing.Imaging.ColorMatrixFlag
+Egami.SystemDrawing.Imaging.ColorMode
+Egami.SystemDrawing.Imaging.ColorMode.Argb32Mode = 0 -> Egami.SystemDrawing.Imaging.ColorMode
+Egami.SystemDrawing.Imaging.ColorMode.Argb64Mode = 1 -> Egami.SystemDrawing.Imaging.ColorMode
 Egami.SystemDrawing.Imaging.ColorPalette
 Egami.SystemDrawing.Imaging.ColorPalette.ColorPalette(Egami.SystemDrawing.Imaging.PaletteType fixedPaletteType) -> void
 Egami.SystemDrawing.Imaging.ColorPalette.ColorPalette(System.Drawing.Color[]! customColors) -> void
@@ -945,6 +1042,342 @@ Egami.SystemDrawing.Imaging.DitherType.Ordered8x8 = 3 -> Egami.SystemDrawing.Ima
 Egami.SystemDrawing.Imaging.DitherType.Solid = 1 -> Egami.SystemDrawing.Imaging.DitherType
 Egami.SystemDrawing.Imaging.DitherType.Spiral4x4 = 5 -> Egami.SystemDrawing.Imaging.DitherType
 Egami.SystemDrawing.Imaging.DitherType.Spiral8x8 = 6 -> Egami.SystemDrawing.Imaging.DitherType
+Egami.SystemDrawing.Imaging.Effects.BlackSaturationCurveEffect
+Egami.SystemDrawing.Imaging.Effects.BlackSaturationCurveEffect.BlackSaturation.get -> int
+Egami.SystemDrawing.Imaging.Effects.BlackSaturationCurveEffect.BlackSaturationCurveEffect(Egami.SystemDrawing.Imaging.Effects.CurveChannel channel, int blackSaturation) -> void
+Egami.SystemDrawing.Imaging.Effects.BlurEffect
+Egami.SystemDrawing.Imaging.Effects.BlurEffect.BlurEffect(float radius, bool expandEdge) -> void
+Egami.SystemDrawing.Imaging.Effects.BlurEffect.ExpandEdge.get -> bool
+Egami.SystemDrawing.Imaging.Effects.BlurEffect.Radius.get -> float
+Egami.SystemDrawing.Imaging.Effects.BrightnessContrastEffect
+Egami.SystemDrawing.Imaging.Effects.BrightnessContrastEffect.BrightnessContrastEffect(int brightnessLevel, int contrastLevel) -> void
+Egami.SystemDrawing.Imaging.Effects.BrightnessContrastEffect.BrightnessLevel.get -> int
+Egami.SystemDrawing.Imaging.Effects.BrightnessContrastEffect.ContrastLevel.get -> int
+Egami.SystemDrawing.Imaging.Effects.ColorBalanceEffect
+Egami.SystemDrawing.Imaging.Effects.ColorBalanceEffect.ColorBalanceEffect(int cyanRed, int magentaGreen, int yellowBlue) -> void
+Egami.SystemDrawing.Imaging.Effects.ColorBalanceEffect.CyanRed.get -> int
+Egami.SystemDrawing.Imaging.Effects.ColorBalanceEffect.MagentaGreen.get -> int
+Egami.SystemDrawing.Imaging.Effects.ColorBalanceEffect.YellowBlue.get -> int
+Egami.SystemDrawing.Imaging.Effects.ColorCurveEffect
+Egami.SystemDrawing.Imaging.Effects.ColorCurveEffect.Channel.get -> Egami.SystemDrawing.Imaging.Effects.CurveChannel
+Egami.SystemDrawing.Imaging.Effects.ColorLookupTableEffect
+Egami.SystemDrawing.Imaging.Effects.ColorLookupTableEffect.AlphaLookupTable.get -> System.ReadOnlyMemory<byte>
+Egami.SystemDrawing.Imaging.Effects.ColorLookupTableEffect.BlueLookupTable.get -> System.ReadOnlyMemory<byte>
+Egami.SystemDrawing.Imaging.Effects.ColorLookupTableEffect.ColorLookupTableEffect(byte[]! redLookupTable, byte[]! greenLookupTable, byte[]! blueLookupTable, byte[]! alphaLookupTable) -> void
+Egami.SystemDrawing.Imaging.Effects.ColorLookupTableEffect.ColorLookupTableEffect(System.ReadOnlySpan<byte> redLookupTable, System.ReadOnlySpan<byte> greenLookupTable, System.ReadOnlySpan<byte> blueLookupTable, System.ReadOnlySpan<byte> alphaLookupTable) -> void
+Egami.SystemDrawing.Imaging.Effects.ColorLookupTableEffect.GreenLookupTable.get -> System.ReadOnlyMemory<byte>
+Egami.SystemDrawing.Imaging.Effects.ColorLookupTableEffect.RedLookupTable.get -> System.ReadOnlyMemory<byte>
+Egami.SystemDrawing.Imaging.Effects.ColorMatrixEffect
+Egami.SystemDrawing.Imaging.Effects.ColorMatrixEffect.ColorMatrixEffect(Egami.SystemDrawing.Imaging.ColorMatrix! matrix) -> void
+Egami.SystemDrawing.Imaging.Effects.ColorMatrixEffect.Matrix.get -> Egami.SystemDrawing.Imaging.ColorMatrix!
+Egami.SystemDrawing.Imaging.Effects.ContrastCurveEffect
+Egami.SystemDrawing.Imaging.Effects.ContrastCurveEffect.Contrast.get -> int
+Egami.SystemDrawing.Imaging.Effects.ContrastCurveEffect.ContrastCurveEffect(Egami.SystemDrawing.Imaging.Effects.CurveChannel channel, int contrast) -> void
+Egami.SystemDrawing.Imaging.Effects.CurveChannel
+Egami.SystemDrawing.Imaging.Effects.CurveChannel.All = 0 -> Egami.SystemDrawing.Imaging.Effects.CurveChannel
+Egami.SystemDrawing.Imaging.Effects.CurveChannel.Blue = 3 -> Egami.SystemDrawing.Imaging.Effects.CurveChannel
+Egami.SystemDrawing.Imaging.Effects.CurveChannel.Green = 2 -> Egami.SystemDrawing.Imaging.Effects.CurveChannel
+Egami.SystemDrawing.Imaging.Effects.CurveChannel.Red = 1 -> Egami.SystemDrawing.Imaging.Effects.CurveChannel
+Egami.SystemDrawing.Imaging.Effects.DensityCurveEffect
+Egami.SystemDrawing.Imaging.Effects.DensityCurveEffect.Density.get -> int
+Egami.SystemDrawing.Imaging.Effects.DensityCurveEffect.DensityCurveEffect(Egami.SystemDrawing.Imaging.Effects.CurveChannel channel, int density) -> void
+Egami.SystemDrawing.Imaging.Effects.Effect
+Egami.SystemDrawing.Imaging.Effects.Effect.Dispose() -> void
+Egami.SystemDrawing.Imaging.Effects.ExposureCurveEffect
+Egami.SystemDrawing.Imaging.Effects.ExposureCurveEffect.Exposure.get -> int
+Egami.SystemDrawing.Imaging.Effects.ExposureCurveEffect.ExposureCurveEffect(Egami.SystemDrawing.Imaging.Effects.CurveChannel channel, int exposure) -> void
+Egami.SystemDrawing.Imaging.Effects.GrayScaleEffect
+Egami.SystemDrawing.Imaging.Effects.GrayScaleEffect.GrayScaleEffect() -> void
+Egami.SystemDrawing.Imaging.Effects.HighlightCurveEffect
+Egami.SystemDrawing.Imaging.Effects.HighlightCurveEffect.Highlight.get -> int
+Egami.SystemDrawing.Imaging.Effects.HighlightCurveEffect.HighlightCurveEffect(Egami.SystemDrawing.Imaging.Effects.CurveChannel channel, int highlight) -> void
+Egami.SystemDrawing.Imaging.Effects.InvertEffect
+Egami.SystemDrawing.Imaging.Effects.InvertEffect.InvertEffect() -> void
+Egami.SystemDrawing.Imaging.Effects.LevelsEffect
+Egami.SystemDrawing.Imaging.Effects.LevelsEffect.Highlight.get -> int
+Egami.SystemDrawing.Imaging.Effects.LevelsEffect.LevelsEffect(int highlight, int midtone, int shadow) -> void
+Egami.SystemDrawing.Imaging.Effects.LevelsEffect.Midtone.get -> int
+Egami.SystemDrawing.Imaging.Effects.LevelsEffect.Shadow.get -> int
+Egami.SystemDrawing.Imaging.Effects.MidtoneCurveEffect
+Egami.SystemDrawing.Imaging.Effects.MidtoneCurveEffect.Midtone.get -> int
+Egami.SystemDrawing.Imaging.Effects.MidtoneCurveEffect.MidtoneCurveEffect(Egami.SystemDrawing.Imaging.Effects.CurveChannel channel, int midtone) -> void
+Egami.SystemDrawing.Imaging.Effects.SepiaEffect
+Egami.SystemDrawing.Imaging.Effects.SepiaEffect.SepiaEffect() -> void
+Egami.SystemDrawing.Imaging.Effects.ShadowCurveEffect
+Egami.SystemDrawing.Imaging.Effects.ShadowCurveEffect.Shadow.get -> int
+Egami.SystemDrawing.Imaging.Effects.ShadowCurveEffect.ShadowCurveEffect(Egami.SystemDrawing.Imaging.Effects.CurveChannel channel, int shadow) -> void
+Egami.SystemDrawing.Imaging.Effects.SharpenEffect
+Egami.SystemDrawing.Imaging.Effects.SharpenEffect.Amount.get -> float
+Egami.SystemDrawing.Imaging.Effects.SharpenEffect.Radius.get -> float
+Egami.SystemDrawing.Imaging.Effects.SharpenEffect.SharpenEffect(float radius, float amount) -> void
+Egami.SystemDrawing.Imaging.Effects.TintEffect
+Egami.SystemDrawing.Imaging.Effects.TintEffect.Amount.get -> int
+Egami.SystemDrawing.Imaging.Effects.TintEffect.Hue.get -> int
+Egami.SystemDrawing.Imaging.Effects.TintEffect.TintEffect(int hue, int amount) -> void
+Egami.SystemDrawing.Imaging.Effects.TintEffect.TintEffect(System.Drawing.Color color, int amount) -> void
+Egami.SystemDrawing.Imaging.Effects.VividEffect
+Egami.SystemDrawing.Imaging.Effects.VividEffect.VividEffect() -> void
+Egami.SystemDrawing.Imaging.Effects.WhiteSaturationCurveEffect
+Egami.SystemDrawing.Imaging.Effects.WhiteSaturationCurveEffect.WhiteSaturation.get -> int
+Egami.SystemDrawing.Imaging.Effects.WhiteSaturationCurveEffect.WhiteSaturationCurveEffect(Egami.SystemDrawing.Imaging.Effects.CurveChannel channel, int whiteSaturation) -> void
+Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.BeginContainer = 16423 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.BeginContainerNoParams = 16424 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.Clear = 16393 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.Comment = 16387 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.DrawArc = 16402 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.DrawBeziers = 16409 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.DrawClosedCurve = 16407 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.DrawCurve = 16408 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.DrawDriverString = 16438 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.DrawEllipse = 16399 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.DrawImage = 16410 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.DrawImagePoints = 16411 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.DrawLines = 16397 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.DrawPath = 16405 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.DrawPie = 16401 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.DrawRects = 16395 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.DrawString = 16412 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfAbortPath = 68 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfAlphaBlend = 114 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfAngleArc = 41 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfArcTo = 55 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfBeginPath = 59 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfBitBlt = 76 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfChord = 46 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfCloseFigure = 61 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfColorCorrectPalette = 111 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfColorMatchToTargetW = 121 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfCreateBrushIndirect = 39 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfCreateColorSpace = 99 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfCreateColorSpaceW = 122 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfCreateDibPatternBrushPt = 94 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfCreateMonoBrush = 93 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfCreatePalette = 49 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfCreatePen = 38 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfDeleteColorSpace = 101 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfDeleteObject = 40 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfDrawEscape = 105 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfEllipse = 42 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfEndPath = 60 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfEof = 14 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfExcludeClipRect = 29 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfExtCreateFontIndirect = 82 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfExtCreatePen = 95 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfExtEscape = 106 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfExtFloodFill = 53 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfExtSelectClipRgn = 75 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfExtTextOutA = 83 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfExtTextOutW = 84 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfFillPath = 62 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfFillRgn = 71 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfFlattenPath = 65 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfForceUfiMapping = 109 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfFrameRgn = 72 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfGdiComment = 70 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfGlsBoundedRecord = 103 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfGlsRecord = 102 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfGradientFill = 118 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfHeader = 1 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfIntersectClipRect = 30 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfInvertRgn = 73 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfLineTo = 54 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfMaskBlt = 78 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfMax = 122 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfMin = 1 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfModifyWorldTransform = 36 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfMoveToEx = 27 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfNamedEscpae = 110 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfOffsetClipRgn = 26 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfPaintRgn = 74 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfPie = 47 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfPixelFormat = 104 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfPlgBlt = 79 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfPlusRecordBase = 16384 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfPolyBezier = 2 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfPolyBezier16 = 85 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfPolyBezierTo = 5 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfPolyBezierTo16 = 88 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfPolyDraw = 56 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfPolyDraw16 = 92 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfPolygon = 3 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfPolygon16 = 86 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfPolyline = 4 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfPolyline16 = 87 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfPolyLineTo = 6 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfPolylineTo16 = 89 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfPolyPolygon = 8 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfPolyPolygon16 = 91 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfPolyPolyline = 7 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfPolyPolyline16 = 90 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfPolyTextOutA = 96 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfPolyTextOutW = 97 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfRealizePalette = 52 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfRectangle = 43 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfReserved069 = 69 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfReserved117 = 117 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfResizePalette = 51 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfRestoreDC = 34 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfRoundArc = 45 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfRoundRect = 44 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfSaveDC = 33 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfScaleViewportExtEx = 31 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfScaleWindowExtEx = 32 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfSelectClipPath = 67 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfSelectObject = 37 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfSelectPalette = 48 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfSetArcDirection = 57 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfSetBkColor = 25 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfSetBkMode = 18 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfSetBrushOrgEx = 13 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfSetColorAdjustment = 23 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfSetColorSpace = 100 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfSetDIBitsToDevice = 80 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfSetIcmMode = 98 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfSetIcmProfileA = 112 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfSetIcmProfileW = 113 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfSetLayout = 115 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfSetLinkedUfis = 119 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfSetMapMode = 17 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfSetMapperFlags = 16 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfSetMetaRgn = 28 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfSetMiterLimit = 58 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfSetPaletteEntries = 50 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfSetPixelV = 15 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfSetPolyFillMode = 19 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfSetROP2 = 20 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfSetStretchBltMode = 21 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfSetTextAlign = 22 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfSetTextColor = 24 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfSetTextJustification = 120 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfSetViewportExtEx = 11 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfSetViewportOrgEx = 12 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfSetWindowExtEx = 9 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfSetWindowOrgEx = 10 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfSetWorldTransform = 35 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfSmallTextOut = 108 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfStartDoc = 107 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfStretchBlt = 77 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfStretchDIBits = 81 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfStrokeAndFillPath = 63 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfStrokePath = 64 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfTransparentBlt = 116 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EmfWidenPath = 66 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EndContainer = 16425 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.EndOfFile = 16386 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.FillClosedCurve = 16406 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.FillEllipse = 16398 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.FillPath = 16404 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.FillPie = 16400 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.FillPolygon = 16396 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.FillRects = 16394 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.FillRegion = 16403 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.GetDC = 16388 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.Header = 16385 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.Invalid = 16384 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.Max = 16438 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.Min = 16385 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.MultiFormatEnd = 16391 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.MultiFormatSection = 16390 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.MultiFormatStart = 16389 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.MultiplyWorldTransform = 16428 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.Object = 16392 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.OffsetClip = 16437 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.ResetClip = 16433 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.ResetWorldTransform = 16427 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.Restore = 16422 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.RotateWorldTransform = 16431 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.Save = 16421 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.ScaleWorldTransform = 16430 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.SetAntiAliasMode = 16414 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.SetClipPath = 16435 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.SetClipRect = 16434 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.SetClipRegion = 16436 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.SetCompositingMode = 16419 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.SetCompositingQuality = 16420 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.SetInterpolationMode = 16417 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.SetPageTransform = 16432 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.SetPixelOffsetMode = 16418 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.SetRenderingOrigin = 16413 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.SetTextContrast = 16416 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.SetTextRenderingHint = 16415 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.SetWorldTransform = 16426 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.Total = 16439 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.TranslateWorldTransform = 16429 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.WmfAnimatePalette = 66614 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.WmfArc = 67607 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.WmfBitBlt = 67874 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.WmfChord = 67632 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.WmfCreateBrushIndirect = 66300 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.WmfCreateFontIndirect = 66299 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.WmfCreatePalette = 65783 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.WmfCreatePatternBrush = 66041 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.WmfCreatePenIndirect = 66298 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.WmfCreateRegion = 67327 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.WmfDeleteObject = 66032 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.WmfDibBitBlt = 67904 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.WmfDibCreatePatternBrush = 65858 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.WmfDibStretchBlt = 68417 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.WmfEllipse = 66584 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.WmfEscape = 67110 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.WmfExcludeClipRect = 66581 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.WmfExtFloodFill = 66888 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.WmfExtTextOut = 68146 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.WmfFillRegion = 66088 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.WmfFloodFill = 66585 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.WmfFrameRegion = 66601 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.WmfIntersectClipRect = 66582 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.WmfInvertRegion = 65834 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.WmfLineTo = 66067 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.WmfMoveTo = 66068 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.WmfOffsetCilpRgn = 66080 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.WmfOffsetViewportOrg = 66065 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.WmfOffsetWindowOrg = 66063 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.WmfPaintRegion = 65835 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.WmfPatBlt = 67101 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.WmfPie = 67610 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.WmfPolygon = 66340 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.WmfPolyline = 66341 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.WmfPolyPolygon = 66872 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.WmfRealizePalette = 65589 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.WmfRecordBase = 65536 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.WmfRectangle = 66587 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.WmfResizePalette = 65849 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.WmfRestoreDC = 65831 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.WmfRoundRect = 67100 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.WmfSaveDC = 65566 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.WmfScaleViewportExt = 66578 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.WmfScaleWindowExt = 66576 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.WmfSelectClipRegion = 65836 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.WmfSelectObject = 65837 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.WmfSelectPalette = 66100 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.WmfSetBkColor = 66049 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.WmfSetBkMode = 65794 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.WmfSetDibToDev = 68915 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.WmfSetLayout = 65865 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.WmfSetMapMode = 65795 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.WmfSetMapperFlags = 66097 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.WmfSetPalEntries = 65591 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.WmfSetPixel = 66591 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.WmfSetPolyFillMode = 65798 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.WmfSetRelAbs = 65797 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.WmfSetROP2 = 65796 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.WmfSetStretchBltMode = 65799 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.WmfSetTextAlign = 65838 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.WmfSetTextCharExtra = 65800 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.WmfSetTextColor = 66057 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.WmfSetTextJustification = 66058 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.WmfSetViewportExt = 66062 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.WmfSetViewportOrg = 66061 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.WmfSetWindowExt = 66060 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.WmfSetWindowOrg = 66059 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.WmfStretchBlt = 68387 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.WmfStretchDib = 69443 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfPlusRecordType.WmfTextOut = 66849 -> Egami.SystemDrawing.Imaging.EmfPlusRecordType
+Egami.SystemDrawing.Imaging.EmfType
+Egami.SystemDrawing.Imaging.EmfType.EmfOnly = 3 -> Egami.SystemDrawing.Imaging.EmfType
+Egami.SystemDrawing.Imaging.EmfType.EmfPlusDual = 5 -> Egami.SystemDrawing.Imaging.EmfType
+Egami.SystemDrawing.Imaging.EmfType.EmfPlusOnly = 4 -> Egami.SystemDrawing.Imaging.EmfType
 Egami.SystemDrawing.Imaging.Encoder
 Egami.SystemDrawing.Imaging.Encoder.Encoder(System.Guid guid) -> void
 Egami.SystemDrawing.Imaging.Encoder.Guid.get -> System.Guid
@@ -1124,6 +1557,98 @@ Egami.SystemDrawing.Imaging.ImageLockMode.ReadOnly = 1 -> Egami.SystemDrawing.Im
 Egami.SystemDrawing.Imaging.ImageLockMode.ReadWrite = Egami.SystemDrawing.Imaging.ImageLockMode.ReadOnly | Egami.SystemDrawing.Imaging.ImageLockMode.WriteOnly -> Egami.SystemDrawing.Imaging.ImageLockMode
 Egami.SystemDrawing.Imaging.ImageLockMode.UserInputBuffer = 4 -> Egami.SystemDrawing.Imaging.ImageLockMode
 Egami.SystemDrawing.Imaging.ImageLockMode.WriteOnly = 2 -> Egami.SystemDrawing.Imaging.ImageLockMode
+Egami.SystemDrawing.Imaging.Metafile
+Egami.SystemDrawing.Imaging.Metafile.GetHenhmetafile() -> nint
+Egami.SystemDrawing.Imaging.Metafile.GetMetafileHeader() -> Egami.SystemDrawing.Imaging.MetafileHeader!
+Egami.SystemDrawing.Imaging.Metafile.Metafile(nint henhmetafile, bool deleteEmf) -> void
+Egami.SystemDrawing.Imaging.Metafile.Metafile(nint hmetafile, Egami.SystemDrawing.Imaging.WmfPlaceableFileHeader! wmfHeader) -> void
+Egami.SystemDrawing.Imaging.Metafile.Metafile(nint hmetafile, Egami.SystemDrawing.Imaging.WmfPlaceableFileHeader! wmfHeader, bool deleteWmf) -> void
+Egami.SystemDrawing.Imaging.Metafile.Metafile(nint referenceHdc, Egami.SystemDrawing.Imaging.EmfType emfType) -> void
+Egami.SystemDrawing.Imaging.Metafile.Metafile(nint referenceHdc, Egami.SystemDrawing.Imaging.EmfType emfType, string! description) -> void
+Egami.SystemDrawing.Imaging.Metafile.Metafile(nint referenceHdc, System.Drawing.Rectangle frameRect) -> void
+Egami.SystemDrawing.Imaging.Metafile.Metafile(nint referenceHdc, System.Drawing.Rectangle frameRect, Egami.SystemDrawing.Imaging.MetafileFrameUnit frameUnit) -> void
+Egami.SystemDrawing.Imaging.Metafile.Metafile(nint referenceHdc, System.Drawing.Rectangle frameRect, Egami.SystemDrawing.Imaging.MetafileFrameUnit frameUnit, Egami.SystemDrawing.Imaging.EmfType type) -> void
+Egami.SystemDrawing.Imaging.Metafile.Metafile(nint referenceHdc, System.Drawing.Rectangle frameRect, Egami.SystemDrawing.Imaging.MetafileFrameUnit frameUnit, Egami.SystemDrawing.Imaging.EmfType type, string! desc) -> void
+Egami.SystemDrawing.Imaging.Metafile.Metafile(nint referenceHdc, System.Drawing.RectangleF frameRect) -> void
+Egami.SystemDrawing.Imaging.Metafile.Metafile(nint referenceHdc, System.Drawing.RectangleF frameRect, Egami.SystemDrawing.Imaging.MetafileFrameUnit frameUnit) -> void
+Egami.SystemDrawing.Imaging.Metafile.Metafile(nint referenceHdc, System.Drawing.RectangleF frameRect, Egami.SystemDrawing.Imaging.MetafileFrameUnit frameUnit, Egami.SystemDrawing.Imaging.EmfType type) -> void
+Egami.SystemDrawing.Imaging.Metafile.Metafile(nint referenceHdc, System.Drawing.RectangleF frameRect, Egami.SystemDrawing.Imaging.MetafileFrameUnit frameUnit, Egami.SystemDrawing.Imaging.EmfType type, string! description) -> void
+Egami.SystemDrawing.Imaging.Metafile.Metafile(string! filename) -> void
+Egami.SystemDrawing.Imaging.Metafile.Metafile(string! fileName, nint referenceHdc) -> void
+Egami.SystemDrawing.Imaging.Metafile.Metafile(string! fileName, nint referenceHdc, Egami.SystemDrawing.Imaging.EmfType type) -> void
+Egami.SystemDrawing.Imaging.Metafile.Metafile(string! fileName, nint referenceHdc, Egami.SystemDrawing.Imaging.EmfType type, string! description) -> void
+Egami.SystemDrawing.Imaging.Metafile.Metafile(string! fileName, nint referenceHdc, System.Drawing.Rectangle frameRect) -> void
+Egami.SystemDrawing.Imaging.Metafile.Metafile(string! fileName, nint referenceHdc, System.Drawing.Rectangle frameRect, Egami.SystemDrawing.Imaging.MetafileFrameUnit frameUnit) -> void
+Egami.SystemDrawing.Imaging.Metafile.Metafile(string! fileName, nint referenceHdc, System.Drawing.Rectangle frameRect, Egami.SystemDrawing.Imaging.MetafileFrameUnit frameUnit, Egami.SystemDrawing.Imaging.EmfType type) -> void
+Egami.SystemDrawing.Imaging.Metafile.Metafile(string! fileName, nint referenceHdc, System.Drawing.Rectangle frameRect, Egami.SystemDrawing.Imaging.MetafileFrameUnit frameUnit, Egami.SystemDrawing.Imaging.EmfType type, string! description) -> void
+Egami.SystemDrawing.Imaging.Metafile.Metafile(string! fileName, nint referenceHdc, System.Drawing.Rectangle frameRect, Egami.SystemDrawing.Imaging.MetafileFrameUnit frameUnit, string! description) -> void
+Egami.SystemDrawing.Imaging.Metafile.Metafile(string! fileName, nint referenceHdc, System.Drawing.RectangleF frameRect) -> void
+Egami.SystemDrawing.Imaging.Metafile.Metafile(string! fileName, nint referenceHdc, System.Drawing.RectangleF frameRect, Egami.SystemDrawing.Imaging.MetafileFrameUnit frameUnit) -> void
+Egami.SystemDrawing.Imaging.Metafile.Metafile(string! fileName, nint referenceHdc, System.Drawing.RectangleF frameRect, Egami.SystemDrawing.Imaging.MetafileFrameUnit frameUnit, Egami.SystemDrawing.Imaging.EmfType type) -> void
+Egami.SystemDrawing.Imaging.Metafile.Metafile(string! fileName, nint referenceHdc, System.Drawing.RectangleF frameRect, Egami.SystemDrawing.Imaging.MetafileFrameUnit frameUnit, Egami.SystemDrawing.Imaging.EmfType type, string! description) -> void
+Egami.SystemDrawing.Imaging.Metafile.Metafile(string! fileName, nint referenceHdc, System.Drawing.RectangleF frameRect, Egami.SystemDrawing.Imaging.MetafileFrameUnit frameUnit, string! desc) -> void
+Egami.SystemDrawing.Imaging.Metafile.Metafile(System.IO.Stream! stream) -> void
+Egami.SystemDrawing.Imaging.Metafile.Metafile(System.IO.Stream! stream, nint referenceHdc) -> void
+Egami.SystemDrawing.Imaging.Metafile.Metafile(System.IO.Stream! stream, nint referenceHdc, Egami.SystemDrawing.Imaging.EmfType type) -> void
+Egami.SystemDrawing.Imaging.Metafile.Metafile(System.IO.Stream! stream, nint referenceHdc, Egami.SystemDrawing.Imaging.EmfType type, string! description) -> void
+Egami.SystemDrawing.Imaging.Metafile.Metafile(System.IO.Stream! stream, nint referenceHdc, System.Drawing.Rectangle frameRect) -> void
+Egami.SystemDrawing.Imaging.Metafile.Metafile(System.IO.Stream! stream, nint referenceHdc, System.Drawing.Rectangle frameRect, Egami.SystemDrawing.Imaging.MetafileFrameUnit frameUnit) -> void
+Egami.SystemDrawing.Imaging.Metafile.Metafile(System.IO.Stream! stream, nint referenceHdc, System.Drawing.Rectangle frameRect, Egami.SystemDrawing.Imaging.MetafileFrameUnit frameUnit, Egami.SystemDrawing.Imaging.EmfType type) -> void
+Egami.SystemDrawing.Imaging.Metafile.Metafile(System.IO.Stream! stream, nint referenceHdc, System.Drawing.Rectangle frameRect, Egami.SystemDrawing.Imaging.MetafileFrameUnit frameUnit, Egami.SystemDrawing.Imaging.EmfType type, string! description) -> void
+Egami.SystemDrawing.Imaging.Metafile.Metafile(System.IO.Stream! stream, nint referenceHdc, System.Drawing.RectangleF frameRect) -> void
+Egami.SystemDrawing.Imaging.Metafile.Metafile(System.IO.Stream! stream, nint referenceHdc, System.Drawing.RectangleF frameRect, Egami.SystemDrawing.Imaging.MetafileFrameUnit frameUnit) -> void
+Egami.SystemDrawing.Imaging.Metafile.Metafile(System.IO.Stream! stream, nint referenceHdc, System.Drawing.RectangleF frameRect, Egami.SystemDrawing.Imaging.MetafileFrameUnit frameUnit, Egami.SystemDrawing.Imaging.EmfType type) -> void
+Egami.SystemDrawing.Imaging.Metafile.Metafile(System.IO.Stream! stream, nint referenceHdc, System.Drawing.RectangleF frameRect, Egami.SystemDrawing.Imaging.MetafileFrameUnit frameUnit, Egami.SystemDrawing.Imaging.EmfType type, string! description) -> void
+Egami.SystemDrawing.Imaging.Metafile.PlayRecord(Egami.SystemDrawing.Imaging.EmfPlusRecordType recordType, int flags, int dataSize, byte[]? data) -> void
+Egami.SystemDrawing.Imaging.MetafileFrameUnit
+Egami.SystemDrawing.Imaging.MetafileFrameUnit.Document = 5 -> Egami.SystemDrawing.Imaging.MetafileFrameUnit
+Egami.SystemDrawing.Imaging.MetafileFrameUnit.GdiCompatible = 7 -> Egami.SystemDrawing.Imaging.MetafileFrameUnit
+Egami.SystemDrawing.Imaging.MetafileFrameUnit.Inch = 4 -> Egami.SystemDrawing.Imaging.MetafileFrameUnit
+Egami.SystemDrawing.Imaging.MetafileFrameUnit.Millimeter = 6 -> Egami.SystemDrawing.Imaging.MetafileFrameUnit
+Egami.SystemDrawing.Imaging.MetafileFrameUnit.Pixel = 2 -> Egami.SystemDrawing.Imaging.MetafileFrameUnit
+Egami.SystemDrawing.Imaging.MetafileFrameUnit.Point = 3 -> Egami.SystemDrawing.Imaging.MetafileFrameUnit
+Egami.SystemDrawing.Imaging.MetafileHeader
+Egami.SystemDrawing.Imaging.MetafileHeader.Bounds.get -> System.Drawing.Rectangle
+Egami.SystemDrawing.Imaging.MetafileHeader.DpiX.get -> float
+Egami.SystemDrawing.Imaging.MetafileHeader.DpiY.get -> float
+Egami.SystemDrawing.Imaging.MetafileHeader.EmfPlusHeaderSize.get -> int
+Egami.SystemDrawing.Imaging.MetafileHeader.IsDisplay() -> bool
+Egami.SystemDrawing.Imaging.MetafileHeader.IsEmf() -> bool
+Egami.SystemDrawing.Imaging.MetafileHeader.IsEmfOrEmfPlus() -> bool
+Egami.SystemDrawing.Imaging.MetafileHeader.IsEmfPlus() -> bool
+Egami.SystemDrawing.Imaging.MetafileHeader.IsEmfPlusDual() -> bool
+Egami.SystemDrawing.Imaging.MetafileHeader.IsEmfPlusOnly() -> bool
+Egami.SystemDrawing.Imaging.MetafileHeader.IsWmf() -> bool
+Egami.SystemDrawing.Imaging.MetafileHeader.IsWmfPlaceable() -> bool
+Egami.SystemDrawing.Imaging.MetafileHeader.LogicalDpiX.get -> int
+Egami.SystemDrawing.Imaging.MetafileHeader.LogicalDpiY.get -> int
+Egami.SystemDrawing.Imaging.MetafileHeader.MetafileSize.get -> int
+Egami.SystemDrawing.Imaging.MetafileHeader.Type.get -> Egami.SystemDrawing.Imaging.MetafileType
+Egami.SystemDrawing.Imaging.MetafileHeader.Version.get -> int
+Egami.SystemDrawing.Imaging.MetafileHeader.WmfHeader.get -> Egami.SystemDrawing.Imaging.MetaHeader!
+Egami.SystemDrawing.Imaging.MetafileType
+Egami.SystemDrawing.Imaging.MetafileType.Emf = 3 -> Egami.SystemDrawing.Imaging.MetafileType
+Egami.SystemDrawing.Imaging.MetafileType.EmfPlusDual = 5 -> Egami.SystemDrawing.Imaging.MetafileType
+Egami.SystemDrawing.Imaging.MetafileType.EmfPlusOnly = 4 -> Egami.SystemDrawing.Imaging.MetafileType
+Egami.SystemDrawing.Imaging.MetafileType.Invalid = 0 -> Egami.SystemDrawing.Imaging.MetafileType
+Egami.SystemDrawing.Imaging.MetafileType.Wmf = 1 -> Egami.SystemDrawing.Imaging.MetafileType
+Egami.SystemDrawing.Imaging.MetafileType.WmfPlaceable = 2 -> Egami.SystemDrawing.Imaging.MetafileType
+Egami.SystemDrawing.Imaging.MetaHeader
+Egami.SystemDrawing.Imaging.MetaHeader.HeaderSize.get -> short
+Egami.SystemDrawing.Imaging.MetaHeader.HeaderSize.set -> void
+Egami.SystemDrawing.Imaging.MetaHeader.MaxRecord.get -> int
+Egami.SystemDrawing.Imaging.MetaHeader.MaxRecord.set -> void
+Egami.SystemDrawing.Imaging.MetaHeader.MetaHeader() -> void
+Egami.SystemDrawing.Imaging.MetaHeader.NoObjects.get -> short
+Egami.SystemDrawing.Imaging.MetaHeader.NoObjects.set -> void
+Egami.SystemDrawing.Imaging.MetaHeader.NoParameters.get -> short
+Egami.SystemDrawing.Imaging.MetaHeader.NoParameters.set -> void
+Egami.SystemDrawing.Imaging.MetaHeader.Size.get -> int
+Egami.SystemDrawing.Imaging.MetaHeader.Size.set -> void
+Egami.SystemDrawing.Imaging.MetaHeader.Type.get -> short
+Egami.SystemDrawing.Imaging.MetaHeader.Type.set -> void
+Egami.SystemDrawing.Imaging.MetaHeader.Version.get -> short
+Egami.SystemDrawing.Imaging.MetaHeader.Version.set -> void
 Egami.SystemDrawing.Imaging.PaletteFlags
 Egami.SystemDrawing.Imaging.PaletteFlags.GrayScale = 2 -> Egami.SystemDrawing.Imaging.PaletteFlags
 Egami.SystemDrawing.Imaging.PaletteFlags.Halftone = 4 -> Egami.SystemDrawing.Imaging.PaletteFlags
@@ -1162,6 +1687,7 @@ Egami.SystemDrawing.Imaging.PixelFormat.Indexed = 65536 -> Egami.SystemDrawing.I
 Egami.SystemDrawing.Imaging.PixelFormat.Max = 15 -> Egami.SystemDrawing.Imaging.PixelFormat
 Egami.SystemDrawing.Imaging.PixelFormat.PAlpha = 524288 -> Egami.SystemDrawing.Imaging.PixelFormat
 Egami.SystemDrawing.Imaging.PixelFormat.Undefined = 0 -> Egami.SystemDrawing.Imaging.PixelFormat
+Egami.SystemDrawing.Imaging.PlayRecordCallback
 Egami.SystemDrawing.Imaging.PropertyItem
 Egami.SystemDrawing.Imaging.PropertyItem.Id.get -> int
 Egami.SystemDrawing.Imaging.PropertyItem.Id.set -> void
@@ -1171,6 +1697,26 @@ Egami.SystemDrawing.Imaging.PropertyItem.Type.get -> short
 Egami.SystemDrawing.Imaging.PropertyItem.Type.set -> void
 Egami.SystemDrawing.Imaging.PropertyItem.Value.get -> byte[]?
 Egami.SystemDrawing.Imaging.PropertyItem.Value.set -> void
+Egami.SystemDrawing.Imaging.WmfPlaceableFileHeader
+Egami.SystemDrawing.Imaging.WmfPlaceableFileHeader.BboxBottom.get -> short
+Egami.SystemDrawing.Imaging.WmfPlaceableFileHeader.BboxBottom.set -> void
+Egami.SystemDrawing.Imaging.WmfPlaceableFileHeader.BboxLeft.get -> short
+Egami.SystemDrawing.Imaging.WmfPlaceableFileHeader.BboxLeft.set -> void
+Egami.SystemDrawing.Imaging.WmfPlaceableFileHeader.BboxRight.get -> short
+Egami.SystemDrawing.Imaging.WmfPlaceableFileHeader.BboxRight.set -> void
+Egami.SystemDrawing.Imaging.WmfPlaceableFileHeader.BboxTop.get -> short
+Egami.SystemDrawing.Imaging.WmfPlaceableFileHeader.BboxTop.set -> void
+Egami.SystemDrawing.Imaging.WmfPlaceableFileHeader.Checksum.get -> short
+Egami.SystemDrawing.Imaging.WmfPlaceableFileHeader.Checksum.set -> void
+Egami.SystemDrawing.Imaging.WmfPlaceableFileHeader.Hmf.get -> short
+Egami.SystemDrawing.Imaging.WmfPlaceableFileHeader.Hmf.set -> void
+Egami.SystemDrawing.Imaging.WmfPlaceableFileHeader.Inch.get -> short
+Egami.SystemDrawing.Imaging.WmfPlaceableFileHeader.Inch.set -> void
+Egami.SystemDrawing.Imaging.WmfPlaceableFileHeader.Key.get -> int
+Egami.SystemDrawing.Imaging.WmfPlaceableFileHeader.Key.set -> void
+Egami.SystemDrawing.Imaging.WmfPlaceableFileHeader.Reserved.get -> int
+Egami.SystemDrawing.Imaging.WmfPlaceableFileHeader.Reserved.set -> void
+Egami.SystemDrawing.Imaging.WmfPlaceableFileHeader.WmfPlaceableFileHeader() -> void
 Egami.SystemDrawing.Pen
 Egami.SystemDrawing.Pen.Alignment.get -> Egami.SystemDrawing.Drawing2D.PenAlignment
 Egami.SystemDrawing.Pen.Alignment.set -> void
@@ -1299,7 +1845,108 @@ Egami.SystemDrawing.SolidBrush
 Egami.SystemDrawing.SolidBrush.Color.get -> System.Drawing.Color
 Egami.SystemDrawing.SolidBrush.Color.set -> void
 Egami.SystemDrawing.SolidBrush.SolidBrush(System.Drawing.Color color) -> void
+Egami.SystemDrawing.StockIconId
+Egami.SystemDrawing.StockIconId.Application = 2 -> Egami.SystemDrawing.StockIconId
+Egami.SystemDrawing.StockIconId.AudioFiles = 71 -> Egami.SystemDrawing.StockIconId
+Egami.SystemDrawing.StockIconId.AutoList = 49 -> Egami.SystemDrawing.StockIconId
+Egami.SystemDrawing.StockIconId.ClusteredDrive = 140 -> Egami.SystemDrawing.StockIconId
+Egami.SystemDrawing.StockIconId.Delete = 84 -> Egami.SystemDrawing.StockIconId
+Egami.SystemDrawing.StockIconId.DesktopPC = 94 -> Egami.SystemDrawing.StockIconId
+Egami.SystemDrawing.StockIconId.DeviceAudioPlayer = 102 -> Egami.SystemDrawing.StockIconId
+Egami.SystemDrawing.StockIconId.DeviceCamera = 100 -> Egami.SystemDrawing.StockIconId
+Egami.SystemDrawing.StockIconId.DeviceCellPhone = 99 -> Egami.SystemDrawing.StockIconId
+Egami.SystemDrawing.StockIconId.DeviceVideoCamera = 101 -> Egami.SystemDrawing.StockIconId
+Egami.SystemDrawing.StockIconId.DocumentNoAssociation = 0 -> Egami.SystemDrawing.StockIconId
+Egami.SystemDrawing.StockIconId.DocumentWithAssociation = 1 -> Egami.SystemDrawing.StockIconId
+Egami.SystemDrawing.StockIconId.Drive35 = 6 -> Egami.SystemDrawing.StockIconId
+Egami.SystemDrawing.StockIconId.Drive525 = 5 -> Egami.SystemDrawing.StockIconId
+Egami.SystemDrawing.StockIconId.DriveBD = 133 -> Egami.SystemDrawing.StockIconId
+Egami.SystemDrawing.StockIconId.DriveCD = 11 -> Egami.SystemDrawing.StockIconId
+Egami.SystemDrawing.StockIconId.DriveDVD = 59 -> Egami.SystemDrawing.StockIconId
+Egami.SystemDrawing.StockIconId.DriveFixed = 8 -> Egami.SystemDrawing.StockIconId
+Egami.SystemDrawing.StockIconId.DriveHDDVD = 132 -> Egami.SystemDrawing.StockIconId
+Egami.SystemDrawing.StockIconId.DriveNet = 9 -> Egami.SystemDrawing.StockIconId
+Egami.SystemDrawing.StockIconId.DriveNetDisabled = 10 -> Egami.SystemDrawing.StockIconId
+Egami.SystemDrawing.StockIconId.DriveRam = 12 -> Egami.SystemDrawing.StockIconId
+Egami.SystemDrawing.StockIconId.DriveRemovable = 7 -> Egami.SystemDrawing.StockIconId
+Egami.SystemDrawing.StockIconId.DriveUnknown = 58 -> Egami.SystemDrawing.StockIconId
+Egami.SystemDrawing.StockIconId.Error = 80 -> Egami.SystemDrawing.StockIconId
+Egami.SystemDrawing.StockIconId.Find = 22 -> Egami.SystemDrawing.StockIconId
+Egami.SystemDrawing.StockIconId.Folder = 3 -> Egami.SystemDrawing.StockIconId
+Egami.SystemDrawing.StockIconId.FolderBack = 75 -> Egami.SystemDrawing.StockIconId
+Egami.SystemDrawing.StockIconId.FolderFront = 76 -> Egami.SystemDrawing.StockIconId
+Egami.SystemDrawing.StockIconId.FolderOpen = 4 -> Egami.SystemDrawing.StockIconId
+Egami.SystemDrawing.StockIconId.Help = 23 -> Egami.SystemDrawing.StockIconId
+Egami.SystemDrawing.StockIconId.ImageFiles = 72 -> Egami.SystemDrawing.StockIconId
+Egami.SystemDrawing.StockIconId.Info = 79 -> Egami.SystemDrawing.StockIconId
+Egami.SystemDrawing.StockIconId.Internet = 104 -> Egami.SystemDrawing.StockIconId
+Egami.SystemDrawing.StockIconId.Key = 81 -> Egami.SystemDrawing.StockIconId
+Egami.SystemDrawing.StockIconId.Link = 29 -> Egami.SystemDrawing.StockIconId
+Egami.SystemDrawing.StockIconId.Lock = 47 -> Egami.SystemDrawing.StockIconId
+Egami.SystemDrawing.StockIconId.MediaAudioDVD = 85 -> Egami.SystemDrawing.StockIconId
+Egami.SystemDrawing.StockIconId.MediaBDR = 138 -> Egami.SystemDrawing.StockIconId
+Egami.SystemDrawing.StockIconId.MediaBDRE = 139 -> Egami.SystemDrawing.StockIconId
+Egami.SystemDrawing.StockIconId.MediaBDROM = 137 -> Egami.SystemDrawing.StockIconId
+Egami.SystemDrawing.StockIconId.MediaBlankCD = 69 -> Egami.SystemDrawing.StockIconId
+Egami.SystemDrawing.StockIconId.MediaBluRay = 90 -> Egami.SystemDrawing.StockIconId
+Egami.SystemDrawing.StockIconId.MediaCDAudio = 40 -> Egami.SystemDrawing.StockIconId
+Egami.SystemDrawing.StockIconId.MediaCDAudioPlus = 65 -> Egami.SystemDrawing.StockIconId
+Egami.SystemDrawing.StockIconId.MediaCDBurn = 68 -> Egami.SystemDrawing.StockIconId
+Egami.SystemDrawing.StockIconId.MediaCDR = 67 -> Egami.SystemDrawing.StockIconId
+Egami.SystemDrawing.StockIconId.MediaCDROM = 70 -> Egami.SystemDrawing.StockIconId
+Egami.SystemDrawing.StockIconId.MediaCDRW = 66 -> Egami.SystemDrawing.StockIconId
+Egami.SystemDrawing.StockIconId.MediaCompactFlash = 98 -> Egami.SystemDrawing.StockIconId
+Egami.SystemDrawing.StockIconId.MediaDVD = 60 -> Egami.SystemDrawing.StockIconId
+Egami.SystemDrawing.StockIconId.MediaDVDPlusR = 92 -> Egami.SystemDrawing.StockIconId
+Egami.SystemDrawing.StockIconId.MediaDVDPlusRW = 93 -> Egami.SystemDrawing.StockIconId
+Egami.SystemDrawing.StockIconId.MediaDVDR = 63 -> Egami.SystemDrawing.StockIconId
+Egami.SystemDrawing.StockIconId.MediaDVDRAM = 61 -> Egami.SystemDrawing.StockIconId
+Egami.SystemDrawing.StockIconId.MediaDVDROM = 64 -> Egami.SystemDrawing.StockIconId
+Egami.SystemDrawing.StockIconId.MediaDVDRW = 62 -> Egami.SystemDrawing.StockIconId
+Egami.SystemDrawing.StockIconId.MediaEnhancedCD = 87 -> Egami.SystemDrawing.StockIconId
+Egami.SystemDrawing.StockIconId.MediaEnhancedDVD = 88 -> Egami.SystemDrawing.StockIconId
+Egami.SystemDrawing.StockIconId.MediaHDDVD = 89 -> Egami.SystemDrawing.StockIconId
+Egami.SystemDrawing.StockIconId.MediaHDDVDR = 135 -> Egami.SystemDrawing.StockIconId
+Egami.SystemDrawing.StockIconId.MediaHDDVDRAM = 136 -> Egami.SystemDrawing.StockIconId
+Egami.SystemDrawing.StockIconId.MediaHDDVDROM = 134 -> Egami.SystemDrawing.StockIconId
+Egami.SystemDrawing.StockIconId.MediaMovieDVD = 86 -> Egami.SystemDrawing.StockIconId
+Egami.SystemDrawing.StockIconId.MediaSmartMedia = 97 -> Egami.SystemDrawing.StockIconId
+Egami.SystemDrawing.StockIconId.MediaSVCD = 56 -> Egami.SystemDrawing.StockIconId
+Egami.SystemDrawing.StockIconId.MediaVCD = 91 -> Egami.SystemDrawing.StockIconId
+Egami.SystemDrawing.StockIconId.MixedFiles = 74 -> Egami.SystemDrawing.StockIconId
+Egami.SystemDrawing.StockIconId.MobilePC = 95 -> Egami.SystemDrawing.StockIconId
+Egami.SystemDrawing.StockIconId.MyNetwork = 17 -> Egami.SystemDrawing.StockIconId
+Egami.SystemDrawing.StockIconId.NetworkConnect = 103 -> Egami.SystemDrawing.StockIconId
+Egami.SystemDrawing.StockIconId.Printer = 16 -> Egami.SystemDrawing.StockIconId
+Egami.SystemDrawing.StockIconId.PrinterFax = 52 -> Egami.SystemDrawing.StockIconId
+Egami.SystemDrawing.StockIconId.PrinterFaxNet = 53 -> Egami.SystemDrawing.StockIconId
+Egami.SystemDrawing.StockIconId.PrinterFile = 54 -> Egami.SystemDrawing.StockIconId
+Egami.SystemDrawing.StockIconId.PrinterNet = 50 -> Egami.SystemDrawing.StockIconId
+Egami.SystemDrawing.StockIconId.Recycler = 31 -> Egami.SystemDrawing.StockIconId
+Egami.SystemDrawing.StockIconId.RecyclerFull = 32 -> Egami.SystemDrawing.StockIconId
+Egami.SystemDrawing.StockIconId.Rename = 83 -> Egami.SystemDrawing.StockIconId
+Egami.SystemDrawing.StockIconId.Server = 15 -> Egami.SystemDrawing.StockIconId
+Egami.SystemDrawing.StockIconId.ServerShare = 51 -> Egami.SystemDrawing.StockIconId
+Egami.SystemDrawing.StockIconId.Settings = 106 -> Egami.SystemDrawing.StockIconId
+Egami.SystemDrawing.StockIconId.Share = 28 -> Egami.SystemDrawing.StockIconId
+Egami.SystemDrawing.StockIconId.Shield = 77 -> Egami.SystemDrawing.StockIconId
+Egami.SystemDrawing.StockIconId.SlowFile = 30 -> Egami.SystemDrawing.StockIconId
+Egami.SystemDrawing.StockIconId.Software = 82 -> Egami.SystemDrawing.StockIconId
+Egami.SystemDrawing.StockIconId.Stack = 55 -> Egami.SystemDrawing.StockIconId
+Egami.SystemDrawing.StockIconId.StuffedFolder = 57 -> Egami.SystemDrawing.StockIconId
+Egami.SystemDrawing.StockIconId.Users = 96 -> Egami.SystemDrawing.StockIconId
+Egami.SystemDrawing.StockIconId.VideoFiles = 73 -> Egami.SystemDrawing.StockIconId
+Egami.SystemDrawing.StockIconId.Warning = 78 -> Egami.SystemDrawing.StockIconId
+Egami.SystemDrawing.StockIconId.World = 13 -> Egami.SystemDrawing.StockIconId
+Egami.SystemDrawing.StockIconId.ZipFile = 105 -> Egami.SystemDrawing.StockIconId
+Egami.SystemDrawing.StockIconOptions
+Egami.SystemDrawing.StockIconOptions.Default = 0 -> Egami.SystemDrawing.StockIconOptions
+Egami.SystemDrawing.StockIconOptions.LinkOverlay = 32768 -> Egami.SystemDrawing.StockIconOptions
+Egami.SystemDrawing.StockIconOptions.Selected = 65536 -> Egami.SystemDrawing.StockIconOptions
+Egami.SystemDrawing.StockIconOptions.ShellIconSize = 4 -> Egami.SystemDrawing.StockIconOptions
+Egami.SystemDrawing.StockIconOptions.SmallIcon = 1 -> Egami.SystemDrawing.StockIconOptions
 Egami.SystemDrawing.SystemBrushes
+Egami.SystemDrawing.SystemIcons
 Egami.SystemDrawing.SystemPens
 Egami.SystemDrawing.Text.TextRenderingHint
 Egami.SystemDrawing.Text.TextRenderingHint.AntiAlias = 4 -> Egami.SystemDrawing.Text.TextRenderingHint
@@ -1331,6 +1978,15 @@ Egami.SystemDrawing.TextureBrush.TranslateTransform(float dx, float dy) -> void
 Egami.SystemDrawing.TextureBrush.TranslateTransform(float dx, float dy, Egami.SystemDrawing.Drawing2D.MatrixOrder order) -> void
 Egami.SystemDrawing.TextureBrush.WrapMode.get -> Egami.SystemDrawing.Drawing2D.WrapMode
 Egami.SystemDrawing.TextureBrush.WrapMode.set -> void
+Egami.SystemDrawing.ToolboxBitmapAttribute
+Egami.SystemDrawing.ToolboxBitmapAttribute.GetImage(object? component) -> Egami.SystemDrawing.Image?
+Egami.SystemDrawing.ToolboxBitmapAttribute.GetImage(object? component, bool large) -> Egami.SystemDrawing.Image?
+Egami.SystemDrawing.ToolboxBitmapAttribute.GetImage(System.Type! type) -> Egami.SystemDrawing.Image?
+Egami.SystemDrawing.ToolboxBitmapAttribute.GetImage(System.Type! type, bool large) -> Egami.SystemDrawing.Image?
+Egami.SystemDrawing.ToolboxBitmapAttribute.GetImage(System.Type! type, string? imgName, bool large) -> Egami.SystemDrawing.Image?
+Egami.SystemDrawing.ToolboxBitmapAttribute.ToolboxBitmapAttribute(string! imageFile) -> void
+Egami.SystemDrawing.ToolboxBitmapAttribute.ToolboxBitmapAttribute(System.Type! t) -> void
+Egami.SystemDrawing.ToolboxBitmapAttribute.ToolboxBitmapAttribute(System.Type? t, string? name) -> void
 override Egami.SystemDrawing.Bitmap.Clone() -> object!
 override Egami.SystemDrawing.Drawing2D.HatchBrush.Clone() -> object!
 override Egami.SystemDrawing.Drawing2D.LinearGradientBrush.Clone() -> object!
@@ -1338,15 +1994,35 @@ override Egami.SystemDrawing.Drawing2D.Matrix.Equals(object? obj) -> bool
 override Egami.SystemDrawing.Drawing2D.Matrix.GetHashCode() -> int
 override Egami.SystemDrawing.Drawing2D.PathGradientBrush.Clone() -> object!
 override Egami.SystemDrawing.Icon.ToString() -> string!
+override Egami.SystemDrawing.IconConverter.CanConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Type! sourceType) -> bool
+override Egami.SystemDrawing.IconConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Type? destinationType) -> bool
+override Egami.SystemDrawing.IconConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object! value) -> object?
+override Egami.SystemDrawing.IconConverter.ConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object? value, System.Type! destinationType) -> object?
+override Egami.SystemDrawing.ImageConverter.CanConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Type! sourceType) -> bool
+override Egami.SystemDrawing.ImageConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Type? destinationType) -> bool
+override Egami.SystemDrawing.ImageConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object! value) -> object?
+override Egami.SystemDrawing.ImageConverter.ConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object? value, System.Type! destinationType) -> object?
+override Egami.SystemDrawing.ImageConverter.GetProperties(System.ComponentModel.ITypeDescriptorContext? context, object? value, System.Attribute![]? attributes) -> System.ComponentModel.PropertyDescriptorCollection!
+override Egami.SystemDrawing.ImageConverter.GetPropertiesSupported(System.ComponentModel.ITypeDescriptorContext? context) -> bool
+override Egami.SystemDrawing.ImageFormatConverter.CanConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Type! sourceType) -> bool
+override Egami.SystemDrawing.ImageFormatConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Type? destinationType) -> bool
+override Egami.SystemDrawing.ImageFormatConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object! value) -> object?
+override Egami.SystemDrawing.ImageFormatConverter.ConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object? value, System.Type! destinationType) -> object?
+override Egami.SystemDrawing.ImageFormatConverter.GetStandardValues(System.ComponentModel.ITypeDescriptorContext? context) -> System.ComponentModel.TypeConverter.StandardValuesCollection!
+override Egami.SystemDrawing.ImageFormatConverter.GetStandardValuesSupported(System.ComponentModel.ITypeDescriptorContext? context) -> bool
 override Egami.SystemDrawing.Imaging.FrameDimension.Equals(object? o) -> bool
 override Egami.SystemDrawing.Imaging.FrameDimension.GetHashCode() -> int
 override Egami.SystemDrawing.Imaging.FrameDimension.ToString() -> string!
 override Egami.SystemDrawing.Imaging.ImageFormat.Equals(object? o) -> bool
 override Egami.SystemDrawing.Imaging.ImageFormat.GetHashCode() -> int
 override Egami.SystemDrawing.Imaging.ImageFormat.ToString() -> string!
+override Egami.SystemDrawing.Imaging.Metafile.Clone() -> object!
 override Egami.SystemDrawing.SolidBrush.Clone() -> object!
 override Egami.SystemDrawing.TextureBrush.Clone() -> object!
+override Egami.SystemDrawing.ToolboxBitmapAttribute.Equals(object? value) -> bool
+override Egami.SystemDrawing.ToolboxBitmapAttribute.GetHashCode() -> int
 static Egami.SystemDrawing.Bitmap.FromHicon(nint hicon) -> Egami.SystemDrawing.Bitmap!
+static Egami.SystemDrawing.Bitmap.FromRaster(Egami.Raster! raster) -> Egami.SystemDrawing.Bitmap!
 static Egami.SystemDrawing.Bitmap.FromResource(nint hinstance, string! bitmapName) -> Egami.SystemDrawing.Bitmap!
 static Egami.SystemDrawing.Brushes.AliceBlue.get -> Egami.SystemDrawing.Brush!
 static Egami.SystemDrawing.Brushes.AntiqueWhite.get -> Egami.SystemDrawing.Brush!
@@ -1489,6 +2165,7 @@ static Egami.SystemDrawing.Brushes.White.get -> Egami.SystemDrawing.Brush!
 static Egami.SystemDrawing.Brushes.WhiteSmoke.get -> Egami.SystemDrawing.Brush!
 static Egami.SystemDrawing.Brushes.Yellow.get -> Egami.SystemDrawing.Brush!
 static Egami.SystemDrawing.Brushes.YellowGreen.get -> Egami.SystemDrawing.Brush!
+static Egami.SystemDrawing.BufferedGraphicsManager.Current.get -> Egami.SystemDrawing.BufferedGraphicsContext!
 static Egami.SystemDrawing.Graphics.FromHdc(nint hdc) -> Egami.SystemDrawing.Graphics!
 static Egami.SystemDrawing.Graphics.FromHdc(nint hdc, nint hdevice) -> Egami.SystemDrawing.Graphics!
 static Egami.SystemDrawing.Graphics.FromHdcInternal(nint hdc) -> Egami.SystemDrawing.Graphics!
@@ -1511,6 +2188,11 @@ static Egami.SystemDrawing.Image.GetPixelFormatSize(Egami.SystemDrawing.Imaging.
 static Egami.SystemDrawing.Image.IsAlphaPixelFormat(Egami.SystemDrawing.Imaging.PixelFormat pixfmt) -> bool
 static Egami.SystemDrawing.Image.IsCanonicalPixelFormat(Egami.SystemDrawing.Imaging.PixelFormat pixfmt) -> bool
 static Egami.SystemDrawing.Image.IsExtendedPixelFormat(Egami.SystemDrawing.Imaging.PixelFormat pixfmt) -> bool
+static Egami.SystemDrawing.ImageAnimator.Animate(Egami.SystemDrawing.Image! image, System.EventHandler! onFrameChangedHandler) -> void
+static Egami.SystemDrawing.ImageAnimator.CanAnimate(Egami.SystemDrawing.Image? image) -> bool
+static Egami.SystemDrawing.ImageAnimator.StopAnimate(Egami.SystemDrawing.Image! image, System.EventHandler! onFrameChangedHandler) -> void
+static Egami.SystemDrawing.ImageAnimator.UpdateFrames() -> void
+static Egami.SystemDrawing.ImageAnimator.UpdateFrames(Egami.SystemDrawing.Image? image) -> void
 static Egami.SystemDrawing.Imaging.ColorPalette.CreateOptimalPalette(int colors, bool useTransparentColor, Egami.SystemDrawing.Bitmap! bitmap) -> Egami.SystemDrawing.Imaging.ColorPalette!
 static Egami.SystemDrawing.Imaging.FrameDimension.Page.get -> Egami.SystemDrawing.Imaging.FrameDimension!
 static Egami.SystemDrawing.Imaging.FrameDimension.Resolution.get -> Egami.SystemDrawing.Imaging.FrameDimension!
@@ -1529,6 +2211,10 @@ static Egami.SystemDrawing.Imaging.ImageFormat.Png.get -> Egami.SystemDrawing.Im
 static Egami.SystemDrawing.Imaging.ImageFormat.Tiff.get -> Egami.SystemDrawing.Imaging.ImageFormat!
 static Egami.SystemDrawing.Imaging.ImageFormat.Webp.get -> Egami.SystemDrawing.Imaging.ImageFormat!
 static Egami.SystemDrawing.Imaging.ImageFormat.Wmf.get -> Egami.SystemDrawing.Imaging.ImageFormat!
+static Egami.SystemDrawing.Imaging.Metafile.GetMetafileHeader(nint henhmetafile) -> Egami.SystemDrawing.Imaging.MetafileHeader!
+static Egami.SystemDrawing.Imaging.Metafile.GetMetafileHeader(nint hmetafile, Egami.SystemDrawing.Imaging.WmfPlaceableFileHeader! wmfHeader) -> Egami.SystemDrawing.Imaging.MetafileHeader!
+static Egami.SystemDrawing.Imaging.Metafile.GetMetafileHeader(string! fileName) -> Egami.SystemDrawing.Imaging.MetafileHeader!
+static Egami.SystemDrawing.Imaging.Metafile.GetMetafileHeader(System.IO.Stream! stream) -> Egami.SystemDrawing.Imaging.MetafileHeader!
 static Egami.SystemDrawing.Pens.AliceBlue.get -> Egami.SystemDrawing.Pen!
 static Egami.SystemDrawing.Pens.AntiqueWhite.get -> Egami.SystemDrawing.Pen!
 static Egami.SystemDrawing.Pens.Aqua.get -> Egami.SystemDrawing.Pen!
@@ -1705,6 +2391,18 @@ static Egami.SystemDrawing.SystemBrushes.ScrollBar.get -> Egami.SystemDrawing.Br
 static Egami.SystemDrawing.SystemBrushes.Window.get -> Egami.SystemDrawing.Brush!
 static Egami.SystemDrawing.SystemBrushes.WindowFrame.get -> Egami.SystemDrawing.Brush!
 static Egami.SystemDrawing.SystemBrushes.WindowText.get -> Egami.SystemDrawing.Brush!
+static Egami.SystemDrawing.SystemIcons.Application.get -> Egami.SystemDrawing.Icon!
+static Egami.SystemDrawing.SystemIcons.Asterisk.get -> Egami.SystemDrawing.Icon!
+static Egami.SystemDrawing.SystemIcons.Error.get -> Egami.SystemDrawing.Icon!
+static Egami.SystemDrawing.SystemIcons.Exclamation.get -> Egami.SystemDrawing.Icon!
+static Egami.SystemDrawing.SystemIcons.GetStockIcon(Egami.SystemDrawing.StockIconId stockIcon, Egami.SystemDrawing.StockIconOptions options = Egami.SystemDrawing.StockIconOptions.Default) -> Egami.SystemDrawing.Icon!
+static Egami.SystemDrawing.SystemIcons.GetStockIcon(Egami.SystemDrawing.StockIconId stockIcon, int size) -> Egami.SystemDrawing.Icon!
+static Egami.SystemDrawing.SystemIcons.Hand.get -> Egami.SystemDrawing.Icon!
+static Egami.SystemDrawing.SystemIcons.Information.get -> Egami.SystemDrawing.Icon!
+static Egami.SystemDrawing.SystemIcons.Question.get -> Egami.SystemDrawing.Icon!
+static Egami.SystemDrawing.SystemIcons.Shield.get -> Egami.SystemDrawing.Icon!
+static Egami.SystemDrawing.SystemIcons.Warning.get -> Egami.SystemDrawing.Icon!
+static Egami.SystemDrawing.SystemIcons.WinLogo.get -> Egami.SystemDrawing.Icon!
 static Egami.SystemDrawing.SystemPens.ActiveBorder.get -> Egami.SystemDrawing.Pen!
 static Egami.SystemDrawing.SystemPens.ActiveCaption.get -> Egami.SystemDrawing.Pen!
 static Egami.SystemDrawing.SystemPens.ActiveCaptionText.get -> Egami.SystemDrawing.Pen!
@@ -1739,6 +2437,7 @@ static Egami.SystemDrawing.SystemPens.ScrollBar.get -> Egami.SystemDrawing.Pen!
 static Egami.SystemDrawing.SystemPens.Window.get -> Egami.SystemDrawing.Pen!
 static Egami.SystemDrawing.SystemPens.WindowFrame.get -> Egami.SystemDrawing.Pen!
 static Egami.SystemDrawing.SystemPens.WindowText.get -> Egami.SystemDrawing.Pen!
+static Egami.SystemDrawing.ToolboxBitmapAttribute.GetImageFromResource(System.Type! t, string? imageName, bool large) -> Egami.SystemDrawing.Image?
 static readonly Egami.SystemDrawing.Imaging.Encoder.ChrominanceTable -> Egami.SystemDrawing.Imaging.Encoder!
 static readonly Egami.SystemDrawing.Imaging.Encoder.ColorDepth -> Egami.SystemDrawing.Imaging.Encoder!
 static readonly Egami.SystemDrawing.Imaging.Encoder.ColorSpace -> Egami.SystemDrawing.Imaging.Encoder!
@@ -1752,7 +2451,10 @@ static readonly Egami.SystemDrawing.Imaging.Encoder.SaveFlag -> Egami.SystemDraw
 static readonly Egami.SystemDrawing.Imaging.Encoder.ScanMethod -> Egami.SystemDrawing.Imaging.Encoder!
 static readonly Egami.SystemDrawing.Imaging.Encoder.Transformation -> Egami.SystemDrawing.Imaging.Encoder!
 static readonly Egami.SystemDrawing.Imaging.Encoder.Version -> Egami.SystemDrawing.Imaging.Encoder!
+static readonly Egami.SystemDrawing.ToolboxBitmapAttribute.Default -> Egami.SystemDrawing.ToolboxBitmapAttribute!
 virtual Egami.SystemDrawing.Brush.Dispose(bool disposing) -> void
 virtual Egami.SystemDrawing.Drawing2D.CustomLineCap.Dispose(bool disposing) -> void
 virtual Egami.SystemDrawing.Graphics.DrawImageAbort.Invoke(nint callbackdata) -> bool
+virtual Egami.SystemDrawing.Graphics.EnumerateMetafileProc.Invoke(Egami.SystemDrawing.Imaging.EmfPlusRecordType recordType, int flags, int dataSize, nint data, Egami.SystemDrawing.Imaging.PlayRecordCallback? callbackData) -> bool
 virtual Egami.SystemDrawing.Image.GetThumbnailImageAbort.Invoke() -> bool
+virtual Egami.SystemDrawing.Imaging.PlayRecordCallback.Invoke(Egami.SystemDrawing.Imaging.EmfPlusRecordType recordType, int flags, int dataSize, nint recordData) -> void

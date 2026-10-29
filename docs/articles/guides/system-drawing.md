@@ -5,7 +5,8 @@ Egami.SystemDrawing gives code written for System.Drawing.Common its API on ever
 runs only on Windows since .NET 6; with this package the same code runs on Linux, macOS and in containers, drawn by Egami.
 
 The package is a preview (1.0.0-preview.1). This release has bitmaps, pixel access, codecs, icons, and `Graphics` with pens,
-brushes, paths, transforms, clipping, regions and images. Fonts and text follow in the next previews.
+brushes, paths, transforms, clipping, regions and images, metafiles, effects, off-screen buffers and the image animator. Fonts
+and text follow in the next preview.
 
 ## Moving code over
 
@@ -218,6 +219,57 @@ and `DrawIconUnstretched` draws it at its size.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/SystemDrawingPackage.cs#images)]
 
+## Metafiles
+
+`Metafile` reads WMF, EMF and EMF+ (and `Image.FromFile` returns one for them) through Egami.Metafiles. It is an `Image` sized by
+its frame as GDI+ sizes it: an EMF's frame in pixels at the resolution of the device it was made for, one pixel more for the
+included edge, and a placeable WMF's box at 96 pixels to the inch; `GetBounds` gives the frame unrounded and
+`PhysicalDimension` in hundredths of a millimeter. `GetMetafileHeader` reports the `MetafileType`, version, bounds,
+resolutions, size and EMF+ header, and a `MetaHeader` and `WmfPlaceableFileHeader` for WMF. `DrawImage` plays the metafile as
+vectors into the destination. `EnumerateMetafile` calls an `EnumerateMetafileProc` back for each record as GDI+ enumerates them, with its
+`EmfPlusRecordType`, flags and pinned data: a placeable WMF's records without header and end, an EMF's from header to end, and
+for EMF+ the EMF header, the EMF+ records and the end record. Egami plays metafiles whole, so when the callback calls
+`PlayRecord`, the metafile is drawn once the walk ends; the `PlayRecordCallback` GDI+ passes for that is always null. As in GDI+, `Graphics.FromImage` on a metafile throws
+`ExternalException` and `RotateFlip` throws `NotImplementedException`; saving or copying it into a `Bitmap` rasterizes it.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/SystemDrawingPackage.cs#metafiles)]
+
+Egami reads metafiles but does not record them: the constructors that would record one take an `EmfType` or a
+`MetafileFrameUnit`, and throw `NotSupportedException` with the EGSD0004 warning.
+
+## Effects
+
+The GDI+ 1.1 effects of `Egami.SystemDrawing.Imaging.Effects` apply to a bitmap with `Bitmap.ApplyEffect`, to an area or the
+whole of it, or while drawing with `DrawImage(image, effect)`. `ColorMatrixEffect`, `ColorLookupTableEffect`,
+`GrayScaleEffect`, `InvertEffect` and `SepiaEffect` give GDI+'s pixels, and `BrightnessContrastEffect`, `ColorBalanceEffect`,
+`LevelsEffect`, `ExposureCurveEffect`, `DensityCurveEffect`, `MidtoneCurveEffect`, `WhiteSaturationCurveEffect` and
+`BlackSaturationCurveEffect` follow GDI+'s curves, measured on a gray ramp, to within a level. `HighlightCurveEffect`,
+`ShadowCurveEffect` and `ContrastCurveEffect` (all `ColorCurveEffect` with a `CurveChannel`), `TintEffect`, `VividEffect`,
+`BlurEffect` and `SharpenEffect` are Egami's own versions of the same adjustments.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/SystemDrawingPackage.cs#effects)]
+
+## Buffers, cached bitmaps and animation
+
+`BufferedGraphicsManager.Current` and `BufferedGraphicsContext` allocate a `BufferedGraphics`: an off-screen bitmap whose
+`Graphics` draws in the target's coordinates, copied onto the target by `Render` as GDI copies it, premultiplied colors made
+opaque. A `CachedBitmap` is drawn at device pixels with `DrawCachedBitmap`. `ImageAnimator` steps animated GIFs through their
+frames at their delays: `Animate` calls a handler when the next frame is due, and `UpdateFrames` selects it. `Graphics` is an
+`IDeviceContext`, whose members throw. `ImageConverter`, `IconConverter` and `ImageFormatConverter` convert for designers and
+serializers, `ToolboxBitmapAttribute`, `BitmapSuffixInSameAssemblyAttribute`, `BitmapSuffixInSatelliteAssemblyAttribute` and
+`Design.CategoryNameCollection` serve the Windows Forms designer, and `ContentAlignment` and `ColorMode` complete the enums.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/SystemDrawingPackage.cs#extras)]
+
+## Moving on to Egami
+
+`Bitmap.AsRaster` gives the bitmap's pixels as an Egami raster: a view of the same memory, no copy, for 32-bit ARGB and
+premultiplied ARGB, 24-bit RGB and the 16-bit formats, and an 8-bit RGBA copy for the others. `Bitmap.FromRaster` copies a raster
+into a bitmap of the matching format. `Graphics.Canvas` is an Egami canvas over a 32-bit bitmap, set to the graphics' transform
+and clip, so code can move to Egami's API one call at a time.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/SystemDrawingPackage.cs#escape-hatches)]
+
 ## What throws on every OS
 
 Members that need Windows handles exist so code compiles, throw `PlatformNotSupportedException` with a message naming what to
@@ -229,7 +281,9 @@ error in `.editorconfig`.
 
 - **EGSD0001, Windows handles**: `Bitmap.GetHbitmap`, `GetHicon`, `FromHicon` and `FromResource`, `Image.FromHbitmap`,
   `Icon.Handle` and `Icon.FromHandle`, `Graphics.FromHdc`, `FromHwnd`, `GetHdc`, `ReleaseHdc` and `GetHalftonePalette`, and
-  `Region.FromHrgn` and `GetHrgn`. Use `LockBits` for the pixels, `new Icon(path)` for icons and `Graphics.FromImage` to draw.
+  `Region.FromHrgn` and `GetHrgn`, the `Metafile` handle constructors and `GetHenhmetafile`, and the device-context overloads of
+  `BufferedGraphicsContext.Allocate` and `BufferedGraphics.Render`. Use `LockBits` for the pixels, `new Icon(path)` for icons and
+  `Graphics.FromImage` to draw.
 
 <a id="egsd0002"></a>
 
@@ -237,7 +291,13 @@ error in `.editorconfig`.
 
 <a id="egsd0003"></a>
 
-- **EGSD0003, Windows' own icons**: `Icon.ExtractAssociatedIcon` and `Icon.ExtractIcon`. Load an icon file instead.
+- **EGSD0003, Windows' own icons**: `Icon.ExtractAssociatedIcon` and `Icon.ExtractIcon`, and `SystemIcons` with its
+  `GetStockIcon` and the `StockIconId` and `StockIconOptions` it takes. Load an icon file instead.
+
+<a id="egsd0004"></a>
+
+- **EGSD0004, metafile recording**: the `Metafile` constructors that record a new metafile. Draw on a `Bitmap`, or write SVG or
+  PDF with Egami.Drawing's canvases.
 
 ## Known differences
 
@@ -255,5 +315,9 @@ The package is measured against System.Drawing on Windows with the same probe pr
 - Drawing onto 16-bit bitmaps does not dither, and `SourceCopy` with antialiasing blends its edges with what is below instead of
   making them transparent.
 - Compound pens draw their strips on both sides of the line, and `PathGradientBrush.FocusScales` is kept but not drawn.
+- A WMF without a placeable header is read as WMF, sized by its first window extent; GDI+ converts it to EMF first, so its
+  size, header and records differ. Metafiles are drawn by Egami.Metafiles, which is close to GDI+ but not equal to it.
+- `BlurEffect`, `SharpenEffect`, `TintEffect`, `VividEffect` and the highlight, shadow and contrast curves are Egami's own
+  versions; `PlayRecord` plays the whole metafile, not one record.
 - `Flatten` takes as many steps as GDI+ but evaluates the curve exactly, so its points differ from GDI+'s, which are rounded to
   sixteenths of a pixel. Rounded rectangles have no zero-length segments, which GDI+'s float arithmetic adds.

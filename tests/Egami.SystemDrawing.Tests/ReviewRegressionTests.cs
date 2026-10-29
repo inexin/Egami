@@ -127,4 +127,86 @@ public class ReviewRegressionTests
         Assert.False(region.IsVisible(new System.Drawing.Point(20, 5), null));
         Assert.NotNull(typeof(Region).GetMethod(nameof(Region.IsVisible), [typeof(System.Drawing.Point)]));
     }
+
+    [Fact]
+    public void CanvasFollowsTheBitmapsPixelsAfterTheyAreReplaced()
+    {
+        using Bitmap bitmap = new(20, 10);
+        using Graphics g = Graphics.FromImage(bitmap);
+        Egami.Drawing.Canvas before = g.Canvas;
+
+        // RotateFlip replaces the pixels: the canvas is made again over the new ones, 10 by 20.
+        bitmap.RotateFlip(RotateFlipType.Rotate90FlipNone);
+        Egami.Drawing.Canvas after = g.Canvas;
+        Assert.NotSame(before, after);
+        after.FillRect(new Egami.Drawing.RectF(0, 15, 10, 5), new Rgba8(255, 0, 0, 255));
+        Assert.Equal(255, bitmap.GetPixel(5, 17).R);
+
+        // A format the canvas cannot draw on is refused instead of drawn through the old pixels.
+        bitmap.ConvertFormat(PixelFormat.Format24bppRgb);
+        Assert.Throws<InvalidOperationException>(() => g.Canvas);
+    }
+
+    [Fact]
+    public void CanvasFollowsTheActiveFrameAndChecksTheLock()
+    {
+        using Image gif = Image.FromFile(TestFiles.Image("gif", "loop-3.gif"));
+        using Bitmap frames = (Bitmap)gif;
+        frames.ConvertFormat(PixelFormat.Format32bppArgb);
+        using Graphics g = Graphics.FromImage(frames);
+        Egami.Drawing.Canvas first = g.Canvas;
+        frames.SelectActiveFrame(FrameDimension.Time, 1);
+        frames.ConvertFormat(PixelFormat.Format32bppArgb);
+        Assert.NotSame(first, g.Canvas);
+
+        BitmapData data = frames.LockBits(new Rectangle(0, 0, 2, 2), ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
+        try
+        {
+            Assert.IsType<ExternalException>(Record.Exception(() => g.Canvas), exactMatch: false);
+        }
+        finally
+        {
+            frames.UnlockBits(data);
+        }
+    }
+
+    [Fact]
+    public void RasterViewsKeepTheirPixelsAlive()
+    {
+        using Bitmap bitmap = new(16, 8);
+        Raster<Bgra8> view = (Raster<Bgra8>)bitmap.AsRaster();
+        bitmap.RotateFlip(RotateFlipType.Rotate90FlipNone);
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
+        GC.Collect();
+
+        // The view still owns the old pixels, so writing to it is safe; it no longer shows in the bitmap.
+        view.Row(7)[15] = new Bgra8(1, 2, 3, 255);
+        Assert.Equal(new Bgra8(1, 2, 3, 255), view.Row(7)[15]);
+    }
+
+    [Fact]
+    public void TruncatedMetafileRecordsStopTheWalkInsideTheFile()
+    {
+        // A placeable WMF whose last record claims more words than the file has.
+        byte[] wmf = File.ReadAllBytes(TestFiles.Image(System.IO.Path.Combine("metafiles", "synthetic"), "gdi-shapes-basic.wmf"));
+        byte[] cut = wmf[..(wmf.Length - 30)];
+        BinaryPrimitives.WriteInt32LittleEndian(cut.AsSpan(cut.Length - 8), 0x7FFFFFF0);
+        AssertInside(cut);
+
+        // An EMF+ record whose data size runs past its record and the file.
+        byte[] emf = File.ReadAllBytes(TestFiles.Image(System.IO.Path.Combine("metafiles", "synthetic"), "plus-shapes.plus.emf"));
+        int plus = IndexOf(emf, "EMF+"u8) + 4;
+        BinaryPrimitives.WriteInt32LittleEndian(emf.AsSpan(plus + 8), int.MaxValue);
+        AssertInside(emf);
+    }
+
+    private static void AssertInside(byte[] data)
+    {
+        Egami.SystemDrawing.Internal.MetafileScan scan = Egami.SystemDrawing.Internal.MetafileScan.Read(data);
+        Assert.All(scan.Records, r => Assert.InRange((long)r.Offset + r.Size, 0, scan.Data.Length));
+        Assert.All(scan.Records, r => Assert.True(r.Size >= 0));
+    }
+
+    private static int IndexOf(byte[] data, ReadOnlySpan<byte> what) => data.AsSpan().IndexOf(what);
 }
