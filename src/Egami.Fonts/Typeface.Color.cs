@@ -13,6 +13,8 @@ public sealed partial class Typeface
     private static readonly FontTag s_sbix = new("sbix");
     private static readonly FontTag s_cbdt = new("CBDT");
     private static readonly FontTag s_cblc = new("CBLC");
+    private static readonly FontTag s_ebdt = new("EBDT");
+    private static readonly FontTag s_eblc = new("EBLC");
     private static readonly FontTag s_svg = new("SVG ");
 
     private Box<ColrTable?>? _colr;
@@ -20,6 +22,7 @@ public sealed partial class Typeface
     private float[]? _colrScalars;
     private Box<SbixTable?>? _sbixTable;
     private Box<CbdtTables?>? _cbdtTables;
+    private Box<CbdtTables?>? _embeddedBitmaps;
     private FontPaletteInfo[]? _palettes;
     private int _colorFormats = -1;
 
@@ -58,6 +61,19 @@ public sealed partial class Typeface
     internal SbixTable? Sbix => Root.LoadOnce(ref Root._sbixTable, () => TryGetTable(s_sbix, out ReadOnlyMemory<byte> t) ? SbixTable.Read(t, TableOffset(s_sbix), GlyphCount) : null, s_sbix, "its glyphs draw as outlines");
 
     internal CbdtTables? Cbdt => Root.LoadOnce(ref Root._cbdtTables, () => TryGetTable(s_cblc, out ReadOnlyMemory<byte> l) && TryGetTable(s_cbdt, out ReadOnlyMemory<byte> d) ? CbdtTables.Read(l, d, TableOffset(s_cblc)) : null, s_cblc, "its glyphs draw as outlines");
+
+    /// <summary>
+    /// A glyph's embedded bitmap at a size of exactly a strike's pixels per em (the EBLC and EBDT tables), or null at any other
+    /// size, for a glyph the strike lacks, or when the face has no strikes.
+    /// </summary>
+    internal EmbeddedBitmap? GetEmbeddedBitmap(ushort glyph, float pixelsPerEm)
+    {
+        int ppem = (int)pixelsPerEm;
+        return ppem == pixelsPerEm && ppem is > 0 and < 256 && EmbeddedBitmaps is CbdtTables strikes && strikes.HasStrike(ppem) ? strikes.GetEmbedded(glyph, ppem) : null;
+    }
+
+    /// <summary>Gets the face's EBLC and EBDT strikes (bit depth 1 to 8), or null when it has none.</summary>
+    internal CbdtTables? EmbeddedBitmaps => Root.LoadOnce(ref Root._embeddedBitmaps, () => TryGetTable(s_eblc, out ReadOnlyMemory<byte> l) && TryGetTable(s_ebdt, out ReadOnlyMemory<byte> d) ? CbdtTables.ReadEmbedded(l, d, TableOffset(s_eblc)) : null, s_eblc, "its glyphs draw as outlines");
 
     /// <summary>
     /// Gets a glyph's color description in the first format that has it: COLR version 1, then version 0, then sbix, then CBDT
