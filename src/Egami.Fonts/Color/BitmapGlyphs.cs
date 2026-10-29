@@ -142,13 +142,18 @@ internal sealed class SbixTable
 
 /// <summary>
 /// Google's CBLC and CBDT: bitmap sizes, index subtables (formats 1 to 5) and image formats 17, 18 and 19 (PNG) and the
-/// byte-aligned 32-bit formats 1 and 6 (premultiplied BGRA) placed by small or big glyph metrics.
+/// byte-aligned 32-bit formats 1 and 6 (premultiplied BGRA) placed by small or big glyph metrics. The same reader takes the
+/// OpenType EBLC and EBDT tables they extend (<see cref="ReadEmbedded"/>): black-and-white and gray strikes of bit depth 1, 2, 4
+/// or 8 in image formats 1, 2, 5, 6 and 7, for <see cref="GetEmbedded"/>.
 /// </summary>
 internal sealed class CbdtTables
 {
     private readonly ReadOnlyMemory<byte> _cblc;
     private readonly ReadOnlyMemory<byte> _cbdt;
     private readonly Size[] _sizes;
+
+    // Decoded embedded bitmaps, null for glyphs a strike lacks.
+    private readonly System.Collections.Concurrent.ConcurrentDictionary<(ushort Glyph, int Ppem), EmbeddedBitmap?> _embedded = new();
 
     private CbdtTables(ReadOnlyMemory<byte> cblc, ReadOnlyMemory<byte> cbdt, Size[] sizes)
     {
@@ -157,7 +162,13 @@ internal sealed class CbdtTables
         _sizes = sizes;
     }
 
-    public static CbdtTables Read(ReadOnlyMemory<byte> cblc, ReadOnlyMemory<byte> cbdt, long offset)
+    /// <summary>Reads CBLC and CBDT: the 32-bit color strikes.</summary>
+    public static CbdtTables Read(ReadOnlyMemory<byte> cblc, ReadOnlyMemory<byte> cbdt, long offset) => Read(cblc, cbdt, offset, embedded: false);
+
+    /// <summary>Reads EBLC and EBDT: the strikes of bit depth 1, 2, 4 or 8.</summary>
+    public static CbdtTables ReadEmbedded(ReadOnlyMemory<byte> eblc, ReadOnlyMemory<byte> ebdt, long offset) => Read(eblc, ebdt, offset, embedded: true);
+
+    private static CbdtTables Read(ReadOnlyMemory<byte> cblc, ReadOnlyMemory<byte> cbdt, long offset, bool embedded)
     {
         ReadOnlySpan<byte> data = cblc.Span;
         var r = new FontReader(data, offset);
@@ -176,9 +187,9 @@ internal sealed class CbdtTables
             int tables = (int)Math.Min(BigEndian.UInt32(data, at + 8), (uint)(data.Length / 8));
             int start = BigEndian.UInt16(data, at + 40), end = BigEndian.UInt16(data, at + 42);
             int ppem = BigEndian.UInt8(data, at + 45), depth = BigEndian.UInt8(data, at + 46);
-            if (depth == 32 && ppem > 0)
+            if (ppem > 0 && (embedded ? depth is 1 or 2 or 4 or 8 : depth == 32))
             {
-                sizes.Add(new Size(ppem, arrayOffset, tables, start, end));
+                sizes.Add(new Size(ppem, arrayOffset, tables, start, end, depth));
             }
         }
 
@@ -222,6 +233,98 @@ internal sealed class CbdtTables
         }
 
         return null;
+    }
+
+    /// <summary>
+    /// Whether a strike of exactly this many pixels per em holds bitmaps (EBLC and EBDT only); text at other sizes draws as
+    /// outlines, as Windows does.
+    /// </summary>
+    public bool HasStrike(int ppem) => Array.Exists(_sizes, s => s.Ppem == ppem);
+
+    /// <summary>
+    /// A glyph's embedded bitmap from the strike of exactly this ppem (EBLC and EBDT): coverage from 0 to 255 per pixel, row by row
+    /// from the top, placed by its bearings in whole pixels (y up), with its advance; null when the strike has no image for it or
+    /// its entry is damaged.
+    /// </summary>
+    public EmbeddedBitmap? GetEmbedded(ushort glyph, int ppem) => _embedded.GetOrAdd((glyph, ppem), static (key, self) => self.TryDecodeEmbedded(key.Glyph, key.Ppem), this);
+
+    // A damaged index or image leaves the glyph to its outline.
+    private EmbeddedBitmap? TryDecodeEmbedded(ushort glyph, int ppem)
+    {
+        try
+        {
+            return DecodeEmbedded(glyph, ppem);
+        }
+        catch (CorruptDataException)
+        {
+            return null;
+        }
+    }
+
+    private EmbeddedBitmap? DecodeEmbedded(ushort glyph, int ppem)
+    {
+        int s = Array.FindIndex(_sizes, x => x.Ppem == ppem);
+        if (s < 0 || glyph < _sizes[s].Start || glyph > _sizes[s].End)
+        {
+            return null;
+        }
+
+        Size size = _sizes[s];
+        Location at = Locate(size, glyph);
+        ReadOnlySpan<byte> data = _cbdt.Span;
+        if (at.Format == 0 || at.Length <= 0 || at.Offset < 0 || (long)at.Offset + at.Length > data.Length)
+        {
+            return null;
+        }
+
+        ReadOnlySpan<byte> entry = data.Slice(at.Offset, at.Length);
+        int width, height, bearingX, bearingY, advance, start;
+        bool bitAligned;
+        switch (at.Format)
+        {
+            case 1 or 2 when entry.Length >= 5:
+                (height, width, bearingX, bearingY, advance) = (entry[0], entry[1], (sbyte)entry[2], (sbyte)entry[3], entry[4]);
+                (start, bitAligned) = (5, at.Format == 2);
+                break;
+            case 6 or 7 when entry.Length >= 8:
+                (height, width, bearingX, bearingY, advance) = (entry[0], entry[1], (sbyte)entry[2], (sbyte)entry[3], entry[4]);
+                (start, bitAligned) = (8, at.Format == 7);
+                break;
+            case 5 when at.Metrics is BigMetrics m:
+                (height, width, bearingX, bearingY, advance) = (m.Height, m.Width, m.BearingX, m.BearingY, m.Advance);
+                (start, bitAligned) = (0, true);
+                break;
+            default:
+                return null;
+        }
+
+        if (width == 0 || height == 0)
+        {
+            return new EmbeddedBitmap(0, 0, 0, 0, advance, []);
+        }
+
+        // Pixels are packed most significant bit first; the byte-aligned formats start every row on a byte.
+        int depth = size.Depth, max = (1 << depth) - 1;
+        int rowBits = bitAligned ? width * depth : ((width * depth) + 7) / 8 * 8;
+        long bytes = (((long)rowBits * height) + 7) / 8;
+        if (start + bytes > entry.Length)
+        {
+            return null;
+        }
+
+        var coverage = new byte[width * height];
+        ReadOnlySpan<byte> image = entry[start..];
+        for (int y = 0; y < height; y++)
+        {
+            for (int x = 0; x < width; x++)
+            {
+                int bit = (y * rowBits) + (x * depth);
+                int value = (image[bit >> 3] >> (8 - depth - (bit & 7))) & max;
+                coverage[(y * width) + x] = (byte)(value * 255 / max);
+            }
+        }
+
+        return new EmbeddedBitmap(width, height, bearingX, bearingY, advance, coverage);
     }
 
     private BitmapColorGlyph? Image(ushort glyph, Size size, Location at, int unitsPerEm)
@@ -391,16 +494,23 @@ internal sealed class CbdtTables
         return default;
     }
 
-    private readonly record struct Size(int Ppem, int ArrayOffset, int Tables, int Start, int End);
+    private readonly record struct Size(int Ppem, int ArrayOffset, int Tables, int Start, int End, int Depth);
 
     private readonly record struct Location(int Format, int Offset, int Length, BigMetrics? Metrics);
 
-    private readonly record struct BigMetrics(int Height, int Width, int BearingX, int BearingY)
+    private readonly record struct BigMetrics(int Height, int Width, int BearingX, int BearingY, int Advance)
     {
         public static BigMetrics Read(ReadOnlySpan<byte> data, int at)
-            => new(BigEndian.Slice(data, at, 8)[0], data[at + 1], (sbyte)data[at + 2], (sbyte)data[at + 3]);
+            => new(BigEndian.Slice(data, at, 8)[0], data[at + 1], (sbyte)data[at + 2], (sbyte)data[at + 3], data[at + 4]);
     }
 }
+
+/// <summary>
+/// A glyph's image from an EBDT strike: <paramref name="Coverage"/> holds <paramref name="Width"/> × <paramref name="Height"/>
+/// values from 0 to 255, row by row from the top; the top-left pixel is <paramref name="BearingX"/> right of the origin and
+/// <paramref name="BearingY"/> above the baseline; <paramref name="Advance"/> is the strike's advance in whole pixels.
+/// </summary>
+internal sealed record EmbeddedBitmap(int Width, int Height, int BearingX, int BearingY, int Advance, byte[] Coverage);
 
 /// <summary>Strike choice and image sizes shared by sbix and CBDT.</summary>
 internal static class BitmapStrikes
