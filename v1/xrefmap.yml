@@ -24424,6 +24424,19 @@ references:
   isSpec: "True"
   fullName: Egami.Fonts.Font.EffectiveTypeface
   nameWithType: Font.EffectiveTypeface
+- uid: Egami.Fonts.Font.EmbeddedBitmaps
+  name: EmbeddedBitmaps
+  href: api/Egami.Fonts.Font.html#Egami_Fonts_Font_EmbeddedBitmaps
+  commentId: P:Egami.Fonts.Font.EmbeddedBitmaps
+  fullName: Egami.Fonts.Font.EmbeddedBitmaps
+  nameWithType: Font.EmbeddedBitmaps
+- uid: Egami.Fonts.Font.EmbeddedBitmaps*
+  name: EmbeddedBitmaps
+  href: api/Egami.Fonts.Font.html#Egami_Fonts_Font_EmbeddedBitmaps_
+  commentId: Overload:Egami.Fonts.Font.EmbeddedBitmaps
+  isSpec: "True"
+  fullName: Egami.Fonts.Font.EmbeddedBitmaps
+  nameWithType: Font.EmbeddedBitmaps
 - uid: Egami.Fonts.Font.Embolden
   name: Embolden
   href: api/Egami.Fonts.Font.html#Egami_Fonts_Font_Embolden

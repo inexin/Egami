@@ -380,6 +380,9 @@ using (RasterCanvas&lt;Rgba8&gt; canvas = image.CreateCanvas())
     canvas.DrawText(&quot;A darkened caption&quot;, new Vector2(8, 48), caption, Rgba8.Black);
 }
 </code></pre><h2 id="color-fonts">Color fonts</h2>
+<p><code>Font.EmbeddedBitmaps</code> draws a face's embedded black-and-white or gray strikes (the EBLC and EBDT tables) as Windows does: at
+exactly a strike's size the glyphs it holds come from their bitmaps, aliased, and grid-fitted metrics take the strike's advances.
+It is off by default; <code>Font.WithGdiPlusLook()</code> turns it on.</p>
 <p>Emoji and other color glyphs draw in color by themselves. Per glyph, the first format the font has wins: COLR version 1 (a
 graph of layers, gradients, transforms and compositing), COLR version 0 (layers of solid outlines), sbix, then CBDT and CBLC
 (images); anything else draws its outline in the paint. <code>Typeface.ColorFormats</code> says what a face holds.</p>
