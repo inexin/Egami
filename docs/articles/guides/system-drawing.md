@@ -223,17 +223,16 @@ and `DrawIconUnstretched` draws it at its size.
 
 `FontFamily` finds a family among the installed fonts, scanned without native calls (on Linux the fontconfig folders and the
 usual share/fonts folders), or in a `PrivateFontCollection` filled from files or memory; `InstalledFontCollection` and
-`FontFamily.Families` list them. Where a Windows core font is missing, a metric-compatible open font stands in under the
-requested name: Liberation Sans or Arimo for Arial, Liberation Serif or Tinos for Times New Roman, Liberation Mono or Cousine for
-Courier New, Carlito for Calibri and Caladea for Cambria. `GetEmHeight`, `GetCellAscent`, `GetCellDescent` and
-`GetLineSpacing` are GDI+'s: the units per em, the OS/2 Windows ascent and descent, and the hhea ascender, descender and line
-gap. A `Font` converts its size at 96 dpi for `SizeInPoints`, `GetHeight()` and `Height` (the line spacing rounded up), at a
-resolution for `GetHeight(dpi)` and in the page units for `GetHeight(Graphics)`; sizes of zero and the `Display` unit throw
-`ArgumentException`. A family that cannot be found falls back to Microsoft Sans Serif, with `OriginalFontName` keeping the name.
-Missing bold and italic faces are synthesized. `ToLogFont` and `FromLogFont` read and write the `Interop.LOGFONT` struct, with no
-GDI handle; `SystemFonts` gives Windows 10 and 11's interface fonts, `GenericFontFamilies` names the serif, sans-serif and
-monospace families, and `FontConverter` converts fonts to and from strings such as "Arial, 10pt, style=Bold", with
-`FontConverter.FontNameConverter` and `FontConverter.FontUnitConverter` for the name and unit properties.
+`FontFamily.Families` list them. `GetEmHeight`, `GetCellAscent`, `GetCellDescent` and `GetLineSpacing` are GDI+'s: the units per
+em, the OS/2 Windows ascent and descent, and the hhea ascender, descender and line gap. A `Font` converts its size at 96 dpi for
+`SizeInPoints`, `GetHeight()` and `Height` (the line spacing rounded up), at a resolution for `GetHeight(dpi)` and in the page
+units for `GetHeight(Graphics)`; sizes of zero and the `Display` unit throw `ArgumentException`. As in System.Drawing, a family
+that is not installed makes `new FontFamily(name)` throw and makes a `Font` fall back to the generic sans-serif family, with
+`Name` the family used and `OriginalFontName` the one asked for (see [Fonts that are not installed](#fonts-that-are-not-installed)
+for stand-ins). Missing bold and italic faces are synthesized. `ToLogFont` and `FromLogFont` read and write the
+`Interop.LOGFONT` struct, with no GDI handle; `SystemFonts` gives Windows 10 and 11's interface fonts, `GenericFontFamilies` names
+the serif, sans-serif and monospace families, and `FontConverter` converts fonts to and from strings such as "Arial, 10pt,
+style=Bold", with `FontConverter.FontNameConverter` and `FontConverter.FontUnitConverter` for the name and unit properties.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/SystemDrawingPackage.cs#fonts)]
 
@@ -257,6 +256,26 @@ Egami.Drawing's GDI+ ClearType preset: the font's hints for GDI+, grid-fitted ad
 `StringDigitSubstitute` and `StringUnit` are kept and reported; digits are drawn as written.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/SystemDrawingPackage.cs#text)]
+
+### Fonts that are not installed
+
+Linux and macOS have none of Windows' core fonts, so Arial, Times New Roman and the others fall back to whatever sans-serif font is
+installed, and text runs longer or shorter than on Windows. Reference the Egami.Fonts.Substitutes package and register its finder
+once at startup: its metric-compatible open fonts (Liberation Sans for Arial and Helvetica, Liberation Serif for Times New Roman,
+Liberation Mono for Courier New, Carlito for Calibri, Caladea for Cambria) then stand in under the requested name, so `Font.Name`
+reports it and lines break where they do on Windows. Installed fonts always come first. Egami.SystemDrawing itself ships no fonts;
+`SystemDrawingOptions.FontSubstitutes` takes any finder of the same shape, from a family name and style to a typeface. The
+[Fonts](#fonts) sample above registers it.
+
+### Drawing on 32-bit ARGB bitmaps
+
+`new Bitmap(width, height)` makes a 32-bit ARGB bitmap, and by default a Graphics draws on its pixels in place, blending with
+Egami's rounding: many times faster than GDI+'s way, and within a level of GDI+ where colors blend. `ArgbDrawing.Exact` draws
+through a premultiplied copy of the area each call touches instead, rounding exactly as GDI+ does; set it for one Graphics with
+`Graphics.ArgbDrawing`, or for every Graphics made afterwards with `SystemDrawingOptions.ArgbDrawing`. `SourceCopy` and the
+premultiplied, 24-bit, 16-bit and indexed formats always round as GDI+ does.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/SystemDrawingPackage.cs#graphics)]
 
 ## Metafiles
 
@@ -305,7 +324,8 @@ serializers, `ToolboxBitmapAttribute`, `BitmapSuffixInSameAssemblyAttribute`, `B
 `Bitmap.AsRaster` gives the bitmap's pixels as an Egami raster: a view of the same memory, no copy, for 32-bit ARGB and
 premultiplied ARGB, 24-bit RGB and the 16-bit formats, and an 8-bit RGBA copy for the others. `Bitmap.FromRaster` copies a raster
 into a bitmap of the matching format. `Graphics.Canvas` is an Egami canvas over a 32-bit bitmap, set to the graphics' transform
-and clip, so code can move to Egami's API one call at a time.
+and clip, so code can move to Egami's API one call at a time. [Migrating from System.Drawing to Egami](system-drawing-migration.md)
+walks through the move step by step.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/SystemDrawingPackage.cs#escape-hatches)]
 
@@ -352,8 +372,10 @@ The package is measured against System.Drawing on Windows with the same probe pr
   shapes match on about 99.8 percent of their pixels.
 - `HighQualityBilinear` and `HighQualityBicubic` sample as plain bilinear and bicubic, without GDI+'s wider filters, and an image
   drawn much smaller is not prefiltered.
-- On 32-bit ARGB bitmaps, translucent colors and antialiased edges blend with Egami's rounding, within a level of GDI+'s
-  (`SourceCopy` keeps GDI+'s rounding); premultiplied ARGB and the other formats round as GDI+ does.
+- On 32-bit ARGB bitmaps, translucent colors and antialiased edges blend with Egami's rounding, within a level of GDI+'s, unless
+  `ArgbDrawing.Exact` is set ([Drawing on 32-bit ARGB bitmaps](#drawing-on-32-bit-argb-bitmaps)).
+- Without Egami.Fonts.Substitutes registered, a Windows font that is not installed falls back to the installed sans-serif font,
+  so text measures differently from Windows ([Fonts that are not installed](#fonts-that-are-not-installed)).
 - Drawing onto 16-bit bitmaps does not dither, and `SourceCopy` with antialiasing blends its edges with what is below instead of
   making them transparent.
 - Compound pens draw their strips on both sides of the line, and `PathGradientBrush.FocusScales` is kept but not drawn.
