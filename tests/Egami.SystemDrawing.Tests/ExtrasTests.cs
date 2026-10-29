@@ -246,4 +246,31 @@ public class ExtrasTests
             return p;
         }
     }
+
+    [Fact]
+    public void AMetafileWithAHugeFrameLoadsAndDrawsItsPixelsOnlyWhenAsked()
+    {
+        // Fuzz finding (step 2.13 task 34): the frame was rasterized at load, overflowing for a frame of billions of pixels.
+        byte[] data = File.ReadAllBytes(TestFiles.Image(System.IO.Path.Combine("fuzz", "sysdrawing-regressions"), "huge-frame.emf"));
+        using Image image = Image.FromStream(new MemoryStream(data));
+        Assert.True((long)image.Width * image.Height > 1L << 31);
+        using (Bitmap target = new(16, 16))
+        using (Graphics g = Graphics.FromImage(target))
+        {
+            g.DrawImage(image, new Rectangle(0, 0, 16, 16));
+        }
+
+        Assert.Throws<OutOfMemoryException>(() => image.Save(new MemoryStream(), ImageFormat.Png));
+    }
+
+    [Fact]
+    public void AMetafileSavesAsPng()
+    {
+        using Metafile mf = new(Metafiles("gdi-shapes-basic.emf"));
+        using MemoryStream png = new();
+        mf.Save(png, ImageFormat.Png);
+        png.Position = 0;
+        using Image back = Image.FromStream(png);
+        Assert.Equal((mf.Width, mf.Height), (back.Width, back.Height));
+    }
 }
