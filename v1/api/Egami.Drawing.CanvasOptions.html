@@ -89,7 +89,7 @@
 
 
   <h1 id="Egami_Drawing_CanvasOptions" data-uid="Egami.Drawing.CanvasOptions" class="text-break">
-Class CanvasOptions  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/CanvasOptions.cs/#L60"><i class="bi bi-code-slash"></i></a>
+Class CanvasOptions  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/CanvasOptions.cs/#L94"><i class="bi bi-code-slash"></i></a>
   </h1>
 
   <div class="facts text-secondary">
@@ -176,11 +176,62 @@ using RasterCanvas&lt;Rgba8&gt; linear = raster.CreateCanvas(new CanvasOptions {
 </h2>
 
 
+  <a id="Egami_Drawing_CanvasOptions_Antialiasing_" data-uid="Egami.Drawing.CanvasOptions.Antialiasing*"></a>
+
+  <h3 id="Egami_Drawing_CanvasOptions_Antialiasing" data-uid="Egami.Drawing.CanvasOptions.Antialiasing">
+  Antialiasing
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/CanvasOptions.cs/#L276"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets how shapes are antialiased. Defaults to <a class="xref" href="Egami.Drawing.Antialiasing.html#Egami_Drawing_Antialiasing_Exact">Exact</a>; <a class="xref" href="Egami.Drawing.Antialiasing.html#Egami_Drawing_Antialiasing_GdiPlus">GdiPlus</a>
+samples as GDI+ does and draws its thin pens. Text and images are not affected, nor are paints with
+<a class="xref" href="Egami.Drawing.Paint.html#Egami_Drawing_Paint_Antialias">Antialias</a> off.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Antialiasing Antialiasing { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Drawing.Antialiasing.html">Antialiasing</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+  <h4 class="section" id="Egami_Drawing_CanvasOptions_Antialiasing_examples">Examples</h4>
+  <pre><code class="lang-csharp">// Shapes as System.Drawing draws them at its defaults (SmoothingMode.AntiAlias, PixelOffsetMode.None): whole coordinates on
+// pixel centres, GDI+'s 8 by 4 samples a pixel, and pens up to 1.5 px drawn as its one-pixel thin lines.
+// CanvasOptions.GdiPlusClearType sets both too.
+var options = new CanvasOptions { PixelOffset = PixelOffset.None, Antialiasing = Antialiasing.GdiPlus };
+using (RasterCanvas&lt;Rgb8&gt; canvas = raster.CreateCanvas(options))
+{
+    canvas.FillOval(new RectF(4, 4, 20, 20), new SolidPaint(new Rgba8(0, 90, 200, 255)));
+    canvas.DrawLine(new Vector2(30, 6), new Vector2(60, 26), new Stroke(0.5f), new SolidPaint(Rgba8.Black));
+}</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>The value is not defined.</p>
+</dd>
+  </dl>
+
+
+
   <a id="Egami_Drawing_CanvasOptions_ClearTypeLevel_" data-uid="Egami.Drawing.CanvasOptions.ClearTypeLevel*"></a>
 
   <h3 id="Egami_Drawing_CanvasOptions_ClearTypeLevel" data-uid="Egami.Drawing.CanvasOptions.ClearTypeLevel">
   ClearTypeLevel
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/CanvasOptions.cs/#L208"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/CanvasOptions.cs/#L247"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets how much of the LCD mask <a class="xref" href="Egami.Fonts.FontEdging.html#Egami_Fonts_FontEdging_Lcd">Lcd</a> text uses, from 0 (the grayscale coverage of the same
@@ -242,7 +293,7 @@ var custom = new CanvasOptions { PixelGeometry = PixelGeometry.RgbHorizontal, Lc
 
   <h3 id="Egami_Drawing_CanvasOptions_ColorGlyphRenderer" data-uid="Egami.Drawing.CanvasOptions.ColorGlyphRenderer">
   ColorGlyphRenderer
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/CanvasOptions.cs/#L123"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/CanvasOptions.cs/#L162"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets a renderer for color glyphs of formats Egami.Drawing does not draw itself (OpenType SVG with Egami.Svg's
@@ -282,7 +333,7 @@ using (RasterCanvas&lt;Rgba8&gt; canvas = raster.CreateCanvas(new CanvasOptions 
 
   <h3 id="Egami_Drawing_CanvasOptions_ColorSpace" data-uid="Egami.Drawing.CanvasOptions.ColorSpace">
   ColorSpace
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/CanvasOptions.cs/#L99"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/CanvasOptions.cs/#L138"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets where edges and paints blend. <a class="xref" href="Egami.Operations.ColorSpace.html#Egami_Operations_ColorSpace_Encoded">Encoded</a> (the default) blends the stored values, as Egami's other
@@ -322,7 +373,7 @@ antialiased edges and translucent colors from darkening.</p>
 
   <h3 id="Egami_Drawing_CanvasOptions_Default" data-uid="Egami.Drawing.CanvasOptions.Default">
   Default
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/CanvasOptions.cs/#L75"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/CanvasOptions.cs/#L111"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the options every canvas starts with.</p>
@@ -354,12 +405,13 @@ antialiased edges and translucent colors from darkening.</p>
 
   <h3 id="Egami_Drawing_CanvasOptions_GdiPlusClearType" data-uid="Egami.Drawing.CanvasOptions.GdiPlusClearType">
   GdiPlusClearType
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/CanvasOptions.cs/#L85"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/CanvasOptions.cs/#L122"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the canvas settings of System.Drawing's ClearTypeGridFit text, as measured on Windows in 2.7.5 and 2.7.6: an RGB stripe,
 <a class="xref" href="Egami.Drawing.LcdFilter.html#Egami_Drawing_LcdFilter_Gdi">Gdi</a>, <a class="xref" href="Egami.Drawing.LcdSampling.html#Egami_Drawing_LcdSampling_Gdi">Gdi</a> (coverage in sixths, blended through GDI+'s 8-bit gamma tables)
-and a <a class="xref" href="Egami.Drawing.CanvasOptions.html#Egami_Drawing_CanvasOptions_TextGamma">TextGamma</a> of 1.4 (GDI+'s 1 + Graphics.TextContrast / 10 at its default contrast of 4). Use it with fonts from <a class="xref" href="Egami.Fonts.Font.html#Egami_Fonts_Font_WithGdiPlusLook">WithGdiPlusLook()</a>.</p>
+a <a class="xref" href="Egami.Drawing.CanvasOptions.html#Egami_Drawing_CanvasOptions_TextGamma">TextGamma</a> of 1.4 (GDI+'s 1 + Graphics.TextContrast / 10 at its default contrast of 4), and GDI+'s default
+<a class="xref" href="Egami.Drawing.PixelOffset.html#Egami_Drawing_PixelOffset_None">None</a> with its <a class="xref" href="Egami.Drawing.Antialiasing.html#Egami_Drawing_Antialiasing_GdiPlus">GdiPlus</a> shapes (2.7.6). Use it with fonts from <a class="xref" href="Egami.Fonts.Font.html#Egami_Fonts_Font_WithGdiPlusLook">WithGdiPlusLook()</a>.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
 
@@ -401,7 +453,7 @@ CanvasOptions contrast8 = CanvasOptions.GdiPlusClearType with { TextGamma = 1 + 
 
   <h3 id="Egami_Drawing_CanvasOptions_LcdFilter" data-uid="Egami.Drawing.CanvasOptions.LcdFilter">
   LcdFilter
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/CanvasOptions.cs/#L179"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/CanvasOptions.cs/#L218"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the filter <a class="xref" href="Egami.Fonts.FontEdging.html#Egami_Fonts_FontEdging_Lcd">Lcd</a> text spreads subpixel coverage with. Defaults to
@@ -462,7 +514,7 @@ var custom = new CanvasOptions { PixelGeometry = PixelGeometry.RgbHorizontal, Lc
 
   <h3 id="Egami_Drawing_CanvasOptions_LcdSampling" data-uid="Egami.Drawing.CanvasOptions.LcdSampling">
   LcdSampling
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/CanvasOptions.cs/#L193"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/CanvasOptions.cs/#L232"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets how <a class="xref" href="Egami.Fonts.FontEdging.html#Egami_Fonts_FontEdging_Lcd">Lcd</a> text samples glyphs. Defaults to <a class="xref" href="Egami.Drawing.LcdSampling.html#Egami_Drawing_LcdSampling_Smooth">Smooth</a>;
@@ -523,7 +575,7 @@ var custom = new CanvasOptions { PixelGeometry = PixelGeometry.RgbHorizontal, Lc
 
   <h3 id="Egami_Drawing_CanvasOptions_PixelGeometry" data-uid="Egami.Drawing.CanvasOptions.PixelGeometry">
   PixelGeometry
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/CanvasOptions.cs/#L110"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/CanvasOptions.cs/#L149"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the subpixel order of the display the image is for, which <a class="xref" href="Egami.Fonts.FontEdging.html#Egami_Fonts_FontEdging_Lcd">Lcd</a> text needs. Defaults to
@@ -558,11 +610,61 @@ var custom = new CanvasOptions { PixelGeometry = PixelGeometry.RgbHorizontal, Lc
 
 
 
+  <a id="Egami_Drawing_CanvasOptions_PixelOffset_" data-uid="Egami.Drawing.CanvasOptions.PixelOffset*"></a>
+
+  <h3 id="Egami_Drawing_CanvasOptions_PixelOffset" data-uid="Egami.Drawing.CanvasOptions.PixelOffset">
+  PixelOffset
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/CanvasOptions.cs/#L261"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets where pixel centres are. Defaults to <a class="xref" href="Egami.Drawing.PixelOffset.html#Egami_Drawing_PixelOffset_Half">Half</a>; <a class="xref" href="Egami.Drawing.PixelOffset.html#Egami_Drawing_PixelOffset_None">None</a> is
+GDI+'s default, which moves paths and unhinted text half a pixel.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public PixelOffset PixelOffset { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Drawing.PixelOffset.html">PixelOffset</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+  <h4 class="section" id="Egami_Drawing_CanvasOptions_PixelOffset_examples">Examples</h4>
+  <pre><code class="lang-csharp">// Shapes as System.Drawing draws them at its defaults (SmoothingMode.AntiAlias, PixelOffsetMode.None): whole coordinates on
+// pixel centres, GDI+'s 8 by 4 samples a pixel, and pens up to 1.5 px drawn as its one-pixel thin lines.
+// CanvasOptions.GdiPlusClearType sets both too.
+var options = new CanvasOptions { PixelOffset = PixelOffset.None, Antialiasing = Antialiasing.GdiPlus };
+using (RasterCanvas&lt;Rgb8&gt; canvas = raster.CreateCanvas(options))
+{
+    canvas.FillOval(new RectF(4, 4, 20, 20), new SolidPaint(new Rgba8(0, 90, 200, 255)));
+    canvas.DrawLine(new Vector2(30, 6), new Vector2(60, 26), new Stroke(0.5f), new SolidPaint(Rgba8.Black));
+}</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>The value is not defined.</p>
+</dd>
+  </dl>
+
+
+
   <a id="Egami_Drawing_CanvasOptions_TextContrast_" data-uid="Egami.Drawing.CanvasOptions.TextContrast*"></a>
 
   <h3 id="Egami_Drawing_CanvasOptions_TextContrast" data-uid="Egami.Drawing.CanvasOptions.TextContrast">
   TextContrast
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/CanvasOptions.cs/#L165"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/CanvasOptions.cs/#L204"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets how much thin glyph coverage is boosted before it blends, from 0 to 1. Defaults to 0, none. Coverage a becomes
@@ -615,7 +717,7 @@ var boosted = new CanvasOptions { TextContrast = 0.25f };</code></pre>
 
   <h3 id="Egami_Drawing_CanvasOptions_TextGamma" data-uid="Egami.Drawing.CanvasOptions.TextGamma">
   TextGamma
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/CanvasOptions.cs/#L150"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/CanvasOptions.cs/#L189"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the gamma of the blend that draws glyph coverage, from 0.5 to 3. Defaults to 1, today's blend. Each channel blends as
@@ -673,7 +775,7 @@ gamma-correct one.</p>
 
   <h3 id="Egami_Drawing_CanvasOptions_Tolerance" data-uid="Egami.Drawing.CanvasOptions.Tolerance">
   Tolerance
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/CanvasOptions.cs/#L130"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/CanvasOptions.cs/#L169"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets how far, in device pixels, a curve's straight-line approximation may stray from it. Defaults to 0.1; smaller values cost
@@ -712,7 +814,7 @@ more lines.</p>
 </article>
 
         <div class="contribution d-print-none">
-          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/CanvasOptions.cs/#L60" class="edit-link">Edit this page</a>
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/CanvasOptions.cs/#L94" class="edit-link">Edit this page</a>
         </div>
 
 

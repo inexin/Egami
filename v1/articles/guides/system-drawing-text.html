@@ -122,6 +122,30 @@ CanvasOptions contrast8 = CanvasOptions.GdiPlusClearType with { TextGamma = 1 + 
 <p>For a white Trebuchet MS label at 16 pixels on a black or a #0078d4 button, the result is within 0.5% of GDI+'s brightness. The
 mean per-pixel difference is 0.67 levels out of 255 on black and 0.38 on blue, against 9.5 and 5.4 for Egami's default text.
 Fonts that GDI+ draws from embedded bitmaps at small sizes, such as Calibri, still differ: Egami draws their outlines.</p>
+<h2 id="shapes">Shapes</h2>
+<p>Two canvas settings match what <code>Graphics</code> does with shapes at its defaults, <code>SmoothingMode.AntiAlias</code> and
+<code>PixelOffsetMode.None</code>. <code>CanvasOptions.GdiPlusClearType</code> sets both.</p>
+<ul>
+<li><code>PixelOffset.None</code> puts whole coordinates on pixel centres, as GDI+'s <code>None</code>, <code>Default</code> and <code>HighSpeed</code> offset modes do. Paths,
+their paints and clips move half a pixel right and down. Text moves only when it is unhinted, just as GDI+ moves its
+<code>AntiAlias</code> text but not its grid-fitted text, and images do not move. <code>PixelOffset.Half</code>, Egami's default, is GDI+'s <code>Half</code>.</li>
+<li><code>Antialiasing.GdiPlus</code> samples like <code>AntiAlias</code> and <code>HighQuality</code>, which are the same mode. Each pixel has 8 samples across
+and 4 down, and a sample on a left or top edge is inside. Pens of 1.5 device pixels or less draw as GDI+'s thin lines: one
+pixel thick across the line's major axis, at full strength, with pointed ends and no caps.</li>
+</ul>
+<pre><code class="lang-csharp">// Shapes as System.Drawing draws them at its defaults (SmoothingMode.AntiAlias, PixelOffsetMode.None): whole coordinates on
+// pixel centres, GDI+'s 8 by 4 samples a pixel, and pens up to 1.5 px drawn as its one-pixel thin lines.
+// CanvasOptions.GdiPlusClearType sets both too.
+var options = new CanvasOptions { PixelOffset = PixelOffset.None, Antialiasing = Antialiasing.GdiPlus };
+using (RasterCanvas&lt;Rgb8&gt; canvas = raster.CreateCanvas(options))
+{
+    canvas.FillOval(new RectF(4, 4, 20, 20), new SolidPaint(new Rgba8(0, 90, 200, 255)));
+    canvas.DrawLine(new Vector2(30, 6), new Vector2(60, 26), new Stroke(0.5f), new SolidPaint(Rgba8.Black));
+}
+</code></pre>
+<p>On rectangles, polygons, ovals and lines at fractional positions, the mean difference from GDI+ is 0.12 levels, down from 1.94
+with Egami's closest settings before. Rectangles and polygons match to the level. Ovals and round caps still differ a little,
+because GDI+ flattens curves its own way.</p>
 <h2 id="gdi-cleartype">GDI ClearType</h2>
 <p>For <code>TextRenderer</code> or GDI's <code>ExtTextOut</code>:</p>
 <ul>

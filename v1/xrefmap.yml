@@ -13889,6 +13889,24 @@ references:
   commentId: F:Egami.Drawing.AnnotationKind.Url
   fullName: Egami.Drawing.AnnotationKind.Url
   nameWithType: AnnotationKind.Url
+- uid: Egami.Drawing.Antialiasing
+  name: Antialiasing
+  href: api/Egami.Drawing.Antialiasing.html
+  commentId: T:Egami.Drawing.Antialiasing
+  fullName: Egami.Drawing.Antialiasing
+  nameWithType: Antialiasing
+- uid: Egami.Drawing.Antialiasing.Exact
+  name: Exact
+  href: api/Egami.Drawing.Antialiasing.html#Egami_Drawing_Antialiasing_Exact
+  commentId: F:Egami.Drawing.Antialiasing.Exact
+  fullName: Egami.Drawing.Antialiasing.Exact
+  nameWithType: Antialiasing.Exact
+- uid: Egami.Drawing.Antialiasing.GdiPlus
+  name: GdiPlus
+  href: api/Egami.Drawing.Antialiasing.html#Egami_Drawing_Antialiasing_GdiPlus
+  commentId: F:Egami.Drawing.Antialiasing.GdiPlus
+  fullName: Egami.Drawing.Antialiasing.GdiPlus
+  nameWithType: Antialiasing.GdiPlus
 - uid: Egami.Drawing.BlendPaint
   name: BlendPaint
   href: api/Egami.Drawing.BlendPaint.html
@@ -15383,6 +15401,19 @@ references:
   commentId: T:Egami.Drawing.CanvasOptions
   fullName: Egami.Drawing.CanvasOptions
   nameWithType: CanvasOptions
+- uid: Egami.Drawing.CanvasOptions.Antialiasing
+  name: Antialiasing
+  href: api/Egami.Drawing.CanvasOptions.html#Egami_Drawing_CanvasOptions_Antialiasing
+  commentId: P:Egami.Drawing.CanvasOptions.Antialiasing
+  fullName: Egami.Drawing.CanvasOptions.Antialiasing
+  nameWithType: CanvasOptions.Antialiasing
+- uid: Egami.Drawing.CanvasOptions.Antialiasing*
+  name: Antialiasing
+  href: api/Egami.Drawing.CanvasOptions.html#Egami_Drawing_CanvasOptions_Antialiasing_
+  commentId: Overload:Egami.Drawing.CanvasOptions.Antialiasing
+  isSpec: "True"
+  fullName: Egami.Drawing.CanvasOptions.Antialiasing
+  nameWithType: CanvasOptions.Antialiasing
 - uid: Egami.Drawing.CanvasOptions.ClearTypeLevel
   name: ClearTypeLevel
   href: api/Egami.Drawing.CanvasOptions.html#Egami_Drawing_CanvasOptions_ClearTypeLevel
@@ -15487,6 +15518,19 @@ references:
   isSpec: "True"
   fullName: Egami.Drawing.CanvasOptions.PixelGeometry
   nameWithType: CanvasOptions.PixelGeometry
+- uid: Egami.Drawing.CanvasOptions.PixelOffset
+  name: PixelOffset
+  href: api/Egami.Drawing.CanvasOptions.html#Egami_Drawing_CanvasOptions_PixelOffset
+  commentId: P:Egami.Drawing.CanvasOptions.PixelOffset
+  fullName: Egami.Drawing.CanvasOptions.PixelOffset
+  nameWithType: CanvasOptions.PixelOffset
+- uid: Egami.Drawing.CanvasOptions.PixelOffset*
+  name: PixelOffset
+  href: api/Egami.Drawing.CanvasOptions.html#Egami_Drawing_CanvasOptions_PixelOffset_
+  commentId: Overload:Egami.Drawing.CanvasOptions.PixelOffset
+  isSpec: "True"
+  fullName: Egami.Drawing.CanvasOptions.PixelOffset
+  nameWithType: CanvasOptions.PixelOffset
 - uid: Egami.Drawing.CanvasOptions.TextContrast
   name: TextContrast
   href: api/Egami.Drawing.CanvasOptions.html#Egami_Drawing_CanvasOptions_TextContrast
@@ -20669,6 +20713,24 @@ references:
   commentId: F:Egami.Drawing.PixelGeometry.Unknown
   fullName: Egami.Drawing.PixelGeometry.Unknown
   nameWithType: PixelGeometry.Unknown
+- uid: Egami.Drawing.PixelOffset
+  name: PixelOffset
+  href: api/Egami.Drawing.PixelOffset.html
+  commentId: T:Egami.Drawing.PixelOffset
+  fullName: Egami.Drawing.PixelOffset
+  nameWithType: PixelOffset
+- uid: Egami.Drawing.PixelOffset.Half
+  name: Half
+  href: api/Egami.Drawing.PixelOffset.html#Egami_Drawing_PixelOffset_Half
+  commentId: F:Egami.Drawing.PixelOffset.Half
+  fullName: Egami.Drawing.PixelOffset.Half
+  nameWithType: PixelOffset.Half
+- uid: Egami.Drawing.PixelOffset.None
+  name: None
+  href: api/Egami.Drawing.PixelOffset.html#Egami_Drawing_PixelOffset_None
+  commentId: F:Egami.Drawing.PixelOffset.None
+  fullName: Egami.Drawing.PixelOffset.None
+  nameWithType: PixelOffset.None
 - uid: Egami.Drawing.PlaceholderPainter
   name: PlaceholderPainter
   href: api/Egami.Drawing.PlaceholderPainter.html
