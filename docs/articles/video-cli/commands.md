@@ -26,7 +26,7 @@ Commands:
   remux <inputs>                Copy tracks into another container without decoding: change AVI to Matroska, pick tracks, keep tags, chapters and attachments.
   trim <inputs>                 Cut a part out of files: every track from --from up to --to, with timestamps starting at 0; subtitle cues shown across the cut are clipped to it. Without --smart or --reencode nothing is decoded and the cut starts at the video keyframe at or before --from, like ffmpeg -ss -to -c copy.
   concat <inputs>               Join clips with the same tracks and codecs into one file without decoding, one after another in the order given (globs sorted by name).
-  segment <inputs>              Split files into parts without decoding, at video keyframes: -o names the parts with {part} (from 1), such as out-{part:000}.mkv; a folder takes {name}-{part:000}.{ext}.
+  segment <inputs>              Split files into parts without decoding, at video keyframes: -o names the parts with {part} (from 1), such as out-{part:000}.mkv; a folder takes {name}-{part:000}.{ext}. --hls and --dash write streaming segments and playlists into a folder.
   timestamps <inputs>           Change packet timestamps without decoding: shift tracks, re-time video to a constant frame rate, repair broken timestamps or start at 0. With --track, --shift, --rate and --fix change only those tracks; every track is written.
   extract <inputs>              Copy a track into its own file without decoding (VP8, VP9 and AV1 to IVF, PCM to WAV, FLAC to FLAC, Opus and Vorbis to Ogg, the rest to Matroska), or write attachments and cover art as files.
   embed <inputs>                Add tracks from other files, attachments and cover art to a file without decoding, and set track languages, names and defaults. Track numbers count the output's tracks from 1.
@@ -60,7 +60,7 @@ Commands:
   stabilize <input>             Take the shake out of a clip in two passes: measure the camera's motion (corners tracked with Lucas-Kanade, a RANSAC fit), smooth its path with a Gaussian, and warp each frame onto it; like ffmpeg's vidstabdetect and vidstabtransform.
   edit <file>                   Render an edit file: clips on a track with transitions, layers over it and effects with time windows. Every other editing command writes one with --save-edit.
   formats                       List the containers and codecs egami-video reads and writes, like ffmpeg -formats and -codecs.
-  ffmpeg <arguments>            Run an ffmpeg command line with egami-video: 'egami-video ffmpeg -i in.avi -c copy out.mkv'. --explain prints the native command instead. Takes -i, -f, -y, -n, -ss, -to, -t, -itsoffset, -framerate, -map, -c, -codec, -c:v, -c:a, -c:s, -vcodec, -acodec, -scodec, -an, -vn, -sn, -dn, -r, -s, -frames:v, -vframes, -q:v, -qscale:v, -ar, -ac, -sample_fmt, -metadata, -map_metadata, -map_chapters, -vf, -filter:v, -af, -filter:a, -lavfi, -filter_complex (psnr, ssim, showwavespic, showspectrumpic, and the editing filters), -loop 1 on an image, -segment_time, -segment_times, -update, -progress, -stats, -nostats, -stats_period, -hide_banner, -loglevel, -v, -nostdin, %d patterns and pipe:; filters scale, crop, pad, transpose, hflip, vflip, fps, thumbnail, select (scene), tile; to -f null the detection filters blackdetect, freezedetect, cropdetect, idet, signalstats, blurdetect, blockdetect, silencedetect, volumedetect, astats and ebur128; the editing filters fade, setpts (a constant factor), reverse, loop, tpad (clone), fps, scale, xfade, concat, overlay, hstack, vstack, xstack (grid), zoompan, chromakey, colorkey, despill, hflip and vflip (with enable), deshake, vidstabdetect and vidstabtransform; audio afade, acrossfade, amix, atempo, volume, areverse and aloop, with enable='between(t,a,b)', rendered as one edit; -f lavfi sources testsrc, testsrc2, smptebars, smptehdbars, color, sine, anullsrc and anoisesrc; anything else stops with exit code 2.
+  ffmpeg <arguments>            Run an ffmpeg command line with egami-video: 'egami-video ffmpeg -i in.avi -c copy out.mkv'. --explain prints the native command instead. Takes -i, -f, -y, -n, -ss, -to, -t, -itsoffset, -framerate, -map, -c, -codec, -c:v, -c:a, -c:s, -vcodec, -acodec, -scodec, -an, -vn, -sn, -dn, -r, -s, -frames:v, -vframes, -q:v, -qscale:v, -ar, -ac, -sample_fmt, -metadata, -map_metadata, -map_chapters, -vf, -filter:v, -af, -filter:a, -lavfi, -filter_complex (psnr, ssim, showwavespic, showspectrumpic, and the editing filters), -loop 1 on an image, -segment_time, -segment_times, -update, -progress, -stats, -nostats, -stats_period, -hide_banner, -loglevel, -v, -nostdin, %d patterns and pipe:; filters scale, crop, pad, transpose, hflip, vflip, fps, thumbnail, select (scene), tile; to -f null the detection filters blackdetect, freezedetect, cropdetect, idet, signalstats, blurdetect, blockdetect, silencedetect, volumedetect, astats and ebur128; the audio filters volume, afade, atempo, adelay, apad, atrim, asetpts, highpass, lowpass, bandpass, bandreject, allpass, equalizer, bass, lowshelf, treble, highshelf, acompressor, agate, alimiter, loudnorm, silenceremove in -af; the editing filters fade, setpts (a constant factor), reverse, loop, tpad (clone), fps, scale, xfade, concat, overlay, hstack, vstack, xstack (grid), zoompan, chromakey, colorkey, despill, hflip and vflip (with enable), deshake, vidstabdetect and vidstabtransform; audio afade, acrossfade, amix, atempo, volume, areverse and aloop, with enable='between(t,a,b)', rendered as one edit; -f lavfi sources testsrc, testsrc2, smptebars, smptehdbars, color, sine, anullsrc and anoisesrc; anything else stops with exit code 2.
   ffprobe <arguments>           Run an ffprobe command line with egami-video: 'egami-video ffprobe -of json -show_streams in.mkv'. --explain prints the native command instead. Takes -i, -show_streams, -show_format, -show_packets, -show_frames, -show_chapters, -select_streams, -show_entries, -of, -print_format, -output_format (json, csv, compact, default, flat, xml), -v, -loglevel, -hide_banner, -pretty; anything else stops with exit code 2.
   mcp                           Serve egami-video's commands as tools to an AI assistant over the Model Context Protocol, on standard input and output. Tools read and write only inside the folders the assistant opened and those given with --allow, and never replace an input unless asked.
 ```
@@ -115,6 +115,7 @@ Options:
   -j, --jobs <count>             How many files to work on at once; 0 (the default) for one per processor.
   --in-place                     Allow outputs to replace their inputs.
   --fail-fast                    Stop at the first file that fails.
+  --fragment <length>            Write fragmented MP4, for streaming and browsers' Media Source Extensions: fragments start at the first video keyframe after this long (2s without a value), or at every one with --fragment=keyframe. Give a length as --fragment=4s.
 ```
 
 ## trim
@@ -174,7 +175,7 @@ Options:
 
 ```text
 Description:
-  Split files into parts without decoding, at video keyframes: -o names the parts with {part} (from 1), such as out-{part:000}.mkv; a folder takes {name}-{part:000}.{ext}.
+  Split files into parts without decoding, at video keyframes: -o names the parts with {part} (from 1), such as out-{part:000}.mkv; a folder takes {name}-{part:000}.{ext}. --hls and --dash write streaming segments and playlists into a folder.
 
 Usage:
   egami-video segment <inputs>... [options]
@@ -199,6 +200,8 @@ Options:
   --threshold <0-1>              With --scenes: how sharp a change starts a scene, from 0 to 1. Default 0.15.
   --min-length <time>            With --scenes: the shortest scene. Default 0.6s.
   --exact                        With --scenes: start every part on its scene's first frame, by smart cut (trim --smart): only the frames from there up to the next keyframe are encoded again.
+  --hls                          Write HLS: CMAF segments of the audio and video tracks into the folder -o names, with master.m3u8 and a playlist a track. --every sets the segment length (6s by default).
+  --dash                         Write DASH: the same CMAF segments with manifest.mpd; give it with --hls for both from one set of segments.
 ```
 
 ## timestamps
@@ -525,7 +528,15 @@ Options:
   -b, --bitrate <bits/s>                VP8, VP9 and AV1: aim at this average bitrate instead of a quality, such as 2000k or 1.5M.
   --size <WxH>                          Fit every frame into this size, keeping its shape, with black around it; images take the first image's size by default.
   --chroma <420|422|444>                Chroma subsampling for frames made from images: 420 (the default), 422 or 444.
-  --audio <file>                        Add the first audio track of this file, copied without decoding, up to the end of the video.
+  --audio <file>                        Add the first audio track of this file, copied without decoding (or filtered and encoded again with the audio filter options), up to the end of the video.
+  --fragment <length>                   Write fragmented MP4, for streaming and browsers' Media Source Extensions: fragments start at the first video keyframe after this long (2s without a value), or at every one with --fragment=keyframe. Give a length as --fragment=4s.
+  --gain <dB>                           Change the level by this many decibels, such as -3 or 6.
+  --fade-in <time>                      Fade the sound in over this long from its start, such as 2 or 500ms.
+  --fade-out <time>                     Fade the sound out over this long to its end.
+  --tempo <factor>                      Play the sound faster or slower, from 0.25 to 4, keeping the pitch.
+  --normalize <target>                  Bring the loudness to a target in two passes: ebu (-23 LUFS), atsc (-24), streaming (-14), podcast (-16) or a number of LUFS.
+  --trim-silence                        Cut the silence at the start and the end (audio files only: it would put the sound out of step with video).
+  --af <filters>                        Audio filters in ffmpeg's -af syntax: volume, afade, atempo, adelay, apad, atrim, asetpts, highpass, lowpass, bandpass, bandreject, allpass, equalizer, bass, lowshelf, treble, highshelf, acompressor, agate, alimiter, loudnorm, silenceremove.
   --keyframe-interval <frames>          The most frames from one keyframe to the next; FFV1 makes every frame a keyframe unless this is given.
   --slices <count>                      FFV1: slices a frame is cut into, coded in parallel, 1 to 1024; picked from the frame size by default.
   --no-slice-crc                        FFV1: leave out the slice CRCs that let verify check the file.
@@ -560,6 +571,12 @@ Options:
   -t, --track <track>                   Which video track to run the steps over: v:1 for the second, or a track number; audio and subtitle tracks are copied.
   -an, --no-audio                       Leave out the audio tracks.
   -sn, --no-subtitles                   Leave out the subtitle tracks.
+  --af <filters>                        Filter the audio tracks, in ffmpeg's -af syntax (volume, afade, atempo, adelay, apad, atrim, asetpts, highpass, lowpass, bandpass, bandreject, allpass, equalizer, bass, lowshelf, treble, highshelf, acompressor, agate, alimiter, loudnorm, silenceremove), and encode them again; by default they are copied.
+  --gain <dB>                           Change the audio's level by this many decibels.
+  --fade-in <time>                      Fade the audio in over this long from its start.
+  --fade-out <time>                     Fade the audio out over this long to its end.
+  --tempo <factor>                      Change the audio's tempo, 0.25 to 4 (it no longer lines up with the picture).
+  --normalize <target>                  Bring the audio's loudness to ebu, atsc, streaming, podcast or a number of LUFS, in two passes.
   -w, --workflow <file>                 Take the steps from an egami JSON workflow file.
   --save-workflow <file>                Write the steps to a JSON workflow file (then run them, unless --dry-run).
   --dry-run                             Print the steps and the file each input would write, and stop.
@@ -945,6 +962,13 @@ Options:
   --level <0-8>                     FLAC's compression level, from 0 (fastest) to 8 (smallest), 5 by default; ALAC's, 0 (fast) or 1 (the default).
   -b, --bitrate <bits/s>            Opus's bitrate for all channels together, such as 96k; 64k a channel by default.
   -vn, --no-video                   Leave out video tracks, keeping only audio (and subtitles) in a Matroska or MP4 output.
+  --gain <dB>                       Change the level by this many decibels, such as -3 or 6.
+  --fade-in <time>                  Fade the sound in over this long from its start, such as 2 or 500ms.
+  --fade-out <time>                 Fade the sound out over this long to its end.
+  --tempo <factor>                  Play the sound faster or slower, from 0.25 to 4, keeping the pitch.
+  --normalize <target>              Bring the loudness to a target in two passes: ebu (-23 LUFS), atsc (-24), streaming (-14), podcast (-16) or a number of LUFS.
+  --trim-silence                    Cut the silence at the start and the end (audio files only: it would put the sound out of step with video).
+  --af <filters>                    Audio filters in ffmpeg's -af syntax: volume, afade, atempo, adelay, apad, atrim, asetpts, highpass, lowpass, bandpass, bandreject, allpass, equalizer, bass, lowshelf, treble, highshelf, acompressor, agate, alimiter, loudnorm, silenceremove.
 ```
 
 ## join
@@ -1312,7 +1336,7 @@ Options:
 
 ```text
 Description:
-  Run an ffmpeg command line with egami-video: 'egami-video ffmpeg -i in.avi -c copy out.mkv'. --explain prints the native command instead. Takes -i, -f, -y, -n, -ss, -to, -t, -itsoffset, -framerate, -map, -c, -codec, -c:v, -c:a, -c:s, -vcodec, -acodec, -scodec, -an, -vn, -sn, -dn, -r, -s, -frames:v, -vframes, -q:v, -qscale:v, -ar, -ac, -sample_fmt, -metadata, -map_metadata, -map_chapters, -vf, -filter:v, -af, -filter:a, -lavfi, -filter_complex (psnr, ssim, showwavespic, showspectrumpic, and the editing filters), -loop 1 on an image, -segment_time, -segment_times, -update, -progress, -stats, -nostats, -stats_period, -hide_banner, -loglevel, -v, -nostdin, %d patterns and pipe:; filters scale, crop, pad, transpose, hflip, vflip, fps, thumbnail, select (scene), tile; to -f null the detection filters blackdetect, freezedetect, cropdetect, idet, signalstats, blurdetect, blockdetect, silencedetect, volumedetect, astats and ebur128; the editing filters fade, setpts (a constant factor), reverse, loop, tpad (clone), fps, scale, xfade, concat, overlay, hstack, vstack, xstack (grid), zoompan, chromakey, colorkey, despill, hflip and vflip (with enable), deshake, vidstabdetect and vidstabtransform; audio afade, acrossfade, amix, atempo, volume, areverse and aloop, with enable='between(t,a,b)', rendered as one edit; -f lavfi sources testsrc, testsrc2, smptebars, smptehdbars, color, sine, anullsrc and anoisesrc; anything else stops with exit code 2.
+  Run an ffmpeg command line with egami-video: 'egami-video ffmpeg -i in.avi -c copy out.mkv'. --explain prints the native command instead. Takes -i, -f, -y, -n, -ss, -to, -t, -itsoffset, -framerate, -map, -c, -codec, -c:v, -c:a, -c:s, -vcodec, -acodec, -scodec, -an, -vn, -sn, -dn, -r, -s, -frames:v, -vframes, -q:v, -qscale:v, -ar, -ac, -sample_fmt, -metadata, -map_metadata, -map_chapters, -vf, -filter:v, -af, -filter:a, -lavfi, -filter_complex (psnr, ssim, showwavespic, showspectrumpic, and the editing filters), -loop 1 on an image, -segment_time, -segment_times, -update, -progress, -stats, -nostats, -stats_period, -hide_banner, -loglevel, -v, -nostdin, %d patterns and pipe:; filters scale, crop, pad, transpose, hflip, vflip, fps, thumbnail, select (scene), tile; to -f null the detection filters blackdetect, freezedetect, cropdetect, idet, signalstats, blurdetect, blockdetect, silencedetect, volumedetect, astats and ebur128; the audio filters volume, afade, atempo, adelay, apad, atrim, asetpts, highpass, lowpass, bandpass, bandreject, allpass, equalizer, bass, lowshelf, treble, highshelf, acompressor, agate, alimiter, loudnorm, silenceremove in -af; the editing filters fade, setpts (a constant factor), reverse, loop, tpad (clone), fps, scale, xfade, concat, overlay, hstack, vstack, xstack (grid), zoompan, chromakey, colorkey, despill, hflip and vflip (with enable), deshake, vidstabdetect and vidstabtransform; audio afade, acrossfade, amix, atempo, volume, areverse and aloop, with enable='between(t,a,b)', rendered as one edit; -f lavfi sources testsrc, testsrc2, smptebars, smptehdbars, color, sine, anullsrc and anoisesrc; anything else stops with exit code 2.
 
 Usage:
   egami-video ffmpeg [<arguments>...] [options] [[--] <additional arguments>...]]

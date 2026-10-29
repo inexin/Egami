@@ -31,6 +31,13 @@ internal static class RunVideoCommand
         ["-sn"] = false,
         ["--progress"] = true,
         ["--progress-format"] = true,
+        ["--af"] = true,
+        ["--gain"] = true,
+        ["--fade-in"] = true,
+        ["--fade-out"] = true,
+        ["--tempo"] = true,
+        ["--normalize"] = true,
+        ["--trim-silence"] = false,
         ["--keyframe-interval"] = true,
         ["--slices"] = true,
         ["--no-slice-crc"] = false,
@@ -60,6 +67,12 @@ internal static class RunVideoCommand
         command.Options.Add(new Option<string?>("--track", "-t") { Description = "Which video track to run the steps over: v:1 for the second, or a track number; audio and subtitle tracks are copied.", HelpName = "track" });
         command.Options.Add(new Option<bool>("--no-audio", "-an") { Description = "Leave out the audio tracks." });
         command.Options.Add(new Option<bool>("--no-subtitles", "-sn") { Description = "Leave out the subtitle tracks." });
+        command.Options.Add(new Option<string?>("--af") { Description = "Filter the audio tracks, in ffmpeg's -af syntax (" + string.Join(", ", AudioFilterPlan.Names) + "), and encode them again; by default they are copied.", HelpName = "filters" });
+        command.Options.Add(new Option<string?>("--gain") { Description = "Change the audio's level by this many decibels.", HelpName = "dB" });
+        command.Options.Add(new Option<string?>("--fade-in") { Description = "Fade the audio in over this long from its start.", HelpName = "time" });
+        command.Options.Add(new Option<string?>("--fade-out") { Description = "Fade the audio out over this long to its end.", HelpName = "time" });
+        command.Options.Add(new Option<string?>("--tempo") { Description = "Change the audio's tempo, 0.25 to 4 (it no longer lines up with the picture).", HelpName = "factor" });
+        command.Options.Add(new Option<string?>("--normalize") { Description = "Bring the audio's loudness to ebu, atsc, streaming, podcast or a number of LUFS, in two passes.", HelpName = "target" });
         command.Options.Add(new Option<string?>("--workflow", "-w") { Description = "Take the steps from an egami JSON workflow file.", HelpName = "file" });
         command.Options.Add(new Option<string?>("--save-workflow") { Description = "Write the steps to a JSON workflow file (then run them, unless --dry-run).", HelpName = "file" });
         command.Options.Add(new Option<bool>("--dry-run") { Description = "Print the steps and the file each input would write, and stop." });
@@ -182,6 +195,7 @@ internal static class RunVideoCommand
             TrackSelection.Parse(own.GetValueOrDefault("--track"), own.ContainsKey("--no-audio"), own.ContainsKey("--no-subtitles")))
         {
             Windows = stepWindows,
+            Audio = AudioPlan(own),
             Extras = EncoderExtras.Parse(name => own.ContainsKey(name) ? Last(own, name) ?? string.Empty : null),
         };
 
@@ -433,10 +447,60 @@ internal static class RunVideoCommand
         public bool Contains(MediaTime time) => time.Seconds >= Start && time.Seconds < End;
     }
 
+    /// <summary>The audio filters of run's options, in the order audio and encode run them, or <see langword="null"/> for none.</summary>
+    private static AudioFilterPlan? AudioPlan(Dictionary<string, List<string>> own)
+    {
+        if (own.ContainsKey("--trim-silence"))
+        {
+            throw new UsageException("--trim-silence would put the sound out of step with the picture; use egami-video audio on the sound alone.");
+        }
+
+        AudioFilterPlan plan = new();
+        if (Last(own, "--tempo") is { } tempo)
+        {
+            plan.AddTempo(tempo);
+        }
+
+        if (Last(own, "--af") is { } chain)
+        {
+            plan.AddChain(chain);
+        }
+
+        if (Last(own, "--gain") is { } gain)
+        {
+            plan.AddGain(gain);
+        }
+
+        if (Last(own, "--fade-in") is { } fadeIn)
+        {
+            plan.AddFadeIn(fadeIn);
+        }
+
+        if (Last(own, "--fade-out") is { } fadeOut)
+        {
+            plan.AddFadeOut(fadeOut);
+        }
+
+        if (Last(own, "--normalize") is { } target)
+        {
+            plan.AddNormalize(target);
+        }
+
+        if (plan.RemovesSilence)
+        {
+            throw new UsageException("silenceremove would put the sound out of step with the picture; use egami-video audio on the sound alone.");
+        }
+
+        return plan.IsEmpty ? null : plan;
+    }
+
     private sealed class RunJob(List<BoundStep> allSteps, VideoCodec? codec, Rational? rate, int? quality, bool autoCrop, TrackSelection selection)
     {
         /// <summary>Gets the steps that run only inside a time window.</summary>
         public IReadOnlyDictionary<BoundStep, StepWindow> Windows { get; init; } = new Dictionary<BoundStep, StepWindow>();
+
+        /// <summary>Gets the filters the audio tracks run through, or <see langword="null"/> to copy them.</summary>
+        public AudioFilterPlan? Audio { get; init; }
 
         /// <summary>Gets the keyframe interval and FFV1 settings.</summary>
         public EncoderExtras Extras { get; init; } = new();
@@ -454,7 +518,7 @@ internal static class RunVideoCommand
 
             VideoCodec encoder = codec ?? (session.Context.FindCodec(track) is { CanEncode: true } same ? same : MotionJpegCodec.Instance);
             Extras.Check(encoder);
-            using OtherPackets others = OtherPackets.Open(session, input, selection);
+            using OtherPackets others = OtherPackets.Open(session, input, selection, Audio, target.Container);
             VideoWriterOptions options = new()
             {
                 Codec = encoder,
@@ -497,6 +561,7 @@ internal static class RunVideoCommand
                 }
 
                 others.WriteUpTo(writer, double.PositiveInfinity);
+                others.Finish(writer);
                 writer.Finish();
                 progress.Finish();
             });
@@ -655,19 +720,22 @@ internal static class RunVideoCommand
 
     /// <summary>
     /// The audio and subtitle packets of a file, read through a second demuxer and written between the frames in time order,
-    /// unchanged. Standard input is read only once, by the decoder, so only its video is written.
+    /// unchanged, or with the audio filtered and encoded again when run has audio filters. Standard input is read only once, by
+    /// the decoder, so only its video is written.
     /// </summary>
     private sealed class OtherPackets : IDisposable
     {
         private readonly HashSet<int> _numbers;
+        private readonly Dictionary<int, AudioCommand.AudioRecoder> _recoders;
         private IDemuxer? _demuxer;
         private EncodedPacket? _next;
 
-        private OtherPackets(IDemuxer? demuxer, IReadOnlyList<TrackInfo> tracks)
+        private OtherPackets(IDemuxer? demuxer, IReadOnlyList<TrackInfo> tracks, Dictionary<int, AudioCommand.AudioRecoder>? recoders = null)
         {
             _demuxer = demuxer;
             Tracks = tracks;
             _numbers = [.. tracks.Select(t => t.Number)];
+            _recoders = recoders ?? [];
         }
 
         /// <summary>Gets the tracks copied.</summary>
@@ -677,7 +745,7 @@ internal static class RunVideoCommand
         /// Opens the tracks to copy: every audio and subtitle track, less those <c>--no-audio</c> and <c>--no-subtitles</c> leave
         /// out, or the audio and subtitle tracks <c>--track</c> names when it names some.
         /// </summary>
-        public static OtherPackets Open(VideoSession session, InputFile input, TrackSelection selection)
+        public static OtherPackets Open(VideoSession session, InputFile input, TrackSelection selection, AudioFilterPlan? audio, Egami.Video.Containers.ContainerFormat container)
         {
             if (input.IsStdin)
             {
@@ -699,7 +767,39 @@ internal static class RunVideoCommand
                     return new OtherPackets(null, []);
                 }
 
-                return new OtherPackets(demuxer, tracks);
+                if (audio is null)
+                {
+                    return new OtherPackets(demuxer, tracks);
+                }
+
+                if (audio.ChangesLength)
+                {
+                    session.Warn($"{input.Display}: {audio.Describe()} changes the sound's length, so it no longer lines up with the picture.");
+                }
+
+                Dictionary<int, AudioCommand.AudioRecoder> recoders = [];
+                try
+                {
+                    for (int i = 0; i < tracks.Count; i++)
+                    {
+                        if (tracks[i] is AudioTrackInfo track && AudioCommand.Filtered(session, input.Display, input.IsStdin ? null : () => MediaIO.OpenStream(session, input), track, audio, container) is { } recoder)
+                        {
+                            recoders[track.Number] = recoder;
+                            tracks[i] = recoder.Encoder.Track with { Number = track.Number, Language = track.Language, Name = track.Name, IsDefault = track.IsDefault, Tags = track.Tags };
+                        }
+                    }
+                }
+                catch
+                {
+                    foreach (AudioCommand.AudioRecoder recoder in recoders.Values)
+                    {
+                        recoder.Dispose();
+                    }
+
+                    throw;
+                }
+
+                return new OtherPackets(demuxer, tracks, recoders);
             }
             catch
             {
@@ -716,8 +816,24 @@ internal static class RunVideoCommand
                 _next = null;
                 using (packet)
                 {
-                    writer.WritePacket(packet);
+                    if (_recoders.TryGetValue(packet.TrackNumber, out AudioCommand.AudioRecoder? recoder))
+                    {
+                        recoder.Send(packet, writer.WritePacket);
+                    }
+                    else
+                    {
+                        writer.WritePacket(packet);
+                    }
                 }
+            }
+        }
+
+        /// <summary>Writes what the filtered audio tracks still hold.</summary>
+        public void Finish(VideoWriter writer)
+        {
+            foreach (AudioCommand.AudioRecoder recoder in _recoders.Values)
+            {
+                recoder.Finish(writer.WritePacket);
             }
         }
 
@@ -725,6 +841,10 @@ internal static class RunVideoCommand
         {
             _next?.Dispose();
             _demuxer?.Dispose();
+            foreach (AudioCommand.AudioRecoder recoder in _recoders.Values)
+            {
+                recoder.Dispose();
+            }
         }
 
         private EncodedPacket? Peek()

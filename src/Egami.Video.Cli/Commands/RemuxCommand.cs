@@ -1,6 +1,7 @@
 using System.CommandLine;
 
 using Egami.Video.Cli.Host;
+using Egami.Video.Containers;
 
 namespace Egami.Video.Cli.Commands;
 
@@ -13,8 +14,10 @@ internal static class RemuxCommand
     public static Command Create(VideoSession session)
     {
         MediaOptions options = new();
+        Option<string?> fragment = Fragments.CreateOption();
         Command command = new("remux", "Copy tracks into another container without decoding: change AVI to Matroska, pick tracks, keep tags, chapters and attachments.");
         options.AddTo(command);
+        command.Options.Add(fragment);
         command.SetAction(result =>
         {
             BatchOptions batch = options.Batch(session, result);
@@ -22,9 +25,10 @@ internal static class RemuxCommand
             OutputTemplate output = options.OutputTemplate(session, result, inputs);
             TrackSelection selection = options.Tracks(result);
             string? format = result.GetValue(options.Format);
+            Mp4FragmentOptions? fragments = Fragments.Parse(result, fragment);
             return Batch.Run(session, inputs, batch, input =>
             {
-                MediaTarget target = MediaIO.Resolve(session, input, output, format, "mkv");
+                MediaTarget target = Fragments.Apply(MediaIO.Resolve(session, input, output, format, "mkv"), fragments);
                 Run(session, input, target, selection, inputs.Count);
                 return [target.Path];
             });
@@ -39,6 +43,7 @@ internal static class RemuxCommand
         using (IDemuxer probe = MediaIO.OpenDemuxer(session, input))
         {
             keep = [.. selection.Select(probe.Tracks, input.Display).Select(t => t.Number)];
+            target = Fragments.ForTracks(target, probe.Tracks.Where(t => keep.Contains(t.Number)));
 
             // Standard input can be read only once: the job goes on with the demuxer that read the headers.
             if (input.IsStdin)
@@ -57,7 +62,8 @@ internal static class RemuxCommand
         MediaIO.Write(session, target.Path, output =>
         {
             using Stream source = MediaIO.OpenStream(session, input);
-            MediaFile.Remux(source, output, target.Container.Name, t => keep.Contains(t.Number), session.Context, leaveOpen: true, progress, session.Cancellation);
+            MediaContext context = target.Container is Mp4Format { Fragments: not null } ? session.Context.WithContainer(target.Container) : session.Context;
+            MediaFile.Remux(source, output, target.Container.Name, t => keep.Contains(t.Number), context, leaveOpen: true, progress, session.Cancellation);
         });
     }
 

@@ -3,6 +3,7 @@ using System.Globalization;
 
 using Egami.Video.Audio;
 using Egami.Video.Audio.Codecs;
+using Egami.Video.Audio.Filters;
 using Egami.Video.Cli.Host;
 using Egami.Video.Containers;
 using Egami.Video.Containers.Flac;
@@ -44,6 +45,7 @@ internal static class AudioCommand
         Option<string?> sampleFormat = new("--sample-format") { Description = "The samples to store: u8, s16, s24, s32, f32 or f64 (float only with pcm); by default the source's depth.", HelpName = "format" };
         Option<int?> level = new("--level") { Description = "FLAC's compression level, from 0 (fastest) to 8 (smallest), 5 by default; ALAC's, 0 (fast) or 1 (the default).", HelpName = "0-8" };
         Option<bool> noVideo = new("--no-video", "-vn") { Description = "Leave out video tracks, keeping only audio (and subtitles) in a Matroska or MP4 output." };
+        FilterOptions filters = new();
         Command command = new("audio", "Decode audio to WAV, FLAC, Ogg FLAC, Opus, AIFF, CAF or ALAC in .m4a, or encode a video file's audio again while copying its video unchanged: resample, remix and change the sample format.");
         options.AddTo(command);
         command.Options.Add(codec);
@@ -53,6 +55,7 @@ internal static class AudioCommand
         command.Options.Add(level);
         command.Options.Add(bitrate);
         command.Options.Add(noVideo);
+        filters.AddTo(command);
         command.SetAction(result =>
         {
             AudioRequest request = new(
@@ -65,7 +68,8 @@ internal static class AudioCommand
                 result.GetValue(level) is { } l ? l is >= 0 and <= 8 ? l : throw new UsageException($"--level {l} is not 0 to 8.") : null,
                 result.GetValue(bitrate) is { } b ? ParseBitrate(b) : null,
                 TrackSelection.Parse(result.GetValue(options.Track), result.GetValue(options.NoAudio), result.GetValue(options.NoSubtitles), result.GetValue(noVideo)),
-                result.GetValue(options.Format));
+                result.GetValue(options.Format),
+                filters.Plan(result));
             if (result.GetValue(options.NoAudio))
             {
                 throw new UsageException("--no-audio leaves nothing for audio to do; use remux to drop audio tracks.");
@@ -86,7 +90,85 @@ internal static class AudioCommand
     }
 
     /// <summary>What to write: the codec, rate, layout, sample format, level and bitrate, the tracks, and the <c>--format</c> given.</summary>
-    internal sealed record AudioRequest(string? Codec, int? Rate, ChannelLayout? Layout, (SampleFormat Format, int Bits, bool Float)? SampleFormat, int? Level, int? Bitrate, TrackSelection Tracks, string? Format = null);
+    internal sealed record AudioRequest(string? Codec, int? Rate, ChannelLayout? Layout, (SampleFormat Format, int Bits, bool Float)? SampleFormat, int? Level, int? Bitrate, TrackSelection Tracks, string? Format = null, AudioFilterPlan? Filters = null)
+    {
+        /// <summary>Gets the filters to run, or <see langword="null"/> for none.</summary>
+        public AudioFilterPlan? Filtering => Filters is { IsEmpty: false } plan ? plan : null;
+    }
+
+    /// <summary>
+    /// The audio filter options of <c>audio</c> and <c>encode</c> (V9.1 Design Q14). They run in this order: the silence trim,
+    /// the tempo, <c>--af</c>, the gain, the fades and last the loudness normalization.
+    /// </summary>
+    internal sealed class FilterOptions
+    {
+        public Option<string?> Gain { get; } = new("--gain") { Description = "Change the level by this many decibels, such as -3 or 6.", HelpName = "dB", AllowMultipleArgumentsPerToken = false };
+
+        public Option<string?> FadeIn { get; } = new("--fade-in") { Description = "Fade the sound in over this long from its start, such as 2 or 500ms.", HelpName = "time" };
+
+        public Option<string?> FadeOut { get; } = new("--fade-out") { Description = "Fade the sound out over this long to its end.", HelpName = "time" };
+
+        public Option<string?> Tempo { get; } = new("--tempo") { Description = "Play the sound faster or slower, from 0.25 to 4, keeping the pitch.", HelpName = "factor" };
+
+        public Option<string?> Normalize { get; } = new("--normalize") { Description = "Bring the loudness to a target in two passes: ebu (-23 LUFS), atsc (-24), streaming (-14), podcast (-16) or a number of LUFS.", HelpName = "target" };
+
+        public Option<bool> TrimSilence { get; } = new("--trim-silence") { Description = "Cut the silence at the start and the end (audio files only: it would put the sound out of step with video)." };
+
+        public Option<string?> Af { get; } = new("--af") { Description = "Audio filters in ffmpeg's -af syntax: " + string.Join(", ", AudioFilterPlan.Names) + ".", HelpName = "filters" };
+
+        public void AddTo(Command command)
+        {
+            command.Options.Add(Gain);
+            command.Options.Add(FadeIn);
+            command.Options.Add(FadeOut);
+            command.Options.Add(Tempo);
+            command.Options.Add(Normalize);
+            command.Options.Add(TrimSilence);
+            command.Options.Add(Af);
+        }
+
+        /// <summary>Builds the plan from the options given, or an empty one.</summary>
+        public AudioFilterPlan Plan(ParseResult result)
+        {
+            AudioFilterPlan plan = new();
+            if (result.GetValue(TrimSilence))
+            {
+                plan.AddTrimSilence();
+            }
+
+            if (result.GetValue(Tempo) is { } tempo)
+            {
+                plan.AddTempo(tempo);
+            }
+
+            if (result.GetValue(Af) is { } chain)
+            {
+                plan.AddChain(chain);
+            }
+
+            if (result.GetValue(Gain) is { } gain)
+            {
+                plan.AddGain(gain);
+            }
+
+            if (result.GetValue(FadeIn) is { } fadeIn)
+            {
+                plan.AddFadeIn(fadeIn);
+            }
+
+            if (result.GetValue(FadeOut) is { } fadeOut)
+            {
+                plan.AddFadeOut(fadeOut);
+            }
+
+            if (result.GetValue(Normalize) is { } target)
+            {
+                plan.AddNormalize(target);
+            }
+
+            return plan;
+        }
+    }
 
     /// <summary>Parses <c>--bitrate</c>: bits a second, such as 96000, 96k or 0.5M, within what Opus codes.</summary>
     internal static int ParseBitrate(string text)
@@ -210,6 +292,31 @@ internal static class AudioCommand
         {
             Transcode(session, input, target, request, codecName, count);
         }
+    }
+
+    /// <summary>
+    /// Makes the recoder that filters an audio track another command copies (run's audio): encoded in Opus for WebM, PCM for
+    /// AVI and FLAC otherwise, after a measuring pass when the filters normalize the loudness. Null when the track cannot be decoded.
+    /// </summary>
+    internal static AudioRecoder? Filtered(VideoSession session, string display, Func<Stream>? reopen, AudioTrackInfo track, AudioFilterPlan plan, ContainerFormat container)
+    {
+        if (session.Context.FindAudioCodec(track) is not { } decoder)
+        {
+            session.Warn($"{display}: egami-video cannot decode track {track.Number} ({CodecNames.Name(track.CodecId)}); it is copied as it is.");
+            return null;
+        }
+
+        string name = container == MatroskaFormat.WebM ? "opus" : container is AviFormat ? "pcm" : "flac";
+        AudioRequest request = new(name, null, null, null, null, null, TrackSelection.Parse(null, false, false), null, plan);
+        LoudnessReport? measured = null;
+        if (plan.Measures && reopen is not null)
+        {
+            using AudioReader first = AudioReader.Open(reopen(), new AudioReaderOptions { TrackNumber = track.Number, SampleFormat = null }, session.Context);
+            measured = plan.Measure(first.ReadFrames(), first.SampleRate, first.Layout, session.Context, session.Cancellation);
+        }
+
+        AudioCodec codec = Codec(name, request, track);
+        return new AudioRecoder(track, decoder, codec, request, Bits(codec, request, track), OpusOptions(name, request), session.Context, measured);
     }
 
     /// <summary>Whether the output is a .opus file, by its extension or by <c>--format opus</c>: Ogg that gets Opus by default.</summary>
@@ -341,7 +448,15 @@ internal static class AudioCommand
             SampleRate = request.Rate,
             Layout = request.Layout,
         };
+        LoudnessReport? measured = null;
+        if (request.Filtering is { Measures: true } plan)
+        {
+            using AudioReader first = AudioReader.Open(Open(), readerOptions, session.Context);
+            measured = plan.Measure(first.ReadFrames(), first.SampleRate, first.Layout, session.Context, session.Cancellation);
+        }
+
         using AudioReader reader = AudioReader.Open(Open(), readerOptions, session.Context);
+        using IAudioFilter? filter = request.Filtering?.Build(reader.SampleRate, reader.Layout, measured, session.Context);
         AudioWriterOptions writerOptions = new()
         {
             Codec = Codec(codecName, request, track),
@@ -357,13 +472,38 @@ internal static class AudioCommand
             using AudioWriter writer = AudioWriter.Create(counted, target.Container.Name, writerOptions, session.Context, leaveOpen: true);
             try
             {
+                void Filtered()
+                {
+                    while (filter!.TryReceive(out AudioFrame? output))
+                    {
+                        using (output)
+                        {
+                            writer.Write(output);
+                        }
+                    }
+                }
+
                 while (reader.TryRead(out AudioFrame? frame))
                 {
                     using (frame)
                     {
                         progress.Packet(track.Number, frame.Timestamp);
-                        writer.Write(frame);
+                        if (filter is null)
+                        {
+                            writer.Write(frame);
+                            continue;
+                        }
+
+                        filter.Send(frame);
                     }
+
+                    Filtered();
+                }
+
+                if (filter is not null)
+                {
+                    filter.Flush();
+                    Filtered();
                 }
 
                 writer.Finish();
@@ -391,7 +531,26 @@ internal static class AudioCommand
         // once, so it goes on through the loop below, as does Opus, which the job would encode at the rate of the original
         // recording that OpusHead names rather than the 48 kHz Opus decodes to, and encoding to Opus, whose bitrate the job does
         // not take.
-        if (request.Rate is null && request.Layout is null && request.SampleFormat is null && !input.IsStdin && codecName != "opus" && !kept.Any(t => t.CodecId == CodecIds.Opus))
+        if (request.Filtering is { } plan)
+        {
+            bool video = kept.Any(t => t.Kind == TrackKind.Video);
+            if (video && plan.RemovesSilence)
+            {
+                throw new UsageException($"{input.Display}: cutting silence would put the sound out of step with the video; write an audio file, or give --no-video.");
+            }
+
+            if (video && plan.ChangesLength)
+            {
+                session.Warn($"{input.Display}: {plan.Describe()} changes the sound's length, so it no longer lines up with the video.");
+            }
+
+            if (plan.Measures && input.IsStdin)
+            {
+                session.Warn($"{input.Display}: standard input is read once, so the loudness is normalized in one pass (dynamic) instead of two.");
+            }
+        }
+
+        if (request.Filtering is null && request.Rate is null && request.Layout is null && request.SampleFormat is null && !input.IsStdin && codecName != "opus" && !kept.Any(t => t.CodecId == CodecIds.Opus))
         {
             HashSet<int> numbers = [.. kept.Select(t => t.Number)];
             foreach (AudioTrackInfo track in kept.OfType<AudioTrackInfo>().Where(t => session.Context.FindAudioCodec(t) is null))
@@ -433,7 +592,14 @@ internal static class AudioCommand
                 }
 
                 AudioCodec codec = Codec(codecName, request, track);
-                AudioRecoder recoder = new(track, decoderCodec, codec, request, Bits(codec, request, track), OpusOptions(codecName, request), session.Context);
+                LoudnessReport? measured = null;
+                if (request.Filtering is { Measures: true } measuring && !input.IsStdin)
+                {
+                    using AudioReader first = AudioReader.Open(MediaIO.OpenStream(session, input), new AudioReaderOptions { TrackNumber = track.Number, SampleFormat = null, SampleRate = request.Rate, Layout = request.Layout }, session.Context);
+                    measured = measuring.Measure(first.ReadFrames(), first.SampleRate, first.Layout, session.Context, session.Cancellation);
+                }
+
+                AudioRecoder recoder = new(track, decoderCodec, codec, request, Bits(codec, request, track), OpusOptions(codecName, request), session.Context, measured);
                 recoders[track.Number] = recoder;
                 kept[i] = recoder.Encoder.Track with { Number = track.Number, Language = track.Language, Name = track.Name, IsDefault = track.IsDefault, Tags = track.Tags };
             }
@@ -488,16 +654,17 @@ internal static class AudioCommand
     /// Decodes one audio track's packets and encodes them again: drops the codec's priming samples (before time zero), resamples
     /// with <see cref="Resampler"/> and mixes with <see cref="ChannelMixer"/>'s default matrix when asked.
     /// </summary>
-    private sealed class AudioRecoder : IDisposable
+    internal sealed class AudioRecoder : IDisposable
     {
         private readonly IAudioDecoder _decoder;
         private readonly MediaContext _context;
         private readonly ChannelLayout _layout;
         private readonly bool _remix;
         private readonly int _rate;
+        private readonly IAudioFilter? _filter;
         private Resampler? _resampler;
 
-        public AudioRecoder(AudioTrackInfo track, AudioCodec decoder, AudioCodec encoder, AudioRequest request, int bits, OpusEncoderOptions? opus, MediaContext context)
+        public AudioRecoder(AudioTrackInfo track, AudioCodec decoder, AudioCodec encoder, AudioRequest request, int bits, OpusEncoderOptions? opus, MediaContext context, LoudnessReport? measured = null)
         {
             Number = track.Number;
             _context = context;
@@ -514,6 +681,8 @@ internal static class AudioCommand
                 _decoder.Dispose();
                 throw;
             }
+
+            _filter = request.Filtering?.Build(_rate, _layout, measured, context);
         }
 
         public int Number { get; }
@@ -542,6 +711,12 @@ internal static class AudioCommand
                 }
             }
 
+            if (_filter is not null)
+            {
+                _filter.Flush();
+                Filtered(write);
+            }
+
             Encoder.Flush();
             Write(write);
         }
@@ -551,6 +726,7 @@ internal static class AudioCommand
             _decoder.Dispose();
             Encoder.Dispose();
             _resampler?.Dispose();
+            _filter?.Dispose();
         }
 
         private void Drain(Action<EncodedPacket> write)
@@ -621,7 +797,27 @@ internal static class AudioCommand
 
         private void Encode(AudioFrame frame, Action<EncodedPacket> write)
         {
+            if (_filter is not null)
+            {
+                _filter.Send(frame);
+                Filtered(write);
+                return;
+            }
+
             Encoder.Send(frame);
+            Write(write);
+        }
+
+        private void Filtered(Action<EncodedPacket> write)
+        {
+            while (_filter!.TryReceive(out AudioFrame? filtered))
+            {
+                using (filtered)
+                {
+                    Encoder.Send(filtered);
+                }
+            }
+
             Write(write);
         }
 

@@ -239,6 +239,7 @@ internal static class Seeds
         WriteSubtitles(directory);
         WriteTrim(directory);
         WriteFfv1(directory);
+        WriteAudioFilters(directory);
         File.WriteAllBytes(Path.Combine(y4m, "420.y4m"), [.. "YUV4MPEG2 W4 H2 F25:1 Ip A1:1 C420jpeg XCOLORRANGE=FULL\n"u8, .. "FRAME\n"u8, .. new byte[12], .. "FRAME\n"u8, .. new byte[12]]);
         File.WriteAllBytes(Path.Combine(y4m, "444p10.y4m"), [.. "YUV4MPEG2 W2 H2 F30000:1001 It A4:3 C444p10\n"u8, .. "FRAME\n"u8, .. new byte[24]]);
 
@@ -263,6 +264,34 @@ internal static class Seeds
             Chapters = [new ChapterInfo(MediaTime.Zero, new MediaTime(1, new Rational(1, 25)), "c")],
             Attachments = [new AttachmentInfo("cover.jpg", "image/jpeg", frame)],
         }));
+    }
+
+    /// <summary>V9.1 audio filter seeds: settings bytes over a second of noise, a tone and silence, 16-bit stereo at 8 kHz.</summary>
+    public static void WriteAudioFilters(string directory)
+    {
+        string filters = Directory.CreateDirectory(Path.Combine(directory, "afilters")).FullName;
+        Random random = new(91);
+        for (int seed = 0; seed < 8; seed++)
+        {
+            byte[] settings = new byte[24];
+            random.NextBytes(settings);
+            settings[0] = 0;
+            settings[1] = 1;
+            byte[] audio = new byte[8000 * 4];
+            for (int i = 0; i < audio.Length / 4; i++)
+            {
+                short value = (seed % 3) switch
+                {
+                    0 => (short)random.Next(-20000, 20000),
+                    1 => (short)(12000 * Math.Sin(2 * Math.PI * 440 * i / 8000.0)),
+                    _ => (short)(i is > 3000 and < 5000 ? 8000 * Math.Sin(i * 0.3) : 0),
+                };
+                System.Buffers.Binary.BinaryPrimitives.WriteInt16LittleEndian(audio.AsSpan(i * 4), value);
+                System.Buffers.Binary.BinaryPrimitives.WriteInt16LittleEndian(audio.AsSpan((i * 4) + 2), value);
+            }
+
+            File.WriteAllBytes(Path.Combine(filters, $"chain{seed}.bin"), [.. settings, .. audio]);
+        }
     }
 
     /// <summary>

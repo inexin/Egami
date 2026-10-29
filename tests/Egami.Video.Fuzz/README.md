@@ -30,6 +30,7 @@ reports hangs. Limits are lowered so a valid but huge file cannot exhaust memory
 | `ffv1` | An FFV1 Matroska or AVI file read through VideoReader with Skip, Conceal and Throw (damaged frames must never throw outside Throw), the first frame converted to RGB; then `Ffv1Codec.Verify` and every packet's headers described | `tests/video/fuzz-seeds/ffv1/*` |
 | `ffv1raw` | FFV1 frames without a container: the picture size, a configuration record and length-prefixed frames, decoded with Skip and Conceal on one thread and on two, which must give the same frames | `tests/video/fuzz-seeds/ffv1raw/*` |
 | `ffv1enc` | The FFV1 encoder: the first bytes pick the size, layout (every chroma format, RGB, alpha), depth, coder, context model, slices, CRCs and keyframe spacing; the rest fills the frames, which must decode back unchanged | `tests/video/fuzz-seeds/ffv1enc/*` |
+| `afilters` | V9.1's audio filters: the first 24 bytes pick the rate, the channels and a chain of up to six filters with parameters in their documented ranges; the rest is 16-bit audio, sent in uneven frames with a Reset. Nothing may throw, and every sample out must be finite | `tests/video/fuzz-seeds/afilters/*` |
 | `mjpeg` | One Motion JPEG packet: decoded at full and 1/4 scale (DHT splicing, AVI1 field weaving, junk trimming), converted to RGB, encoded back | `tests/video/fuzz-seeds/mjpeg/*` |
 
 The seeds are written by `dotnet run --project tests/Egami.Video.Fuzz -- seeds tests/video/fuzz-seeds`.

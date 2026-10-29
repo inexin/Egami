@@ -15,6 +15,22 @@ changes that break code come only in a new major version.
   text matches GDI+ slightly closer. Egami's own sampling is unchanged. Egami.Fonts' hinter now reports each glyph's scan
   control, internally.
 
+## Egami.Drawing, Egami.Fonts and Egami.SystemDrawing, unreleased
+
+Where GDI+ puts text in a layout box (2.7.6 task 28), measured on Windows. Additive; Egami's own text output is unchanged.
+
+- `GdiPlusText.Baseline(font, box, align, typographic)` (Egami.Drawing) gives the baseline `Graphics.DrawString` puts one line
+  on in a box with a line alignment, and `Font.GdiPlusAscent` (Egami.Fonts) the ascent below the line's top it uses: for a
+  grid-fitted font, the cell ascent rounded or the VDMX maximum at the size, in whole pixels. All 9,720 baselines probed
+  (10 fonts, 11 to 24 px, box heights, fractional positions, both formats, three alignments) equal GDI+'s, and the email
+  button of the report matches GDI+ with no vertical shift (mean difference 0.91 levels on black, 0.50 on #0078d4).
+- Egami.SystemDrawing's `DrawString` follows the same rule: one line is a cell tall plus 1/8 em with the default format (more
+  lines are a line spacing each), and ClearTypeGridFit puts the first baseline that whole-pixel ascent below the rounded line
+  top. Of 3,900 single-line ClearType placements probed, 3,899 now equal GDI+'s (1,362 before); AntiAlias placements improve
+  from 1,634 to 2,751. With `StringFormatFlags.LineLimit` (as in `GenericTypographic`) text of one line is drawn in a box
+  shorter than a line, as GDI+ does. `FontFamily.GetCellAscent` and `GetCellDescent` use the typographic metrics of fonts that
+  set USE_TYPO_METRICS, as GDI+ does.
+
 ## Egami.Fonts, unreleased
 
 - A face that `FontFallback` picks now takes all of the font's rendering settings: `EmbeddedBitmaps`, `HintingTarget`,
@@ -25,6 +41,15 @@ changes that break code come only in a new major version.
 
 ## Egami.Video.Cli, unreleased
 
+- `egami-video remux --fragment` and `encode --fragment` write fragmented MP4 (`--fragment=4s`, `--fragment=keyframe`), and
+  `segment --hls --dash` writes CMAF segments with HLS and DASH playlists into a folder. ffmpeg mode takes `-movflags
+  faststart`, `frag_keyframe`, `empty_moov` and `default_base_moof`, and `-frag_duration` with frag_keyframe.
+- V9.1 stage D (Build Plan tasks 16 to 19): `egami-video audio` and `encode` (for its `--audio`) take `--gain`, `--fade-in`,
+  `--fade-out`, `--tempo`, `--normalize` (ebu, atsc, streaming, podcast or LUFS, two passes), `--trim-silence` (refused with
+  video) and `--af`, which parses ffmpeg's `-af` syntax for volume, afade, atempo, adelay, apad, atrim, asetpts, highpass,
+  lowpass, bandpass, bandreject, allpass, equalizer, bass, treble, acompressor, agate, alimiter, loudnorm and silenceremove;
+  `run` takes them all but the silence cut for the audio it copies, and ffmpeg mode turns an `-af` chain of them into
+  `audio --af`. A new `afilters` fuzz target runs random chains.
 - FFV1 in egami-video: `encode` and `run` take `--codec ffv1` with `--slices`, `--no-slice-crc`, `--coder` and `--context`, and
   `--keyframe-interval` for every codec; `egami-video verify` (also an MCP tool) checks FFV1 files' slice and configuration CRCs
   without decoding; `info` names FFV1 tracks; ffmpeg mode takes `-c:v ffv1` with `-level 3`, `-coder`, `-context`, `-slices`,
