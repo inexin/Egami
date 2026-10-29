@@ -352,6 +352,8 @@ The package is measured against System.Drawing on Windows with the same probe pr
   shapes match on about 99.8 percent of their pixels.
 - `HighQualityBilinear` and `HighQualityBicubic` sample as plain bilinear and bicubic, without GDI+'s wider filters, and an image
   drawn much smaller is not prefiltered.
+- On 32-bit ARGB bitmaps, translucent colors and antialiased edges blend with Egami's rounding, within a level of GDI+'s
+  (`SourceCopy` keeps GDI+'s rounding); premultiplied ARGB and the other formats round as GDI+ does.
 - Drawing onto 16-bit bitmaps does not dither, and `SourceCopy` with antialiasing blends its edges with what is below instead of
   making them transparent.
 - Compound pens draw their strips on both sides of the line, and `PathGradientBrush.FocusScales` is kept but not drawn.
