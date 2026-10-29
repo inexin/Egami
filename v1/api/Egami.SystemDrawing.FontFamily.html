@@ -6,7 +6,7 @@
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <meta name="title" content="Class FontFamily | Egami ">
       
-      <meta name="description" content="A family of faces, such as Arial with its bold and italic faces, found among the installed fonts or a . Where a Windows core font is missing (on Linux and macOS), a metric-compatible open font stands in under the requested name: Liberation Sans or Arimo for Arial, Liberation Serif or Tinos for Times New Roman, Liberation Mono or Cousine for Courier New, Carlito for Calibri.">
+      <meta name="description" content="A family of faces, such as Arial with its bold and italic faces, found among the installed fonts or a . A missing family is an error, as in System.Drawing, unless  gives a stand-in: set it to Egami.Fonts.Substitutes&#39; SubstituteFonts.Find for metric-compatible fonts (Liberation, Carlito, Caladea) under the requested name.">
       <link rel="icon" href="../images/favicon.ico">
       <link rel="stylesheet" href="../public/docfx.min.css">
       <link rel="stylesheet" href="../public/main.css">
@@ -98,9 +98,9 @@ Class FontFamily  <a class="header-action link-secondary" title="View source" hr
   </div>
 
   <div class="markdown summary"><p>A family of faces, such as Arial with its bold and italic faces, found among the installed fonts or a
-<a class="xref" href="Egami.SystemDrawing.Text.PrivateFontCollection.html">PrivateFontCollection</a>. Where a Windows core font is missing (on Linux and macOS), a metric-compatible open font
-stands in under the requested name: Liberation Sans or Arimo for Arial, Liberation Serif or Tinos for Times New Roman,
-Liberation Mono or Cousine for Courier New, Carlito for Calibri.</p>
+<a class="xref" href="Egami.SystemDrawing.Text.PrivateFontCollection.html">PrivateFontCollection</a>. A missing family is an error, as in System.Drawing, unless
+<a class="xref" href="Egami.SystemDrawing.SystemDrawingOptions.html#Egami_SystemDrawing_SystemDrawingOptions_FontSubstitutes">FontSubstitutes</a> gives a stand-in: set it to Egami.Fonts.Substitutes'
+<code>SubstituteFonts.Find</code> for metric-compatible fonts (Liberation, Carlito, Caladea) under the requested name.</p>
 </div>
   <div class="markdown conceptual"></div>
 
@@ -159,9 +159,15 @@ using Font title = new(family, 12, FontStyle.Bold);    // 12 points: 16 pixels p
 float lineSpacing = title.GetHeight();                   // ascender + descender + line gap, in pixels
 int ascent = family.GetCellAscent(FontStyle.Regular);    // design units, of GetEmHeight per em
 
-// A family that is not installed falls back to Microsoft Sans Serif (or its stand-in), keeping the name asked for.
+// A family that is not installed falls back to the generic sans-serif family, as in System.Drawing: Name is the family
+// used, OriginalFontName the one asked for.
 using Font missing = new("No Such Font", 10);
 string asked = missing.OriginalFontName;                  // "No Such Font"
+
+// With Egami.Fonts.Substitutes referenced, metric-compatible fonts stand in under the requested name, keeping line breaks.
+SystemDrawingOptions.FontSubstitutes = Egami.Fonts.Substitutes.SubstituteFonts.Find;
+using Font helvetica = new("Helvetica", 10);              // Liberation Sans where Helvetica is not installed
+string standIn = helvetica.Name;                          // "Helvetica"
 
 title.ToLogFont(out LOGFONT logFont);                    // lfHeight -16, lfWeight 700
 Egami.Fonts.Font egami = title.ToEgamiFont();            // for Egami.Drawing's canvases</code></pre>
@@ -245,7 +251,7 @@ Egami.Fonts.Font egami = title.ToEgamiFont();            // for Egami.Drawing's 
   <h4 class="section">Exceptions</h4>
   <dl class="parameters">
     <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
-    <dd><p>No such family is installed and no substitute is.</p>
+    <dd><p>No such family is installed and no registered substitute has one.</p>
 </dd>
   </dl>
 
@@ -287,7 +293,7 @@ Egami.Fonts.Font egami = title.ToEgamiFont();            // for Egami.Drawing's 
   <h4 class="section">Exceptions</h4>
   <dl class="parameters">
     <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
-    <dd><p>The collection has no such family and no substitute for it.</p>
+    <dd><p>The collection has no such family and no registered substitute has one.</p>
 </dd>
   </dl>
 
@@ -432,7 +438,7 @@ Egami.Fonts.Font egami = title.ToEgamiFont();            // for Egami.Drawing's 
   <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/FontFamily.cs/#L71"><i class="bi bi-code-slash"></i></a>
   </h3>
 
-  <div class="markdown level1 summary"><p>Gets the family name: the installed family's own spelling, or the requested name when a substitute stands in.</p>
+  <div class="markdown level1 summary"><p>Gets the family name: the installed family's own spelling, or the requested name when a registered substitute stands in.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
 

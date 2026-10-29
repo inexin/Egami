@@ -138,8 +138,8 @@ them, so LockBits code and pixel values carry over.</p>
     </dl>
     <dl class="jumplist">
       <dt><a class="xref" href="Egami.SystemDrawing.Font.html">Font</a></dt>
-      <dd><p>A family, size, style and unit for drawing and measuring text. A family that is not installed falls back to Microsoft Sans
-Serif (or its stand-in), with <a class="xref" href="Egami.SystemDrawing.Font.html#Egami_SystemDrawing_Font_OriginalFontName">OriginalFontName</a> keeping the name asked for; sizes convert at the target's
+      <dd><p>A family, size, style and unit for drawing and measuring text. A family that is not installed (and has no registered stand-in)
+falls back to the generic sans-serif family, with <a class="xref" href="Egami.SystemDrawing.Font.html#Egami_SystemDrawing_Font_Name">Name</a> the family used and <a class="xref" href="Egami.SystemDrawing.Font.html#Egami_SystemDrawing_Font_OriginalFontName">OriginalFontName</a> the name asked for; sizes convert at the target's
 resolution, 96 dpi for <a class="xref" href="Egami.SystemDrawing.Font.html#Egami_SystemDrawing_Font_GetHeight">GetHeight()</a> and <a class="xref" href="Egami.SystemDrawing.Font.html#Egami_SystemDrawing_Font_SizeInPoints">SizeInPoints</a>.</p>
 </dd>
     </dl>
@@ -162,9 +162,9 @@ constructor calls for code generation.</p>
     <dl class="jumplist">
       <dt><a class="xref" href="Egami.SystemDrawing.FontFamily.html">FontFamily</a></dt>
       <dd><p>A family of faces, such as Arial with its bold and italic faces, found among the installed fonts or a
-<a class="xref" href="Egami.SystemDrawing.Text.PrivateFontCollection.html">PrivateFontCollection</a>. Where a Windows core font is missing (on Linux and macOS), a metric-compatible open font
-stands in under the requested name: Liberation Sans or Arimo for Arial, Liberation Serif or Tinos for Times New Roman,
-Liberation Mono or Cousine for Courier New, Carlito for Calibri.</p>
+<a class="xref" href="Egami.SystemDrawing.Text.PrivateFontCollection.html">PrivateFontCollection</a>. A missing family is an error, as in System.Drawing, unless
+<a class="xref" href="Egami.SystemDrawing.SystemDrawingOptions.html#Egami_SystemDrawing_SystemDrawingOptions_FontSubstitutes">FontSubstitutes</a> gives a stand-in: set it to Egami.Fonts.Substitutes'
+<code>SubstituteFonts.Find</code> for metric-compatible fonts (Liberation, Carlito, Caladea) under the requested name.</p>
 </dd>
     </dl>
     <dl class="jumplist">
@@ -239,6 +239,11 @@ hotkey prefixes and the ranges MeasureCharacterRanges measures.</p>
 </dd>
     </dl>
     <dl class="jumplist">
+      <dt><a class="xref" href="Egami.SystemDrawing.SystemDrawingOptions.html">SystemDrawingOptions</a></dt>
+      <dd><p>Egami's own settings for the drop-in, beyond System.Drawing's API.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
       <dt><a class="xref" href="Egami.SystemDrawing.SystemFonts.html">SystemFonts</a></dt>
       <dd><p>The fonts Windows uses for its own interface, with Windows 10 and 11's defaults: Segoe UI 9 for captions, menus, message boxes,
 icon titles and the status bar, Microsoft Sans Serif 8.25 for <a class="xref" href="Egami.SystemDrawing.SystemFonts.html#Egami_SystemDrawing_SystemFonts_DefaultFont">DefaultFont</a> and Tahoma 8 for dialogs.</p>
@@ -283,6 +288,11 @@ Interfaces
     <h3 id="enums">
 Enums
 </h3>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.SystemDrawing.ArgbDrawing.html">ArgbDrawing</a></dt>
+      <dd><p>How a Graphics draws on a 32-bit ARGB bitmap, the format <code>new Bitmap(width, height)</code> makes.</p>
+</dd>
+    </dl>
     <dl class="jumplist">
       <dt><a class="xref" href="Egami.SystemDrawing.ContentAlignment.html">ContentAlignment</a></dt>
       <dd><p>Where content sits in a rectangle.</p>

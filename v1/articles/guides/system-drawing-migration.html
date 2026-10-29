@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Migrating from System.Drawing to Egami | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Migrating from System.Drawing to Egami | Egami ">
+      
+      
+      <link rel="icon" href="../../images/favicon.ico">
+      <link rel="stylesheet" href="../../public/docfx.min.css">
+      <link rel="stylesheet" href="../../public/main.css">
+      <meta name="docfx:navrel" content="../../toc.html">
+      <meta name="docfx:tocrel" content="../toc.html">
+      
+      <meta name="docfx:rel" content="../../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/blob/main/docs/articles/guides/system-drawing-migration.md/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../../index.html">
+            <img id="logo" class="svg" src="../../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="migrating-from-systemdrawing-to-egami">Migrating from System.Drawing to Egami</h1>
+
+<p>Egami.SystemDrawing runs System.Drawing code unchanged; this guide moves that code to Egami's own API one piece at a time, with
+the four escape hatches that join the two: <code>Bitmap.AsRaster</code>, <code>Bitmap.FromRaster</code>, <code>Graphics.Canvas</code> and <code>Font.ToEgamiFont</code>. At
+every step the program builds, runs and gives the same pictures, so the move can stop anywhere.</p>
+<h2 id="step-0-the-drop-in">Step 0: the drop-in</h2>
+<p>Replace the System.Drawing.Common package reference with Egami.SystemDrawing, as the <a href="system-drawing.html#moving-code-over">drop-in guide</a>
+describes: <code>System.Drawing</code> and <code>Egami.SystemDrawing</code> come in as implicit usings, and files that name <code>System.Drawing.Imaging</code>,
+<code>System.Drawing.Drawing2D</code> or <code>System.Drawing.Text</code> change those lines to <code>Egami.SystemDrawing.Imaging</code>, <code>.Drawing2D</code> and
+<code>.Text</code>. Members that need Windows handles compile with a warning, EGSD0001 to EGSD0004, and throw when called: each warning
+marks code that has to change anyway (an HBITMAP becomes <code>LockBits</code> or <code>AsRaster</code>, <code>CopyFromScreen</code> has no replacement, an
+<code>Icon</code> comes from a file). The <a href="system-drawing.html#what-throws-on-every-os">drop-in guide's list</a> names every member.</p>
+<h2 id="the-strategy">The strategy</h2>
+<p>Keep <code>Bitmap</code>, <code>Image</code> and <code>Graphics</code> at the edges of the program, where they meet other code and public APIs, and move the hot
+spots first: pixel loops, resizing, filters, batch encoding. An escape hatch turns a bitmap into an Egami raster for one part of a
+routine and back for the rest, so each change is small and tested on its own. When no <code>Bitmap</code> crosses a boundary any more, drop
+the package.</p>
+<h2 id="pixels-bitmapasraster">Pixels: Bitmap.AsRaster</h2>
+<p><code>AsRaster</code> gives a bitmap's pixels as a <code>Raster&lt;TPixel&gt;</code> without copying them for 32-bit ARGB (<code>Raster&lt;Bgra8&gt;</code>), premultiplied
+ARGB (<code>Raster&lt;PremulBgra8&gt;</code>), 24-bit RGB (<code>Raster&lt;Bgr8&gt;</code>) and the 16-bit formats; other formats give an 8-bit RGBA copy. Egami's
+operations (<code>Apply</code> changes a raster, <code>Derive</code> makes a new one) and its row spans then work on the bitmap itself, in place of
+<code>LockBits</code> loops, <code>ImageAttributes</code> color matrices and hand-written filters.</p>
+<p>The view stays valid as long as you hold it, but RotateFlip, MakeTransparent, a format change (<code>ConvertFormat</code>) and
+SelectActiveFrame give the bitmap new pixels, which an old view no longer shows: fetch the view again after them.</p>
+<pre><code class="lang-csharp">// A 32-bit or 24-bit bitmap's pixels as an Egami raster, no copy: Egami's operations change the bitmap itself.
+using (Bitmap argb = bitmap.Clone(new Rectangle(0, 0, bitmap.Width, bitmap.Height), PixelFormat.Format32bppArgb))
+{
+    var view = (Raster&lt;Bgra8&gt;)argb.AsRaster();
+    view.Apply(ops =&gt; ops.Grayscale().Sharpen(0.5f));
+    Color gray = argb.GetPixel(10, 10);  // R, G and B are equal now
+
+    // RotateFlip, a format change or SelectActiveFrame give the bitmap new pixels: fetch the view again after them.
+    argb.RotateFlip(RotateFlipType.Rotate90FlipNone);
+    view = (Raster&lt;Bgra8&gt;)argb.AsRaster();
+    Assert.Equal(gray.R, gray.B);
+    Assert.Equal(argb.Width, view.Width);
+}
+</code></pre><h2 id="results-back-bitmapfromraster">Results back: Bitmap.FromRaster</h2>
+<p><code>Bitmap.FromRaster</code> copies any Egami raster into a bitmap of the matching format (<code>Bgra8</code> into 32-bit ARGB, <code>Bgr8</code> into 24-bit
+RGB, other pixel types through 8-bit RGBA), for code that still takes a <code>Bitmap</code> or <code>Image</code>.</p>
+<pre><code class="lang-csharp">// An Egami result handed back to code that still takes a Bitmap: FromRaster copies it into the matching pixel format.
+using Raster&lt;Rgba8&gt; badge = Raster.Create(64, 64, new Rgba8(30, 110, 200, 255));
+badge.Apply(ops =&gt; ops.Vignette());
+using Bitmap forOldCode = Bitmap.FromRaster(badge);  // 32-bit ARGB
+forOldCode.Save(System.IO.Path.Combine(System.IO.Path.GetTempPath(), $&quot;badge-{Guid.NewGuid():N}.png&quot;), ImageFormat.Png);
+</code></pre><h2 id="drawing-graphicscanvas">Drawing: Graphics.Canvas</h2>
+<p><code>Graphics.Canvas</code> is an Egami.Drawing canvas over a 32-bit bitmap, set to the graphics' world transform and clip, so Egami
+paths, paints, gradients, images and text can be drawn between <code>Graphics</code> calls. A routine moves call by call; once it only uses
+the canvas, draw on <code>raster.CreateCanvas()</code> instead.</p>
+<pre><code class="lang-csharp">// Egami.Drawing calls in the middle of an existing Graphics: the canvas draws in the graphics' world coordinates and clip.
+using Bitmap bitmap = new(120, 80);
+using (Graphics g = Graphics.FromImage(bitmap))
+{
+    g.Clear(Color.White);
+    g.TranslateTransform(10, 10);
+    g.DrawRectangle(Pens.Black, 0, 0, 60, 40);                       // System.Drawing, as before
+    Egami.Drawing.Canvas canvas = g.Canvas;                          // Egami, at the same place
+    canvas.FillPath(Egami.Drawing.Path.Star(new Vector2(30, 20), 18, 8, 5), new SolidPaint(new Rgba8(240, 160, 0, 255)) { Antialias = true });
+}
+</code></pre><h2 id="text-fonttoegamifont">Text: Font.ToEgamiFont</h2>
+<p><code>Font.ToEgamiFont</code> gives the same family, style and size as an Egami.Fonts font, sized in pixels at 96 dpi by default, with
+synthetic bold or italic where the family lacks the face. Egami shapes text (kerning, ligatures, Arabic, Indic and the other
+complex scripts), lays out paragraphs with <code>TextLayout</code> and draws with <code>Canvas.DrawText</code>; <code>Font.MeasureText</code> replaces
+<code>MeasureString</code>.</p>
+<pre><code class="lang-csharp">// The same font in Egami.Fonts: shaped text (kerning, ligatures, complex scripts), measured and drawn by Egami.Drawing.
+EgamiFonts.Font font = caption.ToEgamiFont();  // 16 pixels per em at 96 dpi, synthetic bold or italic as needed
+using Raster&lt;Rgba8&gt; label = Raster.Create(200, 30, new Rgba8(255, 255, 255, 255));
+using (RasterCanvas&lt;Rgba8&gt; canvas = label.CreateCanvas())
+{
+    canvas.DrawText(&quot;Shaped by Egami&quot;, new Vector2(4, 20), font, new Rgba8(0, 0, 0, 255));
+}
+
+float width = font.MeasureText(&quot;Shaped by Egami&quot;).Advance;
+</code></pre><h2 id="files-rasterload-and-save">Files: Raster.Load and Save</h2>
+<p><code>Image.FromFile</code> and <code>Image.FromStream</code> become <code>Raster.Load</code>, which reads every format Egami knows; <code>Raster.Probe</code> reads the
+size, format and frames from the header alone. <code>Save</code> takes the format's own writer options (<code>JpegWriterOptions</code>,
+<code>PngWriterOptions</code>, <code>WebpWriterOptions</code> and the others) instead of <code>ImageCodecInfo</code> and <code>EncoderParameters</code>, and metadata stays
+in the raster's <code>Metadata</code> instead of <code>PropertyItem</code>s. The <a href="../formats/index.html">formats overview</a> and each format's page cover the options.</p>
+<pre><code class="lang-csharp">// Image.FromFile and Save become Raster.Load and Save; Probe reads the header alone, and each format has its own options.
+Egami.Formats.RasterInfo info = Raster.Probe(input);             // size, format, frames, without decoding pixels
+using Raster photo = Raster.Load(input);
+photo.Save(output, new JpegWriterOptions { Quality = 85 });     // instead of EncoderParameters
+</code></pre><h2 id="what-maps-to-what">What maps to what</h2>
+<table>
+<thead>
+<tr>
+<th>System.Drawing</th>
+<th>Egami</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Bitmap</code>, <code>Image</code></td>
+<td><code>Raster&lt;TPixel&gt;</code>, such as <code>Raster&lt;Rgba8&gt;</code>; <code>Raster</code> when the pixel type does not matter</td>
+</tr>
+<tr>
+<td><code>PixelFormat</code></td>
+<td>the pixel type: <code>Rgba8</code>, <code>Bgra8</code>, <code>PremulBgra8</code>, <code>Rgb8</code>, <code>Gray8</code>, <code>Rgba16</code> and the others</td>
+</tr>
+<tr>
+<td><code>GetPixel</code>, <code>SetPixel</code>, <code>LockBits</code></td>
+<td><code>Raster&lt;TPixel&gt;.GetPixel</code>, <code>SetPixel</code> and <code>Row(y)</code> spans</td>
+</tr>
+<tr>
+<td><code>Image.FromFile</code>, <code>FromStream</code>, <code>Save</code>, <code>EncoderParameters</code></td>
+<td><code>Raster.Load</code>, <code>Raster.Probe</code>, <code>Save</code> with the format's writer options</td>
+</tr>
+<tr>
+<td><code>PropertyItem</code>, <code>GetPropertyItem</code></td>
+<td><code>Raster.Metadata</code> (EXIF, XMP, IPTC, ICC)</td>
+</tr>
+<tr>
+<td><code>RotateFlip</code>, <code>GetThumbnailImage</code>, <code>Clone(rect)</code></td>
+<td>operations: <code>Rotate</code>, <code>FlipHorizontal</code>, <code>FlipVertical</code>, <code>Fit</code>, <code>Resize</code>, <code>Crop</code></td>
+</tr>
+<tr>
+<td><code>ImageAttributes</code>, <code>ColorMatrix</code>, <code>SetGamma</code></td>
+<td>operations: <code>ColorMatrix</code>, <code>Gamma</code>, <code>Grayscale</code>, <code>Brightness</code> and the rest</td>
+</tr>
+<tr>
+<td><code>Graphics</code>, <code>Graphics.FromImage</code></td>
+<td><code>Canvas</code>, from <code>raster.CreateCanvas()</code></td>
+</tr>
+<tr>
+<td><code>Pen</code>, <code>DashStyle</code>, <code>LineCap</code>, <code>LineJoin</code></td>
+<td><code>Stroke</code> (width, dashes, caps, joins) with a <code>Paint</code></td>
+</tr>
+<tr>
+<td><code>SolidBrush</code>, <code>LinearGradientBrush</code>, <code>PathGradientBrush</code>, <code>TextureBrush</code></td>
+<td><code>SolidPaint</code>, <code>LinearGradient</code>, <code>RadialGradient</code>, <code>ImagePaint</code></td>
+</tr>
+<tr>
+<td><code>GraphicsPath</code>, <code>Region</code></td>
+<td><code>Path</code>, <code>PathBuilder</code>, <code>Path.Union</code> and the other path operations</td>
+</tr>
+<tr>
+<td><code>Matrix</code>, <code>TranslateTransform</code>, <code>RotateTransform</code></td>
+<td><code>System.Numerics.Matrix3x2</code>, <code>Canvas.Concat</code>, <code>Translate</code>, <code>Rotate</code>, <code>Scale</code></td>
+</tr>
+<tr>
+<td><code>SetClip</code>, <code>IntersectClip</code></td>
+<td><code>Canvas.ClipRect</code>, <code>ClipPath</code></td>
+</tr>
+<tr>
+<td><code>Font</code>, <code>FontFamily</code>, <code>InstalledFontCollection</code></td>
+<td><code>Egami.Fonts.Font</code>, <code>Typeface</code>, <code>FontCollection.System</code></td>
+</tr>
+<tr>
+<td><code>DrawString</code>, <code>MeasureString</code>, <code>StringFormat</code></td>
+<td><code>Canvas.DrawText</code>, <code>Font.MeasureText</code>, <code>TextLayout</code> with a <code>ParagraphStyle</code></td>
+</tr>
+<tr>
+<td><code>Metafile</code></td>
+<td><code>Egami.Metafiles.Metafile</code></td>
+</tr>
+<tr>
+<td><code>Icon</code></td>
+<td>ICO and CUR files through <code>Raster.Load</code> and <code>Save</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="the-last-step">The last step</h2>
+<p>When no <code>Bitmap</code>, <code>Image</code>, <code>Graphics</code> or <code>Font</code> crosses a boundary of your code any more, remove the Egami.SystemDrawing
+package reference and its implicit usings. What is left uses Egami, Egami.Drawing and Egami.Fonts directly; the compiler lists
+anything that still names a drop-in type.</p>
+<h2 id="recipes">Recipes</h2>
+<h3 id="move-a-thumbnail-with-a-watermark-in-three-steps">Move a thumbnail with a watermark in three steps</h3>
+<p>A routine that scales a photo to 200 pixels wide, writes a caption on it and saves a JPEG, as System.Drawing code writes it. It
+runs unchanged on the drop-in:</p>
+<pre><code class="lang-csharp">// Step 1: the System.Drawing code as it was, compiled against Egami.SystemDrawing.
+private static void Step1(string input, string output)
+{
+    using Image source = Image.FromFile(input);
+    int height = source.Height * 200 / source.Width;
+    using Bitmap thumb = new(200, height);
+    using (Graphics g = Graphics.FromImage(thumb))
+    {
+        g.InterpolationMode = Egami.SystemDrawing.Drawing2D.InterpolationMode.HighQualityBicubic;
+        g.DrawImage(source, new Rectangle(0, 0, 200, height));
+        using Egami.SystemDrawing.Font font = new(&quot;Arial&quot;, 10);
+        g.DrawString(&quot;© Egami&quot;, font, Brushes.White, 4, height - 20);
+    }
+
+    thumb.Save(output, ImageFormat.Jpeg);
+}
+</code></pre>
+<p>The scaling moves to Egami first: the photo loads as a raster, <code>Resize</code> makes the thumbnail, and <code>Bitmap.FromRaster</code> hands it
+to the drawing and saving code, which does not change:</p>
+<pre><code class="lang-csharp">// Step 2: the hot spot (scaling) moves to Egami; the bitmap stays at the edges, so the watermark code is untouched.
+private static void Step2(string input, string output)
+{
+    using Raster loaded = Raster.Load(input);
+    using Raster&lt;Rgba8&gt; small = loaded.As&lt;Rgba8&gt;().Derive(ops =&gt; ops.Resize(200, 0));
+    using Bitmap thumb = Bitmap.FromRaster(small);
+    using (Graphics g = Graphics.FromImage(thumb))
+    {
+        using Egami.SystemDrawing.Font font = new(&quot;Arial&quot;, 10);
+        g.DrawString(&quot;© Egami&quot;, font, Brushes.White, 4, thumb.Height - 20);
+    }
+
+    thumb.Save(output, ImageFormat.Jpeg);
+}
+</code></pre>
+<p>Then the caption and the save move too, and the routine uses Egami alone:</p>
+<pre><code class="lang-csharp">// Step 3: all Egami: load, resize, draw the watermark on the raster's canvas, save with the JPEG options.
+private static void Step3(string input, string output)
+{
+    using Raster loaded = Raster.Load(input);
+    using Raster&lt;Rgba8&gt; thumb = loaded.As&lt;Rgba8&gt;().Derive(ops =&gt; ops.Resize(200, 0));
+    EgamiFonts.Font font = new(EgamiFonts.Typeface.FromFile(FontFile), 13);
+    using (RasterCanvas&lt;Rgba8&gt; canvas = thumb.CreateCanvas())
+    {
+        canvas.DrawText(&quot;© Egami&quot;, new Vector2(6, thumb.Height - 8), font, new Rgba8(255, 255, 255, 255));
+    }
+
+    thumb.Save(output, new JpegWriterOptions { Quality = 85 });
+}
+</code></pre>
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/docs/articles/guides/system-drawing-migration.md/#L1" class="edit-link">Edit this page</a>
+        </div>
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

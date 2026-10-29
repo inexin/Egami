@@ -6,7 +6,7 @@
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <meta name="title" content="Class Font | Egami ">
       
-      <meta name="description" content="A family, size, style and unit for drawing and measuring text. A family that is not installed falls back to Microsoft Sans Serif (or its stand-in), with  keeping the name asked for; sizes convert at the target&#39;s resolution, 96 dpi for  and .">
+      <meta name="description" content="A family, size, style and unit for drawing and measuring text. A family that is not installed (and has no registered stand-in) falls back to the generic sans-serif family, with  the family used and  the name asked for; sizes convert at the target&#39;s resolution, 96 dpi for  and .">
       <link rel="icon" href="../images/favicon.ico">
       <link rel="stylesheet" href="../public/docfx.min.css">
       <link rel="stylesheet" href="../public/main.css">
@@ -97,8 +97,8 @@ Class Font  <a class="header-action link-secondary" title="View source" href="ht
   <dl><dt>Assembly</dt><dd>Egami.SystemDrawing.dll</dd></dl>
   </div>
 
-  <div class="markdown summary"><p>A family, size, style and unit for drawing and measuring text. A family that is not installed falls back to Microsoft Sans
-Serif (or its stand-in), with <a class="xref" href="Egami.SystemDrawing.Font.html#Egami_SystemDrawing_Font_OriginalFontName">OriginalFontName</a> keeping the name asked for; sizes convert at the target's
+  <div class="markdown summary"><p>A family, size, style and unit for drawing and measuring text. A family that is not installed (and has no registered stand-in)
+falls back to the generic sans-serif family, with <a class="xref" href="Egami.SystemDrawing.Font.html#Egami_SystemDrawing_Font_Name">Name</a> the family used and <a class="xref" href="Egami.SystemDrawing.Font.html#Egami_SystemDrawing_Font_OriginalFontName">OriginalFontName</a> the name asked for; sizes convert at the target's
 resolution, 96 dpi for <a class="xref" href="Egami.SystemDrawing.Font.html#Egami_SystemDrawing_Font_GetHeight">GetHeight()</a> and <a class="xref" href="Egami.SystemDrawing.Font.html#Egami_SystemDrawing_Font_SizeInPoints">SizeInPoints</a>.</p>
 </div>
   <div class="markdown conceptual"></div>
@@ -161,9 +161,15 @@ using Font title = new(family, 12, FontStyle.Bold);    // 12 points: 16 pixels p
 float lineSpacing = title.GetHeight();                   // ascender + descender + line gap, in pixels
 int ascent = family.GetCellAscent(FontStyle.Regular);    // design units, of GetEmHeight per em
 
-// A family that is not installed falls back to Microsoft Sans Serif (or its stand-in), keeping the name asked for.
+// A family that is not installed falls back to the generic sans-serif family, as in System.Drawing: Name is the family
+// used, OriginalFontName the one asked for.
 using Font missing = new("No Such Font", 10);
 string asked = missing.OriginalFontName;                  // "No Such Font"
+
+// With Egami.Fonts.Substitutes referenced, metric-compatible fonts stand in under the requested name, keeping line breaks.
+SystemDrawingOptions.FontSubstitutes = Egami.Fonts.Substitutes.SubstituteFonts.Find;
+using Font helvetica = new("Helvetica", 10);              // Liberation Sans where Helvetica is not installed
+string standIn = helvetica.Name;                          // "Helvetica"
 
 title.ToLogFont(out LOGFONT logFont);                    // lfHeight -16, lfWeight 700
 Egami.Fonts.Font egami = title.ToEgamiFont();            // for Egami.Drawing's canvases</code></pre>

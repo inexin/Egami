@@ -276,6 +276,13 @@ using (Graphics g = Graphics.FromImage(bitmap))
 }
 
 Color corner = bitmap.GetPixel(0, 0);  // white
+
+// Egami's own setting: 32-bit ARGB bitmaps draw in place by default; Exact rounds blends exactly as GDI+ does, more slowly.
+using (Graphics exact = Graphics.FromImage(bitmap))
+{
+    exact.ArgbDrawing = ArgbDrawing.Exact;  // or SystemDrawingOptions.ArgbDrawing for every Graphics made afterwards
+    exact.FillRectangle(Brushes.Gold, 60, 40, 10, 10);
+}
 </code></pre><h3 id="transforms-and-states">Transforms and states</h3>
 <p><code>Matrix</code> is a 3 by 2 affine transform with System.Drawing's members; <code>MatrixOrder.Prepend</code>, the default, applies a new
 transform before the existing one. The world transform takes the same calls on <code>Graphics</code>, and <code>TransformPoints</code> maps points
@@ -435,17 +442,16 @@ g.DrawImage(source, new Rectangle(20, 0, 40, 40), 0, 0, 16, 16, GraphicsUnit.Pix
 </code></pre><h3 id="fonts">Fonts</h3>
 <p><code>FontFamily</code> finds a family among the installed fonts, scanned without native calls (on Linux the fontconfig folders and the
 usual share/fonts folders), or in a <code>PrivateFontCollection</code> filled from files or memory; <code>InstalledFontCollection</code> and
-<code>FontFamily.Families</code> list them. Where a Windows core font is missing, a metric-compatible open font stands in under the
-requested name: Liberation Sans or Arimo for Arial, Liberation Serif or Tinos for Times New Roman, Liberation Mono or Cousine for
-Courier New, Carlito for Calibri and Caladea for Cambria. <code>GetEmHeight</code>, <code>GetCellAscent</code>, <code>GetCellDescent</code> and
-<code>GetLineSpacing</code> are GDI+'s: the units per em, the OS/2 Windows ascent and descent, and the hhea ascender, descender and line
-gap. A <code>Font</code> converts its size at 96 dpi for <code>SizeInPoints</code>, <code>GetHeight()</code> and <code>Height</code> (the line spacing rounded up), at a
-resolution for <code>GetHeight(dpi)</code> and in the page units for <code>GetHeight(Graphics)</code>; sizes of zero and the <code>Display</code> unit throw
-<code>ArgumentException</code>. A family that cannot be found falls back to Microsoft Sans Serif, with <code>OriginalFontName</code> keeping the name.
-Missing bold and italic faces are synthesized. <code>ToLogFont</code> and <code>FromLogFont</code> read and write the <code>Interop.LOGFONT</code> struct, with no
-GDI handle; <code>SystemFonts</code> gives Windows 10 and 11's interface fonts, <code>GenericFontFamilies</code> names the serif, sans-serif and
-monospace families, and <code>FontConverter</code> converts fonts to and from strings such as &quot;Arial, 10pt, style=Bold&quot;, with
-<code>FontConverter.FontNameConverter</code> and <code>FontConverter.FontUnitConverter</code> for the name and unit properties.</p>
+<code>FontFamily.Families</code> list them. <code>GetEmHeight</code>, <code>GetCellAscent</code>, <code>GetCellDescent</code> and <code>GetLineSpacing</code> are GDI+'s: the units per
+em, the OS/2 Windows ascent and descent, and the hhea ascender, descender and line gap. A <code>Font</code> converts its size at 96 dpi for
+<code>SizeInPoints</code>, <code>GetHeight()</code> and <code>Height</code> (the line spacing rounded up), at a resolution for <code>GetHeight(dpi)</code> and in the page
+units for <code>GetHeight(Graphics)</code>; sizes of zero and the <code>Display</code> unit throw <code>ArgumentException</code>. As in System.Drawing, a family
+that is not installed makes <code>new FontFamily(name)</code> throw and makes a <code>Font</code> fall back to the generic sans-serif family, with
+<code>Name</code> the family used and <code>OriginalFontName</code> the one asked for (see <a href="#fonts-that-are-not-installed">Fonts that are not installed</a>
+for stand-ins). Missing bold and italic faces are synthesized. <code>ToLogFont</code> and <code>FromLogFont</code> read and write the
+<code>Interop.LOGFONT</code> struct, with no GDI handle; <code>SystemFonts</code> gives Windows 10 and 11's interface fonts, <code>GenericFontFamilies</code> names
+the serif, sans-serif and monospace families, and <code>FontConverter</code> converts fonts to and from strings such as &quot;Arial, 10pt,
+style=Bold&quot;, with <code>FontConverter.FontNameConverter</code> and <code>FontConverter.FontUnitConverter</code> for the name and unit properties.</p>
 <pre><code class="lang-csharp">// Fonts from the installed families, or from files an application brings along.
 using PrivateFontCollection fonts = new();
 fonts.AddFontFile(file);
@@ -454,9 +460,15 @@ using Font title = new(family, 12, FontStyle.Bold);    // 12 points: 16 pixels p
 float lineSpacing = title.GetHeight();                   // ascender + descender + line gap, in pixels
 int ascent = family.GetCellAscent(FontStyle.Regular);    // design units, of GetEmHeight per em
 
-// A family that is not installed falls back to Microsoft Sans Serif (or its stand-in), keeping the name asked for.
+// A family that is not installed falls back to the generic sans-serif family, as in System.Drawing: Name is the family
+// used, OriginalFontName the one asked for.
 using Font missing = new(&quot;No Such Font&quot;, 10);
 string asked = missing.OriginalFontName;                  // &quot;No Such Font&quot;
+
+// With Egami.Fonts.Substitutes referenced, metric-compatible fonts stand in under the requested name, keeping line breaks.
+SystemDrawingOptions.FontSubstitutes = Egami.Fonts.Substitutes.SubstituteFonts.Find;
+using Font helvetica = new(&quot;Helvetica&quot;, 10);              // Liberation Sans where Helvetica is not installed
+string standIn = helvetica.Name;                          // &quot;Helvetica&quot;
 
 title.ToLogFont(out LOGFONT logFont);                    // lfHeight -16, lfWeight 700
 Egami.Fonts.Font egami = title.ToEgamiFont();            // for Egami.Drawing's canvases
@@ -498,6 +510,39 @@ g.MeasureString(&quot;The quick brown fox&quot;, font, new SizeF(80, 40), format
 // Where characters fall, in whole pixels.
 format.SetMeasurableCharacterRanges([new CharacterRange(4, 5)]);
 Region[] quick = g.MeasureCharacterRanges(&quot;The quick brown fox&quot;, font, box, format);
+</code></pre><h3 id="fonts-that-are-not-installed">Fonts that are not installed</h3>
+<p>Linux and macOS have none of Windows' core fonts, so Arial, Times New Roman and the others fall back to whatever sans-serif font is
+installed, and text runs longer or shorter than on Windows. Reference the Egami.Fonts.Substitutes package and register its finder
+once at startup: its metric-compatible open fonts (Liberation Sans for Arial and Helvetica, Liberation Serif for Times New Roman,
+Liberation Mono for Courier New, Carlito for Calibri, Caladea for Cambria) then stand in under the requested name, so <code>Font.Name</code>
+reports it and lines break where they do on Windows. Installed fonts always come first. Egami.SystemDrawing itself ships no fonts;
+<code>SystemDrawingOptions.FontSubstitutes</code> takes any finder of the same shape, from a family name and style to a typeface. The
+<a href="#fonts">Fonts</a> sample above registers it.</p>
+<h3 id="drawing-on-32-bit-argb-bitmaps">Drawing on 32-bit ARGB bitmaps</h3>
+<p><code>new Bitmap(width, height)</code> makes a 32-bit ARGB bitmap, and by default a Graphics draws on its pixels in place, blending with
+Egami's rounding: many times faster than GDI+'s way, and within a level of GDI+ where colors blend. <code>ArgbDrawing.Exact</code> draws
+through a premultiplied copy of the area each call touches instead, rounding exactly as GDI+ does; set it for one Graphics with
+<code>Graphics.ArgbDrawing</code>, or for every Graphics made afterwards with <code>SystemDrawingOptions.ArgbDrawing</code>. <code>SourceCopy</code> and the
+premultiplied, 24-bit, 16-bit and indexed formats always round as GDI+ does.</p>
+<pre><code class="lang-csharp">// Draw on a bitmap as with System.Drawing: GDI+'s defaults are aliased shapes and whole-pixel centers.
+using Bitmap bitmap = new(80, 60);
+using (Graphics g = Graphics.FromImage(bitmap))
+{
+    g.Clear(Color.White);
+    g.SmoothingMode = SmoothingMode.AntiAlias;
+    g.PageUnit = GraphicsUnit.Millimeter;  // 1 mm is 96 / 25.4 pixels at the bitmap's 96 dpi
+    using Pen pen = new(Color.Navy, 0.5f);
+    g.DrawEllipse(pen, 2, 2, 15, 10);
+}
+
+Color corner = bitmap.GetPixel(0, 0);  // white
+
+// Egami's own setting: 32-bit ARGB bitmaps draw in place by default; Exact rounds blends exactly as GDI+ does, more slowly.
+using (Graphics exact = Graphics.FromImage(bitmap))
+{
+    exact.ArgbDrawing = ArgbDrawing.Exact;  // or SystemDrawingOptions.ArgbDrawing for every Graphics made afterwards
+    exact.FillRectangle(Brushes.Gold, 60, 40, 10, 10);
+}
 </code></pre><h2 id="metafiles">Metafiles</h2>
 <p><code>Metafile</code> reads WMF, EMF and EMF+ (and <code>Image.FromFile</code> returns one for them) through Egami.Metafiles. It is an <code>Image</code> sized by
 its frame as GDI+ sizes it: an EMF's frame in pixels at the resolution of the device it was made for, one pixel more for the
@@ -579,7 +624,8 @@ ImageAnimator.UpdateFrames(animation);
 <p><code>Bitmap.AsRaster</code> gives the bitmap's pixels as an Egami raster: a view of the same memory, no copy, for 32-bit ARGB and
 premultiplied ARGB, 24-bit RGB and the 16-bit formats, and an 8-bit RGBA copy for the others. <code>Bitmap.FromRaster</code> copies a raster
 into a bitmap of the matching format. <code>Graphics.Canvas</code> is an Egami canvas over a 32-bit bitmap, set to the graphics' transform
-and clip, so code can move to Egami's API one call at a time.</p>
+and clip, so code can move to Egami's API one call at a time. <a href="system-drawing-migration.html">Migrating from System.Drawing to Egami</a>
+walks through the move step by step.</p>
 <pre><code class="lang-csharp">// Move to Egami's own API one call at a time: a bitmap's pixels as a raster (no copy for 32-bit ARGB), the graphics' canvas.
 using Bitmap bitmap = new(64, 48);
 Raster view = bitmap.AsRaster();  // Raster&lt;Bgra8&gt; over the bitmap's own pixels
@@ -631,6 +677,10 @@ PDF with Egami.Drawing's canvases.</li>
 shapes match on about 99.8 percent of their pixels.</li>
 <li><code>HighQualityBilinear</code> and <code>HighQualityBicubic</code> sample as plain bilinear and bicubic, without GDI+'s wider filters, and an image
 drawn much smaller is not prefiltered.</li>
+<li>On 32-bit ARGB bitmaps, translucent colors and antialiased edges blend with Egami's rounding, within a level of GDI+'s, unless
+<code>ArgbDrawing.Exact</code> is set (<a href="#drawing-on-32-bit-argb-bitmaps">Drawing on 32-bit ARGB bitmaps</a>).</li>
+<li>Without Egami.Fonts.Substitutes registered, a Windows font that is not installed falls back to the installed sans-serif font,
+so text measures differently from Windows (<a href="#fonts-that-are-not-installed">Fonts that are not installed</a>).</li>
 <li>Drawing onto 16-bit bitmaps does not dither, and <code>SourceCopy</code> with antialiasing blends its edges with what is below instead of
 making them transparent.</li>
 <li>Compound pens draw their strips on both sides of the line, and <code>PathGradientBrush.FocusScales</code> is kept but not drawn.</li>

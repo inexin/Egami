@@ -76027,6 +76027,24 @@ references:
   commentId: N:Egami.SystemDrawing
   fullName: Egami.SystemDrawing
   nameWithType: Egami.SystemDrawing
+- uid: Egami.SystemDrawing.ArgbDrawing
+  name: ArgbDrawing
+  href: api/Egami.SystemDrawing.ArgbDrawing.html
+  commentId: T:Egami.SystemDrawing.ArgbDrawing
+  fullName: Egami.SystemDrawing.ArgbDrawing
+  nameWithType: ArgbDrawing
+- uid: Egami.SystemDrawing.ArgbDrawing.Exact
+  name: Exact
+  href: api/Egami.SystemDrawing.ArgbDrawing.html#Egami_SystemDrawing_ArgbDrawing_Exact
+  commentId: F:Egami.SystemDrawing.ArgbDrawing.Exact
+  fullName: Egami.SystemDrawing.ArgbDrawing.Exact
+  nameWithType: ArgbDrawing.Exact
+- uid: Egami.SystemDrawing.ArgbDrawing.InPlace
+  name: InPlace
+  href: api/Egami.SystemDrawing.ArgbDrawing.html#Egami_SystemDrawing_ArgbDrawing_InPlace
+  commentId: F:Egami.SystemDrawing.ArgbDrawing.InPlace
+  fullName: Egami.SystemDrawing.ArgbDrawing.InPlace
+  nameWithType: ArgbDrawing.InPlace
 - uid: Egami.SystemDrawing.Bitmap
   name: Bitmap
   href: api/Egami.SystemDrawing.Bitmap.html
@@ -84295,6 +84313,19 @@ references:
   isSpec: "True"
   fullName: Egami.SystemDrawing.Graphics.AddMetafileComment
   nameWithType: Graphics.AddMetafileComment
+- uid: Egami.SystemDrawing.Graphics.ArgbDrawing
+  name: ArgbDrawing
+  href: api/Egami.SystemDrawing.Graphics.html#Egami_SystemDrawing_Graphics_ArgbDrawing
+  commentId: P:Egami.SystemDrawing.Graphics.ArgbDrawing
+  fullName: Egami.SystemDrawing.Graphics.ArgbDrawing
+  nameWithType: Graphics.ArgbDrawing
+- uid: Egami.SystemDrawing.Graphics.ArgbDrawing*
+  name: ArgbDrawing
+  href: api/Egami.SystemDrawing.Graphics.html#Egami_SystemDrawing_Graphics_ArgbDrawing_
+  commentId: Overload:Egami.SystemDrawing.Graphics.ArgbDrawing
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.Graphics.ArgbDrawing
+  nameWithType: Graphics.ArgbDrawing
 - uid: Egami.SystemDrawing.Graphics.BeginContainer
   name: BeginContainer()
   href: api/Egami.SystemDrawing.Graphics.html#Egami_SystemDrawing_Graphics_BeginContainer
@@ -99509,6 +99540,38 @@ references:
   isSpec: "True"
   fullName: Egami.SystemDrawing.SystemBrushes.WindowText
   nameWithType: SystemBrushes.WindowText
+- uid: Egami.SystemDrawing.SystemDrawingOptions
+  name: SystemDrawingOptions
+  href: api/Egami.SystemDrawing.SystemDrawingOptions.html
+  commentId: T:Egami.SystemDrawing.SystemDrawingOptions
+  fullName: Egami.SystemDrawing.SystemDrawingOptions
+  nameWithType: SystemDrawingOptions
+- uid: Egami.SystemDrawing.SystemDrawingOptions.ArgbDrawing
+  name: ArgbDrawing
+  href: api/Egami.SystemDrawing.SystemDrawingOptions.html#Egami_SystemDrawing_SystemDrawingOptions_ArgbDrawing
+  commentId: P:Egami.SystemDrawing.SystemDrawingOptions.ArgbDrawing
+  fullName: Egami.SystemDrawing.SystemDrawingOptions.ArgbDrawing
+  nameWithType: SystemDrawingOptions.ArgbDrawing
+- uid: Egami.SystemDrawing.SystemDrawingOptions.ArgbDrawing*
+  name: ArgbDrawing
+  href: api/Egami.SystemDrawing.SystemDrawingOptions.html#Egami_SystemDrawing_SystemDrawingOptions_ArgbDrawing_
+  commentId: Overload:Egami.SystemDrawing.SystemDrawingOptions.ArgbDrawing
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.SystemDrawingOptions.ArgbDrawing
+  nameWithType: SystemDrawingOptions.ArgbDrawing
+- uid: Egami.SystemDrawing.SystemDrawingOptions.FontSubstitutes
+  name: FontSubstitutes
+  href: api/Egami.SystemDrawing.SystemDrawingOptions.html#Egami_SystemDrawing_SystemDrawingOptions_FontSubstitutes
+  commentId: P:Egami.SystemDrawing.SystemDrawingOptions.FontSubstitutes
+  fullName: Egami.SystemDrawing.SystemDrawingOptions.FontSubstitutes
+  nameWithType: SystemDrawingOptions.FontSubstitutes
+- uid: Egami.SystemDrawing.SystemDrawingOptions.FontSubstitutes*
+  name: FontSubstitutes
+  href: api/Egami.SystemDrawing.SystemDrawingOptions.html#Egami_SystemDrawing_SystemDrawingOptions_FontSubstitutes_
+  commentId: Overload:Egami.SystemDrawing.SystemDrawingOptions.FontSubstitutes
+  isSpec: "True"
+  fullName: Egami.SystemDrawing.SystemDrawingOptions.FontSubstitutes
+  nameWithType: SystemDrawingOptions.FontSubstitutes
 - uid: Egami.SystemDrawing.SystemFonts
   name: SystemFonts
   href: api/Egami.SystemDrawing.SystemFonts.html

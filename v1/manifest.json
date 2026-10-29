@@ -11717,6 +11717,20 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.ArgbDrawing.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.ArgbDrawing.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.ArgbDrawing",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.ArgbDrawing.yml\" sourcestartlinenumber=\"1\">How a Graphics draws on a 32-bit ARGB bitmap, the format <code>new Bitmap(width, height)</code> makes.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.SystemDrawing.Bitmap.yml",
       "output": {
         ".html": {
@@ -12427,7 +12441,7 @@
       "Uid": null,
       "IsMRef": true,
       "Title": "Egami.SystemDrawing.Font",
-      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Font.yml\" sourcestartlinenumber=\"1\">A family, size, style and unit for drawing and measuring text. A family that is not installed falls back to Microsoft Sans\nSerif (or its stand-in), with <xref href=\"Egami.SystemDrawing.Font.OriginalFontName\" data-throw-if-not-resolved=\"false\"></xref> keeping the name asked for; sizes convert at the target's\nresolution, 96 dpi for <xref href=\"Egami.SystemDrawing.Font.GetHeight\" data-throw-if-not-resolved=\"false\"></xref> and <xref href=\"Egami.SystemDrawing.Font.SizeInPoints\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n"
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Font.yml\" sourcestartlinenumber=\"1\">A family, size, style and unit for drawing and measuring text. A family that is not installed (and has no registered stand-in)\nfalls back to the generic sans-serif family, with <xref href=\"Egami.SystemDrawing.Font.Name\" data-throw-if-not-resolved=\"false\"></xref> the family used and <xref href=\"Egami.SystemDrawing.Font.OriginalFontName\" data-throw-if-not-resolved=\"false\"></xref> the name asked for; sizes convert at the target's\nresolution, 96 dpi for <xref href=\"Egami.SystemDrawing.Font.GetHeight\" data-throw-if-not-resolved=\"false\"></xref> and <xref href=\"Egami.SystemDrawing.Font.SizeInPoints\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n"
     },
     {
       "type": "ManagedReference",
@@ -12483,7 +12497,7 @@
       "Uid": null,
       "IsMRef": true,
       "Title": "Egami.SystemDrawing.FontFamily",
-      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.FontFamily.yml\" sourcestartlinenumber=\"1\">A family of faces, such as Arial with its bold and italic faces, found among the installed fonts or a\n<xref href=\"Egami.SystemDrawing.Text.PrivateFontCollection\" data-throw-if-not-resolved=\"false\"></xref>. Where a Windows core font is missing (on Linux and macOS), a metric-compatible open font\nstands in under the requested name: Liberation Sans or Arimo for Arial, Liberation Serif or Tinos for Times New Roman,\nLiberation Mono or Cousine for Courier New, Carlito for Calibri.</p>\n"
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.FontFamily.yml\" sourcestartlinenumber=\"1\">A family of faces, such as Arial with its bold and italic faces, found among the installed fonts or a\n<xref href=\"Egami.SystemDrawing.Text.PrivateFontCollection\" data-throw-if-not-resolved=\"false\"></xref>. A missing family is an error, as in System.Drawing, unless\n<xref href=\"Egami.SystemDrawing.SystemDrawingOptions.FontSubstitutes\" data-throw-if-not-resolved=\"false\"></xref> gives a stand-in: set it to Egami.Fonts.Substitutes'\n<code>SubstituteFonts.Find</code> for metric-compatible fonts (Liberation, Carlito, Caladea) under the requested name.</p>\n"
     },
     {
       "type": "ManagedReference",
@@ -13744,6 +13758,20 @@
       "IsMRef": true,
       "Title": "Egami.SystemDrawing.SystemBrushes",
       "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.SystemBrushes.yml\" sourcestartlinenumber=\"1\">Solid brushes of the system colors, which cannot be changed or disposed.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.SystemDrawingOptions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.SystemDrawingOptions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.SystemDrawingOptions",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.SystemDrawingOptions.yml\" sourcestartlinenumber=\"1\">Egami's own settings for the drop-in, beyond System.Drawing's API.</p>\n"
     },
     {
       "type": "ManagedReference",
@@ -18532,6 +18560,16 @@
       "output": {
         ".html": {
           "relative_path": "articles/guides/svg.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "articles/guides/system-drawing-migration.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/guides/system-drawing-migration.html"
         }
       },
       "version": ""
