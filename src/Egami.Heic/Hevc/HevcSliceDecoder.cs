@@ -20,15 +20,15 @@ internal sealed partial class HevcSliceDecoder
     private readonly HevcPps _pps;
     private readonly HevcLayout _layout;
     private readonly CabacEngine _cabac = new();
-    private readonly HevcIntra _intra = new();
+    private readonly HevcIntra _intra;
     private readonly byte[] _contexts = new byte[HevcContexts.Count];
     private readonly int[] _statCoeff = new int[4];
     private readonly byte[] _dsContexts = new byte[HevcContexts.Count];
     private readonly int[] _dsStatCoeff = new int[4];
-    private readonly int[] _coefficients = new int[32 * 32];
-    private readonly int[] _residual = new int[32 * 32];
-    private readonly int[] _lumaResidual = new int[32 * 32];
-    private readonly int[] _scratch = new int[32 * 32];
+    private readonly int[] _coefficients;
+    private readonly int[] _residual;
+    private readonly int[] _lumaResidual;
+    private readonly int[] _scratch;
     private readonly int _log2MinCuQpDeltaSize;
     private readonly int _log2MinCuChromaQpOffsetSize;
 
@@ -65,6 +65,13 @@ internal sealed partial class HevcSliceDecoder
 
     internal HevcSliceDecoder(HevcPicture picture)
     {
+        HevcScratch scratch = HevcScratch.Current;
+        _intra = scratch.Intra;
+        _inter = scratch.Inter;
+        _coefficients = scratch.Coefficients;
+        _residual = scratch.Residual;
+        _lumaResidual = scratch.LumaResidual;
+        _scratch = scratch.Scratch;
         _picture = picture;
         _sps = picture.Sps;
         _pps = picture.Pps;

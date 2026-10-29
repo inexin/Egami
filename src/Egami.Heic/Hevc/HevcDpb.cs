@@ -21,6 +21,15 @@ internal sealed class HevcDpbPicture(HevcPicture picture, int poc, int id) : INa
     /// <summary>Gets or sets the marking: <see cref="Unused"/>, <see cref="ShortTerm"/> or <see cref="LongTerm"/>.</summary>
     internal int Marking { get; set; } = ShortTerm;
 
+    /// <summary>Gets or sets whether the picture waits for output (pic_output_flag), set when it is stored.</summary>
+    internal bool PicOutput { get; set; }
+
+    /// <summary>Gets or sets whether whoever took the picture from the output is done with its samples.</summary>
+    internal bool Released { get; set; }
+
+    /// <summary>Gets or sets whether the picture was in the buffer at the last look; for recycling.</summary>
+    internal bool InBuffer { get; set; }
+
     /// <summary>Gets or sets the type of the picture's NAL units.</summary>
     internal HevcPictureKind Kind { get; set; }
 
@@ -159,6 +168,7 @@ internal sealed class HevcDpb
     internal void Finish(HevcDpbPicture current, bool picOutput, List<(HevcDpbPicture Picture, int Poc)> output)
     {
         current.Marking = HevcDpbPicture.ShortTerm;
+        current.PicOutput = picOutput;
         _buffer.Insert(current, current.Poc, picOutput);
         while (_buffer.TryBumpAfterInsert(out HevcDpbPicture leaving, out int poc))
         {

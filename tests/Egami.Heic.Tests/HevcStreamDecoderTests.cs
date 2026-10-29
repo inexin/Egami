@@ -89,7 +89,7 @@ public class HevcStreamDecoderTests
     }
 
     /// <summary>The stream's NAL units, each with its start code.</summary>
-    private static IEnumerable<byte[]> Units(byte[] stream)
+    internal static IEnumerable<byte[]> Units(byte[] stream)
     {
         List<int> starts = [];
         for (int i = 0; i + 3 <= stream.Length; i++)
@@ -106,5 +106,39 @@ public class HevcStreamDecoderTests
             int end = k + 1 < starts.Count ? starts[k + 1] : stream.Length;
             yield return stream[starts[k]..end];
         }
+    }
+}
+
+/// <summary>Phase 2.9.10 task 25: what decoding allocates once the decoder runs (EGAMI_ALLOCATION_TESTS=1).</summary>
+public class HevcAllocationTests
+{
+    [Trait("Category", "Allocation")]
+    [Fact]
+    public void SteadyStateAllocations()
+    {
+        Assert.SkipUnless(Environment.GetEnvironmentVariable("EGAMI_ALLOCATION_TESTS") == "1", "Allocation budgets run on demand: set EGAMI_ALLOCATION_TESTS=1.");
+        byte[] stream = File.ReadAllBytes(Path.Combine(AppContext.BaseDirectory, "images", "heic", "video", "hevc-inter-kvazaar.h265"));
+        using HevcStreamDecoder decoder = new();
+        Egami.YuvRaster<byte> raster = Egami.YuvRaster.Create(96, 64, Egami.Pixels.ChromaFormat.Yuv420, Egami.Pixels.YuvColor.Bt709Limited);
+        List<byte[]> units = [.. HevcStreamDecoderTests.Units(stream)];
+        void Run()
+        {
+            // The stream again and again: each pass starts at an IDR picture, as a player's stream would at a key frame.
+            foreach (byte[] unit in units)
+            {
+                decoder.Send(unit);
+                while (decoder.TryReceiveFrame(raster, out _))
+                {
+                }
+            }
+        }
+
+        Run();
+        Run();
+        long before = GC.GetAllocatedBytesForCurrentThread();
+        Run();
+        long perFrame = (GC.GetAllocatedBytesForCurrentThread() - before) / 12;
+        TestContext.Current.TestOutputHelper?.WriteLine($"{perFrame} bytes a frame");
+        Assert.True(perFrame < 0, $"{perFrame} bytes a frame");
     }
 }

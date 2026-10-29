@@ -18,6 +18,10 @@ internal sealed class HevcSequenceDecoder(SafetyLimits limits, int parallelism =
     private bool _skipping;
     private HevcSliceRefs? _refs;
 
+    // The pictures handed out that may come back once released and out of the buffer, and the pictures ready to be used again.
+    private readonly List<HevcDpbPicture> _live = [];
+    private readonly List<HevcPicture> _pool = [];
+
     /// <summary>
     /// Gets or sets whether samples are decoded. Without, only headers, order counts, reference marking and output order are
     /// worked out, as a test of those against a reference decoder's trace.
@@ -83,8 +87,9 @@ internal sealed class HevcSequenceDecoder(SafetyLimits limits, int parallelism =
             (HevcSps sps, HevcPps pps) = _store.Active(header.PpsId);
             sps.CheckSupported();
             limits.CheckFrameSize(sps.Width, sps.Height);
-            _picture = new HevcPicture(sps, pps);
+            _picture = NewPicture(sps, pps);
             _current = _dpb.Start(nal, header, _picture, output);
+            _live.Add(_current);
             PictureStarted?.Invoke(_current);
             _picOutput = header.PicOutput;
         }
@@ -120,6 +125,55 @@ internal sealed class HevcSequenceDecoder(SafetyLimits limits, int parallelism =
         _segments.Add(new HevcSegment(nal, header, _slice ?? header, _sliceAddrRs, HevcSliceDecoder.SubstreamStarts(nal, header), firstTs) { Refs = _refs });
     }
 
+    /// <summary>
+    /// Notes that whoever took a picture from the output is done with its samples, so the picture can be used again for a later
+    /// one once it has left the buffer. Pictures never released are never used again.
+    /// </summary>
+    internal static void Release(HevcDpbPicture picture) => picture.Released = true;
+
+    /// <summary>A picture to decode into: a recycled one of the same parameter sets, else a new one.</summary>
+    private HevcPicture NewPicture(HevcSps sps, HevcPps pps)
+    {
+        foreach (HevcDpbPicture p in _live)
+        {
+            p.InBuffer = false;
+        }
+
+        foreach (HevcDpbPicture p in _dpb.Pictures)
+        {
+            p.InBuffer = true;
+        }
+
+        for (int i = _live.Count - 1; i >= 0; i--)
+        {
+            HevcDpbPicture p = _live[i];
+            if (!p.InBuffer && (p.Released || !p.PicOutput))
+            {
+                _pool.Add(p.Picture);
+                _live.RemoveAt(i);
+            }
+        }
+
+        for (int i = 0; i < _pool.Count; i++)
+        {
+            HevcPicture recycled = _pool[i];
+            if (recycled.Fits(sps, pps))
+            {
+                _pool.RemoveAt(i);
+                recycled.Clear(sps, pps);
+                return recycled;
+            }
+        }
+
+        if (_pool.Count > 16)
+        {
+            // Pictures of parameter sets no longer used.
+            _pool.Clear();
+        }
+
+        return new HevcPicture(sps, pps);
+    }
+
     /// <summary>Completes the last picture and outputs every picture still waiting, at the end of the stream.</summary>
     internal void Flush(List<(HevcDpbPicture Picture, int Poc)> output, CancellationToken cancellationToken = default)
     {
@@ -134,6 +188,7 @@ internal sealed class HevcSequenceDecoder(SafetyLimits limits, int parallelism =
         _picture = null;
         _current = null;
         _dpb.Clear();
+        _live.Clear();
     }
 
     private void FinishPicture(List<(HevcDpbPicture Picture, int Poc)> output, CancellationToken cancellationToken)
@@ -162,7 +217,14 @@ internal sealed class HevcSequenceDecoder(SafetyLimits limits, int parallelism =
                 }
 
                 HevcLoopFilter.Apply(picture, parallelism, cancellationToken);
-                picture.ColMotion = new HevcColMotion(picture);
+                if (picture.ColMotion is null)
+                {
+                    picture.ColMotion = new HevcColMotion(picture);
+                }
+                else
+                {
+                    picture.ColMotion.Update(picture);
+                }
             }
         }
         finally

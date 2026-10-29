@@ -15,7 +15,7 @@ internal sealed partial class HevcSliceDecoder
     private const int PartnLx2N = 6;
     private const int PartnRx2N = 7;
 
-    private readonly HevcInter _inter = new();
+    private readonly HevcInter _inter;
     private readonly Candidate[] _merge = new Candidate[5];
     private HevcSliceRefs? _refs;
     private bool _cuIntra = true;

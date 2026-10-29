@@ -155,38 +155,45 @@ public sealed class HevcStreamDecoder : IDisposable
 
         _frames.Dequeue();
         HevcPicture picture = next.Picture.Picture;
-        HevcSps sps = picture.Sps;
-        for (int c = 0; c < picture.Planes.Length; c++)
+        try
         {
-            int sx = c == 0 ? 1 : sps.SubWidthC, sy = c == 0 ? 1 : sps.SubHeightC;
-            int left = sps.Conformance.Left / sx, top = sps.Conformance.Top / sy, width = info.Width / sx, height = info.Height / sy;
-            ushort[] plane = picture.Planes[c];
-            int stride = picture.Widths[c];
-            if (destination is YuvRaster<byte> bytes)
+            HevcSps sps = picture.Sps;
+            for (int c = 0; c < picture.Planes.Length; c++)
             {
-                YuvPlane<byte> target = c == 0 ? bytes.Y : c == 1 ? bytes.U! : bytes.V!;
-                for (int y = 0; y < height; y++)
+                int sx = c == 0 ? 1 : sps.SubWidthC, sy = c == 0 ? 1 : sps.SubHeightC;
+                int left = sps.Conformance.Left / sx, top = sps.Conformance.Top / sy, width = info.Width / sx, height = info.Height / sy;
+                ushort[] plane = picture.Planes[c];
+                int stride = picture.Widths[c];
+                if (destination is YuvRaster<byte> bytes)
                 {
-                    Span<byte> row = target.Row(y);
-                    ReadOnlySpan<ushort> source = plane.AsSpan(((top + y) * stride) + left, width);
-                    for (int x = 0; x < width; x++)
+                    YuvPlane<byte> target = c == 0 ? bytes.Y : c == 1 ? bytes.U! : bytes.V!;
+                    for (int y = 0; y < height; y++)
                     {
-                        row[x] = (byte)source[x];
+                        Span<byte> row = target.Row(y);
+                        ReadOnlySpan<ushort> source = plane.AsSpan(((top + y) * stride) + left, width);
+                        for (int x = 0; x < width; x++)
+                        {
+                            row[x] = (byte)source[x];
+                        }
                     }
                 }
-            }
-            else if (destination is YuvRaster<ushort> words)
-            {
-                YuvPlane<ushort> target = c == 0 ? words.Y : c == 1 ? words.U! : words.V!;
-                for (int y = 0; y < height; y++)
+                else if (destination is YuvRaster<ushort> words)
                 {
-                    plane.AsSpan(((top + y) * stride) + left, width).CopyTo(target.Row(y));
+                    YuvPlane<ushort> target = c == 0 ? words.Y : c == 1 ? words.U! : words.V!;
+                    for (int y = 0; y < height; y++)
+                    {
+                        plane.AsSpan(((top + y) * stride) + left, width).CopyTo(target.Row(y));
+                    }
+                }
+                else
+                {
+                    throw new ArgumentException("The destination must have byte or ushort samples.", nameof(destination));
                 }
             }
-            else
-            {
-                throw new ArgumentException("The destination must have byte or ushort samples.", nameof(destination));
-            }
+        }
+        finally
+        {
+            HevcSequenceDecoder.Release(next.Picture);
         }
 
         return true;

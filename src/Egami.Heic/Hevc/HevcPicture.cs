@@ -70,9 +70,33 @@ internal sealed class HevcPicture
         }
     }
 
-    internal HevcSps Sps { get; }
+    internal HevcSps Sps { get; private set; }
 
-    internal HevcPps Pps { get; }
+    /// <summary>
+    /// Gets whether the picture's arrays and layout fit pictures of these parameter sets: the same size, chroma format, block
+    /// sizes and tiles, as when a stream sends its parameter sets again.
+    /// </summary>
+    internal bool Fits(HevcSps sps, HevcPps pps) =>
+        (sps == Sps || (sps.Width == Sps.Width && sps.Height == Sps.Height && sps.ChromaFormatIdc == Sps.ChromaFormatIdc
+            && sps.CtbLog2Size == Sps.CtbLog2Size && sps.MinCbLog2Size == Sps.MinCbLog2Size && sps.MinTbLog2Size == Sps.MinTbLog2Size))
+        && (pps == Pps || (pps.TilesEnabled == Pps.TilesEnabled && pps.ColumnWidths.AsSpan().SequenceEqual(Pps.ColumnWidths)
+            && pps.RowHeights.AsSpan().SequenceEqual(Pps.RowHeights) && pps.TileColumns == Pps.TileColumns && pps.TileRows == Pps.TileRows));
+
+    /// <summary>Makes a recycled picture ready for the next one: its parameter sets, and the block maps a picture fills only where it is decoded.</summary>
+    internal void Clear(HevcSps sps, HevcPps pps)
+    {
+        Sps = sps;
+        Pps = pps;
+        Array.Clear(Flags);
+        Array.Clear(PredFlags);
+        Array.Clear(SkipFlags);
+        Array.Fill(CtbSlice, -1);
+        Array.Clear(CtbSliceHeader);
+        Array.Clear(CtbRefs);
+        Array.Clear(Sao);
+    }
+
+    internal HevcPps Pps { get; private set; }
 
     internal HevcLayout Layout { get; }
 
@@ -210,11 +234,19 @@ internal sealed class HevcColMotion
     {
         HevcSps sps = picture.Sps;
         Width16 = (sps.Width + 15) >> 4;
-        int height16 = (sps.Height + 15) >> 4, count = Width16 * height16;
+        int count = Width16 * ((sps.Height + 15) >> 4);
         PredFlags = new byte[count];
         Mv = [new int[count], new int[count]];
         RefPoc = [new int[count], new int[count]];
         LongTerm = [new bool[count], new bool[count]];
+        Update(picture);
+    }
+
+    /// <summary>Takes the motion of a picture of the same size again, for a recycled picture.</summary>
+    internal void Update(HevcPicture picture)
+    {
+        HevcSps sps = picture.Sps;
+        int height16 = (sps.Height + 15) >> 4;
         for (int y = 0; y < height16; y++)
         {
             for (int x = 0; x < Width16; x++)
