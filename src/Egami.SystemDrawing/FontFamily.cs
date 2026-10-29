@@ -19,6 +19,7 @@ namespace Egami.SystemDrawing;
 public sealed class FontFamily : MarshalByRefObject, IDisposable
 {
     private readonly EgamiFonts.FontFamily _family;
+    private readonly object?[] _matches = new object?[4];
 
     /// <summary>Initializes a new instance of the <see cref="FontFamily"/> class: an installed family.</summary>
     /// <param name="name">The family name, matched without regard to case.</param>
@@ -134,7 +135,19 @@ public sealed class FontFamily : MarshalByRefObject, IDisposable
     public override string ToString() => $"[{nameof(FontFamily)}: Name={Name}]";
 
     /// <summary>The face for a style, with the bold and italic to synthesize.</summary>
-    internal EgamiFonts.FontMatch Match(FontStyle style) => _family.Match(TextFonts.Style(style));
+    internal EgamiFonts.FontMatch Match(FontStyle style)
+    {
+        // Kept per bold and italic, the only parts of the style matching reads; boxed, so another thread sees a whole match or none.
+        int slot = (int)(style & (FontStyle.Bold | FontStyle.Italic));
+        if (_matches[slot] is EgamiFonts.FontMatch kept)
+        {
+            return kept;
+        }
+
+        EgamiFonts.FontMatch match = _family.Match(TextFonts.Style(style));
+        _matches[slot] = match;
+        return match;
+    }
 
     /// <summary>A style's vertical metrics in design units, as GDI+ reports them.</summary>
     internal (int EmHeight, int Ascent, int Descent, int LineSpacing) Metrics(FontStyle style)

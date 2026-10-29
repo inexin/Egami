@@ -24,8 +24,10 @@ internal sealed class GdiTextLayout
     };
 
     private readonly string _text;
-    private readonly int[] _source;
-    private readonly bool[] _hotkey;
+    // The original index of each character, and whether the hotkey prefix marks it; null when the text has no prefixes, so the
+    // indices are the same and nothing is marked.
+    private readonly int[]? _source;
+    private readonly bool[]? _hotkey;
     private readonly float[] _advance;
     private readonly float[] _drawAdvance;
     private readonly List<(ushort Glyph, float Dx, float Dy)>?[] _glyphs;
@@ -34,9 +36,11 @@ internal sealed class GdiTextLayout
     private readonly float _em;
     private readonly StringFormat _format;
     private readonly EgamiFonts.Font _font;
+    private readonly bool _sizeOnly;
 
-    private GdiTextLayout(string text, int[] source, bool[] hotkey, Font font, float em, SizeF box, StringFormat format, float gridScale, bool glyphs)
+    private GdiTextLayout(string text, int[]? source, bool[]? hotkey, Font font, float em, SizeF box, StringFormat format, float gridScale, bool glyphs, bool sizeOnly)
     {
+        _sizeOnly = sizeOnly;
         _text = text;
         _source = source;
         _hotkey = hotkey;
@@ -56,7 +60,7 @@ internal sealed class GdiTextLayout
         // advances at the device size GDI+ places glyphs by (grid-fitted, or near design with the typographic format).
         _advance = new float[text.Length];
         _drawAdvance = gridScale > 0 ? new float[text.Length] : _advance;
-        _glyphs = new List<(ushort, float, float)>?[text.Length];
+        _glyphs = glyphs ? new List<(ushort, float, float)>?[text.Length] : [];
         EgamiFonts.Font? draw = gridScale > 0
             ? font.ToEgamiFont(em * gridScale, kerning: false) with
             {
@@ -120,8 +124,9 @@ internal sealed class GdiTextLayout
     /// <param name="format">The format, or null for the default.</param>
     /// <param name="gridScale">Device pixels per world unit to place glyphs by hinted advances at, or 0 to place them as measured.</param>
     /// <param name="glyphs">Whether the layout keeps the glyphs to draw; measuring needs only the advances.</param>
+    /// <param name="sizeOnly">Whether only <see cref="Measure"/> and <see cref="CharactersFitted"/> are read, so lines need not keep their characters.</param>
     /// <returns>The layout.</returns>
-    public static GdiTextLayout Create(ReadOnlySpan<char> text, Font font, float em, SizeF box, StringFormat? format, float gridScale = 0, bool glyphs = true)
+    public static GdiTextLayout Create(ReadOnlySpan<char> text, Font font, float em, SizeF box, StringFormat? format, float gridScale = 0, bool glyphs = true, bool sizeOnly = false)
     {
         format ??= StringFormat.GenericDefault;
         if ((format.FormatFlags & StringFormatFlags.DirectionVertical) != 0)
@@ -129,11 +134,16 @@ internal sealed class GdiTextLayout
             box = new SizeF(box.Height, box.Width);
         }
 
+        bool prefix = format.HotkeyPrefix != HotkeyPrefix.None;
+        if (!prefix || !text.Contains('&'))
+        {
+            return new GdiTextLayout(text.ToString(), null, null, font, em, box, format, gridScale, glyphs, sizeOnly);
+        }
+
         // The hotkey prefix: an ampersand marks the next character (Show underlines it); two make one ampersand.
         var display = new System.Text.StringBuilder(text.Length);
         List<int> source = new(text.Length);
         List<bool> hotkey = new(text.Length);
-        bool prefix = format.HotkeyPrefix != HotkeyPrefix.None;
         for (int i = 0; i < text.Length; i++)
         {
             bool mark = false;
@@ -148,7 +158,7 @@ internal sealed class GdiTextLayout
             hotkey.Add(mark);
         }
 
-        return new GdiTextLayout(display.ToString(), [.. source], [.. hotkey], font, em, box, format, gridScale, glyphs);
+        return new GdiTextLayout(display.ToString(), [.. source], [.. hotkey], font, em, box, format, gridScale, glyphs, sizeOnly);
     }
 
     /// <summary>Gets the size MeasureString reports: the widest line and the padding, the lines and an eighth em.</summary>
@@ -215,7 +225,7 @@ internal sealed class GdiTextLayout
         float baseline = top + line.Top + Ascent;
         foreach (Item item in line.Items)
         {
-            List<(ushort Glyph, float Dx, float Dy)>? cluster = item.Char < 0 ? item.Ellipsis : _glyphs[item.Char];
+            List<(ushort Glyph, float Dx, float Dy)>? cluster = item.Char < 0 ? item.Ellipsis : _glyphs.Length > 0 ? _glyphs[item.Char] : null;
             if (cluster is null)
             {
                 continue;
@@ -238,7 +248,7 @@ internal sealed class GdiTextLayout
         {
             foreach (Item item in line.Items)
             {
-                if (item.Char >= 0 && _hotkey[item.Char])
+                if (item.Char >= 0 && _hotkey is not null && _hotkey[item.Char])
                 {
                     yield return (line, line.X + item.X, line.X + item.X + item.Advance);
                 }
@@ -254,7 +264,7 @@ internal sealed class GdiTextLayout
             float x0 = float.PositiveInfinity, x1 = float.NegativeInfinity;
             foreach (Item item in line.Items)
             {
-                if (item.Char >= 0 && _source[item.Char] >= first && _source[item.Char] < first + length)
+                if (item.Char >= 0 && Source(item.Char) >= first && Source(item.Char) < first + length)
                 {
                     x0 = MathF.Min(x0, line.X + item.X);
                     x1 = MathF.Max(x1, line.X + item.X + item.Advance);
@@ -271,7 +281,7 @@ internal sealed class GdiTextLayout
     private void Shape(EgamiFonts.Font font, int start, int end, float scale, float widen, float[] advances, bool keepGlyphs)
     {
         string piece = _text[start..end];
-        EgamiFonts.GlyphRun run = font.Shape(piece, s_noLigatures);
+        EgamiFonts.GlyphRun run = ShapeCache.Shape(font, piece, s_noLigatures);
         ReadOnlySpan<ushort> glyphs = run.Glyphs;
         ReadOnlySpan<Vector2> positions = run.Positions;
         ReadOnlySpan<int> clusters = run.Clusters;
@@ -295,6 +305,8 @@ internal sealed class GdiTextLayout
             list.Add((glyphs[g], (positions[g].X - clusterStart) * scale, positions[g].Y * scale));
         }
     }
+
+    private int Source(int i) => _source is null ? i : _source[i];
 
     private bool Wraps => (_format.FormatFlags & StringFormatFlags.NoWrap) == 0 && !float.IsPositiveInfinity(_available);
 
@@ -374,7 +386,7 @@ internal sealed class GdiTextLayout
                 Add(line);
                 // GDI+ counts the characters kept, but all of them when a path ellipsis keeps the start and the end.
                 int fitted = _format.Trimming == StringTrimming.EllipsisPath ? line.Covers : line.End;
-                CharactersFitted = fitted > 0 ? _source[fitted - 1] + 1 : CharactersFitted;
+                CharactersFitted = fitted > 0 ? Source(fitted - 1) + 1 : CharactersFitted;
                 i = end;
             }
             while (i < pe);
@@ -382,7 +394,7 @@ internal sealed class GdiTextLayout
 
         if (paragraphs.Count > 0 && paragraphs[^1].End < _text.Length)
         {
-            CharactersFitted = _source.Length > 0 ? _source[^1] + 1 : 0;
+            CharactersFitted = _text.Length > 0 ? Source(_text.Length - 1) + 1 : 0;
         }
     }
 
@@ -601,9 +613,9 @@ internal sealed class GdiTextLayout
     /// <summary>A line of the characters from <paramref name="start"/> to <paramref name="end"/>, covering the source up to <paramref name="covers"/>.</summary>
     private Line Chars(int start, int end, int covers)
     {
-        Line line = new() { End = end, Covers = covers };
+        Line line = new(_sizeOnly ? 0 : end - start) { End = end, Covers = covers };
         float x = 0;
-        for (int j = start; j < end; j++)
+        for (int j = start; j < end && !_sizeOnly; j++)
         {
             float a = Advance(j, x);
             if (_text[j] != '\t')
@@ -633,9 +645,9 @@ internal sealed class GdiTextLayout
     }
 
     /// <summary>One line: its characters with their pen positions, its width, where it starts and its top.</summary>
-    internal sealed class Line
+    internal sealed class Line(int capacity = 0)
     {
-        public List<Item> Items { get; } = [];
+        public List<Item> Items { get; } = new(capacity);
 
         /// <summary>Gets or sets the width, without trailing spaces unless the format measures them.</summary>
         public float Width { get; set; }
@@ -654,7 +666,7 @@ internal sealed class GdiTextLayout
     }
 
     /// <summary>A character on a line, or the ellipsis (character -1), at a pen position from the line's left.</summary>
-    internal sealed record Item(int Char, float X, float Advance)
+    internal readonly record struct Item(int Char, float X, float Advance)
     {
         public List<(ushort Glyph, float Dx, float Dy)>? Ellipsis { get; init; }
     }
