@@ -29,6 +29,7 @@ public sealed partial class Graphics : MarshalByRefObject, IDisposable, IDeviceC
     private Settings _state = new();
     private int _nextId = 1;
     private bool _disposed;
+    private InPlaceCanvas? _inPlace;
 
     private Graphics(Bitmap image)
     {
@@ -296,6 +297,8 @@ public sealed partial class Graphics : MarshalByRefObject, IDisposable, IDeviceC
     {
         _disposed = true;
         _canvas?.Dispose();
+        _inPlace?.Dispose();
+        _inPlace = null;
     }
 
     /// <summary>Does nothing: Egami draws each call at once.</summary>
@@ -518,15 +521,20 @@ public sealed partial class Graphics : MarshalByRefObject, IDisposable, IDeviceC
             area = area is RectF a ? Intersect(a, c) : c;
         }
 
-        Surface.Draw(_image.Current, area, canvas =>
-        {
-            if (clip is not null)
+        Surface.Draw(
+            _image.Current,
+            area,
+            canvas =>
             {
-                canvas.ClipPath(clip, ClipOp.Intersect, antialias: false);
-            }
+                if (clip is not null)
+                {
+                    canvas.ClipPath(clip, ClipOp.Intersect, antialias: false);
+                }
 
-            draw(canvas);
-        });
+                draw(canvas);
+            },
+            ref _inPlace,
+            State.Compositing == CompositingMode.SourceCopy);
     }
 
     private static RectF Intersect(RectF a, RectF b)
