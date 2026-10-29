@@ -121,6 +121,12 @@ Enum InterpolationSpace  <a class="header-action link-secondary" title="View sou
   
   <dd><p>The stored sRGB-encoded values, as most libraries, browsers' legacy colors and both of Egami's references do.</p>
 </dd>
+    <dt id="Egami_Drawing_InterpolationSpace_GdiPlusGamma"><code>GdiPlusGamma = 4</code></dt>
+  
+  <dd><p>As GDI+'s gamma-corrected gradients (<code>LinearGradientBrush.GammaCorrection</code>), measured on Windows in 2.7.6: each pair of
+stops is cut into 16 equal parts, the 17 colors where they meet are mixed in light of gamma 2.2 and rounded to 8 bits, and the
+gradient runs straight through them in the stored encoded values. Alpha mixes straight.</p>
+</dd>
     <dt id="Egami_Drawing_InterpolationSpace_LinearSrgb"><code>LinearSrgb = 1</code></dt>
   
   <dd><p>Linear-light sRGB: physically even mixing, brighter midpoints.</p>

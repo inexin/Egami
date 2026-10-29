@@ -148,7 +148,27 @@ using (RasterCanvas&lt;Rgb8&gt; canvas = raster.CreateCanvas(options))
 <p>On rectangles, polygons, ovals and lines at fractional positions, the mean difference from GDI+ is 0.12 levels, down from 1.94
 with Egami's closest settings before. Rectangles and polygons match to the level. Ovals and round caps still differ a little,
 because GDI+ flattens curves its own way.</p>
-<h2 id="gdi-cleartype">GDI ClearType</h2>
+<h2 id="gradients">Gradients</h2>
+<p>Egami's gradients already match GDI+'s within a fraction of a level when they mix in the stored values, as <code>LinearGradientBrush</code>
+does by default. Its <code>Blend</code>, <code>InterpolationColors</code> and <code>WrapMode</code> (Tile is <code>TileMode.Repeat</code>, TileFlipX is <code>Mirror</code>) map to
+stops and tile modes.</p>
+<ul>
+<li><code>GammaCorrection = true</code> is <code>GradientInterpolation.GdiPlusGamma</code>: 16 steps between each pair of colors, each mixed in
+gamma-2.2 light and rounded to 8 bits.</li>
+<li>A <code>PathGradientBrush</code> is a fan of triangles from its <code>CenterPoint</code> to the flattened path, with the surround colors at the
+path's points and the center color at the center: draw it as a <code>Mesh</code>. GDI+'s default <code>CenterPoint</code> is the mean of the path's
+points, which for an ellipse is not its middle.</li>
+</ul>
+<pre><code class="lang-csharp">// LinearGradientBrush with GammaCorrection = true: GDI+'s 16 gamma-2.2 steps between the colors.
+var brush = new LinearGradient(new Vector2(0, 0), new Vector2(256, 0), new GradientStop(0, Rgba8.Black), new GradientStop(1, Rgba8.White))
+{
+    Interpolation = GradientInterpolation.GdiPlusGamma,
+};
+using (RasterCanvas&lt;Rgb8&gt; canvas = raster.CreateCanvas())
+{
+    canvas.FillRect(new RectF(0, 0, 256, 16), brush);
+}
+</code></pre><h2 id="gdi-cleartype">GDI ClearType</h2>
 <p>For <code>TextRenderer</code> or GDI's <code>ExtTextOut</code>:</p>
 <ul>
 <li>Set <code>Font.HintingTarget = TrueTypeTarget.Gdi</code> and <code>Font.Metrics = FontMetrics.Compatible</code>. GDI's compatible widths equal

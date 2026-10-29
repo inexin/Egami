@@ -89,7 +89,7 @@
 
 
   <h1 id="Egami_Drawing_GradientInterpolation" data-uid="Egami.Drawing.GradientInterpolation" class="text-break">
-Class GradientInterpolation  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Gradients.cs/#L138"><i class="bi bi-code-slash"></i></a>
+Class GradientInterpolation  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Gradients.cs/#L145"><i class="bi bi-code-slash"></i></a>
   </h1>
 
   <div class="facts text-secondary">
@@ -191,7 +191,7 @@ way around the hue circle.</p>
 
   <h3 id="Egami_Drawing_GradientInterpolation_Encoded" data-uid="Egami.Drawing.GradientInterpolation.Encoded">
   Encoded
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Gradients.cs/#L147"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Gradients.cs/#L154"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets mixing in the stored encoded values: the default.</p>
@@ -219,11 +219,54 @@ way around the hue circle.</p>
 
 
 
+  <a id="Egami_Drawing_GradientInterpolation_GdiPlusGamma_" data-uid="Egami.Drawing.GradientInterpolation.GdiPlusGamma*"></a>
+
+  <h3 id="Egami_Drawing_GradientInterpolation_GdiPlusGamma" data-uid="Egami.Drawing.GradientInterpolation.GdiPlusGamma">
+  GdiPlusGamma
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Gradients.cs/#L166"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets GDI+'s gamma-corrected mixing (<a class="xref" href="Egami.Drawing.InterpolationSpace.html#Egami_Drawing_InterpolationSpace_GdiPlusGamma">GdiPlusGamma</a>).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static GradientInterpolation GdiPlusGamma { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Drawing.GradientInterpolation.html">GradientInterpolation</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+  <h4 class="section" id="Egami_Drawing_GradientInterpolation_GdiPlusGamma_examples">Examples</h4>
+  <pre><code class="lang-csharp">// LinearGradientBrush with GammaCorrection = true: GDI+'s 16 gamma-2.2 steps between the colors.
+var brush = new LinearGradient(new Vector2(0, 0), new Vector2(256, 0), new GradientStop(0, Rgba8.Black), new GradientStop(1, Rgba8.White))
+{
+    Interpolation = GradientInterpolation.GdiPlusGamma,
+};
+using (RasterCanvas&lt;Rgb8&gt; canvas = raster.CreateCanvas())
+{
+    canvas.FillRect(new RectF(0, 0, 256, 16), brush);
+}</code></pre>
+
+
+
+
+
+
   <a id="Egami_Drawing_GradientInterpolation_Hue_" data-uid="Egami.Drawing.GradientInterpolation.Hue*"></a>
 
   <h3 id="Egami_Drawing_GradientInterpolation_Hue" data-uid="Egami.Drawing.GradientInterpolation.Hue">
   Hue
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Gradients.cs/#L159"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Gradients.cs/#L172"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the way around the hue circle; used by <a class="xref" href="Egami.Drawing.InterpolationSpace.html#Egami_Drawing_InterpolationSpace_Oklch">Oklch</a> only.</p>
@@ -255,7 +298,7 @@ way around the hue circle.</p>
 
   <h3 id="Egami_Drawing_GradientInterpolation_LinearSrgb" data-uid="Egami.Drawing.GradientInterpolation.LinearSrgb">
   LinearSrgb
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Gradients.cs/#L150"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Gradients.cs/#L157"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets mixing in linear-light sRGB.</p>
@@ -287,7 +330,7 @@ way around the hue circle.</p>
 
   <h3 id="Egami_Drawing_GradientInterpolation_Oklab" data-uid="Egami.Drawing.GradientInterpolation.Oklab">
   Oklab
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Gradients.cs/#L153"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Gradients.cs/#L160"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets mixing in Oklab.</p>
@@ -319,7 +362,7 @@ way around the hue circle.</p>
 
   <h3 id="Egami_Drawing_GradientInterpolation_Space" data-uid="Egami.Drawing.GradientInterpolation.Space">
   Space
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Gradients.cs/#L156"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Gradients.cs/#L169"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the color space.</p>
@@ -355,7 +398,7 @@ way around the hue circle.</p>
 
   <h3 id="Egami_Drawing_GradientInterpolation_Oklch_Egami_Drawing_HueMethod_" data-uid="Egami.Drawing.GradientInterpolation.Oklch(Egami.Drawing.HueMethod)">
   Oklch(HueMethod)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Gradients.cs/#L165"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Gradients.cs/#L178"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Returns mixing in Oklch with a hue method.</p>
@@ -400,7 +443,7 @@ way around the hue circle.</p>
 </article>
 
         <div class="contribution d-print-none">
-          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Gradients.cs/#L138" class="edit-link">Edit this page</a>
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Gradients.cs/#L145" class="edit-link">Edit this page</a>
         </div>
 
 

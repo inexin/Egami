@@ -16578,6 +16578,19 @@ references:
   isSpec: "True"
   fullName: Egami.Drawing.GradientInterpolation.Encoded
   nameWithType: GradientInterpolation.Encoded
+- uid: Egami.Drawing.GradientInterpolation.GdiPlusGamma
+  name: GdiPlusGamma
+  href: api/Egami.Drawing.GradientInterpolation.html#Egami_Drawing_GradientInterpolation_GdiPlusGamma
+  commentId: P:Egami.Drawing.GradientInterpolation.GdiPlusGamma
+  fullName: Egami.Drawing.GradientInterpolation.GdiPlusGamma
+  nameWithType: GradientInterpolation.GdiPlusGamma
+- uid: Egami.Drawing.GradientInterpolation.GdiPlusGamma*
+  name: GdiPlusGamma
+  href: api/Egami.Drawing.GradientInterpolation.html#Egami_Drawing_GradientInterpolation_GdiPlusGamma_
+  commentId: Overload:Egami.Drawing.GradientInterpolation.GdiPlusGamma
+  isSpec: "True"
+  fullName: Egami.Drawing.GradientInterpolation.GdiPlusGamma
+  nameWithType: GradientInterpolation.GdiPlusGamma
 - uid: Egami.Drawing.GradientInterpolation.Hue
   name: Hue
   href: api/Egami.Drawing.GradientInterpolation.html#Egami_Drawing_GradientInterpolation_Hue
@@ -17380,6 +17393,12 @@ references:
   commentId: F:Egami.Drawing.InterpolationSpace.Encoded
   fullName: Egami.Drawing.InterpolationSpace.Encoded
   nameWithType: InterpolationSpace.Encoded
+- uid: Egami.Drawing.InterpolationSpace.GdiPlusGamma
+  name: GdiPlusGamma
+  href: api/Egami.Drawing.InterpolationSpace.html#Egami_Drawing_InterpolationSpace_GdiPlusGamma
+  commentId: F:Egami.Drawing.InterpolationSpace.GdiPlusGamma
+  fullName: Egami.Drawing.InterpolationSpace.GdiPlusGamma
+  nameWithType: InterpolationSpace.GdiPlusGamma
 - uid: Egami.Drawing.InterpolationSpace.LinearSrgb
   name: LinearSrgb
   href: api/Egami.Drawing.InterpolationSpace.html#Egami_Drawing_InterpolationSpace_LinearSrgb
