@@ -134,6 +134,9 @@ public sealed partial class RasterCanvas<TPixel>
         float sx = emX / face.UnitsPerEm, sy = emY / face.UnitsPerEm;
         Rect clip = _clip.Bounds;
         byte[]? scratch = null;
+
+        // A solid paint's glyphs gather into rows and blend a row at a time (see GlyphStrip); the contrast boost works per glyph.
+        using GlyphStrip? strip = sink is not null && blend is not { HasBoost: true } ? GlyphStrip.For<TPixel>(sink, clip) : null;
         ReadOnlySpan<ushort> glyphs = run.Glyphs;
         ReadOnlySpan<Vector2> positions = run.Positions;
         for (int i = 0; i < glyphs.Length; i++)
@@ -171,6 +174,7 @@ public sealed partial class RasterCanvas<TPixel>
 
                 if (image.Pixels is not null)
                 {
+                    strip?.Flush(sink!);
                     DrawColorMask(image, ox, oy, paint);
                 }
                 else if (image.Coverage.Length == 0 && image.Bounds.IsEmpty && image.Channels == 0)
@@ -213,11 +217,13 @@ public sealed partial class RasterCanvas<TPixel>
             {
                 BlendSolid(mask, placed, visible, solidText.Value, blend);
             }
-            else
+            else if (strip is null || !strip.Add(mask, placed, visible, sink!))
             {
                 BlendMask(mask, placed, visible, sink!, blend, ref scratch);
             }
         }
+
+        strip?.Flush(sink!);
 
         if (uncachedColor is not null)
         {
