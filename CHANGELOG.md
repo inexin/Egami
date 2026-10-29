@@ -8,6 +8,12 @@ changes that break code come only in a new major version.
 - `Antialiasing.GdiPlus` draws two to three times faster and allocates nothing per fill once warm, with the same pixels: a
   filled ellipse through Egami.SystemDrawing with `SmoothingMode.AntiAlias` takes 78 µs instead of 255 µs, close to Egami's
   exact coverage.
+- `LcdSampling.Gdi` (the GDI+ look's ClearType) keeps a hinted TrueType font's dropout control (SCANCTRL and SCANTYPE), as
+  GDI+ does, so thin horizontal strokes no longer vanish: SimSun's bars at 18 to 24 px, about a third of a pixel thick, fell
+  between two rows' sample points. With embedded bitmaps off, SimSun at 18, 20 and 24 px now differs from GDI+ by 0.00 to
+  0.88 levels per pixel instead of 0.27 to 11.35; Microsoft YaHei, whose dropout leaves out stubs, stays within 0.08. Latin
+  text matches GDI+ slightly closer. Egami's own sampling is unchanged. Egami.Fonts' hinter now reports each glyph's scan
+  control, internally.
 
 ## Egami.Video.Cli, unreleased
 

@@ -113,6 +113,15 @@ internal sealed partial class TrueTypeInterpreter
     /// <summary>Gets the graphics state the control value program left.</summary>
     internal GraphicsState PrepState => _prepState;
 
+    /// <summary>
+    /// Gets the scan control and scan type (SCANCTRL, SCANTYPE) the last glyph program left, or the control value program's when
+    /// the glyph had none, for the rasterizer's dropout control.
+    /// </summary>
+    internal (int Control, int Type) Scan { get; private set; }
+
+    /// <summary>Starts a glyph's scan state from the control value program's.</summary>
+    internal void ResetScan() => Scan = (_prepState.ScanControl, _prepState.ScanType);
+
     /// <summary>Gets the twilight zone.</summary>
     internal Zone Twilight => _twilight;
 
@@ -185,6 +194,7 @@ internal sealed partial class TrueTypeInterpreter
         }
         finally
         {
+            Scan = (_gs.ScanControl, _gs.ScanType);
             _cvt = cvt;
             _storage = storage;
             _composite = false;

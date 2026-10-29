@@ -365,7 +365,10 @@ public sealed partial class RasterCanvas<TPixel>
         float tolerance = MathF.Min(Options.Tolerance, GlyphTolerance);
         if (style.Edging == FontEdging.Lcd)
         {
-            return Lcd.Render(path, tolerance, style, _rasterizer);
+            // GDI+'s sampling keeps the font's dropout control, so thin strokes between sample rows still show.
+            (bool, bool)? dropout = style.Look?.Sampling == LcdSampling.Gdi && style.Full is TrueTypeTarget target
+                && face.GetHintedGlyph(glyph, sy * face.UnitsPerEm, target) is HintedGlyph { Dropout: true } hinted ? (hinted.SmartDropout, hinted.NoStubs) : null;
+            return Lcd.Render(path, tolerance, style, _rasterizer, dropout);
         }
 
         var edges = new EdgeList();
@@ -951,13 +954,15 @@ internal static class Lcd
     // Gdi sampling's on-or-off samples per pixel across the stripes.
     private const int Samples = 6;
 
-    public static GlyphMask Render(Path path, float tolerance, GlyphStyle style, CoverageRasterizer rasterizer)
+    // dropout: for Gdi sampling, the font's dropout control at this size; null for none, else whether its rule is smart and whether
+    // it leaves out stubs.
+    public static GlyphMask Render(Path path, float tolerance, GlyphStyle style, CoverageRasterizer rasterizer, (bool Smart, bool NoStubs)? dropout = null)
     {
         bool vertical = style.Geometry is PixelGeometry.RgbVertical or PixelGeometry.BgrVertical;
         bool bgr = style.Geometry is PixelGeometry.BgrHorizontal or PixelGeometry.BgrVertical;
         if (style.Look?.Sampling == LcdSampling.Gdi)
         {
-            return RenderGdi(path, tolerance, style, rasterizer, vertical, bgr);
+            return RenderGdi(path, tolerance, style, rasterizer, vertical, bgr, dropout);
         }
 
         var edges = new EdgeList();
@@ -1028,7 +1033,7 @@ internal static class Lcd
     // first); a sample is on when the outline covers at least half of its thin cell, which is where the outline crosses the cell's
     // centre. Each subpixel then holds 0 to 2 samples, and the filter spreads those counts over three channels: with the Gdi
     // filter a channel is the samples of its subpixel and its two neighbours, k of 6, stored as k × 255 / 6 to within a level.
-    private static GlyphMask RenderGdi(Path path, float tolerance, GlyphStyle style, CoverageRasterizer rasterizer, bool vertical, bool bgr)
+    private static GlyphMask RenderGdi(Path path, float tolerance, GlyphStyle style, CoverageRasterizer rasterizer, bool vertical, bool bgr, (bool Smart, bool NoStubs)? dropout)
     {
         var edges = new EdgeList();
         Matrix3x2 m = vertical ? new Matrix3x2(0, Strip, Samples, 0, 0, 0) : Matrix3x2.CreateScale(Samples, Strip);
@@ -1041,7 +1046,8 @@ internal static class Lcd
 
         // Pixels wide enough for the filter's two subpixels (four samples) each side.
         int l0 = FloorDiv(sub.Y, Strip);
-        int lines = -FloorDiv(-sub.Bottom, Strip) - l0;
+        // Simple dropout control may turn on the row below a stroke that ends above that row's centre.
+        int lines = -FloorDiv(-sub.Bottom, Strip) - l0 + (dropout is null ? 0 : 1);
         int p0 = FloorDiv(sub.X - 4, Samples);
         int pixels = -FloorDiv(-(sub.Right + 4), Samples) - p0;
         int width = pixels * Samples, count = pixels * 3;
@@ -1050,11 +1056,30 @@ internal static class Lcd
         byte[] rgb = new byte[lines * count];
         LcdFilter filter = style.Look?.Filter ?? LcdFilter.Gdi;
         int level = style.Look is LcdLook look ? (int)MathF.Round(Math.Clamp(look.Level, 0, 1) * 256) : 256;
+        bool[]? dropouts = null;
+        if (dropout is (bool smart, bool noStubs))
+        {
+            // The same outline with its axes swapped, so the edges along the stripes, which the edge list drops, are kept.
+            var swapped = new EdgeList();
+            Flattener.Flatten(path, m * new Matrix3x2(0, 1, 1, 0, 0, 0), tolerance, swapped);
+            dropouts = Dropouts(swapped, p0 * Samples, width, l0, lines, smart, noStubs);
+        }
         for (int l = 0; l < lines; l++)
         {
             var row = new Rect(p0 * Samples, ((l0 + l) * Strip) + (Strip / 2), width, 1);
             Array.Clear(samples);
             rasterizer.Fill(edges, row, FillRule.NonZero, true, new BufferSink(samples, row), 1);
+            if (dropouts is not null)
+            {
+                for (int s = 0; s < width; s++)
+                {
+                    if (dropouts[(l * width) + s])
+                    {
+                        samples[s] = 255;
+                    }
+                }
+            }
+
             for (int s = 0; s < count; s++)
             {
                 counts[s] = (byte)((samples[2 * s] >= 128 ? 1 : 0) + (samples[(2 * s) + 1] >= 128 ? 1 : 0));
@@ -1092,6 +1117,98 @@ internal static class Lcd
 
         Rect bounds = vertical ? new Rect(l0, p0, lines, pixels) : new Rect(p0, l0, pixels, lines);
         return new GlyphMask(bounds, rgb, 3);
+    }
+
+    // TrueType dropout control along the stripes, as GDI+ ClearType draws thin strokes (measured on SimSun in 2.7.6): on each
+    // sample column's centre line, a stretch the outline covers (by the nonzero rule) that holds no row's sample point between
+    // two of them still turns one row's sample on. The smart rule picks the row whose sample point is nearer the stretch's middle;
+    // the simple rule picks the lower one. Without stubs, a stretch counts only where the outline covers the next sample column on
+    // both sides too: the end of a stroke is a stub. Returns null when the outline has no such stretch. The edges come with their
+    // axes swapped: (row position, column position).
+    private static bool[]? Dropouts(EdgeList swapped, int x0, int width, int l0, int lines, bool smart, bool noStubs)
+    {
+        ReadOnlySpan<float> c = swapped.Coordinates;
+        var stretches = new List<(float Top, float Bottom)>[width];
+        List<(float Y, int Winding)> crossings = [];
+        for (int s = 0; s < width; s++)
+        {
+            float x = x0 + s + 0.5f;
+            crossings.Clear();
+            for (int i = 0; i < c.Length; i += 4)
+            {
+                float ay = c[i], ax = c[i + 1], by = c[i + 2], bx = c[i + 3];
+                if ((ax <= x && x < bx) || (bx <= x && x < ax))
+                {
+                    crossings.Add((ay + ((x - ax) * (by - ay) / (bx - ax)), bx > ax ? 1 : -1));
+                }
+            }
+
+            crossings.Sort(static (a, b) => a.Y.CompareTo(b.Y));
+            var column = new List<(float Top, float Bottom)>();
+            int winding = 0;
+            for (int k = 0; k + 1 < crossings.Count; k++)
+            {
+                winding += crossings[k].Winding;
+                if (winding != 0 && crossings[k + 1].Y > crossings[k].Y)
+                {
+                    column.Add((crossings[k].Y, crossings[k + 1].Y));
+                }
+            }
+
+            stretches[s] = column;
+        }
+
+        bool[]? result = null;
+        for (int s = 0; s < width; s++)
+        {
+            foreach ((float top, float bottom) in stretches[s])
+            {
+                // A row's sample point is at its centre: (l0 + l) · Strip + Strip / 2 + ½.
+                float below = MathF.Ceiling((top - (Strip / 2) - 0.5f) / Strip) - l0;
+                float centre = ((l0 + below) * Strip) + (Strip / 2) + 0.5f;
+                if (centre < bottom)
+                {
+                    continue;
+                }
+
+                if (noStubs && !(Continues(stretches, s - 1, top, bottom) && Continues(stretches, s + 1, top, bottom)))
+                {
+                    continue;
+                }
+
+                int l = (int)below;
+                if (smart && centre - ((top + bottom) / 2) > Strip / 2f)
+                {
+                    l--;
+                }
+
+                if ((uint)l < (uint)lines)
+                {
+                    result ??= new bool[lines * width];
+                    result[(l * width) + s] = true;
+                }
+            }
+        }
+
+        return result;
+
+        static bool Continues(List<(float Top, float Bottom)>[] stretches, int s, float top, float bottom)
+        {
+            if ((uint)s >= (uint)stretches.Length)
+            {
+                return false;
+            }
+
+            foreach ((float t, float b) in stretches[s])
+            {
+                if (t < bottom && b > top)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
     }
 
     private static int FloorDiv(int a, int b) => (int)Math.Floor(a / (double)b);
