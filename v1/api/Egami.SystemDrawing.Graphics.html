@@ -6,7 +6,7 @@
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <meta name="title" content="Class Graphics | Egami ">
       
-      <meta name="description" content="Draws on a bitmap, as System.Drawing&#39;s Graphics: shapes with pens and brushes, images, clipping, transforms and the page unit, with GDI+&#39;s defaults: aliased shapes (), pixel centers on whole coordinates, bilinear image sampling without prefiltering, transforms prepended. Get one with .">
+      <meta name="description" content="The way from a graphics to Egami&#39;s own canvas.">
       <link rel="icon" href="../images/favicon.ico">
       <link rel="stylesheet" href="../public/docfx.min.css">
       <link rel="stylesheet" href="../public/main.css">
@@ -97,14 +97,12 @@ Class Graphics  <a class="header-action link-secondary" title="View source" href
   <dl><dt>Assembly</dt><dd>Egami.SystemDrawing.dll</dd></dl>
   </div>
 
-  <div class="markdown summary"><p>Draws on a bitmap, as System.Drawing's Graphics: shapes with pens and brushes, images, clipping, transforms and the page
-unit, with GDI+'s defaults: aliased shapes (<a class="xref" href="Egami.SystemDrawing.Drawing2D.SmoothingMode.html#Egami_SystemDrawing_Drawing2D_SmoothingMode_None">None</a>), pixel centers on whole coordinates, bilinear
-image sampling without prefiltering, transforms prepended. Get one with <a class="xref" href="Egami.SystemDrawing.Graphics.html#Egami_SystemDrawing_Graphics_FromImage_Egami_SystemDrawing_Image_">FromImage(Image)</a>.</p>
+  <div class="markdown summary"><p>The way from a graphics to Egami's own canvas.</p>
 </div>
   <div class="markdown conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public sealed class Graphics : MarshalByRefObject, IDisposable</code></pre>
+    <pre><code class="lang-csharp hljs">public sealed class Graphics : MarshalByRefObject, IDeviceContext, IDisposable</code></pre>
   </div>
 
 
@@ -122,6 +120,7 @@ image sampling without prefiltering, transforms prepended. Get one with <a class
   <dl class="typelist implements">
     <dt>Implements</dt>
     <dd>
+      <div><a class="xref" href="Egami.SystemDrawing.IDeviceContext.html">IDeviceContext</a></div>
       <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.idisposable">IDisposable</a></div>
     </dd>
   </dl>
@@ -177,6 +176,64 @@ Color corner = bitmap.GetPixel(0, 0);  // white</code></pre>
 
   <h2 class="section" id="properties">Properties
 </h2>
+
+
+  <a id="Egami_SystemDrawing_Graphics_Canvas_" data-uid="Egami.SystemDrawing.Graphics.Canvas*"></a>
+
+  <h3 id="Egami_SystemDrawing_Graphics_Canvas" data-uid="Egami.SystemDrawing.Graphics.Canvas">
+  Canvas
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/EscapeHatches.cs/#L114"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets an Egami canvas over the bitmap's own pixels, set to the graphics' current transform and clip, for drawing with
+Egami's API in between System.Drawing calls. It needs a 32-bit ARGB or premultiplied ARGB bitmap; for other formats use
+<a class="xref" href="Egami.SystemDrawing.Bitmap.html#Egami_SystemDrawing_Bitmap_AsRaster">AsRaster()</a>. Its coordinates are the world coordinates of the moment it is fetched; fetch it again after
+changing the transform or clip. A canvas is made again when the bitmap's pixels are replaced (by RotateFlip, MakeTransparent,
+ConvertFormat or SelectActiveFrame), so always use the one this property returns.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Canvas Canvas { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Drawing.Canvas.html">Canvas</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+  <h4 class="section" id="Egami_SystemDrawing_Graphics_Canvas_examples">Examples</h4>
+  <pre><code class="lang-csharp">// Move to Egami's own API one call at a time: a bitmap's pixels as a raster (no copy for 32-bit ARGB), the graphics' canvas.
+using Bitmap bitmap = new(64, 48);
+Raster view = bitmap.AsRaster();  // Raster&lt;Bgra8&gt; over the bitmap's own pixels
+using (Graphics g = Graphics.FromImage(bitmap))
+{
+    g.TranslateTransform(10, 10);
+    Egami.Drawing.Canvas canvas = g.Canvas;  // drawn in the graphics' world coordinates
+    canvas.FillCircle(new System.Numerics.Vector2(5, 5), 4, new Egami.Pixels.Rgba8(255, 0, 0, 255));
+}
+
+using Bitmap back = Bitmap.FromRaster(view);  // a copy, 32-bit ARGB</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.invalidoperationexception">InvalidOperationException</a></dt>
+    <dd><p>The bitmap is not 32-bit ARGB or premultiplied ARGB.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.runtime.interopservices.externalexception">ExternalException</a></dt>
+    <dd><p>The bitmap is locked, as for every other drawing call.</p>
+</dd>
+  </dl>
+
 
 
   <a id="Egami_SystemDrawing_Graphics_Clip_" data-uid="Egami.SystemDrawing.Graphics.Clip*"></a>
@@ -803,11 +860,44 @@ Color corner = bitmap.GetPixel(0, 0);  // white</code></pre>
 </h2>
 
 
+  <a id="Egami_SystemDrawing_Graphics_AddMetafileComment_" data-uid="Egami.SystemDrawing.Graphics.AddMetafileComment*"></a>
+
+  <h3 id="Egami_SystemDrawing_Graphics_AddMetafileComment_System_Byte___" data-uid="Egami.SystemDrawing.Graphics.AddMetafileComment(System.Byte[])">
+  AddMetafileComment(byte[])
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.Extras.cs/#L27"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Does nothing: comments are for metafiles being recorded, and Egami draws on bitmaps.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void AddMetafileComment(byte[] data)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>data</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.byte">byte</a>[]</dt>
+    <dd><p>The comment.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
   <a id="Egami_SystemDrawing_Graphics_BeginContainer_" data-uid="Egami.SystemDrawing.Graphics.BeginContainer*"></a>
 
   <h3 id="Egami_SystemDrawing_Graphics_BeginContainer" data-uid="Egami.SystemDrawing.Graphics.BeginContainer">
   BeginContainer()
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L431"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L433"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Starts a container: inside it the transform, page unit, clip and quality settings start again from their defaults, drawn
@@ -841,7 +931,7 @@ through the transform at this point and kept inside the clip at this point.</p>
 
   <h3 id="Egami_SystemDrawing_Graphics_BeginContainer_System_Drawing_Rectangle_System_Drawing_Rectangle_Egami_SystemDrawing_GraphicsUnit_" data-uid="Egami.SystemDrawing.Graphics.BeginContainer(System.Drawing.Rectangle,System.Drawing.Rectangle,Egami.SystemDrawing.GraphicsUnit)">
   BeginContainer(Rectangle, Rectangle, GraphicsUnit)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L452"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L454"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Starts a container that maps a source rectangle onto a destination rectangle.</p>
@@ -886,7 +976,7 @@ through the transform at this point and kept inside the clip at this point.</p>
 
   <h3 id="Egami_SystemDrawing_Graphics_BeginContainer_System_Drawing_RectangleF_System_Drawing_RectangleF_Egami_SystemDrawing_GraphicsUnit_" data-uid="Egami.SystemDrawing.Graphics.BeginContainer(System.Drawing.RectangleF,System.Drawing.RectangleF,Egami.SystemDrawing.GraphicsUnit)">
   BeginContainer(RectangleF, RectangleF, GraphicsUnit)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L438"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L440"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Starts a container that maps a source rectangle onto a destination rectangle.</p>
@@ -931,7 +1021,7 @@ through the transform at this point and kept inside the clip at this point.</p>
 
   <h3 id="Egami_SystemDrawing_Graphics_Clear_System_Drawing_Color_" data-uid="Egami.SystemDrawing.Graphics.Clear(System.Drawing.Color)">
   Clear(Color)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L314"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L316"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Fills the area inside the clip with a color, replacing what is there.</p>
@@ -964,7 +1054,7 @@ through the transform at this point and kept inside the clip at this point.</p>
 
   <h3 id="Egami_SystemDrawing_Graphics_CopyFromScreen_System_Drawing_Point_System_Drawing_Point_System_Drawing_Size_" data-uid="Egami.SystemDrawing.Graphics.CopyFromScreen(System.Drawing.Point,System.Drawing.Point,System.Drawing.Size)">
   CopyFromScreen(Point, Point, Size)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L263"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L264"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Not supported: screen capture. Always throws.</p>
@@ -1004,7 +1094,7 @@ public void CopyFromScreen(Point upperLeftSource, Point upperLeftDestination, Si
 
   <h3 id="Egami_SystemDrawing_Graphics_CopyFromScreen_System_Drawing_Point_System_Drawing_Point_System_Drawing_Size_Egami_SystemDrawing_CopyPixelOperation_" data-uid="Egami.SystemDrawing.Graphics.CopyFromScreen(System.Drawing.Point,System.Drawing.Point,System.Drawing.Size,Egami.SystemDrawing.CopyPixelOperation)">
   CopyFromScreen(Point, Point, Size, CopyPixelOperation)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L271"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L272"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Not supported: screen capture. Always throws.</p>
@@ -1047,7 +1137,7 @@ public void CopyFromScreen(Point upperLeftSource, Point upperLeftDestination, Si
 
   <h3 id="Egami_SystemDrawing_Graphics_CopyFromScreen_System_Int32_System_Int32_System_Int32_System_Int32_System_Drawing_Size_" data-uid="Egami.SystemDrawing.Graphics.CopyFromScreen(System.Int32,System.Int32,System.Int32,System.Int32,System.Drawing.Size)">
   CopyFromScreen(int, int, int, int, Size)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L280"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L281"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Not supported: screen capture. Always throws.</p>
@@ -1093,7 +1183,7 @@ public void CopyFromScreen(int sourceX, int sourceY, int destinationX, int desti
 
   <h3 id="Egami_SystemDrawing_Graphics_CopyFromScreen_System_Int32_System_Int32_System_Int32_System_Int32_System_Drawing_Size_Egami_SystemDrawing_CopyPixelOperation_" data-uid="Egami.SystemDrawing.Graphics.CopyFromScreen(System.Int32,System.Int32,System.Int32,System.Int32,System.Drawing.Size,Egami.SystemDrawing.CopyPixelOperation)">
   CopyFromScreen(int, int, int, int, Size, CopyPixelOperation)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L290"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L291"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Not supported: screen capture. Always throws.</p>
@@ -1142,7 +1232,7 @@ public void CopyFromScreen(int sourceX, int sourceY, int destinationX, int desti
 
   <h3 id="Egami_SystemDrawing_Graphics_Dispose" data-uid="Egami.SystemDrawing.Graphics.Dispose">
   Dispose()
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L294"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L295"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Releases the graphics; the bitmap keeps what was drawn.</p>
@@ -1628,6 +1718,45 @@ public void CopyFromScreen(int sourceX, int sourceY, int destinationX, int desti
 </dd>
     <dt><code>points</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.point">Point</a>&gt;</dt>
     <dd><p>The points.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Graphics_DrawCachedBitmap_" data-uid="Egami.SystemDrawing.Graphics.DrawCachedBitmap*"></a>
+
+  <h3 id="Egami_SystemDrawing_Graphics_DrawCachedBitmap_Egami_SystemDrawing_Imaging_CachedBitmap_System_Int32_System_Int32_" data-uid="Egami.SystemDrawing.Graphics.DrawCachedBitmap(Egami.SystemDrawing.Imaging.CachedBitmap,System.Int32,System.Int32)">
+  DrawCachedBitmap(CachedBitmap, int, int)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.Extras.cs/#L37"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Draws a cached bitmap at device pixels, ignoring the transform but its translation, as GDI+ draws it.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void DrawCachedBitmap(CachedBitmap cachedBitmap, int x, int y)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>cachedBitmap</code> <a class="xref" href="Egami.SystemDrawing.Imaging.CachedBitmap.html">CachedBitmap</a></dt>
+    <dd><p>The cached bitmap.</p>
+</dd>
+    <dt><code>x</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The left edge.</p>
+</dd>
+    <dt><code>y</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The top edge.</p>
 </dd>
   </dl>
 
@@ -2777,6 +2906,90 @@ public void CopyFromScreen(int sourceX, int sourceY, int destinationX, int desti
 </dd>
     <dt><code>targetRect</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.rectangle">Rectangle</a></dt>
     <dd><p>The rectangle.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Graphics_DrawImage_" data-uid="Egami.SystemDrawing.Graphics.DrawImage*"></a>
+
+  <h3 id="Egami_SystemDrawing_Graphics_DrawImage_Egami_SystemDrawing_Image_Egami_SystemDrawing_Imaging_Effects_Effect_" data-uid="Egami.SystemDrawing.Graphics.DrawImage(Egami.SystemDrawing.Image,Egami.SystemDrawing.Imaging.Effects.Effect)">
+  DrawImage(Image, Effect)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.Extras.cs/#L61"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Draws an image with an effect applied, at its physical size.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void DrawImage(Image image, Effect effect)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>image</code> <a class="xref" href="Egami.SystemDrawing.Image.html">Image</a></dt>
+    <dd><p>The image.</p>
+</dd>
+    <dt><code>effect</code> <a class="xref" href="Egami.SystemDrawing.Imaging.Effects.Effect.html">Effect</a></dt>
+    <dd><p>The effect.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Graphics_DrawImage_" data-uid="Egami.SystemDrawing.Graphics.DrawImage*"></a>
+
+  <h3 id="Egami_SystemDrawing_Graphics_DrawImage_Egami_SystemDrawing_Image_Egami_SystemDrawing_Imaging_Effects_Effect_System_Drawing_RectangleF_Egami_SystemDrawing_Drawing2D_Matrix_Egami_SystemDrawing_GraphicsUnit_Egami_SystemDrawing_Imaging_ImageAttributes_" data-uid="Egami.SystemDrawing.Graphics.DrawImage(Egami.SystemDrawing.Image,Egami.SystemDrawing.Imaging.Effects.Effect,System.Drawing.RectangleF,Egami.SystemDrawing.Drawing2D.Matrix,Egami.SystemDrawing.GraphicsUnit,Egami.SystemDrawing.Imaging.ImageAttributes)">
+  DrawImage(Image, Effect, RectangleF, Matrix?, GraphicsUnit, ImageAttributes?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.Extras.cs/#L77"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Draws part of an image with an effect applied, through a transform.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void DrawImage(Image image, Effect effect, RectangleF srcRect = default, Matrix? transform = null, GraphicsUnit srcUnit = GraphicsUnit.Pixel, ImageAttributes? imageAttr = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>image</code> <a class="xref" href="Egami.SystemDrawing.Image.html">Image</a></dt>
+    <dd><p>The image.</p>
+</dd>
+    <dt><code>effect</code> <a class="xref" href="Egami.SystemDrawing.Imaging.Effects.Effect.html">Effect</a></dt>
+    <dd><p>The effect.</p>
+</dd>
+    <dt><code>srcRect</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.rectanglef">RectangleF</a></dt>
+    <dd><p>The part of the image.</p>
+</dd>
+    <dt><code>transform</code> <a class="xref" href="Egami.SystemDrawing.Drawing2D.Matrix.html">Matrix</a></dt>
+    <dd><p>A transform for the image, or null.</p>
+</dd>
+    <dt><code>srcUnit</code> <a class="xref" href="Egami.SystemDrawing.GraphicsUnit.html">GraphicsUnit</a></dt>
+    <dd><p>The unit of the part.</p>
+</dd>
+    <dt><code>imageAttr</code> <a class="xref" href="Egami.SystemDrawing.Imaging.ImageAttributes.html">ImageAttributes</a></dt>
+    <dd><p>Color adjustments, or null.</p>
 </dd>
   </dl>
 
@@ -5423,7 +5636,7 @@ public void CopyFromScreen(int sourceX, int sourceY, int destinationX, int desti
 
   <h3 id="Egami_SystemDrawing_Graphics_EndContainer_Egami_SystemDrawing_Drawing2D_GraphicsContainer_" data-uid="Egami.SystemDrawing.Graphics.EndContainer(Egami.SystemDrawing.Drawing2D.GraphicsContainer)">
   EndContainer(GraphicsContainer)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L456"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L458"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Ends a container, restoring the state from before it.</p>
@@ -5438,6 +5651,1662 @@ public void CopyFromScreen(int sourceX, int sourceY, int destinationX, int desti
   <dl class="parameters">
     <dt><code>container</code> <a class="xref" href="Egami.SystemDrawing.Drawing2D.GraphicsContainer.html">GraphicsContainer</a></dt>
     <dd><p>The container.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Graphics_EnumerateMetafile_" data-uid="Egami.SystemDrawing.Graphics.EnumerateMetafile*"></a>
+
+  <h3 id="Egami_SystemDrawing_Graphics_EnumerateMetafile_Egami_SystemDrawing_Imaging_Metafile_System_Drawing_Point_Egami_SystemDrawing_Graphics_EnumerateMetafileProc_" data-uid="Egami.SystemDrawing.Graphics.EnumerateMetafile(Egami.SystemDrawing.Imaging.Metafile,System.Drawing.Point,Egami.SystemDrawing.Graphics.EnumerateMetafileProc)">
+  EnumerateMetafile(Metafile, Point, EnumerateMetafileProc)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.Metafiles.cs/#L84"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Walks the metafile's records, as GDI+ enumerates them, calling the callback for each until it returns false. Where
+the metafile would be drawn is not used: records are walked, not drawn.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void EnumerateMetafile(Metafile metafile, Point destPoint, Graphics.EnumerateMetafileProc callback)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>metafile</code> <a class="xref" href="Egami.SystemDrawing.Imaging.Metafile.html">Metafile</a></dt>
+    <dd><p>The metafile.</p>
+</dd>
+    <dt><code>destPoint</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.point">Point</a></dt>
+    <dd><p>The point the frame starts at.</p>
+</dd>
+    <dt><code>callback</code> <a class="xref" href="Egami.SystemDrawing.Graphics.html">Graphics</a>.<a class="xref" href="Egami.SystemDrawing.Graphics.EnumerateMetafileProc.html">EnumerateMetafileProc</a></dt>
+    <dd><p>Called for each record; returning false stops the walk.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Graphics_EnumerateMetafile_" data-uid="Egami.SystemDrawing.Graphics.EnumerateMetafile*"></a>
+
+  <h3 id="Egami_SystemDrawing_Graphics_EnumerateMetafile_Egami_SystemDrawing_Imaging_Metafile_System_Drawing_Point_Egami_SystemDrawing_Graphics_EnumerateMetafileProc_System_IntPtr_" data-uid="Egami.SystemDrawing.Graphics.EnumerateMetafile(Egami.SystemDrawing.Imaging.Metafile,System.Drawing.Point,Egami.SystemDrawing.Graphics.EnumerateMetafileProc,System.IntPtr)">
+  EnumerateMetafile(Metafile, Point, EnumerateMetafileProc, nint)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.Metafiles.cs/#L94"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Walks the metafile's records, as GDI+ enumerates them, calling the callback for each until it returns false. Where
+the metafile would be drawn is not used: records are walked, not drawn.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void EnumerateMetafile(Metafile metafile, Point destPoint, Graphics.EnumerateMetafileProc callback, nint callbackData)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>metafile</code> <a class="xref" href="Egami.SystemDrawing.Imaging.Metafile.html">Metafile</a></dt>
+    <dd><p>The metafile.</p>
+</dd>
+    <dt><code>destPoint</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.point">Point</a></dt>
+    <dd><p>The point the frame starts at.</p>
+</dd>
+    <dt><code>callback</code> <a class="xref" href="Egami.SystemDrawing.Graphics.html">Graphics</a>.<a class="xref" href="Egami.SystemDrawing.Graphics.EnumerateMetafileProc.html">EnumerateMetafileProc</a></dt>
+    <dd><p>Called for each record; returning false stops the walk.</p>
+</dd>
+    <dt><code>callbackData</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.intptr">nint</a></dt>
+    <dd><p>Not used.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Graphics_EnumerateMetafile_" data-uid="Egami.SystemDrawing.Graphics.EnumerateMetafile*"></a>
+
+  <h3 id="Egami_SystemDrawing_Graphics_EnumerateMetafile_Egami_SystemDrawing_Imaging_Metafile_System_Drawing_Point_Egami_SystemDrawing_Graphics_EnumerateMetafileProc_System_IntPtr_Egami_SystemDrawing_Imaging_ImageAttributes_" data-uid="Egami.SystemDrawing.Graphics.EnumerateMetafile(Egami.SystemDrawing.Imaging.Metafile,System.Drawing.Point,Egami.SystemDrawing.Graphics.EnumerateMetafileProc,System.IntPtr,Egami.SystemDrawing.Imaging.ImageAttributes)">
+  EnumerateMetafile(Metafile, Point, EnumerateMetafileProc, nint, ImageAttributes?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.Metafiles.cs/#L105"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Walks the metafile's records, as GDI+ enumerates them, calling the callback for each until it returns false. Where
+the metafile would be drawn is not used: records are walked, not drawn.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void EnumerateMetafile(Metafile metafile, Point destPoint, Graphics.EnumerateMetafileProc callback, nint callbackData, ImageAttributes? imageAttr)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>metafile</code> <a class="xref" href="Egami.SystemDrawing.Imaging.Metafile.html">Metafile</a></dt>
+    <dd><p>The metafile.</p>
+</dd>
+    <dt><code>destPoint</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.point">Point</a></dt>
+    <dd><p>The point the frame starts at.</p>
+</dd>
+    <dt><code>callback</code> <a class="xref" href="Egami.SystemDrawing.Graphics.html">Graphics</a>.<a class="xref" href="Egami.SystemDrawing.Graphics.EnumerateMetafileProc.html">EnumerateMetafileProc</a></dt>
+    <dd><p>Called for each record; returning false stops the walk.</p>
+</dd>
+    <dt><code>callbackData</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.intptr">nint</a></dt>
+    <dd><p>Not used.</p>
+</dd>
+    <dt><code>imageAttr</code> <a class="xref" href="Egami.SystemDrawing.Imaging.ImageAttributes.html">ImageAttributes</a></dt>
+    <dd><p>Not used.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Graphics_EnumerateMetafile_" data-uid="Egami.SystemDrawing.Graphics.EnumerateMetafile*"></a>
+
+  <h3 id="Egami_SystemDrawing_Graphics_EnumerateMetafile_Egami_SystemDrawing_Imaging_Metafile_System_Drawing_Point_System_Drawing_Rectangle_Egami_SystemDrawing_GraphicsUnit_Egami_SystemDrawing_Graphics_EnumerateMetafileProc_" data-uid="Egami.SystemDrawing.Graphics.EnumerateMetafile(Egami.SystemDrawing.Imaging.Metafile,System.Drawing.Point,System.Drawing.Rectangle,Egami.SystemDrawing.GraphicsUnit,Egami.SystemDrawing.Graphics.EnumerateMetafileProc)">
+  EnumerateMetafile(Metafile, Point, Rectangle, GraphicsUnit, EnumerateMetafileProc)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.Metafiles.cs/#L116"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Walks the metafile's records, as GDI+ enumerates them, calling the callback for each until it returns false. Where
+the metafile would be drawn is not used: records are walked, not drawn.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void EnumerateMetafile(Metafile metafile, Point destPoint, Rectangle srcRect, GraphicsUnit srcUnit, Graphics.EnumerateMetafileProc callback)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>metafile</code> <a class="xref" href="Egami.SystemDrawing.Imaging.Metafile.html">Metafile</a></dt>
+    <dd><p>The metafile.</p>
+</dd>
+    <dt><code>destPoint</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.point">Point</a></dt>
+    <dd><p>The point the frame starts at.</p>
+</dd>
+    <dt><code>srcRect</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.rectangle">Rectangle</a></dt>
+    <dd><p>The part of the frame.</p>
+</dd>
+    <dt><code>srcUnit</code> <a class="xref" href="Egami.SystemDrawing.GraphicsUnit.html">GraphicsUnit</a></dt>
+    <dd><p>The unit of the part.</p>
+</dd>
+    <dt><code>callback</code> <a class="xref" href="Egami.SystemDrawing.Graphics.html">Graphics</a>.<a class="xref" href="Egami.SystemDrawing.Graphics.EnumerateMetafileProc.html">EnumerateMetafileProc</a></dt>
+    <dd><p>Called for each record; returning false stops the walk.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Graphics_EnumerateMetafile_" data-uid="Egami.SystemDrawing.Graphics.EnumerateMetafile*"></a>
+
+  <h3 id="Egami_SystemDrawing_Graphics_EnumerateMetafile_Egami_SystemDrawing_Imaging_Metafile_System_Drawing_Point_System_Drawing_Rectangle_Egami_SystemDrawing_GraphicsUnit_Egami_SystemDrawing_Graphics_EnumerateMetafileProc_System_IntPtr_" data-uid="Egami.SystemDrawing.Graphics.EnumerateMetafile(Egami.SystemDrawing.Imaging.Metafile,System.Drawing.Point,System.Drawing.Rectangle,Egami.SystemDrawing.GraphicsUnit,Egami.SystemDrawing.Graphics.EnumerateMetafileProc,System.IntPtr)">
+  EnumerateMetafile(Metafile, Point, Rectangle, GraphicsUnit, EnumerateMetafileProc, nint)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.Metafiles.cs/#L128"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Walks the metafile's records, as GDI+ enumerates them, calling the callback for each until it returns false. Where
+the metafile would be drawn is not used: records are walked, not drawn.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void EnumerateMetafile(Metafile metafile, Point destPoint, Rectangle srcRect, GraphicsUnit srcUnit, Graphics.EnumerateMetafileProc callback, nint callbackData)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>metafile</code> <a class="xref" href="Egami.SystemDrawing.Imaging.Metafile.html">Metafile</a></dt>
+    <dd><p>The metafile.</p>
+</dd>
+    <dt><code>destPoint</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.point">Point</a></dt>
+    <dd><p>The point the frame starts at.</p>
+</dd>
+    <dt><code>srcRect</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.rectangle">Rectangle</a></dt>
+    <dd><p>The part of the frame.</p>
+</dd>
+    <dt><code>srcUnit</code> <a class="xref" href="Egami.SystemDrawing.GraphicsUnit.html">GraphicsUnit</a></dt>
+    <dd><p>The unit of the part.</p>
+</dd>
+    <dt><code>callback</code> <a class="xref" href="Egami.SystemDrawing.Graphics.html">Graphics</a>.<a class="xref" href="Egami.SystemDrawing.Graphics.EnumerateMetafileProc.html">EnumerateMetafileProc</a></dt>
+    <dd><p>Called for each record; returning false stops the walk.</p>
+</dd>
+    <dt><code>callbackData</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.intptr">nint</a></dt>
+    <dd><p>Not used.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Graphics_EnumerateMetafile_" data-uid="Egami.SystemDrawing.Graphics.EnumerateMetafile*"></a>
+
+  <h3 id="Egami_SystemDrawing_Graphics_EnumerateMetafile_Egami_SystemDrawing_Imaging_Metafile_System_Drawing_Point_System_Drawing_Rectangle_Egami_SystemDrawing_GraphicsUnit_Egami_SystemDrawing_Graphics_EnumerateMetafileProc_System_IntPtr_Egami_SystemDrawing_Imaging_ImageAttributes_" data-uid="Egami.SystemDrawing.Graphics.EnumerateMetafile(Egami.SystemDrawing.Imaging.Metafile,System.Drawing.Point,System.Drawing.Rectangle,Egami.SystemDrawing.GraphicsUnit,Egami.SystemDrawing.Graphics.EnumerateMetafileProc,System.IntPtr,Egami.SystemDrawing.Imaging.ImageAttributes)">
+  EnumerateMetafile(Metafile, Point, Rectangle, GraphicsUnit, EnumerateMetafileProc, nint, ImageAttributes?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.Metafiles.cs/#L141"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Walks the metafile's records, as GDI+ enumerates them, calling the callback for each until it returns false. Where
+the metafile would be drawn is not used: records are walked, not drawn.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void EnumerateMetafile(Metafile metafile, Point destPoint, Rectangle srcRect, GraphicsUnit unit, Graphics.EnumerateMetafileProc callback, nint callbackData, ImageAttributes? imageAttr)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>metafile</code> <a class="xref" href="Egami.SystemDrawing.Imaging.Metafile.html">Metafile</a></dt>
+    <dd><p>The metafile.</p>
+</dd>
+    <dt><code>destPoint</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.point">Point</a></dt>
+    <dd><p>The point the frame starts at.</p>
+</dd>
+    <dt><code>srcRect</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.rectangle">Rectangle</a></dt>
+    <dd><p>The part of the frame.</p>
+</dd>
+    <dt><code>unit</code> <a class="xref" href="Egami.SystemDrawing.GraphicsUnit.html">GraphicsUnit</a></dt>
+    <dd><p>The unit of the part.</p>
+</dd>
+    <dt><code>callback</code> <a class="xref" href="Egami.SystemDrawing.Graphics.html">Graphics</a>.<a class="xref" href="Egami.SystemDrawing.Graphics.EnumerateMetafileProc.html">EnumerateMetafileProc</a></dt>
+    <dd><p>Called for each record; returning false stops the walk.</p>
+</dd>
+    <dt><code>callbackData</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.intptr">nint</a></dt>
+    <dd><p>Not used.</p>
+</dd>
+    <dt><code>imageAttr</code> <a class="xref" href="Egami.SystemDrawing.Imaging.ImageAttributes.html">ImageAttributes</a></dt>
+    <dd><p>Not used.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Graphics_EnumerateMetafile_" data-uid="Egami.SystemDrawing.Graphics.EnumerateMetafile*"></a>
+
+  <h3 id="Egami_SystemDrawing_Graphics_EnumerateMetafile_Egami_SystemDrawing_Imaging_Metafile_System_Drawing_PointF_Egami_SystemDrawing_Graphics_EnumerateMetafileProc_" data-uid="Egami.SystemDrawing.Graphics.EnumerateMetafile(Egami.SystemDrawing.Imaging.Metafile,System.Drawing.PointF,Egami.SystemDrawing.Graphics.EnumerateMetafileProc)">
+  EnumerateMetafile(Metafile, PointF, EnumerateMetafileProc)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.Metafiles.cs/#L18"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Walks the metafile's records, as GDI+ enumerates them, calling the callback for each until it returns false. Where
+the metafile would be drawn is not used: records are walked, not drawn.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void EnumerateMetafile(Metafile metafile, PointF destPoint, Graphics.EnumerateMetafileProc callback)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>metafile</code> <a class="xref" href="Egami.SystemDrawing.Imaging.Metafile.html">Metafile</a></dt>
+    <dd><p>The metafile.</p>
+</dd>
+    <dt><code>destPoint</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.pointf">PointF</a></dt>
+    <dd><p>The point the frame starts at.</p>
+</dd>
+    <dt><code>callback</code> <a class="xref" href="Egami.SystemDrawing.Graphics.html">Graphics</a>.<a class="xref" href="Egami.SystemDrawing.Graphics.EnumerateMetafileProc.html">EnumerateMetafileProc</a></dt>
+    <dd><p>Called for each record; returning false stops the walk.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Graphics_EnumerateMetafile_" data-uid="Egami.SystemDrawing.Graphics.EnumerateMetafile*"></a>
+
+  <h3 id="Egami_SystemDrawing_Graphics_EnumerateMetafile_Egami_SystemDrawing_Imaging_Metafile_System_Drawing_PointF_Egami_SystemDrawing_Graphics_EnumerateMetafileProc_System_IntPtr_" data-uid="Egami.SystemDrawing.Graphics.EnumerateMetafile(Egami.SystemDrawing.Imaging.Metafile,System.Drawing.PointF,Egami.SystemDrawing.Graphics.EnumerateMetafileProc,System.IntPtr)">
+  EnumerateMetafile(Metafile, PointF, EnumerateMetafileProc, nint)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.Metafiles.cs/#L28"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Walks the metafile's records, as GDI+ enumerates them, calling the callback for each until it returns false. Where
+the metafile would be drawn is not used: records are walked, not drawn.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void EnumerateMetafile(Metafile metafile, PointF destPoint, Graphics.EnumerateMetafileProc callback, nint callbackData)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>metafile</code> <a class="xref" href="Egami.SystemDrawing.Imaging.Metafile.html">Metafile</a></dt>
+    <dd><p>The metafile.</p>
+</dd>
+    <dt><code>destPoint</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.pointf">PointF</a></dt>
+    <dd><p>The point the frame starts at.</p>
+</dd>
+    <dt><code>callback</code> <a class="xref" href="Egami.SystemDrawing.Graphics.html">Graphics</a>.<a class="xref" href="Egami.SystemDrawing.Graphics.EnumerateMetafileProc.html">EnumerateMetafileProc</a></dt>
+    <dd><p>Called for each record; returning false stops the walk.</p>
+</dd>
+    <dt><code>callbackData</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.intptr">nint</a></dt>
+    <dd><p>Not used.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Graphics_EnumerateMetafile_" data-uid="Egami.SystemDrawing.Graphics.EnumerateMetafile*"></a>
+
+  <h3 id="Egami_SystemDrawing_Graphics_EnumerateMetafile_Egami_SystemDrawing_Imaging_Metafile_System_Drawing_PointF_Egami_SystemDrawing_Graphics_EnumerateMetafileProc_System_IntPtr_Egami_SystemDrawing_Imaging_ImageAttributes_" data-uid="Egami.SystemDrawing.Graphics.EnumerateMetafile(Egami.SystemDrawing.Imaging.Metafile,System.Drawing.PointF,Egami.SystemDrawing.Graphics.EnumerateMetafileProc,System.IntPtr,Egami.SystemDrawing.Imaging.ImageAttributes)">
+  EnumerateMetafile(Metafile, PointF, EnumerateMetafileProc, nint, ImageAttributes?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.Metafiles.cs/#L39"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Walks the metafile's records, as GDI+ enumerates them, calling the callback for each until it returns false. Where
+the metafile would be drawn is not used: records are walked, not drawn.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void EnumerateMetafile(Metafile metafile, PointF destPoint, Graphics.EnumerateMetafileProc callback, nint callbackData, ImageAttributes? imageAttr)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>metafile</code> <a class="xref" href="Egami.SystemDrawing.Imaging.Metafile.html">Metafile</a></dt>
+    <dd><p>The metafile.</p>
+</dd>
+    <dt><code>destPoint</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.pointf">PointF</a></dt>
+    <dd><p>The point the frame starts at.</p>
+</dd>
+    <dt><code>callback</code> <a class="xref" href="Egami.SystemDrawing.Graphics.html">Graphics</a>.<a class="xref" href="Egami.SystemDrawing.Graphics.EnumerateMetafileProc.html">EnumerateMetafileProc</a></dt>
+    <dd><p>Called for each record; returning false stops the walk.</p>
+</dd>
+    <dt><code>callbackData</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.intptr">nint</a></dt>
+    <dd><p>Not used.</p>
+</dd>
+    <dt><code>imageAttr</code> <a class="xref" href="Egami.SystemDrawing.Imaging.ImageAttributes.html">ImageAttributes</a></dt>
+    <dd><p>Not used.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Graphics_EnumerateMetafile_" data-uid="Egami.SystemDrawing.Graphics.EnumerateMetafile*"></a>
+
+  <h3 id="Egami_SystemDrawing_Graphics_EnumerateMetafile_Egami_SystemDrawing_Imaging_Metafile_System_Drawing_PointF_System_Drawing_RectangleF_Egami_SystemDrawing_GraphicsUnit_Egami_SystemDrawing_Graphics_EnumerateMetafileProc_" data-uid="Egami.SystemDrawing.Graphics.EnumerateMetafile(Egami.SystemDrawing.Imaging.Metafile,System.Drawing.PointF,System.Drawing.RectangleF,Egami.SystemDrawing.GraphicsUnit,Egami.SystemDrawing.Graphics.EnumerateMetafileProc)">
+  EnumerateMetafile(Metafile, PointF, RectangleF, GraphicsUnit, EnumerateMetafileProc)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.Metafiles.cs/#L50"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Walks the metafile's records, as GDI+ enumerates them, calling the callback for each until it returns false. Where
+the metafile would be drawn is not used: records are walked, not drawn.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void EnumerateMetafile(Metafile metafile, PointF destPoint, RectangleF srcRect, GraphicsUnit srcUnit, Graphics.EnumerateMetafileProc callback)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>metafile</code> <a class="xref" href="Egami.SystemDrawing.Imaging.Metafile.html">Metafile</a></dt>
+    <dd><p>The metafile.</p>
+</dd>
+    <dt><code>destPoint</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.pointf">PointF</a></dt>
+    <dd><p>The point the frame starts at.</p>
+</dd>
+    <dt><code>srcRect</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.rectanglef">RectangleF</a></dt>
+    <dd><p>The part of the frame.</p>
+</dd>
+    <dt><code>srcUnit</code> <a class="xref" href="Egami.SystemDrawing.GraphicsUnit.html">GraphicsUnit</a></dt>
+    <dd><p>The unit of the part.</p>
+</dd>
+    <dt><code>callback</code> <a class="xref" href="Egami.SystemDrawing.Graphics.html">Graphics</a>.<a class="xref" href="Egami.SystemDrawing.Graphics.EnumerateMetafileProc.html">EnumerateMetafileProc</a></dt>
+    <dd><p>Called for each record; returning false stops the walk.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Graphics_EnumerateMetafile_" data-uid="Egami.SystemDrawing.Graphics.EnumerateMetafile*"></a>
+
+  <h3 id="Egami_SystemDrawing_Graphics_EnumerateMetafile_Egami_SystemDrawing_Imaging_Metafile_System_Drawing_PointF_System_Drawing_RectangleF_Egami_SystemDrawing_GraphicsUnit_Egami_SystemDrawing_Graphics_EnumerateMetafileProc_System_IntPtr_" data-uid="Egami.SystemDrawing.Graphics.EnumerateMetafile(Egami.SystemDrawing.Imaging.Metafile,System.Drawing.PointF,System.Drawing.RectangleF,Egami.SystemDrawing.GraphicsUnit,Egami.SystemDrawing.Graphics.EnumerateMetafileProc,System.IntPtr)">
+  EnumerateMetafile(Metafile, PointF, RectangleF, GraphicsUnit, EnumerateMetafileProc, nint)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.Metafiles.cs/#L62"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Walks the metafile's records, as GDI+ enumerates them, calling the callback for each until it returns false. Where
+the metafile would be drawn is not used: records are walked, not drawn.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void EnumerateMetafile(Metafile metafile, PointF destPoint, RectangleF srcRect, GraphicsUnit srcUnit, Graphics.EnumerateMetafileProc callback, nint callbackData)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>metafile</code> <a class="xref" href="Egami.SystemDrawing.Imaging.Metafile.html">Metafile</a></dt>
+    <dd><p>The metafile.</p>
+</dd>
+    <dt><code>destPoint</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.pointf">PointF</a></dt>
+    <dd><p>The point the frame starts at.</p>
+</dd>
+    <dt><code>srcRect</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.rectanglef">RectangleF</a></dt>
+    <dd><p>The part of the frame.</p>
+</dd>
+    <dt><code>srcUnit</code> <a class="xref" href="Egami.SystemDrawing.GraphicsUnit.html">GraphicsUnit</a></dt>
+    <dd><p>The unit of the part.</p>
+</dd>
+    <dt><code>callback</code> <a class="xref" href="Egami.SystemDrawing.Graphics.html">Graphics</a>.<a class="xref" href="Egami.SystemDrawing.Graphics.EnumerateMetafileProc.html">EnumerateMetafileProc</a></dt>
+    <dd><p>Called for each record; returning false stops the walk.</p>
+</dd>
+    <dt><code>callbackData</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.intptr">nint</a></dt>
+    <dd><p>Not used.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Graphics_EnumerateMetafile_" data-uid="Egami.SystemDrawing.Graphics.EnumerateMetafile*"></a>
+
+  <h3 id="Egami_SystemDrawing_Graphics_EnumerateMetafile_Egami_SystemDrawing_Imaging_Metafile_System_Drawing_PointF_System_Drawing_RectangleF_Egami_SystemDrawing_GraphicsUnit_Egami_SystemDrawing_Graphics_EnumerateMetafileProc_System_IntPtr_Egami_SystemDrawing_Imaging_ImageAttributes_" data-uid="Egami.SystemDrawing.Graphics.EnumerateMetafile(Egami.SystemDrawing.Imaging.Metafile,System.Drawing.PointF,System.Drawing.RectangleF,Egami.SystemDrawing.GraphicsUnit,Egami.SystemDrawing.Graphics.EnumerateMetafileProc,System.IntPtr,Egami.SystemDrawing.Imaging.ImageAttributes)">
+  EnumerateMetafile(Metafile, PointF, RectangleF, GraphicsUnit, EnumerateMetafileProc, nint, ImageAttributes?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.Metafiles.cs/#L75"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Walks the metafile's records, as GDI+ enumerates them, calling the callback for each until it returns false. Where
+the metafile would be drawn is not used: records are walked, not drawn.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void EnumerateMetafile(Metafile metafile, PointF destPoint, RectangleF srcRect, GraphicsUnit unit, Graphics.EnumerateMetafileProc callback, nint callbackData, ImageAttributes? imageAttr)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>metafile</code> <a class="xref" href="Egami.SystemDrawing.Imaging.Metafile.html">Metafile</a></dt>
+    <dd><p>The metafile.</p>
+</dd>
+    <dt><code>destPoint</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.pointf">PointF</a></dt>
+    <dd><p>The point the frame starts at.</p>
+</dd>
+    <dt><code>srcRect</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.rectanglef">RectangleF</a></dt>
+    <dd><p>The part of the frame.</p>
+</dd>
+    <dt><code>unit</code> <a class="xref" href="Egami.SystemDrawing.GraphicsUnit.html">GraphicsUnit</a></dt>
+    <dd><p>The unit of the part.</p>
+</dd>
+    <dt><code>callback</code> <a class="xref" href="Egami.SystemDrawing.Graphics.html">Graphics</a>.<a class="xref" href="Egami.SystemDrawing.Graphics.EnumerateMetafileProc.html">EnumerateMetafileProc</a></dt>
+    <dd><p>Called for each record; returning false stops the walk.</p>
+</dd>
+    <dt><code>callbackData</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.intptr">nint</a></dt>
+    <dd><p>Not used.</p>
+</dd>
+    <dt><code>imageAttr</code> <a class="xref" href="Egami.SystemDrawing.Imaging.ImageAttributes.html">ImageAttributes</a></dt>
+    <dd><p>Not used.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Graphics_EnumerateMetafile_" data-uid="Egami.SystemDrawing.Graphics.EnumerateMetafile*"></a>
+
+  <h3 id="Egami_SystemDrawing_Graphics_EnumerateMetafile_Egami_SystemDrawing_Imaging_Metafile_System_Drawing_PointF___Egami_SystemDrawing_Graphics_EnumerateMetafileProc_" data-uid="Egami.SystemDrawing.Graphics.EnumerateMetafile(Egami.SystemDrawing.Imaging.Metafile,System.Drawing.PointF[],Egami.SystemDrawing.Graphics.EnumerateMetafileProc)">
+  EnumerateMetafile(Metafile, PointF[], EnumerateMetafileProc)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.Metafiles.cs/#L282"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Walks the metafile's records, as GDI+ enumerates them, calling the callback for each until it returns false. Where
+the metafile would be drawn is not used: records are walked, not drawn.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void EnumerateMetafile(Metafile metafile, PointF[] destPoints, Graphics.EnumerateMetafileProc callback)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>metafile</code> <a class="xref" href="Egami.SystemDrawing.Imaging.Metafile.html">Metafile</a></dt>
+    <dd><p>The metafile.</p>
+</dd>
+    <dt><code>destPoints</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.pointf">PointF</a>[]</dt>
+    <dd><p>Where the frame's corners go.</p>
+</dd>
+    <dt><code>callback</code> <a class="xref" href="Egami.SystemDrawing.Graphics.html">Graphics</a>.<a class="xref" href="Egami.SystemDrawing.Graphics.EnumerateMetafileProc.html">EnumerateMetafileProc</a></dt>
+    <dd><p>Called for each record; returning false stops the walk.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Graphics_EnumerateMetafile_" data-uid="Egami.SystemDrawing.Graphics.EnumerateMetafile*"></a>
+
+  <h3 id="Egami_SystemDrawing_Graphics_EnumerateMetafile_Egami_SystemDrawing_Imaging_Metafile_System_Drawing_PointF___Egami_SystemDrawing_Graphics_EnumerateMetafileProc_System_IntPtr_" data-uid="Egami.SystemDrawing.Graphics.EnumerateMetafile(Egami.SystemDrawing.Imaging.Metafile,System.Drawing.PointF[],Egami.SystemDrawing.Graphics.EnumerateMetafileProc,System.IntPtr)">
+  EnumerateMetafile(Metafile, PointF[], EnumerateMetafileProc, nint)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.Metafiles.cs/#L292"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Walks the metafile's records, as GDI+ enumerates them, calling the callback for each until it returns false. Where
+the metafile would be drawn is not used: records are walked, not drawn.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void EnumerateMetafile(Metafile metafile, PointF[] destPoints, Graphics.EnumerateMetafileProc callback, nint callbackData)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>metafile</code> <a class="xref" href="Egami.SystemDrawing.Imaging.Metafile.html">Metafile</a></dt>
+    <dd><p>The metafile.</p>
+</dd>
+    <dt><code>destPoints</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.pointf">PointF</a>[]</dt>
+    <dd><p>Where the frame's corners go.</p>
+</dd>
+    <dt><code>callback</code> <a class="xref" href="Egami.SystemDrawing.Graphics.html">Graphics</a>.<a class="xref" href="Egami.SystemDrawing.Graphics.EnumerateMetafileProc.html">EnumerateMetafileProc</a></dt>
+    <dd><p>Called for each record; returning false stops the walk.</p>
+</dd>
+    <dt><code>callbackData</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.intptr">nint</a></dt>
+    <dd><p>Not used.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Graphics_EnumerateMetafile_" data-uid="Egami.SystemDrawing.Graphics.EnumerateMetafile*"></a>
+
+  <h3 id="Egami_SystemDrawing_Graphics_EnumerateMetafile_Egami_SystemDrawing_Imaging_Metafile_System_Drawing_PointF___Egami_SystemDrawing_Graphics_EnumerateMetafileProc_System_IntPtr_Egami_SystemDrawing_Imaging_ImageAttributes_" data-uid="Egami.SystemDrawing.Graphics.EnumerateMetafile(Egami.SystemDrawing.Imaging.Metafile,System.Drawing.PointF[],Egami.SystemDrawing.Graphics.EnumerateMetafileProc,System.IntPtr,Egami.SystemDrawing.Imaging.ImageAttributes)">
+  EnumerateMetafile(Metafile, PointF[], EnumerateMetafileProc, nint, ImageAttributes?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.Metafiles.cs/#L303"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Walks the metafile's records, as GDI+ enumerates them, calling the callback for each until it returns false. Where
+the metafile would be drawn is not used: records are walked, not drawn.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void EnumerateMetafile(Metafile metafile, PointF[] destPoints, Graphics.EnumerateMetafileProc callback, nint callbackData, ImageAttributes? imageAttr)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>metafile</code> <a class="xref" href="Egami.SystemDrawing.Imaging.Metafile.html">Metafile</a></dt>
+    <dd><p>The metafile.</p>
+</dd>
+    <dt><code>destPoints</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.pointf">PointF</a>[]</dt>
+    <dd><p>Where the frame's corners go.</p>
+</dd>
+    <dt><code>callback</code> <a class="xref" href="Egami.SystemDrawing.Graphics.html">Graphics</a>.<a class="xref" href="Egami.SystemDrawing.Graphics.EnumerateMetafileProc.html">EnumerateMetafileProc</a></dt>
+    <dd><p>Called for each record; returning false stops the walk.</p>
+</dd>
+    <dt><code>callbackData</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.intptr">nint</a></dt>
+    <dd><p>Not used.</p>
+</dd>
+    <dt><code>imageAttr</code> <a class="xref" href="Egami.SystemDrawing.Imaging.ImageAttributes.html">ImageAttributes</a></dt>
+    <dd><p>Not used.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Graphics_EnumerateMetafile_" data-uid="Egami.SystemDrawing.Graphics.EnumerateMetafile*"></a>
+
+  <h3 id="Egami_SystemDrawing_Graphics_EnumerateMetafile_Egami_SystemDrawing_Imaging_Metafile_System_Drawing_PointF___System_Drawing_RectangleF_Egami_SystemDrawing_GraphicsUnit_Egami_SystemDrawing_Graphics_EnumerateMetafileProc_" data-uid="Egami.SystemDrawing.Graphics.EnumerateMetafile(Egami.SystemDrawing.Imaging.Metafile,System.Drawing.PointF[],System.Drawing.RectangleF,Egami.SystemDrawing.GraphicsUnit,Egami.SystemDrawing.Graphics.EnumerateMetafileProc)">
+  EnumerateMetafile(Metafile, PointF[], RectangleF, GraphicsUnit, EnumerateMetafileProc)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.Metafiles.cs/#L314"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Walks the metafile's records, as GDI+ enumerates them, calling the callback for each until it returns false. Where
+the metafile would be drawn is not used: records are walked, not drawn.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void EnumerateMetafile(Metafile metafile, PointF[] destPoints, RectangleF srcRect, GraphicsUnit srcUnit, Graphics.EnumerateMetafileProc callback)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>metafile</code> <a class="xref" href="Egami.SystemDrawing.Imaging.Metafile.html">Metafile</a></dt>
+    <dd><p>The metafile.</p>
+</dd>
+    <dt><code>destPoints</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.pointf">PointF</a>[]</dt>
+    <dd><p>Where the frame's corners go.</p>
+</dd>
+    <dt><code>srcRect</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.rectanglef">RectangleF</a></dt>
+    <dd><p>The part of the frame.</p>
+</dd>
+    <dt><code>srcUnit</code> <a class="xref" href="Egami.SystemDrawing.GraphicsUnit.html">GraphicsUnit</a></dt>
+    <dd><p>The unit of the part.</p>
+</dd>
+    <dt><code>callback</code> <a class="xref" href="Egami.SystemDrawing.Graphics.html">Graphics</a>.<a class="xref" href="Egami.SystemDrawing.Graphics.EnumerateMetafileProc.html">EnumerateMetafileProc</a></dt>
+    <dd><p>Called for each record; returning false stops the walk.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Graphics_EnumerateMetafile_" data-uid="Egami.SystemDrawing.Graphics.EnumerateMetafile*"></a>
+
+  <h3 id="Egami_SystemDrawing_Graphics_EnumerateMetafile_Egami_SystemDrawing_Imaging_Metafile_System_Drawing_PointF___System_Drawing_RectangleF_Egami_SystemDrawing_GraphicsUnit_Egami_SystemDrawing_Graphics_EnumerateMetafileProc_System_IntPtr_" data-uid="Egami.SystemDrawing.Graphics.EnumerateMetafile(Egami.SystemDrawing.Imaging.Metafile,System.Drawing.PointF[],System.Drawing.RectangleF,Egami.SystemDrawing.GraphicsUnit,Egami.SystemDrawing.Graphics.EnumerateMetafileProc,System.IntPtr)">
+  EnumerateMetafile(Metafile, PointF[], RectangleF, GraphicsUnit, EnumerateMetafileProc, nint)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.Metafiles.cs/#L326"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Walks the metafile's records, as GDI+ enumerates them, calling the callback for each until it returns false. Where
+the metafile would be drawn is not used: records are walked, not drawn.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void EnumerateMetafile(Metafile metafile, PointF[] destPoints, RectangleF srcRect, GraphicsUnit srcUnit, Graphics.EnumerateMetafileProc callback, nint callbackData)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>metafile</code> <a class="xref" href="Egami.SystemDrawing.Imaging.Metafile.html">Metafile</a></dt>
+    <dd><p>The metafile.</p>
+</dd>
+    <dt><code>destPoints</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.pointf">PointF</a>[]</dt>
+    <dd><p>Where the frame's corners go.</p>
+</dd>
+    <dt><code>srcRect</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.rectanglef">RectangleF</a></dt>
+    <dd><p>The part of the frame.</p>
+</dd>
+    <dt><code>srcUnit</code> <a class="xref" href="Egami.SystemDrawing.GraphicsUnit.html">GraphicsUnit</a></dt>
+    <dd><p>The unit of the part.</p>
+</dd>
+    <dt><code>callback</code> <a class="xref" href="Egami.SystemDrawing.Graphics.html">Graphics</a>.<a class="xref" href="Egami.SystemDrawing.Graphics.EnumerateMetafileProc.html">EnumerateMetafileProc</a></dt>
+    <dd><p>Called for each record; returning false stops the walk.</p>
+</dd>
+    <dt><code>callbackData</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.intptr">nint</a></dt>
+    <dd><p>Not used.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Graphics_EnumerateMetafile_" data-uid="Egami.SystemDrawing.Graphics.EnumerateMetafile*"></a>
+
+  <h3 id="Egami_SystemDrawing_Graphics_EnumerateMetafile_Egami_SystemDrawing_Imaging_Metafile_System_Drawing_PointF___System_Drawing_RectangleF_Egami_SystemDrawing_GraphicsUnit_Egami_SystemDrawing_Graphics_EnumerateMetafileProc_System_IntPtr_Egami_SystemDrawing_Imaging_ImageAttributes_" data-uid="Egami.SystemDrawing.Graphics.EnumerateMetafile(Egami.SystemDrawing.Imaging.Metafile,System.Drawing.PointF[],System.Drawing.RectangleF,Egami.SystemDrawing.GraphicsUnit,Egami.SystemDrawing.Graphics.EnumerateMetafileProc,System.IntPtr,Egami.SystemDrawing.Imaging.ImageAttributes)">
+  EnumerateMetafile(Metafile, PointF[], RectangleF, GraphicsUnit, EnumerateMetafileProc, nint, ImageAttributes?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.Metafiles.cs/#L339"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Walks the metafile's records, as GDI+ enumerates them, calling the callback for each until it returns false. Where
+the metafile would be drawn is not used: records are walked, not drawn.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void EnumerateMetafile(Metafile metafile, PointF[] destPoints, RectangleF srcRect, GraphicsUnit unit, Graphics.EnumerateMetafileProc callback, nint callbackData, ImageAttributes? imageAttr)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>metafile</code> <a class="xref" href="Egami.SystemDrawing.Imaging.Metafile.html">Metafile</a></dt>
+    <dd><p>The metafile.</p>
+</dd>
+    <dt><code>destPoints</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.pointf">PointF</a>[]</dt>
+    <dd><p>Where the frame's corners go.</p>
+</dd>
+    <dt><code>srcRect</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.rectanglef">RectangleF</a></dt>
+    <dd><p>The part of the frame.</p>
+</dd>
+    <dt><code>unit</code> <a class="xref" href="Egami.SystemDrawing.GraphicsUnit.html">GraphicsUnit</a></dt>
+    <dd><p>The unit of the part.</p>
+</dd>
+    <dt><code>callback</code> <a class="xref" href="Egami.SystemDrawing.Graphics.html">Graphics</a>.<a class="xref" href="Egami.SystemDrawing.Graphics.EnumerateMetafileProc.html">EnumerateMetafileProc</a></dt>
+    <dd><p>Called for each record; returning false stops the walk.</p>
+</dd>
+    <dt><code>callbackData</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.intptr">nint</a></dt>
+    <dd><p>Not used.</p>
+</dd>
+    <dt><code>imageAttr</code> <a class="xref" href="Egami.SystemDrawing.Imaging.ImageAttributes.html">ImageAttributes</a></dt>
+    <dd><p>Not used.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Graphics_EnumerateMetafile_" data-uid="Egami.SystemDrawing.Graphics.EnumerateMetafile*"></a>
+
+  <h3 id="Egami_SystemDrawing_Graphics_EnumerateMetafile_Egami_SystemDrawing_Imaging_Metafile_System_Drawing_Point___Egami_SystemDrawing_Graphics_EnumerateMetafileProc_" data-uid="Egami.SystemDrawing.Graphics.EnumerateMetafile(Egami.SystemDrawing.Imaging.Metafile,System.Drawing.Point[],Egami.SystemDrawing.Graphics.EnumerateMetafileProc)">
+  EnumerateMetafile(Metafile, Point[], EnumerateMetafileProc)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.Metafiles.cs/#L348"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Walks the metafile's records, as GDI+ enumerates them, calling the callback for each until it returns false. Where
+the metafile would be drawn is not used: records are walked, not drawn.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void EnumerateMetafile(Metafile metafile, Point[] destPoints, Graphics.EnumerateMetafileProc callback)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>metafile</code> <a class="xref" href="Egami.SystemDrawing.Imaging.Metafile.html">Metafile</a></dt>
+    <dd><p>The metafile.</p>
+</dd>
+    <dt><code>destPoints</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.point">Point</a>[]</dt>
+    <dd><p>Where the frame's corners go.</p>
+</dd>
+    <dt><code>callback</code> <a class="xref" href="Egami.SystemDrawing.Graphics.html">Graphics</a>.<a class="xref" href="Egami.SystemDrawing.Graphics.EnumerateMetafileProc.html">EnumerateMetafileProc</a></dt>
+    <dd><p>Called for each record; returning false stops the walk.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Graphics_EnumerateMetafile_" data-uid="Egami.SystemDrawing.Graphics.EnumerateMetafile*"></a>
+
+  <h3 id="Egami_SystemDrawing_Graphics_EnumerateMetafile_Egami_SystemDrawing_Imaging_Metafile_System_Drawing_Point___Egami_SystemDrawing_Graphics_EnumerateMetafileProc_System_IntPtr_" data-uid="Egami.SystemDrawing.Graphics.EnumerateMetafile(Egami.SystemDrawing.Imaging.Metafile,System.Drawing.Point[],Egami.SystemDrawing.Graphics.EnumerateMetafileProc,System.IntPtr)">
+  EnumerateMetafile(Metafile, Point[], EnumerateMetafileProc, nint)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.Metafiles.cs/#L358"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Walks the metafile's records, as GDI+ enumerates them, calling the callback for each until it returns false. Where
+the metafile would be drawn is not used: records are walked, not drawn.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void EnumerateMetafile(Metafile metafile, Point[] destPoints, Graphics.EnumerateMetafileProc callback, nint callbackData)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>metafile</code> <a class="xref" href="Egami.SystemDrawing.Imaging.Metafile.html">Metafile</a></dt>
+    <dd><p>The metafile.</p>
+</dd>
+    <dt><code>destPoints</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.point">Point</a>[]</dt>
+    <dd><p>Where the frame's corners go.</p>
+</dd>
+    <dt><code>callback</code> <a class="xref" href="Egami.SystemDrawing.Graphics.html">Graphics</a>.<a class="xref" href="Egami.SystemDrawing.Graphics.EnumerateMetafileProc.html">EnumerateMetafileProc</a></dt>
+    <dd><p>Called for each record; returning false stops the walk.</p>
+</dd>
+    <dt><code>callbackData</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.intptr">nint</a></dt>
+    <dd><p>Not used.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Graphics_EnumerateMetafile_" data-uid="Egami.SystemDrawing.Graphics.EnumerateMetafile*"></a>
+
+  <h3 id="Egami_SystemDrawing_Graphics_EnumerateMetafile_Egami_SystemDrawing_Imaging_Metafile_System_Drawing_Point___Egami_SystemDrawing_Graphics_EnumerateMetafileProc_System_IntPtr_Egami_SystemDrawing_Imaging_ImageAttributes_" data-uid="Egami.SystemDrawing.Graphics.EnumerateMetafile(Egami.SystemDrawing.Imaging.Metafile,System.Drawing.Point[],Egami.SystemDrawing.Graphics.EnumerateMetafileProc,System.IntPtr,Egami.SystemDrawing.Imaging.ImageAttributes)">
+  EnumerateMetafile(Metafile, Point[], EnumerateMetafileProc, nint, ImageAttributes?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.Metafiles.cs/#L369"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Walks the metafile's records, as GDI+ enumerates them, calling the callback for each until it returns false. Where
+the metafile would be drawn is not used: records are walked, not drawn.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void EnumerateMetafile(Metafile metafile, Point[] destPoints, Graphics.EnumerateMetafileProc callback, nint callbackData, ImageAttributes? imageAttr)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>metafile</code> <a class="xref" href="Egami.SystemDrawing.Imaging.Metafile.html">Metafile</a></dt>
+    <dd><p>The metafile.</p>
+</dd>
+    <dt><code>destPoints</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.point">Point</a>[]</dt>
+    <dd><p>Where the frame's corners go.</p>
+</dd>
+    <dt><code>callback</code> <a class="xref" href="Egami.SystemDrawing.Graphics.html">Graphics</a>.<a class="xref" href="Egami.SystemDrawing.Graphics.EnumerateMetafileProc.html">EnumerateMetafileProc</a></dt>
+    <dd><p>Called for each record; returning false stops the walk.</p>
+</dd>
+    <dt><code>callbackData</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.intptr">nint</a></dt>
+    <dd><p>Not used.</p>
+</dd>
+    <dt><code>imageAttr</code> <a class="xref" href="Egami.SystemDrawing.Imaging.ImageAttributes.html">ImageAttributes</a></dt>
+    <dd><p>Not used.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Graphics_EnumerateMetafile_" data-uid="Egami.SystemDrawing.Graphics.EnumerateMetafile*"></a>
+
+  <h3 id="Egami_SystemDrawing_Graphics_EnumerateMetafile_Egami_SystemDrawing_Imaging_Metafile_System_Drawing_Point___System_Drawing_Rectangle_Egami_SystemDrawing_GraphicsUnit_Egami_SystemDrawing_Graphics_EnumerateMetafileProc_" data-uid="Egami.SystemDrawing.Graphics.EnumerateMetafile(Egami.SystemDrawing.Imaging.Metafile,System.Drawing.Point[],System.Drawing.Rectangle,Egami.SystemDrawing.GraphicsUnit,Egami.SystemDrawing.Graphics.EnumerateMetafileProc)">
+  EnumerateMetafile(Metafile, Point[], Rectangle, GraphicsUnit, EnumerateMetafileProc)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.Metafiles.cs/#L380"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Walks the metafile's records, as GDI+ enumerates them, calling the callback for each until it returns false. Where
+the metafile would be drawn is not used: records are walked, not drawn.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void EnumerateMetafile(Metafile metafile, Point[] destPoints, Rectangle srcRect, GraphicsUnit srcUnit, Graphics.EnumerateMetafileProc callback)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>metafile</code> <a class="xref" href="Egami.SystemDrawing.Imaging.Metafile.html">Metafile</a></dt>
+    <dd><p>The metafile.</p>
+</dd>
+    <dt><code>destPoints</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.point">Point</a>[]</dt>
+    <dd><p>Where the frame's corners go.</p>
+</dd>
+    <dt><code>srcRect</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.rectangle">Rectangle</a></dt>
+    <dd><p>The part of the frame.</p>
+</dd>
+    <dt><code>srcUnit</code> <a class="xref" href="Egami.SystemDrawing.GraphicsUnit.html">GraphicsUnit</a></dt>
+    <dd><p>The unit of the part.</p>
+</dd>
+    <dt><code>callback</code> <a class="xref" href="Egami.SystemDrawing.Graphics.html">Graphics</a>.<a class="xref" href="Egami.SystemDrawing.Graphics.EnumerateMetafileProc.html">EnumerateMetafileProc</a></dt>
+    <dd><p>Called for each record; returning false stops the walk.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Graphics_EnumerateMetafile_" data-uid="Egami.SystemDrawing.Graphics.EnumerateMetafile*"></a>
+
+  <h3 id="Egami_SystemDrawing_Graphics_EnumerateMetafile_Egami_SystemDrawing_Imaging_Metafile_System_Drawing_Point___System_Drawing_Rectangle_Egami_SystemDrawing_GraphicsUnit_Egami_SystemDrawing_Graphics_EnumerateMetafileProc_System_IntPtr_" data-uid="Egami.SystemDrawing.Graphics.EnumerateMetafile(Egami.SystemDrawing.Imaging.Metafile,System.Drawing.Point[],System.Drawing.Rectangle,Egami.SystemDrawing.GraphicsUnit,Egami.SystemDrawing.Graphics.EnumerateMetafileProc,System.IntPtr)">
+  EnumerateMetafile(Metafile, Point[], Rectangle, GraphicsUnit, EnumerateMetafileProc, nint)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.Metafiles.cs/#L392"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Walks the metafile's records, as GDI+ enumerates them, calling the callback for each until it returns false. Where
+the metafile would be drawn is not used: records are walked, not drawn.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void EnumerateMetafile(Metafile metafile, Point[] destPoints, Rectangle srcRect, GraphicsUnit srcUnit, Graphics.EnumerateMetafileProc callback, nint callbackData)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>metafile</code> <a class="xref" href="Egami.SystemDrawing.Imaging.Metafile.html">Metafile</a></dt>
+    <dd><p>The metafile.</p>
+</dd>
+    <dt><code>destPoints</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.point">Point</a>[]</dt>
+    <dd><p>Where the frame's corners go.</p>
+</dd>
+    <dt><code>srcRect</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.rectangle">Rectangle</a></dt>
+    <dd><p>The part of the frame.</p>
+</dd>
+    <dt><code>srcUnit</code> <a class="xref" href="Egami.SystemDrawing.GraphicsUnit.html">GraphicsUnit</a></dt>
+    <dd><p>The unit of the part.</p>
+</dd>
+    <dt><code>callback</code> <a class="xref" href="Egami.SystemDrawing.Graphics.html">Graphics</a>.<a class="xref" href="Egami.SystemDrawing.Graphics.EnumerateMetafileProc.html">EnumerateMetafileProc</a></dt>
+    <dd><p>Called for each record; returning false stops the walk.</p>
+</dd>
+    <dt><code>callbackData</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.intptr">nint</a></dt>
+    <dd><p>Not used.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Graphics_EnumerateMetafile_" data-uid="Egami.SystemDrawing.Graphics.EnumerateMetafile*"></a>
+
+  <h3 id="Egami_SystemDrawing_Graphics_EnumerateMetafile_Egami_SystemDrawing_Imaging_Metafile_System_Drawing_Point___System_Drawing_Rectangle_Egami_SystemDrawing_GraphicsUnit_Egami_SystemDrawing_Graphics_EnumerateMetafileProc_System_IntPtr_Egami_SystemDrawing_Imaging_ImageAttributes_" data-uid="Egami.SystemDrawing.Graphics.EnumerateMetafile(Egami.SystemDrawing.Imaging.Metafile,System.Drawing.Point[],System.Drawing.Rectangle,Egami.SystemDrawing.GraphicsUnit,Egami.SystemDrawing.Graphics.EnumerateMetafileProc,System.IntPtr,Egami.SystemDrawing.Imaging.ImageAttributes)">
+  EnumerateMetafile(Metafile, Point[], Rectangle, GraphicsUnit, EnumerateMetafileProc, nint, ImageAttributes?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.Metafiles.cs/#L405"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Walks the metafile's records, as GDI+ enumerates them, calling the callback for each until it returns false. Where
+the metafile would be drawn is not used: records are walked, not drawn.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void EnumerateMetafile(Metafile metafile, Point[] destPoints, Rectangle srcRect, GraphicsUnit unit, Graphics.EnumerateMetafileProc callback, nint callbackData, ImageAttributes? imageAttr)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>metafile</code> <a class="xref" href="Egami.SystemDrawing.Imaging.Metafile.html">Metafile</a></dt>
+    <dd><p>The metafile.</p>
+</dd>
+    <dt><code>destPoints</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.point">Point</a>[]</dt>
+    <dd><p>Where the frame's corners go.</p>
+</dd>
+    <dt><code>srcRect</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.rectangle">Rectangle</a></dt>
+    <dd><p>The part of the frame.</p>
+</dd>
+    <dt><code>unit</code> <a class="xref" href="Egami.SystemDrawing.GraphicsUnit.html">GraphicsUnit</a></dt>
+    <dd><p>The unit of the part.</p>
+</dd>
+    <dt><code>callback</code> <a class="xref" href="Egami.SystemDrawing.Graphics.html">Graphics</a>.<a class="xref" href="Egami.SystemDrawing.Graphics.EnumerateMetafileProc.html">EnumerateMetafileProc</a></dt>
+    <dd><p>Called for each record; returning false stops the walk.</p>
+</dd>
+    <dt><code>callbackData</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.intptr">nint</a></dt>
+    <dd><p>Not used.</p>
+</dd>
+    <dt><code>imageAttr</code> <a class="xref" href="Egami.SystemDrawing.Imaging.ImageAttributes.html">ImageAttributes</a></dt>
+    <dd><p>Not used.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Graphics_EnumerateMetafile_" data-uid="Egami.SystemDrawing.Graphics.EnumerateMetafile*"></a>
+
+  <h3 id="Egami_SystemDrawing_Graphics_EnumerateMetafile_Egami_SystemDrawing_Imaging_Metafile_System_Drawing_Rectangle_Egami_SystemDrawing_Graphics_EnumerateMetafileProc_" data-uid="Egami.SystemDrawing.Graphics.EnumerateMetafile(Egami.SystemDrawing.Imaging.Metafile,System.Drawing.Rectangle,Egami.SystemDrawing.Graphics.EnumerateMetafileProc)">
+  EnumerateMetafile(Metafile, Rectangle, EnumerateMetafileProc)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.Metafiles.cs/#L216"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Walks the metafile's records, as GDI+ enumerates them, calling the callback for each until it returns false. Where
+the metafile would be drawn is not used: records are walked, not drawn.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void EnumerateMetafile(Metafile metafile, Rectangle destRect, Graphics.EnumerateMetafileProc callback)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>metafile</code> <a class="xref" href="Egami.SystemDrawing.Imaging.Metafile.html">Metafile</a></dt>
+    <dd><p>The metafile.</p>
+</dd>
+    <dt><code>destRect</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.rectangle">Rectangle</a></dt>
+    <dd><p>The rectangle the frame fills.</p>
+</dd>
+    <dt><code>callback</code> <a class="xref" href="Egami.SystemDrawing.Graphics.html">Graphics</a>.<a class="xref" href="Egami.SystemDrawing.Graphics.EnumerateMetafileProc.html">EnumerateMetafileProc</a></dt>
+    <dd><p>Called for each record; returning false stops the walk.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Graphics_EnumerateMetafile_" data-uid="Egami.SystemDrawing.Graphics.EnumerateMetafile*"></a>
+
+  <h3 id="Egami_SystemDrawing_Graphics_EnumerateMetafile_Egami_SystemDrawing_Imaging_Metafile_System_Drawing_Rectangle_Egami_SystemDrawing_Graphics_EnumerateMetafileProc_System_IntPtr_" data-uid="Egami.SystemDrawing.Graphics.EnumerateMetafile(Egami.SystemDrawing.Imaging.Metafile,System.Drawing.Rectangle,Egami.SystemDrawing.Graphics.EnumerateMetafileProc,System.IntPtr)">
+  EnumerateMetafile(Metafile, Rectangle, EnumerateMetafileProc, nint)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.Metafiles.cs/#L226"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Walks the metafile's records, as GDI+ enumerates them, calling the callback for each until it returns false. Where
+the metafile would be drawn is not used: records are walked, not drawn.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void EnumerateMetafile(Metafile metafile, Rectangle destRect, Graphics.EnumerateMetafileProc callback, nint callbackData)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>metafile</code> <a class="xref" href="Egami.SystemDrawing.Imaging.Metafile.html">Metafile</a></dt>
+    <dd><p>The metafile.</p>
+</dd>
+    <dt><code>destRect</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.rectangle">Rectangle</a></dt>
+    <dd><p>The rectangle the frame fills.</p>
+</dd>
+    <dt><code>callback</code> <a class="xref" href="Egami.SystemDrawing.Graphics.html">Graphics</a>.<a class="xref" href="Egami.SystemDrawing.Graphics.EnumerateMetafileProc.html">EnumerateMetafileProc</a></dt>
+    <dd><p>Called for each record; returning false stops the walk.</p>
+</dd>
+    <dt><code>callbackData</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.intptr">nint</a></dt>
+    <dd><p>Not used.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Graphics_EnumerateMetafile_" data-uid="Egami.SystemDrawing.Graphics.EnumerateMetafile*"></a>
+
+  <h3 id="Egami_SystemDrawing_Graphics_EnumerateMetafile_Egami_SystemDrawing_Imaging_Metafile_System_Drawing_Rectangle_Egami_SystemDrawing_Graphics_EnumerateMetafileProc_System_IntPtr_Egami_SystemDrawing_Imaging_ImageAttributes_" data-uid="Egami.SystemDrawing.Graphics.EnumerateMetafile(Egami.SystemDrawing.Imaging.Metafile,System.Drawing.Rectangle,Egami.SystemDrawing.Graphics.EnumerateMetafileProc,System.IntPtr,Egami.SystemDrawing.Imaging.ImageAttributes)">
+  EnumerateMetafile(Metafile, Rectangle, EnumerateMetafileProc, nint, ImageAttributes?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.Metafiles.cs/#L237"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Walks the metafile's records, as GDI+ enumerates them, calling the callback for each until it returns false. Where
+the metafile would be drawn is not used: records are walked, not drawn.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void EnumerateMetafile(Metafile metafile, Rectangle destRect, Graphics.EnumerateMetafileProc callback, nint callbackData, ImageAttributes? imageAttr)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>metafile</code> <a class="xref" href="Egami.SystemDrawing.Imaging.Metafile.html">Metafile</a></dt>
+    <dd><p>The metafile.</p>
+</dd>
+    <dt><code>destRect</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.rectangle">Rectangle</a></dt>
+    <dd><p>The rectangle the frame fills.</p>
+</dd>
+    <dt><code>callback</code> <a class="xref" href="Egami.SystemDrawing.Graphics.html">Graphics</a>.<a class="xref" href="Egami.SystemDrawing.Graphics.EnumerateMetafileProc.html">EnumerateMetafileProc</a></dt>
+    <dd><p>Called for each record; returning false stops the walk.</p>
+</dd>
+    <dt><code>callbackData</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.intptr">nint</a></dt>
+    <dd><p>Not used.</p>
+</dd>
+    <dt><code>imageAttr</code> <a class="xref" href="Egami.SystemDrawing.Imaging.ImageAttributes.html">ImageAttributes</a></dt>
+    <dd><p>Not used.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Graphics_EnumerateMetafile_" data-uid="Egami.SystemDrawing.Graphics.EnumerateMetafile*"></a>
+
+  <h3 id="Egami_SystemDrawing_Graphics_EnumerateMetafile_Egami_SystemDrawing_Imaging_Metafile_System_Drawing_Rectangle_System_Drawing_Rectangle_Egami_SystemDrawing_GraphicsUnit_Egami_SystemDrawing_Graphics_EnumerateMetafileProc_" data-uid="Egami.SystemDrawing.Graphics.EnumerateMetafile(Egami.SystemDrawing.Imaging.Metafile,System.Drawing.Rectangle,System.Drawing.Rectangle,Egami.SystemDrawing.GraphicsUnit,Egami.SystemDrawing.Graphics.EnumerateMetafileProc)">
+  EnumerateMetafile(Metafile, Rectangle, Rectangle, GraphicsUnit, EnumerateMetafileProc)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.Metafiles.cs/#L248"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Walks the metafile's records, as GDI+ enumerates them, calling the callback for each until it returns false. Where
+the metafile would be drawn is not used: records are walked, not drawn.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void EnumerateMetafile(Metafile metafile, Rectangle destRect, Rectangle srcRect, GraphicsUnit srcUnit, Graphics.EnumerateMetafileProc callback)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>metafile</code> <a class="xref" href="Egami.SystemDrawing.Imaging.Metafile.html">Metafile</a></dt>
+    <dd><p>The metafile.</p>
+</dd>
+    <dt><code>destRect</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.rectangle">Rectangle</a></dt>
+    <dd><p>The rectangle the frame fills.</p>
+</dd>
+    <dt><code>srcRect</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.rectangle">Rectangle</a></dt>
+    <dd><p>The part of the frame.</p>
+</dd>
+    <dt><code>srcUnit</code> <a class="xref" href="Egami.SystemDrawing.GraphicsUnit.html">GraphicsUnit</a></dt>
+    <dd><p>The unit of the part.</p>
+</dd>
+    <dt><code>callback</code> <a class="xref" href="Egami.SystemDrawing.Graphics.html">Graphics</a>.<a class="xref" href="Egami.SystemDrawing.Graphics.EnumerateMetafileProc.html">EnumerateMetafileProc</a></dt>
+    <dd><p>Called for each record; returning false stops the walk.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Graphics_EnumerateMetafile_" data-uid="Egami.SystemDrawing.Graphics.EnumerateMetafile*"></a>
+
+  <h3 id="Egami_SystemDrawing_Graphics_EnumerateMetafile_Egami_SystemDrawing_Imaging_Metafile_System_Drawing_Rectangle_System_Drawing_Rectangle_Egami_SystemDrawing_GraphicsUnit_Egami_SystemDrawing_Graphics_EnumerateMetafileProc_System_IntPtr_" data-uid="Egami.SystemDrawing.Graphics.EnumerateMetafile(Egami.SystemDrawing.Imaging.Metafile,System.Drawing.Rectangle,System.Drawing.Rectangle,Egami.SystemDrawing.GraphicsUnit,Egami.SystemDrawing.Graphics.EnumerateMetafileProc,System.IntPtr)">
+  EnumerateMetafile(Metafile, Rectangle, Rectangle, GraphicsUnit, EnumerateMetafileProc, nint)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.Metafiles.cs/#L260"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Walks the metafile's records, as GDI+ enumerates them, calling the callback for each until it returns false. Where
+the metafile would be drawn is not used: records are walked, not drawn.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void EnumerateMetafile(Metafile metafile, Rectangle destRect, Rectangle srcRect, GraphicsUnit srcUnit, Graphics.EnumerateMetafileProc callback, nint callbackData)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>metafile</code> <a class="xref" href="Egami.SystemDrawing.Imaging.Metafile.html">Metafile</a></dt>
+    <dd><p>The metafile.</p>
+</dd>
+    <dt><code>destRect</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.rectangle">Rectangle</a></dt>
+    <dd><p>The rectangle the frame fills.</p>
+</dd>
+    <dt><code>srcRect</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.rectangle">Rectangle</a></dt>
+    <dd><p>The part of the frame.</p>
+</dd>
+    <dt><code>srcUnit</code> <a class="xref" href="Egami.SystemDrawing.GraphicsUnit.html">GraphicsUnit</a></dt>
+    <dd><p>The unit of the part.</p>
+</dd>
+    <dt><code>callback</code> <a class="xref" href="Egami.SystemDrawing.Graphics.html">Graphics</a>.<a class="xref" href="Egami.SystemDrawing.Graphics.EnumerateMetafileProc.html">EnumerateMetafileProc</a></dt>
+    <dd><p>Called for each record; returning false stops the walk.</p>
+</dd>
+    <dt><code>callbackData</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.intptr">nint</a></dt>
+    <dd><p>Not used.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Graphics_EnumerateMetafile_" data-uid="Egami.SystemDrawing.Graphics.EnumerateMetafile*"></a>
+
+  <h3 id="Egami_SystemDrawing_Graphics_EnumerateMetafile_Egami_SystemDrawing_Imaging_Metafile_System_Drawing_Rectangle_System_Drawing_Rectangle_Egami_SystemDrawing_GraphicsUnit_Egami_SystemDrawing_Graphics_EnumerateMetafileProc_System_IntPtr_Egami_SystemDrawing_Imaging_ImageAttributes_" data-uid="Egami.SystemDrawing.Graphics.EnumerateMetafile(Egami.SystemDrawing.Imaging.Metafile,System.Drawing.Rectangle,System.Drawing.Rectangle,Egami.SystemDrawing.GraphicsUnit,Egami.SystemDrawing.Graphics.EnumerateMetafileProc,System.IntPtr,Egami.SystemDrawing.Imaging.ImageAttributes)">
+  EnumerateMetafile(Metafile, Rectangle, Rectangle, GraphicsUnit, EnumerateMetafileProc, nint, ImageAttributes?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.Metafiles.cs/#L273"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Walks the metafile's records, as GDI+ enumerates them, calling the callback for each until it returns false. Where
+the metafile would be drawn is not used: records are walked, not drawn.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void EnumerateMetafile(Metafile metafile, Rectangle destRect, Rectangle srcRect, GraphicsUnit unit, Graphics.EnumerateMetafileProc callback, nint callbackData, ImageAttributes? imageAttr)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>metafile</code> <a class="xref" href="Egami.SystemDrawing.Imaging.Metafile.html">Metafile</a></dt>
+    <dd><p>The metafile.</p>
+</dd>
+    <dt><code>destRect</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.rectangle">Rectangle</a></dt>
+    <dd><p>The rectangle the frame fills.</p>
+</dd>
+    <dt><code>srcRect</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.rectangle">Rectangle</a></dt>
+    <dd><p>The part of the frame.</p>
+</dd>
+    <dt><code>unit</code> <a class="xref" href="Egami.SystemDrawing.GraphicsUnit.html">GraphicsUnit</a></dt>
+    <dd><p>The unit of the part.</p>
+</dd>
+    <dt><code>callback</code> <a class="xref" href="Egami.SystemDrawing.Graphics.html">Graphics</a>.<a class="xref" href="Egami.SystemDrawing.Graphics.EnumerateMetafileProc.html">EnumerateMetafileProc</a></dt>
+    <dd><p>Called for each record; returning false stops the walk.</p>
+</dd>
+    <dt><code>callbackData</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.intptr">nint</a></dt>
+    <dd><p>Not used.</p>
+</dd>
+    <dt><code>imageAttr</code> <a class="xref" href="Egami.SystemDrawing.Imaging.ImageAttributes.html">ImageAttributes</a></dt>
+    <dd><p>Not used.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Graphics_EnumerateMetafile_" data-uid="Egami.SystemDrawing.Graphics.EnumerateMetafile*"></a>
+
+  <h3 id="Egami_SystemDrawing_Graphics_EnumerateMetafile_Egami_SystemDrawing_Imaging_Metafile_System_Drawing_RectangleF_Egami_SystemDrawing_Graphics_EnumerateMetafileProc_" data-uid="Egami.SystemDrawing.Graphics.EnumerateMetafile(Egami.SystemDrawing.Imaging.Metafile,System.Drawing.RectangleF,Egami.SystemDrawing.Graphics.EnumerateMetafileProc)">
+  EnumerateMetafile(Metafile, RectangleF, EnumerateMetafileProc)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.Metafiles.cs/#L150"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Walks the metafile's records, as GDI+ enumerates them, calling the callback for each until it returns false. Where
+the metafile would be drawn is not used: records are walked, not drawn.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void EnumerateMetafile(Metafile metafile, RectangleF destRect, Graphics.EnumerateMetafileProc callback)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>metafile</code> <a class="xref" href="Egami.SystemDrawing.Imaging.Metafile.html">Metafile</a></dt>
+    <dd><p>The metafile.</p>
+</dd>
+    <dt><code>destRect</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.rectanglef">RectangleF</a></dt>
+    <dd><p>The rectangle the frame fills.</p>
+</dd>
+    <dt><code>callback</code> <a class="xref" href="Egami.SystemDrawing.Graphics.html">Graphics</a>.<a class="xref" href="Egami.SystemDrawing.Graphics.EnumerateMetafileProc.html">EnumerateMetafileProc</a></dt>
+    <dd><p>Called for each record; returning false stops the walk.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Graphics_EnumerateMetafile_" data-uid="Egami.SystemDrawing.Graphics.EnumerateMetafile*"></a>
+
+  <h3 id="Egami_SystemDrawing_Graphics_EnumerateMetafile_Egami_SystemDrawing_Imaging_Metafile_System_Drawing_RectangleF_Egami_SystemDrawing_Graphics_EnumerateMetafileProc_System_IntPtr_" data-uid="Egami.SystemDrawing.Graphics.EnumerateMetafile(Egami.SystemDrawing.Imaging.Metafile,System.Drawing.RectangleF,Egami.SystemDrawing.Graphics.EnumerateMetafileProc,System.IntPtr)">
+  EnumerateMetafile(Metafile, RectangleF, EnumerateMetafileProc, nint)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.Metafiles.cs/#L160"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Walks the metafile's records, as GDI+ enumerates them, calling the callback for each until it returns false. Where
+the metafile would be drawn is not used: records are walked, not drawn.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void EnumerateMetafile(Metafile metafile, RectangleF destRect, Graphics.EnumerateMetafileProc callback, nint callbackData)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>metafile</code> <a class="xref" href="Egami.SystemDrawing.Imaging.Metafile.html">Metafile</a></dt>
+    <dd><p>The metafile.</p>
+</dd>
+    <dt><code>destRect</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.rectanglef">RectangleF</a></dt>
+    <dd><p>The rectangle the frame fills.</p>
+</dd>
+    <dt><code>callback</code> <a class="xref" href="Egami.SystemDrawing.Graphics.html">Graphics</a>.<a class="xref" href="Egami.SystemDrawing.Graphics.EnumerateMetafileProc.html">EnumerateMetafileProc</a></dt>
+    <dd><p>Called for each record; returning false stops the walk.</p>
+</dd>
+    <dt><code>callbackData</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.intptr">nint</a></dt>
+    <dd><p>Not used.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Graphics_EnumerateMetafile_" data-uid="Egami.SystemDrawing.Graphics.EnumerateMetafile*"></a>
+
+  <h3 id="Egami_SystemDrawing_Graphics_EnumerateMetafile_Egami_SystemDrawing_Imaging_Metafile_System_Drawing_RectangleF_Egami_SystemDrawing_Graphics_EnumerateMetafileProc_System_IntPtr_Egami_SystemDrawing_Imaging_ImageAttributes_" data-uid="Egami.SystemDrawing.Graphics.EnumerateMetafile(Egami.SystemDrawing.Imaging.Metafile,System.Drawing.RectangleF,Egami.SystemDrawing.Graphics.EnumerateMetafileProc,System.IntPtr,Egami.SystemDrawing.Imaging.ImageAttributes)">
+  EnumerateMetafile(Metafile, RectangleF, EnumerateMetafileProc, nint, ImageAttributes?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.Metafiles.cs/#L171"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Walks the metafile's records, as GDI+ enumerates them, calling the callback for each until it returns false. Where
+the metafile would be drawn is not used: records are walked, not drawn.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void EnumerateMetafile(Metafile metafile, RectangleF destRect, Graphics.EnumerateMetafileProc callback, nint callbackData, ImageAttributes? imageAttr)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>metafile</code> <a class="xref" href="Egami.SystemDrawing.Imaging.Metafile.html">Metafile</a></dt>
+    <dd><p>The metafile.</p>
+</dd>
+    <dt><code>destRect</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.rectanglef">RectangleF</a></dt>
+    <dd><p>The rectangle the frame fills.</p>
+</dd>
+    <dt><code>callback</code> <a class="xref" href="Egami.SystemDrawing.Graphics.html">Graphics</a>.<a class="xref" href="Egami.SystemDrawing.Graphics.EnumerateMetafileProc.html">EnumerateMetafileProc</a></dt>
+    <dd><p>Called for each record; returning false stops the walk.</p>
+</dd>
+    <dt><code>callbackData</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.intptr">nint</a></dt>
+    <dd><p>Not used.</p>
+</dd>
+    <dt><code>imageAttr</code> <a class="xref" href="Egami.SystemDrawing.Imaging.ImageAttributes.html">ImageAttributes</a></dt>
+    <dd><p>Not used.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Graphics_EnumerateMetafile_" data-uid="Egami.SystemDrawing.Graphics.EnumerateMetafile*"></a>
+
+  <h3 id="Egami_SystemDrawing_Graphics_EnumerateMetafile_Egami_SystemDrawing_Imaging_Metafile_System_Drawing_RectangleF_System_Drawing_RectangleF_Egami_SystemDrawing_GraphicsUnit_Egami_SystemDrawing_Graphics_EnumerateMetafileProc_" data-uid="Egami.SystemDrawing.Graphics.EnumerateMetafile(Egami.SystemDrawing.Imaging.Metafile,System.Drawing.RectangleF,System.Drawing.RectangleF,Egami.SystemDrawing.GraphicsUnit,Egami.SystemDrawing.Graphics.EnumerateMetafileProc)">
+  EnumerateMetafile(Metafile, RectangleF, RectangleF, GraphicsUnit, EnumerateMetafileProc)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.Metafiles.cs/#L182"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Walks the metafile's records, as GDI+ enumerates them, calling the callback for each until it returns false. Where
+the metafile would be drawn is not used: records are walked, not drawn.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void EnumerateMetafile(Metafile metafile, RectangleF destRect, RectangleF srcRect, GraphicsUnit srcUnit, Graphics.EnumerateMetafileProc callback)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>metafile</code> <a class="xref" href="Egami.SystemDrawing.Imaging.Metafile.html">Metafile</a></dt>
+    <dd><p>The metafile.</p>
+</dd>
+    <dt><code>destRect</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.rectanglef">RectangleF</a></dt>
+    <dd><p>The rectangle the frame fills.</p>
+</dd>
+    <dt><code>srcRect</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.rectanglef">RectangleF</a></dt>
+    <dd><p>The part of the frame.</p>
+</dd>
+    <dt><code>srcUnit</code> <a class="xref" href="Egami.SystemDrawing.GraphicsUnit.html">GraphicsUnit</a></dt>
+    <dd><p>The unit of the part.</p>
+</dd>
+    <dt><code>callback</code> <a class="xref" href="Egami.SystemDrawing.Graphics.html">Graphics</a>.<a class="xref" href="Egami.SystemDrawing.Graphics.EnumerateMetafileProc.html">EnumerateMetafileProc</a></dt>
+    <dd><p>Called for each record; returning false stops the walk.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Graphics_EnumerateMetafile_" data-uid="Egami.SystemDrawing.Graphics.EnumerateMetafile*"></a>
+
+  <h3 id="Egami_SystemDrawing_Graphics_EnumerateMetafile_Egami_SystemDrawing_Imaging_Metafile_System_Drawing_RectangleF_System_Drawing_RectangleF_Egami_SystemDrawing_GraphicsUnit_Egami_SystemDrawing_Graphics_EnumerateMetafileProc_System_IntPtr_" data-uid="Egami.SystemDrawing.Graphics.EnumerateMetafile(Egami.SystemDrawing.Imaging.Metafile,System.Drawing.RectangleF,System.Drawing.RectangleF,Egami.SystemDrawing.GraphicsUnit,Egami.SystemDrawing.Graphics.EnumerateMetafileProc,System.IntPtr)">
+  EnumerateMetafile(Metafile, RectangleF, RectangleF, GraphicsUnit, EnumerateMetafileProc, nint)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.Metafiles.cs/#L194"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Walks the metafile's records, as GDI+ enumerates them, calling the callback for each until it returns false. Where
+the metafile would be drawn is not used: records are walked, not drawn.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void EnumerateMetafile(Metafile metafile, RectangleF destRect, RectangleF srcRect, GraphicsUnit srcUnit, Graphics.EnumerateMetafileProc callback, nint callbackData)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>metafile</code> <a class="xref" href="Egami.SystemDrawing.Imaging.Metafile.html">Metafile</a></dt>
+    <dd><p>The metafile.</p>
+</dd>
+    <dt><code>destRect</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.rectanglef">RectangleF</a></dt>
+    <dd><p>The rectangle the frame fills.</p>
+</dd>
+    <dt><code>srcRect</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.rectanglef">RectangleF</a></dt>
+    <dd><p>The part of the frame.</p>
+</dd>
+    <dt><code>srcUnit</code> <a class="xref" href="Egami.SystemDrawing.GraphicsUnit.html">GraphicsUnit</a></dt>
+    <dd><p>The unit of the part.</p>
+</dd>
+    <dt><code>callback</code> <a class="xref" href="Egami.SystemDrawing.Graphics.html">Graphics</a>.<a class="xref" href="Egami.SystemDrawing.Graphics.EnumerateMetafileProc.html">EnumerateMetafileProc</a></dt>
+    <dd><p>Called for each record; returning false stops the walk.</p>
+</dd>
+    <dt><code>callbackData</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.intptr">nint</a></dt>
+    <dd><p>Not used.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Graphics_EnumerateMetafile_" data-uid="Egami.SystemDrawing.Graphics.EnumerateMetafile*"></a>
+
+  <h3 id="Egami_SystemDrawing_Graphics_EnumerateMetafile_Egami_SystemDrawing_Imaging_Metafile_System_Drawing_RectangleF_System_Drawing_RectangleF_Egami_SystemDrawing_GraphicsUnit_Egami_SystemDrawing_Graphics_EnumerateMetafileProc_System_IntPtr_Egami_SystemDrawing_Imaging_ImageAttributes_" data-uid="Egami.SystemDrawing.Graphics.EnumerateMetafile(Egami.SystemDrawing.Imaging.Metafile,System.Drawing.RectangleF,System.Drawing.RectangleF,Egami.SystemDrawing.GraphicsUnit,Egami.SystemDrawing.Graphics.EnumerateMetafileProc,System.IntPtr,Egami.SystemDrawing.Imaging.ImageAttributes)">
+  EnumerateMetafile(Metafile, RectangleF, RectangleF, GraphicsUnit, EnumerateMetafileProc, nint, ImageAttributes?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.Metafiles.cs/#L207"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Walks the metafile's records, as GDI+ enumerates them, calling the callback for each until it returns false. Where
+the metafile would be drawn is not used: records are walked, not drawn.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void EnumerateMetafile(Metafile metafile, RectangleF destRect, RectangleF srcRect, GraphicsUnit unit, Graphics.EnumerateMetafileProc callback, nint callbackData, ImageAttributes? imageAttr)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>metafile</code> <a class="xref" href="Egami.SystemDrawing.Imaging.Metafile.html">Metafile</a></dt>
+    <dd><p>The metafile.</p>
+</dd>
+    <dt><code>destRect</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.rectanglef">RectangleF</a></dt>
+    <dd><p>The rectangle the frame fills.</p>
+</dd>
+    <dt><code>srcRect</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.rectanglef">RectangleF</a></dt>
+    <dd><p>The part of the frame.</p>
+</dd>
+    <dt><code>unit</code> <a class="xref" href="Egami.SystemDrawing.GraphicsUnit.html">GraphicsUnit</a></dt>
+    <dd><p>The unit of the part.</p>
+</dd>
+    <dt><code>callback</code> <a class="xref" href="Egami.SystemDrawing.Graphics.html">Graphics</a>.<a class="xref" href="Egami.SystemDrawing.Graphics.EnumerateMetafileProc.html">EnumerateMetafileProc</a></dt>
+    <dd><p>Called for each record; returning false stops the walk.</p>
+</dd>
+    <dt><code>callbackData</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.intptr">nint</a></dt>
+    <dd><p>Not used.</p>
+</dd>
+    <dt><code>imageAttr</code> <a class="xref" href="Egami.SystemDrawing.Imaging.ImageAttributes.html">ImageAttributes</a></dt>
+    <dd><p>Not used.</p>
 </dd>
   </dl>
 
@@ -7094,7 +8963,7 @@ public void CopyFromScreen(int sourceX, int sourceY, int destinationX, int desti
 
   <h3 id="Egami_SystemDrawing_Graphics_Flush" data-uid="Egami.SystemDrawing.Graphics.Flush">
   Flush()
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L300"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L302"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Does nothing: Egami draws each call at once.</p>
@@ -7121,7 +8990,7 @@ public void CopyFromScreen(int sourceX, int sourceY, int destinationX, int desti
 
   <h3 id="Egami_SystemDrawing_Graphics_Flush_Egami_SystemDrawing_Drawing2D_FlushIntention_" data-uid="Egami.SystemDrawing.Graphics.Flush(Egami.SystemDrawing.Drawing2D.FlushIntention)">
   Flush(FlushIntention)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L307"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L309"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Does nothing: Egami draws each call at once.</p>
@@ -7154,7 +9023,7 @@ public void CopyFromScreen(int sourceX, int sourceY, int destinationX, int desti
 
   <h3 id="Egami_SystemDrawing_Graphics_FromHdc_System_IntPtr_" data-uid="Egami.SystemDrawing.Graphics.FromHdc(System.IntPtr)">
   FromHdc(nint)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L200"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L201"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Not supported: Windows device contexts. Always throws.</p>
@@ -7194,7 +9063,7 @@ public static Graphics FromHdc(nint hdc)</code></pre>
 
   <h3 id="Egami_SystemDrawing_Graphics_FromHdc_System_IntPtr_System_IntPtr_" data-uid="Egami.SystemDrawing.Graphics.FromHdc(System.IntPtr,System.IntPtr)">
   FromHdc(nint, nint)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L208"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L209"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Not supported: Windows device contexts. Always throws.</p>
@@ -7237,7 +9106,7 @@ public static Graphics FromHdc(nint hdc, nint hdevice)</code></pre>
 
   <h3 id="Egami_SystemDrawing_Graphics_FromHwnd_System_IntPtr_" data-uid="Egami.SystemDrawing.Graphics.FromHwnd(System.IntPtr)">
   FromHwnd(nint)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L215"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L216"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Not supported: Windows windows. Always throws.</p>
@@ -7394,7 +9263,7 @@ public static Graphics FromHwnd(nint hwnd)</code></pre>
 
   <h3 id="Egami_SystemDrawing_Graphics_GetHalftonePalette" data-uid="Egami.SystemDrawing.Graphics.GetHalftonePalette">
   GetHalftonePalette()
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L241"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L242"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Not supported: Windows palettes. Always throws.</p>
@@ -7428,7 +9297,7 @@ public static nint GetHalftonePalette()</code></pre>
 
   <h3 id="Egami_SystemDrawing_Graphics_GetHdc" data-uid="Egami.SystemDrawing.Graphics.GetHdc">
   GetHdc()
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L246"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L247"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Not supported: Windows device contexts. Always throws.</p>
@@ -7462,7 +9331,7 @@ public nint GetHdc()</code></pre>
 
   <h3 id="Egami_SystemDrawing_Graphics_GetNearestColor_System_Drawing_Color_" data-uid="Egami.SystemDrawing.Graphics.GetNearestColor(System.Drawing.Color)">
   GetNearestColor(Color)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L322"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L324"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>The nearest color GDI+ reports for the bitmap's pixel format: the 16-bit formats cut the low bits; the others keep the color.</p>
@@ -7936,7 +9805,7 @@ public nint GetHdc()</code></pre>
 
   <h3 id="Egami_SystemDrawing_Graphics_MultiplyTransform_Egami_SystemDrawing_Drawing2D_Matrix_" data-uid="Egami.SystemDrawing.Graphics.MultiplyTransform(Egami.SystemDrawing.Drawing2D.Matrix)">
   MultiplyTransform(Matrix)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L332"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L334"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Multiplies the world transform by a matrix, applied before it.</p>
@@ -7969,7 +9838,7 @@ public nint GetHdc()</code></pre>
 
   <h3 id="Egami_SystemDrawing_Graphics_MultiplyTransform_Egami_SystemDrawing_Drawing2D_Matrix_Egami_SystemDrawing_Drawing2D_MatrixOrder_" data-uid="Egami.SystemDrawing.Graphics.MultiplyTransform(Egami.SystemDrawing.Drawing2D.Matrix,Egami.SystemDrawing.Drawing2D.MatrixOrder)">
   MultiplyTransform(Matrix, MatrixOrder)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L337"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L339"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Multiplies the world transform by a matrix, applied before or after it.</p>
@@ -8005,7 +9874,7 @@ public nint GetHdc()</code></pre>
 
   <h3 id="Egami_SystemDrawing_Graphics_ReleaseHdc" data-uid="Egami.SystemDrawing.Graphics.ReleaseHdc">
   ReleaseHdc()
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L256"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L257"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Not supported: Windows device contexts. Always throws.</p>
@@ -8033,7 +9902,7 @@ public void ReleaseHdc()</code></pre>
 
   <h3 id="Egami_SystemDrawing_Graphics_ReleaseHdc_System_IntPtr_" data-uid="Egami.SystemDrawing.Graphics.ReleaseHdc(System.IntPtr)">
   ReleaseHdc(nint)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L251"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L252"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Not supported: Windows device contexts. Always throws.</p>
@@ -8094,7 +9963,7 @@ public void ReleaseHdc(nint hdc)</code></pre>
 
   <h3 id="Egami_SystemDrawing_Graphics_ResetTransform" data-uid="Egami.SystemDrawing.Graphics.ResetTransform">
   ResetTransform()
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L344"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L346"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Makes the world transform the identity.</p>
@@ -8121,7 +9990,7 @@ public void ReleaseHdc(nint hdc)</code></pre>
 
   <h3 id="Egami_SystemDrawing_Graphics_Restore_Egami_SystemDrawing_Drawing2D_GraphicsState_" data-uid="Egami.SystemDrawing.Graphics.Restore(Egami.SystemDrawing.Drawing2D.GraphicsState)">
   Restore(GraphicsState)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L420"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L422"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Restores a saved state, dropping every state and container saved after it.</p>
@@ -8154,7 +10023,7 @@ public void ReleaseHdc(nint hdc)</code></pre>
 
   <h3 id="Egami_SystemDrawing_Graphics_RotateTransform_System_Single_" data-uid="Egami.SystemDrawing.Graphics.RotateTransform(System.Single)">
   RotateTransform(float)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L370"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L372"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Rotates the world transform clockwise, before it.</p>
@@ -8187,7 +10056,7 @@ public void ReleaseHdc(nint hdc)</code></pre>
 
   <h3 id="Egami_SystemDrawing_Graphics_RotateTransform_System_Single_Egami_SystemDrawing_Drawing2D_MatrixOrder_" data-uid="Egami.SystemDrawing.Graphics.RotateTransform(System.Single,Egami.SystemDrawing.Drawing2D.MatrixOrder)">
   RotateTransform(float, MatrixOrder)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L375"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L377"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Rotates the world transform clockwise, before or after it.</p>
@@ -8223,7 +10092,7 @@ public void ReleaseHdc(nint hdc)</code></pre>
 
   <h3 id="Egami_SystemDrawing_Graphics_Save" data-uid="Egami.SystemDrawing.Graphics.Save">
   Save()
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L411"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L413"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Saves the transform, page settings, clip and quality settings.</p>
@@ -8256,7 +10125,7 @@ public void ReleaseHdc(nint hdc)</code></pre>
 
   <h3 id="Egami_SystemDrawing_Graphics_ScaleTransform_System_Single_System_Single_" data-uid="Egami.SystemDrawing.Graphics.ScaleTransform(System.Single,System.Single)">
   ScaleTransform(float, float)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L360"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L362"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Scales the world transform, before it.</p>
@@ -8292,7 +10161,7 @@ public void ReleaseHdc(nint hdc)</code></pre>
 
   <h3 id="Egami_SystemDrawing_Graphics_ScaleTransform_System_Single_System_Single_Egami_SystemDrawing_Drawing2D_MatrixOrder_" data-uid="Egami.SystemDrawing.Graphics.ScaleTransform(System.Single,System.Single,Egami.SystemDrawing.Drawing2D.MatrixOrder)">
   ScaleTransform(float, float, MatrixOrder)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L366"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L368"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Scales the world transform, before or after it.</p>
@@ -8643,7 +10512,7 @@ public void ReleaseHdc(nint hdc)</code></pre>
 
   <h3 id="Egami_SystemDrawing_Graphics_TransformPoints_Egami_SystemDrawing_Drawing2D_CoordinateSpace_Egami_SystemDrawing_Drawing2D_CoordinateSpace_System_Drawing_PointF___" data-uid="Egami.SystemDrawing.Graphics.TransformPoints(Egami.SystemDrawing.Drawing2D.CoordinateSpace,Egami.SystemDrawing.Drawing2D.CoordinateSpace,System.Drawing.PointF[])">
   TransformPoints(CoordinateSpace, CoordinateSpace, params PointF[])
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L381"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L383"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Transforms points from one coordinate space to another.</p>
@@ -8682,7 +10551,7 @@ public void ReleaseHdc(nint hdc)</code></pre>
 
   <h3 id="Egami_SystemDrawing_Graphics_TransformPoints_Egami_SystemDrawing_Drawing2D_CoordinateSpace_Egami_SystemDrawing_Drawing2D_CoordinateSpace_System_Drawing_Point___" data-uid="Egami.SystemDrawing.Graphics.TransformPoints(Egami.SystemDrawing.Drawing2D.CoordinateSpace,Egami.SystemDrawing.Drawing2D.CoordinateSpace,System.Drawing.Point[])">
   TransformPoints(CoordinateSpace, CoordinateSpace, params Point[])
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L397"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L399"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Transforms points from one coordinate space to another, rounding to whole coordinates.</p>
@@ -8721,7 +10590,7 @@ public void ReleaseHdc(nint hdc)</code></pre>
 
   <h3 id="Egami_SystemDrawing_Graphics_TransformPoints_Egami_SystemDrawing_Drawing2D_CoordinateSpace_Egami_SystemDrawing_Drawing2D_CoordinateSpace_System_ReadOnlySpan_System_Drawing_PointF__" data-uid="Egami.SystemDrawing.Graphics.TransformPoints(Egami.SystemDrawing.Drawing2D.CoordinateSpace,Egami.SystemDrawing.Drawing2D.CoordinateSpace,System.ReadOnlySpan{System.Drawing.PointF})">
   TransformPoints(CoordinateSpace, CoordinateSpace, params ReadOnlySpan&lt;PointF&gt;)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L391"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L393"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Transforms points from one coordinate space to another.</p>
@@ -8760,7 +10629,7 @@ public void ReleaseHdc(nint hdc)</code></pre>
 
   <h3 id="Egami_SystemDrawing_Graphics_TransformPoints_Egami_SystemDrawing_Drawing2D_CoordinateSpace_Egami_SystemDrawing_Drawing2D_CoordinateSpace_System_ReadOnlySpan_System_Drawing_Point__" data-uid="Egami.SystemDrawing.Graphics.TransformPoints(Egami.SystemDrawing.Drawing2D.CoordinateSpace,Egami.SystemDrawing.Drawing2D.CoordinateSpace,System.ReadOnlySpan{System.Drawing.Point})">
   TransformPoints(CoordinateSpace, CoordinateSpace, params ReadOnlySpan&lt;Point&gt;)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L407"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L409"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Transforms points from one coordinate space to another, rounding to whole coordinates.</p>
@@ -8871,7 +10740,7 @@ public void ReleaseHdc(nint hdc)</code></pre>
 
   <h3 id="Egami_SystemDrawing_Graphics_TranslateTransform_System_Single_System_Single_" data-uid="Egami.SystemDrawing.Graphics.TranslateTransform(System.Single,System.Single)">
   TranslateTransform(float, float)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L349"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L351"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Translates the world transform, before it.</p>
@@ -8907,7 +10776,7 @@ public void ReleaseHdc(nint hdc)</code></pre>
 
   <h3 id="Egami_SystemDrawing_Graphics_TranslateTransform_System_Single_System_Single_Egami_SystemDrawing_Drawing2D_MatrixOrder_" data-uid="Egami.SystemDrawing.Graphics.TranslateTransform(System.Single,System.Single,Egami.SystemDrawing.Drawing2D.MatrixOrder)">
   TranslateTransform(float, float, MatrixOrder)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L355"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L357"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Translates the world transform, before or after it.</p>

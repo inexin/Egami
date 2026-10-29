@@ -91,7 +91,8 @@
 <code>Icon</code>, pixel formats, <code>LockBits</code>, the codecs and their encoder parameters, frames and property items. System.Drawing.Common
 runs only on Windows since .NET 6; with this package the same code runs on Linux, macOS and in containers, drawn by Egami.</p>
 <p>The package is a preview (1.0.0-preview.1). This release has bitmaps, pixel access, codecs, icons, and <code>Graphics</code> with pens,
-brushes, paths, transforms, clipping, regions and images. Fonts and text follow in the next previews.</p>
+brushes, paths, transforms, clipping, regions and images, metafiles, effects, off-screen buffers and the image animator. Fonts
+and text follow in the next preview.</p>
 <h2 id="moving-code-over">Moving code over</h2>
 <p>Replace the System.Drawing.Common package reference with Egami.SystemDrawing. With implicit usings on, the package adds
 <code>System.Drawing</code> and <code>Egami.SystemDrawing</code> as implicit usings, so most files compile unchanged; files that name
@@ -431,6 +432,99 @@ using ImageAttributes attributes = new();
 attributes.SetColorMatrix(new ColorMatrix { Matrix33 = 0.5f });  // half the alpha
 attributes.SetWrapMode(WrapMode.Tile);
 g.DrawImage(source, new Rectangle(20, 0, 40, 40), 0, 0, 16, 16, GraphicsUnit.Pixel, attributes);
+</code></pre><h2 id="metafiles">Metafiles</h2>
+<p><code>Metafile</code> reads WMF, EMF and EMF+ (and <code>Image.FromFile</code> returns one for them) through Egami.Metafiles. It is an <code>Image</code> sized by
+its frame as GDI+ sizes it: an EMF's frame in pixels at the resolution of the device it was made for, one pixel more for the
+included edge, and a placeable WMF's box at 96 pixels to the inch; <code>GetBounds</code> gives the frame unrounded and
+<code>PhysicalDimension</code> in hundredths of a millimeter. <code>GetMetafileHeader</code> reports the <code>MetafileType</code>, version, bounds,
+resolutions, size and EMF+ header, and a <code>MetaHeader</code> and <code>WmfPlaceableFileHeader</code> for WMF. <code>DrawImage</code> plays the metafile as
+vectors into the destination. <code>EnumerateMetafile</code> calls an <code>EnumerateMetafileProc</code> back for each record as GDI+ enumerates them, with its
+<code>EmfPlusRecordType</code>, flags and pinned data: a placeable WMF's records without header and end, an EMF's from header to end, and
+for EMF+ the EMF header, the EMF+ records and the end record. Egami plays metafiles whole, so when the callback calls
+<code>PlayRecord</code>, the metafile is drawn once the walk ends; the <code>PlayRecordCallback</code> GDI+ passes for that is always null. As in GDI+, <code>Graphics.FromImage</code> on a metafile throws
+<code>ExternalException</code> and <code>RotateFlip</code> throws <code>NotImplementedException</code>; saving or copying it into a <code>Bitmap</code> rasterizes it.</p>
+<pre><code class="lang-csharp">// A metafile is an Image sized by its frame; DrawImage plays it as vectors, EnumerateMetafile walks its records.
+using Metafile metafile = new(System.IO.Path.Combine(Images, &quot;shapes-plus.emf&quot;));
+MetafileHeader header = metafile.GetMetafileHeader();  // EmfPlusDual, its bounds and resolution
+int records = 0;
+using Bitmap bitmap = new(400, 300);
+using (Graphics g = Graphics.FromImage(bitmap))
+{
+    g.Clear(Color.White);
+    g.DrawImage(metafile, new Rectangle(0, 0, 400, 300));
+    g.EnumerateMetafile(metafile, new PointF(0, 0), (type, flags, size, data, play) =&gt;
+    {
+        records++;
+        return true;
+    });
+}
+</code></pre>
+<p>Egami reads metafiles but does not record them: the constructors that would record one take an <code>EmfType</code> or a
+<code>MetafileFrameUnit</code>, and throw <code>NotSupportedException</code> with the EGSD0004 warning.</p>
+<h2 id="effects">Effects</h2>
+<p>The GDI+ 1.1 effects of <code>Egami.SystemDrawing.Imaging.Effects</code> apply to a bitmap with <code>Bitmap.ApplyEffect</code>, to an area or the
+whole of it, or while drawing with <code>DrawImage(image, effect)</code>. <code>ColorMatrixEffect</code>, <code>ColorLookupTableEffect</code>,
+<code>GrayScaleEffect</code>, <code>InvertEffect</code> and <code>SepiaEffect</code> give GDI+'s pixels, and <code>BrightnessContrastEffect</code>, <code>ColorBalanceEffect</code>,
+<code>LevelsEffect</code>, <code>ExposureCurveEffect</code>, <code>DensityCurveEffect</code>, <code>MidtoneCurveEffect</code>, <code>WhiteSaturationCurveEffect</code> and
+<code>BlackSaturationCurveEffect</code> follow GDI+'s curves, measured on a gray ramp, to within a level. <code>HighlightCurveEffect</code>,
+<code>ShadowCurveEffect</code> and <code>ContrastCurveEffect</code> (all <code>ColorCurveEffect</code> with a <code>CurveChannel</code>), <code>TintEffect</code>, <code>VividEffect</code>,
+<code>BlurEffect</code> and <code>SharpenEffect</code> are Egami's own versions of the same adjustments.</p>
+<pre><code class="lang-csharp">// GDI+ 1.1's effects, computed with Egami's operations; the color effects match GDI+ to a level or so.
+using Bitmap photo = new(System.IO.Path.Combine(Images, &quot;duck.png&quot;));
+using (BrightnessContrastEffect brighter = new(30, 20))
+{
+    photo.ApplyEffect(brighter, Rectangle.Empty);
+}
+
+using (GrayScaleEffect gray = new())
+{
+    photo.ApplyEffect(gray, new Rectangle(0, 0, photo.Width / 2, photo.Height));
+}
+
+using BlurEffect blur = new(4, false);
+using Bitmap target = new(photo.Width, photo.Height);
+using Graphics g = Graphics.FromImage(target);
+g.DrawImage(photo, blur);
+</code></pre><h2 id="buffers-cached-bitmaps-and-animation">Buffers, cached bitmaps and animation</h2>
+<p><code>BufferedGraphicsManager.Current</code> and <code>BufferedGraphicsContext</code> allocate a <code>BufferedGraphics</code>: an off-screen bitmap whose
+<code>Graphics</code> draws in the target's coordinates, copied onto the target by <code>Render</code> as GDI copies it, premultiplied colors made
+opaque. A <code>CachedBitmap</code> is drawn at device pixels with <code>DrawCachedBitmap</code>. <code>ImageAnimator</code> steps animated GIFs through their
+frames at their delays: <code>Animate</code> calls a handler when the next frame is due, and <code>UpdateFrames</code> selects it. <code>Graphics</code> is an
+<code>IDeviceContext</code>, whose members throw. <code>ImageConverter</code>, <code>IconConverter</code> and <code>ImageFormatConverter</code> convert for designers and
+serializers, <code>ToolboxBitmapAttribute</code>, <code>BitmapSuffixInSameAssemblyAttribute</code>, <code>BitmapSuffixInSatelliteAssemblyAttribute</code> and
+<code>Design.CategoryNameCollection</code> serve the Windows Forms designer, and <code>ContentAlignment</code> and <code>ColorMode</code> complete the enums.</p>
+<pre><code class="lang-csharp">// Off-screen buffers, cached bitmaps and animated GIFs, as WinForms code uses them.
+using Bitmap window = new(100, 80);
+using Graphics screen = Graphics.FromImage(window);
+using (BufferedGraphics buffer = BufferedGraphicsManager.Current.Allocate(screen, new Rectangle(10, 10, 80, 60)))
+{
+    buffer.Graphics.Clear(Color.SteelBlue);
+    buffer.Render();
+}
+
+using Bitmap sprite = new(8, 8);
+using CachedBitmap cached = new(sprite, screen);
+screen.DrawCachedBitmap(cached, 2, 2);
+
+using Image animation = Image.FromFile(System.IO.Path.Combine(Images, &quot;loop.gif&quot;));
+bool animates = ImageAnimator.CanAnimate(animation);  // true: more than one timed frame
+ImageAnimator.UpdateFrames(animation);
+</code></pre><h2 id="moving-on-to-egami">Moving on to Egami</h2>
+<p><code>Bitmap.AsRaster</code> gives the bitmap's pixels as an Egami raster: a view of the same memory, no copy, for 32-bit ARGB and
+premultiplied ARGB, 24-bit RGB and the 16-bit formats, and an 8-bit RGBA copy for the others. <code>Bitmap.FromRaster</code> copies a raster
+into a bitmap of the matching format. <code>Graphics.Canvas</code> is an Egami canvas over a 32-bit bitmap, set to the graphics' transform
+and clip, so code can move to Egami's API one call at a time.</p>
+<pre><code class="lang-csharp">// Move to Egami's own API one call at a time: a bitmap's pixels as a raster (no copy for 32-bit ARGB), the graphics' canvas.
+using Bitmap bitmap = new(64, 48);
+Raster view = bitmap.AsRaster();  // Raster&lt;Bgra8&gt; over the bitmap's own pixels
+using (Graphics g = Graphics.FromImage(bitmap))
+{
+    g.TranslateTransform(10, 10);
+    Egami.Drawing.Canvas canvas = g.Canvas;  // drawn in the graphics' world coordinates
+    canvas.FillCircle(new System.Numerics.Vector2(5, 5), 4, new Egami.Pixels.Rgba8(255, 0, 0, 255));
+}
+
+using Bitmap back = Bitmap.FromRaster(view);  // a copy, 32-bit ARGB
 </code></pre><h2 id="what-throws-on-every-os">What throws on every OS</h2>
 <p>Members that need Windows handles exist so code compiles, throw <code>PlatformNotSupportedException</code> with a message naming what to
 use instead, and carry <code>[Obsolete]</code> with one diagnostic id per group, so the compiler warns at each use. Suppress an id in the
@@ -440,7 +534,9 @@ error in <code>.editorconfig</code>.</p>
 <ul>
 <li><strong>EGSD0001, Windows handles</strong>: <code>Bitmap.GetHbitmap</code>, <code>GetHicon</code>, <code>FromHicon</code> and <code>FromResource</code>, <code>Image.FromHbitmap</code>,
 <code>Icon.Handle</code> and <code>Icon.FromHandle</code>, <code>Graphics.FromHdc</code>, <code>FromHwnd</code>, <code>GetHdc</code>, <code>ReleaseHdc</code> and <code>GetHalftonePalette</code>, and
-<code>Region.FromHrgn</code> and <code>GetHrgn</code>. Use <code>LockBits</code> for the pixels, <code>new Icon(path)</code> for icons and <code>Graphics.FromImage</code> to draw.</li>
+<code>Region.FromHrgn</code> and <code>GetHrgn</code>, the <code>Metafile</code> handle constructors and <code>GetHenhmetafile</code>, and the device-context overloads of
+<code>BufferedGraphicsContext.Allocate</code> and <code>BufferedGraphics.Render</code>. Use <code>LockBits</code> for the pixels, <code>new Icon(path)</code> for icons and
+<code>Graphics.FromImage</code> to draw.</li>
 </ul>
 <p><a id="egsd0002"></a></p>
 <ul>
@@ -448,7 +544,13 @@ error in <code>.editorconfig</code>.</p>
 </ul>
 <p><a id="egsd0003"></a></p>
 <ul>
-<li><strong>EGSD0003, Windows' own icons</strong>: <code>Icon.ExtractAssociatedIcon</code> and <code>Icon.ExtractIcon</code>. Load an icon file instead.</li>
+<li><strong>EGSD0003, Windows' own icons</strong>: <code>Icon.ExtractAssociatedIcon</code> and <code>Icon.ExtractIcon</code>, and <code>SystemIcons</code> with its
+<code>GetStockIcon</code> and the <code>StockIconId</code> and <code>StockIconOptions</code> it takes. Load an icon file instead.</li>
+</ul>
+<p><a id="egsd0004"></a></p>
+<ul>
+<li><strong>EGSD0004, metafile recording</strong>: the <code>Metafile</code> constructors that record a new metafile. Draw on a <code>Bitmap</code>, or write SVG or
+PDF with Egami.Drawing's canvases.</li>
 </ul>
 <h2 id="known-differences">Known differences</h2>
 <p>The package is measured against System.Drawing on Windows with the same probe programs compiled against both (egami-compare,
@@ -465,6 +567,10 @@ drawn much smaller is not prefiltered.</li>
 <li>Drawing onto 16-bit bitmaps does not dither, and <code>SourceCopy</code> with antialiasing blends its edges with what is below instead of
 making them transparent.</li>
 <li>Compound pens draw their strips on both sides of the line, and <code>PathGradientBrush.FocusScales</code> is kept but not drawn.</li>
+<li>A WMF without a placeable header is read as WMF, sized by its first window extent; GDI+ converts it to EMF first, so its
+size, header and records differ. Metafiles are drawn by Egami.Metafiles, which is close to GDI+ but not equal to it.</li>
+<li><code>BlurEffect</code>, <code>SharpenEffect</code>, <code>TintEffect</code>, <code>VividEffect</code> and the highlight, shadow and contrast curves are Egami's own
+versions; <code>PlayRecord</code> plays the whole metafile, not one record.</li>
 <li><code>Flatten</code> takes as many steps as GDI+ but evaluates the curve exactly, so its points differ from GDI+'s, which are rounded to
 sixteenths of a pixel. Rounded rectangles have no zero-length segments, which GDI+'s float arithmetic adds.</li>
 </ul>

@@ -11731,6 +11731,34 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.BitmapSuffixInSameAssemblyAttribute.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.BitmapSuffixInSameAssemblyAttribute.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.BitmapSuffixInSameAssemblyAttribute",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.BitmapSuffixInSameAssemblyAttribute.yml\" sourcestartlinenumber=\"1\">Marks an assembly whose resource bitmaps have a suffix in the same assembly, for the designer.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.BitmapSuffixInSatelliteAssemblyAttribute.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.BitmapSuffixInSatelliteAssemblyAttribute.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.BitmapSuffixInSatelliteAssemblyAttribute",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.BitmapSuffixInSatelliteAssemblyAttribute.yml\" sourcestartlinenumber=\"1\">Marks an assembly whose resource bitmaps have a suffix in a satellite assembly, for the designer.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.SystemDrawing.Brush.yml",
       "output": {
         ".html": {
@@ -11759,6 +11787,62 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.BufferedGraphics.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.BufferedGraphics.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.BufferedGraphics",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.BufferedGraphics.yml\" sourcestartlinenumber=\"1\">An off-screen buffer to draw on and then copy to a graphics in one go, as WinForms double-buffering does.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.BufferedGraphicsContext.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.BufferedGraphicsContext.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.BufferedGraphicsContext",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.BufferedGraphicsContext.yml\" sourcestartlinenumber=\"1\">Makes <xref href=\"Egami.SystemDrawing.BufferedGraphics\" data-throw-if-not-resolved=\"false\"></xref> buffers.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.BufferedGraphicsManager.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.BufferedGraphicsManager.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.BufferedGraphicsManager",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.BufferedGraphicsManager.yml\" sourcestartlinenumber=\"1\">The process's shared <xref href=\"Egami.SystemDrawing.BufferedGraphicsContext\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.ContentAlignment.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.ContentAlignment.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.ContentAlignment",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.ContentAlignment.yml\" sourcestartlinenumber=\"1\">Where content sits in a rectangle.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.SystemDrawing.CopyPixelOperation.yml",
       "output": {
         ".html": {
@@ -11770,6 +11854,34 @@
       "IsMRef": true,
       "Title": "Egami.SystemDrawing.CopyPixelOperation",
       "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.CopyPixelOperation.yml\" sourcestartlinenumber=\"1\">The raster operation of <xref href=\"Egami.SystemDrawing.Graphics.CopyFromScreen(System.Drawing.Point%2cSystem.Drawing.Point%2cSystem.Drawing.Size%2cEgami.SystemDrawing.CopyPixelOperation)\" data-throw-if-not-resolved=\"false\"></xref>, which needs Windows and always throws.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Design.CategoryNameCollection.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Design.CategoryNameCollection.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Design.CategoryNameCollection",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Design.CategoryNameCollection.yml\" sourcestartlinenumber=\"1\">A read-only list of toolbox category names.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Design.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Design.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Design",
+      "Summary": null
     },
     {
       "type": "ManagedReference",
@@ -12305,6 +12417,20 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Graphics.EnumerateMetafileProc.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Graphics.EnumerateMetafileProc.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Graphics.EnumerateMetafileProc",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Graphics.EnumerateMetafileProc.yml\" sourcestartlinenumber=\"1\">Called for each record while a metafile is enumerated.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.SystemDrawing.Graphics.yml",
       "output": {
         ".html": {
@@ -12315,7 +12441,7 @@
       "Uid": null,
       "IsMRef": true,
       "Title": "Egami.SystemDrawing.Graphics",
-      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Graphics.yml\" sourcestartlinenumber=\"1\">Draws on a bitmap, as System.Drawing's Graphics: shapes with pens and brushes, images, clipping, transforms and the page\nunit, with GDI+'s defaults: aliased shapes (<xref href=\"Egami.SystemDrawing.Drawing2D.SmoothingMode.None\" data-throw-if-not-resolved=\"false\"></xref>), pixel centers on whole coordinates, bilinear\nimage sampling without prefiltering, transforms prepended. Get one with <xref href=\"Egami.SystemDrawing.Graphics.FromImage(Egami.SystemDrawing.Image)\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n"
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Graphics.yml\" sourcestartlinenumber=\"1\">The way from a graphics to Egami's own canvas.</p>\n"
     },
     {
       "type": "ManagedReference",
@@ -12333,6 +12459,20 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.IDeviceContext.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.IDeviceContext.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.IDeviceContext",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.IDeviceContext.yml\" sourcestartlinenumber=\"1\">An object that hands out a Windows device context; <xref href=\"Egami.SystemDrawing.Graphics\" data-throw-if-not-resolved=\"false\"></xref> is one, and Egami's always throws.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.SystemDrawing.Icon.yml",
       "output": {
         ".html": {
@@ -12344,6 +12484,20 @@
       "IsMRef": true,
       "Title": "Egami.SystemDrawing.Icon",
       "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Icon.yml\" sourcestartlinenumber=\"1\">A Windows icon: an ICO file with images at several sizes, of which the icon shows the one nearest the size asked for (32 by\n32 when none is), as System.Drawing chooses it. <xref href=\"Egami.SystemDrawing.Icon.Save(System.IO.Stream)\" data-throw-if-not-resolved=\"false\"></xref> writes the file it was loaded from.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.IconConverter.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.IconConverter.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.IconConverter",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.IconConverter.yml\" sourcestartlinenumber=\"1\">Converts icons to and from bytes (the ICO file) for designers and serializers.</p>\n"
     },
     {
       "type": "ManagedReference",
@@ -12375,6 +12529,48 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.ImageAnimator.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.ImageAnimator.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.ImageAnimator",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.ImageAnimator.yml\" sourcestartlinenumber=\"1\">Steps animated GIFs (and other images with timed frames) through their frames at their delays: a timer marks images due for\ntheir next frame and calls their handlers; <xref href=\"Egami.SystemDrawing.ImageAnimator.UpdateFrames(Egami.SystemDrawing.Image)\" data-throw-if-not-resolved=\"false\"></xref> then selects the frame.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.ImageConverter.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.ImageConverter.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.ImageConverter",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.ImageConverter.yml\" sourcestartlinenumber=\"1\">Converts images to and from bytes (the file they are saved as) for designers and serializers.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.ImageFormatConverter.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.ImageFormatConverter.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.ImageFormatConverter",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.ImageFormatConverter.yml\" sourcestartlinenumber=\"1\">Converts image formats to and from their names, and lists the standard ones, for designers.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.SystemDrawing.Imaging.BitmapData.yml",
       "output": {
         ".html": {
@@ -12386,6 +12582,20 @@
       "IsMRef": true,
       "Title": "Egami.SystemDrawing.Imaging.BitmapData",
       "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Imaging.BitmapData.yml\" sourcestartlinenumber=\"1\">A locked area of a bitmap's pixels, from <xref href=\"Egami.SystemDrawing.Bitmap.LockBits(System.Drawing.Rectangle%2cEgami.SystemDrawing.Imaging.ImageLockMode%2cEgami.SystemDrawing.Imaging.PixelFormat)\" data-throw-if-not-resolved=\"false\"></xref>:\nwhere the first row starts, the bytes from one row to the next, and the size and format of the pixels.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Imaging.CachedBitmap.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Imaging.CachedBitmap.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Imaging.CachedBitmap",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Imaging.CachedBitmap.yml\" sourcestartlinenumber=\"1\">A copy of a bitmap ready to draw at device pixels with <xref href=\"Egami.SystemDrawing.Graphics.DrawCachedBitmap(Egami.SystemDrawing.Imaging.CachedBitmap%2cSystem.Int32%2cSystem.Int32)\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n"
     },
     {
       "type": "ManagedReference",
@@ -12473,6 +12683,20 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Imaging.ColorMode.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Imaging.ColorMode.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Imaging.ColorMode",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Imaging.ColorMode.yml\" sourcestartlinenumber=\"1\">Whether a color key holds 32-bit or 64-bit colors.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.SystemDrawing.Imaging.ColorPalette.yml",
       "output": {
         ".html": {
@@ -12498,6 +12722,370 @@
       "IsMRef": true,
       "Title": "Egami.SystemDrawing.Imaging.DitherType",
       "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Imaging.DitherType.yml\" sourcestartlinenumber=\"1\">How <xref href=\"Egami.SystemDrawing.Bitmap.ConvertFormat(Egami.SystemDrawing.Imaging.PixelFormat%2cEgami.SystemDrawing.Imaging.DitherType%2cEgami.SystemDrawing.Imaging.PaletteType%2cEgami.SystemDrawing.Imaging.ColorPalette%2cSystem.Single)\" data-throw-if-not-resolved=\"false\"></xref> dithers to fewer colors.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Imaging.Effects.BlackSaturationCurveEffect.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Imaging.Effects.BlackSaturationCurveEffect.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Imaging.Effects.BlackSaturationCurveEffect",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Imaging.Effects.BlackSaturationCurveEffect.yml\" sourcestartlinenumber=\"1\">Black saturation, 0 to 255: the value that becomes black.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Imaging.Effects.BlurEffect.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Imaging.Effects.BlurEffect.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Imaging.Effects.BlurEffect",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Imaging.Effects.BlurEffect.yml\" sourcestartlinenumber=\"1\">A Gaussian blur of a radius in pixels, 0 to 255.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Imaging.Effects.BrightnessContrastEffect.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Imaging.Effects.BrightnessContrastEffect.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Imaging.Effects.BrightnessContrastEffect",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Imaging.Effects.BrightnessContrastEffect.yml\" sourcestartlinenumber=\"1\">Brightness (-255 to 255) and contrast (-100 to 100).</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Imaging.Effects.ColorBalanceEffect.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Imaging.Effects.ColorBalanceEffect.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Imaging.Effects.ColorBalanceEffect",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Imaging.Effects.ColorBalanceEffect.yml\" sourcestartlinenumber=\"1\">Shifts toward red, green and blue (or cyan, magenta and yellow), each -100 to 100.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Imaging.Effects.ColorCurveEffect.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Imaging.Effects.ColorCurveEffect.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Imaging.Effects.ColorCurveEffect",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Imaging.Effects.ColorCurveEffect.yml\" sourcestartlinenumber=\"1\">A tone curve on some or all color channels; the kinds of curve derive from it.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Imaging.Effects.ColorLookupTableEffect.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Imaging.Effects.ColorLookupTableEffect.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Imaging.Effects.ColorLookupTableEffect",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Imaging.Effects.ColorLookupTableEffect.yml\" sourcestartlinenumber=\"1\">Colors through a lookup table per channel.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Imaging.Effects.ColorMatrixEffect.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Imaging.Effects.ColorMatrixEffect.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Imaging.Effects.ColorMatrixEffect",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Imaging.Effects.ColorMatrixEffect.yml\" sourcestartlinenumber=\"1\">Colors through a 5 by 5 color matrix.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Imaging.Effects.ContrastCurveEffect.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Imaging.Effects.ContrastCurveEffect.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Imaging.Effects.ContrastCurveEffect",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Imaging.Effects.ContrastCurveEffect.yml\" sourcestartlinenumber=\"1\">Contrast, -100 to 100: values pushed from or toward the middle.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Imaging.Effects.CurveChannel.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Imaging.Effects.CurveChannel.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Imaging.Effects.CurveChannel",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Imaging.Effects.CurveChannel.yml\" sourcestartlinenumber=\"1\">Which color channels a curve effect adjusts.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Imaging.Effects.DensityCurveEffect.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Imaging.Effects.DensityCurveEffect.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Imaging.Effects.DensityCurveEffect",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Imaging.Effects.DensityCurveEffect.yml\" sourcestartlinenumber=\"1\">Density, -255 to 255: added to each value, as GDI+ applies it.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Imaging.Effects.Effect.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Imaging.Effects.Effect.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Imaging.Effects.Effect",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Imaging.Effects.Effect.yml\" sourcestartlinenumber=\"1\">An image effect, as GDI+ 1.1 has them: applied to a bitmap with <xref href=\"Egami.SystemDrawing.Bitmap.ApplyEffect(Egami.SystemDrawing.Imaging.Effects.Effect%2cSystem.Drawing.Rectangle)\" data-throw-if-not-resolved=\"false\"></xref> or while\ndrawing with <xref href=\"Egami.SystemDrawing.Graphics.DrawImage(Egami.SystemDrawing.Image%2cEgami.SystemDrawing.Imaging.Effects.Effect)\" data-throw-if-not-resolved=\"false\"></xref>. Egami computes them with its own operations, so the results\nare close to GDI+'s rather than equal.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Imaging.Effects.ExposureCurveEffect.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Imaging.Effects.ExposureCurveEffect.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Imaging.Effects.ExposureCurveEffect",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Imaging.Effects.ExposureCurveEffect.yml\" sourcestartlinenumber=\"1\">Exposure, -255 to 255: added to each value, as GDI+ applies it.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Imaging.Effects.GrayScaleEffect.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Imaging.Effects.GrayScaleEffect.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Imaging.Effects.GrayScaleEffect",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Imaging.Effects.GrayScaleEffect.yml\" sourcestartlinenumber=\"1\">Gray from each color's luminance.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Imaging.Effects.HighlightCurveEffect.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Imaging.Effects.HighlightCurveEffect.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Imaging.Effects.HighlightCurveEffect",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Imaging.Effects.HighlightCurveEffect.yml\" sourcestartlinenumber=\"1\">Highlights, -100 to 100: the upper values raised or lowered.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Imaging.Effects.InvertEffect.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Imaging.Effects.InvertEffect.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Imaging.Effects.InvertEffect",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Imaging.Effects.InvertEffect.yml\" sourcestartlinenumber=\"1\">Each color channel inverted.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Imaging.Effects.LevelsEffect.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Imaging.Effects.LevelsEffect.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Imaging.Effects.LevelsEffect",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Imaging.Effects.LevelsEffect.yml\" sourcestartlinenumber=\"1\">Levels: highlights (0 to 100) and shadows (0 to 100) stretched, midtones (-100 to 100) shifted.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Imaging.Effects.MidtoneCurveEffect.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Imaging.Effects.MidtoneCurveEffect.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Imaging.Effects.MidtoneCurveEffect",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Imaging.Effects.MidtoneCurveEffect.yml\" sourcestartlinenumber=\"1\">Midtones, -100 to 100: the middle values raised or lowered.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Imaging.Effects.SepiaEffect.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Imaging.Effects.SepiaEffect.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Imaging.Effects.SepiaEffect",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Imaging.Effects.SepiaEffect.yml\" sourcestartlinenumber=\"1\">A sepia tone: gray tinted brown.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Imaging.Effects.ShadowCurveEffect.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Imaging.Effects.ShadowCurveEffect.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Imaging.Effects.ShadowCurveEffect",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Imaging.Effects.ShadowCurveEffect.yml\" sourcestartlinenumber=\"1\">Shadows, -100 to 100: the lower values raised or lowered.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Imaging.Effects.SharpenEffect.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Imaging.Effects.SharpenEffect.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Imaging.Effects.SharpenEffect",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Imaging.Effects.SharpenEffect.yml\" sourcestartlinenumber=\"1\">An unsharp mask: detail at a radius in pixels raised by an amount, 0 to 100.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Imaging.Effects.TintEffect.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Imaging.Effects.TintEffect.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Imaging.Effects.TintEffect",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Imaging.Effects.TintEffect.yml\" sourcestartlinenumber=\"1\">A tint toward a hue (-180 to 180 degrees) by an amount (-100 to 100).</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Imaging.Effects.VividEffect.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Imaging.Effects.VividEffect.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Imaging.Effects.VividEffect",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Imaging.Effects.VividEffect.yml\" sourcestartlinenumber=\"1\">Livelier colors: saturation raised.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Imaging.Effects.WhiteSaturationCurveEffect.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Imaging.Effects.WhiteSaturationCurveEffect.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Imaging.Effects.WhiteSaturationCurveEffect",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Imaging.Effects.WhiteSaturationCurveEffect.yml\" sourcestartlinenumber=\"1\">White saturation, 0 to 255: the value that becomes white.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Imaging.Effects.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Imaging.Effects.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Imaging.Effects",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Imaging.EmfPlusRecordType.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Imaging.EmfPlusRecordType.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Imaging.EmfPlusRecordType",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Imaging.EmfPlusRecordType.yml\" sourcestartlinenumber=\"1\">The type of a metafile record, as <xref href=\"Egami.SystemDrawing.Graphics.EnumerateMetafile(Egami.SystemDrawing.Imaging.Metafile%2cSystem.Drawing.PointF%2cEgami.SystemDrawing.Graphics.EnumerateMetafileProc)\" data-throw-if-not-resolved=\"false\"></xref> reports it: WMF functions above 0x10000, EMF records from 1, EMF+ records from 0x4000.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Imaging.EmfType.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Imaging.EmfType.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Imaging.EmfType",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Imaging.EmfType.yml\" sourcestartlinenumber=\"1\">The kind of EMF a recording would write; Egami does not record metafiles.</p>\n"
     },
     {
       "type": "ManagedReference",
@@ -12669,6 +13257,76 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Imaging.MetaHeader.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Imaging.MetaHeader.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Imaging.MetaHeader",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Imaging.MetaHeader.yml\" sourcestartlinenumber=\"1\">A WMF's own header ([MS-WMF] 2.3.2.2).</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Imaging.Metafile.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Imaging.Metafile.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Imaging.Metafile",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Imaging.Metafile.yml\" sourcestartlinenumber=\"1\">A WMF, EMF or EMF+ picture, read and drawn by Egami.Metafiles: an <xref href=\"Egami.SystemDrawing.Image\" data-throw-if-not-resolved=\"false\"></xref> sized by its frame, which\n<xref href=\"Egami.SystemDrawing.Graphics.DrawImage(Egami.SystemDrawing.Image%2cSystem.Single%2cSystem.Single)\" data-throw-if-not-resolved=\"false\"></xref> plays as vectors and <xref href=\"Egami.SystemDrawing.Graphics.EnumerateMetafile(Egami.SystemDrawing.Imaging.Metafile%2cSystem.Drawing.PointF%2cEgami.SystemDrawing.Graphics.EnumerateMetafileProc)\" data-throw-if-not-resolved=\"false\"></xref>\nwalks record by record. Egami reads metafiles but does not record them, so the recording constructors throw.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Imaging.MetafileFrameUnit.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Imaging.MetafileFrameUnit.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Imaging.MetafileFrameUnit",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Imaging.MetafileFrameUnit.yml\" sourcestartlinenumber=\"1\">The unit of a recording's frame rectangle; Egami does not record metafiles.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Imaging.MetafileHeader.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Imaging.MetafileHeader.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Imaging.MetafileHeader",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Imaging.MetafileHeader.yml\" sourcestartlinenumber=\"1\">A metafile's header: its type, size, resolution and version, as GDI+ reports them.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Imaging.MetafileType.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Imaging.MetafileType.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Imaging.MetafileType",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Imaging.MetafileType.yml\" sourcestartlinenumber=\"1\">What a metafile is, as its header reports it.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.SystemDrawing.Imaging.PaletteFlags.yml",
       "output": {
         ".html": {
@@ -12711,6 +13369,20 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Imaging.PlayRecordCallback.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Imaging.PlayRecordCallback.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Imaging.PlayRecordCallback",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Imaging.PlayRecordCallback.yml\" sourcestartlinenumber=\"1\">Plays a record back while a metafile is enumerated; Egami does not play single records, so it is never given.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.SystemDrawing.Imaging.PropertyItem.yml",
       "output": {
         ".html": {
@@ -12722,6 +13394,20 @@
       "IsMRef": true,
       "Title": "Egami.SystemDrawing.Imaging.PropertyItem",
       "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Imaging.PropertyItem.yml\" sourcestartlinenumber=\"1\">One metadata tag of an image, as EXIF and TIFF store it: its id, type and raw bytes. <xref href=\"Egami.SystemDrawing.Image.PropertyItems\" data-throw-if-not-resolved=\"false\"></xref> and\n<xref href=\"Egami.SystemDrawing.Image.GetPropertyItem(System.Int32)\" data-throw-if-not-resolved=\"false\"></xref> read them from the image's EXIF data, and <xref href=\"Egami.SystemDrawing.Image.SetPropertyItem(Egami.SystemDrawing.Imaging.PropertyItem)\" data-throw-if-not-resolved=\"false\"></xref>\nwrites one back. There is no public constructor, as in System.Drawing: change an item read from an image.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Imaging.WmfPlaceableFileHeader.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Imaging.WmfPlaceableFileHeader.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Imaging.WmfPlaceableFileHeader",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Imaging.WmfPlaceableFileHeader.yml\" sourcestartlinenumber=\"1\">A placeable WMF's header: its box in its own units and how many make an inch.</p>\n"
     },
     {
       "type": "ManagedReference",
@@ -12809,6 +13495,34 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.StockIconId.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.StockIconId.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.StockIconId",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.StockIconId.yml\" sourcestartlinenumber=\"1\">Windows' stock shell icons, which only Windows has; <xref href=\"Egami.SystemDrawing.SystemIcons.GetStockIcon(Egami.SystemDrawing.StockIconId%2cSystem.Int32)\" data-throw-if-not-resolved=\"false\"></xref> throws.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.StockIconOptions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.StockIconOptions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.StockIconOptions",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.StockIconOptions.yml\" sourcestartlinenumber=\"1\">How Windows would draw a stock icon.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.SystemDrawing.SystemBrushes.yml",
       "output": {
         ".html": {
@@ -12820,6 +13534,20 @@
       "IsMRef": true,
       "Title": "Egami.SystemDrawing.SystemBrushes",
       "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.SystemBrushes.yml\" sourcestartlinenumber=\"1\">Solid brushes of the system colors, which cannot be changed or disposed.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.SystemIcons.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.SystemIcons.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.SystemIcons",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.SystemIcons.yml\" sourcestartlinenumber=\"1\">Not supported: Windows' own icons. Every member throws.</p>\n"
     },
     {
       "type": "ManagedReference",
@@ -12876,6 +13604,20 @@
       "IsMRef": true,
       "Title": "Egami.SystemDrawing.TextureBrush",
       "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.TextureBrush.yml\" sourcestartlinenumber=\"1\">A brush that tiles an image, from the world origin, through its transform.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.ToolboxBitmapAttribute.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.ToolboxBitmapAttribute.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.ToolboxBitmapAttribute",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.ToolboxBitmapAttribute.yml\" sourcestartlinenumber=\"1\">Names a type's toolbox image: a bitmap or icon resource next to the type, as the Windows Forms designer looks it up.</p>\n"
     },
     {
       "type": "ManagedReference",

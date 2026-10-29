@@ -101,6 +101,11 @@ where the first row starts, the bytes from one row to the next, and the size and
 </dd>
     </dl>
     <dl class="jumplist">
+      <dt><a class="xref" href="Egami.SystemDrawing.Imaging.CachedBitmap.html">CachedBitmap</a></dt>
+      <dd><p>A copy of a bitmap ready to draw at device pixels with <a class="xref" href="Egami.SystemDrawing.Graphics.html#Egami_SystemDrawing_Graphics_DrawCachedBitmap_Egami_SystemDrawing_Imaging_CachedBitmap_System_Int32_System_Int32_">DrawCachedBitmap(CachedBitmap, int, int)</a>.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
       <dt><a class="xref" href="Egami.SystemDrawing.Imaging.ColorMap.html">ColorMap</a></dt>
       <dd><p>A color a remap table replaces, and its replacement.</p>
 </dd>
@@ -158,10 +163,32 @@ decoders listed; the list matches GDI+'s so code that looks a codec up by its MI
 </dd>
     </dl>
     <dl class="jumplist">
+      <dt><a class="xref" href="Egami.SystemDrawing.Imaging.MetaHeader.html">MetaHeader</a></dt>
+      <dd><p>A WMF's own header ([MS-WMF] 2.3.2.2).</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.SystemDrawing.Imaging.Metafile.html">Metafile</a></dt>
+      <dd><p>A WMF, EMF or EMF+ picture, read and drawn by Egami.Metafiles: an <a class="xref" href="Egami.SystemDrawing.Image.html">Image</a> sized by its frame, which
+<a class="xref" href="Egami.SystemDrawing.Graphics.html#Egami_SystemDrawing_Graphics_DrawImage_Egami_SystemDrawing_Image_System_Single_System_Single_">DrawImage(Image, float, float)</a> plays as vectors and <a class="xref" href="Egami.SystemDrawing.Graphics.html#Egami_SystemDrawing_Graphics_EnumerateMetafile_Egami_SystemDrawing_Imaging_Metafile_System_Drawing_PointF_Egami_SystemDrawing_Graphics_EnumerateMetafileProc_">EnumerateMetafile(Metafile, PointF, EnumerateMetafileProc)</a>
+walks record by record. Egami reads metafiles but does not record them, so the recording constructors throw.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.SystemDrawing.Imaging.MetafileHeader.html">MetafileHeader</a></dt>
+      <dd><p>A metafile's header: its type, size, resolution and version, as GDI+ reports them.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
       <dt><a class="xref" href="Egami.SystemDrawing.Imaging.PropertyItem.html">PropertyItem</a></dt>
       <dd><p>One metadata tag of an image, as EXIF and TIFF store it: its id, type and raw bytes. <a class="xref" href="Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_PropertyItems">PropertyItems</a> and
 <a class="xref" href="Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_GetPropertyItem_System_Int32_">GetPropertyItem(int)</a> read them from the image's EXIF data, and <a class="xref" href="Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_SetPropertyItem_Egami_SystemDrawing_Imaging_PropertyItem_">SetPropertyItem(PropertyItem)</a>
 writes one back. There is no public constructor, as in System.Drawing: change an item read from an image.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.SystemDrawing.Imaging.WmfPlaceableFileHeader.html">WmfPlaceableFileHeader</a></dt>
+      <dd><p>A placeable WMF's header: its box in its own units and how many make an inch.</p>
 </dd>
     </dl>
     <h3 id="enums">
@@ -188,8 +215,23 @@ Enums
 </dd>
     </dl>
     <dl class="jumplist">
+      <dt><a class="xref" href="Egami.SystemDrawing.Imaging.ColorMode.html">ColorMode</a></dt>
+      <dd><p>Whether a color key holds 32-bit or 64-bit colors.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
       <dt><a class="xref" href="Egami.SystemDrawing.Imaging.DitherType.html">DitherType</a></dt>
       <dd><p>How <a class="xref" href="Egami.SystemDrawing.Bitmap.html#Egami_SystemDrawing_Bitmap_ConvertFormat_Egami_SystemDrawing_Imaging_PixelFormat_Egami_SystemDrawing_Imaging_DitherType_Egami_SystemDrawing_Imaging_PaletteType_Egami_SystemDrawing_Imaging_ColorPalette_System_Single_">ConvertFormat(PixelFormat, DitherType, PaletteType, ColorPalette?, float)</a> dithers to fewer colors.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.SystemDrawing.Imaging.EmfPlusRecordType.html">EmfPlusRecordType</a></dt>
+      <dd><p>The type of a metafile record, as <a class="xref" href="Egami.SystemDrawing.Graphics.html#Egami_SystemDrawing_Graphics_EnumerateMetafile_Egami_SystemDrawing_Imaging_Metafile_System_Drawing_PointF_Egami_SystemDrawing_Graphics_EnumerateMetafileProc_">EnumerateMetafile(Metafile, PointF, EnumerateMetafileProc)</a> reports it: WMF functions above 0x10000, EMF records from 1, EMF+ records from 0x4000.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.SystemDrawing.Imaging.EmfType.html">EmfType</a></dt>
+      <dd><p>The kind of EMF a recording would write; Egami does not record metafiles.</p>
 </dd>
     </dl>
     <dl class="jumplist">
@@ -218,6 +260,16 @@ Enums
 </dd>
     </dl>
     <dl class="jumplist">
+      <dt><a class="xref" href="Egami.SystemDrawing.Imaging.MetafileFrameUnit.html">MetafileFrameUnit</a></dt>
+      <dd><p>The unit of a recording's frame rectangle; Egami does not record metafiles.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.SystemDrawing.Imaging.MetafileType.html">MetafileType</a></dt>
+      <dd><p>What a metafile is, as its header reports it.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
       <dt><a class="xref" href="Egami.SystemDrawing.Imaging.PaletteFlags.html">PaletteFlags</a></dt>
       <dd><p>What a <a class="xref" href="Egami.SystemDrawing.Imaging.ColorPalette.html">ColorPalette</a>'s <a class="xref" href="Egami.SystemDrawing.Imaging.ColorPalette.html#Egami_SystemDrawing_Imaging_ColorPalette_Flags">Flags</a> say about its colors.</p>
 </dd>
@@ -231,6 +283,14 @@ Enums
       <dt><a class="xref" href="Egami.SystemDrawing.Imaging.PixelFormat.html">PixelFormat</a></dt>
       <dd><p>The memory layout of a bitmap's pixels, with System.Drawing's values: bits 8 to 15 hold the bits a pixel, bits 0 to 7 an
 index, and the high bits the flags below.</p>
+</dd>
+    </dl>
+    <h3 id="delegates">
+Delegates
+</h3>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.SystemDrawing.Imaging.PlayRecordCallback.html">PlayRecordCallback</a></dt>
+      <dd><p>Plays a record back while a metafile is enumerated; Egami does not play single records, so it is never given.</p>
 </dd>
     </dl>
 

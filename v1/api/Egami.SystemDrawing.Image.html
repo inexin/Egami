@@ -130,6 +130,7 @@ as in System.Drawing. Load one with <a class="xref" href="Egami.SystemDrawing.Im
     <dt>Derived</dt>
     <dd>
       <div><a class="xref" href="Egami.SystemDrawing.Bitmap.html">Bitmap</a></div>
+      <div><a class="xref" href="Egami.SystemDrawing.Imaging.Metafile.html">Metafile</a></div>
     </dd>
   </dl>
 
@@ -198,7 +199,7 @@ EncoderValue lzw = EncoderValue.CompressionLZW;                                 
 
   <h3 id="Egami_SystemDrawing_Image_Flags" data-uid="Egami.SystemDrawing.Image.Flags">
   Flags
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L71"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L73"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the image's <a class="xref" href="Egami.SystemDrawing.Imaging.ImageFlags.html">ImageFlags</a> as an integer.</p>
@@ -230,7 +231,7 @@ EncoderValue lzw = EncoderValue.CompressionLZW;                                 
 
   <h3 id="Egami_SystemDrawing_Image_FrameDimensionsList" data-uid="Egami.SystemDrawing.Image.FrameDimensionsList">
   FrameDimensionsList
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L108"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L110"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the GUIDs of the dimensions the image's frames are counted in: one, Page, Time or Resolution.</p>
@@ -294,7 +295,7 @@ EncoderValue lzw = EncoderValue.CompressionLZW;                                 
 
   <h3 id="Egami_SystemDrawing_Image_HorizontalResolution" data-uid="Egami.SystemDrawing.Image.HorizontalResolution">
   HorizontalResolution
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L51"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L53"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the horizontal resolution in pixels per inch; 96 unless the file or <a class="xref" href="Egami.SystemDrawing.Bitmap.html#Egami_SystemDrawing_Bitmap_SetResolution_System_Single_System_Single_">SetResolution(float, float)</a> says otherwise.</p>
@@ -326,7 +327,7 @@ EncoderValue lzw = EncoderValue.CompressionLZW;                                 
 
   <h3 id="Egami_SystemDrawing_Image_Palette" data-uid="Egami.SystemDrawing.Image.Palette">
   Palette
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L97"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L99"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets or sets the palette. Getting gives a copy: change its entries, then set it to change the image. A non-indexed image
@@ -391,7 +392,7 @@ has an empty palette.</p>
 
   <h3 id="Egami_SystemDrawing_Image_PixelFormat" data-uid="Egami.SystemDrawing.Image.PixelFormat">
   PixelFormat
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L81"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L83"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the pixel format.</p>
@@ -423,7 +424,7 @@ has an empty palette.</p>
 
   <h3 id="Egami_SystemDrawing_Image_PropertyIdList" data-uid="Egami.SystemDrawing.Image.PropertyIdList">
   PropertyIdList
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L118"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L120"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the ids of the image's property items.</p>
@@ -455,7 +456,7 @@ has an empty palette.</p>
 
   <h3 id="Egami_SystemDrawing_Image_PropertyItems" data-uid="Egami.SystemDrawing.Image.PropertyItems">
   PropertyItems
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L128"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L130"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets copies of the image's property items: its EXIF tags, a GIF's frame delays and loop count, a JPEG's quantization tables.</p>
@@ -487,7 +488,7 @@ has an empty palette.</p>
 
   <h3 id="Egami_SystemDrawing_Image_RawFormat" data-uid="Egami.SystemDrawing.Image.RawFormat">
   RawFormat
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L84"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L86"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the format of the file the image came from, or <a class="xref" href="Egami.SystemDrawing.Imaging.ImageFormat.html#Egami_SystemDrawing_Imaging_ImageFormat_MemoryBmp">MemoryBmp</a> for one made in memory.</p>
@@ -583,7 +584,7 @@ has an empty palette.</p>
 
   <h3 id="Egami_SystemDrawing_Image_VerticalResolution" data-uid="Egami.SystemDrawing.Image.VerticalResolution">
   VerticalResolution
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L61"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L63"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the vertical resolution in pixels per inch.</p>
@@ -651,7 +652,7 @@ has an empty palette.</p>
 
   <h3 id="Egami_SystemDrawing_Image_Clone" data-uid="Egami.SystemDrawing.Image.Clone">
   Clone()
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L435"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L442"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>A copy of the image with all its frames and properties.</p>
@@ -684,7 +685,7 @@ has an empty palette.</p>
 
   <h3 id="Egami_SystemDrawing_Image_Dispose" data-uid="Egami.SystemDrawing.Image.Dispose">
   Dispose()
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L438"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L445"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Releases the image's pixels.</p>
@@ -711,7 +712,7 @@ has an empty palette.</p>
 
   <h3 id="Egami_SystemDrawing_Image_Dispose_System_Boolean_" data-uid="Egami.SystemDrawing.Image.Dispose(System.Boolean)">
   Dispose(bool)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L446"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L453"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Releases the image's pixels and finishes a multi-frame save it started.</p>
@@ -744,7 +745,7 @@ has an empty palette.</p>
 
   <h3 id="Egami_SystemDrawing_Image_Finalize" data-uid="Egami.SystemDrawing.Image.Finalize">
   ~Image()
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L463"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L470"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Finishes nothing: the pixels are managed memory.</p>
@@ -771,7 +772,7 @@ has an empty palette.</p>
 
   <h3 id="Egami_SystemDrawing_Image_FromFile_System_String_" data-uid="Egami.SystemDrawing.Image.FromFile(System.String)">
   FromFile(string)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L176"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L178"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Loads an image from a file.</p>
@@ -819,7 +820,7 @@ has an empty palette.</p>
 
   <h3 id="Egami_SystemDrawing_Image_FromFile_System_String_System_Boolean_" data-uid="Egami.SystemDrawing.Image.FromFile(System.String,System.Boolean)">
   FromFile(string, bool)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L182"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L184"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Loads an image from a file.</p>
@@ -861,7 +862,7 @@ has an empty palette.</p>
 
   <h3 id="Egami_SystemDrawing_Image_FromHbitmap_System_IntPtr_" data-uid="Egami.SystemDrawing.Image.FromHbitmap(System.IntPtr)">
   FromHbitmap(nint)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L223"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L225"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Not supported: Windows bitmap handles. Always throws.</p>
@@ -901,7 +902,7 @@ public static Bitmap FromHbitmap(nint hbitmap)</code></pre>
 
   <h3 id="Egami_SystemDrawing_Image_FromHbitmap_System_IntPtr_System_IntPtr_" data-uid="Egami.SystemDrawing.Image.FromHbitmap(System.IntPtr,System.IntPtr)">
   FromHbitmap(nint, nint)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L231"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L233"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Not supported: Windows bitmap and palette handles. Always throws.</p>
@@ -944,7 +945,7 @@ public static Bitmap FromHbitmap(nint hbitmap, nint hpalette)</code></pre>
 
   <h3 id="Egami_SystemDrawing_Image_FromStream_System_IO_Stream_" data-uid="Egami.SystemDrawing.Image.FromStream(System.IO.Stream)">
   FromStream(Stream)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L199"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L201"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Loads an image from a stream, read to its end.</p>
@@ -989,7 +990,7 @@ public static Bitmap FromHbitmap(nint hbitmap, nint hpalette)</code></pre>
 
   <h3 id="Egami_SystemDrawing_Image_FromStream_System_IO_Stream_System_Boolean_" data-uid="Egami.SystemDrawing.Image.FromStream(System.IO.Stream,System.Boolean)">
   FromStream(Stream, bool)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L205"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L207"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Loads an image from a stream, read to its end.</p>
@@ -1031,7 +1032,7 @@ public static Bitmap FromHbitmap(nint hbitmap, nint hpalette)</code></pre>
 
   <h3 id="Egami_SystemDrawing_Image_FromStream_System_IO_Stream_System_Boolean_System_Boolean_" data-uid="Egami.SystemDrawing.Image.FromStream(System.IO.Stream,System.Boolean,System.Boolean)">
   FromStream(Stream, bool, bool)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L212"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L214"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Loads an image from a stream, read to its end.</p>
@@ -1076,7 +1077,7 @@ public static Bitmap FromHbitmap(nint hbitmap, nint hpalette)</code></pre>
 
   <h3 id="Egami_SystemDrawing_Image_GetBounds_Egami_SystemDrawing_GraphicsUnit__" data-uid="Egami.SystemDrawing.Image.GetBounds(Egami.SystemDrawing.GraphicsUnit@)">
   GetBounds(ref GraphicsUnit)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L258"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L260"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the bounds in a unit; for a bitmap, its size in pixels.</p>
@@ -1115,7 +1116,7 @@ public static Bitmap FromHbitmap(nint hbitmap, nint hpalette)</code></pre>
 
   <h3 id="Egami_SystemDrawing_Image_GetEncoderParameterList_System_Guid_" data-uid="Egami.SystemDrawing.Image.GetEncoderParameterList(System.Guid)">
   GetEncoderParameterList(Guid)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L335"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L337"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the settings an encoder takes.</p>
@@ -1160,7 +1161,7 @@ public static Bitmap FromHbitmap(nint hbitmap, nint hpalette)</code></pre>
 
   <h3 id="Egami_SystemDrawing_Image_GetFrameCount_Egami_SystemDrawing_Imaging_FrameDimension_" data-uid="Egami.SystemDrawing.Image.GetFrameCount(Egami.SystemDrawing.Imaging.FrameDimension)">
   GetFrameCount(FrameDimension)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L268"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L270"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the number of frames in a dimension: pages, animation frames or resolutions.</p>
@@ -1205,7 +1206,7 @@ public static Bitmap FromHbitmap(nint hbitmap, nint hpalette)</code></pre>
 
   <h3 id="Egami_SystemDrawing_Image_GetPixelFormatSize_Egami_SystemDrawing_Imaging_PixelFormat_" data-uid="Egami.SystemDrawing.Image.GetPixelFormatSize(Egami.SystemDrawing.Imaging.PixelFormat)">
   GetPixelFormatSize(PixelFormat)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L238"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L240"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the bits a pixel of a format takes.</p>
@@ -1244,7 +1245,7 @@ public static Bitmap FromHbitmap(nint hbitmap, nint hpalette)</code></pre>
 
   <h3 id="Egami_SystemDrawing_Image_GetPropertyItem_System_Int32_" data-uid="Egami.SystemDrawing.Image.GetPropertyItem(System.Int32)">
   GetPropertyItem(int)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L296"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L298"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets a copy of a property item.</p>
@@ -1289,7 +1290,7 @@ public static Bitmap FromHbitmap(nint hbitmap, nint hpalette)</code></pre>
 
   <h3 id="Egami_SystemDrawing_Image_GetThumbnailImage_System_Int32_System_Int32_Egami_SystemDrawing_Image_GetThumbnailImageAbort_System_IntPtr_" data-uid="Egami.SystemDrawing.Image.GetThumbnailImage(System.Int32,System.Int32,Egami.SystemDrawing.Image.GetThumbnailImageAbort,System.IntPtr)">
   GetThumbnailImage(int, int, GetThumbnailImageAbort?, nint)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L422"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L429"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>A small copy of the image, as 32-bit premultiplied ARGB.</p>
@@ -1337,7 +1338,7 @@ public static Bitmap FromHbitmap(nint hbitmap, nint hpalette)</code></pre>
 
   <h3 id="Egami_SystemDrawing_Image_IsAlphaPixelFormat_Egami_SystemDrawing_Imaging_PixelFormat_" data-uid="Egami.SystemDrawing.Image.IsAlphaPixelFormat(Egami.SystemDrawing.Imaging.PixelFormat)">
   IsAlphaPixelFormat(PixelFormat)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L243"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L245"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets whether a format holds alpha.</p>
@@ -1376,7 +1377,7 @@ public static Bitmap FromHbitmap(nint hbitmap, nint hpalette)</code></pre>
 
   <h3 id="Egami_SystemDrawing_Image_IsCanonicalPixelFormat_Egami_SystemDrawing_Imaging_PixelFormat_" data-uid="Egami.SystemDrawing.Image.IsCanonicalPixelFormat(Egami.SystemDrawing.Imaging.PixelFormat)">
   IsCanonicalPixelFormat(PixelFormat)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L253"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L255"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets whether a format is the default 32-bit ARGB.</p>
@@ -1415,7 +1416,7 @@ public static Bitmap FromHbitmap(nint hbitmap, nint hpalette)</code></pre>
 
   <h3 id="Egami_SystemDrawing_Image_IsExtendedPixelFormat_Egami_SystemDrawing_Imaging_PixelFormat_" data-uid="Egami.SystemDrawing.Image.IsExtendedPixelFormat(Egami.SystemDrawing.Imaging.PixelFormat)">
   IsExtendedPixelFormat(PixelFormat)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L248"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L250"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets whether a format holds 16 bits a channel.</p>
@@ -1454,7 +1455,7 @@ public static Bitmap FromHbitmap(nint hbitmap, nint hpalette)</code></pre>
 
   <h3 id="Egami_SystemDrawing_Image_RemovePropertyItem_System_Int32_" data-uid="Egami.SystemDrawing.Image.RemovePropertyItem(System.Int32)">
   RemovePropertyItem(int)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L322"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L324"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Removes a property item.</p>
@@ -1493,7 +1494,7 @@ public static Bitmap FromHbitmap(nint hbitmap, nint hpalette)</code></pre>
 
   <h3 id="Egami_SystemDrawing_Image_RotateFlip_Egami_SystemDrawing_RotateFlipType_" data-uid="Egami.SystemDrawing.Image.RotateFlip(Egami.SystemDrawing.RotateFlipType)">
   RotateFlip(RotateFlipType)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L410"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L412"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Rotates and flips the image in place.</p>
@@ -1526,7 +1527,7 @@ public static Bitmap FromHbitmap(nint hbitmap, nint hpalette)</code></pre>
 
   <h3 id="Egami_SystemDrawing_Image_Save_System_IO_Stream_Egami_SystemDrawing_Imaging_ImageCodecInfo_Egami_SystemDrawing_Imaging_EncoderParameters_" data-uid="Egami.SystemDrawing.Image.Save(System.IO.Stream,Egami.SystemDrawing.Imaging.ImageCodecInfo,Egami.SystemDrawing.Imaging.EncoderParameters)">
   Save(Stream, ImageCodecInfo, EncoderParameters?)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L380"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L382"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Saves the image to a stream with an encoder and its settings.</p>
@@ -1565,7 +1566,7 @@ public static Bitmap FromHbitmap(nint hbitmap, nint hpalette)</code></pre>
 
   <h3 id="Egami_SystemDrawing_Image_Save_System_IO_Stream_Egami_SystemDrawing_Imaging_ImageFormat_" data-uid="Egami.SystemDrawing.Image.Save(System.IO.Stream,Egami.SystemDrawing.Imaging.ImageFormat)">
   Save(Stream, ImageFormat)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L370"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L372"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Saves the image to a stream in a format.</p>
@@ -1607,7 +1608,7 @@ public static Bitmap FromHbitmap(nint hbitmap, nint hpalette)</code></pre>
 
   <h3 id="Egami_SystemDrawing_Image_Save_System_String_" data-uid="Egami.SystemDrawing.Image.Save(System.String)">
   Save(string)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L343"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L345"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Saves the image in the format it was loaded from, or as PNG when it was made in memory or no encoder writes its format.</p>
@@ -1640,7 +1641,7 @@ public static Bitmap FromHbitmap(nint hbitmap, nint hpalette)</code></pre>
 
   <h3 id="Egami_SystemDrawing_Image_Save_System_String_Egami_SystemDrawing_Imaging_ImageCodecInfo_Egami_SystemDrawing_Imaging_EncoderParameters_" data-uid="Egami.SystemDrawing.Image.Save(System.String,Egami.SystemDrawing.Imaging.ImageCodecInfo,Egami.SystemDrawing.Imaging.EncoderParameters)">
   Save(string, ImageCodecInfo, EncoderParameters?)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L358"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L360"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Saves the image with an encoder and its settings.</p>
@@ -1679,7 +1680,7 @@ public static Bitmap FromHbitmap(nint hbitmap, nint hpalette)</code></pre>
 
   <h3 id="Egami_SystemDrawing_Image_Save_System_String_Egami_SystemDrawing_Imaging_ImageFormat_" data-uid="Egami.SystemDrawing.Image.Save(System.String,Egami.SystemDrawing.Imaging.ImageFormat)">
   Save(string, ImageFormat)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L348"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L350"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Saves the image in a format.</p>
@@ -1715,7 +1716,7 @@ public static Bitmap FromHbitmap(nint hbitmap, nint hpalette)</code></pre>
 
   <h3 id="Egami_SystemDrawing_Image_SaveAdd_Egami_SystemDrawing_Image_Egami_SystemDrawing_Imaging_EncoderParameters_" data-uid="Egami.SystemDrawing.Image.SaveAdd(Egami.SystemDrawing.Image,Egami.SystemDrawing.Imaging.EncoderParameters)">
   SaveAdd(Image, EncoderParameters)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L400"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L402"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Adds another image as the next frame of a multi-frame save this image started.</p>
@@ -1751,7 +1752,7 @@ public static Bitmap FromHbitmap(nint hbitmap, nint hpalette)</code></pre>
 
   <h3 id="Egami_SystemDrawing_Image_SaveAdd_Egami_SystemDrawing_Imaging_EncoderParameters_" data-uid="Egami.SystemDrawing.Image.SaveAdd(Egami.SystemDrawing.Imaging.EncoderParameters)">
   SaveAdd(EncoderParameters)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L390"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L392"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Adds this image as the next frame of a multi-frame save, or with <a class="xref" href="Egami.SystemDrawing.Imaging.EncoderValue.html#Egami_SystemDrawing_Imaging_EncoderValue_Flush">Flush</a> finishes it.</p>
@@ -1784,7 +1785,7 @@ public static Bitmap FromHbitmap(nint hbitmap, nint hpalette)</code></pre>
 
   <h3 id="Egami_SystemDrawing_Image_SelectActiveFrame_Egami_SystemDrawing_Imaging_FrameDimension_System_Int32_" data-uid="Egami.SystemDrawing.Image.SelectActiveFrame(Egami.SystemDrawing.Imaging.FrameDimension,System.Int32)">
   SelectActiveFrame(FrameDimension, int)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L279"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L281"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Makes a frame the one the image shows, draws and saves.</p>
@@ -1828,7 +1829,7 @@ public static Bitmap FromHbitmap(nint hbitmap, nint hpalette)</code></pre>
 
   <h3 id="Egami_SystemDrawing_Image_SetPropertyItem_Egami_SystemDrawing_Imaging_PropertyItem_" data-uid="Egami.SystemDrawing.Image.SetPropertyItem(Egami.SystemDrawing.Imaging.PropertyItem)">
   SetPropertyItem(PropertyItem)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L304"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Image.cs/#L306"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Adds a property item, or replaces the one with its id.</p>

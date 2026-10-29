@@ -1,0 +1,1177 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Enum EmfPlusRecordType | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Enum EmfPlusRecordType | Egami ">
+      
+      <meta name="description" content="The type of a metafile record, as  reports it: WMF functions above 0x10000, EMF records from 1, EMF+ records from 0x4000.">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_SystemDrawing_Imaging_EmfPlusRecordType.md&amp;value=---%0Auid%3A%20Egami.SystemDrawing.Imaging.EmfPlusRecordType%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.SystemDrawing.Imaging.EmfPlusRecordType">
+
+
+
+
+  <h1 id="Egami_SystemDrawing_Imaging_EmfPlusRecordType" data-uid="Egami.SystemDrawing.Imaging.EmfPlusRecordType" class="text-break">
+Enum EmfPlusRecordType  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/MetafileEnums.cs/#L7"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a>.<a class="xref" href="Egami.SystemDrawing.html">SystemDrawing</a>.<a class="xref" href="Egami.SystemDrawing.Imaging.html">Imaging</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.SystemDrawing.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>The type of a metafile record, as <a class="xref" href="Egami.SystemDrawing.Graphics.html#Egami_SystemDrawing_Graphics_EnumerateMetafile_Egami_SystemDrawing_Imaging_Metafile_System_Drawing_PointF_Egami_SystemDrawing_Graphics_EnumerateMetafileProc_">EnumerateMetafile(Metafile, PointF, EnumerateMetafileProc)</a> reports it: WMF functions above 0x10000, EMF records from 1, EMF+ records from 0x4000.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public enum EmfPlusRecordType</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+  <h2 id="fields">Fields
+</h2>
+  <dl class="parameters">
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_BeginContainer"><code>BeginContainer = 16423</code></dt>
+  
+  <dd><p>The EMF+ Begin Container record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_BeginContainerNoParams"><code>BeginContainerNoParams = 16424</code></dt>
+  
+  <dd><p>The EMF+ Begin Container No Params record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_Clear"><code>Clear = 16393</code></dt>
+  
+  <dd><p>The EMF+ Clear record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_Comment"><code>Comment = 16387</code></dt>
+  
+  <dd><p>The EMF+ Comment record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_DrawArc"><code>DrawArc = 16402</code></dt>
+  
+  <dd><p>The EMF+ Draw Arc record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_DrawBeziers"><code>DrawBeziers = 16409</code></dt>
+  
+  <dd><p>The EMF+ Draw Beziers record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_DrawClosedCurve"><code>DrawClosedCurve = 16407</code></dt>
+  
+  <dd><p>The EMF+ Draw Closed Curve record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_DrawCurve"><code>DrawCurve = 16408</code></dt>
+  
+  <dd><p>The EMF+ Draw Curve record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_DrawDriverString"><code>DrawDriverString = 16438</code></dt>
+  
+  <dd><p>The EMF+ Draw Driver String record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_DrawEllipse"><code>DrawEllipse = 16399</code></dt>
+  
+  <dd><p>The EMF+ Draw Ellipse record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_DrawImage"><code>DrawImage = 16410</code></dt>
+  
+  <dd><p>The EMF+ Draw Image record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_DrawImagePoints"><code>DrawImagePoints = 16411</code></dt>
+  
+  <dd><p>The EMF+ Draw Image Points record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_DrawLines"><code>DrawLines = 16397</code></dt>
+  
+  <dd><p>The EMF+ Draw Lines record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_DrawPath"><code>DrawPath = 16405</code></dt>
+  
+  <dd><p>The EMF+ Draw Path record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_DrawPie"><code>DrawPie = 16401</code></dt>
+  
+  <dd><p>The EMF+ Draw Pie record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_DrawRects"><code>DrawRects = 16395</code></dt>
+  
+  <dd><p>The EMF+ Draw Rects record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_DrawString"><code>DrawString = 16412</code></dt>
+  
+  <dd><p>The EMF+ Draw String record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfAbortPath"><code>EmfAbortPath = 68</code></dt>
+  
+  <dd><p>The EMF Abort Path record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfAlphaBlend"><code>EmfAlphaBlend = 114</code></dt>
+  
+  <dd><p>The EMF Alpha Blend record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfAngleArc"><code>EmfAngleArc = 41</code></dt>
+  
+  <dd><p>The EMF Angle Arc record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfArcTo"><code>EmfArcTo = 55</code></dt>
+  
+  <dd><p>The EMF Arc To record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfBeginPath"><code>EmfBeginPath = 59</code></dt>
+  
+  <dd><p>The EMF Begin Path record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfBitBlt"><code>EmfBitBlt = 76</code></dt>
+  
+  <dd><p>The EMF Bit Blt record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfChord"><code>EmfChord = 46</code></dt>
+  
+  <dd><p>The EMF Chord record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfCloseFigure"><code>EmfCloseFigure = 61</code></dt>
+  
+  <dd><p>The EMF Close Figure record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfColorCorrectPalette"><code>EmfColorCorrectPalette = 111</code></dt>
+  
+  <dd><p>The EMF Color Correct Palette record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfColorMatchToTargetW"><code>EmfColorMatchToTargetW = 121</code></dt>
+  
+  <dd><p>The EMF Color Match To Target W record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfCreateBrushIndirect"><code>EmfCreateBrushIndirect = 39</code></dt>
+  
+  <dd><p>The EMF Create Brush Indirect record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfCreateColorSpace"><code>EmfCreateColorSpace = 99</code></dt>
+  
+  <dd><p>The EMF Create Color Space record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfCreateColorSpaceW"><code>EmfCreateColorSpaceW = 122</code></dt>
+  
+  <dd><p>The EMF Create Color Space W record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfCreateDibPatternBrushPt"><code>EmfCreateDibPatternBrushPt = 94</code></dt>
+  
+  <dd><p>The EMF Create Dib Pattern Brush Pt record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfCreateMonoBrush"><code>EmfCreateMonoBrush = 93</code></dt>
+  
+  <dd><p>The EMF Create Mono Brush record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfCreatePalette"><code>EmfCreatePalette = 49</code></dt>
+  
+  <dd><p>The EMF Create Palette record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfCreatePen"><code>EmfCreatePen = 38</code></dt>
+  
+  <dd><p>The EMF Create Pen record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfDeleteColorSpace"><code>EmfDeleteColorSpace = 101</code></dt>
+  
+  <dd><p>The EMF Delete Color Space record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfDeleteObject"><code>EmfDeleteObject = 40</code></dt>
+  
+  <dd><p>The EMF Delete Object record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfDrawEscape"><code>EmfDrawEscape = 105</code></dt>
+  
+  <dd><p>The EMF Draw Escape record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfEllipse"><code>EmfEllipse = 42</code></dt>
+  
+  <dd><p>The EMF Ellipse record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfEndPath"><code>EmfEndPath = 60</code></dt>
+  
+  <dd><p>The EMF End Path record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfEof"><code>EmfEof = 14</code></dt>
+  
+  <dd><p>The EMF Eof record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfExcludeClipRect"><code>EmfExcludeClipRect = 29</code></dt>
+  
+  <dd><p>The EMF Exclude Clip Rect record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfExtCreateFontIndirect"><code>EmfExtCreateFontIndirect = 82</code></dt>
+  
+  <dd><p>The EMF Ext Create Font Indirect record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfExtCreatePen"><code>EmfExtCreatePen = 95</code></dt>
+  
+  <dd><p>The EMF Ext Create Pen record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfExtEscape"><code>EmfExtEscape = 106</code></dt>
+  
+  <dd><p>The EMF Ext Escape record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfExtFloodFill"><code>EmfExtFloodFill = 53</code></dt>
+  
+  <dd><p>The EMF Ext Flood Fill record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfExtSelectClipRgn"><code>EmfExtSelectClipRgn = 75</code></dt>
+  
+  <dd><p>The EMF Ext Select Clip Rgn record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfExtTextOutA"><code>EmfExtTextOutA = 83</code></dt>
+  
+  <dd><p>The EMF Ext Text Out A record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfExtTextOutW"><code>EmfExtTextOutW = 84</code></dt>
+  
+  <dd><p>The EMF Ext Text Out W record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfFillPath"><code>EmfFillPath = 62</code></dt>
+  
+  <dd><p>The EMF Fill Path record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfFillRgn"><code>EmfFillRgn = 71</code></dt>
+  
+  <dd><p>The EMF Fill Rgn record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfFlattenPath"><code>EmfFlattenPath = 65</code></dt>
+  
+  <dd><p>The EMF Flatten Path record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfForceUfiMapping"><code>EmfForceUfiMapping = 109</code></dt>
+  
+  <dd><p>The EMF Force Ufi Mapping record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfFrameRgn"><code>EmfFrameRgn = 72</code></dt>
+  
+  <dd><p>The EMF Frame Rgn record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfGdiComment"><code>EmfGdiComment = 70</code></dt>
+  
+  <dd><p>The EMF Gdi Comment record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfGlsBoundedRecord"><code>EmfGlsBoundedRecord = 103</code></dt>
+  
+  <dd><p>The EMF Gls Bounded Record record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfGlsRecord"><code>EmfGlsRecord = 102</code></dt>
+  
+  <dd><p>The EMF Gls Record record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfGradientFill"><code>EmfGradientFill = 118</code></dt>
+  
+  <dd><p>The EMF Gradient Fill record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfHeader"><code>EmfHeader = 1</code></dt>
+  
+  <dd><p>The EMF Header record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfIntersectClipRect"><code>EmfIntersectClipRect = 30</code></dt>
+  
+  <dd><p>The EMF Intersect Clip Rect record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfInvertRgn"><code>EmfInvertRgn = 73</code></dt>
+  
+  <dd><p>The EMF Invert Rgn record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfLineTo"><code>EmfLineTo = 54</code></dt>
+  
+  <dd><p>The EMF Line To record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfMaskBlt"><code>EmfMaskBlt = 78</code></dt>
+  
+  <dd><p>The EMF Mask Blt record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfMax"><code>EmfMax = 122</code></dt>
+  
+  <dd><p>The EMF Max record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfMin"><code>EmfMin = 1</code></dt>
+  
+  <dd><p>The EMF Min record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfModifyWorldTransform"><code>EmfModifyWorldTransform = 36</code></dt>
+  
+  <dd><p>The EMF Modify World Transform record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfMoveToEx"><code>EmfMoveToEx = 27</code></dt>
+  
+  <dd><p>The EMF Move To Ex record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfNamedEscpae"><code>EmfNamedEscpae = 110</code></dt>
+  
+  <dd><p>The EMF Named Escpae record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfOffsetClipRgn"><code>EmfOffsetClipRgn = 26</code></dt>
+  
+  <dd><p>The EMF Offset Clip Rgn record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfPaintRgn"><code>EmfPaintRgn = 74</code></dt>
+  
+  <dd><p>The EMF Paint Rgn record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfPie"><code>EmfPie = 47</code></dt>
+  
+  <dd><p>The EMF Pie record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfPixelFormat"><code>EmfPixelFormat = 104</code></dt>
+  
+  <dd><p>The EMF Pixel Format record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfPlgBlt"><code>EmfPlgBlt = 79</code></dt>
+  
+  <dd><p>The EMF Plg Blt record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfPlusRecordBase"><code>EmfPlusRecordBase = 16384</code></dt>
+  
+  <dd><p>The EMF+ Record Base record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfPolyBezier"><code>EmfPolyBezier = 2</code></dt>
+  
+  <dd><p>The EMF Poly Bezier record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfPolyBezier16"><code>EmfPolyBezier16 = 85</code></dt>
+  
+  <dd><p>The EMF Poly Bezier16 record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfPolyBezierTo"><code>EmfPolyBezierTo = 5</code></dt>
+  
+  <dd><p>The EMF Poly Bezier To record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfPolyBezierTo16"><code>EmfPolyBezierTo16 = 88</code></dt>
+  
+  <dd><p>The EMF Poly Bezier To16 record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfPolyDraw"><code>EmfPolyDraw = 56</code></dt>
+  
+  <dd><p>The EMF Poly Draw record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfPolyDraw16"><code>EmfPolyDraw16 = 92</code></dt>
+  
+  <dd><p>The EMF Poly Draw16 record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfPolyLineTo"><code>EmfPolyLineTo = 6</code></dt>
+  
+  <dd><p>The EMF Poly Line To record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfPolyPolygon"><code>EmfPolyPolygon = 8</code></dt>
+  
+  <dd><p>The EMF Poly Polygon record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfPolyPolygon16"><code>EmfPolyPolygon16 = 91</code></dt>
+  
+  <dd><p>The EMF Poly Polygon16 record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfPolyPolyline"><code>EmfPolyPolyline = 7</code></dt>
+  
+  <dd><p>The EMF Poly Polyline record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfPolyPolyline16"><code>EmfPolyPolyline16 = 90</code></dt>
+  
+  <dd><p>The EMF Poly Polyline16 record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfPolyTextOutA"><code>EmfPolyTextOutA = 96</code></dt>
+  
+  <dd><p>The EMF Poly Text Out A record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfPolyTextOutW"><code>EmfPolyTextOutW = 97</code></dt>
+  
+  <dd><p>The EMF Poly Text Out W record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfPolygon"><code>EmfPolygon = 3</code></dt>
+  
+  <dd><p>The EMF Polygon record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfPolygon16"><code>EmfPolygon16 = 86</code></dt>
+  
+  <dd><p>The EMF Polygon16 record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfPolyline"><code>EmfPolyline = 4</code></dt>
+  
+  <dd><p>The EMF Polyline record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfPolyline16"><code>EmfPolyline16 = 87</code></dt>
+  
+  <dd><p>The EMF Polyline16 record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfPolylineTo16"><code>EmfPolylineTo16 = 89</code></dt>
+  
+  <dd><p>The EMF Polyline To16 record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfRealizePalette"><code>EmfRealizePalette = 52</code></dt>
+  
+  <dd><p>The EMF Realize Palette record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfRectangle"><code>EmfRectangle = 43</code></dt>
+  
+  <dd><p>The EMF Rectangle record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfReserved069"><code>EmfReserved069 = 69</code></dt>
+  
+  <dd><p>The EMF Reserved069 record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfReserved117"><code>EmfReserved117 = 117</code></dt>
+  
+  <dd><p>The EMF Reserved117 record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfResizePalette"><code>EmfResizePalette = 51</code></dt>
+  
+  <dd><p>The EMF Resize Palette record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfRestoreDC"><code>EmfRestoreDC = 34</code></dt>
+  
+  <dd><p>The EMF Restore DC record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfRoundArc"><code>EmfRoundArc = 45</code></dt>
+  
+  <dd><p>The EMF Round Arc record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfRoundRect"><code>EmfRoundRect = 44</code></dt>
+  
+  <dd><p>The EMF Round Rect record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfSaveDC"><code>EmfSaveDC = 33</code></dt>
+  
+  <dd><p>The EMF Save DC record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfScaleViewportExtEx"><code>EmfScaleViewportExtEx = 31</code></dt>
+  
+  <dd><p>The EMF Scale Viewport Ext Ex record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfScaleWindowExtEx"><code>EmfScaleWindowExtEx = 32</code></dt>
+  
+  <dd><p>The EMF Scale Window Ext Ex record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfSelectClipPath"><code>EmfSelectClipPath = 67</code></dt>
+  
+  <dd><p>The EMF Select Clip Path record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfSelectObject"><code>EmfSelectObject = 37</code></dt>
+  
+  <dd><p>The EMF Select Object record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfSelectPalette"><code>EmfSelectPalette = 48</code></dt>
+  
+  <dd><p>The EMF Select Palette record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfSetArcDirection"><code>EmfSetArcDirection = 57</code></dt>
+  
+  <dd><p>The EMF Set Arc Direction record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfSetBkColor"><code>EmfSetBkColor = 25</code></dt>
+  
+  <dd><p>The EMF Set Bk Color record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfSetBkMode"><code>EmfSetBkMode = 18</code></dt>
+  
+  <dd><p>The EMF Set Bk Mode record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfSetBrushOrgEx"><code>EmfSetBrushOrgEx = 13</code></dt>
+  
+  <dd><p>The EMF Set Brush Org Ex record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfSetColorAdjustment"><code>EmfSetColorAdjustment = 23</code></dt>
+  
+  <dd><p>The EMF Set Color Adjustment record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfSetColorSpace"><code>EmfSetColorSpace = 100</code></dt>
+  
+  <dd><p>The EMF Set Color Space record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfSetDIBitsToDevice"><code>EmfSetDIBitsToDevice = 80</code></dt>
+  
+  <dd><p>The EMF Set DIBits To Device record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfSetIcmMode"><code>EmfSetIcmMode = 98</code></dt>
+  
+  <dd><p>The EMF Set Icm Mode record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfSetIcmProfileA"><code>EmfSetIcmProfileA = 112</code></dt>
+  
+  <dd><p>The EMF Set Icm Profile A record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfSetIcmProfileW"><code>EmfSetIcmProfileW = 113</code></dt>
+  
+  <dd><p>The EMF Set Icm Profile W record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfSetLayout"><code>EmfSetLayout = 115</code></dt>
+  
+  <dd><p>The EMF Set Layout record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfSetLinkedUfis"><code>EmfSetLinkedUfis = 119</code></dt>
+  
+  <dd><p>The EMF Set Linked Ufis record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfSetMapMode"><code>EmfSetMapMode = 17</code></dt>
+  
+  <dd><p>The EMF Set Map Mode record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfSetMapperFlags"><code>EmfSetMapperFlags = 16</code></dt>
+  
+  <dd><p>The EMF Set Mapper Flags record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfSetMetaRgn"><code>EmfSetMetaRgn = 28</code></dt>
+  
+  <dd><p>The EMF Set Meta Rgn record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfSetMiterLimit"><code>EmfSetMiterLimit = 58</code></dt>
+  
+  <dd><p>The EMF Set Miter Limit record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfSetPaletteEntries"><code>EmfSetPaletteEntries = 50</code></dt>
+  
+  <dd><p>The EMF Set Palette Entries record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfSetPixelV"><code>EmfSetPixelV = 15</code></dt>
+  
+  <dd><p>The EMF Set Pixel V record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfSetPolyFillMode"><code>EmfSetPolyFillMode = 19</code></dt>
+  
+  <dd><p>The EMF Set Poly Fill Mode record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfSetROP2"><code>EmfSetROP2 = 20</code></dt>
+  
+  <dd><p>The EMF Set ROP2 record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfSetStretchBltMode"><code>EmfSetStretchBltMode = 21</code></dt>
+  
+  <dd><p>The EMF Set Stretch Blt Mode record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfSetTextAlign"><code>EmfSetTextAlign = 22</code></dt>
+  
+  <dd><p>The EMF Set Text Align record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfSetTextColor"><code>EmfSetTextColor = 24</code></dt>
+  
+  <dd><p>The EMF Set Text Color record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfSetTextJustification"><code>EmfSetTextJustification = 120</code></dt>
+  
+  <dd><p>The EMF Set Text Justification record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfSetViewportExtEx"><code>EmfSetViewportExtEx = 11</code></dt>
+  
+  <dd><p>The EMF Set Viewport Ext Ex record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfSetViewportOrgEx"><code>EmfSetViewportOrgEx = 12</code></dt>
+  
+  <dd><p>The EMF Set Viewport Org Ex record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfSetWindowExtEx"><code>EmfSetWindowExtEx = 9</code></dt>
+  
+  <dd><p>The EMF Set Window Ext Ex record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfSetWindowOrgEx"><code>EmfSetWindowOrgEx = 10</code></dt>
+  
+  <dd><p>The EMF Set Window Org Ex record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfSetWorldTransform"><code>EmfSetWorldTransform = 35</code></dt>
+  
+  <dd><p>The EMF Set World Transform record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfSmallTextOut"><code>EmfSmallTextOut = 108</code></dt>
+  
+  <dd><p>The EMF Small Text Out record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfStartDoc"><code>EmfStartDoc = 107</code></dt>
+  
+  <dd><p>The EMF Start Doc record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfStretchBlt"><code>EmfStretchBlt = 77</code></dt>
+  
+  <dd><p>The EMF Stretch Blt record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfStretchDIBits"><code>EmfStretchDIBits = 81</code></dt>
+  
+  <dd><p>The EMF Stretch DIBits record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfStrokeAndFillPath"><code>EmfStrokeAndFillPath = 63</code></dt>
+  
+  <dd><p>The EMF Stroke And Fill Path record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfStrokePath"><code>EmfStrokePath = 64</code></dt>
+  
+  <dd><p>The EMF Stroke Path record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfTransparentBlt"><code>EmfTransparentBlt = 116</code></dt>
+  
+  <dd><p>The EMF Transparent Blt record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EmfWidenPath"><code>EmfWidenPath = 66</code></dt>
+  
+  <dd><p>The EMF Widen Path record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EndContainer"><code>EndContainer = 16425</code></dt>
+  
+  <dd><p>The EMF+ End Container record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_EndOfFile"><code>EndOfFile = 16386</code></dt>
+  
+  <dd><p>The EMF+ End Of File record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_FillClosedCurve"><code>FillClosedCurve = 16406</code></dt>
+  
+  <dd><p>The EMF+ Fill Closed Curve record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_FillEllipse"><code>FillEllipse = 16398</code></dt>
+  
+  <dd><p>The EMF+ Fill Ellipse record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_FillPath"><code>FillPath = 16404</code></dt>
+  
+  <dd><p>The EMF+ Fill Path record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_FillPie"><code>FillPie = 16400</code></dt>
+  
+  <dd><p>The EMF+ Fill Pie record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_FillPolygon"><code>FillPolygon = 16396</code></dt>
+  
+  <dd><p>The EMF+ Fill Polygon record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_FillRects"><code>FillRects = 16394</code></dt>
+  
+  <dd><p>The EMF+ Fill Rects record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_FillRegion"><code>FillRegion = 16403</code></dt>
+  
+  <dd><p>The EMF+ Fill Region record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_GetDC"><code>GetDC = 16388</code></dt>
+  
+  <dd><p>The EMF+ Get DC record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_Header"><code>Header = 16385</code></dt>
+  
+  <dd><p>The EMF+ Header record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_Invalid"><code>Invalid = 16384</code></dt>
+  
+  <dd><p>The EMF+ Invalid record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_Max"><code>Max = 16438</code></dt>
+  
+  <dd><p>The EMF+ Max record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_Min"><code>Min = 16385</code></dt>
+  
+  <dd><p>The EMF+ Min record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_MultiFormatEnd"><code>MultiFormatEnd = 16391</code></dt>
+  
+  <dd><p>The EMF+ Multi Format End record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_MultiFormatSection"><code>MultiFormatSection = 16390</code></dt>
+  
+  <dd><p>The EMF+ Multi Format Section record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_MultiFormatStart"><code>MultiFormatStart = 16389</code></dt>
+  
+  <dd><p>The EMF+ Multi Format Start record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_MultiplyWorldTransform"><code>MultiplyWorldTransform = 16428</code></dt>
+  
+  <dd><p>The EMF+ Multiply World Transform record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_Object"><code>Object = 16392</code></dt>
+  
+  <dd><p>The EMF+ Object record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_OffsetClip"><code>OffsetClip = 16437</code></dt>
+  
+  <dd><p>The EMF+ Offset Clip record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_ResetClip"><code>ResetClip = 16433</code></dt>
+  
+  <dd><p>The EMF+ Reset Clip record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_ResetWorldTransform"><code>ResetWorldTransform = 16427</code></dt>
+  
+  <dd><p>The EMF+ Reset World Transform record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_Restore"><code>Restore = 16422</code></dt>
+  
+  <dd><p>The EMF+ Restore record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_RotateWorldTransform"><code>RotateWorldTransform = 16431</code></dt>
+  
+  <dd><p>The EMF+ Rotate World Transform record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_Save"><code>Save = 16421</code></dt>
+  
+  <dd><p>The EMF+ Save record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_ScaleWorldTransform"><code>ScaleWorldTransform = 16430</code></dt>
+  
+  <dd><p>The EMF+ Scale World Transform record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_SetAntiAliasMode"><code>SetAntiAliasMode = 16414</code></dt>
+  
+  <dd><p>The EMF+ Set Anti Alias Mode record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_SetClipPath"><code>SetClipPath = 16435</code></dt>
+  
+  <dd><p>The EMF+ Set Clip Path record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_SetClipRect"><code>SetClipRect = 16434</code></dt>
+  
+  <dd><p>The EMF+ Set Clip Rect record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_SetClipRegion"><code>SetClipRegion = 16436</code></dt>
+  
+  <dd><p>The EMF+ Set Clip Region record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_SetCompositingMode"><code>SetCompositingMode = 16419</code></dt>
+  
+  <dd><p>The EMF+ Set Compositing Mode record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_SetCompositingQuality"><code>SetCompositingQuality = 16420</code></dt>
+  
+  <dd><p>The EMF+ Set Compositing Quality record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_SetInterpolationMode"><code>SetInterpolationMode = 16417</code></dt>
+  
+  <dd><p>The EMF+ Set Interpolation Mode record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_SetPageTransform"><code>SetPageTransform = 16432</code></dt>
+  
+  <dd><p>The EMF+ Set Page Transform record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_SetPixelOffsetMode"><code>SetPixelOffsetMode = 16418</code></dt>
+  
+  <dd><p>The EMF+ Set Pixel Offset Mode record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_SetRenderingOrigin"><code>SetRenderingOrigin = 16413</code></dt>
+  
+  <dd><p>The EMF+ Set Rendering Origin record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_SetTextContrast"><code>SetTextContrast = 16416</code></dt>
+  
+  <dd><p>The EMF+ Set Text Contrast record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_SetTextRenderingHint"><code>SetTextRenderingHint = 16415</code></dt>
+  
+  <dd><p>The EMF+ Set Text Rendering Hint record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_SetWorldTransform"><code>SetWorldTransform = 16426</code></dt>
+  
+  <dd><p>The EMF+ Set World Transform record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_Total"><code>Total = 16439</code></dt>
+  
+  <dd><p>The EMF+ Total record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_TranslateWorldTransform"><code>TranslateWorldTransform = 16429</code></dt>
+  
+  <dd><p>The EMF+ Translate World Transform record.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_WmfAnimatePalette"><code>WmfAnimatePalette = 66614</code></dt>
+  
+  <dd><p>The WMF Animate Palette record (function 0x436).</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_WmfArc"><code>WmfArc = 67607</code></dt>
+  
+  <dd><p>The WMF Arc record (function 0x817).</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_WmfBitBlt"><code>WmfBitBlt = 67874</code></dt>
+  
+  <dd><p>The WMF Bit Blt record (function 0x922).</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_WmfChord"><code>WmfChord = 67632</code></dt>
+  
+  <dd><p>The WMF Chord record (function 0x830).</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_WmfCreateBrushIndirect"><code>WmfCreateBrushIndirect = 66300</code></dt>
+  
+  <dd><p>The WMF Create Brush Indirect record (function 0x2FC).</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_WmfCreateFontIndirect"><code>WmfCreateFontIndirect = 66299</code></dt>
+  
+  <dd><p>The WMF Create Font Indirect record (function 0x2FB).</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_WmfCreatePalette"><code>WmfCreatePalette = 65783</code></dt>
+  
+  <dd><p>The WMF Create Palette record (function 0xF7).</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_WmfCreatePatternBrush"><code>WmfCreatePatternBrush = 66041</code></dt>
+  
+  <dd><p>The WMF Create Pattern Brush record (function 0x1F9).</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_WmfCreatePenIndirect"><code>WmfCreatePenIndirect = 66298</code></dt>
+  
+  <dd><p>The WMF Create Pen Indirect record (function 0x2FA).</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_WmfCreateRegion"><code>WmfCreateRegion = 67327</code></dt>
+  
+  <dd><p>The WMF Create Region record (function 0x6FF).</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_WmfDeleteObject"><code>WmfDeleteObject = 66032</code></dt>
+  
+  <dd><p>The WMF Delete Object record (function 0x1F0).</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_WmfDibBitBlt"><code>WmfDibBitBlt = 67904</code></dt>
+  
+  <dd><p>The WMF Dib Bit Blt record (function 0x940).</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_WmfDibCreatePatternBrush"><code>WmfDibCreatePatternBrush = 65858</code></dt>
+  
+  <dd><p>The WMF Dib Create Pattern Brush record (function 0x142).</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_WmfDibStretchBlt"><code>WmfDibStretchBlt = 68417</code></dt>
+  
+  <dd><p>The WMF Dib Stretch Blt record (function 0xB41).</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_WmfEllipse"><code>WmfEllipse = 66584</code></dt>
+  
+  <dd><p>The WMF Ellipse record (function 0x418).</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_WmfEscape"><code>WmfEscape = 67110</code></dt>
+  
+  <dd><p>The WMF Escape record (function 0x626).</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_WmfExcludeClipRect"><code>WmfExcludeClipRect = 66581</code></dt>
+  
+  <dd><p>The WMF Exclude Clip Rect record (function 0x415).</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_WmfExtFloodFill"><code>WmfExtFloodFill = 66888</code></dt>
+  
+  <dd><p>The WMF Ext Flood Fill record (function 0x548).</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_WmfExtTextOut"><code>WmfExtTextOut = 68146</code></dt>
+  
+  <dd><p>The WMF Ext Text Out record (function 0xA32).</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_WmfFillRegion"><code>WmfFillRegion = 66088</code></dt>
+  
+  <dd><p>The WMF Fill Region record (function 0x228).</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_WmfFloodFill"><code>WmfFloodFill = 66585</code></dt>
+  
+  <dd><p>The WMF Flood Fill record (function 0x419).</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_WmfFrameRegion"><code>WmfFrameRegion = 66601</code></dt>
+  
+  <dd><p>The WMF Frame Region record (function 0x429).</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_WmfIntersectClipRect"><code>WmfIntersectClipRect = 66582</code></dt>
+  
+  <dd><p>The WMF Intersect Clip Rect record (function 0x416).</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_WmfInvertRegion"><code>WmfInvertRegion = 65834</code></dt>
+  
+  <dd><p>The WMF Invert Region record (function 0x12A).</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_WmfLineTo"><code>WmfLineTo = 66067</code></dt>
+  
+  <dd><p>The WMF Line To record (function 0x213).</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_WmfMoveTo"><code>WmfMoveTo = 66068</code></dt>
+  
+  <dd><p>The WMF Move To record (function 0x214).</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_WmfOffsetCilpRgn"><code>WmfOffsetCilpRgn = 66080</code></dt>
+  
+  <dd><p>The WMF Offset Cilp Rgn record (function 0x220).</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_WmfOffsetViewportOrg"><code>WmfOffsetViewportOrg = 66065</code></dt>
+  
+  <dd><p>The WMF Offset Viewport Org record (function 0x211).</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_WmfOffsetWindowOrg"><code>WmfOffsetWindowOrg = 66063</code></dt>
+  
+  <dd><p>The WMF Offset Window Org record (function 0x20F).</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_WmfPaintRegion"><code>WmfPaintRegion = 65835</code></dt>
+  
+  <dd><p>The WMF Paint Region record (function 0x12B).</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_WmfPatBlt"><code>WmfPatBlt = 67101</code></dt>
+  
+  <dd><p>The WMF Pat Blt record (function 0x61D).</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_WmfPie"><code>WmfPie = 67610</code></dt>
+  
+  <dd><p>The WMF Pie record (function 0x81A).</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_WmfPolyPolygon"><code>WmfPolyPolygon = 66872</code></dt>
+  
+  <dd><p>The WMF Poly Polygon record (function 0x538).</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_WmfPolygon"><code>WmfPolygon = 66340</code></dt>
+  
+  <dd><p>The WMF Polygon record (function 0x324).</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_WmfPolyline"><code>WmfPolyline = 66341</code></dt>
+  
+  <dd><p>The WMF Polyline record (function 0x325).</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_WmfRealizePalette"><code>WmfRealizePalette = 65589</code></dt>
+  
+  <dd><p>The WMF Realize Palette record (function 0x35).</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_WmfRecordBase"><code>WmfRecordBase = 65536</code></dt>
+  
+  <dd><p>Added to a WMF function number to make its record type.</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_WmfRectangle"><code>WmfRectangle = 66587</code></dt>
+  
+  <dd><p>The WMF Rectangle record (function 0x41B).</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_WmfResizePalette"><code>WmfResizePalette = 65849</code></dt>
+  
+  <dd><p>The WMF Resize Palette record (function 0x139).</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_WmfRestoreDC"><code>WmfRestoreDC = 65831</code></dt>
+  
+  <dd><p>The WMF Restore DC record (function 0x127).</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_WmfRoundRect"><code>WmfRoundRect = 67100</code></dt>
+  
+  <dd><p>The WMF Round Rect record (function 0x61C).</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_WmfSaveDC"><code>WmfSaveDC = 65566</code></dt>
+  
+  <dd><p>The WMF Save DC record (function 0x1E).</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_WmfScaleViewportExt"><code>WmfScaleViewportExt = 66578</code></dt>
+  
+  <dd><p>The WMF Scale Viewport Ext record (function 0x412).</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_WmfScaleWindowExt"><code>WmfScaleWindowExt = 66576</code></dt>
+  
+  <dd><p>The WMF Scale Window Ext record (function 0x410).</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_WmfSelectClipRegion"><code>WmfSelectClipRegion = 65836</code></dt>
+  
+  <dd><p>The WMF Select Clip Region record (function 0x12C).</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_WmfSelectObject"><code>WmfSelectObject = 65837</code></dt>
+  
+  <dd><p>The WMF Select Object record (function 0x12D).</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_WmfSelectPalette"><code>WmfSelectPalette = 66100</code></dt>
+  
+  <dd><p>The WMF Select Palette record (function 0x234).</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_WmfSetBkColor"><code>WmfSetBkColor = 66049</code></dt>
+  
+  <dd><p>The WMF Set Bk Color record (function 0x201).</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_WmfSetBkMode"><code>WmfSetBkMode = 65794</code></dt>
+  
+  <dd><p>The WMF Set Bk Mode record (function 0x102).</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_WmfSetDibToDev"><code>WmfSetDibToDev = 68915</code></dt>
+  
+  <dd><p>The WMF Set Dib To Dev record (function 0xD33).</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_WmfSetLayout"><code>WmfSetLayout = 65865</code></dt>
+  
+  <dd><p>The WMF Set Layout record (function 0x149).</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_WmfSetMapMode"><code>WmfSetMapMode = 65795</code></dt>
+  
+  <dd><p>The WMF Set Map Mode record (function 0x103).</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_WmfSetMapperFlags"><code>WmfSetMapperFlags = 66097</code></dt>
+  
+  <dd><p>The WMF Set Mapper Flags record (function 0x231).</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_WmfSetPalEntries"><code>WmfSetPalEntries = 65591</code></dt>
+  
+  <dd><p>The WMF Set Pal Entries record (function 0x37).</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_WmfSetPixel"><code>WmfSetPixel = 66591</code></dt>
+  
+  <dd><p>The WMF Set Pixel record (function 0x41F).</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_WmfSetPolyFillMode"><code>WmfSetPolyFillMode = 65798</code></dt>
+  
+  <dd><p>The WMF Set Poly Fill Mode record (function 0x106).</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_WmfSetROP2"><code>WmfSetROP2 = 65796</code></dt>
+  
+  <dd><p>The WMF Set ROP2 record (function 0x104).</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_WmfSetRelAbs"><code>WmfSetRelAbs = 65797</code></dt>
+  
+  <dd><p>The WMF Set Rel Abs record (function 0x105).</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_WmfSetStretchBltMode"><code>WmfSetStretchBltMode = 65799</code></dt>
+  
+  <dd><p>The WMF Set Stretch Blt Mode record (function 0x107).</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_WmfSetTextAlign"><code>WmfSetTextAlign = 65838</code></dt>
+  
+  <dd><p>The WMF Set Text Align record (function 0x12E).</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_WmfSetTextCharExtra"><code>WmfSetTextCharExtra = 65800</code></dt>
+  
+  <dd><p>The WMF Set Text Char Extra record (function 0x108).</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_WmfSetTextColor"><code>WmfSetTextColor = 66057</code></dt>
+  
+  <dd><p>The WMF Set Text Color record (function 0x209).</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_WmfSetTextJustification"><code>WmfSetTextJustification = 66058</code></dt>
+  
+  <dd><p>The WMF Set Text Justification record (function 0x20A).</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_WmfSetViewportExt"><code>WmfSetViewportExt = 66062</code></dt>
+  
+  <dd><p>The WMF Set Viewport Ext record (function 0x20E).</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_WmfSetViewportOrg"><code>WmfSetViewportOrg = 66061</code></dt>
+  
+  <dd><p>The WMF Set Viewport Org record (function 0x20D).</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_WmfSetWindowExt"><code>WmfSetWindowExt = 66060</code></dt>
+  
+  <dd><p>The WMF Set Window Ext record (function 0x20C).</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_WmfSetWindowOrg"><code>WmfSetWindowOrg = 66059</code></dt>
+  
+  <dd><p>The WMF Set Window Org record (function 0x20B).</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_WmfStretchBlt"><code>WmfStretchBlt = 68387</code></dt>
+  
+  <dd><p>The WMF Stretch Blt record (function 0xB23).</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_WmfStretchDib"><code>WmfStretchDib = 69443</code></dt>
+  
+  <dd><p>The WMF Stretch Dib record (function 0xF43).</p>
+</dd>
+    <dt id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_WmfTextOut"><code>WmfTextOut = 66849</code></dt>
+  
+  <dd><p>The WMF Text Out record (function 0x521).</p>
+</dd>
+  </dl>
+
+  <h2 id="Egami_SystemDrawing_Imaging_EmfPlusRecordType_examples">Examples</h2>
+  <pre><code class="lang-csharp">// A metafile is an Image sized by its frame; DrawImage plays it as vectors, EnumerateMetafile walks its records.
+using Metafile metafile = new(System.IO.Path.Combine(Images, "shapes-plus.emf"));
+MetafileHeader header = metafile.GetMetafileHeader();  // EmfPlusDual, its bounds and resolution
+int records = 0;
+using Bitmap bitmap = new(400, 300);
+using (Graphics g = Graphics.FromImage(bitmap))
+{
+    g.Clear(Color.White);
+    g.DrawImage(metafile, new Rectangle(0, 0, 400, 300));
+    g.EnumerateMetafile(metafile, new PointF(0, 0), (type, flags, size, data, play) =&gt;
+    {
+        records++;
+        return true;
+    });
+}</code></pre>
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/MetafileEnums.cs/#L7" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

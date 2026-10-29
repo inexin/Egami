@@ -102,6 +102,16 @@ them, so LockBits code and pixel values carry over.</p>
 </dd>
     </dl>
     <dl class="jumplist">
+      <dt><a class="xref" href="Egami.SystemDrawing.BitmapSuffixInSameAssemblyAttribute.html">BitmapSuffixInSameAssemblyAttribute</a></dt>
+      <dd><p>Marks an assembly whose resource bitmaps have a suffix in the same assembly, for the designer.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.SystemDrawing.BitmapSuffixInSatelliteAssemblyAttribute.html">BitmapSuffixInSatelliteAssemblyAttribute</a></dt>
+      <dd><p>Marks an assembly whose resource bitmaps have a suffix in a satellite assembly, for the designer.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
       <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
       <dd><p>What fills shapes: the base of <a class="xref" href="Egami.SystemDrawing.SolidBrush.html">SolidBrush</a> and the other brushes.</p>
 </dd>
@@ -112,10 +122,23 @@ them, so LockBits code and pixel values carry over.</p>
 </dd>
     </dl>
     <dl class="jumplist">
+      <dt><a class="xref" href="Egami.SystemDrawing.BufferedGraphics.html">BufferedGraphics</a></dt>
+      <dd><p>An off-screen buffer to draw on and then copy to a graphics in one go, as WinForms double-buffering does.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.SystemDrawing.BufferedGraphicsContext.html">BufferedGraphicsContext</a></dt>
+      <dd><p>Makes <a class="xref" href="Egami.SystemDrawing.BufferedGraphics.html">BufferedGraphics</a> buffers.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.SystemDrawing.BufferedGraphicsManager.html">BufferedGraphicsManager</a></dt>
+      <dd><p>The process's shared <a class="xref" href="Egami.SystemDrawing.BufferedGraphicsContext.html">BufferedGraphicsContext</a>.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
       <dt><a class="xref" href="Egami.SystemDrawing.Graphics.html">Graphics</a></dt>
-      <dd><p>Draws on a bitmap, as System.Drawing's Graphics: shapes with pens and brushes, images, clipping, transforms and the page
-unit, with GDI+'s defaults: aliased shapes (<a class="xref" href="Egami.SystemDrawing.Drawing2D.SmoothingMode.html#Egami_SystemDrawing_Drawing2D_SmoothingMode_None">None</a>), pixel centers on whole coordinates, bilinear
-image sampling without prefiltering, transforms prepended. Get one with <a class="xref" href="Egami.SystemDrawing.Graphics.html#Egami_SystemDrawing_Graphics_FromImage_Egami_SystemDrawing_Image_">FromImage(Image)</a>.</p>
+      <dd><p>The way from a graphics to Egami's own canvas.</p>
 </dd>
     </dl>
     <dl class="jumplist">
@@ -125,9 +148,30 @@ image sampling without prefiltering, transforms prepended. Get one with <a class
 </dd>
     </dl>
     <dl class="jumplist">
+      <dt><a class="xref" href="Egami.SystemDrawing.IconConverter.html">IconConverter</a></dt>
+      <dd><p>Converts icons to and from bytes (the ICO file) for designers and serializers.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
       <dt><a class="xref" href="Egami.SystemDrawing.Image.html">Image</a></dt>
       <dd><p>The base of <a class="xref" href="Egami.SystemDrawing.Bitmap.html">Bitmap</a> and the metafile type: size, resolution, pixel format, palette, frames, metadata and saving,
 as in System.Drawing. Load one with <a class="xref" href="Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_FromFile_System_String_">FromFile(string)</a> or <a class="xref" href="Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_FromStream_System_IO_Stream_">FromStream(Stream)</a>.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.SystemDrawing.ImageAnimator.html">ImageAnimator</a></dt>
+      <dd><p>Steps animated GIFs (and other images with timed frames) through their frames at their delays: a timer marks images due for
+their next frame and calls their handlers; <a class="xref" href="Egami.SystemDrawing.ImageAnimator.html#Egami_SystemDrawing_ImageAnimator_UpdateFrames_Egami_SystemDrawing_Image_">UpdateFrames(Image?)</a> then selects the frame.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.SystemDrawing.ImageConverter.html">ImageConverter</a></dt>
+      <dd><p>Converts images to and from bytes (the file they are saved as) for designers and serializers.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.SystemDrawing.ImageFormatConverter.html">ImageFormatConverter</a></dt>
+      <dd><p>Converts image formats to and from their names, and lists the standard ones, for designers.</p>
 </dd>
     </dl>
     <dl class="jumplist">
@@ -158,6 +202,11 @@ infinite when made with no arguments. Graphics clips to one.</p>
 </dd>
     </dl>
     <dl class="jumplist">
+      <dt><a class="xref" href="Egami.SystemDrawing.SystemIcons.html">SystemIcons</a></dt>
+      <dd><p>Not supported: Windows' own icons. Every member throws.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
       <dt><a class="xref" href="Egami.SystemDrawing.SystemPens.html">SystemPens</a></dt>
       <dd><p>One-unit pens of the system colors, which cannot be changed or disposed.</p>
 </dd>
@@ -167,9 +216,27 @@ infinite when made with no arguments. Graphics clips to one.</p>
       <dd><p>A brush that tiles an image, from the world origin, through its transform.</p>
 </dd>
     </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.SystemDrawing.ToolboxBitmapAttribute.html">ToolboxBitmapAttribute</a></dt>
+      <dd><p>Names a type's toolbox image: a bitmap or icon resource next to the type, as the Windows Forms designer looks it up.</p>
+</dd>
+    </dl>
+    <h3 id="interfaces">
+Interfaces
+</h3>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.SystemDrawing.IDeviceContext.html">IDeviceContext</a></dt>
+      <dd><p>An object that hands out a Windows device context; <a class="xref" href="Egami.SystemDrawing.Graphics.html">Graphics</a> is one, and Egami's always throws.</p>
+</dd>
+    </dl>
     <h3 id="enums">
 Enums
 </h3>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.SystemDrawing.ContentAlignment.html">ContentAlignment</a></dt>
+      <dd><p>Where content sits in a rectangle.</p>
+</dd>
+    </dl>
     <dl class="jumplist">
       <dt><a class="xref" href="Egami.SystemDrawing.CopyPixelOperation.html">CopyPixelOperation</a></dt>
       <dd><p>The raster operation of <a class="xref" href="Egami.SystemDrawing.Graphics.html#Egami_SystemDrawing_Graphics_CopyFromScreen_System_Drawing_Point_System_Drawing_Point_System_Drawing_Size_Egami_SystemDrawing_CopyPixelOperation_">CopyFromScreen(Point, Point, Size, CopyPixelOperation)</a>, which needs Windows and always throws.</p>
@@ -186,12 +253,27 @@ Enums
 transformation and share a value, as in System.Drawing.</p>
 </dd>
     </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.SystemDrawing.StockIconId.html">StockIconId</a></dt>
+      <dd><p>Windows' stock shell icons, which only Windows has; <a class="xref" href="Egami.SystemDrawing.SystemIcons.html#Egami_SystemDrawing_SystemIcons_GetStockIcon_Egami_SystemDrawing_StockIconId_System_Int32_">GetStockIcon(StockIconId, int)</a> throws.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.SystemDrawing.StockIconOptions.html">StockIconOptions</a></dt>
+      <dd><p>How Windows would draw a stock icon.</p>
+</dd>
+    </dl>
     <h3 id="delegates">
 Delegates
 </h3>
     <dl class="jumplist">
       <dt><a class="xref" href="Egami.SystemDrawing.Graphics.DrawImageAbort.html">Graphics.DrawImageAbort</a></dt>
       <dd><p>Called before a DrawImage draws; returning <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a> stops it with an ExternalException, as in GDI+.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.SystemDrawing.Graphics.EnumerateMetafileProc.html">Graphics.EnumerateMetafileProc</a></dt>
+      <dd><p>Called for each record while a metafile is enumerated.</p>
 </dd>
     </dl>
     <dl class="jumplist">
