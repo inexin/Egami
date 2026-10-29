@@ -136,8 +136,8 @@ egami-video audio in.mkv -o sound.flac
 </tr>
 <tr>
 <td><code>segment</code></td>
-<td>Split every <code>--every</code>, at <code>--at</code> times or at <code>--scenes</code>, at keyframes</td>
-<td><code>-f segment</code></td>
+<td>Split every <code>--every</code>, at <code>--at</code> times or at <code>--scenes</code>, at keyframes; <code>--hls</code> and <code>--dash</code> for streaming</td>
+<td><code>-f segment</code>, <code>-f hls</code>, <code>-f dash</code></td>
 </tr>
 <tr>
 <td><code>timestamps</code></td>
@@ -369,6 +369,16 @@ egami-video segment in.mkv --every 1 -o parts/{part:000}.mkv
 egami-video segment in.mkv --scenes -o shots/{part:000}.mkv -v
 egami-video concat parts/001.mkv parts/002.mkv -o joined.mkv
 egami-video timestamps in.mkv --shift 0.5 --track a -o later.mkv
+</code></pre>
+<h2 id="streaming">Streaming</h2>
+<p><code>remux --fragment</code> and <code>encode --fragment</code> write fragmented MP4: a moov with the setup only, then the media as moof and mdat
+pairs, each starting at the first video keyframe after 2 seconds (<code>--fragment=4s</code> for another length, <code>--fragment=keyframe</code> for
+every keyframe). Such a file is written as it goes, so it suits uploads, cloud storage and browsers' Media Source Extensions.</p>
+<p><code>segment --hls --dash</code> writes the audio and video tracks as CMAF segments into the folder <code>-o</code> names, cut at the first video
+keyframe after <code>--every</code> (6 seconds by default), with <code>master.m3u8</code> and a playlist a track for HLS and <code>manifest.mpd</code> for DASH;
+give one of the two for its playlists only. Subtitle and data tracks are left out.</p>
+<pre><code class="lang-sh">egami-video remux in.mp4 --fragment -o fragmented.mp4
+egami-video segment in.mp4 --hls --dash --every 2 -o stream/
 </code></pre>
 <h2 id="subtitles">Subtitles</h2>
 <p><code>subs</code> works on text subtitles: SRT, WebVTT and ASS (SSA is read and written as ASS). <code>subs convert</code> writes another format, named
