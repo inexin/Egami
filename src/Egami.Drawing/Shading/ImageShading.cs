@@ -1,5 +1,7 @@
+using System.Collections.Concurrent;
 using System.Numerics;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 using Egami.Operations;
 using Egami.Pixels;
@@ -31,6 +33,9 @@ internal sealed class ImageShader : Shader
     private readonly float _stretchY;
     private readonly float _supportX;
     private readonly float _supportY;
+
+    // The high-quality modes' horizontal sums per thread, for an image mapped without rotation or skew (see ShadeBoxedRows).
+    private ConcurrentDictionary<int, Dictionary<int, BoxedChunk>>? _boxedLines;
 
     private ImageShader(PremulRgbaF32[] texels, int width, int height, Matrix3x2 inverse, ImagePaint paint, int level)
     {
@@ -110,7 +115,11 @@ internal sealed class ImageShader : Shader
     public override void Shade(int y, int x, Span<PremulRgbaF32> row)
     {
         Vector2 p = Vector2.Transform(new Vector2(x + 0.5f, y + 0.5f), _inverse), step = new(_inverse.M11, _inverse.M12);
-        if (_boxed)
+        if (_boxed && _inverse.M12 == 0 && _inverse.M21 == 0 && row.Length <= Chunk)
+        {
+            ShadeBoxedRows(x, p, step, row);
+        }
+        else if (_boxed)
         {
             ShadeBoxed(p, step, row);
         }
@@ -180,11 +189,24 @@ internal sealed class ImageShader : Shader
 
     private static PremulRgbaF32[] Texels(Raster source, bool linear)
     {
-        using Raster<PremulRgbaF32> premul = source.As<PremulRgbaF32>();
-        PremulRgbaF32[] texels = new PremulRgbaF32[source.Width * source.Height];
-        for (int y = 0; y < source.Height; y++)
+        // The common types convert each row straight into the texels, as As<PremulRgbaF32> converts it; every texel is written, so
+        // the array needs no clearing.
+        PremulRgbaF32[] texels = GC.AllocateUninitializedArray<PremulRgbaF32>(source.Width * source.Height);
+        bool direct = source switch
         {
-            premul.Row(y).CopyTo(texels.AsSpan(y * source.Width, source.Width));
+            Raster<Bgra8> r => Convert(r, texels),
+            Raster<Rgba8> r => Convert(r, texels),
+            Raster<PremulBgra8> r => Convert(r, texels),
+            Raster<PremulRgba8> r => Convert(r, texels),
+            Raster<Bgr8> r => Convert(r, texels),
+            Raster<Rgb8> r => Convert(r, texels),
+            Raster<PremulRgbaF32> r => Convert(r, texels),
+            _ => false,
+        };
+        if (!direct)
+        {
+            using Raster<PremulRgbaF32> premul = source.As<PremulRgbaF32>();
+            Convert(premul, texels);
         }
 
         if (linear)
@@ -198,6 +220,17 @@ internal sealed class ImageShader : Shader
         }
 
         return texels;
+    }
+
+    private static bool Convert<TPixel>(Raster<TPixel> source, PremulRgbaF32[] texels)
+        where TPixel : unmanaged, IPixelType<TPixel>
+    {
+        for (int y = 0; y < source.Height; y++)
+        {
+            PixelConvert.Convert<TPixel, PremulRgbaF32>(source.Row(y), texels.AsSpan(y * source.Width, source.Width));
+        }
+
+        return true;
     }
 
     private static PremulRgbaF32 ToEncoded(PremulRgbaF32 c)
@@ -263,6 +296,55 @@ internal sealed class ImageShader : Shader
         }
     }
 
+    /// <summary>
+    /// The high-quality modes for an image mapped without rotation or skew: a pixel's weights across depend only on its column and
+    /// those down only on its row, so the weighted sum across each source row (the inner loop of <see cref="FilteredBoxed"/>) is the
+    /// same for every device row that reads that source row. Each thread keeps those sums per run of columns for the last source
+    /// rows it read and adds them up down the column in the same order, so every pixel is exactly what FilteredBoxed gives.
+    /// </summary>
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private void ShadeBoxedRows(int x, Vector2 p, Vector2 step, Span<PremulRgbaF32> row)
+    {
+        Dictionary<int, BoxedChunk> chunks = LazyInitializer.EnsureInitialized(ref _boxedLines).GetOrAdd(Environment.CurrentManagedThreadId, static _ => []);
+        if (!chunks.TryGetValue(x, out BoxedChunk? chunk) || chunk.Length != row.Length || chunk.Px != p.X)
+        {
+            chunk = new BoxedChunk(this, p, step, row.Length);
+            chunks[x] = chunk;
+        }
+
+        bool cubic = _filter == ResampleFilter.GdiPlusHighQualityBicubic;
+        float v = p.Y - 0.5f;
+        int y0 = (int)MathF.Floor(v - _supportY) + 1;
+        int ny = Math.Min((int)MathF.Floor(v + _supportY) - y0 + 1, MaxBoxedTaps);
+        Span<float> wy = stackalloc float[MaxBoxedTaps];
+        float sumY = 0;
+        for (int j = 0; j < ny; j++)
+        {
+            wy[j] = BoxedWeight(cubic, v - (y0 + j), _stretchY);
+            sumY += wy[j];
+        }
+
+        for (int i = 0; i < row.Length; i++)
+        {
+            float sumX = chunk.SumX[i];
+            if (sumX == 0 || sumY == 0)
+            {
+                row[i] = default;
+                continue;
+            }
+
+            Vector4 acc = default;
+            for (int j = 0; j < ny; j++)
+            {
+                acc += chunk.Line(this, y0 + j)[i] * wy[j];
+            }
+
+            acc /= sumX * sumY;
+            float a = Math.Clamp(acc.W, 0, 1);
+            row[i] = new PremulRgbaF32(Math.Clamp(acc.X, 0, a), Math.Clamp(acc.Y, 0, a), Math.Clamp(acc.Z, 0, a), a);
+        }
+    }
+
     // GDI+'s high-quality modes: separable weights from the widened, box-averaged kernel on each axis.
     private PremulRgbaF32 FilteredBoxed(Vector2 q, Span<float> wx, Span<float> wy)
     {
@@ -288,14 +370,27 @@ internal sealed class ImageShader : Shader
             return default;
         }
 
+        // Taps inside the image read its rows directly; the tile modes only matter at the edges.
+        bool inside = x0 >= 0 && y0 >= 0 && x0 + nx <= _width && y0 + ny <= _height;
         Vector4 acc = default;
         for (int j = 0; j < ny; j++)
         {
             Vector4 line = default;
-            for (int i = 0; i < nx; i++)
+            if (inside)
             {
-                PremulRgbaF32 t = Fetch(x0 + i, y0 + j);
-                line += new Vector4(t.R, t.G, t.B, t.A) * wx[i];
+                ReadOnlySpan<Vector4> texels = MemoryMarshal.Cast<PremulRgbaF32, Vector4>(_texels.AsSpan(((y0 + j) * _width) + x0, nx));
+                for (int i = 0; i < nx; i++)
+                {
+                    line += texels[i] * wx[i];
+                }
+            }
+            else
+            {
+                for (int i = 0; i < nx; i++)
+                {
+                    PremulRgbaF32 t = Fetch(x0 + i, y0 + j);
+                    line += new Vector4(t.R, t.G, t.B, t.A) * wx[i];
+                }
             }
 
             acc += line * wy[j];
@@ -409,6 +504,100 @@ internal sealed class ImageShader : Shader
         float a = Math.Clamp(acc.W, 0, 1);
         return new PremulRgbaF32(Math.Clamp(acc.X, 0, a), Math.Clamp(acc.Y, 0, a), Math.Clamp(acc.Z, 0, a), a);
     }
+
+    /// <summary>
+    /// One thread's run of device columns for <see cref="ShadeBoxedRows"/>: each column's taps and weights across, and the weighted
+    /// sums across the source rows read most recently, one slot per row in a ring as tall as the kernel reaches.
+    /// </summary>
+    private sealed class BoxedChunk
+    {
+        private readonly int[] _x0;
+        private readonly int[] _nx;
+        private readonly float[] _wx;
+        private readonly int[] _tags;
+        private readonly Vector4[] _lines;
+
+        public BoxedChunk(ImageShader shader, Vector2 p, Vector2 step, int length)
+        {
+            Length = length;
+            Px = p.X;
+            _x0 = new int[length];
+            _nx = new int[length];
+            _wx = new float[length * MaxBoxedTaps];
+            SumX = new float[length];
+            bool cubic = shader._filter == ResampleFilter.GdiPlusHighQualityBicubic;
+            for (int i = 0; i < length; i++)
+            {
+                // The same column position, taps and weights FilteredBoxed takes for this pixel.
+                Vector2 q = p + (step * i);
+                float u = q.X - 0.5f;
+                int x0 = (int)MathF.Floor(u - shader._supportX) + 1;
+                int nx = Math.Min((int)MathF.Floor(u + shader._supportX) - x0 + 1, MaxBoxedTaps);
+                float sum = 0;
+                for (int k = 0; k < nx; k++)
+                {
+                    float w = BoxedWeight(cubic, u - (x0 + k), shader._stretchX);
+                    _wx[(i * MaxBoxedTaps) + k] = w;
+                    sum += w;
+                }
+
+                _x0[i] = x0;
+                _nx[i] = nx;
+                SumX[i] = sum;
+            }
+
+            int rows = Math.Min((int)MathF.Ceiling(2 * shader._supportY) + 2, MaxBoxedTaps + 1);
+            _tags = new int[rows];
+            Array.Fill(_tags, int.MinValue);
+            _lines = new Vector4[rows * length];
+        }
+
+        public int Length { get; }
+
+        public float Px { get; }
+
+        public float[] SumX { get; }
+
+        /// <summary>The weighted sums across source row <paramref name="iy"/> for each column, computed on first use.</summary>
+        public ReadOnlySpan<Vector4> Line(ImageShader shader, int iy)
+        {
+            int slot = (int)((uint)(iy - int.MinValue) % (uint)_tags.Length);
+            Span<Vector4> line = _lines.AsSpan(slot * Length, Length);
+            if (_tags[slot] == iy)
+            {
+                return line;
+            }
+
+            bool rowInside = (uint)iy < (uint)shader._height;
+            for (int i = 0; i < Length; i++)
+            {
+                Vector4 sum = default;
+                ReadOnlySpan<float> wx = _wx.AsSpan(i * MaxBoxedTaps, MaxBoxedTaps);
+                int x0 = _x0[i], nx = _nx[i];
+                if (rowInside && x0 >= 0 && x0 + nx <= shader._width)
+                {
+                    ReadOnlySpan<Vector4> texels = MemoryMarshal.Cast<PremulRgbaF32, Vector4>(shader._texels.AsSpan((iy * shader._width) + x0, nx));
+                    for (int k = 0; k < nx; k++)
+                    {
+                        sum += texels[k] * wx[k];
+                    }
+                }
+                else
+                {
+                    for (int k = 0; k < nx; k++)
+                    {
+                        PremulRgbaF32 t = shader.Fetch(x0 + k, iy);
+                        sum += new Vector4(t.R, t.G, t.B, t.A) * wx[k];
+                    }
+                }
+
+                line[i] = sum;
+            }
+
+            _tags[slot] = iy;
+            return line;
+        }
+    }
 }
 
 /// <summary>
@@ -435,11 +624,25 @@ internal sealed class ImageCopyShader<TPixel> : PixelShader<TPixel>
         _dy = (int)inverse.M32;
         _tileX = paint.TileX;
         _tileY = paint.TileY;
-        _pixels = new TPixel[_width * _height];
-        using Raster<TPixel> converted = image.As<TPixel>();
-        for (int y = 0; y < _height; y++)
+        // Every pixel is written, so the array needs no clearing; an image already in the target's type is copied without a converted
+        // raster in between.
+        _pixels = GC.AllocateUninitializedArray<TPixel>(_width * _height);
+        Raster<TPixel>? converted = image as Raster<TPixel>;
+        bool owned = converted is null;
+        converted ??= image.As<TPixel>();
+        try
         {
-            converted.Row(y).CopyTo(_pixels.AsSpan(y * _width, _width));
+            for (int y = 0; y < _height; y++)
+            {
+                converted.Row(y).CopyTo(_pixels.AsSpan(y * _width, _width));
+            }
+        }
+        finally
+        {
+            if (owned)
+            {
+                converted.Dispose();
+            }
         }
 
         IsOpaque = !TPixel.Layout.HasAlpha || (!image.Layout.HasAlpha && _tileX != TileMode.Decal && _tileY != TileMode.Decal);
