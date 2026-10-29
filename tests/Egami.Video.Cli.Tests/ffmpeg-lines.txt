@@ -18,6 +18,13 @@
 => remux - -o out.mkv | ffmpeg -i pipe:0 -c copy out.mkv
 => remux in.mkv -o out.ivf | ffmpeg -i in.mkv -map 0:v:0 -c copy out.ivf
 => remux in.mkv -o out.mkv --progress - | ffmpeg -i in.mkv -c copy -progress pipe:1 out.mkv
+=> remux in.mkv -o out.mp4 --fragment=keyframe | ffmpeg -i in.mkv -c copy -movflags frag_keyframe+empty_moov out.mp4
+=> remux in.mkv -o out.mp4 --fragment=keyframe | ffmpeg -i in.mkv -c copy -movflags +frag_keyframe+empty_moov+default_base_moof -frag_duration 4000000 out.mp4
+=> remux in.mkv -o out.mp4 --fragment=keyframe | ffmpeg -i in.mkv -c copy -movflags empty_moov+default_base_moof out.mp4
+!! -frag_duration | ffmpeg -i in.mkv -c copy -movflags empty_moov -frag_duration 4000000 out.mp4
+=> remux in.mkv -o out.mp4 | ffmpeg -i in.mkv -c copy -movflags +faststart out.mp4
+!! -movflags isml | ffmpeg -i in.mkv -c copy -movflags isml+frag_keyframe out.mp4
+!! -movflags frag_keyframe | ffmpeg -i in.mkv -c copy -movflags frag_keyframe out.mkv
 => remux in.mkv -o out.mkv --progress progress.txt | ffmpeg -nostats -i in.mkv -c copy -progress progress.txt out.mkv
 => remux in.mkv -o out.mkv | ffmpeg -loglevel error -i in.mkv -c copy out.mkv
 => remux in.mkv -o out.mkv | ffmpeg -v quiet -stats -i in.mkv -c copy out.mkv
@@ -152,7 +159,6 @@
 !! -af volume | ffmpeg -i in.mp4 -af volume=2 out.wav
 !! -preset | ffmpeg -i in.mp4 -preset slow out.mkv
 !! -f hls | ffmpeg -i in.mp4 -c copy -f hls out.m3u8
-!! -movflags | ffmpeg -i in.mkv -c copy -movflags +faststart out.mp4
 !! -lavfi blend | ffmpeg -i a.mkv -i b.mkv -lavfi blend out.mkv
 => info in.mp4 --format ffprobe | ffprobe -v quiet -print_format json -show_format -show_streams in.mp4
 => info in.mkv --format ffprobe --packets --track v:0 | ffprobe -select_streams v:0 -show_packets -of csv in.mkv

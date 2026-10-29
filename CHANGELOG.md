@@ -5,6 +5,10 @@ changes that break code come only in a new major version.
 
 ## Egami.Video.Cli, unreleased
 
+- `egami-video remux --fragment` and `encode --fragment` write fragmented MP4 (`--fragment=4s`, `--fragment=keyframe`), and
+  `segment --hls --dash` writes CMAF segments with HLS and DASH playlists into a folder. ffmpeg mode takes `-movflags
+  faststart`, `frag_keyframe`, `empty_moov` and `default_base_moof`, and `-frag_duration` with frag_keyframe.
+
 - `egami-video run` reads and writes Egami.Formats.Extended's formats, with `--set sgi.rle=` and `--set sunraster.rle=` for
   their writer options.
 

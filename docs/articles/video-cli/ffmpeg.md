@@ -24,6 +24,7 @@ prints `egami-video run in.mkv resize 640 + flip horizontal -o out.mkv --codec m
 | ffmpeg line | Native command |
 | --- | --- |
 | `-i in -c copy out` (any container change, `-map`, `-an`, `-sn`) | `remux` |
+| `-movflags frag_keyframe+empty_moov+default_base_moof` with `-c copy` or an image input | `remux --fragment=keyframe`, `encode --fragment=keyframe` |
 | `-ss`, `-to`, `-t` with `-c copy` | `trim` |
 | several `-i` with `-map 0 -map 1:a` | `embed` |
 | `-f concat -i list.txt -c copy` | `concat` with the files the list names |
@@ -110,7 +111,7 @@ file as Egami.Video's camera motion) and `vidstabtransform` (its `input` and `sm
 ffmpeg mode takes `-i`, `-f`, `-y`, `-n`, `-ss`, `-to`, `-t`, `-itsoffset`, `-framerate`, `-safe`, `-map`, `-c`, `-codec`, `-c:v`,
 `-c:a`, `-c:s`, `-vcodec`, `-acodec`, `-scodec`, `-an`, `-vn`, `-sn`, `-dn`, `-r`, `-s`, `-frames:v`, `-vframes`, `-q:v`,
 `-qscale:v`, `-ar`, `-b:a`, `-ab`, `-ac`, `-sample_fmt`, `-metadata`, `-map_metadata`, `-map_chapters`, `-vf`, `-filter:v`, `-lavfi` and
-`-filter_complex` (psnr, ssim, showwavespic, showspectrumpic and the editing filters), `-af` and `-filter:a` (detection and editing filters), `-loop 1` before an image, `-segment_time`, `-segment_times`, `-update`, `-progress`, `-stats`, `-nostats`,
+`-filter_complex` (psnr, ssim, showwavespic, showspectrumpic and the editing filters), `-af` and `-filter:a` (detection and editing filters), `-loop 1` before an image, `-segment_time`, `-segment_times`, `-movflags` (faststart, frag_keyframe, empty_moov and default_base_moof), `-frag_duration` (with frag_keyframe), `-update`, `-progress`, `-stats`, `-nostats`,
 `-stats_period`, `-hide_banner`, `-loglevel`, `-v` and `-nostdin`, with `pipe:` and `%d` patterns. The filters are scale, crop,
 pad, transpose, hflip, vflip, fps, thumbnail, select (scene) and tile, and with `-f null` the detection filters above; the
 `-f lavfi` sources are testsrc, testsrc2, smptebars, smptehdbars, color, sine, anullsrc and anoisesrc. Codecs: `copy`, `mjpeg` and `rawvideo` for video, `flac`,
@@ -120,6 +121,11 @@ ffprobe mode takes `-i`, `-show_streams`, `-show_format`, `-show_packets`, `-sho
 `-show_entries`, `-of` (also `-print_format`, `-output_format`) with the json, csv, compact, default, flat and xml writers and
 their `nokey`, `noprint_wrappers`, `print_section` and `item_sep` options, `-v`, `-loglevel`, `-hide_banner` and `-pretty`. Its
 JSON is `egami-video info --format ffprobe`.
+
+ffmpeg starts a fragment at every video keyframe for frag_keyframe and for empty_moov alone, and egami-video writes the same
+boxes in the same order. With frag_keyframe, `-frag_duration` also cuts where keyframes are further apart than it; egami-video
+cuts only at keyframes, so the layouts differ only for such long keyframe intervals. `-frag_duration` without frag_keyframe
+stops, since ffmpeg then cuts between keyframes.
 
 The tests run more than a hundred common ffmpeg and ffprobe lines: each either maps to the native command it should or stops
 naming its option. The subset was written from FFmpeg's published documentation only.
