@@ -7,7 +7,9 @@ namespace Egami.Fonts.Shaping;
 
 /// <summary>
 /// Where characters the font does not map go: the caller's font families first, matched to the font's style, then a resolver.
-/// Without fallback (<see cref="None"/>, the default) shaping depends only on the fonts passed, never on the machine.
+/// Without fallback (<see cref="None"/>, the default) shaping depends only on the fonts passed, never on the machine. A fallback
+/// face is drawn with the font's settings (hinting, metrics, embedded bitmaps, edging, emboldening and the rest) but its own default
+/// palette, as GDI+ font linking draws a linked face, bitmaps included.
 /// </summary>
 /// <example>
 /// <code language="csharp" source="../../../tests/Egami.DocSamples/Shaping.cs" region="fallback"/>

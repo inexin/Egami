@@ -31,6 +31,14 @@ Where GDI+ puts text in a layout box (2.7.6 task 28), measured on Windows. Addit
   shorter than a line, as GDI+ does. `FontFamily.GetCellAscent` and `GetCellDescent` use the typographic metrics of fonts that
   set USE_TYPO_METRICS, as GDI+ does.
 
+## Egami.Fonts, unreleased
+
+- A face that `FontFallback` picks now takes all of the font's rendering settings: `EmbeddedBitmaps`, `HintingTarget`,
+  `Metrics`, `Embolden`, `StemDarkening` and `ColorGlyphs` were dropped before (the palette stays the face's own). So SimSun
+  found by fallback from `Font.WithGdiPlusLook()` text draws its 12 to 17 px bitmaps, as GDI+ font linking does (probed: the
+  linked face's aliased bitmaps), and grid-fitted metrics apply to fallback runs too. Fonts that set none of these shape and
+  draw as before.
+
 ## Egami.Video.Cli, unreleased
 
 - `egami-video remux --fragment` and `encode --fragment` write fragmented MP4 (`--fragment=4s`, `--fragment=keyframe`), and
