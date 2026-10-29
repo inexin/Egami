@@ -89,6 +89,21 @@ API review come in later stages.
   `V_MS/VFW/FOURCC`), and the AVI writer stores `V_FFV1` tracks, so FFV1 remuxes between Matroska and AVI. Version 3 tracks
   give `BitDepth` and `ChromaFormat` from the record. `CodecHeaders.Describe` lists FFV1 parameters and slice headers.
 
+V9.1 stage C: loudness normalization and silence removal in `Egami.Video.Audio.Filters` (Build Plan tasks 12 to 15). All
+additive.
+
+- `LoudnessTarget` (integrated, true peak, range) with the `EbuR128`, `AtscA85`, `Streaming` and `Podcast` presets, and
+  `LoudnessNormalizer`: linear from a first pass's `LoudnessReport` (one gain, a true-peak `Limiter` only when the gain would
+  take the peaks over the ceiling), or one pass with `LoudnessNormalizer.Dynamic` (1.5 s lookahead, kept within the range).
+- `AudioFilters.NormalizeLoudnessAsync` measures and normalizes every audio track of a file, copying the other tracks, and
+  returns a `LoudnessNormalization` per track; `AudioFilters.ApplyAsync` runs filters of your own over a file's audio tracks.
+- `SilenceRemover` with `SilenceRemoval.Trim` (start and end) and `Shorten` (pauses over 1 s cut to 0.3 s), -50 dBFS RMS over
+  20 ms, 10 ms fades and crossfades at the cuts.
+- Gates: on the EBU Tech 3341 cases 1 to 5 and Tech 3342 cases 1, 3 and 4 (generated from the specs' descriptions) the linear
+  normalizer lands within 0.5 LU of the EBU R 128, streaming and ATSC targets, under their true-peak ceilings, with the range
+  kept within 0.2 LU; a tone with clicks lifted 16 dB stays within 0.5 LU and under -0.9 dBTP. The dynamic mode lands within
+  0.5 LU on the 3341 cases and 1.5 LU on the 3342 steps, with the range within 1.5 LU of the target's.
+
 V9.1 stage B: EQ and dynamics in `Egami.Video.Audio.Filters` (Build Plan tasks 8 to 11). All additive.
 
 - `Biquad` with the eight Audio EQ Cookbook `BiquadKind`s (low and high pass, band pass, notch, all pass, peaking, low and high

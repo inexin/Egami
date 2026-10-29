@@ -293,4 +293,74 @@ public class AudioFilters
         voice.ForEach(f => f.Dispose());
         Assert.Equal(3 * 48000, samples);
     }
+
+    [Fact]
+    public async Task Loudness()
+    {
+        string input = Path.Combine(Path.GetTempPath(), $"egami-loudness-{Guid.NewGuid():N}.wav");
+        string output = Path.ChangeExtension(input, ".flac");
+        using (AudioWriter writer = AudioWriter.Create(input))
+        {
+            foreach (AudioFrame frame in Music(5))
+            {
+                using (frame)
+                {
+                    writer.Write(frame);
+                }
+            }
+        }
+
+        try
+        {
+            #region audio-loudness
+            // Two passes over a file: measure each audio track, then apply one gain (and a true-peak limiter only if needed).
+            IReadOnlyList<LoudnessNormalization> done = await Egami.Video.Audio.Filters.AudioFilters.NormalizeLoudnessAsync(input, output, LoudnessTarget.Podcast);
+            Console.WriteLine($"{done[0].Measured.Integrated:F1} LUFS, {done[0].Gain:+0.0;-0.0} dB, limited: {done[0].Limited}");
+
+            // The same as a filter, from your own first pass; or one pass, following the loudness as it goes.
+            LoudnessMeter meter = new();
+            foreach (AudioFrame frame in Music())
+            {
+                using (frame)
+                {
+                    meter.Add(frame);
+                }
+            }
+
+            using LoudnessNormalizer linear = new(LoudnessTarget.EbuR128, meter.Report());
+            using LoudnessNormalizer live = LoudnessNormalizer.Dynamic(LoudnessTarget.Streaming);
+            #endregion
+            Assert.Single(done);
+            Assert.True(File.Exists(output));
+            Assert.False(linear.IsDynamic);
+            Assert.True(live.IsDynamic);
+        }
+        finally
+        {
+            File.Delete(input);
+            File.Delete(output);
+        }
+    }
+
+    [Fact]
+    public void Silence()
+    {
+        List<AudioFrame> frames = [.. TestSources.Silence(TestAudioFormat.Default, MediaTime.FromSeconds(1)), .. Music(2)];
+
+        #region audio-silence
+        // Cut a voice recording's lead-in and tail, and pauses over 1 s down to 0.3 s. Audio only: the result is shorter.
+        using SilenceRemover remover = new(SilenceRemoval.Shorten) { Threshold = -45 };
+        #endregion
+        int samples = 0;
+        foreach (AudioFrame frame in frames)
+        {
+            remover.Send(frame);
+            frame.Dispose();
+            samples += Drain(remover);
+        }
+
+        remover.Flush();
+        samples += Drain(remover);
+        Assert.InRange(samples, 2 * 48000, (2 * 48000) + 2000);
+    }
 }
