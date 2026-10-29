@@ -186,6 +186,10 @@ raster applies it.
 
 ## Color fonts
 
+`Font.EmbeddedBitmaps` draws a face's embedded black-and-white or gray strikes (the EBLC and EBDT tables) as Windows does: at
+exactly a strike's size the glyphs it holds come from their bitmaps, aliased, and grid-fitted metrics take the strike's advances.
+It is off by default; `Font.WithGdiPlusLook()` turns it on.
+
 Emoji and other color glyphs draw in color by themselves. Per glyph, the first format the font has wins: COLR version 1 (a
 graph of layers, gradients, transforms and compositing), COLR version 0 (layers of solid outlines), sbix, then CBDT and CBLC
 (images); anything else draws its outline in the paint. `Typeface.ColorFormats` says what a face holds.

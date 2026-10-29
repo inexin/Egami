@@ -59,6 +59,10 @@ Closer GDI+ text (2.7.6 stage 1), measured against GDI+ on Windows in egami-comp
   up to sixteenths of a pixel.
 - Lars's button test against GDI+: a mean difference of 0.67 levels on black and 0.38 on #0078d4, down from 1.92 and 1.06.
   95.8% of glyph sizes in the six-font advance test match GDI+'s drawn widths, up from 90.6%.
+- `Font.EmbeddedBitmaps` (2.7.6 task 22) draws a face's EBLC and EBDT strikes as Windows does: at exactly a strike's size, the
+  glyphs it holds are drawn from their black-and-white or gray bitmaps (bit depth 1, 2, 4 or 8; image formats 1, 2, 5, 6 and
+  7), and grid-fitted layout takes the strike's advances. Off by default; `Font.WithGdiPlusLook()` turns it on. Calibri's
+  printable ASCII glyphs at its six strike sizes (12, 13, 15, 16, 17 and 19 pixels) now equal GDI+'s pixel for pixel.
 
 Closer GDI+ shapes (2.7.6 stage 2), measured the same way. These are opt-in too.
 

@@ -135,7 +135,8 @@ public sealed class GlyphBuffer
     /// Replaces each horizontal advance with the glyph's hinted advance at the font's size (or its design advance, rounded, when it
     /// cannot be hinted) rounded to whole units, plus what shaping added to it (kerning, positioning) rounded, and rounds the
     /// offsets, for <see cref="FontMetrics.GridFitted"/>; <see cref="FontMetrics.Compatible"/> takes GDI's compatible widths
-    /// instead. For <see cref="FontMetrics.GridFittedToDesign"/>, as GDI+ lays out GenericTypographic lines, a run whose hinted
+    /// instead; with <see cref="Font.EmbeddedBitmaps"/>, a glyph an embedded strike holds at the size takes the strike's advance.
+    /// For <see cref="FontMetrics.GridFittedToDesign"/>, as GDI+ lays out GenericTypographic lines, a run whose hinted
     /// advances would make it more than <see cref="GdiPlusLineWidening"/> wider than its design advances keeps its design advances,
     /// rounded up to sixteenths of a pixel (fractional; glyph origins still land on whole pixels when drawn). Zero advances (marks)
     /// stay zero; vertical runs are left as they are.
@@ -155,7 +156,9 @@ public sealed class GlyphBuffer
             }
 
             float design = face.GetAdvance(_glyphs[i]) * scale;
-            float hinted = font.Metrics == FontMetrics.Compatible
+            float hinted = font.EmbeddedBitmaps && face.GetEmbeddedBitmap(_glyphs[i], font.Size) is Color.EmbeddedBitmap bitmap
+                ? bitmap.Advance
+                : font.Metrics == FontMetrics.Compatible
                 ? face.GetCompatibleAdvance(_glyphs[i], font.Size) ?? MathF.Round(design)
                 : MathF.Round(face.GetHintedGlyph(_glyphs[i], font.Size, font.HintingTarget)?.Advance ?? design);
             fitted[i] = hinted + MathF.Round(p.XAdvance - design);
