@@ -109,11 +109,11 @@ file as Egami.Video's camera motion) and `vidstabtransform` (its `input` and `sm
 
 ffmpeg mode takes `-i`, `-f`, `-y`, `-n`, `-ss`, `-to`, `-t`, `-itsoffset`, `-framerate`, `-safe`, `-map`, `-c`, `-codec`, `-c:v`,
 `-c:a`, `-c:s`, `-vcodec`, `-acodec`, `-scodec`, `-an`, `-vn`, `-sn`, `-dn`, `-r`, `-s`, `-frames:v`, `-vframes`, `-q:v`,
-`-qscale:v`, `-ar`, `-b:a`, `-ab`, `-ac`, `-sample_fmt`, `-metadata`, `-map_metadata`, `-map_chapters`, `-vf`, `-filter:v`, `-lavfi` and
+`-qscale:v`, `-g`, `-level 3`, `-coder`, `-context`, `-slices`, `-slicecrc` (the last five with `-c:v ffv1`), `-ar`, `-b:a`, `-ab`, `-ac`, `-sample_fmt`, `-metadata`, `-map_metadata`, `-map_chapters`, `-vf`, `-filter:v`, `-lavfi` and
 `-filter_complex` (psnr, ssim, showwavespic, showspectrumpic and the editing filters), `-af` and `-filter:a` (detection and editing filters), `-loop 1` before an image, `-segment_time`, `-segment_times`, `-update`, `-progress`, `-stats`, `-nostats`,
 `-stats_period`, `-hide_banner`, `-loglevel`, `-v` and `-nostdin`, with `pipe:` and `%d` patterns. The filters are scale, crop,
 pad, transpose, hflip, vflip, fps, thumbnail, select (scene) and tile, and with `-f null` the detection filters above; the
-`-f lavfi` sources are testsrc, testsrc2, smptebars, smptehdbars, color, sine, anullsrc and anoisesrc. Codecs: `copy`, `mjpeg` and `rawvideo` for video, `flac`,
+`-f lavfi` sources are testsrc, testsrc2, smptebars, smptehdbars, color, sine, anullsrc and anoisesrc. Codecs: `copy`, `mjpeg`, `ffv1` and `rawvideo` for video, `flac`,
 `alac`, `libopus` (or `opus`) and the `pcm_` codecs for audio.
 
 ffprobe mode takes `-i`, `-show_streams`, `-show_format`, `-show_packets`, `-show_frames`, `-show_chapters`, `-select_streams`,

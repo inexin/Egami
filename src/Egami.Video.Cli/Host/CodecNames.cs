@@ -7,6 +7,7 @@ internal static class CodecNames
     {
         [CodecIds.MotionJpeg] = ("Motion JPEG", "mjpeg", "Motion JPEG"),
         [CodecIds.Uncompressed] = ("raw video", "rawvideo", "raw video"),
+        [CodecIds.Ffv1] = ("FFV1", "ffv1", "FFmpeg video codec #1"),
         [CodecIds.Vp8] = ("VP8", "vp8", "On2 VP8"),
         [CodecIds.Vp9] = ("VP9", "vp9", "Google VP9"),
         [CodecIds.Av1] = ("AV1", "av1", "Alliance for Open Media AV1"),

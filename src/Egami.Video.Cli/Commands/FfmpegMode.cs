@@ -57,7 +57,7 @@ internal static class FfmpegMode
             return ExecuteEdit(session, parsed, explain);
         }
 
-        IReadOnlyList<string[]> commands = FfmpegTranslator.Translate(parsed, session, explain);
+        IReadOnlyList<string[]> commands = FfmpegEncoderOptions.Apply(parsed, FfmpegTranslator.Translate(parsed, session, explain));
         if (explain)
         {
             foreach (string[] command in commands)

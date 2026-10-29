@@ -31,6 +31,11 @@ internal static class RunVideoCommand
         ["-sn"] = false,
         ["--progress"] = true,
         ["--progress-format"] = true,
+        ["--keyframe-interval"] = true,
+        ["--slices"] = true,
+        ["--no-slice-crc"] = false,
+        ["--coder"] = true,
+        ["--context"] = true,
     };
 
     /// <summary>The command, for help; the tool parses run's arguments itself, since steps carry their own options.</summary>
@@ -47,7 +52,8 @@ internal static class RunVideoCommand
         command.Arguments.Add(new Argument<string[]>("inputs-and-steps") { Description = "Videos (files, globs, -), then steps separated by +, ending in save out.mkv if -o is not given.", Arity = ArgumentArity.ZeroOrMore });
         command.Options.Add(new Option<string?>("--output", "-o") { Description = "Where the video goes when save has no path: a file, a folder, a template with {name}, or - with --format.", HelpName = "path" });
         command.Options.Add(new Option<string?>("--format", "-f") { Description = "The output container (mkv, avi …), when the output's extension does not say.", HelpName = "container" });
-        command.Options.Add(new Option<string?>("--codec") { Description = "The video codec to encode with: mjpeg, vp8, vp9, av1 or raw. The input's codec when Egami.Video can encode it, else mjpeg.", HelpName = "codec" });
+        command.Options.Add(new Option<string?>("--codec") { Description = "The video codec to encode with: mjpeg, vp8, vp9, av1, ffv1 or raw. The input's codec when Egami.Video can encode it, else mjpeg.", HelpName = "codec" });
+        EncoderExtras.AddTo(command);
         command.Options.Add(new Option<int?>("--quality") { Description = "The encoder's quality from 1 to 100.", HelpName = "1-100" });
         command.Options.Add(new Option<string?>("--crop") { Description = "auto finds the black bars of letterbox, pillarbox and windowbox video, as the analyze command's crop detector does, and crops them off before the other steps.", HelpName = "auto" });
         command.Options.Add(new Option<string?>("--rate") { Description = "Frames per second of the output, dropping or repeating frames to match; frames keep their own times by default.", HelpName = "fps" });
@@ -176,6 +182,7 @@ internal static class RunVideoCommand
             TrackSelection.Parse(own.GetValueOrDefault("--track"), own.ContainsKey("--no-audio"), own.ContainsKey("--no-subtitles")))
         {
             Windows = stepWindows,
+            Extras = EncoderExtras.Parse(name => own.ContainsKey(name) ? Last(own, name) ?? string.Empty : null),
         };
 
         if (parsed.Flags.Contains("--dry-run"))
@@ -386,11 +393,12 @@ internal static class RunVideoCommand
             "vp8" => Vp8Codec.Instance,
             "vp9" => Vp9Codec.Instance,
             "av1" => Av1Codec.Instance,
+            "ffv1" => Ffv1Codec.Instance,
             _ => session.Context.Codecs.FirstOrDefault(c => string.Equals(c.Name, name, StringComparison.OrdinalIgnoreCase)),
         };
-        return codec is null ? throw new UsageException($"--codec '{name}' is not a video codec egami-video knows; give mjpeg, vp8, vp9, av1 or raw.")
+        return codec is null ? throw new UsageException($"--codec '{name}' is not a video codec egami-video knows; give mjpeg, vp8, vp9, av1, ffv1 or raw.")
             : codec.CanEncode ? codec
-            : throw new UsageException($"egami-video cannot encode {codec.Name} yet; give --codec mjpeg, vp8, vp9, av1 or raw.");
+            : throw new UsageException($"egami-video cannot encode {codec.Name} yet; give --codec mjpeg, vp8, vp9, av1, ffv1 or raw.");
     }
 
     private static void ListSteps(VideoSession session, string? name)
@@ -430,6 +438,9 @@ internal static class RunVideoCommand
         /// <summary>Gets the steps that run only inside a time window.</summary>
         public IReadOnlyDictionary<BoundStep, StepWindow> Windows { get; init; } = new Dictionary<BoundStep, StepWindow>();
 
+        /// <summary>Gets the keyframe interval and FFV1 settings.</summary>
+        public EncoderExtras Extras { get; init; } = new();
+
         /// <summary>Decodes an input's video, runs the steps over every frame and encodes the frames into <paramref name="target"/>.</summary>
         public void Run(VideoSession session, InputFile input, MediaTarget target, int count)
         {
@@ -442,6 +453,7 @@ internal static class RunVideoCommand
             }
 
             VideoCodec encoder = codec ?? (session.Context.FindCodec(track) is { CanEncode: true } same ? same : MotionJpegCodec.Instance);
+            Extras.Check(encoder);
             using OtherPackets others = OtherPackets.Open(session, input, selection);
             VideoWriterOptions options = new()
             {
@@ -454,6 +466,7 @@ internal static class RunVideoCommand
                 OtherTracks = others.Tracks,
                 Metadata = source.Info.Metadata,
             };
+            options = Extras.Apply(options);
             session.Info($"{input.Display}: {steps.Count} steps over track {track.Number}, encoding {encoder.Name} into {target.Container.Name}");
 
             MediaIO.Write(session, target.Path, stream =>
