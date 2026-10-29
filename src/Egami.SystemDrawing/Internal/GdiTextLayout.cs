@@ -377,7 +377,9 @@ internal sealed class GdiTextLayout
         for (int k = 0; k < line.Items.Count; k++)
         {
             Item item = line.Items[k];
-            if (item.Char >= 0 && previous >= 0 && _text.AsSpan(previous, item.Char - previous).Contains('\t'))
+            // A tab before a character, at the start of the line too, puts it at the stop the tab reached.
+            bool tabbed = previous >= 0 ? _text.AsSpan(previous, item.Char - previous).Contains('\t') : item.X > 0;
+            if (item.Char >= 0 && tabbed)
             {
                 pen = MathF.Max(pen, item.X);
             }

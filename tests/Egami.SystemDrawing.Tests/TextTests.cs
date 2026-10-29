@@ -270,6 +270,75 @@ public class TextTests
     }
 
     [Fact]
+    public void ALeadingTabMovesTheTextToTheTabStop()
+    {
+        using Graphics g = NewGraphics(out Bitmap b, 200, 60);
+        using (b)
+        {
+            using Font font = DejaVu12;
+            StringFormat format = new();
+            format.SetTabStops(0, [50]);
+
+            // Review finding: a tab first on a line was measured but not drawn, so the text started at the line's left.
+            foreach (string text in new[] { "\tabc", "x\n\tabc" })
+            {
+                format.SetMeasurableCharacterRanges([new CharacterRange(text.IndexOf('a'), 1)]);
+                RectangleF a = g.MeasureCharacterRanges(text, font, new RectangleF(0, 0, 200, 60), format)[0].GetBounds(g);
+                Assert.InRange(a.X, 50 + (16f / 6) - 1, 50 + (16f / 6) + 1);
+                g.Clear(Color.White);
+                g.TextRenderingHint = TextRenderingHint.AntiAlias;
+                g.DrawString(text, font, Brushes.Black, new RectangleF(0, 0, 200, 60), format);
+                int left = int.MaxValue;
+                for (int y = text.Length > 4 ? 20 : 0; y < 60; y++)
+                {
+                    for (int x = 0; x < 200; x++)
+                    {
+                        if (b.GetPixel(x, y).R < 128)
+                        {
+                            left = Math.Min(left, x);
+                        }
+                    }
+                }
+
+                Assert.InRange(left, 50, 56);
+                using GraphicsPath path = new();
+                path.AddString(text, DejaVu, 0, 16, new RectangleF(0, 0, 200, 60), format);
+                Assert.InRange(path.GetBounds().X, text.Length > 4 ? 0 : 50, 56);
+            }
+        }
+    }
+
+    [Fact]
+    public void FontCollectionsRefuseFilesThatAreNotFonts()
+    {
+        // Review finding: Egami.Fonts' own exceptions escaped instead of the ExternalException System.Drawing documents.
+        using PrivateFontCollection fonts = new();
+        string text = System.IO.Path.GetTempFileName();
+        try
+        {
+            File.WriteAllText(text, "not a font");
+            Assert.Throws<System.Runtime.InteropServices.ExternalException>(() => fonts.AddFontFile(text));
+        }
+        finally
+        {
+            File.Delete(text);
+        }
+
+        byte[] random = new byte[512];
+        new Random(5).NextBytes(random);
+        IntPtr memory = System.Runtime.InteropServices.Marshal.AllocHGlobal(random.Length);
+        try
+        {
+            System.Runtime.InteropServices.Marshal.Copy(random, 0, memory, random.Length);
+            Assert.Throws<System.Runtime.InteropServices.ExternalException>(() => fonts.AddMemoryFont(memory, random.Length));
+        }
+        finally
+        {
+            System.Runtime.InteropServices.Marshal.FreeHGlobal(memory);
+        }
+    }
+
+    [Fact]
     public void AddStringAddsClosedFigures()
     {
         using GraphicsPath path = new();

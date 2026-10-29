@@ -97,7 +97,7 @@ public sealed class PrivateFontCollection : FontCollection
         {
             added = Fonts.AddFile(path);
         }
-        catch (Exception e) when (e is InvalidDataException or NotSupportedException or EndOfStreamException)
+        catch (Exception e) when (e is EgamiException or InvalidDataException or NotSupportedException or EndOfStreamException)
         {
             throw new ExternalException("File not found.", unchecked((int)0x80004005));
         }
@@ -126,7 +126,7 @@ public sealed class PrivateFontCollection : FontCollection
         {
             Fonts.Add(EgamiFonts.Typeface.FromMemory(data));
         }
-        catch (Exception e) when (e is InvalidDataException or NotSupportedException or EndOfStreamException or ArgumentException)
+        catch (Exception e) when (e is EgamiException or InvalidDataException or NotSupportedException or EndOfStreamException or ArgumentException)
         {
             throw new ExternalException("A generic error occurred in GDI+.", unchecked((int)0x80004005));
         }
