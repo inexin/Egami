@@ -15,6 +15,22 @@ changes that break code come only in a new major version.
   text matches GDI+ slightly closer. Egami's own sampling is unchanged. Egami.Fonts' hinter now reports each glyph's scan
   control, internally.
 
+## Egami.Drawing, Egami.Fonts and Egami.SystemDrawing, unreleased
+
+Where GDI+ puts text in a layout box (2.7.6 task 28), measured on Windows. Additive; Egami's own text output is unchanged.
+
+- `GdiPlusText.Baseline(font, box, align, typographic)` (Egami.Drawing) gives the baseline `Graphics.DrawString` puts one line
+  on in a box with a line alignment, and `Font.GdiPlusAscent` (Egami.Fonts) the ascent below the line's top it uses: for a
+  grid-fitted font, the cell ascent rounded or the VDMX maximum at the size, in whole pixels. All 9,720 baselines probed
+  (10 fonts, 11 to 24 px, box heights, fractional positions, both formats, three alignments) equal GDI+'s, and the email
+  button of the report matches GDI+ with no vertical shift (mean difference 0.91 levels on black, 0.50 on #0078d4).
+- Egami.SystemDrawing's `DrawString` follows the same rule: one line is a cell tall plus 1/8 em with the default format (more
+  lines are a line spacing each), and ClearTypeGridFit puts the first baseline that whole-pixel ascent below the rounded line
+  top. Of 3,900 single-line ClearType placements probed, 3,899 now equal GDI+'s (1,362 before); AntiAlias placements improve
+  from 1,634 to 2,751. With `StringFormatFlags.LineLimit` (as in `GenericTypographic`) text of one line is drawn in a box
+  shorter than a line, as GDI+ does. `FontFamily.GetCellAscent` and `GetCellDescent` use the typographic metrics of fonts that
+  set USE_TYPO_METRICS, as GDI+ does.
+
 ## Egami.Video.Cli, unreleased
 
 - `egami-video remux --fragment` and `encode --fragment` write fragmented MP4 (`--fragment=4s`, `--fragment=keyframe`), and

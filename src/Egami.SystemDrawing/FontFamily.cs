@@ -141,6 +141,14 @@ public sealed class FontFamily : MarshalByRefObject, IDisposable
     {
         EgamiFonts.Typeface face = Match(style).Typeface;
         EgamiFonts.VerticalMetrics win = face.WinMetrics, hhea = face.HheaMetrics;
+
+        // The cell is the Windows metrics, or the typographic ones when the font asks for them (USE_TYPO_METRICS).
+        EgamiFonts.VerticalMetrics typo = face.TypoMetrics;
+        if (GdiAscent.UsesTypoMetrics(face) && (typo.Ascent != 0 || typo.Descent != 0))
+        {
+            win = typo;
+        }
+
         int ascent = win.Ascent, descent = -win.Descent;
         if (ascent == 0 && descent == 0)
         {

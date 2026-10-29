@@ -59,6 +59,7 @@ internal static class Tags
     public static readonly FontTag Cmap = new("cmap");
     public static readonly FontTag Head = new("head");
     public static readonly FontTag Hhea = new("hhea");
+    public static readonly FontTag Vdmx = new("VDMX");
     public static readonly FontTag Hmtx = new("hmtx");
     public static readonly FontTag Maxp = new("maxp");
     public static readonly FontTag Name = new("name");

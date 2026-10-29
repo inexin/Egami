@@ -45,6 +45,26 @@ Some fonts carry black-and-white bitmaps for small sizes, such as Calibri at 12,
 those instead of the outlines. `Font.WithGdiPlusLook()` turns on `Font.EmbeddedBitmaps`, so Egami does too: Calibri's glyphs at
 those sizes equal GDI+'s pixel for pixel.
 
+### Placing text in a box
+
+`DrawString` with a layout rectangle and `StringFormat.LineAlignment` places a line by GDI+'s own rule, which can differ from
+centring on the font's ascent and descent by more than a pixel. `GdiPlusText.Baseline` gives the baseline it uses, for one line
+in a box:
+
+- The line is a cell tall: the ascent and descent `FontFamily.GetCellAscent` and `GetCellDescent` report (the OS/2 Windows
+  metrics, or the typographic ones when the font sets USE_TYPO_METRICS), plus 1/8 em with the default `StringFormat`. GDI+'s
+  line spacing does not count for one line.
+- `LineAlignment` puts that cell at the box's top, middle or bottom.
+- The baseline is `Font.GdiPlusAscent` below the cell's top. With `ClearTypeGridFit` the top is first rounded to a whole pixel,
+  and the ascent is whole pixels too: the cell ascent rounded, or the font's VDMX maximum at the size when that is larger. For
+  Trebuchet MS at 16 pixels that is 17 pixels, against a cell ascent of 15.02.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/SystemDrawing.cs#gdiplus-baseline)]
+
+Against GDI+, 9,720 of 9,720 baselines are equal (10 fonts, 11 to 24 pixels, nine box heights at three fractional positions,
+both formats and all three alignments), and the button above needs no vertical shift to match. Egami's own
+`Canvas.DrawText` with a rectangle and `VerticalAlign` keeps its own centring.
+
 ## Shapes
 
 Two canvas settings match what `Graphics` does with shapes at its defaults, `SmoothingMode.AntiAlias` and
