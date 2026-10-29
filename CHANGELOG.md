@@ -15,6 +15,14 @@ changes that break code come only in a new major version.
   text matches GDI+ slightly closer. Egami's own sampling is unchanged. Egami.Fonts' hinter now reports each glyph's scan
   control, internally.
 
+## Egami.Fonts, unreleased
+
+- A face that `FontFallback` picks now takes all of the font's rendering settings: `EmbeddedBitmaps`, `HintingTarget`,
+  `Metrics`, `Embolden`, `StemDarkening` and `ColorGlyphs` were dropped before (the palette stays the face's own). So SimSun
+  found by fallback from `Font.WithGdiPlusLook()` text draws its 12 to 17 px bitmaps, as GDI+ font linking does (probed: the
+  linked face's aliased bitmaps), and grid-fitted metrics apply to fallback runs too. Fonts that set none of these shape and
+  draw as before.
+
 ## Egami.Video.Cli, unreleased
 
 - FFV1 in egami-video: `encode` and `run` take `--codec ffv1` with `--slices`, `--no-slice-crc`, `--coder` and `--context`, and

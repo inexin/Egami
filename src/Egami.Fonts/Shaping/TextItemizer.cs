@@ -374,14 +374,22 @@ internal static class TextItemizer
     private static bool Preferred(Typeface face, bool emoji, bool textPresentation) =>
         emoji ? IsColor(face) : !textPresentation || !IsColor(face);
 
+    // A fallback face draws as the span's font does, as GDI+ font linking draws a linked face with the font's settings (its
+    // bitmaps too); only the palette, which names entries of one face's own color table, stays the face's default.
     private static Font Derive(Font font, Typeface face, FontSynthesis synthesis) => new(face, font.Size)
     {
         Kerning = font.Kerning,
         AllowSynthesis = font.AllowSynthesis,
         Synthesis = synthesis,
         Hinting = font.Hinting,
+        HintingTarget = font.HintingTarget,
+        Metrics = font.Metrics,
+        EmbeddedBitmaps = font.EmbeddedBitmaps,
         Subpixel = font.Subpixel,
         Edging = font.Edging,
+        Embolden = font.Embolden,
+        StemDarkening = font.StemDarkening,
+        ColorGlyphs = font.ColorGlyphs,
         OpticalSizing = font.OpticalSizing,
     };
 
