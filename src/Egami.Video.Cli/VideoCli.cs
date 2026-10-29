@@ -132,6 +132,7 @@ internal static class VideoCli
         root.Subcommands.Add(PictureCommands.Animate(session));
         root.Subcommands.Add(CheckCommands.Hash(session));
         root.Subcommands.Add(CheckCommands.Compare(session));
+        root.Subcommands.Add(VerifyCommand.Create(session));
 
         // Stage C: audio (V5).
         root.Subcommands.Add(AudioCommand.Create(session));
