@@ -78,7 +78,10 @@ def video_commands_page():
         "",
     ]
     for name in subcommands(root):
-        lines += [f"## {name}", "", "```text", strip_globals(egami_video(name, "--help")).rstrip(), "```", ""]
+        text = egami_video(name, "--help")
+        lines += [f"## {name}", "", "```text", strip_globals(text).rstrip(), "```", ""]
+        for child in subcommands(text):
+            lines += [f"### {name} {child}", "", "```text", strip_globals(egami_video(name, child, "--help")).rstrip(), "```", ""]
     return "\n".join(lines)
 
 

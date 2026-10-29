@@ -139,7 +139,7 @@ internal static class InfoCommand
         Stream Open() => stdin is not null ? new MemoryStream(stdin, writable: false) : MediaIO.OpenStream(session, input);
         long? size = input.Path is { } path ? new FileInfo(path).Length : stdin?.LongLength;
 
-        using IDemuxer demuxer = MediaFile.OpenDemuxer(Open(), session.Context);
+        using IDemuxer demuxer = SubtitleFiles.IsSubtitlePath(input.Path) ? SubtitleFiles.OpenDemuxer(session, input) : MediaFile.OpenDemuxer(Open(), session.Context);
         MediaInfo info = demuxer.Info;
         IReadOnlyList<TrackInfo> tracks = request.Tracks.Select(demuxer.Tracks, input.Display);
         InfoData data = new(input, info, size, tracks);

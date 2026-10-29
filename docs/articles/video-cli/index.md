@@ -38,6 +38,7 @@ With the `egami` tool installed too, `egami video info clip.mkv` runs `egami-vid
 | `extract` | One track, attachments or cover art to their own files | `-map 0:a:0 -c copy`, `-dump_attachment` |
 | `embed` | Add tracks, attachments and cover art; set languages and names | `-i a -i b -map 0 -map 1` |
 | `metadata` | Write tags and chapters as JSON, or change them | `-f ffmetadata`, `-metadata` |
+| `subs` | Convert, shift and sync SRT, WebVTT and ASS files; subtitle tracks to and from text files | `ffmpeg -i in.srt out.vtt`, `-itsoffset`, `-c:s mov_text` |
 | `frames` | Frames as images; Motion JPEG frames as JPEG without decoding | `ffmpeg -i in out-%04d.png` |
 | `encode` | Images, an image sequence or Y4M into a clip | `ffmpeg -framerate 30 -i %04d.png` |
 | `run` | egami's steps on every frame, then encode | `-vf scale,crop,pad,transpose` |
@@ -135,6 +136,37 @@ give one of the two for its playlists only. Subtitle and data tracks are left ou
 egami-video remux in.mp4 --fragment -o fragmented.mp4
 egami-video segment in.mp4 --hls --dash --every 2 -o stream/
 ```
+
+## Subtitles
+
+`subs` works on text subtitles: SRT, WebVTT and ASS (SSA is read and written as ASS). `subs convert` writes another format, named
+by `-o`'s extension or `--format`; what the target cannot hold, such as ASS colours in WebVTT, is left out and reported once per
+kind. A file converted to its own format unchanged comes back byte for byte. `--from` and `--to` keep a time range (`--rebase`
+moves it to 0), `--sort` puts cues in order and `--fix-overlaps` ends each cue when the next starts.
+
+`subs shift --by` moves every cue (negative shows them sooner); `--scale` or `--fps 23.976:25` retimes them for a speed change
+first. `subs sync` takes sync points, each a time in the subtitles and where it should be in the video: one moves everything, two
+far apart also fix a speed difference. Times are exact, so nothing drifts over a long film.
+
+`subs extract` writes a media file's text subtitle tracks as files, each in its own format unless `--format` says otherwise
+(mov_text becomes SRT). `subs embed` adds subtitle files to a media file as tracks and copies its other tracks: Matroska keeps SRT,
+WebVTT and ASS as they are, WebM takes WebVTT and MP4 mov_text or WebVTT, converted as needed. Give a language after `=`, name
+tracks with `--name 1=Commentary`, pick the default with `--default 1`, and leave out the file's own subtitles with `--replace`.
+Files without a byte order mark that are not UTF-8 are read as Windows-1252, or the code page `--encoding` names; `--strict`
+fails on a malformed file instead of repairing it, and outputs are UTF-8 (`--bom` and `--crlf` for Windows tools).
+
+```sh
+egami-video subs convert in.srt -o in.vtt
+egami-video subs shift in.srt --by -0.5 -o sooner.srt
+egami-video subs shift in.srt --fps 23.976:25 -o pal.srt
+egami-video subs sync in.srt --map 0:01=0:01.2 --map 0:05=0:05.6 -o synced.srt
+egami-video subs embed in.webm --add in.srt=eng -o subtitled.mkv
+egami-video subs extract subtitled.mkv -o subs/{name}.{format}
+egami-video info in.srt
+```
+
+Subtitle files are inputs to the other commands too: `info` lists one as a file with one subtitle track, and `embed --add
+movie.srt` adds it like a track of another file. `trim`, `concat` and `timestamps` move the subtitle tracks of what they cut.
 
 ## Frames and pictures
 

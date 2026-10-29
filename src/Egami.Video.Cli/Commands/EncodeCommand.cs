@@ -247,7 +247,7 @@ internal static class EncodeCommand
     }
 
     /// <summary>Parses a frame rate: 25, 29.97 (read as 30000/1001), or 30000/1001.</summary>
-    internal static Rational ParseRate(string text)
+    internal static Rational ParseRate(string text, string option = "--rate")
     {
         Rational rate;
         try
@@ -265,16 +265,16 @@ internal static class EncodeCommand
         }
         catch (FormatException)
         {
-            throw BadRate(text);
+            throw BadRate(text, option);
         }
         catch (OverflowException)
         {
-            throw BadRate(text);
+            throw BadRate(text, option);
         }
 
-        return rate.Numerator > 0 && rate.ToDouble() <= 1000 ? rate : throw BadRate(text);
+        return rate.Numerator > 0 && rate.ToDouble() <= 1000 ? rate : throw BadRate(text, option);
 
-        static UsageException BadRate(string text) => new($"--rate '{text}' is not a frame rate: give frames per second above 0 and at most 1000, such as 25, 29.97 or 30000/1001.");
+        static UsageException BadRate(string text, string option) => new($"{option} '{text}' is not a frame rate: give frames per second above 0 and at most 1000, such as 25, 29.97 or 30000/1001.");
     }
 
     internal static Size ParseSize(string text)
