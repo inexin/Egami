@@ -29,6 +29,11 @@ internal static class MediaIO
     /// <summary>Opens an input for reading packets.</summary>
     public static IDemuxer OpenDemuxer(VideoSession session, InputFile input)
     {
+        if (SubtitleFiles.IsSubtitlePath(input.Path))
+        {
+            return SubtitleFiles.OpenDemuxer(session, input);
+        }
+
         Stream stream = OpenStream(session, input);
         try
         {
