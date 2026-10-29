@@ -142,3 +142,26 @@ public class HevcAllocationTests
         Assert.True(perFrame < 0, $"{perFrame} bytes a frame");
     }
 }
+
+/// <summary>Inputs the hevcstream fuzz target found: each must fail as broken data, never crash.</summary>
+public class HevcFuzzRegressionTests
+{
+    public static TheoryData<string> Files() => [.. Directory.GetFiles(Path.Combine(AppContext.BaseDirectory, "images", "fuzz", "hevc-regressions")).Select(f => Path.GetFileName(f)).Order(StringComparer.Ordinal)];
+
+    /// <summary>entry-point-past-data: a slice's entry point past its data started the CABAC engine outside the array.</summary>
+    [Theory]
+    [MemberData(nameof(Files))]
+    public void DamagedStreamsFailCleanly(string file)
+    {
+        byte[] data = File.ReadAllBytes(Path.Combine(AppContext.BaseDirectory, "images", "fuzz", "hevc-regressions", file));
+        using HevcStreamDecoder decoder = new();
+        try
+        {
+            decoder.Send(data);
+            decoder.Flush();
+        }
+        catch (EgamiException)
+        {
+        }
+    }
+}
