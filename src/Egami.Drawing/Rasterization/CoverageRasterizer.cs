@@ -58,6 +58,9 @@ internal sealed class CoverageRasterizer : IDisposable
     /// <summary>Gets or sets the number of row bands to use regardless of size, for tests; 0 lets the size decide.</summary>
     internal int ForcedBands { get; set; }
 
+    /// <summary>Gets a value indicating whether antialiased fills take GDI+'s point samples (<see cref="SampledRasterizer"/>) instead of exact coverage.</summary>
+    internal bool GdiPlus { get; init; }
+
     public void Dispose() => _workspaces.Dispose();
 
     /// <summary>Fills the edges inside <paramref name="clip"/>, calling the sink for each run with nonzero coverage.</summary>
@@ -81,7 +84,23 @@ internal sealed class CoverageRasterizer : IDisposable
         }
 
         int bands = BandCount(area, bytesPerPixel);
-        if (antialias)
+        if (antialias && GdiPlus)
+        {
+            SampledRasterizer sampled = new(edges, area, rule == FillRule.EvenOdd);
+            Run(bands, area.Height, (start, end) =>
+            {
+                Workspace workspace = _workspaces.Rent();
+                try
+                {
+                    sampled.Band(start, end, workspace, sink);
+                }
+                finally
+                {
+                    _workspaces.Return(workspace);
+                }
+            });
+        }
+        else if (antialias)
         {
             PrepareLines(edges, area);
             if (_lineCount == 0)
