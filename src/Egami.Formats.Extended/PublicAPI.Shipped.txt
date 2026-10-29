@@ -1,1 +1,83 @@
 #nullable enable
+Egami.Formats.Extended.ExtendedContextExtensions
+Egami.Formats.Extended.Farbfeld.FarbfeldFormat
+Egami.Formats.Extended.Pcx.PcxDetails
+Egami.Formats.Extended.Pcx.PcxDetails.BitsPerPixel.get -> int
+Egami.Formats.Extended.Pcx.PcxDetails.BitsPerPixel.set -> void
+Egami.Formats.Extended.Pcx.PcxDetails.Palette.get -> System.ReadOnlyMemory<Egami.Pixels.Rgb8>
+Egami.Formats.Extended.Pcx.PcxDetails.Palette.set -> void
+Egami.Formats.Extended.Pcx.PcxDetails.PcxDetails() -> void
+Egami.Formats.Extended.Pcx.PcxDetails.Planes.get -> int
+Egami.Formats.Extended.Pcx.PcxDetails.Planes.set -> void
+Egami.Formats.Extended.Pcx.PcxDetails.Version.get -> int
+Egami.Formats.Extended.Pcx.PcxDetails.Version.set -> void
+Egami.Formats.Extended.Pcx.PcxFormat
+Egami.Formats.Extended.Sgi.SgiDetails
+Egami.Formats.Extended.Sgi.SgiDetails.BytesPerChannel.get -> int
+Egami.Formats.Extended.Sgi.SgiDetails.BytesPerChannel.set -> void
+Egami.Formats.Extended.Sgi.SgiDetails.Channels.get -> int
+Egami.Formats.Extended.Sgi.SgiDetails.Channels.set -> void
+Egami.Formats.Extended.Sgi.SgiDetails.Name.get -> string!
+Egami.Formats.Extended.Sgi.SgiDetails.Name.set -> void
+Egami.Formats.Extended.Sgi.SgiDetails.Rle.get -> bool
+Egami.Formats.Extended.Sgi.SgiDetails.Rle.set -> void
+Egami.Formats.Extended.Sgi.SgiDetails.SgiDetails() -> void
+Egami.Formats.Extended.Sgi.SgiFormat
+Egami.Formats.Extended.Sgi.SgiWriterOptions
+Egami.Formats.Extended.Sgi.SgiWriterOptions.Rle.get -> bool
+Egami.Formats.Extended.Sgi.SgiWriterOptions.Rle.init -> void
+Egami.Formats.Extended.Sgi.SgiWriterOptions.SgiWriterOptions() -> void
+Egami.Formats.Extended.SunRaster.SunRasterDetails
+Egami.Formats.Extended.SunRaster.SunRasterDetails.Colormap.get -> System.ReadOnlyMemory<Egami.Pixels.Rgb8>
+Egami.Formats.Extended.SunRaster.SunRasterDetails.Colormap.set -> void
+Egami.Formats.Extended.SunRaster.SunRasterDetails.Depth.get -> int
+Egami.Formats.Extended.SunRaster.SunRasterDetails.Depth.set -> void
+Egami.Formats.Extended.SunRaster.SunRasterDetails.RgbOrder.get -> bool
+Egami.Formats.Extended.SunRaster.SunRasterDetails.RgbOrder.set -> void
+Egami.Formats.Extended.SunRaster.SunRasterDetails.Rle.get -> bool
+Egami.Formats.Extended.SunRaster.SunRasterDetails.Rle.set -> void
+Egami.Formats.Extended.SunRaster.SunRasterDetails.SunRasterDetails() -> void
+Egami.Formats.Extended.SunRaster.SunRasterFormat
+Egami.Formats.Extended.SunRaster.SunRasterWriterOptions
+Egami.Formats.Extended.SunRaster.SunRasterWriterOptions.Rle.get -> bool
+Egami.Formats.Extended.SunRaster.SunRasterWriterOptions.Rle.init -> void
+Egami.Formats.Extended.SunRaster.SunRasterWriterOptions.SunRasterWriterOptions() -> void
+Egami.Formats.Extended.Wbmp.WbmpFormat
+Egami.Formats.Extended.Xbm.XbmDetails
+Egami.Formats.Extended.Xbm.XbmDetails.Hotspot.get -> Egami.Point?
+Egami.Formats.Extended.Xbm.XbmDetails.Hotspot.set -> void
+Egami.Formats.Extended.Xbm.XbmDetails.Name.get -> string!
+Egami.Formats.Extended.Xbm.XbmDetails.Name.set -> void
+Egami.Formats.Extended.Xbm.XbmDetails.XbmDetails() -> void
+Egami.Formats.Extended.Xbm.XbmFormat
+Egami.Formats.Extended.Xpm.XpmDetails
+Egami.Formats.Extended.Xpm.XpmDetails.CharactersPerPixel.get -> int
+Egami.Formats.Extended.Xpm.XpmDetails.CharactersPerPixel.set -> void
+Egami.Formats.Extended.Xpm.XpmDetails.Hotspot.get -> Egami.Point?
+Egami.Formats.Extended.Xpm.XpmDetails.Hotspot.set -> void
+Egami.Formats.Extended.Xpm.XpmDetails.Name.get -> string!
+Egami.Formats.Extended.Xpm.XpmDetails.Name.set -> void
+Egami.Formats.Extended.Xpm.XpmDetails.XpmDetails() -> void
+Egami.Formats.Extended.Xpm.XpmFormat
+override Egami.Formats.Extended.Pcx.PcxDetails.Copy() -> Egami.Metadata.FormatDetails!
+override Egami.Formats.Extended.Sgi.SgiDetails.Copy() -> Egami.Metadata.FormatDetails!
+override Egami.Formats.Extended.SunRaster.SunRasterDetails.Copy() -> Egami.Metadata.FormatDetails!
+override Egami.Formats.Extended.Xbm.XbmDetails.Copy() -> Egami.Metadata.FormatDetails!
+override Egami.Formats.Extended.Xpm.XpmDetails.Copy() -> Egami.Metadata.FormatDetails!
+static Egami.Formats.Extended.ExtendedContextExtensions.WithExtendedFormats(this Egami.EgamiContext! context) -> Egami.EgamiContext!
+static Egami.Formats.Extended.ExtendedContextExtensions.WithFarbfeld(this Egami.EgamiContext! context) -> Egami.EgamiContext!
+static Egami.Formats.Extended.ExtendedContextExtensions.WithPcx(this Egami.EgamiContext! context) -> Egami.EgamiContext!
+static Egami.Formats.Extended.ExtendedContextExtensions.WithSgi(this Egami.EgamiContext! context) -> Egami.EgamiContext!
+static Egami.Formats.Extended.ExtendedContextExtensions.WithSunRaster(this Egami.EgamiContext! context) -> Egami.EgamiContext!
+static Egami.Formats.Extended.ExtendedContextExtensions.WithWbmp(this Egami.EgamiContext! context) -> Egami.EgamiContext!
+static Egami.Formats.Extended.ExtendedContextExtensions.WithXbm(this Egami.EgamiContext! context) -> Egami.EgamiContext!
+static Egami.Formats.Extended.ExtendedContextExtensions.WithXpm(this Egami.EgamiContext! context) -> Egami.EgamiContext!
+static Egami.Formats.Extended.Farbfeld.FarbfeldFormat.Info.get -> Egami.Formats.FormatInfo!
+static Egami.Formats.Extended.Pcx.PcxFormat.Info.get -> Egami.Formats.FormatInfo!
+static Egami.Formats.Extended.Sgi.SgiFormat.Info.get -> Egami.Formats.FormatInfo!
+static Egami.Formats.Extended.Sgi.SgiWriterOptions.Default.get -> Egami.Formats.Extended.Sgi.SgiWriterOptions!
+static Egami.Formats.Extended.SunRaster.SunRasterFormat.Info.get -> Egami.Formats.FormatInfo!
+static Egami.Formats.Extended.SunRaster.SunRasterWriterOptions.Default.get -> Egami.Formats.Extended.SunRaster.SunRasterWriterOptions!
+static Egami.Formats.Extended.Wbmp.WbmpFormat.Info.get -> Egami.Formats.FormatInfo!
+static Egami.Formats.Extended.Xbm.XbmFormat.Info.get -> Egami.Formats.FormatInfo!
+static Egami.Formats.Extended.Xpm.XpmFormat.Info.get -> Egami.Formats.FormatInfo!

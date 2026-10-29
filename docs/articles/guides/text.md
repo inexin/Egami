@@ -105,8 +105,8 @@ are.
 - `Font.Subpixel` (on by default) keeps glyph origins at quarter pixels horizontally, each quarter its own cached mask, so small
   text is evenly spaced; off, origins snap to whole pixels as in 2.7.1. Vertical positions always snap to whole pixels.
 - `Font.Hinting` = `FontHinting.Light` snaps the baseline, x-height and cap-height zones (a CFF font's blue zones, else zones
-  measured from the face's own glyphs) to whole pixels, up to 48 pixels per em; x values and advances never move. There is no
-  TrueType bytecode hinting.
+  measured from the face's own glyphs) to whole pixels, up to 48 pixels per em; x values and advances never move.
+  `FontHinting.Full` runs the font's TrueType instructions instead (see [TrueType hinting](#truetype-hinting)).
 - `Font.Edging` picks `FontEdging.Antialias` (the default), `Alias` (one bit, pixel centres inside the outline) or `Lcd`: three
   samples per pixel along the canvas's `CanvasOptions.PixelGeometry`, filtered and blended per channel. LCD text draws only onto
   an 8-bit RGB canvas outside layers with a solid source-over paint; anything else falls back to grayscale with one
