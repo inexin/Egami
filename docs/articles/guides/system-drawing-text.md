@@ -28,6 +28,26 @@ For a white Trebuchet MS label at 16 pixels on a black or a #0078d4 button, the 
 mean per-pixel difference is 0.67 levels out of 255 on black and 0.38 on blue, against 9.5 and 5.4 for Egami's default text.
 Fonts that GDI+ draws from embedded bitmaps at small sizes, such as Calibri, still differ: Egami draws their outlines.
 
+## Image scaling
+
+`Graphics.DrawImage` scales with its `InterpolationMode`. Each mode has a `ResampleFilter` of its own, recovered from
+DrawImage's impulse responses:
+
+| InterpolationMode | ResampleFilter |
+| --- | --- |
+| Default, Low, Bilinear | `GdiPlusBilinear`: two pixels at every scale, so shrinking skips pixels |
+| Bicubic | `GdiPlusBicubic`: Keys cubic (a = −0.5), four pixels at every scale |
+| HighQualityBilinear | `GdiPlusHighQualityBilinear`: the tent, widened when shrinking, convolved with a one-pixel box |
+| High, HighQualityBicubic | `GdiPlusHighQualityBicubic`: Keys cubic (a = −1), widened when shrinking, convolved with a one-pixel box |
+| NearestNeighbor | `Nearest` |
+
+With `PixelOffsetMode.Half`, GDI+ uses Egami's grid. With its default offset, source and destination pixel centres sit on whole
+coordinates, so a scale s moves the image by (1 − s) / 2 destination pixels against Egami's grid. On those rows, DrawImage and
+Egami are 0.37 levels apart on average, down from 2.53 with Egami's closest filters before.
+
+`CompositingQuality.HighQuality` and `GammaCorrected` blend in linear light, which is `CanvasOptions.ColorSpace = ColorSpace.Linear`
+(within 0.1 levels of GDI+). The other qualities blend the stored values, Egami's default.
+
 ## GDI ClearType
 
 For `TextRenderer` or GDI's `ExtTextOut`:

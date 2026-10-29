@@ -58,6 +58,18 @@ A new package of format plugins (Build Plan tasks 1 to 12). It depends on core E
 - `egami` (and `egami-video run`) read and write Egami.Formats.Extended's formats, with `--set sgi.rle=` and
   `--set sunraster.rle=` for their writer options. `--preview-formats` adds the formats in preview; there are none yet.
 
+## Egami and Egami.Drawing, unreleased
+
+GDI+'s image scaling (2.7.6 stage 4), recovered from DrawImage's impulse responses on Windows in egami-compare. All additive.
+
+- New `ResampleFilter` members named after GDI+'s interpolation modes, for Resize, Rotate and an `ImagePaint`'s sampling:
+  - `GdiPlusBilinear` (Default, Low, Bilinear) is the two-pixel tent at every scale.
+  - `GdiPlusBicubic` (Bicubic) is Keys cubic with a = −0.5 at every scale. Neither averages when shrinking, as GDI+'s don't.
+  - `GdiPlusHighQualityBilinear` is the tent, widened by the reduction, convolved with a one-pixel box.
+  - `GdiPlusHighQualityBicubic` (High, HighQualityBicubic) is the same with Keys cubic, a = −1.
+- Against DrawImage at PixelOffsetMode Default and Half, up and down, the mean difference over those modes drops from 2.53 levels
+  (Egami's closest filter before) to 0.37. Bilinear and HighQualityBilinear are within 0.2 levels.
+
 ## Egami, unreleased
 
 Packed 5-5-5 pixel types (step 2.13 task 2), for 16-bit BMP and TGA and the GDI+ 16-bit bitmaps of Egami.SystemDrawing. All

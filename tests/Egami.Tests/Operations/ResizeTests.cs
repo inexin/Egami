@@ -114,8 +114,10 @@ public class ResizeTests
                     }
                 }
 
-                // Box enlarges like Nearest, so only reductions are sure to blend.
-                Assert.True(filter == ResampleFilter.Nearest || w > 40 || partial > 0, "The edge should be blended.");
+                // Box enlarges like Nearest, so only reductions are sure to blend; GDI+'s Bilinear and Bicubic skip pixels when
+                // shrinking, so their samples may all miss the edge.
+                bool skips = filter is ResampleFilter.Nearest or ResampleFilter.GdiPlusBilinear or ResampleFilter.GdiPlusBicubic;
+                Assert.True(skips || w > 40 || partial > 0, "The edge should be blended.");
             }
         }
     }

@@ -62,3 +62,7 @@ static Egami.Pixels.Bgra5551.FromScaled(System.Numerics.Vector4 rgba) -> Egami.P
 static Egami.Pixels.Bgra5551.Layout.get -> Egami.Pixels.PixelLayoutInfo
 static Egami.Pixels.Bgra5551.operator !=(Egami.Pixels.Bgra5551 left, Egami.Pixels.Bgra5551 right) -> bool
 static Egami.Pixels.Bgra5551.operator ==(Egami.Pixels.Bgra5551 left, Egami.Pixels.Bgra5551 right) -> bool
+Egami.Operations.ResampleFilter.GdiPlusBicubic = 11 -> Egami.Operations.ResampleFilter
+Egami.Operations.ResampleFilter.GdiPlusBilinear = 10 -> Egami.Operations.ResampleFilter
+Egami.Operations.ResampleFilter.GdiPlusHighQualityBicubic = 13 -> Egami.Operations.ResampleFilter
+Egami.Operations.ResampleFilter.GdiPlusHighQualityBilinear = 12 -> Egami.Operations.ResampleFilter

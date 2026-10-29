@@ -25,6 +25,13 @@ internal sealed class ImageShader : Shader
     private readonly float _support;
     private readonly int _level;
 
+    // GDI+'s high-quality modes: the kernel widened per image axis by the reduction, and its support on each axis.
+    private readonly bool _boxed;
+    private readonly float _stretchX;
+    private readonly float _stretchY;
+    private readonly float _supportX;
+    private readonly float _supportY;
+
     private ImageShader(PremulRgbaF32[] texels, int width, int height, Matrix3x2 inverse, ImagePaint paint, int level)
     {
         _texels = texels;
@@ -37,13 +44,23 @@ internal sealed class ImageShader : Shader
         _filter = paint.Sampling.Filter;
         _linear = paint.Sampling.ColorSpace == ColorSpace.Linear;
         _support = Support(_filter);
+        _boxed = _filter is ResampleFilter.GdiPlusHighQualityBilinear or ResampleFilter.GdiPlusHighQualityBicubic;
+        if (_boxed)
+        {
+            // Texel units per device pixel along each image axis; GDI+ widens its kernel by the reduction, never below 1.
+            _stretchX = MathF.Max(1, new Vector2(inverse.M11, inverse.M21).Length());
+            _stretchY = MathF.Max(1, new Vector2(inverse.M12, inverse.M22).Length());
+            float k = _filter == ResampleFilter.GdiPlusHighQualityBicubic ? 2 : 1;
+            _supportX = (k * _stretchX) + 0.5f;
+            _supportY = (k * _stretchY) + 0.5f;
+        }
     }
 
     /// <summary>Returns whether the mapping is a whole-pixel shift with a filter that passes pixels through unchanged there.</summary>
     internal static bool IsPixelCopy(Matrix3x2 inverse, SamplingOptions sampling)
     {
         bool passes = sampling.Filter is ResampleFilter.Nearest or ResampleFilter.Box or ResampleFilter.Bilinear or ResampleFilter.Bicubic
-            or ResampleFilter.Lanczos2 or ResampleFilter.Lanczos3 or ResampleFilter.Hermite;
+            or ResampleFilter.Lanczos2 or ResampleFilter.Lanczos3 or ResampleFilter.Hermite or ResampleFilter.GdiPlusBilinear or ResampleFilter.GdiPlusBicubic;
         return passes && inverse.M11 == 1 && inverse.M22 == 1 && inverse.M12 == 0 && inverse.M21 == 0
             && inverse.M31 == MathF.Round(inverse.M31) && inverse.M32 == MathF.Round(inverse.M32);
     }
@@ -93,11 +110,18 @@ internal sealed class ImageShader : Shader
     public override void Shade(int y, int x, Span<PremulRgbaF32> row)
     {
         Vector2 p = Vector2.Transform(new Vector2(x + 0.5f, y + 0.5f), _inverse), step = new(_inverse.M11, _inverse.M12);
-        Span<float> wx = stackalloc float[16], wy = stackalloc float[16];
-        for (int i = 0; i < row.Length; i++)
+        if (_boxed)
         {
-            Vector2 q = p + (step * i);
-            row[i] = _filter == ResampleFilter.Nearest ? Fetch((int)MathF.Floor(q.X), (int)MathF.Floor(q.Y)) : Filtered(q, wx, wy);
+            ShadeBoxed(p, step, row);
+        }
+        else
+        {
+            Span<float> wx = stackalloc float[16], wy = stackalloc float[16];
+            for (int i = 0; i < row.Length; i++)
+            {
+                Vector2 q = p + (step * i);
+                row[i] = _filter == ResampleFilter.Nearest ? Fetch((int)MathF.Floor(q.X), (int)MathF.Floor(q.Y)) : Filtered(q, wx, wy);
+            }
         }
 
         if (_linear)
@@ -109,11 +133,24 @@ internal sealed class ImageShader : Shader
         }
     }
 
-    /// <summary>Device → image scale: the longer of the inverse's columns. Past 2, the mip level that brings it under 2.</summary>
+    /// <summary>
+    /// Device → image scale: the longer of the inverse's columns. Past 2, the mip level that brings it under 2; GDI+'s Bilinear and Bicubic never
+    /// take a level, and its high-quality modes only past a reduction of 8.
+    /// </summary>
     private static int Level(ImagePaint paint, Matrix3x2 inverse)
     {
         float footprint = MathF.Max(new Vector2(inverse.M11, inverse.M12).Length(), new Vector2(inverse.M21, inverse.M22).Length());
-        return paint.Sampling.Filter == ResampleFilter.Nearest || !(footprint >= 2) ? 0 : (int)MathF.Floor(MathF.Log2(footprint));
+        switch (paint.Sampling.Filter)
+        {
+            case ResampleFilter.Nearest or ResampleFilter.GdiPlusBilinear or ResampleFilter.GdiPlusBicubic:
+                // GDI+'s Bilinear and Bicubic keep their taps at every scale, skipping pixels when shrinking.
+                return 0;
+            case ResampleFilter.GdiPlusHighQualityBilinear or ResampleFilter.GdiPlusHighQualityBicubic:
+                // The widened kernel from the full image, up to a reduction of 8; past that from the level that brings it to 4.
+                return !(footprint > MaxBoxedStretch) ? 0 : (int)MathF.Floor(MathF.Log2(footprint / (MaxBoxedStretch / 2)));
+            default:
+                return !(footprint >= 2) ? 0 : (int)MathF.Floor(MathF.Log2(footprint));
+        }
     }
 
     /// <summary>Maps a texel index into 0..size − 1 by a tile mode, or −1 for Decal outside.</summary>
@@ -178,10 +215,96 @@ internal sealed class ImageShader : Shader
     private static float Support(ResampleFilter filter) => filter switch
     {
         ResampleFilter.Box => 0.5f,
-        ResampleFilter.Bilinear or ResampleFilter.Hermite => 1,
+        ResampleFilter.Bilinear or ResampleFilter.Hermite or ResampleFilter.GdiPlusBilinear => 1,
         ResampleFilter.Lanczos3 => 3,
+        ResampleFilter.GdiPlusHighQualityBilinear => 1.5f,
+        ResampleFilter.GdiPlusHighQualityBicubic => 2.5f,
         _ => 2,
     };
+
+    /// <summary>The most taps a GDI+ high-quality axis takes: its kernel widened by up to <see cref="MaxBoxedStretch"/>.</summary>
+    private const int MaxBoxedTaps = 40;
+
+    /// <summary>The widest reduction GDI+'s high-quality modes take from the full image; past it they start from a mip level.</summary>
+    private const float MaxBoxedStretch = 8;
+
+    /// <summary>
+    /// GDI+'s high-quality kernels (<see cref="ResampleFilter.GdiPlusHighQualityBilinear"/> and
+    /// <see cref="ResampleFilter.GdiPlusHighQualityBicubic"/>): the tent or Keys cubic with a = −1, widened by
+    /// <paramref name="stretch"/>, averaged over a box one texel wide around <paramref name="x"/>.
+    /// </summary>
+    private static float BoxedWeight(bool cubic, float x, float stretch)
+    {
+        return stretch * (Integral(cubic, (x + 0.5f) / stretch) - Integral(cubic, (x - 0.5f) / stretch));
+
+        // The kernel's integral from 0 to t, odd in t.
+        static float Integral(bool cubic, float t)
+        {
+            float a = MathF.Abs(t), sign = MathF.Sign(t);
+            if (!cubic)
+            {
+                return sign * (a < 1 ? a - (a * a / 2) : 0.5f);
+            }
+
+            static float Inner(float u) => (u * u * u * u / 4) - (2 * u * u * u / 3) + u;
+            static float Outer(float u) => (-u * u * u * u / 4) + (5 * u * u * u / 3) - (4 * u * u) + (4 * u);
+            return sign * (a < 1 ? Inner(a) : Inner(1) + Outer(MathF.Min(a, 2)) - Outer(1));
+        }
+    }
+
+    // GDI+'s high-quality modes, kept out of Shade's loop so the other filters run the same code as before.
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private void ShadeBoxed(Vector2 p, Vector2 step, Span<PremulRgbaF32> row)
+    {
+        Span<float> wx = stackalloc float[MaxBoxedTaps], wy = stackalloc float[MaxBoxedTaps];
+        for (int i = 0; i < row.Length; i++)
+        {
+            row[i] = FilteredBoxed(p + (step * i), wx, wy);
+        }
+    }
+
+    // GDI+'s high-quality modes: separable weights from the widened, box-averaged kernel on each axis.
+    private PremulRgbaF32 FilteredBoxed(Vector2 q, Span<float> wx, Span<float> wy)
+    {
+        bool cubic = _filter == ResampleFilter.GdiPlusHighQualityBicubic;
+        float u = q.X - 0.5f, v = q.Y - 0.5f;
+        int x0 = (int)MathF.Floor(u - _supportX) + 1, y0 = (int)MathF.Floor(v - _supportY) + 1;
+        int nx = Math.Min((int)MathF.Floor(u + _supportX) - x0 + 1, wx.Length), ny = Math.Min((int)MathF.Floor(v + _supportY) - y0 + 1, wy.Length);
+        float sumX = 0, sumY = 0;
+        for (int i = 0; i < nx; i++)
+        {
+            wx[i] = BoxedWeight(cubic, u - (x0 + i), _stretchX);
+            sumX += wx[i];
+        }
+
+        for (int j = 0; j < ny; j++)
+        {
+            wy[j] = BoxedWeight(cubic, v - (y0 + j), _stretchY);
+            sumY += wy[j];
+        }
+
+        if (sumX == 0 || sumY == 0)
+        {
+            return default;
+        }
+
+        Vector4 acc = default;
+        for (int j = 0; j < ny; j++)
+        {
+            Vector4 line = default;
+            for (int i = 0; i < nx; i++)
+            {
+                PremulRgbaF32 t = Fetch(x0 + i, y0 + j);
+                line += new Vector4(t.R, t.G, t.B, t.A) * wx[i];
+            }
+
+            acc += line * wy[j];
+        }
+
+        acc /= sumX * sumY;
+        float a = Math.Clamp(acc.W, 0, 1);
+        return new PremulRgbaF32(Math.Clamp(acc.X, 0, a), Math.Clamp(acc.Y, 0, a), Math.Clamp(acc.Z, 0, a), a);
+    }
 
     /// <summary>The filter's kernel at distance <paramref name="x"/> texels.</summary>
     private static float Kernel(ResampleFilter filter, float x)
@@ -205,6 +328,8 @@ internal sealed class ImageShader : Shader
                 return x < 3 ? Sinc(x) * Sinc(x / 3) : 0;
             case ResampleFilter.Gaussian:
                 return x < 2 ? MathF.Exp(-2 * x * x) : 0;
+            case ResampleFilter.GdiPlusBilinear:
+                return x < 1 ? 1 - x : 0;
             default:
                 return Cubic(x, 0, 0.5f);
         }
