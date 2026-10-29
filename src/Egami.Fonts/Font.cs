@@ -249,6 +249,44 @@ public readonly record struct Font
     /// <exception cref="InvalidOperationException">The font is <c>default(Font)</c>, which has no typeface.</exception>
     public float LineHeight => Face.Extents.LineHeight * Scale;
 
+    /// <summary>
+    /// Gets how far below a line's top GDI+ (System.Drawing's DrawString) puts the baseline, at this size: the cell ascent GDI+
+    /// reports (FontFamily.GetCellAscent: the OS/2 Windows ascent, or the typographic one when the font sets USE_TYPO_METRICS).
+    /// For a grid-fitted font (<see cref="FontMetrics.GridFitted"/> with <see cref="FontHinting.Full"/>, as
+    /// <see cref="WithGdiPlusLook"/> sets) it is the whole pixels ClearTypeGridFit puts the first line's baseline below the line's
+    /// rounded top: the cell ascent rounded, or the font's VDMX maximum at the size rounded to whole pixels per em when that is
+    /// larger, as measured from GDI+.
+    /// </summary>
+    /// <example>
+    /// <code language="csharp" source="../../tests/Egami.DocSamples/SystemDrawing.cs" region="gdiplus-baseline"/>
+    /// </example>
+    /// <exception cref="InvalidOperationException">The font is <c>default(Font)</c>, which has no typeface.</exception>
+    public float GdiPlusAscent
+    {
+        get
+        {
+            Typeface face = Face;
+            float ascent = face.GdiPlusCell.Ascent * Size / face.UnitsPerEm;
+            if (Metrics != FontMetrics.GridFitted || Hinting != FontHinting.Full)
+            {
+                return ascent;
+            }
+
+            int rounded = (int)MathF.Floor(ascent + 0.5f);
+            return face.VdmxYMax((int)MathF.Round(Size, MidpointRounding.AwayFromZero)) is int yMax ? Math.Max(rounded, yMax) : rounded;
+        }
+    }
+
+    /// <summary>The height of the cell GDI+ lays one line out in at this size: its ascent and descent.</summary>
+    internal float GdiPlusCellHeight
+    {
+        get
+        {
+            (int ascent, int descent) = Face.GdiPlusCell;
+            return (ascent + descent) * Size / Face.UnitsPerEm;
+        }
+    }
+
     private Typeface Face => EffectiveTypeface;
 
     /// <summary>

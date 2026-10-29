@@ -188,7 +188,9 @@ internal sealed class GdiTextLayout
                 return 0;
             }
 
-            float block = Lines.Count * LineSpacing;
+            // As measured: one line is a cell (ascent and descent) tall, more lines a line spacing each, and the default format adds
+            // 1/8 em.
+            float block = (Lines.Count == 1 ? Ascent + Descent : Lines.Count * LineSpacing) + (_format.Typographic ? 0 : _em / 8);
             float room = Box.Height > 0 ? Box.Height : 0;
             return _format.LineAlignment switch
             {
@@ -323,13 +325,17 @@ internal sealed class GdiTextLayout
         }
 
         int maxLines = int.MaxValue;
+        bool onlyOne = false;
         StringFormatFlags flags = _format.FormatFlags;
         if (Box.Height > 0)
         {
             float fit = Box.Height / LineSpacing;
             if ((flags & StringFormatFlags.LineLimit) != 0)
             {
+                // As measured: the whole lines that fit, but text of a single line is drawn in any box.
                 maxLines = (int)MathF.Floor(fit + 1e-4f);
+                onlyOne = maxLines == 0;
+                maxLines = Math.Max(maxLines, 1);
             }
             else if ((flags & StringFormatFlags.NoClip) == 0 && _format.Trimming != StringTrimming.None)
             {
@@ -344,6 +350,12 @@ internal sealed class GdiTextLayout
             {
                 if (Lines.Count >= maxLines)
                 {
+                    if (onlyOne)
+                    {
+                        Lines.Clear();
+                        CharactersFitted = 0;
+                    }
+
                     return;
                 }
 

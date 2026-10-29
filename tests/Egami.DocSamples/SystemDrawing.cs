@@ -37,6 +37,32 @@ public class SystemDrawing
     }
 
     [Fact]
+    public void GdiPlusBaseline()
+    {
+        Typeface face = Typeface.FromFile(FontFile);
+        using Raster<Rgb8> button = Raster.Create(200, 36, new Rgb8(0x00, 0x78, 0xd4));
+
+        #region gdiplus-baseline
+        // Centred in a box as DrawString with StringFormat { Alignment = Center, LineAlignment = Center } puts it.
+        Font label = new Font(face, 16).WithGdiPlusLook();
+        var box = new RectF(0, 0, 200, 36);
+        float baseline = GdiPlusText.Baseline(label, box, VerticalAlign.Center);
+        using (RasterCanvas<Rgb8> canvas = button.CreateCanvas(CanvasOptions.GdiPlus))
+        {
+            float width = label.MeasureText("Start the course").Advance;
+            canvas.DrawText("Start the course", new Vector2(MathF.Round((box.Width - width) / 2), baseline), label, Rgba8.White);
+        }
+
+        // The ascent it used: whole pixels for a grid-fitted font.
+        float ascent = label.GdiPlusAscent;
+        #endregion
+
+        Assert.Equal(MathF.Round(ascent), ascent);
+        Assert.Equal(MathF.Round(baseline), baseline);
+        Assert.Contains(Enumerable.Range(0, button.Width), x => button.GetPixel(x, (int)baseline - 2).R > 128);
+    }
+
+    [Fact]
     public void GdiPlusShapes()
     {
         using Raster<Rgb8> raster = Raster.Create(64, 32, new Rgb8(255, 255, 255));
