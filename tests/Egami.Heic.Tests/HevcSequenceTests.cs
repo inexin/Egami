@@ -15,6 +15,9 @@ public class HevcSequenceTests
 {
     public static TheoryData<string> Suites() => ["HEVC_v1", "RExt"];
 
+    /// <summary>The suites, on one thread and on five (task 25); five threads decode only the streams of tiles, wavefronts and slices.</summary>
+    public static TheoryData<string, int> SuitesAndThreads() => new() { { "HEVC_v1", 1 }, { "RExt", 1 }, { "HEVC_v1", 5 }, { "RExt", 5 } };
+
     [Theory]
     [MemberData(nameof(Suites))]
     public void ConformanceOrderCountsAndOutputOrderMatchHm(string suite)
@@ -103,8 +106,8 @@ public class HevcSequenceTests
     /// that fail are listed with their first wrong frame, so the test shows progress.
     /// </summary>
     [Theory]
-    [MemberData(nameof(Suites))]
-    public void ConformanceFramesDecodeBitExact(string suite)
+    [MemberData(nameof(SuitesAndThreads))]
+    public void ConformanceFramesDecodeBitExact(string suite, int threads)
     {
         if (HevcTestFiles.Cache() is not string cache)
         {
@@ -118,7 +121,8 @@ public class HevcSequenceTests
         int passed = 0, unsupported = 0, totalHashes = 0;
         foreach (JsonProperty stream in frames.RootElement.GetProperty("streams").EnumerateObject())
         {
-            if (!stream.Value.TryGetProperty("frames", out JsonElement expected) || (only is not null && !stream.Name.Contains(only, StringComparison.Ordinal)))
+            if (!stream.Value.TryGetProperty("frames", out JsonElement expected) || (only is not null && !stream.Name.Contains(only, StringComparison.Ordinal))
+                || (threads > 1 && !System.Text.RegularExpressions.Regex.IsMatch(stream.Name, "TILE|WPP|ENTP|DSLICE|SLIST|STRUCT|SLICES", System.Text.RegularExpressions.RegexOptions.IgnoreCase)))
             {
                 continue;
             }
@@ -126,7 +130,7 @@ public class HevcSequenceTests
             string path = files.First(f => Path.GetFileName(f) == stream.Name);
             try
             {
-                HevcSequenceDecoder decoder = new(SafetyLimits.Default);
+                HevcSequenceDecoder decoder = new(SafetyLimits.Default, threads);
                 List<(HevcDpbPicture Picture, int Poc)> output = [];
                 List<string> md5s = [];
                 int hashes = 0, wrongHashes = 0;
@@ -191,7 +195,7 @@ public class HevcSequenceTests
             }
         }
 
-        Assert.True(only is not null || totalHashes > 0, "No decoded picture hash SEI message was found.");
+        Assert.True(only is not null || threads > 1 || totalHashes > 0, "No decoded picture hash SEI message was found.");
         Assert.True(failures.Count == 0, $"{passed} bit-exact ({totalHashes} picture hashes checked), {unsupported} unsupported, {failures.Count} failed:\n" + string.Join("\n", failures));
     }
 }
