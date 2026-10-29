@@ -28,6 +28,7 @@
 import glob
 import hashlib
 import json
+import math
 import os
 import re
 import shutil
@@ -929,6 +930,76 @@ def extra():
     write_manifest(f"{folder}/manifest.json", manifest)
 
 
+def inter():
+    """The committed HEVC inter fixture (Phase 2.9.10): a moving pattern of our own, coded by Kvazaar with P and B pictures, and
+    the MD5 of each frame HM decodes: tests/images/heic/video/hevc-inter-kvazaar.h265 and tests/reference/heic/hevc-inter-kvazaar.json."""
+    os.makedirs(TMP, exist_ok=True)
+    os.makedirs(f"{OUT}/video", exist_ok=True)
+    w, h, n = 96, 64, 12
+    with open(f"{TMP}/inter.yuv", "wb") as f:
+        for t in range(n):
+            y = bytearray(w * h)
+            for j in range(h):
+                for i in range(w):
+                    y[j * w + i] = int(128 + 60 * math.sin((i + 2 * t) / 7.0) * math.cos((j - t) / 5.0)) & 255
+            f.write(bytes(y) + bytes(((i * 3 + t * 5) & 255) for i in range(w * h // 4)) + bytes(((i * 7 - t * 3) & 255) for i in range(w * h // 4)))
+    stream = f"{OUT}/video/hevc-inter-kvazaar.h265"
+    sh("kvazaar", "-i", f"{TMP}/inter.yuv", "--input-res", f"{w}x{h}", "-o", stream, "--gop", "8", "--period", "16", "--preset", "medium",
+       "--qp", "30", "--frames", str(n))
+    sh("TAppDecoder", "-b", stream, "-o", f"{TMP}/inter-hm.yuv", "-d", "0")
+    data = open(f"{TMP}/inter-hm.yuv", "rb").read()
+    size = w * h * 3 // 2
+    with open(f"{REF}/hevc-inter-kvazaar.json", "w") as f:
+        json.dump({"tools": tools(), "frames": [md5(data[i:i + size]) for i in range(0, len(data), size)]}, f, indent=1, sort_keys=True)
+        f.write(chr(10))
+
+
+def sequences():
+    """heif-dec's frames of the corpus's image sequences (Phase 2.9.10 task 24): the MD5 of each Y4M frame's planes, in the
+    order heif-dec -S writes them, as tests/reference/heic/<name>.frames.json."""
+    os.makedirs(TMP, exist_ok=True)
+    for path in sorted(glob.glob(f"{OUT}/*sequence*.heic")):
+        name = os.path.basename(path)[:-5]
+        for old in glob.glob(f"{TMP}/seq-*.y4m"):
+            os.remove(old)
+        sh("heif-dec", "-S", "--ignore-editlist", path, f"{TMP}/seq.y4m")
+        written = sorted(glob.glob(f"{TMP}/seq-*.y4m"), key=lambda p: int(re.search(r"-(\d+)\.y4m$", p).group(1)))
+        md5s = []
+        for frame in written:
+            data = open(frame, "rb").read()
+            md5s.append(md5(data[data.index(b"FRAME") + 6:]))
+        with open(f"{REF}/{name}.frames.json", "w") as f:
+            json.dump({"tools": tools(), "frames": md5s}, f, indent=1, sort_keys=True)
+            f.write(chr(10))
+
+
+def frames():
+    """Per-frame MD5s of HM's whole decode of every conformance stream, in output order (Phase 2.9.10): {set}/frames.json."""
+    os.makedirs(TMP, exist_ok=True)
+    for set_name in ("HEVC_v1", "RExt"):
+        path = f"{CACHE}/reference/{set_name}/summary.json"
+        if not os.path.isfile(path):
+            continue
+        result = {}
+        for name, entry in sorted(json.load(open(path))["streams"].items()):
+            print(set_name, name, flush=True)
+            info = entry.get("sps")
+            r = sh("TAppDecoder", "-b", f"{CACHE}/{entry['path']}", "-o", f"{TMP}/frames.yuv", "-d", "0", check=False, timeout=7200)
+            if not info or not os.path.isfile(f"{TMP}/frames.yuv"):
+                result[name] = {"hm_exit": r.returncode}
+                continue
+            data = open(f"{TMP}/frames.yuv", "rb").read()
+            os.remove(f"{TMP}/frames.yuv")
+            n = picture_bytes(info)
+            item = {"hm_exit": r.returncode, "frame_bytes": n, "bytes": len(data)}
+            if len(data) % n == 0:
+                item["frames"] = [md5(data[i:i + n]) for i in range(0, len(data), n)]
+            result[name] = item
+            with open(f"{CACHE}/reference/{set_name}/frames.json", "w") as f:
+                json.dump({"tools": tools(), "streams": result}, f, indent=1, sort_keys=True)
+                f.write("\n")
+
+
 HEADER_LINE = re.compile(r"^\s*\d+\s+(\S+)\s+(?:u\(\d+\)|ue\(v\)|se\(v\)|f\(\d+\))\s*:\s*(-?\d+)\s*$")
 
 
@@ -1000,4 +1071,4 @@ def traces():
 
 if __name__ == "__main__":
     for step in sys.argv[1:]:
-        {"corpus": corpus, "conformance": conformance, "extra": extra, "suite": suite, "traces": traces}[step]()
+        {"corpus": corpus, "conformance": conformance, "extra": extra, "suite": suite, "traces": traces, "frames": frames, "inter": inter, "sequences": sequences}[step]()

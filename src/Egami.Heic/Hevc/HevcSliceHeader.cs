@@ -63,6 +63,54 @@ internal sealed class HevcSliceHeader
     /// <summary>Gets the byte in the RBSP where the slice data starts.</summary>
     internal int DataStart { get; private set; }
 
+    /// <summary>Gets no_output_of_prior_pics_flag (IRAP pictures).</summary>
+    internal bool NoOutputOfPriorPics { get; private set; }
+
+    /// <summary>Gets pic_output_flag (1 when the PPS does not send it).</summary>
+    internal bool PicOutput { get; private set; } = true;
+
+    /// <summary>Gets slice_pic_order_cnt_lsb (0 for an IDR picture).</summary>
+    internal int PocLsb { get; private set; }
+
+    /// <summary>Gets the short-term reference picture set the slice uses (empty for an IDR picture).</summary>
+    internal HevcShortTermRps ShortTermRps { get; private set; } = HevcShortTermRps.Empty;
+
+    /// <summary>Gets the long-term pictures of the slice (7.4.7.1): PocLsbLt, UsedByCurrPicLt, and DeltaPocMsbCycleLt or -1 when not sent.</summary>
+    internal (int PocLsb, bool Used, int MsbCycle)[] LongTerm { get; private set; } = [];
+
+    /// <summary>Gets slice_temporal_mvp_enabled_flag.</summary>
+    internal bool TemporalMvp { get; private set; }
+
+    /// <summary>Gets num_ref_idx_l0_active_minus1 + 1 (0 for an I slice).</summary>
+    internal int NumRefIdxL0 { get; private set; }
+
+    /// <summary>Gets num_ref_idx_l1_active_minus1 + 1 (0 unless a B slice).</summary>
+    internal int NumRefIdxL1 { get; private set; }
+
+    /// <summary>Gets list_entry_l0, or null without ref_pic_list_modification_flag_l0.</summary>
+    internal int[]? ListEntryL0 { get; private set; }
+
+    /// <summary>Gets list_entry_l1, or null without ref_pic_list_modification_flag_l1.</summary>
+    internal int[]? ListEntryL1 { get; private set; }
+
+    /// <summary>Gets NumPicTotalCurr (7-55).</summary>
+    internal int NumPicTotalCurr { get; private set; }
+
+    /// <summary>Gets mvd_l1_zero_flag.</summary>
+    internal bool MvdL1Zero { get; private set; }
+
+    /// <summary>Gets collocated_from_l0_flag (1 when not sent).</summary>
+    internal bool CollocatedFromL0 { get; private set; } = true;
+
+    /// <summary>Gets collocated_ref_idx.</summary>
+    internal int CollocatedRefIdx { get; private set; }
+
+    /// <summary>Gets the explicit weights (pred_weight_table), or null.</summary>
+    internal HevcPredWeights? Weights { get; private set; }
+
+    /// <summary>Gets MaxNumMergeCand (5 - five_minus_max_num_merge_cand).</summary>
+    internal int MaxNumMergeCand { get; private set; }
+
     /// <summary>
     /// Reads a slice segment header. For a dependent slice segment, the fields of the slice it continues come from
     /// <paramref name="independent"/>, the previous independent slice segment's header.
@@ -72,7 +120,7 @@ internal sealed class HevcSliceHeader
         HevcSliceHeader h = new() { FirstSliceSegmentInPic = r.Flag("first_slice_segment_in_pic_flag") };
         if (nal.IsIrap)
         {
-            r.Flag("no_output_of_prior_pics_flag");
+            h.NoOutputOfPriorPics = r.Flag("no_output_of_prior_pics_flag");
         }
 
         h.PpsId = (int)r.Ue("slice_pic_parameter_set_id", 63);
@@ -154,6 +202,21 @@ internal sealed class HevcSliceHeader
         TcOffsetDiv2 = s.TcOffsetDiv2;
         LoopFilterAcrossSlices = s.LoopFilterAcrossSlices;
         CabacInit = s.CabacInit;
+        PicOutput = s.PicOutput;
+        PocLsb = s.PocLsb;
+        ShortTermRps = s.ShortTermRps;
+        LongTerm = s.LongTerm;
+        TemporalMvp = s.TemporalMvp;
+        NumRefIdxL0 = s.NumRefIdxL0;
+        NumRefIdxL1 = s.NumRefIdxL1;
+        ListEntryL0 = s.ListEntryL0;
+        ListEntryL1 = s.ListEntryL1;
+        NumPicTotalCurr = s.NumPicTotalCurr;
+        MvdL1Zero = s.MvdL1Zero;
+        CollocatedFromL0 = s.CollocatedFromL0;
+        CollocatedRefIdx = s.CollocatedRefIdx;
+        Weights = s.Weights;
+        MaxNumMergeCand = s.MaxNumMergeCand;
     }
 
     private void ReadSliceFields(NalBitReader r, HevcNal nal, HevcSps sps, HevcPps pps)
@@ -166,14 +229,14 @@ internal sealed class HevcSliceHeader
         SliceType = (int)r.Ue("slice_type", 2);
         if (pps.OutputFlagPresent)
         {
-            r.Flag("pic_output_flag");
+            PicOutput = r.Flag("pic_output_flag");
         }
 
         bool temporalMvp = false;
         int numPicTotalCurr = 0;
         if (!nal.IsIdr)
         {
-            r.U(sps.Log2MaxPocLsb, "slice_pic_order_cnt_lsb");
+            PocLsb = (int)r.U(sps.Log2MaxPocLsb, "slice_pic_order_cnt_lsb");
             HevcShortTermRps rps;
             if (!r.Flag("short_term_ref_pic_set_sps_flag"))
             {
@@ -196,6 +259,7 @@ internal sealed class HevcSliceHeader
                 rps = index < sps.ShortTermRps.Count ? sps.ShortTermRps[index] : throw HevcErrors.Corrupt($"short_term_ref_pic_set_idx is {index}.");
             }
 
+            ShortTermRps = rps;
             numPicTotalCurr = rps.NumUsed;
             if (sps.LongTermRefsPresent)
             {
@@ -207,25 +271,34 @@ internal sealed class HevcSliceHeader
                     ltBits++;
                 }
 
+                LongTerm = new (int, bool, int)[numLtSps + numLtPics];
+                int cycleSum = 0;
                 for (int i = 0; i < numLtSps + numLtPics; i++)
                 {
                     bool used;
+                    int pocLsb;
                     if (i < numLtSps)
                     {
                         int index = ltBits > 0 ? (int)r.U(ltBits, "lt_idx_sps[i]") : 0;
-                        used = index < sps.UsedByCurrPicLtSps.Length && sps.UsedByCurrPicLtSps[index];
+                        if (index >= sps.NumLongTermRefPicsSps)
+                        {
+                            throw HevcErrors.Corrupt($"lt_idx_sps is {index}.");
+                        }
+
+                        used = sps.UsedByCurrPicLtSps[index];
+                        pocLsb = sps.LtRefPicPocLsbSps[index];
                     }
                     else
                     {
-                        r.U(sps.Log2MaxPocLsb, "poc_lsb_lt");
+                        pocLsb = (int)r.U(sps.Log2MaxPocLsb, "poc_lsb_lt");
                         used = r.Flag("used_by_curr_pic_lt_flag");
                     }
 
-                    if (r.Flag("delta_poc_msb_present_flag"))
-                    {
-                        r.Ue("delta_poc_msb_cycle_lt[i]");
-                    }
-
+                    // 7-52: DeltaPocMsbCycleLt adds up from the first SPS entry and from the first slice entry, absent ones as 0.
+                    bool msb = r.Flag("delta_poc_msb_present_flag");
+                    int delta = msb ? (int)r.Ue("delta_poc_msb_cycle_lt[i]", 1u << 24) : 0;
+                    cycleSum = i == 0 || i == numLtSps ? delta : cycleSum + delta;
+                    LongTerm[i] = (pocLsb, used, msb ? cycleSum : -1);
                     numPicTotalCurr += used ? 1 : 0;
                 }
             }
@@ -235,6 +308,9 @@ internal sealed class HevcSliceHeader
                 temporalMvp = r.Flag("slice_temporal_mvp_enabled_flag");
             }
         }
+
+        TemporalMvp = temporalMvp;
+        NumPicTotalCurr = numPicTotalCurr;
 
         if (sps.SaoEnabled)
         {
@@ -269,24 +345,26 @@ internal sealed class HevcSliceHeader
 
                 if (r.Flag("ref_pic_list_modification_flag_l0"))
                 {
+                    ListEntryL0 = new int[numRefIdxL0];
                     for (int i = 0; i < numRefIdxL0; i++)
                     {
-                        r.U(bits, "list_entry_l0");
+                        ListEntryL0[i] = (int)r.U(bits, "list_entry_l0");
                     }
                 }
 
                 if (SliceType == B && r.Flag("ref_pic_list_modification_flag_l1"))
                 {
+                    ListEntryL1 = new int[numRefIdxL1];
                     for (int i = 0; i < numRefIdxL1; i++)
                     {
-                        r.U(bits, "list_entry_l1");
+                        ListEntryL1[i] = (int)r.U(bits, "list_entry_l1");
                     }
                 }
             }
 
             if (SliceType == B)
             {
-                r.Flag("mvd_l1_zero_flag");
+                MvdL1Zero = r.Flag("mvd_l1_zero_flag");
             }
 
             if (pps.CabacInitPresent)
@@ -297,19 +375,23 @@ internal sealed class HevcSliceHeader
             if (temporalMvp)
             {
                 bool fromL0 = SliceType != B || r.Flag("collocated_from_l0_flag");
+                CollocatedFromL0 = fromL0;
                 if ((fromL0 && numRefIdxL0 > 1) || (!fromL0 && numRefIdxL1 > 1))
                 {
-                    r.Ue("collocated_ref_idx", 14);
+                    CollocatedRefIdx = (int)r.Ue("collocated_ref_idx", (uint)((fromL0 ? numRefIdxL0 : numRefIdxL1) - 1));
                 }
             }
 
             if ((pps.WeightedPred && SliceType == P) || (pps.WeightedBipred && SliceType == B))
             {
-                ReadPredWeightTable(r, sps, numRefIdxL0, SliceType == B ? numRefIdxL1 : 0);
+                Weights = HevcPredWeights.Read(r, sps, numRefIdxL0, SliceType == B ? numRefIdxL1 : 0);
             }
 
-            r.Ue("five_minus_max_num_merge_cand", 4);
+            MaxNumMergeCand = 5 - (int)r.Ue("five_minus_max_num_merge_cand", 4);
         }
+
+        NumRefIdxL0 = numRefIdxL0;
+        NumRefIdxL1 = numRefIdxL1;
 
         SliceQp = 26 + pps.InitQpMinus26 + r.Se("slice_qp_delta", -128, 127);
         if (SliceQp < -sps.QpBdOffsetLuma || SliceQp > 51)
@@ -351,17 +433,35 @@ internal sealed class HevcSliceHeader
             LoopFilterAcrossSlices = r.Flag("slice_loop_filter_across_slices_enabled_flag");
         }
     }
+}
 
-    /// <summary>Reads pred_weight_table() (H.265 7.3.6.3), which intra decoding does not use.</summary>
-    private static void ReadPredWeightTable(NalBitReader r, HevcSps sps, int numL0, int numL1)
+/// <summary>pred_weight_table() (H.265 7.3.6.3): per list and reference index, the weights and offsets of luma, Cb and Cr.</summary>
+internal sealed class HevcPredWeights
+{
+    /// <summary>Gets luma_log2_weight_denom.</summary>
+    internal int LumaLog2Denom { get; private set; }
+
+    /// <summary>Gets ChromaLog2WeightDenom.</summary>
+    internal int ChromaLog2Denom { get; private set; }
+
+    /// <summary>Gets, per list, per reference index, LumaWeight, luma offset, then the weight and offset of Cb and of Cr (7-56 to 7-58).</summary>
+    internal int[][] Values { get; } = [[], []];
+
+    /// <summary>Reads the table; offsets are scaled to the bit depth unless high_precision_offsets_enabled_flag is set.</summary>
+    internal static HevcPredWeights Read(NalBitReader r, HevcSps sps, int numL0, int numL1)
     {
-        r.Ue("luma_log2_weight_denom", 7);
+        HevcPredWeights w = new() { LumaLog2Denom = (int)r.Ue("luma_log2_weight_denom", 7) };
         bool chroma = sps.ChromaArrayType != 0;
+        w.ChromaLog2Denom = w.LumaLog2Denom;
         if (chroma)
         {
-            r.Se("delta_chroma_log2_weight_denom");
+            w.ChromaLog2Denom += r.Se("delta_chroma_log2_weight_denom", -w.LumaLog2Denom, 7 - w.LumaLog2Denom);
         }
 
+        int wpOffsetBdShiftY = sps.HighPrecisionOffsets ? 0 : sps.BitDepthLuma - 8;
+        int wpOffsetBdShiftC = sps.HighPrecisionOffsets ? 0 : sps.BitDepthChroma - 8;
+        int halfRangeC = sps.HighPrecisionOffsets ? 1 << (sps.BitDepthChroma - 1) : 128;
+        int halfRangeY = sps.HighPrecisionOffsets ? 1 << (sps.BitDepthLuma - 1) : 128;
         for (int list = 0; list < (numL1 > 0 ? 2 : 1); list++)
         {
             int count = list == 0 ? numL0 : numL1;
@@ -380,23 +480,36 @@ internal sealed class HevcSliceHeader
                 }
             }
 
+            int[] values = new int[count * 6];
             for (int i = 0; i < count; i++)
             {
+                int o = i * 6;
+                values[o] = 1 << w.LumaLog2Denom;
+                values[o + 2] = values[o + 4] = 1 << w.ChromaLog2Denom;
                 if (luma[i])
                 {
-                    r.Se($"delta_luma_weight_{l}[i]");
-                    r.Se($"luma_offset_{l}[i]");
+                    values[o] += r.Se($"delta_luma_weight_{l}[i]", -128, 127);
+                    values[o + 1] = r.Se($"luma_offset_{l}[i]", -halfRangeY, halfRangeY - 1) << wpOffsetBdShiftY;
                 }
 
                 if (chromaFlags[i])
                 {
                     for (int j = 0; j < 2; j++)
                     {
-                        r.Se($"delta_chroma_weight_{l}[i]");
-                        r.Se($"delta_chroma_offset_{l}[i]");
+                        int weight = (1 << w.ChromaLog2Denom) + r.Se($"delta_chroma_weight_{l}[i]", -128, 127);
+                        int delta = r.Se($"delta_chroma_offset_{l}[i]", -4 * halfRangeC, (4 * halfRangeC) - 1);
+
+                        // 7-56: the offset is predicted from the weight.
+                        int offset = Math.Clamp(delta - ((halfRangeC * weight) >> w.ChromaLog2Denom) + halfRangeC, -halfRangeC, halfRangeC - 1);
+                        values[o + 2 + (2 * j)] = weight;
+                        values[o + 3 + (2 * j)] = offset << wpOffsetBdShiftC;
                     }
                 }
             }
+
+            w.Values[list] = values;
         }
+
+        return w;
     }
 }

@@ -44,7 +44,7 @@ internal sealed class HevcIntra
             if ((y * sy) >> 2 != unit)
             {
                 unit = (y * sy) >> 2;
-                available = picture.Available(xCurr, yCurr, (x0 - 1) * sx, y * sy);
+                available = picture.IntraReferenceAvailable(xCurr, yCurr, (x0 - 1) * sx, y * sy);
             }
 
             _available[i] = available;
@@ -55,7 +55,7 @@ internal sealed class HevcIntra
             }
         }
 
-        _available[corner] = picture.Available(xCurr, yCurr, (x0 - 1) * sx, (y0 - 1) * sy);
+        _available[corner] = picture.IntraReferenceAvailable(xCurr, yCurr, (x0 - 1) * sx, (y0 - 1) * sy);
         if (_available[corner])
         {
             _ref[corner] = plane[((y0 - 1) * stride) + x0 - 1];
@@ -70,7 +70,7 @@ internal sealed class HevcIntra
             if ((x * sx) >> 2 != unit)
             {
                 unit = (x * sx) >> 2;
-                available = picture.Available(xCurr, yCurr, x * sx, (y0 - 1) * sy);
+                available = picture.IntraReferenceAvailable(xCurr, yCurr, x * sx, (y0 - 1) * sy);
             }
 
             _available[corner + 1 + i] = available;

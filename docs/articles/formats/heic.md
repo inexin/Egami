@@ -4,9 +4,9 @@ HEIC is the format iPhones and most Android phones save photos in: HEIF files wh
 covered by patents, so Egami reads HEIC through a separate package, Egami.Heic, that an app opts in to. The core Egami package
 contains no HEVC code and never depends on Egami.Heic.
 
-Egami.Heic decodes HEIC images with a managed HEVC decoder: the intra pictures of the Main, Main 10, Main Still Picture and
-format range extensions profiles, up to 12 bits and from 4:0:0 to 4:4:4. Gain maps, the photo's other images (thumbnails,
-depth maps, mattes) and image sequences whose frames are all intra are read too.
+Egami.Heic decodes HEIC images with a managed HEVC decoder: intra and inter pictures of the Main, Main 10, Main Still Picture
+and format range extensions profiles, up to 12 bits and from 4:0:0 to 4:4:4. Gain maps, the photo's other images (thumbnails,
+depth maps, mattes) and image sequences are read too, and `HevcStreamDecoder` decodes HEVC video streams.
 
 ## Without Egami.Heic
 
@@ -52,7 +52,8 @@ The decoded HEVC planes are available without the conversion to RGB, as for AVIF
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Heic.cs#yuv)]
 
-Every intra picture of the HEVC conformance streams in these profiles decodes bit-exact to HM, the reference decoder.
+Every picture of the HEVC conformance streams (JCT-VC HEVC_v1 and RExt) in these profiles decodes bit-exact to HM, the reference
+decoder, and matches its decoded picture hash.
 
 ## HDR photos
 
@@ -76,9 +77,23 @@ image item on its own, with its own color and crop, and its own rotation as the 
 
 ## Image sequences
 
-A HEIC image sequence (the hevc and hevx brands) whose frames are all intra loads every frame, as an animation; Egami.Heic does
-not decode inter frames. A sequence with inter frames gives its still image when the file has one, and otherwise its first frame
-with a `Heic.SequenceFirstFrame` warning.
+A HEIC image sequence (the hevc and hevx brands), such as a burst or an animation, loads every frame, as an animation: the
+track's pictures in output order, inter-coded ones too, equal to libheif's `heif-dec -S`.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Heic.cs#sequence)]
+
+## HEVC streams
+
+`HevcStreamDecoder` decodes an HEVC video stream an access unit at a time, as Egami.Video's HEVC support does: an Annex B byte
+stream, or an MP4 or Matroska track's samples after `SetConfiguration` with its hvcC record. Pictures come out in output order
+into a `YuvRaster`, cropped to the stream's conformance window, with their order count, NAL unit type and color in
+`HevcFrameInfo` (with its `HevcPictureKind`); `Flush` lets the last ones out at the end of the stream. Decoding starts at an IRAP picture; leading pictures of
+a CRA picture that starts the stream are left out, and only the base layer of a layered stream decodes. In `HevcDecoderOptions`,
+`ConcealErrors` keeps a
+picture with damaged slice data as far as it decoded, and `CheckPictureHashes` checks each picture against its decoded picture
+hash.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Heic.cs#stream)]
 
 ## Patents
 

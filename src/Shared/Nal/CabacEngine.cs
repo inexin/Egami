@@ -131,9 +131,10 @@ internal sealed class CabacEngine
     /// <summary>Starts decoding at a byte position (H.265 9.3.2.5, H.264 9.3.1.2): reads 9 bits into the offset.</summary>
     internal void Start(byte[] data, int position, int end)
     {
+        // A damaged stream can name an entry point past its data: the engine then reads zeros until the caller checks Overrun.
         _data = data;
-        _position = position;
-        _end = end;
+        _end = Math.Clamp(end, 0, data.Length);
+        _position = Math.Clamp(position, 0, _end);
         _range = 510;
         _bitsNeeded = -8;
         _value = (uint)((ReadByte() << 8) | ReadByte());

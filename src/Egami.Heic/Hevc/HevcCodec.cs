@@ -64,7 +64,27 @@ internal sealed class HevcCodec : IHeifCodec, IHevcSampleCodec
             }
         }
 
-        // The planes inside the conformance window, as HM writes them.
+        return Planes(picture);
+    }
+
+    public IHevcTrackDecoder OpenTrack(HevcConfig config, EgamiInput input, int parallelism) => new TrackDecoder(this, config, input, parallelism);
+
+    /// <summary>Keeps the color the SPS's VUI gives, when it has one.</summary>
+    private void TakeColor(HevcSps sps)
+    {
+        if (sps.Vui is HevcVui vui)
+        {
+            lock (_lock)
+            {
+                _codePoints = new ColorCodePoints((byte)vui.ColourPrimaries, (byte)vui.TransferCharacteristics, (byte)vui.MatrixCoefficients, vui.FullRange);
+            }
+        }
+    }
+
+    /// <summary>The planes inside the conformance window, as HM writes them.</summary>
+    private static HeifPlanes Planes(HevcPicture picture)
+    {
+        HevcSps sps = picture.Sps;
         int planes = sps.ChromaArrayType == 0 ? 1 : 3;
         ushort[][] samples = new ushort[planes][];
         int[] strides = new int[planes];
@@ -92,5 +112,68 @@ internal sealed class HevcCodec : IHeifCodec, IHevcSampleCodec
         }
 
         return new HeifPlanes(sps.OutputWidth, sps.OutputHeight, sps.BitDepthLuma, sps.SubWidthC - 1, sps.SubHeightC - 1, planes == 1, samples, strides);
+    }
+
+    /// <summary>A track's samples through <see cref="HevcSequenceDecoder"/>, after its configuration's parameter sets.</summary>
+    private sealed class TrackDecoder : IHevcTrackDecoder
+    {
+        private readonly HevcSequenceDecoder _decoder;
+        private readonly HevcConfig _config;
+        private readonly EgamiInput _input;
+        private readonly List<(HevcDpbPicture Picture, int Poc)> _output = [];
+        private readonly Queue<HevcPicture> _pictures = new();
+
+        private readonly HevcCodec _codec;
+
+        internal TrackDecoder(HevcCodec codec, HevcConfig config, EgamiInput input, int parallelism)
+        {
+            _codec = codec;
+            _config = config;
+            _input = input;
+            _decoder = new HevcSequenceDecoder(input.Limits, parallelism);
+            foreach (ReadOnlyMemory<byte> unit in config.NalUnits)
+            {
+                _decoder.Send(HevcNal.Parse(unit.Span), _output, input.CancellationToken);
+            }
+        }
+
+        public void Send(ReadOnlyMemory<byte> sample)
+        {
+            foreach (ReadOnlyMemory<byte> unit in NalFraming.SplitLengthPrefixed(sample, _config.LengthSize))
+            {
+                _decoder.Send(HevcNal.Parse(unit.Span), _output, _input.CancellationToken);
+            }
+
+            Collect();
+        }
+
+        public void Flush()
+        {
+            _decoder.Flush(_output, _input.CancellationToken);
+            Collect();
+        }
+
+        public bool TryTake(out HeifPlanes planes)
+        {
+            if (_pictures.TryDequeue(out HevcPicture? picture))
+            {
+                _codec.TakeColor(picture.Sps);
+                planes = Planes(picture);
+                return true;
+            }
+
+            planes = null!;
+            return false;
+        }
+
+        private void Collect()
+        {
+            foreach ((HevcDpbPicture picture, _) in _output)
+            {
+                _pictures.Enqueue(picture.Picture);
+            }
+
+            _output.Clear();
+        }
     }
 }

@@ -25,5 +25,8 @@
     <None Include="../reference/heic/manifest.json" Link="reference/heic/manifest.json" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../reference/heic/*.png" LinkBase="reference/heic" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../reference/heic/hm-headers.json.gz" Link="reference/heic/hm-headers.json.gz" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../reference/heic/hevc-inter-kvazaar.json" Link="reference/heic/hevc-inter-kvazaar.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../reference/heic/*.frames.json" LinkBase="reference/heic" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../images/fuzz/hevc-regressions/*" LinkBase="images/fuzz/hevc-regressions" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

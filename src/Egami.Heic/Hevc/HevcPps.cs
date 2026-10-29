@@ -110,6 +110,9 @@ internal sealed class HevcPps
     /// <summary>Gets the PPS's scaling lists, or null when it codes none (then the SPS's apply).</summary>
     internal HevcScalingList? ScalingList { get; private set; }
 
+    /// <summary>Gets Log2ParMrgLevel (log2_parallel_merge_level_minus2 + 2).</summary>
+    internal int Log2ParMrgLevel { get; private set; } = 2;
+
     /// <summary>Gets lists_modification_present_flag.</summary>
     internal bool ListsModificationPresent { get; private set; }
 
@@ -213,7 +216,7 @@ internal sealed class HevcPps
         }
 
         pps.ListsModificationPresent = r.Flag("lists_modification_present_flag");
-        r.Ue("log2_parallel_merge_level_minus2");
+        pps.Log2ParMrgLevel = (int)r.Ue("log2_parallel_merge_level_minus2", 4) + 2;
         pps.SliceHeaderExtensionPresent = r.Flag("slice_segment_header_extension_present_flag");
         if (r.Flag("pps_extension_present_flag"))
         {

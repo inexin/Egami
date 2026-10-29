@@ -6,6 +6,7 @@ namespace Egami.Heic.Hevc;
 internal sealed class HevcNal
 {
     internal const int TrailN = 0;
+    internal const int RaslN = 8;
     internal const int RaslR = 9;
     internal const int BlaWLp = 16;
     internal const int BlaWRadl = 17;

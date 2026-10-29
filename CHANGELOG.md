@@ -3,6 +3,22 @@
 All notable changes to Egami are listed here. Egami follows [Semantic Versioning](https://semver.org): from 1.0, public API
 changes that break code come only in a new major version.
 
+## Egami.Heic, unreleased
+
+2.9.10: HEVC inter frames (H.264 and HEVC Build Plan tasks 19 to 25). All additive.
+
+- Egami.Heic's HEVC decoder decodes inter pictures: reference picture sets and the decoded picture buffer with output in order
+  (bumping), merge, AMVP and temporal motion vector prediction, 8-tap and 4-tap interpolation, default and explicit weighted
+  prediction, inter residuals and the deblocking filter's motion-based strengths, for Main, Main 10 and the range extensions
+  formats to 12 bits. Every frame of the 147 JCT-VC HEVC_v1 and 35 RExt conformance streams in scope equals HM 18.0's and its
+  decoded picture hash, on one thread and, for the streams with tiles, wavefronts or slices, on five.
+- `HevcStreamDecoder`, `HevcDecoderOptions`, `HevcFrameInfo` and `HevcPictureKind`: a public HEVC video decoder, as
+  `Av1StreamDecoder` is for AV1, for Egami.Video's HEVC support and any other source of HEVC access units (Annex B, or an hvcC
+  record and length-prefixed samples).
+- HEIC image sequences with inter frames (bursts, animations) load every frame, equal to libheif's `heif-dec -S`; a sequence
+  with a still image loads as its sequence, as an all-intra one already did, and no longer gives a `Heic.SequenceFirstFrame`
+  warning.
+
 ## Egami.Drawing, unreleased
 
 - An `ImagePaint` drawn with `GdiPlusHighQualityBicubic` or `GdiPlusHighQualityBilinear` and no rotation or skew sums each

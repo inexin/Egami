@@ -1,0 +1,24 @@
+{
+ "frames": [
+  "7d27af27d7cee3643978278efbcca869",
+  "c3b8e17377744688d6c448a47aea76b2",
+  "b085ffecbf6509723774761dc06fdb92",
+  "773f55f539185b3bc9c533946d394338",
+  "406f4877b721ebbabf52731a5d8e7019",
+  "fc0c31e28eddd83102b50b73508d484e",
+  "a4ad0b033596a6980f6c83faa8f327e5",
+  "dd7524e1a628612f4a5c4489cadfc45d",
+  "a851dcee465fb9d2838959700364a56b",
+  "ee909b0607c180cda5ccaee2a6044d63",
+  "d49f1fe5eef875efe7fc432755f17dcc",
+  "7b243009b674724d954f946bb8e09497"
+ ],
+ "tools": {
+  "exiftool": "13.25",
+  "hm": "HM 18.0 (fb4486d5)",
+  "kvazaar": "2.3.1",
+  "libde265": "1.0.15",
+  "libheif": "1.23.4\nlibheif: 1.23.4\nplugin path: /usr/lib/x86_64-linux-gnu/libheif/plugins",
+  "x265": "4.1"
+ }
+}

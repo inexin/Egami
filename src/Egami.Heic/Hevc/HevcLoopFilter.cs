@@ -1,3 +1,5 @@
+using System.Buffers;
+
 namespace Egami.Heic.Hevc;
 
 /// <summary>
@@ -67,10 +69,16 @@ internal static class HevcLoopFilter
                     continue;
                 }
 
+                int bs = BoundaryStrength(picture, p, q, (picture.Flags[q] & (vertical ? HevcPicture.TransformLeft : HevcPicture.TransformTop)) != 0);
+                if (bs == 0)
+                {
+                    continue;
+                }
+
                 int qpL = (picture.QpY[q] + picture.QpY[p] + 1) >> 1;
                 bool noP = NoFilter(picture, p), noQ = NoFilter(picture, q);
-                LumaEdge(picture, x4 << 2, y4 << 2, vertical, qpL, slice, noP, noQ);
-                if (sps.ChromaArrayType != 0)
+                LumaEdge(picture, x4 << 2, y4 << 2, vertical, qpL, bs, slice, noP, noQ);
+                if (sps.ChromaArrayType != 0 && bs == 2)
                 {
                     int sub = vertical ? sps.SubWidthC : sps.SubHeightC;
                     int lumaPosition = vertical ? x4 << 2 : y4 << 2;
@@ -121,18 +129,67 @@ internal static class HevcLoopFilter
         return true;
     }
 
+    /// <summary>
+    /// bS of an edge segment (8.7.2.4) between 4x4 blocks p and q: 2 with an intra side, 1 at a transform block edge with luma
+    /// coefficients on a side, 1 when the sides predict from other pictures or with vectors a sample or more apart, else 0.
+    /// </summary>
+    private static int BoundaryStrength(HevcPicture picture, int p, int q, bool transformEdge)
+    {
+        int fp = picture.PredFlags[p], fq = picture.PredFlags[q];
+        if (fp == 0 || fq == 0)
+        {
+            return 2;
+        }
+
+        if (transformEdge && ((picture.Flags[p] | picture.Flags[q]) & HevcPicture.Coded) != 0)
+        {
+            return 1;
+        }
+
+        int countP = (fp & 1) + (fp >> 1), countQ = (fq & 1) + (fq >> 1);
+        if (countP != countQ)
+        {
+            return 1;
+        }
+
+        int[] id0 = picture.RefId[0], id1 = picture.RefId[1], mv0 = picture.Mv[0], mv1 = picture.Mv[1];
+        if (countP == 1)
+        {
+            int refP = fp == 1 ? id0[p] : id1[p], refQ = fq == 1 ? id0[q] : id1[q];
+            int mvP = fp == 1 ? mv0[p] : mv1[p], mvQ = fq == 1 ? mv0[q] : mv1[q];
+            return refP != refQ || Far(mvP, mvQ) ? 1 : 0;
+        }
+
+        int p0 = id0[p], p1 = id1[p], q0 = id0[q], q1 = id1[q];
+        if (!((p0 == q0 && p1 == q1) || (p0 == q1 && p1 == q0)))
+        {
+            return 1;
+        }
+
+        if (p0 != p1)
+        {
+            // Two different pictures: compare the vectors of the same picture.
+            return p0 == q0 ? (Far(mv0[p], mv0[q]) || Far(mv1[p], mv1[q]) ? 1 : 0) : (Far(mv0[p], mv1[q]) || Far(mv1[p], mv0[q]) ? 1 : 0);
+        }
+
+        // Both vectors of each side name one picture: bS 1 only when neither pairing matches.
+        return (Far(mv0[p], mv0[q]) || Far(mv1[p], mv1[q])) && (Far(mv0[p], mv1[q]) || Far(mv1[p], mv0[q])) ? 1 : 0;
+    }
+
+    private static bool Far(int a, int b) => Math.Abs((short)a - (short)b) >= 4 || Math.Abs((a >> 16) - (b >> 16)) >= 4;
+
     private static bool NoFilter(HevcPicture picture, int block)
     {
         byte flags = picture.Flags[block];
         return (flags & HevcPicture.Bypass) != 0 || ((flags & HevcPicture.Pcm) != 0 && picture.Sps.PcmLoopFilterDisabled);
     }
 
-    private static void LumaEdge(HevcPicture picture, int x, int y, bool vertical, int qpL, HevcSliceHeader slice, bool noP, bool noQ)
+    private static void LumaEdge(HevcPicture picture, int x, int y, bool vertical, int qpL, int bs, HevcSliceHeader slice, bool noP, bool noQ)
     {
         HevcSps sps = picture.Sps;
         int bitDepth = sps.BitDepthLuma;
         int beta = Beta[Math.Clamp(qpL + (slice.BetaOffsetDiv2 << 1), 0, 51)] << (bitDepth - 8);
-        int tc = Tc[Math.Clamp(qpL + 2 + (slice.TcOffsetDiv2 << 1), 0, 53)] << (bitDepth - 8);
+        int tc = Tc[Math.Clamp(qpL + (2 * (bs - 1)) + (slice.TcOffsetDiv2 << 1), 0, 53)] << (bitDepth - 8);
         if (tc == 0 && beta == 0)
         {
             return;
@@ -283,25 +340,34 @@ internal static class HevcLoopFilter
         for (int c = 0; c < components; c++)
         {
             // Each CTB reads the deblocked samples and writes only its own.
-            ushort[] deblocked = (ushort[])picture.Planes[c].Clone();
+            ushort[] plane = picture.Planes[c];
+            ushort[] deblocked = ArrayPool<ushort>.Shared.Rent(plane.Length);
+            plane.AsSpan().CopyTo(deblocked);
             int component = c;
-            HevcThreads.For(sps.HeightInCtbs, parallelism, row =>
+            try
             {
-                for (int ctb = row * sps.WidthInCtbs; ctb < (row + 1) * sps.WidthInCtbs; ctb++)
+                HevcThreads.For(sps.HeightInCtbs, parallelism, row =>
                 {
-                    HevcSliceHeader? slice = picture.CtbSliceHeader[ctb];
-                    if (slice is null || (component == 0 ? !slice.SaoLuma : !slice.SaoChroma))
+                    for (int ctb = row * sps.WidthInCtbs; ctb < (row + 1) * sps.WidthInCtbs; ctb++)
                     {
-                        continue;
-                    }
+                        HevcSliceHeader? slice = picture.CtbSliceHeader[ctb];
+                        if (slice is null || (component == 0 ? !slice.SaoLuma : !slice.SaoChroma))
+                        {
+                            continue;
+                        }
 
-                    HevcSaoParameters sao = picture.Sao[ctb];
-                    if (sao.Type(component) != 0)
-                    {
-                        SaoCtb(picture, component, ctb, sao, deblocked);
+                        HevcSaoParameters sao = picture.Sao[ctb];
+                        if (sao.Type(component) != 0)
+                        {
+                            SaoCtb(picture, component, ctb, sao, deblocked);
+                        }
                     }
-                }
-            }, cancellationToken);
+                }, cancellationToken);
+            }
+            finally
+            {
+                ArrayPool<ushort>.Shared.Return(deblocked);
+            }
         }
     }
 

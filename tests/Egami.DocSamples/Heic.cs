@@ -102,4 +102,34 @@ public class Heic
         Assert.IsType<Raster<Egami.Pixels.RgbaF16>>(hdr);
         Assert.True(File.Exists("sky-matte.png"));
     }
+
+    [Fact]
+    public void SequencesAndStreams()
+    {
+        using SampleFiles files = new();
+        EgamiContext heic = new EgamiContext().WithHeic();
+
+        #region sequence
+        // A burst or animated HEIC file: every frame, inter-coded ones too, in output order.
+        using Raster burst = Raster.Load("burst.heic", heic);
+        int frames = burst.FrameCount;
+        #endregion
+
+        #region stream
+        // An HEVC stream from any source: Annex B here, or SetConfiguration with an MP4 track's hvcC and its samples.
+        using HevcStreamDecoder decoder = new(context: heic);
+        decoder.Send(File.ReadAllBytes("clip.h265"));
+        decoder.Flush();                                    // the end of the stream: the last pictures come out
+        int shown = 0;
+        while (decoder.NextFrame is HevcFrameInfo next)
+        {
+            using YuvRaster<byte> frame = YuvRaster.Create(next.Width, next.Height, next.Chroma, YuvColor.Bt709Limited);
+            decoder.TryReceiveFrame(frame, out HevcFrameInfo info);     // info.Poc, info.Kind, info.Color
+            shown++;
+        }
+        #endregion
+
+        Assert.Equal(4, frames);
+        Assert.Equal(12, shown);
+    }
 }

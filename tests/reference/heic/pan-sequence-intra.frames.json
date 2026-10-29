@@ -1,0 +1,16 @@
+{
+ "frames": [
+  "c1ad184b26c739104dbb5823b0369e63",
+  "6efd02baff639c48980ced1718040152",
+  "3f6e7c711d161592322ebafd7e274de2",
+  "85cb76f7176f5164524069cd90ca85cd"
+ ],
+ "tools": {
+  "exiftool": "13.25",
+  "hm": "HM 18.0 (fb4486d5)",
+  "kvazaar": "2.3.1",
+  "libde265": "1.0.15",
+  "libheif": "1.23.4\nlibheif: 1.23.4\nplugin path: /usr/lib/x86_64-linux-gnu/libheif/plugins",
+  "x265": "4.1"
+ }
+}
