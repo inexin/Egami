@@ -156,6 +156,28 @@ public class GraphicsTests
     }
 
     [Fact]
+    public void ArgbDrawingChoosesInPlaceOrGdiPlusExactBlending()
+    {
+        Assert.Equal(ArgbDrawing.InPlace, SystemDrawingOptions.ArgbDrawing);
+        using SolidBrush glass = new(Color.FromArgb(128, 200, 30, 10));
+        int Fill(ArgbDrawing mode)
+        {
+            using Bitmap b = new(10, 10, PixelFormat.Format32bppArgb);
+            using Graphics g = Graphics.FromImage(b);
+            Assert.Equal(ArgbDrawing.InPlace, g.ArgbDrawing);
+            g.ArgbDrawing = mode;
+            g.FillRectangle(glass, 0, 0, 10, 10);
+            return b.GetPixel(5, 5).ToArgb();
+        }
+
+        // On a transparent bitmap GDI+ keeps the color as premultiplied ARGB rounds it; in place rounds a level differently.
+        Assert.Equal(unchecked((int)0x80C71D09), Fill(ArgbDrawing.Exact));
+        Assert.Equal(unchecked((int)0x80C71E0A), Fill(ArgbDrawing.InPlace));
+        using Graphics any = Graphics.FromImage(new Bitmap(1, 1));
+        Assert.Throws<ArgumentOutOfRangeException>(() => any.ArgbDrawing = (ArgbDrawing)5);
+    }
+
+    [Fact]
     public void DrawImageAtAPointUsesTheImageResolution()
     {
         using Bitmap source = new(8, 8);

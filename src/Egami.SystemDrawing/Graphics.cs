@@ -30,10 +30,27 @@ public sealed partial class Graphics : MarshalByRefObject, IDisposable, IDeviceC
     private int _nextId = 1;
     private bool _disposed;
     private InPlaceCanvas? _inPlace;
+    private ArgbDrawing _argbDrawing;
 
     private Graphics(Bitmap image)
     {
         _image = image;
+        _argbDrawing = SystemDrawingOptions.ArgbDrawing;
+    }
+
+    /// <summary>
+    /// Gets or sets how this Graphics draws on a 32-bit ARGB bitmap: in place (the default, from
+    /// <see cref="SystemDrawingOptions.ArgbDrawing"/>), or through a premultiplied copy that rounds exactly as GDI+ does. Egami's
+    /// own setting; System.Drawing has none.
+    /// </summary>
+    /// <exception cref="ArgumentOutOfRangeException">The value is not an <see cref="SystemDrawing.ArgbDrawing"/>.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../tests/Egami.DocSamples/SystemDrawingPackage.cs" region="graphics"/>
+    /// </example>
+    public ArgbDrawing ArgbDrawing
+    {
+        get => _argbDrawing;
+        set => _argbDrawing = Enum.IsDefined(value) ? value : throw new ArgumentOutOfRangeException(nameof(value), value, null);
     }
 
     /// <summary>Called before a DrawImage draws; returning <see langword="true"/> stops it with an ExternalException, as in GDI+.</summary>
@@ -534,7 +551,7 @@ public sealed partial class Graphics : MarshalByRefObject, IDisposable, IDeviceC
                 draw(canvas);
             },
             ref _inPlace,
-            State.Compositing == CompositingMode.SourceCopy);
+            State.Compositing == CompositingMode.SourceCopy || _argbDrawing == ArgbDrawing.Exact);
     }
 
     private static RectF Intersect(RectF a, RectF b)
