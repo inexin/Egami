@@ -113,15 +113,16 @@ public sealed record class CanvasOptions
     public static CanvasOptions Default { get; } = new();
 
     /// <summary>
-    /// Gets the canvas settings of System.Drawing's ClearTypeGridFit text, as measured on Windows in 2.7.5 and 2.7.6: an RGB stripe,
-    /// <see cref="LcdFilter.Gdi"/>, <see cref="LcdSampling.Gdi"/> (coverage in sixths, blended through GDI+'s 8-bit gamma tables)
-    /// a <see cref="TextGamma"/> of 1.4 (GDI+'s 1 + Graphics.TextContrast / 10 at its default contrast of 4), and GDI+'s default
-    /// <see cref="PixelOffset.None"/> with its <see cref="Antialiasing.GdiPlus"/> shapes (2.7.6). Use it with fonts from <see cref="Fonts.Font.WithGdiPlusLook"/>.
+    /// Gets System.Drawing's canvas settings, as measured on Windows in 2.7.5 and 2.7.6. For ClearTypeGridFit text: an RGB stripe,
+    /// <see cref="LcdFilter.Gdi"/>, <see cref="LcdSampling.Gdi"/> (coverage in sixths, blended through GDI+'s 8-bit gamma tables) and
+    /// a <see cref="TextGamma"/> of 1.4 (GDI+'s 1 + Graphics.TextContrast / 10 at its default contrast of 4). For shapes and images:
+    /// GDI+'s default <see cref="PixelOffset.None"/> and its <see cref="Antialiasing.GdiPlus"/>. Use it with fonts from
+    /// <see cref="Fonts.Font.WithGdiPlusLook"/>; the resample filter is each draw call's, such as <c>ResampleFilter.GdiPlusBilinear</c>.
     /// </summary>
     /// <example>
     /// <code language="csharp" source="../../tests/Egami.DocSamples/SystemDrawing.cs" region="gdiplus"/>
     /// </example>
-    public static CanvasOptions GdiPlusClearType { get; } = new()
+    public static CanvasOptions GdiPlus { get; } = new()
     {
         PixelGeometry = PixelGeometry.RgbHorizontal,
         LcdFilter = LcdFilter.Gdi,

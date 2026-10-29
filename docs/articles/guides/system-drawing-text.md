@@ -7,7 +7,7 @@ the text settings. Egami.SystemDrawing applies all of them for you.
 
 | GDI+ | Egami |
 | --- | --- |
-| `TextRenderingHint.ClearTypeGridFit` | `Font.WithGdiPlusLook()` with `CanvasOptions.GdiPlusClearType` |
+| `TextRenderingHint.ClearTypeGridFit` | `Font.WithGdiPlusLook()` with `CanvasOptions.GdiPlus` |
 | `PixelOffsetMode.None`, `Default`, `HighSpeed` / `Half`, `HighQuality` | `CanvasOptions.PixelOffset.None` / `Half` (the default) |
 | `SmoothingMode.AntiAlias`, `HighQuality` | `CanvasOptions.Antialiasing.GdiPlus`; `SmoothingMode.None` is `Paint.Antialias = false` |
 | `LinearGradientBrush.GammaCorrection` | `GradientInterpolation.GdiPlusGamma` |
@@ -15,13 +15,13 @@ the text settings. Egami.SystemDrawing applies all of them for you.
 | `InterpolationMode` | the `ResampleFilter.GdiPlus*` members, per draw call (see [Image scaling](#image-scaling)) |
 | `CompositingQuality.HighQuality`, `GammaCorrected` | `CanvasOptions.ColorSpace = ColorSpace.Linear` |
 
-`CanvasOptions.GdiPlusClearType` sets GDI+'s defaults for text, pixel offset and antialiasing. It does not choose a resample
+`CanvasOptions.GdiPlus` sets GDI+'s defaults for text, pixel offset and antialiasing. It does not choose a resample
 filter: that belongs to each `DrawImage` or `ImagePaint` call's `SamplingOptions`, so pass `ResampleFilter.GdiPlusBilinear` there for
 GDI+'s default `InterpolationMode`.
 
 ## GDI+ ClearTypeGridFit
 
-`Font.WithGdiPlusLook()` and `CanvasOptions.GdiPlusClearType` together give GDI+'s ClearTypeGridFit look.
+`Font.WithGdiPlusLook()` and `CanvasOptions.GdiPlus` together give GDI+'s ClearTypeGridFit look.
 
 - The font's TrueType instructions run for GDI+, with Microsoft's ClearType compatibility rules (`FontHinting.Full`,
   `TrueTypeTarget.GdiPlus`).
@@ -48,7 +48,7 @@ those sizes equal GDI+'s pixel for pixel.
 ## Shapes
 
 Two canvas settings match what `Graphics` does with shapes at its defaults, `SmoothingMode.AntiAlias` and
-`PixelOffsetMode.None`. `CanvasOptions.GdiPlusClearType` sets both.
+`PixelOffsetMode.None`. `CanvasOptions.GdiPlus` sets both.
 
 - `PixelOffset.None` puts whole coordinates on pixel centres, as GDI+'s `None`, `Default` and `HighSpeed` offset modes do. Paths,
   their paints and clips move half a pixel right and down. Text moves only when it is unhinted, just as GDI+ moves its
@@ -103,7 +103,7 @@ closest filters before.
 
 Egami.Metafiles' EMF+ player follows the records' interpolation modes with the `GdiPlus*` filters and their gamma-corrected
 gradients with `GdiPlusGamma`. Smoothing and compositing apply to the whole canvas, so set them for the playback through
-`MetafileRenderOptions.CanvasOptions`, for example `CanvasOptions.GdiPlusClearType`. With `PixelOffset.None` there, the player
+`MetafileRenderOptions.CanvasOptions`, for example `CanvasOptions.GdiPlus`. With `PixelOffset.None` there, the player
 leaves the pixel offset to the canvas.
 
 ## GDI ClearType

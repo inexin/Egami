@@ -870,7 +870,7 @@ static Egami.Drawing.Annotation.Url(string! url) -> Egami.Drawing.Annotation!
 static Egami.Drawing.BlendPaint.operator !=(Egami.Drawing.BlendPaint? left, Egami.Drawing.BlendPaint? right) -> bool
 static Egami.Drawing.BlendPaint.operator ==(Egami.Drawing.BlendPaint? left, Egami.Drawing.BlendPaint? right) -> bool
 static Egami.Drawing.CanvasOptions.Default.get -> Egami.Drawing.CanvasOptions!
-static Egami.Drawing.CanvasOptions.GdiPlusClearType.get -> Egami.Drawing.CanvasOptions!
+static Egami.Drawing.CanvasOptions.GdiPlus.get -> Egami.Drawing.CanvasOptions!
 static Egami.Drawing.CanvasOptions.operator !=(Egami.Drawing.CanvasOptions? left, Egami.Drawing.CanvasOptions? right) -> bool
 static Egami.Drawing.CanvasOptions.operator ==(Egami.Drawing.CanvasOptions? left, Egami.Drawing.CanvasOptions? right) -> bool
 static Egami.Drawing.ColorMatrixPaint.operator !=(Egami.Drawing.ColorMatrixPaint? left, Egami.Drawing.ColorMatrixPaint? right) -> bool

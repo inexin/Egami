@@ -121,13 +121,13 @@ public class LcdLookTests
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    public void GdiPlusClearTypeBlendsThroughGdiPlusTables(bool whiteOnBlack)
+    public void GdiPlusPresetBlendsThroughGdiPlusTables(bool whiteOnBlack)
     {
         // GDI+'s drawn values for k of 6 at its default contrast (measured in egami-compare, 2.7.6): 8-bit gamma tables both ways,
         // the same values for black on white in the other order. Only where two glyphs' masks meet may a value fall between.
         byte[] drawn = [0, 72, 116, 156, 191, 224, 255];
         using Raster<Rgba8> image = Raster.Create(240, 60, whiteOnBlack ? Rgba8.Black : Rgba8.White);
-        using (RasterCanvas<Rgba8> canvas = image.CreateCanvas(CanvasOptions.GdiPlusClearType))
+        using (RasterCanvas<Rgba8> canvas = image.CreateCanvas(CanvasOptions.GdiPlus))
         {
             canvas.DrawText("Hamburgefonstiv", new Vector2(4, 40), new Font(Noto, 13).WithGdiPlusLook(), whiteOnBlack ? Rgba8.White : Rgba8.Black);
         }

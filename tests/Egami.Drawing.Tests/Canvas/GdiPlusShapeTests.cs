@@ -183,8 +183,8 @@ public class GdiPlusShapeTests
     {
         Assert.Equal(PixelOffset.Half, CanvasOptions.Default.PixelOffset);
         Assert.Equal(Antialiasing.Exact, CanvasOptions.Default.Antialiasing);
-        Assert.Equal(PixelOffset.None, CanvasOptions.GdiPlusClearType.PixelOffset);
-        Assert.Equal(Antialiasing.GdiPlus, CanvasOptions.GdiPlusClearType.Antialiasing);
+        Assert.Equal(PixelOffset.None, CanvasOptions.GdiPlus.PixelOffset);
+        Assert.Equal(Antialiasing.GdiPlus, CanvasOptions.GdiPlus.Antialiasing);
         Assert.Throws<ArgumentOutOfRangeException>(() => new CanvasOptions { PixelOffset = (PixelOffset)7 });
         Assert.Throws<ArgumentOutOfRangeException>(() => new CanvasOptions { Antialiasing = (Antialiasing)7 });
     }
