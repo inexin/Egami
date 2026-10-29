@@ -1,0 +1,1003 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class TextureBrush | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class TextureBrush | Egami ">
+      
+      <meta name="description" content="A brush that tiles an image, from the world origin, through its transform.">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_SystemDrawing_TextureBrush.md&amp;value=---%0Auid%3A%20Egami.SystemDrawing.TextureBrush%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.SystemDrawing.TextureBrush">
+
+
+
+  <h1 id="Egami_SystemDrawing_TextureBrush" data-uid="Egami.SystemDrawing.TextureBrush" class="text-break">
+Class TextureBrush  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/TextureBrush.Transform.cs/#L10"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a>.<a class="xref" href="Egami.SystemDrawing.html">SystemDrawing</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.SystemDrawing.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>A brush that tiles an image, from the world origin, through its transform.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public sealed class TextureBrush : Brush, ICloneable, IDisposable</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.marshalbyrefobject">MarshalByRefObject</a></div>
+      <div><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></div>
+      <div><span class="xref">TextureBrush</span></div>
+    </dd>
+  </dl>
+
+  <dl class="typelist implements">
+    <dt>Implements</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.icloneable">ICloneable</a></div>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.idisposable">IDisposable</a></div>
+    </dd>
+  </dl>
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="Egami.SystemDrawing.Brush.html#Egami_SystemDrawing_Brush_Dispose">Brush.Dispose()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.marshalbyrefobject.getlifetimeservice">MarshalByRefObject.GetLifetimeService()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.marshalbyrefobject.initializelifetimeservice">MarshalByRefObject.InitializeLifetimeService()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+  </dd></dl>
+
+
+
+  <h2 id="Egami_SystemDrawing_TextureBrush_examples">Examples</h2>
+  <pre><code class="lang-csharp">// Hatch, texture and gradient brushes, and the Brushes and Pens of the named colors.
+using Bitmap bitmap = new(80, 60);
+using Graphics g = Graphics.FromImage(bitmap);
+using HatchBrush hatch = new(HatchStyle.DiagonalCross, Color.Black, Color.White);
+g.FillRectangle(hatch, 0, 0, 40, 30);
+using LinearGradientBrush linear = new(new Rectangle(40, 0, 40, 30), Color.Red, Color.Blue, LinearGradientMode.Horizontal);
+linear.SetSigmaBellShape(0.5f);
+g.FillRectangle(linear, 40, 0, 40, 30);
+using PathGradientBrush radial = new([new PointF(0, 30), new PointF(40, 30), new PointF(20, 60)]) { CenterColor = Color.White, SurroundColors = [Color.Green] };
+g.FillRectangle(radial, 0, 30, 40, 30);
+using Bitmap tile = new(4, 4);
+tile.SetPixel(0, 0, Color.Orange);
+using TextureBrush texture = new(tile, WrapMode.TileFlipXY);
+g.FillRectangle(texture, 40, 30, 40, 30);
+g.DrawRectangle(Egami.SystemDrawing.Pens.Gray, 0, 0, 79, 59);
+g.FillEllipse(Egami.SystemDrawing.Brushes.Gold, 36, 26, 8, 8);
+Blend? blend = linear.Blend;  // 511 factors: the bell, as GDI+ samples it</code></pre>
+
+
+
+
+  <h2 class="section" id="constructors">Constructors
+</h2>
+
+
+  <a id="Egami_SystemDrawing_TextureBrush__ctor_" data-uid="Egami.SystemDrawing.TextureBrush.#ctor*"></a>
+
+  <h3 id="Egami_SystemDrawing_TextureBrush__ctor_Egami_SystemDrawing_Image_" data-uid="Egami.SystemDrawing.TextureBrush.#ctor(Egami.SystemDrawing.Image)">
+  TextureBrush(Image)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/TextureBrush.cs/#L25"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Initializes a new instance of the <a class="xref" href="Egami.SystemDrawing.TextureBrush.html">TextureBrush</a> class, tiled.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public TextureBrush(Image bitmap)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>bitmap</code> <a class="xref" href="Egami.SystemDrawing.Image.html">Image</a></dt>
+    <dd><p>The image.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_TextureBrush__ctor_" data-uid="Egami.SystemDrawing.TextureBrush.#ctor*"></a>
+
+  <h3 id="Egami_SystemDrawing_TextureBrush__ctor_Egami_SystemDrawing_Image_Egami_SystemDrawing_Drawing2D_WrapMode_" data-uid="Egami.SystemDrawing.TextureBrush.#ctor(Egami.SystemDrawing.Image,Egami.SystemDrawing.Drawing2D.WrapMode)">
+  TextureBrush(Image, WrapMode)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/TextureBrush.cs/#L33"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Initializes a new instance of the <a class="xref" href="Egami.SystemDrawing.TextureBrush.html">TextureBrush</a> class.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public TextureBrush(Image image, WrapMode wrapMode)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>image</code> <a class="xref" href="Egami.SystemDrawing.Image.html">Image</a></dt>
+    <dd><p>The image.</p>
+</dd>
+    <dt><code>wrapMode</code> <a class="xref" href="Egami.SystemDrawing.Drawing2D.WrapMode.html">WrapMode</a></dt>
+    <dd><p>How it repeats.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_TextureBrush__ctor_" data-uid="Egami.SystemDrawing.TextureBrush.#ctor*"></a>
+
+  <h3 id="Egami_SystemDrawing_TextureBrush__ctor_Egami_SystemDrawing_Image_Egami_SystemDrawing_Drawing2D_WrapMode_System_Drawing_Rectangle_" data-uid="Egami.SystemDrawing.TextureBrush.#ctor(Egami.SystemDrawing.Image,Egami.SystemDrawing.Drawing2D.WrapMode,System.Drawing.Rectangle)">
+  TextureBrush(Image, WrapMode, Rectangle)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/TextureBrush.cs/#L51"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Initializes a new instance of the <a class="xref" href="Egami.SystemDrawing.TextureBrush.html">TextureBrush</a> class from part of an image.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public TextureBrush(Image image, WrapMode wrapMode, Rectangle dstRect)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>image</code> <a class="xref" href="Egami.SystemDrawing.Image.html">Image</a></dt>
+    <dd><p>The image.</p>
+</dd>
+    <dt><code>wrapMode</code> <a class="xref" href="Egami.SystemDrawing.Drawing2D.WrapMode.html">WrapMode</a></dt>
+    <dd><p>How it repeats.</p>
+</dd>
+    <dt><code>dstRect</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.rectangle">Rectangle</a></dt>
+    <dd><p>The part of the image.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_TextureBrush__ctor_" data-uid="Egami.SystemDrawing.TextureBrush.#ctor*"></a>
+
+  <h3 id="Egami_SystemDrawing_TextureBrush__ctor_Egami_SystemDrawing_Image_Egami_SystemDrawing_Drawing2D_WrapMode_System_Drawing_RectangleF_" data-uid="Egami.SystemDrawing.TextureBrush.#ctor(Egami.SystemDrawing.Image,Egami.SystemDrawing.Drawing2D.WrapMode,System.Drawing.RectangleF)">
+  TextureBrush(Image, WrapMode, RectangleF)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/TextureBrush.cs/#L42"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Initializes a new instance of the <a class="xref" href="Egami.SystemDrawing.TextureBrush.html">TextureBrush</a> class from part of an image.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public TextureBrush(Image image, WrapMode wrapMode, RectangleF dstRect)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>image</code> <a class="xref" href="Egami.SystemDrawing.Image.html">Image</a></dt>
+    <dd><p>The image.</p>
+</dd>
+    <dt><code>wrapMode</code> <a class="xref" href="Egami.SystemDrawing.Drawing2D.WrapMode.html">WrapMode</a></dt>
+    <dd><p>How it repeats.</p>
+</dd>
+    <dt><code>dstRect</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.rectanglef">RectangleF</a></dt>
+    <dd><p>The part of the image.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_TextureBrush__ctor_" data-uid="Egami.SystemDrawing.TextureBrush.#ctor*"></a>
+
+  <h3 id="Egami_SystemDrawing_TextureBrush__ctor_Egami_SystemDrawing_Image_System_Drawing_Rectangle_" data-uid="Egami.SystemDrawing.TextureBrush.#ctor(Egami.SystemDrawing.Image,System.Drawing.Rectangle)">
+  TextureBrush(Image, Rectangle)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/TextureBrush.cs/#L76"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Initializes a new instance of the <a class="xref" href="Egami.SystemDrawing.TextureBrush.html">TextureBrush</a> class from part of an image, tiled.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public TextureBrush(Image image, Rectangle dstRect)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>image</code> <a class="xref" href="Egami.SystemDrawing.Image.html">Image</a></dt>
+    <dd><p>The image.</p>
+</dd>
+    <dt><code>dstRect</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.rectangle">Rectangle</a></dt>
+    <dd><p>The part of the image.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_TextureBrush__ctor_" data-uid="Egami.SystemDrawing.TextureBrush.#ctor*"></a>
+
+  <h3 id="Egami_SystemDrawing_TextureBrush__ctor_Egami_SystemDrawing_Image_System_Drawing_Rectangle_Egami_SystemDrawing_Imaging_ImageAttributes_" data-uid="Egami.SystemDrawing.TextureBrush.#ctor(Egami.SystemDrawing.Image,System.Drawing.Rectangle,Egami.SystemDrawing.Imaging.ImageAttributes)">
+  TextureBrush(Image, Rectangle, ImageAttributes?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/TextureBrush.cs/#L85"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Initializes a new instance of the <a class="xref" href="Egami.SystemDrawing.TextureBrush.html">TextureBrush</a> class from part of an image, tiled, its colors adjusted.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public TextureBrush(Image image, Rectangle dstRect, ImageAttributes? imageAttr)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>image</code> <a class="xref" href="Egami.SystemDrawing.Image.html">Image</a></dt>
+    <dd><p>The image.</p>
+</dd>
+    <dt><code>dstRect</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.rectangle">Rectangle</a></dt>
+    <dd><p>The part of the image.</p>
+</dd>
+    <dt><code>imageAttr</code> <a class="xref" href="Egami.SystemDrawing.Imaging.ImageAttributes.html">ImageAttributes</a></dt>
+    <dd><p>Color adjustments, or null.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_TextureBrush__ctor_" data-uid="Egami.SystemDrawing.TextureBrush.#ctor*"></a>
+
+  <h3 id="Egami_SystemDrawing_TextureBrush__ctor_Egami_SystemDrawing_Image_System_Drawing_RectangleF_" data-uid="Egami.SystemDrawing.TextureBrush.#ctor(Egami.SystemDrawing.Image,System.Drawing.RectangleF)">
+  TextureBrush(Image, RectangleF)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/TextureBrush.cs/#L59"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Initializes a new instance of the <a class="xref" href="Egami.SystemDrawing.TextureBrush.html">TextureBrush</a> class from part of an image, tiled.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public TextureBrush(Image image, RectangleF dstRect)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>image</code> <a class="xref" href="Egami.SystemDrawing.Image.html">Image</a></dt>
+    <dd><p>The image.</p>
+</dd>
+    <dt><code>dstRect</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.rectanglef">RectangleF</a></dt>
+    <dd><p>The part of the image.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_TextureBrush__ctor_" data-uid="Egami.SystemDrawing.TextureBrush.#ctor*"></a>
+
+  <h3 id="Egami_SystemDrawing_TextureBrush__ctor_Egami_SystemDrawing_Image_System_Drawing_RectangleF_Egami_SystemDrawing_Imaging_ImageAttributes_" data-uid="Egami.SystemDrawing.TextureBrush.#ctor(Egami.SystemDrawing.Image,System.Drawing.RectangleF,Egami.SystemDrawing.Imaging.ImageAttributes)">
+  TextureBrush(Image, RectangleF, ImageAttributes?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/TextureBrush.cs/#L68"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Initializes a new instance of the <a class="xref" href="Egami.SystemDrawing.TextureBrush.html">TextureBrush</a> class from part of an image, tiled, its colors adjusted.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public TextureBrush(Image image, RectangleF dstRect, ImageAttributes? imageAttr)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>image</code> <a class="xref" href="Egami.SystemDrawing.Image.html">Image</a></dt>
+    <dd><p>The image.</p>
+</dd>
+    <dt><code>dstRect</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.rectanglef">RectangleF</a></dt>
+    <dd><p>The part of the image.</p>
+</dd>
+    <dt><code>imageAttr</code> <a class="xref" href="Egami.SystemDrawing.Imaging.ImageAttributes.html">ImageAttributes</a></dt>
+    <dd><p>Color adjustments, or null.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="Egami_SystemDrawing_TextureBrush_Image_" data-uid="Egami.SystemDrawing.TextureBrush.Image*"></a>
+
+  <h3 id="Egami_SystemDrawing_TextureBrush_Image" data-uid="Egami.SystemDrawing.TextureBrush.Image">
+  Image
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/TextureBrush.cs/#L132"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets a copy of the image.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Image Image { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Image.html">Image</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_TextureBrush_Transform_" data-uid="Egami.SystemDrawing.TextureBrush.Transform*"></a>
+
+  <h3 id="Egami_SystemDrawing_TextureBrush_Transform" data-uid="Egami.SystemDrawing.TextureBrush.Transform">
+  Transform
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/TextureBrush.Transform.cs/#L14"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets a copy of the brush's transform, from brush space to world coordinates.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Matrix Transform { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Drawing2D.Matrix.html">Matrix</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>The transform cannot be inverted.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_SystemDrawing_TextureBrush_WrapMode_" data-uid="Egami.SystemDrawing.TextureBrush.WrapMode*"></a>
+
+  <h3 id="Egami_SystemDrawing_TextureBrush_WrapMode" data-uid="Egami.SystemDrawing.TextureBrush.WrapMode">
+  WrapMode
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/TextureBrush.cs/#L135"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets how the image repeats; <a class="xref" href="Egami.SystemDrawing.Drawing2D.WrapMode.html#Egami_SystemDrawing_Drawing2D_WrapMode_Clamp">Clamp</a> draws it once.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public WrapMode WrapMode { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Drawing2D.WrapMode.html">WrapMode</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="Egami_SystemDrawing_TextureBrush_Clone_" data-uid="Egami.SystemDrawing.TextureBrush.Clone*"></a>
+
+  <h3 id="Egami_SystemDrawing_TextureBrush_Clone" data-uid="Egami.SystemDrawing.TextureBrush.Clone">
+  Clone()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/TextureBrush.cs/#L142"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>A copy.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public override object Clone()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></dt>
+    <dd><p>The copy.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_TextureBrush_Dispose_" data-uid="Egami.SystemDrawing.TextureBrush.Dispose*"></a>
+
+  <h3 id="Egami_SystemDrawing_TextureBrush_Dispose_System_Boolean_" data-uid="Egami.SystemDrawing.TextureBrush.Dispose(System.Boolean)">
+  Dispose(bool)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/TextureBrush.cs/#L145"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Releases the brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">protected override void Dispose(bool disposing)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>disposing</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>Whether <a class="xref" href="Egami.SystemDrawing.Brush.html#Egami_SystemDrawing_Brush_Dispose">Dispose()</a> was called.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_TextureBrush_MultiplyTransform_" data-uid="Egami.SystemDrawing.TextureBrush.MultiplyTransform*"></a>
+
+  <h3 id="Egami_SystemDrawing_TextureBrush_MultiplyTransform_Egami_SystemDrawing_Drawing2D_Matrix_" data-uid="Egami.SystemDrawing.TextureBrush.MultiplyTransform(Egami.SystemDrawing.Drawing2D.Matrix)">
+  MultiplyTransform(Matrix)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/TextureBrush.Transform.cs/#L32"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Multiplies the transform by a matrix, applied before it.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void MultiplyTransform(Matrix matrix)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>matrix</code> <a class="xref" href="Egami.SystemDrawing.Drawing2D.Matrix.html">Matrix</a></dt>
+    <dd><p>The matrix.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_TextureBrush_MultiplyTransform_" data-uid="Egami.SystemDrawing.TextureBrush.MultiplyTransform*"></a>
+
+  <h3 id="Egami_SystemDrawing_TextureBrush_MultiplyTransform_Egami_SystemDrawing_Drawing2D_Matrix_Egami_SystemDrawing_Drawing2D_MatrixOrder_" data-uid="Egami.SystemDrawing.TextureBrush.MultiplyTransform(Egami.SystemDrawing.Drawing2D.Matrix,Egami.SystemDrawing.Drawing2D.MatrixOrder)">
+  MultiplyTransform(Matrix, MatrixOrder)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/TextureBrush.Transform.cs/#L37"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Multiplies the transform by a matrix.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void MultiplyTransform(Matrix matrix, MatrixOrder order)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>matrix</code> <a class="xref" href="Egami.SystemDrawing.Drawing2D.Matrix.html">Matrix</a></dt>
+    <dd><p>The matrix.</p>
+</dd>
+    <dt><code>order</code> <a class="xref" href="Egami.SystemDrawing.Drawing2D.MatrixOrder.html">MatrixOrder</a></dt>
+    <dd><p>Whether it applies before or after.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_TextureBrush_ResetTransform_" data-uid="Egami.SystemDrawing.TextureBrush.ResetTransform*"></a>
+
+  <h3 id="Egami_SystemDrawing_TextureBrush_ResetTransform" data-uid="Egami.SystemDrawing.TextureBrush.ResetTransform">
+  ResetTransform()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/TextureBrush.Transform.cs/#L28"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Makes the transform the identity.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void ResetTransform()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_TextureBrush_RotateTransform_" data-uid="Egami.SystemDrawing.TextureBrush.RotateTransform*"></a>
+
+  <h3 id="Egami_SystemDrawing_TextureBrush_RotateTransform_System_Single_" data-uid="Egami.SystemDrawing.TextureBrush.RotateTransform(System.Single)">
+  RotateTransform(float)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/TextureBrush.Transform.cs/#L67"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Rotates the transform clockwise, before it.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void RotateTransform(float angle)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>angle</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>The angle in degrees.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_TextureBrush_RotateTransform_" data-uid="Egami.SystemDrawing.TextureBrush.RotateTransform*"></a>
+
+  <h3 id="Egami_SystemDrawing_TextureBrush_RotateTransform_System_Single_Egami_SystemDrawing_Drawing2D_MatrixOrder_" data-uid="Egami.SystemDrawing.TextureBrush.RotateTransform(System.Single,Egami.SystemDrawing.Drawing2D.MatrixOrder)">
+  RotateTransform(float, MatrixOrder)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/TextureBrush.Transform.cs/#L72"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Rotates the transform clockwise.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void RotateTransform(float angle, MatrixOrder order)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>angle</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>The angle in degrees.</p>
+</dd>
+    <dt><code>order</code> <a class="xref" href="Egami.SystemDrawing.Drawing2D.MatrixOrder.html">MatrixOrder</a></dt>
+    <dd><p>Whether it applies before or after.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_TextureBrush_ScaleTransform_" data-uid="Egami.SystemDrawing.TextureBrush.ScaleTransform*"></a>
+
+  <h3 id="Egami_SystemDrawing_TextureBrush_ScaleTransform_System_Single_System_Single_" data-uid="Egami.SystemDrawing.TextureBrush.ScaleTransform(System.Single,System.Single)">
+  ScaleTransform(float, float)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/TextureBrush.Transform.cs/#L57"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Scales the transform, before it.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void ScaleTransform(float sx, float sy)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>sx</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>The horizontal factor.</p>
+</dd>
+    <dt><code>sy</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>The vertical factor.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_TextureBrush_ScaleTransform_" data-uid="Egami.SystemDrawing.TextureBrush.ScaleTransform*"></a>
+
+  <h3 id="Egami_SystemDrawing_TextureBrush_ScaleTransform_System_Single_System_Single_Egami_SystemDrawing_Drawing2D_MatrixOrder_" data-uid="Egami.SystemDrawing.TextureBrush.ScaleTransform(System.Single,System.Single,Egami.SystemDrawing.Drawing2D.MatrixOrder)">
+  ScaleTransform(float, float, MatrixOrder)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/TextureBrush.Transform.cs/#L63"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Scales the transform.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void ScaleTransform(float sx, float sy, MatrixOrder order)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>sx</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>The horizontal factor.</p>
+</dd>
+    <dt><code>sy</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>The vertical factor.</p>
+</dd>
+    <dt><code>order</code> <a class="xref" href="Egami.SystemDrawing.Drawing2D.MatrixOrder.html">MatrixOrder</a></dt>
+    <dd><p>Whether it applies before or after.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_TextureBrush_TranslateTransform_" data-uid="Egami.SystemDrawing.TextureBrush.TranslateTransform*"></a>
+
+  <h3 id="Egami_SystemDrawing_TextureBrush_TranslateTransform_System_Single_System_Single_" data-uid="Egami.SystemDrawing.TextureBrush.TranslateTransform(System.Single,System.Single)">
+  TranslateTransform(float, float)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/TextureBrush.Transform.cs/#L46"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Translates the transform, before it.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void TranslateTransform(float dx, float dy)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>dx</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>The horizontal distance.</p>
+</dd>
+    <dt><code>dy</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>The vertical distance.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_TextureBrush_TranslateTransform_" data-uid="Egami.SystemDrawing.TextureBrush.TranslateTransform*"></a>
+
+  <h3 id="Egami_SystemDrawing_TextureBrush_TranslateTransform_System_Single_System_Single_Egami_SystemDrawing_Drawing2D_MatrixOrder_" data-uid="Egami.SystemDrawing.TextureBrush.TranslateTransform(System.Single,System.Single,Egami.SystemDrawing.Drawing2D.MatrixOrder)">
+  TranslateTransform(float, float, MatrixOrder)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/TextureBrush.Transform.cs/#L52"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Translates the transform.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void TranslateTransform(float dx, float dy, MatrixOrder order)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>dx</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>The horizontal distance.</p>
+</dd>
+    <dt><code>dy</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>The vertical distance.</p>
+</dd>
+    <dt><code>order</code> <a class="xref" href="Egami.SystemDrawing.Drawing2D.MatrixOrder.html">MatrixOrder</a></dt>
+    <dd><p>Whether it applies before or after.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/TextureBrush.Transform.cs/#L10" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

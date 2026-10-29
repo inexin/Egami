@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class CustomLineCap | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class CustomLineCap | Egami ">
+      
+      <meta name="description" content="A line end drawn from a path: the path&#39;s x axis runs across the line and its y axis along it, outward from the end, in pen widths. The stroke path is outlined; GDI+ refuses fill paths. Set it as a pen&#39;s  or .">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_SystemDrawing_Drawing2D_CustomLineCap.md&amp;value=---%0Auid%3A%20Egami.SystemDrawing.Drawing2D.CustomLineCap%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.SystemDrawing.Drawing2D.CustomLineCap">
+
+
+
+  <h1 id="Egami_SystemDrawing_Drawing2D_CustomLineCap" data-uid="Egami.SystemDrawing.Drawing2D.CustomLineCap" class="text-break">
+Class CustomLineCap  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Drawing2D/CustomLineCap.cs/#L17"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a>.<a class="xref" href="Egami.SystemDrawing.html">SystemDrawing</a>.<a class="xref" href="Egami.SystemDrawing.Drawing2D.html">Drawing2D</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.SystemDrawing.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>A line end drawn from a path: the path's x axis runs across the line and its y axis along it, outward from the end, in pen
+widths. The stroke path is outlined; GDI+ refuses fill paths. Set it as a pen's <a class="xref" href="Egami.SystemDrawing.Pen.html#Egami_SystemDrawing_Pen_CustomStartCap">CustomStartCap</a> or
+<a class="xref" href="Egami.SystemDrawing.Pen.html#Egami_SystemDrawing_Pen_CustomEndCap">CustomEndCap</a>.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public class CustomLineCap : MarshalByRefObject, ICloneable, IDisposable</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.marshalbyrefobject">MarshalByRefObject</a></div>
+      <div><span class="xref">CustomLineCap</span></div>
+    </dd>
+  </dl>
+
+  <dl class="typelist implements">
+    <dt>Implements</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.icloneable">ICloneable</a></div>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.idisposable">IDisposable</a></div>
+    </dd>
+  </dl>
+
+  <dl class="typelist derived">
+    <dt>Derived</dt>
+    <dd>
+      <div><a class="xref" href="Egami.SystemDrawing.Drawing2D.AdjustableArrowCap.html">AdjustableArrowCap</a></div>
+    </dd>
+  </dl>
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.marshalbyrefobject.getlifetimeservice">MarshalByRefObject.GetLifetimeService()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.marshalbyrefobject.initializelifetimeservice">MarshalByRefObject.InitializeLifetimeService()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.marshalbyrefobject.memberwiseclone">MarshalByRefObject.MemberwiseClone(bool)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone">object.MemberwiseClone()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+  </dd></dl>
+
+
+
+  <h2 id="Egami_SystemDrawing_Drawing2D_CustomLineCap_examples">Examples</h2>
+  <pre><code class="lang-csharp">// Pens take GDI+'s caps, joins, dash styles (in multiples of the width), compound lines, inset alignment and arrow caps.
+using Bitmap bitmap = new(80, 60);
+using Graphics g = Graphics.FromImage(bitmap);
+g.SmoothingMode = SmoothingMode.AntiAlias;
+using Pen dashed = new(Color.Navy, 3) { DashStyle = DashStyle.DashDot, StartCap = LineCap.Round, EndCap = LineCap.ArrowAnchor };
+g.DrawLine(dashed, 5, 10, 75, 10);
+using Pen arrow = new(Color.DarkRed, 2) { CustomEndCap = new AdjustableArrowCap(4, 5) };
+g.DrawLine(arrow, 5, 30, 70, 30);
+using Pen inset = new(Color.Black, 4) { Alignment = PenAlignment.Inset, LineJoin = LineJoin.Round };
+g.DrawRectangle(inset, 5, 40, 30, 15);
+float[] pattern = dashed.DashPattern;  // 3, 1, 1, 1</code></pre>
+
+
+
+
+  <h2 class="section" id="constructors">Constructors
+</h2>
+
+
+  <a id="Egami_SystemDrawing_Drawing2D_CustomLineCap__ctor_" data-uid="Egami.SystemDrawing.Drawing2D.CustomLineCap.#ctor*"></a>
+
+  <h3 id="Egami_SystemDrawing_Drawing2D_CustomLineCap__ctor_Egami_SystemDrawing_Drawing2D_GraphicsPath_Egami_SystemDrawing_Drawing2D_GraphicsPath_" data-uid="Egami.SystemDrawing.Drawing2D.CustomLineCap.#ctor(Egami.SystemDrawing.Drawing2D.GraphicsPath,Egami.SystemDrawing.Drawing2D.GraphicsPath)">
+  CustomLineCap(GraphicsPath?, GraphicsPath?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Drawing2D/CustomLineCap.cs/#L26"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Initializes a new instance of the <a class="xref" href="Egami.SystemDrawing.Drawing2D.CustomLineCap.html">CustomLineCap</a> class.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public CustomLineCap(GraphicsPath? fillPath, GraphicsPath? strokePath)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>fillPath</code> <a class="xref" href="Egami.SystemDrawing.Drawing2D.GraphicsPath.html">GraphicsPath</a></dt>
+    <dd><p>The path to fill, or null.</p>
+</dd>
+    <dt><code>strokePath</code> <a class="xref" href="Egami.SystemDrawing.Drawing2D.GraphicsPath.html">GraphicsPath</a></dt>
+    <dd><p>The path to outline, or null.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Drawing2D_CustomLineCap__ctor_" data-uid="Egami.SystemDrawing.Drawing2D.CustomLineCap.#ctor*"></a>
+
+  <h3 id="Egami_SystemDrawing_Drawing2D_CustomLineCap__ctor_Egami_SystemDrawing_Drawing2D_GraphicsPath_Egami_SystemDrawing_Drawing2D_GraphicsPath_Egami_SystemDrawing_Drawing2D_LineCap_" data-uid="Egami.SystemDrawing.Drawing2D.CustomLineCap.#ctor(Egami.SystemDrawing.Drawing2D.GraphicsPath,Egami.SystemDrawing.Drawing2D.GraphicsPath,Egami.SystemDrawing.Drawing2D.LineCap)">
+  CustomLineCap(GraphicsPath?, GraphicsPath?, LineCap)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Drawing2D/CustomLineCap.cs/#L35"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Initializes a new instance of the <a class="xref" href="Egami.SystemDrawing.Drawing2D.CustomLineCap.html">CustomLineCap</a> class.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public CustomLineCap(GraphicsPath? fillPath, GraphicsPath? strokePath, LineCap baseCap)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>fillPath</code> <a class="xref" href="Egami.SystemDrawing.Drawing2D.GraphicsPath.html">GraphicsPath</a></dt>
+    <dd><p>The path to fill, or null.</p>
+</dd>
+    <dt><code>strokePath</code> <a class="xref" href="Egami.SystemDrawing.Drawing2D.GraphicsPath.html">GraphicsPath</a></dt>
+    <dd><p>The path to outline, or null.</p>
+</dd>
+    <dt><code>baseCap</code> <a class="xref" href="Egami.SystemDrawing.Drawing2D.LineCap.html">LineCap</a></dt>
+    <dd><p>The cap the line itself ends with.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Drawing2D_CustomLineCap__ctor_" data-uid="Egami.SystemDrawing.Drawing2D.CustomLineCap.#ctor*"></a>
+
+  <h3 id="Egami_SystemDrawing_Drawing2D_CustomLineCap__ctor_Egami_SystemDrawing_Drawing2D_GraphicsPath_Egami_SystemDrawing_Drawing2D_GraphicsPath_Egami_SystemDrawing_Drawing2D_LineCap_System_Single_" data-uid="Egami.SystemDrawing.Drawing2D.CustomLineCap.#ctor(Egami.SystemDrawing.Drawing2D.GraphicsPath,Egami.SystemDrawing.Drawing2D.GraphicsPath,Egami.SystemDrawing.Drawing2D.LineCap,System.Single)">
+  CustomLineCap(GraphicsPath?, GraphicsPath?, LineCap, float)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Drawing2D/CustomLineCap.cs/#L46"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Initializes a new instance of the <a class="xref" href="Egami.SystemDrawing.Drawing2D.CustomLineCap.html">CustomLineCap</a> class.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public CustomLineCap(GraphicsPath? fillPath, GraphicsPath? strokePath, LineCap baseCap, float baseInset)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>fillPath</code> <a class="xref" href="Egami.SystemDrawing.Drawing2D.GraphicsPath.html">GraphicsPath</a></dt>
+    <dd><p>The path to fill, or null.</p>
+</dd>
+    <dt><code>strokePath</code> <a class="xref" href="Egami.SystemDrawing.Drawing2D.GraphicsPath.html">GraphicsPath</a></dt>
+    <dd><p>The path to outline, or null.</p>
+</dd>
+    <dt><code>baseCap</code> <a class="xref" href="Egami.SystemDrawing.Drawing2D.LineCap.html">LineCap</a></dt>
+    <dd><p>The cap the line itself ends with.</p>
+</dd>
+    <dt><code>baseInset</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>How far the line stops short of its end, in pen widths.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.notimplementedexception">NotImplementedException</a></dt>
+    <dd><p>A fill path is given: GDI+ does not implement filled custom caps, and neither does Egami.</p>
+</dd>
+  </dl>
+
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="Egami_SystemDrawing_Drawing2D_CustomLineCap_BaseCap_" data-uid="Egami.SystemDrawing.Drawing2D.CustomLineCap.BaseCap*"></a>
+
+  <h3 id="Egami_SystemDrawing_Drawing2D_CustomLineCap_BaseCap" data-uid="Egami.SystemDrawing.Drawing2D.CustomLineCap.BaseCap">
+  BaseCap
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Drawing2D/CustomLineCap.cs/#L65"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets the cap the line itself ends with.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public LineCap BaseCap { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Drawing2D.LineCap.html">LineCap</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>An anchor or custom cap, which GDI+ refuses.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_SystemDrawing_Drawing2D_CustomLineCap_BaseInset_" data-uid="Egami.SystemDrawing.Drawing2D.CustomLineCap.BaseInset*"></a>
+
+  <h3 id="Egami_SystemDrawing_Drawing2D_CustomLineCap_BaseInset" data-uid="Egami.SystemDrawing.Drawing2D.CustomLineCap.BaseInset">
+  BaseInset
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Drawing2D/CustomLineCap.cs/#L72"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets how far the line stops short of its end, in pen widths.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float BaseInset { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Drawing2D_CustomLineCap_StrokeJoin_" data-uid="Egami.SystemDrawing.Drawing2D.CustomLineCap.StrokeJoin*"></a>
+
+  <h3 id="Egami_SystemDrawing_Drawing2D_CustomLineCap_StrokeJoin" data-uid="Egami.SystemDrawing.Drawing2D.CustomLineCap.StrokeJoin">
+  StrokeJoin
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Drawing2D/CustomLineCap.cs/#L75"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets how a stroke path's corners join.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public LineJoin StrokeJoin { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Drawing2D.LineJoin.html">LineJoin</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Drawing2D_CustomLineCap_WidthScale_" data-uid="Egami.SystemDrawing.Drawing2D.CustomLineCap.WidthScale*"></a>
+
+  <h3 id="Egami_SystemDrawing_Drawing2D_CustomLineCap_WidthScale" data-uid="Egami.SystemDrawing.Drawing2D.CustomLineCap.WidthScale">
+  WidthScale
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Drawing2D/CustomLineCap.cs/#L78"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets how much the pen width scales the cap; 1 by default.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float WidthScale { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="Egami_SystemDrawing_Drawing2D_CustomLineCap_Clone_" data-uid="Egami.SystemDrawing.Drawing2D.CustomLineCap.Clone*"></a>
+
+  <h3 id="Egami_SystemDrawing_Drawing2D_CustomLineCap_Clone" data-uid="Egami.SystemDrawing.Drawing2D.CustomLineCap.Clone">
+  Clone()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Drawing2D/CustomLineCap.cs/#L100"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>A copy.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public object Clone()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></dt>
+    <dd><p>The copy.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Drawing2D_CustomLineCap_Dispose_" data-uid="Egami.SystemDrawing.Drawing2D.CustomLineCap.Dispose*"></a>
+
+  <h3 id="Egami_SystemDrawing_Drawing2D_CustomLineCap_Dispose" data-uid="Egami.SystemDrawing.Drawing2D.CustomLineCap.Dispose">
+  Dispose()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Drawing2D/CustomLineCap.cs/#L103"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Releases the cap.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Dispose()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Drawing2D_CustomLineCap_Dispose_" data-uid="Egami.SystemDrawing.Drawing2D.CustomLineCap.Dispose*"></a>
+
+  <h3 id="Egami_SystemDrawing_Drawing2D_CustomLineCap_Dispose_System_Boolean_" data-uid="Egami.SystemDrawing.Drawing2D.CustomLineCap.Dispose(System.Boolean)">
+  Dispose(bool)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Drawing2D/CustomLineCap.cs/#L111"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Releases the cap.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">protected virtual void Dispose(bool disposing)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>disposing</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>Whether <a class="xref" href="Egami.SystemDrawing.Drawing2D.CustomLineCap.html#Egami_SystemDrawing_Drawing2D_CustomLineCap_Dispose">Dispose()</a> was called.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Drawing2D_CustomLineCap_GetStrokeCaps_" data-uid="Egami.SystemDrawing.Drawing2D.CustomLineCap.GetStrokeCaps*"></a>
+
+  <h3 id="Egami_SystemDrawing_Drawing2D_CustomLineCap_GetStrokeCaps_Egami_SystemDrawing_Drawing2D_LineCap__Egami_SystemDrawing_Drawing2D_LineCap__" data-uid="Egami.SystemDrawing.Drawing2D.CustomLineCap.GetStrokeCaps(Egami.SystemDrawing.Drawing2D.LineCap@,Egami.SystemDrawing.Drawing2D.LineCap@)">
+  GetStrokeCaps(out LineCap, out LineCap)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Drawing2D/CustomLineCap.cs/#L92"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the caps of a stroke path's ends.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void GetStrokeCaps(out LineCap startCap, out LineCap endCap)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>startCap</code> <a class="xref" href="Egami.SystemDrawing.Drawing2D.LineCap.html">LineCap</a></dt>
+    <dd><p>The start cap.</p>
+</dd>
+    <dt><code>endCap</code> <a class="xref" href="Egami.SystemDrawing.Drawing2D.LineCap.html">LineCap</a></dt>
+    <dd><p>The end cap.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Drawing2D_CustomLineCap_SetStrokeCaps_" data-uid="Egami.SystemDrawing.Drawing2D.CustomLineCap.SetStrokeCaps*"></a>
+
+  <h3 id="Egami_SystemDrawing_Drawing2D_CustomLineCap_SetStrokeCaps_Egami_SystemDrawing_Drawing2D_LineCap_Egami_SystemDrawing_Drawing2D_LineCap_" data-uid="Egami.SystemDrawing.Drawing2D.CustomLineCap.SetStrokeCaps(Egami.SystemDrawing.Drawing2D.LineCap,Egami.SystemDrawing.Drawing2D.LineCap)">
+  SetStrokeCaps(LineCap, LineCap)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Drawing2D/CustomLineCap.cs/#L83"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Sets the caps of a stroke path's ends.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void SetStrokeCaps(LineCap startCap, LineCap endCap)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>startCap</code> <a class="xref" href="Egami.SystemDrawing.Drawing2D.LineCap.html">LineCap</a></dt>
+    <dd><p>The start cap.</p>
+</dd>
+    <dt><code>endCap</code> <a class="xref" href="Egami.SystemDrawing.Drawing2D.LineCap.html">LineCap</a></dt>
+    <dd><p>The end cap.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Drawing2D/CustomLineCap.cs/#L17" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

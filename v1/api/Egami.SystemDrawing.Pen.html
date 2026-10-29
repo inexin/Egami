@@ -89,7 +89,7 @@
 
 
   <h1 id="Egami_SystemDrawing_Pen" data-uid="Egami.SystemDrawing.Pen" class="text-break">
-Class Pen  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Pen.Settings.cs/#L6"><i class="bi bi-code-slash"></i></a>
+Class Pen  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Pen.Settings.cs/#L11"><i class="bi bi-code-slash"></i></a>
   </h1>
 
   <div class="facts text-secondary">
@@ -181,7 +181,7 @@ g.FillPolygon(brush, [new PointF(40, 4), new PointF(48, 16), new PointF(32, 16)]
 
   <h3 id="Egami_SystemDrawing_Pen__ctor_Egami_SystemDrawing_Brush_" data-uid="Egami.SystemDrawing.Pen.#ctor(Egami.SystemDrawing.Brush)">
   Pen(Brush)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Pen.cs/#L33"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Pen.cs/#L34"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Initializes a new instance of the <a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a> class, 1 unit wide.</p>
@@ -214,7 +214,7 @@ g.FillPolygon(brush, [new PointF(40, 4), new PointF(48, 16), new PointF(32, 16)]
 
   <h3 id="Egami_SystemDrawing_Pen__ctor_Egami_SystemDrawing_Brush_System_Single_" data-uid="Egami.SystemDrawing.Pen.#ctor(Egami.SystemDrawing.Brush,System.Single)">
   Pen(Brush, float)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Pen.cs/#L41"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Pen.cs/#L42"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Initializes a new instance of the <a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a> class.</p>
@@ -250,7 +250,7 @@ g.FillPolygon(brush, [new PointF(40, 4), new PointF(48, 16), new PointF(32, 16)]
 
   <h3 id="Egami_SystemDrawing_Pen__ctor_System_Drawing_Color_" data-uid="Egami.SystemDrawing.Pen.#ctor(System.Drawing.Color)">
   Pen(Color)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Pen.cs/#L18"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Pen.cs/#L19"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Initializes a new instance of the <a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a> class, 1 unit wide.</p>
@@ -283,7 +283,7 @@ g.FillPolygon(brush, [new PointF(40, 4), new PointF(48, 16), new PointF(32, 16)]
 
   <h3 id="Egami_SystemDrawing_Pen__ctor_System_Drawing_Color_System_Single_" data-uid="Egami.SystemDrawing.Pen.#ctor(System.Drawing.Color,System.Single)">
   Pen(Color, float)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Pen.cs/#L26"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Pen.cs/#L27"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Initializes a new instance of the <a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a> class.</p>
@@ -319,11 +319,43 @@ g.FillPolygon(brush, [new PointF(40, 4), new PointF(48, 16), new PointF(32, 16)]
 </h2>
 
 
+  <a id="Egami_SystemDrawing_Pen_Alignment_" data-uid="Egami.SystemDrawing.Pen.Alignment*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pen_Alignment" data-uid="Egami.SystemDrawing.Pen.Alignment">
+  Alignment
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Pen.Settings.cs/#L142"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets where the pen lies along a closed outline; GDI+ draws everything but <a class="xref" href="Egami.SystemDrawing.Drawing2D.PenAlignment.html#Egami_SystemDrawing_Drawing2D_PenAlignment_Inset">Inset</a> centered.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public PenAlignment Alignment { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Drawing2D.PenAlignment.html">PenAlignment</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
   <a id="Egami_SystemDrawing_Pen_Brush_" data-uid="Egami.SystemDrawing.Pen.Brush*"></a>
 
   <h3 id="Egami_SystemDrawing_Pen_Brush" data-uid="Egami.SystemDrawing.Pen.Brush">
   Brush
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Pen.cs/#L60"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Pen.cs/#L62"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets or sets a copy of the brush the pen paints with.</p>
@@ -355,7 +387,7 @@ g.FillPolygon(brush, [new PointF(40, 4), new PointF(48, 16), new PointF(32, 16)]
 
   <h3 id="Egami_SystemDrawing_Pen_Color" data-uid="Egami.SystemDrawing.Pen.Color">
   Color
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Pen.cs/#L49"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Pen.cs/#L51"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets or sets the color; setting it makes the brush a solid brush of that color.</p>
@@ -380,6 +412,449 @@ g.FillPolygon(brush, [new PointF(40, 4), new PointF(48, 16), new PointF(32, 16)]
 
 
 
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>The pen paints with a brush other than a solid one, as in GDI+.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_SystemDrawing_Pen_CompoundArray_" data-uid="Egami.SystemDrawing.Pen.CompoundArray*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pen_CompoundArray" data-uid="Egami.SystemDrawing.Pen.CompoundArray">
+  CompoundArray
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Pen.Settings.cs/#L116"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets the positions across the width, from 0 to 1 in increasing pairs, of the strips a compound line draws.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float[] CompoundArray { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a>[]</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>The positions are not increasing pairs from 0 to 1.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_SystemDrawing_Pen_CustomEndCap_" data-uid="Egami.SystemDrawing.Pen.CustomEndCap*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pen_CustomEndCap" data-uid="Egami.SystemDrawing.Pen.CustomEndCap">
+  CustomEndCap
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Pen.Settings.cs/#L162"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets a copy of the cap drawn at the end; setting it makes <a class="xref" href="Egami.SystemDrawing.Pen.html#Egami_SystemDrawing_Pen_EndCap">EndCap</a> custom.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public CustomLineCap CustomEndCap { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Drawing2D.CustomLineCap.html">CustomLineCap</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pen_CustomStartCap_" data-uid="Egami.SystemDrawing.Pen.CustomStartCap*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pen_CustomStartCap" data-uid="Egami.SystemDrawing.Pen.CustomStartCap">
+  CustomStartCap
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Pen.Settings.cs/#L149"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets a copy of the cap drawn at the start; setting it makes <a class="xref" href="Egami.SystemDrawing.Pen.html#Egami_SystemDrawing_Pen_StartCap">StartCap</a> custom.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public CustomLineCap CustomStartCap { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Drawing2D.CustomLineCap.html">CustomLineCap</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pen_DashCap_" data-uid="Egami.SystemDrawing.Pen.DashCap*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pen_DashCap" data-uid="Egami.SystemDrawing.Pen.DashCap">
+  DashCap
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Pen.Settings.cs/#L42"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets how each dash ends; triangle dash caps are drawn flat.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public DashCap DashCap { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Drawing2D.DashCap.html">DashCap</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pen_DashOffset_" data-uid="Egami.SystemDrawing.Pen.DashOffset*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pen_DashOffset" data-uid="Egami.SystemDrawing.Pen.DashOffset">
+  DashOffset
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Pen.Settings.cs/#L82"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets where the dash pattern starts, in multiples of the width.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float DashOffset { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pen_DashPattern_" data-uid="Egami.SystemDrawing.Pen.DashPattern*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pen_DashPattern" data-uid="Egami.SystemDrawing.Pen.DashPattern">
+  DashPattern
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Pen.Settings.cs/#L92"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets the dash and gap lengths, in multiples of the width: the style's own pattern, or a custom one.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float[] DashPattern { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a>[]</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>A length is zero or less, or the pattern is empty.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.invalidoperationexception">InvalidOperationException</a></dt>
+    <dd><p>The pen is solid, as in GDI+.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_SystemDrawing_Pen_DashStyle_" data-uid="Egami.SystemDrawing.Pen.DashStyle*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pen_DashStyle" data-uid="Egami.SystemDrawing.Pen.DashStyle">
+  DashStyle
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Pen.Settings.cs/#L63"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets the dash style; setting <a class="xref" href="Egami.SystemDrawing.Pen.html#Egami_SystemDrawing_Pen_DashPattern">DashPattern</a> makes it <a class="xref" href="Egami.SystemDrawing.Drawing2D.DashStyle.html#Egami_SystemDrawing_Drawing2D_DashStyle_Custom">Custom</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public DashStyle DashStyle { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Drawing2D.DashStyle.html">DashStyle</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pen_EndCap_" data-uid="Egami.SystemDrawing.Pen.EndCap*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pen_EndCap" data-uid="Egami.SystemDrawing.Pen.EndCap">
+  EndCap
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Pen.Settings.cs/#L35"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets how the line ends.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public LineCap EndCap { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Drawing2D.LineCap.html">LineCap</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pen_LineJoin_" data-uid="Egami.SystemDrawing.Pen.LineJoin*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pen_LineJoin" data-uid="Egami.SystemDrawing.Pen.LineJoin">
+  LineJoin
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Pen.Settings.cs/#L49"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets how segments meet.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public LineJoin LineJoin { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Drawing2D.LineJoin.html">LineJoin</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pen_MiterLimit_" data-uid="Egami.SystemDrawing.Pen.MiterLimit*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pen_MiterLimit" data-uid="Egami.SystemDrawing.Pen.MiterLimit">
+  MiterLimit
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Pen.Settings.cs/#L56"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets how far a mitered corner reaches, in half widths, before it is beveled; at least 1.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float MiterLimit { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pen_PenType_" data-uid="Egami.SystemDrawing.Pen.PenType*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pen_PenType" data-uid="Egami.SystemDrawing.Pen.PenType">
+  PenType
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Pen.Settings.cs/#L175"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the kind of brush the pen paints with.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public PenType PenType { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Drawing2D.PenType.html">PenType</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pen_StartCap_" data-uid="Egami.SystemDrawing.Pen.StartCap*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pen_StartCap" data-uid="Egami.SystemDrawing.Pen.StartCap">
+  StartCap
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Pen.Settings.cs/#L28"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets how the line starts.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public LineCap StartCap { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Drawing2D.LineCap.html">LineCap</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pen_Transform_" data-uid="Egami.SystemDrawing.Pen.Transform*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pen_Transform" data-uid="Egami.SystemDrawing.Pen.Transform">
+  Transform
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Pen.Settings.cs/#L186"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets a copy of the pen's own transform, which shapes its width.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Matrix Transform { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Drawing2D.Matrix.html">Matrix</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>The transform cannot be inverted.</p>
+</dd>
+  </dl>
 
 
 
@@ -387,7 +862,7 @@ g.FillPolygon(brush, [new PointF(40, 4), new PointF(48, 16), new PointF(32, 16)]
 
   <h3 id="Egami_SystemDrawing_Pen_Width" data-uid="Egami.SystemDrawing.Pen.Width">
   Width
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Pen.cs/#L72"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Pen.cs/#L74"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets or sets the width in world units.</p>
@@ -423,7 +898,7 @@ g.FillPolygon(brush, [new PointF(40, 4), new PointF(48, 16), new PointF(32, 16)]
 
   <h3 id="Egami_SystemDrawing_Pen_Clone" data-uid="Egami.SystemDrawing.Pen.Clone">
   Clone()
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Pen.cs/#L90"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Pen.cs/#L92"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>A copy, which can change even when this pen cannot.</p>
@@ -456,7 +931,7 @@ g.FillPolygon(brush, [new PointF(40, 4), new PointF(48, 16), new PointF(32, 16)]
 
   <h3 id="Egami_SystemDrawing_Pen_Dispose" data-uid="Egami.SystemDrawing.Pen.Dispose">
   Dispose()
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Pen.cs/#L99"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Pen.cs/#L101"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Releases the pen.</p>
@@ -485,11 +960,365 @@ g.FillPolygon(brush, [new PointF(40, 4), new PointF(48, 16), new PointF(32, 16)]
 
 
 
+  <a id="Egami_SystemDrawing_Pen_MultiplyTransform_" data-uid="Egami.SystemDrawing.Pen.MultiplyTransform*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pen_MultiplyTransform_Egami_SystemDrawing_Drawing2D_Matrix_" data-uid="Egami.SystemDrawing.Pen.MultiplyTransform(Egami.SystemDrawing.Drawing2D.Matrix)">
+  MultiplyTransform(Matrix)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Pen.Settings.cs/#L213"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Multiplies the pen's transform by a matrix, applied before it.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void MultiplyTransform(Matrix matrix)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>matrix</code> <a class="xref" href="Egami.SystemDrawing.Drawing2D.Matrix.html">Matrix</a></dt>
+    <dd><p>The matrix.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pen_MultiplyTransform_" data-uid="Egami.SystemDrawing.Pen.MultiplyTransform*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pen_MultiplyTransform_Egami_SystemDrawing_Drawing2D_Matrix_Egami_SystemDrawing_Drawing2D_MatrixOrder_" data-uid="Egami.SystemDrawing.Pen.MultiplyTransform(Egami.SystemDrawing.Drawing2D.Matrix,Egami.SystemDrawing.Drawing2D.MatrixOrder)">
+  MultiplyTransform(Matrix, MatrixOrder)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Pen.Settings.cs/#L218"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Multiplies the pen's transform by a matrix.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void MultiplyTransform(Matrix matrix, MatrixOrder order)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>matrix</code> <a class="xref" href="Egami.SystemDrawing.Drawing2D.Matrix.html">Matrix</a></dt>
+    <dd><p>The matrix.</p>
+</dd>
+    <dt><code>order</code> <a class="xref" href="Egami.SystemDrawing.Drawing2D.MatrixOrder.html">MatrixOrder</a></dt>
+    <dd><p>Whether it applies before or after.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pen_ResetTransform_" data-uid="Egami.SystemDrawing.Pen.ResetTransform*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pen_ResetTransform" data-uid="Egami.SystemDrawing.Pen.ResetTransform">
+  ResetTransform()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Pen.Settings.cs/#L209"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Makes the pen's transform the identity.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void ResetTransform()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pen_RotateTransform_" data-uid="Egami.SystemDrawing.Pen.RotateTransform*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pen_RotateTransform_System_Single_" data-uid="Egami.SystemDrawing.Pen.RotateTransform(System.Single)">
+  RotateTransform(float)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Pen.Settings.cs/#L248"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Rotates the pen's transform.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void RotateTransform(float angle)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>angle</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>The angle in degrees.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pen_RotateTransform_" data-uid="Egami.SystemDrawing.Pen.RotateTransform*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pen_RotateTransform_System_Single_Egami_SystemDrawing_Drawing2D_MatrixOrder_" data-uid="Egami.SystemDrawing.Pen.RotateTransform(System.Single,Egami.SystemDrawing.Drawing2D.MatrixOrder)">
+  RotateTransform(float, MatrixOrder)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Pen.Settings.cs/#L253"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Rotates the pen's transform.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void RotateTransform(float angle, MatrixOrder order)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>angle</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>The angle in degrees.</p>
+</dd>
+    <dt><code>order</code> <a class="xref" href="Egami.SystemDrawing.Drawing2D.MatrixOrder.html">MatrixOrder</a></dt>
+    <dd><p>Whether it applies before or after.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pen_ScaleTransform_" data-uid="Egami.SystemDrawing.Pen.ScaleTransform*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pen_ScaleTransform_System_Single_System_Single_" data-uid="Egami.SystemDrawing.Pen.ScaleTransform(System.Single,System.Single)">
+  ScaleTransform(float, float)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Pen.Settings.cs/#L238"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Scales the pen's transform, and so its width.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void ScaleTransform(float sx, float sy)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>sx</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>The horizontal factor.</p>
+</dd>
+    <dt><code>sy</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>The vertical factor.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pen_ScaleTransform_" data-uid="Egami.SystemDrawing.Pen.ScaleTransform*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pen_ScaleTransform_System_Single_System_Single_Egami_SystemDrawing_Drawing2D_MatrixOrder_" data-uid="Egami.SystemDrawing.Pen.ScaleTransform(System.Single,System.Single,Egami.SystemDrawing.Drawing2D.MatrixOrder)">
+  ScaleTransform(float, float, MatrixOrder)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Pen.Settings.cs/#L244"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Scales the pen's transform, and so its width.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void ScaleTransform(float sx, float sy, MatrixOrder order)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>sx</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>The horizontal factor.</p>
+</dd>
+    <dt><code>sy</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>The vertical factor.</p>
+</dd>
+    <dt><code>order</code> <a class="xref" href="Egami.SystemDrawing.Drawing2D.MatrixOrder.html">MatrixOrder</a></dt>
+    <dd><p>Whether it applies before or after.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pen_SetLineCap_" data-uid="Egami.SystemDrawing.Pen.SetLineCap*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pen_SetLineCap_Egami_SystemDrawing_Drawing2D_LineCap_Egami_SystemDrawing_Drawing2D_LineCap_Egami_SystemDrawing_Drawing2D_DashCap_" data-uid="Egami.SystemDrawing.Pen.SetLineCap(Egami.SystemDrawing.Drawing2D.LineCap,Egami.SystemDrawing.Drawing2D.LineCap,Egami.SystemDrawing.Drawing2D.DashCap)">
+  SetLineCap(LineCap, LineCap, DashCap)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Pen.Settings.cs/#L201"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Sets both line caps and the dash cap.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void SetLineCap(LineCap startCap, LineCap endCap, DashCap dashCap)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>startCap</code> <a class="xref" href="Egami.SystemDrawing.Drawing2D.LineCap.html">LineCap</a></dt>
+    <dd><p>The start cap.</p>
+</dd>
+    <dt><code>endCap</code> <a class="xref" href="Egami.SystemDrawing.Drawing2D.LineCap.html">LineCap</a></dt>
+    <dd><p>The end cap.</p>
+</dd>
+    <dt><code>dashCap</code> <a class="xref" href="Egami.SystemDrawing.Drawing2D.DashCap.html">DashCap</a></dt>
+    <dd><p>The dash cap.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pen_TranslateTransform_" data-uid="Egami.SystemDrawing.Pen.TranslateTransform*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pen_TranslateTransform_System_Single_System_Single_" data-uid="Egami.SystemDrawing.Pen.TranslateTransform(System.Single,System.Single)">
+  TranslateTransform(float, float)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Pen.Settings.cs/#L227"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Translates the pen's transform, which does not change how it draws.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void TranslateTransform(float dx, float dy)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>dx</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>The horizontal distance.</p>
+</dd>
+    <dt><code>dy</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>The vertical distance.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pen_TranslateTransform_" data-uid="Egami.SystemDrawing.Pen.TranslateTransform*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pen_TranslateTransform_System_Single_System_Single_Egami_SystemDrawing_Drawing2D_MatrixOrder_" data-uid="Egami.SystemDrawing.Pen.TranslateTransform(System.Single,System.Single,Egami.SystemDrawing.Drawing2D.MatrixOrder)">
+  TranslateTransform(float, float, MatrixOrder)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Pen.Settings.cs/#L233"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Translates the pen's transform, which does not change how it draws.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void TranslateTransform(float dx, float dy, MatrixOrder order)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>dx</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>The horizontal distance.</p>
+</dd>
+    <dt><code>dy</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>The vertical distance.</p>
+</dd>
+    <dt><code>order</code> <a class="xref" href="Egami.SystemDrawing.Drawing2D.MatrixOrder.html">MatrixOrder</a></dt>
+    <dd><p>Whether it applies before or after.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
 
 </article>
 
         <div class="contribution d-print-none">
-          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Pen.Settings.cs/#L6" class="edit-link">Edit this page</a>
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Pen.Settings.cs/#L11" class="edit-link">Edit this page</a>
         </div>
 
 

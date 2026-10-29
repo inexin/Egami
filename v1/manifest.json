@@ -11745,6 +11745,20 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Brushes.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Brushes.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Brushes",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Brushes.yml\" sourcestartlinenumber=\"1\">Solid brushes of the named web colors, one per color and thread, as System.Drawing keeps them; their color can be changed, as in System.Drawing.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.SystemDrawing.CopyPixelOperation.yml",
       "output": {
         ".html": {
@@ -11756,6 +11770,48 @@
       "IsMRef": true,
       "Title": "Egami.SystemDrawing.CopyPixelOperation",
       "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.CopyPixelOperation.yml\" sourcestartlinenumber=\"1\">The raster operation of <xref href=\"Egami.SystemDrawing.Graphics.CopyFromScreen(System.Drawing.Point%2cSystem.Drawing.Point%2cSystem.Drawing.Size%2cEgami.SystemDrawing.CopyPixelOperation)\" data-throw-if-not-resolved=\"false\"></xref>, which needs Windows and always throws.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Drawing2D.AdjustableArrowCap.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Drawing2D.AdjustableArrowCap.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Drawing2D.AdjustableArrowCap",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Drawing2D.AdjustableArrowCap.yml\" sourcestartlinenumber=\"1\">An arrowhead line end, its width and height in pen widths, filled or outlined, with an optional inset middle.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Drawing2D.Blend.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Drawing2D.Blend.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Drawing2D.Blend",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Drawing2D.Blend.yml\" sourcestartlinenumber=\"1\">A gradient's falloff: at each position from 0 to 1, a factor from the start color (0) to the end color (1).</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Drawing2D.ColorBlend.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Drawing2D.ColorBlend.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Drawing2D.ColorBlend",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Drawing2D.ColorBlend.yml\" sourcestartlinenumber=\"1\">A gradient's colors at positions from 0 to 1, the first at 0 and the last at 1.</p>\n"
     },
     {
       "type": "ManagedReference",
@@ -11815,6 +11871,48 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Drawing2D.CustomLineCap.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Drawing2D.CustomLineCap.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Drawing2D.CustomLineCap",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Drawing2D.CustomLineCap.yml\" sourcestartlinenumber=\"1\">A line end drawn from a path: the path's x axis runs across the line and its y axis along it, outward from the end, in pen\nwidths. The stroke path is outlined; GDI+ refuses fill paths. Set it as a pen's <xref href=\"Egami.SystemDrawing.Pen.CustomStartCap\" data-throw-if-not-resolved=\"false\"></xref> or\n<xref href=\"Egami.SystemDrawing.Pen.CustomEndCap\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Drawing2D.DashCap.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Drawing2D.DashCap.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Drawing2D.DashCap",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Drawing2D.DashCap.yml\" sourcestartlinenumber=\"1\">How each dash ends.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Drawing2D.DashStyle.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Drawing2D.DashStyle.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Drawing2D.DashStyle",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Drawing2D.DashStyle.yml\" sourcestartlinenumber=\"1\">A pen's dash pattern, in multiples of its width.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.SystemDrawing.Drawing2D.FillMode.yml",
       "output": {
         ".html": {
@@ -11857,6 +11955,34 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Drawing2D.GraphicsPath.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Drawing2D.GraphicsPath.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Drawing2D.GraphicsPath",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Drawing2D.GraphicsPath.yml\" sourcestartlinenumber=\"1\">The Add builders.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Drawing2D.GraphicsPathIterator.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Drawing2D.GraphicsPathIterator.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Drawing2D.GraphicsPathIterator",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Drawing2D.GraphicsPathIterator.yml\" sourcestartlinenumber=\"1\">Walks a <xref href=\"Egami.SystemDrawing.Drawing2D.GraphicsPath\" data-throw-if-not-resolved=\"false\"></xref> by figure, by run of one point type within the current figure, or by marker, as GDI+ walks\nit. The iterator copies the path when it is made.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.SystemDrawing.Drawing2D.GraphicsState.yml",
       "output": {
         ".html": {
@@ -11871,6 +11997,34 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Drawing2D.HatchBrush.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Drawing2D.HatchBrush.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Drawing2D.HatchBrush",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Drawing2D.HatchBrush.yml\" sourcestartlinenumber=\"1\">A brush of one of GDI+'s 53 hatch patterns: 8 by 8 tiles of a foreground color on a background, from the device origin.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Drawing2D.HatchStyle.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Drawing2D.HatchStyle.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Drawing2D.HatchStyle",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Drawing2D.HatchStyle.yml\" sourcestartlinenumber=\"1\">The 53 hatch patterns of <xref href=\"Egami.SystemDrawing.Drawing2D.HatchBrush\" data-throw-if-not-resolved=\"false\"></xref>, each an 8 by 8 tile of foreground on background, from the device origin.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.SystemDrawing.Drawing2D.InterpolationMode.yml",
       "output": {
         ".html": {
@@ -11882,6 +12036,62 @@
       "IsMRef": true,
       "Title": "Egami.SystemDrawing.Drawing2D.InterpolationMode",
       "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Drawing2D.InterpolationMode.yml\" sourcestartlinenumber=\"1\">How images are sampled when drawn at another size or angle. GDI+ and Egami.SystemDrawing default to bilinear without prefiltering.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Drawing2D.LineCap.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Drawing2D.LineCap.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Drawing2D.LineCap",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Drawing2D.LineCap.yml\" sourcestartlinenumber=\"1\">How a line ends: flat, square, round, a triangle, an anchor shape centered on the end, or a custom cap.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Drawing2D.LineJoin.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Drawing2D.LineJoin.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Drawing2D.LineJoin",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Drawing2D.LineJoin.yml\" sourcestartlinenumber=\"1\">How two segments of a line meet.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Drawing2D.LinearGradientBrush.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Drawing2D.LinearGradientBrush.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Drawing2D.LinearGradientBrush",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Drawing2D.LinearGradientBrush.yml\" sourcestartlinenumber=\"1\">A brush of colors along a line: across a rectangle at an angle (or between two points), the colors constant on lines\nperpendicular to it, with a <xref href=\"Egami.SystemDrawing.Drawing2D.LinearGradientBrush.Blend\" data-throw-if-not-resolved=\"false\"></xref> or preset colors, repeating beyond the rectangle.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Drawing2D.LinearGradientMode.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Drawing2D.LinearGradientMode.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Drawing2D.LinearGradientMode",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Drawing2D.LinearGradientMode.yml\" sourcestartlinenumber=\"1\">The direction of a <xref href=\"Egami.SystemDrawing.Drawing2D.LinearGradientBrush\" data-throw-if-not-resolved=\"false\"></xref> made from a rectangle.</p>\n"
     },
     {
       "type": "ManagedReference",
@@ -11910,6 +12120,76 @@
       "IsMRef": true,
       "Title": "Egami.SystemDrawing.Drawing2D.MatrixOrder",
       "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Drawing2D.MatrixOrder.yml\" sourcestartlinenumber=\"1\">Whether a transform is applied before the existing ones (<xref href=\"Egami.SystemDrawing.Drawing2D.MatrixOrder.Prepend\" data-throw-if-not-resolved=\"false\"></xref>, the default) or after them.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Drawing2D.PathData.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Drawing2D.PathData.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Drawing2D.PathData",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Drawing2D.PathData.yml\" sourcestartlinenumber=\"1\">A path's points and their <xref href=\"Egami.SystemDrawing.Drawing2D.PathPointType\" data-throw-if-not-resolved=\"false\"></xref> types.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Drawing2D.PathGradientBrush.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Drawing2D.PathGradientBrush.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Drawing2D.PathGradientBrush",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Drawing2D.PathGradientBrush.yml\" sourcestartlinenumber=\"1\">A brush of colors from a center out to the edge of a polygon or path: the center color at the center point, the surrounding\ncolors at the boundary's points, with a <xref href=\"Egami.SystemDrawing.Drawing2D.PathGradientBrush.Blend\" data-throw-if-not-resolved=\"false\"></xref> or preset colors between.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Drawing2D.PathPointType.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Drawing2D.PathPointType.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Drawing2D.PathPointType",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Drawing2D.PathPointType.yml\" sourcestartlinenumber=\"1\">The type of a point of a <xref href=\"Egami.SystemDrawing.Drawing2D.GraphicsPath\" data-throw-if-not-resolved=\"false\"></xref>: its kind in the low bits and flags above.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Drawing2D.PenAlignment.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Drawing2D.PenAlignment.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Drawing2D.PenAlignment",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Drawing2D.PenAlignment.yml\" sourcestartlinenumber=\"1\">Where a pen lies along a closed shape's outline.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Drawing2D.PenType.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Drawing2D.PenType.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Drawing2D.PenType",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Drawing2D.PenType.yml\" sourcestartlinenumber=\"1\">What a pen paints with: the kind of its brush.</p>\n"
     },
     {
       "type": "ManagedReference",
@@ -11966,6 +12246,20 @@
       "IsMRef": true,
       "Title": "Egami.SystemDrawing.Drawing2D.SmoothingMode",
       "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Drawing2D.SmoothingMode.yml\" sourcestartlinenumber=\"1\">Whether shapes and lines are antialiased. GDI+ and Egami.SystemDrawing default to <xref href=\"Egami.SystemDrawing.Drawing2D.SmoothingMode.None\" data-throw-if-not-resolved=\"false\"></xref>, aliased.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Drawing2D.WarpMode.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Drawing2D.WarpMode.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Drawing2D.WarpMode",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Drawing2D.WarpMode.yml\" sourcestartlinenumber=\"1\">How <xref href=\"Egami.SystemDrawing.Drawing2D.GraphicsPath.Warp(System.Drawing.PointF%5b%5d%2cSystem.Drawing.RectangleF%2cEgami.SystemDrawing.Drawing2D.Matrix%2cEgami.SystemDrawing.Drawing2D.WarpMode%2cSystem.Single)\" data-throw-if-not-resolved=\"false\"></xref> maps a rectangle onto four points.</p>\n"
     },
     {
       "type": "ManagedReference",
@@ -12459,6 +12753,20 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Pens.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Pens.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Pens",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Pens.yml\" sourcestartlinenumber=\"1\">One-unit pens of the named web colors, which cannot be changed or disposed.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.SystemDrawing.Region.yml",
       "output": {
         ".html": {
@@ -12501,6 +12809,34 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.SystemBrushes.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.SystemBrushes.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.SystemBrushes",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.SystemBrushes.yml\" sourcestartlinenumber=\"1\">Solid brushes of the system colors, which cannot be changed or disposed.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.SystemPens.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.SystemPens.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.SystemPens",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.SystemPens.yml\" sourcestartlinenumber=\"1\">One-unit pens of the system colors, which cannot be changed or disposed.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.SystemDrawing.Text.TextRenderingHint.yml",
       "output": {
         ".html": {
@@ -12526,6 +12862,20 @@
       "IsMRef": true,
       "Title": "Egami.SystemDrawing.Text",
       "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.TextureBrush.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.TextureBrush.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.TextureBrush",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.TextureBrush.yml\" sourcestartlinenumber=\"1\">A brush that tiles an image, from the world origin, through its transform.</p>\n"
     },
     {
       "type": "ManagedReference",

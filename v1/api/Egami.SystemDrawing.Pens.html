@@ -1,0 +1,4712 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class Pens | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class Pens | Egami ">
+      
+      <meta name="description" content="One-unit pens of the named web colors, which cannot be changed or disposed.">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_SystemDrawing_Pens.md&amp;value=---%0Auid%3A%20Egami.SystemDrawing.Pens%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.SystemDrawing.Pens">
+
+
+
+  <h1 id="Egami_SystemDrawing_Pens" data-uid="Egami.SystemDrawing.Pens" class="text-break">
+Class Pens  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L579"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a>.<a class="xref" href="Egami.SystemDrawing.html">SystemDrawing</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.SystemDrawing.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>One-unit pens of the named web colors, which cannot be changed or disposed.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static class Pens</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><span class="xref">Pens</span></div>
+    </dd>
+  </dl>
+
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone">object.MemberwiseClone()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+  </dd></dl>
+
+
+
+  <h2 id="Egami_SystemDrawing_Pens_examples">Examples</h2>
+  <pre><code class="lang-csharp">// Hatch, texture and gradient brushes, and the Brushes and Pens of the named colors.
+using Bitmap bitmap = new(80, 60);
+using Graphics g = Graphics.FromImage(bitmap);
+using HatchBrush hatch = new(HatchStyle.DiagonalCross, Color.Black, Color.White);
+g.FillRectangle(hatch, 0, 0, 40, 30);
+using LinearGradientBrush linear = new(new Rectangle(40, 0, 40, 30), Color.Red, Color.Blue, LinearGradientMode.Horizontal);
+linear.SetSigmaBellShape(0.5f);
+g.FillRectangle(linear, 40, 0, 40, 30);
+using PathGradientBrush radial = new([new PointF(0, 30), new PointF(40, 30), new PointF(20, 60)]) { CenterColor = Color.White, SurroundColors = [Color.Green] };
+g.FillRectangle(radial, 0, 30, 40, 30);
+using Bitmap tile = new(4, 4);
+tile.SetPixel(0, 0, Color.Orange);
+using TextureBrush texture = new(tile, WrapMode.TileFlipXY);
+g.FillRectangle(texture, 40, 30, 40, 30);
+g.DrawRectangle(Egami.SystemDrawing.Pens.Gray, 0, 0, 79, 59);
+g.FillEllipse(Egami.SystemDrawing.Brushes.Gold, 36, 26, 8, 8);
+Blend? blend = linear.Blend;  // 511 factors: the bell, as GDI+ samples it</code></pre>
+
+
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="Egami_SystemDrawing_Pens_AliceBlue_" data-uid="Egami.SystemDrawing.Pens.AliceBlue*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_AliceBlue" data-uid="Egami.SystemDrawing.Pens.AliceBlue">
+  AliceBlue
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L585"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the alice blue pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen AliceBlue { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_AntiqueWhite_" data-uid="Egami.SystemDrawing.Pens.AntiqueWhite*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_AntiqueWhite" data-uid="Egami.SystemDrawing.Pens.AntiqueWhite">
+  AntiqueWhite
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L588"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the antique white pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen AntiqueWhite { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_Aqua_" data-uid="Egami.SystemDrawing.Pens.Aqua*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_Aqua" data-uid="Egami.SystemDrawing.Pens.Aqua">
+  Aqua
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L591"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the aqua pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen Aqua { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_Aquamarine_" data-uid="Egami.SystemDrawing.Pens.Aquamarine*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_Aquamarine" data-uid="Egami.SystemDrawing.Pens.Aquamarine">
+  Aquamarine
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L594"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the aquamarine pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen Aquamarine { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_Azure_" data-uid="Egami.SystemDrawing.Pens.Azure*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_Azure" data-uid="Egami.SystemDrawing.Pens.Azure">
+  Azure
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L597"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the azure pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen Azure { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_Beige_" data-uid="Egami.SystemDrawing.Pens.Beige*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_Beige" data-uid="Egami.SystemDrawing.Pens.Beige">
+  Beige
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L600"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the beige pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen Beige { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_Bisque_" data-uid="Egami.SystemDrawing.Pens.Bisque*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_Bisque" data-uid="Egami.SystemDrawing.Pens.Bisque">
+  Bisque
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L603"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the bisque pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen Bisque { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_Black_" data-uid="Egami.SystemDrawing.Pens.Black*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_Black" data-uid="Egami.SystemDrawing.Pens.Black">
+  Black
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L606"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the black pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen Black { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_BlanchedAlmond_" data-uid="Egami.SystemDrawing.Pens.BlanchedAlmond*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_BlanchedAlmond" data-uid="Egami.SystemDrawing.Pens.BlanchedAlmond">
+  BlanchedAlmond
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L609"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the blanched almond pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen BlanchedAlmond { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_Blue_" data-uid="Egami.SystemDrawing.Pens.Blue*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_Blue" data-uid="Egami.SystemDrawing.Pens.Blue">
+  Blue
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L612"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the blue pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen Blue { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_BlueViolet_" data-uid="Egami.SystemDrawing.Pens.BlueViolet*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_BlueViolet" data-uid="Egami.SystemDrawing.Pens.BlueViolet">
+  BlueViolet
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L615"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the blue violet pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen BlueViolet { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_Brown_" data-uid="Egami.SystemDrawing.Pens.Brown*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_Brown" data-uid="Egami.SystemDrawing.Pens.Brown">
+  Brown
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L618"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the brown pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen Brown { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_BurlyWood_" data-uid="Egami.SystemDrawing.Pens.BurlyWood*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_BurlyWood" data-uid="Egami.SystemDrawing.Pens.BurlyWood">
+  BurlyWood
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L621"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the burly wood pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen BurlyWood { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_CadetBlue_" data-uid="Egami.SystemDrawing.Pens.CadetBlue*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_CadetBlue" data-uid="Egami.SystemDrawing.Pens.CadetBlue">
+  CadetBlue
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L624"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the cadet blue pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen CadetBlue { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_Chartreuse_" data-uid="Egami.SystemDrawing.Pens.Chartreuse*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_Chartreuse" data-uid="Egami.SystemDrawing.Pens.Chartreuse">
+  Chartreuse
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L627"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the chartreuse pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen Chartreuse { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_Chocolate_" data-uid="Egami.SystemDrawing.Pens.Chocolate*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_Chocolate" data-uid="Egami.SystemDrawing.Pens.Chocolate">
+  Chocolate
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L630"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the chocolate pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen Chocolate { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_Coral_" data-uid="Egami.SystemDrawing.Pens.Coral*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_Coral" data-uid="Egami.SystemDrawing.Pens.Coral">
+  Coral
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L633"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the coral pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen Coral { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_CornflowerBlue_" data-uid="Egami.SystemDrawing.Pens.CornflowerBlue*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_CornflowerBlue" data-uid="Egami.SystemDrawing.Pens.CornflowerBlue">
+  CornflowerBlue
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L636"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the cornflower blue pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen CornflowerBlue { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_Cornsilk_" data-uid="Egami.SystemDrawing.Pens.Cornsilk*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_Cornsilk" data-uid="Egami.SystemDrawing.Pens.Cornsilk">
+  Cornsilk
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L639"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the cornsilk pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen Cornsilk { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_Crimson_" data-uid="Egami.SystemDrawing.Pens.Crimson*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_Crimson" data-uid="Egami.SystemDrawing.Pens.Crimson">
+  Crimson
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L642"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the crimson pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen Crimson { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_Cyan_" data-uid="Egami.SystemDrawing.Pens.Cyan*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_Cyan" data-uid="Egami.SystemDrawing.Pens.Cyan">
+  Cyan
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L645"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the cyan pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen Cyan { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_DarkBlue_" data-uid="Egami.SystemDrawing.Pens.DarkBlue*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_DarkBlue" data-uid="Egami.SystemDrawing.Pens.DarkBlue">
+  DarkBlue
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L648"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the dark blue pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen DarkBlue { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_DarkCyan_" data-uid="Egami.SystemDrawing.Pens.DarkCyan*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_DarkCyan" data-uid="Egami.SystemDrawing.Pens.DarkCyan">
+  DarkCyan
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L651"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the dark cyan pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen DarkCyan { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_DarkGoldenrod_" data-uid="Egami.SystemDrawing.Pens.DarkGoldenrod*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_DarkGoldenrod" data-uid="Egami.SystemDrawing.Pens.DarkGoldenrod">
+  DarkGoldenrod
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L654"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the dark goldenrod pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen DarkGoldenrod { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_DarkGray_" data-uid="Egami.SystemDrawing.Pens.DarkGray*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_DarkGray" data-uid="Egami.SystemDrawing.Pens.DarkGray">
+  DarkGray
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L657"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the dark gray pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen DarkGray { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_DarkGreen_" data-uid="Egami.SystemDrawing.Pens.DarkGreen*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_DarkGreen" data-uid="Egami.SystemDrawing.Pens.DarkGreen">
+  DarkGreen
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L660"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the dark green pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen DarkGreen { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_DarkKhaki_" data-uid="Egami.SystemDrawing.Pens.DarkKhaki*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_DarkKhaki" data-uid="Egami.SystemDrawing.Pens.DarkKhaki">
+  DarkKhaki
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L663"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the dark khaki pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen DarkKhaki { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_DarkMagenta_" data-uid="Egami.SystemDrawing.Pens.DarkMagenta*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_DarkMagenta" data-uid="Egami.SystemDrawing.Pens.DarkMagenta">
+  DarkMagenta
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L666"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the dark magenta pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen DarkMagenta { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_DarkOliveGreen_" data-uid="Egami.SystemDrawing.Pens.DarkOliveGreen*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_DarkOliveGreen" data-uid="Egami.SystemDrawing.Pens.DarkOliveGreen">
+  DarkOliveGreen
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L669"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the dark olive green pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen DarkOliveGreen { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_DarkOrange_" data-uid="Egami.SystemDrawing.Pens.DarkOrange*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_DarkOrange" data-uid="Egami.SystemDrawing.Pens.DarkOrange">
+  DarkOrange
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L672"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the dark orange pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen DarkOrange { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_DarkOrchid_" data-uid="Egami.SystemDrawing.Pens.DarkOrchid*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_DarkOrchid" data-uid="Egami.SystemDrawing.Pens.DarkOrchid">
+  DarkOrchid
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L675"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the dark orchid pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen DarkOrchid { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_DarkRed_" data-uid="Egami.SystemDrawing.Pens.DarkRed*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_DarkRed" data-uid="Egami.SystemDrawing.Pens.DarkRed">
+  DarkRed
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L678"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the dark red pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen DarkRed { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_DarkSalmon_" data-uid="Egami.SystemDrawing.Pens.DarkSalmon*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_DarkSalmon" data-uid="Egami.SystemDrawing.Pens.DarkSalmon">
+  DarkSalmon
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L681"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the dark salmon pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen DarkSalmon { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_DarkSeaGreen_" data-uid="Egami.SystemDrawing.Pens.DarkSeaGreen*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_DarkSeaGreen" data-uid="Egami.SystemDrawing.Pens.DarkSeaGreen">
+  DarkSeaGreen
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L684"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the dark sea green pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen DarkSeaGreen { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_DarkSlateBlue_" data-uid="Egami.SystemDrawing.Pens.DarkSlateBlue*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_DarkSlateBlue" data-uid="Egami.SystemDrawing.Pens.DarkSlateBlue">
+  DarkSlateBlue
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L687"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the dark slate blue pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen DarkSlateBlue { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_DarkSlateGray_" data-uid="Egami.SystemDrawing.Pens.DarkSlateGray*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_DarkSlateGray" data-uid="Egami.SystemDrawing.Pens.DarkSlateGray">
+  DarkSlateGray
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L690"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the dark slate gray pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen DarkSlateGray { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_DarkTurquoise_" data-uid="Egami.SystemDrawing.Pens.DarkTurquoise*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_DarkTurquoise" data-uid="Egami.SystemDrawing.Pens.DarkTurquoise">
+  DarkTurquoise
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L693"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the dark turquoise pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen DarkTurquoise { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_DarkViolet_" data-uid="Egami.SystemDrawing.Pens.DarkViolet*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_DarkViolet" data-uid="Egami.SystemDrawing.Pens.DarkViolet">
+  DarkViolet
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L696"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the dark violet pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen DarkViolet { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_DeepPink_" data-uid="Egami.SystemDrawing.Pens.DeepPink*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_DeepPink" data-uid="Egami.SystemDrawing.Pens.DeepPink">
+  DeepPink
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L699"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the deep pink pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen DeepPink { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_DeepSkyBlue_" data-uid="Egami.SystemDrawing.Pens.DeepSkyBlue*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_DeepSkyBlue" data-uid="Egami.SystemDrawing.Pens.DeepSkyBlue">
+  DeepSkyBlue
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L702"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the deep sky blue pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen DeepSkyBlue { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_DimGray_" data-uid="Egami.SystemDrawing.Pens.DimGray*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_DimGray" data-uid="Egami.SystemDrawing.Pens.DimGray">
+  DimGray
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L705"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the dim gray pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen DimGray { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_DodgerBlue_" data-uid="Egami.SystemDrawing.Pens.DodgerBlue*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_DodgerBlue" data-uid="Egami.SystemDrawing.Pens.DodgerBlue">
+  DodgerBlue
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L708"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the dodger blue pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen DodgerBlue { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_Firebrick_" data-uid="Egami.SystemDrawing.Pens.Firebrick*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_Firebrick" data-uid="Egami.SystemDrawing.Pens.Firebrick">
+  Firebrick
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L711"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the firebrick pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen Firebrick { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_FloralWhite_" data-uid="Egami.SystemDrawing.Pens.FloralWhite*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_FloralWhite" data-uid="Egami.SystemDrawing.Pens.FloralWhite">
+  FloralWhite
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L714"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the floral white pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen FloralWhite { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_ForestGreen_" data-uid="Egami.SystemDrawing.Pens.ForestGreen*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_ForestGreen" data-uid="Egami.SystemDrawing.Pens.ForestGreen">
+  ForestGreen
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L717"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the forest green pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen ForestGreen { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_Fuchsia_" data-uid="Egami.SystemDrawing.Pens.Fuchsia*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_Fuchsia" data-uid="Egami.SystemDrawing.Pens.Fuchsia">
+  Fuchsia
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L720"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the fuchsia pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen Fuchsia { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_Gainsboro_" data-uid="Egami.SystemDrawing.Pens.Gainsboro*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_Gainsboro" data-uid="Egami.SystemDrawing.Pens.Gainsboro">
+  Gainsboro
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L723"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the gainsboro pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen Gainsboro { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_GhostWhite_" data-uid="Egami.SystemDrawing.Pens.GhostWhite*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_GhostWhite" data-uid="Egami.SystemDrawing.Pens.GhostWhite">
+  GhostWhite
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L726"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the ghost white pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen GhostWhite { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_Gold_" data-uid="Egami.SystemDrawing.Pens.Gold*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_Gold" data-uid="Egami.SystemDrawing.Pens.Gold">
+  Gold
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L729"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the gold pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen Gold { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_Goldenrod_" data-uid="Egami.SystemDrawing.Pens.Goldenrod*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_Goldenrod" data-uid="Egami.SystemDrawing.Pens.Goldenrod">
+  Goldenrod
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L732"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the goldenrod pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen Goldenrod { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_Gray_" data-uid="Egami.SystemDrawing.Pens.Gray*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_Gray" data-uid="Egami.SystemDrawing.Pens.Gray">
+  Gray
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L735"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the gray pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen Gray { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_Green_" data-uid="Egami.SystemDrawing.Pens.Green*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_Green" data-uid="Egami.SystemDrawing.Pens.Green">
+  Green
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L738"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the green pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen Green { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_GreenYellow_" data-uid="Egami.SystemDrawing.Pens.GreenYellow*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_GreenYellow" data-uid="Egami.SystemDrawing.Pens.GreenYellow">
+  GreenYellow
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L741"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the green yellow pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen GreenYellow { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_Honeydew_" data-uid="Egami.SystemDrawing.Pens.Honeydew*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_Honeydew" data-uid="Egami.SystemDrawing.Pens.Honeydew">
+  Honeydew
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L744"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the honeydew pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen Honeydew { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_HotPink_" data-uid="Egami.SystemDrawing.Pens.HotPink*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_HotPink" data-uid="Egami.SystemDrawing.Pens.HotPink">
+  HotPink
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L747"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the hot pink pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen HotPink { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_IndianRed_" data-uid="Egami.SystemDrawing.Pens.IndianRed*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_IndianRed" data-uid="Egami.SystemDrawing.Pens.IndianRed">
+  IndianRed
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L750"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the indian red pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen IndianRed { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_Indigo_" data-uid="Egami.SystemDrawing.Pens.Indigo*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_Indigo" data-uid="Egami.SystemDrawing.Pens.Indigo">
+  Indigo
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L753"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the indigo pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen Indigo { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_Ivory_" data-uid="Egami.SystemDrawing.Pens.Ivory*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_Ivory" data-uid="Egami.SystemDrawing.Pens.Ivory">
+  Ivory
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L756"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the ivory pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen Ivory { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_Khaki_" data-uid="Egami.SystemDrawing.Pens.Khaki*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_Khaki" data-uid="Egami.SystemDrawing.Pens.Khaki">
+  Khaki
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L759"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the khaki pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen Khaki { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_Lavender_" data-uid="Egami.SystemDrawing.Pens.Lavender*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_Lavender" data-uid="Egami.SystemDrawing.Pens.Lavender">
+  Lavender
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L762"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the lavender pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen Lavender { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_LavenderBlush_" data-uid="Egami.SystemDrawing.Pens.LavenderBlush*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_LavenderBlush" data-uid="Egami.SystemDrawing.Pens.LavenderBlush">
+  LavenderBlush
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L765"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the lavender blush pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen LavenderBlush { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_LawnGreen_" data-uid="Egami.SystemDrawing.Pens.LawnGreen*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_LawnGreen" data-uid="Egami.SystemDrawing.Pens.LawnGreen">
+  LawnGreen
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L768"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the lawn green pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen LawnGreen { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_LemonChiffon_" data-uid="Egami.SystemDrawing.Pens.LemonChiffon*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_LemonChiffon" data-uid="Egami.SystemDrawing.Pens.LemonChiffon">
+  LemonChiffon
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L771"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the lemon chiffon pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen LemonChiffon { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_LightBlue_" data-uid="Egami.SystemDrawing.Pens.LightBlue*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_LightBlue" data-uid="Egami.SystemDrawing.Pens.LightBlue">
+  LightBlue
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L774"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the light blue pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen LightBlue { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_LightCoral_" data-uid="Egami.SystemDrawing.Pens.LightCoral*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_LightCoral" data-uid="Egami.SystemDrawing.Pens.LightCoral">
+  LightCoral
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L777"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the light coral pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen LightCoral { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_LightCyan_" data-uid="Egami.SystemDrawing.Pens.LightCyan*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_LightCyan" data-uid="Egami.SystemDrawing.Pens.LightCyan">
+  LightCyan
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L780"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the light cyan pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen LightCyan { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_LightGoldenrodYellow_" data-uid="Egami.SystemDrawing.Pens.LightGoldenrodYellow*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_LightGoldenrodYellow" data-uid="Egami.SystemDrawing.Pens.LightGoldenrodYellow">
+  LightGoldenrodYellow
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L783"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the light goldenrod yellow pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen LightGoldenrodYellow { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_LightGray_" data-uid="Egami.SystemDrawing.Pens.LightGray*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_LightGray" data-uid="Egami.SystemDrawing.Pens.LightGray">
+  LightGray
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L786"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the light gray pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen LightGray { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_LightGreen_" data-uid="Egami.SystemDrawing.Pens.LightGreen*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_LightGreen" data-uid="Egami.SystemDrawing.Pens.LightGreen">
+  LightGreen
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L789"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the light green pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen LightGreen { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_LightPink_" data-uid="Egami.SystemDrawing.Pens.LightPink*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_LightPink" data-uid="Egami.SystemDrawing.Pens.LightPink">
+  LightPink
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L792"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the light pink pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen LightPink { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_LightSalmon_" data-uid="Egami.SystemDrawing.Pens.LightSalmon*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_LightSalmon" data-uid="Egami.SystemDrawing.Pens.LightSalmon">
+  LightSalmon
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L795"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the light salmon pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen LightSalmon { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_LightSeaGreen_" data-uid="Egami.SystemDrawing.Pens.LightSeaGreen*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_LightSeaGreen" data-uid="Egami.SystemDrawing.Pens.LightSeaGreen">
+  LightSeaGreen
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L798"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the light sea green pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen LightSeaGreen { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_LightSkyBlue_" data-uid="Egami.SystemDrawing.Pens.LightSkyBlue*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_LightSkyBlue" data-uid="Egami.SystemDrawing.Pens.LightSkyBlue">
+  LightSkyBlue
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L801"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the light sky blue pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen LightSkyBlue { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_LightSlateGray_" data-uid="Egami.SystemDrawing.Pens.LightSlateGray*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_LightSlateGray" data-uid="Egami.SystemDrawing.Pens.LightSlateGray">
+  LightSlateGray
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L804"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the light slate gray pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen LightSlateGray { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_LightSteelBlue_" data-uid="Egami.SystemDrawing.Pens.LightSteelBlue*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_LightSteelBlue" data-uid="Egami.SystemDrawing.Pens.LightSteelBlue">
+  LightSteelBlue
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L807"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the light steel blue pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen LightSteelBlue { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_LightYellow_" data-uid="Egami.SystemDrawing.Pens.LightYellow*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_LightYellow" data-uid="Egami.SystemDrawing.Pens.LightYellow">
+  LightYellow
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L810"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the light yellow pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen LightYellow { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_Lime_" data-uid="Egami.SystemDrawing.Pens.Lime*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_Lime" data-uid="Egami.SystemDrawing.Pens.Lime">
+  Lime
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L813"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the lime pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen Lime { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_LimeGreen_" data-uid="Egami.SystemDrawing.Pens.LimeGreen*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_LimeGreen" data-uid="Egami.SystemDrawing.Pens.LimeGreen">
+  LimeGreen
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L816"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the lime green pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen LimeGreen { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_Linen_" data-uid="Egami.SystemDrawing.Pens.Linen*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_Linen" data-uid="Egami.SystemDrawing.Pens.Linen">
+  Linen
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L819"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the linen pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen Linen { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_Magenta_" data-uid="Egami.SystemDrawing.Pens.Magenta*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_Magenta" data-uid="Egami.SystemDrawing.Pens.Magenta">
+  Magenta
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L822"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the magenta pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen Magenta { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_Maroon_" data-uid="Egami.SystemDrawing.Pens.Maroon*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_Maroon" data-uid="Egami.SystemDrawing.Pens.Maroon">
+  Maroon
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L825"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the maroon pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen Maroon { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_MediumAquamarine_" data-uid="Egami.SystemDrawing.Pens.MediumAquamarine*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_MediumAquamarine" data-uid="Egami.SystemDrawing.Pens.MediumAquamarine">
+  MediumAquamarine
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L828"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the medium aquamarine pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen MediumAquamarine { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_MediumBlue_" data-uid="Egami.SystemDrawing.Pens.MediumBlue*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_MediumBlue" data-uid="Egami.SystemDrawing.Pens.MediumBlue">
+  MediumBlue
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L831"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the medium blue pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen MediumBlue { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_MediumOrchid_" data-uid="Egami.SystemDrawing.Pens.MediumOrchid*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_MediumOrchid" data-uid="Egami.SystemDrawing.Pens.MediumOrchid">
+  MediumOrchid
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L834"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the medium orchid pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen MediumOrchid { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_MediumPurple_" data-uid="Egami.SystemDrawing.Pens.MediumPurple*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_MediumPurple" data-uid="Egami.SystemDrawing.Pens.MediumPurple">
+  MediumPurple
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L837"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the medium purple pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen MediumPurple { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_MediumSeaGreen_" data-uid="Egami.SystemDrawing.Pens.MediumSeaGreen*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_MediumSeaGreen" data-uid="Egami.SystemDrawing.Pens.MediumSeaGreen">
+  MediumSeaGreen
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L840"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the medium sea green pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen MediumSeaGreen { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_MediumSlateBlue_" data-uid="Egami.SystemDrawing.Pens.MediumSlateBlue*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_MediumSlateBlue" data-uid="Egami.SystemDrawing.Pens.MediumSlateBlue">
+  MediumSlateBlue
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L843"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the medium slate blue pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen MediumSlateBlue { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_MediumSpringGreen_" data-uid="Egami.SystemDrawing.Pens.MediumSpringGreen*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_MediumSpringGreen" data-uid="Egami.SystemDrawing.Pens.MediumSpringGreen">
+  MediumSpringGreen
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L846"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the medium spring green pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen MediumSpringGreen { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_MediumTurquoise_" data-uid="Egami.SystemDrawing.Pens.MediumTurquoise*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_MediumTurquoise" data-uid="Egami.SystemDrawing.Pens.MediumTurquoise">
+  MediumTurquoise
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L849"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the medium turquoise pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen MediumTurquoise { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_MediumVioletRed_" data-uid="Egami.SystemDrawing.Pens.MediumVioletRed*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_MediumVioletRed" data-uid="Egami.SystemDrawing.Pens.MediumVioletRed">
+  MediumVioletRed
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L852"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the medium violet red pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen MediumVioletRed { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_MidnightBlue_" data-uid="Egami.SystemDrawing.Pens.MidnightBlue*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_MidnightBlue" data-uid="Egami.SystemDrawing.Pens.MidnightBlue">
+  MidnightBlue
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L855"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the midnight blue pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen MidnightBlue { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_MintCream_" data-uid="Egami.SystemDrawing.Pens.MintCream*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_MintCream" data-uid="Egami.SystemDrawing.Pens.MintCream">
+  MintCream
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L858"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the mint cream pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen MintCream { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_MistyRose_" data-uid="Egami.SystemDrawing.Pens.MistyRose*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_MistyRose" data-uid="Egami.SystemDrawing.Pens.MistyRose">
+  MistyRose
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L861"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the misty rose pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen MistyRose { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_Moccasin_" data-uid="Egami.SystemDrawing.Pens.Moccasin*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_Moccasin" data-uid="Egami.SystemDrawing.Pens.Moccasin">
+  Moccasin
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L864"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the moccasin pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen Moccasin { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_NavajoWhite_" data-uid="Egami.SystemDrawing.Pens.NavajoWhite*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_NavajoWhite" data-uid="Egami.SystemDrawing.Pens.NavajoWhite">
+  NavajoWhite
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L867"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the navajo white pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen NavajoWhite { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_Navy_" data-uid="Egami.SystemDrawing.Pens.Navy*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_Navy" data-uid="Egami.SystemDrawing.Pens.Navy">
+  Navy
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L870"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the navy pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen Navy { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_OldLace_" data-uid="Egami.SystemDrawing.Pens.OldLace*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_OldLace" data-uid="Egami.SystemDrawing.Pens.OldLace">
+  OldLace
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L873"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the old lace pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen OldLace { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_Olive_" data-uid="Egami.SystemDrawing.Pens.Olive*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_Olive" data-uid="Egami.SystemDrawing.Pens.Olive">
+  Olive
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L876"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the olive pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen Olive { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_OliveDrab_" data-uid="Egami.SystemDrawing.Pens.OliveDrab*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_OliveDrab" data-uid="Egami.SystemDrawing.Pens.OliveDrab">
+  OliveDrab
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L879"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the olive drab pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen OliveDrab { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_Orange_" data-uid="Egami.SystemDrawing.Pens.Orange*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_Orange" data-uid="Egami.SystemDrawing.Pens.Orange">
+  Orange
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L882"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the orange pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen Orange { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_OrangeRed_" data-uid="Egami.SystemDrawing.Pens.OrangeRed*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_OrangeRed" data-uid="Egami.SystemDrawing.Pens.OrangeRed">
+  OrangeRed
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L885"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the orange red pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen OrangeRed { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_Orchid_" data-uid="Egami.SystemDrawing.Pens.Orchid*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_Orchid" data-uid="Egami.SystemDrawing.Pens.Orchid">
+  Orchid
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L888"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the orchid pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen Orchid { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_PaleGoldenrod_" data-uid="Egami.SystemDrawing.Pens.PaleGoldenrod*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_PaleGoldenrod" data-uid="Egami.SystemDrawing.Pens.PaleGoldenrod">
+  PaleGoldenrod
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L891"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the pale goldenrod pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen PaleGoldenrod { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_PaleGreen_" data-uid="Egami.SystemDrawing.Pens.PaleGreen*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_PaleGreen" data-uid="Egami.SystemDrawing.Pens.PaleGreen">
+  PaleGreen
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L894"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the pale green pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen PaleGreen { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_PaleTurquoise_" data-uid="Egami.SystemDrawing.Pens.PaleTurquoise*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_PaleTurquoise" data-uid="Egami.SystemDrawing.Pens.PaleTurquoise">
+  PaleTurquoise
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L897"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the pale turquoise pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen PaleTurquoise { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_PaleVioletRed_" data-uid="Egami.SystemDrawing.Pens.PaleVioletRed*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_PaleVioletRed" data-uid="Egami.SystemDrawing.Pens.PaleVioletRed">
+  PaleVioletRed
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L900"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the pale violet red pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen PaleVioletRed { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_PapayaWhip_" data-uid="Egami.SystemDrawing.Pens.PapayaWhip*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_PapayaWhip" data-uid="Egami.SystemDrawing.Pens.PapayaWhip">
+  PapayaWhip
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L903"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the papaya whip pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen PapayaWhip { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_PeachPuff_" data-uid="Egami.SystemDrawing.Pens.PeachPuff*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_PeachPuff" data-uid="Egami.SystemDrawing.Pens.PeachPuff">
+  PeachPuff
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L906"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the peach puff pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen PeachPuff { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_Peru_" data-uid="Egami.SystemDrawing.Pens.Peru*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_Peru" data-uid="Egami.SystemDrawing.Pens.Peru">
+  Peru
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L909"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the peru pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen Peru { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_Pink_" data-uid="Egami.SystemDrawing.Pens.Pink*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_Pink" data-uid="Egami.SystemDrawing.Pens.Pink">
+  Pink
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L912"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the pink pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen Pink { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_Plum_" data-uid="Egami.SystemDrawing.Pens.Plum*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_Plum" data-uid="Egami.SystemDrawing.Pens.Plum">
+  Plum
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L915"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the plum pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen Plum { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_PowderBlue_" data-uid="Egami.SystemDrawing.Pens.PowderBlue*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_PowderBlue" data-uid="Egami.SystemDrawing.Pens.PowderBlue">
+  PowderBlue
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L918"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the powder blue pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen PowderBlue { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_Purple_" data-uid="Egami.SystemDrawing.Pens.Purple*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_Purple" data-uid="Egami.SystemDrawing.Pens.Purple">
+  Purple
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L921"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the purple pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen Purple { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_Red_" data-uid="Egami.SystemDrawing.Pens.Red*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_Red" data-uid="Egami.SystemDrawing.Pens.Red">
+  Red
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L924"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the red pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen Red { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_RosyBrown_" data-uid="Egami.SystemDrawing.Pens.RosyBrown*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_RosyBrown" data-uid="Egami.SystemDrawing.Pens.RosyBrown">
+  RosyBrown
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L927"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the rosy brown pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen RosyBrown { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_RoyalBlue_" data-uid="Egami.SystemDrawing.Pens.RoyalBlue*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_RoyalBlue" data-uid="Egami.SystemDrawing.Pens.RoyalBlue">
+  RoyalBlue
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L930"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the royal blue pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen RoyalBlue { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_SaddleBrown_" data-uid="Egami.SystemDrawing.Pens.SaddleBrown*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_SaddleBrown" data-uid="Egami.SystemDrawing.Pens.SaddleBrown">
+  SaddleBrown
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L933"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the saddle brown pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen SaddleBrown { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_Salmon_" data-uid="Egami.SystemDrawing.Pens.Salmon*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_Salmon" data-uid="Egami.SystemDrawing.Pens.Salmon">
+  Salmon
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L936"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the salmon pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen Salmon { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_SandyBrown_" data-uid="Egami.SystemDrawing.Pens.SandyBrown*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_SandyBrown" data-uid="Egami.SystemDrawing.Pens.SandyBrown">
+  SandyBrown
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L939"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the sandy brown pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen SandyBrown { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_SeaGreen_" data-uid="Egami.SystemDrawing.Pens.SeaGreen*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_SeaGreen" data-uid="Egami.SystemDrawing.Pens.SeaGreen">
+  SeaGreen
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L942"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the sea green pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen SeaGreen { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_SeaShell_" data-uid="Egami.SystemDrawing.Pens.SeaShell*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_SeaShell" data-uid="Egami.SystemDrawing.Pens.SeaShell">
+  SeaShell
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L945"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the sea shell pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen SeaShell { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_Sienna_" data-uid="Egami.SystemDrawing.Pens.Sienna*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_Sienna" data-uid="Egami.SystemDrawing.Pens.Sienna">
+  Sienna
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L948"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the sienna pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen Sienna { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_Silver_" data-uid="Egami.SystemDrawing.Pens.Silver*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_Silver" data-uid="Egami.SystemDrawing.Pens.Silver">
+  Silver
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L951"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the silver pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen Silver { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_SkyBlue_" data-uid="Egami.SystemDrawing.Pens.SkyBlue*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_SkyBlue" data-uid="Egami.SystemDrawing.Pens.SkyBlue">
+  SkyBlue
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L954"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the sky blue pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen SkyBlue { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_SlateBlue_" data-uid="Egami.SystemDrawing.Pens.SlateBlue*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_SlateBlue" data-uid="Egami.SystemDrawing.Pens.SlateBlue">
+  SlateBlue
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L957"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the slate blue pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen SlateBlue { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_SlateGray_" data-uid="Egami.SystemDrawing.Pens.SlateGray*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_SlateGray" data-uid="Egami.SystemDrawing.Pens.SlateGray">
+  SlateGray
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L960"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the slate gray pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen SlateGray { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_Snow_" data-uid="Egami.SystemDrawing.Pens.Snow*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_Snow" data-uid="Egami.SystemDrawing.Pens.Snow">
+  Snow
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L963"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the snow pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen Snow { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_SpringGreen_" data-uid="Egami.SystemDrawing.Pens.SpringGreen*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_SpringGreen" data-uid="Egami.SystemDrawing.Pens.SpringGreen">
+  SpringGreen
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L966"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the spring green pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen SpringGreen { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_SteelBlue_" data-uid="Egami.SystemDrawing.Pens.SteelBlue*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_SteelBlue" data-uid="Egami.SystemDrawing.Pens.SteelBlue">
+  SteelBlue
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L969"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the steel blue pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen SteelBlue { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_Tan_" data-uid="Egami.SystemDrawing.Pens.Tan*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_Tan" data-uid="Egami.SystemDrawing.Pens.Tan">
+  Tan
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L972"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the tan pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen Tan { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_Teal_" data-uid="Egami.SystemDrawing.Pens.Teal*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_Teal" data-uid="Egami.SystemDrawing.Pens.Teal">
+  Teal
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L975"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the teal pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen Teal { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_Thistle_" data-uid="Egami.SystemDrawing.Pens.Thistle*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_Thistle" data-uid="Egami.SystemDrawing.Pens.Thistle">
+  Thistle
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L978"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the thistle pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen Thistle { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_Tomato_" data-uid="Egami.SystemDrawing.Pens.Tomato*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_Tomato" data-uid="Egami.SystemDrawing.Pens.Tomato">
+  Tomato
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L981"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the tomato pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen Tomato { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_Transparent_" data-uid="Egami.SystemDrawing.Pens.Transparent*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_Transparent" data-uid="Egami.SystemDrawing.Pens.Transparent">
+  Transparent
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L984"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the transparent pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen Transparent { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_Turquoise_" data-uid="Egami.SystemDrawing.Pens.Turquoise*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_Turquoise" data-uid="Egami.SystemDrawing.Pens.Turquoise">
+  Turquoise
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L987"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the turquoise pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen Turquoise { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_Violet_" data-uid="Egami.SystemDrawing.Pens.Violet*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_Violet" data-uid="Egami.SystemDrawing.Pens.Violet">
+  Violet
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L990"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the violet pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen Violet { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_Wheat_" data-uid="Egami.SystemDrawing.Pens.Wheat*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_Wheat" data-uid="Egami.SystemDrawing.Pens.Wheat">
+  Wheat
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L993"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the wheat pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen Wheat { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_White_" data-uid="Egami.SystemDrawing.Pens.White*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_White" data-uid="Egami.SystemDrawing.Pens.White">
+  White
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L996"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the white pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen White { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_WhiteSmoke_" data-uid="Egami.SystemDrawing.Pens.WhiteSmoke*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_WhiteSmoke" data-uid="Egami.SystemDrawing.Pens.WhiteSmoke">
+  WhiteSmoke
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L999"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the white smoke pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen WhiteSmoke { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_Yellow_" data-uid="Egami.SystemDrawing.Pens.Yellow*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_Yellow" data-uid="Egami.SystemDrawing.Pens.Yellow">
+  Yellow
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L1002"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the yellow pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen Yellow { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Pens_YellowGreen_" data-uid="Egami.SystemDrawing.Pens.YellowGreen*"></a>
+
+  <h3 id="Egami_SystemDrawing_Pens_YellowGreen" data-uid="Egami.SystemDrawing.Pens.YellowGreen">
+  YellowGreen
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L1005"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the yellow green pen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Pen YellowGreen { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L579" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

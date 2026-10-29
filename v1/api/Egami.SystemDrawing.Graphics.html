@@ -4669,6 +4669,42 @@ public void CopyFromScreen(int sourceX, int sourceY, int destinationX, int desti
 
 
 
+  <a id="Egami_SystemDrawing_Graphics_DrawPath_" data-uid="Egami.SystemDrawing.Graphics.DrawPath*"></a>
+
+  <h3 id="Egami_SystemDrawing_Graphics_DrawPath_Egami_SystemDrawing_Pen_Egami_SystemDrawing_Drawing2D_GraphicsPath_" data-uid="Egami.SystemDrawing.Graphics.DrawPath(Egami.SystemDrawing.Pen,Egami.SystemDrawing.Drawing2D.GraphicsPath)">
+  DrawPath(Pen, GraphicsPath)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.Drawing.cs/#L102"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Strokes a path with a pen; each figure is stroked on its own, closed ones joined all round.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void DrawPath(Pen pen, GraphicsPath path)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>pen</code> <a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+    <dd><p>The pen.</p>
+</dd>
+    <dt><code>path</code> <a class="xref" href="Egami.SystemDrawing.Drawing2D.GraphicsPath.html">GraphicsPath</a></dt>
+    <dd><p>The path.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
   <a id="Egami_SystemDrawing_Graphics_DrawPie_" data-uid="Egami.SystemDrawing.Graphics.DrawPie*"></a>
 
   <h3 id="Egami_SystemDrawing_Graphics_DrawPie_Egami_SystemDrawing_Pen_System_Drawing_Rectangle_System_Single_System_Single_" data-uid="Egami.SystemDrawing.Graphics.DrawPie(Egami.SystemDrawing.Pen,System.Drawing.Rectangle,System.Single,System.Single)">
@@ -5420,7 +5456,7 @@ public void CopyFromScreen(int sourceX, int sourceY, int destinationX, int desti
 
   <h3 id="Egami_SystemDrawing_Graphics_ExcludeClip_Egami_SystemDrawing_Region_" data-uid="Egami.SystemDrawing.Graphics.ExcludeClip(Egami.SystemDrawing.Region)">
   ExcludeClip(Region)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.Drawing.cs/#L113"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.Drawing.cs/#L144"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Removes a region from the clip.</p>
@@ -5453,7 +5489,7 @@ public void CopyFromScreen(int sourceX, int sourceY, int destinationX, int desti
 
   <h3 id="Egami_SystemDrawing_Graphics_ExcludeClip_System_Drawing_Rectangle_" data-uid="Egami.SystemDrawing.Graphics.ExcludeClip(System.Drawing.Rectangle)">
   ExcludeClip(Rectangle)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.Drawing.cs/#L109"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.Drawing.cs/#L140"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Removes a rectangle from the clip.</p>
@@ -6098,6 +6134,42 @@ public void CopyFromScreen(int sourceX, int sourceY, int destinationX, int desti
 </dd>
     <dt><code>height</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
     <dd><p>The height.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Graphics_FillPath_" data-uid="Egami.SystemDrawing.Graphics.FillPath*"></a>
+
+  <h3 id="Egami_SystemDrawing_Graphics_FillPath_Egami_SystemDrawing_Brush_Egami_SystemDrawing_Drawing2D_GraphicsPath_" data-uid="Egami.SystemDrawing.Graphics.FillPath(Egami.SystemDrawing.Brush,Egami.SystemDrawing.Drawing2D.GraphicsPath)">
+  FillPath(Brush, GraphicsPath)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.Drawing.cs/#L111"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Fills a path with a brush, by its fill mode.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void FillPath(Brush brush, GraphicsPath path)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>brush</code> <a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd><p>The brush.</p>
+</dd>
+    <dt><code>path</code> <a class="xref" href="Egami.SystemDrawing.Drawing2D.GraphicsPath.html">GraphicsPath</a></dt>
+    <dd><p>The path.</p>
 </dd>
   </dl>
 
@@ -7253,7 +7325,7 @@ public static Graphics FromHwnd(nint hwnd)</code></pre>
 
   <h3 id="Egami_SystemDrawing_Graphics_GetContextInfo_System_Drawing_PointF__" data-uid="Egami.SystemDrawing.Graphics.GetContextInfo(System.Drawing.PointF@)">
   GetContextInfo(out PointF)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.Drawing.cs/#L134"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.Drawing.cs/#L165"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the translation of the transform and the clip.</p>
@@ -7286,7 +7358,7 @@ public static Graphics FromHwnd(nint hwnd)</code></pre>
 
   <h3 id="Egami_SystemDrawing_Graphics_GetContextInfo_System_Drawing_PointF__Egami_SystemDrawing_Region__" data-uid="Egami.SystemDrawing.Graphics.GetContextInfo(System.Drawing.PointF@,Egami.SystemDrawing.Region@)">
   GetContextInfo(out PointF, out Region?)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.Drawing.cs/#L139"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.Drawing.cs/#L170"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the translation of the transform and the clip.</p>
@@ -7429,7 +7501,7 @@ public nint GetHdc()</code></pre>
 
   <h3 id="Egami_SystemDrawing_Graphics_IntersectClip_Egami_SystemDrawing_Region_" data-uid="Egami.SystemDrawing.Graphics.IntersectClip(Egami.SystemDrawing.Region)">
   IntersectClip(Region)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.Drawing.cs/#L105"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.Drawing.cs/#L136"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Intersects the clip with a region.</p>
@@ -7462,7 +7534,7 @@ public nint GetHdc()</code></pre>
 
   <h3 id="Egami_SystemDrawing_Graphics_IntersectClip_System_Drawing_Rectangle_" data-uid="Egami.SystemDrawing.Graphics.IntersectClip(System.Drawing.Rectangle)">
   IntersectClip(Rectangle)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.Drawing.cs/#L97"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.Drawing.cs/#L128"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Intersects the clip with a rectangle.</p>
@@ -7495,7 +7567,7 @@ public nint GetHdc()</code></pre>
 
   <h3 id="Egami_SystemDrawing_Graphics_IntersectClip_System_Drawing_RectangleF_" data-uid="Egami.SystemDrawing.Graphics.IntersectClip(System.Drawing.RectangleF)">
   IntersectClip(RectangleF)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.Drawing.cs/#L101"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.Drawing.cs/#L132"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Intersects the clip with a rectangle.</p>
@@ -7567,7 +7639,7 @@ public nint GetHdc()</code></pre>
 
   <h3 id="Egami_SystemDrawing_Graphics_IsVisible_System_Drawing_PointF_" data-uid="Egami.SystemDrawing.Graphics.IsVisible(System.Drawing.PointF)">
   IsVisible(PointF)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.Drawing.cs/#L155"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.Drawing.cs/#L186"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets whether a point is inside the bitmap and the clip.</p>
@@ -7645,7 +7717,7 @@ public nint GetHdc()</code></pre>
 
   <h3 id="Egami_SystemDrawing_Graphics_IsVisible_System_Drawing_RectangleF_" data-uid="Egami.SystemDrawing.Graphics.IsVisible(System.Drawing.RectangleF)">
   IsVisible(RectangleF)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.Drawing.cs/#L166"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.Drawing.cs/#L197"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets whether any of a rectangle is inside the bitmap and the clip.</p>
@@ -7995,7 +8067,7 @@ public void ReleaseHdc(nint hdc)</code></pre>
 
   <h3 id="Egami_SystemDrawing_Graphics_ResetClip" data-uid="Egami.SystemDrawing.Graphics.ResetClip">
   ResetClip()
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.Drawing.cs/#L116"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.Drawing.cs/#L147"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Removes the clip.</p>
@@ -8257,6 +8329,75 @@ public void ReleaseHdc(nint hdc)</code></pre>
 
   <a id="Egami_SystemDrawing_Graphics_SetClip_" data-uid="Egami.SystemDrawing.Graphics.SetClip*"></a>
 
+  <h3 id="Egami_SystemDrawing_Graphics_SetClip_Egami_SystemDrawing_Drawing2D_GraphicsPath_" data-uid="Egami.SystemDrawing.Graphics.SetClip(Egami.SystemDrawing.Drawing2D.GraphicsPath)">
+  SetClip(GraphicsPath)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.Drawing.cs/#L88"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Makes the clip a path's area.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void SetClip(GraphicsPath path)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>path</code> <a class="xref" href="Egami.SystemDrawing.Drawing2D.GraphicsPath.html">GraphicsPath</a></dt>
+    <dd><p>The path, in world coordinates.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Graphics_SetClip_" data-uid="Egami.SystemDrawing.Graphics.SetClip*"></a>
+
+  <h3 id="Egami_SystemDrawing_Graphics_SetClip_Egami_SystemDrawing_Drawing2D_GraphicsPath_Egami_SystemDrawing_Drawing2D_CombineMode_" data-uid="Egami.SystemDrawing.Graphics.SetClip(Egami.SystemDrawing.Drawing2D.GraphicsPath,Egami.SystemDrawing.Drawing2D.CombineMode)">
+  SetClip(GraphicsPath, CombineMode)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.Drawing.cs/#L93"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Combines the clip with a path's area.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void SetClip(GraphicsPath path, CombineMode combineMode)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>path</code> <a class="xref" href="Egami.SystemDrawing.Drawing2D.GraphicsPath.html">GraphicsPath</a></dt>
+    <dd><p>The path, in world coordinates.</p>
+</dd>
+    <dt><code>combineMode</code> <a class="xref" href="Egami.SystemDrawing.Drawing2D.CombineMode.html">CombineMode</a></dt>
+    <dd><p>How to combine.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Graphics_SetClip_" data-uid="Egami.SystemDrawing.Graphics.SetClip*"></a>
+
   <h3 id="Egami_SystemDrawing_Graphics_SetClip_Egami_SystemDrawing_Graphics_" data-uid="Egami.SystemDrawing.Graphics.SetClip(Egami.SystemDrawing.Graphics)">
   SetClip(Graphics)
   <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.Drawing.cs/#L57"><i class="bi bi-code-slash"></i></a>
@@ -8328,7 +8469,7 @@ public void ReleaseHdc(nint hdc)</code></pre>
 
   <h3 id="Egami_SystemDrawing_Graphics_SetClip_Egami_SystemDrawing_Region_Egami_SystemDrawing_Drawing2D_CombineMode_" data-uid="Egami.SystemDrawing.Graphics.SetClip(Egami.SystemDrawing.Region,Egami.SystemDrawing.Drawing2D.CombineMode)">
   SetClip(Region, CombineMode)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.Drawing.cs/#L89"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.Drawing.cs/#L120"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Combines the clip with a region.</p>
@@ -8658,7 +8799,7 @@ public void ReleaseHdc(nint hdc)</code></pre>
 
   <h3 id="Egami_SystemDrawing_Graphics_TranslateClip_System_Int32_System_Int32_" data-uid="Egami.SystemDrawing.Graphics.TranslateClip(System.Int32,System.Int32)">
   TranslateClip(int, int)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.Drawing.cs/#L130"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.Drawing.cs/#L161"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Moves the clip.</p>
@@ -8694,7 +8835,7 @@ public void ReleaseHdc(nint hdc)</code></pre>
 
   <h3 id="Egami_SystemDrawing_Graphics_TranslateClip_System_Single_System_Single_" data-uid="Egami.SystemDrawing.Graphics.TranslateClip(System.Single,System.Single)">
   TranslateClip(float, float)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.Drawing.cs/#L121"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.Drawing.cs/#L152"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Moves the clip.</p>

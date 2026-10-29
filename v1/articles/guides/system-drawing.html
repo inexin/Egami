@@ -90,9 +90,8 @@
 <p>Egami.SystemDrawing gives code written for System.Drawing.Common its API on every OS, in managed code: <code>Bitmap</code>, <code>Image</code>,
 <code>Icon</code>, pixel formats, <code>LockBits</code>, the codecs and their encoder parameters, frames and property items. System.Drawing.Common
 runs only on Windows since .NET 6; with this package the same code runs on Linux, macOS and in containers, drawn by Egami.</p>
-<p>The package is a preview (1.0.0-preview.1). This release has bitmaps, pixel access, codecs, icons, and <code>Graphics</code> with solid
-pens and brushes, transforms, clipping, regions and images. The other pens and brushes, paths, fonts and text follow in the next
-previews.</p>
+<p>The package is a preview (1.0.0-preview.1). This release has bitmaps, pixel access, codecs, icons, and <code>Graphics</code> with pens,
+brushes, paths, transforms, clipping, regions and images. Fonts and text follow in the next previews.</p>
 <h2 id="moving-code-over">Moving code over</h2>
 <p>Replace the System.Drawing.Common package reference with Egami.SystemDrawing. With implicit usings on, the package adds
 <code>System.Drawing</code> and <code>Egami.SystemDrawing</code> as implicit usings, so most files compile unchanged; files that name
@@ -321,8 +320,8 @@ RectangleF[] scans = region.GetRegionScans(new Matrix());  // the pixels, as rec
 <p><code>DrawLine</code>, <code>DrawRectangle</code>, <code>DrawEllipse</code>, <code>DrawArc</code>, <code>DrawPie</code>, <code>DrawPolygon</code>, <code>DrawBezier</code>, <code>DrawCurve</code>, <code>DrawClosedCurve</code>,
 <code>DrawRoundedRectangle</code> and their <code>Fill</code> forms take every System.Drawing overload, including the span ones. Arcs are measured on
 the ellipse as GDI+ measures them, cardinal splines use GDI+'s tension (0.5 by default), and a pen is never thinner than a
-pixel. Polygons and closed curves fill even-odd unless given <code>FillMode.Winding</code>. This preview has <code>Pen</code> and <code>SolidBrush</code>, which
-derives from <code>Brush</code>; the other brushes, pen styles and <code>GraphicsPath</code> come with the next one.</p>
+pixel. Polygons and closed curves fill even-odd unless given <code>FillMode.Winding</code>. <code>DrawPath</code> and <code>FillPath</code> draw a
+<code>GraphicsPath</code>.</p>
 <pre><code class="lang-csharp">// Lines, rectangles, arcs, pies, polygons, Beziers and cardinal splines, stroked with a pen or filled with a brush.
 using Bitmap bitmap = new(64, 48);
 using Graphics g = Graphics.FromImage(bitmap);
@@ -334,6 +333,80 @@ g.DrawArc(pen, 30, 6, 30, 20, 0, 180);
 g.FillPie(brush, 4, 20, 24, 24, 30, 120);
 g.DrawCurve(pen, [new PointF(30, 40), new PointF(40, 30), new PointF(50, 44), new PointF(60, 34)], 0.5f);
 g.FillPolygon(brush, [new PointF(40, 4), new PointF(48, 16), new PointF(32, 16)], FillMode.Winding);
+</code></pre><h3 id="pens">Pens</h3>
+<p>A <code>Pen</code> has GDI+'s settings and checks: <code>StartCap</code> and <code>EndCap</code> take every <code>LineCap</code>, the anchors centered on the end;
+<code>LineJoin</code> with <code>MiterLimit</code> (at least 1); a <code>DashStyle</code> whose <code>DashPattern</code> is in multiples of the width, with a <code>DashCap</code> and
+<code>DashOffset</code> (a solid pen's <code>DashPattern</code> throws <code>InvalidOperationException</code>, and <code>Custom</code> keeps the pattern of the style
+before it); <code>CompoundArray</code> strips; <code>PenAlignment.Inset</code>, the only alignment GDI+ draws differently from centered; and a
+<code>Transform</code> that shapes the nib, so a pen scaled 3 by 1 draws three times as wide across vertical lines. <code>CustomEndCap</code> and
+<code>CustomStartCap</code> take an <code>AdjustableArrowCap</code> or a <code>CustomLineCap</code> with a stroke path; as in GDI+, a <code>CustomLineCap</code> with a fill
+path throws <code>NotImplementedException</code>. <code>PenType</code> says what kind of brush the pen paints with. <code>Pens</code> and <code>SystemPens</code> hold
+one-unit pens of the named and system colors, which cannot be changed or disposed.</p>
+<pre><code class="lang-csharp">// Pens take GDI+'s caps, joins, dash styles (in multiples of the width), compound lines, inset alignment and arrow caps.
+using Bitmap bitmap = new(80, 60);
+using Graphics g = Graphics.FromImage(bitmap);
+g.SmoothingMode = SmoothingMode.AntiAlias;
+using Pen dashed = new(Color.Navy, 3) { DashStyle = DashStyle.DashDot, StartCap = LineCap.Round, EndCap = LineCap.ArrowAnchor };
+g.DrawLine(dashed, 5, 10, 75, 10);
+using Pen arrow = new(Color.DarkRed, 2) { CustomEndCap = new AdjustableArrowCap(4, 5) };
+g.DrawLine(arrow, 5, 30, 70, 30);
+using Pen inset = new(Color.Black, 4) { Alignment = PenAlignment.Inset, LineJoin = LineJoin.Round };
+g.DrawRectangle(inset, 5, 40, 30, 15);
+float[] pattern = dashed.DashPattern;  // 3, 1, 1, 1
+</code></pre><h3 id="brushes">Brushes</h3>
+<p><code>HatchBrush</code> draws the 53 <code>HatchStyle</code> patterns pixel for pixel as GDI+ draws them on a bitmap, from the device origin moved by
+<code>RenderingOrigin</code>, including GDI+'s smoothed forward, backward and crossed diagonals. <code>TextureBrush</code> tiles an image (or part of
+it) through its transform, by its <code>WrapMode</code>; given <code>ImageAttributes</code>, it takes their wrap mode, <code>Clamp</code> unless they set one.
+<code>LinearGradientBrush</code> runs across a rectangle at an angle, a <code>LinearGradientMode</code> or between two points, with GDI+'s brush
+transform: the far corners lie on the end colors, and the diagonal modes and a scaleable angle work in the rectangle stretched to
+a square. Its <code>Blend</code> falls off from <code>SetSigmaBellShape</code> (511 samples of the normal curve, as GDI+ takes them) or
+<code>SetBlendTriangularShape</code>, or a <code>ColorBlend</code> sets preset colors, after which <code>Blend</code> is null. <code>PathGradientBrush</code> runs from a
+center color at the mean of the boundary's points out to the surrounding colors. <code>Brushes</code> and <code>SystemBrushes</code> hold solid
+brushes of the named and system colors; as in System.Drawing, the color of one of the <code>Brushes</code> can be changed. Every brush
+derives from <code>Brush</code>.</p>
+<pre><code class="lang-csharp">// Hatch, texture and gradient brushes, and the Brushes and Pens of the named colors.
+using Bitmap bitmap = new(80, 60);
+using Graphics g = Graphics.FromImage(bitmap);
+using HatchBrush hatch = new(HatchStyle.DiagonalCross, Color.Black, Color.White);
+g.FillRectangle(hatch, 0, 0, 40, 30);
+using LinearGradientBrush linear = new(new Rectangle(40, 0, 40, 30), Color.Red, Color.Blue, LinearGradientMode.Horizontal);
+linear.SetSigmaBellShape(0.5f);
+g.FillRectangle(linear, 40, 0, 40, 30);
+using PathGradientBrush radial = new([new PointF(0, 30), new PointF(40, 30), new PointF(20, 60)]) { CenterColor = Color.White, SurroundColors = [Color.Green] };
+g.FillRectangle(radial, 0, 30, 40, 30);
+using Bitmap tile = new(4, 4);
+tile.SetPixel(0, 0, Color.Orange);
+using TextureBrush texture = new(tile, WrapMode.TileFlipXY);
+g.FillRectangle(texture, 40, 30, 40, 30);
+g.DrawRectangle(Egami.SystemDrawing.Pens.Gray, 0, 0, 79, 59);
+g.FillEllipse(Egami.SystemDrawing.Brushes.Gold, 36, 26, 8, 8);
+Blend? blend = linear.Blend;  // 511 factors: the bell, as GDI+ samples it
+</code></pre><h3 id="paths">Paths</h3>
+<p>A <code>GraphicsPath</code> keeps GDI+'s points and <code>PathPointType</code> types, built as GDI+ builds them: lines, arcs, Beziers and curves join
+the open figure (a repeated point is dropped), while rectangles, ellipses, pies, polygons and closed curves are figures of their
+own. Arcs are cubic Beziers of 90 degrees of the ellipse's own angle from the start, the remainder last. <code>PathPoints</code>,
+<code>PathTypes</code> and <code>PathData</code> hand out copies. <code>Flatten</code>, <code>Widen</code> and <code>Warp</code> (a <code>WarpMode</code> of perspective or bilinear, from four
+points or three) replace the figures; <code>Reverse</code> keeps each segment's kind, the closes and the markers. <code>GetBounds</code> with a matrix
+transforms the bounds' corners and grows them for a pen as GDI+ does, and <code>IsVisible</code> and <code>IsOutlineVisible</code> test the pixel a
+point rounds to. <code>GraphicsPathIterator</code> walks figures, runs of one type and markers. A path also makes a <code>Region</code>, a clip, and a
+path gradient's boundary.</p>
+<pre><code class="lang-csharp">// Paths keep GDI+'s points and point types; lines, arcs and curves join the open figure, closed shapes are their own.
+using GraphicsPath path = new();
+path.AddLine(0, 0, 10, 10);
+path.AddArc(0, 0, 40, 20, 0, 90);
+path.CloseFigure();
+path.AddEllipse(50, 0, 20, 20);
+byte[] types = path.PathTypes;  // 0 1 1 3 3 3|128, then the ellipse's 13 points
+RectangleF bounds = path.GetBounds();
+bool inside = path.IsVisible(60, 10);
+using GraphicsPathIterator iterator = new(path);
+int figures = iterator.SubpathCount;  // 2
+path.Widen(new Pen(Color.Black, 2));
+
+using Bitmap bitmap = new(80, 30);
+using Graphics g = Graphics.FromImage(bitmap);
+g.FillPath(Egami.SystemDrawing.Brushes.Teal, path);
+g.SetClip(path);
 </code></pre><h3 id="images">Images</h3>
 <p><code>DrawImage(image, x, y)</code> and <code>DrawImageUnscaled</code> draw an image at its physical size: its pixels at its resolution, in page
 units at the bitmap's resolution. The other overloads stretch an image or part of it into a rectangle or a parallelogram, with
@@ -391,6 +464,9 @@ shapes match on about 99.8 percent of their pixels.</li>
 drawn much smaller is not prefiltered.</li>
 <li>Drawing onto 16-bit bitmaps does not dither, and <code>SourceCopy</code> with antialiasing blends its edges with what is below instead of
 making them transparent.</li>
+<li>Compound pens draw their strips on both sides of the line, and <code>PathGradientBrush.FocusScales</code> is kept but not drawn.</li>
+<li><code>Flatten</code> takes as many steps as GDI+ but evaluates the curve exactly, so its points differ from GDI+'s, which are rounded to
+sixteenths of a pixel. Rounded rectangles have no zero-length segments, which GDI+'s float arithmetic adds.</li>
 </ul>
 
 </article>

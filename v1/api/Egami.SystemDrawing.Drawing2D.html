@@ -95,8 +95,41 @@
 Classes
 </h3>
     <dl class="jumplist">
+      <dt><a class="xref" href="Egami.SystemDrawing.Drawing2D.AdjustableArrowCap.html">AdjustableArrowCap</a></dt>
+      <dd><p>An arrowhead line end, its width and height in pen widths, filled or outlined, with an optional inset middle.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.SystemDrawing.Drawing2D.Blend.html">Blend</a></dt>
+      <dd><p>A gradient's falloff: at each position from 0 to 1, a factor from the start color (0) to the end color (1).</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.SystemDrawing.Drawing2D.ColorBlend.html">ColorBlend</a></dt>
+      <dd><p>A gradient's colors at positions from 0 to 1, the first at 0 and the last at 1.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.SystemDrawing.Drawing2D.CustomLineCap.html">CustomLineCap</a></dt>
+      <dd><p>A line end drawn from a path: the path's x axis runs across the line and its y axis along it, outward from the end, in pen
+widths. The stroke path is outlined; GDI+ refuses fill paths. Set it as a pen's <a class="xref" href="Egami.SystemDrawing.Pen.html#Egami_SystemDrawing_Pen_CustomStartCap">CustomStartCap</a> or
+<a class="xref" href="Egami.SystemDrawing.Pen.html#Egami_SystemDrawing_Pen_CustomEndCap">CustomEndCap</a>.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
       <dt><a class="xref" href="Egami.SystemDrawing.Drawing2D.GraphicsContainer.html">GraphicsContainer</a></dt>
       <dd><p>A container <a class="xref" href="Egami.SystemDrawing.Graphics.html#Egami_SystemDrawing_Graphics_BeginContainer">BeginContainer()</a> returned, for <a class="xref" href="Egami.SystemDrawing.Graphics.html#Egami_SystemDrawing_Graphics_EndContainer_Egami_SystemDrawing_Drawing2D_GraphicsContainer_">EndContainer(GraphicsContainer)</a>.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.SystemDrawing.Drawing2D.GraphicsPath.html">GraphicsPath</a></dt>
+      <dd><p>The Add builders.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.SystemDrawing.Drawing2D.GraphicsPathIterator.html">GraphicsPathIterator</a></dt>
+      <dd><p>Walks a <a class="xref" href="Egami.SystemDrawing.Drawing2D.GraphicsPath.html">GraphicsPath</a> by figure, by run of one point type within the current figure, or by marker, as GDI+ walks
+it. The iterator copies the path when it is made.</p>
 </dd>
     </dl>
     <dl class="jumplist">
@@ -105,9 +138,31 @@ Classes
 </dd>
     </dl>
     <dl class="jumplist">
+      <dt><a class="xref" href="Egami.SystemDrawing.Drawing2D.HatchBrush.html">HatchBrush</a></dt>
+      <dd><p>A brush of one of GDI+'s 53 hatch patterns: 8 by 8 tiles of a foreground color on a background, from the device origin.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.SystemDrawing.Drawing2D.LinearGradientBrush.html">LinearGradientBrush</a></dt>
+      <dd><p>A brush of colors along a line: across a rectangle at an angle (or between two points), the colors constant on lines
+perpendicular to it, with a <a class="xref" href="Egami.SystemDrawing.Drawing2D.LinearGradientBrush.html#Egami_SystemDrawing_Drawing2D_LinearGradientBrush_Blend">Blend</a> or preset colors, repeating beyond the rectangle.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
       <dt><a class="xref" href="Egami.SystemDrawing.Drawing2D.Matrix.html">Matrix</a></dt>
       <dd><p>A 3 by 2 affine transform, as System.Drawing's Matrix: row vectors times the matrix, so <a class="xref" href="Egami.SystemDrawing.Drawing2D.MatrixOrder.html#Egami_SystemDrawing_Drawing2D_MatrixOrder_Prepend">Prepend</a> (the
 default) applies a new transform before the existing one.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.SystemDrawing.Drawing2D.PathData.html">PathData</a></dt>
+      <dd><p>A path's points and their <a class="xref" href="Egami.SystemDrawing.Drawing2D.PathPointType.html">PathPointType</a> types.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.SystemDrawing.Drawing2D.PathGradientBrush.html">PathGradientBrush</a></dt>
+      <dd><p>A brush of colors from a center out to the edge of a polygon or path: the center color at the center point, the surrounding
+colors at the boundary's points, with a <a class="xref" href="Egami.SystemDrawing.Drawing2D.PathGradientBrush.html#Egami_SystemDrawing_Drawing2D_PathGradientBrush_Blend">Blend</a> or preset colors between.</p>
 </dd>
     </dl>
     <dl class="jumplist">
@@ -139,6 +194,16 @@ Enums
 </dd>
     </dl>
     <dl class="jumplist">
+      <dt><a class="xref" href="Egami.SystemDrawing.Drawing2D.DashCap.html">DashCap</a></dt>
+      <dd><p>How each dash ends.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.SystemDrawing.Drawing2D.DashStyle.html">DashStyle</a></dt>
+      <dd><p>A pen's dash pattern, in multiples of its width.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
       <dt><a class="xref" href="Egami.SystemDrawing.Drawing2D.FillMode.html">FillMode</a></dt>
       <dd><p>Which points are inside a shape that crosses itself.</p>
 </dd>
@@ -149,13 +214,48 @@ Enums
 </dd>
     </dl>
     <dl class="jumplist">
+      <dt><a class="xref" href="Egami.SystemDrawing.Drawing2D.HatchStyle.html">HatchStyle</a></dt>
+      <dd><p>The 53 hatch patterns of <a class="xref" href="Egami.SystemDrawing.Drawing2D.HatchBrush.html">HatchBrush</a>, each an 8 by 8 tile of foreground on background, from the device origin.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
       <dt><a class="xref" href="Egami.SystemDrawing.Drawing2D.InterpolationMode.html">InterpolationMode</a></dt>
       <dd><p>How images are sampled when drawn at another size or angle. GDI+ and Egami.SystemDrawing default to bilinear without prefiltering.</p>
 </dd>
     </dl>
     <dl class="jumplist">
+      <dt><a class="xref" href="Egami.SystemDrawing.Drawing2D.LineCap.html">LineCap</a></dt>
+      <dd><p>How a line ends: flat, square, round, a triangle, an anchor shape centered on the end, or a custom cap.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.SystemDrawing.Drawing2D.LineJoin.html">LineJoin</a></dt>
+      <dd><p>How two segments of a line meet.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.SystemDrawing.Drawing2D.LinearGradientMode.html">LinearGradientMode</a></dt>
+      <dd><p>The direction of a <a class="xref" href="Egami.SystemDrawing.Drawing2D.LinearGradientBrush.html">LinearGradientBrush</a> made from a rectangle.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
       <dt><a class="xref" href="Egami.SystemDrawing.Drawing2D.MatrixOrder.html">MatrixOrder</a></dt>
       <dd><p>Whether a transform is applied before the existing ones (<a class="xref" href="Egami.SystemDrawing.Drawing2D.MatrixOrder.html#Egami_SystemDrawing_Drawing2D_MatrixOrder_Prepend">Prepend</a>, the default) or after them.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.SystemDrawing.Drawing2D.PathPointType.html">PathPointType</a></dt>
+      <dd><p>The type of a point of a <a class="xref" href="Egami.SystemDrawing.Drawing2D.GraphicsPath.html">GraphicsPath</a>: its kind in the low bits and flags above.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.SystemDrawing.Drawing2D.PenAlignment.html">PenAlignment</a></dt>
+      <dd><p>Where a pen lies along a closed shape's outline.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.SystemDrawing.Drawing2D.PenType.html">PenType</a></dt>
+      <dd><p>What a pen paints with: the kind of its brush.</p>
 </dd>
     </dl>
     <dl class="jumplist">
@@ -171,6 +271,11 @@ Enums
     <dl class="jumplist">
       <dt><a class="xref" href="Egami.SystemDrawing.Drawing2D.SmoothingMode.html">SmoothingMode</a></dt>
       <dd><p>Whether shapes and lines are antialiased. GDI+ and Egami.SystemDrawing default to <a class="xref" href="Egami.SystemDrawing.Drawing2D.SmoothingMode.html#Egami_SystemDrawing_Drawing2D_SmoothingMode_None">None</a>, aliased.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.SystemDrawing.Drawing2D.WarpMode.html">WarpMode</a></dt>
+      <dd><p>How <a class="xref" href="Egami.SystemDrawing.Drawing2D.GraphicsPath.html#Egami_SystemDrawing_Drawing2D_GraphicsPath_Warp_System_Drawing_PointF___System_Drawing_RectangleF_Egami_SystemDrawing_Drawing2D_Matrix_Egami_SystemDrawing_Drawing2D_WarpMode_System_Single_">Warp(PointF[], RectangleF, Matrix?, WarpMode, float)</a> maps a rectangle onto four points.</p>
 </dd>
     </dl>
     <dl class="jumplist">

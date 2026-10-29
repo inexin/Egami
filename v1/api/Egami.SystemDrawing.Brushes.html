@@ -1,0 +1,4712 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class Brushes | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class Brushes | Egami ">
+      
+      <meta name="description" content="Solid brushes of the named web colors, one per color and thread, as System.Drawing keeps them; their color can be changed, as in System.Drawing.">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_SystemDrawing_Brushes.md&amp;value=---%0Auid%3A%20Egami.SystemDrawing.Brushes%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.SystemDrawing.Brushes">
+
+
+
+  <h1 id="Egami_SystemDrawing_Brushes" data-uid="Egami.SystemDrawing.Brushes" class="text-break">
+Class Brushes  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L7"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a>.<a class="xref" href="Egami.SystemDrawing.html">SystemDrawing</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.SystemDrawing.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>Solid brushes of the named web colors, one per color and thread, as System.Drawing keeps them; their color can be changed, as in System.Drawing.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static class Brushes</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><span class="xref">Brushes</span></div>
+    </dd>
+  </dl>
+
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone">object.MemberwiseClone()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+  </dd></dl>
+
+
+
+  <h2 id="Egami_SystemDrawing_Brushes_examples">Examples</h2>
+  <pre><code class="lang-csharp">// Hatch, texture and gradient brushes, and the Brushes and Pens of the named colors.
+using Bitmap bitmap = new(80, 60);
+using Graphics g = Graphics.FromImage(bitmap);
+using HatchBrush hatch = new(HatchStyle.DiagonalCross, Color.Black, Color.White);
+g.FillRectangle(hatch, 0, 0, 40, 30);
+using LinearGradientBrush linear = new(new Rectangle(40, 0, 40, 30), Color.Red, Color.Blue, LinearGradientMode.Horizontal);
+linear.SetSigmaBellShape(0.5f);
+g.FillRectangle(linear, 40, 0, 40, 30);
+using PathGradientBrush radial = new([new PointF(0, 30), new PointF(40, 30), new PointF(20, 60)]) { CenterColor = Color.White, SurroundColors = [Color.Green] };
+g.FillRectangle(radial, 0, 30, 40, 30);
+using Bitmap tile = new(4, 4);
+tile.SetPixel(0, 0, Color.Orange);
+using TextureBrush texture = new(tile, WrapMode.TileFlipXY);
+g.FillRectangle(texture, 40, 30, 40, 30);
+g.DrawRectangle(Egami.SystemDrawing.Pens.Gray, 0, 0, 79, 59);
+g.FillEllipse(Egami.SystemDrawing.Brushes.Gold, 36, 26, 8, 8);
+Blend? blend = linear.Blend;  // 511 factors: the bell, as GDI+ samples it</code></pre>
+
+
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="Egami_SystemDrawing_Brushes_AliceBlue_" data-uid="Egami.SystemDrawing.Brushes.AliceBlue*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_AliceBlue" data-uid="Egami.SystemDrawing.Brushes.AliceBlue">
+  AliceBlue
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L13"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the alice blue brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush AliceBlue { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_AntiqueWhite_" data-uid="Egami.SystemDrawing.Brushes.AntiqueWhite*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_AntiqueWhite" data-uid="Egami.SystemDrawing.Brushes.AntiqueWhite">
+  AntiqueWhite
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L16"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the antique white brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush AntiqueWhite { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_Aqua_" data-uid="Egami.SystemDrawing.Brushes.Aqua*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_Aqua" data-uid="Egami.SystemDrawing.Brushes.Aqua">
+  Aqua
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L19"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the aqua brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush Aqua { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_Aquamarine_" data-uid="Egami.SystemDrawing.Brushes.Aquamarine*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_Aquamarine" data-uid="Egami.SystemDrawing.Brushes.Aquamarine">
+  Aquamarine
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L22"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the aquamarine brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush Aquamarine { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_Azure_" data-uid="Egami.SystemDrawing.Brushes.Azure*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_Azure" data-uid="Egami.SystemDrawing.Brushes.Azure">
+  Azure
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L25"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the azure brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush Azure { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_Beige_" data-uid="Egami.SystemDrawing.Brushes.Beige*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_Beige" data-uid="Egami.SystemDrawing.Brushes.Beige">
+  Beige
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L28"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the beige brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush Beige { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_Bisque_" data-uid="Egami.SystemDrawing.Brushes.Bisque*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_Bisque" data-uid="Egami.SystemDrawing.Brushes.Bisque">
+  Bisque
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L31"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the bisque brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush Bisque { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_Black_" data-uid="Egami.SystemDrawing.Brushes.Black*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_Black" data-uid="Egami.SystemDrawing.Brushes.Black">
+  Black
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L34"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the black brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush Black { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_BlanchedAlmond_" data-uid="Egami.SystemDrawing.Brushes.BlanchedAlmond*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_BlanchedAlmond" data-uid="Egami.SystemDrawing.Brushes.BlanchedAlmond">
+  BlanchedAlmond
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L37"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the blanched almond brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush BlanchedAlmond { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_Blue_" data-uid="Egami.SystemDrawing.Brushes.Blue*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_Blue" data-uid="Egami.SystemDrawing.Brushes.Blue">
+  Blue
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L40"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the blue brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush Blue { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_BlueViolet_" data-uid="Egami.SystemDrawing.Brushes.BlueViolet*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_BlueViolet" data-uid="Egami.SystemDrawing.Brushes.BlueViolet">
+  BlueViolet
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L43"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the blue violet brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush BlueViolet { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_Brown_" data-uid="Egami.SystemDrawing.Brushes.Brown*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_Brown" data-uid="Egami.SystemDrawing.Brushes.Brown">
+  Brown
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L46"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the brown brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush Brown { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_BurlyWood_" data-uid="Egami.SystemDrawing.Brushes.BurlyWood*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_BurlyWood" data-uid="Egami.SystemDrawing.Brushes.BurlyWood">
+  BurlyWood
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L49"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the burly wood brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush BurlyWood { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_CadetBlue_" data-uid="Egami.SystemDrawing.Brushes.CadetBlue*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_CadetBlue" data-uid="Egami.SystemDrawing.Brushes.CadetBlue">
+  CadetBlue
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L52"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the cadet blue brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush CadetBlue { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_Chartreuse_" data-uid="Egami.SystemDrawing.Brushes.Chartreuse*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_Chartreuse" data-uid="Egami.SystemDrawing.Brushes.Chartreuse">
+  Chartreuse
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L55"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the chartreuse brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush Chartreuse { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_Chocolate_" data-uid="Egami.SystemDrawing.Brushes.Chocolate*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_Chocolate" data-uid="Egami.SystemDrawing.Brushes.Chocolate">
+  Chocolate
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L58"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the chocolate brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush Chocolate { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_Coral_" data-uid="Egami.SystemDrawing.Brushes.Coral*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_Coral" data-uid="Egami.SystemDrawing.Brushes.Coral">
+  Coral
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L61"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the coral brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush Coral { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_CornflowerBlue_" data-uid="Egami.SystemDrawing.Brushes.CornflowerBlue*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_CornflowerBlue" data-uid="Egami.SystemDrawing.Brushes.CornflowerBlue">
+  CornflowerBlue
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L64"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the cornflower blue brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush CornflowerBlue { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_Cornsilk_" data-uid="Egami.SystemDrawing.Brushes.Cornsilk*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_Cornsilk" data-uid="Egami.SystemDrawing.Brushes.Cornsilk">
+  Cornsilk
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L67"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the cornsilk brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush Cornsilk { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_Crimson_" data-uid="Egami.SystemDrawing.Brushes.Crimson*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_Crimson" data-uid="Egami.SystemDrawing.Brushes.Crimson">
+  Crimson
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L70"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the crimson brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush Crimson { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_Cyan_" data-uid="Egami.SystemDrawing.Brushes.Cyan*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_Cyan" data-uid="Egami.SystemDrawing.Brushes.Cyan">
+  Cyan
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L73"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the cyan brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush Cyan { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_DarkBlue_" data-uid="Egami.SystemDrawing.Brushes.DarkBlue*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_DarkBlue" data-uid="Egami.SystemDrawing.Brushes.DarkBlue">
+  DarkBlue
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L76"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the dark blue brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush DarkBlue { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_DarkCyan_" data-uid="Egami.SystemDrawing.Brushes.DarkCyan*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_DarkCyan" data-uid="Egami.SystemDrawing.Brushes.DarkCyan">
+  DarkCyan
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L79"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the dark cyan brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush DarkCyan { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_DarkGoldenrod_" data-uid="Egami.SystemDrawing.Brushes.DarkGoldenrod*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_DarkGoldenrod" data-uid="Egami.SystemDrawing.Brushes.DarkGoldenrod">
+  DarkGoldenrod
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L82"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the dark goldenrod brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush DarkGoldenrod { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_DarkGray_" data-uid="Egami.SystemDrawing.Brushes.DarkGray*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_DarkGray" data-uid="Egami.SystemDrawing.Brushes.DarkGray">
+  DarkGray
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L85"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the dark gray brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush DarkGray { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_DarkGreen_" data-uid="Egami.SystemDrawing.Brushes.DarkGreen*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_DarkGreen" data-uid="Egami.SystemDrawing.Brushes.DarkGreen">
+  DarkGreen
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L88"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the dark green brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush DarkGreen { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_DarkKhaki_" data-uid="Egami.SystemDrawing.Brushes.DarkKhaki*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_DarkKhaki" data-uid="Egami.SystemDrawing.Brushes.DarkKhaki">
+  DarkKhaki
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L91"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the dark khaki brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush DarkKhaki { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_DarkMagenta_" data-uid="Egami.SystemDrawing.Brushes.DarkMagenta*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_DarkMagenta" data-uid="Egami.SystemDrawing.Brushes.DarkMagenta">
+  DarkMagenta
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L94"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the dark magenta brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush DarkMagenta { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_DarkOliveGreen_" data-uid="Egami.SystemDrawing.Brushes.DarkOliveGreen*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_DarkOliveGreen" data-uid="Egami.SystemDrawing.Brushes.DarkOliveGreen">
+  DarkOliveGreen
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L97"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the dark olive green brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush DarkOliveGreen { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_DarkOrange_" data-uid="Egami.SystemDrawing.Brushes.DarkOrange*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_DarkOrange" data-uid="Egami.SystemDrawing.Brushes.DarkOrange">
+  DarkOrange
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L100"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the dark orange brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush DarkOrange { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_DarkOrchid_" data-uid="Egami.SystemDrawing.Brushes.DarkOrchid*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_DarkOrchid" data-uid="Egami.SystemDrawing.Brushes.DarkOrchid">
+  DarkOrchid
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L103"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the dark orchid brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush DarkOrchid { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_DarkRed_" data-uid="Egami.SystemDrawing.Brushes.DarkRed*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_DarkRed" data-uid="Egami.SystemDrawing.Brushes.DarkRed">
+  DarkRed
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L106"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the dark red brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush DarkRed { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_DarkSalmon_" data-uid="Egami.SystemDrawing.Brushes.DarkSalmon*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_DarkSalmon" data-uid="Egami.SystemDrawing.Brushes.DarkSalmon">
+  DarkSalmon
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L109"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the dark salmon brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush DarkSalmon { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_DarkSeaGreen_" data-uid="Egami.SystemDrawing.Brushes.DarkSeaGreen*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_DarkSeaGreen" data-uid="Egami.SystemDrawing.Brushes.DarkSeaGreen">
+  DarkSeaGreen
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L112"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the dark sea green brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush DarkSeaGreen { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_DarkSlateBlue_" data-uid="Egami.SystemDrawing.Brushes.DarkSlateBlue*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_DarkSlateBlue" data-uid="Egami.SystemDrawing.Brushes.DarkSlateBlue">
+  DarkSlateBlue
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L115"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the dark slate blue brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush DarkSlateBlue { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_DarkSlateGray_" data-uid="Egami.SystemDrawing.Brushes.DarkSlateGray*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_DarkSlateGray" data-uid="Egami.SystemDrawing.Brushes.DarkSlateGray">
+  DarkSlateGray
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L118"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the dark slate gray brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush DarkSlateGray { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_DarkTurquoise_" data-uid="Egami.SystemDrawing.Brushes.DarkTurquoise*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_DarkTurquoise" data-uid="Egami.SystemDrawing.Brushes.DarkTurquoise">
+  DarkTurquoise
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L121"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the dark turquoise brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush DarkTurquoise { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_DarkViolet_" data-uid="Egami.SystemDrawing.Brushes.DarkViolet*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_DarkViolet" data-uid="Egami.SystemDrawing.Brushes.DarkViolet">
+  DarkViolet
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L124"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the dark violet brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush DarkViolet { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_DeepPink_" data-uid="Egami.SystemDrawing.Brushes.DeepPink*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_DeepPink" data-uid="Egami.SystemDrawing.Brushes.DeepPink">
+  DeepPink
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L127"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the deep pink brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush DeepPink { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_DeepSkyBlue_" data-uid="Egami.SystemDrawing.Brushes.DeepSkyBlue*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_DeepSkyBlue" data-uid="Egami.SystemDrawing.Brushes.DeepSkyBlue">
+  DeepSkyBlue
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L130"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the deep sky blue brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush DeepSkyBlue { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_DimGray_" data-uid="Egami.SystemDrawing.Brushes.DimGray*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_DimGray" data-uid="Egami.SystemDrawing.Brushes.DimGray">
+  DimGray
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L133"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the dim gray brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush DimGray { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_DodgerBlue_" data-uid="Egami.SystemDrawing.Brushes.DodgerBlue*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_DodgerBlue" data-uid="Egami.SystemDrawing.Brushes.DodgerBlue">
+  DodgerBlue
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L136"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the dodger blue brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush DodgerBlue { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_Firebrick_" data-uid="Egami.SystemDrawing.Brushes.Firebrick*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_Firebrick" data-uid="Egami.SystemDrawing.Brushes.Firebrick">
+  Firebrick
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L139"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the firebrick brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush Firebrick { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_FloralWhite_" data-uid="Egami.SystemDrawing.Brushes.FloralWhite*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_FloralWhite" data-uid="Egami.SystemDrawing.Brushes.FloralWhite">
+  FloralWhite
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L142"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the floral white brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush FloralWhite { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_ForestGreen_" data-uid="Egami.SystemDrawing.Brushes.ForestGreen*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_ForestGreen" data-uid="Egami.SystemDrawing.Brushes.ForestGreen">
+  ForestGreen
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L145"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the forest green brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush ForestGreen { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_Fuchsia_" data-uid="Egami.SystemDrawing.Brushes.Fuchsia*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_Fuchsia" data-uid="Egami.SystemDrawing.Brushes.Fuchsia">
+  Fuchsia
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L148"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the fuchsia brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush Fuchsia { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_Gainsboro_" data-uid="Egami.SystemDrawing.Brushes.Gainsboro*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_Gainsboro" data-uid="Egami.SystemDrawing.Brushes.Gainsboro">
+  Gainsboro
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L151"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the gainsboro brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush Gainsboro { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_GhostWhite_" data-uid="Egami.SystemDrawing.Brushes.GhostWhite*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_GhostWhite" data-uid="Egami.SystemDrawing.Brushes.GhostWhite">
+  GhostWhite
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L154"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the ghost white brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush GhostWhite { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_Gold_" data-uid="Egami.SystemDrawing.Brushes.Gold*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_Gold" data-uid="Egami.SystemDrawing.Brushes.Gold">
+  Gold
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L157"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the gold brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush Gold { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_Goldenrod_" data-uid="Egami.SystemDrawing.Brushes.Goldenrod*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_Goldenrod" data-uid="Egami.SystemDrawing.Brushes.Goldenrod">
+  Goldenrod
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L160"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the goldenrod brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush Goldenrod { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_Gray_" data-uid="Egami.SystemDrawing.Brushes.Gray*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_Gray" data-uid="Egami.SystemDrawing.Brushes.Gray">
+  Gray
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L163"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the gray brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush Gray { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_Green_" data-uid="Egami.SystemDrawing.Brushes.Green*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_Green" data-uid="Egami.SystemDrawing.Brushes.Green">
+  Green
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L166"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the green brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush Green { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_GreenYellow_" data-uid="Egami.SystemDrawing.Brushes.GreenYellow*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_GreenYellow" data-uid="Egami.SystemDrawing.Brushes.GreenYellow">
+  GreenYellow
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L169"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the green yellow brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush GreenYellow { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_Honeydew_" data-uid="Egami.SystemDrawing.Brushes.Honeydew*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_Honeydew" data-uid="Egami.SystemDrawing.Brushes.Honeydew">
+  Honeydew
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L172"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the honeydew brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush Honeydew { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_HotPink_" data-uid="Egami.SystemDrawing.Brushes.HotPink*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_HotPink" data-uid="Egami.SystemDrawing.Brushes.HotPink">
+  HotPink
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L175"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the hot pink brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush HotPink { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_IndianRed_" data-uid="Egami.SystemDrawing.Brushes.IndianRed*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_IndianRed" data-uid="Egami.SystemDrawing.Brushes.IndianRed">
+  IndianRed
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L178"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the indian red brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush IndianRed { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_Indigo_" data-uid="Egami.SystemDrawing.Brushes.Indigo*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_Indigo" data-uid="Egami.SystemDrawing.Brushes.Indigo">
+  Indigo
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L181"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the indigo brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush Indigo { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_Ivory_" data-uid="Egami.SystemDrawing.Brushes.Ivory*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_Ivory" data-uid="Egami.SystemDrawing.Brushes.Ivory">
+  Ivory
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L184"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the ivory brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush Ivory { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_Khaki_" data-uid="Egami.SystemDrawing.Brushes.Khaki*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_Khaki" data-uid="Egami.SystemDrawing.Brushes.Khaki">
+  Khaki
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L187"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the khaki brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush Khaki { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_Lavender_" data-uid="Egami.SystemDrawing.Brushes.Lavender*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_Lavender" data-uid="Egami.SystemDrawing.Brushes.Lavender">
+  Lavender
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L190"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the lavender brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush Lavender { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_LavenderBlush_" data-uid="Egami.SystemDrawing.Brushes.LavenderBlush*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_LavenderBlush" data-uid="Egami.SystemDrawing.Brushes.LavenderBlush">
+  LavenderBlush
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L193"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the lavender blush brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush LavenderBlush { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_LawnGreen_" data-uid="Egami.SystemDrawing.Brushes.LawnGreen*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_LawnGreen" data-uid="Egami.SystemDrawing.Brushes.LawnGreen">
+  LawnGreen
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L196"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the lawn green brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush LawnGreen { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_LemonChiffon_" data-uid="Egami.SystemDrawing.Brushes.LemonChiffon*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_LemonChiffon" data-uid="Egami.SystemDrawing.Brushes.LemonChiffon">
+  LemonChiffon
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L199"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the lemon chiffon brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush LemonChiffon { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_LightBlue_" data-uid="Egami.SystemDrawing.Brushes.LightBlue*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_LightBlue" data-uid="Egami.SystemDrawing.Brushes.LightBlue">
+  LightBlue
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L202"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the light blue brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush LightBlue { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_LightCoral_" data-uid="Egami.SystemDrawing.Brushes.LightCoral*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_LightCoral" data-uid="Egami.SystemDrawing.Brushes.LightCoral">
+  LightCoral
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L205"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the light coral brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush LightCoral { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_LightCyan_" data-uid="Egami.SystemDrawing.Brushes.LightCyan*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_LightCyan" data-uid="Egami.SystemDrawing.Brushes.LightCyan">
+  LightCyan
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L208"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the light cyan brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush LightCyan { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_LightGoldenrodYellow_" data-uid="Egami.SystemDrawing.Brushes.LightGoldenrodYellow*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_LightGoldenrodYellow" data-uid="Egami.SystemDrawing.Brushes.LightGoldenrodYellow">
+  LightGoldenrodYellow
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L211"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the light goldenrod yellow brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush LightGoldenrodYellow { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_LightGray_" data-uid="Egami.SystemDrawing.Brushes.LightGray*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_LightGray" data-uid="Egami.SystemDrawing.Brushes.LightGray">
+  LightGray
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L214"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the light gray brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush LightGray { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_LightGreen_" data-uid="Egami.SystemDrawing.Brushes.LightGreen*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_LightGreen" data-uid="Egami.SystemDrawing.Brushes.LightGreen">
+  LightGreen
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L217"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the light green brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush LightGreen { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_LightPink_" data-uid="Egami.SystemDrawing.Brushes.LightPink*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_LightPink" data-uid="Egami.SystemDrawing.Brushes.LightPink">
+  LightPink
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L220"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the light pink brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush LightPink { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_LightSalmon_" data-uid="Egami.SystemDrawing.Brushes.LightSalmon*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_LightSalmon" data-uid="Egami.SystemDrawing.Brushes.LightSalmon">
+  LightSalmon
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L223"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the light salmon brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush LightSalmon { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_LightSeaGreen_" data-uid="Egami.SystemDrawing.Brushes.LightSeaGreen*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_LightSeaGreen" data-uid="Egami.SystemDrawing.Brushes.LightSeaGreen">
+  LightSeaGreen
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L226"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the light sea green brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush LightSeaGreen { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_LightSkyBlue_" data-uid="Egami.SystemDrawing.Brushes.LightSkyBlue*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_LightSkyBlue" data-uid="Egami.SystemDrawing.Brushes.LightSkyBlue">
+  LightSkyBlue
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L229"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the light sky blue brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush LightSkyBlue { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_LightSlateGray_" data-uid="Egami.SystemDrawing.Brushes.LightSlateGray*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_LightSlateGray" data-uid="Egami.SystemDrawing.Brushes.LightSlateGray">
+  LightSlateGray
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L232"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the light slate gray brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush LightSlateGray { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_LightSteelBlue_" data-uid="Egami.SystemDrawing.Brushes.LightSteelBlue*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_LightSteelBlue" data-uid="Egami.SystemDrawing.Brushes.LightSteelBlue">
+  LightSteelBlue
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L235"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the light steel blue brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush LightSteelBlue { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_LightYellow_" data-uid="Egami.SystemDrawing.Brushes.LightYellow*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_LightYellow" data-uid="Egami.SystemDrawing.Brushes.LightYellow">
+  LightYellow
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L238"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the light yellow brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush LightYellow { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_Lime_" data-uid="Egami.SystemDrawing.Brushes.Lime*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_Lime" data-uid="Egami.SystemDrawing.Brushes.Lime">
+  Lime
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L241"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the lime brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush Lime { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_LimeGreen_" data-uid="Egami.SystemDrawing.Brushes.LimeGreen*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_LimeGreen" data-uid="Egami.SystemDrawing.Brushes.LimeGreen">
+  LimeGreen
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L244"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the lime green brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush LimeGreen { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_Linen_" data-uid="Egami.SystemDrawing.Brushes.Linen*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_Linen" data-uid="Egami.SystemDrawing.Brushes.Linen">
+  Linen
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L247"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the linen brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush Linen { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_Magenta_" data-uid="Egami.SystemDrawing.Brushes.Magenta*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_Magenta" data-uid="Egami.SystemDrawing.Brushes.Magenta">
+  Magenta
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L250"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the magenta brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush Magenta { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_Maroon_" data-uid="Egami.SystemDrawing.Brushes.Maroon*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_Maroon" data-uid="Egami.SystemDrawing.Brushes.Maroon">
+  Maroon
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L253"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the maroon brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush Maroon { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_MediumAquamarine_" data-uid="Egami.SystemDrawing.Brushes.MediumAquamarine*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_MediumAquamarine" data-uid="Egami.SystemDrawing.Brushes.MediumAquamarine">
+  MediumAquamarine
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L256"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the medium aquamarine brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush MediumAquamarine { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_MediumBlue_" data-uid="Egami.SystemDrawing.Brushes.MediumBlue*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_MediumBlue" data-uid="Egami.SystemDrawing.Brushes.MediumBlue">
+  MediumBlue
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L259"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the medium blue brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush MediumBlue { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_MediumOrchid_" data-uid="Egami.SystemDrawing.Brushes.MediumOrchid*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_MediumOrchid" data-uid="Egami.SystemDrawing.Brushes.MediumOrchid">
+  MediumOrchid
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L262"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the medium orchid brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush MediumOrchid { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_MediumPurple_" data-uid="Egami.SystemDrawing.Brushes.MediumPurple*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_MediumPurple" data-uid="Egami.SystemDrawing.Brushes.MediumPurple">
+  MediumPurple
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L265"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the medium purple brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush MediumPurple { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_MediumSeaGreen_" data-uid="Egami.SystemDrawing.Brushes.MediumSeaGreen*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_MediumSeaGreen" data-uid="Egami.SystemDrawing.Brushes.MediumSeaGreen">
+  MediumSeaGreen
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L268"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the medium sea green brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush MediumSeaGreen { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_MediumSlateBlue_" data-uid="Egami.SystemDrawing.Brushes.MediumSlateBlue*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_MediumSlateBlue" data-uid="Egami.SystemDrawing.Brushes.MediumSlateBlue">
+  MediumSlateBlue
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L271"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the medium slate blue brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush MediumSlateBlue { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_MediumSpringGreen_" data-uid="Egami.SystemDrawing.Brushes.MediumSpringGreen*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_MediumSpringGreen" data-uid="Egami.SystemDrawing.Brushes.MediumSpringGreen">
+  MediumSpringGreen
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L274"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the medium spring green brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush MediumSpringGreen { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_MediumTurquoise_" data-uid="Egami.SystemDrawing.Brushes.MediumTurquoise*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_MediumTurquoise" data-uid="Egami.SystemDrawing.Brushes.MediumTurquoise">
+  MediumTurquoise
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L277"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the medium turquoise brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush MediumTurquoise { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_MediumVioletRed_" data-uid="Egami.SystemDrawing.Brushes.MediumVioletRed*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_MediumVioletRed" data-uid="Egami.SystemDrawing.Brushes.MediumVioletRed">
+  MediumVioletRed
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L280"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the medium violet red brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush MediumVioletRed { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_MidnightBlue_" data-uid="Egami.SystemDrawing.Brushes.MidnightBlue*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_MidnightBlue" data-uid="Egami.SystemDrawing.Brushes.MidnightBlue">
+  MidnightBlue
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L283"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the midnight blue brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush MidnightBlue { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_MintCream_" data-uid="Egami.SystemDrawing.Brushes.MintCream*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_MintCream" data-uid="Egami.SystemDrawing.Brushes.MintCream">
+  MintCream
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L286"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the mint cream brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush MintCream { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_MistyRose_" data-uid="Egami.SystemDrawing.Brushes.MistyRose*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_MistyRose" data-uid="Egami.SystemDrawing.Brushes.MistyRose">
+  MistyRose
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L289"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the misty rose brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush MistyRose { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_Moccasin_" data-uid="Egami.SystemDrawing.Brushes.Moccasin*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_Moccasin" data-uid="Egami.SystemDrawing.Brushes.Moccasin">
+  Moccasin
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L292"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the moccasin brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush Moccasin { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_NavajoWhite_" data-uid="Egami.SystemDrawing.Brushes.NavajoWhite*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_NavajoWhite" data-uid="Egami.SystemDrawing.Brushes.NavajoWhite">
+  NavajoWhite
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L295"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the navajo white brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush NavajoWhite { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_Navy_" data-uid="Egami.SystemDrawing.Brushes.Navy*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_Navy" data-uid="Egami.SystemDrawing.Brushes.Navy">
+  Navy
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L298"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the navy brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush Navy { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_OldLace_" data-uid="Egami.SystemDrawing.Brushes.OldLace*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_OldLace" data-uid="Egami.SystemDrawing.Brushes.OldLace">
+  OldLace
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L301"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the old lace brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush OldLace { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_Olive_" data-uid="Egami.SystemDrawing.Brushes.Olive*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_Olive" data-uid="Egami.SystemDrawing.Brushes.Olive">
+  Olive
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L304"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the olive brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush Olive { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_OliveDrab_" data-uid="Egami.SystemDrawing.Brushes.OliveDrab*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_OliveDrab" data-uid="Egami.SystemDrawing.Brushes.OliveDrab">
+  OliveDrab
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L307"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the olive drab brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush OliveDrab { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_Orange_" data-uid="Egami.SystemDrawing.Brushes.Orange*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_Orange" data-uid="Egami.SystemDrawing.Brushes.Orange">
+  Orange
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L310"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the orange brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush Orange { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_OrangeRed_" data-uid="Egami.SystemDrawing.Brushes.OrangeRed*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_OrangeRed" data-uid="Egami.SystemDrawing.Brushes.OrangeRed">
+  OrangeRed
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L313"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the orange red brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush OrangeRed { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_Orchid_" data-uid="Egami.SystemDrawing.Brushes.Orchid*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_Orchid" data-uid="Egami.SystemDrawing.Brushes.Orchid">
+  Orchid
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L316"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the orchid brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush Orchid { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_PaleGoldenrod_" data-uid="Egami.SystemDrawing.Brushes.PaleGoldenrod*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_PaleGoldenrod" data-uid="Egami.SystemDrawing.Brushes.PaleGoldenrod">
+  PaleGoldenrod
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L319"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the pale goldenrod brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush PaleGoldenrod { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_PaleGreen_" data-uid="Egami.SystemDrawing.Brushes.PaleGreen*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_PaleGreen" data-uid="Egami.SystemDrawing.Brushes.PaleGreen">
+  PaleGreen
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L322"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the pale green brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush PaleGreen { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_PaleTurquoise_" data-uid="Egami.SystemDrawing.Brushes.PaleTurquoise*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_PaleTurquoise" data-uid="Egami.SystemDrawing.Brushes.PaleTurquoise">
+  PaleTurquoise
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L325"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the pale turquoise brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush PaleTurquoise { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_PaleVioletRed_" data-uid="Egami.SystemDrawing.Brushes.PaleVioletRed*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_PaleVioletRed" data-uid="Egami.SystemDrawing.Brushes.PaleVioletRed">
+  PaleVioletRed
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L328"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the pale violet red brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush PaleVioletRed { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_PapayaWhip_" data-uid="Egami.SystemDrawing.Brushes.PapayaWhip*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_PapayaWhip" data-uid="Egami.SystemDrawing.Brushes.PapayaWhip">
+  PapayaWhip
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L331"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the papaya whip brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush PapayaWhip { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_PeachPuff_" data-uid="Egami.SystemDrawing.Brushes.PeachPuff*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_PeachPuff" data-uid="Egami.SystemDrawing.Brushes.PeachPuff">
+  PeachPuff
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L334"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the peach puff brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush PeachPuff { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_Peru_" data-uid="Egami.SystemDrawing.Brushes.Peru*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_Peru" data-uid="Egami.SystemDrawing.Brushes.Peru">
+  Peru
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L337"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the peru brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush Peru { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_Pink_" data-uid="Egami.SystemDrawing.Brushes.Pink*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_Pink" data-uid="Egami.SystemDrawing.Brushes.Pink">
+  Pink
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L340"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the pink brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush Pink { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_Plum_" data-uid="Egami.SystemDrawing.Brushes.Plum*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_Plum" data-uid="Egami.SystemDrawing.Brushes.Plum">
+  Plum
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L343"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the plum brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush Plum { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_PowderBlue_" data-uid="Egami.SystemDrawing.Brushes.PowderBlue*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_PowderBlue" data-uid="Egami.SystemDrawing.Brushes.PowderBlue">
+  PowderBlue
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L346"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the powder blue brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush PowderBlue { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_Purple_" data-uid="Egami.SystemDrawing.Brushes.Purple*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_Purple" data-uid="Egami.SystemDrawing.Brushes.Purple">
+  Purple
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L349"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the purple brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush Purple { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_Red_" data-uid="Egami.SystemDrawing.Brushes.Red*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_Red" data-uid="Egami.SystemDrawing.Brushes.Red">
+  Red
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L352"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the red brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush Red { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_RosyBrown_" data-uid="Egami.SystemDrawing.Brushes.RosyBrown*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_RosyBrown" data-uid="Egami.SystemDrawing.Brushes.RosyBrown">
+  RosyBrown
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L355"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the rosy brown brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush RosyBrown { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_RoyalBlue_" data-uid="Egami.SystemDrawing.Brushes.RoyalBlue*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_RoyalBlue" data-uid="Egami.SystemDrawing.Brushes.RoyalBlue">
+  RoyalBlue
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L358"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the royal blue brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush RoyalBlue { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_SaddleBrown_" data-uid="Egami.SystemDrawing.Brushes.SaddleBrown*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_SaddleBrown" data-uid="Egami.SystemDrawing.Brushes.SaddleBrown">
+  SaddleBrown
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L361"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the saddle brown brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush SaddleBrown { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_Salmon_" data-uid="Egami.SystemDrawing.Brushes.Salmon*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_Salmon" data-uid="Egami.SystemDrawing.Brushes.Salmon">
+  Salmon
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L364"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the salmon brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush Salmon { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_SandyBrown_" data-uid="Egami.SystemDrawing.Brushes.SandyBrown*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_SandyBrown" data-uid="Egami.SystemDrawing.Brushes.SandyBrown">
+  SandyBrown
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L367"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the sandy brown brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush SandyBrown { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_SeaGreen_" data-uid="Egami.SystemDrawing.Brushes.SeaGreen*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_SeaGreen" data-uid="Egami.SystemDrawing.Brushes.SeaGreen">
+  SeaGreen
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L370"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the sea green brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush SeaGreen { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_SeaShell_" data-uid="Egami.SystemDrawing.Brushes.SeaShell*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_SeaShell" data-uid="Egami.SystemDrawing.Brushes.SeaShell">
+  SeaShell
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L373"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the sea shell brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush SeaShell { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_Sienna_" data-uid="Egami.SystemDrawing.Brushes.Sienna*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_Sienna" data-uid="Egami.SystemDrawing.Brushes.Sienna">
+  Sienna
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L376"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the sienna brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush Sienna { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_Silver_" data-uid="Egami.SystemDrawing.Brushes.Silver*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_Silver" data-uid="Egami.SystemDrawing.Brushes.Silver">
+  Silver
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L379"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the silver brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush Silver { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_SkyBlue_" data-uid="Egami.SystemDrawing.Brushes.SkyBlue*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_SkyBlue" data-uid="Egami.SystemDrawing.Brushes.SkyBlue">
+  SkyBlue
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L382"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the sky blue brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush SkyBlue { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_SlateBlue_" data-uid="Egami.SystemDrawing.Brushes.SlateBlue*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_SlateBlue" data-uid="Egami.SystemDrawing.Brushes.SlateBlue">
+  SlateBlue
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L385"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the slate blue brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush SlateBlue { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_SlateGray_" data-uid="Egami.SystemDrawing.Brushes.SlateGray*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_SlateGray" data-uid="Egami.SystemDrawing.Brushes.SlateGray">
+  SlateGray
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L388"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the slate gray brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush SlateGray { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_Snow_" data-uid="Egami.SystemDrawing.Brushes.Snow*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_Snow" data-uid="Egami.SystemDrawing.Brushes.Snow">
+  Snow
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L391"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the snow brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush Snow { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_SpringGreen_" data-uid="Egami.SystemDrawing.Brushes.SpringGreen*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_SpringGreen" data-uid="Egami.SystemDrawing.Brushes.SpringGreen">
+  SpringGreen
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L394"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the spring green brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush SpringGreen { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_SteelBlue_" data-uid="Egami.SystemDrawing.Brushes.SteelBlue*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_SteelBlue" data-uid="Egami.SystemDrawing.Brushes.SteelBlue">
+  SteelBlue
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L397"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the steel blue brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush SteelBlue { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_Tan_" data-uid="Egami.SystemDrawing.Brushes.Tan*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_Tan" data-uid="Egami.SystemDrawing.Brushes.Tan">
+  Tan
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L400"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the tan brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush Tan { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_Teal_" data-uid="Egami.SystemDrawing.Brushes.Teal*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_Teal" data-uid="Egami.SystemDrawing.Brushes.Teal">
+  Teal
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L403"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the teal brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush Teal { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_Thistle_" data-uid="Egami.SystemDrawing.Brushes.Thistle*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_Thistle" data-uid="Egami.SystemDrawing.Brushes.Thistle">
+  Thistle
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L406"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the thistle brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush Thistle { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_Tomato_" data-uid="Egami.SystemDrawing.Brushes.Tomato*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_Tomato" data-uid="Egami.SystemDrawing.Brushes.Tomato">
+  Tomato
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L409"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the tomato brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush Tomato { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_Transparent_" data-uid="Egami.SystemDrawing.Brushes.Transparent*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_Transparent" data-uid="Egami.SystemDrawing.Brushes.Transparent">
+  Transparent
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L412"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the transparent brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush Transparent { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_Turquoise_" data-uid="Egami.SystemDrawing.Brushes.Turquoise*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_Turquoise" data-uid="Egami.SystemDrawing.Brushes.Turquoise">
+  Turquoise
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L415"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the turquoise brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush Turquoise { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_Violet_" data-uid="Egami.SystemDrawing.Brushes.Violet*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_Violet" data-uid="Egami.SystemDrawing.Brushes.Violet">
+  Violet
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L418"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the violet brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush Violet { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_Wheat_" data-uid="Egami.SystemDrawing.Brushes.Wheat*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_Wheat" data-uid="Egami.SystemDrawing.Brushes.Wheat">
+  Wheat
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L421"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the wheat brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush Wheat { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_White_" data-uid="Egami.SystemDrawing.Brushes.White*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_White" data-uid="Egami.SystemDrawing.Brushes.White">
+  White
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L424"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the white brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush White { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_WhiteSmoke_" data-uid="Egami.SystemDrawing.Brushes.WhiteSmoke*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_WhiteSmoke" data-uid="Egami.SystemDrawing.Brushes.WhiteSmoke">
+  WhiteSmoke
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L427"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the white smoke brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush WhiteSmoke { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_Yellow_" data-uid="Egami.SystemDrawing.Brushes.Yellow*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_Yellow" data-uid="Egami.SystemDrawing.Brushes.Yellow">
+  Yellow
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L430"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the yellow brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush Yellow { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Brushes_YellowGreen_" data-uid="Egami.SystemDrawing.Brushes.YellowGreen*"></a>
+
+  <h3 id="Egami_SystemDrawing_Brushes_YellowGreen" data-uid="Egami.SystemDrawing.Brushes.YellowGreen">
+  YellowGreen
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L433"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the yellow green brush.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Brush YellowGreen { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Statics.cs/#L7" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>
