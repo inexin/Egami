@@ -205,4 +205,45 @@ public class ExtrasTests
         Assert.All(expected.Zip(actual), p => Assert.InRange(p.Second, p.First - 1, p.First + 1));
 
     private static byte[] Pick(byte[] values, params int[] at) => at.Length == 0 ? [values[0], values[32], values[128], values[224]] : [.. at.Select(i => values[i])];
+
+    [Theory]
+    [InlineData("offset-frame.emf")]
+    [InlineData("offset-box.wmf")]
+    public void AWholeMetafileIsDrawnFromItsFrameWhereverTheFrameStarts(string name)
+    {
+        // gdi-shapes-basic with the EMF frame (or the placeable WMF box) moved off (0, 0): GDI+ takes a whole image's source from
+        // GetBounds, so drawing it whole equals drawing its frame rectangle as the source.
+        using Metafile mf = new(Metafiles(name));
+        GraphicsUnit unit = GraphicsUnit.Pixel;
+        RectangleF frame = mf.GetBounds(ref unit);
+        Assert.True(frame.X > 0 && frame.Y > 0);
+        using Bitmap whole = Draw(g => g.DrawImage(mf, new Rectangle(0, 0, 120, 90)));
+        using Bitmap framed = Draw(g => g.DrawImage(mf, new RectangleF(0, 0, 120, 90), frame, GraphicsUnit.Pixel));
+        using Bitmap fromOrigin = Draw(g => g.DrawImage(mf, new RectangleF(0, 0, 120, 90), new RectangleF(0, 0, frame.Width, frame.Height), GraphicsUnit.Pixel));
+        Assert.Equal(Pixels(framed), Pixels(whole));
+        Assert.NotEqual(Pixels(fromOrigin), Pixels(whole));
+
+        static Bitmap Draw(Action<Graphics> draw)
+        {
+            Bitmap b = new(120, 90);
+            using Graphics g = Graphics.FromImage(b);
+            g.Clear(Color.White);
+            draw(g);
+            return b;
+        }
+
+        static int[] Pixels(Bitmap b)
+        {
+            int[] p = new int[b.Width * b.Height];
+            for (int y = 0; y < b.Height; y++)
+            {
+                for (int x = 0; x < b.Width; x++)
+                {
+                    p[(y * b.Width) + x] = b.GetPixel(x, y).ToArgb();
+                }
+            }
+
+            return p;
+        }
+    }
 }

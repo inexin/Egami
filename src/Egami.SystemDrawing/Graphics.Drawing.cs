@@ -383,7 +383,7 @@ public sealed partial class Graphics
     internal void DrawImageAt(Image image, float x, float y, RectangleF? source = null, GraphicsUnit unit = GraphicsUnit.Pixel)
     {
         ArgumentNullException.ThrowIfNull(image);
-        RectangleF src = source ?? new RectangleF(0, 0, image.Width, image.Height);
+        RectangleF src = source ?? WholeSource(image);
         float sx = SourceScale(unit, image.HorizontalResolution), sy = SourceScale(unit, image.VerticalResolution);
         float page = PageFactor;
         float w = src.Width * sx * DpiX / image.HorizontalResolution / page, h = src.Height * sy * DpiY / image.VerticalResolution / page;
@@ -394,7 +394,7 @@ public sealed partial class Graphics
     internal void DrawImageRect(Image image, RectangleF dest, RectangleF? source = null, GraphicsUnit unit = GraphicsUnit.Pixel, ImageAttributes? attributes = null, DrawImageAbort? abort = null, IntPtr data = default)
     {
         ArgumentNullException.ThrowIfNull(image);
-        DrawImageCore(image, new PointF(dest.X, dest.Y), new PointF(dest.Right, dest.Y), new PointF(dest.X, dest.Bottom), source ?? new RectangleF(0, 0, image.Width, image.Height), unit, attributes, abort, data);
+        DrawImageCore(image, new PointF(dest.X, dest.Y), new PointF(dest.Right, dest.Y), new PointF(dest.X, dest.Bottom), source ?? WholeSource(image), unit, attributes, abort, data);
     }
 
     /// <summary>Draws an image onto a parallelogram given by three world points: top-left, top-right and bottom-left.</summary>
@@ -406,8 +406,14 @@ public sealed partial class Graphics
             throw GdiErrors.InvalidParameter();
         }
 
-        DrawImageCore(image, points[0], points[1], points[2], source ?? new RectangleF(0, 0, image.Width, image.Height), unit, attributes, abort, data);
+        DrawImageCore(image, points[0], points[1], points[2], source ?? WholeSource(image), unit, attributes, abort, data);
     }
+
+    /// <summary>
+    /// The source rectangle of a whole image, as GDI+ takes it from GetBounds: a bitmap's pixels from (0, 0), a metafile's frame
+    /// where it lies, which need not start at (0, 0).
+    /// </summary>
+    private static RectangleF WholeSource(Image image) => image is Metafile metafile ? metafile.FrameBounds : new RectangleF(0, 0, image.Width, image.Height);
 
     /// <summary>Pixels per source unit at an image's resolution.</summary>
     private static float SourceScale(GraphicsUnit unit, float dpi) => unit switch
