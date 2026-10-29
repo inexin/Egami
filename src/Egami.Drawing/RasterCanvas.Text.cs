@@ -1,4 +1,5 @@
 using System.Numerics;
+using System.Runtime.CompilerServices;
 
 using Egami.Drawing.Rasterization;
 using Egami.Fonts;
@@ -127,6 +128,9 @@ public sealed partial class RasterCanvas<TPixel>
             Full = full ? font.HintingTarget : null,
         };
         bool subpixel = font.Subpixel && font.Metrics == FontMetrics.Design;
+
+        // Embedded bitmaps apply only upright at a whole strike size; GetEmbeddedBitmap answers null at any other size.
+        bool bitmaps = font.EmbeddedBitmaps && emX == emY && emY > 0;
         float sx = emX / face.UnitsPerEm, sy = emY / face.UnitsPerEm;
         Rect clip = _clip.Bounds;
         byte[]? scratch = null;
@@ -178,11 +182,19 @@ public sealed partial class RasterCanvas<TPixel>
                 continue;
             }
 
-            var key = new GlyphKey(face, glyph, emX, emY, style, phase);
-            if (!GlyphCache.TryGet(key, out GlyphMask? mask))
+            GlyphMask? mask = bitmaps ? BitmapMask(face, glyph, emY) : null;
+            if (mask is not null)
             {
-                mask = RenderMask(face, glyph, sx, sy, phase, style);
-                GlyphCache.Add(key, mask);
+                (ox, _) = Snap(device.X, false);
+            }
+            else
+            {
+                var key = new GlyphKey(face, glyph, emX, emY, style, phase);
+                if (!GlyphCache.TryGet(key, out mask))
+                {
+                    mask = RenderMask(face, glyph, sx, sy, phase, style);
+                    GlyphCache.Add(key, mask);
+                }
             }
 
             if (mask.Coverage.Length == 0)
@@ -301,6 +313,26 @@ public sealed partial class RasterCanvas<TPixel>
         {
             base.OnDrawGlyphRun(Subrun(run, turned), origin, paint);
         }
+    }
+
+    // A glyph's embedded bitmap as a cached grayscale mask, or null when no strike of exactly this size holds it. Kept out of the
+    // glyph loop so text without embedded bitmaps runs the same code as before.
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static GlyphMask? BitmapMask(Typeface face, ushort glyph, float em)
+    {
+        if (face.GetEmbeddedBitmap(glyph, em) is not Fonts.Color.EmbeddedBitmap bitmap)
+        {
+            return null;
+        }
+
+        var key = new GlyphKey(face, glyph, em, em, new GlyphStyle(FontEdging.Alias, false, FontSynthesis.None, PixelGeometry.Unknown) { Bitmap = true }, 0);
+        if (!GlyphCache.TryGet(key, out GlyphMask? mask))
+        {
+            mask = bitmap.Width == 0 ? GlyphMask.Empty : new GlyphMask(new Rect(bitmap.BearingX, -bitmap.BearingY, bitmap.Width, bitmap.Height), bitmap.Coverage, 1);
+            GlyphCache.Add(key, mask);
+        }
+
+        return mask;
     }
 
     /// <summary>
@@ -532,7 +564,7 @@ internal readonly record struct GlyphStyle
     private readonly byte _edging;
     private readonly byte _synthesis;
     private readonly byte _geometry;
-    // Bit 0: light hinting; bits 1 to 3: full hinting's target plus one.
+    // Bit 0: light hinting; bits 1 to 3: full hinting's target plus one; bit 7: an embedded bitmap.
     private readonly byte _hint;
 
     public GlyphStyle(FontEdging edging, bool hint, FontSynthesis synthesis, PixelGeometry geometry)
@@ -550,8 +582,8 @@ internal readonly record struct GlyphStyle
     /// <summary>Gets the target the font's instructions run for, or null when they do not.</summary>
     public TrueTypeTarget? Full
     {
-        get => _hint >> 1 is int t and > 0 ? (TrueTypeTarget)(t - 1) : null;
-        init => _hint = (byte)((_hint & 1) | (value is TrueTypeTarget t ? ((int)t + 1) << 1 : 0));
+        get => ((_hint >> 1) & 7) is int t and > 0 ? (TrueTypeTarget)(t - 1) : null;
+        init => _hint = (byte)((_hint & 0x81) | (value is TrueTypeTarget t ? ((int)t + 1) << 1 : 0));
     }
 
     public FontSynthesis Synthesis => (FontSynthesis)_synthesis;
@@ -565,6 +597,13 @@ internal readonly record struct GlyphStyle
 
     /// <summary>Gets an LCD mask's filter, sampling and level, or null for the defaults (and for masks that are not LCD).</summary>
     public LcdLook? Look { get; init; }
+
+    /// <summary>Gets a value indicating whether the mask is the glyph's embedded bitmap (EBDT) rather than its outline.</summary>
+    public bool Bitmap
+    {
+        get => (_hint & 0x80) != 0;
+        init => _hint = (byte)(value ? _hint | 0x80 : _hint & 0x7F);
+    }
 }
 
 /// <summary>The LCD settings of a canvas that change its masks.</summary>
