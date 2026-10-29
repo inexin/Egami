@@ -213,7 +213,9 @@ internal sealed partial class HevcSliceDecoder
 
     private void InitializeContexts()
     {
-        HevcContexts.Initialize(_contexts, _slice.SliceQp);
+        // initType (9-7): 0 for I slices; P and B slices swap 1 and 2 with cabac_init_flag.
+        int initType = _slice.SliceType == HevcSliceHeader.I ? 0 : (_slice.SliceType == HevcSliceHeader.P) != _slice.CabacInit ? 1 : 2;
+        HevcContexts.Initialize(_contexts, _slice.SliceQp, initType);
         Array.Clear(_statCoeff);
     }
 
