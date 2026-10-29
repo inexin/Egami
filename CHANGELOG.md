@@ -15,7 +15,7 @@ changes that break code come only in a new major version.
   text matches GDI+ slightly closer. Egami's own sampling is unchanged. Egami.Fonts' hinter now reports each glyph's scan
   control, internally.
 
-## Egami.Video.Cli, unreleased
+## Egami.Video.Cli 1.1.0 (2026-10-29)
 
 - V9.1 stage D (Build Plan tasks 16 to 19): `egami-video audio` and `encode` (for its `--audio`) take `--gain`, `--fade-in`,
   `--fade-out`, `--tempo`, `--normalize` (ebu, atsc, streaming, podcast or LUFS, two passes), `--trim-silence` (refused with
@@ -35,7 +35,10 @@ changes that break code come only in a new major version.
   file's text subtitle tracks written as files; subtitle files added to MKV, WebM or MP4 as tracks with languages, names and a
   default. `info` and `embed --add` take subtitle files as inputs.
 
-## Egami.Video, unreleased
+## Egami.Video 1.1.0 (2026-10-29)
+
+With Egami.Video.H264 1.1.0. All additive to 1.0. The V9.1 stages B to D API review was accepted on 2026-10-29 (all as
+recommended), with no API changes.
 
 MP3 decode speed (the V5.8 speed gate, left for 1.0.x). No API changes.
 
