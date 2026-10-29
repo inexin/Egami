@@ -144,4 +144,20 @@ public class IntegrationTests
         BinaryPrimitives.WriteInt16LittleEndian(file.AsSpan(56), 1);
         return file;
     }
+
+    /// <summary>
+    /// With CanvasOptions.PixelOffset None the EMF+ player leaves GDI+'s pixel offset to the canvas, so shapes land where they do on
+    /// a default canvas, not half a pixel further.
+    /// </summary>
+    [Fact]
+    public void PixelOffsetNoneCanvasIsNotShiftedTwice()
+    {
+        Metafile m = Metafile.Load(TestFiles.SyntheticPath("plus-shapes.plus.emf"));
+        using Raster<Rgba8> plain = m.Rasterize<Rgba8>(new MetafileRenderOptions { Width = 181, Height = 136 });
+        using Raster<Rgba8> none = m.Rasterize<Rgba8>(new MetafileRenderOptions { Width = 181, Height = 136, CanvasOptions = new CanvasOptions { PixelOffset = PixelOffset.None } });
+        for (int y = 0; y < plain.Height; y++)
+        {
+            Assert.True(plain.Row(y).SequenceEqual(none.Row(y)), $"Row {y} differs.");
+        }
+    }
 }
