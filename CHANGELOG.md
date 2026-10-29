@@ -3,6 +3,12 @@
 All notable changes to Egami are listed here. Egami follows [Semantic Versioning](https://semver.org): from 1.0, public API
 changes that break code come only in a new major version.
 
+## Egami.Drawing, unreleased
+
+- `Antialiasing.GdiPlus` draws two to three times faster and allocates nothing per fill once warm, with the same pixels: a
+  filled ellipse through Egami.SystemDrawing with `SmoothingMode.AntiAlias` takes 78 µs instead of 255 µs, close to Egami's
+  exact coverage.
+
 ## Egami.SystemDrawing and Egami.Metafiles, unreleased
 
 GDI+'s measured settings from 2.7.6, wired in (task 20).
