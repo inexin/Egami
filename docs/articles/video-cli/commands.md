@@ -26,7 +26,7 @@ Commands:
   remux <inputs>                Copy tracks into another container without decoding: change AVI to Matroska, pick tracks, keep tags, chapters and attachments.
   trim <inputs>                 Cut a part out of files: every track from --from up to --to, with timestamps starting at 0; subtitle cues shown across the cut are clipped to it. Without --smart or --reencode nothing is decoded and the cut starts at the video keyframe at or before --from, like ffmpeg -ss -to -c copy.
   concat <inputs>               Join clips with the same tracks and codecs into one file without decoding, one after another in the order given (globs sorted by name).
-  segment <inputs>              Split files into parts without decoding, at video keyframes: -o names the parts with {part} (from 1), such as out-{part:000}.mkv; a folder takes {name}-{part:000}.{ext}.
+  segment <inputs>              Split files into parts without decoding, at video keyframes: -o names the parts with {part} (from 1), such as out-{part:000}.mkv; a folder takes {name}-{part:000}.{ext}. --hls and --dash write streaming segments and playlists into a folder.
   timestamps <inputs>           Change packet timestamps without decoding: shift tracks, re-time video to a constant frame rate, repair broken timestamps or start at 0. With --track, --shift, --rate and --fix change only those tracks; every track is written.
   extract <inputs>              Copy a track into its own file without decoding (VP8, VP9 and AV1 to IVF, PCM to WAV, FLAC to FLAC, Opus and Vorbis to Ogg, the rest to Matroska), or write attachments and cover art as files.
   embed <inputs>                Add tracks from other files, attachments and cover art to a file without decoding, and set track languages, names and defaults. Track numbers count the output's tracks from 1.
@@ -115,6 +115,7 @@ Options:
   -j, --jobs <count>             How many files to work on at once; 0 (the default) for one per processor.
   --in-place                     Allow outputs to replace their inputs.
   --fail-fast                    Stop at the first file that fails.
+  --fragment <length>            Write fragmented MP4, for streaming and browsers' Media Source Extensions: fragments start at the first video keyframe after this long (2s without a value), or at every one with --fragment=keyframe. Give a length as --fragment=4s.
 ```
 
 ## trim
@@ -174,7 +175,7 @@ Options:
 
 ```text
 Description:
-  Split files into parts without decoding, at video keyframes: -o names the parts with {part} (from 1), such as out-{part:000}.mkv; a folder takes {name}-{part:000}.{ext}.
+  Split files into parts without decoding, at video keyframes: -o names the parts with {part} (from 1), such as out-{part:000}.mkv; a folder takes {name}-{part:000}.{ext}. --hls and --dash write streaming segments and playlists into a folder.
 
 Usage:
   egami-video segment <inputs>... [options]
@@ -199,6 +200,8 @@ Options:
   --threshold <0-1>              With --scenes: how sharp a change starts a scene, from 0 to 1. Default 0.15.
   --min-length <time>            With --scenes: the shortest scene. Default 0.6s.
   --exact                        With --scenes: start every part on its scene's first frame, by smart cut (trim --smart): only the frames from there up to the next keyframe are encoded again.
+  --hls                          Write HLS: CMAF segments of the audio and video tracks into the folder -o names, with master.m3u8 and a playlist a track. --every sets the segment length (6s by default).
+  --dash                         Write DASH: the same CMAF segments with manifest.mpd; give it with --hls for both from one set of segments.
 ```
 
 ## timestamps
@@ -526,6 +529,7 @@ Options:
   --size <WxH>                          Fit every frame into this size, keeping its shape, with black around it; images take the first image's size by default.
   --chroma <420|422|444>                Chroma subsampling for frames made from images: 420 (the default), 422 or 444.
   --audio <file>                        Add the first audio track of this file, copied without decoding (or filtered and encoded again with the audio filter options), up to the end of the video.
+  --fragment <length>                   Write fragmented MP4, for streaming and browsers' Media Source Extensions: fragments start at the first video keyframe after this long (2s without a value), or at every one with --fragment=keyframe. Give a length as --fragment=4s.
   --gain <dB>                           Change the level by this many decibels, such as -3 or 6.
   --fade-in <time>                      Fade the sound in over this long from its start, such as 2 or 500ms.
   --fade-out <time>                     Fade the sound out over this long to its end.

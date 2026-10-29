@@ -49,6 +49,8 @@ internal static class EncodeCommand
         command.Options.Add(size);
         command.Options.Add(chroma);
         command.Options.Add(audio);
+        Option<string?> fragment = Fragments.CreateOption();
+        command.Options.Add(fragment);
         filters.AddTo(command);
         EncoderExtras.AddTo(command);
         command.SetAction(result =>
@@ -78,7 +80,7 @@ internal static class EncodeCommand
             }
             Source source = Source.Find(session, result.GetValue(inputs) ?? []);
             InputFile first = source.Display;
-            MediaTarget target = MediaIO.Resolve(session, first, OutputTemplate.Parse(text), result.GetValue(format), "mkv");
+            MediaTarget target = Fragments.Apply(MediaIO.Resolve(session, first, OutputTemplate.Parse(text), result.GetValue(format), "mkv"), Fragments.Parse(result, fragment));
             if (target.IsStdout && target.Container is AviFormat)
             {
                 throw new UsageException("AVI needs a file it can seek in; write mkv or y4m to standard output.");
@@ -157,7 +159,8 @@ internal static class EncodeCommand
             options = settings.Extras.Apply(options);
             MediaTime? duration = source.Count is { } count ? new MediaTime(count, frameRate.Reciprocal()) : source.Duration;
             JobProgress progress = new(session.ProgressSink?.For(source.Display, 0, 1), duration, [], session.Cancellation, counted);
-            using VideoWriter writer = VideoWriter.Create(counted, target.Container.Extensions[0].TrimStart('.'), options, session.Context, leaveOpen: true);
+            MediaContext context = target.Container is Mp4Format { Fragments: not null } ? session.Context.WithContainer(target.Container) : session.Context;
+            using VideoWriter writer = VideoWriter.Create(counted, target.Container.Extensions[0].TrimStart('.'), options, context, leaveOpen: true);
             EncodedPacket? waiting = null;
             MediaTime frameDuration = new(1, frameRate.Reciprocal());
             MediaTime end = MediaTime.Zero;

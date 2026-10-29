@@ -20,6 +20,60 @@ internal static class FfmpegTranslator
     /// <summary>The native command lines for an ffmpeg line, in the order they run; <paramref name="explain"/> skips the check that the output is new.</summary>
     public static IReadOnlyList<string[]> Translate(FfmpegLine line, VideoSession session, bool explain = false)
     {
+        string? fragment = Fragment(line);
+        IReadOnlyList<string[]> commands = TranslateJob(line, session, explain);
+        if (fragment is null)
+        {
+            return commands;
+        }
+
+        // Fragmented MP4 is an option of the commands that write an MP4 of their own: remux (stream copy) and encode.
+        if (commands is not [[("remux" or "encode"), ..] job] || System.IO.Path.GetExtension(Path(line.Output!)).ToLowerInvariant() is not (".mp4" or ".m4v" or ".mov" or ".m4a") && OutputFormat(line.Format, line.Output!) != "mp4")
+        {
+            throw FfmpegMode.Unsupported(line.FragmentDuration is not null ? "-frag_duration" : "-movflags frag_keyframe", why: "egami-video fragments the MP4 that a stream copy (-c copy) or an encode of images writes");
+        }
+
+        return [[.. job, fragment]];
+    }
+
+    /// <summary>
+    /// The <c>--fragment</c> word for <c>-movflags</c>, or <see langword="null"/> for a flat file. ffmpeg starts a fragment at
+    /// every video keyframe for frag_keyframe, and for empty_moov alone too; default_base_moof is how egami-video always writes
+    /// them, and faststart (moov first) is its default for flat MP4. -frag_duration goes only with frag_keyframe, whose cuts
+    /// come first when keyframes are closer than it: on its own ffmpeg cuts between keyframes, which egami-video does not.
+    /// </summary>
+    private static string? Fragment(FfmpegLine line)
+    {
+        bool fragmented = false, keyframes = false;
+        foreach (string flag in line.MovFlags)
+        {
+            switch (flag)
+            {
+                case "faststart" or "default_base_moof": break;
+                case "frag_keyframe": fragmented = keyframes = true; break;
+                case "empty_moov": fragmented = true; break;
+                default: throw FfmpegMode.Unsupported($"-movflags {flag}", why: "faststart, frag_keyframe, empty_moov and default_base_moof are");
+            }
+        }
+
+        if (line.FragmentDuration is { } micros)
+        {
+            if (!long.TryParse(micros, NumberStyles.None, CultureInfo.InvariantCulture, out long value) || value <= 0)
+            {
+                throw new UsageException($"-frag_duration '{micros}' must be a whole number of microseconds above 0, such as 2000000.");
+            }
+
+            if (!keyframes)
+            {
+                throw FfmpegMode.Unsupported("-frag_duration", why: "without -movflags frag_keyframe ffmpeg cuts fragments between keyframes; egami-video starts them at video keyframes (egami-video remux --fragment=2s)");
+            }
+        }
+
+        return fragmented ? "--fragment=keyframe" : null;
+    }
+
+    private static IReadOnlyList<string[]> TranslateJob(FfmpegLine line, VideoSession session, bool explain)
+    {
         string output = Path(line.Output!);
         string extension = System.IO.Path.GetExtension(output).ToLowerInvariant();
         FfmpegInput first = line.Inputs[0];

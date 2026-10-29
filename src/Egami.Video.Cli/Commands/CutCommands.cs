@@ -118,7 +118,9 @@ internal static class CutCommands
         Option<double?> threshold = new("--threshold") { Description = "With --scenes: how sharp a change starts a scene, from 0 to 1. Default 0.15.", HelpName = "0-1" };
         Option<string?> minLength = new("--min-length") { Description = "With --scenes: the shortest scene. Default 0.6s.", HelpName = "time" };
         Option<bool> exact = new("--exact") { Description = "With --scenes: start every part on its scene's first frame, by smart cut (trim --smart): only the frames from there up to the next keyframe are encoded again." };
-        Command command = new("segment", "Split files into parts without decoding, at video keyframes: -o names the parts with {part} (from 1), such as out-{part:000}.mkv; a folder takes {name}-{part:000}.{ext}.");
+        Option<bool> hls = new("--hls") { Description = "Write HLS: CMAF segments of the audio and video tracks into the folder -o names, with master.m3u8 and a playlist a track. --every sets the segment length (6s by default)." };
+        Option<bool> dash = new("--dash") { Description = "Write DASH: the same CMAF segments with manifest.mpd; give it with --hls for both from one set of segments." };
+        Command command = new("segment", "Split files into parts without decoding, at video keyframes: -o names the parts with {part} (from 1), such as out-{part:000}.mkv; a folder takes {name}-{part:000}.{ext}. --hls and --dash write streaming segments and playlists into a folder.");
         options.AddTo(command);
         command.Options.Add(every);
         command.Options.Add(at);
@@ -127,11 +129,25 @@ internal static class CutCommands
         command.Options.Add(threshold);
         command.Options.Add(minLength);
         command.Options.Add(exact);
+        command.Options.Add(hls);
+        command.Options.Add(dash);
         command.SetAction(result =>
         {
             string? everyText = result.GetValue(every);
             string? atText = result.GetValue(at);
             bool byScene = result.GetValue(scenes);
+            SegmentPlaylists playlists = (result.GetValue(hls) ? SegmentPlaylists.Hls : SegmentPlaylists.None) | (result.GetValue(dash) ? SegmentPlaylists.Dash : SegmentPlaylists.None);
+            if (playlists != SegmentPlaylists.None)
+            {
+                if (atText is not null || byScene || result.GetValue(keepTimestamps))
+                {
+                    throw new UsageException("--hls and --dash cut segments of the same length at keyframes: give --every for the length, not --at, --scenes or --keep-timestamps.");
+                }
+
+                double length = everyText is null ? 6 : TimeValue.ParseDuration(everyText, "--every", allowFrames: false).Seconds;
+                return Streaming(session, options, result, playlists, TimeSpan.FromSeconds(length));
+            }
+
             if ((everyText is null ? 0 : 1) + (atText is null ? 0 : 1) + (byScene ? 1 : 0) != 1)
             {
                 throw new UsageException("segment needs one of --every, --at and --scenes, such as --every 10, --at 1:00,2:30 or --scenes.");
@@ -199,6 +215,91 @@ internal static class CutCommands
             return Batch.Run(session, inputs, batch, input => RunSegment(session, input, output, format, selection, interval, points, sceneOptions, keep, inputs.Count));
         });
         return command;
+    }
+
+    /// <summary>
+    /// <c>segment --hls --dash</c>: each input's audio and video tracks as CMAF segments with playlists, through
+    /// <see cref="Mp4SegmentWriter"/>, into the folder -o names (a template such as stream/{name} gives each input its own).
+    /// </summary>
+    private static int Streaming(VideoSession session, MediaOptions options, ParseResult result, SegmentPlaylists playlists, TimeSpan length)
+    {
+        BatchOptions batch = options.Batch(session, result);
+        List<InputFile> inputs = options.ExpandInputs(session, result);
+        string text = result.GetValue(options.Output)
+            ?? throw new UsageException("No output: give -o with the folder for the segments and playlists, such as -o stream/ or -o stream/{name}.");
+        if (text == "-")
+        {
+            throw new UsageException("--hls and --dash write a folder of files, not standard output: give -o with a folder, such as -o stream/.");
+        }
+
+        if (result.GetValue(options.Format) is not null)
+        {
+            throw new UsageException("--hls and --dash always write fragmented MP4 (CMAF) segments; leave out --format.");
+        }
+
+        OutputTemplate output = MediaOptions.CheckTemplate(session, text, inputs, "stream/{name}", part: "part");
+        TrackSelection selection = options.Tracks(result);
+        Mp4SegmentOptions segmentOptions = new() { SegmentDuration = length, Playlists = playlists };
+        return Batch.Run(session, inputs, batch, input =>
+        {
+            string folder = session.ResolvePath(output.Resolve(input, string.Empty).TrimEnd('/', '\\'));
+            if (File.Exists(folder))
+            {
+                throw new UsageException($"-o '{folder}' is a file; --hls and --dash write into a folder.");
+            }
+
+            using IDemuxer demuxer = MediaIO.OpenDemuxer(session, input);
+            IReadOnlyList<TrackInfo> picked = selection.Select(demuxer.Tracks, input.Display);
+            TrackInfo[] tracks = [.. picked.Where(t => t.Kind is TrackKind.Video or TrackKind.Audio)];
+            foreach (TrackInfo left in picked.Where(t => !tracks.Contains(t)))
+            {
+                session.Info($"{input.Display}: track {left.Number} ({Kinds.Name(left.Kind)}) is left out; HLS and DASH segments hold audio and video.");
+            }
+
+            if (tracks.Length == 0)
+            {
+                throw new UsageException($"{input.Display}: no audio or video track to segment; it has {TrackSelection.Describe(demuxer.Tracks)}.");
+            }
+
+            HashSet<int> keep = [.. tracks.Select(t => t.Number)];
+            List<string> written = [];
+            Stream Open(string name)
+            {
+                string path = Path.Combine(folder, name);
+                session.Paths?.Check(Path.GetFullPath(path, session.WorkingDirectory));
+                if (!session.InPlace && input.Path is { } source && Batch.SamePath(path, source))
+                {
+                    throw new UsageException($"{input.Display}: the segment {name} would replace the input; give another -o.");
+                }
+
+                Directory.CreateDirectory(folder);
+                written.Add(path);
+                session.Written.Enqueue(path);
+                return new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None, 1 << 16);
+            }
+
+            JobProgress progress = new(session.ProgressSink?.For(input, input.Index, inputs.Count), demuxer.Info.Duration, tracks, session.Cancellation, null);
+            using (Mp4SegmentWriter writer = new(Open, [.. tracks.Select(t => t with { Duration = null })], demuxer.Info.Metadata, segmentOptions, session.Context))
+            {
+                while (demuxer.ReadPacket() is { } packet)
+                {
+                    using (packet)
+                    {
+                        if (keep.Contains(packet.TrackNumber))
+                        {
+                            writer.WritePacket(packet);
+                            progress.Packet(packet.TrackNumber, packet.Timestamp);
+                        }
+                    }
+                }
+
+                writer.Finish();
+            }
+
+            progress.Finish();
+            session.Info($"wrote {written.Count} files to {folder}");
+            return written;
+        });
     }
 
     /// <summary>The extension an output takes when -o does not say: the input's when egami-video writes it, otherwise mkv.</summary>

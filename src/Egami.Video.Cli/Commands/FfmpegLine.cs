@@ -87,6 +87,12 @@ internal sealed class FfmpegLine
 
     public string? SegmentTimes { get; set; }
 
+    /// <summary>Gets the MP4 muxer flags of -movflags, such as frag_keyframe and empty_moov.</summary>
+    public List<string> MovFlags { get; } = [];
+
+    /// <summary>Gets or sets -frag_duration: the fragment length in microseconds.</summary>
+    public string? FragmentDuration { get; set; }
+
     public string? Progress { get; set; }
 
     /// <summary>Parses the words after <c>ffmpeg</c>; throws <see cref="UsageException"/> naming any option outside the subset.</summary>
@@ -181,6 +187,8 @@ internal sealed class FfmpegLine
                 case "-lavfi" or "-filter_complex": line.ComplexFilter = Next(); break;
                 case "-segment_time": line.SegmentTime = Next(); break;
                 case "-segment_times": line.SegmentTimes = Next(); break;
+                case "-movflags": line.MovFlags.AddRange(Next().Split('+', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)); break;
+                case "-frag_duration": line.FragmentDuration = Next(); break;
                 default:
                     throw FfmpegMode.Unsupported(name);
             }
