@@ -123,10 +123,19 @@ public sealed partial class Graphics
                 continue;
             }
 
+            // ClearType puts the first line's baseline a whole-pixel ascent below its rounded top; later lines' baselines round as
+            // they fall.
+            float shift = 0;
+            if (clearType && ReferenceEquals(line, layout.Lines[0]))
+            {
+                float lineTop = Vector2.Transform(new Vector2(line.X, top + line.Top), place).Y;
+                shift = GdiAscent.FirstBaseline(lineTop, device) - (lineTop + (layout.Ascent * scale));
+            }
+
             Vector2[] positions = new Vector2[run.Count];
             for (int i = 0; i < positions.Length; i++)
             {
-                positions[i] = Vector2.Transform(run.Positions[i], place);
+                positions[i] = Vector2.Transform(run.Positions[i], place) + new Vector2(0, shift);
             }
 
             runs.Add(EgamiFonts.GlyphRun.Create(device, run.Glyphs, positions));
