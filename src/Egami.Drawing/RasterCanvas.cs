@@ -76,7 +76,8 @@ public sealed partial class RasterCanvas<TPixel> : Canvas
 
     /// <summary>
     /// Gets the matrix that takes paths, their paints and clips to device pixels: <see cref="Canvas.Matrix"/>, moved half a pixel
-    /// right and down for <see cref="PixelOffset.None"/>. Images keep <see cref="Canvas.Matrix"/>.
+    /// right and down for <see cref="PixelOffset.None"/>. Images keep <see cref="Canvas.Matrix"/> and move by
+    /// <see cref="PixelCentreShift"/> instead.
     /// </summary>
     private Matrix3x2 GeometryMatrix
     {
@@ -418,8 +419,21 @@ public sealed partial class RasterCanvas<TPixel> : Canvas
     {
         if (!_clip.Bounds.IsEmpty)
         {
-            _target.DrawImage(_tools, image, source, destination, Matrix, sampling, paint, _clip.Bounds, _clip.Mask);
+            _target.DrawImage(_tools, image, source, destination, Matrix, sampling, paint, _clip.Bounds, _clip.Mask, _pixelOffset ? PixelCentreShift(source, destination) : default);
         }
+    }
+
+    /// <summary>
+    /// GDI+'s image grid for <see cref="PixelOffset.None"/>, as measured in 2.7.6: source pixel centres map onto destination pixel
+    /// centres, so the samples move by h − L·h device pixels, where h = (½, ½) and L is the image's scale and the canvas transform.
+    /// An image drawn 1:1 does not move.
+    /// </summary>
+    private Vector2 PixelCentreShift(RectF source, RectF destination)
+    {
+        Matrix3x2 linear = Matrix3x2.CreateScale(destination.Width / source.Width, destination.Height / source.Height) * (Matrix with { M31 = 0, M32 = 0 });
+        Vector2 half = new(0.5f, 0.5f);
+        Vector2 shift = half - Vector2.TransformNormal(half, linear);
+        return float.IsFinite(shift.X) && float.IsFinite(shift.Y) ? shift : default;
     }
 
     private static PixelPlane<TPixel> Plane(Raster<TPixel> raster)

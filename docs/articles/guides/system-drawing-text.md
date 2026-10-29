@@ -37,7 +37,8 @@ Two canvas settings match what `Graphics` does with shapes at its defaults, `Smo
 
 - `PixelOffset.None` puts whole coordinates on pixel centres, as GDI+'s `None`, `Default` and `HighSpeed` offset modes do. Paths,
   their paints and clips move half a pixel right and down. Text moves only when it is unhinted, just as GDI+ moves its
-  `AntiAlias` text but not its grid-fitted text, and images do not move. `PixelOffset.Half`, Egami's default, is GDI+'s `Half`.
+  `AntiAlias` text but not its grid-fitted text. Images go onto GDI+'s grid, where source and destination pixel centres line up: an
+  image scaled by s moves (1 − s) / 2 pixels, and one drawn 1:1 does not move. `PixelOffset.Half`, Egami's default, is GDI+'s `Half`.
 - `Antialiasing.GdiPlus` samples like `AntiAlias` and `HighQuality`, which are the same mode. Each pixel has 8 samples across
   and 4 down, and a sample on a left or top edge is inside. Pens of 1.5 device pixels or less draw as GDI+'s thin lines: one
   pixel thick across the line's major axis, at full strength, with pointed ends and no caps.
@@ -61,6 +62,27 @@ stops and tile modes.
   points, which for an ellipse is not its middle.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/SystemDrawing.cs#gdiplus-gradients)]
+
+## Image scaling
+
+`Graphics.DrawImage` scales with its `InterpolationMode`. Each mode has a `ResampleFilter` of its own, recovered from
+DrawImage's impulse responses:
+
+| InterpolationMode | ResampleFilter |
+| --- | --- |
+| Default, Low, Bilinear | `GdiPlusBilinear`: two pixels at every scale, so shrinking skips pixels |
+| Bicubic | `GdiPlusBicubic`: Keys cubic (a = −0.5), four pixels at every scale |
+| HighQualityBilinear | `GdiPlusHighQualityBilinear`: the tent, widened when shrinking, convolved with a one-pixel box |
+| High, HighQualityBicubic | `GdiPlusHighQualityBicubic`: Keys cubic (a = −1), widened when shrinking, convolved with a one-pixel box |
+| NearestNeighbor | `Nearest` |
+
+With `PixelOffsetMode.Half`, GDI+ uses Egami's grid. With its default offset, source and destination pixel centres sit on whole
+coordinates, so a scale s moves the image by (1 − s) / 2 destination pixels against Egami's grid; `CanvasOptions.PixelOffset.None`
+does the same. Over both offsets, DrawImage and Egami's canvas are 0.38 levels apart on average, down from 2.53 with Egami's
+closest filters before.
+
+`CompositingQuality.HighQuality` and `GammaCorrected` blend in linear light, which is `CanvasOptions.ColorSpace = ColorSpace.Linear`
+(within 0.1 levels of GDI+). The other qualities blend the stored values, Egami's default.
 
 ## GDI ClearType
 

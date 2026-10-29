@@ -64,7 +64,9 @@ public enum PixelOffset
 
     /// <summary>
     /// Whole coordinates fall on pixel centres, as GDI+ draws by default (<c>PixelOffsetMode.None</c>, <c>Default</c> and
-    /// <c>HighSpeed</c>): paths, their paints and unhinted text move half a pixel right and down. Hinted text and images do not move.
+    /// <c>HighSpeed</c>): paths, their paints and unhinted text move half a pixel right and down. Hinted text does not move,
+    /// and images sit on GDI+'s grid, with source pixel centres on destination pixel centres: an image scaled by s moves (1 − s) / 2
+    /// pixels, one drawn 1:1 not at all.
     /// </summary>
     None,
 }

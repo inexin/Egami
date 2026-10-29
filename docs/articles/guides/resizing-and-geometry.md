@@ -34,6 +34,9 @@ Four more filters follow ImageMagick's definitions: `Lanczos2` (a two-lobe windo
 ringing), `Hermite` (a one-pixel cubic with no ringing), `Gaussian` (σ = ½, soft) and `Spline` (the cubic B-spline, the smoothest).
 They work everywhere a filter does: resizes, rotations, transforms and warps.
 
+Four filters reproduce GDI+'s `InterpolationMode`s, for images that must look like `Graphics.DrawImage`'s; see
+[Matching System.Drawing text](system-drawing-text.md#image-scaling).
+
 ### Many sizes from one image
 
 `MipChain` halves an image again and again, averaging 2 × 2 blocks, and resizes each target from the smallest level at least twice

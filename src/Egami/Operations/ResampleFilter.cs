@@ -43,6 +43,30 @@ public enum ResampleFilter
 
     /// <summary>The cubic B-spline (B = 1, C = 0) out to 2 pixels: the smoothest cubic, with no ringing and noticeable blur.</summary>
     Spline,
+
+    /// <summary>
+    /// As GDI+'s <c>InterpolationMode.Bilinear</c> (and <c>Default</c> and <c>Low</c>), measured in 2.7.6: the tent between the
+    /// two nearest source pixels at every scale, so shrinking skips pixels instead of averaging them.
+    /// </summary>
+    GdiPlusBilinear,
+
+    /// <summary>
+    /// As GDI+'s <c>InterpolationMode.Bicubic</c>, measured in 2.7.6: Keys cubic with a = −0.5 over the four nearest source pixels
+    /// at every scale, so shrinking skips pixels instead of averaging them.
+    /// </summary>
+    GdiPlusBicubic,
+
+    /// <summary>
+    /// As GDI+'s <c>InterpolationMode.HighQualityBilinear</c>, measured in 2.7.6: the tent, widened by the reduction when shrinking,
+    /// convolved with a box one source pixel wide (the quadratic B-spline when enlarging). Soft, with no ringing.
+    /// </summary>
+    GdiPlusHighQualityBilinear,
+
+    /// <summary>
+    /// As GDI+'s <c>InterpolationMode.HighQualityBicubic</c> (and <c>High</c>), measured in 2.7.6: Keys cubic with a = −1, widened by
+    /// the reduction when shrinking, convolved with a box one source pixel wide. Sharp, with slight ringing.
+    /// </summary>
+    GdiPlusHighQualityBicubic,
 }
 
 /// <summary>The color space in which resizing, blurs and grayscale blend colors: the stored sRGB-encoded values, or linear light.</summary>

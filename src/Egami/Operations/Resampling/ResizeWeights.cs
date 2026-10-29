@@ -12,9 +12,11 @@ internal static class ResampleKernels
         {
             ResampleFilter.Nearest => 0,
             ResampleFilter.Box => 0.5,
-            ResampleFilter.Bilinear or ResampleFilter.Hermite => 1,
-            ResampleFilter.Bicubic or ResampleFilter.Mitchell or ResampleFilter.Lanczos2 or ResampleFilter.Gaussian or ResampleFilter.Spline => 2,
+            ResampleFilter.Bilinear or ResampleFilter.Hermite or ResampleFilter.GdiPlusBilinear => 1,
+            ResampleFilter.Bicubic or ResampleFilter.Mitchell or ResampleFilter.Lanczos2 or ResampleFilter.Gaussian or ResampleFilter.Spline or ResampleFilter.GdiPlusBicubic => 2,
             ResampleFilter.Lanczos3 => 3,
+            ResampleFilter.GdiPlusHighQualityBilinear => 1.5,
+            ResampleFilter.GdiPlusHighQualityBicubic => 2.5,
             _ => throw new ArgumentOutOfRangeException(nameof(filter), filter, null),
         };
     }
@@ -49,8 +51,64 @@ internal static class ResampleKernels
                 return x < 2 ? Math.Exp(-2 * x * x) : 0;
             case ResampleFilter.Spline:
                 return Cubic(x, b: 1, c: 0);
+            case ResampleFilter.GdiPlusBilinear:
+                return x < 1 ? 1 - x : 0;
+            case ResampleFilter.GdiPlusBicubic:
+                return Cubic(x, b: 0, c: 0.5);
+            case ResampleFilter.GdiPlusHighQualityBilinear or ResampleFilter.GdiPlusHighQualityBicubic:
+                return BoxConvolved(filter, x, 1);
             default:
                 return x < 0.5 ? 1 : 0;
+        }
+    }
+
+    /// <summary>
+    /// Gets whether the kernel widens with the reduction when shrinking, so every source pixel contributes. GDI+'s Bilinear and
+    /// Bicubic do not: they keep their taps at every scale.
+    /// </summary>
+    internal static bool Stretches(ResampleFilter filter) => filter is not (ResampleFilter.GdiPlusBilinear or ResampleFilter.GdiPlusBicubic);
+
+    /// <summary>Returns the support in source pixels with the kernel widened by <paramref name="stretch"/> (at least 1).</summary>
+    internal static double Support(ResampleFilter filter, double stretch) => filter switch
+    {
+        ResampleFilter.GdiPlusHighQualityBilinear => stretch + 0.5,
+        ResampleFilter.GdiPlusHighQualityBicubic => (2 * stretch) + 0.5,
+        _ => Support(filter) * stretch,
+    };
+
+    /// <summary>
+    /// Returns the weight of a source pixel <paramref name="x"/> source pixels from the sample with the kernel widened by
+    /// <paramref name="stretch"/>: the kernel at x / stretch, or for GDI+'s high-quality modes the widened kernel convolved with a
+    /// box one source pixel wide.
+    /// </summary>
+    internal static double Weight(ResampleFilter filter, double x, double stretch)
+        => filter is ResampleFilter.GdiPlusHighQualityBilinear or ResampleFilter.GdiPlusHighQualityBicubic
+            ? BoxConvolved(filter, x, stretch)
+            : Evaluate(filter, x / stretch);
+
+    /// <summary>
+    /// GDI+'s high-quality kernels: the tent or Keys cubic (a = −1) widened by <paramref name="stretch"/> and averaged over a box
+    /// one source pixel wide around <paramref name="x"/>, from the kernel's antiderivative.
+    /// </summary>
+    private static double BoxConvolved(ResampleFilter filter, double x, double stretch)
+    {
+        bool cubic = filter == ResampleFilter.GdiPlusHighQualityBicubic;
+        return stretch * (Integral(cubic, (x + 0.5) / stretch) - Integral(cubic, (x - 0.5) / stretch));
+
+        // The kernel's integral from 0 to t, odd in t.
+        static double Integral(bool cubic, double t)
+        {
+            double a = Math.Abs(t), sign = Math.Sign(t);
+            if (!cubic)
+            {
+                return sign * (a < 1 ? a - (a * a / 2) : 0.5);
+            }
+
+            // Keys with a = −1: x³ − 2x² + 1 on [0, 1), −x³ + 5x² − 8x + 4 on [1, 2).
+            static double Inner(double u) => (u * u * u * u / 4) - (2 * u * u * u / 3) + u;
+            static double Outer(double u) => (-u * u * u * u / 4) + (5 * u * u * u / 3) - (4 * u * u) + (4 * u);
+            double value = a < 1 ? Inner(a) : Inner(1) + Outer(Math.Min(a, 2)) - Outer(1);
+            return sign * value;
         }
     }
 
@@ -288,9 +346,9 @@ internal sealed class ResizeWeights : IDisposable
             return new ResizeWeights(size, first, count, ones, 1);
         }
 
-        // Shrinking stretches the kernel so every source pixel contributes.
-        double stretch = Math.Max(1.0, 1.0 / scale);
-        double support = ResampleKernels.Support(filter) * stretch;
+        // Shrinking stretches the kernel so every source pixel contributes, except for GDI+'s point-sampled modes.
+        double stretch = ResampleKernels.Stretches(filter) ? Math.Max(1.0, 1.0 / scale) : 1;
+        double support = ResampleKernels.Support(filter, stretch);
         int stride = Math.Min((int)Math.Ceiling(support * 2) + 1, high - low + 1);
         float[] weights = ArrayPool<float>.Shared.Rent(size * stride);
         Span<double> buffer = stride <= 256 ? stackalloc double[stride] : new double[stride];
@@ -306,7 +364,7 @@ internal sealed class ResizeWeights : IDisposable
             double sum = 0;
             for (int j = start; j <= end; j++)
             {
-                double w = ResampleKernels.Evaluate(filter, (j - center) / stretch);
+                double w = ResampleKernels.Weight(filter, j - center, stretch);
                 buffer[j - start] = w;
                 sum += w;
             }
