@@ -26,6 +26,7 @@
     <None Include="../images/ops/duck.png" Link="images/duck.png" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../images/gif/loop-3.gif" Link="images/loop.gif" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../images/ico/set.ico" Link="images/app.ico" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../images/metafiles/synthetic/plus-shapes.dual.emf" Link="images/shapes-plus.emf" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../video/corpus/audio/opus/opus-hybrid.opus" Link="images/talk.opus" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../video/corpus/audio/vorbis/q6-stereo-48k.ogg" Link="images/song.ogg" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../video/corpus/audio/opus/webm-opus.webm" Link="images/music.webm" CopyToOutputDirectory="PreserveNewest" />

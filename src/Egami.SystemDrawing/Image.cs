@@ -45,7 +45,9 @@ public abstract class Image : MarshalByRefObject, IDisposable, ICloneable
     public Size Size => new(Width, Height);
 
     /// <summary>Gets the size: in pixels for a bitmap, in hundredths of a millimeter for a metafile.</summary>
-    public SizeF PhysicalDimension => new(Width, Height);
+    public SizeF PhysicalDimension => this is Metafile metafile
+        ? new(metafile.FrameBounds.Width / HorizontalResolution * 2540, metafile.FrameBounds.Height / VerticalResolution * 2540)
+        : new(Width, Height);
 
     /// <summary>Gets the horizontal resolution in pixels per inch; 96 unless the file or <see cref="Bitmap.SetResolution(float, float)"/> says otherwise.</summary>
     public float HorizontalResolution
@@ -78,7 +80,7 @@ public abstract class Image : MarshalByRefObject, IDisposable, ICloneable
     }
 
     /// <summary>Gets the pixel format.</summary>
-    public PixelFormat PixelFormat => Current.Format;
+    public PixelFormat PixelFormat => this is Metafile ? PixelFormat.Format32bppRgb : Current.Format;
 
     /// <summary>Gets the format of the file the image came from, or <see cref="ImageFormat.MemoryBmp"/> for one made in memory.</summary>
     public ImageFormat RawFormat
@@ -258,7 +260,7 @@ public abstract class Image : MarshalByRefObject, IDisposable, ICloneable
     public RectangleF GetBounds(ref GraphicsUnit pageUnit)
     {
         pageUnit = GraphicsUnit.Pixel;
-        return new RectangleF(0, 0, Width, Height);
+        return this is Metafile metafile ? metafile.FrameBounds : new RectangleF(0, 0, Width, Height);
     }
 
     /// <summary>Gets the number of frames in a dimension: pages, animation frames or resolutions.</summary>
@@ -409,6 +411,11 @@ public abstract class Image : MarshalByRefObject, IDisposable, ICloneable
     /// <param name="rotateFlipType">The rotation and flip.</param>
     public void RotateFlip(RotateFlipType rotateFlipType)
     {
+        if (this is Metafile)
+        {
+            throw new NotImplementedException("Not implemented.");
+        }
+
         CheckAlive();
         _frames[_active] = Transforms.RotateFlip(Current, rotateFlipType);
     }
