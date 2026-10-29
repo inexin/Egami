@@ -845,3 +845,60 @@ static Egami.Video.Audio.Filters.EqualizerBand.operator !=(Egami.Video.Audio.Fil
 static Egami.Video.Audio.Filters.EqualizerBand.operator ==(Egami.Video.Audio.Filters.EqualizerBand left, Egami.Video.Audio.Filters.EqualizerBand right) -> bool
 ~override Egami.Video.Audio.Filters.EqualizerBand.Equals(object obj) -> bool
 ~override Egami.Video.Audio.Filters.EqualizerBand.ToString() -> string
+Egami.Video.Audio.Filters.AudioFilters
+Egami.Video.Audio.Filters.LoudnessNormalization
+Egami.Video.Audio.Filters.LoudnessNormalization.<Clone>$() -> Egami.Video.Audio.Filters.LoudnessNormalization!
+Egami.Video.Audio.Filters.LoudnessNormalization.Deconstruct(out int TrackNumber, out Egami.Video.Audio.LoudnessReport! Measured, out double Gain, out bool Limited) -> void
+Egami.Video.Audio.Filters.LoudnessNormalization.Equals(Egami.Video.Audio.Filters.LoudnessNormalization? other) -> bool
+Egami.Video.Audio.Filters.LoudnessNormalization.Gain.get -> double
+Egami.Video.Audio.Filters.LoudnessNormalization.Gain.init -> void
+Egami.Video.Audio.Filters.LoudnessNormalization.Limited.get -> bool
+Egami.Video.Audio.Filters.LoudnessNormalization.Limited.init -> void
+Egami.Video.Audio.Filters.LoudnessNormalization.LoudnessNormalization(int TrackNumber, Egami.Video.Audio.LoudnessReport! Measured, double Gain, bool Limited) -> void
+Egami.Video.Audio.Filters.LoudnessNormalization.Measured.get -> Egami.Video.Audio.LoudnessReport!
+Egami.Video.Audio.Filters.LoudnessNormalization.Measured.init -> void
+Egami.Video.Audio.Filters.LoudnessNormalization.TrackNumber.get -> int
+Egami.Video.Audio.Filters.LoudnessNormalization.TrackNumber.init -> void
+Egami.Video.Audio.Filters.LoudnessNormalizer
+Egami.Video.Audio.Filters.LoudnessNormalizer.Gain.get -> double
+Egami.Video.Audio.Filters.LoudnessNormalizer.IsDynamic.get -> bool
+Egami.Video.Audio.Filters.LoudnessNormalizer.Limits.get -> bool
+Egami.Video.Audio.Filters.LoudnessNormalizer.LoudnessNormalizer(Egami.Video.Audio.Filters.LoudnessTarget! target, Egami.Video.Audio.LoudnessReport! measured) -> void
+Egami.Video.Audio.Filters.LoudnessNormalizer.Measured.get -> Egami.Video.Audio.LoudnessReport?
+Egami.Video.Audio.Filters.LoudnessNormalizer.Target.get -> Egami.Video.Audio.Filters.LoudnessTarget!
+Egami.Video.Audio.Filters.LoudnessTarget
+Egami.Video.Audio.Filters.LoudnessTarget.<Clone>$() -> Egami.Video.Audio.Filters.LoudnessTarget!
+Egami.Video.Audio.Filters.LoudnessTarget.Equals(Egami.Video.Audio.Filters.LoudnessTarget? other) -> bool
+Egami.Video.Audio.Filters.LoudnessTarget.Integrated.get -> double
+Egami.Video.Audio.Filters.LoudnessTarget.LoudnessTarget(double integrated, double truePeak, double range = 7) -> void
+Egami.Video.Audio.Filters.LoudnessTarget.Range.get -> double
+Egami.Video.Audio.Filters.LoudnessTarget.TruePeak.get -> double
+Egami.Video.Audio.Filters.SilenceRemoval
+Egami.Video.Audio.Filters.SilenceRemoval.Shorten = 1 -> Egami.Video.Audio.Filters.SilenceRemoval
+Egami.Video.Audio.Filters.SilenceRemoval.Trim = 0 -> Egami.Video.Audio.Filters.SilenceRemoval
+Egami.Video.Audio.Filters.SilenceRemover
+Egami.Video.Audio.Filters.SilenceRemover.KeepGap.get -> Egami.Video.MediaTime
+Egami.Video.Audio.Filters.SilenceRemover.KeepGap.init -> void
+Egami.Video.Audio.Filters.SilenceRemover.MaxGap.get -> Egami.Video.MediaTime
+Egami.Video.Audio.Filters.SilenceRemover.MaxGap.init -> void
+Egami.Video.Audio.Filters.SilenceRemover.Mode.get -> Egami.Video.Audio.Filters.SilenceRemoval
+Egami.Video.Audio.Filters.SilenceRemover.SilenceRemover(Egami.Video.Audio.Filters.SilenceRemoval mode = Egami.Video.Audio.Filters.SilenceRemoval.Trim) -> void
+Egami.Video.Audio.Filters.SilenceRemover.Threshold.get -> double
+Egami.Video.Audio.Filters.SilenceRemover.Threshold.init -> void
+override Egami.Video.Audio.Filters.LoudnessNormalization.Equals(object? obj) -> bool
+override Egami.Video.Audio.Filters.LoudnessNormalization.GetHashCode() -> int
+override Egami.Video.Audio.Filters.LoudnessNormalization.ToString() -> string!
+override Egami.Video.Audio.Filters.LoudnessTarget.Equals(object? obj) -> bool
+override Egami.Video.Audio.Filters.LoudnessTarget.GetHashCode() -> int
+override Egami.Video.Audio.Filters.LoudnessTarget.ToString() -> string!
+static Egami.Video.Audio.Filters.AudioFilters.ApplyAsync(string! inputPath, string! outputPath, System.Func<Egami.Video.AudioTrackInfo!, Egami.Video.Audio.Filters.IAudioFilter?>! filters, Egami.Video.Audio.AudioCodec? audio = null, int? audioLevel = null, Egami.Video.MediaContext? context = null, System.IProgress<Egami.Video.MediaProgress>? progress = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<long>!
+static Egami.Video.Audio.Filters.AudioFilters.NormalizeLoudnessAsync(string! inputPath, string! outputPath, Egami.Video.Audio.Filters.LoudnessTarget? target = null, Egami.Video.Audio.AudioCodec? audio = null, int? audioLevel = null, Egami.Video.MediaContext? context = null, System.IProgress<Egami.Video.MediaProgress>? progress = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Egami.Video.Audio.Filters.LoudnessNormalization!>!>!
+static Egami.Video.Audio.Filters.LoudnessNormalization.operator !=(Egami.Video.Audio.Filters.LoudnessNormalization? left, Egami.Video.Audio.Filters.LoudnessNormalization? right) -> bool
+static Egami.Video.Audio.Filters.LoudnessNormalization.operator ==(Egami.Video.Audio.Filters.LoudnessNormalization? left, Egami.Video.Audio.Filters.LoudnessNormalization? right) -> bool
+static Egami.Video.Audio.Filters.LoudnessNormalizer.Dynamic(Egami.Video.Audio.Filters.LoudnessTarget! target) -> Egami.Video.Audio.Filters.LoudnessNormalizer!
+static Egami.Video.Audio.Filters.LoudnessTarget.AtscA85.get -> Egami.Video.Audio.Filters.LoudnessTarget!
+static Egami.Video.Audio.Filters.LoudnessTarget.EbuR128.get -> Egami.Video.Audio.Filters.LoudnessTarget!
+static Egami.Video.Audio.Filters.LoudnessTarget.Podcast.get -> Egami.Video.Audio.Filters.LoudnessTarget!
+static Egami.Video.Audio.Filters.LoudnessTarget.Streaming.get -> Egami.Video.Audio.Filters.LoudnessTarget!
+static Egami.Video.Audio.Filters.LoudnessTarget.operator !=(Egami.Video.Audio.Filters.LoudnessTarget? left, Egami.Video.Audio.Filters.LoudnessTarget? right) -> bool
+static Egami.Video.Audio.Filters.LoudnessTarget.operator ==(Egami.Video.Audio.Filters.LoudnessTarget? left, Egami.Video.Audio.Filters.LoudnessTarget? right) -> bool

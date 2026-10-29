@@ -17,7 +17,7 @@ namespace Egami.Video.Audio;
 /// </example>
 public sealed class LoudnessMeter : IAudioDetector
 {
-    private const double Offset = -0.691;
+    internal const double Offset = -0.691;
     private const int ShortTermSteps = 30;
     private const int MomentarySteps = 4;
 
@@ -433,7 +433,7 @@ public sealed class LoudnessMeter : IAudioDetector
     /// curve). BS.1770 gives the coefficients at 48 kHz; for other rates they come from the same analog filters through the
     /// bilinear transform, with the analog parameters that reproduce the 48 kHz table, as libebur128 does (THIRD-PARTY-NOTICES.md).
     /// </summary>
-    private sealed class KWeighting
+    internal sealed class KWeighting
     {
         private readonly double _b0, _b1, _b2, _a1, _a2, _c1, _c2;
         private double _s1, _s2, _t1, _t2;

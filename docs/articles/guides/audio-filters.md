@@ -1,8 +1,8 @@
 # Audio filters
 
 Egami.Video's audio filters change level, time, tone and placement of decoded audio as it streams: gain and gain envelopes,
-fades and crossfades, mixing and panning, delay, padding, trimming and new timestamps, tempo and speed changes, EQ, and
-dynamics (compressor, gate and limiter). They live in
+fades and crossfades, mixing and panning, delay, padding, trimming and new timestamps, tempo and speed changes, EQ, dynamics
+(compressor, gate and limiter), loudness normalization and silence removal. They live in
 `Egami.Video.Audio.Filters` and work on the `AudioFrame`s that `AudioReader` and the decoders hand out (see [Audio](audio.md)).
 
 ## The filter loop
@@ -101,3 +101,27 @@ With `Sidechain` on, a compressor takes its level from another signal given to `
 music ducks under a voice. Input waits until the sidechain covers it; `CompleteSidechain` says no more comes.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/AudioFilters.cs#audio-ducking)]
+
+## Loudness
+
+`LoudnessNormalizer` brings audio to a `LoudnessTarget`: an integrated loudness, a true-peak ceiling and, for the dynamic mode,
+a loudness range. The presets are `EbuR128` (-23 LUFS, -1 dBTP, the default), `AtscA85` (-24, -2), `Streaming` (-14, -1) and
+`Podcast` (-16, -1). Given a first pass's `LoudnessReport` from `LoudnessMeter`, it is linear: one gain, so the dynamics stay
+as they are, and a true-peak `Limiter` only when that gain would take the peaks over the ceiling. `AudioFilters.NormalizeLoudnessAsync`
+runs both passes over every audio track of a file, copying the video and other tracks. `LoudnessNormalizer.Dynamic` works in one
+pass, for input that cannot be read twice: it follows the loudness with 1.5 s of lookahead and keeps it within the target's
+range, so it changes the dynamics and lands less exactly on the target.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/AudioFilters.cs#audio-loudness)]
+
+`AudioFilters.ApplyAsync` runs filters of your own on every audio track of a file the same way. Filtered tracks are encoded
+with the codec you give, else their own when the container holds it, else the container's usual one.
+
+## Silence
+
+`SilenceRemover` cuts silence out: a sample is silent when the loudest channel's RMS over 20 ms is under its `Threshold`
+(-50 dBFS by default). `SilenceRemoval.Trim` cuts the start and the end; `SilenceRemoval.Shorten` also cuts pauses longer than
+`MaxGap` (1 s) to `KeepGap` (0.3 s). Every cut fades or crossfades over 10 ms. The result is shorter than the input and its
+timestamps run on without gaps, so use it on audio alone, not on a track that has to stay in step with video.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/AudioFilters.cs#audio-silence)]
