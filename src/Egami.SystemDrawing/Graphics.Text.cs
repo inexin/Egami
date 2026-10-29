@@ -218,7 +218,7 @@ public sealed partial class Graphics
             return SizeF.Empty;
         }
 
-        GdiTextLayout layout = GdiTextLayout.Create(s, font, font.EmIn(this), layoutArea, format, glyphs: false);
+        GdiTextLayout layout = GdiTextLayout.Create(s, font, font.EmIn(this), layoutArea, format, glyphs: false, sizeOnly: true);
         charactersFitted = layout.CharactersFitted;
         linesFilled = layout.Lines.Count;
         return layout.Measure();

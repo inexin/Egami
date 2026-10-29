@@ -54,6 +54,48 @@ public sealed class EditCommandTests : IDisposable
     }
 
     [Fact]
+    public void KeyAutoReadsTheScreenColour()
+    {
+        // A pale green screen with a gray square in front of it.
+        Directory.CreateDirectory(_tool.PathOf("in"));
+        for (int i = 0; i < 3; i++)
+        {
+            using Raster<Egami.Pixels.Rgb8> frame = Raster.Create<Egami.Pixels.Rgb8>(64, 48);
+            for (int y = 0; y < 48; y++)
+            {
+                Span<Egami.Pixels.Rgb8> row = frame.Row(y);
+                for (int x = 0; x < 64; x++)
+                {
+                    row[x] = x is >= 24 and < 40 && y is >= 16 and < 32 ? new Egami.Pixels.Rgb8(128, 128, 128) : new Egami.Pixels.Rgb8(0x34, 0xC9, 0x5F);
+                }
+            }
+
+            frame.Save(_tool.PathOf($"in/f{i}.png"));
+        }
+
+        Assert.Equal(ExitCodes.Success, _tool.Run("encode", "in/*.png", "--codec", "ffv1", "-o", "screen.mkv").Code);
+        _tool.Copy("mkv-mjpeg-pcm.mkv", "b.mkv");
+        ToolRun run = _tool.Run("overlay", "b.mkv", "screen.mkv", "--key", "auto", "--save-edit", "keyed.json");
+        Assert.True(run.Code == ExitCodes.Success, run.Error);
+        string json = File.ReadAllText(_tool.PathOf("keyed.json"));
+        Assert.Contains("\"color\": \"#34C95FFF\"", json, StringComparison.OrdinalIgnoreCase);
+
+        // The soft edge ends before gray: the square keeps its alpha.
+        double blend = double.Parse(System.Text.RegularExpressions.Regex.Match(json, "\"blend\": ([0-9.]+)").Groups[1].Value, System.Globalization.CultureInfo.InvariantCulture);
+        Assert.InRange(blend, 0.05, 0.3);
+
+        Directory.CreateDirectory(_tool.PathOf("gray"));
+        using (Raster<Egami.Pixels.Rgb8> gray = Raster.Create(64, 48, new Egami.Pixels.Rgb8(100, 110, 105)))
+        {
+            gray.Save(_tool.PathOf("gray/f0.png"));
+        }
+
+        Assert.Equal(ExitCodes.Success, _tool.Run("encode", "gray/*.png", "--codec", "ffv1", "-o", "gray.mkv").Code);
+        ToolRun none = _tool.Run("overlay", "b.mkv", "gray.mkv", "--key", "auto", "-o", "x.mkv");
+        Assert.Contains("no green or blue screen", none.Error, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void SpeedReverseLoopAndFreeze()
     {
         _tool.Copy("avi-mjpeg-420-pcm.avi", "a.avi");

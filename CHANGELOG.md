@@ -19,6 +19,23 @@ changes that break code come only in a new major version.
   with a still image loads as its sequence, as an all-intra one already did, and no longer gives a `Heic.SequenceFirstFrame`
   warning.
 
+## Egami.Drawing, unreleased
+
+- An `ImagePaint` drawn with `GdiPlusHighQualityBicubic` or `GdiPlusHighQualityBilinear` and no rotation or skew sums each
+  source row across once per thread instead of once per device pixel, with the same pixels: an EMF+ file of high-quality
+  images through Egami.SystemDrawing plays in 5.4 ms instead of 14.4 ms (GDI+: 5.4 ms). Taps inside the image read its rows
+  directly.
+- Image paints convert their texels row by row straight into the shader, with no converted raster in between and no
+  clearing: Egami.SystemDrawing's scaled `DrawImage` of a 640 × 480 photo takes 3.3 ms instead of 3.8 ms (GDI+: 3.5 ms).
+
+## Egami.SystemDrawing, unreleased
+
+- `Graphics.MeasureString` takes about 0.7 µs instead of 7.1 µs for a 43-character line it has measured before, and allocates
+  0.7 KB instead of 13 KB, with the same sizes; GDI+ takes 0.56 µs. Shaped runs of strings up to 256 characters are kept per
+  font (up to 1,024, emptied when full), a family's face match is kept per style, and measuring builds no per-character
+  list. A string not measured before still costs about 7 µs, the cost of shaping it. `DrawString` gets the same cache and
+  allocates half as much (239 KB instead of 451 KB for 20 lines).
+
 ## Egami 1.3.1 (2026-10-29)
 
 A bug-fix release of the Egami train for GDI+-look text, with Egami.SystemDrawing 1.0.0-preview.2. Egami.Drawing and
@@ -62,6 +79,12 @@ Where GDI+ puts text in a layout box (2.7.6 task 28), measured on Windows. Addit
   found by fallback from `Font.WithGdiPlusLook()` text draws its 12 to 17 px bitmaps, as GDI+ font linking does (probed: the
   linked face's aliased bitmaps), and grid-fitted metrics apply to fallback runs too. Fonts that set none of these shape and
   draw as before.
+
+## Egami.Video.Cli, unreleased
+
+- `egami-video overlay --key auto` reads the screen colour from the overlay's first frame: the median of its green or blue
+  pixels, whichever covers more of the frame (refused when neither covers 5 %). Without `--blend`, auto also picks a softer
+  edge for a pale screen, so grays and whites in front of it stay solid.
 
 ## Egami.Video.Cli 1.1.0 (2026-10-29)
 

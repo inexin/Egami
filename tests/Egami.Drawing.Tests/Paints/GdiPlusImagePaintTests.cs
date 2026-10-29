@@ -37,6 +37,47 @@ public class GdiPlusImagePaintTests
         Assert.InRange(row[16], at16 - 2, at16 + 2);
     }
 
+    [Theory]
+    [InlineData(ResampleFilter.GdiPlusHighQualityBilinear)]
+    [InlineData(ResampleFilter.GdiPlusHighQualityBicubic)]
+    public void HighQualityRowsShadeTheSameInAnyOrder(ResampleFilter filter)
+    {
+        // Unrotated high-quality sampling keeps each thread's sums across source rows between calls; the order rows are shaded in,
+        // and another shader on the same thread, must not change a pixel.
+        Random random = new(7);
+        using Raster<Rgba8> source = Raster.Create(37, 23, Rgba8.Transparent);
+        for (int y = 0; y < source.Height; y++)
+        {
+            for (int x = 0; x < source.Width; x++)
+            {
+                source.SetPixel(x, y, new Rgba8((byte)random.Next(256), (byte)random.Next(256), (byte)random.Next(256), (byte)random.Next(256)));
+            }
+        }
+
+        ImagePaint paint = new(source, TileMode.Clamp, TileMode.Mirror, new SamplingOptions { Filter = filter });
+        Matrix3x2 inverse = Matrix3x2.CreateTranslation(3.3f, -2.6f) * Matrix3x2.CreateScale(37f / 90, 23f / 71);
+        int[] down = [.. Enumerable.Range(-5, 85)];
+        PremulRgbaF32[][] expected = Shade(Shading.ImageShader.Create(paint, inverse), down);
+        PremulRgbaF32[][] reversed = Shade(Shading.ImageShader.Create(paint, inverse), [.. down.Reverse()]);
+        int[] order = [.. down.OrderBy(_ => random.Next())];
+        PremulRgbaF32[][] shuffled = Shade(Shading.ImageShader.Create(paint, inverse), order);
+        for (int r = 0; r < down.Length; r++)
+        {
+            Assert.Equal(expected[r], reversed[down.Length - 1 - r]);
+            Assert.Equal(expected[order[r] + 5], shuffled[r]);
+        }
+
+        static PremulRgbaF32[][] Shade(Shading.ImageShader shader, int[] rows)
+        {
+            return [.. rows.Select(y =>
+            {
+                PremulRgbaF32[] row = new PremulRgbaF32[100];
+                shader.Shade(y, -4, row);
+                return row;
+            })];
+        }
+    }
+
     private static byte[] Draw(ResampleFilter filter, int width, int impulse, int size)
     {
         using Raster<Rgba8> source = Raster.Create(width, 8, new Rgba8(0, 0, 0, 255));
