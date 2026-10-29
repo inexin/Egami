@@ -3,6 +3,22 @@
 All notable changes to Egami are listed here. Egami follows [Semantic Versioning](https://semver.org): from 1.0, public API
 changes that break code come only in a new major version.
 
+## Egami.SystemDrawing and Egami.Metafiles, unreleased
+
+GDI+'s measured settings from 2.7.6, wired in (task 20).
+
+- Egami.SystemDrawing: `Graphics.InterpolationMode` takes the `ResampleFilter.GdiPlus*` filters, `SmoothingMode` AntiAlias and
+  HighQuality take `Antialiasing.GdiPlus`, `CompositingQuality` HighQuality and GammaCorrected blend in linear light, and
+  `LinearGradientBrush.GammaCorrection` mixes with `GradientInterpolation.GdiPlusGamma`. ClearType text keeps its own pixel
+  offset instead of the preset's. Against GDI+ in the System.Drawing probes, AntiAlias goes from 94.5% to 96.5% of pixels
+  exact, WideAntiAlias from 94.0% to 96.6%, images from 87.8% to 89.9% (99.6% within 8 levels), gradients from 65.8% to 67.9%
+  and pen drawing from 95.2% to 96.7%.
+- Egami.Metafiles: the EMF+ player takes the `GdiPlus*` filters for each interpolation mode and `GdiPlusGamma` for
+  gamma-corrected linear brushes; against GDI+ the gradient brushes' mean goes from 1.15 to 1.11 levels and images' from 3.53
+  to 3.39. This changes how such metafiles render with the default options, toward GDI+. With `PixelOffset.None` in
+  `MetafileRenderOptions.CanvasOptions`, it leaves the pixel offset to the canvas.
+- The shared GDI+ code's approximation of gamma-corrected gradients (eight unrounded stops per pair) is gone.
+
 ## Egami.Video.Cli, unreleased
 
 - `egami-video run` reads and writes Egami.Formats.Extended's formats, with `--set sgi.rle=` and `--set sunraster.rle=` for
@@ -255,7 +271,7 @@ default draws exactly what Egami 1.2.0 drew.
 - `Font.Metrics` takes advances from the design (`FontMetrics.Design`, the default), from the hinted outlines
   (`GridFitted`) or from GDI's compatible widths (`Compatible`, equal to GDI's `GetCharABCWidths` for 9,688 of 9,690 glyph
   sizes of the six Windows UI fonts from 8 to 24 pixels per em). Measured text always matches drawn text.
-- `CanvasOptions.GdiPlusClearType` and `Font.WithGdiPlusLook()` set all of it as GDI+'s `ClearTypeGridFit` draws: on Lars's
+- `CanvasOptions.GdiPlus` and `Font.WithGdiPlusLook()` set all of it as GDI+'s `ClearTypeGridFit` draws: on Lars's
   button test the mean difference from GDI+ drops from 9.50 levels (light hinting) to 1.92 on black and from 5.36 to 1.06 on
   #0078d4, before the 2.7.6 work below.
 
@@ -270,7 +286,7 @@ Closer GDI+ text (2.7.6 stage 1), measured against GDI+ on Windows in egami-comp
 
 - `LcdSampling.Gdi` samples as GDI+ does: six on-or-off samples per pixel across the stripes, so each channel is a whole
   number of sixths. With a `TextGamma`, that text blends through GDI+'s 8-bit gamma tables, which reproduce GDI+'s drawn value
-  for every coverage on every gray background measured. `CanvasOptions.GdiPlusClearType` gets both.
+  for every coverage on every gray background measured. `CanvasOptions.GdiPlus` gets both.
 - The GDI+ hinting target rounds an advance its instructions leave alone up from about 0.458 of a pixel, as GDI+ does.
 - `FontMetrics.GridFitted` keeps hinted advances for every run, as `DrawString` does with the default `StringFormat`. The new
   `FontMetrics.GridFittedToDesign` has the 2.1-pixel line rule for `GenericTypographic` lines, with design advances rounded
@@ -290,7 +306,7 @@ Closer GDI+ shapes (2.7.6 stage 2), measured the same way. These are opt-in too.
 - `CanvasOptions.Antialiasing`: `Exact` is Egami's coverage. `GdiPlus` samples as GDI+'s `SmoothingMode.AntiAlias` does,
   with 8 by 4 point samples a pixel and a top-left fill rule. It also draws pens of 1.5 device pixels or less as GDI+'s thin
   lines, one pixel thick with pointed ends. Each row is computed on its own, so the result is the same at any core count.
-- `CanvasOptions.GdiPlusClearType` sets `PixelOffset.None` and `Antialiasing.GdiPlus` too.
+- `CanvasOptions.GdiPlus` sets `PixelOffset.None` and `Antialiasing.GdiPlus` too.
 - Against GDI+ at its defaults (AntiAlias, PixelOffsetMode.None), the stage 0 shape probes' mean difference drops from 1.94
   levels (Egami's closest settings before) to 0.12: rects 1.60 to 0.00, polygons 2.17 to 0.01, ovals 0.85 to 0.32, lines 3.15
   to 0.16.

@@ -7,7 +7,7 @@ using Egami.Pixels;
 namespace Egami.GdiPlus;
 
 /// <summary>
-/// GDI+ brush semantics: hatch tiles, wrap modes, blend factors and preset colors as gradient stops, gamma-corrected blending,
+/// GDI+ brush semantics: hatch tiles, wrap modes, blend factors and preset colors as gradient stops, gamma-corrected blend factors,
 /// and path gradients as Gouraud meshes.
 /// </summary>
 internal static class GdiPlusBrushes
@@ -119,37 +119,6 @@ internal static class GdiPlusBrushes
     /// <summary>Mixes two 8-bit colors channel by channel, rounding to nearest.</summary>
     public static Rgba8 Lerp(Rgba8 a, Rgba8 b, float t) =>
         new((byte)(a.R + ((b.R - a.R) * t) + 0.5f), (byte)(a.G + ((b.G - a.G) * t) + 0.5f), (byte)(a.B + ((b.B - a.B) * t) + 0.5f), (byte)(a.A + ((b.A - a.A) * t) + 0.5f));
-
-    /// <summary>
-    /// A gamma-corrected gradient (GDI+ blends in linear light, gamma 2.2): each segment gets stops in between whose colors are
-    /// mixed in linear light, so the encoded-space gradient between them follows the same curve closely.
-    /// </summary>
-    public static GradientStop[] GammaStops(GradientStop[] stops)
-    {
-        List<GradientStop> result = [];
-        for (int i = 0; i < stops.Length; i++)
-        {
-            result.Add(stops[i]);
-            if (i + 1 < stops.Length)
-            {
-                GradientStop a = stops[i], b = stops[i + 1];
-                for (int k = 1; k < 8; k++)
-                {
-                    float t = k / 8f;
-                    result.Add(new GradientStop(a.Offset + ((b.Offset - a.Offset) * t), LinearMix(a.Color, b.Color, t)));
-                }
-            }
-        }
-
-        return [.. result];
-    }
-
-    private static RgbaF32 LinearMix(RgbaF32 a, RgbaF32 b, float t)
-    {
-        static float L(float c) => MathF.Pow(Math.Clamp(c, 0, 1), 2.2f);
-        static float E(float c) => MathF.Pow(Math.Clamp(c, 0, 1), 1 / 2.2f);
-        return new RgbaF32(E(L(a.R) + ((L(b.R) - L(a.R)) * t)), E(L(a.G) + ((L(b.G) - L(a.G)) * t)), E(L(a.B) + ((L(b.B) - L(a.B)) * t)), a.A + ((b.A - a.A) * t));
-    }
 
     /// <summary>
     /// A path gradient as a Gouraud mesh in device space: rings from the boundary (position 0) to the center (position 1) at the

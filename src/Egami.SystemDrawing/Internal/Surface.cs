@@ -16,20 +16,21 @@ internal static class Surface
     /// <summary>Runs a drawing call on a canvas whose coordinates are the bitmap's device pixels.</summary>
     /// <param name="frame">The frame to draw on.</param>
     /// <param name="bounds">The device area the call can touch, or null for all of it.</param>
+    /// <param name="options">The canvas settings: GDI+'s antialiasing and compositing as the Graphics has them.</param>
     /// <param name="draw">The call.</param>
-    /// <param name="cache">The canvas kept between calls for formats drawn in place, renewed when the frame changes.</param>
+    /// <param name="cache">The canvas kept between calls for formats drawn in place, renewed when the frame or the settings change.</param>
     /// <param name="copies">Whether 32-bit ARGB must round as GDI+ does, through a premultiplied copy: for SourceCopy, and for
     /// <see cref="ArgbDrawing.Exact"/>.</param>
-    public static void Draw(Frame frame, RectF? bounds, Action<Canvas> draw, ref InPlaceCanvas? cache, bool copies = false)
+    public static void Draw(Frame frame, RectF? bounds, CanvasOptions options, Action<Canvas> draw, ref InPlaceCanvas? cache, bool copies = false)
     {
         // Premultiplied ARGB draws in place, and so does 32-bit ARGB, through Egami's blending of straight alpha: far faster than a
         // premultiplied copy, and within a level of GDI+'s rounding where colors blend. Copies keep GDI+'s exact rounding.
         if (frame.Stride > 0 && (frame.Format == PixelFormat.Format32bppPArgb || (frame.Format == PixelFormat.Format32bppArgb && !copies)))
         {
-            if (cache is null || !ReferenceEquals(cache.Frame, frame))
+            if (cache is null || !ReferenceEquals(cache.Frame, frame) || !ReferenceEquals(cache.Options, options))
             {
                 cache?.Dispose();
-                cache = new InPlaceCanvas(frame);
+                cache = new InPlaceCanvas(frame, options);
             }
 
             Canvas canvas = cache.Canvas;
@@ -76,7 +77,7 @@ internal static class Surface
             }
         }
 
-        using (RasterCanvas<PremulBgra8> canvas = new(shadow))
+        using (RasterCanvas<PremulBgra8> canvas = new(shadow, options))
         {
             canvas.Translate(-x0, -y0);
             draw(canvas);
@@ -180,26 +181,30 @@ internal sealed class InPlaceCanvas : IDisposable
     private readonly PointerMemory _memory;
     private readonly Raster _raster;
 
-    public InPlaceCanvas(Frame frame)
+    public InPlaceCanvas(Frame frame, CanvasOptions options)
     {
         Frame = frame;
+        Options = options;
         _memory = new PointerMemory(frame.Scan0, frame.Stride * frame.Height, frame);
         if (frame.Format == PixelFormat.Format32bppPArgb)
         {
             Raster<PremulBgra8> premul = Raster.Wrap<PremulBgra8>(_memory.Memory, frame.Width, frame.Height, frame.Stride);
             _raster = premul;
-            Canvas = new RasterCanvas<PremulBgra8>(premul);
+            Canvas = new RasterCanvas<PremulBgra8>(premul, options);
         }
         else
         {
             Raster<Bgra8> straight = Raster.Wrap<Bgra8>(_memory.Memory, frame.Width, frame.Height, frame.Stride);
             _raster = straight;
-            Canvas = new RasterCanvas<Bgra8>(straight);
+            Canvas = new RasterCanvas<Bgra8>(straight, options);
         }
     }
 
     /// <summary>Gets the frame the canvas draws on.</summary>
     public Frame Frame { get; }
+
+    /// <summary>Gets the canvas settings it was made with.</summary>
+    public CanvasOptions Options { get; }
 
     /// <summary>Gets the canvas.</summary>
     public Canvas Canvas { get; }

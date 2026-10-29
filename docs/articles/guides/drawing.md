@@ -17,7 +17,7 @@ precision. Calls draw when they are made; `Save` and `Restore` bracket changes t
 - `CanvasOptions` sets where edges blend (`ColorSpace.Encoded`, the default, or `Linear`) and the curve `Tolerance`
   (0.1 pixel by default).
 - `CanvasOptions.PixelOffset` and `CanvasOptions.Antialiasing` switch to GDI+'s pixel centres and antialiasing, for images
-  that must look like System.Drawing's (see [Matching System.Drawing text](system-drawing-text.md#shapes)).
+  that must look like System.Drawing's (see [Matching System.Drawing](system-drawing-text.md#shapes)).
 - A canvas is for one thread at a time. A large call spreads its rows over `EgamiContext.MaxParallelism` cores, with the same
   pixels at any core count.
 

@@ -8,7 +8,7 @@ attributes. Neither package depends on the other.
 | File | What it holds |
 | --- | --- |
 | `GdiPlusPen.cs` | The pen model (`GdiPlusPen`, `GdiPlusCustomCap`) and `GdiPlusPens`: dash patterns scaled by the width, dash caps kept inside the dash, compound lines, inset alignment, anchor and adjustable-arrow caps, the one-pixel minimum width |
-| `GdiPlusBrushes.cs` | Wrap modes, hatch tiles and their scale, blend factors and preset colors as gradient stops, gamma-corrected stops, path gradients as Gouraud meshes |
+| `GdiPlusBrushes.cs` | Wrap modes, hatch tiles and their scale, blend factors and preset colors as gradient stops (gamma-corrected brushes mix with Egami.Drawing's `GradientInterpolation.GdiPlusGamma`), path gradients as Gouraud meshes |
 | `GdiPlusHatches.cs` | The 8 by 8 tiles of the 53 hatch styles, measured from what GDI+ draws |
 | `GdiPlusRegions.cs` | Region combine modes over paths, with null for the infinite region |
 | `GdiPlusStringFormat.cs` | The string format model, its flag values, the hotkey prefix and tab stop positions |

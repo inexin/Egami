@@ -21,14 +21,14 @@ public class SystemDrawing
         // Text that looks like System.Drawing's Graphics.DrawString with TextRenderingHint.ClearTypeGridFit: the font's own hints
         // and grid-fitted advances, GDI+'s ClearType filter, sampling and gamma.
         Font label = new Font(face, 16).WithGdiPlusLook();
-        using (RasterCanvas<Rgb8> canvas = button.CreateCanvas(CanvasOptions.GdiPlusClearType))
+        using (RasterCanvas<Rgb8> canvas = button.CreateCanvas(CanvasOptions.GdiPlus))
         {
             float width = label.MeasureText("Start the course").Advance;
             canvas.DrawText("Start the course", new Vector2(MathF.Round((200 - width) / 2), 26), label, Rgba8.White);
         }
 
         // A different Graphics.TextContrast (0 to 12) is a different text gamma: 1 + contrast / 10.
-        CanvasOptions contrast8 = CanvasOptions.GdiPlusClearType with { TextGamma = 1 + (8 / 10f) };
+        CanvasOptions contrast8 = CanvasOptions.GdiPlus with { TextGamma = 1 + (8 / 10f) };
         #endregion
 
         Assert.Equal(1.8f, contrast8.TextGamma, 3);
@@ -44,7 +44,7 @@ public class SystemDrawing
         #region gdiplus-shapes
         // Shapes as System.Drawing draws them at its defaults (SmoothingMode.AntiAlias, PixelOffsetMode.None): whole coordinates on
         // pixel centres, GDI+'s 8 by 4 samples a pixel, and pens up to 1.5 px drawn as its one-pixel thin lines.
-        // CanvasOptions.GdiPlusClearType sets both too.
+        // CanvasOptions.GdiPlus sets both too.
         var options = new CanvasOptions { PixelOffset = PixelOffset.None, Antialiasing = Antialiasing.GdiPlus };
         using (RasterCanvas<Rgb8> canvas = raster.CreateCanvas(options))
         {
@@ -53,8 +53,8 @@ public class SystemDrawing
         }
         #endregion
 
-        Assert.Equal(PixelOffset.None, CanvasOptions.GdiPlusClearType.PixelOffset);
-        Assert.Equal(Antialiasing.GdiPlus, CanvasOptions.GdiPlusClearType.Antialiasing);
+        Assert.Equal(PixelOffset.None, CanvasOptions.GdiPlus.PixelOffset);
+        Assert.Equal(Antialiasing.GdiPlus, CanvasOptions.GdiPlus.Antialiasing);
         Assert.Equal(new Rgb8(0, 90, 200), raster.GetPixel(14, 14));
     }
 

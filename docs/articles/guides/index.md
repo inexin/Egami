@@ -88,7 +88,7 @@ Operations that run on a raster through `Apply` and `Derive`.
 - [Fonts and text](text.md): loading fonts, drawing text and preparing fonts for PDF.
 - [Paragraph layout](paragraph-layout.md): line breaking, justification, columns and vertical text.
 - [Unicode text and shaping](unicode-text.md): complex scripts, bidirectional text and emoji.
-- [Matching System.Drawing text](system-drawing-text.md): drawing UI text as GDI+ and GDI do on Windows.
+- [Matching System.Drawing](system-drawing-text.md): drawing UI text, shapes, gradients and scaled images as GDI+ and GDI do on Windows.
 
 ## Egami.Svg and Egami.Css
 

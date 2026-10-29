@@ -254,7 +254,7 @@ public readonly record struct Font
     /// <summary>
     /// This font as System.Drawing draws ClearTypeGridFit text: the font's TrueType instructions for GDI+
     /// (<see cref="FontHinting.Full"/>, <see cref="TrueTypeTarget.GdiPlus"/>), <see cref="FontMetrics.GridFitted"/> advances, LCD
-    /// edging and the face's <see cref="EmbeddedBitmaps"/>. Draw it on a canvas with Egami.Drawing's <c>CanvasOptions.GdiPlusClearType</c>.
+    /// edging and the face's <see cref="EmbeddedBitmaps"/>. Draw it on a canvas with Egami.Drawing's <c>CanvasOptions.GdiPlus</c>.
     /// </summary>
     /// <returns>The font with those settings.</returns>
     /// <example>

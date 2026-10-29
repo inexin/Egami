@@ -69,15 +69,6 @@ public class BrushAndRegionTests
     }
 
     [Fact]
-    public void GammaStopsAddSevenStopsBetweenEachPair()
-    {
-        GradientStop[] stops = GdiPlusBrushes.GammaStops([new GradientStop(0, Red), new GradientStop(1, Blue)]);
-        Assert.Equal(9, stops.Length);
-        Assert.Equal(0.5f, stops[4].Offset);
-        Assert.True(stops[4].Color.ToRgba8().R > 128);
-    }
-
-    [Fact]
     public void APathGradientIsAMeshOfRingsAroundTheCenter()
     {
         Vector2[] square = [new(0, 0), new(10, 0), new(10, 10), new(0, 10)];

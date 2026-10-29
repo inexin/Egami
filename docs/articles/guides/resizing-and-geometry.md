@@ -35,7 +35,7 @@ ringing), `Hermite` (a one-pixel cubic with no ringing), `Gaussian` (σ = ½, so
 They work everywhere a filter does: resizes, rotations, transforms and warps.
 
 Four filters reproduce GDI+'s `InterpolationMode`s, for images that must look like `Graphics.DrawImage`'s; see
-[Matching System.Drawing text](system-drawing-text.md#image-scaling).
+[Matching System.Drawing](system-drawing-text.md#image-scaling).
 
 ### Many sizes from one image
 

@@ -541,6 +541,7 @@ public sealed partial class Graphics : MarshalByRefObject, IDisposable, IDeviceC
         Surface.Draw(
             _image.Current,
             area,
+            CanvasOptionsFor(Smooth, State.CompositingQuality),
             canvas =>
             {
                 if (clip is not null)
@@ -553,6 +554,20 @@ public sealed partial class Graphics : MarshalByRefObject, IDisposable, IDeviceC
             ref _inPlace,
             State.Compositing == CompositingMode.SourceCopy || _argbDrawing == ArgbDrawing.Exact);
     }
+
+    // The canvas for a call: GDI+'s antialiasing when smoothing is on (Graphics applies the pixel offset itself), and linear light
+    // for the gamma-corrected compositing qualities, as measured in 2.7.6. One instance each, so a call allocates none and the kept
+    // canvas is renewed only when the settings change.
+    private static readonly CanvasOptions[] CallOptions =
+    [
+        CanvasOptions.Default,
+        new() { Antialiasing = Antialiasing.GdiPlus },
+        new() { ColorSpace = Operations.ColorSpace.Linear },
+        new() { Antialiasing = Antialiasing.GdiPlus, ColorSpace = Operations.ColorSpace.Linear },
+    ];
+
+    private static CanvasOptions CanvasOptionsFor(bool smooth, CompositingQuality quality)
+        => CallOptions[(smooth ? 1 : 0) + (quality is CompositingQuality.HighQuality or CompositingQuality.GammaCorrected ? 2 : 0)];
 
     private static RectF Intersect(RectF a, RectF b)
     {

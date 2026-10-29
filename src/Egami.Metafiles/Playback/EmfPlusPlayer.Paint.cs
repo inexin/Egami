@@ -50,14 +50,17 @@ internal sealed partial class EmfPlusPlayer
                 {
                     RectF r = brush.Rect;
                     GradientStop[] stops = brush.Stops ?? [new GradientStop(0, brush.Color), new GradientStop(1, brush.EndColor)];
-                    if (brush.GammaCorrected)
-                    {
-                        stops = GdiPlusBrushes.GammaStops(stops);
-                    }
 
                     (TileMode tile, _) = GdiPlusBrushes.Wrap(brush.WrapMode);
                     return new PlusFill(
-                        new LinearGradient(new Vector2(r.X, r.Y), new Vector2(r.Right, r.Y), stops) { LocalMatrix = local, Tile = tile, Antialias = Smooth, BlendMode = Blend },
+                        new LinearGradient(new Vector2(r.X, r.Y), new Vector2(r.Right, r.Y), stops)
+                        {
+                            LocalMatrix = local,
+                            Tile = tile,
+                            Antialias = Smooth,
+                            BlendMode = Blend,
+                            Interpolation = brush.GammaCorrected ? GradientInterpolation.GdiPlusGamma : GradientInterpolation.Encoded,
+                        },
                         null);
                 }
 
@@ -70,8 +73,23 @@ internal sealed partial class EmfPlusPlayer
         }
     }
 
-    /// <summary>Nearest neighbour for GDI+'s NearestNeighbor interpolation (5), smooth otherwise.</summary>
-    private SamplingOptions Sampling => _state.Interpolation == 5 ? new SamplingOptions { Filter = ResampleFilter.Nearest } : new SamplingOptions { Filter = ResampleFilter.Bilinear };
+    /// <summary>
+    /// The filter for GDI+'s interpolation mode, as measured in 2.7.6: NearestNeighbor (5), Bicubic (4), HighQualityBilinear (6),
+    /// HighQualityBicubic (7) and HighQuality (2); Default, LowQuality and Bilinear take GDI+'s bilinear.
+    /// </summary>
+    private SamplingOptions Sampling => Samplings[_state.Interpolation is >= 0 and <= 7 ? _state.Interpolation : 0];
+
+    private static readonly SamplingOptions[] Samplings =
+    [
+        new() { Filter = ResampleFilter.GdiPlusBilinear },
+        new() { Filter = ResampleFilter.GdiPlusBilinear },
+        new() { Filter = ResampleFilter.GdiPlusHighQualityBicubic },
+        new() { Filter = ResampleFilter.GdiPlusBilinear },
+        new() { Filter = ResampleFilter.GdiPlusBicubic },
+        new() { Filter = ResampleFilter.Nearest },
+        new() { Filter = ResampleFilter.GdiPlusHighQualityBilinear },
+        new() { Filter = ResampleFilter.GdiPlusHighQualityBicubic },
+    ];
 
     // ---- Pens ----
 

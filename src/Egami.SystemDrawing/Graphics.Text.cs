@@ -175,7 +175,8 @@ public sealed partial class Graphics
 
         bounds = outer is null ? bounds : Intersect(bounds, outer.Bounds);
         bounds = clip is null ? bounds : Intersect(bounds, clip.Bounds);
-        CanvasOptions options = CanvasOptions.GdiPlusClearType with { TextGamma = 1 + (State.TextContrast / 10f) };
+        // Graphics places its device coordinates itself, so the preset's PixelOffset.None would move the clips a second time.
+        CanvasOptions options = CanvasOptions.GdiPlus with { TextGamma = 1 + (State.TextContrast / 10f), PixelOffset = PixelOffset.Half };
         SolidPaint paint = new(new Pixels.Rgba8(c.R, c.G, c.B, 255));
         return Surface.DrawOpaque(_image.Current, bounds, options, canvas =>
         {
