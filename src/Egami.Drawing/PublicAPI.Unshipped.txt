@@ -1,3 +1,1 @@
 #nullable enable
-Egami.Drawing.GdiPlusText
-static Egami.Drawing.GdiPlusText.Baseline(Egami.Fonts.Font font, Egami.Drawing.RectF box, Egami.Drawing.VerticalAlign align, bool typographic = false) -> float
