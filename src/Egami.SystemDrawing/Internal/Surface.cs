@@ -8,7 +8,7 @@ using Egami.SystemDrawing.Imaging;
 namespace Egami.SystemDrawing.Internal;
 
 /// <summary>
-/// Where a Graphics draws: a canvas over the bitmap's own memory for premultiplied 32-bit ARGB, or over a premultiplied copy of the
+/// Where a Graphics draws: a canvas over the bitmap's own memory for 32-bit ARGB and premultiplied ARGB, or over a premultiplied copy of the
 /// area a call touches for every other format, converted in and out as GDI+ converts.
 /// </summary>
 internal static class Surface
@@ -17,14 +17,32 @@ internal static class Surface
     /// <param name="frame">The frame to draw on.</param>
     /// <param name="bounds">The device area the call can touch, or null for all of it.</param>
     /// <param name="draw">The call.</param>
-    public static void Draw(Frame frame, RectF? bounds, Action<Canvas> draw)
+    /// <param name="cache">The canvas kept between calls for formats drawn in place, renewed when the frame changes.</param>
+    /// <param name="copies">Whether 32-bit ARGB must round as GDI+ does, through a premultiplied copy: for SourceCopy, and for
+    /// <see cref="ArgbDrawing.Exact"/>.</param>
+    public static void Draw(Frame frame, RectF? bounds, Action<Canvas> draw, ref InPlaceCanvas? cache, bool copies = false)
     {
-        if (frame.Stride > 0 && frame.Format == PixelFormat.Format32bppPArgb)
+        // Premultiplied ARGB draws in place, and so does 32-bit ARGB, through Egami's blending of straight alpha: far faster than a
+        // premultiplied copy, and within a level of GDI+'s rounding where colors blend. Copies keep GDI+'s exact rounding.
+        if (frame.Stride > 0 && (frame.Format == PixelFormat.Format32bppPArgb || (frame.Format == PixelFormat.Format32bppArgb && !copies)))
         {
-            using PointerMemory memory = new(frame.Scan0, frame.Stride * frame.Height, frame);
-            using Raster<PremulBgra8> raster = Raster.Wrap<PremulBgra8>(memory.Memory, frame.Width, frame.Height, frame.Stride);
-            using RasterCanvas<PremulBgra8> canvas = new(raster);
-            draw(canvas);
+            if (cache is null || !ReferenceEquals(cache.Frame, frame))
+            {
+                cache?.Dispose();
+                cache = new InPlaceCanvas(frame);
+            }
+
+            Canvas canvas = cache.Canvas;
+            int count = canvas.Save();
+            try
+            {
+                draw(canvas);
+            }
+            finally
+            {
+                canvas.RestoreToCount(count);
+            }
+
             return;
         }
 
@@ -153,6 +171,44 @@ internal static class Surface
         }
 
         return ((uint)a << 24) | ((uint)GdiPixels.Unpremultiply((byte)(argb >> 16), a) << 16) | ((uint)GdiPixels.Unpremultiply((byte)(argb >> 8), a) << 8) | GdiPixels.Unpremultiply((byte)argb, a);
+    }
+}
+
+/// <summary>A canvas over a 32-bit frame's own pixels, kept by a Graphics between calls.</summary>
+internal sealed class InPlaceCanvas : IDisposable
+{
+    private readonly PointerMemory _memory;
+    private readonly Raster _raster;
+
+    public InPlaceCanvas(Frame frame)
+    {
+        Frame = frame;
+        _memory = new PointerMemory(frame.Scan0, frame.Stride * frame.Height, frame);
+        if (frame.Format == PixelFormat.Format32bppPArgb)
+        {
+            Raster<PremulBgra8> premul = Raster.Wrap<PremulBgra8>(_memory.Memory, frame.Width, frame.Height, frame.Stride);
+            _raster = premul;
+            Canvas = new RasterCanvas<PremulBgra8>(premul);
+        }
+        else
+        {
+            Raster<Bgra8> straight = Raster.Wrap<Bgra8>(_memory.Memory, frame.Width, frame.Height, frame.Stride);
+            _raster = straight;
+            Canvas = new RasterCanvas<Bgra8>(straight);
+        }
+    }
+
+    /// <summary>Gets the frame the canvas draws on.</summary>
+    public Frame Frame { get; }
+
+    /// <summary>Gets the canvas.</summary>
+    public Canvas Canvas { get; }
+
+    public void Dispose()
+    {
+        Canvas.Dispose();
+        _raster.Dispose();
+        ((IDisposable)_memory).Dispose();
     }
 }
 

@@ -9,9 +9,9 @@ namespace Egami.SystemDrawing;
 
 /// <summary>
 /// A family of faces, such as Arial with its bold and italic faces, found among the installed fonts or a
-/// <see cref="PrivateFontCollection"/>. Where a Windows core font is missing (on Linux and macOS), a metric-compatible open font
-/// stands in under the requested name: Liberation Sans or Arimo for Arial, Liberation Serif or Tinos for Times New Roman,
-/// Liberation Mono or Cousine for Courier New, Carlito for Calibri.
+/// <see cref="PrivateFontCollection"/>. A missing family is an error, as in System.Drawing, unless
+/// <see cref="SystemDrawingOptions.FontSubstitutes"/> gives a stand-in: set it to Egami.Fonts.Substitutes'
+/// <c>SubstituteFonts.Find</c> for metric-compatible fonts (Liberation, Carlito, Caladea) under the requested name.
 /// </summary>
 /// <example>
 /// <code language="csharp" source="../../tests/Egami.DocSamples/SystemDrawingPackage.cs" region="fonts"/>
@@ -22,7 +22,7 @@ public sealed class FontFamily : MarshalByRefObject, IDisposable
 
     /// <summary>Initializes a new instance of the <see cref="FontFamily"/> class: an installed family.</summary>
     /// <param name="name">The family name, matched without regard to case.</param>
-    /// <exception cref="ArgumentException">No such family is installed and no substitute is.</exception>
+    /// <exception cref="ArgumentException">No such family is installed and no registered substitute has one.</exception>
     public FontFamily(string name)
         : this(name, null)
     {
@@ -31,13 +31,13 @@ public sealed class FontFamily : MarshalByRefObject, IDisposable
     /// <summary>Initializes a new instance of the <see cref="FontFamily"/> class: a family of a collection.</summary>
     /// <param name="name">The family name, matched without regard to case.</param>
     /// <param name="fontCollection">The collection, or <see langword="null"/> for the installed fonts.</param>
-    /// <exception cref="ArgumentException">The collection has no such family and no substitute for it.</exception>
+    /// <exception cref="ArgumentException">The collection has no such family and no registered substitute has one.</exception>
     public FontFamily(string name, FontCollection? fontCollection)
     {
         ArgumentNullException.ThrowIfNull(name);
         EgamiFonts.FontCollection fonts = fontCollection?.Fonts ?? EgamiFonts.FontCollection.System;
-        _family = TextFonts.Find(fonts, name) ?? throw new ArgumentException($"Font '{name}' cannot be found.", nameof(name));
-        Name = _family.Name.Equals(name.Trim(), StringComparison.OrdinalIgnoreCase) ? _family.Name : name.Trim();
+        _family = TextFonts.Find(fonts, name, out bool substituted) ?? throw new ArgumentException($"Font '{name}' cannot be found.", nameof(name));
+        Name = substituted ? name.Trim() : _family.Name;
     }
 
     /// <summary>Initializes a new instance of the <see cref="FontFamily"/> class: a generic family.</summary>
@@ -51,8 +51,8 @@ public sealed class FontFamily : MarshalByRefObject, IDisposable
             GenericFontFamilies.Monospace => (TextFonts.Monospace, EgamiFonts.GenericFamily.Monospace),
             _ => (TextFonts.SansSerif, EgamiFonts.GenericFamily.SansSerif),
         };
-        _family = TextFonts.Generic(name, generic) ?? throw new ArgumentException("No fonts are installed.", nameof(genericFamily));
-        Name = name;
+        _family = TextFonts.Generic(name, generic, out bool substituted) ?? throw new ArgumentException("No fonts are installed.", nameof(genericFamily));
+        Name = substituted || _family.Name.Equals(name, StringComparison.OrdinalIgnoreCase) ? name : _family.Name;
     }
 
     /// <summary>Gets the installed families.</summary>
@@ -67,7 +67,7 @@ public sealed class FontFamily : MarshalByRefObject, IDisposable
     /// <summary>Gets a serif family: Times New Roman, as on Windows.</summary>
     public static FontFamily GenericSerif => new(GenericFontFamilies.Serif);
 
-    /// <summary>Gets the family name: the installed family's own spelling, or the requested name when a substitute stands in.</summary>
+    /// <summary>Gets the family name: the installed family's own spelling, or the requested name when a registered substitute stands in.</summary>
     public string Name { get; }
 
     internal EgamiFonts.FontFamily Faces => _family;
