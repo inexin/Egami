@@ -56,6 +56,12 @@ Add only the packages you use. Each one has its own guides, and its name links t
 | [Egami.Css](src/Egami.Css) | CSS parsing, selectors and the cascade | [Guide](https://inexin.github.io/Egami/v1/articles/guides/css.html) | [![NuGet](https://img.shields.io/nuget/v/Egami.Css.svg)](https://www.nuget.org/packages/Egami.Css) |
 | [Egami.Metafiles](src/Egami.Metafiles) | Plays WMF, EMF and EMF+ pictures | [Guide](https://inexin.github.io/Egami/v1/articles/guides/metafiles.html) | [![NuGet](https://img.shields.io/nuget/v/Egami.Metafiles.svg)](https://www.nuget.org/packages/Egami.Metafiles) |
 
+### Compatibility
+
+| Package | What it does | Docs | NuGet |
+| --- | --- | --- | --- |
+| [Egami.SystemDrawing](src/Egami.SystemDrawing) | System.Drawing.Common's API on every OS, in managed code: change the usings and keep the code (preview) | [System.Drawing drop-in](https://inexin.github.io/Egami/v1/articles/guides/system-drawing.html) | [![NuGet](https://img.shields.io/nuget/vpre/Egami.SystemDrawing.svg)](https://www.nuget.org/packages/Egami.SystemDrawing) |
+
 ### Video and audio
 
 | Package | What it does | Docs | NuGet |
@@ -70,7 +76,7 @@ Add only the packages you use. Each one has its own guides, and its name links t
 | [Egami.Cli](src/Egami.Cli) | The `egami` command: convert, resize, inspect and edit images from a shell, with chained steps, workflow files and batches | [The egami command](https://inexin.github.io/Egami/v1/articles/cli/index.html) | [![NuGet](https://img.shields.io/nuget/v/Egami.Cli.svg)](https://www.nuget.org/packages/Egami.Cli) |
 | [Egami.Video.Cli](src/Egami.Video.Cli) | The `egami-video` command: inspect, remux, cut, join and convert video and audio from a shell, with ffmpeg and ffprobe command lines | [The egami-video command](https://inexin.github.io/Egami/v1/articles/video-cli/index.html) | [![NuGet](https://img.shields.io/nuget/v/Egami.Video.Cli.svg)](https://www.nuget.org/packages/Egami.Video.Cli) |
 
-All packages are 1.0 or later and on [NuGet](https://www.nuget.org/packages?q=Egami).
+All packages except Egami.SystemDrawing (a preview) are 1.0 or later, and all are on [NuGet](https://www.nuget.org/packages?q=Egami).
 [Packages](https://inexin.github.io/Egami/v1/articles/packages.html) lists what each one needs.
 
 ## The egami command
