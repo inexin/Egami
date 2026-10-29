@@ -18,3 +18,5 @@ Egami.Fonts.TrueTypeTarget.GdiPlus = 0 -> Egami.Fonts.TrueTypeTarget
 Egami.Fonts.FontMetrics.Compatible = 2 -> Egami.Fonts.FontMetrics
 Egami.Fonts.FontMetrics.GridFittedToDesign = 3 -> Egami.Fonts.FontMetrics
 Egami.Fonts.Font.WithGdiPlusLook() -> Egami.Fonts.Font
+Egami.Fonts.Font.EmbeddedBitmaps.get -> bool
+Egami.Fonts.Font.EmbeddedBitmaps.init -> void

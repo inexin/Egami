@@ -57,6 +57,7 @@ public readonly record struct Font
     private readonly bool _stemDarkening;
     private readonly byte _hintingTarget;
     private readonly byte _metrics;
+    private readonly bool _embeddedBitmaps;
 
     /// <summary>Initializes a font.</summary>
     /// <param name="typeface">The face.</param>
@@ -80,6 +81,18 @@ public readonly record struct Font
 
     /// <summary>Gets the em size in canvas units.</summary>
     public float Size { get; }
+
+    /// <summary>
+    /// Gets whether the face's embedded black-and-white or gray bitmaps (the EBLC and EBDT tables) are used, as Windows uses them:
+    /// only at a size of exactly a strike's pixels per em, for the glyphs the strike holds. Those glyphs are drawn from the bitmap
+    /// instead of the outline (aliased, whatever the edging, and only under a scale-and-translate transform at that size on a
+    /// raster), and with grid-fitted <see cref="Metrics"/> they take the strike's advances. Defaults to false; faces without
+    /// strikes are not affected.
+    /// </summary>
+    /// <example>
+    /// <code language="csharp" source="../../tests/Egami.DocSamples/SystemDrawing.cs" region="gdiplus"/>
+    /// </example>
+    public bool EmbeddedBitmaps { get => _embeddedBitmaps; init => _embeddedBitmaps = value; }
 
     /// <summary>Gets whether pair kerning is applied when shaping. Defaults to true.</summary>
     public bool Kerning { get => !_noKerning; init => _noKerning = !value; }
@@ -240,8 +253,8 @@ public readonly record struct Font
 
     /// <summary>
     /// This font as System.Drawing draws ClearTypeGridFit text: the font's TrueType instructions for GDI+
-    /// (<see cref="FontHinting.Full"/>, <see cref="TrueTypeTarget.GdiPlus"/>), <see cref="FontMetrics.GridFitted"/> advances and
-    /// LCD edging. Draw it on a canvas with Egami.Drawing's <c>CanvasOptions.GdiPlusClearType</c>.
+    /// (<see cref="FontHinting.Full"/>, <see cref="TrueTypeTarget.GdiPlus"/>), <see cref="FontMetrics.GridFitted"/> advances, LCD
+    /// edging and the face's <see cref="EmbeddedBitmaps"/>. Draw it on a canvas with Egami.Drawing's <c>CanvasOptions.GdiPlusClearType</c>.
     /// </summary>
     /// <returns>The font with those settings.</returns>
     /// <example>
@@ -249,6 +262,7 @@ public readonly record struct Font
     /// </example>
     public Font WithGdiPlusLook() => this with
     {
+        EmbeddedBitmaps = true,
         Hinting = FontHinting.Full,
         HintingTarget = TrueTypeTarget.GdiPlus,
         Metrics = FontMetrics.GridFitted,

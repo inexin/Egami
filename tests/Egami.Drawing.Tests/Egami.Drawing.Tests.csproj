@@ -28,6 +28,7 @@
   <!-- Phase 2.7.5: the allocation-budget meter, for text gamma's warm-draw budget. -->
   <ItemGroup>
     <Compile Include="..\Egami.Tests\Memory\AllocationMeter.cs" Link="Memory\AllocationMeter.cs" />
+    <Compile Include="..\Egami.Fonts.Tests\EmbeddedStrikes.cs" Link="Canvas\EmbeddedStrikes.cs" />
   </ItemGroup>
 
 </Project>
