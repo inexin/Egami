@@ -1,0 +1,19 @@
+#nullable enable
+Egami.Video.Codecs.HevcCodec
+Egami.Video.Containers.HevcFormat
+Egami.Video.Containers.HevcFormat.FrameRate.get -> Egami.Video.Rational?
+Egami.Video.Containers.HevcFormat.FrameRate.init -> void
+Egami.Video.Containers.HevcFormat.HevcFormat() -> void
+Egami.Video.HevcMediaContextExtensions
+override Egami.Video.Codecs.HevcCodec.CanDecode(Egami.Video.TrackInfo! track) -> bool
+override Egami.Video.Codecs.HevcCodec.CodecId.get -> string!
+override Egami.Video.Codecs.HevcCodec.CreateDecoder(Egami.Video.VideoTrackInfo! track, Egami.Video.Codecs.VideoDecoderOptions? options, Egami.Video.MediaContext! context) -> Egami.Video.Codecs.IVideoDecoder!
+override Egami.Video.Codecs.HevcCodec.Name.get -> string!
+override Egami.Video.Containers.HevcFormat.Extensions.get -> System.Collections.Generic.IReadOnlyList<string!>!
+override Egami.Video.Containers.HevcFormat.IsMatch(System.ReadOnlySpan<byte> header) -> bool
+override Egami.Video.Containers.HevcFormat.Name.get -> string!
+override Egami.Video.Containers.HevcFormat.OpenDemuxer(System.IO.Stream! stream, Egami.Video.MediaContext! context, bool leaveOpen) -> Egami.Video.Containers.IDemuxer!
+override Egami.Video.Containers.HevcFormat.SignatureLength.get -> int
+static Egami.Video.Codecs.HevcCodec.Instance.get -> Egami.Video.Codecs.HevcCodec!
+static Egami.Video.Containers.HevcFormat.Instance.get -> Egami.Video.Containers.HevcFormat!
+static Egami.Video.HevcMediaContextExtensions.WithHevc(this Egami.Video.MediaContext! context) -> Egami.Video.MediaContext!
