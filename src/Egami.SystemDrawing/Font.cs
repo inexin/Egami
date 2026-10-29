@@ -10,8 +10,8 @@ using EgamiFonts = Egami.Fonts;
 namespace Egami.SystemDrawing;
 
 /// <summary>
-/// A family, size, style and unit for drawing and measuring text. A family that is not installed falls back to Microsoft Sans
-/// Serif (or its stand-in), with <see cref="OriginalFontName"/> keeping the name asked for; sizes convert at the target's
+/// A family, size, style and unit for drawing and measuring text. A family that is not installed (and has no registered stand-in)
+/// falls back to the generic sans-serif family, with <see cref="Name"/> the family used and <see cref="OriginalFontName"/> the name asked for; sizes convert at the target's
 /// resolution, 96 dpi for <see cref="GetHeight()"/> and <see cref="SizeInPoints"/>.
 /// </summary>
 /// <example>

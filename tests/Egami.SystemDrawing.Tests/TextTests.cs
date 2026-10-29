@@ -90,7 +90,30 @@ public class TextTests
         Assert.SkipWhen(FontFamily.Families.Length == 0, "No fonts are installed.");
         using Font font = new("No Such Font Family", 10);
         Assert.Equal("No Such Font Family", font.OriginalFontName);
-        Assert.Equal(FontFamily.GenericSansSerif.Name, font.Name);
+        Assert.Equal(FontFamily.GenericSansSerif.Name, font.Name);  // the family actually used, as in System.Drawing
+        Assert.NotEqual("No Such Font Family", font.Name);
+    }
+
+    [Fact]
+    public void RegisteredSubstitutesStandInUnderTheRequestedName()
+    {
+        // API review R4: no stand-ins unless the application registers a finder (Egami.Fonts.Substitutes' SubstituteFonts.Find).
+        Assert.Throws<ArgumentException>(() => new FontFamily("Imaginary Sans"));
+        Egami.Fonts.Typeface dejaVu = DejaVu.Faces.Faces[0];
+        SystemDrawingOptions.FontSubstitutes = (name, style) => name == "Imaginary Sans" ? dejaVu : null;
+        try
+        {
+            using FontFamily family = new("Imaginary Sans");
+            Assert.Equal("Imaginary Sans", family.Name);
+            Assert.Equal(1901, family.GetCellAscent(FontStyle.Regular));
+            using Font font = new("Imaginary Sans", 10);
+            Assert.Equal(("Imaginary Sans", "Imaginary Sans"), (font.Name, font.OriginalFontName));
+            Assert.Throws<ArgumentException>(() => new FontFamily("No Such Font Family"));
+        }
+        finally
+        {
+            SystemDrawingOptions.FontSubstitutes = null;
+        }
     }
 
     [Fact]
