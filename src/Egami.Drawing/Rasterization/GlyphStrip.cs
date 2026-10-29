@@ -14,42 +14,53 @@ namespace Egami.Drawing.Rasterization;
 /// out after), so each row blends only the spans of the glyph rows that have coverage there, as glyph by glyph does, and glyph
 /// boxes may not overlap.</item>
 /// </list>
-/// A glyph that breaks either rule, or falls outside the strip, first flushes what is gathered.
+/// A glyph that breaks either rule, or falls outside the strip, first flushes what is gathered. A canvas keeps one strip, whose
+/// buffer stays all zero between runs.
 /// </summary>
 internal sealed class GlyphStrip : IDisposable
 {
     /// <summary>The most bytes a strip holds.</summary>
     private const int MaxBytes = 1 << 20;
 
-    private readonly bool _premultiplied;
-    private readonly Rect _clip;
     private readonly List<Rect> _boxes = [];
+    private bool _premultiplied;
+    private Rect _clip;
     private byte[]? _buffer;
     private Rect _area;
     private int _top = int.MaxValue;
     private int _bottom = int.MinValue;
+    private int _left = int.MaxValue;
+    private int _right = int.MinValue;
 
-    private GlyphStrip(bool premultiplied, Rect clip)
-    {
-        _premultiplied = premultiplied;
-        _clip = clip;
-    }
-
-    /// <summary>Returns a strip for a solid paint's plain sink on a target of <typeparamref name="TPixel"/>, or null where it would not give the same pixels.</summary>
-    internal static GlyphStrip? For<TPixel>(ISpanSink sink, Rect clip)
+    /// <summary>
+    /// Starts a run through a sink on a target of <typeparamref name="TPixel"/>; returns false where gathering would not give the
+    /// same pixels: anything but a solid paint's plain sink on an 8-bit RGBA or BGRA target.
+    /// </summary>
+    internal bool Begin<TPixel>(ISpanSink sink, Rect clip)
         where TPixel : unmanaged, IPixelType<TPixel>
     {
         if (sink is not SolidSink<TPixel>)
         {
-            return null;
+            return false;
         }
 
         if (typeof(TPixel) == typeof(PremulBgra8) || typeof(TPixel) == typeof(PremulRgba8))
         {
-            return new GlyphStrip(true, clip);
+            _premultiplied = true;
+        }
+        else if (typeof(TPixel) == typeof(Bgra8) || typeof(TPixel) == typeof(Rgba8))
+        {
+            _premultiplied = false;
+        }
+        else
+        {
+            return false;
         }
 
-        return typeof(TPixel) == typeof(Bgra8) || typeof(TPixel) == typeof(Rgba8) ? new GlyphStrip(false, clip) : null;
+        // A new run starts a new strip at its first glyph.
+        _clip = clip;
+        _area = default;
+        return true;
     }
 
     /// <summary>Adds a glyph's visible coverage, flushing first when it does not fit; returns false when it is too large to gather.</summary>
@@ -77,6 +88,8 @@ internal sealed class GlyphStrip : IDisposable
         _boxes.Add(visible);
         _top = Math.Min(_top, visible.Y);
         _bottom = Math.Max(_bottom, visible.Bottom);
+        _left = Math.Min(_left, visible.X);
+        _right = Math.Max(_right, visible.Right);
         return true;
     }
 
@@ -88,16 +101,18 @@ internal sealed class GlyphStrip : IDisposable
             return;
         }
 
+        // Only the columns glyphs reached hold coverage; the rest of the buffer stays zero.
         for (int y = _top; y < _bottom; y++)
         {
             Span<byte> row = Row(y);
+            Span<byte> used = row.Slice(_left - _area.X, _right - _left);
             if (_premultiplied)
             {
-                int first = row.IndexOfAnyExcept((byte)0);
+                int first = used.IndexOfAnyExcept((byte)0);
                 if (first >= 0)
                 {
-                    int last = row.LastIndexOfAnyExcept((byte)0);
-                    sink.Blend(y, _area.X + first, row[first..(last + 1)]);
+                    int last = used.LastIndexOfAnyExcept((byte)0);
+                    sink.Blend(y, _left + first, used[first..(last + 1)]);
                 }
             }
             else
@@ -105,12 +120,14 @@ internal sealed class GlyphStrip : IDisposable
                 BlendSpans(y, row, sink);
             }
 
-            row.Clear();
+            used.Clear();
         }
 
         _boxes.Clear();
         _top = int.MaxValue;
         _bottom = int.MinValue;
+        _left = int.MaxValue;
+        _right = int.MinValue;
     }
 
     public void Dispose()
@@ -150,7 +167,7 @@ internal sealed class GlyphStrip : IDisposable
 
     private bool Fits(GlyphMask mask, Rect placed, Rect visible)
     {
-        if (_buffer is null || visible.X < _area.X || visible.Y < _area.Y || visible.Right > _area.Right || visible.Bottom > _area.Bottom)
+        if (_buffer is null || _area.IsEmpty || visible.X < _area.X || visible.Y < _area.Y || visible.Right > _area.Right || visible.Bottom > _area.Bottom)
         {
             return false;
         }
@@ -189,20 +206,21 @@ internal sealed class GlyphStrip : IDisposable
     private bool Start(Rect visible)
     {
         int height = Math.Max(visible.Height, 1);
-        Rect area = new Rect(visible.X, visible.Y - (2 * height), Math.Min(_clip.Right - visible.X, 4096), 5 * height).Intersect(_clip);
+        Rect area = new Rect(visible.X, visible.Y - (2 * height), Math.Min(_clip.Right - visible.X, 2048), 5 * height).Intersect(_clip);
         if (area.IsEmpty || area.Width < visible.Width || (long)area.Width * area.Height > MaxBytes)
         {
             return false;
         }
 
+        // The buffer is all zero between flushes, whatever the area's shape, so only a new one needs clearing.
         int bytes = area.Width * area.Height;
         if (_buffer is null || _buffer.Length < bytes)
         {
             Dispose();
             _buffer = ArrayPool<byte>.Shared.Rent(bytes);
+            _buffer.AsSpan().Clear();
         }
 
-        _buffer.AsSpan(0, bytes).Clear();
         _area = area;
         return visible.Y >= area.Y && visible.Bottom <= area.Bottom;
     }

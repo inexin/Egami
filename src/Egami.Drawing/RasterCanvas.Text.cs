@@ -24,6 +24,7 @@ public sealed partial class RasterCanvas<TPixel>
     private bool _lcdFallbackReported;
     private LcdLook? _lcdLook;
     private bool _lcdLookMade;
+    private GlyphStrip? _glyphStrip;
 
     // The canvas's LCD filter, sampling and level as one cache-key part, or null for the defaults.
     private LcdLook? LcdLook
@@ -136,7 +137,7 @@ public sealed partial class RasterCanvas<TPixel>
         byte[]? scratch = null;
 
         // A solid paint's glyphs gather into rows and blend a row at a time (see GlyphStrip); the contrast boost works per glyph.
-        using GlyphStrip? strip = sink is not null && blend is not { HasBoost: true } ? GlyphStrip.For<TPixel>(sink, clip) : null;
+        GlyphStrip? strip = sink is not null && blend is not { HasBoost: true } && (_glyphStrip ??= new()).Begin<TPixel>(sink, clip) ? _glyphStrip : null;
         ReadOnlySpan<ushort> glyphs = run.Glyphs;
         ReadOnlySpan<Vector2> positions = run.Positions;
         for (int i = 0; i < glyphs.Length; i++)
