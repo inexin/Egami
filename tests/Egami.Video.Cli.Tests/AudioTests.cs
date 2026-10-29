@@ -361,7 +361,7 @@ public sealed class AudioTests
         return length;
     }
 
-    private static List<string> VideoPackets(string path) => [.. RemuxTests.Packets(path).Where(p => p.StartsWith("Video ", StringComparison.Ordinal))];
+    internal static List<string> VideoPackets(string path) => [.. RemuxTests.Packets(path).Where(p => p.StartsWith("Video ", StringComparison.Ordinal))];
 
     /// <summary>Checks a FLAC file with the reference decoder, or ffmpeg's, when either is on the PATH.</summary>
     private static void VerifyFlac(string path)

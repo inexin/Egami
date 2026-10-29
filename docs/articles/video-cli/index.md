@@ -238,6 +238,15 @@ and CAF get PCM, .m4a gets ALAC, and the rest FLAC. ALAC also goes in .mov, .mka
 for all channels together (64k a channel by default); `--level` sets FLAC's compression (0 to 8) or ALAC's (0 fast, 1 the
 default). `extract` writes ALAC tracks to .m4a and AC-3 and E-AC-3 tracks to raw .ac3 and .eac3 files.
 
+The audio filters (see [Audio filters](../guides/audio-filters.md)) run on the way: `--gain` in decibels, `--fade-in` and
+`--fade-out` over a time from the start and to the end, `--tempo` (0.25 to 4, the pitch kept), `--normalize` to `ebu`, `atsc`,
+`streaming`, `podcast` or a number of LUFS (two passes: measure, then one gain and a true-peak limiter only where needed),
+`--trim-silence`, and `--af` with ffmpeg's `-af` syntax for volume, afade, atempo, adelay, apad, atrim, asetpts, the EQ
+filters (highpass, lowpass, bandpass, bandreject, allpass, equalizer, bass, treble), acompressor, agate, alimiter, loudnorm
+and silenceremove; an unknown filter stops with the list. `--trim-silence` and silenceremove refuse a file with video, since
+the sound would no longer line up with it. `encode` takes the same options for its `--audio`, and `run` all but the silence
+cut for the audio it copies.
+
 ```sh
 egami-video audio in.mkv -o sound.flac
 egami-video audio in.webm --rate 44100 --channels stereo --sample-format s16 -o sound.wav
@@ -246,6 +255,8 @@ egami-video audio sound.flac --bitrate 96k -o sound.opus
 egami-video audio in.mp4 --bitrate 64k -o opus-audio.webm
 egami-video audio sound.flac -o sound.m4a
 egami-video audio sound.wav --sample-format s24 -o sound.aiff
+egami-video audio talk.wav --trim-silence --normalize podcast -o talk.flac
+egami-video audio in.mkv --af "highpass=f=80,acompressor=threshold=-20dB:ratio=3" --fade-out 2 -o cleaner.mkv
 ```
 
 ## Editing
