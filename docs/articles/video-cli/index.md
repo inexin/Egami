@@ -286,14 +286,14 @@ egami-video audio in.mkv --af "highpass=f=80,acompressor=threshold=-20dB:ratio=3
 and audio: every clip is fitted to one canvas (`--size`, `--rate` and `--fit`, from the first clip by default) and its sound
 resampled. `--transition` joins clips with `fade`, `fadeblack`, `dissolve`, `wipeleft`, `slideup`, `circleopen`, `clock`,
 `zoom`, `pixelize`, `blur` and others, as `kind:duration`, with an equal-power crossfade of the sound. `overlay --key green`
-keys out a green screen and takes the spill out of its edges. `--save-edit` writes the edit as JSON, which `edit` renders,
+keys out a green screen and takes the spill out of its edges; `--key auto` reads the screen colour from the overlay's first frame. `--save-edit` writes the edit as JSON, which `edit` renders,
 and which can be changed by hand: effects in it are egami run steps, such as `"blur 8"`.
 
 ```sh
 egami-video join in.avi in.webm in.mkv --transition dissolve:0.5 --size 320x240 -o joined.mkv
 egami-video fade in.webm --in 0.5 --out 1 -o faded.webm
 egami-video overlay in.avi in.webm --at right-8,top-8 --scale 0.3 --opacity 0.8 --from 0.5 --to 1.5 -o overlay.mkv
-egami-video overlay in.avi in.mkv --key green --similarity 0.12 --despill 0.6 -o keyed.mkv
+egami-video overlay in.avi in.mkv --key auto --similarity 0.12 --despill 0.6 -o keyed.mkv
 egami-video pip in.avi in.webm --corner bottom-left --scale 0.25 --fade-in 0.2 -o pip.mkv
 egami-video stack in.avi in.mkv --gap 4 -o side-by-side.mkv --save-edit side-by-side.json
 egami-video edit side-by-side.json --codec raw -o again.avi
