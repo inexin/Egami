@@ -145,7 +145,8 @@ internal sealed class CabacEngine
     {
         // As Decode(ref State, ref byte): the more probable symbol takes the short path.
         int s = state;
-        uint entry = Unsafe.Add(ref MemoryMarshal.GetReference(Packed), (s << 2) + (int)((_range >> 6) & 3));
+        // The range is 256 to 510, so range >> 6 is 4 to 7: qRangeIdx + 4, the table's row read from 4 entries before it.
+        uint entry = Unsafe.Add(ref Unsafe.Add(ref MemoryMarshal.GetReference(Packed), -4), (s << 2) + (int)(_range >> 6));
         uint lps = entry & 0xFF;
         uint range = _range - lps;
         uint scaledRange = range << 7;
@@ -204,7 +205,8 @@ internal sealed class CabacEngine
         // One load gives the LPS range and the state after either symbol. The more probable symbol, most bins, takes the short
         // path: at most one bit of renormalisation, from a range of 256 or more down to 2^8 - 2 at least.
         int s = state;
-        uint entry = Unsafe.Add(ref MemoryMarshal.GetReference(Packed), (s << 2) + (int)((e.Range >> 6) & 3));
+        // The range is 256 to 510, so range >> 6 is 4 to 7: qRangeIdx + 4, the table's row read from 4 entries before it.
+        uint entry = Unsafe.Add(ref Unsafe.Add(ref MemoryMarshal.GetReference(Packed), -4), (s << 2) + (int)(e.Range >> 6));
         uint lps = entry & 0xFF;
         uint range = e.Range - lps;
         uint scaledRange = range << 7;
