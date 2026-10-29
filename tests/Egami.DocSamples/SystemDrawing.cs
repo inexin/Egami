@@ -37,6 +37,28 @@ public class SystemDrawing
     }
 
     [Fact]
+    public void GdiPlusShapes()
+    {
+        using Raster<Rgb8> raster = Raster.Create(64, 32, new Rgb8(255, 255, 255));
+
+        #region gdiplus-shapes
+        // Shapes as System.Drawing draws them at its defaults (SmoothingMode.AntiAlias, PixelOffsetMode.None): whole coordinates on
+        // pixel centres, GDI+'s 8 by 4 samples a pixel, and pens up to 1.5 px drawn as its one-pixel thin lines.
+        // CanvasOptions.GdiPlusClearType sets both too.
+        var options = new CanvasOptions { PixelOffset = PixelOffset.None, Antialiasing = Antialiasing.GdiPlus };
+        using (RasterCanvas<Rgb8> canvas = raster.CreateCanvas(options))
+        {
+            canvas.FillOval(new RectF(4, 4, 20, 20), new SolidPaint(new Rgba8(0, 90, 200, 255)));
+            canvas.DrawLine(new Vector2(30, 6), new Vector2(60, 26), new Stroke(0.5f), new SolidPaint(Rgba8.Black));
+        }
+        #endregion
+
+        Assert.Equal(PixelOffset.None, CanvasOptions.GdiPlusClearType.PixelOffset);
+        Assert.Equal(Antialiasing.GdiPlus, CanvasOptions.GdiPlusClearType.Antialiasing);
+        Assert.Equal(new Rgb8(0, 90, 200), raster.GetPixel(14, 14));
+    }
+
+    [Fact]
     public void GdiPlusGradients()
     {
         using Raster<Rgb8> raster = Raster.Create(256, 16, new Rgb8(255, 255, 255));

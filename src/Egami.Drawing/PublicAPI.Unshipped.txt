@@ -25,5 +25,15 @@ static Egami.Drawing.LcdFilter.Default.get -> Egami.Drawing.LcdFilter!
 static Egami.Drawing.LcdFilter.Gdi.get -> Egami.Drawing.LcdFilter!
 static Egami.Drawing.LcdFilter.Light.get -> Egami.Drawing.LcdFilter!
 static Egami.Drawing.CanvasOptions.GdiPlusClearType.get -> Egami.Drawing.CanvasOptions!
+Egami.Drawing.Antialiasing
+Egami.Drawing.Antialiasing.Exact = 0 -> Egami.Drawing.Antialiasing
+Egami.Drawing.Antialiasing.GdiPlus = 1 -> Egami.Drawing.Antialiasing
+Egami.Drawing.CanvasOptions.Antialiasing.get -> Egami.Drawing.Antialiasing
+Egami.Drawing.CanvasOptions.Antialiasing.init -> void
+Egami.Drawing.CanvasOptions.PixelOffset.get -> Egami.Drawing.PixelOffset
+Egami.Drawing.CanvasOptions.PixelOffset.init -> void
+Egami.Drawing.PixelOffset
+Egami.Drawing.PixelOffset.Half = 0 -> Egami.Drawing.PixelOffset
+Egami.Drawing.PixelOffset.None = 1 -> Egami.Drawing.PixelOffset
 Egami.Drawing.InterpolationSpace.GdiPlusGamma = 4 -> Egami.Drawing.InterpolationSpace
 static Egami.Drawing.GradientInterpolation.GdiPlusGamma.get -> Egami.Drawing.GradientInterpolation!
