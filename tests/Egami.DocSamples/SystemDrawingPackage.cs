@@ -200,6 +200,13 @@ public class SystemDrawingPackage
         }
 
         Color corner = bitmap.GetPixel(0, 0);  // white
+
+        // Egami's own setting: 32-bit ARGB bitmaps draw in place by default; Exact rounds blends exactly as GDI+ does, more slowly.
+        using (Graphics exact = Graphics.FromImage(bitmap))
+        {
+            exact.ArgbDrawing = ArgbDrawing.Exact;  // or SystemDrawingOptions.ArgbDrawing for every Graphics made afterwards
+            exact.FillRectangle(Brushes.Gold, 60, 40, 10, 10);
+        }
         #endregion
 
         Assert.Equal(Color.White.ToArgb(), corner.ToArgb());
@@ -468,9 +475,15 @@ public class SystemDrawingPackage
         float lineSpacing = title.GetHeight();                   // ascender + descender + line gap, in pixels
         int ascent = family.GetCellAscent(FontStyle.Regular);    // design units, of GetEmHeight per em
 
-        // A family that is not installed falls back to Microsoft Sans Serif (or its stand-in), keeping the name asked for.
+        // A family that is not installed falls back to the generic sans-serif family, as in System.Drawing: Name is the family
+        // used, OriginalFontName the one asked for.
         using Font missing = new("No Such Font", 10);
         string asked = missing.OriginalFontName;                  // "No Such Font"
+
+        // With Egami.Fonts.Substitutes referenced, metric-compatible fonts stand in under the requested name, keeping line breaks.
+        SystemDrawingOptions.FontSubstitutes = Egami.Fonts.Substitutes.SubstituteFonts.Find;
+        using Font helvetica = new("Helvetica", 10);              // Liberation Sans where Helvetica is not installed
+        string standIn = helvetica.Name;                          // "Helvetica"
 
         title.ToLogFont(out LOGFONT logFont);                    // lfHeight -16, lfWeight 700
         Egami.Fonts.Font egami = title.ToEgamiFont();            // for Egami.Drawing's canvases
@@ -479,6 +492,8 @@ public class SystemDrawingPackage
         Assert.Equal(2384f / 2048 * 16, lineSpacing, 3);
         Assert.Equal(1901, ascent);
         Assert.Equal("No Such Font", asked);
+        Assert.Equal("Helvetica", standIn);
+        SystemDrawingOptions.FontSubstitutes = null;
         Assert.Equal(-16, logFont.lfHeight);
         Assert.Equal(16, egami.Size);
     }

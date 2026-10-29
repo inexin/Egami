@@ -36,10 +36,10 @@ public abstract class Image : MarshalByRefObject, IDisposable, ICloneable
     public object? Tag { get; set; }
 
     /// <summary>Gets the width in pixels.</summary>
-    public int Width => Current.Width;
+    public int Width => Peek.Width;
 
     /// <summary>Gets the height in pixels.</summary>
-    public int Height => Current.Height;
+    public int Height => Peek.Height;
 
     /// <summary>Gets the size in pixels.</summary>
     public Size Size => new(Width, Height);
@@ -157,12 +157,33 @@ public abstract class Image : MarshalByRefObject, IDisposable, ICloneable
         get
         {
             CheckAlive();
+            return _frames[_active] = Realize(_frames[_active]);
+        }
+    }
+
+    /// <summary>Gets the active frame without drawing a metafile's pixels, for its size.</summary>
+    private Frame Peek
+    {
+        get
+        {
+            CheckAlive();
             return _frames[_active];
         }
     }
 
     /// <summary>Gets the frames.</summary>
-    internal IReadOnlyList<Frame> Frames => _frames;
+    internal IReadOnlyList<Frame> Frames
+    {
+        get
+        {
+            for (int i = 0; i < _frames.Count; i++)
+            {
+                _frames[i] = Realize(_frames[i]);
+            }
+
+            return _frames;
+        }
+    }
 
     /// <summary>Gets the property items, for codecs.</summary>
     internal List<PropertyItem> Properties => _properties;
@@ -480,6 +501,9 @@ public abstract class Image : MarshalByRefObject, IDisposable, ICloneable
         Dimension = dimension;
     }
 
+    /// <summary>A frame with its pixels: a metafile draws its own when they are first needed; others have them already.</summary>
+    private protected virtual Frame Realize(Frame frame) => frame;
+
     /// <summary>Replaces the active frame.</summary>
     internal void ReplaceCurrent(Frame frame) => _frames[_active] = frame;
 
@@ -491,7 +515,7 @@ public abstract class Image : MarshalByRefObject, IDisposable, ICloneable
         copy.FileFlags = FileFlags;
         copy.Raw = Raw;
         copy._properties.AddRange(_properties.Select(p => p.Copy()));
-        copy.SetFrames([.. _frames.Select(f => f.Copy())], Dimension);
+        copy.SetFrames([.. Frames.Select(f => f.Copy())], Dimension);
         copy._active = _active;
     }
 

@@ -31,7 +31,8 @@ codecs, icons, Graphics, pens, brushes, paths, fonts and text, metafiles, effect
 - `GraphicsPath` with every builder, GDI+'s point and type arrays, `Flatten`, `Widen`, `Warp`, `Reverse`,
   bounds, hit tests and markers; `GraphicsPathIterator`; regions, clips, `DrawPath` and `FillPath` from paths.
 - `FontFamily`, `Font`, `InstalledFontCollection`, `PrivateFontCollection`, `SystemFonts`, `FontConverter` and
-  `Interop.LOGFONT`, with GDI+'s metrics and metric-compatible stand-ins for the Windows core fonts on other systems;
+  `Interop.LOGFONT`, with GDI+'s metrics; `SystemDrawingOptions.FontSubstitutes` takes Egami.Fonts.Substitutes'
+  `SubstituteFonts.Find` for metric-compatible stand-ins where the Windows core fonts are not installed;
   `StringFormat` and `CharacterRange`; `DrawString`, `MeasureString`, `MeasureCharacterRanges` and `GraphicsPath.AddString`
   laid out as GDI+ lays text out (padding, widening, wrapping, trimming, alignment, tabs, hotkeys, vertical text), and
   `Font.ToEgamiFont`.
@@ -43,6 +44,11 @@ codecs, icons, Graphics, pens, brushes, paths, fonts and text, metafiles, effect
   throws, EGSD0003), and the escape hatches `Bitmap.AsRaster`, `Bitmap.FromRaster` and `Graphics.Canvas`.
 - Members that need Windows handles throw PlatformNotSupportedException and warn at compile time (EGSD0001 to EGSD0004).
 - With implicit usings on, the package adds `System.Drawing` and `Egami.SystemDrawing` as implicit usings.
+- `SystemDrawingOptions.ArgbDrawing` and `Graphics.ArgbDrawing` choose between drawing 32-bit ARGB bitmaps in place (the
+  default) and through GDI+'s exact premultiplied rounding.
+- A migration guide from System.Drawing to Egami's own API, through the escape hatches.
+- Measured against native Egami (`benchmarks/Egami.SystemDrawing.Benchmarks`): fills, DrawString and LockBits within 5 % of the
+  native calls; a `sysdrawing` fuzz target for `Image.FromStream`; the package icon.
 
 ## Egami.Drawing and Egami.Fonts, unreleased
 
