@@ -17,6 +17,9 @@ changes that break code come only in a new major version.
 
 ## Egami.Video.Cli 1.1.0 (2026-10-29)
 
+- `egami-video remux --fragment` and `encode --fragment` write fragmented MP4 (`--fragment=4s`, `--fragment=keyframe`), and
+  `segment --hls --dash` writes CMAF segments with HLS and DASH playlists into a folder. ffmpeg mode takes `-movflags
+  faststart`, `frag_keyframe`, `empty_moov` and `default_base_moof`, and `-frag_duration` with frag_keyframe.
 - V9.1 stage D (Build Plan tasks 16 to 19): `egami-video audio` and `encode` (for its `--audio`) take `--gain`, `--fade-in`,
   `--fade-out`, `--tempo`, `--normalize` (ebu, atsc, streaming, podcast or LUFS, two passes), `--trim-silence` (refused with
   video) and `--af`, which parses ffmpeg's `-af` syntax for volume, afade, atempo, adelay, apad, atrim, asetpts, highpass,

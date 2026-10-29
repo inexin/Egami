@@ -33,7 +33,7 @@ With the `egami` tool installed too, `egami video info clip.mkv` runs `egami-vid
 | `remux` | Copy tracks into another container | `ffmpeg -c copy` |
 | `trim` | Cut from the keyframe at or before `--from` to `--to` | `ffmpeg -ss -to -c copy` |
 | `concat` | Join clips with the same tracks and codecs | the concat demuxer |
-| `segment` | Split every `--every`, at `--at` times or at `--scenes`, at keyframes | `-f segment` |
+| `segment` | Split every `--every`, at `--at` times or at `--scenes`, at keyframes; `--hls` and `--dash` for streaming | `-f segment`, `-f hls`, `-f dash` |
 | `timestamps` | Shift, set a frame rate, repair timestamps | `-itsoffset`, `-r`, `setts` |
 | `extract` | One track, attachments or cover art to their own files | `-map 0:a:0 -c copy`, `-dump_attachment` |
 | `embed` | Add tracks, attachments and cover art; set languages and names | `-i a -i b -map 0 -map 1` |
@@ -125,6 +125,21 @@ egami-video segment in.mkv --every 1 -o parts/{part:000}.mkv
 egami-video segment in.mkv --scenes -o shots/{part:000}.mkv -v
 egami-video concat parts/001.mkv parts/002.mkv -o joined.mkv
 egami-video timestamps in.mkv --shift 0.5 --track a -o later.mkv
+```
+
+## Streaming
+
+`remux --fragment` and `encode --fragment` write fragmented MP4: a moov with the setup only, then the media as moof and mdat
+pairs, each starting at the first video keyframe after 2 seconds (`--fragment=4s` for another length, `--fragment=keyframe` for
+every keyframe). Such a file is written as it goes, so it suits uploads, cloud storage and browsers' Media Source Extensions.
+
+`segment --hls --dash` writes the audio and video tracks as CMAF segments into the folder `-o` names, cut at the first video
+keyframe after `--every` (6 seconds by default), with `master.m3u8` and a playlist a track for HLS and `manifest.mpd` for DASH;
+give one of the two for its playlists only. Subtitle and data tracks are left out.
+
+```sh
+egami-video remux in.mp4 --fragment -o fragmented.mp4
+egami-video segment in.mp4 --hls --dash --every 2 -o stream/
 ```
 
 ## Subtitles
