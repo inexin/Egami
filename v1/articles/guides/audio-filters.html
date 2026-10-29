@@ -288,7 +288,12 @@ with the codec you give, else their own when the container holds it, else the co
 timestamps run on without gaps, so use it on audio alone, not on a track that has to stay in step with video.</p>
 <pre><code class="lang-csharp">// Cut a voice recording's lead-in and tail, and pauses over 1 s down to 0.3 s. Audio only: the result is shorter.
 using SilenceRemover remover = new(SilenceRemoval.Shorten) { Threshold = -45 };
-</code></pre>
+</code></pre><h2 id="on-the-command-line">On the command line</h2>
+<p><code>egami-video audio</code> runs these filters with <code>--gain</code>, <code>--fade-in</code>, <code>--fade-out</code>, <code>--tempo</code>, <code>--normalize</code>, <code>--trim-silence</code>
+and <code>--af</code>, which takes ffmpeg's <code>-af</code> syntax (<code>highpass=f=80,acompressor=threshold=-20dB:ratio=3,loudnorm</code>); <code>encode</code> and
+<code>run</code> take them for the audio they add or copy, and <code>egami-video ffmpeg</code> turns an <code>-af</code> chain into the same command. See
+<a href="../video-cli/index.html#audio">the egami-video command</a>.</p>
+
 </article>
 
         <div class="contribution d-print-none">
