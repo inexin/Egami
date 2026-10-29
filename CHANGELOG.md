@@ -3,6 +3,14 @@
 All notable changes to Egami are listed here. Egami follows [Semantic Versioning](https://semver.org): from 1.0, public API
 changes that break code come only in a new major version.
 
+## Egami.SystemDrawing, unreleased
+
+- `Graphics.MeasureString` takes about 0.7 µs instead of 7.1 µs for a 43-character line it has measured before, and allocates
+  0.7 KB instead of 13 KB, with the same sizes; GDI+ takes 0.56 µs. Shaped runs of strings up to 256 characters are kept per
+  font (up to 1,024, emptied when full), a family's face match is kept per style, and measuring builds no per-character
+  list. A string not measured before still costs about 7 µs, the cost of shaping it. `DrawString` gets the same cache and
+  allocates half as much (239 KB instead of 451 KB for 20 lines).
+
 ## Egami 1.3.1 (2026-10-29)
 
 A bug-fix release of the Egami train for GDI+-look text, with Egami.SystemDrawing 1.0.0-preview.2. Egami.Drawing and

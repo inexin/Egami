@@ -190,6 +190,30 @@ public class TextTests
     }
 
     [Fact]
+    public void MeasuringAgainGivesTheSameSizesForEachFontAndStyle()
+    {
+        // Shaped runs and face matches are kept between calls; a repeat must not take another size's or style's.
+        using Graphics g = NewGraphics(out Bitmap b);
+        using (b)
+        {
+            using Font small = DejaVu12;
+            using Font large = new(DejaVu, 24);
+            using Font bold = new(DejaVu, 12, FontStyle.Bold);
+            SizeF first = g.MeasureString(Sample, small);
+            SizeF twice = g.MeasureString(Sample, large);
+            SizeF heavy = g.MeasureString(Sample, bold);
+            Assert.Equal(2 * first.Width, twice.Width, 2);
+            Assert.Equal(first, g.MeasureString(Sample, small));
+            Assert.Equal(twice, g.MeasureString(Sample, large));
+            Assert.Equal(heavy, g.MeasureString(Sample, bold));
+
+            // A hotkey prefix measures the text without its ampersand, cached or not.
+            StringFormat hotkey = new() { HotkeyPrefix = HotkeyPrefix.Show };
+            Assert.Equal(g.MeasureString("Open", small), g.MeasureString("&Open", small, PointF.Empty, hotkey));
+        }
+    }
+
+    [Fact]
     public void MeasureCharacterRangesGivesWholePixels()
     {
         using Graphics g = NewGraphics(out Bitmap b);
