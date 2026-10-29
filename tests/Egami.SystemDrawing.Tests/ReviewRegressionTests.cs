@@ -6,7 +6,7 @@ using Egami.Pixels;
 
 namespace Egami.SystemDrawing.Tests;
 
-/// <summary>Regressions found in review of the stage A pull request.</summary>
+/// <summary>Regressions found in review of the stage A and C pull requests.</summary>
 public class ReviewRegressionTests
 {
     [Theory]
@@ -69,5 +69,62 @@ public class ReviewRegressionTests
         PropertyItem item = image.GetPropertyItem(0x9999)!;
         Assert.Equal(12, item.Type);
         Assert.Equal(1.5, BinaryPrimitives.ReadDoubleLittleEndian(item.Value));
+    }
+
+    [Fact]
+    public void ClonedImageAttributesKeepTheirWrapMode()
+    {
+        using Bitmap source = new(2, 2);
+        for (int y = 0; y < 2; y++)
+        {
+            for (int x = 0; x < 2; x++)
+            {
+                source.SetPixel(x, y, Color.FromArgb(255, 255, 0, 0));
+            }
+        }
+
+        using ImageAttributes original = new();
+        original.SetWrapMode(Egami.SystemDrawing.Drawing2D.WrapMode.Tile);
+        using ImageAttributes clone = (ImageAttributes)original.Clone();
+        using Bitmap target = new(8, 8);
+        using (Graphics g = Graphics.FromImage(target))
+        {
+            // Drawn from a source rectangle four times the image: tiled, every pixel is red; clamped, most are transparent.
+            g.DrawImage(source, new Rectangle(0, 0, 8, 8), 0, 0, 8, 8, GraphicsUnit.Pixel, clone);
+        }
+
+        Assert.Equal(255, target.GetPixel(6, 6).A);
+    }
+
+    [Fact]
+    public void FillRegionWithAnInfiniteRegionFillsTheClip()
+    {
+        // GDI+ (PathProbes.Regions): an infinite region fills the whole bitmap, or what the clip lets through.
+        using Bitmap b = new(16, 12);
+        using Graphics g = Graphics.FromImage(b);
+        using SolidBrush red = new(Color.Red);
+        using Region infinite = new();
+        g.FillRegion(red, infinite);
+        Assert.Equal(Color.Red.ToArgb(), b.GetPixel(0, 0).ToArgb());
+        Assert.Equal(Color.Red.ToArgb(), b.GetPixel(15, 11).ToArgb());
+
+        g.Clear(Color.Transparent);
+        g.SetClip(new Rectangle(2, 2, 4, 4));
+        g.TranslateTransform(100, 100);
+        g.FillRegion(red, g.Clip);
+        Assert.Equal(0, b.GetPixel(1, 1).A);
+        Assert.Equal(Color.Red.ToArgb(), b.GetPixel(2, 2).ToArgb());
+        Assert.Equal(Color.Red.ToArgb(), b.GetPixel(5, 5).ToArgb());
+        Assert.Equal(0, b.GetPixel(6, 6).A);
+    }
+
+    [Fact]
+    public void RegionIsVisibleTakesSystemDrawingPoints()
+    {
+        // Inside an Egami namespace Point names Egami.Point; the public overload must take System.Drawing.Point.
+        using Region region = new(new Rectangle(0, 0, 10, 10));
+        Assert.True(region.IsVisible(new System.Drawing.Point(5, 5)));
+        Assert.False(region.IsVisible(new System.Drawing.Point(20, 5), null));
+        Assert.NotNull(typeof(Region).GetMethod(nameof(Region.IsVisible), [typeof(System.Drawing.Point)]));
     }
 }

@@ -5,8 +5,8 @@ changes that break code come only in a new major version.
 
 ## Egami.SystemDrawing 1.0.0-preview.1, unreleased
 
-A new package: System.Drawing.Common's API on every OS, in managed code (step 2.13, stage A). Bitmaps, pixel access, codecs and
-icons; Graphics, pens, brushes, paths, fonts and text follow in later previews.
+A new package: System.Drawing.Common's API on every OS, in managed code (step 2.13, stages A, C and D). Bitmaps, pixel access,
+codecs, icons, Graphics, pens, brushes and paths; fonts and text follow in later previews.
 
 - `Bitmap`, `Image` and `Icon` in the `Egami.SystemDrawing` namespace, and `PixelFormat`, `BitmapData`, `ColorPalette`,
   `ImageFormat`, `ImageCodecInfo`, `Encoder`, `EncoderParameters`, `FrameDimension` and `PropertyItem` in
@@ -19,6 +19,17 @@ icons; Graphics, pens, brushes, paths, fonts and text follow in later previews.
   multipage TIFF and animated GIF frames, property items (EXIF, TIFF tags, JPEG quantization tables, PNG and GIF fields),
   GDI+'s codec list, JPEG quality, TIFF compression and depth, and SaveAdd.
 - Icons choose the image nearest a size as System.Drawing does and save the file they came from.
+- `Graphics` on any bitmap GDI+ draws on, with GDI+'s defaults and its rules measured on Windows: page units and scale,
+  transforms, `Save`, `Restore` and containers, the clip and `Region` as whole device pixels, quality settings, and every Draw,
+  Fill and DrawImage overload for lines, rectangles, ellipses, arcs, pies, polygons, Beziers, cardinal splines, rounded
+  rectangles, regions, images and icons; `Matrix`, `Region`, `RegionData`, `ImageAttributes`, `ColorMatrix`, `ColorMap`, `Pen`
+  and `SolidBrush`.
+- Pens with every cap, join, dash style, compound line, inset alignment, arrow and stroke cap, and a nib-shaping transform;
+  `Pens` and `SystemPens`. `HatchBrush` (all 53 styles as GDI+ draws them), `TextureBrush`, `LinearGradientBrush` and
+  `PathGradientBrush` with GDI+'s brush transforms, blends, sigma bell and triangular shapes and preset colors; `Brushes` and
+  `SystemBrushes`.
+- `GraphicsPath` with every builder but `AddString`, GDI+'s point and type arrays, `Flatten`, `Widen`, `Warp`, `Reverse`,
+  bounds, hit tests and markers; `GraphicsPathIterator`; regions, clips, `DrawPath` and `FillPath` from paths.
 - Members that need Windows handles throw PlatformNotSupportedException and warn at compile time (EGSD0001 to EGSD0003).
 - With implicit usings on, the package adds `System.Drawing` and `Egami.SystemDrawing` as implicit usings.
 
@@ -35,6 +46,18 @@ Closer GDI+ text (2.7.6 stage 1), measured against GDI+ on Windows in egami-comp
   up to sixteenths of a pixel.
 - Lars's button test against GDI+: a mean difference of 0.67 levels on black and 0.38 on #0078d4, down from 1.92 and 1.06.
   95.8% of glyph sizes in the six-font advance test match GDI+'s drawn widths, up from 90.6%.
+
+Closer GDI+ shapes (2.7.6 stage 2), measured the same way. These are opt-in too.
+
+- `CanvasOptions.PixelOffset`: `Half` is Egami's grid. `None`, GDI+'s default, puts whole coordinates on pixel centres, so paths,
+  their paints, clips and unhinted text move half a pixel; hinted text and images stay put, as they do in GDI+.
+- `CanvasOptions.Antialiasing`: `Exact` is Egami's coverage. `GdiPlus` samples as GDI+'s `SmoothingMode.AntiAlias` does,
+  with 8 by 4 point samples a pixel and a top-left fill rule. It also draws pens of 1.5 device pixels or less as GDI+'s thin
+  lines, one pixel thick with pointed ends. Each row is computed on its own, so the result is the same at any core count.
+- `CanvasOptions.GdiPlusClearType` sets `PixelOffset.None` and `Antialiasing.GdiPlus` too.
+- Against GDI+ at its defaults (AntiAlias, PixelOffsetMode.None), the stage 0 shape probes' mean difference drops from 1.94
+  levels (Egami's closest settings before) to 0.12: rects 1.60 to 0.00, polygons 2.17 to 0.01, ovals 0.85 to 0.32, lines 3.15
+  to 0.16.
 
 ## Egami.Formats.Extended, unreleased
 

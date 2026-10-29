@@ -116,6 +116,15 @@ internal sealed class GdiPlusCustomCap
     public Path? Shape { get; init; }
 
     public float BaseInset { get; init; }
+
+    /// <summary>
+    /// Gets a value indicating whether <see cref="Shape"/> is drawn at the line's end, its x axis across the line and its y axis
+    /// along it, outward, in pen widths times <see cref="WidthScale"/>. Off for metafiles, which do not draw path caps.
+    /// </summary>
+    public bool DrawShape { get; init; }
+
+    /// <summary>Gets how much the pen width scales the cap.</summary>
+    public float WidthScale { get; init; } = 1;
 }
 
 /// <summary>What a pen draws along a path: the outline to fill, the clip an inset pen needs, and the caps at the open ends.</summary>
@@ -274,6 +283,13 @@ internal static class GdiPlusPens
             Vector2 tip = end, baseCenter = end - (dir * h), inset = baseCenter + (dir * arrow.MiddleInset * width);
             Path head = Path.Polygon([tip, baseCenter + (normal * w), inset, baseCenter - (normal * w)]);
             shape = arrow.Filled ? head : new Stroke(width).ToPath(Path.Polygon([baseCenter + (normal * w), tip, baseCenter - (normal * w)], close: false));
+        }
+
+        if (kind == GdiPlusPen.CapCustom && custom is { Arrow: false, DrawShape: true, Shape: Path cap })
+        {
+            float scale = width * custom.WidthScale;
+            Matrix3x2 place = new(normal.X * scale, normal.Y * scale, dir.X * scale, dir.Y * scale, end.X, end.Y);
+            shape = cap.Transform(place).WithFillRule(FillRule.NonZero);
         }
 
         return shape;
