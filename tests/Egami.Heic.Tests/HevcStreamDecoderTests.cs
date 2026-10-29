@@ -61,6 +61,8 @@ public class HevcStreamDecoderTests
         Assert.Equal(8, next.Value.BitDepth);
         Assert.Equal(ChromaFormat.Yuv420, next.Value.Chroma);
         Assert.Equal(HevcPictureKind.Idr, next.Value.Kind);
+        Assert.True(next.Value.IsIrap);
+        Assert.Equal(0, next.Value.Poc);
         YuvRaster<byte> wrong = YuvRaster.Create(64, 64, ChromaFormat.Yuv420, YuvColor.Bt709Limited);
         Assert.Throws<ArgumentException>(() => decoder.TryReceiveFrame(wrong, out _));
     }

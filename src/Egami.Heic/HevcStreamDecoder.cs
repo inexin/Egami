@@ -16,7 +16,7 @@ namespace Egami.Heic;
 /// <remarks>
 /// <para>
 /// <see cref="Send"/> takes the NAL units of one access unit or more: an Annex B byte stream (start codes), or after
-/// <see cref="Configure"/> with an MP4 or Matroska hvcC record, NAL units each after a size field. Pictures come out in output
+/// <see cref="SetConfiguration"/> with an MP4 or Matroska hvcC record, NAL units each after a size field. Pictures come out in output
 /// order once the stream's reordering allows, through <see cref="TryReceiveFrame"/>; <see cref="Flush"/> lets the rest out at
 /// the end of the stream.
 /// </para>
@@ -43,7 +43,7 @@ public sealed class HevcStreamDecoder : IDisposable
     {
         _options = options ?? HevcDecoderOptions.Default;
         EgamiContext c = context ?? EgamiContext.Default;
-        _decoder = new HevcSequenceDecoder(c.Limits, Math.Max(1, c.MaxParallelism));
+        _decoder = new HevcSequenceDecoder(c.Limits, Math.Max(1, c.MaxParallelism)) { ConcealErrors = _options.ConcealErrors };
     }
 
     /// <summary>Gets the information of the next frame <see cref="TryReceiveFrame"/> gives, to size its raster, or null when there is none.</summary>
@@ -55,7 +55,7 @@ public sealed class HevcStreamDecoder : IDisposable
     /// </summary>
     /// <param name="hvcC">The record's bytes, from configurationVersion on.</param>
     /// <exception cref="CorruptDataException">The record is broken.</exception>
-    public void Configure(ReadOnlySpan<byte> hvcC)
+    public void SetConfiguration(ReadOnlySpan<byte> hvcC)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
         if (hvcC.Length < 23 || hvcC[0] != 1)
@@ -96,7 +96,7 @@ public sealed class HevcStreamDecoder : IDisposable
     }
 
     /// <summary>
-    /// Decodes NAL units: an Annex B byte stream, or after <see cref="Configure"/> NAL units after size fields. Pictures that
+    /// Decodes NAL units: an Annex B byte stream, or after <see cref="SetConfiguration"/> NAL units after size fields. Pictures that
     /// are ready in output order wait for <see cref="TryReceiveFrame"/>.
     /// </summary>
     /// <param name="data">Whole NAL units, of one access unit or more.</param>
@@ -235,7 +235,7 @@ public sealed class HevcStreamDecoder : IDisposable
             ? new ColorCodePoints((byte)vui.ColourPrimaries, (byte)vui.TransferCharacteristics, (byte)vui.MatrixCoefficients, vui.FullRange)
             : new ColorCodePoints(2, 2, (byte)(sps.OutputHeight <= 576 ? 6 : 1), vui?.FullRange ?? false);
         ChromaFormat chroma = sps.ChromaFormatIdc switch { 0 => ChromaFormat.Yuv400, 2 => ChromaFormat.Yuv422, 3 => ChromaFormat.Yuv444, _ => ChromaFormat.Yuv420 };
-        return new HevcFrameInfo(p.Kind, p.Poc, sps.OutputWidth, sps.OutputHeight, Math.Max(sps.BitDepthLuma, sps.BitDepthChroma), chroma, p.TemporalId, color);
+        return new HevcFrameInfo(p.Kind, p.Kind is HevcPictureKind.Idr or HevcPictureKind.Cra or HevcPictureKind.Bla, p.Poc, sps.OutputWidth, sps.OutputHeight, Math.Max(sps.BitDepthLuma, sps.BitDepthChroma), chroma, p.TemporalId, color);
     }
 }
 
@@ -244,6 +244,12 @@ public sealed record HevcDecoderOptions
 {
     /// <summary>Gets the default options.</summary>
     public static HevcDecoderOptions Default { get; } = new();
+
+    /// <summary>
+    /// Gets a value indicating whether damaged slice data is concealed rather than thrown: the picture keeps what decoded before
+    /// the damage, stays a reference and comes out; damaged parameter sets and slice headers still throw. Defaults to false.
+    /// </summary>
+    public bool ConcealErrors { get; init; }
 
     /// <summary>
     /// Gets a value indicating whether each picture is checked against its decoded picture hash SEI message, when it has one: a
@@ -276,12 +282,13 @@ public enum HevcPictureKind
 
 /// <summary>What an HEVC picture was, as <see cref="HevcStreamDecoder.TryReceiveFrame"/> gives it.</summary>
 /// <param name="Kind">The type of its NAL units.</param>
-/// <param name="PictureOrderCount">PicOrderCntVal: its place in output order within its coded video sequence.</param>
+/// <param name="IsIrap">Whether it is an IRAP picture (IDR, CRA or BLA), where decoding can start.</param>
+/// <param name="Poc">PicOrderCntVal: its place in output order within its coded video sequence.</param>
 /// <param name="Width">The width of its conformance window, the picture as shown.</param>
 /// <param name="Height">The height of its conformance window.</param>
 /// <param name="BitDepth">The bit depth of its samples (the larger of luma's and chroma's).</param>
 /// <param name="Chroma">Its chroma format.</param>
 /// <param name="TemporalId">Its temporal sub-layer (TemporalId).</param>
 /// <param name="Color">Its colour from the sequence's VUI, or the HD or SD default when the VUI leaves it unspecified.</param>
-public readonly record struct HevcFrameInfo(HevcPictureKind Kind, int PictureOrderCount, int Width, int Height, int BitDepth, ChromaFormat Chroma,
+public readonly record struct HevcFrameInfo(HevcPictureKind Kind, bool IsIrap, int Poc, int Width, int Height, int BitDepth, ChromaFormat Chroma,
     int TemporalId, ColorCodePoints Color);

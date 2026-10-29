@@ -27,6 +27,9 @@ internal sealed class HevcSequenceDecoder(SafetyLimits limits, int parallelism =
     /// <summary>Gets or sets what runs when a picture starts, after its reference picture set; for tests.</summary>
     internal Action<HevcDpbPicture>? PictureStarted { get; set; }
 
+    /// <summary>Gets or sets whether damaged slice data leaves the picture as far as it decoded instead of throwing.</summary>
+    internal bool ConcealErrors { get; set; }
+
     /// <summary>Gets the decoded picture buffer.</summary>
     internal HevcDpb Dpb => _dpb;
 
@@ -149,7 +152,15 @@ internal sealed class HevcSequenceDecoder(SafetyLimits limits, int parallelism =
             if (DecodeSamples)
             {
                 _segments[^1].EndTs = picture.Layout.TsToRs.Length;
-                new HevcChainSet(HevcDecoder.Chains(picture, _segments), parallelism, cancellationToken).Decode(picture);
+                try
+                {
+                    new HevcChainSet(HevcDecoder.Chains(picture, _segments), parallelism, cancellationToken).Decode(picture);
+                }
+                catch (CorruptDataException) when (ConcealErrors)
+                {
+                    // The coding tree blocks before the damage stay; the rest keep the samples the picture was made with.
+                }
+
                 HevcLoopFilter.Apply(picture, parallelism, cancellationToken);
                 picture.ColMotion = new HevcColMotion(picture);
             }
