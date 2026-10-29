@@ -43,6 +43,8 @@ codecs, icons, Graphics, pens, brushes, paths, fonts and text, metafiles, effect
   throws, EGSD0003), and the escape hatches `Bitmap.AsRaster`, `Bitmap.FromRaster` and `Graphics.Canvas`.
 - Members that need Windows handles throw PlatformNotSupportedException and warn at compile time (EGSD0001 to EGSD0004).
 - With implicit usings on, the package adds `System.Drawing` and `Egami.SystemDrawing` as implicit usings.
+- Measured against native Egami (`benchmarks/Egami.SystemDrawing.Benchmarks`): fills, DrawString and LockBits within 5 % of the
+  native calls; a `sysdrawing` fuzz target for `Image.FromStream`; the package icon.
 
 ## Egami.Drawing and Egami.Fonts, unreleased
 
