@@ -222,14 +222,17 @@ internal static partial class Codecs
             throw new ArgumentException("No Egami encoder has this class id.", nameof(codec));
         }
 
+        // A metafile saved to a raster format is drawn into a bitmap first, as GDI+ draws it.
+        using Bitmap? drawn = image as Bitmap is null ? new Bitmap(image) : null;
+        Bitmap bitmap = drawn ?? (Bitmap)image;
         if (parameters?.Number(Encoder.SaveFlag) == (long)EncoderValue.MultiFrame && codec.FormatID == ImageFormat.Tiff.Guid)
         {
             image.PendingSave = new MultiFrameSave(path, stream, parameters);
-            image.PendingSave.Pages.Add(Page((Bitmap)image, parameters));
+            image.PendingSave.Pages.Add(Page(bitmap, parameters));
             return;
         }
 
-        byte[] bytes = Encode((Bitmap)image, codec.FormatID, parameters);
+        byte[] bytes = Encode(bitmap, codec.FormatID, parameters);
         if (path is not null)
         {
             File.WriteAllBytes(path, bytes);
