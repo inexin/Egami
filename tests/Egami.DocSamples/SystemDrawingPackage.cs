@@ -5,6 +5,8 @@ using Egami.SystemDrawing;
 using Egami.SystemDrawing.Drawing2D;
 using Egami.SystemDrawing.Imaging;
 using Egami.SystemDrawing.Imaging.Effects;
+using Egami.SystemDrawing.Interop;
+using Egami.SystemDrawing.Text;
 
 namespace Egami.DocSamples;
 
@@ -450,6 +452,74 @@ public class SystemDrawingPackage
 
         Assert.Equal(Color.SteelBlue.ToArgb(), window.GetPixel(20, 20).ToArgb());
         Assert.True(animates);
+    }
+
+    [Fact]
+    public void Fonts()
+    {
+        string file = System.IO.Path.Combine(AppContext.BaseDirectory, "fonts", "DejaVuSans.ttf");
+
+        #region fonts
+        // Fonts from the installed families, or from files an application brings along.
+        using PrivateFontCollection fonts = new();
+        fonts.AddFontFile(file);
+        using FontFamily family = new("DejaVu Sans", fonts);
+        using Font title = new(family, 12, FontStyle.Bold);    // 12 points: 16 pixels per em at 96 dpi
+        float lineSpacing = title.GetHeight();                   // ascender + descender + line gap, in pixels
+        int ascent = family.GetCellAscent(FontStyle.Regular);    // design units, of GetEmHeight per em
+
+        // A family that is not installed falls back to Microsoft Sans Serif (or its stand-in), keeping the name asked for.
+        using Font missing = new("No Such Font", 10);
+        string asked = missing.OriginalFontName;                  // "No Such Font"
+
+        title.ToLogFont(out LOGFONT logFont);                    // lfHeight -16, lfWeight 700
+        Egami.Fonts.Font egami = title.ToEgamiFont();            // for Egami.Drawing's canvases
+        #endregion
+
+        Assert.Equal(2384f / 2048 * 16, lineSpacing, 3);
+        Assert.Equal(1901, ascent);
+        Assert.Equal("No Such Font", asked);
+        Assert.Equal(-16, logFont.lfHeight);
+        Assert.Equal(16, egami.Size);
+    }
+
+    [Fact]
+    public void Text()
+    {
+        string file = System.IO.Path.Combine(AppContext.BaseDirectory, "fonts", "DejaVuSans.ttf");
+        using PrivateFontCollection fonts = new();
+        fonts.AddFontFile(file);
+        using Font font = new(new FontFamily("DejaVu Sans", fonts), 10);
+
+        #region text
+        using Bitmap bitmap = new(240, 80);
+        using Graphics g = Graphics.FromImage(bitmap);
+        g.Clear(Color.White);
+        g.TextRenderingHint = Egami.SystemDrawing.Text.TextRenderingHint.AntiAlias;
+
+        // From a point: the text starts 1/6 em right of it, the first baseline the font's ascent below it.
+        g.DrawString("Save && E&xit", font, Brushes.Black, 4, 4, new StringFormat { HotkeyPrefix = HotkeyPrefix.Show });
+
+        // In a rectangle: wrapped at words, aligned, the last line that fits trimmed with an ellipsis, clipped to the rectangle.
+        using StringFormat format = new() { Alignment = StringAlignment.Center, Trimming = StringTrimming.EllipsisWord };
+        RectangleF box = new(4, 24, 150, 34);
+        g.DrawString("The quick brown fox jumps over the lazy dog again and again", font, Brushes.Navy, box, format);
+
+        // Measuring: the default format pads 1/6 em on each side; GenericTypographic measures the glyphs alone.
+        SizeF size = g.MeasureString("Save", font);
+        SizeF tight = g.MeasureString("Save", font, PointF.Empty, StringFormat.GenericTypographic);
+        g.MeasureString("The quick brown fox", font, new SizeF(80, 40), format, out int fitted, out int lines);
+
+        // Where characters fall, in whole pixels.
+        format.SetMeasurableCharacterRanges([new CharacterRange(4, 5)]);
+        Region[] quick = g.MeasureCharacterRanges("The quick brown fox", font, box, format);
+        #endregion
+
+        Assert.True(size.Width > tight.Width);
+        Assert.Equal(2, lines);
+        Assert.InRange(fitted, 8, 19);
+        Assert.Single(quick);
+        Assert.Contains(Enumerable.Range(24, 34), y => Enumerable.Range(4, 150).Any(x => bitmap.GetPixel(x, y).B > bitmap.GetPixel(x, y).R + 40));
     }
 
     [Fact]

@@ -1,12 +1,16 @@
 # Builds the egami and egami-video commands as native programs (Native AOT, no .NET runtime needed) for win-x64, linux-x64
 # and osx-arm64, checks that each one runs, and keeps them as the run's artifacts. It publishes nothing: no release, no tag,
-# no NuGet.
+# no NuGet. Pull requests run it only when they change the CLI projects or this file; pushes to main run it for any change
+# under src/, so a trim or AOT warning from a library change shows up there. release.yml builds the binaries that ship.
 name: CLI native builds
 
 on:
   pull_request:
     paths:
-      - 'src/**'
+      - 'src/Egami.Cli/**'
+      - 'src/Egami.Cli.Host/**'
+      - 'src/Egami.Cli.Generators/**'
+      - 'src/Egami.Video.Cli/**'
       - '.github/workflows/cli-native.yml'
   push:
     branches: [main]

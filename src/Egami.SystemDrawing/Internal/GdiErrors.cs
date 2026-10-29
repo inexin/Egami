@@ -28,7 +28,7 @@ internal static class GdiErrors
 /// <summary>The diagnostic ids of the Windows-only members, one per group; suppress or raise them in .editorconfig.</summary>
 internal static class Diagnostics
 {
-    /// <summary>Windows handles: HBITMAP, HICON, HDC, HWND, HRGN, HFONT and LOGFONT.</summary>
+    /// <summary>Windows handles: HBITMAP, HICON, HDC, HWND, HRGN and HFONT.</summary>
     public const string Handles = "EGSD0001";
 
     /// <summary>Screen capture: Graphics.CopyFromScreen.</summary>

@@ -5,9 +5,8 @@ changes that break code come only in a new major version.
 
 ## Egami.SystemDrawing 1.0.0-preview.1, unreleased
 
-A new package: System.Drawing.Common's API on every OS, in managed code (step 2.13, stages A, C, D and F). Bitmaps, pixel
-access, codecs, icons, Graphics, pens, brushes, paths, metafiles, effects and the rest of the API but text; fonts and text follow
-in the next preview.
+A new package: System.Drawing.Common's API on every OS, in managed code (step 2.13, stages A, C to F). Bitmaps, pixel access,
+codecs, icons, Graphics, pens, brushes, paths, fonts and text, metafiles, effects and the rest of the API.
 
 - `Bitmap`, `Image` and `Icon` in the `Egami.SystemDrawing` namespace, and `PixelFormat`, `BitmapData`, `ColorPalette`,
   `ImageFormat`, `ImageCodecInfo`, `Encoder`, `EncoderParameters`, `FrameDimension` and `PropertyItem` in
@@ -29,8 +28,13 @@ in the next preview.
   `Pens` and `SystemPens`. `HatchBrush` (all 53 styles as GDI+ draws them), `TextureBrush`, `LinearGradientBrush` and
   `PathGradientBrush` with GDI+'s brush transforms, blends, sigma bell and triangular shapes and preset colors; `Brushes` and
   `SystemBrushes`.
-- `GraphicsPath` with every builder but `AddString`, GDI+'s point and type arrays, `Flatten`, `Widen`, `Warp`, `Reverse`,
+- `GraphicsPath` with every builder, GDI+'s point and type arrays, `Flatten`, `Widen`, `Warp`, `Reverse`,
   bounds, hit tests and markers; `GraphicsPathIterator`; regions, clips, `DrawPath` and `FillPath` from paths.
+- `FontFamily`, `Font`, `InstalledFontCollection`, `PrivateFontCollection`, `SystemFonts`, `FontConverter` and
+  `Interop.LOGFONT`, with GDI+'s metrics and metric-compatible stand-ins for the Windows core fonts on other systems;
+  `StringFormat` and `CharacterRange`; `DrawString`, `MeasureString`, `MeasureCharacterRanges` and `GraphicsPath.AddString`
+  laid out as GDI+ lays text out (padding, widening, wrapping, trimming, alignment, tabs, hotkeys, vertical text), and
+  `Font.ToEgamiFont`.
 - `Metafile` over Egami.Metafiles: GDI+'s sizes, headers (`MetafileHeader`, `MetaHeader`, `WmfPlaceableFileHeader`) and
   record enumeration (`EnumerateMetafile`, `EmfPlusRecordType`), drawn as vectors by `DrawImage`; the recording constructors
   throw (EGSD0004).
