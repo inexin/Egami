@@ -86,7 +86,7 @@ internal sealed class CoverageRasterizer : IDisposable
             return;
         }
 
-        int bands = BandCount(area, bytesPerPixel, edges);
+        int bands = BandCount(area, bytesPerPixel, antialias ? null : edges);
         if (antialias && GdiPlus)
         {
             _sampled ??= new SampledRasterizer();
@@ -142,7 +142,7 @@ internal sealed class CoverageRasterizer : IDisposable
         return right > left && bottom > top ? new Rect((int)left, (int)top, (int)(right - left), (int)(bottom - top)) : default;
     }
 
-    private int BandCount(Rect area, int bytesPerPixel, EdgeList edges)
+    private int BandCount(Rect area, int bytesPerPixel, EdgeList? edges)
     {
         if (ForcedBands > 0)
         {
@@ -150,7 +150,7 @@ internal sealed class CoverageRasterizer : IDisposable
         }
 
         if (_maxParallelism == 1 || (long)area.Width * area.Height * bytesPerPixel <= ParallelBytes || area.Height < 32
-            || Work(edges) * bytesPerPixel <= ParallelBytes)
+            || (edges is not null && Work(edges) * bytesPerPixel <= ParallelBytes))
         {
             return 1;
         }
@@ -159,9 +159,10 @@ internal sealed class CoverageRasterizer : IDisposable
     }
 
     /// <summary>
-    /// The pixels a fill touches, roughly: the outline's enclosed area (by trapezoids, which the dropped horizontal edges do not
-    /// change) and its length. A thin shape across a large box, such as a
-    /// one-pixel line, is too little work to band, whatever its box; the bands give the same pixels either way.
+    /// The pixels an aliased fill touches, roughly: the outline's enclosed area (by trapezoids, which the dropped horizontal edges
+    /// do not change) and its length. A thin shape across a large box, such as a one-pixel line, is too little work to band,
+    /// whatever its box; the bands give the same pixels either way. Antialiased fills, which do far more per row, band by their
+    /// box alone.
     /// </summary>
     private static double Work(EdgeList edges)
     {
