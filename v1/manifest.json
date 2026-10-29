@@ -4839,7 +4839,7 @@
       "Uid": null,
       "IsMRef": true,
       "Title": "Egami.Fonts.Shaping.FontFallback",
-      "Summary": "<p sourcefile=\"api/Egami.Fonts.Shaping.FontFallback.yml\" sourcestartlinenumber=\"1\">Where characters the font does not map go: the caller's font families first, matched to the font's style, then a resolver.\nWithout fallback (<xref href=\"Egami.Fonts.Shaping.FontFallback.None\" data-throw-if-not-resolved=\"false\"></xref>, the default) shaping depends only on the fonts passed, never on the machine.</p>\n"
+      "Summary": "<p sourcefile=\"api/Egami.Fonts.Shaping.FontFallback.yml\" sourcestartlinenumber=\"1\">Where characters the font does not map go: the caller's font families first, matched to the font's style, then a resolver.\nWithout fallback (<xref href=\"Egami.Fonts.Shaping.FontFallback.None\" data-throw-if-not-resolved=\"false\"></xref>, the default) shaping depends only on the fonts passed, never on the machine. A fallback\nface is drawn with the font's settings (hinting, metrics, embedded bitmaps, edging, emboldening and the rest) but its own default\npalette, as GDI+ font linking draws a linked face, bitmaps included.</p>\n"
     },
     {
       "type": "ManagedReference",

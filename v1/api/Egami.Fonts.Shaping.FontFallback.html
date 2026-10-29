@@ -6,7 +6,7 @@
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <meta name="title" content="Class FontFallback | Egami ">
       
-      <meta name="description" content="Where characters the font does not map go: the caller&#39;s font families first, matched to the font&#39;s style, then a resolver. Without fallback (, the default) shaping depends only on the fonts passed, never on the machine.">
+      <meta name="description" content="Where characters the font does not map go: the caller&#39;s font families first, matched to the font&#39;s style, then a resolver. Without fallback (, the default) shaping depends only on the fonts passed, never on the machine. A fallback face is drawn with the font&#39;s settings (hinting, metrics, embedded bitmaps, edging, emboldening and the rest) but its own default palette, as GDI+ font linking draws a linked face, bitmaps included.">
       <link rel="icon" href="../images/favicon.ico">
       <link rel="stylesheet" href="../public/docfx.min.css">
       <link rel="stylesheet" href="../public/main.css">
@@ -89,7 +89,7 @@
 
 
   <h1 id="Egami_Fonts_Shaping_FontFallback" data-uid="Egami.Fonts.Shaping.FontFallback" class="text-break">
-Class FontFallback  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Shaping/FontFallback.cs/#L15"><i class="bi bi-code-slash"></i></a>
+Class FontFallback  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Shaping/FontFallback.cs/#L17"><i class="bi bi-code-slash"></i></a>
   </h1>
 
   <div class="facts text-secondary">
@@ -98,7 +98,9 @@ Class FontFallback  <a class="header-action link-secondary" title="View source" 
   </div>
 
   <div class="markdown summary"><p>Where characters the font does not map go: the caller's font families first, matched to the font's style, then a resolver.
-Without fallback (<a class="xref" href="Egami.Fonts.Shaping.FontFallback.html#Egami_Fonts_Shaping_FontFallback_None">None</a>, the default) shaping depends only on the fonts passed, never on the machine.</p>
+Without fallback (<a class="xref" href="Egami.Fonts.Shaping.FontFallback.html#Egami_Fonts_Shaping_FontFallback_None">None</a>, the default) shaping depends only on the fonts passed, never on the machine. A fallback
+face is drawn with the font's settings (hinting, metrics, embedded bitmaps, edging, emboldening and the rest) but its own default
+palette, as GDI+ font linking draws a linked face, bitmaps included.</p>
 </div>
   <div class="markdown conceptual"></div>
 
@@ -161,7 +163,7 @@ FontFallback none = FontFallback.None;          // the default: missing characte
 
   <h3 id="Egami_Fonts_Shaping_FontFallback__ctor_System_Collections_Generic_IEnumerable_Egami_Fonts_FontFamily__Egami_Fonts_Shaping_IFontFallbackResolver_" data-uid="Egami.Fonts.Shaping.FontFallback.#ctor(System.Collections.Generic.IEnumerable{Egami.Fonts.FontFamily},Egami.Fonts.Shaping.IFontFallbackResolver)">
   FontFallback(IEnumerable&lt;FontFamily&gt;, IFontFallbackResolver?)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Shaping/FontFallback.cs/#L23"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Shaping/FontFallback.cs/#L25"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Initializes a fallback list.</p>
@@ -207,7 +209,7 @@ FontFallback none = FontFallback.None;          // the default: missing characte
 
   <h3 id="Egami_Fonts_Shaping_FontFallback_Families" data-uid="Egami.Fonts.Shaping.FontFallback.Families">
   Families
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Shaping/FontFallback.cs/#L45"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Shaping/FontFallback.cs/#L47"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the families tried, in order.</p>
@@ -239,7 +241,7 @@ FontFallback none = FontFallback.None;          // the default: missing characte
 
   <h3 id="Egami_Fonts_Shaping_FontFallback_None" data-uid="Egami.Fonts.Shaping.FontFallback.None">
   None
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Shaping/FontFallback.cs/#L36"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Shaping/FontFallback.cs/#L38"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets no fallback: characters the font lacks become its .notdef glyph.</p>
@@ -271,7 +273,7 @@ FontFallback none = FontFallback.None;          // the default: missing characte
 
   <h3 id="Egami_Fonts_Shaping_FontFallback_Resolver" data-uid="Egami.Fonts.Shaping.FontFallback.Resolver">
   Resolver
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Shaping/FontFallback.cs/#L48"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Shaping/FontFallback.cs/#L50"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the resolver tried after the families, or null.</p>
@@ -303,7 +305,7 @@ FontFallback none = FontFallback.None;          // the default: missing characte
 
   <h3 id="Egami_Fonts_Shaping_FontFallback_System" data-uid="Egami.Fonts.Shaping.FontFallback.System">
   System
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Shaping/FontFallback.cs/#L42"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Shaping/FontFallback.cs/#L44"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets fallback to the installed fonts (<a class="xref" href="Egami.Fonts.Shaping.SystemFontFallback.html">SystemFontFallback</a>): fixed per-system, per-script family lists, then any
@@ -336,7 +338,7 @@ installed face that maps the characters. Output then depends on the machine's fo
 </article>
 
         <div class="contribution d-print-none">
-          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Shaping/FontFallback.cs/#L15" class="edit-link">Edit this page</a>
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Shaping/FontFallback.cs/#L17" class="edit-link">Edit this page</a>
         </div>
 
 
