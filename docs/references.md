@@ -97,6 +97,8 @@ LGPL code is never read.
 | FLAC, IETF RFC 9639 | FLAC decoder, encoder and .flac files |
 | Microsoft WAVEFORMATEXTENSIBLE; EBU Tech 3306 (RF64); Sony Wave64 GUIDs | WAV, RF64 and Wave64 |
 | ITU-R BS.775 | Downmix levels |
+| Audio EQ Cookbook (Robert Bristow-Johnson, W3C Audio Working Group note) | `Biquad`, `ParametricEqualizer` and `Butterworth`'s sections |
+| ITU-R BS.1770-5, Annex 2 | True-peak detection in `Limiter` |
 | Ogg, IETF RFC 3533; Ogg Opus, IETF RFC 7845 | Ogg pages, the Opus mapping, OpusHead and OpusTags |
 | Opus, IETF RFC 6716 and RFC 8251 | Opus decoding and its test vectors |
 | Vorbis I specification (Xiph.Org) | The Ogg Vorbis mapping and Vorbis headers |

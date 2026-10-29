@@ -26,7 +26,7 @@ public sealed class LoudnessMeter : IAudioDetector
     /// 10 ms boundary, as a file-based meter must for EBU Tech 3341 cases 10 and 13 (bursts that start between steps).
     /// </summary>
     private const int Parts = 10;
-    private const int PeakTaps = 12;
+    internal const int PeakTaps = 12;
 
     private static readonly double AbsoluteGate = Power(-70);
 
@@ -492,7 +492,7 @@ public sealed class LoudnessMeter : IAudioDetector
     /// The true-peak estimate of BS.1770 Annex 2: the samples upsampled by 4 (2 from 96 kHz) with a polyphase interpolating
     /// low-pass of 12 taps per phase, and the largest magnitude kept.
     /// </summary>
-    private sealed class PeakEstimator(float[][] phases)
+    internal sealed class PeakEstimator(float[][] phases)
     {
         private readonly float[] _history = new float[PeakTaps * 2];
         private int _next;
