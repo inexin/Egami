@@ -73,6 +73,22 @@ public sealed class DecodeTests
     }
 
     [Fact]
+    public void DolbyVisionEntryDecodesItsBaseLayer()
+    {
+        // b.mp4 with its sample entry renamed dvh1, as Dolby Vision profile 8 files may have it: Egami.Video passes the track
+        // through as V_QUICKTIME, and HevcCodec decodes its HEVC base layer from the entry's hvcC.
+        byte[] file = File.ReadAllBytes(PathOf("b.mp4"));
+        int at = file.AsSpan().IndexOf("hvc1"u8);
+        Assert.True(at > 0 && file.AsSpan(at + 1).IndexOf("hvc1"u8) < 0);
+        "dvh1"u8.CopyTo(file.AsSpan(at));
+        using MemoryStream stream = new(file);
+        using IDemuxer demuxer = Mp4Format.Instance.OpenDemuxer(stream, MediaContext.Default, leaveOpen: true);
+        Assert.Equal(CodecIds.QuickTimeVideo, demuxer.Info.VideoTrack!.CodecId);
+        Assert.True(HevcCodec.Instance.CanDecode(demuxer.Info.VideoTrack));
+        Check("b", demuxer, 1);
+    }
+
+    [Fact]
     public void MatroskaMatchesFfmpeg()
     {
         using FileStream stream = File.OpenRead(PathOf("p.mkv"));
@@ -101,6 +117,48 @@ public sealed class DecodeTests
 
             Assert.Equal(frames, count);
         }
+    }
+
+    [Fact]
+    public void SeekingToACraPictureSkipsItsLeadingPictures()
+    {
+        // open-gop has a CRA picture every 8 frames, each with RASL pictures that refer to pictures before it. Decoding from one
+        // drops them, and every frame after is FFmpeg's, in order.
+        using JsonDocument json = JsonDocument.Parse(File.ReadAllText(PathOf("open-gop.frames.json")));
+        string[] expected = [.. json.RootElement.GetProperty("md5").EnumerateArray().Select(e => e.GetString()!)];
+        using FileStream stream = File.OpenRead(PathOf("open-gop.h265"));
+        using IDemuxer demuxer = HevcFormat.Instance.OpenDemuxer(stream, MediaContext.Default, leaveOpen: true);
+        VideoTrackInfo track = demuxer.Info.VideoTrack!;
+        using IVideoDecoder decoder = HevcCodec.Instance.CreateDecoder(track, null, MediaContext.Default.WithHevc());
+        demuxer.Seek(new MediaTime(10, track.TimeBase));
+        EncodedPacket first = demuxer.ReadPacket()!;
+        Assert.True(first.IsKeyframe);
+        int start = (int)first.Timestamp.Ticks;
+        Assert.True(start is > 0 and <= 10);
+        List<string> actual = [];
+        List<MediaTime> times = [];
+        using (first)
+        {
+            decoder.Send(first);
+        }
+
+        Receive(decoder, actual, times);
+        while (demuxer.ReadPacket() is { } packet)
+        {
+            using (packet)
+            {
+                decoder.Send(packet);
+            }
+
+            Receive(decoder, actual, times);
+        }
+
+        decoder.Flush();
+        Receive(decoder, actual, times);
+        int at = Array.IndexOf(expected, actual[0]);
+        Assert.True(at >= start, "The first frame after the seek is not one of the frames from the CRA picture on.");
+        Assert.Equal(expected[at..], actual);
+        Assert.True(actual.Count < expected.Length - start, "The RASL pictures of the CRA picture were output.");
     }
 
     [Fact]

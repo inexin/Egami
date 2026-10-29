@@ -44,10 +44,15 @@ public sealed class HevcCodec : VideoCodec
     public override string CodecId => CodecIds.Hevc;
 
     /// <inheritdoc/>
+    /// <remarks>
+    /// Also decodes the Dolby Vision MP4 tracks Egami.Video passes through as <see cref="CodecIds.QuickTimeVideo"/>, whose dvh1 or
+    /// dvhe sample entry holds an hvcC record: their HEVC base layer.
+    /// </remarks>
     public override bool CanDecode(TrackInfo track)
     {
         ArgumentNullException.ThrowIfNull(track);
-        return string.Equals(track.CodecId, CodecIds.Hevc, StringComparison.Ordinal);
+        return string.Equals(track.CodecId, CodecIds.Hevc, StringComparison.Ordinal)
+            || (string.Equals(track.CodecId, CodecIds.QuickTimeVideo, StringComparison.Ordinal) && !DolbyVisionConfiguration(track.CodecPrivate).IsEmpty);
     }
 
     /// <inheritdoc/>
@@ -65,5 +70,36 @@ public sealed class HevcCodec : VideoCodec
         }
 
         return new HevcVideoDecoder(track, options, context);
+    }
+
+    /// <summary>
+    /// The hvcC record of a Dolby Vision sample entry (dvh1 or dvhe, ETSI TS 103 572), the whole stsd entry with its size and type
+    /// first, or empty for any other entry. Its child boxes follow the 78 bytes of a visual sample entry's fields.
+    /// </summary>
+    internal static ReadOnlyMemory<byte> DolbyVisionConfiguration(ReadOnlyMemory<byte> entry)
+    {
+        ReadOnlySpan<byte> box = entry.Span;
+        if (box.Length < 86 || !(box[4..8].SequenceEqual("dvh1"u8) || box[4..8].SequenceEqual("dvhe"u8)))
+        {
+            return ReadOnlyMemory<byte>.Empty;
+        }
+
+        for (int at = 86; at + 8 <= box.Length;)
+        {
+            int size = (int)Math.Min(System.Buffers.Binary.BinaryPrimitives.ReadUInt32BigEndian(box[at..]), int.MaxValue);
+            if (size < 8 || size > box.Length - at)
+            {
+                break;
+            }
+
+            if (box.Slice(at + 4, 4).SequenceEqual("hvcC"u8))
+            {
+                return entry.Slice(at + 8, size - 8);
+            }
+
+            at += size;
+        }
+
+        return ReadOnlyMemory<byte>.Empty;
     }
 }

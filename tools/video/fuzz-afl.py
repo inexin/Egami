@@ -17,7 +17,7 @@ import sys
 SEEDS = {"avi": "tests/video/fuzz-seeds/avi/*", "mkv": "tests/video/fuzz-seeds/mkv/*", "y4m": "tests/video/fuzz-seeds/y4m/*", "mjpeg": "tests/video/fuzz-seeds/mjpeg/*",
          "ivf": "tests/video/fuzz-seeds/ivf/*", "webm": "tests/video/fuzz-seeds/webm/*", "vp8": "tests/video/fuzz-seeds/vp8/*",
          "vp9": "tests/video/fuzz-seeds/vp9/*", "vp9raw": "tests/video/fuzz-seeds/vp9raw/*",
-         "h264": "tests/video/fuzz-seeds/h264/*",
+         "h264": "tests/video/fuzz-seeds/h264/*", "hevc": "tests/video/fuzz-seeds/hevc/*",
          "av1": "tests/video/fuzz-seeds/av1/*", "av1raw": "tests/video/fuzz-seeds/av1raw/*", "obu": "tests/video/fuzz-seeds/obu/*",
          "mp4": "tests/video/fuzz-seeds/mp4/*", "mp4mux": "tests/video/fuzz-seeds/mp4/*",
          "wav": "tests/video/fuzz-seeds/wav/*", "flac": "tests/video/fuzz-seeds/flac/*",
@@ -31,7 +31,7 @@ SEEDS = {"avi": "tests/video/fuzz-seeds/avi/*", "mkv": "tests/video/fuzz-seeds/m
          "ffv1": "tests/video/fuzz-seeds/ffv1/*", "ffv1raw": "tests/video/fuzz-seeds/ffv1raw/*", "ffv1enc": "tests/video/fuzz-seeds/ffv1enc/*", "afilters": "tests/video/fuzz-seeds/afilters/*"}
 
 # The VP8 decoder itself is in Egami; its own fuzzing (Egami 2.3.5) covers it, and the vp8 target instruments it too.
-INSTRUMENT = {"h264": "sharpfuzz /out/Egami.Video.H264.dll", "vp8": "sharpfuzz /out/Egami.dll", "av1": "sharpfuzz /out/Egami.dll",
+INSTRUMENT = {"h264": "sharpfuzz /out/Egami.Video.H264.dll", "hevc": "sharpfuzz /out/Egami.Video.Hevc.dll\nsharpfuzz /out/Egami.Heic.dll", "vp8": "sharpfuzz /out/Egami.dll", "av1": "sharpfuzz /out/Egami.dll",
               "av1raw": "sharpfuzz /out/Egami.dll", "av1enc": "sharpfuzz /out/Egami.dll",
               "trim": "sharpfuzz /out/Egami.dll"}
 

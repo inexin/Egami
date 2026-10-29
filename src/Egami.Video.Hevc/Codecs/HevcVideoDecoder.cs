@@ -26,6 +26,12 @@ internal sealed class HevcVideoDecoder : IVideoDecoder
     private DiagnosticReporter? _diagnostics;
     private HdrMetadata? _hdr;
     private bool _waitingForIrap;
+
+    // As the decoder tracks them (8.1.3): whether no picture was decoded since the start or a reset, whether an end of sequence
+    // came, and whether the RASL pictures of the last IRAP picture are skipped, which then give no frame and take no timestamp.
+    private bool _first = true;
+    private bool _afterEndOfSequence;
+    private bool _skipRasl;
     private int _packet = -1;
     private bool _disposed;
 
@@ -36,12 +42,15 @@ internal sealed class HevcVideoDecoder : IVideoDecoder
         _errors = options.Errors;
         _decoder = new HevcStreamDecoder(new HevcDecoderOptions { ConcealErrors = _errors == DecodeErrorMode.Conceal }, _egami);
         _hdr = track.Hdr;
-        if (!track.CodecPrivate.IsEmpty)
+        ReadOnlyMemory<byte> config = string.Equals(track.CodecId, CodecIds.QuickTimeVideo, StringComparison.Ordinal)
+            ? HevcCodec.DolbyVisionConfiguration(track.CodecPrivate)
+            : track.CodecPrivate;
+        if (!config.IsEmpty)
         {
             try
             {
-                _decoder.SetConfiguration(track.CodecPrivate.Span);
-                _lengthSize = (track.CodecPrivate.Span[21] & 3) + 1;
+                _decoder.SetConfiguration(config.Span);
+                _lengthSize = (config.Span[21] & 3) + 1;
             }
             catch (CorruptDataException e)
             {
@@ -93,6 +102,7 @@ internal sealed class HevcVideoDecoder : IVideoDecoder
             TakeOutput();
             _decoder.Reset();
             _times.Clear();
+            _first = true;
             _waitingForIrap = true;
             return;
         }
@@ -133,6 +143,8 @@ internal sealed class HevcVideoDecoder : IVideoDecoder
         _decoder.Reset();
         _times.Clear();
         _waitingForIrap = false;
+        _first = true;
+        _afterEndOfSequence = false;
     }
 
     public void Dispose()
@@ -163,8 +175,9 @@ internal sealed class HevcVideoDecoder : IVideoDecoder
     }
 
     /// <summary>
-    /// What an access unit holds: how many pictures start in it (VCL units of the base layer with first_slice_segment_in_pic_flag),
-    /// whether one is an IRAP picture, and the HDR10+ metadata and mastering display and content light level of its prefix SEI.
+    /// What an access unit holds: how many pictures start in it that the decoder outputs (VCL units of the base layer with
+    /// first_slice_segment_in_pic_flag, but not RASL pictures it skips), whether one is an IRAP picture, and the HDR10+ metadata
+    /// and mastering display and content light level of its prefix SEI.
     /// </summary>
     private (int Pictures, bool Irap, Hdr10PlusMetadata? Hdr10Plus) Scan(List<ReadOnlyMemory<byte>> units)
     {
@@ -187,12 +200,27 @@ internal sealed class HevcVideoDecoder : IVideoDecoder
 
             if (type < 32 && (unit[2] & 0x80) != 0)
             {
+                if (type is >= 16 and <= 23)
+                {
+                    // BLA and IDR pictures, and a CRA picture first in the stream or after an end of sequence, skip their RASL pictures.
+                    _skipRasl = _first || _afterEndOfSequence || type <= 20;
+                    _first = _afterEndOfSequence = false;
+                    irap = true;
+                }
+                else if (_skipRasl && type is 8 or 9)
+                {
+                    continue;
+                }
+
                 pictures++;
-                irap |= type is >= 16 and <= 23;
+            }
+            else if (type == 36)
+            {
+                _afterEndOfSequence = true;
             }
             else if (type == 39)
             {
-                HevcSeiMessages sei = HevcSeiMessages.Read(NalFraming.Unescape(unit));
+                HevcSeiMessages sei = HevcSeiMessages.Read(NalFraming.Unescape(unit), _hdr);
                 hdr10Plus ??= sei.Hdr10Plus;
                 if (sei.Hdr is { } hdr)
                 {

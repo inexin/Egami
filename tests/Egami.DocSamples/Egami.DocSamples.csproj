@@ -81,6 +81,9 @@
     <None Include="../video/corpus/h264/cabac-b-spatial.mp4" Link="images/h264.mp4" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../video/corpus/h264/high-crop.h264" Link="images/camera.h264" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../video/corpus/h264/mbaff-pic-struct.h264" Link="images/interlaced.h264" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../video/corpus/hevc/b.mp4" Link="images/hevc.mp4" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../video/corpus/hevc/hdr10.h265" Link="images/hdr10.h265" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../video/corpus/hevc/crop.h265" Link="images/camera.h265" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../video/corpus/vp9/p0-altref.webm" Link="images/movie.webm" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../video/corpus/vp8/v0-keyframes.webm" Link="images/show.webm" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../video/corpus/vp9/alpha-ramp.webm" Link="images/alpha.webm" CopyToOutputDirectory="PreserveNewest" />
@@ -112,6 +115,7 @@
     <ProjectReference Include="..\..\src\Egami.Heic\Egami.Heic.csproj" />
     <ProjectReference Include="..\..\src\Egami.Video\Egami.Video.csproj" />
     <ProjectReference Include="..\..\src\Egami.Video.H264\Egami.Video.H264.csproj" />
+    <ProjectReference Include="..\..\src\Egami.Video.Hevc\Egami.Video.Hevc.csproj" />
     <ProjectReference Include="..\..\samples\Animation\Animation.csproj" />
     <ProjectReference Include="..\..\samples\Color\Color.csproj" />
     <ProjectReference Include="..\..\samples\Compositing\Compositing.csproj" />

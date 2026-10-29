@@ -176,6 +176,8 @@
       href: guides/lossless-archiving.md
     - name: H.264
       href: guides/h264.md
+    - name: HEVC
+      href: guides/hevc.md
     - name: Audio
       href: guides/audio.md
     - name: Audio filters

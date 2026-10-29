@@ -16,10 +16,13 @@ internal sealed class HevcSeiMessages
     /// <summary>Gets the HDR10+ metadata of the first ITU-T T.35 message that holds it, or null.</summary>
     internal Hdr10PlusMetadata? Hdr10Plus { get; private set; }
 
-    /// <summary>Reads a prefix SEI NAL unit, its two-byte header included. A broken message ends the walk quietly.</summary>
-    internal static HevcSeiMessages Read(byte[] unit)
+    /// <summary>
+    /// Reads a prefix SEI NAL unit, its two-byte header included, over the HDR metadata the stream gave before: encoders write the
+    /// mastering display and the content light level in separate units. A broken message ends the walk quietly.
+    /// </summary>
+    internal static HevcSeiMessages Read(byte[] unit, HdrMetadata? hdr)
     {
-        HevcSeiMessages sei = new();
+        HevcSeiMessages sei = new() { Hdr = hdr };
         try
         {
             NalSei.Read(new NalBitReader(unit, 2), sei, static (r, type, size, s) => s.ReadPayload(r, type, size));
