@@ -3,7 +3,142 @@
 All notable changes to Egami are listed here. Egami follows [Semantic Versioning](https://semver.org): from 1.0, public API
 changes that break code come only in a new major version.
 
-## Egami.SystemDrawing 1.0.0-preview.1, unreleased
+## Egami 1.3.0 (2026-10-29)
+
+The release train: Egami, Egami.Drawing, Egami.Fonts, Egami.Svg, Egami.Css, Egami.Heic, Egami.Formats.Extended and Egami.Cli
+move to 1.3.0 together, and Egami.Formats.Extended releases for the first time. It adds API and removes none.
+
+### Format plugin helpers
+
+Helpers a format plugin needs, made public for Egami.Formats.Extended. All additive.
+
+- `EgamiInput.CheckFrameSize`, for a row reader that rents its buffers before any raster exists.
+- `EgamiInput.Warn(RasterMetadata, ...)`, for warnings from an open `RowReader`.
+- `SaveKeeps` and `EncodeStart<TPixel>.ReportLosses`, so a plugin's writer reports what a save loses as Egami's own writers do.
+
+### Packed 5-5-5 pixels
+
+Packed 5-5-5 pixel types (step 2.13 task 2), for 16-bit BMP and TGA and the GDI+ 16-bit bitmaps of Egami.SystemDrawing. All
+additive.
+
+- `Bgr555` and `Bgra5551`: blue in bits 0 to 4, green in 5 to 9, red in 10 to 14, and in `Bgra5551` a 1-bit alpha in bit 15.
+  Every value survives a round trip through `Rgba8` (with the unused top bit clear for `Bgr555`), and converting to and from
+  `Rgba8` and `Bgra8` runs eight or sixteen pixels at a time.
+- `BmpPixelFormat.Bgr555`, `Bgr565` and `Bgra5551` write 16-bit BMP, and 16-bit files with matching bit fields load straight
+  into `Bgr555`, `Bgr565` and `Bgra5551`.
+- `TgaPixelFormat.Bgr555` and `Bgra5551` write 16-bit TGA, raw or RLE, and 15 and 16-bit files load straight into the two
+  types.
+
+### GDI+ image scaling
+
+GDI+'s image scaling (2.7.6 stage 4), recovered from DrawImage's impulse responses on Windows in egami-compare. All additive.
+
+- New `ResampleFilter` members named after GDI+'s interpolation modes, for Resize, Rotate and an `ImagePaint`'s sampling:
+  - `GdiPlusBilinear` (Default, Low, Bilinear) is the two-pixel tent at every scale.
+  - `GdiPlusBicubic` (Bicubic) is Keys cubic with a = −0.5 at every scale. Neither averages when shrinking, as GDI+'s don't.
+  - `GdiPlusHighQualityBilinear` is the tent, widened by the reduction, convolved with a one-pixel box.
+  - `GdiPlusHighQualityBicubic` (High, HighQualityBicubic) is the same with Keys cubic, a = −1.
+- With `CanvasOptions.PixelOffset.None`, `DrawImage` uses GDI+'s default grid, with source pixel centres on destination pixel
+  centres: an image scaled by s moves (1 − s) / 2 pixels, and one drawn 1:1 does not move.
+- Against DrawImage at PixelOffsetMode Default and Half, up and down, the mean difference over those modes drops from 2.53 levels
+  (Egami's closest filter before) to 0.37. Bilinear and HighQualityBilinear are within 0.2 levels.
+
+### OCR
+
+- `CommandOcrEngine` hands the program a gray PNG when the image is gray and opaque, and an RGB PNG when it is opaque, instead
+  of RGBA. Tesseract reads a scanned page about a quarter faster that way: 100 scanned pages at 4 at a time took 35 s instead
+  of 45 to 56 s, with the same words.
+
+## Egami.Drawing and Egami.Fonts 1.3.0 (2026-10-29)
+
+Closer GDI and GDI+ text (2.7.5), measured against GDI and GDI+ on Windows. Every setting is opt-in: the defaults draw what
+1.2.0 drew.
+
+- `CanvasOptions.TextGamma` (0.5 to 3, default 1) blends text coverage per channel through a power law, as GDI ClearType
+  does, and `CanvasOptions.TextContrast` (0 to 1, default 0) boosts thin coverage as Skia and DirectWrite do.
+- LCD text looks: `CanvasOptions.LcdFilter` with the `LcdFilter` presets `Default`, `Balanced`, `Light` and `Gdi` (the filter
+  measured from GDI and GDI+) or `LcdFilter.Custom`, `CanvasOptions.LcdSampling` and `CanvasOptions.ClearTypeLevel`, which
+  mixes the LCD mask with grayscale coverage as Windows' ClearType level does.
+- `Font.Embolden` grows outlines by a set amount, and `Font.StemDarkening` darkens small text along FreeType's default CFF
+  curve. Both add to synthetic bold and leave advances alone; Egami.Svg honours `Embolden`.
+- TrueType hinting: `FontHinting.Full` runs the font's own instructions in Egami's interpreter, in ClearType compatibility
+  mode, for the rasterizer `Font.HintingTarget` names (`TrueTypeTarget.GdiPlus`, `Gdi` or `FreeType`). Faces it cannot hint
+  fall back to `FontHinting.Light`.
+- `Font.Metrics` chooses where advances come from: `FontMetrics.Design` (the default), `GridFitted` (hinted advances, as
+  `Graphics.DrawString` draws with the default `StringFormat`) or `Compatible` (GDI's compatible widths). Measuring and
+  drawing follow the same advances.
+- `FontHinting.Light` also nudges the scale so the x-height lands on a whole pixel and puts horizontal stems on whole pixels,
+  with their height kept.
+- `Font.WithGdiPlusLook()` and `CanvasOptions.GdiPlusClearType` together draw text as `Graphics.DrawString` does with
+  ClearTypeGridFit. The Matching System.Drawing text guide explains each setting.
+
+Closer GDI+ gradients (2.7.6 stage 3), measured on Windows in egami-compare and opt-in like the rest.
+
+- `InterpolationSpace.GdiPlusGamma` and `GradientInterpolation.GdiPlusGamma` mix as `LinearGradientBrush.GammaCorrection` does.
+  Each pair of stops is cut into 16 parts, the 17 colors where they meet are mixed in gamma-2.2 light and rounded to 8 bits,
+  and the gradient runs straight through them. On the stage 0 gamma probes the mean difference from GDI+ drops from 0.83 to
+  1.04 levels (Egami's closest, `LinearSrgb`) to 0.08 to 0.16.
+
+Closer GDI+ text (2.7.6 stage 1), measured against GDI+ on Windows in egami-compare. Egami's default output does not change.
+
+- `LcdSampling.Gdi` samples as GDI+ does: six on-or-off samples per pixel across the stripes, so each channel is a whole
+  number of sixths. With a `TextGamma`, that text blends through GDI+'s 8-bit gamma tables, which reproduce GDI+'s drawn value
+  for every coverage on every gray background measured. `CanvasOptions.GdiPlusClearType` gets both.
+- The GDI+ hinting target rounds an advance its instructions leave alone up from about 0.458 of a pixel, as GDI+ does.
+- `FontMetrics.GridFitted` keeps hinted advances for every run, as `DrawString` does with the default `StringFormat`. The new
+  `FontMetrics.GridFittedToDesign` has the 2.1-pixel line rule for `GenericTypographic` lines, with design advances rounded
+  up to sixteenths of a pixel.
+- Lars's button test against GDI+: a mean difference of 0.67 levels on black and 0.38 on #0078d4, down from 1.92 and 1.06.
+  95.8% of glyph sizes in the six-font advance test match GDI+'s drawn widths, up from 90.6%.
+- `Font.EmbeddedBitmaps` (2.7.6 task 22) draws a face's EBLC and EBDT strikes as Windows does: at exactly a strike's size, the
+  glyphs it holds are drawn from their black-and-white or gray bitmaps (bit depth 1, 2, 4 or 8; image formats 1, 2, 5, 6 and
+  7), and grid-fitted layout takes the strike's advances. Off by default; `Font.WithGdiPlusLook()` turns it on. Calibri's
+  printable ASCII glyphs at its six strike sizes (12, 13, 15, 16, 17 and 19 pixels) now equal GDI+'s pixel for pixel.
+
+Closer GDI+ shapes (2.7.6 stage 2), measured the same way. These are opt-in too.
+
+- `CanvasOptions.PixelOffset`: `Half` is Egami's grid. `None`, GDI+'s default, puts whole coordinates on pixel centres, so paths,
+  their paints, clips and unhinted text move half a pixel, and hinted text stays put, as in GDI+. Images go onto GDI+'s grid,
+  source pixel centres on destination pixel centres (2.7.6 stage 4).
+- `CanvasOptions.Antialiasing`: `Exact` is Egami's coverage. `GdiPlus` samples as GDI+'s `SmoothingMode.AntiAlias` does,
+  with 8 by 4 point samples a pixel and a top-left fill rule. It also draws pens of 1.5 device pixels or less as GDI+'s thin
+  lines, one pixel thick with pointed ends. Each row is computed on its own, so the result is the same at any core count.
+- `CanvasOptions.GdiPlusClearType` sets `PixelOffset.None` and `Antialiasing.GdiPlus` too.
+- Against GDI+ at its defaults (AntiAlias, PixelOffsetMode.None), the stage 0 shape probes' mean difference drops from 1.94
+  levels (Egami's closest settings before) to 0.12: rects 1.60 to 0.00, polygons 2.17 to 0.01, ovals 0.85 to 0.32, lines 3.15
+  to 0.16.
+
+## Egami.Formats.Extended 1.3.0 (2026-10-29)
+
+A new package of format plugins (Build Plan tasks 1 to 12). It depends on core Egami only and rides the Egami release train.
+
+- PCX, SGI, Sun raster, XBM, XPM, WBMP and Farbfeld, each read and written, registered with `WithExtendedFormats()` or one
+  `With<Format>()` each (`WithPcx`, `WithSgi`, `WithSunRaster`, `WithXbm`, `WithXpm`, `WithWbmp`, `WithFarbfeld`).
+- Every format probes, streams through `RasterDecoder`, saves through `RasterEncoder` and `Transcode`, keeps the safety limits,
+  and in a lenient read of a damaged file keeps what decoded with a warning such as `Pcx.RowsMissing`.
+- `PcxDetails`, `SgiDetails`, `SunRasterDetails`, `XbmDetails` and `XpmDetails` keep what the headers say; `SgiWriterOptions.Rle`
+  and `SunRasterWriterOptions.Rle` choose run-length coding.
+- Egami reads every file ImageMagick 7.1.2 writes in these formats to ImageMagick's pixels, and ImageMagick reads every file
+  Egami writes to Egami's; ImageMagick's 1-bit PCX loads inverted, since it sets the bits of black pixels against its own
+  palette. Loading and saving the 12-megapixel files is faster than ImageMagick in every case, at 1 thread and on all cores.
+- The format's name for Sun raster is `Sun raster` (it was `SUN`), so it matches `SunRasterWriterOptions`.
+- A page per format in the docs, a Package column in the formats overview, and the `EGAMIX` diagnostic ids for formats in
+  preview (none yet). The package has its own icon and lockups.
+
+## Egami.Cli 1.3.0 (2026-10-29)
+
+- `egami ocr`: the text of images through an OCR program you name with `--engine-command`, such as Tesseract, as plain
+  text, hOCR or ALTO (`--as`, or `-o`'s extension), with `--lang`, `--dpi` (the image's own by default) and
+  `--engine-timeout`. `egami mcp` does not offer it, since it runs the program a call names.
+- `egami` reads and writes Egami.Formats.Extended's formats, with `--set sgi.rle=` and `--set sunraster.rle=` for their
+  writer options. `--preview-formats` adds the formats in preview; there are none yet.
+
+## Egami.Svg, Egami.Css and Egami.Heic 1.3.0 (2026-10-29)
+
+- No changes of their own beyond Egami 1.3.0: they move to 1.3.0 with the release train. Egami.Svg honours `Font.Embolden`,
+  and Egami.Heic depends on exactly Egami 1.3.0.
+
+## Egami.SystemDrawing 1.0.0-preview.1 (2026-10-29)
 
 A new package: System.Drawing.Common's API on every OS, in managed code (step 2.13, stages A, C to F). Bitmaps, pixel access,
 codecs, icons, Graphics, pens, brushes, paths, fonts and text, metafiles, effects and the rest of the API.
@@ -44,114 +179,45 @@ codecs, icons, Graphics, pens, brushes, paths, fonts and text, metafiles, effect
 - Members that need Windows handles throw PlatformNotSupportedException and warn at compile time (EGSD0001 to EGSD0004).
 - With implicit usings on, the package adds `System.Drawing` and `Egami.SystemDrawing` as implicit usings.
 
-## Egami.Drawing and Egami.Fonts, unreleased
+## Egami.Barcodes 1.0.1 (2026-10-29)
 
-Closer GDI+ gradients (2.7.6 stage 3), measured on Windows in egami-compare and opt-in like the rest.
+### Package icon
 
-- `InterpolationSpace.GdiPlusGamma` and `GradientInterpolation.GdiPlusGamma` mix as `LinearGradientBrush.GammaCorrection` does.
-  Each pair of stops is cut into 16 parts, the 17 colors where they meet are mixed in gamma-2.2 light and rounded to 8 bits,
-  and the gradient runs straight through them. On the stage 0 gamma probes the mean difference from GDI+ drops from 0.83 to
-  1.04 levels (Egami's closest, `LinearSrgb`) to 0.08 to 0.16.
+- The package has its own icon on NuGet: a graphite tile with barcode bars, in `branding/` with the other package icons.
 
-Closer GDI+ text (2.7.6 stage 1), measured against GDI+ on Windows in egami-compare. Egami's default output does not change.
+### Faster reading
 
-- `LcdSampling.Gdi` samples as GDI+ does: six on-or-off samples per pixel across the stripes, so each channel is a whole
-  number of sixths. With a `TextGamma`, that text blends through GDI+'s 8-bit gamma tables, which reproduce GDI+'s drawn value
-  for every coverage on every gray background measured. `CanvasOptions.GdiPlusClearType` gets both.
-- The GDI+ hinting target rounds an advance its instructions leave alone up from about 0.458 of a pixel, as GDI+ does.
-- `FontMetrics.GridFitted` keeps hinted advances for every run, as `DrawString` does with the default `StringFormat`. The new
-  `FontMetrics.GridFittedToDesign` has the 2.1-pixel line rule for `GenericTypographic` lines, with design advances rounded
-  up to sixteenths of a pixel.
-- Lars's button test against GDI+: a mean difference of 0.67 levels on black and 0.38 on #0078d4, down from 1.92 and 1.06.
-  95.8% of glyph sizes in the six-font advance test match GDI+'s drawn widths, up from 90.6%.
-- `Font.EmbeddedBitmaps` (2.7.6 task 22) draws a face's EBLC and EBDT strikes as Windows does: at exactly a strike's size, the
-  glyphs it holds are drawn from their black-and-white or gray bitmaps (bit depth 1, 2, 4 or 8; image formats 1, 2, 5, 6 and
-  7), and grid-fitted layout takes the strike's advances. Off by default; `Font.WithGdiPlusLook()` turns it on. Calibri's
-  printable ASCII glyphs at its six strike sizes (12, 13, 15, 16, 17 and 19 pixels) now equal GDI+'s pixel for pixel.
+- Reading takes about 0.9 times zxing-cpp 3.1.1's time on one thread over the 817 ZXing test images, each read for its own symbology (3.1 times before), with
+  the same symbols read or more. Linear barcodes, PDF417 and QR codes are within 1.5 times zxing-cpp's time; Aztec and Data
+  Matrix within about 1.8 times.
+- The inverted pass reuses the first pass's thresholds with dark and light swapped, the linear scan reads light-on-dark bars
+  from the same scan lines, and inside a symbol the first pass found the inverted pass looks for no other.
+- The thresholds, run cutting and Reed-Solomon decoding work on several pixels or values at a time; QR, Data Matrix and
+  Aztec check a grid's fixed patterns (timing patterns, the L and clock tracks, the mode message) before sampling and
+  decoding it.
+- PDF417 rows are read every three quarters of a module instead of every pixel.
 
-Closer GDI+ shapes (2.7.6 stage 2), measured the same way. These are opt-in too.
+### Reading
 
-- `CanvasOptions.PixelOffset`: `Half` is Egami's grid. `None`, GDI+'s default, puts whole coordinates on pixel centres, so paths,
-  their paints, clips and unhinted text move half a pixel, and hinted text stays put, as in GDI+. Images go onto GDI+'s grid,
-  source pixel centres on destination pixel centres (2.7.6 stage 4).
-- `CanvasOptions.Antialiasing`: `Exact` is Egami's coverage. `GdiPlus` samples as GDI+'s `SmoothingMode.AntiAlias` does,
-  with 8 by 4 point samples a pixel and a top-left fill rule. It also draws pens of 1.5 device pixels or less as GDI+'s thin
-  lines, one pixel thick with pointed ends. Each row is computed on its own, so the result is the same at any core count.
-- `CanvasOptions.GdiPlusClearType` sets `PixelOffset.None` and `Antialiasing.GdiPlus` too.
-- Against GDI+ at its defaults (AntiAlias, PixelOffsetMode.None), the stage 0 shape probes' mean difference drops from 1.94
-  levels (Egami's closest settings before) to 0.12: rects 1.60 to 0.00, polygons 2.17 to 0.01, ovals 0.85 to 0.32, lines 3.15
-  to 0.16.
+- From effort 5 the linear scan also reads rows through the local threshold, which keeps bars under glare apart (from effort 6
+  before), and scans 29 lines instead of 25, including effort 0 to 2's lines. EAN-13 photos with glare read 16 of 22 ZXing
+  test images (11 before).
+- QR looks for finder patterns again with more slack when it finds fewer than three, and tries every alignment pattern
+  near the expected place, nearest first, then the nearest one nudged by quarter modules, so
+  strongly tilted and curled symbols read (ZXing qrcode-3 39 of 42, 37 before; qrcode-4 38 of 48, 35 before).
+- PDF417 cut off before its start pattern reads from the stop pattern, using the right row indicators (ZXing pdf417-3 19 of
+  19, 16 before).
 
-## Egami.Formats.Extended, unreleased
+### Faster writing
 
-A new package of format plugins (Build Plan tasks 1 to 12). It depends on core Egami only and rides the Egami release train.
-
-- PCX, SGI, Sun raster, XBM, XPM, WBMP and Farbfeld, each read and written, registered with `WithExtendedFormats()` or one
-  `With<Format>()` each (`WithPcx`, `WithSgi`, `WithSunRaster`, `WithXbm`, `WithXpm`, `WithWbmp`, `WithFarbfeld`).
-- Every format probes, streams through `RasterDecoder`, saves through `RasterEncoder` and `Transcode`, keeps the safety limits,
-  and in a lenient read of a damaged file keeps what decoded with a warning such as `Pcx.RowsMissing`.
-- `PcxDetails`, `SgiDetails`, `SunRasterDetails`, `XbmDetails` and `XpmDetails` keep what the headers say; `SgiWriterOptions.Rle`
-  and `SunRasterWriterOptions.Rle` choose run-length coding.
-- Egami reads every file ImageMagick 7.1.2 writes in these formats to ImageMagick's pixels, and ImageMagick reads every file
-  Egami writes to Egami's; ImageMagick's 1-bit PCX loads inverted, since it sets the bits of black pixels against its own
-  palette. Loading and saving the 12-megapixel files is faster than ImageMagick in every case, at 1 thread and on all cores.
-- The format's name for Sun raster is `Sun raster` (it was `SUN`), so it matches `SunRasterWriterOptions`.
-- A page per format in the docs, a Package column in the formats overview, and the `EGAMIX` diagnostic ids for formats in
-  preview (none yet). The package has its own icon and lockups.
-
-## Egami.Cli and Egami.Video.Cli, unreleased
-
-- `egami` (and `egami-video run`) read and write Egami.Formats.Extended's formats, with `--set sgi.rle=` and
-  `--set sunraster.rle=` for their writer options. `--preview-formats` adds the formats in preview; there are none yet.
-
-## Egami and Egami.Drawing, unreleased
-
-GDI+'s image scaling (2.7.6 stage 4), recovered from DrawImage's impulse responses on Windows in egami-compare. All additive.
-
-- New `ResampleFilter` members named after GDI+'s interpolation modes, for Resize, Rotate and an `ImagePaint`'s sampling:
-  - `GdiPlusBilinear` (Default, Low, Bilinear) is the two-pixel tent at every scale.
-  - `GdiPlusBicubic` (Bicubic) is Keys cubic with a = −0.5 at every scale. Neither averages when shrinking, as GDI+'s don't.
-  - `GdiPlusHighQualityBilinear` is the tent, widened by the reduction, convolved with a one-pixel box.
-  - `GdiPlusHighQualityBicubic` (High, HighQualityBicubic) is the same with Keys cubic, a = −1.
-- With `CanvasOptions.PixelOffset.None`, `DrawImage` uses GDI+'s default grid, with source pixel centres on destination pixel
-  centres: an image scaled by s moves (1 − s) / 2 pixels, and one drawn 1:1 does not move.
-- Against DrawImage at PixelOffsetMode Default and Half, up and down, the mean difference over those modes drops from 2.53 levels
-  (Egami's closest filter before) to 0.37. Bilinear and HighQualityBilinear are within 0.2 levels.
-
-## Egami, unreleased
-
-Packed 5-5-5 pixel types (step 2.13 task 2), for 16-bit BMP and TGA and the GDI+ 16-bit bitmaps of Egami.SystemDrawing. All
-additive.
-
-- `Bgr555` and `Bgra5551`: blue in bits 0 to 4, green in 5 to 9, red in 10 to 14, and in `Bgra5551` a 1-bit alpha in bit 15.
-  Every value survives a round trip through `Rgba8` (with the unused top bit clear for `Bgr555`), and converting to and from
-  `Rgba8` and `Bgra8` runs eight or sixteen pixels at a time.
-- `BmpPixelFormat.Bgr555`, `Bgr565` and `Bgra5551` write 16-bit BMP, and 16-bit files with matching bit fields load straight
-  into `Bgr555`, `Bgr565` and `Bgra5551`.
-- `TgaPixelFormat.Bgr555` and `Bgra5551` write 16-bit TGA, raw or RLE, and 15 and 16-bit files load straight into the two
-  types.
-
-## Egami, unreleased
-
-Helpers a format plugin needs, made public for Egami.Formats.Extended. All additive.
-
-- `EgamiInput.CheckFrameSize`, for a row reader that rents its buffers before any raster exists.
-- `EgamiInput.Warn(RasterMetadata, ...)`, for warnings from an open `RowReader`.
-- `SaveKeeps` and `EncodeStart<TPixel>.ReportLosses`, so a plugin's writer reports what a save loses as Egami's own writers do.
-
-## Egami.Cli, unreleased
-
-- `egami ocr`: the text of images through an OCR program you name with `--engine-command`, such as Tesseract, as plain
-  text, hOCR or ALTO (`--as`, or `-o`'s extension), with `--lang`, `--dpi` (the image's own by default) and
-  `--engine-timeout`. `egami mcp` does not offer it, since it runs the program a call names.
-
-## Egami, unreleased
-
-- `CommandOcrEngine` hands the program a gray PNG when the image is gray and opaque, and an RGB PNG when it is opaque, instead
-  of RGBA. Tesseract reads a scanned page about a quarter faster that way: 100 scanned pages at 4 at a time took 35 s instead
-  of 45 to 56 s, with the same words.
+- `Barcode.Code128` takes about 0.6 times ZXing.Net 0.16.10's time (1.6 times before): the code set search runs on the
+  stack, and the symbol characters and bars are built without lists or copies. Code 128 and Code 39 no longer copy
+  text without control characters for the human-readable text.
 
 ## Egami.Video, unreleased
+
+- `egami-video run` reads and writes Egami.Formats.Extended's formats, with `--set sgi.rle=` and `--set sunraster.rle=` for
+  their writer options, and `--preview-formats`.
 
 MP3 decode speed (the V5.8 speed gate, left for 1.0.x). No API changes.
 
@@ -1298,41 +1364,6 @@ which needs no .NET runtime.
   replace an input without `in_place`. The package is also listed as an MCP server on NuGet, with its `server.json`.
 - `egami <name>` runs an `egami-<name>` program from the PATH, so other families' tools join in; `egami formats` names
   `egami-heic` for HEIC, which the tool leaves out.
-## Egami.Barcodes 1.0.1 (unreleased)
-
-### Package icon
-
-- The package has its own icon on NuGet: a graphite tile with barcode bars, in `branding/` with the other package icons.
-
-### Faster reading
-
-- Reading takes about 0.9 times zxing-cpp 3.1.1's time on one thread over the 817 ZXing test images, each read for its own symbology (3.1 times before), with
-  the same symbols read or more. Linear barcodes, PDF417 and QR codes are within 1.5 times zxing-cpp's time; Aztec and Data
-  Matrix within about 1.8 times.
-- The inverted pass reuses the first pass's thresholds with dark and light swapped, the linear scan reads light-on-dark bars
-  from the same scan lines, and inside a symbol the first pass found the inverted pass looks for no other.
-- The thresholds, run cutting and Reed-Solomon decoding work on several pixels or values at a time; QR, Data Matrix and
-  Aztec check a grid's fixed patterns (timing patterns, the L and clock tracks, the mode message) before sampling and
-  decoding it.
-- PDF417 rows are read every three quarters of a module instead of every pixel.
-
-### Reading
-
-- From effort 5 the linear scan also reads rows through the local threshold, which keeps bars under glare apart (from effort 6
-  before), and scans 29 lines instead of 25, including effort 0 to 2's lines. EAN-13 photos with glare read 16 of 22 ZXing
-  test images (11 before).
-- QR looks for finder patterns again with more slack when it finds fewer than three, and tries every alignment pattern
-  near the expected place, nearest first, then the nearest one nudged by quarter modules, so
-  strongly tilted and curled symbols read (ZXing qrcode-3 39 of 42, 37 before; qrcode-4 38 of 48, 35 before).
-- PDF417 cut off before its start pattern reads from the stop pattern, using the right row indicators (ZXing pdf417-3 19 of
-  19, 16 before).
-
-### Faster writing
-
-- `Barcode.Code128` takes about 0.6 times ZXing.Net 0.16.10's time (1.6 times before): the code set search runs on the
-  stack, and the symbol characters and bars are built without lists or copies. Code 128 and Code 39 no longer copy
-  text without control characters for the human-readable text.
-
 ## Egami.Barcodes 1.0.0 (2026-10-19)
 
 A new package that writes and reads barcodes, drawn through Egami.Drawing.

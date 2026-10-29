@@ -56,6 +56,12 @@ Add only the packages you use. Each one has its own guides, and its name links t
 | [Egami.Css](src/Egami.Css) | CSS parsing, selectors and the cascade | [Guide](https://inexin.github.io/Egami/v1/articles/guides/css.html) | [![NuGet](https://img.shields.io/nuget/v/Egami.Css.svg)](https://www.nuget.org/packages/Egami.Css) |
 | [Egami.Metafiles](src/Egami.Metafiles) | Plays WMF, EMF and EMF+ pictures | [Guide](https://inexin.github.io/Egami/v1/articles/guides/metafiles.html) | [![NuGet](https://img.shields.io/nuget/v/Egami.Metafiles.svg)](https://www.nuget.org/packages/Egami.Metafiles) |
 
+### Compatibility
+
+| Package | What it does | Docs | NuGet |
+| --- | --- | --- | --- |
+| [Egami.SystemDrawing](src/Egami.SystemDrawing) | System.Drawing.Common's API on every OS, in managed code (preview) | [Guide](https://inexin.github.io/Egami/v1/articles/guides/system-drawing.html) | [![NuGet](https://img.shields.io/nuget/vpre/Egami.SystemDrawing.svg)](https://www.nuget.org/packages/Egami.SystemDrawing) |
+
 ### Video and audio
 
 | Package | What it does | Docs | NuGet |
