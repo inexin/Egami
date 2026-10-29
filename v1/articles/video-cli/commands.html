@@ -116,6 +116,7 @@ Commands:
   extract &lt;inputs&gt;              Copy a track into its own file without decoding (VP8, VP9 and AV1 to IVF, PCM to WAV, FLAC to FLAC, Opus and Vorbis to Ogg, the rest to Matroska), or write attachments and cover art as files.
   embed &lt;inputs&gt;                Add tracks from other files, attachments and cover art to a file without decoding, and set track languages, names and defaults. Track numbers count the output's tracks from 1.
   metadata &lt;inputs&gt;             Write tags, chapters, track names and languages and attachment names as JSON, or copy a file with them changed from such a JSON or with --set, --remove and --chapter.
+  subs                          Convert SRT, WebVTT and ASS files, shift and sync their timing, and copy subtitle tracks out of and into media files.
   frames &lt;inputs&gt;               Write video frames as images: every frame, one every few seconds, at given times, keyframes or a few evenly spaced.
   encode &lt;inputs&gt;               Make a clip from images, an image sequence or a Y4M stream, with Motion JPEG, VP8 or uncompressed video, and audio from another file.
   run &lt;inputs-and-steps&gt;        Run egami's steps over every frame of a video, separated by +, and encode it again: 'egami-video run in.mkv crop 0 60 1920 960 + resize 1280x + save out.mkv'. 'egami-video run --list' lists the steps; audio and subtitles are copied, and frames keep their times.
@@ -368,6 +369,147 @@ Options:
   --set &lt;KEY=value&gt;              Set a file tag, such as TITLE=Holiday; repeat it for more.
   --remove &lt;KEY&gt;                 Remove a file tag; repeat it for more.
   --chapter &lt;start[-end]=title&gt;  Add a chapter, such as 1:30-2:45=Intro or 90=Part two; repeat it for more.
+</code></pre>
+<h2 id="subs">subs</h2>
+<pre><code class="lang-text">Description:
+  Convert SRT, WebVTT and ASS files, shift and sync their timing, and copy subtitle tracks out of and into media files.
+
+Usage:
+  egami-video subs [command] [options]
+
+Options:
+
+Commands:
+  convert &lt;inputs&gt;  Write subtitle files in another format (SRT, WebVTT, ASS), optionally cut to a time range, sorted or with overlaps fixed. What the target cannot hold is reported once per kind.
+  shift &lt;inputs&gt;    Move subtitle times by an offset, and scale them for a speed or frame rate change.
+  sync &lt;inputs&gt;     Retime subtitles by sync points: one moves every cue by the same amount, two also fix a speed difference.
+  extract &lt;inputs&gt;  Write a media file's text subtitle tracks as SRT, WebVTT or ASS files: each in its own format, or the one --format names.
+  embed &lt;inputs&gt;    Add subtitle files to a media file as tracks, copying its other tracks without decoding. SRT, WebVTT and ASS stay as they are in Matroska; WebM takes WebVTT and MP4 mov_text or WebVTT, converted as needed.
+</code></pre>
+<h3 id="subs-convert">subs convert</h3>
+<pre><code class="lang-text">Description:
+  Write subtitle files in another format (SRT, WebVTT, ASS), optionally cut to a time range, sorted or with overlaps fixed. What the target cannot hold is reported once per kind.
+
+Usage:
+  egami-video subs convert &lt;inputs&gt;... [options]
+
+Arguments:
+  &lt;inputs&gt;  SRT, WebVTT, ASS or SSA files, globs (*, ?, **) expanded the same way in every shell, media files with a subtitle track, or - for standard input.
+
+Options:
+  -o, --output &lt;path&gt;            Where to write: a file, a folder, a template with {name}, {ext}, {dir}, {index} and {format}, or - for standard output (with --format).
+  -f, --format &lt;srt|vtt|ass&gt;     The subtitle format to write: srt, vtt or ass, when -o's extension does not say.
+  --encoding &lt;name&gt;              Read files without a byte order mark that are not UTF-8 in this code page, such as windows-1250, instead of Windows-1252.
+  --strict                       Fail on a malformed file instead of repairing it with a warning.
+  --bom                          Start the written files with a UTF-8 byte order mark.
+  --crlf                         End lines with CR LF, as Windows tools write them, instead of LF.
+  -t, --track &lt;track&gt;            The subtitle track of a media file input: s:1, s:eng or a track number as info shows it; the first one by default.
+  -j, --jobs &lt;count&gt;             How many files to work on at once; 0 (the default) for one per processor.
+  --in-place                     Replace each input with its changed file when there is no -o, or allow -o to name an input.
+  --fail-fast                    Stop at the first file that fails.
+  --from &lt;time&gt;                  Keep only what shows from this time on; cues across it are cut there.
+  --to &lt;time&gt;                    Keep only what shows before this time; cues across it are cut there.
+  --rebase                       Move the cues so --from becomes 0, as trim does to a video.
+  --sort                         Put the cues in time order.
+  --fix-overlaps                 Sort, and end each cue when the next one on its layer starts, so lines never show at once by accident.
+</code></pre>
+<h3 id="subs-shift">subs shift</h3>
+<pre><code class="lang-text">Description:
+  Move subtitle times by an offset, and scale them for a speed or frame rate change.
+
+Usage:
+  egami-video subs shift &lt;inputs&gt;... [options]
+
+Arguments:
+  &lt;inputs&gt;  SRT, WebVTT, ASS or SSA files, globs (*, ?, **) expanded the same way in every shell, media files with a subtitle track, or - for standard input.
+
+Options:
+  -o, --output &lt;path&gt;            Where to write: a file, a folder, a template with {name}, {ext}, {dir}, {index} and {format}, or - for standard output (with --format).
+  -f, --format &lt;srt|vtt|ass&gt;     The subtitle format to write: srt, vtt or ass, when -o's extension does not say.
+  --encoding &lt;name&gt;              Read files without a byte order mark that are not UTF-8 in this code page, such as windows-1250, instead of Windows-1252.
+  --strict                       Fail on a malformed file instead of repairing it with a warning.
+  --bom                          Start the written files with a UTF-8 byte order mark.
+  --crlf                         End lines with CR LF, as Windows tools write them, instead of LF.
+  -t, --track &lt;track&gt;            The subtitle track of a media file input: s:1, s:eng or a track number as info shows it; the first one by default.
+  -j, --jobs &lt;count&gt;             How many files to work on at once; 0 (the default) for one per processor.
+  --in-place                     Replace each input with its changed file when there is no -o, or allow -o to name an input.
+  --fail-fast                    Stop at the first file that fails.
+  --by &lt;time&gt;                    Move every cue: positive to show later, negative to show sooner, such as 2.5, -1:30 or -500ms.
+  --scale &lt;factor&gt;               Multiply every time first, such as 1001/1000 or 0.96.
+  --fps &lt;from:to&gt;                Retime for a frame rate change first, such as 23.976:25 for a film sped up to 25 fps.
+</code></pre>
+<h3 id="subs-sync">subs sync</h3>
+<pre><code class="lang-text">Description:
+  Retime subtitles by sync points: one moves every cue by the same amount, two also fix a speed difference.
+
+Usage:
+  egami-video subs sync &lt;inputs&gt;... [options]
+
+Arguments:
+  &lt;inputs&gt;  SRT, WebVTT, ASS or SSA files, globs (*, ?, **) expanded the same way in every shell, media files with a subtitle track, or - for standard input.
+
+Options:
+  -o, --output &lt;path&gt;                Where to write: a file, a folder, a template with {name}, {ext}, {dir}, {index} and {format}, or - for standard output (with --format).
+  -f, --format &lt;srt|vtt|ass&gt;         The subtitle format to write: srt, vtt or ass, when -o's extension does not say.
+  --encoding &lt;name&gt;                  Read files without a byte order mark that are not UTF-8 in this code page, such as windows-1250, instead of Windows-1252.
+  --strict                           Fail on a malformed file instead of repairing it with a warning.
+  --bom                              Start the written files with a UTF-8 byte order mark.
+  --crlf                             End lines with CR LF, as Windows tools write them, instead of LF.
+  -t, --track &lt;track&gt;                The subtitle track of a media file input: s:1, s:eng or a track number as info shows it; the first one by default.
+  -j, --jobs &lt;count&gt;                 How many files to work on at once; 0 (the default) for one per processor.
+  --in-place                         Replace each input with its changed file when there is no -o, or allow -o to name an input.
+  --fail-fast                        Stop at the first file that fails.
+  --map &lt;subtitle=video&gt; (REQUIRED)  A time in the subtitles and where it should be in the video, such as 1:02.5=1:04; give two, far apart, to fix a speed difference too.
+</code></pre>
+<h3 id="subs-extract">subs extract</h3>
+<pre><code class="lang-text">Description:
+  Write a media file's text subtitle tracks as SRT, WebVTT or ASS files: each in its own format, or the one --format names.
+
+Usage:
+  egami-video subs extract &lt;inputs&gt;... [options]
+
+Arguments:
+  &lt;inputs&gt;  Media files with text subtitle tracks, globs (*, ?, **) expanded the same way in every shell, folders with --recursive, or - for standard input.
+
+Options:
+  -r, --recursive                Take every media file in folders given as inputs, at any depth.
+  -j, --jobs &lt;count&gt;             How many files to work on at once; 0 (the default) for one per processor.
+  --fail-fast                    Stop at the first file that fails.
+  -o, --output &lt;path&gt;            Where to write: a file, a folder, a template with {name}, {track} (the track number) and {format}, or - for standard output.
+  -t, --track &lt;track&gt;            Which subtitle tracks: s:1, s:eng or track numbers as info shows them; repeat it or separate with commas. Every subtitle track by default.
+  -f, --format &lt;srt|vtt|ass&gt;     The subtitle format to write: srt, vtt or ass, when -o's extension does not say.
+  --encoding &lt;name&gt;              Read files without a byte order mark that are not UTF-8 in this code page, such as windows-1250, instead of Windows-1252.
+  --strict                       Fail on a malformed file instead of repairing it with a warning.
+  --bom                          Start the written files with a UTF-8 byte order mark.
+  --crlf                         End lines with CR LF, as Windows tools write them, instead of LF.
+  --in-place                     Allow outputs to replace their inputs.
+</code></pre>
+<h3 id="subs-embed">subs embed</h3>
+<pre><code class="lang-text">Description:
+  Add subtitle files to a media file as tracks, copying its other tracks without decoding. SRT, WebVTT and ASS stay as they are in Matroska; WebM takes WebVTT and MP4 mov_text or WebVTT, converted as needed.
+
+Usage:
+  egami-video subs embed &lt;inputs&gt;... [options]
+
+Arguments:
+  &lt;inputs&gt;  Media files, globs (*, ?, **) expanded the same way in every shell, folders with --recursive, or - for standard input.
+
+Options:
+  -o, --output &lt;path&gt;                 Where to write: a file, a folder, a template with {name}, {ext}, {dir}, {index} and {format}, or - for standard output (with --format).
+  -f, --format &lt;container&gt;            The output container by name or extension (mkv, webm, mp4, m4a, avi, ivf, y4m, wav, flac, ogg, aiff, caf, ac3), when -o's extension does not say; always for -o -.
+  -t, --track &lt;track&gt;                 Which tracks: v, a, s or d with an optional :index or :language (a:1, s:eng), or a track number as info shows it. Repeat it or separate with commas; all tracks by default.
+  -an, --no-audio                     Leave out audio tracks.
+  -sn, --no-subtitles                 Leave out subtitle tracks.
+  -r, --recursive                     Take every media file in folders given as inputs, at any depth.
+  -j, --jobs &lt;count&gt;                  How many files to work on at once; 0 (the default) for one per processor.
+  --in-place                          Allow outputs to replace their inputs.
+  --fail-fast                         Stop at the first file that fails.
+  --add &lt;file[=language]&gt; (REQUIRED)  A subtitle file to add as a track, with an optional language after '=' (movie.nor.srt=nor); repeat it for more.
+  --name &lt;index=name&gt;                 Name an added track, in --add's order from 1: 1=Commentary.
+  --default &lt;index&gt;                   Make an added track the default subtitles, in --add's order from 1.
+  --replace                           Leave out the input's own subtitle tracks.
+  --encoding &lt;name&gt;                   Read files without a byte order mark that are not UTF-8 in this code page, such as windows-1250, instead of Windows-1252.
+  --strict                            Fail on a malformed file instead of repairing it with a warning.
 </code></pre>
 <h2 id="frames">frames</h2>
 <pre><code class="lang-text">Description:

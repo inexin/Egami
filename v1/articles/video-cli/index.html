@@ -160,6 +160,11 @@ egami-video audio in.mkv -o sound.flac
 <td><code>-f ffmetadata</code>, <code>-metadata</code></td>
 </tr>
 <tr>
+<td><code>subs</code></td>
+<td>Convert, shift and sync SRT, WebVTT and ASS files; subtitle tracks to and from text files</td>
+<td><code>ffmpeg -i in.srt out.vtt</code>, <code>-itsoffset</code>, <code>-c:s mov_text</code></td>
+</tr>
+<tr>
 <td><code>frames</code></td>
 <td>Frames as images; Motion JPEG frames as JPEG without decoding</td>
 <td><code>ffmpeg -i in out-%04d.png</code></td>
@@ -357,6 +362,29 @@ egami-video segment in.mkv --scenes -o shots/{part:000}.mkv -v
 egami-video concat parts/001.mkv parts/002.mkv -o joined.mkv
 egami-video timestamps in.mkv --shift 0.5 --track a -o later.mkv
 </code></pre>
+<h2 id="subtitles">Subtitles</h2>
+<p><code>subs</code> works on text subtitles: SRT, WebVTT and ASS (SSA is read and written as ASS). <code>subs convert</code> writes another format, named
+by <code>-o</code>'s extension or <code>--format</code>; what the target cannot hold, such as ASS colours in WebVTT, is left out and reported once per
+kind. A file converted to its own format unchanged comes back byte for byte. <code>--from</code> and <code>--to</code> keep a time range (<code>--rebase</code>
+moves it to 0), <code>--sort</code> puts cues in order and <code>--fix-overlaps</code> ends each cue when the next starts.</p>
+<p><code>subs shift --by</code> moves every cue (negative shows them sooner); <code>--scale</code> or <code>--fps 23.976:25</code> retimes them for a speed change
+first. <code>subs sync</code> takes sync points, each a time in the subtitles and where it should be in the video: one moves everything, two
+far apart also fix a speed difference. Times are exact, so nothing drifts over a long film.</p>
+<p><code>subs extract</code> writes a media file's text subtitle tracks as files, each in its own format unless <code>--format</code> says otherwise
+(mov_text becomes SRT). <code>subs embed</code> adds subtitle files to a media file as tracks and copies its other tracks: Matroska keeps SRT,
+WebVTT and ASS as they are, WebM takes WebVTT and MP4 mov_text or WebVTT, converted as needed. Give a language after <code>=</code>, name
+tracks with <code>--name 1=Commentary</code>, pick the default with <code>--default 1</code>, and leave out the file's own subtitles with <code>--replace</code>.
+Files without a byte order mark that are not UTF-8 are read as Windows-1252, or the code page <code>--encoding</code> names; <code>--strict</code>
+fails on a malformed file instead of repairing it, and outputs are UTF-8 (<code>--bom</code> and <code>--crlf</code> for Windows tools).</p>
+<pre><code class="lang-sh">egami-video subs convert in.srt -o in.vtt
+egami-video subs shift in.srt --by -0.5 -o sooner.srt
+egami-video subs shift in.srt --fps 23.976:25 -o pal.srt
+egami-video subs sync in.srt --map 0:01=0:01.2 --map 0:05=0:05.6 -o synced.srt
+egami-video subs embed in.webm --add in.srt=eng -o subtitled.mkv
+egami-video subs extract subtitled.mkv -o subs/{name}.{format}
+egami-video info in.srt
+</code></pre>
+<p>Subtitle files are inputs to the other commands too: <code>info</code> lists one as a file with one subtitle track, and <code>embed --add movie.srt</code> adds it like a track of another file. <code>trim</code>, <code>concat</code> and <code>timestamps</code> move the subtitle tracks of what they cut.</p>
 <h2 id="frames-and-pictures">Frames and pictures</h2>
 <p><code>frames</code> writes decoded frames in any format egami writes; <code>{frame}</code> in the output is the frame's number in the video. Motion
 JPEG frames written as JPEG are the stored frames, byte for byte, without decoding.</p>
