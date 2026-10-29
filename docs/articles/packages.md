@@ -30,6 +30,12 @@ one version and release together; the other packages have versions of their own.
 | [Egami.Css](https://github.com/inexin/Egami/tree/main/src/Egami.Css) | 1.x | CSS syntax, selectors, the cascade, media queries and value parsers | Nothing | [CSS](guides/css.md) |
 | [Egami.Metafiles](https://github.com/inexin/Egami/tree/main/src/Egami.Metafiles) | 1.0 | Plays WMF, EMF and EMF+ pictures onto a canvas | Egami, Egami.Drawing, Egami.Fonts | [Windows metafiles](guides/metafiles.md) |
 
+## Compatibility
+
+| Package | Version | What it does | Needs | Docs |
+| --- | --- | --- | --- | --- |
+| [Egami.SystemDrawing](https://github.com/inexin/Egami/tree/main/src/Egami.SystemDrawing) | 1.0 preview | System.Drawing.Common's API on every OS, in managed code: Bitmap, Image, Icon, pixel formats, LockBits and the codecs so far | Egami, Egami.Drawing, Egami.Fonts, Egami.Metafiles | [System.Drawing drop-in](guides/system-drawing.md) |
+
 ## Video and audio
 
 | Package | Version | What it does | Needs | Docs |

@@ -67,9 +67,10 @@ public sealed partial class RasterCanvas<TPixel>
             return;
         }
 
-        // Blurred text fills as paths, which the blur needs whole.
-        Matrix3x2 m = Matrix;
+        // Blurred text fills as paths, which the blur needs whole. Only unhinted text moves with PixelOffset.None, as GDI+'s
+        // AntiAlias text does and its grid-fitted text does not.
         Font font = run.Font;
+        Matrix3x2 m = font.Hinting == FontHinting.None ? GeometryMatrix : Matrix;
         float emX = font.Size * m.M11, emY = font.Size * m.M22;
         if (m.M12 != 0 || m.M21 != 0 || emX == 0 || emY == 0 || MathF.Abs(emX) > MaxCachedEm || MathF.Abs(emY) > MaxCachedEm || paint.Blur is { Sigma: > 0 })
         {

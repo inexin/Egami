@@ -32,8 +32,12 @@ public sealed partial class RasterCanvas<TPixel> : Canvas
     private readonly DrawTools _tools;
     private readonly Stack<ClipState> _clips = new();
     private readonly Stack<Layer> _layers = new();
+    private readonly bool _pixelOffset;
     private RasterTarget _target;
     private ClipState _clip;
+
+    /// <summary>The widest pen, in device pixels, that GDI+ draws as a thin line under <see cref="Antialiasing.GdiPlus"/>.</summary>
+    private const float GdiPlusThinPen = 1.5f;
 
     /// <summary>Initializes a new instance of the <see cref="RasterCanvas{TPixel}"/> class over a raster's first frame.</summary>
     /// <param name="raster">The raster to draw on.</param>
@@ -60,7 +64,8 @@ public sealed partial class RasterCanvas<TPixel> : Canvas
     {
         _context = context;
         Options = options ?? CanvasOptions.Default;
-        _rasterizer = new CoverageRasterizer(context.Memory, context.MaxParallelism);
+        _rasterizer = new CoverageRasterizer(context.Memory, context.MaxParallelism) { GdiPlus = Options.Antialiasing == Antialiasing.GdiPlus };
+        _pixelOffset = Options.PixelOffset == PixelOffset.None;
         _tools = new DrawTools(_rasterizer, _edges, Options, context);
         _target = target;
         _clip = new ClipState(target.Area, null);
@@ -68,6 +73,25 @@ public sealed partial class RasterCanvas<TPixel> : Canvas
 
     /// <summary>Gets the canvas's settings.</summary>
     public CanvasOptions Options { get; }
+
+    /// <summary>
+    /// Gets the matrix that takes paths, their paints and clips to device pixels: <see cref="Canvas.Matrix"/>, moved half a pixel
+    /// right and down for <see cref="PixelOffset.None"/>. Images keep <see cref="Canvas.Matrix"/>.
+    /// </summary>
+    private Matrix3x2 GeometryMatrix
+    {
+        get
+        {
+            Matrix3x2 m = Matrix;
+            if (_pixelOffset)
+            {
+                m.M31 += 0.5f;
+                m.M32 += 0.5f;
+            }
+
+            return m;
+        }
+    }
 
     /// <summary>Gets or sets the number of row bands every call uses, for tests; 0 lets the size decide.</summary>
     internal int ForcedBands
@@ -243,7 +267,7 @@ public sealed partial class RasterCanvas<TPixel> : Canvas
     /// <inheritdoc/>
     protected override void OnClipRect(RectF rect, ClipOp op, bool antialias)
     {
-        Matrix3x2 m = Matrix;
+        Matrix3x2 m = GeometryMatrix;
         if (op == ClipOp.Intersect && m.M12 == 0 && m.M21 == 0)
         {
             Vector2 a = Vector2.Transform(rect.Position, m), b = Vector2.Transform(new Vector2(rect.Right, rect.Bottom), m);
@@ -269,7 +293,7 @@ public sealed partial class RasterCanvas<TPixel> : Canvas
 
         // The shape's coverage over the current bounds, then combined with the current clip.
         _edges.Clear();
-        Flattener.Flatten(path, Matrix, Options.Tolerance, _edges);
+        Flattener.Flatten(path, GeometryMatrix, Options.Tolerance, _edges);
         int size = bounds.Width * bounds.Height;
         IMemoryOwner<byte> coverage = _context.Memory.Allocate(size, ClearMode.Zero);
         try
@@ -343,7 +367,7 @@ public sealed partial class RasterCanvas<TPixel> : Canvas
             return;
         }
 
-        Matrix3x2 m = Matrix;
+        Matrix3x2 m = GeometryMatrix;
         byte scale = 255;
         FillRule rule = path.FillRule;
         _edges.Clear();
@@ -360,7 +384,13 @@ public sealed partial class RasterCanvas<TPixel> : Canvas
 
             float deviceWidth = stroke.Width * MathF.Sqrt(MathF.Abs(m.GetDeterminant()));
             rule = FillRule.NonZero;
-            if (stroke.IsHairline || deviceWidth < 1)
+            if (_rasterizer.GdiPlus && deviceWidth <= GdiPlusThinPen)
+            {
+                // GDI+'s thin pens: one pixel thick across the major axis at full strength, whatever the width and caps.
+                Path outline = Hairline.GdiPlusOutline(path.TransformForDrawing(m), Options.Tolerance);
+                Flattener.Flatten(outline, Matrix3x2.Identity, Options.Tolerance, _edges);
+            }
+            else if (stroke.IsHairline || deviceWidth < 1)
             {
                 // A hairline is one device pixel wide whatever the transform; a thinner stroke draws as one, fainter by its width.
                 scale = stroke.IsHairline ? (byte)255 : (byte)Math.Clamp((int)MathF.Round(deviceWidth * 255), 0, 255);
@@ -440,7 +470,7 @@ public sealed partial class RasterCanvas<TPixel> : Canvas
     /// <summary>Fills the edge list with a paint through the clip, blurred when the paint asks.</summary>
     private void FillEdges(FillRule rule, bool antialias, Paint paint, byte scale)
     {
-        ISpanSink? sink = _target.CreateSink(paint, Matrix, Options.ColorSpace, _clip.Mask, scale);
+        ISpanSink? sink = _target.CreateSink(paint, GeometryMatrix, Options.ColorSpace, _clip.Mask, scale);
         if (sink is null)
         {
             return;
@@ -467,14 +497,14 @@ public sealed partial class RasterCanvas<TPixel> : Canvas
     /// <summary>Whether a fill can take the exact blur: a normal blur, antialiased, under a scale and translation.</summary>
     private bool TryAnalyticBlur(Paint paint, out MaskBlur blur, out Matrix3x2 m)
     {
-        m = Matrix;
+        m = GeometryMatrix;
         blur = Scaled(paint.Blur ?? default);
         return paint.Blur is { Sigma: > 0, Style: BlurStyle.Normal } && paint.Antialias && m.M12 == 0 && m.M21 == 0 && !_clip.Bounds.IsEmpty;
     }
 
     private void DrawAnalytic(Paint paint, Action<ISpanSink> fill)
     {
-        if (_target.CreateSink(paint, Matrix, Options.ColorSpace, _clip.Mask, 255) is ISpanSink sink)
+        if (_target.CreateSink(paint, GeometryMatrix, Options.ColorSpace, _clip.Mask, 255) is ISpanSink sink)
         {
             fill(sink);
         }
@@ -488,7 +518,7 @@ public sealed partial class RasterCanvas<TPixel> : Canvas
             return default;
         }
 
-        Matrix3x2 m = Matrix;
+        Matrix3x2 m = GeometryMatrix;
         RectF device = RectF.FromPoints(
         [
             Vector2.Transform(new Vector2(local.Left, local.Top), m),

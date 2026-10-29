@@ -35,6 +35,7 @@
     <Project Path="src/Egami.Heic/Egami.Heic.csproj" />
     <Project Path="src/Egami.Metafiles/Egami.Metafiles.csproj" />
     <Project Path="src/Egami.Svg/Egami.Svg.csproj" />
+    <Project Path="src/Egami.SystemDrawing/Egami.SystemDrawing.csproj" />
     <Project Path="src/Egami.Video/Egami.Video.csproj" />
     <Project Path="src/Egami.Video.Cli/Egami.Video.Cli.csproj" />
     <Project Path="src/Egami.Video.H264/Egami.Video.H264.csproj" />
@@ -55,6 +56,7 @@
     <Project Path="tests/Egami.Nal.Tests/Egami.Nal.Tests.csproj" />
     <Project Path="tests/Egami.OutsideTests/Egami.OutsideTests.csproj" />
     <Project Path="tests/Egami.Svg.Tests/Egami.Svg.Tests.csproj" />
+    <Project Path="tests/Egami.SystemDrawing.Tests/Egami.SystemDrawing.Tests.csproj" />
     <Project Path="tests/Egami.Tests/Egami.Tests.csproj" />
     <Project Path="tests/Egami.Video.Fuzz/Egami.Video.Fuzz.csproj" />
     <Project Path="tests/Egami.Video.Cli.Tests/Egami.Video.Cli.Tests.csproj" />

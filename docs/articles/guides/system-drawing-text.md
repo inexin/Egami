@@ -30,6 +30,24 @@ Some fonts carry black-and-white bitmaps for small sizes, such as Calibri at 12,
 those instead of the outlines. `Font.WithGdiPlusLook()` turns on `Font.EmbeddedBitmaps`, so Egami does too: Calibri's glyphs at
 those sizes equal GDI+'s pixel for pixel.
 
+## Shapes
+
+Two canvas settings match what `Graphics` does with shapes at its defaults, `SmoothingMode.AntiAlias` and
+`PixelOffsetMode.None`. `CanvasOptions.GdiPlusClearType` sets both.
+
+- `PixelOffset.None` puts whole coordinates on pixel centres, as GDI+'s `None`, `Default` and `HighSpeed` offset modes do. Paths,
+  their paints and clips move half a pixel right and down. Text moves only when it is unhinted, just as GDI+ moves its
+  `AntiAlias` text but not its grid-fitted text, and images do not move. `PixelOffset.Half`, Egami's default, is GDI+'s `Half`.
+- `Antialiasing.GdiPlus` samples like `AntiAlias` and `HighQuality`, which are the same mode. Each pixel has 8 samples across
+  and 4 down, and a sample on a left or top edge is inside. Pens of 1.5 device pixels or less draw as GDI+'s thin lines: one
+  pixel thick across the line's major axis, at full strength, with pointed ends and no caps.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/SystemDrawing.cs#gdiplus-shapes)]
+
+On rectangles, polygons, ovals and lines at fractional positions, the mean difference from GDI+ is 0.12 levels, down from 1.94
+with Egami's closest settings before. Rectangles and polygons match to the level. Ovals and round caps still differ a little,
+because GDI+ flattens curves its own way.
+
 ## GDI ClearType
 
 For `TextRenderer` or GDI's `ExtTextOut`:

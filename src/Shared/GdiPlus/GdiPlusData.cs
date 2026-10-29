@@ -106,6 +106,78 @@ internal static class GdiPlusData
         return b.ToPath(rule);
     }
 
+    /// <summary>
+    /// A path as GDI+ points and point types: a start, lines, cubic Beziers in threes (quadratic curves raised to cubics), and the
+    /// close flag on a figure's last point.
+    /// </summary>
+    public static (Vector2[] Points, byte[] Types) ToPointsAndTypes(Path path)
+    {
+        List<Vector2> points = [];
+        List<byte> types = [];
+        ReadOnlySpan<Vector2> p = path.Points;
+        int at = 0;
+        foreach (PathVerb verb in path.Verbs)
+        {
+            switch (verb)
+            {
+                case PathVerb.Move:
+                    points.Add(p[at++]);
+                    types.Add(PointStart);
+                    break;
+                case PathVerb.Line:
+                    points.Add(p[at++]);
+                    types.Add(PointLine);
+                    break;
+                case PathVerb.Quad:
+                    {
+                        Vector2 a = points.Count > 0 ? points[^1] : p[at];
+                        Vector2 c = p[at], e = p[at + 1];
+                        points.Add(a + ((c - a) * (2f / 3)));
+                        points.Add(e + ((c - e) * (2f / 3)));
+                        points.Add(e);
+                        types.AddRange([PointBezier, PointBezier, PointBezier]);
+                        at += 2;
+                        break;
+                    }
+
+                case PathVerb.Cubic:
+                    points.AddRange([p[at], p[at + 1], p[at + 2]]);
+                    types.AddRange([PointBezier, PointBezier, PointBezier]);
+                    at += 3;
+                    break;
+                case PathVerb.Close:
+                    if (types.Count > 0)
+                    {
+                        types[^1] |= PointClose;
+                    }
+
+                    break;
+            }
+        }
+
+        return ([.. points], [.. types]);
+    }
+
+    /// <summary>Writes an EmfPlusPath: version, count, flags 0 (float points, plain types), the points, the types, padded to 4 bytes.</summary>
+    public static byte[] WritePath(Path path)
+    {
+        (Vector2[] points, byte[] types) = ToPointsAndTypes(path);
+        byte[] data = new byte[12 + (points.Length * 8) + ((types.Length + 3) & ~3)];
+        BinaryPrimitives.WriteUInt32LittleEndian(data, Version);
+        BinaryPrimitives.WriteInt32LittleEndian(data.AsSpan(4), points.Length);
+        for (int i = 0; i < points.Length; i++)
+        {
+            BinaryPrimitives.WriteSingleLittleEndian(data.AsSpan(12 + (i * 8)), points[i].X);
+            BinaryPrimitives.WriteSingleLittleEndian(data.AsSpan(16 + (i * 8)), points[i].Y);
+        }
+
+        types.CopyTo(data.AsSpan(12 + (points.Length * 8)));
+        return data;
+    }
+
+    /// <summary>The EMF+ object version GDI+ writes, 0xDBC01002.</summary>
+    public const uint Version = 0xDBC01002;
+
     /// <summary>EmfPlusPointF, EmfPlusPoint (16-bit) or EmfPlusPointR (relative, 7- or 15-bit) points.</summary>
     public static Vector2[] ReadPoints(ReadOnlySpan<byte> d, ref int at, int count, bool compressed, bool relative)
     {

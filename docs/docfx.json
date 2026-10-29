@@ -32,6 +32,10 @@
           "files": [ "Egami.Metafiles.csproj" ]
         },
         {
+          "src": "../src/Egami.SystemDrawing",
+          "files": [ "Egami.SystemDrawing.csproj" ]
+        },
+        {
           "src": "../src/Egami.Barcodes",
           "files": [ "Egami.Barcodes.csproj" ]
         },

@@ -1,0 +1,11 @@
+<Project>
+  <!--
+    Egami.SystemDrawing: with implicit usings on, System.Drawing (Color, Point, Rectangle and the other primitives) and
+    Egami.SystemDrawing (Bitmap, Graphics, Pen, Font and the rest) come in as implicit usings, so most files only swap the
+    package reference. Set EgamiSystemDrawingImplicitUsings to false to leave them out.
+  -->
+  <ItemGroup Condition="'$(ImplicitUsings)' == 'enable' and '$(EgamiSystemDrawingImplicitUsings)' != 'false'">
+    <Using Include="System.Drawing" />
+    <Using Include="Egami.SystemDrawing" />
+  </ItemGroup>
+</Project>
