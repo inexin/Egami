@@ -4,9 +4,8 @@ Egami.SystemDrawing gives code written for System.Drawing.Common its API on ever
 `Icon`, pixel formats, `LockBits`, the codecs and their encoder parameters, frames and property items. System.Drawing.Common
 runs only on Windows since .NET 6; with this package the same code runs on Linux, macOS and in containers, drawn by Egami.
 
-The package is a preview (1.0.0-preview.1). This release has bitmaps, pixel access, codecs, icons, and `Graphics` with solid
-pens and brushes, transforms, clipping, regions and images. The other pens and brushes, paths, fonts and text follow in the next
-previews.
+The package is a preview (1.0.0-preview.1). This release has bitmaps, pixel access, codecs, icons, and `Graphics` with pens,
+brushes, paths, transforms, clipping, regions and images. Fonts and text follow in the next previews.
 
 ## Moving code over
 
@@ -161,10 +160,51 @@ writes GDI+'s region format as a `RegionData`, with the checksum left as zero.
 `DrawLine`, `DrawRectangle`, `DrawEllipse`, `DrawArc`, `DrawPie`, `DrawPolygon`, `DrawBezier`, `DrawCurve`, `DrawClosedCurve`,
 `DrawRoundedRectangle` and their `Fill` forms take every System.Drawing overload, including the span ones. Arcs are measured on
 the ellipse as GDI+ measures them, cardinal splines use GDI+'s tension (0.5 by default), and a pen is never thinner than a
-pixel. Polygons and closed curves fill even-odd unless given `FillMode.Winding`. This preview has `Pen` and `SolidBrush`, which
-derives from `Brush`; the other brushes, pen styles and `GraphicsPath` come with the next one.
+pixel. Polygons and closed curves fill even-odd unless given `FillMode.Winding`. `DrawPath` and `FillPath` draw a
+`GraphicsPath`.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/SystemDrawingPackage.cs#shapes)]
+
+### Pens
+
+A `Pen` has GDI+'s settings and checks: `StartCap` and `EndCap` take every `LineCap`, the anchors centered on the end;
+`LineJoin` with `MiterLimit` (at least 1); a `DashStyle` whose `DashPattern` is in multiples of the width, with a `DashCap` and
+`DashOffset` (a solid pen's `DashPattern` throws `InvalidOperationException`, and `Custom` keeps the pattern of the style
+before it); `CompoundArray` strips; `PenAlignment.Inset`, the only alignment GDI+ draws differently from centered; and a
+`Transform` that shapes the nib, so a pen scaled 3 by 1 draws three times as wide across vertical lines. `CustomEndCap` and
+`CustomStartCap` take an `AdjustableArrowCap` or a `CustomLineCap` with a stroke path; as in GDI+, a `CustomLineCap` with a fill
+path throws `NotImplementedException`. `PenType` says what kind of brush the pen paints with. `Pens` and `SystemPens` hold
+one-unit pens of the named and system colors, which cannot be changed or disposed.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/SystemDrawingPackage.cs#pens)]
+
+### Brushes
+
+`HatchBrush` draws the 53 `HatchStyle` patterns pixel for pixel as GDI+ draws them on a bitmap, from the device origin moved by
+`RenderingOrigin`, including GDI+'s smoothed forward, backward and crossed diagonals. `TextureBrush` tiles an image (or part of
+it) through its transform, by its `WrapMode`; given `ImageAttributes`, it takes their wrap mode, `Clamp` unless they set one.
+`LinearGradientBrush` runs across a rectangle at an angle, a `LinearGradientMode` or between two points, with GDI+'s brush
+transform: the far corners lie on the end colors, and the diagonal modes and a scaleable angle work in the rectangle stretched to
+a square. Its `Blend` falls off from `SetSigmaBellShape` (511 samples of the normal curve, as GDI+ takes them) or
+`SetBlendTriangularShape`, or a `ColorBlend` sets preset colors, after which `Blend` is null. `PathGradientBrush` runs from a
+center color at the mean of the boundary's points out to the surrounding colors. `Brushes` and `SystemBrushes` hold solid
+brushes of the named and system colors; as in System.Drawing, the color of one of the `Brushes` can be changed. Every brush
+derives from `Brush`.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/SystemDrawingPackage.cs#brushes)]
+
+### Paths
+
+A `GraphicsPath` keeps GDI+'s points and `PathPointType` types, built as GDI+ builds them: lines, arcs, Beziers and curves join
+the open figure (a repeated point is dropped), while rectangles, ellipses, pies, polygons and closed curves are figures of their
+own. Arcs are cubic Beziers of 90 degrees of the ellipse's own angle from the start, the remainder last. `PathPoints`,
+`PathTypes` and `PathData` hand out copies. `Flatten`, `Widen` and `Warp` (a `WarpMode` of perspective or bilinear, from four
+points or three) replace the figures; `Reverse` keeps each segment's kind, the closes and the markers. `GetBounds` with a matrix
+transforms the bounds' corners and grows them for a pen as GDI+ does, and `IsVisible` and `IsOutlineVisible` test the pixel a
+point rounds to. `GraphicsPathIterator` walks figures, runs of one type and markers. A path also makes a `Region`, a clip, and a
+path gradient's boundary.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/SystemDrawingPackage.cs#paths)]
 
 ### Images
 
@@ -214,3 +254,6 @@ The package is measured against System.Drawing on Windows with the same probe pr
   drawn much smaller is not prefiltered.
 - Drawing onto 16-bit bitmaps does not dither, and `SourceCopy` with antialiasing blends its edges with what is below instead of
   making them transparent.
+- Compound pens draw their strips on both sides of the line, and `PathGradientBrush.FocusScales` is kept but not drawn.
+- `Flatten` takes as many steps as GDI+ but evaluates the curve exactly, so its points differ from GDI+'s, which are rounded to
+  sixteenths of a pixel. Rounded rectangles have no zero-length segments, which GDI+'s float arithmetic adds.

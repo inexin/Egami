@@ -298,4 +298,79 @@ public class SystemDrawingPackage
         Assert.Equal(0, bitmap.GetPixel(18, 18).A);
         Assert.InRange(bitmap.GetPixel(40, 20).A, 120, 135);
     }
+
+    [Fact]
+    public void Pens()
+    {
+        #region pens
+        // Pens take GDI+'s caps, joins, dash styles (in multiples of the width), compound lines, inset alignment and arrow caps.
+        using Bitmap bitmap = new(80, 60);
+        using Graphics g = Graphics.FromImage(bitmap);
+        g.SmoothingMode = SmoothingMode.AntiAlias;
+        using Pen dashed = new(Color.Navy, 3) { DashStyle = DashStyle.DashDot, StartCap = LineCap.Round, EndCap = LineCap.ArrowAnchor };
+        g.DrawLine(dashed, 5, 10, 75, 10);
+        using Pen arrow = new(Color.DarkRed, 2) { CustomEndCap = new AdjustableArrowCap(4, 5) };
+        g.DrawLine(arrow, 5, 30, 70, 30);
+        using Pen inset = new(Color.Black, 4) { Alignment = PenAlignment.Inset, LineJoin = LineJoin.Round };
+        g.DrawRectangle(inset, 5, 40, 30, 15);
+        float[] pattern = dashed.DashPattern;  // 3, 1, 1, 1
+        #endregion
+
+        Assert.Equal([3f, 1, 1, 1], pattern);
+    }
+
+    [Fact]
+    public void BrushesAndGradients()
+    {
+        #region brushes
+        // Hatch, texture and gradient brushes, and the Brushes and Pens of the named colors.
+        using Bitmap bitmap = new(80, 60);
+        using Graphics g = Graphics.FromImage(bitmap);
+        using HatchBrush hatch = new(HatchStyle.DiagonalCross, Color.Black, Color.White);
+        g.FillRectangle(hatch, 0, 0, 40, 30);
+        using LinearGradientBrush linear = new(new Rectangle(40, 0, 40, 30), Color.Red, Color.Blue, LinearGradientMode.Horizontal);
+        linear.SetSigmaBellShape(0.5f);
+        g.FillRectangle(linear, 40, 0, 40, 30);
+        using PathGradientBrush radial = new([new PointF(0, 30), new PointF(40, 30), new PointF(20, 60)]) { CenterColor = Color.White, SurroundColors = [Color.Green] };
+        g.FillRectangle(radial, 0, 30, 40, 30);
+        using Bitmap tile = new(4, 4);
+        tile.SetPixel(0, 0, Color.Orange);
+        using TextureBrush texture = new(tile, WrapMode.TileFlipXY);
+        g.FillRectangle(texture, 40, 30, 40, 30);
+        g.DrawRectangle(Egami.SystemDrawing.Pens.Gray, 0, 0, 79, 59);
+        g.FillEllipse(Egami.SystemDrawing.Brushes.Gold, 36, 26, 8, 8);
+        Blend? blend = linear.Blend;  // 511 factors: the bell, as GDI+ samples it
+        #endregion
+
+        Assert.Equal(511, blend!.Factors.Length);
+    }
+
+    [Fact]
+    public void Paths()
+    {
+        #region paths
+        // Paths keep GDI+'s points and point types; lines, arcs and curves join the open figure, closed shapes are their own.
+        using GraphicsPath path = new();
+        path.AddLine(0, 0, 10, 10);
+        path.AddArc(0, 0, 40, 20, 0, 90);
+        path.CloseFigure();
+        path.AddEllipse(50, 0, 20, 20);
+        byte[] types = path.PathTypes;  // 0 1 1 3 3 3|128, then the ellipse's 13 points
+        RectangleF bounds = path.GetBounds();
+        bool inside = path.IsVisible(60, 10);
+        using GraphicsPathIterator iterator = new(path);
+        int figures = iterator.SubpathCount;  // 2
+        path.Widen(new Pen(Color.Black, 2));
+
+        using Bitmap bitmap = new(80, 30);
+        using Graphics g = Graphics.FromImage(bitmap);
+        g.FillPath(Egami.SystemDrawing.Brushes.Teal, path);
+        g.SetClip(path);
+        #endregion
+
+        Assert.Equal(19, types.Length);
+        Assert.Equal(0f, bounds.X);
+        Assert.True(inside);
+        Assert.Equal(2, figures);
+    }
 }

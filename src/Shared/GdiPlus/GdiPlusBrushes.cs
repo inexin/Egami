@@ -39,11 +39,19 @@ internal static class GdiPlusBrushes
 
     /// <summary>
     /// A hatch style's 8 by 8 tile, in reference pixels: the back color everywhere and the fore color on the style's set bits,
-    /// both copied rather than blended. Styles out of range clamp to the nearest.
+    /// both copied rather than blended. Styles out of range clamp to the nearest. With <paramref name="smoothDiagonals"/>, the
+    /// forward, backward and crossed diagonals (styles 2, 3 and 5) are drawn as GDI+ 1.1 draws them on screen and on bitmaps:
+    /// 234/255 of the fore color on the diagonal and 64/255 beside it, left and right.
     /// </summary>
-    public static Picture HatchTile(int style, Rgba8 fore, Rgba8 back)
+    public static Picture HatchTile(int style, Rgba8 fore, Rgba8 back, bool smoothDiagonals = false)
     {
-        byte[] rows = GdiPlusHatches.Tiles[Math.Clamp(style, 0, GdiPlusHatches.Tiles.Length - 1)];
+        style = Math.Clamp(style, 0, GdiPlusHatches.Tiles.Length - 1);
+        if (smoothDiagonals && style is 2 or 3 or 5)
+        {
+            return SmoothDiagonals(style, fore, back);
+        }
+
+        byte[] rows = GdiPlusHatches.Tiles[style];
         PictureRecorder tile = new(new RectF(0, 0, 8, 8));
         tile.FillRect(new RectF(0, 0, 8, 8), new SolidPaint(back) { Antialias = false, BlendMode = BlendMode.Source });
         SolidPaint ink = new(fore) { Antialias = false, BlendMode = BlendMode.Source };
@@ -55,6 +63,27 @@ internal static class GdiPlusBrushes
                 {
                     tile.FillRect(new RectF(x, y, 1, 1), ink);
                 }
+            }
+        }
+
+        return tile.Finish();
+    }
+
+    private static Picture SmoothDiagonals(int style, Rgba8 fore, Rgba8 back)
+    {
+        PictureRecorder tile = new(new RectF(0, 0, 8, 8));
+        for (int y = 0; y < 8; y++)
+        {
+            for (int x = 0; x < 8; x++)
+            {
+                int coverage = 0;
+                foreach (int center in (int[])(style switch { 2 => [y], 3 => [7 - y], _ => [y, 7 - y] }))
+                {
+                    int d = ((x - center) % 8 + 8) % 8;
+                    coverage = Math.Max(coverage, d == 0 ? 234 : d is 1 or 7 ? 64 : 0);
+                }
+
+                tile.FillRect(new RectF(x, y, 1, 1), new SolidPaint(Lerp(back, fore, coverage / 255f)) { Antialias = false, BlendMode = BlendMode.Source });
             }
         }
 
@@ -133,8 +162,16 @@ internal static class GdiPlusBrushes
     /// <param name="surround">The surrounding colors, one per boundary point; the last repeats, and none means the center color.</param>
     /// <param name="stops">The stops from the boundary (0) to the center (1), from blend factors or preset colors, or null.</param>
     /// <param name="local">The brush transform times the world-to-device transform.</param>
-    public static Mesh? PathGradient(Vector2[] boundary, Vector2 center, Rgba8 centerColor, Rgba8[] surround, GradientStop[]? stops, Matrix3x2 local)
+    /// <param name="presetColors">Whether the stops' own colors are the rings' colors (preset colors), rather than mixes from the surround to the center.</param>
+    public static Mesh? PathGradient(Vector2[] boundary, Vector2 center, Rgba8 centerColor, Rgba8[] surround, GradientStop[]? stops, Matrix3x2 local, bool presetColors = false)
     {
+        if (presetColors && stops is { Length: > 1 })
+        {
+            Rgba8[] ringColors = [.. stops.OrderBy(s => s.Offset).Select(s => s.Color.ToRgba8())];
+            float[] ringPositions = [.. stops.OrderBy(s => s.Offset).Select(s => s.Offset)];
+            return Rings(boundary, center, local, ringPositions, (ring, _) => ringColors[ring], ringColors[^1]);
+        }
+
         if (boundary.Length < 2)
         {
             return null;
@@ -181,6 +218,51 @@ internal static class GdiPlusBrushes
         int centerIndex = positions.Count;
         positions.Add(Vector2.Transform(c, local));
         colors.Add(RgbaF32.FromRgba8(Lerp(Surround(0), centerColor, rings[^1].Mix)));
+        int last = (rings.Length - 1) * n;
+        for (int i = 0; i < n; i++)
+        {
+            indices.AddRange([last + i, last + ((i + 1) % n), centerIndex]);
+        }
+
+        return new Mesh(MeshMode.Triangles, positions.ToArray(), colors.ToArray(), indices: indices.ToArray());
+    }
+
+    /// <summary>Rings from the boundary to the center at positions, each point colored by its ring and boundary index, and the center.</summary>
+    private static Mesh Rings(Vector2[] boundary, Vector2 center, Matrix3x2 local, float[] rings, Func<int, int, Rgba8> color, Rgba8 centerColor)
+    {
+        if (rings[0] > 0)
+        {
+            rings = [0, .. rings];
+            Func<int, int, Rgba8> inner = color;
+            color = (ring, i) => inner(Math.Max(0, ring - 1), i);
+        }
+
+        List<Vector2> positions = [];
+        List<RgbaF32> colors = [];
+        List<int> indices = [];
+        int n = boundary.Length;
+        for (int ring = 0; ring < rings.Length; ring++)
+        {
+            for (int i = 0; i < n; i++)
+            {
+                positions.Add(Vector2.Transform(boundary[i] + ((center - boundary[i]) * rings[ring]), local));
+                colors.Add(RgbaF32.FromRgba8(color(ring, i)));
+            }
+
+            if (ring > 0)
+            {
+                int a = (ring - 1) * n, b = ring * n;
+                for (int i = 0; i < n; i++)
+                {
+                    int j = (i + 1) % n;
+                    indices.AddRange([a + i, a + j, b + i, a + j, b + j, b + i]);
+                }
+            }
+        }
+
+        int centerIndex = positions.Count;
+        positions.Add(Vector2.Transform(center, local));
+        colors.Add(RgbaF32.FromRgba8(centerColor));
         int last = (rings.Length - 1) * n;
         for (int i = 0; i < n; i++)
         {

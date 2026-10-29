@@ -70,6 +70,37 @@ public sealed class Region : MarshalByRefObject, IDisposable
     /// <summary>Gets the region as a path in its own coordinates, or null when infinite.</summary>
     internal Path? Shape { get; private set; }
 
+    /// <summary>Whether the region came from combining, so its bounds are its pixels'.</summary>
+    private bool _combined;
+
+    /// <summary>Initializes a new instance of the <see cref="Region"/> class holding a path's area, by its fill mode.</summary>
+    /// <param name="path">The path.</param>
+    public Region(Drawing2D.GraphicsPath path)
+    {
+        ArgumentNullException.ThrowIfNull(path);
+        Shape = path.ToPath();
+    }
+
+    /// <summary>Intersects the region with a path's area.</summary>
+    /// <param name="path">The path.</param>
+    public void Intersect(Drawing2D.GraphicsPath path) => Combine(Of(path), GdiPlusRegions.Intersect);
+
+    /// <summary>Unites the region with a path's area.</summary>
+    /// <param name="path">The path.</param>
+    public void Union(Drawing2D.GraphicsPath path) => Combine(Of(path), GdiPlusRegions.Union);
+
+    /// <summary>Keeps where exactly one of the region and a path's area is.</summary>
+    /// <param name="path">The path.</param>
+    public void Xor(Drawing2D.GraphicsPath path) => Combine(Of(path), GdiPlusRegions.Xor);
+
+    /// <summary>Removes a path's area from the region.</summary>
+    /// <param name="path">The path.</param>
+    public void Exclude(Drawing2D.GraphicsPath path) => Combine(Of(path), GdiPlusRegions.Exclude);
+
+    /// <summary>Makes the region a path's area less the region.</summary>
+    /// <param name="path">The path.</param>
+    public void Complement(Drawing2D.GraphicsPath path) => Combine(Of(path), GdiPlusRegions.Complement);
+
     /// <summary>Not supported: Windows region handles. Always throws.</summary>
     /// <param name="hrgn">The handle.</param>
     /// <returns>Never returns.</returns>
@@ -78,7 +109,7 @@ public sealed class Region : MarshalByRefObject, IDisposable
 
     /// <summary>A copy.</summary>
     /// <returns>The copy.</returns>
-    public Region Clone() => new(Shape);
+    public Region Clone() => new(Shape) { _combined = _combined };
 
     /// <summary>Does nothing; the region holds no unmanaged memory.</summary>
     public void Dispose()
@@ -185,9 +216,10 @@ public sealed class Region : MarshalByRefObject, IDisposable
             return RectangleF.Empty;
         }
 
-        // A single rectangle keeps its own edges; anything else is GDI+'s pixels.
-        if (RegionData.IsRect(Shape, out RectF r))
+        // A single rectangle or path keeps its own edges; a combined region is GDI+'s pixels.
+        if (!_combined || RegionData.IsRect(Shape, out _))
         {
+            RectF r = Shape.Bounds;
             return new RectangleF(r.X, r.Y, r.Width, r.Height);
         }
 
@@ -356,7 +388,17 @@ public sealed class Region : MarshalByRefObject, IDisposable
     internal static Path Rect(RectangleF rect) =>
         rect.Width <= 0 || rect.Height <= 0 ? Path.Empty : Path.Rect(new RectF(rect.X, rect.Y, rect.Width, rect.Height));
 
-    internal void Combine(Path? other, int mode) => Shape = GdiPlusRegions.Combine(Shape, other, mode);
+    internal void Combine(Path? other, int mode)
+    {
+        Shape = GdiPlusRegions.Combine(Shape, other, mode);
+        _combined = true;
+    }
+
+    private static Path Of(Drawing2D.GraphicsPath path)
+    {
+        ArgumentNullException.ThrowIfNull(path);
+        return path.ToPath();
+    }
 
     private static Path? Of(Region region)
     {
