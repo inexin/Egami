@@ -260,7 +260,7 @@ internal sealed partial class H264SliceDecoder
         bool availableC = Neighbor(list, bx + w, by - 1, out int refC, out int mvC);
         if (!availableC)
         {
-            availableC = _mbaff && bx == 0 && by > 0 ? LeftD(list, by, out refC, out mvC) : Neighbor(list, bx - 1, by - 1, out refC, out mvC);
+            availableC = _mixedLeft && bx == 0 && by > 0 ? LeftD(list, by, out refC, out mvC) : Neighbor(list, bx - 1, by - 1, out refC, out mvC);
         }
 
         if (w == 4 && h == 2)
@@ -416,19 +416,7 @@ internal sealed partial class H264SliceDecoder
                 colZero8 = (colZeros[Block(0, 0)] ? 1 : 0) | (colZeros[Block(3, 0)] ? 2 : 0) | (colZeros[Block(0, 3)] ? 4 : 0) | (colZeros[Block(3, 3)] ? 8 : 0);
             }
 
-            for (int list = 0; list < 2; list++)
-            {
-                int r = refIdx[list], m = mvp[list];
-                _directRefBlock[list * 16] = (sbyte)r;
-                _directMv[list * 16] = r < 0 || (r == 0 && (colZero8 & 1) != 0) ? 0 : m;
-                _directMv[(list * 16) + 2] = r < 0 || (r == 0 && (colZero8 & 2) != 0) ? 0 : m;
-                _directMv[(list * 16) + 8] = r < 0 || (r == 0 && (colZero8 & 4) != 0) ? 0 : m;
-                _directMv[(list * 16) + 10] = r < 0 || (r == 0 && (colZero8 & 8) != 0) ? 0 : m;
-            }
-
-            bool split = colZero8 is not 0 and not 15 && ((refIdx[0] == 0 && mvp[0] != 0) || (refIdx[1] == 0 && mvp[1] != 0));
-            _directUniform = split ? 0 : 1;
-            _directQuarters = true;
+            SetDirectQuarters(refIdx, mvp, colZero8);
             return;
         }
 
@@ -474,11 +462,58 @@ internal sealed partial class H264SliceDecoder
     }
 
     /// <summary>
+    /// The whole-macroblock form of spatial direct prediction with 8x8 inference: one reference per list, in block 0, and one
+    /// vector per 8x8 block, in its first block, with colZeroFlag per 8x8 block in the bits of colZero8.
+    /// </summary>
+    private void SetDirectQuarters(Span<int> refIdx, Span<int> mvp, int colZero8)
+    {
+        for (int list = 0; list < 2; list++)
+        {
+            int r = refIdx[list], m = mvp[list];
+            _directRefBlock[list * 16] = (sbyte)r;
+            _directMv[list * 16] = r < 0 || (r == 0 && (colZero8 & 1) != 0) ? 0 : m;
+            _directMv[(list * 16) + 2] = r < 0 || (r == 0 && (colZero8 & 2) != 0) ? 0 : m;
+            _directMv[(list * 16) + 8] = r < 0 || (r == 0 && (colZero8 & 4) != 0) ? 0 : m;
+            _directMv[(list * 16) + 10] = r < 0 || (r == 0 && (colZero8 & 8) != 0) ? 0 : m;
+        }
+
+        bool split = colZero8 is not 0 and not 15 && ((refIdx[0] == 0 && mvp[0] != 0) || (refIdx[1] == 0 && mvp[1] != 0));
+        _directUniform = split ? 0 : 1;
+        _directQuarters = true;
+    }
+
+    /// <summary>
     /// Spatial direct prediction when the co-located picture is coded otherwise than the current one (a frame against a field
-    /// pair, or an MBAFF frame): each 4x4 block's colZeroFlag from the block <see cref="Colocated"/> finds.
+    /// pair, or an MBAFF frame): colZeroFlag of each 8x8 block from the block <see cref="Colocated"/> finds. Such streams have
+    /// direct_8x8_inference_flag 1 (7.4.2.1.1, frame_mbs_only_flag 0), so the four blocks of an 8x8 share it.
     /// </summary>
     private void SpatialDirectMapped(int mask, Span<int> refIdx, Span<int> mvp, bool zero, bool colShortTerm)
     {
+        int colZero8 = 0;
+        if (colShortTerm && !zero)
+        {
+            for (int quarter = 0; quarter < 4; quarter++)
+            {
+                if ((mask & (1 << quarter)) == 0)
+                {
+                    continue;
+                }
+
+                // Worked out here: ColZero holds only the corner blocks, and a frame and a field read other rows.
+                Colocated((quarter & 1) * 2, (quarter >> 1) * 2, out H264Picture colPic, out int b, out int mb, out _);
+                int list = colPic.RefIdx[0][b] >= 0 ? 0 : 1;
+                int mvCol = colPic.Mv[list][b];
+                bool colZero = !colPic.MbIntra[mb] && colPic.RefIdx[list][b] == 0 && (uint)(MvX(mvCol) + 1) <= 2 && (uint)(MvY(mvCol) + 1) <= 2;
+                colZero8 |= colZero ? 1 << quarter : 0;
+            }
+        }
+
+        if (mask == 15)
+        {
+            SetDirectQuarters(refIdx, mvp, colZero8);
+            return;
+        }
+
         for (int blk = 0; blk < 16; blk++)
         {
             int bx = blk & 3, by = blk >> 2, quarter = ((by >> 1) * 2) + (bx >> 1);
@@ -487,16 +522,7 @@ internal sealed partial class H264SliceDecoder
                 continue;
             }
 
-            bool colZero = false;
-            if (colShortTerm && !zero)
-            {
-                // Worked out here: ColZero holds only the corner blocks, and a frame and a field read other rows.
-                Colocated(bx, by, out H264Picture colPic, out int b, out int mb, out _);
-                int list = colPic.RefIdx[0][b] >= 0 ? 0 : 1;
-                int mvCol = colPic.Mv[list][b];
-                colZero = !colPic.MbIntra[mb] && colPic.RefIdx[list][b] == 0 && (uint)(MvX(mvCol) + 1) <= 2 && (uint)(MvY(mvCol) + 1) <= 2;
-            }
-
+            bool colZero = (colZero8 & (1 << quarter)) != 0;
             for (int list = 0; list < 2; list++)
             {
                 _directRefBlock[(list * 16) + blk] = (sbyte)refIdx[list];

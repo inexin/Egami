@@ -144,30 +144,44 @@ internal sealed class CabacEngine
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal int Decode(ref byte state)
     {
-        // As Decode(ref State, ref byte): the symbol chosen by a mask, one renormalisation for both.
+        // As Decode(ref State, ref byte): the more probable symbol takes the short path.
         int s = state;
-        uint entry = Unsafe.Add(ref MemoryMarshal.GetReference(Packed), (s << 2) + (int)((_range >> 6) & 3));
+        // The range is 256 to 510, so range >> 6 is 4 to 7: qRangeIdx + 4, the table's row read from 4 entries before it.
+        uint entry = Unsafe.Add(ref Unsafe.Add(ref MemoryMarshal.GetReference(Packed), -4), (s << 2) + (int)(_range >> 6));
         uint lps = entry & 0xFF;
-        uint mpsRange = _range - lps;
-        uint scaledRange = mpsRange << 7;
-        uint value = _value;
-        uint m = (uint)~(((int)value - (int)scaledRange) >> 31);
-        value -= scaledRange & m;
-        uint range = (lps & m) | (mpsRange & ~m);
-        state = (byte)(entry >> (8 + (int)(m & 8)));
-        int shift = System.Numerics.BitOperations.LeadingZeroCount(range) - 23;
-        _range = range << shift;
-        value <<= shift;
-        int bitsNeeded = _bitsNeeded + shift;
-        if (bitsNeeded >= 0)
+        uint range = _range - lps;
+        uint scaledRange = range << 7;
+        if (_value < scaledRange)
         {
-            value |= (uint)ReadByte() << bitsNeeded;
-            bitsNeeded -= 8;
+            state = (byte)(entry >> 8);
+            if (range < 256)
+            {
+                range <<= 1;
+                _value <<= 1;
+                if (++_bitsNeeded >= 0)
+                {
+                    _value |= (uint)ReadByte();
+                    _bitsNeeded = -8;
+                }
+            }
+
+            _range = range;
+            return s & 1;
         }
 
-        _value = value;
-        _bitsNeeded = bitsNeeded;
-        return (s & 1) ^ (int)(m & 1);
+        _value -= scaledRange;
+        state = (byte)(entry >> 16);
+        int shift = System.Numerics.BitOperations.LeadingZeroCount(lps) - 23;
+        _range = lps << shift;
+        _value <<= shift;
+        _bitsNeeded += shift;
+        if (_bitsNeeded >= 0)
+        {
+            _value |= (uint)ReadByte() << _bitsNeeded;
+            _bitsNeeded -= 8;
+        }
+
+        return (s & 1) ^ 1;
     }
 
     /// <summary>
@@ -189,19 +203,36 @@ internal sealed class CabacEngine
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal int Decode(ref State e, ref byte state)
     {
-        // One load gives the LPS range and the state after either symbol. The symbol is chosen without a branch: m is all
-        // ones for the less probable one, and one renormalisation by the leading zeros of the new range serves both.
+        // One load gives the LPS range and the state after either symbol. The more probable symbol, most bins, takes the short
+        // path: at most one bit of renormalisation, from a range of 256 or more down to 2^8 - 2 at least.
         int s = state;
-        uint entry = Unsafe.Add(ref MemoryMarshal.GetReference(Packed), (s << 2) + (int)((e.Range >> 6) & 3));
+        // The range is 256 to 510, so range >> 6 is 4 to 7: qRangeIdx + 4, the table's row read from 4 entries before it.
+        uint entry = Unsafe.Add(ref Unsafe.Add(ref MemoryMarshal.GetReference(Packed), -4), (s << 2) + (int)(e.Range >> 6));
         uint lps = entry & 0xFF;
-        uint mpsRange = e.Range - lps;
-        uint scaledRange = mpsRange << 7;
-        uint m = (uint)~(((int)e.Value - (int)scaledRange) >> 31);
-        e.Value -= scaledRange & m;
-        uint range = (lps & m) | (mpsRange & ~m);
-        state = (byte)(entry >> (8 + (int)(m & 8)));
-        int shift = System.Numerics.BitOperations.LeadingZeroCount(range) - 23;
-        e.Range = range << shift;
+        uint range = e.Range - lps;
+        uint scaledRange = range << 7;
+        if (e.Value < scaledRange)
+        {
+            state = (byte)(entry >> 8);
+            if (range < 256)
+            {
+                range <<= 1;
+                e.Value <<= 1;
+                if (++e.BitsNeeded >= 0)
+                {
+                    e.Value |= (uint)ReadByte(ref e.Position);
+                    e.BitsNeeded = -8;
+                }
+            }
+
+            e.Range = range;
+            return s & 1;
+        }
+
+        e.Value -= scaledRange;
+        state = (byte)(entry >> 16);
+        int shift = System.Numerics.BitOperations.LeadingZeroCount(lps) - 23;
+        e.Range = lps << shift;
         e.Value <<= shift;
         e.BitsNeeded += shift;
         if (e.BitsNeeded >= 0)
@@ -210,7 +241,7 @@ internal sealed class CabacEngine
             e.BitsNeeded -= 8;
         }
 
-        return (s & 1) ^ (int)(m & 1);
+        return (s & 1) ^ 1;
     }
 
     /// <summary><see cref="Bypass()"/> on a saved state.</summary>
