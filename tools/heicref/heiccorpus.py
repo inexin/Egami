@@ -954,6 +954,25 @@ def inter():
         f.write(chr(10))
 
 
+def sequences():
+    """heif-dec's frames of the corpus's image sequences (Phase 2.9.10 task 24): the MD5 of each Y4M frame's planes, in the
+    order heif-dec -S writes them, as tests/reference/heic/<name>.frames.json."""
+    os.makedirs(TMP, exist_ok=True)
+    for path in sorted(glob.glob(f"{OUT}/*sequence*.heic")):
+        name = os.path.basename(path)[:-5]
+        for old in glob.glob(f"{TMP}/seq-*.y4m"):
+            os.remove(old)
+        sh("heif-dec", "-S", "--ignore-editlist", path, f"{TMP}/seq.y4m")
+        written = sorted(glob.glob(f"{TMP}/seq-*.y4m"), key=lambda p: int(re.search(r"-(\d+)\.y4m$", p).group(1)))
+        md5s = []
+        for frame in written:
+            data = open(frame, "rb").read()
+            md5s.append(md5(data[data.index(b"FRAME") + 6:]))
+        with open(f"{REF}/{name}.frames.json", "w") as f:
+            json.dump({"tools": tools(), "frames": md5s}, f, indent=1, sort_keys=True)
+            f.write(chr(10))
+
+
 def frames():
     """Per-frame MD5s of HM's whole decode of every conformance stream, in output order (Phase 2.9.10): {set}/frames.json."""
     os.makedirs(TMP, exist_ok=True)
@@ -1052,4 +1071,4 @@ def traces():
 
 if __name__ == "__main__":
     for step in sys.argv[1:]:
-        {"corpus": corpus, "conformance": conformance, "extra": extra, "suite": suite, "traces": traces, "frames": frames, "inter": inter}[step]()
+        {"corpus": corpus, "conformance": conformance, "extra": extra, "suite": suite, "traces": traces, "frames": frames, "inter": inter, "sequences": sequences}[step]()

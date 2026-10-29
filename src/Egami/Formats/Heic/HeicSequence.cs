@@ -14,13 +14,29 @@ internal interface IHevcSampleCodec
 {
     /// <summary>Decodes a sample's picture into planes.</summary>
     HeifPlanes Decode(HevcConfig config, ReadOnlyMemory<byte> sample, EgamiInput input, int parallelism);
+
+    /// <summary>Starts decoding a track's samples in decoding order, inter pictures included.</summary>
+    IHevcTrackDecoder OpenTrack(HevcConfig config, EgamiInput input, int parallelism);
+}
+
+/// <summary>A track's decoder: samples go in in decoding order, pictures come out in output order.</summary>
+internal interface IHevcTrackDecoder
+{
+    /// <summary>Decodes a sample; the pictures it lets out wait for <see cref="TryTake"/>.</summary>
+    void Send(ReadOnlyMemory<byte> sample);
+
+    /// <summary>Lets the pictures still waiting out, at the end of the track.</summary>
+    void Flush();
+
+    /// <summary>Takes the next picture in output order, cropped to its conformance window.</summary>
+    bool TryTake(out HeifPlanes planes);
 }
 
 /// <summary>
 /// A HEIC image sequence (the hevc and hevx brands), read from its tracks: the first hvc1 track that describes no other is the
 /// color, a track with an auxl reference to it naming the alpha URN the alpha; each track's first sample entry gives its hvcC
-/// configuration and colr. Egami.Heic decodes intra pictures only, so every frame loads when every sample is a sync sample, and
-/// otherwise the first frame alone with a Heic.SequenceFirstFrame warning (2.9.4 design, question 5).
+/// configuration and colr. Every frame loads, inter pictures too (2.9.10 design, question 20): the frames are the pictures in
+/// output order, the track's samples decoded one after another from the first.
 /// </summary>
 internal sealed class HeicSequence : IHeifSequence
 {
@@ -90,6 +106,9 @@ internal sealed class HeicSequence : IHeifSequence
 
     public int SampleCount => Color.Samples.Count;
 
+    /// <summary>Gets whether every frame decodes: HEVC's inter pictures do.</summary>
+    public bool DecodesAllFrames => true;
+
     /// <summary>Gets whether every sample is a sync sample (an IRAP picture, intra coded).</summary>
     public bool AllKeyFrames => Color.Samples.TrueForAll(s => s.Sync) && (AlphaTrack is null || AlphaTrack.Samples.TrueForAll(s => s.Sync));
 
@@ -104,8 +123,7 @@ internal sealed class HeicSequence : IHeifSequence
 
     /// <summary>
     /// Gets the sequence when the file is read from its tracks: when it has no meta box, or when its major brand is hevc or hevx
-    /// (image sequences) and every frame is intra, so Load gives them all. A sequence with inter frames and a primary item gives
-    /// that still image instead, as heif-dec does; otherwise null.
+    /// (image sequences), so Load gives every frame, inter ones too (2.9.10); otherwise null.
     /// </summary>
     internal static HeicSequence? Find(HeifFile heif)
     {
@@ -124,8 +142,7 @@ internal sealed class HeicSequence : IHeifSequence
 
         HeifTrack? alpha = tracks.Find(t => t != color && t.SampleEntry == HeicFile.Hvc1 && t.Samples.Count > 0
             && t.References.TryGetValue(Auxl, out uint[]? owners) && Array.IndexOf(owners, color.Id) >= 0 && IsAlpha(heif, t));
-        HeicSequence sequence = new(heif, color, alpha);
-        return heif.HasMeta && !sequence.AllKeyFrames ? null : sequence;
+        return new HeicSequence(heif, color, alpha);
     }
 
     public TimeSpan Delay(int index) => Color.Timescale == 0 ? TimeSpan.Zero : TimeSpan.FromSeconds(Color.Samples[index].Duration / (double)Color.Timescale);
@@ -133,7 +150,14 @@ internal sealed class HeicSequence : IHeifSequence
     public (HeifPlanes Color, HeifPlanes? Alpha) Decode(int index, IHeifCodec codec, EgamiInput input)
     {
         IHevcSampleCodec samples = (IHevcSampleCodec)codec;
-        HeifPlanes color = samples.Decode(Config, Sample(Color, index), input, input.Context.MaxParallelism);
+        if (_color is null || index < _color.Next)
+        {
+            // From the first sample: the frames are pictures in output order, which only decoding from the start gives.
+            _color = new TrackFrames(samples.OpenTrack(Config, input, input.Context.MaxParallelism));
+            _alpha = AlphaTrack is null ? null : new TrackFrames(samples.OpenTrack(AlphaConfig!, input, input.Context.MaxParallelism));
+        }
+
+        HeifPlanes color = _color.Frame(index, Color, this, input);
         if (color.BitDepth != BitDepth || color.Monochrome != Monochrome)
         {
             throw input.Corrupt(-1, $"Frame {index} of the HEIC sequence is {color.BitDepth}-bit{(color.Monochrome ? " monochrome" : "")}, but its hvcC box says {BitDepth}-bit{(Monochrome ? " monochrome" : "")}.");
@@ -147,7 +171,7 @@ internal sealed class HeicSequence : IHeifSequence
         HeifPlanes? alpha = null;
         if (AlphaTrack is HeifTrack track && index < track.Samples.Count)
         {
-            alpha = samples.Decode(AlphaConfig!, Sample(track, index), input, input.Context.MaxParallelism).LumaOnly();
+            alpha = _alpha!.Frame(index, track, this, input).LumaOnly();
             if (alpha.Width != color.Width || alpha.Height != color.Height)
             {
                 throw input.Corrupt(-1, $"The alpha frame is {alpha.Width} x {alpha.Height}, but the color frame is {color.Width} x {color.Height}.");
@@ -200,6 +224,50 @@ internal sealed class HeicSequence : IHeifSequence
         }
 
         return null;
+    }
+
+    private TrackFrames? _color;
+    private TrackFrames? _alpha;
+
+    /// <summary>A track's pictures in output order, decoded as far as the frames asked for.</summary>
+    private sealed class TrackFrames(IHevcTrackDecoder decoder)
+    {
+        private int _sample;
+        private bool _flushed;
+
+        /// <summary>Gets the index of the next frame <see cref="Frame"/> gives without starting again.</summary>
+        internal int Next { get; private set; }
+
+        internal HeifPlanes Frame(int index, HeifTrack track, HeicSequence sequence, EgamiInput input)
+        {
+            while (true)
+            {
+                if (decoder.TryTake(out HeifPlanes planes))
+                {
+                    if (Next++ == index)
+                    {
+                        return planes;
+                    }
+
+                    continue;
+                }
+
+                if (_sample < track.Samples.Count)
+                {
+                    input.CancellationToken.ThrowIfCancellationRequested();
+                    decoder.Send(sequence.Sample(track, _sample++));
+                }
+                else if (!_flushed)
+                {
+                    decoder.Flush();
+                    _flushed = true;
+                }
+                else
+                {
+                    throw input.Corrupt(-1, $"The HEIC sequence's track has {track.Samples.Count} samples, but frame {index} was not among its pictures.");
+                }
+            }
+        }
     }
 
     /// <summary>A sample's bytes.</summary>

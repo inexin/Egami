@@ -66,12 +66,45 @@ public class HeicExtrasTests
     }
 
     [Fact]
-    public void ASequenceWithInterFramesGivesItsStillImage()
+    public void ASequenceWithInterFramesLoadsEveryFrame()
     {
         string path = Corpus("pan-sequence.heic");
+        RasterInfo info = Raster.Probe(path, Context);
+        Assert.Equal(4, info.FrameCount);
         using Raster raster = Raster.Load(path, Context);
-        Assert.Equal(1, raster.FrameCount);
+        Assert.Equal(4, raster.FrameCount);
         Assert.Equal((256, 192), (raster.Width, raster.Height));
+        Assert.Empty(raster.Metadata.Warnings);
+    }
+
+    /// <summary>Phase 2.9.10 task 24: every frame of the corpus's sequences equals heif-dec's (its -S output's planes).</summary>
+    [Theory]
+    [InlineData("pan-sequence")]
+    [InlineData("pan-sequence-intra")]
+    public void SequenceFramesEqualHeifDec(string name)
+    {
+        string[] expected = [.. System.Text.Json.JsonDocument.Parse(File.ReadAllBytes(Path.Combine(HevcTestFiles.References, name + ".frames.json")))
+            .RootElement.GetProperty("frames").EnumerateArray().Select(e => e.GetString()!)];
+        byte[] bytes = File.ReadAllBytes(Corpus(name + ".heic"));
+        Egami.Formats.Heif.HeifFile heif = Egami.Formats.Heif.HeifFile.Parse(bytes, "HEIC");
+        HeicSequence sequence = HeicSequence.Find(heif)!;
+        Hevc.HevcSequenceDecoder decoder = new(SafetyLimits.Default);
+        List<(Hevc.HevcDpbPicture Picture, int Poc)> output = [];
+        foreach (ReadOnlyMemory<byte> unit in sequence.Config.NalUnits)
+        {
+            decoder.Send(Hevc.HevcNal.Parse(unit.Span), output, TestContext.Current.CancellationToken);
+        }
+
+        foreach (Egami.Formats.Heif.HeifSample sample in sequence.Color.Samples)
+        {
+            foreach (ReadOnlyMemory<byte> unit in Egami.Nal.NalFraming.SplitLengthPrefixed(bytes.AsMemory((int)sample.Offset, sample.Size), sequence.Config.LengthSize))
+            {
+                decoder.Send(Hevc.HevcNal.Parse(unit.Span), output, TestContext.Current.CancellationToken);
+            }
+        }
+
+        decoder.Flush(output, TestContext.Current.CancellationToken);
+        Assert.Equal(expected, output.Select(o => HevcDecodeTests.Md5(o.Picture.Picture)));
     }
 
     [Fact]

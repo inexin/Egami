@@ -17,13 +17,16 @@ public partial class HeicLoadTests
 {
     private static readonly EgamiContext Context = new EgamiContext().WithHeic();
 
-    /// <summary>The corpus files whose primary image is one hvc1 item with HM's MD5 (no grid or overlay).</summary>
+    /// <summary>
+    /// The corpus files whose primary image is one hvc1 item with HM's MD5 (no grid or overlay). pan-sequence.heic loads as its
+    /// sequence since 2.9.10, whose first frame is not its still image; HeicExtrasTests checks its frames.
+    /// </summary>
     public static TheoryData<string> SingleItemFiles()
     {
         TheoryData<string> files = [];
         foreach (JsonProperty file in HevcTestFiles.Manifest.Value.EnumerateObject().OrderBy(f => f.Name, StringComparer.Ordinal))
         {
-            if (PrimaryItem(file.Value) is JsonElement item && item.TryGetProperty("hm_md5", out _))
+            if (PrimaryItem(file.Value) is JsonElement item && item.TryGetProperty("hm_md5", out _) && file.Name != "pan-sequence.heic")
             {
                 files.Add(file.Name);
             }

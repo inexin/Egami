@@ -16,14 +16,14 @@ public partial class HeicPixelTests(ITestOutputHelper output)
 
     /// <summary>
     /// The corpus files with a heif-dec reference whose image is HEVC-coded (JPEG-coded and uncompressed HEIF come with task 13),
-    /// but two. hm-slices.heic: libde265, inside heif-dec, filters across its slice boundaries differently from HM, the bit-exact
+    /// but three. hm-slices.heic: libde265, inside heif-dec, filters across its slice boundaries differently from HM, the bit-exact
     /// reference (stage A's finding), so heif-dec's pixels there are not HEVC's. duck-clap-odd.heic: its clean aperture has
     /// half-sample offsets, and heif-dec's output there is no crop of the decoded image (even its luma differs), so Egami crops at
-    /// whole samples, as libavif does.
+    /// whole samples, as libavif does. pan-sequence.heic: Load gives its sequence since 2.9.10, heif-dec its still image.
     /// </summary>
     public static TheoryData<string> RgbFiles() => [.. Directory.GetFiles(HevcTestFiles.References, "*.png")
         .Select(Path.GetFileNameWithoutExtension).Where(n => File.Exists(Path.Combine(HevcTestFiles.Corpus, n + ".heic")))
-        .Select(n => n + ".heic").Where(n => n is not ("hm-slices.heic" or "duck-clap-odd.heic") && Egami.Formats.Heic.HeicSupport.Matches(File.ReadAllBytes(Path.Combine(HevcTestFiles.Corpus, n)).AsSpan(0, 64)))
+        .Select(n => n + ".heic").Where(n => n is not ("hm-slices.heic" or "duck-clap-odd.heic" or "pan-sequence.heic") && Egami.Formats.Heic.HeicSupport.Matches(File.ReadAllBytes(Path.Combine(HevcTestFiles.Corpus, n)).AsSpan(0, 64)))
         .Order(StringComparer.Ordinal)!];
 
     [Theory]
