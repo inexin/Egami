@@ -230,6 +230,11 @@ egami-video audio in.mkv -o sound.flac
 <td><code>-lavfi psnr</code>, <code>-lavfi ssim</code></td>
 </tr>
 <tr>
+<td><code>verify</code></td>
+<td>Check FFV1 files for damage without decoding</td>
+<td><code>-err_detect crccheck -f null -</code></td>
+</tr>
+<tr>
 <td><code>audio</code></td>
 <td>Audio to WAV, FLAC, Opus, AIFF, CAF or ALAC; audio again while copying video</td>
 <td><code>-vn -c:a flac</code>, <code>-c:a libopus -b:a</code>, <code>-ar</code>, <code>-ac</code></td>
@@ -302,9 +307,12 @@ egami-video audio in.mkv -o sound.flac
 </tbody>
 </table>
 <p>Commands that copy packets (<code>remux</code>, <code>trim</code>, <code>concat</code>, <code>segment</code>, <code>timestamps</code>, <code>extract</code>, <code>embed</code>, <code>metadata</code>) never decode, so
-they work on any codec, H.264 and AAC included. Commands that decode need a codec Egami.Video decodes: Motion JPEG, VP8, VP9, AV1
-and uncompressed video, and PCM, FLAC, Opus and Vorbis audio. <code>encode</code> and <code>run</code> write Motion JPEG, VP8, VP9, AV1 or uncompressed video; <code>encode --codec vp8</code>, <code>vp9</code> or <code>av1</code> takes
-<code>--effort</code> and <code>--bitrate</code> (see <a href="../guides/video-encoding.html">Encoding video</a>).</p>
+they work on any codec, H.264 and AAC included. Commands that decode need a codec Egami.Video decodes: Motion JPEG, VP8, VP9, AV1,
+FFV1 and uncompressed video, and PCM, FLAC, Opus and Vorbis audio. <code>encode</code> and <code>run</code> write Motion JPEG, VP8, VP9, AV1, FFV1 or uncompressed video; <code>encode --codec vp8</code>, <code>vp9</code> or <code>av1</code> takes
+<code>--effort</code> and <code>--bitrate</code> (see <a href="../guides/video-encoding.html">Encoding video</a>). <code>--keyframe-interval</code> spaces keyframes for any codec.</p>
+<p><code>--codec ffv1</code> writes lossless FFV1 version 3 to Matroska or AVI, with the archival defaults: every frame a keyframe, slice CRCs
+on and a slice grid picked from the frame size. <code>--slices</code>, <code>--no-slice-crc</code>, <code>--coder range|range-default|golomb</code> and
+<code>--context small|large</code> change them. <code>run</code> keeps an FFV1 input in FFV1.</p>
 <h2 id="inspecting">Inspecting</h2>
 <p><code>info</code> reads the headers without decoding. <code>--all</code> reads every packet too, for packet and keyframe counts and bit rates;
 <code>--headers</code> shows the codec headers of each track's first frame; <code>--packets</code> and <code>--frames</code> list every packet and every decoded
@@ -483,9 +491,13 @@ accuracy. A step of <code>run</code> can take a time window, <code>@start-end</c
 <h2 id="checking">Checking</h2>
 <p><code>hash</code> writes a hash of every decoded frame (or every packet with <code>--packets</code>) in the layout of <code>ffmpeg -f framemd5</code>, and the
 hashes equal ffmpeg's for the same decoded planes. <code>compare</code> measures PSNR and SSIM per plane between a reference and other
-clips, and <code>--min-psnr</code> or <code>--min-ssim</code> turn it into a check that exits with 1.</p>
+clips, and <code>--min-psnr</code> or <code>--min-ssim</code> turn it into a check that exits with 1. <code>verify</code> checks FFV1 files for damage without
+decoding a picture: every slice's CRC and footer and the configuration CRC, far faster than a decode, so an archive can run it
+routinely; it exits with 1 when a file is damaged and lists each damaged slice (<code>--json</code> for scripts).</p>
 <pre><code class="lang-sh">egami-video hash in.webm --total
 egami-video compare in.mkv small.mkv --scale --json
+egami-video encode in.mkv --codec ffv1 -o archive.mkv
+egami-video verify archive.mkv
 </code></pre>
 <h2 id="files-batches-and-pipes">Files, batches and pipes</h2>
 <p>Inputs are files, globs (<code>*</code>, <code>?</code>, <code>[abc]</code>, <code>**</code>, expanded the same way in every shell), folders with <code>--recursive</code>, or <code>-</code> for
