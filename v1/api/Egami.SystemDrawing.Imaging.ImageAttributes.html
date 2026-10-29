@@ -1,0 +1,1822 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class ImageAttributes | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class ImageAttributes | Egami ">
+      
+      <meta name="description" content="How images are recolored when drawn and what is drawn beyond their edges: color matrices, gamma, threshold, a color key, remap tables and an output channel per , and a wrap mode. Without a wrap mode set, nothing is drawn beyond an image, as in GDI+.">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_SystemDrawing_Imaging_ImageAttributes.md&amp;value=---%0Auid%3A%20Egami.SystemDrawing.Imaging.ImageAttributes%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.SystemDrawing.Imaging.ImageAttributes">
+
+
+
+  <h1 id="Egami_SystemDrawing_Imaging_ImageAttributes" data-uid="Egami.SystemDrawing.Imaging.ImageAttributes" class="text-break">
+Class ImageAttributes  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/ImageAttributes.cs/#L271"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a>.<a class="xref" href="Egami.SystemDrawing.html">SystemDrawing</a>.<a class="xref" href="Egami.SystemDrawing.Imaging.html">Imaging</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.SystemDrawing.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>How images are recolored when drawn and what is drawn beyond their edges: color matrices, gamma, threshold, a color key, remap
+tables and an output channel per <a class="xref" href="Egami.SystemDrawing.Imaging.ColorAdjustType.html">ColorAdjustType</a>, and a wrap mode. Without a wrap mode set, nothing is drawn
+beyond an image, as in GDI+.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public sealed class ImageAttributes : ICloneable, IDisposable</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><span class="xref">ImageAttributes</span></div>
+    </dd>
+  </dl>
+
+  <dl class="typelist implements">
+    <dt>Implements</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.icloneable">ICloneable</a></div>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.idisposable">IDisposable</a></div>
+    </dd>
+  </dl>
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+  </dd></dl>
+
+
+
+  <h2 id="Egami_SystemDrawing_Imaging_ImageAttributes_examples">Examples</h2>
+  <pre><code class="lang-csharp">// DrawImage at a point draws at the image's physical size; ImageAttributes adjust its colors and tile it.
+using Bitmap source = new(8, 8);
+source.SetResolution(48, 48);  // half the 96 dpi of the bitmap drawn on, so it is drawn twice as large
+using (Graphics s = Graphics.FromImage(source))
+{
+    s.Clear(Color.Orange);
+}
+
+using Bitmap bitmap = new(64, 48);
+using Graphics g = Graphics.FromImage(bitmap);
+g.DrawImage(source, 0, 0);  // 16 by 16 pixels
+g.InterpolationMode = InterpolationMode.NearestNeighbor;
+using ImageAttributes attributes = new();
+attributes.SetColorMatrix(new ColorMatrix { Matrix33 = 0.5f });  // half the alpha
+attributes.SetWrapMode(WrapMode.Tile);
+g.DrawImage(source, new Rectangle(20, 0, 40, 40), 0, 0, 16, 16, GraphicsUnit.Pixel, attributes);</code></pre>
+
+
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="Egami_SystemDrawing_Imaging_ImageAttributes_ClearBrushRemapTable_" data-uid="Egami.SystemDrawing.Imaging.ImageAttributes.ClearBrushRemapTable*"></a>
+
+  <h3 id="Egami_SystemDrawing_Imaging_ImageAttributes_ClearBrushRemapTable" data-uid="Egami.SystemDrawing.Imaging.ImageAttributes.ClearBrushRemapTable">
+  ClearBrushRemapTable()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/ImageAttributes.cs/#L529"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Removes the remap table for brushes.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void ClearBrushRemapTable()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Imaging_ImageAttributes_ClearColorKey_" data-uid="Egami.SystemDrawing.Imaging.ImageAttributes.ClearColorKey*"></a>
+
+  <h3 id="Egami_SystemDrawing_Imaging_ImageAttributes_ClearColorKey" data-uid="Egami.SystemDrawing.Imaging.ImageAttributes.ClearColorKey">
+  ClearColorKey()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/ImageAttributes.cs/#L421"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Removes the color key for every type.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void ClearColorKey()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Imaging_ImageAttributes_ClearColorKey_" data-uid="Egami.SystemDrawing.Imaging.ImageAttributes.ClearColorKey*"></a>
+
+  <h3 id="Egami_SystemDrawing_Imaging_ImageAttributes_ClearColorKey_Egami_SystemDrawing_Imaging_ColorAdjustType_" data-uid="Egami.SystemDrawing.Imaging.ImageAttributes.ClearColorKey(Egami.SystemDrawing.Imaging.ColorAdjustType)">
+  ClearColorKey(ColorAdjustType)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/ImageAttributes.cs/#L425"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Removes the color key for one type.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void ClearColorKey(ColorAdjustType type)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>type</code> <a class="xref" href="Egami.SystemDrawing.Imaging.ColorAdjustType.html">ColorAdjustType</a></dt>
+    <dd><p>The type.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Imaging_ImageAttributes_ClearColorMatrix_" data-uid="Egami.SystemDrawing.Imaging.ImageAttributes.ClearColorMatrix*"></a>
+
+  <h3 id="Egami_SystemDrawing_Imaging_ImageAttributes_ClearColorMatrix" data-uid="Egami.SystemDrawing.Imaging.ImageAttributes.ClearColorMatrix">
+  ClearColorMatrix()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/ImageAttributes.cs/#L347"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Removes the color matrices of every type.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void ClearColorMatrix()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Imaging_ImageAttributes_ClearColorMatrix_" data-uid="Egami.SystemDrawing.Imaging.ImageAttributes.ClearColorMatrix*"></a>
+
+  <h3 id="Egami_SystemDrawing_Imaging_ImageAttributes_ClearColorMatrix_Egami_SystemDrawing_Imaging_ColorAdjustType_" data-uid="Egami.SystemDrawing.Imaging.ImageAttributes.ClearColorMatrix(Egami.SystemDrawing.Imaging.ColorAdjustType)">
+  ClearColorMatrix(ColorAdjustType)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/ImageAttributes.cs/#L351"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Removes the color matrices of one type.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void ClearColorMatrix(ColorAdjustType type)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>type</code> <a class="xref" href="Egami.SystemDrawing.Imaging.ColorAdjustType.html">ColorAdjustType</a></dt>
+    <dd><p>The type.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Imaging_ImageAttributes_ClearGamma_" data-uid="Egami.SystemDrawing.Imaging.ImageAttributes.ClearGamma*"></a>
+
+  <h3 id="Egami_SystemDrawing_Imaging_ImageAttributes_ClearGamma" data-uid="Egami.SystemDrawing.Imaging.ImageAttributes.ClearGamma">
+  ClearGamma()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/ImageAttributes.cs/#L368"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Removes gamma for every type.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void ClearGamma()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Imaging_ImageAttributes_ClearGamma_" data-uid="Egami.SystemDrawing.Imaging.ImageAttributes.ClearGamma*"></a>
+
+  <h3 id="Egami_SystemDrawing_Imaging_ImageAttributes_ClearGamma_Egami_SystemDrawing_Imaging_ColorAdjustType_" data-uid="Egami.SystemDrawing.Imaging.ImageAttributes.ClearGamma(Egami.SystemDrawing.Imaging.ColorAdjustType)">
+  ClearGamma(ColorAdjustType)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/ImageAttributes.cs/#L372"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Removes gamma for one type.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void ClearGamma(ColorAdjustType type)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>type</code> <a class="xref" href="Egami.SystemDrawing.Imaging.ColorAdjustType.html">ColorAdjustType</a></dt>
+    <dd><p>The type.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Imaging_ImageAttributes_ClearNoOp_" data-uid="Egami.SystemDrawing.Imaging.ImageAttributes.ClearNoOp*"></a>
+
+  <h3 id="Egami_SystemDrawing_Imaging_ImageAttributes_ClearNoOp" data-uid="Egami.SystemDrawing.Imaging.ImageAttributes.ClearNoOp">
+  ClearNoOp()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/ImageAttributes.cs/#L382"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Turns color adjustment back on for every type.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void ClearNoOp()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Imaging_ImageAttributes_ClearNoOp_" data-uid="Egami.SystemDrawing.Imaging.ImageAttributes.ClearNoOp*"></a>
+
+  <h3 id="Egami_SystemDrawing_Imaging_ImageAttributes_ClearNoOp_Egami_SystemDrawing_Imaging_ColorAdjustType_" data-uid="Egami.SystemDrawing.Imaging.ImageAttributes.ClearNoOp(Egami.SystemDrawing.Imaging.ColorAdjustType)">
+  ClearNoOp(ColorAdjustType)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/ImageAttributes.cs/#L386"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Turns color adjustment back on for one type.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void ClearNoOp(ColorAdjustType type)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>type</code> <a class="xref" href="Egami.SystemDrawing.Imaging.ColorAdjustType.html">ColorAdjustType</a></dt>
+    <dd><p>The type.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Imaging_ImageAttributes_ClearOutputChannel_" data-uid="Egami.SystemDrawing.Imaging.ImageAttributes.ClearOutputChannel*"></a>
+
+  <h3 id="Egami_SystemDrawing_Imaging_ImageAttributes_ClearOutputChannel" data-uid="Egami.SystemDrawing.Imaging.ImageAttributes.ClearOutputChannel">
+  ClearOutputChannel()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/ImageAttributes.cs/#L437"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Removes the output channel for every type.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void ClearOutputChannel()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Imaging_ImageAttributes_ClearOutputChannel_" data-uid="Egami.SystemDrawing.Imaging.ImageAttributes.ClearOutputChannel*"></a>
+
+  <h3 id="Egami_SystemDrawing_Imaging_ImageAttributes_ClearOutputChannel_Egami_SystemDrawing_Imaging_ColorAdjustType_" data-uid="Egami.SystemDrawing.Imaging.ImageAttributes.ClearOutputChannel(Egami.SystemDrawing.Imaging.ColorAdjustType)">
+  ClearOutputChannel(ColorAdjustType)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/ImageAttributes.cs/#L441"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Removes the output channel for one type.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void ClearOutputChannel(ColorAdjustType type)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>type</code> <a class="xref" href="Egami.SystemDrawing.Imaging.ColorAdjustType.html">ColorAdjustType</a></dt>
+    <dd><p>The type.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Imaging_ImageAttributes_ClearOutputChannelColorProfile_" data-uid="Egami.SystemDrawing.Imaging.ImageAttributes.ClearOutputChannelColorProfile*"></a>
+
+  <h3 id="Egami_SystemDrawing_Imaging_ImageAttributes_ClearOutputChannelColorProfile" data-uid="Egami.SystemDrawing.Imaging.ImageAttributes.ClearOutputChannelColorProfile">
+  ClearOutputChannelColorProfile()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/ImageAttributes.cs/#L453"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Does nothing, as nothing keeps a color profile.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void ClearOutputChannelColorProfile()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Imaging_ImageAttributes_ClearOutputChannelColorProfile_" data-uid="Egami.SystemDrawing.Imaging.ImageAttributes.ClearOutputChannelColorProfile*"></a>
+
+  <h3 id="Egami_SystemDrawing_Imaging_ImageAttributes_ClearOutputChannelColorProfile_Egami_SystemDrawing_Imaging_ColorAdjustType_" data-uid="Egami.SystemDrawing.Imaging.ImageAttributes.ClearOutputChannelColorProfile(Egami.SystemDrawing.Imaging.ColorAdjustType)">
+  ClearOutputChannelColorProfile(ColorAdjustType)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/ImageAttributes.cs/#L459"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Does nothing, as nothing keeps a color profile.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void ClearOutputChannelColorProfile(ColorAdjustType type)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>type</code> <a class="xref" href="Egami.SystemDrawing.Imaging.ColorAdjustType.html">ColorAdjustType</a></dt>
+    <dd><p>The type.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Imaging_ImageAttributes_ClearRemapTable_" data-uid="Egami.SystemDrawing.Imaging.ImageAttributes.ClearRemapTable*"></a>
+
+  <h3 id="Egami_SystemDrawing_Imaging_ImageAttributes_ClearRemapTable" data-uid="Egami.SystemDrawing.Imaging.ImageAttributes.ClearRemapTable">
+  ClearRemapTable()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/ImageAttributes.cs/#L510"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Removes the remap table for every type.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void ClearRemapTable()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Imaging_ImageAttributes_ClearRemapTable_" data-uid="Egami.SystemDrawing.Imaging.ImageAttributes.ClearRemapTable*"></a>
+
+  <h3 id="Egami_SystemDrawing_Imaging_ImageAttributes_ClearRemapTable_Egami_SystemDrawing_Imaging_ColorAdjustType_" data-uid="Egami.SystemDrawing.Imaging.ImageAttributes.ClearRemapTable(Egami.SystemDrawing.Imaging.ColorAdjustType)">
+  ClearRemapTable(ColorAdjustType)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/ImageAttributes.cs/#L514"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Removes the remap table for one type.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void ClearRemapTable(ColorAdjustType type)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>type</code> <a class="xref" href="Egami.SystemDrawing.Imaging.ColorAdjustType.html">ColorAdjustType</a></dt>
+    <dd><p>The type.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Imaging_ImageAttributes_ClearThreshold_" data-uid="Egami.SystemDrawing.Imaging.ImageAttributes.ClearThreshold*"></a>
+
+  <h3 id="Egami_SystemDrawing_Imaging_ImageAttributes_ClearThreshold" data-uid="Egami.SystemDrawing.Imaging.ImageAttributes.ClearThreshold">
+  ClearThreshold()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/ImageAttributes.cs/#L398"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Removes the threshold for every type.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void ClearThreshold()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Imaging_ImageAttributes_ClearThreshold_" data-uid="Egami.SystemDrawing.Imaging.ImageAttributes.ClearThreshold*"></a>
+
+  <h3 id="Egami_SystemDrawing_Imaging_ImageAttributes_ClearThreshold_Egami_SystemDrawing_Imaging_ColorAdjustType_" data-uid="Egami.SystemDrawing.Imaging.ImageAttributes.ClearThreshold(Egami.SystemDrawing.Imaging.ColorAdjustType)">
+  ClearThreshold(ColorAdjustType)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/ImageAttributes.cs/#L402"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Removes the threshold for one type.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void ClearThreshold(ColorAdjustType type)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>type</code> <a class="xref" href="Egami.SystemDrawing.Imaging.ColorAdjustType.html">ColorAdjustType</a></dt>
+    <dd><p>The type.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Imaging_ImageAttributes_Clone_" data-uid="Egami.SystemDrawing.Imaging.ImageAttributes.Clone*"></a>
+
+  <h3 id="Egami_SystemDrawing_Imaging_ImageAttributes_Clone" data-uid="Egami.SystemDrawing.Imaging.ImageAttributes.Clone">
+  Clone()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/ImageAttributes.cs/#L277"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>A copy.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public object Clone()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></dt>
+    <dd><p>The copy.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Imaging_ImageAttributes_Dispose_" data-uid="Egami.SystemDrawing.Imaging.ImageAttributes.Dispose*"></a>
+
+  <h3 id="Egami_SystemDrawing_Imaging_ImageAttributes_Dispose" data-uid="Egami.SystemDrawing.Imaging.ImageAttributes.Dispose">
+  Dispose()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/ImageAttributes.cs/#L299"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Does nothing; the attributes hold no unmanaged memory.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Dispose()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Imaging_ImageAttributes_GetAdjustedPalette_" data-uid="Egami.SystemDrawing.Imaging.ImageAttributes.GetAdjustedPalette*"></a>
+
+  <h3 id="Egami_SystemDrawing_Imaging_ImageAttributes_GetAdjustedPalette_Egami_SystemDrawing_Imaging_ColorPalette_Egami_SystemDrawing_Imaging_ColorAdjustType_" data-uid="Egami.SystemDrawing.Imaging.ImageAttributes.GetAdjustedPalette(Egami.SystemDrawing.Imaging.ColorPalette,Egami.SystemDrawing.Imaging.ColorAdjustType)">
+  GetAdjustedPalette(ColorPalette, ColorAdjustType)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/ImageAttributes.cs/#L554"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Changes a palette's colors as a type's adjustments change colors.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void GetAdjustedPalette(ColorPalette palette, ColorAdjustType type)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>palette</code> <a class="xref" href="Egami.SystemDrawing.Imaging.ColorPalette.html">ColorPalette</a></dt>
+    <dd><p>The palette to change in place.</p>
+</dd>
+    <dt><code>type</code> <a class="xref" href="Egami.SystemDrawing.Imaging.ColorAdjustType.html">ColorAdjustType</a></dt>
+    <dd><p>The type.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Imaging_ImageAttributes_SetBrushRemapTable_" data-uid="Egami.SystemDrawing.Imaging.ImageAttributes.SetBrushRemapTable*"></a>
+
+  <h3 id="Egami_SystemDrawing_Imaging_ImageAttributes_SetBrushRemapTable_Egami_SystemDrawing_Imaging_ColorMap___" data-uid="Egami.SystemDrawing.Imaging.ImageAttributes.SetBrushRemapTable(Egami.SystemDrawing.Imaging.ColorMap[])">
+  SetBrushRemapTable(ColorMap[])
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/ImageAttributes.cs/#L518"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Sets the remap table for brushes.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void SetBrushRemapTable(ColorMap[] map)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>map</code> <a class="xref" href="Egami.SystemDrawing.Imaging.ColorMap.html">ColorMap</a>[]</dt>
+    <dd><p>The replacements.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Imaging_ImageAttributes_SetBrushRemapTable_" data-uid="Egami.SystemDrawing.Imaging.ImageAttributes.SetBrushRemapTable*"></a>
+
+  <h3 id="Egami_SystemDrawing_Imaging_ImageAttributes_SetBrushRemapTable_System_ReadOnlySpan_Egami_SystemDrawing_Imaging_ColorMap__" data-uid="Egami.SystemDrawing.Imaging.ImageAttributes.SetBrushRemapTable(System.ReadOnlySpan{Egami.SystemDrawing.Imaging.ColorMap})">
+  SetBrushRemapTable(ReadOnlySpan&lt;ColorMap&gt;)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/ImageAttributes.cs/#L522"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Sets the remap table for brushes.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void SetBrushRemapTable(ReadOnlySpan&lt;ColorMap&gt; map)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>map</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;<a class="xref" href="Egami.SystemDrawing.Imaging.ColorMap.html">ColorMap</a>&gt;</dt>
+    <dd><p>The replacements.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Imaging_ImageAttributes_SetBrushRemapTable_" data-uid="Egami.SystemDrawing.Imaging.ImageAttributes.SetBrushRemapTable*"></a>
+
+  <h3 id="Egami_SystemDrawing_Imaging_ImageAttributes_SetBrushRemapTable_System_ReadOnlySpan_System_ValueTuple_System_Drawing_Color_System_Drawing_Color___" data-uid="Egami.SystemDrawing.Imaging.ImageAttributes.SetBrushRemapTable(System.ReadOnlySpan{System.ValueTuple{System.Drawing.Color,System.Drawing.Color}})">
+  SetBrushRemapTable(ReadOnlySpan&lt;(Color OldColor, Color NewColor)&gt;)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/ImageAttributes.cs/#L526"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Sets the remap table for brushes.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void SetBrushRemapTable(ReadOnlySpan&lt;(Color OldColor, Color NewColor)&gt; map)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>map</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;(<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.color">Color</a> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.valuetuple-system.drawing.color,system.drawing.color-.oldcolor">OldColor</a>, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.color">Color</a> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.valuetuple-system.drawing.color,system.drawing.color-.newcolor">NewColor</a>)&gt;</dt>
+    <dd><p>The replacements, old color then new.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Imaging_ImageAttributes_SetColorKey_" data-uid="Egami.SystemDrawing.Imaging.ImageAttributes.SetColorKey*"></a>
+
+  <h3 id="Egami_SystemDrawing_Imaging_ImageAttributes_SetColorKey_System_Drawing_Color_System_Drawing_Color_" data-uid="Egami.SystemDrawing.Imaging.ImageAttributes.SetColorKey(System.Drawing.Color,System.Drawing.Color)">
+  SetColorKey(Color, Color)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/ImageAttributes.cs/#L407"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Sets a color key for every type: colors whose channels all lie in the range become transparent.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void SetColorKey(Color colorLow, Color colorHigh)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>colorLow</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.color">Color</a></dt>
+    <dd><p>The lowest color of the range.</p>
+</dd>
+    <dt><code>colorHigh</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.color">Color</a></dt>
+    <dd><p>The highest color of the range.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Imaging_ImageAttributes_SetColorKey_" data-uid="Egami.SystemDrawing.Imaging.ImageAttributes.SetColorKey*"></a>
+
+  <h3 id="Egami_SystemDrawing_Imaging_ImageAttributes_SetColorKey_System_Drawing_Color_System_Drawing_Color_Egami_SystemDrawing_Imaging_ColorAdjustType_" data-uid="Egami.SystemDrawing.Imaging.ImageAttributes.SetColorKey(System.Drawing.Color,System.Drawing.Color,Egami.SystemDrawing.Imaging.ColorAdjustType)">
+  SetColorKey(Color, Color, ColorAdjustType)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/ImageAttributes.cs/#L413"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Sets a color key for one type.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void SetColorKey(Color colorLow, Color colorHigh, ColorAdjustType type)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>colorLow</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.color">Color</a></dt>
+    <dd><p>The lowest color of the range.</p>
+</dd>
+    <dt><code>colorHigh</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.color">Color</a></dt>
+    <dd><p>The highest color of the range.</p>
+</dd>
+    <dt><code>type</code> <a class="xref" href="Egami.SystemDrawing.Imaging.ColorAdjustType.html">ColorAdjustType</a></dt>
+    <dd><p>The type.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Imaging_ImageAttributes_SetColorMatrices_" data-uid="Egami.SystemDrawing.Imaging.ImageAttributes.SetColorMatrices*"></a>
+
+  <h3 id="Egami_SystemDrawing_Imaging_ImageAttributes_SetColorMatrices_Egami_SystemDrawing_Imaging_ColorMatrix_Egami_SystemDrawing_Imaging_ColorMatrix_" data-uid="Egami.SystemDrawing.Imaging.ImageAttributes.SetColorMatrices(Egami.SystemDrawing.Imaging.ColorMatrix,Egami.SystemDrawing.Imaging.ColorMatrix)">
+  SetColorMatrices(ColorMatrix, ColorMatrix?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/ImageAttributes.cs/#L327"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Sets the color matrix and the gray matrix for every type.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void SetColorMatrices(ColorMatrix newColorMatrix, ColorMatrix? grayMatrix)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>newColorMatrix</code> <a class="xref" href="Egami.SystemDrawing.Imaging.ColorMatrix.html">ColorMatrix</a></dt>
+    <dd><p>The color matrix.</p>
+</dd>
+    <dt><code>grayMatrix</code> <a class="xref" href="Egami.SystemDrawing.Imaging.ColorMatrix.html">ColorMatrix</a></dt>
+    <dd><p>The gray matrix, used with <a class="xref" href="Egami.SystemDrawing.Imaging.ColorMatrixFlag.html#Egami_SystemDrawing_Imaging_ColorMatrixFlag_AltGrays">AltGrays</a>.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Imaging_ImageAttributes_SetColorMatrices_" data-uid="Egami.SystemDrawing.Imaging.ImageAttributes.SetColorMatrices*"></a>
+
+  <h3 id="Egami_SystemDrawing_Imaging_ImageAttributes_SetColorMatrices_Egami_SystemDrawing_Imaging_ColorMatrix_Egami_SystemDrawing_Imaging_ColorMatrix_Egami_SystemDrawing_Imaging_ColorMatrixFlag_" data-uid="Egami.SystemDrawing.Imaging.ImageAttributes.SetColorMatrices(Egami.SystemDrawing.Imaging.ColorMatrix,Egami.SystemDrawing.Imaging.ColorMatrix,Egami.SystemDrawing.Imaging.ColorMatrixFlag)">
+  SetColorMatrices(ColorMatrix, ColorMatrix?, ColorMatrixFlag)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/ImageAttributes.cs/#L333"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Sets the color matrix and the gray matrix for every type.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void SetColorMatrices(ColorMatrix newColorMatrix, ColorMatrix? grayMatrix, ColorMatrixFlag flags)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>newColorMatrix</code> <a class="xref" href="Egami.SystemDrawing.Imaging.ColorMatrix.html">ColorMatrix</a></dt>
+    <dd><p>The color matrix.</p>
+</dd>
+    <dt><code>grayMatrix</code> <a class="xref" href="Egami.SystemDrawing.Imaging.ColorMatrix.html">ColorMatrix</a></dt>
+    <dd><p>The gray matrix, used with <a class="xref" href="Egami.SystemDrawing.Imaging.ColorMatrixFlag.html#Egami_SystemDrawing_Imaging_ColorMatrixFlag_AltGrays">AltGrays</a>.</p>
+</dd>
+    <dt><code>flags</code> <a class="xref" href="Egami.SystemDrawing.Imaging.ColorMatrixFlag.html">ColorMatrixFlag</a></dt>
+    <dd><p>Which colors the color matrix changes.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Imaging_ImageAttributes_SetColorMatrices_" data-uid="Egami.SystemDrawing.Imaging.ImageAttributes.SetColorMatrices*"></a>
+
+  <h3 id="Egami_SystemDrawing_Imaging_ImageAttributes_SetColorMatrices_Egami_SystemDrawing_Imaging_ColorMatrix_Egami_SystemDrawing_Imaging_ColorMatrix_Egami_SystemDrawing_Imaging_ColorMatrixFlag_Egami_SystemDrawing_Imaging_ColorAdjustType_" data-uid="Egami.SystemDrawing.Imaging.ImageAttributes.SetColorMatrices(Egami.SystemDrawing.Imaging.ColorMatrix,Egami.SystemDrawing.Imaging.ColorMatrix,Egami.SystemDrawing.Imaging.ColorMatrixFlag,Egami.SystemDrawing.Imaging.ColorAdjustType)">
+  SetColorMatrices(ColorMatrix, ColorMatrix?, ColorMatrixFlag, ColorAdjustType)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/ImageAttributes.cs/#L340"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Sets the color matrix and the gray matrix for one type.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void SetColorMatrices(ColorMatrix newColorMatrix, ColorMatrix? grayMatrix, ColorMatrixFlag mode, ColorAdjustType type)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>newColorMatrix</code> <a class="xref" href="Egami.SystemDrawing.Imaging.ColorMatrix.html">ColorMatrix</a></dt>
+    <dd><p>The color matrix.</p>
+</dd>
+    <dt><code>grayMatrix</code> <a class="xref" href="Egami.SystemDrawing.Imaging.ColorMatrix.html">ColorMatrix</a></dt>
+    <dd><p>The gray matrix, used with <a class="xref" href="Egami.SystemDrawing.Imaging.ColorMatrixFlag.html#Egami_SystemDrawing_Imaging_ColorMatrixFlag_AltGrays">AltGrays</a>.</p>
+</dd>
+    <dt><code>mode</code> <a class="xref" href="Egami.SystemDrawing.Imaging.ColorMatrixFlag.html">ColorMatrixFlag</a></dt>
+    <dd><p>Which colors the color matrix changes.</p>
+</dd>
+    <dt><code>type</code> <a class="xref" href="Egami.SystemDrawing.Imaging.ColorAdjustType.html">ColorAdjustType</a></dt>
+    <dd><p>The type.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Imaging_ImageAttributes_SetColorMatrix_" data-uid="Egami.SystemDrawing.Imaging.ImageAttributes.SetColorMatrix*"></a>
+
+  <h3 id="Egami_SystemDrawing_Imaging_ImageAttributes_SetColorMatrix_Egami_SystemDrawing_Imaging_ColorMatrix_" data-uid="Egami.SystemDrawing.Imaging.ImageAttributes.SetColorMatrix(Egami.SystemDrawing.Imaging.ColorMatrix)">
+  SetColorMatrix(ColorMatrix)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/ImageAttributes.cs/#L305"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Sets the color matrix for every type.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void SetColorMatrix(ColorMatrix newColorMatrix)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>newColorMatrix</code> <a class="xref" href="Egami.SystemDrawing.Imaging.ColorMatrix.html">ColorMatrix</a></dt>
+    <dd><p>The matrix.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Imaging_ImageAttributes_SetColorMatrix_" data-uid="Egami.SystemDrawing.Imaging.ImageAttributes.SetColorMatrix*"></a>
+
+  <h3 id="Egami_SystemDrawing_Imaging_ImageAttributes_SetColorMatrix_Egami_SystemDrawing_Imaging_ColorMatrix_Egami_SystemDrawing_Imaging_ColorMatrixFlag_" data-uid="Egami.SystemDrawing.Imaging.ImageAttributes.SetColorMatrix(Egami.SystemDrawing.Imaging.ColorMatrix,Egami.SystemDrawing.Imaging.ColorMatrixFlag)">
+  SetColorMatrix(ColorMatrix, ColorMatrixFlag)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/ImageAttributes.cs/#L310"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Sets the color matrix for every type.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void SetColorMatrix(ColorMatrix newColorMatrix, ColorMatrixFlag flags)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>newColorMatrix</code> <a class="xref" href="Egami.SystemDrawing.Imaging.ColorMatrix.html">ColorMatrix</a></dt>
+    <dd><p>The matrix.</p>
+</dd>
+    <dt><code>flags</code> <a class="xref" href="Egami.SystemDrawing.Imaging.ColorMatrixFlag.html">ColorMatrixFlag</a></dt>
+    <dd><p>Which colors it changes.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Imaging_ImageAttributes_SetColorMatrix_" data-uid="Egami.SystemDrawing.Imaging.ImageAttributes.SetColorMatrix*"></a>
+
+  <h3 id="Egami_SystemDrawing_Imaging_ImageAttributes_SetColorMatrix_Egami_SystemDrawing_Imaging_ColorMatrix_Egami_SystemDrawing_Imaging_ColorMatrixFlag_Egami_SystemDrawing_Imaging_ColorAdjustType_" data-uid="Egami.SystemDrawing.Imaging.ImageAttributes.SetColorMatrix(Egami.SystemDrawing.Imaging.ColorMatrix,Egami.SystemDrawing.Imaging.ColorMatrixFlag,Egami.SystemDrawing.Imaging.ColorAdjustType)">
+  SetColorMatrix(ColorMatrix, ColorMatrixFlag, ColorAdjustType)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/ImageAttributes.cs/#L316"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Sets the color matrix for one type.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void SetColorMatrix(ColorMatrix newColorMatrix, ColorMatrixFlag mode, ColorAdjustType type)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>newColorMatrix</code> <a class="xref" href="Egami.SystemDrawing.Imaging.ColorMatrix.html">ColorMatrix</a></dt>
+    <dd><p>The matrix.</p>
+</dd>
+    <dt><code>mode</code> <a class="xref" href="Egami.SystemDrawing.Imaging.ColorMatrixFlag.html">ColorMatrixFlag</a></dt>
+    <dd><p>Which colors it changes.</p>
+</dd>
+    <dt><code>type</code> <a class="xref" href="Egami.SystemDrawing.Imaging.ColorAdjustType.html">ColorAdjustType</a></dt>
+    <dd><p>The type.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Imaging_ImageAttributes_SetGamma_" data-uid="Egami.SystemDrawing.Imaging.ImageAttributes.SetGamma*"></a>
+
+  <h3 id="Egami_SystemDrawing_Imaging_ImageAttributes_SetGamma_System_Single_" data-uid="Egami.SystemDrawing.Imaging.ImageAttributes.SetGamma(System.Single)">
+  SetGamma(float)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/ImageAttributes.cs/#L360"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Sets gamma for every type: each channel is raised to it.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void SetGamma(float gamma)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>gamma</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>The gamma, 0.1 to 5.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Imaging_ImageAttributes_SetGamma_" data-uid="Egami.SystemDrawing.Imaging.ImageAttributes.SetGamma*"></a>
+
+  <h3 id="Egami_SystemDrawing_Imaging_ImageAttributes_SetGamma_System_Single_Egami_SystemDrawing_Imaging_ColorAdjustType_" data-uid="Egami.SystemDrawing.Imaging.ImageAttributes.SetGamma(System.Single,Egami.SystemDrawing.Imaging.ColorAdjustType)">
+  SetGamma(float, ColorAdjustType)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/ImageAttributes.cs/#L365"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Sets gamma for one type.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void SetGamma(float gamma, ColorAdjustType type)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>gamma</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>The gamma, 0.1 to 5.</p>
+</dd>
+    <dt><code>type</code> <a class="xref" href="Egami.SystemDrawing.Imaging.ColorAdjustType.html">ColorAdjustType</a></dt>
+    <dd><p>The type.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Imaging_ImageAttributes_SetNoOp_" data-uid="Egami.SystemDrawing.Imaging.ImageAttributes.SetNoOp*"></a>
+
+  <h3 id="Egami_SystemDrawing_Imaging_ImageAttributes_SetNoOp" data-uid="Egami.SystemDrawing.Imaging.ImageAttributes.SetNoOp">
+  SetNoOp()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/ImageAttributes.cs/#L375"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Turns color adjustment off for every type.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void SetNoOp()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Imaging_ImageAttributes_SetNoOp_" data-uid="Egami.SystemDrawing.Imaging.ImageAttributes.SetNoOp*"></a>
+
+  <h3 id="Egami_SystemDrawing_Imaging_ImageAttributes_SetNoOp_Egami_SystemDrawing_Imaging_ColorAdjustType_" data-uid="Egami.SystemDrawing.Imaging.ImageAttributes.SetNoOp(Egami.SystemDrawing.Imaging.ColorAdjustType)">
+  SetNoOp(ColorAdjustType)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/ImageAttributes.cs/#L379"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Turns color adjustment off for one type.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void SetNoOp(ColorAdjustType type)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>type</code> <a class="xref" href="Egami.SystemDrawing.Imaging.ColorAdjustType.html">ColorAdjustType</a></dt>
+    <dd><p>The type.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Imaging_ImageAttributes_SetOutputChannel_" data-uid="Egami.SystemDrawing.Imaging.ImageAttributes.SetOutputChannel*"></a>
+
+  <h3 id="Egami_SystemDrawing_Imaging_ImageAttributes_SetOutputChannel_Egami_SystemDrawing_Imaging_ColorChannelFlag_" data-uid="Egami.SystemDrawing.Imaging.ImageAttributes.SetOutputChannel(Egami.SystemDrawing.Imaging.ColorChannelFlag)">
+  SetOutputChannel(ColorChannelFlag)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/ImageAttributes.cs/#L429"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Sets the CMYK channel shown as gray for every type.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void SetOutputChannel(ColorChannelFlag flags)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>flags</code> <a class="xref" href="Egami.SystemDrawing.Imaging.ColorChannelFlag.html">ColorChannelFlag</a></dt>
+    <dd><p>The channel.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Imaging_ImageAttributes_SetOutputChannel_" data-uid="Egami.SystemDrawing.Imaging.ImageAttributes.SetOutputChannel*"></a>
+
+  <h3 id="Egami_SystemDrawing_Imaging_ImageAttributes_SetOutputChannel_Egami_SystemDrawing_Imaging_ColorChannelFlag_Egami_SystemDrawing_Imaging_ColorAdjustType_" data-uid="Egami.SystemDrawing.Imaging.ImageAttributes.SetOutputChannel(Egami.SystemDrawing.Imaging.ColorChannelFlag,Egami.SystemDrawing.Imaging.ColorAdjustType)">
+  SetOutputChannel(ColorChannelFlag, ColorAdjustType)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/ImageAttributes.cs/#L434"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Sets the CMYK channel shown as gray for one type.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void SetOutputChannel(ColorChannelFlag flags, ColorAdjustType type)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>flags</code> <a class="xref" href="Egami.SystemDrawing.Imaging.ColorChannelFlag.html">ColorChannelFlag</a></dt>
+    <dd><p>The channel.</p>
+</dd>
+    <dt><code>type</code> <a class="xref" href="Egami.SystemDrawing.Imaging.ColorAdjustType.html">ColorAdjustType</a></dt>
+    <dd><p>The type.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Imaging_ImageAttributes_SetOutputChannelColorProfile_" data-uid="Egami.SystemDrawing.Imaging.ImageAttributes.SetOutputChannelColorProfile*"></a>
+
+  <h3 id="Egami_SystemDrawing_Imaging_ImageAttributes_SetOutputChannelColorProfile_System_String_" data-uid="Egami.SystemDrawing.Imaging.ImageAttributes.SetOutputChannelColorProfile(System.String)">
+  SetOutputChannelColorProfile(string)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/ImageAttributes.cs/#L445"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Accepted for compatibility; Egami computes the output channel without a color profile.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void SetOutputChannelColorProfile(string colorProfileFilename)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>colorProfileFilename</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The profile.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Imaging_ImageAttributes_SetOutputChannelColorProfile_" data-uid="Egami.SystemDrawing.Imaging.ImageAttributes.SetOutputChannelColorProfile*"></a>
+
+  <h3 id="Egami_SystemDrawing_Imaging_ImageAttributes_SetOutputChannelColorProfile_System_String_Egami_SystemDrawing_Imaging_ColorAdjustType_" data-uid="Egami.SystemDrawing.Imaging.ImageAttributes.SetOutputChannelColorProfile(System.String,Egami.SystemDrawing.Imaging.ColorAdjustType)">
+  SetOutputChannelColorProfile(string, ColorAdjustType)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/ImageAttributes.cs/#L450"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Accepted for compatibility; Egami computes the output channel without a color profile.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void SetOutputChannelColorProfile(string colorProfileFilename, ColorAdjustType type)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>colorProfileFilename</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The profile.</p>
+</dd>
+    <dt><code>type</code> <a class="xref" href="Egami.SystemDrawing.Imaging.ColorAdjustType.html">ColorAdjustType</a></dt>
+    <dd><p>The type.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Imaging_ImageAttributes_SetRemapTable_" data-uid="Egami.SystemDrawing.Imaging.ImageAttributes.SetRemapTable*"></a>
+
+  <h3 id="Egami_SystemDrawing_Imaging_ImageAttributes_SetRemapTable_Egami_SystemDrawing_Imaging_ColorAdjustType_System_ReadOnlySpan_Egami_SystemDrawing_Imaging_ColorMap__" data-uid="Egami.SystemDrawing.Imaging.ImageAttributes.SetRemapTable(Egami.SystemDrawing.Imaging.ColorAdjustType,System.ReadOnlySpan{Egami.SystemDrawing.Imaging.ColorMap})">
+  SetRemapTable(ColorAdjustType, ReadOnlySpan&lt;ColorMap&gt;)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/ImageAttributes.cs/#L484"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Sets the remap table for one type.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void SetRemapTable(ColorAdjustType type, ReadOnlySpan&lt;ColorMap&gt; map)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>type</code> <a class="xref" href="Egami.SystemDrawing.Imaging.ColorAdjustType.html">ColorAdjustType</a></dt>
+    <dd><p>The type.</p>
+</dd>
+    <dt><code>map</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;<a class="xref" href="Egami.SystemDrawing.Imaging.ColorMap.html">ColorMap</a>&gt;</dt>
+    <dd><p>The replacements.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Imaging_ImageAttributes_SetRemapTable_" data-uid="Egami.SystemDrawing.Imaging.ImageAttributes.SetRemapTable*"></a>
+
+  <h3 id="Egami_SystemDrawing_Imaging_ImageAttributes_SetRemapTable_Egami_SystemDrawing_Imaging_ColorAdjustType_System_ReadOnlySpan_System_ValueTuple_System_Drawing_Color_System_Drawing_Color___" data-uid="Egami.SystemDrawing.Imaging.ImageAttributes.SetRemapTable(Egami.SystemDrawing.Imaging.ColorAdjustType,System.ReadOnlySpan{System.ValueTuple{System.Drawing.Color,System.Drawing.Color}})">
+  SetRemapTable(ColorAdjustType, ReadOnlySpan&lt;(Color OldColor, Color NewColor)&gt;)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/ImageAttributes.cs/#L498"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Sets the remap table for one type.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void SetRemapTable(ColorAdjustType type, ReadOnlySpan&lt;(Color OldColor, Color NewColor)&gt; map)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>type</code> <a class="xref" href="Egami.SystemDrawing.Imaging.ColorAdjustType.html">ColorAdjustType</a></dt>
+    <dd><p>The type.</p>
+</dd>
+    <dt><code>map</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;(<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.color">Color</a> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.valuetuple-system.drawing.color,system.drawing.color-.oldcolor">OldColor</a>, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.color">Color</a> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.valuetuple-system.drawing.color,system.drawing.color-.newcolor">NewColor</a>)&gt;</dt>
+    <dd><p>The replacements, old color then new.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Imaging_ImageAttributes_SetRemapTable_" data-uid="Egami.SystemDrawing.Imaging.ImageAttributes.SetRemapTable*"></a>
+
+  <h3 id="Egami_SystemDrawing_Imaging_ImageAttributes_SetRemapTable_Egami_SystemDrawing_Imaging_ColorMap___" data-uid="Egami.SystemDrawing.Imaging.ImageAttributes.SetRemapTable(Egami.SystemDrawing.Imaging.ColorMap[])">
+  SetRemapTable(ColorMap[])
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/ImageAttributes.cs/#L465"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Sets the remap table for every type: colors replaced exactly by others.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void SetRemapTable(ColorMap[] map)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>map</code> <a class="xref" href="Egami.SystemDrawing.Imaging.ColorMap.html">ColorMap</a>[]</dt>
+    <dd><p>The replacements.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Imaging_ImageAttributes_SetRemapTable_" data-uid="Egami.SystemDrawing.Imaging.ImageAttributes.SetRemapTable*"></a>
+
+  <h3 id="Egami_SystemDrawing_Imaging_ImageAttributes_SetRemapTable_System_ReadOnlySpan_Egami_SystemDrawing_Imaging_ColorMap__" data-uid="Egami.SystemDrawing.Imaging.ImageAttributes.SetRemapTable(System.ReadOnlySpan{Egami.SystemDrawing.Imaging.ColorMap})">
+  SetRemapTable(ReadOnlySpan&lt;ColorMap&gt;)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/ImageAttributes.cs/#L475"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Sets the remap table for every type.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void SetRemapTable(ReadOnlySpan&lt;ColorMap&gt; map)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>map</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;<a class="xref" href="Egami.SystemDrawing.Imaging.ColorMap.html">ColorMap</a>&gt;</dt>
+    <dd><p>The replacements.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Imaging_ImageAttributes_SetRemapTable_" data-uid="Egami.SystemDrawing.Imaging.ImageAttributes.SetRemapTable*"></a>
+
+  <h3 id="Egami_SystemDrawing_Imaging_ImageAttributes_SetRemapTable_System_ReadOnlySpan_System_ValueTuple_System_Drawing_Color_System_Drawing_Color___" data-uid="Egami.SystemDrawing.Imaging.ImageAttributes.SetRemapTable(System.ReadOnlySpan{System.ValueTuple{System.Drawing.Color,System.Drawing.Color}})">
+  SetRemapTable(ReadOnlySpan&lt;(Color OldColor, Color NewColor)&gt;)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/ImageAttributes.cs/#L479"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Sets the remap table for every type.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void SetRemapTable(ReadOnlySpan&lt;(Color OldColor, Color NewColor)&gt; map)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>map</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;(<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.color">Color</a> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.valuetuple-system.drawing.color,system.drawing.color-.oldcolor">OldColor</a>, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.color">Color</a> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.valuetuple-system.drawing.color,system.drawing.color-.newcolor">NewColor</a>)&gt;</dt>
+    <dd><p>The replacements, old color then new.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Imaging_ImageAttributes_SetThreshold_" data-uid="Egami.SystemDrawing.Imaging.ImageAttributes.SetThreshold*"></a>
+
+  <h3 id="Egami_SystemDrawing_Imaging_ImageAttributes_SetThreshold_System_Single_" data-uid="Egami.SystemDrawing.Imaging.ImageAttributes.SetThreshold(System.Single)">
+  SetThreshold(float)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/ImageAttributes.cs/#L390"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Sets the threshold for every type: a channel above it becomes full, else zero.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void SetThreshold(float threshold)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>threshold</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>The threshold, 0 to 1.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Imaging_ImageAttributes_SetThreshold_" data-uid="Egami.SystemDrawing.Imaging.ImageAttributes.SetThreshold*"></a>
+
+  <h3 id="Egami_SystemDrawing_Imaging_ImageAttributes_SetThreshold_System_Single_Egami_SystemDrawing_Imaging_ColorAdjustType_" data-uid="Egami.SystemDrawing.Imaging.ImageAttributes.SetThreshold(System.Single,Egami.SystemDrawing.Imaging.ColorAdjustType)">
+  SetThreshold(float, ColorAdjustType)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/ImageAttributes.cs/#L395"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Sets the threshold for one type.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void SetThreshold(float threshold, ColorAdjustType type)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>threshold</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>The threshold, 0 to 1.</p>
+</dd>
+    <dt><code>type</code> <a class="xref" href="Egami.SystemDrawing.Imaging.ColorAdjustType.html">ColorAdjustType</a></dt>
+    <dd><p>The type.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Imaging_ImageAttributes_SetWrapMode_" data-uid="Egami.SystemDrawing.Imaging.ImageAttributes.SetWrapMode*"></a>
+
+  <h3 id="Egami_SystemDrawing_Imaging_ImageAttributes_SetWrapMode_Egami_SystemDrawing_Drawing2D_WrapMode_" data-uid="Egami.SystemDrawing.Imaging.ImageAttributes.SetWrapMode(Egami.SystemDrawing.Drawing2D.WrapMode)">
+  SetWrapMode(WrapMode)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/ImageAttributes.cs/#L533"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Sets how images repeat beyond their edges.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void SetWrapMode(WrapMode mode)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>mode</code> <a class="xref" href="Egami.SystemDrawing.Drawing2D.WrapMode.html">WrapMode</a></dt>
+    <dd><p>The wrap mode.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Imaging_ImageAttributes_SetWrapMode_" data-uid="Egami.SystemDrawing.Imaging.ImageAttributes.SetWrapMode*"></a>
+
+  <h3 id="Egami_SystemDrawing_Imaging_ImageAttributes_SetWrapMode_Egami_SystemDrawing_Drawing2D_WrapMode_System_Drawing_Color_" data-uid="Egami.SystemDrawing.Imaging.ImageAttributes.SetWrapMode(Egami.SystemDrawing.Drawing2D.WrapMode,System.Drawing.Color)">
+  SetWrapMode(WrapMode, Color)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/ImageAttributes.cs/#L538"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Sets how images repeat beyond their edges, and the color beyond them with <a class="xref" href="Egami.SystemDrawing.Drawing2D.WrapMode.html#Egami_SystemDrawing_Drawing2D_WrapMode_Clamp">Clamp</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void SetWrapMode(WrapMode mode, Color color)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>mode</code> <a class="xref" href="Egami.SystemDrawing.Drawing2D.WrapMode.html">WrapMode</a></dt>
+    <dd><p>The wrap mode.</p>
+</dd>
+    <dt><code>color</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.color">Color</a></dt>
+    <dd><p>The color beyond the edges.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Imaging_ImageAttributes_SetWrapMode_" data-uid="Egami.SystemDrawing.Imaging.ImageAttributes.SetWrapMode*"></a>
+
+  <h3 id="Egami_SystemDrawing_Imaging_ImageAttributes_SetWrapMode_Egami_SystemDrawing_Drawing2D_WrapMode_System_Drawing_Color_System_Boolean_" data-uid="Egami.SystemDrawing.Imaging.ImageAttributes.SetWrapMode(Egami.SystemDrawing.Drawing2D.WrapMode,System.Drawing.Color,System.Boolean)">
+  SetWrapMode(WrapMode, Color, bool)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/ImageAttributes.cs/#L544"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Sets how images repeat beyond their edges, and the color beyond them.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void SetWrapMode(WrapMode mode, Color color, bool clamp)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>mode</code> <a class="xref" href="Egami.SystemDrawing.Drawing2D.WrapMode.html">WrapMode</a></dt>
+    <dd><p>The wrap mode.</p>
+</dd>
+    <dt><code>color</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.color">Color</a></dt>
+    <dd><p>The color beyond the edges.</p>
+</dd>
+    <dt><code>clamp</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>Ignored, as in GDI+.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/ImageAttributes.cs/#L271" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

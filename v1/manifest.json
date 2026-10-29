@@ -11703,6 +11703,300 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Brush.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Brush.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Brush",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Brush.yml\" sourcestartlinenumber=\"1\">What fills shapes: the base of <xref href=\"Egami.SystemDrawing.SolidBrush\" data-throw-if-not-resolved=\"false\"></xref> and the other brushes.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.CopyPixelOperation.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.CopyPixelOperation.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.CopyPixelOperation",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.CopyPixelOperation.yml\" sourcestartlinenumber=\"1\">The raster operation of <xref href=\"Egami.SystemDrawing.Graphics.CopyFromScreen(System.Drawing.Point%2cSystem.Drawing.Point%2cSystem.Drawing.Size%2cEgami.SystemDrawing.CopyPixelOperation)\" data-throw-if-not-resolved=\"false\"></xref>, which needs Windows and always throws.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Drawing2D.CombineMode.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Drawing2D.CombineMode.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Drawing2D.CombineMode",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Drawing2D.CombineMode.yml\" sourcestartlinenumber=\"1\">How a region or clip combines with another.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Drawing2D.CompositingMode.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Drawing2D.CompositingMode.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Drawing2D.CompositingMode",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Drawing2D.CompositingMode.yml\" sourcestartlinenumber=\"1\">Whether drawing blends over what is there or replaces it.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Drawing2D.CompositingQuality.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Drawing2D.CompositingQuality.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Drawing2D.CompositingQuality",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Drawing2D.CompositingQuality.yml\" sourcestartlinenumber=\"1\">How carefully blending is done. Egami blends the same way for every value.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Drawing2D.CoordinateSpace.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Drawing2D.CoordinateSpace.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Drawing2D.CoordinateSpace",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Drawing2D.CoordinateSpace.yml\" sourcestartlinenumber=\"1\">A coordinate space of a <xref href=\"Egami.SystemDrawing.Graphics\" data-throw-if-not-resolved=\"false\"></xref>: world (before any transform), page (after the world transform) or device (pixels).</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Drawing2D.FillMode.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Drawing2D.FillMode.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Drawing2D.FillMode",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Drawing2D.FillMode.yml\" sourcestartlinenumber=\"1\">Which points are inside a shape that crosses itself.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Drawing2D.FlushIntention.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Drawing2D.FlushIntention.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Drawing2D.FlushIntention",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Drawing2D.FlushIntention.yml\" sourcestartlinenumber=\"1\">Whether <xref href=\"Egami.SystemDrawing.Graphics.Flush(Egami.SystemDrawing.Drawing2D.FlushIntention)\" data-throw-if-not-resolved=\"false\"></xref> waits for drawing to finish. Egami draws immediately, so both are the same.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Drawing2D.GraphicsContainer.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Drawing2D.GraphicsContainer.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Drawing2D.GraphicsContainer",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Drawing2D.GraphicsContainer.yml\" sourcestartlinenumber=\"1\">A container <xref href=\"Egami.SystemDrawing.Graphics.BeginContainer\" data-throw-if-not-resolved=\"false\"></xref> returned, for <xref href=\"Egami.SystemDrawing.Graphics.EndContainer(Egami.SystemDrawing.Drawing2D.GraphicsContainer)\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Drawing2D.GraphicsState.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Drawing2D.GraphicsState.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Drawing2D.GraphicsState",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Drawing2D.GraphicsState.yml\" sourcestartlinenumber=\"1\">A graphics state <xref href=\"Egami.SystemDrawing.Graphics.Save\" data-throw-if-not-resolved=\"false\"></xref> returned, for <xref href=\"Egami.SystemDrawing.Graphics.Restore(Egami.SystemDrawing.Drawing2D.GraphicsState)\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Drawing2D.InterpolationMode.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Drawing2D.InterpolationMode.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Drawing2D.InterpolationMode",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Drawing2D.InterpolationMode.yml\" sourcestartlinenumber=\"1\">How images are sampled when drawn at another size or angle. GDI+ and Egami.SystemDrawing default to bilinear without prefiltering.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Drawing2D.Matrix.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Drawing2D.Matrix.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Drawing2D.Matrix",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Drawing2D.Matrix.yml\" sourcestartlinenumber=\"1\">A 3 by 2 affine transform, as System.Drawing's Matrix: row vectors times the matrix, so <xref href=\"Egami.SystemDrawing.Drawing2D.MatrixOrder.Prepend\" data-throw-if-not-resolved=\"false\"></xref> (the\ndefault) applies a new transform before the existing one.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Drawing2D.MatrixOrder.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Drawing2D.MatrixOrder.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Drawing2D.MatrixOrder",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Drawing2D.MatrixOrder.yml\" sourcestartlinenumber=\"1\">Whether a transform is applied before the existing ones (<xref href=\"Egami.SystemDrawing.Drawing2D.MatrixOrder.Prepend\" data-throw-if-not-resolved=\"false\"></xref>, the default) or after them.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Drawing2D.PixelOffsetMode.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Drawing2D.PixelOffsetMode.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Drawing2D.PixelOffsetMode",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Drawing2D.PixelOffsetMode.yml\" sourcestartlinenumber=\"1\">Where pixel centers are: on whole coordinates (the default), or half a pixel off with <xref href=\"Egami.SystemDrawing.Drawing2D.PixelOffsetMode.Half\" data-throw-if-not-resolved=\"false\"></xref> and <xref href=\"Egami.SystemDrawing.Drawing2D.PixelOffsetMode.HighQuality\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Drawing2D.QualityMode.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Drawing2D.QualityMode.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Drawing2D.QualityMode",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Drawing2D.QualityMode.yml\" sourcestartlinenumber=\"1\">A quality level, the base of the smoothing, compositing and interpolation modes.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Drawing2D.RegionData.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Drawing2D.RegionData.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Drawing2D.RegionData",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Drawing2D.RegionData.yml\" sourcestartlinenumber=\"1\">A region in the EMF+ region format ([MS-EMFPLUS] 2.2.1.8), after GDI+'s size and checksum, from <xref href=\"Egami.SystemDrawing.Region.GetRegionData\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Drawing2D.SmoothingMode.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Drawing2D.SmoothingMode.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Drawing2D.SmoothingMode",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Drawing2D.SmoothingMode.yml\" sourcestartlinenumber=\"1\">Whether shapes and lines are antialiased. GDI+ and Egami.SystemDrawing default to <xref href=\"Egami.SystemDrawing.Drawing2D.SmoothingMode.None\" data-throw-if-not-resolved=\"false\"></xref>, aliased.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Drawing2D.WrapMode.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Drawing2D.WrapMode.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Drawing2D.WrapMode",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Drawing2D.WrapMode.yml\" sourcestartlinenumber=\"1\">How a texture or image repeats beyond its edges.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Drawing2D.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Drawing2D.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Drawing2D",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Graphics.DrawImageAbort.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Graphics.DrawImageAbort.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Graphics.DrawImageAbort",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Graphics.DrawImageAbort.yml\" sourcestartlinenumber=\"1\">Called before a DrawImage draws; returning <a href=\"https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool\">true</a> stops it with an ExternalException, as in GDI+.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Graphics.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Graphics.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Graphics",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Graphics.yml\" sourcestartlinenumber=\"1\">Draws on a bitmap, as System.Drawing's Graphics: shapes with pens and brushes, images, clipping, transforms and the page\nunit, with GDI+'s defaults: aliased shapes (<xref href=\"Egami.SystemDrawing.Drawing2D.SmoothingMode.None\" data-throw-if-not-resolved=\"false\"></xref>), pixel centers on whole coordinates, bilinear\nimage sampling without prefiltering, transforms prepended. Get one with <xref href=\"Egami.SystemDrawing.Graphics.FromImage(Egami.SystemDrawing.Image)\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.SystemDrawing.GraphicsUnit.yml",
       "output": {
         ".html": {
@@ -11770,6 +12064,90 @@
       "IsMRef": true,
       "Title": "Egami.SystemDrawing.Imaging.BitmapData",
       "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Imaging.BitmapData.yml\" sourcestartlinenumber=\"1\">A locked area of a bitmap's pixels, from <xref href=\"Egami.SystemDrawing.Bitmap.LockBits(System.Drawing.Rectangle%2cEgami.SystemDrawing.Imaging.ImageLockMode%2cEgami.SystemDrawing.Imaging.PixelFormat)\" data-throw-if-not-resolved=\"false\"></xref>:\nwhere the first row starts, the bytes from one row to the next, and the size and format of the pixels.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Imaging.ColorAdjustType.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Imaging.ColorAdjustType.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Imaging.ColorAdjustType",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Imaging.ColorAdjustType.yml\" sourcestartlinenumber=\"1\">What an <xref href=\"Egami.SystemDrawing.Imaging.ImageAttributes\" data-throw-if-not-resolved=\"false\"></xref> setting applies to.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Imaging.ColorChannelFlag.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Imaging.ColorChannelFlag.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Imaging.ColorChannelFlag",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Imaging.ColorChannelFlag.yml\" sourcestartlinenumber=\"1\">A CMYK channel <xref href=\"Egami.SystemDrawing.Imaging.ImageAttributes.SetOutputChannel(Egami.SystemDrawing.Imaging.ColorChannelFlag)\" data-throw-if-not-resolved=\"false\"></xref> shows as gray.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Imaging.ColorMap.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Imaging.ColorMap.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Imaging.ColorMap",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Imaging.ColorMap.yml\" sourcestartlinenumber=\"1\">A color a remap table replaces, and its replacement.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Imaging.ColorMapType.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Imaging.ColorMapType.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Imaging.ColorMapType",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Imaging.ColorMapType.yml\" sourcestartlinenumber=\"1\">What a color map applies to.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Imaging.ColorMatrix.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Imaging.ColorMatrix.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Imaging.ColorMatrix",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Imaging.ColorMatrix.yml\" sourcestartlinenumber=\"1\">A 5 by 5 color matrix: a color's red, green, blue, alpha and 1, as a row from 0 to 1, times the matrix, as GDI+ applies it.\nStarts as the identity.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Imaging.ColorMatrixFlag.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Imaging.ColorMatrixFlag.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Imaging.ColorMatrixFlag",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Imaging.ColorMatrixFlag.yml\" sourcestartlinenumber=\"1\">Which colors a color matrix changes.</p>\n"
     },
     {
       "type": "ManagedReference",
@@ -11882,6 +12260,20 @@
       "IsMRef": true,
       "Title": "Egami.SystemDrawing.Imaging.FrameDimension",
       "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Imaging.FrameDimension.yml\" sourcestartlinenumber=\"1\">How an image's frames are counted: as pages (TIFF), as moments in time (an animated GIF) or as resolutions.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Imaging.ImageAttributes.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Imaging.ImageAttributes.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Imaging.ImageAttributes",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Imaging.ImageAttributes.yml\" sourcestartlinenumber=\"1\">How images are recolored when drawn and what is drawn beyond their edges: color matrices, gamma, threshold, a color key, remap\ntables and an output channel per <xref href=\"Egami.SystemDrawing.Imaging.ColorAdjustType\" data-throw-if-not-resolved=\"false\"></xref>, and a wrap mode. Without a wrap mode set, nothing is drawn\nbeyond an image, as in GDI+.</p>\n"
     },
     {
       "type": "ManagedReference",
@@ -12025,6 +12417,34 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Pen.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Pen.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Pen",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Pen.yml\" sourcestartlinenumber=\"1\">What draws lines and outlines: a brush and a width in world units, at least one device pixel, as in GDI+.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Region.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Region.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Region",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Region.yml\" sourcestartlinenumber=\"1\">An area made of rectangles and shapes combined with <xref href=\"Egami.SystemDrawing.Region.Union(Egami.SystemDrawing.Region)\" data-throw-if-not-resolved=\"false\"></xref>, <xref href=\"Egami.SystemDrawing.Region.Intersect(Egami.SystemDrawing.Region)\" data-throw-if-not-resolved=\"false\"></xref>,\n<xref href=\"Egami.SystemDrawing.Region.Xor(Egami.SystemDrawing.Region)\" data-throw-if-not-resolved=\"false\"></xref>, <xref href=\"Egami.SystemDrawing.Region.Exclude(Egami.SystemDrawing.Region)\" data-throw-if-not-resolved=\"false\"></xref> and <xref href=\"Egami.SystemDrawing.Region.Complement(Egami.SystemDrawing.Region)\" data-throw-if-not-resolved=\"false\"></xref>, as System.Drawing's Region:\ninfinite when made with no arguments. Graphics clips to one.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.SystemDrawing.RotateFlipType.yml",
       "output": {
         ".html": {
@@ -12036,6 +12456,48 @@
       "IsMRef": true,
       "Title": "Egami.SystemDrawing.RotateFlipType",
       "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.RotateFlipType.yml\" sourcestartlinenumber=\"1\">A rotation clockwise and a flip for <xref href=\"Egami.SystemDrawing.Image.RotateFlip(Egami.SystemDrawing.RotateFlipType)\" data-throw-if-not-resolved=\"false\"></xref>. Several names mean the same\ntransformation and share a value, as in System.Drawing.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.SolidBrush.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.SolidBrush.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.SolidBrush",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.SolidBrush.yml\" sourcestartlinenumber=\"1\">A brush of one color.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Text.TextRenderingHint.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Text.TextRenderingHint.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Text.TextRenderingHint",
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Text.TextRenderingHint.yml\" sourcestartlinenumber=\"1\">How text is rendered: aliased, grayscale or ClearType, with or without hinting.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SystemDrawing.Text.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SystemDrawing.Text.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SystemDrawing.Text",
+      "Summary": null
     },
     {
       "type": "ManagedReference",

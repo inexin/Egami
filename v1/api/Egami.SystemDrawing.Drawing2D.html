@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Namespace Egami.SystemDrawing.Drawing2D | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Namespace Egami.SystemDrawing.Drawing2D | Egami ">
+      
+      
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.SystemDrawing.Drawing2D">
+
+  <h1 id="Egami_SystemDrawing_Drawing2D" data-uid="Egami.SystemDrawing.Drawing2D" class="text-break">Namespace Egami.SystemDrawing.Drawing2D</h1>
+  <div class="markdown level0 summary"></div>
+  <div class="markdown level0 conceptual"></div>
+  <div class="markdown level0 remarks"></div>
+
+    <h3 id="classes">
+Classes
+</h3>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.SystemDrawing.Drawing2D.GraphicsContainer.html">GraphicsContainer</a></dt>
+      <dd><p>A container <a class="xref" href="Egami.SystemDrawing.Graphics.html#Egami_SystemDrawing_Graphics_BeginContainer">BeginContainer()</a> returned, for <a class="xref" href="Egami.SystemDrawing.Graphics.html#Egami_SystemDrawing_Graphics_EndContainer_Egami_SystemDrawing_Drawing2D_GraphicsContainer_">EndContainer(GraphicsContainer)</a>.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.SystemDrawing.Drawing2D.GraphicsState.html">GraphicsState</a></dt>
+      <dd><p>A graphics state <a class="xref" href="Egami.SystemDrawing.Graphics.html#Egami_SystemDrawing_Graphics_Save">Save()</a> returned, for <a class="xref" href="Egami.SystemDrawing.Graphics.html#Egami_SystemDrawing_Graphics_Restore_Egami_SystemDrawing_Drawing2D_GraphicsState_">Restore(GraphicsState)</a>.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.SystemDrawing.Drawing2D.Matrix.html">Matrix</a></dt>
+      <dd><p>A 3 by 2 affine transform, as System.Drawing's Matrix: row vectors times the matrix, so <a class="xref" href="Egami.SystemDrawing.Drawing2D.MatrixOrder.html#Egami_SystemDrawing_Drawing2D_MatrixOrder_Prepend">Prepend</a> (the
+default) applies a new transform before the existing one.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.SystemDrawing.Drawing2D.RegionData.html">RegionData</a></dt>
+      <dd><p>A region in the EMF+ region format ([MS-EMFPLUS] 2.2.1.8), after GDI+'s size and checksum, from <a class="xref" href="Egami.SystemDrawing.Region.html#Egami_SystemDrawing_Region_GetRegionData">GetRegionData()</a>.</p>
+</dd>
+    </dl>
+    <h3 id="enums">
+Enums
+</h3>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.SystemDrawing.Drawing2D.CombineMode.html">CombineMode</a></dt>
+      <dd><p>How a region or clip combines with another.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.SystemDrawing.Drawing2D.CompositingMode.html">CompositingMode</a></dt>
+      <dd><p>Whether drawing blends over what is there or replaces it.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.SystemDrawing.Drawing2D.CompositingQuality.html">CompositingQuality</a></dt>
+      <dd><p>How carefully blending is done. Egami blends the same way for every value.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.SystemDrawing.Drawing2D.CoordinateSpace.html">CoordinateSpace</a></dt>
+      <dd><p>A coordinate space of a <a class="xref" href="Egami.SystemDrawing.Graphics.html">Graphics</a>: world (before any transform), page (after the world transform) or device (pixels).</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.SystemDrawing.Drawing2D.FillMode.html">FillMode</a></dt>
+      <dd><p>Which points are inside a shape that crosses itself.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.SystemDrawing.Drawing2D.FlushIntention.html">FlushIntention</a></dt>
+      <dd><p>Whether <a class="xref" href="Egami.SystemDrawing.Graphics.html#Egami_SystemDrawing_Graphics_Flush_Egami_SystemDrawing_Drawing2D_FlushIntention_">Flush(FlushIntention)</a> waits for drawing to finish. Egami draws immediately, so both are the same.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.SystemDrawing.Drawing2D.InterpolationMode.html">InterpolationMode</a></dt>
+      <dd><p>How images are sampled when drawn at another size or angle. GDI+ and Egami.SystemDrawing default to bilinear without prefiltering.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.SystemDrawing.Drawing2D.MatrixOrder.html">MatrixOrder</a></dt>
+      <dd><p>Whether a transform is applied before the existing ones (<a class="xref" href="Egami.SystemDrawing.Drawing2D.MatrixOrder.html#Egami_SystemDrawing_Drawing2D_MatrixOrder_Prepend">Prepend</a>, the default) or after them.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.SystemDrawing.Drawing2D.PixelOffsetMode.html">PixelOffsetMode</a></dt>
+      <dd><p>Where pixel centers are: on whole coordinates (the default), or half a pixel off with <a class="xref" href="Egami.SystemDrawing.Drawing2D.PixelOffsetMode.html#Egami_SystemDrawing_Drawing2D_PixelOffsetMode_Half">Half</a> and <a class="xref" href="Egami.SystemDrawing.Drawing2D.PixelOffsetMode.html#Egami_SystemDrawing_Drawing2D_PixelOffsetMode_HighQuality">HighQuality</a>.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.SystemDrawing.Drawing2D.QualityMode.html">QualityMode</a></dt>
+      <dd><p>A quality level, the base of the smoothing, compositing and interpolation modes.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.SystemDrawing.Drawing2D.SmoothingMode.html">SmoothingMode</a></dt>
+      <dd><p>Whether shapes and lines are antialiased. GDI+ and Egami.SystemDrawing default to <a class="xref" href="Egami.SystemDrawing.Drawing2D.SmoothingMode.html#Egami_SystemDrawing_Drawing2D_SmoothingMode_None">None</a>, aliased.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.SystemDrawing.Drawing2D.WrapMode.html">WrapMode</a></dt>
+      <dd><p>How a texture or image repeats beyond its edges.</p>
+</dd>
+    </dl>
+
+
+</article>
+
+        <div class="contribution d-print-none">
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

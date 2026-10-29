@@ -1,0 +1,1142 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class ColorMatrix | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class ColorMatrix | Egami ">
+      
+      <meta name="description" content="A 5 by 5 color matrix: a color&#39;s red, green, blue, alpha and 1, as a row from 0 to 1, times the matrix, as GDI+ applies it. Starts as the identity.">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_SystemDrawing_Imaging_ColorMatrix.md&amp;value=---%0Auid%3A%20Egami.SystemDrawing.Imaging.ColorMatrix%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.SystemDrawing.Imaging.ColorMatrix">
+
+
+
+  <h1 id="Egami_SystemDrawing_Imaging_ColorMatrix" data-uid="Egami.SystemDrawing.Imaging.ColorMatrix" class="text-break">
+Class ColorMatrix  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/ImageAttributes.cs/#L15"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a>.<a class="xref" href="Egami.SystemDrawing.html">SystemDrawing</a>.<a class="xref" href="Egami.SystemDrawing.Imaging.html">Imaging</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.SystemDrawing.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>A 5 by 5 color matrix: a color's red, green, blue, alpha and 1, as a row from 0 to 1, times the matrix, as GDI+ applies it.
+Starts as the identity.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public sealed class ColorMatrix</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><span class="xref">ColorMatrix</span></div>
+    </dd>
+  </dl>
+
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+  </dd></dl>
+
+
+
+  <h2 id="Egami_SystemDrawing_Imaging_ColorMatrix_examples">Examples</h2>
+  <pre><code class="lang-csharp">// DrawImage at a point draws at the image's physical size; ImageAttributes adjust its colors and tile it.
+using Bitmap source = new(8, 8);
+source.SetResolution(48, 48);  // half the 96 dpi of the bitmap drawn on, so it is drawn twice as large
+using (Graphics s = Graphics.FromImage(source))
+{
+    s.Clear(Color.Orange);
+}
+
+using Bitmap bitmap = new(64, 48);
+using Graphics g = Graphics.FromImage(bitmap);
+g.DrawImage(source, 0, 0);  // 16 by 16 pixels
+g.InterpolationMode = InterpolationMode.NearestNeighbor;
+using ImageAttributes attributes = new();
+attributes.SetColorMatrix(new ColorMatrix { Matrix33 = 0.5f });  // half the alpha
+attributes.SetWrapMode(WrapMode.Tile);
+g.DrawImage(source, new Rectangle(20, 0, 40, 40), 0, 0, 16, 16, GraphicsUnit.Pixel, attributes);</code></pre>
+
+
+
+
+  <h2 class="section" id="constructors">Constructors
+</h2>
+
+
+  <a id="Egami_SystemDrawing_Imaging_ColorMatrix__ctor_" data-uid="Egami.SystemDrawing.Imaging.ColorMatrix.#ctor*"></a>
+
+  <h3 id="Egami_SystemDrawing_Imaging_ColorMatrix__ctor" data-uid="Egami.SystemDrawing.Imaging.ColorMatrix.#ctor">
+  ColorMatrix()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/ImageAttributes.cs/#L20"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Initializes a new instance of the <a class="xref" href="Egami.SystemDrawing.Imaging.ColorMatrix.html">ColorMatrix</a> class: the identity.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public ColorMatrix()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Imaging_ColorMatrix__ctor_" data-uid="Egami.SystemDrawing.Imaging.ColorMatrix.#ctor*"></a>
+
+  <h3 id="Egami_SystemDrawing_Imaging_ColorMatrix__ctor_System_ReadOnlySpan_System_Single__" data-uid="Egami.SystemDrawing.Imaging.ColorMatrix.#ctor(System.ReadOnlySpan{System.Single})">
+  ColorMatrix(ReadOnlySpan&lt;float&gt;)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/ImageAttributes.cs/#L45"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Initializes a new instance of the <a class="xref" href="Egami.SystemDrawing.Imaging.ColorMatrix.html">ColorMatrix</a> class from 25 values, row by row.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public ColorMatrix(ReadOnlySpan&lt;float&gt; newColorMatrix)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>newColorMatrix</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a>&gt;</dt>
+    <dd><p>The values.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>There are not 25 values.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_SystemDrawing_Imaging_ColorMatrix__ctor_" data-uid="Egami.SystemDrawing.Imaging.ColorMatrix.#ctor*"></a>
+
+  <h3 id="Egami_SystemDrawing_Imaging_ColorMatrix__ctor_System_Single_____" data-uid="Egami.SystemDrawing.Imaging.ColorMatrix.#ctor(System.Single[][])">
+  ColorMatrix(float[][])
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/ImageAttributes.cs/#L30"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Initializes a new instance of the <a class="xref" href="Egami.SystemDrawing.Imaging.ColorMatrix.html">ColorMatrix</a> class from its rows.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public ColorMatrix(float[][] newColorMatrix)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>newColorMatrix</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a>[][]</dt>
+    <dd><p>Up to 5 rows of up to 5 values.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="Egami_SystemDrawing_Imaging_ColorMatrix_Item_" data-uid="Egami.SystemDrawing.Imaging.ColorMatrix.Item*"></a>
+
+  <h3 id="Egami_SystemDrawing_Imaging_ColorMatrix_Item_System_Int32_System_Int32_" data-uid="Egami.SystemDrawing.Imaging.ColorMatrix.Item(System.Int32,System.Int32)">
+  this[int, int]
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/ImageAttributes.cs/#L59"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets a value by row and column, 0 to 4.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float this[int row, int column] { get; set; }</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>row</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The row.</p>
+</dd>
+    <dt><code>column</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The column.</p>
+</dd>
+  </dl>
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>The value.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Imaging_ColorMatrix_Matrix00_" data-uid="Egami.SystemDrawing.Imaging.ColorMatrix.Matrix00*"></a>
+
+  <h3 id="Egami_SystemDrawing_Imaging_ColorMatrix_Matrix00" data-uid="Egami.SystemDrawing.Imaging.ColorMatrix.Matrix00">
+  Matrix00
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/ImageAttributes.cs/#L66"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets the value in row 0, column 0.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float Matrix00 { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Imaging_ColorMatrix_Matrix01_" data-uid="Egami.SystemDrawing.Imaging.ColorMatrix.Matrix01*"></a>
+
+  <h3 id="Egami_SystemDrawing_Imaging_ColorMatrix_Matrix01" data-uid="Egami.SystemDrawing.Imaging.ColorMatrix.Matrix01">
+  Matrix01
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/ImageAttributes.cs/#L73"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets the value in row 0, column 1.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float Matrix01 { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Imaging_ColorMatrix_Matrix02_" data-uid="Egami.SystemDrawing.Imaging.ColorMatrix.Matrix02*"></a>
+
+  <h3 id="Egami_SystemDrawing_Imaging_ColorMatrix_Matrix02" data-uid="Egami.SystemDrawing.Imaging.ColorMatrix.Matrix02">
+  Matrix02
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/ImageAttributes.cs/#L80"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets the value in row 0, column 2.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float Matrix02 { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Imaging_ColorMatrix_Matrix03_" data-uid="Egami.SystemDrawing.Imaging.ColorMatrix.Matrix03*"></a>
+
+  <h3 id="Egami_SystemDrawing_Imaging_ColorMatrix_Matrix03" data-uid="Egami.SystemDrawing.Imaging.ColorMatrix.Matrix03">
+  Matrix03
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/ImageAttributes.cs/#L87"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets the value in row 0, column 3.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float Matrix03 { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Imaging_ColorMatrix_Matrix04_" data-uid="Egami.SystemDrawing.Imaging.ColorMatrix.Matrix04*"></a>
+
+  <h3 id="Egami_SystemDrawing_Imaging_ColorMatrix_Matrix04" data-uid="Egami.SystemDrawing.Imaging.ColorMatrix.Matrix04">
+  Matrix04
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/ImageAttributes.cs/#L94"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets the value in row 0, column 4.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float Matrix04 { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Imaging_ColorMatrix_Matrix10_" data-uid="Egami.SystemDrawing.Imaging.ColorMatrix.Matrix10*"></a>
+
+  <h3 id="Egami_SystemDrawing_Imaging_ColorMatrix_Matrix10" data-uid="Egami.SystemDrawing.Imaging.ColorMatrix.Matrix10">
+  Matrix10
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/ImageAttributes.cs/#L101"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets the value in row 1, column 0.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float Matrix10 { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Imaging_ColorMatrix_Matrix11_" data-uid="Egami.SystemDrawing.Imaging.ColorMatrix.Matrix11*"></a>
+
+  <h3 id="Egami_SystemDrawing_Imaging_ColorMatrix_Matrix11" data-uid="Egami.SystemDrawing.Imaging.ColorMatrix.Matrix11">
+  Matrix11
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/ImageAttributes.cs/#L108"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets the value in row 1, column 1.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float Matrix11 { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Imaging_ColorMatrix_Matrix12_" data-uid="Egami.SystemDrawing.Imaging.ColorMatrix.Matrix12*"></a>
+
+  <h3 id="Egami_SystemDrawing_Imaging_ColorMatrix_Matrix12" data-uid="Egami.SystemDrawing.Imaging.ColorMatrix.Matrix12">
+  Matrix12
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/ImageAttributes.cs/#L115"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets the value in row 1, column 2.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float Matrix12 { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Imaging_ColorMatrix_Matrix13_" data-uid="Egami.SystemDrawing.Imaging.ColorMatrix.Matrix13*"></a>
+
+  <h3 id="Egami_SystemDrawing_Imaging_ColorMatrix_Matrix13" data-uid="Egami.SystemDrawing.Imaging.ColorMatrix.Matrix13">
+  Matrix13
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/ImageAttributes.cs/#L122"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets the value in row 1, column 3.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float Matrix13 { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Imaging_ColorMatrix_Matrix14_" data-uid="Egami.SystemDrawing.Imaging.ColorMatrix.Matrix14*"></a>
+
+  <h3 id="Egami_SystemDrawing_Imaging_ColorMatrix_Matrix14" data-uid="Egami.SystemDrawing.Imaging.ColorMatrix.Matrix14">
+  Matrix14
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/ImageAttributes.cs/#L129"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets the value in row 1, column 4.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float Matrix14 { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Imaging_ColorMatrix_Matrix20_" data-uid="Egami.SystemDrawing.Imaging.ColorMatrix.Matrix20*"></a>
+
+  <h3 id="Egami_SystemDrawing_Imaging_ColorMatrix_Matrix20" data-uid="Egami.SystemDrawing.Imaging.ColorMatrix.Matrix20">
+  Matrix20
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/ImageAttributes.cs/#L136"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets the value in row 2, column 0.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float Matrix20 { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Imaging_ColorMatrix_Matrix21_" data-uid="Egami.SystemDrawing.Imaging.ColorMatrix.Matrix21*"></a>
+
+  <h3 id="Egami_SystemDrawing_Imaging_ColorMatrix_Matrix21" data-uid="Egami.SystemDrawing.Imaging.ColorMatrix.Matrix21">
+  Matrix21
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/ImageAttributes.cs/#L143"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets the value in row 2, column 1.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float Matrix21 { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Imaging_ColorMatrix_Matrix22_" data-uid="Egami.SystemDrawing.Imaging.ColorMatrix.Matrix22*"></a>
+
+  <h3 id="Egami_SystemDrawing_Imaging_ColorMatrix_Matrix22" data-uid="Egami.SystemDrawing.Imaging.ColorMatrix.Matrix22">
+  Matrix22
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/ImageAttributes.cs/#L150"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets the value in row 2, column 2.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float Matrix22 { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Imaging_ColorMatrix_Matrix23_" data-uid="Egami.SystemDrawing.Imaging.ColorMatrix.Matrix23*"></a>
+
+  <h3 id="Egami_SystemDrawing_Imaging_ColorMatrix_Matrix23" data-uid="Egami.SystemDrawing.Imaging.ColorMatrix.Matrix23">
+  Matrix23
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/ImageAttributes.cs/#L157"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets the value in row 2, column 3.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float Matrix23 { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Imaging_ColorMatrix_Matrix24_" data-uid="Egami.SystemDrawing.Imaging.ColorMatrix.Matrix24*"></a>
+
+  <h3 id="Egami_SystemDrawing_Imaging_ColorMatrix_Matrix24" data-uid="Egami.SystemDrawing.Imaging.ColorMatrix.Matrix24">
+  Matrix24
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/ImageAttributes.cs/#L164"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets the value in row 2, column 4.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float Matrix24 { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Imaging_ColorMatrix_Matrix30_" data-uid="Egami.SystemDrawing.Imaging.ColorMatrix.Matrix30*"></a>
+
+  <h3 id="Egami_SystemDrawing_Imaging_ColorMatrix_Matrix30" data-uid="Egami.SystemDrawing.Imaging.ColorMatrix.Matrix30">
+  Matrix30
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/ImageAttributes.cs/#L171"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets the value in row 3, column 0.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float Matrix30 { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Imaging_ColorMatrix_Matrix31_" data-uid="Egami.SystemDrawing.Imaging.ColorMatrix.Matrix31*"></a>
+
+  <h3 id="Egami_SystemDrawing_Imaging_ColorMatrix_Matrix31" data-uid="Egami.SystemDrawing.Imaging.ColorMatrix.Matrix31">
+  Matrix31
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/ImageAttributes.cs/#L178"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets the value in row 3, column 1.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float Matrix31 { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Imaging_ColorMatrix_Matrix32_" data-uid="Egami.SystemDrawing.Imaging.ColorMatrix.Matrix32*"></a>
+
+  <h3 id="Egami_SystemDrawing_Imaging_ColorMatrix_Matrix32" data-uid="Egami.SystemDrawing.Imaging.ColorMatrix.Matrix32">
+  Matrix32
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/ImageAttributes.cs/#L185"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets the value in row 3, column 2.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float Matrix32 { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Imaging_ColorMatrix_Matrix33_" data-uid="Egami.SystemDrawing.Imaging.ColorMatrix.Matrix33*"></a>
+
+  <h3 id="Egami_SystemDrawing_Imaging_ColorMatrix_Matrix33" data-uid="Egami.SystemDrawing.Imaging.ColorMatrix.Matrix33">
+  Matrix33
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/ImageAttributes.cs/#L192"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets the value in row 3, column 3.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float Matrix33 { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Imaging_ColorMatrix_Matrix34_" data-uid="Egami.SystemDrawing.Imaging.ColorMatrix.Matrix34*"></a>
+
+  <h3 id="Egami_SystemDrawing_Imaging_ColorMatrix_Matrix34" data-uid="Egami.SystemDrawing.Imaging.ColorMatrix.Matrix34">
+  Matrix34
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/ImageAttributes.cs/#L199"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets the value in row 3, column 4.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float Matrix34 { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Imaging_ColorMatrix_Matrix40_" data-uid="Egami.SystemDrawing.Imaging.ColorMatrix.Matrix40*"></a>
+
+  <h3 id="Egami_SystemDrawing_Imaging_ColorMatrix_Matrix40" data-uid="Egami.SystemDrawing.Imaging.ColorMatrix.Matrix40">
+  Matrix40
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/ImageAttributes.cs/#L206"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets the value in row 4, column 0.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float Matrix40 { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Imaging_ColorMatrix_Matrix41_" data-uid="Egami.SystemDrawing.Imaging.ColorMatrix.Matrix41*"></a>
+
+  <h3 id="Egami_SystemDrawing_Imaging_ColorMatrix_Matrix41" data-uid="Egami.SystemDrawing.Imaging.ColorMatrix.Matrix41">
+  Matrix41
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/ImageAttributes.cs/#L213"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets the value in row 4, column 1.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float Matrix41 { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Imaging_ColorMatrix_Matrix42_" data-uid="Egami.SystemDrawing.Imaging.ColorMatrix.Matrix42*"></a>
+
+  <h3 id="Egami_SystemDrawing_Imaging_ColorMatrix_Matrix42" data-uid="Egami.SystemDrawing.Imaging.ColorMatrix.Matrix42">
+  Matrix42
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/ImageAttributes.cs/#L220"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets the value in row 4, column 2.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float Matrix42 { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Imaging_ColorMatrix_Matrix43_" data-uid="Egami.SystemDrawing.Imaging.ColorMatrix.Matrix43*"></a>
+
+  <h3 id="Egami_SystemDrawing_Imaging_ColorMatrix_Matrix43" data-uid="Egami.SystemDrawing.Imaging.ColorMatrix.Matrix43">
+  Matrix43
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/ImageAttributes.cs/#L227"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets the value in row 4, column 3.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float Matrix43 { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Imaging_ColorMatrix_Matrix44_" data-uid="Egami.SystemDrawing.Imaging.ColorMatrix.Matrix44*"></a>
+
+  <h3 id="Egami_SystemDrawing_Imaging_ColorMatrix_Matrix44" data-uid="Egami.SystemDrawing.Imaging.ColorMatrix.Matrix44">
+  Matrix44
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/ImageAttributes.cs/#L234"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets the value in row 4, column 4.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float Matrix44 { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/ImageAttributes.cs/#L15" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

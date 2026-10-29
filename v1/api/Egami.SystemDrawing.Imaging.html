@@ -101,6 +101,17 @@ where the first row starts, the bytes from one row to the next, and the size and
 </dd>
     </dl>
     <dl class="jumplist">
+      <dt><a class="xref" href="Egami.SystemDrawing.Imaging.ColorMap.html">ColorMap</a></dt>
+      <dd><p>A color a remap table replaces, and its replacement.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.SystemDrawing.Imaging.ColorMatrix.html">ColorMatrix</a></dt>
+      <dd><p>A 5 by 5 color matrix: a color's red, green, blue, alpha and 1, as a row from 0 to 1, times the matrix, as GDI+ applies it.
+Starts as the identity.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
       <dt><a class="xref" href="Egami.SystemDrawing.Imaging.ColorPalette.html">ColorPalette</a></dt>
       <dd><p>The colors an indexed bitmap's pixels point into. <a class="xref" href="Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_Palette">Palette</a> hands out a copy: change its entries and set it
 back to change the bitmap's palette.</p>
@@ -127,6 +138,13 @@ back to change the bitmap's palette.</p>
 </dd>
     </dl>
     <dl class="jumplist">
+      <dt><a class="xref" href="Egami.SystemDrawing.Imaging.ImageAttributes.html">ImageAttributes</a></dt>
+      <dd><p>How images are recolored when drawn and what is drawn beyond their edges: color matrices, gamma, threshold, a color key, remap
+tables and an output channel per <a class="xref" href="Egami.SystemDrawing.Imaging.ColorAdjustType.html">ColorAdjustType</a>, and a wrap mode. Without a wrap mode set, nothing is drawn
+beyond an image, as in GDI+.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
       <dt><a class="xref" href="Egami.SystemDrawing.Imaging.ImageCodecInfo.html">ImageCodecInfo</a></dt>
       <dd><p>One of the codecs <a class="xref" href="Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_Save_System_IO_Stream_Egami_SystemDrawing_Imaging_ImageCodecInfo_Egami_SystemDrawing_Imaging_EncoderParameters_">Save(Stream, ImageCodecInfo, EncoderParameters?)</a> writes with, as GDI+ lists them:
 BMP, JPEG, GIF, TIFF and PNG encoders, and those plus EMF, WMF and ICO decoders. Egami reads many more formats than the
@@ -149,6 +167,26 @@ writes one back. There is no public constructor, as in System.Drawing: change an
     <h3 id="enums">
 Enums
 </h3>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.SystemDrawing.Imaging.ColorAdjustType.html">ColorAdjustType</a></dt>
+      <dd><p>What an <a class="xref" href="Egami.SystemDrawing.Imaging.ImageAttributes.html">ImageAttributes</a> setting applies to.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.SystemDrawing.Imaging.ColorChannelFlag.html">ColorChannelFlag</a></dt>
+      <dd><p>A CMYK channel <a class="xref" href="Egami.SystemDrawing.Imaging.ImageAttributes.html#Egami_SystemDrawing_Imaging_ImageAttributes_SetOutputChannel_Egami_SystemDrawing_Imaging_ColorChannelFlag_">SetOutputChannel(ColorChannelFlag)</a> shows as gray.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.SystemDrawing.Imaging.ColorMapType.html">ColorMapType</a></dt>
+      <dd><p>What a color map applies to.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.SystemDrawing.Imaging.ColorMatrixFlag.html">ColorMatrixFlag</a></dt>
+      <dd><p>Which colors a color matrix changes.</p>
+</dd>
+    </dl>
     <dl class="jumplist">
       <dt><a class="xref" href="Egami.SystemDrawing.Imaging.DitherType.html">DitherType</a></dt>
       <dd><p>How <a class="xref" href="Egami.SystemDrawing.Bitmap.html#Egami_SystemDrawing_Bitmap_ConvertFormat_Egami_SystemDrawing_Imaging_PixelFormat_Egami_SystemDrawing_Imaging_DitherType_Egami_SystemDrawing_Imaging_PaletteType_Egami_SystemDrawing_Imaging_ColorPalette_System_Single_">ConvertFormat(PixelFormat, DitherType, PaletteType, ColorPalette?, float)</a> dithers to fewer colors.</p>

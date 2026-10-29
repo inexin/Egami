@@ -1,0 +1,2057 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class Region | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class Region | Egami ">
+      
+      <meta name="description" content="An area made of rectangles and shapes combined with , , ,  and , as System.Drawing&#39;s Region: infinite when made with no arguments. Graphics clips to one.">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_SystemDrawing_Region.md&amp;value=---%0Auid%3A%20Egami.SystemDrawing.Region%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.SystemDrawing.Region">
+
+
+
+  <h1 id="Egami_SystemDrawing_Region" data-uid="Egami.SystemDrawing.Region" class="text-break">
+Class Region  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Region.cs/#L22"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a>.<a class="xref" href="Egami.SystemDrawing.html">SystemDrawing</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.SystemDrawing.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>An area made of rectangles and shapes combined with <a class="xref" href="Egami.SystemDrawing.Region.html#Egami_SystemDrawing_Region_Union_Egami_SystemDrawing_Region_">Union(Region)</a>, <a class="xref" href="Egami.SystemDrawing.Region.html#Egami_SystemDrawing_Region_Intersect_Egami_SystemDrawing_Region_">Intersect(Region)</a>,
+<a class="xref" href="Egami.SystemDrawing.Region.html#Egami_SystemDrawing_Region_Xor_Egami_SystemDrawing_Region_">Xor(Region)</a>, <a class="xref" href="Egami.SystemDrawing.Region.html#Egami_SystemDrawing_Region_Exclude_Egami_SystemDrawing_Region_">Exclude(Region)</a> and <a class="xref" href="Egami.SystemDrawing.Region.html#Egami_SystemDrawing_Region_Complement_Egami_SystemDrawing_Region_">Complement(Region)</a>, as System.Drawing's Region:
+infinite when made with no arguments. Graphics clips to one.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public sealed class Region : MarshalByRefObject, IDisposable</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.marshalbyrefobject">MarshalByRefObject</a></div>
+      <div><span class="xref">Region</span></div>
+    </dd>
+  </dl>
+
+  <dl class="typelist implements">
+    <dt>Implements</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.idisposable">IDisposable</a></div>
+    </dd>
+  </dl>
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.marshalbyrefobject.getlifetimeservice">MarshalByRefObject.GetLifetimeService()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.marshalbyrefobject.initializelifetimeservice">MarshalByRefObject.InitializeLifetimeService()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+  </dd></dl>
+
+
+
+  <h2 id="Egami_SystemDrawing_Region_examples">Examples</h2>
+  <pre><code class="lang-csharp">// The clip is kept in device pixels, as GDI+ keeps it: changing the transform afterwards does not move it.
+using Bitmap bitmap = new(64, 48);
+using Graphics g = Graphics.FromImage(bitmap);
+g.SetClip(new Rectangle(10, 10, 20, 20));
+g.ExcludeClip(new Rectangle(15, 15, 5, 5));
+g.TranslateTransform(100, 0);
+RectangleF bounds = g.ClipBounds;  // (-90, 10, 20, 20) in the new world coordinates
+g.ResetTransform();
+using SolidBrush brush = new(Color.Red);
+g.FillRectangle(brush, 0, 0, 64, 48);  // paints only inside the clip
+using Region region = new(new Rectangle(0, 0, 4, 4));
+region.Union(new RectangleF(2.5f, 2.5f, 4, 4));
+RectangleF[] scans = region.GetRegionScans(new Matrix());  // the pixels, as rectangles</code></pre>
+
+
+
+
+  <h2 class="section" id="constructors">Constructors
+</h2>
+
+
+  <a id="Egami_SystemDrawing_Region__ctor_" data-uid="Egami.SystemDrawing.Region.#ctor*"></a>
+
+  <h3 id="Egami_SystemDrawing_Region__ctor" data-uid="Egami.SystemDrawing.Region.#ctor">
+  Region()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Region.cs/#L28"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Initializes a new instance of the <a class="xref" href="Egami.SystemDrawing.Region.html">Region</a> class: the infinite region.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Region()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Region__ctor_" data-uid="Egami.SystemDrawing.Region.#ctor*"></a>
+
+  <h3 id="Egami_SystemDrawing_Region__ctor_Egami_SystemDrawing_Drawing2D_RegionData_" data-uid="Egami.SystemDrawing.Region.#ctor(Egami.SystemDrawing.Drawing2D.RegionData)">
+  Region(RegionData)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Region.cs/#L49"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Initializes a new instance of the <a class="xref" href="Egami.SystemDrawing.Region.html">Region</a> class from the data <a class="xref" href="Egami.SystemDrawing.Region.html#Egami_SystemDrawing_Region_GetRegionData">GetRegionData()</a> returned.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Region(RegionData rgnData)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>rgnData</code> <a class="xref" href="Egami.SystemDrawing.Drawing2D.RegionData.html">RegionData</a></dt>
+    <dd><p>The data, in the EMF+ region format.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>The data is not a region.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_SystemDrawing_Region__ctor_" data-uid="Egami.SystemDrawing.Region.#ctor*"></a>
+
+  <h3 id="Egami_SystemDrawing_Region__ctor_System_Drawing_Rectangle_" data-uid="Egami.SystemDrawing.Region.#ctor(System.Drawing.Rectangle)">
+  Region(Rectangle)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Region.cs/#L41"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Initializes a new instance of the <a class="xref" href="Egami.SystemDrawing.Region.html">Region</a> class: a rectangle.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Region(Rectangle rect)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>rect</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.rectangle">Rectangle</a></dt>
+    <dd><p>The rectangle.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Region__ctor_" data-uid="Egami.SystemDrawing.Region.#ctor*"></a>
+
+  <h3 id="Egami_SystemDrawing_Region__ctor_System_Drawing_RectangleF_" data-uid="Egami.SystemDrawing.Region.#ctor(System.Drawing.RectangleF)">
+  Region(RectangleF)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Region.cs/#L34"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Initializes a new instance of the <a class="xref" href="Egami.SystemDrawing.Region.html">Region</a> class: a rectangle.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Region(RectangleF rect)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>rect</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.rectanglef">RectangleF</a></dt>
+    <dd><p>The rectangle.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="Egami_SystemDrawing_Region_Clone_" data-uid="Egami.SystemDrawing.Region.Clone*"></a>
+
+  <h3 id="Egami_SystemDrawing_Region_Clone" data-uid="Egami.SystemDrawing.Region.Clone">
+  Clone()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Region.cs/#L81"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>A copy.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Region Clone()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Region.html">Region</a></dt>
+    <dd><p>The copy.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Region_Complement_" data-uid="Egami.SystemDrawing.Region.Complement*"></a>
+
+  <h3 id="Egami_SystemDrawing_Region_Complement_Egami_SystemDrawing_Region_" data-uid="Egami.SystemDrawing.Region.Complement(Egami.SystemDrawing.Region)">
+  Complement(Region)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Region.cs/#L152"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Becomes the part of another region outside this one.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Complement(Region region)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>region</code> <a class="xref" href="Egami.SystemDrawing.Region.html">Region</a></dt>
+    <dd><p>The region.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Region_Complement_" data-uid="Egami.SystemDrawing.Region.Complement*"></a>
+
+  <h3 id="Egami_SystemDrawing_Region_Complement_System_Drawing_Rectangle_" data-uid="Egami.SystemDrawing.Region.Complement(System.Drawing.Rectangle)">
+  Complement(Rectangle)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Region.cs/#L148"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Becomes the part of a rectangle outside the region.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Complement(Rectangle rect)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>rect</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.rectangle">Rectangle</a></dt>
+    <dd><p>The rectangle.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Region_Complement_" data-uid="Egami.SystemDrawing.Region.Complement*"></a>
+
+  <h3 id="Egami_SystemDrawing_Region_Complement_System_Drawing_RectangleF_" data-uid="Egami.SystemDrawing.Region.Complement(System.Drawing.RectangleF)">
+  Complement(RectangleF)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Region.cs/#L144"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Becomes the part of a rectangle outside the region.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Complement(RectangleF rect)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>rect</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.rectanglef">RectangleF</a></dt>
+    <dd><p>The rectangle.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Region_Dispose_" data-uid="Egami.SystemDrawing.Region.Dispose*"></a>
+
+  <h3 id="Egami_SystemDrawing_Region_Dispose" data-uid="Egami.SystemDrawing.Region.Dispose">
+  Dispose()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Region.cs/#L84"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Does nothing; the region holds no unmanaged memory.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Dispose()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Region_Equals_" data-uid="Egami.SystemDrawing.Region.Equals*"></a>
+
+  <h3 id="Egami_SystemDrawing_Region_Equals_Egami_SystemDrawing_Region_Egami_SystemDrawing_Graphics_" data-uid="Egami.SystemDrawing.Region.Equals(Egami.SystemDrawing.Region,Egami.SystemDrawing.Graphics)">
+  Equals(Region, Graphics)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Region.cs/#L220"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether two regions cover the same pixels.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool Equals(Region region, Graphics g)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>region</code> <a class="xref" href="Egami.SystemDrawing.Region.html">Region</a></dt>
+    <dd><p>The other region.</p>
+</dd>
+    <dt><code>g</code> <a class="xref" href="Egami.SystemDrawing.Graphics.html">Graphics</a></dt>
+    <dd><p>A graphics, which GDI+ uses for precision.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p><a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a> when equal.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Region_Exclude_" data-uid="Egami.SystemDrawing.Region.Exclude*"></a>
+
+  <h3 id="Egami_SystemDrawing_Region_Exclude_Egami_SystemDrawing_Region_" data-uid="Egami.SystemDrawing.Region.Exclude(Egami.SystemDrawing.Region)">
+  Exclude(Region)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Region.cs/#L140"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Removes another region.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Exclude(Region region)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>region</code> <a class="xref" href="Egami.SystemDrawing.Region.html">Region</a></dt>
+    <dd><p>The region.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Region_Exclude_" data-uid="Egami.SystemDrawing.Region.Exclude*"></a>
+
+  <h3 id="Egami_SystemDrawing_Region_Exclude_System_Drawing_Rectangle_" data-uid="Egami.SystemDrawing.Region.Exclude(System.Drawing.Rectangle)">
+  Exclude(Rectangle)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Region.cs/#L136"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Removes a rectangle.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Exclude(Rectangle rect)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>rect</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.rectangle">Rectangle</a></dt>
+    <dd><p>The rectangle.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Region_Exclude_" data-uid="Egami.SystemDrawing.Region.Exclude*"></a>
+
+  <h3 id="Egami_SystemDrawing_Region_Exclude_System_Drawing_RectangleF_" data-uid="Egami.SystemDrawing.Region.Exclude(System.Drawing.RectangleF)">
+  Exclude(RectangleF)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Region.cs/#L132"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Removes a rectangle.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Exclude(RectangleF rect)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>rect</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.rectanglef">RectangleF</a></dt>
+    <dd><p>The rectangle.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Region_FromHrgn_" data-uid="Egami.SystemDrawing.Region.FromHrgn*"></a>
+
+  <h3 id="Egami_SystemDrawing_Region_FromHrgn_System_IntPtr_" data-uid="Egami.SystemDrawing.Region.FromHrgn(System.IntPtr)">
+  FromHrgn(nint)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Region.cs/#L76"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Not supported: Windows region handles. Always throws.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Obsolete(&quot;Windows GDI handles are not available in Egami.SystemDrawing; it always throws PlatformNotSupportedException. Use Bitmap.LockBits to reach the pixels.&quot;, DiagnosticId = &quot;EGSD0001&quot;, UrlFormat = &quot;https://inexin.github.io/Egami/v1/articles/guides/system-drawing.html#{0}&quot;)]
+public static Region FromHrgn(nint hrgn)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>hrgn</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.intptr">nint</a></dt>
+    <dd><p>The handle.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Region.html">Region</a></dt>
+    <dd><p>Never returns.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Region_GetBounds_" data-uid="Egami.SystemDrawing.Region.GetBounds*"></a>
+
+  <h3 id="Egami_SystemDrawing_Region_GetBounds_Egami_SystemDrawing_Graphics_" data-uid="Egami.SystemDrawing.Region.GetBounds(Egami.SystemDrawing.Graphics)">
+  GetBounds(Graphics)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Region.cs/#L175"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the bounds; the infinite region's are GDI+'s, about 4 million each way.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public RectangleF GetBounds(Graphics g)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>g</code> <a class="xref" href="Egami.SystemDrawing.Graphics.html">Graphics</a></dt>
+    <dd><p>The graphics whose units the bounds are in; the region's own coordinates are used.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.rectanglef">RectangleF</a></dt>
+    <dd><p>The bounds.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Region_GetHrgn_" data-uid="Egami.SystemDrawing.Region.GetHrgn*"></a>
+
+  <h3 id="Egami_SystemDrawing_Region_GetHrgn_Egami_SystemDrawing_Graphics_" data-uid="Egami.SystemDrawing.Region.GetHrgn(Egami.SystemDrawing.Graphics)">
+  GetHrgn(Graphics)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Region.cs/#L347"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Not supported: Windows region handles. Always throws.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Obsolete(&quot;Windows GDI handles are not available in Egami.SystemDrawing; it always throws PlatformNotSupportedException. Use Bitmap.LockBits to reach the pixels.&quot;, DiagnosticId = &quot;EGSD0001&quot;, UrlFormat = &quot;https://inexin.github.io/Egami/v1/articles/guides/system-drawing.html#{0}&quot;)]
+public nint GetHrgn(Graphics g)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>g</code> <a class="xref" href="Egami.SystemDrawing.Graphics.html">Graphics</a></dt>
+    <dd><p>The graphics.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.intptr">nint</a></dt>
+    <dd><p>Never returns.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Region_GetRegionData_" data-uid="Egami.SystemDrawing.Region.GetRegionData*"></a>
+
+  <h3 id="Egami_SystemDrawing_Region_GetRegionData" data-uid="Egami.SystemDrawing.Region.GetRegionData">
+  GetRegionData()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Region.cs/#L342"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>The region in the EMF+ region format, which <a class="xref" href="Egami.SystemDrawing.Region.html#Egami_SystemDrawing_Region__ctor_Egami_SystemDrawing_Drawing2D_RegionData_">Region(RegionData)</a> reads back.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public RegionData GetRegionData()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SystemDrawing.Drawing2D.RegionData.html">RegionData</a></dt>
+    <dd><p>The data.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Region_GetRegionScans_" data-uid="Egami.SystemDrawing.Region.GetRegionScans*"></a>
+
+  <h3 id="Egami_SystemDrawing_Region_GetRegionScans_Egami_SystemDrawing_Drawing2D_Matrix_" data-uid="Egami.SystemDrawing.Region.GetRegionScans(Egami.SystemDrawing.Drawing2D.Matrix)">
+  GetRegionScans(Matrix)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Region.cs/#L334"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>The region as rectangles of whole pixels after a transform, one run of rows at a time.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public RectangleF[] GetRegionScans(Matrix matrix)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>matrix</code> <a class="xref" href="Egami.SystemDrawing.Drawing2D.Matrix.html">Matrix</a></dt>
+    <dd><p>The transform.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.rectanglef">RectangleF</a>[]</dt>
+    <dd><p>The rectangles, top to bottom and left to right.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Region_Intersect_" data-uid="Egami.SystemDrawing.Region.Intersect*"></a>
+
+  <h3 id="Egami_SystemDrawing_Region_Intersect_Egami_SystemDrawing_Region_" data-uid="Egami.SystemDrawing.Region.Intersect(Egami.SystemDrawing.Region)">
+  Intersect(Region)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Region.cs/#L104"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Intersects with another region.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Intersect(Region region)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>region</code> <a class="xref" href="Egami.SystemDrawing.Region.html">Region</a></dt>
+    <dd><p>The region.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Region_Intersect_" data-uid="Egami.SystemDrawing.Region.Intersect*"></a>
+
+  <h3 id="Egami_SystemDrawing_Region_Intersect_System_Drawing_Rectangle_" data-uid="Egami.SystemDrawing.Region.Intersect(System.Drawing.Rectangle)">
+  Intersect(Rectangle)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Region.cs/#L100"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Intersects with a rectangle.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Intersect(Rectangle rect)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>rect</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.rectangle">Rectangle</a></dt>
+    <dd><p>The rectangle.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Region_Intersect_" data-uid="Egami.SystemDrawing.Region.Intersect*"></a>
+
+  <h3 id="Egami_SystemDrawing_Region_Intersect_System_Drawing_RectangleF_" data-uid="Egami.SystemDrawing.Region.Intersect(System.Drawing.RectangleF)">
+  Intersect(RectangleF)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Region.cs/#L96"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Intersects with a rectangle.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Intersect(RectangleF rect)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>rect</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.rectanglef">RectangleF</a></dt>
+    <dd><p>The rectangle.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Region_IsEmpty_" data-uid="Egami.SystemDrawing.Region.IsEmpty*"></a>
+
+  <h3 id="Egami_SystemDrawing_Region_IsEmpty_Egami_SystemDrawing_Graphics_" data-uid="Egami.SystemDrawing.Region.IsEmpty(Egami.SystemDrawing.Graphics)">
+  IsEmpty(Graphics)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Region.cs/#L201"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether the region is empty.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool IsEmpty(Graphics g)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>g</code> <a class="xref" href="Egami.SystemDrawing.Graphics.html">Graphics</a></dt>
+    <dd><p>A graphics, which GDI+ uses for precision.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p><a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a> when empty.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Region_IsInfinite_" data-uid="Egami.SystemDrawing.Region.IsInfinite*"></a>
+
+  <h3 id="Egami_SystemDrawing_Region_IsInfinite_Egami_SystemDrawing_Graphics_" data-uid="Egami.SystemDrawing.Region.IsInfinite(Egami.SystemDrawing.Graphics)">
+  IsInfinite(Graphics)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Region.cs/#L210"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether the region is infinite.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool IsInfinite(Graphics g)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>g</code> <a class="xref" href="Egami.SystemDrawing.Graphics.html">Graphics</a></dt>
+    <dd><p>A graphics, which GDI+ uses for precision.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p><a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a> when infinite.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Region_IsVisible_" data-uid="Egami.SystemDrawing.Region.IsVisible*"></a>
+
+  <h3 id="Egami_SystemDrawing_Region_IsVisible_System_Drawing_Point_" data-uid="Egami.SystemDrawing.Region.IsVisible(System.Drawing.Point)">
+  IsVisible(Point)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Region.cs/#L295"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether a point is in the region.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool IsVisible(Point point)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>point</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.point">Point</a></dt>
+    <dd><p>The point.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p><a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a> when inside.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Region_IsVisible_" data-uid="Egami.SystemDrawing.Region.IsVisible*"></a>
+
+  <h3 id="Egami_SystemDrawing_Region_IsVisible_System_Drawing_Point_Egami_SystemDrawing_Graphics_" data-uid="Egami.SystemDrawing.Region.IsVisible(System.Drawing.Point,Egami.SystemDrawing.Graphics)">
+  IsVisible(Point, Graphics?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Region.cs/#L301"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether a point is in the region.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool IsVisible(Point point, Graphics? g)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>point</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.point">Point</a></dt>
+    <dd><p>The point.</p>
+</dd>
+    <dt><code>g</code> <a class="xref" href="Egami.SystemDrawing.Graphics.html">Graphics</a></dt>
+    <dd><p>A graphics, or null.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p><a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a> when inside.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Region_IsVisible_" data-uid="Egami.SystemDrawing.Region.IsVisible*"></a>
+
+  <h3 id="Egami_SystemDrawing_Region_IsVisible_System_Drawing_PointF_" data-uid="Egami.SystemDrawing.Region.IsVisible(System.Drawing.PointF)">
+  IsVisible(PointF)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Region.cs/#L242"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether a point is in the region.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool IsVisible(PointF point)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>point</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.pointf">PointF</a></dt>
+    <dd><p>The point.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p><a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a> when inside.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Region_IsVisible_" data-uid="Egami.SystemDrawing.Region.IsVisible*"></a>
+
+  <h3 id="Egami_SystemDrawing_Region_IsVisible_System_Drawing_PointF_Egami_SystemDrawing_Graphics_" data-uid="Egami.SystemDrawing.Region.IsVisible(System.Drawing.PointF,Egami.SystemDrawing.Graphics)">
+  IsVisible(PointF, Graphics?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Region.cs/#L255"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether a point is in the region.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool IsVisible(PointF point, Graphics? g)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>point</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.pointf">PointF</a></dt>
+    <dd><p>The point.</p>
+</dd>
+    <dt><code>g</code> <a class="xref" href="Egami.SystemDrawing.Graphics.html">Graphics</a></dt>
+    <dd><p>A graphics, or null.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p><a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a> when inside.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Region_IsVisible_" data-uid="Egami.SystemDrawing.Region.IsVisible*"></a>
+
+  <h3 id="Egami_SystemDrawing_Region_IsVisible_System_Drawing_Rectangle_" data-uid="Egami.SystemDrawing.Region.IsVisible(System.Drawing.Rectangle)">
+  IsVisible(Rectangle)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Region.cs/#L314"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether any of a rectangle is in the region.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool IsVisible(Rectangle rect)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>rect</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.rectangle">Rectangle</a></dt>
+    <dd><p>The rectangle.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p><a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a> when they overlap.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Region_IsVisible_" data-uid="Egami.SystemDrawing.Region.IsVisible*"></a>
+
+  <h3 id="Egami_SystemDrawing_Region_IsVisible_System_Drawing_Rectangle_Egami_SystemDrawing_Graphics_" data-uid="Egami.SystemDrawing.Region.IsVisible(System.Drawing.Rectangle,Egami.SystemDrawing.Graphics)">
+  IsVisible(Rectangle, Graphics?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Region.cs/#L329"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether any of a rectangle is in the region.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool IsVisible(Rectangle rect, Graphics? g)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>rect</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.rectangle">Rectangle</a></dt>
+    <dd><p>The rectangle.</p>
+</dd>
+    <dt><code>g</code> <a class="xref" href="Egami.SystemDrawing.Graphics.html">Graphics</a></dt>
+    <dd><p>A graphics, or null.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p><a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a> when they overlap.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Region_IsVisible_" data-uid="Egami.SystemDrawing.Region.IsVisible*"></a>
+
+  <h3 id="Egami_SystemDrawing_Region_IsVisible_System_Drawing_RectangleF_" data-uid="Egami.SystemDrawing.Region.IsVisible(System.Drawing.RectangleF)">
+  IsVisible(RectangleF)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Region.cs/#L268"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether any of a rectangle is in the region.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool IsVisible(RectangleF rect)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>rect</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.rectanglef">RectangleF</a></dt>
+    <dd><p>The rectangle.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p><a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a> when they overlap.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Region_IsVisible_" data-uid="Egami.SystemDrawing.Region.IsVisible*"></a>
+
+  <h3 id="Egami_SystemDrawing_Region_IsVisible_System_Drawing_RectangleF_Egami_SystemDrawing_Graphics_" data-uid="Egami.SystemDrawing.Region.IsVisible(System.Drawing.RectangleF,Egami.SystemDrawing.Graphics)">
+  IsVisible(RectangleF, Graphics?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Region.cs/#L283"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether any of a rectangle is in the region.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool IsVisible(RectangleF rect, Graphics? g)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>rect</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.rectanglef">RectangleF</a></dt>
+    <dd><p>The rectangle.</p>
+</dd>
+    <dt><code>g</code> <a class="xref" href="Egami.SystemDrawing.Graphics.html">Graphics</a></dt>
+    <dd><p>A graphics, or null.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p><a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a> when they overlap.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Region_IsVisible_" data-uid="Egami.SystemDrawing.Region.IsVisible*"></a>
+
+  <h3 id="Egami_SystemDrawing_Region_IsVisible_System_Int32_System_Int32_Egami_SystemDrawing_Graphics_" data-uid="Egami.SystemDrawing.Region.IsVisible(System.Int32,System.Int32,Egami.SystemDrawing.Graphics)">
+  IsVisible(int, int, Graphics?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Region.cs/#L290"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether a point is in the region.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool IsVisible(int x, int y, Graphics? g)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>x</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The horizontal coordinate.</p>
+</dd>
+    <dt><code>y</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The vertical coordinate.</p>
+</dd>
+    <dt><code>g</code> <a class="xref" href="Egami.SystemDrawing.Graphics.html">Graphics</a></dt>
+    <dd><p>A graphics, or null.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p><a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a> when inside.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Region_IsVisible_" data-uid="Egami.SystemDrawing.Region.IsVisible*"></a>
+
+  <h3 id="Egami_SystemDrawing_Region_IsVisible_System_Int32_System_Int32_System_Int32_System_Int32_" data-uid="Egami.SystemDrawing.Region.IsVisible(System.Int32,System.Int32,System.Int32,System.Int32)">
+  IsVisible(int, int, int, int)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Region.cs/#L309"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether any of a rectangle is in the region.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool IsVisible(int x, int y, int width, int height)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>x</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The left edge.</p>
+</dd>
+    <dt><code>y</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The top edge.</p>
+</dd>
+    <dt><code>width</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The width.</p>
+</dd>
+    <dt><code>height</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The height.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p><a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a> when they overlap.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Region_IsVisible_" data-uid="Egami.SystemDrawing.Region.IsVisible*"></a>
+
+  <h3 id="Egami_SystemDrawing_Region_IsVisible_System_Int32_System_Int32_System_Int32_System_Int32_Egami_SystemDrawing_Graphics_" data-uid="Egami.SystemDrawing.Region.IsVisible(System.Int32,System.Int32,System.Int32,System.Int32,Egami.SystemDrawing.Graphics)">
+  IsVisible(int, int, int, int, Graphics?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Region.cs/#L323"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether any of a rectangle is in the region.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool IsVisible(int x, int y, int width, int height, Graphics? g)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>x</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The left edge.</p>
+</dd>
+    <dt><code>y</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The top edge.</p>
+</dd>
+    <dt><code>width</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The width.</p>
+</dd>
+    <dt><code>height</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The height.</p>
+</dd>
+    <dt><code>g</code> <a class="xref" href="Egami.SystemDrawing.Graphics.html">Graphics</a></dt>
+    <dd><p>A graphics, or null.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p><a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a> when they overlap.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Region_IsVisible_" data-uid="Egami.SystemDrawing.Region.IsVisible*"></a>
+
+  <h3 id="Egami_SystemDrawing_Region_IsVisible_System_Single_System_Single_" data-uid="Egami.SystemDrawing.Region.IsVisible(System.Single,System.Single)">
+  IsVisible(float, float)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Region.cs/#L237"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether a point is in the region.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool IsVisible(float x, float y)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>x</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>The horizontal coordinate.</p>
+</dd>
+    <dt><code>y</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>The vertical coordinate.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p><a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a> when inside.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Region_IsVisible_" data-uid="Egami.SystemDrawing.Region.IsVisible*"></a>
+
+  <h3 id="Egami_SystemDrawing_Region_IsVisible_System_Single_System_Single_Egami_SystemDrawing_Graphics_" data-uid="Egami.SystemDrawing.Region.IsVisible(System.Single,System.Single,Egami.SystemDrawing.Graphics)">
+  IsVisible(float, float, Graphics?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Region.cs/#L249"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether a point is in the region.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool IsVisible(float x, float y, Graphics? g)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>x</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>The horizontal coordinate.</p>
+</dd>
+    <dt><code>y</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>The vertical coordinate.</p>
+</dd>
+    <dt><code>g</code> <a class="xref" href="Egami.SystemDrawing.Graphics.html">Graphics</a></dt>
+    <dd><p>A graphics, or null.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p><a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a> when inside.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Region_IsVisible_" data-uid="Egami.SystemDrawing.Region.IsVisible*"></a>
+
+  <h3 id="Egami_SystemDrawing_Region_IsVisible_System_Single_System_Single_System_Single_System_Single_" data-uid="Egami.SystemDrawing.Region.IsVisible(System.Single,System.Single,System.Single,System.Single)">
+  IsVisible(float, float, float, float)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Region.cs/#L263"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether any of a rectangle is in the region.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool IsVisible(float x, float y, float width, float height)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>x</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>The left edge.</p>
+</dd>
+    <dt><code>y</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>The top edge.</p>
+</dd>
+    <dt><code>width</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>The width.</p>
+</dd>
+    <dt><code>height</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>The height.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p><a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a> when they overlap.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Region_IsVisible_" data-uid="Egami.SystemDrawing.Region.IsVisible*"></a>
+
+  <h3 id="Egami_SystemDrawing_Region_IsVisible_System_Single_System_Single_System_Single_System_Single_Egami_SystemDrawing_Graphics_" data-uid="Egami.SystemDrawing.Region.IsVisible(System.Single,System.Single,System.Single,System.Single,Egami.SystemDrawing.Graphics)">
+  IsVisible(float, float, float, float, Graphics?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Region.cs/#L277"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether any of a rectangle is in the region.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool IsVisible(float x, float y, float width, float height, Graphics? g)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>x</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>The left edge.</p>
+</dd>
+    <dt><code>y</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>The top edge.</p>
+</dd>
+    <dt><code>width</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>The width.</p>
+</dd>
+    <dt><code>height</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>The height.</p>
+</dd>
+    <dt><code>g</code> <a class="xref" href="Egami.SystemDrawing.Graphics.html">Graphics</a></dt>
+    <dd><p>A graphics, or null.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p><a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a> when they overlap.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Region_MakeEmpty_" data-uid="Egami.SystemDrawing.Region.MakeEmpty*"></a>
+
+  <h3 id="Egami_SystemDrawing_Region_MakeEmpty" data-uid="Egami.SystemDrawing.Region.MakeEmpty">
+  MakeEmpty()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Region.cs/#L89"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Makes the region empty.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void MakeEmpty()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Region_MakeInfinite_" data-uid="Egami.SystemDrawing.Region.MakeInfinite*"></a>
+
+  <h3 id="Egami_SystemDrawing_Region_MakeInfinite" data-uid="Egami.SystemDrawing.Region.MakeInfinite">
+  MakeInfinite()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Region.cs/#L92"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Makes the region infinite.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void MakeInfinite()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Region_ReleaseHrgn_" data-uid="Egami.SystemDrawing.Region.ReleaseHrgn*"></a>
+
+  <h3 id="Egami_SystemDrawing_Region_ReleaseHrgn_System_IntPtr_" data-uid="Egami.SystemDrawing.Region.ReleaseHrgn(System.IntPtr)">
+  ReleaseHrgn(nint)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Region.cs/#L353"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Not supported: Windows region handles. Always throws.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Obsolete(&quot;Windows GDI handles are not available in Egami.SystemDrawing; it always throws PlatformNotSupportedException. Use Bitmap.LockBits to reach the pixels.&quot;, DiagnosticId = &quot;EGSD0001&quot;, UrlFormat = &quot;https://inexin.github.io/Egami/v1/articles/guides/system-drawing.html#{0}&quot;)]
+public void ReleaseHrgn(nint regionHandle)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>regionHandle</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.intptr">nint</a></dt>
+    <dd><p>The handle.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Region_Transform_" data-uid="Egami.SystemDrawing.Region.Transform*"></a>
+
+  <h3 id="Egami_SystemDrawing_Region_Transform_Egami_SystemDrawing_Drawing2D_Matrix_" data-uid="Egami.SystemDrawing.Region.Transform(Egami.SystemDrawing.Drawing2D.Matrix)">
+  Transform(Matrix)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Region.cs/#L166"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Transforms the region.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Transform(Matrix matrix)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>matrix</code> <a class="xref" href="Egami.SystemDrawing.Drawing2D.Matrix.html">Matrix</a></dt>
+    <dd><p>The transform.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Region_Translate_" data-uid="Egami.SystemDrawing.Region.Translate*"></a>
+
+  <h3 id="Egami_SystemDrawing_Region_Translate_System_Int32_System_Int32_" data-uid="Egami.SystemDrawing.Region.Translate(System.Int32,System.Int32)">
+  Translate(int, int)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Region.cs/#L162"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Moves the region.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Translate(int dx, int dy)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>dx</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The horizontal distance.</p>
+</dd>
+    <dt><code>dy</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The vertical distance.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Region_Translate_" data-uid="Egami.SystemDrawing.Region.Translate*"></a>
+
+  <h3 id="Egami_SystemDrawing_Region_Translate_System_Single_System_Single_" data-uid="Egami.SystemDrawing.Region.Translate(System.Single,System.Single)">
+  Translate(float, float)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Region.cs/#L157"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Moves the region.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Translate(float dx, float dy)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>dx</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>The horizontal distance.</p>
+</dd>
+    <dt><code>dy</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>The vertical distance.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Region_Union_" data-uid="Egami.SystemDrawing.Region.Union*"></a>
+
+  <h3 id="Egami_SystemDrawing_Region_Union_Egami_SystemDrawing_Region_" data-uid="Egami.SystemDrawing.Region.Union(Egami.SystemDrawing.Region)">
+  Union(Region)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Region.cs/#L116"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Adds another region.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Union(Region region)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>region</code> <a class="xref" href="Egami.SystemDrawing.Region.html">Region</a></dt>
+    <dd><p>The region.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Region_Union_" data-uid="Egami.SystemDrawing.Region.Union*"></a>
+
+  <h3 id="Egami_SystemDrawing_Region_Union_System_Drawing_Rectangle_" data-uid="Egami.SystemDrawing.Region.Union(System.Drawing.Rectangle)">
+  Union(Rectangle)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Region.cs/#L112"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Adds a rectangle.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Union(Rectangle rect)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>rect</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.rectangle">Rectangle</a></dt>
+    <dd><p>The rectangle.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Region_Union_" data-uid="Egami.SystemDrawing.Region.Union*"></a>
+
+  <h3 id="Egami_SystemDrawing_Region_Union_System_Drawing_RectangleF_" data-uid="Egami.SystemDrawing.Region.Union(System.Drawing.RectangleF)">
+  Union(RectangleF)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Region.cs/#L108"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Adds a rectangle.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Union(RectangleF rect)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>rect</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.rectanglef">RectangleF</a></dt>
+    <dd><p>The rectangle.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Region_Xor_" data-uid="Egami.SystemDrawing.Region.Xor*"></a>
+
+  <h3 id="Egami_SystemDrawing_Region_Xor_Egami_SystemDrawing_Region_" data-uid="Egami.SystemDrawing.Region.Xor(Egami.SystemDrawing.Region)">
+  Xor(Region)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Region.cs/#L128"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Keeps what is in exactly one of the two regions.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Xor(Region region)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>region</code> <a class="xref" href="Egami.SystemDrawing.Region.html">Region</a></dt>
+    <dd><p>The region.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Region_Xor_" data-uid="Egami.SystemDrawing.Region.Xor*"></a>
+
+  <h3 id="Egami_SystemDrawing_Region_Xor_System_Drawing_Rectangle_" data-uid="Egami.SystemDrawing.Region.Xor(System.Drawing.Rectangle)">
+  Xor(Rectangle)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Region.cs/#L124"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Keeps what is in exactly one of the region and a rectangle.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Xor(Rectangle rect)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>rect</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.rectangle">Rectangle</a></dt>
+    <dd><p>The rectangle.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_SystemDrawing_Region_Xor_" data-uid="Egami.SystemDrawing.Region.Xor*"></a>
+
+  <h3 id="Egami_SystemDrawing_Region_Xor_System_Drawing_RectangleF_" data-uid="Egami.SystemDrawing.Region.Xor(System.Drawing.RectangleF)">
+  Xor(RectangleF)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Region.cs/#L120"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Keeps what is in exactly one of the region and a rectangle.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Xor(RectangleF rect)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>rect</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.rectanglef">RectangleF</a></dt>
+    <dd><p>The rectangle.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Region.cs/#L22" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

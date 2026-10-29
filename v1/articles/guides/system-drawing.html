@@ -90,8 +90,9 @@
 <p>Egami.SystemDrawing gives code written for System.Drawing.Common its API on every OS, in managed code: <code>Bitmap</code>, <code>Image</code>,
 <code>Icon</code>, pixel formats, <code>LockBits</code>, the codecs and their encoder parameters, frames and property items. System.Drawing.Common
 runs only on Windows since .NET 6; with this package the same code runs on Linux, macOS and in containers, drawn by Egami.</p>
-<p>The package is a preview (1.0.0-preview.1). This release has bitmaps, pixel access, codecs and icons. <code>Graphics</code>, pens,
-brushes, paths, regions, fonts and text follow in the next previews.</p>
+<p>The package is a preview (1.0.0-preview.1). This release has bitmaps, pixel access, codecs, icons, and <code>Graphics</code> with solid
+pens and brushes, transforms, clipping, regions and images. The other pens and brushes, paths, fonts and text follow in the next
+previews.</p>
 <h2 id="moving-code-over">Moving code over</h2>
 <p>Replace the System.Drawing.Common package reference with Egami.SystemDrawing. With implicit usings on, the package adds
 <code>System.Drawing</code> and <code>Egami.SystemDrawing</code> as implicit usings, so most files compile unchanged; files that name
@@ -251,6 +252,112 @@ using Icon icon = new(System.IO.Path.Combine(Images, &quot;app.ico&quot;), 24, 2
 using Bitmap image = icon.ToBitmap();  // 24 by 24, 32-bit ARGB
 using MemoryStream copy = new();
 icon.Save(copy);
+</code></pre><h2 id="drawing-with-graphics">Drawing with Graphics</h2>
+<p><code>Graphics.FromImage</code> draws on a bitmap of any pixel format GDI+ draws on; indexed formats throw <code>ArgumentException</code>, and 16-bit
+gray and 16-bit ARGB 1555 throw <code>ExternalException</code>, as in GDI+. Each call draws at once, so <code>Flush</code> does nothing, and the bitmap
+keeps what was drawn after <code>Dispose</code>; <code>FlushIntention</code> is accepted and changes nothing. As in GDI+, drawing goes through premultiplied ARGB with GDI+'s rounding, so a
+translucent copy onto a format without alpha keeps the premultiplied color.</p>
+<p>GDI+'s defaults are kept: shapes are aliased (<code>SmoothingMode.None</code>), pixel centers lie on whole coordinates
+(<code>PixelOffsetMode.Default</code>; <code>Half</code> and <code>HighQuality</code> move them half a pixel, to Egami's own centers), images are sampled
+bilinearly, and drawing blends (<code>CompositingMode.SourceOver</code>; <code>SourceCopy</code> replaces). <code>CompositingQuality</code> and <code>QualityMode</code>
+values are kept but blend the same way. Settings read back as GDI+ stores them:
+<code>SmoothingMode.HighQuality</code> reads as <code>AntiAlias</code>, <code>HighSpeed</code> and <code>Default</code> as <code>None</code>, <code>InterpolationMode.Low</code> as <code>Bilinear</code> and
+<code>High</code> as <code>HighQualityBicubic</code>. <code>PageUnit</code> and <code>PageScale</code> scale page coordinates at the bitmap's resolution; with
+<code>GraphicsUnit.Display</code>, the default, GDI+ ignores the page scale and so does the package.</p>
+<pre><code class="lang-csharp">// Draw on a bitmap as with System.Drawing: GDI+'s defaults are aliased shapes and whole-pixel centers.
+using Bitmap bitmap = new(80, 60);
+using (Graphics g = Graphics.FromImage(bitmap))
+{
+    g.Clear(Color.White);
+    g.SmoothingMode = SmoothingMode.AntiAlias;
+    g.PageUnit = GraphicsUnit.Millimeter;  // 1 mm is 96 / 25.4 pixels at the bitmap's 96 dpi
+    using Pen pen = new(Color.Navy, 0.5f);
+    g.DrawEllipse(pen, 2, 2, 15, 10);
+}
+
+Color corner = bitmap.GetPixel(0, 0);  // white
+</code></pre><h3 id="transforms-and-states">Transforms and states</h3>
+<p><code>Matrix</code> is a 3 by 2 affine transform with System.Drawing's members; <code>MatrixOrder.Prepend</code>, the default, applies a new
+transform before the existing one. The world transform takes the same calls on <code>Graphics</code>, and <code>TransformPoints</code> maps points
+between <code>CoordinateSpace.World</code>, <code>Page</code> and <code>Device</code>. <code>Save</code> and <code>Restore</code> keep the transform, page settings, clip and quality
+settings; restoring a state drops every state saved after it. <code>BeginContainer</code> returns a <code>GraphicsContainer</code> and starts again from the defaults inside the
+current transform and clip; with a destination and a source rectangle, the source is in the given unit and the container's own
+coordinates are pixels, as in GDI+.</p>
+<pre><code class="lang-csharp">// Transforms prepend by default, so the last call applies first; Save and Restore bring settings back.
+using Bitmap bitmap = new(64, 64);
+using Graphics g = Graphics.FromImage(bitmap);
+g.TranslateTransform(32, 32);
+g.RotateTransform(45);
+GraphicsState saved = g.Save();
+g.ScaleTransform(2, 2);
+PointF[] points = [new(1, 0)];
+g.TransformPoints(CoordinateSpace.Device, CoordinateSpace.World, points);  // (33.41, 33.41)
+g.Restore(saved);
+
+using Matrix matrix = new();
+matrix.Rotate(90);
+matrix.Translate(10, 0, MatrixOrder.Append);
+float[] elements = matrix.Elements;  // 0, 1, -1, 0, 10, 0
+</code></pre><h3 id="clipping-and-regions">Clipping and regions</h3>
+<p>The clip is kept in device pixels, as GDI+ keeps it, so a later transform does not move it, and it holds the pixels whose
+whole coordinates lie inside: closed at the top and left, open at the bottom and right, half a pixel in when the pixel offset is
+set. <code>SetClip</code> takes a <code>CombineMode</code>. <code>ClipBounds</code> and <code>VisibleClipBounds</code> are its pixels' bounds in world coordinates. A <code>Region</code> keeps its shape as given;
+<code>GetRegionScans</code>, <code>IsEmpty</code>, <code>Equals</code> and the bounds of a combined region are its pixels, rasterized the same way. <code>GetRegionData</code>
+writes GDI+'s region format as a <code>RegionData</code>, with the checksum left as zero.</p>
+<pre><code class="lang-csharp">// The clip is kept in device pixels, as GDI+ keeps it: changing the transform afterwards does not move it.
+using Bitmap bitmap = new(64, 48);
+using Graphics g = Graphics.FromImage(bitmap);
+g.SetClip(new Rectangle(10, 10, 20, 20));
+g.ExcludeClip(new Rectangle(15, 15, 5, 5));
+g.TranslateTransform(100, 0);
+RectangleF bounds = g.ClipBounds;  // (-90, 10, 20, 20) in the new world coordinates
+g.ResetTransform();
+using SolidBrush brush = new(Color.Red);
+g.FillRectangle(brush, 0, 0, 64, 48);  // paints only inside the clip
+using Region region = new(new Rectangle(0, 0, 4, 4));
+region.Union(new RectangleF(2.5f, 2.5f, 4, 4));
+RectangleF[] scans = region.GetRegionScans(new Matrix());  // the pixels, as rectangles
+</code></pre><h3 id="shapes">Shapes</h3>
+<p><code>DrawLine</code>, <code>DrawRectangle</code>, <code>DrawEllipse</code>, <code>DrawArc</code>, <code>DrawPie</code>, <code>DrawPolygon</code>, <code>DrawBezier</code>, <code>DrawCurve</code>, <code>DrawClosedCurve</code>,
+<code>DrawRoundedRectangle</code> and their <code>Fill</code> forms take every System.Drawing overload, including the span ones. Arcs are measured on
+the ellipse as GDI+ measures them, cardinal splines use GDI+'s tension (0.5 by default), and a pen is never thinner than a
+pixel. Polygons and closed curves fill even-odd unless given <code>FillMode.Winding</code>. This preview has <code>Pen</code> and <code>SolidBrush</code>, which
+derives from <code>Brush</code>; the other brushes, pen styles and <code>GraphicsPath</code> come with the next one.</p>
+<pre><code class="lang-csharp">// Lines, rectangles, arcs, pies, polygons, Beziers and cardinal splines, stroked with a pen or filled with a brush.
+using Bitmap bitmap = new(64, 48);
+using Graphics g = Graphics.FromImage(bitmap);
+using Pen pen = new(Color.Black, 2);
+using SolidBrush brush = new(Color.FromArgb(128, 255, 0, 0));
+g.DrawLine(pen, 2, 2, 60, 2);
+g.FillRectangle(brush, 4, 6, 20, 12);
+g.DrawArc(pen, 30, 6, 30, 20, 0, 180);
+g.FillPie(brush, 4, 20, 24, 24, 30, 120);
+g.DrawCurve(pen, [new PointF(30, 40), new PointF(40, 30), new PointF(50, 44), new PointF(60, 34)], 0.5f);
+g.FillPolygon(brush, [new PointF(40, 4), new PointF(48, 16), new PointF(32, 16)], FillMode.Winding);
+</code></pre><h3 id="images">Images</h3>
+<p><code>DrawImage(image, x, y)</code> and <code>DrawImageUnscaled</code> draw an image at its physical size: its pixels at its resolution, in page
+units at the bitmap's resolution. The other overloads stretch an image or part of it into a rectangle or a parallelogram, with
+the source in any <code>GraphicsUnit</code>. As in GDI+, the edges fade where sampling reaches past the image, unless <code>ImageAttributes</code>
+sets a wrap mode; <code>ImageAttributes</code> also applies color matrices (with a <code>ColorMatrixFlag</code> for grays), gamma, thresholds, color
+keys, <code>ColorMap</code> remap tables (by <code>ColorMapType</code>) and <code>ColorChannelFlag</code> output channels, each for every <code>ColorAdjustType</code> or
+one of them. A <code>DrawImageAbort</code> callback that returns true stops the draw with <code>ExternalException</code>. <code>DrawIcon</code> stretches an icon,
+and <code>DrawIconUnstretched</code> draws it at its size.</p>
+<pre><code class="lang-csharp">// DrawImage at a point draws at the image's physical size; ImageAttributes adjust its colors and tile it.
+using Bitmap source = new(8, 8);
+source.SetResolution(48, 48);  // half the 96 dpi of the bitmap drawn on, so it is drawn twice as large
+using (Graphics s = Graphics.FromImage(source))
+{
+    s.Clear(Color.Orange);
+}
+
+using Bitmap bitmap = new(64, 48);
+using Graphics g = Graphics.FromImage(bitmap);
+g.DrawImage(source, 0, 0);  // 16 by 16 pixels
+g.InterpolationMode = InterpolationMode.NearestNeighbor;
+using ImageAttributes attributes = new();
+attributes.SetColorMatrix(new ColorMatrix { Matrix33 = 0.5f });  // half the alpha
+attributes.SetWrapMode(WrapMode.Tile);
+g.DrawImage(source, new Rectangle(20, 0, 40, 40), 0, 0, 16, 16, GraphicsUnit.Pixel, attributes);
 </code></pre><h2 id="what-throws-on-every-os">What throws on every OS</h2>
 <p>Members that need Windows handles exist so code compiles, throw <code>PlatformNotSupportedException</code> with a message naming what to
 use instead, and carry <code>[Obsolete]</code> with one diagnostic id per group, so the compiler warns at each use. Suppress an id in the
@@ -259,11 +366,12 @@ error in <code>.editorconfig</code>.</p>
 <p><a id="egsd0001"></a></p>
 <ul>
 <li><strong>EGSD0001, Windows handles</strong>: <code>Bitmap.GetHbitmap</code>, <code>GetHicon</code>, <code>FromHicon</code> and <code>FromResource</code>, <code>Image.FromHbitmap</code>,
-<code>Icon.Handle</code> and <code>Icon.FromHandle</code>. Use <code>LockBits</code> for the pixels and <code>new Icon(path)</code> for icons.</li>
+<code>Icon.Handle</code> and <code>Icon.FromHandle</code>, <code>Graphics.FromHdc</code>, <code>FromHwnd</code>, <code>GetHdc</code>, <code>ReleaseHdc</code> and <code>GetHalftonePalette</code>, and
+<code>Region.FromHrgn</code> and <code>GetHrgn</code>. Use <code>LockBits</code> for the pixels, <code>new Icon(path)</code> for icons and <code>Graphics.FromImage</code> to draw.</li>
 </ul>
 <p><a id="egsd0002"></a></p>
 <ul>
-<li><strong>EGSD0002, screen capture</strong>: <code>Graphics.CopyFromScreen</code>, which comes with <code>Graphics</code>.</li>
+<li><strong>EGSD0002, screen capture</strong>: <code>Graphics.CopyFromScreen</code>, with or without a <code>CopyPixelOperation</code>.</li>
 </ul>
 <p><a id="egsd0003"></a></p>
 <ul>
@@ -277,6 +385,12 @@ error in <code>.editorconfig</code>.</p>
 <li><code>CreateOptimalPalette</code> chooses different colors.</li>
 <li>CMYK JPEG and TIFF files load as <code>Format24bppRgb</code>; GDI+ gives them a CMYK format System.Drawing has no name for.</li>
 <li>Egami reads BMP files GDI+ rejects (OS/2, 2-bit, RLE24, embedded PNG and JPEG).</li>
+<li>Antialiased edges are Egami's: about 96 percent of the pixels of an antialiased shape match GDI+ within 8 levels, and aliased
+shapes match on about 99.8 percent of their pixels.</li>
+<li><code>HighQualityBilinear</code> and <code>HighQualityBicubic</code> sample as plain bilinear and bicubic, without GDI+'s wider filters, and an image
+drawn much smaller is not prefiltered.</li>
+<li>Drawing onto 16-bit bitmaps does not dither, and <code>SourceCopy</code> with antialiasing blends its edges with what is below instead of
+making them transparent.</li>
 </ul>
 
 </article>

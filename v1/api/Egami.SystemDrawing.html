@@ -102,6 +102,18 @@ them, so LockBits code and pixel values carry over.</p>
 </dd>
     </dl>
     <dl class="jumplist">
+      <dt><a class="xref" href="Egami.SystemDrawing.Brush.html">Brush</a></dt>
+      <dd><p>What fills shapes: the base of <a class="xref" href="Egami.SystemDrawing.SolidBrush.html">SolidBrush</a> and the other brushes.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.SystemDrawing.Graphics.html">Graphics</a></dt>
+      <dd><p>Draws on a bitmap, as System.Drawing's Graphics: shapes with pens and brushes, images, clipping, transforms and the page
+unit, with GDI+'s defaults: aliased shapes (<a class="xref" href="Egami.SystemDrawing.Drawing2D.SmoothingMode.html#Egami_SystemDrawing_Drawing2D_SmoothingMode_None">None</a>), pixel centers on whole coordinates, bilinear
+image sampling without prefiltering, transforms prepended. Get one with <a class="xref" href="Egami.SystemDrawing.Graphics.html#Egami_SystemDrawing_Graphics_FromImage_Egami_SystemDrawing_Image_">FromImage(Image)</a>.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
       <dt><a class="xref" href="Egami.SystemDrawing.Icon.html">Icon</a></dt>
       <dd><p>A Windows icon: an ICO file with images at several sizes, of which the icon shows the one nearest the size asked for (32 by
 32 when none is), as System.Drawing chooses it. <a class="xref" href="Egami.SystemDrawing.Icon.html#Egami_SystemDrawing_Icon_Save_System_IO_Stream_">Save(Stream)</a> writes the file it was loaded from.</p>
@@ -113,9 +125,31 @@ them, so LockBits code and pixel values carry over.</p>
 as in System.Drawing. Load one with <a class="xref" href="Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_FromFile_System_String_">FromFile(string)</a> or <a class="xref" href="Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_FromStream_System_IO_Stream_">FromStream(Stream)</a>.</p>
 </dd>
     </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.SystemDrawing.Pen.html">Pen</a></dt>
+      <dd><p>What draws lines and outlines: a brush and a width in world units, at least one device pixel, as in GDI+.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.SystemDrawing.Region.html">Region</a></dt>
+      <dd><p>An area made of rectangles and shapes combined with <a class="xref" href="Egami.SystemDrawing.Region.html#Egami_SystemDrawing_Region_Union_Egami_SystemDrawing_Region_">Union(Region)</a>, <a class="xref" href="Egami.SystemDrawing.Region.html#Egami_SystemDrawing_Region_Intersect_Egami_SystemDrawing_Region_">Intersect(Region)</a>,
+<a class="xref" href="Egami.SystemDrawing.Region.html#Egami_SystemDrawing_Region_Xor_Egami_SystemDrawing_Region_">Xor(Region)</a>, <a class="xref" href="Egami.SystemDrawing.Region.html#Egami_SystemDrawing_Region_Exclude_Egami_SystemDrawing_Region_">Exclude(Region)</a> and <a class="xref" href="Egami.SystemDrawing.Region.html#Egami_SystemDrawing_Region_Complement_Egami_SystemDrawing_Region_">Complement(Region)</a>, as System.Drawing's Region:
+infinite when made with no arguments. Graphics clips to one.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.SystemDrawing.SolidBrush.html">SolidBrush</a></dt>
+      <dd><p>A brush of one color.</p>
+</dd>
+    </dl>
     <h3 id="enums">
 Enums
 </h3>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.SystemDrawing.CopyPixelOperation.html">CopyPixelOperation</a></dt>
+      <dd><p>The raster operation of <a class="xref" href="Egami.SystemDrawing.Graphics.html#Egami_SystemDrawing_Graphics_CopyFromScreen_System_Drawing_Point_System_Drawing_Point_System_Drawing_Size_Egami_SystemDrawing_CopyPixelOperation_">CopyFromScreen(Point, Point, Size, CopyPixelOperation)</a>, which needs Windows and always throws.</p>
+</dd>
+    </dl>
     <dl class="jumplist">
       <dt><a class="xref" href="Egami.SystemDrawing.GraphicsUnit.html">GraphicsUnit</a></dt>
       <dd><p>The unit of a measure: the world's, the display's, pixels, points, inches, document units or millimeters.</p>
@@ -130,6 +164,11 @@ transformation and share a value, as in System.Drawing.</p>
     <h3 id="delegates">
 Delegates
 </h3>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.SystemDrawing.Graphics.DrawImageAbort.html">Graphics.DrawImageAbort</a></dt>
+      <dd><p>Called before a DrawImage draws; returning <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a> stops it with an ExternalException, as in GDI+.</p>
+</dd>
+    </dl>
     <dl class="jumplist">
       <dt><a class="xref" href="Egami.SystemDrawing.Image.GetThumbnailImageAbort.html">Image.GetThumbnailImageAbort</a></dt>
       <dd><p>Called when <a class="xref" href="Egami.SystemDrawing.Image.html#Egami_SystemDrawing_Image_GetThumbnailImage_System_Int32_System_Int32_Egami_SystemDrawing_Image_GetThumbnailImageAbort_System_IntPtr_">GetThumbnailImage(int, int, GetThumbnailImageAbort?, nint)</a> may stop early; GDI+ never calls it.</p>
