@@ -4,8 +4,9 @@ Egami.SystemDrawing gives code written for System.Drawing.Common its API on ever
 `Icon`, pixel formats, `LockBits`, the codecs and their encoder parameters, frames and property items. System.Drawing.Common
 runs only on Windows since .NET 6; with this package the same code runs on Linux, macOS and in containers, drawn by Egami.
 
-The package is a preview (1.0.0-preview.1). This release has bitmaps, pixel access, codecs and icons. `Graphics`, pens,
-brushes, paths, regions, fonts and text follow in the next previews.
+The package is a preview (1.0.0-preview.1). This release has bitmaps, pixel access, codecs, icons, and `Graphics` with solid
+pens and brushes, transforms, clipping, regions and images. The other pens and brushes, paths, fonts and text follow in the next
+previews.
 
 ## Moving code over
 
@@ -117,6 +118,66 @@ the file it came from. `Image.FromFile` on an icon takes the last image of the f
 
 [!code-csharp[](../../../tests/Egami.DocSamples/SystemDrawingPackage.cs#icon)]
 
+## Drawing with Graphics
+
+`Graphics.FromImage` draws on a bitmap of any pixel format GDI+ draws on; indexed formats throw `ArgumentException`, and 16-bit
+gray and 16-bit ARGB 1555 throw `ExternalException`, as in GDI+. Each call draws at once, so `Flush` does nothing, and the bitmap
+keeps what was drawn after `Dispose`; `FlushIntention` is accepted and changes nothing. As in GDI+, drawing goes through premultiplied ARGB with GDI+'s rounding, so a
+translucent copy onto a format without alpha keeps the premultiplied color.
+
+GDI+'s defaults are kept: shapes are aliased (`SmoothingMode.None`), pixel centers lie on whole coordinates
+(`PixelOffsetMode.Default`; `Half` and `HighQuality` move them half a pixel, to Egami's own centers), images are sampled
+bilinearly, and drawing blends (`CompositingMode.SourceOver`; `SourceCopy` replaces). `CompositingQuality` and `QualityMode`
+values are kept but blend the same way. Settings read back as GDI+ stores them:
+`SmoothingMode.HighQuality` reads as `AntiAlias`, `HighSpeed` and `Default` as `None`, `InterpolationMode.Low` as `Bilinear` and
+`High` as `HighQualityBicubic`. `PageUnit` and `PageScale` scale page coordinates at the bitmap's resolution; with
+`GraphicsUnit.Display`, the default, GDI+ ignores the page scale and so does the package.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/SystemDrawingPackage.cs#graphics)]
+
+### Transforms and states
+
+`Matrix` is a 3 by 2 affine transform with System.Drawing's members; `MatrixOrder.Prepend`, the default, applies a new
+transform before the existing one. The world transform takes the same calls on `Graphics`, and `TransformPoints` maps points
+between `CoordinateSpace.World`, `Page` and `Device`. `Save` and `Restore` keep the transform, page settings, clip and quality
+settings; restoring a state drops every state saved after it. `BeginContainer` returns a `GraphicsContainer` and starts again from the defaults inside the
+current transform and clip; with a destination and a source rectangle, the source is in the given unit and the container's own
+coordinates are pixels, as in GDI+.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/SystemDrawingPackage.cs#transforms)]
+
+### Clipping and regions
+
+The clip is kept in device pixels, as GDI+ keeps it, so a later transform does not move it, and it holds the pixels whose
+whole coordinates lie inside: closed at the top and left, open at the bottom and right, half a pixel in when the pixel offset is
+set. `SetClip` takes a `CombineMode`. `ClipBounds` and `VisibleClipBounds` are its pixels' bounds in world coordinates. A `Region` keeps its shape as given;
+`GetRegionScans`, `IsEmpty`, `Equals` and the bounds of a combined region are its pixels, rasterized the same way. `GetRegionData`
+writes GDI+'s region format as a `RegionData`, with the checksum left as zero.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/SystemDrawingPackage.cs#clipping)]
+
+### Shapes
+
+`DrawLine`, `DrawRectangle`, `DrawEllipse`, `DrawArc`, `DrawPie`, `DrawPolygon`, `DrawBezier`, `DrawCurve`, `DrawClosedCurve`,
+`DrawRoundedRectangle` and their `Fill` forms take every System.Drawing overload, including the span ones. Arcs are measured on
+the ellipse as GDI+ measures them, cardinal splines use GDI+'s tension (0.5 by default), and a pen is never thinner than a
+pixel. Polygons and closed curves fill even-odd unless given `FillMode.Winding`. This preview has `Pen` and `SolidBrush`, which
+derives from `Brush`; the other brushes, pen styles and `GraphicsPath` come with the next one.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/SystemDrawingPackage.cs#shapes)]
+
+### Images
+
+`DrawImage(image, x, y)` and `DrawImageUnscaled` draw an image at its physical size: its pixels at its resolution, in page
+units at the bitmap's resolution. The other overloads stretch an image or part of it into a rectangle or a parallelogram, with
+the source in any `GraphicsUnit`. As in GDI+, the edges fade where sampling reaches past the image, unless `ImageAttributes`
+sets a wrap mode; `ImageAttributes` also applies color matrices (with a `ColorMatrixFlag` for grays), gamma, thresholds, color
+keys, `ColorMap` remap tables (by `ColorMapType`) and `ColorChannelFlag` output channels, each for every `ColorAdjustType` or
+one of them. A `DrawImageAbort` callback that returns true stops the draw with `ExternalException`. `DrawIcon` stretches an icon,
+and `DrawIconUnstretched` draws it at its size.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/SystemDrawingPackage.cs#images)]
+
 ## What throws on every OS
 
 Members that need Windows handles exist so code compiles, throw `PlatformNotSupportedException` with a message naming what to
@@ -127,11 +188,12 @@ error in `.editorconfig`.
 <a id="egsd0001"></a>
 
 - **EGSD0001, Windows handles**: `Bitmap.GetHbitmap`, `GetHicon`, `FromHicon` and `FromResource`, `Image.FromHbitmap`,
-  `Icon.Handle` and `Icon.FromHandle`. Use `LockBits` for the pixels and `new Icon(path)` for icons.
+  `Icon.Handle` and `Icon.FromHandle`, `Graphics.FromHdc`, `FromHwnd`, `GetHdc`, `ReleaseHdc` and `GetHalftonePalette`, and
+  `Region.FromHrgn` and `GetHrgn`. Use `LockBits` for the pixels, `new Icon(path)` for icons and `Graphics.FromImage` to draw.
 
 <a id="egsd0002"></a>
 
-- **EGSD0002, screen capture**: `Graphics.CopyFromScreen`, which comes with `Graphics`.
+- **EGSD0002, screen capture**: `Graphics.CopyFromScreen`, with or without a `CopyPixelOperation`.
 
 <a id="egsd0003"></a>
 
@@ -146,3 +208,9 @@ The package is measured against System.Drawing on Windows with the same probe pr
 - `CreateOptimalPalette` chooses different colors.
 - CMYK JPEG and TIFF files load as `Format24bppRgb`; GDI+ gives them a CMYK format System.Drawing has no name for.
 - Egami reads BMP files GDI+ rejects (OS/2, 2-bit, RLE24, embedded PNG and JPEG).
+- Antialiased edges are Egami's: about 96 percent of the pixels of an antialiased shape match GDI+ within 8 levels, and aliased
+  shapes match on about 99.8 percent of their pixels.
+- `HighQualityBilinear` and `HighQualityBicubic` sample as plain bilinear and bicubic, without GDI+'s wider filters, and an image
+  drawn much smaller is not prefiltered.
+- Drawing onto 16-bit bitmaps does not dither, and `SourceCopy` with antialiasing blends its edges with what is below instead of
+  making them transparent.

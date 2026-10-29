@@ -5,8 +5,8 @@ changes that break code come only in a new major version.
 
 ## Egami.SystemDrawing 1.0.0-preview.1, unreleased
 
-A new package: System.Drawing.Common's API on every OS, in managed code (step 2.13, stage A). Bitmaps, pixel access, codecs and
-icons; Graphics, pens, brushes, paths, fonts and text follow in later previews.
+A new package: System.Drawing.Common's API on every OS, in managed code (step 2.13, stages A and C). Bitmaps, pixel access,
+codecs, icons and Graphics; the other pens and brushes, paths, fonts and text follow in later previews.
 
 - `Bitmap`, `Image` and `Icon` in the `Egami.SystemDrawing` namespace, and `PixelFormat`, `BitmapData`, `ColorPalette`,
   `ImageFormat`, `ImageCodecInfo`, `Encoder`, `EncoderParameters`, `FrameDimension` and `PropertyItem` in
@@ -19,6 +19,11 @@ icons; Graphics, pens, brushes, paths, fonts and text follow in later previews.
   multipage TIFF and animated GIF frames, property items (EXIF, TIFF tags, JPEG quantization tables, PNG and GIF fields),
   GDI+'s codec list, JPEG quality, TIFF compression and depth, and SaveAdd.
 - Icons choose the image nearest a size as System.Drawing does and save the file they came from.
+- `Graphics` on any bitmap GDI+ draws on, with GDI+'s defaults and its rules measured on Windows: page units and scale,
+  transforms, `Save`, `Restore` and containers, the clip and `Region` as whole device pixels, quality settings, and every Draw,
+  Fill and DrawImage overload for lines, rectangles, ellipses, arcs, pies, polygons, Beziers, cardinal splines, rounded
+  rectangles, regions, images and icons; `Matrix`, `Region`, `RegionData`, `ImageAttributes`, `ColorMatrix`, `ColorMap`, `Pen`
+  and `SolidBrush`.
 - Members that need Windows handles throw PlatformNotSupportedException and warn at compile time (EGSD0001 to EGSD0003).
 - With implicit usings on, the package adds `System.Drawing` and `Egami.SystemDrawing` as implicit usings.
 
