@@ -58,6 +58,10 @@ internal sealed partial class H264Deblock
     // The bS of an intra macroblock's top edge: 4, or 3 in a field picture, whose rows across it are a field row apart (8.7.2.1).
     private int _topIntra = 4;
 
+    // The raster indexes of the macroblocks across the current macroblock's left and top edges, whose QPs those edges average.
+    private int _leftMb;
+    private int _topMb;
+
     private static Vector128<short> FarLimit(bool field) => field ? Vector128.Create(3 | (1 << 16)).AsInt16() : Vector128.Create((short)3);
 
     /// <summary>Filters the macroblock rows from <paramref name="firstRow"/> to before <paramref name="endRow"/>.</summary>
@@ -114,6 +118,8 @@ internal sealed partial class H264Deblock
 
     private void FilterMacroblock(int mbX, int mbY, int addr, bool left, bool top, H264FilterParams p)
     {
+        _leftMb = addr - 1;
+        _topMb = addr - _widthMbs;
         if (_pic.Narrow)
         {
             FilterMacroblock<byte>(mbX, mbY, addr, left, top, p);
@@ -147,7 +153,7 @@ internal sealed partial class H264Deblock
                     continue;
                 }
 
-                int qpP = edge == 0 ? _mb.Qp[dir == 0 ? addr - 1 : addr - _widthMbs] : qp;
+                int qpP = edge == 0 ? _mb.Qp[dir == 0 ? _leftMb : _topMb] : qp;
                 int qpAv = (qpP + qp + 1) >> 1;
                 int at = dir == 0 ? origin + (edge * 4) : origin + (edge * 4 * stride);
                 FilterEdge(_pic.Y<T>(), at, stride, dir, 16, qpAv, p, edge, false, 4, _bitDepthY);
@@ -183,7 +189,7 @@ internal sealed partial class H264Deblock
 
                     // The luma edge whose strengths the chroma edge takes.
                     int lumaEdge = dir == 0 ? ce * 2 : _chroma == 1 ? ce * 2 : ce;
-                    int qpP = ce == 0 ? qpc[dir == 0 ? addr - 1 : addr - _widthMbs] : qpc[addr];
+                    int qpP = ce == 0 ? qpc[dir == 0 ? _leftMb : _topMb] : qpc[addr];
                     int qpAv = (qpP + qpc[addr] + 1) >> 1;
                     int at = dir == 0 ? cOrigin + (ce * 4) : cOrigin + (ce * 4 * cStride);
                     int length = dir == 0 ? ch : cw;
@@ -202,6 +208,16 @@ internal sealed partial class H264Deblock
         where T : unmanaged
     {
         ComputeStrengths(mbX, mbY, addr, left, top);
+        FilterWide<T>(mbX, mbY, addr, left, top, p);
+    }
+
+    /// <summary>
+    /// Filters the macroblock at (mbX, mbY) of _pic with the strengths in _bs, 256 bits at a time; the left and top edges'
+    /// QPs come from _leftMb and _topMb.
+    /// </summary>
+    private void FilterWide<T>(int mbX, int mbY, int addr, bool left, bool top, H264FilterParams p)
+        where T : unmanaged
+    {
         ref int bs = ref MemoryMarshal.GetArrayDataReference(_bs);
         Vector256<int> any = Vector256.LoadUnsafe(ref bs) | Vector256.LoadUnsafe(ref bs, 8) | Vector256.LoadUnsafe(ref bs, 16) | Vector256.LoadUnsafe(ref bs, 24);
         if (any == Vector256<int>.Zero)
@@ -239,7 +255,7 @@ internal sealed partial class H264Deblock
                     continue;
                 }
 
-                int qpP = edge == 0 ? qps[dir == 0 ? addr - 1 : addr - _widthMbs] : qp;
+                int qpP = edge == 0 ? qps[dir == 0 ? _leftMb : _topMb] : qp;
                 int qpAv = (qpP + qp + 1) >> 1;
                 int indexA = Math.Clamp(qpAv + p.OffsetA, 0, 51), indexB = Math.Clamp(qpAv + p.OffsetB, 0, 51);
                 int alpha = H264Tables.Alpha[indexA] * scaleY, beta = H264Tables.Beta[indexB] * scaleY;
@@ -334,7 +350,7 @@ internal sealed partial class H264Deblock
                     continue;
                 }
 
-                int pAddr = ce != 0 ? addr : dir == 0 ? addr - 1 : addr - _widthMbs;
+                int pAddr = ce != 0 ? addr : dir == 0 ? _leftMb : _topMb;
                 (int alphaCb, int betaCb, int indexCb) = Thresholds((qpCb[pAddr] + qpCb[addr] + 1) >> 1, p, scale);
                 (int alphaCr, int betaCr, int indexCr) = Thresholds((qpCr[pAddr] + qpCr[addr] + 1) >> 1, p, scale);
                 Vector128<short> bs8 = Vector128.Shuffle(b4.AsByte(), Vector128.Create((byte)0, 16, 0, 16, 4, 16, 4, 16, 8, 16, 8, 16, 12, 16, 12, 16)).AsInt16();

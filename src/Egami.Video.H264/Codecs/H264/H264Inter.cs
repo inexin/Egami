@@ -109,6 +109,12 @@ internal sealed class H264Inter
     /// </summary>
     internal void SetMacroblock(H264Picture pic, H264Picture[] list0, H264Picture[] list1, int[] implicitWeights, H264Picture motion, int w4)
     {
+        if (ReferenceEquals(_pic, pic) && ReferenceEquals(_list0, list0) && ReferenceEquals(_refIdx0, motion.RefIdx[0]))
+        {
+            // The same as the last macroblock's (an MBAFF frame sets this per macroblock); list1 and the weights go with list0.
+            return;
+        }
+
         _pic = pic;
         _list0 = list0;
         _list1 = list1;

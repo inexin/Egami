@@ -1,3 +1,6 @@
+using System.Runtime.InteropServices;
+using System.Runtime.Intrinsics;
+
 namespace Egami.Video.Codecs.H264;
 
 /// <summary>
@@ -64,9 +67,8 @@ internal sealed partial class H264Deblock
         _fieldMbs = field;
         _far = FarLimit(field);
         H264Picture pic = field ? frame.Field(bottom) : frame;
-        _pic = frame;
         int row = field ? pairY : (2 * pairY) + bottom;
-        int b0 = FirstBlock(addr);
+        int b0 = (((2 * pairY) + bottom) * 4 * w4) + (pairX * 4);
         bool intra = frame.MbIntra[addr];
         int slice = mb.Slice[addr];
         int leftPair = Neighbor(pairX - 1, pairY, slice, p);
@@ -74,20 +76,7 @@ internal sealed partial class H264Deblock
 
         // Internal edges of the macroblock's own blocks, and bS of the edges the left and top neighbours share when they are
         // coded as this macroblock is.
-        for (int i = 0; i < _bs.Length; i++)
-        {
-            _bs[i] = 0;
-        }
-
-        for (int edge = 1; edge < 4; edge++)
-        {
-            for (int k = 0; k < 4; k++)
-            {
-                _bs[(edge * 4) + k] = intra ? 3 : StrengthOf(b0 + (k * w4) + edge - 1, b0 + (k * w4) + edge);
-                _bs[16 + (edge * 4) + k] = intra ? 3 : StrengthOf(b0 + ((edge - 1) * w4) + k, b0 + (edge * w4) + k);
-            }
-        }
-
+        bool columnZero = ComputeMbaffStrengths(addr, b0, intra, pairX > 0);
         bool leftMixed = false;
         int leftMb = -1;
         if (leftPair >= 0)
@@ -95,11 +84,23 @@ internal sealed partial class H264Deblock
             bool leftField = mb.FieldMb[leftPair];
             if (leftField == field)
             {
+                // The left macroblock in the same geometry is the one before in raster order, its blocks just left of these.
                 leftMb = leftPair + (bottom * w);
-                int lb0 = FirstBlock(leftMb);
-                for (int k = 0; k < 4; k++)
+                if (intra || frame.MbIntra[leftMb])
                 {
-                    _bs[k] = intra || frame.MbIntra[leftMb] ? 4 : StrengthOf(lb0 + (k * w4) + 3, b0 + (k * w4));
+                    _bs[0] = _bs[1] = _bs[2] = _bs[3] = 4;
+                }
+                else if (!columnZero && mb.FlatInside[addr] && mb.FlatInside[leftMb] && UseVectors)
+                {
+                    // Both flat: the four segments join the same two motions.
+                    _bs[0] = _bs[1] = _bs[2] = _bs[3] = MotionStrength(b0 - 1, b0);
+                }
+                else if (!columnZero)
+                {
+                    for (int k = 0; k < 4; k++)
+                    {
+                        _bs[k] = StrengthOf(b0 + (k * w4) - 1, b0 + (k * w4));
+                    }
                 }
             }
             else
@@ -120,30 +121,66 @@ internal sealed partial class H264Deblock
 
         // The top edge: the macroblock above in the same geometry, or a frame macroblock under a field pair (filtered per
         // field below), or a field macroblock under a frame pair (mixed).
-        int topMb = -1;
+        int topMb = -1, topUp = 0;
         bool topDouble = false;
         if (!field && bottom == 1)
         {
             topMb = addr - w;
+            topUp = 1;
         }
         else if (abovePair >= 0)
         {
             bool aboveField = mb.FieldMb[abovePair];
             topDouble = !field && aboveField;
             topMb = topDouble ? -1 : field && aboveField ? abovePair + (bottom * w) : abovePair + w;
+
+            // How many macroblock rows of the frame up topMb is.
+            topUp = field && aboveField ? 2 : bottom + 1;
         }
 
+        bool topMixed = false;
         if (topMb >= 0)
         {
-            bool mixed = field != mb.FieldMb[topMb];
-            int tb0 = FirstBlock(topMb) + (3 * w4);
-            for (int k = 0; k < 4; k++)
+            topMixed = field != mb.FieldMb[topMb];
+            int tb0 = b0 - (topUp * 4 * w4) + (3 * w4);
+            if (!intra && !frame.MbIntra[topMb] && !topMixed && UseVectors)
             {
-                // A horizontal macroblock edge with an intra side has bS 4 only between frame macroblocks.
-                _bs[16 + k] = intra || frame.MbIntra[topMb] ? (field || mixed ? 3 : 4)
-                    : mixed ? 1 + ((_nonzero[tb0 + k] | _nonzero[b0 + k]) != 0 ? 1 : 0)
-                    : StrengthOf(tb0 + k, b0 + k);
+                Strengths(b0, b0 - tb0).StoreUnsafe(ref MemoryMarshal.GetArrayDataReference(_bs), 16);
             }
+            else
+            {
+                for (int k = 0; k < 4; k++)
+                {
+                    // A horizontal macroblock edge with an intra side has bS 4 only between frame macroblocks.
+                    _bs[16 + k] = intra || frame.MbIntra[topMb] ? (field || topMixed ? 3 : 4)
+                        : topMixed ? 1 + ((_nonzero[tb0 + k] | _nonzero[b0 + k]) != 0 ? 1 : 0)
+                        : StrengthOf(tb0 + k, b0 + k);
+                }
+            }
+        }
+
+        if (!leftMixed && leftMb < 0)
+        {
+            _bs[0] = _bs[1] = _bs[2] = _bs[3] = 0;
+        }
+
+        if (topMb < 0)
+        {
+            _bs[16] = _bs[17] = _bs[18] = _bs[19] = 0;
+        }
+
+        if (!leftMixed && !topDouble && !topMixed && UseVectors && UseWideVectors)
+        {
+            // Every edge as in a picture of this macroblock's geometry: the progressive filter with these neighbours.
+            if (!ReferenceEquals(_pic, pic))
+            {
+                _pic = pic;
+            }
+
+            _leftMb = leftMb;
+            _topMb = topMb;
+            FilterWide<T>(pairX, row, addr, leftMb >= 0, topMb >= 0, p);
+            return;
         }
 
         // Luma: vertical edges, then horizontal ones.
@@ -231,6 +268,57 @@ internal sealed partial class H264Deblock
                 FilterEdge(plane, cOrigin + (ce * 4 * cStride), cStride, 1, 8, qpc[addr], p, _chroma == 1 ? ce * 2 : ce, true, 2, _bitDepthC);
             }
         }
+    }
+
+    /// <summary>
+    /// Sets bS of the macroblock's internal edges; returns whether the vertical edge 0 holds bS against the blocks just left of
+    /// the macroblock, as the vector form works out, and the top edge's are left for the caller.
+    /// </summary>
+    private bool ComputeMbaffStrengths(int addr, int b0, bool intra, bool hasLeft)
+    {
+        int w4 = _mb.W4;
+        ref int bs = ref MemoryMarshal.GetArrayDataReference(_bs);
+        if (intra)
+        {
+            _bs.AsSpan().Fill(3);
+            return false;
+        }
+
+        if (UseVectors && _mb.FlatInside[addr])
+        {
+            _bs.AsSpan().Clear();
+            return false;
+        }
+
+        if (!UseVectors)
+        {
+            _bs.AsSpan().Clear();
+            for (int edge = 1; edge < 4; edge++)
+            {
+                for (int k = 0; k < 4; k++)
+                {
+                    _bs[(edge * 4) + k] = StrengthOf(b0 + (k * w4) + edge - 1, b0 + (k * w4) + edge);
+                    _bs[16 + (edge * 4) + k] = StrengthOf(b0 + ((edge - 1) * w4) + k, b0 + (edge * w4) + k);
+                }
+            }
+
+            return false;
+        }
+
+        // As ComputeStrengths: rows of blocks transposed into the vertical edges, then the horizontal ones.
+        int back = hasLeft ? 1 : 0;
+        Vector128<int> r0 = Strengths(b0, back), r1 = Strengths(b0 + w4, back);
+        Vector128<int> r2 = Strengths(b0 + (2 * w4), back), r3 = Strengths(b0 + (3 * w4), back);
+        Vector128<long> t0 = Lo(r0, r1).AsInt64(), t1 = Lo(r2, r3).AsInt64(), t2 = Hi(r0, r1).AsInt64(), t3 = Hi(r2, r3).AsInt64();
+        Lo(t0, t1).AsInt32().StoreUnsafe(ref bs, 0);
+        Hi(t0, t1).AsInt32().StoreUnsafe(ref bs, 4);
+        Lo(t2, t3).AsInt32().StoreUnsafe(ref bs, 8);
+        Hi(t2, t3).AsInt32().StoreUnsafe(ref bs, 12);
+        Vector128<int>.Zero.StoreUnsafe(ref bs, 16);
+        Strengths(b0 + w4, w4).StoreUnsafe(ref bs, 20);
+        Strengths(b0 + (2 * w4), w4).StoreUnsafe(ref bs, 24);
+        Strengths(b0 + (3 * w4), w4).StoreUnsafe(ref bs, 28);
+        return hasLeft;
     }
 
     /// <summary>

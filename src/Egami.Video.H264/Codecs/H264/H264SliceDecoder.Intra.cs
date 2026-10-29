@@ -16,7 +16,7 @@ internal sealed partial class H264SliceDecoder
     /// </summary>
     private bool LeftIntra(int first, int count)
     {
-        if (!_mbaff)
+        if (!_mixedLeft)
         {
             return IntraAvailable(LeftMb);
         }
@@ -453,12 +453,12 @@ internal sealed partial class H264SliceDecoder
         int stride = _pic.ChromaStride;
         int w = _sps.MbWidthC, h = _sps.MbHeightC;
         int at = _pic.ChromaOrigin + (_mbY * h * stride) + (_mbX * w);
-        if (_mbaff && !_leftIntraKnown)
+        if (_mixedLeft && !_leftIntraKnown)
         {
             FindLeftIntra();
         }
 
-        bool left = _mbaff ? (_leftIntraChroma & ((1 << h) - 1)) == (1 << h) - 1 : IntraAvailable(LeftMb), top = IntraAvailable(TopMb);
+        bool left = _mixedLeft ? (_leftIntraChroma & ((1 << h) - 1)) == (1 << h) - 1 : IntraAvailable(LeftMb), top = IntraAvailable(TopMb);
         bool topLeft = IntraAvailable(_mbX > 0 && _mbY > 0 ? _mbAddr - _widthMbs - 1 : -1);
         for (int i = 0; i < w; i++)
         {
@@ -467,7 +467,7 @@ internal sealed partial class H264SliceDecoder
 
         for (int i = 0; i < h; i++)
         {
-            _left[i] = left || (_mbaff && (_leftIntraChroma & (1 << i)) != 0) ? H264Samples.Get(plane, at + (i * stride) - 1) : 0;
+            _left[i] = left || (_mixedLeft && (_leftIntraChroma & (1 << i)) != 0) ? H264Samples.Get(plane, at + (i * stride) - 1) : 0;
         }
 
         _topLeft = topLeft ? H264Samples.Get(plane, at - stride - 1) : 0;
@@ -488,7 +488,7 @@ internal sealed partial class H264SliceDecoder
                         }
 
                         // DC takes the left samples of its own four rows, which an MBAFF frame may have when others are not.
-                        bool rowsLeft = _mbaff ? ((_leftIntraChroma >> yo) & 15) == 15 : left;
+                        bool rowsLeft = _mixedLeft ? ((_leftIntraChroma >> yo) & 15) == 15 : left;
 
                         int v;
                         if ((xo == 0 && yo == 0) || (xo > 0 && yo > 0))
