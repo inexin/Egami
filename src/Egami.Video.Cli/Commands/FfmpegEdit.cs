@@ -37,6 +37,17 @@ internal static class FfmpegEdit
             return true;
         }
 
+        // An -af chain alone that uses one of V9.1's audio filters beyond the editing ones goes to egami-video audio --af;
+        // one of only volume, afade and atempo stays an edit, as before.
+        if (line.AudioFilter is { } sound && line.VideoFilter is null && line.ComplexFilter is null)
+        {
+            string[] names = [.. FfmpegTranslator.SplitChain(sound).Select(f => f.Split('=')[0].Trim())];
+            if (names.All(AudioFilterPlan.Names.Contains) && names.Any(n => !EditFilters.Contains(n)))
+            {
+                return false;
+            }
+        }
+
         foreach (string? graph in new[] { line.VideoFilter, line.AudioFilter, line.ComplexFilter })
         {
             if (graph is null)

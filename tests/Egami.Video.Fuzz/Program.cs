@@ -3,6 +3,8 @@ using System.Buffers.Binary;
 using Egami;
 using Egami.Pixels;
 using Egami.Video;
+using Egami.Video.Audio;
+using Egami.Video.Audio.Filters;
 using Egami.Video.Codecs;
 using Egami.Video.Containers;
 using Egami.Video.Subtitles;
@@ -97,7 +99,8 @@ static Action<Stream> Target(string name) => name switch
     "ffv1" => ReadFfv1,
     "ffv1raw" => DecodeFfv1Packets,
     "ffv1enc" => EncodeFfv1,
-    _ => throw new ArgumentException($"Unknown fuzz target '{name}'. Targets: avi, mkv, y4m, ivf, webm, mp4, obu, ac3, mp4mux, mjpeg, vp8, vp9, vp9raw, h264, av1, av1raw, wav, flac, ogg, aiff, caf, opusraw, vorbisraw, vp8enc, mp3, mp3raw, ac3raw, alac, opusenc, subs, subtrack, vp9enc, av1enc, trim, ffv1, ffv1raw, ffv1enc."),
+    "afilters" => FilterAudio,
+    _ => throw new ArgumentException($"Unknown fuzz target '{name}'. Targets: avi, mkv, y4m, ivf, webm, mp4, obu, ac3, mp4mux, mjpeg, vp8, vp9, vp9raw, h264, av1, av1raw, wav, flac, ogg, aiff, caf, opusraw, vorbisraw, vp8enc, mp3, mp3raw, ac3raw, alac, opusenc, subs, subtrack, vp9enc, av1enc, trim, ffv1, ffv1raw, ffv1enc, afilters."),
 };
 
 static MediaContext Context() => MediaContext.Default with
@@ -1681,6 +1684,102 @@ static void DecodeMotionJpeg(Stream stream)
             // A CMYK, YCCK or RGB JPEG has no planes.
         }
     }
+}
+
+// V9.1's audio filters (stage D, task 19): the first bytes pick the rate, the channels, a chain of up to six filters with
+// parameters inside their documented ranges, and the frame sizes; the rest is 16-bit audio, sent in uneven frames with a
+// Reset now and then. Nothing may throw, and every sample out must be finite.
+static void FilterAudio(Stream stream)
+{
+    byte[] data = ReadAll(stream);
+    if (data.Length < 24)
+    {
+        return;
+    }
+
+    int at = 0;
+    byte Next() => data[at++ % 24];
+    double Unit() => Next() / 255.0;
+    int rate = (Next() % 5) switch { 0 => 8000, 1 => 16000, 2 => 44100, 3 => 48000, _ => 96000 };
+    ChannelLayout layout = (Next() % 3) switch { 0 => ChannelLayout.Mono, 1 => ChannelLayout.Stereo, _ => ChannelLayout.Surround51 };
+    MediaTime Time(double most) => MediaTime.FromSeconds(Unit() * most);
+    double Frequency() => 20 + (Unit() * ((rate / 2.0 * 0.95) - 20));
+    BiquadKind Kind() => (BiquadKind)(Next() % 8);
+    MediaContext context = Context();
+    using AudioFilterChain chain = new(rate, layout, context);
+    int count = 1 + (Next() % 6);
+    for (int i = 0; i < count; i++)
+    {
+        chain.Add((Next() % 18) switch
+        {
+            0 => new Gain((Unit() * 60) - 40),
+            1 => new AudioFade(Next() % 2 == 0 ? FadeDirection.In : FadeDirection.Out, Time(0.5), Time(0.5), (FadeCurve)(Next() % 5)),
+            2 => new Pan((Unit() * 2) - 1) { Balance = (Unit() * 2) - 1 },
+            3 => new Delay(Time(0.2)),
+            4 => new Tempo(0.25 + (Unit() * 3.75), Next() % 2 == 0 ? TempoPreset.Music : TempoPreset.Speech),
+            5 => new Speed(0.25 + (Unit() * 3.75)),
+            6 => new Biquad(Kind(), Frequency(), 0.1 + (Unit() * 20), (Unit() * 48) - 24),
+            7 => Biquad.FromBandwidth(Kind(), Frequency(), 0.05 + (Unit() * 4), (Unit() * 48) - 24),
+            8 => new Butterworth(Next() % 2 == 0 ? BiquadKind.LowPass : BiquadKind.HighPass, Frequency(), 2 + (Next() % 7)),
+            9 => new ParametricEqualizer(new EqualizerBand(Kind(), Frequency(), (Unit() * 48) - 24, 0.1 + (Unit() * 10)), new EqualizerBand(Kind(), Frequency(), (Unit() * 48) - 24)),
+            10 => new Compressor { Threshold = -Unit() * 120, Ratio = 1 + (Unit() * 99), Knee = Unit() * 24, Attack = Time(1), Release = Time(1), Makeup = Unit() * 48, Detection = (LevelDetection)(Next() % 2) },
+            11 => new Gate { Threshold = -Unit() * 120, Ratio = 1 + (Unit() * 99), Range = -Unit() * 120, Knee = Unit() * 24, Attack = Time(1), Release = Time(1) },
+            12 => new Limiter { Ceiling = -Unit() * 60, Release = MediaTime.FromSeconds(0.001 + Unit()), TruePeak = Next() % 2 == 0 },
+            13 => LoudnessNormalizer.Dynamic(new LoudnessTarget(-70 + (Unit() * 65), -Unit() * 9, 1 + (Unit() * 49))),
+            14 => new SilenceRemover(Next() % 2 == 0 ? SilenceRemoval.Trim : SilenceRemoval.Shorten) { Threshold = -Unit() * 120, KeepGap = MediaTime.FromSeconds(0.1 + (Unit() * 0.4)), MaxGap = MediaTime.FromSeconds(0.5 + Unit()) },
+            15 => new Trim(Time(0.3), Next() % 2 == 0 ? null : MediaTime.FromSeconds(0.3) + Time(1)),
+            16 => new Pad(Time(0.3)),
+            _ => new Retime(Time(1)),
+        });
+    }
+
+    int channels = layout.ChannelCount, sizes = Next();
+    long sample = 0;
+    int resetAt = Next();
+    void Check()
+    {
+        while (chain.TryReceive(out AudioFrame? output))
+        {
+            using (output)
+            {
+                for (int c = 0; c < output.ChannelCount; c++)
+                {
+                    foreach (float value in output.GetSpan<float>(c))
+                    {
+                        if (!float.IsFinite(value))
+                        {
+                            throw new InvalidOperationException($"A filter gave {value}.");
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    int position = 24, frame = 0;
+    while (position + 2 <= data.Length)
+    {
+        int n = Math.Min(1 + ((sizes * (frame + 7)) % 1500), (data.Length - position) / (2 * channels));
+        if (n <= 0)
+        {
+            break;
+        }
+
+        using AudioFrame input = new(SampleFormat.S16, layout, rate, n, new MediaTime(sample, new Rational(1, rate)), context);
+        data.AsSpan(position, n * 2 * channels).CopyTo(System.Runtime.InteropServices.MemoryMarshal.AsBytes(input.GetSpan<short>(0)));
+        position += n * 2 * channels;
+        sample += n;
+        chain.Send(input);
+        Check();
+        if (++frame == 1 + (resetAt % 40))
+        {
+            chain.Reset();
+            sample = 0;
+        }
+    }
+
+    chain.Flush();
+    Check();
 }
 
 static byte[] ReadAll(Stream stream)

@@ -113,9 +113,29 @@ internal static class FfmpegTranslator
             return [Detect(line, first, input, common)];
         }
 
+        // V9.1's audio filters: egami-video audio with --af, which parses the same chain.
+        string? filtered = null;
         if (line.AudioFilter is { } audioFilter)
         {
-            throw FfmpegMode.Unsupported($"-af {SplitChain(audioFilter)[0].Split('=')[0].Trim()}", why: $"-af takes only the detection filters, to -f null: {string.Join(", ", AudioDetections)}");
+            string firstName = SplitChain(audioFilter)[0].Split('=')[0].Trim();
+            if (!SplitChain(audioFilter).All(f => AudioFilterPlan.Names.Contains(f.Split('=')[0].Trim())))
+            {
+                string unknown = SplitChain(audioFilter).Select(f => f.Split('=')[0].Trim()).First(n => !AudioFilterPlan.Names.Contains(n));
+                throw FfmpegMode.Unsupported($"-af {unknown}", why: $"-af takes {string.Join(", ", AudioFilterPlan.Names)}, and to -f null the detection filters {string.Join(", ", AudioDetections)}");
+            }
+
+            if (line.VideoFilter is not null || line.ComplexFilter is not null)
+            {
+                throw FfmpegMode.Unsupported($"-af {firstName} with -vf or -filter_complex", why: "egami-video filters the sound alone, copying the picture");
+            }
+
+            if ((line.Codecs.TryGetValue("a", out string? copy) ? copy : line.Codecs.GetValueOrDefault(string.Empty)) == "copy")
+            {
+                throw new UsageException("-af filters the sound, which -c:a copy keeps as it is; drop one of them.");
+            }
+
+            new AudioFilterPlan().AddChain(audioFilter, "-af");
+            filtered = audioFilter;
         }
 
         // Quality checks: -lavfi psnr or ssim between two inputs, to the null muxer.
@@ -243,7 +263,7 @@ internal static class FfmpegTranslator
         }
 
         bool copiesAudio = (line.Codecs.TryGetValue("a", out string? audioCopy) ? audioCopy : line.Codecs.GetValueOrDefault(string.Empty)) == "copy";
-        bool audioJob = AudioExtensions.Contains(extension) || (CopyableAudioExtensions.Contains(extension) && !copiesAudio) || line.NoVideo || line.SampleRate is not null || line.Channels is not null || line.SampleFormat is not null
+        bool audioJob = filtered is not null || AudioExtensions.Contains(extension) || (CopyableAudioExtensions.Contains(extension) && !copiesAudio) || line.NoVideo || line.SampleRate is not null || line.Channels is not null || line.SampleFormat is not null
             || line.AudioBitrate is not null
             || (line.Codecs.TryGetValue("a", out string? audioCodec) && audioCodec != "copy");
         if (audioJob)
@@ -277,6 +297,11 @@ internal static class FfmpegTranslator
             if (line.NoVideo)
             {
                 audio.Add("--no-video");
+            }
+
+            if (filtered is not null)
+            {
+                audio.AddRange(["--af", filtered]);
             }
 
             return [[.. audio]];
