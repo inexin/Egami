@@ -96,7 +96,7 @@ internal static class HevcDecoder
     /// of a segment one substream. When a segment has fewer entry points than substreams, the substreams can only be found one
     /// after another, so everything is one chain.
     /// </summary>
-    private static List<HevcChain> Chains(HevcPicture picture, List<HevcSegment> segments)
+    internal static List<HevcChain> Chains(HevcPicture picture, List<HevcSegment> segments)
     {
         HevcLayout layout = picture.Layout;
         HevcSps sps = picture.Sps;

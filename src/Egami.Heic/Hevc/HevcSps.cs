@@ -89,6 +89,18 @@ internal sealed class HevcSps
     /// <summary>Gets pcm_loop_filter_disabled_flag.</summary>
     internal bool PcmLoopFilterDisabled { get; private set; }
 
+    /// <summary>Gets sps_max_dec_pic_buffering_minus1 + 1 of the highest sub-layer: the decoded picture buffer's size.</summary>
+    internal int MaxDecPicBuffering { get; private set; } = 1;
+
+    /// <summary>Gets sps_max_num_reorder_pics of the highest sub-layer.</summary>
+    internal int MaxNumReorder { get; private set; }
+
+    /// <summary>Gets sps_max_latency_increase_plus1 of the highest sub-layer (0: no latency limit).</summary>
+    internal int MaxLatencyIncreasePlus1 { get; private set; }
+
+    /// <summary>Gets SpsMaxLatencyPictures (7-9), or 0 for no limit.</summary>
+    internal int MaxLatencyPictures => MaxLatencyIncreasePlus1 == 0 ? 0 : MaxNumReorder + MaxLatencyIncreasePlus1 - 1;
+
     /// <summary>Gets the short-term reference picture sets.</summary>
     internal List<HevcShortTermRps> ShortTermRps { get; } = [];
 
@@ -100,6 +112,9 @@ internal sealed class HevcSps
 
     /// <summary>Gets used_by_curr_pic_lt_sps_flag of each long-term picture the SPS lists.</summary>
     internal bool[] UsedByCurrPicLtSps { get; private set; } = [];
+
+    /// <summary>Gets lt_ref_pic_poc_lsb_sps of each long-term picture the SPS lists.</summary>
+    internal int[] LtRefPicPocLsbSps { get; private set; } = [];
 
     /// <summary>Gets sps_temporal_mvp_enabled_flag.</summary>
     internal bool TemporalMvpEnabled { get; private set; }
@@ -207,9 +222,10 @@ internal sealed class HevcSps
         bool orderingInfo = r.Flag("sps_sub_layer_ordering_info_present_flag");
         for (int i = orderingInfo ? 0 : maxSubLayersMinus1; i <= maxSubLayersMinus1; i++)
         {
-            r.Ue("sps_max_dec_pic_buffering_minus1[i]");
-            r.Ue("sps_max_num_reorder_pics[i]");
-            r.Ue("sps_max_latency_increase_plus1[i]");
+            // The highest sub-layer's values are the ones a decoder of every sub-layer keeps.
+            sps.MaxDecPicBuffering = (int)r.Ue("sps_max_dec_pic_buffering_minus1[i]", 15) + 1;
+            sps.MaxNumReorder = (int)r.Ue("sps_max_num_reorder_pics[i]", (uint)(sps.MaxDecPicBuffering - 1));
+            sps.MaxLatencyIncreasePlus1 = (int)r.Ue("sps_max_latency_increase_plus1[i]", uint.MaxValue - 1);
         }
 
         sps.MinCbLog2Size = (int)r.Ue("log2_min_luma_coding_block_size_minus3", 3) + 3;
@@ -272,9 +288,10 @@ internal sealed class HevcSps
         {
             sps.NumLongTermRefPicsSps = (int)r.Ue("num_long_term_ref_pics_sps", 32);
             sps.UsedByCurrPicLtSps = new bool[sps.NumLongTermRefPicsSps];
+            sps.LtRefPicPocLsbSps = new int[sps.NumLongTermRefPicsSps];
             for (int i = 0; i < sps.NumLongTermRefPicsSps; i++)
             {
-                r.U(sps.Log2MaxPocLsb, "lt_ref_pic_poc_lsb_sps");
+                sps.LtRefPicPocLsbSps[i] = (int)r.U(sps.Log2MaxPocLsb, "lt_ref_pic_poc_lsb_sps");
                 sps.UsedByCurrPicLtSps[i] = r.Flag("used_by_curr_pic_lt_sps_flag[i]");
             }
         }

@@ -24,6 +24,8 @@ Usage, from the repo root with Docker running:
   python tools/make-heic-references.py extra        .cache/heic/reference/extra (the HEIF files that stay in .cache)
   python tools/make-heic-references.py suite        the conformance summaries' suite MD5s again, without decoding
   python tools/make-heic-references.py traces       HM's syntax traces: tests/reference/heic/hm-headers.json.gz and .cache
+  python tools/make-heic-references.py frames       .cache/heic/reference/{HEVC_v1,RExt}/frames.json: the MD5 of every frame HM
+                                                    outputs, in output order (2.9.10's inter decoding)
 """
 import hashlib
 import json
@@ -126,6 +128,6 @@ if __name__ == "__main__":
     steps = sys.argv[1:] or ["fetch", "corpus", "conformance", "extra", "traces"]
     if "fetch" in steps:
         fetch()
-    for step in ("corpus", "conformance", "extra", "suite", "traces"):
+    for step in ("corpus", "conformance", "extra", "suite", "traces", "frames"):
         if step in steps:
             run(step)

@@ -464,6 +464,9 @@ internal sealed class HevcScalingList
 /// <summary>A short-term reference picture set (H.265 7.3.7, 7.4.8): the POC deltas and whether each is used now.</summary>
 internal sealed class HevcShortTermRps
 {
+    /// <summary>Gets a set without pictures, an IDR picture's.</summary>
+    internal static HevcShortTermRps Empty { get; } = new();
+
     /// <summary>Gets the negative POC deltas, nearest first, then the positive ones, nearest first.</summary>
     internal int[] Deltas { get; private set; } = [];
 

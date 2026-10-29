@@ -929,6 +929,33 @@ def extra():
     write_manifest(f"{folder}/manifest.json", manifest)
 
 
+def frames():
+    """Per-frame MD5s of HM's whole decode of every conformance stream, in output order (Phase 2.9.10): {set}/frames.json."""
+    os.makedirs(TMP, exist_ok=True)
+    for set_name in ("HEVC_v1", "RExt"):
+        path = f"{CACHE}/reference/{set_name}/summary.json"
+        if not os.path.isfile(path):
+            continue
+        result = {}
+        for name, entry in sorted(json.load(open(path))["streams"].items()):
+            print(set_name, name, flush=True)
+            info = entry.get("sps")
+            r = sh("TAppDecoder", "-b", f"{CACHE}/{entry['path']}", "-o", f"{TMP}/frames.yuv", "-d", "0", check=False, timeout=7200)
+            if not info or not os.path.isfile(f"{TMP}/frames.yuv"):
+                result[name] = {"hm_exit": r.returncode}
+                continue
+            data = open(f"{TMP}/frames.yuv", "rb").read()
+            os.remove(f"{TMP}/frames.yuv")
+            n = picture_bytes(info)
+            item = {"hm_exit": r.returncode, "frame_bytes": n, "bytes": len(data)}
+            if len(data) % n == 0:
+                item["frames"] = [md5(data[i:i + n]) for i in range(0, len(data), n)]
+            result[name] = item
+            with open(f"{CACHE}/reference/{set_name}/frames.json", "w") as f:
+                json.dump({"tools": tools(), "streams": result}, f, indent=1, sort_keys=True)
+                f.write("\n")
+
+
 HEADER_LINE = re.compile(r"^\s*\d+\s+(\S+)\s+(?:u\(\d+\)|ue\(v\)|se\(v\)|f\(\d+\))\s*:\s*(-?\d+)\s*$")
 
 
@@ -1000,4 +1027,4 @@ def traces():
 
 if __name__ == "__main__":
     for step in sys.argv[1:]:
-        {"corpus": corpus, "conformance": conformance, "extra": extra, "suite": suite, "traces": traces}[step]()
+        {"corpus": corpus, "conformance": conformance, "extra": extra, "suite": suite, "traces": traces, "frames": frames}[step]()

@@ -22,13 +22,21 @@ internal static class HevcTestFiles
     /// <summary>Gets HM's header traces of every corpus HEVC item, keyed "file#item".</summary>
     internal static readonly Lazy<JsonElement> HmHeaders = new(() => ReadGzipJson(Path.Combine(References, "hm-headers.json.gz")).GetProperty("items"));
 
-    /// <summary>Gets the fetched .cache/heic folder when EGAMI_CORPUS names heic (or all), else null.</summary>
+    /// <summary>
+    /// Gets the fetched .cache/heic folder when EGAMI_CORPUS names heic (or all), else null: EGAMI_HEIC_CACHE when set (another
+    /// worktree's), else the nearest .cache/heic above the tests.
+    /// </summary>
     internal static string? Cache()
     {
         string asked = Environment.GetEnvironmentVariable("EGAMI_CORPUS") ?? "";
         if (!asked.Split([',', ';', ' '], StringSplitOptions.RemoveEmptyEntries).Any(c => c.Trim() is "heic" or "all"))
         {
             return null;
+        }
+
+        if (Environment.GetEnvironmentVariable("EGAMI_HEIC_CACHE") is { Length: > 0 } given && Directory.Exists(Path.Combine(given, "reference")))
+        {
+            return given;
         }
 
         for (DirectoryInfo? dir = new(AppContext.BaseDirectory); dir is not null; dir = dir.Parent)
