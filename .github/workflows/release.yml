@@ -10,6 +10,9 @@ name: Release
 # environment requires Lars's approval before the job starts.
 # The secret NUGET_USER is the nuget.org account name. After the NuGet push, a v* tag also builds the egami command as a
 # native program for win-x64, linux-x64 and osx-arm64 and attaches the three to a GitHub release named after the tag.
+# nuget.org cannot take a package unlisted, so a package that sets EgamiUnlisted in its project file (Egami.Css and
+# Egami.Cli.Host, which only other Egami packages and tools use) is unlisted right after the push. Unlisted versions are
+# hidden from search but still restore as dependencies.
 
 on:
   push:
@@ -57,9 +60,14 @@ jobs:
       # it needs, so it installs with what is on nuget.org; the others ignore it.
       - name: Pack
         run: |
+          unlisted=
           for package in $PACKAGES; do
             dotnet pack "src/$package" -c Release -o artifacts/nuget -p:UseReleasedDependencies=true
+            if [ "$(dotnet msbuild "src/$package/$package.csproj" -getProperty:EgamiUnlisted)" = "true" ]; then
+              unlisted="$unlisted $package@$(dotnet msbuild "src/$package/$package.csproj" -getProperty:Version)"
+            fi
           done
+          echo "UNLISTED=$unlisted" >> "$GITHUB_ENV"
       - uses: actions/upload-artifact@v7
         with:
           name: nuget
@@ -71,6 +79,27 @@ jobs:
           user: ${{ secrets.NUGET_USER }}
       - name: Publish
         run: dotnet nuget push "artifacts/nuget/*.nupkg" --api-key "$NUGET_API_KEY" --source https://api.nuget.org/v3/index.json --skip-duplicate
+        env:
+          NUGET_API_KEY: ${{ steps.login.outputs.NUGET_API_KEY }}
+      # On nuget.org, dotnet nuget delete unlists; it never deletes. A version just pushed may still be validating, so each
+      # unlist is retried for up to ten minutes. A failure only warns: the packages are out, and the summary gives the command
+      # to unlist by hand.
+      - name: Unlist the helper packages
+        if: env.UNLISTED != ''
+        run: |
+          for entry in $UNLISTED; do
+            id=${entry%@*}
+            version=${entry#*@}
+            for attempt in 1 2 3 4 5 6 7 8 9 10; do
+              if dotnet nuget delete "$id" "$version" --api-key "$NUGET_API_KEY" --source https://api.nuget.org/v3/index.json --non-interactive; then
+                echo "Unlisted $id $version" >> "$GITHUB_STEP_SUMMARY"
+                continue 2
+              fi
+              sleep 60
+            done
+            echo "::warning::Could not unlist $id $version; unlist it on nuget.org"
+            echo "Not unlisted, do it by hand: dotnet nuget delete $id $version --source https://api.nuget.org/v3/index.json" >> "$GITHUB_STEP_SUMMARY"
+          done
         env:
           NUGET_API_KEY: ${{ steps.login.outputs.NUGET_API_KEY }}
 

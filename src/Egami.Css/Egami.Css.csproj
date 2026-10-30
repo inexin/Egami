@@ -9,6 +9,9 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <IsTrimmable>true</IsTrimmable>
     <IsAotCompatible>true</IsAotCompatible>
+    <!-- Hidden from NuGet search: Egami.Svg and Egap's HTML reader bring it in, so nobody needs to find it on its own.
+         release.yml unlists each version right after the push; unlisted versions still restore as dependencies. -->
+    <EgamiUnlisted>true</EgamiUnlisted>
   </PropertyGroup>
 
   <!-- Build-time analyzer only; ships nothing. -->
