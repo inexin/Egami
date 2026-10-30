@@ -104,6 +104,10 @@ Every user-visible change updates the docs in the same pull request:
   `## Recipes` heading is one short task with its code. A new guide goes into its package's section of
   `docs/articles/toc.yml` and `docs/articles/guides/index.md`, in the same order; then run `python tools/make-llms-txt.py` to
   update `docs/llms.txt`.
+- The package's agent guide in `tools/agent-guides/<PackageId>.md` when its main entry points or common mistakes change: a short
+  guide for coding agents, packed into the NuGet package as `AGENTS.md`. Its samples are `{{sample File.cs#region}}` lines from
+  `tests/Egami.DocSamples/`. `python tools/make-llms-txt.py` writes `docs/agents/<PackageId>.md` from it; rerun it after changing
+  a guide or a sample region it uses.
 - Code shown in the docs lives in `tests/Egami.DocSamples/` as `#region` blocks, so it is compiled and run with the tests.
   Guides include it with `[!code-csharp[](../../../tests/Egami.DocSamples/File.cs#region)]`, and XML `<example>` tags point at
   the same regions. Don't paste code into a guide that the tests don't run.
