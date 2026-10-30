@@ -1,0 +1,257 @@
+[
+ {
+  "name": "Background",
+  "kind": "pixel",
+  "visible": true,
+  "opacity": 255,
+  "blend": "BlendMode.NORMAL",
+  "clipping": false,
+  "bbox": [
+   0,
+   0,
+   64,
+   48
+  ],
+  "depth": 0
+ },
+ {
+  "name": "Off canvas",
+  "kind": "pixel",
+  "visible": true,
+  "opacity": 255,
+  "blend": "BlendMode.MULTIPLY",
+  "clipping": false,
+  "bbox": [
+   -6,
+   10,
+   34,
+   40
+  ],
+  "depth": 0
+ },
+ {
+  "name": "Masked",
+  "kind": "pixel",
+  "visible": true,
+  "opacity": 204,
+  "blend": "BlendMode.NORMAL",
+  "clipping": false,
+  "bbox": [
+   30,
+   4,
+   54,
+   24
+  ],
+  "depth": 0
+ },
+ {
+  "name": "Disabled mask",
+  "kind": "pixel",
+  "visible": true,
+  "opacity": 255,
+  "blend": "BlendMode.NORMAL",
+  "clipping": false,
+  "bbox": [
+   2,
+   30,
+   32,
+   46
+  ],
+  "depth": 0
+ },
+ {
+  "name": "Fill 50",
+  "kind": "pixel",
+  "visible": true,
+  "opacity": 255,
+  "blend": "BlendMode.SCREEN",
+  "clipping": false,
+  "bbox": [
+   20,
+   20,
+   50,
+   36
+  ],
+  "depth": 0
+ },
+ {
+  "name": "Hidden",
+  "kind": "pixel",
+  "visible": false,
+  "opacity": 255,
+  "blend": "BlendMode.NORMAL",
+  "clipping": false,
+  "bbox": [
+   0,
+   0,
+   30,
+   16
+  ],
+  "depth": 0
+ },
+ {
+  "name": "Empty",
+  "kind": "pixel",
+  "visible": true,
+  "opacity": 255,
+  "blend": "BlendMode.NORMAL",
+  "clipping": false,
+  "bbox": [
+   0,
+   0,
+   0,
+   0
+  ],
+  "depth": 0
+ },
+ {
+  "name": "Clip base",
+  "kind": "pixel",
+  "visible": true,
+  "opacity": 230,
+  "blend": "BlendMode.NORMAL",
+  "clipping": false,
+  "bbox": [
+   40,
+   24,
+   60,
+   44
+  ],
+  "depth": 0
+ },
+ {
+  "name": "Clipped 1",
+  "kind": "pixel",
+  "visible": true,
+  "opacity": 255,
+  "blend": "BlendMode.MULTIPLY",
+  "clipping": true,
+  "bbox": [
+   37,
+   21,
+   63,
+   47
+  ],
+  "depth": 0
+ },
+ {
+  "name": "Clipped 2",
+  "kind": "pixel",
+  "visible": true,
+  "opacity": 255,
+  "blend": "BlendMode.NORMAL",
+  "clipping": true,
+  "bbox": [
+   34,
+   30,
+   64,
+   40
+  ],
+  "depth": 0
+ },
+ {
+  "name": "Clipped 1",
+  "kind": "pixel",
+  "visible": true,
+  "opacity": 255,
+  "blend": "BlendMode.MULTIPLY",
+  "clipping": true,
+  "bbox": [
+   37,
+   21,
+   63,
+   47
+  ],
+  "depth": 0
+ },
+ {
+  "name": "Clipped 2",
+  "kind": "pixel",
+  "visible": true,
+  "opacity": 255,
+  "blend": "BlendMode.NORMAL",
+  "clipping": true,
+  "bbox": [
+   34,
+   30,
+   64,
+   40
+  ],
+  "depth": 0
+ },
+ {
+  "name": "Isolated",
+  "kind": "group",
+  "visible": true,
+  "opacity": 178,
+  "blend": "BlendMode.MULTIPLY",
+  "clipping": false,
+  "bbox": [
+   2,
+   2,
+   46,
+   36
+  ],
+  "depth": 0
+ },
+ {
+  "name": "Iso child 1",
+  "kind": "pixel",
+  "visible": true,
+  "opacity": 255,
+  "blend": "BlendMode.OVERLAY",
+  "clipping": false,
+  "bbox": [
+   2,
+   2,
+   38,
+   26
+  ],
+  "depth": 1
+ },
+ {
+  "name": "Iso child 2",
+  "kind": "pixel",
+  "visible": true,
+  "opacity": 180,
+  "blend": "BlendMode.NORMAL",
+  "clipping": false,
+  "bbox": [
+   10,
+   12,
+   46,
+   36
+  ],
+  "depth": 1
+ },
+ {
+  "name": "Pass",
+  "kind": "group",
+  "visible": true,
+  "opacity": 153,
+  "blend": "BlendMode.PASS_THROUGH",
+  "clipping": false,
+  "bbox": [
+   34,
+   6,
+   70,
+   30
+  ],
+  "depth": 0
+ },
+ {
+  "name": "Pass child",
+  "kind": "pixel",
+  "visible": true,
+  "opacity": 255,
+  "blend": "BlendMode.NORMAL",
+  "clipping": false,
+  "bbox": [
+   34,
+   6,
+   70,
+   30
+  ],
+  "depth": 1
+ }
+]

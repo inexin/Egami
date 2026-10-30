@@ -27,6 +27,8 @@ import zlib
 import numpy as np
 from PIL import Image
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
 ROOT = "/w"
 CORPUS = f"{ROOT}/tests/images/psd"
 TARGET = f"{ROOT}/tests/reference/psd"
@@ -424,6 +426,9 @@ def build():
                        ("magick-rgba16.psd", ["-depth", "16"]), ("magick-none.psd", ["-alpha", "off", "-compress", "None"]),
                        ("magick-zip.psd", ["-alpha", "off", "-compress", "Zip"])):
         subprocess.run(["magick", src] + args + [f"{CORPUS}/{name}"], check=True)
+
+    import psdlayered
+    psdlayered.build()
 
     bad(r, g, b)
     return truth

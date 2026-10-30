@@ -22,7 +22,7 @@
     "width": 300000
    },
    "magickError": "magick: width or height exceeds limit `/w/tests/images/psd/bad//huge.psd' @ error/psd.c/ReadPSDImage/2473.",
-   "pillowError": "cannot identify image file '/w/tests/images/psd/bad//huge.psd'"
+   "pillowError": "Truncated File Read"
   },
   "bad/mode5.psd": {
    "header": {
@@ -375,6 +375,413 @@
    "truth": "Rgb8",
    "truthTolerance": 1
   },
+  "layered-cmyk16.psd": {
+   "header": {
+    "channels": 4,
+    "depth": 16,
+    "height": 48,
+    "mode": 4,
+    "version": 1,
+    "width": 64
+   },
+   "pillowError": "cannot identify image file '/w/tests/images/psd/layered-cmyk16.psd'"
+  },
+  "layered-cmyk8.psd": {
+   "header": {
+    "channels": 4,
+    "depth": 8,
+    "height": 48,
+    "mode": 4,
+    "version": 1,
+    "width": 64
+   },
+   "pillowMode": "CMYK"
+  },
+  "layered-fill.psd": {
+   "header": {
+    "channels": 3,
+    "depth": 8,
+    "height": 48,
+    "mode": 3,
+    "version": 1,
+    "width": 64
+   },
+   "pillowMode": "RGB"
+  },
+  "layered-gray16.psd": {
+   "header": {
+    "channels": 1,
+    "depth": 16,
+    "height": 48,
+    "mode": 1,
+    "version": 1,
+    "width": 64
+   },
+   "pillowError": "cannot identify image file '/w/tests/images/psd/layered-gray16.psd'"
+  },
+  "layered-gray8.psd": {
+   "header": {
+    "channels": 1,
+    "depth": 8,
+    "height": 48,
+    "mode": 1,
+    "version": 1,
+    "width": 64
+   },
+   "pillowMode": "L"
+  },
+  "layered-lab8.psd": {
+   "header": {
+    "channels": 3,
+    "depth": 8,
+    "height": 48,
+    "mode": 9,
+    "version": 1,
+    "width": 64
+   },
+   "pillowMode": "LAB"
+  },
+  "layered-mode-color.psd": {
+   "header": {
+    "channels": 3,
+    "depth": 8,
+    "height": 48,
+    "mode": 3,
+    "version": 1,
+    "width": 64
+   },
+   "pillowMode": "RGB"
+  },
+  "layered-mode-colorburn.psd": {
+   "header": {
+    "channels": 3,
+    "depth": 8,
+    "height": 48,
+    "mode": 3,
+    "version": 1,
+    "width": 64
+   },
+   "pillowMode": "RGB"
+  },
+  "layered-mode-colordodge.psd": {
+   "header": {
+    "channels": 3,
+    "depth": 8,
+    "height": 48,
+    "mode": 3,
+    "version": 1,
+    "width": 64
+   },
+   "pillowMode": "RGB"
+  },
+  "layered-mode-darken.psd": {
+   "header": {
+    "channels": 3,
+    "depth": 8,
+    "height": 48,
+    "mode": 3,
+    "version": 1,
+    "width": 64
+   },
+   "pillowMode": "RGB"
+  },
+  "layered-mode-darkercolor.psd": {
+   "header": {
+    "channels": 3,
+    "depth": 8,
+    "height": 48,
+    "mode": 3,
+    "version": 1,
+    "width": 64
+   },
+   "pillowMode": "RGB"
+  },
+  "layered-mode-difference.psd": {
+   "header": {
+    "channels": 3,
+    "depth": 8,
+    "height": 48,
+    "mode": 3,
+    "version": 1,
+    "width": 64
+   },
+   "pillowMode": "RGB"
+  },
+  "layered-mode-divide.psd": {
+   "header": {
+    "channels": 3,
+    "depth": 8,
+    "height": 48,
+    "mode": 3,
+    "version": 1,
+    "width": 64
+   },
+   "pillowMode": "RGB"
+  },
+  "layered-mode-exclusion.psd": {
+   "header": {
+    "channels": 3,
+    "depth": 8,
+    "height": 48,
+    "mode": 3,
+    "version": 1,
+    "width": 64
+   },
+   "pillowMode": "RGB"
+  },
+  "layered-mode-hardlight.psd": {
+   "header": {
+    "channels": 3,
+    "depth": 8,
+    "height": 48,
+    "mode": 3,
+    "version": 1,
+    "width": 64
+   },
+   "pillowMode": "RGB"
+  },
+  "layered-mode-hardmix.psd": {
+   "header": {
+    "channels": 3,
+    "depth": 8,
+    "height": 48,
+    "mode": 3,
+    "version": 1,
+    "width": 64
+   },
+   "pillowMode": "RGB"
+  },
+  "layered-mode-hue.psd": {
+   "header": {
+    "channels": 3,
+    "depth": 8,
+    "height": 48,
+    "mode": 3,
+    "version": 1,
+    "width": 64
+   },
+   "pillowMode": "RGB"
+  },
+  "layered-mode-lighten.psd": {
+   "header": {
+    "channels": 3,
+    "depth": 8,
+    "height": 48,
+    "mode": 3,
+    "version": 1,
+    "width": 64
+   },
+   "pillowMode": "RGB"
+  },
+  "layered-mode-lightercolor.psd": {
+   "header": {
+    "channels": 3,
+    "depth": 8,
+    "height": 48,
+    "mode": 3,
+    "version": 1,
+    "width": 64
+   },
+   "pillowMode": "RGB"
+  },
+  "layered-mode-linearburn.psd": {
+   "header": {
+    "channels": 3,
+    "depth": 8,
+    "height": 48,
+    "mode": 3,
+    "version": 1,
+    "width": 64
+   },
+   "pillowMode": "RGB"
+  },
+  "layered-mode-lineardodge.psd": {
+   "header": {
+    "channels": 3,
+    "depth": 8,
+    "height": 48,
+    "mode": 3,
+    "version": 1,
+    "width": 64
+   },
+   "pillowMode": "RGB"
+  },
+  "layered-mode-linearlight.psd": {
+   "header": {
+    "channels": 3,
+    "depth": 8,
+    "height": 48,
+    "mode": 3,
+    "version": 1,
+    "width": 64
+   },
+   "pillowMode": "RGB"
+  },
+  "layered-mode-luminosity.psd": {
+   "header": {
+    "channels": 3,
+    "depth": 8,
+    "height": 48,
+    "mode": 3,
+    "version": 1,
+    "width": 64
+   },
+   "pillowMode": "RGB"
+  },
+  "layered-mode-multiply.psd": {
+   "header": {
+    "channels": 3,
+    "depth": 8,
+    "height": 48,
+    "mode": 3,
+    "version": 1,
+    "width": 64
+   },
+   "pillowMode": "RGB"
+  },
+  "layered-mode-normal.psd": {
+   "header": {
+    "channels": 3,
+    "depth": 8,
+    "height": 48,
+    "mode": 3,
+    "version": 1,
+    "width": 64
+   },
+   "pillowMode": "RGB"
+  },
+  "layered-mode-overlay.psd": {
+   "header": {
+    "channels": 3,
+    "depth": 8,
+    "height": 48,
+    "mode": 3,
+    "version": 1,
+    "width": 64
+   },
+   "pillowMode": "RGB"
+  },
+  "layered-mode-pinlight.psd": {
+   "header": {
+    "channels": 3,
+    "depth": 8,
+    "height": 48,
+    "mode": 3,
+    "version": 1,
+    "width": 64
+   },
+   "pillowMode": "RGB"
+  },
+  "layered-mode-saturation.psd": {
+   "header": {
+    "channels": 3,
+    "depth": 8,
+    "height": 48,
+    "mode": 3,
+    "version": 1,
+    "width": 64
+   },
+   "pillowMode": "RGB"
+  },
+  "layered-mode-screen.psd": {
+   "header": {
+    "channels": 3,
+    "depth": 8,
+    "height": 48,
+    "mode": 3,
+    "version": 1,
+    "width": 64
+   },
+   "pillowMode": "RGB"
+  },
+  "layered-mode-softlight.psd": {
+   "header": {
+    "channels": 3,
+    "depth": 8,
+    "height": 48,
+    "mode": 3,
+    "version": 1,
+    "width": 64
+   },
+   "pillowMode": "RGB"
+  },
+  "layered-mode-subtract.psd": {
+   "header": {
+    "channels": 3,
+    "depth": 8,
+    "height": 48,
+    "mode": 3,
+    "version": 1,
+    "width": 64
+   },
+   "pillowMode": "RGB"
+  },
+  "layered-mode-vividlight.psd": {
+   "header": {
+    "channels": 3,
+    "depth": 8,
+    "height": 48,
+    "mode": 3,
+    "version": 1,
+    "width": 64
+   },
+   "pillowMode": "RGB"
+  },
+  "layered-nocomposite.psd": {
+   "header": {
+    "channels": 3,
+    "depth": 8,
+    "height": 48,
+    "mode": 3,
+    "version": 1,
+    "width": 64
+   },
+   "pillowMode": "RGB"
+  },
+  "layered-rgb16.psd": {
+   "header": {
+    "channels": 3,
+    "depth": 16,
+    "height": 48,
+    "mode": 3,
+    "version": 1,
+    "width": 64
+   },
+   "pillowError": "cannot identify image file '/w/tests/images/psd/layered-rgb16.psd'"
+  },
+  "layered-rgb32.psd": {
+   "header": {
+    "channels": 3,
+    "depth": 32,
+    "height": 48,
+    "mode": 3,
+    "version": 1,
+    "width": 64
+   },
+   "pillowError": "cannot identify image file '/w/tests/images/psd/layered-rgb32.psd'"
+  },
+  "layered-rgb8.psb": {
+   "header": {
+    "channels": 3,
+    "depth": 8,
+    "height": 48,
+    "mode": 3,
+    "version": 2,
+    "width": 64
+   },
+   "pillowError": "cannot identify image file '/w/tests/images/psd/layered-rgb8.psb'"
+  },
+  "layered-rgb8.psd": {
+   "header": {
+    "channels": 3,
+    "depth": 8,
+    "height": 48,
+    "mode": 3,
+    "version": 1,
+    "width": 64
+   },
+   "pillowMode": "RGB"
+  },
   "layers.psd": {
    "header": {
     "channels": 3,
@@ -700,7 +1107,7 @@
  },
  "tools": {
   "exiftool": "13.55",
-  "imagemagick": "Version: ImageMagick 7.1.2-32 Q16-HDRI x86_64 24766 https://imagemagick.org",
-  "pillow": "12.3.0"
+  "imagemagick": "Version: ImageMagick 7.1.2-34 Q16-HDRI x86_64 24891 https://imagemagick.org",
+  "pillow": "13.0.0"
  }
 }

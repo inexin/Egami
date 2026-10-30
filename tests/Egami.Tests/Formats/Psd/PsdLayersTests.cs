@@ -1,3 +1,7 @@
+using System.IO.Compression;
+using System.Runtime.InteropServices;
+using System.Text.Json;
+
 using Egami.Formats;
 using Egami.Formats.Psd;
 using Egami.Pixels;
@@ -8,6 +12,85 @@ namespace Egami.Tests.Formats.Psd;
 public class PsdLayersTests
 {
     private static string File(string name) => Path.Combine(PsdReaderTests.Images, name);
+
+    public static TheoryData<string> LayeredFiles() => [.. Manifest().RootElement.EnumerateObject().Select(p => p.Name).Order(StringComparer.Ordinal)];
+
+    internal static JsonDocument Manifest() => JsonDocument.Parse(System.IO.File.ReadAllBytes(Path.Combine(PsdReaderTests.References, "layered.json")));
+
+    internal static byte[] Gunzip(string path)
+    {
+        using GZipStream zip = new(System.IO.File.OpenRead(path), CompressionMode.Decompress);
+        using MemoryStream bytes = new();
+        zip.CopyTo(bytes);
+        return bytes.ToArray();
+    }
+
+    [Theory]
+    [MemberData(nameof(LayeredFiles))]
+    public void LayerPixelsAreTheWrittenOnes(string name)
+    {
+        using JsonDocument manifest = Manifest();
+        JsonElement expected = manifest.RootElement.GetProperty(name).GetProperty("layers");
+        byte[] truth = Gunzip(Path.Combine(PsdReaderTests.References, name + ".layerpixels.raw.gz"));
+        using PsdDocument document = PsdImage.ReadLayers(File(name));
+        Assert.DoesNotContain(document.Metadata.Warnings, w => w.Id != "Psd.NoComposite");
+        int at = 0;
+        foreach (JsonElement entry in expected.EnumerateArray())
+        {
+            PsdLayerImage layer = document.Layers.Single(l => l.Info.Name == entry.GetProperty("name").GetString());
+            Assert.Equal((entry.GetProperty("x").GetInt32(), entry.GetProperty("y").GetInt32()), (layer.X, layer.Y));
+            byte[] actual = Bytes(layer);
+            Assert.Equal(entry.GetProperty("layout").GetString(), Layout(layer));
+            Assert.True(truth.AsSpan(at, actual.Length).SequenceEqual(actual), $"{name}: layer {layer.Info.Name} differs.");
+            at += actual.Length;
+        }
+
+        Assert.Equal(truth.Length, at);
+    }
+
+    private static string Layout(PsdLayerImage layer) => layer.Ink is InkRaster ink
+        ? (ink.Depth == InkDepth.Unorm8 ? "Ink8" : "Ink16")
+        : layer.Pixels!.GetType().GetGenericArguments()[0].Name;
+
+    /// <summary>Returns a layer's pixels as little-endian bytes, an ink raster's planes one after another, alpha last.</summary>
+    private static byte[] Bytes(PsdLayerImage layer)
+    {
+        List<byte> bytes = [];
+        if (layer.Ink is InkRaster ink)
+        {
+            foreach (InkPlate plate in ink.Plates.Append(ink.Alpha))
+            {
+                for (int y = 0; y < ink.Height; y++)
+                {
+                    bytes.AddRange(ink.Depth == InkDepth.Unorm8 ? plate.Row8(y).ToArray() : MemoryMarshal.AsBytes(plate.Row16(y)).ToArray());
+                }
+            }
+
+            return [.. bytes];
+        }
+
+        return layer.Pixels switch
+        {
+            Raster<Rgba8> r => Of(r),
+            Raster<Rgba16> r => Of(r),
+            Raster<RgbaF32> r => Of(r),
+            Raster<GrayAlpha8> r => Of(r),
+            Raster<GrayAlpha16> r => Of(r),
+            _ => throw new InvalidOperationException(),
+        };
+
+        static byte[] Of<TPixel>(Raster<TPixel> raster)
+            where TPixel : unmanaged, IPixelType<TPixel>
+        {
+            List<byte> rows = [];
+            for (int y = 0; y < raster.Height; y++)
+            {
+                rows.AddRange(MemoryMarshal.AsBytes(raster.Row(y)).ToArray());
+            }
+
+            return [.. rows];
+        }
+    }
 
     [Fact]
     public void ReadsEveryLayerWithItsPixelsAndParent()

@@ -1,0 +1,1132 @@
+{
+ "layered-cmyk16.psd": {
+  "depth": 16,
+  "flat": "ink",
+  "layers": [
+   {
+    "height": 48,
+    "layout": "Ink16",
+    "name": "Background",
+    "width": 64,
+    "x": 0,
+    "y": 0
+   },
+   {
+    "height": 30,
+    "layout": "Ink16",
+    "name": "Off canvas",
+    "width": 40,
+    "x": -6,
+    "y": 10
+   },
+   {
+    "height": 20,
+    "layout": "Ink16",
+    "name": "Masked",
+    "width": 24,
+    "x": 30,
+    "y": 4
+   }
+  ],
+  "mode": "cmyk"
+ },
+ "layered-cmyk8.psd": {
+  "depth": 8,
+  "flat": "ink",
+  "layers": [
+   {
+    "height": 48,
+    "layout": "Ink8",
+    "name": "Background",
+    "width": 64,
+    "x": 0,
+    "y": 0
+   },
+   {
+    "height": 30,
+    "layout": "Ink8",
+    "name": "Off canvas",
+    "width": 40,
+    "x": -6,
+    "y": 10
+   },
+   {
+    "height": 20,
+    "layout": "Ink8",
+    "name": "Masked",
+    "width": 24,
+    "x": 30,
+    "y": 4
+   }
+  ],
+  "mode": "cmyk"
+ },
+ "layered-fill.psd": {
+  "depth": 8,
+  "flat": "psd-tools",
+  "layers": [
+   {
+    "height": 48,
+    "layout": "Rgba8",
+    "name": "Background",
+    "width": 64,
+    "x": 0,
+    "y": 0
+   }
+  ],
+  "mode": "rgb"
+ },
+ "layered-gray16.psd": {
+  "depth": 16,
+  "flat": "psd-tools",
+  "layers": [
+   {
+    "height": 48,
+    "layout": "GrayAlpha16",
+    "name": "Background",
+    "width": 64,
+    "x": 0,
+    "y": 0
+   },
+   {
+    "height": 30,
+    "layout": "GrayAlpha16",
+    "name": "Off canvas",
+    "width": 40,
+    "x": -6,
+    "y": 10
+   },
+   {
+    "height": 20,
+    "layout": "GrayAlpha16",
+    "name": "Masked",
+    "width": 24,
+    "x": 30,
+    "y": 4
+   }
+  ],
+  "mode": "gray"
+ },
+ "layered-gray8.psd": {
+  "depth": 8,
+  "flat": "psd-tools",
+  "layers": [
+   {
+    "height": 48,
+    "layout": "GrayAlpha8",
+    "name": "Background",
+    "width": 64,
+    "x": 0,
+    "y": 0
+   },
+   {
+    "height": 30,
+    "layout": "GrayAlpha8",
+    "name": "Off canvas",
+    "width": 40,
+    "x": -6,
+    "y": 10
+   },
+   {
+    "height": 20,
+    "layout": "GrayAlpha8",
+    "name": "Masked",
+    "width": 24,
+    "x": 30,
+    "y": 4
+   },
+   {
+    "height": 16,
+    "layout": "GrayAlpha8",
+    "name": "Disabled mask",
+    "width": 30,
+    "x": 2,
+    "y": 30
+   },
+   {
+    "height": 16,
+    "layout": "GrayAlpha8",
+    "name": "Fill 50",
+    "width": 30,
+    "x": 20,
+    "y": 20
+   },
+   {
+    "height": 16,
+    "layout": "GrayAlpha8",
+    "name": "Hidden",
+    "width": 30,
+    "x": 0,
+    "y": 0
+   },
+   {
+    "height": 20,
+    "layout": "GrayAlpha8",
+    "name": "Clip base",
+    "width": 20,
+    "x": 40,
+    "y": 24
+   },
+   {
+    "height": 26,
+    "layout": "GrayAlpha8",
+    "name": "Clipped 1",
+    "width": 26,
+    "x": 37,
+    "y": 21
+   },
+   {
+    "height": 10,
+    "layout": "GrayAlpha8",
+    "name": "Clipped 2",
+    "width": 30,
+    "x": 34,
+    "y": 30
+   },
+   {
+    "height": 24,
+    "layout": "GrayAlpha8",
+    "name": "Iso child 1",
+    "width": 36,
+    "x": 2,
+    "y": 2
+   },
+   {
+    "height": 24,
+    "layout": "GrayAlpha8",
+    "name": "Iso child 2",
+    "width": 36,
+    "x": 10,
+    "y": 12
+   },
+   {
+    "height": 24,
+    "layout": "GrayAlpha8",
+    "name": "Pass child",
+    "width": 36,
+    "x": 34,
+    "y": 6
+   }
+  ],
+  "mode": "gray"
+ },
+ "layered-lab8.psd": {
+  "depth": 8,
+  "layers": [
+   {
+    "height": 48,
+    "layout": "Rgba8",
+    "name": "Background",
+    "width": 64,
+    "x": 0,
+    "y": 0
+   },
+   {
+    "height": 30,
+    "layout": "Rgba8",
+    "name": "Off canvas",
+    "width": 40,
+    "x": -6,
+    "y": 10
+   }
+  ],
+  "mode": "lab"
+ },
+ "layered-mode-color.psd": {
+  "depth": 8,
+  "flat": "psd-tools",
+  "layers": [
+   {
+    "height": 48,
+    "layout": "Rgba8",
+    "name": "Background",
+    "width": 64,
+    "x": 0,
+    "y": 0
+   },
+   {
+    "height": 42,
+    "layout": "Rgba8",
+    "name": "color",
+    "width": 56,
+    "x": 4,
+    "y": 3
+   }
+  ],
+  "mode": "rgb"
+ },
+ "layered-mode-colorburn.psd": {
+  "depth": 8,
+  "flat": "psd-tools",
+  "layers": [
+   {
+    "height": 48,
+    "layout": "Rgba8",
+    "name": "Background",
+    "width": 64,
+    "x": 0,
+    "y": 0
+   },
+   {
+    "height": 42,
+    "layout": "Rgba8",
+    "name": "colorburn",
+    "width": 56,
+    "x": 4,
+    "y": 3
+   }
+  ],
+  "mode": "rgb"
+ },
+ "layered-mode-colordodge.psd": {
+  "depth": 8,
+  "flat": "psd-tools",
+  "layers": [
+   {
+    "height": 48,
+    "layout": "Rgba8",
+    "name": "Background",
+    "width": 64,
+    "x": 0,
+    "y": 0
+   },
+   {
+    "height": 42,
+    "layout": "Rgba8",
+    "name": "colordodge",
+    "width": 56,
+    "x": 4,
+    "y": 3
+   }
+  ],
+  "mode": "rgb"
+ },
+ "layered-mode-darken.psd": {
+  "depth": 8,
+  "flat": "psd-tools",
+  "layers": [
+   {
+    "height": 48,
+    "layout": "Rgba8",
+    "name": "Background",
+    "width": 64,
+    "x": 0,
+    "y": 0
+   },
+   {
+    "height": 42,
+    "layout": "Rgba8",
+    "name": "darken",
+    "width": 56,
+    "x": 4,
+    "y": 3
+   }
+  ],
+  "mode": "rgb"
+ },
+ "layered-mode-darkercolor.psd": {
+  "depth": 8,
+  "flat": "psd-tools",
+  "layers": [
+   {
+    "height": 48,
+    "layout": "Rgba8",
+    "name": "Background",
+    "width": 64,
+    "x": 0,
+    "y": 0
+   },
+   {
+    "height": 42,
+    "layout": "Rgba8",
+    "name": "darkercolor",
+    "width": 56,
+    "x": 4,
+    "y": 3
+   }
+  ],
+  "mode": "rgb"
+ },
+ "layered-mode-difference.psd": {
+  "depth": 8,
+  "flat": "psd-tools",
+  "layers": [
+   {
+    "height": 48,
+    "layout": "Rgba8",
+    "name": "Background",
+    "width": 64,
+    "x": 0,
+    "y": 0
+   },
+   {
+    "height": 42,
+    "layout": "Rgba8",
+    "name": "difference",
+    "width": 56,
+    "x": 4,
+    "y": 3
+   }
+  ],
+  "mode": "rgb"
+ },
+ "layered-mode-divide.psd": {
+  "depth": 8,
+  "flat": "psd-tools",
+  "layers": [
+   {
+    "height": 48,
+    "layout": "Rgba8",
+    "name": "Background",
+    "width": 64,
+    "x": 0,
+    "y": 0
+   },
+   {
+    "height": 42,
+    "layout": "Rgba8",
+    "name": "divide",
+    "width": 56,
+    "x": 4,
+    "y": 3
+   }
+  ],
+  "mode": "rgb"
+ },
+ "layered-mode-exclusion.psd": {
+  "depth": 8,
+  "flat": "psd-tools",
+  "layers": [
+   {
+    "height": 48,
+    "layout": "Rgba8",
+    "name": "Background",
+    "width": 64,
+    "x": 0,
+    "y": 0
+   },
+   {
+    "height": 42,
+    "layout": "Rgba8",
+    "name": "exclusion",
+    "width": 56,
+    "x": 4,
+    "y": 3
+   }
+  ],
+  "mode": "rgb"
+ },
+ "layered-mode-hardlight.psd": {
+  "depth": 8,
+  "flat": "psd-tools",
+  "layers": [
+   {
+    "height": 48,
+    "layout": "Rgba8",
+    "name": "Background",
+    "width": 64,
+    "x": 0,
+    "y": 0
+   },
+   {
+    "height": 42,
+    "layout": "Rgba8",
+    "name": "hardlight",
+    "width": 56,
+    "x": 4,
+    "y": 3
+   }
+  ],
+  "mode": "rgb"
+ },
+ "layered-mode-hardmix.psd": {
+  "depth": 8,
+  "flat": "psd-tools",
+  "layers": [
+   {
+    "height": 48,
+    "layout": "Rgba8",
+    "name": "Background",
+    "width": 64,
+    "x": 0,
+    "y": 0
+   },
+   {
+    "height": 42,
+    "layout": "Rgba8",
+    "name": "hardmix",
+    "width": 56,
+    "x": 4,
+    "y": 3
+   }
+  ],
+  "mode": "rgb"
+ },
+ "layered-mode-hue.psd": {
+  "depth": 8,
+  "flat": "psd-tools",
+  "layers": [
+   {
+    "height": 48,
+    "layout": "Rgba8",
+    "name": "Background",
+    "width": 64,
+    "x": 0,
+    "y": 0
+   },
+   {
+    "height": 42,
+    "layout": "Rgba8",
+    "name": "hue",
+    "width": 56,
+    "x": 4,
+    "y": 3
+   }
+  ],
+  "mode": "rgb"
+ },
+ "layered-mode-lighten.psd": {
+  "depth": 8,
+  "flat": "psd-tools",
+  "layers": [
+   {
+    "height": 48,
+    "layout": "Rgba8",
+    "name": "Background",
+    "width": 64,
+    "x": 0,
+    "y": 0
+   },
+   {
+    "height": 42,
+    "layout": "Rgba8",
+    "name": "lighten",
+    "width": 56,
+    "x": 4,
+    "y": 3
+   }
+  ],
+  "mode": "rgb"
+ },
+ "layered-mode-lightercolor.psd": {
+  "depth": 8,
+  "flat": "psd-tools",
+  "layers": [
+   {
+    "height": 48,
+    "layout": "Rgba8",
+    "name": "Background",
+    "width": 64,
+    "x": 0,
+    "y": 0
+   },
+   {
+    "height": 42,
+    "layout": "Rgba8",
+    "name": "lightercolor",
+    "width": 56,
+    "x": 4,
+    "y": 3
+   }
+  ],
+  "mode": "rgb"
+ },
+ "layered-mode-linearburn.psd": {
+  "depth": 8,
+  "flat": "psd-tools",
+  "layers": [
+   {
+    "height": 48,
+    "layout": "Rgba8",
+    "name": "Background",
+    "width": 64,
+    "x": 0,
+    "y": 0
+   },
+   {
+    "height": 42,
+    "layout": "Rgba8",
+    "name": "linearburn",
+    "width": 56,
+    "x": 4,
+    "y": 3
+   }
+  ],
+  "mode": "rgb"
+ },
+ "layered-mode-lineardodge.psd": {
+  "depth": 8,
+  "flat": "psd-tools",
+  "layers": [
+   {
+    "height": 48,
+    "layout": "Rgba8",
+    "name": "Background",
+    "width": 64,
+    "x": 0,
+    "y": 0
+   },
+   {
+    "height": 42,
+    "layout": "Rgba8",
+    "name": "lineardodge",
+    "width": 56,
+    "x": 4,
+    "y": 3
+   }
+  ],
+  "mode": "rgb"
+ },
+ "layered-mode-linearlight.psd": {
+  "depth": 8,
+  "flat": "psd-tools",
+  "layers": [
+   {
+    "height": 48,
+    "layout": "Rgba8",
+    "name": "Background",
+    "width": 64,
+    "x": 0,
+    "y": 0
+   },
+   {
+    "height": 42,
+    "layout": "Rgba8",
+    "name": "linearlight",
+    "width": 56,
+    "x": 4,
+    "y": 3
+   }
+  ],
+  "mode": "rgb"
+ },
+ "layered-mode-luminosity.psd": {
+  "depth": 8,
+  "flat": "psd-tools",
+  "layers": [
+   {
+    "height": 48,
+    "layout": "Rgba8",
+    "name": "Background",
+    "width": 64,
+    "x": 0,
+    "y": 0
+   },
+   {
+    "height": 42,
+    "layout": "Rgba8",
+    "name": "luminosity",
+    "width": 56,
+    "x": 4,
+    "y": 3
+   }
+  ],
+  "mode": "rgb"
+ },
+ "layered-mode-multiply.psd": {
+  "depth": 8,
+  "flat": "psd-tools",
+  "layers": [
+   {
+    "height": 48,
+    "layout": "Rgba8",
+    "name": "Background",
+    "width": 64,
+    "x": 0,
+    "y": 0
+   },
+   {
+    "height": 42,
+    "layout": "Rgba8",
+    "name": "multiply",
+    "width": 56,
+    "x": 4,
+    "y": 3
+   }
+  ],
+  "mode": "rgb"
+ },
+ "layered-mode-normal.psd": {
+  "depth": 8,
+  "flat": "psd-tools",
+  "layers": [
+   {
+    "height": 48,
+    "layout": "Rgba8",
+    "name": "Background",
+    "width": 64,
+    "x": 0,
+    "y": 0
+   },
+   {
+    "height": 42,
+    "layout": "Rgba8",
+    "name": "normal",
+    "width": 56,
+    "x": 4,
+    "y": 3
+   }
+  ],
+  "mode": "rgb"
+ },
+ "layered-mode-overlay.psd": {
+  "depth": 8,
+  "flat": "psd-tools",
+  "layers": [
+   {
+    "height": 48,
+    "layout": "Rgba8",
+    "name": "Background",
+    "width": 64,
+    "x": 0,
+    "y": 0
+   },
+   {
+    "height": 42,
+    "layout": "Rgba8",
+    "name": "overlay",
+    "width": 56,
+    "x": 4,
+    "y": 3
+   }
+  ],
+  "mode": "rgb"
+ },
+ "layered-mode-pinlight.psd": {
+  "depth": 8,
+  "flat": "psd-tools",
+  "layers": [
+   {
+    "height": 48,
+    "layout": "Rgba8",
+    "name": "Background",
+    "width": 64,
+    "x": 0,
+    "y": 0
+   },
+   {
+    "height": 42,
+    "layout": "Rgba8",
+    "name": "pinlight",
+    "width": 56,
+    "x": 4,
+    "y": 3
+   }
+  ],
+  "mode": "rgb"
+ },
+ "layered-mode-saturation.psd": {
+  "depth": 8,
+  "flat": "psd-tools",
+  "layers": [
+   {
+    "height": 48,
+    "layout": "Rgba8",
+    "name": "Background",
+    "width": 64,
+    "x": 0,
+    "y": 0
+   },
+   {
+    "height": 42,
+    "layout": "Rgba8",
+    "name": "saturation",
+    "width": 56,
+    "x": 4,
+    "y": 3
+   }
+  ],
+  "mode": "rgb"
+ },
+ "layered-mode-screen.psd": {
+  "depth": 8,
+  "flat": "psd-tools",
+  "layers": [
+   {
+    "height": 48,
+    "layout": "Rgba8",
+    "name": "Background",
+    "width": 64,
+    "x": 0,
+    "y": 0
+   },
+   {
+    "height": 42,
+    "layout": "Rgba8",
+    "name": "screen",
+    "width": 56,
+    "x": 4,
+    "y": 3
+   }
+  ],
+  "mode": "rgb"
+ },
+ "layered-mode-softlight.psd": {
+  "depth": 8,
+  "flat": "psd-tools",
+  "layers": [
+   {
+    "height": 48,
+    "layout": "Rgba8",
+    "name": "Background",
+    "width": 64,
+    "x": 0,
+    "y": 0
+   },
+   {
+    "height": 42,
+    "layout": "Rgba8",
+    "name": "softlight",
+    "width": 56,
+    "x": 4,
+    "y": 3
+   }
+  ],
+  "mode": "rgb"
+ },
+ "layered-mode-subtract.psd": {
+  "depth": 8,
+  "flat": "psd-tools",
+  "layers": [
+   {
+    "height": 48,
+    "layout": "Rgba8",
+    "name": "Background",
+    "width": 64,
+    "x": 0,
+    "y": 0
+   },
+   {
+    "height": 42,
+    "layout": "Rgba8",
+    "name": "subtract",
+    "width": 56,
+    "x": 4,
+    "y": 3
+   }
+  ],
+  "mode": "rgb"
+ },
+ "layered-mode-vividlight.psd": {
+  "depth": 8,
+  "flat": "psd-tools",
+  "layers": [
+   {
+    "height": 48,
+    "layout": "Rgba8",
+    "name": "Background",
+    "width": 64,
+    "x": 0,
+    "y": 0
+   },
+   {
+    "height": 42,
+    "layout": "Rgba8",
+    "name": "vividlight",
+    "width": 56,
+    "x": 4,
+    "y": 3
+   }
+  ],
+  "mode": "rgb"
+ },
+ "layered-nocomposite.psd": {
+  "depth": 8,
+  "flat": "psd-tools",
+  "layers": [
+   {
+    "height": 48,
+    "layout": "Rgba8",
+    "name": "Background",
+    "width": 64,
+    "x": 0,
+    "y": 0
+   },
+   {
+    "height": 30,
+    "layout": "Rgba8",
+    "name": "Off canvas",
+    "width": 40,
+    "x": -6,
+    "y": 10
+   },
+   {
+    "height": 20,
+    "layout": "Rgba8",
+    "name": "Masked",
+    "width": 24,
+    "x": 30,
+    "y": 4
+   }
+  ],
+  "mode": "rgb"
+ },
+ "layered-rgb16.psd": {
+  "depth": 16,
+  "flat": "psd-tools",
+  "layers": [
+   {
+    "height": 48,
+    "layout": "Rgba16",
+    "name": "Background",
+    "width": 64,
+    "x": 0,
+    "y": 0
+   },
+   {
+    "height": 30,
+    "layout": "Rgba16",
+    "name": "Off canvas",
+    "width": 40,
+    "x": -6,
+    "y": 10
+   },
+   {
+    "height": 20,
+    "layout": "Rgba16",
+    "name": "Masked",
+    "width": 24,
+    "x": 30,
+    "y": 4
+   },
+   {
+    "height": 16,
+    "layout": "Rgba16",
+    "name": "Disabled mask",
+    "width": 30,
+    "x": 2,
+    "y": 30
+   },
+   {
+    "height": 16,
+    "layout": "Rgba16",
+    "name": "Fill 50",
+    "width": 30,
+    "x": 20,
+    "y": 20
+   },
+   {
+    "height": 16,
+    "layout": "Rgba16",
+    "name": "Hidden",
+    "width": 30,
+    "x": 0,
+    "y": 0
+   },
+   {
+    "height": 20,
+    "layout": "Rgba16",
+    "name": "Clip base",
+    "width": 20,
+    "x": 40,
+    "y": 24
+   },
+   {
+    "height": 26,
+    "layout": "Rgba16",
+    "name": "Clipped 1",
+    "width": 26,
+    "x": 37,
+    "y": 21
+   },
+   {
+    "height": 10,
+    "layout": "Rgba16",
+    "name": "Clipped 2",
+    "width": 30,
+    "x": 34,
+    "y": 30
+   },
+   {
+    "height": 24,
+    "layout": "Rgba16",
+    "name": "Iso child 1",
+    "width": 36,
+    "x": 2,
+    "y": 2
+   },
+   {
+    "height": 24,
+    "layout": "Rgba16",
+    "name": "Iso child 2",
+    "width": 36,
+    "x": 10,
+    "y": 12
+   },
+   {
+    "height": 24,
+    "layout": "Rgba16",
+    "name": "Pass child",
+    "width": 36,
+    "x": 34,
+    "y": 6
+   }
+  ],
+  "mode": "rgb"
+ },
+ "layered-rgb32.psd": {
+  "depth": 32,
+  "flat": "psd-tools",
+  "layers": [
+   {
+    "height": 48,
+    "layout": "RgbaF32",
+    "name": "Background",
+    "width": 64,
+    "x": 0,
+    "y": 0
+   },
+   {
+    "height": 30,
+    "layout": "RgbaF32",
+    "name": "Off canvas",
+    "width": 40,
+    "x": -6,
+    "y": 10
+   },
+   {
+    "height": 20,
+    "layout": "RgbaF32",
+    "name": "Masked",
+    "width": 24,
+    "x": 30,
+    "y": 4
+   }
+  ],
+  "mode": "rgb"
+ },
+ "layered-rgb8.psb": {
+  "depth": 8,
+  "flat": "psd-tools",
+  "layers": [
+   {
+    "height": 48,
+    "layout": "Rgba8",
+    "name": "Background",
+    "width": 64,
+    "x": 0,
+    "y": 0
+   },
+   {
+    "height": 30,
+    "layout": "Rgba8",
+    "name": "Off canvas",
+    "width": 40,
+    "x": -6,
+    "y": 10
+   },
+   {
+    "height": 20,
+    "layout": "Rgba8",
+    "name": "Masked",
+    "width": 24,
+    "x": 30,
+    "y": 4
+   }
+  ],
+  "mode": "rgb"
+ },
+ "layered-rgb8.psd": {
+  "depth": 8,
+  "flat": "psd-tools",
+  "layers": [
+   {
+    "height": 48,
+    "layout": "Rgba8",
+    "name": "Background",
+    "width": 64,
+    "x": 0,
+    "y": 0
+   },
+   {
+    "height": 30,
+    "layout": "Rgba8",
+    "name": "Off canvas",
+    "width": 40,
+    "x": -6,
+    "y": 10
+   },
+   {
+    "height": 20,
+    "layout": "Rgba8",
+    "name": "Masked",
+    "width": 24,
+    "x": 30,
+    "y": 4
+   },
+   {
+    "height": 16,
+    "layout": "Rgba8",
+    "name": "Disabled mask",
+    "width": 30,
+    "x": 2,
+    "y": 30
+   },
+   {
+    "height": 16,
+    "layout": "Rgba8",
+    "name": "Fill 50",
+    "width": 30,
+    "x": 20,
+    "y": 20
+   },
+   {
+    "height": 16,
+    "layout": "Rgba8",
+    "name": "Hidden",
+    "width": 30,
+    "x": 0,
+    "y": 0
+   },
+   {
+    "height": 20,
+    "layout": "Rgba8",
+    "name": "Clip base",
+    "width": 20,
+    "x": 40,
+    "y": 24
+   },
+   {
+    "height": 26,
+    "layout": "Rgba8",
+    "name": "Clipped 1",
+    "width": 26,
+    "x": 37,
+    "y": 21
+   },
+   {
+    "height": 10,
+    "layout": "Rgba8",
+    "name": "Clipped 2",
+    "width": 30,
+    "x": 34,
+    "y": 30
+   },
+   {
+    "height": 24,
+    "layout": "Rgba8",
+    "name": "Iso child 1",
+    "width": 36,
+    "x": 2,
+    "y": 2
+   },
+   {
+    "height": 24,
+    "layout": "Rgba8",
+    "name": "Iso child 2",
+    "width": 36,
+    "x": 10,
+    "y": 12
+   },
+   {
+    "height": 24,
+    "layout": "Rgba8",
+    "name": "Pass child",
+    "width": 36,
+    "x": 34,
+    "y": 6
+   }
+  ],
+  "mode": "rgb"
+ }
+}

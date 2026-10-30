@@ -41,7 +41,8 @@ using DrawingPath = Egami.Drawing.Path;
 // as the one entry of an icon, so mutations reach the BMP and PNG entry decoders and the AND mask directly. The psdfile target
 // (Phase 2.3.3) loads PSD and PSB files every way (whole, as other pixel types, from a stream that cannot seek, rows, regions,
 // reductions), which must agree; psddata puts its input behind a small header its first bytes choose (mode, depth, compression,
-// PSD or PSB), so mutations reach the PackBits row table, the Deflate planes and the prediction directly. The egdr target
+// PSD or PSB), so mutations reach the PackBits row table, the Deflate planes and the prediction directly. The psdlayers target
+// (Phase 2.3.10) reads layered files' layers, from memory and from a stream that cannot seek, which must agree. The egdr target
 // (Phase 2.6.4) loads recorded pictures: a picture that loads must save and load again to the same bytes, and replays on a
 // small raster canvas, so mutations reach lattices, atlases, meshes, patches, patterns and nested pictures.
 // The vp8video target (Phase 2.3.5) feeds the VP8 stream decoder a stream of frames (inter frames, hidden frames, every version)
@@ -186,6 +187,7 @@ static Action<Stream> Target(string name) => name switch
     "ani" => LoadAni,
     "psdfile" => LoadPsd,
     "psddata" => LoadPsdData,
+    "psdlayers" => ReadPsdLayers,
     "egdr" => LoadDrawing,
     "inktiff" => LoadInkTiff,
     "shaping" => ShapeFont,
@@ -226,7 +228,7 @@ static Action<Stream> Target(string name) => name switch
         => stream => Egami.Fuzz.BarcodeFuzzTarget.Encode(name["barcode-".Length..], ReadAll(stream)),
     "barcode-read" => stream => Egami.Fuzz.BarcodeFuzzTarget.Read(ReadAll(stream)),
     "paragraph" => stream => Egami.Fuzz.ParagraphFuzzTarget.Run(ReadAll(stream), ParagraphFaces(), DrawParagraph),
-    _ => throw new ArgumentException($"Unknown fuzz target '{name}'. Targets: hinting, radiance, exr, gainmap, avif, avifbox, av1, av1stream, avif-write, heic, heicbox, hevc, hevcstream, isobox, jxl, jxlbox, jxlentropy, jxl-write, jxl-jpeg, jxl-lossy, png, jpeg, jpeg-depth, jpeg-write, jpeg-transform, exif, icc, iptc, psd, xmp, rawprofile, gif, apng, lzw, bmp, tga, qoi, pnm, pfm, detect, stream, tiff, tiffcodec, webp, webpcodec, vp8video, jbig2, jbig2codec, ccitt, cube, jpeg2000, jpeg2000codec, font, cff, subset, woff2, gvar, cff2, colr, instance, svgpath, ico, icoentry, psdfile, psddata, egdr, inktiff, shaping, bidi, css, hocr, alto, paragraph, svg, wmf, emf, emfplus, sysdrawing, barcode-qr, barcode-datamatrix, barcode-pdf417, barcode-aztec, barcode-code128, barcode-code39, barcode-itf, barcode-eanupc, barcode-read."),
+    _ => throw new ArgumentException($"Unknown fuzz target '{name}'. Targets: hinting, radiance, exr, gainmap, avif, avifbox, av1, av1stream, avif-write, heic, heicbox, hevc, hevcstream, isobox, jxl, jxlbox, jxlentropy, jxl-write, jxl-jpeg, jxl-lossy, png, jpeg, jpeg-depth, jpeg-write, jpeg-transform, exif, icc, iptc, psd, xmp, rawprofile, gif, apng, lzw, bmp, tga, qoi, pnm, pfm, detect, stream, tiff, tiffcodec, webp, webpcodec, vp8video, jbig2, jbig2codec, ccitt, cube, jpeg2000, jpeg2000codec, font, cff, subset, woff2, gvar, cff2, colr, instance, svgpath, ico, icoentry, psdfile, psddata, psdlayers, egdr, inktiff, shaping, bidi, css, hocr, alto, paragraph, svg, wmf, emf, emfplus, sysdrawing, barcode-qr, barcode-datamatrix, barcode-pdf417, barcode-aztec, barcode-code128, barcode-code39, barcode-itf, barcode-eanupc, barcode-read."),
 };
 
 static EgamiContext Context()
@@ -1699,6 +1701,45 @@ static void LoadPsd(Stream stream)
 
             Rect region = new(info.Width / 3, info.Height / 4, Math.Max(1, info.Width / 2), Math.Max(1, info.Height / 2));
             using Raster<Rgba8> cropped = Raster.Load<Rgba8>(data, Egami.Formats.Psd.PsdFormat.Info, context, options with { Region = region, MinimumSize = new Size(Math.Max(1, info.Width / 7), 1) });
+        }
+        catch (EgamiException)
+        {
+        }
+    }
+}
+
+// Phase 2.3.10: a PSD's layers read with ReadLayers; a seekable and a forward-only read must give the same layers.
+static void ReadPsdLayers(Stream stream)
+{
+    EgamiContext context = Context();
+    byte[] data = ReadAll(stream);
+    foreach (RecoveryMode recovery in new[] { RecoveryMode.Lenient, RecoveryMode.Strict })
+    {
+        ReaderOptions options = new() { Recovery = recovery };
+        try
+        {
+            using Egami.Formats.Psd.PsdDocument document = Egami.Formats.Psd.PsdImage.ReadLayers(new MemoryStream(data), options, context);
+            using Egami.Formats.Psd.PsdDocument forward = Egami.Formats.Psd.PsdImage.ReadLayers<RgbaF32>(new ForwardOnlyStream(data), options, context);
+            if (document.Layers.Count != forward.Layers.Count)
+            {
+                throw new InvalidOperationException("A seekable and a forward-only read give different layers.");
+            }
+
+            for (int i = 0; i < document.Layers.Count; i++)
+            {
+                if (document.Layers[i].Pixels is Raster pixels)
+                {
+                    using Raster<RgbaF32> mine = pixels.As<RgbaF32>();
+                    Raster<RgbaF32> theirs = (Raster<RgbaF32>)forward.Layers[i].Pixels!;
+                    for (int y = 0; y < mine.Height; y++)
+                    {
+                        if (!mine.Row(y).SequenceEqual(theirs.Row(y)))
+                        {
+                            throw new InvalidOperationException($"Layer {i} row {y} differs between a seekable and a forward-only read.");
+                        }
+                    }
+                }
+            }
         }
         catch (EgamiException)
         {
