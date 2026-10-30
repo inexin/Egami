@@ -89,7 +89,7 @@
 
 
   <h1 id="Egami_Heic_HevcStreamDecoder" data-uid="Egami.Heic.HevcStreamDecoder" class="text-break">
-Class HevcStreamDecoder  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Heic/HevcStreamDecoder.cs/#L33"><i class="bi bi-code-slash"></i></a>
+Class HevcStreamDecoder  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Heic/HevcStreamDecoder.cs/#L35"><i class="bi bi-code-slash"></i></a>
   </h1>
 
   <div class="facts text-secondary">
@@ -190,7 +190,7 @@ its size against the context's <a class="xref" href="Egami.EgamiContext.html#Ega
 
   <h3 id="Egami_Heic_HevcStreamDecoder__ctor_Egami_Heic_HevcDecoderOptions_Egami_EgamiContext_" data-uid="Egami.Heic.HevcStreamDecoder.#ctor(Egami.Heic.HevcDecoderOptions,Egami.EgamiContext)">
   HevcStreamDecoder(HevcDecoderOptions?, EgamiContext?)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Heic/HevcStreamDecoder.cs/#L49"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Heic/HevcStreamDecoder.cs/#L51"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Starts a stream.</p>
@@ -243,7 +243,7 @@ while (decoder.NextFrame is HevcFrameInfo next)
 
   <h3 id="Egami_Heic_HevcStreamDecoder_NextFrame" data-uid="Egami.Heic.HevcStreamDecoder.NextFrame">
   NextFrame
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Heic/HevcStreamDecoder.cs/#L57"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Heic/HevcStreamDecoder.cs/#L79"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the information of the next frame <a class="xref" href="Egami.Heic.HevcStreamDecoder.html#Egami_Heic_HevcStreamDecoder_TryReceiveFrame_Egami_YuvRaster_Egami_Heic_HevcFrameInfo__">TryReceiveFrame(YuvRaster, out HevcFrameInfo)</a> gives, to size its raster, or null when there is none.</p>
@@ -279,7 +279,7 @@ while (decoder.NextFrame is HevcFrameInfo next)
 
   <h3 id="Egami_Heic_HevcStreamDecoder_Dispose" data-uid="Egami.Heic.HevcStreamDecoder.Dispose">
   Dispose()
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Heic/HevcStreamDecoder.cs/#L220"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Heic/HevcStreamDecoder.cs/#L237"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Drops the pictures.</p>
@@ -306,7 +306,7 @@ while (decoder.NextFrame is HevcFrameInfo next)
 
   <h3 id="Egami_Heic_HevcStreamDecoder_Flush" data-uid="Egami.Heic.HevcStreamDecoder.Flush">
   Flush()
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Heic/HevcStreamDecoder.cs/#L132"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Heic/HevcStreamDecoder.cs/#L154"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Ends the stream: the last picture completes and every picture still waiting comes out.</p>
@@ -333,7 +333,7 @@ while (decoder.NextFrame is HevcFrameInfo next)
 
   <h3 id="Egami_Heic_HevcStreamDecoder_Reset" data-uid="Egami.Heic.HevcStreamDecoder.Reset">
   Reset()
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Heic/HevcStreamDecoder.cs/#L211"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Heic/HevcStreamDecoder.cs/#L228"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Drops the pictures, decoded and waiting, and the parameter sets' pictures; the next data must start at an IRAP picture.</p>
@@ -360,7 +360,7 @@ while (decoder.NextFrame is HevcFrameInfo next)
 
   <h3 id="Egami_Heic_HevcStreamDecoder_Send_System_ReadOnlySpan_System_Byte__" data-uid="Egami.Heic.HevcStreamDecoder.Send(System.ReadOnlySpan{System.Byte})">
   Send(ReadOnlySpan&lt;byte&gt;)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Heic/HevcStreamDecoder.cs/#L113"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Heic/HevcStreamDecoder.cs/#L135"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Decodes NAL units: an Annex B byte stream, or after <a class="xref" href="Egami.Heic.HevcStreamDecoder.html#Egami_Heic_HevcStreamDecoder_SetConfiguration_System_ReadOnlySpan_System_Byte__">SetConfiguration(ReadOnlySpan&lt;byte&gt;)</a> NAL units after size fields. Pictures that
@@ -406,7 +406,7 @@ are ready in output order wait for <a class="xref" href="Egami.Heic.HevcStreamDe
 
   <h3 id="Egami_Heic_HevcStreamDecoder_SetConfiguration_System_ReadOnlySpan_System_Byte__" data-uid="Egami.Heic.HevcStreamDecoder.SetConfiguration(System.ReadOnlySpan{System.Byte})">
   SetConfiguration(ReadOnlySpan&lt;byte&gt;)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Heic/HevcStreamDecoder.cs/#L65"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Heic/HevcStreamDecoder.cs/#L87"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Takes an MP4 or Matroska codec configuration record (hvcC, ISO/IEC 14496-15 8.3.3): its parameter sets, and the size of
@@ -446,7 +446,7 @@ the NAL unit size fields that <a class="xref" href="Egami.Heic.HevcStreamDecoder
 
   <h3 id="Egami_Heic_HevcStreamDecoder_TryReceiveFrame_Egami_YuvRaster_Egami_Heic_HevcFrameInfo__" data-uid="Egami.Heic.HevcStreamDecoder.TryReceiveFrame(Egami.YuvRaster,Egami.Heic.HevcFrameInfo@)">
   TryReceiveFrame(YuvRaster, out HevcFrameInfo)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Heic/HevcStreamDecoder.cs/#L147"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Heic/HevcStreamDecoder.cs/#L169"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Copies the next picture in output order into <code class="paramref">destination</code>, cropped to its conformance window.</p>
@@ -495,7 +495,7 @@ stream's bit depth. Its color is left as it is.</p>
 </article>
 
         <div class="contribution d-print-none">
-          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Heic/HevcStreamDecoder.cs/#L33" class="edit-link">Edit this page</a>
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Heic/HevcStreamDecoder.cs/#L35" class="edit-link">Edit this page</a>
         </div>
 
 
