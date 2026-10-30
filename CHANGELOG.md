@@ -3,6 +3,12 @@
 All notable changes to Egami are listed here. Egami follows [Semantic Versioning](https://semver.org): from 1.0, public API
 changes that break code come only in a new major version.
 
+## Every library package, unreleased
+
+- Each NuGet package carries `AGENTS.md`, a short guide for coding agents next to its readme: Egami's own names, the package's
+  entry points, samples from the tested docs samples and common mistakes. The same guides are on the docs site under
+  `agents/`, linked from `llms.txt`.
+
 ## Egami.Metafiles, unreleased
 
 - A GDI pen whose dash pattern is shorter than a device pixel (zero-length user-style entries, say) draws solid instead of

@@ -4,7 +4,8 @@
 - a public type, or a public method that takes options or limits, has no <example>;
 - an <example> points at a snippet file or region that does not exist;
 - a public type is mentioned in no guide or getting-started page, and is not listed in REFERENCE_ONLY below;
-- a guide links a sample in samples/ that does not exist.
+- a guide links a sample in samples/ that does not exist;
+- the package has no agent guide (tools/agent-guides/<package>.md), or its docs/agents/<package>.md is out of date.
 
 Usage: python tools/check-docs.py [src/Egami.Drawing]   (from the repo root; builds src/Egami, or the package given, in Release first)
 """
@@ -103,7 +104,8 @@ def main():
                 problems.append(f"{source}: region {region} not found in {path}")
 
     pages = ""
-    for page in glob.glob("docs/**/*.md", recursive=True):
+    # The agent guides repeat other pages' samples; a type counts as covered only by a guide or getting-started page.
+    for page in (p for p in glob.glob("docs/**/*.md", recursive=True) if not p.replace(os.sep, "/").startswith("docs/agents/")):
         text = open(page, encoding="utf-8").read()
         pages += text
         # Code a page includes counts as the page's own: [!code-csharp[](path#region)].
@@ -125,6 +127,13 @@ def main():
     for sample in set(re.findall(r"samples/(\w+)", pages)):
         if not os.path.exists(f"samples/{sample}/{sample}.csproj"):
             problems.append(f"docs link samples/{sample}, which does not exist")
+
+    if not os.path.exists(f"tools/agent-guides/{NAME}.md"):
+        problems.append(f"{NAME}: no agent guide (add tools/agent-guides/{NAME}.md, then run python tools/make-llms-txt.py)")
+    else:
+        check = subprocess.run([sys.executable, "tools/make-llms-txt.py", "--check"], capture_output=True, text=True)
+        if check.returncode != 0:
+            problems.extend(check.stdout.splitlines() or [check.stderr.strip()])
 
     for p in problems:
         print(p)

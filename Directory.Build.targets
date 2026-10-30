@@ -16,4 +16,10 @@
   <ItemGroup Condition="'$(PackageReadmeFile)' != ''">
     <None Include="$(MSBuildProjectDirectory)/README.md" Pack="true" PackagePath="\" Visible="false" />
   </ItemGroup>
+
+  <!-- Each package's guide for coding agents is docs/agents/<PackageId>.md, packed as AGENTS.md next to the readme.
+       tools/make-llms-txt.py writes it from tools/agent-guides/<PackageId>.md. -->
+  <ItemGroup Condition="Exists('$(MSBuildThisFileDirectory)docs/agents/$(PackageId).md')">
+    <None Include="$(MSBuildThisFileDirectory)docs/agents/$(PackageId).md" Pack="true" PackagePath="AGENTS.md" Visible="false" />
+  </ItemGroup>
 </Project>
