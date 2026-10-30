@@ -6,7 +6,7 @@
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <meta name="title" content="Class DdsFormat | Egami ">
       
-      <meta name="description" content="DDS (DirectDraw Surface), the texture container of Direct3D and most game engines: a header, then every mip level of every face, array slice or depth slice, uncompressed or in BC1 to BC7 blocks. Load gives mip 0 of the first surface; LoadAll and  reach the others. Registered with .">
+      <meta name="description" content="DDS (DirectDraw Surface), the texture container of Direct3D and most game engines: a header, then every mip level of every face, array slice or depth slice, uncompressed or in BC1 to BC7 blocks. Load gives mip 0 of the first surface; LoadAll and  reach the others. Save writes a texture with a full mip chain, SaveAll an array or a cube map (). Registered with .">
       <link rel="icon" href="../images/favicon.ico">
       <link rel="stylesheet" href="../public/docfx.min.css">
       <link rel="stylesheet" href="../public/main.css">
@@ -89,7 +89,7 @@
 
 
   <h1 id="Egami_Formats_Extended_Dds_DdsFormat" data-uid="Egami.Formats.Extended.Dds.DdsFormat" class="text-break">
-Class DdsFormat  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dds/DdsFormat.cs/#L13"><i class="bi bi-code-slash"></i></a>
+Class DdsFormat  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dds/DdsFormat.cs/#L14"><i class="bi bi-code-slash"></i></a>
   </h1>
 
   <div class="facts text-secondary">
@@ -99,7 +99,8 @@ Class DdsFormat  <a class="header-action link-secondary" title="View source" hre
 
   <div class="markdown summary"><p>DDS (DirectDraw Surface), the texture container of Direct3D and most game engines: a header, then every mip level of every
 face, array slice or depth slice, uncompressed or in BC1 to BC7 blocks. Load gives mip 0 of the first surface; LoadAll and
-<a class="xref" href="Egami.Formats.Extended.Dds.DdsReaderOptions.html">DdsReaderOptions</a> reach the others. Registered with <a class="xref" href="Egami.Formats.Extended.ExtendedContextExtensions.html#Egami_Formats_Extended_ExtendedContextExtensions_WithDds_Egami_EgamiContext_">WithDds(EgamiContext)</a>.</p>
+<a class="xref" href="Egami.Formats.Extended.Dds.DdsReaderOptions.html">DdsReaderOptions</a> reach the others. Save writes a texture with a full mip chain, SaveAll an array or a cube map
+(<a class="xref" href="Egami.Formats.Extended.Dds.DdsWriterOptions.html">DdsWriterOptions</a>). Registered with <a class="xref" href="Egami.Formats.Extended.ExtendedContextExtensions.html#Egami_Formats_Extended_ExtendedContextExtensions_WithDds_Egami_EgamiContext_">WithDds(EgamiContext)</a>.</p>
 </div>
   <div class="markdown conceptual"></div>
 
@@ -169,10 +170,10 @@ Console.WriteLine($"{info.Width}×{info.Height}, {info.ImageCount} surface(s)");
 
   <h3 id="Egami_Formats_Extended_Dds_DdsFormat_Info" data-uid="Egami.Formats.Extended.Dds.DdsFormat.Info">
   Info
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dds/DdsFormat.cs/#L16"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dds/DdsFormat.cs/#L17"><i class="bi bi-code-slash"></i></a>
   </h3>
 
-  <div class="markdown level1 summary"><p>Gets the format's registration: name, MIME types, extensions, signature and reader.</p>
+  <div class="markdown level1 summary"><p>Gets the format's registration: name, MIME types, extensions, signature, reader and writer.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
 
@@ -201,7 +202,7 @@ Console.WriteLine($"{info.Width}×{info.Height}, {info.ImageCount} surface(s)");
 </article>
 
         <div class="contribution d-print-none">
-          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dds/DdsFormat.cs/#L13" class="edit-link">Edit this page</a>
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dds/DdsFormat.cs/#L14" class="edit-link">Edit this page</a>
         </div>
 
 

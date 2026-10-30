@@ -88,7 +88,7 @@
 <h1 id="dds">DDS</h1>
 
 <p>DDS (DirectDraw Surface, .dds) is the texture container of Direct3D and most game engines: a header, then every mip level of
-every face, array slice or depth slice back to back, uncompressed or in 4 × 4 blocks of BC1 to BC7. It reads through the
+every face, array slice or depth slice back to back, uncompressed or in 4 × 4 blocks of BC1 to BC7. It reads and writes through the
 Egami.Formats.Extended package: register it with <code>WithDds()</code> or <code>WithExtendedFormats()</code> (<a href="extended.html">Extended formats</a>).</p>
 <table>
 <thead>
@@ -104,7 +104,7 @@ Egami.Formats.Extended package: register it with <code>WithDds()</code> or <code
 </tr>
 <tr>
 <td>Writes</td>
-<td>No, not yet</td>
+<td>Uncompressed formats (8-bit RGBA, BGRA and BGRX, R8, R8G8, A8, 16-bit R, RG and RGBA, half and float RGBA, R32 float, float RGB, R10G10B10A2, R11G11B10 and R9G9B9E5 floats, 565, 5551 and 4444) and BC1 to BC7 with BC6H unsigned and signed, with mips, texture arrays and cube maps (<code>DdsWriterOptions</code>)</td>
 </tr>
 <tr>
 <td>Natural pixel type</td>
@@ -177,6 +177,47 @@ if (texture.Metadata.FormatDetails is DdsDetails dds)
 
 // An _SRGB format is tagged sRGB; any other loads its values as stored.
 bool srgb = texture.Metadata.ColorSpace == ColorSpaceHint.Srgb;
+</code></pre><h2 id="writing">Writing</h2>
+<p>Save writes one texture with its full mip chain; <code>DdsWriterOptions</code> picks the rest.</p>
+<ul>
+<li><code>Format</code> (a <code>DdsTextureFormat</code>) is the format to write. Left <code>null</code>, a raster loaded from DDS keeps its own format when it is
+writable, and any other raster gets the uncompressed format nearest its pixel type: <code>Rgba8</code> for 8-bit colour, <code>R8</code> for 8-bit
+gray, <code>RgbaF16</code> for half floats and so on. Block formats are never picked on their own.</li>
+<li><code>MipLevels</code>: 0 (the default) writes the full chain down to 1 × 1, 1 mip 0 alone, any other number that many. Mips average
+2 × 2 blocks of premultiplied pixels (<code>MipChain</code>), in linear light when the format is sRGB; an odd size takes a box resize to
+the size DDS gives that mip. A raster loaded at mip 0 and unchanged by operations since writes the file's own mips 1 and on.</li>
+<li><code>Effort</code> (0 to 6, default 4, WebP's scale) is how hard the block encoders search: endpoints along the colours' principal
+axis, then least-squares refits and neighbouring endpoints as the effort rises; BC7 tries modes 6 and 1 at the lowest efforts
+and every mode, more partitions and rotations above, and BC6H adds its two-region modes from effort 3. The bytes are the
+same for any thread count.</li>
+<li><code>Srgb</code> writes the _SRGB form of <code>Rgba8</code>, <code>Bgra8</code>, <code>Bgrx8</code> and BC1 to BC3; left <code>null</code>, a source that was sRGB stays sRGB.</li>
+<li><code>PremultipliedAlpha</code> writes colour premultiplied by alpha: DXT2 and DXT4 for BC2 and BC3, the DX10 alpha mode otherwise.</li>
+<li>The legacy header, which old tools read, is written whenever the format has one and nothing needs the DX10 header (BC6H,
+BC7, sRGB, floats, R8G8, R10G10B10A2, texture arrays, premultiplied alpha outside DXT2 and DXT4); <code>Dx10Header</code> forces it.</li>
+<li>SaveAll writes its rasters as a texture array, or with <code>Cube</code> as cube maps, six faces a cube. Every raster has the same
+size, and cube faces are square.</li>
+</ul>
+<p>BC1 keeps alpha as on or off: a pixel below half alpha becomes transparent black. BC4 and the R formats take the raster's gray,
+BC5 and R8G8 its red and green. BC6H keeps no alpha; the unsigned form writes negative values as 0. The <a href="../guides/textures.html">Textures</a>
+guide says which format suits which content.</p>
+<pre><code class="lang-csharp">// A BC3 texture with its full mip chain: the format, mip count, effort (0 to 6) and header are options.
+using (FileStream output = File.Create(&quot;duck.dds&quot;))
+{
+    image.Save(output, DdsFormat.Info, new DdsWriterOptions { Format = DdsTextureFormat.Bc3, Effort = 5 });
+}
+
+// An sRGB colour texture without mips, in the DX10 header.
+using (FileStream output = File.Create(&quot;duck-srgb.dds&quot;))
+{
+    image.Save(output, DdsFormat.Info, new DdsWriterOptions { Format = DdsTextureFormat.Bc1, Srgb = true, MipLevels = 1 });
+}
+
+// Six faces back into a cube map; SaveAll without Cube writes a texture array.
+using RasterList faces = Raster.LoadAll(&quot;sky.dds&quot;, context);
+using (FileStream output = File.Create(&quot;sky-bc1.dds&quot;))
+{
+    Raster.SaveAll(faces, output, DdsFormat.Info, new DdsWriterOptions { Cube = true, Format = DdsTextureFormat.Bc1 });
+}
 </code></pre><h2 id="streaming-and-damaged-files">Streaming and damaged files</h2>
 <p>The reader skips to the surface it wants and decodes its rows in order, a row of blocks at a time, so <code>RasterDecoder</code> streams
 it; planar video surfaces keep chroma after luma and are read whole. A lenient read of a file that ends early keeps the rows it

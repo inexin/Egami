@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Interface IMultiImageWriter | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Interface IMultiImageWriter | Egami ">
+      
+      <meta name="description" content="An optional interface for a format&#39;s writer whose files hold several images (TIFF pages, icon entries, DDS texture arrays and cube maps), for . Without it, SaveAll takes one raster and writes it as Save would.">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_Formats_IMultiImageWriter.md&amp;value=---%0Auid%3A%20Egami.Formats.IMultiImageWriter%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.Formats.IMultiImageWriter">
+
+
+
+  <h1 id="Egami_Formats_IMultiImageWriter" data-uid="Egami.Formats.IMultiImageWriter" class="text-break">
+Interface IMultiImageWriter  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/IMultiImage.cs/#L32"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a>.<a class="xref" href="Egami.Formats.html">Formats</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>An optional interface for a format's writer whose files hold several images (TIFF pages, icon entries, DDS texture arrays
+and cube maps), for <a class="xref" href="Egami.Raster.html#Egami_Raster_SaveAll_System_Collections_Generic_IEnumerable_Egami_Raster__System_IO_Stream_Egami_Formats_FormatInfo_Egami_Formats_WriterOptions_">SaveAll(IEnumerable&lt;Raster&gt;, Stream, FormatInfo, WriterOptions?)</a>. Without it,
+SaveAll takes one raster and writes it as Save would.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public interface IMultiImageWriter</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+  <h2 id="Egami_Formats_IMultiImageWriter_examples">Examples</h2>
+  <pre><code class="lang-csharp">/// &lt;summary&gt;A format holding several RAW8 images: "RAW8P", the image count as one byte, then each image as RAW8 stores it.&lt;/summary&gt;
+public static class Raw8PagesFormat
+{
+    public static FormatInfo Info { get; } = new()
+    {
+        Name = "RAW8P",
+        Extensions = ["raw8p"],
+        SignatureLength = 5,
+        Matches = header =&gt; header.StartsWith("RAW8P"u8),
+        Reader = new Reader(),
+    };
+
+    /// &lt;summary&gt;Names the image a Load reads; LoadAll sets it for each.&lt;/summary&gt;
+    public sealed record PageOptions : ReaderOptions
+    {
+        public int Page { get; init; }
+    }
+
+    private sealed class Reader : IFormatReader, IMultiImageReader
+    {
+        public IReadOnlyList&lt;ReaderOptions&gt; Images(EgamiInput input, ReaderOptions options)
+        {
+            input.Skip(5);
+            int count = input.ReadByte();
+            return [.. Enumerable.Range(0, count).Select(page =&gt; new PageOptions { Recovery = options.Recovery, Page = page })];
+        }
+
+        public RasterInfo ReadInfo(EgamiInput input, ReaderOptions options)
+        {
+            (int width, int height, int count) = Seek(input, options);
+            return new RasterInfo { Format = Info, Width = width, Height = height, Layout = Rgba8.Layout, FrameCount = 1, ImageCount = count, EstimatedBytes = 4L * width * height };
+        }
+
+        public Raster&lt;TPixel&gt; Read&lt;TPixel&gt;(EgamiInput input, ReaderOptions options)
+            where TPixel : unmanaged, IPixelType&lt;TPixel&gt;
+        {
+            (int width, int height, _) = Seek(input, options);
+            Raster&lt;TPixel&gt; raster = input.CreateRaster&lt;TPixel&gt;(width, height);
+            byte[] row = new byte[width * 4];
+            for (int y = 0; y &lt; height; y++)
+            {
+                input.ReadExactly(row);
+                PixelConvert.Convert&lt;Rgba8, TPixel&gt;(MemoryMarshal.Cast&lt;byte, Rgba8&gt;(row.AsSpan()), raster.Row(y));
+            }
+
+            return raster;
+        }
+
+        public Raster Read(EgamiInput input, ReaderOptions options) =&gt; Read&lt;Rgba8&gt;(input, options);
+
+        /// &lt;summary&gt;Skips to the page the options name and reads its size.&lt;/summary&gt;
+        private static (int Width, int Height, int Count) Seek(EgamiInput input, ReaderOptions options)
+        {
+            input.Skip(5);
+            int count = input.ReadByte();
+            int page = (options as PageOptions)?.Page ?? 0;
+            for (int i = 0; ; i++)
+            {
+                input.Skip(4);
+                int width = (int)input.ReadUInt32BigEndian();
+                int height = (int)input.ReadUInt32BigEndian();
+                if (i == page)
+                {
+                    return (width, height, count);
+                }
+
+                input.Skip(4L * width * height);
+            }
+        }
+    }
+}</code></pre>
+
+
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="Egami_Formats_IMultiImageWriter_WriteAll_" data-uid="Egami.Formats.IMultiImageWriter.WriteAll*"></a>
+
+  <h3 id="Egami_Formats_IMultiImageWriter_WriteAll_System_Collections_Generic_IReadOnlyList_Egami_Raster__System_IO_Stream_Egami_Formats_WriterOptions_" data-uid="Egami.Formats.IMultiImageWriter.WriteAll(System.Collections.Generic.IReadOnlyList{Egami.Raster},System.IO.Stream,Egami.Formats.WriterOptions)">
+  WriteAll(IReadOnlyList&lt;Raster&gt;, Stream, WriterOptions)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/IMultiImage.cs/#L41"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Writes every raster, in order, to one file.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">void WriteAll(IReadOnlyList&lt;Raster&gt; rasters, Stream output, WriterOptions options)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>rasters</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="Egami.Raster.html">Raster</a>&gt;</dt>
+    <dd><p>The images, at least one.</p>
+</dd>
+    <dt><code>output</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.io.stream">Stream</a></dt>
+    <dd><p>Where to write. The writer leaves it open.</p>
+</dd>
+    <dt><code>options</code> <a class="xref" href="Egami.Formats.WriterOptions.html">WriterOptions</a></dt>
+    <dd><p>How to write.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Formats_IMultiImageWriter_WriteAll_System_Collections_Generic_IReadOnlyList_Egami_Raster__System_IO_Stream_Egami_Formats_WriterOptions__examples">Examples</h4>
+  <pre><code class="lang-csharp">/// &lt;summary&gt;A format holding several RAW8 images: "RAW8P", the image count as one byte, then each image as RAW8 stores it.&lt;/summary&gt;
+public static class Raw8PagesFormat
+{
+    public static FormatInfo Info { get; } = new()
+    {
+        Name = "RAW8P",
+        Extensions = ["raw8p"],
+        SignatureLength = 5,
+        Matches = header =&gt; header.StartsWith("RAW8P"u8),
+        Reader = new Reader(),
+    };
+
+    /// &lt;summary&gt;Names the image a Load reads; LoadAll sets it for each.&lt;/summary&gt;
+    public sealed record PageOptions : ReaderOptions
+    {
+        public int Page { get; init; }
+    }
+
+    private sealed class Reader : IFormatReader, IMultiImageReader
+    {
+        public IReadOnlyList&lt;ReaderOptions&gt; Images(EgamiInput input, ReaderOptions options)
+        {
+            input.Skip(5);
+            int count = input.ReadByte();
+            return [.. Enumerable.Range(0, count).Select(page =&gt; new PageOptions { Recovery = options.Recovery, Page = page })];
+        }
+
+        public RasterInfo ReadInfo(EgamiInput input, ReaderOptions options)
+        {
+            (int width, int height, int count) = Seek(input, options);
+            return new RasterInfo { Format = Info, Width = width, Height = height, Layout = Rgba8.Layout, FrameCount = 1, ImageCount = count, EstimatedBytes = 4L * width * height };
+        }
+
+        public Raster&lt;TPixel&gt; Read&lt;TPixel&gt;(EgamiInput input, ReaderOptions options)
+            where TPixel : unmanaged, IPixelType&lt;TPixel&gt;
+        {
+            (int width, int height, _) = Seek(input, options);
+            Raster&lt;TPixel&gt; raster = input.CreateRaster&lt;TPixel&gt;(width, height);
+            byte[] row = new byte[width * 4];
+            for (int y = 0; y &lt; height; y++)
+            {
+                input.ReadExactly(row);
+                PixelConvert.Convert&lt;Rgba8, TPixel&gt;(MemoryMarshal.Cast&lt;byte, Rgba8&gt;(row.AsSpan()), raster.Row(y));
+            }
+
+            return raster;
+        }
+
+        public Raster Read(EgamiInput input, ReaderOptions options) =&gt; Read&lt;Rgba8&gt;(input, options);
+
+        /// &lt;summary&gt;Skips to the page the options name and reads its size.&lt;/summary&gt;
+        private static (int Width, int Height, int Count) Seek(EgamiInput input, ReaderOptions options)
+        {
+            input.Skip(5);
+            int count = input.ReadByte();
+            int page = (options as PageOptions)?.Page ?? 0;
+            for (int i = 0; ; i++)
+            {
+                input.Skip(4);
+                int width = (int)input.ReadUInt32BigEndian();
+                int height = (int)input.ReadUInt32BigEndian();
+                if (i == page)
+                {
+                    return (width, height, count);
+                }
+
+                input.Skip(4L * width * height);
+            }
+        }
+    }
+}</code></pre>
+
+
+
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/IMultiImage.cs/#L32" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

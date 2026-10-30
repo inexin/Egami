@@ -6407,7 +6407,7 @@
       "Uid": null,
       "IsMRef": true,
       "Title": "Egami.Formats.Extended.Dds.DdsFormat",
-      "Summary": "<p sourcefile=\"api/Egami.Formats.Extended.Dds.DdsFormat.yml\" sourcestartlinenumber=\"1\">DDS (DirectDraw Surface), the texture container of Direct3D and most game engines: a header, then every mip level of every\nface, array slice or depth slice, uncompressed or in BC1 to BC7 blocks. Load gives mip 0 of the first surface; LoadAll and\n<xref href=\"Egami.Formats.Extended.Dds.DdsReaderOptions\" data-throw-if-not-resolved=\"false\"></xref> reach the others. Registered with <xref href=\"Egami.Formats.Extended.ExtendedContextExtensions.WithDds(Egami.EgamiContext)\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n"
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Extended.Dds.DdsFormat.yml\" sourcestartlinenumber=\"1\">DDS (DirectDraw Surface), the texture container of Direct3D and most game engines: a header, then every mip level of every\nface, array slice or depth slice, uncompressed or in BC1 to BC7 blocks. Load gives mip 0 of the first surface; LoadAll and\n<xref href=\"Egami.Formats.Extended.Dds.DdsReaderOptions\" data-throw-if-not-resolved=\"false\"></xref> reach the others. Save writes a texture with a full mip chain, SaveAll an array or a cube map\n(<xref href=\"Egami.Formats.Extended.Dds.DdsWriterOptions\" data-throw-if-not-resolved=\"false\"></xref>). Registered with <xref href=\"Egami.Formats.Extended.ExtendedContextExtensions.WithDds(Egami.EgamiContext)\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n"
     },
     {
       "type": "ManagedReference",
@@ -6422,6 +6422,34 @@
       "IsMRef": true,
       "Title": "Egami.Formats.Extended.Dds.DdsReaderOptions",
       "Summary": "<p sourcefile=\"api/Egami.Formats.Extended.Dds.DdsReaderOptions.yml\" sourcestartlinenumber=\"1\">Options for reading DDS.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Extended.Dds.DdsTextureFormat.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Extended.Dds.DdsTextureFormat.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Extended.Dds.DdsTextureFormat",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Extended.Dds.DdsTextureFormat.yml\" sourcestartlinenumber=\"1\">The formats the DDS writer writes, each a DXGI format; <xref href=\"Egami.Formats.Extended.Dds.DdsWriterOptions.Srgb\" data-throw-if-not-resolved=\"false\"></xref> picks the _SRGB form where there is one.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Extended.Dds.DdsWriterOptions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Extended.Dds.DdsWriterOptions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Extended.Dds.DdsWriterOptions",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Extended.Dds.DdsWriterOptions.yml\" sourcestartlinenumber=\"1\">Options for writing DDS.</p>\n"
     },
     {
       "type": "ManagedReference",
@@ -6982,6 +7010,20 @@
       "IsMRef": true,
       "Title": "Egami.Formats.IMultiImageReader",
       "Summary": "<p sourcefile=\"api/Egami.Formats.IMultiImageReader.yml\" sourcestartlinenumber=\"1\">An optional interface for a format's reader whose files hold several images (TIFF pages, icon entries, DDS surfaces).\n<xref href=\"Egami.Raster.LoadAll(System.IO.Stream%2cEgami.EgamiContext%2cEgami.Formats.ReaderOptions)\" data-throw-if-not-resolved=\"false\"></xref> asks it for one options value per image and loads each as\nLoad would, so every Load feature applies to each image. The options a reader returns name the image in a way its own\n<xref href=\"Egami.Formats.IFormatReader\" data-throw-if-not-resolved=\"false\"></xref> understands, usually a <xref href=\"Egami.Formats.ReaderOptions\" data-throw-if-not-resolved=\"false\"></xref> subclass of the format's own.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.IMultiImageWriter.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.IMultiImageWriter.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.IMultiImageWriter",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.IMultiImageWriter.yml\" sourcestartlinenumber=\"1\">An optional interface for a format's writer whose files hold several images (TIFF pages, icon entries, DDS texture arrays\nand cube maps), for <xref href=\"Egami.Raster.SaveAll(System.Collections.Generic.IEnumerable%7bEgami.Raster%7d%2cSystem.IO.Stream%2cEgami.Formats.FormatInfo%2cEgami.Formats.WriterOptions)\" data-throw-if-not-resolved=\"false\"></xref>. Without it,\nSaveAll takes one raster and writes it as Save would.</p>\n"
     },
     {
       "type": "ManagedReference",
@@ -19274,6 +19316,16 @@
       "output": {
         ".html": {
           "relative_path": "articles/guides/text.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "articles/guides/textures.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/guides/textures.html"
         }
       },
       "version": ""

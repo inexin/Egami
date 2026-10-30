@@ -332,7 +332,8 @@ encoder gathers the image and calls <code>Write</code> at the end.</p>
 <p>Writing your own operation or pixel type is covered in <a href="../guides/extending.html">Custom operations and formats</a>.</p>
 <h2 id="files-with-several-images">Files with several images</h2>
 <p>A format whose files hold several images, as TIFF holds pages, also implements <code>IMultiImageReader</code>. LoadAll asks it for one
-<code>ReaderOptions</code> per image, usually a subclass of your own that names the image, and loads each as Load would with those options.</p>
+<code>ReaderOptions</code> per image, usually a subclass of your own that names the image, and loads each as Load would with those options. A writer that writes several images to one file implements
+<code>IMultiImageWriter</code>, which SaveAll hands every raster.</p>
 <pre><code class="lang-csharp">/// &lt;summary&gt;A format holding several RAW8 images: &quot;RAW8P&quot;, the image count as one byte, then each image as RAW8 stores it.&lt;/summary&gt;
 public static class Raw8PagesFormat
 {

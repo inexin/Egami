@@ -171,6 +171,13 @@ Load would, so every Load feature applies to each image. The options a reader re
 </dd>
     </dl>
     <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Formats.IMultiImageWriter.html">IMultiImageWriter</a></dt>
+      <dd><p>An optional interface for a format's writer whose files hold several images (TIFF pages, icon entries, DDS texture arrays
+and cube maps), for <a class="xref" href="Egami.Raster.html#Egami_Raster_SaveAll_System_Collections_Generic_IEnumerable_Egami_Raster__System_IO_Stream_Egami_Formats_FormatInfo_Egami_Formats_WriterOptions_">SaveAll(IEnumerable&lt;Raster&gt;, Stream, FormatInfo, WriterOptions?)</a>. Without it,
+SaveAll takes one raster and writes it as Save would.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
       <dt><a class="xref" href="Egami.Formats.IRowFormatReader.html">IRowFormatReader</a></dt>
       <dd><p>An optional interface for a format's reader: an open image that hands out rows as they are asked for, so
 <a class="xref" href="Egami.RasterDecoder.html">RasterDecoder</a> streams the format, with <a class="xref" href="Egami.Formats.ReaderOptions.html#Egami_Formats_ReaderOptions_Region">Region</a> and <a class="xref" href="Egami.Formats.ReaderOptions.html#Egami_Formats_ReaderOptions_MinimumSize">MinimumSize</a>
