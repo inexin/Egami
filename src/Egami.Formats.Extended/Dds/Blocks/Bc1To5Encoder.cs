@@ -16,9 +16,11 @@ internal static class Bc1To5Encoder
 
     /// <summary>
     /// Encodes 16 RGBA pixels (4 bytes each) into a BC1 colour block. With <paramref name="transparent"/>, pixels with alpha
-    /// below 128 become the three-colour mode's transparent black; otherwise alpha is ignored (BC2 and BC3 colour).
+    /// below 128 become the three-colour mode's transparent black; otherwise alpha is ignored. With
+    /// <paramref name="fourColorsOnly"/> (the colour half of BC2 and BC3, whose decoders always interpolate four colours) the
+    /// three-colour mode is never tried.
     /// </summary>
-    public static void EncodeBc1(ReadOnlySpan<byte> rgba, Span<byte> block, bool transparent, int effort)
+    public static void EncodeBc1(ReadOnlySpan<byte> rgba, Span<byte> block, bool transparent, int effort, bool fourColorsOnly = false)
     {
         Span<int> colors = stackalloc int[48];
         Span<bool> clear = stackalloc bool[16];
@@ -74,7 +76,7 @@ internal static class Bc1To5Encoder
             best = Score(colors, clear, e0, e1, fourColors: true, fixedOrder: false);
         }
 
-        if (!four || effort >= 4)
+        if (!four || (effort >= 4 && !fourColorsOnly))
         {
             best = Better(best, Score(colors, clear, e0, e1, fourColors: false, fixedOrder: false));
         }
@@ -109,14 +111,14 @@ internal static class Bc1To5Encoder
         }
 
         BinaryPrimitives.WriteUInt64LittleEndian(block, alpha);
-        EncodeBc1(rgba, block[8..], transparent: false, effort);
+        EncodeBc1(rgba, block[8..], transparent: false, effort, fourColorsOnly: true);
     }
 
     /// <summary>Encodes a BC3 block: alpha as a BC4 block, then the colour as BC1's four-colour mode.</summary>
     public static void EncodeBc3(ReadOnlySpan<byte> rgba, Span<byte> block, int effort)
     {
         EncodeUnorm(rgba[3..], 4, block, effort);
-        EncodeBc1(rgba, block[8..], transparent: false, effort);
+        EncodeBc1(rgba, block[8..], transparent: false, effort, fourColorsOnly: true);
     }
 
     /// <summary>

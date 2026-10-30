@@ -204,6 +204,46 @@ public class DdsWriterTests
         }
     }
 
+    [Theory]
+    [InlineData(DdsTextureFormat.Bc2)]
+    [InlineData(DdsTextureFormat.Bc3)]
+    public void KeepsBc2AndBc3ColourInFourColours(DdsTextureFormat format)
+    {
+        // Black, white and their midpoint: BC1's three-colour mode codes it exactly, but BC2 and BC3 always decode four
+        // colours, so their encoder must not choose it. At any effort the decoded error is at most the four-colour fit's.
+        using Raster<Rgba8> block = Raster.Create<Rgba8>(4, 4);
+        for (int i = 0; i < 16; i++)
+        {
+            byte v = (i % 3) switch { 0 => 0, 1 => 255, _ => 128 };
+            block.Row(i / 4)[i % 4] = new Rgba8(v, v, v, 255);
+        }
+
+        long Error(int effort)
+        {
+            byte[] file = Save(block, new DdsWriterOptions { Format = format, MipLevels = 1, Effort = effort });
+
+            // The colour block's endpoints are in four-colour order (c0 above c1, or equal).
+            ushort c0 = BinaryPrimitives.ReadUInt16LittleEndian(file.AsSpan(file.Length - 8));
+            ushort c1 = BinaryPrimitives.ReadUInt16LittleEndian(file.AsSpan(file.Length - 6));
+            Assert.True(c0 >= c1, $"{format} at effort {effort}: endpoints {c0:X4} and {c1:X4} select the three-colour mode");
+            using Raster<Rgba8> back = Raster.Load<Rgba8>(file, Context);
+            long sum = 0;
+            for (int i = 0; i < 16; i++)
+            {
+                int d = back.Row(i / 4)[i % 4].R - block.Row(i / 4)[i % 4].R;
+                sum += d * d;
+            }
+
+            return sum;
+        }
+
+        long baseline = Error(0);
+        foreach (int effort in (int[])[1, 2, 3, 4, 5, 6])
+        {
+            Assert.True(Error(effort) <= baseline, $"{format} at effort {effort} decodes worse than at effort 0");
+        }
+    }
+
     [Fact]
     public void KeepsBc1Transparency()
     {
