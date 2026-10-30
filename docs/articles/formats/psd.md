@@ -86,6 +86,12 @@ effects, gradient and pattern fills, knockout and mask feathering are left out w
 gives the file, with alpha only when some pixel is not opaque. `PsdFlattenOptions.ApplyAdjustments` turns adjustment layers off.
 Lab, bitmap, indexed and multichannel documents are not flattened.
 
+Levels, curves and invert follow Photoshop's documented formulas. Hue/saturation and the current (not legacy)
+brightness/contrast are close approximations that have not been checked against Photoshop yet, so expect small color
+differences there. Hard Mix and Vivid Light can differ from Photoshop at pure black and white, and Photoshop's fill opacity in
+its eight special modes (Color Burn, Linear Burn, Color Dodge, Linear Dodge, Vivid Light, Linear Light, Hard Mix, Difference)
+works like opacity here.
+
 [!code-csharp[](../../../tests/Egami.DocSamples/Psd.cs#psd-flatten)]
 
 ## Streaming and speed
