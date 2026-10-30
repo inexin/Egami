@@ -7,75 +7,89 @@ namespace Egami.Drawing.Rasterization;
 /// </summary>
 internal sealed class AliasedRasterizer
 {
-    private readonly float[] _edges;
-    private readonly int[] _byTop;
+    private readonly Edge[] _edges;
     private readonly Rect _area;
     private readonly bool _evenOdd;
 
     internal AliasedRasterizer(EdgeList edges, Rect area, bool evenOdd)
     {
-        _edges = edges.Coordinates.ToArray();
+        ReadOnlySpan<float> c = edges.Coordinates;
         _area = area;
         _evenOdd = evenOdd;
-        _byTop = new int[edges.Count];
+        _edges = new Edge[edges.Count];
         float[] tops = new float[edges.Count];
-        for (int i = 0; i < _byTop.Length; i++)
+        for (int i = 0; i < _edges.Length; i++)
         {
-            _byTop[i] = i;
-            tops[i] = MathF.Min(_edges[(4 * i) + 1], _edges[(4 * i) + 3]);
+            _edges[i] = new Edge(c[4 * i], c[(4 * i) + 1], c[(4 * i) + 2], c[(4 * i) + 3]);
+            tops[i] = _edges[i].Top;
         }
 
-        Array.Sort(tops, _byTop);
+        Array.Sort(tops, _edges);
     }
 
     internal void Band(int start, int end, Workspace workspace, ISpanSink sink)
     {
         // The active edges in the order they joined, kept in an array; the crossings' buffer has room for every edge.
-        int[] active = new int[_byTop.Length];
+        Edge[] edges = _edges;
+        int[] active = new int[edges.Length];
         int count = 0, nextEdge = 0;
         Span<byte> scratch = workspace.Coverage.Get(_area.Width);
-        Span<Crossing> buffer = workspace.Crossings.Get(Math.Max(1, _byTop.Length));
+        Span<Crossing> buffer = workspace.Crossings.Get(Math.Max(1, edges.Length));
         for (int row = start; row < end; row++)
         {
             float center = _area.Y + row + 0.5f;
 
             // Edges whose top is above this center join; those whose bottom is at or above it leave.
-            while (nextEdge < _byTop.Length && Top(_byTop[nextEdge]) <= center)
+            while (nextEdge < edges.Length && edges[nextEdge].Top <= center)
             {
-                active[count++] = _byTop[nextEdge++];
+                active[count++] = nextEdge++;
             }
 
             int kept = 0;
             for (int k = 0; k < count; k++)
             {
-                if (Bottom(active[k]) > center)
+                if (edges[active[k]].Bottom > center)
                 {
                     active[kept++] = active[k];
                 }
             }
 
             count = kept;
-            int n = 0;
-            for (int k = 0; k < count; k++)
+            if (count == 2)
             {
-                int e = active[k];
-                float x0 = _edges[4 * e], y0 = _edges[(4 * e) + 1], x1 = _edges[(4 * e) + 2], y1 = _edges[(4 * e) + 3];
-                if (center < MathF.Min(y0, y1))
+                // Two crossings, as every row of a convex shape such as a line has: the pixels between them are inside by either
+                // fill rule (an edge's winding is never zero), so they are the row's one run, exactly as the general walk finds.
+                float x0 = edges[active[0]].CrossingAt(center), x1 = edges[active[1]].CrossingAt(center);
+                if (!float.IsNaN(x0) && !float.IsNaN(x1))
                 {
+                    int left = Column(MathF.Min(x0, x1)), right = Column(MathF.Max(x0, x1));
+                    if (right > left)
+                    {
+                        sink.Fill(_area.Y + row, left, right - left, 255, scratch);
+                    }
+
                     continue;
                 }
-
-                buffer[n].X = (float)(x0 + ((center - (double)y0) * (x1 - (double)x0) / (y1 - (double)y0)));
-                buffer[n].Winding = y1 > y0 ? 1 : -1;
-                n++;
             }
 
-            Span<Crossing> crossings = buffer[..n];
+            for (int k = 0; k < count; k++)
+            {
+                ref readonly Edge e = ref edges[active[k]];
+                buffer[k].X = e.CrossingAt(center);
+                buffer[k].Winding = e.Winding;
+            }
+
+            Span<Crossing> crossings = buffer[..count];
             Sort(crossings);
+            int n = count;
             int winding = 0;
             int runStart = int.MinValue, runEnd = int.MinValue;
+            int b = n > 0 ? Column(crossings[0].X) : 0;
             for (int i = 0; i < n - 1; i++)
             {
+                // Pixels whose centers x + 0.5 lie in [a, b); each crossing's column is found once.
+                int a = b;
+                b = Column(crossings[i + 1].X);
                 winding += crossings[i].Winding;
                 bool inside = _evenOdd ? (winding & 1) != 0 : winding != 0;
                 if (!inside)
@@ -83,9 +97,6 @@ internal sealed class AliasedRasterizer
                     continue;
                 }
 
-                // Pixels whose centers x + 0.5 lie in [a, b).
-                int a = (int)Math.Max(_area.X, Math.Min(_area.Right, Math.Ceiling(crossings[i].X - 0.5)));
-                int b = (int)Math.Max(_area.X, Math.Min(_area.Right, Math.Ceiling(crossings[i + 1].X - 0.5)));
                 if (b <= a)
                 {
                     continue;
@@ -114,6 +125,17 @@ internal sealed class AliasedRasterizer
     }
 
     /// <summary>
+    /// The first pixel column whose center is at or right of <paramref name="x"/>, within the area: whole-number clamps for the
+    /// usual coordinates, the double ones for the rest (NaN among them), with the same results.
+    /// </summary>
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+    private int Column(float x)
+    {
+        double c = Math.Ceiling(x - 0.5);
+        return c is >= -1e9 and <= 1e9 ? Math.Clamp((int)c, _area.X, _area.Right) : (int)Math.Max(_area.X, Math.Min(_area.Right, c));
+    }
+
+    /// <summary>
     /// Sorts crossings by x: by insertion for the few most rows have, else by Span.Sort. Crossings at the same x bound no pixels
     /// between them, so their order among themselves never changes the runs.
     /// </summary>
@@ -139,7 +161,33 @@ internal sealed class AliasedRasterizer
         }
     }
 
-    private float Top(int e) => MathF.Min(_edges[(4 * e) + 1], _edges[(4 * e) + 3]);
+    /// <summary>One edge, with what each row needs ready: its vertical extent, its direction and its run and rise in double.</summary>
+    private readonly struct Edge
+    {
+        private readonly float _x0;
+        private readonly float _y0;
+        private readonly double _dx;
+        private readonly double _dy;
 
-    private float Bottom(int e) => MathF.Max(_edges[(4 * e) + 1], _edges[(4 * e) + 3]);
+        internal Edge(float x0, float y0, float x1, float y1)
+        {
+            _x0 = x0;
+            _y0 = y0;
+            _dx = x1 - (double)x0;
+            _dy = y1 - (double)y0;
+            Top = MathF.Min(y0, y1);
+            Bottom = MathF.Max(y0, y1);
+            Winding = y1 > y0 ? 1 : -1;
+        }
+
+        internal float Top { get; }
+
+        internal float Bottom { get; }
+
+        internal int Winding { get; }
+
+        /// <summary>The x where the edge crosses the line y = <paramref name="center"/>, in double, then to float.</summary>
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+        internal float CrossingAt(float center) => (float)(_x0 + ((center - (double)_y0) * _dx / _dy));
+    }
 }
