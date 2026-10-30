@@ -75,7 +75,9 @@ public sealed class TracingTests : IDisposable
         using Raster<Rgba8> b = await Raster.LoadAsync<Rgba8>(new MemoryStream(png), cancellationToken: Ct);
         using Raster c = Raster.Load(png, options: new ReaderOptions { ConvertColorTo = global::Egami.Colors.ColorProfile.Srgb });
 
-        Assert.Equal(new[] { "Egami.Load", "Egami.Load", "Egami.Load" }, Ours().Select(x => x.OperationName));
+        List<Activity> loads = Ours();
+        Assert.Equal(3, loads.Count);
+        Assert.All(loads, x => Assert.Equal("Egami.Load", x.OperationName));
     }
 
     [Fact]
