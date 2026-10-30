@@ -205,6 +205,8 @@ internal sealed class DdsHeader
             }
         }
 
+        // Every surface is an image LoadAll may return, so the count stays inside SafetyLimits.MaxFrames.
+        input.CheckFrameCount(result.Dimension == DdsDimension.Texture3D ? result.Depth : (long)result.ArraySize * result.Faces);
         int maxMips = 1 + BitOperations.Log2((uint)Math.Max(Math.Max(result.Width, result.Height), result.Depth));
         if (result.MipLevels > maxMips)
         {

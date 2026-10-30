@@ -384,6 +384,9 @@ public class DdsReaderTests
         Assert.Throws<UnsupportedFormatException>(() => Raster.Load(DdsFiles.FourCCFile(4, 4, "ETC2", new byte[8]), Context));
         Assert.Throws<CorruptDataException>(() => Raster.Load(DdsFiles.Dx10(0, 1, 28, []), Context));
         Assert.Throws<LimitExceededException>(() => Raster.Load(DdsFiles.Dx10(1 << 20, 1 << 20, 28, []), Context));
+
+        // Fuzz-found: an array size that overflows when multiplied by six cube faces.
+        Assert.Throws<LimitExceededException>(() => Raster.Probe(DdsFiles.Dx10(4, 4, 103, new byte[64], arraySize: 0x17171717, cube: true), Context));
     }
 
     [Fact]
