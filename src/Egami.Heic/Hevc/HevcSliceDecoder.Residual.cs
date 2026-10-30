@@ -1,3 +1,8 @@
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+
+using Egami.Nal;
+
 namespace Egami.Heic.Hevc;
 
 /// <summary>residual_coding (7.3.8.11) and the reconstruction of one transform block from its coefficient levels.</summary>
@@ -8,12 +13,17 @@ internal sealed partial class HevcSliceDecoder
     /// transforms it into <see cref="_residual"/>, applies the range extensions' modifications and adds it to the prediction.
     /// <paramref name="predMode"/> is the intra prediction mode, or -1 for an inter block.
     /// </summary>
+    [SkipLocalsInit]
     private void Residual(int x0, int y0, int log2, int c, int predMode, int resScale = 0)
     {
         // _coefficients is all zeros here: Reconstruct clears what it used.
         int n = 1 << log2;
+
+        // The engine's state in locals, which the JIT keeps in registers, until the levels are parsed.
+        CabacEngine.State e = _cabac.Save();
+        ref byte contexts = ref MemoryMarshal.GetArrayDataReference(_contexts);
         bool transformSkip = _pps.TransformSkipEnabled && !_cuBypass && log2 <= _pps.Log2MaxTransformSkipSize
-            && _cabac.Decode(ref _contexts[HevcContexts.TransformSkip + (c == 0 ? 0 : 1)]) == 1;
+            && _cabac.Decode(ref e, ref Unsafe.Add(ref contexts, HevcContexts.TransformSkip + (c == 0 ? 0 : 1))) == 1;
 
         // Residual DPCM: implicit for intra blocks, explicit_rdpcm_flag for inter ones (7.3.8.11); and sign data hiding (7.4.9.11).
         bool inter = predMode < 0;
@@ -22,8 +32,8 @@ internal sealed partial class HevcSliceDecoder
         if (inter && _sps.ExplicitRdpcm && (transformSkip || _cuBypass))
         {
             int cc = c == 0 ? 0 : 1;
-            rdpcm = _cabac.Decode(ref _contexts[HevcContexts.ExplicitRdpcm + cc]) == 1;
-            rdpcmVertical = rdpcm && _cabac.Decode(ref _contexts[HevcContexts.ExplicitRdpcmDir + cc]) == 1;
+            rdpcm = _cabac.Decode(ref e, ref Unsafe.Add(ref contexts, HevcContexts.ExplicitRdpcm + cc)) == 1;
+            rdpcmVertical = rdpcm && _cabac.Decode(ref e, ref Unsafe.Add(ref contexts, HevcContexts.ExplicitRdpcmDir + cc)) == 1;
         }
 
         bool signHidingAllowed = _pps.SignDataHiding && !_cuBypass && !rdpcm;
@@ -51,18 +61,18 @@ internal sealed partial class HevcSliceDecoder
 
         int maxPrefix = (log2 << 1) - 1;
         int prefixX = 0;
-        while (prefixX < maxPrefix && _cabac.Decode(ref _contexts[HevcContexts.LastXPrefix + ctxOffset + (prefixX >> ctxShift)]) == 1)
+        while (prefixX < maxPrefix && _cabac.Decode(ref e, ref Unsafe.Add(ref contexts, HevcContexts.LastXPrefix + ctxOffset + (prefixX >> ctxShift))) == 1)
         {
             prefixX++;
         }
 
         int prefixY = 0;
-        while (prefixY < maxPrefix && _cabac.Decode(ref _contexts[HevcContexts.LastYPrefix + ctxOffset + (prefixY >> ctxShift)]) == 1)
+        while (prefixY < maxPrefix && _cabac.Decode(ref e, ref Unsafe.Add(ref contexts, HevcContexts.LastYPrefix + ctxOffset + (prefixY >> ctxShift))) == 1)
         {
             prefixY++;
         }
 
-        int lastX = LastPosition(prefixX), lastY = LastPosition(prefixY);
+        int lastX = LastPosition(ref e, prefixX), lastY = LastPosition(ref e, prefixY);
         if (scanIdx == 2)
         {
             (lastX, lastY) = (lastY, lastX);
@@ -74,54 +84,63 @@ internal sealed partial class HevcSliceDecoder
         byte[] outer = HevcScan.Get(scanIdx, log2Sb);
         int sbWidth = 1 << log2Sb;
 
-        // Find the last sub-block and position in scan order.
-        int lastSubBlock = -1, lastScanPos = -1;
-        for (int i = (1 << (2 * log2Sb)) - 1; i >= 0; i--)
-        {
-            if (outer[2 * i] == lastX >> 2 && outer[(2 * i) + 1] == lastY >> 2)
-            {
-                lastSubBlock = i;
-                break;
-            }
-        }
-
-        for (int p = 15; p >= 0; p--)
-        {
-            if (inner[2 * p] == (lastX & 3) && inner[(2 * p) + 1] == (lastY & 3))
-            {
-                lastScanPos = p;
-                break;
-            }
-        }
-
-        if (lastSubBlock < 0)
+        // The last sub-block and position in scan order.
+        if (lastX >= n || lastY >= n)
         {
             throw HevcErrors.Corrupt("The last significant coefficient is outside its transform block.");
         }
 
-        Span<bool> codedSubBlock = stackalloc bool[64];
-        codedSubBlock.Clear();
+        int lastSubBlock = HevcScan.Inverse(scanIdx, log2Sb)[((lastY >> 2) << log2Sb) + (lastX >> 2)];
+        int lastScanPos = HevcScan.Inverse(scanIdx, 2)[((lastY & 3) << 2) + (lastX & 3)];
+        // With flat scaling (no scaling list applies) the levels are scaled as they are placed (8.6.3, m = 16).
+        long scale = 0;
+        int bdShift = (c == 0 ? _sps.BitDepthLuma : _sps.BitDepthChroma) + log2 - 5;
+        if (!_cuBypass && !(_sps.ScalingListEnabled && (_pps.ScalingList ?? _sps.ScalingList) is not null && !(transformSkip && n > 4)))
+        {
+            scale = HevcTransform.FlatScale(Qp(c));
+        }
+
+        Levels(ref e, lastSubBlock, lastScanPos, inner, outer, sbWidth, log2, c, scanIdx, transformSkip, signHidingAllowed, scale, bdShift, out int maxRow,
+            out int maxColumn);
+        _cabac.Restore(e);
+        Reconstruct(x0, y0, log2, c, predMode, transformSkip, rdpcm, rdpcmVertical, maxRow, maxColumn, resScale, scale != 0);
+    }
+
+    /// <summary>
+    /// The sub-blocks of residual_coding from the last one down: coded_sub_block_flag, sig_coeff_flag, the greater1 and greater2
+    /// flags, signs and coeff_abs_level_remaining, with the levels placed in the coefficients; gives the last row and column with
+    /// a level.
+    /// </summary>
+    [SkipLocalsInit]
+    private void Levels(ref CabacEngine.State state, int lastSubBlock, int lastScanPos, byte[] inner, byte[] outer, int sbWidth, int log2, int c, int scanIdx,
+        bool transformSkip, bool signHidingAllowed, long scale, int bdShift, out int maxRow, out int maxColumn)
+    {
+        CabacEngine.State e = state;
+        ref byte contexts = ref MemoryMarshal.GetArrayDataReference(_contexts);
+        int n = 1 << log2;
+        maxRow = maxColumn = 0;
+        ulong codedSubBlock = 0;
         bool transformSkipContext = _sps.TransformSkipContext && (transformSkip || _cuBypass);
         int sbType = (c == 0 ? 2 : 0) + (transformSkip || _cuBypass ? 1 : 0);
         int greater1State = 1;
         Span<int> positions = stackalloc int[16];
         Span<int> levels = stackalloc int[16];
-        int maxRow = 0, maxColumn = 0;
         for (int i = lastSubBlock; i >= 0; i--)
         {
             int xS = outer[2 * i], yS = outer[(2 * i) + 1];
-            bool right = xS + 1 < sbWidth && codedSubBlock[(yS * sbWidth) + xS + 1];
-            bool below = yS + 1 < sbWidth && codedSubBlock[((yS + 1) * sbWidth) + xS];
-            bool inferSbDcSig = false;
+            bool right = xS + 1 < sbWidth && (codedSubBlock & (1UL << ((yS * sbWidth) + xS + 1))) != 0;
+            bool below = yS + 1 < sbWidth && (codedSubBlock & (1UL << (((yS + 1) * sbWidth) + xS))) != 0;
+            bool inferSbDcSig = false, coded = true;
             if (i < lastSubBlock && i > 0)
             {
                 int ctxInc = Math.Min((right ? 1 : 0) + (below ? 1 : 0), 1) + (c == 0 ? 0 : 2);
-                codedSubBlock[(yS * sbWidth) + xS] = _cabac.Decode(ref _contexts[HevcContexts.CodedSubBlock + ctxInc]) == 1;
+                coded = _cabac.Decode(ref e, ref Unsafe.Add(ref contexts, HevcContexts.CodedSubBlock + ctxInc)) == 1;
                 inferSbDcSig = true;
             }
-            else
+
+            if (coded)
             {
-                codedSubBlock[(yS * sbWidth) + xS] = true;
+                codedSubBlock |= 1UL << ((yS * sbWidth) + xS);
             }
 
             // sig_coeff_flag, in reverse scan order.
@@ -132,28 +151,33 @@ internal sealed partial class HevcSliceDecoder
                 positions[count16++] = lastScanPos;
             }
 
-            if (codedSubBlock[(yS * sbWidth) + xS])
+            if (coded)
             {
                 int table = (((((c == 0 ? 0 : 1) * 4) + log2 - 2) * 3) + scanIdx) * 4;
                 byte[] sigTable = SigContexts[table + (right ? 1 : 0) + (below ? 2 : 0)];
-                for (int p = startPos; p >= 0; p--)
-                {
-                    int xP = inner[2 * p], yP = inner[(2 * p) + 1];
-                    int xC = (xS << 2) + xP, yC = (yS << 2) + yP;
-                    bool significant;
-                    if (p == 0 && inferSbDcSig && count16 == 0)
-                    {
-                        significant = true;
-                    }
-                    else
-                    {
-                        int ctxInc = transformSkipContext ? (c == 0 ? 42 : 43) : sigTable[(yC << log2) + xC];
-                        significant = _cabac.Decode(ref _contexts[HevcContexts.SigCoeff + ctxInc]) == 1;
-                    }
 
-                    if (significant)
+                // Each position's context from the sub-block's corner of the table, the last position separately: inferred
+                // significant when the sub-block is coded but no other position is.
+                ref byte sig = ref Unsafe.Add(ref contexts, HevcContexts.SigCoeff);
+                ref byte corner = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(sigTable), (yS << (2 + log2)) + (xS << 2));
+                ref byte offsets = ref MemoryMarshal.GetArrayDataReference(HevcScan.Offsets(scanIdx, log2));
+                ref int found = ref MemoryMarshal.GetReference(positions);
+                int fixedCtx = c == 0 ? 42 : 43;
+                for (int p = startPos; p > 0; p--)
+                {
+                    int ctxInc = transformSkipContext ? fixedCtx : Unsafe.Add(ref corner, Unsafe.Add(ref offsets, p));
+                    if (_cabac.Decode(ref e, ref Unsafe.Add(ref sig, ctxInc)) != 0)
                     {
-                        positions[count16++] = p;
+                        Unsafe.Add(ref found, count16++) = p;
+                    }
+                }
+
+                if (startPos >= 0)
+                {
+                    if ((inferSbDcSig && count16 == 0)
+                        || _cabac.Decode(ref e, ref Unsafe.Add(ref sig, transformSkipContext ? fixedCtx : corner)) != 0)
+                    {
+                        Unsafe.Add(ref found, count16++) = 0;
                     }
                 }
             }
@@ -176,7 +200,7 @@ internal sealed partial class HevcSliceDecoder
             for (int k = 0; k < Math.Min(count16, 8); k++)
             {
                 int ctxInc = (ctxSet * 4) + greater1State + (c > 0 ? 16 : 0);
-                int bin = _cabac.Decode(ref _contexts[HevcContexts.Greater1 + ctxInc]);
+                int bin = _cabac.Decode(ref e, ref Unsafe.Add(ref contexts, HevcContexts.Greater1 + ctxInc));
                 if (bin == 1)
                 {
                     greater1State = 0;
@@ -199,7 +223,7 @@ internal sealed partial class HevcSliceDecoder
 
             if (firstGreater1 >= 0)
             {
-                int bin = _cabac.Decode(ref _contexts[HevcContexts.Greater2 + ctxSet + (c > 0 ? 4 : 0)]);
+                int bin = _cabac.Decode(ref e, ref Unsafe.Add(ref contexts, HevcContexts.Greater2 + ctxSet + (c > 0 ? 4 : 0)));
                 levels[firstGreater1] = bin + 2;
                 escape |= bin == 1;
             }
@@ -207,7 +231,7 @@ internal sealed partial class HevcSliceDecoder
             // coeff_sign_flag: one bypass bin each, but the hidden sign (7.4.9.11).
             bool signHidden = signHidingAllowed && positions[0] - positions[count16 - 1] > 3;
             int signCount = signHidden ? count16 - 1 : count16;
-            uint signs = _cabac.Bypass(signCount) << (32 - signCount);
+            uint signs = Bypass(ref e, signCount) << (32 - signCount);
 
             // coeff_abs_level_remaining.
             if (escape)
@@ -220,7 +244,7 @@ internal sealed partial class HevcSliceDecoder
                     int baseLevel = k < 8 ? (firstCoeff2 ? 3 : 2) : 1;
                     if (levels[k] == baseLevel)
                     {
-                        int remaining = Remaining(rice);
+                        int remaining = Remaining(ref e, rice);
                         levels[k] = baseLevel + remaining;
                         if (levels[k] > 3 << rice)
                         {
@@ -275,13 +299,18 @@ internal sealed partial class HevcSliceDecoder
                     signs <<= 1;
                 }
 
+                if (scale != 0)
+                {
+                    level = (int)Math.Clamp(((level * scale) + (1L << (bdShift - 1))) >> bdShift, short.MinValue, short.MaxValue);
+                }
+
                 _coefficients[(yC * n) + xC] = level;
                 maxRow = Math.Max(maxRow, yC);
                 maxColumn = Math.Max(maxColumn, xC);
             }
         }
 
-        Reconstruct(x0, y0, log2, c, predMode, transformSkip, rdpcm, rdpcmVertical, maxRow, maxColumn, resScale);
+        state = e;
     }
 
     /// <summary>ctxIdxMap for sig_coeff_flag of 4x4 blocks (9.3.4.2.5); declared before <see cref="SigContexts"/>, built from it.</summary>
@@ -359,7 +388,8 @@ internal sealed partial class HevcSliceDecoder
     }
 
     /// <summary>LastSignificantCoeffX or Y from its prefix and, when the prefix is above 3, its suffix (7.4.9.11).</summary>
-    private int LastPosition(int prefix)
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private int LastPosition(ref CabacEngine.State e, int prefix)
     {
         if (prefix <= 3)
         {
@@ -367,15 +397,16 @@ internal sealed partial class HevcSliceDecoder
         }
 
         int bits = (prefix >> 1) - 1;
-        int suffix = (int)_cabac.Bypass(bits);
+        int suffix = (int)Bypass(ref e, bits);
         return ((1 << bits) * (2 + (prefix & 1))) + suffix;
     }
 
     /// <summary>coeff_abs_level_remaining (9.3.3.11): a Rice prefix of up to four, then Exp-Golomb of order rice + 1.</summary>
-    private int Remaining(int rice)
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private int Remaining(ref CabacEngine.State e, int rice)
     {
         int prefix = 0;
-        while (_cabac.Bypass() == 1)
+        while (_cabac.Bypass(ref e) == 1)
         {
             if (++prefix > 32)
             {
@@ -385,7 +416,7 @@ internal sealed partial class HevcSliceDecoder
 
         if (prefix <= 3)
         {
-            return (prefix << rice) + (int)_cabac.Bypass(rice);
+            return (prefix << rice) + (int)Bypass(ref e, rice);
         }
 
         int bits = prefix - 3 + rice;
@@ -394,12 +425,25 @@ internal sealed partial class HevcSliceDecoder
             throw HevcErrors.Corrupt("coeff_abs_level_remaining is too large.");
         }
 
-        return (int)Math.Min(int.MaxValue, ((((1L << (prefix - 3)) + 3 - 1) << rice) + _cabac.Bypass(bits)));
+        return (int)Math.Min(int.MaxValue, ((((1L << (prefix - 3)) + 3 - 1) << rice) + Bypass(ref e, bits)));
+    }
+
+    /// <summary><paramref name="count"/> bypass bins (up to 32) on a saved engine state, most significant first.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private uint Bypass(ref CabacEngine.State e, int count)
+    {
+        uint bins = 0;
+        for (int i = 0; i < count; i++)
+        {
+            bins = (bins << 1) | (uint)_cabac.Bypass(ref e);
+        }
+
+        return bins;
     }
 
     /// <summary>Scales and transforms the levels (8.6.2), modifies the residual, and adds it to the predicted block.</summary>
     private void Reconstruct(int x0, int y0, int log2, int c, int predMode, bool transformSkip, bool rdpcm, bool rdpcmVertical, int maxRow, int maxColumn,
-        int resScale)
+        int resScale, bool scaled)
     {
         int n = 1 << log2;
         int count = n * n;
@@ -423,7 +467,10 @@ internal sealed partial class HevcSliceDecoder
                 factors = lists.Factors[log2 - 2][c + (predMode < 0 ? 3 : 0)];
             }
 
-            HevcTransform.Scale(_coefficients, log2, Qp(c), bitDepth, factors, maxRow, maxColumn);
+            if (!scaled)
+            {
+                HevcTransform.Scale(_coefficients, log2, Qp(c), bitDepth, factors, maxRow, maxColumn);
+            }
             if (transformSkip)
             {
                 if (rotate)

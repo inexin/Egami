@@ -1,3 +1,5 @@
+using System.Runtime.CompilerServices;
+
 namespace Egami.Heic.Hevc;
 
 /// <summary>
@@ -52,20 +54,23 @@ internal sealed class HevcPicture
         CtbRefs = new HevcSliceRefs?[ctbs];
 
         // MinTbAddrZs (6-10) at 4x4 granularity: the tile scan address of the CTB, then the z-order inside it.
-        int shift = sps.CtbLog2Size - 2;
+        int shift = sps.CtbLog2Size - 2, mask = (1 << shift) - 1;
+        Span<int> spreadX = stackalloc int[16], spreadY = stackalloc int[16];
+        for (int v = 0; v <= mask; v++)
+        {
+            for (int i = 0; i < shift; i++)
+            {
+                spreadX[v] |= ((v >> i) & 1) << (2 * i);
+                spreadY[v] |= ((v >> i) & 1) << ((2 * i) + 1);
+            }
+        }
+
         for (int y = 0; y < Height4; y++)
         {
             for (int x = 0; x < Width4; x++)
             {
                 int ctbRs = ((y >> shift) * sps.WidthInCtbs) + (x >> shift);
-                int inner = 0;
-                for (int i = 0; i < shift; i++)
-                {
-                    inner |= ((x >> i) & 1) << (2 * i);
-                    inner |= ((y >> i) & 1) << ((2 * i) + 1);
-                }
-
-                ZScan[(y * Width4) + x] = (Layout.RsToTs[ctbRs] << (2 * shift)) + inner;
+                ZScan[(y * Width4) + x] = (Layout.RsToTs[ctbRs] << (2 * shift)) + spreadX[x & mask] + spreadY[y & mask];
             }
         }
     }
@@ -178,9 +183,11 @@ internal sealed class HevcPicture
     /// Gets whether the neighbouring luma location (xN, yN) is available to the current one (xC, yC) (6.4.1): inside the
     /// picture, before it in z-scan order, in the same slice and the same tile.
     /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal bool Available(int xC, int yC, int xN, int yN)
     {
-        if (xN < 0 || yN < 0 || xN >= Sps.Width || yN >= Sps.Height)
+        HevcSps sps = Sps;
+        if ((uint)xN >= (uint)sps.Width || (uint)yN >= (uint)sps.Height)
         {
             return false;
         }
@@ -191,9 +198,21 @@ internal sealed class HevcPicture
             return false;
         }
 
+        // Inside one CTB the slice and tile are the same.
+        if (((xN ^ xC) >> sps.CtbLog2Size) == 0 && ((yN ^ yC) >> sps.CtbLog2Size) == 0)
+        {
+            return true;
+        }
+
+        return SameSliceAndTile(xC, yC, xN, yN);
+    }
+
+    /// <summary>Gets whether the CTBs of two luma locations lie in the same slice and the same tile.</summary>
+    private bool SameSliceAndTile(int xC, int yC, int xN, int yN)
+    {
         int ctbN = ((yN >> Sps.CtbLog2Size) * Sps.WidthInCtbs) + (xN >> Sps.CtbLog2Size);
         int ctbC = ((yC >> Sps.CtbLog2Size) * Sps.WidthInCtbs) + (xC >> Sps.CtbLog2Size);
-        return CtbSlice[ctbN] == CtbSlice[ctbC] && Layout.TileId[Layout.RsToTs[ctbN]] == Layout.TileId[Layout.RsToTs[ctbC]];
+        return CtbSlice[ctbN] == CtbSlice[ctbC] && (!Pps.TilesEnabled || Layout.TileId[Layout.RsToTs[ctbN]] == Layout.TileId[Layout.RsToTs[ctbC]]);
     }
 }
 

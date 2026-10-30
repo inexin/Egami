@@ -1,3 +1,5 @@
+using System.Runtime.CompilerServices;
+
 using Egami.Nal;
 
 namespace Egami.Heic.Hevc;
@@ -28,7 +30,7 @@ internal sealed partial class HevcSliceDecoder
     private readonly int[] _coefficients;
     private readonly int[] _residual;
     private readonly int[] _lumaResidual;
-    private readonly int[] _scratch;
+    private readonly short[] _scratch;
     private readonly int _log2MinCuQpDeltaSize;
     private readonly int _log2MinCuChromaQpOffsetSize;
 
@@ -742,6 +744,7 @@ internal sealed partial class HevcSliceDecoder
         }
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private bool Cbf(int trafoDepth) => _cabac.Decode(ref _contexts[HevcContexts.CbfChroma + trafoDepth]) == 1;
 
     private void TransformUnit(int x0, int y0, int xBase, int yBase, int log2TrafoSize, int trafoDepth, int blkIdx, bool cbfLuma,
@@ -924,26 +927,28 @@ internal sealed partial class HevcSliceDecoder
 
     // ---------------------------------------------------------------- per-block maps
 
-    private void FillBlocks<T>(T[] map, int x0, int y0, int width, int height, T value)
+    private void FillBlocks(sbyte[] map, int x0, int y0, int width, int height, sbyte value) =>
+        FillBlocks(Unsafe.As<byte[]>(map), x0, y0, width, height, (byte)value);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void FillBlocks(byte[] map, int x0, int y0, int width, int height, byte value)
     {
         int x4 = x0 >> 2, y4 = y0 >> 2;
         int w4 = Math.Min((x0 + width + 3) >> 2, _picture.Width4) - x4, h4 = Math.Min((y0 + height + 3) >> 2, _picture.Height4) - y4;
-        for (int y = 0; y < h4; y++)
+        for (int y = 0; y < h4 && w4 > 0; y++)
         {
-            map.AsSpan(((y4 + y) * _picture.Width4) + x4, w4).Fill(value);
+            HevcFill.Bytes(ref HevcFill.At(map, ((y4 + y) * _picture.Width4) + x4), w4, value);
         }
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void FillFlags(int x0, int y0, int size, byte flags)
     {
         int x4 = x0 >> 2, y4 = y0 >> 2;
         int w4 = Math.Min((x0 + size + 3) >> 2, _picture.Width4) - x4, h4 = Math.Min((y0 + size + 3) >> 2, _picture.Height4) - y4;
-        for (int y = 0; y < h4; y++)
+        for (int y = 0; y < h4 && w4 > 0; y++)
         {
-            for (int x = 0; x < w4; x++)
-            {
-                _picture.Flags[((y4 + y) * _picture.Width4) + x4 + x] |= flags;
-            }
+            HevcFill.Or(ref HevcFill.At(_picture.Flags, ((y4 + y) * _picture.Width4) + x4), w4, flags);
         }
     }
 
@@ -958,6 +963,7 @@ internal sealed partial class HevcSliceDecoder
     private void MarkPredictionEdges(int x0, int y0, int width, int height) =>
         MarkBlockEdges(x0, y0, width, height, HevcPicture.EdgeLeft, HevcPicture.EdgeTop);
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void MarkBlockEdges(int x0, int y0, int width, int height, int left, int top)
     {
         int x4 = x0 >> 2, y4 = y0 >> 2;

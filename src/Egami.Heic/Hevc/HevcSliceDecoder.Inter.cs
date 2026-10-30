@@ -1,3 +1,5 @@
+using System.Runtime.CompilerServices;
+
 namespace Egami.Heic.Hevc;
 
 /// <summary>
@@ -36,6 +38,7 @@ internal sealed partial class HevcSliceDecoder
     }
 
     /// <summary>cu_skip_flag (ctxInc from the skip flags left and above, 9.3.4.2.2).</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private bool SkipFlag(int x0, int y0)
     {
         int ctxInc = 0;
@@ -336,17 +339,18 @@ internal sealed partial class HevcSliceDecoder
         for (int y = 0; y < h4; y++)
         {
             int at = ((y4 + y) * stride) + x4;
-            _picture.PredFlags.AsSpan(at, w4).Fill((byte)motion.Flags);
-            _picture.RefIdx[0].AsSpan(at, w4).Fill((sbyte)motion.RefIdx0);
-            _picture.RefIdx[1].AsSpan(at, w4).Fill((sbyte)motion.RefIdx1);
-            _picture.Mv[0].AsSpan(at, w4).Fill(motion.Mv0);
-            _picture.Mv[1].AsSpan(at, w4).Fill(motion.Mv1);
-            _picture.RefId[0].AsSpan(at, w4).Fill(id0);
-            _picture.RefId[1].AsSpan(at, w4).Fill(id1);
+            HevcFill.Bytes(ref HevcFill.At(_picture.PredFlags, at), w4, (byte)motion.Flags);
+            HevcFill.Bytes(ref HevcFill.At(Unsafe.As<byte[]>(_picture.RefIdx[0]), at), w4, (byte)motion.RefIdx0);
+            HevcFill.Bytes(ref HevcFill.At(Unsafe.As<byte[]>(_picture.RefIdx[1]), at), w4, (byte)motion.RefIdx1);
+            HevcFill.Ints(ref HevcFill.At(_picture.Mv[0], at), w4, motion.Mv0);
+            HevcFill.Ints(ref HevcFill.At(_picture.Mv[1], at), w4, motion.Mv1);
+            HevcFill.Ints(ref HevcFill.At(_picture.RefId[0], at), w4, id0);
+            HevcFill.Ints(ref HevcFill.At(_picture.RefId[1], at), w4, id1);
         }
     }
 
     /// <summary>The motion of the block covering (x, y), which must lie in the picture.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private Candidate MotionAt(int x, int y)
     {
         int b = ((y >> 2) * _picture.Width4) + (x >> 2);
@@ -364,6 +368,7 @@ internal sealed partial class HevcSliceDecoder
     /// The availability of a neighbouring prediction block (6.4.2): z-scan availability, not the later partition of an NxN
     /// coding unit's second one, and not intra.
     /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private bool PbAvailable(int xCb, int yCb, int nCbS, int xPb, int yPb, int nPbW, int nPbH, int partIdx, int xN, int yN)
     {
         bool sameCb = xCb <= xN && yCb <= yN && xCb + nCbS > xN && yCb + nCbS > yN;
@@ -407,6 +412,10 @@ internal sealed partial class HevcSliceDecoder
         if (availableA1)
         {
             list[count++] = a1;
+            if (count > mergeIdx)
+            {
+                return Chosen(list[mergeIdx], origW, origH);
+            }
         }
 
         int xB1 = xPb + nPbW - 1, yB1 = yPb - 1;
@@ -418,6 +427,10 @@ internal sealed partial class HevcSliceDecoder
         if (availableB1 && !(availableA1 && a1.SameMotion(b1)))
         {
             list[count++] = b1;
+            if (count > mergeIdx)
+            {
+                return Chosen(list[mergeIdx], origW, origH);
+            }
         }
 
         int xB0 = xPb + nPbW, yB0 = yPb - 1;
@@ -428,6 +441,10 @@ internal sealed partial class HevcSliceDecoder
             if (!(availableB1 && b1.SameMotion(b0)))
             {
                 list[count++] = b0;
+                if (count > mergeIdx)
+                {
+                    return Chosen(list[mergeIdx], origW, origH);
+                }
             }
         }
 
@@ -439,6 +456,10 @@ internal sealed partial class HevcSliceDecoder
             if (!(availableA1 && a1.SameMotion(a0)))
             {
                 list[count++] = a0;
+                if (count > mergeIdx)
+                {
+                    return Chosen(list[mergeIdx], origW, origH);
+                }
             }
         }
 
@@ -451,6 +472,10 @@ internal sealed partial class HevcSliceDecoder
                 if (!(availableA1 && a1.SameMotion(b2)) && !(availableB1 && b1.SameMotion(b2)))
                 {
                     list[count++] = b2;
+                    if (count > mergeIdx)
+                    {
+                        return Chosen(list[mergeIdx], origW, origH);
+                    }
                 }
             }
         }
@@ -474,6 +499,10 @@ internal sealed partial class HevcSliceDecoder
             if (col.Flags != 0)
             {
                 list[count++] = col;
+                if (count > mergeIdx)
+                {
+                    return Chosen(list[mergeIdx], origW, origH);
+                }
             }
         }
 
@@ -502,10 +531,17 @@ internal sealed partial class HevcSliceDecoder
             list[count++] = new Candidate { Flags = _slice.SliceType == HevcSliceHeader.P ? 1 : 3, RefIdx0 = r, RefIdx1 = _slice.SliceType == HevcSliceHeader.P ? -1 : r };
         }
 
-        Candidate chosen = list[mergeIdx];
+        return Chosen(list[mergeIdx], origW, origH);
+    }
+
+    /// <summary>
+    /// The merge candidate chosen, with 8x4 and 4x8 blocks predicting from list 0 only (8-??). The list stops growing once it has
+    /// the candidate merge_idx names: later candidates only append to it.
+    /// </summary>
+    private static Candidate Chosen(Candidate chosen, int origW, int origH)
+    {
         if (chosen.Flags == 3 && origW + origH == 12)
         {
-            // 8x4 and 4x8 blocks predict from list 0 only (8-??).
             chosen.Flags = 1;
             chosen.RefIdx1 = -1;
             chosen.Mv1 = 0;
@@ -549,6 +585,12 @@ internal sealed partial class HevcSliceDecoder
             {
                 availableA = ScaledReference(MotionAt(k == 0 ? xA0 : xA1, k == 0 ? yA0 : yA1), list, target, targetLong, out mvA);
             }
+        }
+
+        // A from A0 or A1 is the first candidate whatever B is (the A neighbours being available, B does not stand in for A).
+        if (availableA && mvpFlag == 0)
+        {
+            return mvA;
         }
 
         // B0, B1 and B2.

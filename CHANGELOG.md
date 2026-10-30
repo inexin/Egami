@@ -25,6 +25,13 @@ changes that break code come only in a new major version.
   with a still image loads as its sequence, as an all-intra one already did, and no longer gives a `Heic.SequenceFirstFrame`
   warning.
 
+Video Build Plan task 31: HEVC decode speed. No API changes.
+
+- HEVC decodes 3.5 times faster at 1080p and 5 times faster at 4K 10-bit on one thread: inter prediction, weighted
+  prediction, SAO, the deblocking filter, the inverse transforms and intra prediction run with AVX2 or SSE2 (scalar code
+  elsewhere, with the same output), and the merge and AMVP candidate lists stop at the candidate the stream picks. In
+  instructions a frame it now takes 1.99 times FFmpeg's at 1080p and 1.73 times at 4K 10-bit, from 13.9 and 19.3 times.
+
 ## Egami, unreleased
 
 - 8-bit blends through `Compositor` (the Porter–Duff operators and the integer blend modes, with or without coverage) run two
