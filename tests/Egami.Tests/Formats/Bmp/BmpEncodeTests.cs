@@ -1,6 +1,7 @@
 using System.Buffers.Binary;
 using System.Runtime.InteropServices;
 
+using Egami.Formats;
 using Egami.Formats.Bmp;
 using Egami.Metadata;
 using Egami.Pixels;
@@ -69,6 +70,65 @@ public class BmpEncodeTests
         Assert.Equal(bits switch { BmpPixelFormat.Indexed1 => 1, BmpPixelFormat.Indexed2 => 2, BmpPixelFormat.Indexed4 => 4, _ => 8 }, ((BmpDetails)raster.Metadata.FormatDetails!).BitsPerPixel);
         using Raster<Rgb8> back = Raster.Load<Rgb8>(data);
         Assert.Equal(Bytes(source), Bytes(back));
+    }
+
+    [Theory]
+    [InlineData(BmpPixelFormat.Indexed4, 16, 2u)]
+    [InlineData(BmpPixelFormat.Indexed8, 256, 1u)]
+    public void RunLengthRoundTripsRunsAndNoise(BmpPixelFormat bits, int colors, uint compression)
+    {
+        Random random = new(colors);
+        Rgb8[] palette = [.. Enumerable.Range(0, colors).Select(i => new Rgb8((byte)i, (byte)(255 - i), (byte)(i * 7)))];
+        foreach (int width in (int[])[1, 2, 3, 4, 5, 7, 254, 255, 256, 257, 600])
+        {
+            using Raster<Rgb8> source = Raster.Create<Rgb8>(width, 6);
+            for (int y = 0; y < source.Height; y++)
+            {
+                Span<Rgb8> row = source.Row(y);
+                int x = 0;
+                while (x < width)
+                {
+                    // Runs of every length, alternating pairs and noise.
+                    int kind = random.Next(3);
+                    int length = Math.Min(width - x, random.Next(1, 300));
+                    Rgb8 a = palette[random.Next(palette.Length)], b = palette[random.Next(palette.Length)];
+                    for (int i = 0; i < length; i++, x++)
+                    {
+                        row[x] = kind switch { 0 => a, 1 => (i & 1) == 0 ? a : b, _ => palette[random.Next(palette.Length)] };
+                    }
+                }
+            }
+
+            byte[] data = Save(source, new BmpWriterOptions { PixelFormat = bits, RunLength = true });
+            Assert.Equal(compression, BinaryPrimitives.ReadUInt32LittleEndian(data.AsSpan(30)));
+            Assert.Equal((uint)data.Length - BinaryPrimitives.ReadUInt32LittleEndian(data.AsSpan(10)), BinaryPrimitives.ReadUInt32LittleEndian(data.AsSpan(34)));
+            using Raster raster = Raster.Load(data);
+            Assert.Empty(raster.Metadata.Warnings);
+            using Raster<Rgb8> back = Raster.Load<Rgb8>(data, options: new ReaderOptions { Recovery = RecoveryMode.Strict });
+            Assert.Equal(Bytes(source), Bytes(back));
+        }
+    }
+
+    [Fact]
+    public void RunLengthShrinksFlatImages()
+    {
+        using Raster<Rgb8> source = Raster.Create<Rgb8>(200, 100, new Rgb8(10, 20, 30));
+        source.Row(50)[100] = new Rgb8(200, 0, 0);
+        byte[] plain = Save(source, new BmpWriterOptions { PixelFormat = BmpPixelFormat.Indexed8 });
+        byte[] runs = Save(source, new BmpWriterOptions { PixelFormat = BmpPixelFormat.Indexed8, RunLength = true });
+        Assert.True(runs.Length < plain.Length / 20, $"{runs.Length} bytes against {plain.Length}");
+        using Raster<Rgb8> back = Raster.Load<Rgb8>(runs);
+        Assert.Equal(Bytes(source), Bytes(back));
+    }
+
+    [Theory]
+    [InlineData(BmpPixelFormat.Auto)]
+    [InlineData(BmpPixelFormat.Indexed1)]
+    [InlineData(BmpPixelFormat.Bgr24)]
+    public void RunLengthNeedsA4Or8BitPalette(BmpPixelFormat layout)
+    {
+        using Raster<Rgb8> source = Raster.Create<Rgb8>(4, 4);
+        Assert.Throws<ArgumentException>(() => Save(source, new BmpWriterOptions { PixelFormat = layout, RunLength = true }));
     }
 
     [Fact]

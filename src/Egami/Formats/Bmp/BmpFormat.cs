@@ -54,6 +54,9 @@ public enum BmpCompression
 
     /// <summary>A whole PNG file.</summary>
     Png,
+
+    /// <summary>CCITT modified Huffman 1-bit rows (OS/2 2.x), read but not written.</summary>
+    Huffman1D,
 }
 
 /// <summary>Details only BMP has, kept in <see cref="RasterMetadata.FormatDetails"/>.</summary>
@@ -207,4 +210,11 @@ public sealed class BmpWriterOptions : WriterOptions
     /// </summary>
     /// <remarks>Defaults to <see cref="PaletteOptions.Default"/>: up to 256 colors, Floyd–Steinberg dithering.</remarks>
     public PaletteOptions Palette { get; init; } = PaletteOptions.Default;
+
+    /// <summary>
+    /// Gets whether <see cref="BmpPixelFormat.Indexed4"/> and <see cref="BmpPixelFormat.Indexed8"/> pixels are run-length encoded
+    /// (RLE4 and RLE8), which shrinks images with flat areas. Other layouts cannot be: saving one with this set throws. Defaults to
+    /// <see langword="false"/>.
+    /// </summary>
+    public bool RunLength { get; init; }
 }

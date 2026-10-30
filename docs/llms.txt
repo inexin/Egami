@@ -33,13 +33,14 @@ settings, safety limits and registered formats a call uses.
 - [ANI](https://inexin.github.io/Egami/v1/articles/formats/ani.html): Egami reads and writes Windows animated cursors (.ani), written from Microsoft's description of the RIFF `ACON` form.
 - [AVIF](https://inexin.github.io/Egami/v1/articles/formats/avif.html): Egami reads and writes AVIF still images, written from the AV1 and HEIF specifications with no native code.
 - [AV1 video frames](https://inexin.github.io/Egami/v1/articles/formats/av1.html): `Av1StreamDecoder` decodes AV1 video a temporal unit at a time and `Av1StreamEncoder` encodes it; both work on frames, and Egami.Video uses them for its containers.
-- [BMP](https://inexin.github.io/Egami/v1/articles/formats/bmp.html): Egami reads Windows bitmaps with core, info, V2 to V5 and OS/2 2.x headers at 1 to 32 bits, RLE4, RLE8 and RLE24, bit fields, embedded PNG and JPEG and V5 ICC profiles.
+- [BMP](https://inexin.github.io/Egami/v1/articles/formats/bmp.html): Egami reads Windows bitmaps with core, info, V2 to V5 and OS/2 2.x headers at 1 to 32 bits, RLE4, RLE8 and RLE24, OS/2 Huffman 1D, bit fields, embedded PNG and JPEG and V5 ICC profiles.
 - [CCITT fax](https://inexin.github.io/Egami/v1/articles/formats/ccitt.html): Egami decodes raw CCITT fax data.
 - [DDS](https://inexin.github.io/Egami/v1/articles/formats/dds.html): DDS (DirectDraw Surface, .dds) is the texture container of Direct3D and most game engines.
 - [Extended formats](https://inexin.github.io/Egami/v1/articles/formats/extended.html): Egami.Formats.Extended reads and writes image formats that most apps never meet but some still need.
 - [Farbfeld](https://inexin.github.io/Egami/v1/articles/formats/farbfeld.html): Farbfeld is suckless.org's lossless format.
 - [GIF](https://inexin.github.io/Egami/v1/articles/formats/gif.html): Egami reads GIF 87a and 89a files, with every disposal method, interlaced images, transparency, the loop count, comments, XMP and ICC profiles, and writes GIF 89a.
 - [HEIC](https://inexin.github.io/Egami/v1/articles/formats/heic.html): HEIC is the format iPhones and most Android phones save photos in.
+- [ICNS](https://inexin.github.io/Egami/v1/articles/formats/icns.html): Egami reads and writes Apple icon families (.icns), written from Apple's description of the format.
 - [ICO and CUR](https://inexin.github.io/Egami/v1/articles/formats/ico.html): Egami reads and writes Windows icons (.ico) and cursors (.cur), written from Microsoft's documentation of the icon directory.
 - [ISO BMFF boxes](https://inexin.github.io/Egami/v1/articles/formats/iso-boxes.html): MP4, QuickTime, HEIF, HEIC and AVIF files are made of boxes (ISO/IEC 14496-12).
 - [JBIG2](https://inexin.github.io/Egami/v1/articles/formats/jbig2.html): Egami reads JBIG2 (ITU-T T.88 | ISO/IEC 14492), the bi-level format of scanned documents and of the JBIG2Decode images in PDF, written from the 2018 edition of T.88 and the PDF specification.

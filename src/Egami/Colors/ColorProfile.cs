@@ -225,6 +225,20 @@ public sealed class ColorProfile
     public byte[] ToIcc() => Icc is IccData icc ? icc.ToBytes().ToArray() : IccWriter.Write(this);
 
     /// <summary>
+    /// Returns a version 2 ICC profile for this encoding, for readers that do not read version 4 ones (older image editors,
+    /// viewers and print drivers): the bytes it was read from when they are a version 2 profile, else a small version 2.4
+    /// matrix-shaper (or gray curve) profile written for it, with curv curves (a gamma or a 1024-entry table) and its own white as
+    /// the media white point. PQ and HLG get the rolled-off tables <see cref="ToIcc"/> writes, without the cicp tag version 2
+    /// lacks.
+    /// </summary>
+    /// <returns>A new array holding the profile.</returns>
+    /// <exception cref="InvalidOperationException">The encoding is not RGB or gray with one curve, which a version 2 matrix-shaper cannot hold.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/ColorManagement.cs" region="to-icc-v2"/>
+    /// </example>
+    public byte[] ToIccV2() => Icc is IccData { Version.Major: 2 } icc ? icc.ToBytes().ToArray() : IccWriter.WriteVersion2(this);
+
+    /// <summary>
     /// Returns the RGB encoding that H.273 code points name, or <see langword="null"/> when Egami does not implement the primaries
     /// or the transfer they name, or when the matrix code is not RGB (0).
     /// </summary>

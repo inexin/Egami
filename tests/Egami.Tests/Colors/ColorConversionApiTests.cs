@@ -46,6 +46,51 @@ public class ColorConversionApiTests
         }
     }
 
+    [Theory]
+    [MemberData(nameof(BuiltIns))]
+    public void Version2ProfilesReadBackAsTheBuiltIns(string name)
+    {
+        ColorProfile builtIn = CompiledTransformTests.Profile(name);
+        byte[] icc = builtIn.ToIccV2();
+        IccData parsed = IccData.Parse(icc);
+        Assert.False(parsed.IsDamaged, string.Join(" ", parsed.Warnings));
+        Assert.Equal(new Version(2, 4, 0), parsed.Version);
+        Assert.Equal(name, parsed.Description);
+        Assert.Equal("No copyright, use freely", parsed.Copyright);
+        Assert.False(parsed.TryGetTag("chad", out _));
+        Assert.All(parsed.Tags.Where(t => t.Signature.EndsWith("TRC", StringComparison.Ordinal)), t => Assert.Equal("curv", t.Type));
+        ColorProfile back = ColorProfile.FromIcc(parsed);
+        Assert.Equal(icc, builtIn.ToIccV2());
+        Assert.Equal(icc, back.ToIccV2());    // a version 2 profile read back gives its bytes back
+        if (!builtIn.IsHdr)
+        {
+            Assert.True(back.IsEquivalentTo(builtIn), $"{back.Primaries} {back.White} {back.Transfer}");
+            ColorPipeline a = ColorPipeline.Create(builtIn, ColorProfile.Srgb, RenderingIntent.RelativeColorimetric, false);
+            ColorPipeline b = ColorPipeline.Create(back, ColorProfile.Srgb, RenderingIntent.RelativeColorimetric, false);
+            double[] x = new double[3], y = new double[3];
+            for (int i = 0; i < 125; i++)
+            {
+                double[] input = builtIn.Model == ColorModel.Gray ? [i / 124.0] : [i / 25 / 4.0, i / 5 % 5 / 4.0, i % 5 / 4.0];
+                a.Evaluate(input, x);
+                b.Evaluate(input, y);
+                for (int c = 0; c < 3; c++)
+                {
+                    Assert.True(Math.Abs(x[c] - y[c]) < 2e-3, $"[{string.Join(", ", input)}] {c}: {x[c]} against {y[c]}");
+                }
+            }
+        }
+    }
+
+    [Fact]
+    public void Version2NeedsAMatrixShaper()
+    {
+        // FOGRA39L is a version 2 profile already; a version 4 lookup-table profile has nothing a version 2 matrix-shaper holds.
+        Assert.Equal(ColorProfile.Fogra39.ToIcc(), ColorProfile.Fogra39.ToIccV2());
+        Assert.Throws<InvalidOperationException>(() => ColorProfile.FromIcc(IccReferences.Bytes("synthetic/rgb-mab-xyz-v4.icc")).ToIccV2());
+        byte[] v4 = ColorProfile.DisplayP3.ToIcc();
+        Assert.Equal(2, IccData.Parse(ColorProfile.FromIcc(v4).ToIccV2()).Version.Major);
+    }
+
     [Fact]
     public void SpansOfEveryLayoutAgree()
     {

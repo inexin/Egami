@@ -63,10 +63,22 @@ DDS textures, stage B (writing).
 
 ## Egami, unreleased
 
+Small format gaps from the on-demand list. All additive.
+
+- ICNS: Apple icon families read and write, registered in `EgamiContext.Default` next to ICO (`IcnsFormat`,
+  `IcnsReaderOptions`, `IcnsWriterOptions`, `IcnsDetails`, `IcnsEntry`, `IcnsEntryEncoding`). Every entry kind reads: PNG,
+  JPEG 2000, run-length encoded ARGB, run-length encoded RGB with its 8-bit mask, and the old 1, 4 and 8-bit icons on the
+  Mac OS palettes with their 1-bit mask. Load gives the best entry and LoadAll every entry; Save writes 8-bit RGBA PNG
+  entries, one a raster or `IcnsWriterOptions.MacSizes` (16 to 1024) resized from one, with a table of contents.
+- BMP: `BmpWriterOptions.RunLength` writes `Indexed4` and `Indexed8` as RLE4 and RLE8, which ImageMagick and Pillow read
+  with the same pixels. OS/2 Huffman 1D files, which threw `UnsupportedFormatException`, now load, with
+  `BmpCompression.Huffman1D` in their details.
+- `ColorProfile.ToIccV2` writes a version 2.4 ICC profile for software that reads only version 2: `curv` curves, text tags
+  and the encoding's own white point. Little CMS converts through it as through the version 4 profile, within 1 in 255.
+
 - `IMultiImageReader` and `IMultiImageWriter` are public, so a format plugin's files can hold several images that LoadAll
   returns and SaveAll writes, as TIFF pages and DDS surfaces are; `FormatDetails.PixelsChanged` is overridable, so a plugin's
   details can drop what held only for the pixels as loaded. Additive.
-
 - Progress on long saves. All additive. `SaveProgress`, and overloads of `Save`, `SaveAsync`, `SaveAll`, `Transcode` and
   `TranscodeAsync` that take an `IProgress<SaveProgress>` and a `CancellationToken`, shaped like Egami.Video's
   `MediaProgress`: a report as the save starts, at most one every 250 ms, and a final one. Row writers (PNG, JPEG, BMP, TGA,
@@ -98,6 +110,22 @@ DDS textures, stage B (writing).
   directly.
 - Image paints convert their texels row by row straight into the shader, with no converted raster in between and no
   clearing: Egami.SystemDrawing's scaled `DrawImage` of a 640 × 480 photo takes 3.3 ms instead of 3.8 ms (GDI+: 3.5 ms).
+- Fills without antialiasing take a shorter path on rows with exactly two edge crossings, as every row of a line, rectangle or
+  other convex shape has: the one run between them, with the crossings and pixel columns computed as before, so the pixels are
+  the same. Egami.SystemDrawing's 100 one-pixel `DrawLine` calls take about 30 % less time.
+- An `ImagePaint` filled straight onto a raster canvas, mapped without rotation or skew and with no mip level, reads its image's
+  rows as the shading reaches them instead of converting the whole image to float texels first, when the image is not the
+  canvas's own pixels; the pixels are the same. Each shading thread keeps the few rows it read last. Egami.SystemDrawing's
+  scaled `DrawImage` of a 640 × 480 photo allocates 6 KB instead of 4.9 MB, and drawing a 64 × 64 part of it takes 0.7 ms
+  instead of 2.6 ms.
+
+## Egami.Fonts, unreleased
+
+- Shaping text for the first time takes about 30 % less: each glyph's GDEF properties are looked up in the class tables once
+  per face and kept (the tables are searched for every glyph before, and again after each substitution), code points 0 to 255
+  map through a 256-entry table read once from the character map, and `Font.Shape` fills the run's arrays in place instead of
+  growing lists and copying them. The glyphs and positions are the same. Egami.SystemDrawing's `MeasureString` of a line it has
+  not measured before takes about 8.3 µs instead of 12 µs on a slow cloud machine.
 
 ## Egami.SystemDrawing, unreleased
 

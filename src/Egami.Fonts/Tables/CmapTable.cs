@@ -15,7 +15,11 @@ internal sealed class CmapTable
     private readonly CmapSubtable? _primary;
     private readonly VariationSubtable? _variations;
 
+    private const int LatinCount = 256;
+
     private readonly Func<int, int>? _symbolRemap;
+
+    private int[]? _latin;
 
     private CmapTable(CmapSubtable? primary, CmapKind kind, VariationSubtable? variations, int platform, int encoding, Func<int, int>? symbolRemap = null)
     {
@@ -57,8 +61,29 @@ internal sealed class CmapTable
                 int b = MacRoman.FromCodePoint(codePoint);
                 return b < 0 ? 0 : _primary.Map(b);
             default:
-                return _primary.Map(codePoint);
+                return (uint)codePoint < LatinCount ? Latin()[codePoint] : _primary.Map(codePoint);
         }
+    }
+
+    /// <summary>
+    /// The glyphs of code points 0 to 255, read from the subtable once: most text is mostly these, and the subtables search for
+    /// each code.
+    /// </summary>
+    private int[] Latin()
+    {
+        int[]? latin = Volatile.Read(ref _latin);
+        if (latin is null)
+        {
+            latin = new int[LatinCount];
+            for (int c = 0; c < LatinCount; c++)
+            {
+                latin[c] = _primary!.Map(c);
+            }
+
+            Volatile.Write(ref _latin, latin);
+        }
+
+        return latin;
     }
 
     /// <summary>

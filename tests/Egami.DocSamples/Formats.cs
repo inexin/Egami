@@ -58,6 +58,9 @@ public class Formats
 
         // A 16-color palette, built from the image and dithered.
         image.Save("duck-16.bmp", new BmpWriterOptions { PixelFormat = BmpPixelFormat.Indexed4 });
+
+        // The same palette, run-length encoded (RLE4): smaller where the image has flat areas.
+        image.Save("duck-16-rle.bmp", new BmpWriterOptions { PixelFormat = BmpPixelFormat.Indexed4, RunLength = true });
         #endregion
 
         Assert.Equal(4, ((BmpDetails)Raster.Load("duck-16.bmp").Metadata.FormatDetails!).BitsPerPixel);
