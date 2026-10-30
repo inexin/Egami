@@ -22950,6 +22950,18 @@ references:
   fullName.vb: Egami.EgamiException.New
   nameWithType: EgamiException.EgamiException
   nameWithType.vb: EgamiException.New
+- uid: Egami.EgamiTracing
+  name: EgamiTracing
+  href: api/Egami.EgamiTracing.html
+  commentId: T:Egami.EgamiTracing
+  fullName: Egami.EgamiTracing
+  nameWithType: EgamiTracing
+- uid: Egami.EgamiTracing.SourceName
+  name: SourceName
+  href: api/Egami.EgamiTracing.html#Egami_EgamiTracing_SourceName
+  commentId: F:Egami.EgamiTracing.SourceName
+  fullName: Egami.EgamiTracing.SourceName
+  nameWithType: EgamiTracing.SourceName
 - uid: Egami.Fonts
   name: Egami.Fonts
   href: api/Egami.Fonts.html

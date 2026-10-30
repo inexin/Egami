@@ -3485,6 +3485,20 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.EgamiTracing.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.EgamiTracing.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.EgamiTracing",
+      "Summary": "<p sourcefile=\"api/Egami.EgamiTracing.yml\" sourcestartlinenumber=\"1\">Names the <xref href=\"System.Diagnostics.ActivitySource\" data-throw-if-not-resolved=\"false\"></xref> through which Egami times its loads, probes, saves and transcodes,\nfor OpenTelemetry or any other <xref href=\"System.Diagnostics.ActivityListener\" data-throw-if-not-resolved=\"false\"></xref>. Nothing is started, timed or allocated while\nnobody listens to it.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.Fonts.BitmapColorGlyph.yml",
       "output": {
         ".html": {

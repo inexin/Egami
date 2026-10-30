@@ -232,6 +232,62 @@ EgamiContext context = EgamiContext.Default with
 </code></pre>
 <p>Memory leaks are reported by <code>PixelMemoryUsage.LeakDetected</code> instead, because they belong to a memory source rather than a call and
 are found on the finalizer thread after the call has ended; see <a href="guides/memory-and-threading.html#finding-leaks">Memory and threading</a>.</p>
+<h2 id="tracing">Tracing</h2>
+<p>Egami times its loads, probes, saves and transcodes as <code>System.Diagnostics.Activity</code> spans on the activity source named by
+<code>EgamiTracing.SourceName</code> (&quot;Egami&quot;), so they show up in OpenTelemetry traces and in any <code>ActivityListener</code>. While nobody listens,
+nothing is started or allocated.</p>
+<pre><code class="lang-csharp">// With OpenTelemetry, one line at startup: builder.Services.AddOpenTelemetry().WithTracing(t =&gt; t.AddSource(EgamiTracing.SourceName)).
+// Without it, any ActivityListener hears the same activities. With neither, Egami starts none.
+using ActivityListener listener = new()
+{
+    ShouldListenTo = source =&gt; source.Name == EgamiTracing.SourceName,
+    Sample = (ref ActivityCreationOptions&lt;ActivityContext&gt; _) =&gt; ActivitySamplingResult.AllDataAndRecorded,
+    ActivityStopped = activity =&gt; spans.Enqueue($&quot;{activity.OperationName} {activity.GetTagItem(&quot;egami.format&quot;)} {activity.Duration.TotalMilliseconds:F1} ms&quot;),
+};
+ActivitySource.AddActivityListener(listener);
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Started by</th>
+<th>Activity</th>
+<th>Tags</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Load</code>, <code>LoadAsync</code>, <code>LoadInto</code>, <code>LoadAll</code> and <code>LoadAllAsync</code></td>
+<td><code>Egami.Load</code></td>
+<td><code>egami.format</code>, <code>egami.width</code>, <code>egami.height</code>, <code>egami.frames</code>; <code>egami.images</code> for <code>LoadAll</code></td>
+</tr>
+<tr>
+<td><code>Probe</code> and <code>ProbeAsync</code></td>
+<td><code>Egami.Probe</code></td>
+<td><code>egami.format</code>, <code>egami.width</code>, <code>egami.height</code>, <code>egami.frames</code> when the header says</td>
+</tr>
+<tr>
+<td><code>Save</code>, <code>SaveAsync</code>, <code>SaveAll</code> and <code>SaveAllAsync</code></td>
+<td><code>Egami.Save</code></td>
+<td><code>egami.format</code>, <code>egami.width</code>, <code>egami.height</code>, <code>egami.frames</code>; <code>egami.images</code> for <code>SaveAll</code></td>
+</tr>
+<tr>
+<td><code>Transcode</code> and <code>TranscodeAsync</code></td>
+<td><code>Egami.Transcode</code></td>
+<td>The input's <code>egami.format</code>, <code>egami.width</code>, <code>egami.height</code>, <code>egami.frames</code> when the header says</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>Bytes.</strong> <code>egami.bytes</code> is the bytes read (loads, probes, transcodes) or written (saves), when the stream can seek.</li>
+<li><strong>Errors.</strong> A call that throws sets the activity's status to <code>Error</code>, its <code>error.type</code> tag to the exception's type and adds the
+exception as an event, as OpenTelemetry's conventions ask.</li>
+<li><strong>One span per call.</strong> A call that runs another of the same kind (a <code>Load</code> of a path loading its stream, a <code>LoadAll</code> loading
+each page, a <code>ConvertColorTo</code> load) is one activity. A transcode that has to load the whole image (for <code>Trim</code>, say) holds an
+<code>Egami.Load</code> and an <code>Egami.Save</code> inside its <code>Egami.Transcode</code>.</li>
+<li><strong>Not traced.</strong> <code>RasterDecoder</code> and <code>RasterEncoder</code> sessions, which the caller drives row by row, and operations (<code>Apply</code>,
+<code>Derive</code>) start no activity; time them in your own span.</li>
+</ul>
+<p>The activity and tag names are never renamed once shipped, like the diagnostic ids.</p>
 <h2 id="catalog">Catalog</h2>
 <!-- tests/Egami.Tests/DiagnosticsCatalogTests.cs checks this table against the ids in src/Egami, one to one. -->
 <table>

@@ -119,6 +119,13 @@ Contexts are immutable and safe to share. Change one with a <code>with</code> ex
 </dd>
     </dl>
     <dl class="jumplist">
+      <dt><a class="xref" href="Egami.EgamiTracing.html">EgamiTracing</a></dt>
+      <dd><p>Names the <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.diagnostics.activitysource">ActivitySource</a> through which Egami times its loads, probes, saves and transcodes,
+for OpenTelemetry or any other <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.diagnostics.activitylistener">ActivityListener</a>. Nothing is started, timed or allocated while
+nobody listens to it.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
       <dt><a class="xref" href="Egami.FrameList-1.html">FrameList&lt;TPixel&gt;</a></dt>
       <dd><p>The frames of a raster, all the same size and pixel type. There is always at least one. Frames added from anywhere are copied,
 so a frame belongs to one raster only.</p>
