@@ -94,6 +94,12 @@ internal sealed partial class GdiPlayer
             dashes = dashes.Length % 2 != 0 ? [.. dashes, .. dashes] : null;
         }
 
+        // A pattern shorter than a device pixel cannot show its dashes, and would cut a line into thousands of them: draw it solid.
+        if (dashes is not null && dashes.Sum() < 1)
+        {
+            dashes = null;
+        }
+
         stroke = cosmetic
             ? new Egami.Drawing.Stroke(0) { Dash = dashes is null ? null : new DashPattern(dashes) }
             : new Egami.Drawing.Stroke(width)

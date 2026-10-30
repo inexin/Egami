@@ -3,6 +3,12 @@
 All notable changes to Egami are listed here. Egami follows [Semantic Versioning](https://semver.org): from 1.0, public API
 changes that break code come only in a new major version.
 
+## Egami.Metafiles, unreleased
+
+- A GDI pen whose dash pattern is shorter than a device pixel (zero-length user-style entries, say) draws solid instead of
+  cutting each line into tens of thousands of dashes it could not show: fuzz-found 600-byte EMF files rendered four times at
+  128 pixels took 0.9 s and now take 0.09 s. Pens with longer patterns draw as before.
+
 ## Egami.Heic, unreleased
 
 2.9.10: HEVC inter frames (H.264 and HEVC Build Plan tasks 19 to 25). All additive.
