@@ -288,3 +288,7 @@ heic/, ../reference/heic/
 ocr/
   hOCR and ALTO files written by hand for the OCR tests, in the style of what Tesseract and ABBYY FineReader write; the words
   are made up. Public domain.
+
+fuzz/dds-seeds/
+  Small DDS files for the dds fuzz target, one of each header and pixel format family, written byte by byte with random pixel
+  data by a script for this repository. Public domain (CC0).

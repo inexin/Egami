@@ -32,6 +32,8 @@
       href: formats/bmp.md
     - name: CCITT fax
       href: formats/ccitt.md
+    - name: DDS
+      href: formats/dds.md
     - name: Extended formats
       href: formats/extended.md
     - name: Farbfeld

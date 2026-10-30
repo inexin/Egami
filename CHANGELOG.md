@@ -38,7 +38,25 @@ Video Build Plan task 31: HEVC decode speed. No API changes.
   elsewhere, with the same output), and the merge and AMVP candidate lists stop at the candidate the stream picks. In
   instructions a frame it now takes 1.99 times FFmpeg's at 1080p and 1.73 times at 4K 10-bit, from 13.9 and 19.3 times.
 
+## Egami.Formats.Extended, unreleased
+
+DDS textures, stage A (reading). All additive; it ships with the rest of DDS in one release.
+
+- `DdsFormat`, registered by `WithExtendedFormats()` and `WithDds()`, reads DDS textures: the legacy header (DXT1 to DXT5,
+  ATI1 and ATI2, bit masks, luminance, P8 palettes, YUY2 and UYVY) and the DX10 header's DXGI formats, every one DirectXTex
+  reads: BC1 to BC7 with BC6H signed and unsigned, UNORM, SNORM, sRGB, float, UINT and SINT formats, the packed floats and
+  packed 565, 5551 and 4444 formats, depth and stencil, and packed and planar video. Each loads as its nearest pixel type,
+  BC4, BC5, BC6H and BC7 bit for bit as the Direct3D specification defines them. Premultiplied files are un-premultiplied and
+  `_SRGB` formats tagged sRGB.
+- Mips, cube faces, array slices and volume depth slices: Load reads mip 0 of the first, LoadAll every surface (and with
+  `DdsReaderOptions.IncludeMipLevels` every mip), `DdsReaderOptions.Surface` and `MipLevel` pick one, and
+  `ReaderOptions.MinimumSize` picks the smallest mip that covers it. `DdsReaderOptions.ReconstructNormalZ` rebuilds blue for
+  two-channel normal maps. `DdsDetails` keeps the DXGI format, mips, dimension, cube flag and alpha mode.
+
 ## Egami, unreleased
+
+- `IMultiImageReader` is public, so a format plugin's files can hold several images that LoadAll returns, as TIFF pages and
+  DDS surfaces are. Additive.
 
 - Progress on long saves. All additive. `SaveProgress`, and overloads of `Save`, `SaveAsync`, `SaveAll`, `Transcode` and
   `TranscodeAsync` that take an `IProgress<SaveProgress>` and a `CancellationToken`, shaped like Egami.Video's

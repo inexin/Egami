@@ -18,7 +18,7 @@ public class ExtendedFormatsTests
         EgamiContext core = new();
         EgamiContext context = core.WithExtendedFormats();
         Assert.Equal(core.Formats, context.Formats.Take(core.Formats.Count));
-        Assert.Equal(["PCX", "SGI", "Sun raster", "XBM", "XPM", "WBMP", "Farbfeld"], context.Formats.Skip(core.Formats.Count).Select(f => f.Name));
+        Assert.Equal(["PCX", "SGI", "Sun raster", "XBM", "XPM", "WBMP", "Farbfeld", "DDS"], context.Formats.Skip(core.Formats.Count).Select(f => f.Name));
 
         // Registering again replaces in place.
         Assert.Equal(context.Formats.Count, context.WithExtendedFormats().WithPcx().Formats.Count);

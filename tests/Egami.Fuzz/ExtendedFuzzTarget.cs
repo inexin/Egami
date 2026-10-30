@@ -1,11 +1,12 @@
 using Egami.Formats;
 using Egami.Formats.Extended;
+using Egami.Formats.Extended.Dds;
 using Egami.Pixels;
 
 namespace Egami.Fuzz;
 
 /// <summary>
-/// The Egami.Formats.Extended fuzz targets (pcx, sgi, sun, xbm, xpm, wbmp and farbfeld): each loads its format every way, Probe,
+/// The Egami.Formats.Extended fuzz targets (pcx, sgi, sun, xbm, xpm, wbmp, farbfeld and dds): each loads its format every way, Probe,
 /// Load leniently and strictly, as Rgba8 from a stream that cannot seek and row by row through RasterDecoder, which must agree
 /// with Load; a file that loads is saved back in its format and must load again at its size. Only EgamiExceptions may escape.
 /// </summary>
@@ -45,7 +46,13 @@ internal static class ExtendedFuzzTarget
                     y += rows;
                 }
 
-                if (recovery == RecoveryMode.Lenient)
+                if (format == DdsFormat.Info)
+                {
+                    using RasterList all = Raster.LoadAll(data, format, context, new DdsReaderOptions { Recovery = recovery, IncludeMipLevels = true, ReconstructNormalZ = true });
+                    using Raster small = Raster.Load(data, format, context, options with { MinimumSize = new Size(1, 1) });
+                }
+
+                if (recovery == RecoveryMode.Lenient && format.Writer is not null)
                 {
                     using MemoryStream output = new();
                     raster.Save(output, format);
