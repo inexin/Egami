@@ -90,7 +90,7 @@
 
 
   <h1 id="Egami_Formats_Bmp_BmpPixelFormat" data-uid="Egami.Formats.Bmp.BmpPixelFormat" class="text-break">
-Enum BmpPixelFormat  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Bmp/BmpFormat.cs/#L159"><i class="bi bi-code-slash"></i></a>
+Enum BmpPixelFormat  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Bmp/BmpFormat.cs/#L162"><i class="bi bi-code-slash"></i></a>
   </h1>
 
   <div class="facts text-secondary">
@@ -164,14 +164,17 @@ Enum BmpPixelFormat  <a class="header-action link-secondary" title="View source"
 image.Save("duck.bmp");
 
 // A 16-color palette, built from the image and dithered.
-image.Save("duck-16.bmp", new BmpWriterOptions { PixelFormat = BmpPixelFormat.Indexed4 });</code></pre>
+image.Save("duck-16.bmp", new BmpWriterOptions { PixelFormat = BmpPixelFormat.Indexed4 });
+
+// The same palette, run-length encoded (RLE4): smaller where the image has flat areas.
+image.Save("duck-16-rle.bmp", new BmpWriterOptions { PixelFormat = BmpPixelFormat.Indexed4, RunLength = true });</code></pre>
 
 
 
 </article>
 
         <div class="contribution d-print-none">
-          <a href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Bmp/BmpFormat.cs/#L159" class="edit-link">Edit this page</a>
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Bmp/BmpFormat.cs/#L162" class="edit-link">Edit this page</a>
         </div>
 
 

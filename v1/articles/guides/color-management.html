@@ -192,6 +192,16 @@ parametric curves, or 4.4 with a cicp tag for PQ and HLG. Little CMS, Pillow and
 <pre><code class="lang-csharp">// Any RGB or gray encoding as a small ICC profile, for files and other software.
 byte[] p3 = ColorProfile.DisplayP3.ToIcc();
 bool same = ColorProfile.FromIcc(p3).IsEquivalentTo(ColorProfile.DisplayP3);
+</code></pre>
+<p><code>ColorProfile.ToIccV2</code> writes a version 2.4 profile instead, for software that reads only version 2 (older image editors,
+viewers and print drivers): the same matrix-shaper with the conventions of version 2, <code>curv</code> curves only (a gamma, or a
+1024-entry table for sRGB and other formula curves), text tags in place of <code>mluc</code>, and the encoding's own white as the media
+white point, with no <code>chad</code>. A profile read from version 2 bytes gives them back. Little CMS converts through it as through
+the version 4 profile, within 1 in 255. PQ and HLG get the rolled-off curve tables without the cicp tag, which version 2
+lacks, so prefer <code>ToIcc</code> for HDR.</p>
+<pre><code class="lang-csharp">// A version 2 profile, for software that reads only those: older image editors, viewers and print drivers.
+byte[] p3 = ColorProfile.DisplayP3.ToIccV2();
+Version version = IccData.Parse(p3).Version;
 </code></pre><h2 id="writing-color-tags">Writing color tags</h2>
 <p>Writers take color tags from the generic metadata, so they survive a change of format: PNG writes cICP from <code>CodePoints</code>, cHRM
 from <code>Primaries</code> when there is no ICC profile, and mDCV and cLLI from <code>Hdr</code>; QOI marks a raster linear when its profile is linear.

@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>ICNS | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="ICNS | Egami ">
+      
+      
+      <link rel="icon" href="../../images/favicon.ico">
+      <link rel="stylesheet" href="../../public/docfx.min.css">
+      <link rel="stylesheet" href="../../public/main.css">
+      <meta name="docfx:navrel" content="../../toc.html">
+      <meta name="docfx:tocrel" content="../toc.html">
+      
+      <meta name="docfx:rel" content="../../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/blob/main/docs/articles/formats/icns.md/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../../index.html">
+            <img id="logo" class="svg" src="../../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="icns">ICNS</h1>
+
+<p>Egami reads and writes Apple icon families (.icns), written from Apple's description of the format. <code>IcnsFormat.Info</code> is
+registered in <code>EgamiContext.Default</code>. An icon family holds several images, its entries, each in an element named by a
+four-character type: a whole PNG or JPEG 2000 file (<code>ic07</code> to <code>ic14</code>, <code>icp4</code> to <code>icp6</code>), run-length encoded ARGB (<code>ic04</code>,
+<code>ic05</code>), run-length encoded RGB with an 8-bit mask (<code>is32</code>, <code>il32</code>, <code>ih32</code>, <code>it32</code> with <code>s8mk</code>, <code>l8mk</code>, <code>h8mk</code>, <code>t8mk</code>), or
+the old 1, 4 and 8-bit icons with a 1-bit mask (<code>ICN#</code>, <code>icl4</code>, <code>icl8</code> and their small and huge sizes). Egami's own PNG and
+JPEG 2000 readers decode those entries, so an entry loads exactly as the same file would. PNG entries and RGB entries with
+their masks decode as Pillow decodes them, and Pillow reads the icons Egami writes with the same pixels.</p>
+<h2 id="reading-icons">Reading icons</h2>
+<p><code>Raster.Load</code> returns the best entry: the largest, then the deepest, then the first. <code>Raster.LoadAll</code> returns every entry at
+its own size, in the file's order, and <code>Raster.Probe</code> counts them from the elements without decoding a pixel:
+<code>RasterInfo.ImageCount</code>, and <code>IcnsDetails.Entries</code> on a loaded raster, with each entry's type, size, depth and
+<code>IcnsEntryEncoding</code>. Masks, the table of contents and other elements are not entries.</p>
+<pre><code class="lang-csharp">// Load gives the best entry: the largest, then the deepest. LoadAll gives every entry at its own size.
+using Raster best = Raster.Load(&quot;app.icns&quot;);
+using RasterList entries = Raster.LoadAll(&quot;app.icns&quot;);
+
+// MinimumSize picks the smallest entry at least that big, so a 64 × 64 thumbnail decodes only the 64 × 64 entry.
+using Raster small = Raster.Load(&quot;app.icns&quot;, options: new ReaderOptions { MinimumSize = new Size(64, 64) });
+</code></pre>
+<p><code>ReaderOptions.MinimumSize</code> picks the smallest entry at least that big before the <a href="../guides/memory-and-threading.html#streaming">reduction rule</a>
+applies to it. <code>IcnsReaderOptions.Entry</code> names an entry by its index in <code>IcnsDetails.Entries</code>.</p>
+<pre><code class="lang-csharp">// Pick an entry by its place among the file's image entries.
+using Raster second = Raster.Load(&quot;app.icns&quot;, options: new IcnsReaderOptions { Entry = 1 });
+</code></pre><pre><code class="lang-csharp">// Probe reads only the elements: how many images an icon family holds, without decoding a pixel.
+RasterInfo info = Raster.Probe(&quot;app.icns&quot;);
+Console.WriteLine($&quot;{info.ImageCount} entries; Load gives {info.Width}×{info.Height}&quot;);
+using Raster best = Raster.Load(&quot;app.icns&quot;);
+foreach (IcnsEntry entry in ((IcnsDetails)best.Metadata.FormatDetails!).Entries)
+{
+    Console.WriteLine($&quot;{entry.Type}: {entry.Width}×{entry.Height}, {entry.BitsPerPixel} bits, {entry.Encoding}&quot;);
+}
+</code></pre>
+<p>Every entry loads as <code>Rgba8</code>. An RGB entry without its 8-bit mask takes alpha from the 1-bit mask of its size, or is opaque.
+The 4 and 8-bit icons use the Mac OS system palettes, and 1 bits are black. A PNG entry's own size wins over its type's. An
+element whose length runs past the end of the file ends the list there with the <code>Icns.ElementCut</code> warning, and an entry that
+does not decode is skipped for the next best with <code>Icns.EntryDamaged</code>; in strict mode both throw.</p>
+<h2 id="writing-icons">Writing icons</h2>
+<p>Saving one raster writes one PNG entry at the largest of the entry sizes (16, 32, 64, 128, 256, 512 and 1024 square) that it
+fills; a raster of another size is fitted to it with the <code>Save.IcnsFitted</code> warning. <code>IcnsWriterOptions.Sizes</code> writes a set
+instead, each size resized from the largest raster given with <code>Filter</code>, or taken as drawn from a raster of exactly that size;
+<code>MacSizes</code> holds all seven, which macOS needs at 1× and 2× for every point size. A raster that is not square is fitted inside
+each square and centred on transparency.</p>
+<pre><code class="lang-csharp">// A macOS app icon: 16 to 1024, each resized from one raster. A raster that is not square is centred on transparency.
+logo.Save(&quot;app.icns&quot;, new IcnsWriterOptions { Sizes = IcnsWriterOptions.MacSizes, Filter = Egami.Operations.ResampleFilter.Lanczos3 });
+
+// Hand-drawn small sizes: each raster goes in the entry size it fills, centred on transparency.
+using Raster&lt;Rgba8&gt; drawn16 = logo.Derive(ops =&gt; ops.Fit(16, 16));
+using Raster&lt;Rgba8&gt; large = logo.Derive(ops =&gt; ops.Fit(512, 512));
+Raster.SaveAll([large, drawn16], &quot;drawn.icns&quot;);
+</code></pre>
+<p>Each size is written once, under the type of its pixel size (<code>icp4</code>, <code>icp5</code>, <code>icp6</code>, <code>ic07</code>, <code>ic08</code>, <code>ic09</code>, <code>ic10</code>), after a
+<code>TOC </code> element that lists them, as macOS writes it. Entries are 8-bit RGBA PNG, sorted smallest first; two entries of one
+size throw <code>ArgumentException</code>, and the same rasters and options give the same bytes. An ICC profile goes into the PNG
+entries, while EXIF, XMP and IPTC are not written and a warning says so.</p>
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/docs/articles/formats/icns.md/#L1" class="edit-link">Edit this page</a>
+        </div>
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

@@ -145,8 +145,8 @@ through <a href="vp8.html"><code>Vp8StreamDecoder</code></a> and <a href="av1.ht
 </tr>
 <tr>
 <td><a href="bmp.html">BMP</a></td>
-<td>Core, info, V2 to V5 and OS/2 2.x headers; 1 to 32 bits; RLE4, RLE8, RLE24; bit fields; embedded PNG and JPEG; V5 ICC</td>
-<td>24-bit, 32-bit with alpha, 1, 2, 4 or 8-bit palettes; resolution and ICC</td>
+<td>Core, info, V2 to V5 and OS/2 2.x headers; 1 to 32 bits; RLE4, RLE8, RLE24, OS/2 Huffman 1D; bit fields; embedded PNG and JPEG; V5 ICC</td>
+<td>24-bit, 32-bit with alpha, 1, 2, 4 or 8-bit palettes, RLE4 and RLE8; resolution and ICC</td>
 <td><code>Bgr8</code>, or <code>Bgra8</code> with alpha</td>
 <td>Egami</td>
 </tr>
@@ -196,6 +196,13 @@ through <a href="vp8.html"><code>Vp8StreamDecoder</code></a> and <a href="av1.ht
 <td><a href="ico.html">ICO, CUR</a></td>
 <td>Every entry: PNG, and BMP at 1 to 32 bits with the AND mask; the best entry, or one by <code>MinimumSize</code> or index; cursor hotspots</td>
 <td>One entry a raster, or sets resized to favicon or Windows sizes; PNG at 256 and 32-bit BMP below; hotspots</td>
+<td><code>Rgba8</code></td>
+<td>Egami</td>
+</tr>
+<tr>
+<td><a href="icns.html">ICNS</a></td>
+<td>Every entry: PNG, JPEG 2000, RLE ARGB, RLE RGB with its 8-bit mask, and the old 1, 4 and 8-bit icons with their 1-bit mask; the best entry, or one by <code>MinimumSize</code> or index</td>
+<td>One PNG entry a raster, or sets resized to the macOS sizes 16 to 1024</td>
 <td><code>Rgba8</code></td>
 <td>Egami</td>
 </tr>
@@ -322,7 +329,7 @@ switch (image)
 }
 </code></pre><h2 id="detection">Detection</h2>
 <p>Loading never trusts the file extension: the format comes from the first bytes, in the order PNG, JPEG, GIF, WebP, BMP, QOI, PNM,
-TIFF, JBIG2, JPEG 2000, ICO, CUR, ANI, PSD, Radiance, OpenEXR, JPEG XL (FF 0A or its signature box), AVIF (an ftyp box with the avif or avis brand), HEIC (an ftyp box with a HEVC brand such as heic or heix), then TGA, then the formats a plugin package registers, such as Egami.Formats.Extended's. TGA has no signature, so it is matched only when its whole 18-byte header is consistent. No file of another format in
+TIFF, JBIG2, JPEG 2000, ICO, CUR, ANI, ICNS, PSD, Radiance, OpenEXR, JPEG XL (FF 0A or its signature box), AVIF (an ftyp box with the avif or avis brand), HEIC (an ftyp box with a HEVC brand such as heic or heix), then TGA, then the formats a plugin package registers, such as Egami.Formats.Extended's. TGA has no signature, so it is matched only when its whole 18-byte header is consistent. No file of another format in
 Egami's test corpora is taken for TGA, and neither is any of a million random headers. When you know the format, register only
 that one:</p>
 <pre><code class="lang-csharp">// TGA has no signature, so it is detected last. When you know a file is TGA, register only that format.

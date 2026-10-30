@@ -6915,6 +6915,104 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Icns.IcnsDetails.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Icns.IcnsDetails.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Icns.IcnsDetails",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Icns.IcnsDetails.yml\" sourcestartlinenumber=\"1\">Details only ICNS has, kept in <xref href=\"Egami.Metadata.RasterMetadata.FormatDetails\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Icns.IcnsEntry.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Icns.IcnsEntry.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Icns.IcnsEntry",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Icns.IcnsEntry.yml\" sourcestartlinenumber=\"1\">One image entry of an icon family.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Icns.IcnsEntryEncoding.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Icns.IcnsEntryEncoding.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Icns.IcnsEntryEncoding",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Icns.IcnsEntryEncoding.yml\" sourcestartlinenumber=\"1\">How an ICNS entry's pixels are stored.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Icns.IcnsFormat.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Icns.IcnsFormat.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Icns.IcnsFormat",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Icns.IcnsFormat.yml\" sourcestartlinenumber=\"1\">Apple's icon format, registered in <xref href=\"Egami.EgamiContext.Default\" data-throw-if-not-resolved=\"false\"></xref>. An icon family holds several images (entries) of\ndifferent sizes: PNG or JPEG 2000 files, run-length encoded ARGB or RGB with an 8-bit mask, or the old 1, 4 and 8-bit icons\nwith a 1-bit mask. Load returns the best entry, LoadAll every entry, and Save writes one PNG entry per raster or a set resized\nto <xref href=\"Egami.Formats.Icns.IcnsWriterOptions.Sizes\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Icns.IcnsReaderOptions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Icns.IcnsReaderOptions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Icns.IcnsReaderOptions",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Icns.IcnsReaderOptions.yml\" sourcestartlinenumber=\"1\">Options for reading ICNS.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Icns.IcnsWriterOptions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Icns.IcnsWriterOptions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Icns.IcnsWriterOptions",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Icns.IcnsWriterOptions.yml\" sourcestartlinenumber=\"1\">Options for writing ICNS. Each raster becomes one PNG entry, or one entry per size in <xref href=\"Egami.Formats.Icns.IcnsWriterOptions.Sizes\" data-throw-if-not-resolved=\"false\"></xref>; entries are 8-bit\nRGBA, sorted smallest first, and a table of contents comes first as macOS writes it. EXIF, XMP and IPTC are not written.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Icns.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Icns.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Icns",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.Formats.Ico.CurFormat.yml",
       "output": {
         ".html": {
@@ -18398,6 +18496,16 @@
       "output": {
         ".html": {
           "relative_path": "articles/formats/heic.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "articles/formats/icns.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/formats/icns.html"
         }
       },
       "version": ""

@@ -680,6 +680,21 @@ each page, a <code>ConvertColorTo</code> load) is one activity. A transcode that
 <td>The embedded ICC profile is damaged or of a kind Egami cannot use; colors are read as if it were absent</td>
 </tr>
 <tr>
+<td><code>Icns.ElementCut</code></td>
+<td>Warning</td>
+<td>An ICNS element's length runs past the end of the file; it and the elements after it were skipped</td>
+</tr>
+<tr>
+<td><code>Icns.EntryDamaged</code></td>
+<td>Warning</td>
+<td>The ICNS entry Load picked could not be decoded; the next best was loaded</td>
+</tr>
+<tr>
+<td><code>Icns.Truncated</code></td>
+<td>Warning</td>
+<td>An ICNS file is shorter than its header says</td>
+</tr>
+<tr>
 <td><code>Ico.DirectoryMismatch</code></td>
 <td>Warning</td>
 <td>An icon's directory gives a size its entry's own header contradicts; the header's was used</td>
@@ -1243,6 +1258,11 @@ each page, a <code>ConvertColorTo</code> load) is one activity. A transcode that
 <td><code>Save.HdrClipped</code></td>
 <td>Warning</td>
 <td>An HDR raster with light above reference white was saved to a format that holds 0 to 1; the highlights were clipped and ToneMap would have kept them</td>
+</tr>
+<tr>
+<td><code>Save.IcnsFitted</code></td>
+<td>Warning</td>
+<td>A raster that is not one of ICNS's entry sizes was fitted to the largest one it fills</td>
 </tr>
 <tr>
 <td><code>Save.IcoFitted</code></td>

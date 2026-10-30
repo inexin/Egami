@@ -87,15 +87,18 @@
         <article data-uid="">
 <h1 id="bmp">BMP</h1>
 
-<p>Egami reads Windows bitmaps with core, info, V2 to V5 and OS/2 2.x headers at 1 to 32 bits, RLE4, RLE8 and RLE24, bit fields,
-embedded PNG and JPEG and V5 ICC profiles. It writes 24-bit, 32-bit with alpha, 16-bit 5-5-5, 5-6-5 and 1-5-5-5, and 1, 2, 4 or 8-bit
-palettes, with resolution and ICC.</p>
+<p>Egami reads Windows bitmaps with core, info, V2 to V5 and OS/2 2.x headers at 1 to 32 bits, RLE4, RLE8 and RLE24, OS/2
+Huffman 1D, bit fields, embedded PNG and JPEG and V5 ICC profiles. It writes 24-bit, 32-bit with alpha, 16-bit 5-5-5, 5-6-5 and
+1-5-5-5, and 1, 2, 4 or 8-bit palettes, the 4 and 8-bit ones optionally run-length encoded, with resolution and ICC.</p>
 <p>A BMP loads as <code>Bgr8</code>, or <code>Bgra8</code> with alpha.</p>
 <pre><code class="lang-csharp">// Auto (the default): 24-bit when every pixel is opaque, 32-bit with alpha otherwise.
 image.Save(&quot;duck.bmp&quot;);
 
 // A 16-color palette, built from the image and dithered.
 image.Save(&quot;duck-16.bmp&quot;, new BmpWriterOptions { PixelFormat = BmpPixelFormat.Indexed4 });
+
+// The same palette, run-length encoded (RLE4): smaller where the image has flat areas.
+image.Save(&quot;duck-16-rle.bmp&quot;, new BmpWriterOptions { PixelFormat = BmpPixelFormat.Indexed4, RunLength = true });
 </code></pre>
 <p>A plain 32-bit BMP's fourth byte is used as alpha unless it is 0 in every pixel, in which case the image loads opaque; an alpha
 mask in the header is always used. Pixels that an RLE delta skips are black. <code>BmpPixelFormat.Indexed2</code> writes Windows CE 2-bit
@@ -103,6 +106,15 @@ files, which many desktop readers cannot open, so <code>Auto</code> never picks 
 bit fields; <code>Bgr565</code> and <code>Bgra5551</code> write a V4 header with bit-field masks. Loading a 16-bit file as <code>Bgr555</code>, <code>Bgr565</code> or
 <code>Bgra5551</code> copies its rows when the masks match the type. Resolution is written in pixels per meter, and an ICC
 profile switches the header to V5 with the profile embedded.</p>
+<p><code>BmpWriterOptions.RunLength</code> writes <code>Indexed4</code> and <code>Indexed8</code> as RLE4 and RLE8: runs of one index (and for RLE4 two that take
+turns) as a count and the index, the rest as absolute runs, an end of line after each row and an end of bitmap after the last.
+Images with flat areas shrink a great deal; noisy ones can grow a little. Absolute RLE4 runs are kept to an even length, since
+Pillow drops the last index of an odd one; ImageMagick and Pillow read the files with the same pixels. Other layouts cannot be
+run-length encoded, and asking for it throws <code>ArgumentException</code>.</p>
+<p>OS/2 Huffman 1D files (compression 3 under an OS/2 2.x header, 1 bit a pixel) hold CCITT T.4 one-dimensional rows, which
+Egami's CCITT decoder reads with or without EOL codes before the rows, or byte-aligned as TIFF's modified Huffman. White runs
+are palette entry 0 and black runs entry 1; the <code>BmpDetails.Compression</code> of such a file is <code>Huffman1D</code>. Rows the data does not
+reach are left black with the <code>Bmp.RowsMissing</code> warning, or throw in strict mode.</p>
 
 </article>
 
