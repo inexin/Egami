@@ -76,4 +76,26 @@ public class Psd
 
         Assert.Equal(9, ((PsdDetails)image.Metadata.FormatDetails!).Layers.Count);
     }
+
+    [Fact]
+    public void ReadLayers()
+    {
+        using SampleFiles files = new();
+
+        #region psd-read-layers
+        // ReadLayers gives every layer with its pixels, bottom to top; a group comes after its contents.
+        using PsdDocument document = PsdImage.ReadLayers("layered.psd");
+        foreach (PsdLayerImage layer in document.Layers)
+        {
+            if (layer.Pixels is Raster pixels)
+            {
+                // Each layer at its own size, in the natural type with alpha (Rgba8 here); X and Y place it on the canvas.
+                pixels.Save($"layer-{layer.Index}.png");
+                Console.WriteLine($"{layer.Info.Name}: {pixels.Width}×{pixels.Height} at ({layer.X}, {layer.Y}), in group {layer.ParentIndex}");
+            }
+        }
+        #endregion
+
+        Assert.True(File.Exists("layer-0.png"));
+    }
 }

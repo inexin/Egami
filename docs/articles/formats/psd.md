@@ -54,6 +54,19 @@ layer or one end of a group, with its nesting level. Their pixels are not loaded
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Psd.cs#psd-layers)]
 
+Each record also has `FillOpacity` and a `PsdLayerType`: pixels, text, shape, smart object, fill, adjustment or group.
+
+## Reading layers
+
+`PsdImage.ReadLayers` reads every layer with its pixels into a `PsdDocument`: its `Layers` are `PsdLayerImage`s, bottom to top,
+a group after its contents, each naming its group in `ParentIndex`. A layer's `Pixels` are at its own size, placed on the
+canvas at `X` and `Y`, in the type Load would use, always with straight alpha: `Rgba8`, `Rgba16` or `RgbaF32` for RGB and Lab
+(converted to sRGB), `GrayAlpha8`, `GrayAlpha16` or `RgbaF32` for gray. CMYK layers come as an `InkRaster` in `Ink`.
+`ReadLayers<TPixel>` converts every layer to one type. A layer's pixel mask is a `PsdMask`: a gray raster of its own size and
+place, the value outside it, and whether it is disabled. The channels are read in file order, so the stream need not seek.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Psd.cs#psd-read-layers)]
+
 ## Streaming and speed
 
 Rows come from the channel planes as they are asked for: raw rows at computed offsets and PackBits rows through their byte counts,

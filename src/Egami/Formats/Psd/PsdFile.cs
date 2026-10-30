@@ -19,6 +19,7 @@ internal sealed class PsdFile
     private const int TransparentIndexId = 1047;
     private const int AlphaNamesId = 1006;
     private const int UnicodeAlphaNamesId = 1045;
+    private const int IccProfileId = 1039;
 
     public int Version { get; private set; }
 
@@ -62,6 +63,8 @@ internal sealed class PsdFile
     /// <summary>Gets whether the file is read for its layers: every record is kept, with the blocks the flattener reads.</summary>
     private bool _layered;
 
+    private Action<PsdFile, EgamiInput, long>? _channels;
+
     /// <summary>Gets the channels that make the color: 1 for gray, bitmap, indexed, duotone and multichannel, 3 for RGB and Lab, 4 for CMYK.</summary>
     public int ColorChannels => Mode switch
     {
@@ -77,9 +80,13 @@ internal sealed class PsdFile
     /// <param name="input">The data, at the start of the file.</param>
     /// <param name="options">The caller's options: metadata and layer records are kept only when it reads metadata.</param>
     /// <param name="layers">Whether to keep every layer record and where its channels lie, whatever the options say.</param>
-    public static PsdFile Read(EgamiInput input, ReaderOptions options, bool layers = false)
+    /// <param name="channels">
+    /// Called with the input at the start of the layers' channel data, after the records, to read it in file order; it gets the
+    /// file and where the layer info ends. <see langword="null"/> skips the data.
+    /// </param>
+    public static PsdFile Read(EgamiInput input, ReaderOptions options, bool layers = false, Action<PsdFile, EgamiInput, long>? channels = null)
     {
-        PsdFile file = new() { _layered = layers };
+        PsdFile file = new() { _layered = layers || channels is not null, _channels = channels };
         file.ReadHeader(input);
         long colorLength = input.ReadUInt32BigEndian();
         Remaining(input, colorLength, "color mode data");
@@ -214,7 +221,7 @@ internal sealed class PsdFile
                 break;
             }
 
-            bool needed = id is VersionInfoId or TransparentIndexId or AlphaNamesId or UnicodeAlphaNamesId;
+            bool needed = id is VersionInfoId or TransparentIndexId or AlphaNamesId or UnicodeAlphaNamesId || (_layered && id == IccProfileId);
             if (needed || options.ReadMetadata)
             {
                 kept += size;
@@ -420,6 +427,8 @@ internal sealed class PsdFile
         {
             Warnings.Add("Psd.LayerDataTruncated", "The layers' channel data runs past the end of the layer info; the missing pixels are 0.", end);
         }
+
+        _channels?.Invoke(this, input, end);
     }
 
     private PsdLayerRecord ReadRecord(EgamiInput input, long end, ref int level)

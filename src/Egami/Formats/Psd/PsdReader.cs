@@ -9,6 +9,26 @@ using Egami.Streaming;
 
 namespace Egami.Formats.Psd;
 
+/// <summary>Photoshop's Lab to sRGB: Lab relative to D50, adapted to sRGB's D65 by Bradford, as for TIFF's CIELab.</summary>
+internal static class PsdLab
+{
+    private static readonly Vector3d White = Chromaticity.D50.ToXyz();
+    private static readonly Matrix3d ToRgb = ColorValueMath.XyzToRgb * Matrix3d.Bradford(White, Chromaticity.D65.ToXyz());
+
+    /// <summary>Returns the encoded sRGB of L* (0 to 100), a* and b*, each clamped to 0..1.</summary>
+    public static (double R, double G, double B) ToSrgb(double l, double a, double b)
+    {
+        Vector3d linear = ToRgb * Cie.LabToXyz(new Vector3d(l, a, b), White);
+        return (Encode(linear.X), Encode(linear.Y), Encode(linear.Z));
+
+        static double Encode(double v) => ColorValueMath.Encode(Math.Clamp(v, 0, 1));
+    }
+
+    public static byte Unorm8(double v) => (byte)Math.Round(Math.Clamp(v, 0, 1) * 255, MidpointRounding.AwayFromZero);
+
+    public static ushort Unorm16(double v) => (ushort)Math.Round(Math.Clamp(v, 0, 1) * 65535, MidpointRounding.AwayFromZero);
+}
+
 /// <summary>
 /// Reads PSD and PSB, written from Adobe's Photoshop File Format Specification: the flattened image stored after the layers, a
 /// row at a time, each row gathered from the channel planes. Loads every color mode in the pixel type that fits it (see
@@ -195,7 +215,7 @@ internal sealed class PsdReader : IFormatReader, IRowSourceReader
     }
 
     /// <summary>Maps the image resources to metadata and the file to its details, and notes what the load leaves out.</summary>
-    private static RasterMetadata Metadata(EgamiInput input, PsdFile file, ReaderOptions options)
+    internal static RasterMetadata Metadata(EgamiInput input, PsdFile file, ReaderOptions options)
     {
         RasterMetadata metadata = new() { FormatName = PsdFormat.Info.Name };
         PsdDetails details = new()
@@ -296,8 +316,6 @@ internal sealed class PsdReader : IFormatReader, IRowSourceReader
         private readonly byte[][] _channelRows;
         private readonly TNatural[] _natural;
         private readonly byte[] _palette = [];
-        private readonly Vector3d _labWhite;
-        private readonly Matrix3d _labToRgb;
         private int _row = -1;
         private bool _started;
 
@@ -319,13 +337,6 @@ internal sealed class PsdReader : IFormatReader, IRowSourceReader
             if (file.Mode == PsdColorMode.Indexed)
             {
                 _palette = file.ColorData;
-            }
-
-            if (file.Mode == PsdColorMode.Lab)
-            {
-                // Photoshop's Lab is relative to D50, adapted to sRGB's D65 by Bradford, as for TIFF's CIELab.
-                _labWhite = Chromaticity.D50.ToXyz();
-                _labToRgb = ColorValueMath.XyzToRgb * Matrix3d.Bradford(_labWhite, Chromaticity.D65.ToXyz());
             }
         }
 
@@ -660,18 +671,11 @@ internal sealed class PsdReader : IFormatReader, IRowSourceReader
 
         private static long FloorDivide(long numerator, long denominator) => numerator >= 0 ? numerator / denominator : -((-numerator + denominator - 1) / denominator);
 
-        private (double R, double G, double B) Lab(double l, double a, double b)
-        {
-            Vector3d xyz = Cie.LabToXyz(new Vector3d(l, a, b), _labWhite);
-            Vector3d linear = _labToRgb * xyz;
-            return (Encode(linear.X), Encode(linear.Y), Encode(linear.Z));
+        private static (double R, double G, double B) Lab(double l, double a, double b) => PsdLab.ToSrgb(l, a, b);
 
-            static double Encode(double v) => ColorValueMath.Encode(Math.Clamp(v, 0, 1));
-        }
+        private static byte Unorm8(double v) => PsdLab.Unorm8(v);
 
-        private static byte Unorm8(double v) => (byte)Math.Round(Math.Clamp(v, 0, 1) * 255, MidpointRounding.AwayFromZero);
-
-        private static ushort Unorm16(double v) => (ushort)Math.Round(Math.Clamp(v, 0, 1) * 65535, MidpointRounding.AwayFromZero);
+        private static ushort Unorm16(double v) => PsdLab.Unorm16(v);
 
         protected override void Dispose(bool disposing)
         {
