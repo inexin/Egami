@@ -1,1 +1,61 @@
 #nullable enable
+Egami.Formats.Extended.Dds.DdsAlphaMode
+Egami.Formats.Extended.Dds.DdsAlphaMode.Custom = 4 -> Egami.Formats.Extended.Dds.DdsAlphaMode
+Egami.Formats.Extended.Dds.DdsAlphaMode.Opaque = 3 -> Egami.Formats.Extended.Dds.DdsAlphaMode
+Egami.Formats.Extended.Dds.DdsAlphaMode.Premultiplied = 2 -> Egami.Formats.Extended.Dds.DdsAlphaMode
+Egami.Formats.Extended.Dds.DdsAlphaMode.Straight = 1 -> Egami.Formats.Extended.Dds.DdsAlphaMode
+Egami.Formats.Extended.Dds.DdsAlphaMode.Unknown = 0 -> Egami.Formats.Extended.Dds.DdsAlphaMode
+Egami.Formats.Extended.Dds.DdsDetails
+Egami.Formats.Extended.Dds.DdsDetails.AlphaMode.get -> Egami.Formats.Extended.Dds.DdsAlphaMode
+Egami.Formats.Extended.Dds.DdsDetails.AlphaMode.set -> void
+Egami.Formats.Extended.Dds.DdsDetails.ArraySize.get -> int
+Egami.Formats.Extended.Dds.DdsDetails.ArraySize.set -> void
+Egami.Formats.Extended.Dds.DdsDetails.DdsDetails() -> void
+Egami.Formats.Extended.Dds.DdsDetails.Depth.get -> int
+Egami.Formats.Extended.Dds.DdsDetails.Depth.set -> void
+Egami.Formats.Extended.Dds.DdsDetails.Dimension.get -> Egami.Formats.Extended.Dds.DdsDimension
+Egami.Formats.Extended.Dds.DdsDetails.Dimension.set -> void
+Egami.Formats.Extended.Dds.DdsDetails.Dx10Header.get -> bool
+Egami.Formats.Extended.Dds.DdsDetails.Dx10Header.set -> void
+Egami.Formats.Extended.Dds.DdsDetails.DxgiFormat.get -> int
+Egami.Formats.Extended.Dds.DdsDetails.DxgiFormat.set -> void
+Egami.Formats.Extended.Dds.DdsDetails.FormatName.get -> string!
+Egami.Formats.Extended.Dds.DdsDetails.FormatName.set -> void
+Egami.Formats.Extended.Dds.DdsDetails.FourCC.get -> string?
+Egami.Formats.Extended.Dds.DdsDetails.FourCC.set -> void
+Egami.Formats.Extended.Dds.DdsDetails.IsCube.get -> bool
+Egami.Formats.Extended.Dds.DdsDetails.IsCube.set -> void
+Egami.Formats.Extended.Dds.DdsDetails.IsSrgb.get -> bool
+Egami.Formats.Extended.Dds.DdsDetails.IsSrgb.set -> void
+Egami.Formats.Extended.Dds.DdsDetails.MipLevel.get -> int
+Egami.Formats.Extended.Dds.DdsDetails.MipLevel.set -> void
+Egami.Formats.Extended.Dds.DdsDetails.MipLevels.get -> int
+Egami.Formats.Extended.Dds.DdsDetails.MipLevels.set -> void
+Egami.Formats.Extended.Dds.DdsDetails.Surface.get -> int
+Egami.Formats.Extended.Dds.DdsDetails.Surface.set -> void
+Egami.Formats.Extended.Dds.DdsDimension
+Egami.Formats.Extended.Dds.DdsDimension.Texture1D = 0 -> Egami.Formats.Extended.Dds.DdsDimension
+Egami.Formats.Extended.Dds.DdsDimension.Texture2D = 1 -> Egami.Formats.Extended.Dds.DdsDimension
+Egami.Formats.Extended.Dds.DdsDimension.Texture3D = 2 -> Egami.Formats.Extended.Dds.DdsDimension
+Egami.Formats.Extended.Dds.DdsFormat
+Egami.Formats.Extended.Dds.DdsReaderOptions
+Egami.Formats.Extended.Dds.DdsReaderOptions.DdsReaderOptions() -> void
+Egami.Formats.Extended.Dds.DdsReaderOptions.Equals(Egami.Formats.Extended.Dds.DdsReaderOptions? other) -> bool
+Egami.Formats.Extended.Dds.DdsReaderOptions.IncludeMipLevels.get -> bool
+Egami.Formats.Extended.Dds.DdsReaderOptions.IncludeMipLevels.init -> void
+Egami.Formats.Extended.Dds.DdsReaderOptions.MipLevel.get -> int?
+Egami.Formats.Extended.Dds.DdsReaderOptions.MipLevel.init -> void
+Egami.Formats.Extended.Dds.DdsReaderOptions.ReconstructNormalZ.get -> bool
+Egami.Formats.Extended.Dds.DdsReaderOptions.ReconstructNormalZ.init -> void
+Egami.Formats.Extended.Dds.DdsReaderOptions.Surface.get -> int?
+Egami.Formats.Extended.Dds.DdsReaderOptions.Surface.init -> void
+override Egami.Formats.Extended.Dds.DdsDetails.Copy() -> Egami.Metadata.FormatDetails!
+override Egami.Formats.Extended.Dds.DdsReaderOptions.<Clone>$() -> Egami.Formats.Extended.Dds.DdsReaderOptions!
+override Egami.Formats.Extended.Dds.DdsReaderOptions.Equals(object? obj) -> bool
+override Egami.Formats.Extended.Dds.DdsReaderOptions.GetHashCode() -> int
+override Egami.Formats.Extended.Dds.DdsReaderOptions.ToString() -> string!
+override sealed Egami.Formats.Extended.Dds.DdsReaderOptions.Equals(Egami.Formats.ReaderOptions? other) -> bool
+static Egami.Formats.Extended.Dds.DdsFormat.Info.get -> Egami.Formats.FormatInfo!
+static Egami.Formats.Extended.Dds.DdsReaderOptions.operator !=(Egami.Formats.Extended.Dds.DdsReaderOptions? left, Egami.Formats.Extended.Dds.DdsReaderOptions? right) -> bool
+static Egami.Formats.Extended.Dds.DdsReaderOptions.operator ==(Egami.Formats.Extended.Dds.DdsReaderOptions? left, Egami.Formats.Extended.Dds.DdsReaderOptions? right) -> bool
+static Egami.Formats.Extended.ExtendedContextExtensions.WithDds(this Egami.EgamiContext! context) -> Egami.EgamiContext!

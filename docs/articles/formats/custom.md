@@ -43,3 +43,10 @@ A format without them still works everywhere: the decoder reads the whole image 
 encoder gathers the image and calls `Write` at the end.
 
 Writing your own operation or pixel type is covered in [Custom operations and formats](../guides/extending.md).
+
+## Files with several images
+
+A format whose files hold several images, as TIFF holds pages, also implements `IMultiImageReader`. LoadAll asks it for one
+`ReaderOptions` per image, usually a subclass of your own that names the image, and loads each as Load would with those options.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Extending.cs#multi-image-format)]
