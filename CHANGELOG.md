@@ -21,6 +21,9 @@ changes that break code come only in a new major version.
 
 ## Egami.Drawing, unreleased
 
+- Fills without antialiasing allocate nothing per row (about 88 bytes a row before), and thin shapes in a large box, such as
+  a one-pixel diagonal line, rasterize on one thread instead of fanning out, with the same pixels: Egami.SystemDrawing's
+  100 one-pixel `DrawLine` calls take 1.06 ms instead of 2.06 ms and allocate 287 KB instead of 3 MB (GDI+: 0.49 ms).
 - An `ImagePaint` drawn with `GdiPlusHighQualityBicubic` or `GdiPlusHighQualityBilinear` and no rotation or skew sums each
   source row across once per thread instead of once per device pixel, with the same pixels: an EMF+ file of high-quality
   images through Egami.SystemDrawing plays in 5.4 ms instead of 14.4 ms (GDI+: 5.4 ms). Taps inside the image read its rows
