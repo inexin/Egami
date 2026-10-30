@@ -89,7 +89,7 @@
 
 
   <h1 id="Egami_Formats_Extended_ExtendedContextExtensions" data-uid="Egami.Formats.Extended.ExtendedContextExtensions" class="text-break">
-Class ExtendedContextExtensions  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/ExtendedContextExtensions.cs/#L18"><i class="bi bi-code-slash"></i></a>
+Class ExtendedContextExtensions  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/ExtendedContextExtensions.cs/#L19"><i class="bi bi-code-slash"></i></a>
   </h1>
 
   <div class="facts text-secondary">
@@ -167,15 +167,60 @@ string format = back.Metadata.FormatName!;               // "PCX"</code></pre>
 </h2>
 
 
+  <a id="Egami_Formats_Extended_ExtendedContextExtensions_WithDds_" data-uid="Egami.Formats.Extended.ExtendedContextExtensions.WithDds*"></a>
+
+  <h3 id="Egami_Formats_Extended_ExtendedContextExtensions_WithDds_Egami_EgamiContext_" data-uid="Egami.Formats.Extended.ExtendedContextExtensions.WithDds(Egami.EgamiContext)">
+  WithDds(EgamiContext)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/ExtendedContextExtensions.cs/#L84"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns a copy of <code class="paramref">context</code> that reads DDS textures (<a class="xref" href="Egami.Formats.Extended.Dds.DdsFormat.html">DdsFormat</a>).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static EgamiContext WithDds(this EgamiContext context)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>context</code> <a class="xref" href="Egami.EgamiContext.html">EgamiContext</a></dt>
+    <dd><p>The context to add the format to.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.EgamiContext.html">EgamiContext</a></dt>
+    <dd><p>The new context.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentnullexception">ArgumentNullException</a></dt>
+    <dd><p><code class="paramref">context</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</dd>
+  </dl>
+
+
+
   <a id="Egami_Formats_Extended_ExtendedContextExtensions_WithExtendedFormats_" data-uid="Egami.Formats.Extended.ExtendedContextExtensions.WithExtendedFormats*"></a>
 
   <h3 id="Egami_Formats_Extended_ExtendedContextExtensions_WithExtendedFormats_Egami_EgamiContext_" data-uid="Egami.Formats.Extended.ExtendedContextExtensions.WithExtendedFormats(Egami.EgamiContext)">
   WithExtendedFormats(EgamiContext)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/ExtendedContextExtensions.cs/#L31"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/ExtendedContextExtensions.cs/#L32"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Returns a copy of <code class="paramref">context</code> with every stable format of this package registered: PCX, SGI, Sun raster,
-XBM, XPM, WBMP and Farbfeld. Formats in preview are never included; each has its own method. Call it once, for example
+XBM, XPM, WBMP, Farbfeld and DDS. Formats in preview are never included; each has its own method. Call it once, for example
 <code>EgamiContext.SetDefault(new EgamiContext().WithExtendedFormats())</code> at startup.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
@@ -231,7 +276,7 @@ string format = back.Metadata.FormatName!;               // "PCX"</code></pre>
 
   <h3 id="Egami_Formats_Extended_ExtendedContextExtensions_WithFarbfeld_Egami_EgamiContext_" data-uid="Egami.Formats.Extended.ExtendedContextExtensions.WithFarbfeld(Egami.EgamiContext)">
   WithFarbfeld(EgamiContext)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/ExtendedContextExtensions.cs/#L77"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/ExtendedContextExtensions.cs/#L78"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Returns a copy of <code class="paramref">context</code> that reads and writes Farbfeld (<a class="xref" href="Egami.Formats.Extended.Farbfeld.FarbfeldFormat.html">FarbfeldFormat</a>).</p>
@@ -276,7 +321,7 @@ string format = back.Metadata.FormatName!;               // "PCX"</code></pre>
 
   <h3 id="Egami_Formats_Extended_ExtendedContextExtensions_WithPcx_Egami_EgamiContext_" data-uid="Egami.Formats.Extended.ExtendedContextExtensions.WithPcx(Egami.EgamiContext)">
   WithPcx(EgamiContext)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/ExtendedContextExtensions.cs/#L41"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/ExtendedContextExtensions.cs/#L42"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Returns a copy of <code class="paramref">context</code> that reads and writes PCX (<a class="xref" href="Egami.Formats.Extended.Pcx.PcxFormat.html">PcxFormat</a>).</p>
@@ -321,7 +366,7 @@ string format = back.Metadata.FormatName!;               // "PCX"</code></pre>
 
   <h3 id="Egami_Formats_Extended_ExtendedContextExtensions_WithSgi_Egami_EgamiContext_" data-uid="Egami.Formats.Extended.ExtendedContextExtensions.WithSgi(Egami.EgamiContext)">
   WithSgi(EgamiContext)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/ExtendedContextExtensions.cs/#L47"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/ExtendedContextExtensions.cs/#L48"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Returns a copy of <code class="paramref">context</code> that reads and writes SGI (<a class="xref" href="Egami.Formats.Extended.Sgi.SgiFormat.html">SgiFormat</a>).</p>
@@ -366,7 +411,7 @@ string format = back.Metadata.FormatName!;               // "PCX"</code></pre>
 
   <h3 id="Egami_Formats_Extended_ExtendedContextExtensions_WithSunRaster_Egami_EgamiContext_" data-uid="Egami.Formats.Extended.ExtendedContextExtensions.WithSunRaster(Egami.EgamiContext)">
   WithSunRaster(EgamiContext)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/ExtendedContextExtensions.cs/#L53"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/ExtendedContextExtensions.cs/#L54"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Returns a copy of <code class="paramref">context</code> that reads and writes Sun raster (<a class="xref" href="Egami.Formats.Extended.SunRaster.SunRasterFormat.html">SunRasterFormat</a>).</p>
@@ -411,7 +456,7 @@ string format = back.Metadata.FormatName!;               // "PCX"</code></pre>
 
   <h3 id="Egami_Formats_Extended_ExtendedContextExtensions_WithWbmp_Egami_EgamiContext_" data-uid="Egami.Formats.Extended.ExtendedContextExtensions.WithWbmp(Egami.EgamiContext)">
   WithWbmp(EgamiContext)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/ExtendedContextExtensions.cs/#L71"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/ExtendedContextExtensions.cs/#L72"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Returns a copy of <code class="paramref">context</code> that reads and writes WBMP (<a class="xref" href="Egami.Formats.Extended.Wbmp.WbmpFormat.html">WbmpFormat</a>).</p>
@@ -456,7 +501,7 @@ string format = back.Metadata.FormatName!;               // "PCX"</code></pre>
 
   <h3 id="Egami_Formats_Extended_ExtendedContextExtensions_WithXbm_Egami_EgamiContext_" data-uid="Egami.Formats.Extended.ExtendedContextExtensions.WithXbm(Egami.EgamiContext)">
   WithXbm(EgamiContext)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/ExtendedContextExtensions.cs/#L59"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/ExtendedContextExtensions.cs/#L60"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Returns a copy of <code class="paramref">context</code> that reads and writes XBM (<a class="xref" href="Egami.Formats.Extended.Xbm.XbmFormat.html">XbmFormat</a>).</p>
@@ -501,7 +546,7 @@ string format = back.Metadata.FormatName!;               // "PCX"</code></pre>
 
   <h3 id="Egami_Formats_Extended_ExtendedContextExtensions_WithXpm_Egami_EgamiContext_" data-uid="Egami.Formats.Extended.ExtendedContextExtensions.WithXpm(Egami.EgamiContext)">
   WithXpm(EgamiContext)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/ExtendedContextExtensions.cs/#L65"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/ExtendedContextExtensions.cs/#L66"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Returns a copy of <code class="paramref">context</code> that reads and writes XPM (<a class="xref" href="Egami.Formats.Extended.Xpm.XpmFormat.html">XpmFormat</a>).</p>
@@ -546,7 +591,7 @@ string format = back.Metadata.FormatName!;               // "PCX"</code></pre>
 </article>
 
         <div class="contribution d-print-none">
-          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/ExtendedContextExtensions.cs/#L18" class="edit-link">Edit this page</a>
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/ExtendedContextExtensions.cs/#L19" class="edit-link">Edit this page</a>
         </div>
 
 

@@ -163,6 +163,14 @@ which checks the safety limits first, so no reader can allocate before the size 
 </dd>
     </dl>
     <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Formats.IMultiImageReader.html">IMultiImageReader</a></dt>
+      <dd><p>An optional interface for a format's reader whose files hold several images (TIFF pages, icon entries, DDS surfaces).
+<a class="xref" href="Egami.Raster.html#Egami_Raster_LoadAll_System_IO_Stream_Egami_EgamiContext_Egami_Formats_ReaderOptions_">LoadAll(Stream, EgamiContext?, ReaderOptions?)</a> asks it for one options value per image and loads each as
+Load would, so every Load feature applies to each image. The options a reader returns name the image in a way its own
+<a class="xref" href="Egami.Formats.IFormatReader.html">IFormatReader</a> understands, usually a <a class="xref" href="Egami.Formats.ReaderOptions.html">ReaderOptions</a> subclass of the format's own.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
       <dt><a class="xref" href="Egami.Formats.IRowFormatReader.html">IRowFormatReader</a></dt>
       <dd><p>An optional interface for a format's reader: an open image that hands out rows as they are asked for, so
 <a class="xref" href="Egami.RasterDecoder.html">RasterDecoder</a> streams the format, with <a class="xref" href="Egami.Formats.ReaderOptions.html#Egami_Formats_ReaderOptions_Region">Region</a> and <a class="xref" href="Egami.Formats.ReaderOptions.html#Egami_Formats_ReaderOptions_MinimumSize">MinimumSize</a>

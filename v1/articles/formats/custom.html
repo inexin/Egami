@@ -330,7 +330,81 @@ public static class StreamingRaw8Format
 <p>A format without them still works everywhere: the decoder reads the whole image with <code>Read</code> and serves rows from it, and the
 encoder gathers the image and calls <code>Write</code> at the end.</p>
 <p>Writing your own operation or pixel type is covered in <a href="../guides/extending.html">Custom operations and formats</a>.</p>
+<h2 id="files-with-several-images">Files with several images</h2>
+<p>A format whose files hold several images, as TIFF holds pages, also implements <code>IMultiImageReader</code>. LoadAll asks it for one
+<code>ReaderOptions</code> per image, usually a subclass of your own that names the image, and loads each as Load would with those options.</p>
+<pre><code class="lang-csharp">/// &lt;summary&gt;A format holding several RAW8 images: &quot;RAW8P&quot;, the image count as one byte, then each image as RAW8 stores it.&lt;/summary&gt;
+public static class Raw8PagesFormat
+{
+    public static FormatInfo Info { get; } = new()
+    {
+        Name = &quot;RAW8P&quot;,
+        Extensions = [&quot;raw8p&quot;],
+        SignatureLength = 5,
+        Matches = header =&gt; header.StartsWith(&quot;RAW8P&quot;u8),
+        Reader = new Reader(),
+    };
 
+    /// &lt;summary&gt;Names the image a Load reads; LoadAll sets it for each.&lt;/summary&gt;
+    public sealed record PageOptions : ReaderOptions
+    {
+        public int Page { get; init; }
+    }
+
+    private sealed class Reader : IFormatReader, IMultiImageReader
+    {
+        public IReadOnlyList&lt;ReaderOptions&gt; Images(EgamiInput input, ReaderOptions options)
+        {
+            input.Skip(5);
+            int count = input.ReadByte();
+            return [.. Enumerable.Range(0, count).Select(page =&gt; new PageOptions { Recovery = options.Recovery, Page = page })];
+        }
+
+        public RasterInfo ReadInfo(EgamiInput input, ReaderOptions options)
+        {
+            (int width, int height, int count) = Seek(input, options);
+            return new RasterInfo { Format = Info, Width = width, Height = height, Layout = Rgba8.Layout, FrameCount = 1, ImageCount = count, EstimatedBytes = 4L * width * height };
+        }
+
+        public Raster&lt;TPixel&gt; Read&lt;TPixel&gt;(EgamiInput input, ReaderOptions options)
+            where TPixel : unmanaged, IPixelType&lt;TPixel&gt;
+        {
+            (int width, int height, _) = Seek(input, options);
+            Raster&lt;TPixel&gt; raster = input.CreateRaster&lt;TPixel&gt;(width, height);
+            byte[] row = new byte[width * 4];
+            for (int y = 0; y &lt; height; y++)
+            {
+                input.ReadExactly(row);
+                PixelConvert.Convert&lt;Rgba8, TPixel&gt;(MemoryMarshal.Cast&lt;byte, Rgba8&gt;(row.AsSpan()), raster.Row(y));
+            }
+
+            return raster;
+        }
+
+        public Raster Read(EgamiInput input, ReaderOptions options) =&gt; Read&lt;Rgba8&gt;(input, options);
+
+        /// &lt;summary&gt;Skips to the page the options name and reads its size.&lt;/summary&gt;
+        private static (int Width, int Height, int Count) Seek(EgamiInput input, ReaderOptions options)
+        {
+            input.Skip(5);
+            int count = input.ReadByte();
+            int page = (options as PageOptions)?.Page ?? 0;
+            for (int i = 0; ; i++)
+            {
+                input.Skip(4);
+                int width = (int)input.ReadUInt32BigEndian();
+                int height = (int)input.ReadUInt32BigEndian();
+                if (i == page)
+                {
+                    return (width, height, count);
+                }
+
+                input.Skip(4L * width * height);
+            }
+        }
+    }
+}
+</code></pre>
 </article>
 
         <div class="contribution d-print-none">

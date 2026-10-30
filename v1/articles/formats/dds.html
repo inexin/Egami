@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>DDS | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="DDS | Egami ">
+      
+      
+      <link rel="icon" href="../../images/favicon.ico">
+      <link rel="stylesheet" href="../../public/docfx.min.css">
+      <link rel="stylesheet" href="../../public/main.css">
+      <meta name="docfx:navrel" content="../../toc.html">
+      <meta name="docfx:tocrel" content="../toc.html">
+      
+      <meta name="docfx:rel" content="../../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/blob/main/docs/articles/formats/dds.md/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../../index.html">
+            <img id="logo" class="svg" src="../../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="dds">DDS</h1>
+
+<p>DDS (DirectDraw Surface, .dds) is the texture container of Direct3D and most game engines: a header, then every mip level of
+every face, array slice or depth slice back to back, uncompressed or in 4 × 4 blocks of BC1 to BC7. It reads through the
+Egami.Formats.Extended package: register it with <code>WithDds()</code> or <code>WithExtendedFormats()</code> (<a href="extended.html">Extended formats</a>).</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Reads</td>
+<td>The legacy header (DXT1 to DXT5, ATI1 and ATI2, bit masks, luminance, alpha, P8 and A8P8 palettes, YUY2 and UYVY, the D3D9 float and bump formats) and the DX10 header's DXGI formats: BC1 to BC7 with BC6H unsigned and signed, UNORM, SNORM, sRGB, float, UINT and SINT formats, R10G10B10A2, R11G11B10 and R9G9B9E5 floats, the 565, 5551 and 4444 packed formats, depth and stencil, and the packed and planar video formats (AYUV, Y410, Y416, YUY2, Y210, Y216, NV12, P010, P016, NV11, P208, V208, V408). 2D textures, arrays, cube maps and volume textures, with their mips</td>
+</tr>
+<tr>
+<td>Writes</td>
+<td>No, not yet</td>
+</tr>
+<tr>
+<td>Natural pixel type</td>
+<td>The nearest to the stored format: <code>Rgba8</code> for BC1, BC2, BC3, BC7 and 8-bit RGBA; <code>Gray8</code> for BC4 and R8; <code>Rgb8</code> for BC5 and R8G8; <code>Rgba16</code> for 16-bit UNORM; <code>RgbaF16</code> for BC6H, half floats and the packed floats; <code>RgbaF32</code>, <code>RgbF32</code> or <code>GrayF32</code> for 32-bit floats; <code>Rgb10A2</code>; <code>Bgr565</code>, <code>Bgra5551</code> and <code>Bgra4444</code> for the packed formats</td>
+</tr>
+<tr>
+<td><code>FormatInfo</code></td>
+<td><code>DdsFormat.Info</code>: name <code>DDS</code>, extension <code>.dds</code>, MIME types <code>image/vnd-ms.dds</code> and <code>image/x-dds</code></td>
+</tr>
+</tbody>
+</table>
+<pre><code class="lang-csharp">// Load gives mip 0 of the first surface, in the format's natural pixel type (Rgba8 for BC1 to BC3, BC7 and RGBA8).
+EgamiContext context = EgamiContext.Default.WithDds();
+using Raster texture = Raster.Load(&quot;rock.dds&quot;, context);
+texture.Save(&quot;rock.png&quot;);
+
+// Probe reads the header alone: the surfaces at mip 0 are its images.
+RasterInfo info = Raster.Probe(&quot;rock.dds&quot;, context);
+Console.WriteLine($&quot;{info.Width}×{info.Height}, {info.ImageCount} surface(s)&quot;);
+</code></pre><h2 id="surfaces-and-mips">Surfaces and mips</h2>
+<p>Load reads mip 0 of the first surface. The surfaces are the faces of a cube map (in the order +X, −X, +Y, −Y, +Z, −Z, each cube
+after the one before), the slices of a texture array, or the depth slices of a volume texture; <code>RasterInfo.ImageCount</code> counts
+them. LoadAll gives each at mip 0, and with <code>DdsReaderOptions.IncludeMipLevels</code> every mip after the surface it belongs to.
+<code>DdsReaderOptions.Surface</code> and <code>DdsReaderOptions.MipLevel</code> pick one; for a volume, depth slice <code>Surface</code> at mip <code>m</code> is slice
+<code>Surface &gt;&gt; m</code> of that mip. <code>ReaderOptions.MinimumSize</code> (without a <code>Region</code>) picks the smallest mip that still covers the size,
+so a thumbnail reads a fraction of the file.</p>
+<pre><code class="lang-csharp">// One surface and mip: cube face -Y (faces go +X, -X, +Y, -Y, +Z, -Z), third mip.
+using Raster face = Raster.Load(&quot;sky.dds&quot;, context, new DdsReaderOptions { Surface = 3, MipLevel = 2 });
+
+// Every face at mip 0, or with every mip after its face.
+using RasterList faces = Raster.LoadAll(&quot;sky.dds&quot;, context);
+using RasterList all = Raster.LoadAll(&quot;sky.dds&quot;, context, new DdsReaderOptions { IncludeMipLevels = true });
+
+// A thumbnail reads the smallest mip that still covers the size, a fraction of the file.
+using Raster thumbnail = Raster.Load(&quot;sky.dds&quot;, context, new ReaderOptions { MinimumSize = new Size(8, 8) });
+
+// Two-channel normal maps (BC5, R8G8) load with blue 0, or with Z rebuilt.
+using Raster normals = Raster.Load(&quot;sky.dds&quot;, context, new DdsReaderOptions { ReconstructNormalZ = true });
+</code></pre><h2 id="values">Values</h2>
+<p>Block formats decode as the Direct3D 11 specification defines them: BC4, BC5, BC6H and BC7 exactly, and BC1 to BC3 colours
+from the exact interpolation of their 5- and 6-bit endpoints, rounded once. A BC6H or BC7 block with a reserved mode decodes
+to black (BC7 transparent black).</p>
+<ul>
+<li>Two-channel formats (BC5, R8G8, R16G16 and their float forms) load with blue 0; <code>DdsReaderOptions.ReconstructNormalZ</code>
+rebuilds blue as a normal map's Z, sqrt(1 − x² − y²).</li>
+<li>SNORM formats map −1 to 1 onto 0 to the type's maximum; SINT formats are offset by half the range, so their order is kept.
+UINT formats keep their values; 32-bit integers load as floats holding the integer.</li>
+<li>BC6H signed keeps negative values in <code>RgbaF16</code>. R11G11B10 and R9G9B9E5 floats convert to half floats exactly.</li>
+<li>Depth formats load the depth as <code>GrayF32</code> (D24 scaled to 0 to 1); the stencil-only views (X24_G8, X32_G8X24) load the
+stencil as <code>Gray8</code>.</li>
+<li>YUV formats convert to RGB with the BT.601 studio-range integer formulas, as DirectXTex does; chroma is repeated, not
+interpolated.</li>
+<li>Legacy bit masks scale each field to 8 or 16 bits, rounding to nearest. The 10:10:10:2 masks are read with red and blue
+swapped, as D3DX wrote them.</li>
+</ul>
+<h2 id="colour-alpha-and-details">Colour, alpha and details</h2>
+<p>DDS has no ICC profile. Values load as stored; an <code>_SRGB</code> format (or a legacy header NVTT marked sRGB) is tagged
+<code>ColorSpaceHint.Srgb</code>, and anything else is untagged. Premultiplied files (DXT2, DXT4, or <code>DdsAlphaMode.Premultiplied</code> in the
+DX10 header) are un-premultiplied on load, as TGA's are.</p>
+<p><code>DdsDetails</code>, in <code>RasterMetadata.FormatDetails</code>, keeps what the header says: the DXGI format (<code>DxgiFormat</code>, <code>FormatName</code>), the
+legacy FourCC, the <code>DdsDimension</code>, cube flag, array size and depth, the mip count, the <code>DdsAlphaMode</code>, whether the format is
+sRGB, and which surface and mip the raster is.</p>
+<pre><code class="lang-csharp">// What the header says: the DXGI format, the mip count, the dimension, cube and array layout and the alpha mode.
+using Raster texture = Raster.Load(&quot;rock.dds&quot;, context);
+if (texture.Metadata.FormatDetails is DdsDetails dds)
+{
+    Console.WriteLine($&quot;{dds.FormatName} (DXGI {dds.DxgiFormat}), {dds.MipLevels} mips, {dds.Dimension}, cube: {dds.IsCube}&quot;);
+    Console.WriteLine($&quot;alpha {dds.AlphaMode}, sRGB {dds.IsSrgb}, DX10 header {dds.Dx10Header}&quot;);
+}
+
+// An _SRGB format is tagged sRGB; any other loads its values as stored.
+bool srgb = texture.Metadata.ColorSpace == ColorSpaceHint.Srgb;
+</code></pre><h2 id="streaming-and-damaged-files">Streaming and damaged files</h2>
+<p>The reader skips to the surface it wants and decodes its rows in order, a row of blocks at a time, so <code>RasterDecoder</code> streams
+it; planar video surfaces keep chroma after luma and are read whole. A lenient read of a file that ends early keeps the rows it
+has and leaves the rest transparent black with <code>Dds.RowsMissing</code>; a header that claims more mips than its size allows is read
+with the mips it can have and <code>Dds.MipCountRepaired</code>. A strict read throws <code>CorruptDataException</code> for both. Xbox tiled DDS (the
+XBOX header) and the palette DXGI formats in a DX10 header are not read and throw <code>UnsupportedFormatException</code>.</p>
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/docs/articles/formats/dds.md/#L1" class="edit-link">Edit this page</a>
+        </div>
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>
