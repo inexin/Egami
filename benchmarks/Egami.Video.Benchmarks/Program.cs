@@ -30,6 +30,13 @@ if (args is ["--time-h264", .. string[] h264])
     return;
 }
 
+// Time HEVC decoding (V8 speed gate): -- --time-hevc <file.h265>...
+if (args is ["--time-hevc", .. string[] hevc])
+{
+    HevcTiming.Run(hevc);
+    return;
+}
+
 // Time and write a VP8 encode (V5.2 gates): -- --encode-vp8 <clip.y4m> [--out=file.ivf --quality=Q ...]
 if (args is ["--encode-vp8", .. string[] rest])
 {

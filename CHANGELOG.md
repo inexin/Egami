@@ -80,6 +80,20 @@ Where GDI+ puts text in a layout box (2.7.6 task 28), measured on Windows. Addit
   linked face's aliased bitmaps), and grid-fitted metrics apply to fallback runs too. Fonts that set none of these shape and
   draw as before.
 
+## Egami.Video.Hevc, unreleased
+
+V8: HEVC decode (H.264 and HEVC Build Plan tasks 26 to 28). A new opt-in package at Egami.Video's version.
+
+- `HevcCodec`, `HevcFormat` and `WithHevc()`: HEVC video in MP4, MOV, Matroska and raw Annex B `.h265` files decodes through
+  Egami.Heic's `HevcStreamDecoder`, Main, Main 10, Main 12 and the format range extensions to 12 bits. Frames equal FFmpeg's on
+  the 23 clips of the new HEVC test corpus (`tools/video/make-hevc-corpus.py`), and HM's on the one whose chroma FFmpeg 5.1
+  and 8.1 decode against its own picture hashes; every corpus picture also matches its MD5 picture hash.
+- HDR10 mastering display and content light level SEI fill the frame's `Hdr`, HDR10+ SEI its `Hdr10Plus`; Dolby Vision dvh1
+  and dvhe tracks decode as their HEVC base layer.
+- Decoding starts at an IRAP picture, after a seek too, and drops the RASL pictures a CRA picture skips there; broken data
+  reports `Hevc.CorruptFrame` and follows the error mode.
+- An `hevc` fuzz target, and `--time-hevc` in the video benchmarks.
+
 ## Egami.Video.Cli, unreleased
 
 - `egami-video overlay --key auto` reads the screen colour from the overlay's first frame: the median of its green or blue

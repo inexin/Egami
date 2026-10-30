@@ -1,0 +1,39 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>Egami.Video</RootNamespace>
+    <PackageId>Egami.Video.Hevc</PackageId>
+    <!-- Egami.Video.Hevc ships at Egami.Video's version (H.264 and HEVC design, question 4) and wraps Egami.Heic's public
+         HevcStreamDecoder (V8 design): HEVC video users get HEIC photos too, the same patent family. -->
+    <Version>$(EgamiVideoVersion)</Version>
+    <Description>HEVC (H.265) decoding for Egami.Video, in managed code: Main, Main 10, Main 12 and the format range extensions to 12 bits, in MP4, MOV, Matroska and raw .h265 files, through Egami.Heic's HEVC decoder. HEVC is covered by patents; Egami's authors grant no patent rights and are not lawyers. Whether you need a patent licence depends on your country and on how you use and distribute this package; commercial products may need one from the HEVC patent pools or holders. Egami.Video itself contains no HEVC decoder and does not depend on this package.</Description>
+    <PackageTags>$(EgamiPackageTags);video;hevc;h265;mp4</PackageTags>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <IsTrimmable>true</IsTrimmable>
+    <IsAotCompatible>true</IsAotCompatible>
+  </PropertyGroup>
+
+  <!-- Build-time analyzer only; ships nothing. -->
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Egami.Video\Egami.Video.csproj" />
+    <ProjectReference Include="..\Egami.Heic\Egami.Heic.csproj" />
+  </ItemGroup>
+
+  <!-- The shared NAL code, and Egami.Heic's sequence parameter set reader, compiled in as internal source (H.264 and HEVC design,
+       Q1): the raw .h265 reader takes the track's size, colour and frame rate from the stream's SPS before any decoding. -->
+  <ItemGroup>
+    <Compile Include="..\Shared\Nal\**\*.cs" Link="Shared\Nal\%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="..\Egami.Heic\Hevc\HevcSps.cs;..\Egami.Heic\Hevc\HevcParameterSets.cs;..\Egami.Heic\Hevc\HevcNal.cs;..\Egami.Heic\Hevc\HevcErrors.cs;..\Egami.Heic\Hevc\NalErrors.cs;..\Egami.Heic\Hevc\HevcScan.cs" Link="Heic\%(Filename)%(Extension)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Egami.Video.Hevc.Tests" />
+    <InternalsVisibleTo Include="Egami.Video.Benchmarks" />
+    <InternalsVisibleTo Include="Egami.Video.Fuzz" />
+  </ItemGroup>
+
+</Project>

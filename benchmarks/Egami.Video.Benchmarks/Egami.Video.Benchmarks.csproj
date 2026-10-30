@@ -8,6 +8,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Egami.Video\Egami.Video.csproj" />
     <ProjectReference Include="..\..\src\Egami.Video.H264\Egami.Video.H264.csproj" />
+    <ProjectReference Include="..\..\src\Egami.Video.Hevc\Egami.Video.Hevc.csproj" />
   </ItemGroup>
 
   <ItemGroup>

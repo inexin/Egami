@@ -80,6 +80,7 @@ static Action<Stream> Target(string name) => name switch
     "vp9" => ReadVp9,
     "vp9raw" => DecodeVp9Packets,
     "h264" => ReadH264,
+    "hevc" => ReadHevc,
     "wav" or "flac" or "ogg" or "aiff" or "caf" => ReadAudio,
     "opusraw" => DecodeOpusPackets,
     "vorbisraw" => DecodeVorbisPackets,
@@ -100,7 +101,7 @@ static Action<Stream> Target(string name) => name switch
     "ffv1raw" => DecodeFfv1Packets,
     "ffv1enc" => EncodeFfv1,
     "afilters" => FilterAudio,
-    _ => throw new ArgumentException($"Unknown fuzz target '{name}'. Targets: avi, mkv, y4m, ivf, webm, mp4, obu, ac3, mp4mux, mjpeg, vp8, vp9, vp9raw, h264, av1, av1raw, wav, flac, ogg, aiff, caf, opusraw, vorbisraw, vp8enc, mp3, mp3raw, ac3raw, alac, opusenc, subs, subtrack, vp9enc, av1enc, trim, ffv1, ffv1raw, ffv1enc, afilters."),
+    _ => throw new ArgumentException($"Unknown fuzz target '{name}'. Targets: avi, mkv, y4m, ivf, webm, mp4, obu, ac3, mp4mux, mjpeg, vp8, vp9, vp9raw, h264, hevc, av1, av1raw, wav, flac, ogg, aiff, caf, opusraw, vorbisraw, vp8enc, mp3, mp3raw, ac3raw, alac, opusenc, subs, subtrack, vp9enc, av1enc, trim, ffv1, ffv1raw, ffv1enc, afilters."),
 };
 
 static MediaContext Context() => MediaContext.Default with
@@ -988,6 +989,15 @@ static void ReadH264(Stream stream)
     ReadVideo(new MemoryStream(data), "H.264", Context().WithH264());
     MediaContext threaded = Context().WithH264() with { Egami = Context().Egami with { MaxParallelism = 2 } };
     ReadVideo(new MemoryStream(data), "H.264", threaded);
+}
+
+// A raw HEVC stream, MP4 or Matroska file with Egami.Video.Hevc registered, as for H.264; then decoded again on two threads.
+static void ReadHevc(Stream stream)
+{
+    byte[] data = ReadAll(stream);
+    ReadVideo(new MemoryStream(data), "HEIC", Context().WithHevc());
+    MediaContext threaded = Context().WithHevc() with { Egami = Context().Egami with { MaxParallelism = 2 } };
+    ReadVideo(new MemoryStream(data), "HEIC", threaded);
 }
 
 static void ReadVideo(Stream stream, string codec, MediaContext? baseContext = null)
