@@ -184,6 +184,9 @@ The activity and tag names are never renamed once shipped, like the diagnostic i
 | `Heif.TrailingData` | Warning | A HEIF (AVIF) file has data after its last whole top-level box that does not form a box; it was ignored |
 | `Heif.UnknownLocatedItem` | Warning | A HEIF (AVIF) iloc box locates an item that has no iinf entry; it was ignored |
 | `Icc.Unusable` | Warning | The embedded ICC profile is damaged or of a kind Egami cannot use; colors are read as if it were absent |
+| `Icns.ElementCut` | Warning | An ICNS element's length runs past the end of the file; it and the elements after it were skipped |
+| `Icns.EntryDamaged` | Warning | The ICNS entry Load picked could not be decoded; the next best was loaded |
+| `Icns.Truncated` | Warning | An ICNS file is shorter than its header says |
 | `Ico.DirectoryMismatch` | Warning | An icon's directory gives a size its entry's own header contradicts; the header's was used |
 | `Ico.EntryDamaged` | Warning | The entry Load picked could not be decoded; the next best was loaded |
 | `Ico.EntrySkipped` | Warning | An icon entry lies outside the file, overlaps another or is neither PNG nor BMP; it was skipped |
@@ -297,6 +300,7 @@ The activity and tag names are never renamed once shipped, like the diagnostic i
 | `Save.FramesDropped` | Warning | The format holds one image here; only the first frame was written |
 | `Save.GainMapDropped` | Warning | The format holds no gain map, or the map no longer fits the image; the SDR base was written without it |
 | `Save.HdrClipped` | Warning | An HDR raster with light above reference white was saved to a format that holds 0 to 1; the highlights were clipped and ToneMap would have kept them |
+| `Save.IcnsFitted` | Warning | A raster that is not one of ICNS's entry sizes was fitted to the largest one it fills |
 | `Save.IcoFitted` | Warning | A raster larger than an icon entry's 256 × 256 was fitted to 256 |
 | `Save.MetadataDropped` | Warning | Metadata the format cannot hold, or that is too large for it, was not written |
 | `Streaming.BufferGrown` | Debug | An incremental decode's buffer grew past its first size to hold bytes not yet decoded |

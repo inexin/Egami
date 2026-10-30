@@ -148,6 +148,18 @@ public class ColorManagement
     }
 
     [Fact]
+    public void ToIccV2()
+    {
+        #region to-icc-v2
+        // A version 2 profile, for software that reads only those: older image editors, viewers and print drivers.
+        byte[] p3 = ColorProfile.DisplayP3.ToIccV2();
+        Version version = IccData.Parse(p3).Version;
+        #endregion
+
+        Assert.Equal(2, version.Major);
+    }
+
+    [Fact]
     public void OmitSrgb()
     {
         using Raster<Rgba8> raster = Raster.Create<Rgba8>(4, 4);

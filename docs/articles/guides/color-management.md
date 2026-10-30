@@ -86,6 +86,15 @@ parametric curves, or 4.4 with a cicp tag for PQ and HLG. Little CMS, Pillow and
 
 [!code-csharp[](../../../tests/Egami.DocSamples/ColorManagement.cs#to-icc)]
 
+`ColorProfile.ToIccV2` writes a version 2.4 profile instead, for software that reads only version 2 (older image editors,
+viewers and print drivers): the same matrix-shaper with the conventions of version 2, `curv` curves only (a gamma, or a
+1024-entry table for sRGB and other formula curves), text tags in place of `mluc`, and the encoding's own white as the media
+white point, with no `chad`. A profile read from version 2 bytes gives them back. Little CMS converts through it as through
+the version 4 profile, within 1 in 255. PQ and HLG get the rolled-off curve tables without the cicp tag, which version 2
+lacks, so prefer `ToIcc` for HDR.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/ColorManagement.cs#to-icc-v2)]
+
 ## Writing color tags
 
 Writers take color tags from the generic metadata, so they survive a change of format: PNG writes cICP from `CodePoints`, cHRM
