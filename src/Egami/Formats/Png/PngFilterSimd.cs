@@ -99,8 +99,8 @@ internal static class PngFilterSimd
     }
 
     /// <summary>
-    /// Sub, Average and Paeth, one pixel per step. The pixel left of the first one, and the one above-left of it, are zero,
-    /// which gives exactly the specification's rules for the first pixel.
+    /// Sub, Average and Paeth, one pixel per step, each filter in a loop of its own. The pixel left of the first one, and the one
+    /// above-left of it, are zero, which gives exactly the specification's rules for the first pixel.
     /// </summary>
     private static void PerPixel<TPixel>(byte filter, Span<byte> row, ReadOnlySpan<byte> previous)
         where TPixel : struct, IPixelBytes
@@ -108,21 +108,40 @@ internal static class PngFilterSimd
         ref byte r = ref MemoryMarshal.GetReference(row);
         ref byte p = ref MemoryMarshal.GetReference(previous);
         int stride = TPixel.Size;
-        Vector128<byte> left = Vector128<byte>.Zero;
-        Vector128<byte> upperLeft = Vector128<byte>.Zero;
-        for (int i = 0; i + stride <= row.Length; i += stride)
+        int end = row.Length - stride;
+        if (filter == PngFilter.Sub)
         {
-            Vector128<byte> raw = TPixel.Load(ref Unsafe.Add(ref r, i));
-            Vector128<byte> above = filter == PngFilter.Sub ? default : TPixel.Load(ref Unsafe.Add(ref p, i));
-            Vector128<byte> result = filter switch
+            Vector128<byte> left = Vector128<byte>.Zero;
+            for (int i = 0; i <= end; i += stride)
             {
-                PngFilter.Sub => raw + left,
-                PngFilter.Average => raw + FloorAverage(left, above),
-                _ => raw + Paeth(left, above, upperLeft),
-            };
-            TPixel.Store(ref Unsafe.Add(ref r, i), result);
-            left = result;
-            upperLeft = above;
+                left += TPixel.Load(ref Unsafe.Add(ref r, i));
+                TPixel.Store(ref Unsafe.Add(ref r, i), left);
+            }
+        }
+        else if (filter == PngFilter.Average)
+        {
+            Vector128<byte> left = Vector128<byte>.Zero;
+            for (int i = 0; i <= end; i += stride)
+            {
+                left = TPixel.Load(ref Unsafe.Add(ref r, i)) + FloorAverage(left, TPixel.Load(ref Unsafe.Add(ref p, i)));
+                TPixel.Store(ref Unsafe.Add(ref r, i), left);
+            }
+        }
+        else
+        {
+            // The pixel to the left stays in 16-bit lanes from one step to the next, so the chain each pixel waits on has no
+            // narrowing and widening in it; only the store narrows.
+            Vector128<short> left = Vector128<short>.Zero;
+            Vector128<short> upperLeft = Vector128<short>.Zero;
+            Vector128<short> low = Vector128.Create((short)0xFF);
+            for (int i = 0; i <= end; i += stride)
+            {
+                Vector128<short> raw = Vector128.WidenLower(TPixel.Load(ref Unsafe.Add(ref r, i))).AsInt16();
+                Vector128<short> above = Vector128.WidenLower(TPixel.Load(ref Unsafe.Add(ref p, i))).AsInt16();
+                left = (raw + Paeth(left, above, upperLeft)) & low;
+                TPixel.Store(ref Unsafe.Add(ref r, i), Vector128.Narrow(left.AsUInt16(), left.AsUInt16()));
+                upperLeft = above;
+            }
         }
     }
 
@@ -133,14 +152,10 @@ internal static class PngFilterSimd
         return (a & b) + Vector128.ShiftRightLogical(a ^ b, 1);
     }
 
-    /// <summary>The Paeth predictor for the low 8 bytes, branch-free in 16-bit lanes.</summary>
+    /// <summary>The Paeth predictor of 16-bit lanes holding byte values, branch-free.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static Vector128<byte> Paeth(Vector128<byte> left, Vector128<byte> above, Vector128<byte> upperLeft)
+    private static Vector128<short> Paeth(Vector128<short> a, Vector128<short> b, Vector128<short> c)
     {
-        Vector128<short> a = Vector128.WidenLower(left).AsInt16();
-        Vector128<short> b = Vector128.WidenLower(above).AsInt16();
-        Vector128<short> c = Vector128.WidenLower(upperLeft).AsInt16();
-
         // With p = a + b - c: |p - a| = |b - c|, |p - b| = |a - c|, |p - c| = |a + b - 2c|.
         Vector128<short> pa = Vector128.Abs(b - c);
         Vector128<short> pb = Vector128.Abs(a - c);
@@ -148,8 +163,7 @@ internal static class PngFilterSimd
 
         Vector128<short> useA = Vector128.LessThanOrEqual(pa, pb) & Vector128.LessThanOrEqual(pa, pc);
         Vector128<short> useB = Vector128.LessThanOrEqual(pb, pc);
-        Vector128<short> predicted = Vector128.ConditionalSelect(useA, a, Vector128.ConditionalSelect(useB, b, c));
-        return Vector128.Narrow(predicted.AsUInt16(), predicted.AsUInt16());
+        return Vector128.ConditionalSelect(useA, a, Vector128.ConditionalSelect(useB, b, c));
     }
 
     /// <summary>Loads and stores exactly one pixel of a given size in the low bytes of a vector.</summary>

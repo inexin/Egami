@@ -76,6 +76,11 @@ internal static class ImageTiming
             };
         }
 
+        scenarios["jpeg-decode-progressive-quarter"] = context =>
+        {
+            byte[] file = BenchFiles.Jpeg("photo-progressive.jpg");
+            return () => Raster.Load(file, context, new Formats.ReaderOptions { MinimumSize = new Size(1000, 750) }).Dispose();
+        };
         AddEncode(scenarios, "jpeg-encode-q75-420", PhotoRgb, JpegFormat.Info, new JpegWriterOptions { Quality = 75 });
         AddEncode(scenarios, "jpeg-encode-q90-444", PhotoRgb, JpegFormat.Info, new JpegWriterOptions { Quality = 90, Subsampling = ChromaSubsampling.Subsample444 });
         AddEncode(scenarios, "jpeg-encode-q90-444-optimized", PhotoRgb, JpegFormat.Info,
