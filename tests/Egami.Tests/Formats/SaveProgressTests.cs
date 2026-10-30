@@ -210,6 +210,31 @@ public class SaveProgressTests
     }
 
     [Fact]
+    public void MultiPageTiffCountsPagesInOrder()
+    {
+        using Raster<Rgba8> a = Gradient(64, 200, alpha: false);
+        using Raster<Rgba8> b = Gradient(64, 200, alpha: false);
+        using Raster<Rgba8> c = Gradient(64, 200, alpha: false);
+        List<SaveProgress> reports = [];
+        SaveReporter reporter = new(new Collect(reports), CancellationToken.None, new EveryCall());
+        using MemoryStream stream = new();
+        using (reporter.Enter(stream))
+        {
+            Raster.SaveAll([a, b, c], stream, TiffFormat.Info);
+        }
+
+        double previous = 0;
+        foreach (SaveProgress r in reports)
+        {
+            Assert.InRange(r.Fraction ?? previous, previous, 1);
+            previous = r.Fraction ?? previous;
+        }
+
+        Assert.Contains(reports, r => r.Fraction is > 0.34 and < 0.66);
+        Assert.Equal(3, reports[^1].Frames);
+    }
+
+    [Fact]
     public void SaveAllReportsFinal()
     {
         using Raster<Rgba8> a = Gradient(32, 32, alpha: false);

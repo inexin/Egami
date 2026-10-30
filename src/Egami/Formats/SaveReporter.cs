@@ -114,7 +114,7 @@ internal sealed class SaveReporter
         Cancellation.ThrowIfCancellationRequested();
         if (!_claimed && total > 0)
         {
-            Update((double)done / total);
+            Update(_partFrom + ((_partTo - _partFrom) * Math.Min(1, (double)done / total)));
         }
     }
 
