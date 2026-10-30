@@ -28,7 +28,7 @@ Each format also has its own method and its own `FormatInfo`, for an app that wa
 | [XPM](xpm.md) | `XpmFormat` | version 3, any number of characters a pixel, None, hex colors and X11 color names | every color of the raster, None below half alpha |
 | [WBMP](wbmp.md) | `WbmpFormat` | type 0, extension headers skipped | type 0, white where gray is at least half |
 | [Farbfeld](farbfeld.md) | `FarbfeldFormat` | 16-bit RGBA | 16-bit RGBA |
-| [DDS](dds.md) | `DdsFormat` | Legacy and DX10 headers, BC1 to BC7, every DXGI format DirectXTex reads; every surface and mip through `DdsReaderOptions` | No |
+| [DDS](dds.md) | `DdsFormat` | Legacy and DX10 headers, BC1 to BC7, every DXGI format DirectXTex reads; every surface and mip through `DdsReaderOptions` | Uncompressed formats and BC1 to BC5 with mips, arrays and cube maps |
 
 SGI and Farbfeld keep 16-bit samples and alpha. PCX, Sun raster and WBMP have no alpha, XPM only on or off, and a save that
 loses something the raster has says so in the Warnings, as Egami's own writers do. The formats with a run-length option take

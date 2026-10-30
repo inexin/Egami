@@ -84,8 +84,12 @@ public abstract class FormatDetails
     public abstract FormatDetails Copy();
 
     /// <summary>Forgets what the details say about color, once the pixels have been converted to another encoding.</summary>
-    /// <summary>Notes that an operation changed the pixels, so details that describe the stored pixels as loaded no longer hold.</summary>
-    internal virtual void PixelsChanged()
+    /// <summary>
+    /// Notes that an operation changed the pixels, so details that describe the stored pixels as loaded no longer hold. Egami
+    /// calls it on the details of every raster an operation writes; a format's details override it to drop what was true only
+    /// of the pixels as loaded, such as a copy of their stored bytes. Does nothing by default.
+    /// </summary>
+    protected internal virtual void PixelsChanged()
     {
     }
 

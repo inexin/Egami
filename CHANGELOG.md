@@ -53,10 +53,19 @@ DDS textures, stage A (reading). All additive; it ships with the rest of DDS in 
   `ReaderOptions.MinimumSize` picks the smallest mip that covers it. `DdsReaderOptions.ReconstructNormalZ` rebuilds blue for
   two-channel normal maps. `DdsDetails` keeps the DXGI format, mips, dimension, cube flag and alpha mode.
 
+DDS textures, stage B (writing).
+
+- Save writes DDS: the uncompressed formats and BC1 to BC5 (`DdsTextureFormat`), with a full mip chain made by `MipChain`
+  (`DdsWriterOptions.MipLevels`), an encoder effort of 0 to 6 (`Effort`), sRGB formats (`Srgb`), premultiplied alpha
+  (`PremultipliedAlpha`, DXT2 and DXT4 under the legacy header) and the legacy header whenever the format allows
+  (`Dx10Header` forces DX10). SaveAll writes texture arrays and cube maps (`Cube`). A raster loaded at mip 0 and unchanged
+  since writes the file's own mips.
+
 ## Egami, unreleased
 
-- `IMultiImageReader` is public, so a format plugin's files can hold several images that LoadAll returns, as TIFF pages and
-  DDS surfaces are. Additive.
+- `IMultiImageReader` and `IMultiImageWriter` are public, so a format plugin's files can hold several images that LoadAll
+  returns and SaveAll writes, as TIFF pages and DDS surfaces are; `FormatDetails.PixelsChanged` is overridable, so a plugin's
+  details can drop what held only for the pixels as loaded. Additive.
 
 - Progress on long saves. All additive. `SaveProgress`, and overloads of `Save`, `SaveAsync`, `SaveAll`, `Transcode` and
   `TranscodeAsync` that take an `IProgress<SaveProgress>` and a `CancellationToken`, shaped like Egami.Video's

@@ -395,7 +395,8 @@ public sealed class TiffDetails : FormatDetails
     /// <summary>Gets or sets whether a WebP page's first unit was lossless, which a re-save keeps.</summary>
     internal bool WebpLossless { get; set; }
 
-    internal override void PixelsChanged() => Unchanged = false;
+    /// <inheritdoc/>
+    protected internal override void PixelsChanged() => Unchanged = false;
 
     /// <inheritdoc/>
     public override FormatDetails Copy()

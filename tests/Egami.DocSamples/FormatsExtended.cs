@@ -182,6 +182,40 @@ public class FormatsExtended
         Assert.Equal(32, normals.Width);
     }
 
+    [Fact]
+    public void DdsSave()
+    {
+        using SampleFiles files = new();
+        WriteTexture("sky.dds", faces: 6, size: 32);
+        EgamiContext context = EgamiContext.Default.WithDds();
+        using Raster image = Raster.Load("duck.png");
+
+        #region dds-save
+        // A BC3 texture with its full mip chain: the format, mip count, effort (0 to 6) and header are options.
+        using (FileStream output = File.Create("duck.dds"))
+        {
+            image.Save(output, DdsFormat.Info, new DdsWriterOptions { Format = DdsTextureFormat.Bc3, Effort = 5 });
+        }
+
+        // An sRGB colour texture without mips, in the DX10 header.
+        using (FileStream output = File.Create("duck-srgb.dds"))
+        {
+            image.Save(output, DdsFormat.Info, new DdsWriterOptions { Format = DdsTextureFormat.Bc1, Srgb = true, MipLevels = 1 });
+        }
+
+        // Six faces back into a cube map; SaveAll without Cube writes a texture array.
+        using RasterList faces = Raster.LoadAll("sky.dds", context);
+        using (FileStream output = File.Create("sky-bc1.dds"))
+        {
+            Raster.SaveAll(faces, output, DdsFormat.Info, new DdsWriterOptions { Cube = true, Format = DdsTextureFormat.Bc1 });
+        }
+        #endregion
+
+        Assert.True(((DdsDetails)Raster.Load("sky-bc1.dds", context).Metadata.FormatDetails!).IsCube);
+        Assert.True(((DdsDetails)Raster.Load("duck.dds", context).Metadata.FormatDetails!).MipLevels > 1);
+        Assert.True(((DdsDetails)Raster.Load("duck-srgb.dds", context).Metadata.FormatDetails!).IsSrgb);
+    }
+
     /// <summary>Writes an R8G8B8A8 DDS of <paramref name="faces"/> faces (6 makes a cube map) with a full mip chain.</summary>
     private static void WriteTexture(string path, int faces, int size)
     {

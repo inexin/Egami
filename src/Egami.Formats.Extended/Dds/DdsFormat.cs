@@ -5,14 +5,15 @@ namespace Egami.Formats.Extended.Dds;
 /// <summary>
 /// DDS (DirectDraw Surface), the texture container of Direct3D and most game engines: a header, then every mip level of every
 /// face, array slice or depth slice, uncompressed or in BC1 to BC7 blocks. Load gives mip 0 of the first surface; LoadAll and
-/// <see cref="DdsReaderOptions"/> reach the others. Registered with <see cref="ExtendedContextExtensions.WithDds"/>.
+/// <see cref="DdsReaderOptions"/> reach the others. Save writes a texture with a full mip chain, SaveAll an array or a cube map
+/// (<see cref="DdsWriterOptions"/>). Registered with <see cref="ExtendedContextExtensions.WithDds"/>.
 /// </summary>
 /// <example>
 /// <code language="csharp" source="../../../tests/Egami.DocSamples/FormatsExtended.cs" region="dds-load"/>
 /// </example>
 public static class DdsFormat
 {
-    /// <summary>Gets the format's registration: name, MIME types, extensions, signature and reader.</summary>
+    /// <summary>Gets the format's registration: name, MIME types, extensions, signature, reader and writer.</summary>
     public static FormatInfo Info { get; } = new()
     {
         Name = "DDS",
@@ -21,6 +22,7 @@ public static class DdsFormat
         SignatureLength = 8,
         Matches = DdsHeader.Matches,
         Reader = new DdsReader(),
+        Writer = new DdsWriter(),
     };
 }
 
@@ -110,11 +112,15 @@ public sealed class DdsDetails : FormatDetails
     /// <summary>Gets or sets the mip level this raster is; 0 is full size.</summary>
     public int MipLevel { get; set; }
 
+    /// <summary>Gets or sets the stored bytes of mips 1 and on, kept while the raster is unchanged, so a save rewrites them as they were.</summary>
+    internal StoredMips? Mips { get; set; }
+
     /// <inheritdoc/>
     public override FormatDetails Copy()
     {
         return new DdsDetails
         {
+            Mips = Mips,
             DxgiFormat = DxgiFormat,
             FormatName = FormatName,
             FourCC = FourCC,
@@ -130,6 +136,25 @@ public sealed class DdsDetails : FormatDetails
             MipLevel = MipLevel,
         };
     }
+
+    /// <inheritdoc/>
+    protected override void PixelsChanged() => Mips = null;
+}
+
+/// <summary>The stored mips 1 and on of a surface a load read at mip 0, filled once its last row has decoded.</summary>
+internal sealed class StoredMips
+{
+    /// <summary>Gets or sets the DXGI format they are stored in.</summary>
+    public int Dxgi { get; set; }
+
+    /// <summary>Gets or sets the size of mip 0.</summary>
+    public Size Size { get; set; }
+
+    /// <summary>Gets or sets the number of mips the bytes hold, after mip 0.</summary>
+    public int Count { get; set; }
+
+    /// <summary>Gets or sets the bytes, or <see langword="null"/> until the load has read them.</summary>
+    public byte[]? Bytes { get; set; }
 }
 
 /// <summary>Options for reading DDS.</summary>
