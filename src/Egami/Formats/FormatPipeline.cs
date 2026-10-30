@@ -9,6 +9,37 @@ internal static class FormatPipeline
 {
     internal static Raster Load(Stream stream, EgamiContext context, ReaderOptions options, CancellationToken cancellationToken)
     {
+        using TraceSpan span = Tracer.Start(Tracer.Load, stream);
+        try
+        {
+            Raster raster = LoadCore(stream, context, options, cancellationToken);
+            span.Tag(raster);
+            return raster;
+        }
+        catch (Exception e) when (span.Fail(e))
+        {
+            throw;
+        }
+    }
+
+    internal static Raster<TPixel> Load<TPixel>(Stream stream, EgamiContext context, ReaderOptions options, CancellationToken cancellationToken)
+        where TPixel : unmanaged, IPixelType<TPixel>
+    {
+        using TraceSpan span = Tracer.Start(Tracer.Load, stream);
+        try
+        {
+            Raster<TPixel> raster = LoadCore<TPixel>(stream, context, options, cancellationToken);
+            span.Tag(raster);
+            return raster;
+        }
+        catch (Exception e) when (span.Fail(e))
+        {
+            throw;
+        }
+    }
+
+    private static Raster LoadCore(Stream stream, EgamiContext context, ReaderOptions options, CancellationToken cancellationToken)
+    {
         if (options.ConvertColorTo is Colors.ColorProfile target)
         {
             return ColorLoad.Natural(Load(stream, context, options with { ConvertColorTo = null }, cancellationToken), target);
@@ -38,7 +69,7 @@ internal static class FormatPipeline
         }, cancellationToken);
     }
 
-    internal static Raster<TPixel> Load<TPixel>(Stream stream, EgamiContext context, ReaderOptions options, CancellationToken cancellationToken)
+    private static Raster<TPixel> LoadCore<TPixel>(Stream stream, EgamiContext context, ReaderOptions options, CancellationToken cancellationToken)
         where TPixel : unmanaged, IPixelType<TPixel>
     {
         if (options.ConvertColorTo is Colors.ColorProfile target)
@@ -72,7 +103,17 @@ internal static class FormatPipeline
 
     internal static RasterInfo Probe(Stream stream, EgamiContext context, ReaderOptions options, CancellationToken cancellationToken)
     {
-        return Run(stream, context, options, (format, input) => ProbeCore(format, input, options), cancellationToken);
+        using TraceSpan span = Tracer.Start(Tracer.Probe, stream);
+        try
+        {
+            RasterInfo info = Run(stream, context, options, (format, input) => ProbeCore(format, input, options), cancellationToken);
+            span.Tag(info);
+            return info;
+        }
+        catch (Exception e) when (span.Fail(e))
+        {
+            throw;
+        }
     }
 
     /// <summary>
@@ -228,6 +269,21 @@ internal static class FormatPipeline
     internal static RasterList LoadAll(Stream stream, EgamiContext context, ReaderOptions options, Func<Stream, ReaderOptions, Raster> load, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(stream);
+        using TraceSpan span = Tracer.Start(Tracer.Load, stream);
+        try
+        {
+            RasterList rasters = LoadAllCore(stream, context, options, load, cancellationToken);
+            span.Tag(rasters.Count > 0 ? rasters[0].Metadata.FormatName : null, rasters.Count);
+            return rasters;
+        }
+        catch (Exception e) when (span.Fail(e))
+        {
+            throw;
+        }
+    }
+
+    private static RasterList LoadAllCore(Stream stream, EgamiContext context, ReaderOptions options, Func<Stream, ReaderOptions, Raster> load, CancellationToken cancellationToken)
+    {
         if (!stream.CanSeek)
         {
             (byte[] buffer, int length) = ReadAll(stream, context, cancellationToken);
@@ -331,6 +387,20 @@ internal static class FormatPipeline
     /// </summary>
     internal static void SaveAll(IReadOnlyList<Raster> rasters, Stream output, FormatInfo format, WriterOptions options)
     {
+        using TraceSpan span = Tracer.Start(Tracer.Save, output);
+        span.Tag(format.Name, rasters.Count);
+        try
+        {
+            SaveAllCore(rasters, output, format, options);
+        }
+        catch (Exception e) when (span.Fail(e))
+        {
+            throw;
+        }
+    }
+
+    private static void SaveAllCore(IReadOnlyList<Raster> rasters, Stream output, FormatInfo format, WriterOptions options)
+    {
         IFormatWriter writer = format.Writer ?? throw new UnsupportedFormatException($"The {format.Name} format has no writer.");
         if (rasters.Count == 0)
         {
@@ -374,7 +444,22 @@ internal static class FormatPipeline
     private static async Task SaveAsync<TPixel>(Raster<TPixel> raster, Stream stream, FormatInfo format, WriterOptions options, SaveReporter? reporter, CancellationToken cancellationToken)
         where TPixel : unmanaged, IPixelType<TPixel>
     {
-        raster.ThrowIfDisposed();
+        using TraceSpan span = Tracer.Start(Tracer.Save, stream);
+        try
+        {
+            raster.ThrowIfDisposed();
+            span.Tag(raster, format.Name);
+            await SaveAsyncCore(raster, stream, format, options, reporter, cancellationToken).ConfigureAwait(false);
+        }
+        catch (Exception e) when (span.Fail(e))
+        {
+            throw;
+        }
+    }
+
+    private static async Task SaveAsyncCore<TPixel>(Raster<TPixel> raster, Stream stream, FormatInfo format, WriterOptions options, SaveReporter? reporter, CancellationToken cancellationToken)
+        where TPixel : unmanaged, IPixelType<TPixel>
+    {
         IFormatWriter writer = format.Writer ?? throw new UnsupportedFormatException($"The {format.Name} format has no writer.");
         using SaveReporter.Scope scope = reporter?.Enter(stream) ?? default;
         if (writer is not IRowFormatWriter rows)
@@ -462,6 +547,38 @@ internal static class FormatPipeline
     internal static async Task<Raster<TPixel>> LoadAsync<TPixel>(Stream stream, EgamiContext context, ReaderOptions options, CancellationToken cancellationToken)
         where TPixel : unmanaged, IPixelType<TPixel>
     {
+        using TraceSpan span = Tracer.Start(Tracer.Load, stream);
+        try
+        {
+            Raster<TPixel> raster = await LoadAsyncCore<TPixel>(stream, context, options, cancellationToken).ConfigureAwait(false);
+            span.Tag(raster);
+            return raster;
+        }
+        catch (Exception e) when (span.Fail(e))
+        {
+            throw;
+        }
+    }
+
+    /// <summary>Loads asynchronously in the natural pixel type. See <see cref="LoadAsync{TPixel}"/>.</summary>
+    internal static async Task<Raster> LoadAsync(Stream stream, EgamiContext context, ReaderOptions options, CancellationToken cancellationToken)
+    {
+        using TraceSpan span = Tracer.Start(Tracer.Load, stream);
+        try
+        {
+            Raster raster = await LoadAsyncCore(stream, context, options, cancellationToken).ConfigureAwait(false);
+            span.Tag(raster);
+            return raster;
+        }
+        catch (Exception e) when (span.Fail(e))
+        {
+            throw;
+        }
+    }
+
+    private static async Task<Raster<TPixel>> LoadAsyncCore<TPixel>(Stream stream, EgamiContext context, ReaderOptions options, CancellationToken cancellationToken)
+        where TPixel : unmanaged, IPixelType<TPixel>
+    {
         if (options.ConvertColorTo is Colors.ColorProfile target)
         {
             return ColorLoad.Typed<TPixel>(await LoadAsync(stream, context, options with { ConvertColorTo = null }, cancellationToken).ConfigureAwait(false), target);
@@ -477,8 +594,7 @@ internal static class FormatPipeline
         return load.Decoder.HeaderRead ? Named(raster, load.Decoder.Info.Format) : raster;
     }
 
-    /// <summary>Loads asynchronously in the natural pixel type. See <see cref="LoadAsync{TPixel}"/>.</summary>
-    internal static async Task<Raster> LoadAsync(Stream stream, EgamiContext context, ReaderOptions options, CancellationToken cancellationToken)
+    private static async Task<Raster> LoadAsyncCore(Stream stream, EgamiContext context, ReaderOptions options, CancellationToken cancellationToken)
     {
         if (options.ConvertColorTo is Colors.ColorProfile target)
         {
@@ -566,6 +682,21 @@ internal static class FormatPipeline
     /// A seekable stream ends just past the bytes the header used.
     /// </summary>
     internal static async Task<RasterInfo> ProbeAsync(Stream stream, EgamiContext context, ReaderOptions options, CancellationToken cancellationToken)
+    {
+        using TraceSpan span = Tracer.Start(Tracer.Probe, stream);
+        try
+        {
+            RasterInfo info = await ProbeAsyncCore(stream, context, options, cancellationToken).ConfigureAwait(false);
+            span.Tag(info);
+            return info;
+        }
+        catch (Exception e) when (span.Fail(e))
+        {
+            throw;
+        }
+    }
+
+    private static async Task<RasterInfo> ProbeAsyncCore(Stream stream, EgamiContext context, ReaderOptions options, CancellationToken cancellationToken)
     {
         long start = stream.CanSeek ? stream.Position : -1;
         byte[] buffer = ArrayPool<byte>.Shared.Rent(64 * 1024);

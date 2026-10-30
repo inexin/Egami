@@ -1,3 +1,6 @@
+using System.Collections.Concurrent;
+using System.Diagnostics;
+
 using Egami.Formats;
 using Egami.Formats.Png;
 
@@ -153,6 +156,27 @@ public class Diagnostics
         #endregion
 
         Assert.Equal("Avi.IndexRebuilt", Assert.Single(seen).Id);
+    }
+
+    [Fact]
+    public void Tracing()
+    {
+        ConcurrentQueue<string> spans = new();
+
+        #region tracing
+        // With OpenTelemetry, one line at startup: builder.Services.AddOpenTelemetry().WithTracing(t => t.AddSource(EgamiTracing.SourceName)).
+        // Without it, any ActivityListener hears the same activities. With neither, Egami starts none.
+        using ActivityListener listener = new()
+        {
+            ShouldListenTo = source => source.Name == EgamiTracing.SourceName,
+            Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllDataAndRecorded,
+            ActivityStopped = activity => spans.Enqueue($"{activity.OperationName} {activity.GetTagItem("egami.format")} {activity.Duration.TotalMilliseconds:F1} ms"),
+        };
+        ActivitySource.AddActivityListener(listener);
+        #endregion
+
+        using Raster image = Raster.Load(SampleFiles.Damaged());
+        Assert.Contains(spans, span => span.StartsWith("Egami.Load PNG", StringComparison.Ordinal));
     }
 
     // Stand-ins with the shape of Microsoft.Extensions.Logging and Serilog, which the samples do not reference.
