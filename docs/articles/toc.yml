@@ -40,6 +40,8 @@
       href: formats/gif.md
     - name: HEIC
       href: formats/heic.md
+    - name: ICNS
+      href: formats/icns.md
     - name: ICO and CUR
       href: formats/ico.md
     - name: ISO BMFF boxes

@@ -40,6 +40,19 @@ Video Build Plan task 31: HEVC decode speed. No API changes.
 
 ## Egami, unreleased
 
+Small format gaps from the on-demand list. All additive.
+
+- ICNS: Apple icon families read and write, registered in `EgamiContext.Default` next to ICO (`IcnsFormat`,
+  `IcnsReaderOptions`, `IcnsWriterOptions`, `IcnsDetails`, `IcnsEntry`, `IcnsEntryEncoding`). Every entry kind reads: PNG,
+  JPEG 2000, run-length encoded ARGB, run-length encoded RGB with its 8-bit mask, and the old 1, 4 and 8-bit icons on the
+  Mac OS palettes with their 1-bit mask. Load gives the best entry and LoadAll every entry; Save writes 8-bit RGBA PNG
+  entries, one a raster or `IcnsWriterOptions.MacSizes` (16 to 1024) resized from one, with a table of contents.
+- BMP: `BmpWriterOptions.RunLength` writes `Indexed4` and `Indexed8` as RLE4 and RLE8, which ImageMagick and Pillow read
+  with the same pixels. OS/2 Huffman 1D files, which threw `UnsupportedFormatException`, now load, with
+  `BmpCompression.Huffman1D` in their details.
+- `ColorProfile.ToIccV2` writes a version 2.4 ICC profile for software that reads only version 2: `curv` curves, text tags
+  and the encoding's own white point. Little CMS converts through it as through the version 4 profile, within 1 in 255.
+
 - Progress on long saves. All additive. `SaveProgress`, and overloads of `Save`, `SaveAsync`, `SaveAll`, `Transcode` and
   `TranscodeAsync` that take an `IProgress<SaveProgress>` and a `CancellationToken`, shaped like Egami.Video's
   `MediaProgress`: a report as the save starts, at most one every 250 ms, and a final one. Row writers (PNG, JPEG, BMP, TGA,

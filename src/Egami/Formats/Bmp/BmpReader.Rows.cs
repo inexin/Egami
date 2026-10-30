@@ -105,7 +105,7 @@ internal sealed partial class BmpReader : IRowSourceReader, IIncrementalFormatRe
             return false;
         }
 
-        if (header.Embedded || header.Compression is BmpCompression.Rle4 or BmpCompression.Rle8 or BmpCompression.Rle24 || header.Width < 1 || header.Height < 1)
+        if (header.Embedded || header.Compression is BmpCompression.Rle4 or BmpCompression.Rle8 or BmpCompression.Rle24 or BmpCompression.Huffman1D || header.Width < 1 || header.Height < 1)
         {
             return false;
         }

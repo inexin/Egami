@@ -30,3 +30,68 @@ static Egami.SaveProgress.operator !=(Egami.SaveProgress left, Egami.SaveProgres
 static Egami.SaveProgress.operator ==(Egami.SaveProgress left, Egami.SaveProgress right) -> bool
 ~override Egami.SaveProgress.Equals(object obj) -> bool
 ~override Egami.SaveProgress.ToString() -> string
+Egami.Formats.Bmp.BmpCompression.Huffman1D = 8 -> Egami.Formats.Bmp.BmpCompression
+Egami.Formats.Bmp.BmpWriterOptions.RunLength.get -> bool
+Egami.Formats.Bmp.BmpWriterOptions.RunLength.init -> void
+Egami.Formats.Icns.IcnsDetails
+Egami.Formats.Icns.IcnsDetails.BitsPerPixel.get -> int
+Egami.Formats.Icns.IcnsDetails.BitsPerPixel.set -> void
+Egami.Formats.Icns.IcnsDetails.Encoding.get -> Egami.Formats.Icns.IcnsEntryEncoding
+Egami.Formats.Icns.IcnsDetails.Encoding.set -> void
+Egami.Formats.Icns.IcnsDetails.Entries.get -> System.Collections.Generic.IReadOnlyList<Egami.Formats.Icns.IcnsEntry!>!
+Egami.Formats.Icns.IcnsDetails.Entries.set -> void
+Egami.Formats.Icns.IcnsDetails.IcnsDetails() -> void
+Egami.Formats.Icns.IcnsDetails.Index.get -> int
+Egami.Formats.Icns.IcnsDetails.Index.set -> void
+Egami.Formats.Icns.IcnsDetails.Type.get -> string!
+Egami.Formats.Icns.IcnsDetails.Type.set -> void
+Egami.Formats.Icns.IcnsEntry
+Egami.Formats.Icns.IcnsEntry.<Clone>$() -> Egami.Formats.Icns.IcnsEntry!
+Egami.Formats.Icns.IcnsEntry.BitsPerPixel.get -> int
+Egami.Formats.Icns.IcnsEntry.BitsPerPixel.init -> void
+Egami.Formats.Icns.IcnsEntry.Deconstruct(out string! Type, out int Width, out int Height, out int BitsPerPixel, out Egami.Formats.Icns.IcnsEntryEncoding Encoding) -> void
+Egami.Formats.Icns.IcnsEntry.Encoding.get -> Egami.Formats.Icns.IcnsEntryEncoding
+Egami.Formats.Icns.IcnsEntry.Encoding.init -> void
+Egami.Formats.Icns.IcnsEntry.Equals(Egami.Formats.Icns.IcnsEntry? other) -> bool
+Egami.Formats.Icns.IcnsEntry.Height.get -> int
+Egami.Formats.Icns.IcnsEntry.Height.init -> void
+Egami.Formats.Icns.IcnsEntry.IcnsEntry(string! Type, int Width, int Height, int BitsPerPixel, Egami.Formats.Icns.IcnsEntryEncoding Encoding) -> void
+Egami.Formats.Icns.IcnsEntry.Type.get -> string!
+Egami.Formats.Icns.IcnsEntry.Type.init -> void
+Egami.Formats.Icns.IcnsEntry.Width.get -> int
+Egami.Formats.Icns.IcnsEntry.Width.init -> void
+Egami.Formats.Icns.IcnsEntryEncoding
+Egami.Formats.Icns.IcnsEntryEncoding.Argb = 2 -> Egami.Formats.Icns.IcnsEntryEncoding
+Egami.Formats.Icns.IcnsEntryEncoding.Indexed = 4 -> Egami.Formats.Icns.IcnsEntryEncoding
+Egami.Formats.Icns.IcnsEntryEncoding.Jpeg2000 = 1 -> Egami.Formats.Icns.IcnsEntryEncoding
+Egami.Formats.Icns.IcnsEntryEncoding.Png = 0 -> Egami.Formats.Icns.IcnsEntryEncoding
+Egami.Formats.Icns.IcnsEntryEncoding.Rgb = 3 -> Egami.Formats.Icns.IcnsEntryEncoding
+Egami.Formats.Icns.IcnsFormat
+Egami.Formats.Icns.IcnsReaderOptions
+Egami.Formats.Icns.IcnsReaderOptions.Entry.get -> int?
+Egami.Formats.Icns.IcnsReaderOptions.Entry.init -> void
+Egami.Formats.Icns.IcnsReaderOptions.Equals(Egami.Formats.Icns.IcnsReaderOptions? other) -> bool
+Egami.Formats.Icns.IcnsReaderOptions.IcnsReaderOptions() -> void
+Egami.Formats.Icns.IcnsWriterOptions
+Egami.Formats.Icns.IcnsWriterOptions.Filter.get -> Egami.Operations.ResampleFilter
+Egami.Formats.Icns.IcnsWriterOptions.Filter.init -> void
+Egami.Formats.Icns.IcnsWriterOptions.IcnsWriterOptions() -> void
+Egami.Formats.Icns.IcnsWriterOptions.Sizes.get -> System.Collections.Generic.IReadOnlyList<int>?
+Egami.Formats.Icns.IcnsWriterOptions.Sizes.init -> void
+override Egami.Formats.Icns.IcnsDetails.Copy() -> Egami.Metadata.FormatDetails!
+override Egami.Formats.Icns.IcnsEntry.Equals(object? obj) -> bool
+override Egami.Formats.Icns.IcnsEntry.GetHashCode() -> int
+override Egami.Formats.Icns.IcnsEntry.ToString() -> string!
+override Egami.Formats.Icns.IcnsReaderOptions.<Clone>$() -> Egami.Formats.Icns.IcnsReaderOptions!
+override Egami.Formats.Icns.IcnsReaderOptions.Equals(object? obj) -> bool
+override Egami.Formats.Icns.IcnsReaderOptions.GetHashCode() -> int
+override Egami.Formats.Icns.IcnsReaderOptions.ToString() -> string!
+override sealed Egami.Formats.Icns.IcnsReaderOptions.Equals(Egami.Formats.ReaderOptions? other) -> bool
+static Egami.Formats.Icns.IcnsEntry.operator !=(Egami.Formats.Icns.IcnsEntry? left, Egami.Formats.Icns.IcnsEntry? right) -> bool
+static Egami.Formats.Icns.IcnsEntry.operator ==(Egami.Formats.Icns.IcnsEntry? left, Egami.Formats.Icns.IcnsEntry? right) -> bool
+static Egami.Formats.Icns.IcnsFormat.Info.get -> Egami.Formats.FormatInfo!
+static Egami.Formats.Icns.IcnsReaderOptions.operator !=(Egami.Formats.Icns.IcnsReaderOptions? left, Egami.Formats.Icns.IcnsReaderOptions? right) -> bool
+static Egami.Formats.Icns.IcnsReaderOptions.operator ==(Egami.Formats.Icns.IcnsReaderOptions? left, Egami.Formats.Icns.IcnsReaderOptions? right) -> bool
+static Egami.Formats.Icns.IcnsWriterOptions.Default.get -> Egami.Formats.Icns.IcnsWriterOptions!
+static Egami.Formats.Icns.IcnsWriterOptions.MacSizes.get -> System.Collections.Generic.IReadOnlyList<int>!
+Egami.Colors.ColorProfile.ToIccV2() -> byte[]!
