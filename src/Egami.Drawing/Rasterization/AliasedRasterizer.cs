@@ -30,9 +30,11 @@ internal sealed class AliasedRasterizer
 
     internal void Band(int start, int end, Workspace workspace, ISpanSink sink)
     {
-        List<int> active = [];
-        int nextEdge = 0;
+        // The active edges in the order they joined, kept in an array; the crossings' buffer has room for every edge.
+        int[] active = new int[_byTop.Length];
+        int count = 0, nextEdge = 0;
         Span<byte> scratch = workspace.Coverage.Get(_area.Width);
+        Span<Crossing> buffer = workspace.Crossings.Get(Math.Max(1, _byTop.Length));
         for (int row = start; row < end; row++)
         {
             float center = _area.Y + row + 0.5f;
@@ -40,27 +42,36 @@ internal sealed class AliasedRasterizer
             // Edges whose top is above this center join; those whose bottom is at or above it leave.
             while (nextEdge < _byTop.Length && Top(_byTop[nextEdge]) <= center)
             {
-                active.Add(_byTop[nextEdge++]);
+                active[count++] = _byTop[nextEdge++];
             }
 
-            active.RemoveAll(e => Bottom(e) <= center);
-            Span<Crossing> crossings = workspace.Crossings.Get(Math.Max(1, active.Count));
-            int n = 0;
-            foreach (int e in active)
+            int kept = 0;
+            for (int k = 0; k < count; k++)
             {
+                if (Bottom(active[k]) > center)
+                {
+                    active[kept++] = active[k];
+                }
+            }
+
+            count = kept;
+            int n = 0;
+            for (int k = 0; k < count; k++)
+            {
+                int e = active[k];
                 float x0 = _edges[4 * e], y0 = _edges[(4 * e) + 1], x1 = _edges[(4 * e) + 2], y1 = _edges[(4 * e) + 3];
                 if (center < MathF.Min(y0, y1))
                 {
                     continue;
                 }
 
-                crossings[n].X = (float)(x0 + ((center - (double)y0) * (x1 - (double)x0) / (y1 - (double)y0)));
-                crossings[n].Winding = y1 > y0 ? 1 : -1;
+                buffer[n].X = (float)(x0 + ((center - (double)y0) * (x1 - (double)x0) / (y1 - (double)y0)));
+                buffer[n].Winding = y1 > y0 ? 1 : -1;
                 n++;
             }
 
-            crossings = crossings[..n];
-            crossings.Sort(static (a, b) => a.X.CompareTo(b.X));
+            Span<Crossing> crossings = buffer[..n];
+            Sort(crossings);
             int winding = 0;
             int runStart = int.MinValue, runEnd = int.MinValue;
             for (int i = 0; i < n - 1; i++)
@@ -99,6 +110,32 @@ internal sealed class AliasedRasterizer
             {
                 sink.Fill(_area.Y + row, runStart, runEnd - runStart, 255, scratch);
             }
+        }
+    }
+
+    /// <summary>
+    /// Sorts crossings by x: by insertion for the few most rows have, else by Span.Sort. Crossings at the same x bound no pixels
+    /// between them, so their order among themselves never changes the runs.
+    /// </summary>
+    private static void Sort(Span<Crossing> crossings)
+    {
+        if (crossings.Length > 16)
+        {
+            crossings.Sort(static (a, b) => a.X.CompareTo(b.X));
+            return;
+        }
+
+        for (int i = 1; i < crossings.Length; i++)
+        {
+            Crossing c = crossings[i];
+            int j = i - 1;
+            while (j >= 0 && crossings[j].X.CompareTo(c.X) > 0)
+            {
+                crossings[j + 1] = crossings[j];
+                j--;
+            }
+
+            crossings[j + 1] = c;
         }
     }
 
