@@ -144,6 +144,10 @@ The values are fixed: they never change between releases.</p>
   
   <dd><p>The darker of the two colors, per channel.</p>
 </dd>
+    <dt id="Egami_Operations_BlendMode_DarkerColor"><code>DarkerColor = 37</code></dt>
+  
+  <dd><p>The whole color, source or destination, whose luminosity is lower.</p>
+</dd>
     <dt id="Egami_Operations_BlendMode_Destination"><code>Destination = 3</code></dt>
   
   <dd><p>The destination is kept: <code>d</code>. Drawing with it changes nothing.</p>
@@ -168,6 +172,16 @@ The values are fixed: they never change between releases.</p>
   
   <dd><p>The absolute difference of the colors: <code>B = |Cd − Cs|</code>.</p>
 </dd>
+    <dt id="Egami_Operations_BlendMode_Dissolve"><code>Dissolve = 39</code></dt>
+  
+  <dd><p>Each source pixel is drawn fully or not at all, with a chance equal to its alpha (opacity included), then source-over. The
+pattern is a fixed hash of the pixel's place, not Photoshop's: DrawImage and Fill place it by canvas position, and
+<a class="xref" href="Egami.Operations.Compositor.html">Compositor</a> by the index in the row, so it repeats from row to row there.</p>
+</dd>
+    <dt id="Egami_Operations_BlendMode_Divide"><code>Divide = 31</code></dt>
+  
+  <dd><p>Divides the destination by the source, clamped: <code>B = min(1, Cd / Cs)</code>; black in the source gives white.</p>
+</dd>
     <dt id="Egami_Operations_BlendMode_Exclusion"><code>Exclusion = 24</code></dt>
   
   <dd><p>Like <a class="xref" href="Egami.Operations.BlendMode.html#Egami_Operations_BlendMode_Difference">Difference</a> with lower contrast: <code>B = Cs + Cd − 2·Cs·Cd</code>.</p>
@@ -176,6 +190,10 @@ The values are fixed: they never change between releases.</p>
   
   <dd><p>Multiplies where the source is dark and screens where it is light, as a harsh spotlight would.</p>
 </dd>
+    <dt id="Egami_Operations_BlendMode_HardMix"><code>HardMix = 36</code></dt>
+  
+  <dd><p>Each channel to 0 or 1: <code>B = 1</code> where <code>Cd + Cs ≥ 1</code>, else 0.</p>
+</dd>
     <dt id="Egami_Operations_BlendMode_Hue"><code>Hue = 27</code></dt>
   
   <dd><p>The source's hue with the destination's saturation and luminosity.</p>
@@ -183,6 +201,18 @@ The values are fixed: they never change between releases.</p>
     <dt id="Egami_Operations_BlendMode_Lighten"><code>Lighten = 18</code></dt>
   
   <dd><p>The lighter of the two colors, per channel.</p>
+</dd>
+    <dt id="Egami_Operations_BlendMode_LighterColor"><code>LighterColor = 38</code></dt>
+  
+  <dd><p>The whole color, source or destination, whose luminosity is higher.</p>
+</dd>
+    <dt id="Egami_Operations_BlendMode_LinearBurn"><code>LinearBurn = 32</code></dt>
+  
+  <dd><p>The sum of the colors less 1, clamped: <code>B = max(0, Cd + Cs − 1)</code>. Darkens more than <a class="xref" href="Egami.Operations.BlendMode.html#Egami_Operations_BlendMode_Multiply">Multiply</a>.</p>
+</dd>
+    <dt id="Egami_Operations_BlendMode_LinearLight"><code>LinearLight = 33</code></dt>
+  
+  <dd><p><a class="xref" href="Egami.Operations.BlendMode.html#Egami_Operations_BlendMode_LinearBurn">LinearBurn</a> where the source is dark, <a class="xref" href="Egami.Operations.BlendMode.html#Egami_Operations_BlendMode_Add">Add</a> where it is light: <code>B = clamp(Cd + 2·Cs − 1)</code>.</p>
 </dd>
     <dt id="Egami_Operations_BlendMode_Luminosity"><code>Luminosity = 30</code></dt>
   
@@ -199,6 +229,10 @@ The values are fixed: they never change between releases.</p>
     <dt id="Egami_Operations_BlendMode_Overlay"><code>Overlay = 16</code></dt>
   
   <dd><p>Multiplies or screens depending on the destination, raising contrast: <a class="xref" href="Egami.Operations.BlendMode.html#Egami_Operations_BlendMode_HardLight">HardLight</a> with the layers swapped.</p>
+</dd>
+    <dt id="Egami_Operations_BlendMode_PinLight"><code>PinLight = 35</code></dt>
+  
+  <dd><p><a class="xref" href="Egami.Operations.BlendMode.html#Egami_Operations_BlendMode_Darken">Darken</a> with 2·Cs where the source is dark, <a class="xref" href="Egami.Operations.BlendMode.html#Egami_Operations_BlendMode_Lighten">Lighten</a> with 2·Cs − 1 where it is light.</p>
 </dd>
     <dt id="Egami_Operations_BlendMode_Plus"><code>Plus = 12</code></dt>
   
@@ -239,6 +273,10 @@ The values are fixed: they never change between releases.</p>
     <dt id="Egami_Operations_BlendMode_Subtract"><code>Subtract = 26</code></dt>
   
   <dd><p>The source taken from the destination, clamped: <code>B = max(0, Cd − Cs)</code>.</p>
+</dd>
+    <dt id="Egami_Operations_BlendMode_VividLight"><code>VividLight = 34</code></dt>
+  
+  <dd><p><a class="xref" href="Egami.Operations.BlendMode.html#Egami_Operations_BlendMode_ColorBurn">ColorBurn</a> by 2·Cs where the source is dark, <a class="xref" href="Egami.Operations.BlendMode.html#Egami_Operations_BlendMode_ColorDodge">ColorDodge</a> by 2·Cs − 1 where it is light.</p>
 </dd>
     <dt id="Egami_Operations_BlendMode_Xor"><code>Xor = 11</code></dt>
   

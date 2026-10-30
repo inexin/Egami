@@ -106,7 +106,9 @@ photo.Apply(ops =&gt; ops.DrawImage(logo, tile, new Point(10, 10)), Ct);
 the same as drawing an image of that size.</p>
 <h2 id="blend-modes">Blend modes</h2>
 <p>Pass a <code>BlendMode</code> to choose how each pixel combines with the one under it: the twelve Porter–Duff operators, Plus and Modulate,
-and the W3C blend modes from Multiply to Luminosity, plus Add and Subtract.</p>
+and the W3C blend modes from Multiply to Luminosity, plus Add and Subtract and the rest of Photoshop's modes: Divide,
+LinearBurn, LinearLight, VividLight, PinLight, HardMix, DarkerColor, LighterColor and Dissolve. Dissolve draws each pixel fully or
+not at all, with a chance equal to its alpha, from a fixed hashed pattern of the pixel's place (not Photoshop's pattern).</p>
 <pre><code class="lang-csharp">// Print the photo onto paper: Multiply keeps the paper's texture under every color.
 paper.Apply(ops =&gt; ops.DrawImage(photo, new Point(0, 0), BlendMode.Multiply), Ct);
 
@@ -118,7 +120,8 @@ paper.Apply(ops =&gt; ops.DrawImage(photo, new Point(10, 10), BlendMode.Screen, 
 <li><code>SourceOver</code> on stored values is exactly the plain <code>DrawImage</code>.</li>
 <li>Blends use the stored values, as browsers and editors do; pass <code>ColorSpace.Linear</code> to blend light instead, with the raster's own curve.</li>
 <li>On <code>PremulRgba8</code>, <code>PremulBgra8</code>, <code>Rgba8</code> and <code>Bgra8</code> the Porter–Duff operators, Plus, Modulate and the product-and-sum modes are exact
-integer math; ColorDodge, ColorBurn, SoftLight and the four non-separable modes are within a level of exact, with alpha exact.</li>
+integer math; ColorDodge, ColorBurn, SoftLight, the Photoshop modes and the non-separable modes are within a level of exact, with
+alpha exact.</li>
 </ul>
 <pre><code class="lang-csharp">// One enum names every mode. Blend modes (Multiply to Luminosity) blend the colors, then cover what is under them.
 BlendMode[] darkening = [BlendMode.Multiply, BlendMode.Darken, BlendMode.ColorBurn];

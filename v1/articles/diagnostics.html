@@ -1160,9 +1160,24 @@ each page, a <code>ConvertColorTo</code> load) is one activity. A transcode that
 <td>An unknown PAM header line was ignored</td>
 </tr>
 <tr>
+<td><code>Psd.AdjustmentSkipped</code></td>
+<td>Warning</td>
+<td>Flattening left out adjustment layers of a kind Egami does not apply; the warning names them</td>
+</tr>
+<tr>
+<td><code>Psd.BlendModeUnknown</code></td>
+<td>Warning</td>
+<td>Flattening blended layers with a blend mode Egami does not know as Normal; the warning names them</td>
+</tr>
+<tr>
 <td><code>Psd.ChannelsDropped</code></td>
 <td>Warning</td>
 <td>A multichannel file has no color model; its first channel was loaded as gray and the rest were not</td>
+</tr>
+<tr>
+<td><code>Psd.ClippingBlendSkipped</code></td>
+<td>Warning</td>
+<td>Clipped layers set to blend with the layers under their base were blended with the base alone</td>
 </tr>
 <tr>
 <td><code>Psd.DataTruncated</code></td>
@@ -1170,14 +1185,54 @@ each page, a <code>ConvertColorTo</code> load) is one activity. A transcode that
 <td>The file ends inside the flattened image; the missing pixels are 0</td>
 </tr>
 <tr>
+<td><code>Psd.EffectsSkipped</code></td>
+<td>Warning</td>
+<td>Flattening did not draw layer effects; the warning names the layers</td>
+</tr>
+<tr>
+<td><code>Psd.FillSkipped</code></td>
+<td>Warning</td>
+<td>Flattening left out gradient and pattern fill layers; the warning names them</td>
+</tr>
+<tr>
+<td><code>Psd.FlattenUnsupported</code></td>
+<td>Warning</td>
+<td>Load was asked to flatten a Lab, bitmap, indexed or multichannel file; the stored composite was loaded</td>
+</tr>
+<tr>
+<td><code>Psd.KnockoutSkipped</code></td>
+<td>Warning</td>
+<td>Flattening did not apply knockout; the warning names the layers</td>
+</tr>
+<tr>
+<td><code>Psd.LayerDataDamaged</code></td>
+<td>Warning</td>
+<td>A layer channel's data is damaged or uses an unknown compression; its missing pixels are 0</td>
+</tr>
+<tr>
+<td><code>Psd.LayerDataTruncated</code></td>
+<td>Warning</td>
+<td>A layer channel's data ends early; its missing pixels are 0</td>
+</tr>
+<tr>
 <td><code>Psd.LayersDamaged</code></td>
 <td>Warning</td>
 <td>A layer record is damaged; the records after it were not read, which the flattened image does not need</td>
 </tr>
 <tr>
+<td><code>Psd.MaskFeatherSkipped</code></td>
+<td>Warning</td>
+<td>Flattening did not feather masks; the warning names the layers</td>
+</tr>
+<tr>
 <td><code>Psd.NoComposite</code></td>
 <td>Warning</td>
-<td>The file was saved without Maximize Compatibility; its stored placeholder was loaded, not the layers composited</td>
+<td>The file was saved without Maximize Compatibility and <code>PsdComposite.Stored</code> was asked for; its stored placeholder was loaded</td>
+</tr>
+<tr>
+<td><code>Psd.ProfileUnreadable</code></td>
+<td>Warning</td>
+<td>The embedded ICC profile of a CMYK file could not be read; its layers use FOGRA39's inks</td>
 </tr>
 <tr>
 <td><code>Psd.ResourcesDamaged</code></td>

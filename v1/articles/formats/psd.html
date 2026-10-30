@@ -101,7 +101,8 @@ using Raster photo = Raster.Load(&quot;photo.psd&quot;);
 ReadOnlyMemory&lt;byte&gt; icc = photo.Metadata.IccProfile;
 Resolution? dpi = photo.Metadata.Resolution;
 </code></pre>
-<p>A file saved without Maximize Compatibility holds only a placeholder; <code>PsdDetails.HasRealComposite</code> says so.</p>
+<p>A file saved without Maximize Compatibility holds only a placeholder; <code>PsdDetails.HasRealComposite</code> says so, and Load then
+flattens the layers instead (see <a href="#no-real-composite">No real composite</a>).</p>
 <table>
 <thead>
 <tr>
@@ -192,10 +193,17 @@ foreach (PsdResource resource in details.OtherResources)
     Console.WriteLine($&quot;Resource {resource.Id}, {resource.Data.Length} bytes&quot;);
 }
 </code></pre><h2 id="no-real-composite">No real composite</h2>
-<p>A file saved without Photoshop's Maximize Compatibility holds no real flattened image, only a placeholder. Egami loads it with
-the <code>Psd.NoComposite</code> warning and <code>PsdDetails.HasRealComposite</code> false; it does not composite the layers itself, which would need
-Photoshop's blend modes, adjustment layers, effects and text. ImageMagick flattens the layers instead.</p>
-<h2 id="layers">Layers</h2>
+<p>A file saved without Photoshop's Maximize Compatibility holds no real flattened image, only a placeholder, and
+<code>PsdDetails.HasRealComposite</code> is false. By default Load, Probe and the row readers then flatten the layers as
+<code>PsdDocument.Flatten</code> does, one layer at a time as they come in the file. <code>PsdReaderOptions.Composite</code> chooses:
+<code>PsdComposite.Auto</code> (the default), <code>Stored</code> (always the stored image, the placeholder with the <code>Psd.NoComposite</code> warning) or
+<code>Flatten</code> (always the layers flattened). A flattened image's type comes from the layer records before any pixel is read: with
+alpha unless an opaque Normal layer covers the canvas at the top level. Lab, bitmap, indexed and multichannel files give their stored
+image.</p>
+<pre><code class="lang-csharp">// Load gives the composite Photoshop stored, or the layers flattened when the file has none. Ask for one or the other.
+using Raster flattened = Raster.Load(&quot;layered.psd&quot;, EgamiContext.Default, new PsdReaderOptions { Composite = PsdComposite.Flatten });
+using Raster stored = Raster.Load(&quot;layered.psd&quot;, EgamiContext.Default, new PsdReaderOptions { Composite = PsdComposite.Stored });
+</code></pre><h2 id="layers">Layers</h2>
 <p><code>PsdDetails.Layers</code> lists the layer records bottom to top as the file does: name (the Unicode name when there is one), bounds,
 opacity (0 to 1, as <code>DrawImage</code> takes it), blend mode (Photoshop's key and Egami's <code>BlendMode</code> where there is one), visibility, clipping, and whether the record is a
 layer or one end of a group, with its nesting level. Their pixels are not loaded; <code>LoadAll</code> returns the flattened image only.</p>
@@ -211,17 +219,69 @@ foreach (PsdLayer layer in ((PsdDetails)image.Metadata.FormatDetails!).Layers)
     string kind = layer.Kind == PsdLayerKind.Layer ? &quot;layer&quot; : &quot;group&quot;;
     Console.WriteLine($&quot;{new string(' ', 2 * layer.Level)}{layer.Name} ({kind}, {layer.BlendModeKey}, opacity {layer.Opacity:P0}{(layer.IsVisible ? &quot;&quot; : &quot;, hidden&quot;)})&quot;);
 }
+</code></pre>
+<p>Each record also has <code>FillOpacity</code> and a <code>PsdLayerType</code>: pixels, text, shape, smart object, fill, adjustment or group.</p>
+<h2 id="reading-layers">Reading layers</h2>
+<p><code>PsdImage.ReadLayers</code> reads every layer with its pixels into a <code>PsdDocument</code>: its <code>Layers</code> are <code>PsdLayerImage</code>s, bottom to top,
+a group after its contents, each naming its group in <code>ParentIndex</code>. A layer's <code>Pixels</code> are at its own size, placed on the
+canvas at <code>X</code> and <code>Y</code>, in the type Load would use, always with straight alpha: <code>Rgba8</code>, <code>Rgba16</code> or <code>RgbaF32</code> for RGB and Lab
+(converted to sRGB), <code>GrayAlpha8</code>, <code>GrayAlpha16</code> or <code>RgbaF32</code> for gray. CMYK layers come as an <code>InkRaster</code> in <code>Ink</code>.
+<code>ReadLayers&lt;TPixel&gt;</code> converts every layer to one type. A layer's pixel mask is a <code>PsdMask</code>: a gray raster of its own size and
+place, the value outside it, and whether it is disabled. The channels are read in file order, so the stream need not seek.</p>
+<pre><code class="lang-csharp">// ReadLayers gives every layer with its pixels, bottom to top; a group comes after its contents.
+using PsdDocument document = PsdImage.ReadLayers(&quot;layered.psd&quot;);
+foreach (PsdLayerImage layer in document.Layers)
+{
+    if (layer.Pixels is Raster pixels)
+    {
+        // Each layer at its own size, in the natural type with alpha (Rgba8 here); X and Y place it on the canvas.
+        pixels.Save($&quot;layer-{layer.Index}.png&quot;);
+        Console.WriteLine($&quot;{layer.Info.Name}: {pixels.Width}×{pixels.Height} at ({layer.X}, {layer.Y}), in group {layer.ParentIndex}&quot;);
+    }
+}
+</code></pre><h2 id="flattening">Flattening</h2>
+<p><code>PsdDocument.Flatten</code> composites the layers as Photoshop does, with each layer's <code>Info</code> as it is now, so a copy changed with
+<code>with</code> (a layer hidden, another opacity or blend mode) flattens differently. It covers visibility, opacity and fill opacity, all
+of Photoshop's blend modes (Soft Light with Photoshop's own formula), pixel masks (density, the default color outside them,
+disabled ones), vector masks (filled with the non-zero rule and antialiased), clipping (the clipped layers blend onto their base
+and keep its coverage), pass-through and isolated groups, blending ranges (&quot;blend if&quot;) and solid color fill layers. Layer
+effects, gradient and pattern fills, knockout and mask feathering are left out with one warning a kind naming the layers.
+8 and 16-bit documents blend their stored values and 32-bit ones linear light, as Photoshop does. The result has the type Load
+gives the file, with alpha only when some pixel is not opaque. <code>PsdFlattenOptions.ApplyAdjustments</code> turns adjustment layers off.
+Lab, bitmap, indexed and multichannel documents are not flattened.</p>
+<p>Levels, curves and invert follow Photoshop's documented formulas. Hue/saturation and the current (not legacy)
+brightness/contrast are close approximations that have not been checked against Photoshop yet, so expect small color
+differences there. Hard Mix and Vivid Light can differ from Photoshop at pure black and white, and Photoshop's fill opacity in
+its eight special modes (Color Burn, Linear Burn, Color Dodge, Linear Dodge, Vivid Light, Linear Light, Hard Mix, Difference)
+works like opacity here.</p>
+<pre><code class="lang-csharp">// Flatten composites the layers as Photoshop does; change a layer's record first to flatten it differently.
+using PsdDocument document = PsdImage.ReadLayers(&quot;layered.psd&quot;);
+PsdLayerImage top = document.Layers[^1];
+top.Info = top.Info with { IsVisible = false };
+using Raster flat = document.Flatten();
+foreach (EgamiDiagnostic warning in flat.Metadata.Warnings)
+{
+    // What the flattening left out, such as layer effects, one warning a kind naming the layers.
+    Console.WriteLine(warning.Message);
+}
+
+flat.Save(&quot;without-top.png&quot;);
 </code></pre><h2 id="streaming-and-speed">Streaming and speed</h2>
 <p>Rows come from the channel planes as they are asked for: raw rows at computed offsets and PackBits rows through their byte counts,
 read where they lie on a seekable stream, so <code>Region</code> reads only the rows it needs and the layer data is skipped without being
 read. A stream that cannot seek is read to its end first, and Deflate data is inflated whole. On 12-megapixel files Egami decodes
-three to ten times faster than ImageMagick (Magick.NET).</p>
+three to ten times faster than ImageMagick (Magick.NET). Flattening reads and composites one layer at a time, in float
+canvases from the shared pool, so its managed allocations do not grow with the image: a 12-megapixel file with three layers
+flattens in about 2.2 seconds, against 2.9 for ImageMagick.</p>
 <h2 id="damaged-and-hostile-data">Damaged and hostile data</h2>
 <p>The header's size is checked against <code>SafetyLimits</code> before anything else; PSB's sides of up to 300,000 pixels stay behind the
 default limits unless the caller raises them. Every section length is checked against the data that remains, the layer section
 is skipped by its length, the image resources and layer records count against <code>MaxMetadataBytes</code>, and the PackBits row table is
 bounded by the header before it is read. Damaged layer records or resources are warnings (<code>Psd.LayersDamaged</code>,
-<code>Psd.ResourcesDamaged</code>), since the flattened image does not depend on them. Image data that ends early loads with the missing
+<code>Psd.ResourcesDamaged</code>), since the stored flattened image does not depend on them; damaged or short layer channel data leaves
+the missing pixels 0 with <code>Psd.LayerDataDamaged</code> or <code>Psd.LayerDataTruncated</code>, and throws <code>CorruptDataException</code> in strict
+mode. Each layer and mask is checked against <code>SafetyLimits</code> before it is decoded, and the layers and flattening canvases
+together against <code>MaxTotalBytes</code>. Image data that ends early loads with the missing
 pixels 0 and the <code>Psd.DataTruncated</code> warning, and throws <code>CorruptDataException</code> in strict mode. The reader is fuzzed with AFL++
 through whole files and through the image data alone.</p>
 

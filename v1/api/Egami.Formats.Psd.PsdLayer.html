@@ -341,6 +341,39 @@ foreach (PsdLayer layer in ((PsdDetails)image.Metadata.FormatDetails!).Layers)
 
 
 
+  <a id="Egami_Formats_Psd_PsdLayer_FillOpacity_" data-uid="Egami.Formats.Psd.PsdLayer.FillOpacity*"></a>
+
+  <h3 id="Egami_Formats_Psd_PsdLayer_FillOpacity" data-uid="Egami.Formats.Psd.PsdLayer.FillOpacity">
+  FillOpacity
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Psd/PsdFormat.cs/#L116"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the fill opacity, 0 to 1: like <a class="xref" href="Egami.Formats.Psd.PsdLayer.html#Egami_Formats_Psd_PsdLayer_Opacity">Opacity</a>, but it leaves layer effects alone. 1 when the file names
+none; the file stores it in 256 steps.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float FillOpacity { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
   <a id="Egami_Formats_Psd_PsdLayer_IsClipped_" data-uid="Egami.Formats.Psd.PsdLayer.IsClipped*"></a>
 
   <h3 id="Egami_Formats_Psd_PsdLayer_IsClipped" data-uid="Egami.Formats.Psd.PsdLayer.IsClipped">
@@ -427,6 +460,38 @@ foreach (PsdLayer layer in ((PsdDetails)image.Metadata.FormatDetails!).Layers)
   <h4 class="section">Property Value</h4>
   <dl class="parameters">
     <dt><a class="xref" href="Egami.Formats.Psd.PsdLayerKind.html">PsdLayerKind</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_Psd_PsdLayer_LayerType_" data-uid="Egami.Formats.Psd.PsdLayer.LayerType*"></a>
+
+  <h3 id="Egami_Formats_Psd_PsdLayer_LayerType" data-uid="Egami.Formats.Psd.PsdLayer.LayerType">
+  LayerType
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Psd/PsdFormat.cs/#L119"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets what the layer holds: pixels, text, a shape, a smart object, a fill, an adjustment, or a group.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public PsdLayerType LayerType { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Formats.Psd.PsdLayerType.html">PsdLayerType</a></dt>
     <dd></dd>
   </dl>
 

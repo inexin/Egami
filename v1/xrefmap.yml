@@ -48833,6 +48833,30 @@ references:
   commentId: F:Egami.Formats.Psd.PsdColorMode.Rgb
   fullName: Egami.Formats.Psd.PsdColorMode.Rgb
   nameWithType: PsdColorMode.Rgb
+- uid: Egami.Formats.Psd.PsdComposite
+  name: PsdComposite
+  href: api/Egami.Formats.Psd.PsdComposite.html
+  commentId: T:Egami.Formats.Psd.PsdComposite
+  fullName: Egami.Formats.Psd.PsdComposite
+  nameWithType: PsdComposite
+- uid: Egami.Formats.Psd.PsdComposite.Auto
+  name: Auto
+  href: api/Egami.Formats.Psd.PsdComposite.html#Egami_Formats_Psd_PsdComposite_Auto
+  commentId: F:Egami.Formats.Psd.PsdComposite.Auto
+  fullName: Egami.Formats.Psd.PsdComposite.Auto
+  nameWithType: PsdComposite.Auto
+- uid: Egami.Formats.Psd.PsdComposite.Flatten
+  name: Flatten
+  href: api/Egami.Formats.Psd.PsdComposite.html#Egami_Formats_Psd_PsdComposite_Flatten
+  commentId: F:Egami.Formats.Psd.PsdComposite.Flatten
+  fullName: Egami.Formats.Psd.PsdComposite.Flatten
+  nameWithType: PsdComposite.Flatten
+- uid: Egami.Formats.Psd.PsdComposite.Stored
+  name: Stored
+  href: api/Egami.Formats.Psd.PsdComposite.html#Egami_Formats_Psd_PsdComposite_Stored
+  commentId: F:Egami.Formats.Psd.PsdComposite.Stored
+  fullName: Egami.Formats.Psd.PsdComposite.Stored
+  nameWithType: PsdComposite.Stored
 - uid: Egami.Formats.Psd.PsdCompression
   name: PsdCompression
   href: api/Egami.Formats.Psd.PsdCompression.html
@@ -49012,6 +49036,180 @@ references:
   isSpec: "True"
   fullName: Egami.Formats.Psd.PsdDetails.Version
   nameWithType: PsdDetails.Version
+- uid: Egami.Formats.Psd.PsdDocument
+  name: PsdDocument
+  href: api/Egami.Formats.Psd.PsdDocument.html
+  commentId: T:Egami.Formats.Psd.PsdDocument
+  fullName: Egami.Formats.Psd.PsdDocument
+  nameWithType: PsdDocument
+- uid: Egami.Formats.Psd.PsdDocument.BitsPerChannel
+  name: BitsPerChannel
+  href: api/Egami.Formats.Psd.PsdDocument.html#Egami_Formats_Psd_PsdDocument_BitsPerChannel
+  commentId: P:Egami.Formats.Psd.PsdDocument.BitsPerChannel
+  fullName: Egami.Formats.Psd.PsdDocument.BitsPerChannel
+  nameWithType: PsdDocument.BitsPerChannel
+- uid: Egami.Formats.Psd.PsdDocument.BitsPerChannel*
+  name: BitsPerChannel
+  href: api/Egami.Formats.Psd.PsdDocument.html#Egami_Formats_Psd_PsdDocument_BitsPerChannel_
+  commentId: Overload:Egami.Formats.Psd.PsdDocument.BitsPerChannel
+  isSpec: "True"
+  fullName: Egami.Formats.Psd.PsdDocument.BitsPerChannel
+  nameWithType: PsdDocument.BitsPerChannel
+- uid: Egami.Formats.Psd.PsdDocument.ColorMode
+  name: ColorMode
+  href: api/Egami.Formats.Psd.PsdDocument.html#Egami_Formats_Psd_PsdDocument_ColorMode
+  commentId: P:Egami.Formats.Psd.PsdDocument.ColorMode
+  fullName: Egami.Formats.Psd.PsdDocument.ColorMode
+  nameWithType: PsdDocument.ColorMode
+- uid: Egami.Formats.Psd.PsdDocument.ColorMode*
+  name: ColorMode
+  href: api/Egami.Formats.Psd.PsdDocument.html#Egami_Formats_Psd_PsdDocument_ColorMode_
+  commentId: Overload:Egami.Formats.Psd.PsdDocument.ColorMode
+  isSpec: "True"
+  fullName: Egami.Formats.Psd.PsdDocument.ColorMode
+  nameWithType: PsdDocument.ColorMode
+- uid: Egami.Formats.Psd.PsdDocument.Context
+  name: Context
+  href: api/Egami.Formats.Psd.PsdDocument.html#Egami_Formats_Psd_PsdDocument_Context
+  commentId: P:Egami.Formats.Psd.PsdDocument.Context
+  fullName: Egami.Formats.Psd.PsdDocument.Context
+  nameWithType: PsdDocument.Context
+- uid: Egami.Formats.Psd.PsdDocument.Context*
+  name: Context
+  href: api/Egami.Formats.Psd.PsdDocument.html#Egami_Formats_Psd_PsdDocument_Context_
+  commentId: Overload:Egami.Formats.Psd.PsdDocument.Context
+  isSpec: "True"
+  fullName: Egami.Formats.Psd.PsdDocument.Context
+  nameWithType: PsdDocument.Context
+- uid: Egami.Formats.Psd.PsdDocument.Dispose
+  name: Dispose()
+  href: api/Egami.Formats.Psd.PsdDocument.html#Egami_Formats_Psd_PsdDocument_Dispose
+  commentId: M:Egami.Formats.Psd.PsdDocument.Dispose
+  fullName: Egami.Formats.Psd.PsdDocument.Dispose()
+  nameWithType: PsdDocument.Dispose()
+- uid: Egami.Formats.Psd.PsdDocument.Dispose*
+  name: Dispose
+  href: api/Egami.Formats.Psd.PsdDocument.html#Egami_Formats_Psd_PsdDocument_Dispose_
+  commentId: Overload:Egami.Formats.Psd.PsdDocument.Dispose
+  isSpec: "True"
+  fullName: Egami.Formats.Psd.PsdDocument.Dispose
+  nameWithType: PsdDocument.Dispose
+- uid: Egami.Formats.Psd.PsdDocument.Flatten(Egami.Formats.Psd.PsdFlattenOptions)
+  name: Flatten(PsdFlattenOptions?)
+  href: api/Egami.Formats.Psd.PsdDocument.html#Egami_Formats_Psd_PsdDocument_Flatten_Egami_Formats_Psd_PsdFlattenOptions_
+  commentId: M:Egami.Formats.Psd.PsdDocument.Flatten(Egami.Formats.Psd.PsdFlattenOptions)
+  name.vb: Flatten(PsdFlattenOptions)
+  fullName: Egami.Formats.Psd.PsdDocument.Flatten(Egami.Formats.Psd.PsdFlattenOptions?)
+  fullName.vb: Egami.Formats.Psd.PsdDocument.Flatten(Egami.Formats.Psd.PsdFlattenOptions)
+  nameWithType: PsdDocument.Flatten(PsdFlattenOptions?)
+  nameWithType.vb: PsdDocument.Flatten(PsdFlattenOptions)
+- uid: Egami.Formats.Psd.PsdDocument.Flatten*
+  name: Flatten
+  href: api/Egami.Formats.Psd.PsdDocument.html#Egami_Formats_Psd_PsdDocument_Flatten_
+  commentId: Overload:Egami.Formats.Psd.PsdDocument.Flatten
+  isSpec: "True"
+  fullName: Egami.Formats.Psd.PsdDocument.Flatten
+  nameWithType: PsdDocument.Flatten
+- uid: Egami.Formats.Psd.PsdDocument.FlattenInk(Egami.Formats.Psd.PsdFlattenOptions)
+  name: FlattenInk(PsdFlattenOptions?)
+  href: api/Egami.Formats.Psd.PsdDocument.html#Egami_Formats_Psd_PsdDocument_FlattenInk_Egami_Formats_Psd_PsdFlattenOptions_
+  commentId: M:Egami.Formats.Psd.PsdDocument.FlattenInk(Egami.Formats.Psd.PsdFlattenOptions)
+  name.vb: FlattenInk(PsdFlattenOptions)
+  fullName: Egami.Formats.Psd.PsdDocument.FlattenInk(Egami.Formats.Psd.PsdFlattenOptions?)
+  fullName.vb: Egami.Formats.Psd.PsdDocument.FlattenInk(Egami.Formats.Psd.PsdFlattenOptions)
+  nameWithType: PsdDocument.FlattenInk(PsdFlattenOptions?)
+  nameWithType.vb: PsdDocument.FlattenInk(PsdFlattenOptions)
+- uid: Egami.Formats.Psd.PsdDocument.FlattenInk*
+  name: FlattenInk
+  href: api/Egami.Formats.Psd.PsdDocument.html#Egami_Formats_Psd_PsdDocument_FlattenInk_
+  commentId: Overload:Egami.Formats.Psd.PsdDocument.FlattenInk
+  isSpec: "True"
+  fullName: Egami.Formats.Psd.PsdDocument.FlattenInk
+  nameWithType: PsdDocument.FlattenInk
+- uid: Egami.Formats.Psd.PsdDocument.Height
+  name: Height
+  href: api/Egami.Formats.Psd.PsdDocument.html#Egami_Formats_Psd_PsdDocument_Height
+  commentId: P:Egami.Formats.Psd.PsdDocument.Height
+  fullName: Egami.Formats.Psd.PsdDocument.Height
+  nameWithType: PsdDocument.Height
+- uid: Egami.Formats.Psd.PsdDocument.Height*
+  name: Height
+  href: api/Egami.Formats.Psd.PsdDocument.html#Egami_Formats_Psd_PsdDocument_Height_
+  commentId: Overload:Egami.Formats.Psd.PsdDocument.Height
+  isSpec: "True"
+  fullName: Egami.Formats.Psd.PsdDocument.Height
+  nameWithType: PsdDocument.Height
+- uid: Egami.Formats.Psd.PsdDocument.Layers
+  name: Layers
+  href: api/Egami.Formats.Psd.PsdDocument.html#Egami_Formats_Psd_PsdDocument_Layers
+  commentId: P:Egami.Formats.Psd.PsdDocument.Layers
+  fullName: Egami.Formats.Psd.PsdDocument.Layers
+  nameWithType: PsdDocument.Layers
+- uid: Egami.Formats.Psd.PsdDocument.Layers*
+  name: Layers
+  href: api/Egami.Formats.Psd.PsdDocument.html#Egami_Formats_Psd_PsdDocument_Layers_
+  commentId: Overload:Egami.Formats.Psd.PsdDocument.Layers
+  isSpec: "True"
+  fullName: Egami.Formats.Psd.PsdDocument.Layers
+  nameWithType: PsdDocument.Layers
+- uid: Egami.Formats.Psd.PsdDocument.Metadata
+  name: Metadata
+  href: api/Egami.Formats.Psd.PsdDocument.html#Egami_Formats_Psd_PsdDocument_Metadata
+  commentId: P:Egami.Formats.Psd.PsdDocument.Metadata
+  fullName: Egami.Formats.Psd.PsdDocument.Metadata
+  nameWithType: PsdDocument.Metadata
+- uid: Egami.Formats.Psd.PsdDocument.Metadata*
+  name: Metadata
+  href: api/Egami.Formats.Psd.PsdDocument.html#Egami_Formats_Psd_PsdDocument_Metadata_
+  commentId: Overload:Egami.Formats.Psd.PsdDocument.Metadata
+  isSpec: "True"
+  fullName: Egami.Formats.Psd.PsdDocument.Metadata
+  nameWithType: PsdDocument.Metadata
+- uid: Egami.Formats.Psd.PsdDocument.Width
+  name: Width
+  href: api/Egami.Formats.Psd.PsdDocument.html#Egami_Formats_Psd_PsdDocument_Width
+  commentId: P:Egami.Formats.Psd.PsdDocument.Width
+  fullName: Egami.Formats.Psd.PsdDocument.Width
+  nameWithType: PsdDocument.Width
+- uid: Egami.Formats.Psd.PsdDocument.Width*
+  name: Width
+  href: api/Egami.Formats.Psd.PsdDocument.html#Egami_Formats_Psd_PsdDocument_Width_
+  commentId: Overload:Egami.Formats.Psd.PsdDocument.Width
+  isSpec: "True"
+  fullName: Egami.Formats.Psd.PsdDocument.Width
+  nameWithType: PsdDocument.Width
+- uid: Egami.Formats.Psd.PsdFlattenOptions
+  name: PsdFlattenOptions
+  href: api/Egami.Formats.Psd.PsdFlattenOptions.html
+  commentId: T:Egami.Formats.Psd.PsdFlattenOptions
+  fullName: Egami.Formats.Psd.PsdFlattenOptions
+  nameWithType: PsdFlattenOptions
+- uid: Egami.Formats.Psd.PsdFlattenOptions.ApplyAdjustments
+  name: ApplyAdjustments
+  href: api/Egami.Formats.Psd.PsdFlattenOptions.html#Egami_Formats_Psd_PsdFlattenOptions_ApplyAdjustments
+  commentId: P:Egami.Formats.Psd.PsdFlattenOptions.ApplyAdjustments
+  fullName: Egami.Formats.Psd.PsdFlattenOptions.ApplyAdjustments
+  nameWithType: PsdFlattenOptions.ApplyAdjustments
+- uid: Egami.Formats.Psd.PsdFlattenOptions.ApplyAdjustments*
+  name: ApplyAdjustments
+  href: api/Egami.Formats.Psd.PsdFlattenOptions.html#Egami_Formats_Psd_PsdFlattenOptions_ApplyAdjustments_
+  commentId: Overload:Egami.Formats.Psd.PsdFlattenOptions.ApplyAdjustments
+  isSpec: "True"
+  fullName: Egami.Formats.Psd.PsdFlattenOptions.ApplyAdjustments
+  nameWithType: PsdFlattenOptions.ApplyAdjustments
+- uid: Egami.Formats.Psd.PsdFlattenOptions.Default
+  name: Default
+  href: api/Egami.Formats.Psd.PsdFlattenOptions.html#Egami_Formats_Psd_PsdFlattenOptions_Default
+  commentId: P:Egami.Formats.Psd.PsdFlattenOptions.Default
+  fullName: Egami.Formats.Psd.PsdFlattenOptions.Default
+  nameWithType: PsdFlattenOptions.Default
+- uid: Egami.Formats.Psd.PsdFlattenOptions.Default*
+  name: Default
+  href: api/Egami.Formats.Psd.PsdFlattenOptions.html#Egami_Formats_Psd_PsdFlattenOptions_Default_
+  commentId: Overload:Egami.Formats.Psd.PsdFlattenOptions.Default
+  isSpec: "True"
+  fullName: Egami.Formats.Psd.PsdFlattenOptions.Default
+  nameWithType: PsdFlattenOptions.Default
 - uid: Egami.Formats.Psd.PsdFormat
   name: PsdFormat
   href: api/Egami.Formats.Psd.PsdFormat.html
@@ -49031,6 +49229,55 @@ references:
   isSpec: "True"
   fullName: Egami.Formats.Psd.PsdFormat.Info
   nameWithType: PsdFormat.Info
+- uid: Egami.Formats.Psd.PsdImage
+  name: PsdImage
+  href: api/Egami.Formats.Psd.PsdImage.html
+  commentId: T:Egami.Formats.Psd.PsdImage
+  fullName: Egami.Formats.Psd.PsdImage
+  nameWithType: PsdImage
+- uid: Egami.Formats.Psd.PsdImage.ReadLayers(System.IO.Stream,Egami.Formats.ReaderOptions,Egami.EgamiContext)
+  name: ReadLayers(Stream, ReaderOptions?, EgamiContext?)
+  href: api/Egami.Formats.Psd.PsdImage.html#Egami_Formats_Psd_PsdImage_ReadLayers_System_IO_Stream_Egami_Formats_ReaderOptions_Egami_EgamiContext_
+  commentId: M:Egami.Formats.Psd.PsdImage.ReadLayers(System.IO.Stream,Egami.Formats.ReaderOptions,Egami.EgamiContext)
+  name.vb: ReadLayers(Stream, ReaderOptions, EgamiContext)
+  fullName: Egami.Formats.Psd.PsdImage.ReadLayers(System.IO.Stream, Egami.Formats.ReaderOptions?, Egami.EgamiContext?)
+  fullName.vb: Egami.Formats.Psd.PsdImage.ReadLayers(System.IO.Stream, Egami.Formats.ReaderOptions, Egami.EgamiContext)
+  nameWithType: PsdImage.ReadLayers(Stream, ReaderOptions?, EgamiContext?)
+  nameWithType.vb: PsdImage.ReadLayers(Stream, ReaderOptions, EgamiContext)
+- uid: Egami.Formats.Psd.PsdImage.ReadLayers(System.String,Egami.Formats.ReaderOptions,Egami.EgamiContext)
+  name: ReadLayers(string, ReaderOptions?, EgamiContext?)
+  href: api/Egami.Formats.Psd.PsdImage.html#Egami_Formats_Psd_PsdImage_ReadLayers_System_String_Egami_Formats_ReaderOptions_Egami_EgamiContext_
+  commentId: M:Egami.Formats.Psd.PsdImage.ReadLayers(System.String,Egami.Formats.ReaderOptions,Egami.EgamiContext)
+  name.vb: ReadLayers(String, ReaderOptions, EgamiContext)
+  fullName: Egami.Formats.Psd.PsdImage.ReadLayers(string, Egami.Formats.ReaderOptions?, Egami.EgamiContext?)
+  fullName.vb: Egami.Formats.Psd.PsdImage.ReadLayers(String, Egami.Formats.ReaderOptions, Egami.EgamiContext)
+  nameWithType: PsdImage.ReadLayers(string, ReaderOptions?, EgamiContext?)
+  nameWithType.vb: PsdImage.ReadLayers(String, ReaderOptions, EgamiContext)
+- uid: Egami.Formats.Psd.PsdImage.ReadLayers*
+  name: ReadLayers
+  href: api/Egami.Formats.Psd.PsdImage.html#Egami_Formats_Psd_PsdImage_ReadLayers_
+  commentId: Overload:Egami.Formats.Psd.PsdImage.ReadLayers
+  isSpec: "True"
+  fullName: Egami.Formats.Psd.PsdImage.ReadLayers
+  nameWithType: PsdImage.ReadLayers
+- uid: Egami.Formats.Psd.PsdImage.ReadLayers``1(System.IO.Stream,Egami.Formats.ReaderOptions,Egami.EgamiContext)
+  name: ReadLayers<TPixel>(Stream, ReaderOptions?, EgamiContext?)
+  href: api/Egami.Formats.Psd.PsdImage.html#Egami_Formats_Psd_PsdImage_ReadLayers__1_System_IO_Stream_Egami_Formats_ReaderOptions_Egami_EgamiContext_
+  commentId: M:Egami.Formats.Psd.PsdImage.ReadLayers``1(System.IO.Stream,Egami.Formats.ReaderOptions,Egami.EgamiContext)
+  name.vb: ReadLayers(Of TPixel)(Stream, ReaderOptions, EgamiContext)
+  fullName: Egami.Formats.Psd.PsdImage.ReadLayers<TPixel>(System.IO.Stream, Egami.Formats.ReaderOptions?, Egami.EgamiContext?)
+  fullName.vb: Egami.Formats.Psd.PsdImage.ReadLayers(Of TPixel)(System.IO.Stream, Egami.Formats.ReaderOptions, Egami.EgamiContext)
+  nameWithType: PsdImage.ReadLayers<TPixel>(Stream, ReaderOptions?, EgamiContext?)
+  nameWithType.vb: PsdImage.ReadLayers(Of TPixel)(Stream, ReaderOptions, EgamiContext)
+- uid: Egami.Formats.Psd.PsdImage.ReadLayers``1(System.String,Egami.Formats.ReaderOptions,Egami.EgamiContext)
+  name: ReadLayers<TPixel>(string, ReaderOptions?, EgamiContext?)
+  href: api/Egami.Formats.Psd.PsdImage.html#Egami_Formats_Psd_PsdImage_ReadLayers__1_System_String_Egami_Formats_ReaderOptions_Egami_EgamiContext_
+  commentId: M:Egami.Formats.Psd.PsdImage.ReadLayers``1(System.String,Egami.Formats.ReaderOptions,Egami.EgamiContext)
+  name.vb: ReadLayers(Of TPixel)(String, ReaderOptions, EgamiContext)
+  fullName: Egami.Formats.Psd.PsdImage.ReadLayers<TPixel>(string, Egami.Formats.ReaderOptions?, Egami.EgamiContext?)
+  fullName.vb: Egami.Formats.Psd.PsdImage.ReadLayers(Of TPixel)(String, Egami.Formats.ReaderOptions, Egami.EgamiContext)
+  nameWithType: PsdImage.ReadLayers<TPixel>(string, ReaderOptions?, EgamiContext?)
+  nameWithType.vb: PsdImage.ReadLayers(Of TPixel)(String, ReaderOptions, EgamiContext)
 - uid: Egami.Formats.Psd.PsdLayer
   name: PsdLayer
   href: api/Egami.Formats.Psd.PsdLayer.html
@@ -49095,6 +49342,19 @@ references:
   isSpec: "True"
   fullName: Egami.Formats.Psd.PsdLayer.Bounds
   nameWithType: PsdLayer.Bounds
+- uid: Egami.Formats.Psd.PsdLayer.FillOpacity
+  name: FillOpacity
+  href: api/Egami.Formats.Psd.PsdLayer.html#Egami_Formats_Psd_PsdLayer_FillOpacity
+  commentId: P:Egami.Formats.Psd.PsdLayer.FillOpacity
+  fullName: Egami.Formats.Psd.PsdLayer.FillOpacity
+  nameWithType: PsdLayer.FillOpacity
+- uid: Egami.Formats.Psd.PsdLayer.FillOpacity*
+  name: FillOpacity
+  href: api/Egami.Formats.Psd.PsdLayer.html#Egami_Formats_Psd_PsdLayer_FillOpacity_
+  commentId: Overload:Egami.Formats.Psd.PsdLayer.FillOpacity
+  isSpec: "True"
+  fullName: Egami.Formats.Psd.PsdLayer.FillOpacity
+  nameWithType: PsdLayer.FillOpacity
 - uid: Egami.Formats.Psd.PsdLayer.IsClipped
   name: IsClipped
   href: api/Egami.Formats.Psd.PsdLayer.html#Egami_Formats_Psd_PsdLayer_IsClipped
@@ -49134,6 +49394,19 @@ references:
   isSpec: "True"
   fullName: Egami.Formats.Psd.PsdLayer.Kind
   nameWithType: PsdLayer.Kind
+- uid: Egami.Formats.Psd.PsdLayer.LayerType
+  name: LayerType
+  href: api/Egami.Formats.Psd.PsdLayer.html#Egami_Formats_Psd_PsdLayer_LayerType
+  commentId: P:Egami.Formats.Psd.PsdLayer.LayerType
+  fullName: Egami.Formats.Psd.PsdLayer.LayerType
+  nameWithType: PsdLayer.LayerType
+- uid: Egami.Formats.Psd.PsdLayer.LayerType*
+  name: LayerType
+  href: api/Egami.Formats.Psd.PsdLayer.html#Egami_Formats_Psd_PsdLayer_LayerType_
+  commentId: Overload:Egami.Formats.Psd.PsdLayer.LayerType
+  isSpec: "True"
+  fullName: Egami.Formats.Psd.PsdLayer.LayerType
+  nameWithType: PsdLayer.LayerType
 - uid: Egami.Formats.Psd.PsdLayer.Level
   name: Level
   href: api/Egami.Formats.Psd.PsdLayer.html#Egami_Formats_Psd_PsdLayer_Level
@@ -49173,6 +49446,129 @@ references:
   isSpec: "True"
   fullName: Egami.Formats.Psd.PsdLayer.Opacity
   nameWithType: PsdLayer.Opacity
+- uid: Egami.Formats.Psd.PsdLayerImage
+  name: PsdLayerImage
+  href: api/Egami.Formats.Psd.PsdLayerImage.html
+  commentId: T:Egami.Formats.Psd.PsdLayerImage
+  fullName: Egami.Formats.Psd.PsdLayerImage
+  nameWithType: PsdLayerImage
+- uid: Egami.Formats.Psd.PsdLayerImage.Dispose
+  name: Dispose()
+  href: api/Egami.Formats.Psd.PsdLayerImage.html#Egami_Formats_Psd_PsdLayerImage_Dispose
+  commentId: M:Egami.Formats.Psd.PsdLayerImage.Dispose
+  fullName: Egami.Formats.Psd.PsdLayerImage.Dispose()
+  nameWithType: PsdLayerImage.Dispose()
+- uid: Egami.Formats.Psd.PsdLayerImage.Dispose*
+  name: Dispose
+  href: api/Egami.Formats.Psd.PsdLayerImage.html#Egami_Formats_Psd_PsdLayerImage_Dispose_
+  commentId: Overload:Egami.Formats.Psd.PsdLayerImage.Dispose
+  isSpec: "True"
+  fullName: Egami.Formats.Psd.PsdLayerImage.Dispose
+  nameWithType: PsdLayerImage.Dispose
+- uid: Egami.Formats.Psd.PsdLayerImage.Index
+  name: Index
+  href: api/Egami.Formats.Psd.PsdLayerImage.html#Egami_Formats_Psd_PsdLayerImage_Index
+  commentId: P:Egami.Formats.Psd.PsdLayerImage.Index
+  fullName: Egami.Formats.Psd.PsdLayerImage.Index
+  nameWithType: PsdLayerImage.Index
+- uid: Egami.Formats.Psd.PsdLayerImage.Index*
+  name: Index
+  href: api/Egami.Formats.Psd.PsdLayerImage.html#Egami_Formats_Psd_PsdLayerImage_Index_
+  commentId: Overload:Egami.Formats.Psd.PsdLayerImage.Index
+  isSpec: "True"
+  fullName: Egami.Formats.Psd.PsdLayerImage.Index
+  nameWithType: PsdLayerImage.Index
+- uid: Egami.Formats.Psd.PsdLayerImage.Info
+  name: Info
+  href: api/Egami.Formats.Psd.PsdLayerImage.html#Egami_Formats_Psd_PsdLayerImage_Info
+  commentId: P:Egami.Formats.Psd.PsdLayerImage.Info
+  fullName: Egami.Formats.Psd.PsdLayerImage.Info
+  nameWithType: PsdLayerImage.Info
+- uid: Egami.Formats.Psd.PsdLayerImage.Info*
+  name: Info
+  href: api/Egami.Formats.Psd.PsdLayerImage.html#Egami_Formats_Psd_PsdLayerImage_Info_
+  commentId: Overload:Egami.Formats.Psd.PsdLayerImage.Info
+  isSpec: "True"
+  fullName: Egami.Formats.Psd.PsdLayerImage.Info
+  nameWithType: PsdLayerImage.Info
+- uid: Egami.Formats.Psd.PsdLayerImage.Ink
+  name: Ink
+  href: api/Egami.Formats.Psd.PsdLayerImage.html#Egami_Formats_Psd_PsdLayerImage_Ink
+  commentId: P:Egami.Formats.Psd.PsdLayerImage.Ink
+  fullName: Egami.Formats.Psd.PsdLayerImage.Ink
+  nameWithType: PsdLayerImage.Ink
+- uid: Egami.Formats.Psd.PsdLayerImage.Ink*
+  name: Ink
+  href: api/Egami.Formats.Psd.PsdLayerImage.html#Egami_Formats_Psd_PsdLayerImage_Ink_
+  commentId: Overload:Egami.Formats.Psd.PsdLayerImage.Ink
+  isSpec: "True"
+  fullName: Egami.Formats.Psd.PsdLayerImage.Ink
+  nameWithType: PsdLayerImage.Ink
+- uid: Egami.Formats.Psd.PsdLayerImage.Mask
+  name: Mask
+  href: api/Egami.Formats.Psd.PsdLayerImage.html#Egami_Formats_Psd_PsdLayerImage_Mask
+  commentId: P:Egami.Formats.Psd.PsdLayerImage.Mask
+  fullName: Egami.Formats.Psd.PsdLayerImage.Mask
+  nameWithType: PsdLayerImage.Mask
+- uid: Egami.Formats.Psd.PsdLayerImage.Mask*
+  name: Mask
+  href: api/Egami.Formats.Psd.PsdLayerImage.html#Egami_Formats_Psd_PsdLayerImage_Mask_
+  commentId: Overload:Egami.Formats.Psd.PsdLayerImage.Mask
+  isSpec: "True"
+  fullName: Egami.Formats.Psd.PsdLayerImage.Mask
+  nameWithType: PsdLayerImage.Mask
+- uid: Egami.Formats.Psd.PsdLayerImage.ParentIndex
+  name: ParentIndex
+  href: api/Egami.Formats.Psd.PsdLayerImage.html#Egami_Formats_Psd_PsdLayerImage_ParentIndex
+  commentId: P:Egami.Formats.Psd.PsdLayerImage.ParentIndex
+  fullName: Egami.Formats.Psd.PsdLayerImage.ParentIndex
+  nameWithType: PsdLayerImage.ParentIndex
+- uid: Egami.Formats.Psd.PsdLayerImage.ParentIndex*
+  name: ParentIndex
+  href: api/Egami.Formats.Psd.PsdLayerImage.html#Egami_Formats_Psd_PsdLayerImage_ParentIndex_
+  commentId: Overload:Egami.Formats.Psd.PsdLayerImage.ParentIndex
+  isSpec: "True"
+  fullName: Egami.Formats.Psd.PsdLayerImage.ParentIndex
+  nameWithType: PsdLayerImage.ParentIndex
+- uid: Egami.Formats.Psd.PsdLayerImage.Pixels
+  name: Pixels
+  href: api/Egami.Formats.Psd.PsdLayerImage.html#Egami_Formats_Psd_PsdLayerImage_Pixels
+  commentId: P:Egami.Formats.Psd.PsdLayerImage.Pixels
+  fullName: Egami.Formats.Psd.PsdLayerImage.Pixels
+  nameWithType: PsdLayerImage.Pixels
+- uid: Egami.Formats.Psd.PsdLayerImage.Pixels*
+  name: Pixels
+  href: api/Egami.Formats.Psd.PsdLayerImage.html#Egami_Formats_Psd_PsdLayerImage_Pixels_
+  commentId: Overload:Egami.Formats.Psd.PsdLayerImage.Pixels
+  isSpec: "True"
+  fullName: Egami.Formats.Psd.PsdLayerImage.Pixels
+  nameWithType: PsdLayerImage.Pixels
+- uid: Egami.Formats.Psd.PsdLayerImage.X
+  name: X
+  href: api/Egami.Formats.Psd.PsdLayerImage.html#Egami_Formats_Psd_PsdLayerImage_X
+  commentId: P:Egami.Formats.Psd.PsdLayerImage.X
+  fullName: Egami.Formats.Psd.PsdLayerImage.X
+  nameWithType: PsdLayerImage.X
+- uid: Egami.Formats.Psd.PsdLayerImage.X*
+  name: X
+  href: api/Egami.Formats.Psd.PsdLayerImage.html#Egami_Formats_Psd_PsdLayerImage_X_
+  commentId: Overload:Egami.Formats.Psd.PsdLayerImage.X
+  isSpec: "True"
+  fullName: Egami.Formats.Psd.PsdLayerImage.X
+  nameWithType: PsdLayerImage.X
+- uid: Egami.Formats.Psd.PsdLayerImage.Y
+  name: Y
+  href: api/Egami.Formats.Psd.PsdLayerImage.html#Egami_Formats_Psd_PsdLayerImage_Y
+  commentId: P:Egami.Formats.Psd.PsdLayerImage.Y
+  fullName: Egami.Formats.Psd.PsdLayerImage.Y
+  nameWithType: PsdLayerImage.Y
+- uid: Egami.Formats.Psd.PsdLayerImage.Y*
+  name: Y
+  href: api/Egami.Formats.Psd.PsdLayerImage.html#Egami_Formats_Psd_PsdLayerImage_Y_
+  commentId: Overload:Egami.Formats.Psd.PsdLayerImage.Y
+  isSpec: "True"
+  fullName: Egami.Formats.Psd.PsdLayerImage.Y
+  nameWithType: PsdLayerImage.Y
 - uid: Egami.Formats.Psd.PsdLayerKind
   name: PsdLayerKind
   href: api/Egami.Formats.Psd.PsdLayerKind.html
@@ -49203,6 +49599,170 @@ references:
   commentId: F:Egami.Formats.Psd.PsdLayerKind.OpenGroup
   fullName: Egami.Formats.Psd.PsdLayerKind.OpenGroup
   nameWithType: PsdLayerKind.OpenGroup
+- uid: Egami.Formats.Psd.PsdLayerType
+  name: PsdLayerType
+  href: api/Egami.Formats.Psd.PsdLayerType.html
+  commentId: T:Egami.Formats.Psd.PsdLayerType
+  fullName: Egami.Formats.Psd.PsdLayerType
+  nameWithType: PsdLayerType
+- uid: Egami.Formats.Psd.PsdLayerType.Adjustment
+  name: Adjustment
+  href: api/Egami.Formats.Psd.PsdLayerType.html#Egami_Formats_Psd_PsdLayerType_Adjustment
+  commentId: F:Egami.Formats.Psd.PsdLayerType.Adjustment
+  fullName: Egami.Formats.Psd.PsdLayerType.Adjustment
+  nameWithType: PsdLayerType.Adjustment
+- uid: Egami.Formats.Psd.PsdLayerType.Fill
+  name: Fill
+  href: api/Egami.Formats.Psd.PsdLayerType.html#Egami_Formats_Psd_PsdLayerType_Fill
+  commentId: F:Egami.Formats.Psd.PsdLayerType.Fill
+  fullName: Egami.Formats.Psd.PsdLayerType.Fill
+  nameWithType: PsdLayerType.Fill
+- uid: Egami.Formats.Psd.PsdLayerType.Group
+  name: Group
+  href: api/Egami.Formats.Psd.PsdLayerType.html#Egami_Formats_Psd_PsdLayerType_Group
+  commentId: F:Egami.Formats.Psd.PsdLayerType.Group
+  fullName: Egami.Formats.Psd.PsdLayerType.Group
+  nameWithType: PsdLayerType.Group
+- uid: Egami.Formats.Psd.PsdLayerType.Pixel
+  name: Pixel
+  href: api/Egami.Formats.Psd.PsdLayerType.html#Egami_Formats_Psd_PsdLayerType_Pixel
+  commentId: F:Egami.Formats.Psd.PsdLayerType.Pixel
+  fullName: Egami.Formats.Psd.PsdLayerType.Pixel
+  nameWithType: PsdLayerType.Pixel
+- uid: Egami.Formats.Psd.PsdLayerType.Shape
+  name: Shape
+  href: api/Egami.Formats.Psd.PsdLayerType.html#Egami_Formats_Psd_PsdLayerType_Shape
+  commentId: F:Egami.Formats.Psd.PsdLayerType.Shape
+  fullName: Egami.Formats.Psd.PsdLayerType.Shape
+  nameWithType: PsdLayerType.Shape
+- uid: Egami.Formats.Psd.PsdLayerType.SmartObject
+  name: SmartObject
+  href: api/Egami.Formats.Psd.PsdLayerType.html#Egami_Formats_Psd_PsdLayerType_SmartObject
+  commentId: F:Egami.Formats.Psd.PsdLayerType.SmartObject
+  fullName: Egami.Formats.Psd.PsdLayerType.SmartObject
+  nameWithType: PsdLayerType.SmartObject
+- uid: Egami.Formats.Psd.PsdLayerType.Text
+  name: Text
+  href: api/Egami.Formats.Psd.PsdLayerType.html#Egami_Formats_Psd_PsdLayerType_Text
+  commentId: F:Egami.Formats.Psd.PsdLayerType.Text
+  fullName: Egami.Formats.Psd.PsdLayerType.Text
+  nameWithType: PsdLayerType.Text
+- uid: Egami.Formats.Psd.PsdMask
+  name: PsdMask
+  href: api/Egami.Formats.Psd.PsdMask.html
+  commentId: T:Egami.Formats.Psd.PsdMask
+  fullName: Egami.Formats.Psd.PsdMask
+  nameWithType: PsdMask
+- uid: Egami.Formats.Psd.PsdMask.Bounds
+  name: Bounds
+  href: api/Egami.Formats.Psd.PsdMask.html#Egami_Formats_Psd_PsdMask_Bounds
+  commentId: P:Egami.Formats.Psd.PsdMask.Bounds
+  fullName: Egami.Formats.Psd.PsdMask.Bounds
+  nameWithType: PsdMask.Bounds
+- uid: Egami.Formats.Psd.PsdMask.Bounds*
+  name: Bounds
+  href: api/Egami.Formats.Psd.PsdMask.html#Egami_Formats_Psd_PsdMask_Bounds_
+  commentId: Overload:Egami.Formats.Psd.PsdMask.Bounds
+  isSpec: "True"
+  fullName: Egami.Formats.Psd.PsdMask.Bounds
+  nameWithType: PsdMask.Bounds
+- uid: Egami.Formats.Psd.PsdMask.DefaultColor
+  name: DefaultColor
+  href: api/Egami.Formats.Psd.PsdMask.html#Egami_Formats_Psd_PsdMask_DefaultColor
+  commentId: P:Egami.Formats.Psd.PsdMask.DefaultColor
+  fullName: Egami.Formats.Psd.PsdMask.DefaultColor
+  nameWithType: PsdMask.DefaultColor
+- uid: Egami.Formats.Psd.PsdMask.DefaultColor*
+  name: DefaultColor
+  href: api/Egami.Formats.Psd.PsdMask.html#Egami_Formats_Psd_PsdMask_DefaultColor_
+  commentId: Overload:Egami.Formats.Psd.PsdMask.DefaultColor
+  isSpec: "True"
+  fullName: Egami.Formats.Psd.PsdMask.DefaultColor
+  nameWithType: PsdMask.DefaultColor
+- uid: Egami.Formats.Psd.PsdMask.Density
+  name: Density
+  href: api/Egami.Formats.Psd.PsdMask.html#Egami_Formats_Psd_PsdMask_Density
+  commentId: P:Egami.Formats.Psd.PsdMask.Density
+  fullName: Egami.Formats.Psd.PsdMask.Density
+  nameWithType: PsdMask.Density
+- uid: Egami.Formats.Psd.PsdMask.Density*
+  name: Density
+  href: api/Egami.Formats.Psd.PsdMask.html#Egami_Formats_Psd_PsdMask_Density_
+  commentId: Overload:Egami.Formats.Psd.PsdMask.Density
+  isSpec: "True"
+  fullName: Egami.Formats.Psd.PsdMask.Density
+  nameWithType: PsdMask.Density
+- uid: Egami.Formats.Psd.PsdMask.Feather
+  name: Feather
+  href: api/Egami.Formats.Psd.PsdMask.html#Egami_Formats_Psd_PsdMask_Feather
+  commentId: P:Egami.Formats.Psd.PsdMask.Feather
+  fullName: Egami.Formats.Psd.PsdMask.Feather
+  nameWithType: PsdMask.Feather
+- uid: Egami.Formats.Psd.PsdMask.Feather*
+  name: Feather
+  href: api/Egami.Formats.Psd.PsdMask.html#Egami_Formats_Psd_PsdMask_Feather_
+  commentId: Overload:Egami.Formats.Psd.PsdMask.Feather
+  isSpec: "True"
+  fullName: Egami.Formats.Psd.PsdMask.Feather
+  nameWithType: PsdMask.Feather
+- uid: Egami.Formats.Psd.PsdMask.IsDisabled
+  name: IsDisabled
+  href: api/Egami.Formats.Psd.PsdMask.html#Egami_Formats_Psd_PsdMask_IsDisabled
+  commentId: P:Egami.Formats.Psd.PsdMask.IsDisabled
+  fullName: Egami.Formats.Psd.PsdMask.IsDisabled
+  nameWithType: PsdMask.IsDisabled
+- uid: Egami.Formats.Psd.PsdMask.IsDisabled*
+  name: IsDisabled
+  href: api/Egami.Formats.Psd.PsdMask.html#Egami_Formats_Psd_PsdMask_IsDisabled_
+  commentId: Overload:Egami.Formats.Psd.PsdMask.IsDisabled
+  isSpec: "True"
+  fullName: Egami.Formats.Psd.PsdMask.IsDisabled
+  nameWithType: PsdMask.IsDisabled
+- uid: Egami.Formats.Psd.PsdMask.Pixels
+  name: Pixels
+  href: api/Egami.Formats.Psd.PsdMask.html#Egami_Formats_Psd_PsdMask_Pixels
+  commentId: P:Egami.Formats.Psd.PsdMask.Pixels
+  fullName: Egami.Formats.Psd.PsdMask.Pixels
+  nameWithType: PsdMask.Pixels
+- uid: Egami.Formats.Psd.PsdMask.Pixels*
+  name: Pixels
+  href: api/Egami.Formats.Psd.PsdMask.html#Egami_Formats_Psd_PsdMask_Pixels_
+  commentId: Overload:Egami.Formats.Psd.PsdMask.Pixels
+  isSpec: "True"
+  fullName: Egami.Formats.Psd.PsdMask.Pixels
+  nameWithType: PsdMask.Pixels
+- uid: Egami.Formats.Psd.PsdReaderOptions
+  name: PsdReaderOptions
+  href: api/Egami.Formats.Psd.PsdReaderOptions.html
+  commentId: T:Egami.Formats.Psd.PsdReaderOptions
+  fullName: Egami.Formats.Psd.PsdReaderOptions
+  nameWithType: PsdReaderOptions
+- uid: Egami.Formats.Psd.PsdReaderOptions.Composite
+  name: Composite
+  href: api/Egami.Formats.Psd.PsdReaderOptions.html#Egami_Formats_Psd_PsdReaderOptions_Composite
+  commentId: P:Egami.Formats.Psd.PsdReaderOptions.Composite
+  fullName: Egami.Formats.Psd.PsdReaderOptions.Composite
+  nameWithType: PsdReaderOptions.Composite
+- uid: Egami.Formats.Psd.PsdReaderOptions.Composite*
+  name: Composite
+  href: api/Egami.Formats.Psd.PsdReaderOptions.html#Egami_Formats_Psd_PsdReaderOptions_Composite_
+  commentId: Overload:Egami.Formats.Psd.PsdReaderOptions.Composite
+  isSpec: "True"
+  fullName: Egami.Formats.Psd.PsdReaderOptions.Composite
+  nameWithType: PsdReaderOptions.Composite
+- uid: Egami.Formats.Psd.PsdReaderOptions.Default
+  name: Default
+  href: api/Egami.Formats.Psd.PsdReaderOptions.html#Egami_Formats_Psd_PsdReaderOptions_Default
+  commentId: P:Egami.Formats.Psd.PsdReaderOptions.Default
+  fullName: Egami.Formats.Psd.PsdReaderOptions.Default
+  nameWithType: PsdReaderOptions.Default
+- uid: Egami.Formats.Psd.PsdReaderOptions.Default*
+  name: Default
+  href: api/Egami.Formats.Psd.PsdReaderOptions.html#Egami_Formats_Psd_PsdReaderOptions_Default_
+  commentId: Overload:Egami.Formats.Psd.PsdReaderOptions.Default
+  isSpec: "True"
+  fullName: Egami.Formats.Psd.PsdReaderOptions.Default
+  nameWithType: PsdReaderOptions.Default
 - uid: Egami.Formats.Psd.PsdResource
   name: PsdResource
   href: api/Egami.Formats.Psd.PsdResource.html
@@ -58810,6 +59370,12 @@ references:
   commentId: F:Egami.Operations.BlendMode.Darken
   fullName: Egami.Operations.BlendMode.Darken
   nameWithType: BlendMode.Darken
+- uid: Egami.Operations.BlendMode.DarkerColor
+  name: DarkerColor
+  href: api/Egami.Operations.BlendMode.html#Egami_Operations_BlendMode_DarkerColor
+  commentId: F:Egami.Operations.BlendMode.DarkerColor
+  fullName: Egami.Operations.BlendMode.DarkerColor
+  nameWithType: BlendMode.DarkerColor
 - uid: Egami.Operations.BlendMode.Destination
   name: Destination
   href: api/Egami.Operations.BlendMode.html#Egami_Operations_BlendMode_Destination
@@ -58846,6 +59412,18 @@ references:
   commentId: F:Egami.Operations.BlendMode.Difference
   fullName: Egami.Operations.BlendMode.Difference
   nameWithType: BlendMode.Difference
+- uid: Egami.Operations.BlendMode.Dissolve
+  name: Dissolve
+  href: api/Egami.Operations.BlendMode.html#Egami_Operations_BlendMode_Dissolve
+  commentId: F:Egami.Operations.BlendMode.Dissolve
+  fullName: Egami.Operations.BlendMode.Dissolve
+  nameWithType: BlendMode.Dissolve
+- uid: Egami.Operations.BlendMode.Divide
+  name: Divide
+  href: api/Egami.Operations.BlendMode.html#Egami_Operations_BlendMode_Divide
+  commentId: F:Egami.Operations.BlendMode.Divide
+  fullName: Egami.Operations.BlendMode.Divide
+  nameWithType: BlendMode.Divide
 - uid: Egami.Operations.BlendMode.Exclusion
   name: Exclusion
   href: api/Egami.Operations.BlendMode.html#Egami_Operations_BlendMode_Exclusion
@@ -58858,6 +59436,12 @@ references:
   commentId: F:Egami.Operations.BlendMode.HardLight
   fullName: Egami.Operations.BlendMode.HardLight
   nameWithType: BlendMode.HardLight
+- uid: Egami.Operations.BlendMode.HardMix
+  name: HardMix
+  href: api/Egami.Operations.BlendMode.html#Egami_Operations_BlendMode_HardMix
+  commentId: F:Egami.Operations.BlendMode.HardMix
+  fullName: Egami.Operations.BlendMode.HardMix
+  nameWithType: BlendMode.HardMix
 - uid: Egami.Operations.BlendMode.Hue
   name: Hue
   href: api/Egami.Operations.BlendMode.html#Egami_Operations_BlendMode_Hue
@@ -58870,6 +59454,24 @@ references:
   commentId: F:Egami.Operations.BlendMode.Lighten
   fullName: Egami.Operations.BlendMode.Lighten
   nameWithType: BlendMode.Lighten
+- uid: Egami.Operations.BlendMode.LighterColor
+  name: LighterColor
+  href: api/Egami.Operations.BlendMode.html#Egami_Operations_BlendMode_LighterColor
+  commentId: F:Egami.Operations.BlendMode.LighterColor
+  fullName: Egami.Operations.BlendMode.LighterColor
+  nameWithType: BlendMode.LighterColor
+- uid: Egami.Operations.BlendMode.LinearBurn
+  name: LinearBurn
+  href: api/Egami.Operations.BlendMode.html#Egami_Operations_BlendMode_LinearBurn
+  commentId: F:Egami.Operations.BlendMode.LinearBurn
+  fullName: Egami.Operations.BlendMode.LinearBurn
+  nameWithType: BlendMode.LinearBurn
+- uid: Egami.Operations.BlendMode.LinearLight
+  name: LinearLight
+  href: api/Egami.Operations.BlendMode.html#Egami_Operations_BlendMode_LinearLight
+  commentId: F:Egami.Operations.BlendMode.LinearLight
+  fullName: Egami.Operations.BlendMode.LinearLight
+  nameWithType: BlendMode.LinearLight
 - uid: Egami.Operations.BlendMode.Luminosity
   name: Luminosity
   href: api/Egami.Operations.BlendMode.html#Egami_Operations_BlendMode_Luminosity
@@ -58894,6 +59496,12 @@ references:
   commentId: F:Egami.Operations.BlendMode.Overlay
   fullName: Egami.Operations.BlendMode.Overlay
   nameWithType: BlendMode.Overlay
+- uid: Egami.Operations.BlendMode.PinLight
+  name: PinLight
+  href: api/Egami.Operations.BlendMode.html#Egami_Operations_BlendMode_PinLight
+  commentId: F:Egami.Operations.BlendMode.PinLight
+  fullName: Egami.Operations.BlendMode.PinLight
+  nameWithType: BlendMode.PinLight
 - uid: Egami.Operations.BlendMode.Plus
   name: Plus
   href: api/Egami.Operations.BlendMode.html#Egami_Operations_BlendMode_Plus
@@ -58954,6 +59562,12 @@ references:
   commentId: F:Egami.Operations.BlendMode.Subtract
   fullName: Egami.Operations.BlendMode.Subtract
   nameWithType: BlendMode.Subtract
+- uid: Egami.Operations.BlendMode.VividLight
+  name: VividLight
+  href: api/Egami.Operations.BlendMode.html#Egami_Operations_BlendMode_VividLight
+  commentId: F:Egami.Operations.BlendMode.VividLight
+  fullName: Egami.Operations.BlendMode.VividLight
+  nameWithType: BlendMode.VividLight
 - uid: Egami.Operations.BlendMode.Xor
   name: Xor
   href: api/Egami.Operations.BlendMode.html#Egami_Operations_BlendMode_Xor

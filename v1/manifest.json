@@ -8189,6 +8189,20 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Psd.PsdComposite.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Psd.PsdComposite.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Psd.PsdComposite",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Psd.PsdComposite.yml\" sourcestartlinenumber=\"1\">Which image Load gives for a PSD or PSB file.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.Formats.Psd.PsdCompression.yml",
       "output": {
         ".html": {
@@ -8217,6 +8231,34 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Psd.PsdDocument.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Psd.PsdDocument.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Psd.PsdDocument",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Psd.PsdDocument.yml\" sourcestartlinenumber=\"1\">A PSD or PSB file's layers with their pixels, from <xref href=\"Egami.Formats.Psd.PsdImage.ReadLayers(System.String%2cEgami.Formats.ReaderOptions%2cEgami.EgamiContext)\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Psd.PsdFlattenOptions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Psd.PsdFlattenOptions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Psd.PsdFlattenOptions",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Psd.PsdFlattenOptions.yml\" sourcestartlinenumber=\"1\">Options for <xref href=\"Egami.Formats.Psd.PsdDocument.Flatten(Egami.Formats.Psd.PsdFlattenOptions)\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.Formats.Psd.PsdFormat.yml",
       "output": {
         ".html": {
@@ -8228,6 +8270,20 @@
       "IsMRef": true,
       "Title": "Egami.Formats.Psd.PsdFormat",
       "Summary": "<p sourcefile=\"api/Egami.Formats.Psd.PsdFormat.yml\" sourcestartlinenumber=\"1\">Adobe Photoshop's PSD and large-document PSB formats, read only, registered in <xref href=\"Egami.EgamiContext.Default\" data-throw-if-not-resolved=\"false\"></xref>. Load returns\nthe flattened image Photoshop stores after the layers; the layers themselves are listed in <xref href=\"Egami.Formats.Psd.PsdDetails.Layers\" data-throw-if-not-resolved=\"false\"></xref>\nwithout their pixels.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Psd.PsdImage.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Psd.PsdImage.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Psd.PsdImage",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Psd.PsdImage.yml\" sourcestartlinenumber=\"1\">Reads what PSD and PSB hold besides the image Load gives: the layers, each with its pixels and mask.</p>\n"
     },
     {
       "type": "ManagedReference",
@@ -8245,6 +8301,20 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Psd.PsdLayerImage.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Psd.PsdLayerImage.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Psd.PsdLayerImage",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Psd.PsdLayerImage.yml\" sourcestartlinenumber=\"1\">One layer or group of a <xref href=\"Egami.Formats.Psd.PsdDocument\" data-throw-if-not-resolved=\"false\"></xref>, with its pixels and mask.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.Formats.Psd.PsdLayerKind.yml",
       "output": {
         ".html": {
@@ -8256,6 +8326,48 @@
       "IsMRef": true,
       "Title": "Egami.Formats.Psd.PsdLayerKind",
       "Summary": "<p sourcefile=\"api/Egami.Formats.Psd.PsdLayerKind.yml\" sourcestartlinenumber=\"1\">What a layer record is: a layer, or one end of a group.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Psd.PsdLayerType.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Psd.PsdLayerType.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Psd.PsdLayerType",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Psd.PsdLayerType.yml\" sourcestartlinenumber=\"1\">What a layer holds, from the blocks its record carries.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Psd.PsdMask.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Psd.PsdMask.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Psd.PsdMask",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Psd.PsdMask.yml\" sourcestartlinenumber=\"1\">A layer's pixel mask: 0 hides the layer, the maximum shows it.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Psd.PsdReaderOptions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Psd.PsdReaderOptions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Psd.PsdReaderOptions",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Psd.PsdReaderOptions.yml\" sourcestartlinenumber=\"1\">Options for reading PSD and PSB, on top of the general <xref href=\"Egami.Formats.ReaderOptions\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n"
     },
     {
       "type": "ManagedReference",

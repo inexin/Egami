@@ -100,6 +100,16 @@ Classes
 </dd>
     </dl>
     <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Formats.Psd.PsdDocument.html">PsdDocument</a></dt>
+      <dd><p>A PSD or PSB file's layers with their pixels, from <a class="xref" href="Egami.Formats.Psd.PsdImage.html#Egami_Formats_Psd_PsdImage_ReadLayers_System_String_Egami_Formats_ReaderOptions_Egami_EgamiContext_">ReadLayers(string, ReaderOptions?, EgamiContext?)</a>.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Formats.Psd.PsdFlattenOptions.html">PsdFlattenOptions</a></dt>
+      <dd><p>Options for <a class="xref" href="Egami.Formats.Psd.PsdDocument.html#Egami_Formats_Psd_PsdDocument_Flatten_Egami_Formats_Psd_PsdFlattenOptions_">Flatten(PsdFlattenOptions?)</a>.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
       <dt><a class="xref" href="Egami.Formats.Psd.PsdFormat.html">PsdFormat</a></dt>
       <dd><p>Adobe Photoshop's PSD and large-document PSB formats, read only, registered in <a class="xref" href="Egami.EgamiContext.html#Egami_EgamiContext_Default">Default</a>. Load returns
 the flattened image Photoshop stores after the layers; the layers themselves are listed in <a class="xref" href="Egami.Formats.Psd.PsdDetails.html#Egami_Formats_Psd_PsdDetails_Layers">Layers</a>
@@ -107,8 +117,28 @@ without their pixels.</p>
 </dd>
     </dl>
     <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Formats.Psd.PsdImage.html">PsdImage</a></dt>
+      <dd><p>Reads what PSD and PSB hold besides the image Load gives: the layers, each with its pixels and mask.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
       <dt><a class="xref" href="Egami.Formats.Psd.PsdLayer.html">PsdLayer</a></dt>
       <dd><p>One layer record of a PSD file, read as metadata: the layer's pixels are not loaded.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Formats.Psd.PsdLayerImage.html">PsdLayerImage</a></dt>
+      <dd><p>One layer or group of a <a class="xref" href="Egami.Formats.Psd.PsdDocument.html">PsdDocument</a>, with its pixels and mask.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Formats.Psd.PsdMask.html">PsdMask</a></dt>
+      <dd><p>A layer's pixel mask: 0 hides the layer, the maximum shows it.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Formats.Psd.PsdReaderOptions.html">PsdReaderOptions</a></dt>
+      <dd><p>Options for reading PSD and PSB, on top of the general <a class="xref" href="Egami.Formats.ReaderOptions.html">ReaderOptions</a>.</p>
 </dd>
     </dl>
     <dl class="jumplist">
@@ -125,6 +155,11 @@ Enums
 </dd>
     </dl>
     <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Formats.Psd.PsdComposite.html">PsdComposite</a></dt>
+      <dd><p>Which image Load gives for a PSD or PSB file.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
       <dt><a class="xref" href="Egami.Formats.Psd.PsdCompression.html">PsdCompression</a></dt>
       <dd><p>How the flattened image's channels are compressed, by the code before them.</p>
 </dd>
@@ -132,6 +167,11 @@ Enums
     <dl class="jumplist">
       <dt><a class="xref" href="Egami.Formats.Psd.PsdLayerKind.html">PsdLayerKind</a></dt>
       <dd><p>What a layer record is: a layer, or one end of a group.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Formats.Psd.PsdLayerType.html">PsdLayerType</a></dt>
+      <dd><p>What a layer holds, from the blocks its record carries.</p>
 </dd>
     </dl>
 
