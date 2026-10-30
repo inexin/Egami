@@ -159,6 +159,8 @@ Parallel.ForEach(Directory.GetFiles("in"), new ParallelOptions { MaxDegreeOfPara
   it in `Orientation`.
 - Resizing with both sizes when the aspect ratio should stay: `Fit(w, h)` keeps it inside a box, `Resize(w, 0)` keeps it from
   one side, `Resize(w, h)` stretches.
+- Expecting `Raster.Load` to give a PSD's layers. Load gives the flattened image only; `PsdImage.ReadLayers` gives each layer
+  with its pixels and mask, and `PsdDocument.Flatten` flattens them again after changing a layer's `Info`.
 - Running many images in parallel with the default context. Each operation already uses several threads; when you run files
   side by side, give each a context with `MaxParallelism = 1`.
 - Loading untrusted files without limits. Probe first and pass an `EgamiContext` with `SafetyLimits`; catch

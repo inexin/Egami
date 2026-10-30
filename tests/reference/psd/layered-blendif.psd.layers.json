@@ -1,0 +1,47 @@
+[
+ {
+  "name": "Background",
+  "kind": "pixel",
+  "visible": true,
+  "opacity": 255,
+  "blend": "BlendMode.NORMAL",
+  "clipping": false,
+  "bbox": [
+   0,
+   0,
+   64,
+   48
+  ],
+  "depth": 0
+ },
+ {
+  "name": "Density",
+  "kind": "pixel",
+  "visible": true,
+  "opacity": 220,
+  "blend": "BlendMode.NORMAL",
+  "clipping": false,
+  "bbox": [
+   0,
+   0,
+   64,
+   48
+  ],
+  "depth": 0
+ },
+ {
+  "name": "Blend if",
+  "kind": "pixel",
+  "visible": true,
+  "opacity": 255,
+  "blend": "BlendMode.NORMAL",
+  "clipping": false,
+  "bbox": [
+   0,
+   0,
+   64,
+   48
+  ],
+  "depth": 0
+ }
+]

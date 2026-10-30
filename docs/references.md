@@ -2,7 +2,7 @@
 
 These permissively licensed projects may be studied for ideas. Study the idea, then write your own C#. If code is ever translated closely, its license notice goes into [THIRD-PARTY-NOTICES.md](../THIRD-PARTY-NOTICES.md) in the same pull request.
 
-Licenses were checked on 2026-10-07 (the HEVC libraries on 2026-10-15, the barcode libraries on 2026-10-19) against each project's own license file or package manifest.
+Licenses were checked on 2026-10-07 (the HEVC libraries on 2026-10-15, the barcode libraries on 2026-10-19, psd-tools and ag-psd on 2026-10-30) against each project's own license file or package manifest.
 
 | Library | Language | License | What to learn from it | Egami step |
 |---|---|---|---|---|
@@ -35,6 +35,8 @@ Licenses were checked on 2026-10-07 (the HEVC libraries on 2026-10-15, the barco
 | [HM](https://vcgit.hhi.fraunhofer.de/jvet/HM), the HEVC reference software | C++ | BSD-3 (grants no patent rights) | Where H.265 is unclear; HM's decoder is the bit-exact reference | 2.9.4 |
 | [libhevc](https://android.googlesource.com/platform/external/libhevc) | C | Apache 2.0 | Fast SIMD structure of an HEVC decoder | 2.9.4 |
 | [CrabbyAvif](https://github.com/webmproject/CrabbyAvif) | Rust | Apache 2.0 | HEIF item handling, including HEIC | 2.9.4 |
+| [psd-tools](https://github.com/psd-tools/psd-tools) | Python | MIT | PSD layer records, masks, adjustment data and compositing; its composite() is a reference for flattening | 2.3.10 |
+| [ag-psd](https://github.com/Agamnentzar/ag-psd) | TypeScript | MIT | PSD layer records, masks and additional layer information as Photoshop writes them | 2.3.10 |
 | [libebur128](https://github.com/jiixyj/libebur128) | C | MIT | EBU R 128 loudness: K-weighting at any rate, gating, loudness range | Video V1.4 |
 | [skrifa](https://github.com/googlefonts/fontations/tree/main/skrifa) (Google fontations) | Rust | MIT or Apache 2.0 | A complete TrueType interpreter with ClearType compatibility and an autohinter; read under MIT (2.7.5 Q2, Lars 2026-10-28). A close translation gets a THIRD-PARTY-NOTICES entry | 2.7.5 |
 | [DirectXTex](https://github.com/microsoft/DirectXTex) | C++ | MIT | Every DXGI format, the legacy DDS header mappings and BC1 to BC7 codecs; its `texconv` is the DDS gate oracle | DDS |
@@ -62,6 +64,10 @@ samples only. OCRmyPDF (MPL-2.0) and iText pdfOCR (AGPL) were looked at for beha
 For TrueType hinting (2.7.5), FreeType (FreeType License or GPLv2) is never read; its behaviour comes from the 2.7.5 FreeType
 Hinting Study and FreeType's public documentation pages. The OpenType and Apple TrueType specifications, Microsoft's ClearType
 backward-compatibility page and *The Raster Tragedy* are the references, with skrifa as the listed library.
+
+For PSD layers (2.3.10), Adobe's Photoshop File Format Specification, the W3C Compositing and Blending specification and
+published blend-mode formulas are the references, with psd-tools and ag-psd as the listed libraries. GIMP and Krita (GPL) are
+never read; ImageMagick runs only as a black-box tool.
 
 For HEIC, libheif and libde265 (LGPL-3), FFmpeg's HEVC decoder and openHEVC (LGPL-2.1) and x265 (GPL-2) are never read; they
 only run as black-box tools in Docker to make test files and references. Nokia's HEIF code (non-commercial licence) is never

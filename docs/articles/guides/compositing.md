@@ -19,7 +19,9 @@ the same as drawing an image of that size.
 ## Blend modes
 
 Pass a `BlendMode` to choose how each pixel combines with the one under it: the twelve Porter–Duff operators, Plus and Modulate,
-and the W3C blend modes from Multiply to Luminosity, plus Add and Subtract.
+and the W3C blend modes from Multiply to Luminosity, plus Add and Subtract and the rest of Photoshop's modes: Divide,
+LinearBurn, LinearLight, VividLight, PinLight, HardMix, DarkerColor, LighterColor and Dissolve. Dissolve draws each pixel fully or
+not at all, with a chance equal to its alpha, from a fixed hashed pattern of the pixel's place (not Photoshop's pattern).
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Blending.cs#draw-image-mode)]
 
@@ -27,7 +29,8 @@ and the W3C blend modes from Multiply to Luminosity, plus Add and Subtract.
 - `SourceOver` on stored values is exactly the plain `DrawImage`.
 - Blends use the stored values, as browsers and editors do; pass `ColorSpace.Linear` to blend light instead, with the raster's own curve.
 - On `PremulRgba8`, `PremulBgra8`, `Rgba8` and `Bgra8` the Porter–Duff operators, Plus, Modulate and the product-and-sum modes are exact
-  integer math; ColorDodge, ColorBurn, SoftLight and the four non-separable modes are within a level of exact, with alpha exact.
+  integer math; ColorDodge, ColorBurn, SoftLight, the Photoshop modes and the non-separable modes are within a level of exact, with
+  alpha exact.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Blending.cs#blend-mode)]
 

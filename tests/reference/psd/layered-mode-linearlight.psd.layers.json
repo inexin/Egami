@@ -1,0 +1,32 @@
+[
+ {
+  "name": "Background",
+  "kind": "pixel",
+  "visible": true,
+  "opacity": 255,
+  "blend": "BlendMode.NORMAL",
+  "clipping": false,
+  "bbox": [
+   0,
+   0,
+   64,
+   48
+  ],
+  "depth": 0
+ },
+ {
+  "name": "linearlight",
+  "kind": "pixel",
+  "visible": true,
+  "opacity": 204,
+  "blend": "BlendMode.LINEAR_LIGHT",
+  "clipping": false,
+  "bbox": [
+   4,
+   3,
+   60,
+   45
+  ],
+  "depth": 0
+ }
+]

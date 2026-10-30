@@ -76,4 +76,63 @@ public class Psd
 
         Assert.Equal(9, ((PsdDetails)image.Metadata.FormatDetails!).Layers.Count);
     }
+
+    [Fact]
+    public void ReadLayers()
+    {
+        using SampleFiles files = new();
+
+        #region psd-read-layers
+        // ReadLayers gives every layer with its pixels, bottom to top; a group comes after its contents.
+        using PsdDocument document = PsdImage.ReadLayers("layered.psd");
+        foreach (PsdLayerImage layer in document.Layers)
+        {
+            if (layer.Pixels is Raster pixels)
+            {
+                // Each layer at its own size, in the natural type with alpha (Rgba8 here); X and Y place it on the canvas.
+                pixels.Save($"layer-{layer.Index}.png");
+                Console.WriteLine($"{layer.Info.Name}: {pixels.Width}×{pixels.Height} at ({layer.X}, {layer.Y}), in group {layer.ParentIndex}");
+            }
+        }
+        #endregion
+
+        Assert.True(File.Exists("layer-0.png"));
+    }
+
+    [Fact]
+    public void Flatten()
+    {
+        using SampleFiles files = new();
+
+        #region psd-flatten
+        // Flatten composites the layers as Photoshop does; change a layer's record first to flatten it differently.
+        using PsdDocument document = PsdImage.ReadLayers("layered.psd");
+        PsdLayerImage top = document.Layers[^1];
+        top.Info = top.Info with { IsVisible = false };
+        using Raster flat = document.Flatten();
+        foreach (EgamiDiagnostic warning in flat.Metadata.Warnings)
+        {
+            // What the flattening left out, such as layer effects, one warning a kind naming the layers.
+            Console.WriteLine(warning.Message);
+        }
+
+        flat.Save("without-top.png");
+        #endregion
+
+        Assert.True(File.Exists("without-top.png"));
+    }
+
+    [Fact]
+    public void Composite()
+    {
+        using SampleFiles files = new();
+
+        #region psd-composite
+        // Load gives the composite Photoshop stored, or the layers flattened when the file has none. Ask for one or the other.
+        using Raster flattened = Raster.Load("layered.psd", EgamiContext.Default, new PsdReaderOptions { Composite = PsdComposite.Flatten });
+        using Raster stored = Raster.Load("layered.psd", EgamiContext.Default, new PsdReaderOptions { Composite = PsdComposite.Stored });
+        #endregion
+
+        Assert.Equal(stored.Width, flattened.Width);
+    }
 }

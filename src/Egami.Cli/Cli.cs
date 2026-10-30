@@ -106,6 +106,7 @@ internal static class Cli
         root.Subcommands.Add(AnalysisCommands.Stats(session));
         root.Subcommands.Add(OcrCommand.Create(session));
         root.Subcommands.Add(FrameCommands.Create(session));
+        root.Subcommands.Add(LayersCommand.Create(session));
         root.Subcommands.Add(MetadataCommands.Create(session));
         root.Subcommands.Add(MetadataCommands.Color(session));
         root.Subcommands.Add(DrawingCommands.Text(session));

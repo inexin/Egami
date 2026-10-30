@@ -112,7 +112,7 @@ public class PsdDetailsTests
     [Fact]
     public void WarningsSayWhatWasLeftOut()
     {
-        using Raster placeholder = Raster.Load(File("no-composite.psd"));
+        using Raster placeholder = Raster.Load(File("no-composite.psd"), EgamiContext.Default, new PsdReaderOptions { Composite = PsdComposite.Stored });
         Assert.False(((PsdDetails)placeholder.Metadata.FormatDetails!).HasRealComposite);
         Assert.Contains(placeholder.Metadata.Warnings, w => w.Id == "Psd.NoComposite");
 

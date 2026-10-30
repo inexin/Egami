@@ -107,7 +107,45 @@ public enum PsdLayerKind
 /// <example>
 /// <code language="csharp" source="../../../../tests/Egami.DocSamples/Psd.cs" region="psd-layers"/>
 /// </example>
-public sealed record PsdLayer(string Name, Rect Bounds, float Opacity, string BlendModeKey, BlendMode? BlendMode, bool IsVisible, bool IsClipped, PsdLayerKind Kind, int Level);
+public sealed record PsdLayer(string Name, Rect Bounds, float Opacity, string BlendModeKey, BlendMode? BlendMode, bool IsVisible, bool IsClipped, PsdLayerKind Kind, int Level)
+{
+    /// <summary>
+    /// Gets the fill opacity, 0 to 1: like <see cref="Opacity"/>, but it leaves layer effects alone. 1 when the file names
+    /// none; the file stores it in 256 steps.
+    /// </summary>
+    public float FillOpacity { get; init; } = 1;
+
+    /// <summary>Gets what the layer holds: pixels, text, a shape, a smart object, a fill, an adjustment, or a group.</summary>
+    public PsdLayerType LayerType { get; init; }
+}
+
+/// <summary>What a layer holds, from the blocks its record carries.</summary>
+/// <example>
+/// <code language="csharp" source="../../../../tests/Egami.DocSamples/Psd.cs" region="psd-layers"/>
+/// </example>
+public enum PsdLayerType
+{
+    /// <summary>Pixels painted in Photoshop.</summary>
+    Pixel,
+
+    /// <summary>Text; its pixels are Photoshop's rendering of it.</summary>
+    Text,
+
+    /// <summary>A shape: a fill bounded by a vector mask; its pixels are Photoshop's rendering of it.</summary>
+    Shape,
+
+    /// <summary>A smart object; its pixels are Photoshop's rendering of the embedded or linked file.</summary>
+    SmartObject,
+
+    /// <summary>A solid color, gradient or pattern fill.</summary>
+    Fill,
+
+    /// <summary>An adjustment layer, such as levels or curves, which changes the layers under it and has no pixels.</summary>
+    Adjustment,
+
+    /// <summary>A group record: one end of a group, see <see cref="PsdLayer.Kind"/>.</summary>
+    Group,
+}
 
 /// <summary>An image resource Egami does not map to <see cref="RasterMetadata"/>, kept as it was read.</summary>
 /// <param name="Id">The resource's number, such as 1036 for the thumbnail.</param>

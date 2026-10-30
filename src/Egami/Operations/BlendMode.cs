@@ -109,4 +109,35 @@ public enum BlendMode
 
     /// <summary>The source's luminosity with the destination's hue and saturation.</summary>
     Luminosity = 30,
+
+    /// <summary>Divides the destination by the source, clamped: <c>B = min(1, Cd / Cs)</c>; black in the source gives white.</summary>
+    Divide = 31,
+
+    /// <summary>The sum of the colors less 1, clamped: <c>B = max(0, Cd + Cs − 1)</c>. Darkens more than <see cref="Multiply"/>.</summary>
+    LinearBurn = 32,
+
+    /// <summary><see cref="LinearBurn"/> where the source is dark, <see cref="Add"/> where it is light: <c>B = clamp(Cd + 2·Cs − 1)</c>.</summary>
+    LinearLight = 33,
+
+    /// <summary><see cref="ColorBurn"/> by 2·Cs where the source is dark, <see cref="ColorDodge"/> by 2·Cs − 1 where it is light.</summary>
+    VividLight = 34,
+
+    /// <summary><see cref="Darken"/> with 2·Cs where the source is dark, <see cref="Lighten"/> with 2·Cs − 1 where it is light.</summary>
+    PinLight = 35,
+
+    /// <summary>Each channel to 0 or 1: <c>B = 1</c> where <c>Cd + Cs ≥ 1</c>, else 0.</summary>
+    HardMix = 36,
+
+    /// <summary>The whole color, source or destination, whose luminosity is lower.</summary>
+    DarkerColor = 37,
+
+    /// <summary>The whole color, source or destination, whose luminosity is higher.</summary>
+    LighterColor = 38,
+
+    /// <summary>
+    /// Each source pixel is drawn fully or not at all, with a chance equal to its alpha (opacity included), then source-over. The
+    /// pattern is a fixed hash of the pixel's place, not Photoshop's: DrawImage and Fill place it by canvas position, and
+    /// <see cref="Compositor"/> by the index in the row, so it repeats from row to row there.
+    /// </summary>
+    Dissolve = 39,
 }

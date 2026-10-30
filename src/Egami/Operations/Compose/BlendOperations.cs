@@ -36,7 +36,7 @@ internal sealed class BlendColorOperation(Rgba8 color, BlendMode mode, float opa
         {
             for (int y = start; y < end; y++)
             {
-                rows.BlendSolid(color, input.Destination.Row(y));
+                rows.BlendSolid(color, input.Destination.Row(y), default, 0, y);
             }
         });
     }

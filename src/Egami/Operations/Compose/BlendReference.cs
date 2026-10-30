@@ -30,7 +30,22 @@ internal static class BlendReference
     /// <summary>Gets whether a mode's blend function mixes channels (Hue, Saturation, Color, Luminosity).</summary>
     internal static bool IsNonSeparable(BlendMode mode)
     {
-        return mode >= BlendMode.Hue;
+        return mode is BlendMode.Hue or BlendMode.Saturation or BlendMode.Color or BlendMode.Luminosity or BlendMode.DarkerColor or BlendMode.LighterColor;
+    }
+
+    /// <summary>
+    /// Returns whether <see cref="BlendMode.Dissolve"/> draws the source pixel at (<paramref name="x"/>, <paramref name="y"/>):
+    /// when its alpha, opacity included, is above a threshold in 0..1 hashed from the place, so alpha 1 always draws and 0 never.
+    /// </summary>
+    internal static bool Dissolves(float alpha, int x, int y)
+    {
+        uint h = unchecked(((uint)x * 0x9E3779B1u) ^ ((uint)y * 0x85EBCA77u));
+        h ^= h >> 15;
+        h = unchecked(h * 0x2C1B3C6Du);
+        h ^= h >> 12;
+        h = unchecked(h * 0x297A2D39u);
+        h ^= h >> 15;
+        return alpha > (h >> 8) / 16777216f;
     }
 
     /// <summary>
@@ -38,9 +53,16 @@ internal static class BlendReference
     /// source by <paramref name="opacity"/>, and returns the premultiplied result.
     /// </summary>
     internal static (double R, double G, double B, double A) Blend(
-        BlendMode mode, (double R, double G, double B, double A) s, (double R, double G, double B, double A) d, double opacity = 1)
+        BlendMode mode, (double R, double G, double B, double A) s, (double R, double G, double B, double A) d, double opacity = 1, int x = 0, int y = 0)
     {
         s = (s.R * opacity, s.G * opacity, s.B * opacity, s.A * opacity);
+        if (mode == BlendMode.Dissolve)
+        {
+            // Drawn fully or not at all, then source-over.
+            s = Dissolves((float)s.A, x, y) && s.A > 0 ? (s.R / s.A, s.G / s.A, s.B / s.A, 1) : (0, 0, 0, 0);
+            mode = BlendMode.SourceOver;
+        }
+
         double sa = s.A, da = d.A;
         if (!IsBlend(mode))
         {
@@ -75,14 +97,21 @@ internal static class BlendReference
     /// kernels apply it, scaling each source byte by <paramref name="opacity255"/> / 255 rounded to nearest.
     /// </summary>
     internal static (byte R, byte G, byte B, byte A) Blend8(
-        BlendMode mode, (byte R, byte G, byte B, byte A) s, (byte R, byte G, byte B, byte A) d, int opacity255 = 255)
+        BlendMode mode, (byte R, byte G, byte B, byte A) s, (byte R, byte G, byte B, byte A) d, int opacity255 = 255, int x = 0, int y = 0)
     {
+        if (mode == BlendMode.Dissolve)
+        {
+            // The opacity thins the pattern; a drawn pixel is the source's own straight color, opaque.
+            int a = Scale(s.A, opacity255);
+            return a > 0 && Dissolves(a / 255f, x, y) ? (To8((double)s.R / s.A), To8((double)s.G / s.A), To8((double)s.B / s.A), (byte)255) : d;
+        }
+
         if (opacity255 != 255)
         {
             s = (Scale(s.R, opacity255), Scale(s.G, opacity255), Scale(s.B, opacity255), Scale(s.A, opacity255));
         }
 
-        (double R, double G, double B, double A) result = Blend(mode, (s.R / 255.0, s.G / 255.0, s.B / 255.0, s.A / 255.0), (d.R / 255.0, d.G / 255.0, d.B / 255.0, d.A / 255.0));
+        (double R, double G, double B, double A) result = Blend(mode, (s.R / 255.0, s.G / 255.0, s.B / 255.0, s.A / 255.0), (d.R / 255.0, d.G / 255.0, d.B / 255.0, d.A / 255.0), 1, x, y);
         return (To8(result.R), To8(result.G), To8(result.B), To8(result.A));
 
         static byte Scale(byte v, int o) => (byte)(((v * o) + 127) / 255);
@@ -162,10 +191,25 @@ internal static class BlendReference
                 return Math.Min(1, cb + cs);
             case BlendMode.Subtract:
                 return Math.Max(0, cb - cs);
+            case BlendMode.Divide:
+                return cb <= 0 ? 0 : cs <= 0 ? 1 : Math.Min(1, cb / cs);
+            case BlendMode.LinearBurn:
+                return Math.Max(0, cb + cs - 1);
+            case BlendMode.LinearLight:
+                return Math.Clamp(cb + (2 * cs) - 1, 0, 1);
+            case BlendMode.VividLight:
+                return cs <= 0.5 ? Separable(BlendMode.ColorBurn, cb, 2 * cs) : Separable(BlendMode.ColorDodge, cb, (2 * cs) - 1);
+            case BlendMode.PinLight:
+                return cs <= 0.5 ? Math.Min(cb, 2 * cs) : Math.Max(cb, (2 * cs) - 1);
+            case BlendMode.HardMix:
+                return cb + cs >= HardMixThreshold ? 1 : 0;
             default:
                 throw new ArgumentOutOfRangeException(nameof(mode), mode, null);
         }
     }
+
+    /// <summary>Gets where <see cref="BlendMode.HardMix"/> turns to 1: just under 1, so 8-bit values summing to 255 reach it in single precision.</summary>
+    internal const float HardMixThreshold = 1 - (1f / 65536);
 
     /// <summary>A non-separable blend function B(Cb, Cs) on straight colors in 0..1.</summary>
     internal static (double R, double G, double B) NonSeparable(BlendMode mode, (double R, double G, double B) cb, (double R, double G, double B) cs)
@@ -176,6 +220,8 @@ internal static class BlendReference
             BlendMode.Saturation => SetLum(SetSat(cb, Sat(cs)), Lum(cb)),
             BlendMode.Color => SetLum(cs, Lum(cb)),
             BlendMode.Luminosity => SetLum(cb, Lum(cs)),
+            BlendMode.DarkerColor => Lum(cs) < Lum(cb) ? cs : cb,
+            BlendMode.LighterColor => Lum(cs) > Lum(cb) ? cs : cb,
             _ => throw new ArgumentOutOfRangeException(nameof(mode), mode, null),
         };
     }

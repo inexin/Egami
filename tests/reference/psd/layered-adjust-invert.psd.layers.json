@@ -1,0 +1,32 @@
+[
+ {
+  "name": "Background",
+  "kind": "pixel",
+  "visible": true,
+  "opacity": 255,
+  "blend": "BlendMode.NORMAL",
+  "clipping": false,
+  "bbox": [
+   0,
+   0,
+   64,
+   48
+  ],
+  "depth": 0
+ },
+ {
+  "name": "invert",
+  "kind": "invert",
+  "visible": true,
+  "opacity": 204,
+  "blend": "BlendMode.NORMAL",
+  "clipping": false,
+  "bbox": [
+   0,
+   0,
+   0,
+   0
+  ],
+  "depth": 0
+ }
+]

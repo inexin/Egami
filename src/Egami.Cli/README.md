@@ -13,7 +13,7 @@ egami run "photos/**/*.jpg" --workflow web.json -o web/{dir}/{name}.webp --jobs 
 ```
 
 - Single commands for everyday jobs: info, convert, resize, thumbnail, crop, rotate, flip, auto-orient, compare, stats, frames,
-  metadata, color, text, overlay, montage and formats.
+  layers, metadata, color, text, overlay, montage and formats.
 - `run` chains any of Egami's operations over each image, and JSON workflow files keep a recipe.
 - Every command takes many files and globs, and works on several at once.
 - Reads every format Egami reads, SVG and WMF/EMF included; writes PNG, JPEG, WebP, AVIF, JPEG XL, TIFF, GIF and more.
