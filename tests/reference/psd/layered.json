@@ -1,4 +1,119 @@
 {
+ "layered-adjust-curves.psd": {
+  "depth": 8,
+  "flat": "own",
+  "layers": [
+   {
+    "height": 48,
+    "layout": "Rgba8",
+    "name": "Background",
+    "width": 64,
+    "x": 0,
+    "y": 0
+   }
+  ],
+  "mode": "rgb"
+ },
+ "layered-adjust-invert.psd": {
+  "depth": 8,
+  "flat": "own",
+  "layers": [
+   {
+    "height": 48,
+    "layout": "Rgba8",
+    "name": "Background",
+    "width": 64,
+    "x": 0,
+    "y": 0
+   }
+  ],
+  "mode": "rgb"
+ },
+ "layered-adjust-levels.psd": {
+  "depth": 8,
+  "flat": "own",
+  "layers": [
+   {
+    "height": 48,
+    "layout": "Rgba8",
+    "name": "Background",
+    "width": 64,
+    "x": 0,
+    "y": 0
+   }
+  ],
+  "mode": "rgb"
+ },
+ "layered-blendif.psd": {
+  "depth": 8,
+  "flat": "own",
+  "layers": [
+   {
+    "height": 48,
+    "layout": "Rgba8",
+    "name": "Background",
+    "width": 64,
+    "x": 0,
+    "y": 0
+   },
+   {
+    "height": 48,
+    "layout": "Rgba8",
+    "name": "Density",
+    "width": 64,
+    "x": 0,
+    "y": 0
+   },
+   {
+    "height": 48,
+    "layout": "Rgba8",
+    "name": "Blend if",
+    "width": 64,
+    "x": 0,
+    "y": 0
+   }
+  ],
+  "mode": "rgb"
+ },
+ "layered-clip.psd": {
+  "depth": 8,
+  "flat": "own",
+  "layers": [
+   {
+    "height": 48,
+    "layout": "Rgba8",
+    "name": "Background",
+    "width": 64,
+    "x": 0,
+    "y": 0
+   },
+   {
+    "height": 30,
+    "layout": "Rgba8",
+    "name": "Base",
+    "width": 40,
+    "x": 12,
+    "y": 8
+   },
+   {
+    "height": 36,
+    "layout": "Rgba8",
+    "name": "Clipped normal",
+    "width": 48,
+    "x": 8,
+    "y": 6
+   },
+   {
+    "height": 20,
+    "layout": "Rgba8",
+    "name": "Clipped multiply",
+    "width": 64,
+    "x": 0,
+    "y": 20
+   }
+  ],
+  "mode": "rgb"
+ },
  "layered-cmyk16.psd": {
   "depth": 16,
   "flat": "ink",

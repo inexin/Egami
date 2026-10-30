@@ -375,6 +375,61 @@
    "truth": "Rgb8",
    "truthTolerance": 1
   },
+  "layered-adjust-curves.psd": {
+   "header": {
+    "channels": 3,
+    "depth": 8,
+    "height": 48,
+    "mode": 3,
+    "version": 1,
+    "width": 64
+   },
+   "pillowMode": "RGB"
+  },
+  "layered-adjust-invert.psd": {
+   "header": {
+    "channels": 3,
+    "depth": 8,
+    "height": 48,
+    "mode": 3,
+    "version": 1,
+    "width": 64
+   },
+   "pillowMode": "RGB"
+  },
+  "layered-adjust-levels.psd": {
+   "header": {
+    "channels": 3,
+    "depth": 8,
+    "height": 48,
+    "mode": 3,
+    "version": 1,
+    "width": 64
+   },
+   "pillowMode": "RGB"
+  },
+  "layered-blendif.psd": {
+   "header": {
+    "channels": 3,
+    "depth": 8,
+    "height": 48,
+    "mode": 3,
+    "version": 1,
+    "width": 64
+   },
+   "pillowMode": "RGB"
+  },
+  "layered-clip.psd": {
+   "header": {
+    "channels": 3,
+    "depth": 8,
+    "height": 48,
+    "mode": 3,
+    "version": 1,
+    "width": 64
+   },
+   "pillowMode": "RGB"
+  },
   "layered-cmyk16.psd": {
    "header": {
     "channels": 4,

@@ -84,9 +84,13 @@ internal sealed class PsdFile
     /// Called with the input at the start of the layers' channel data, after the records, to read it in file order; it gets the
     /// file and where the layer info ends. <see langword="null"/> skips the data.
     /// </param>
-    public static PsdFile Read(EgamiInput input, ReaderOptions options, bool layers = false, Action<PsdFile, EgamiInput, long>? channels = null)
+    /// <param name="wantsLayers">
+    /// Asked once the image resources are read: whether the layers are wanted after all. When it is given and says no, the
+    /// records are read as without it and <paramref name="channels"/> is not called.
+    /// </param>
+    public static PsdFile Read(EgamiInput input, ReaderOptions options, bool layers = false, Action<PsdFile, EgamiInput, long>? channels = null, Func<PsdFile, bool>? wantsLayers = null)
     {
-        PsdFile file = new() { _layered = layers || channels is not null, _channels = channels };
+        PsdFile file = new() { _layered = layers || (channels is not null && wantsLayers is null), _channels = wantsLayers is null ? channels : null };
         file.ReadHeader(input);
         long colorLength = input.ReadUInt32BigEndian();
         Remaining(input, colorLength, "color mode data");
@@ -106,6 +110,12 @@ internal sealed class PsdFile
         }
 
         file.ReadResources(input, options);
+        if (wantsLayers?.Invoke(file) == true)
+        {
+            file._layered = true;
+            file._channels = channels;
+        }
+
         file.ReadLayerSection(input, options);
         file.Compression = (PsdCompression)input.ReadUInt16BigEndian();
         if (file.Compression is not (PsdCompression.Raw or PsdCompression.PackBits or PsdCompression.Deflate or PsdCompression.DeflatePredicted))

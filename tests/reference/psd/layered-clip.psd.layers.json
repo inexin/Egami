@@ -1,0 +1,92 @@
+[
+ {
+  "name": "Background",
+  "kind": "pixel",
+  "visible": true,
+  "opacity": 255,
+  "blend": "BlendMode.NORMAL",
+  "clipping": false,
+  "bbox": [
+   0,
+   0,
+   64,
+   48
+  ],
+  "depth": 0
+ },
+ {
+  "name": "Base",
+  "kind": "pixel",
+  "visible": true,
+  "opacity": 230,
+  "blend": "BlendMode.NORMAL",
+  "clipping": false,
+  "bbox": [
+   12,
+   8,
+   52,
+   38
+  ],
+  "depth": 0
+ },
+ {
+  "name": "Clipped normal",
+  "kind": "pixel",
+  "visible": true,
+  "opacity": 153,
+  "blend": "BlendMode.NORMAL",
+  "clipping": true,
+  "bbox": [
+   8,
+   6,
+   56,
+   42
+  ],
+  "depth": 0
+ },
+ {
+  "name": "Clipped multiply",
+  "kind": "pixel",
+  "visible": true,
+  "opacity": 255,
+  "blend": "BlendMode.MULTIPLY",
+  "clipping": true,
+  "bbox": [
+   0,
+   20,
+   64,
+   40
+  ],
+  "depth": 0
+ },
+ {
+  "name": "Clipped normal",
+  "kind": "pixel",
+  "visible": true,
+  "opacity": 153,
+  "blend": "BlendMode.NORMAL",
+  "clipping": true,
+  "bbox": [
+   8,
+   6,
+   56,
+   42
+  ],
+  "depth": 0
+ },
+ {
+  "name": "Clipped multiply",
+  "kind": "pixel",
+  "visible": true,
+  "opacity": 255,
+  "blend": "BlendMode.MULTIPLY",
+  "clipping": true,
+  "bbox": [
+   0,
+   20,
+   64,
+   40
+  ],
+  "depth": 0
+ }
+]

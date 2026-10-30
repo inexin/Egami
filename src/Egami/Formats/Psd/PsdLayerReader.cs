@@ -4,6 +4,7 @@ using System.Runtime.InteropServices;
 using Egami.Colors;
 using Egami.Metadata;
 using Egami.Pixels;
+using Egami.Streaming;
 
 namespace Egami.Formats.Psd;
 
@@ -27,8 +28,15 @@ internal static class PsdLayerReader
                     built[index] = Build(planes, f, i, inks, convert);
                 }));
             RasterMetadata metadata = PsdReader.Metadata(input, file, options);
+            if (file.Records.Count == 0 && file.Mode is not (PsdColorMode.Bitmap or PsdColorMode.Indexed or PsdColorMode.Multichannel))
+            {
+                // A file without layers is its stored image: it comes as one background layer, so it flattens to itself.
+                built[0] = Background(input, file, options, metadata, convert, ref inks);
+            }
+
             List<PsdLayerImage> layers = [];
             List<List<int>> open = [];
+            int[] imageOf = new int[file.Records.Count];
             for (int r = 0; r < file.Records.Count; r++)
             {
                 PsdLayerRecord record = file.Records[r];
@@ -39,9 +47,11 @@ internal static class PsdLayerReader
                     ink?.Dispose();
                     mask?.Pixels.Dispose();
                     open.Add([]);
+                    imageOf[r] = -1;
                     continue;
                 }
 
+                imageOf[r] = layers.Count;
                 PsdLayerImage layer = new(record, layers.Count, pixels, ink, mask);
                 if (record.Info.Kind != PsdLayerKind.Layer && open.Count > 0)
                 {
@@ -61,7 +71,7 @@ internal static class PsdLayerReader
                 layers.Add(layer);
             }
 
-            return new PsdDocument(file.Width, file.Height, file.Mode, file.Depth, [.. layers], metadata, context);
+            return new PsdDocument(file, [.. layers], imageOf, metadata, context);
         }
         catch
         {
@@ -73,6 +83,93 @@ internal static class PsdLayerReader
             }
 
             throw;
+        }
+    }
+
+    /// <summary>Reads the stored composite of a file without layers as its one layer, named Background, in the layer's natural type.</summary>
+    private static (Raster? Pixels, InkRaster? Ink, PsdMask? Mask) Background(
+        EgamiInput input, PsdFile file, ReaderOptions options, RasterMetadata metadata, Func<Raster, Raster>? convert, ref InkSet? inks)
+    {
+        file.Records.Add(new PsdLayerRecord
+        {
+            Info = new PsdLayer("Background", new Rect(0, 0, file.Width, file.Height), 1, "norm", Operations.BlendMode.SourceOver, true, false, PsdLayerKind.Layer, 0),
+            Right = file.Width,
+            Bottom = file.Height,
+        });
+        using RowSource rows = PsdReader.RowsOf(input, file, options, new RasterMetadata { FormatName = PsdFormat.Info.Name }, ownsInput: false);
+        rows.NextFrame();
+        if (file.Mode == PsdColorMode.Cmyk)
+        {
+            inks ??= InksOf(file);
+            InkRaster ink = new(inks, file.Width, file.Height, file.Depth == 16 ? InkDepth.Unorm16 : InkDepth.Unorm8, input.Context);
+            try
+            {
+                Cmyk16[] row = new Cmyk16[file.Width];
+                for (int y = 0; y < file.Height; y++)
+                {
+                    rows.ReadRow(y, 0, row.AsSpan());
+                    for (int x = 0; x < file.Width; x++)
+                    {
+                        ushort[] values = [row[x].C, row[x].M, row[x].Y, row[x].K];
+                        for (int p = 0; p < 4; p++)
+                        {
+                            if (ink.Depth == InkDepth.Unorm16)
+                            {
+                                ink.Plates[p].Row16(y)[x] = values[p];
+                            }
+                            else
+                            {
+                                ink.Plates[p].Row8(y)[x] = (byte)((values[p] + 128) / 257);
+                            }
+                        }
+
+                        if (ink.Depth == InkDepth.Unorm16)
+                        {
+                            ink.Alpha.Row16(y)[x] = 65535;
+                        }
+                        else
+                        {
+                            ink.Alpha.Row8(y)[x] = 255;
+                        }
+                    }
+                }
+
+                return (convert is null ? null : convert(InkToRgba(ink, input.Context)), ink, null);
+            }
+            catch
+            {
+                ink.Dispose();
+                throw;
+            }
+        }
+
+        Raster pixels = (file.ColorChannels == 1 && file.Depth != 32, file.Depth) switch
+        {
+            (true, 16) => Read<GrayAlpha16>(input, rows, file),
+            (true, _) => Read<GrayAlpha8>(input, rows, file),
+            (false, 16) => Read<Rgba16>(input, rows, file),
+            (false, 32) => Read<RgbaF32>(input, rows, file),
+            _ => Read<Rgba8>(input, rows, file),
+        };
+        if (convert is not null)
+        {
+            Raster converted = convert(pixels);
+            pixels.Dispose();
+            pixels = converted;
+        }
+
+        return (pixels, null, null);
+
+        static Raster<TPixel> Read<TPixel>(EgamiInput input, RowSource rows, PsdFile file)
+            where TPixel : unmanaged, IPixelType<TPixel>
+        {
+            Raster<TPixel> raster = input.CreateRaster<TPixel>(file.Width, file.Height);
+            for (int y = 0; y < file.Height; y++)
+            {
+                rows.ReadRow(y, 0, raster.Row(y));
+            }
+
+            return raster;
         }
     }
 

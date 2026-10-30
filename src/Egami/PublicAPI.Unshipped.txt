@@ -50,15 +50,27 @@ Egami.Formats.Icns.IcnsWriterOptions.Filter.init -> void
 Egami.Formats.Icns.IcnsWriterOptions.IcnsWriterOptions() -> void
 Egami.Formats.Icns.IcnsWriterOptions.Sizes.get -> System.Collections.Generic.IReadOnlyList<int>?
 Egami.Formats.Icns.IcnsWriterOptions.Sizes.init -> void
+Egami.Formats.Psd.PsdComposite
+Egami.Formats.Psd.PsdComposite.Auto = 0 -> Egami.Formats.Psd.PsdComposite
+Egami.Formats.Psd.PsdComposite.Flatten = 2 -> Egami.Formats.Psd.PsdComposite
+Egami.Formats.Psd.PsdComposite.Stored = 1 -> Egami.Formats.Psd.PsdComposite
 Egami.Formats.Psd.PsdDocument
 Egami.Formats.Psd.PsdDocument.BitsPerChannel.get -> int
 Egami.Formats.Psd.PsdDocument.ColorMode.get -> Egami.Formats.Psd.PsdColorMode
 Egami.Formats.Psd.PsdDocument.Context.get -> Egami.EgamiContext!
 Egami.Formats.Psd.PsdDocument.Dispose() -> void
+Egami.Formats.Psd.PsdDocument.Flatten(Egami.Formats.Psd.PsdFlattenOptions? options = null) -> Egami.Raster!
+Egami.Formats.Psd.PsdDocument.FlattenInk(Egami.Formats.Psd.PsdFlattenOptions? options = null) -> Egami.InkRaster!
 Egami.Formats.Psd.PsdDocument.Height.get -> int
 Egami.Formats.Psd.PsdDocument.Layers.get -> System.Collections.Generic.IReadOnlyList<Egami.Formats.Psd.PsdLayerImage!>!
 Egami.Formats.Psd.PsdDocument.Metadata.get -> Egami.Metadata.RasterMetadata!
 Egami.Formats.Psd.PsdDocument.Width.get -> int
+Egami.Formats.Psd.PsdFlattenOptions
+Egami.Formats.Psd.PsdFlattenOptions.<Clone>$() -> Egami.Formats.Psd.PsdFlattenOptions!
+Egami.Formats.Psd.PsdFlattenOptions.ApplyAdjustments.get -> bool
+Egami.Formats.Psd.PsdFlattenOptions.ApplyAdjustments.init -> void
+Egami.Formats.Psd.PsdFlattenOptions.Equals(Egami.Formats.Psd.PsdFlattenOptions? other) -> bool
+Egami.Formats.Psd.PsdFlattenOptions.PsdFlattenOptions() -> void
 Egami.Formats.Psd.PsdImage
 Egami.Formats.Psd.PsdLayer.FillOpacity.get -> float
 Egami.Formats.Psd.PsdLayer.FillOpacity.init -> void
@@ -90,6 +102,11 @@ Egami.Formats.Psd.PsdMask.Density.get -> float
 Egami.Formats.Psd.PsdMask.Feather.get -> double
 Egami.Formats.Psd.PsdMask.IsDisabled.get -> bool
 Egami.Formats.Psd.PsdMask.Pixels.get -> Egami.Raster!
+Egami.Formats.Psd.PsdReaderOptions
+Egami.Formats.Psd.PsdReaderOptions.Composite.get -> Egami.Formats.Psd.PsdComposite
+Egami.Formats.Psd.PsdReaderOptions.Composite.init -> void
+Egami.Formats.Psd.PsdReaderOptions.Equals(Egami.Formats.Psd.PsdReaderOptions? other) -> bool
+Egami.Formats.Psd.PsdReaderOptions.PsdReaderOptions() -> void
 Egami.Operations.BlendMode.DarkerColor = 37 -> Egami.Operations.BlendMode
 Egami.Operations.BlendMode.Dissolve = 39 -> Egami.Operations.BlendMode
 Egami.Operations.BlendMode.Divide = 31 -> Egami.Operations.BlendMode
@@ -126,8 +143,16 @@ override Egami.Formats.Icns.IcnsReaderOptions.<Clone>$() -> Egami.Formats.Icns.I
 override Egami.Formats.Icns.IcnsReaderOptions.Equals(object? obj) -> bool
 override Egami.Formats.Icns.IcnsReaderOptions.GetHashCode() -> int
 override Egami.Formats.Icns.IcnsReaderOptions.ToString() -> string!
+override Egami.Formats.Psd.PsdFlattenOptions.Equals(object? obj) -> bool
+override Egami.Formats.Psd.PsdFlattenOptions.GetHashCode() -> int
+override Egami.Formats.Psd.PsdFlattenOptions.ToString() -> string!
+override Egami.Formats.Psd.PsdReaderOptions.<Clone>$() -> Egami.Formats.Psd.PsdReaderOptions!
+override Egami.Formats.Psd.PsdReaderOptions.Equals(object? obj) -> bool
+override Egami.Formats.Psd.PsdReaderOptions.GetHashCode() -> int
+override Egami.Formats.Psd.PsdReaderOptions.ToString() -> string!
 override Egami.SaveProgress.GetHashCode() -> int
 override sealed Egami.Formats.Icns.IcnsReaderOptions.Equals(Egami.Formats.ReaderOptions? other) -> bool
+override sealed Egami.Formats.Psd.PsdReaderOptions.Equals(Egami.Formats.ReaderOptions? other) -> bool
 static Egami.Formats.Icns.IcnsEntry.operator !=(Egami.Formats.Icns.IcnsEntry? left, Egami.Formats.Icns.IcnsEntry? right) -> bool
 static Egami.Formats.Icns.IcnsEntry.operator ==(Egami.Formats.Icns.IcnsEntry? left, Egami.Formats.Icns.IcnsEntry? right) -> bool
 static Egami.Formats.Icns.IcnsFormat.Info.get -> Egami.Formats.FormatInfo!
@@ -135,10 +160,16 @@ static Egami.Formats.Icns.IcnsReaderOptions.operator !=(Egami.Formats.Icns.IcnsR
 static Egami.Formats.Icns.IcnsReaderOptions.operator ==(Egami.Formats.Icns.IcnsReaderOptions? left, Egami.Formats.Icns.IcnsReaderOptions? right) -> bool
 static Egami.Formats.Icns.IcnsWriterOptions.Default.get -> Egami.Formats.Icns.IcnsWriterOptions!
 static Egami.Formats.Icns.IcnsWriterOptions.MacSizes.get -> System.Collections.Generic.IReadOnlyList<int>!
+static Egami.Formats.Psd.PsdFlattenOptions.Default.get -> Egami.Formats.Psd.PsdFlattenOptions!
+static Egami.Formats.Psd.PsdFlattenOptions.operator !=(Egami.Formats.Psd.PsdFlattenOptions? left, Egami.Formats.Psd.PsdFlattenOptions? right) -> bool
+static Egami.Formats.Psd.PsdFlattenOptions.operator ==(Egami.Formats.Psd.PsdFlattenOptions? left, Egami.Formats.Psd.PsdFlattenOptions? right) -> bool
 static Egami.Formats.Psd.PsdImage.ReadLayers(string! path, Egami.Formats.ReaderOptions? options = null, Egami.EgamiContext? context = null) -> Egami.Formats.Psd.PsdDocument!
 static Egami.Formats.Psd.PsdImage.ReadLayers(System.IO.Stream! stream, Egami.Formats.ReaderOptions? options = null, Egami.EgamiContext? context = null) -> Egami.Formats.Psd.PsdDocument!
 static Egami.Formats.Psd.PsdImage.ReadLayers<TPixel>(string! path, Egami.Formats.ReaderOptions? options = null, Egami.EgamiContext? context = null) -> Egami.Formats.Psd.PsdDocument!
 static Egami.Formats.Psd.PsdImage.ReadLayers<TPixel>(System.IO.Stream! stream, Egami.Formats.ReaderOptions? options = null, Egami.EgamiContext? context = null) -> Egami.Formats.Psd.PsdDocument!
+static Egami.Formats.Psd.PsdReaderOptions.Default.get -> Egami.Formats.Psd.PsdReaderOptions!
+static Egami.Formats.Psd.PsdReaderOptions.operator !=(Egami.Formats.Psd.PsdReaderOptions? left, Egami.Formats.Psd.PsdReaderOptions? right) -> bool
+static Egami.Formats.Psd.PsdReaderOptions.operator ==(Egami.Formats.Psd.PsdReaderOptions? left, Egami.Formats.Psd.PsdReaderOptions? right) -> bool
 static Egami.Raster.SaveAll(System.Collections.Generic.IEnumerable<Egami.Raster!>! rasters, string! path, Egami.Formats.WriterOptions? options, System.IProgress<Egami.SaveProgress>? progress, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> void
 static Egami.Raster.SaveAll(System.Collections.Generic.IEnumerable<Egami.Raster!>! rasters, System.IO.Stream! stream, Egami.Formats.FormatInfo! format, Egami.Formats.WriterOptions? options, System.IProgress<Egami.SaveProgress>? progress, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> void
 static Egami.Raster.SaveAll(System.Collections.Generic.IEnumerable<Egami.Raster!>! rasters, System.IO.Stream! stream, string! formatNameOrExtension, Egami.Formats.WriterOptions? options, System.IProgress<Egami.SaveProgress>? progress, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> void

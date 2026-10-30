@@ -372,7 +372,8 @@ def build():
     white = np.full((H, W), 255, np.int64)
     lay = plain_layer("Layer 1", [(0, r), (1, g), (2, b)], 8, 1)
     psd(f"{CORPUS}/no-composite.psd", "rgb", 8, [white, white, white], layers=[lay], real=False)
-    put("no-composite.psd", "Rgb8", np.full((H, W, 3), 255, np.uint8))
+    # Load flattens the layers of a file without a real composite: the one layer, opaque.
+    put("no-composite.psd", "Rgb8", RGB)
 
     # Metadata.
     icc = open(f"{ROOT}/tests/images/icc/compact/DisplayP3-v2-magic.icc", "rb").read()

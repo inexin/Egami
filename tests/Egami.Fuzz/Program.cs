@@ -42,7 +42,8 @@ using DrawingPath = Egami.Drawing.Path;
 // (Phase 2.3.3) loads PSD and PSB files every way (whole, as other pixel types, from a stream that cannot seek, rows, regions,
 // reductions), which must agree; psddata puts its input behind a small header its first bytes choose (mode, depth, compression,
 // PSD or PSB), so mutations reach the PackBits row table, the Deflate planes and the prediction directly. The psdlayers target
-// (Phase 2.3.10) reads layered files' layers, from memory and from a stream that cannot seek, which must agree. The egdr target
+// (Phase 2.3.10) reads layered files' layers, from memory and from a stream that cannot seek, which must agree, and flattens them
+// with Flatten and with a flattening Load. The egdr target
 // (Phase 2.6.4) loads recorded pictures: a picture that loads must save and load again to the same bytes, and replays on a
 // small raster canvas, so mutations reach lattices, atlases, meshes, patches, patterns and nested pictures.
 // The vp8video target (Phase 2.3.5) feeds the VP8 stream decoder a stream of frames (inter frames, hidden frames, every version)
@@ -1720,6 +1721,15 @@ static void ReadPsdLayers(Stream stream)
         {
             using Egami.Formats.Psd.PsdDocument document = Egami.Formats.Psd.PsdImage.ReadLayers(new MemoryStream(data), options, context);
             using Egami.Formats.Psd.PsdDocument forward = Egami.Formats.Psd.PsdImage.ReadLayers<RgbaF32>(new ForwardOnlyStream(data), options, context);
+            if (document.ColorMode is Egami.Formats.Psd.PsdColorMode.Rgb or Egami.Formats.Psd.PsdColorMode.Grayscale or Egami.Formats.Psd.PsdColorMode.Cmyk)
+            {
+                using Raster flat = document.Flatten();
+                using Raster loaded = Raster.Load(data, Egami.Formats.Psd.PsdFormat.Info, context, new Egami.Formats.Psd.PsdReaderOptions { Recovery = recovery, Composite = Egami.Formats.Psd.PsdComposite.Flatten });
+                if (flat.Width != loaded.Width || flat.Height != loaded.Height)
+                {
+                    throw new InvalidOperationException("Flatten and a flattening Load disagree.");
+                }
+            }
             if (document.Layers.Count != forward.Layers.Count)
             {
                 throw new InvalidOperationException("A seekable and a forward-only read give different layers.");

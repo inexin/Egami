@@ -8,7 +8,8 @@ Photoshop stores after the layers, in every color mode and depth, and lists the 
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Psd.cs#psd-load)]
 
-A file saved without Maximize Compatibility holds only a placeholder; `PsdDetails.HasRealComposite` says so.
+A file saved without Maximize Compatibility holds only a placeholder; `PsdDetails.HasRealComposite` says so, and Load then
+flattens the layers instead (see [No real composite](#no-real-composite)).
 
 | Color mode | 1-bit | 8-bit | 16-bit | 32-bit |
 | --- | --- | --- | --- | --- |
@@ -42,9 +43,15 @@ read in `PsdDetails.OtherResources`.
 
 ## No real composite
 
-A file saved without Photoshop's Maximize Compatibility holds no real flattened image, only a placeholder. Egami loads it with
-the `Psd.NoComposite` warning and `PsdDetails.HasRealComposite` false; it does not composite the layers itself, which would need
-Photoshop's blend modes, adjustment layers, effects and text. ImageMagick flattens the layers instead.
+A file saved without Photoshop's Maximize Compatibility holds no real flattened image, only a placeholder, and
+`PsdDetails.HasRealComposite` is false. By default Load, Probe and the row readers then flatten the layers as
+`PsdDocument.Flatten` does, one layer at a time as they come in the file. `PsdReaderOptions.Composite` chooses:
+`PsdComposite.Auto` (the default), `Stored` (always the stored image, the placeholder with the `Psd.NoComposite` warning) or
+`Flatten` (always the layers flattened). A flattened image's type comes from the layer records before any pixel is read: with
+alpha unless an opaque Normal layer covers the canvas at the top level. Lab, bitmap, indexed and multichannel files give their stored
+image.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Psd.cs#psd-composite)]
 
 ## Layers
 
@@ -66,6 +73,20 @@ canvas at `X` and `Y`, in the type Load would use, always with straight alpha: `
 place, the value outside it, and whether it is disabled. The channels are read in file order, so the stream need not seek.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Psd.cs#psd-read-layers)]
+
+## Flattening
+
+`PsdDocument.Flatten` composites the layers as Photoshop does, with each layer's `Info` as it is now, so a copy changed with
+`with` (a layer hidden, another opacity or blend mode) flattens differently. It covers visibility, opacity and fill opacity, all
+of Photoshop's blend modes (Soft Light with Photoshop's own formula), pixel masks (density, the default color outside them,
+disabled ones), vector masks (filled with the non-zero rule and antialiased), clipping (the clipped layers blend onto their base
+and keep its coverage), pass-through and isolated groups, blending ranges ("blend if") and solid color fill layers. Layer
+effects, gradient and pattern fills, knockout and mask feathering are left out with one warning a kind naming the layers.
+8 and 16-bit documents blend their stored values and 32-bit ones linear light, as Photoshop does. The result has the type Load
+gives the file, with alpha only when some pixel is not opaque. `PsdFlattenOptions.ApplyAdjustments` turns adjustment layers off.
+Lab, bitmap, indexed and multichannel documents are not flattened.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Psd.cs#psd-flatten)]
 
 ## Streaming and speed
 

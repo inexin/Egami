@@ -132,11 +132,13 @@ def block(key, data):
 
 class Layer:
     def __init__(self, name, rect=None, color=None, alpha=None, *, blend=b"norm", opacity=255, clipping=0, hidden=False, fill=None,
-                 mask=None, mask_rect=None, mask_default=0, mask_disabled=False, section=None, section_blend=None, blocks=b"", compression=1):
+                 mask=None, mask_rect=None, mask_default=0, mask_disabled=False, section=None, section_blend=None, blocks=b"", compression=1,
+                 density=None, ranges=None, adjust=None):
         self.name, self.rect, self.color, self.alpha = name, rect, color, alpha
         self.blend, self.opacity, self.clipping, self.hidden, self.fill = blend, opacity, clipping, hidden, fill
         self.mask, self.mask_rect, self.mask_default, self.mask_disabled = mask, mask_rect, mask_default, mask_disabled
         self.section, self.section_blend, self.blocks, self.compression = section, section_blend, blocks, compression
+        self.density, self.ranges, self.adjust = density, ranges, adjust
 
 
 def record_and_data(layer, depth, version, counter):
@@ -163,9 +165,12 @@ def record_and_data(layer, depth, version, counter):
     out += b"8BIM" + blend + bytes([layer.opacity, layer.clipping, flags, 0])
     if layer.mask is not None:
         mt, ml, mb, mr = layer.mask_rect
-        mask = struct.pack(">iiii", mt, ml, mb, mr) + bytes([layer.mask_default, 0x02 if layer.mask_disabled else 0]) + b"\0\0"
+        flags = (0x02 if layer.mask_disabled else 0) | (0x10 if layer.density is not None else 0)
+        mask = struct.pack(">iiii", mt, ml, mb, mr) + bytes([layer.mask_default, flags])
+        mask += bytes([1, layer.density]) if layer.density is not None else b"\0\0"
     else:
         mask = b""
+    ranges = b"".join(pc.be32(r) for r in layer.ranges) if layer.ranges else b""
     blocks = layer.blocks
     u = layer.name.encode("utf-16-be")
     blocks += block(b"luni", pc.be32(len(u) // 2) + u + b"\0" * (len(u) % 4 and 4 - len(u) % 4))
@@ -176,7 +181,7 @@ def record_and_data(layer, depth, version, counter):
         if layer.section_blend is not None:
             body += b"8BIM" + layer.section_blend
         blocks += block(b"lsct", body)
-    extra = pc.be32(len(mask)) + mask + pc.be32(0) + pc.pascal(layer.name.encode("ascii", "replace").decode("latin-1")[:31], 4) + blocks
+    extra = pc.be32(len(mask)) + mask + pc.be32(len(ranges)) + ranges + pc.pascal(layer.name.encode("ascii", "replace").decode("latin-1")[:31], 4) + blocks
     return out + pc.be32(len(extra)) + extra, b"".join(d for _, d in channels)
 
 
@@ -277,6 +282,16 @@ def ink_composite(layers, depth):
             continue
         top, left, bottom, right = layer.rect
         a = (layer.alpha / full if layer.alpha is not None else np.ones(layer.color[0].shape)) * layer.opacity / 255
+        if layer.mask is not None:
+            # The user mask on the layer's own grid: its values inside its rectangle, the default color outside.
+            m = np.full(a.shape, layer.mask_default / 255.0)
+            mt, ml, mb, mr = layer.mask_rect
+            for yy in range(a.shape[0]):
+                for xx in range(a.shape[1]):
+                    cy, cx = top + yy, left + xx
+                    if mt <= cy < mb and ml <= cx < mr:
+                        m[yy, xx] = layer.mask[cy - mt, cx - ml] / full
+            a = a * m
         s = np.stack([(full - c) / full for c in layer.color], axis=2) * a[..., None]
         y0, y1, x0, x1 = max(top, 0), min(bottom, H), max(left, 0), min(right, W)
         sv, av = s[y0 - top:y1 - top, x0 - left:x1 - left], a[y0 - top:y1 - top, x0 - left:x1 - left, None]
@@ -284,6 +299,77 @@ def ink_composite(layers, depth):
         alpha[y0:y1, x0:x1] = av + alpha[y0:y1, x0:x1] * (1 - av)
     straight = np.where(alpha > 0, ink / np.maximum(alpha, 1e-12), 0)
     return straight, alpha
+
+
+def range_weight(r, v):
+    """A blending range's weight at values v (0 to 255): black low and high, white low and high, one byte each from the top."""
+    b0, b1, w0, w1 = (r >> 24) & 255, (r >> 16) & 255, (r >> 8) & 255, r & 255
+    out = np.ones_like(v)
+    out = np.where(v < b0, 0, out)
+    if b1 > b0:
+        out = np.where((v >= b0) & (v < b1), (v - b0) / (b1 - b0), out)
+    if w1 > w0:
+        out = np.where((v > w0) & (v < w1), (w1 - v) / (w1 - w0), out)
+    out = np.where(v >= w1, np.where(v <= w0, 1, 0), out)
+    return out
+
+
+def own_composite(layers, depth):
+    """Egami's model, written out for the files psd-tools does not composite as Photoshop does: normal and multiply layers, a
+    user mask with density, blending ranges, and clipping that keeps the base's coverage (the clipped layers blend onto the base
+    as if it were opaque, then the result takes the base's alpha)."""
+    full = 255.0 if depth == 8 else 65535.0
+    color = np.zeros((H, W, 3))
+    alpha = np.zeros((H, W, 1))
+
+    def place(layer):
+        top, left, bottom, right = layer.rect
+        c = np.zeros((H, W, 3))
+        a = np.zeros((H, W, 1))
+        y0, y1, x0, x1 = max(top, 0), min(bottom, H), max(left, 0), min(right, W)
+        lc = np.dstack(layer.color) / full
+        la = (layer.alpha / full if layer.alpha is not None else np.ones(layer.color[0].shape))[..., None]
+        c[y0:y1, x0:x1] = lc[y0 - top:y1 - top, x0 - left:x1 - left]
+        a[y0:y1, x0:x1] = la[y0 - top:y1 - top, x0 - left:x1 - left]
+        if layer.mask is not None:
+            m = np.full((H, W, 1), layer.mask_default / 255.0)
+            mt, ml, mb, mr = layer.mask_rect
+            m[max(mt, 0):min(mb, H), max(ml, 0):min(mr, W)] = (layer.mask / full)[max(mt, 0) - mt:min(mb, H) - mt, max(ml, 0) - ml:min(mr, W) - ml, None]
+            d = (layer.density if layer.density is not None else 255) / 255.0
+            a = a * (1 - d * (1 - m))
+        return c, a
+
+    def blend(bc, ba, sc, sa, key):
+        f = sc if key == b"norm" else bc * sc
+        ra = sa + ba * (1 - sa)
+        rc = np.where(ra > 0, (sc * sa * (1 - ba) + bc * ba * (1 - sa) + f * sa * ba) / np.maximum(ra, 1e-12), 0)
+        return rc, ra
+
+    i = 0
+    while i < len(layers):
+        layer = layers[i]
+        if layer.adjust is not None:
+            # An adjustment layer: the adjusted color mixed in by the layer's opacity; alpha stays.
+            color = color + (layer.adjust(color) - color) * (layer.opacity / 255)
+            i += 1
+            continue
+        c, a = place(layer)
+        if layer.ranges:
+            gray = lambda x: (0.3 * x[..., 0] + 0.59 * x[..., 1] + 0.11 * x[..., 2])[..., None]
+            w = range_weight(layer.ranges[0], gray(c) * 255) * range_weight(layer.ranges[1], gray(color) * 255)
+            for ch in range(3):
+                w = w * range_weight(layer.ranges[2 + 2 * ch], c[..., ch:ch + 1] * 255) * range_weight(layer.ranges[3 + 2 * ch], color[..., ch:ch + 1] * 255)
+            a = a * w
+        # Clipped layers above this one blend onto it as if it were opaque, then take its coverage.
+        j = i + 1
+        gc = c.copy()
+        while j < len(layers) and layers[j].clipping:
+            cc, ca = place(layers[j])
+            gc, _ = blend(gc, np.ones_like(a), cc, ca * layers[j].opacity / 255, layers[j].blend)
+            j += 1
+        color, alpha = blend(color, alpha, gc, a * layer.opacity / 255, layer.blend)
+        i = j
+    return color, alpha
 
 
 def finish(name, mode, depth, layers, *, version=1, flat="psd-tools", real=True, resources=b""):
@@ -297,6 +383,8 @@ def finish(name, mode, depth, layers, *, version=1, flat="psd-tools", real=True,
         color, alpha = psd_tools_composite(path)
     elif flat == "ink":
         color, alpha = ink_composite(layers, depth)
+    elif flat == "own":
+        color, alpha = own_composite(layers, depth)
     else:
         color, alpha = None, None
     if color is not None:
@@ -364,8 +452,10 @@ def build():
         layers.append(Layer("Hidden", rect(0, 0, 16, 30), c, a, hidden=True))
         layers.append(Layer("Empty"))
         # Clipping: a base with two layers clipped to it.
+        # The base is opaque where it is at all: psd-tools composites clipped layers over a partly transparent base differently
+        # from Photoshop's clipping (the base's coverage kept), which Egami's own tests check by hand.
         rgb, alpha = ramp_image(20, 20, 3.0)
-        c, a = planes_of(rgb, alpha, mode, depth)
+        c, a = planes_of(rgb, (alpha > 0.5).astype(np.float64), mode, depth)
         layers.append(Layer("Clip base", rect(24, 40, 20, 20), c, a, opacity=230))
         stripes = np.tile((np.arange(26) // 3 % 2).astype(np.float64)[None, :], (26, 1))
         c2, _ = planes_of(np.dstack([stripes, 1 - stripes, stripes * 0.5]), None, mode, depth)
@@ -412,6 +502,95 @@ def build():
         Layer("Shape", None, None, None, blend=b"mul ", blocks=block(b"SoCo", soco((0.1, 0.3, 0.8), "rgb")) + block(b"vmsk", vmsk([(10, 6), (54, 14), (24, 42)]))),
     ]
     manifest["layered-fill.psd"] = finish("layered-fill.psd", "rgb", 8, layers)
+
+    # Clipping onto a partly transparent base, a mask with density, and blending ranges, against Egami's model written out.
+    rgb, alpha = ramp_image(40, 30, 6.0)
+    c, a = planes_of(rgb, alpha, "rgb", 8)
+    stripes = np.tile((np.arange(48) // 4 % 2).astype(np.float64)[None, :], (36, 1))
+    c2, _ = planes_of(np.dstack([stripes, 0.4 + 0.2 * stripes, 1 - stripes]), None, "rgb", 8)
+    c3, a3 = planes_of(np.full((20, 64, 3), 0.7), np.full((20, 64), 0.6), "rgb", 8)
+    layers = [
+        Layer("Background", (0, 0, H, W), bg_color, None),
+        Layer("Base", (8, 12, 38, 52), c, a, opacity=230),
+        Layer("Clipped normal", (6, 8, 42, 56), c2, None, clipping=1, opacity=153),
+        Layer("Clipped multiply", (20, 0, 40, 64), c3, a3, clipping=1, blend=b"mul "),
+    ]
+    manifest["layered-clip.psd"] = finish("layered-clip.psd", "rgb", 8, layers, flat="own")
+
+    rgb, alpha = ramp_image(W, H, 7.0)
+    c, a = planes_of(rgb, alpha, "rgb", 8)
+    mask = quantize(np.tile(np.linspace(0, 1, W)[None, :], (H, 1)), 8)
+    flipped, _ = planes_of(duck(W, H, flip=True), None, "rgb", 8)
+    split = lambda b0, b1, w0, w1: (b0 << 24) | (b1 << 16) | (w0 << 8) | w1
+    layers = [
+        Layer("Background", (0, 0, H, W), bg_color, None),
+        Layer("Density", (0, 0, H, W), c, a, mask=mask, mask_rect=(0, 0, H, W), density=128, opacity=220),
+        # Gray: this layer from 40 (fading in to 90) to 255, the underlying to 150 (fading out to 220); green: this layer from
+        # 20 (fading in to 60).
+        Layer("Blend if", (0, 0, H, W), flipped, None, ranges=[split(40, 90, 255, 255), split(0, 0, 150, 220), 0x0000FFFF, 0x0000FFFF,
+                                                                 split(20, 60, 255, 255), 0x0000FFFF, 0x0000FFFF, 0x0000FFFF]),
+    ]
+    manifest["layered-blendif.psd"] = finish("layered-blendif.psd", "rgb", 8, layers, flat="own")
+
+    # Adjustment layers: levels, curves and invert, against the formulas written out.
+    def levels_block(records):
+        out = pc.be16(2)
+        for k in range(29):
+            r = records.get(k, (0, 255, 0, 255, 100))
+            out += b"".join(pc.be16(v) for v in r)
+        return block(b"levl", out)
+
+    def level(r, v):
+        x = np.clip((v * 255 - r[0]) / (r[1] - r[0]), 0, 1) ** (100.0 / r[4])
+        return (r[2] + x * (r[3] - r[2])) / 255
+
+    master, red = (20, 230, 10, 245, 140), (0, 200, 0, 255, 80)
+    def apply_levels(c):
+        out = c.copy()
+        out[..., 0] = level(red, out[..., 0])
+        return level(master, out)
+
+    def curves_block(curves):
+        bits = sum(1 << k for k in curves)
+        out = bytes([0]) + pc.be16(1) + pc.be32(bits)
+        for k in sorted(curves):
+            out += pc.be16(len(curves[k])) + b"".join(pc.be16(o) + pc.be16(i) for i, o in curves[k])
+        return block(b"curv", out)
+
+    def spline(points, v):
+        """A natural cubic spline through (input, output) points on 0..255, flat outside them."""
+        xs = np.array([p[0] for p in points], float)
+        ys = np.array([p[1] for p in points], float)
+        n = len(xs)
+        m = np.zeros(n)
+        if n > 2:
+            a = np.zeros((n, n))
+            rhs = np.zeros(n)
+            a[0, 0] = a[-1, -1] = 1
+            for k in range(1, n - 1):
+                a[k, k - 1] = xs[k] - xs[k - 1]
+                a[k, k] = 2 * (xs[k + 1] - xs[k - 1])
+                a[k, k + 1] = xs[k + 1] - xs[k]
+                rhs[k] = 6 * ((ys[k + 1] - ys[k]) / (xs[k + 1] - xs[k]) - (ys[k] - ys[k - 1]) / (xs[k] - xs[k - 1]))
+            m = np.linalg.solve(a, rhs)
+        x = np.clip(v * 255, xs[0], xs[-1])
+        k = np.clip(np.searchsorted(xs, x) , 1, n - 1)
+        h = xs[k] - xs[k - 1]
+        t0, t1 = (xs[k] - x) / h, (x - xs[k - 1]) / h
+        y = t0 * ys[k - 1] + t1 * ys[k] + ((t0 ** 3 - t0) * m[k - 1] + (t1 ** 3 - t1) * m[k]) * h * h / 6
+        return np.clip(y, 0, 255) / 255
+
+    composite_curve, blue_curve = [(0, 0), (64, 40), (180, 210), (255, 255)], [(0, 30), (255, 220)]
+    def apply_curves(c):
+        out = c.copy()
+        out[..., 2] = spline(blue_curve, out[..., 2])
+        return spline(composite_curve, out)
+
+    for kind, blocks, fn in (("levels", levels_block({0: master, 1: red}), apply_levels),
+                             ("curves", curves_block({0: composite_curve, 3: blue_curve}), apply_curves),
+                             ("invert", block(b"nvrt", b""), lambda c: 1 - c)):
+        layers = [Layer("Background", (0, 0, H, W), bg_color, None), Layer(kind, None, None, None, opacity=204, blocks=blocks, adjust=fn)]
+        manifest[f"layered-adjust-{kind}.psd"] = finish(f"layered-adjust-{kind}.psd", "rgb", 8, layers, flat="own")
 
     with open(f"{pc.TARGET}/layered.json", "w") as f:
         json.dump(manifest, f, indent=1, sort_keys=True)

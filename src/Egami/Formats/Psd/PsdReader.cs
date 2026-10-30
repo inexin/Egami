@@ -59,8 +59,9 @@ internal sealed class PsdReader : IFormatReader, IRowSourceReader
 
     public RasterInfo ReadInfo(EgamiInput input, ReaderOptions options)
     {
-        PsdFile file = PsdFile.Read(input, options);
-        Natural natural = NaturalOf(file);
+        PsdFile file = PsdFile.Read(input, options, wantsLayers: f => Flattens(f, options));
+        bool flattens = file.Records.Count > 0 && Flattens(file, options);
+        Natural natural = flattens ? NaturalOf(file, !OpaqueByRecords(file)) : NaturalOf(file);
         PixelLayoutInfo layout = LayoutOf(natural);
         ImageOrientation orientation = ImageOrientation.Normal;
         if (file.Resources.FirstOrDefault(r => r.Id == 1058).Data is byte[] exif)
@@ -80,9 +81,65 @@ internal sealed class PsdReader : IFormatReader, IRowSourceReader
             HasMetadata = file.Resources.Any(r => r.Id is 1039 or 1058 or 1060 or 1028 or 1005),
             EstimatedBytes = (long)file.Width * file.Height * layout.BytesPerPixel,
             Orientation = orientation,
-            Access = RasterAccess.Streamed,
-            WorkingBytes = PsdPlanes.PlannedBytes(file, channels) + RowsWorkingBytes(file, layout),
+            Access = flattens ? RasterAccess.Buffered : RasterAccess.Streamed,
+            WorkingBytes = flattens ? PsdFlattener.WorkingBytes(file) + LargestLayer(file) : PsdPlanes.PlannedBytes(file, channels) + RowsWorkingBytes(file, layout),
         };
+    }
+
+    /// <summary>Returns whether a file is loaded by flattening its layers: when the options ask for it, or by default when it has no real composite.</summary>
+    internal static bool Flattens(PsdFile file, ReaderOptions options)
+    {
+        PsdComposite composite = (options as PsdReaderOptions)?.Composite ?? PsdComposite.Auto;
+        bool wanted = composite == PsdComposite.Flatten || (composite == PsdComposite.Auto && !file.HasRealComposite);
+        return wanted && file.Mode is PsdColorMode.Rgb or PsdColorMode.Grayscale or PsdColorMode.Duotone or PsdColorMode.Cmyk;
+    }
+
+    /// <summary>
+    /// Returns whether the records alone show the flattened image is opaque everywhere: a visible pixel layer at the top level
+    /// with no transparency channel, no mask, Normal at full opacity and fill, covering the canvas. Everything drawn over it keeps
+    /// it opaque. Load and Probe decide the type of a flattened image by this, before any pixels are read.
+    /// </summary>
+    internal static bool OpaqueByRecords(PsdFile file)
+    {
+        int level = 0;
+        foreach (PsdLayerRecord record in file.Records)
+        {
+            PsdLayer info = record.Info;
+            if (info.Kind == PsdLayerKind.GroupEnd)
+            {
+                level++;
+                continue;
+            }
+
+            if (info.Kind != PsdLayerKind.Layer)
+            {
+                level = Math.Max(0, level - 1);
+                continue;
+            }
+
+            if (level == 0 && info.IsVisible && !info.IsClipped && info.LayerType == PsdLayerType.Pixel && info.BlendModeKey == "norm"
+                && info.Opacity >= 1 && info.FillOpacity >= 1 && record.Mask is null && !record.Has("vmsk") && !record.Has("vsms")
+                && !Array.Exists(record.Channels, c => c.Id == -1) && Array.TrueForAll(record.BlendRanges, r => r == 0x0000FFFFu)
+                && record.Left <= 0 && record.Top <= 0 && record.Right >= file.Width && record.Bottom >= file.Height)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /// <summary>Returns the bytes of the largest layer as ReadLayers holds it, which flattening holds one at a time.</summary>
+    private static long LargestLayer(PsdFile file)
+    {
+        long largest = 0;
+        foreach (PsdLayerRecord record in file.Records)
+        {
+            (int w, int h) = record.Size;
+            largest = Math.Max(largest, (long)w * h * (file.Depth == 32 ? 16 : file.Depth == 16 ? 8 : 4) * 2);
+        }
+
+        return largest;
     }
 
     public Raster<TPixel> Read<TPixel>(EgamiInput input, ReaderOptions options)
@@ -125,8 +182,94 @@ internal sealed class PsdReader : IFormatReader, IRowSourceReader
 
     private static RowSource OpenRows(EgamiInput input, ReaderOptions options, bool ownsInput)
     {
-        PsdFile file = PsdFile.Read(input, options);
-        RasterMetadata metadata = Metadata(input, file, options);
+        PsdFlattener? flattener = null;
+        PsdFile file = PsdFile.Read(input, options, channels: (f, i, end) =>
+        {
+            if (f.Records.Count == 0)
+            {
+                return;
+            }
+
+            // Each layer is decoded, flattened in and let go before the next.
+            flattener = new PsdFlattener(f, PsdFlattenOptions.Default, i.Context, f.Warnings, index => f.Records[index].Info);
+            Colors.InkSet? inks = f.Mode == PsdColorMode.Cmyk ? PsdLayerReader.InksOf(f) : null;
+            PsdChannels.Read(i, f, end, options, (index, planes) =>
+            {
+                (Raster? pixels, InkRaster? ink, PsdMask? mask) = PsdLayerReader.Build(planes, f, i, inks, null);
+                try
+                {
+                    flattener.Add(index, pixels, mask, ink);
+                }
+                finally
+                {
+                    pixels?.Dispose();
+                    ink?.Dispose();
+                    mask?.Pixels.Dispose();
+                }
+            });
+        }, wantsLayers: f => Flattens(f, options));
+        if (flattener is null)
+        {
+            RasterMetadata stored = Metadata(input, file, options);
+            if ((options as PsdReaderOptions)?.Composite == PsdComposite.Flatten && file.Records.Count > 0)
+            {
+                stored.WarningList.Add("Psd.FlattenUnsupported", $"{file.Mode} files are not flattened; the composite Photoshop stored was loaded.");
+            }
+
+            return RowsOf(input, file, options, stored, ownsInput);
+        }
+
+        bool alpha = !OpaqueByRecords(file);
+        Raster flat = flattener.Finish();
+        try
+        {
+            Raster typed = Typed(flat, NaturalOf(file, alpha));
+            if (!ReferenceEquals(typed, flat))
+            {
+                flat.Dispose();
+            }
+
+            flat = typed;
+            flat.Metadata.ReplaceWith(Metadata(input, file, options, alpha, flattened: true));
+            if (ownsInput)
+            {
+                input.ReturnUnreadBytes();
+                input.Dispose();
+            }
+
+            return BufferedRowSource.From(flat);
+        }
+        catch
+        {
+            flat.Dispose();
+            throw;
+        }
+    }
+
+    /// <summary>Returns the raster in the natural type, converting it when it is another.</summary>
+    private static Raster Typed(Raster raster, Natural natural)
+    {
+        return natural switch
+        {
+            Natural.Gray8 => raster as Raster<Gray8> ?? raster.As<Gray8>(),
+            Natural.GrayAlpha8 => raster as Raster<GrayAlpha8> ?? raster.As<GrayAlpha8>(),
+            Natural.Gray16 => raster as Raster<Gray16> ?? raster.As<Gray16>(),
+            Natural.GrayAlpha16 => raster as Raster<GrayAlpha16> ?? raster.As<GrayAlpha16>(),
+            Natural.GrayF32 => raster as Raster<GrayF32> ?? raster.As<GrayF32>(),
+            Natural.Rgb8 => raster as Raster<Rgb8> ?? raster.As<Rgb8>(),
+            Natural.Rgba8 => raster as Raster<Rgba8> ?? raster.As<Rgba8>(),
+            Natural.Rgb16 => raster as Raster<Rgb16> ?? raster.As<Rgb16>(),
+            Natural.Rgba16 => raster as Raster<Rgba16> ?? raster.As<Rgba16>(),
+            Natural.RgbF32 => raster as Raster<RgbF32> ?? raster.As<RgbF32>(),
+            Natural.RgbaF32 => raster as Raster<RgbaF32> ?? raster.As<RgbaF32>(),
+            Natural.Cmyk8 => raster as Raster<Cmyk8> ?? raster.As<Cmyk8>(),
+            _ => raster as Raster<Cmyk16> ?? raster.As<Cmyk16>(),
+        };
+    }
+
+    /// <summary>Opens the stored composite's rows of a file already read up to them, in the natural type.</summary>
+    internal static RowSource RowsOf(EgamiInput input, PsdFile file, ReaderOptions options, RasterMetadata metadata, bool ownsInput)
+    {
         PsdPlanes planes = PsdPlanes.Open(input, file, Needed(file), options, metadata.WarningList);
         try
         {
@@ -166,9 +309,9 @@ internal sealed class PsdReader : IFormatReader, IRowSourceReader
         return channels;
     }
 
-    internal static Natural NaturalOf(PsdFile file)
+    internal static Natural NaturalOf(PsdFile file, bool? withAlpha = null)
     {
-        bool alpha = file.MergedAlpha;
+        bool alpha = withAlpha ?? file.MergedAlpha;
         return file.Mode switch
         {
             PsdColorMode.Bitmap => Natural.Gray8,
@@ -215,8 +358,9 @@ internal sealed class PsdReader : IFormatReader, IRowSourceReader
     }
 
     /// <summary>Maps the image resources to metadata and the file to its details, and notes what the load leaves out.</summary>
-    internal static RasterMetadata Metadata(EgamiInput input, PsdFile file, ReaderOptions options)
+    internal static RasterMetadata Metadata(EgamiInput input, PsdFile file, ReaderOptions options, bool? withAlpha = null, bool flattened = false)
     {
+        bool alpha = withAlpha ?? file.MergedAlpha;
         RasterMetadata metadata = new() { FormatName = PsdFormat.Info.Name };
         PsdDetails details = new()
         {
@@ -239,9 +383,9 @@ internal sealed class PsdReader : IFormatReader, IRowSourceReader
 
         metadata.FormatDetails = details;
         metadata.WarningList.AddRange(file.Warnings);
-        if (!file.HasRealComposite)
+        if (!file.HasRealComposite && !flattened)
         {
-            metadata.WarningList.Add("Psd.NoComposite", "The file was saved without Maximize Compatibility, so it holds no real flattened image; the stored placeholder was loaded. Egami does not composite the layers.");
+            metadata.WarningList.Add("Psd.NoComposite", "The file was saved without Maximize Compatibility, so it holds no real flattened image; the stored placeholder was loaded. PsdComposite.Auto or Flatten flattens the layers instead.");
         }
 
         if (file.Mode == PsdColorMode.Multichannel && file.Channels > 1)
@@ -249,7 +393,7 @@ internal sealed class PsdReader : IFormatReader, IRowSourceReader
             metadata.WarningList.Add("Psd.ChannelsDropped", $"A multichannel file has no color model; its first channel was loaded as gray and the other {file.Channels - 1} were not loaded.");
         }
 
-        bool converted = file.Mode == PsdColorMode.Lab || (file.Mode == PsdColorMode.Cmyk && file.MergedAlpha);
+        bool converted = file.Mode == PsdColorMode.Lab || (file.Mode == PsdColorMode.Cmyk && alpha);
         if (file.Depth == 32)
         {
             metadata.ColorSpace = ColorSpaceHint.Linear;

@@ -99,10 +99,14 @@ public static class PsdImage
 public sealed partial class PsdDocument : IDisposable
 {
     private readonly PsdLayerImage[] _layers;
+    private readonly PsdFile _file;
+    private readonly int[] _imageOf;
+    private bool _disposed;
 
-    internal PsdDocument(int width, int height, PsdColorMode mode, int depth, PsdLayerImage[] layers, RasterMetadata metadata, EgamiContext context)
+    internal PsdDocument(PsdFile file, PsdLayerImage[] layers, int[] imageOf, RasterMetadata metadata, EgamiContext context)
     {
-        (Width, Height, ColorMode, BitsPerChannel, _layers, Metadata, Context) = (width, height, mode, depth, layers, metadata, context);
+        (Width, Height, ColorMode, BitsPerChannel, _layers, Metadata, Context) = (file.Width, file.Height, file.Mode, file.Depth, layers, metadata, context);
+        (_file, _imageOf) = (file, imageOf);
     }
 
     /// <summary>Gets the canvas width in pixels.</summary>
@@ -129,14 +133,104 @@ public sealed partial class PsdDocument : IDisposable
     /// <summary>Gets the context the layers were read with.</summary>
     public EgamiContext Context { get; }
 
+    /// <summary>
+    /// Composites the layers as Photoshop does, with each layer's <see cref="PsdLayerImage.Info"/> as it is now, so a changed copy
+    /// (a layer hidden, another opacity or blend mode) flattens differently: visibility, opacity, fill opacity, blend mode (all of
+    /// Photoshop's), pixel and vector masks, clipping, pass-through and isolated groups, blending ranges, solid color fills and
+    /// the levels, curves, hue/saturation, brightness/contrast and invert adjustments. Layer effects, other adjustments,
+    /// gradient and pattern fills and knockout are left out with one warning a kind naming the layers. 8 and 16-bit documents
+    /// blend their stored values, 32-bit ones linear light.
+    /// </summary>
+    /// <param name="options">The options, or <see langword="null"/> for the defaults.</param>
+    /// <returns>
+    /// The flattened image at the canvas's size, in the type Load gives a file of this mode and depth: with alpha only when some
+    /// pixel is not opaque. Its metadata is the document's, with the warnings of the flattening. The caller must dispose it.
+    /// </returns>
+    /// <exception cref="UnsupportedFormatException">The document is Lab, bitmap, indexed or multichannel, which Egami does not flatten.</exception>
+    /// <exception cref="LimitExceededException">The canvases the flattening needs break <see cref="SafetyLimits.MaxTotalBytes"/>.</exception>
+    /// <exception cref="ObjectDisposedException">The document has been disposed.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../../tests/Egami.DocSamples/Psd.cs" region="psd-flatten"/>
+    /// </example>
+    public Raster Flatten(PsdFlattenOptions? options = null)
+    {
+        WarningList warnings = new();
+        Raster flat = Flattener(options, warnings).Finish();
+        flat.Metadata.ReplaceWith(Metadata);
+        flat.Metadata.WarningList.AddRange(warnings);
+        return flat;
+    }
+
+    /// <summary>
+    /// Composites a CMYK document's layers onto ink plates, as <see cref="Flatten"/> does, with the ink blend math of Egami.Drawing's
+    /// ink canvas: every blend mode on the inks' complements, the non-separable ones on cyan, magenta and yellow with black kept.
+    /// </summary>
+    /// <param name="options">The options, or <see langword="null"/> for the defaults.</param>
+    /// <returns>
+    /// The flattened inks: the process inks of the file's CMYK profile (FOGRA39's when it has none), at the document's depth,
+    /// premultiplied by the alpha plane. The caller must dispose it.
+    /// </returns>
+    /// <exception cref="UnsupportedFormatException">The document is not CMYK.</exception>
+    /// <exception cref="LimitExceededException">The canvases the flattening needs break <see cref="SafetyLimits.MaxTotalBytes"/>.</exception>
+    /// <exception cref="ObjectDisposedException">The document has been disposed.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../../tests/Egami.DocSamples/Psd.cs" region="psd-flatten"/>
+    /// </example>
+    public InkRaster FlattenInk(PsdFlattenOptions? options = null)
+    {
+        if (ColorMode != PsdColorMode.Cmyk)
+        {
+            throw new UnsupportedFormatException($"Only CMYK documents flatten to inks; this one is {ColorMode}.");
+        }
+
+        WarningList warnings = new();
+        PsdFlattener flattener = Flattener(options, warnings);
+        return flattener.FinishInk(PsdLayerReader.InksOf(_file));
+    }
+
+    private PsdFlattener Flattener(PsdFlattenOptions? options, WarningList warnings)
+    {
+        ObjectDisposedException.ThrowIf(_disposed, this);
+        if (ColorMode is not (PsdColorMode.Rgb or PsdColorMode.Grayscale or PsdColorMode.Duotone or PsdColorMode.Cmyk))
+        {
+            throw new UnsupportedFormatException($"{ColorMode} documents are not flattened; Load gives the composite Photoshop stored.");
+        }
+
+        PsdFlattener flattener = new(_file, options ?? PsdFlattenOptions.Default, Context, warnings, i => _imageOf[i] >= 0 ? _layers[_imageOf[i]].Info : _file.Records[i].Info);
+        for (int i = 0; i < _imageOf.Length; i++)
+        {
+            PsdLayerImage? layer = _imageOf[i] >= 0 ? _layers[_imageOf[i]] : null;
+            flattener.Add(i, layer?.Pixels, layer?.Mask, layer?.Ink);
+        }
+
+        return flattener;
+    }
+
     /// <summary>Disposes every layer's pixels and mask.</summary>
     public void Dispose()
     {
+        _disposed = true;
         foreach (PsdLayerImage layer in _layers)
         {
             layer.Dispose();
         }
     }
+}
+
+/// <summary>Options for <see cref="PsdDocument.Flatten"/>.</summary>
+/// <example>
+/// <code language="csharp" source="../../../../tests/Egami.DocSamples/Psd.cs" region="psd-flatten"/>
+/// </example>
+public sealed record PsdFlattenOptions
+{
+    /// <summary>Gets the default options.</summary>
+    public static PsdFlattenOptions Default { get; } = new();
+
+    /// <summary>
+    /// Gets a value indicating whether the adjustment layers Egami knows (levels, curves, hue/saturation, brightness/contrast and
+    /// invert) change the layers under them. On by default; off leaves every adjustment layer out, without a warning.
+    /// </summary>
+    public bool ApplyAdjustments { get; init; } = true;
 }
 
 /// <summary>One layer or group of a <see cref="PsdDocument"/>, with its pixels and mask.</summary>
