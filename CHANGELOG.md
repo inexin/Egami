@@ -66,6 +66,11 @@ DDS textures, stage C (BC7 and BC6H encoders).
 - `DdsTextureFormat.Bc7`, `Bc6h` and `Bc6hSigned`: BC7 searches modes, partitions, rotations and p-bits by effort; BC6H fits
   HDR colour in the decoder's domain, with the two-region modes from effort 3. The `egami` command writes them with
   `--set dds.format=bc7` and the other `dds.` keys. A Textures guide says which format suits which content.
+- Against texconv 2026.5.8.1: every file it writes decodes to its own decode, on every mip (BC4 and BC5 SNORM within an
+  8-bit level, which texconv rounds through R8_SNORM), and at the default effort the encoders reach a higher PSNR on 28 photos:
+  BC1 +0.84 dB, BC3 +0.65, BC4 +0.96, BC5 +0.98, BC7 +0.71. BC7 encodes 15.7 times as fast as texconv's CPU path, and BC1 and
+  BC3 five times as fast as ImageMagick. Legacy Q8W8V8U8 files as texconv writes them (an alpha mask without the alpha flag)
+  now load.
 
 ## Egami, unreleased
 
