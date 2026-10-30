@@ -188,9 +188,11 @@ internal sealed class CabacEngine
     /// Gets the engine's state, for a hot loop that decodes bins with <see cref="Decode(ref State, ref byte)"/> and
     /// <see cref="Bypass(ref State)"/>, whose state the JIT keeps in registers; <see cref="Restore"/> gives it back.
     /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal State Save() => new() { Range = _range, Value = _value, BitsNeeded = _bitsNeeded, Position = _position };
 
     /// <summary>Takes back the state <see cref="Save"/> gave.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal void Restore(in State state)
     {
         _range = state.Range;

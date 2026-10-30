@@ -401,6 +401,7 @@ internal sealed partial class H264Deblock
     }
 
     /// <summary>alpha, beta and indexA of an edge (8.7.2.2), scaled to the bit depth.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static (int Alpha, int Beta, int IndexA) Thresholds(int qpAv, H264FilterParams p, int scale)
     {
         int indexA = Math.Clamp(qpAv + p.OffsetA, 0, 51), indexB = Math.Clamp(qpAv + p.OffsetB, 0, 51);
@@ -1019,6 +1020,7 @@ internal sealed partial class H264Deblock
     /// The bS between blocks of two flat macroblocks, which have no coefficients: 0 for the same motion, else by
     /// <see cref="MotionDiffers"/>.
     /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private int MotionStrength(int p, int q)
     {
         Debug.Assert(p >= 0 && q < _mv0.Length, "Both blocks lie in the picture.");
@@ -1175,6 +1177,7 @@ internal sealed partial class H264Deblock
     }
 
     /// <summary>Whether the two blocks use different reference pictures, a different number of vectors or vectors 4 or more apart.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private bool MotionDiffers(int p, int q)
     {
         int p0 = _ref0[p], p1 = _ref1[p];

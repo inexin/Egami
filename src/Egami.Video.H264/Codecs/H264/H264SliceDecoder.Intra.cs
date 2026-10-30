@@ -1,4 +1,6 @@
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+using System.Runtime.Intrinsics;
 
 namespace Egami.Video.Codecs.H264;
 
@@ -302,7 +304,7 @@ internal sealed partial class H264SliceDecoder
                         break;
                     case 2:
                         v = PredictDc(n, left, top, dc);
-                        plane.AsSpan(row, n).Fill(H264Samples.Of<TSample>(v));
+                        FillRow(plane, row, n, H264Samples.Of<TSample>(v));
                         goto NextRow;
                     case 3:
                         v = x == n - 1 && y == n - 1 ? (T((2 * n) - 2) + (3 * T((2 * n) - 1)) + 2) >> 2
@@ -356,6 +358,7 @@ internal sealed partial class H264SliceDecoder
         }
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private int PredictDc(int n, bool left, bool top, int dc)
     {
         int sum = 0;
@@ -407,7 +410,7 @@ internal sealed partial class H264SliceDecoder
             case 1:
                 for (int y = 0; y < 16; y++)
                 {
-                    plane.AsSpan(at + (y * stride), 16).Fill(H264Samples.Of<TSample>(_left[y]));
+                    FillRow(plane, at + (y * stride), 16, H264Samples.Of<TSample>(_left[y]));
                 }
 
                 break;
@@ -416,7 +419,7 @@ internal sealed partial class H264SliceDecoder
                     int v = PredictDc(16, left, top, 1 << (_bitDepthY - 1));
                     for (int y = 0; y < 16; y++)
                     {
-                        plane.AsSpan(at + (y * stride), 16).Fill(H264Samples.Of<TSample>(v));
+                        FillRow(plane, at + (y * stride), 16, H264Samples.Of<TSample>(v));
                     }
 
                     break;
@@ -506,7 +509,7 @@ internal sealed partial class H264SliceDecoder
 
                         for (int y = 0; y < 4; y++)
                         {
-                            plane.AsSpan(at + ((yo + y) * stride) + xo, 4).Fill(H264Samples.Of<TSample>(v));
+                            FillRow(plane, at + ((yo + y) * stride) + xo, 4, H264Samples.Of<TSample>(v));
                         }
                     }
                 }
@@ -515,7 +518,7 @@ internal sealed partial class H264SliceDecoder
             case 1:
                 for (int y = 0; y < h; y++)
                 {
-                    plane.AsSpan(at + (y * stride), w).Fill(H264Samples.Of<TSample>(_left[y]));
+                    FillRow(plane, at + (y * stride), w, H264Samples.Of<TSample>(_left[y]));
                 }
 
                 break;
@@ -556,6 +559,40 @@ internal sealed partial class H264SliceDecoder
 
                     break;
                 }
+        }
+    }
+
+    /// <summary>Sets <paramref name="count"/> samples of a plane row to one value: rows of 4, 8 and 16 in one or two stores.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static void FillRow<TSample>(TSample[] plane, int at, int count, TSample value)
+        where TSample : unmanaged
+    {
+        if ((uint)at > (uint)plane.Length || (uint)count > (uint)(plane.Length - at))
+        {
+            throw H264Errors.Corrupt("A block lies outside the picture.");
+        }
+
+        ref TSample d = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(plane), at);
+        int bytes = count * Unsafe.SizeOf<TSample>();
+        ulong v = Unsafe.SizeOf<TSample>() == 1 ? Unsafe.As<TSample, byte>(ref value) * 0x0101010101010101UL : Unsafe.As<TSample, ushort>(ref value) * 0x0001000100010001UL;
+        ref byte b = ref Unsafe.As<TSample, byte>(ref d);
+        switch (bytes)
+        {
+            case 4:
+                Unsafe.WriteUnaligned(ref b, (uint)v);
+                break;
+            case 8:
+                Unsafe.WriteUnaligned(ref b, v);
+                break;
+            case 16:
+                Vector128.Create(v).StoreUnsafe(ref Unsafe.As<byte, ulong>(ref b));
+                break;
+            case 32:
+                Vector256.Create(v).StoreUnsafe(ref Unsafe.As<byte, ulong>(ref b));
+                break;
+            default:
+                MemoryMarshal.CreateSpan(ref d, count).Fill(value);
+                break;
         }
     }
 }

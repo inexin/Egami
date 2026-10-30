@@ -154,6 +154,7 @@ internal sealed partial class H264SliceDecoder
         FillMv(list, bx, by, w, h, PackMv(x, y), mvd);
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void FillRef(int list, int bx, int by, int w, int h, int refIdx, int id)
     {
         int w4 = _w4;
@@ -190,6 +191,7 @@ internal sealed partial class H264SliceDecoder
     }
 
     /// <summary>Writes a motion vector (and the absolute mvd for CABAC, x low byte, y high byte) to blocks, marking them decoded.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void FillMv(int list, int bx, int by, int w, int h, int mv, int mvd)
     {
         int w4 = _w4;
