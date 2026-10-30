@@ -17,6 +17,34 @@ public class BlendKernelTests
         return [.. Enum.GetValues<BlendMode>()];
     }
 
+    /// <summary>
+    /// Gets whether Darker Color or Lighter Color compares two luminosities so close that single and double precision may pick
+    /// different colors; either pick is right there.
+    /// </summary>
+    private static bool Tie(BlendMode mode, uint s, uint d, int opacity)
+    {
+        if (mode is not (BlendMode.DarkerColor or BlendMode.LighterColor))
+        {
+            return false;
+        }
+
+        uint scaled = 0;
+        for (int shift = 0; shift < 32; shift += 8)
+        {
+            scaled |= (uint)(((((s >> shift) & 0xFF) * opacity) + 127) / 255) << shift;
+        }
+
+        s = scaled;
+
+        static double Lum(uint p)
+        {
+            double a = p >> 24;
+            return a == 0 ? 0 : ((0.3 * (p & 0xFF)) + (0.59 * ((p >> 8) & 0xFF)) + (0.11 * ((p >> 16) & 0xFF))) / a;
+        }
+
+        return Math.Abs(Lum(s) - Lum(d)) < 1e-5;
+    }
+
     [Theory]
     [MemberData(nameof(Modes))]
     public void EveryValuePairMatchesTheReference(BlendMode mode)
@@ -31,7 +59,7 @@ public class BlendKernelTests
                 uint[] expected = new uint[d.Length];
                 for (int i = 0; i < d.Length; i++)
                 {
-                    expected[i] = Pack(BlendReference.Blend8(mode, Unpack(s[i]), Unpack(d[i]), opacity));
+                    expected[i] = Pack(BlendReference.Blend8(mode, Unpack(s[i]), Unpack(d[i]), opacity, i));
                 }
 
                 foreach (int bits in Widths)
@@ -42,7 +70,7 @@ public class BlendKernelTests
                     {
                         if (actual[i] != expected[i])
                         {
-                            Assert.True(!integer && Close(actual[i], expected[i]), $"{mode} at {bits} bits, opacity {opacity}: s {Unpack(s[i])} d {Unpack(d[i])} gave {Unpack(actual[i])}, reference {Unpack(expected[i])}");
+                            Assert.True(!integer && (Close(actual[i], expected[i]) || Tie(mode, s[i], d[i], opacity)), $"{mode} at {bits} bits, opacity {opacity}: s {Unpack(s[i])} d {Unpack(d[i])} gave {Unpack(actual[i])}, reference {Unpack(expected[i])}");
                         }
                     }
                 }
@@ -69,7 +97,7 @@ public class BlendKernelTests
             for (int i = 0; i < d.Length; i++)
             {
                 // The reference works in RGBA; a BGRA pixel is the same bytes with red and blue swapped.
-                expected[i] = bgr ? Swap(Pack(BlendReference.Blend8(mode, Unpack(Swap(s[i])), Unpack(Swap(d[i]))))) : Pack(BlendReference.Blend8(mode, Unpack(s[i]), Unpack(d[i])));
+                expected[i] = bgr ? Swap(Pack(BlendReference.Blend8(mode, Unpack(Swap(s[i])), Unpack(Swap(d[i])), 255, i))) : Pack(BlendReference.Blend8(mode, Unpack(s[i]), Unpack(d[i]), 255, i));
             }
 
             foreach (int bits in Widths)
@@ -78,7 +106,7 @@ public class BlendKernelTests
                 BlendKernels.Blend8(mode, s, actual, default, 255, bgr, bits);
                 for (int i = 0; i < actual.Length; i++)
                 {
-                    Assert.True(actual[i] == expected[i] || (!BlendKernels.IsInteger(mode) && Close(actual[i], expected[i])), $"{mode} bgr={bgr} at {bits} bits: gave {Unpack(actual[i])}, reference {Unpack(expected[i])}");
+                    Assert.True(actual[i] == expected[i] || (!BlendKernels.IsInteger(mode) && (Close(actual[i], expected[i]) || Tie(mode, bgr ? Swap(s[i]) : s[i], bgr ? Swap(d[i]) : d[i], 255))), $"{mode} bgr={bgr} at {bits} bits: gave {Unpack(actual[i])}, reference {Unpack(expected[i])}");
                 }
             }
         }
@@ -138,7 +166,7 @@ public class BlendKernelTests
         BlendKernels.BlendFloat(mode, s, actual, default, 0.8f);
         for (int i = 0; i < s.Length; i += 4)
         {
-            var expected = BlendReference.Blend(mode, (s[i], s[i + 1], s[i + 2], s[i + 3]), (d[i], d[i + 1], d[i + 2], d[i + 3]), 0.8f);
+            var expected = BlendReference.Blend(mode, (s[i], s[i + 1], s[i + 2], s[i + 3]), (d[i], d[i + 1], d[i + 2], d[i + 3]), 0.8f, i / 4);
             Assert.Equal(expected.R, actual[i], 2e-5);
             Assert.Equal(expected.G, actual[i + 1], 2e-5);
             Assert.Equal(expected.B, actual[i + 2], 2e-5);

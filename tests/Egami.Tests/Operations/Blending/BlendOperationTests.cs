@@ -158,7 +158,7 @@ public class BlendOperationTests
         using Raster<Rgba8> under = Raster.Create(2, 2, Rgba8.Blue);
         under.Apply(ops => ops.DrawImage(top, new Point(0, 0), BlendMode.Destination).BlendColor(Rgba8.Lime, BlendMode.Destination), Ct);
         Assert.Equal(Rgba8.Blue, under.GetPixel(1, 1));
-        Assert.Throws<ArgumentOutOfRangeException>(() => under.Apply(ops => ops.DrawImage(top, new Point(0, 0), (BlendMode)31), Ct));
+        Assert.Throws<ArgumentOutOfRangeException>(() => under.Apply(ops => ops.DrawImage(top, new Point(0, 0), (BlendMode)40), Ct));
         Assert.Throws<ArgumentOutOfRangeException>(() => under.Apply(ops => ops.DrawImage(top, new Point(0, 0), BlendMode.Screen, 1.5f), Ct));
         Assert.Throws<ArgumentOutOfRangeException>(() => under.Apply(ops => ops.BlendColor(Rgba8.Red, BlendMode.Screen, 1, (ColorSpace)7), Ct));
         Assert.Throws<ArgumentOutOfRangeException>(() => under.Apply(ops => ops.DrawArithmetic(top, new Point(0, 0), float.NaN, 0, 0, 0), Ct));

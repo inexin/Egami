@@ -18,6 +18,12 @@ public class CompositorTests
     [MemberData(nameof(Modes))]
     public void RowsEqualDrawImage(BlendMode mode)
     {
+        if (mode == BlendMode.Dissolve)
+        {
+            // DrawImage places Dissolve's pattern by canvas row; Compositor rows have no row, as BlendMode.Dissolve documents.
+            return;
+        }
+
         (Rgba8[] s, Rgba8[] d) = BlendCorpus.Layers(64, 48);
         Same<Rgba8>(mode, s, d);
         Same<PremulBgra8>(mode, s, d);

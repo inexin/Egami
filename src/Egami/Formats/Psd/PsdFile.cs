@@ -711,6 +711,17 @@ internal sealed class PsdFile
         "sat " => BlendMode.Saturation,
         "colr" => BlendMode.Color,
         "lum " => BlendMode.Luminosity,
+        "lddg" => BlendMode.Add,
+        "fsub" => BlendMode.Subtract,
+        "fdiv" => BlendMode.Divide,
+        "lbrn" => BlendMode.LinearBurn,
+        "lLit" => BlendMode.LinearLight,
+        "vLit" => BlendMode.VividLight,
+        "pLit" => BlendMode.PinLight,
+        "hMix" => BlendMode.HardMix,
+        "dkCl" => BlendMode.DarkerColor,
+        "lgCl" => BlendMode.LighterColor,
+        "diss" => BlendMode.Dissolve,
         _ => null,
     };
 }

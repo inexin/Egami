@@ -90,6 +90,15 @@ Egami.Formats.Psd.PsdMask.Density.get -> float
 Egami.Formats.Psd.PsdMask.Feather.get -> double
 Egami.Formats.Psd.PsdMask.IsDisabled.get -> bool
 Egami.Formats.Psd.PsdMask.Pixels.get -> Egami.Raster!
+Egami.Operations.BlendMode.DarkerColor = 37 -> Egami.Operations.BlendMode
+Egami.Operations.BlendMode.Dissolve = 39 -> Egami.Operations.BlendMode
+Egami.Operations.BlendMode.Divide = 31 -> Egami.Operations.BlendMode
+Egami.Operations.BlendMode.HardMix = 36 -> Egami.Operations.BlendMode
+Egami.Operations.BlendMode.LighterColor = 38 -> Egami.Operations.BlendMode
+Egami.Operations.BlendMode.LinearBurn = 32 -> Egami.Operations.BlendMode
+Egami.Operations.BlendMode.LinearLight = 33 -> Egami.Operations.BlendMode
+Egami.Operations.BlendMode.PinLight = 35 -> Egami.Operations.BlendMode
+Egami.Operations.BlendMode.VividLight = 34 -> Egami.Operations.BlendMode
 Egami.Raster.Save(string! path, Egami.Formats.WriterOptions? options, System.IProgress<Egami.SaveProgress>? progress, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> void
 Egami.Raster.Save(System.IO.Stream! stream, Egami.Formats.FormatInfo! format, Egami.Formats.WriterOptions? options, System.IProgress<Egami.SaveProgress>? progress, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> void
 Egami.Raster.Save(System.IO.Stream! stream, string! formatNameOrExtension, Egami.Formats.WriterOptions? options, System.IProgress<Egami.SaveProgress>? progress, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> void
