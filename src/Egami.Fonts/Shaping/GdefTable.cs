@@ -39,6 +39,11 @@ internal sealed class GdefTable
     private readonly int _ligCaretList;
     private readonly int _markSetCount;
 
+    /// <summary>A glyph's properties not looked up yet; real ones never set bit 0.</summary>
+    private const ushort UnknownProps = 0xFFFF;
+
+    private ushort[]? _props;
+
     public GdefTable(ReadOnlyMemory<byte> data)
     {
         _data = data;
@@ -130,6 +135,58 @@ internal sealed class GdefTable
 
     /// <summary>The glyph's properties: base, ligature or mark bits, and a mark's attachment class in the high byte.</summary>
     public int GetGlyphProps(uint glyph)
+    {
+        // Each glyph's properties are looked up in the class tables once and kept; a glyph past every classed one has none.
+        ushort[] props = Volatile.Read(ref _props) ?? CreateProps();
+        if (glyph >= (uint)props.Length)
+        {
+            return 0;
+        }
+
+        int known = props[glyph];
+        if (known == UnknownProps)
+        {
+            known = LookUpGlyphProps(glyph);
+            props[glyph] = (ushort)known;
+        }
+
+        return known;
+    }
+
+    private ushort[] CreateProps()
+    {
+        ushort[] props = new ushort[LastClassedGlyph(_data.Span, _glyphClassDef) + 1];
+        props.AsSpan().Fill(UnknownProps);
+        return Interlocked.CompareExchange(ref _props, props, null) ?? props;
+    }
+
+    /// <summary>The highest glyph a class definition table gives a class, or −1.</summary>
+    private static int LastClassedGlyph(ReadOnlySpan<byte> d, int t)
+    {
+        if (t == 0)
+        {
+            return -1;
+        }
+
+        switch (U16(d, t))
+        {
+            case 1:
+                return U16(d, t + 4) == 0 ? -1 : U16(d, t + 2) + U16(d, t + 4) - 1;
+            case 2:
+                int last = -1;
+                for (int i = 0, count = U16(d, t + 2); i < count; i++)
+                {
+                    last = Math.Max(last, U16(d, t + 4 + (i * 6) + 2));
+                }
+
+                return last;
+            default:
+                return -1;
+        }
+    }
+
+    /// <summary>The glyph's properties from the class tables, as <see cref="GetGlyphProps"/> keeps them.</summary>
+    internal int LookUpGlyphProps(uint glyph)
     {
         ReadOnlySpan<byte> d = _data.Span;
         switch (ClassOf(d, _glyphClassDef, glyph))

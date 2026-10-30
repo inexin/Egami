@@ -4,6 +4,7 @@ using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Configs;
 
 using Egami.Drawing;
+using Egami.Operations;
 using Egami.Pixels;
 using Egami.SystemDrawing.Drawing2D;
 using Egami.SystemDrawing.Imaging;
@@ -26,6 +27,9 @@ public class DropInBenchmarks : IDisposable
     private const int Size = 512;
     private const string Line = "The quick brown fox jumps over the lazy dog";
 
+    // More distinct lines than the drop-in's shape cache keeps, so each measure shapes its text afresh.
+    private const int Unique = 4096;
+
     private Bitmap _argb = null!;
     private Bitmap _parb = null!;
     private Graphics _argbGraphics = null!;
@@ -40,6 +44,8 @@ public class DropInBenchmarks : IDisposable
     private Font _font = null!;
     private EgamiFonts.Font _egamiFont;
     private PrivateFontCollection _fonts = null!;
+    private string[] _unique = [];
+    private int _next;
 
     [GlobalSetup]
     public void Setup()
@@ -63,6 +69,7 @@ public class DropInBenchmarks : IDisposable
         _fonts.AddFontFile(System.IO.Path.Combine(AppContext.BaseDirectory, "DejaVuSans.ttf"));
         _font = new Font(new FontFamily("DejaVu Sans", _fonts), 12);
         _egamiFont = _font.ToEgamiFont() with { Kerning = false };
+        _unique = [.. Enumerable.Range(0, Unique).Select(i => $"{i} {Line} {i * 7919}")];
     }
 
     [GlobalCleanup]
@@ -119,6 +126,50 @@ public class DropInBenchmarks : IDisposable
     public void DrawImageScaled() => _parbGraphics.DrawImage(_photo, new SdRectangle(0, 0, Size, Size));
 
     [Benchmark(Baseline = true)]
+    [BenchmarkCategory("DrawImage high quality")]
+    public void DrawImageHighQualityEgami()
+        => _premulCanvas.DrawImage(_photoRaster, new RectF(0, 0, Size, Size), new SamplingOptions { Filter = ResampleFilter.GdiPlusHighQualityBicubic });
+
+    [Benchmark]
+    [BenchmarkCategory("DrawImage high quality")]
+    public void DrawImageHighQuality()
+    {
+        _parbGraphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
+        _parbGraphics.DrawImage(_photo, new SdRectangle(0, 0, Size, Size));
+        _parbGraphics.InterpolationMode = InterpolationMode.Bilinear;
+    }
+
+    [Benchmark(Baseline = true)]
+    [BenchmarkCategory("DrawImage part")]
+    public void DrawImagePartEgami() => _premulCanvas.DrawImage(_photoRaster, new RectF(100, 100, 64, 64), new RectF(0, 0, 128, 128));
+
+    [Benchmark]
+    [BenchmarkCategory("DrawImage part")]
+    public void DrawImagePart() => _parbGraphics.DrawImage(_photo, new SdRectangle(0, 0, 128, 128), new SdRectangle(100, 100, 64, 64), GraphicsUnit.Pixel);
+
+    [Benchmark(Baseline = true)]
+    [BenchmarkCategory("DrawLine 1 px")]
+    public void DrawLineEgami()
+    {
+        Stroke stroke = new() { Width = 1 };
+        SolidPaint paint = new(new Rgba8(0, 0, 0, 255));
+        for (int i = 0; i < 100; i++)
+        {
+            _premulCanvas.DrawLine(new Vector2(i * 5, 0), new Vector2(Size - 1 - (i * 5), Size - 1), stroke, paint);
+        }
+    }
+
+    [Benchmark]
+    [BenchmarkCategory("DrawLine 1 px")]
+    public void DrawLine()
+    {
+        for (int i = 0; i < 100; i++)
+        {
+            _parbGraphics.DrawLine(Pens.Black, i * 5, 0, Size - 1 - (i * 5), Size - 1);
+        }
+    }
+
+    [Benchmark(Baseline = true)]
     [BenchmarkCategory("DrawString")]
     public void DrawTextEgami()
     {
@@ -145,6 +196,14 @@ public class DropInBenchmarks : IDisposable
     [Benchmark]
     [BenchmarkCategory("MeasureString")]
     public float MeasureString() => _parbGraphics.MeasureString(Line, _font).Width;
+
+    [Benchmark(Baseline = true)]
+    [BenchmarkCategory("MeasureString new text")]
+    public float MeasureUniqueEgami() => _egamiFont.MeasureText(_unique[_next++ & (Unique - 1)]).Advance;
+
+    [Benchmark]
+    [BenchmarkCategory("MeasureString new text")]
+    public float MeasureStringUnique() => _parbGraphics.MeasureString(_unique[_next++ & (Unique - 1)], _font).Width;
 
     [Benchmark(Baseline = true)]
     [BenchmarkCategory("Load PNG")]

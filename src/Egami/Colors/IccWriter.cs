@@ -6,7 +6,9 @@ namespace Egami.Colors;
 /// <summary>
 /// Writes small version 4 ICC profiles for RGB and gray encodings: a matrix-shaper (or gray curve) with para curves where the
 /// curve is a formula and curv tables otherwise, version 4.3 for SDR and 4.4 with a cicp tag for PQ and HLG, whose curves are
-/// written as tables that roll highlights off toward reference white, for readers that ignore cicp.
+/// written as tables that roll highlights off toward reference white, for readers that ignore cicp. Version 2.4 profiles, for
+/// readers that predate version 4, have the same matrix-shaper with the conventions of that version: textDescriptionType and
+/// textType text, curv curves only (a gamma or a table), and the media white point the encoding's own white, with no chad.
 /// </summary>
 internal static class IccWriter
 {
@@ -47,6 +49,41 @@ internal static class IccWriter
         }
 
         return Assemble(hdr ? 0x04400000u : 0x04300000u, profile.Model == ColorModel.Gray ? "GRAY" : "RGB ", tags);
+    }
+
+    /// <summary>Writes a version 2.4 matrix-shaper (or gray curve) profile.</summary>
+    public static byte[] WriteVersion2(ColorProfile profile)
+    {
+        TransferFunction curve = profile.Transfer ?? throw new InvalidOperationException($"'{profile.Name}' has no single curve to write.");
+        if (profile.Model is not (ColorModel.Rgb or ColorModel.Gray))
+        {
+            throw new InvalidOperationException($"'{profile.Name}' is not an RGB or gray encoding, which is all Egami writes as ICC.");
+        }
+
+        Vector3d white = profile.White.ToXyz();
+        List<(string Signature, byte[] Data)> tags =
+        [
+            ("desc", TextDescription(profile.Name)),
+            ("cprt", Text("No copyright, use freely")),
+            ("wtpt", Xyz(white)),
+        ];
+        byte[] trc = CurveVersion2(curve);
+        if (profile.Model == ColorModel.Gray)
+        {
+            tags.Add(("kTRC", trc));
+        }
+        else
+        {
+            Matrix3d colorants = Matrix3d.Bradford(white, Cie.D50) * profile.ToXyz();
+            tags.Add(("rXYZ", Xyz(new Vector3d(colorants[0, 0], colorants[1, 0], colorants[2, 0]))));
+            tags.Add(("gXYZ", Xyz(new Vector3d(colorants[0, 1], colorants[1, 1], colorants[2, 1]))));
+            tags.Add(("bXYZ", Xyz(new Vector3d(colorants[0, 2], colorants[1, 2], colorants[2, 2]))));
+            tags.Add(("rTRC", trc));
+            tags.Add(("gTRC", trc));
+            tags.Add(("bTRC", trc));
+        }
+
+        return Assemble(0x02400000u, profile.Model == ColorModel.Gray ? "GRAY" : "RGB ", tags);
     }
 
     private static byte[] Assemble(uint version, string space, List<(string Signature, byte[] Data)> tags)
@@ -127,6 +164,42 @@ internal static class IccWriter
         return data;
     }
 
+    /// <summary>
+    /// A curv for version 2: none for linear, a u8Fixed8 gamma when the gamma is exact in it, else a table: the curve's own, or
+    /// the formula sampled, with highlights rolled off for PQ and HLG as in version 4.
+    /// </summary>
+    private static byte[] CurveVersion2(TransferFunction curve)
+    {
+        if (curve.Shape == TransferFunction.Kind.Linear)
+        {
+            return [.. "curv"u8, 0, 0, 0, 0, 0, 0, 0, 0];
+        }
+
+        if (curve.Shape == TransferFunction.Kind.Gamma && curve.ParametricValues is { G: double g and > 0 and < 256 } && Math.Round(g * 256) == g * 256)
+        {
+            byte[] gamma = [.. "curv"u8, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0];
+            BinaryPrimitives.WriteUInt16BigEndian(gamma.AsSpan(12), (ushort)(g * 256));
+            return gamma;
+        }
+
+        if (curve.Shape == TransferFunction.Kind.Table)
+        {
+            return Curve(curve);
+        }
+
+        byte[] data = new byte[12 + (2 * TableSize)];
+        "curv"u8.CopyTo(data);
+        BinaryPrimitives.WriteUInt32BigEndian(data.AsSpan(8), TableSize);
+        for (int i = 0; i < TableSize; i++)
+        {
+            double linear = curve.ToLinear(i / (double)(TableSize - 1));
+            double v = curve.IsHdr ? RollOff(linear) : linear;
+            BinaryPrimitives.WriteUInt16BigEndian(data.AsSpan(12 + (2 * i)), (ushort)Math.Round(Math.Clamp(v, 0, 1) * 65535));
+        }
+
+        return data;
+    }
+
     private static double RollOff(double linear)
     {
         const double Knee = 0.75;
@@ -167,6 +240,29 @@ internal static class IccWriter
 
         return data;
     }
+
+    /// <summary>A version 2 textDescriptionType: the ASCII description, and empty Unicode and ScriptCode descriptions.</summary>
+    private static byte[] TextDescription(string text)
+    {
+        byte[] ascii = Ascii(text);
+        byte[] data = new byte[12 + ascii.Length + 1 + 4 + 4 + 2 + 1 + 67];
+        "desc"u8.CopyTo(data);
+        BinaryPrimitives.WriteUInt32BigEndian(data.AsSpan(8), (uint)(ascii.Length + 1));
+        ascii.CopyTo(data, 12);
+        return data;
+    }
+
+    private static byte[] Text(string text)
+    {
+        byte[] ascii = Ascii(text);
+        byte[] data = new byte[8 + ascii.Length + 1];
+        "text"u8.CopyTo(data);
+        ascii.CopyTo(data, 8);
+        return data;
+    }
+
+    /// <summary>Returns 7-bit ASCII, with '?' for anything else, as version 2 text has no other encoding.</summary>
+    private static byte[] Ascii(string text) => [.. text.Select(c => c is >= ' ' and < (char)0x7F ? (byte)c : (byte)'?')];
 
     private static byte[] Mluc(string text)
     {

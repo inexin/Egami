@@ -1,5 +1,6 @@
 using System.Numerics;
 
+using Egami.Drawing.Rasterization;
 using Egami.Drawing.Shading;
 using Egami.Operations;
 using Egami.Pixels;
@@ -80,6 +81,14 @@ public sealed record class ImagePaint : Paint
 
     /// <inheritdoc/>
     internal override PixelShader<TPixel>? CreatePixelShader<TPixel>(Matrix3x2 toDevice, ColorSpace colorSpace)
+        => CreatePixelShader<TPixel>(toDevice, colorSpace, null);
+
+    /// <summary>
+    /// Returns the shader for a fill into <paramref name="target"/>: when the image shares no memory with the target, an unturned
+    /// mapping reads the image's rows as it needs them instead of converting the whole image first.
+    /// </summary>
+    internal PixelShader<TPixel>? CreatePixelShader<TPixel>(Matrix3x2 toDevice, ColorSpace colorSpace, RasterTarget? target)
+        where TPixel : unmanaged, IPixelType<TPixel>
     {
         if (!TryInverse(toDevice, out Matrix3x2 inverse))
         {
@@ -92,6 +101,6 @@ public sealed record class ImagePaint : Paint
             return new ImageCopyShader<TPixel>(this, inverse);
         }
 
-        return base.CreatePixelShader<TPixel>(toDevice, colorSpace);
+        return new ConvertingShader<TPixel>(ImageShader.Create(this, inverse, target), Dither);
     }
 }

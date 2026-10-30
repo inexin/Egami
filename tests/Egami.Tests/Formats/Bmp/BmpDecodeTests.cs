@@ -138,9 +138,10 @@ public class BmpDecodeTests(ITestOutputHelper output)
         badBits[28] = 7;
         Assert.Throws<CorruptDataException>(() => Raster.Load(badBits));
 
+        // Huffman 1D is 1-bit only.
         byte[] huffman = (byte[])SimpleCorpus.Read("bmp/os2-pal8.bmp").Clone();
         huffman[30] = 3;
-        Assert.Throws<UnsupportedFormatException>(() => Raster.Load(huffman));
+        Assert.Throws<CorruptDataException>(() => Raster.Load(huffman));
 
         byte[] huge = (byte[])data.Clone();
         BitConverter.TryWriteBytes(huge.AsSpan(18), 1_000_000_000);
@@ -154,6 +155,81 @@ public class BmpDecodeTests(ITestOutputHelper output)
         byte[] data = (byte[])SimpleCorpus.Read("bmp/alphabitfields-4444.bmp").Clone();
         BitConverter.TryWriteBytes(data.AsSpan(54), 0x0FF0u);
         Assert.Throws<CorruptDataException>(() => Raster.Load(data));
+    }
+
+    [Theory]
+    [InlineData(true, 64)]
+    [InlineData(false, 64)]
+    [InlineData(true, 40)]
+    public void ReadsOs2Huffman1D(bool endOfLine, int headerSize)
+    {
+        const int width = 37, height = 9;
+        int rowBytes = (width + 7) / 8;
+        byte[] packed = new byte[rowBytes * height];
+        new Random(5).NextBytes(packed);
+        for (int y = 0; y < height; y++)
+        {
+            // Long runs too, and the padding bits clear.
+            packed.AsSpan(y * rowBytes, 2).Fill((byte)(y % 2 == 0 ? 0xFF : 0x00));
+            packed[(y * rowBytes) + rowBytes - 1] &= 0xF8;
+        }
+
+        byte[] coded = Egami.Formats.Tiff.CcittEncoder.Encode(packed, width, height, group4: false, endOfLine, endOfBlock: endOfLine);
+        Rgb8 white = new(250, 240, 230), black = new(5, 10, 20);
+        int offset = 14 + headerSize + 8;
+        byte[] file = new byte[offset + coded.Length];
+        file[0] = (byte)'B';
+        file[1] = (byte)'M';
+        BitConverter.TryWriteBytes(file.AsSpan(2), file.Length);
+        BitConverter.TryWriteBytes(file.AsSpan(10), offset);
+        BitConverter.TryWriteBytes(file.AsSpan(14), headerSize);
+        BitConverter.TryWriteBytes(file.AsSpan(18), width);
+        BitConverter.TryWriteBytes(file.AsSpan(22), height);
+        BitConverter.TryWriteBytes(file.AsSpan(26), (ushort)1);
+        BitConverter.TryWriteBytes(file.AsSpan(28), (ushort)1);
+        BitConverter.TryWriteBytes(file.AsSpan(30), 3);
+        BitConverter.TryWriteBytes(file.AsSpan(34), coded.Length);
+        int palette = 14 + headerSize;
+        (file[palette], file[palette + 1], file[palette + 2]) = (white.B, white.G, white.R);
+        (file[palette + 4], file[palette + 5], file[palette + 6]) = (black.B, black.G, black.R);
+        coded.CopyTo(file, offset);
+
+        using Raster raster = Raster.Load(file, options: new ReaderOptions { Recovery = RecoveryMode.Strict });
+        Assert.Equal(BmpCompression.Huffman1D, ((BmpDetails)raster.Metadata.FormatDetails!).Compression);
+        Assert.Empty(raster.Metadata.Warnings);
+        using Raster<Rgb8> pixels = Raster.Load<Rgb8>(file);
+        for (int y = 0; y < height; y++)
+        {
+            // Rows are stored bottom-up.
+            ReadOnlySpan<byte> bits = packed.AsSpan((height - 1 - y) * rowBytes, rowBytes);
+            for (int x = 0; x < width; x++)
+            {
+                Assert.Equal((bits[x >> 3] & (0x80 >> (x & 7))) != 0 ? black : white, pixels.Row(y)[x]);
+            }
+        }
+    }
+
+    [Fact]
+    public void TruncatedHuffman1DKeepsTheRowsItHas()
+    {
+        const int width = 16, height = 8;
+        byte[] packed = new byte[2 * height];
+        byte[] coded = Egami.Formats.Tiff.CcittEncoder.Encode(packed, width, height, group4: false, endOfLine: true, endOfBlock: false);
+        byte[] file = new byte[14 + 64 + 8 + (coded.Length / 2)];
+        file[0] = (byte)'B';
+        file[1] = (byte)'M';
+        BitConverter.TryWriteBytes(file.AsSpan(10), 14 + 64 + 8);
+        BitConverter.TryWriteBytes(file.AsSpan(14), 64);
+        BitConverter.TryWriteBytes(file.AsSpan(18), width);
+        BitConverter.TryWriteBytes(file.AsSpan(22), height);
+        BitConverter.TryWriteBytes(file.AsSpan(26), (ushort)1);
+        BitConverter.TryWriteBytes(file.AsSpan(28), (ushort)1);
+        BitConverter.TryWriteBytes(file.AsSpan(30), 3);
+        file[78] = file[79] = file[80] = 255;
+        coded.AsSpan(0, coded.Length / 2).CopyTo(file.AsSpan(86));
+        using Raster raster = Raster.Load(file);
+        Assert.Contains(raster.Metadata.Warnings, w => w.Id == "Bmp.RowsMissing");
+        Assert.Throws<CorruptDataException>(() => Raster.Load(file, options: new ReaderOptions { Recovery = RecoveryMode.Strict }));
     }
 
     private static int Largest(byte[] expected, byte[] actual)

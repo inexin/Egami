@@ -129,6 +129,13 @@ internal abstract class RasterTarget(Rect area) : IDisposable
     /// <summary>Gets the size of one pixel, which decides when a fill bands across cores.</summary>
     internal abstract int BytesPerPixel { get; }
 
+    /// <summary>
+    /// Returns whether <paramref name="plane"/> shares no memory with these pixels, so a shader may read it while the fill writes
+    /// here. <see langword="false"/> when that is not known.
+    /// </summary>
+    internal virtual bool Disjoint<TOther>(PixelPlane<TOther> plane)
+        where TOther : unmanaged, IPixelType<TOther> => false;
+
     /// <summary>Returns the sink that blends a paint into these pixels, or <see langword="null"/> when the paint draws nothing.</summary>
     internal abstract ISpanSink? CreateSink(Paint paint, Matrix3x2 matrix, ColorSpace colorSpace, ClipMask? mask, byte scale);
 
@@ -225,6 +232,8 @@ internal sealed class RasterTarget<TPixel> : RasterTarget
     }
 
     internal override int BytesPerPixel => System.Runtime.CompilerServices.Unsafe.SizeOf<TPixel>();
+
+    internal override bool Disjoint<TOther>(PixelPlane<TOther> plane) => PlaneMemory.Disjoint(_plane, plane);
 
     private static bool EightBit => TPixel.Layout.ChannelType == PixelChannelType.Unorm8;
 
@@ -513,7 +522,8 @@ internal sealed class RasterTarget<TPixel> : RasterTarget
     private ShaderSink<TPixel, TSource>? Shaded<TSource>(Paint paint, Matrix3x2 matrix, ColorSpace colorSpace, ClipMask? mask, byte scale)
         where TSource : unmanaged, IPixelType<TSource>
     {
-        PixelShader<TSource>? shader = paint.CreatePixelShader<TSource>(matrix, colorSpace);
+        // An image paint may read its image in place, row by row, when the image is not these pixels.
+        PixelShader<TSource>? shader = paint is ImagePaint image ? image.CreatePixelShader<TSource>(matrix, colorSpace, this) : paint.CreatePixelShader<TSource>(matrix, colorSpace);
         return shader is null ? null : new ShaderSink<TPixel, TSource>(this, shader, paint, colorSpace, mask, scale);
     }
 
