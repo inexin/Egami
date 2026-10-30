@@ -139,6 +139,7 @@ public class DdsWriterTests
     [InlineData(DdsTextureFormat.Bc3, 36.5)]
     [InlineData(DdsTextureFormat.Bc4, 52)]
     [InlineData(DdsTextureFormat.Bc5, 48)]
+    [InlineData(DdsTextureFormat.Bc7, 38)]
     public void EncodesBlocks(DdsTextureFormat format, double minimumPsnr)
     {
         // BC1's alpha is 1 bit: the photo is opaque for it, so its colour error is what is measured.
@@ -160,6 +161,47 @@ public class DdsWriterTests
         byte[] one = Save(serial, new DdsWriterOptions { Format = format });
         byte[] many = Save(parallel, new DdsWriterOptions { Format = format });
         Assert.Equal(one, many);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void EncodesBc6h(bool negatives)
+    {
+        // HDR waves from 0.001 to about 40 (and their negatives on the left for the signed format), in half floats.
+        using Raster<RgbaF16> hdr = Raster.Create<RgbaF16>(64, 48);
+        for (int y = 0; y < hdr.Height; y++)
+        {
+            Span<RgbaF16> row = hdr.Row(y);
+            for (int x = 0; x < row.Length; x++)
+            {
+                float v = MathF.Exp((float)(Math.Sin(x * 0.2) * Math.Cos(y * 0.15) * 5)) * 0.3f;
+                float sign = negatives && x < 16 ? -1 : 1;
+                row[x] = new RgbaF16((Half)(sign * v), (Half)(v * 0.5f), (Half)(v * 0.25f + 0.001f), Half.One);
+            }
+        }
+
+        DdsTextureFormat format = negatives ? DdsTextureFormat.Bc6hSigned : DdsTextureFormat.Bc6h;
+        foreach (int effort in (int[])[0, 4, 6])
+        {
+            byte[] file = Save(hdr, new DdsWriterOptions { Format = format, MipLevels = 1, Effort = effort });
+            Assert.Equal(negatives ? "BC6H_SF16" : "BC6H_UF16", Details(file).FormatName);
+            using Raster<RgbaF16> back = Raster.Load<RgbaF16>(file, Context);
+            double relative = 0;
+            for (int y = 0; y < hdr.Height; y++)
+            {
+                for (int x = 0; x < hdr.Width; x++)
+                {
+                    RgbaF16 a = hdr.Row(y)[x], b = back.Row(y)[x];
+                    relative += Math.Abs((float)a.R - (float)b.R) / (Math.Abs((float)a.R) + 0.01);
+                    relative += Math.Abs((float)a.G - (float)b.G) / (Math.Abs((float)a.G) + 0.01);
+                    relative += Math.Abs((float)a.B - (float)b.B) / (Math.Abs((float)a.B) + 0.01);
+                }
+            }
+
+            relative /= hdr.Width * hdr.Height * 3;
+            Assert.True(relative < (effort == 0 ? 0.08 : 0.05), $"effort {effort}: mean relative error {relative:F4}");
+        }
     }
 
     [Fact]

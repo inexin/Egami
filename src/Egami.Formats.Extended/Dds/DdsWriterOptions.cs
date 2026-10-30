@@ -77,6 +77,15 @@ public enum DdsTextureFormat
 
     /// <summary>BC5 (ATI2): red and green, for normal maps, 8 bits a pixel.</summary>
     Bc5,
+
+    /// <summary>BC7: RGBA at 8 bits a pixel, with eight modes and partitions; the best quality of the 8-bit block formats. DX10 header.</summary>
+    Bc7,
+
+    /// <summary>BC6H_UF16: unsigned half-float RGB for HDR, 8 bits a pixel; negatives become 0. DX10 header.</summary>
+    Bc6h,
+
+    /// <summary>BC6H_SF16: signed half-float RGB for HDR, 8 bits a pixel. DX10 header.</summary>
+    Bc6hSigned,
 }
 
 /// <summary>Options for writing DDS.</summary>

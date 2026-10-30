@@ -18,7 +18,7 @@ public class DdsEncodeBenchmarks
     private Raster<Rgba8> _image = null!;
     private DdsWriterOptions _options = null!;
 
-    [Params("BC1", "BC3", "BC4", "BC5", "RGBA8")]
+    [Params("BC1", "BC3", "BC4", "BC5", "BC6H", "BC7", "RGBA8")]
     public string Format { get; set; } = "";
 
     [GlobalSetup]
@@ -47,6 +47,8 @@ public class DdsEncodeBenchmarks
             "BC3" => DdsTextureFormat.Bc3,
             "BC4" => DdsTextureFormat.Bc4,
             "BC5" => DdsTextureFormat.Bc5,
+            "BC6H" => DdsTextureFormat.Bc6h,
+            "BC7" => DdsTextureFormat.Bc7,
             _ => DdsTextureFormat.Rgba8,
         };
         _options = new DdsWriterOptions { Format = format, MipLevels = 1 };

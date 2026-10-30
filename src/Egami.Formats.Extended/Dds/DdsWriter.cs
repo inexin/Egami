@@ -147,6 +147,9 @@ internal sealed class DdsWriter : IFormatWriter, IMultiImageWriter
             76 or 77 or 78 => DdsTextureFormat.Bc3,
             79 or 80 => DdsTextureFormat.Bc4,
             82 or 83 => DdsTextureFormat.Bc5,
+            97 or 98 or 99 => DdsTextureFormat.Bc7,
+            94 or 95 => DdsTextureFormat.Bc6h,
+            96 => DdsTextureFormat.Bc6hSigned,
             _ => null,
         };
     }
@@ -259,7 +262,7 @@ internal sealed class DdsWriter : IFormatWriter, IMultiImageWriter
         ParallelOptions parallel = new() { MaxDegreeOfParallelism = Math.Max(1, level.Context.MaxParallelism) };
         Parallel.For(0, blocksHigh, parallel, by =>
         {
-            Span<byte> gathered = stackalloc byte[16 * 4];
+            Span<byte> gathered = stackalloc byte[16 * 8];
             for (int bx = 0; bx < blocksWide; bx++)
             {
                 for (int i = 0; i < 16; i++)
@@ -283,6 +286,13 @@ internal sealed class DdsWriter : IFormatWriter, IMultiImageWriter
                         break;
                     case DdsTextureFormat.Bc4:
                         Bc1To5Encoder.EncodeUnorm(gathered, 1, block, effort);
+                        break;
+                    case DdsTextureFormat.Bc7:
+                        Bc7Encoder.Encode(gathered, block, effort);
+                        break;
+                    case DdsTextureFormat.Bc6h:
+                    case DdsTextureFormat.Bc6hSigned:
+                        Bc6hEncoder.Encode(MemoryMarshal.Cast<byte, ushort>(gathered), block, target.Format == DdsTextureFormat.Bc6hSigned, effort);
                         break;
                     default:
                         Bc1To5Encoder.EncodeUnorm(gathered, 3, block, effort);
@@ -528,6 +538,9 @@ internal sealed class DdsWriter : IFormatWriter, IMultiImageWriter
                 DdsTextureFormat.Bc3 => new(format, 77, 78, DdsNatural.Rgba8, 0, 16, new Legacy(FourCC, 0x35545844, 0, 0, 0, 0, 0)),
                 DdsTextureFormat.Bc4 => new(format, 80, 0, DdsNatural.Gray8, 0, 8, new Legacy(FourCC, 0x31495441, 0, 0, 0, 0, 0)),
                 DdsTextureFormat.Bc5 => new(format, 83, 0, DdsNatural.Rgb8, 0, 16, new Legacy(FourCC, 0x32495441, 0, 0, 0, 0, 0)),
+                DdsTextureFormat.Bc7 => new(format, 98, 99, DdsNatural.Rgba8, 0, 16, null),
+                DdsTextureFormat.Bc6h => new(format, 95, 0, DdsNatural.RgbaF16, 0, 16, null),
+                DdsTextureFormat.Bc6hSigned => new(format, 96, 0, DdsNatural.RgbaF16, 0, 16, null),
                 _ => throw new ArgumentOutOfRangeException(nameof(format), format, "The DDS format is not defined."),
             };
         }
