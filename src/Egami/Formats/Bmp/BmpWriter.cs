@@ -188,6 +188,7 @@ internal sealed class BmpWriter : IFormatWriter, IRowFormatWriter
                 WriteRow(raster.Row(_y));
                 if ((_y & 63) == 0)
                 {
+                    SaveReporter.Current?.Rows(raster.Height - _y, raster.Height);
                     yield return _y;
                 }
             }

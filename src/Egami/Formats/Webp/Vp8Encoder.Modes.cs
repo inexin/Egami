@@ -117,6 +117,8 @@ internal sealed partial class Vp8Encoder
                 RecordMacroblock(mbx, mb);
                 SaveBoundary(mbx, mby, mb);
             }
+
+            _options.Report?.Advance(1);
         }
 
         _tokenStart[_mbw * _mbh] = _tokenCount;

@@ -324,4 +324,88 @@ public abstract partial class Raster
         FormatPipeline.SaveAll([.. rasters], buffer, format, options ?? WriterOptions.Default);
         await stream.WriteAsync(buffer.Written, cancellationToken).ConfigureAwait(false);
     }
+
+    /// <summary>
+    /// Writes several rasters to one file as <see cref="SaveAll(IEnumerable{Raster}, Stream, FormatInfo, WriterOptions?)"/> does,
+    /// reporting progress.
+    /// </summary>
+    /// <param name="rasters">The images to write, at least one.</param>
+    /// <param name="stream">Where to write, from its current position. It is left open.</param>
+    /// <param name="format">The format.</param>
+    /// <param name="options">The format's options, or <see langword="null"/> for its defaults.</param>
+    /// <param name="progress">Gets <see cref="SaveProgress"/> reports, or <see langword="null"/>.</param>
+    /// <param name="cancellationToken">Cancels the encode between bands of rows, and inside the codecs that count their own work.</param>
+    /// <exception cref="ArgumentException">No raster was given, or more than one to a format that holds one image.</exception>
+    /// <exception cref="UnsupportedFormatException">The format has no writer.</exception>
+    /// <exception cref="ObjectDisposedException">A raster has been disposed.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="rasters"/>, <paramref name="stream"/> or <paramref name="format"/> is <see langword="null"/>.</exception>
+    /// <exception cref="OperationCanceledException"><paramref name="cancellationToken"/> was canceled.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/GettingStarted.cs" region="save-progress"/>
+    /// </example>
+    public static void SaveAll(IEnumerable<Raster> rasters, Stream stream, FormatInfo format, WriterOptions? options, IProgress<SaveProgress>? progress, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(rasters);
+        ArgumentNullException.ThrowIfNull(stream);
+        ArgumentNullException.ThrowIfNull(format);
+        SaveReporter? reporter = SaveReporter.For(progress, cancellationToken);
+        using (reporter?.Enter(stream) ?? default)
+        {
+            FormatPipeline.SaveAll([.. rasters], stream, format, options ?? WriterOptions.Default);
+        }
+
+        reporter?.Finish();
+    }
+
+    /// <summary>Writes several rasters to one file in the named format, reporting progress. See <see cref="SaveAll(IEnumerable{Raster}, Stream, FormatInfo, WriterOptions?, IProgress{SaveProgress}?, CancellationToken)"/>.</summary>
+    /// <param name="rasters">The images to write, at least one.</param>
+    /// <param name="stream">Where to write, from its current position. It is left open.</param>
+    /// <param name="formatNameOrExtension">The format's name or one of its extensions, ignoring case.</param>
+    /// <param name="options">The format's options, or <see langword="null"/> for its defaults.</param>
+    /// <param name="progress">Gets <see cref="SaveProgress"/> reports, or <see langword="null"/>.</param>
+    /// <param name="cancellationToken">Cancels the encode between bands of rows, and inside the codecs that count their own work.</param>
+    /// <exception cref="ArgumentException">No raster was given, or more than one to a format that holds one image.</exception>
+    /// <exception cref="UnsupportedFormatException">No registered format matches, or it has no writer.</exception>
+    /// <exception cref="ObjectDisposedException">A raster has been disposed.</exception>
+    /// <exception cref="ArgumentNullException">An argument is <see langword="null"/>.</exception>
+    /// <exception cref="OperationCanceledException"><paramref name="cancellationToken"/> was canceled.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/GettingStarted.cs" region="save-progress"/>
+    /// </example>
+    public static void SaveAll(IEnumerable<Raster> rasters, Stream stream, string formatNameOrExtension, WriterOptions? options, IProgress<SaveProgress>? progress, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(rasters);
+        ArgumentNullException.ThrowIfNull(formatNameOrExtension);
+        Raster[] list = [.. rasters];
+        EgamiContext context = list.Length > 0 ? list[0].Context : EgamiContext.Default;
+        SaveAll(list, stream, FormatPipeline.FormatForName(context, formatNameOrExtension), options, progress, cancellationToken);
+    }
+
+    /// <summary>
+    /// Writes several rasters to one file, choosing the format from the file extension, reporting progress. If writing fails or is
+    /// canceled, the partly written file is deleted.
+    /// </summary>
+    /// <param name="rasters">The images to write, at least one.</param>
+    /// <param name="path">The file path.</param>
+    /// <param name="options">The format's options, or <see langword="null"/> for its defaults.</param>
+    /// <param name="progress">Gets <see cref="SaveProgress"/> reports, or <see langword="null"/>.</param>
+    /// <param name="cancellationToken">Cancels the encode between bands of rows, and inside the codecs that count their own work.</param>
+    /// <exception cref="ArgumentException">No raster was given, or more than one to a format that holds one image.</exception>
+    /// <exception cref="UnsupportedFormatException">No registered format uses the extension, or it has no writer.</exception>
+    /// <exception cref="ObjectDisposedException">A raster has been disposed.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="rasters"/> or <paramref name="path"/> is <see langword="null"/>.</exception>
+    /// <exception cref="IOException">The file cannot be written.</exception>
+    /// <exception cref="OperationCanceledException"><paramref name="cancellationToken"/> was canceled.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/GettingStarted.cs" region="save-progress"/>
+    /// </example>
+    public static void SaveAll(IEnumerable<Raster> rasters, string path, WriterOptions? options, IProgress<SaveProgress>? progress, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(rasters);
+        Raster[] list = [.. rasters];
+        EgamiContext context = list.Length > 0 ? list[0].Context : EgamiContext.Default;
+        FormatInfo format = FormatPipeline.FormatForPath(context, path);
+        options = FormatPipeline.OptionsForPath(format, path, options);
+        WriteFile(path, stream => SaveAll(list, stream, format, options, progress, cancellationToken));
+    }
 }

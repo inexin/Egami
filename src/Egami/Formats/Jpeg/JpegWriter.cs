@@ -741,11 +741,14 @@ internal sealed class JpegWriter : IFormatWriter, IRowFormatWriter
         internal IEnumerable<int> WriteScan(JpegBitWriter writer)
         {
             using RowProducer rows = new(this, keepAll: _keepAll);
+            SaveReporter? reporter = SaveReporter.Current;
             if (_options.Progressive)
             {
+                // The rows are gathered, then the scans coded from them: count the gathering as the first half.
                 for (int my = 0; my < _mcusY; my++)
                 {
                     rows.Get(my);
+                    reporter?.Rows(my + 1, 2L * _mcusY);
                     yield return my;
                 }
 
@@ -763,6 +766,7 @@ internal sealed class JpegWriter : IFormatWriter, IRowFormatWriter
             {
                 CodeRow(writer, rows.Get(my));
                 rows.Release(my);
+                reporter?.Rows(my + 1, _mcusY);
                 yield return my;
             }
         }

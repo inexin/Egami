@@ -257,6 +257,7 @@ internal sealed class PngWriter : IFormatWriter, IRowFormatWriter
             for (int i = 0; i < raster.FrameCount; i++)
             {
                 WriteFrame(raster.Frames[i]);
+                SaveReporter.Current?.Frames(i + 1, raster.FrameCount);
                 yield return i;
             }
         }

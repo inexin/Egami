@@ -6,6 +6,9 @@ namespace Egami.Formats.Webp;
 /// <summary>The settings of one VP8 encode.</summary>
 internal sealed record Vp8EncoderOptions
 {
+    /// <summary>Gets the save to count a still key frame's macroblock rows to, or <see langword="null"/>.</summary>
+    internal SaveReporter? Report { get; init; }
+
     /// <summary>Gets the quality, 0 to 100, on libwebp's curve.</summary>
     internal int Quality { get; init; } = 75;
 
@@ -190,6 +193,7 @@ internal sealed partial class Vp8Encoder
 
         SetSegmentParams();
         SetSegmentProbabilities();
+        options.Report?.Plan(_mbh);
         try
         {
             return EncodeFrame();

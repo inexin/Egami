@@ -11,6 +11,9 @@ internal sealed record JxlLossySettings
 
     internal int Parallelism { get; init; } = Environment.ProcessorCount;
 
+    /// <summary>Gets the save to count the encode's stages to, or <see langword="null"/>.</summary>
+    internal SaveReporter? Report { get; init; }
+
     /// <summary>Gets the ISO of the photon noise the decoder adds, or 0 for none.</summary>
     internal float PhotonNoiseIso { get; init; }
 
@@ -515,10 +518,15 @@ internal sealed partial class JxlVarDctEncoder
             settings = settings with { Distance = (original * 0.25f) + 0.25f };
         }
 
+        // A save's progress counts the stages, each about as long as the next.
+        SaveReporter? report = settings.Report;
+        report?.Plan(8);
         JxlVarDctEncoder e = new(image, settings, intensityTarget, upsampling, original, header.Alpha);
         e.PrepareExtraChannels(image, header);
         e.ChooseParameters();
+        report?.Advance(1);
         e.ComputeCoefficients();
+        report?.Advance(1);
         e.QuantizeLf();
         if (settings.Progressive)
         {
@@ -529,11 +537,17 @@ internal sealed partial class JxlVarDctEncoder
             e._passCoeffs = [e._coeffs];
         }
 
+        report?.Advance(1);
         e.ComputeOrders();
+        report?.Advance(1);
         e.FindBlockEntropyModel();
+        report?.Advance(1);
         e.ChooseEpfSharpness(header);
+        report?.Advance(1);
 
-        return e.Codestream(header);
+        byte[] codestream = e.Codestream(header);
+        report?.Advance(2);
+        return codestream;
     }
 
     /// <summary>Writes the codestream with the frame as it stands: image header, frame header, TOC and sections.</summary>

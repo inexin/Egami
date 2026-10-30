@@ -168,6 +168,7 @@ public abstract class RowEncoder<TPixel> : IDisposable
             WriteRow(raster.Row(y));
             if ((y & 63) == 63)
             {
+                SaveReporter.Current?.Rows(y + 1, raster.Height);
                 yield return y;
             }
         }

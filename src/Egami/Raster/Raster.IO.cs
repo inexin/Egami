@@ -444,6 +444,63 @@ public abstract partial class Raster
         FormatPipeline.Save(stream, format, options ?? WriterOptions.Default, WriteWith);
     }
 
+    /// <summary>
+    /// Encodes the raster in <paramref name="format"/> as <see cref="Save(Stream, FormatInfo, WriterOptions?)"/> does, reporting how
+    /// far it has come and stopping when <paramref name="cancellationToken"/> is canceled.
+    /// </summary>
+    /// <param name="stream">Where to write, from its current position. It is left open.</param>
+    /// <param name="format">The format.</param>
+    /// <param name="options">The format's options, or <see langword="null"/> for its defaults.</param>
+    /// <param name="progress">Gets <see cref="SaveProgress"/> reports, or <see langword="null"/>.</param>
+    /// <param name="cancellationToken">Cancels the encode between bands of rows, and inside the codecs that count their own work.</param>
+    /// <exception cref="UnsupportedFormatException">The format has no writer.</exception>
+    /// <exception cref="ObjectDisposedException">The raster has been disposed.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="stream"/> is <see langword="null"/>.</exception>
+    /// <exception cref="OperationCanceledException"><paramref name="cancellationToken"/> was canceled.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/GettingStarted.cs" region="save-progress"/>
+    /// </example>
+    public void Save(Stream stream, FormatInfo format, WriterOptions? options, IProgress<SaveProgress>? progress, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(stream);
+        ArgumentNullException.ThrowIfNull(format);
+        SaveReporter? reporter = SaveReporter.For(progress, cancellationToken);
+        if (reporter is null)
+        {
+            Save(stream, format, options);
+            return;
+        }
+
+        using (reporter.Enter(stream))
+        {
+            Save(stream, format, options);
+        }
+
+        reporter.Finish();
+    }
+
+    /// <summary>
+    /// Encodes the raster in the named format, reporting progress. See
+    /// <see cref="Save(Stream, FormatInfo, WriterOptions?, IProgress{SaveProgress}?, CancellationToken)"/>.
+    /// </summary>
+    /// <param name="stream">Where to write, from its current position. It is left open.</param>
+    /// <param name="formatNameOrExtension">The format's name or one of its extensions, ignoring case.</param>
+    /// <param name="options">The format's options, or <see langword="null"/> for its defaults.</param>
+    /// <param name="progress">Gets <see cref="SaveProgress"/> reports, or <see langword="null"/>.</param>
+    /// <param name="cancellationToken">Cancels the encode between bands of rows, and inside the codecs that count their own work.</param>
+    /// <exception cref="UnsupportedFormatException">No registered format matches, or it has no writer.</exception>
+    /// <exception cref="ObjectDisposedException">The raster has been disposed.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="stream"/> is <see langword="null"/>.</exception>
+    /// <exception cref="OperationCanceledException"><paramref name="cancellationToken"/> was canceled.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/GettingStarted.cs" region="save-progress"/>
+    /// </example>
+    public void Save(Stream stream, string formatNameOrExtension, WriterOptions? options, IProgress<SaveProgress>? progress, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(formatNameOrExtension);
+        Save(stream, FormatPipeline.FormatForName(Context, formatNameOrExtension), options, progress, cancellationToken);
+    }
+
     /// <summary>Encodes the raster in the registered format with this name or file extension, such as "PNG" or ".png".</summary>
     /// <param name="stream">Where to write, from its current position. It is left open.</param>
     /// <param name="formatNameOrExtension">The format's name or one of its extensions, ignoring case.</param>
@@ -482,6 +539,29 @@ public abstract partial class Raster
     }
 
     /// <summary>
+    /// Encodes the raster to a file as <see cref="Save(string, WriterOptions?)"/> does, reporting progress. If the save fails or is
+    /// canceled, the partly written file is deleted.
+    /// </summary>
+    /// <param name="path">The file path.</param>
+    /// <param name="options">The format's options, or <see langword="null"/> for its defaults.</param>
+    /// <param name="progress">Gets <see cref="SaveProgress"/> reports, or <see langword="null"/>.</param>
+    /// <param name="cancellationToken">Cancels the encode between bands of rows, and inside the codecs that count their own work.</param>
+    /// <exception cref="UnsupportedFormatException">No registered format uses the extension, or it has no writer.</exception>
+    /// <exception cref="ObjectDisposedException">The raster has been disposed.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="path"/> is <see langword="null"/>.</exception>
+    /// <exception cref="IOException">The file cannot be written.</exception>
+    /// <exception cref="OperationCanceledException"><paramref name="cancellationToken"/> was canceled.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/GettingStarted.cs" region="save-progress"/>
+    /// </example>
+    public void Save(string path, WriterOptions? options, IProgress<SaveProgress>? progress, CancellationToken cancellationToken = default)
+    {
+        FormatInfo format = FormatPipeline.FormatForPath(Context, path);
+        options = FormatPipeline.OptionsForPath(format, path, options);
+        WriteFile(path, stream => Save(stream, format, options, progress, cancellationToken));
+    }
+
+    /// <summary>
     /// Encodes the raster into a pooled buffer, then writes it to <paramref name="stream"/> asynchronously.
     /// See <see cref="Save(Stream, FormatInfo, WriterOptions?)"/>.
     /// </summary>
@@ -502,7 +582,90 @@ public abstract partial class Raster
         ArgumentNullException.ThrowIfNull(stream);
         ArgumentNullException.ThrowIfNull(format);
         cancellationToken.ThrowIfCancellationRequested();
-        await FormatPipeline.SaveAsync(this, stream, format, options ?? WriterOptions.Default, cancellationToken).ConfigureAwait(false);
+        await FormatPipeline.SaveAsync(this, stream, format, options ?? WriterOptions.Default, null, cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Encodes the raster and writes it to <paramref name="stream"/> asynchronously, reporting progress. See
+    /// <see cref="SaveAsync(Stream, FormatInfo, WriterOptions?, CancellationToken)"/>.
+    /// </summary>
+    /// <param name="stream">Where to write. It is left open.</param>
+    /// <param name="format">The format.</param>
+    /// <param name="options">The format's options, or <see langword="null"/> for its defaults.</param>
+    /// <param name="progress">Gets <see cref="SaveProgress"/> reports, or <see langword="null"/>.</param>
+    /// <param name="cancellationToken">Cancels the encode between bands of rows, inside the codecs that count their own work, and while writing.</param>
+    /// <returns>A task that completes when the data is written.</returns>
+    /// <exception cref="UnsupportedFormatException">No registered format matches, or it has no writer.</exception>
+    /// <exception cref="ObjectDisposedException">The raster has been disposed.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="stream"/> is <see langword="null"/>.</exception>
+    /// <exception cref="OperationCanceledException"><paramref name="cancellationToken"/> was canceled.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/GettingStarted.cs" region="save-progress"/>
+    /// </example>
+    public async Task SaveAsync(Stream stream, FormatInfo format, WriterOptions? options, IProgress<SaveProgress>? progress, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(stream);
+        ArgumentNullException.ThrowIfNull(format);
+        cancellationToken.ThrowIfCancellationRequested();
+        SaveReporter? reporter = SaveReporter.For(progress, cancellationToken);
+        await FormatPipeline.SaveAsync(this, stream, format, options ?? WriterOptions.Default, reporter, cancellationToken).ConfigureAwait(false);
+        reporter?.Finish();
+    }
+
+    /// <summary>Encodes the raster in the named format and writes it asynchronously, reporting progress.</summary>
+    /// <param name="stream">Where to write. It is left open.</param>
+    /// <param name="formatNameOrExtension">The format's name or one of its extensions, ignoring case.</param>
+    /// <param name="options">The format's options, or <see langword="null"/> for its defaults.</param>
+    /// <param name="progress">Gets <see cref="SaveProgress"/> reports, or <see langword="null"/>.</param>
+    /// <param name="cancellationToken">Cancels the encode between bands of rows, inside the codecs that count their own work, and while writing.</param>
+    /// <returns>A task that completes when the data is written.</returns>
+    /// <exception cref="UnsupportedFormatException">No registered format matches, or it has no writer.</exception>
+    /// <exception cref="ObjectDisposedException">The raster has been disposed.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="stream"/> is <see langword="null"/>.</exception>
+    /// <exception cref="OperationCanceledException"><paramref name="cancellationToken"/> was canceled.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/GettingStarted.cs" region="save-progress"/>
+    /// </example>
+    public Task SaveAsync(Stream stream, string formatNameOrExtension, WriterOptions? options, IProgress<SaveProgress>? progress, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(formatNameOrExtension);
+        return SaveAsync(stream, FormatPipeline.FormatForName(Context, formatNameOrExtension), options, progress, cancellationToken);
+    }
+
+    /// <summary>
+    /// Encodes the raster to a file asynchronously, reporting progress. If the save fails or is canceled, the partly written file
+    /// is deleted.
+    /// </summary>
+    /// <param name="path">The file path.</param>
+    /// <param name="options">The format's options, or <see langword="null"/> for its defaults.</param>
+    /// <param name="progress">Gets <see cref="SaveProgress"/> reports, or <see langword="null"/>.</param>
+    /// <param name="cancellationToken">Cancels the encode between bands of rows, inside the codecs that count their own work, and while writing.</param>
+    /// <returns>A task that completes when the file is written.</returns>
+    /// <exception cref="UnsupportedFormatException">No registered format matches, or it has no writer.</exception>
+    /// <exception cref="ObjectDisposedException">The raster has been disposed.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="path"/> is <see langword="null"/>.</exception>
+    /// <exception cref="IOException">The file cannot be written.</exception>
+    /// <exception cref="OperationCanceledException"><paramref name="cancellationToken"/> was canceled.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/GettingStarted.cs" region="save-progress"/>
+    /// </example>
+    public async Task SaveAsync(string path, WriterOptions? options, IProgress<SaveProgress>? progress, CancellationToken cancellationToken = default)
+    {
+        FormatInfo format = FormatPipeline.FormatForPath(Context, path);
+        options = FormatPipeline.OptionsForPath(format, path, options);
+        FileStream stream = new(path, FileMode.Create, FileAccess.Write, FileShare.None, 4096, FileOptions.Asynchronous);
+        try
+        {
+            await using (stream.ConfigureAwait(false))
+            {
+                await SaveAsync(stream, format, options, progress, cancellationToken).ConfigureAwait(false);
+            }
+        }
+        catch
+        {
+            File.Delete(path);
+            throw;
+        }
     }
 
     /// <summary>Encodes the raster in the named format and writes it asynchronously.</summary>

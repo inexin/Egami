@@ -40,12 +40,19 @@ internal sealed class JxlWriter : IFormatWriter, IRowFormatWriter
             }
 
             SaveLosses.Report(start, "JPEG XL", SaveKeeps.Alpha | SaveKeeps.Wide | SaveKeeps.FloatingPoint | SaveKeeps.Cmyk | SaveKeeps.Exif | SaveKeeps.Xmp | SaveKeeps.Icc | SaveKeeps.GainMap);
+            if (!chunked)
+            {
+                // The rows are only gathered; the encode at the end counts its own stages.
+                SaveReporter.Current?.Claim();
+            }
+
             return chunked ? new ChunkedLossyEncoder<TPixel>(output, start, jxl, settings) : new LossyEncoder<TPixel>(output, start, jxl);
         }
 
         start.Refuse("JPEG XL", "Lossless encoding", "Save from a whole raster.");
         SaveKeeps keeps = SaveKeeps.Alpha | SaveKeeps.Wide | SaveKeeps.FloatingPoint | SaveKeeps.Exif | SaveKeeps.Xmp | SaveKeeps.Icc | SaveKeeps.GainMap;
         SaveLosses.Report(start, "JPEG XL", keeps);
+        SaveReporter.Current?.Claim();
         return new Encoder<TPixel>(output, start, jxl);
     }
 
@@ -411,7 +418,7 @@ internal sealed class JxlWriter : IFormatWriter, IRowFormatWriter
                 HasBlack = image.Black is not null,
                 IntensityTarget = _rows.IntensityTarget,
             };
-            JxlLossySettings settings = LossySettings(options, start.Context.MaxParallelism);
+            JxlLossySettings settings = LossySettings(options, start.Context.MaxParallelism) with { Report = SaveReporter.Current };
             byte[] codestream = JxlVarDctEncoder.Encode(image, header, settings, _rows.IntensityTarget);
             byte[]? exif = strip || metadata.Exif is null ? null : metadata.Exif.ToBytes().ToArray();
             byte[]? xmp = strip || metadata.Xmp.IsEmpty ? null : metadata.Xmp.ToArray();

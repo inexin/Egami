@@ -74,6 +74,8 @@ such as `Blur` or `Rotate`, throws `NotSupportedException` before anything is wr
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Streaming.cs#transcode-async)]
 
+[!code-csharp[](../../../tests/Egami.DocSamples/Streaming.cs#transcode-progress)]
+
 ## Pixel memory
 
 Pixel memory never lives on the garbage-collected heap as large arrays. `PooledPixelMemorySource.Shared` hands out pooled arrays

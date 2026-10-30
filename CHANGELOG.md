@@ -40,6 +40,13 @@ Video Build Plan task 31: HEVC decode speed. No API changes.
 
 ## Egami, unreleased
 
+- Progress on long saves. All additive. `SaveProgress`, and overloads of `Save`, `SaveAsync`, `SaveAll`, `Transcode` and
+  `TranscodeAsync` that take an `IProgress<SaveProgress>` and a `CancellationToken`, shaped like Egami.Video's
+  `MediaProgress`: a report as the save starts, at most one every 250 ms, and a final one. Row writers (PNG, JPEG, BMP, TGA,
+  TIFF, QOI, Netpbm, Radiance) count rows, GIF and APNG count frames and multi-page TIFF pages; AVIF counts AV1 superblock rows, lossy JPEG XL its
+  stages and lossy WebP its macroblock rows. Lossless JPEG XL and WebP and the other formats report only start and end. The
+  token now also stops a synchronous save, between bands and inside those codecs, and a canceled file save deletes the file.
+  A save without a handler or token runs as before.
 - 8-bit blends through `Compositor` (the Porter–Duff operators and the integer blend modes, with or without coverage) run two
   to three times faster with the same bits: their vector lanes now inline into the kernels, and a solid color loads as one
   splat. A 512-pixel solid source-over row through coverage takes 0.78 µs instead of 2.35 µs; a 10-pixel row 54 ns instead of

@@ -177,6 +177,7 @@ internal sealed class GifWriter : IFormatWriter, IRowFormatWriter
             for (int i = 0; i < frames; i++)
             {
                 Step(i + 1 < frames ? Next(i + 1) : null);
+                SaveReporter.Current?.Frames(i + 1, frames);
                 yield return i;
             }
         }

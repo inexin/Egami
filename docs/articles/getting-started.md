@@ -56,6 +56,13 @@ collection. Methods that return a new raster say so in their name: `Copy`, `As` 
 
 [!code-csharp[](../../tests/Egami.DocSamples/GettingStarted.cs#async)]
 
+`Save`, `SaveAsync`, `SaveAll` and `Transcode` also take an `IProgress<SaveProgress>` and a `CancellationToken`, in the same
+shape as Egami.Video's `MediaProgress`: a report as the save starts, at most one every 250 ms, then a final one with
+`IsFinal` set and a `Fraction` of 1. Row-by-row formats count the rows they have written; AVIF, lossy JPEG XL and lossy WebP
+count their own work; the rest report only as they start and end.
+
+[!code-csharp[](../../tests/Egami.DocSamples/GettingStarted.cs#save-progress)]
+
 ## Choosing a format
 
 [!code-csharp[](../../tests/Egami.DocSamples/GettingStarted.cs#choosing-a-format)]

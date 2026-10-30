@@ -42,9 +42,13 @@ internal sealed class TiffWriter : IFormatWriter, IRowFormatWriter, IMultiImageW
 
         bool big = TiffPlan.Big(options, pixels);
         using TiffOutput file = new(output, TiffPlan.BigEndianFor(rasters[0].Metadata, options), big);
+        SaveReporter? reporter = SaveReporter.Current;
         for (int i = 0; i < rasters.Count; i++)
         {
+            // A save's progress: each page's rows fill its share.
+            reporter?.Part((double)i / rasters.Count, (double)(i + 1) / rasters.Count);
             rasters[i].Accept(new PageVisitor(file, options, i, rasters.Count));
+            reporter?.Frames(i + 1, rasters.Count);
         }
 
         file.Finish();
