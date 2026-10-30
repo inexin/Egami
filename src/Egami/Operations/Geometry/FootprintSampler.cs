@@ -2,6 +2,7 @@ using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
+using System.Runtime.Intrinsics.X86;
 
 using Egami.Operations.Resampling;
 using Egami.Pixels;
@@ -456,9 +457,8 @@ internal readonly ref struct FootprintSampler<TPixel>
                 Vector128<byte> four = contiguous
                     ? Vector128.LoadUnsafe(ref origin, (nuint)(((long)(y0 + j) * _width) + x0) * 4)
                     : Vector128.LoadUnsafe(ref MemoryMarshal.GetReference(MemoryMarshal.AsBytes(Row(y0 + j).Slice(x0, 4))));
-                Vector128<ushort> low = Vector128.WidenLower(four), high = Vector128.WidenUpper(four);
-                Vector256<float> p01 = Vector256.ConvertToSingle(Vector256.Create(Vector128.WidenLower(low), Vector128.WidenUpper(low)).AsInt32());
-                Vector256<float> p23 = Vector256.ConvertToSingle(Vector256.Create(Vector128.WidenLower(high), Vector128.WidenUpper(high)).AsInt32());
+                Vector256<float> p01 = Vector256.ConvertToSingle(Widen8(four));
+                Vector256<float> p23 = Vector256.ConvertToSingle(Widen8(Vector128.Shuffle(four.AsUInt64(), Vector128.Create(1ul, 1ul)).AsByte()));
                 if (!premultiplied)
                 {
                     // Times (a, a, a, 255): color premultiplied, alpha kept, all in units of 255².
@@ -478,8 +478,7 @@ internal readonly ref struct FootprintSampler<TPixel>
                 Vector256<float> line = Vector256<float>.Zero;
                 for (int i = 0; i < wx.Length; i += 2)
                 {
-                    Vector128<ushort> wide = Vector128.WidenLower(Vector128.CreateScalarUnsafe(Unsafe.ReadUnaligned<ulong>(ref Unsafe.Add(ref start, i * 4))).AsByte());
-                    Vector256<float> p = Vector256.ConvertToSingle(Vector256.Create(Vector128.WidenLower(wide), Vector128.WidenUpper(wide)).AsInt32());
+                    Vector256<float> p = Vector256.ConvertToSingle(Widen8(Vector128.CreateScalarUnsafe(Unsafe.ReadUnaligned<ulong>(ref Unsafe.Add(ref start, i * 4))).AsByte()));
                     if (!premultiplied)
                     {
                         p *= Vector256.ConditionalSelect(isAlpha, full, Vector256.Shuffle(p, alphaLanes));
@@ -588,7 +587,7 @@ internal readonly ref struct FootprintSampler<TPixel>
         if (RowConverter<TPixel>.Premul8)
         {
             Vector128<byte> raw = Vector128.CreateScalarUnsafe(Unsafe.As<TPixel, uint>(ref Unsafe.AsRef(in pixel))).AsByte();
-            return (Vector128.ConvertToSingle(Vector128.WidenLower(Vector128.WidenLower(raw)).AsInt32()) * (1f / 255f)).AsVector4();
+            return (Vector128.ConvertToSingle(Widen4(raw)) * (1f / 255f)).AsVector4();
         }
 
         if (RowConverter<TPixel>.PremulFloat)
@@ -607,8 +606,7 @@ internal readonly ref struct FootprintSampler<TPixel>
         if (RowConverter<TPixel>.FourByte)
         {
             Vector128<byte> bytes = Vector128.CreateScalarUnsafe(Unsafe.As<TPixel, uint>(ref Unsafe.AsRef(in pixel))).AsByte();
-            Vector128<uint> wide = Vector128.WidenLower(Vector128.WidenLower(bytes));
-            p = (Vector128.ConvertToSingle(wide.AsInt32()) * (1f / 255f)).AsVector4();
+            p = (Vector128.ConvertToSingle(Widen4(bytes)) * (1f / 255f)).AsVector4();
         }
         else
         {
@@ -706,5 +704,23 @@ internal readonly ref struct FootprintSampler<TPixel>
     private ReadOnlySpan<TPixel> Row(int y)
     {
         return _all.IsEmpty ? _plane.Row(y) : _all.Slice(y * _width, _width);
+    }
+
+    /// <summary>The low four bytes as 32-bit lanes, in one instruction where SSE4.1 has it.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static Vector128<int> Widen4(Vector128<byte> bytes) =>
+        Sse41.IsSupported ? Sse41.ConvertToVector128Int32(bytes) : Vector128.WidenLower(Vector128.WidenLower(bytes)).AsInt32();
+
+    /// <summary>The low eight bytes as 32-bit lanes, in one instruction where AVX2 has it.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static Vector256<int> Widen8(Vector128<byte> bytes)
+    {
+        if (Avx2.IsSupported)
+        {
+            return Avx2.ConvertToVector256Int32(bytes);
+        }
+
+        Vector128<ushort> wide = Vector128.WidenLower(bytes);
+        return Vector256.Create(Vector128.WidenLower(wide), Vector128.WidenUpper(wide)).AsInt32();
     }
 }
