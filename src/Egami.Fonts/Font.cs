@@ -395,10 +395,22 @@ public readonly record struct Font
         List<ShapedLine> lines = TextItemizer.ShapeLines(text, this, o);
         bool vertical = o.Direction == TextDirection.TopToBottom;
         float lineHeight = LineHeight;
-        List<ushort> glyphs = new(text.Length);
-        List<Vector2> positions = new(text.Length);
-        List<int>? clusters = source is null ? null : new(text.Length);
-        List<float> advances = new(text.Length);
+
+        // The run's arrays are filled in place: the lines' glyphs counted first.
+        int total = 0;
+        foreach (ShapedLine line in lines)
+        {
+            foreach (ShapedRun run in line.Runs)
+            {
+                total += run.Glyphs.Positions.Length;
+            }
+        }
+
+        ushort[] glyphs = new ushort[total];
+        Vector2[] positions = new Vector2[total];
+        int[]? clusters = source is null ? null : new int[total];
+        float[] advances = new float[total];
+        int n = 0;
         Script? script = null;
         bool oneScript = true;
         for (int l = 0; l < lines.Count; l++)
@@ -409,19 +421,23 @@ public readonly record struct Font
                 oneScript &= script is null || script == run.Script;
                 script ??= run.Script;
                 ReadOnlySpan<GlyphPosition> p = run.Glyphs.Positions;
-                for (int i = 0; i < p.Length; i++)
+                for (int i = 0; i < p.Length; i++, n++)
                 {
-                    glyphs.Add(run.Glyphs.GlyphIds[i]);
-                    positions.Add(new Vector2(x + p[i].XOffset, y - p[i].YOffset));
-                    clusters?.Add(run.Glyphs.Clusters[i]);
-                    advances.Add(p[i].XAdvance);
+                    glyphs[n] = run.Glyphs.GlyphIds[i];
+                    positions[n] = new Vector2(x + p[i].XOffset, y - p[i].YOffset);
+                    if (clusters is not null)
+                    {
+                        clusters[n] = run.Glyphs.Clusters[i];
+                    }
+
+                    advances[n] = p[i].XAdvance;
                     x += p[i].XAdvance;
                     y -= p[i].YAdvance;
                 }
             }
         }
 
-        return new GlyphRun(this, [.. glyphs], [.. positions], source, clusters is null ? null : [.. clusters], null, [.. advances])
+        return new GlyphRun(this, glyphs, positions, source, clusters, null, advances)
         {
             BidiLevel = lines.Count == 0 ? 0 : lines[0].ParagraphLevel,
             Script = oneScript && script is Script s ? s : Script.Common,

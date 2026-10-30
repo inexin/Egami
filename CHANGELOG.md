@@ -80,6 +80,14 @@ Video Build Plan task 31: HEVC decode speed. No API changes.
   scaled `DrawImage` of a 640 × 480 photo allocates 6 KB instead of 4.9 MB, and drawing a 64 × 64 part of it takes 0.7 ms
   instead of 2.6 ms.
 
+## Egami.Fonts, unreleased
+
+- Shaping text for the first time takes about 30 % less: each glyph's GDEF properties are looked up in the class tables once
+  per face and kept (the tables are searched for every glyph before, and again after each substitution), code points 0 to 255
+  map through a 256-entry table read once from the character map, and `Font.Shape` fills the run's arrays in place instead of
+  growing lists and copying them. The glyphs and positions are the same. Egami.SystemDrawing's `MeasureString` of a line it has
+  not measured before takes about 8.3 µs instead of 12 µs on a slow cloud machine.
+
 ## Egami.SystemDrawing, unreleased
 
 - `Graphics.MeasureString` takes about 0.7 µs instead of 7.1 µs for a 43-character line it has measured before, and allocates
