@@ -157,7 +157,8 @@ internal static class Vp8Costs
             }
             else if (v >= 11)
             {
-                (ReadOnlySpan<byte> cat, int start) = v < 19 ? (Vp8Decoder.Cat3, 11) : v < 35 ? (Vp8Decoder.Cat4, 19) : v < 67 ? (Vp8Decoder.Cat5, 35) : (Vp8Decoder.Cat6, 67);
+                ReadOnlySpan<byte> cat = v < 19 ? Vp8Decoder.Cat3 : v < 35 ? Vp8Decoder.Cat4 : v < 67 ? Vp8Decoder.Cat5 : Vp8Decoder.Cat6;
+                int start = v < 19 ? 11 : v < 35 ? 19 : v < 67 ? 35 : 67;
                 int extra = v - start;
                 for (int i = 0; i < cat.Length; i++)
                 {

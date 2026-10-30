@@ -494,7 +494,7 @@ internal static partial class Av1LoopFilter
             if (Av1Samples.IsByte<T>())
             {
                 Vector128<byte> bytes = Vector128.CreateScalarUnsafe(Unsafe.ReadUnaligned<uint>(ref Unsafe.As<T, byte>(ref at))).AsByte();
-                return Vector128.WidenLower(Vector128.WidenLower(bytes)).AsInt32();
+                return Sse41.IsSupported ? Sse41.ConvertToVector128Int32(bytes) : Vector128.WidenLower(Vector128.WidenLower(bytes)).AsInt32();
             }
 
             return Vector128.WidenLower(Vector128.CreateScalarUnsafe(Unsafe.ReadUnaligned<ulong>(ref Unsafe.As<T, byte>(ref at))).AsUInt16()).AsInt32();
@@ -561,7 +561,7 @@ internal static partial class Av1LoopFilter
             to[3] = Widen(Sse2.ShiftRightLogical128BitLane(group, 12));
         }
 
-        static Vector128<int> Widen(Vector128<byte> b) => Vector128.WidenLower(Vector128.WidenLower(b)).AsInt32();
+        static Vector128<int> Widen(Vector128<byte> b) => Sse41.IsSupported ? Sse41.ConvertToVector128Int32(b) : Vector128.WidenLower(Vector128.WidenLower(b)).AsInt32();
     }
 
     /// <summary>Stores the columns <see cref="LoadColumns"/> loads, back into their four rows.</summary>

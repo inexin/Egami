@@ -1,5 +1,6 @@
 using System.Runtime.CompilerServices;
 using System.Runtime.Intrinsics;
+using System.Runtime.Intrinsics.X86;
 
 namespace Egami.Operations.Compose;
 
@@ -177,7 +178,7 @@ internal readonly struct U128(Vector128<uint> v) : IULanes<U128>
     public static U128 LoadBytes(ref byte p, nuint i)
     {
         Vector128<byte> bytes = Vector128.CreateScalar(Unsafe.ReadUnaligned<uint>(ref Unsafe.Add(ref p, i))).AsByte();
-        return new(Vector128.WidenLower(Vector128.WidenLower(bytes)));
+        return new(Sse41.IsSupported ? Sse41.ConvertToVector128Int32(bytes).AsUInt32() : Vector128.WidenLower(Vector128.WidenLower(bytes)));
     }
 
     public static U128 Splat(uint v) => new(Vector128.Create(v));
@@ -255,7 +256,7 @@ internal readonly struct U256(Vector256<uint> v) : IULanes<U256>
     public static U256 LoadBytes(ref byte p, nuint i)
     {
         Vector128<byte> bytes = Vector128.CreateScalar(Unsafe.ReadUnaligned<ulong>(ref Unsafe.Add(ref p, i))).AsByte();
-        return new(Vector256.WidenLower(Vector128.WidenLower(bytes).ToVector256Unsafe()));
+        return new(Avx2.IsSupported ? Avx2.ConvertToVector256Int32(bytes).AsUInt32() : Vector256.WidenLower(Vector128.WidenLower(bytes).ToVector256Unsafe()));
     }
 
     public static U256 Splat(uint v) => new(Vector256.Create(v));
@@ -333,7 +334,9 @@ internal readonly struct U512(Vector512<uint> v) : IULanes<U512>
     public static U512 LoadBytes(ref byte p, nuint i)
     {
         Vector128<byte> bytes = Vector128.LoadUnsafe(ref p, i);
-        return new(Vector512.WidenLower(Vector256.WidenLower(bytes.ToVector256Unsafe()).ToVector512Unsafe()));
+        return new(Avx512F.IsSupported
+            ? Avx512F.ConvertToVector512Int32(bytes).AsUInt32()
+            : Vector512.WidenLower(Vector256.WidenLower(bytes.ToVector256Unsafe()).ToVector512Unsafe()));
     }
 
     public static U512 Splat(uint v) => new(Vector512.Create(v));

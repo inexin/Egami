@@ -15,15 +15,17 @@ internal static partial class Vp8Timing
 {
     internal static void Run(string[] files)
     {
-        // --one-thread times one thread only, for profiling.
+        // --one-thread times one thread only, for profiling; --runs=N runs N times (tools/video/count-instructions.py).
         int[] counts = files.Contains("--one-thread") ? [1] : [1, Environment.ProcessorCount];
+        int runs = files.FirstOrDefault(f => f.StartsWith("--runs=", StringComparison.Ordinal)) is { } r
+            ? int.Parse(r["--runs=".Length..], System.Globalization.CultureInfo.InvariantCulture) : 5;
         foreach (string file in files.Where(f => !f.StartsWith("--", StringComparison.Ordinal)))
         {
             List<byte[]> packets = ReadIvf(file);
             foreach (int threads in counts)
             {
                 double best = double.MaxValue;
-                for (int run = 0; run < 5; run++)
+                for (int run = 0; run < runs; run++)
                 {
                     using Vp8VideoDecoder video = new(threads);
                     long start = Stopwatch.GetTimestamp();
