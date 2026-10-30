@@ -188,6 +188,12 @@ internal sealed class HevcVps
 /// <summary>vui_parameters() (H.265 E.2.1): the shared start (<see cref="NalVui"/>), and the rest read past.</summary>
 internal sealed class HevcVui : NalVui
 {
+    /// <summary>Gets vui_num_units_in_tick, or 0 without timing information: a picture lasts this many ticks of <see cref="TimeScale"/>.</summary>
+    internal long NumUnitsInTick { get; private set; }
+
+    /// <summary>Gets vui_time_scale, the ticks in a second, or 0 without timing information.</summary>
+    internal long TimeScale { get; private set; }
+
     internal static HevcVui Read(NalBitReader r, int subWidthC, int subHeightC, int maxSubLayersMinus1)
     {
         HevcVui vui = new();
@@ -205,8 +211,8 @@ internal sealed class HevcVui : NalVui
 
         if (r.Flag("vui_timing_info_present_flag"))
         {
-            r.U(32, "vui_num_units_in_tick");
-            r.U(32, "vui_time_scale");
+            vui.NumUnitsInTick = r.U(32, "vui_num_units_in_tick");
+            vui.TimeScale = r.U(32, "vui_time_scale");
             if (r.Flag("vui_poc_proportional_to_timing_flag"))
             {
                 r.Ue("vui_num_ticks_poc_diff_one_minus1");

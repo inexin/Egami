@@ -223,6 +223,17 @@ internal static class Seeds
         }
     }
 
+    /// <summary>HEVC seeds: small clips of tests/video/corpus/hevc whole: Main, Main 10, 4:4:4, monochrome, slices, and one MP4.</summary>
+    public static void WriteHevc(string directory)
+    {
+        string hevc = Directory.CreateDirectory(Path.Combine(directory, "hevc")).FullName;
+        string corpus = Path.Combine("tests", "video", "corpus", "hevc");
+        foreach (string file in (ReadOnlySpan<string>)["qp-high.h265", "gray.h265", "crop.h265", "444.h265", "main10.mp4", "slices.h265", "open-gop.h265"])
+        {
+            File.Copy(Path.Combine(corpus, file), Path.Combine(hevc, file), overwrite: true);
+        }
+    }
+
     public static void Write(string directory)
     {
         string avi = Directory.CreateDirectory(Path.Combine(directory, "avi")).FullName;
@@ -233,6 +244,7 @@ internal static class Seeds
         WriteVp9(directory);
         WriteAv1(directory);
         WriteH264(directory);
+        WriteHevc(directory);
         WriteMp4(directory);
         WriteMp3(directory);
         WriteAc3(directory);

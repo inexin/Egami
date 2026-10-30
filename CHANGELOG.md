@@ -32,6 +32,9 @@ changes that break code come only in a new major version.
   pixels (glyphs that would cover the same pixel go one after the other): 20 lines of 16 px text take 0.50 ms instead of
   0.93 ms. With Egami's faster 8-bit blends, Egami.SystemDrawing's `DrawString` of 20 lines takes 0.78 ms instead of
   1.00 ms (GDI+: 0.73 ms).
+- Fills without antialiasing allocate nothing per row (about 88 bytes a row before), and thin shapes in a large box, such as
+  a one-pixel diagonal line, rasterize on one thread instead of fanning out, with the same pixels: Egami.SystemDrawing's
+  100 one-pixel `DrawLine` calls take 1.06 ms instead of 2.06 ms and allocate 287 KB instead of 3 MB (GDI+: 0.49 ms).
 - An `ImagePaint` drawn with `GdiPlusHighQualityBicubic` or `GdiPlusHighQualityBilinear` and no rotation or skew sums each
   source row across once per thread instead of once per device pixel, with the same pixels: an EMF+ file of high-quality
   images through Egami.SystemDrawing plays in 5.4 ms instead of 14.4 ms (GDI+: 5.4 ms). Taps inside the image read its rows
@@ -90,6 +93,20 @@ Where GDI+ puts text in a layout box (2.7.6 task 28), measured on Windows. Addit
   found by fallback from `Font.WithGdiPlusLook()` text draws its 12 to 17 px bitmaps, as GDI+ font linking does (probed: the
   linked face's aliased bitmaps), and grid-fitted metrics apply to fallback runs too. Fonts that set none of these shape and
   draw as before.
+
+## Egami.Video.Hevc, unreleased
+
+V8: HEVC decode (H.264 and HEVC Build Plan tasks 26 to 28). A new opt-in package at Egami.Video's version.
+
+- `HevcCodec`, `HevcFormat` and `WithHevc()`: HEVC video in MP4, MOV, Matroska and raw Annex B `.h265` files decodes through
+  Egami.Heic's `HevcStreamDecoder`, Main, Main 10, Main 12 and the format range extensions to 12 bits. Frames equal FFmpeg's on
+  the 23 clips of the new HEVC test corpus (`tools/video/make-hevc-corpus.py`), and HM's on the one whose chroma FFmpeg 5.1
+  and 8.1 decode against its own picture hashes; every corpus picture also matches its MD5 picture hash.
+- HDR10 mastering display and content light level SEI fill the frame's `Hdr`, HDR10+ SEI its `Hdr10Plus`; Dolby Vision dvh1
+  and dvhe tracks decode as their HEVC base layer.
+- Decoding starts at an IRAP picture, after a seek too, and drops the RASL pictures a CRA picture skips there; broken data
+  reports `Hevc.CorruptFrame` and follows the error mode.
+- An `hevc` fuzz target, and `--time-hevc` in the video benchmarks.
 
 ## Egami.Video.Cli, unreleased
 
