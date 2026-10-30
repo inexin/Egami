@@ -282,8 +282,11 @@ The activity and tag names are never renamed once shipped, like the diagnostic i
 | `Pnm.UnknownHeaderLine` | Warning | An unknown PAM header line was ignored |
 | `Psd.ChannelsDropped` | Warning | A multichannel file has no color model; its first channel was loaded as gray and the rest were not |
 | `Psd.DataTruncated` | Warning | The file ends inside the flattened image; the missing pixels are 0 |
+| `Psd.LayerDataDamaged` | Warning | A layer channel's data is damaged or uses an unknown compression; its missing pixels are 0 |
+| `Psd.LayerDataTruncated` | Warning | A layer channel's data ends early; its missing pixels are 0 |
 | `Psd.LayersDamaged` | Warning | A layer record is damaged; the records after it were not read, which the flattened image does not need |
 | `Psd.NoComposite` | Warning | The file was saved without Maximize Compatibility; its stored placeholder was loaded, not the layers composited |
+| `Psd.ProfileUnreadable` | Warning | The embedded ICC profile of a CMYK file could not be read; its layers use FOGRA39's inks |
 | `Psd.ResourcesDamaged` | Warning | An image resource is damaged; the resources after it were skipped |
 | `Psd.RowShort` | Warning | A PackBits row decodes short; the rest of it is 0 |
 | `Qoi.DataAfterEnd` | Warning | Data follows the last pixel where the end marker should be |
