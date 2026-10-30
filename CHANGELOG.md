@@ -71,6 +71,11 @@ Video Build Plan task 31: HEVC decode speed. No API changes.
   directly.
 - Image paints convert their texels row by row straight into the shader, with no converted raster in between and no
   clearing: Egami.SystemDrawing's scaled `DrawImage` of a 640 × 480 photo takes 3.3 ms instead of 3.8 ms (GDI+: 3.5 ms).
+- An `ImagePaint` filled straight onto a raster canvas, mapped without rotation or skew and with no mip level, reads its image's
+  rows as the shading reaches them instead of converting the whole image to float texels first, when the image is not the
+  canvas's own pixels; the pixels are the same. Each shading thread keeps the few rows it read last. Egami.SystemDrawing's
+  scaled `DrawImage` of a 640 × 480 photo allocates 6 KB instead of 4.9 MB, and drawing a 64 × 64 part of it takes 0.7 ms
+  instead of 2.6 ms.
 
 ## Egami.SystemDrawing, unreleased
 
