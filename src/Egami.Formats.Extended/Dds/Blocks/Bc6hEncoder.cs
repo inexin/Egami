@@ -61,6 +61,35 @@ internal static class Bc6hEncoder
         Candidate work = new();
         Span<int> ranked = stackalloc int[32];
         int partitions = maxPartitions == 0 ? 0 : Rank(u, maxPartitions, ranked);
+        if (partitions > 2)
+        {
+            // A quick fit of each ranked partition in mode 10 (6-bit endpoints, which always fit) picks the two that every
+            // two-region mode then tries.
+            Span<long> errors = stackalloc long[32];
+            for (int s = 0; s < partitions; s++)
+            {
+                work.Reset(9, ranked[s]);
+                errors[s] = Fit(h, u, Modes.Slice(9 * 7, 7), signed, 0, work, long.MaxValue) ? work.Error : long.MaxValue;
+            }
+
+            for (int k = 0; k < 2; k++)
+            {
+                int pick = k;
+                for (int s = k + 1; s < partitions; s++)
+                {
+                    if (errors[s] < errors[pick])
+                    {
+                        pick = s;
+                    }
+                }
+
+                (ranked[k], ranked[pick]) = (ranked[pick], ranked[k]);
+                (errors[k], errors[pick]) = (errors[pick], errors[k]);
+            }
+
+            partitions = 2;
+        }
+
         for (int index = 0; index < 14; index++)
         {
             ReadOnlySpan<byte> m = Modes.Slice(index * 7, 7);
@@ -391,12 +420,33 @@ internal static class Bc6hEncoder
             }
         }
 
+        // The palette runs along a line: project each pixel for the nearest index, then check the neighbours.
+        long dd = 0;
+        Span<long> dir = stackalloc long[3];
+        for (int c = 0; c < 3; c++)
+        {
+            dir[c] = palette[((entries - 1) * 3) + c] - palette[c];
+            dd += dir[c] * dir[c];
+        }
+
         long total = 0;
         foreach (int i in members)
         {
             long bestError = long.MaxValue;
             int bestIndex = 0;
-            for (int k = 0; k < entries; k++)
+            int guess = 0;
+            if (dd > 0)
+            {
+                long dot = 0;
+                for (int c = 0; c < 3; c++)
+                {
+                    dot += (h[(i * 3) + c] - palette[c]) * dir[c];
+                }
+
+                guess = (int)Math.Clamp(Math.Round(dot * (entries - 1) / (double)dd), 0, entries - 1);
+            }
+
+            for (int k = Math.Max(0, guess - 1); k <= Math.Min(entries - 1, guess + 1); k++)
             {
                 long e = 0;
                 for (int c = 0; c < 3; c++)

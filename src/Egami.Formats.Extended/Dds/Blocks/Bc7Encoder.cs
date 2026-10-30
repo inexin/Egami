@@ -57,9 +57,15 @@ internal static class Bc7Encoder
         int partitions = effort switch { <= 1 => 1, 2 => 2, 3 => 4, 4 => 8, 5 => 16, _ => 64 };
         int refits = effort switch { 0 => 0, <= 2 => 1, <= 4 => 2, _ => 3 };
 
-        Encoding best = Encoding.Worst;
-        Encoding work = new();
+        // Three encodings a thread, reused block after block: the best so far, the one being tried, and modes 4 and 5's alpha.
+        Encoding[] scratch = t_scratch ??= [new(), new(), new()];
+        Encoding best = scratch[0];
+        Encoding work = scratch[1];
+        best.Reset(6, 0, 0, 0);
+        best.Error = long.MaxValue;
         Span<int> ranked = stackalloc int[64];
+        Span<int> finalists = stackalloc int[2];
+        Span<long> finalistErrors = stackalloc long[2];
         foreach (int mode in modes)
         {
             ReadOnlySpan<byte> m = Modes.Slice(mode * 9, 9);
@@ -67,16 +73,16 @@ internal static class Bc7Encoder
             if (subsets == 1)
             {
                 int rotations = m[2] != 0 ? (effort >= 4 ? 4 : effort >= 2 ? 2 : 1) : 1;
-                int selections = m[3] != 0 ? 2 : 1;
+                int selections = m[3] != 0 && effort >= 3 ? 2 : 1;
                 for (int rotation = 0; rotation < rotations; rotation++)
                 {
                     for (int selection = 0; selection < selections; selection++)
                     {
                         work.Reset(mode, 0, rotation, selection);
-                        FitSingle(px, m, work, refits);
+                        FitSingle(px, m, work, refits, scratch[2]);
                         if (work.Error < best.Error)
                         {
-                            best = work.Clone();
+                            (best, work) = (work, best);
                         }
                     }
                 }
@@ -84,20 +90,51 @@ internal static class Bc7Encoder
                 continue;
             }
 
+            // A quick fit of every ranked partition, then the full search on the two best.
             int count = RankPartitions(px, subsets, 1 << m[1], Math.Min(partitions, 1 << m[1]), ranked, opaque);
-            for (int c = 0; c < count; c++)
+            finalistErrors.Fill(long.MaxValue);
+            for (int c = 0; c < count && count > 2; c++)
             {
                 work.Reset(mode, ranked[c], 0, 0);
+                FitPartitioned(px, m, work, 0, finalistErrors[1]);
+                if (work.Error < finalistErrors[1])
+                {
+                    int slot = work.Error < finalistErrors[0] ? 0 : 1;
+                    if (slot == 0)
+                    {
+                        (finalists[1], finalistErrors[1]) = (finalists[0], finalistErrors[0]);
+                    }
+
+                    (finalists[slot], finalistErrors[slot]) = (ranked[c], work.Error);
+                }
+            }
+
+            if (count <= 2)
+            {
+                ranked[..count].CopyTo(finalists);
+            }
+
+            for (int c = 0; c < Math.Min(count, 2); c++)
+            {
+                if (count > 2 && finalistErrors[c] == long.MaxValue)
+                {
+                    continue;
+                }
+
+                work.Reset(mode, finalists[c], 0, 0);
                 FitPartitioned(px, m, work, refits, best.Error);
                 if (work.Error < best.Error)
                 {
-                    best = work.Clone();
+                    (best, work) = (work, best);
                 }
             }
         }
 
         Pack(best, block);
     }
+
+    [ThreadStatic]
+    private static Encoding[]? t_scratch;
 
     /// <summary>Ranks the partitions by the colours' spread about each subset's mean, smallest first, and returns how many it kept.</summary>
     private static int RankPartitions(ReadOnlySpan<int> px, int subsets, int available, int keep, Span<int> ranked, bool opaque)
@@ -162,7 +199,7 @@ internal static class Bc7Encoder
     }
 
     /// <summary>Fits a one-subset mode: 6 (RGBA together), or 4 and 5 (colour and alpha apart, after the rotation).</summary>
-    private static void FitSingle(ReadOnlySpan<int> source, ReadOnlySpan<byte> m, Encoding work, int refits)
+    private static void FitSingle(ReadOnlySpan<int> source, ReadOnlySpan<byte> m, Encoding work, int refits, Encoding alpha)
     {
         Span<int> px = stackalloc int[64];
         source.CopyTo(px);
@@ -192,7 +229,7 @@ internal static class Bc7Encoder
         int colorBits = work.Selection == 0 ? m[7] : m[8];
         int alphaBits = work.Selection == 0 ? m[8] : m[7];
         work.Error = Fit(px, all, 0, 3, m[4], 0, 0, colorBits, refits, work, primary: work.Selection == 0)
-            + FitAlpha(px, m[5], alphaBits, refits, work, primary: work.Selection != 0);
+            + FitAlpha(px, m[5], alphaBits, refits, work, alpha, primary: work.Selection != 0);
     }
 
     /// <summary>Fits every subset of a partitioned mode, stopping once the error passes <paramref name="limit"/>.</summary>
@@ -249,12 +286,14 @@ internal static class Bc7Encoder
         Span<byte> bestIdx = stackalloc byte[16];
         for (int round = 0; round <= refits; round++)
         {
-            int options = pbitMode == 1 ? 4 : pbitMode == 2 ? 2 : 1;
+            // Unique p-bits: every pair in the last round; before it, each endpoint's p-bit that quantizes it best.
+            bool guess = pbitMode == 1 && round < refits;
+            int options = guess ? 1 : pbitMode == 1 ? 4 : pbitMode == 2 ? 2 : 1;
             long roundBest = long.MaxValue;
             for (int option = 0; option < options; option++)
             {
-                p[0] = pbitMode == 1 ? option & 1 : pbitMode == 2 ? option : 0;
-                p[1] = pbitMode == 1 ? option >> 1 : p[0];
+                p[0] = guess ? BestPBit(lo, channels, colorBits, alphaBits) : pbitMode == 1 ? option & 1 : pbitMode == 2 ? option : 0;
+                p[1] = guess ? BestPBit(hi, channels, colorBits, alphaBits) : pbitMode == 1 ? option >> 1 : p[0];
                 for (int c = 0; c < channels; c++)
                 {
                     int bits = c == 3 ? alphaBits : colorBits;
@@ -318,7 +357,7 @@ internal static class Bc7Encoder
     }
 
     /// <summary>Fits modes 4 and 5's alpha: its own endpoints and indices, no p-bits.</summary>
-    private static long FitAlpha(ReadOnlySpan<int> px, int alphaBits, int indexBits, int refits, Encoding work, bool primary)
+    private static long FitAlpha(ReadOnlySpan<int> px, int alphaBits, int indexBits, int refits, Encoding work, Encoding single, bool primary)
     {
         Span<int> alpha = stackalloc int[64];
         Span<int> all = stackalloc int[16];
@@ -328,7 +367,6 @@ internal static class Bc7Encoder
             all[i] = i;
         }
 
-        Encoding single = new();
         single.Reset(work.Mode, 0, 0, 0);
         long error = Fit(alpha, all, 0, 1, alphaBits, 0, 0, indexBits, refits, single, primary: true);
         work.Endpoints[3] = single.Endpoints[0];
@@ -514,12 +552,34 @@ internal static class Bc7Encoder
             }
         }
 
+        // The palette lies on the line between the endpoints: project each pixel onto it for the nearest index, then
+        // check the neighbours, which covers the interpolation's rounding.
+        int dd = 0;
+        Span<int> dir = stackalloc int[4];
+        for (int c = 0; c < channels; c++)
+        {
+            dir[c] = e1[c] - e0[c];
+            dd += dir[c] * dir[c];
+        }
+
         long total = 0;
         foreach (int i in members)
         {
             int bestIndex = 0;
             int bestError = int.MaxValue;
-            for (int k = 0; k < entries; k++)
+            int guess = 0;
+            if (dd > 0)
+            {
+                int dot = 0;
+                for (int c = 0; c < channels; c++)
+                {
+                    dot += (px[(i * 4) + c] - e0[c]) * dir[c];
+                }
+
+                guess = Math.Clamp((int)MathF.Round(dot * (entries - 1) / (float)dd), 0, entries - 1);
+            }
+
+            for (int k = Math.Max(0, guess - 1); k <= Math.Min(entries - 1, guess + 1); k++)
             {
                 int error = 0;
                 for (int c = 0; c < channels; c++)
@@ -539,6 +599,23 @@ internal static class Bc7Encoder
         }
 
         return total;
+    }
+
+    /// <summary>Returns the p-bit with which an endpoint's channels quantize closest.</summary>
+    private static int BestPBit(ReadOnlySpan<float> endpoint, int channels, int colorBits, int alphaBits)
+    {
+        Span<float> error = stackalloc float[2];
+        for (int p = 0; p < 2; p++)
+        {
+            for (int c = 0; c < channels; c++)
+            {
+                int bits = c == 3 ? alphaBits : colorBits;
+                float d = Expand((Quantize(endpoint[c], bits, true, p) << 1) | p, bits + 1) - endpoint[c];
+                error[p] += d * d;
+            }
+        }
+
+        return error[1] < error[0] ? 1 : 0;
     }
 
     private static int Quantize(float value, int bits, bool pbit, int p)
@@ -637,8 +714,6 @@ internal static class Bc7Encoder
     /// <summary>One way to code the block: the mode's choices, quantized endpoints (subset × 8: end 0 RGBA, end 1 RGBA), p-bits and indices.</summary>
     private sealed class Encoding
     {
-        public static Encoding Worst { get; } = new() { Error = long.MaxValue };
-
         public int Mode { get; private set; }
 
         public int Partition { get; private set; }
@@ -664,19 +739,6 @@ internal static class Bc7Encoder
             Array.Clear(PBits);
             Array.Clear(Indices);
             Array.Clear(Secondary);
-        }
-
-        public Encoding Clone()
-        {
-            Encoding copy = new()
-            {
-                Endpoints = (int[])Endpoints.Clone(),
-                PBits = (int[])PBits.Clone(),
-                Indices = (byte[])Indices.Clone(),
-                Secondary = (byte[])Secondary.Clone(),
-            };
-            (copy.Mode, copy.Partition, copy.Rotation, copy.Selection, copy.Error) = (Mode, Partition, Rotation, Selection, Error);
-            return copy;
         }
     }
 }
