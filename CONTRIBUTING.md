@@ -131,7 +131,10 @@ nuget.org with trusted publishing, after a maintainer approves the `nuget` envir
 key: a trusted publishing policy on nuget.org names this repository, `release.yml` and the `nuget` environment, and the secret `NUGET_USER` holds the
 nuget.org account name. Egami.Barcodes, Egami.Metafiles, Egami.Fonts.Substitutes and Egami.Video keep their own version in
 their project file: a tag `<package>-v<version>`, for example `Egami.Barcodes-v1.0.1`, runs the same workflow for that one
-package at that version, so it releases on its own. Only maintainers tag releases.
+package at that version, so it releases on its own. Only maintainers tag releases. A package that only other Egami packages
+or tools use sets `<EgamiUnlisted>true</EgamiUnlisted>` in its project file (Egami.Css and Egami.Cli.Host do): nuget.org
+cannot take a package unlisted, so `release.yml` unlists that version right after the push. It stays out of search but
+still restores as a dependency.
 
 ## Pull requests
 

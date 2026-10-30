@@ -16,6 +16,9 @@
     <DevelopmentDependency>true</DevelopmentDependency>
     <!-- A source package has no lib folder by design. -->
     <NoWarn>$(NoWarn);NU5128</NoWarn>
+    <!-- Hidden from NuGet search: only the family's own tools use it. release.yml unlists each version right after the push;
+         unlisted versions still restore. -->
+    <EgamiUnlisted>true</EgamiUnlisted>
   </PropertyGroup>
 
   <!-- The sources use System.CommandLine and ModelContextProtocol.Core; the tool that compiles them references both itself,
