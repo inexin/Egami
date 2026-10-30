@@ -64,7 +64,8 @@ codecs; `profile-vp9.py` profiles VP9 against libvpx; `make-subtitle-tracks.py`,
 `make-subtitle-references.py` and `time-subtitles.py` make and check the subtitle files against FFmpeg, MKVToolNix and MP4Box;
 `make-h264-corpus.py` makes the H.264 clips and their FFmpeg frame hashes, and `make-h264-tables.py` regenerates Egami.Video.H264's
 CAVLC and CABAC tables from OpenH264; `count-instructions.py` counts a decoder's instructions, branches and cycles per frame
-from the CPU's counters against FFmpeg's, repeatably even on a busy machine. Its gates against FFmpeg, libvpx and the Matroska tools live in the
+from the CPU's counters against FFmpeg's, repeatably even on a busy machine (also Opus per packet, and per operation the image
+scenarios of `Egami.Benchmarks -- --time-image`), and `make-count-clips.py` makes the clips it counts for each codec. Its gates against FFmpeg, libvpx and the Matroska tools live in the
 egami-compare repository (`video/`). Benchmarks: `dotnet run -c Release --project benchmarks/Egami.Video.Benchmarks`.
 
 ## Repository layout

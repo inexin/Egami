@@ -37,6 +37,13 @@ if (args is ["--time-hevc", .. string[] hevc])
     return;
 }
 
+// Time Opus decoding (2.4.8 counts): -- --time-opus <file.opus>...
+if (args is ["--time-opus", .. string[] opusFiles])
+{
+    OpusTiming.Run(opusFiles);
+    return;
+}
+
 // Time and write a VP8 encode (V5.2 gates): -- --encode-vp8 <clip.y4m> [--out=file.ivf --quality=Q ...]
 if (args is ["--encode-vp8", .. string[] rest])
 {
