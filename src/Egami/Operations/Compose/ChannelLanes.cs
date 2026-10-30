@@ -16,6 +16,9 @@ internal interface IChannelLanes<TSelf>
 
     static abstract TSelf Load(ref uint p, nuint i);
 
+    /// <summary>Gets lanes holding one pixel in every pixel position, as <see cref="Load"/> of a row of copies would.</summary>
+    static abstract TSelf SplatPixel(uint pixel);
+
     /// <summary>Stores lanes that are all 255 or less.</summary>
     static abstract void Store(TSelf v, ref uint p, nuint i);
 
@@ -54,53 +57,79 @@ internal interface IChannelLanes<TSelf>
 
 internal readonly struct C128(Vector128<ushort> v) : IChannelLanes<C128>
 {
-    private static readonly Vector128<byte> Spread = Vector128.Create((byte)0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0);
+    private static Vector128<byte> Spread
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => Vector128.Create((byte)0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0);
+    }
 
     internal readonly Vector128<ushort> V = v;
 
     public static int Pixels => 2;
 
-    public static C128 AlphaLanes => new(Vector128.Create((ushort)0, 0, 0, 0xFFFF, 0, 0, 0, 0xFFFF));
+    public static C128 AlphaLanes
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => new(Vector128.Create((ushort)0, 0, 0, 0xFFFF, 0, 0, 0, 0xFFFF));
+    }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static C128 SplatPixel(uint pixel) => new(Vector128.WidenLower(Vector128.Create(pixel).AsByte()));
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static C128 Load(ref uint p, nuint i)
     {
         Vector128<byte> bytes = Vector128.CreateScalar(Unsafe.ReadUnaligned<ulong>(ref Unsafe.As<uint, byte>(ref Unsafe.Add(ref p, i)))).AsByte();
         return new(Vector128.WidenLower(bytes));
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Store(C128 v, ref uint p, nuint i)
     {
         Unsafe.WriteUnaligned(ref Unsafe.As<uint, byte>(ref Unsafe.Add(ref p, i)), Vector128.Narrow(v.V, v.V).AsUInt64().ToScalar());
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static C128 LoadCoverage(ref byte p, nuint i)
     {
         Vector128<byte> bytes = Vector128.CreateScalar(Unsafe.ReadUnaligned<ushort>(ref Unsafe.Add(ref p, i))).AsByte();
         return new(Vector128.WidenLower(Vector128.Shuffle(bytes, Spread)));
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static C128 Splat(ushort v) => new(Vector128.Create(v));
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static C128 operator +(C128 a, C128 b) => new(a.V + b.V);
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static C128 operator -(C128 a, C128 b) => new(a.V - b.V);
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static C128 operator *(C128 a, C128 b) => new(a.V * b.V);
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static C128 operator >>(C128 a, int shift) => new(a.V >>> shift);
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static C128 operator <<(C128 a, int shift) => new(a.V << shift);
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static C128 Min(C128 a, C128 b) => new(Vector128.Min(a.V, b.V));
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static C128 Max(C128 a, C128 b) => new(Vector128.Max(a.V, b.V));
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static C128 LessOrEqual(C128 a, C128 b) => new(Vector128.LessThanOrEqual(a.V, b.V));
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static C128 Select(C128 mask, C128 a, C128 b) => new(Vector128.ConditionalSelect(mask.V, a.V, b.V));
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool AllZero(C128 v) => v.V == Vector128<ushort>.Zero;
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static C128 BroadcastAlpha(C128 v)
     {
         Vector128<ulong> a = v.V.AsUInt64() >>> 48;
@@ -110,50 +139,76 @@ internal readonly struct C128(Vector128<ushort> v) : IChannelLanes<C128>
 
 internal readonly struct C256(Vector256<ushort> v) : IChannelLanes<C256>
 {
-    private static readonly Vector128<byte> Spread = Vector128.Create((byte)0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3);
+    private static Vector128<byte> Spread
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => Vector128.Create((byte)0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3);
+    }
 
     internal readonly Vector256<ushort> V = v;
 
     public static int Pixels => 4;
 
-    public static C256 AlphaLanes => new(Vector256.Create((ushort)0, 0, 0, 0xFFFF, 0, 0, 0, 0xFFFF, 0, 0, 0, 0xFFFF, 0, 0, 0, 0xFFFF));
+    public static C256 AlphaLanes
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => new(Vector256.Create((ushort)0, 0, 0, 0xFFFF, 0, 0, 0, 0xFFFF, 0, 0, 0, 0xFFFF, 0, 0, 0, 0xFFFF));
+    }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static C256 SplatPixel(uint pixel) => new(Vector256.WidenLower(Vector128.Create(pixel).AsByte().ToVector256Unsafe()));
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static C256 Load(ref uint p, nuint i) => new(Vector256.WidenLower(Vector128.LoadUnsafe(ref p, i).AsByte().ToVector256Unsafe()));
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Store(C256 v, ref uint p, nuint i)
     {
         Vector256<byte> narrow = Vector256.Narrow(v.V, v.V);
         narrow.GetLower().AsUInt32().StoreUnsafe(ref p, i);
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static C256 LoadCoverage(ref byte p, nuint i)
     {
         Vector128<byte> bytes = Vector128.CreateScalar(Unsafe.ReadUnaligned<uint>(ref Unsafe.Add(ref p, i))).AsByte();
         return new(Vector256.WidenLower(Vector128.Shuffle(bytes, Spread).ToVector256Unsafe()));
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static C256 Splat(ushort v) => new(Vector256.Create(v));
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static C256 operator +(C256 a, C256 b) => new(a.V + b.V);
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static C256 operator -(C256 a, C256 b) => new(a.V - b.V);
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static C256 operator *(C256 a, C256 b) => new(a.V * b.V);
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static C256 operator >>(C256 a, int shift) => new(a.V >>> shift);
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static C256 operator <<(C256 a, int shift) => new(a.V << shift);
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static C256 Min(C256 a, C256 b) => new(Vector256.Min(a.V, b.V));
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static C256 Max(C256 a, C256 b) => new(Vector256.Max(a.V, b.V));
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static C256 LessOrEqual(C256 a, C256 b) => new(Vector256.LessThanOrEqual(a.V, b.V));
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static C256 Select(C256 mask, C256 a, C256 b) => new(Vector256.ConditionalSelect(mask.V, a.V, b.V));
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool AllZero(C256 v) => v.V == Vector256<ushort>.Zero;
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static C256 BroadcastAlpha(C256 v)
     {
         Vector256<ulong> a = v.V.AsUInt64() >>> 48;
@@ -163,22 +218,36 @@ internal readonly struct C256(Vector256<ushort> v) : IChannelLanes<C256>
 
 internal readonly struct C512(Vector512<ushort> v) : IChannelLanes<C512>
 {
-    private static readonly Vector128<byte> Spread = Vector128.Create((byte)0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3);
+    private static Vector128<byte> Spread
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => Vector128.Create((byte)0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3);
+    }
 
     internal readonly Vector512<ushort> V = v;
 
     public static int Pixels => 8;
 
-    public static C512 AlphaLanes => new(Vector512.Create(C256.AlphaLanes.V, C256.AlphaLanes.V));
+    public static C512 AlphaLanes
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => new(Vector512.Create(C256.AlphaLanes.V, C256.AlphaLanes.V));
+    }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static C512 SplatPixel(uint pixel) => new(Vector512.WidenLower(Vector256.Create(pixel).AsByte().ToVector512Unsafe()));
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static C512 Load(ref uint p, nuint i) => new(Vector512.WidenLower(Vector256.LoadUnsafe(ref p, i).AsByte().ToVector512Unsafe()));
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Store(C512 v, ref uint p, nuint i)
     {
         Vector512<byte> narrow = Vector512.Narrow(v.V, v.V);
         narrow.GetLower().AsUInt32().StoreUnsafe(ref p, i);
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static C512 LoadCoverage(ref byte p, nuint i)
     {
         Vector128<byte> bytes = Vector128.CreateScalar(Unsafe.ReadUnaligned<ulong>(ref Unsafe.Add(ref p, i))).AsByte();
@@ -187,28 +256,40 @@ internal readonly struct C512(Vector512<ushort> v) : IChannelLanes<C512>
         return new(Vector512.WidenLower(Vector256.Create(low, high).ToVector512Unsafe()));
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static C512 Splat(ushort v) => new(Vector512.Create(v));
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static C512 operator +(C512 a, C512 b) => new(a.V + b.V);
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static C512 operator -(C512 a, C512 b) => new(a.V - b.V);
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static C512 operator *(C512 a, C512 b) => new(a.V * b.V);
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static C512 operator >>(C512 a, int shift) => new(a.V >>> shift);
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static C512 operator <<(C512 a, int shift) => new(a.V << shift);
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static C512 Min(C512 a, C512 b) => new(Vector512.Min(a.V, b.V));
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static C512 Max(C512 a, C512 b) => new(Vector512.Max(a.V, b.V));
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static C512 LessOrEqual(C512 a, C512 b) => new(Vector512.LessThanOrEqual(a.V, b.V));
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static C512 Select(C512 mask, C512 a, C512 b) => new(Vector512.ConditionalSelect(mask.V, a.V, b.V));
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool AllZero(C512 v) => v.V == Vector512<ushort>.Zero;
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static C512 BroadcastAlpha(C512 v)
     {
         Vector512<ulong> a = v.V.AsUInt64() >>> 48;

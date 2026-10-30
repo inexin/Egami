@@ -110,6 +110,7 @@ public sealed partial class RasterCanvas<TPixel> : Canvas
         _clip.Mask?.Dispose();
         _clip = new ClipState(default, null);
         _rasterizer.Dispose();
+        _glyphStrip?.Dispose();
         base.Dispose(disposing);
     }
 

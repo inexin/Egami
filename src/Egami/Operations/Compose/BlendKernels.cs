@@ -226,17 +226,21 @@ internal static class BlendKernels
         ref byte k = ref MemoryMarshal.GetReference(coverage);
         int n = destination.Length;
         int i = 0;
-        if (vectorBits >= 512 && Vector512.IsHardwareAccelerated)
+        // A width runs only when it has a whole vector to do, so short rows skip its setup; each pixel still takes the same lanes.
+        if (vectorBits >= 512 && Vector512.IsHardwareAccelerated && n - i >= C512.Pixels)
         {
             i = IntegerMode<C512>(in c, ref s, ref d, ref k, i, n);
         }
 
-        if (vectorBits >= 256 && Vector256.IsHardwareAccelerated)
+        if (vectorBits >= 256 && Vector256.IsHardwareAccelerated && n - i >= C256.Pixels)
         {
             i = IntegerMode<C256>(in c, ref s, ref d, ref k, i, n);
         }
 
-        i = IntegerMode<C128>(in c, ref s, ref d, ref k, i, n);
+        if (n - i >= C128.Pixels)
+        {
+            i = IntegerMode<C128>(in c, ref s, ref d, ref k, i, n);
+        }
         if (i < n)
         {
             // The last pixel of an odd row runs as a pair whose second pixel is a copy, so every pixel takes the same path.
@@ -389,12 +393,11 @@ internal static class BlendKernels
     /// <summary>Premultiplies one 8-bit channel as PixelConvert does: round(c·α / 255).</summary>
     private static uint Premultiply(uint channel, uint alpha) => ((channel * alpha) + 127) / 255;
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static TC Solid<TC>(uint color)
         where TC : struct, IChannelLanes<TC>
     {
-        Span<uint> pixels = stackalloc uint[16];
-        pixels.Fill(color);
-        return TC.Load(ref MemoryMarshal.GetReference(pixels), 0);
+        return TC.SplatPixel(color);
     }
 
     private static TU Float<TU, TF>(in Context c, TU s, TU d)
