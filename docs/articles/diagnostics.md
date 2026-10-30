@@ -84,12 +84,12 @@ nothing is started or allocated.
 
 [!code-csharp[](../../tests/Egami.DocSamples/Diagnostics.cs#tracing)]
 
-| Activity | Started by | Tags |
+| Started by | Activity | Tags |
 | --- | --- | --- |
-| `Egami.Load` | `Load`, `LoadAsync`, `LoadInto`, `LoadAll` and `LoadAllAsync` | `egami.format`, `egami.width`, `egami.height`, `egami.frames`; `egami.images` for `LoadAll` |
-| `Egami.Probe` | `Probe` and `ProbeAsync` | `egami.format`, `egami.width`, `egami.height`, `egami.frames` when the header says |
-| `Egami.Save` | `Save`, `SaveAsync`, `SaveAll` and `SaveAllAsync` | `egami.format`, `egami.width`, `egami.height`, `egami.frames`; `egami.images` for `SaveAll` |
-| `Egami.Transcode` | `Transcode` and `TranscodeAsync` | The input's `egami.format`, `egami.width`, `egami.height`, `egami.frames` when the header says |
+| `Load`, `LoadAsync`, `LoadInto`, `LoadAll` and `LoadAllAsync` | `Egami.Load` | `egami.format`, `egami.width`, `egami.height`, `egami.frames`; `egami.images` for `LoadAll` |
+| `Probe` and `ProbeAsync` | `Egami.Probe` | `egami.format`, `egami.width`, `egami.height`, `egami.frames` when the header says |
+| `Save`, `SaveAsync`, `SaveAll` and `SaveAllAsync` | `Egami.Save` | `egami.format`, `egami.width`, `egami.height`, `egami.frames`; `egami.images` for `SaveAll` |
+| `Transcode` and `TranscodeAsync` | `Egami.Transcode` | The input's `egami.format`, `egami.width`, `egami.height`, `egami.frames` when the header says |
 
 - **Bytes.** `egami.bytes` is the bytes read (loads, probes, transcodes) or written (saves), when the stream can seek.
 - **Errors.** A call that throws sets the activity's status to `Error`, its `error.type` tag to the exception's type and adds the

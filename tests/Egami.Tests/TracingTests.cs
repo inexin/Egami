@@ -15,7 +15,11 @@ namespace Egami.Tests;
 /// </summary>
 public sealed class TracingTests : IDisposable
 {
-    private static readonly ActivitySource TestSource = new("Egami.Tests.Tracing");
+    private const string TestSourceName = "Egami.Tests.Tracing";
+
+    // Matched by name: the listener's first check can run while this field is still being set (creating the source asks every
+    // listener), when it would read null.
+    private static readonly ActivitySource TestSource = new(TestSourceName);
 
     private readonly ConcurrentQueue<Activity> _stopped = new();
     private readonly ActivityListener _listener;
@@ -25,7 +29,7 @@ public sealed class TracingTests : IDisposable
     {
         _listener = new ActivityListener
         {
-            ShouldListenTo = source => source.Name is EgamiTracing.SourceName || source == TestSource,
+            ShouldListenTo = source => source.Name is EgamiTracing.SourceName or TestSourceName,
             Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllDataAndRecorded,
             ActivityStopped = Stopped,
         };
