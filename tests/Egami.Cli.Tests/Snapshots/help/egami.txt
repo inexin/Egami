@@ -27,6 +27,7 @@ Commands:
   stats <inputs>                    Measure images: per-channel minimum, maximum, mean, deviation, skewness, kurtosis and entropy, as ImageMagick's identify -verbose.
   ocr <inputs>                      Read the text of images with an OCR program (Tesseract or any that writes hOCR or ALTO), as plain text, hOCR or ALTO.
   frames                            Split an animation (GIF, APNG, WebP) into still images, or join stills into one.
+  layers <input> <folder>           Write each layer of a PSD or PSB file as a PNG at its own size, its mask as a gray PNG, and layers.json listing every layer and group: name, place, size, blend mode, opacity, visibility and group.
   metadata                          Show, strip or copy metadata: color profile, EXIF, XMP, IPTC, text and resolution.
   color <inputs>                    Convert images to another color profile (ICC, 2.1.2), tone mapping HDR to SDR where needed (2.9.1).
   text <inputs>                     Draw a caption or watermark on images, with any font and script, wrapped to fit (2.8.2 layout).

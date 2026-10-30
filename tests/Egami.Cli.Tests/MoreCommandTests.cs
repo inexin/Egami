@@ -137,6 +137,27 @@ public sealed class MoreCommandTests : IDisposable
     }
 
     [Fact]
+    public void LayersWritesEachLayerAndAList()
+    {
+        _tool.Copy("psd/layered-rgb8.psd", "doc.psd");
+        Expect(0, _tool.Run("layers", "doc.psd", "out"));
+        using System.Text.Json.JsonDocument list = System.Text.Json.JsonDocument.Parse(File.ReadAllBytes(_tool.PathOf("out/layers.json")));
+        System.Text.Json.JsonElement layers = list.RootElement.GetProperty("layers");
+        using Egami.Formats.Psd.PsdDocument document = Egami.Formats.Psd.PsdImage.ReadLayers(_tool.PathOf("doc.psd"));
+        Assert.Equal(document.Layers.Count, layers.GetArrayLength());
+        System.Text.Json.JsonElement masked = layers.EnumerateArray().Single(l => l.GetProperty("name").GetString() == "Masked");
+        Assert.Equal((30, 4, "norm"), (masked.GetProperty("x").GetInt32(), masked.GetProperty("y").GetInt32(), masked.GetProperty("blendMode").GetString()));
+        using Raster image = Raster.Load(_tool.PathOf(Path.Combine("out", masked.GetProperty("image").GetString()!)));
+        Assert.Equal((24, 20), (image.Width, image.Height));
+        Assert.True(File.Exists(_tool.PathOf(Path.Combine("out", masked.GetProperty("mask").GetProperty("image").GetString()!))));
+        Assert.Equal("group", layers.EnumerateArray().Single(l => l.GetProperty("name").GetString() == "Isolated").GetProperty("kind").GetString());
+
+        _tool.Copy("psd/layered-cmyk8.psd", "cmyk.psd");
+        Expect(0, _tool.Run("layers", "cmyk.psd", "cmyk"));
+        Assert.Equal(4, Directory.GetFiles(_tool.PathOf("cmyk"), "*.png").Length);  // three layers and one mask
+    }
+
+    [Fact]
     public void FramesJoinTakesADelayOrRate()
     {
         _tool.Copy(Png, "a.png");
