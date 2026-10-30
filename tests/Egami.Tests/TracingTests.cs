@@ -73,16 +73,16 @@ public sealed class TracingTests : IDisposable
         byte[] png = Png(8, 8);
         using Raster a = await Raster.LoadAsync(new MemoryStream(png), cancellationToken: Ct);
         using Raster<Rgba8> b = await Raster.LoadAsync<Rgba8>(new MemoryStream(png), cancellationToken: Ct);
-        using Raster c = Raster.Load(png, options: new ReaderOptions { ConvertColorTo = Colors.ColorProfile.Srgb });
+        using Raster c = Raster.Load(png, options: new ReaderOptions { ConvertColorTo = global::Egami.Colors.ColorProfile.Srgb });
 
-        Assert.Equal(["Egami.Load", "Egami.Load", "Egami.Load"], Ours().Select(x => x.OperationName));
+        Assert.Equal(new[] { "Egami.Load", "Egami.Load", "Egami.Load" }, Ours().Select(x => x.OperationName));
     }
 
     [Fact]
     public async Task ProbeTagsTheHeader()
     {
         byte[] png = Png(12, 7);
-        Raster.Probe(png);
+        _ = Raster.Probe(png);
         await Raster.ProbeAsync(new MemoryStream(png), cancellationToken: Ct);
 
         Assert.Equal(2, Ours().Count);
