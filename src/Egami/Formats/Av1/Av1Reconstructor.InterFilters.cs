@@ -85,7 +85,7 @@ internal sealed partial class Av1Reconstructor<T>
     }
 
     /// <summary>The horizontal pass over <paramref name="rows"/> rows of the window: 8-tap, or a copy shifted to the filter's scale.</summary>
-    private static void Horizontal(T[] src, int at, int stride, int frac, short[] filters, int w, int rows, int round0, short[] inter)
+    internal static void Horizontal(T[] src, int at, int stride, int frac, short[] filters, int w, int rows, int round0, short[] inter)
     {
         if (frac == 0)
         {
@@ -272,7 +272,7 @@ internal sealed partial class Av1Reconstructor<T>
     }
 
     /// <summary>The vertical 8-tap pass over the intermediate rows, rows (m, m + 1) interleaved for vpmaddwd.</summary>
-    private static void Vertical(short[] inter, int frac, short[] filters, int w, int h, int round1, int[] pred)
+    internal static void Vertical(short[] inter, int frac, short[] filters, int w, int h, int round1, int[] pred)
     {
         ReadOnlySpan<short> f = filters.AsSpan(frac * 8, 8);
         int half = 1 << (round1 - 1);

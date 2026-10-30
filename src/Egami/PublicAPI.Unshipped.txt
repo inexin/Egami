@@ -634,6 +634,8 @@ Egami.Formats.Av1.Av1FramePlan.Effort.init -> void
 Egami.Formats.Av1.Av1FramePlan.Equals(Egami.Formats.Av1.Av1FramePlan? other) -> bool
 Egami.Formats.Av1.Av1FramePlan.ErrorResilient.get -> bool
 Egami.Formats.Av1.Av1FramePlan.ErrorResilient.init -> void
+Egami.Formats.Av1.Av1FramePlan.Referenced.get -> bool?
+Egami.Formats.Av1.Av1FramePlan.Referenced.init -> void
 Egami.Formats.Av1.Av1FramePlan.Kind.get -> Egami.Formats.Av1.Av1FrameKind
 Egami.Formats.Av1.Av1FramePlan.Kind.init -> void
 Egami.Formats.Av1.Av1FramePlan.OrderHint.get -> int?

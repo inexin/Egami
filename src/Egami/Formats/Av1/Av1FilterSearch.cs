@@ -18,8 +18,11 @@ internal static class Av1FilterSearch
     ];
 
     /// <summary>Searches and applies the filters.</summary>
-    internal static void Search(Av1Frame frame, Av1EncoderSource source, Av1SequenceHeader sequence, Av1FrameParameters parameters, int effort, long rdmult)
+    internal static void Search(Av1Frame frame, Av1EncoderSource source, Av1SequenceHeader sequence, Av1FrameParameters parameters, int effort, long rdmult,
+        bool reference = true)
     {
+        // A frame no other predicts from searches its filters as two efforts lower do.
+        effort = reference ? effort : Math.Max(0, effort - 2);
         Av1FrameHeader header = frame.Header;
         // Intra block copy turns every loop filter off.
         if (header.CodedLossless || header.AllowIntrabc)
@@ -189,17 +192,21 @@ internal static class Av1FilterSearch
 
             frame.Header = Reparse(sequence, parameters);
             Av1Cdef.Apply<ushort>(frame);
-            for (int u = 0; u < units; u++)
+            int columns = frame.CdefStride;
+            frame.For((units + columns - 1) / columns, row =>
             {
-                if (coded[u])
+                for (int u = row * columns; u < Math.Min(units, (row + 1) * columns); u++)
                 {
-                    lumaError[u, k] = UnitError(frame, source, 0, u);
-                    for (int plane = 1; plane < planes; plane++)
+                    if (coded[u])
                     {
-                        chromaError[u, k] += UnitError(frame, source, plane, u);
+                        lumaError[u, k] = UnitError(frame, source, 0, u);
+                        for (int plane = 1; plane < planes; plane++)
+                        {
+                            chromaError[u, k] += UnitError(frame, source, plane, u);
+                        }
                     }
                 }
-            }
+            });
         }
 
         // Greedy: start from the best single pair, then add the pair (luma strength, chroma strength) that lowers the total most.
@@ -316,20 +323,7 @@ internal static class Av1FilterSearch
 
     private static long PlaneError(Av1Frame frame, Av1EncoderSource source, int plane)
     {
-        ushort[] a = frame.Plane<ushort>(plane), b = source.Planes[plane];
-        int stride = frame.Strides[plane];
-        long error = 0;
-        for (int y = 0; y < source.Heights[plane]; y++)
-        {
-            int at = y * stride;
-            for (int x = 0; x < source.Widths[plane]; x++)
-            {
-                int d = a[at + x] - b[at + x];
-                error += d * d;
-            }
-        }
-
-        return error;
+        return Av1MotionSearch.SquaredError(frame.Plane<ushort>(plane), source.Planes[plane], 0, frame.Strides[plane], source.Widths[plane], source.Heights[plane]);
     }
 
     /// <summary>Gets a plane's squared error over one 64x64 luma unit, at 8-bit scale times 16, as the block search counts distortion.</summary>
@@ -339,19 +333,8 @@ internal static class Av1FilterSearch
         int fbr = unit / frame.CdefStride, fbc = unit % frame.CdefStride;
         int x0 = (fbc * 64) >> ssx, y0 = (fbr * 64) >> ssy;
         int x1 = Math.Min(x0 + (64 >> ssx), source.Widths[plane]), y1 = Math.Min(y0 + (64 >> ssy), source.Heights[plane]);
-        ushort[] a = frame.Plane<ushort>(plane), b = source.Planes[plane];
         int stride = frame.Strides[plane];
-        long error = 0;
-        for (int y = y0; y < y1; y++)
-        {
-            int at = y * stride;
-            for (int x = x0; x < x1; x++)
-            {
-                int d = a[at + x] - b[at + x];
-                error += d * d;
-            }
-        }
-
+        long error = x1 > x0 && y1 > y0 ? Av1MotionSearch.SquaredError(frame.Plane<ushort>(plane), source.Planes[plane], (y0 * stride) + x0, stride, x1 - x0, y1 - y0) : 0;
         return frame.Sequence.BitDepth switch
         {
             10 => error,
