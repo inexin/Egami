@@ -1,3 +1,4 @@
+using System.Buffers;
 using System.Buffers.Binary;
 
 namespace Egami.Formats.Psd;
@@ -13,8 +14,9 @@ internal static class PsdVectorMask
     private const int SubScanlines = 16;
 
     /// <summary>
-    /// Returns the mask's coverage, 0 to 1, a value a canvas pixel, or <see langword="null"/> when the mask is disabled or its
-    /// data is unreadable. An inverted mask comes back inverted.
+    /// Returns the mask's coverage, 0 to 1, a value a canvas pixel (width × height of them, in an array rented from the shared
+    /// pool, which the caller returns), or <see langword="null"/> when the mask is disabled or its data is unreadable. An inverted
+    /// mask comes back inverted.
     /// </summary>
     public static float[]? Rasterize(ReadOnlySpan<byte> data, int width, int height)
     {
@@ -66,19 +68,16 @@ internal static class PsdVectorMask
             }
         }
 
-        float[] mask = new float[(long)width * height];
-        if (startFilled && groups.Count == 0)
-        {
-            Array.Fill(mask, 1f);
-        }
-
-        float[] plane = groups.Count > 0 ? new float[mask.Length] : [];
+        int count = width * height;
+        float[] mask = ArrayPool<float>.Shared.Rent(count);
+        Array.Fill(mask, startFilled && groups.Count == 0 ? 1f : 0f, 0, count);
+        float[] plane = ArrayPool<float>.Shared.Rent(count);
         bool first = true;
         foreach ((int operation, List<List<Knot>> paths) in groups)
         {
-            Array.Clear(plane);
+            Array.Clear(plane, 0, count);
             Fill(paths, plane, width, height);
-            for (int i = 0; i < mask.Length; i++)
+            for (int i = 0; i < count; i++)
             {
                 float m = mask[i], p = plane[i];
                 mask[i] = operation switch
@@ -93,9 +92,10 @@ internal static class PsdVectorMask
             first = false;
         }
 
+        ArrayPool<float>.Shared.Return(plane);
         if ((flags & 1) != 0)
         {
-            for (int i = 0; i < mask.Length; i++)
+            for (int i = 0; i < count; i++)
             {
                 mask[i] = 1 - mask[i];
             }

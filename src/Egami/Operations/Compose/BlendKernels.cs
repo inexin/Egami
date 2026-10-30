@@ -612,6 +612,23 @@ internal static class BlendKernels
                 return TF.Min(one, cb + cs);
             case BlendMode.Subtract:
                 return TF.Max(zero, cb - cs);
+            default:
+                return PhotoshopSeparable<TF, TU>(mode, cb, cs);
+        }
+    }
+
+    /// <summary>
+    /// The separable modes Photoshop has beyond the W3C ones, kept out of the W3C modes' switch so that stays as small
+    /// as the W3C modes need.
+    /// </summary>
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static TF PhotoshopSeparable<TF, TU>(BlendMode mode, TF cb, TF cs)
+        where TF : struct, IFLanes<TF, TU>
+        where TU : struct, IULanes<TU>
+    {
+        TF one = TF.Splat(1), zero = TF.Splat(0), half = TF.Splat(0.5f), two = TF.Splat(2);
+        switch (mode)
+        {
             case BlendMode.Divide:
                 {
                     TF q = TF.Min(one, cb / TF.Max(cs, TF.Splat(1e-30f)));
@@ -654,29 +671,30 @@ internal static class BlendKernels
                 (r, g, b) = (csR, csG, csB);
                 SetLum<TF, TU>(ref r, ref g, ref b, Lum(cbR, cbG, cbB), wr, wg, wb);
                 break;
-            case BlendMode.DarkerColor:
-                {
-                    TF pick = TF.Less(Lum(csR, csG, csB), Lum(cbR, cbG, cbB));
-                    (r, g, b) = (TF.Select(pick, csR, cbR), TF.Select(pick, csG, cbG), TF.Select(pick, csB, cbB));
-                    break;
-                }
-
-            case BlendMode.LighterColor:
-                {
-                    TF pick = TF.Less(Lum(cbR, cbG, cbB), Lum(csR, csG, csB));
-                    (r, g, b) = (TF.Select(pick, csR, cbR), TF.Select(pick, csG, cbG), TF.Select(pick, csB, cbB));
-                    break;
-                }
-
-            default:
+            case BlendMode.Luminosity:
                 (r, g, b) = (cbR, cbG, cbB);
                 SetLum<TF, TU>(ref r, ref g, ref b, Lum(csR, csG, csB), wr, wg, wb);
+                break;
+            default:
+                PickColor<TF, TU>(mode == BlendMode.DarkerColor, wr, wg, wb, cbR, cbG, cbB, csR, csG, csB, out r, out g, out b);
                 break;
         }
 
         TF Lum(TF x, TF y, TF z) => (wr * x) + (wg * y) + (wb * z);
 
         static TF Sat(TF x, TF y, TF z) => TF.Max(x, TF.Max(y, z)) - TF.Min(x, TF.Min(y, z));
+    }
+
+    /// <summary>Darker Color and Lighter Color: the whole source or destination color, whichever has the lower (or higher) luminosity.</summary>
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static void PickColor<TF, TU>(
+        bool darker, TF wr, TF wg, TF wb, TF cbR, TF cbG, TF cbB, TF csR, TF csG, TF csB, out TF r, out TF g, out TF b)
+        where TF : struct, IFLanes<TF, TU>
+        where TU : struct, IULanes<TU>
+    {
+        TF ls = (wr * csR) + (wg * csG) + (wb * csB), lb = (wr * cbR) + (wg * cbG) + (wb * cbB);
+        TF pick = darker ? TF.Less(ls, lb) : TF.Less(lb, ls);
+        (r, g, b) = (TF.Select(pick, csR, cbR), TF.Select(pick, csG, cbG), TF.Select(pick, csB, cbB));
     }
 
     private static void SetSat<TF, TU>(TF r, TF g, TF b, TF s, out TF outR, out TF outG, out TF outB)

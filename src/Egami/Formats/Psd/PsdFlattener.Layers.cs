@@ -298,7 +298,7 @@ internal sealed partial class PsdFlattener
         int depth = _file.Depth;
         float full = depth == 8 ? 255 : depth == 16 ? 65535 : 1;
         bool opaque = true;
-        for (int i = _channels; i < canvas.Length; i += _stride)
+        for (int i = _channels, n = _stride * _width * _height; i < n; i += _stride)
         {
             if (MathF.Round(Math.Clamp(canvas[i], 0, 1) * (depth == 32 ? 65535 : full)) < (depth == 32 ? 65535 : full))
             {
@@ -411,7 +411,7 @@ internal sealed partial class PsdFlattener
     private Raster<TPixel> WriteInkAsRgba<TPixel>(float[] canvas)
         where TPixel : unmanaged, IPixelType<TPixel>
     {
-        float[] rgba = new float[4L * _width * _height];
+        float[] rgba = Allocate(4L * _width * _height);
         for (int i = 0, n = _width * _height; i < n; i++)
         {
             float a = Math.Clamp(canvas[(5 * i) + 4], 0, 1);
@@ -425,7 +425,14 @@ internal sealed partial class PsdFlattener
             rgba[(4 * i) + 3] = a;
         }
 
-        return Write<TPixel>(rgba, 3, true, typeof(TPixel) == typeof(Rgba8) ? 255 : 65535);
+        try
+        {
+            return Write<TPixel>(rgba, 3, true, typeof(TPixel) == typeof(Rgba8) ? 255 : 65535);
+        }
+        finally
+        {
+            Release(rgba);
+        }
     }
 
     /// <summary>Returns the flattened ink canvas as an ink raster of the document's process inks, the planes premultiplied by alpha.</summary>

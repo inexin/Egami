@@ -14,6 +14,7 @@ internal sealed partial class PsdFlattener
     {
         if (!ReferenceEquals(_vectorFor, record))
         {
+            ReleaseVector();
             _vectorFor = record;
             _vectorPlane = record.Blocks.TryGetValue("vmsk", out byte[]? data) || record.Blocks.TryGetValue("vsms", out data)
                 ? PsdVectorMask.Rasterize(data, _width, _height)
@@ -31,6 +32,18 @@ internal sealed partial class PsdFlattener
         {
             shape[i] *= 1 - (density * (1 - plane[at + i]));
         }
+    }
+
+    /// <summary>Returns the last vector mask's coverage to the pool.</summary>
+    private void ReleaseVector()
+    {
+        if (_vectorPlane is not null)
+        {
+            System.Buffers.ArrayPool<float>.Shared.Return(_vectorPlane);
+            _vectorPlane = null;
+        }
+
+        _vectorFor = null;
     }
 
     /// <summary>Applies an adjustment layer to the canvas under it, or to its clipping base's content when it is clipped.</summary>

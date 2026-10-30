@@ -271,7 +271,7 @@ public class PsdLayersTests(ITestOutputHelper output)
 
         // The triangle (10, 6), (54, 14), (24, 42): half the cross product of two sides.
         double area = Math.Abs(((54 - 10) * (42 - 6)) - ((24 - 10) * (14 - 6))) / 2.0;
-        Assert.Equal(area, plane.Sum(v => (double)v), area * 0.005);
+        Assert.Equal(area, plane.Take(64 * 48).Sum(v => (double)v), area * 0.005);
         Assert.Equal(1f, plane[(20 * 64) + 30]);
         Assert.Equal(0f, plane[(40 * 64) + 60]);
     }

@@ -33,6 +33,7 @@ internal sealed partial class PsdFlattener
     private readonly float[] _row;
     private readonly int _channels;
     private readonly int _stride;
+    private readonly Dictionary<float[], long> _rented = new(ReferenceEqualityComparer.Instance);
     private float[]? _scratch;
     private long _bytes;
 
@@ -171,13 +172,40 @@ internal sealed partial class PsdFlattener
     /// <summary>Flattens what is left and returns the canvas in the document's type, with alpha only when some pixel is not opaque.</summary>
     public Raster Finish()
     {
-        return Output(Complete());
+        try
+        {
+            return Output(Complete());
+        }
+        finally
+        {
+            ReleaseAll();
+        }
     }
 
     /// <summary>Flattens what is left of a CMYK document and returns the canvas as an ink raster of <paramref name="inks"/>.</summary>
     public InkRaster FinishInk(Colors.InkSet inks)
     {
-        return OutputInk(Complete(), inks);
+        try
+        {
+            return OutputInk(Complete(), inks);
+        }
+        finally
+        {
+            ReleaseAll();
+        }
+    }
+
+    /// <summary>Returns every buffer the flattening still holds to the pool; the flattener cannot be used after.</summary>
+    public void ReleaseAll()
+    {
+        foreach (float[] buffer in _rented.Keys.ToArray())
+        {
+            Release(buffer);
+        }
+
+        _scratch = null;
+        _frames.Clear();
+        ReleaseVector();
     }
 
     private float[] Complete()
@@ -280,7 +308,7 @@ internal sealed partial class PsdFlattener
         else if (passThrough)
         {
             canvas = Allocate((long)_stride * _width * _height);
-            parent.Canvas.CopyTo(canvas, 0);
+            parent.Canvas.AsSpan(0, _stride * _width * _height).CopyTo(canvas);
         }
         else
         {
@@ -553,7 +581,7 @@ internal sealed partial class PsdFlattener
         return _scratch ??= Allocate((long)_stride * _width * _height);
     }
 
-    /// <summary>Allocates a zeroed buffer, counting it against <see cref="SafetyLimits.MaxTotalBytes"/>.</summary>
+    /// <summary>Rents a zeroed buffer of at least <paramref name="floats"/> values from the pool, counting it against <see cref="SafetyLimits.MaxTotalBytes"/>.</summary>
     private float[] Allocate(long floats)
     {
         long bytes = floats * 4;
@@ -562,13 +590,20 @@ internal sealed partial class PsdFlattener
             throw new LimitExceededException(nameof(SafetyLimits.MaxTotalBytes), _context.Limits.MaxTotalBytes, _bytes + bytes);
         }
 
+        float[] buffer = ArrayPool<float>.Shared.Rent((int)floats);
+        Array.Clear(buffer, 0, (int)floats);
+        _rented[buffer] = bytes;
         _bytes += bytes;
-        return new float[floats];
+        return buffer;
     }
 
     private void Release(float[] buffer)
     {
-        _bytes -= buffer.LongLength * 4;
+        if (_rented.Remove(buffer, out long bytes))
+        {
+            _bytes -= bytes;
+            ArrayPool<float>.Shared.Return(buffer);
+        }
     }
 
     private void Clear(float[] buffer, Rect area)

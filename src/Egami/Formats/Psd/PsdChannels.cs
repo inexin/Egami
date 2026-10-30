@@ -162,13 +162,24 @@ internal static class PsdChannels
         }
     }
 
-    private static int Inflate(ReadOnlySpan<byte> data, Span<byte> destination)
+    private static unsafe int Inflate(ReadOnlySpan<byte> data, Span<byte> destination)
     {
         int total = 0;
-        byte[] copy = data.ToArray();
+        fixed (byte* compressed = data)
+        {
+            using UnmanagedMemoryStream source = new(compressed, data.Length);
+            total = Inflate(source, destination);
+        }
+
+        return total;
+    }
+
+    private static int Inflate(Stream source, Span<byte> destination)
+    {
+        int total = 0;
         try
         {
-            using ZLibStream zlib = new(new MemoryStream(copy, writable: false), CompressionMode.Decompress);
+            using ZLibStream zlib = new(source, CompressionMode.Decompress);
             while (total < destination.Length)
             {
                 int n = zlib.Read(destination[total..]);
