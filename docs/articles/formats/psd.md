@@ -93,7 +93,9 @@ Lab, bitmap, indexed and multichannel documents are not flattened.
 Rows come from the channel planes as they are asked for: raw rows at computed offsets and PackBits rows through their byte counts,
 read where they lie on a seekable stream, so `Region` reads only the rows it needs and the layer data is skipped without being
 read. A stream that cannot seek is read to its end first, and Deflate data is inflated whole. On 12-megapixel files Egami decodes
-three to ten times faster than ImageMagick (Magick.NET).
+three to ten times faster than ImageMagick (Magick.NET). Flattening reads and composites one layer at a time, in float
+canvases from the shared pool, so its managed allocations do not grow with the image: a 12-megapixel file with three layers
+flattens in about 2.2 seconds, against 2.9 for ImageMagick.
 
 ## Damaged and hostile data
 
@@ -101,6 +103,9 @@ The header's size is checked against `SafetyLimits` before anything else; PSB's 
 default limits unless the caller raises them. Every section length is checked against the data that remains, the layer section
 is skipped by its length, the image resources and layer records count against `MaxMetadataBytes`, and the PackBits row table is
 bounded by the header before it is read. Damaged layer records or resources are warnings (`Psd.LayersDamaged`,
-`Psd.ResourcesDamaged`), since the flattened image does not depend on them. Image data that ends early loads with the missing
+`Psd.ResourcesDamaged`), since the stored flattened image does not depend on them; damaged or short layer channel data leaves
+the missing pixels 0 with `Psd.LayerDataDamaged` or `Psd.LayerDataTruncated`, and throws `CorruptDataException` in strict
+mode. Each layer and mask is checked against `SafetyLimits` before it is decoded, and the layers and flattening canvases
+together against `MaxTotalBytes`. Image data that ends early loads with the missing
 pixels 0 and the `Psd.DataTruncated` warning, and throws `CorruptDataException` in strict mode. The reader is fuzzed with AFL++
 through whole files and through the image data alone.
