@@ -19,8 +19,19 @@ changes that break code come only in a new major version.
   with a still image loads as its sequence, as an all-intra one already did, and no longer gives a `Heic.SequenceFirstFrame`
   warning.
 
+## Egami, unreleased
+
+- 8-bit blends through `Compositor` (the Porter–Duff operators and the integer blend modes, with or without coverage) run two
+  to three times faster with the same bits: their vector lanes now inline into the kernels, and a solid color loads as one
+  splat. A 512-pixel solid source-over row through coverage takes 0.78 µs instead of 2.35 µs; a 10-pixel row 54 ns instead of
+  124 ns.
+
 ## Egami.Drawing, unreleased
 
+- Text on premultiplied 8-bit canvases blends a run's glyphs a row at a time instead of a glyph row at a time, with the same
+  pixels (glyphs that would cover the same pixel go one after the other): 20 lines of 16 px text take 0.50 ms instead of
+  0.93 ms. With Egami's faster 8-bit blends, Egami.SystemDrawing's `DrawString` of 20 lines takes 0.78 ms instead of
+  1.00 ms (GDI+: 0.73 ms).
 - An `ImagePaint` drawn with `GdiPlusHighQualityBicubic` or `GdiPlusHighQualityBilinear` and no rotation or skew sums each
   source row across once per thread instead of once per device pixel, with the same pixels: an EMF+ file of high-quality
   images through Egami.SystemDrawing plays in 5.4 ms instead of 14.4 ms (GDI+: 5.4 ms). Taps inside the image read its rows
