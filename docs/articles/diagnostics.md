@@ -76,6 +76,32 @@ Egami's.
 Memory leaks are reported by `PixelMemoryUsage.LeakDetected` instead, because they belong to a memory source rather than a call and
 are found on the finalizer thread after the call has ended; see [Memory and threading](guides/memory-and-threading.md#finding-leaks).
 
+## Tracing
+
+Egami times its loads, probes, saves and transcodes as `System.Diagnostics.Activity` spans on the activity source named by
+`EgamiTracing.SourceName` ("Egami"), so they show up in OpenTelemetry traces and in any `ActivityListener`. While nobody listens,
+nothing is started or allocated.
+
+[!code-csharp[](../../tests/Egami.DocSamples/Diagnostics.cs#tracing)]
+
+| Activity | Started by | Tags |
+| --- | --- | --- |
+| `Egami.Load` | `Load`, `LoadAsync`, `LoadInto`, `LoadAll` and `LoadAllAsync` | `egami.format`, `egami.width`, `egami.height`, `egami.frames`; `egami.images` for `LoadAll` |
+| `Egami.Probe` | `Probe` and `ProbeAsync` | `egami.format`, `egami.width`, `egami.height`, `egami.frames` when the header says |
+| `Egami.Save` | `Save`, `SaveAsync`, `SaveAll` and `SaveAllAsync` | `egami.format`, `egami.width`, `egami.height`, `egami.frames`; `egami.images` for `SaveAll` |
+| `Egami.Transcode` | `Transcode` and `TranscodeAsync` | The input's `egami.format`, `egami.width`, `egami.height`, `egami.frames` when the header says |
+
+- **Bytes.** `egami.bytes` is the bytes read (loads, probes, transcodes) or written (saves), when the stream can seek.
+- **Errors.** A call that throws sets the activity's status to `Error`, its `error.type` tag to the exception's type and adds the
+  exception as an event, as OpenTelemetry's conventions ask.
+- **One span per call.** A call that runs another of the same kind (a `Load` of a path loading its stream, a `LoadAll` loading
+  each page, a `ConvertColorTo` load) is one activity. A transcode that has to load the whole image (for `Trim`, say) holds an
+  `Egami.Load` and an `Egami.Save` inside its `Egami.Transcode`.
+- **Not traced.** `RasterDecoder` and `RasterEncoder` sessions, which the caller drives row by row, and operations (`Apply`,
+  `Derive`) start no activity; time them in your own span.
+
+The activity and tag names are never renamed once shipped, like the diagnostic ids.
+
 ## Catalog
 
 <!-- tests/Egami.Tests/DiagnosticsCatalogTests.cs checks this table against the ids in src/Egami, one to one. -->

@@ -149,6 +149,21 @@ public abstract partial class Raster
     {
         ArgumentNullException.ThrowIfNull(stream);
         ArgumentNullException.ThrowIfNull(target);
+        using TraceSpan span = Tracer.Start(Tracer.Load, stream);
+        try
+        {
+            LoadIntoCore(stream, target, context, options);
+            span.Tag(target);
+        }
+        catch (Exception e) when (span.Fail(e))
+        {
+            throw;
+        }
+    }
+
+    private static void LoadIntoCore<TPixel>(Stream stream, Raster<TPixel> target, EgamiContext? context, ReaderOptions? options)
+        where TPixel : unmanaged, IPixelType<TPixel>
+    {
         using RasterDecoder decoder = RasterDecoder.Open(stream, context, options);
         decoder.CheckSize(target, nameof(target));
         Metadata.FrameMetadata frame = decoder.ReadFrame(target) ?? throw new ArgumentException("The options select no frame.", nameof(options));
@@ -441,7 +456,16 @@ public abstract partial class Raster
     {
         ArgumentNullException.ThrowIfNull(stream);
         ArgumentNullException.ThrowIfNull(format);
-        FormatPipeline.Save(stream, format, options ?? WriterOptions.Default, WriteWith);
+        using TraceSpan span = Tracer.Start(Tracer.Save, stream);
+        span.Tag(this, format.Name);
+        try
+        {
+            FormatPipeline.Save(stream, format, options ?? WriterOptions.Default, WriteWith);
+        }
+        catch (Exception e) when (span.Fail(e))
+        {
+            throw;
+        }
     }
 
     /// <summary>

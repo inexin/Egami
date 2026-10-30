@@ -47,6 +47,10 @@ Video Build Plan task 31: HEVC decode speed. No API changes.
   stages and lossy WebP its macroblock rows. Lossless JPEG XL and WebP and the other formats report only start and end. The
   token now also stops a synchronous save, between bands and inside those codecs, and a canceled file save deletes the file.
   A save without a handler or token runs as before.
+- Tracing through `System.Diagnostics.ActivitySource`. All additive. `EgamiTracing.SourceName` ("Egami") names the source;
+  loads, probes, saves and transcodes start the activities `Egami.Load`, `Egami.Probe`, `Egami.Save` and `Egami.Transcode`,
+  tagged with the format, size, frame or image count and bytes, and marked as errors when they throw. OpenTelemetry picks them
+  up with `AddSource("Egami")`. While nobody listens, nothing is started or allocated.
 - 8-bit blends through `Compositor` (the Porter–Duff operators and the integer blend modes, with or without coverage) run two
   to three times faster with the same bits: their vector lanes now inline into the kernels, and a solid color loads as one
   splat. A 512-pixel solid source-over row through coverage takes 0.78 µs instead of 2.35 µs; a 10-pixel row 54 ns instead of

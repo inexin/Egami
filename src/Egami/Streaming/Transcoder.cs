@@ -169,6 +169,19 @@ internal static class Transcoder
 
     public static void Run(Stream input, EgamiContext context, ReaderOptions options, Action<RasterOps>? build, ITranscodeTarget target, CancellationToken cancellationToken)
     {
+        using TraceSpan span = Tracer.Start(Tracer.Transcode, input);
+        try
+        {
+            RunCore(input, context, options, build, target, span, cancellationToken);
+        }
+        catch (Exception e) when (span.Fail(e))
+        {
+            throw;
+        }
+    }
+
+    private static void RunCore(Stream input, EgamiContext context, ReaderOptions options, Action<RasterOps>? build, ITranscodeTarget target, TraceSpan span, CancellationToken cancellationToken)
+    {
         // The header is read once to plan, then again with the options the plan chose: a seekable input goes back, and the
         // bytes read from one that cannot seek are replayed.
         using ReplayStream? replay = input.CanSeek ? null : new(input);
@@ -178,6 +191,7 @@ internal static class Transcoder
         using (RasterDecoder probe = RasterDecoder.Open(source, context, options))
         {
             probe.Quiet = true;
+            span.Tag(probe.Info);
             plan = TranscodePlan.Create(build, probe.Info, options, options.ConvertColorTo ?? probe.Metadata.GetColorProfile(), options.ConvertColorTo is null ? probe.Metadata.Hdr : null);
         }
 
@@ -196,6 +210,19 @@ internal static class Transcoder
 
     public static async Task RunAsync(Stream input, EgamiContext context, ReaderOptions options, Action<RasterOps>? build, ITranscodeTarget target, CancellationToken cancellationToken)
     {
+        using TraceSpan span = Tracer.Start(Tracer.Transcode, input);
+        try
+        {
+            await RunAsyncCore(input, context, options, build, target, span, cancellationToken).ConfigureAwait(false);
+        }
+        catch (Exception e) when (span.Fail(e))
+        {
+            throw;
+        }
+    }
+
+    private static async Task RunAsyncCore(Stream input, EgamiContext context, ReaderOptions options, Action<RasterOps>? build, ITranscodeTarget target, TraceSpan span, CancellationToken cancellationToken)
+    {
         using ReplayStream? replay = input.CanSeek ? null : new(input);
         Stream source = replay ?? input;
         long start = input.CanSeek ? input.Position : 0;
@@ -203,6 +230,7 @@ internal static class Transcoder
         using (RasterDecoder probe = await RasterDecoder.OpenAsync(source, context, options, cancellationToken).ConfigureAwait(false))
         {
             probe.Quiet = true;
+            span.Tag(probe.Info);
             plan = TranscodePlan.Create(build, probe.Info, options, options.ConvertColorTo ?? probe.Metadata.GetColorProfile(), options.ConvertColorTo is null ? probe.Metadata.Hdr : null);
         }
 
