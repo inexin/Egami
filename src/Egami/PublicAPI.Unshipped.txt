@@ -1,5 +1,5 @@
 #nullable enable
-const Egami.EgamiTracing.SourceName = "Egami" -> string
+const Egami.EgamiTracing.SourceName = "Egami" -> string!
 Egami.EgamiTracing
 Egami.Raster.Save(System.IO.Stream! stream, Egami.Formats.FormatInfo! format, Egami.Formats.WriterOptions? options, System.IProgress<Egami.SaveProgress>? progress, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> void
 Egami.Raster.Save(System.IO.Stream! stream, string! formatNameOrExtension, Egami.Formats.WriterOptions? options, System.IProgress<Egami.SaveProgress>? progress, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> void
