@@ -35,6 +35,7 @@ settings, safety limits and registered formats a call uses.
 - [AV1 video frames](https://inexin.github.io/Egami/v1/articles/formats/av1.html): `Av1StreamDecoder` decodes AV1 video a temporal unit at a time and `Av1StreamEncoder` encodes it; both work on frames, and Egami.Video uses them for its containers.
 - [BMP](https://inexin.github.io/Egami/v1/articles/formats/bmp.html): Egami reads Windows bitmaps with core, info, V2 to V5 and OS/2 2.x headers at 1 to 32 bits, RLE4, RLE8 and RLE24, OS/2 Huffman 1D, bit fields, embedded PNG and JPEG and V5 ICC profiles.
 - [CCITT fax](https://inexin.github.io/Egami/v1/articles/formats/ccitt.html): Egami decodes raw CCITT fax data.
+- [DDS](https://inexin.github.io/Egami/v1/articles/formats/dds.html): DDS (DirectDraw Surface, .dds) is the texture container of Direct3D and most game engines.
 - [Extended formats](https://inexin.github.io/Egami/v1/articles/formats/extended.html): Egami.Formats.Extended reads and writes image formats that most apps never meet but some still need.
 - [Farbfeld](https://inexin.github.io/Egami/v1/articles/formats/farbfeld.html): Farbfeld is suckless.org's lossless format.
 - [GIF](https://inexin.github.io/Egami/v1/articles/formats/gif.html): Egami reads GIF 87a and 89a files, with every disposal method, interlaced images, transparency, the loop count, comments, XMP and ICC profiles, and writes GIF 89a.
@@ -114,6 +115,10 @@ settings, safety limits and registered formats a call uses.
 ## Egami.Metafiles
 
 - [Windows metafiles](https://inexin.github.io/Egami/v1/articles/guides/metafiles.html): Egami.Metafiles plays Windows metafiles, the vector pictures Office and Windows programs exchange.
+
+## Egami.Formats.Extended
+
+- [Textures](https://inexin.github.io/Egami/v1/articles/guides/textures.html): Game engines and 3D tools keep their textures in DDS files.
 
 ## Egami.SystemDrawing
 

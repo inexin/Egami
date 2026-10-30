@@ -104,6 +104,80 @@ public static class Raw8Format
 }
 #endregion
 
+#region multi-image-format
+/// <summary>A format holding several RAW8 images: "RAW8P", the image count as one byte, then each image as RAW8 stores it.</summary>
+public static class Raw8PagesFormat
+{
+    public static FormatInfo Info { get; } = new()
+    {
+        Name = "RAW8P",
+        Extensions = ["raw8p"],
+        SignatureLength = 5,
+        Matches = header => header.StartsWith("RAW8P"u8),
+        Reader = new Reader(),
+    };
+
+    /// <summary>Names the image a Load reads; LoadAll sets it for each.</summary>
+    public sealed record PageOptions : ReaderOptions
+    {
+        public int Page { get; init; }
+    }
+
+    private sealed class Reader : IFormatReader, IMultiImageReader
+    {
+        public IReadOnlyList<ReaderOptions> Images(EgamiInput input, ReaderOptions options)
+        {
+            input.Skip(5);
+            int count = input.ReadByte();
+            return [.. Enumerable.Range(0, count).Select(page => new PageOptions { Recovery = options.Recovery, Page = page })];
+        }
+
+        public RasterInfo ReadInfo(EgamiInput input, ReaderOptions options)
+        {
+            (int width, int height, int count) = Seek(input, options);
+            return new RasterInfo { Format = Info, Width = width, Height = height, Layout = Rgba8.Layout, FrameCount = 1, ImageCount = count, EstimatedBytes = 4L * width * height };
+        }
+
+        public Raster<TPixel> Read<TPixel>(EgamiInput input, ReaderOptions options)
+            where TPixel : unmanaged, IPixelType<TPixel>
+        {
+            (int width, int height, _) = Seek(input, options);
+            Raster<TPixel> raster = input.CreateRaster<TPixel>(width, height);
+            byte[] row = new byte[width * 4];
+            for (int y = 0; y < height; y++)
+            {
+                input.ReadExactly(row);
+                PixelConvert.Convert<Rgba8, TPixel>(MemoryMarshal.Cast<byte, Rgba8>(row.AsSpan()), raster.Row(y));
+            }
+
+            return raster;
+        }
+
+        public Raster Read(EgamiInput input, ReaderOptions options) => Read<Rgba8>(input, options);
+
+        /// <summary>Skips to the page the options name and reads its size.</summary>
+        private static (int Width, int Height, int Count) Seek(EgamiInput input, ReaderOptions options)
+        {
+            input.Skip(5);
+            int count = input.ReadByte();
+            int page = (options as PageOptions)?.Page ?? 0;
+            for (int i = 0; ; i++)
+            {
+                input.Skip(4);
+                int width = (int)input.ReadUInt32BigEndian();
+                int height = (int)input.ReadUInt32BigEndian();
+                if (i == page)
+                {
+                    return (width, height, count);
+                }
+
+                input.Skip(4L * width * height);
+            }
+        }
+    }
+}
+#endregion
+
 #region row-format
 /// <summary>The same RAW8 format, streaming: rows go in and out one at a time, so RasterDecoder, RasterEncoder and Transcode stream it.</summary>
 public static class StreamingRaw8Format
@@ -291,5 +365,23 @@ public class Extending
         using RasterDecoder decoder = RasterDecoder.Open("small.raw8", context);
         Assert.Equal(RasterAccess.Streamed, decoder.Info.Access);
         Assert.Equal(32, Math.Max(decoder.Info.Width, decoder.Info.Height));
+    }
+
+    [Fact]
+    public void UseMultiImageFormat()
+    {
+        using MemoryStream file = new();
+        file.Write("RAW8P"u8);
+        file.WriteByte(2);
+        foreach (int size in (int[])[3, 5])
+        {
+            using Raster<Rgba8> page = Raster.Create<Rgba8>(size, size);
+            page.Save(file, Raw8Format.Info);
+        }
+
+        file.Position = 0;
+        EgamiContext context = EgamiContext.Default.WithFormat(Raw8PagesFormat.Info);
+        using RasterList pages = Raster.LoadAll(file, context);
+        Assert.Equal([3, 5], pages.Select(p => p.Width));
     }
 }

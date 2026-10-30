@@ -39,8 +39,15 @@ Licenses were checked on 2026-10-07 (the HEVC libraries on 2026-10-15, the barco
 | [ag-psd](https://github.com/Agamnentzar/ag-psd) | TypeScript | MIT | PSD layer records, masks and additional layer information as Photoshop writes them | 2.3.10 |
 | [libebur128](https://github.com/jiixyj/libebur128) | C | MIT | EBU R 128 loudness: K-weighting at any rate, gating, loudness range | Video V1.4 |
 | [skrifa](https://github.com/googlefonts/fontations/tree/main/skrifa) (Google fontations) | Rust | MIT or Apache 2.0 | A complete TrueType interpreter with ClearType compatibility and an autohinter; read under MIT (2.7.5 Q2, Lars 2026-10-28). A close translation gets a THIRD-PARTY-NOTICES entry | 2.7.5 |
+| [DirectXTex](https://github.com/microsoft/DirectXTex) | C++ | MIT | Every DXGI format, the legacy DDS header mappings and BC1 to BC7 codecs; its `texconv` is the DDS gate oracle | DDS |
+| [bcdec](https://github.com/iOrange/bcdec) | C | MIT or Unlicense | Compact BC1 to BC7 block decoders | DDS |
+| [bc7enc_rdo](https://github.com/richgel999/bc7enc_rdo) | C++ | MIT or public domain | Fast BC1 to BC7 encoders and their mode searches | DDS |
 
-Specifications, textbooks and papers are always fine. Code under GPL, LGPL or AGPL, and code with no license, is never used.
+Specifications, textbooks and papers are always fine.
+
+For DDS textures, Microsoft's DDS programming guide, the Direct3D 11 BC6H and BC7 format pages and the Khronos Data Format
+Specification (its S3TC, RGTC and BPTC chapters) are the references, with DirectXTex, Pfim, bcdec, stb_dxt and bc7enc_rdo as
+the listed libraries. ImageSharp.Textures and GIMP's DDS plug-in (GPL) are never read. Code under GPL, LGPL or AGPL, and code with no license, is never used.
 
 For barcodes, ZBar (LGPL) is never used, and of zint only the backend library (BSD-3) may be studied: its frontends and GUI are
 under the GPL and are never used.

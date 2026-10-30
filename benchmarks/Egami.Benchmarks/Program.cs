@@ -28,6 +28,13 @@ if (args is ["--time-filters", .. string[] names])
     return;
 }
 
+// Time the 2.4.8 image scenarios (JPEG, PNG, resize, compose, YUV, blur): -- --time-image [--one-thread|--threads=N] [--runs=N] [--list] [name...]
+if (args is ["--time-image", .. string[] imageArgs])
+{
+    ImageTiming.Run(imageArgs);
+    return;
+}
+
 // Time AV1 decoding (Phase 2.9.5 speed gate) at one thread and all cores: -- --time-av1 [--one-thread] <file.ivf>...
 if (args is ["--time-av1", .. string[] av1s])
 {

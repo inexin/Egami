@@ -38,6 +38,40 @@ Video Build Plan task 31: HEVC decode speed. No API changes.
   elsewhere, with the same output), and the merge and AMVP candidate lists stop at the candidate the stream picks. In
   instructions a frame it now takes 1.99 times FFmpeg's at 1080p and 1.73 times at 4K 10-bit, from 13.9 and 19.3 times.
 
+## Egami.Formats.Extended, unreleased
+
+DDS textures, stage A (reading). All additive; it ships with the rest of DDS in one release.
+
+- `DdsFormat`, registered by `WithExtendedFormats()` and `WithDds()`, reads DDS textures: the legacy header (DXT1 to DXT5,
+  ATI1 and ATI2, bit masks, luminance, P8 palettes, YUY2 and UYVY) and the DX10 header's DXGI formats, every one DirectXTex
+  reads: BC1 to BC7 with BC6H signed and unsigned, UNORM, SNORM, sRGB, float, UINT and SINT formats, the packed floats and
+  packed 565, 5551 and 4444 formats, depth and stencil, and packed and planar video. Each loads as its nearest pixel type,
+  BC4, BC5, BC6H and BC7 bit for bit as the Direct3D specification defines them. Premultiplied files are un-premultiplied and
+  `_SRGB` formats tagged sRGB.
+- Mips, cube faces, array slices and volume depth slices: Load reads mip 0 of the first, LoadAll every surface (and with
+  `DdsReaderOptions.IncludeMipLevels` every mip), `DdsReaderOptions.Surface` and `MipLevel` pick one, and
+  `ReaderOptions.MinimumSize` picks the smallest mip that covers it. `DdsReaderOptions.ReconstructNormalZ` rebuilds blue for
+  two-channel normal maps. `DdsDetails` keeps the DXGI format, mips, dimension, cube flag and alpha mode.
+
+DDS textures, stage B (writing).
+
+- Save writes DDS: the uncompressed formats and BC1 to BC5 (`DdsTextureFormat`), with a full mip chain made by `MipChain`
+  (`DdsWriterOptions.MipLevels`), an encoder effort of 0 to 6 (`Effort`), sRGB formats (`Srgb`), premultiplied alpha
+  (`PremultipliedAlpha`, DXT2 and DXT4 under the legacy header) and the legacy header whenever the format allows
+  (`Dx10Header` forces DX10). SaveAll writes texture arrays and cube maps (`Cube`). A raster loaded at mip 0 and unchanged
+  since writes the file's own mips.
+
+DDS textures, stage C (BC7 and BC6H encoders).
+
+- `DdsTextureFormat.Bc7`, `Bc6h` and `Bc6hSigned`: BC7 searches modes, partitions, rotations and p-bits by effort; BC6H fits
+  HDR colour in the decoder's domain, with the two-region modes from effort 3. The `egami` command writes them with
+  `--set dds.format=bc7` and the other `dds.` keys. A Textures guide says which format suits which content.
+- Against texconv 2026.5.8.1: every file it writes decodes to its own decode, on every mip (BC4 and BC5 SNORM within an
+  8-bit level, which texconv rounds through R8_SNORM), and at the default effort the encoders reach a higher PSNR on 28 photos:
+  BC1 +0.84 dB, BC3 +0.65, BC4 +0.96, BC5 +0.98, BC7 +0.71. BC7 encodes 15.7 times as fast as texconv's CPU path, and BC1 and
+  BC3 five times as fast as ImageMagick. Legacy Q8W8V8U8 files as texconv writes them (an alpha mask without the alpha flag)
+  now load.
+
 ## Egami, unreleased
 
 2.3.10: PSD layers. All additive.
@@ -78,6 +112,9 @@ Small format gaps from the on-demand list. All additive.
 - `ColorProfile.ToIccV2` writes a version 2.4 ICC profile for software that reads only version 2: `curv` curves, text tags
   and the encoding's own white point. Little CMS converts through it as through the version 4 profile, within 1 in 255.
 
+- `IMultiImageReader` and `IMultiImageWriter` are public, so a format plugin's files can hold several images that LoadAll
+  returns and SaveAll writes, as TIFF pages and DDS surfaces are; `FormatDetails.PixelsChanged` is overridable, so a plugin's
+  details can drop what held only for the pixels as loaded. Additive.
 - Progress on long saves. All additive. `SaveProgress`, and overloads of `Save`, `SaveAsync`, `SaveAll`, `Transcode` and
   `TranscodeAsync` that take an `IProgress<SaveProgress>` and a `CancellationToken`, shaped like Egami.Video's
   `MediaProgress`: a report as the save starts, at most one every 250 ms, and a final one. Row writers (PNG, JPEG, BMP, TGA,

@@ -1,1 +1,106 @@
 #nullable enable
+Egami.Formats.Extended.Dds.DdsAlphaMode
+Egami.Formats.Extended.Dds.DdsAlphaMode.Custom = 4 -> Egami.Formats.Extended.Dds.DdsAlphaMode
+Egami.Formats.Extended.Dds.DdsAlphaMode.Opaque = 3 -> Egami.Formats.Extended.Dds.DdsAlphaMode
+Egami.Formats.Extended.Dds.DdsAlphaMode.Premultiplied = 2 -> Egami.Formats.Extended.Dds.DdsAlphaMode
+Egami.Formats.Extended.Dds.DdsAlphaMode.Straight = 1 -> Egami.Formats.Extended.Dds.DdsAlphaMode
+Egami.Formats.Extended.Dds.DdsAlphaMode.Unknown = 0 -> Egami.Formats.Extended.Dds.DdsAlphaMode
+Egami.Formats.Extended.Dds.DdsDetails
+Egami.Formats.Extended.Dds.DdsDetails.AlphaMode.get -> Egami.Formats.Extended.Dds.DdsAlphaMode
+Egami.Formats.Extended.Dds.DdsDetails.AlphaMode.set -> void
+Egami.Formats.Extended.Dds.DdsDetails.ArraySize.get -> int
+Egami.Formats.Extended.Dds.DdsDetails.ArraySize.set -> void
+Egami.Formats.Extended.Dds.DdsDetails.DdsDetails() -> void
+Egami.Formats.Extended.Dds.DdsDetails.Depth.get -> int
+Egami.Formats.Extended.Dds.DdsDetails.Depth.set -> void
+Egami.Formats.Extended.Dds.DdsDetails.Dimension.get -> Egami.Formats.Extended.Dds.DdsDimension
+Egami.Formats.Extended.Dds.DdsDetails.Dimension.set -> void
+Egami.Formats.Extended.Dds.DdsDetails.Dx10Header.get -> bool
+Egami.Formats.Extended.Dds.DdsDetails.Dx10Header.set -> void
+Egami.Formats.Extended.Dds.DdsDetails.DxgiFormat.get -> int
+Egami.Formats.Extended.Dds.DdsDetails.DxgiFormat.set -> void
+Egami.Formats.Extended.Dds.DdsDetails.FormatName.get -> string!
+Egami.Formats.Extended.Dds.DdsDetails.FormatName.set -> void
+Egami.Formats.Extended.Dds.DdsDetails.FourCC.get -> string?
+Egami.Formats.Extended.Dds.DdsDetails.FourCC.set -> void
+Egami.Formats.Extended.Dds.DdsDetails.IsCube.get -> bool
+Egami.Formats.Extended.Dds.DdsDetails.IsCube.set -> void
+Egami.Formats.Extended.Dds.DdsDetails.IsSrgb.get -> bool
+Egami.Formats.Extended.Dds.DdsDetails.IsSrgb.set -> void
+Egami.Formats.Extended.Dds.DdsDetails.MipLevel.get -> int
+Egami.Formats.Extended.Dds.DdsDetails.MipLevel.set -> void
+Egami.Formats.Extended.Dds.DdsDetails.MipLevels.get -> int
+Egami.Formats.Extended.Dds.DdsDetails.MipLevels.set -> void
+Egami.Formats.Extended.Dds.DdsDetails.Surface.get -> int
+Egami.Formats.Extended.Dds.DdsDetails.Surface.set -> void
+Egami.Formats.Extended.Dds.DdsDimension
+Egami.Formats.Extended.Dds.DdsDimension.Texture1D = 0 -> Egami.Formats.Extended.Dds.DdsDimension
+Egami.Formats.Extended.Dds.DdsDimension.Texture2D = 1 -> Egami.Formats.Extended.Dds.DdsDimension
+Egami.Formats.Extended.Dds.DdsDimension.Texture3D = 2 -> Egami.Formats.Extended.Dds.DdsDimension
+Egami.Formats.Extended.Dds.DdsFormat
+Egami.Formats.Extended.Dds.DdsReaderOptions
+Egami.Formats.Extended.Dds.DdsReaderOptions.DdsReaderOptions() -> void
+Egami.Formats.Extended.Dds.DdsReaderOptions.Equals(Egami.Formats.Extended.Dds.DdsReaderOptions? other) -> bool
+Egami.Formats.Extended.Dds.DdsReaderOptions.IncludeMipLevels.get -> bool
+Egami.Formats.Extended.Dds.DdsReaderOptions.IncludeMipLevels.init -> void
+Egami.Formats.Extended.Dds.DdsReaderOptions.MipLevel.get -> int?
+Egami.Formats.Extended.Dds.DdsReaderOptions.MipLevel.init -> void
+Egami.Formats.Extended.Dds.DdsReaderOptions.ReconstructNormalZ.get -> bool
+Egami.Formats.Extended.Dds.DdsReaderOptions.ReconstructNormalZ.init -> void
+Egami.Formats.Extended.Dds.DdsReaderOptions.Surface.get -> int?
+Egami.Formats.Extended.Dds.DdsReaderOptions.Surface.init -> void
+Egami.Formats.Extended.Dds.DdsTextureFormat
+Egami.Formats.Extended.Dds.DdsTextureFormat.A8 = 5 -> Egami.Formats.Extended.Dds.DdsTextureFormat
+Egami.Formats.Extended.Dds.DdsTextureFormat.Bc1 = 19 -> Egami.Formats.Extended.Dds.DdsTextureFormat
+Egami.Formats.Extended.Dds.DdsTextureFormat.Bc2 = 20 -> Egami.Formats.Extended.Dds.DdsTextureFormat
+Egami.Formats.Extended.Dds.DdsTextureFormat.Bc3 = 21 -> Egami.Formats.Extended.Dds.DdsTextureFormat
+Egami.Formats.Extended.Dds.DdsTextureFormat.Bc4 = 22 -> Egami.Formats.Extended.Dds.DdsTextureFormat
+Egami.Formats.Extended.Dds.DdsTextureFormat.Bc5 = 23 -> Egami.Formats.Extended.Dds.DdsTextureFormat
+Egami.Formats.Extended.Dds.DdsTextureFormat.Bc6h = 25 -> Egami.Formats.Extended.Dds.DdsTextureFormat
+Egami.Formats.Extended.Dds.DdsTextureFormat.Bc6hSigned = 26 -> Egami.Formats.Extended.Dds.DdsTextureFormat
+Egami.Formats.Extended.Dds.DdsTextureFormat.Bc7 = 24 -> Egami.Formats.Extended.Dds.DdsTextureFormat
+Egami.Formats.Extended.Dds.DdsTextureFormat.Bgr565 = 16 -> Egami.Formats.Extended.Dds.DdsTextureFormat
+Egami.Formats.Extended.Dds.DdsTextureFormat.Bgra4444 = 18 -> Egami.Formats.Extended.Dds.DdsTextureFormat
+Egami.Formats.Extended.Dds.DdsTextureFormat.Bgra5551 = 17 -> Egami.Formats.Extended.Dds.DdsTextureFormat
+Egami.Formats.Extended.Dds.DdsTextureFormat.Bgra8 = 1 -> Egami.Formats.Extended.Dds.DdsTextureFormat
+Egami.Formats.Extended.Dds.DdsTextureFormat.Bgrx8 = 2 -> Egami.Formats.Extended.Dds.DdsTextureFormat
+Egami.Formats.Extended.Dds.DdsTextureFormat.R11G11B10F = 14 -> Egami.Formats.Extended.Dds.DdsTextureFormat
+Egami.Formats.Extended.Dds.DdsTextureFormat.R16 = 6 -> Egami.Formats.Extended.Dds.DdsTextureFormat
+Egami.Formats.Extended.Dds.DdsTextureFormat.R32F = 10 -> Egami.Formats.Extended.Dds.DdsTextureFormat
+Egami.Formats.Extended.Dds.DdsTextureFormat.R8 = 3 -> Egami.Formats.Extended.Dds.DdsTextureFormat
+Egami.Formats.Extended.Dds.DdsTextureFormat.Rg16 = 7 -> Egami.Formats.Extended.Dds.DdsTextureFormat
+Egami.Formats.Extended.Dds.DdsTextureFormat.Rg8 = 4 -> Egami.Formats.Extended.Dds.DdsTextureFormat
+Egami.Formats.Extended.Dds.DdsTextureFormat.Rgb10A2 = 13 -> Egami.Formats.Extended.Dds.DdsTextureFormat
+Egami.Formats.Extended.Dds.DdsTextureFormat.Rgb9E5 = 15 -> Egami.Formats.Extended.Dds.DdsTextureFormat
+Egami.Formats.Extended.Dds.DdsTextureFormat.Rgba16 = 8 -> Egami.Formats.Extended.Dds.DdsTextureFormat
+Egami.Formats.Extended.Dds.DdsTextureFormat.Rgba8 = 0 -> Egami.Formats.Extended.Dds.DdsTextureFormat
+Egami.Formats.Extended.Dds.DdsTextureFormat.RgbaF16 = 9 -> Egami.Formats.Extended.Dds.DdsTextureFormat
+Egami.Formats.Extended.Dds.DdsTextureFormat.RgbaF32 = 12 -> Egami.Formats.Extended.Dds.DdsTextureFormat
+Egami.Formats.Extended.Dds.DdsTextureFormat.RgbF32 = 11 -> Egami.Formats.Extended.Dds.DdsTextureFormat
+Egami.Formats.Extended.Dds.DdsWriterOptions
+Egami.Formats.Extended.Dds.DdsWriterOptions.Cube.get -> bool
+Egami.Formats.Extended.Dds.DdsWriterOptions.Cube.init -> void
+Egami.Formats.Extended.Dds.DdsWriterOptions.DdsWriterOptions() -> void
+Egami.Formats.Extended.Dds.DdsWriterOptions.Dx10Header.get -> bool
+Egami.Formats.Extended.Dds.DdsWriterOptions.Dx10Header.init -> void
+Egami.Formats.Extended.Dds.DdsWriterOptions.Effort.get -> int
+Egami.Formats.Extended.Dds.DdsWriterOptions.Effort.init -> void
+Egami.Formats.Extended.Dds.DdsWriterOptions.Format.get -> Egami.Formats.Extended.Dds.DdsTextureFormat?
+Egami.Formats.Extended.Dds.DdsWriterOptions.Format.init -> void
+Egami.Formats.Extended.Dds.DdsWriterOptions.MipLevels.get -> int
+Egami.Formats.Extended.Dds.DdsWriterOptions.MipLevels.init -> void
+Egami.Formats.Extended.Dds.DdsWriterOptions.PremultipliedAlpha.get -> bool
+Egami.Formats.Extended.Dds.DdsWriterOptions.PremultipliedAlpha.init -> void
+Egami.Formats.Extended.Dds.DdsWriterOptions.Srgb.get -> bool?
+Egami.Formats.Extended.Dds.DdsWriterOptions.Srgb.init -> void
+override Egami.Formats.Extended.Dds.DdsDetails.Copy() -> Egami.Metadata.FormatDetails!
+override Egami.Formats.Extended.Dds.DdsReaderOptions.<Clone>$() -> Egami.Formats.Extended.Dds.DdsReaderOptions!
+override Egami.Formats.Extended.Dds.DdsReaderOptions.Equals(object? obj) -> bool
+override Egami.Formats.Extended.Dds.DdsReaderOptions.GetHashCode() -> int
+override Egami.Formats.Extended.Dds.DdsReaderOptions.ToString() -> string!
+override sealed Egami.Formats.Extended.Dds.DdsReaderOptions.Equals(Egami.Formats.ReaderOptions? other) -> bool
+static Egami.Formats.Extended.Dds.DdsFormat.Info.get -> Egami.Formats.FormatInfo!
+static Egami.Formats.Extended.Dds.DdsReaderOptions.operator !=(Egami.Formats.Extended.Dds.DdsReaderOptions? left, Egami.Formats.Extended.Dds.DdsReaderOptions? right) -> bool
+static Egami.Formats.Extended.Dds.DdsReaderOptions.operator ==(Egami.Formats.Extended.Dds.DdsReaderOptions? left, Egami.Formats.Extended.Dds.DdsReaderOptions? right) -> bool
+static Egami.Formats.Extended.Dds.DdsWriterOptions.Default.get -> Egami.Formats.Extended.Dds.DdsWriterOptions!
+static Egami.Formats.Extended.ExtendedContextExtensions.WithDds(this Egami.EgamiContext! context) -> Egami.EgamiContext!

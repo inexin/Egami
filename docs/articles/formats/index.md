@@ -5,7 +5,7 @@ map), TIFF, Radiance .hdr, OpenEXR, JPEG XL, AVIF, and Windows icons and cursors
 2000, Windows animated cursors (ANI) and Photoshop's PSD and PSB. HEIC phone photos load through the separate, opt-in Egami.Heic
 package; core Egami detects and probes them. SVG and Windows metafiles (WMF, EMF) load through the separate
 [Egami.Svg](../guides/svg.md) and [Egami.Metafiles](../guides/metafiles.md) packages, and PCX, SGI, Sun raster, XBM, XPM, WBMP
-and Farbfeld through [Egami.Formats.Extended](extended.md). The Package column says which package holds each format. Every reader checks sizes against the
+Farbfeld and DDS textures through [Egami.Formats.Extended](extended.md). The Package column says which package holds each format. Every reader checks sizes against the
 safety limits before it allocates, and every reader has been fuzzed.
 
 Each format has its own page with its options and what it keeps from the file; the table below links them. VP8 and AV1 video frames decode
@@ -44,6 +44,7 @@ through [`Vp8StreamDecoder`](vp8.md) and [`Av1StreamDecoder`](av1.md), VP8 and A
 | [XPM](xpm.md) | Version 3, any color keys, None, hex colors and X11 names | Version 3 with every color of the raster | `Rgba8` | Egami.Formats.Extended |
 | [WBMP](wbmp.md) | Type 0 | Type 0 | `Gray8`, black 0 and white 255 | Egami.Formats.Extended |
 | [Farbfeld](farbfeld.md) | The whole format | 16-bit RGBA | `Rgba16` | Egami.Formats.Extended |
+| [DDS](dds.md) | Legacy and DX10 headers, BC1 to BC7, every DXGI format DirectXTex reads; mips, cube maps, arrays and volumes | Uncompressed formats and BC1 to BC7, with mips, arrays and cube maps | The nearest to the stored format: `Rgba8`, `Gray8`, `Rgb8`, `Rgba16`, `RgbaF16`, `RgbaF32` and others | Egami.Formats.Extended |
 
 `Raster.Load` returns the natural type; `Raster.Load<TPixel>` decodes straight into the type you ask for, converting row by row.
 
