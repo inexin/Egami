@@ -12,7 +12,7 @@ namespace Egami.Benchmarks;
 /// and at all cores, or at --one-thread or --threads=N only. tools/video/count-instructions.py runs one scenario with two run
 /// counts under perf to count instructions per operation. JPEG and PNG decode and encode, resize, compose, YUV conversion and
 /// the byte blur, on the benchmark photo (4000 × 3000) unless the name says otherwise. Run: <c>-- --time-image [name...]</c>,
-/// where a name selects every scenario it starts; --list prints the names.
+/// where a name selects that scenario, or every scenario it starts when no scenario has that exact name; --list prints the names.
 /// </summary>
 internal static class ImageTiming
 {
@@ -40,7 +40,7 @@ internal static class ImageTiming
         string[] names = [.. args.Where(a => !a.StartsWith("--", StringComparison.Ordinal))];
         foreach ((string name, Func<EgamiContext, Action> make) in Scenarios)
         {
-            if (names.Length > 0 && !names.Any(n => name.StartsWith(n, StringComparison.OrdinalIgnoreCase)))
+            if (names.Length > 0 && !names.Any(n => Scenarios.ContainsKey(n) ? n == name : name.StartsWith(n, StringComparison.OrdinalIgnoreCase)))
             {
                 continue;
             }
