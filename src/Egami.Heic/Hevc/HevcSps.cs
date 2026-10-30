@@ -153,10 +153,10 @@ internal sealed class HevcSps
     internal bool CabacBypassAlignment { get; private set; }
 
     /// <summary>Gets PicWidthInCtbsY.</summary>
-    internal int WidthInCtbs => (Width + (1 << CtbLog2Size) - 1) >> CtbLog2Size;
+    internal int WidthInCtbs { get; private set; }
 
     /// <summary>Gets PicHeightInCtbsY.</summary>
-    internal int HeightInCtbs => (Height + (1 << CtbLog2Size) - 1) >> CtbLog2Size;
+    internal int HeightInCtbs { get; private set; }
 
     /// <summary>Gets PicWidthInMinCbsY.</summary>
     internal int WidthInMinCbs => Width >> MinCbLog2Size;
@@ -336,6 +336,8 @@ internal sealed class HevcSps
         }
 
         r.TrailingBits();
+        sps.WidthInCtbs = (sps.Width + (1 << sps.CtbLog2Size) - 1) >> sps.CtbLog2Size;
+        sps.HeightInCtbs = (sps.Height + (1 << sps.CtbLog2Size) - 1) >> sps.CtbLog2Size;
         return sps;
     }
 

@@ -23,5 +23,5 @@ internal sealed class HevcScratch
 
     internal int[] LumaResidual { get; } = new int[32 * 32];
 
-    internal int[] Scratch { get; } = new int[32 * 32];
+    internal short[] Scratch { get; } = new short[32 * 32];
 }

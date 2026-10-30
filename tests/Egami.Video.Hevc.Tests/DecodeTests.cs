@@ -33,6 +33,23 @@ public sealed class DecodeTests
 
     [Theory]
     [MemberData(nameof(Clips))]
+    public void ScalarFormsMatchFfmpeg(string clip)
+    {
+        // The inter prediction, SAO and deblocking without AVX2. The tests of this class run one at a time; other classes that
+        // decode meanwhile only take the scalar code as well.
+        Egami.Heic.Hevc.HevcInter.UseVectors = false;
+        try
+        {
+            RawStreamMatchesFfmpeg(clip);
+        }
+        finally
+        {
+            Egami.Heic.Hevc.HevcInter.UseVectors = System.Runtime.Intrinsics.X86.Avx2.IsSupported;
+        }
+    }
+
+    [Theory]
+    [MemberData(nameof(Clips))]
     public void ThreadsGiveTheSameFrames(string clip)
     {
         using FileStream stream = File.OpenRead(PathOf(clip + ".h265"));

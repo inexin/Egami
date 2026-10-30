@@ -1,6 +1,7 @@
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
+using System.Runtime.Intrinsics.X86;
 
 namespace Egami.Heic.Hevc;
 
@@ -86,6 +87,9 @@ internal static class HevcTransform
         return matrix;
     }
 
+    /// <summary>m * levelScale[qP % 6] &lt;&lt; (qP / 6) of <see cref="Scale"/> with flat scaling, m = 16.</summary>
+    internal static long FlatScale(int qp) => (16L * LevelScale[qp % 6]) << (qp / 6);
+
     /// <summary>
     /// Scales coefficient levels in place (8.6.3): d = Clip3(-32768, 32767, (level * m * levelScale[qP % 6] &lt;&lt; (qP / 6) +
     /// (1 &lt;&lt; (bdShift - 1))) &gt;&gt; bdShift), m from the scaling factors or 16. The levels lie in rows 0 to
@@ -120,15 +124,201 @@ internal static class HevcTransform
     /// <remarks>
     /// Each stage adds coefficient times matrix row to a whole output row at once. The sums fit 32 bits: the coefficients and
     /// the first stage's outputs are 16-bit (extended precision is not decoded), the matrix entries at most 90, and there are at
-    /// most 32 terms.
+    /// most 32 terms. With AVX2 the terms go two at a time: a pair of 16-bit inputs times the interleaved matrix rows of
+    /// <see cref="Pairs"/> in one multiply-add.
     /// </remarks>
-    internal static void Inverse(int[] coefficients, int[] residual, int[] scratch, int log2, int bitDepth, bool dst, int lastRow, int lastColumn)
+    internal static void Inverse(int[] coefficients, int[] residual, short[] scratch, int log2, int bitDepth, bool dst, int lastRow, int lastColumn)
+    {
+        int n = 1 << log2;
+        int bdShift = 20 - bitDepth;
+        if (!Avx2.IsSupported)
+        {
+            InverseScalar(coefficients, residual, log2, bitDepth, dst, lastRow, lastColumn);
+            return;
+        }
+
+        short[] pairs = dst ? DstPairs : Pairs[log2];
+        if (n == 4)
+        {
+            Inverse4(coefficients, residual, pairs, bdShift);
+            return;
+        }
+
+        Span<int> inputs = stackalloc int[16];
+        Span<int> rows = stackalloc int[16];
+
+        // First stage: column x of the coefficients gives column x of the intermediate block, stored as scratch row x.
+        ref int c0 = ref MemoryMarshal.GetArrayDataReference(coefficients);
+        ref short s0 = ref MemoryMarshal.GetArrayDataReference(scratch);
+        for (int x = 0; x <= lastColumn; x++)
+        {
+            int count = 0;
+            for (int k = 0; k <= lastRow; k += 2)
+            {
+                int pair = (Unsafe.Add(ref c0, (k * n) + x) & 0xFFFF) | (Unsafe.Add(ref c0, ((k + 1) * n) + x) << 16);
+                if (pair != 0)
+                {
+                    inputs[count] = pair;
+                    rows[count++] = k >> 1;
+                }
+            }
+
+            Stage(inputs[..count], rows, pairs, n, ref Unsafe.Add(ref s0, x * n), 7);
+        }
+
+        // A last column of even index leaves the odd scratch row after it unwritten; the second stage reads it as a pair's half.
+        if ((lastColumn & 1) == 0)
+        {
+            scratch.AsSpan((lastColumn + 1) * n, n).Clear();
+        }
+
+        // Second stage: row y of the intermediate block (column y of scratch) gives row y of the residual.
+        ref int r0 = ref MemoryMarshal.GetArrayDataReference(residual);
+        for (int y = 0; y < n; y++)
+        {
+            int count = 0;
+            for (int k = 0; k <= lastColumn; k += 2)
+            {
+                int pair = (ushort)Unsafe.Add(ref s0, (k * n) + y) | (Unsafe.Add(ref s0, ((k + 1) * n) + y) << 16);
+                if (pair != 0)
+                {
+                    inputs[count] = pair;
+                    rows[count++] = k >> 1;
+                }
+            }
+
+            Stage(inputs[..count], rows, pairs, n, ref Unsafe.Add(ref r0, y * n), bdShift);
+        }
+    }
+
+    /// <summary>
+    /// The 4x4 transform in registers: the coefficient rows interleaved in pairs (rows 0 and 1, rows 2 and 3) times each output
+    /// row's pair of matrix entries, then the intermediate rows' sample pairs times the interleaved matrix rows.
+    /// </summary>
+    private static void Inverse4(int[] coefficients, int[] residual, short[] pairs, int bdShift)
+    {
+        ref int c0 = ref MemoryMarshal.GetArrayDataReference(coefficients);
+        ref short m0 = ref MemoryMarshal.GetArrayDataReference(pairs);
+        Vector128<short> rows02 = Sse2.PackSignedSaturate(Vector128.LoadUnsafe(ref c0), Vector128.LoadUnsafe(ref c0, 8));
+        Vector128<short> rows13 = Sse2.PackSignedSaturate(Vector128.LoadUnsafe(ref c0, 4), Vector128.LoadUnsafe(ref c0, 12));
+        Vector128<short> p01 = Sse2.UnpackLow(rows02, rows13), p23 = Sse2.UnpackHigh(rows02, rows13);
+        Vector128<int> m01 = Vector128.LoadUnsafe(ref m0).AsInt32(), m23 = Vector128.LoadUnsafe(ref m0, 8).AsInt32();
+        Vector128<int> round = Vector128.Create(64);
+        Vector128<int> g0 = (Sse2.MultiplyAddAdjacent(p01, Sse2.Shuffle(m01, 0x00).AsInt16()) + Sse2.MultiplyAddAdjacent(p23, Sse2.Shuffle(m23, 0x00).AsInt16()) + round) >> 7;
+        Vector128<int> g1 = (Sse2.MultiplyAddAdjacent(p01, Sse2.Shuffle(m01, 0x55).AsInt16()) + Sse2.MultiplyAddAdjacent(p23, Sse2.Shuffle(m23, 0x55).AsInt16()) + round) >> 7;
+        Vector128<int> g2 = (Sse2.MultiplyAddAdjacent(p01, Sse2.Shuffle(m01, 0xAA).AsInt16()) + Sse2.MultiplyAddAdjacent(p23, Sse2.Shuffle(m23, 0xAA).AsInt16()) + round) >> 7;
+        Vector128<int> g3 = (Sse2.MultiplyAddAdjacent(p01, Sse2.Shuffle(m01, 0xFF).AsInt16()) + Sse2.MultiplyAddAdjacent(p23, Sse2.Shuffle(m23, 0xFF).AsInt16()) + round) >> 7;
+
+        // Intermediate rows 0 and 1, and 2 and 3, clipped to 16 bits: as ints, pairs of samples (0, 1) and (2, 3) of each row.
+        Vector128<int> g01 = Sse2.PackSignedSaturate(g0, g1).AsInt32(), g23 = Sse2.PackSignedSaturate(g2, g3).AsInt32();
+        Vector128<short> pm01 = m01.AsInt16(), pm23 = m23.AsInt16();
+        Vector128<int> add = Vector128.Create(1 << (bdShift - 1));
+        ref int r0 = ref MemoryMarshal.GetArrayDataReference(residual);
+        ((Sse2.MultiplyAddAdjacent(Sse2.Shuffle(g01, 0x00).AsInt16(), pm01) + Sse2.MultiplyAddAdjacent(Sse2.Shuffle(g01, 0x55).AsInt16(), pm23) + add) >> bdShift).StoreUnsafe(ref r0);
+        ((Sse2.MultiplyAddAdjacent(Sse2.Shuffle(g01, 0xAA).AsInt16(), pm01) + Sse2.MultiplyAddAdjacent(Sse2.Shuffle(g01, 0xFF).AsInt16(), pm23) + add) >> bdShift).StoreUnsafe(ref r0, 4);
+        ((Sse2.MultiplyAddAdjacent(Sse2.Shuffle(g23, 0x00).AsInt16(), pm01) + Sse2.MultiplyAddAdjacent(Sse2.Shuffle(g23, 0x55).AsInt16(), pm23) + add) >> bdShift).StoreUnsafe(ref r0, 8);
+        ((Sse2.MultiplyAddAdjacent(Sse2.Shuffle(g23, 0xAA).AsInt16(), pm01) + Sse2.MultiplyAddAdjacent(Sse2.Shuffle(g23, 0xFF).AsInt16(), pm23) + add) >> bdShift).StoreUnsafe(ref r0, 12);
+    }
+
+    /// <summary>One output row of a transform stage: the sum of each input pair times its interleaved matrix rows, rounded and shifted.</summary>
+    private static void Stage(ReadOnlySpan<int> inputs, ReadOnlySpan<int> rows, short[] pairs, int n, ref short destination, int shift)
+    {
+        ref short m0 = ref MemoryMarshal.GetArrayDataReference(pairs);
+        if (n == 4)
+        {
+            Vector128<int> sum = Vector128.Create(1 << (shift - 1));
+            for (int i = 0; i < inputs.Length; i++)
+            {
+                sum += Sse2.MultiplyAddAdjacent(Vector128.Create(inputs[i]).AsInt16(), Vector128.LoadUnsafe(ref m0, (nuint)(rows[i] * 8)));
+            }
+
+            Unsafe.WriteUnaligned(ref Unsafe.As<short, byte>(ref destination), Sse2.PackSignedSaturate(sum >> shift, sum >> shift).AsUInt64().ToScalar());
+            return;
+        }
+
+        for (int c = 0; c < n; c += 8)
+        {
+            Vector256<int> sum = Vector256.Create(1 << (shift - 1));
+            for (int i = 0; i < inputs.Length; i++)
+            {
+                sum += Avx2.MultiplyAddAdjacent(Vector256.Create(inputs[i]).AsInt16(), Vector256.LoadUnsafe(ref m0, (nuint)((rows[i] * 2 * n) + (2 * c))));
+            }
+
+            sum >>= shift;
+            Sse2.PackSignedSaturate(sum.GetLower(), sum.GetUpper()).StoreUnsafe(ref destination, (nuint)c);
+        }
+    }
+
+    /// <summary>As <see cref="Stage(ReadOnlySpan{int}, ReadOnlySpan{int}, short[], int, ref short, int)"/>, into 32-bit residuals without clipping.</summary>
+    private static void Stage(ReadOnlySpan<int> inputs, ReadOnlySpan<int> rows, short[] pairs, int n, ref int destination, int shift)
+    {
+        ref short m0 = ref MemoryMarshal.GetArrayDataReference(pairs);
+        if (n == 4)
+        {
+            Vector128<int> sum = Vector128.Create(1 << (shift - 1));
+            for (int i = 0; i < inputs.Length; i++)
+            {
+                sum += Sse2.MultiplyAddAdjacent(Vector128.Create(inputs[i]).AsInt16(), Vector128.LoadUnsafe(ref m0, (nuint)(rows[i] * 8)));
+            }
+
+            (sum >> shift).StoreUnsafe(ref destination);
+            return;
+        }
+
+        for (int c = 0; c < n; c += 8)
+        {
+            Vector256<int> sum = Vector256.Create(1 << (shift - 1));
+            for (int i = 0; i < inputs.Length; i++)
+            {
+                sum += Avx2.MultiplyAddAdjacent(Vector256.Create(inputs[i]).AsInt16(), Vector256.LoadUnsafe(ref m0, (nuint)((rows[i] * 2 * n) + (2 * c))));
+            }
+
+            (sum >> shift).StoreUnsafe(ref destination, (nuint)c);
+        }
+    }
+
+    /// <summary>
+    /// The n x n DCT matrices by log2(n) with their rows interleaved in pairs: entry 2 (p n + j) is row 2p, column j, and the
+    /// entry after it row 2p + 1, column j.
+    /// </summary>
+    private static readonly short[][] Pairs = MakePairs();
+
+    private static readonly short[] DstPairs = Interleave(DstMatrix, 4);
+
+    private static short[][] MakePairs()
+    {
+        short[][] pairs = new short[6][];
+        for (int log2 = 2; log2 <= 5; log2++)
+        {
+            pairs[log2] = Interleave(Matrices[log2], 1 << log2);
+        }
+
+        return pairs;
+    }
+
+    private static short[] Interleave(int[] matrix, int n)
+    {
+        short[] pairs = new short[n * n];
+        for (int p = 0; p < n / 2; p++)
+        {
+            for (int j = 0; j < n; j++)
+            {
+                pairs[2 * ((p * n) + j)] = (short)matrix[(2 * p * n) + j];
+                pairs[(2 * ((p * n) + j)) + 1] = (short)matrix[(((2 * p) + 1) * n) + j];
+            }
+        }
+
+        return pairs;
+    }
+
+    private static void InverseScalar(int[] coefficients, int[] residual, int log2, int bitDepth, bool dst, int lastRow, int lastColumn)
     {
         int n = 1 << log2;
         int[] matrix = dst ? DstMatrix : Matrices[log2];
         int bdShift = 20 - bitDepth;
         Span<int> sum = stackalloc int[32];
         sum = sum[..n];
+        Span<int> scratch = stackalloc int[32 * 32];
 
         // First stage: column x of the coefficients gives column x of the intermediate block, stored as scratch row x.
         for (int x = 0; x <= lastColumn; x++)
@@ -143,7 +333,7 @@ internal static class HevcTransform
                 }
             }
 
-            ShiftClip(sum, scratch.AsSpan(x * n, n), 7);
+            ShiftClip(sum, scratch.Slice(x * n, n), 7);
         }
 
         // Second stage: row y of the intermediate block (column y of scratch) gives row y of the residual.
@@ -261,8 +451,27 @@ internal static class HevcTransform
     internal static void Add(ushort[] plane, int at, int stride, int[] residual, int log2, int bitDepth)
     {
         int n = 1 << log2;
-        Vector128<int> max = Vector128.Create((1 << bitDepth) - 1);
         ref int r0 = ref MemoryMarshal.GetArrayDataReference(residual);
+        if (n >= 8 && Avx2.IsSupported)
+        {
+            Vector256<int> max8 = Vector256.Create((1 << bitDepth) - 1);
+            ref ushort p8 = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(plane), at);
+            for (int y = 0; y < n; y++)
+            {
+                ref ushort row = ref Unsafe.Add(ref p8, y * stride);
+                for (int x = 0; x < n; x += 8)
+                {
+                    Vector256<int> predicted = Avx2.ConvertToVector256Int32(Vector128.LoadUnsafe(ref row, (nuint)x));
+                    // The pack clips below at 0; above, the bit depth's maximum.
+                    Vector256<int> sum = Vector256.Min(predicted + Vector256.LoadUnsafe(ref r0, (nuint)((y * n) + x)), max8);
+                    Sse41.PackUnsignedSaturate(sum.GetLower(), sum.GetUpper()).StoreUnsafe(ref row, (nuint)x);
+                }
+            }
+
+            return;
+        }
+
+        Vector128<int> max = Vector128.Create((1 << bitDepth) - 1);
         for (int y = 0; y < n; y++)
         {
             Span<ushort> row = plane.AsSpan(at + (y * stride), n);

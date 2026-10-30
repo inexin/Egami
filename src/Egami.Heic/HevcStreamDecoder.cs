@@ -1,4 +1,6 @@
 using System.Buffers.Binary;
+using System.Runtime.InteropServices;
+using System.Runtime.Intrinsics;
 
 using Egami.Colors;
 using Egami.Heic.Hevc;
@@ -51,6 +53,26 @@ public sealed class HevcStreamDecoder : IDisposable
         _options = options ?? HevcDecoderOptions.Default;
         EgamiContext c = context ?? EgamiContext.Default;
         _decoder = new HevcSequenceDecoder(c.Limits, Math.Max(1, c.MaxParallelism)) { ConcealErrors = _options.ConcealErrors };
+    }
+
+    /// <summary>Copies 8-bit samples from 16-bit storage into bytes.</summary>
+    private static void Narrow(ReadOnlySpan<ushort> source, Span<byte> destination)
+    {
+        int x = 0;
+        if (Vector256.IsHardwareAccelerated)
+        {
+            ref ushort s = ref MemoryMarshal.GetReference(source);
+            ref byte d = ref MemoryMarshal.GetReference(destination);
+            for (; x <= source.Length - 32; x += 32)
+            {
+                Vector256.Narrow(Vector256.LoadUnsafe(ref s, (nuint)x), Vector256.LoadUnsafe(ref s, (nuint)x + 16)).StoreUnsafe(ref d, (nuint)x);
+            }
+        }
+
+        for (; x < source.Length; x++)
+        {
+            destination[x] = (byte)source[x];
+        }
     }
 
     /// <summary>Gets the information of the next frame <see cref="TryReceiveFrame"/> gives, to size its raster, or null when there is none.</summary>
@@ -177,12 +199,7 @@ public sealed class HevcStreamDecoder : IDisposable
                     YuvPlane<byte> target = c == 0 ? bytes.Y : c == 1 ? bytes.U! : bytes.V!;
                     for (int y = 0; y < height; y++)
                     {
-                        Span<byte> row = target.Row(y);
-                        ReadOnlySpan<ushort> source = plane.AsSpan(((top + y) * stride) + left, width);
-                        for (int x = 0; x < width; x++)
-                        {
-                            row[x] = (byte)source[x];
-                        }
+                        Narrow(plane.AsSpan(((top + y) * stride) + left, width), target.Row(y));
                     }
                 }
                 else if (destination is YuvRaster<ushort> words)
