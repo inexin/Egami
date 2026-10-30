@@ -483,9 +483,26 @@ public class TextTests
             StringFormat ranges = new();
             ranges.SetMeasurableCharacterRanges([new CharacterRange(0, 3), new CharacterRange(4, 5), new CharacterRange(16, 7)]);
             Region[] regions = g.MeasureCharacterRanges(Sample, arial, new RectangleF(10, 5, 400, 60), ranges);
-            Assert.Equal(new RectangleF(13, 5, 28, 18), regions[0].GetBounds(g));
-            Assert.Equal(new RectangleF(45, 5, 39, 18), regions[1].GetBounds(g));
-            Assert.Equal(new RectangleF(137, 5, 52, 18), regions[2].GetBounds(g));
+            AssertRange(new RectangleF(13, 5, 28, 18), regions[0].GetBounds(g));
+            AssertRange(new RectangleF(45, 5, 39, 18), regions[1].GetBounds(g));
+            AssertRange(new RectangleF(137, 5, 52, 18), regions[2].GetBounds(g));
+        }
+
+        // Ranges are measured by hinted whole-pixel advances, which come from the font file's hdmx table and hinting program.
+        // The references are Windows's Arial; macOS ships another Arial build whose hinted widths differ by a pixel in places,
+        // so elsewhere an edge may land one pixel off.
+        static void AssertRange(RectangleF expected, RectangleF actual)
+        {
+            if (OperatingSystem.IsWindows())
+            {
+                Assert.Equal(expected, actual);
+                return;
+            }
+
+            Assert.Equal(expected.Left, actual.Left, 1f);
+            Assert.Equal(expected.Top, actual.Top, 1f);
+            Assert.Equal(expected.Right, actual.Right, 1f);
+            Assert.Equal(expected.Bottom, actual.Bottom, 1f);
         }
     }
 
