@@ -85,6 +85,9 @@ internal sealed class Av1EncoderSettings
     internal bool TemporalDeltaQ => Video && Analysis is not null && DeltaQuantizers && Layer == 0 && Reference;
 
     internal CancellationToken CancellationToken { get; init; }
+
+    /// <summary>Gets the save to count a still picture's superblock rows to, or <see langword="null"/>.</summary>
+    internal SaveReporter? Report { get; init; }
 }
 
 /// <summary>The source planes, padded to the frame's superblock-aligned planes by repeating the last column and row.</summary>
@@ -378,11 +381,13 @@ internal sealed class Av1Encoder
         if (!settings.Stream)
         {
             // A still picture: each tile's rows in order on one worker.
+            settings.Report?.Plan(jobs);
             frame.For(tiles, tile =>
             {
                 for (int row = 0; row < rows[tile].Rows; row++)
                 {
                     primary[tile]!.EncodeRow(rows[tile], row);
+                    settings.Report?.Advance(1);
                 }
             });
             for (int tile = 0; tile < tiles; tile++)

@@ -254,4 +254,25 @@ public class Streaming
 
         Assert.True(response.Length > 0);
     }
+
+    [Fact]
+    public void TranscodeProgress()
+    {
+        using SampleFiles files = new();
+        int reports = 0;
+
+        #region transcode-progress
+        // A progress handler sees the output's rows go out; the token stops the work between bands.
+        IProgress<SaveProgress> progress = new Progress<SaveProgress>(p => Console.WriteLine($"{p.Fraction:P0}, {p.BytesWritten} bytes"));
+        Raster.Transcode("egret.png", "egret.jpg", x => x.Fit(1024, 1024), null, null, null, progress, TestContext.Current.CancellationToken);
+        #endregion
+
+        Raster.Transcode("egret.png", "egret-2.jpg", null, null, null, null, new Counter(() => reports++), TestContext.Current.CancellationToken);
+        Assert.True(reports >= 2);
+    }
+
+    private sealed class Counter(Action report) : IProgress<SaveProgress>
+    {
+        public void Report(SaveProgress value) => report();
+    }
 }

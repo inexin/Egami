@@ -86,6 +86,31 @@ public class GettingStarted
     }
 
     [Fact]
+    public void SaveProgress()
+    {
+        using SampleFiles files = new();
+        using Raster image = Raster.Load("duck.png");
+        CancellationToken cancellationToken = TestContext.Current.CancellationToken;
+        double? last = null;
+
+        #region save-progress
+        // Slow encoders (AVIF, JPEG XL, lossy WebP) report how far they have come: once as they start, at most every 250 ms,
+        // then once more with IsFinal. A canceled token stops the encode and deletes the half-written file.
+        Progress<SaveProgress> progress = new(p => Console.WriteLine($"{p.Fraction:P0} after {p.Elapsed.TotalSeconds:F1} s"));
+        image.Save("duck.avif", options: null, progress, cancellationToken);
+        #endregion
+
+        image.Save("duck.webp", null, new Inline(p => last = p.Fraction), cancellationToken);
+        Assert.Equal(1, last);
+        Assert.True(File.Exists("duck.avif"));
+    }
+
+    private sealed class Inline(Action<SaveProgress> report) : IProgress<SaveProgress>
+    {
+        public void Report(SaveProgress value) => report(value);
+    }
+
+    [Fact]
     public void ChoosingAFormat()
     {
         using SampleFiles files = new();

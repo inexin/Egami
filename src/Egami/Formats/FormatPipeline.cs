@@ -366,16 +366,17 @@ internal static class FormatPipeline
     /// Encodes asynchronously through the format's row encoder, as Save would, writing the bytes out between bands so the file is
     /// never held whole. Formats from plugins without one are encoded into a pooled buffer first, as in 1.0.
     /// </summary>
-    internal static Task SaveAsync(Raster raster, Stream stream, FormatInfo format, WriterOptions options, CancellationToken cancellationToken)
+    internal static Task SaveAsync(Raster raster, Stream stream, FormatInfo format, WriterOptions options, SaveReporter? reporter, CancellationToken cancellationToken)
     {
-        return raster.Accept(new SaveAsyncVisitor(stream, format, options, cancellationToken));
+        return raster.Accept(new SaveAsyncVisitor(stream, format, options, reporter, cancellationToken));
     }
 
-    private static async Task SaveAsync<TPixel>(Raster<TPixel> raster, Stream stream, FormatInfo format, WriterOptions options, CancellationToken cancellationToken)
+    private static async Task SaveAsync<TPixel>(Raster<TPixel> raster, Stream stream, FormatInfo format, WriterOptions options, SaveReporter? reporter, CancellationToken cancellationToken)
         where TPixel : unmanaged, IPixelType<TPixel>
     {
         raster.ThrowIfDisposed();
         IFormatWriter writer = format.Writer ?? throw new UnsupportedFormatException($"The {format.Name} format has no writer.");
+        using SaveReporter.Scope scope = reporter?.Enter(stream) ?? default;
         if (writer is not IRowFormatWriter rows)
         {
             using PooledBufferStream buffer = new();
@@ -401,12 +402,12 @@ internal static class FormatPipeline
         await output.WriteOutAsync(cancellationToken).ConfigureAwait(false);
     }
 
-    private sealed class SaveAsyncVisitor(Stream stream, FormatInfo format, WriterOptions options, CancellationToken cancellationToken) : IRasterVisitor<Task>
+    private sealed class SaveAsyncVisitor(Stream stream, FormatInfo format, WriterOptions options, SaveReporter? reporter, CancellationToken cancellationToken) : IRasterVisitor<Task>
     {
         public Task Visit<TPixel>(Raster<TPixel> raster)
             where TPixel : unmanaged, IPixelType<TPixel>
         {
-            return SaveAsync(raster, stream, format, options, cancellationToken);
+            return SaveAsync(raster, stream, format, options, reporter, cancellationToken);
         }
     }
 

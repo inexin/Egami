@@ -137,6 +137,7 @@ public sealed class RasterEncoder<TPixel> : IDisposable
         Width = width;
         Height = height;
         _output = new EncodeOutput(target);
+        SaveReporter.Current?.Watch(target);
         try
         {
             if (writer is IRowFormatWriter rows)
@@ -439,6 +440,7 @@ public sealed class RasterEncoder<TPixel> : IDisposable
         }
 
         RowsWritten += rows;
+        SaveReporter.Current?.Rows(RowsWritten, Height);
     }
 
     private void WriteFrameCore(Frame<TPixel> view, Raster<TPixel> frame)
@@ -467,6 +469,7 @@ public sealed class RasterEncoder<TPixel> : IDisposable
         }
 
         FramesWritten++;
+        SaveReporter.Current?.Frames(FramesWritten, 0);
     }
 
     private void CompleteCore()

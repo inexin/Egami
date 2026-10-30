@@ -64,6 +64,9 @@ internal sealed partial class WebpWriter : IFormatWriter, IRowFormatWriter
             _options = options;
             _lossless = lossless;
             _argb = start.Context.Memory.Allocate(checked(start.Width * start.Height * 4), ClearMode.None);
+
+            // The rows are only gathered; a lossy encode at the end counts its own macroblock rows.
+            SaveReporter.Current?.Claim();
         }
 
         private Span<uint> Argb => MemoryMarshal.Cast<byte, uint>(_argb.Memory.Span)[..(_start.Width * _start.Height)];
@@ -95,7 +98,7 @@ internal sealed partial class WebpWriter : IFormatWriter, IRowFormatWriter
             bool alpha = Vp8lEncoder.HasAlpha(argb);
             if (!lossless)
             {
-                (byte[] frame, byte[]? alphaChunk) = EncodeLossy(argb, width, height, options, alpha);
+                (byte[] frame, byte[]? alphaChunk) = EncodeLossy(argb, width, height, options, alpha, SaveReporter.Current);
                 Container.Write(output, metadata, options, new ImageChunk(WebpContainer.Vp8, frame, alphaChunk, alpha), width, height);
                 return;
             }
@@ -109,7 +112,7 @@ internal sealed partial class WebpWriter : IFormatWriter, IRowFormatWriter
         /// Encodes a lossy still: the VP8 frame, and for an image with transparency the ALPH payload. Unless transparent colors are
         /// kept, fully transparent pixels are first flattened so they cost almost nothing.
         /// </summary>
-        internal static (byte[] Frame, byte[]? Alpha) EncodeLossy(Span<uint> argb, int width, int height, WebpWriterOptions options, bool alpha)
+        internal static (byte[] Frame, byte[]? Alpha) EncodeLossy(Span<uint> argb, int width, int height, WebpWriterOptions options, bool alpha, SaveReporter? report = null)
         {
             byte[]? alphaChunk = null;
             if (alpha)
@@ -129,7 +132,7 @@ internal sealed partial class WebpWriter : IFormatWriter, IRowFormatWriter
             }
 
             Vp8Planes planes = WebpRgbToYuv.Convert(argb, width, height, options.SharpYuv);
-            byte[] frame = new Vp8Encoder(planes, new Vp8EncoderOptions { Quality = options.Quality, Effort = options.Effort }).Encode();
+            byte[] frame = new Vp8Encoder(planes, new Vp8EncoderOptions { Quality = options.Quality, Effort = options.Effort, Report = report }).Encode();
             return (frame, alphaChunk);
         }
 

@@ -54,6 +54,8 @@ internal sealed partial class AvifWriter
         Av1StreamEncoder? colorEncoder = null, alphaEncoder = null;
         List<byte[]> colorSamples = [], alphaSamples = [];
         long[] durations = new long[frames];
+        SaveReporter? reporter = SaveReporter.Current;
+        reporter?.Plan(frames);
         try
         {
             for (int i = 0; i < frames; i++)
@@ -74,6 +76,9 @@ internal sealed partial class AvifWriter
                     int q = options.AlphaQuality == 100 ? 0 : QIndexFor(options.AlphaQuality);
                     alphaSamples.Add(alphaEncoder.EncodePlanes(plane, Plan(i, q, options.Effort)).Data.ToArray());
                 }
+
+                reporter?.Advance(1);
+                reporter?.Frames(i + 1, frames);
             }
 
             Track colorTrack = new(1, "pict", colorEncoder!.Sequence, colorEncoder.SequenceHeader.ToArray(), colorSamples, durations,

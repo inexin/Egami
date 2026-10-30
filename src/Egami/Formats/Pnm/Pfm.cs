@@ -118,6 +118,7 @@ internal static class Pfm
                 WriteRow(raster.Row(y));
                 if ((y & 63) == 0)
                 {
+                    SaveReporter.Current?.Rows(raster.Height - y, raster.Height);
                     yield return y;
                 }
             }

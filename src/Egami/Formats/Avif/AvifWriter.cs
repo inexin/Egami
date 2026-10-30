@@ -168,24 +168,34 @@ internal sealed partial class AvifWriter : IFormatWriter, IRowFormatWriter
             : chroma == ChromaFormat.Yuv420 && bitDepth == 8 && options.Effort >= 5 ? SharpPlanes(raster, primaries, transfer, matrix)
             : ConvertedPlanes(raster, chroma, bitDepth, primaries, transfer, matrix);
         (int cellWidth, int cellHeight) = GridCells(raster.Width, raster.Height, chroma, options.GridTileSize);
+        bool hasAlpha = layout.HasAlpha && !Opaque(rgba);
+
+        // A save's progress counts superblock rows: the color planes take the first three quarters when an alpha plane follows.
+        SaveReporter? reporter = SaveReporter.Current;
+        reporter?.Part(0, hasAlpha ? 0.75 : 1);
         CodedImage colorStream = CodedImage.Encode(color, cellWidth, cellHeight, new Av1EncoderSettings
         {
             Lossless = lossless,
             QIndex = QIndexFor(options.Quality),
             Effort = options.Effort,
             Parallelism = parallelism,
+            Report = reporter,
+            CancellationToken = reporter?.Cancellation ?? default,
         });
 
         CodedImage? alphaStream = null;
-        if (layout.HasAlpha && !Opaque(rgba))
+        if (hasAlpha)
         {
             Av1EncoderInput alpha = AlphaPlane(rgba, bitDepth);
+            reporter?.Part(0.75, 1);
             alphaStream = CodedImage.Encode(alpha, cellWidth, cellHeight, new Av1EncoderSettings
             {
                 Lossless = options.AlphaQuality == 100,
                 QIndex = QIndexFor(options.AlphaQuality),
                 Effort = options.Effort,
                 Parallelism = parallelism,
+                Report = reporter,
+                CancellationToken = reporter?.Cancellation ?? default,
             });
         }
 
