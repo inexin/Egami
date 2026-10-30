@@ -4,6 +4,7 @@ using System.Numerics;
 using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
 
+using Egami.Formats.Ccitt;
 using Egami.Metadata;
 using Egami.Pixels;
 
@@ -159,6 +160,11 @@ internal sealed partial class BmpReader : IFormatReader
                 header.Resolution = xppm > 0 && yppm > 0 ? new Resolution(xppm, yppm, ResolutionUnit.PerMeter) : null;
                 colorsUsed = BinaryPrimitives.ReadUInt32LittleEndian(info.AsSpan(32));
             }
+
+            if (size >= 24)
+            {
+                header.ImageSize = BinaryPrimitives.ReadUInt32LittleEndian(info.AsSpan(20));
+            }
         }
 
         if (header.Width < 1 || height == 0 || height == int.MinValue)
@@ -178,8 +184,9 @@ internal sealed partial class BmpReader : IFormatReader
             (_, 0) => BmpCompression.None,
             (_, 1) => BmpCompression.Rle8,
             (_, 2) => BmpCompression.Rle4,
-            (true, 3) => throw new UnsupportedFormatException("OS/2 Huffman 1D compressed BMP files are not supported."),
+            (true, 3) => BmpCompression.Huffman1D,
             (true, 4) => BmpCompression.Rle24,
+            (false, 3) when header.Bits == 1 => BmpCompression.Huffman1D, // an OS/2 2.x header cut to 40 bytes
             (false, 3) => BmpCompression.Bitfields,
             (false, 4) => BmpCompression.Jpeg,
             (false, 5) => BmpCompression.Png,
@@ -192,6 +199,7 @@ internal sealed partial class BmpReader : IFormatReader
             BmpCompression.Rle8 => header.Bits == 8,
             BmpCompression.Rle4 => header.Bits == 4,
             BmpCompression.Rle24 => header.Bits == 24,
+            BmpCompression.Huffman1D => header.Bits == 1,
             BmpCompression.Bitfields or BmpCompression.AlphaBitfields => header.Bits is 16 or 32,
             BmpCompression.Jpeg or BmpCompression.Png => true,
             _ => header.Bits is 1 or 2 or 4 or 8 or 16 or 24 or 32,
@@ -201,7 +209,7 @@ internal sealed partial class BmpReader : IFormatReader
             throw input.Corrupt(28, $"{header.Bits} bits a pixel does not fit {header.Compression} compression.");
         }
 
-        if (header.TopDown && header.Compression is BmpCompression.Rle4 or BmpCompression.Rle8 or BmpCompression.Rle24)
+        if (header.TopDown && header.Compression is BmpCompression.Rle4 or BmpCompression.Rle8 or BmpCompression.Rle24 or BmpCompression.Huffman1D)
         {
             throw input.Corrupt(22, "Run-length encoded rows cannot be top-down.");
         }
@@ -406,6 +414,10 @@ internal sealed partial class BmpReader : IFormatReader
             {
                 new RleDecoder<TPixel>(input, header, raster, strict).Run();
             }
+            else if (header.Compression == BmpCompression.Huffman1D)
+            {
+                DecodeHuffman(input, header, raster, strict);
+            }
             else
             {
                 // On a seekable stream, whether a 32-bit file's alpha counts is checked first, so no pixel goes through a lossy
@@ -467,6 +479,106 @@ internal sealed partial class BmpReader : IFormatReader
         }
     }
 
+    /// <summary>
+    /// Decodes OS/2 Huffman 1D rows: CCITT T.4 one-dimensional codes, white runs first as in fax, with or without EOL codes before
+    /// each row; when those do not decode, as TIFF's modified Huffman, each row starting on a byte. Bit 0 (white) is palette
+    /// entry 0 and bit 1 (black) entry 1.
+    /// </summary>
+    private static void DecodeHuffman<TPixel>(EgamiInput input, Header header, Raster<TPixel> raster, bool strict)
+        where TPixel : unmanaged, IPixelType<TPixel>
+    {
+        byte[] data = ReadRest(input, header);
+        int width = header.Width;
+        int rowBytes = (width + 7) / 8;
+        byte[] packed = ArrayPool<byte>.Shared.Rent(rowBytes);
+        Bgr8[] row = ArrayPool<Bgr8>.Shared.Rent(width);
+        try
+        {
+            Bgr8 white = Entry(header, 0);
+            Bgr8 black = Entry(header, 1);
+            CcittDecoder decoder = new(0, false, false, width, header.Height, 0);
+            int done = Rows(decoder);
+            if (decoder.Damage is not null)
+            {
+                CcittDecoder aligned = new(0, false, true, width, header.Height, 0, eolsPossible: false);
+                int alignedDone = Rows(aligned);
+                if (aligned.Damage is null || alignedDone > done)
+                {
+                    (decoder, done) = (aligned, alignedDone);
+                }
+                else
+                {
+                    Rows(new CcittDecoder(0, false, false, width, header.Height, 0));
+                }
+            }
+
+            if (done < header.Height)
+            {
+                string reason = decoder.Damage ?? "The Huffman 1D data ends early.";
+                Damaged(header, raster, done, new CorruptDataException(BmpFormat.Info.Name, input.Position, reason), strict);
+            }
+
+            int Rows(CcittDecoder d)
+            {
+                Span<byte> bits = packed.AsSpan(0, rowBytes);
+                Span<Bgr8> colors = row.AsSpan(0, width);
+                while (d.NextRow(data, bits))
+                {
+                    input.CancellationToken.ThrowIfCancellationRequested();
+                    for (int x = 0; x < width; x++)
+                    {
+                        colors[x] = (bits[x >> 3] & (0x80 >> (x & 7))) != 0 ? black : white;
+                    }
+
+                    PixelConvert.Convert<Bgr8, TPixel>(colors, raster.Row(header.RowOf(d.RowsDone - 1)));
+                }
+
+                return d.RowsDone;
+            }
+        }
+        finally
+        {
+            ArrayPool<byte>.Shared.Return(packed);
+            ArrayPool<Bgr8>.Shared.Return(row);
+        }
+    }
+
+    private static Bgr8 Entry(Header header, int index)
+    {
+        Rgb8 c = index < header.Palette.Length ? header.Palette[index] : index == 0 ? new Rgb8(255, 255, 255) : default;
+        return new Bgr8(c.B, c.G, c.R);
+    }
+
+    /// <summary>Reads the stored pixels whole: the size the header gives, or up to the end of the file.</summary>
+    private static byte[] ReadRest(EgamiInput input, Header header)
+    {
+        long left = input.Length is long length ? length - input.Position : -1;
+        long known = header.ImageSize > 0 && left >= 0 ? Math.Min(header.ImageSize, left) : header.ImageSize > 0 ? header.ImageSize : left;
+        if (known >= 0)
+        {
+            input.CheckMemory(known);
+            byte[] bytes = new byte[(int)Math.Min(known, Array.MaxLength)];
+            return bytes[..input.Read(bytes)];
+        }
+
+        using MemoryStream all = new();
+        byte[] chunk = ArrayPool<byte>.Shared.Rent(81920);
+        try
+        {
+            int read;
+            while ((read = input.Read(chunk)) > 0)
+            {
+                all.Write(chunk, 0, read);
+            }
+        }
+        finally
+        {
+            ArrayPool<byte>.Shared.Return(chunk);
+        }
+
+        return all.ToArray();
+    }
+
     /// <summary>Clears the rows not yet decoded after the data ended, or throws in strict mode.</summary>
     private static void Damaged<TPixel>(Header header, Raster<TPixel> raster, int fileRow, CorruptDataException e, bool strict)
         where TPixel : unmanaged, IPixelType<TPixel>
@@ -500,6 +612,9 @@ internal sealed partial class BmpReader : IFormatReader
         public int Bits { get; set; }
 
         public BmpCompression Compression { get; set; }
+
+        /// <summary>Gets or sets the size of the stored pixels the header gives, or 0 where it gives none.</summary>
+        public uint ImageSize { get; set; }
 
         public (uint Red, uint Green, uint Blue, uint Alpha) Masks { get; set; }
 

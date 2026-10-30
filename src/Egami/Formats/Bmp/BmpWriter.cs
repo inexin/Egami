@@ -11,7 +11,7 @@ namespace Egami.Formats.Bmp;
 
 /// <summary>
 /// Writes BMP with bottom-up rows: 24-bit or 16-bit 5-5-5 with a BITMAPINFOHEADER, 32-bit BGRA and 16-bit 5-6-5 or 1-5-5-5 with
-/// a BITMAPV4HEADER and bit-field masks, or a 1, 2, 4 or 8-bit palette. An ICC profile switches to a BITMAPV5HEADER with the profile after the pixels. Only the first frame
+/// a BITMAPV4HEADER and bit-field masks, or a 1, 2, 4 or 8-bit palette, the 4 and 8-bit ones optionally run-length encoded. An ICC profile switches to a BITMAPV5HEADER with the profile after the pixels. Only the first frame
 /// is written.
 /// </summary>
 internal sealed class BmpWriter : IFormatWriter, IRowFormatWriter
@@ -28,6 +28,11 @@ internal sealed class BmpWriter : IFormatWriter, IRowFormatWriter
         where TPixel : unmanaged, IPixelType<TPixel>
     {
         BmpWriterOptions bmp = start.Options as BmpWriterOptions ?? new BmpWriterOptions { StripMetadata = start.Options.StripMetadata };
+        if (bmp.RunLength && bmp.PixelFormat is not (BmpPixelFormat.Indexed4 or BmpPixelFormat.Indexed8))
+        {
+            throw new ArgumentException($"BMP run-length encoding needs PixelFormat Indexed4 or Indexed8, not {bmp.PixelFormat}.", nameof(start));
+        }
+
         if (bmp.PixelFormat == BmpPixelFormat.Auto && TPixel.Layout.HasAlpha)
         {
             start.Refuse("BMP", "Choosing 24 or 32 bits by whether any pixel is transparent", "Set BmpWriterOptions.PixelFormat to Bgr24 or Bgra32.");
@@ -59,6 +64,7 @@ internal sealed class BmpWriter : IFormatWriter, IRowFormatWriter
         private readonly BottomUpRows? _rows;
         private readonly BuiltPalette? _palette;
         private readonly byte[]? _indices;
+        private readonly ArrayBufferWriter<byte>? _runs;
         private int _y;
 
         internal Encoder(Stream output, EncodeStart<TPixel> start, BmpWriterOptions bmp)
@@ -92,6 +98,12 @@ internal sealed class BmpWriter : IFormatWriter, IRowFormatWriter
                 (_palette, _indices) = MapToPalette(raster!, bmp.Palette, 1 << _bits);
             }
 
+            if (bmp.RunLength)
+            {
+                _runs = BmpRunLength.Encode(_indices.AsSpan(0, width * height), width, height, _bits);
+                imageSize = _runs.WrittenCount;
+            }
+
             int paletteBytes = (_palette?.Colors.Length ?? 0) * 4;
             long offset = 14 + headerSize + paletteBytes;
             long fileSize = offset + imageSize + _profile.Length;
@@ -114,7 +126,7 @@ internal sealed class BmpWriter : IFormatWriter, IRowFormatWriter
             BinaryPrimitives.WriteInt32LittleEndian(info[8..], _topDown ? -height : height);
             BinaryPrimitives.WriteUInt16LittleEndian(info[12..], 1);
             BinaryPrimitives.WriteUInt16LittleEndian(info[14..], (ushort)_bits);
-            BinaryPrimitives.WriteUInt32LittleEndian(info[16..], masked ? 3u : 0u);
+            BinaryPrimitives.WriteUInt32LittleEndian(info[16..], masked ? 3u : _runs is null ? 0u : _bits == 8 ? 1u : 2u);
             BinaryPrimitives.WriteUInt32LittleEndian(info[20..], (uint)imageSize);
             (int xppm, int yppm) = PixelsPerMeter(start.Metadata.Resolution);
             BinaryPrimitives.WriteInt32LittleEndian(info[24..], xppm);
@@ -183,6 +195,14 @@ internal sealed class BmpWriter : IFormatWriter, IRowFormatWriter
 
         public override IEnumerable<int> WriteWhole(Raster<TPixel> raster)
         {
+            if (_runs is not null)
+            {
+                _writer.Write(_runs.WrittenSpan);
+                SaveReporter.Current?.Rows(raster.Height, raster.Height);
+                yield return 0;
+                yield break;
+            }
+
             for (_y = raster.Height - 1; _y >= 0; _y--)
             {
                 WriteRow(raster.Row(_y));
