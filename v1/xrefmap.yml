@@ -71959,6 +71959,15 @@ references:
   fullName.vb: Egami.Raster.Save(System.IO.Stream, Egami.Formats.FormatInfo, Egami.Formats.WriterOptions)
   nameWithType: Raster.Save(Stream, FormatInfo, WriterOptions?)
   nameWithType.vb: Raster.Save(Stream, FormatInfo, WriterOptions)
+- uid: Egami.Raster.Save(System.IO.Stream,Egami.Formats.FormatInfo,Egami.Formats.WriterOptions,System.IProgress{Egami.SaveProgress},System.Threading.CancellationToken)
+  name: Save(Stream, FormatInfo, WriterOptions?, IProgress<SaveProgress>?, CancellationToken)
+  href: api/Egami.Raster.html#Egami_Raster_Save_System_IO_Stream_Egami_Formats_FormatInfo_Egami_Formats_WriterOptions_System_IProgress_Egami_SaveProgress__System_Threading_CancellationToken_
+  commentId: M:Egami.Raster.Save(System.IO.Stream,Egami.Formats.FormatInfo,Egami.Formats.WriterOptions,System.IProgress{Egami.SaveProgress},System.Threading.CancellationToken)
+  name.vb: Save(Stream, FormatInfo, WriterOptions, IProgress(Of SaveProgress), CancellationToken)
+  fullName: Egami.Raster.Save(System.IO.Stream, Egami.Formats.FormatInfo, Egami.Formats.WriterOptions?, System.IProgress<Egami.SaveProgress>?, System.Threading.CancellationToken)
+  fullName.vb: Egami.Raster.Save(System.IO.Stream, Egami.Formats.FormatInfo, Egami.Formats.WriterOptions, System.IProgress(Of Egami.SaveProgress), System.Threading.CancellationToken)
+  nameWithType: Raster.Save(Stream, FormatInfo, WriterOptions?, IProgress<SaveProgress>?, CancellationToken)
+  nameWithType.vb: Raster.Save(Stream, FormatInfo, WriterOptions, IProgress(Of SaveProgress), CancellationToken)
 - uid: Egami.Raster.Save(System.IO.Stream,System.String,Egami.Formats.WriterOptions)
   name: Save(Stream, string, WriterOptions?)
   href: api/Egami.Raster.html#Egami_Raster_Save_System_IO_Stream_System_String_Egami_Formats_WriterOptions_
@@ -71968,6 +71977,15 @@ references:
   fullName.vb: Egami.Raster.Save(System.IO.Stream, String, Egami.Formats.WriterOptions)
   nameWithType: Raster.Save(Stream, string, WriterOptions?)
   nameWithType.vb: Raster.Save(Stream, String, WriterOptions)
+- uid: Egami.Raster.Save(System.IO.Stream,System.String,Egami.Formats.WriterOptions,System.IProgress{Egami.SaveProgress},System.Threading.CancellationToken)
+  name: Save(Stream, string, WriterOptions?, IProgress<SaveProgress>?, CancellationToken)
+  href: api/Egami.Raster.html#Egami_Raster_Save_System_IO_Stream_System_String_Egami_Formats_WriterOptions_System_IProgress_Egami_SaveProgress__System_Threading_CancellationToken_
+  commentId: M:Egami.Raster.Save(System.IO.Stream,System.String,Egami.Formats.WriterOptions,System.IProgress{Egami.SaveProgress},System.Threading.CancellationToken)
+  name.vb: Save(Stream, String, WriterOptions, IProgress(Of SaveProgress), CancellationToken)
+  fullName: Egami.Raster.Save(System.IO.Stream, string, Egami.Formats.WriterOptions?, System.IProgress<Egami.SaveProgress>?, System.Threading.CancellationToken)
+  fullName.vb: Egami.Raster.Save(System.IO.Stream, String, Egami.Formats.WriterOptions, System.IProgress(Of Egami.SaveProgress), System.Threading.CancellationToken)
+  nameWithType: Raster.Save(Stream, string, WriterOptions?, IProgress<SaveProgress>?, CancellationToken)
+  nameWithType.vb: Raster.Save(Stream, String, WriterOptions, IProgress(Of SaveProgress), CancellationToken)
 - uid: Egami.Raster.Save(System.String,Egami.Formats.WriterOptions)
   name: Save(string, WriterOptions?)
   href: api/Egami.Raster.html#Egami_Raster_Save_System_String_Egami_Formats_WriterOptions_
@@ -71977,6 +71995,15 @@ references:
   fullName.vb: Egami.Raster.Save(String, Egami.Formats.WriterOptions)
   nameWithType: Raster.Save(string, WriterOptions?)
   nameWithType.vb: Raster.Save(String, WriterOptions)
+- uid: Egami.Raster.Save(System.String,Egami.Formats.WriterOptions,System.IProgress{Egami.SaveProgress},System.Threading.CancellationToken)
+  name: Save(string, WriterOptions?, IProgress<SaveProgress>?, CancellationToken)
+  href: api/Egami.Raster.html#Egami_Raster_Save_System_String_Egami_Formats_WriterOptions_System_IProgress_Egami_SaveProgress__System_Threading_CancellationToken_
+  commentId: M:Egami.Raster.Save(System.String,Egami.Formats.WriterOptions,System.IProgress{Egami.SaveProgress},System.Threading.CancellationToken)
+  name.vb: Save(String, WriterOptions, IProgress(Of SaveProgress), CancellationToken)
+  fullName: Egami.Raster.Save(string, Egami.Formats.WriterOptions?, System.IProgress<Egami.SaveProgress>?, System.Threading.CancellationToken)
+  fullName.vb: Egami.Raster.Save(String, Egami.Formats.WriterOptions, System.IProgress(Of Egami.SaveProgress), System.Threading.CancellationToken)
+  nameWithType: Raster.Save(string, WriterOptions?, IProgress<SaveProgress>?, CancellationToken)
+  nameWithType.vb: Raster.Save(String, WriterOptions, IProgress(Of SaveProgress), CancellationToken)
 - uid: Egami.Raster.Save*
   name: Save
   href: api/Egami.Raster.html#Egami_Raster_Save_
@@ -71993,6 +72020,15 @@ references:
   fullName.vb: Egami.Raster.SaveAll(System.Collections.Generic.IEnumerable(Of Egami.Raster), System.IO.Stream, Egami.Formats.FormatInfo, Egami.Formats.WriterOptions)
   nameWithType: Raster.SaveAll(IEnumerable<Raster>, Stream, FormatInfo, WriterOptions?)
   nameWithType.vb: Raster.SaveAll(IEnumerable(Of Raster), Stream, FormatInfo, WriterOptions)
+- uid: Egami.Raster.SaveAll(System.Collections.Generic.IEnumerable{Egami.Raster},System.IO.Stream,Egami.Formats.FormatInfo,Egami.Formats.WriterOptions,System.IProgress{Egami.SaveProgress},System.Threading.CancellationToken)
+  name: SaveAll(IEnumerable<Raster>, Stream, FormatInfo, WriterOptions?, IProgress<SaveProgress>?, CancellationToken)
+  href: api/Egami.Raster.html#Egami_Raster_SaveAll_System_Collections_Generic_IEnumerable_Egami_Raster__System_IO_Stream_Egami_Formats_FormatInfo_Egami_Formats_WriterOptions_System_IProgress_Egami_SaveProgress__System_Threading_CancellationToken_
+  commentId: M:Egami.Raster.SaveAll(System.Collections.Generic.IEnumerable{Egami.Raster},System.IO.Stream,Egami.Formats.FormatInfo,Egami.Formats.WriterOptions,System.IProgress{Egami.SaveProgress},System.Threading.CancellationToken)
+  name.vb: SaveAll(IEnumerable(Of Raster), Stream, FormatInfo, WriterOptions, IProgress(Of SaveProgress), CancellationToken)
+  fullName: Egami.Raster.SaveAll(System.Collections.Generic.IEnumerable<Egami.Raster>, System.IO.Stream, Egami.Formats.FormatInfo, Egami.Formats.WriterOptions?, System.IProgress<Egami.SaveProgress>?, System.Threading.CancellationToken)
+  fullName.vb: Egami.Raster.SaveAll(System.Collections.Generic.IEnumerable(Of Egami.Raster), System.IO.Stream, Egami.Formats.FormatInfo, Egami.Formats.WriterOptions, System.IProgress(Of Egami.SaveProgress), System.Threading.CancellationToken)
+  nameWithType: Raster.SaveAll(IEnumerable<Raster>, Stream, FormatInfo, WriterOptions?, IProgress<SaveProgress>?, CancellationToken)
+  nameWithType.vb: Raster.SaveAll(IEnumerable(Of Raster), Stream, FormatInfo, WriterOptions, IProgress(Of SaveProgress), CancellationToken)
 - uid: Egami.Raster.SaveAll(System.Collections.Generic.IEnumerable{Egami.Raster},System.IO.Stream,System.String,Egami.Formats.WriterOptions)
   name: SaveAll(IEnumerable<Raster>, Stream, string, WriterOptions?)
   href: api/Egami.Raster.html#Egami_Raster_SaveAll_System_Collections_Generic_IEnumerable_Egami_Raster__System_IO_Stream_System_String_Egami_Formats_WriterOptions_
@@ -72002,6 +72038,15 @@ references:
   fullName.vb: Egami.Raster.SaveAll(System.Collections.Generic.IEnumerable(Of Egami.Raster), System.IO.Stream, String, Egami.Formats.WriterOptions)
   nameWithType: Raster.SaveAll(IEnumerable<Raster>, Stream, string, WriterOptions?)
   nameWithType.vb: Raster.SaveAll(IEnumerable(Of Raster), Stream, String, WriterOptions)
+- uid: Egami.Raster.SaveAll(System.Collections.Generic.IEnumerable{Egami.Raster},System.IO.Stream,System.String,Egami.Formats.WriterOptions,System.IProgress{Egami.SaveProgress},System.Threading.CancellationToken)
+  name: SaveAll(IEnumerable<Raster>, Stream, string, WriterOptions?, IProgress<SaveProgress>?, CancellationToken)
+  href: api/Egami.Raster.html#Egami_Raster_SaveAll_System_Collections_Generic_IEnumerable_Egami_Raster__System_IO_Stream_System_String_Egami_Formats_WriterOptions_System_IProgress_Egami_SaveProgress__System_Threading_CancellationToken_
+  commentId: M:Egami.Raster.SaveAll(System.Collections.Generic.IEnumerable{Egami.Raster},System.IO.Stream,System.String,Egami.Formats.WriterOptions,System.IProgress{Egami.SaveProgress},System.Threading.CancellationToken)
+  name.vb: SaveAll(IEnumerable(Of Raster), Stream, String, WriterOptions, IProgress(Of SaveProgress), CancellationToken)
+  fullName: Egami.Raster.SaveAll(System.Collections.Generic.IEnumerable<Egami.Raster>, System.IO.Stream, string, Egami.Formats.WriterOptions?, System.IProgress<Egami.SaveProgress>?, System.Threading.CancellationToken)
+  fullName.vb: Egami.Raster.SaveAll(System.Collections.Generic.IEnumerable(Of Egami.Raster), System.IO.Stream, String, Egami.Formats.WriterOptions, System.IProgress(Of Egami.SaveProgress), System.Threading.CancellationToken)
+  nameWithType: Raster.SaveAll(IEnumerable<Raster>, Stream, string, WriterOptions?, IProgress<SaveProgress>?, CancellationToken)
+  nameWithType.vb: Raster.SaveAll(IEnumerable(Of Raster), Stream, String, WriterOptions, IProgress(Of SaveProgress), CancellationToken)
 - uid: Egami.Raster.SaveAll(System.Collections.Generic.IEnumerable{Egami.Raster},System.String,Egami.Formats.WriterOptions)
   name: SaveAll(IEnumerable<Raster>, string, WriterOptions?)
   href: api/Egami.Raster.html#Egami_Raster_SaveAll_System_Collections_Generic_IEnumerable_Egami_Raster__System_String_Egami_Formats_WriterOptions_
@@ -72011,6 +72056,15 @@ references:
   fullName.vb: Egami.Raster.SaveAll(System.Collections.Generic.IEnumerable(Of Egami.Raster), String, Egami.Formats.WriterOptions)
   nameWithType: Raster.SaveAll(IEnumerable<Raster>, string, WriterOptions?)
   nameWithType.vb: Raster.SaveAll(IEnumerable(Of Raster), String, WriterOptions)
+- uid: Egami.Raster.SaveAll(System.Collections.Generic.IEnumerable{Egami.Raster},System.String,Egami.Formats.WriterOptions,System.IProgress{Egami.SaveProgress},System.Threading.CancellationToken)
+  name: SaveAll(IEnumerable<Raster>, string, WriterOptions?, IProgress<SaveProgress>?, CancellationToken)
+  href: api/Egami.Raster.html#Egami_Raster_SaveAll_System_Collections_Generic_IEnumerable_Egami_Raster__System_String_Egami_Formats_WriterOptions_System_IProgress_Egami_SaveProgress__System_Threading_CancellationToken_
+  commentId: M:Egami.Raster.SaveAll(System.Collections.Generic.IEnumerable{Egami.Raster},System.String,Egami.Formats.WriterOptions,System.IProgress{Egami.SaveProgress},System.Threading.CancellationToken)
+  name.vb: SaveAll(IEnumerable(Of Raster), String, WriterOptions, IProgress(Of SaveProgress), CancellationToken)
+  fullName: Egami.Raster.SaveAll(System.Collections.Generic.IEnumerable<Egami.Raster>, string, Egami.Formats.WriterOptions?, System.IProgress<Egami.SaveProgress>?, System.Threading.CancellationToken)
+  fullName.vb: Egami.Raster.SaveAll(System.Collections.Generic.IEnumerable(Of Egami.Raster), String, Egami.Formats.WriterOptions, System.IProgress(Of Egami.SaveProgress), System.Threading.CancellationToken)
+  nameWithType: Raster.SaveAll(IEnumerable<Raster>, string, WriterOptions?, IProgress<SaveProgress>?, CancellationToken)
+  nameWithType.vb: Raster.SaveAll(IEnumerable(Of Raster), String, WriterOptions, IProgress(Of SaveProgress), CancellationToken)
 - uid: Egami.Raster.SaveAll*
   name: SaveAll
   href: api/Egami.Raster.html#Egami_Raster_SaveAll_
@@ -72034,6 +72088,15 @@ references:
   isSpec: "True"
   fullName: Egami.Raster.SaveAllAsync
   nameWithType: Raster.SaveAllAsync
+- uid: Egami.Raster.SaveAsync(System.IO.Stream,Egami.Formats.FormatInfo,Egami.Formats.WriterOptions,System.IProgress{Egami.SaveProgress},System.Threading.CancellationToken)
+  name: SaveAsync(Stream, FormatInfo, WriterOptions?, IProgress<SaveProgress>?, CancellationToken)
+  href: api/Egami.Raster.html#Egami_Raster_SaveAsync_System_IO_Stream_Egami_Formats_FormatInfo_Egami_Formats_WriterOptions_System_IProgress_Egami_SaveProgress__System_Threading_CancellationToken_
+  commentId: M:Egami.Raster.SaveAsync(System.IO.Stream,Egami.Formats.FormatInfo,Egami.Formats.WriterOptions,System.IProgress{Egami.SaveProgress},System.Threading.CancellationToken)
+  name.vb: SaveAsync(Stream, FormatInfo, WriterOptions, IProgress(Of SaveProgress), CancellationToken)
+  fullName: Egami.Raster.SaveAsync(System.IO.Stream, Egami.Formats.FormatInfo, Egami.Formats.WriterOptions?, System.IProgress<Egami.SaveProgress>?, System.Threading.CancellationToken)
+  fullName.vb: Egami.Raster.SaveAsync(System.IO.Stream, Egami.Formats.FormatInfo, Egami.Formats.WriterOptions, System.IProgress(Of Egami.SaveProgress), System.Threading.CancellationToken)
+  nameWithType: Raster.SaveAsync(Stream, FormatInfo, WriterOptions?, IProgress<SaveProgress>?, CancellationToken)
+  nameWithType.vb: Raster.SaveAsync(Stream, FormatInfo, WriterOptions, IProgress(Of SaveProgress), CancellationToken)
 - uid: Egami.Raster.SaveAsync(System.IO.Stream,Egami.Formats.FormatInfo,Egami.Formats.WriterOptions,System.Threading.CancellationToken)
   name: SaveAsync(Stream, FormatInfo, WriterOptions?, CancellationToken)
   href: api/Egami.Raster.html#Egami_Raster_SaveAsync_System_IO_Stream_Egami_Formats_FormatInfo_Egami_Formats_WriterOptions_System_Threading_CancellationToken_
@@ -72043,6 +72106,15 @@ references:
   fullName.vb: Egami.Raster.SaveAsync(System.IO.Stream, Egami.Formats.FormatInfo, Egami.Formats.WriterOptions, System.Threading.CancellationToken)
   nameWithType: Raster.SaveAsync(Stream, FormatInfo, WriterOptions?, CancellationToken)
   nameWithType.vb: Raster.SaveAsync(Stream, FormatInfo, WriterOptions, CancellationToken)
+- uid: Egami.Raster.SaveAsync(System.IO.Stream,System.String,Egami.Formats.WriterOptions,System.IProgress{Egami.SaveProgress},System.Threading.CancellationToken)
+  name: SaveAsync(Stream, string, WriterOptions?, IProgress<SaveProgress>?, CancellationToken)
+  href: api/Egami.Raster.html#Egami_Raster_SaveAsync_System_IO_Stream_System_String_Egami_Formats_WriterOptions_System_IProgress_Egami_SaveProgress__System_Threading_CancellationToken_
+  commentId: M:Egami.Raster.SaveAsync(System.IO.Stream,System.String,Egami.Formats.WriterOptions,System.IProgress{Egami.SaveProgress},System.Threading.CancellationToken)
+  name.vb: SaveAsync(Stream, String, WriterOptions, IProgress(Of SaveProgress), CancellationToken)
+  fullName: Egami.Raster.SaveAsync(System.IO.Stream, string, Egami.Formats.WriterOptions?, System.IProgress<Egami.SaveProgress>?, System.Threading.CancellationToken)
+  fullName.vb: Egami.Raster.SaveAsync(System.IO.Stream, String, Egami.Formats.WriterOptions, System.IProgress(Of Egami.SaveProgress), System.Threading.CancellationToken)
+  nameWithType: Raster.SaveAsync(Stream, string, WriterOptions?, IProgress<SaveProgress>?, CancellationToken)
+  nameWithType.vb: Raster.SaveAsync(Stream, String, WriterOptions, IProgress(Of SaveProgress), CancellationToken)
 - uid: Egami.Raster.SaveAsync(System.IO.Stream,System.String,Egami.Formats.WriterOptions,System.Threading.CancellationToken)
   name: SaveAsync(Stream, string, WriterOptions?, CancellationToken)
   href: api/Egami.Raster.html#Egami_Raster_SaveAsync_System_IO_Stream_System_String_Egami_Formats_WriterOptions_System_Threading_CancellationToken_
@@ -72052,6 +72124,15 @@ references:
   fullName.vb: Egami.Raster.SaveAsync(System.IO.Stream, String, Egami.Formats.WriterOptions, System.Threading.CancellationToken)
   nameWithType: Raster.SaveAsync(Stream, string, WriterOptions?, CancellationToken)
   nameWithType.vb: Raster.SaveAsync(Stream, String, WriterOptions, CancellationToken)
+- uid: Egami.Raster.SaveAsync(System.String,Egami.Formats.WriterOptions,System.IProgress{Egami.SaveProgress},System.Threading.CancellationToken)
+  name: SaveAsync(string, WriterOptions?, IProgress<SaveProgress>?, CancellationToken)
+  href: api/Egami.Raster.html#Egami_Raster_SaveAsync_System_String_Egami_Formats_WriterOptions_System_IProgress_Egami_SaveProgress__System_Threading_CancellationToken_
+  commentId: M:Egami.Raster.SaveAsync(System.String,Egami.Formats.WriterOptions,System.IProgress{Egami.SaveProgress},System.Threading.CancellationToken)
+  name.vb: SaveAsync(String, WriterOptions, IProgress(Of SaveProgress), CancellationToken)
+  fullName: Egami.Raster.SaveAsync(string, Egami.Formats.WriterOptions?, System.IProgress<Egami.SaveProgress>?, System.Threading.CancellationToken)
+  fullName.vb: Egami.Raster.SaveAsync(String, Egami.Formats.WriterOptions, System.IProgress(Of Egami.SaveProgress), System.Threading.CancellationToken)
+  nameWithType: Raster.SaveAsync(string, WriterOptions?, IProgress<SaveProgress>?, CancellationToken)
+  nameWithType.vb: Raster.SaveAsync(String, WriterOptions, IProgress(Of SaveProgress), CancellationToken)
 - uid: Egami.Raster.SaveAsync(System.String,Egami.Formats.WriterOptions,System.Threading.CancellationToken)
   name: SaveAsync(string, WriterOptions?, CancellationToken)
   href: api/Egami.Raster.html#Egami_Raster_SaveAsync_System_String_Egami_Formats_WriterOptions_System_Threading_CancellationToken_
@@ -72138,6 +72219,15 @@ references:
   fullName.vb: Egami.Raster.Transcode(System.IO.Stream, System.IO.Stream, Egami.Formats.FormatInfo, System.Action(Of Egami.Operations.RasterOps), Egami.Formats.ReaderOptions, Egami.Formats.WriterOptions, Egami.EgamiContext)
   nameWithType: Raster.Transcode(Stream, Stream, FormatInfo, Action<RasterOps>?, ReaderOptions?, WriterOptions?, EgamiContext?)
   nameWithType.vb: Raster.Transcode(Stream, Stream, FormatInfo, Action(Of RasterOps), ReaderOptions, WriterOptions, EgamiContext)
+- uid: Egami.Raster.Transcode(System.IO.Stream,System.IO.Stream,Egami.Formats.FormatInfo,System.Action{Egami.Operations.RasterOps},Egami.Formats.ReaderOptions,Egami.Formats.WriterOptions,Egami.EgamiContext,System.IProgress{Egami.SaveProgress},System.Threading.CancellationToken)
+  name: Transcode(Stream, Stream, FormatInfo, Action<RasterOps>?, ReaderOptions?, WriterOptions?, EgamiContext?, IProgress<SaveProgress>?, CancellationToken)
+  href: api/Egami.Raster.html#Egami_Raster_Transcode_System_IO_Stream_System_IO_Stream_Egami_Formats_FormatInfo_System_Action_Egami_Operations_RasterOps__Egami_Formats_ReaderOptions_Egami_Formats_WriterOptions_Egami_EgamiContext_System_IProgress_Egami_SaveProgress__System_Threading_CancellationToken_
+  commentId: M:Egami.Raster.Transcode(System.IO.Stream,System.IO.Stream,Egami.Formats.FormatInfo,System.Action{Egami.Operations.RasterOps},Egami.Formats.ReaderOptions,Egami.Formats.WriterOptions,Egami.EgamiContext,System.IProgress{Egami.SaveProgress},System.Threading.CancellationToken)
+  name.vb: Transcode(Stream, Stream, FormatInfo, Action(Of RasterOps), ReaderOptions, WriterOptions, EgamiContext, IProgress(Of SaveProgress), CancellationToken)
+  fullName: Egami.Raster.Transcode(System.IO.Stream, System.IO.Stream, Egami.Formats.FormatInfo, System.Action<Egami.Operations.RasterOps>?, Egami.Formats.ReaderOptions?, Egami.Formats.WriterOptions?, Egami.EgamiContext?, System.IProgress<Egami.SaveProgress>?, System.Threading.CancellationToken)
+  fullName.vb: Egami.Raster.Transcode(System.IO.Stream, System.IO.Stream, Egami.Formats.FormatInfo, System.Action(Of Egami.Operations.RasterOps), Egami.Formats.ReaderOptions, Egami.Formats.WriterOptions, Egami.EgamiContext, System.IProgress(Of Egami.SaveProgress), System.Threading.CancellationToken)
+  nameWithType: Raster.Transcode(Stream, Stream, FormatInfo, Action<RasterOps>?, ReaderOptions?, WriterOptions?, EgamiContext?, IProgress<SaveProgress>?, CancellationToken)
+  nameWithType.vb: Raster.Transcode(Stream, Stream, FormatInfo, Action(Of RasterOps), ReaderOptions, WriterOptions, EgamiContext, IProgress(Of SaveProgress), CancellationToken)
 - uid: Egami.Raster.Transcode(System.String,System.String,System.Action{Egami.Operations.RasterOps},Egami.Formats.ReaderOptions,Egami.Formats.WriterOptions,Egami.EgamiContext)
   name: Transcode(string, string, Action<RasterOps>?, ReaderOptions?, WriterOptions?, EgamiContext?)
   href: api/Egami.Raster.html#Egami_Raster_Transcode_System_String_System_String_System_Action_Egami_Operations_RasterOps__Egami_Formats_ReaderOptions_Egami_Formats_WriterOptions_Egami_EgamiContext_
@@ -72147,6 +72237,15 @@ references:
   fullName.vb: Egami.Raster.Transcode(String, String, System.Action(Of Egami.Operations.RasterOps), Egami.Formats.ReaderOptions, Egami.Formats.WriterOptions, Egami.EgamiContext)
   nameWithType: Raster.Transcode(string, string, Action<RasterOps>?, ReaderOptions?, WriterOptions?, EgamiContext?)
   nameWithType.vb: Raster.Transcode(String, String, Action(Of RasterOps), ReaderOptions, WriterOptions, EgamiContext)
+- uid: Egami.Raster.Transcode(System.String,System.String,System.Action{Egami.Operations.RasterOps},Egami.Formats.ReaderOptions,Egami.Formats.WriterOptions,Egami.EgamiContext,System.IProgress{Egami.SaveProgress},System.Threading.CancellationToken)
+  name: Transcode(string, string, Action<RasterOps>?, ReaderOptions?, WriterOptions?, EgamiContext?, IProgress<SaveProgress>?, CancellationToken)
+  href: api/Egami.Raster.html#Egami_Raster_Transcode_System_String_System_String_System_Action_Egami_Operations_RasterOps__Egami_Formats_ReaderOptions_Egami_Formats_WriterOptions_Egami_EgamiContext_System_IProgress_Egami_SaveProgress__System_Threading_CancellationToken_
+  commentId: M:Egami.Raster.Transcode(System.String,System.String,System.Action{Egami.Operations.RasterOps},Egami.Formats.ReaderOptions,Egami.Formats.WriterOptions,Egami.EgamiContext,System.IProgress{Egami.SaveProgress},System.Threading.CancellationToken)
+  name.vb: Transcode(String, String, Action(Of RasterOps), ReaderOptions, WriterOptions, EgamiContext, IProgress(Of SaveProgress), CancellationToken)
+  fullName: Egami.Raster.Transcode(string, string, System.Action<Egami.Operations.RasterOps>?, Egami.Formats.ReaderOptions?, Egami.Formats.WriterOptions?, Egami.EgamiContext?, System.IProgress<Egami.SaveProgress>?, System.Threading.CancellationToken)
+  fullName.vb: Egami.Raster.Transcode(String, String, System.Action(Of Egami.Operations.RasterOps), Egami.Formats.ReaderOptions, Egami.Formats.WriterOptions, Egami.EgamiContext, System.IProgress(Of Egami.SaveProgress), System.Threading.CancellationToken)
+  nameWithType: Raster.Transcode(string, string, Action<RasterOps>?, ReaderOptions?, WriterOptions?, EgamiContext?, IProgress<SaveProgress>?, CancellationToken)
+  nameWithType.vb: Raster.Transcode(String, String, Action(Of RasterOps), ReaderOptions, WriterOptions, EgamiContext, IProgress(Of SaveProgress), CancellationToken)
 - uid: Egami.Raster.Transcode*
   name: Transcode
   href: api/Egami.Raster.html#Egami_Raster_Transcode_
@@ -72154,6 +72253,15 @@ references:
   isSpec: "True"
   fullName: Egami.Raster.Transcode
   nameWithType: Raster.Transcode
+- uid: Egami.Raster.TranscodeAsync(System.IO.Stream,System.IO.Stream,Egami.Formats.FormatInfo,System.Action{Egami.Operations.RasterOps},Egami.Formats.ReaderOptions,Egami.Formats.WriterOptions,Egami.EgamiContext,System.IProgress{Egami.SaveProgress},System.Threading.CancellationToken)
+  name: TranscodeAsync(Stream, Stream, FormatInfo, Action<RasterOps>?, ReaderOptions?, WriterOptions?, EgamiContext?, IProgress<SaveProgress>?, CancellationToken)
+  href: api/Egami.Raster.html#Egami_Raster_TranscodeAsync_System_IO_Stream_System_IO_Stream_Egami_Formats_FormatInfo_System_Action_Egami_Operations_RasterOps__Egami_Formats_ReaderOptions_Egami_Formats_WriterOptions_Egami_EgamiContext_System_IProgress_Egami_SaveProgress__System_Threading_CancellationToken_
+  commentId: M:Egami.Raster.TranscodeAsync(System.IO.Stream,System.IO.Stream,Egami.Formats.FormatInfo,System.Action{Egami.Operations.RasterOps},Egami.Formats.ReaderOptions,Egami.Formats.WriterOptions,Egami.EgamiContext,System.IProgress{Egami.SaveProgress},System.Threading.CancellationToken)
+  name.vb: TranscodeAsync(Stream, Stream, FormatInfo, Action(Of RasterOps), ReaderOptions, WriterOptions, EgamiContext, IProgress(Of SaveProgress), CancellationToken)
+  fullName: Egami.Raster.TranscodeAsync(System.IO.Stream, System.IO.Stream, Egami.Formats.FormatInfo, System.Action<Egami.Operations.RasterOps>?, Egami.Formats.ReaderOptions?, Egami.Formats.WriterOptions?, Egami.EgamiContext?, System.IProgress<Egami.SaveProgress>?, System.Threading.CancellationToken)
+  fullName.vb: Egami.Raster.TranscodeAsync(System.IO.Stream, System.IO.Stream, Egami.Formats.FormatInfo, System.Action(Of Egami.Operations.RasterOps), Egami.Formats.ReaderOptions, Egami.Formats.WriterOptions, Egami.EgamiContext, System.IProgress(Of Egami.SaveProgress), System.Threading.CancellationToken)
+  nameWithType: Raster.TranscodeAsync(Stream, Stream, FormatInfo, Action<RasterOps>?, ReaderOptions?, WriterOptions?, EgamiContext?, IProgress<SaveProgress>?, CancellationToken)
+  nameWithType.vb: Raster.TranscodeAsync(Stream, Stream, FormatInfo, Action(Of RasterOps), ReaderOptions, WriterOptions, EgamiContext, IProgress(Of SaveProgress), CancellationToken)
 - uid: Egami.Raster.TranscodeAsync(System.IO.Stream,System.IO.Stream,Egami.Formats.FormatInfo,System.Action{Egami.Operations.RasterOps},Egami.Formats.ReaderOptions,Egami.Formats.WriterOptions,Egami.EgamiContext,System.Threading.CancellationToken)
   name: TranscodeAsync(Stream, Stream, FormatInfo, Action<RasterOps>?, ReaderOptions?, WriterOptions?, EgamiContext?, CancellationToken)
   href: api/Egami.Raster.html#Egami_Raster_TranscodeAsync_System_IO_Stream_System_IO_Stream_Egami_Formats_FormatInfo_System_Action_Egami_Operations_RasterOps__Egami_Formats_ReaderOptions_Egami_Formats_WriterOptions_Egami_EgamiContext_System_Threading_CancellationToken_
@@ -72163,6 +72271,15 @@ references:
   fullName.vb: Egami.Raster.TranscodeAsync(System.IO.Stream, System.IO.Stream, Egami.Formats.FormatInfo, System.Action(Of Egami.Operations.RasterOps), Egami.Formats.ReaderOptions, Egami.Formats.WriterOptions, Egami.EgamiContext, System.Threading.CancellationToken)
   nameWithType: Raster.TranscodeAsync(Stream, Stream, FormatInfo, Action<RasterOps>?, ReaderOptions?, WriterOptions?, EgamiContext?, CancellationToken)
   nameWithType.vb: Raster.TranscodeAsync(Stream, Stream, FormatInfo, Action(Of RasterOps), ReaderOptions, WriterOptions, EgamiContext, CancellationToken)
+- uid: Egami.Raster.TranscodeAsync(System.String,System.String,System.Action{Egami.Operations.RasterOps},Egami.Formats.ReaderOptions,Egami.Formats.WriterOptions,Egami.EgamiContext,System.IProgress{Egami.SaveProgress},System.Threading.CancellationToken)
+  name: TranscodeAsync(string, string, Action<RasterOps>?, ReaderOptions?, WriterOptions?, EgamiContext?, IProgress<SaveProgress>?, CancellationToken)
+  href: api/Egami.Raster.html#Egami_Raster_TranscodeAsync_System_String_System_String_System_Action_Egami_Operations_RasterOps__Egami_Formats_ReaderOptions_Egami_Formats_WriterOptions_Egami_EgamiContext_System_IProgress_Egami_SaveProgress__System_Threading_CancellationToken_
+  commentId: M:Egami.Raster.TranscodeAsync(System.String,System.String,System.Action{Egami.Operations.RasterOps},Egami.Formats.ReaderOptions,Egami.Formats.WriterOptions,Egami.EgamiContext,System.IProgress{Egami.SaveProgress},System.Threading.CancellationToken)
+  name.vb: TranscodeAsync(String, String, Action(Of RasterOps), ReaderOptions, WriterOptions, EgamiContext, IProgress(Of SaveProgress), CancellationToken)
+  fullName: Egami.Raster.TranscodeAsync(string, string, System.Action<Egami.Operations.RasterOps>?, Egami.Formats.ReaderOptions?, Egami.Formats.WriterOptions?, Egami.EgamiContext?, System.IProgress<Egami.SaveProgress>?, System.Threading.CancellationToken)
+  fullName.vb: Egami.Raster.TranscodeAsync(String, String, System.Action(Of Egami.Operations.RasterOps), Egami.Formats.ReaderOptions, Egami.Formats.WriterOptions, Egami.EgamiContext, System.IProgress(Of Egami.SaveProgress), System.Threading.CancellationToken)
+  nameWithType: Raster.TranscodeAsync(string, string, Action<RasterOps>?, ReaderOptions?, WriterOptions?, EgamiContext?, IProgress<SaveProgress>?, CancellationToken)
+  nameWithType.vb: Raster.TranscodeAsync(String, String, Action(Of RasterOps), ReaderOptions, WriterOptions, EgamiContext, IProgress(Of SaveProgress), CancellationToken)
 - uid: Egami.Raster.TranscodeAsync(System.String,System.String,System.Action{Egami.Operations.RasterOps},Egami.Formats.ReaderOptions,Egami.Formats.WriterOptions,Egami.EgamiContext,System.Threading.CancellationToken)
   name: TranscodeAsync(string, string, Action<RasterOps>?, ReaderOptions?, WriterOptions?, EgamiContext?, CancellationToken)
   href: api/Egami.Raster.html#Egami_Raster_TranscodeAsync_System_String_System_String_System_Action_Egami_Operations_RasterOps__Egami_Formats_ReaderOptions_Egami_Formats_WriterOptions_Egami_EgamiContext_System_Threading_CancellationToken_
@@ -73493,6 +73610,77 @@ references:
   isSpec: "True"
   fullName: Egami.SafetyLimits.MaxWidth
   nameWithType: SafetyLimits.MaxWidth
+- uid: Egami.SaveProgress
+  name: SaveProgress
+  href: api/Egami.SaveProgress.html
+  commentId: T:Egami.SaveProgress
+  fullName: Egami.SaveProgress
+  nameWithType: SaveProgress
+- uid: Egami.SaveProgress.BytesWritten
+  name: BytesWritten
+  href: api/Egami.SaveProgress.html#Egami_SaveProgress_BytesWritten
+  commentId: P:Egami.SaveProgress.BytesWritten
+  fullName: Egami.SaveProgress.BytesWritten
+  nameWithType: SaveProgress.BytesWritten
+- uid: Egami.SaveProgress.BytesWritten*
+  name: BytesWritten
+  href: api/Egami.SaveProgress.html#Egami_SaveProgress_BytesWritten_
+  commentId: Overload:Egami.SaveProgress.BytesWritten
+  isSpec: "True"
+  fullName: Egami.SaveProgress.BytesWritten
+  nameWithType: SaveProgress.BytesWritten
+- uid: Egami.SaveProgress.Elapsed
+  name: Elapsed
+  href: api/Egami.SaveProgress.html#Egami_SaveProgress_Elapsed
+  commentId: P:Egami.SaveProgress.Elapsed
+  fullName: Egami.SaveProgress.Elapsed
+  nameWithType: SaveProgress.Elapsed
+- uid: Egami.SaveProgress.Elapsed*
+  name: Elapsed
+  href: api/Egami.SaveProgress.html#Egami_SaveProgress_Elapsed_
+  commentId: Overload:Egami.SaveProgress.Elapsed
+  isSpec: "True"
+  fullName: Egami.SaveProgress.Elapsed
+  nameWithType: SaveProgress.Elapsed
+- uid: Egami.SaveProgress.Fraction
+  name: Fraction
+  href: api/Egami.SaveProgress.html#Egami_SaveProgress_Fraction
+  commentId: P:Egami.SaveProgress.Fraction
+  fullName: Egami.SaveProgress.Fraction
+  nameWithType: SaveProgress.Fraction
+- uid: Egami.SaveProgress.Fraction*
+  name: Fraction
+  href: api/Egami.SaveProgress.html#Egami_SaveProgress_Fraction_
+  commentId: Overload:Egami.SaveProgress.Fraction
+  isSpec: "True"
+  fullName: Egami.SaveProgress.Fraction
+  nameWithType: SaveProgress.Fraction
+- uid: Egami.SaveProgress.Frames
+  name: Frames
+  href: api/Egami.SaveProgress.html#Egami_SaveProgress_Frames
+  commentId: P:Egami.SaveProgress.Frames
+  fullName: Egami.SaveProgress.Frames
+  nameWithType: SaveProgress.Frames
+- uid: Egami.SaveProgress.Frames*
+  name: Frames
+  href: api/Egami.SaveProgress.html#Egami_SaveProgress_Frames_
+  commentId: Overload:Egami.SaveProgress.Frames
+  isSpec: "True"
+  fullName: Egami.SaveProgress.Frames
+  nameWithType: SaveProgress.Frames
+- uid: Egami.SaveProgress.IsFinal
+  name: IsFinal
+  href: api/Egami.SaveProgress.html#Egami_SaveProgress_IsFinal
+  commentId: P:Egami.SaveProgress.IsFinal
+  fullName: Egami.SaveProgress.IsFinal
+  nameWithType: SaveProgress.IsFinal
+- uid: Egami.SaveProgress.IsFinal*
+  name: IsFinal
+  href: api/Egami.SaveProgress.html#Egami_SaveProgress_IsFinal_
+  commentId: Overload:Egami.SaveProgress.IsFinal
+  isSpec: "True"
+  fullName: Egami.SaveProgress.IsFinal
+  nameWithType: SaveProgress.IsFinal
 - uid: Egami.Size
   name: Size
   href: api/Egami.Size.html

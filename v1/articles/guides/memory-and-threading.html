@@ -253,6 +253,9 @@ Raster.Transcode(&quot;egret.png&quot;, &quot;thumb.jpg&quot;, x =&gt; x.Fit(256
 </code></pre><pre><code class="lang-csharp">// On a server: an upload to a 512-pixel PNG preview, streamed both ways.
 await using Stream upload = File.OpenRead(&quot;egret.png&quot;);
 await Raster.TranscodeAsync(upload, response, PngFormat.Info, x =&gt; x.Fit(512, 512), cancellationToken: TestContext.Current.CancellationToken);
+</code></pre><pre><code class="lang-csharp">// A progress handler sees the output's rows go out; the token stops the work between bands.
+IProgress&lt;SaveProgress&gt; progress = new Progress&lt;SaveProgress&gt;(p =&gt; Console.WriteLine($&quot;{p.Fraction:P0}, {p.BytesWritten} bytes&quot;));
+Raster.Transcode(&quot;egret.png&quot;, &quot;egret.jpg&quot;, x =&gt; x.Fit(1024, 1024), null, null, null, progress, TestContext.Current.CancellationToken);
 </code></pre><h2 id="pixel-memory">Pixel memory</h2>
 <p>Pixel memory never lives on the garbage-collected heap as large arrays. <code>PooledPixelMemorySource.Shared</code> hands out pooled arrays
 for small blocks and 64-byte-aligned unmanaged memory for large ones, keeps up to 128 MB of freed blocks for reuse, and splits very

@@ -215,6 +215,15 @@ collection. Methods that return a new raster say so in their name: <code>Copy</c
 await using FileStream stream = File.OpenRead(&quot;duck.png&quot;);
 using Raster image = await Raster.LoadAsync(stream, cancellationToken: cancellationToken);
 await image.SaveAsync(&quot;duck-copy.png&quot;, cancellationToken: cancellationToken);
+</code></pre>
+<p><code>Save</code>, <code>SaveAsync</code>, <code>SaveAll</code> and <code>Transcode</code> also take an <code>IProgress&lt;SaveProgress&gt;</code> and a <code>CancellationToken</code>, in the same
+shape as Egami.Video's <code>MediaProgress</code>: a report as the save starts, at most one every 250 ms, then a final one with
+<code>IsFinal</code> set and a <code>Fraction</code> of 1. Row-by-row formats count the rows they have written; AVIF, lossy JPEG XL and lossy WebP
+count their own work; the rest report only as they start and end.</p>
+<pre><code class="lang-csharp">// Slow encoders (AVIF, JPEG XL, lossy WebP) report how far they have come: once as they start, at most every 250 ms,
+// then once more with IsFinal. A canceled token stops the encode and deletes the half-written file.
+Progress&lt;SaveProgress&gt; progress = new(p =&gt; Console.WriteLine($&quot;{p.Fraction:P0} after {p.Elapsed.TotalSeconds:F1} s&quot;));
+image.Save(&quot;duck.avif&quot;, options: null, progress, cancellationToken);
 </code></pre><h2 id="choosing-a-format">Choosing a format</h2>
 <pre><code class="lang-csharp">// Save(path) picks the writer from the file extension...
 image.Save(&quot;duck-copy.qoi&quot;);

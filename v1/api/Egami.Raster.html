@@ -5264,9 +5264,76 @@ image.Save(output, PngFormat.Info, new PngWriterOptions
 
   <a id="Egami_Raster_Save_" data-uid="Egami.Raster.Save*"></a>
 
+  <h3 id="Egami_Raster_Save_System_IO_Stream_Egami_Formats_FormatInfo_Egami_Formats_WriterOptions_System_IProgress_Egami_SaveProgress__System_Threading_CancellationToken_" data-uid="Egami.Raster.Save(System.IO.Stream,Egami.Formats.FormatInfo,Egami.Formats.WriterOptions,System.IProgress{Egami.SaveProgress},System.Threading.CancellationToken)">
+  Save(Stream, FormatInfo, WriterOptions?, IProgress&lt;SaveProgress&gt;?, CancellationToken)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Raster/Raster.IO.cs/#L463"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Encodes the raster in <code class="paramref">format</code> as <a class="xref" href="Egami.Raster.html#Egami_Raster_Save_System_IO_Stream_Egami_Formats_FormatInfo_Egami_Formats_WriterOptions_">Save(Stream, FormatInfo, WriterOptions?)</a> does, reporting how
+far it has come and stopping when <code class="paramref">cancellationToken</code> is canceled.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Save(Stream stream, FormatInfo format, WriterOptions? options, IProgress&lt;SaveProgress&gt;? progress, CancellationToken cancellationToken = default)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>stream</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.io.stream">Stream</a></dt>
+    <dd><p>Where to write, from its current position. It is left open.</p>
+</dd>
+    <dt><code>format</code> <a class="xref" href="Egami.Formats.FormatInfo.html">FormatInfo</a></dt>
+    <dd><p>The format.</p>
+</dd>
+    <dt><code>options</code> <a class="xref" href="Egami.Formats.WriterOptions.html">WriterOptions</a></dt>
+    <dd><p>The format's options, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for its defaults.</p>
+</dd>
+    <dt><code>progress</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.iprogress-1">IProgress</a>&lt;<a class="xref" href="Egami.SaveProgress.html">SaveProgress</a>&gt;</dt>
+    <dd><p>Gets <a class="xref" href="Egami.SaveProgress.html">SaveProgress</a> reports, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</dd>
+    <dt><code>cancellationToken</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken">CancellationToken</a></dt>
+    <dd><p>Cancels the encode between bands of rows, and inside the codecs that count their own work.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Raster_Save_System_IO_Stream_Egami_Formats_FormatInfo_Egami_Formats_WriterOptions_System_IProgress_Egami_SaveProgress__System_Threading_CancellationToken__examples">Examples</h4>
+  <pre><code class="lang-csharp">// Slow encoders (AVIF, JPEG XL, lossy WebP) report how far they have come: once as they start, at most every 250 ms,
+// then once more with IsFinal. A canceled token stops the encode and deletes the half-written file.
+Progress&lt;SaveProgress&gt; progress = new(p =&gt; Console.WriteLine($"{p.Fraction:P0} after {p.Elapsed.TotalSeconds:F1} s"));
+image.Save("duck.avif", options: null, progress, cancellationToken);</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.UnsupportedFormatException.html">UnsupportedFormatException</a></dt>
+    <dd><p>The format has no writer.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.objectdisposedexception">ObjectDisposedException</a></dt>
+    <dd><p>The raster has been disposed.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentnullexception">ArgumentNullException</a></dt>
+    <dd><p><code class="paramref">stream</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.operationcanceledexception">OperationCanceledException</a></dt>
+    <dd><p><code class="paramref">cancellationToken</code> was canceled.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Raster_Save_" data-uid="Egami.Raster.Save*"></a>
+
   <h3 id="Egami_Raster_Save_System_IO_Stream_System_String_Egami_Formats_WriterOptions_" data-uid="Egami.Raster.Save(System.IO.Stream,System.String,Egami.Formats.WriterOptions)">
   Save(Stream, string, WriterOptions?)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Raster/Raster.IO.cs/#L457"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Raster/Raster.IO.cs/#L514"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Encodes the raster in the registered format with this name or file extension, such as &quot;PNG&quot; or &quot;.png&quot;.</p>
@@ -5323,9 +5390,76 @@ image.Save(output, PngFormat.Info, new PngWriterOptions
 
   <a id="Egami_Raster_Save_" data-uid="Egami.Raster.Save*"></a>
 
+  <h3 id="Egami_Raster_Save_System_IO_Stream_System_String_Egami_Formats_WriterOptions_System_IProgress_Egami_SaveProgress__System_Threading_CancellationToken_" data-uid="Egami.Raster.Save(System.IO.Stream,System.String,Egami.Formats.WriterOptions,System.IProgress{Egami.SaveProgress},System.Threading.CancellationToken)">
+  Save(Stream, string, WriterOptions?, IProgress&lt;SaveProgress&gt;?, CancellationToken)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Raster/Raster.IO.cs/#L498"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Encodes the raster in the named format, reporting progress. See
+<a class="xref" href="Egami.Raster.html#Egami_Raster_Save_System_IO_Stream_Egami_Formats_FormatInfo_Egami_Formats_WriterOptions_System_IProgress_Egami_SaveProgress__System_Threading_CancellationToken_">Save(Stream, FormatInfo, WriterOptions?, IProgress&lt;SaveProgress&gt;?, CancellationToken)</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Save(Stream stream, string formatNameOrExtension, WriterOptions? options, IProgress&lt;SaveProgress&gt;? progress, CancellationToken cancellationToken = default)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>stream</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.io.stream">Stream</a></dt>
+    <dd><p>Where to write, from its current position. It is left open.</p>
+</dd>
+    <dt><code>formatNameOrExtension</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The format's name or one of its extensions, ignoring case.</p>
+</dd>
+    <dt><code>options</code> <a class="xref" href="Egami.Formats.WriterOptions.html">WriterOptions</a></dt>
+    <dd><p>The format's options, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for its defaults.</p>
+</dd>
+    <dt><code>progress</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.iprogress-1">IProgress</a>&lt;<a class="xref" href="Egami.SaveProgress.html">SaveProgress</a>&gt;</dt>
+    <dd><p>Gets <a class="xref" href="Egami.SaveProgress.html">SaveProgress</a> reports, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</dd>
+    <dt><code>cancellationToken</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken">CancellationToken</a></dt>
+    <dd><p>Cancels the encode between bands of rows, and inside the codecs that count their own work.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Raster_Save_System_IO_Stream_System_String_Egami_Formats_WriterOptions_System_IProgress_Egami_SaveProgress__System_Threading_CancellationToken__examples">Examples</h4>
+  <pre><code class="lang-csharp">// Slow encoders (AVIF, JPEG XL, lossy WebP) report how far they have come: once as they start, at most every 250 ms,
+// then once more with IsFinal. A canceled token stops the encode and deletes the half-written file.
+Progress&lt;SaveProgress&gt; progress = new(p =&gt; Console.WriteLine($"{p.Fraction:P0} after {p.Elapsed.TotalSeconds:F1} s"));
+image.Save("duck.avif", options: null, progress, cancellationToken);</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.UnsupportedFormatException.html">UnsupportedFormatException</a></dt>
+    <dd><p>No registered format matches, or it has no writer.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.objectdisposedexception">ObjectDisposedException</a></dt>
+    <dd><p>The raster has been disposed.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentnullexception">ArgumentNullException</a></dt>
+    <dd><p><code class="paramref">stream</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.operationcanceledexception">OperationCanceledException</a></dt>
+    <dd><p><code class="paramref">cancellationToken</code> was canceled.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Raster_Save_" data-uid="Egami.Raster.Save*"></a>
+
   <h3 id="Egami_Raster_Save_System_String_Egami_Formats_WriterOptions_" data-uid="Egami.Raster.Save(System.String,Egami.Formats.WriterOptions)">
   Save(string, WriterOptions?)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Raster/Raster.IO.cs/#L477"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Raster/Raster.IO.cs/#L534"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Encodes the raster to a file, choosing the format from the file extension. An existing file is replaced.
@@ -5377,6 +5511,73 @@ image.Save(output, PngFormat.Info, new PngWriterOptions
 </dd>
     <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.io.ioexception">IOException</a></dt>
     <dd><p>The file cannot be written.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Raster_Save_" data-uid="Egami.Raster.Save*"></a>
+
+  <h3 id="Egami_Raster_Save_System_String_Egami_Formats_WriterOptions_System_IProgress_Egami_SaveProgress__System_Threading_CancellationToken_" data-uid="Egami.Raster.Save(System.String,Egami.Formats.WriterOptions,System.IProgress{Egami.SaveProgress},System.Threading.CancellationToken)">
+  Save(string, WriterOptions?, IProgress&lt;SaveProgress&gt;?, CancellationToken)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Raster/Raster.IO.cs/#L557"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Encodes the raster to a file as <a class="xref" href="Egami.Raster.html#Egami_Raster_Save_System_String_Egami_Formats_WriterOptions_">Save(string, WriterOptions?)</a> does, reporting progress. If the save fails or is
+canceled, the partly written file is deleted.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Save(string path, WriterOptions? options, IProgress&lt;SaveProgress&gt;? progress, CancellationToken cancellationToken = default)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>path</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The file path.</p>
+</dd>
+    <dt><code>options</code> <a class="xref" href="Egami.Formats.WriterOptions.html">WriterOptions</a></dt>
+    <dd><p>The format's options, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for its defaults.</p>
+</dd>
+    <dt><code>progress</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.iprogress-1">IProgress</a>&lt;<a class="xref" href="Egami.SaveProgress.html">SaveProgress</a>&gt;</dt>
+    <dd><p>Gets <a class="xref" href="Egami.SaveProgress.html">SaveProgress</a> reports, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</dd>
+    <dt><code>cancellationToken</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken">CancellationToken</a></dt>
+    <dd><p>Cancels the encode between bands of rows, and inside the codecs that count their own work.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Raster_Save_System_String_Egami_Formats_WriterOptions_System_IProgress_Egami_SaveProgress__System_Threading_CancellationToken__examples">Examples</h4>
+  <pre><code class="lang-csharp">// Slow encoders (AVIF, JPEG XL, lossy WebP) report how far they have come: once as they start, at most every 250 ms,
+// then once more with IsFinal. A canceled token stops the encode and deletes the half-written file.
+Progress&lt;SaveProgress&gt; progress = new(p =&gt; Console.WriteLine($"{p.Fraction:P0} after {p.Elapsed.TotalSeconds:F1} s"));
+image.Save("duck.avif", options: null, progress, cancellationToken);</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.UnsupportedFormatException.html">UnsupportedFormatException</a></dt>
+    <dd><p>No registered format uses the extension, or it has no writer.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.objectdisposedexception">ObjectDisposedException</a></dt>
+    <dd><p>The raster has been disposed.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentnullexception">ArgumentNullException</a></dt>
+    <dd><p><code class="paramref">path</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.io.ioexception">IOException</a></dt>
+    <dd><p>The file cannot be written.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.operationcanceledexception">OperationCanceledException</a></dt>
+    <dd><p><code class="paramref">cancellationToken</code> was canceled.</p>
 </dd>
   </dl>
 
@@ -5449,6 +5650,79 @@ Raster.SaveAll([pages[1]], "second.png");</code></pre>
 
   <a id="Egami_Raster_SaveAll_" data-uid="Egami.Raster.SaveAll*"></a>
 
+  <h3 id="Egami_Raster_SaveAll_System_Collections_Generic_IEnumerable_Egami_Raster__System_IO_Stream_Egami_Formats_FormatInfo_Egami_Formats_WriterOptions_System_IProgress_Egami_SaveProgress__System_Threading_CancellationToken_" data-uid="Egami.Raster.SaveAll(System.Collections.Generic.IEnumerable{Egami.Raster},System.IO.Stream,Egami.Formats.FormatInfo,Egami.Formats.WriterOptions,System.IProgress{Egami.SaveProgress},System.Threading.CancellationToken)">
+  SaveAll(IEnumerable&lt;Raster&gt;, Stream, FormatInfo, WriterOptions?, IProgress&lt;SaveProgress&gt;?, CancellationToken)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Raster/Raster.Pages.cs/#L346"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Writes several rasters to one file as <a class="xref" href="Egami.Raster.html#Egami_Raster_SaveAll_System_Collections_Generic_IEnumerable_Egami_Raster__System_IO_Stream_Egami_Formats_FormatInfo_Egami_Formats_WriterOptions_">SaveAll(IEnumerable&lt;Raster&gt;, Stream, FormatInfo, WriterOptions?)</a> does,
+reporting progress.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static void SaveAll(IEnumerable&lt;Raster&gt; rasters, Stream stream, FormatInfo format, WriterOptions? options, IProgress&lt;SaveProgress&gt;? progress, CancellationToken cancellationToken = default)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>rasters</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1">IEnumerable</a>&lt;<a class="xref" href="Egami.Raster.html">Raster</a>&gt;</dt>
+    <dd><p>The images to write, at least one.</p>
+</dd>
+    <dt><code>stream</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.io.stream">Stream</a></dt>
+    <dd><p>Where to write, from its current position. It is left open.</p>
+</dd>
+    <dt><code>format</code> <a class="xref" href="Egami.Formats.FormatInfo.html">FormatInfo</a></dt>
+    <dd><p>The format.</p>
+</dd>
+    <dt><code>options</code> <a class="xref" href="Egami.Formats.WriterOptions.html">WriterOptions</a></dt>
+    <dd><p>The format's options, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for its defaults.</p>
+</dd>
+    <dt><code>progress</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.iprogress-1">IProgress</a>&lt;<a class="xref" href="Egami.SaveProgress.html">SaveProgress</a>&gt;</dt>
+    <dd><p>Gets <a class="xref" href="Egami.SaveProgress.html">SaveProgress</a> reports, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</dd>
+    <dt><code>cancellationToken</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken">CancellationToken</a></dt>
+    <dd><p>Cancels the encode between bands of rows, and inside the codecs that count their own work.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Raster_SaveAll_System_Collections_Generic_IEnumerable_Egami_Raster__System_IO_Stream_Egami_Formats_FormatInfo_Egami_Formats_WriterOptions_System_IProgress_Egami_SaveProgress__System_Threading_CancellationToken__examples">Examples</h4>
+  <pre><code class="lang-csharp">// Slow encoders (AVIF, JPEG XL, lossy WebP) report how far they have come: once as they start, at most every 250 ms,
+// then once more with IsFinal. A canceled token stops the encode and deletes the half-written file.
+Progress&lt;SaveProgress&gt; progress = new(p =&gt; Console.WriteLine($"{p.Fraction:P0} after {p.Elapsed.TotalSeconds:F1} s"));
+image.Save("duck.avif", options: null, progress, cancellationToken);</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>No raster was given, or more than one to a format that holds one image.</p>
+</dd>
+    <dt><a class="xref" href="Egami.UnsupportedFormatException.html">UnsupportedFormatException</a></dt>
+    <dd><p>The format has no writer.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.objectdisposedexception">ObjectDisposedException</a></dt>
+    <dd><p>A raster has been disposed.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentnullexception">ArgumentNullException</a></dt>
+    <dd><p><code class="paramref">rasters</code>, <code class="paramref">stream</code> or <code class="paramref">format</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.operationcanceledexception">OperationCanceledException</a></dt>
+    <dd><p><code class="paramref">cancellationToken</code> was canceled.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Raster_SaveAll_" data-uid="Egami.Raster.SaveAll*"></a>
+
   <h3 id="Egami_Raster_SaveAll_System_Collections_Generic_IEnumerable_Egami_Raster__System_IO_Stream_System_String_Egami_Formats_WriterOptions_" data-uid="Egami.Raster.SaveAll(System.Collections.Generic.IEnumerable{Egami.Raster},System.IO.Stream,System.String,Egami.Formats.WriterOptions)">
   SaveAll(IEnumerable&lt;Raster&gt;, Stream, string, WriterOptions?)
   <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Raster/Raster.Pages.cs/#L265"><i class="bi bi-code-slash"></i></a>
@@ -5506,6 +5780,78 @@ Raster.SaveAll([pages[1]], "second.png");</code></pre>
 </dd>
     <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentnullexception">ArgumentNullException</a></dt>
     <dd><p>An argument is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Raster_SaveAll_" data-uid="Egami.Raster.SaveAll*"></a>
+
+  <h3 id="Egami_Raster_SaveAll_System_Collections_Generic_IEnumerable_Egami_Raster__System_IO_Stream_System_String_Egami_Formats_WriterOptions_System_IProgress_Egami_SaveProgress__System_Threading_CancellationToken_" data-uid="Egami.Raster.SaveAll(System.Collections.Generic.IEnumerable{Egami.Raster},System.IO.Stream,System.String,Egami.Formats.WriterOptions,System.IProgress{Egami.SaveProgress},System.Threading.CancellationToken)">
+  SaveAll(IEnumerable&lt;Raster&gt;, Stream, string, WriterOptions?, IProgress&lt;SaveProgress&gt;?, CancellationToken)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Raster/Raster.Pages.cs/#L375"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Writes several rasters to one file in the named format, reporting progress. See <a class="xref" href="Egami.Raster.html#Egami_Raster_SaveAll_System_Collections_Generic_IEnumerable_Egami_Raster__System_IO_Stream_Egami_Formats_FormatInfo_Egami_Formats_WriterOptions_System_IProgress_Egami_SaveProgress__System_Threading_CancellationToken_">SaveAll(IEnumerable&lt;Raster&gt;, Stream, FormatInfo, WriterOptions?, IProgress&lt;SaveProgress&gt;?, CancellationToken)</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static void SaveAll(IEnumerable&lt;Raster&gt; rasters, Stream stream, string formatNameOrExtension, WriterOptions? options, IProgress&lt;SaveProgress&gt;? progress, CancellationToken cancellationToken = default)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>rasters</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1">IEnumerable</a>&lt;<a class="xref" href="Egami.Raster.html">Raster</a>&gt;</dt>
+    <dd><p>The images to write, at least one.</p>
+</dd>
+    <dt><code>stream</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.io.stream">Stream</a></dt>
+    <dd><p>Where to write, from its current position. It is left open.</p>
+</dd>
+    <dt><code>formatNameOrExtension</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The format's name or one of its extensions, ignoring case.</p>
+</dd>
+    <dt><code>options</code> <a class="xref" href="Egami.Formats.WriterOptions.html">WriterOptions</a></dt>
+    <dd><p>The format's options, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for its defaults.</p>
+</dd>
+    <dt><code>progress</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.iprogress-1">IProgress</a>&lt;<a class="xref" href="Egami.SaveProgress.html">SaveProgress</a>&gt;</dt>
+    <dd><p>Gets <a class="xref" href="Egami.SaveProgress.html">SaveProgress</a> reports, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</dd>
+    <dt><code>cancellationToken</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken">CancellationToken</a></dt>
+    <dd><p>Cancels the encode between bands of rows, and inside the codecs that count their own work.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Raster_SaveAll_System_Collections_Generic_IEnumerable_Egami_Raster__System_IO_Stream_System_String_Egami_Formats_WriterOptions_System_IProgress_Egami_SaveProgress__System_Threading_CancellationToken__examples">Examples</h4>
+  <pre><code class="lang-csharp">// Slow encoders (AVIF, JPEG XL, lossy WebP) report how far they have come: once as they start, at most every 250 ms,
+// then once more with IsFinal. A canceled token stops the encode and deletes the half-written file.
+Progress&lt;SaveProgress&gt; progress = new(p =&gt; Console.WriteLine($"{p.Fraction:P0} after {p.Elapsed.TotalSeconds:F1} s"));
+image.Save("duck.avif", options: null, progress, cancellationToken);</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>No raster was given, or more than one to a format that holds one image.</p>
+</dd>
+    <dt><a class="xref" href="Egami.UnsupportedFormatException.html">UnsupportedFormatException</a></dt>
+    <dd><p>No registered format matches, or it has no writer.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.objectdisposedexception">ObjectDisposedException</a></dt>
+    <dd><p>A raster has been disposed.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentnullexception">ArgumentNullException</a></dt>
+    <dd><p>An argument is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.operationcanceledexception">OperationCanceledException</a></dt>
+    <dd><p><code class="paramref">cancellationToken</code> was canceled.</p>
 </dd>
   </dl>
 
@@ -5571,6 +5917,79 @@ Raster.SaveAll([pages[1]], "second.png");</code></pre>
 </dd>
     <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.io.ioexception">IOException</a></dt>
     <dd><p>The file cannot be written.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Raster_SaveAll_" data-uid="Egami.Raster.SaveAll*"></a>
+
+  <h3 id="Egami_Raster_SaveAll_System_Collections_Generic_IEnumerable_Egami_Raster__System_String_Egami_Formats_WriterOptions_System_IProgress_Egami_SaveProgress__System_Threading_CancellationToken_" data-uid="Egami.Raster.SaveAll(System.Collections.Generic.IEnumerable{Egami.Raster},System.String,Egami.Formats.WriterOptions,System.IProgress{Egami.SaveProgress},System.Threading.CancellationToken)">
+  SaveAll(IEnumerable&lt;Raster&gt;, string, WriterOptions?, IProgress&lt;SaveProgress&gt;?, CancellationToken)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Raster/Raster.Pages.cs/#L402"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Writes several rasters to one file, choosing the format from the file extension, reporting progress. If writing fails or is
+canceled, the partly written file is deleted.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static void SaveAll(IEnumerable&lt;Raster&gt; rasters, string path, WriterOptions? options, IProgress&lt;SaveProgress&gt;? progress, CancellationToken cancellationToken = default)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>rasters</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1">IEnumerable</a>&lt;<a class="xref" href="Egami.Raster.html">Raster</a>&gt;</dt>
+    <dd><p>The images to write, at least one.</p>
+</dd>
+    <dt><code>path</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The file path.</p>
+</dd>
+    <dt><code>options</code> <a class="xref" href="Egami.Formats.WriterOptions.html">WriterOptions</a></dt>
+    <dd><p>The format's options, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for its defaults.</p>
+</dd>
+    <dt><code>progress</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.iprogress-1">IProgress</a>&lt;<a class="xref" href="Egami.SaveProgress.html">SaveProgress</a>&gt;</dt>
+    <dd><p>Gets <a class="xref" href="Egami.SaveProgress.html">SaveProgress</a> reports, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</dd>
+    <dt><code>cancellationToken</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken">CancellationToken</a></dt>
+    <dd><p>Cancels the encode between bands of rows, and inside the codecs that count their own work.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Raster_SaveAll_System_Collections_Generic_IEnumerable_Egami_Raster__System_String_Egami_Formats_WriterOptions_System_IProgress_Egami_SaveProgress__System_Threading_CancellationToken__examples">Examples</h4>
+  <pre><code class="lang-csharp">// Slow encoders (AVIF, JPEG XL, lossy WebP) report how far they have come: once as they start, at most every 250 ms,
+// then once more with IsFinal. A canceled token stops the encode and deletes the half-written file.
+Progress&lt;SaveProgress&gt; progress = new(p =&gt; Console.WriteLine($"{p.Fraction:P0} after {p.Elapsed.TotalSeconds:F1} s"));
+image.Save("duck.avif", options: null, progress, cancellationToken);</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>No raster was given, or more than one to a format that holds one image.</p>
+</dd>
+    <dt><a class="xref" href="Egami.UnsupportedFormatException.html">UnsupportedFormatException</a></dt>
+    <dd><p>No registered format uses the extension, or it has no writer.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.objectdisposedexception">ObjectDisposedException</a></dt>
+    <dd><p>A raster has been disposed.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentnullexception">ArgumentNullException</a></dt>
+    <dd><p><code class="paramref">rasters</code> or <code class="paramref">path</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.io.ioexception">IOException</a></dt>
+    <dd><p>The file cannot be written.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.operationcanceledexception">OperationCanceledException</a></dt>
+    <dd><p><code class="paramref">cancellationToken</code> was canceled.</p>
 </dd>
   </dl>
 
@@ -5655,9 +6074,82 @@ Raster.SaveAll([pages[1]], "second.png");</code></pre>
 
   <a id="Egami_Raster_SaveAsync_" data-uid="Egami.Raster.SaveAsync*"></a>
 
+  <h3 id="Egami_Raster_SaveAsync_System_IO_Stream_Egami_Formats_FormatInfo_Egami_Formats_WriterOptions_System_IProgress_Egami_SaveProgress__System_Threading_CancellationToken_" data-uid="Egami.Raster.SaveAsync(System.IO.Stream,Egami.Formats.FormatInfo,Egami.Formats.WriterOptions,System.IProgress{Egami.SaveProgress},System.Threading.CancellationToken)">
+  SaveAsync(Stream, FormatInfo, WriterOptions?, IProgress&lt;SaveProgress&gt;?, CancellationToken)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Raster/Raster.IO.cs/#L605"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Encodes the raster and writes it to <code class="paramref">stream</code> asynchronously, reporting progress. See
+<a class="xref" href="Egami.Raster.html#Egami_Raster_SaveAsync_System_IO_Stream_Egami_Formats_FormatInfo_Egami_Formats_WriterOptions_System_Threading_CancellationToken_">SaveAsync(Stream, FormatInfo, WriterOptions?, CancellationToken)</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Task SaveAsync(Stream stream, FormatInfo format, WriterOptions? options, IProgress&lt;SaveProgress&gt;? progress, CancellationToken cancellationToken = default)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>stream</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.io.stream">Stream</a></dt>
+    <dd><p>Where to write. It is left open.</p>
+</dd>
+    <dt><code>format</code> <a class="xref" href="Egami.Formats.FormatInfo.html">FormatInfo</a></dt>
+    <dd><p>The format.</p>
+</dd>
+    <dt><code>options</code> <a class="xref" href="Egami.Formats.WriterOptions.html">WriterOptions</a></dt>
+    <dd><p>The format's options, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for its defaults.</p>
+</dd>
+    <dt><code>progress</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.iprogress-1">IProgress</a>&lt;<a class="xref" href="Egami.SaveProgress.html">SaveProgress</a>&gt;</dt>
+    <dd><p>Gets <a class="xref" href="Egami.SaveProgress.html">SaveProgress</a> reports, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</dd>
+    <dt><code>cancellationToken</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken">CancellationToken</a></dt>
+    <dd><p>Cancels the encode between bands of rows, inside the codecs that count their own work, and while writing.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.tasks.task">Task</a></dt>
+    <dd><p>A task that completes when the data is written.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Raster_SaveAsync_System_IO_Stream_Egami_Formats_FormatInfo_Egami_Formats_WriterOptions_System_IProgress_Egami_SaveProgress__System_Threading_CancellationToken__examples">Examples</h4>
+  <pre><code class="lang-csharp">// Slow encoders (AVIF, JPEG XL, lossy WebP) report how far they have come: once as they start, at most every 250 ms,
+// then once more with IsFinal. A canceled token stops the encode and deletes the half-written file.
+Progress&lt;SaveProgress&gt; progress = new(p =&gt; Console.WriteLine($"{p.Fraction:P0} after {p.Elapsed.TotalSeconds:F1} s"));
+image.Save("duck.avif", options: null, progress, cancellationToken);</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.UnsupportedFormatException.html">UnsupportedFormatException</a></dt>
+    <dd><p>No registered format matches, or it has no writer.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.objectdisposedexception">ObjectDisposedException</a></dt>
+    <dd><p>The raster has been disposed.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentnullexception">ArgumentNullException</a></dt>
+    <dd><p><code class="paramref">stream</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.operationcanceledexception">OperationCanceledException</a></dt>
+    <dd><p><code class="paramref">cancellationToken</code> was canceled.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Raster_SaveAsync_" data-uid="Egami.Raster.SaveAsync*"></a>
+
   <h3 id="Egami_Raster_SaveAsync_System_IO_Stream_Egami_Formats_FormatInfo_Egami_Formats_WriterOptions_System_Threading_CancellationToken_" data-uid="Egami.Raster.SaveAsync(System.IO.Stream,Egami.Formats.FormatInfo,Egami.Formats.WriterOptions,System.Threading.CancellationToken)">
   SaveAsync(Stream, FormatInfo, WriterOptions?, CancellationToken)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Raster/Raster.IO.cs/#L500"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Raster/Raster.IO.cs/#L580"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Encodes the raster into a pooled buffer, then writes it to <code class="paramref">stream</code> asynchronously.
@@ -5726,9 +6218,81 @@ await image.SaveAsync("duck-copy.png", cancellationToken: cancellationToken);</c
 
   <a id="Egami_Raster_SaveAsync_" data-uid="Egami.Raster.SaveAsync*"></a>
 
+  <h3 id="Egami_Raster_SaveAsync_System_IO_Stream_System_String_Egami_Formats_WriterOptions_System_IProgress_Egami_SaveProgress__System_Threading_CancellationToken_" data-uid="Egami.Raster.SaveAsync(System.IO.Stream,System.String,Egami.Formats.WriterOptions,System.IProgress{Egami.SaveProgress},System.Threading.CancellationToken)">
+  SaveAsync(Stream, string, WriterOptions?, IProgress&lt;SaveProgress&gt;?, CancellationToken)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Raster/Raster.IO.cs/#L629"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Encodes the raster in the named format and writes it asynchronously, reporting progress.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Task SaveAsync(Stream stream, string formatNameOrExtension, WriterOptions? options, IProgress&lt;SaveProgress&gt;? progress, CancellationToken cancellationToken = default)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>stream</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.io.stream">Stream</a></dt>
+    <dd><p>Where to write. It is left open.</p>
+</dd>
+    <dt><code>formatNameOrExtension</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The format's name or one of its extensions, ignoring case.</p>
+</dd>
+    <dt><code>options</code> <a class="xref" href="Egami.Formats.WriterOptions.html">WriterOptions</a></dt>
+    <dd><p>The format's options, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for its defaults.</p>
+</dd>
+    <dt><code>progress</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.iprogress-1">IProgress</a>&lt;<a class="xref" href="Egami.SaveProgress.html">SaveProgress</a>&gt;</dt>
+    <dd><p>Gets <a class="xref" href="Egami.SaveProgress.html">SaveProgress</a> reports, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</dd>
+    <dt><code>cancellationToken</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken">CancellationToken</a></dt>
+    <dd><p>Cancels the encode between bands of rows, inside the codecs that count their own work, and while writing.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.tasks.task">Task</a></dt>
+    <dd><p>A task that completes when the data is written.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Raster_SaveAsync_System_IO_Stream_System_String_Egami_Formats_WriterOptions_System_IProgress_Egami_SaveProgress__System_Threading_CancellationToken__examples">Examples</h4>
+  <pre><code class="lang-csharp">// Slow encoders (AVIF, JPEG XL, lossy WebP) report how far they have come: once as they start, at most every 250 ms,
+// then once more with IsFinal. A canceled token stops the encode and deletes the half-written file.
+Progress&lt;SaveProgress&gt; progress = new(p =&gt; Console.WriteLine($"{p.Fraction:P0} after {p.Elapsed.TotalSeconds:F1} s"));
+image.Save("duck.avif", options: null, progress, cancellationToken);</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.UnsupportedFormatException.html">UnsupportedFormatException</a></dt>
+    <dd><p>No registered format matches, or it has no writer.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.objectdisposedexception">ObjectDisposedException</a></dt>
+    <dd><p>The raster has been disposed.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentnullexception">ArgumentNullException</a></dt>
+    <dd><p><code class="paramref">stream</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.operationcanceledexception">OperationCanceledException</a></dt>
+    <dd><p><code class="paramref">cancellationToken</code> was canceled.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Raster_SaveAsync_" data-uid="Egami.Raster.SaveAsync*"></a>
+
   <h3 id="Egami_Raster_SaveAsync_System_IO_Stream_System_String_Egami_Formats_WriterOptions_System_Threading_CancellationToken_" data-uid="Egami.Raster.SaveAsync(System.IO.Stream,System.String,Egami.Formats.WriterOptions,System.Threading.CancellationToken)">
   SaveAsync(Stream, string, WriterOptions?, CancellationToken)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Raster/Raster.IO.cs/#L521"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Raster/Raster.IO.cs/#L684"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Encodes the raster in the named format and writes it asynchronously.</p>
@@ -5796,9 +6360,82 @@ await image.SaveAsync("duck-copy.png", cancellationToken: cancellationToken);</c
 
   <a id="Egami_Raster_SaveAsync_" data-uid="Egami.Raster.SaveAsync*"></a>
 
+  <h3 id="Egami_Raster_SaveAsync_System_String_Egami_Formats_WriterOptions_System_IProgress_Egami_SaveProgress__System_Threading_CancellationToken_" data-uid="Egami.Raster.SaveAsync(System.String,Egami.Formats.WriterOptions,System.IProgress{Egami.SaveProgress},System.Threading.CancellationToken)">
+  SaveAsync(string, WriterOptions?, IProgress&lt;SaveProgress&gt;?, CancellationToken)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Raster/Raster.IO.cs/#L652"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Encodes the raster to a file asynchronously, reporting progress. If the save fails or is canceled, the partly written file
+is deleted.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Task SaveAsync(string path, WriterOptions? options, IProgress&lt;SaveProgress&gt;? progress, CancellationToken cancellationToken = default)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>path</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The file path.</p>
+</dd>
+    <dt><code>options</code> <a class="xref" href="Egami.Formats.WriterOptions.html">WriterOptions</a></dt>
+    <dd><p>The format's options, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for its defaults.</p>
+</dd>
+    <dt><code>progress</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.iprogress-1">IProgress</a>&lt;<a class="xref" href="Egami.SaveProgress.html">SaveProgress</a>&gt;</dt>
+    <dd><p>Gets <a class="xref" href="Egami.SaveProgress.html">SaveProgress</a> reports, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</dd>
+    <dt><code>cancellationToken</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken">CancellationToken</a></dt>
+    <dd><p>Cancels the encode between bands of rows, inside the codecs that count their own work, and while writing.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.tasks.task">Task</a></dt>
+    <dd><p>A task that completes when the file is written.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Raster_SaveAsync_System_String_Egami_Formats_WriterOptions_System_IProgress_Egami_SaveProgress__System_Threading_CancellationToken__examples">Examples</h4>
+  <pre><code class="lang-csharp">// Slow encoders (AVIF, JPEG XL, lossy WebP) report how far they have come: once as they start, at most every 250 ms,
+// then once more with IsFinal. A canceled token stops the encode and deletes the half-written file.
+Progress&lt;SaveProgress&gt; progress = new(p =&gt; Console.WriteLine($"{p.Fraction:P0} after {p.Elapsed.TotalSeconds:F1} s"));
+image.Save("duck.avif", options: null, progress, cancellationToken);</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.UnsupportedFormatException.html">UnsupportedFormatException</a></dt>
+    <dd><p>No registered format matches, or it has no writer.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.objectdisposedexception">ObjectDisposedException</a></dt>
+    <dd><p>The raster has been disposed.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentnullexception">ArgumentNullException</a></dt>
+    <dd><p><code class="paramref">path</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.io.ioexception">IOException</a></dt>
+    <dd><p>The file cannot be written.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.operationcanceledexception">OperationCanceledException</a></dt>
+    <dd><p><code class="paramref">cancellationToken</code> was canceled.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Raster_SaveAsync_" data-uid="Egami.Raster.SaveAsync*"></a>
+
   <h3 id="Egami_Raster_SaveAsync_System_String_Egami_Formats_WriterOptions_System_Threading_CancellationToken_" data-uid="Egami.Raster.SaveAsync(System.String,Egami.Formats.WriterOptions,System.Threading.CancellationToken)">
   SaveAsync(string, WriterOptions?, CancellationToken)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Raster/Raster.IO.cs/#L540"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Raster/Raster.IO.cs/#L703"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Encodes the raster to a file asynchronously, choosing the format from the file extension.</p>
@@ -6163,6 +6800,93 @@ Raster.Transcode("egret.png", "thumb.jpg", x =&gt; x.Fit(256, 256).Saturation(1.
 
   <a id="Egami_Raster_Transcode_" data-uid="Egami.Raster.Transcode*"></a>
 
+  <h3 id="Egami_Raster_Transcode_System_IO_Stream_System_IO_Stream_Egami_Formats_FormatInfo_System_Action_Egami_Operations_RasterOps__Egami_Formats_ReaderOptions_Egami_Formats_WriterOptions_Egami_EgamiContext_System_IProgress_Egami_SaveProgress__System_Threading_CancellationToken_" data-uid="Egami.Raster.Transcode(System.IO.Stream,System.IO.Stream,Egami.Formats.FormatInfo,System.Action{Egami.Operations.RasterOps},Egami.Formats.ReaderOptions,Egami.Formats.WriterOptions,Egami.EgamiContext,System.IProgress{Egami.SaveProgress},System.Threading.CancellationToken)">
+  Transcode(Stream, Stream, FormatInfo, Action&lt;RasterOps&gt;?, ReaderOptions?, WriterOptions?, EgamiContext?, IProgress&lt;SaveProgress&gt;?, CancellationToken)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Streaming/Transcode.cs/#L193"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Transcodes from one stream to another, a band of rows at a time, reporting how far the output has come. See
+<a class="xref" href="Egami.Raster.html#Egami_Raster_Transcode_System_String_System_String_System_Action_Egami_Operations_RasterOps__Egami_Formats_ReaderOptions_Egami_Formats_WriterOptions_Egami_EgamiContext_System_IProgress_Egami_SaveProgress__System_Threading_CancellationToken_">Transcode(string, string, Action&lt;RasterOps&gt;?, ReaderOptions?, WriterOptions?, EgamiContext?, IProgress&lt;SaveProgress&gt;?, CancellationToken)</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static void Transcode(Stream input, Stream output, FormatInfo outputFormat, Action&lt;RasterOps&gt;? operations, ReaderOptions? readerOptions, WriterOptions? writerOptions, EgamiContext? context, IProgress&lt;SaveProgress&gt;? progress, CancellationToken cancellationToken = default)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>input</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.io.stream">Stream</a></dt>
+    <dd><p>The image to read, from its current position. It is left open.</p>
+</dd>
+    <dt><code>output</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.io.stream">Stream</a></dt>
+    <dd><p>Where to write, from its current position. It is left open.</p>
+</dd>
+    <dt><code>outputFormat</code> <a class="xref" href="Egami.Formats.FormatInfo.html">FormatInfo</a></dt>
+    <dd><p>The output format.</p>
+</dd>
+    <dt><code>operations</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.action-1">Action</a>&lt;<a class="xref" href="Egami.Operations.RasterOps.html">RasterOps</a>&gt;</dt>
+    <dd><p>The chain, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> to only convert the format.</p>
+</dd>
+    <dt><code>readerOptions</code> <a class="xref" href="Egami.Formats.ReaderOptions.html">ReaderOptions</a></dt>
+    <dd><p>How to read, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for the defaults.</p>
+</dd>
+    <dt><code>writerOptions</code> <a class="xref" href="Egami.Formats.WriterOptions.html">WriterOptions</a></dt>
+    <dd><p>How to write, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for the format's defaults.</p>
+</dd>
+    <dt><code>context</code> <a class="xref" href="Egami.EgamiContext.html">EgamiContext</a></dt>
+    <dd><p>The context, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.EgamiContext.html#Egami_EgamiContext_Default">Default</a>.</p>
+</dd>
+    <dt><code>progress</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.iprogress-1">IProgress</a>&lt;<a class="xref" href="Egami.SaveProgress.html">SaveProgress</a>&gt;</dt>
+    <dd><p>Gets <a class="xref" href="Egami.SaveProgress.html">SaveProgress</a> reports as the output is written, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</dd>
+    <dt><code>cancellationToken</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken">CancellationToken</a></dt>
+    <dd><p>Cancels the work between bands.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Raster_Transcode_System_IO_Stream_System_IO_Stream_Egami_Formats_FormatInfo_System_Action_Egami_Operations_RasterOps__Egami_Formats_ReaderOptions_Egami_Formats_WriterOptions_Egami_EgamiContext_System_IProgress_Egami_SaveProgress__System_Threading_CancellationToken__examples">Examples</h4>
+  <pre><code class="lang-csharp">// A progress handler sees the output's rows go out; the token stops the work between bands.
+IProgress&lt;SaveProgress&gt; progress = new Progress&lt;SaveProgress&gt;(p =&gt; Console.WriteLine($"{p.Fraction:P0}, {p.BytesWritten} bytes"));
+Raster.Transcode("egret.png", "egret.jpg", x =&gt; x.Fit(1024, 1024), null, null, null, progress, TestContext.Current.CancellationToken);</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentnullexception">ArgumentNullException</a></dt>
+    <dd><p><code class="paramref">input</code>, <code class="paramref">output</code> or <code class="paramref">outputFormat</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.notsupportedexception">NotSupportedException</a></dt>
+    <dd><p>The chain holds an operation that cannot stream, or a writer option that needs every pixel first.</p>
+</dd>
+    <dt><a class="xref" href="Egami.UnsupportedFormatException.html">UnsupportedFormatException</a></dt>
+    <dd><p>The input's format is not recognized, or the output's has no writer.</p>
+</dd>
+    <dt><a class="xref" href="Egami.CorruptDataException.html">CorruptDataException</a></dt>
+    <dd><p>The input breaks its format's rules.</p>
+</dd>
+    <dt><a class="xref" href="Egami.LimitExceededException.html">LimitExceededException</a></dt>
+    <dd><p>The input exceeds the context's safety limits.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.io.ioexception">IOException</a></dt>
+    <dd><p>A file cannot be read or written.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.operationcanceledexception">OperationCanceledException</a></dt>
+    <dd><p><code class="paramref">cancellationToken</code> was canceled.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Raster_Transcode_" data-uid="Egami.Raster.Transcode*"></a>
+
   <h3 id="Egami_Raster_Transcode_System_String_System_String_System_Action_Egami_Operations_RasterOps__Egami_Formats_ReaderOptions_Egami_Formats_WriterOptions_Egami_EgamiContext_" data-uid="Egami.Raster.Transcode(System.String,System.String,System.Action{Egami.Operations.RasterOps},Egami.Formats.ReaderOptions,Egami.Formats.WriterOptions,Egami.EgamiContext)">
   Transcode(string, string, Action&lt;RasterOps&gt;?, ReaderOptions?, WriterOptions?, EgamiContext?)
   <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Streaming/Transcode.cs/#L40"><i class="bi bi-code-slash"></i></a>
@@ -6240,6 +6964,183 @@ is not carried over, since the output's metadata goes before its image data.</p>
 </dd>
     <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.io.ioexception">IOException</a></dt>
     <dd><p>A file cannot be read or written.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Raster_Transcode_" data-uid="Egami.Raster.Transcode*"></a>
+
+  <h3 id="Egami_Raster_Transcode_System_String_System_String_System_Action_Egami_Operations_RasterOps__Egami_Formats_ReaderOptions_Egami_Formats_WriterOptions_Egami_EgamiContext_System_IProgress_Egami_SaveProgress__System_Threading_CancellationToken_" data-uid="Egami.Raster.Transcode(System.String,System.String,System.Action{Egami.Operations.RasterOps},Egami.Formats.ReaderOptions,Egami.Formats.WriterOptions,Egami.EgamiContext,System.IProgress{Egami.SaveProgress},System.Threading.CancellationToken)">
+  Transcode(string, string, Action&lt;RasterOps&gt;?, ReaderOptions?, WriterOptions?, EgamiContext?, IProgress&lt;SaveProgress&gt;?, CancellationToken)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Streaming/Transcode.cs/#L156"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Transcodes a file as <a class="xref" href="Egami.Raster.html#Egami_Raster_Transcode_System_String_System_String_System_Action_Egami_Operations_RasterOps__Egami_Formats_ReaderOptions_Egami_Formats_WriterOptions_Egami_EgamiContext_">Transcode(string, string, Action&lt;RasterOps&gt;?, ReaderOptions?, WriterOptions?, EgamiContext?)</a>
+does, reporting how far the output has come. If the transcode fails or is canceled, the partly written file is deleted.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static void Transcode(string inputPath, string outputPath, Action&lt;RasterOps&gt;? operations, ReaderOptions? readerOptions, WriterOptions? writerOptions, EgamiContext? context, IProgress&lt;SaveProgress&gt;? progress, CancellationToken cancellationToken = default)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>inputPath</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The image to read.</p>
+</dd>
+    <dt><code>outputPath</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The file to write; the format comes from its extension.</p>
+</dd>
+    <dt><code>operations</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.action-1">Action</a>&lt;<a class="xref" href="Egami.Operations.RasterOps.html">RasterOps</a>&gt;</dt>
+    <dd><p>The chain, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> to only convert the format.</p>
+</dd>
+    <dt><code>readerOptions</code> <a class="xref" href="Egami.Formats.ReaderOptions.html">ReaderOptions</a></dt>
+    <dd><p>How to read, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for the defaults.</p>
+</dd>
+    <dt><code>writerOptions</code> <a class="xref" href="Egami.Formats.WriterOptions.html">WriterOptions</a></dt>
+    <dd><p>How to write, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for the format's defaults.</p>
+</dd>
+    <dt><code>context</code> <a class="xref" href="Egami.EgamiContext.html">EgamiContext</a></dt>
+    <dd><p>The context, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.EgamiContext.html#Egami_EgamiContext_Default">Default</a>.</p>
+</dd>
+    <dt><code>progress</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.iprogress-1">IProgress</a>&lt;<a class="xref" href="Egami.SaveProgress.html">SaveProgress</a>&gt;</dt>
+    <dd><p>Gets <a class="xref" href="Egami.SaveProgress.html">SaveProgress</a> reports as the output is written, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</dd>
+    <dt><code>cancellationToken</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken">CancellationToken</a></dt>
+    <dd><p>Cancels the work between bands.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Raster_Transcode_System_String_System_String_System_Action_Egami_Operations_RasterOps__Egami_Formats_ReaderOptions_Egami_Formats_WriterOptions_Egami_EgamiContext_System_IProgress_Egami_SaveProgress__System_Threading_CancellationToken__examples">Examples</h4>
+  <pre><code class="lang-csharp">// A progress handler sees the output's rows go out; the token stops the work between bands.
+IProgress&lt;SaveProgress&gt; progress = new Progress&lt;SaveProgress&gt;(p =&gt; Console.WriteLine($"{p.Fraction:P0}, {p.BytesWritten} bytes"));
+Raster.Transcode("egret.png", "egret.jpg", x =&gt; x.Fit(1024, 1024), null, null, null, progress, TestContext.Current.CancellationToken);</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentnullexception">ArgumentNullException</a></dt>
+    <dd><p><code class="paramref">inputPath</code> or <code class="paramref">outputPath</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.notsupportedexception">NotSupportedException</a></dt>
+    <dd><p>The chain holds an operation that cannot stream, or a writer option that needs every pixel first.</p>
+</dd>
+    <dt><a class="xref" href="Egami.UnsupportedFormatException.html">UnsupportedFormatException</a></dt>
+    <dd><p>The input's format is not recognized, or the output's has no writer.</p>
+</dd>
+    <dt><a class="xref" href="Egami.CorruptDataException.html">CorruptDataException</a></dt>
+    <dd><p>The input breaks its format's rules.</p>
+</dd>
+    <dt><a class="xref" href="Egami.LimitExceededException.html">LimitExceededException</a></dt>
+    <dd><p>The input exceeds the context's safety limits.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.io.ioexception">IOException</a></dt>
+    <dd><p>A file cannot be read or written.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.operationcanceledexception">OperationCanceledException</a></dt>
+    <dd><p><code class="paramref">cancellationToken</code> was canceled.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Raster_TranscodeAsync_" data-uid="Egami.Raster.TranscodeAsync*"></a>
+
+  <h3 id="Egami_Raster_TranscodeAsync_System_IO_Stream_System_IO_Stream_Egami_Formats_FormatInfo_System_Action_Egami_Operations_RasterOps__Egami_Formats_ReaderOptions_Egami_Formats_WriterOptions_Egami_EgamiContext_System_IProgress_Egami_SaveProgress__System_Threading_CancellationToken_" data-uid="Egami.Raster.TranscodeAsync(System.IO.Stream,System.IO.Stream,Egami.Formats.FormatInfo,System.Action{Egami.Operations.RasterOps},Egami.Formats.ReaderOptions,Egami.Formats.WriterOptions,Egami.EgamiContext,System.IProgress{Egami.SaveProgress},System.Threading.CancellationToken)">
+  TranscodeAsync(Stream, Stream, FormatInfo, Action&lt;RasterOps&gt;?, ReaderOptions?, WriterOptions?, EgamiContext?, IProgress&lt;SaveProgress&gt;?, CancellationToken)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Streaming/Transcode.cs/#L271"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Transcodes from one stream to another asynchronously, reporting how far the output has come. See
+<a class="xref" href="Egami.Raster.html#Egami_Raster_TranscodeAsync_System_String_System_String_System_Action_Egami_Operations_RasterOps__Egami_Formats_ReaderOptions_Egami_Formats_WriterOptions_Egami_EgamiContext_System_Threading_CancellationToken_">TranscodeAsync(string, string, Action&lt;RasterOps&gt;?, ReaderOptions?, WriterOptions?, EgamiContext?, CancellationToken)</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Task TranscodeAsync(Stream input, Stream output, FormatInfo outputFormat, Action&lt;RasterOps&gt;? operations, ReaderOptions? readerOptions, WriterOptions? writerOptions, EgamiContext? context, IProgress&lt;SaveProgress&gt;? progress, CancellationToken cancellationToken = default)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>input</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.io.stream">Stream</a></dt>
+    <dd><p>The image to read, from its current position. It is left open.</p>
+</dd>
+    <dt><code>output</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.io.stream">Stream</a></dt>
+    <dd><p>Where to write, from its current position. It is left open.</p>
+</dd>
+    <dt><code>outputFormat</code> <a class="xref" href="Egami.Formats.FormatInfo.html">FormatInfo</a></dt>
+    <dd><p>The output format.</p>
+</dd>
+    <dt><code>operations</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.action-1">Action</a>&lt;<a class="xref" href="Egami.Operations.RasterOps.html">RasterOps</a>&gt;</dt>
+    <dd><p>The chain, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> to only convert the format.</p>
+</dd>
+    <dt><code>readerOptions</code> <a class="xref" href="Egami.Formats.ReaderOptions.html">ReaderOptions</a></dt>
+    <dd><p>How to read, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for the defaults.</p>
+</dd>
+    <dt><code>writerOptions</code> <a class="xref" href="Egami.Formats.WriterOptions.html">WriterOptions</a></dt>
+    <dd><p>How to write, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for the format's defaults.</p>
+</dd>
+    <dt><code>context</code> <a class="xref" href="Egami.EgamiContext.html">EgamiContext</a></dt>
+    <dd><p>The context, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.EgamiContext.html#Egami_EgamiContext_Default">Default</a>.</p>
+</dd>
+    <dt><code>progress</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.iprogress-1">IProgress</a>&lt;<a class="xref" href="Egami.SaveProgress.html">SaveProgress</a>&gt;</dt>
+    <dd><p>Gets <a class="xref" href="Egami.SaveProgress.html">SaveProgress</a> reports as the output is written, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</dd>
+    <dt><code>cancellationToken</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken">CancellationToken</a></dt>
+    <dd><p>Cancels reading, writing and, between bands, the work.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.tasks.task">Task</a></dt>
+    <dd><p>A task that completes when the output is written.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Raster_TranscodeAsync_System_IO_Stream_System_IO_Stream_Egami_Formats_FormatInfo_System_Action_Egami_Operations_RasterOps__Egami_Formats_ReaderOptions_Egami_Formats_WriterOptions_Egami_EgamiContext_System_IProgress_Egami_SaveProgress__System_Threading_CancellationToken__examples">Examples</h4>
+  <pre><code class="lang-csharp">// A progress handler sees the output's rows go out; the token stops the work between bands.
+IProgress&lt;SaveProgress&gt; progress = new Progress&lt;SaveProgress&gt;(p =&gt; Console.WriteLine($"{p.Fraction:P0}, {p.BytesWritten} bytes"));
+Raster.Transcode("egret.png", "egret.jpg", x =&gt; x.Fit(1024, 1024), null, null, null, progress, TestContext.Current.CancellationToken);</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentnullexception">ArgumentNullException</a></dt>
+    <dd><p><code class="paramref">input</code>, <code class="paramref">output</code> or <code class="paramref">outputFormat</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.notsupportedexception">NotSupportedException</a></dt>
+    <dd><p>The chain holds an operation that cannot stream, or a writer option that needs every pixel first.</p>
+</dd>
+    <dt><a class="xref" href="Egami.UnsupportedFormatException.html">UnsupportedFormatException</a></dt>
+    <dd><p>The input's format is not recognized, or the output's has no writer.</p>
+</dd>
+    <dt><a class="xref" href="Egami.CorruptDataException.html">CorruptDataException</a></dt>
+    <dd><p>The input breaks its format's rules.</p>
+</dd>
+    <dt><a class="xref" href="Egami.LimitExceededException.html">LimitExceededException</a></dt>
+    <dd><p>The input exceeds the context's safety limits.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.io.ioexception">IOException</a></dt>
+    <dd><p>A file cannot be read or written.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.operationcanceledexception">OperationCanceledException</a></dt>
+    <dd><p><code class="paramref">cancellationToken</code> was canceled.</p>
 </dd>
   </dl>
 
@@ -6323,6 +7224,96 @@ await Raster.TranscodeAsync(upload, response, PngFormat.Info, x =&gt; x.Fit(512,
 </dd>
     <dt><a class="xref" href="Egami.LimitExceededException.html">LimitExceededException</a></dt>
     <dd><p>The input exceeds the context's safety limits.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.operationcanceledexception">OperationCanceledException</a></dt>
+    <dd><p><code class="paramref">cancellationToken</code> was canceled.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Raster_TranscodeAsync_" data-uid="Egami.Raster.TranscodeAsync*"></a>
+
+  <h3 id="Egami_Raster_TranscodeAsync_System_String_System_String_System_Action_Egami_Operations_RasterOps__Egami_Formats_ReaderOptions_Egami_Formats_WriterOptions_Egami_EgamiContext_System_IProgress_Egami_SaveProgress__System_Threading_CancellationToken_" data-uid="Egami.Raster.TranscodeAsync(System.String,System.String,System.Action{Egami.Operations.RasterOps},Egami.Formats.ReaderOptions,Egami.Formats.WriterOptions,Egami.EgamiContext,System.IProgress{Egami.SaveProgress},System.Threading.CancellationToken)">
+  TranscodeAsync(string, string, Action&lt;RasterOps&gt;?, ReaderOptions?, WriterOptions?, EgamiContext?, IProgress&lt;SaveProgress&gt;?, CancellationToken)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Streaming/Transcode.cs/#L230"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Transcodes a file asynchronously, reporting how far the output has come. See
+<a class="xref" href="Egami.Raster.html#Egami_Raster_TranscodeAsync_System_String_System_String_System_Action_Egami_Operations_RasterOps__Egami_Formats_ReaderOptions_Egami_Formats_WriterOptions_Egami_EgamiContext_System_Threading_CancellationToken_">TranscodeAsync(string, string, Action&lt;RasterOps&gt;?, ReaderOptions?, WriterOptions?, EgamiContext?, CancellationToken)</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Task TranscodeAsync(string inputPath, string outputPath, Action&lt;RasterOps&gt;? operations, ReaderOptions? readerOptions, WriterOptions? writerOptions, EgamiContext? context, IProgress&lt;SaveProgress&gt;? progress, CancellationToken cancellationToken = default)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>inputPath</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The image to read.</p>
+</dd>
+    <dt><code>outputPath</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The file to write; the format comes from its extension.</p>
+</dd>
+    <dt><code>operations</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.action-1">Action</a>&lt;<a class="xref" href="Egami.Operations.RasterOps.html">RasterOps</a>&gt;</dt>
+    <dd><p>The chain, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> to only convert the format.</p>
+</dd>
+    <dt><code>readerOptions</code> <a class="xref" href="Egami.Formats.ReaderOptions.html">ReaderOptions</a></dt>
+    <dd><p>How to read, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for the defaults.</p>
+</dd>
+    <dt><code>writerOptions</code> <a class="xref" href="Egami.Formats.WriterOptions.html">WriterOptions</a></dt>
+    <dd><p>How to write, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for the format's defaults.</p>
+</dd>
+    <dt><code>context</code> <a class="xref" href="Egami.EgamiContext.html">EgamiContext</a></dt>
+    <dd><p>The context, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.EgamiContext.html#Egami_EgamiContext_Default">Default</a>.</p>
+</dd>
+    <dt><code>progress</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.iprogress-1">IProgress</a>&lt;<a class="xref" href="Egami.SaveProgress.html">SaveProgress</a>&gt;</dt>
+    <dd><p>Gets <a class="xref" href="Egami.SaveProgress.html">SaveProgress</a> reports as the output is written, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</dd>
+    <dt><code>cancellationToken</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken">CancellationToken</a></dt>
+    <dd><p>Cancels reading, writing and, between bands, the work.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.tasks.task">Task</a></dt>
+    <dd><p>A task that completes when the output is written.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Raster_TranscodeAsync_System_String_System_String_System_Action_Egami_Operations_RasterOps__Egami_Formats_ReaderOptions_Egami_Formats_WriterOptions_Egami_EgamiContext_System_IProgress_Egami_SaveProgress__System_Threading_CancellationToken__examples">Examples</h4>
+  <pre><code class="lang-csharp">// A progress handler sees the output's rows go out; the token stops the work between bands.
+IProgress&lt;SaveProgress&gt; progress = new Progress&lt;SaveProgress&gt;(p =&gt; Console.WriteLine($"{p.Fraction:P0}, {p.BytesWritten} bytes"));
+Raster.Transcode("egret.png", "egret.jpg", x =&gt; x.Fit(1024, 1024), null, null, null, progress, TestContext.Current.CancellationToken);</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentnullexception">ArgumentNullException</a></dt>
+    <dd><p><code class="paramref">inputPath</code> or <code class="paramref">outputPath</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.notsupportedexception">NotSupportedException</a></dt>
+    <dd><p>The chain holds an operation that cannot stream, or a writer option that needs every pixel first.</p>
+</dd>
+    <dt><a class="xref" href="Egami.UnsupportedFormatException.html">UnsupportedFormatException</a></dt>
+    <dd><p>The input's format is not recognized, or the output's has no writer.</p>
+</dd>
+    <dt><a class="xref" href="Egami.CorruptDataException.html">CorruptDataException</a></dt>
+    <dd><p>The input breaks its format's rules.</p>
+</dd>
+    <dt><a class="xref" href="Egami.LimitExceededException.html">LimitExceededException</a></dt>
+    <dd><p>The input exceeds the context's safety limits.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.io.ioexception">IOException</a></dt>
+    <dd><p>A file cannot be read or written.</p>
 </dd>
     <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.operationcanceledexception">OperationCanceledException</a></dt>
     <dd><p><code class="paramref">cancellationToken</code> was canceled.</p>

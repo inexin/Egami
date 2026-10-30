@@ -12,6 +12,146 @@
       }
     },
     {
+      "type": "Resource",
+      "source_relative_path": "agents/Egami.Barcodes.md",
+      "output": {
+        "resource": {
+          "relative_path": "agents/Egami.Barcodes.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "agents/Egami.Css.md",
+      "output": {
+        "resource": {
+          "relative_path": "agents/Egami.Css.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "agents/Egami.Drawing.md",
+      "output": {
+        "resource": {
+          "relative_path": "agents/Egami.Drawing.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "agents/Egami.Fonts.Substitutes.md",
+      "output": {
+        "resource": {
+          "relative_path": "agents/Egami.Fonts.Substitutes.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "agents/Egami.Fonts.md",
+      "output": {
+        "resource": {
+          "relative_path": "agents/Egami.Fonts.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "agents/Egami.Formats.Extended.md",
+      "output": {
+        "resource": {
+          "relative_path": "agents/Egami.Formats.Extended.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "agents/Egami.Heic.md",
+      "output": {
+        "resource": {
+          "relative_path": "agents/Egami.Heic.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "agents/Egami.Metafiles.md",
+      "output": {
+        "resource": {
+          "relative_path": "agents/Egami.Metafiles.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "agents/Egami.Svg.md",
+      "output": {
+        "resource": {
+          "relative_path": "agents/Egami.Svg.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "agents/Egami.SystemDrawing.md",
+      "output": {
+        "resource": {
+          "relative_path": "agents/Egami.SystemDrawing.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "agents/Egami.Video.H264.md",
+      "output": {
+        "resource": {
+          "relative_path": "agents/Egami.Video.H264.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "agents/Egami.Video.Hevc.md",
+      "output": {
+        "resource": {
+          "relative_path": "agents/Egami.Video.Hevc.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "agents/Egami.Video.md",
+      "output": {
+        "resource": {
+          "relative_path": "agents/Egami.Video.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "agents/Egami.md",
+      "output": {
+        "resource": {
+          "relative_path": "agents/Egami.md"
+        }
+      },
+      "version": ""
+    },
+    {
       "type": "ManagedReference",
       "source_relative_path": "api/Egami.Alignment.yml",
       "output": {
@@ -11280,6 +11420,20 @@
       "IsMRef": true,
       "Title": "Egami.SafetyLimits",
       "Summary": "<p sourcefile=\"api/Egami.SafetyLimits.yml\" sourcestartlinenumber=\"1\">Limits that protect against hostile or broken files. Readers check sizes from the header before allocating any pixel memory.\nThe defaults let normal photos and screenshots through. Change them with a <code>with</code> expression.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.SaveProgress.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.SaveProgress.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.SaveProgress",
+      "Summary": "<p sourcefile=\"api/Egami.SaveProgress.yml\" sourcestartlinenumber=\"1\">How far a save such as <xref href=\"Egami.Raster.Save(System.String%2cEgami.Formats.WriterOptions%2cSystem.IProgress%7bEgami.SaveProgress%7d%2cSystem.Threading.CancellationToken)\" data-throw-if-not-resolved=\"false\"></xref>\nhas come. A save reports once as it starts, then at most every 250 ms, then once more with <xref href=\"Egami.SaveProgress.IsFinal\" data-throw-if-not-resolved=\"false\"></xref> set.</p>\n"
     },
     {
       "type": "ManagedReference",
