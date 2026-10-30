@@ -10,8 +10,10 @@ internal static class PlaneMemory
 {
     /// <summary>
     /// Returns whether two planes share no bytes. Each plane's rows span a range of addresses; the ranges are taken relative to
-    /// one of <paramref name="a"/>'s rows, with no garbage collection in between (which could move managed memory), and a
-    /// collection during the walk gives <see langword="false"/>. Memory both planes share moves together, so it always overlaps.
+    /// one of <paramref name="a"/>'s rows, with no garbage collection in between (which could move managed memory): a walk a
+    /// collection interrupted is taken again, a few times, so the answer does not depend on when other threads allocate, and
+    /// only a walk that never finishes without one gives <see langword="false"/>. Memory both planes share moves together, so
+    /// it always overlaps.
     /// </summary>
     internal static bool Disjoint<TA, TB>(PixelPlane<TA> a, PixelPlane<TB> b)
         where TA : unmanaged, IPixelType<TA>
@@ -22,11 +24,19 @@ internal static class PlaneMemory
             return true;
         }
 
-        int collections = GC.CollectionCount(0);
-        ref byte anchor = ref MemoryMarshal.GetReference(MemoryMarshal.AsBytes(a.Row(0)));
-        (nint aLow, nint aHigh) = Range(a, ref anchor);
-        (nint bLow, nint bHigh) = Range(b, ref anchor);
-        return GC.CollectionCount(0) == collections && (bHigh <= aLow || aHigh <= bLow);
+        for (int attempt = 0; attempt < 8; attempt++)
+        {
+            int collections = GC.CollectionCount(0);
+            ref byte anchor = ref MemoryMarshal.GetReference(MemoryMarshal.AsBytes(a.Row(0)));
+            (nint aLow, nint aHigh) = Range(a, ref anchor);
+            (nint bLow, nint bHigh) = Range(b, ref anchor);
+            if (GC.CollectionCount(0) == collections)
+            {
+                return bHigh <= aLow || aHigh <= bLow;
+            }
+        }
+
+        return false;
     }
 
     private static (nint Low, nint High) Range<T>(PixelPlane<T> plane, ref byte anchor)
