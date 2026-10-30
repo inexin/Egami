@@ -47,6 +47,7 @@ Writing your own operation or pixel type is covered in [Custom operations and fo
 ## Files with several images
 
 A format whose files hold several images, as TIFF holds pages, also implements `IMultiImageReader`. LoadAll asks it for one
-`ReaderOptions` per image, usually a subclass of your own that names the image, and loads each as Load would with those options.
+`ReaderOptions` per image, usually a subclass of your own that names the image, and loads each as Load would with those options. A writer that writes several images to one file implements
+`IMultiImageWriter`, which SaveAll hands every raster.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Extending.cs#multi-image-format)]

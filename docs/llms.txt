@@ -116,6 +116,10 @@ settings, safety limits and registered formats a call uses.
 
 - [Windows metafiles](https://inexin.github.io/Egami/v1/articles/guides/metafiles.html): Egami.Metafiles plays Windows metafiles, the vector pictures Office and Windows programs exchange.
 
+## Egami.Formats.Extended
+
+- [Textures](https://inexin.github.io/Egami/v1/articles/guides/textures.html): Game engines and 3D tools keep their textures in DDS files.
+
 ## Egami.SystemDrawing
 
 - [Migrating from System.Drawing to Egami](https://inexin.github.io/Egami/v1/articles/guides/system-drawing-migration.html): Egami.SystemDrawing runs System.Drawing code unchanged; this guide moves that code to Egami's own API one piece at a time, with the four escape hatches that join the two.

@@ -1,12 +1,16 @@
 #nullable enable
 const Egami.EgamiTracing.SourceName = "Egami" -> string!
 Egami.EgamiTracing
+Egami.Formats.IMultiImageReader
+Egami.Formats.IMultiImageReader.Images(Egami.Formats.EgamiInput! input, Egami.Formats.ReaderOptions! options) -> System.Collections.Generic.IReadOnlyList<Egami.Formats.ReaderOptions!>!
+Egami.Formats.IMultiImageWriter
+Egami.Formats.IMultiImageWriter.WriteAll(System.Collections.Generic.IReadOnlyList<Egami.Raster!>! rasters, System.IO.Stream! output, Egami.Formats.WriterOptions! options) -> void
+Egami.Raster.Save(string! path, Egami.Formats.WriterOptions? options, System.IProgress<Egami.SaveProgress>? progress, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> void
 Egami.Raster.Save(System.IO.Stream! stream, Egami.Formats.FormatInfo! format, Egami.Formats.WriterOptions? options, System.IProgress<Egami.SaveProgress>? progress, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> void
 Egami.Raster.Save(System.IO.Stream! stream, string! formatNameOrExtension, Egami.Formats.WriterOptions? options, System.IProgress<Egami.SaveProgress>? progress, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> void
-Egami.Raster.Save(string! path, Egami.Formats.WriterOptions? options, System.IProgress<Egami.SaveProgress>? progress, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> void
+Egami.Raster.SaveAsync(string! path, Egami.Formats.WriterOptions? options, System.IProgress<Egami.SaveProgress>? progress, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
 Egami.Raster.SaveAsync(System.IO.Stream! stream, Egami.Formats.FormatInfo! format, Egami.Formats.WriterOptions? options, System.IProgress<Egami.SaveProgress>? progress, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
 Egami.Raster.SaveAsync(System.IO.Stream! stream, string! formatNameOrExtension, Egami.Formats.WriterOptions? options, System.IProgress<Egami.SaveProgress>? progress, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
-Egami.Raster.SaveAsync(string! path, Egami.Formats.WriterOptions? options, System.IProgress<Egami.SaveProgress>? progress, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
 Egami.SaveProgress
 Egami.SaveProgress.BytesWritten.get -> long
 Egami.SaveProgress.BytesWritten.init -> void
@@ -21,19 +25,18 @@ Egami.SaveProgress.IsFinal.get -> bool
 Egami.SaveProgress.IsFinal.init -> void
 Egami.SaveProgress.SaveProgress() -> void
 override Egami.SaveProgress.GetHashCode() -> int
+static Egami.Raster.SaveAll(System.Collections.Generic.IEnumerable<Egami.Raster!>! rasters, string! path, Egami.Formats.WriterOptions? options, System.IProgress<Egami.SaveProgress>? progress, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> void
 static Egami.Raster.SaveAll(System.Collections.Generic.IEnumerable<Egami.Raster!>! rasters, System.IO.Stream! stream, Egami.Formats.FormatInfo! format, Egami.Formats.WriterOptions? options, System.IProgress<Egami.SaveProgress>? progress, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> void
 static Egami.Raster.SaveAll(System.Collections.Generic.IEnumerable<Egami.Raster!>! rasters, System.IO.Stream! stream, string! formatNameOrExtension, Egami.Formats.WriterOptions? options, System.IProgress<Egami.SaveProgress>? progress, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> void
-static Egami.Raster.SaveAll(System.Collections.Generic.IEnumerable<Egami.Raster!>! rasters, string! path, Egami.Formats.WriterOptions? options, System.IProgress<Egami.SaveProgress>? progress, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> void
-static Egami.Raster.Transcode(System.IO.Stream! input, System.IO.Stream! output, Egami.Formats.FormatInfo! outputFormat, System.Action<Egami.Operations.RasterOps!>? operations, Egami.Formats.ReaderOptions? readerOptions, Egami.Formats.WriterOptions? writerOptions, Egami.EgamiContext? context, System.IProgress<Egami.SaveProgress>? progress, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> void
 static Egami.Raster.Transcode(string! inputPath, string! outputPath, System.Action<Egami.Operations.RasterOps!>? operations, Egami.Formats.ReaderOptions? readerOptions, Egami.Formats.WriterOptions? writerOptions, Egami.EgamiContext? context, System.IProgress<Egami.SaveProgress>? progress, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> void
-static Egami.Raster.TranscodeAsync(System.IO.Stream! input, System.IO.Stream! output, Egami.Formats.FormatInfo! outputFormat, System.Action<Egami.Operations.RasterOps!>? operations, Egami.Formats.ReaderOptions? readerOptions, Egami.Formats.WriterOptions? writerOptions, Egami.EgamiContext? context, System.IProgress<Egami.SaveProgress>? progress, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
+static Egami.Raster.Transcode(System.IO.Stream! input, System.IO.Stream! output, Egami.Formats.FormatInfo! outputFormat, System.Action<Egami.Operations.RasterOps!>? operations, Egami.Formats.ReaderOptions? readerOptions, Egami.Formats.WriterOptions? writerOptions, Egami.EgamiContext? context, System.IProgress<Egami.SaveProgress>? progress, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> void
 static Egami.Raster.TranscodeAsync(string! inputPath, string! outputPath, System.Action<Egami.Operations.RasterOps!>? operations, Egami.Formats.ReaderOptions? readerOptions, Egami.Formats.WriterOptions? writerOptions, Egami.EgamiContext? context, System.IProgress<Egami.SaveProgress>? progress, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
+static Egami.Raster.TranscodeAsync(System.IO.Stream! input, System.IO.Stream! output, Egami.Formats.FormatInfo! outputFormat, System.Action<Egami.Operations.RasterOps!>? operations, Egami.Formats.ReaderOptions? readerOptions, Egami.Formats.WriterOptions? writerOptions, Egami.EgamiContext? context, System.IProgress<Egami.SaveProgress>? progress, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
 static Egami.SaveProgress.operator !=(Egami.SaveProgress left, Egami.SaveProgress right) -> bool
 static Egami.SaveProgress.operator ==(Egami.SaveProgress left, Egami.SaveProgress right) -> bool
+virtual Egami.Metadata.FormatDetails.PixelsChanged() -> void
 ~override Egami.SaveProgress.Equals(object obj) -> bool
 ~override Egami.SaveProgress.ToString() -> string
-Egami.Formats.IMultiImageReader
-Egami.Formats.IMultiImageReader.Images(Egami.Formats.EgamiInput! input, Egami.Formats.ReaderOptions! options) -> System.Collections.Generic.IReadOnlyList<Egami.Formats.ReaderOptions!>!
 Egami.Formats.Bmp.BmpCompression.Huffman1D = 8 -> Egami.Formats.Bmp.BmpCompression
 Egami.Formats.Bmp.BmpWriterOptions.RunLength.get -> bool
 Egami.Formats.Bmp.BmpWriterOptions.RunLength.init -> void

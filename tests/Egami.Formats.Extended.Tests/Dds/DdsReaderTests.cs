@@ -90,6 +90,10 @@ public class DdsReaderTests
         using Raster<Rgb8> v8u8 = Assert.IsType<Raster<Rgb8>>(Raster.Load(DdsFiles.Masks(2, 1, DdsFiles.BumpDuDv, 16, 0xFF, 0xFF00, 0, 0, [0x81, 0x7F, 0, 0x80]), Context));
         Assert.Equal(new Rgb8(0, 255, 0), v8u8.Row(0)[0]);
         Assert.Equal(new Rgb8(128, 0, 0), v8u8.Row(0)[1]);
+
+        // Q8W8V8U8 as texconv writes it: the alpha mask without the alpha flag.
+        using Raster<Rgba8> q8 = Assert.IsType<Raster<Rgba8>>(Raster.Load(DdsFiles.Masks(1, 1, DdsFiles.BumpDuDv, 32, 0xFF, 0xFF00, 0xFF0000, 0xFF000000, [0x7F, 0x81, 0, 0x7F]), Context));
+        Assert.Equal(new Rgba8(255, 0, 128, 255), q8.Row(0)[0]);
         using Raster<Gray8> sint = Assert.IsType<Raster<Gray8>>(Raster.Load(DdsFiles.Dx10(2, 1, 64, [0x80, 0x7F]), Context));
         Assert.Equal([0, 255], [sint.Row(0)[0].L, sint.Row(0)[1].L]);
         byte[] u32 = new byte[4];
