@@ -99,6 +99,10 @@ Operations that run on a raster through `Apply` and `Derive`.
 
 - [Windows metafiles](metafiles.md): play WMF, EMF and EMF+ pictures onto a canvas.
 
+## Egami.Formats.Extended
+
+- [Textures](textures.md): read and write DDS textures: block formats, mips, cube maps, normal maps and HDR.
+
 ## Egami.SystemDrawing
 
 - [Migrating from System.Drawing to Egami](system-drawing-migration.md): move drop-in code to Egami's own API one piece at a time.

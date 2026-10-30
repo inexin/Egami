@@ -44,7 +44,7 @@ through [`Vp8StreamDecoder`](vp8.md) and [`Av1StreamDecoder`](av1.md), VP8 and A
 | [XPM](xpm.md) | Version 3, any color keys, None, hex colors and X11 names | Version 3 with every color of the raster | `Rgba8` | Egami.Formats.Extended |
 | [WBMP](wbmp.md) | Type 0 | Type 0 | `Gray8`, black 0 and white 255 | Egami.Formats.Extended |
 | [Farbfeld](farbfeld.md) | The whole format | 16-bit RGBA | `Rgba16` | Egami.Formats.Extended |
-| [DDS](dds.md) | Legacy and DX10 headers, BC1 to BC7, every DXGI format DirectXTex reads; mips, cube maps, arrays and volumes | Uncompressed formats and BC1 to BC5, with mips, arrays and cube maps | The nearest to the stored format: `Rgba8`, `Gray8`, `Rgb8`, `Rgba16`, `RgbaF16`, `RgbaF32` and others | Egami.Formats.Extended |
+| [DDS](dds.md) | Legacy and DX10 headers, BC1 to BC7, every DXGI format DirectXTex reads; mips, cube maps, arrays and volumes | Uncompressed formats and BC1 to BC7, with mips, arrays and cube maps | The nearest to the stored format: `Rgba8`, `Gray8`, `Rgb8`, `Rgba16`, `RgbaF16`, `RgbaF32` and others | Egami.Formats.Extended |
 
 `Raster.Load` returns the natural type; `Raster.Load<TPixel>` decodes straight into the type you ask for, converting row by row.
 

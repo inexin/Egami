@@ -61,6 +61,12 @@ DDS textures, stage B (writing).
   (`Dx10Header` forces DX10). SaveAll writes texture arrays and cube maps (`Cube`). A raster loaded at mip 0 and unchanged
   since writes the file's own mips.
 
+DDS textures, stage C (BC7 and BC6H encoders).
+
+- `DdsTextureFormat.Bc7`, `Bc6h` and `Bc6hSigned`: BC7 searches modes, partitions, rotations and p-bits by effort; BC6H fits
+  HDR colour in the decoder's domain, with the two-region modes from effort 3. The `egami` command writes them with
+  `--set dds.format=bc7` and the other `dds.` keys. A Textures guide says which format suits which content.
+
 ## Egami, unreleased
 
 Small format gaps from the on-demand list. All additive.
