@@ -107,6 +107,14 @@ Where GDI+ puts text in a layout box (2.7.6 task 28), measured on Windows. Addit
   linked face's aliased bitmaps), and grid-fitted metrics apply to fallback runs too. Fonts that set none of these shape and
   draw as before.
 
+## Egami.Video.H264, unreleased
+
+Video Build Plan task 30: general H.264 decode speed. No API changes.
+
+- H.264 decoding takes about 2% fewer instructions a frame at 1080p, progressive and MBAFF, with the same output: small hot
+  helpers of the deblocking strengths, motion and CABAC syntax inline, the CABAC engine's saved state stays in registers,
+  and short row fills are single stores.
+
 ## Egami.Video.Hevc, unreleased
 
 V8: HEVC decode (H.264 and HEVC Build Plan tasks 26 to 28). A new opt-in package at Egami.Video's version.

@@ -23,6 +23,7 @@ internal sealed partial class H264SliceDecoder
 
     private int Bin(int ctx) => _engine.Decode(ref _ctx[ctx]);
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private bool DecodeSkipFlag(int mbAddr)
     {
         SetAddress(mbAddr);
@@ -352,6 +353,7 @@ internal sealed partial class H264SliceDecoder
         return cbp;
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private int ReadQpDeltaCabac()
     {
         if (Bin(60 + (_prevQpDeltaNonZero ? 1 : 0)) == 0)
@@ -374,6 +376,7 @@ internal sealed partial class H264SliceDecoder
     }
 
     /// <summary>Reads ref_idx_lX for the partition whose top-left 4x4 block is (bx, by) in the macroblock.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private int ReadRefIdx(int list, int bx, int by, int count)
     {
         if (!_cabac)

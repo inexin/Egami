@@ -535,12 +535,16 @@ internal sealed partial class H264SliceDecoder
             {
                 // Intra modes are read only from Intra4x4 and Intra8x8 macroblocks, which write their own.
                 Unsafe.WriteUnaligned(ref Unsafe.As<sbyte, byte>(ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(intraModes), b)), uint.MaxValue);
-                _mo.RefIdx[0].AsSpan(b, 4).Fill(-1);
-                _mo.RefIdx[1].AsSpan(b, 4).Fill(-1);
-                _mo.RefPicId[0].AsSpan(b, 4).Fill(-1);
-                _mo.RefPicId[1].AsSpan(b, 4).Fill(-1);
-                _mo.Mv[0].AsSpan(b, 4).Clear();
-                _mo.Mv[1].AsSpan(b, 4).Clear();
+                // Four entries each, as single stores (a span fill this short costs mostly its call).
+                Span<sbyte> refIdx0 = _mo.RefIdx[0].AsSpan(b, 4), refIdx1 = _mo.RefIdx[1].AsSpan(b, 4);
+                Span<int> refPic0 = _mo.RefPicId[0].AsSpan(b, 4), refPic1 = _mo.RefPicId[1].AsSpan(b, 4);
+                Span<int> mv0 = _mo.Mv[0].AsSpan(b, 4), mv1 = _mo.Mv[1].AsSpan(b, 4);
+                Unsafe.WriteUnaligned(ref Unsafe.As<sbyte, byte>(ref MemoryMarshal.GetReference(refIdx0)), uint.MaxValue);
+                Unsafe.WriteUnaligned(ref Unsafe.As<sbyte, byte>(ref MemoryMarshal.GetReference(refIdx1)), uint.MaxValue);
+                Vector128<int>.AllBitsSet.StoreUnsafe(ref MemoryMarshal.GetReference(refPic0));
+                Vector128<int>.AllBitsSet.StoreUnsafe(ref MemoryMarshal.GetReference(refPic1));
+                Vector128<int>.Zero.StoreUnsafe(ref MemoryMarshal.GetReference(mv0));
+                Vector128<int>.Zero.StoreUnsafe(ref MemoryMarshal.GetReference(mv1));
             }
         }
 
@@ -649,8 +653,8 @@ internal sealed partial class H264SliceDecoder
             int b = Block(0, 0);
             for (int y = 0; y < 4; y++, b += w4)
             {
-                _mb.NzLuma.AsSpan(b, 4).Fill(16);
-                _mb.Nonzero.AsSpan(b, 4).Fill(1);
+                Unsafe.WriteUnaligned(ref MemoryMarshal.GetReference(_mb.NzLuma.AsSpan(b, 4)), 0x10101010u);
+                Unsafe.WriteUnaligned(ref MemoryMarshal.GetReference(_mb.Nonzero.AsSpan(b, 4)), 0x01010101u);
             }
 
             if (_chromaArrayType != 0)
