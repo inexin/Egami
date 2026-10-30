@@ -18656,6 +18656,16 @@
     },
     {
       "type": "Conceptual",
+      "source_relative_path": "articles/guides/hevc.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/guides/hevc.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
       "source_relative_path": "articles/guides/index.md",
       "output": {
         ".html": {
