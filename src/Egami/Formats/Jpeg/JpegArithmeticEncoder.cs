@@ -6,9 +6,10 @@ using System.Runtime.InteropServices;
 namespace Egami.Formats.Jpeg;
 
 /// <summary>
-/// The arithmetic encoder of T.81 annex D.1 (the QM-coder) with the statistical models of annexes F and G for sequential and
-/// progressive DCT scans, at the default conditioning (L = 0, U = 1, Kx = 5) so the file needs no DAC segment. Contexts are the
-/// bytes <see cref="JpegArithmeticDecoder"/> keeps, and they are reset at the start of each scan and at every restart.
+/// The arithmetic encoder of T.81 annex D.1 (the QM-coder) with the statistical models of annexes F, G and H for sequential and
+/// progressive DCT scans and lossless differences, at the default conditioning (L = 0, U = 1, Kx = 5) so the file needs no DAC
+/// segment. Contexts are the bytes <see cref="JpegArithmeticDecoder"/> keeps, and they are reset at the start of each scan and at
+/// every restart.
 /// </summary>
 internal sealed class JpegArithmeticEncoder
 {
@@ -253,6 +254,19 @@ internal sealed class JpegArithmeticEncoder
         _coder = q;
     }
 
+    /// <summary>
+    /// Codes one lossless difference (T.81 H.1.2.3, -32767 to 32768) with conditioning table <paramref name="table"/>, given the
+    /// differences coded for the sample to the left (<paramref name="left"/>) and above (<paramref name="above"/>), which the
+    /// two-dimensional context of table H.3 is made from.
+    /// </summary>
+    internal void EncodeDifference(int table, int left, int above, int difference)
+    {
+        int b = Category(above);
+        Coder q = _coder;
+        EncodeMagnitude(ref q, ref _dc[table * DcBins], (20 * Category(left)) + (4 * b), b >= 3 ? 129 : 100, difference);
+        _coder = q;
+    }
+
     /// <summary>Codes one binary decision with a context the caller keeps, for tests of the coder alone.</summary>
     internal void EncodeBit(ref byte context, int bit)
     {
@@ -269,18 +283,30 @@ internal sealed class JpegArithmeticEncoder
     }
 
     /// <summary>
-    /// Codes a DC difference (T.81 F.1.4.1, figures F.4 to F.8): the zero decision in the component's conditioning context, the
-    /// sign, the magnitude category and its bits; then sets the context for the next difference from this one's category.
+    /// Codes a DC difference (T.81 F.1.4.1, figures F.4 to F.8) in the component's conditioning context, then sets the context for
+    /// the next difference from this one's category.
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void EncodeDc(ref Coder q, ref byte stats, ref int context, int diff)
     {
-        int s0 = context;
+        int m = EncodeMagnitude(ref q, ref stats, context, 20, diff);
+
+        // With L = 0 and U = 1 a magnitude of 1 or 2 is small and 3 or more large (F.1.4.4.1.2).
+        context = diff == 0 ? 0 : (m > 1 ? 12 : 4) + (diff < 0 ? 4 : 0);
+    }
+
+    /// <summary>
+    /// Codes a DC or lossless difference (figures F.4 to F.8, H.1.2.3): the zero decision at <paramref name="s0"/>, the sign, the
+    /// magnitude category from <paramref name="x1"/> and the magnitude bits. Returns the category's bound, the highest power of two
+    /// not above the magnitude less one (0 for a magnitude of 0 or 1).
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private int EncodeMagnitude(ref Coder q, ref byte stats, int s0, int x1, int diff)
+    {
         if (diff == 0)
         {
             Encode(ref q, ref Unsafe.Add(ref stats, s0), 0);
-            context = 0;
-            return;
+            return 0;
         }
 
         Encode(ref q, ref Unsafe.Add(ref stats, s0), 1);
@@ -297,7 +323,7 @@ internal sealed class JpegArithmeticEncoder
         {
             Encode(ref q, ref Unsafe.Add(ref stats, st), 1);
             m = 1;
-            st = 20;
+            st = x1;
             while (m << 1 <= v)
             {
                 Encode(ref q, ref Unsafe.Add(ref stats, st), 1);
@@ -308,13 +334,21 @@ internal sealed class JpegArithmeticEncoder
             Encode(ref q, ref Unsafe.Add(ref stats, st), 0);
         }
 
-        // With L = 0 and U = 1 a magnitude of 1 or 2 is small and 3 or more large (F.1.4.4.1.2).
-        context = (m > 1 ? 12 : 4) + (4 * sign);
+        int bound = m;
         st += 14;
         while ((m >>= 1) != 0)
         {
             Encode(ref q, ref Unsafe.Add(ref stats, st), (v & m) != 0 ? 1 : 0);
         }
+
+        return bound;
+    }
+
+    /// <summary>Returns the conditioning category of a difference at L = 0 and U = 1 (T.81 F.1.4.4.1.2): 0 zero, 1 small +, 2 small -, 3 large +, 4 large -.</summary>
+    private static int Category(int difference)
+    {
+        int magnitude = Math.Abs(difference);
+        return magnitude == 0 ? 0 : (magnitude <= 2 ? 1 : 3) + (difference < 0 ? 1 : 0);
     }
 
     /// <summary>
