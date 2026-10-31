@@ -75,29 +75,42 @@ internal static partial class Av1LoopFilter
         Av1FrameHeader h = frame.Header;
         frame.For(planeMiRows, y =>
         {
+            // The frame's arrays in locals, so the loop loads them once rather than through the closure for every unit.
+            Av1BlockInfo?[] grid = frame.Grid;
+            byte[] txSizes = frame.TxSizeMap;
+            int miRows = frame.MiRows, miCols = frame.MiCols;
             int miRow = ssy | (y << ssy);
+            Span<int> row = units.AsSpan(y * planeMiCols, planeMiCols);
+            if (miRow >= miRows)
+            {
+                row.Clear();
+                return;
+            }
+
             Av1BlockInfo? last = null;
-            int blockBits = 0;
+            int blockBits = 0, blockTx = 0;
             for (int x = 0; x < planeMiCols; x++)
             {
                 int miCol = ssx | (x << ssx);
-                if (miRow >= frame.MiRows || miCol >= frame.MiCols)
+                if (miCol >= miCols)
                 {
-                    units[(y * planeMiCols) + x] = 0;
+                    row[x] = 0;
                     continue;
                 }
 
-                Av1BlockInfo b = frame.Grid[(miRow * frame.MiCols) + miCol]!;
+                Av1BlockInfo b = grid[(miRow * miCols) + miCol]!;
                 if (b != last)
                 {
-                    // What depends on the block alone, worked out once for the units along its row.
+                    // What depends on the block alone, worked out once for the units along its row; a luma unit's transform size
+                    // comes from the map (blockTx -1), as a block may hold several.
                     int bsize = plane == 0 ? b.Size : Av1Tables.PlaneBlockSize(b.Size, ssx, ssy);
                     blockBits = (FilterLevel(h, b, plane, 0) << 8) | (FilterLevel(h, b, plane, 1) << 14) | ((b.Skip && b.IsInter ? 1 : 0) << 20)
                         | (System.Numerics.BitOperations.Log2((uint)Av1Tables.BlockSizeWide[bsize]) << 21) | (System.Numerics.BitOperations.Log2((uint)Av1Tables.BlockSizeHigh[bsize]) << 25);
+                    blockTx = h.LosslessArray[b.SegmentId] ? Tx.T4x4 : plane == 0 ? -1 : Av1Tables.MaxUvTxSize(b.Size, ssx, ssy);
                     last = b;
                 }
 
-                units[(y * planeMiCols) + x] = TransformSize(frame, b, miRow, miCol, plane, ssx, ssy) | blockBits;
+                row[x] = (blockTx >= 0 ? blockTx : txSizes[(miRow * miCols) + miCol]) | blockBits;
             }
         });
     }
