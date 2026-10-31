@@ -182,7 +182,8 @@ internal static class RawLensProfiles
     {
         List<RawLensProfile> list = [];
         Dictionary<string, RawLensProfile> byLens = new(StringComparer.Ordinal);
-        foreach (XElement entry in xml.Descendants().Where(e => e.Name.LocalName == "li" && Value(e, "FocalLength") is not null))
+        // Every calibration entry names its lens; a manual-focus lens's entries may give no focal length (it is then fixed).
+        foreach (XElement entry in xml.Descendants().Where(e => e.Name.LocalName == "li" && (Value(e, "LensPrettyName") ?? Value(e, "Lens")) is not null))
         {
             string lens = Value(entry, "LensPrettyName") ?? Value(entry, "Lens") ?? "";
             if (lens.Length == 0)
@@ -242,11 +243,21 @@ internal static class RawLensProfiles
             }
         }
 
+        // A lens whose entries had no model the reader knows is no profile: matching it would correct nothing.
+        list.RemoveAll(p => p.Distortion.Count == 0 && p.Vignetting.Count == 0 && p.Tca.Count == 0);
         return list;
     }
 
-    private static XElement? Child(XElement e, string name) => e.Elements().FirstOrDefault(c => c.Name.LocalName == name)
-        ?.Let(c => c.Elements().FirstOrDefault(d => d.Name.LocalName == "Description") ?? c);
+    /// <summary>
+    /// Finds a struct-valued child, directly or inside an rdf:Description wrapping <paramref name="e"/>'s values (Adobe's own
+    /// files put each calibration's values in one), and returns the element holding its values.
+    /// </summary>
+    private static XElement? Child(XElement e, string name)
+    {
+        XElement? child = e.Elements().FirstOrDefault(c => c.Name.LocalName == name)
+            ?? e.Elements().FirstOrDefault(d => d.Name.LocalName == "Description")?.Elements().FirstOrDefault(c => c.Name.LocalName == name);
+        return child?.Let(c => c.Elements().FirstOrDefault(d => d.Name.LocalName == "Description") ?? c);
+    }
 
     private static string? Value(XElement e, string name)
     {

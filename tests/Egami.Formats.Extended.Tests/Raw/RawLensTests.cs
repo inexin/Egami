@@ -44,6 +44,29 @@ public sealed class RawLensTests : IDisposable
         </x:xmpmeta>
         """;
 
+    /// <summary>The same lens in the layout Adobe's own files use: each entry's values in an rdf:Description under rdf:li.</summary>
+    private const string AdobeLayoutLcp = """
+        <x:xmpmeta xmlns:x="adobe:ns:meta/">
+         <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+          <rdf:Description xmlns:photoshop="http://ns.adobe.com/photoshop/1.0/" xmlns:stCamera="http://ns.adobe.com/photoshop/1.0/camera-profile">
+           <photoshop:CameraProfiles>
+            <rdf:Seq>
+             <rdf:li>
+              <rdf:Description stCamera:Make="Egami" stCamera:Model="Test Camera" stCamera:LensPrettyName="Egami Prime 35mm" stCamera:FocalLength="35"
+                     stCamera:FocusDistance="10" stCamera:ApertureValue="4" stCamera:SensorFormatFactor="1">
+               <stCamera:PerspectiveModel stCamera:FocalLengthX="0.95" stCamera:FocalLengthY="0.95" stCamera:ImageXCenter="0.5" stCamera:ImageYCenter="0.375"
+                                          stCamera:RadialDistortParam1="0" stCamera:RadialDistortParam2="0">
+                <stCamera:VignetteModel stCamera:VignetteModelParam1="-0.6" />
+               </stCamera:PerspectiveModel>
+              </rdf:Description>
+             </rdf:li>
+            </rdf:Seq>
+           </photoshop:CameraProfiles>
+          </rdf:Description>
+         </rdf:RDF>
+        </x:xmpmeta>
+        """;
+
     private readonly string _folder = Path.Combine(Path.GetTempPath(), "egami-lens-" + Guid.NewGuid().ToString("N"));
 
     public RawLensTests()
@@ -97,10 +120,13 @@ public sealed class RawLensTests : IDisposable
         Assert.Contains("distortion", Assert.IsType<RawDetails>(corrected.Metadata.FormatDetails).LensProfile);
     }
 
-    [Fact]
-    public void AdobeLcpVignetting()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void AdobeLcpVignetting(bool adobeLayout)
     {
-        File.WriteAllText(Path.Combine(_folder, "prime.lcp"), Lcp);
+        // Review finding: in Adobe's own layout the models sat one rdf:Description deeper and were skipped.
+        File.WriteAllText(Path.Combine(_folder, "prime.lcp"), adobeLayout ? AdobeLayoutLcp : Lcp);
         byte[] file = Shot("Egami Prime 35mm", 35, 4);
         RawReaderOptions options = new() { LensProfiles = [_folder], ColorNoiseReduction = 0 };
         using Raster<Rgb16> corrected = Raster.Load<Rgb16>(file, TestImages.Context, options);

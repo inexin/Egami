@@ -68,6 +68,18 @@ public class RawMakerTests
     }
 
     [Fact]
+    public void RafWithAByteCountPastTheEndReadsStrictly()
+    {
+        // Review finding: the X-H2S records a strip byte count past the end of the file, which is not damage.
+        const int Width = 768, Height = 6;
+        ushort[] samples = Scene(Width, Height, 14);
+        byte[] file = Raf(Width, Height, 14, true, FujiEncoder.Encode(samples, Width, Height, true, 14), countExtra: 64);
+        using Raster<Gray16> mosaic = Raster.Load<Gray16>(file, Context, new RawReaderOptions { Output = RawOutput.Mosaic, Recovery = RecoveryMode.Strict });
+        Assert.Equal(samples[^1], mosaic.Row(Height - 1)[Width - 1].L);
+        Assert.DoesNotContain(mosaic.Metadata.Warnings, w => w.Id.EndsWith("DataDamaged", StringComparison.Ordinal));
+    }
+
+    [Fact]
     public void UncompressedRafReads()
     {
         const int Width = 48, Height = 12;
@@ -179,7 +191,7 @@ public class RawMakerTests
     }
 
     /// <summary>A RAF: header, meta directory with the X-Trans cells (stored last first) and a CFA-section TIFF.</summary>
-    private static byte[] Raf(int width, int height, int bits, bool xtrans, byte[] data, byte[]? pattern = null)
+    private static byte[] Raf(int width, int height, int bits, bool xtrans, byte[] data, byte[]? pattern = null, int countExtra = 0)
     {
         List<byte> meta = [0, 0, 0, 0];
         int records = 0;
@@ -209,7 +221,7 @@ public class RawMakerTests
         Entry(cfa, at + 14, 0xF002, 4, height);
         Entry(cfa, at + 26, 0xF003, 4, bits);
         Entry(cfa, at + 38, 0xF007, 4, 128);
-        Entry(cfa, at + 50, 0xF008, 4, data.Length);
+        Entry(cfa, at + 50, 0xF008, 4, data.Length + countExtra);
         data.CopyTo(cfa, 128);
 
         byte[] header = new byte[108];

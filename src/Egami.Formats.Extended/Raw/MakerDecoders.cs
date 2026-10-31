@@ -25,7 +25,9 @@ internal static class MakerDecoders
         if (count > tiff.Length - offset)
         {
             count = tiff.Length - offset;
-            if (sensor.Codec is not (RawCodec.PanasonicV4 or RawCodec.PanasonicV5 or RawCodec.PanasonicV6 or RawCodec.PanasonicV7 or RawCodec.PanasonicV8))
+            // Panasonic's data has no count, and some Fujifilm bodies (the X-H2S) record one past the end of the file; their
+            // decoders report what is really missing themselves.
+            if (sensor.Codec is not (RawCodec.PanasonicV4 or RawCodec.PanasonicV5 or RawCodec.PanasonicV6 or RawCodec.PanasonicV7 or RawCodec.PanasonicV8 or RawCodec.FujiCompressed))
             {
                 damaged(0, "The raw data runs past the end of the file; what is missing reads as black.");
             }
