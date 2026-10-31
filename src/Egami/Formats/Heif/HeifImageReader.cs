@@ -36,13 +36,8 @@ internal sealed partial class HeifImageReader(Func<FormatInfo> format, HeifDiagn
     /// </summary>
     internal bool TruncateFill { get; init; }
 
-    /// <summary>
-    /// Gets or sets whether an image is coded in layers whose base layer alone loads, at its own size (AVIF's a1lx without lsel).
-    /// </summary>
-    internal Func<HeifImage, bool>? Layered { get; init; }
-
-    /// <summary>Gets the RasterInfo of a still image, <paramref name="size"/> replacing the output size when given.</summary>
-    internal RasterInfo Info(HeifImage file, EgamiInput input, ReaderOptions options, (int Width, int Height)? size = null)
+    /// <summary>Gets the RasterInfo of a still image.</summary>
+    internal RasterInfo Info(HeifImage file, EgamiInput input, ReaderOptions options)
     {
         if (input.Reports(DiagnosticLevel.Warning))
         {
@@ -53,7 +48,7 @@ internal sealed partial class HeifImageReader(Func<FormatInfo> format, HeifDiagn
             }
         }
 
-        (int width, int height) = size ?? OutputSize(file);
+        (int width, int height) = OutputSize(file);
         input.Limits.CheckFrameSize(width, height);
         PixelLayoutInfo layout = options.Hdr is not null && (file.ToneMap is not null || file.AppleGainMap is not null) ? RgbaF16.Layout : NaturalLayout(file);
         return new RasterInfo
@@ -79,6 +74,24 @@ internal sealed partial class HeifImageReader(Func<FormatInfo> format, HeifDiagn
     /// <summary>Reads the still image into <typeparamref name="TPixel"/>.</summary>
     internal Raster<TPixel> Read<TPixel>(EgamiInput input, HeifImage file, ReaderOptions options)
         where TPixel : unmanaged, IPixelType<TPixel> => Read<TPixel>(input, Prepare(input, file, options, null));
+
+    /// <summary>Decodes the still image (only the grid cells <see cref="ReaderOptions.Region"/> needs) and gives how to read its rows.</summary>
+    internal Prepared PrepareStill(EgamiInput input, HeifImage file, ReaderOptions options) => Prepare(input, file, options, options.Region);
+
+    /// <summary>
+    /// Gives how to read the rows of planes decoded on their own (an incremental preview), converted with the color as Load converts
+    /// the image, and cropped to its clean aperture.
+    /// </summary>
+    internal PixelRows PlaneRows(HeifImage file, HeifPlanes color, ColorCodePoints points)
+    {
+        (int x, int y) = file.Crop is (int cx, int cy, _, _) ? (cx, cy) : (0, 0);
+        IHeifRgbConverter converter = Converter(new HeifConversion(color, null, false, points, false));
+        return new PixelRows(converter.Channels, converter.OutputDepth, (row, column, samples) =>
+            converter.Row(y + row, x + column, samples.Length / converter.Channels, samples))
+        {
+            Write = (row, column, width, target) => converter.Write(y + row, x + column, width, target),
+        };
+    }
 
     /// <summary>Opens the still image as a row source, decoding only the grid cells <see cref="ReaderOptions.Region"/> needs.</summary>
     internal RowSource Open(EgamiInput input, HeifImage file, ReaderOptions options) => new Rows(input, Prepare(input, file, options, options.Region));
@@ -170,8 +183,9 @@ internal sealed partial class HeifImageReader(Func<FormatInfo> format, HeifDiagn
     /// <param name="points">The image's color: the nclx property's, else what the codec read from the color image's stream.</param>
     internal static (HeifPlanes Color, HeifPlanes? Alpha) Decode(HeifImage file, IHeifCodec codec, EgamiInput input, Rect? needed, out ColorCodePoints points)
     {
-        input.CheckMemory(WorkingBytes(file));
-        HeifPlanes color = file.Primary.Type == HeifImage.Grid
+        input.CheckMemory(WorkingBytes(file) * (1 + (file.SampleTransform?.Inputs.Count ?? 0)));
+        HeifPlanes color = file.SampleTransform is HeifSampleTransform transform ? Transform(file, codec, transform, input, needed, alpha: false)
+            : file.Primary.Type == HeifImage.Grid
             ? Grid(file, codec, file.Cells, (file.GridSize.Rows, file.GridSize.Columns, file.Width, file.Height), input, needed, lumaOnly: false)
             : Cell(file, codec, file.Cells[0], input);
         if (color.BitDepth != file.BitDepth || color.Monochrome != file.Monochrome)
@@ -186,7 +200,8 @@ internal sealed partial class HeifImageReader(Func<FormatInfo> format, HeifDiagn
         if (file.Alpha is not null)
         {
             (int rows, int columns, _, _) = file.AlphaLayout;
-            alpha = file.AlphaCells.Count == 1 && rows * columns == 1
+            alpha = file.SampleTransform is HeifSampleTransform alphaTransform ? Transform(file, codec, alphaTransform, input, needed, alpha: true)
+                : file.AlphaCells.Count == 1 && rows * columns == 1
                 ? Cell(file, codec, file.AlphaCells[0], input).LumaOnly()
                 : Grid(file, codec, file.AlphaCells, file.AlphaLayout, input, needed, lumaOnly: true);
             if (alpha.Width != color.Width || alpha.Height != color.Height)
@@ -249,6 +264,70 @@ internal sealed partial class HeifImageReader(Func<FormatInfo> format, HeifDiagn
         }
 
         return HeifPlanes.Grid(decoded, layout.Rows, layout.Columns, layout.Width, layout.Height, input);
+    }
+
+    /// <summary>
+    /// Decodes a sample transform's input images (their alpha images when <paramref name="alpha"/>) and evaluates its expression for
+    /// each sample of each plane (AVIF 1.2.0 section 4.2.3), giving planes of the transform's depth. The inputs must match in size
+    /// and chroma format.
+    /// </summary>
+    internal static HeifPlanes Transform(HeifImage file, IHeifCodec codec, HeifSampleTransform transform, EgamiInput input, Rect? needed, bool alpha)
+    {
+        IReadOnlyList<HeifSampleInput> sources = transform.Inputs;
+        HeifPlanes[] planes = new HeifPlanes[sources.Count];
+        for (int i = 0; i < sources.Count; i++)
+        {
+            (IReadOnlyList<HeifItem> cells, (int Rows, int Columns, int Width, int Height) layout) = alpha
+                ? (sources[i].AlphaCells, sources[i].AlphaLayout)
+                : (sources[i].Cells, sources[i].Layout);
+            HeifPlanes decoded = cells.Count == 1 && layout.Rows * layout.Columns == 1
+                ? Cell(file, codec, cells[0], input)
+                : Grid(file, codec, cells, layout, input, needed, lumaOnly: alpha);
+            planes[i] = alpha ? decoded.LumaOnly() : decoded;
+            HeifPlanes first = planes[0];
+            if (planes[i].Width != first.Width || planes[i].Height != first.Height || planes[i].Monochrome != first.Monochrome
+                || planes[i].SubsamplingX != first.SubsamplingX || planes[i].SubsamplingY != first.SubsamplingY)
+            {
+                throw input.Corrupt(-1, "The sample transform's input images differ in size or chroma format.");
+            }
+        }
+
+        AvifSampleTransform expression = transform.Expression;
+        HeifPlanes shape = planes[0];
+        int count = shape.Samples.Length;
+        ushort[][] samples = new ushort[count][];
+        int[] strides = new int[count];
+        ushort[][] inputs = new ushort[planes.Length][];
+        int[] offsets = new int[planes.Length];
+        long[][] stack = new long[Math.Max(1, expression.MaxStack)][];
+        for (int s = 0; s < stack.Length; s++)
+        {
+            stack[s] = new long[shape.Width];
+        }
+
+        for (int p = 0; p < count; p++)
+        {
+            int width = p == 0 ? shape.Width : shape.ChromaWidth, height = p == 0 ? shape.Height : shape.ChromaHeight;
+            strides[p] = width;
+            samples[p] = new ushort[width * height];
+            for (int i = 0; i < planes.Length; i++)
+            {
+                inputs[i] = planes[i].Samples[p];
+            }
+
+            for (int y = 0; y < height; y++)
+            {
+                input.CancellationToken.ThrowIfCancellationRequested();
+                for (int i = 0; i < planes.Length; i++)
+                {
+                    offsets[i] = y * planes[i].Strides[p];
+                }
+
+                expression.Row(inputs, offsets, samples[p].AsSpan(y * width, width), stack);
+            }
+        }
+
+        return shape with { BitDepth = expression.Depth, Samples = samples, Strides = strides };
     }
 
     /// <summary>
@@ -382,7 +461,6 @@ internal sealed partial class HeifImageReader(Func<FormatInfo> format, HeifDiagn
         (int width, int height) = OutputSize(file);
         input.Limits.CheckFrameSize(width, height);
         (int x, int y) = file.Crop is (int cx, int cy, _, _) ? (cx, cy) : (0, 0);
-        bool layered = file.Overlay is null && Layered?.Invoke(file) == true;
         PixelLayoutInfo natural = NaturalLayout(file);
         IHeifCodec codec = createCodec(options);
         ColorCodePoints points = file.CodePoints;
@@ -399,12 +477,6 @@ internal sealed partial class HeifImageReader(Func<FormatInfo> format, HeifDiagn
         {
             Rect? needed = region is Rect r ? r with { X = r.X + x, Y = r.Y + y } : null;
             (HeifPlanes color, HeifPlanes? alpha) = Decode(file, codec, input, needed, out points);
-            if (layered && (color.Width, color.Height) != (file.Width, file.Height))
-            {
-                // A spatially layered image's base layer is smaller than the image; it loads whole, at its own size.
-                (x, y, width, height) = (0, 0, color.Width, color.Height);
-            }
-
             if (x + width > color.Width || y + height > color.Height)
             {
                 throw input.Corrupt(-1, $"The image is {color.Width} x {color.Height}, smaller than its {width} x {height} clean aperture at ({x}, {y}).");
@@ -432,11 +504,6 @@ internal sealed partial class HeifImageReader(Func<FormatInfo> format, HeifDiagn
         else if (file.AppleGainMap is not null && options.ReadMetadata)
         {
             ReadAppleGainMap(file, codec, input, metadata);
-        }
-
-        if (layered)
-        {
-            metadata.WarningList.Add(ids.BaseLayerOnly!, "The image is coded in layers whose later ones are inter frames, which Egami decodes from 2.9.5; its first (lowest quality) layer was loaded.");
         }
 
         if (unsupported.Count > 0)
@@ -932,7 +999,7 @@ internal sealed partial class HeifImageReader(Func<FormatInfo> format, HeifDiagn
     }
 
     /// <summary>Reads part of an output row into <paramref name="destination"/> through the natural type.</summary>
-    private static void ReadRow<TPixel>(PixelRows rows, PixelLayoutInfo natural, int row, int column, Span<int> samples, Span<byte> packed, Span<TPixel> destination)
+    internal static void ReadRow<TPixel>(PixelRows rows, PixelLayoutInfo natural, int row, int column, Span<int> samples, Span<byte> packed, Span<TPixel> destination)
         where TPixel : unmanaged, IPixelType<TPixel>
     {
         bool direct = TPixel.Layout == natural;
@@ -1065,6 +1132,5 @@ internal sealed partial class HeifImageReader(Func<FormatInfo> format, HeifDiagn
 /// <param name="SequenceFirstFrame">A sequence's frames are not all key frames, so only the first loaded.</param>
 /// <param name="FramesDropped">A damaged frame ended a sequence's lenient load.</param>
 /// <param name="InterFrames">Why a sequence with inter frames gives its first frame only, as the end of a sentence.</param>
-/// <param name="BaseLayerOnly">Only a layered image's base layer was loaded, for formats that have layers.</param>
 internal sealed record HeifDiagnosticIds(string MatrixApproximated, string MatrixUnknown, string ExifDamaged, string GainMapDropped,
-    string SequenceFirstFrame, string FramesDropped, string InterFrames, string? BaseLayerOnly = null);
+    string SequenceFirstFrame, string FramesDropped, string InterFrames);

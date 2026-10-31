@@ -105,6 +105,18 @@ public class CatalogTests
     }
 
     [Fact]
+    public void TiffTakesZstdAndItsLevel()
+    {
+        WriterOptions options = WriterCatalog.Build(Egami.Formats.Tiff.TiffFormat.Info, new Dictionary<string, string>
+        {
+            ["compression"] = "zstd",
+            ["zstd-level"] = "19",
+        });
+        Egami.Formats.Tiff.TiffWriterOptions tiff = Assert.IsType<Egami.Formats.Tiff.TiffWriterOptions>(options);
+        Assert.Equal((Egami.Formats.Tiff.TiffCompression.Zstd, 19), (tiff.Compression, tiff.ZstdLevel));
+    }
+
+    [Fact]
     public void UnknownSettingsAreUsageErrors()
     {
         UsageException error = Assert.Throws<UsageException>(() => WriterCatalog.Build(PngFormat.Info, new Dictionary<string, string> { ["quality"] = "5" }));

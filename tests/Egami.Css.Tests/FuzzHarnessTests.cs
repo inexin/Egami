@@ -29,6 +29,7 @@ public sealed class FuzzHarnessTests
         }
     }
 
+    [Trait("Category", "Slow")]
     [Fact]
     public void RandomMutationsNeverThrow()
     {

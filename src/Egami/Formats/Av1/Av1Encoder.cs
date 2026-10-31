@@ -36,6 +36,9 @@ internal sealed class Av1EncoderSettings
     /// <summary>Gets or sets whether every sample is kept exactly: quantizer 0 and the Walsh-Hadamard transform.</summary>
     internal bool Lossless { get; init; }
 
+    /// <summary>Gets the film grain parameters the frame writes for decoders to add, or null for none.</summary>
+    internal Av1FilmGrain? FilmGrain { get; init; }
+
     /// <summary>Gets or sets base_q_idx, 0 to 255; 0 codes the frame losslessly in its own planes.</summary>
     internal int QIndex { get; init; } = 100;
 
@@ -257,12 +260,15 @@ internal sealed class Av1Encoder
         }
     }
 
+    /// <summary>Wraps a stream another encoder wrote (the frames of a layered image, say) with its sequence header and last frame.</summary>
+    internal static Av1Encoder FromStream(byte[] stream, Av1SequenceHeader sequence, Av1Frame reconstruction) => new(stream, sequence, reconstruction, 0, 0);
+
     /// <summary>Encodes one frame.</summary>
     internal static Av1Encoder Encode(Av1EncoderInput input, Av1EncoderSettings settings)
     {
         ArgumentNullException.ThrowIfNull(input);
         ArgumentNullException.ThrowIfNull(settings);
-        Av1SequenceHeader sequence = SequenceFor(input);
+        Av1SequenceHeader sequence = SequenceFor(input, settings.FilmGrain is not null);
         Av1FrameParameters parameters = ParametersFor(input, sequence, settings);
         (byte[] payload, Av1Frame frame, double estimated, double tileBits) = EncodeFrame(input, settings, sequence, parameters, [], []);
         List<byte> stream = [];
@@ -427,7 +433,7 @@ internal sealed class Av1Encoder
     /// Gets the sequence header of a still picture: profile and color configuration from the input, a reduced still picture
     /// header, 64x64 superblocks, every intra tool the frames may use, and the smallest level that holds the picture.
     /// </summary>
-    internal static Av1SequenceHeader SequenceFor(Av1EncoderInput input)
+    internal static Av1SequenceHeader SequenceFor(Av1EncoderInput input, bool filmGrain = false)
     {
         bool mono = input.Chroma == ChromaFormat.Yuv400;
         (int ssx, int ssy) = input.Chroma switch
@@ -465,6 +471,7 @@ internal sealed class Av1Encoder
             SubsamplingX = ssx,
             SubsamplingY = ssy,
             ChromaSamplePosition = ssx == 1 && ssy == 1 ? input.ChromaSamplePosition : 0,
+            FilmGrainParamsPresent = filmGrain,
         };
 
         // Read back, so the header the frames use is exactly what a decoder sees.
@@ -502,6 +509,7 @@ internal sealed class Av1Encoder
         int minLog2Tiles = Math.Max(minLog2Cols, Av1FrameHeader.TileLog2((4096 * 2304) >> 12, sbRows * sbCols));
         Av1FrameParameters f = new()
         {
+            FilmGrain = settings.FilmGrain,
             Width = input.Width,
             Height = input.Height,
             TileColsLog2 = minLog2Cols,

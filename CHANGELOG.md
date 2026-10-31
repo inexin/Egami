@@ -107,6 +107,38 @@ DDS textures, stage C (BC7 and BC6H encoders).
 
 ## Egami, unreleased
 
+TIFF ZSTD (Build Plan "Egami TIFF: ZSTD, LZMA and LERC", tasks 1 to 4). All additive.
+
+- TIFF reads ZSTD compression (50000), with the horizontal and floating-point predictors, through a fully managed Zstandard
+  decoder written from RFC 8878 (no native code, no packages): every frame the zstd CLI writes at levels 1 to 22, with
+  `--long`, with and without the checksum, decodes byte for byte, at about three quarters of libzstd's speed on one thread. A
+  damaged strip keeps what decoded before the damage, with the usual short-strip warning.
+- `TiffCompression.Zstd` and `TiffWriterOptions.ZstdLevel` (1 to 22, default 9, as libtiff's): TIFF writes ZSTD with a managed
+  Zstandard encoder following libzstd's level ladder, within 5 % of libzstd's size at levels 1 to 15 and at 0.6 times its speed
+  or better. libtiff and GDAL read Egami's ZSTD files, and Egami reads theirs, with identical samples. The predictor defaults as
+  for Deflate; `ParallelCompression` and streamed saves work; `CompressionLevel` stays Deflate's.
+
+AVIF extras (progressive AVIF, sample transforms, mini files, more encode options). All additive; defaults write and read what
+they did, except that a layered image now loads its best layer.
+
+- A progressive (layered) AVIF loads its best layer at the image's full size, equal to avifdec, instead of its first layer
+  with the `Avif.BaseLayerOnly` warning, which is gone. `AvifReaderOptions.Layer` picks a layer (an lsel property in the file
+  is honoured otherwise), and `AvifDetails.Layers` lists each layer's size.
+- `RasterDecoder.RenderPreview` draws a progressive AVIF's best layer received so far at full size while its bytes arrive, as
+  it draws a progressive JPEG's scans; other AVIF files still decode at the end.
+- Sample transforms (sato items, AVIF 1.2): files that combine AV1 images into one of more bits, such as the 16-bit files
+  `avifenc --depth 16` writes, load at the transform's depth, every expression the specification allows evaluated over the
+  planes; `AvifDetails.HasSampleTransform` says so, and `AvifReaderOptions.SampleTransform = false` loads the fallback image.
+- Files with the compact mini box (the mif3 brand of the HEIF amendment draft) load with their alpha, gain map, ICC, Exif and
+  XMP; `AvifFormat` recognizes them by their ftyp minor version.
+- `AvifWriterOptions.Progressive` writes two layers as `avifenc --progressive` does, and `Layers` up to four `AvifLayer`s, each
+  with its quality and scale; `BitDepth = 16` writes 16 bits through a sample transform (8+8 lossless, 12+8 lossy), with the
+  8- or 12-bit image as the fallback; `TargetSize` searches the quality for the largest file not above a size
+  (`Avif.TargetSizeExceeded` when quality 0 is larger); `GainMapQuality` codes a gain map at its own quality;
+  `FilmGrainDenoise` (1 to 50) denoises and writes AV1 film grain parameters that decoders add back. A raster loaded with
+  `AvifReaderOptions.FilmGrain = false` gets its grain parameters written back on save. Layered images larger than one AV1
+  frame are written in one layer (`Avif.LayersDropped`).
+
 For camera RAW (Egami.Formats.Extended). Additive.
 
 - `FormatInfo.ConvertsColor`: a format whose reader renders `ReaderOptions.ConvertColorTo`'s colour space itself (a RAW
@@ -215,6 +247,8 @@ Small format gaps from the on-demand list. All additive.
 
 ## Egami.Cli, unreleased
 
+- `--progressive`, `--target-size`, `--qgain-map` and `--denoise` on every command that writes, for the AVIF extras (and
+  `--progressive` for JPEG and JPEG XL too); 16-bit AVIF is `--bit-depth 16`.
 - `egami layers in.psd folder`: each layer of a PSD or PSB as a PNG at its own size, each pixel mask as a gray PNG, and
   `layers.json` with every layer's and group's name, place, size, blend mode, opacity, visibility and group (2.3.10). Also an
   MCP tool.

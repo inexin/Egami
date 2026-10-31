@@ -1,5 +1,6 @@
 using Egami.Formats.Ani;
 using Egami.Formats.Png;
+using Egami.Formats.Tiff;
 using Egami.Pixels;
 using Egami.Tests.Formats.Ani;
 using Egami.Tests.Memory;
@@ -65,6 +66,37 @@ public class AllocationTests
         long saveFew = Allocated(() => few.Save(Stream.Null, AniFormat.Info));
         long saveMany = Allocated(() => many.Save(Stream.Null, AniFormat.Info));
         Assert.True((saveMany - saveFew) / 60 < 256, $"64 steps allocated {saveMany:N0} bytes against {saveFew:N0} for 4.");
+    }
+
+    [Theory]
+    [InlineData(1, 0)]
+    [InlineData(9, 0)]
+    [InlineData(19, 0)]
+    [InlineData(9, 64)]
+    public void TiffZstdSaveAndLoadAllocateOnlyTheStripTables(int level, int tile)
+    {
+        // The Zstandard codec keeps its tables and buffers per thread, so a page costs its strip or tile offsets (two 8-byte
+        // entries each, written and read) and nothing per byte.
+        AllocationMeter.SkipUnlessOnDemand();
+        TiffWriterOptions options = new() { Compression = TiffCompression.Zstd, ZstdLevel = level, TileSize = tile };
+        using Raster<Rgb8> small = Formats.Tiff.TiffWriterTests.Pattern<Rgb8>(300, 64);
+        using Raster<Rgb8> large = Formats.Tiff.TiffWriterTests.Pattern<Rgb8>(300, 3000);
+        using MemoryStream smallFile = new();
+        using MemoryStream largeFile = new();
+        small.Save(smallFile, TiffFormat.Info, options);
+        large.Save(largeFile, TiffFormat.Info, options);
+        byte[] smallBytes = smallFile.ToArray();
+        byte[] largeBytes = largeFile.ToArray();
+        int units = tile > 0 ? 5 * ((3000 / tile) + 1) : 3000 / (65536 / 900) + 1;
+        long allowance = 1024 + (32L * units);
+
+        long saveSmall = Allocated(() => small.Save(Stream.Null, TiffFormat.Info, options));
+        long saveLarge = Allocated(() => large.Save(Stream.Null, TiffFormat.Info, options));
+        Assert.True(saveLarge - saveSmall < allowance, $"Saving 3,000 rows allocated {saveLarge:N0} bytes against {saveSmall:N0} for 64 rows.");
+
+        long loadSmall = Allocated(() => Raster.Load(smallBytes).Dispose());
+        long loadLarge = Allocated(() => Raster.Load(largeBytes).Dispose());
+        Assert.True(loadLarge - loadSmall < allowance, $"Loading 3,000 rows allocated {loadLarge:N0} bytes against {loadSmall:N0} for 64 rows.");
     }
 
     /// <summary>The fewest bytes one call allocated over several tries; see <see cref="AllocationMeter"/>.</summary>

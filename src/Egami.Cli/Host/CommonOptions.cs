@@ -83,6 +83,14 @@ internal sealed class ImageOptions
 
     public Option<int?> BitDepth { get; } = new("--bit-depth") { Description = "Bits per channel to write (PNG, AVIF).", HelpName = "bits" };
 
+    public Option<bool?> Progressive { get; } = new("--progressive") { Description = "Write the image so viewers show it coarse first, then sharper as it arrives (AVIF layers, JPEG and JPEG XL progressive)." };
+
+    public Option<int?> TargetSize { get; } = new("--target-size") { Description = "Search the quality for the largest file not above this many bytes (AVIF).", HelpName = "bytes" };
+
+    public Option<int?> GainMapQuality { get; } = new("--qgain-map") { Description = "Quality of the gain map from 0 to 100, as avifenc's --qgain-map (AVIF).", HelpName = "0-100" };
+
+    public Option<int?> Denoise { get; } = new("--denoise") { Description = "Take film grain out before coding and write it as AV1 film grain, 0 to 50 (AVIF).", HelpName = "0-50" };
+
     public Option<bool> Strip { get; } = new("--strip") { Description = "Leave out metadata (EXIF, XMP, IPTC, text, resolution) but keep the color profile, so colors stay right." };
 
     public Option<string[]> Set { get; } = new("--set")
@@ -120,6 +128,10 @@ internal sealed class ImageOptions
             command.Options.Add(Lossless);
             command.Options.Add(Effort);
             command.Options.Add(BitDepth);
+            command.Options.Add(Progressive);
+            command.Options.Add(TargetSize);
+            command.Options.Add(GainMapQuality);
+            command.Options.Add(Denoise);
             command.Options.Add(Strip);
             command.Options.Add(Set);
         }
@@ -162,6 +174,26 @@ internal sealed class ImageOptions
         if (result.GetValue(BitDepth) is { } depth)
         {
             common["bit-depth"] = depth.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        }
+
+        if (result.GetValue(Progressive) is { } progressive)
+        {
+            common["progressive"] = progressive ? "true" : "false";
+        }
+
+        if (result.GetValue(TargetSize) is { } target)
+        {
+            common["target-size"] = target.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        }
+
+        if (result.GetValue(GainMapQuality) is { } gainMap)
+        {
+            common["gain-map-quality"] = gainMap.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        }
+
+        if (result.GetValue(Denoise) is { } denoise)
+        {
+            common["film-grain-denoise"] = denoise.ToString(System.Globalization.CultureInfo.InvariantCulture);
         }
 
         if (result.GetValue(Strip))

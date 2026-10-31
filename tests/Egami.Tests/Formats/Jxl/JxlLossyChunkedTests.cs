@@ -15,6 +15,7 @@ public class JxlLossyChunkedTests
 {
     private static readonly string Images = Path.Combine(AppContext.BaseDirectory, "images");
 
+    [Trait("Category", "Slow")]
     [Theory]
     [InlineData(600, 400, 3)]
     [InlineData(600, 400, 7)]
@@ -43,6 +44,7 @@ public class JxlLossyChunkedTests
         Assert.True(Psnr(source, back) > 33, $"PSNR {Psnr(source, back):F1}");
     }
 
+    [Trait("Category", "Slow")]
     [Fact]
     public void AlphaStaysExactInChunks()
     {

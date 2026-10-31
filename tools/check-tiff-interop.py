@@ -6,16 +6,54 @@ in strips, tiles and BigTIFF, with Egami's decode as raw samples next to each; t
 libtiff 4.6.0 (tiffinfo -D, and tools/tiffref/tiffref.c's raw samples, or its RGBA for 1-bit, palette, CCITT, JPEG and
 WebP pages; raw within 2 levels for CMYK JPEG pages, named near-*), ImageMagick 7.1.1 and Pillow.
 
+It also checks the other way for ZSTD (TIFF ZSTD task 3): libtiff's tiffcp -c zstd (no predictor, predictor 2, 3 for float,
+tiles) and GDAL 3.9's gdal_translate -co COMPRESS=ZSTD (PREDICTOR 2 and 3, ZSTD_LEVEL, tiles) write files from the
+corpus's base images into .cache/tiff-interop/foreign, libtiff decodes each to raw samples beside it, and the
+TiffInteropFiles test reads them with Egami, which must give the same samples.
+
 Usage, from the repo root with Docker running:
   python tools/check-tiff-interop.py
 """
 import os
+import shutil
 import subprocess
 import sys
 
 IMAGE = "alpine:3.20"
 PACKAGES = "python3 py3-pillow imagemagick tiff-tools tiff-dev gcc musl-dev"
 OUT = ".cache/tiff-interop"
+FOREIGN = OUT + "/foreign"
+GDAL_IMAGE = "ghcr.io/osgeo/gdal:alpine-small-3.9.3"
+BASES = ("gray8", "gray16", "grayf32", "rgb8", "rgb16", "rgba8", "rgba16", "rgbf32", "cmyk8")
+
+# tiffcp's ZSTD options: the predictor alone, then p and the level.
+TIFFCP = [("zstd", ["-c", "zstd"]), ("zstd-p2", ["-c", "zstd:2"]), ("zstd-p2-tiles", ["-c", "zstd:2", "-t", "-w", "32", "-l", "32"]),
+          ("zstd-rows7", ["-c", "zstd:2", "-r", "7"])]
+
+# gdal_translate's: the float predictor goes to float images only.
+GDAL = [("zstd-p2", ["-co", "PREDICTOR=2"]), ("zstd-p2-l1-tiles", ["-co", "PREDICTOR=2", "-co", "ZSTD_LEVEL=1", "-co", "TILED=YES",
+        "-co", "BLOCKXSIZE=32", "-co", "BLOCKYSIZE=32"]), ("zstd-l22", ["-co", "ZSTD_LEVEL=22"])]
+
+
+def foreign_libtiff():
+    """In alpine: tiffcp's ZSTD files, then libtiff's raw samples of every foreign file (GDAL's written before)."""
+    subprocess.run(["gcc", "-O2", "-o", "/tmp/tiffref", "tools/tiffref/tiffref.c", "-ltiff"], check=True)
+    for base in BASES:
+        for name, options in TIFFCP + ([("zstd-p3", ["-c", "zstd:3"])] if "f32" in base else []):
+            subprocess.run(["tiffcp", *options, f"tests/images/tiff/{base}.tif", f"{FOREIGN}/libtiff-{base}-{name}.tif"], check=True)
+    for name in sorted(n for n in os.listdir(FOREIGN) if n.endswith(".tif")):
+        subprocess.run(["/tmp/tiffref", "raw", f"{FOREIGN}/{name}", "0", f"{FOREIGN}/{name}.raw"], check=True, capture_output=True)
+    print(f"{FOREIGN}: {len([n for n in os.listdir(FOREIGN) if n.endswith('.tif')])} ZSTD files from libtiff and GDAL")
+
+
+def gdal_script():
+    """The shell commands for GDAL's image (which has no Python) that write gdal_translate's ZSTD files."""
+    lines = ["set -e"]
+    for base in BASES:
+        for name, options in GDAL + ([("zstd-p3", ["-co", "PREDICTOR=3"])] if "f32" in base else []):
+            lines.append(" ".join(["gdal_translate", "-q", "-of", "GTiff", "-co", "COMPRESS=ZSTD", *options, f"tests/images/tiff/{base}.tif",
+                                   f"{FOREIGN}/gdal-{base}-{name}.tif"]))
+    return "\n".join(lines)
 
 # Pillow reads no float, CMYK-16 or 16-bit RGB(A) TIFF it can convert to RGBA, so it is only asked to open them.
 PILLOW_OPEN_ONLY = ("f32", "f16", "16")
@@ -88,9 +126,17 @@ def main():
     if len(sys.argv) > 1 and sys.argv[1] == "--inside":
         inside()
         return
+    if len(sys.argv) > 1 and sys.argv[1] == "--foreign-libtiff":
+        foreign_libtiff()
+        return
+    repo = os.getcwd()
+    shutil.rmtree(FOREIGN, ignore_errors=True)
+    os.makedirs(FOREIGN)
+    subprocess.run(["docker", "run", "--rm", "-v", f"{repo}:/work", "-w", "/work", GDAL_IMAGE, "sh", "-c", gdal_script()], check=True)
+    subprocess.run(["docker", "run", "--rm", "-v", f"{repo}:/work", "-w", "/work", IMAGE, "sh", "-c",
+                    f"apk add --no-cache {PACKAGES} > /dev/null && python3 tools/check-tiff-interop.py --foreign-libtiff"], check=True)
     env = dict(os.environ, EGAMI_INTEROP_DIR=os.path.abspath(OUT))
     subprocess.run(["dotnet", "test", "tests/Egami.Tests", "-c", "Release", "--filter", "FullyQualifiedName~TiffInteropFiles"], check=True, env=env)
-    repo = os.getcwd()
     subprocess.run(["docker", "run", "--rm", "-v", f"{repo}:/work", "-w", "/work", IMAGE, "sh", "-c",
                     f"apk add --no-cache {PACKAGES} > /dev/null && python3 tools/check-tiff-interop.py --inside"], check=True)
 

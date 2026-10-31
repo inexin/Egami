@@ -131,6 +131,22 @@ public class Tiff
     }
 
     [Fact]
+    public void Zstd()
+    {
+        using SampleFiles files = new();
+        using Raster<Rgb16> photo = Raster.Load<Rgb16>("duck.png");
+
+        #region tiff-zstd
+        // Zstandard with the predictor: lossless, read by libtiff and GDAL. Level 1 writes fastest, 19 writes smallest.
+        photo.Save("zstd.tif", new TiffWriterOptions { Compression = TiffCompression.Zstd });
+        photo.Save("zstd-small.tif", new TiffWriterOptions { Compression = TiffCompression.Zstd, ZstdLevel = 19 });
+        #endregion
+
+        Assert.Equal(TiffCompression.Zstd, ((TiffDetails)Raster.Load("zstd.tif").Metadata.FormatDetails!).Compression);
+        Assert.True(new FileInfo("zstd-small.tif").Length <= new FileInfo("zstd.tif").Length);
+    }
+
+    [Fact]
     public void Details()
     {
         using SampleFiles files = new();

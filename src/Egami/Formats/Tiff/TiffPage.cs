@@ -351,13 +351,13 @@ internal sealed class TiffPage
     private void CheckCompression()
     {
         if (Compression is TiffCodes.None or TiffCodes.CcittRle or TiffCodes.CcittGroup3 or TiffCodes.CcittGroup4 or TiffCodes.Lzw
-            or TiffCodes.OldJpeg or TiffCodes.Jpeg or TiffCodes.Deflate or TiffCodes.AdobeDeflate or TiffCodes.CcittRleWord
+            or TiffCodes.OldJpeg or TiffCodes.Jpeg or TiffCodes.Deflate or TiffCodes.AdobeDeflate or TiffCodes.Zstd or TiffCodes.CcittRleWord
             or TiffCodes.PackBits or TiffCodes.ThunderScan or TiffCodes.Webp or TiffCodes.JpegXl or TiffCodes.DngJpegXl)
         {
             return;
         }
 
-        throw new NotSupportedException(Compression is TiffCodes.Zstd or TiffCodes.Lzma or TiffCodes.Lerc
+        throw new NotSupportedException(Compression is TiffCodes.Lzma or TiffCodes.Lerc
             ? $"TIFF: compression {Compression} ({TiffCodes.Name(Compression)}) is not read yet; it is added on real demand."
             : $"TIFF: compression {Compression} ({TiffCodes.Name(Compression)}) is not read.");
     }

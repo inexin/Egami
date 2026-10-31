@@ -186,5 +186,39 @@ static Egami.SaveProgress.operator ==(Egami.SaveProgress left, Egami.SaveProgres
 virtual Egami.Metadata.FormatDetails.PixelsChanged() -> void
 ~override Egami.SaveProgress.Equals(object obj) -> bool
 ~override Egami.SaveProgress.ToString() -> string
+Egami.Formats.Tiff.TiffCompression.Zstd = 50000 -> Egami.Formats.Tiff.TiffCompression
+Egami.Formats.Tiff.TiffWriterOptions.ZstdLevel.get -> int
+Egami.Formats.Tiff.TiffWriterOptions.ZstdLevel.init -> void
 Egami.Formats.FormatInfo.ConvertsColor.get -> bool
 Egami.Formats.FormatInfo.ConvertsColor.init -> void
+Egami.Formats.Avif.AvifDetails.Layers.get -> System.Collections.Generic.IReadOnlyList<Egami.Size>!
+Egami.Formats.Avif.AvifDetails.Layers.set -> void
+Egami.Formats.Avif.AvifReaderOptions.Layer.get -> int?
+Egami.Formats.Avif.AvifReaderOptions.Layer.init -> void
+Egami.Formats.Avif.AvifDetails.HasSampleTransform.get -> bool
+Egami.Formats.Avif.AvifDetails.HasSampleTransform.set -> void
+Egami.Formats.Avif.AvifReaderOptions.SampleTransform.get -> bool
+Egami.Formats.Avif.AvifReaderOptions.SampleTransform.init -> void
+Egami.Formats.Avif.AvifLayer
+Egami.Formats.Avif.AvifLayer.AvifLayer() -> void
+Egami.Formats.Avif.AvifLayer.Quality.get -> int
+Egami.Formats.Avif.AvifLayer.Quality.init -> void
+Egami.Formats.Avif.AvifLayer.Scale.get -> double
+Egami.Formats.Avif.AvifLayer.Scale.init -> void
+Egami.Formats.Avif.AvifWriterOptions.FilmGrainDenoise.get -> int
+Egami.Formats.Avif.AvifWriterOptions.FilmGrainDenoise.init -> void
+Egami.Formats.Avif.AvifWriterOptions.GainMapQuality.get -> int?
+Egami.Formats.Avif.AvifWriterOptions.GainMapQuality.init -> void
+Egami.Formats.Avif.AvifWriterOptions.Layers.get -> System.Collections.Generic.IReadOnlyList<Egami.Formats.Avif.AvifLayer!>?
+Egami.Formats.Avif.AvifWriterOptions.Layers.init -> void
+Egami.Formats.Avif.AvifWriterOptions.Progressive.get -> bool
+Egami.Formats.Avif.AvifWriterOptions.Progressive.init -> void
+Egami.Formats.Avif.AvifWriterOptions.TargetSize.get -> int?
+Egami.Formats.Avif.AvifWriterOptions.TargetSize.init -> void
+Egami.Formats.Avif.AvifLayer.<Clone>$() -> Egami.Formats.Avif.AvifLayer!
+Egami.Formats.Avif.AvifLayer.Equals(Egami.Formats.Avif.AvifLayer? other) -> bool
+override Egami.Formats.Avif.AvifLayer.Equals(object? obj) -> bool
+override Egami.Formats.Avif.AvifLayer.GetHashCode() -> int
+override Egami.Formats.Avif.AvifLayer.ToString() -> string!
+static Egami.Formats.Avif.AvifLayer.operator !=(Egami.Formats.Avif.AvifLayer? left, Egami.Formats.Avif.AvifLayer? right) -> bool
+static Egami.Formats.Avif.AvifLayer.operator ==(Egami.Formats.Avif.AvifLayer? left, Egami.Formats.Avif.AvifLayer? right) -> bool

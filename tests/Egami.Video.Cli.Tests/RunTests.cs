@@ -92,6 +92,7 @@ public sealed class RunTests
         Assert.Contains("no video track", audio.Error, StringComparison.Ordinal);
     }
 
+    [Trait("Category", "Slow")]
     [Theory]
     [InlineData("mkv-mjpeg-pcm.mkv", null, CodecIds.MotionJpeg)]
     [InlineData("mkv-raw-i420.mkv", null, CodecIds.Uncompressed)]

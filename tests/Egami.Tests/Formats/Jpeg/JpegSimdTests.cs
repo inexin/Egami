@@ -130,6 +130,7 @@ public class JpegSimdTests
         }
     }
 
+    [Trait("Category", "Slow")]
     [Fact]
     public void QuantizationIsExactForEveryValueAndDivisor()
     {
