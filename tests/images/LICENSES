@@ -296,4 +296,6 @@ fuzz/dds-seeds/
 fuzz/raw-seeds/
   Small DNG files for the raw fuzz target, one of each sample layout, compression, CFA pattern, opcode list and camera profile
   path, written with the tests' own DNG builder (tests/Egami.Formats.Extended.Tests/Raw/DngFiles.cs) from computed values for
-  this repository. Public domain (CC0).
+  this repository; and small maker files (a Nikon Huffman NEF, RAFs with Fujifilm compressed X-Trans and Bayer data and an
+  uncompressed one) written by tests/Egami.Formats.Extended.Tests/Raw/RawMakerTests.cs from computed values. Public domain
+  (CC0).
