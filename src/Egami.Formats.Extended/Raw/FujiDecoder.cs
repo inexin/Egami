@@ -58,25 +58,21 @@ internal static class FujiDecoder
         }
 
         int table = 16;
-        long[] sizes = new long[h.Blocks];
-        for (int b = 0; b < h.Blocks; b++)
-        {
-            sizes[b] = BinaryPrimitives.ReadUInt32BigEndian(data[(table + (4 * b))..]);
-        }
-
-        int at = table + ((4 * h.Blocks) + 15 & ~15);
-        int qbases = at;
+        int qbases = table + ((4 * h.Blocks) + 15 & ~15);
         int l16 = (h.Lines + 15) & ~15;
-        if (!h.Lossless)
+        long at = qbases + (h.Lossless ? 0 : (long)h.Blocks * l16);
+        if (at > data.Length)
         {
-            at += h.Blocks * l16;
+            throw new InvalidDataException("The RAF compressed data ends inside its strip table.");
         }
 
+        long[] sizes = new long[h.Blocks];
         long[] starts = new long[h.Blocks];
         for (int b = 0; b < h.Blocks; b++)
         {
+            sizes[b] = BinaryPrimitives.ReadUInt32BigEndian(data[(table + (4 * b))..]);
             starts[b] = at;
-            at += (int)sizes[b];
+            at += sizes[b];
         }
 
         byte[] q = h.Lossless ? [] : data.Slice(qbases, h.Blocks * l16).ToArray();
@@ -94,11 +90,12 @@ internal static class FujiDecoder
         List<(int, string)> reports = [];
         RawParallel.For(0, h.Blocks, parallel, b =>
         {
-            int start = offset + (int)starts[b];
-            int length = (int)Math.Max(0, Math.Min(sizes[b], file.Length - start));
+            // A strip that starts past the end of the file (or of its declared data) is missing: it decodes from zeros.
+            long start = Math.Min(offset + starts[b], file.Length);
+            int length = (int)Math.Clamp(Math.Min(sizes[b], file.Length - start), 0, int.MaxValue);
             try
             {
-                new Strip(h, b, file.AsSpan(start, length), h.Lossless ? default : q.AsSpan(b * l16, h.Lines), pixels, mains, small).Run();
+                new Strip(h, b, file.AsSpan((int)start, length), h.Lossless ? default : q.AsSpan(b * l16, h.Lines), pixels, mains, small).Run();
             }
             catch (InvalidDataException e)
             {

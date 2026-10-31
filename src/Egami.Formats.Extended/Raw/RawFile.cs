@@ -95,6 +95,10 @@ internal sealed class RawFile : IDisposable
             {
                 throw input.Corrupt(0, e.Message);
             }
+            catch (Exception e) when (MakerDecoders.Malformed(e))
+            {
+                throw input.Corrupt(0, "The RAF's structure is malformed.");
+            }
         }
 
         if (!RawTiff.TryHeader(source.Data.AsSpan(0, source.Length), out bool bigEndian, out ushort magic, out uint first) || (magic != 42 && maker is null))
@@ -117,6 +121,10 @@ internal sealed class RawFile : IDisposable
         catch (InvalidDataException e)
         {
             throw input.Corrupt(0, e.Message);
+        }
+        catch (Exception e) when (maker is not null && MakerDecoders.Malformed(e))
+        {
+            throw input.Corrupt(0, "The RAW file's structure is malformed.");
         }
     }
 

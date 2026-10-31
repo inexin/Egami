@@ -33,6 +33,30 @@ internal static class MakerDecoders
             }
         }
 
+        try
+        {
+            Dispatch(sensor, tiff, pixels, parallel, damaged, offset, count);
+        }
+        catch (Exception e) when (Malformed(e))
+        {
+            // Every codec checks what the file gives it; this is the backstop that keeps a check a decoder missed from
+            // surfacing as anything but malformed data.
+            throw new InvalidDataException($"The {sensor.Codec} raw data is malformed.", e);
+        }
+
+        if (sensor.Codec is RawCodec.PanasonicV4 or RawCodec.PanasonicV5 or RawCodec.PanasonicV6 or RawCodec.PanasonicV7 or RawCodec.PanasonicV8)
+        {
+            FillZeros(pixels, parallel);
+        }
+    }
+
+    /// <summary>Gets whether an exception is malformed input reaching an index, slice or arithmetic check.</summary>
+    internal static bool Malformed(Exception e) => e is IndexOutOfRangeException or ArgumentOutOfRangeException or ArgumentException
+        or OverflowException or DivideByZeroException
+        || (e is AggregateException a && a.InnerExceptions.All(Malformed));
+
+    private static void Dispatch(RawSensor sensor, RawTiff tiff, RawPixels pixels, ParallelOptions parallel, Action<int, string> damaged, long offset, long count)
+    {
         ReadOnlySpan<byte> data = tiff.Data.AsSpan((int)offset, (int)count);
         switch (sensor.Codec)
         {
@@ -87,11 +111,6 @@ internal static class MakerDecoders
                 break;
             default:
                 throw new NotSupportedException($"Egami does not read the {sensor.Codec} raw codec yet.");
-        }
-
-        if (sensor.Codec is RawCodec.PanasonicV4 or RawCodec.PanasonicV5 or RawCodec.PanasonicV6 or RawCodec.PanasonicV7 or RawCodec.PanasonicV8)
-        {
-            FillZeros(pixels, parallel);
         }
     }
 
@@ -154,7 +173,7 @@ internal static class MakerDecoders
     }
 
     /// <summary>A most-significant-bit-first reader of plain bytes, no stuffing; past the end it reads zeros.</summary>
-    private ref struct MsbBits(ReadOnlySpan<byte> data)
+    internal ref struct MsbBits(ReadOnlySpan<byte> data)
     {
         private readonly ReadOnlySpan<byte> _data = data;
         private int _pos;
@@ -234,7 +253,7 @@ internal static class MakerDecoders
     }
 
     /// <summary>A Huffman decoder from a 16-bit peek: (length, symbol) per peek value.</summary>
-    private sealed class PeekTable
+    internal sealed class PeekTable
     {
         private readonly ushort[] _entries;
 
@@ -295,7 +314,8 @@ internal static class MakerDecoders
     private static int Extend(uint r, int length) => length == 0 ? 0 : (r & (1u << (length - 1))) == 0 ? (int)r - ((1 << length) - 1) : (int)r;
 
     /// <summary>Pentax PEF Huffman (PEF spec, sections 2 to 4).</summary>
-    private static void Pentax(ReadOnlySpan<byte> data, RawPixels pixels, PentaxTable? table, int bits)
+    /// <summary>Builds the Huffman decoder from maker-note tag 0x0220, or the default table (PEF spec, section 2).</summary>
+    internal static PeekTable PentaxCodes(PentaxTable? table)
     {
         PeekTable codes;
         if (table is not null)
@@ -317,7 +337,7 @@ internal static class MakerDecoders
                     throw new InvalidDataException("The Pentax Huffman table has a code length outside 1 to 12.");
                 }
 
-                codes.Set(U(14 + (2 * c)) >> (12 - length), length, c);
+                codes.Set((U(14 + (2 * c)) >> (12 - length)) & ((1 << length) - 1), length, c);
             }
         }
         else
@@ -325,6 +345,12 @@ internal static class MakerDecoders
             codes = PeekTable.Canonical([0, 2, 3, 1, 1, 1, 1, 1, 1, 2, 0, 0, 0, 0, 0, 0], [3, 4, 2, 5, 1, 6, 0, 7, 8, 9, 10, 11, 12]);
         }
 
+        return codes;
+    }
+
+    private static void Pentax(ReadOnlySpan<byte> data, RawPixels pixels, PentaxTable? table, int bits)
+    {
+        PeekTable codes = PentaxCodes(table);
         MsbBits reader = new(data);
         int width = pixels.Width, height = pixels.Height, max = (1 << bits) - 1;
         for (int y = 0; y < height; y++)
@@ -627,18 +653,24 @@ internal static class MakerDecoders
     }
 
     /// <summary>Olympus ORF, the general algorithm driven by the 14 parameters (ORF spec, sections 2 to 5).</summary>
+    /// <summary>Checks the stream header tag 0x0653 describes (its last byte is 1) and returns where the coded data starts.</summary>
+    internal static int OlympusStart(ReadOnlySpan<byte> data, int t653)
+    {
+        int header = t653 + 2;
+        if (t653 < 1 || data.Length < header || data[t653 - 1] != 1)
+        {
+            throw new InvalidDataException("The ORF compressed stream header is not what its parameters say.");
+        }
+
+        return header;
+    }
+
     private static void Olympus(ReadOnlySpan<byte> data, RawPixels pixels, OlympusParams p)
     {
         ushort[] t = p.T;
         int t640 = t[0], t641 = t[1], t642 = t[2], t643 = t[3], t644 = t[4], t645 = t[5], t646 = t[6];
         int t647 = t[7], t648 = t[8], t649 = t[9], t650 = t[10], t651 = t[11], t652 = t[12], t653 = t[13];
-        int header = t653 + 2;
-        if (data.Length < header || data[t653 - 1] != 1)
-        {
-            throw new InvalidDataException("The ORF compressed stream header is not what its parameters say.");
-        }
-
-        MsbBits reader = new(data[header..]);
+        MsbBits reader = new(data[OlympusStart(data, t653)..]);
         int width = pixels.Width, height = pixels.Height;
         Span<int> mag = stackalloc int[2], run = stackalloc int[2], k = stackalloc int[2];
         for (int y = 0; y < height; y++)

@@ -318,5 +318,7 @@ fuzz/raw-seeds/
   Small DNG files for the raw fuzz target, one of each sample layout, compression, CFA pattern, opcode list and camera profile
   path, written with the tests' own DNG builder (tests/Egami.Formats.Extended.Tests/Raw/DngFiles.cs) from computed values for
   this repository; and small maker files (a Nikon Huffman NEF, RAFs with Fujifilm compressed X-Trans and Bayer data and an
-  uncompressed one) written by tests/Egami.Formats.Extended.Tests/Raw/RawMakerTests.cs from computed values. Public domain
-  (CC0).
+  uncompressed one) written by tests/Egami.Formats.Extended.Tests/Raw/RawMakerTests.cs from computed values, and truncated
+  copies of them. Public domain (CC0). The *-head.* files are the first 24 KB of CC0 samples from raw.pixls.us (Canon EOS
+  350D and EOS 80D sRAW, Nikon D90, Pentax K-3, Sony ILCE-6000, Olympus E-M10, Panasonic DC-GH6, Fujifilm X-T3), kept for
+  their headers and maker notes. Public domain (CC0).

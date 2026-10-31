@@ -105,6 +105,52 @@ public class RawMakerTests
         Assert.ThrowsAny<NotSupportedException>(() => Raster.Load<Gray16>(file, Context, Mosaic).Dispose());
     }
 
+    [Theory]
+    [InlineData(RecoveryMode.Strict)]
+    [InlineData(RecoveryMode.Lenient)]
+    public void CompressedRafCutAfterItsHeaderIsCorrupt(RecoveryMode recovery)
+    {
+        // Review finding: the strip table and q bases were read past the end of a stream cut after its 16-byte header.
+        const int Width = 768, Height = 6;
+        byte[] stream = FujiEncoder.Encode(Scene(Width, Height, 14), Width, Height, true, 14);
+        byte[] file = Raf(Width, Height, 14, true, stream[..16]);
+        Assert.Throws<CorruptDataException>(() => Raster.Load<Gray16>(file, Context, new RawReaderOptions { Output = RawOutput.Mosaic, Recovery = recovery }).Dispose());
+    }
+
+    [Fact]
+    public void RafStripSizesThatOverflowAreMissingStrips()
+    {
+        // Review finding: 32-bit strip sizes summed in an int wrapped to negative offsets.
+        const int Width = 1536, Height = 6;
+        byte[] stream = FujiEncoder.Encode(Scene(Width, Height, 14), Width, Height, true, 14);
+        BinaryPrimitives.WriteUInt32BigEndian(stream.AsSpan(16), 0xFFFFFFF0);
+        byte[] file = Raf(Width, Height, 14, true, stream);
+        using Raster<Gray16> mosaic = Raster.Load<Gray16>(file, Context, new RawReaderOptions { Output = RawOutput.Mosaic, Recovery = RecoveryMode.Lenient });
+        Assert.Contains(mosaic.Metadata.Warnings, w => w.Id.EndsWith("DataDamaged", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void PentaxCodesKeepOnlyTheirLengthsBits()
+    {
+        // Review finding: a 16-bit code with bits above its length indexed past the lookup table.
+        byte[] table = new byte[14 + (3 * 12)];
+        for (int c = 0; c < 12; c++)
+        {
+            BinaryPrimitives.WriteUInt16LittleEndian(table.AsSpan(14 + (2 * c)), 0xFFFF);
+            table[14 + (2 * 12) + c] = (byte)(c + 1);
+        }
+
+        Assert.NotNull(MakerDecoders.PentaxCodes(new PentaxTable(table, false)));
+    }
+
+    [Fact]
+    public void OlympusStreamHeaderOfLengthZeroIsInvalid()
+    {
+        // Review finding: tag 0x0653 = 0 read the byte before the stream.
+        Assert.Throws<InvalidDataException>(() => MakerDecoders.OlympusStart(new byte[16], 0));
+        Assert.Equal(5, MakerDecoders.OlympusStart(new byte[] { 0, 0, 1, 0, 0 }, 3));
+    }
+
     [Fact]
     public void TruncatedRw2DecodesWithBlackForTheMissingPart()
     {

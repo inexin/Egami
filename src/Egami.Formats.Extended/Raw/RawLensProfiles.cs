@@ -55,7 +55,7 @@ internal static class RawLensProfiles
                         XDocument xml = XDocument.Load(file, LoadOptions.None);
                         profiles = ext == ".LCP" ? Lcp(xml) : Lensfun(xml);
                     }
-                    catch (Exception e) when (e is XmlException or IOException or UnauthorizedAccessException or FormatException)
+                    catch (Exception e) when (e is XmlException or IOException or UnauthorizedAccessException or FormatException || MakerDecoders.Malformed(e))
                     {
                         warnings?.Add("LensProfileDamaged", $"The lens profile file {file} could not be read ({e.Message}).");
                         profiles = [];
