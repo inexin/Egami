@@ -31,6 +31,11 @@ internal sealed partial class JxlWriter : IFormatWriter, IRowFormatWriter
         JxlWriterOptions jxl = start.Options as JxlWriterOptions ?? JxlWriterOptions.Default;
         if (!jxl.FirstFrameOnly && start.Whole is { FrameCount: > 1 })
         {
+            if (jxl.ExtraChannels is { Count: > 0 })
+            {
+                throw new NotSupportedException("JPEG XL: JxlWriterOptions.ExtraChannels are written with a still image, not an animation. Set FirstFrameOnly to write the first frame with them.");
+            }
+
             // An animation: each frame is coded whole, so only Save writes one.
             bool lossless = jxl.WritesLossless(start.Metadata);
             SaveKeeps animationKeeps = SaveKeeps.Alpha | SaveKeeps.Wide | SaveKeeps.FloatingPoint | SaveKeeps.Exif | SaveKeeps.Xmp | SaveKeeps.Icc | SaveKeeps.GainMap | SaveKeeps.Frames;
@@ -39,14 +44,15 @@ internal sealed partial class JxlWriter : IFormatWriter, IRowFormatWriter
         }
 
         SaveKeeps frames = jxl.FirstFrameOnly ? SaveKeeps.Frames : SaveKeeps.None;
+        List<JxlExtraPlane> extras = ExtraPlanes(jxl, start.Width, start.Height);
         if (!jxl.WritesLossless(start.Metadata))
         {
             // Large images go in chunks as libjxl's streaming mode codes them, so they can also come as rows.
             JxlLossySettings settings = LossySettings(jxl, start.Context.MaxParallelism);
-            bool chunked = JxlChunkedFrame.Applies(start.Width, start.Height, settings, TPixel.Layout.HasAlpha && jxl.AlphaDistance > 0);
+            bool chunked = extras.Count == 0 && JxlChunkedFrame.Applies(start.Width, start.Height, settings, TPixel.Layout.HasAlpha && jxl.AlphaDistance > 0);
             if (!chunked)
             {
-                start.Refuse("JPEG XL", "Lossy encoding of an image this small, at this distance, or with these options", "Save from a whole raster.");
+                start.Refuse("JPEG XL", extras.Count > 0 ? "Writing extra channels" : "Lossy encoding of an image this small, at this distance, or with these options", "Save from a whole raster.");
             }
 
             SaveLosses.Report(start, "JPEG XL", SaveKeeps.Alpha | SaveKeeps.Wide | SaveKeeps.FloatingPoint | SaveKeeps.Cmyk | SaveKeeps.Exif | SaveKeeps.Xmp | SaveKeeps.Icc | SaveKeeps.GainMap | frames);
@@ -56,14 +62,66 @@ internal sealed partial class JxlWriter : IFormatWriter, IRowFormatWriter
                 SaveReporter.Current?.Claim();
             }
 
-            return chunked ? new ChunkedLossyEncoder<TPixel>(output, start, jxl, settings) : new LossyEncoder<TPixel>(output, start, jxl);
+            return chunked ? new ChunkedLossyEncoder<TPixel>(output, start, jxl, settings) : new LossyEncoder<TPixel>(output, start, jxl, extras);
         }
 
         start.Refuse("JPEG XL", "Lossless encoding", "Save from a whole raster.");
+        bool cmyk = (TPixel.Layout == Cmyk8.Layout || TPixel.Layout == Cmyk16.Layout) && start.Metadata.GetColorProfile().Model == ColorModel.Cmyk
+            && !jxl.StripMetadata && !jxl.ProfileToWrite(start.Metadata).IsEmpty;
         SaveKeeps keeps = SaveKeeps.Alpha | SaveKeeps.Wide | SaveKeeps.FloatingPoint | SaveKeeps.Exif | SaveKeeps.Xmp | SaveKeeps.Icc | SaveKeeps.GainMap | frames;
-        SaveLosses.Report(start, "JPEG XL", keeps);
+        SaveLosses.Report(start, "JPEG XL", keeps | (cmyk ? SaveKeeps.Cmyk : SaveKeeps.None));
         SaveReporter.Current?.Claim();
-        return new Encoder<TPixel>(output, start, jxl);
+        return new Encoder<TPixel>(output, start, jxl, extras, cmyk);
+    }
+
+    /// <summary>
+    /// Gets the extra channels of <see cref="JxlWriterOptions.ExtraChannels"/> as the encoders take them: integers of their bits
+    /// (float samples as their bit patterns), each checked against the image size its subsampling gives.
+    /// </summary>
+    internal static List<JxlExtraPlane> ExtraPlanes(JxlWriterOptions options, int width, int height)
+    {
+        List<JxlExtraPlane> planes = [];
+        IReadOnlyList<JxlExtraChannelImage> given = options.ExtraChannels ?? [];
+        for (int i = 0; i < given.Count; i++)
+        {
+            JxlExtraChannelImage image = given[i] ?? throw new ArgumentException($"Extra channel {i} is null.", nameof(options));
+            JxlExtraChannel c = image.Channel;
+            int s = c.Subsampling;
+            int w = (int)((width + (1L << s) - 1) >> s), h = (int)((height + (1L << s) - 1) >> s);
+            Raster<GrayF32> samples = image.Samples;
+            if (samples.Width != w || samples.Height != h)
+            {
+                throw new ArgumentException($"Extra channel {i} is {samples.Width} × {samples.Height}; with a subsampling of {s} on a {width} × {height} image it must be {w} × {h}.", nameof(options));
+            }
+
+            int[] data = new int[w * h];
+            int bits = c.BitsPerSample;
+            float max = (float)((1L << bits) - 1);
+            for (int y = 0; y < h; y++)
+            {
+                ReadOnlySpan<GrayF32> row = samples.Row(y);
+                for (int x = 0; x < w; x++)
+                {
+                    float v = row[x].L;
+                    data[(y * w) + x] = c.ExponentBits == 0 ? (int)MathF.Round(Math.Clamp(v, 0, 1) * max)
+                        : bits == 32 ? BitConverter.SingleToInt32Bits(v) : BitConverter.HalfToUInt16Bits((Half)v);
+                }
+            }
+
+            JxlExtraChannelInfo info = new()
+            {
+                Type = (JxlExtraChannelType)c.Kind,
+                BitDepth = new JxlBitDepth(bits, c.ExponentBits),
+                DimShift = s,
+                Name = c.Name,
+                AlphaAssociated = c.AlphaPremultiplied,
+                SpotColor = c.SpotColor is null ? null : [.. c.SpotColor],
+                CfaChannel = 1,
+            };
+            planes.Add(new JxlExtraPlane(info, data, w, h));
+        }
+
+        return planes;
     }
 
     /// <summary>Gets the raster's samples as the encoder takes them, in the raster's own precision.</summary>
@@ -279,11 +337,13 @@ internal sealed partial class JxlWriter : IFormatWriter, IRowFormatWriter
     }
 
     /// <summary>Gathers rows into planes and encodes them at the end.</summary>
-    private sealed class Encoder<TPixel>(Stream output, EncodeStart<TPixel> start, JxlWriterOptions options) : RowEncoder<TPixel>
+    private sealed class Encoder<TPixel>(Stream output, EncodeStart<TPixel> start, JxlWriterOptions options, List<JxlExtraPlane> extras, bool cmyk) : RowEncoder<TPixel>
         where TPixel : unmanaged, IPixelType<TPixel>
     {
         private readonly Planes _planes = new(TPixel.Layout, start.Width, start.Height);
         private readonly IntermediateRow _row = new(start.Width);
+        private readonly int[]? _black = cmyk ? new int[start.Width * start.Height] : null;
+        private Cmyk16[]? _inks;
         private int _rows;
 
         public override void WriteRow(ReadOnlySpan<TPixel> row)
@@ -291,6 +351,26 @@ internal sealed partial class JxlWriter : IFormatWriter, IRowFormatWriter
             if (_rows == start.Height)
             {
                 throw new InvalidOperationException($"The image has {start.Height} rows; no more can be written.");
+            }
+
+            if (_black is not null)
+            {
+                // CMYK: the color channels hold 1 − C, 1 − M and 1 − Y and black 1 − K, as JPEG XL stores ink.
+                _inks ??= new Cmyk16[start.Width];
+                PixelConvert.Convert(row, _inks.AsSpan());
+                bool eight = _planes.Kind == PixelChannelType.Unorm8;
+                int at = _rows * start.Width;
+                for (int x = 0; x < start.Width; x++)
+                {
+                    Cmyk16 p = _inks[x];
+                    _planes.Color[0][at + x] = Ink(p.C, eight);
+                    _planes.Color[1][at + x] = Ink(p.M, eight);
+                    _planes.Color[2][at + x] = Ink(p.Y, eight);
+                    _black[at + x] = Ink(p.K, eight);
+                }
+
+                _rows++;
+                return;
             }
 
             switch (_planes.Kind)
@@ -325,20 +405,27 @@ internal sealed partial class JxlWriter : IFormatWriter, IRowFormatWriter
 
             RasterMetadata metadata = start.Metadata;
             bool strip = options.StripMetadata;
-            JxlEncodeInput input = _planes.ToInput(options.Effort) with { Parallelism = start.Context.MaxParallelism };
+            JxlEncodeInput input = _planes.ToInput(options.Effort) with { Parallelism = start.Context.MaxParallelism, Extras = extras };
             (JxlColorEncoding color, byte[]? icc) = ColorOf(metadata, options, input.Color.Count == 1);
             int orientation = metadata.Exif?.Orientation is ImageOrientation o && (int)o is >= 1 and <= 8 ? (int)o : 1;
             input = input with { ColorEncoding = color, Icc = icc, Orientation = orientation };
+            if (_black is not null)
+            {
+                input = input with { HasBlack = true, Black = _black, BlackBitDepth = input.BitDepth };
+            }
             byte[] codestream = JxlLosslessEncoder.Encode(input);
             byte[]? exif = strip || metadata.Exif is null ? null : metadata.Exif.ToBytes().ToArray();
             byte[]? xmp = strip || metadata.Xmp.IsEmpty ? null : metadata.Xmp.ToArray();
             byte[]? gainMap = strip || metadata.GainMap is null ? null : GainMapBundle(metadata.GainMap, options.Effort, start.Context.MaxParallelism);
             WriteFile(output, codestream, exif, xmp, gainMap: gainMap);
         }
+
+        /// <summary>Gets the stored value of an ink: its absence, at 8 or 16 bits.</summary>
+        private static int Ink(ushort ink, bool eight) => eight ? (65535 - ink + 128) / 257 : 65535 - ink;
     }
 
     /// <summary>Converts rows to linear light as they come and encodes them lossy at the end (Phase 2.9.7).</summary>
-    private sealed class LossyEncoder<TPixel>(Stream output, EncodeStart<TPixel> start, JxlWriterOptions options) : RowEncoder<TPixel>
+    private sealed class LossyEncoder<TPixel>(Stream output, EncodeStart<TPixel> start, JxlWriterOptions options, List<JxlExtraPlane> extras) : RowEncoder<TPixel>
         where TPixel : unmanaged, IPixelType<TPixel>
     {
         private readonly JxlLinearRows _rows = new(start.Width, start.Height, start.Metadata.GetColorProfile(), TPixel.Layout);
@@ -427,6 +514,7 @@ internal sealed partial class JxlWriter : IFormatWriter, IRowFormatWriter
                 AlphaBitDepth = new JxlBitDepth(_alphaBits, 0),
                 HasBlack = image.Black is not null,
                 IntensityTarget = _rows.IntensityTarget,
+                Extras = extras,
             };
             JxlLossySettings settings = LossySettings(options, start.Context.MaxParallelism) with { Report = SaveReporter.Current };
             byte[] codestream = JxlVarDctEncoder.Encode(image, header, settings, _rows.IntensityTarget);
@@ -847,6 +935,14 @@ public sealed class JxlWriterOptions : WriterOptions
     /// raster's <see cref="RasterMetadata.LoopCount"/>.
     /// </summary>
     public bool FirstFrameOnly { get; init; }
+
+    /// <summary>
+    /// Gets extra channels to write after the raster's own alpha (and black, for CMYK), such as depth, a selection mask, thermal
+    /// data or a spot color: each coded lossless, in lossless and lossy files alike. Still images only; an animation refuses
+    /// them. Defaults to <see langword="null"/>, none. Channels of a loaded file are not on its raster: read them with
+    /// <see cref="JxlImage.ReadExtraChannel(string, int, ReaderOptions?, EgamiContext?)"/> and pass them here to keep them.
+    /// </summary>
+    public IReadOnlyList<JxlExtraChannelImage>? ExtraChannels { get; init; }
 
     /// <summary>Gets the distance lossy data is written at: <see cref="Distance"/>, or <see cref="Quality"/> on cjxl's mapping, at least 0.1.</summary>
     internal float EffectiveDistance => _distance ?? MathF.Max(0.1f, DistanceFromQuality(_quality));

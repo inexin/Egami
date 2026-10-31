@@ -138,6 +138,10 @@ internal sealed partial class JxlVarDctEncoder
 
     // The frame's upsampling (2 at libjxl's low-bitrate point) and the distance asked for, which sets the X matrix scale.
     private readonly int _upsampling;
+
+    // Each extra channel's subsampling (the image header's dim_shift), and the coded size and shift of the given ones.
+    private int[] _extraShifts = [];
+    private readonly Dictionary<int, (int Width, int Height, int Shift)> _extraSizes = [];
     private readonly float _originalDistance;
     private readonly (float Dx, float Db, float ExposedBlue) _pixelStats;
     private readonly float[]? _noise;
@@ -665,6 +669,41 @@ internal sealed partial class JxlVarDctEncoder
         0.001864627368902f, -0.000176807273646f, -0.000562751488849f, -0.000897597057705f, -0.000314256996835f, -0.000314256996835f,
     ];
 
+    /// <summary>
+    /// Gets the upsampling factor the frame header gives extra channel <paramref name="i"/>: the frame's, shared with its
+    /// subsampling, so that the two together are at least the frame's (F.2).
+    /// </summary>
+    private int ExtraFactor(int i) => Math.Max(1, _upsampling >> ExtraShift(i));
+
+    private int ExtraShift(int i) => i < _extraShifts.Length ? _extraShifts[i] : 0;
+
+    /// <summary>Halves a plane each way by averaging 2×2 boxes, as alpha is for a frame coded at half size.</summary>
+    private static int[] BoxHalf(int[] data, int width, int height)
+    {
+        int w = Ceil(width, 2), h = Ceil(height, 2);
+        int[] half = new int[w * h];
+        for (int y = 0; y < h; y++)
+        {
+            for (int x = 0; x < w; x++)
+            {
+                long sum = 0;
+                int count = 0;
+                for (int iy = 0; iy < 2 && (2 * y) + iy < height; iy++)
+                {
+                    for (int ix = 0; ix < 2 && (2 * x) + ix < width; ix++)
+                    {
+                        sum += data[(((2 * y) + iy) * width) + (2 * x) + ix];
+                        count++;
+                    }
+                }
+
+                half[(y * w) + x] = (int)((sum + (count / 2)) / count);
+            }
+        }
+
+        return half;
+    }
+
     private static int CeilLog2(long x) => x <= 1 ? 0 : 64 - System.Numerics.BitOperations.LeadingZeroCount((ulong)(x - 1));
 
     /// <summary>Converts the linear planes to XYB and pads them to whole blocks, repeating the last column and row.</summary>
@@ -1056,7 +1095,9 @@ internal sealed partial class JxlVarDctEncoder
         List<JxlChannel> channels = [new JxlChannel(lw, lh, 0, 0) { Data = cy2 }, new JxlChannel(lw, lh, 0, 0) { Data = cx2 }, new JxlChannel(lw, lh, 0, 0) { Data = cb2 }];
         for (int i = 0; i < _extraCount; i++)
         {
-            channels.Add(new JxlChannel(lw, lh, 0, 0));
+            // An LF frame's extra channels are subsampled as the image header says.
+            int s = ExtraShift(i);
+            channels.Add(new JxlChannel(Ceil(lw, 1 << s), Ceil(lh, 1 << s), s, s));
         }
 
         float distance = MathF.Max(0.05f * 0.02f, _settings.Distance * 0.02f);
@@ -1116,14 +1157,39 @@ internal sealed partial class JxlVarDctEncoder
             planes.Add(([.. black.Select(v => (int)MathF.Round(Math.Clamp(v, 0, 1) * max))], header.BlackBitDepth.BitsPerSample));
         }
 
+        int own = planes.Count;
+        foreach (JxlExtraPlane extra in header.Extras)
+        {
+            planes.Add((extra.Samples, extra.Info.BitDepth.BitsPerSample));
+        }
+
         _extraCount = planes.Count;
+        _extraShifts = [.. Enumerable.Repeat(0, own), .. header.Extras.Select(e => e.Info.DimShift)];
         if (planes.Count == 0)
         {
             return;
         }
 
         List<JxlChannel> channels = [];
-        foreach ((int[] data, _) in planes)
+        for (int i = own; i < planes.Count; i++)
+        {
+            // A subsampled channel at least as small as the coded frame keeps its samples, shifted against it.
+            JxlExtraPlane extra = header.Extras[i - own];
+            int s = extra.Info.DimShift;
+            int shift = CeilLog2(ExtraFactor(i) << s) - CeilLog2(_upsampling);
+            if (ExtraFactor(i) == 1)
+            {
+                planes[i] = (extra.Samples, planes[i].Bits);
+            }
+            else
+            {
+                planes[i] = (BoxHalf(extra.Samples, extra.Width, extra.Height), planes[i].Bits);
+            }
+
+            _extraSizes.Add(i, (Ceil(image.Width, ExtraFactor(i) << s), Ceil(image.Height, ExtraFactor(i) << s), shift));
+        }
+
+        foreach ((int[] data, _) in planes.Take(own))
         {
             JxlChannel ch = new(_width, _height, 0, 0);
             if (_upsampling == 1)
@@ -1154,6 +1220,12 @@ internal sealed partial class JxlVarDctEncoder
             }
 
             channels.Add(ch);
+        }
+
+        for (int i = own; i < planes.Count; i++)
+        {
+            (int cw, int chh, int shift) = _extraSizes[i];
+            channels.Add(new JxlChannel(cw, chh, shift, shift) { Data = planes[i].Data });
         }
 
         float[] distances = [.. planes.Select((p, i) => i == 0 && header.Alpha is not null ? _settings.AlphaDistance : 0f)];
@@ -1220,10 +1292,11 @@ internal sealed partial class JxlVarDctEncoder
         int groupShift = JxlModularEncoder.GroupShift(rw, rh);
         List<JxlChannel> channels = [new JxlChannel(rw, rh, 0, 0) { Data = cy }, new JxlChannel(rw, rh, 0, 0) { Data = cx }, new JxlChannel(rw, rh, 0, 0) { Data = cb }];
 
-        // The extra channels are in every frame: zero here, as libjxl's placeholders.
+        // The extra channels are in every frame: zero here, as libjxl's placeholders, subsampled as the image header says.
         for (int i = 0; i < _extraCount; i++)
         {
-            channels.Add(new JxlChannel(rw, rh, 0, 0));
+            int s = ExtraShift(i);
+            channels.Add(new JxlChannel(Ceil(rw, 1 << s), Ceil(rh, 1 << s), s, s));
         }
 
         List<byte[]> sections = JxlModularEncoder.Encode(channels, 3, 8, Speed, rw, rh, groupShift, _settings.Parallelism, stored);
@@ -2529,7 +2602,7 @@ internal sealed partial class JxlVarDctEncoder
             w.WriteU32(new JxlU32(1, 0, 2, 0, 4, 0, 8, 0), (uint)_upsampling);
             for (int i = 0; i < _extraCount; i++)
             {
-                w.WriteU32(new JxlU32(1, 0, 2, 0, 4, 0, 8, 0), (uint)_upsampling);
+                w.WriteU32(new JxlU32(1, 0, 2, 0, 4, 0, 8, 0), (uint)ExtraFactor(i));
             }
         }
 

@@ -36,6 +36,9 @@ internal sealed record JxlFrameInfo
     internal string Name { get; init; } = string.Empty;
 }
 
+/// <summary>An extra channel to write: its description and its samples as integers (float samples as their bits), <paramref name="Width"/> by <paramref name="Height"/>.</summary>
+internal sealed record JxlExtraPlane(JxlExtraChannelInfo Info, int[] Samples, int Width, int Height);
+
 /// <summary>Writes the parts of headers that animations and layers add: the animation header and a frame's place, blending, duration and name.</summary>
 internal static class JxlFrameWriter
 {

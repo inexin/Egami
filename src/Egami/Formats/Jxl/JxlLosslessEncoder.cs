@@ -19,8 +19,14 @@ internal sealed record JxlEncodeInput
 
     internal bool AlphaPremultiplied { get; init; }
 
-    /// <summary>Gets whether the image has a black (K) extra channel, after alpha if there is one; only the lossy encoder writes it.</summary>
+    /// <summary>Gets whether the image has a black (K) extra channel, after alpha if there is one.</summary>
     internal bool HasBlack { get; init; }
+
+    /// <summary>Gets the black samples a lossless image codes (0 full ink), or <see langword="null"/>; the lossy encoder takes black from its image.</summary>
+    internal int[]? Black { get; init; }
+
+    /// <summary>Gets the extra channels after alpha and black, each with its samples.</summary>
+    internal IReadOnlyList<JxlExtraPlane> Extras { get; init; } = [];
 
     internal JxlBitDepth BlackBitDepth { get; init; } = new(16, 0);
 
@@ -87,16 +93,27 @@ internal static class JxlLosslessEncoder
     internal static byte[] EncodeFrame(JxlBitWriter w, JxlEncodeInput input, JxlFrameInfo frame, int canvasWidth, int canvasHeight)
     {
         int bits = Math.Max(input.BitDepth.BitsPerSample, input.Alpha is null ? 0 : input.AlphaBitDepth.BitsPerSample);
+        bits = Math.Max(bits, input.Black is null ? 0 : input.BlackBitDepth.BitsPerSample);
+        bits = input.Extras.Aggregate(bits, (b, e) => Math.Max(b, e.Info.BitDepth.BitsPerSample));
         int effort = Math.Clamp(input.Effort, 1, 7);
-        bool fast = effort == 1 && bits <= 16;
+        bool fast = effort == 1 && bits <= 16 && input.Black is null && input.Extras.Count == 0;
+        if (effort == 1 && (input.Black is not null || input.Extras.Count > 0))
+        {
+            // libjxl's fast lossless path takes color and alpha only; cjxl -e 1 codes other extra channels at effort 2.
+            effort = 2;
+        }
         int groupShift = fast ? 1 : JxlModularEncoder.GroupShift(input.Width, input.Height);
         // The fast path only reads the planes; the Modular encoder transforms copies of them.
-        int[][] planes = [.. input.Color, .. input.Alpha is null ? [] : new[] { input.Alpha }];
-        List<JxlChannel> channels = fast ? [] : [.. planes.Select(p => new JxlChannel(0, 0, 0, 0) { Data = (int[])p.Clone() })];
-        for (int i = 0; i < channels.Count; i++)
+        int[][] planes = [.. input.Color, .. input.Alpha is null ? [] : new[] { input.Alpha }, .. input.Black is null ? [] : new[] { input.Black }];
+        List<JxlChannel> channels = fast ? [] : [.. planes.Select(p => new JxlChannel(input.Width, input.Height, 0, 0) { Data = (int[])p.Clone() })];
+        if (!fast)
         {
-            // JxlChannel sizes come from the constructor; make full-size channels around the copied samples.
-            channels[i] = new JxlChannel(input.Width, input.Height, 0, 0) { Data = channels[i].Data };
+            foreach (JxlExtraPlane extra in input.Extras)
+            {
+                // A subsampled channel is coded at its own size, shifted as the decoder places it.
+                int shift = extra.Info.DimShift;
+                channels.Add(new JxlChannel(extra.Width, extra.Height, shift, shift) { Data = (int[])extra.Samples.Clone() });
+            }
         }
 
         List<byte[]> sections = fast
@@ -149,9 +166,9 @@ internal static class JxlLosslessEncoder
 
         WriteBitDepth(w, input.BitDepth);
         bool sixteen = input.BitDepth.BitsPerSample <= 12 && (input.Alpha is null || input.AlphaBitDepth.BitsPerSample <= 12)
-            && (!input.HasBlack || input.BlackBitDepth.BitsPerSample <= 12);
+            && (!input.HasBlack || input.BlackBitDepth.BitsPerSample <= 12) && input.Extras.All(e => e.Info.BitDepth.BitsPerSample <= 12);
         w.WriteBool(sixteen);
-        w.WriteU32(new JxlU32(0, 0, 1, 0, 2, 4, 1, 12), (input.Alpha is null ? 0u : 1u) + (input.HasBlack ? 1u : 0u));
+        w.WriteU32(new JxlU32(0, 0, 1, 0, 2, 4, 1, 12), (uint)Extras(input));
         if (input.Alpha is not null)
         {
             if (input.AlphaBitDepth == new JxlBitDepth(8, 0) && !input.AlphaPremultiplied)
@@ -178,6 +195,11 @@ internal static class JxlLosslessEncoder
             w.WriteU32(new JxlU32(0, 0, 0, 4, 16, 5, 48, 10), 0);
         }
 
+        foreach (JxlExtraPlane plane in input.Extras)
+        {
+            WriteExtraChannelInfo(w, plane.Info);
+        }
+
         w.WriteBool(input.Xyb);
         WriteColorEncoding(w, input);
         if (extra)
@@ -197,8 +219,34 @@ internal static class JxlLosslessEncoder
         w.WriteBool(true); // default CustomTransformData
     }
 
-    /// <summary>Gets how many extra channels the image header lists: alpha, then black.</summary>
-    internal static int Extras(JxlEncodeInput input) => (input.Alpha is null ? 0 : 1) + (input.HasBlack ? 1 : 0);
+    /// <summary>Gets how many extra channels the image header lists: alpha, then black, then the others.</summary>
+    internal static int Extras(JxlEncodeInput input) => (input.Alpha is null ? 0 : 1) + (input.HasBlack ? 1 : 0) + input.Extras.Count;
+
+    /// <summary>Writes an ExtraChannelInfo (D.3.6) in full.</summary>
+    private static void WriteExtraChannelInfo(JxlBitWriter w, JxlExtraChannelInfo info)
+    {
+        w.WriteBool(false);
+        w.WriteEnum((uint)info.Type);
+        WriteBitDepth(w, info.BitDepth);
+        w.WriteU32(new JxlU32(0, 0, 3, 0, 4, 0, 1, 3), (uint)info.DimShift);
+        JxlFrameWriter.WriteName(w, info.Name);
+        switch (info.Type)
+        {
+            case JxlExtraChannelType.Alpha:
+                w.WriteBool(info.AlphaAssociated);
+                break;
+            case JxlExtraChannelType.SpotColor:
+                foreach (float v in info.SpotColor!)
+                {
+                    w.WriteF16(v);
+                }
+
+                break;
+            case JxlExtraChannelType.Cfa:
+                w.WriteU32(new JxlU32(1, 0, 0, 2, 3, 4, 19, 8), info.CfaChannel);
+                break;
+        }
+    }
 
     private static void WriteBitDepth(JxlBitWriter w, JxlBitDepth depth)
     {
