@@ -79,7 +79,9 @@ internal sealed partial class AvifWriter
         int found = low - 1;
         if (best is not null && found < 100 && best.Length < target * 0.95 && !still.Layered)
         {
-            int fine = QIndexFor(found + 1) + 1, coarse = QIndexFor(found) - 1;
+            // The next quality bounds the search when it codes the same chroma format; across the switch to 4:4:4 at quality 90
+            // the best quality's 4:2:0 may still fit at finer quantizers.
+            int fine = still.ChromaFor(found + 1) == still.ChromaFor(found) ? QIndexFor(found + 1) + 1 : 0, coarse = QIndexFor(found) - 1;
             while (fine <= coarse)
             {
                 cancel.ThrowIfCancellationRequested();
@@ -163,14 +165,17 @@ internal sealed partial class AvifWriter
 
         public void Dispose() => _rgba.Dispose();
 
+        /// <summary>Gets the chroma format the image is coded in at a quality: gray 4:0:0, lossless 4:4:4, the options', else 4:4:4 from 90.</summary>
+        internal ChromaFormat ChromaFor(int quality) => _gray ? ChromaFormat.Yuv400
+            : Lossless ? ChromaFormat.Yuv444
+            : _options.Chroma is ChromaFormat chosen and (ChromaFormat.Yuv420 or ChromaFormat.Yuv422 or ChromaFormat.Yuv444) ? chosen
+            : quality >= 90 ? ChromaFormat.Yuv444 : ChromaFormat.Yuv420;
+
         /// <summary>Codes the image at <paramref name="quality"/> and writes its file.</summary>
         internal void Write(int quality, Stream output, SaveReporter? reporter, int? qindex = null)
         {
             AvifWriterOptions options = _options;
-            ChromaFormat chroma = _gray ? ChromaFormat.Yuv400
-                : Lossless ? ChromaFormat.Yuv444
-                : options.Chroma is ChromaFormat chosen and (ChromaFormat.Yuv420 or ChromaFormat.Yuv422 or ChromaFormat.Yuv444) ? chosen
-                : quality >= 90 ? ChromaFormat.Yuv444 : ChromaFormat.Yuv420;
+            ChromaFormat chroma = ChromaFor(quality);
             (Av1EncoderInput color, Av1FilmGrain? grain) = Planes(chroma);
             (int cellWidth, int cellHeight) = GridCells(_raster.Width, _raster.Height, chroma, options.GridTileSize);
             IReadOnlyList<AvifLayer>? layers = LayerPlan(quality);
@@ -312,6 +317,8 @@ internal sealed partial class AvifWriter
                     RefreshSlots = 1 << k,
                     Referenced = !last,
                     Tune = Av1Tune.Image,
+                    // A lower layer is a preview: finer quantizers in flat areas (Variance Boost) cost it more than they show.
+                    DeltaQuantizers = last,
                     OrderHint = 0,
                     SpatialId = k,
                     FilmGrain = grain,
