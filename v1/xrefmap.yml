@@ -43246,6 +43246,19 @@ references:
   isSpec: "True"
   fullName: Egami.Formats.Extended.Raw.RawDetails.LensModel
   nameWithType: RawDetails.LensModel
+- uid: Egami.Formats.Extended.Raw.RawDetails.LensProfile
+  name: LensProfile
+  href: api/Egami.Formats.Extended.Raw.RawDetails.html#Egami_Formats_Extended_Raw_RawDetails_LensProfile
+  commentId: P:Egami.Formats.Extended.Raw.RawDetails.LensProfile
+  fullName: Egami.Formats.Extended.Raw.RawDetails.LensProfile
+  nameWithType: RawDetails.LensProfile
+- uid: Egami.Formats.Extended.Raw.RawDetails.LensProfile*
+  name: LensProfile
+  href: api/Egami.Formats.Extended.Raw.RawDetails.html#Egami_Formats_Extended_Raw_RawDetails_LensProfile_
+  commentId: Overload:Egami.Formats.Extended.Raw.RawDetails.LensProfile
+  isSpec: "True"
+  fullName: Egami.Formats.Extended.Raw.RawDetails.LensProfile
+  nameWithType: RawDetails.LensProfile
 - uid: Egami.Formats.Extended.Raw.RawDetails.Make
   name: Make
   href: api/Egami.Formats.Extended.Raw.RawDetails.html#Egami_Formats_Extended_Raw_RawDetails_Make
@@ -43628,6 +43641,19 @@ references:
   isSpec: "True"
   fullName: Egami.Formats.Extended.Raw.RawReaderOptions.ApplyProfile
   nameWithType: RawReaderOptions.ApplyProfile
+- uid: Egami.Formats.Extended.Raw.RawReaderOptions.AutoChromaticAberration
+  name: AutoChromaticAberration
+  href: api/Egami.Formats.Extended.Raw.RawReaderOptions.html#Egami_Formats_Extended_Raw_RawReaderOptions_AutoChromaticAberration
+  commentId: P:Egami.Formats.Extended.Raw.RawReaderOptions.AutoChromaticAberration
+  fullName: Egami.Formats.Extended.Raw.RawReaderOptions.AutoChromaticAberration
+  nameWithType: RawReaderOptions.AutoChromaticAberration
+- uid: Egami.Formats.Extended.Raw.RawReaderOptions.AutoChromaticAberration*
+  name: AutoChromaticAberration
+  href: api/Egami.Formats.Extended.Raw.RawReaderOptions.html#Egami_Formats_Extended_Raw_RawReaderOptions_AutoChromaticAberration_
+  commentId: Overload:Egami.Formats.Extended.Raw.RawReaderOptions.AutoChromaticAberration
+  isSpec: "True"
+  fullName: Egami.Formats.Extended.Raw.RawReaderOptions.AutoChromaticAberration
+  nameWithType: RawReaderOptions.AutoChromaticAberration
 - uid: Egami.Formats.Extended.Raw.RawReaderOptions.ColorNoiseReduction
   name: ColorNoiseReduction
   href: api/Egami.Formats.Extended.Raw.RawReaderOptions.html#Egami_Formats_Extended_Raw_RawReaderOptions_ColorNoiseReduction
@@ -43693,6 +43719,19 @@ references:
   isSpec: "True"
   fullName: Egami.Formats.Extended.Raw.RawReaderOptions.LensCorrections
   nameWithType: RawReaderOptions.LensCorrections
+- uid: Egami.Formats.Extended.Raw.RawReaderOptions.LensProfiles
+  name: LensProfiles
+  href: api/Egami.Formats.Extended.Raw.RawReaderOptions.html#Egami_Formats_Extended_Raw_RawReaderOptions_LensProfiles
+  commentId: P:Egami.Formats.Extended.Raw.RawReaderOptions.LensProfiles
+  fullName: Egami.Formats.Extended.Raw.RawReaderOptions.LensProfiles
+  nameWithType: RawReaderOptions.LensProfiles
+- uid: Egami.Formats.Extended.Raw.RawReaderOptions.LensProfiles*
+  name: LensProfiles
+  href: api/Egami.Formats.Extended.Raw.RawReaderOptions.html#Egami_Formats_Extended_Raw_RawReaderOptions_LensProfiles_
+  commentId: Overload:Egami.Formats.Extended.Raw.RawReaderOptions.LensProfiles
+  isSpec: "True"
+  fullName: Egami.Formats.Extended.Raw.RawReaderOptions.LensProfiles
+  nameWithType: RawReaderOptions.LensProfiles
 - uid: Egami.Formats.Extended.Raw.RawReaderOptions.LuminanceNoiseReduction
   name: LuminanceNoiseReduction
   href: api/Egami.Formats.Extended.Raw.RawReaderOptions.html#Egami_Formats_Extended_Raw_RawReaderOptions_LuminanceNoiseReduction

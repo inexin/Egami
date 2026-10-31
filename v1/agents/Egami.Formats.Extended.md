@@ -2,7 +2,7 @@
 # Egami.Formats.Extended: guide for coding agents
 
 Egami.Formats.Extended reads and writes image formats that most apps never meet but some still need: PCX, SGI, Sun raster, XBM,
-XPM, WBMP, Farbfeld and DDS textures (BC1 to BC7, mips, cube maps, arrays and volumes), and reads camera RAW (DNG), developed on
+XPM, WBMP, Farbfeld and DDS textures (BC1 to BC7, mips, cube maps, arrays and volumes), and reads camera RAW (DNG, CR2, NEF, PEF, ARW, ORF, RW2 and RAF), developed on
 load. Each is a plugin on core Egami's public format API.
 
 Namespaces: `Egami.Formats.Extended` (the `With...` methods), `Egami.Formats.Extended.<Format>` (`PcxFormat` and the other
@@ -102,6 +102,7 @@ RawReaderOptions develop = new()
     Demosaic = RawDemosaicMethod.Malvar,   // faster than the default AHD
     LuminanceNoiseReduction = 20,          // 0 to 100; off by default
     ColorNoiseReduction = 40,              // 0 to 100; 25 by default
+    AutoChromaticAberration = true,        // fix colour fringes when no lens profile covers the file
     ConvertColorTo = Colors.ColorProfile.DisplayP3, // rendered straight into P3, the profile attached
 };
 using Raster photo = Raster.Load("photo.dng", context, develop);

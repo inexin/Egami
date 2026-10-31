@@ -89,7 +89,7 @@
 
 
   <h1 id="Egami_Formats_Extended_Raw_RawReaderOptions" data-uid="Egami.Formats.Extended.Raw.RawReaderOptions" class="text-break">
-Class RawReaderOptions  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Raw/RawFormat.cs/#L246"><i class="bi bi-code-slash"></i></a>
+Class RawReaderOptions  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Raw/RawFormat.cs/#L249"><i class="bi bi-code-slash"></i></a>
   </h1>
 
   <div class="facts text-secondary">
@@ -186,6 +186,7 @@ Class RawReaderOptions  <a class="header-action link-secondary" title="View sour
     Demosaic = RawDemosaicMethod.Malvar,   // faster than the default AHD
     LuminanceNoiseReduction = 20,          // 0 to 100; off by default
     ColorNoiseReduction = 40,              // 0 to 100; 25 by default
+    AutoChromaticAberration = true,        // fix colour fringes when no lens profile covers the file
     ConvertColorTo = Colors.ColorProfile.DisplayP3, // rendered straight into P3, the profile attached
 };
 using Raster photo = Raster.Load("photo.dng", context, develop);
@@ -202,7 +203,7 @@ photo.Save("photo-p3.png");</code></pre>
 
   <h3 id="Egami_Formats_Extended_Raw_RawReaderOptions_ApplyBaselineExposure" data-uid="Egami.Formats.Extended.Raw.RawReaderOptions.ApplyBaselineExposure">
   ApplyBaselineExposure
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Raw/RawFormat.cs/#L330"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Raw/RawFormat.cs/#L333"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets whether the file's own exposure correction (DNG's BaselineExposure) is applied. Defaults to <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>.</p>
@@ -234,7 +235,7 @@ photo.Save("photo-p3.png");</code></pre>
 
   <h3 id="Egami_Formats_Extended_Raw_RawReaderOptions_ApplyProfile" data-uid="Egami.Formats.Extended.Raw.RawReaderOptions.ApplyProfile">
   ApplyProfile
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Raw/RawFormat.cs/#L374"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Raw/RawFormat.cs/#L377"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets whether the camera profile's look is applied: its HueSatMap, LookTable and tone curve. Defaults to
@@ -263,11 +264,63 @@ photo.Save("photo-p3.png");</code></pre>
 
 
 
+  <a id="Egami_Formats_Extended_Raw_RawReaderOptions_AutoChromaticAberration_" data-uid="Egami.Formats.Extended.Raw.RawReaderOptions.AutoChromaticAberration*"></a>
+
+  <h3 id="Egami_Formats_Extended_Raw_RawReaderOptions_AutoChromaticAberration" data-uid="Egami.Formats.Extended.Raw.RawReaderOptions.AutoChromaticAberration">
+  AutoChromaticAberration
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Raw/RawFormat.cs/#L396"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether a file that no lens correction covers (no lens opcodes, no matching profile) has its lateral chromatic
+aberration measured from the image and corrected: red and blue are scaled about the centre to line their edges up with
+green's. Defaults to <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>, since the measurement costs about as much as the demosaic. Applies only
+with <a class="xref" href="Egami.Formats.Extended.Raw.RawReaderOptions.html#Egami_Formats_Extended_Raw_RawReaderOptions_LensCorrections">LensCorrections</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool AutoChromaticAberration { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+  <h4 class="section" id="Egami_Formats_Extended_Raw_RawReaderOptions_AutoChromaticAberration_examples">Examples</h4>
+  <pre><code class="lang-csharp">RawReaderOptions develop = new()
+{
+    WhiteBalance = RawWhiteBalance.Custom,
+    Temperature = 4800,                    // kelvin
+    Tint = 5,                              // toward magenta
+    Exposure = -0.5,                       // stops
+    Highlights = RawHighlightMode.Rebuild, // recover clipped colour from what was not clipped
+    Demosaic = RawDemosaicMethod.Malvar,   // faster than the default AHD
+    LuminanceNoiseReduction = 20,          // 0 to 100; off by default
+    ColorNoiseReduction = 40,              // 0 to 100; 25 by default
+    AutoChromaticAberration = true,        // fix colour fringes when no lens profile covers the file
+    ConvertColorTo = Colors.ColorProfile.DisplayP3, // rendered straight into P3, the profile attached
+};
+using Raster photo = Raster.Load("photo.dng", context, develop);
+photo.Save("photo-p3.png");</code></pre>
+
+
+
+
+
+
   <a id="Egami_Formats_Extended_Raw_RawReaderOptions_ColorNoiseReduction_" data-uid="Egami.Formats.Extended.Raw.RawReaderOptions.ColorNoiseReduction*"></a>
 
   <h3 id="Egami_Formats_Extended_Raw_RawReaderOptions_ColorNoiseReduction" data-uid="Egami.Formats.Extended.Raw.RawReaderOptions.ColorNoiseReduction">
   ColorNoiseReduction
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Raw/RawFormat.cs/#L353"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Raw/RawFormat.cs/#L356"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the strength, 0 to 100, of colour noise reduction after demosaicing. Defaults to 25.</p>
@@ -305,7 +358,7 @@ photo.Save("photo-p3.png");</code></pre>
 
   <h3 id="Egami_Formats_Extended_Raw_RawReaderOptions_Demosaic" data-uid="Egami.Formats.Extended.Raw.RawReaderOptions.Demosaic">
   Demosaic
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Raw/RawFormat.cs/#L282"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Raw/RawFormat.cs/#L285"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the demosaicing method. Defaults to <a class="xref" href="Egami.Formats.Extended.Raw.RawDemosaicMethod.html#Egami_Formats_Extended_Raw_RawDemosaicMethod_Ahd">Ahd</a>.</p>
@@ -337,7 +390,7 @@ photo.Save("photo-p3.png");</code></pre>
 
   <h3 id="Egami_Formats_Extended_Raw_RawReaderOptions_Exposure" data-uid="Egami.Formats.Extended.Raw.RawReaderOptions.Exposure">
   Exposure
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Raw/RawFormat.cs/#L318"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Raw/RawFormat.cs/#L321"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the exposure to add, in stops, −10 to 10. Defaults to 0.</p>
@@ -375,7 +428,7 @@ photo.Save("photo-p3.png");</code></pre>
 
   <h3 id="Egami_Formats_Extended_Raw_RawReaderOptions_Highlights" data-uid="Egami.Formats.Extended.Raw.RawReaderOptions.Highlights">
   Highlights
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Raw/RawFormat.cs/#L333"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Raw/RawFormat.cs/#L336"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets what happens where the sensor clipped. Defaults to <a class="xref" href="Egami.Formats.Extended.Raw.RawHighlightMode.html#Egami_Formats_Extended_Raw_RawHighlightMode_Clip">Clip</a>.</p>
@@ -407,7 +460,7 @@ photo.Save("photo-p3.png");</code></pre>
 
   <h3 id="Egami_Formats_Extended_Raw_RawReaderOptions_LensCorrections" data-uid="Egami.Formats.Extended.Raw.RawReaderOptions.LensCorrections">
   LensCorrections
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Raw/RawFormat.cs/#L368"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Raw/RawFormat.cs/#L371"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets whether the lens corrections the file carries (distortion, vignetting and lateral chromatic aberration, from DNG
@@ -436,11 +489,46 @@ opcodes) are applied. Defaults to <a href="https://learn.microsoft.com/dotnet/cs
 
 
 
+  <a id="Egami_Formats_Extended_Raw_RawReaderOptions_LensProfiles_" data-uid="Egami.Formats.Extended.Raw.RawReaderOptions.LensProfiles*"></a>
+
+  <h3 id="Egami_Formats_Extended_Raw_RawReaderOptions_LensProfiles" data-uid="Egami.Formats.Extended.Raw.RawReaderOptions.LensProfiles">
+  LensProfiles
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Raw/RawFormat.cs/#L385"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the folders of lens profiles to correct with: Lensfun database files (<code>.xml</code>) and Adobe lens profiles
+(<code>.lcp</code>), searched with their subfolders, and a system Lensfun install when there is one. A file whose own data
+corrects the lens (DNG's lens opcodes) uses that instead. Egami ships no profiles: Lensfun's database is under CC BY-SA
+and Adobe's profiles are Adobe's, so you supply them. Defaults to none. Applies only with <a class="xref" href="Egami.Formats.Extended.Raw.RawReaderOptions.html#Egami_Formats_Extended_Raw_RawReaderOptions_LensCorrections">LensCorrections</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public IReadOnlyList&lt;string&gt; LensProfiles { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
   <a id="Egami_Formats_Extended_Raw_RawReaderOptions_LuminanceNoiseReduction_" data-uid="Egami.Formats.Extended.Raw.RawReaderOptions.LuminanceNoiseReduction*"></a>
 
   <h3 id="Egami_Formats_Extended_Raw_RawReaderOptions_LuminanceNoiseReduction" data-uid="Egami.Formats.Extended.Raw.RawReaderOptions.LuminanceNoiseReduction">
   LuminanceNoiseReduction
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Raw/RawFormat.cs/#L340"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Raw/RawFormat.cs/#L343"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the strength, 0 to 100, of luminance noise reduction, done on the sensor data before demosaicing with the file's
@@ -479,7 +567,7 @@ noise model, or one measured from the image. Defaults to 0 (off).</p>
 
   <h3 id="Egami_Formats_Extended_Raw_RawReaderOptions_Output" data-uid="Egami.Formats.Extended.Raw.RawReaderOptions.Output">
   Output
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Raw/RawFormat.cs/#L260"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Raw/RawFormat.cs/#L263"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets what Load returns. Defaults to <a class="xref" href="Egami.Formats.Extended.Raw.RawOutput.html#Egami_Formats_Extended_Raw_RawOutput_Developed">Developed</a>. When it is that and
@@ -513,7 +601,7 @@ that covers it.</p>
 
   <h3 id="Egami_Formats_Extended_Raw_RawReaderOptions_PreviewIndex" data-uid="Egami.Formats.Extended.Raw.RawReaderOptions.PreviewIndex">
   PreviewIndex
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Raw/RawFormat.cs/#L267"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Raw/RawFormat.cs/#L270"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets which preview <a class="xref" href="Egami.Formats.Extended.Raw.RawOutput.html#Egami_Formats_Extended_Raw_RawOutput_Preview">Preview</a> returns, as an index into <a class="xref" href="Egami.Formats.Extended.Raw.RawDetails.html#Egami_Formats_Extended_Raw_RawDetails_Previews">Previews</a>, or
@@ -552,7 +640,7 @@ that covers it.</p>
 
   <h3 id="Egami_Formats_Extended_Raw_RawReaderOptions_Temperature" data-uid="Egami.Formats.Extended.Raw.RawReaderOptions.Temperature">
   Temperature
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Raw/RawFormat.cs/#L289"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Raw/RawFormat.cs/#L292"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the colour temperature in kelvin, 2,000 to 50,000, that <a class="xref" href="Egami.Formats.Extended.Raw.RawWhiteBalance.html#Egami_Formats_Extended_Raw_RawWhiteBalance_Custom">Custom</a> balances for. Defaults to 5,500.</p>
@@ -590,7 +678,7 @@ that covers it.</p>
 
   <h3 id="Egami_Formats_Extended_Raw_RawReaderOptions_Tint" data-uid="Egami.Formats.Extended.Raw.RawReaderOptions.Tint">
   Tint
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Raw/RawFormat.cs/#L305"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Raw/RawFormat.cs/#L308"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the tint, −150 to 150, that <a class="xref" href="Egami.Formats.Extended.Raw.RawWhiteBalance.html#Egami_Formats_Extended_Raw_RawWhiteBalance_Custom">Custom</a> balances for: positive for light that is magenta,
@@ -629,7 +717,7 @@ negative for light that is green. Defaults to 0.</p>
 
   <h3 id="Egami_Formats_Extended_Raw_RawReaderOptions_WhiteBalance" data-uid="Egami.Formats.Extended.Raw.RawReaderOptions.WhiteBalance">
   WhiteBalance
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Raw/RawFormat.cs/#L285"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Raw/RawFormat.cs/#L288"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets where the white balance comes from. Defaults to <a class="xref" href="Egami.Formats.Extended.Raw.RawWhiteBalance.html#Egami_Formats_Extended_Raw_RawWhiteBalance_AsShot">AsShot</a>.</p>
@@ -661,7 +749,7 @@ negative for light that is green. Defaults to 0.</p>
 </article>
 
         <div class="contribution d-print-none">
-          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Raw/RawFormat.cs/#L246" class="edit-link">Edit this page</a>
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Raw/RawFormat.cs/#L249" class="edit-link">Edit this page</a>
         </div>
 
 

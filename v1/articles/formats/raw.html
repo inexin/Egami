@@ -88,10 +88,11 @@
 <h1 id="camera-raw">Camera RAW</h1>
 
 <p>Camera RAW files hold the sensor data a camera recorded, before any processing. Egami reads DNG (.dng), the open RAW format
-Adobe publishes, which phones, Leica, Pentax, Ricoh, Hasselblad and Adobe DNG Converter write, and develops it into an image on
-load. It reads through the Egami.Formats.Extended package: register it with <code>WithRaw()</code> or <code>WithExtendedFormats()</code>
-(<a href="extended.html">Extended formats</a>). RAW is detected ahead of TIFF, since a DNG file is a TIFF file; without it, a DNG opens as
-TIFF and only its preview pages load.</p>
+Adobe publishes, which phones, Leica, Pentax, Ricoh, Hasselblad and Adobe DNG Converter write, and the makers' own formats:
+Canon CR2, Nikon NEF and NRW, Pentax PEF, Sony ARW and SR2, Olympus ORF, Panasonic RW2 and Fujifilm RAF. It develops them into
+an image on load. It reads through the Egami.Formats.Extended package: register it with <code>WithRaw()</code> or <code>WithExtendedFormats()</code>
+(<a href="extended.html">Extended formats</a>). RAW is detected ahead of TIFF, since a DNG file (like most maker formats) is a TIFF file;
+without it, a DNG opens as TIFF and only its preview pages load.</p>
 <table>
 <thead>
 <tr>
@@ -102,7 +103,7 @@ TIFF and only its preview pages load.</p>
 <tbody>
 <tr>
 <td>Reads</td>
-<td>DNG 1.0 to 1.7: colour filter arrays of any pattern and LinearRaw, uncompressed 1 to 32-bit integers and 16, 24 or 32-bit floats, lossless JPEG, Deflate with the integer and floating-point predictors, lossy JPEG and JPEG XL, in strips or tiles; linearization tables, black level patterns and deltas, white levels, active area and default crop; opcode lists 1 to 3; camera profiles (dual-illuminant colour matrices, ForwardMatrix, HueSatMap, LookTable, tone curve); embedded previews</td>
+<td>DNG 1.0 to 1.7: colour filter arrays of any pattern and LinearRaw, uncompressed 1 to 32-bit integers and 16, 24 or 32-bit floats, lossless JPEG, Deflate with the integer and floating-point predictors, lossy JPEG and JPEG XL, in strips or tiles; linearization tables, black level patterns and deltas, white levels, active area and default crop; opcode lists 1 to 3; camera profiles (dual-illuminant colour matrices, ForwardMatrix, HueSatMap, LookTable, tone curve); embedded previews. The maker formats of <a href="#maker-formats">Maker formats</a></td>
 </tr>
 <tr>
 <td>Writes</td>
@@ -114,7 +115,7 @@ TIFF and only its preview pages load.</p>
 </tr>
 <tr>
 <td><code>FormatInfo</code></td>
-<td><code>RawFormat.Info</code>: name <code>RAW</code>, extension <code>.dng</code>, MIME types <code>image/x-adobe-dng</code> and <code>image/dng</code></td>
+<td><code>RawFormat.Info</code>: name <code>RAW</code>, extensions <code>.dng</code>, <code>.cr2</code>, <code>.nef</code>, <code>.nrw</code>, <code>.pef</code>, <code>.arw</code>, <code>.sr2</code>, <code>.orf</code>, <code>.rw2</code> and <code>.raf</code>, with each format's MIME type</td>
 </tr>
 </tbody>
 </table>
@@ -151,7 +152,24 @@ using Raster&lt;Rgba8&gt; half = Raster.Load&lt;Rgba8&gt;(&quot;photo.dng&quot;,
 
 // A thumbnail: MinimumSize takes the smallest embedded preview or half-size develop that covers it.
 using Raster thumb = Raster.Load(&quot;photo.dng&quot;, context, new ReaderOptions { MinimumSize = new Size(32, 32) });
-</code></pre><h2 id="the-develop">The develop</h2>
+</code></pre><h2 id="maker-formats">Maker formats</h2>
+<p>A maker file goes through the same develop as a DNG. What a DNG carries in its tags comes from elsewhere:</p>
+<ul>
+<li>The sensor data is decoded by each maker's codec: Canon's sliced lossless JPEG and sRAW and mRAW, Nikon's Huffman coding and
+curve, Pentax's Huffman coding, Sony's ARW2, ARW1 and lossless JPEG tiles, Olympus's and Panasonic's own codings (Panasonic
+RawFormat 4 to 8), Fujifilm's compressed codec (lossless and lossy, X-Trans and Bayer) and the plain packings. Decoded
+mosaics are bit for bit those Adobe DNG Converter stores (on 22 CC0 sample files), but for defective pixels and clipping.</li>
+<li>White balance, black levels and crops come from the file and its maker note where it has them.</li>
+<li>Colour matrices, and levels and crops a file does not give, come from Egami's camera table: for each camera, what Adobe DNG
+Converter writes in a DNG of a sample file, measured as a black box. A camera that is not in the table develops with a
+generic matrix and a <code>CameraUnknown</code> warning.</li>
+<li>Canon sRAW and mRAW files are LinearRaw (three samples a pixel), so <code>RawOutput.Mosaic</code> gives <code>Rgb16</code>. Fujifilm X-Trans
+sensors (6 × 6 pattern) are demosaiced by Egami's own gradient-weighted method whatever <code>Demosaic</code> says. A RAF's
+dynamic-range setting moves the baseline exposure as it does in Adobe's DNGs.</li>
+</ul>
+<p>Not read: Canon CR3 (stage C will give its previews and metadata), Sony SRF, Nikon's small (sNEF) and High Efficiency raws, the
+Sony A100, RAFs from before 2012 whose CFA section is not a TIFF, and 14-bit packed RAFs. They throw <code>NotSupportedException</code>.</p>
+<h2 id="the-develop">The develop</h2>
 <p>The develop follows the DNG specification's processing order:</p>
 <ol>
 <li>Opcode list 1 on the stored values; then the linearization table, the black levels (per position of the black level pattern,
@@ -191,12 +209,24 @@ carries its ICC profile. Other colour models (CMYK, gray) are converted to after
     Demosaic = RawDemosaicMethod.Malvar,   // faster than the default AHD
     LuminanceNoiseReduction = 20,          // 0 to 100; off by default
     ColorNoiseReduction = 40,              // 0 to 100; 25 by default
+    AutoChromaticAberration = true,        // fix colour fringes when no lens profile covers the file
     ConvertColorTo = Colors.ColorProfile.DisplayP3, // rendered straight into P3, the profile attached
 };
 using Raster photo = Raster.Load(&quot;photo.dng&quot;, context, develop);
 photo.Save(&quot;photo-p3.png&quot;);
 </code></pre>
 <p>The develop runs in parallel bands, and its output is the same for any <code>EgamiContext.MaxParallelism</code>.</p>
+<h2 id="lens-profiles">Lens profiles</h2>
+<p>A file that carries its own lens corrections (a DNG's warp and vignetting opcodes) is corrected with those. For other files,
+<code>RawReaderOptions.LensProfiles</code> names folders of lens profiles that Egami reads at run time: Lensfun database files (<code>.xml</code>)
+and Adobe lens profiles (<code>.lcp</code>). A system Lensfun install (such as <code>/usr/share/lensfun</code> on Linux) is searched too. The
+profile whose lens name matches the file's EXIF LensModel corrects vignetting, distortion and lateral chromatic aberration,
+its calibrations interpolated for the shot's focal length and aperture; <code>RawDetails.LensProfile</code> says which one did.</p>
+<p>Egami ships no profiles. Lensfun's database is under CC BY-SA 3.0 and Adobe's profiles come with Adobe's software, so you
+supply them and their terms apply to them. <code>LensCorrections = false</code> turns every lens correction off.</p>
+<p>For a file no profile covers, <code>AutoChromaticAberration = true</code> measures lateral chromatic aberration from the image itself and
+scales red and blue about the centre to line their edges up with green's. It is off by default: the measurement costs about as
+much as the demosaic.</p>
 <h2 id="details-and-metadata">Details and metadata</h2>
 <p><code>RawDetails</code>, in <code>RasterMetadata.FormatDetails</code>, says what the raster is (<code>Output</code>, <code>PreviewIndex</code>), the camera (<code>Make</code>,
 <code>Model</code>, <code>UniqueCameraModel</code>, <code>DngVersion</code>), the sensor data (<code>SensorWidth</code>, <code>SensorHeight</code>, <code>ActiveArea</code>, <code>CropArea</code>,
@@ -215,7 +245,9 @@ foreach (RawPreview preview in details.Previews)
 }
 </code></pre><h2 id="limits">Limits</h2>
 <ul>
-<li>DNG only for now. CR2, NEF, ARW, PEF, ORF, RW2 and RAF follow; CR3 will give its previews and metadata.</li>
+<li>The maker formats above; CR3 will give its previews and metadata.</li>
+<li>Fujifilm GFX 100 files (100 MP) need <code>MaxTotalBytes</code> above its 2 GB default for a full develop; their previews, half-size
+develop and mosaic fit.</li>
 <li>Three-colour data only: monochrome DNGs and four-colour (CMYG) sensors are not developed (their mosaic loads).</li>
 <li>Non-square pixels (DefaultScale other than 1) are developed square. The third calibration illuminant of DNG 1.6, profile gain
 table maps, semantic masks and extra camera profiles are not read; opcode TrimBounds and WarpRectilinear2 are skipped with a
