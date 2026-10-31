@@ -93,9 +93,10 @@ internal sealed class JxlModularEncoder
     /// several <paramref name="passes"/>, the channels go with the last. A <paramref name="chunk"/> of a larger frame takes
     /// no global palettes, puts every channel in the groups and learns no decision on the stream.
     /// </summary>
-    internal static (JxlEncodeImage[] Streams, List<JxlTreeNode> Tree) PrepareExtraChannels(List<JxlChannel> channels, int[] bits, float[] distances, int effort, int width, int height, int parallelism, int passes = 1, bool chunk = false)
+    internal static (JxlEncodeImage[] Streams, List<JxlTreeNode> Tree) PrepareExtraChannels(List<JxlChannel> channels, int[] bits, int imageBits, float[] distances, int effort, int width, int height, int parallelism, int passes = 1, bool chunk = false)
     {
-        int bitDepth = bits.Max();
+        // The Modular image has the image header's bit depth, which a decoder takes for the palette's implicit colors.
+        int bitDepth = imageBits;
         int groups = Ceil(width, 256) * Ceil(height, 256);
         int lfGroups = Ceil(width, 2048) * Ceil(height, 2048);
         JxlModularEncoder e = new(effort, width, height, 1, 1 + (3 * lfGroups) + 17 + (passes * groups), false, parallelism) { _lastPass = (passes - 1) * groups, _chunk = chunk };
@@ -123,6 +124,11 @@ internal sealed class JxlModularEncoder
         if (prefix < gi.Channels.Count)
         {
             Parallel.For(0, e._groups, e._parallel, g => e.PrepareGroup(gi, g, prefix));
+            for (int lf = 0; lf < lfGroups; lf++)
+            {
+                e.PrepareLfGroup(gi, lf, prefix);
+            }
+
             for (int c = prefix; c < gi.Channels.Count; c++)
             {
                 gi.Channels[c].Data = [];
@@ -556,7 +562,15 @@ internal sealed class JxlModularEncoder
         gi.Channels.AddRange(channels);
         int maxBitDepth = bitDepth + 1;
         float channelColors = _effort >= 2 || bitDepth > 8 ? 95 : 0;
-        TryPalettes(gi, channelColors);
+
+        // libjxl codes a frame of more than 8 groups group by group (its streaming mode, CanDoStreamingEncoding): no global
+        // palettes, and at effort 2 each group with its own fixed tree and distributions.
+        bool local = _effort == 2 && _groups > 8 && _lfDequant is null;
+        if (!local)
+        {
+            TryPalettes(gi, channelColors);
+        }
+
         if (_effort <= 4 && _color && gi.Channels.Count - gi.Meta >= 3 && maxBitDepth + 1 < 32)
         {
             ForwardRct(gi, gi.Meta, 6);
@@ -576,6 +590,11 @@ internal sealed class JxlModularEncoder
         {
             int prefixBefore = gi.CodedPrefix(_groupDim);
             Parallel.For(0, _groups, _parallel, g => PrepareGroup(gi, g, prefixBefore));
+            for (int lf = 0; lf < _lfGroups; lf++)
+            {
+                PrepareLfGroup(gi, lf, prefixBefore);
+            }
+
         }
 
         // The channels the groups now hold leave the global stream, which keeps their sizes for the prefix test.
@@ -583,6 +602,11 @@ internal sealed class JxlModularEncoder
         for (int c = prefix; c < gi.Channels.Count; c++)
         {
             gi.Channels[c].Data = [];
+        }
+
+        if (local)
+        {
+            return WriteLocal();
         }
 
         List<JxlTreeNode> tree = BuildTree();
@@ -629,9 +653,11 @@ internal sealed class JxlModularEncoder
         }
 
         List<byte[]> sections = [global.ToArray()];
-        for (int i = 0; i < _lfGroups; i++)
+        for (int lf = 0; lf < _lfGroups; lf++)
         {
-            sections.Add([]);
+            JxlBitWriter w = new();
+            WriteStream(w, _streams[LfStream(lf)], code, tokens[LfStream(lf)]);
+            sections.Add(w.ToArray());
         }
 
         sections.Add([]);
@@ -648,6 +674,75 @@ internal sealed class JxlModularEncoder
         return sections;
     }
 
+    /// <summary>
+    /// Writes the frame with a tree and distributions of each stream's own (libjxl's ModularGenericCompress per stream): the
+    /// LF global section with no global tree and the global stream, then each group's stream.
+    /// </summary>
+    private List<byte[]> WriteLocal()
+    {
+        JxlHistogramParams p = JxlHistogramParams.ForModular(_effort);
+        JxlBitWriter global = new();
+        global.WriteBool(true); // default LF dequantization
+        global.WriteBool(false); // no global tree
+        WriteLocalStream(global, 0, p);
+        List<byte[]> sections = [global.ToArray()];
+        for (int lf = 0; lf < _lfGroups; lf++)
+        {
+            JxlBitWriter w = new();
+            WriteLocalStream(w, LfStream(lf), p);
+            sections.Add(w.ToArray());
+        }
+
+        sections.Add([]);
+
+        byte[][] groupSections = new byte[_groups][];
+        Parallel.For(0, _groups, _parallel, g =>
+        {
+            JxlBitWriter w = new();
+            WriteLocalStream(w, GroupStream(g), p);
+            groupSections[g] = w.ToArray();
+        });
+        sections.AddRange(groupSections);
+        return sections;
+    }
+
+    /// <summary>Writes a stream with its own tree (the fixed one for its coded pixels) and distributions, or nothing when it has no channels.</summary>
+    private void WriteLocalStream(JxlBitWriter w, int stream, JxlHistogramParams p)
+    {
+        JxlEncodeImage image = _streams[stream];
+        if (image.Channels.Count == 0)
+        {
+            return;
+        }
+
+        int prefix = image.CodedPrefix(_groupDim);
+        long pixels = 0;
+        int width = 0;
+        for (int c = 0; c < prefix; c++)
+        {
+            pixels += (long)image.Channels[c].Width * image.Channels[c].Height;
+            width = Math.Max(width, image.Channels[c].Width);
+        }
+
+        List<JxlTreeNode> tree = FixedTree(9, 5, Math.Max(1, pixels), image.BitDepth);
+        List<List<JxlToken>> treeTokens = [[]];
+        (int[] property, int[] value, int[] left, int[] right, int[] predictor, int[] context) = TokenizeTree(tree, treeTokens[0]);
+        List<JxlToken> tokens = [];
+        for (int c = 0; c < prefix; c++)
+        {
+            if (image.Channels[c].Width > 0 && image.Channels[c].Height > 0)
+            {
+                tokens.AddRange(Tokenize(image.Channels[c], c, stream, property, value, left, right, predictor, context, false));
+            }
+        }
+
+        WriteStreamHeader(w, image, useGlobalTree: false);
+        JxlEntropyCode treeCode = JxlEntropyCode.Write(w, p, 6, treeTokens);
+        treeCode.WriteTokens(w, treeTokens[0]);
+        JxlEntropyCode code = JxlEntropyCode.Write(w, p with { ImageWidths = [width] }, context.Max() + 1, [tokens]);
+        code.WriteTokens(w, tokens);
+    }
+
     /// <summary>Writes a stream: its header (global tree, default WP parameters, transforms) and tokens, or nothing when it has no channels.</summary>
     internal static void WriteStream(JxlBitWriter w, JxlEncodeImage image, JxlEntropyCode code, List<JxlToken> tokens)
     {
@@ -656,7 +751,17 @@ internal sealed class JxlModularEncoder
             return;
         }
 
-        w.WriteBool(true); // use_global_tree
+        WriteStreamHeader(w, image, useGlobalTree: true);
+
+        // The ANS state follows even when every channel is left to the groups (as libjxl writes it): libjxl's decoder skips
+        // a stream with nothing to code, but jxl-oxide reads the state of every stream that has channels.
+        code.WriteTokens(w, tokens);
+    }
+
+    /// <summary>Writes a stream's header (H.2): whether it uses the global tree, default WP parameters, and its transforms.</summary>
+    private static void WriteStreamHeader(JxlBitWriter w, JxlEncodeImage image, bool useGlobalTree)
+    {
+        w.WriteBool(useGlobalTree);
         w.WriteBool(true); // default WP parameters
         w.WriteU32(new JxlU32(0, 0, 1, 0, 2, 4, 18, 8), (uint)image.Transforms.Count);
         JxlU32 beginC = new(0, 3, 8, 6, 72, 10, 1096, 13);
@@ -691,10 +796,49 @@ internal sealed class JxlModularEncoder
                     break;
             }
         }
+    }
 
-        // The ANS state follows even when every channel is left to the groups (as libjxl writes it): libjxl's decoder skips
-        // a stream with nothing to code, but jxl-oxide reads the state of every stream that has channels.
-        code.WriteTokens(w, tokens);
+    /// <summary>Gets whether a channel past the global prefix goes in the LF groups' streams: one subsampled 3 or more times both ways (H.4).</summary>
+    private static bool InLfGroups(JxlChannel channel) => channel.HShift >= 3 && channel.VShift >= 3;
+
+    /// <summary>Gets the stream id of LF group <paramref name="lf"/>'s Modular stream (ModularLfGroup).</summary>
+    private int LfStream(int lf) => 1 + _lfGroups + lf;
+
+    /// <summary>Copies LF group <paramref name="lf"/>'s part of every channel past the prefix subsampled 3 or more times both ways into its stream.</summary>
+    private void PrepareLfGroup(JxlEncodeImage full, int lf, int prefix)
+    {
+        JxlEncodeImage gi = new(full.BitDepth);
+        int dim = _groupDim * 8;
+        int perRow = Ceil(_width, dim);
+        int x0 = lf % perRow * dim;
+        int y0 = lf / perRow * dim;
+        for (int c = prefix; c < full.Channels.Count; c++)
+        {
+            JxlChannel fc = full.Channels[c];
+            if (!InLfGroups(fc))
+            {
+                continue;
+            }
+
+            int cx = x0 >> fc.HShift;
+            int cy = y0 >> fc.VShift;
+            int w = Math.Min(dim >> fc.HShift, fc.Width - cx);
+            int h = Math.Min(dim >> fc.VShift, fc.Height - cy);
+            if (w <= 0 || h <= 0)
+            {
+                continue;
+            }
+
+            JxlChannel part = new(w, h, fc.HShift, fc.VShift);
+            for (int y = 0; y < h; y++)
+            {
+                Array.Copy(fc.Data, ((cy + y) * fc.Width) + cx, part.Data, y * w, w);
+            }
+
+            gi.Channels.Add(part);
+        }
+
+        _streams[LfStream(lf)] = gi;
     }
 
     /// <summary>Copies a group's part of every channel larger than a group into its stream, then tries local palettes and RCTs.</summary>
@@ -706,6 +850,11 @@ internal sealed class JxlModularEncoder
         for (int c = prefix; c < full.Channels.Count; c++)
         {
             JxlChannel fc = full.Channels[c];
+            if (InLfGroups(fc))
+            {
+                continue;
+            }
+
             int cx = x0 >> fc.HShift;
             int cy = y0 >> fc.VShift;
             int w = Math.Min(_groupDim >> fc.HShift, fc.Width - cx);

@@ -1,4 +1,5 @@
 using Egami.Metadata;
+using Egami.Pixels;
 
 namespace Egami.Formats.Jxl;
 
@@ -156,4 +157,53 @@ public sealed class JxlExtraChannel
 
     /// <summary>Gets a spot color's red, green, blue and solidity, or <see langword="null"/> for other channels.</summary>
     public IReadOnlyList<float>? SpotColor { get; init; }
+}
+
+/// <summary>
+/// An extra channel to write with <see cref="JxlWriterOptions.ExtraChannels"/>: its description and its samples, as
+/// <see cref="JxlImage.ReadExtraChannel(string, int, ReaderOptions?, EgamiContext?)"/> gives them back.
+/// </summary>
+/// <example>
+/// <code language="csharp" source="../../../../tests/Egami.DocSamples/Jxl.cs" region="write-extra-channels"/>
+/// </example>
+public sealed class JxlExtraChannelImage
+{
+    /// <summary>Creates an extra channel to write. The caller keeps the raster and disposes it after the save.</summary>
+    /// <param name="channel">
+    /// What the channel holds and how it is stored: its kind, name, bits (1 to 24 for integers; 16 with 5 exponent bits or 32
+    /// with 8 for floats), subsampling (0 to 3), whether color is premultiplied by it (alpha only) and, for a spot color, its
+    /// red, green, blue and solidity.
+    /// </param>
+    /// <param name="samples">
+    /// The samples, at the image size halved <see cref="JxlExtraChannel.Subsampling"/> times each way (rounded up): 0 to 1 for
+    /// integer channels, which are scaled to their bits and rounded; float channels are stored as given.
+    /// </param>
+    /// <exception cref="ArgumentNullException"><paramref name="channel"/> or <paramref name="samples"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentException">The description is not one JPEG XL can store.</exception>
+    public JxlExtraChannelImage(JxlExtraChannel channel, Raster<GrayF32> samples)
+    {
+        ArgumentNullException.ThrowIfNull(channel);
+        ArgumentNullException.ThrowIfNull(samples);
+        string? problem = !Enum.IsDefined(channel.Kind) ? $"The kind {channel.Kind} is not one JPEG XL has."
+            : channel.ExponentBits == 0 && channel.BitsPerSample is < 1 or > 24 ? "Integer extra channels have 1 to 24 bits."
+            : channel.ExponentBits != 0 && (channel.BitsPerSample, channel.ExponentBits) is not ((16, 5) or (32, 8)) ? "Float extra channels are 16 bits with 5 exponent bits or 32 with 8."
+            : channel.Subsampling is < 0 or > 3 ? "The subsampling must be from 0 to 3."
+            : channel.AlphaPremultiplied && channel.Kind != JxlExtraChannelKind.Alpha ? "Only an alpha channel can premultiply the color."
+            : channel.Kind == JxlExtraChannelKind.SpotColor && channel.SpotColor is not { Count: 4 } ? "A spot color channel needs its red, green, blue and solidity."
+            : System.Text.Encoding.UTF8.GetByteCount(channel.Name) > JxlFrameWriter.MaxNameBytes ? $"A JPEG XL extra channel name holds {JxlFrameWriter.MaxNameBytes} bytes of UTF-8."
+            : null;
+        if (problem is not null)
+        {
+            throw new ArgumentException(problem, nameof(channel));
+        }
+
+        Channel = channel;
+        Samples = samples;
+    }
+
+    /// <summary>Gets the channel's description.</summary>
+    public JxlExtraChannel Channel { get; }
+
+    /// <summary>Gets the channel's samples.</summary>
+    public Raster<GrayF32> Samples { get; }
 }

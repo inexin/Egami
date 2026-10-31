@@ -144,6 +144,21 @@ For camera RAW (Egami.Formats.Extended). Additive.
   develop) gets the option passed through, instead of Egami converting the pixels after the load. Every other format loads
   as before.
 
+JPEG XL extras, PR A: animations, layers and extra channels written. All additive.
+
+- JPEG XL animations through `Save`: a raster with more than one frame is written as an animation, lossless or lossy, with
+  each frame's delay (1 ms ticks) and the loop count, each frame cut to the rectangle that changed and blended or replaced as
+  cjxl does from an APNG. Sizes are within 2 % of cjxl 0.12's at efforts 1 to 4 and lossy (at equal Butteraugli and
+  SSIMULACRA2), and djxl decodes them to the same frames. `JxlWriterOptions.FirstFrameOnly` writes a still on purpose; before,
+  only the first frame was written, with a `Save.FramesDropped` warning.
+- `JxlImage.WriteLayers` and a public `JxlLayer` constructor: layers with their place, blend mode, duration and name, which
+  `ReadLayers` reads back field for field.
+- `JxlWriterOptions.ExtraChannels` and `JxlExtraChannelImage`: depth, selection masks, thermal data, spot colors and other
+  extra channels of any bit depth and subsampling, coded lossless in lossless and lossy files. Lossless CMYK keeps its black
+  channel instead of being converted to RGB.
+- Lossless JPEG XL at effort 2 codes a frame of more than eight groups group by group, each with its own context model, as
+  libjxl does: screenshots are up to 20 % smaller and match cjxl -e 2 within 0.01 %. Smaller images are written as before.
+
 2.3.10: PSD layers. All additive.
 
 - `PsdImage.ReadLayers` (and `ReadLayers<TPixel>`) reads every layer of a PSD or PSB with its pixels into a `PsdDocument`:
