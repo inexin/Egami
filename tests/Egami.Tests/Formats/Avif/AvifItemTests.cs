@@ -119,14 +119,41 @@ public class AvifItemTests
     [Theory]
     [InlineData("duck-layered-3.avif")]
     [InlineData("duck-progressive.avif")]
-    public void LayeredImageLoadsItsBaseLayerWithAWarning(string file)
+    public void LayeredImageLoadsItsBestLayerAtFullSize(string file)
     {
         string path = Path.Combine(Corpus, file);
         using Raster raster = Raster.Load(path);
-        Assert.Contains(raster.Metadata.Warnings, w => w.Id == "Avif.BaseLayerOnly");
+        Assert.Empty(raster.Metadata.Warnings);
+        AvifDetails details = (AvifDetails)raster.Metadata.FormatDetails!;
+        Assert.True(details.Layers.Count >= 2);
+        Assert.Equal(new Size(raster.Width, raster.Height), details.Layers[^1]);
 
-        // Probe gives the size Load gives: a spatially layered base layer's own, smaller than ispe's.
+        // Probe gives the size Load gives: the image's.
         RasterInfo info = Raster.Probe(path);
         Assert.Equal((raster.Width, raster.Height), (info.Width, info.Height));
+
+        // Each layer loads at full size; past the last gives the last, which is the best.
+        using Raster<Rgba8> best = raster.As<Rgba8>();
+        using Raster<Rgba8> last = Raster.Load<Rgba8>(path, options: new AvifReaderOptions { Layer = 99 });
+        Assert.True(Same(best, last));
+        for (int layer = 0; layer < details.Layers.Count - 1; layer++)
+        {
+            using Raster<Rgba8> lower = Raster.Load<Rgba8>(path, options: new AvifReaderOptions { Layer = layer });
+            Assert.Equal((raster.Width, raster.Height), (lower.Width, lower.Height));
+            Assert.False(Same(best, lower), $"layer {layer}");
+        }
+    }
+
+    private static bool Same(Raster<Rgba8> a, Raster<Rgba8> b)
+    {
+        for (int y = 0; y < a.Height; y++)
+        {
+            if (!a.Row(y).SequenceEqual(b.Row(y)))
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 }

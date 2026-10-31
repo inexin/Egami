@@ -143,71 +143,6 @@ internal sealed partial class AvifWriter : IFormatWriter, IRowFormatWriter
         }
     }
 
-    /// <summary>Encodes an image and writes its file.</summary>
-    internal static void WriteImage(Raster raster, RasterMetadata metadata, AvifWriterOptions options, EgamiContext context, Stream output)
-    {
-        PixelLayoutInfo layout = raster.Layout;
-        bool gray = layout.ChannelOrder is PixelChannelOrder.Gray or PixelChannelOrder.GrayAlpha;
-        bool deep = layout.NeedsWideSamples;
-        AvifDetails? details = metadata.FormatDetails as AvifDetails;
-        bool lossless = options.Lossless ?? details?.Lossless ?? false;
-        int bitDepth = options.BitDepth ?? (!deep ? 8 : lossless ? (details is { BitDepth: > 8 } ? details.BitDepth : 12) : 10);
-        ChromaFormat chroma = gray ? ChromaFormat.Yuv400
-            : lossless ? ChromaFormat.Yuv444
-            : options.Chroma is ChromaFormat chosen and (ChromaFormat.Yuv420 or ChromaFormat.Yuv422 or ChromaFormat.Yuv444) ? chosen
-            : options.Quality >= 90 ? ChromaFormat.Yuv444 : ChromaFormat.Yuv420;
-        FileMetadata extras = FileMetadata.From(metadata, options);
-        (int primaries, int transfer) = metadata.CodePoints is ColorCodePoints points ? (points.Primaries, points.TransferCharacteristics)
-            : !extras.Icc.IsEmpty ? (2, 2) : (1, 13);
-        int matrix = gray ? 2 : lossless ? 0 : 6;
-        int parallelism = context.MaxParallelism;
-
-        using Raster<Rgba16> rgba = raster.As<Rgba16>();
-        Av1EncoderInput color = lossless || gray
-            ? DirectPlanes(rgba, chroma == ChromaFormat.Yuv400, bitDepth, primaries, transfer, matrix)
-            : chroma == ChromaFormat.Yuv420 && bitDepth == 8 && options.Effort >= 5 ? SharpPlanes(raster, primaries, transfer, matrix)
-            : ConvertedPlanes(raster, chroma, bitDepth, primaries, transfer, matrix);
-        (int cellWidth, int cellHeight) = GridCells(raster.Width, raster.Height, chroma, options.GridTileSize);
-        bool hasAlpha = layout.HasAlpha && !Opaque(rgba);
-
-        // A save's progress counts superblock rows: the color planes take the first three quarters when an alpha plane follows.
-        SaveReporter? reporter = SaveReporter.Current;
-        reporter?.Part(0, hasAlpha ? 0.75 : 1);
-        CodedImage colorStream = CodedImage.Encode(color, cellWidth, cellHeight, new Av1EncoderSettings
-        {
-            Lossless = lossless,
-            QIndex = QIndexFor(options.Quality),
-            Effort = options.Effort,
-            Parallelism = parallelism,
-            Report = reporter,
-            CancellationToken = reporter?.Cancellation ?? default,
-        });
-
-        CodedImage? alphaStream = null;
-        if (hasAlpha)
-        {
-            Av1EncoderInput alpha = AlphaPlane(rgba, bitDepth);
-            reporter?.Part(0.75, 1);
-            alphaStream = CodedImage.Encode(alpha, cellWidth, cellHeight, new Av1EncoderSettings
-            {
-                Lossless = options.AlphaQuality == 100,
-                QIndex = QIndexFor(options.AlphaQuality),
-                Effort = options.Effort,
-                Parallelism = parallelism,
-                Report = reporter,
-                CancellationToken = reporter?.Cancellation ?? default,
-            });
-        }
-
-        GainMapItem? gainMap = null;
-        if (!options.StripMetadata && metadata.GainMap is GainMap map)
-        {
-            gainMap = EncodeGainMap(map, options, parallelism, primaries);
-        }
-
-        WriteFile(output, raster.Width, raster.Height, colorStream, alphaStream, primaries, transfer, matrix, extras, gainMap);
-    }
-
     /// <summary>
     /// Gets the size of a grid's cells: <paramref name="chosen"/>, or for an image larger than one frame of 8192 x 4352 the
     /// fewest equal cells that fit that, each side even so subsampled chroma divides it; the whole image when it fits one frame.
@@ -238,6 +173,9 @@ internal sealed partial class AvifWriter : IFormatWriter, IRowFormatWriter
     internal sealed record CodedImage(Av1Encoder[] Cells, int Columns, int Rows, int CellWidth, int CellHeight)
     {
         internal Av1Encoder First => Cells[0];
+
+        /// <summary>Gets the size of each layer's frames in the one cell's stream of a layered image, or null.</summary>
+        internal int[]? LayerSizes { get; init; }
 
         internal bool IsGrid => Cells.Length > 1;
 
@@ -300,10 +238,11 @@ internal sealed partial class AvifWriter : IFormatWriter, IRowFormatWriter
     internal sealed record GainMapItem(Av1Encoder Stream, int Width, int Height, GainMapInfo Info, int AlternatePrimaries, int AlternateTransfer);
 
     /// <summary>
-    /// Codes a gain map: one channel as a 4:0:0 image, three as 4:4:4 with the identity matrix, at the image's quality. The
+    /// Codes a gain map: one channel as a 4:0:0 image, three as 4:4:4 with the identity matrix, at <paramref name="quality"/> (the
+    /// image's unless <see cref="AvifWriterOptions.GainMapQuality"/> sets it; 100 there is lossless, as avifenc --qgain-map 100). The
     /// alternate rendition is described as libavif's encoder describes it: the base's primaries, with PQ when it is the HDR one.
     /// </summary>
-    private static GainMapItem EncodeGainMap(GainMap map, AvifWriterOptions options, int parallelism, int primaries)
+    private static GainMapItem EncodeGainMap(GainMap map, AvifWriterOptions options, int parallelism, int primaries, int quality)
     {
         int n = map.Width * map.Height;
         byte[] pixels = map.Pixels;
@@ -336,8 +275,8 @@ internal sealed partial class AvifWriter : IFormatWriter, IRowFormatWriter
         };
         Av1Encoder stream = Av1Encoder.Encode(input, new Av1EncoderSettings
         {
-            Lossless = options.Lossless == true,
-            QIndex = QIndexFor(options.Quality),
+            Lossless = options.GainMapQuality is int chosen ? chosen == 100 : options.Lossless == true,
+            QIndex = QIndexFor(quality),
             Effort = options.Effort,
             Parallelism = parallelism,
         });
@@ -468,6 +407,12 @@ internal sealed partial class AvifWriter : IFormatWriter, IRowFormatWriter
             heif.Associate(item, ispe);
             heif.AddProperty(item, HeifWriter.PixelInformation(depth, channels));
             heif.AddProperty(item, ConfigurationBox(image.First), essential: true);
+            if (image.LayerSizes is int[] sizes)
+            {
+                // The layers' sizes, so a reader can show each as it arrives (AV1-ISOBMFF 2.3.4); no lsel, so all are shown.
+                heif.AddProperty(item, LayerIndex(sizes));
+            }
+
             return item;
         }
 

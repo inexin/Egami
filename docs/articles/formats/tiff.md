@@ -21,14 +21,14 @@ reduced-resolution pages and SubIFDs come too, each after the page it belongs to
 
 | Compression | Read |
 | --- | --- |
-| None, LZW (and TIFF 5.0's bit-reversed LZW), Deflate, PackBits | Yes, with the horizontal and floating-point predictors |
+| None, LZW (and TIFF 5.0's bit-reversed LZW), Deflate, PackBits, ZSTD | Yes, with the horizontal and floating-point predictors |
 | CCITT modified Huffman, Group 3 (1-D and 2-D), Group 4 | 1-bit pages |
 | JPEG, old-style JPEG | 8-bit pages, through Egami's JPEG decoder; old-style JPEG is best effort |
 | ThunderScan | 4-bit gray |
 | SGILog, SGILog24 | LogL and LogLuv pages, as linear `GrayF32` or `RgbF32` |
 | WebP | Lossless and lossy, through Egami's WebP decoder |
 | JPEG XL (50002, and DNG 1.7's 52546) | Chunky gray, RGB and YCbCr pages of 8 or 16-bit or float samples, lossless and lossy, through Egami's JPEG XL decoder; each strip or tile as its codestream decodes alone. DNG's camera RAW pages (CFA, LinearRaw) are not read |
-| ZSTD, LZMA, LERC | Not yet: `NotSupportedException` names the code. Added on real demand |
+| LZMA, LERC | Not yet: `NotSupportedException` names the code. Added on real demand |
 
 Each page loads in the pixel type that fits it. Depths Egami has no type for widen to the next: 2 and 4 bits to 8, 10 to 14 bits
 to 16, scaled so the maximum stays the maximum; 24 and 32-bit integers and 16 to 64-bit floats load as float types.
@@ -54,9 +54,10 @@ them through it.
 
 | Option | Default | Does |
 | --- | --- | --- |
-| `Compression` | the TIFF source's, else `Deflate` | `None`, `Lzw`, `Deflate`, `PackBits`, `CcittGroup3` and `CcittGroup4` (1-bit), `Jpeg` (8-bit gray, RGB and CMYK), `Webp` (lossless at `Quality` 100, else lossy) |
+| `Compression` | the TIFF source's, else `Deflate` | `None`, `Lzw`, `Deflate`, `Zstd`, `PackBits`, `CcittGroup3` and `CcittGroup4` (1-bit), `Jpeg` (8-bit gray, RGB and CMYK), `Webp` (lossless at `Quality` 100, else lossy) |
 | `CompressionLevel` | 5 | Deflate level, 0 to 9 |
-| `Predictor` | the source's, else `Horizontal` for integers and `FloatingPoint` for floats | For LZW and Deflate; `None` turns it off |
+| `ZstdLevel` | 9 | Zstandard level, 1 to 22, as libtiff's `ZSTD_LEVEL` |
+| `Predictor` | the source's, else `Horizontal` for integers and `FloatingPoint` for floats | For LZW, Deflate and Zstd; `None` turns it off |
 | `Quality` | 75 | JPEG and lossy WebP quality |
 | `TileSize` | the source's, else strips of about 64 KB | A multiple of 16 writes square tiles; 0 forces strips |
 | `Layout` | `Classic` | `Big` writes BigTIFF; `Auto` switches when the pixels pass 4 GB; `Classic` throws before writing when they would |
@@ -74,6 +75,16 @@ as pages.
 [!code-csharp[](../../../tests/Egami.DocSamples/Tiff.cs#tiff-fax)]
 
 Group 4 is the usual choice for scanned text; it takes 1-bit pages only, so threshold first or set `Reduce`.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Tiff.cs#tiff-zstd)]
+
+ZSTD (code 50000, libtiff's and GDAL's) is lossless like Deflate. In Egami's benchmarks a TIFF loads about as fast as with
+Deflate (the predictor and the pixel conversion take most of the time); level 3 writes about as fast as Deflate's default and
+level 9 (the default) a little smaller than it, while on flat images such as screenshots the files are a third smaller. Higher
+levels write smaller and slower. Egami's
+Zstandard codec is its own managed code from RFC 8878: one frame a strip or tile, with the content size and no checksum, as
+libtiff writes. Up to level 15 it follows libzstd's settings and stays within 5 % of its size; from 16, where libzstd switches to
+optimal parsing, Egami's files are a few percent larger. libtiff and GDAL read Egami's ZSTD files and Egami reads theirs.
 
 Files are checked against libtiff (no tiffinfo warnings, identical samples), ImageMagick and Pillow, and open in Windows' WIC
 except for BigTIFF and tiled gray-with-alpha or 16-bit CMYK, which WIC does not read from any writer.

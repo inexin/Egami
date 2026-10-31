@@ -1,0 +1,11 @@
+# AVIF extras (2026-10-31): libavif 1.4.2 built again from the same source with its experimental mini box (HEIF amendment draft),
+# as avifenc-mini and avifdec-mini, to write and decode the mini corpus files. Built by tools/make-avif-references.py extras on top
+# of tools/avifref/Dockerfile (egami-avifref:2.9.2); the tools run as oracles only.
+FROM egami-avifref:2.9.2
+RUN cmake -S /src/libavif -B /src/libavif/mini -G Ninja -DCMAKE_BUILD_TYPE=Release -DAVIF_BUILD_APPS=ON -DBUILD_SHARED_LIBS=OFF \
+        -DAVIF_CODEC_DAV1D=SYSTEM -DAVIF_CODEC_AOM=SYSTEM -DAVIF_LIBYUV=OFF -DAVIF_JPEG=SYSTEM -DAVIF_ZLIBPNG=SYSTEM \
+        -DAVIF_LIBXML2=SYSTEM -DAVIF_LIBSHARPYUV=OFF -DAVIF_ENABLE_EXPERIMENTAL_MINI=ON \
+    && ninja -C /src/libavif/mini avifenc avifdec \
+    && cp /src/libavif/mini/avifenc /usr/local/bin/avifenc-mini && cp /src/libavif/mini/avifdec /usr/local/bin/avifdec-mini \
+    && rm -rf /src/libavif/mini && avifenc-mini --help | grep -i mini
+WORKDIR /work

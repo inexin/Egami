@@ -267,8 +267,8 @@ internal sealed record TiffPlan(TiffStore Store, int Photometric, int Samples, i
             compression = TiffCodes.Deflate;
         }
 
-        if (compression is not (TiffCodes.None or TiffCodes.Lzw or TiffCodes.Deflate or TiffCodes.PackBits or TiffCodes.CcittGroup3
-            or TiffCodes.CcittGroup4 or TiffCodes.Jpeg or TiffCodes.Webp))
+        if (compression is not (TiffCodes.None or TiffCodes.Lzw or TiffCodes.Deflate or TiffCodes.Zstd or TiffCodes.PackBits
+            or TiffCodes.CcittGroup3 or TiffCodes.CcittGroup4 or TiffCodes.Jpeg or TiffCodes.Webp))
         {
             throw new ArgumentException($"TIFF: {TiffCodes.Name(compression)} compression is read only; it cannot be written.", nameof(options));
         }
@@ -389,7 +389,7 @@ internal sealed record TiffPlan(TiffStore Store, int Photometric, int Samples, i
         }
 
         int predictor = 1;
-        if (compression is TiffCodes.Lzw or TiffCodes.Deflate && bits >= 8 && store != TiffStore.Palette)
+        if (compression is TiffCodes.Lzw or TiffCodes.Deflate or TiffCodes.Zstd && bits >= 8 && store != TiffStore.Palette)
         {
             TiffPredictor? wanted = tiff.Predictor ?? (tiff.Compression is null ? source?.Predictor : null);
             predictor = wanted switch
@@ -419,6 +419,7 @@ internal sealed record TiffPlan(TiffStore Store, int Photometric, int Samples, i
     {
         TiffCompression.None => TiffCodes.None,
         TiffCompression.Lzw => TiffCodes.Lzw,
+        TiffCompression.Zstd => TiffCodes.Zstd,
         TiffCompression.PackBits => TiffCodes.PackBits,
         TiffCompression.CcittGroup3 when source.BitsPerSample == 1 && (options.Reduce || source.Unchanged) => TiffCodes.CcittGroup3,
         TiffCompression.CcittGroup4 when source.BitsPerSample == 1 && (options.Reduce || source.Unchanged) => TiffCodes.CcittGroup4,

@@ -61,6 +61,7 @@ public class PropertyTests
     }
 
     /// <summary>Huge, tiny, degenerate and far-away coordinates draw without throwing, and the drawing stays inside the raster.</summary>
+    [Trait("Category", "Slow")]
     [Fact]
     public void ExtremeCoordinatesNeverThrow()
     {
@@ -118,6 +119,7 @@ public class PropertyTests
     }
 
     /// <summary>Contains agrees with an aliased fill: a pixel center is covered exactly when the path contains it.</summary>
+    [Trait("Category", "Slow")]
     [Fact]
     public void ContainsAgreesWithAliasedFills()
     {

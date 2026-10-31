@@ -11,6 +11,7 @@ public sealed partial class GuideTests
 {
     private static readonly string Docs = Path.Combine(Path.GetDirectoryName(Tool.Images)!, "..", "docs", "articles", "video-cli");
 
+    [Trait("Category", "Slow")]
     [Theory]
     [InlineData("index.md")]
     [InlineData("ffmpeg.md")]

@@ -55,6 +55,7 @@ public sealed record TiffReaderOptions : ReaderOptions
 public sealed class TiffWriterOptions : WriterOptions
 {
     private readonly int _compressionLevel = 5;
+    private readonly int _zstdLevel = 9;
     private readonly int _quality = 75;
     private readonly int? _tileSize;
 
@@ -64,7 +65,7 @@ public sealed class TiffWriterOptions : WriterOptions
     /// <summary>
     /// Gets the compression, or <see langword="null"/> (the default) for the TIFF source's, else <see cref="TiffCompression.Deflate"/>.
     /// The writer takes <see cref="TiffCompression.None"/>, <see cref="TiffCompression.Lzw"/>, <see cref="TiffCompression.Deflate"/>,
-    /// <see cref="TiffCompression.PackBits"/>, <see cref="TiffCompression.CcittGroup3"/> and <see cref="TiffCompression.CcittGroup4"/>
+    /// <see cref="TiffCompression.Zstd"/>, <see cref="TiffCompression.PackBits"/>, <see cref="TiffCompression.CcittGroup3"/> and <see cref="TiffCompression.CcittGroup4"/>
     /// (1-bit images only), <see cref="TiffCompression.Jpeg"/> and <see cref="TiffCompression.Webp"/>.
     /// </summary>
     public TiffCompression? Compression { get; init; }
@@ -83,7 +84,23 @@ public sealed class TiffWriterOptions : WriterOptions
     }
 
     /// <summary>
-    /// Gets the predictor for LZW and Deflate, or <see langword="null"/> (the default) for the source's, else
+    /// Gets the Zstandard level, 1 (fastest) to 22 (smallest), for <see cref="TiffCompression.Zstd"/>. Defaults to 9, as libtiff's
+    /// ZSTD_LEVEL does. <see cref="CompressionLevel"/> is Deflate's alone.
+    /// </summary>
+    /// <exception cref="ArgumentOutOfRangeException">The value is outside 1 to 22.</exception>
+    public int ZstdLevel
+    {
+        get => _zstdLevel;
+        init
+        {
+            ArgumentOutOfRangeException.ThrowIfLessThan(value, 1);
+            ArgumentOutOfRangeException.ThrowIfGreaterThan(value, 22);
+            _zstdLevel = value;
+        }
+    }
+
+    /// <summary>
+    /// Gets the predictor for LZW, Deflate and Zstandard, or <see langword="null"/> (the default) for the source's, else
     /// <see cref="TiffPredictor.Horizontal"/> for 8, 16 and 32-bit integer samples and <see cref="TiffPredictor.FloatingPoint"/>
     /// for float samples. <see cref="TiffPredictor.None"/> turns it off.
     /// </summary>
@@ -189,6 +206,9 @@ public enum TiffCompression
     /// <summary>SGILog24, LogLuv in 24 bits (34677); read only.</summary>
     SgiLog24 = 34677,
 
+    /// <summary>Zstandard (50000), libtiff's code; written at <see cref="TiffWriterOptions.ZstdLevel"/>.</summary>
+    Zstd = 50000,
+
     /// <summary>WebP (50001).</summary>
     Webp = 50001,
 
@@ -199,7 +219,7 @@ public enum TiffCompression
     DngJpegXl = 52546,
 }
 
-/// <summary>The horizontal differencing applied before LZW or Deflate, from the Predictor tag.</summary>
+/// <summary>The horizontal differencing applied before LZW, Deflate or Zstandard, from the Predictor tag.</summary>
 /// <example>
 /// <code language="csharp" source="../../../../tests/Egami.DocSamples/Tiff.cs" region="tiff-save"/>
 /// </example>

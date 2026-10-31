@@ -35,6 +35,7 @@ public sealed class BidiTests
         ["PDI"] = BidiClass.PopDirectionalIsolate,
     };
 
+    [Trait("Category", "Slow")]
     [Fact]
     public void BidiTestPasses()
     {

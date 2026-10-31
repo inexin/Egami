@@ -11,6 +11,7 @@ public class SaveTests
     [MemberData(nameof(TestSvg.CorpusData), MemberType = typeof(TestSvg))]
     public void CorpusFilesRoundTrip(string name) => AssertRoundTrip(SvgDocument.Load(TestSvg.CorpusFile(name)));
 
+    [Trait("Category", "Slow")]
     [Fact]
     public void SuiteFilesRoundTrip()
     {

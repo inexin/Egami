@@ -94,6 +94,13 @@ internal sealed class HeifFile
     {
         HeifFile heif = new(file, formatName);
         heif.ParseTopLevel();
+        int mini = heif.Boxes.FindIndex(b => b.Type == HeifMini.Mini);
+        if (!heif.HasMeta && mini > 0 && heif.HasBrand(HeifMini.Mif3))
+        {
+            // A mini box stands for a meta box (the mif3 brand); it is read as the file it stands for.
+            return Parse(HeifMini.Expand(file.Span, heif.Boxes[0], heif.Boxes[mini], heif.MinorVersion, formatName), formatName);
+        }
+
         return heif;
     }
 
