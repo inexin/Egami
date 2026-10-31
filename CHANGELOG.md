@@ -121,6 +121,8 @@ JPEG XL extras, PR D: partial display. No public API change.
   every cut of the test files and the 144 cuts of egami-compare's truncated set it shows a preview exactly when djxl
   `--allow_partial_files` does, within one level at 8 bits of its picture. Rows come out after the last byte, the same pixels as a
   whole-file load.
+- JPEG XL files with an LF frame of level 4, or a Modular color channel smaller than its frame, are reported as damaged
+  (`CorruptDataException`) instead of crashing the decoder; found by the new jxl-partial fuzz target.
 
 JPEG XL extras, PR B: lossless efforts 8 to 10 and patches. All additive.
 
