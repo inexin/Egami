@@ -7,7 +7,7 @@ namespace Egami.Benchmarks;
 
 /// <summary>
 /// TIFF's lossless compressions side by side (TIFF ZSTD task 4): a 2048 × 1536 photo-like RGB image and a screenshot-like one,
-/// written and read with LZW, Deflate (level 5) and ZSTD (levels 3, 9 and 19), each with the horizontal predictor, in strips.
+/// written and read with LZW, Deflate (level 5), ZSTD (levels 3, 9 and 19) and LZMA (presets 1 and 6), each with the horizontal predictor, in strips.
 /// </summary>
 [MemoryDiagnoser]
 public class TiffCompressionBenchmarks
@@ -19,7 +19,7 @@ public class TiffCompressionBenchmarks
     [Params("Photo", "Screenshot")]
     public string Image { get; set; } = "Photo";
 
-    [Params("Lzw", "Deflate", "Zstd3", "Zstd9", "Zstd19")]
+    [Params("Lzw", "Deflate", "Zstd3", "Zstd9", "Zstd19", "Lzma1", "Lzma6")]
     public string Codec { get; set; } = "Deflate";
 
     [GlobalSetup]
@@ -49,6 +49,8 @@ public class TiffCompressionBenchmarks
     {
         "Lzw" => new TiffWriterOptions { Compression = TiffCompression.Lzw },
         "Deflate" => new TiffWriterOptions { Compression = TiffCompression.Deflate },
+        "Lzma1" => new TiffWriterOptions { Compression = TiffCompression.Lzma, LzmaPreset = 1 },
+        "Lzma6" => new TiffWriterOptions { Compression = TiffCompression.Lzma, LzmaPreset = 6 },
         _ => new TiffWriterOptions { Compression = TiffCompression.Zstd, ZstdLevel = int.Parse(Codec[4..], System.Globalization.CultureInfo.InvariantCulture) },
     };
 
