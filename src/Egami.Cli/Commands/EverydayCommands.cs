@@ -166,14 +166,16 @@ internal static class EverydayCommands
 
     /// <summary>
     /// The lossless JPEG route (2.4.4): a JPEG input written as JPEG with no other step, setting or color conversion is
-    /// transformed in its compressed form, so no generation is lost. A transform that would move a partial block falls back
-    /// to decoding.
+    /// transformed in its compressed form, so no generation is lost; <c>--arithmetic</c> alone keeps the route and writes the
+    /// result arithmetic-coded. A transform that would move a partial block falls back to decoding.
     /// </summary>
     private static Func<InputSource, OutputTemplate?, IReadOnlyList<string>?>? LosslessJpeg(
         CliSession session, ParseResult result, ImageOptions options, Option<bool> reencode, JpegTransformOperation? operation)
     {
+        SaveSpec save = options.Save(result);
+        bool arithmetic = save.Common.TryGetValue("arithmetic", out string? coding) && coding == "true";
         if (operation is null || result.GetValue(reencode) || result.GetValue(options.AutoOrient) || result.GetValue(options.To) is not null
-            || options.Save(result).HasSettings)
+            || save.Settings.Count > 0 || save.Common.Keys.Any(k => k != "arithmetic"))
         {
             return null;
         }
@@ -194,7 +196,7 @@ internal static class EverydayCommands
 
             try
             {
-                JpegTransformOptions transform = new() { Operation = operation.Value, Edges = JpegTransformEdges.Strict };
+                JpegTransformOptions transform = new() { Operation = operation.Value, Edges = JpegTransformEdges.Strict, Arithmetic = arithmetic };
                 Output.Write(session, path, destination =>
                 {
                     using Stream source = input.Open(session);

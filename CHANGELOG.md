@@ -113,6 +113,16 @@ DDS textures, stage C (BC7 and BC6H encoders).
 
 ## Egami, unreleased
 
+Arithmetic and lossless JPEG writing, stage C: speed (Build Plan task 8's gate). No API changes; every file is byte for byte
+what it was.
+
+- On one thread a 24-megapixel photo now encodes faster than libjpeg-turbo's cjpeg in every mode the gate covers: lossless
+  (predictor 1) 2.3 s to 0.93 to 1.06 s (cjpeg 1.46 to 1.59 s), progressive arithmetic 0.66 s to 0.38 to 0.40 s (cjpeg 0.47
+  to 0.49 s), sequential arithmetic 0.26 s to 0.22 to 0.28 s (cjpeg 0.25 to 0.31 s). The lossless encoder computes each
+  difference once with a loop per predictor and writes the Huffman codes with the bit buffer in registers, and 8-bit pixels
+  skip the 16-bit conversion; the arithmetic coder renormalizes with one shift, and progressive arithmetic finds each band's
+  coefficients from vector compares; arithmetic lossless (SOF11) codes a row at a time.
+
 Arithmetic and lossless JPEG writing, stage B: lossless. All additive.
 
 - `JpegWriterOptions.Lossless` and `JpegLosslessOptions` write lossless JPEG (T.81 annex H): SOF3, or SOF11 with `Arithmetic`,
@@ -307,6 +317,10 @@ Small format gaps from the on-demand list. All additive.
 
 ## Egami.Cli, unreleased
 
+- `--lossless` also writes lossless JPEG when the output is JPEG (the predictor picked per image, no point transform;
+  `--set jpeg.lossless.predictor=N` and the other `jpeg.lossless.*` settings choose more), and the new `--arithmetic` writes
+  arithmetic-coded JPEG on every command that writes. `rotate`, `flip` and `auto-orient` keep their lossless JPEG route with
+  `--arithmetic`, repacking the result with arithmetic coding.
 - `--progressive`, `--target-size`, `--qgain-map` and `--denoise` on every command that writes, for the AVIF extras (and
   `--progressive` for JPEG and JPEG XL too); 16-bit AVIF is `--bit-depth 16`.
 - `egami layers in.psd folder`: each layer of a PSD or PSB as a PNG at its own size, each pixel mask as a gray PNG, and
