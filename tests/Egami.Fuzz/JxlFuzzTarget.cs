@@ -291,7 +291,7 @@ internal static class JxlFuzzTarget
         JxlWriterOptions options = new()
         {
             Lossless = false,
-            Effort = 1 + (data[2] % 7),
+            Effort = 1 + (data[2] % 10),
             Distance = distance,
             Progressive = (data[4] & 1) != 0,
             PhotonNoiseIso = (data[4] & 2) != 0 ? 100 + (data[5] * 100) : null,

@@ -1,4 +1,5 @@
 using Egami.Analysis;
+using Egami.Formats.Jxl;
 using Egami.Operations;
 using Egami.Pixels;
 
@@ -26,6 +27,23 @@ public class Analysis
 
         Assert.False(result.IsIdentical);
         Assert.True(sameLook || !sameLook);
+    }
+
+    [Fact]
+    public void ButteraugliDistance()
+    {
+        using SampleFiles files = new();
+        using Raster original = Raster.Load("duck.png");
+        original.Save("duck.jxl", new JxlWriterOptions { Distance = 2 });
+        using Raster saved = Raster.Load("duck.jxl");
+
+        #region butteraugli
+        // How far a lossy save moved the picture to the eye: under about 1 it looks the same.
+        CompareResult result = Raster.Compare(original, saved, new CompareOptions { Butteraugli = true });
+        Console.WriteLine($"Butteraugli {result.Butteraugli:F2}, 3-norm {result.Butteraugli3Norm:F2}");
+        #endregion
+
+        Assert.InRange(result.Butteraugli, 0.5, 6);
     }
 
     [Fact]

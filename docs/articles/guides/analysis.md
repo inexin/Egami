@@ -25,6 +25,15 @@ compares the stored channels.
 (σ 1.5) and DSSIM = (1 − SSIM) / 2. It costs about as much as four blurs. ImageMagick 7.1 computes SSIM on straight channels, so
 use `AlphaCompare.Straight` to reproduce its numbers on images with transparency.
 
+**Butteraugli.** With `Butteraugli = true`, `CompareResult.Butteraugli` gets libjxl's psychovisual distance, the number cjxl's
+`-d` aims at: under about 1 the images look the same, and each step up is a more visible difference. It models the eye (light
+sensitivity, frequency bands, edges, masking by busy areas), so it costs far more than SSIM, about half a second a megapixel.
+`Butteraugli3Norm` is its 3-norm, which follows the overall quality more than the single worst spot. The scores match libjxl
+0.12's butteraugli_main within 0.1 %: colors are read as sRGB (or linear light when the profile says so) at 80 nits, and images
+with alpha are compared over black and over white, the larger distance counting.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Analysis.cs#butteraugli)]
+
 `Region` compares one rectangle and `Frame` another frame. Results do not depend on the thread count.
 
 ## Visual regression tests
