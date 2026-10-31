@@ -394,9 +394,12 @@ already decoded (`JxlIcc.cs`), and its rendering order and blending: the stage o
 splines before color upsampling, noise after, reference frames saved before or after the color transform) in
 `JxlImageDecoder.cs`, its patch and frame blending and alpha compositing (`JxlBlend.cs`), its spot color mixing and alpha unpremultiplying with their smallest alpha (`JxlImageDecoder.cs`), and its conversion of XYB output into an enumerated color space: linear sRGB to XYZ D50 and on to the target's primaries, the sRGB luminances for gray, a gamma curve that sends samples at or below 10^-5 to 0, the PQ scaling by intensity_target and the HLG inverse OOTF (`JxlColor.cs`), the layout of its jhgm gain map bundle (`JxlGainMap.cs`), and, for speed, its high-precision sRGB curve and its fast power function (FastLog2f and FastPow2f) for the BT.709, gamma and DCI curves (`JxlColor.cs`, `JxlFastMath.cs`). Egami's lossless JPEG XL encoder is translated from
 libjxl 0.12.0's encoder, so its files match cjxl's choices: the entropy coder's histogram normalization and description,
-clustering, context map, hybrid integer choice and RLE (enc_ans, enc_cluster, enc_context_map, enc_lz77; `JxlEntropyEncoder.cs`),
+clustering, context map, hybrid integer choice and LZ77: runs, the greedy hash-chain parse with its fitted length and distance
+costs, and the optimal parse (enc_ans, enc_cluster, enc_context_map, enc_lz77; `JxlEntropyEncoder.cs`, `JxlLz77.cs`),
 the MA tree learning with its sample deduplication and property quantization (enc_ma, enc_encoding; `JxlTreeLearner.cs`), the
-choices of palettes, RCTs, fixed trees and settings at each effort (enc_modular, enc_palette, enc_rct; `JxlModularEncoder.cs`),
+choices of palettes, RCTs, fixed trees and settings at each effort, and the group-by-group coding of large frames with a tree and
+distributions per group (enc_modular, enc_palette, enc_rct, enc_frame's CanDoStreamingEncoding, enc_encoding's
+ModularGenericCompress; `JxlModularEncoder.cs`),
 the fast lossless encoder of effort 1 with its fixed tree, prefix codes and code-length search (enc_fast_lossless;
 `JxlFastLossless.cs`), the ICC profile transform (enc_icc_codec; `JxlIccEncoder.cs`) and, for the lossy encoder (2.9.7), the forward XYB: linear sRGB
 through the opsin absorbance matrix and bias, cone responses clamped at zero, cube root (enc_xyb, cms/opsin_params; `JxlXyb.cs`), and its VarDCT frame: the
