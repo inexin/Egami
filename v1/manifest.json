@@ -9039,7 +9039,7 @@
       "Uid": null,
       "IsMRef": true,
       "Title": "Egami.Formats.Tiff.TiffPredictor",
-      "Summary": "<p sourcefile=\"api/Egami.Formats.Tiff.TiffPredictor.yml\" sourcestartlinenumber=\"1\">The horizontal differencing applied before LZW, Deflate or Zstandard, from the Predictor tag.</p>\n"
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Tiff.TiffPredictor.yml\" sourcestartlinenumber=\"1\">The horizontal differencing applied before LZW, Deflate, Zstandard or LZMA, from the Predictor tag.</p>\n"
     },
     {
       "type": "ManagedReference",

@@ -125,7 +125,7 @@ using Raster first = pages.Detach(0);
 </thead>
 <tbody>
 <tr>
-<td>None, LZW (and TIFF 5.0's bit-reversed LZW), Deflate, PackBits, ZSTD</td>
+<td>None, LZW (and TIFF 5.0's bit-reversed LZW), Deflate, PackBits, ZSTD, LZMA</td>
 <td>Yes, with the horizontal and floating-point predictors</td>
 </tr>
 <tr>
@@ -153,7 +153,7 @@ using Raster first = pages.Detach(0);
 <td>Chunky gray, RGB and YCbCr pages of 8 or 16-bit or float samples, lossless and lossy, through Egami's JPEG XL decoder; each strip or tile as its codestream decodes alone. DNG's camera RAW pages (CFA, LinearRaw) are not read</td>
 </tr>
 <tr>
-<td>LZMA, LERC</td>
+<td>LERC</td>
 <td>Not yet: <code>NotSupportedException</code> names the code. Added on real demand</td>
 </tr>
 </tbody>
@@ -236,7 +236,7 @@ photo.Save(&quot;photo.tif&quot;, new TiffWriterOptions { Compression = TiffComp
 <tr>
 <td><code>Compression</code></td>
 <td>the TIFF source's, else <code>Deflate</code></td>
-<td><code>None</code>, <code>Lzw</code>, <code>Deflate</code>, <code>Zstd</code>, <code>PackBits</code>, <code>CcittGroup3</code> and <code>CcittGroup4</code> (1-bit), <code>Jpeg</code> (8-bit gray, RGB and CMYK), <code>Webp</code> (lossless at <code>Quality</code> 100, else lossy)</td>
+<td><code>None</code>, <code>Lzw</code>, <code>Deflate</code>, <code>Zstd</code>, <code>Lzma</code>, <code>PackBits</code>, <code>CcittGroup3</code> and <code>CcittGroup4</code> (1-bit), <code>Jpeg</code> (8-bit gray, RGB and CMYK), <code>Webp</code> (lossless at <code>Quality</code> 100, else lossy)</td>
 </tr>
 <tr>
 <td><code>CompressionLevel</code></td>
@@ -249,9 +249,14 @@ photo.Save(&quot;photo.tif&quot;, new TiffWriterOptions { Compression = TiffComp
 <td>Zstandard level, 1 to 22, as libtiff's <code>ZSTD_LEVEL</code></td>
 </tr>
 <tr>
+<td><code>LzmaPreset</code></td>
+<td>6</td>
+<td>LZMA preset, 0 to 9, with xz's meanings, as libtiff's <code>LZMA_PRESET</code></td>
+</tr>
+<tr>
 <td><code>Predictor</code></td>
 <td>the source's, else <code>Horizontal</code> for integers and <code>FloatingPoint</code> for floats</td>
-<td>For LZW, Deflate and Zstd; <code>None</code> turns it off</td>
+<td>For LZW, Deflate, Zstd and LZMA; <code>None</code> turns it off</td>
 </tr>
 <tr>
 <td><code>Quality</code></td>
@@ -306,6 +311,17 @@ levels write smaller and slower. Egami's
 Zstandard codec is its own managed code from RFC 8878: one frame a strip or tile, with the content size and no checksum, as
 libtiff writes. Up to level 15 it follows libzstd's settings and stays within 5 % of its size; from 16, where libzstd switches to
 optimal parsing, Egami's files are a few percent larger. libtiff and GDAL read Egami's ZSTD files and Egami reads theirs.</p>
+<pre><code class="lang-csharp">// LZMA with the predictor: the smallest lossless TIFF, slow to write; preset 6 is libtiff's default, 9 the smallest.
+photo.Save(&quot;archive.tif&quot;, new TiffWriterOptions { Compression = TiffCompression.Lzma });
+photo.Save(&quot;archive-fast.tif&quot;, new TiffWriterOptions { Compression = TiffCompression.Lzma, LzmaPreset = 1 });
+</code></pre>
+<p>LZMA (code 34925) writes the smallest lossless files, at a cost: on Egami's 2048 by 1536 photo benchmark, preset 6 is 18 %
+smaller than Deflate and 16 % smaller than ZSTD 19, but loads about eight times slower and writes about twenty times slower than
+Deflate. It suits archives that are written once and read rarely. Each strip or tile is an xz stream, as libtiff writes it: the
+delta filter over whole samples, then LZMA2, with no check; Egami's codec is its own managed code from the xz format
+specification. Presets 0 to 9 follow xz, with the dictionary cut to the strip, so a 64 KB strip never asks for a 64 MB
+dictionary; Egami's files are within 4 % of liblzma's size at every preset. libtiff and GDAL read Egami's LZMA files and Egami
+reads theirs. Some libtiff builds (Alpine's, for one) leave LZMA out and cannot open them.</p>
 <p>Files are checked against libtiff (no tiffinfo warnings, identical samples), ImageMagick and Pillow, and open in Windows' WIC
 except for BigTIFF and tiled gray-with-alpha or 16-bit CMYK, which WIC does not read from any writer.</p>
 <h2 id="format-details-and-metadata">Format details and metadata</h2>

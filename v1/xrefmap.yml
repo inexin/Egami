@@ -52573,6 +52573,12 @@ references:
   commentId: F:Egami.Formats.Tiff.TiffCompression.JpegXl
   fullName: Egami.Formats.Tiff.TiffCompression.JpegXl
   nameWithType: TiffCompression.JpegXl
+- uid: Egami.Formats.Tiff.TiffCompression.Lzma
+  name: Lzma
+  href: api/Egami.Formats.Tiff.TiffCompression.html#Egami_Formats_Tiff_TiffCompression_Lzma
+  commentId: F:Egami.Formats.Tiff.TiffCompression.Lzma
+  fullName: Egami.Formats.Tiff.TiffCompression.Lzma
+  nameWithType: TiffCompression.Lzma
 - uid: Egami.Formats.Tiff.TiffCompression.Lzw
   name: Lzw
   href: api/Egami.Formats.Tiff.TiffCompression.html#Egami_Formats_Tiff_TiffCompression_Lzw
@@ -53240,6 +53246,19 @@ references:
   isSpec: "True"
   fullName: Egami.Formats.Tiff.TiffWriterOptions.Layout
   nameWithType: TiffWriterOptions.Layout
+- uid: Egami.Formats.Tiff.TiffWriterOptions.LzmaPreset
+  name: LzmaPreset
+  href: api/Egami.Formats.Tiff.TiffWriterOptions.html#Egami_Formats_Tiff_TiffWriterOptions_LzmaPreset
+  commentId: P:Egami.Formats.Tiff.TiffWriterOptions.LzmaPreset
+  fullName: Egami.Formats.Tiff.TiffWriterOptions.LzmaPreset
+  nameWithType: TiffWriterOptions.LzmaPreset
+- uid: Egami.Formats.Tiff.TiffWriterOptions.LzmaPreset*
+  name: LzmaPreset
+  href: api/Egami.Formats.Tiff.TiffWriterOptions.html#Egami_Formats_Tiff_TiffWriterOptions_LzmaPreset_
+  commentId: Overload:Egami.Formats.Tiff.TiffWriterOptions.LzmaPreset
+  isSpec: "True"
+  fullName: Egami.Formats.Tiff.TiffWriterOptions.LzmaPreset
+  nameWithType: TiffWriterOptions.LzmaPreset
 - uid: Egami.Formats.Tiff.TiffWriterOptions.ParallelCompression
   name: ParallelCompression
   href: api/Egami.Formats.Tiff.TiffWriterOptions.html#Egami_Formats_Tiff_TiffWriterOptions_ParallelCompression
