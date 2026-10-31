@@ -365,7 +365,7 @@ avifenc's default speed 6.</p>
 
   <h3 id="Egami_Formats_Avif_AvifWriterOptions_FilmGrainDenoise" data-uid="Egami.Formats.Avif.AvifWriterOptions.FilmGrainDenoise">
   FilmGrainDenoise
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Avif/AvifFormat.cs/#L493"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Avif/AvifFormat.cs/#L494"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets how strongly to take film grain out before coding and put it back on decoding, 0 (the default, off) to 50, as libaom's
@@ -414,7 +414,7 @@ plain.Save("duck-grain-again.avif");</code></pre>
 
   <h3 id="Egami_Formats_Avif_AvifWriterOptions_GainMapQuality" data-uid="Egami.Formats.Avif.AvifWriterOptions.GainMapQuality">
   GainMapQuality
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Avif/AvifFormat.cs/#L477"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Avif/AvifFormat.cs/#L478"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the quality of a gain map, 0 to 100 on the same scale as <a class="xref" href="Egami.Formats.Avif.AvifWriterOptions.html#Egami_Formats_Avif_AvifWriterOptions_Quality">Quality</a>, as avifenc --qgain-map sets it, or
@@ -677,11 +677,12 @@ using Raster first = Raster.Load("duck-layers.avif", options: new AvifReaderOpti
 
   <h3 id="Egami_Formats_Avif_AvifWriterOptions_TargetSize" data-uid="Egami.Formats.Avif.AvifWriterOptions.TargetSize">
   TargetSize
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Avif/AvifFormat.cs/#L463"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Avif/AvifFormat.cs/#L464"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the largest size the file may have, in bytes, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> (the default) to code at <a class="xref" href="Egami.Formats.Avif.AvifWriterOptions.html#Egami_Formats_Avif_AvifWriterOptions_Quality">Quality</a>:
-the quality is searched, as avifenc --target-size searches it, for the largest file not above the size. When even quality 0
+the quality is searched, as avifenc --target-size searches it, for the largest file not above the size, then the quantizer
+between that quality and the next (in one layer), so the file lands close under the size. When even quality 0
 is larger, that file is written and an Avif.TargetSizeExceeded warning says so. Ignored for lossless images.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
