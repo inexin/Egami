@@ -85,6 +85,14 @@ at its own quality, as `avifenc --qgain-map`.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Avif.cs#target-size)]
 
+`FilmGrainDenoise`, 1 to 50, takes film grain out before coding and writes AV1 film grain parameters that decoders use to put it
+back, so the grain costs a few bytes rather than many, as libaom's denoise-noise-level does for still images: on a picture with
+measurable noise, each plane is denoised by a Wiener filter and the noise modeled by its autoregressive pattern and its strength at
+each brightness. A clean picture gets no grain. A raster loaded with `AvifReaderOptions.FilmGrain` set to `false` keeps its
+`AvifDetails.FilmGrain`, and saving it as AVIF writes the parameters back, so the look survives a round trip.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Avif.cs#grain)]
+
 ### Progressive AVIF
 
 `Progressive` writes two layers, as `avifenc --progressive` does: a small first layer at quality 2 that a viewer can show while

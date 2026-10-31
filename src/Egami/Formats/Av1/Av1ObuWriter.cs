@@ -7,6 +7,9 @@ namespace Egami.Formats.Av1;
 /// </summary>
 internal sealed class Av1FrameParameters
 {
+    /// <summary>Gets or sets the film grain parameters a shown frame writes, or null for none (apply_grain 0).</summary>
+    internal Av1FilmGrain? FilmGrain { get; set; }
+
     /// <summary>Gets or sets frame_type.</summary>
     internal Av1FrameType FrameType { get; set; } = Av1FrameType.Key;
 
@@ -707,10 +710,88 @@ internal static class Av1ObuWriter
 
         if (s.FilmGrainParamsPresent && (f.ShowFrame || f.ShowableFrame))
         {
-            w.Flag(false); // apply_grain
+            FilmGrainParams(w, s, f);
         }
 
         static int Secondary(int strength) => strength == 4 ? 3 : strength;
+    }
+
+    /// <summary>
+    /// Writes film_grain_params (section 5.9.30): apply_grain, then the parameters in full (an inter frame sets update_grain), as the
+    /// frame header reader reads them.
+    /// </summary>
+    private static void FilmGrainParams(Av1BitWriter w, Av1SequenceHeader s, Av1FrameParameters f)
+    {
+        if (f.FilmGrain is not { ApplyGrain: true } g)
+        {
+            w.Flag(false); // apply_grain
+            return;
+        }
+
+        w.Flag(true);
+        w.Bits(g.GrainSeed & 0xFFFF, 16);
+        if (f.FrameType == Av1FrameType.Inter)
+        {
+            w.Flag(true); // update_grain
+        }
+
+        Points(w, g.PointsY);
+        if (!s.Monochrome)
+        {
+            w.Flag(g.ChromaScalingFromLuma);
+        }
+
+        if (!s.Monochrome && !g.ChromaScalingFromLuma && !(s.SubsamplingX == 1 && s.SubsamplingY == 1 && g.PointsY.Length == 0))
+        {
+            Points(w, g.PointsCb);
+            Points(w, g.PointsCr);
+        }
+
+        w.Bits(g.GrainScalingMinus8, 2);
+        w.Bits(g.ArCoeffLag, 2);
+        foreach (int c in g.PointsY.Length > 0 ? g.ArCoeffsYPlus128 : [])
+        {
+            w.Bits(c, 8);
+        }
+
+        foreach (int c in g.ChromaScalingFromLuma || g.PointsCb.Length > 0 ? g.ArCoeffsCbPlus128 : [])
+        {
+            w.Bits(c, 8);
+        }
+
+        foreach (int c in g.ChromaScalingFromLuma || g.PointsCr.Length > 0 ? g.ArCoeffsCrPlus128 : [])
+        {
+            w.Bits(c, 8);
+        }
+
+        w.Bits(g.ArCoeffShiftMinus6, 2);
+        w.Bits(g.GrainScaleShift, 2);
+        if (g.PointsCb.Length > 0)
+        {
+            w.Bits(g.CbMult, 8);
+            w.Bits(g.CbLumaMult, 8);
+            w.Bits(g.CbOffset, 9);
+        }
+
+        if (g.PointsCr.Length > 0)
+        {
+            w.Bits(g.CrMult, 8);
+            w.Bits(g.CrLumaMult, 8);
+            w.Bits(g.CrOffset, 9);
+        }
+
+        w.Flag(g.OverlapFlag);
+        w.Flag(g.ClipToRestrictedRange);
+
+        static void Points(Av1BitWriter w, (int Value, int Scaling)[] points)
+        {
+            w.Bits(points.Length, 4);
+            foreach ((int value, int scaling) in points)
+            {
+                w.Bits(value, 8);
+                w.Bits(scaling, 8);
+            }
+        }
     }
 
     /// <summary>Writes frame_size, superres_params (off) and render_size (the frame's own).</summary>

@@ -133,6 +133,7 @@ public sealed class Av1StreamEncoder : IDisposable
             VarianceBoost = plan.VarianceBoost ?? plan.Tune == Av1Tune.Image,
             Layer = intra ? 0 : plan.Layer,
             Intra = intra,
+            FilmGrain = _sequence.FilmGrainParamsPresent ? plan.FilmGrain : null,
         };
         Av1SearchProfile profile = Av1SearchProfile.For(settings.Effort, settings.Lossless, settings.Reference);
         Av1FrameParameters parameters = Av1Encoder.ParametersFor(input, _sequence, settings);
@@ -517,6 +518,9 @@ public sealed record Av1SequenceOptions
     /// </summary>
     internal int SpatialLayers { get; init; } = 1;
 
+    /// <summary>Gets whether frames may carry film grain parameters (<see cref="Av1FramePlan.FilmGrain"/>).</summary>
+    internal bool FilmGrain { get; init; }
+
     /// <summary>
     /// Gets options that reproduce a sequence header exactly: the stream's size, bit depth, chroma, color and tools are the
     /// header's, and <see cref="Av1StreamEncoder.SequenceHeader"/> is the same OBU.
@@ -604,6 +608,7 @@ public sealed record Av1SequenceOptions
             SubsamplingX = ssx,
             SubsamplingY = ssy,
             ChromaSamplePosition = ssx == 1 && ssy == 1 ? ChromaSiting switch { Pixels.ChromaSiting.Left => 1, Pixels.ChromaSiting.TopLeft => 2, _ => 0 } : 0,
+            FilmGrainParamsPresent = FilmGrain,
         };
         byte[] payload = Av1ObuWriter.SequenceHeader(written);
         return (Av1SequenceHeader.Parse(payload, "AV1"), payload);
@@ -764,6 +769,9 @@ public sealed record Av1FramePlan
     /// null (the default) writes no extension.
     /// </summary>
     internal int? SpatialId { get; init; }
+
+    /// <summary>Gets the film grain parameters the frame writes, for a stream with <see cref="Av1SequenceOptions.FilmGrain"/>; null for none.</summary>
+    internal Av1FilmGrain? FilmGrain { get; init; }
 
     /// <summary>Gets whether screen content tools (palettes, and intra block copy in intra frames) are on; null (the default) detects screen content.</summary>
     public bool? ScreenContent { get; init; }

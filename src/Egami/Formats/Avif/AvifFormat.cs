@@ -152,6 +152,12 @@ public sealed class AvifDetails : FormatDetails
     public AvifFilmGrain? FilmGrain { get; set; }
 
     /// <summary>
+    /// Gets or sets whether Load added <see cref="FilmGrain"/> to the pixels; a raster loaded without it (FilmGrain false) has
+    /// the grain written back when it is saved as AVIF (AVIF extras design, question 9).
+    /// </summary>
+    internal bool GrainApplied { get; set; }
+
+    /// <summary>
     /// Gets or sets every item of the file with what it is to the primary image (design question 13); read an image item with
     /// <see cref="AvifImage.ReadItem(string, uint, ReaderOptions?, EgamiContext?)"/>. Empty for a sequence read from its tracks.
     /// </summary>
@@ -182,6 +188,7 @@ public sealed class AvifDetails : FormatDetails
             IsSequence = IsSequence,
             HasFilmGrain = HasFilmGrain,
             FilmGrain = FilmGrain,
+            GrainApplied = GrainApplied,
             Items = Items,
         };
     }

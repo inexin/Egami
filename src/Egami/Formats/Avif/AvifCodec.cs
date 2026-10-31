@@ -19,6 +19,9 @@ internal sealed class AvifCodec(bool filmGrain, int? layer = null) : IHeifCodec
     /// <summary>Gets the film grain parameters of the first frame decoded that applies grain, or null.</summary>
     internal AvifFilmGrain? FilmGrain { get; private set; }
 
+    /// <summary>Gets whether grain is added to the frames' pixels.</summary>
+    internal bool AppliesGrain => filmGrain;
+
     /// <summary>Gets whether the first frame decoded is coded lossless.</summary>
     internal bool Lossless { get; private set; }
 

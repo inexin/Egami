@@ -30,6 +30,7 @@ internal sealed partial class AvifReader : IFormatReader, IYuvFormatReader, IRow
         {
             AvifDetails details = AvifDetails.From((AvifFile)file);
             details.FilmGrain = ((AvifCodec)codec).FilmGrain;
+            details.GrainApplied = ((AvifCodec)codec).AppliesGrain;
             details.Lossless = ((AvifCodec)codec).Lossless;
             details.Layers = ((AvifCodec)codec).Layers;
             metadata.FormatDetails = details;

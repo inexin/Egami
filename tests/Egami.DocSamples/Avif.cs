@@ -222,6 +222,15 @@ public class Avif
         using Raster fallback = Raster.Load("duck-16bit.avif", options: new AvifReaderOptions { SampleTransform = false });
         #endregion
 
+        #region grain
+        // Grain is costly to code: denoise first and let decoders add it back from AV1 film grain parameters.
+        duck.Save("duck-grain.avif", new AvifWriterOptions { Quality = 60, FilmGrainDenoise = 20 });
+
+        // A raster loaded without its grain keeps the parameters, and saving writes them back.
+        using Raster plain = Raster.Load("duck-grain.avif", options: new AvifReaderOptions { FilmGrain = false });
+        plain.Save("duck-grain-again.avif");
+        #endregion
+
         #region target-size
         // The quality is searched for the largest file not above the size, as avifenc --target-size does.
         duck.Save("duck-8k.avif", new AvifWriterOptions { TargetSize = 8000 });
@@ -235,5 +244,7 @@ public class Avif
         Assert.Equal(16, ((AvifDetails)deep.Metadata.FormatDetails!).BitDepth);
         Assert.Equal(12, ((AvifDetails)fallback.Metadata.FormatDetails!).BitDepth);
         Assert.True(new FileInfo("duck-8k.avif").Length <= 8000);
+        using Raster again = Raster.Load("duck-grain-again.avif", options: new AvifReaderOptions { FilmGrain = false });
+        Assert.Equal(((AvifDetails)plain.Metadata.FormatDetails!).FilmGrain is null, ((AvifDetails)again.Metadata.FormatDetails!).FilmGrain is null);
     }
 }

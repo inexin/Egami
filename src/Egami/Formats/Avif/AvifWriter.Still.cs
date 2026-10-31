@@ -109,7 +109,7 @@ internal sealed partial class AvifWriter
         private readonly int _matrix;
         private readonly FileMetadata _extras;
         private readonly bool _hasAlpha;
-        private readonly Dictionary<ChromaFormat, Av1EncoderInput> _planes = [];
+        private readonly Dictionary<ChromaFormat, (Av1EncoderInput Planes, Av1FilmGrain? Grain)> _planes = [];
         private readonly Dictionary<string, CodedImage> _alpha = [];
         private GainMapItem? _gainMap;
         private bool _gainMapDone;
@@ -144,7 +144,7 @@ internal sealed partial class AvifWriter
                 : Lossless ? ChromaFormat.Yuv444
                 : options.Chroma is ChromaFormat chosen and (ChromaFormat.Yuv420 or ChromaFormat.Yuv422 or ChromaFormat.Yuv444) ? chosen
                 : quality >= 90 ? ChromaFormat.Yuv444 : ChromaFormat.Yuv420;
-            Av1EncoderInput color = Planes(chroma);
+            (Av1EncoderInput color, Av1FilmGrain? grain) = Planes(chroma);
             (int cellWidth, int cellHeight) = GridCells(_raster.Width, _raster.Height, chroma, options.GridTileSize);
             IReadOnlyList<AvifLayer>? layers = LayerPlan(quality);
             if (layers is not null && (cellWidth < _raster.Width || cellHeight < _raster.Height))
@@ -156,8 +156,8 @@ internal sealed partial class AvifWriter
             // A save's progress counts superblock rows: the color planes take the first three quarters when an alpha plane follows.
             reporter?.Part(0, _hasAlpha ? 0.75 : 1);
             CodedImage colorStream = layers is null
-                ? CodedImage.Encode(color, cellWidth, cellHeight, Settings(Lossless, QIndexFor(quality), reporter))
-                : EncodeLayers(color, layers, Lossless, reporter);
+                ? CodedImage.Encode(color, cellWidth, cellHeight, Settings(Lossless, QIndexFor(quality), reporter, grain))
+                : EncodeLayers(color, layers, Lossless, reporter, grain);
 
             CodedImage? alphaStream = null;
             if (_hasAlpha)
@@ -205,9 +205,10 @@ internal sealed partial class AvifWriter
                 : null;
         }
 
-        private Av1EncoderSettings Settings(bool lossless, int qindex, SaveReporter? reporter) => new()
+        private Av1EncoderSettings Settings(bool lossless, int qindex, SaveReporter? reporter, Av1FilmGrain? grain = null) => new()
         {
             Lossless = lossless,
+            FilmGrain = grain,
             QIndex = qindex,
             Effort = _options.Effort,
             Parallelism = _context.MaxParallelism,
@@ -215,19 +216,34 @@ internal sealed partial class AvifWriter
             CancellationToken = reporter?.Cancellation ?? default,
         };
 
-        /// <summary>Gets the color planes of a chroma format, converted once.</summary>
-        private Av1EncoderInput Planes(ChromaFormat chroma)
+        /// <summary>
+        /// Gets the color planes of a chroma format, converted once, and the film grain their frames carry: with FilmGrainDenoise
+        /// the planes denoised and their grain modeled (AVIF extras design, question 9), else a loaded raster's grain that Load
+        /// left out, else none. Lossless images carry none.
+        /// </summary>
+        private (Av1EncoderInput Planes, Av1FilmGrain? Grain) Planes(ChromaFormat chroma)
         {
-            if (!_planes.TryGetValue(chroma, out Av1EncoderInput? planes))
+            if (!_planes.TryGetValue(chroma, out (Av1EncoderInput Planes, Av1FilmGrain? Grain) entry))
             {
-                planes = Lossless || _gray
+                Av1EncoderInput planes = Lossless || _gray
                     ? DirectPlanes(_rgba, chroma == ChromaFormat.Yuv400, _bitDepth, _primaries, _transfer, _matrix)
                     : chroma == ChromaFormat.Yuv420 && _bitDepth == 8 && _options.Effort >= 5 ? SharpPlanes(_raster, _primaries, _transfer, _matrix)
                     : ConvertedPlanes(_raster, chroma, _bitDepth, _primaries, _transfer, _matrix);
-                _planes[chroma] = planes;
+                Av1FilmGrain? grain = null;
+                if (!Lossless && _options.FilmGrainDenoise > 0 && Av1FilmGrainModel.Run(planes, _options.FilmGrainDenoise) is (Av1EncoderInput denoised, Av1FilmGrain modeled))
+                {
+                    (planes, grain) = (denoised, modeled);
+                }
+                else if (!Lossless && _options.FilmGrainDenoise == 0 && _metadata.FormatDetails is AvifDetails { FilmGrain: AvifFilmGrain kept, GrainApplied: false })
+                {
+                    grain = Grain(kept, planes);
+                }
+
+                entry = (planes, grain);
+                _planes[chroma] = entry;
             }
 
-            return planes;
+            return entry;
         }
 
         /// <summary>
@@ -235,7 +251,7 @@ internal sealed partial class AvifWriter
         /// first a key frame and each later one shown in turn, predicted from the one before when it is the same size (and the first
         /// of two is not near empty), else coded on its own; the item's data is the frames in order, which a1lx indexes.
         /// </summary>
-        private CodedImage EncodeLayers(Av1EncoderInput input, IReadOnlyList<AvifLayer> layers, bool lossless, SaveReporter? reporter)
+        private CodedImage EncodeLayers(Av1EncoderInput input, IReadOnlyList<AvifLayer> layers, bool lossless, SaveReporter? reporter, Av1FilmGrain? grain = null)
         {
             using Av1StreamEncoder encoder = new(new Av1SequenceOptions
             {
@@ -246,6 +262,7 @@ internal sealed partial class AvifWriter
                 CodePoints = new ColorCodePoints((byte)input.ColorPrimaries, (byte)input.TransferCharacteristics, (byte)input.MatrixCoefficients, input.FullRange),
                 ChromaSiting = input.ChromaSamplePosition switch { 1 => ChromaSiting.Left, 2 => ChromaSiting.TopLeft, _ => null },
                 SpatialLayers = layers.Count,
+                FilmGrain = grain is not null,
             }, _context);
             bool allIntra = layers.Count == 2 && layers[0].Quality <= AllIntraFirstLayerQuality;
             List<byte> data = [];
@@ -270,6 +287,7 @@ internal sealed partial class AvifWriter
                     Tune = Av1Tune.Image,
                     OrderHint = 0,
                     SpatialId = k,
+                    FilmGrain = grain,
                 });
                 data.AddRange(frame.Data.Span);
                 sizes[k] = frame.Data.Length;
@@ -279,6 +297,45 @@ internal sealed partial class AvifWriter
             byte[] stream = [.. data];
             return new CodedImage([Av1Encoder.FromStream(stream, encoder.Sequence, encoder.Reconstruction!)], 1, 1, input.Width, input.Height) { LayerSizes = sizes };
         }
+    }
+
+    /// <summary>
+    /// Gets the AV1 film grain parameters of a loaded raster's grain, for planes of their chroma format: a chroma table the planes'
+    /// format cannot carry (4:0:0) is left out, and AV1's rules on 4:2:0 chroma without luma points are kept.
+    /// </summary>
+    internal static Av1FilmGrain Grain(AvifFilmGrain g, Av1EncoderInput planes)
+    {
+        bool mono = planes.Chroma == ChromaFormat.Yuv400;
+        bool fromLuma = !mono && g.ChromaScalingFromLuma;
+        bool chroma = !mono && !fromLuma && !(planes.Chroma == ChromaFormat.Yuv420 && g.ScalingPointsY.Count == 0);
+        (int, int)[] cb = chroma ? [.. g.ScalingPointsCb] : [], cr = chroma ? [.. g.ScalingPointsCr] : [];
+        int lumaCount = 2 * g.ArCoeffLag * (g.ArCoeffLag + 1), chromaCount = lumaCount + (g.ScalingPointsY.Count > 0 ? 1 : 0);
+        int[] Coefficients(IReadOnlyList<int> values, int n) => [.. Enumerable.Range(0, n).Select(i => (i < values.Count ? values[i] : 0) + 128)];
+        return new Av1FilmGrain
+        {
+            ApplyGrain = true,
+            UpdateGrain = true,
+            GrainSeed = g.RandomSeed,
+            PointsY = [.. g.ScalingPointsY],
+            ChromaScalingFromLuma = fromLuma,
+            PointsCb = cb,
+            PointsCr = cr,
+            GrainScalingMinus8 = g.ScalingShift - 8,
+            ArCoeffLag = g.ArCoeffLag,
+            ArCoeffsYPlus128 = g.ScalingPointsY.Count > 0 ? Coefficients(g.ArCoeffsY, lumaCount) : [],
+            ArCoeffsCbPlus128 = fromLuma || cb.Length > 0 ? Coefficients(g.ArCoeffsCb, chromaCount) : [],
+            ArCoeffsCrPlus128 = fromLuma || cr.Length > 0 ? Coefficients(g.ArCoeffsCr, chromaCount) : [],
+            ArCoeffShiftMinus6 = g.ArCoeffShift - 6,
+            GrainScaleShift = g.GrainScaleShift,
+            CbMult = g.Cb.Mult,
+            CbLumaMult = g.Cb.LumaMult,
+            CbOffset = g.Cb.Offset,
+            CrMult = g.Cr.Mult,
+            CrLumaMult = g.Cr.LumaMult,
+            CrOffset = g.Cr.Offset,
+            OverlapFlag = g.Overlap,
+            ClipToRestrictedRange = g.ClipToRestrictedRange,
+        };
     }
 
     /// <summary>Scales planes down to a layer's size, each output sample the mean of the input samples its area covers.</summary>
