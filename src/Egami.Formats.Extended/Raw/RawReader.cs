@@ -43,6 +43,19 @@ internal sealed class RawReader : IFormatReader, IRowFormatReader, IMultiImageRe
     {
         RawFile file = RawFile.Open(input);
         Plan plan = Plan.Choose(file, options, input);
+        if (plan.Output != RawOutput.Mosaic && options.ConvertColorTo is { Model: not ColorModel.Rgb } other)
+        {
+            // Converted to another model: its type at the depth the image has, as Egami's own conversion on load picks.
+            bool wide = plan.Natural != Natural.Rgb8 && plan.Natural != Natural.Gray8;
+            return (other.Model, wide) switch
+            {
+                (ColorModel.Gray, true) => Load<Gray16>(file, plan, options, input),
+                (ColorModel.Gray, false) => Load<Gray8>(file, plan, options, input),
+                (ColorModel.Cmyk, true) => Load<Cmyk16>(file, plan, options, input),
+                _ => Load<Cmyk8>(file, plan, options, input),
+            };
+        }
+
         return plan.Natural switch
         {
             Natural.Gray16 => Load<Gray16>(file, plan, options, input),
@@ -120,14 +133,15 @@ internal sealed class RawReader : IFormatReader, IRowFormatReader, IMultiImageRe
             default:
                 {
                     using RawPixels pixels = Pixels(file, frame.Sensor, input, strict, warnings);
-                    RawDeveloper developer = new(frame, Raw(options), plan.Output == RawOutput.HalfSize, ColorProfile.Srgb, warnings);
+                    ColorProfile space = RenderSpace(options) ?? ColorProfile.Srgb;
+                    RawDeveloper developer = new(frame, Raw(options), plan.Output == RawOutput.HalfSize, space, warnings);
                     raster = input.CreateRaster<TPixel>(plan.Width, plan.Height);
                     try
                     {
                         Raster<TPixel> target = raster;
                         developer.Run(pixels, input, (y, row) => PixelConvert.Convert(row, target.Row(y)));
                         camera = developer.Camera;
-                        raster.Metadata.ColorSpace = ColorSpaceHint.Srgb;
+                        Describe(raster.Metadata, space);
                     }
                     catch
                     {
@@ -137,6 +151,16 @@ internal sealed class RawReader : IFormatReader, IRowFormatReader, IMultiImageRe
 
                     break;
                 }
+        }
+
+        // A colour space the develop cannot render into (CMYK, gray, HDR) is converted to here, as Egami would after any load.
+        if (plan.Output != RawOutput.Mosaic && options.ConvertColorTo is ColorProfile convert && (plan.Output == RawOutput.Preview || RenderSpace(options) is null))
+        {
+            Raster<TPixel> stored = raster;
+            using (stored)
+            {
+                raster = stored.ConvertColor<TPixel>(convert);
+            }
         }
 
         RasterMetadata metadata = raster.Metadata;
@@ -152,6 +176,25 @@ internal sealed class RawReader : IFormatReader, IRowFormatReader, IMultiImageRe
         }
 
         return raster;
+    }
+
+    /// <summary>Returns the RGB colour space the develop renders into for the options, or <see langword="null"/> for sRGB.</summary>
+    internal static ColorProfile? RenderSpace(ReaderOptions options)
+    {
+        return options.ConvertColorTo is { Model: ColorModel.Rgb, Primaries: not null, Transfer.IsHdr: false } target ? target : null;
+    }
+
+    /// <summary>Records the colour space a develop rendered into.</summary>
+    private static void Describe(RasterMetadata metadata, ColorProfile space)
+    {
+        if (space.IsEquivalentTo(ColorProfile.Srgb))
+        {
+            metadata.ColorSpace = ColorSpaceHint.Srgb;
+            return;
+        }
+
+        metadata.IccProfile = space.ToIcc();
+        metadata.ColorSpace = ColorSpaceHint.EmbeddedIcc;
     }
 
     /// <summary>Reads and decodes the sensor data; damage throws when strict, else is noted.</summary>
@@ -466,6 +509,11 @@ internal sealed class RawReader : IFormatReader, IRowFormatReader, IMultiImageRe
             _options = options;
             _input = input;
             Metadata = new RasterMetadata { FormatName = RawFormat.Info.Name, FormatDetails = Details(file, plan, null) };
+            if (plan.Output is RawOutput.Developed or RawOutput.HalfSize)
+            {
+                // Known before the develop runs, so a streaming decode converts from what the rows will be.
+                Describe(Metadata, RenderSpace(options) ?? ColorProfile.Srgb);
+            }
         }
 
         public override int Width => _plan.Width;

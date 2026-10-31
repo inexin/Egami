@@ -11,6 +11,9 @@ public class RawReaderTests
 {
     private static readonly double[] Curve = [0, 0, 0.1525, 0.3, 1, 1];
 
+    /// <summary>XYZ (D65) to linear Display P3.</summary>
+    private static readonly double[] P3Camera = [2.4934969, -0.9313836, -0.4027108, -0.8294890, 1.7626641, 0.0236247, 0.0358458, -0.0761724, 0.9568845];
+
     private static EgamiContext Context => TestImages.Context;
 
     /// <summary>The 16-bit sRGB value of a linear one, as the develop encodes it.</summary>
@@ -511,6 +514,32 @@ public class RawReaderTests
         dng.ExtraIfd0.Add(TiffTag.Float(50940, Curve));
         using Raster<Rgb16> raster = Raster.Load<Rgb16>(dng.Build(), Context);
         Assert.True(raster.Row(8)[8].G > Srgb(10000 / 65535.0) + 2000);
+    }
+
+    [Fact]
+    public void RendersIntoConvertColorTo()
+    {
+        // A camera whose RGB is linear Display P3 sees P3's green, beyond sRGB: rendered into P3 it keeps its colour, through
+        // sRGB it is clipped and comes back paler.
+        DngFile dng = new DngFile { Width = 24, Height = 24, ColorMatrix = P3Camera }.Fill((x, y, _) => ((y & 1) << 1 | (x & 1)) is 1 or 2 ? 40000 : 200);
+        byte[] file = dng.Build();
+        ReaderOptions p3 = new RawReaderOptions { ConvertColorTo = Colors.ColorProfile.DisplayP3, ColorNoiseReduction = 0 };
+        using Raster<Rgb16> direct = Raster.Load<Rgb16>(file, Context, p3);
+        Assert.Equal(ColorSpaceHint.EmbeddedIcc, direct.Metadata.ColorSpace);
+        Assert.True(direct.Metadata.GetColorProfile().IsEquivalentTo(Colors.ColorProfile.DisplayP3));
+        using Raster<Rgb16> viaSrgb = Raster.Load<Rgb16>(file, Context, new RawReaderOptions { ColorNoiseReduction = 0 });
+        using Raster<Rgb16> converted = viaSrgb.ConvertColor<Rgb16>(Colors.ColorProfile.DisplayP3);
+        Assert.True(direct.Row(12)[12].R < converted.Row(12)[12].R, "Rendered straight into P3, the green is not clipped to sRGB first.");
+
+        // Natural loads, streams and other models too.
+        using Raster natural = Raster.Load(file, Context, p3);
+        Assert.Equal(Rgb16.Layout, natural.Layout);
+        using Raster cmyk = Raster.Load(file, Context, new ReaderOptions { ConvertColorTo = Colors.ColorProfile.Fogra39 });
+        Assert.Equal(Cmyk16.Layout, cmyk.Layout);
+        using RasterDecoder decoder = RasterDecoder.Open(new MemoryStream(file), Context, p3);
+        using Raster<Rgb16> band = Raster.Create<Rgb16>(24, 24);
+        decoder.ReadRows(band);
+        Assert.True(band.Row(12).SequenceEqual(direct.Row(12)));
     }
 
     [Fact]

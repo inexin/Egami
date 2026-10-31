@@ -23,6 +23,7 @@ public static class RawFormat
         SignatureLength = RawDetect.SignatureLength,
         Matches = RawDetect.Matches,
         Reader = new RawReader(),
+        ConvertsColor = true,
     };
 }
 
@@ -32,7 +33,11 @@ public static class RawFormat
 /// </example>
 public enum RawOutput
 {
-    /// <summary>The developed image, in <see cref="Pixels.Rgb16"/> sRGB unless <see cref="ReaderOptions.ConvertColorTo"/> says otherwise.</summary>
+    /// <summary>
+    /// The developed image, in <see cref="Pixels.Rgb16"/> sRGB, or rendered straight into the RGB space
+    /// <see cref="ReaderOptions.ConvertColorTo"/> names (Display P3, Adobe RGB, ProPhoto, Rec. 2020, linear ones), whose ICC
+    /// profile the raster then carries.
+    /// </summary>
     Developed,
 
     /// <summary>The largest embedded preview, as the camera or converter rendered it; fast, but its look is the maker's.</summary>
@@ -41,7 +46,7 @@ public enum RawOutput
     /// <summary>
     /// The sensor data as stored: <see cref="Pixels.Gray16"/> for a colour filter array (the pattern is in
     /// <see cref="RawDetails.CfaPattern"/>), <see cref="Pixels.Rgb16"/> for LinearRaw, float types for floating-point data.
-    /// Nothing is scaled, cropped or balanced.
+    /// Nothing is scaled, cropped or balanced, and <see cref="ReaderOptions.ConvertColorTo"/> does not apply.
     /// </summary>
     Mosaic,
 
