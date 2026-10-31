@@ -58,6 +58,9 @@ internal sealed class RawDeveloper
     /// <summary>Gets the colour transform the develop used, once it has run.</summary>
     public RawCamera? Camera { get; private set; }
 
+    /// <summary>Gets which lens profile corrected the image, once the develop has run, or <see langword="null"/>.</summary>
+    public string? LensProfile { get; private set; }
+
     /// <summary>
     /// Runs the develop and hands each output row, as encoded RGB in <see cref="Target"/>, to <paramref name="write"/>, which may be
     /// called from several threads at once for different rows.
@@ -119,6 +122,11 @@ internal sealed class RawDeveloper
             DngOpcodes.Apply(list3, new RawPlane(rgb, pw, ph, 3, null) { Scale = _half ? 2 : 1 }, 3, _options.LensCorrections, input, _warnings);
         }
 
+        if (_options.LensCorrections && !HasLensOpcodes(frame.Opcodes3))
+        {
+            LensProfile = CorrectLens(rgb, pw, ph, parallel);
+        }
+
         RawHighlights.Apply(rgb, pw, ph, camera.Multipliers, _options.Highlights, parallel);
         if (_options.ColorNoiseReduction > 0)
         {
@@ -139,6 +147,36 @@ internal sealed class RawDeveloper
 
             return row;
         }, _ => { });
+    }
+
+    private static bool HasLensOpcodes(byte[]? list) => list is not null && DngOpcodes.Ids(list).Exists(id => id is DngOpcodes.WarpRectilinear or DngOpcodes.WarpFisheye or DngOpcodes.FixVignetteRadial);
+
+    /// <summary>Corrects the lens from a runtime profile that matches the camera and lens, when one does.</summary>
+    private string? CorrectLens(Memory<float> rgb, int width, int height, ParallelOptions parallel)
+    {
+        RawFrame frame = _frame;
+        if (frame.FocalLength is not double focal || string.IsNullOrWhiteSpace(frame.LensModel) || (_options.LensProfiles.Count == 0 && !RawLensProfiles.HasSystemProfiles))
+        {
+            return AutoCa(rgb, width, height, parallel);
+        }
+
+        List<RawLensProfile> profiles = RawLensProfiles.Load(_options.LensProfiles, _warnings);
+        if (RawLensProfiles.Match(profiles, frame.Make, frame.Model, frame.LensModel) is not RawLensProfile profile)
+        {
+            return AutoCa(rgb, width, height, parallel);
+        }
+
+        double crop = frame.FocalLength35 is double f35 && focal > 0 ? f35 / focal : profile.CropFactor;
+        string? applied = RawLens.Apply(rgb, width, height, profile, focal, frame.FNumber ?? 0, frame.FocusDistance ?? 1000, crop, parallel);
+        return applied is null ? null : $"{(profile.Format == RawLensFormat.Lcp ? "Adobe" : "Lensfun")}: {(profile.Maker.Length > 0 ? profile.Maker + " " : "")}{profile.Lens} ({applied})";
+    }
+
+    /// <summary>Corrects lateral chromatic aberration measured from the image itself, for a file nothing else corrects, when asked.</summary>
+    private string? AutoCa(Memory<float> rgb, int width, int height, ParallelOptions parallel)
+    {
+        return _options.AutoChromaticAberration && RawAutoCa.Apply(rgb, width, height, parallel) is (double red, double blue)
+            ? string.Create(System.Globalization.CultureInfo.InvariantCulture, $"Automatic lateral chromatic aberration (red × {red:F5}, blue × {blue:F5})")
+            : null;
     }
 
     /// <summary>Returns the exposure, in stops: the file's baseline exposure (and the profile's offset) plus the option's.</summary>
@@ -236,7 +274,7 @@ internal sealed class RawDeveloper
                 return;
             }
 
-            Parallel.For(0, active.Height, parallel, y =>
+            RawParallel.For(0, active.Height, parallel, y =>
             {
                 int sy = y + active.Y;
                 Span<float> target = mosaic.Span.Slice(y * aw * samples, aw * samples);
@@ -372,7 +410,7 @@ internal sealed class RawDeveloper
     private static void Scale(Memory<float> mosaic, int width, int height, int samples, RawCfa? cfa, double[] multipliers, ParallelOptions parallel)
     {
         float[] m = [.. multipliers.Select(v => (float)v)];
-        Parallel.For(0, height, parallel, y =>
+        RawParallel.For(0, height, parallel, y =>
         {
             Span<float> row = mosaic.Span.Slice(y * width * samples, width * samples);
             if (cfa is null)

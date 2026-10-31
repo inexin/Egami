@@ -1,7 +1,7 @@
 # Egami.Formats.Extended: guide for coding agents
 
 Egami.Formats.Extended reads and writes image formats that most apps never meet but some still need: PCX, SGI, Sun raster, XBM,
-XPM, WBMP, Farbfeld and DDS textures (BC1 to BC7, mips, cube maps, arrays and volumes), and reads camera RAW (DNG), developed on
+XPM, WBMP, Farbfeld and DDS textures (BC1 to BC7, mips, cube maps, arrays and volumes), and reads camera RAW (DNG, CR2, NEF, PEF, ARW, ORF, RW2 and RAF), developed on
 load. Each is a plugin on core Egami's public format API.
 
 Namespaces: `Egami.Formats.Extended` (the `With...` methods), `Egami.Formats.Extended.<Format>` (`PcxFormat` and the other

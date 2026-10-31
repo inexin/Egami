@@ -324,6 +324,7 @@ public class FormatsExtended
             Demosaic = RawDemosaicMethod.Malvar,   // faster than the default AHD
             LuminanceNoiseReduction = 20,          // 0 to 100; off by default
             ColorNoiseReduction = 40,              // 0 to 100; 25 by default
+            AutoChromaticAberration = true,        // fix colour fringes when no lens profile covers the file
             ConvertColorTo = Colors.ColorProfile.DisplayP3, // rendered straight into P3, the profile attached
         };
         using Raster photo = Raster.Load("photo.dng", context, develop);

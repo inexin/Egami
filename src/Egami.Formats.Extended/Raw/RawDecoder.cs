@@ -26,6 +26,27 @@ internal static class RawDecoder
     /// <summary>Decodes every unit. A unit that is missing or damaged stays zero and is reported through <paramref name="damaged"/>.</summary>
     public static RawPixels Decode(RawSensor sensor, RawTiff tiff, EgamiInput input, Action<int, string> damaged)
     {
+        if (sensor.Codec != RawCodec.Tiff)
+        {
+            if (sensor.Width <= 0 || sensor.Height <= 0 || (long)sensor.Width * sensor.Height > 1L << 30)
+            {
+                throw new InvalidDataException("The raw image has no size, or one larger than a camera's.");
+            }
+
+            RawPixels maker = new(input, sensor.Width, sensor.Height, sensor.Samples, false);
+            try
+            {
+                ParallelOptions options = new() { MaxDegreeOfParallelism = Math.Max(1, input.Context.MaxParallelism), CancellationToken = input.CancellationToken };
+                MakerDecoders.Decode(sensor, tiff, maker, options, damaged);
+                return maker;
+            }
+            catch
+            {
+                maker.Dispose();
+                throw;
+            }
+        }
+
         Check(sensor);
         RawPixels pixels = new(input, sensor.Width, sensor.Height, sensor.Samples, sensor.Float);
         try
@@ -55,7 +76,7 @@ internal static class RawDecoder
                 List<(int Unit, string Message)> reports = [];
                 try
                 {
-                    Parallel.For(0, units, parallel, u => Unit(sensor, tiff, input, pixels, u, (i, m) =>
+                    RawParallel.For(0, units, parallel, u => Unit(sensor, tiff, input, pixels, u, (i, m) =>
                     {
                         lock (reports)
                         {

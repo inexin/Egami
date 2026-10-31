@@ -60,6 +60,19 @@ Camera RAW, stage A (DNG). All additive; it ships with the rest of camera RAW in
   each preview. `RawDetails` keeps the camera, sensor layout, levels, the develop's white balance and colour matrix, opcodes,
   previews, exposure settings and the maker note; EXIF, GPS and XMP come through.
 
+Camera RAW, stage B (maker formats). All additive.
+
+- `RawFormat` reads Canon CR2 (with sRAW and mRAW), Nikon NEF and NRW, Pentax PEF, Sony ARW and SR2, Olympus ORF, Panasonic RW2
+  (RawFormat 4 to 8) and Fujifilm RAF (uncompressed and compressed, lossless and lossy, X-Trans and Bayer), with each maker's
+  white balance, black levels and crops; decoded mosaics match Adobe DNG Converter's bit for bit on 22 CC0 sample files.
+- A camera table of 556 cameras, measured from Adobe DNG Converter's output as a black box, gives colour matrices and the
+  levels and crops a file does not give.
+- X-Trans sensors get their own demosaic; Panasonic's zeroed defective pixels are filled.
+- Lens corrections (`LensCorrections`) use Lensfun XML and Adobe LCP profiles loaded at run time from
+  `RawReaderOptions.LensProfiles` and the system's Lensfun folders (no profile data ships), else, with
+  `AutoChromaticAberration` (off by default), an automatic lateral chromatic aberration correction; `RawDetails.LensProfile`
+  names what was applied.
+
 DDS textures, stage A (reading). All additive; it ships with the rest of DDS in one release.
 
 - `DdsFormat`, registered by `WithExtendedFormats()` and `WithDds()`, reads DDS textures: the legacy header (DXT1 to DXT5,
