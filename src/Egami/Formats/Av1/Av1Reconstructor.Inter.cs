@@ -81,6 +81,14 @@ internal sealed partial class Av1Reconstructor<T>
         int round1 = compound ? 7 : _bitDepth == 12 ? 9 : 11;
         int postRound = 14 - round0 - round1;
         int ssx = plane > 0 ? _ssx : 0, ssy = plane > 0 ? _ssy : 0;
+        T[] dst = _frame.Plane<T>(plane);
+        int stride = _frame.Strides[plane];
+        int at = (y * stride) + x;
+        int max = (1 << _bitDepth) - 1;
+        bool interintra = b.RefFrame1 == Ref.Intra;
+
+        // A single prediction from an unscaled reference goes straight into the frame: its last rounding already gives samples.
+        bool direct = false;
         for (int list = 0; list < (compound ? 2 : 1); list++)
         {
             int rf = list == 0 ? cand.RefFrame0 : cand.RefFrame1;
@@ -117,18 +125,18 @@ internal sealed partial class Av1Reconstructor<T>
             {
                 (int mvRow, int mvCol) = list == 0 ? (cand.MvRow, cand.MvCol) : (cand.Mv1Row, cand.Mv1Col);
                 (int startX, int startY, int stepX, int stepY) = Scale(reference, plane, x, y, mvRow, mvCol);
-                BlockInterPrediction(reference, plane, startX, startY, stepX, stepY, w, h, cand.FilterX, cand.FilterY, round0, round1, pred);
+                direct = !compound && !interintra && stepX == 1 << 10 && stepY == 1 << 10;
+                BlockInterPrediction(reference, plane, startX, startY, stepX, stepY, w, h, cand.FilterX, cand.FilterY, round0, round1, pred,
+                    direct ? new Picture(dst, at, stride, max) : null);
             }
         }
 
-        T[] dst = _frame.Plane<T>(plane);
-        int stride = _frame.Strides[plane];
-        int at = (y * stride) + x;
-        int max = (1 << _bitDepth) - 1;
-        bool interintra = b.RefFrame1 == Ref.Intra;
         if (!compound && !interintra)
         {
-            Blend(_pred0, _pred0, 1, 0, 0, w, h, dst, at, stride, max);
+            if (!direct)
+            {
+                Blend(_pred0, _pred0, 1, 0, 0, w, h, dst, at, stride, max);
+            }
         }
         else if (compound && b.CompoundType == Compound.Average)
         {
@@ -172,13 +180,45 @@ internal sealed partial class Av1Reconstructor<T>
         if (Vector256.IsHardwareAccelerated && w >= 8)
         {
             Vector256<int> wa = Vector256.Create(w0), wb = Vector256.Create(w1), halfV = Vector256.Create(half), maxV = Vector256.Create(max);
-            for (int i = 0; i < h; i++)
+            ref int a0 = ref a[0], b0 = ref b[0];
+            ref T d0 = ref dst[0];
+
+            // A loop for each case, so a single prediction is a clamped copy and an average needs no multiply.
+            if (w1 == 0 && w0 == 1 && shift == 0)
             {
-                for (int j = 0; j + 8 <= w; j += 8)
+                for (int i = 0; i < h; i++)
                 {
-                    Vector256<int> v = (wa * Vector256.LoadUnsafe(ref a[0], (nuint)((i * w) + j))) + (wb * Vector256.LoadUnsafe(ref b[0], (nuint)((i * w) + j))) + halfV;
-                    v = Vector256.Min(Vector256.Max(Vector256.ShiftRightArithmetic(v, shift), Vector256<int>.Zero), maxV);
-                    Av1Samples.Store8(ref dst[0], at + (i * stride) + j, Vector128.Narrow(v.GetLower().AsUInt32(), v.GetUpper().AsUInt32()));
+                    for (int j = 0; j + 8 <= w; j += 8)
+                    {
+                        Vector256<int> v = Vector256.Min(Vector256.Max(Vector256.LoadUnsafe(ref a0, (nuint)((i * w) + j)), Vector256<int>.Zero), maxV);
+                        Av1Samples.Store8(ref d0, at + (i * stride) + j, Av1Samples.Pack(v));
+                    }
+                }
+            }
+            else if (w0 == 1 && w1 == 1)
+            {
+                for (int i = 0; i < h; i++)
+                {
+                    for (int j = 0; j + 8 <= w; j += 8)
+                    {
+                        nuint k = (nuint)((i * w) + j);
+                        Vector256<int> v = Vector256.LoadUnsafe(ref a0, k) + Vector256.LoadUnsafe(ref b0, k) + halfV;
+                        v = Vector256.Min(Vector256.Max(Vector256.ShiftRightArithmetic(v, shift), Vector256<int>.Zero), maxV);
+                        Av1Samples.Store8(ref d0, at + (i * stride) + j, Av1Samples.Pack(v));
+                    }
+                }
+            }
+            else
+            {
+                for (int i = 0; i < h; i++)
+                {
+                    for (int j = 0; j + 8 <= w; j += 8)
+                    {
+                        nuint k = (nuint)((i * w) + j);
+                        Vector256<int> v = (wa * Vector256.LoadUnsafe(ref a0, k)) + (wb * Vector256.LoadUnsafe(ref b0, k)) + halfV;
+                        v = Vector256.Min(Vector256.Max(Vector256.ShiftRightArithmetic(v, shift), Vector256<int>.Zero), maxV);
+                        Av1Samples.Store8(ref d0, at + (i * stride) + j, Av1Samples.Pack(v));
+                    }
                 }
             }
 
@@ -245,7 +285,7 @@ internal sealed partial class Av1Reconstructor<T>
 
     /// <summary>The block inter prediction process: two one-dimensional 8-tap passes over the reference, clamped at its edges.</summary>
     private void BlockInterPrediction(Av1Frame reference, int plane, int x, int y, int stepX, int stepY, int w, int h, int filterX, int filterY,
-        int round0, int round1, int[] pred)
+        int round0, int round1, int[] pred, Picture? picture = null)
     {
         int ssx = plane > 0 ? _ssx : 0, ssy = plane > 0 ? _ssy : 0;
         int lastX = ((reference.Header.UpscaledWidth + ssx) >> ssx) - 1;
@@ -255,7 +295,7 @@ internal sealed partial class Av1Reconstructor<T>
         short[] fx = Filters(filterX, w), fy = Filters(filterY, h);
         if (stepX == 1 << 10 && stepY == 1 << 10)
         {
-            UnscaledPrediction(src, stride, lastX, lastY, x, y, w, h, fx, fy, round0, round1, pred);
+            UnscaledPrediction(src, stride, lastX, lastY, x, y, w, h, fx, fy, round0, round1, pred, picture);
             return;
         }
 

@@ -506,10 +506,10 @@ internal static partial class Av1LoopFilter
             ref T at = ref Unsafe.Add(ref origin, offset);
             if (along == 1)
             {
-                Vector128<ushort> narrow = Vector128.Narrow(value.AsUInt32(), value.AsUInt32());
+                Vector128<ushort> narrow = Av1Samples.Pack(value);
                 if (Av1Samples.IsByte<T>())
                 {
-                    Unsafe.WriteUnaligned(ref Unsafe.As<T, byte>(ref at), Vector128.Narrow(narrow, narrow).AsUInt32().ToScalar());
+                    Unsafe.WriteUnaligned(ref Unsafe.As<T, byte>(ref at), Av1Samples.PackBytes(narrow).AsUInt32().ToScalar());
                 }
                 else
                 {
