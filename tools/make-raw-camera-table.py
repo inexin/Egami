@@ -9,7 +9,12 @@ in the package: one line per camera, tab-separated:
 
   Make  Model  UniqueCameraModel  Illuminant1  ColorMatrix1 (9)  Illuminant2  ColorMatrix2 (9 or -)  ForwardMatrix1 (9 or -)
   ForwardMatrix2 (9 or -)  BaselineExposure  Width Height  ActiveArea (top left bottom right, or -)
-  DefaultCrop (x y width height, or -)  BlackRepeat (rows columns)  BlackLevels  WhiteLevel
+  DefaultCrop (x y width height, or -)  BlackRepeat (rows columns)  BlackLevels  WhiteLevel  ExposureBias (or -)
+
+ExposureBias is, for RAF samples only, the RawExposureBias the sample's RAF header records (meta tag 0x9650, as ExifTool's
+FujiFilm tag page names it, read as a fact): Adobe's BaselineExposure follows the camera's dynamic-range setting, so Egami
+moves the table's value by the difference between a file's bias and the measured sample's. Only the RAF's bytes up to its meta
+directory are fetched for it.
 
 Make and Model are the IFD0 strings of the DNG, which Adobe copies from the original file, trimmed. Matrices are row-major,
 rounded to 4 decimals (Adobe stores them in units of 1/10000).
@@ -83,6 +88,40 @@ def download(sample):
     with open(path, "wb") as f:
         f.write(data)
     return path
+
+
+def fetch(sample, start, length):
+    """Reads bytes [start, start + length) of a sample, streaming from its start (the server ignores range requests)."""
+    base, rest = sample["url"].split("/nice/", 1)
+    with urllib.request.urlopen(base + "/nice/" + urllib.parse.quote(rest), timeout=120) as response:
+        data = bytearray()
+        while len(data) < start + length:
+            chunk = response.read(min(1 << 20, start + length - len(data)))
+            if not chunk:
+                return None
+            data += chunk
+    return bytes(data[start:start + length])
+
+
+def raf_bias(sample):
+    """Reads a RAF's RawExposureBias (meta tag 0x9650: two signed 16-bit values, a ratio) in EV, or None."""
+    header = fetch(sample, 0, 108)
+    if not header or not header.startswith(b"FUJIFILM"):
+        return None
+    offset, length = struct.unpack(">II", header[92:100])
+    meta = fetch(sample, offset, min(length, 1 << 20)) if 4 <= length else None
+    if not meta:
+        return None
+    at = 4
+    for _ in range(struct.unpack(">I", meta[:4])[0]):
+        if at + 4 > len(meta):
+            break
+        tag, n = struct.unpack(">HH", meta[at:at + 4])
+        if tag == 0x9650 and n >= 4:
+            num, den = struct.unpack(">hh", meta[at + 4:at + 8])
+            return round(num / den, 4) if den else None
+        at += 4 + n
+    return None
 
 
 def convert(source):
@@ -192,7 +231,8 @@ def line(entry):
     fields = [entry["dngMake"], entry["dngModel"], entry["unique"], str(entry["illuminant1"]), m(entry["cm1"]),
               str(entry["illuminant2"]), m(entry["cm2"]), m(entry["fm1"]), m(entry["fm2"]), f"{entry['baseline']:g}",
               m(entry["size"]), m(entry["active"]), m(entry["crop"] if entry["crop"] and len(entry["crop"]) == 4 else None),
-              m(entry["blackRepeat"]), m(entry["black"]), str(entry["white"])]
+              m(entry["blackRepeat"]), m(entry["black"]), str(entry["white"]),
+              f"{entry['rafBias']:g}" if entry.get("rafBias") is not None else "-"]
     return "\t".join(f.replace("\t", " ") for f in fields)
 
 
@@ -238,6 +278,18 @@ def main():
         with open(progress_path, "w", encoding="utf-8") as f:
             json.dump(progress, f, indent=1)
 
+    # RAF samples: the exposure bias of the sample each line was measured on.
+    for sample in todo:
+        entry = progress.get(str(sample["id"]))
+        if sample["ext"] == "raf" and entry and "error" not in entry and "rafBias" not in entry:
+            try:
+                entry["rafBias"] = raf_bias(sample)
+            except Exception as e:  # noqa: BLE001 - a bias that cannot be read leaves the column empty
+                print(f"   no exposure bias for {sample['model']}: {e}", flush=True)
+                entry["rafBias"] = None
+            with open(progress_path, "w", encoding="utf-8") as f:
+                json.dump(progress, f, indent=1)
+
     # One line per Make and Model as the files say them; when two samples name the same camera, the first in id order wins.
     seen = {}
     for key in sorted(progress, key=int):
@@ -251,7 +303,7 @@ def main():
         f.write("# Egami camera colour table, made by tools/make-raw-camera-table.py from Adobe DNG Converter output on CC0 samples\n")
         f.write("# from raw.pixls.us. Columns: Make, Model, UniqueCameraModel, Illuminant1, ColorMatrix1, Illuminant2,\n")
         f.write("# ColorMatrix2, ForwardMatrix1, ForwardMatrix2, BaselineExposure, Width Height, ActiveArea, DefaultCrop, BlackRepeat,\n")
-        f.write("# BlackLevels, WhiteLevel. Do not edit by hand; run the script.\n")
+        f.write("# BlackLevels, WhiteLevel, ExposureBias. Do not edit by hand; run the script.\n")
         for text in lines:
             f.write(text + "\n")
     errors = sum(1 for e in progress.values() if "error" in e)

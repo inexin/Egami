@@ -165,7 +165,7 @@ internal static class MakerParser
         return frame;
     }
 
-    private static void Collect(RawIfd ifd, List<RawIfd> all, int depth)
+    internal static void Collect(RawIfd ifd, List<RawIfd> all, int depth)
     {
         if (all.Count >= 64 || all.Any(i => i.Offset == ifd.Offset))
         {
@@ -186,7 +186,7 @@ internal static class MakerParser
     }
 
     /// <summary>Fills in what every maker format shares: camera, exposure, previews, and the camera table's colour and levels.</summary>
-    private static void Common(RawFrame frame, RawIfd ifd0, RawIfd? exif, List<RawIfd> all, MakerNote? note)
+    internal static void Common(RawFrame frame, RawIfd ifd0, RawIfd? exif, List<RawIfd> all, MakerNote? note)
     {
         frame.MetadataIfd = ifd0;
         frame.Make = ifd0.Ascii(RawTags.Make) ?? "";
@@ -214,6 +214,11 @@ internal static class MakerParser
         {
             frame.Profile = camera.Profile;
             frame.BaselineExposure = camera.Profile.BaselineExposure;
+            if (camera.ExposureBias is double measured && frame.ExposureBias is double bias)
+            {
+                // Adobe's baseline exposure follows the bias one for one: move it by this file's difference from the sample's.
+                frame.BaselineExposure += measured - bias;
+            }
             bool sameSize = camera.Width == frame.Sensor.Width && camera.Height == frame.Sensor.Height;
             if (sameSize && camera.ActiveArea is Rect active && !frame.HasOwnCrop)
             {
@@ -266,7 +271,7 @@ internal static class MakerParser
     }
 
     /// <summary>A sensor description for a strip-stored maker raw IFD, with the codec that decodes it.</summary>
-    private static RawSensor Sensor(RawIfd ifd, RawCodec codec, int width, int height, int bits, object? data = null, long offset = -1, long count = -1)
+    internal static RawSensor Sensor(RawIfd ifd, RawCodec codec, int width, int height, int bits, object? data = null, long offset = -1, long count = -1)
     {
         long[] offsets = offset >= 0 ? [offset] : ifd.Ints(RawTags.StripOffsets) ?? ifd.Ints(RawTags.TileOffsets) ?? [];
         long[] counts = count >= 0 ? [count] : ifd.Ints(RawTags.StripByteCounts) ?? ifd.Ints(RawTags.TileByteCounts) ?? [];
@@ -290,7 +295,7 @@ internal static class MakerParser
         };
     }
 
-    private static RawCfa Bayer(string pattern)
+    internal static RawCfa Bayer(string pattern)
     {
         byte[] colors = [.. pattern.Select(c => (byte)(c == 'R' ? 0 : c == 'G' ? 1 : 2))];
         return new RawCfa(2, 2, colors);

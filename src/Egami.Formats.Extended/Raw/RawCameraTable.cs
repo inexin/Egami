@@ -61,6 +61,7 @@ internal static class RawCameraTable
                     BlackRepeat = Ints(f[13]) is { Length: 2 } r ? (r[0], r[1]) : (1, 1),
                     Black = Numbers(f[14]) ?? [0],
                     White = Int(f[15]),
+                    ExposureBias = f.Length >= 17 && Numbers(f[16]) is { Length: 1 } bias ? bias[0] : null,
                 };
             }
 
@@ -154,4 +155,7 @@ internal sealed record RawCameraEntry(RawProfile Profile)
     public double[] Black { get; init; } = [0];
 
     public int White { get; init; }
+
+    /// <summary>Gets, for a RAF camera, the exposure bias of the file the profile's baseline exposure was measured on, or <see langword="null"/>.</summary>
+    public double? ExposureBias { get; init; }
 }

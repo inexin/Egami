@@ -216,6 +216,9 @@ internal sealed class RawFrame
 
     public double BaselineExposure { get; set; }
 
+    /// <summary>Gets or sets a RAF's RawExposureBias in EV (its dynamic-range setting moves it), or <see langword="null"/>.</summary>
+    public double? ExposureBias { get; set; }
+
     public RawProfile Profile { get; set; } = new();
 
     public byte[]? Opcodes1 { get; set; }

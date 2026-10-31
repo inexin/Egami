@@ -8,7 +8,7 @@ internal static class RawDetect
     /// <summary>Gets how many leading bytes detection looks at: enough for an IFD0 of 170 entries at offset 8.</summary>
     public const int SignatureLength = 2048;
 
-    public static bool Matches(ReadOnlySpan<byte> header) => IsDng(header) || MakerParser.Detect(header) is RawKind kind && kind != RawKind.Raf;
+    public static bool Matches(ReadOnlySpan<byte> header) => IsDng(header) || MakerParser.Detect(header) is not null;
 
     /// <summary>Gets whether a header is a DNG's: a TIFF header whose IFD0 has DNGVersion.</summary>
     public static bool IsDng(ReadOnlySpan<byte> header)
@@ -84,6 +84,19 @@ internal sealed class RawFile : IDisposable
     {
         source.Ensure(RawDetect.SignatureLength);
         RawKind? maker = MakerParser.Detect(source.Data.AsSpan(0, source.Length));
+        if (maker == RawKind.Raf)
+        {
+            try
+            {
+                (RawFrame raf, RawTiff cfa) = RafParser.Parse(source);
+                return new RawFile(source, cfa, raf);
+            }
+            catch (InvalidDataException e)
+            {
+                throw input.Corrupt(0, e.Message);
+            }
+        }
+
         if (!RawTiff.TryHeader(source.Data.AsSpan(0, source.Length), out bool bigEndian, out ushort magic, out uint first) || (magic != 42 && maker is null))
         {
             throw input.Corrupt(0, "The RAW file's TIFF header is wrong.");

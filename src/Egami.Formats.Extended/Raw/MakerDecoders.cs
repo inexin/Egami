@@ -77,6 +77,9 @@ internal static class MakerDecoders
             case RawCodec.Canon:
                 Canon(tiff.Data, (int)offset, (int)count, pixels, (CanonSlices)sensor.CodecData!, damaged);
                 break;
+            case RawCodec.FujiCompressed:
+                FujiDecoder.Decode(tiff.Data, (int)offset, (int)count, pixels, parallel, damaged);
+                break;
             default:
                 throw new NotSupportedException($"Egami does not read the {sensor.Codec} raw codec yet.");
         }
@@ -92,7 +95,7 @@ internal static class MakerDecoders
         }
     }
 
-    /// <summary>12-bit samples packed two in three bytes, least significant bits first (Sony spec, section 6).</summary>
+    /// <summary>12-bit samples packed two in three bytes, least significant bits first (Sony spec, section 6; Fujifilm's 12-bit RAF, measured).</summary>
     private static void Packed12Lsb(ReadOnlySpan<byte> data, RawPixels pixels)
     {
         Span<ushort> out16 = pixels.U16;
