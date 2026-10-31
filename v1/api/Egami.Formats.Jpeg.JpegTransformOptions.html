@@ -164,11 +164,46 @@ Console.WriteLine($"{result.Width} × {result.Height}");</code></pre>
 </h2>
 
 
+  <a id="Egami_Formats_Jpeg_JpegTransformOptions_Arithmetic_" data-uid="Egami.Formats.Jpeg.JpegTransformOptions.Arithmetic*"></a>
+
+  <h3 id="Egami_Formats_Jpeg_JpegTransformOptions_Arithmetic" data-uid="Egami.Formats.Jpeg.JpegTransformOptions.Arithmetic">
+  Arithmetic
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Jpeg/JpegTransformOptions.cs/#L120"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether the result is arithmetic-coded (<code>jpegtran -arithmetic</code>; SOF9, or SOF10 with <a class="xref" href="Egami.Formats.Jpeg.JpegTransformOptions.html#Egami_Formats_Jpeg_JpegTransformOptions_Progressive">Progressive</a>), as
+<a class="xref" href="Egami.Formats.Jpeg.JpegWriterOptions.html#Egami_Formats_Jpeg_JpegWriterOptions_Arithmetic">Arithmetic</a> writes: about 4 to 8% smaller than optimized Huffman tables, with the same
+pixels, so a Huffman file can be repacked with no loss; but no web browser reads it. <a class="xref" href="Egami.Formats.Jpeg.JpegTransformOptions.html#Egami_Formats_Jpeg_JpegTransformOptions_OptimizeHuffman">OptimizeHuffman</a> is then
+ignored. Defaults to <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>: Huffman-coded, whatever the source was, as <code>jpegtran</code> does.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool Arithmetic { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
   <a id="Egami_Formats_Jpeg_JpegTransformOptions_CopyMetadata_" data-uid="Egami.Formats.Jpeg.JpegTransformOptions.CopyMetadata*"></a>
 
   <h3 id="Egami_Formats_Jpeg_JpegTransformOptions_CopyMetadata" data-uid="Egami.Formats.Jpeg.JpegTransformOptions.CopyMetadata">
   CopyMetadata
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Jpeg/JpegTransformOptions.cs/#L120"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Jpeg/JpegTransformOptions.cs/#L128"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets whether EXIF, ICC, XMP, IPTC, comments and other application segments are copied (<code>jpegtran -copy all</code>).

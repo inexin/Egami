@@ -47036,6 +47036,19 @@ references:
   commentId: T:Egami.Formats.Jpeg.JpegTransformOptions
   fullName: Egami.Formats.Jpeg.JpegTransformOptions
   nameWithType: JpegTransformOptions
+- uid: Egami.Formats.Jpeg.JpegTransformOptions.Arithmetic
+  name: Arithmetic
+  href: api/Egami.Formats.Jpeg.JpegTransformOptions.html#Egami_Formats_Jpeg_JpegTransformOptions_Arithmetic
+  commentId: P:Egami.Formats.Jpeg.JpegTransformOptions.Arithmetic
+  fullName: Egami.Formats.Jpeg.JpegTransformOptions.Arithmetic
+  nameWithType: JpegTransformOptions.Arithmetic
+- uid: Egami.Formats.Jpeg.JpegTransformOptions.Arithmetic*
+  name: Arithmetic
+  href: api/Egami.Formats.Jpeg.JpegTransformOptions.html#Egami_Formats_Jpeg_JpegTransformOptions_Arithmetic_
+  commentId: Overload:Egami.Formats.Jpeg.JpegTransformOptions.Arithmetic
+  isSpec: "True"
+  fullName: Egami.Formats.Jpeg.JpegTransformOptions.Arithmetic
+  nameWithType: JpegTransformOptions.Arithmetic
 - uid: Egami.Formats.Jpeg.JpegTransformOptions.CopyMetadata
   name: CopyMetadata
   href: api/Egami.Formats.Jpeg.JpegTransformOptions.html#Egami_Formats_Jpeg_JpegTransformOptions_CopyMetadata
@@ -47191,6 +47204,19 @@ references:
   commentId: T:Egami.Formats.Jpeg.JpegWriterOptions
   fullName: Egami.Formats.Jpeg.JpegWriterOptions
   nameWithType: JpegWriterOptions
+- uid: Egami.Formats.Jpeg.JpegWriterOptions.Arithmetic
+  name: Arithmetic
+  href: api/Egami.Formats.Jpeg.JpegWriterOptions.html#Egami_Formats_Jpeg_JpegWriterOptions_Arithmetic
+  commentId: P:Egami.Formats.Jpeg.JpegWriterOptions.Arithmetic
+  fullName: Egami.Formats.Jpeg.JpegWriterOptions.Arithmetic
+  nameWithType: JpegWriterOptions.Arithmetic
+- uid: Egami.Formats.Jpeg.JpegWriterOptions.Arithmetic*
+  name: Arithmetic
+  href: api/Egami.Formats.Jpeg.JpegWriterOptions.html#Egami_Formats_Jpeg_JpegWriterOptions_Arithmetic_
+  commentId: Overload:Egami.Formats.Jpeg.JpegWriterOptions.Arithmetic
+  isSpec: "True"
+  fullName: Egami.Formats.Jpeg.JpegWriterOptions.Arithmetic
+  nameWithType: JpegWriterOptions.Arithmetic
 - uid: Egami.Formats.Jpeg.JpegWriterOptions.Background
   name: Background
   href: api/Egami.Formats.Jpeg.JpegWriterOptions.html#Egami_Formats_Jpeg_JpegWriterOptions_Background

@@ -96,7 +96,7 @@ Lossless JPEG, the kind inside DNG tiles and many DICOM files, decodes to its ex
 <code>Gray8</code> or <code>Rgb8</code>, deeper as <code>Gray16</code> or <code>Rgb16</code>. Three-component lossless files are RGB unless a JFIF segment or Adobe
 transform says YCbCr. Lossless files have no DCT, so <code>MinimumSize</code> reduces them after a full decode. <code>JpegDetails.Precision</code>,
 <code>Arithmetic</code> and <code>Lossless</code> say what a file is. Hierarchical files are refused with <code>UnsupportedFormatException</code>.</p>
-<p>Browsers show none of these modes. Egami writes 12-bit files on request (below), but no arithmetic or lossless ones.</p>
+<p>Browsers show none of these modes. Egami writes 12-bit and arithmetic-coded files on request (below), but no lossless ones.</p>
 <h2 id="threads">Threads</h2>
 <p>A large file decodes on up to <code>MaxParallelism</code> threads with the same pixels as one thread. A file with restart markers is split
 at the markers already in it; a progressive file's scans run as a pipeline, each refinement scan a few rows behind the scan
@@ -157,6 +157,11 @@ image.Save(output, JpegFormat.Info, new JpegWriterOptions
 <td>Scans that show a coarse image first and refine it, with tables optimized per scan</td>
 </tr>
 <tr>
+<td><code>Arithmetic</code></td>
+<td><code>false</code></td>
+<td>Arithmetic coding instead of Huffman: smaller files, same pixels, no browser support</td>
+</tr>
+<tr>
 <td><code>Precision</code></td>
 <td>8</td>
 <td>12 keeps more of 16-bit and float pixels</td>
@@ -201,6 +206,21 @@ deep.Save(&quot;duck-12bit.jpg&quot;, new JpegWriterOptions { Precision = 12, Qu
 samples to 12 bits; it is worth it for 16-bit and float pixels. The Huffman tables are always optimized, as libjpeg-turbo does
 at 12 bits, and quantization tables pass 255 at low quality, in 16-bit entries. libjpeg-turbo's djpeg reads them; browsers,
 Pillow and many ImageMagick builds do not.</p>
+<h3 id="arithmetic-coding">Arithmetic coding</h3>
+<pre><code class="lang-csharp">// Arithmetic coding: the same pixels in a smaller file, for archives; browsers do not read it.
+image.Save(&quot;duck-arithmetic.jpg&quot;, new JpegWriterOptions { Quality = 90, Arithmetic = true });
+
+// An existing Huffman-coded file repacked with arithmetic coding, with no change to its pixels.
+JpegTransform.Apply(&quot;duck-progressive.jpg&quot;, &quot;duck-repacked.jpg&quot;, new JpegTransformOptions { Arithmetic = true });
+</code></pre>
+<p><code>Arithmetic</code> codes the scans with T.81's adaptive arithmetic coder instead of Huffman codes: a sequential (SOF9) file, or a
+progressive (SOF10) one with <code>Progressive</code>, at 8 or 12 bits, in every color type, subsampling and restart interval. The
+quantized coefficients are the same, so the file decodes to exactly the pixels of the Huffman file with the same options, and
+is about 4 to 8 % smaller than with optimized Huffman tables; it is no larger than <code>cjpeg -arithmetic</code>'s file at the same
+settings (libjpeg adds a 12-byte DAC segment Egami leaves out). A sequential file needs no tables, so it streams in one pass at
+either precision and ignores <code>OptimizeHuffman</code>. libjpeg-turbo, ImageMagick and Egami read these files; browsers do not, and
+Pillow fails on some. They suit archives, not the web. An Ultra HDR gain map is left out with a <code>Save.GainMapDropped</code> warning,
+and <code>GainMap</code> with <code>Arithmetic</code> throws <code>NotSupportedException</code>. Re-saving an arithmetic file writes Huffman codes unless you set it.</p>
 <h2 id="lossless-rotation-flips-and-crops">Lossless rotation, flips and crops</h2>
 <pre><code class="lang-csharp">// Turns the photo upright by its EXIF orientation without re-encoding: no quality is lost, and the tag is reset.
 JpegTransform.Apply(&quot;sideways.jpg&quot;, &quot;upright.jpg&quot;, new JpegTransformOptions { Operation = JpegTransformOperation.AutoOrient });
@@ -217,7 +237,8 @@ Console.WriteLine($&quot;{result.Width} × {result.Height}&quot;);
 <p><code>JpegTransform</code> turns, mirrors, crops and drops the color of a JPEG without decoding it to pixels, as <code>jpegtran</code> does: the
 quantized DCT coefficients move and change sign block by block, and are coded again, so the result has exactly the quality the
 file had. Quantization tables and chroma subsampling stay as they were. It takes every mode the reader takes except lossless
-JPEG: baseline, progressive, arithmetic (written back with Huffman coding), 12-bit, gray, CMYK and YCCK. The result decodes to
+JPEG: baseline, progressive, arithmetic, 12-bit, gray, CMYK and YCCK; the result is Huffman-coded unless <code>Arithmetic</code> is set,
+so an existing file can also be repacked smaller with no change to its pixels (<code>jpegtran -arithmetic</code>). The result decodes to
 the same pixels as the file <code>jpegtran</code> makes with the same switches, on every subsampling and edge case.</p>
 <table>
 <thead>
@@ -257,6 +278,11 @@ the same pixels as the file <code>jpegtran</code> makes with the same switches, 
 <td><code>OptimizeHuffman</code></td>
 <td><code>true</code></td>
 <td>Tables built for the result, a few percent smaller than the standard ones</td>
+</tr>
+<tr>
+<td><code>Arithmetic</code></td>
+<td><code>false</code></td>
+<td>Arithmetic coding, as <code>JpegWriterOptions.Arithmetic</code> writes: smaller, same pixels</td>
 </tr>
 <tr>
 <td><code>CopyMetadata</code></td>
