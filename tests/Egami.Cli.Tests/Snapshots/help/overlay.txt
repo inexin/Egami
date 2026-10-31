@@ -8,35 +8,50 @@ Arguments:
   <inputs>  Image files, globs (*, ?, **) expanded the same way in every shell, folders with --recursive, or - for standard input.
 
 Options:
-  -o, --output <path>       Where to write: a file, a folder, a template with {name}, {ext}, {dir}, {index} and {format}, or - for standard output.
-  -f, --format <format>     The output format by name or extension, when -o's extension does not say (and always for -o -).
-  --quality <0-100>         Lossy quality from 0 to 100 (JPEG, WebP, AVIF, JPEG XL, TIFF's JPEG).
-  --lossless                Lossless encoding (WebP, AVIF, JPEG XL).
-  --effort <level>          Encoder effort: higher is smaller and slower (WebP, AVIF, JPEG XL).
-  --bit-depth <bits>        Bits per channel to write (PNG, AVIF).
-  --progressive             Write the image so viewers show it coarse first, then sharper as it arrives (AVIF layers, JPEG and JPEG XL progressive).
-  --target-size <bytes>     Search the quality for the largest file not above this many bytes (AVIF).
-  --qgain-map <0-100>       Quality of the gain map from 0 to 100, as avifenc's --qgain-map (AVIF).
-  --denoise <0-50>          Take film grain out before coding and write it as AV1 film grain, 0 to 50 (AVIF).
-  --strip                   Leave out metadata (EXIF, XMP, IPTC, text, resolution) but keep the color profile, so colors stay right.
-  --set <fmt.key=value>     Any writer setting as fmt.key=value, such as png.compression-level=9; 'egami formats png' lists the keys.
-  --auto-orient             Turn the image upright from its EXIF orientation first.
-  --to <profile>            Convert colors to this profile while reading: srgb, display-p3, adobe-rgb, rec2020, ... or an ICC file.
-  -r, --recursive           Take every image in folders given as inputs, at any depth.
-  -j, --jobs <count>        How many files to work on at once; 0 (the default) for one per processor.
-  --in-place                Allow outputs to replace their inputs.
-  --fail-fast               Stop at the first file that fails.
-  -i, --image <image>       The image to lay on top (SVG too); the last input may give it instead: egami overlay in.png logo.svg -o out.png.
-  --anchor <anchor>         Where it sits: bottom-right (the default), center, top-left, ...
-  --margin <pixels>         The distance from the image's edges in pixels.
-  --offset <x,y>            A further shift in pixels, x,y.
-  --opacity <0-1>           From 0 (invisible) to 1 (the default). [default: 1]
-  --blend <mode>            The blend mode: normal (the default), multiply, screen, overlay, darken, lighten, ...
-  -s, --size <size>         Resize the overlay first, in the size syntax (W, xH, WxH, P%).
-  -?, -h, --help            Show help and usage information
-  -v, --verbose             Write information to standard error.
-  -vv, --debug              Write debugging detail to standard error.
-  -q, --quiet               Write only errors to standard error.
-  --limit <name=value,...>  Safety limits, such as pixels=100M,memory=2GB,frames=500 (names: pixels, width, height, frames, memory, metadata). EGAMI_LIMITS sets them too.
-  --preview-formats         Also read and write the formats in preview (none in this release); they may change or go in any minor release.
+  -o, --output <path>                  Where to write: a file, a folder, a template with {name}, {ext}, {dir}, {index} and {format}, or - for standard output.
+  -f, --format <format>                The output format by name or extension, when -o's extension does not say (and always for -o -).
+  --quality <0-100>                    Lossy quality from 0 to 100 (JPEG, WebP, AVIF, JPEG XL, TIFF's JPEG).
+  --lossless                           Lossless encoding (WebP, AVIF, JPEG XL).
+  --effort <level>                     Encoder effort: higher is smaller and slower (WebP, AVIF, JPEG XL).
+  --bit-depth <bits>                   Bits per channel to write (PNG, AVIF).
+  --progressive                        Write the image so viewers show it coarse first, then sharper as it arrives (AVIF layers, JPEG and JPEG XL progressive).
+  --target-size <bytes>                Search the quality for the largest file not above this many bytes (AVIF).
+  --qgain-map <0-100>                  Quality of the gain map from 0 to 100, as avifenc's --qgain-map (AVIF).
+  --denoise <0-50>                     Take film grain out before coding and write it as AV1 film grain, 0 to 50 (AVIF).
+  --strip                              Leave out metadata (EXIF, XMP, IPTC, text, resolution) but keep the color profile, so colors stay right.
+  --set <fmt.key=value>                Any writer setting as fmt.key=value, such as png.compression-level=9; 'egami formats png' lists the keys.
+  --auto-orient                        Turn the image upright from its EXIF orientation first.
+  --to <profile>                       Convert colors to this profile while reading: srgb, display-p3, adobe-rgb, rec2020, ... or an ICC file.
+  -r, --recursive                      Take every image in folders given as inputs, at any depth.
+  -j, --jobs <count>                   How many files to work on at once; 0 (the default) for one per processor.
+  --in-place                           Allow outputs to replace their inputs.
+  --fail-fast                          Stop at the first file that fails.
+  -i, --image <image>                  The image to lay on top (SVG too); the last input may give it instead: egami overlay in.png logo.svg -o out.png.
+  --anchor <anchor>                    Where it sits: bottom-right (the default), center, top-left, ...
+  --margin <pixels>                    The distance from the image's edges in pixels.
+  --offset <x,y>                       A further shift in pixels, x,y.
+  --opacity <0-1>                      From 0 (invisible) to 1 (the default). [default: 1]
+  --blend <mode>                       The blend mode: normal (the default), multiply, screen, overlay, darken, lighten, ...
+  -s, --size <size>                    Resize the overlay first, in the size syntax (W, xH, WxH, P%).
+  -?, -h, --help                       Show help and usage information
+  -v, --verbose                        Write information to standard error.
+  -vv, --debug                         Write debugging detail to standard error.
+  -q, --quiet                          Write only errors to standard error.
+  --limit <name=value,...>             Safety limits, such as pixels=100M,memory=2GB,frames=500 (names: pixels, width, height, frames, memory, metadata). EGAMI_LIMITS sets them too.
+  --preview-formats                    Also read and write the formats in preview (none in this release); they may change or go in any minor release.
+  --raw-output <value>                 What a camera RAW input loads as: developed (default), half-size, preview or mosaic.
+  --raw-preview <value>                Which embedded preview --raw-output preview loads, 0 for the largest.
+  --raw-white-balance <value>          White balance of a RAW develop: as-shot (default), auto or custom (with --raw-temperature and --raw-tint).
+  --raw-temperature <value>            Color temperature in kelvin for --raw-white-balance custom.
+  --raw-tint <value>                   Tint for --raw-white-balance custom, positive toward magenta.
+  --raw-exposure <value>               Exposure of a RAW develop in stops, such as +0.5 or -1.
+  --raw-demosaic <value>               Demosaic method: ahd (default), malvar or bilinear.
+  --raw-highlights <value>             Clipped highlights: clip (default), blend or rebuild.
+  --raw-noise-reduction <value>        Luminance noise reduction of a RAW develop, 0 to 100 (default 0).
+  --raw-color-noise-reduction <value>  Color noise reduction of a RAW develop, 0 to 100 (default 25).
+  --raw-lens-profiles <value>          Folders of Lensfun (.xml) and Adobe (.lcp) lens profiles, separated by the system's path separator.
+  --raw-no-lens-corrections            Apply no lens corrections.
+  --raw-auto-ca                        Measure and correct lateral chromatic aberration when no lens profile covers the file.
+  --raw-tone-curve                     Give a develop without a profile tone curve the default contrast curve.
+  --raw-no-profile                     Leave out the camera profile's look (HueSatMap, LookTable and tone curve).
 

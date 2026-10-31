@@ -34,12 +34,12 @@ internal static class Runner
 
         KeepColorProfileWhenStripping(work, plan);
 
-        ReaderOptions read = new()
+        ReaderOptions read = session.Reading(new ReaderOptions
         {
             ConvertColorTo = plan.Read.ConvertTo,
             Frames = plan.Read.FirstFrameOnly ? ..1 : ..,
             MinimumSize = DecodeSize(work, info),
-        };
+        })!;
 
         if (CanStream(work))
         {

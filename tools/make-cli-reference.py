@@ -48,7 +48,7 @@ def commands_page():
         "# Command reference",
         "",
         "Every egami command with its arguments and options, as `egami <command> --help` prints them. The options of all commands",
-        "(`-v`, `-vv`, `-q`, `--limit`) are listed once, at the top. [The egami command](index.md) explains the conventions they share.",
+        "(`-v`, `-vv`, `-q`, `--limit`, `--raw-*`) are listed once, at the top. [The egami command](index.md) explains the conventions they share.",
         "",
         "```text",
         root.rstrip(),
@@ -87,7 +87,7 @@ def video_commands_page():
 
 def strip_globals(text):
     """Leaves out the options every command shares, which the top of the page lists."""
-    shared = ("-?, -h, --help", "-v, --verbose", "-vv, --debug", "-q, --quiet", "--limit <", "--progress <", "--progress-format <")
+    shared = ("-?, -h, --help", "-v, --verbose", "-vv, --debug", "-q, --quiet", "--limit <", "--progress <", "--progress-format <", "--raw-", "--preview-formats")
     return "\n".join(line for line in text.splitlines() if not line.strip().startswith(shared))
 
 
