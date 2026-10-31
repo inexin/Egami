@@ -74,6 +74,30 @@ internal sealed partial class AvifWriter
             }
         }
 
+        // A quality step can move the size by more than 5 %: between the best quality and the next, search base_q_idx itself
+        // (the encoder's own scale, 4 steps a quality or finer), keeping the chroma format of the best quality.
+        int found = low - 1;
+        if (best is not null && found < 100 && best.Length < target * 0.95 && !still.Layered)
+        {
+            int fine = QIndexFor(found + 1) + 1, coarse = QIndexFor(found) - 1;
+            while (fine <= coarse)
+            {
+                cancel.ThrowIfCancellationRequested();
+                int qindex = (fine + coarse) / 2;
+                using MemoryStream file = new();
+                still.Write(found, file, reporter, qindex);
+                if (file.Length <= target)
+                {
+                    best = file.ToArray();
+                    coarse = qindex - 1;
+                }
+                else
+                {
+                    fine = qindex + 1;
+                }
+            }
+        }
+
         if (best is null)
         {
             if (smallest is null)
@@ -134,10 +158,13 @@ internal sealed partial class AvifWriter
         /// <summary>Gets whether the image is coded lossless.</summary>
         internal bool Lossless { get; }
 
+        /// <summary>Gets whether the image is coded in layers, whose qualities the target size search keeps to the quality scale.</summary>
+        internal bool Layered => _options.Layers is { Count: > 1 } || _options.Progressive;
+
         public void Dispose() => _rgba.Dispose();
 
         /// <summary>Codes the image at <paramref name="quality"/> and writes its file.</summary>
-        internal void Write(int quality, Stream output, SaveReporter? reporter)
+        internal void Write(int quality, Stream output, SaveReporter? reporter, int? qindex = null)
         {
             AvifWriterOptions options = _options;
             ChromaFormat chroma = _gray ? ChromaFormat.Yuv400
@@ -156,7 +183,7 @@ internal sealed partial class AvifWriter
             // A save's progress counts superblock rows: the color planes take the first three quarters when an alpha plane follows.
             reporter?.Part(0, _hasAlpha ? 0.75 : 1);
             CodedImage colorStream = layers is null
-                ? CodedImage.Encode(color, cellWidth, cellHeight, Settings(Lossless, QIndexFor(quality), reporter, grain))
+                ? CodedImage.Encode(color, cellWidth, cellHeight, Settings(Lossless, qindex ?? QIndexFor(quality), reporter, grain))
                 : EncodeLayers(color, layers, Lossless, reporter, grain);
 
             CodedImage? alphaStream = null;
