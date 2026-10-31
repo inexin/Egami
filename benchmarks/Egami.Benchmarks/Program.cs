@@ -51,6 +51,13 @@ if (args is ["--encode-av1", string av1Frames, string av1Quality, string av1Effo
     return;
 }
 
+// Time xz decoding against xz -dc, timed live in Docker (TIFF LZMA task 5): -- --time-xz .cache/xz [name part...]
+if (args is ["--time-xz", string xzFolder, .. string[] xzOnly])
+{
+    XzTiming.Run(xzFolder, xzOnly);
+    return;
+}
+
 // Time Zstandard decoding against zstd -b -d (TIFF ZSTD task 1): -- --time-zstd .cache/zstd [name part...]
 if (args is ["--time-zstd", string zstdFolder, .. string[] zstdOnly])
 {
