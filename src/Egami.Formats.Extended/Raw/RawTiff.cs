@@ -54,8 +54,9 @@ internal sealed class RawTiff
     /// <summary>Reads the IFD at <paramref name="offset"/> (counted from <see cref="Origin"/>), or returns <see langword="null"/> when it does not fit.</summary>
     public RawIfd? ReadIfd(long offset)
     {
+        // An offset beyond what an array can hold is no IFD (and would overflow the arithmetic below).
         long at = Origin + offset;
-        if (offset <= 0 || !Source.Ensure(at + 2))
+        if (offset <= 0 || offset > int.MaxValue - 16L - Origin || !Source.Ensure(at + 2))
         {
             return null;
         }

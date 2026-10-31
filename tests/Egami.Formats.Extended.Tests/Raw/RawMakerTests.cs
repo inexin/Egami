@@ -220,6 +220,17 @@ public class RawMakerTests
         Assert.Equal(expected, MakerParser.ExifCfa(exif)?.Name);
     }
 
+    [Fact]
+    public void IfdOffsetsBeyondAnArrayAreNoIfd()
+    {
+        // Fuzz finding: a SubIFDs value read as long.MaxValue overflowed the IFD reader's bounds check.
+        byte[] tiff = TiffBuilder.Write(new TiffBuilder.Ifd { Tags = { TiffTag.Long(256, 1) } });
+        RawTiff file = new(new RawSource(tiff, tiff.Length), false);
+        Assert.Null(file.ReadIfd(long.MaxValue));
+        Assert.Null(file.ReadIfd(uint.MaxValue));
+        Assert.NotNull(file.ReadIfd(8));
+    }
+
     [Theory]
     [InlineData(0xFFFFFFF0u)]
     [InlineData(0x7FFFFFFEu)]
