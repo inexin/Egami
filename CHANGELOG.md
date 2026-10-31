@@ -94,6 +94,18 @@ DDS textures, stage C (BC7 and BC6H encoders).
 
 ## Egami, unreleased
 
+JPEG XL extras, PR B: lossless efforts 8 to 10 and patches. All additive.
+
+- `JxlWriterOptions.Effort` takes 1 to 10. Lossless 8 and 9 learn their context tree from more properties, try more color
+  transforms and weighted predictor settings, and find LZ77 copies (greedy at 8, optimal at 9 and up); a frame of more than
+  eight groups is coded group by group, as libjxl does. Lossless 10 tries every predictor under one tree for the whole image.
+  Sizes are within 1 % of cjxl 0.12's at the same effort on photos and smaller on screenshots. Lossy 8 to 10 code as 7 until
+  the Butteraugli-driven search comes.
+- Lossless JPEG XL finds patches from effort 5, as cjxl does: repeated shapes such as letters are coded once in a reference
+  frame. Text screenshots of up to eight groups come out 12 to 57 % smaller at efforts 5 to 7 (600×400 crops of a terminal,
+  code and documentation page), within 0.1 % of cjxl's; larger frames find patches at effort 10, as cjxl's do. Photos, and
+  efforts 1 to 4, write the same bytes as before.
+
 Arithmetic and lossless JPEG writing, stage A: arithmetic coding. All additive.
 
 - `JpegWriterOptions.Arithmetic` writes arithmetic-coded JPEG (T.81 annex D's QM-coder with the models of annexes F and G):
