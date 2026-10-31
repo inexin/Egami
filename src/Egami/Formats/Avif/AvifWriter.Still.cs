@@ -49,7 +49,7 @@ internal sealed partial class AvifWriter
         SaveReporter? reporter = SaveReporter.Current;
         CancellationToken cancel = reporter?.Cancellation ?? default;
         byte[]? best = null, smallest = null;
-        int low = 0, high = 100, tries = 0;
+        int low = 0, high = 100, tries = 0, found = -1, failed = 101;
         while (low <= high)
         {
             cancel.ThrowIfCancellationRequested();
@@ -61,6 +61,7 @@ internal sealed partial class AvifWriter
             if (file.Length <= target)
             {
                 best = file.ToArray();
+                found = quality;
                 low = quality + 1;
             }
             else
@@ -70,18 +71,18 @@ internal sealed partial class AvifWriter
                     smallest = file.ToArray();
                 }
 
+                failed = Math.Min(failed, quality);
                 high = quality - 1;
             }
         }
 
-        // A quality step can move the size by more than 5 %: between the best quality and the next, search base_q_idx itself
-        // (the encoder's own scale, 4 steps a quality or finer), keeping the chroma format of the best quality.
-        int found = low - 1;
+        // A quality step can move the size by more than 5 %: between the best quality and the lowest one found too large, search
+        // base_q_idx itself (the encoder's own scale, 4 steps a quality or finer), keeping the chroma format of the best quality.
         if (best is not null && found < 100 && best.Length < target * 0.95 && !still.Layered)
         {
-            // The next quality bounds the search when it codes the same chroma format; across the switch to 4:4:4 at quality 90
-            // the best quality's 4:2:0 may still fit at finer quantizers.
-            int fine = still.ChromaFor(found + 1) == still.ChromaFor(found) ? QIndexFor(found + 1) + 1 : 0, coarse = QIndexFor(found) - 1;
+            // The quality found too large bounds the search when it codes the same chroma format; across the switch to 4:4:4 at
+            // quality 90 the best quality's 4:2:0 may still fit at finer quantizers.
+            int fine = failed <= 100 && still.ChromaFor(failed) == still.ChromaFor(found) ? QIndexFor(failed) + 1 : 0, coarse = QIndexFor(found) - 1;
             while (fine <= coarse)
             {
                 cancel.ThrowIfCancellationRequested();
