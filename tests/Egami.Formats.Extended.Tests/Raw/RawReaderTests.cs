@@ -693,3 +693,51 @@ public class RawAllocationTests
         return fewest;
     }
 }
+
+/// <summary>RAW Build Plan task 6: the camera colour table, generated from Adobe DNG Converter output.</summary>
+public class RawCameraTableTests
+{
+    [Fact]
+    public void ParsesLinesAndFindsByMakeAndModel()
+    {
+        string text = "# comment\nCanon\tCanon EOS Test\tCanon EOS Test\t17\t1 0 0 0 1 0 0 0 1\t21\t2 0 0 0 2 0 0 0 2\t-\t-\t0.25"
+            + "\t5280 3528\t52 72 3528 5280\t12 12 5184 3456\t2 2\t2047 2047 2048 2047\t12277\nbroken line\n";
+        Dictionary<string, RawCameraEntry> cameras = RawCameraTable.Parse(text);
+        RawCameraEntry camera = Assert.Single(cameras).Value;
+        RawProfile profile = camera.Profile;
+        Assert.Equal((5280, 3528), (camera.Width, camera.Height));
+        Assert.Equal(new Rect(72, 52, 5208, 3476), camera.ActiveArea);
+        Assert.Equal(new Rect(12, 12, 5184, 3456), camera.DefaultCrop);
+        Assert.Equal((2, 2), camera.BlackRepeat);
+        Assert.Equal(2048, camera.Black[2]);
+        Assert.Equal(12277, camera.White);
+        Assert.Equal(17, profile.Illuminant1);
+        Assert.Equal(21, profile.Illuminant2);
+        Assert.Equal(2, profile.ColorMatrix2![0]);
+        Assert.Null(profile.ForwardMatrix1);
+        Assert.Equal(0.25, profile.BaselineExposure);
+        Assert.Equal("Canon EOS Test", profile.Name);
+    }
+
+    [Fact]
+    public void TheEmbeddedTableHasCameras()
+    {
+        Assert.True(RawCameraTable.Count > 0);
+        RawCameraEntry? camera = RawCameraTable.Find(" canon ", "CANON EOS 1000D");
+        Assert.NotNull(camera);
+        Assert.Equal(9, camera.Profile.ColorMatrix1!.Length);
+        Assert.True(camera.Width > 0);
+        Assert.Null(RawCameraTable.Find("Egami", "No Such Camera"));
+    }
+
+    [Fact]
+    public void ADngWithoutColourDataUsesTheTable()
+    {
+        // The Canon 1000D's matrix gives a different colour transform from the sRGB fallback a camera without data gets.
+        byte[] known = new DngFile { ColorMatrix = null, Make = "Canon", Model = "Canon EOS 1000D" }.Fill((_, _, _) => 20000).Build();
+        byte[] unknown = new DngFile { ColorMatrix = null, Make = "Egami", Model = "No Such Camera" }.Fill((_, _, _) => 20000).Build();
+        using Raster a = Raster.Load(known, TestImages.Context);
+        using Raster b = Raster.Load(unknown, TestImages.Context);
+        Assert.NotEqual(((RawDetails)a.Metadata.FormatDetails!).CameraToXyz, ((RawDetails)b.Metadata.FormatDetails!).CameraToXyz);
+    }
+}
