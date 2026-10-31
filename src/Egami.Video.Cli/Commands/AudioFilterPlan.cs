@@ -306,7 +306,7 @@ internal sealed class AudioFilterPlan
                 {
                     a.Refuse("level_in", "level_sc", "mix", "mode");
                     double threshold = Level(a.Take("threshold", "0.125"), where);
-                    double ratio = Number(a.Take("ratio", name == "agate" ? "2" : "2"), where);
+                    double ratio = Number(a.Take("ratio", "2"), where);
                     MediaTime attack = MediaTime.FromSeconds(Number(a.Take("attack", "20"), where) / 1000);
                     MediaTime release = MediaTime.FromSeconds(Number(a.Take("release", "250"), where) / 1000);
                     double makeup = Level(a.Take("makeup", "1"), where);
