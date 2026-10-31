@@ -59,13 +59,6 @@ public class TiffReaderTests
             && p.GetProperty("photometric").GetInt32() != 4).ElementAt(pageNumber);
         int index = page.GetProperty("index").GetInt32();
         int compression = page.GetProperty("compression").GetInt32();
-        if (compression is 50000)
-        {
-            NotSupportedException e = Assert.Throws<NotSupportedException>(() => Raster.Load(corpus.Read(file), options: new TiffReaderOptions { Page = pageNumber }));
-            Assert.Contains("ZSTD", e.Message, StringComparison.Ordinal);
-            return;
-        }
-
         using Raster raster = Raster.Load(corpus.Read(file), options: new TiffReaderOptions { Page = pageNumber });
         Assert.Equal("TIFF", raster.Metadata.FormatName);
         Assert.Equal(page.GetProperty("width").GetInt32(), raster.Width);

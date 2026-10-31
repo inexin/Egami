@@ -10,6 +10,39 @@ namespace Egami.Tests.Formats.Tiff;
 /// </summary>
 public class TiffInteropFiles
 {
+    /// <summary>
+    /// Reads the ZSTD files libtiff and GDAL wrote into EGAMI_INTEROP_DIR/foreign (tools/check-tiff-interop.py makes them first);
+    /// Egami's samples must equal libtiff's decode beside each.
+    /// </summary>
+    [Fact]
+    public void ReadsLibtiffAndGdalZstdFiles()
+    {
+        string? directory = Environment.GetEnvironmentVariable("EGAMI_INTEROP_DIR");
+        string foreign = Path.Combine(directory ?? "", "foreign");
+        Assert.SkipUnless(directory is not null && Directory.Exists(foreign), "EGAMI_INTEROP_DIR/foreign does not exist.");
+        List<string> failures = [];
+        string[] files = Directory.GetFiles(foreign, "*.tif");
+        foreach (string file in files)
+        {
+            try
+            {
+                using Raster raster = Raster.Load(File.ReadAllBytes(file));
+                byte[] mine = TiffReference.Bytes(raster);
+                if (!mine.AsSpan().SequenceEqual(File.ReadAllBytes(file + ".raw")))
+                {
+                    failures.Add($"{Path.GetFileName(file)}: samples differ from libtiff's");
+                }
+            }
+            catch (Exception e) when (e is EgamiException or NotSupportedException)
+            {
+                failures.Add($"{Path.GetFileName(file)}: {e.Message}");
+            }
+        }
+
+        Assert.True(files.Length > 0, "No foreign files.");
+        Assert.True(failures.Count == 0, string.Join(Environment.NewLine, failures));
+    }
+
     [Fact]
     public void WriteFiles()
     {
@@ -30,7 +63,7 @@ public class TiffInteropFiles
         {
             foreach ((string name, Raster raster) in rasters)
             {
-                foreach (TiffCompression compression in (TiffCompression[])[TiffCompression.None, TiffCompression.Lzw, TiffCompression.Deflate, TiffCompression.PackBits])
+                foreach (TiffCompression compression in (TiffCompression[])[TiffCompression.None, TiffCompression.Lzw, TiffCompression.Deflate, TiffCompression.Zstd, TiffCompression.PackBits])
                 {
                     string c = compression.ToString().ToLowerInvariant();
                     Write(directory!, $"{name}-{c}.tif", raster, new TiffWriterOptions { Compression = compression });
@@ -38,6 +71,7 @@ public class TiffInteropFiles
                 }
 
                 Write(directory!, $"{name}-deflate-big.tif", raster, new TiffWriterOptions { Layout = TiffLayout.Big, TileSize = 32 });
+                Write(directory!, $"{name}-zstd-19.tif", raster, new TiffWriterOptions { Compression = TiffCompression.Zstd, ZstdLevel = 19 });
             }
 
             // The extras: 1-bit and palette pages (Reduce), CCITT, JPEG and lossless WebP. These compare through RGBA.

@@ -186,3 +186,6 @@ static Egami.SaveProgress.operator ==(Egami.SaveProgress left, Egami.SaveProgres
 virtual Egami.Metadata.FormatDetails.PixelsChanged() -> void
 ~override Egami.SaveProgress.Equals(object obj) -> bool
 ~override Egami.SaveProgress.ToString() -> string
+Egami.Formats.Tiff.TiffCompression.Zstd = 50000 -> Egami.Formats.Tiff.TiffCompression
+Egami.Formats.Tiff.TiffWriterOptions.ZstdLevel.get -> int
+Egami.Formats.Tiff.TiffWriterOptions.ZstdLevel.init -> void

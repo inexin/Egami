@@ -100,6 +100,9 @@ internal sealed class ZstdDecoder
     private uint repeat2;
     private uint repeat3;
 
+    // The output written by every block decoded whole, for DecodePartial.
+    private int _progress;
+
     /// <summary>
     /// Decodes the frames of <paramref name="input"/> one after another into <paramref name="output"/>; returns the bytes written.
     /// Throws a <see cref="CorruptDataException"/> when the data breaks the format or needs more room than the output has,
@@ -113,6 +116,29 @@ internal sealed class ZstdDecoder
         try
         {
             return decoder.Run(input, output);
+        }
+        finally
+        {
+            cached = decoder;
+        }
+    }
+
+    /// <summary>
+    /// Decodes as <see cref="Decode"/> does, but on corrupt data returns the bytes of the blocks decoded before it instead of
+    /// throwing, for readers that keep what a damaged strip still holds.
+    /// </summary>
+    public static int DecodePartial(ReadOnlySpan<byte> input, Span<byte> output)
+    {
+        ZstdDecoder decoder = cached ?? new ZstdDecoder();
+        cached = null;
+        try
+        {
+            decoder._progress = 0;
+            return decoder.Run(input, output);
+        }
+        catch (CorruptDataException)
+        {
+            return decoder._progress;
         }
         finally
         {
@@ -295,6 +321,7 @@ internal sealed class ZstdDecoder
             }
 
             at += stored;
+            _progress = written;
             if ((header & 1) != 0)
             {
                 break;
