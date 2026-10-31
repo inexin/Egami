@@ -12,7 +12,7 @@ public class TiffWriterTests
         TheoryData<string, TiffCompression, int> data = [];
         foreach (string type in Types.Keys)
         {
-            foreach (TiffCompression compression in (TiffCompression[])[TiffCompression.None, TiffCompression.Lzw, TiffCompression.Deflate, TiffCompression.PackBits])
+            foreach (TiffCompression compression in (TiffCompression[])[TiffCompression.None, TiffCompression.Lzw, TiffCompression.Deflate, TiffCompression.Zstd, TiffCompression.PackBits])
             {
                 foreach (int tile in (int[])[0, 16])
                 {
@@ -424,6 +424,8 @@ public class TiffWriterExtrasTests
     [Theory]
     [InlineData(TiffCompression.Deflate, 0)]
     [InlineData(TiffCompression.Lzw, 16)]
+    [InlineData(TiffCompression.Zstd, 0)]
+    [InlineData(TiffCompression.Zstd, 16)]
     [InlineData(TiffCompression.PackBits, 0)]
     [InlineData(TiffCompression.CcittGroup4, 0)]
     public void ParallelCompressionWritesTheSameFile(TiffCompression compression, int tile)
@@ -435,5 +437,93 @@ public class TiffWriterExtrasTests
         byte[] many = Save(source, new TiffWriterOptions { Compression = compression, TileSize = tile, ParallelCompression = true });
         Assert.Equal(one, many);
     }
-}
 
+    [Theory]
+    [InlineData(1)]
+    [InlineData(9)]
+    [InlineData(19)]
+    public void ZstdKeepsItsCompressionAndPredictorThroughAResave(int level)
+    {
+        using Raster<Rgb16> photo = TiffWriterTests.Pattern<Rgb16>(120, 90);
+        byte[] file = Save(photo, new TiffWriterOptions { Compression = TiffCompression.Zstd, ZstdLevel = level });
+        using Raster<Rgb16> back = Raster.Load<Rgb16>(file);
+        TiffDetails details = (TiffDetails)back.Metadata.FormatDetails!;
+        Assert.Equal((TiffCompression.Zstd, TiffPredictor.Horizontal), (details.Compression, details.Predictor));
+        Assert.Equal(TiffReference.Bytes(photo), TiffReference.Bytes(back));
+
+        // Saved again with no options, the source's compression stays.
+        using Raster<Rgb16> again = Raster.Load<Rgb16>(Save(back, TiffWriterOptions.Default));
+        Assert.Equal(TiffCompression.Zstd, ((TiffDetails)again.Metadata.FormatDetails!).Compression);
+    }
+
+    [Fact]
+    public void ZstdFloatsUseTheFloatingPointPredictor()
+    {
+        using Raster<RgbF32> floats = TiffWriterTests.Pattern<RgbF32>(64, 40);
+        using Raster<RgbF32> back = Raster.Load<RgbF32>(Save(floats, new TiffWriterOptions { Compression = TiffCompression.Zstd }));
+        Assert.Equal(TiffPredictor.FloatingPoint, ((TiffDetails)back.Metadata.FormatDetails!).Predictor);
+        Assert.Equal(TiffReference.Bytes(floats), TiffReference.Bytes(back));
+    }
+
+    [Fact]
+    public void ZstdLevelIsChecked()
+    {
+        Assert.Equal(9, new TiffWriterOptions().ZstdLevel);
+        Assert.Throws<ArgumentOutOfRangeException>(() => new TiffWriterOptions { ZstdLevel = 0 });
+        Assert.Throws<ArgumentOutOfRangeException>(() => new TiffWriterOptions { ZstdLevel = 23 });
+    }
+
+    [Fact]
+    public void ADamagedZstdStripKeepsWhatDecodedLeniently()
+    {
+        // Smooth enough that every strip is a compressed block, whose damage the decoder sees.
+        using Raster<Gray8> gray = Raster.Create<Gray8>(300, 400);
+        for (int y = 0; y < gray.Height; y++)
+        {
+            Span<Gray8> row = gray.Row(y);
+            for (int x = 0; x < row.Length; x++)
+            {
+                row[x] = new Gray8((byte)((x * y / 50) + (x % 7)));
+            }
+        }
+
+        byte[] file = Save(gray, new TiffWriterOptions { Compression = TiffCompression.Zstd, Predictor = TiffPredictor.None });
+
+        // Overwrite bytes inside the strips (which follow the 8-byte header; the IFD comes last): strict reading fails, lenient
+        // reading keeps the rest.
+        byte[] cut = (byte[])file.Clone();
+        cut.AsSpan(file.Length / 3, 64).Fill(0xA5);
+        Assert.ThrowsAny<EgamiException>(() => Raster.Load(cut, EgamiContext.Default, new Egami.Formats.ReaderOptions { Recovery = Egami.Formats.RecoveryMode.Strict }));
+        using Raster lenient = Raster.Load(cut, EgamiContext.Default, new Egami.Formats.ReaderOptions { Recovery = Egami.Formats.RecoveryMode.Lenient });
+        Assert.Equal((300, 400), (lenient.Width, lenient.Height));
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(32)]
+    public void AStreamedZstdSaveWritesWhatSaveWrites(int tile)
+    {
+        using Raster<Rgb8> photo = TiffWriterTests.Pattern<Rgb8>(150, 130);
+        TiffWriterOptions options = new() { Compression = TiffCompression.Zstd, ZstdLevel = 3, TileSize = tile };
+        byte[] saved = Save(photo, options);
+        using MemoryStream memory = new();
+        using (RasterEncoder<Rgb8> encoder = RasterEncoder.Create<Rgb8>(memory, TiffFormat.Info, photo.Width, photo.Height, options))
+        {
+            using Raster<Rgb8> band = Raster.Create<Rgb8>(photo.Width, 7);
+            for (int y = 0; y < photo.Height; y += 7)
+            {
+                int rows = Math.Min(7, photo.Height - y);
+                for (int r = 0; r < rows; r++)
+                {
+                    photo.Row(y + r).CopyTo(band.Row(r));
+                }
+
+                encoder.WriteRows(band, rows);
+            }
+
+            encoder.Complete();
+        }
+
+        Assert.Equal(saved, memory.ToArray());
+    }
+}

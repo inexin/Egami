@@ -181,6 +181,16 @@ public class AnimationAndMetadata
         deep.Save("duck-12bit.jpg", new JpegWriterOptions { Precision = 12, Quality = 95 });
         #endregion
 
+        #region jpeg-arithmetic
+        // Arithmetic coding: the same pixels in a smaller file, for archives; browsers do not read it.
+        image.Save("duck-arithmetic.jpg", new JpegWriterOptions { Quality = 90, Arithmetic = true });
+
+        // An existing Huffman-coded file repacked with arithmetic coding, with no change to its pixels.
+        JpegTransform.Apply("duck-progressive.jpg", "duck-repacked.jpg", new JpegTransformOptions { Arithmetic = true });
+        #endregion
+
+        Assert.True(((JpegDetails)Raster.Load("duck-arithmetic.jpg").Metadata.FormatDetails!).Arithmetic);
+        Assert.True(((JpegDetails)Raster.Load("duck-repacked.jpg").Metadata.FormatDetails!).Arithmetic);
         Assert.True(((JpegDetails)Raster.Load("duck-progressive.jpg").Metadata.FormatDetails!).Progressive);
         Assert.Equal(JpegColorSpace.Ycck, ((JpegDetails)Raster.Load("duck-ycck.jpg").Metadata.FormatDetails!).ColorSpace);
         Assert.Equal(12, ((JpegDetails)Raster.Load("duck-12bit.jpg").Metadata.FormatDetails!).Precision);
