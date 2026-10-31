@@ -282,6 +282,18 @@ internal sealed class JpegBitWriter : IDisposable
         }
     }
 
+    /// <summary>Writes one byte of arithmetic-coded data, with a zero after 0xFF (the bit buffer must be empty).</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal void Byte(int value)
+    {
+        Reserve(2);
+        _buffer[_length++] = (byte)value;
+        if (value == 0xFF)
+        {
+            _buffer[_length++] = 0;
+        }
+    }
+
     /// <summary>Writes a marker (after <see cref="Align"/>).</summary>
     internal void Marker(byte marker)
     {

@@ -12,7 +12,7 @@ Lossless JPEG, the kind inside DNG tiles and many DICOM files, decodes to its ex
 transform says YCbCr. Lossless files have no DCT, so `MinimumSize` reduces them after a full decode. `JpegDetails.Precision`,
 `Arithmetic` and `Lossless` say what a file is. Hierarchical files are refused with `UnsupportedFormatException`.
 
-Browsers show none of these modes. Egami writes 12-bit files on request (below), but no arithmetic or lossless ones.
+Browsers show none of these modes. Egami writes 12-bit and arithmetic-coded files on request (below), but no lossless ones.
 
 ## Threads
 
@@ -46,6 +46,7 @@ without re-encoding it, use `JpegTransform` with `AutoOrient` (see [lossless rot
 | `OptimizeHuffman` | `false` | Tables built for the image: a few percent smaller |
 | `ColorType` | `Auto` | `Gray` writes one gray component whatever the pixel type; `Cmyk` and `Ycck` write four (`Auto` picks `Cmyk` for CMYK pixels) |
 | `Progressive` | `false` | Scans that show a coarse image first and refine it, with tables optimized per scan |
+| `Arithmetic` | `false` | Arithmetic coding instead of Huffman: smaller files, same pixels, no browser support |
 | `Precision` | 8 | 12 keeps more of 16-bit and float pixels |
 | `RestartInterval` | 0 | Restart markers every so many blocks, for damaged-stream recovery |
 | `Background` | none | Composites alpha onto this color first; without it alpha is ignored |
@@ -78,6 +79,19 @@ samples to 12 bits; it is worth it for 16-bit and float pixels. The Huffman tabl
 at 12 bits, and quantization tables pass 255 at low quality, in 16-bit entries. libjpeg-turbo's djpeg reads them; browsers,
 Pillow and many ImageMagick builds do not.
 
+### Arithmetic coding
+
+[!code-csharp[](../../../tests/Egami.DocSamples/AnimationAndMetadata.cs#jpeg-arithmetic)]
+
+`Arithmetic` codes the scans with T.81's adaptive arithmetic coder instead of Huffman codes: a sequential (SOF9) file, or a
+progressive (SOF10) one with `Progressive`, at 8 or 12 bits, in every color type, subsampling and restart interval. The
+quantized coefficients are the same, so the file decodes to exactly the pixels of the Huffman file with the same options, and
+is about 4 to 8 % smaller than with optimized Huffman tables; it is no larger than `cjpeg -arithmetic`'s file at the same
+settings (libjpeg adds a 12-byte DAC segment Egami leaves out). A sequential file needs no tables, so it streams in one pass at
+either precision and ignores `OptimizeHuffman`. libjpeg-turbo, ImageMagick and Egami read these files; browsers do not, and
+Pillow fails on some. They suit archives, not the web. An Ultra HDR gain map is left out with a `Save.GainMapDropped` warning,
+and `GainMap` with `Arithmetic` throws `NotSupportedException`. Re-saving an arithmetic file writes Huffman codes unless you set it.
+
 ## Lossless rotation, flips and crops
 
 [!code-csharp[](../../../tests/Egami.DocSamples/AnimationAndMetadata.cs#jpeg-transform)]
@@ -85,7 +99,8 @@ Pillow and many ImageMagick builds do not.
 `JpegTransform` turns, mirrors, crops and drops the color of a JPEG without decoding it to pixels, as `jpegtran` does: the
 quantized DCT coefficients move and change sign block by block, and are coded again, so the result has exactly the quality the
 file had. Quantization tables and chroma subsampling stay as they were. It takes every mode the reader takes except lossless
-JPEG: baseline, progressive, arithmetic (written back with Huffman coding), 12-bit, gray, CMYK and YCCK. The result decodes to
+JPEG: baseline, progressive, arithmetic, 12-bit, gray, CMYK and YCCK; the result is Huffman-coded unless `Arithmetic` is set,
+so an existing file can also be repacked smaller with no change to its pixels (`jpegtran -arithmetic`). The result decodes to
 the same pixels as the file `jpegtran` makes with the same switches, on every subsampling and edge case.
 
 | Option | Default | Does |
@@ -96,6 +111,7 @@ the same pixels as the file `jpegtran` makes with the same switches, on every su
 | `Edges` | `Trim` | What happens at a mirrored edge that is not a whole number of MCUs (below) |
 | `Progressive` | `false` | Writes progressive scans, as `JpegWriterOptions.Progressive` does |
 | `OptimizeHuffman` | `true` | Tables built for the result, a few percent smaller than the standard ones |
+| `Arithmetic` | `false` | Arithmetic coding, as `JpegWriterOptions.Arithmetic` writes: smaller, same pixels |
 | `CopyMetadata` | `true` | Copies EXIF, ICC, XMP, IPTC, comments and other segments |
 
 A block of 8 × 8 pixels moves as a whole, so an edge that is not a whole number of MCUs (8 pixels, or 16 with subsampled chroma)
