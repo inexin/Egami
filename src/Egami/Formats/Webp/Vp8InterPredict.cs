@@ -159,9 +159,39 @@ internal static class Vp8InterPredict
     {
         if ((fx | fy) == 0)
         {
-            for (int r = 0; r < h; r++)
+            // A whole-pixel vector copies the block: rows of 16, 8 or 4 bytes as one load and store each, rather than a call to
+            // the general copy for every row, once the whole block is known to lie inside both spans.
+            _ = src.Slice(at, ((h - 1) * stride) + w);
+            _ = dst.Slice(dstAt, ((h - 1) * dstStride) + w);
+            ref byte s = ref Unsafe.Add(ref MemoryMarshal.GetReference(src), at);
+            ref byte d = ref Unsafe.Add(ref MemoryMarshal.GetReference(dst), dstAt);
+            if (w == 16)
             {
-                src.Slice(at + (r * stride), w).CopyTo(dst.Slice(dstAt + (r * dstStride), w));
+                for (int r = 0; r < h; r++)
+                {
+                    Unsafe.WriteUnaligned(ref Unsafe.Add(ref d, r * dstStride), Unsafe.ReadUnaligned<Vector128<byte>>(ref Unsafe.Add(ref s, r * stride)));
+                }
+            }
+            else if (w == 8)
+            {
+                for (int r = 0; r < h; r++)
+                {
+                    Unsafe.WriteUnaligned(ref Unsafe.Add(ref d, r * dstStride), Unsafe.ReadUnaligned<ulong>(ref Unsafe.Add(ref s, r * stride)));
+                }
+            }
+            else if (w == 4)
+            {
+                for (int r = 0; r < h; r++)
+                {
+                    Unsafe.WriteUnaligned(ref Unsafe.Add(ref d, r * dstStride), Unsafe.ReadUnaligned<uint>(ref Unsafe.Add(ref s, r * stride)));
+                }
+            }
+            else
+            {
+                for (int r = 0; r < h; r++)
+                {
+                    MemoryMarshal.CreateReadOnlySpan(ref Unsafe.Add(ref s, r * stride), w).CopyTo(MemoryMarshal.CreateSpan(ref Unsafe.Add(ref d, r * dstStride), w));
+                }
             }
         }
         else if (Vector128.IsHardwareAccelerated)
