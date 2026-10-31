@@ -20,6 +20,7 @@ settings, safety limits and registered formats a call uses.
 
 ## Egami: basics
 
+- [Benchmarks](https://inexin.github.io/Egami/v1/articles/benchmarks.html): How fast Egami is next to ImageSharp, SkiaSharp and Magick.NET on the same tasks and inputs.
 - [Diagnostics](https://inexin.github.io/Egami/v1/articles/diagnostics.html): Egami can tell an app what it recovered from, what it lost on purpose and what it decided on the caller's behalf, through one optional handler on `EgamiContext`.
 - [Memory and threading](https://inexin.github.io/Egami/v1/articles/guides/memory-and-threading.html): A raster remembers the context it was loaded or created with, and its operations use it.
 - [Metadata](https://inexin.github.io/Egami/v1/articles/guides/metadata.html): `raster.Metadata` holds what a file says beside its pixels.
