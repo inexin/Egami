@@ -62,9 +62,10 @@ using DrawingPath = Egami.Drawing.Path;
 // The heic, heicbox and hevc targets (Phase 2.9.4, HeicFuzzTarget.cs) load HEIC files with Egami.Heic every way (stills, grids,
 // gain maps, sequences, YUV planes, items), reach the HEIF box reader directly, and feed raw HEVC streams to the decoder on one
 // thread and four, which must agree.
-// The pcx, sgi, sun, xbm, xpm, wbmp, farbfeld and dds targets (Egami.Formats.Extended, ExtendedFuzzTarget.cs) load each format
+// The pcx, sgi, sun, xbm, xpm, wbmp, farbfeld, dds and raw targets (Egami.Formats.Extended, ExtendedFuzzTarget.cs) load each format
 // every way, Probe, Load, Load from a stream that cannot seek and RasterDecoder, which must agree, and save what loads back; dds
-// also loads every surface and mip level with LoadAll, and the smallest mip with MinimumSize.
+// also loads every surface and mip level with LoadAll, and the smallest mip with MinimumSize; raw loads every output (mosaic,
+// half size, preview) and develops with every demosaic, highlight, white balance and noise path.
 // The isobox target (Phase 2.9.8, IsoBoxFuzzTarget.cs) walks the public ISO BMFF box walker over arbitrary bytes as a tree.
 // The avif-write target (Phase 2.9.6) runs the AV1 encoder on arbitrary planes and options, which must decode exactly to its
 // reconstruction (and its source when lossless), and the AVIF writer with alpha and grids, whose lossless files load back exactly.
@@ -208,7 +209,7 @@ static Action<Stream> Target(string name) => name switch
     "avifbox" => stream => Egami.Fuzz.AvifFuzzTarget.LoadBoxes(ReadAll(stream), Context()),
     "av1" => stream => Egami.Fuzz.AvifFuzzTarget.DecodeAv1(ReadAll(stream), Context()),
     "av1stream" => stream => Egami.Fuzz.AvifFuzzTarget.DecodeStream(ReadAll(stream), Context()),
-    "pcx" or "sgi" or "sun" or "xbm" or "xpm" or "wbmp" or "farbfeld" or "dds" => stream => Egami.Fuzz.ExtendedFuzzTarget.Load(ReadAll(stream), Context(), name),
+    "pcx" or "sgi" or "sun" or "xbm" or "xpm" or "wbmp" or "farbfeld" or "dds" or "raw" => stream => Egami.Fuzz.ExtendedFuzzTarget.Load(ReadAll(stream), Context(), name),
     "heic" => stream => Egami.Fuzz.HeicFuzzTarget.Load(ReadAll(stream), Context()),
     "isobox" => stream => Egami.Fuzz.IsoBoxFuzzTarget.Walk(ReadAll(stream)),
     "heicbox" => stream => Egami.Fuzz.HeicFuzzTarget.LoadBoxes(ReadAll(stream), Context()),

@@ -51,14 +51,27 @@ internal static class RawDecoder
             }
             else
             {
-                object gate = new();
-                Parallel.For(0, units, parallel, u => Unit(sensor, tiff, input, pixels, u, (i, m) =>
+                // Damage is reported after the units have run, in unit order, so a strict read throws the first as it is.
+                List<(int Unit, string Message)> reports = [];
+                try
                 {
-                    lock (gate)
+                    Parallel.For(0, units, parallel, u => Unit(sensor, tiff, input, pixels, u, (i, m) =>
                     {
-                        damaged(i, m);
-                    }
-                }));
+                        lock (reports)
+                        {
+                            reports.Add((i, m));
+                        }
+                    }));
+                }
+                catch (AggregateException e) when (e.InnerExceptions.Count > 0)
+                {
+                    System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(e.InnerExceptions[0]).Throw();
+                }
+
+                foreach ((int unit, string message) in reports.OrderBy(r => r.Unit))
+                {
+                    damaged(unit, message);
+                }
             }
 
             return pixels;
@@ -85,6 +98,18 @@ internal static class RawDecoder
         if (sensor.Compression is not (CompressionNone or CompressionJpeg or CompressionDeflate or CompressionDeflateOld or CompressionLossyJpeg or CompressionJpegXl))
         {
             throw new NotSupportedException($"Egami does not read raw data with TIFF compression {sensor.Compression}.");
+        }
+
+        if (sensor.Compression is CompressionLossyJpeg or CompressionJpegXl && sensor.Samples is not (1 or 3))
+        {
+            throw new NotSupportedException($"Egami reads lossy raw data with 1 or 3 samples, not {sensor.Samples}.");
+        }
+
+        // A strip or tile is decoded whole into one buffer; keep it to a size a real file has.
+        long unitSamples = (long)sensor.UnitWidth * sensor.UnitHeight * sensor.Samples;
+        if (unitSamples > 1 << 28 || sensor.UnitWidth > Math.Max(sensor.Width, 1 << 16) || sensor.UnitHeight > Math.Max(sensor.Height, 1 << 16))
+        {
+            throw new InvalidDataException($"The strips or tiles are {sensor.UnitWidth} × {sensor.UnitHeight}, larger than a raw image needs.");
         }
 
         if (sensor.Ifd.Int(RawTags.PlanarConfiguration, 1) == 2 && sensor.Samples > 1)
@@ -311,11 +336,17 @@ internal static class RawDecoder
 
             int bytesPerSample = sensor.Bits / 8;
             int predictor = sensor.Predictor;
+            bool floatPredictor = predictor is 3 or 34894 or 34895;
+            if ((floatPredictor && !sensor.Float) || (predictor is 2 or 34892 or 34893 && sensor.Bits is not (8 or 16 or 32)))
+            {
+                throw new InvalidDataException($"Predictor {predictor} does not apply to {sensor.Bits}-bit {(sensor.Float ? "floating-point" : "integer")} samples.");
+            }
+
             int factor = predictor is 34892 or 34894 ? 2 : predictor is 34893 or 34895 ? 4 : 1;
             for (int y = 0; y < Math.Min(rows, whole); y++)
             {
                 Span<byte> row = buffer.AsSpan(y * rowBytes, rowBytes);
-                if (predictor is 3 or 34894 or 34895)
+                if (floatPredictor)
                 {
                     FloatPredictor(row, unitWidth * sensor.Samples, bytesPerSample, sensor.Samples * factor);
                     Floats(row, sensor.Bits, true, pixels.F32Row(y0 + y).Slice(x0 * sensor.Samples, cols * sensor.Samples));
@@ -361,9 +392,9 @@ internal static class RawDecoder
                 total += n;
             }
         }
-        catch (InvalidDataException)
+        catch (IOException)
         {
-            // Keep what inflated before the damage.
+            // Keep what inflated before the damage (InvalidDataException and zlib's own errors are both IOExceptions).
         }
 
         return total;

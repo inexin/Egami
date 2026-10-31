@@ -112,6 +112,19 @@ internal sealed class RawReader : IFormatReader, IRowFormatReader, IMultiImageRe
     private static Raster<TPixel> Load<TPixel>(RawFile file, Plan plan, ReaderOptions options, EgamiInput input)
         where TPixel : unmanaged, IPixelType<TPixel>
     {
+        try
+        {
+            return LoadCore<TPixel>(file, plan, options, input);
+        }
+        catch (InvalidDataException e)
+        {
+            throw input.Corrupt(0, e.Message);
+        }
+    }
+
+    private static Raster<TPixel> LoadCore<TPixel>(RawFile file, Plan plan, ReaderOptions options, EgamiInput input)
+        where TPixel : unmanaged, IPixelType<TPixel>
+    {
         RawFrame frame = file.Frame;
         bool strict = options.Recovery == RecoveryMode.Strict;
         RawWarnings warnings = new();
@@ -436,7 +449,7 @@ internal sealed class RawReader : IFormatReader, IRowFormatReader, IMultiImageRe
                 else
                 {
                     RawPreviewSource p = previews[previewIndex];
-                    input.CheckFrameSize(p.Width, p.Height);
+                    int width = p.Width, height = p.Height;
                     Natural natural = Natural.Rgb8;
                     if (!p.Jpeg && p.Ifd!.Int(RawTags.SamplesPerPixel, 1) == 1)
                     {
@@ -447,15 +460,18 @@ internal sealed class RawReader : IFormatReader, IRowFormatReader, IMultiImageRe
                         byte[] bytes = file.Source.Data.AsSpan((int)p.Offset, (int)Math.Min(p.Length, 64 * 1024)).ToArray();
                         try
                         {
+                            // The JPEG's own size and layout are what a load gives, whatever the IFD says.
                             RasterInfo info = Raster.Probe(bytes, JpegFormat.Info, input.Context with { Formats = [JpegFormat.Info] });
                             natural = info.Layout.ChannelCount == 1 ? Natural.Gray8 : Natural.Rgb8;
+                            (width, height) = (info.Width, info.Height);
                         }
                         catch (EgamiException)
                         {
                         }
                     }
 
-                    return new Plan(output, p.Width, p.Height, natural, p, previewIndex, p.Length + ((long)p.Width * p.Height * 3));
+                    input.CheckFrameSize(width, height);
+                    return new Plan(output, width, height, natural, p, previewIndex, p.Length + ((long)width * height * 3));
                 }
             }
 

@@ -72,7 +72,13 @@ internal sealed class RawFile
         RawTiff tiff = new(source, bigEndian);
         try
         {
-            return new RawFile(source, tiff, DngParser.Parse(tiff, first));
+            RawFrame frame = DngParser.Parse(tiff, first);
+            if (frame.Sensor.Width <= 0 || frame.Sensor.Height <= 0 || frame.Sensor.UnitWidth <= 0 || frame.Sensor.UnitHeight <= 0)
+            {
+                throw input.Corrupt(0, "The raw image has no size.");
+            }
+
+            return new RawFile(source, tiff, frame);
         }
         catch (InvalidDataException e)
         {
