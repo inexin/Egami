@@ -137,7 +137,18 @@ internal static class Av1Samples
         {
             byte[] bytes = (byte[])planes[plane];
             ushort[] to = new ushort[bytes.Length];
-            for (int i = 0; i < bytes.Length; i++)
+            int i = 0;
+            if (Avx2.IsSupported)
+            {
+                ref byte from = ref bytes[0];
+                ref ushort into = ref to[0];
+                for (; i + 16 <= bytes.Length; i += 16)
+                {
+                    Avx2.ConvertToVector256Int16(Vector128.LoadUnsafe(ref from, (nuint)i)).AsUInt16().StoreUnsafe(ref into, (nuint)i);
+                }
+            }
+
+            for (; i < bytes.Length; i++)
             {
                 to[i] = bytes[i];
             }
