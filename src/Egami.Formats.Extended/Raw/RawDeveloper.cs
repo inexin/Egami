@@ -160,7 +160,7 @@ internal sealed class RawDeveloper
             return AutoCa(rgb, width, height, parallel);
         }
 
-        List<RawLensProfile> profiles = RawLensProfiles.Load(_options.LensProfiles, _warnings);
+        List<RawLensProfile> profiles = RawLensProfiles.Load(_options.LensProfiles, _warnings, frame.LensModel);
         if (RawLensProfiles.Match(profiles, frame.Make, frame.Model, frame.LensModel) is not RawLensProfile profile)
         {
             return AutoCa(rgb, width, height, parallel);

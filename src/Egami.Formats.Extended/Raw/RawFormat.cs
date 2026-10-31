@@ -378,7 +378,8 @@ public sealed record RawReaderOptions : ReaderOptions
 
     /// <summary>
     /// Gets the folders of lens profiles to correct with: Lensfun database files (<c>.xml</c>) and Adobe lens profiles
-    /// (<c>.lcp</c>), searched with their subfolders, and a system Lensfun install when there is one. A file whose own data
+    /// (<c>.lcp</c>), searched with their subfolders; a system Lensfun install and the folders Adobe's software installs its lens
+    /// profiles in are searched too when they are there. A file whose own data
     /// corrects the lens (DNG's lens opcodes) uses that instead. Egami ships no profiles: Lensfun's database is under CC BY-SA
     /// and Adobe's profiles are Adobe's, so you supply them. Defaults to none. Applies only with <see cref="LensCorrections"/>.
     /// </summary>

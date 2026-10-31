@@ -102,12 +102,19 @@ The develop runs in parallel bands, and its output is the same for any `EgamiCon
 
 A file that carries its own lens corrections (a DNG's warp and vignetting opcodes) is corrected with those. For other files,
 `RawReaderOptions.LensProfiles` names folders of lens profiles that Egami reads at run time: Lensfun database files (`.xml`)
-and Adobe lens profiles (`.lcp`). A system Lensfun install (such as `/usr/share/lensfun` on Linux) is searched too. The
-profile whose lens name matches the file's EXIF LensModel corrects vignetting, distortion and lateral chromatic aberration,
-its calibrations interpolated for the shot's focal length and aperture; `RawDetails.LensProfile` says which one did.
+and Adobe lens profiles (`.lcp`). Two kinds of folders are searched as well when they are there: a system Lensfun install (such
+as `/usr/share/lensfun` on Linux), and the folders Adobe's software (Camera Raw, Lightroom, DNG Converter) installs its lens
+profiles in, `%ProgramData%\Adobe\CameraRaw\LensProfiles\1.0` and `%AppData%\Adobe\CameraRaw\LensProfiles\1.0` on Windows and
+`/Library/Application Support/Adobe/CameraRaw/LensProfiles/1.0` and its counterpart in your own Library on macOS. Egami only
+reads them. The profile whose lens name matches the file's EXIF LensModel (an Adobe profile's name as people read it, or as
+cameras write it) corrects vignetting, distortion and lateral chromatic aberration, its calibrations interpolated for the
+shot's focal length and aperture; `RawDetails.LensProfile` says which one did.
+
+Adobe's folder holds thousands of profiles, so Egami reads only those whose file name has the lens's focal length, the first
+time a lens is developed (about two seconds for a common zoom), and keeps them for the process.
 
 Egami ships no profiles. Lensfun's database is under CC BY-SA 3.0 and Adobe's profiles come with Adobe's software, so you
-supply them and their terms apply to them. `LensCorrections = false` turns every lens correction off.
+supply them, or install that software, and their terms apply to them. `LensCorrections = false` turns every lens correction off.
 
 For a file no profile covers, `AutoChromaticAberration = true` measures lateral chromatic aberration from the image itself and
 scales red and blue about the centre to line their edges up with green's. It is off by default: the measurement costs about as

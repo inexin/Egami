@@ -1,3 +1,5 @@
+using System.Xml.Linq;
+
 using Egami.Formats.Extended.Raw;
 using Egami.Pixels;
 
@@ -77,6 +79,37 @@ public sealed class RawLensTests : IDisposable
     public void Dispose()
     {
         Directory.Delete(_folder, recursive: true);
+    }
+
+    [Theory]
+    [InlineData("EF24-70mm f/4L IS USM", "Canon EF 24-70mm f/4 L IS USM")]
+    [InlineData("NIKKOR Z 24-70mm f/4 S", null)]
+    [InlineData("Some Lens", null)]
+    public void LcpLensNamesMatchAsCamerasWriteThemButNotGenerically(string exifLens, string? expected)
+    {
+        // Adobe's files give the lens as cameras write it (Lens) and as people read it (LensPrettyName); a third-party lens's
+        // Lens is often only "24-70mm", which must not match every 24-70mm.
+        static XDocument Entry(string pretty, string lens) => XDocument.Parse($"""
+            <x:xmpmeta xmlns:x="adobe:ns:meta/"><rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+             <rdf:Description xmlns:photoshop="http://ns.adobe.com/photoshop/1.0/" xmlns:stCamera="http://ns.adobe.com/photoshop/1.0/camera-profile">
+              <photoshop:CameraProfiles><rdf:Seq><rdf:li><rdf:Description stCamera:Make="Maker" stCamera:LensPrettyName="{pretty}"
+               stCamera:Lens="{lens}" stCamera:FocalLength="24"><stCamera:PerspectiveModel stCamera:RadialDistortParam1="0.01" />
+              </rdf:Description></rdf:li></rdf:Seq></photoshop:CameraProfiles></rdf:Description></rdf:RDF></x:xmpmeta>
+            """);
+        List<RawLensProfile> profiles = [.. RawLensProfiles.Lcp(Entry("Canon EF 24-70mm f/4 L IS USM", "EF24-70mm f/4L IS USM")),
+            .. RawLensProfiles.Lcp(Entry("SIGMA 24-70mm F2.8 EX DG MACRO", "24-70mm")), .. RawLensProfiles.Lcp(Entry("Generic", "Sigma Lens"))];
+        Assert.Equal(expected, RawLensProfiles.Match(profiles, "Canon", "Camera", exifLens)?.Lens);
+    }
+
+    [Theory]
+    [InlineData("EF24-70mm f/4L IS USM", "24-70")]
+    [InlineData("XF35mmF2 R WR", "35")]
+    [InlineData("OLYMPUS M.12-40mm F2.8", "12-40")]
+    [InlineData("50 mm f/1.8", "50")]
+    [InlineData("Some Lens", null)]
+    public void FocalTokensNameTheLensFocalLength(string lens, string? expected)
+    {
+        Assert.Equal(expected, RawLensProfiles.FocalToken(lens));
     }
 
     [Fact]
