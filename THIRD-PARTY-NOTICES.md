@@ -511,7 +511,11 @@ and `aq_variance.c` (`Av1VarianceBoost.cs`), the deblocking level guess of `pick
 (`Av1TileWriter.Inter.cs`, sharing the derivations of `mvref_common.c` and `pred_common.c` with the decoder in
 `Av1TileState.Inter.cs`), and follows the structure of its inter mode search and motion search (`rdopt.c`, `mcomp.c`;
 `Av1TileEncoder.Inter.cs`, `Av1MotionSearch.cs`) and of its global motion estimation (`global_motion.c`, `ransac.c`;
-`Av1GlobalMotion.cs`). libaom is distributed under the BSD 2-clause license:
+`Av1GlobalMotion.cs`). The film grain denoiser and noise model (`Av1FilmGrainModel.cs`) follow the design of libaom's still-image
+path in `aom_dsp/noise_model.c`, `noise_util.c` and `av1/encoder/encoder.c`: the measured noise level clamped as for all-intra
+coding, the half-cosine window, the Wiener gain with its 1.1 margin and the default noise power, the error-diffused rounding, and
+strengths in 8-bit units divided by the autoregressive filter's gain, turned into scaling points and shifts as
+`aom_noise_model_get_grain_parameters` does. libaom is distributed under the BSD 2-clause license:
 
     Copyright (c) 2016, Alliance for Open Media. All rights reserved.
 
@@ -726,7 +730,10 @@ The HEIF image layer converts decoded planes to RGB as libavif 1.4.2 does withou
 sample: the lookup tables, Kr and Kb (derived from the primaries for matrix code 12), bilinear chroma upsampling and alpha
 unpremultiplication of its `src/reformat.c`, `src/alpha.c` and `src/colr.c` (`HeifRgbConverter.cs`). The AVIF writer lays out
 its files as libavif's `src/write.c` does and maps quality to libaom's quantizer with the tune IQ table of `src/codec_aom.c`
-(`AvifWriter.cs`). libavif is distributed under the BSD 2-clause license:
+(`AvifWriter.cs`). The AVIF extras follow libavif 1.4.2 too: the layered image layout (a spatial layer a layer, a1lx), avifenc
+--progressive's two layers and the all-intra second layer after a near-empty first (`AvifWriter.Still.cs`), the sample transform
+recipes and their residual (`AvifWriter.SampleTransform.cs`), the target size search, and the mini box's field order and
+defaults, checked against its experimental reader (`HeifMini.cs`). libavif is distributed under the BSD 2-clause license:
 
     Copyright 2019 Joe Drago. All rights reserved.
 

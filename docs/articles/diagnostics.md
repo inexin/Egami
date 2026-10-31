@@ -122,13 +122,14 @@ The activity and tag names are never renamed once shipped, like the diagnostic i
 | `Ani.SizeMissing` | Warning | A frame of an animated cursor has no image at the size loaded; its nearest image was resized, hotspot and all |
 | `Ani.StepCount` | Warning | An animated cursor's header gives a step count its `seq ` chunk or frames contradict; theirs was used |
 | `Ani.ZeroRate` | Warning | An animated cursor's default rate, or a step's rate, is 0; the step uses the default rate, or one jiffy (1/60 s) when that is 0 too |
-| `Avif.BaseLayerOnly` | Warning | An AVIF image is coded in layers whose later ones are inter frames, which Egami does not decode yet; its first layer was loaded |
 | `Avif.ExifDamaged` | Warning | An AVIF Exif item's TIFF header offset points past its end; the item was skipped |
 | `Avif.FramesDropped` | Warning | A frame of an AVIF sequence after the first cannot be decoded; a lenient load keeps the frames before it |
 | `Avif.GainMapDropped` | Warning | An AVIF gain map (tmap item) has metadata or an image that cannot be read, or a version Egami does not know; the image loads as SDR only |
+| `Avif.LayersDropped` | Warning | An AVIF image asked to be written in layers is larger than one AV1 frame and is written as a grid, which Egami writes in one layer |
 | `Avif.MatrixApproximated` | Warning | An AVIF image's matrix coefficients are ones libavif does not convert (reserved, constant luminance, or YCgCo at limited range); the nearest matrix it has was used |
 | `Avif.MatrixUnknown` | Warning | An AVIF image's matrix coefficients have no YuvMatrix; YuvRaster.Load marks the planes BT.601 |
 | `Avif.SequenceFirstFrame` | Warning | No longer reported: AVIF sequences decode every frame, inter frames included (Egami 1.1) |
+| `Avif.TargetSizeExceeded` | Warning | An AVIF image is larger than AvifWriterOptions.TargetSize even at quality 0; it was written at quality 0 |
 | `Bmp.DataOffsetInHeaders` | Warning | The pixel data offset points into the headers; the pixels are read from where the headers end |
 | `Bmp.EmbeddedSizeMismatch` | Warning | An embedded PNG or JPEG is not the size the BMP header gives |
 | `Bmp.IndexOutOfRange` | Warning | Pixels use indices past the palette; they are drawn black |

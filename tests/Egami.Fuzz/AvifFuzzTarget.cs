@@ -220,6 +220,47 @@ internal static class AvifFuzzTarget
             return;
         }
 
+        // AVIF extras: the first layer of a layered image, the fallback of a sample transform, and a progressive file's previews
+        // while its bytes arrive.
+        foreach (AvifReaderOptions options in (AvifReaderOptions[])[new() { Layer = 0 }, new() { SampleTransform = false }])
+        {
+            if ((options.Layer is not null && details.Layers.Count > 1) || (!options.SampleTransform && details.HasSampleTransform))
+            {
+                try
+                {
+                    using Raster other = Raster.Load(data, context, options);
+                }
+                catch (EgamiException)
+                {
+                }
+            }
+        }
+
+        if (details.IsProgressive)
+        {
+            try
+            {
+                int chunk = Math.Max(1, data.Length / 3);
+                using RasterDecoder decoder = RasterDecoder.OpenIncremental(context);
+                Raster<Rgb8>? preview = null;
+                for (int at = 0; at < data.Length; at += chunk)
+                {
+                    decoder.Append(data.AsSpan(at, Math.Min(chunk, data.Length - at)));
+                    if (decoder.HeaderRead)
+                    {
+                        preview ??= Raster.Create<Rgb8>(decoder.Info.Width, decoder.Info.Height);
+                        decoder.RenderPreview(preview);
+                    }
+                }
+
+                decoder.EndOfInput();
+                preview?.Dispose();
+            }
+            catch (EgamiException)
+            {
+            }
+        }
+
         foreach (AvifItem item in details.Items.Where(i => i.IsImage).Take(4))
         {
             try

@@ -29,11 +29,6 @@ public class AvifPixelTests
     public void LoadEqualsAvifdec(string file)
     {
         JsonElement entry = Manifest.Value.GetProperty(file);
-        if (Layered(entry))
-        {
-            return;
-        }
-
         byte[] data = File.ReadAllBytes(Path.Combine(Corpus, file));
         using (Raster raster = Raster.Load(data))
         {
@@ -66,11 +61,6 @@ public class AvifPixelTests
     public void YuvLoadEqualsDav1d(string file)
     {
         JsonElement entry = Manifest.Value.GetProperty(file);
-        if (Layered(entry))
-        {
-            return;
-        }
-
         using (YuvRaster planes = YuvRaster.Load(Path.Combine(Corpus, file)))
         {
             Assert.Equal(entry.GetProperty("yuv_md5").GetString(), Md5(planes));
@@ -151,10 +141,6 @@ public class AvifPixelTests
             Assert.True(part.Row(y).SequenceEqual(full.Row(region.Y + y).Slice(region.X, region.Width)), $"row {y}");
         }
     }
-
-    /// <summary>Gets whether the primary item holds several frames (layers), whose best layer task 16 decodes.</summary>
-    private static bool Layered(JsonElement entry) => entry.GetProperty("items").EnumerateArray()
-        .Any(i => i.TryGetProperty("primary", out JsonElement p) && p.GetBoolean() && i.TryGetProperty("frames", out JsonElement f) && f.GetInt32() > 1);
 
     /// <summary>Gets whether avifdec's PNG of this file is the raw luma (see apps/shared/avifpng.c's copyYPlane), which only differs for limited range.</summary>
     private static bool AvifdecCopiesLuma(Raster raster, byte[] data)

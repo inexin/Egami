@@ -843,8 +843,8 @@ public sealed class RasterDecoder : IDisposable
 
     /// <summary>
     /// Draws what is known of the frame in progress: an interlaced PNG from the passes received so far, a progressive JPEG from its
-    /// scans so far, a GIF frame from the rows received so far (interlaced ones repeated over the rows they stand for), each later
-    /// pass sharpening it. Region and
+    /// scans so far, a progressive (layered) AVIF from its best layer received so far at full size, a GIF frame from the rows
+    /// received so far (interlaced ones repeated over the rows they stand for), each later pass sharpening it. Region and
     /// reduction apply as to rows. The decode does not move on.
     /// </summary>
     /// <typeparam name="TPixel">The pixel type to draw in.</typeparam>
