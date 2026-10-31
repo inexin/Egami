@@ -422,10 +422,10 @@ internal static class JxlFuzzTarget
 
     /// <summary>
     /// The jxl-frames target (JPEG XL extras PR A): the frame writer. Byte 0 picks animation, layers or extra channels, lossless
-    /// or lossy; the next bytes the size, frame count and effort, the rest the pixels (frames mostly repeat the one before, with
-    /// a changed patch, so frames get cut). Lossless animations must load back to the same frames, layers through ReadLayers to
-    /// the same places, blend modes, names and pixels, and extra channels to the same samples; lossy files must load at their
-    /// size with every frame.
+    /// or lossy; the next bytes the size (for extra channels sometimes past one group), frame count and effort, the rest the
+    /// pixels (frames mostly repeat the one before, with a changed patch, so frames get cut). Lossless animations must load back
+    /// to the same frames, layers through ReadLayers to the same places, blend modes, names and pixels, and extra channels to the
+    /// same samples; lossy files must load at their size with every frame.
     /// </summary>
     public static void Frames(byte[] data, EgamiContext context)
     {
@@ -447,6 +447,12 @@ internal static class JxlFuzzTarget
                 Layers(pixels, width, height, count, data[6], options, context);
                 break;
             default:
+                // Now and then past one group each way, so channels subsampled 3 times reach the LF groups' streams.
+                if (data[7] >= 240)
+                {
+                    (width, height) = (width + 260 + (data[7] & 7), height + 260 + (data[7] & 8));
+                }
+
                 ExtraChannels(pixels, width, height, data[6], options, context);
                 break;
         }

@@ -180,7 +180,7 @@ public static class JxlImage
     /// <param name="context">The context, or <see langword="null"/> for <see cref="EgamiContext.Default"/>.</param>
     /// <exception cref="ArgumentNullException"><paramref name="path"/> or <paramref name="layers"/> is <see langword="null"/>, or holds <see langword="null"/>.</exception>
     /// <exception cref="ArgumentOutOfRangeException"><paramref name="width"/> or <paramref name="height"/> is not positive, or above 2³⁰.</exception>
-    /// <exception cref="ArgumentException"><paramref name="layers"/> is empty.</exception>
+    /// <exception cref="ArgumentException"><paramref name="layers"/> is empty, or a layer lasts longer than 2³² − 1 ms.</exception>
     /// <example>
     /// <code language="csharp" source="../../../../tests/Egami.DocSamples/Jxl.cs" region="write-layers"/>
     /// </example>
@@ -200,7 +200,7 @@ public static class JxlImage
     /// <param name="context">The context, or <see langword="null"/> for <see cref="EgamiContext.Default"/>.</param>
     /// <exception cref="ArgumentNullException"><paramref name="stream"/> or <paramref name="layers"/> is <see langword="null"/>, or holds <see langword="null"/>.</exception>
     /// <exception cref="ArgumentOutOfRangeException"><paramref name="width"/> or <paramref name="height"/> is not positive, or above 2³⁰.</exception>
-    /// <exception cref="ArgumentException"><paramref name="layers"/> is empty.</exception>
+    /// <exception cref="ArgumentException"><paramref name="layers"/> is empty, or a layer lasts longer than 2³² − 1 ms.</exception>
     /// <example>
     /// <code language="csharp" source="../../../../tests/Egami.DocSamples/Jxl.cs" region="write-layers"/>
     /// </example>
@@ -225,6 +225,12 @@ public static class JxlImage
         foreach (JxlLayer layer in layers)
         {
             ArgumentNullException.ThrowIfNull(layer, nameof(layers));
+
+            // A layer ReadLayers gave can last longer than the 1 ms ticks of a written file hold.
+            if (Math.Round(layer.Duration.TotalMilliseconds) > uint.MaxValue)
+            {
+                throw new ArgumentException($"A layer lasts {layer.Duration}; JPEG XL layers are written with durations up to 2³² − 1 ms.", nameof(layers));
+            }
         }
 
         using MemoryStream file = new();
@@ -335,6 +341,18 @@ public sealed class JxlLayer : IDisposable
             throw new ArgumentException($"A JPEG XL layer name holds {JxlFrameWriter.MaxNameBytes} bytes of UTF-8.", nameof(name));
         }
 
+        Raster = raster;
+        X = x;
+        Y = y;
+        Blend = blend;
+        Duration = duration;
+        Name = name;
+    }
+
+    /// <summary>Creates a layer read from a file, as it is there: its duration can be any the file's ticks give.</summary>
+    internal JxlLayer(Raster raster, int x, int y, JxlLayerBlend blend, TimeSpan duration, string name, bool read)
+    {
+        _ = read;
         Raster = raster;
         X = x;
         Y = y;

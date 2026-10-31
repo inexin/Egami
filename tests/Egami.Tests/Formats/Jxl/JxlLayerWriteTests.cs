@@ -153,6 +153,28 @@ public class JxlLayerWriteTests
     }
 
     [Fact]
+    public void LongLayersReadButAreNotWritten()
+    {
+        // A file whose ticks are seconds (1 per second) can hold a layer of 5,000,000 s, more than written files' 2³² − 1 ms.
+        using Raster<Rgb8> pixels = Raster.Create<Rgb8>(8, 8, new Rgb8(1, 2, 3));
+        JxlEncodeInput input = JxlWriter.ToInput(pixels, 3) with { Animation = new JxlAnimation(1, 1, 0, false) };
+        JxlBitWriter w = new();
+        JxlLosslessEncoder.WriteHeaders(w, input);
+        byte[] file = JxlLosslessEncoder.EncodeFrame(w, input, new JxlFrameInfo { Duration = 5_000_000 }, 8, 8);
+
+        IReadOnlyList<JxlLayer> read = JxlImage.ReadLayers(new MemoryStream(file));
+        try
+        {
+            Assert.Equal(TimeSpan.FromSeconds(5_000_000), read[0].Duration);
+            Assert.Throws<ArgumentException>(() => JxlImage.WriteLayers(new MemoryStream(), 8, 8, read));
+        }
+        finally
+        {
+            Dispose(read);
+        }
+    }
+
+    [Fact]
     public void BadLayersAreRefused()
     {
         using Raster<Rgb8> r = Raster.Create<Rgb8>(4, 4);

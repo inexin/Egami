@@ -93,7 +93,7 @@ internal static class JxlImageDecoder
             Run(file, codestream, input, Sequence(file), lfOnly: false, layers: true, (decoded, f) =>
             {
                 Raster raster = Natural(input, file, layout => Single(layout, input, file, decoded, f));
-                layers.Add(new JxlLayer(raster, f.X0, f.Y0, (JxlLayerBlend)f.Blending.Mode, Delay(f, file.Header), f.Name));
+                layers.Add(new JxlLayer(raster, f.X0, f.Y0, (JxlLayerBlend)f.Blending.Mode, Delay(f, file.Header), f.Name, read: true));
                 return true;
             });
             return layers;

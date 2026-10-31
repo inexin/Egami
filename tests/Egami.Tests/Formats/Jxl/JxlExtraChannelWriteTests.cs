@@ -115,6 +115,41 @@ public class JxlExtraChannelWriteTests
         AssertSamples(depth, back, 0);
     }
 
+    [Theory]
+    [InlineData(true, 1, false)]
+    [InlineData(true, 2, false)]
+    [InlineData(true, 5, false)]
+    [InlineData(false, 5, false)]
+    [InlineData(false, 7, false)]
+    [InlineData(false, 5, true)]
+    public void ChannelsSubsampledThreeTimesGoInTheLfGroups(bool lossless, int effort, bool progressive)
+    {
+        // A channel subsampled 3 times both ways is coded in the LF groups' streams (H.4), here on a frame of 18 groups, which
+        // lossless effort 2 codes group by group; text-like edges give lossy effort 7 patches, and progressive an LF frame.
+        const int Width = 1300, Height = 700;
+        using Raster<Rgba8> image = Raster.Create<Rgba8>(Width, Height);
+        for (int y = 0; y < Height; y++)
+        {
+            for (int x = 0; x < Width; x++)
+            {
+                byte ink = (x / 6 % 5 == 0 && y / 9 % 3 == 0) ? (byte)0 : (byte)230;
+                image.Row(y)[x] = new Rgba8(ink, (byte)(ink ^ (x >> 2)), (byte)(y >> 2), (byte)(255 - (x % 5)));
+            }
+        }
+
+        using Raster<GrayF32> depth = Quantized(Ramp((Width + 7) / 8, (Height + 7) / 8, 5), 8);
+        JxlExtraChannel channel = new() { Kind = JxlExtraChannelKind.Depth, Subsampling = 3 };
+        JxlWriterOptions options = new() { Lossless = lossless, Effort = effort, Progressive = progressive, ExtraChannels = [new JxlExtraChannelImage(channel, depth)] };
+        byte[] file = Save(image, options);
+        using Raster<GrayF32> back = JxlImage.ReadExtraChannel(new MemoryStream(file), 1);
+        AssertSamples(depth, back, 3);
+        if (lossless)
+        {
+            using Raster<Rgba8> loaded = Raster.Load<Rgba8>(new MemoryStream(file));
+            Assert.Equal(image.Row(650)[1250], loaded.Row(650)[1250]);
+        }
+    }
+
     [Fact]
     public void LosslessCmykKeepsItsInks()
     {

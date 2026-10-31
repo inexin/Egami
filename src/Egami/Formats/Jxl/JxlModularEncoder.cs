@@ -124,6 +124,11 @@ internal sealed class JxlModularEncoder
         if (prefix < gi.Channels.Count)
         {
             Parallel.For(0, e._groups, e._parallel, g => e.PrepareGroup(gi, g, prefix));
+            for (int lf = 0; lf < lfGroups; lf++)
+            {
+                e.PrepareLfGroup(gi, lf, prefix);
+            }
+
             for (int c = prefix; c < gi.Channels.Count; c++)
             {
                 gi.Channels[c].Data = [];
@@ -585,6 +590,11 @@ internal sealed class JxlModularEncoder
         {
             int prefixBefore = gi.CodedPrefix(_groupDim);
             Parallel.For(0, _groups, _parallel, g => PrepareGroup(gi, g, prefixBefore));
+            for (int lf = 0; lf < _lfGroups; lf++)
+            {
+                PrepareLfGroup(gi, lf, prefixBefore);
+            }
+
         }
 
         // The channels the groups now hold leave the global stream, which keeps their sizes for the prefix test.
@@ -643,9 +653,11 @@ internal sealed class JxlModularEncoder
         }
 
         List<byte[]> sections = [global.ToArray()];
-        for (int i = 0; i < _lfGroups; i++)
+        for (int lf = 0; lf < _lfGroups; lf++)
         {
-            sections.Add([]);
+            JxlBitWriter w = new();
+            WriteStream(w, _streams[LfStream(lf)], code, tokens[LfStream(lf)]);
+            sections.Add(w.ToArray());
         }
 
         sections.Add([]);
@@ -674,10 +686,14 @@ internal sealed class JxlModularEncoder
         global.WriteBool(false); // no global tree
         WriteLocalStream(global, 0, p);
         List<byte[]> sections = [global.ToArray()];
-        for (int i = 0; i <= _lfGroups; i++)
+        for (int lf = 0; lf < _lfGroups; lf++)
         {
-            sections.Add([]);
+            JxlBitWriter w = new();
+            WriteLocalStream(w, LfStream(lf), p);
+            sections.Add(w.ToArray());
         }
+
+        sections.Add([]);
 
         byte[][] groupSections = new byte[_groups][];
         Parallel.For(0, _groups, _parallel, g =>
@@ -782,6 +798,49 @@ internal sealed class JxlModularEncoder
         }
     }
 
+    /// <summary>Gets whether a channel past the global prefix goes in the LF groups' streams: one subsampled 3 or more times both ways (H.4).</summary>
+    private static bool InLfGroups(JxlChannel channel) => channel.HShift >= 3 && channel.VShift >= 3;
+
+    /// <summary>Gets the stream id of LF group <paramref name="lf"/>'s Modular stream (ModularLfGroup).</summary>
+    private int LfStream(int lf) => 1 + _lfGroups + lf;
+
+    /// <summary>Copies LF group <paramref name="lf"/>'s part of every channel past the prefix subsampled 3 or more times both ways into its stream.</summary>
+    private void PrepareLfGroup(JxlEncodeImage full, int lf, int prefix)
+    {
+        JxlEncodeImage gi = new(full.BitDepth);
+        int dim = _groupDim * 8;
+        int perRow = Ceil(_width, dim);
+        int x0 = lf % perRow * dim;
+        int y0 = lf / perRow * dim;
+        for (int c = prefix; c < full.Channels.Count; c++)
+        {
+            JxlChannel fc = full.Channels[c];
+            if (!InLfGroups(fc))
+            {
+                continue;
+            }
+
+            int cx = x0 >> fc.HShift;
+            int cy = y0 >> fc.VShift;
+            int w = Math.Min(dim >> fc.HShift, fc.Width - cx);
+            int h = Math.Min(dim >> fc.VShift, fc.Height - cy);
+            if (w <= 0 || h <= 0)
+            {
+                continue;
+            }
+
+            JxlChannel part = new(w, h, fc.HShift, fc.VShift);
+            for (int y = 0; y < h; y++)
+            {
+                Array.Copy(fc.Data, ((cy + y) * fc.Width) + cx, part.Data, y * w, w);
+            }
+
+            gi.Channels.Add(part);
+        }
+
+        _streams[LfStream(lf)] = gi;
+    }
+
     /// <summary>Copies a group's part of every channel larger than a group into its stream, then tries local palettes and RCTs.</summary>
     private void PrepareGroup(JxlEncodeImage full, int g, int prefix)
     {
@@ -791,6 +850,11 @@ internal sealed class JxlModularEncoder
         for (int c = prefix; c < full.Channels.Count; c++)
         {
             JxlChannel fc = full.Channels[c];
+            if (InLfGroups(fc))
+            {
+                continue;
+            }
+
             int cx = x0 >> fc.HShift;
             int cy = y0 >> fc.VShift;
             int w = Math.Min(_groupDim >> fc.HShift, fc.Width - cx);
