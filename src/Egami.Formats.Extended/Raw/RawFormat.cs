@@ -383,4 +383,15 @@ public sealed record RawReaderOptions : ReaderOptions
     /// and Adobe's profiles are Adobe's, so you supply them. Defaults to none. Applies only with <see cref="LensCorrections"/>.
     /// </summary>
     public IReadOnlyList<string> LensProfiles { get; init; } = [];
+
+    /// <summary>
+    /// Gets whether a file that no lens correction covers (no lens opcodes, no matching profile) has its lateral chromatic
+    /// aberration measured from the image and corrected: red and blue are scaled about the centre to line their edges up with
+    /// green's. Defaults to <see langword="false"/>, since the measurement costs about as much as the demosaic. Applies only
+    /// with <see cref="LensCorrections"/>.
+    /// </summary>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/FormatsExtended.cs" region="raw-develop"/>
+    /// </example>
+    public bool AutoChromaticAberration { get; init; }
 }

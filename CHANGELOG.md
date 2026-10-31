@@ -69,8 +69,9 @@ Camera RAW, stage B (maker formats). All additive.
   levels and crops a file does not give.
 - X-Trans sensors get their own demosaic; Panasonic's zeroed defective pixels are filled.
 - Lens corrections (`LensCorrections`) use Lensfun XML and Adobe LCP profiles loaded at run time from
-  `RawReaderOptions.LensProfiles` and the system's Lensfun folders (no profile data ships), else an automatic lateral
-  chromatic aberration correction; `RawDetails.LensProfile` names what was applied.
+  `RawReaderOptions.LensProfiles` and the system's Lensfun folders (no profile data ships), else, with
+  `AutoChromaticAberration` (off by default), an automatic lateral chromatic aberration correction; `RawDetails.LensProfile`
+  names what was applied.
 
 DDS textures, stage A (reading). All additive; it ships with the rest of DDS in one release.
 

@@ -171,10 +171,10 @@ internal sealed class RawDeveloper
         return applied is null ? null : $"{(profile.Format == RawLensFormat.Lcp ? "Adobe" : "Lensfun")}: {(profile.Maker.Length > 0 ? profile.Maker + " " : "")}{profile.Lens} ({applied})";
     }
 
-    /// <summary>Corrects lateral chromatic aberration measured from the image itself, for a file nothing else corrects.</summary>
-    private static string? AutoCa(Memory<float> rgb, int width, int height, ParallelOptions parallel)
+    /// <summary>Corrects lateral chromatic aberration measured from the image itself, for a file nothing else corrects, when asked.</summary>
+    private string? AutoCa(Memory<float> rgb, int width, int height, ParallelOptions parallel)
     {
-        return RawAutoCa.Apply(rgb, width, height, parallel) is (double red, double blue)
+        return _options.AutoChromaticAberration && RawAutoCa.Apply(rgb, width, height, parallel) is (double red, double blue)
             ? string.Create(System.Globalization.CultureInfo.InvariantCulture, $"Automatic lateral chromatic aberration (red × {red:F5}, blue × {blue:F5})")
             : null;
     }

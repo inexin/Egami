@@ -99,6 +99,10 @@ its calibrations interpolated for the shot's focal length and aperture; `RawDeta
 Egami ships no profiles. Lensfun's database is under CC BY-SA 3.0 and Adobe's profiles come with Adobe's software, so you
 supply them and their terms apply to them. `LensCorrections = false` turns every lens correction off.
 
+For a file no profile covers, `AutoChromaticAberration = true` measures lateral chromatic aberration from the image itself and
+scales red and blue about the centre to line their edges up with green's. It is off by default: the measurement costs about as
+much as the demosaic.
+
 ## Details and metadata
 
 `RawDetails`, in `RasterMetadata.FormatDetails`, says what the raster is (`Output`, `PreviewIndex`), the camera (`Make`,
