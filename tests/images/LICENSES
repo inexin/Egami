@@ -91,6 +91,8 @@ fuzz/ani-seeds/
 fuzz/avif-seeds/, fuzz/avifbox-seeds/, fuzz/av1-seeds/
   Seeds for the AVIF fuzz targets: copies of small files of avif/ (avif-seeds), the same files with their ftyp box taken out
   (avifbox-seeds), and the AV1 data of their primary items (av1-seeds). Same licenses as the files they come from.
+  avif-seeds/extras_*.avif are a mini file of avif/extras/ and a 16 x 16 sample transform and mini file made the same way from
+  ops/duck.png (public domain).
 
 fuzz/jxl-seeds/, fuzz/jxlbox-seeds/, fuzz/jxlentropy-seeds/
   Seeds for the JPEG XL fuzz targets: copies of the small files of jxl/ (jxl-seeds), the boxes of jxl/ files and of Egami's
@@ -246,6 +248,13 @@ avif/, ../reference/avif/
   BY-NC-ND 4.0, Xiph CC BY-SA 3.0 and CC BY 3.0, Microsoft with copyright in each file), libavif's test files whose pictures
   carry other licenses, libaom's test vectors, dav1d's test data and the Argon streams stay in .cache/avif and are never
   committed.
+
+avif/extras/, ../reference/avif/extras/
+  AVIF extras files made by tools/make-avif-references.py extras (tools/avifref/avifextras.py) with libavif 1.4.2's avifenc and,
+  for mini-*.avif, the same libavif built with its experimental mini box (BSD 2-clause), run as tools only, from crops of
+  ops/duck.png above with noise added for the 16-bit sources (public domain) and icc/compact/DisplayP3Compat-v4.icc (CC0 1.0).
+  The references are avifdec 1.4.2's decodes (with --sato for sample transforms, and without it for their fallbacks) and
+  manifest.json. Public domain, as their sources.
 
 heic/, ../reference/heic/
   HEIF files made by tools/make-heic-references.py (tools/heicref/heiccorpus.py and heif.py) with libheif 1.23.4's heif-enc
