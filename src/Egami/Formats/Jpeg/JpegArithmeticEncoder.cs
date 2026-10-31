@@ -152,24 +152,16 @@ internal sealed class JpegArithmeticEncoder
     /// </summary>
     internal void EncodeAcFirst(ReadOnlySpan<short> block, int acTable, int ss, int se, int al)
     {
-        int end = ss - 1;
-        for (int k = se; k >= ss; k--)
-        {
-            if (Math.Abs((int)block[k]) >> al != 0)
-            {
-                end = k;
-                break;
-            }
-        }
-
+        // The coefficients the band codes as nonzero, from one vector compare of the block.
+        ulong coded = JpegProgressiveEncoder.AtLeast(block, 1 << al) & JpegProgressiveEncoder.Band(ss, se);
+        int end = coded == 0 ? ss - 1 : 63 - BitOperations.LeadingZeroCount(coded);
         ref byte stats = ref _ac[acTable * AcBins];
         Coder q = _coder;
         for (int k = ss; k <= end; k++)
         {
             int st = 3 * (k - 1);
             Encode(ref q, ref Unsafe.Add(ref stats, st), 0);
-            int value;
-            while ((value = Transform(block[k], al)) == 0)
+            while ((coded & (1UL << k)) == 0)
             {
                 Encode(ref q, ref Unsafe.Add(ref stats, st + 1), 0);
                 st += 3;
@@ -177,7 +169,7 @@ internal sealed class JpegArithmeticEncoder
             }
 
             Encode(ref q, ref Unsafe.Add(ref stats, st + 1), 1);
-            EncodeAc(ref q, ref stats, st, k, value);
+            EncodeAc(ref q, ref stats, st, k, Transform(block[k], al));
         }
 
         if (end < se)
@@ -195,23 +187,12 @@ internal sealed class JpegArithmeticEncoder
     /// </summary>
     internal void EncodeAcRefine(ReadOnlySpan<short> block, int acTable, int ss, int se, int ah, int al)
     {
-        int end = ss - 1;
-        int last = 0;
-        for (int k = se; k >= ss; k--)
-        {
-            int magnitude = Math.Abs((int)block[k]);
-            if (end < ss && magnitude >> al != 0)
-            {
-                end = k;
-            }
-
-            if (magnitude >> ah != 0)
-            {
-                last = k;
-                break;
-            }
-        }
-
+        // Nonzero at this bit (coded), and nonzero already from the bits above it (earlier), from vector compares of the block.
+        ulong band = JpegProgressiveEncoder.Band(ss, se);
+        ulong coded = JpegProgressiveEncoder.AtLeast(block, 1 << al) & band;
+        ulong earlier = JpegProgressiveEncoder.AtLeast(block, 1 << ah) & band;
+        int end = coded == 0 ? ss - 1 : 63 - BitOperations.LeadingZeroCount(coded);
+        int last = earlier == 0 ? 0 : 63 - BitOperations.LeadingZeroCount(earlier);
         ref byte stats = ref _ac[acTable * AcBins];
         Coder q = _coder;
         byte fixedState = JpegQmTables.FixedState;
@@ -225,18 +206,17 @@ internal sealed class JpegArithmeticEncoder
 
             while (true)
             {
-                int coefficient = block[k];
-                int magnitude = Math.Abs(coefficient);
-                if (magnitude >> ah != 0)
+                ulong bit = 1UL << k;
+                if ((earlier & bit) != 0)
                 {
-                    Encode(ref q, ref Unsafe.Add(ref stats, st + 2), (magnitude >> al) & 1);
+                    Encode(ref q, ref Unsafe.Add(ref stats, st + 2), (Math.Abs((int)block[k]) >> al) & 1);
                     break;
                 }
 
-                if (magnitude >> al != 0)
+                if ((coded & bit) != 0)
                 {
                     Encode(ref q, ref Unsafe.Add(ref stats, st + 1), 1);
-                    Encode(ref q, ref fixedState, coefficient < 0 ? 1 : 0);
+                    Encode(ref q, ref fixedState, block[k] < 0 ? 1 : 0);
                     break;
                 }
 
@@ -255,17 +235,33 @@ internal sealed class JpegArithmeticEncoder
     }
 
     /// <summary>
-    /// Codes one lossless difference (T.81 H.1.2.3, -32767 to 32768) with conditioning table <paramref name="table"/>, given the
-    /// differences coded for the sample to the left (<paramref name="left"/>) and above (<paramref name="above"/>), which the
-    /// two-dimensional context of table H.3 is made from.
+    /// Codes one row of lossless differences (T.81 H.1.2.3), stored modulo 2^16 with the components interleaved, each component
+    /// in its own conditioning table, given the row of differences above (<paramref name="above"/>, empty on the first line of the
+    /// image or of a restart interval). Each context is made from the differences to the left and above (table H.3), zero at the
+    /// start of a line and on its first line.
     /// </summary>
-    internal void EncodeDifference(int table, int left, int above, int difference)
+    internal void EncodeDifferences(int components, ReadOnlySpan<ushort> row, ReadOnlySpan<ushort> above)
     {
-        int b = Category(above);
         Coder q = _coder;
-        EncodeMagnitude(ref q, ref _dc[table * DcBins], (20 * Category(left)) + (4 * b), b >= 3 ? 129 : 100, difference);
+        ref byte stats = ref MemoryMarshal.GetArrayDataReference(_dc);
+        bool first = above.IsEmpty;
+        for (int j = 0, i = 0; j < row.Length; j++)
+        {
+            int left = j < components ? 0 : Signed(row[j - components]);
+            int b = first ? 0 : Category(Signed(above[j]));
+            EncodeMagnitude(ref q, ref Unsafe.Add(ref stats, i * DcBins), (20 * Category(left)) + (4 * b), b >= 3 ? 129 : 100, Signed(row[j]));
+            if (++i == components)
+            {
+                i = 0;
+            }
+        }
+
         _coder = q;
     }
+
+    /// <summary>A stored lossless difference as -32767 to 32768: 0x8000 is 32768 (T.81 H.1.2.2).</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static int Signed(ushort stored) => stored == 0x8000 ? 32768 : (short)stored;
 
     /// <summary>Codes one binary decision with a context the caller keeps, for tests of the coder alone.</summary>
     internal void EncodeBit(ref byte context, int bit)
@@ -345,6 +341,7 @@ internal sealed class JpegArithmeticEncoder
     }
 
     /// <summary>Returns the conditioning category of a difference at L = 0 and U = 1 (T.81 F.1.4.4.1.2): 0 zero, 1 small +, 2 small -, 3 large +, 4 large -.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static int Category(int difference)
     {
         int magnitude = Math.Abs(difference);
@@ -436,18 +433,20 @@ internal sealed class JpegArithmeticEncoder
             context = (byte)((sv & 0x80) ^ (entry & 0xFF));
         }
 
-        // Renorm_e (D.1.5): double A and C until A is at least X'8000', a byte going out every 8 doublings.
-        do
+        // Renorm_e (D.1.5): double A and C until A is at least X'8000', a byte going out every 8 doublings; done as one shift of
+        // A and at most two of C, since A is below X'10000' and above 0, so at most 15 doublings.
+        int shift = BitOperations.LeadingZeroCount((uint)q.A) - 16;
+        q.A <<= shift;
+        while (shift >= q.Ct)
         {
-            q.A <<= 1;
-            q.C <<= 1;
-            if (--q.Ct == 0)
-            {
-                ByteOut(ref q);
-                q.Ct = 8;
-            }
+            q.C <<= q.Ct;
+            shift -= q.Ct;
+            ByteOut(ref q);
+            q.Ct = 8;
         }
-        while (q.A < 0x8000);
+
+        q.C <<= shift;
+        q.Ct -= shift;
     }
 
     /// <summary>

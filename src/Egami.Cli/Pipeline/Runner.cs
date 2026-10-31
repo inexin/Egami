@@ -108,6 +108,18 @@ internal static class Runner
         WriterInfo? writer = WriterCatalog.Find(format);
         foreach ((string key, string value) in save.Common)
         {
+            if (key == "lossless" && writer is not null && writer.Settings.All(s => s.Key != key) && writer.Settings.Any(s => s.Key.StartsWith("lossless.", StringComparison.Ordinal)))
+            {
+                // Lossless JPEG is an options object (JpegWriterOptions.Lossless): --lossless turns it on at its defaults, the
+                // predictor picked per image and no point transform; --set jpeg.lossless.* chooses more.
+                if (value == "true")
+                {
+                    values["lossless.point-transform"] = "0";
+                }
+
+                continue;
+            }
+
             if (writer?.Settings.Any(s => s.Key == key) == true || (writer is null && key == "strip-metadata"))
             {
                 values[key] = value;

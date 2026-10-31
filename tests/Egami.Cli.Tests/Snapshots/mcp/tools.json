@@ -62,7 +62,7 @@
           },
           "lossless": {
             "type": "boolean",
-            "description": "Lossless encoding (WebP, AVIF, JPEG XL)."
+            "description": "Lossless encoding (WebP, AVIF, JPEG XL, and lossless JPEG with the predictor picked per image)."
           },
           "effort": {
             "type": "integer",
@@ -75,6 +75,10 @@
           "progressive": {
             "type": "boolean",
             "description": "Write the image so viewers show it coarse first, then sharper as it arrives (AVIF layers, JPEG and JPEG XL progressive)."
+          },
+          "arithmetic": {
+            "type": "boolean",
+            "description": "Arithmetic coding instead of Huffman: smaller files with the same pixels, which browsers do not read (JPEG)."
           },
           "target_size": {
             "type": "integer",
@@ -160,7 +164,7 @@
           },
           "lossless": {
             "type": "boolean",
-            "description": "Lossless encoding (WebP, AVIF, JPEG XL)."
+            "description": "Lossless encoding (WebP, AVIF, JPEG XL, and lossless JPEG with the predictor picked per image)."
           },
           "effort": {
             "type": "integer",
@@ -173,6 +177,10 @@
           "progressive": {
             "type": "boolean",
             "description": "Write the image so viewers show it coarse first, then sharper as it arrives (AVIF layers, JPEG and JPEG XL progressive)."
+          },
+          "arithmetic": {
+            "type": "boolean",
+            "description": "Arithmetic coding instead of Huffman: smaller files with the same pixels, which browsers do not read (JPEG)."
           },
           "target_size": {
             "type": "integer",
@@ -283,7 +291,7 @@
           },
           "lossless": {
             "type": "boolean",
-            "description": "Lossless encoding (WebP, AVIF, JPEG XL)."
+            "description": "Lossless encoding (WebP, AVIF, JPEG XL, and lossless JPEG with the predictor picked per image)."
           },
           "effort": {
             "type": "integer",
@@ -296,6 +304,10 @@
           "progressive": {
             "type": "boolean",
             "description": "Write the image so viewers show it coarse first, then sharper as it arrives (AVIF layers, JPEG and JPEG XL progressive)."
+          },
+          "arithmetic": {
+            "type": "boolean",
+            "description": "Arithmetic coding instead of Huffman: smaller files with the same pixels, which browsers do not read (JPEG)."
           },
           "target_size": {
             "type": "integer",
@@ -409,7 +421,7 @@
           },
           "lossless": {
             "type": "boolean",
-            "description": "Lossless encoding (WebP, AVIF, JPEG XL)."
+            "description": "Lossless encoding (WebP, AVIF, JPEG XL, and lossless JPEG with the predictor picked per image)."
           },
           "effort": {
             "type": "integer",
@@ -422,6 +434,10 @@
           "progressive": {
             "type": "boolean",
             "description": "Write the image so viewers show it coarse first, then sharper as it arrives (AVIF layers, JPEG and JPEG XL progressive)."
+          },
+          "arithmetic": {
+            "type": "boolean",
+            "description": "Arithmetic coding instead of Huffman: smaller files with the same pixels, which browsers do not read (JPEG)."
           },
           "target_size": {
             "type": "integer",
@@ -512,7 +528,7 @@
           },
           "lossless": {
             "type": "boolean",
-            "description": "Lossless encoding (WebP, AVIF, JPEG XL)."
+            "description": "Lossless encoding (WebP, AVIF, JPEG XL, and lossless JPEG with the predictor picked per image)."
           },
           "effort": {
             "type": "integer",
@@ -525,6 +541,10 @@
           "progressive": {
             "type": "boolean",
             "description": "Write the image so viewers show it coarse first, then sharper as it arrives (AVIF layers, JPEG and JPEG XL progressive)."
+          },
+          "arithmetic": {
+            "type": "boolean",
+            "description": "Arithmetic coding instead of Huffman: smaller files with the same pixels, which browsers do not read (JPEG)."
           },
           "target_size": {
             "type": "integer",
@@ -627,7 +647,7 @@
           },
           "lossless": {
             "type": "boolean",
-            "description": "Lossless encoding (WebP, AVIF, JPEG XL)."
+            "description": "Lossless encoding (WebP, AVIF, JPEG XL, and lossless JPEG with the predictor picked per image)."
           },
           "effort": {
             "type": "integer",
@@ -640,6 +660,10 @@
           "progressive": {
             "type": "boolean",
             "description": "Write the image so viewers show it coarse first, then sharper as it arrives (AVIF layers, JPEG and JPEG XL progressive)."
+          },
+          "arithmetic": {
+            "type": "boolean",
+            "description": "Arithmetic coding instead of Huffman: smaller files with the same pixels, which browsers do not read (JPEG)."
           },
           "target_size": {
             "type": "integer",
@@ -734,7 +758,7 @@
           },
           "lossless": {
             "type": "boolean",
-            "description": "Lossless encoding (WebP, AVIF, JPEG XL)."
+            "description": "Lossless encoding (WebP, AVIF, JPEG XL, and lossless JPEG with the predictor picked per image)."
           },
           "effort": {
             "type": "integer",
@@ -747,6 +771,10 @@
           "progressive": {
             "type": "boolean",
             "description": "Write the image so viewers show it coarse first, then sharper as it arrives (AVIF layers, JPEG and JPEG XL progressive)."
+          },
+          "arithmetic": {
+            "type": "boolean",
+            "description": "Arithmetic coding instead of Huffman: smaller files with the same pixels, which browsers do not read (JPEG)."
           },
           "target_size": {
             "type": "integer",
@@ -1276,7 +1304,7 @@
           },
           "lossless": {
             "type": "boolean",
-            "description": "Lossless encoding (WebP, AVIF, JPEG XL)."
+            "description": "Lossless encoding (WebP, AVIF, JPEG XL, and lossless JPEG with the predictor picked per image)."
           },
           "effort": {
             "type": "integer",
@@ -1289,6 +1317,10 @@
           "progressive": {
             "type": "boolean",
             "description": "Write the image so viewers show it coarse first, then sharper as it arrives (AVIF layers, JPEG and JPEG XL progressive)."
+          },
+          "arithmetic": {
+            "type": "boolean",
+            "description": "Arithmetic coding instead of Huffman: smaller files with the same pixels, which browsers do not read (JPEG)."
           },
           "target_size": {
             "type": "integer",
@@ -1374,7 +1406,7 @@
           },
           "lossless": {
             "type": "boolean",
-            "description": "Lossless encoding (WebP, AVIF, JPEG XL)."
+            "description": "Lossless encoding (WebP, AVIF, JPEG XL, and lossless JPEG with the predictor picked per image)."
           },
           "effort": {
             "type": "integer",
@@ -1387,6 +1419,10 @@
           "progressive": {
             "type": "boolean",
             "description": "Write the image so viewers show it coarse first, then sharper as it arrives (AVIF layers, JPEG and JPEG XL progressive)."
+          },
+          "arithmetic": {
+            "type": "boolean",
+            "description": "Arithmetic coding instead of Huffman: smaller files with the same pixels, which browsers do not read (JPEG)."
           },
           "target_size": {
             "type": "integer",
@@ -1477,7 +1513,7 @@
           },
           "lossless": {
             "type": "boolean",
-            "description": "Lossless encoding (WebP, AVIF, JPEG XL)."
+            "description": "Lossless encoding (WebP, AVIF, JPEG XL, and lossless JPEG with the predictor picked per image)."
           },
           "effort": {
             "type": "integer",
@@ -1490,6 +1526,10 @@
           "progressive": {
             "type": "boolean",
             "description": "Write the image so viewers show it coarse first, then sharper as it arrives (AVIF layers, JPEG and JPEG XL progressive)."
+          },
+          "arithmetic": {
+            "type": "boolean",
+            "description": "Arithmetic coding instead of Huffman: smaller files with the same pixels, which browsers do not read (JPEG)."
           },
           "target_size": {
             "type": "integer",
@@ -1596,7 +1636,7 @@
           },
           "lossless": {
             "type": "boolean",
-            "description": "Lossless encoding (WebP, AVIF, JPEG XL)."
+            "description": "Lossless encoding (WebP, AVIF, JPEG XL, and lossless JPEG with the predictor picked per image)."
           },
           "effort": {
             "type": "integer",
@@ -1609,6 +1649,10 @@
           "progressive": {
             "type": "boolean",
             "description": "Write the image so viewers show it coarse first, then sharper as it arrives (AVIF layers, JPEG and JPEG XL progressive)."
+          },
+          "arithmetic": {
+            "type": "boolean",
+            "description": "Arithmetic coding instead of Huffman: smaller files with the same pixels, which browsers do not read (JPEG)."
           },
           "target_size": {
             "type": "integer",
@@ -1739,7 +1783,7 @@
           },
           "lossless": {
             "type": "boolean",
-            "description": "Lossless encoding (WebP, AVIF, JPEG XL)."
+            "description": "Lossless encoding (WebP, AVIF, JPEG XL, and lossless JPEG with the predictor picked per image)."
           },
           "effort": {
             "type": "integer",
@@ -1752,6 +1796,10 @@
           "progressive": {
             "type": "boolean",
             "description": "Write the image so viewers show it coarse first, then sharper as it arrives (AVIF layers, JPEG and JPEG XL progressive)."
+          },
+          "arithmetic": {
+            "type": "boolean",
+            "description": "Arithmetic coding instead of Huffman: smaller files with the same pixels, which browsers do not read (JPEG)."
           },
           "target_size": {
             "type": "integer",

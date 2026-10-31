@@ -114,6 +114,47 @@ public sealed class EverydayCommandTests : IDisposable
     }
 
     [Fact]
+    public void JpegLosslessAndArithmeticFlags()
+    {
+        string png = _tool.Copy(Png);
+        Assert.Equal(0, _tool.Run("convert", png, "-o", "lossless.jpg", "--lossless").Code);
+        Assert.Equal(0, _tool.Run("convert", png, "-o", "lossless-ac.jpg", "--lossless", "--arithmetic").Code);
+        Assert.Equal(0, _tool.Run("convert", png, "-o", "arithmetic.jpg", "--arithmetic", "--quality", "90").Code);
+        Assert.Equal(0, _tool.Run("convert", png, "-o", "predictor.jpg", "--set", "jpeg.lossless.predictor=3").Code);
+        Assert.Equal(0, _tool.Run("convert", png, "-o", "plain.jpg", "--lossless", "false").Code);
+        Assert.Equal(Save(png, JpegFormat.Info, new JpegWriterOptions { Lossless = new JpegLosslessOptions() }), File.ReadAllBytes(_tool.PathOf("lossless.jpg")));
+        Assert.Equal(Save(png, JpegFormat.Info, new JpegWriterOptions { Lossless = new JpegLosslessOptions(), Arithmetic = true }), File.ReadAllBytes(_tool.PathOf("lossless-ac.jpg")));
+        Assert.Equal(Save(png, JpegFormat.Info, new JpegWriterOptions { Quality = 90, Arithmetic = true }), File.ReadAllBytes(_tool.PathOf("arithmetic.jpg")));
+        Assert.Equal(Save(png, JpegFormat.Info, new JpegWriterOptions { Lossless = new JpegLosslessOptions { Predictor = 3 } }), File.ReadAllBytes(_tool.PathOf("predictor.jpg")));
+        Assert.Equal(Save(png, JpegFormat.Info, JpegWriterOptions.Default), File.ReadAllBytes(_tool.PathOf("plain.jpg")));
+        using (Raster written = Raster.Load(_tool.PathOf("lossless-ac.jpg")))
+        {
+            Assert.True(((JpegDetails)written.Metadata.FormatDetails!).Lossless);
+        }
+
+        // Formats without arithmetic coding say so and write as usual.
+        ToolRun png2 = _tool.Run("convert", png, "-o", "again.png", "--arithmetic");
+        Assert.Equal(0, png2.Code);
+        Assert.Contains("--arithmetic is ignored", png2.Error, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void JpegRotatesLosslesslyIntoArithmeticCoding()
+    {
+        string duck = _tool.Copy(Duck);
+        ToolRun run = _tool.Run("rotate", duck, "90", "-o", "turned.jpg", "--arithmetic", "-v");
+        Assert.Equal(0, run.Code);
+        Assert.Contains("transformed losslessly", run.Error, StringComparison.Ordinal);
+        using MemoryStream expected = new();
+        using (FileStream source = File.OpenRead(_tool.PathOf(duck)))
+        {
+            JpegTransform.Apply(source, expected, new JpegTransformOptions { Operation = JpegTransformOperation.Rotate90, Edges = JpegTransformEdges.Strict, Arithmetic = true });
+        }
+
+        Assert.Equal(expected.ToArray(), File.ReadAllBytes(_tool.PathOf("turned.jpg")));
+    }
+
+    [Fact]
     public void StandardInputAndOutput()
     {
         byte[] png = File.ReadAllBytes(Path.Combine(Tool.Images, Png));
