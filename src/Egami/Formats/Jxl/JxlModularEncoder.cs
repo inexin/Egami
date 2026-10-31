@@ -742,7 +742,7 @@ internal sealed class JxlModularEncoder
             width = Math.Max(width, image.Channels[c].Width);
         }
 
-        List<JxlTreeNode> tree = _effort == 2 ? FixedTree(9, 5, Math.Max(1, pixels), image.BitDepth) : LearnTree([stream]);
+        List<JxlTreeNode> tree = _effort == 2 ? FixedTree(9, 5, Math.Max(1, pixels), image.BitDepth) : LearnTree([stream], sequential: true);
         List<List<JxlToken>> treeTokens = [[]];
         (int[] property, int[] value, int[] left, int[] right, int[] predictor, int[] context) = TokenizeTree(tree, treeTokens[0]);
         bool usesWp = property.Any(q => q == 15) || property.Select((q, i) => q < 0 && predictor[i] == 6).Any(b => b);
@@ -1621,8 +1621,11 @@ internal sealed class JxlModularEncoder
 
     /// <summary>Learns the tree from samples of every stream (libjxl's LearnTree, CollectPixelSamples and GatherTreeData).</summary>
     /// <summary>Learns one tree from samples of the given streams, or of every stream.</summary>
-    private List<JxlTreeNode> LearnTree(int[]? only = null)
+    /// <param name="only">The streams to learn from, or <see langword="null"/> for all.</param>
+    /// <param name="sequential">Whether to learn on one thread, as each group does when the groups learn side by side.</param>
+    private List<JxlTreeNode> LearnTree(int[]? only = null, bool sequential = false)
     {
+        ParallelOptions parallel = sequential ? new ParallelOptions { MaxDegreeOfParallelism = 1 } : _parallel;
         // enc_modular's settings by speed tier: e8 (kitten) 10 properties, e9 and e10 (tortoise, glacier) all 16.
         int count = _effort switch { >= 9 => 16, 8 => 10, 7 => 7, 6 => 5, 5 => 4, _ => 3 };
         int maxValues = _effort switch { >= 9 => 256, 8 => 128, 7 => 96, 6 => 64, 5 => 48, _ => 32 };
@@ -1667,7 +1670,7 @@ internal sealed class JxlModularEncoder
         totalPixels = Math.Max(totalPixels, 1);
         List<(int Stream, int Channel)> units = [.. Units().Where(u => only is null || only.Contains(u.Stream))];
         SampleBuffer[] buffers = new SampleBuffer[units.Count];
-        Parallel.For(0, units.Count, _parallel, u => buffers[u] = GatherTreeData(_streams[units[u].Stream].Channels[units[u].Channel], units[u].Channel, units[u].Stream, repeats, predictors, properties, _streams[units[u].Stream].Wp));
+        Parallel.For(0, units.Count, parallel, u => buffers[u] = GatherTreeData(_streams[units[u].Stream].Channels[units[u].Channel], units[u].Channel, units[u].Stream, repeats, predictors, properties, _streams[units[u].Stream].Wp));
         Span<int> props = stackalloc int[16];
         Span<long> preds = stackalloc long[14];
         foreach (SampleBuffer b in buffers)
@@ -1696,7 +1699,7 @@ internal sealed class JxlModularEncoder
 
         float fraction = learner.SampleCount * 1f / totalPixels;
         float required = (fraction * 0.9f) + 0.1f;
-        return learner.Learn(threshold * required, 1.001f, _parallel.MaxDegreeOfParallelism);
+        return learner.Learn(threshold * required, 1.001f, parallel.MaxDegreeOfParallelism);
     }
 
     private void CollectPixelSamples(JxlEncodeImage img, int stream, float repeats, List<long> groupPixels, List<long> channelPixels, List<int> pixelSamples, List<int> diffSamples)
