@@ -5,7 +5,13 @@
   <img src="branding/lockups/Egami-on-light.svg" alt="Egami" height="64">
 </picture>
 
-Egami is an open source 2D imaging library for .NET 10 that loads, edits, draws and saves images.
+[![NuGet](https://img.shields.io/nuget/v/Egami.svg)](https://www.nuget.org/packages/Egami)
+[![CI](https://github.com/inexin/Egami/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/inexin/Egami/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Docs](https://img.shields.io/badge/docs-inexin.github.io%2FEgami-informational.svg)](https://inexin.github.io/Egami/)
+
+Egami is an open source 2D imaging library for .NET 10 that loads, edits, draws and saves images. Around it sit packages for
+text, SVG, barcodes, a System.Drawing drop-in, video and audio, and the `egami` command line, all in the same managed code.
 
 - **MIT-licensed**, with no strings for commercial use.
 - **Fully managed C#**: no native binaries, no P/Invoke, no third-party dependencies.
@@ -13,7 +19,7 @@ Egami is an open source 2D imaging library for .NET 10 that loads, edits, draws 
 - **Trimming and Native AOT clean**, on every OS and CPU .NET 10 supports.
 
 Egami is not a drop-in replacement for ImageSharp or SkiaSharp: it has its own API. The aim is to cover what they do, at the
-same speed or faster.
+same speed or faster: see the [benchmarks](https://inexin.github.io/Egami/v1/articles/benchmarks.html).
 
 ```sh
 dotnet add package Egami
