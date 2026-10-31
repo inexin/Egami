@@ -825,7 +825,7 @@ internal sealed partial class JxlVarDctEncoder
             // sizes, the quantization field over them, then the factors again for the chosen blocks.
             float inv = (float)(1.0 * GlobalScaleDenom / _globalScale);
             float[] field = (float[])_aq.QuantField.Clone();
-            JxlAcStrategySearch search = new(_xyb, _blocksX, _blocksY, _aq.QuantField, _aq.Mask1x1, d, Speed, _strategy, _isFirst);
+            JxlAcStrategySearch search = new(_xyb, _blocksX, _blocksY, _aq.QuantField, _aq.Mask1x1, d, Effort, _strategy, _isFirst);
             Parallel.For(0, _tilesX * _tilesY, _parallel, tile =>
             {
                 int tx = tile % _tilesX;
@@ -2946,15 +2946,25 @@ internal sealed partial class JxlVarDctEncoder
         WriteBlockContexts(global);
         global.WriteBool(true); // default chroma from luma
         global.WriteBool(true); // global tree
-        // HistogramParams::ForModular for VarDCT data: fast clustering, approximate ANS histograms, and a hybrid integer search
-        // when the LF image has extra precision.
-        JxlHistogramParams mp = new()
-        {
-            Clustering = JxlHistogramParams.ClusteringKind.Fast,
-            AnsStrategy = JxlHistogramParams.AnsKind.Approximate,
-            UintMethod = _lfPrecision != 0 && !_draft ? JxlHistogramParams.UintKind.Fast : JxlHistogramParams.UintKind.None,
-            MaxHistograms = maxHistograms,
-        };
+        // HistogramParams::ForModular for VarDCT data: up to effort 7 fast clustering, approximate ANS histograms, and a hybrid
+        // integer search when the LF image has extra precision; from effort 8 the defaults (best clustering and hybrid integers,
+        // precise histograms) with LZ77, greedy at 8 and optimal from 9.
+        bool slow = Effort >= 8 && !_draft;
+        JxlHistogramParams mp = slow
+            ? new()
+            {
+                Clustering = JxlHistogramParams.ClusteringKind.Best,
+                AnsStrategy = JxlHistogramParams.AnsKind.Precise,
+                UintMethod = JxlHistogramParams.UintKind.Best,
+                Lz77 = Effort >= 9 ? JxlHistogramParams.Lz77Kind.Optimal : JxlHistogramParams.Lz77Kind.Greedy,
+            }
+            : new()
+            {
+                Clustering = JxlHistogramParams.ClusteringKind.Fast,
+                AnsStrategy = JxlHistogramParams.AnsKind.Approximate,
+                UintMethod = _lfPrecision != 0 && !_draft ? JxlHistogramParams.UintKind.Fast : JxlHistogramParams.UintKind.None,
+                MaxHistograms = maxHistograms,
+            };
         JxlEntropyCode treeCode = JxlEntropyCode.Write(global, mp, 6, treeTokens);
         treeCode.WriteTokens(global, treeTokens[0]);
         JxlEntropyCode code = JxlEntropyCode.Write(global, mp with { ImageWidths = widths }, context.Max() + 1, modularTokens);
@@ -2991,12 +3001,14 @@ internal sealed partial class JxlVarDctEncoder
         hf.WriteBool(true);
         hf.Write(0, CeilLog2(_groups));
 
-        // HistogramParams for the HF tokens: at most four clusters above effort 3 (libjxl's kFastest), then fast clustering.
+        // HistogramParams for the HF tokens: at most four clusters above effort 3 (libjxl's kFastest), then fast clustering;
+        // precise histograms from effort 8, and from 9 best clustering, the hybrid integer search and runs of repeats.
         JxlHistogramParams acp = new()
         {
-            Clustering = JxlHistogramParams.ClusteringKind.Fast,
-            UintMethod = JxlHistogramParams.UintKind.None,
-            AnsStrategy = JxlHistogramParams.AnsKind.Approximate,
+            Clustering = slow && Effort >= 9 ? JxlHistogramParams.ClusteringKind.Best : JxlHistogramParams.ClusteringKind.Fast,
+            UintMethod = slow && Effort >= 9 ? JxlHistogramParams.UintKind.Best : JxlHistogramParams.UintKind.None,
+            AnsStrategy = slow ? JxlHistogramParams.AnsKind.Precise : JxlHistogramParams.AnsKind.Approximate,
+            Rle = slow && Effort >= 9,
             MaxHistograms = Math.Min(maxHistograms, effort <= 2 ? 4 : int.MaxValue),
         };
         JxlEntropyCode[] acCodes = new JxlEntropyCode[_passes];
@@ -3010,6 +3022,12 @@ internal sealed partial class JxlVarDctEncoder
 
             List<List<JxlToken>> ac = [.. acTokens.Skip(pass * _groups).Take(_groups)];
             acCodes[pass] = JxlEntropyCode.Write(hf, acp, (NonZeroBuckets + ZeroDensityContexts) * _blockClusters, ac);
+
+            // Runs of repeats may replace a group's tokens: what goes out is what the code was built for.
+            for (int g = 0; g < _groups; g++)
+            {
+                acTokens[(pass * _groups) + g] = ac[g];
+            }
         }
 
         // The extra channels not squeezed go with the last pass; squeezed ones with the pass of their shift.
