@@ -89,6 +89,17 @@ internal sealed class JxlFrameDecoder
     /// <summary>Gets a value indicating whether a VarDCT frame stops at its coefficients, for JPEG reconstruction.</summary>
     internal bool CoefficientsOnly { get; init; }
 
+    /// <summary>
+    /// Gets how many bytes of the codestream have arrived, for a partly downloaded file (design of PR D), or
+    /// <see cref="long.MaxValue"/> when all have. Sections that have not arrived whole are left out: a Modular frame keeps zeros
+    /// there, a VarDCT frame shows its LF image upsampled in the groups that have no pass yet. A frame whose LF global section
+    /// or any LF group has not arrived throws <see cref="JxlNotArrivedException"/>, as libjxl shows nothing of it yet.
+    /// </summary>
+    internal long Arrived { get; init; } = long.MaxValue;
+
+    /// <summary>Gets whether every section of the frame was decoded; false when <see cref="Arrived"/> left some out.</summary>
+    internal bool Complete { get; private set; } = true;
+
     /// <summary>Gets how many pass groups (of all passes) were decoded, and how many the frame has.</summary>
     internal (int Decoded, int Total) PassGroups => (_decodedGroups, _frame.Passes * (int)_frame.Groups);
 
@@ -106,6 +117,11 @@ internal sealed class JxlFrameDecoder
         int height = (int)h;
 
         // LF global: dequantization multipliers, the VarDCT globals, the global tree and the global Modular stream.
+        if (!Has(0) || Enumerable.Range(1, (int)_frame.LfGroups).Any(i => !Has(i)))
+        {
+            throw new JxlNotArrivedException();
+        }
+
         JxlBitReader r = Section(0);
         JxlPatch[]? patches = (_frame.Flags & 0x02) != 0 ? JxlFeatures.ReadPatches(r, _image, _frame) : null;
         JxlSplines? splines = (_frame.Flags & 0x10) != 0 ? JxlFeatures.ReadSplines(r, _frame) : null;
@@ -182,6 +198,12 @@ internal sealed class JxlFrameDecoder
                 return;
             }
 
+            if (!Has(1 + lf))
+            {
+                Complete = false;
+                return;
+            }
+
             JxlBitReader lr = Section(1 + lf);
             if (varDct is not null && !useLfFrame)
             {
@@ -218,10 +240,17 @@ internal sealed class JxlFrameDecoder
             };
         }
 
-        varDct?.ReadHfGlobal(Section(1 + lfGroups), GlobalTree, lfGroups, groups);
         int passes = _frame.Passes;
+        bool hfGlobal = Has(1 + lfGroups);
+        if (hfGlobal)
+        {
+            varDct?.ReadHfGlobal(Section(1 + lfGroups), GlobalTree, lfGroups, groups);
+        }
+
+        // How many passes of each group were decoded: a pass group comes after the group's earlier passes only.
+        int[] done = new int[groups];
         int[] passOfShift = PassOfShift();
-        for (int p = 0; p < passes; p++)
+        for (int p = 0; p < passes && hfGlobal; p++)
         {
             // Passes add to the same coefficients, so they run in order; the groups of a pass are independent.
             parallel.For(groups, g =>
@@ -231,6 +260,12 @@ internal sealed class JxlFrameDecoder
                     return;
                 }
 
+                if (done[g] != p || !Has(1 + lfGroups + 1 + (p * groups) + g))
+                {
+                    return;
+                }
+
+                done[g]++;
                 Interlocked.Increment(ref _decodedGroups);
                 JxlBitReader pr = Section(1 + lfGroups + 1 + (p * groups) + g);
                 varDct?.DecodePassGroup(pr, p, g);
@@ -257,6 +292,11 @@ internal sealed class JxlFrameDecoder
             });
         }
 
+        if (done.Any(d => d < passes) && Arrived != long.MaxValue)
+        {
+            Complete = false;
+        }
+
         global.Inverse(r);
         if (varDct is null)
         {
@@ -269,6 +309,11 @@ internal sealed class JxlFrameDecoder
         }
 
         float[][] planes = varDct.Reconstruct(useLfFrame ? lfFrame : null, Parallel);
+        if (!Complete)
+        {
+            FillFromLf(varDct, planes, done, hfGlobal, groupDim, groupsPerRow, (int)Ceil(width, 8), (int)Ceil(height, 8));
+        }
+
         return new JxlFrameChannels(width, height, global.Channels, 3, extraStart)
         {
             ColorPlanes = planes,
@@ -279,6 +324,47 @@ internal sealed class JxlFrameDecoder
             Splines = splines,
             Noise = noise,
         };
+    }
+
+    /// <summary>
+    /// Gives each pass group that has no pass yet (every group when HF global has not arrived) the LF image upsampled 8 times by
+    /// the decoder's upsampling, as libjxl's progressive flush shows such groups.
+    /// </summary>
+    private void FillFromLf(JxlVarDct varDct, float[][] planes, int[] done, bool hfGlobal, int groupDim, int groupsPerRow, int lw, int lh)
+    {
+        float[][] lf = varDct.PreparedLfImage();
+        float[][] up = [.. lf.Select(p => JxlFilters.Upsample(p, lw, lh, lw, 8, _image, Parallel))];
+        int uw = lw * 8;
+        for (int g = 0; g < done.Length; g++)
+        {
+            if (hfGlobal && done[g] > 0)
+            {
+                continue;
+            }
+
+            int x0 = g % groupsPerRow * groupDim, y0 = g / groupsPerRow * groupDim;
+            for (int c = 0; c < 3; c++)
+            {
+                int stride = varDct.PlaneBlocksX(c) * 8;
+                int x1 = Math.Min(x0 + groupDim, Math.Min(stride, uw)), y1 = Math.Min(y0 + groupDim, lh * 8);
+                for (int y = y0; y < y1; y++)
+                {
+                    up[c].AsSpan((y * uw) + x0, x1 - x0).CopyTo(planes[c].AsSpan((y * stride) + x0));
+                }
+            }
+        }
+    }
+
+    /// <summary>Gets whether section <paramref name="index"/> has arrived whole.</summary>
+    private bool Has(int index)
+    {
+        if (Arrived == long.MaxValue)
+        {
+            return true;
+        }
+
+        (long offset, uint size) = _toc.Sizes.Length == 1 ? (0, _toc.Sizes[0]) : _toc.Section(index);
+        return _offset + offset + size <= Arrived;
     }
 
     /// <summary>Gets whether the group at (<paramref name="gx"/>, <paramref name="gy"/>) of <paramref name="size"/> pixels meets the needed part.</summary>
@@ -401,5 +487,14 @@ internal sealed class JxlFrameDecoder
         }
 
         return new JxlBitReader(_codestream, (int)start, (int)size);
+    }
+}
+
+/// <summary>Thrown when a frame's LF global section or one of its LF groups has not arrived, so there is nothing to show yet.</summary>
+internal sealed class JxlNotArrivedException : Exception
+{
+    public JxlNotArrivedException()
+        : base("The frame's first sections have not arrived.")
+    {
     }
 }

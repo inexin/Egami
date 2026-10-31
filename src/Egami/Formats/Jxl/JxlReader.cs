@@ -10,7 +10,7 @@ namespace Egami.Formats.Jxl;
 /// sample format, channels, orientation, frame count and a memory estimate. Decoding pixels comes with the Modular and VarDCT
 /// stages.
 /// </summary>
-internal sealed class JxlReader : IFormatReader, IRowSourceReader
+internal sealed partial class JxlReader : IFormatReader, IRowSourceReader
 {
     internal static readonly JxlReader Instance = new();
 
@@ -52,6 +52,12 @@ internal sealed class JxlReader : IFormatReader, IRowSourceReader
     /// </summary>
     public RowSource Open(EgamiInput input, ReaderOptions options)
     {
+        if (input.Incremental && !input.AtEndOfInput && options.Hdr is null && Header(input) is JxlImageHeader header)
+        {
+            // Bytes are still arriving: previews from what has arrived, rows once all has (PR D).
+            return new IncrementalRows(input, options, header);
+        }
+
         Raster raster = JxlImageDecoder.Decode(input, options);
         raster.Metadata.FormatName ??= JxlFormat.Info.Name;
         return BufferedRowSource.From(raster);

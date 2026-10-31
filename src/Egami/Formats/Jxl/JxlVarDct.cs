@@ -483,6 +483,12 @@ internal sealed class JxlVarDct
     internal float[][] LfImage()
     {
         PrepareLf(null);
+        return PreparedLfImage();
+    }
+
+    /// <summary>Gets the LF image (1:8) as <see cref="Reconstruct"/> left it: chroma from luma and smoothing already applied.</summary>
+    internal float[][] PreparedLfImage()
+    {
         int width = (int)Ceil(Width, 8);
         int height = (int)Ceil(Height, 8);
         float[][] planes = new float[3][];

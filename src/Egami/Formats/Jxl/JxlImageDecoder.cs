@@ -398,7 +398,7 @@ internal static class JxlImageDecoder
     /// Decodes the frames in order and calls <paramref name="emit"/> with each frame shown (the canvas after each key frame) or,
     /// with <paramref name="layers"/>, with each regular frame before blending; stops when it returns <see langword="false"/>.
     /// </summary>
-    private static void Run(JxlFile file, byte[] codestream, EgamiInput input, List<(JxlFrameHeader Header, JxlToc Toc, long Offset)> sequence, bool lfOnly, bool layers, Func<JxlDecoded, JxlFrameHeader, bool> emit)
+    private static void Run(JxlFile file, byte[] codestream, EgamiInput input, List<(JxlFrameHeader Header, JxlToc Toc, long Offset)> sequence, bool lfOnly, bool layers, Func<JxlDecoded, JxlFrameHeader, bool> emit, long arrived = long.MaxValue)
     {
         JxlImageHeader h = file.Header;
         float[][]?[] lfFrames = new float[4][][];
@@ -427,7 +427,7 @@ internal static class JxlImageDecoder
             }
 
             bool referenced = !f.IsLast && f.Type != JxlFrameType.Lf && (f.Duration == 0 || f.SaveAsReference != 0);
-            JxlFrameDecoder decoder = new(codestream, h, f, toc, offset, input.Limits) { Parallel = file.Parallel, Needed = f.IsLast && file.DisplayedFrames == 1 && !lfOnly && !layers ? file.Needed(f) : null };
+            JxlFrameDecoder decoder = new(codestream, h, f, toc, offset, input.Limits) { Parallel = file.Parallel, Needed = f.IsLast && file.DisplayedFrames == 1 && !lfOnly && !layers ? file.Needed(f) : null, Arrived = arrived };
             if (lfOnly && f.Type != JxlFrameType.Lf)
             {
                 // From the LF frame when the frame has one, from its own LF groups otherwise.
@@ -516,6 +516,74 @@ internal static class JxlImageDecoder
         if (!layers && visible == 0)
         {
             throw new CorruptDataException(JxlFormat.Info.Name, -1, "The codestream has no frame to show.");
+        }
+    }
+
+    /// <summary>
+    /// Decodes what has arrived of a still image (PR D's partial display), from the first <paramref name="length"/> bytes of the
+    /// file: libjxl's progressive flush, with the pass groups not yet arrived shown from the LF image upsampled, a squeezed
+    /// Modular image at the levels that have arrived and an unsqueezed one with its missing groups black. Nothing shows until the
+    /// frame's LF global section and LF groups have arrived (a progressive file's LF frame alone shows nothing either, as with
+    /// djxl). Returns <see langword="null"/> while nothing can be shown, and for animations.
+    /// </summary>
+    internal static Raster? DecodePartial(byte[] data, int length, EgamiInput input, ReaderOptions options)
+    {
+        byte[]? codestream = JxlPartial.Codestream(data, length);
+        if (codestream is null)
+        {
+            return null;
+        }
+
+        using MemoryStream stream = new(codestream, writable: false);
+        EgamiInput copy = new(stream, input.Context, input.CancellationToken);
+        try
+        {
+            JxlFile file;
+            try
+            {
+                file = JxlFile.ReadPartial(copy);
+            }
+            catch (Exception e) when (e is EgamiException or EndOfStreamException)
+            {
+                return null;
+            }
+
+            if (file.Header.Animation is not null || file.Frames.Count == 0)
+            {
+                return null;
+            }
+
+            file.Output = JxlOutput.For(file, options is JxlReaderOptions { LinearOutput: true }, input.Context);
+            file.Parallel = new JxlParallel(Math.Max(1, input.Context.MaxParallelism), input.CancellationToken);
+
+            // Up to the first frame shown; the frames before it (LF, reference and patch frames) as far as they have arrived.
+            List<(JxlFrameHeader Header, JxlToc Toc, long Offset)> sequence = Sequence(file);
+            int shown = sequence.FindIndex(s => s.Header.IsNormal && s.Header.IsKeyFrame);
+            if (shown < 0)
+            {
+                return null;
+            }
+
+            Raster? result = null;
+            try
+            {
+                Run(file, codestream, copy, sequence[..(shown + 1)], lfOnly: false, layers: false, (decoded, f) =>
+                {
+                    result = Natural(copy, file, layout => Single(layout, copy, file, decoded, f));
+                    return false;
+                }, codestream.Length);
+            }
+            catch (Exception e) when (e is JxlNotArrivedException or EgamiException or EndOfStreamException)
+            {
+                // An earlier frame (an LF or reference frame) has not arrived whole, or the frame's first sections have not.
+                return null;
+            }
+
+            return result;
+        }
+        finally
+        {
+            copy.Dispose();
         }
     }
 
