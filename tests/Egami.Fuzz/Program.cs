@@ -24,7 +24,9 @@ using DrawingPath = Egami.Drawing.Path;
 // bit streams and the encoders arbitrary pixels, whose lossless round trip must be exact. The jpeg-write target (Phase 2.4.3)
 // runs the JPEG writer: the input picks a pixel type, size, pixels and writer options (CMYK, YCCK, 12-bit, progressive among
 // them); the file must read back at its size, a progressive file must decode to the baseline file's pixels, and a streamed
-// encode must write what Save writes. The jbig2 and jbig2codec targets (Phase 2.3.4) load JBIG2 files every way, standalone and
+// encode must write what Save writes. Since the arithmetic and lossless writing Build Plan it also writes arithmetic-coded files,
+// which must decode to the Huffman file's pixels, and lossless ones (any predictor, point transform and precision), whose samples
+// must come back exactly when nothing asks for a loss, and equal between SOF3 and SOF11 always. The jbig2 and jbig2codec targets (Phase 2.3.4) load JBIG2 files every way, standalone and
 // embedded with globals, and feed each of JBIG2's decoding procedures (regions, dictionaries, Huffman tables) raw bytes. The cube
 // target (Phase 2.5.3) reads .cube LUT files, which must load or fail with an EgamiException; a table that loads must write back
 // and read again to the same values and run as a filter. The jpeg2000 and jpeg2000codec targets (Phase 2.3.4) load JP2, JPX and
@@ -1477,16 +1479,30 @@ static void WriteJpeg(Stream stream)
     int height = 1 + ((data[2] | ((data[3] & 1) << 8)) % 300);
     byte flags = data[5];
     byte more = data[6];
-    JpegWriterOptions Options(bool progressive) => new()
+
+    // The high bits of the size bytes: arithmetic coding, lossless, the predictor (0 automatic), the point transform and the
+    // lossless precision (0 to 3 the pixel type's).
+    bool arithmetic = (data[3] & 2) != 0;
+    bool lossless = (data[3] & 4) != 0;
+    int predictor = (data[3] >> 3) & 7;
+    int pt = data[3] >> 6;
+    int precisionCode = data[1] >> 1;
+    int? llPrecision = precisionCode < 4 ? null : 2 + (precisionCode % 15);
+    JpegLosslessOptions? Lossless(int bits) => lossless
+        ? new JpegLosslessOptions { Predictor = predictor == 0 ? null : predictor, PointTransform = Math.Min(pt, (llPrecision ?? bits) - 1), Precision = llPrecision }
+        : null;
+    JpegWriterOptions Options(bool progressive, bool arith, int bits) => new()
     {
         Quality = 1 + (data[7] % 100),
         Subsampling = (ChromaSubsampling)(flags % 3),
         OptimizeHuffman = (flags & 4) != 0,
-        Progressive = progressive,
+        Progressive = progressive && !lossless,
         Precision = (flags & 16) != 0 ? 12 : 8,
-        ColorType = (JpegColorType)((flags >> 5) % 4),
+        ColorType = lossless && (flags >> 5) % 4 == 3 ? JpegColorType.Auto : (JpegColorType)((flags >> 5) % 4),
         RestartInterval = (more & 8) != 0 ? more >> 4 : 0,
         Background = (more & 4) != 0 ? new Rgba8(data[0], data[1], data[2], 255) : null,
+        Arithmetic = arith,
+        Lossless = Lossless(bits),
     };
 
     using Raster raster = (data[4] % 7) switch
@@ -1500,17 +1516,42 @@ static void WriteJpeg(Stream stream)
         _ => Fill<Rgba8>(width, height, data, context),
     };
 
-    bool progressive = (flags & 8) != 0;
-    byte[] file = Save(raster, Options(progressive));
+    int sourceBits = raster.Layout.ChannelType == PixelChannelType.Unorm8 ? 8 : 16;
+    bool progressive = (flags & 8) != 0 && !lossless;
+    byte[] file = Save(raster, Options(progressive, arithmetic, sourceBits));
     using Raster back = Raster.Load(file, context);
     if (back.Width != width || back.Height != height || back.Metadata.Warnings.Count > 0)
     {
         throw new InvalidOperationException($"The JPEG read back as {back.Width} × {back.Height} with {back.Metadata.Warnings.Count} warnings.");
     }
 
+    if (arithmetic)
+    {
+        // Only the entropy coding differs, so the Huffman file must give the same pixels.
+        using Raster huffman = Raster.Load(Save(raster, Options(progressive, false, sourceBits)), context);
+        Same(huffman, back, "the arithmetic file", "the Huffman one");
+    }
+
+    if (lossless && llPrecision is null && pt == 0 && (more & 4) == 0 && (flags >> 5) % 4 is 0 or 3)
+    {
+        // Nothing asked for a loss: the samples come back exactly, alpha aside. 8-bit CMYK loads as RGB unless asked for inks.
+        if (raster.Layout.ChannelOrder == PixelChannelOrder.Cmyk)
+        {
+            using Raster<Cmyk16> written = raster.As<Cmyk16>();
+            using Raster<Cmyk16> read = Raster.Load<Cmyk16>(file, context);
+            Same(written, read, "the lossless file", "the pixels written");
+        }
+        else
+        {
+            using Raster<Rgb16> written = raster.As<Rgb16>();
+            using Raster<Rgb16> read = back.As<Rgb16>();
+            Same(written, read, "the lossless file", "the pixels written");
+        }
+    }
+
     if (progressive)
     {
-        using Raster baseline = Raster.Load(Save(raster, Options(false)), context);
+        using Raster baseline = Raster.Load(Save(raster, Options(false, arithmetic, sourceBits)), context);
         using Raster<Rgba16> a = baseline.As<Rgba16>();
         using Raster<Rgba16> b = back.As<Rgba16>();
         for (int y = 0; y < height; y++)
@@ -1525,7 +1566,7 @@ static void WriteJpeg(Stream stream)
     if ((more & 2) != 0 && raster is Raster<Rgb16> rgb)
     {
         using MemoryStream streamed = new();
-        using (RasterEncoder<Rgb16> encoder = RasterEncoder.Create<Rgb16>(streamed, JpegFormat.Info, width, height, Options(progressive), context: context))
+        using (RasterEncoder<Rgb16> encoder = RasterEncoder.Create<Rgb16>(streamed, JpegFormat.Info, width, height, Options(progressive, arithmetic, sourceBits), context: context))
         {
             encoder.WriteRows(rgb);
             encoder.Complete();
@@ -1542,6 +1583,19 @@ static void WriteJpeg(Stream stream)
         using MemoryStream output = new();
         raster.Save(output, JpegFormat.Info, options);
         return output.ToArray();
+    }
+
+    static void Same(Raster expected, Raster actual, string what, string than)
+    {
+        using Raster<Rgba16> a = expected.As<Rgba16>();
+        using Raster<Rgba16> b = actual.As<Rgba16>();
+        for (int y = 0; y < a.Height; y++)
+        {
+            if (!a.Row(y).SequenceEqual(b.Row(y)))
+            {
+                throw new InvalidOperationException($"Row {y} of {what} decodes differently from {than}.");
+            }
+        }
     }
 
     static Raster<T> Fill<T>(int width, int height, byte[] data, EgamiContext context)

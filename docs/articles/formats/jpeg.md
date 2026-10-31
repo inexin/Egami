@@ -12,7 +12,7 @@ Lossless JPEG, the kind inside DNG tiles and many DICOM files, decodes to its ex
 transform says YCbCr. Lossless files have no DCT, so `MinimumSize` reduces them after a full decode. `JpegDetails.Precision`,
 `Arithmetic` and `Lossless` say what a file is. Hierarchical files are refused with `UnsupportedFormatException`.
 
-Browsers show none of these modes. Egami writes 12-bit and arithmetic-coded files on request (below), but no lossless ones.
+Browsers show none of these modes. Egami writes each of them on request (below).
 
 ## Threads
 
@@ -47,6 +47,7 @@ without re-encoding it, use `JpegTransform` with `AutoOrient` (see [lossless rot
 | `ColorType` | `Auto` | `Gray` writes one gray component whatever the pixel type; `Cmyk` and `Ycck` write four (`Auto` picks `Cmyk` for CMYK pixels) |
 | `Progressive` | `false` | Scans that show a coarse image first and refine it, with tables optimized per scan |
 | `Arithmetic` | `false` | Arithmetic coding instead of Huffman: smaller files, same pixels, no browser support |
+| `Lossless` | none | A `JpegLosslessOptions` writes lossless JPEG: the exact samples, no DCT |
 | `Precision` | 8 | 12 keeps more of 16-bit and float pixels |
 | `RestartInterval` | 0 | Restart markers every so many blocks, for damaged-stream recovery |
 | `Background` | none | Composites alpha onto this color first; without it alpha is ignored |
@@ -91,6 +92,29 @@ settings (libjpeg adds a 12-byte DAC segment Egami leaves out). A sequential fil
 either precision and ignores `OptimizeHuffman`. libjpeg-turbo, ImageMagick and Egami read these files; browsers do not, and
 Pillow fails on some. They suit archives, not the web. An Ultra HDR gain map is left out with a `Save.GainMapDropped` warning,
 and `GainMap` with `Arithmetic` throws `NotSupportedException`. Re-saving an arithmetic file writes Huffman codes unless you set it.
+
+### Lossless
+
+[!code-csharp[](../../../tests/Egami.DocSamples/AnimationAndMetadata.cs#jpeg-lossless)]
+
+`Lossless` writes lossless JPEG (T.81 annex H, the kind DNG raw tiles and DICOM use): no DCT and no quantization, each sample
+predicted from its neighbors and the difference coded, so the file loads back to exactly the samples written. The components are
+the pixels' own: gray, RGB behind an Adobe marker, or CMYK, never subsampled or converted to YCbCr. `Quality`, `Subsampling`,
+`OptimizeHuffman` and `Precision` do not apply; `Progressive` or `ColorType = Ycck` with it throws `ArgumentException`.
+
+| `JpegLosslessOptions` | Default | Does |
+| --- | --- | --- |
+| `Predictor` | automatic | 1 to 7, T.81's predictors (1 left, 2 above, 3 above left, 4 to 7 combinations); automatic tries each on rows spread through the image and keeps the smallest |
+| `PointTransform` | 0 | Drops that many low bits from every sample first: smaller, no longer lossless (reported as `Save.DepthReduced`) |
+| `Precision` | the pixel type's | 2 to 16 bits; 8 for 8-bit pixel types, 16 for 16-bit and float ones. Fewer bits round the samples (reported) |
+
+The Huffman tables are always made for the image, so every sample is held until the end, about 2 bytes each, counted against
+`SafetyLimits.MaxTotalBytes`. `RestartInterval` is rounded up to whole rows of pixels, as T.81 asks of lossless files. With
+`Arithmetic` the file is SOF11, up to a few percent smaller (6 % on an 8-bit photo, the same at 16 bits); only Egami and Thomas
+Richter's libjpeg read SOF11, while libjpeg-turbo, DNG and DICOM readers read the Huffman-coded SOF3. libjpeg-turbo's `djpeg`
+decodes Egami's SOF3 files to exactly the samples written, and at the same predictor they are within 0.2 % of `cjpeg
+-lossless`'s size. No browser reads either. An Ultra HDR gain map is left out with a `Save.GainMapDropped` warning, and
+`GainMap` with `Lossless` throws `NotSupportedException`.
 
 ## Lossless rotation, flips and crops
 

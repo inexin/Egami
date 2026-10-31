@@ -122,6 +122,80 @@ public class JpegWriterInteropFiles
             using Raster<Rgb8> rgb = Raster.Load<Rgb8>(path + ".huffman");
             File.WriteAllBytes(path + ".rgb", Bytes(rgb));
         }
+
+        // Lossless (ll- SOF3, lla- SOF11): each with its samples at the file's precision as PGM or PPM (.src.pnm), which the file
+        // must decode to exactly (low point-transform bits cleared) and which cjpeg -lossless codes for the size comparison.
+        Raster small = odd;
+        foreach ((string name, Raster source, int? predictor, int pt, int? precision, int restart, bool arithmetic) in ((string, Raster, int?, int, int?, int, bool)[])
+        [
+            ("ll-gray8-p1", gray, 1, 0, null, 0, false), ("ll-rgb8-p1", duck, 1, 0, null, 0, false), ("ll-rgb8-p2", duck, 2, 0, null, 0, false),
+            ("ll-rgb8-p3", duck, 3, 0, null, 0, false), ("ll-rgb8-p4", duck, 4, 0, null, 0, false), ("ll-rgb8-p5", duck, 5, 0, null, 0, false),
+            ("ll-rgb8-p6", duck, 6, 0, null, 0, false), ("ll-rgb8-p7", egret, 7, 0, null, 0, false), ("ll-rgb8-pt2", duck, 1, 2, null, 0, false),
+            ("ll-rgb8-restart", duck, 4, 0, null, 37, false), ("ll-odd-p5", small, 5, 0, null, 0, false), ("ll-gray16-p4", gray16, 4, 0, null, 0, false),
+            ("ll-gray12-p6", gray16, 6, 0, 12, 0, false), ("ll-rgb16-p7", rgb16, 7, 1, null, 0, false), ("ll-gray2-p1", gray16, 1, 0, 2, 0, false), ("ll-gray5-p4", gray16, 4, 0, 5, 0, false),
+            ("ll-rgb8-auto", duck, null, 0, null, 0, false), ("lla-rgb8-p1", duck, 1, 0, null, 0, true), ("lla-gray16-p4", gray16, 4, 0, null, 0, true),
+            ("lla-rgb8-restart", small, 6, 0, null, 64, true), ("lla-gray12-pt1", gray16, 7, 1, 12, 0, true), ("lla-rgb8-auto", egret, null, 0, null, 0, true),
+        ])
+        {
+            JpegLosslessOptions lossless = new() { Predictor = predictor, PointTransform = pt, Precision = precision };
+            string path = Path.Combine(directory!, name + ".jpg");
+            using (FileStream file = File.Create(path))
+            {
+                source.Save(file, JpegFormat.Info, new JpegWriterOptions { Lossless = lossless, RestartInterval = restart, Arithmetic = arithmetic });
+            }
+
+            if (arithmetic)
+            {
+                // Its SOF3 twin, for decoders that read both the same way.
+                using FileStream twin = File.Create(path[..^4] + ".sof3");
+                source.Save(twin, JpegFormat.Info, new JpegWriterOptions { Lossless = lossless, RestartInterval = restart });
+            }
+
+            int bits = precision ?? (source.Layout.BitsPerChannel > 8 ? 16 : 8);
+            File.WriteAllBytes(path[..^4] + ".src.pnm", Pnm(source, bits));
+            File.WriteAllText(path[..^4] + ".json", JsonSerializer.Serialize(new { lossless = true, predictor, pt, precision = bits, restart = JpegLosslessWriter<Rgb8>.RestartInterval(restart, source.Width), arithmetic, gray = source.Layout.ChannelCount == 1 }));
+        }
+    }
+
+    /// <summary>
+    /// Returns a raster's samples narrowed to <paramref name="bits"/> as the lossless writer narrows them, as binary PGM (gray) or
+    /// PPM, with maxval 2^bits - 1 and two big-endian bytes per sample above 8 bits.
+    /// </summary>
+    private static byte[] Pnm(Raster raster, int bits)
+    {
+        bool gray = raster.Layout.ChannelCount == 1;
+        ushort[] wide;
+        switch (raster)
+        {
+            case Raster<Gray8> g: { using Raster<Gray16> w = g.As<Gray16>(); wide = Words(w); break; }
+            case Raster<Gray16> g: wide = Words(g); break;
+            case Raster<Rgb8> c: { using Raster<Rgb16> w = c.As<Rgb16>(); wide = Words(w); break; }
+            case Raster<Rgb16> c: wide = Words(c); break;
+            default: throw new InvalidOperationException(raster.GetType().Name);
+        }
+
+        int max = (1 << bits) - 1;
+        using MemoryStream stream = new();
+        byte[] header = System.Text.Encoding.ASCII.GetBytes($"{(gray ? "P5" : "P6")}\n{raster.Width} {raster.Height}\n{max}\n");
+        stream.Write(header);
+        foreach (ushort value in wide)
+        {
+            int sample = (int)(((value * (long)max) + 32767) / 65535);
+            if (bits > 8)
+            {
+                stream.WriteByte((byte)(sample >> 8));
+            }
+
+            stream.WriteByte((byte)sample);
+        }
+
+        return stream.ToArray();
+    }
+
+    private static ushort[] Words<TPixel>(Raster<TPixel> raster)
+        where TPixel : unmanaged, IPixelType<TPixel>
+    {
+        return System.Runtime.InteropServices.MemoryMarshal.Cast<byte, ushort>(Bytes(raster)).ToArray();
     }
 
     /// <summary>
