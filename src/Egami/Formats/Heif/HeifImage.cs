@@ -36,6 +36,7 @@ internal abstract class HeifImage
     internal static readonly uint Dimg = IsoTypes.Of("dimg");
     internal static readonly uint Cdsc = IsoTypes.Of("cdsc");
     internal static readonly uint Prem = IsoTypes.Of("prem");
+    internal static readonly uint Sato = IsoTypes.Of("sato");
 
     private protected HeifImage(HeifFile heif, HeifItem primary)
     {
@@ -100,6 +101,16 @@ internal abstract class HeifImage
 
     /// <summary>Gets how the gain map's cells tile: rows, columns and output size.</summary>
     internal (int Rows, int Columns, int Width, int Height) GainMapLayout { get; private set; }
+
+    /// <summary>
+    /// Gets the sample transform derived image (sato, AVIF 1.2) that the file prefers to the primary item, when it is used: its
+    /// expression and its input images, the primary among them. Load then gives its output, at its own depth. Otherwise
+    /// <see langword="null"/>.
+    /// </summary>
+    internal HeifSampleTransform? SampleTransform { get; private set; }
+
+    /// <summary>Gets or sets whether <see cref="Resolve"/> looks for a sample transform (AVIF's do); set before it runs.</summary>
+    private protected bool UseSampleTransforms { get; set; }
 
     /// <summary>Gets whether Load gives alpha: there is an alpha image, or an overlay's canvas is not opaque.</summary>
     internal bool HasAlpha => Alpha is not null || Overlay is { Fill: [_, _, _, < 0xFFFF] };
@@ -300,6 +311,11 @@ internal abstract class HeifImage
         }
 
         FindAlpha();
+        if (UseSampleTransforms)
+        {
+            FindSampleTransform();
+        }
+
         FindGainMap();
         if (ToneMap is null)
         {
@@ -390,6 +406,115 @@ internal abstract class HeifImage
             (AlphaCells, AlphaLayout) = (alphas, (GridSize.Rows, GridSize.Columns, Width, Height));
             AlphaPremultiplied = Array.IndexOf(Cells[0].ReferencesOf(Prem), alphas[0].Id) >= 0;
         }
+    }
+
+    /// <summary>
+    /// Finds a sato item that an altr group prefers to the primary item (listed before it), as libavif finds it, whose inputs are
+    /// all coded items or grids of the image's size, the primary's alpha matched by an alpha on every other input. An item readers
+    /// ignore (another version, reserved tokens) or one of a depth Egami cannot hold leaves the primary item, the fallback, in use.
+    /// </summary>
+    private void FindSampleTransform()
+    {
+        HeifFile heif = Heif;
+        if (Overlay is not null)
+        {
+            return;
+        }
+
+        uint thmb = IsoTypes.Of("thmb");
+        foreach (HeifEntityGroup group in heif.Groups)
+        {
+            int primaryAt = Array.IndexOf(group.Entities, Primary.Id);
+            if (group.Type != Altr || primaryAt <= 0)
+            {
+                continue;
+            }
+
+            foreach (uint id in group.Entities.AsSpan(0, primaryAt))
+            {
+                if (heif.Item(id) is not HeifItem sato || sato.Type != Sato || sato.UnsupportedEssential != 0 || sato.ReferencesOf(thmb).Length > 0)
+                {
+                    continue;
+                }
+
+                uint[] inputs = sato.ReferencesOf(Dimg);
+                if (inputs.Length is 0 or > 32 || heif.Property(sato, AvifProperties.Pixi) is not HeifProperty pixi
+                    || AvifProperties.ReadPixelInformation(heif, pixi) is not [byte depth, ..] || depth is < 1 or > 16 || heif.Property(sato, AvifProperties.Clap) is not null)
+                {
+                    continue;
+                }
+
+                if (AvifSampleTransform.Parse(heif.ItemData(sato).Span, inputs.Length, depth, heif.FormatName) is not AvifSampleTransform expression)
+                {
+                    continue;
+                }
+
+                List<HeifSampleInput> sources = [];
+                foreach (uint input in inputs)
+                {
+                    if (SampleInput(input) is not HeifSampleInput source)
+                    {
+                        break;
+                    }
+
+                    sources.Add(source);
+                }
+
+                if (sources.Count == inputs.Length)
+                {
+                    SampleTransform = new HeifSampleTransform(sato, expression, sources);
+                    return;
+                }
+            }
+        }
+    }
+
+    /// <summary>Gets an input of a sample transform: the primary image itself, or another coded item or grid of the same size, with its alpha.</summary>
+    private HeifSampleInput? SampleInput(uint id)
+    {
+        HeifFile heif = Heif;
+        if (id == Primary.Id)
+        {
+            return new HeifSampleInput(Primary, Cells, (GridSize.Rows, GridSize.Columns, Width, Height), AlphaCells, AlphaLayout);
+        }
+
+        if (heif.Item(id) is not HeifItem item || item.UnsupportedEssential != 0 || (item.Type != CodedType && item.Type != Grid))
+        {
+            return null;
+        }
+
+        (IReadOnlyList<HeifItem> cells, (int Rows, int Columns, int Width, int Height) layout) = Tiles(item);
+        if (layout.Width != Width || layout.Height != Height)
+        {
+            return null;
+        }
+
+        IReadOnlyList<HeifItem> alphaCells = [];
+        (int Rows, int Columns, int Width, int Height) alphaLayout = default;
+        foreach (HeifItem candidate in heif.Items)
+        {
+            uint[] owners = candidate.ReferencesOf(Auxl);
+            if (candidate.UnsupportedEssential == 0 && owners.Length > 0 && owners[0] == id && (candidate.Type == CodedType || candidate.Type == Grid) && IsAlpha(candidate))
+            {
+                (alphaCells, alphaLayout) = Tiles(candidate);
+                break;
+            }
+        }
+
+        return (alphaCells.Count > 0) != (Alpha is not null) ? null : new HeifSampleInput(item, cells, layout, alphaCells, alphaLayout);
+    }
+
+    /// <summary>Gets an image item's coded items and how they tile: a grid's cells, or the coded item alone.</summary>
+    private (IReadOnlyList<HeifItem> Cells, (int Rows, int Columns, int Width, int Height) Layout) Tiles(HeifItem item)
+    {
+        if (item.Type == Grid)
+        {
+            (List<HeifItem> cells, int rows, int columns, int width, int height) = ReadGrid(item);
+            return (cells, (rows, columns, width, height));
+        }
+
+        (int w, int h) = Extents(item);
+        return ([item], (1, 1, w, h));
     }
 
     private void FindGainMap()
@@ -495,13 +620,13 @@ internal abstract class HeifImage
     internal List<(HeifItem Item, HeifItemRole Role, Size Size, string? AuxiliaryType)> ItemRoles()
     {
         HeifFile heif = Heif;
-        HashSet<uint> alpha = [.. AlphaCells.Select(i => i.Id)];
+        HashSet<uint> alpha = [.. AlphaCells.Select(i => i.Id), .. SampleTransform?.Inputs.SelectMany(i => i.AlphaCells).Select(i => i.Id) ?? []];
         if (Alpha is HeifItem a)
         {
             alpha.Add(a.Id);
         }
 
-        HashSet<uint> derived = [.. heif.Items.SelectMany(i => i.ReferencesOf(Dimg)), .. heif.Items.Where(i => i.Type == Tmap).Select(i => i.Id)];
+        HashSet<uint> derived = [.. heif.Items.SelectMany(i => i.ReferencesOf(Dimg)), .. heif.Items.Where(i => i.Type == Tmap || i.Type == Sato).Select(i => i.Id)];
         derived.Remove(Primary.Id);
         uint gainMap = ToneMap is HeifItem tmap ? tmap.ReferencesOf(Dimg)[1] : AppleGainMap?.Id ?? 0;
         uint thmb = IsoTypes.Of("thmb");
@@ -710,3 +835,18 @@ internal abstract class HeifImage
 
     private protected static CorruptDataException Corrupt(HeifFile heif, string problem) => new(heif.FormatName, -1, problem);
 }
+
+/// <summary>A sample transform derived image (sato) in use: the item, its expression, and its inputs in reference order.</summary>
+/// <param name="Item">The sato item.</param>
+/// <param name="Expression">Its expression.</param>
+/// <param name="Inputs">Its input images.</param>
+internal sealed record HeifSampleTransform(HeifItem Item, AvifSampleTransform Expression, IReadOnlyList<HeifSampleInput> Inputs);
+
+/// <summary>An input image of a sample transform: the item, its coded cells and their layout, and its alpha image's cells and layout.</summary>
+/// <param name="Item">The coded item or grid.</param>
+/// <param name="Cells">Its coded items: a grid's cells, or the item alone.</param>
+/// <param name="Layout">How the cells tile.</param>
+/// <param name="AlphaCells">Its alpha image's coded items, or none.</param>
+/// <param name="AlphaLayout">How the alpha cells tile.</param>
+internal sealed record HeifSampleInput(HeifItem Item, IReadOnlyList<HeifItem> Cells, (int Rows, int Columns, int Width, int Height) Layout,
+    IReadOnlyList<HeifItem> AlphaCells, (int Rows, int Columns, int Width, int Height) AlphaLayout);

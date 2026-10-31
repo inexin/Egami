@@ -183,8 +183,9 @@ internal sealed partial class HeifImageReader(Func<FormatInfo> format, HeifDiagn
     /// <param name="points">The image's color: the nclx property's, else what the codec read from the color image's stream.</param>
     internal static (HeifPlanes Color, HeifPlanes? Alpha) Decode(HeifImage file, IHeifCodec codec, EgamiInput input, Rect? needed, out ColorCodePoints points)
     {
-        input.CheckMemory(WorkingBytes(file));
-        HeifPlanes color = file.Primary.Type == HeifImage.Grid
+        input.CheckMemory(WorkingBytes(file) * (1 + (file.SampleTransform?.Inputs.Count ?? 0)));
+        HeifPlanes color = file.SampleTransform is HeifSampleTransform transform ? Transform(file, codec, transform, input, needed, alpha: false)
+            : file.Primary.Type == HeifImage.Grid
             ? Grid(file, codec, file.Cells, (file.GridSize.Rows, file.GridSize.Columns, file.Width, file.Height), input, needed, lumaOnly: false)
             : Cell(file, codec, file.Cells[0], input);
         if (color.BitDepth != file.BitDepth || color.Monochrome != file.Monochrome)
@@ -199,7 +200,8 @@ internal sealed partial class HeifImageReader(Func<FormatInfo> format, HeifDiagn
         if (file.Alpha is not null)
         {
             (int rows, int columns, _, _) = file.AlphaLayout;
-            alpha = file.AlphaCells.Count == 1 && rows * columns == 1
+            alpha = file.SampleTransform is HeifSampleTransform alphaTransform ? Transform(file, codec, alphaTransform, input, needed, alpha: true)
+                : file.AlphaCells.Count == 1 && rows * columns == 1
                 ? Cell(file, codec, file.AlphaCells[0], input).LumaOnly()
                 : Grid(file, codec, file.AlphaCells, file.AlphaLayout, input, needed, lumaOnly: true);
             if (alpha.Width != color.Width || alpha.Height != color.Height)
@@ -262,6 +264,70 @@ internal sealed partial class HeifImageReader(Func<FormatInfo> format, HeifDiagn
         }
 
         return HeifPlanes.Grid(decoded, layout.Rows, layout.Columns, layout.Width, layout.Height, input);
+    }
+
+    /// <summary>
+    /// Decodes a sample transform's input images (their alpha images when <paramref name="alpha"/>) and evaluates its expression for
+    /// each sample of each plane (AVIF 1.2.0 section 4.2.3), giving planes of the transform's depth. The inputs must match in size
+    /// and chroma format.
+    /// </summary>
+    internal static HeifPlanes Transform(HeifImage file, IHeifCodec codec, HeifSampleTransform transform, EgamiInput input, Rect? needed, bool alpha)
+    {
+        IReadOnlyList<HeifSampleInput> sources = transform.Inputs;
+        HeifPlanes[] planes = new HeifPlanes[sources.Count];
+        for (int i = 0; i < sources.Count; i++)
+        {
+            (IReadOnlyList<HeifItem> cells, (int Rows, int Columns, int Width, int Height) layout) = alpha
+                ? (sources[i].AlphaCells, sources[i].AlphaLayout)
+                : (sources[i].Cells, sources[i].Layout);
+            HeifPlanes decoded = cells.Count == 1 && layout.Rows * layout.Columns == 1
+                ? Cell(file, codec, cells[0], input)
+                : Grid(file, codec, cells, layout, input, needed, lumaOnly: alpha);
+            planes[i] = alpha ? decoded.LumaOnly() : decoded;
+            HeifPlanes first = planes[0];
+            if (planes[i].Width != first.Width || planes[i].Height != first.Height || planes[i].Monochrome != first.Monochrome
+                || planes[i].SubsamplingX != first.SubsamplingX || planes[i].SubsamplingY != first.SubsamplingY)
+            {
+                throw input.Corrupt(-1, "The sample transform's input images differ in size or chroma format.");
+            }
+        }
+
+        AvifSampleTransform expression = transform.Expression;
+        HeifPlanes shape = planes[0];
+        int count = shape.Samples.Length;
+        ushort[][] samples = new ushort[count][];
+        int[] strides = new int[count];
+        ushort[][] inputs = new ushort[planes.Length][];
+        int[] offsets = new int[planes.Length];
+        long[][] stack = new long[Math.Max(1, expression.MaxStack)][];
+        for (int s = 0; s < stack.Length; s++)
+        {
+            stack[s] = new long[shape.Width];
+        }
+
+        for (int p = 0; p < count; p++)
+        {
+            int width = p == 0 ? shape.Width : shape.ChromaWidth, height = p == 0 ? shape.Height : shape.ChromaHeight;
+            strides[p] = width;
+            samples[p] = new ushort[width * height];
+            for (int i = 0; i < planes.Length; i++)
+            {
+                inputs[i] = planes[i].Samples[p];
+            }
+
+            for (int y = 0; y < height; y++)
+            {
+                input.CancellationToken.ThrowIfCancellationRequested();
+                for (int i = 0; i < planes.Length; i++)
+                {
+                    offsets[i] = y * planes[i].Strides[p];
+                }
+
+                expression.Row(inputs, offsets, samples[p].AsSpan(y * width, width), stack);
+            }
+        }
+
+        return shape with { BitDepth = expression.Depth, Samples = samples, Strides = strides };
     }
 
     /// <summary>

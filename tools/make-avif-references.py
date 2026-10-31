@@ -27,6 +27,10 @@ Usage, from the repo root with Docker running:
   python tools/make-avif-references.py modeinfo     libaom's mode info of every AV1 item (aominspect), for the corpus and extra
   python tools/make-avif-references.py overlay      overlay (iovl) files built from corpus images, and libheif's decodes of them
   python tools/make-avif-references.py gainmap      libavif's HDR renditions of the gain map files (avifgainmaputil tonemap)
+  python tools/make-avif-references.py extras       the AVIF extras corpus (sample transforms, mini files, scaled layers) and
+                                                    avifdec's decodes of it, in tests/images/avif/extras and
+                                                    tests/reference/avif/extras (tools/avifref/avifextras.py, in the image
+                                                    tools/avifref/Dockerfile.extras builds: libavif with its experimental mini box)
 """
 import hashlib
 import os
@@ -37,6 +41,7 @@ import urllib.request
 import zipfile
 
 IMAGE = "egami-avifref:2.9.2"
+EXTRAS = "egami-avifref-extras:1"
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CACHE = os.path.join(ROOT, ".cache", "avif")
 LIBAVIF = ("https://github.com/AOMediaCodec/libavif", "v1.4.2")
@@ -123,9 +128,22 @@ def run(*args):
     subprocess.run(["docker", "run", "--rm", *mounts, IMAGE, "python3", "/t/avifcorpus.py", *args], check=True, env=env)
 
 
+def extras():
+    if subprocess.run(["docker", "image", "inspect", IMAGE], capture_output=True).returncode != 0:
+        subprocess.run(["docker", "build", "-t", IMAGE, os.path.join(ROOT, "tools", "avifref")], check=True)
+    if subprocess.run(["docker", "image", "inspect", EXTRAS], capture_output=True).returncode != 0:
+        subprocess.run(["docker", "build", "-t", EXTRAS, "-f", os.path.join(ROOT, "tools", "avifref", "Dockerfile.extras"),
+                        os.path.join(ROOT, "tools", "avifref")], check=True)
+    env = dict(os.environ, MSYS_NO_PATHCONV="1")
+    subprocess.run(["docker", "run", "--rm", "-v", f"{ROOT}:/w", "-v", f"{os.path.join(ROOT, 'tools', 'avifref')}:/t:ro", EXTRAS,
+                    "python3", "/t/avifextras.py"], check=True, env=env)
+
+
 steps = sys.argv[1:] or ["fetch", "corpus", "conformance", "extra"]
 if "fetch" in steps:
     fetch("argon" in steps)
 for step in ("corpus", "conformance", "extra", "headers", "modeinfo", "overlay", "gainmap"):
     if step in steps:
         run(step)
+if "extras" in steps:
+    extras()

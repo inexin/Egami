@@ -192,3 +192,7 @@ Egami.Formats.Avif.AvifDetails.Layers.get -> System.Collections.Generic.IReadOnl
 Egami.Formats.Avif.AvifDetails.Layers.set -> void
 Egami.Formats.Avif.AvifReaderOptions.Layer.get -> int?
 Egami.Formats.Avif.AvifReaderOptions.Layer.init -> void
+Egami.Formats.Avif.AvifDetails.HasSampleTransform.get -> bool
+Egami.Formats.Avif.AvifDetails.HasSampleTransform.set -> void
+Egami.Formats.Avif.AvifReaderOptions.SampleTransform.get -> bool
+Egami.Formats.Avif.AvifReaderOptions.SampleTransform.init -> void

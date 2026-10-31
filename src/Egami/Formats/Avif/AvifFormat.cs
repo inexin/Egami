@@ -73,8 +73,21 @@ public sealed class AvifDetails : FormatDetails
     /// <summary>Gets or sets the AV1 tier: 0 (Main) or 1 (High).</summary>
     public int Tier { get; set; }
 
-    /// <summary>Gets or sets the bits a sample has: 8, 10 or 12.</summary>
+    /// <summary>
+    /// Gets or sets the bits a sample of the image Load gave has: 8, 10 or 12 as AV1 codes them, or the depth of a sample
+    /// transform's output (16 in the files avifenc --depth 16 writes) when <see cref="HasSampleTransform"/> is true.
+    /// </summary>
     public int BitDepth { get; set; } = 8;
+
+    /// <summary>
+    /// Gets or sets whether the image Load gave is the output of a sample transform derived image (a sato item, AVIF 1.2.0), which
+    /// combines several AV1 images into one of more bits (design question 4); <see cref="AvifReaderOptions.SampleTransform"/> set
+    /// to false loads the file's fallback image instead.
+    /// </summary>
+    /// <example>
+    /// <code language="csharp" source="../../../../tests/Egami.DocSamples/Avif.cs" region="sato"/>
+    /// </example>
+    public bool HasSampleTransform { get; set; }
 
     /// <summary>Gets or sets the chroma format: 4:0:0 (monochrome), 4:2:0, 4:2:2 or 4:4:4.</summary>
     public ChromaFormat Chroma { get; set; } = ChromaFormat.Yuv420;
@@ -153,6 +166,7 @@ public sealed class AvifDetails : FormatDetails
             Level = Level,
             Tier = Tier,
             BitDepth = BitDepth,
+            HasSampleTransform = HasSampleTransform,
             Chroma = Chroma,
             ChromaSiting = ChromaSiting,
             CodePoints = CodePoints,
@@ -180,7 +194,8 @@ public sealed class AvifDetails : FormatDetails
             Profile = file.Config.Profile,
             Level = file.Config.Level,
             Tier = file.Config.Tier,
-            BitDepth = file.Config.BitDepth,
+            BitDepth = file.BitDepth,
+            HasSampleTransform = file.SampleTransform is not null,
             Chroma = file.Config.Chroma,
             ChromaSiting = file.Config.Chroma != ChromaFormat.Yuv420 ? null : file.Sequence.ChromaSamplePosition switch
             {
@@ -231,6 +246,16 @@ public sealed record AvifReaderOptions : ReaderOptions
         get => _layer;
         init => _layer = value is null or >= 0 ? value : throw new ArgumentOutOfRangeException(nameof(value), value, "The layer is 0 or more.");
     }
+
+    /// <summary>
+    /// Gets whether a sample transform derived image (a sato item, AVIF 1.2.0) that the file prefers to its primary image is applied,
+    /// giving its output at its own depth, such as 16 bits from a 12-bit image and an 8-bit residual (the default, true), or left
+    /// out, giving the primary image the file keeps as the fallback for readers without sample transforms.
+    /// </summary>
+    /// <example>
+    /// <code language="csharp" source="../../../../tests/Egami.DocSamples/Avif.cs" region="sato"/>
+    /// </example>
+    public bool SampleTransform { get; init; } = true;
 }
 
 /// <summary>

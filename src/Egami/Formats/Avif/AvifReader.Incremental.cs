@@ -19,13 +19,13 @@ internal sealed partial class AvifReader : IIncrementalFormatReader
     public HeaderState HeaderStatus(EgamiInput input, ReaderOptions options)
     {
         HeaderState state = MetaEnd(input, options, out long end);
-        return state != HeaderState.Arrived ? state : Progressive(input, end, out _);
+        return state != HeaderState.Arrived ? state : Progressive(input, end, options, out _);
     }
 
     /// <summary>Opens the incremental source of a progressive still whose meta box has arrived while more bytes may come, else null.</summary>
     private static ProgressiveRows? OpenProgressive(EgamiInput input, ReaderOptions options) =>
         input.Incremental && !input.AtEndOfInput && MetaEnd(input, options, out long end) == HeaderState.Arrived
-            && Progressive(input, end, out AvifFile? head) == HeaderState.Arrived
+            && Progressive(input, end, options, out AvifFile? head) == HeaderState.Arrived
             ? new ProgressiveRows(input, options, head!)
             : null;
 
@@ -81,7 +81,7 @@ internal sealed partial class AvifReader : IIncrementalFormatReader
     /// alpha, grid, overlay or gain map, waits for its first layer, which holds the sequence header; then gives the still image,
     /// parsed from the bytes so far with the rest of its data zero. Any other file is read whole.
     /// </summary>
-    private static HeaderState Progressive(EgamiInput input, long end, out AvifFile? file)
+    private static HeaderState Progressive(EgamiInput input, long end, ReaderOptions options, out AvifFile? file)
     {
         file = null;
         if (end > int.MaxValue)
@@ -123,8 +123,8 @@ internal sealed partial class AvifReader : IIncrementalFormatReader
                 return HeaderState.NotYet;
             }
 
-            AvifFile still = AvifFile.Open(HeifFile.Parse(bytes, input.FormatName));
-            if (!still.Progressive || still.Primary != still.Cells[0] || still.Overlay is not null || still.Alpha is not null || still.ToneMap is not null)
+            AvifFile still = AvifFile.Open(HeifFile.Parse(bytes, input.FormatName), SampleTransforms(options));
+            if (still.SampleTransform is not null || !still.Progressive || still.Primary != still.Cells[0] || still.Overlay is not null || still.Alpha is not null || still.ToneMap is not null)
             {
                 return HeaderState.WaitsForEnd;
             }
@@ -370,7 +370,7 @@ internal sealed partial class AvifReader : IIncrementalFormatReader
                 throw new NeedsInputException();
             }
 
-            AvifFile file = AvifFile.Open(HeifFile.Parse(_bytes.AsMemory(0, _received), _input.FormatName));
+            AvifFile file = AvifFile.Open(HeifFile.Parse(_bytes.AsMemory(0, _received), _input.FormatName), SampleTransforms(_options));
             HeifImageReader.Prepared image = Still.PrepareStill(_input, file, _options);
             HeifImageReader.Adopt(_metadata, image.Metadata);
             _image = image;

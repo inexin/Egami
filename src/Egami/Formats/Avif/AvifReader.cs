@@ -44,7 +44,7 @@ internal sealed partial class AvifReader : IFormatReader, IYuvFormatReader, IRow
             return SequenceInfo(sequence, input, options);
         }
 
-        return Still.Info(AvifFile.Open(heif), input, options);
+        return Still.Info(AvifFile.Open(heif, SampleTransforms(options)), input, options);
     }
 
     public Raster Read(EgamiInput input, ReaderOptions options)
@@ -61,7 +61,7 @@ internal sealed partial class AvifReader : IFormatReader, IYuvFormatReader, IRow
             return ReadSequence(input, sequence, options);
         }
 
-        return Still.Read(input, AvifFile.Open(heif), options);
+        return Still.Read(input, AvifFile.Open(heif, SampleTransforms(options)), options);
     }
 
     public Raster<TPixel> Read<TPixel>(EgamiInput input, ReaderOptions options)
@@ -84,7 +84,7 @@ internal sealed partial class AvifReader : IFormatReader, IYuvFormatReader, IRow
         HeifFile heif = HeifFile.Read(input);
         return AvifSequence.Find(heif) is AvifSequence sequence
             ? ReadSequence<TPixel>(input, sequence, options)
-            : Still.Read<TPixel>(input, AvifFile.Open(heif), options);
+            : Still.Read<TPixel>(input, AvifFile.Open(heif, SampleTransforms(options)), options);
     }
 
     public RowSource Open(EgamiInput input, ReaderOptions options)
@@ -103,7 +103,7 @@ internal sealed partial class AvifReader : IFormatReader, IYuvFormatReader, IRow
                 return BufferedRowSource.From(ReadSequence(input, sequence, options));
             }
 
-            return Still.Open(input, AvifFile.Open(heif), options);
+            return Still.Open(input, AvifFile.Open(heif, SampleTransforms(options)), options);
         }
         catch
         {
@@ -117,7 +117,7 @@ internal sealed partial class AvifReader : IFormatReader, IYuvFormatReader, IRow
         HeifFile heif = HeifFile.Read(input);
         return AvifSequence.Find(heif) is AvifSequence sequence
             ? SequenceYuv(sequence, input, options)
-            : Still.ReadYuv(input, AvifFile.Open(heif), options, "AVIF");
+            : Still.ReadYuv(input, AvifFile.Open(heif, SampleTransforms(options)), options, "AVIF");
     }
 
     public (RasterInfo Info, ChromaFormat? Format, int BitDepth, YuvColor Color) ProbeYuv(EgamiInput input, ReaderOptions options)
@@ -129,11 +129,14 @@ internal sealed partial class AvifReader : IFormatReader, IYuvFormatReader, IRow
             return (first, sequence.Config.Chroma, sequence.Config.BitDepth, PlaneColor(sequence.CodePoints, sequence.Config, sequence.Sequence, null));
         }
 
-        return Still.ProbeYuv(AvifFile.Open(heif));
+        return Still.ProbeYuv(AvifFile.Open(heif, SampleTransforms(options)));
     }
 
     /// <summary>Gets the natural pixel layout (design question 7).</summary>
     internal static PixelLayoutInfo NaturalLayout(int bitDepth, bool monochrome, bool alpha) => HeifImageReader.NaturalLayout(bitDepth, monochrome, alpha);
+
+    /// <summary>Gets whether a read applies the sample transform a file prefers to its primary item (AVIF extras design, question 4).</summary>
+    private static bool SampleTransforms(ReaderOptions options) => options is not AvifReaderOptions { SampleTransform: false };
 
     /// <summary>
     /// Makes the AV1 codec for one read: film grain applied unless the options turn it off (design question 6), and the layer of a
