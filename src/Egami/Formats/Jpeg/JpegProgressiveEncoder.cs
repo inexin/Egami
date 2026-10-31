@@ -8,8 +8,8 @@ namespace Egami.Formats.Jpeg;
 /// <summary>
 /// Writes the scans of a progressive file (T.81 annex G) from quantized blocks held for the whole image: libjpeg's
 /// <c>jpeg_simple_progression</c> script of spectral selection and successive approximation, each scan coded twice, first only
-/// counting symbols so it gets its own optimal Huffman tables, then for real. Restart markers follow the restart interval in MCUs,
-/// as in a sequential file. The blocks are put in zigzag order first, so each scan finds a block's coefficients in its band, and
+/// counting symbols so it gets its own optimal Huffman tables, then for real; or once, arithmetic-coded with the models of annex
+/// G.1.3. Restart markers follow the restart interval in MCUs, as in a sequential file. The blocks are put in zigzag order first, so each scan finds a block's coefficients in its band, and
 /// those it codes, from bit masks.
 /// </summary>
 internal sealed class JpegProgressiveEncoder
@@ -29,6 +29,7 @@ internal sealed class JpegProgressiveEncoder
     private readonly byte[] _corrections = new byte[MaxCorrectionBits + 64];
     private readonly byte[] _blockCorrections = new byte[64];
     private JpegBitWriter? _writer;
+    private JpegArithmeticEncoder? _arithmetic;
     private int _table;
     private int _eobRun;
     private int _pendingCorrections;
@@ -88,16 +89,17 @@ internal sealed class JpegProgressiveEncoder
     }
 
     /// <summary>
-    /// Writes every scan: DHT for the tables it uses, SOS and its entropy-coded data, then the next. The rows' blocks are left in
-    /// zigzag order.
+    /// Writes every scan: DHT for the tables it uses (unless <paramref name="arithmetic"/>), SOS and its entropy-coded data, then
+    /// the next. The rows' blocks are left in zigzag order.
     /// </summary>
-    internal void Write(JpegBitWriter writer, Scan[] script, SegmentWriter segment)
+    internal void Write(JpegBitWriter writer, Scan[] script, SegmentWriter segment, bool arithmetic = false)
     {
         ToZigZag();
+        _arithmetic = arithmetic ? new JpegArithmeticEncoder(writer) : null;
         foreach (Scan scan in script)
         {
             bool dc = scan.Ss == 0;
-            if (!(dc && scan.Ah > 0))
+            if (!arithmetic && !(dc && scan.Ah > 0))
             {
                 Array.Clear(_counts);
                 _writer = null;
@@ -130,7 +132,9 @@ internal sealed class JpegProgressiveEncoder
             sos[^1] = (byte)((scan.Ah << 4) | scan.Al);
             segment(writer, JpegMarker.Sos, sos);
             _writer = writer;
+            _arithmetic?.Restart();
             Code(scan);
+            _arithmetic?.Finish();
             writer.Align();
         }
     }
@@ -240,17 +244,25 @@ internal sealed class JpegProgressiveEncoder
         EmitEobRun();
         if (_writer is not null)
         {
+            _arithmetic?.Finish();
             _writer.Align();
             _writer.Marker((byte)(JpegMarker.Rst0 + _restart));
         }
 
         _restart = (_restart + 1) & 7;
         Array.Clear(_predictors);
+        _arithmetic?.Restart();
     }
 
     private void CodeBlock(Scan scan, int component, ReadOnlySpan<short> block)
     {
         _table = _components[component].Table;
+        if (_arithmetic is not null)
+        {
+            CodeArithmetic(scan, component, block);
+            return;
+        }
+
         if (scan.Ss == 0)
         {
             if (scan.Ah == 0)
@@ -276,6 +288,28 @@ internal sealed class JpegProgressiveEncoder
         else
         {
             AcRefine(scan, block);
+        }
+    }
+
+    /// <summary>Codes one block of a scan with the arithmetic coder (T.81 G.1.3): the DC and AC models of each kind of scan.</summary>
+    private void CodeArithmetic(Scan scan, int component, ReadOnlySpan<short> block)
+    {
+        JpegArithmeticEncoder coder = _arithmetic!;
+        if (scan.Ss == 0 && scan.Ah == 0)
+        {
+            coder.EncodeDcFirst(block[0] >> scan.Al, component, ref _predictors[component], _table);
+        }
+        else if (scan.Ss == 0)
+        {
+            coder.EncodeDcRefine((block[0] >> scan.Al) & 1);
+        }
+        else if (scan.Ah == 0)
+        {
+            coder.EncodeAcFirst(block, _table, scan.Ss, scan.Se, scan.Al);
+        }
+        else
+        {
+            coder.EncodeAcRefine(block, _table, scan.Ss, scan.Se, scan.Ah, scan.Al);
         }
     }
 

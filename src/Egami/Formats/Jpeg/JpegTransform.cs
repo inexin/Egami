@@ -486,10 +486,17 @@ internal static class JpegTransformer
                 sof[8 + (3 * i)] = (byte)c.QuantTable;
             }
 
-            JpegWriter.Segment(writer, options.Progressive ? JpegMarker.Sof2 : deep || sixteen ? JpegMarker.Sof1 : JpegMarker.Sof0, sof);
+            byte marker = options.Arithmetic
+                ? options.Progressive ? JpegMarker.Sof10 : JpegMarker.Sof9
+                : options.Progressive ? JpegMarker.Sof2 : deep || sixteen ? JpegMarker.Sof1 : JpegMarker.Sof0;
+            JpegWriter.Segment(writer, marker, sof);
             if (options.Progressive)
             {
-                WriteProgressive(writer, input);
+                WriteProgressive(writer, input, options.Arithmetic);
+            }
+            else if (options.Arithmetic)
+            {
+                WriteArithmetic(writer);
             }
             else
             {
@@ -570,8 +577,44 @@ internal static class JpegTransformer
             writer.Align();
         }
 
+        /// <summary>Writes one interleaved arithmetic-coded scan; MCU rows are made as they are coded.</summary>
+        private void WriteArithmetic(JpegBitWriter writer)
+        {
+            byte[] sos = new byte[1 + (2 * _source.Length) + 3];
+            sos[0] = (byte)_source.Length;
+            for (int i = 0; i < _source.Length; i++)
+            {
+                sos[1 + (2 * i)] = (byte)_header.Components[_source[i]].Id;
+                sos[2 + (2 * i)] = (byte)((Table(i) << 4) | Table(i));
+            }
+
+            sos[^2] = 63;
+            JpegWriter.Segment(writer, JpegMarker.Sos, sos);
+            short[] row = new short[McusX * BlocksPerMcu * 64];
+            int[] predictors = new int[_source.Length];
+            JpegArithmeticEncoder coder = new(writer);
+            for (int my = 0; my < McusY; my++)
+            {
+                FillRow(my, row);
+                int b = 0;
+                for (int mx = 0; mx < McusX; mx++)
+                {
+                    for (int i = 0; i < _source.Length; i++)
+                    {
+                        int t = Table(i);
+                        for (int n = 0; n < _h[i] * _v[i]; n++, b++)
+                        {
+                            coder.EncodeBlock(row.AsSpan(b * 64, 64), i, ref predictors[i], t, t);
+                        }
+                    }
+                }
+            }
+
+            coder.Finish();
+        }
+
         /// <summary>Writes the progressive scans from every MCU row, made first and held, counted against the memory limit.</summary>
-        private void WriteProgressive(JpegBitWriter writer, EgamiInput input)
+        private void WriteProgressive(JpegBitWriter writer, EgamiInput input, bool arithmetic)
         {
             int length = McusX * BlocksPerMcu * 64;
             input.CheckMemory((long)length * sizeof(short) * McusY);
@@ -594,7 +637,7 @@ internal static class JpegTransformer
 
             JpegProgressiveEncoder encoder = new(components, McusX, McusY, 0, my => rows[my]);
             bool ycbcr = !Gray && _header.ColorSpace == JpegColorSpace.YCbCr;
-            encoder.Write(writer, JpegProgressiveEncoder.Script(components.Length, ycbcr), JpegWriter.Segment);
+            encoder.Write(writer, JpegProgressiveEncoder.Script(components.Length, ycbcr), JpegWriter.Segment, arithmetic);
         }
 
         private static int Table(int i) => i == 0 ? 0 : 1;

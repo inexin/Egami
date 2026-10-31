@@ -188,3 +188,7 @@ virtual Egami.Metadata.FormatDetails.PixelsChanged() -> void
 ~override Egami.SaveProgress.ToString() -> string
 Egami.Formats.FormatInfo.ConvertsColor.get -> bool
 Egami.Formats.FormatInfo.ConvertsColor.init -> void
+Egami.Formats.Jpeg.JpegTransformOptions.Arithmetic.get -> bool
+Egami.Formats.Jpeg.JpegTransformOptions.Arithmetic.init -> void
+Egami.Formats.Jpeg.JpegWriterOptions.Arithmetic.get -> bool
+Egami.Formats.Jpeg.JpegWriterOptions.Arithmetic.init -> void
