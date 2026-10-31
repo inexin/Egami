@@ -86,6 +86,48 @@ internal static class MakerDecoders
             default:
                 throw new NotSupportedException($"Egami does not read the {sensor.Codec} raw codec yet.");
         }
+
+        if (sensor.Codec is RawCodec.PanasonicV4 or RawCodec.PanasonicV5 or RawCodec.PanasonicV6 or RawCodec.PanasonicV7 or RawCodec.PanasonicV8)
+        {
+            FillZeros(pixels, parallel);
+        }
+    }
+
+    /// <summary>
+    /// Panasonic cameras write their mapped defective pixels as 0 (measured: Adobe DNG Converter fills exactly those); each
+    /// becomes the mean of the non-zero samples of its colour two pixels away.
+    /// </summary>
+    private static void FillZeros(RawPixels pixels, ParallelOptions parallel)
+    {
+        int width = pixels.Width, height = pixels.Height;
+        RawParallel.For(0, height, parallel, y =>
+        {
+            Span<ushort> row = pixels.U16Row(y);
+            for (int x = 0; x < width; x++)
+            {
+                if (row[x] != 0)
+                {
+                    continue;
+                }
+
+                int sum = 0, n = 0;
+                ReadOnlySpan<ushort> all = pixels.U16;
+                for (int k = 0; k < 4; k++)
+                {
+                    int xx = x + (k == 0 ? -2 : k == 1 ? 2 : 0), yy = y + (k == 2 ? -2 : k == 3 ? 2 : 0);
+                    if (xx >= 0 && xx < width && yy >= 0 && yy < height && all[(yy * width) + xx] is ushort v and > 0)
+                    {
+                        sum += v;
+                        n++;
+                    }
+                }
+
+                if (n > 0)
+                {
+                    row[x] = (ushort)(sum / n);
+                }
+            }
+        });
     }
 
     private static void Unpacked16(ReadOnlySpan<byte> data, RawPixels pixels, bool bigEndian)
