@@ -262,9 +262,6 @@ internal static class Av1FilmGrainSynthesis
         return scaling;
     }
 
-    private static int SampleLut(int[] lut, int[,] offsets, int subx, int suby, int bx, int by, int x, int y) =>
-        lut[SampleLutAt(offsets, subx, suby, bx, by) + (y * GrainWidth) + x];
-
     /// <summary>Where in the grain template the block's sample (0, 0) is.</summary>
     private static int SampleLutAt(int[,] offsets, int subx, int suby, int bx, int by)
     {
@@ -309,6 +306,8 @@ internal static class Av1FilmGrainSynthesis
             int ystart = d.OverlapFlag && rowNum != 0 ? Math.Min(2, bh) : 0;
             int xstart = d.OverlapFlag && bx != 0 ? Math.Min(2, bw) : 0;
             int lutBase = SampleLutAt(offsets, 0, 0, 0, 0);
+            // Where the blocks the overlaps blend with start (read only where there are overlaps).
+            int lutLeft = SampleLutAt(offsets, 0, 0, 1, 0), lutTop = SampleLutAt(offsets, 0, 0, 0, 1), lutTopLeft = SampleLutAt(offsets, 0, 0, 1, 1);
             int shift = d.ScalingShift;
             for (int y = ystart; y < bh; y++)
             {
@@ -322,19 +321,19 @@ internal static class Av1FilmGrainSynthesis
             {
                 for (int x = 0; x < (y < ystart ? bw : xstart); x++)
                 {
-                    int grain = SampleLut(lut, offsets, 0, 0, 0, 0, x, y);
+                    int grain = lut[lutBase + (y * GrainWidth) + x];
                     if (x < xstart)
                     {
-                        int old = SampleLut(lut, offsets, 0, 0, 1, 0, x, y);
+                        int old = lut[lutLeft + (y * GrainWidth) + x];
                         grain = Math.Clamp(Round2((old * (x == 0 ? w0 : w1)[0]) + (grain * (x == 0 ? w0 : w1)[1]), 5), grainMin, grainMax);
                     }
 
                     if (y < ystart)
                     {
-                        int top = SampleLut(lut, offsets, 0, 0, 0, 1, x, y);
+                        int top = lut[lutTop + (y * GrainWidth) + x];
                         if (x < xstart)
                         {
-                            int oldTop = SampleLut(lut, offsets, 0, 0, 1, 1, x, y);
+                            int oldTop = lut[lutTopLeft + (y * GrainWidth) + x];
                             top = Math.Clamp(Round2((oldTop * (x == 0 ? w0 : w1)[0]) + (top * (x == 0 ? w0 : w1)[1]), 5), grainMin, grainMax);
                         }
 
@@ -414,6 +413,8 @@ internal static class Av1FilmGrainSynthesis
             int ystart = d.OverlapFlag && rowNum != 0 ? Math.Min(2 >> sy, bh) : 0;
             int xstart = d.OverlapFlag && bx != 0 ? Math.Min(2 >> sx, bw) : 0;
             int lutBase = SampleLutAt(offsets, sx, sy, 0, 0);
+            // Where the blocks the overlaps blend with start (read only where there are overlaps).
+            int lutLeft = SampleLutAt(offsets, sx, sy, 1, 0), lutTop = SampleLutAt(offsets, sx, sy, 0, 1), lutTopLeft = SampleLutAt(offsets, sx, sy, 1, 1);
             for (int y = ystart; y < bh; y++)
             {
                 // As Add does for each sample, over a row's spans: the checks once a row, and a loop for each way of getting the value.
@@ -429,19 +430,19 @@ internal static class Av1FilmGrainSynthesis
             {
                 for (int x = 0; x < (y < ystart ? bw : xstart); x++)
                 {
-                    int grain = SampleLut(lut, offsets, sx, sy, 0, 0, x, y);
+                    int grain = lut[lutBase + (y * GrainWidth) + x];
                     if (x < xstart)
                     {
-                        int old = SampleLut(lut, offsets, sx, sy, 1, 0, x, y);
+                        int old = lut[lutLeft + (y * GrainWidth) + x];
                         grain = Math.Clamp(Round2((old * Weight(sx, x, 0)) + (grain * Weight(sx, x, 1)), 5), grainMin, grainMax);
                     }
 
                     if (y < ystart)
                     {
-                        int top = SampleLut(lut, offsets, sx, sy, 0, 1, x, y);
+                        int top = lut[lutTop + (y * GrainWidth) + x];
                         if (x < xstart)
                         {
-                            int oldTop = SampleLut(lut, offsets, sx, sy, 1, 1, x, y);
+                            int oldTop = lut[lutTopLeft + (y * GrainWidth) + x];
                             top = Math.Clamp(Round2((oldTop * Weight(sx, x, 0)) + (top * Weight(sx, x, 1)), 5), grainMin, grainMax);
                         }
 
