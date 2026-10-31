@@ -90,7 +90,7 @@
 <p>Camera RAW files hold the sensor data a camera recorded, before any processing. Egami reads DNG (.dng), the open RAW format
 Adobe publishes, which phones, Leica, Pentax, Ricoh, Hasselblad and Adobe DNG Converter write, and the makers' own formats:
 Canon CR2, Nikon NEF and NRW, Pentax PEF, Sony ARW and SR2, Olympus ORF, Panasonic RW2 and Fujifilm RAF. It develops them into
-an image on load. It reads through the Egami.Formats.Extended package: register it with <code>WithRaw()</code> or <code>WithExtendedFormats()</code>
+an image on load. Of Canon's CR3 it reads the previews and the metadata (<a href="#canon-cr3">Canon CR3</a>). It reads through the Egami.Formats.Extended package: register it with <code>WithRaw()</code> or <code>WithExtendedFormats()</code>
 (<a href="extended.html">Extended formats</a>). RAW is detected ahead of TIFF, since a DNG file (like most maker formats) is a TIFF file;
 without it, a DNG opens as TIFF and only its preview pages load.</p>
 <table>
@@ -115,7 +115,7 @@ without it, a DNG opens as TIFF and only its preview pages load.</p>
 </tr>
 <tr>
 <td><code>FormatInfo</code></td>
-<td><code>RawFormat.Info</code>: name <code>RAW</code>, extensions <code>.dng</code>, <code>.cr2</code>, <code>.nef</code>, <code>.nrw</code>, <code>.pef</code>, <code>.arw</code>, <code>.sr2</code>, <code>.orf</code>, <code>.rw2</code> and <code>.raf</code>, with each format's MIME type</td>
+<td><code>RawFormat.Info</code>: name <code>RAW</code>, extensions <code>.dng</code>, <code>.cr2</code>, <code>.nef</code>, <code>.nrw</code>, <code>.pef</code>, <code>.arw</code>, <code>.sr2</code>, <code>.orf</code>, <code>.rw2</code>, <code>.raf</code> and <code>.cr3</code>, with each format's MIME type</td>
 </tr>
 </tbody>
 </table>
@@ -167,8 +167,15 @@ generic matrix and a <code>CameraUnknown</code> warning.</li>
 sensors (6 × 6 pattern) are demosaiced by Egami's own gradient-weighted method whatever <code>Demosaic</code> says. A RAF's
 dynamic-range setting moves the baseline exposure as it does in Adobe's DNGs.</li>
 </ul>
-<p>Not read: Canon CR3 (stage C will give its previews and metadata), Sony SRF, Nikon's small (sNEF) and High Efficiency raws, the
-Sony A100, RAFs from before 2012 whose CFA section is not a TIFF, and 14-bit packed RAFs. They throw <code>NotSupportedException</code>.</p>
+<p>Not read: Sony SRF, Nikon's small (sNEF) and High Efficiency raws, the Sony A100, RAFs from before 2012 whose CFA section is not
+a TIFF, and 14-bit packed RAFs. They throw <code>NotSupportedException</code>.</p>
+<h2 id="canon-cr3">Canon CR3</h2>
+<p>Canon's CR3 files (EOS R and M bodies, the 250D, 850D and 90D, the 1D X Mark III and recent PowerShots) are an ISO base media
+file. Egami reads their three previews, all JPEGs: the full-size one, a 1620 × 1080 (or 1440 × 1080) one and a 160 × 120
+thumbnail; and their metadata: EXIF, GPS, and Canon's maker note as bytes in <code>RawDetails.MakerNote</code>. <code>Raster.Probe</code> gives the
+sensor data's size, and <code>RawOutput.Preview</code> (with <code>PreviewIndex</code>, or <code>ReaderOptions.MinimumSize</code>) loads a preview.</p>
+<p>The sensor data itself is coded with Canon's CRX codec, which Egami does not decode yet: a develop, a half-size develop or the
+mosaic of a CR3 throws <code>NotSupportedException</code> saying so.</p>
 <h2 id="the-develop">The develop</h2>
 <p>The develop follows the DNG specification's processing order:</p>
 <ol>
@@ -245,7 +252,7 @@ foreach (RawPreview preview in details.Previews)
 }
 </code></pre><h2 id="limits">Limits</h2>
 <ul>
-<li>The maker formats above; CR3 will give its previews and metadata.</li>
+<li>The maker formats above; of CR3, only the previews and metadata.</li>
 <li>Fujifilm GFX 100 files (100 MP) need <code>MaxTotalBytes</code> above its 2 GB default for a full develop; their previews, half-size
 develop and mosaic fit.</li>
 <li>Three-colour data only: monochrome DNGs and four-colour (CMYG) sensors are not developed (their mosaic loads).</li>
