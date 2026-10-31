@@ -165,24 +165,32 @@ internal static class Vp8InterPredict
             _ = dst.Slice(dstAt, ((h - 1) * dstStride) + w);
             ref byte s = ref Unsafe.Add(ref MemoryMarshal.GetReference(src), at);
             ref byte d = ref Unsafe.Add(ref MemoryMarshal.GetReference(dst), dstAt);
-            for (int r = 0; r < h; r++)
+            if (w == 16)
             {
-                ref byte from = ref Unsafe.Add(ref s, r * stride);
-                ref byte to = ref Unsafe.Add(ref d, r * dstStride);
-                switch (w)
+                for (int r = 0; r < h; r++)
                 {
-                    case 16:
-                        Unsafe.WriteUnaligned(ref to, Unsafe.ReadUnaligned<Vector128<byte>>(ref from));
-                        break;
-                    case 8:
-                        Unsafe.WriteUnaligned(ref to, Unsafe.ReadUnaligned<ulong>(ref from));
-                        break;
-                    case 4:
-                        Unsafe.WriteUnaligned(ref to, Unsafe.ReadUnaligned<uint>(ref from));
-                        break;
-                    default:
-                        MemoryMarshal.CreateReadOnlySpan(ref from, w).CopyTo(MemoryMarshal.CreateSpan(ref to, w));
-                        break;
+                    Unsafe.WriteUnaligned(ref Unsafe.Add(ref d, r * dstStride), Unsafe.ReadUnaligned<Vector128<byte>>(ref Unsafe.Add(ref s, r * stride)));
+                }
+            }
+            else if (w == 8)
+            {
+                for (int r = 0; r < h; r++)
+                {
+                    Unsafe.WriteUnaligned(ref Unsafe.Add(ref d, r * dstStride), Unsafe.ReadUnaligned<ulong>(ref Unsafe.Add(ref s, r * stride)));
+                }
+            }
+            else if (w == 4)
+            {
+                for (int r = 0; r < h; r++)
+                {
+                    Unsafe.WriteUnaligned(ref Unsafe.Add(ref d, r * dstStride), Unsafe.ReadUnaligned<uint>(ref Unsafe.Add(ref s, r * stride)));
+                }
+            }
+            else
+            {
+                for (int r = 0; r < h; r++)
+                {
+                    MemoryMarshal.CreateReadOnlySpan(ref Unsafe.Add(ref s, r * stride), w).CopyTo(MemoryMarshal.CreateSpan(ref Unsafe.Add(ref d, r * dstStride), w));
                 }
             }
         }
