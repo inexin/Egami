@@ -18,8 +18,8 @@ public static class RawFormat
     public static FormatInfo Info { get; } = new()
     {
         Name = "RAW",
-        MimeTypes = ["image/x-adobe-dng", "image/dng"],
-        Extensions = ["dng"],
+        MimeTypes = ["image/x-adobe-dng", "image/dng", "image/x-canon-cr2", "image/x-nikon-nef", "image/x-nikon-nrw", "image/x-pentax-pef", "image/x-sony-arw", "image/x-sony-sr2", "image/x-olympus-orf", "image/x-panasonic-rw2"],
+        Extensions = ["dng", "cr2", "nef", "nrw", "pef", "arw", "sr2", "orf", "rw2"],
         SignatureLength = RawDetect.SignatureLength,
         Matches = RawDetect.Matches,
         Reader = new RawReader(),

@@ -38,6 +38,12 @@ internal sealed class RawSensor
     /// <summary>Gets the byte order of uncompressed samples wider than 8 bits.</summary>
     public bool BigEndian { get; init; }
 
+    /// <summary>Gets the codec of maker sensor data, or <see cref="RawCodec.Tiff"/> for TIFF's own compressions.</summary>
+    public RawCodec Codec { get; init; }
+
+    /// <summary>Gets what the codec needs from the file's tags (its tables, curve or parameters), or <see langword="null"/>.</summary>
+    public object? CodecData { get; init; }
+
     /// <summary>Gets the number of units across.</summary>
     public int UnitsAcross => (Width + UnitWidth - 1) / UnitWidth;
 
@@ -246,4 +252,13 @@ internal sealed class RawFrame
     public byte[]? MakerNote { get; set; }
 
     public List<(string Id, string Message)> Repairs { get; } = [];
+
+    /// <summary>Gets or sets whether the file gave its own active area and crop, which the camera table must not replace.</summary>
+    public bool HasOwnCrop { get; set; }
+
+    /// <summary>Gets or sets whether the file gave its own black levels, which the camera table must not replace.</summary>
+    public bool HasOwnLevels { get; set; }
+
+    /// <summary>Gets or sets masked sensor pixels to measure black from when no black level is known, or <see langword="null"/>.</summary>
+    public Rect? MaskedArea { get; set; }
 }

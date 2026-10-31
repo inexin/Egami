@@ -8,7 +8,10 @@ internal static class RawDetect
     /// <summary>Gets how many leading bytes detection looks at: enough for an IFD0 of 170 entries at offset 8.</summary>
     public const int SignatureLength = 2048;
 
-    public static bool Matches(ReadOnlySpan<byte> header)
+    public static bool Matches(ReadOnlySpan<byte> header) => IsDng(header) || MakerParser.Detect(header) is RawKind kind && kind != RawKind.Raf;
+
+    /// <summary>Gets whether a header is a DNG's: a TIFF header whose IFD0 has DNGVersion.</summary>
+    public static bool IsDng(ReadOnlySpan<byte> header)
     {
         if (!RawTiff.TryHeader(header, out bool bigEndian, out ushort magic, out uint first) || magic != 42 || first < 8 || first + 2 > header.Length)
         {
@@ -79,7 +82,9 @@ internal sealed class RawFile : IDisposable
 
     private static RawFile Open(EgamiInput input, RawSource source)
     {
-        if (!source.Ensure(8) || !RawTiff.TryHeader(source.Data.AsSpan(0, source.Length), out bool bigEndian, out ushort magic, out uint first) || magic != 42)
+        source.Ensure(RawDetect.SignatureLength);
+        RawKind? maker = MakerParser.Detect(source.Data.AsSpan(0, source.Length));
+        if (!RawTiff.TryHeader(source.Data.AsSpan(0, source.Length), out bool bigEndian, out ushort magic, out uint first) || (magic != 42 && maker is null))
         {
             throw input.Corrupt(0, "The RAW file's TIFF header is wrong.");
         }
@@ -87,7 +92,8 @@ internal sealed class RawFile : IDisposable
         RawTiff tiff = new(source, bigEndian);
         try
         {
-            RawFrame frame = DngParser.Parse(tiff, first);
+            bool dng = RawDetect.IsDng(source.Data.AsSpan(0, source.Length));
+            RawFrame frame = dng || maker is null ? DngParser.Parse(tiff, first) : MakerParser.Parse(tiff, first, maker.Value);
             if (frame.Sensor.Width <= 0 || frame.Sensor.Height <= 0 || frame.Sensor.UnitWidth <= 0 || frame.Sensor.UnitHeight <= 0)
             {
                 throw input.Corrupt(0, "The raw image has no size.");
