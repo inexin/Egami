@@ -117,6 +117,18 @@ public class CatalogTests
     }
 
     [Fact]
+    public void TiffTakesLzmaAndItsPreset()
+    {
+        WriterOptions options = WriterCatalog.Build(Egami.Formats.Tiff.TiffFormat.Info, new Dictionary<string, string>
+        {
+            ["compression"] = "lzma",
+            ["lzma-preset"] = "9",
+        });
+        Egami.Formats.Tiff.TiffWriterOptions tiff = Assert.IsType<Egami.Formats.Tiff.TiffWriterOptions>(options);
+        Assert.Equal((Egami.Formats.Tiff.TiffCompression.Lzma, 9), (tiff.Compression, tiff.LzmaPreset));
+    }
+
+    [Fact]
     public void UnknownSettingsAreUsageErrors()
     {
         UsageException error = Assert.Throws<UsageException>(() => WriterCatalog.Build(PngFormat.Info, new Dictionary<string, string> { ["quality"] = "5" }));

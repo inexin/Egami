@@ -11,11 +11,11 @@ namespace Egami.Tests.Formats.Tiff;
 public class TiffInteropFiles
 {
     /// <summary>
-    /// Reads the ZSTD files libtiff and GDAL wrote into EGAMI_INTEROP_DIR/foreign (tools/check-tiff-interop.py makes them first);
+    /// Reads the ZSTD and LZMA files libtiff and GDAL wrote into EGAMI_INTEROP_DIR/foreign (tools/check-tiff-interop.py makes them first);
     /// Egami's samples must equal libtiff's decode beside each.
     /// </summary>
     [Fact]
-    public void ReadsLibtiffAndGdalZstdFiles()
+    public void ReadsLibtiffAndGdalZstdAndLzmaFiles()
     {
         string? directory = Environment.GetEnvironmentVariable("EGAMI_INTEROP_DIR");
         string foreign = Path.Combine(directory ?? "", "foreign");
@@ -63,7 +63,7 @@ public class TiffInteropFiles
         {
             foreach ((string name, Raster raster) in rasters)
             {
-                foreach (TiffCompression compression in (TiffCompression[])[TiffCompression.None, TiffCompression.Lzw, TiffCompression.Deflate, TiffCompression.Zstd, TiffCompression.PackBits])
+                foreach (TiffCompression compression in (TiffCompression[])[TiffCompression.None, TiffCompression.Lzw, TiffCompression.Deflate, TiffCompression.Zstd, TiffCompression.Lzma, TiffCompression.PackBits])
                 {
                     string c = compression.ToString().ToLowerInvariant();
                     Write(directory!, $"{name}-{c}.tif", raster, new TiffWriterOptions { Compression = compression });
@@ -72,6 +72,8 @@ public class TiffInteropFiles
 
                 Write(directory!, $"{name}-deflate-big.tif", raster, new TiffWriterOptions { Layout = TiffLayout.Big, TileSize = 32 });
                 Write(directory!, $"{name}-zstd-19.tif", raster, new TiffWriterOptions { Compression = TiffCompression.Zstd, ZstdLevel = 19 });
+                Write(directory!, $"{name}-lzma-9.tif", raster, new TiffWriterOptions { Compression = TiffCompression.Lzma, LzmaPreset = 9 });
+                Write(directory!, $"{name}-lzma-1-tiles.tif", raster, new TiffWriterOptions { Compression = TiffCompression.Lzma, LzmaPreset = 1, TileSize = 16 });
             }
 
             // The extras: 1-bit and palette pages (Reduce), CCITT, JPEG and lossless WebP. These compare through RGBA.
