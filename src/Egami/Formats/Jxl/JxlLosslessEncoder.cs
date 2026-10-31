@@ -36,6 +36,9 @@ internal sealed record JxlEncodeInput
     /// <summary>Gets the EXIF orientation, 1 to 8.</summary>
     internal int Orientation { get; init; } = 1;
 
+    /// <summary>Gets the animation header of an animated file, or <see langword="null"/> for a still image or layers without durations.</summary>
+    internal JxlAnimation? Animation { get; init; }
+
     internal int Effort { get; init; } = 5;
 
     /// <summary>Gets whether the image is XYB encoded (a lossy VarDCT image) rather than kept in its own color space.</summary>
@@ -54,12 +57,19 @@ internal static class JxlLosslessEncoder
     /// <summary>Encodes the image as a bare codestream.</summary>
     internal static byte[] Encode(JxlEncodeInput input)
     {
+        JxlBitWriter w = new();
+        WriteHeaders(w, input);
+        return EncodeFrame(w, input, JxlFrameInfo.Still, input.Width, input.Height);
+    }
+
+    /// <summary>Writes the image header and the ICC profile, if any, padded to a whole byte as the first frame needs.</summary>
+    internal static void WriteHeaders(JxlBitWriter w, JxlEncodeInput input)
+    {
         if (input.Color.Count is not (1 or 3))
         {
             throw new ArgumentException("A JPEG XL image has one or three color channels.", nameof(input));
         }
 
-        JxlBitWriter w = new();
         WriteImageHeader(w, input);
         if (input.Icc is not null)
         {
@@ -67,7 +77,15 @@ internal static class JxlLosslessEncoder
         }
 
         w.ZeroPadToByte();
+    }
 
+    /// <summary>
+    /// Encodes <paramref name="input"/>'s planes as one Modular frame placed on a <paramref name="canvasWidth"/> by
+    /// <paramref name="canvasHeight"/> canvas as <paramref name="frame"/> says, and returns <paramref name="w"/>'s bytes (the
+    /// headers before it, or none) with the frame after them.
+    /// </summary>
+    internal static byte[] EncodeFrame(JxlBitWriter w, JxlEncodeInput input, JxlFrameInfo frame, int canvasWidth, int canvasHeight)
+    {
         int bits = Math.Max(input.BitDepth.BitsPerSample, input.Alpha is null ? 0 : input.AlphaBitDepth.BitsPerSample);
         int effort = Math.Clamp(input.Effort, 1, 7);
         bool fast = effort == 1 && bits <= 16;
@@ -85,7 +103,7 @@ internal static class JxlLosslessEncoder
             ? JxlFastLossless.Encode(planes, input.Width, input.Height, bits, input.Parallelism)
             : JxlModularEncoder.Encode(channels, input.Color.Count, bits, effort, input.Width, input.Height, groupShift, input.Parallelism);
 
-        WriteFrameHeader(w, input, groupShift);
+        WriteFrameHeader(w, input, groupShift, frame, canvasWidth, canvasHeight);
         w.WriteBool(false); // no TOC permutation
         w.ZeroPadToByte();
         JxlU32 size = new(0, 10, 1024, 14, 17408, 22, 4211712, 30);
@@ -115,14 +133,18 @@ internal static class JxlLosslessEncoder
 
         // ImageMetadata, written out: lossless keeps its color space instead of XYB, and lossy names its own.
         w.WriteBool(false);
-        bool extra = input.Orientation != 1 || input.IntensityTarget != 255;
+        bool extra = input.Orientation != 1 || input.IntensityTarget != 255 || input.Animation is not null;
         w.WriteBool(extra);
         if (extra)
         {
             w.Write((ulong)(input.Orientation - 1), 3);
             w.WriteBool(false); // intrinsic size
             w.WriteBool(false); // preview
-            w.WriteBool(false); // animation
+            w.WriteBool(input.Animation is not null);
+            if (input.Animation is JxlAnimation animation)
+            {
+                JxlFrameWriter.WriteAnimation(w, animation);
+            }
         }
 
         WriteBitDepth(w, input.BitDepth);
@@ -174,6 +196,9 @@ internal static class JxlLosslessEncoder
         w.WriteNoExtensions();
         w.WriteBool(true); // default CustomTransformData
     }
+
+    /// <summary>Gets how many extra channels the image header lists: alpha, then black.</summary>
+    internal static int Extras(JxlEncodeInput input) => (input.Alpha is null ? 0 : 1) + (input.HasBlack ? 1 : 0);
 
     private static void WriteBitDepth(JxlBitWriter w, JxlBitDepth depth)
     {
@@ -302,10 +327,10 @@ internal static class JxlLosslessEncoder
         w.WriteU32(d, JxlTreeLearner.PackSigned((int)Math.Round(xy.Y * 1e6)));
     }
 
-    /// <summary>Writes the frame header (C.2): a last regular Modular frame, no crop or blending, Gaborish and EPF off.</summary>
-    private static void WriteFrameHeader(JxlBitWriter w, JxlEncodeInput input, int groupShift)
+    /// <summary>Writes the frame header (C.2): a regular Modular frame placed as <paramref name="frame"/> says, Gaborish and EPF off.</summary>
+    private static void WriteFrameHeader(JxlBitWriter w, JxlEncodeInput input, int groupShift, JxlFrameInfo frame, int canvasWidth, int canvasHeight)
     {
-        int extras = input.Alpha is null ? 0 : 1;
+        int extras = Extras(input);
         JxlU32 factor = new(1, 0, 2, 0, 4, 0, 8, 0);
         w.WriteBool(false);
         w.Write(0, 2); // regular frame
@@ -320,16 +345,7 @@ internal static class JxlLosslessEncoder
 
         w.Write((ulong)groupShift, 2);
         w.WriteU32(new JxlU32(1, 0, 2, 0, 3, 0, 4, 3), 1); // one pass
-        w.WriteBool(false); // no crop
-        JxlU32 mode = new(0, 0, 1, 0, 2, 0, 3, 2);
-        w.WriteU32(mode, 0); // replace
-        for (int i = 0; i < extras; i++)
-        {
-            w.WriteU32(mode, 0);
-        }
-
-        w.WriteBool(true); // last frame
-        w.WriteU32(new JxlU32(0, 0, 0, 4, 16, 5, 48, 10), 0); // no name
+        JxlFrameWriter.WriteLayout(w, frame, input.Width, input.Height, canvasWidth, canvasHeight, extras, input.Animation is not null);
 
         // Loop filter: not all default, Gaborish off, no EPF.
         w.WriteBool(false);
