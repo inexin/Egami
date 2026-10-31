@@ -156,7 +156,7 @@ internal sealed class H264Sps
 
             if (r.Flag("seq_scaling_matrix_present_flag"))
             {
-                s.ScalingLists = H264ScalingLists.Read(r, s.ChromaFormatIdc == 3 ? 12 : 8, null, true);
+                s.ScalingLists = H264ScalingLists.Read(r, 8, null, true); // 4:4:4 (12 lists) is rejected above
             }
         }
 
