@@ -152,6 +152,9 @@ internal sealed class RawProfile
 
     public double BaselineExposureOffset { get; set; }
 
+    /// <summary>Gets or sets the camera's BaselineExposure, for a profile from the camera table; a file's own value wins.</summary>
+    public double BaselineExposure { get; set; }
+
     public string? Name { get; set; }
 }
 

@@ -297,6 +297,10 @@ internal sealed class DngFile
     /// <summary>XYZ (D65) to linear sRGB, the camera's ColorMatrix, so camera RGB is linear sRGB.</summary>
     public static readonly double[] SrgbCamera = [3.2404542, -1.5371385, -0.4985314, -0.9692660, 1.8760108, 0.0415560, 0.0556434, -0.2040259, 1.0572252];
 
+    public string Make { get; set; } = "Egami";
+
+    public string Model { get; set; } = "Test Camera";
+
     public int Width { get; set; } = 16;
 
     public int Height { get; set; } = 16;
@@ -386,8 +390,8 @@ internal sealed class DngFile
     {
         TiffBuilder.Ifd ifd0 = new();
         ifd0.Tags.Add(TiffTag.Long(254, 1));
-        ifd0.Tags.Add(TiffTag.Ascii(271, "Egami"));
-        ifd0.Tags.Add(TiffTag.Ascii(272, "Test Camera"));
+        ifd0.Tags.Add(TiffTag.Ascii(271, Make));
+        ifd0.Tags.Add(TiffTag.Ascii(272, Model));
         ifd0.Tags.Add(TiffTag.Short(274, Orientation));
         ifd0.Tags.Add(TiffTag.Bytes(50706, 1, 4, 0, 0));
         ifd0.Tags.Add(TiffTag.Ascii(50708, "Egami Test Camera"));

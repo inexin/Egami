@@ -124,6 +124,16 @@ internal static class DngParser
         profile.Illuminant1 = (int)Pick(RawTags.CalibrationIlluminant1).Int(RawTags.CalibrationIlluminant1);
         profile.Illuminant2 = (int)Pick(RawTags.CalibrationIlluminant2).Int(RawTags.CalibrationIlluminant2);
         profile.Name = ifd0.Ascii(RawTags.ProfileName);
+        if (profile.ColorMatrix1 is null && RawCameraTable.Find(frame.Make, frame.Model)?.Profile is RawProfile known)
+        {
+            // A DNG without colour data (some converters write none): the camera table's matrices.
+            profile.ColorMatrix1 = known.ColorMatrix1;
+            profile.ColorMatrix2 = known.ColorMatrix2;
+            profile.ForwardMatrix1 ??= known.ForwardMatrix1;
+            profile.ForwardMatrix2 ??= known.ForwardMatrix2;
+            profile.Illuminant1 = known.Illuminant1;
+            profile.Illuminant2 = known.Illuminant2;
+        }
         profile.BaselineExposureOffset = ifd0.Double(RawTags.BaselineExposureOffset);
         if (ifd0.Ints(RawTags.ProfileHueSatMapDims, 3) is { Length: 3 } hsDims && Dims(hsDims) is int[] hs)
         {
