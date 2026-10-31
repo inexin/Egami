@@ -811,20 +811,22 @@ public sealed class JxlWriterOptions : WriterOptions
     public static new JxlWriterOptions Default { get; } = new();
 
     /// <summary>
-    /// Gets how hard the encoder works, 1 (fastest) to 7 (smallest files), on libjxl's effort scale for both kinds, so the same
+    /// Gets how hard the encoder works, 1 (fastest) to 10 (smallest files), on libjxl's effort scale for both kinds, so the same
     /// number gives about the same file as cjxl -e. Lossless: 1 is libjxl's fast lossless path, 2 and 3 use fixed trees, 4 and
-    /// up learn the tree, and 5 and up also try local palettes and color transforms. Lossy: 1 to 3 use 8×8 DCTs and one
-    /// quantization value, 4 adds finer LF and context modeling, 5 adaptive quantization, chroma from luma, Gaborish and simple
-    /// block sizes, 6 the full block-size search, and 7 patches for repeated shapes such as text. Defaults to 5.
+    /// up learn the tree, 5 and up also try local palettes and color transforms, 8 and 9 learn from more properties and find
+    /// LZ77 copies, and 10 tries every predictor under one tree for the whole image (and needs every pixel at once). Lossy: 1 to
+    /// 3 use 8×8 DCTs and one quantization value, 4 adds finer LF and context modeling, 5 adaptive quantization, chroma from
+    /// luma, Gaborish and simple block sizes, 6 the full block-size search, and 7 patches for repeated shapes such as text; 8
+    /// to 10 code lossy files as 7 does. Defaults to 5.
     /// </summary>
-    /// <exception cref="ArgumentOutOfRangeException">The value is outside 1 to 7.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">The value is outside 1 to 10.</exception>
     public int Effort
     {
         get => _effort;
         init
         {
             ArgumentOutOfRangeException.ThrowIfLessThan(value, 1);
-            ArgumentOutOfRangeException.ThrowIfGreaterThan(value, 7);
+            ArgumentOutOfRangeException.ThrowIfGreaterThan(value, 10);
             _effort = value;
         }
     }

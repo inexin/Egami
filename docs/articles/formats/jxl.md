@@ -77,7 +77,7 @@ orientation. `JxlWriterOptions` follows cjxl's own knobs, so the same numbers gi
 | Option | Default | Does |
 | --- | --- | --- |
 | `Lossless` | `null` | `true` writes Modular, `false` VarDCT; `null` keeps the kind of the JPEG XL file the raster came from and writes lossy otherwise |
-| `Effort` | 5 | 1 (fastest) to 7 (smallest), cjxl's `-e`, for both kinds |
+| `Effort` | 5 | 1 (fastest) to 10 (smallest), cjxl's `-e`; lossy files take 8 to 10 as 7 |
 | `Quality` | 90 | Lossy quality, 0 to 100, cjxl's `-q` scale; 90 is distance 1.0, visually lossless |
 | `Distance` | `null` | A distance as cjxl's `-d` instead of a quality, 0.1 to 25 |
 | `AlphaDistance` | 0 | Lossy files: 0 keeps alpha exact, larger values code it lossy |
@@ -91,8 +91,11 @@ orientation. `JxlWriterOptions` follows cjxl's own knobs, so the same numbers gi
 
 Lossless files give back every pixel exactly, in the raster's own precision: 8 or 16-bit, half or single float, gray or RGB,
 with alpha when it is not opaque everywhere. The effort follows cjxl's: 1 is its fast path, 7 learns a context tree and tries
-palettes and color transforms, for files within a few bytes of cjxl's. The ICC profile (or an enumerated sRGB, linear or HDR
-space), EXIF, XMP and orientation are kept.
+palettes and color transforms, 8 and 9 learn from more properties, try more color transforms and weighted predictor settings
+and find LZ77 copies, and 10 tries every predictor under one context tree for the whole image, for files within a few bytes of
+cjxl's at each effort. Effort 10 is slow, as cjxl's is (seconds a megapixel), and keeps the whole image in memory. From
+effort 5, shapes that repeat, such as the letters of a screenshot, are coded once as patches. The ICC profile (or an
+enumerated sRGB, linear or HDR space), EXIF, XMP and orientation are kept.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Jxl.cs#save-lossy)]
 
@@ -112,8 +115,9 @@ from there cjxl and Egami code the whole image at half size). `AlphaDistance` ab
 `--alpha_distance` does. Fully transparent pixels keep their color unless `KeepTransparentColors` is false, which lets the
 encoder replace it, as libjxl does by default, for a smaller file.
 
-A frame of more than eight groups (256-pixel squares) is coded group by group at lossless effort 2, each group with its own
-context model, as libjxl does by default; screenshots and other images with flat areas come out much smaller that way.
+A frame of more than eight groups (256-pixel squares) is coded group by group at lossless efforts 2, 8 and 9, each group with
+its own context model, as libjxl does by default (screenshots and other images with flat areas come out smaller that way), and
+then without patches, as with libjxl; effort 10 always codes the whole frame at once.
 
 ### Animations
 

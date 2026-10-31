@@ -95,7 +95,7 @@ internal static class JxlLosslessEncoder
         int bits = Math.Max(input.BitDepth.BitsPerSample, input.Alpha is null ? 0 : input.AlphaBitDepth.BitsPerSample);
         bits = Math.Max(bits, input.Black is null ? 0 : input.BlackBitDepth.BitsPerSample);
         bits = input.Extras.Aggregate(bits, (b, e) => Math.Max(b, e.Info.BitDepth.BitsPerSample));
-        int effort = Math.Clamp(input.Effort, 1, 7);
+        int effort = Math.Clamp(input.Effort, 1, 10);
         bool fast = effort == 1 && bits <= 16 && input.Black is null && input.Extras.Count == 0;
         if (effort == 1 && (input.Black is not null || input.Extras.Count > 0))
         {
@@ -116,11 +116,24 @@ internal static class JxlLosslessEncoder
             }
         }
 
+        // Patches go in a reference frame before this one, which then codes the image less them.
+        (byte[] Frame, JxlBitWriter Dictionary)? patches = null;
+        if (!fast && JxlLosslessPatches.Apply(input, effort, input.Width, input.Height))
+        {
+            int[] extraShifts = [.. Enumerable.Repeat(0, planes.Length - input.Color.Count), .. input.Extras.Select(e => e.Info.DimShift)];
+            patches = JxlLosslessPatches.Find(channels, input, effort, input.Width, input.Height, extraShifts);
+        }
+
         List<byte[]> sections = fast
             ? JxlFastLossless.Encode(planes, input.Width, input.Height, bits, input.Parallelism)
-            : JxlModularEncoder.Encode(channels, input.Color.Count, input.BitDepth.BitsPerSample, effort, input.Width, input.Height, groupShift, input.Parallelism);
+            : JxlModularEncoder.Encode(channels, input.Color.Count, input.BitDepth.BitsPerSample, effort, input.Width, input.Height, groupShift, input.Parallelism, lfGlobalStart: patches?.Dictionary);
 
-        WriteFrameHeader(w, input, groupShift, frame, canvasWidth, canvasHeight);
+        if (patches is (byte[] reference, _))
+        {
+            w.Append(reference);
+        }
+
+        WriteFrameHeader(w, input, groupShift, frame, canvasWidth, canvasHeight, patches is null ? 0UL : 2UL);
         w.WriteBool(false); // no TOC permutation
         w.ZeroPadToByte();
         JxlU32 size = new(0, 10, 1024, 14, 17408, 22, 4211712, 30);
@@ -376,14 +389,14 @@ internal static class JxlLosslessEncoder
     }
 
     /// <summary>Writes the frame header (C.2): a regular Modular frame placed as <paramref name="frame"/> says, Gaborish and EPF off.</summary>
-    private static void WriteFrameHeader(JxlBitWriter w, JxlEncodeInput input, int groupShift, JxlFrameInfo frame, int canvasWidth, int canvasHeight)
+    private static void WriteFrameHeader(JxlBitWriter w, JxlEncodeInput input, int groupShift, JxlFrameInfo frame, int canvasWidth, int canvasHeight, ulong flags)
     {
         int extras = Extras(input);
         JxlU32 factor = new(1, 0, 2, 0, 4, 0, 8, 0);
         w.WriteBool(false);
         w.Write(0, 2); // regular frame
         w.Write(1, 1); // Modular
-        w.WriteU64(0); // flags
+        w.WriteU64(flags); // patches (2) or none
         w.WriteBool(false); // not YCbCr
         w.WriteU32(factor, 1);
         for (int i = 0; i < extras; i++)

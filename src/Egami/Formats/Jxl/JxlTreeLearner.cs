@@ -435,7 +435,13 @@ internal sealed class JxlTreeLearner
             h = (h * 0x1e35a7bd) + p[a];
         }
 
-        return (int)(h >> 16);
+        // A final mix (splitmix64's), so that samples differing only in their last fields still spread over the table.
+        h ^= h >> 30;
+        h *= 0xbf58476d1ce4e5b9;
+        h ^= h >> 27;
+        h *= 0x94d049bb133111eb;
+        h ^= h >> 31;
+        return (int)h & int.MaxValue;
     }
 
     private bool Same(int a, int b)

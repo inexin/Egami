@@ -51,6 +51,16 @@ internal sealed record JxlHistogramParams
     /// <summary>Gets whether runs of a repeated value may become LZ77 copies at distance 1 (libjxl's kRLE).</summary>
     internal bool Rle { get; init; }
 
+    /// <summary>Gets the LZ77 search beyond runs: none, libjxl's greedy hash-chain parse (kLZ77) or its optimal parse (kOptimal).</summary>
+    internal Lz77Kind Lz77 { get; init; }
+
+    internal enum Lz77Kind
+    {
+        None,
+        Greedy,
+        Optimal,
+    }
+
     internal AnsKind AnsStrategy { get; init; } = AnsKind.Precise;
 
     /// <summary>Gets each stream's widest channel, which makes LZ77 distance 1 the special "one to the left" distance.</summary>
@@ -72,8 +82,9 @@ internal sealed record JxlHistogramParams
     {
         Clustering = effort >= 8 ? ClusteringKind.Best : ClusteringKind.Fast,
         AnsStrategy = effort <= 1 ? AnsKind.Fast : effort >= 8 ? AnsKind.Precise : AnsKind.Approximate,
-        Rle = effort >= 5,
-        UintMethod = effort >= 5 ? UintKind.Fast : UintKind.None,
+        Rle = effort is >= 5 and <= 7,
+        Lz77 = effort >= 9 ? Lz77Kind.Optimal : effort == 8 ? Lz77Kind.Greedy : Lz77Kind.None,
+        UintMethod = effort >= 8 ? UintKind.Best : effort >= 5 ? UintKind.Fast : UintKind.None,
     };
 
     /// <summary>Gets the hybrid integer configuration tokens are counted with before the per-cluster choice.</summary>
@@ -724,7 +735,12 @@ internal sealed class JxlEntropyCode
     internal static JxlEntropyCode Build(IJxlBitSink w, JxlHistogramParams p, int contexts, List<List<JxlToken>> streams, out long cost)
     {
         JxlEntropyCode code = new();
-        List<List<JxlToken>>? lz = p.Rle ? ApplyRle(p, contexts, streams) : null;
+        List<List<JxlToken>>? lz = p.Lz77 switch
+        {
+            JxlHistogramParams.Lz77Kind.Greedy => JxlLz77.Greedy(p, contexts, streams),
+            JxlHistogramParams.Lz77Kind.Optimal => JxlLz77.Optimal(p, contexts, streams),
+            _ => p.Rle ? ApplyRle(p, contexts, streams) : null,
+        };
         code._lz77 = lz is not null;
 
         JxlBitCounter header = new();
