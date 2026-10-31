@@ -62,6 +62,7 @@ internal static class RawCameraTable
                     Black = Numbers(f[14]) ?? [0],
                     White = Int(f[15]),
                     ExposureBias = f.Length >= 17 && Numbers(f[16]) is { Length: 1 } bias ? bias[0] : null,
+                    ReducedWhite = f.Length >= 18 && Numbers(f[17]) is { Length: 1 } reduced ? reduced[0] : null,
                 };
             }
 
@@ -158,4 +159,7 @@ internal sealed record RawCameraEntry(RawProfile Profile)
 
     /// <summary>Gets, for a RAF camera, the exposure bias of the file the profile's baseline exposure was measured on, or <see langword="null"/>.</summary>
     public double? ExposureBias { get; init; }
+
+    /// <summary>Gets, for a Canon body, the white level of its sRAW and mRAW data as Adobe stores it, or <see langword="null"/>.</summary>
+    public double? ReducedWhite { get; init; }
 }

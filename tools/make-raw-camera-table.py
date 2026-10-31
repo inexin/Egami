@@ -10,11 +10,16 @@ in the package: one line per camera, tab-separated:
   Make  Model  UniqueCameraModel  Illuminant1  ColorMatrix1 (9)  Illuminant2  ColorMatrix2 (9 or -)  ForwardMatrix1 (9 or -)
   ForwardMatrix2 (9 or -)  BaselineExposure  Width Height  ActiveArea (top left bottom right, or -)
   DefaultCrop (x y width height, or -)  BlackRepeat (rows columns)  BlackLevels  WhiteLevel  ExposureBias (or -)
+  ReducedWhite (or -)
 
 ExposureBias is, for RAF samples only, the RawExposureBias the sample's RAF header records (meta tag 0x9650, as ExifTool's
 FujiFilm tag page names it, read as a fact): Adobe's BaselineExposure follows the camera's dynamic-range setting, so Egami
 moves the table's value by the difference between a file's bias and the measured sample's. Only the RAF's bytes up to its meta
 directory are fetched for it.
+
+ReducedWhite is, for Canon bodies with a CC0 sRAW or mRAW sample, the white level of Adobe's LinearRaw DNG of that sample:
+Egami's sRAW decode gives the same values Adobe stores, whose saturation is not the sensor's white level. Full-resolution
+samples are always the ones measured for the rest of the line.
 
 Make and Model are the IFD0 strings of the DNG, which Adobe copies from the original file, trimmed. Matrices are row-major,
 rounded to 4 decimals (Adobe stores them in units of 1/10000).
@@ -56,11 +61,16 @@ TAG_CROP_ORIGIN, TAG_CROP_SIZE, TAG_ACTIVE = 50719, 50720, 50829
 VERSION = 2
 
 
-def samples(repository, formats):
-    """Returns the smallest CC0 file of each camera in the given formats, from raw.pixls.us's repository listing."""
+def reduced(row):
+    """Gets whether a listing row is a reduced-resolution mode (Canon sRAW and mRAW, Nikon sNEF), whose DNG is LinearRaw."""
+    return re.search(r"\b(sRAW|mRAW|sNEF)", row[2]) is not None
+
+
+def samples(repository, formats, reduced_only=False):
+    """Returns the smallest full-resolution (or, with reduced_only, reduced) CC0 file of each camera in the given formats."""
     cameras = {}
     for row in repository["data"]:
-        if "zero" not in row[5]:
+        if "zero" not in row[5] or reduced(row) != reduced_only:
             continue
         m = re.search(r"href='([^']+)'>([^<]+)</a>.*?sha256 Checksum'>([0-9a-f]+)</span>&nbsp;\(([\d.]+)MB\)", row[7])
         if not m:
@@ -232,7 +242,8 @@ def line(entry):
               str(entry["illuminant2"]), m(entry["cm2"]), m(entry["fm1"]), m(entry["fm2"]), f"{entry['baseline']:g}",
               m(entry["size"]), m(entry["active"]), m(entry["crop"] if entry["crop"] and len(entry["crop"]) == 4 else None),
               m(entry["blackRepeat"]), m(entry["black"]), str(entry["white"]),
-              f"{entry['rafBias']:g}" if entry.get("rafBias") is not None else "-"]
+              f"{entry['rafBias']:g}" if entry.get("rafBias") is not None else "-",
+              str(entry["reducedWhite"]) if entry.get("reducedWhite") else "-"]
     return "\t".join(f.replace("\t", " ") for f in fields)
 
 
@@ -278,6 +289,28 @@ def main():
         with open(progress_path, "w", encoding="utf-8") as f:
             json.dump(progress, f, indent=1)
 
+    # Canon sRAW and mRAW: the white level Adobe gives the reduced-resolution data, which differs from the sensor's.
+    for sample in samples(json.load(open(listing, encoding="utf-8")), [f for f in args.formats.split(",") if f == "cr2"], True):
+        key = str(sample["id"])
+        if key in progress and progress[key].get("version") == VERSION:
+            continue
+        print(f"[reduced] {sample['make']} {sample['model']} ({sample['mb']} MB)", flush=True)
+        source = dng = None
+        try:
+            source = download(sample)
+            dng = convert(source)
+            progress[key] = {**colour(dng), "make": sample["make"], "model": sample["model"], "ext": sample["ext"], "sha": sample["sha"]}
+        except Exception as e:  # noqa: BLE001 - a sample Adobe cannot convert is noted and skipped
+            print(f"   skipped: {e}", flush=True)
+            progress[key] = {"error": str(e), "make": sample["make"], "model": sample["model"], "ext": sample["ext"], "version": VERSION}
+        finally:
+            if not args.keep:
+                for path in (dng, source):
+                    if path and os.path.exists(path):
+                        os.remove(path)
+        with open(progress_path, "w", encoding="utf-8") as f:
+            json.dump(progress, f, indent=1)
+
     # RAF samples: the exposure bias of the sample each line was measured on.
     for sample in todo:
         entry = progress.get(str(sample["id"]))
@@ -290,20 +323,32 @@ def main():
             with open(progress_path, "w", encoding="utf-8") as f:
                 json.dump(progress, f, indent=1)
 
+    # Reduced-resolution samples measured by earlier runs do not describe the sensor; they are left out.
+    skip = set()
+    for row in json.load(open(listing, encoding="utf-8"))["data"]:
+        m = re.search(r"getfile.php/(\d+)/", row[7])
+        if m and reduced(row):
+            skip.add(m.group(1))
+
     # One line per Make and Model as the files say them; when two samples name the same camera, the first in id order wins.
     seen = {}
+    reduced_white = {}
     for key in sorted(progress, key=int):
         entry = progress[key]
-        if "error" in entry or entry.get("version") != VERSION:
+        if key in skip and "error" not in entry and entry.get("version") == VERSION:
+            reduced_white.setdefault((entry["dngMake"].lower(), entry["dngModel"].lower()), entry["white"])
+    for key in sorted(progress, key=int):
+        entry = progress[key]
+        if "error" in entry or entry.get("version") != VERSION or key in skip:
             continue
         name = (entry["dngMake"].lower(), entry["dngModel"].lower())
-        seen.setdefault(name, entry)
+        seen.setdefault(name, {**entry, "reducedWhite": reduced_white.get(name)})
     lines = sorted((line(e) for e in seen.values()), key=str.lower)
     with open(OUTPUT, "w", encoding="utf-8", newline="\n") as f:
         f.write("# Egami camera colour table, made by tools/make-raw-camera-table.py from Adobe DNG Converter output on CC0 samples\n")
         f.write("# from raw.pixls.us. Columns: Make, Model, UniqueCameraModel, Illuminant1, ColorMatrix1, Illuminant2,\n")
         f.write("# ColorMatrix2, ForwardMatrix1, ForwardMatrix2, BaselineExposure, Width Height, ActiveArea, DefaultCrop, BlackRepeat,\n")
-        f.write("# BlackLevels, WhiteLevel, ExposureBias. Do not edit by hand; run the script.\n")
+        f.write("# BlackLevels, WhiteLevel, ExposureBias, ReducedWhite. Do not edit by hand; run the script.\n")
         for text in lines:
             f.write(text + "\n")
     errors = sum(1 for e in progress.values() if "error" in e)

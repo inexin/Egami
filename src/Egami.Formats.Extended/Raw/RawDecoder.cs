@@ -33,7 +33,7 @@ internal static class RawDecoder
                 throw new InvalidDataException("The raw image has no size, or one larger than a camera's.");
             }
 
-            RawPixels maker = new(input, sensor.Width, sensor.Height, 1, false);
+            RawPixels maker = new(input, sensor.Width, sensor.Height, sensor.Samples, false);
             try
             {
                 ParallelOptions options = new() { MaxDegreeOfParallelism = Math.Max(1, input.Context.MaxParallelism), CancellationToken = input.CancellationToken };

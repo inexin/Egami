@@ -77,6 +77,9 @@ internal static class MakerDecoders
             case RawCodec.Canon:
                 Canon(tiff.Data, (int)offset, (int)count, pixels, (CanonSlices)sensor.CodecData!, damaged);
                 break;
+            case RawCodec.CanonSraw:
+                CanonSraw(tiff.Data, (int)offset, (int)count, pixels, (CanonSraw)sensor.CodecData!, parallel, damaged);
+                break;
             case RawCodec.FujiCompressed:
                 FujiDecoder.Decode(tiff.Data, (int)offset, (int)count, pixels, parallel, damaged);
                 break;
@@ -1083,6 +1086,135 @@ internal static class MakerDecoders
     private static byte ReverseBits(byte b) => (byte)((((b * 0x0802u) & 0x22110u) | ((b * 0x8020u) & 0x88440u)) * 0x10101u >> 16);
 
     /// <summary>Canon CR2: one lossless JPEG frame whose values fill vertical slices of the image in turn (CR2 spec, sections 3 and 4).</summary>
+    /// <summary>
+    /// Canon sRAW and mRAW (CR2 spec, sections 3, 5 and 6): the frame's groups scatter into the slices as Y, Cb and Cr per
+    /// pixel; missing chroma is interpolated, vertically for 4:2:0 and then horizontally; then YCbCr goes to RGB by the body's
+    /// formula set. The spec's sRAW multipliers are left to the white balance (see the parser).
+    /// </summary>
+    private static void CanonSraw(byte[] file, int offset, int count, RawPixels pixels, CanonSraw p, ParallelOptions parallel, Action<int, string> damaged)
+    {
+        const int Bias = 16384;
+        LosslessJpeg jpeg = LosslessJpeg.Open(file, offset, count);
+        int width = pixels.Width, height = pixels.Height, stride = width * 3;
+        int luma = p.H * p.V, perGroup = luma + 2;
+        if (jpeg.H0 != p.H || jpeg.V0 != p.V || jpeg.SampleCount < (long)width * height / luma * perGroup)
+        {
+            throw new InvalidDataException("The CR2 sRAW frame is smaller than the image.");
+        }
+
+        ushort[] flat = ArrayPool<ushort>.Shared.Rent((int)jpeg.SampleCount);
+        try
+        {
+            Span<ushort> values = flat.AsSpan(0, (int)jpeg.SampleCount);
+            values.Clear();
+            if (!jpeg.DecodeSraw(values))
+            {
+                damaged(0, "The CR2 sRAW lossless JPEG ends early; what is missing reads as black.");
+            }
+
+            // Slice widths count decoded values of one row of groups; a group spans H pixels across and V rows down.
+            Span<ushort> out16 = pixels.U16;
+            long[] s = p.Slices;
+            bool sliced = s.Length == 3 && s[1] > 0;
+            int sliceCount = sliced ? (int)s[0] : 0;
+            int sliceGroups = sliced ? (int)(s[1] / perGroup) : width / p.H;
+            int lastGroups = sliced ? (int)(s[2] / perGroup) : 0;
+            if (sliced && ((sliceCount * sliceGroups) + lastGroups) * p.H != width)
+            {
+                throw new InvalidDataException("The CR2 sRAW slices do not add up to the image width.");
+            }
+
+            int j = 0;
+            int groupRows = height / p.V;
+            for (int i = 0; i <= sliceCount; i++)
+            {
+                int gw = i < sliceCount || !sliced ? sliceGroups : lastGroups;
+                int x0 = i * sliceGroups * p.H;
+                for (int gy = 0; gy < groupRows; gy++)
+                {
+                    for (int gx = 0; gx < gw; gx++, j += perGroup)
+                    {
+                        int x = x0 + (gx * p.H), y = gy * p.V;
+                        for (int k = 0; k < luma; k++)
+                        {
+                            out16[((y + (k / p.H)) * stride) + ((x + (k % p.H)) * 3)] = values[j + k];
+                        }
+
+                        int at = (y * stride) + (x * 3);
+                        out16[at + 1] = values[j + luma];
+                        out16[at + 2] = values[j + luma + 1];
+                    }
+                }
+            }
+        }
+        finally
+        {
+            ArrayPool<ushort>.Shared.Return(flat);
+        }
+
+        // Chroma is centred by 16384; 4:2:0 fills the odd rows from above and below, then every row fills its odd columns.
+        if (p.V == 2)
+        {
+            RawParallel.For(0, height / 2, parallel, half =>
+            {
+                Span<ushort> all = pixels.U16;
+                int y = (2 * half) + 1;
+                for (int x = 0; x < width; x += 2)
+                {
+                    for (int c = 1; c <= 2; c++)
+                    {
+                        int above = all[((y - 1) * stride) + (x * 3) + c] - Bias;
+                        int below = y + 1 < height ? all[((y + 1) * stride) + (x * 3) + c] - Bias : above;
+                        all[(y * stride) + (x * 3) + c] = (ushort)(((above + below + 1) >> 1) + Bias);
+                    }
+                }
+            });
+        }
+
+        RawParallel.For(0, height, parallel, y =>
+        {
+            Span<ushort> row = pixels.U16Row(y);
+            for (int x = 1; x < width; x += 2)
+            {
+                for (int c = 1; c <= 2; c++)
+                {
+                    int left = row[((x - 1) * 3) + c] - Bias;
+                    int right = x + 1 < width ? row[((x + 1) * 3) + c] - Bias : left;
+                    row[(x * 3) + c] = (ushort)(((left + right + 1) >> 1) + Bias);
+                }
+            }
+
+            for (int x = 0; x < width; x++)
+            {
+                int at = x * 3;
+                int lum = row[at], cb = row[at + 1] - Bias, cr = row[at + 2] - Bias;
+                int r, g, b;
+                if (p.SetA)
+                {
+                    int cb4 = (cb * 4) + p.Hue, cr4 = (cr * 4) + p.Hue;
+                    r = lum + (((50 * cb4) + (22929 * cr4)) >> 14);
+                    g = lum + (((-5640 * cb4) - (11751 * cr4)) >> 14);
+                    b = lum + (((29040 * cb4) - (101 * cr4)) >> 14);
+                }
+                else
+                {
+                    if (p.Older)
+                    {
+                        lum -= 512;
+                    }
+
+                    r = lum + cr;
+                    b = lum + cb;
+                    g = lum + (((-778 * cb) - (2048 * cr)) >> 12);
+                }
+
+                row[at] = (ushort)Math.Clamp(r, 0, ushort.MaxValue);
+                row[at + 1] = (ushort)Math.Clamp(g, 0, ushort.MaxValue);
+                row[at + 2] = (ushort)Math.Clamp(b, 0, ushort.MaxValue);
+            }
+        });
+    }
+
     private static void Canon(byte[] file, int offset, int count, RawPixels pixels, CanonSlices slices, Action<int, string> damaged)
     {
         LosslessJpeg jpeg = LosslessJpeg.Open(file, offset, count);

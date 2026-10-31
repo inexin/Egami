@@ -1,3 +1,5 @@
+using System.Globalization;
+using System.Text.RegularExpressions;
 using System.Buffers.Binary;
 using System.Text;
 
@@ -36,6 +38,7 @@ internal enum RawCodec
     Packed12Lsb,
     Unpacked16,
     FujiCompressed,
+    CanonSraw,
 }
 
 /// <summary>
@@ -608,6 +611,131 @@ internal static class MakerParser
         return frame;
     }
 
+    /// <summary>
+    /// Canon's as-shot white balance as a neutral: ColorData's WB_RGGBLevelsAsShot, at the index its version (told by its
+    /// length) puts it, as ExifTool's Canon tag page lists them; or <see langword="null"/>.
+    /// </summary>
+    private static double[]? CanonAsShot(MakerNote? note)
+    {
+        if (note?.Ifd.Ints(0x4001, 8192) is not long[] color)
+        {
+            return null;
+        }
+
+        int index = color.Length switch
+        {
+            582 => 25,
+            653 => 34,
+            796 or 674 or 692 or 702 or 1227 or 1250 or 1251 or 1337 or 1338 or 1346 or 1273 or 1275 or 1312 or 1313 or 1316 or 1506
+                or 1560 or 1592 or 1353 or 1602 => 63,
+            5120 or 1816 or 1820 or 1824 => 71,
+            2024 or 3656 => 85,
+            3973 or 3778 or 4528 => 105,
+            _ => -1,
+        };
+        return index >= 0 && index + 4 <= color.Length && color[index] > 0 && color[index + 1] > 0 && color[index + 3] > 0
+            ? [color[index + 1] / (double)color[index], 1, color[index + 1] / (double)color[index + 3]]
+            : null;
+    }
+
+    /// <summary>
+    /// A Canon sRAW or mRAW CR2 (CR2 spec, sections 5 and 6), decoded to LinearRaw RGB. The decode stops before the spec's
+    /// sRAW multipliers, which leaves the values Adobe DNG Converter stores for these files (measured bit for bit); the
+    /// multipliers' levels (ColorData at the offset its length gives) instead divide the as-shot neutral, and the white level
+    /// is the one Adobe gives the camera's reduced-resolution data, from the camera table.
+    /// </summary>
+    private static RawFrame CanonSraw(RawIfd ifd0, RawIfd raw, LosslessJpeg header, long[] slices, MakerNote? note)
+    {
+        int h = header.H0, v = header.V0;
+        if (header.Components != 3 || h != 2 || v is not (1 or 2))
+        {
+            throw new NotSupportedException("The CR2's sRAW sampling is not one Egami reads.");
+        }
+
+        long groups = (long)header.McusPerLine * header.McuLines;
+        // Slice widths count decoded values of one row of groups (some frames' headers are transposed, so the frame's own
+        // width is not used when slices are given).
+        int perGroup = (h * v) + 2;
+        int width = slices is { Length: 3 } && slices[1] > 0 ? (int)(((slices[0] * slices[1]) + slices[2]) / perGroup * h) : header.McusPerLine * h;
+        int height = (int)Math.Min(groups * h * v / Math.Max(width, 1), int.MaxValue);
+        if (width <= 0 || height <= 0 || width % h != 0 || height % v != 0)
+        {
+            throw new InvalidDataException("The CR2's sRAW frame does not fit its slices.");
+        }
+
+        double[] levels = [1, 1, 1];
+        if (note?.Ifd.Ints(0x4001, 8192) is long[] color)
+        {
+            int at = color.Length switch
+            {
+                674 or 692 or 702 or 1227 or 1250 or 1251 or 1337 or 1338 or 1346 => 0x4E,
+                1273 or 1275 => 0x62,
+                1312 or 1313 or 1316 or 1506 => 0x7B,
+                1560 or 1592 or 1353 or 1602 => 0x80,
+                _ => -1,
+            };
+            if (at >= 0 && at + 4 <= color.Length && color.Skip(at).Take(4).All(c => c > 0))
+            {
+                levels = [color[at] / (double)color[at + 1], 1, color[at + 3] / (double)color[at + 1]];
+            }
+        }
+
+        // The body decides the formula set and the hue: by model, model ID (maker-note tag 0x0010) and firmware (tag 0x0007).
+        long id = note?.Ifd.Int(0x0010) ?? 0;
+        string model = ifd0.Ascii(RawTags.Model) ?? "";
+        bool setA = model.EndsWith("5D Mark II", StringComparison.OrdinalIgnoreCase) || model.EndsWith("EOS 7D", StringComparison.OrdinalIgnoreCase)
+            || model.EndsWith("EOS 50D", StringComparison.OrdinalIgnoreCase) || model.EndsWith("1D Mark IV", StringComparison.OrdinalIgnoreCase)
+            || model.EndsWith("EOS 60D", StringComparison.OrdinalIgnoreCase);
+        int f = (h * v) - 1;
+        int hue = (f + 1) * 4;
+        long firmware = 0;
+        if (note?.Ifd.Ascii(0x0007) is string text && Regex.Match(text, @"(\d+)\.(\d+)\.(\d+)") is { Success: true } version)
+        {
+            firmware = (long.Parse(version.Groups[1].Value, CultureInfo.InvariantCulture) * 1_000_000)
+                + (long.Parse(version.Groups[2].Value, CultureInfo.InvariantCulture) * 1000) + long.Parse(version.Groups[3].Value, CultureInfo.InvariantCulture);
+        }
+
+        if (id >= 0x80000281 || (id == 0x80000218 && firmware > 1000006))
+        {
+            hue = f * 2;
+        }
+
+        RawSensor strip = Sensor(raw, RawCodec.CanonSraw, width, height, 15);
+        RawFrame frame = new()
+        {
+            Sensor = new RawSensor
+            {
+                Ifd = raw,
+                Width = width,
+                Height = height,
+                Samples = 3,
+                Bits = 15,
+                Photometric = DngParser.PhotometricLinearRaw,
+                UnitWidth = width,
+                UnitHeight = height,
+                Offsets = strip.Offsets,
+                Counts = strip.Counts,
+                BigEndian = strip.BigEndian,
+                Codec = RawCodec.CanonSraw,
+                CodecData = new CanonSraw(slices, h, v, setA, hue, id is > 0 and < 0x80000218),
+            },
+        };
+        RawCameraEntry? camera = RawCameraTable.Find(ifd0.Ascii(RawTags.Make) ?? "", model);
+        double white = camera?.ReducedWhite ?? (camera is { White: > 0 } ? camera.White - camera.Black.Average() : 16383);
+        frame.Black = [0, 0, 0];
+        frame.White = [white, white, white];
+        if (CanonAsShot(note) is double[] neutral)
+        {
+            frame.AsShotNeutral = [neutral[0] / levels[0], 1, neutral[2] / levels[2]];
+        }
+
+        frame.HasOwnLevels = true;
+        frame.HasOwnCrop = true;
+        frame.Active = new Rect(0, 0, width, height);
+        frame.Crop = (0, 0, width, height);
+        return frame;
+    }
+
     private static RawFrame Cr2(RawTiff tiff, List<RawIfd> chain, List<RawIfd> all, MakerNote? note)
     {
         RawIfd raw = (chain.Count >= 4 ? chain[3] : null) ?? Largest(all, i => i.Int(RawTags.Compression) == 6)
@@ -626,8 +754,9 @@ internal static class MakerParser
         int height = (int)Math.Min(header.SampleCount / Math.Max(width, 1), int.MaxValue);
         if (header.H0 != 1 || header.V0 != 1)
         {
-            throw new NotSupportedException("Egami does not read Canon sRAW or mRAW files yet.");
+            return CanonSraw(chain[0], raw, header, slices, note);
         }
+
         RawSensor sensor = Sensor(raw, RawCodec.Canon, width, height, 14, new CanonSlices(slices));
         RawFrame frame = new() { Sensor = sensor };
         frame.Cfa = Bayer("RGGB");
@@ -643,26 +772,7 @@ internal static class MakerParser
             }
         }
 
-        // As-shot white balance: ColorData's WB_RGGBLevelsAsShot, at the index its version (told by its length) puts it, as
-        // ExifTool's Canon tag page lists them.
-        if (note?.Ifd.Ints(0x4001, 8192) is long[] color)
-        {
-            int index = color.Length switch
-            {
-                582 => 25,
-                653 => 34,
-                796 or 674 or 692 or 702 or 1227 or 1250 or 1251 or 1337 or 1338 or 1346 or 1273 or 1275 or 1312 or 1313 or 1316 or 1506
-                    or 1560 or 1592 or 1353 or 1602 => 63,
-                5120 or 1816 or 1820 or 1824 => 71,
-                2024 or 3656 => 85,
-                3973 or 3778 or 4528 => 105,
-                _ => -1,
-            };
-            if (index >= 0 && index + 4 <= color.Length && color[index] > 0 && color[index + 1] > 0 && color[index + 3] > 0)
-            {
-                frame.AsShotNeutral = [color[index + 1] / (double)color[index], 1, color[index + 1] / (double)color[index + 3]];
-            }
-        }
+        frame.AsShotNeutral = CanonAsShot(note) ?? frame.AsShotNeutral;
 
         // Black is measured from the masked columns left of the active area when nothing else gives it.
         frame.MaskedArea = frame.Active.X >= 16 ? new Rect(4, frame.Active.Y, frame.Active.X - 8, frame.Active.Height) : null;
@@ -670,6 +780,12 @@ internal static class MakerParser
         return frame;
     }
 }
+
+/// <summary>
+/// A Canon sRAW or mRAW frame's decoding parameters (CR2 spec, sections 5 and 6): the slices, the luma sampling factors,
+/// which of the two formula sets the body uses, the hue offset and whether luma carries the older bodies' 512 offset.
+/// </summary>
+internal sealed record CanonSraw(long[] Slices, int H, int V, bool SetA, int Hue, bool Older);
 
 /// <summary>A maker note: its IFD (with its own byte order and offset base) and its bytes.</summary>
 internal sealed class MakerNote(RawIfd ifd, byte[] bytes)
