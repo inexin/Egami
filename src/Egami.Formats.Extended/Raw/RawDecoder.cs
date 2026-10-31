@@ -55,7 +55,7 @@ internal static class RawDecoder
                 List<(int Unit, string Message)> reports = [];
                 try
                 {
-                    Parallel.For(0, units, parallel, u => Unit(sensor, tiff, input, pixels, u, (i, m) =>
+                    RawParallel.For(0, units, parallel, u => Unit(sensor, tiff, input, pixels, u, (i, m) =>
                     {
                         lock (reports)
                         {

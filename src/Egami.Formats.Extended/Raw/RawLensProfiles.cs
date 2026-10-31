@@ -21,6 +21,9 @@ internal static class RawLensProfiles
         "/opt/homebrew/share/lensfun/version_1",
     ];
 
+    /// <summary>Gets whether a system Lensfun install is there to search.</summary>
+    public static bool HasSystemProfiles { get; } = SystemFolders.Any(Directory.Exists);
+
     private static readonly ConcurrentDictionary<string, (DateTime Stamp, List<RawLensProfile> Profiles)> Cache = new(StringComparer.Ordinal);
 
     /// <summary>Returns the profiles of the given folders and of a system Lensfun install, read once per folder and file time.</summary>

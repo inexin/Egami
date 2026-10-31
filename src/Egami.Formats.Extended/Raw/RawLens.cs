@@ -26,7 +26,7 @@ internal static class RawLens
         Geometry g = new(profile, width, height, cropFactor);
         if (vignetting is not null)
         {
-            Parallel.For(0, height, parallel, y =>
+            RawParallel.For(0, height, parallel, y =>
             {
                 Span<float> row = rgb.Span.Slice(y * width * 3, width * 3);
                 for (int x = 0; x < width; x++)
@@ -41,8 +41,9 @@ internal static class RawLens
 
         if (distortion is not null || tca is not null)
         {
-            float[] source = rgb.Span[..(width * height * 3)].ToArray();
-            Parallel.For(0, height, parallel, y =>
+            float[] source = System.Buffers.ArrayPool<float>.Shared.Rent(width * height * 3);
+            rgb.Span[..(width * height * 3)].CopyTo(source);
+            RawParallel.For(0, height, parallel, y =>
             {
                 Span<float> row = rgb.Span.Slice(y * width * 3, width * 3);
                 for (int x = 0; x < width; x++)
@@ -54,6 +55,7 @@ internal static class RawLens
                     }
                 }
             });
+            System.Buffers.ArrayPool<float>.Shared.Return(source);
         }
 
         return string.Join(", ", new[] { distortion is null ? null : "distortion", tca is null ? null : "lateral chromatic aberration", vignetting is null ? null : "vignetting" }.Where(s => s is not null));

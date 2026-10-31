@@ -155,20 +155,28 @@ internal sealed class RawDeveloper
     private string? CorrectLens(Memory<float> rgb, int width, int height, ParallelOptions parallel)
     {
         RawFrame frame = _frame;
-        if (frame.FocalLength is not double focal || string.IsNullOrWhiteSpace(frame.LensModel))
+        if (frame.FocalLength is not double focal || string.IsNullOrWhiteSpace(frame.LensModel) || (_options.LensProfiles.Count == 0 && !RawLensProfiles.HasSystemProfiles))
         {
-            return null;
+            return AutoCa(rgb, width, height, parallel);
         }
 
         List<RawLensProfile> profiles = RawLensProfiles.Load(_options.LensProfiles, _warnings);
         if (RawLensProfiles.Match(profiles, frame.Make, frame.Model, frame.LensModel) is not RawLensProfile profile)
         {
-            return null;
+            return AutoCa(rgb, width, height, parallel);
         }
 
         double crop = frame.FocalLength35 is double f35 && focal > 0 ? f35 / focal : profile.CropFactor;
         string? applied = RawLens.Apply(rgb, width, height, profile, focal, frame.FNumber ?? 0, frame.FocusDistance ?? 1000, crop, parallel);
         return applied is null ? null : $"{(profile.Format == RawLensFormat.Lcp ? "Adobe" : "Lensfun")}: {(profile.Maker.Length > 0 ? profile.Maker + " " : "")}{profile.Lens} ({applied})";
+    }
+
+    /// <summary>Corrects lateral chromatic aberration measured from the image itself, for a file nothing else corrects.</summary>
+    private static string? AutoCa(Memory<float> rgb, int width, int height, ParallelOptions parallel)
+    {
+        return RawAutoCa.Apply(rgb, width, height, parallel) is (double red, double blue)
+            ? string.Create(System.Globalization.CultureInfo.InvariantCulture, $"Automatic lateral chromatic aberration (red × {red:F5}, blue × {blue:F5})")
+            : null;
     }
 
     /// <summary>Returns the exposure, in stops: the file's baseline exposure (and the profile's offset) plus the option's.</summary>
@@ -266,7 +274,7 @@ internal sealed class RawDeveloper
                 return;
             }
 
-            Parallel.For(0, active.Height, parallel, y =>
+            RawParallel.For(0, active.Height, parallel, y =>
             {
                 int sy = y + active.Y;
                 Span<float> target = mosaic.Span.Slice(y * aw * samples, aw * samples);
@@ -402,7 +410,7 @@ internal sealed class RawDeveloper
     private static void Scale(Memory<float> mosaic, int width, int height, int samples, RawCfa? cfa, double[] multipliers, ParallelOptions parallel)
     {
         float[] m = [.. multipliers.Select(v => (float)v)];
-        Parallel.For(0, height, parallel, y =>
+        RawParallel.For(0, height, parallel, y =>
         {
             Span<float> row = mosaic.Span.Slice(y * width * samples, width * samples);
             if (cfa is null)

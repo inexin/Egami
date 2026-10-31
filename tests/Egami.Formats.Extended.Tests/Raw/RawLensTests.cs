@@ -136,3 +136,46 @@ public sealed class RawLensTests : IDisposable
         return dng.Build();
     }
 }
+
+/// <summary>RAW Build Plan task 10: automatic lateral chromatic aberration correction for files without lens data.</summary>
+public class RawAutoCaTests
+{
+    [Fact]
+    public void FindsAndUndoesARadialScaleOfRedAndBlue()
+    {
+        // Fine rings around the centre; red is drawn 0.2 % larger and blue 0.15 % smaller than green.
+        const int W = 400, H = 300;
+        float[] rgb = new float[W * H * 3];
+        static float Scene(double x, double y)
+        {
+            double r = Math.Sqrt((x * x) + (y * y));
+            return (float)(0.45 + (0.35 * Math.Sin(r / 2.5)));
+        }
+
+        for (int y = 0; y < H; y++)
+        {
+            for (int x = 0; x < W; x++)
+            {
+                double dx = x + 0.5 - (W / 2.0), dy = y + 0.5 - (H / 2.0);
+                rgb[((y * W) + x) * 3] = Scene(dx / 1.002, dy / 1.002);
+                rgb[(((y * W) + x) * 3) + 1] = Scene(dx, dy);
+                rgb[(((y * W) + x) * 3) + 2] = Scene(dx / 0.9985, dy / 0.9985);
+            }
+        }
+
+        (double red, double blue)? found = RawAutoCa.Apply(rgb, W, H, new ParallelOptions());
+        Assert.NotNull(found);
+        Assert.Equal(1.002, found.Value.red, 0.0002);
+        Assert.Equal(0.9985, found.Value.blue, 0.0002);
+
+        // A plane without CA is left alone.
+        float[] gray = new float[W * H * 3];
+        for (int i = 0; i < W * H; i++)
+        {
+            double x = (i % W) + 0.5 - (W / 2.0), y = (i / W) + 0.5 - (H / 2.0);
+            gray[i * 3] = gray[(i * 3) + 1] = gray[(i * 3) + 2] = Scene(x, y);
+        }
+
+        Assert.Null(RawAutoCa.Apply(gray, W, H, new ParallelOptions()));
+    }
+}

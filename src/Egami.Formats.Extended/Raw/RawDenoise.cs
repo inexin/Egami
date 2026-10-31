@@ -19,7 +19,7 @@ internal static class RawDenoise
     {
         int positions = cfa.Rows * cfa.Columns;
         float k = (float)(amount * 3);
-        Parallel.For(0, positions, parallel, p =>
+        RawParallel.For(0, positions, parallel, p =>
         {
             int py = p / cfa.Columns, px = p % cfa.Columns;
             int w = (width - px + cfa.Columns - 1) / cfa.Columns;
@@ -76,7 +76,7 @@ internal static class RawDenoise
         float[] c2 = ArrayPool<float>.Shared.Rent(count);
         try
         {
-            Parallel.For(0, height, parallel, y =>
+            RawParallel.For(0, height, parallel, y =>
             {
                 ReadOnlySpan<float> row = rgb.Span.Slice(y * width * 3, width * 3);
                 for (int x = 0; x < width; x++)
@@ -97,7 +97,7 @@ internal static class RawDenoise
                 }
             }
 
-            Parallel.For(0, height, parallel, y =>
+            RawParallel.For(0, height, parallel, y =>
             {
                 Span<float> row = rgb.Span.Slice(y * width * 3, width * 3);
                 for (int x = 0; x < width; x++)
@@ -294,8 +294,8 @@ internal static class RawDenoise
                 int hole = 1 << level;
                 float t = k * sigma * Attenuation[Math.Min(level, Attenuation.Length - 1)];
                 float[] c = current, n = next, tmp = temp, acc = sum;
-                Parallel.For(0, h, parallel, y => SmoothRow(c, tmp, w, y, hole));
-                Parallel.For(0, h, parallel, y =>
+                RawParallel.For(0, h, parallel, y => SmoothRow(c, tmp, w, y, hole));
+                RawParallel.For(0, h, parallel, y =>
                 {
                     SmoothColumn(tmp, n, w, h, y, hole);
                     int row = y * w;
