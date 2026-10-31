@@ -68,6 +68,28 @@ public class JxlLossyHighEffortTests
         }
     }
 
+    [Theory]
+    [InlineData(8)]
+    [InlineData(10)]
+    public void ProgressiveFramesDecode(int effort)
+    {
+        // Found by fuzzing: the encoder's own draft of a progressive frame must be coded in three passes too.
+        using Raster<Rgba8> image = Raster.Load<Rgba8>(Path.Combine(Images, "ops", "egret.png"));
+        for (int y = 0; y < image.Height; y++)
+        {
+            for (int x = 0; x < image.Width; x++)
+            {
+                image.Row(y)[x].A = (byte)(128 + ((x + y) % 128));
+            }
+        }
+
+        using MemoryStream file = new();
+        image.Save(file, JxlFormat.Info, new JxlWriterOptions { Distance = 2.5f, Effort = effort, Progressive = true });
+        file.Position = 0;
+        using Raster<Rgba8> back = Raster.Load<Rgba8>(file);
+        Assert.InRange(Raster.Compare(image, back, new CompareOptions { Butteraugli = true }).Butteraugli, 0.5, 8);
+    }
+
     [Fact]
     public void LargeFramesAreCodedWhole()
     {

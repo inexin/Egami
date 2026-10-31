@@ -1833,7 +1833,16 @@ internal sealed partial class JxlVarDctEncoder
     {
         ComputeCoefficients();
         QuantizeLf();
-        _passCoeffs = [_coeffs];
+        if (_settings.Progressive)
+        {
+            // The draft is coded in the frame's own passes, as the frame header says.
+            MakeProgressive();
+        }
+        else
+        {
+            _passCoeffs = [_coeffs];
+        }
+
         ComputeOrders();
         FindBlockEntropyModel();
         _draft = true;
