@@ -231,6 +231,29 @@ public class RawMakerTests
         Assert.NotNull(file.ReadIfd(8));
     }
 
+    [Fact]
+    public void EntriesASmallFileOnlyClaimsRentNoMoreThanItHolds()
+    {
+        // Review finding: an IFD entry that claims 1.5 GB in a 200 KB file made the streamed reader rent the whole claim
+        // before finding the file short. (A file within the first 64 KB read is safe: that read reaches its end.)
+        DngFile dng = new DngFile { Width = 16, Height = 16 }.Fill((_, _, _) => 20000);
+        dng.ExtraIfd0.Add(TiffTag.Undefined(0xC5FF, new byte[8]));
+        byte[] file = dng.Build();
+        int at = (int)BinaryPrimitives.ReadUInt32LittleEndian(file.AsSpan(4));
+        int count = BinaryPrimitives.ReadUInt16LittleEndian(file.AsSpan(at));
+        int entry = Enumerable.Range(0, count).Select(i => at + 2 + (i * 12)).First(e => BinaryPrimitives.ReadUInt16LittleEndian(file.AsSpan(e)) == 0xC5FF);
+        BinaryPrimitives.WriteUInt32LittleEndian(file.AsSpan(entry + 4), 1_500_000_000);
+        Array.Resize(ref file, 200_000);
+        long before = GC.GetAllocatedBytesForCurrentThread();
+        // A stream that is not a MemoryStream, so the reader streams it rather than reading the array in place.
+        using (BufferedStream stream = new(new MemoryStream(file)))
+        {
+            Assert.Equal(16, Raster.Probe(stream, Context).Width);
+        }
+
+        Assert.True(GC.GetAllocatedBytesForCurrentThread() - before < 64L << 20, "the reader rented the entry's claimed size");
+    }
+
     [Theory]
     [InlineData(0xFFFFFFF0u)]
     [InlineData(0x7FFFFFFEu)]

@@ -188,20 +188,22 @@ internal sealed class RawSource : IDisposable
             return false;
         }
 
-        if (end > Data.Length)
-        {
-            long size = Math.Min(Math.Max(end, Math.Min((long)Data.Length * 2, _max)), _max);
-            _input.CheckMemory(size);
-            byte[] larger = System.Buffers.ArrayPool<byte>.Shared.Rent((int)size);
-            Data.AsSpan(0, Length).CopyTo(larger);
-            Return();
-            Data = larger;
-            _pooled = true;
-        }
-
+        // The buffer grows only as data arrives, doubling when full: a count a small file only claims (an IFD entry of a
+        // gigabyte) never makes it rent more than the file holds.
         while (Length < end)
         {
-            int n = _input.Read(Data.AsSpan(Length, (int)Math.Min(Data.Length - Length, Math.Max(end - Length, 256 * 1024))));
+            if (Length == Data.Length)
+            {
+                long size = Math.Min(Math.Min(Math.Max((long)Data.Length * 2, 64 * 1024), Math.Max(end, Length + (256 * 1024))), _max);
+                _input.CheckMemory(size);
+                byte[] larger = System.Buffers.ArrayPool<byte>.Shared.Rent((int)size);
+                Data.AsSpan(0, Length).CopyTo(larger);
+                Return();
+                Data = larger;
+                _pooled = true;
+            }
+
+            int n = _input.Read(Data.AsSpan(Length, Data.Length - Length));
             if (n == 0)
             {
                 _ended = true;
