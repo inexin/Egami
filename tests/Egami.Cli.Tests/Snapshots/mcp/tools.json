@@ -72,6 +72,22 @@
             "type": "integer",
             "description": "Bits per channel to write (PNG, AVIF)."
           },
+          "progressive": {
+            "type": "boolean",
+            "description": "Write the image so viewers show it coarse first, then sharper as it arrives (AVIF layers, JPEG and JPEG XL progressive)."
+          },
+          "target_size": {
+            "type": "integer",
+            "description": "Search the quality for the largest file not above this many bytes (AVIF)."
+          },
+          "qgain_map": {
+            "type": "integer",
+            "description": "Quality of the gain map from 0 to 100, as avifenc's --qgain-map (AVIF)."
+          },
+          "denoise": {
+            "type": "integer",
+            "description": "Take film grain out before coding and write it as AV1 film grain, 0 to 50 (AVIF)."
+          },
           "strip": {
             "type": "boolean",
             "description": "Leave out metadata (EXIF, XMP, IPTC, text, resolution) but keep the color profile, so colors stay right."
@@ -153,6 +169,22 @@
           "bit_depth": {
             "type": "integer",
             "description": "Bits per channel to write (PNG, AVIF)."
+          },
+          "progressive": {
+            "type": "boolean",
+            "description": "Write the image so viewers show it coarse first, then sharper as it arrives (AVIF layers, JPEG and JPEG XL progressive)."
+          },
+          "target_size": {
+            "type": "integer",
+            "description": "Search the quality for the largest file not above this many bytes (AVIF)."
+          },
+          "qgain_map": {
+            "type": "integer",
+            "description": "Quality of the gain map from 0 to 100, as avifenc's --qgain-map (AVIF)."
+          },
+          "denoise": {
+            "type": "integer",
+            "description": "Take film grain out before coding and write it as AV1 film grain, 0 to 50 (AVIF)."
           },
           "strip": {
             "type": "boolean",
@@ -260,6 +292,22 @@
           "bit_depth": {
             "type": "integer",
             "description": "Bits per channel to write (PNG, AVIF)."
+          },
+          "progressive": {
+            "type": "boolean",
+            "description": "Write the image so viewers show it coarse first, then sharper as it arrives (AVIF layers, JPEG and JPEG XL progressive)."
+          },
+          "target_size": {
+            "type": "integer",
+            "description": "Search the quality for the largest file not above this many bytes (AVIF)."
+          },
+          "qgain_map": {
+            "type": "integer",
+            "description": "Quality of the gain map from 0 to 100, as avifenc's --qgain-map (AVIF)."
+          },
+          "denoise": {
+            "type": "integer",
+            "description": "Take film grain out before coding and write it as AV1 film grain, 0 to 50 (AVIF)."
           },
           "strip": {
             "type": "boolean",
@@ -371,6 +419,22 @@
             "type": "integer",
             "description": "Bits per channel to write (PNG, AVIF)."
           },
+          "progressive": {
+            "type": "boolean",
+            "description": "Write the image so viewers show it coarse first, then sharper as it arrives (AVIF layers, JPEG and JPEG XL progressive)."
+          },
+          "target_size": {
+            "type": "integer",
+            "description": "Search the quality for the largest file not above this many bytes (AVIF)."
+          },
+          "qgain_map": {
+            "type": "integer",
+            "description": "Quality of the gain map from 0 to 100, as avifenc's --qgain-map (AVIF)."
+          },
+          "denoise": {
+            "type": "integer",
+            "description": "Take film grain out before coding and write it as AV1 film grain, 0 to 50 (AVIF)."
+          },
           "strip": {
             "type": "boolean",
             "description": "Leave out metadata (EXIF, XMP, IPTC, text, resolution) but keep the color profile, so colors stay right."
@@ -457,6 +521,22 @@
           "bit_depth": {
             "type": "integer",
             "description": "Bits per channel to write (PNG, AVIF)."
+          },
+          "progressive": {
+            "type": "boolean",
+            "description": "Write the image so viewers show it coarse first, then sharper as it arrives (AVIF layers, JPEG and JPEG XL progressive)."
+          },
+          "target_size": {
+            "type": "integer",
+            "description": "Search the quality for the largest file not above this many bytes (AVIF)."
+          },
+          "qgain_map": {
+            "type": "integer",
+            "description": "Quality of the gain map from 0 to 100, as avifenc's --qgain-map (AVIF)."
+          },
+          "denoise": {
+            "type": "integer",
+            "description": "Take film grain out before coding and write it as AV1 film grain, 0 to 50 (AVIF)."
           },
           "strip": {
             "type": "boolean",
@@ -557,6 +637,22 @@
             "type": "integer",
             "description": "Bits per channel to write (PNG, AVIF)."
           },
+          "progressive": {
+            "type": "boolean",
+            "description": "Write the image so viewers show it coarse first, then sharper as it arrives (AVIF layers, JPEG and JPEG XL progressive)."
+          },
+          "target_size": {
+            "type": "integer",
+            "description": "Search the quality for the largest file not above this many bytes (AVIF)."
+          },
+          "qgain_map": {
+            "type": "integer",
+            "description": "Quality of the gain map from 0 to 100, as avifenc's --qgain-map (AVIF)."
+          },
+          "denoise": {
+            "type": "integer",
+            "description": "Take film grain out before coding and write it as AV1 film grain, 0 to 50 (AVIF)."
+          },
           "strip": {
             "type": "boolean",
             "description": "Leave out metadata (EXIF, XMP, IPTC, text, resolution) but keep the color profile, so colors stay right."
@@ -647,6 +743,22 @@
           "bit_depth": {
             "type": "integer",
             "description": "Bits per channel to write (PNG, AVIF)."
+          },
+          "progressive": {
+            "type": "boolean",
+            "description": "Write the image so viewers show it coarse first, then sharper as it arrives (AVIF layers, JPEG and JPEG XL progressive)."
+          },
+          "target_size": {
+            "type": "integer",
+            "description": "Search the quality for the largest file not above this many bytes (AVIF)."
+          },
+          "qgain_map": {
+            "type": "integer",
+            "description": "Quality of the gain map from 0 to 100, as avifenc's --qgain-map (AVIF)."
+          },
+          "denoise": {
+            "type": "integer",
+            "description": "Take film grain out before coding and write it as AV1 film grain, 0 to 50 (AVIF)."
           },
           "strip": {
             "type": "boolean",
@@ -1174,6 +1286,22 @@
             "type": "integer",
             "description": "Bits per channel to write (PNG, AVIF)."
           },
+          "progressive": {
+            "type": "boolean",
+            "description": "Write the image so viewers show it coarse first, then sharper as it arrives (AVIF layers, JPEG and JPEG XL progressive)."
+          },
+          "target_size": {
+            "type": "integer",
+            "description": "Search the quality for the largest file not above this many bytes (AVIF)."
+          },
+          "qgain_map": {
+            "type": "integer",
+            "description": "Quality of the gain map from 0 to 100, as avifenc's --qgain-map (AVIF)."
+          },
+          "denoise": {
+            "type": "integer",
+            "description": "Take film grain out before coding and write it as AV1 film grain, 0 to 50 (AVIF)."
+          },
           "strip": {
             "type": "boolean",
             "description": "Leave out metadata (EXIF, XMP, IPTC, text, resolution) but keep the color profile, so colors stay right."
@@ -1255,6 +1383,22 @@
           "bit_depth": {
             "type": "integer",
             "description": "Bits per channel to write (PNG, AVIF)."
+          },
+          "progressive": {
+            "type": "boolean",
+            "description": "Write the image so viewers show it coarse first, then sharper as it arrives (AVIF layers, JPEG and JPEG XL progressive)."
+          },
+          "target_size": {
+            "type": "integer",
+            "description": "Search the quality for the largest file not above this many bytes (AVIF)."
+          },
+          "qgain_map": {
+            "type": "integer",
+            "description": "Quality of the gain map from 0 to 100, as avifenc's --qgain-map (AVIF)."
+          },
+          "denoise": {
+            "type": "integer",
+            "description": "Take film grain out before coding and write it as AV1 film grain, 0 to 50 (AVIF)."
           },
           "strip": {
             "type": "boolean",
@@ -1342,6 +1486,22 @@
           "bit_depth": {
             "type": "integer",
             "description": "Bits per channel to write (PNG, AVIF)."
+          },
+          "progressive": {
+            "type": "boolean",
+            "description": "Write the image so viewers show it coarse first, then sharper as it arrives (AVIF layers, JPEG and JPEG XL progressive)."
+          },
+          "target_size": {
+            "type": "integer",
+            "description": "Search the quality for the largest file not above this many bytes (AVIF)."
+          },
+          "qgain_map": {
+            "type": "integer",
+            "description": "Quality of the gain map from 0 to 100, as avifenc's --qgain-map (AVIF)."
+          },
+          "denoise": {
+            "type": "integer",
+            "description": "Take film grain out before coding and write it as AV1 film grain, 0 to 50 (AVIF)."
           },
           "strip": {
             "type": "boolean",
@@ -1445,6 +1605,22 @@
           "bit_depth": {
             "type": "integer",
             "description": "Bits per channel to write (PNG, AVIF)."
+          },
+          "progressive": {
+            "type": "boolean",
+            "description": "Write the image so viewers show it coarse first, then sharper as it arrives (AVIF layers, JPEG and JPEG XL progressive)."
+          },
+          "target_size": {
+            "type": "integer",
+            "description": "Search the quality for the largest file not above this many bytes (AVIF)."
+          },
+          "qgain_map": {
+            "type": "integer",
+            "description": "Quality of the gain map from 0 to 100, as avifenc's --qgain-map (AVIF)."
+          },
+          "denoise": {
+            "type": "integer",
+            "description": "Take film grain out before coding and write it as AV1 film grain, 0 to 50 (AVIF)."
           },
           "strip": {
             "type": "boolean",
@@ -1572,6 +1748,22 @@
           "bit_depth": {
             "type": "integer",
             "description": "Bits per channel to write (PNG, AVIF)."
+          },
+          "progressive": {
+            "type": "boolean",
+            "description": "Write the image so viewers show it coarse first, then sharper as it arrives (AVIF layers, JPEG and JPEG XL progressive)."
+          },
+          "target_size": {
+            "type": "integer",
+            "description": "Search the quality for the largest file not above this many bytes (AVIF)."
+          },
+          "qgain_map": {
+            "type": "integer",
+            "description": "Quality of the gain map from 0 to 100, as avifenc's --qgain-map (AVIF)."
+          },
+          "denoise": {
+            "type": "integer",
+            "description": "Take film grain out before coding and write it as AV1 film grain, 0 to 50 (AVIF)."
           },
           "strip": {
             "type": "boolean",

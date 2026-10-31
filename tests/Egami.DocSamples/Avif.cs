@@ -169,4 +169,71 @@ public class Avif
         Assert.True(firstDelay > TimeSpan.Zero);
         Assert.True(File.Exists("item-3-GainMap.png") || details.Items.Any(i => i.Role == AvifItemRole.GainMap));
     }
+
+    [Fact]
+    public void Extras()
+    {
+        using SampleFiles files = new();
+        using Raster duck = Raster.Load("duck.avif");
+
+        #region layers
+        // A progressive file: a small first layer a viewer can show early, then the image (as avifenc --progressive writes it).
+        duck.Save("duck-progressive.avif", new AvifWriterOptions { Quality = 60, Progressive = true });
+
+        // Or up to four layers, each with its own quality and size; the last is the image at full size.
+        duck.Save("duck-layers.avif", new AvifWriterOptions
+        {
+            Layers = [new AvifLayer { Quality = 20, Scale = 0.5 }, new AvifLayer { Quality = 45 }, new AvifLayer { Quality = 75 }],
+        });
+
+        // Load gives the best layer; AvifReaderOptions.Layer picks another, at full size.
+        using Raster best = Raster.Load("duck-layers.avif");
+        IReadOnlyList<Size> layers = ((AvifDetails)best.Metadata.FormatDetails!).Layers;   // 160x120, 320x240, 320x240
+        using Raster first = Raster.Load("duck-layers.avif", options: new AvifReaderOptions { Layer = 0 });
+        #endregion
+
+        #region avif-preview
+        // While a progressive file downloads, RenderPreview draws the best layer received so far at full size.
+        byte[] file = File.ReadAllBytes("duck-progressive.avif");
+        using RasterDecoder decoder = RasterDecoder.OpenIncremental();
+        Raster<Rgb8>? preview = null;
+        int previews = 0;
+        foreach (byte[] chunk in file.Chunk(1024))
+        {
+            decoder.Append(chunk);
+            if (decoder.HeaderRead)
+            {
+                preview ??= Raster.Create<Rgb8>(decoder.Info.Width, decoder.Info.Height);
+                previews += decoder.RenderPreview(preview) ? 1 : 0;
+            }
+        }
+
+        decoder.EndOfInput();
+        preview?.Dispose();
+        #endregion
+
+        #region sato
+        // 16 bits a sample, which AV1 cannot code, as a sample transform (AVIF 1.2): a 12-bit image and an 8-bit residual (or,
+        // lossless, the high and low bytes), with the first image as the fallback for readers without sample transforms.
+        using Raster<Rgb16> wide = duck.As<Rgb16>();
+        wide.Save("duck-16bit.avif", new AvifWriterOptions { BitDepth = 16, Quality = 90 });
+        using Raster deep = Raster.Load("duck-16bit.avif");
+        bool transformed = ((AvifDetails)deep.Metadata.FormatDetails!).HasSampleTransform;   // true, at 16 bits
+        using Raster fallback = Raster.Load("duck-16bit.avif", options: new AvifReaderOptions { SampleTransform = false });
+        #endregion
+
+        #region target-size
+        // The quality is searched for the largest file not above the size, as avifenc --target-size does.
+        duck.Save("duck-8k.avif", new AvifWriterOptions { TargetSize = 8000 });
+        #endregion
+
+        Assert.Equal(3, layers.Count);
+        Assert.Equal((best.Width, best.Height), (first.Width, first.Height));
+        Assert.True(((AvifDetails)Raster.Load("duck-progressive.avif").Metadata.FormatDetails!).IsProgressive);
+        Assert.True(previews > 0);
+        Assert.True(transformed);
+        Assert.Equal(16, ((AvifDetails)deep.Metadata.FormatDetails!).BitDepth);
+        Assert.Equal(12, ((AvifDetails)fallback.Metadata.FormatDetails!).BitDepth);
+        Assert.True(new FileInfo("duck-8k.avif").Length <= 8000);
+    }
 }

@@ -14,6 +14,10 @@ Options:
   --lossless                Lossless encoding (WebP, AVIF, JPEG XL).
   --effort <level>          Encoder effort: higher is smaller and slower (WebP, AVIF, JPEG XL).
   --bit-depth <bits>        Bits per channel to write (PNG, AVIF).
+  --progressive             Write the image so viewers show it coarse first, then sharper as it arrives (AVIF layers, JPEG and JPEG XL progressive).
+  --target-size <bytes>     Search the quality for the largest file not above this many bytes (AVIF).
+  --qgain-map <0-100>       Quality of the gain map from 0 to 100, as avifenc's --qgain-map (AVIF).
+  --denoise <0-50>          Take film grain out before coding and write it as AV1 film grain, 0 to 50 (AVIF).
   --strip                   Leave out metadata (EXIF, XMP, IPTC, text, resolution) but keep the color profile, so colors stay right.
   --set <fmt.key=value>     Any writer setting as fmt.key=value, such as png.compression-level=9; 'egami formats png' lists the keys.
   -r, --recursive           Take every image in folders given as inputs, at any depth.
