@@ -14,6 +14,17 @@ namespace Egami.Benchmarks;
 /// </summary>
 internal static class XzTiming
 {
+    /// <summary>Decodes one file <paramref name="runs"/> times, for perf to count.</summary>
+    internal static void Repeat(string file, int length, int runs)
+    {
+        byte[] data = File.ReadAllBytes(file);
+        byte[] output = new byte[length];
+        for (int i = 0; i < runs; i++)
+        {
+            XzDecoder.Decode(data, output);
+        }
+    }
+
     internal static void Run(string folder, string[] only)
     {
         using JsonDocument manifest = JsonDocument.Parse(File.ReadAllText(Path.Combine(folder, "manifest.json")));
