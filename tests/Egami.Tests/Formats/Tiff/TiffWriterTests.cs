@@ -12,7 +12,7 @@ public class TiffWriterTests
         TheoryData<string, TiffCompression, int> data = [];
         foreach (string type in Types.Keys)
         {
-            foreach (TiffCompression compression in (TiffCompression[])[TiffCompression.None, TiffCompression.Lzw, TiffCompression.Deflate, TiffCompression.Zstd, TiffCompression.PackBits])
+            foreach (TiffCompression compression in (TiffCompression[])[TiffCompression.None, TiffCompression.Lzw, TiffCompression.Deflate, TiffCompression.Zstd, TiffCompression.Lzma, TiffCompression.PackBits])
             {
                 foreach (int tile in (int[])[0, 16])
                 {
@@ -426,6 +426,8 @@ public class TiffWriterExtrasTests
     [InlineData(TiffCompression.Lzw, 16)]
     [InlineData(TiffCompression.Zstd, 0)]
     [InlineData(TiffCompression.Zstd, 16)]
+    [InlineData(TiffCompression.Lzma, 0)]
+    [InlineData(TiffCompression.Lzma, 16)]
     [InlineData(TiffCompression.PackBits, 0)]
     [InlineData(TiffCompression.CcittGroup4, 0)]
     public void ParallelCompressionWritesTheSameFile(TiffCompression compression, int tile)
@@ -438,29 +440,39 @@ public class TiffWriterExtrasTests
         Assert.Equal(one, many);
     }
 
+    /// <summary>Options for ZSTD at a level or LZMA at a preset.</summary>
+    private static TiffWriterOptions Compressed(TiffCompression compression, int level, int tile = 0) => compression == TiffCompression.Zstd
+        ? new TiffWriterOptions { Compression = compression, ZstdLevel = level, TileSize = tile }
+        : new TiffWriterOptions { Compression = compression, LzmaPreset = level, TileSize = tile };
+
     [Theory]
-    [InlineData(1)]
-    [InlineData(9)]
-    [InlineData(19)]
-    public void ZstdKeepsItsCompressionAndPredictorThroughAResave(int level)
+    [InlineData(TiffCompression.Zstd, 1)]
+    [InlineData(TiffCompression.Zstd, 9)]
+    [InlineData(TiffCompression.Zstd, 19)]
+    [InlineData(TiffCompression.Lzma, 0)]
+    [InlineData(TiffCompression.Lzma, 6)]
+    [InlineData(TiffCompression.Lzma, 9)]
+    public void ZstdAndLzmaKeepTheirCompressionAndPredictorThroughAResave(TiffCompression compression, int level)
     {
         using Raster<Rgb16> photo = TiffWriterTests.Pattern<Rgb16>(120, 90);
-        byte[] file = Save(photo, new TiffWriterOptions { Compression = TiffCompression.Zstd, ZstdLevel = level });
+        byte[] file = Save(photo, Compressed(compression, level));
         using Raster<Rgb16> back = Raster.Load<Rgb16>(file);
         TiffDetails details = (TiffDetails)back.Metadata.FormatDetails!;
-        Assert.Equal((TiffCompression.Zstd, TiffPredictor.Horizontal), (details.Compression, details.Predictor));
+        Assert.Equal((compression, TiffPredictor.Horizontal), (details.Compression, details.Predictor));
         Assert.Equal(TiffReference.Bytes(photo), TiffReference.Bytes(back));
 
         // Saved again with no options, the source's compression stays.
         using Raster<Rgb16> again = Raster.Load<Rgb16>(Save(back, TiffWriterOptions.Default));
-        Assert.Equal(TiffCompression.Zstd, ((TiffDetails)again.Metadata.FormatDetails!).Compression);
+        Assert.Equal(compression, ((TiffDetails)again.Metadata.FormatDetails!).Compression);
     }
 
-    [Fact]
-    public void ZstdFloatsUseTheFloatingPointPredictor()
+    [Theory]
+    [InlineData(TiffCompression.Zstd)]
+    [InlineData(TiffCompression.Lzma)]
+    public void ZstdAndLzmaFloatsUseTheFloatingPointPredictor(TiffCompression compression)
     {
         using Raster<RgbF32> floats = TiffWriterTests.Pattern<RgbF32>(64, 40);
-        using Raster<RgbF32> back = Raster.Load<RgbF32>(Save(floats, new TiffWriterOptions { Compression = TiffCompression.Zstd }));
+        using Raster<RgbF32> back = Raster.Load<RgbF32>(Save(floats, new TiffWriterOptions { Compression = compression }));
         Assert.Equal(TiffPredictor.FloatingPoint, ((TiffDetails)back.Metadata.FormatDetails!).Predictor);
         Assert.Equal(TiffReference.Bytes(floats), TiffReference.Bytes(back));
     }
@@ -471,10 +483,15 @@ public class TiffWriterExtrasTests
         Assert.Equal(9, new TiffWriterOptions().ZstdLevel);
         Assert.Throws<ArgumentOutOfRangeException>(() => new TiffWriterOptions { ZstdLevel = 0 });
         Assert.Throws<ArgumentOutOfRangeException>(() => new TiffWriterOptions { ZstdLevel = 23 });
+        Assert.Equal(6, new TiffWriterOptions().LzmaPreset);
+        Assert.Throws<ArgumentOutOfRangeException>(() => new TiffWriterOptions { LzmaPreset = -1 });
+        Assert.Throws<ArgumentOutOfRangeException>(() => new TiffWriterOptions { LzmaPreset = 10 });
     }
 
-    [Fact]
-    public void ADamagedZstdStripKeepsWhatDecodedLeniently()
+    [Theory]
+    [InlineData(TiffCompression.Zstd)]
+    [InlineData(TiffCompression.Lzma)]
+    public void ADamagedZstdOrLzmaStripKeepsWhatDecodedLeniently(TiffCompression compression)
     {
         // Smooth enough that every strip is a compressed block, whose damage the decoder sees.
         using Raster<Gray8> gray = Raster.Create<Gray8>(300, 400);
@@ -487,7 +504,7 @@ public class TiffWriterExtrasTests
             }
         }
 
-        byte[] file = Save(gray, new TiffWriterOptions { Compression = TiffCompression.Zstd, Predictor = TiffPredictor.None });
+        byte[] file = Save(gray, new TiffWriterOptions { Compression = compression, Predictor = TiffPredictor.None });
 
         // Overwrite bytes inside the strips (which follow the 8-byte header; the IFD comes last): strict reading fails, lenient
         // reading keeps the rest.
@@ -499,12 +516,14 @@ public class TiffWriterExtrasTests
     }
 
     [Theory]
-    [InlineData(0)]
-    [InlineData(32)]
-    public void AStreamedZstdSaveWritesWhatSaveWrites(int tile)
+    [InlineData(TiffCompression.Zstd, 0)]
+    [InlineData(TiffCompression.Zstd, 32)]
+    [InlineData(TiffCompression.Lzma, 0)]
+    [InlineData(TiffCompression.Lzma, 32)]
+    public void AStreamedZstdOrLzmaSaveWritesWhatSaveWrites(TiffCompression compression, int tile)
     {
         using Raster<Rgb8> photo = TiffWriterTests.Pattern<Rgb8>(150, 130);
-        TiffWriterOptions options = new() { Compression = TiffCompression.Zstd, ZstdLevel = 3, TileSize = tile };
+        TiffWriterOptions options = Compressed(compression, compression == TiffCompression.Zstd ? 3 : 1, tile);
         byte[] saved = Save(photo, options);
         using MemoryStream memory = new();
         using (RasterEncoder<Rgb8> encoder = RasterEncoder.Create<Rgb8>(memory, TiffFormat.Info, photo.Width, photo.Height, options))
