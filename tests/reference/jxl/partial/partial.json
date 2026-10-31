@@ -1,0 +1,72 @@
+{
+  "duck-d1": {
+    "10": {
+      "bytes": 6484,
+      "djxl": false
+    },
+    "50": {
+      "bytes": 32421,
+      "djxl": true
+    },
+    "90": {
+      "bytes": 58358,
+      "djxl": true
+    }
+  },
+  "duck-d1-progressive": {
+    "10": {
+      "bytes": 2909,
+      "djxl": false
+    },
+    "50": {
+      "bytes": 14547,
+      "djxl": true
+    },
+    "90": {
+      "bytes": 26185,
+      "djxl": true
+    }
+  },
+  "duck-lossless-e7": {
+    "10": {
+      "bytes": 40690,
+      "djxl": true
+    },
+    "50": {
+      "bytes": 203452,
+      "djxl": true
+    },
+    "90": {
+      "bytes": 366214,
+      "djxl": true
+    }
+  },
+  "duck-small-modular-progressive": {
+    "10": {
+      "bytes": 7896,
+      "djxl": false
+    },
+    "50": {
+      "bytes": 39482,
+      "djxl": false
+    },
+    "90": {
+      "bytes": 71067,
+      "djxl": false
+    }
+  },
+  "duck-alpha-d1": {
+    "10": {
+      "bytes": 1692,
+      "djxl": false
+    },
+    "50": {
+      "bytes": 8464,
+      "djxl": false
+    },
+    "90": {
+      "bytes": 15236,
+      "djxl": false
+    }
+  }
+}

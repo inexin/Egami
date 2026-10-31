@@ -113,6 +113,15 @@ DDS textures, stage C (BC7 and BC6H encoders).
 
 ## Egami, unreleased
 
+JPEG XL extras, PR D: partial display. No public API change.
+
+- `RasterDecoder.OpenIncremental` opens a JPEG XL file once its image header has arrived, and `RenderPreview` draws what has
+  arrived of a still as libjxl's progressive flush does: nothing until a frame's LF sections are in, then the LF image
+  upsampled, sharpening group by group and pass by pass; lossless files fill in group by group or, squeezed, level by level. At
+  every cut of the test files and the 144 cuts of egami-compare's truncated set it shows a preview exactly when djxl
+  `--allow_partial_files` does, within one level at 8 bits of its picture. Rows come out after the last byte, the same pixels as a
+  whole-file load.
+
 JPEG XL extras, PR B: lossless efforts 8 to 10 and patches. All additive.
 
 - `JxlWriterOptions.Effort` takes 1 to 10. Lossless 8 and 9 learn their context tree from more properties, try more color

@@ -843,7 +843,8 @@ public sealed class RasterDecoder : IDisposable
 
     /// <summary>
     /// Draws what is known of the frame in progress: an interlaced PNG from the passes received so far, a progressive JPEG from its
-    /// scans so far, a progressive (layered) AVIF from its best layer received so far at full size, a GIF frame from the rows
+    /// scans so far, a progressive (layered) AVIF from its best layer received so far at full size, a JPEG XL still as libjxl's
+    /// progressive flush draws it (its LF image upsampled, then each pass and group as it arrives), a GIF frame from the rows
     /// received so far (interlaced ones repeated over the rows they stand for), each later pass sharpening it. Region and
     /// reduction apply as to rows. The decode does not move on.
     /// </summary>
