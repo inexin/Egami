@@ -112,7 +112,8 @@ profiles in, `%ProgramData%\Adobe\CameraRaw\LensProfiles\1.0` and `%AppData%\Ado
 `/Library/Application Support/Adobe/CameraRaw/LensProfiles/1.0` and its counterpart in your own Library on macOS. Egami only
 reads them. The profile whose lens name matches the file's EXIF LensModel (an Adobe profile's name as people read it, or as
 cameras write it) corrects vignetting, distortion and lateral chromatic aberration, its calibrations interpolated for the
-shot's focal length and aperture; `RawDetails.LensProfile` says which one did.
+shot's focal length and aperture, at the calibrated focus distance nearest the shot's; `RawDetails.LensProfile` says which one
+did. The corrections measure from the output image (the default crop), the image the profiles were made for.
 
 Adobe's folder holds thousands of profiles, so Egami reads only those whose file name has the lens's focal length, the first
 time a lens is developed (about two seconds for a common zoom), and keeps them for the process.
@@ -145,4 +146,11 @@ EXIF (with GPS) and XMP come through as for TIFF.
 - Non-square pixels (DefaultScale other than 1) are developed square. The third calibration illuminant of DNG 1.6, profile gain
   table maps, semantic masks and extra camera profiles are not read; opcode TrimBounds and WarpRectilinear2 are skipped with a
   warning.
+- Lens corrections that cameras record in their own maker notes (Fujifilm, Micro Four Thirds, Nikon Z, Sony) are not read;
+  a lens profile, or `AutoChromaticAberration`, corrects those files instead.
+- Without a NoiseProfile (maker formats), luminance noise reduction measures the noise from the image, which for textured
+  scenes reads higher than Adobe's calibrated profiles do, so the same setting reduces more. Luminance noise reduction works on
+  the mosaic, so Canon sRAW and mRAW files get colour noise reduction only.
+- Adobe gives some Canon sRAW and mRAW files a brighter baseline exposure than the camera's normal raws (+0.25 EV for the EOS 5D
+  Mark II, +0.34 EV for the EOS 70D, by a rule not yet known); Egami uses the camera's raw one.
 - Egami writes no RAW or DNG files.
