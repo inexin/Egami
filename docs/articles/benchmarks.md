@@ -1,8 +1,9 @@
 # Benchmarks
 
-How fast Egami is next to ImageSharp, SkiaSharp and Magick.NET on the same tasks and inputs. Egami is faster in 243 of 269
-cases, typically 1.5 to 3 times faster than ImageSharp. It is slower in 11, led by lossless WebP at effort 4 on screen content,
-where SkiaSharp's native libwebp is about 10 times faster.
+How fast Egami is next to ImageSharp, SkiaSharp and Magick.NET on the same tasks and inputs. This page has 260 comparisons
+(each case against each library timed on it). Egami is faster in 234 of them, within 5% in 16, and more than 5% slower in 10,
+led by lossless WebP at effort 4 on screen content, where SkiaSharp's native libwebp is about 10 times faster. Against
+ImageSharp, Egami is typically 1.5 to 3 times faster.
 
 [Performance](performance.md) has the tips that keep your own code fast and the benchmarks that ship with Egami.
 
@@ -10,7 +11,8 @@ where SkiaSharp's native libwebp is about 10 times faster.
 
 Each library has its own column with its typical time relative to Egami's on the same task and input (the geometric mean over
 the cases). Egami is the 1.00× baseline: 2.00× means that library takes twice as long, and below 1.00× it is faster than Egami.
-An empty cell means that library was not measured for the area. Areas marked Oct 30 were rerun
+An empty cell means that library was not measured for the area. Cases counts the scenarios in the area; a
+scenario timed against two libraries makes two comparisons. Areas marked Oct 30 were rerun
 on 30 October 2026; the rest come from runs between 9 and 22 October.
 
 | Area | Cases | Egami | ImageSharp | SkiaSharp | Magick.NET |
