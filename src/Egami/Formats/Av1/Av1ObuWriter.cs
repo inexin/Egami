@@ -860,9 +860,20 @@ internal static class Av1ObuWriter
     }
 
     /// <summary>Frames a payload as an OBU with obu_has_size_field set and no extension (section 5.3).</summary>
-    internal static void Obu(List<byte> output, Av1ObuType type, ReadOnlySpan<byte> payload)
+    internal static void Obu(List<byte> output, Av1ObuType type, ReadOnlySpan<byte> payload) => Obu(output, type, payload, null);
+
+    /// <summary>
+    /// Frames a payload as an OBU with obu_has_size_field set and, when <paramref name="spatialId"/> is given, the extension header
+    /// (temporal_id 0 and that spatial_id) that the frames of a stream with spatial layers carry (section 5.3.3).
+    /// </summary>
+    internal static void Obu(List<byte> output, Av1ObuType type, ReadOnlySpan<byte> payload, int? spatialId)
     {
-        output.Add((byte)(((int)type << 3) | 2));
+        output.Add((byte)(((int)type << 3) | (spatialId is null ? 0 : 4) | 2));
+        if (spatialId is int id)
+        {
+            output.Add((byte)((id & 3) << 3));
+        }
+
         Av1BitWriter.Leb128(output, (ulong)payload.Length);
         foreach (byte b in payload)
         {

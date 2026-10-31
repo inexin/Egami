@@ -257,6 +257,9 @@ internal sealed class Av1Encoder
         }
     }
 
+    /// <summary>Wraps a stream another encoder wrote (the frames of a layered image, say) with its sequence header and last frame.</summary>
+    internal static Av1Encoder FromStream(byte[] stream, Av1SequenceHeader sequence, Av1Frame reconstruction) => new(stream, sequence, reconstruction, 0, 0);
+
     /// <summary>Encodes one frame.</summary>
     internal static Av1Encoder Encode(Av1EncoderInput input, Av1EncoderSettings settings)
     {

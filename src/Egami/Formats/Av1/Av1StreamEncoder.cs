@@ -214,7 +214,7 @@ public sealed class Av1StreamEncoder : IDisposable
             data.AddRange(_sequenceObu);
         }
 
-        Av1ObuWriter.Obu(data, Av1ObuType.Frame, payload);
+        Av1ObuWriter.Obu(data, Av1ObuType.Frame, payload, plan.SpatialId);
         (long luma, long chroma) = SquaredErrors(input, reconstruction);
 
         byte[] unit = [];
@@ -512,6 +512,12 @@ public sealed record Av1SequenceOptions
     public bool HighTier { get; init; }
 
     /// <summary>
+    /// Gets the spatial layers, 1 (the default) to 4: more give the operating points of a layered AVIF image, as libaom writes them
+    /// (the first all the layers, the last the first layer alone), whose frames carry their layer as <see cref="Av1FramePlan.SpatialId"/>.
+    /// </summary>
+    internal int SpatialLayers { get; init; } = 1;
+
+    /// <summary>
     /// Gets options that reproduce a sequence header exactly: the stream's size, bit depth, chroma, color and tools are the
     /// header's, and <see cref="Av1StreamEncoder.SequenceHeader"/> is the same OBU.
     /// </summary>
@@ -568,7 +574,8 @@ public sealed record Av1SequenceOptions
         Av1SequenceHeader written = new()
         {
             Profile = profile,
-            OperatingPoints = [new Av1OperatingPoint(0, level, level > 7 && HighTier ? 1 : 0)],
+            OperatingPoints = SpatialLayers <= 1 ? [new Av1OperatingPoint(0, level, level > 7 && HighTier ? 1 : 0)]
+                : [.. Enumerable.Range(0, SpatialLayers).Reverse().Select(top => new Av1OperatingPoint((((1 << (top + 1)) - 1) << 8) | 1, level, level > 7 && HighTier ? 1 : 0))],
             FrameWidthBits = Math.Max(1, 32 - int.LeadingZeroCount(Width - 1)),
             FrameHeightBits = Math.Max(1, 32 - int.LeadingZeroCount(Height - 1)),
             MaxFrameWidth = Width,
@@ -751,6 +758,12 @@ public sealed record Av1FramePlan
         get => _layer;
         init => _layer = InRange(value, 0, 7);
     }
+
+    /// <summary>
+    /// Gets the frame's spatial layer, written in its OBU's extension header, for a stream with <see cref="Av1SequenceOptions.SpatialLayers"/>;
+    /// null (the default) writes no extension.
+    /// </summary>
+    internal int? SpatialId { get; init; }
 
     /// <summary>Gets whether screen content tools (palettes, and intra block copy in intra frames) are on; null (the default) detects screen content.</summary>
     public bool? ScreenContent { get; init; }

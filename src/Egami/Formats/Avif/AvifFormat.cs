@@ -332,6 +332,10 @@ public sealed class AvifWriterOptions : WriterOptions
     private readonly int _alphaQuality = 100;
     private readonly int? _bitDepth;
     private readonly Size? _gridTileSize;
+    private readonly IReadOnlyList<AvifLayer>? _layers;
+    private readonly int? _targetSize;
+    private readonly int? _gainMapQuality;
+    private readonly int _filmGrainDenoise;
 
     /// <summary>Gets the default options.</summary>
     public static new AvifWriterOptions Default { get; } = new();
@@ -372,14 +376,20 @@ public sealed class AvifWriterOptions : WriterOptions
     public ChromaFormat? Chroma { get; init; }
 
     /// <summary>
-    /// Gets the bits a sample has, 8, 10 or 12, or <see langword="null"/> (the default) for 8 with 8-bit pixels and 10 with
-    /// deeper ones; a lossless file of deeper pixels takes the depth of the AVIF file they were read from, else 12.
+    /// Gets the bits a sample has, 8, 10, 12 or 16, or <see langword="null"/> (the default) for 8 with 8-bit pixels and 10 with
+    /// deeper ones; a lossless file of deeper pixels takes the depth of the AVIF file they were read from, else 12. 16 bits, which
+    /// AV1 cannot code, are written as a sample transform (AVIF 1.2.0): lossless as an 8-bit image of the high bytes and a hidden
+    /// 8-bit image of the low bytes, lossy as a 12-bit image and a hidden 8-bit residual that overlaps it by 4 bits. Readers without
+    /// sample transforms show the 8- or 12-bit image.
     /// </summary>
-    /// <exception cref="ArgumentOutOfRangeException">The value is not 8, 10 or 12.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">The value is not 8, 10, 12 or 16.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../../tests/Egami.DocSamples/Avif.cs" region="sato"/>
+    /// </example>
     public int? BitDepth
     {
         get => _bitDepth;
-        init => _bitDepth = value is null or 8 or 10 or 12 ? value : throw new ArgumentOutOfRangeException(nameof(value), value, "The bit depth is 8, 10 or 12.");
+        init => _bitDepth = value is null or 8 or 10 or 12 or 16 ? value : throw new ArgumentOutOfRangeException(nameof(value), value, "The bit depth is 8, 10, 12 or 16.");
     }
 
     /// <summary>
@@ -405,10 +415,119 @@ public sealed class AvifWriterOptions : WriterOptions
             ? value : throw new ArgumentOutOfRangeException(nameof(value), value, "Grid cells are 64 to 8192 samples a side.");
     }
 
+    /// <summary>
+    /// Gets whether to write a progressive image of two layers, as avifenc --progressive does: a small first layer at quality 2,
+    /// which a viewer can show while the rest arrives, then the image at <see cref="Quality"/>. Defaults to false. Ignored when
+    /// <see cref="Layers"/> is set, and below Quality 10, where a first layer saves nothing.
+    /// </summary>
+    /// <example>
+    /// <code language="csharp" source="../../../../tests/Egami.DocSamples/Avif.cs" region="layers"/>
+    /// </example>
+    public bool Progressive { get; init; }
+
+    /// <summary>
+    /// Gets the layers of a progressive image, 1 to 4, from the first and smallest to the last, each with its own quality and scale;
+    /// <see langword="null"/> (the default) for one layer, or the two <see cref="Progressive"/> makes. The last layer is the
+    /// image at full size; when the image is lossless it is coded lossless. Images larger than one AV1 frame (written as a grid)
+    /// are written in one layer.
+    /// </summary>
+    /// <exception cref="ArgumentException">The list is empty, has more than 4 layers, or its last layer is not at scale 1.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../../tests/Egami.DocSamples/Avif.cs" region="layers"/>
+    /// </example>
+    public IReadOnlyList<AvifLayer>? Layers
+    {
+        get => _layers;
+        init => _layers = value is null ? null
+            : value.Count is 0 or > 4 ? throw new ArgumentException("A layered image has 1 to 4 layers.", nameof(value))
+            : value[^1].Scale != 1 ? throw new ArgumentException("The last layer is the image at full size, scale 1.", nameof(value))
+            : [.. value];
+    }
+
+    /// <summary>
+    /// Gets the largest size the file may have, in bytes, or <see langword="null"/> (the default) to code at <see cref="Quality"/>:
+    /// the quality is searched, as avifenc --target-size searches it, for the largest file not above the size. When even quality 0
+    /// is larger, that file is written and an Avif.TargetSizeExceeded warning says so. Ignored for lossless images.
+    /// </summary>
+    /// <exception cref="ArgumentOutOfRangeException">The value is below 1.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../../tests/Egami.DocSamples/Avif.cs" region="target-size"/>
+    /// </example>
+    public int? TargetSize
+    {
+        get => _targetSize;
+        init => _targetSize = value is null or >= 1 ? value : throw new ArgumentOutOfRangeException(nameof(value), value, "The target size is 1 byte or more.");
+    }
+
+    /// <summary>
+    /// Gets the quality of a gain map, 0 to 100 on the same scale as <see cref="Quality"/>, as avifenc --qgain-map sets it, or
+    /// <see langword="null"/> (the default) for the image's quality.
+    /// </summary>
+    /// <exception cref="ArgumentOutOfRangeException">The value is outside 0 to 100.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../../tests/Egami.DocSamples/Avif.cs" region="write"/>
+    /// </example>
+    public int? GainMapQuality
+    {
+        get => _gainMapQuality;
+        init => _gainMapQuality = value is int q ? InRange(q, 0, 100) : null;
+    }
+
+    /// <summary>
+    /// Gets how strongly to take film grain out before coding and put it back on decoding, 0 (the default, off) to 50, as libaom's
+    /// denoise-noise-level: the image is denoised, the grain measured and written as AV1 film grain parameters that decoders add
+    /// back, so the grain costs few bits. A raster loaded without its grain (<see cref="AvifReaderOptions.FilmGrain"/> false)
+    /// gets its <see cref="AvifDetails.FilmGrain"/> written back when this is 0. Ignored for lossless images.
+    /// </summary>
+    /// <exception cref="ArgumentOutOfRangeException">The value is outside 0 to 50.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../../tests/Egami.DocSamples/Avif.cs" region="grain"/>
+    /// </example>
+    public int FilmGrainDenoise
+    {
+        get => _filmGrainDenoise;
+        init => _filmGrainDenoise = InRange(value, 0, 50);
+    }
+
     private static int InRange(int value, int min, int max)
     {
         ArgumentOutOfRangeException.ThrowIfLessThan(value, min);
         ArgumentOutOfRangeException.ThrowIfGreaterThan(value, max);
         return value;
+    }
+}
+
+/// <summary>One layer of a progressive AVIF image (<see cref="AvifWriterOptions.Layers"/>): its quality and its scale.</summary>
+/// <example>
+/// <code language="csharp" source="../../../../tests/Egami.DocSamples/Avif.cs" region="layers"/>
+/// </example>
+public sealed record AvifLayer
+{
+    private readonly int _quality = 60;
+    private readonly double _scale = 1;
+
+    /// <summary>Gets the layer's quality, 0 to 100 on <see cref="AvifWriterOptions.Quality"/>'s scale. Defaults to 60.</summary>
+    /// <exception cref="ArgumentOutOfRangeException">The value is outside 0 to 100.</exception>
+    public int Quality
+    {
+        get => _quality;
+        init
+        {
+            ArgumentOutOfRangeException.ThrowIfLessThan(value, 0);
+            ArgumentOutOfRangeException.ThrowIfGreaterThan(value, 100);
+            _quality = value;
+        }
+    }
+
+    /// <summary>
+    /// Gets the layer's size as a part of the image's, above 0 up to 1 (the default), as avifenc --scaling-mode sets it: a layer at
+    /// 0.5 is coded at half the width and height and shown scaled up. A layer of another size than the one before it is coded on
+    /// its own rather than from it.
+    /// </summary>
+    /// <exception cref="ArgumentOutOfRangeException">The value is not above 0 and at most 1.</exception>
+    public double Scale
+    {
+        get => _scale;
+        init => _scale = value is > 0 and <= 1 ? value : throw new ArgumentOutOfRangeException(nameof(value), value, "The scale is above 0 and at most 1.");
     }
 }
