@@ -768,11 +768,16 @@ internal sealed partial class PngReader : IFormatReader, Streaming.IRowSourceRea
             if (ReadZlibHeader(state, idat))
             {
                 using DeflateStream deflate = new(idat, CompressionMode.Decompress, leaveOpen: true);
-                using InflatedReader inflated = new(deflate, (int)header.RowBytes(header.Width) + 1);
+
+                // The worker owns the input until disposed, which waits for it: before the IDAT run is drained below.
+                long imageBytes = (header.RowBytes(header.Width) + 1) * header.Height;
+                using ReadAheadInflater? ahead = ReadAheadInflater.Worth(input, imageBytes) ? new(deflate, input.CancellationToken) : null;
+                using InflatedReader inflated = new((Stream?)ahead ?? deflate, (int)header.RowBytes(header.Width) + 1);
                 RowDecoder<TNatural, TPixel> rows = new(state, raster, inflated, unpack);
                 complete = header.Interlaced ? rows.DecodeInterlaced() : rows.DecodeSequential();
                 adler = rows.Adler;
                 checkAdler = complete && IsEndOfImageData(state, inflated);
+                ahead?.Dispose();
             }
             else
             {

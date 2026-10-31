@@ -317,9 +317,10 @@ internal sealed partial class JpegDecoder<TPixel>
     /// file can be read into memory. Every scan is located first, with the tables it uses; then each core takes the next scan in
     /// file order, and a scan that refines coefficients an earlier one codes follows it block row by block row, so a chain of
     /// refinement scans runs as a pipeline. Returns false to decode one scan at a time as before; a parallel decode that met
-    /// anything but clean data is undone, and <paramref name="reader"/> then reads the bytes already in memory.
+    /// anything but clean data is undone, and <paramref name="reader"/> then reads the bytes already in memory. Without
+    /// <paramref name="finish"/> the rows are not transformed: the decode stops with every coefficient in place, for pull mode.
     /// </summary>
-    private bool DecodeScansTogether(EgamiInput input, ref JpegBitReader reader, JpegScan first)
+    private bool DecodeScansTogether(EgamiInput input, ref JpegBitReader reader, JpegScan first, bool finish = true)
     {
         int cores = Math.Min(Math.Min(input.Context.MaxParallelism, Environment.ProcessorCount), MaxPipelineCores);
         if (cores < 2 || (!ForcePipeline && (long)_header.Width * _header.Height < ParallelPixels)
@@ -354,7 +355,7 @@ internal sealed partial class JpegDecoder<TPixel>
                 LatchQuant(i);
             }
 
-            RunPlan(input, bytes, size, plan, cores);
+            RunPlan(input, bytes, size, plan, cores, finish);
             _speculative = false;
             return true;
         }
@@ -434,10 +435,11 @@ internal sealed partial class JpegDecoder<TPixel>
     /// Runs the planned scans on <paramref name="cores"/> cores, then the last pass in runs of MCU rows, each run following every
     /// scan so it converts rows as soon as the last scan has passed them. Each core takes the next piece of work in that order, so
     /// a piece only ever waits for pieces that have started already, and none waits for a later one: the pipeline cannot deadlock.
+    /// Without <paramref name="finish"/> there is no last pass.
     /// </summary>
-    private void RunPlan(EgamiInput input, byte[] bytes, int size, List<PlannedScan> plan, int cores)
+    private void RunPlan(EgamiInput input, byte[] bytes, int size, List<PlannedScan> plan, int cores, bool finish)
     {
-        int runs = Math.Max(1, Math.Min(cores, _mcusY / MinRowsPerCore));
+        int runs = finish ? Math.Max(1, Math.Min(cores, _mcusY / MinRowsPerCore)) : 0;
         PipelineState state = new(input.CancellationToken);
         ScanFollower[] followers = new ScanFollower[plan.Count];
         for (int s = 0; s < plan.Count; s++)
