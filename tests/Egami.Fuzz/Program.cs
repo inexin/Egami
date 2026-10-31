@@ -39,7 +39,8 @@ using DrawingPath = Egami.Drawing.Path;
 // 2.3.6) decodes raw CCITT data with PDF's parameters picked by its first bytes, through the filter call, Load and the row
 // reader, which must agree. The zstd target (TIFF ZSTD task 1) decodes Zstandard frames into a large output and into one of
 // exactly the size written, which must agree; zstd-write (task 2) encodes its bytes at the level its first byte picks, which must
-// decode back exactly.
+// decode back exactly. The xz target (TIFF LZMA task 5) decodes xz streams as zstd does Zstandard frames, and xz-write (task 6)
+// encodes its bytes at the preset and delta distance its first byte picks, which must decode back exactly.
 // The ico target (Phase 2.3.3) loads ICO and CUR files every way (each entry, the
 // best one, MinimumSize, rows) and writes the entries back, which must read again to the same pixels; icoentry wraps its input
 // as the one entry of an icon, so mutations reach the BMP and PNG entry decoders and the AND mask directly. The psdfile target
@@ -178,6 +179,8 @@ static Action<Stream> Target(string name) => name switch
     "ccitt" => DecodeCcitt,
     "zstd" => DecodeZstd,
     "zstd-write" => EncodeZstd,
+    "xz" => DecodeXz,
+    "xz-write" => EncodeXz,
     "cube" => LoadCube,
     "jpeg2000" => LoadJpeg2000,
     "jpeg2000codec" => DecodeJpeg2000Codec,
@@ -846,6 +849,55 @@ static void DecodeZstd(Stream stream)
     if (Egami.Compression.Zstd.ZstdDecoder.Decode(data, exact) != written || !exact.AsSpan().SequenceEqual(output.AsSpan(0, written)))
     {
         throw new InvalidOperationException("The Zstandard decoder writes differently into an output of exactly the right size.");
+    }
+}
+
+static void DecodeXz(Stream stream)
+{
+    // Into a large output, then into exactly what that wrote, which must give the same bytes; only EgamiExceptions may escape.
+    byte[] data = ReadAll(stream);
+    byte[] output = new byte[512 * 1024];
+    int written;
+    try
+    {
+        written = Egami.Compression.Lzma.XzDecoder.Decode(data, output);
+    }
+    catch (EgamiException)
+    {
+        return;
+    }
+
+    if (written < 0 || written > output.Length)
+    {
+        throw new InvalidOperationException($"The xz decoder reports {written} bytes written.");
+    }
+
+    byte[] exact = new byte[written];
+    if (Egami.Compression.Lzma.XzDecoder.Decode(data, exact) != written || !exact.AsSpan().SequenceEqual(output.AsSpan(0, written)))
+    {
+        throw new InvalidOperationException("The xz decoder writes differently into an output of exactly the right size.");
+    }
+}
+
+static void EncodeXz(Stream stream)
+{
+    // The first byte picks the preset (low four bits, to 9) and the delta distance (high four bits), the rest is the data: the
+    // stream must decode back to it exactly.
+    byte[] data = ReadAll(stream);
+    if (data.Length == 0)
+    {
+        return;
+    }
+
+    int preset = (data[0] & 15) % 10;
+    int delta = data[0] >> 4;
+    ReadOnlySpan<byte> input = data.AsSpan(1);
+    byte[] packed = new byte[Egami.Compression.Lzma.XzEncoder.MaxEncodedLength(input.Length)];
+    int size = Egami.Compression.Lzma.XzEncoder.Encode(input, packed, preset, delta);
+    byte[] back = new byte[input.Length];
+    if (Egami.Compression.Lzma.XzDecoder.Decode(packed.AsSpan(0, size), back) != input.Length || !back.AsSpan().SequenceEqual(input))
+    {
+        throw new InvalidOperationException($"An xz stream written at preset {preset}, delta {delta} does not decode to its input.");
     }
 }
 

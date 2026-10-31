@@ -247,3 +247,6 @@ Egami.Formats.Jxl.JxlExtraChannelImage.Channel.get -> Egami.Formats.Jxl.JxlExtra
 Egami.Formats.Jxl.JxlExtraChannelImage.Samples.get -> Egami.Raster<Egami.Pixels.GrayF32>!
 Egami.Formats.Jxl.JxlWriterOptions.ExtraChannels.get -> System.Collections.Generic.IReadOnlyList<Egami.Formats.Jxl.JxlExtraChannelImage!>?
 Egami.Formats.Jxl.JxlWriterOptions.ExtraChannels.init -> void
+Egami.Formats.Tiff.TiffCompression.Lzma = 34925 -> Egami.Formats.Tiff.TiffCompression
+Egami.Formats.Tiff.TiffWriterOptions.LzmaPreset.get -> int
+Egami.Formats.Tiff.TiffWriterOptions.LzmaPreset.init -> void

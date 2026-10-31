@@ -19,6 +19,7 @@ internal static class LocalCorpus
         ["jxl"] = "tools/make-jxl-references.py",
         ["tiff"] = "tools/make-tiff-references.py --pics",
         ["vp8"] = "tools/make-vp8-references.py",
+        ["xz"] = "tools/make-xz-references.py --local",
         ["zstd"] = "tools/make-zstd-references.py --local",
     };
 

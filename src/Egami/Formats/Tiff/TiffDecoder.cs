@@ -3,6 +3,7 @@ using System.IO.Compression;
 using System.Numerics;
 using System.Runtime.InteropServices;
 
+using Egami.Compression.Lzma;
 using Egami.Compression.Zstd;
 
 namespace Egami.Formats.Tiff;
@@ -53,6 +54,7 @@ internal sealed class TiffDecoder : IDisposable
                 TiffCodes.Lzw => TiffLzw.Decode(packed, target),
                 TiffCodes.Deflate or TiffCodes.AdobeDeflate => Inflate(packed, target),
                 TiffCodes.Zstd => ZstdDecoder.DecodePartial(packed, target),
+                TiffCodes.Lzma => XzDecoder.DecodePartial(packed, target),
                 TiffCodes.PackBits => PackBits.Decode(packed, target, out _),
                 TiffCodes.ThunderScan => ThunderScan(packed, target, page.UnitWidth, rows),
                 TiffCodes.CcittRle or TiffCodes.CcittGroup3 or TiffCodes.CcittGroup4 or TiffCodes.CcittRleWord

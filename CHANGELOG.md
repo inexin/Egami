@@ -144,6 +144,18 @@ Arithmetic and lossless JPEG writing, stage A: arithmetic coding. All additive.
 - `JpegTransformOptions.Arithmetic` writes the transform's result arithmetic-coded, so a Huffman file can be repacked smaller
   with no change to its pixels, as `jpegtran -arithmetic` does. The default stays Huffman.
 
+TIFF LZMA (Build Plan "Egami TIFF: ZSTD, LZMA and LERC", tasks 5 to 9). All additive.
+
+- TIFF reads LZMA compression (34925), with the horizontal and floating-point predictors, through a fully managed xz and
+  LZMA2 decoder written from the xz format specification and the LZMA SDK's (no native code, no packages): every stream the xz
+  CLI writes at presets 0 to 9 and -e, with the delta filter and any check (CRC32, CRC64 and SHA-256 verified), decodes byte for
+  byte, at about 0.6 times liblzma's speed. Filters other than delta and LZMA2 are refused by name.
+- `TiffCompression.Lzma` and `TiffWriterOptions.LzmaPreset` (0 to 9, default 6, as libtiff's): TIFF writes LZMA as libtiff does,
+  each strip or tile an xz stream of the delta filter and LZMA2, with a managed encoder on xz's presets (fast mode on hash
+  chains, normal mode on binary trees with price-based parsing), within 4 % of liblzma's size and at 0.5 times its speed or
+  better. libtiff and GDAL read Egami's LZMA files, and Egami reads theirs, with identical samples. LZMA is slow by nature: the
+  default compression stays Deflate.
+
 TIFF ZSTD (Build Plan "Egami TIFF: ZSTD, LZMA and LERC", tasks 1 to 4). All additive.
 
 - TIFF reads ZSTD compression (50000), with the horizontal and floating-point predictors, through a fully managed Zstandard
