@@ -114,6 +114,9 @@ they did, except that a layered image now loads its best layer.
   `FilmGrainDenoise` (1 to 50) denoises and writes AV1 film grain parameters that decoders add back. A raster loaded with
   `AvifReaderOptions.FilmGrain = false` gets its grain parameters written back on save. Layered images larger than one AV1
   frame are written in one layer (`Avif.LayersDropped`).
+- AVIF extras gates (egami-compare): `TargetSize` then searches the quantizer between quality steps, so files land within 5% under
+  the size, and a progressive image's first layer is coded without Variance Boost, which makes it 2 to 6% of the file instead of 4
+  to 8%.
 
 For camera RAW (Egami.Formats.Extended). Additive.
 
