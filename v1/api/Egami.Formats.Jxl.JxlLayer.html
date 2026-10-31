@@ -6,7 +6,7 @@
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <meta name="title" content="Class JxlLayer | Egami ">
       
-      <meta name="description" content="A JPEG XL frame before blending, from .">
+      <meta name="description" content="A JPEG XL frame before blending, from , or one to write with .">
       <link rel="icon" href="../images/favicon.ico">
       <link rel="stylesheet" href="../public/docfx.min.css">
       <link rel="stylesheet" href="../public/main.css">
@@ -89,7 +89,7 @@
 
 
   <h1 id="Egami_Formats_Jxl_JxlLayer" data-uid="Egami.Formats.Jxl.JxlLayer" class="text-break">
-Class JxlLayer  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Jxl/JxlImage.cs/#L233"><i class="bi bi-code-slash"></i></a>
+Class JxlLayer  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Jxl/JxlImage.cs/#L310"><i class="bi bi-code-slash"></i></a>
   </h1>
 
   <div class="facts text-secondary">
@@ -97,7 +97,8 @@ Class JxlLayer  <a class="header-action link-secondary" title="View source" href
   <dl><dt>Assembly</dt><dd>Egami.dll</dd></dl>
   </div>
 
-  <div class="markdown summary"><p>A JPEG XL frame before blending, from <a class="xref" href="Egami.Formats.Jxl.JxlImage.html#Egami_Formats_Jxl_JxlImage_ReadLayers_System_String_Egami_Formats_ReaderOptions_Egami_EgamiContext_">ReadLayers(string, ReaderOptions?, EgamiContext?)</a>.</p>
+  <div class="markdown summary"><p>A JPEG XL frame before blending, from <a class="xref" href="Egami.Formats.Jxl.JxlImage.html#Egami_Formats_Jxl_JxlImage_ReadLayers_System_String_Egami_Formats_ReaderOptions_Egami_EgamiContext_">ReadLayers(string, ReaderOptions?, EgamiContext?)</a>, or one to
+write with <a class="xref" href="Egami.Formats.Jxl.JxlImage.html#Egami_Formats_Jxl_JxlImage_WriteLayers_System_String_System_Int32_System_Int32_System_Collections_Generic_IReadOnlyList_Egami_Formats_Jxl_JxlLayer__Egami_Formats_Jxl_JxlWriterOptions_Egami_EgamiContext_">WriteLayers(string, int, int, IReadOnlyList&lt;JxlLayer&gt;, JxlWriterOptions?, EgamiContext?)</a>.</p>
 </div>
   <div class="markdown conceptual"></div>
 
@@ -171,6 +172,89 @@ using Raster thumbnail = Raster.Load("duck.jxl", options: new JxlReaderOptions {
 
 
 
+  <h2 class="section" id="constructors">Constructors
+</h2>
+
+
+  <a id="Egami_Formats_Jxl_JxlLayer__ctor_" data-uid="Egami.Formats.Jxl.JxlLayer.#ctor*"></a>
+
+  <h3 id="Egami_Formats_Jxl_JxlLayer__ctor_Egami_Raster_System_Int32_System_Int32_Egami_Formats_Jxl_JxlLayerBlend_System_TimeSpan_System_String_" data-uid="Egami.Formats.Jxl.JxlLayer.#ctor(Egami.Raster,System.Int32,System.Int32,Egami.Formats.Jxl.JxlLayerBlend,System.TimeSpan,System.String)">
+  JxlLayer(Raster, int, int, JxlLayerBlend, TimeSpan, string?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Jxl/JxlImage.cs/#L325"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Creates a layer to write. The layer takes the raster: disposing the layer disposes it.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public JxlLayer(Raster raster, int x = 0, int y = 0, JxlLayerBlend blend = JxlLayerBlend.Replace, TimeSpan duration = default, string? name = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>raster</code> <a class="xref" href="Egami.Raster.html">Raster</a></dt>
+    <dd><p>The layer's pixels, at its own size.</p>
+</dd>
+    <dt><code>x</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The left edge on the canvas; it can be negative or reach past the canvas.</p>
+</dd>
+    <dt><code>y</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The top edge on the canvas; it can be negative or reach past the canvas.</p>
+</dd>
+    <dt><code>blend</code> <a class="xref" href="Egami.Formats.Jxl.JxlLayerBlend.html">JxlLayerBlend</a></dt>
+    <dd><p>How the layer's color combines with the canvas below it.</p>
+</dd>
+    <dt><code>duration</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.timespan">TimeSpan</a></dt>
+    <dd><p>How long the canvas shows after this layer in an animation; zero for a layer that is not shown alone.</p>
+</dd>
+    <dt><code>name</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The layer's name, up to 1,071 bytes of UTF-8, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for none.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Formats_Jxl_JxlLayer__ctor_Egami_Raster_System_Int32_System_Int32_Egami_Formats_Jxl_JxlLayerBlend_System_TimeSpan_System_String__examples">Examples</h4>
+  <pre><code class="lang-csharp">// Layers for an editor: each at its own place, blended onto the ones below, and named. ReadLayers gives them back.
+using Raster&lt;Rgba8&gt; photo = Raster.Load&lt;Rgba8&gt;("duck.png");
+Raster&lt;Rgba8&gt; badge = Raster.Create&lt;Rgba8&gt;(120, 60, new Rgba8(255, 200, 0, 160));
+List&lt;JxlLayer&gt; layers =
+[
+    new(photo.As&lt;Rgba8&gt;(), name: "photo"),
+    new(badge, x: -20, y: 30, blend: JxlLayerBlend.Blend, name: "badge"),
+];
+JxlImage.WriteLayers("layered.jxl", photo.Width, photo.Height, layers);
+foreach (JxlLayer layer in layers)
+{
+    layer.Dispose();
+}
+
+// Load gives them blended; ReadLayers as they were written.
+using Raster flat = Raster.Load("layered.jxl");
+IReadOnlyList&lt;JxlLayer&gt; read = JxlImage.ReadLayers("layered.jxl");</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentnullexception">ArgumentNullException</a></dt>
+    <dd><p><code class="paramref">raster</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p><code class="paramref">blend</code> is not a defined mode, or <code class="paramref">duration</code> is negative or longer than 2³² − 1 ms.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p><code class="paramref">name</code> is longer than 1,071 bytes of UTF-8.</p>
+</dd>
+  </dl>
+
+
+
   <h2 class="section" id="properties">Properties
 </h2>
 
@@ -179,7 +263,7 @@ using Raster thumbnail = Raster.Load("duck.jxl", options: new JxlReaderOptions {
 
   <h3 id="Egami_Formats_Jxl_JxlLayer_Blend" data-uid="Egami.Formats.Jxl.JxlLayer.Blend">
   Blend
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Jxl/JxlImage.cs/#L255"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Jxl/JxlImage.cs/#L374"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets how the layer's color combines with the canvas.</p>
@@ -211,7 +295,7 @@ using Raster thumbnail = Raster.Load("duck.jxl", options: new JxlReaderOptions {
 
   <h3 id="Egami_Formats_Jxl_JxlLayer_Duration" data-uid="Egami.Formats.Jxl.JxlLayer.Duration">
   Duration
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Jxl/JxlImage.cs/#L258"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Jxl/JxlImage.cs/#L377"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets how long the canvas shows after this layer in an animation; zero for a layer that is not shown alone.</p>
@@ -243,7 +327,7 @@ using Raster thumbnail = Raster.Load("duck.jxl", options: new JxlReaderOptions {
 
   <h3 id="Egami_Formats_Jxl_JxlLayer_Name" data-uid="Egami.Formats.Jxl.JxlLayer.Name">
   Name
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Jxl/JxlImage.cs/#L261"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Jxl/JxlImage.cs/#L380"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the layer's name, or an empty string.</p>
@@ -275,7 +359,7 @@ using Raster thumbnail = Raster.Load("duck.jxl", options: new JxlReaderOptions {
 
   <h3 id="Egami_Formats_Jxl_JxlLayer_Raster" data-uid="Egami.Formats.Jxl.JxlLayer.Raster">
   Raster
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Jxl/JxlImage.cs/#L246"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Jxl/JxlImage.cs/#L365"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the layer's pixels, at its own size.</p>
@@ -307,7 +391,7 @@ using Raster thumbnail = Raster.Load("duck.jxl", options: new JxlReaderOptions {
 
   <h3 id="Egami_Formats_Jxl_JxlLayer_X" data-uid="Egami.Formats.Jxl.JxlLayer.X">
   X
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Jxl/JxlImage.cs/#L249"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Jxl/JxlImage.cs/#L368"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the left edge of the layer on the canvas; it can be negative or reach past the canvas.</p>
@@ -339,7 +423,7 @@ using Raster thumbnail = Raster.Load("duck.jxl", options: new JxlReaderOptions {
 
   <h3 id="Egami_Formats_Jxl_JxlLayer_Y" data-uid="Egami.Formats.Jxl.JxlLayer.Y">
   Y
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Jxl/JxlImage.cs/#L252"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Jxl/JxlImage.cs/#L371"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the top edge of the layer on the canvas.</p>
@@ -375,7 +459,7 @@ using Raster thumbnail = Raster.Load("duck.jxl", options: new JxlReaderOptions {
 
   <h3 id="Egami_Formats_Jxl_JxlLayer_Dispose" data-uid="Egami.Formats.Jxl.JxlLayer.Dispose">
   Dispose()
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Jxl/JxlImage.cs/#L264"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Jxl/JxlImage.cs/#L383"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Disposes the raster.</p>
@@ -402,7 +486,7 @@ using Raster thumbnail = Raster.Load("duck.jxl", options: new JxlReaderOptions {
 </article>
 
         <div class="contribution d-print-none">
-          <a href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Jxl/JxlImage.cs/#L233" class="edit-link">Edit this page</a>
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Jxl/JxlImage.cs/#L310" class="edit-link">Edit this page</a>
         </div>
 
 

@@ -48406,6 +48406,57 @@ references:
   isSpec: "True"
   fullName: Egami.Formats.Jxl.JxlExtraChannel.Subsampling
   nameWithType: JxlExtraChannel.Subsampling
+- uid: Egami.Formats.Jxl.JxlExtraChannelImage
+  name: JxlExtraChannelImage
+  href: api/Egami.Formats.Jxl.JxlExtraChannelImage.html
+  commentId: T:Egami.Formats.Jxl.JxlExtraChannelImage
+  fullName: Egami.Formats.Jxl.JxlExtraChannelImage
+  nameWithType: JxlExtraChannelImage
+- uid: Egami.Formats.Jxl.JxlExtraChannelImage.#ctor(Egami.Formats.Jxl.JxlExtraChannel,Egami.Raster{Egami.Pixels.GrayF32})
+  name: JxlExtraChannelImage(JxlExtraChannel, Raster<GrayF32>)
+  href: api/Egami.Formats.Jxl.JxlExtraChannelImage.html#Egami_Formats_Jxl_JxlExtraChannelImage__ctor_Egami_Formats_Jxl_JxlExtraChannel_Egami_Raster_Egami_Pixels_GrayF32__
+  commentId: M:Egami.Formats.Jxl.JxlExtraChannelImage.#ctor(Egami.Formats.Jxl.JxlExtraChannel,Egami.Raster{Egami.Pixels.GrayF32})
+  name.vb: New(JxlExtraChannel, Raster(Of GrayF32))
+  fullName: Egami.Formats.Jxl.JxlExtraChannelImage.JxlExtraChannelImage(Egami.Formats.Jxl.JxlExtraChannel, Egami.Raster<Egami.Pixels.GrayF32>)
+  fullName.vb: Egami.Formats.Jxl.JxlExtraChannelImage.New(Egami.Formats.Jxl.JxlExtraChannel, Egami.Raster(Of Egami.Pixels.GrayF32))
+  nameWithType: JxlExtraChannelImage.JxlExtraChannelImage(JxlExtraChannel, Raster<GrayF32>)
+  nameWithType.vb: JxlExtraChannelImage.New(JxlExtraChannel, Raster(Of GrayF32))
+- uid: Egami.Formats.Jxl.JxlExtraChannelImage.#ctor*
+  name: JxlExtraChannelImage
+  href: api/Egami.Formats.Jxl.JxlExtraChannelImage.html#Egami_Formats_Jxl_JxlExtraChannelImage__ctor_
+  commentId: Overload:Egami.Formats.Jxl.JxlExtraChannelImage.#ctor
+  isSpec: "True"
+  name.vb: New
+  fullName: Egami.Formats.Jxl.JxlExtraChannelImage.JxlExtraChannelImage
+  fullName.vb: Egami.Formats.Jxl.JxlExtraChannelImage.New
+  nameWithType: JxlExtraChannelImage.JxlExtraChannelImage
+  nameWithType.vb: JxlExtraChannelImage.New
+- uid: Egami.Formats.Jxl.JxlExtraChannelImage.Channel
+  name: Channel
+  href: api/Egami.Formats.Jxl.JxlExtraChannelImage.html#Egami_Formats_Jxl_JxlExtraChannelImage_Channel
+  commentId: P:Egami.Formats.Jxl.JxlExtraChannelImage.Channel
+  fullName: Egami.Formats.Jxl.JxlExtraChannelImage.Channel
+  nameWithType: JxlExtraChannelImage.Channel
+- uid: Egami.Formats.Jxl.JxlExtraChannelImage.Channel*
+  name: Channel
+  href: api/Egami.Formats.Jxl.JxlExtraChannelImage.html#Egami_Formats_Jxl_JxlExtraChannelImage_Channel_
+  commentId: Overload:Egami.Formats.Jxl.JxlExtraChannelImage.Channel
+  isSpec: "True"
+  fullName: Egami.Formats.Jxl.JxlExtraChannelImage.Channel
+  nameWithType: JxlExtraChannelImage.Channel
+- uid: Egami.Formats.Jxl.JxlExtraChannelImage.Samples
+  name: Samples
+  href: api/Egami.Formats.Jxl.JxlExtraChannelImage.html#Egami_Formats_Jxl_JxlExtraChannelImage_Samples
+  commentId: P:Egami.Formats.Jxl.JxlExtraChannelImage.Samples
+  fullName: Egami.Formats.Jxl.JxlExtraChannelImage.Samples
+  nameWithType: JxlExtraChannelImage.Samples
+- uid: Egami.Formats.Jxl.JxlExtraChannelImage.Samples*
+  name: Samples
+  href: api/Egami.Formats.Jxl.JxlExtraChannelImage.html#Egami_Formats_Jxl_JxlExtraChannelImage_Samples_
+  commentId: Overload:Egami.Formats.Jxl.JxlExtraChannelImage.Samples
+  isSpec: "True"
+  fullName: Egami.Formats.Jxl.JxlExtraChannelImage.Samples
+  nameWithType: JxlExtraChannelImage.Samples
 - uid: Egami.Formats.Jxl.JxlExtraChannelKind
   name: JxlExtraChannelKind
   href: api/Egami.Formats.Jxl.JxlExtraChannelKind.html
@@ -48616,12 +48667,56 @@ references:
   isSpec: "True"
   fullName: Egami.Formats.Jxl.JxlImage.ReconstructJpeg
   nameWithType: JxlImage.ReconstructJpeg
+- uid: Egami.Formats.Jxl.JxlImage.WriteLayers(System.IO.Stream,System.Int32,System.Int32,System.Collections.Generic.IReadOnlyList{Egami.Formats.Jxl.JxlLayer},Egami.Formats.Jxl.JxlWriterOptions,Egami.EgamiContext)
+  name: WriteLayers(Stream, int, int, IReadOnlyList<JxlLayer>, JxlWriterOptions?, EgamiContext?)
+  href: api/Egami.Formats.Jxl.JxlImage.html#Egami_Formats_Jxl_JxlImage_WriteLayers_System_IO_Stream_System_Int32_System_Int32_System_Collections_Generic_IReadOnlyList_Egami_Formats_Jxl_JxlLayer__Egami_Formats_Jxl_JxlWriterOptions_Egami_EgamiContext_
+  commentId: M:Egami.Formats.Jxl.JxlImage.WriteLayers(System.IO.Stream,System.Int32,System.Int32,System.Collections.Generic.IReadOnlyList{Egami.Formats.Jxl.JxlLayer},Egami.Formats.Jxl.JxlWriterOptions,Egami.EgamiContext)
+  name.vb: WriteLayers(Stream, Integer, Integer, IReadOnlyList(Of JxlLayer), JxlWriterOptions, EgamiContext)
+  fullName: Egami.Formats.Jxl.JxlImage.WriteLayers(System.IO.Stream, int, int, System.Collections.Generic.IReadOnlyList<Egami.Formats.Jxl.JxlLayer>, Egami.Formats.Jxl.JxlWriterOptions?, Egami.EgamiContext?)
+  fullName.vb: Egami.Formats.Jxl.JxlImage.WriteLayers(System.IO.Stream, Integer, Integer, System.Collections.Generic.IReadOnlyList(Of Egami.Formats.Jxl.JxlLayer), Egami.Formats.Jxl.JxlWriterOptions, Egami.EgamiContext)
+  nameWithType: JxlImage.WriteLayers(Stream, int, int, IReadOnlyList<JxlLayer>, JxlWriterOptions?, EgamiContext?)
+  nameWithType.vb: JxlImage.WriteLayers(Stream, Integer, Integer, IReadOnlyList(Of JxlLayer), JxlWriterOptions, EgamiContext)
+- uid: Egami.Formats.Jxl.JxlImage.WriteLayers(System.String,System.Int32,System.Int32,System.Collections.Generic.IReadOnlyList{Egami.Formats.Jxl.JxlLayer},Egami.Formats.Jxl.JxlWriterOptions,Egami.EgamiContext)
+  name: WriteLayers(string, int, int, IReadOnlyList<JxlLayer>, JxlWriterOptions?, EgamiContext?)
+  href: api/Egami.Formats.Jxl.JxlImage.html#Egami_Formats_Jxl_JxlImage_WriteLayers_System_String_System_Int32_System_Int32_System_Collections_Generic_IReadOnlyList_Egami_Formats_Jxl_JxlLayer__Egami_Formats_Jxl_JxlWriterOptions_Egami_EgamiContext_
+  commentId: M:Egami.Formats.Jxl.JxlImage.WriteLayers(System.String,System.Int32,System.Int32,System.Collections.Generic.IReadOnlyList{Egami.Formats.Jxl.JxlLayer},Egami.Formats.Jxl.JxlWriterOptions,Egami.EgamiContext)
+  name.vb: WriteLayers(String, Integer, Integer, IReadOnlyList(Of JxlLayer), JxlWriterOptions, EgamiContext)
+  fullName: Egami.Formats.Jxl.JxlImage.WriteLayers(string, int, int, System.Collections.Generic.IReadOnlyList<Egami.Formats.Jxl.JxlLayer>, Egami.Formats.Jxl.JxlWriterOptions?, Egami.EgamiContext?)
+  fullName.vb: Egami.Formats.Jxl.JxlImage.WriteLayers(String, Integer, Integer, System.Collections.Generic.IReadOnlyList(Of Egami.Formats.Jxl.JxlLayer), Egami.Formats.Jxl.JxlWriterOptions, Egami.EgamiContext)
+  nameWithType: JxlImage.WriteLayers(string, int, int, IReadOnlyList<JxlLayer>, JxlWriterOptions?, EgamiContext?)
+  nameWithType.vb: JxlImage.WriteLayers(String, Integer, Integer, IReadOnlyList(Of JxlLayer), JxlWriterOptions, EgamiContext)
+- uid: Egami.Formats.Jxl.JxlImage.WriteLayers*
+  name: WriteLayers
+  href: api/Egami.Formats.Jxl.JxlImage.html#Egami_Formats_Jxl_JxlImage_WriteLayers_
+  commentId: Overload:Egami.Formats.Jxl.JxlImage.WriteLayers
+  isSpec: "True"
+  fullName: Egami.Formats.Jxl.JxlImage.WriteLayers
+  nameWithType: JxlImage.WriteLayers
 - uid: Egami.Formats.Jxl.JxlLayer
   name: JxlLayer
   href: api/Egami.Formats.Jxl.JxlLayer.html
   commentId: T:Egami.Formats.Jxl.JxlLayer
   fullName: Egami.Formats.Jxl.JxlLayer
   nameWithType: JxlLayer
+- uid: Egami.Formats.Jxl.JxlLayer.#ctor(Egami.Raster,System.Int32,System.Int32,Egami.Formats.Jxl.JxlLayerBlend,System.TimeSpan,System.String)
+  name: JxlLayer(Raster, int, int, JxlLayerBlend, TimeSpan, string?)
+  href: api/Egami.Formats.Jxl.JxlLayer.html#Egami_Formats_Jxl_JxlLayer__ctor_Egami_Raster_System_Int32_System_Int32_Egami_Formats_Jxl_JxlLayerBlend_System_TimeSpan_System_String_
+  commentId: M:Egami.Formats.Jxl.JxlLayer.#ctor(Egami.Raster,System.Int32,System.Int32,Egami.Formats.Jxl.JxlLayerBlend,System.TimeSpan,System.String)
+  name.vb: New(Raster, Integer, Integer, JxlLayerBlend, TimeSpan, String)
+  fullName: Egami.Formats.Jxl.JxlLayer.JxlLayer(Egami.Raster, int, int, Egami.Formats.Jxl.JxlLayerBlend, System.TimeSpan, string?)
+  fullName.vb: Egami.Formats.Jxl.JxlLayer.New(Egami.Raster, Integer, Integer, Egami.Formats.Jxl.JxlLayerBlend, System.TimeSpan, String)
+  nameWithType: JxlLayer.JxlLayer(Raster, int, int, JxlLayerBlend, TimeSpan, string?)
+  nameWithType.vb: JxlLayer.New(Raster, Integer, Integer, JxlLayerBlend, TimeSpan, String)
+- uid: Egami.Formats.Jxl.JxlLayer.#ctor*
+  name: JxlLayer
+  href: api/Egami.Formats.Jxl.JxlLayer.html#Egami_Formats_Jxl_JxlLayer__ctor_
+  commentId: Overload:Egami.Formats.Jxl.JxlLayer.#ctor
+  isSpec: "True"
+  name.vb: New
+  fullName: Egami.Formats.Jxl.JxlLayer.JxlLayer
+  fullName.vb: Egami.Formats.Jxl.JxlLayer.New
+  nameWithType: JxlLayer.JxlLayer
+  nameWithType.vb: JxlLayer.New
 - uid: Egami.Formats.Jxl.JxlLayer.Blend
   name: Blend
   href: api/Egami.Formats.Jxl.JxlLayer.html#Egami_Formats_Jxl_JxlLayer_Blend
@@ -48865,6 +48960,32 @@ references:
   isSpec: "True"
   fullName: Egami.Formats.Jxl.JxlWriterOptions.Effort
   nameWithType: JxlWriterOptions.Effort
+- uid: Egami.Formats.Jxl.JxlWriterOptions.ExtraChannels
+  name: ExtraChannels
+  href: api/Egami.Formats.Jxl.JxlWriterOptions.html#Egami_Formats_Jxl_JxlWriterOptions_ExtraChannels
+  commentId: P:Egami.Formats.Jxl.JxlWriterOptions.ExtraChannels
+  fullName: Egami.Formats.Jxl.JxlWriterOptions.ExtraChannels
+  nameWithType: JxlWriterOptions.ExtraChannels
+- uid: Egami.Formats.Jxl.JxlWriterOptions.ExtraChannels*
+  name: ExtraChannels
+  href: api/Egami.Formats.Jxl.JxlWriterOptions.html#Egami_Formats_Jxl_JxlWriterOptions_ExtraChannels_
+  commentId: Overload:Egami.Formats.Jxl.JxlWriterOptions.ExtraChannels
+  isSpec: "True"
+  fullName: Egami.Formats.Jxl.JxlWriterOptions.ExtraChannels
+  nameWithType: JxlWriterOptions.ExtraChannels
+- uid: Egami.Formats.Jxl.JxlWriterOptions.FirstFrameOnly
+  name: FirstFrameOnly
+  href: api/Egami.Formats.Jxl.JxlWriterOptions.html#Egami_Formats_Jxl_JxlWriterOptions_FirstFrameOnly
+  commentId: P:Egami.Formats.Jxl.JxlWriterOptions.FirstFrameOnly
+  fullName: Egami.Formats.Jxl.JxlWriterOptions.FirstFrameOnly
+  nameWithType: JxlWriterOptions.FirstFrameOnly
+- uid: Egami.Formats.Jxl.JxlWriterOptions.FirstFrameOnly*
+  name: FirstFrameOnly
+  href: api/Egami.Formats.Jxl.JxlWriterOptions.html#Egami_Formats_Jxl_JxlWriterOptions_FirstFrameOnly_
+  commentId: Overload:Egami.Formats.Jxl.JxlWriterOptions.FirstFrameOnly
+  isSpec: "True"
+  fullName: Egami.Formats.Jxl.JxlWriterOptions.FirstFrameOnly
+  nameWithType: JxlWriterOptions.FirstFrameOnly
 - uid: Egami.Formats.Jxl.JxlWriterOptions.KeepTransparentColors
   name: KeepTransparentColors
   href: api/Egami.Formats.Jxl.JxlWriterOptions.html#Egami_Formats_Jxl_JxlWriterOptions_KeepTransparentColors

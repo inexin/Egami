@@ -8007,6 +8007,20 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Jxl.JxlExtraChannelImage.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Jxl.JxlExtraChannelImage.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Jxl.JxlExtraChannelImage",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Jxl.JxlExtraChannelImage.yml\" sourcestartlinenumber=\"1\">An extra channel to write with <xref href=\"Egami.Formats.Jxl.JxlWriterOptions.ExtraChannels\" data-throw-if-not-resolved=\"false\"></xref>: its description and its samples, as\n<xref href=\"Egami.Formats.Jxl.JxlImage.ReadExtraChannel(System.String%2cSystem.Int32%2cEgami.Formats.ReaderOptions%2cEgami.EgamiContext)\" data-throw-if-not-resolved=\"false\"></xref> gives them back.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.Formats.Jxl.JxlExtraChannelKind.yml",
       "output": {
         ".html": {
@@ -8059,7 +8073,7 @@
       "Uid": null,
       "IsMRef": true,
       "Title": "Egami.Formats.Jxl.JxlLayer",
-      "Summary": "<p sourcefile=\"api/Egami.Formats.Jxl.JxlLayer.yml\" sourcestartlinenumber=\"1\">A JPEG XL frame before blending, from <xref href=\"Egami.Formats.Jxl.JxlImage.ReadLayers(System.String%2cEgami.Formats.ReaderOptions%2cEgami.EgamiContext)\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n"
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Jxl.JxlLayer.yml\" sourcestartlinenumber=\"1\">A JPEG XL frame before blending, from <xref href=\"Egami.Formats.Jxl.JxlImage.ReadLayers(System.String%2cEgami.Formats.ReaderOptions%2cEgami.EgamiContext)\" data-throw-if-not-resolved=\"false\"></xref>, or one to\nwrite with <xref href=\"Egami.Formats.Jxl.JxlImage.WriteLayers(System.String%2cSystem.Int32%2cSystem.Int32%2cSystem.Collections.Generic.IReadOnlyList%7bEgami.Formats.Jxl.JxlLayer%7d%2cEgami.Formats.Jxl.JxlWriterOptions%2cEgami.EgamiContext)\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n"
     },
     {
       "type": "ManagedReference",

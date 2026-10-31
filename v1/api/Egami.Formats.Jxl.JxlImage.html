@@ -176,7 +176,7 @@ using Raster thumbnail = Raster.Load("duck.jxl", options: new JxlReaderOptions {
 
   <h3 id="Egami_Formats_Jxl_JxlImage_ReadExtraChannel_System_IO_Stream_System_Int32_Egami_Formats_ReaderOptions_Egami_EgamiContext_" data-uid="Egami.Formats.Jxl.JxlImage.ReadExtraChannel(System.IO.Stream,System.Int32,Egami.Formats.ReaderOptions,Egami.EgamiContext)">
   ReadExtraChannel(Stream, int, ReaderOptions?, EgamiContext?)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Jxl/JxlImage.cs/#L199"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Jxl/JxlImage.cs/#L273"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Reads one extra channel from a stream; see <a class="xref" href="Egami.Formats.Jxl.JxlImage.html#Egami_Formats_Jxl_JxlImage_ReadExtraChannel_System_String_System_Int32_Egami_Formats_ReaderOptions_Egami_EgamiContext_">ReadExtraChannel(string, int, ReaderOptions?, EgamiContext?)</a>.</p>
@@ -248,7 +248,7 @@ using Raster plain = Raster.Load("sprite.jxl", options: new JxlReaderOptions { R
 
   <h3 id="Egami_Formats_Jxl_JxlImage_ReadExtraChannel_System_String_System_Int32_Egami_Formats_ReaderOptions_Egami_EgamiContext_" data-uid="Egami.Formats.Jxl.JxlImage.ReadExtraChannel(System.String,System.Int32,Egami.Formats.ReaderOptions,Egami.EgamiContext)">
   ReadExtraChannel(string, int, ReaderOptions?, EgamiContext?)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Jxl/JxlImage.cs/#L181"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Jxl/JxlImage.cs/#L255"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Reads one extra channel, such as depth, a selection mask, thermal data or a spot color, into a gray raster at the image
@@ -816,6 +816,169 @@ if (((JxlDetails)image.Metadata.FormatDetails!).HasJpegReconstruction)
 </dd>
     <dt><a class="xref" href="Egami.CorruptDataException.html">CorruptDataException</a></dt>
     <dd><p>The data breaks the format's rules, including data of another format.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Formats_Jxl_JxlImage_WriteLayers_" data-uid="Egami.Formats.Jxl.JxlImage.WriteLayers*"></a>
+
+  <h3 id="Egami_Formats_Jxl_JxlImage_WriteLayers_System_IO_Stream_System_Int32_System_Int32_System_Collections_Generic_IReadOnlyList_Egami_Formats_Jxl_JxlLayer__Egami_Formats_Jxl_JxlWriterOptions_Egami_EgamiContext_" data-uid="Egami.Formats.Jxl.JxlImage.WriteLayers(System.IO.Stream,System.Int32,System.Int32,System.Collections.Generic.IReadOnlyList{Egami.Formats.Jxl.JxlLayer},Egami.Formats.Jxl.JxlWriterOptions,Egami.EgamiContext)">
+  WriteLayers(Stream, int, int, IReadOnlyList&lt;JxlLayer&gt;, JxlWriterOptions?, EgamiContext?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Jxl/JxlImage.cs/#L207"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Writes layers to a stream; see <a class="xref" href="Egami.Formats.Jxl.JxlImage.html#Egami_Formats_Jxl_JxlImage_WriteLayers_System_String_System_Int32_System_Int32_System_Collections_Generic_IReadOnlyList_Egami_Formats_Jxl_JxlLayer__Egami_Formats_Jxl_JxlWriterOptions_Egami_EgamiContext_">WriteLayers(string, int, int, IReadOnlyList&lt;JxlLayer&gt;, JxlWriterOptions?, EgamiContext?)</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static void WriteLayers(Stream stream, int width, int height, IReadOnlyList&lt;JxlLayer&gt; layers, JxlWriterOptions? options = null, EgamiContext? context = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>stream</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.io.stream">Stream</a></dt>
+    <dd><p>Where to write the file.</p>
+</dd>
+    <dt><code>width</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The canvas width.</p>
+</dd>
+    <dt><code>height</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The canvas height.</p>
+</dd>
+    <dt><code>layers</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="Egami.Formats.Jxl.JxlLayer.html">JxlLayer</a>&gt;</dt>
+    <dd><p>The layers, bottom first.</p>
+</dd>
+    <dt><code>options</code> <a class="xref" href="Egami.Formats.Jxl.JxlWriterOptions.html">JxlWriterOptions</a></dt>
+    <dd><p>The options, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for lossless at the default effort.</p>
+</dd>
+    <dt><code>context</code> <a class="xref" href="Egami.EgamiContext.html">EgamiContext</a></dt>
+    <dd><p>The context, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.EgamiContext.html#Egami_EgamiContext_Default">Default</a>.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Formats_Jxl_JxlImage_WriteLayers_System_IO_Stream_System_Int32_System_Int32_System_Collections_Generic_IReadOnlyList_Egami_Formats_Jxl_JxlLayer__Egami_Formats_Jxl_JxlWriterOptions_Egami_EgamiContext__examples">Examples</h4>
+  <pre><code class="lang-csharp">// Layers for an editor: each at its own place, blended onto the ones below, and named. ReadLayers gives them back.
+using Raster&lt;Rgba8&gt; photo = Raster.Load&lt;Rgba8&gt;("duck.png");
+Raster&lt;Rgba8&gt; badge = Raster.Create&lt;Rgba8&gt;(120, 60, new Rgba8(255, 200, 0, 160));
+List&lt;JxlLayer&gt; layers =
+[
+    new(photo.As&lt;Rgba8&gt;(), name: "photo"),
+    new(badge, x: -20, y: 30, blend: JxlLayerBlend.Blend, name: "badge"),
+];
+JxlImage.WriteLayers("layered.jxl", photo.Width, photo.Height, layers);
+foreach (JxlLayer layer in layers)
+{
+    layer.Dispose();
+}
+
+// Load gives them blended; ReadLayers as they were written.
+using Raster flat = Raster.Load("layered.jxl");
+IReadOnlyList&lt;JxlLayer&gt; read = JxlImage.ReadLayers("layered.jxl");</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentnullexception">ArgumentNullException</a></dt>
+    <dd><p><code class="paramref">stream</code> or <code class="paramref">layers</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>, or holds <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p><code class="paramref">width</code> or <code class="paramref">height</code> is not positive, or above 2³⁰.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p><code class="paramref">layers</code> is empty, or a layer lasts longer than 2³² − 1 ms.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Formats_Jxl_JxlImage_WriteLayers_" data-uid="Egami.Formats.Jxl.JxlImage.WriteLayers*"></a>
+
+  <h3 id="Egami_Formats_Jxl_JxlImage_WriteLayers_System_String_System_Int32_System_Int32_System_Collections_Generic_IReadOnlyList_Egami_Formats_Jxl_JxlLayer__Egami_Formats_Jxl_JxlWriterOptions_Egami_EgamiContext_" data-uid="Egami.Formats.Jxl.JxlImage.WriteLayers(System.String,System.Int32,System.Int32,System.Collections.Generic.IReadOnlyList{Egami.Formats.Jxl.JxlLayer},Egami.Formats.Jxl.JxlWriterOptions,Egami.EgamiContext)">
+  WriteLayers(string, int, int, IReadOnlyList&lt;JxlLayer&gt;, JxlWriterOptions?, EgamiContext?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Jxl/JxlImage.cs/#L187"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Writes layers as one frame each, so that <a class="xref" href="Egami.Formats.Jxl.JxlImage.html#Egami_Formats_Jxl_JxlImage_ReadLayers_System_String_Egami_Formats_ReaderOptions_Egami_EgamiContext_">ReadLayers(string, ReaderOptions?, EgamiContext?)</a> gives them back
+with their place, blend mode, duration and name, and Load gives them blended. Each layer blends onto the canvas made by
+the ones before it, the first onto a transparent black canvas. All layers take the first one's pixel format (gray or
+color, and its sample type) and, when any layer has alpha, alpha; others are converted. The file is lossless unless
+<code class="paramref">options</code> sets <a class="xref" href="Egami.Formats.Jxl.JxlWriterOptions.html#Egami_Formats_Jxl_JxlWriterOptions_Lossless">Lossless</a> to <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a> or a
+<a class="xref" href="Egami.Formats.Jxl.JxlWriterOptions.html#Egami_Formats_Jxl_JxlWriterOptions_Distance">Distance</a>, and animated when any layer has a duration.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static void WriteLayers(string path, int width, int height, IReadOnlyList&lt;JxlLayer&gt; layers, JxlWriterOptions? options = null, EgamiContext? context = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>path</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The file to write.</p>
+</dd>
+    <dt><code>width</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The canvas width.</p>
+</dd>
+    <dt><code>height</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The canvas height.</p>
+</dd>
+    <dt><code>layers</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="Egami.Formats.Jxl.JxlLayer.html">JxlLayer</a>&gt;</dt>
+    <dd><p>The layers, bottom first.</p>
+</dd>
+    <dt><code>options</code> <a class="xref" href="Egami.Formats.Jxl.JxlWriterOptions.html">JxlWriterOptions</a></dt>
+    <dd><p>The options, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for lossless at the default effort; <a class="xref" href="Egami.Formats.Jxl.JxlWriterOptions.html#Egami_Formats_Jxl_JxlWriterOptions_FirstFrameOnly">FirstFrameOnly</a> is ignored.</p>
+</dd>
+    <dt><code>context</code> <a class="xref" href="Egami.EgamiContext.html">EgamiContext</a></dt>
+    <dd><p>The context, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.EgamiContext.html#Egami_EgamiContext_Default">Default</a>.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Formats_Jxl_JxlImage_WriteLayers_System_String_System_Int32_System_Int32_System_Collections_Generic_IReadOnlyList_Egami_Formats_Jxl_JxlLayer__Egami_Formats_Jxl_JxlWriterOptions_Egami_EgamiContext__examples">Examples</h4>
+  <pre><code class="lang-csharp">// Layers for an editor: each at its own place, blended onto the ones below, and named. ReadLayers gives them back.
+using Raster&lt;Rgba8&gt; photo = Raster.Load&lt;Rgba8&gt;("duck.png");
+Raster&lt;Rgba8&gt; badge = Raster.Create&lt;Rgba8&gt;(120, 60, new Rgba8(255, 200, 0, 160));
+List&lt;JxlLayer&gt; layers =
+[
+    new(photo.As&lt;Rgba8&gt;(), name: "photo"),
+    new(badge, x: -20, y: 30, blend: JxlLayerBlend.Blend, name: "badge"),
+];
+JxlImage.WriteLayers("layered.jxl", photo.Width, photo.Height, layers);
+foreach (JxlLayer layer in layers)
+{
+    layer.Dispose();
+}
+
+// Load gives them blended; ReadLayers as they were written.
+using Raster flat = Raster.Load("layered.jxl");
+IReadOnlyList&lt;JxlLayer&gt; read = JxlImage.ReadLayers("layered.jxl");</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentnullexception">ArgumentNullException</a></dt>
+    <dd><p><code class="paramref">path</code> or <code class="paramref">layers</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>, or holds <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p><code class="paramref">width</code> or <code class="paramref">height</code> is not positive, or above 2³⁰.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p><code class="paramref">layers</code> is empty, or a layer lasts longer than 2³² − 1 ms.</p>
 </dd>
   </dl>
 

@@ -113,7 +113,7 @@ using Raster first = Raster.Load(&quot;pan.gif&quot;, options: new ReaderOptions
 <p><code>ReaderOptions.Frames</code> takes a range: <code>..1</code> for the first frame, <code>^1..</code> for the last (which has to read every frame to find it),
 <code>2..5</code> for three in the middle. <code>Raster.Probe</code> counts the frames without decoding them.</p>
 <h2 id="writing-animations">Writing animations</h2>
-<p>Saving a raster with more than one frame as GIF or PNG writes an animation. The writers work out each frame's stored rectangle,
+<p>Saving a raster with more than one frame as GIF, PNG, WebP or JPEG XL writes an animation. The writers work out each frame's stored rectangle,
 disposal and blend from the pixels, so an edited animation stays small: only what changed between frames is stored.</p>
 <p>GIF holds at most 256 colors per frame and has on-or-off transparency; APNG keeps full color and partial alpha. The <a href="../formats/gif.html">GIF</a>
 and <a href="../formats/png.html">PNG and APNG</a> pages have each writer's options.</p>
