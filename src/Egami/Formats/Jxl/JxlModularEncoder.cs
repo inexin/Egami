@@ -564,8 +564,9 @@ internal sealed class JxlModularEncoder
         float channelColors = _effort >= 2 || bitDepth > 8 ? 95 : 0;
 
         // libjxl codes a frame of more than 8 groups group by group (its streaming mode, CanDoStreamingEncoding): no global
-        // palettes, and at effort 2 each group with its own fixed tree and distributions.
-        bool local = _effort == 2 && _groups > 8 && _lfDequant is null;
+        // palettes, and each group with its own tree and distributions, a fixed one at effort 2 and a learned one at 8 and 9.
+        // Efforts 3 to 7 keep one tree for the frame, which comes out as small; effort 10 never streams.
+        bool local = (_effort == 2 || _effort is 8 or 9) && _groups > 8 && _lfDequant is null;
         if (!local)
         {
             TryPalettes(gi, channelColors);
@@ -724,23 +725,26 @@ internal sealed class JxlModularEncoder
             width = Math.Max(width, image.Channels[c].Width);
         }
 
-        List<JxlTreeNode> tree = FixedTree(9, 5, Math.Max(1, pixels), image.BitDepth);
+        List<JxlTreeNode> tree = _effort == 2 ? FixedTree(9, 5, Math.Max(1, pixels), image.BitDepth) : LearnTree([stream]);
         List<List<JxlToken>> treeTokens = [[]];
         (int[] property, int[] value, int[] left, int[] right, int[] predictor, int[] context) = TokenizeTree(tree, treeTokens[0]);
+        bool usesWp = property.Any(q => q == 15) || property.Select((q, i) => q < 0 && predictor[i] == 6).Any(b => b);
         List<JxlToken> tokens = [];
         for (int c = 0; c < prefix; c++)
         {
             if (image.Channels[c].Width > 0 && image.Channels[c].Height > 0)
             {
-                tokens.AddRange(Tokenize(image.Channels[c], c, stream, property, value, left, right, predictor, context, false));
+                tokens.AddRange(Tokenize(image.Channels[c], c, stream, property, value, left, right, predictor, context, usesWp));
             }
         }
 
         WriteStreamHeader(w, image, useGlobalTree: false);
         JxlEntropyCode treeCode = JxlEntropyCode.Write(w, p, 6, treeTokens);
         treeCode.WriteTokens(w, treeTokens[0]);
-        JxlEntropyCode code = JxlEntropyCode.Write(w, p with { ImageWidths = [width] }, context.Max() + 1, [tokens]);
-        code.WriteTokens(w, tokens);
+        // LZ77 may replace the stream's tokens: what goes out is what the code was built for.
+        List<List<JxlToken>> streams = [tokens];
+        JxlEntropyCode code = JxlEntropyCode.Write(w, p with { ImageWidths = [width] }, context.Max() + 1, streams);
+        code.WriteTokens(w, streams[0]);
     }
 
     /// <summary>Writes a stream: its header (global tree, default WP parameters, transforms) and tokens, or nothing when it has no channels.</summary>
@@ -890,7 +894,7 @@ internal sealed class JxlModularEncoder
     /// <summary>At effort 5 and up, keeps whichever of a few RCTs (none and YCoCg first) makes the cheapest estimate (PrepareStreamParams).</summary>
     private void SearchRct(JxlEncodeImage gi)
     {
-        int tries = _effort switch { >= 7 => 7, 6 => 5, 5 => 4, _ => 0 };
+        int tries = _effort switch { >= 9 => 19, 8 => 9, 7 => 7, 6 => 5, 5 => 4, _ => 0 };
         if (!_color || gi.Channels.Count - gi.Meta < 3 || tries == 0)
         {
             return;
@@ -1488,35 +1492,40 @@ internal sealed class JxlModularEncoder
     }
 
     /// <summary>Learns the tree from samples of every stream (libjxl's LearnTree, CollectPixelSamples and GatherTreeData).</summary>
-    private List<JxlTreeNode> LearnTree()
+    /// <summary>Learns one tree from samples of the given streams, or of every stream.</summary>
+    private List<JxlTreeNode> LearnTree(int[]? only = null)
     {
-        int count = _effort switch { >= 7 => 7, 6 => 5, 5 => 4, _ => 3 };
-        int maxValues = _effort switch { >= 7 => 96, 6 => 64, 5 => 48, _ => 32 };
-        float repeats = 0.5f * _effort switch { >= 7 => 1f, 6 => 0.7f, 5 => 0.5f, _ => 0.3f };
+        // enc_modular's settings by speed tier: e8 (kitten) 10 properties, e9 and e10 (tortoise, glacier) all 16.
+        int count = _effort switch { >= 9 => 16, 8 => 10, 7 => 7, 6 => 5, 5 => 4, _ => 3 };
+        int maxValues = _effort switch { >= 9 => 256, 8 => 128, 7 => 96, 6 => 64, 5 => 48, _ => 32 };
+        float repeats = 0.5f * _effort switch { >= 9 => 1.3f, 8 => 1.1f, 7 => 1f, 6 => 0.7f, 5 => 0.5f, _ => 0.3f };
         float threshold = 75 + (14 * (10 - _effort));
         List<int> order = [.. PropertyOrder];
-        if (_streams.Length < 30 || _chunk)
+        if ((_streams.Length < 30 && _effort < 9) || _chunk)
         {
             // Few groups: the group is no use as a property.
             order.RemoveAt(1);
         }
 
         int[] properties = [.. order.Take(count)];
-        int[] predictors = [6, 5];
+
+        // Weighted and gradient (libjxl's Best) up to e9; every predictor (Variable) at e10.
+        int[] predictors = _effort >= 10 ? [.. Enumerable.Range(0, 14)] : [6, 5];
         JxlTreeLearner learner = new(predictors, properties, 1 << 16);
 
         List<long> groupPixels = [];
         List<long> channelPixels = [];
         List<int> pixelSamples = [];
         List<int> diffSamples = [];
-        for (int s = 0; s < _streams.Length; s++)
+        int[] streams = only ?? [.. Enumerable.Range(0, _streams.Length)];
+        foreach (int s in streams)
         {
             CollectPixelSamples(_streams[s], s, repeats, groupPixels, channelPixels, pixelSamples, diffSamples);
         }
 
         learner.Quantize(groupPixels, channelPixels, pixelSamples, diffSamples, maxValues);
 
-        int start = Array.FindIndex(_streams, s => s.Channels.Count > 0);
+        int start = streams.FirstOrDefault(s => _streams[s].Channels.Count > 0, -1);
         long totalPixels = 0;
         if (start >= 0)
         {
@@ -1528,7 +1537,7 @@ internal sealed class JxlModularEncoder
         }
 
         totalPixels = Math.Max(totalPixels, 1);
-        List<(int Stream, int Channel)> units = Units();
+        List<(int Stream, int Channel)> units = [.. Units().Where(u => only is null || only.Contains(u.Stream))];
         SampleBuffer[] buffers = new SampleBuffer[units.Count];
         Parallel.For(0, units.Count, _parallel, u => buffers[u] = GatherTreeData(_streams[units[u].Stream].Channels[units[u].Channel], units[u].Channel, units[u].Stream, repeats, predictors, properties));
         Span<int> props = stackalloc int[16];

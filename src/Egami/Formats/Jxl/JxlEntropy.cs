@@ -7,6 +7,9 @@ namespace Egami.Formats.Jxl;
 /// </summary>
 internal sealed class JxlEntropyDecoder
 {
+    /// <summary>Gets the distance special distance code <paramref name="index"/> stands for in a stream of <paramref name="multiplier"/> samples a row (at least 1).</summary>
+    internal static int SpecialDistance(int index, int multiplier) => Math.Max(1, SpecialDistances[2 * index] + (multiplier * SpecialDistances[(2 * index) + 1]));
+
     private static readonly sbyte[] SpecialDistances =
     [
         0, 1, 1, 0, 1, 1, -1, 1, 0, 2, 2, 0, 1, 2, -1, 2, 2, 1, -2, 1,

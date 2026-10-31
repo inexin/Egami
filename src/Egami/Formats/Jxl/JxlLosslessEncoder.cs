@@ -95,7 +95,7 @@ internal static class JxlLosslessEncoder
         int bits = Math.Max(input.BitDepth.BitsPerSample, input.Alpha is null ? 0 : input.AlphaBitDepth.BitsPerSample);
         bits = Math.Max(bits, input.Black is null ? 0 : input.BlackBitDepth.BitsPerSample);
         bits = input.Extras.Aggregate(bits, (b, e) => Math.Max(b, e.Info.BitDepth.BitsPerSample));
-        int effort = Math.Clamp(input.Effort, 1, 7);
+        int effort = Math.Clamp(input.Effort, 1, 10);
         bool fast = effort == 1 && bits <= 16 && input.Black is null && input.Extras.Count == 0;
         if (effort == 1 && (input.Black is not null || input.Extras.Count > 0))
         {
