@@ -23,6 +23,7 @@ public class LoudnessTests
         { "3342 case 4", [-50, -35, -20, -35, -50], [20, 20, 20, 20, 20] },
     };
 
+    [Trait("Category", "Slow")]
     [Theory]
     [MemberData(nameof(Cases))]
     public void LinearNormalizationHitsTheTarget(string name, double[] levels, double[] seconds)

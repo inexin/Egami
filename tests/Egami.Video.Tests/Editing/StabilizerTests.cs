@@ -98,6 +98,7 @@ public class StabilizerTests
         }
     }
 
+    [Trait("Category", "Slow")]
     [Theory]
     [InlineData(StabilizeEdges.Zoom)]
     [InlineData(StabilizeEdges.Black)]

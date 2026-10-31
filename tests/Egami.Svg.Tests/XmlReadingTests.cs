@@ -24,6 +24,7 @@ public class XmlReadingTests
         Assert.True(document.Root.Descendants().Any());
     }
 
+    [Trait("Category", "Slow")]
     [Fact]
     public void SuiteFilesLoad()
     {

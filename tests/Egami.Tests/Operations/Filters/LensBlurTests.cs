@@ -131,6 +131,7 @@ public class LensBlurTests
         Assert.True(worst < 2e-5, $"worst {worst}");
     }
 
+    [Trait("Category", "Slow")]
     [Theory]
     [InlineData(12f, 0)]
     [InlineData(20f, 6)]

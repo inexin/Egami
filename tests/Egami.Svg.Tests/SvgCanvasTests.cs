@@ -161,6 +161,7 @@ public class SvgCanvasTests
         Assert.Contains(diagnostics, d => d.Id == "Svg.FallbackImage" && d.Level == DiagnosticLevel.Info);
     }
 
+    [Trait("Category", "Slow")]
     [Fact]
     public void ClipsAreBalancedGroups()
     {

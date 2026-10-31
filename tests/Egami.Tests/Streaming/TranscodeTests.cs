@@ -153,6 +153,7 @@ public class TranscodeTests
         }
     }
 
+    [Trait("Category", "Slow")]
     [Fact]
     public async Task AsyncAndUnseekableInputsWriteTheSameBytes()
     {
