@@ -278,7 +278,7 @@ internal sealed class TiffPage
         page.Planar = file.Integer(ifd, TiffTags.PlanarConfiguration, 1) == 2 && page.Samples > 1;
         page.FaxOptions = (uint)file.Integer(ifd, TiffTags.T4Options, 0);
         page.Predictor = (int)file.Integer(ifd, TiffTags.Predictor, 1);
-        if (page.Compression is not (TiffCodes.Lzw or TiffCodes.Deflate or TiffCodes.AdobeDeflate or TiffCodes.Zstd or TiffCodes.Webp))
+        if (page.Compression is not (TiffCodes.Lzw or TiffCodes.Deflate or TiffCodes.AdobeDeflate or TiffCodes.Zstd or TiffCodes.Lzma or TiffCodes.Webp))
         {
             // The predictor only means something to the codecs that use it; libtiff ignores it elsewhere too.
             page.Predictor = page.Predictor == 1 ? 1 : page.IgnorePredictor();
@@ -351,13 +351,13 @@ internal sealed class TiffPage
     private void CheckCompression()
     {
         if (Compression is TiffCodes.None or TiffCodes.CcittRle or TiffCodes.CcittGroup3 or TiffCodes.CcittGroup4 or TiffCodes.Lzw
-            or TiffCodes.OldJpeg or TiffCodes.Jpeg or TiffCodes.Deflate or TiffCodes.AdobeDeflate or TiffCodes.Zstd or TiffCodes.CcittRleWord
-            or TiffCodes.PackBits or TiffCodes.ThunderScan or TiffCodes.Webp or TiffCodes.JpegXl or TiffCodes.DngJpegXl)
+            or TiffCodes.OldJpeg or TiffCodes.Jpeg or TiffCodes.Deflate or TiffCodes.AdobeDeflate or TiffCodes.Zstd or TiffCodes.Lzma
+            or TiffCodes.CcittRleWord or TiffCodes.PackBits or TiffCodes.ThunderScan or TiffCodes.Webp or TiffCodes.JpegXl or TiffCodes.DngJpegXl)
         {
             return;
         }
 
-        throw new NotSupportedException(Compression is TiffCodes.Lzma or TiffCodes.Lerc
+        throw new NotSupportedException(Compression is TiffCodes.Lerc
             ? $"TIFF: compression {Compression} ({TiffCodes.Name(Compression)}) is not read yet; it is added on real demand."
             : $"TIFF: compression {Compression} ({TiffCodes.Name(Compression)}) is not read.");
     }

@@ -3,6 +3,7 @@ using System.Buffers.Binary;
 using System.IO.Compression;
 using System.Runtime.InteropServices;
 
+using Egami.Compression.Lzma;
 using Egami.Compression.Zstd;
 using Egami.Metadata;
 using Egami.Pixels;
@@ -109,7 +110,7 @@ internal sealed class TiffPageEncoder<TPixel> : RowEncoder<TPixel>
         _unit = ArrayPool<byte>.Shared.Rent(unitBytes);
         _packed = ArrayPool<byte>.Shared.Rent(ScratchLength(unitBytes, _unitRows));
         _batch = _options.ParallelCompression && _start.Context.MaxParallelism > 1
-            && _plan.Compression is TiffCodes.Lzw or TiffCodes.Deflate or TiffCodes.Zstd or TiffCodes.PackBits or TiffCodes.CcittGroup3
+            && _plan.Compression is TiffCodes.Lzw or TiffCodes.Deflate or TiffCodes.Zstd or TiffCodes.Lzma or TiffCodes.PackBits or TiffCodes.CcittGroup3
                 or TiffCodes.CcittGroup4
             ? _start.Context.MaxParallelism * 2
             : 1;
@@ -354,7 +355,8 @@ internal sealed class TiffPageEncoder<TPixel> : RowEncoder<TPixel>
 
     /// <summary>The scratch a unit of <paramref name="length"/> bytes needs for any of the codecs that write into it.</summary>
     private static int ScratchLength(int length, int rows) =>
-        Math.Max(Math.Max(PackBits.MaxEncodedLength(length) + rows, TiffLzwEncoder.MaxEncodedLength(length)), ZstdEncoder.MaxEncodedLength(length));
+        Math.Max(Math.Max(Math.Max(PackBits.MaxEncodedLength(length) + rows, TiffLzwEncoder.MaxEncodedLength(length)), ZstdEncoder.MaxEncodedLength(length)),
+            XzEncoder.MaxEncodedLength(length));
 
     /// <summary>Compresses one unit, into <paramref name="scratch"/> or <paramref name="deflate"/>; returns the compressed bytes.</summary>
     private ReadOnlySpan<byte> Compress(Span<byte> unit, int rowLength, int rows, int unitWidth, byte[] scratch, MemoryStream? deflate)
@@ -368,6 +370,10 @@ internal sealed class TiffPageEncoder<TPixel> : RowEncoder<TPixel>
                 break;
             case TiffCodes.Zstd:
                 packed = scratch.AsSpan(0, ZstdEncoder.Encode(unit, scratch, _options.ZstdLevel));
+                break;
+            case TiffCodes.Lzma:
+                // As libtiff: the delta filter over whole samples (1 byte apart for depths that are not whole bytes), then LZMA2.
+                packed = scratch.AsSpan(0, XzEncoder.Encode(unit, scratch, _options.LzmaPreset, plan.Bits % 8 != 0 ? 1 : plan.Bits / 8));
                 break;
             case TiffCodes.PackBits:
                 int n = 0;

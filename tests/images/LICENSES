@@ -323,3 +323,10 @@ fuzz/raw-seeds/
   350D and EOS 80D sRAW, Nikon D90, Pentax K-3, Sony ILCE-6000, Olympus E-M10, Panasonic DC-GH6, Fujifilm X-T3), kept for
   their headers and maker notes; canon-r6-head.cr3 is the first 64 KB of a CC0 Canon EOS R6 CR3 from raw.pixls.us. Public
   domain (CC0). canon-synthetic.cr3 is written by tests/Egami.Formats.Extended.Tests/Raw/RawCr3Tests.cs. Public domain (CC0).
+
+xz/
+  xz files made by tools/make-xz-references.py with XZ Utils 5.8 (0BSD) from the same inputs as zstd/ above. Public domain, as
+  their sources.
+
+../reference/xz/
+  The inputs each xz/ file decodes to, gzipped, and manifest.json, made by tools/make-xz-references.py. Public domain.

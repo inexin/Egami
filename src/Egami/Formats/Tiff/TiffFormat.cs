@@ -56,6 +56,7 @@ public sealed class TiffWriterOptions : WriterOptions
 {
     private readonly int _compressionLevel = 5;
     private readonly int _zstdLevel = 9;
+    private readonly int _lzmaPreset = 6;
     private readonly int _quality = 75;
     private readonly int? _tileSize;
 
@@ -65,7 +66,7 @@ public sealed class TiffWriterOptions : WriterOptions
     /// <summary>
     /// Gets the compression, or <see langword="null"/> (the default) for the TIFF source's, else <see cref="TiffCompression.Deflate"/>.
     /// The writer takes <see cref="TiffCompression.None"/>, <see cref="TiffCompression.Lzw"/>, <see cref="TiffCompression.Deflate"/>,
-    /// <see cref="TiffCompression.Zstd"/>, <see cref="TiffCompression.PackBits"/>, <see cref="TiffCompression.CcittGroup3"/> and <see cref="TiffCompression.CcittGroup4"/>
+    /// <see cref="TiffCompression.Zstd"/>, <see cref="TiffCompression.Lzma"/>, <see cref="TiffCompression.PackBits"/>, <see cref="TiffCompression.CcittGroup3"/> and <see cref="TiffCompression.CcittGroup4"/>
     /// (1-bit images only), <see cref="TiffCompression.Jpeg"/> and <see cref="TiffCompression.Webp"/>.
     /// </summary>
     public TiffCompression? Compression { get; init; }
@@ -100,7 +101,23 @@ public sealed class TiffWriterOptions : WriterOptions
     }
 
     /// <summary>
-    /// Gets the predictor for LZW, Deflate and Zstandard, or <see langword="null"/> (the default) for the source's, else
+    /// Gets the LZMA preset, 0 (fastest) to 9 (smallest), for <see cref="TiffCompression.Lzma"/>, with xz's meanings. Defaults to
+    /// 6, as libtiff's LZMA_PRESET does. LZMA writes slowly at the higher presets; <see cref="CompressionLevel"/> is Deflate's alone.
+    /// </summary>
+    /// <exception cref="ArgumentOutOfRangeException">The value is outside 0 to 9.</exception>
+    public int LzmaPreset
+    {
+        get => _lzmaPreset;
+        init
+        {
+            ArgumentOutOfRangeException.ThrowIfNegative(value);
+            ArgumentOutOfRangeException.ThrowIfGreaterThan(value, 9);
+            _lzmaPreset = value;
+        }
+    }
+
+    /// <summary>
+    /// Gets the predictor for LZW, Deflate, Zstandard and LZMA, or <see langword="null"/> (the default) for the source's, else
     /// <see cref="TiffPredictor.Horizontal"/> for 8, 16 and 32-bit integer samples and <see cref="TiffPredictor.FloatingPoint"/>
     /// for float samples. <see cref="TiffPredictor.None"/> turns it off.
     /// </summary>
@@ -206,6 +223,9 @@ public enum TiffCompression
     /// <summary>SGILog24, LogLuv in 24 bits (34677); read only.</summary>
     SgiLog24 = 34677,
 
+    /// <summary>LZMA (34925), each strip or tile an xz stream of LZMA2, as libtiff writes; written at <see cref="TiffWriterOptions.LzmaPreset"/>.</summary>
+    Lzma = 34925,
+
     /// <summary>Zstandard (50000), libtiff's code; written at <see cref="TiffWriterOptions.ZstdLevel"/>.</summary>
     Zstd = 50000,
 
@@ -219,7 +239,7 @@ public enum TiffCompression
     DngJpegXl = 52546,
 }
 
-/// <summary>The horizontal differencing applied before LZW, Deflate or Zstandard, from the Predictor tag.</summary>
+/// <summary>The horizontal differencing applied before LZW, Deflate, Zstandard or LZMA, from the Predictor tag.</summary>
 /// <example>
 /// <code language="csharp" source="../../../../tests/Egami.DocSamples/Tiff.cs" region="tiff-save"/>
 /// </example>
