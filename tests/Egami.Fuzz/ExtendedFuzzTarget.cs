@@ -84,9 +84,10 @@ internal static class ExtendedFuzzTarget
             catch (EgamiException)
             {
             }
-            catch (NotSupportedException) when (recovery == RecoveryMode.Lenient)
+            catch (NotSupportedException) when (recovery == RecoveryMode.Lenient || format == RawFormat.Info)
             {
-                // A writer refuses sizes its format cannot hold, such as PCX over 65,534 pixels wide.
+                // A writer refuses sizes its format cannot hold, such as PCX over 65,534 pixels wide; RAW, as core TIFF does,
+                // refuses sample layouts and compressions it does not read.
             }
         }
     }

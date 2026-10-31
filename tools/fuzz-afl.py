@@ -77,6 +77,7 @@ if [ -f /out/Egami.Metafiles.dll ]; then sharpfuzz /out/Egami.Metafiles.dll; fi
 if [ -f /out/Egami.SystemDrawing.dll ]; then sharpfuzz /out/Egami.SystemDrawing.dll; fi
 if [ -f /out/Egami.Barcodes.dll ]; then sharpfuzz /out/Egami.Barcodes.dll; fi
 if [ -f /out/Egami.Cli.dll ]; then sharpfuzz /out/Egami.Cli.dll; fi
+if [ -f /out/Egami.Formats.Extended.dll ]; then sharpfuzz /out/Egami.Formats.Extended.dll; fi
 mkdir -p /seeds && cp {seeds} /seeds/
 afl-fuzz -V {seconds} -i /seeds -o /findings/{target} {role} -t 5000 -m none -- /out/Egami.Fuzz {target}
 """
