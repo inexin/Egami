@@ -159,9 +159,31 @@ internal static class Vp8InterPredict
     {
         if ((fx | fy) == 0)
         {
+            // A whole-pixel vector copies the block: rows of 16, 8 or 4 bytes as one load and store each, rather than a call to
+            // the general copy for every row, once the whole block is known to lie inside both spans.
+            _ = src.Slice(at, ((h - 1) * stride) + w);
+            _ = dst.Slice(dstAt, ((h - 1) * dstStride) + w);
+            ref byte s = ref Unsafe.Add(ref MemoryMarshal.GetReference(src), at);
+            ref byte d = ref Unsafe.Add(ref MemoryMarshal.GetReference(dst), dstAt);
             for (int r = 0; r < h; r++)
             {
-                src.Slice(at + (r * stride), w).CopyTo(dst.Slice(dstAt + (r * dstStride), w));
+                ref byte from = ref Unsafe.Add(ref s, r * stride);
+                ref byte to = ref Unsafe.Add(ref d, r * dstStride);
+                switch (w)
+                {
+                    case 16:
+                        Unsafe.WriteUnaligned(ref to, Unsafe.ReadUnaligned<Vector128<byte>>(ref from));
+                        break;
+                    case 8:
+                        Unsafe.WriteUnaligned(ref to, Unsafe.ReadUnaligned<ulong>(ref from));
+                        break;
+                    case 4:
+                        Unsafe.WriteUnaligned(ref to, Unsafe.ReadUnaligned<uint>(ref from));
+                        break;
+                    default:
+                        MemoryMarshal.CreateReadOnlySpan(ref from, w).CopyTo(MemoryMarshal.CreateSpan(ref to, w));
+                        break;
+                }
             }
         }
         else if (Vector128.IsHardwareAccelerated)
