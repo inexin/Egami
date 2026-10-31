@@ -1,5 +1,6 @@
 using System.Buffers;
 using System.Buffers.Binary;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics.X86;
 using System.Text;
@@ -11,10 +12,10 @@ using Egami.Streaming;
 namespace Egami.Formats.Jpeg;
 
 /// <summary>
-/// Writes JPEG files with Huffman coding (T.81 annexes F and G), one MCU row at a time: rows are converted to YCbCr, gray, CMYK or
-/// YCCK the way <c>cjpeg</c> does, chroma is averaged down, and each block goes through the forward DCT, quantization and the
-/// Huffman coder. Baseline 8-bit files are coded as the rows come; with optimized tables, 12-bit samples or progressive scans the
-/// quantized blocks are kept for later passes. Only the first frame is written.
+/// Writes JPEG files with Huffman or arithmetic coding (T.81 annexes F and G), one MCU row at a time: rows are converted to YCbCr,
+/// gray, CMYK or YCCK the way <c>cjpeg</c> does, chroma is averaged down, and each block goes through the forward DCT, quantization
+/// and the entropy coder. Baseline 8-bit and sequential arithmetic files are coded as the rows come; with optimized tables, 12-bit
+/// Huffman samples or progressive scans the quantized blocks are kept for later passes. Only the first frame is written.
 /// </summary>
 internal sealed class JpegWriter : IFormatWriter, IRowFormatWriter
 {
@@ -49,6 +50,11 @@ internal sealed class JpegWriter : IFormatWriter, IRowFormatWriter
 
         if (jpeg.GainMap is Colors.GainMapOptions gainMap)
         {
+            if (jpeg.Arithmetic)
+            {
+                throw new NotSupportedException("JpegWriterOptions.GainMap writes Ultra HDR, which HDR viewers decode only from a Huffman-coded base image; leave Arithmetic off.");
+            }
+
             Raster<TPixel> hdr = start.Whole ?? throw new NotSupportedException("JpegWriterOptions.GainMap needs the whole raster to make the gain map; save the raster rather than streaming its rows.");
             return new UltraHdrWriter<TPixel>(output, hdr, gainMap, jpeg);
         }
@@ -112,7 +118,11 @@ internal sealed class JpegWriter : IFormatWriter, IRowFormatWriter
             ReadOnlyMemory<byte>? xmp = null;
             if (!jpeg.StripMetadata && jpeg.KeepGainMap && start.Metadata.GainMap is Colors.GainMap gainMap)
             {
-                if (JpegGainMapWriter.Fits(gainMap, start.Width, start.Height))
+                if (jpeg.Arithmetic)
+                {
+                    SaveLosses.Report(start.Context, "Save.GainMapDropped", "An arithmetic-coded JPEG carries no gain map, since no HDR viewer decodes its base image; the image was written as its SDR base.");
+                }
+                else if (JpegGainMapWriter.Fits(gainMap, start.Width, start.Height))
                 {
                     _map = JpegGainMapWriter.MapImage(gainMap, start.Context);
                     _base = new MemoryStream();
@@ -508,6 +518,57 @@ internal sealed class JpegWriter : IFormatWriter, IRowFormatWriter
         Ycck,
     }
 
+    /// <summary>The entropy coding of a sequential scan's blocks, implemented by structs so each coding gets its own compiled loop.</summary>
+    private interface IBlockCoder
+    {
+        /// <summary>Codes one block in natural order, of scan component <paramref name="index"/> with table slot <paramref name="table"/>.</summary>
+        void Encode(ReadOnlySpan<short> block, int index, ref int predictor, int table);
+
+        /// <summary>Ends the entropy-coded segment before a restart marker.</summary>
+        void Finish();
+
+        /// <summary>Starts the segment after a restart marker.</summary>
+        void Restart();
+    }
+
+    /// <summary>Huffman coding with the tables in the DHT segments.</summary>
+    private readonly struct HuffmanBlocks(JpegBitWriter writer, JpegHuffmanCodes[] dc, JpegHuffmanCodes[] ac) : IBlockCoder
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void Encode(ReadOnlySpan<short> block, int index, ref int predictor, int table)
+        {
+            JpegBlockCoder.Encode(writer, block, ref predictor, dc[table], ac[table]);
+        }
+
+        public void Finish()
+        {
+        }
+
+        public void Restart()
+        {
+        }
+    }
+
+    /// <summary>Arithmetic coding at the default conditioning, with the same slot for the statistics as the quantization table.</summary>
+    private readonly struct ArithmeticBlocks(JpegArithmeticEncoder coder) : IBlockCoder
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void Encode(ReadOnlySpan<short> block, int index, ref int predictor, int table)
+        {
+            coder.EncodeBlock(block, index, ref predictor, table, table);
+        }
+
+        public void Finish()
+        {
+            coder.Finish();
+        }
+
+        public void Restart()
+        {
+            coder.Restart();
+        }
+    }
+
     /// <summary>The encoding state for one image: its components, tables and the samples of the MCU row being coded.</summary>
     private sealed class Encoder<TPixel> : IDisposable
         where TPixel : unmanaged, IPixelType<TPixel>
@@ -534,11 +595,13 @@ internal sealed class JpegWriter : IFormatWriter, IRowFormatWriter
         private readonly ushort[][] _quant;
         private readonly JpegHuffmanCodes[] _dc;
         private readonly JpegHuffmanCodes[] _ac;
+        private readonly bool _arithmetic;
         private readonly int[] _predictors;
         private readonly TPixel[]? _window;
         private readonly List<short[]>? _kept;
         private readonly YuvRaster<byte>? _yuv;
         private short[]? _blocks;
+        private JpegArithmeticEncoder? _coder;
         private int _mcu;
         private int _restart;
         private int _rowsIn;
@@ -559,7 +622,9 @@ internal sealed class JpegWriter : IFormatWriter, IRowFormatWriter
             }
 
             // The standard Huffman tables code 8-bit magnitudes only, so 12-bit files always get their own, as in libjpeg-turbo.
-            _optimize = options.OptimizeHuffman || _wide;
+            // Arithmetic coding has no tables, so it codes every row as it comes.
+            _arithmetic = options.Arithmetic;
+            _optimize = !_arithmetic && (options.OptimizeHuffman || _wide);
             _keepAll = _optimize || options.Progressive;
             (_maxH, _maxV) = _space is Space.Gray or Space.Cmyk ? (1, 1) : planes is not null ? planes.ChromaFormat switch
             {
@@ -592,7 +657,7 @@ internal sealed class JpegWriter : IFormatWriter, IRowFormatWriter
 
             // The new modes that hold every quantized block count them against the memory limit (optimized baseline tables have
             // always held them unchecked, and still do).
-            if (_wide || options.Progressive)
+            if ((_wide && !_arithmetic) || options.Progressive)
             {
                 long held = (long)BlocksPerRow() * 64 * sizeof(short) * _mcusY;
                 if (held > start.Context.Limits.MaxTotalBytes)
@@ -693,8 +758,8 @@ internal sealed class JpegWriter : IFormatWriter, IRowFormatWriter
         private const int MaxWorkers = 4;
 
         /// <summary>
-        /// DQT and the frame header (SOF0 for baseline, SOF1 for 12-bit sequential, SOF2 for progressive), laid out as libjpeg does:
-        /// one table per segment, 16-bit entries only for a table that needs them.
+        /// DQT and the frame header (SOF0 for baseline, SOF1 for 12-bit sequential, SOF2 for progressive; SOF9 and SOF10 for the
+        /// arithmetic-coded ones), laid out as libjpeg does: one table per segment, 16-bit entries only for a table that needs them.
         /// </summary>
         internal void WriteHeaders(JpegBitWriter writer)
         {
@@ -731,7 +796,10 @@ internal sealed class JpegWriter : IFormatWriter, IRowFormatWriter
                 sof[8 + (3 * i)] = (byte)_planes[i].Table;
             }
 
-            Segment(writer, _options.Progressive ? JpegMarker.Sof2 : _wide ? JpegMarker.Sof1 : JpegMarker.Sof0, sof);
+            byte marker = _arithmetic
+                ? _options.Progressive ? JpegMarker.Sof10 : JpegMarker.Sof9
+                : _options.Progressive ? JpegMarker.Sof2 : _wide ? JpegMarker.Sof1 : JpegMarker.Sof0;
+            Segment(writer, marker, sof);
         }
 
         /// <summary>
@@ -827,6 +895,7 @@ internal sealed class JpegWriter : IFormatWriter, IRowFormatWriter
                 }
             }
 
+            _coder?.Finish();
             writer.Align();
         }
 
@@ -887,13 +956,13 @@ internal sealed class JpegWriter : IFormatWriter, IRowFormatWriter
             }
 
             JpegProgressiveEncoder encoder = new(components, _mcusX, _mcusY, _options.RestartInterval, rows);
-            encoder.Write(writer, JpegProgressiveEncoder.Script(components.Length, _space == Space.YCbCr), Segment);
+            encoder.Write(writer, JpegProgressiveEncoder.Script(components.Length, _space == Space.YCbCr), Segment, _arithmetic);
         }
 
-        /// <summary>Writes DHT, DRI and SOS, and starts coding from the first MCU.</summary>
+        /// <summary>Writes DHT (for Huffman coding), DRI and SOS, and starts coding from the first MCU.</summary>
         private void BeginScan(JpegBitWriter writer)
         {
-            for (int t = 0; t < _dc.Length; t++)
+            for (int t = 0; t < _dc.Length && !_arithmetic; t++)
             {
                 WriteHuffman(writer, 0, t, _dc[t]);
                 WriteHuffman(writer, 1, t, _ac[t]);
@@ -919,26 +988,41 @@ internal sealed class JpegWriter : IFormatWriter, IRowFormatWriter
             Array.Clear(_predictors);
             _mcu = 0;
             _restart = 0;
+            _coder = _arithmetic ? new JpegArithmeticEncoder(writer) : null;
         }
 
-        /// <summary>Huffman-codes one transformed MCU row, with a restart marker where one is due.</summary>
+        /// <summary>Entropy-codes one transformed MCU row, with a restart marker where one is due.</summary>
         private void CodeRow(JpegBitWriter writer, short[] row)
+        {
+            if (_coder is null)
+            {
+                CodeRow(writer, row, new HuffmanBlocks(writer, _dc, _ac));
+            }
+            else
+            {
+                CodeRow(writer, row, new ArithmeticBlocks(_coder));
+            }
+        }
+
+        /// <summary>Codes one MCU row with <paramref name="coder"/>, a struct so the JIT compiles the loop for each coding.</summary>
+        private void CodeRow<TCoder>(JpegBitWriter writer, short[] row, TCoder coder)
+            where TCoder : struct, IBlockCoder
         {
             // Locals, not fields, in the loop: the coder is the slowest stage of a parallel encode.
             int[] predictors = _predictors;
             Plane[] planes = _planes;
-            JpegHuffmanCodes[] dc = _dc;
-            JpegHuffmanCodes[] ac = _ac;
             int mcu = _mcu;
             int b = 0;
             for (int mx = 0; mx < _mcusX; mx++, mcu++)
             {
                 if (RestartDue(mcu))
                 {
+                    coder.Finish();
                     writer.Align();
                     writer.Marker((byte)(JpegMarker.Rst0 + _restart));
                     _restart = (_restart + 1) & 7;
                     Array.Clear(predictors);
+                    coder.Restart();
                 }
 
                 for (int i = 0; i < planes.Length; i++)
@@ -946,7 +1030,7 @@ internal sealed class JpegWriter : IFormatWriter, IRowFormatWriter
                     int t = planes[i].Table;
                     for (int n = 0; n < planes[i].BlocksPerMcu; n++, b++)
                     {
-                        JpegBlockCoder.Encode(writer, row.AsSpan(b * 64, 64), ref predictors[i], dc[t], ac[t]);
+                        coder.Encode(row.AsSpan(b * 64, 64), i, ref predictors[i], t);
                     }
                 }
             }

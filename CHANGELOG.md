@@ -107,6 +107,18 @@ DDS textures, stage C (BC7 and BC6H encoders).
 
 ## Egami, unreleased
 
+Arithmetic and lossless JPEG writing, stage A: arithmetic coding. All additive.
+
+- `JpegWriterOptions.Arithmetic` writes arithmetic-coded JPEG (T.81 annex D's QM-coder with the models of annexes F and G):
+  sequential (SOF9) and, with `Progressive`, progressive (SOF10) files, 8 and 12-bit, gray, YCbCr, CMYK and YCCK, any
+  subsampling and restart interval, at the default conditioning so no DAC segment is written. Each file decodes, in Egami and
+  in libjpeg-turbo's `djpeg`, to exactly the pixels of the Huffman file with the same options, and is no larger than
+  `cjpeg -arithmetic`'s file. A sequential arithmetic file streams in one pass at either precision. An Ultra HDR gain map is
+  left out with a `Save.GainMapDropped` warning; `GainMap` with `Arithmetic` throws `NotSupportedException`. The Huffman paths
+  are unchanged.
+- `JpegTransformOptions.Arithmetic` writes the transform's result arithmetic-coded, so a Huffman file can be repacked smaller
+  with no change to its pixels, as `jpegtran -arithmetic` does. The default stays Huffman.
+
 TIFF ZSTD (Build Plan "Egami TIFF: ZSTD, LZMA and LERC", tasks 1 to 4). All additive.
 
 - TIFF reads ZSTD compression (50000), with the horizontal and floating-point predictors, through a fully managed Zstandard

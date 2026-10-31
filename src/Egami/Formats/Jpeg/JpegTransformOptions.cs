@@ -112,6 +112,14 @@ public sealed class JpegTransformOptions
     public bool OptimizeHuffman { get; init; } = true;
 
     /// <summary>
+    /// Gets whether the result is arithmetic-coded (<c>jpegtran -arithmetic</c>; SOF9, or SOF10 with <see cref="Progressive"/>), as
+    /// <see cref="JpegWriterOptions.Arithmetic"/> writes: about 4 to 8% smaller than optimized Huffman tables, with the same
+    /// pixels, so a Huffman file can be repacked with no loss; but no web browser reads it. <see cref="OptimizeHuffman"/> is then
+    /// ignored. Defaults to <see langword="false"/>: Huffman-coded, whatever the source was, as <c>jpegtran</c> does.
+    /// </summary>
+    public bool Arithmetic { get; init; }
+
+    /// <summary>
     /// Gets whether EXIF, ICC, XMP, IPTC, comments and other application segments are copied (<c>jpegtran -copy all</c>).
     /// Defaults to <see langword="true"/>. EXIF's pixel dimensions follow the result; its thumbnail gets the same rotation, flip
     /// and gray conversion, and is dropped after a crop, since it would still show the whole image. With <see langword="false"/>
