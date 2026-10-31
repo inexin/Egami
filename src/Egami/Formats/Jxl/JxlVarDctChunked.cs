@@ -262,7 +262,7 @@ internal sealed partial class JxlVarDctEncoder
         }
 
         float[] distances = new float[planes.Count];
-        (_extraStreams, _extraTree) = JxlModularEncoder.PrepareExtraChannels(channels, [.. planes.Select(p => p.Bits)], distances, Speed, _width, _height, _settings.Parallelism, chunk: true);
+        (_extraStreams, _extraTree) = JxlModularEncoder.PrepareExtraChannels(channels, [.. planes.Select(p => p.Bits)], _frame!.Header.BitDepth.BitsPerSample, distances, Speed, _width, _height, _settings.Parallelism, chunk: true);
     }
 
     /// <summary>Gets the frame's group index of this chunk's group <paramref name="g"/>.</summary>

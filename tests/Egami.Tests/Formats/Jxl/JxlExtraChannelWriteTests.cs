@@ -79,6 +79,42 @@ public class JxlExtraChannelWriteTests
         AssertSamples(Quantized(mask, 8), back, 1);
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void ChannelsDeeperThanTheColorAreExact(bool lossless)
+    {
+        // Found by the jxl-frames fuzz target: a 10-bit channel beside 8-bit color, whose samples a palette codes. The palette's
+        // implicit colors depend on the bit depth, which a decoder takes from the image header, not from the channel.
+        byte[] bytes =
+        [
+            0x64, 0x64, 0x29, 0x0B, 0xEF, 0x10, 0xFF, 0x8B, 0xF8, 0x00, 0x67, 0x3B, 0x45, 0x3F, 0xD4, 0x06, 0xFF, 0xEF, 0x10, 0xFF, 0xD8,
+            0xFF, 0xF9, 0x05, 0xFF, 0xFF, 0x05, 0x00, 0x00, 0x00, 0x82, 0x8B, 0xF8, 0x00, 0x67, 0xC4, 0x45, 0x37, 0xD4, 0x06, 0xFF, 0x61,
+        ];
+        const int Side = 21;
+        using Raster<Rgba8> image = Raster.Create<Rgba8>(Side, Side);
+        using Raster<GrayF32> depth = Raster.Create<GrayF32>(Side, Side);
+        for (int y = 0; y < Side; y++)
+        {
+            Span<byte> row = System.Runtime.InteropServices.MemoryMarshal.AsBytes(image.Row(y));
+            for (int i = 0; i < row.Length; i++)
+            {
+                row[i] = bytes[((y * row.Length) + i) % bytes.Length];
+            }
+
+            for (int x = 0; x < Side; x++)
+            {
+                int v = bytes[((y * Side) + x) % bytes.Length] | (bytes[((y * Side) + x + 1) % bytes.Length] << 8);
+                depth.Row(y)[x] = new GrayF32((v % 1024) / 1023f);
+            }
+        }
+
+        JxlExtraChannel channel = new() { Kind = JxlExtraChannelKind.Depth, BitsPerSample = 10 };
+        byte[] file = Save(image, new JxlWriterOptions { Lossless = lossless, Distance = lossless ? null : 2.5f, ExtraChannels = [new JxlExtraChannelImage(channel, depth)] });
+        using Raster<GrayF32> back = JxlImage.ReadExtraChannel(new MemoryStream(file), 1);
+        AssertSamples(depth, back, 0);
+    }
+
     [Fact]
     public void LosslessCmykKeepsItsInks()
     {

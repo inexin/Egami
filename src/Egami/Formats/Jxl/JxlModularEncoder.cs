@@ -93,9 +93,10 @@ internal sealed class JxlModularEncoder
     /// several <paramref name="passes"/>, the channels go with the last. A <paramref name="chunk"/> of a larger frame takes
     /// no global palettes, puts every channel in the groups and learns no decision on the stream.
     /// </summary>
-    internal static (JxlEncodeImage[] Streams, List<JxlTreeNode> Tree) PrepareExtraChannels(List<JxlChannel> channels, int[] bits, float[] distances, int effort, int width, int height, int parallelism, int passes = 1, bool chunk = false)
+    internal static (JxlEncodeImage[] Streams, List<JxlTreeNode> Tree) PrepareExtraChannels(List<JxlChannel> channels, int[] bits, int imageBits, float[] distances, int effort, int width, int height, int parallelism, int passes = 1, bool chunk = false)
     {
-        int bitDepth = bits.Max();
+        // The Modular image has the image header's bit depth, which a decoder takes for the palette's implicit colors.
+        int bitDepth = imageBits;
         int groups = Ceil(width, 256) * Ceil(height, 256);
         int lfGroups = Ceil(width, 2048) * Ceil(height, 2048);
         JxlModularEncoder e = new(effort, width, height, 1, 1 + (3 * lfGroups) + 17 + (passes * groups), false, parallelism) { _lastPass = (passes - 1) * groups, _chunk = chunk };

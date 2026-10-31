@@ -600,7 +600,9 @@ internal static class JxlFuzzTarget
         if (shift == 0)
         {
             // Full size: exactly the samples, in lossy files too (below distance 10, where the frame is coded at full size).
-            using Raster<GrayF32> back = JxlImage.ReadExtraChannel(new MemoryStream(jxl), 0, context: context);
+            // Alpha, when the image has it, comes first.
+            int index = ((JxlDetails)again.Metadata.FormatDetails!).ExtraChannels.Count - 1;
+            using Raster<GrayF32> back = JxlImage.ReadExtraChannel(new MemoryStream(jxl), index, context: context);
             for (int y = 0; y < h; y++)
             {
                 for (int x = 0; x < w; x++)

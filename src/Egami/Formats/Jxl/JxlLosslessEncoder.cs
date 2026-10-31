@@ -118,7 +118,7 @@ internal static class JxlLosslessEncoder
 
         List<byte[]> sections = fast
             ? JxlFastLossless.Encode(planes, input.Width, input.Height, bits, input.Parallelism)
-            : JxlModularEncoder.Encode(channels, input.Color.Count, bits, effort, input.Width, input.Height, groupShift, input.Parallelism);
+            : JxlModularEncoder.Encode(channels, input.Color.Count, input.BitDepth.BitsPerSample, effort, input.Width, input.Height, groupShift, input.Parallelism);
 
         WriteFrameHeader(w, input, groupShift, frame, canvasWidth, canvasHeight);
         w.WriteBool(false); // no TOC permutation

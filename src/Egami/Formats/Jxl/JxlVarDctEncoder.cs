@@ -1229,7 +1229,7 @@ internal sealed partial class JxlVarDctEncoder
         }
 
         float[] distances = [.. planes.Select((p, i) => i == 0 && header.Alpha is not null ? _settings.AlphaDistance : 0f)];
-        (_extraStreams, _extraTree) = JxlModularEncoder.PrepareExtraChannels(channels, [.. planes.Select(p => p.Bits)], distances, Speed, _width, _height, _settings.Parallelism, _settings.Progressive ? 3 : 1);
+        (_extraStreams, _extraTree) = JxlModularEncoder.PrepareExtraChannels(channels, [.. planes.Select(p => p.Bits)], header.BitDepth.BitsPerSample, distances, Speed, _width, _height, _settings.Parallelism, _settings.Progressive ? 3 : 1);
     }
 
     /// <summary>
