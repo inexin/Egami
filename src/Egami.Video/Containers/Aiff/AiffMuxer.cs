@@ -59,7 +59,7 @@ internal sealed class AiffMuxer : IMuxer
         _leaveOpen = leaveOpen;
         if (!stream.CanSeek)
         {
-            _temp = new FileStream(Path.GetTempFileName(), FileMode.Create, FileAccess.ReadWrite, FileShare.None, 1 << 16, FileOptions.DeleteOnClose);
+            _temp = new FileStream(Path.Combine(Path.GetTempPath(), Path.GetRandomFileName()), FileMode.CreateNew, FileAccess.ReadWrite, FileShare.None, 1 << 16, FileOptions.DeleteOnClose);
         }
 
         _out = new OutputStream(_temp ?? stream);

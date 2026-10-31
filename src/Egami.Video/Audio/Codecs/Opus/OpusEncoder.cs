@@ -286,7 +286,10 @@ internal sealed class OpusEncoder
         }
     }
 
-    /// <summary>Gets or sets a forced bandwidth or <see cref="Auto"/> (OPUS_SET_BANDWIDTH).</summary>
+    /// <summary>
+    /// Sets a forced bandwidth or <see cref="Auto"/> (OPUS_SET_BANDWIDTH); gets the bandwidth the last frame was coded with
+    /// (OPUS_GET_BANDWIDTH), which can differ from the value set.
+    /// </summary>
     public int Bandwidth
     {
         get => _bandwidth;
