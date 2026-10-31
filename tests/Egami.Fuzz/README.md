@@ -48,6 +48,7 @@ Targets:
 | `zstd` | Zstandard frames (TIFF ZSTD): decoded into a large output and into one of exactly the size written, which must give the same bytes; only an `EgamiException` may escape | `tests/images/zstd/*.zst` |
 | `zstd-write` | A level byte, then data for the Zstandard encoder: the frame must decode back to the data exactly | `tests/images/fuzz/zstd-write-seeds/*` |
 | `xz` | xz streams (TIFF LZMA): decoded into a large output and into one of exactly the size written, which must give the same bytes; only an `EgamiException` may escape | `tests/images/xz/*.xz` |
+| `xz-write` | A byte picking the preset (low four bits) and the delta distance (high four bits), then data for the xz encoder: the stream must decode back to the data exactly | `tests/images/fuzz/zstd-write-seeds/*` |
 
 ## Running locally (Linux or WSL)
 

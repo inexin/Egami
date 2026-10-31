@@ -58,6 +58,14 @@ if (args is ["--decode-xz", string xzFile, string xzLength, string xzRuns])
     return;
 }
 
+// Encode the xz local corpus inputs against xz -N, with sizes, timed live in Docker, and check every output with xz -t (task 6):
+// -- --time-xz-encode .cache/xz [input-preset...]
+if (args is ["--time-xz-encode", string xzEncodeFolder, .. string[] xzEncodeOnly])
+{
+    XzEncodeTiming.Run(xzEncodeFolder, xzEncodeOnly);
+    return;
+}
+
 // Time xz decoding against xz -dc, timed live in Docker (TIFF LZMA task 5): -- --time-xz .cache/xz [name part...]
 if (args is ["--time-xz", string xzFolder, .. string[] xzOnly])
 {

@@ -41,6 +41,48 @@ public class XzEncoderTests
         Assert.True(differs == data.Length, $"The output differs from byte {differs}.");
     }
 
+    [Theory]
+    [InlineData(0)]
+    [InlineData(1)]
+    [InlineData(6)]
+    [InlineData(9)]
+    public void AWarmEncodeAllocatesNothing(int preset)
+    {
+        byte[] data = Input("mixed");
+        byte[] packed = new byte[XzEncoder.MaxEncodedLength(data.Length)];
+        XzEncoder.Encode(data, packed, preset, 2);
+        long before = GC.GetAllocatedBytesForCurrentThread();
+        XzEncoder.Encode(data, packed, preset, 2);
+        Assert.Equal(0, GC.GetAllocatedBytesForCurrentThread() - before);
+    }
+
+    [Fact]
+    public void IncompressibleDataGoesOutAsUncompressedChunks()
+    {
+        Random random = new(9);
+        foreach (int length in new[] { 1, 100, 65535, 65536, 65537, 200_000 })
+        {
+            byte[] data = new byte[length];
+            random.NextBytes(data);
+            byte[] packed = new byte[XzEncoder.MaxEncodedLength(length)];
+            int size = XzEncoder.Encode(data, packed, 6);
+            Assert.InRange(size, length, packed.Length);
+            byte[] back = new byte[length];
+            Assert.Equal(length, XzDecoder.Decode(packed.AsSpan(0, size), back));
+            Assert.Equal(data, back);
+        }
+    }
+
+    [Fact]
+    public void RefusesBadPresetsAndShortOutputs()
+    {
+        byte[] data = new byte[100];
+        byte[] packed = new byte[XzEncoder.MaxEncodedLength(100)];
+        Assert.Throws<ArgumentOutOfRangeException>(() => XzEncoder.Encode(data, packed, -1));
+        Assert.Throws<ArgumentOutOfRangeException>(() => XzEncoder.Encode(data, packed, 10));
+        Assert.Throws<ArgumentException>(() => XzEncoder.Encode(data, packed.AsSpan(1), 6));
+    }
+
     internal static byte[] Input(string name)
     {
         using GZipStream stream = new(File.OpenRead(Path.Combine(References, name + ".bin.gz")), CompressionMode.Decompress);
