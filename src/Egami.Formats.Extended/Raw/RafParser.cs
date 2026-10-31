@@ -191,7 +191,7 @@ internal static class RafParser
     }
 
     /// <summary>Walks a JPEG's markers to its Exif TIFF header's position and its frame size.</summary>
-    private static (long ExifAt, int Width, int Height) Jpeg(RawSource source, int offset, int length)
+    internal static (long ExifAt, int Width, int Height) Jpeg(RawSource source, int offset, int length)
     {
         ReadOnlySpan<byte> j = source.Data.AsSpan(offset, Math.Min(length, source.Length - offset));
         long exif = 0;

@@ -252,6 +252,12 @@ internal sealed class RawFrame
     /// <summary>Gets or sets the IFD whose tags hold the EXIF, XMP and ICC metadata (IFD0).</summary>
     public RawIfd? MetadataIfd { get; set; }
 
+    /// <summary>Gets or sets the Exif IFD when it is not one IFD0 points at (a CR3's CMT2 block), or <see langword="null"/>.</summary>
+    public RawIfd? ExifIfd { get; set; }
+
+    /// <summary>Gets or sets the GPS IFD when it is not one IFD0 points at (a CR3's CMT4 block), or <see langword="null"/>.</summary>
+    public RawIfd? GpsIfd { get; set; }
+
     public byte[]? MakerNote { get; set; }
 
     public List<(string Id, string Message)> Repairs { get; } = [];
