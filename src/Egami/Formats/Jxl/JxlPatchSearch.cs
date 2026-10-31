@@ -54,30 +54,73 @@ internal sealed class JxlPatchCandidate(int width, int height)
 /// </summary>
 internal static class JxlPatchSearch
 {
+    /// <summary>
+    /// Writes a patch dictionary (PatchDictionaryEncoder::Encode): per patch its reference frame, place and size, how many
+    /// times it occurs, and each occurrence's position (the first, then offsets) and blend mode for color and each extra channel.
+    /// </summary>
+    internal static void WriteDictionary(JxlBitWriter w, JxlPatch[] patches)
+    {
+        List<JxlToken> tokens = [new JxlToken(0, (uint)patches.Length)];
+        foreach (JxlPatch p in patches)
+        {
+            tokens.Add(new JxlToken(1, (uint)p.Reference));
+            tokens.Add(new JxlToken(3, (uint)p.X0));
+            tokens.Add(new JxlToken(3, (uint)p.Y0));
+            tokens.Add(new JxlToken(2, (uint)(p.Width - 1)));
+            tokens.Add(new JxlToken(2, (uint)(p.Height - 1)));
+            tokens.Add(new JxlToken(7, (uint)(p.Targets.Length - 1)));
+            for (int j = 0; j < p.Targets.Length; j++)
+            {
+                if (j == 0)
+                {
+                    tokens.Add(new JxlToken(4, (uint)p.Targets[j].X));
+                    tokens.Add(new JxlToken(4, (uint)p.Targets[j].Y));
+                }
+                else
+                {
+                    tokens.Add(new JxlToken(6, JxlTreeLearner.PackSigned(p.Targets[j].X - p.Targets[j - 1].X)));
+                    tokens.Add(new JxlToken(6, JxlTreeLearner.PackSigned(p.Targets[j].Y - p.Targets[j - 1].Y)));
+                }
+
+                foreach (JxlPatchBlending b in p.Targets[j].Blending)
+                {
+                    tokens.Add(new JxlToken(5, (uint)b.Mode));
+                }
+            }
+        }
+
+        List<List<JxlToken>> streams = [tokens];
+        JxlEntropyCode code = JxlEntropyCode.Write(w, new JxlHistogramParams { Rle = true }, 10, streams);
+        code.WriteTokens(w, streams[0]);
+    }
+
     internal const int MaxPatchSize = 32;
     private const int PatchSide = 4;
-    private static readonly float[] ChannelDequant = [0.01615f, 0.08875f, 0.1922f];
-    private static readonly float[] ChannelWeights = [30.0f, 3.0f, 1.0f];
+    // PatchColorspaceInfo: the quantization steps and weights of X, Y and B, or of R, G and B on a 0 to 1 scale (lossless).
+    private static readonly float[] XybDequant = [0.01615f, 0.08875f, 0.1922f];
+    private static readonly float[] XybWeights = [30.0f, 3.0f, 1.0f];
+    private static readonly float[] RgbDequant = [20.0f / 255, 22.0f / 255, 20.0f / 255];
+    private static readonly float[] RgbWeights = [0.017f * 255, 0.02f * 255, 0.017f * 255];
 
-    private static bool IsSimilar(float[][] p, int a, int b, float threshold)
+    private static bool IsSimilar(float[][] p, int a, int b, float threshold, float[] weights)
     {
         float distance = 0;
         for (int c = 0; c < 3; c++)
         {
-            distance += MathF.Abs(p[c][a] - p[c][b]) * ChannelWeights[c];
+            distance += MathF.Abs(p[c][a] - p[c][b]) * weights[c];
         }
 
         return distance <= threshold;
     }
 
-    private static bool IsSimilar(float r0, float r1, float r2, float[][] p, int b, float threshold)
+    private static bool IsSimilar(float r0, float r1, float r2, float[][] p, int b, float threshold, float[] weights)
     {
-        float distance = (MathF.Abs(r0 - p[0][b]) * ChannelWeights[0]) + (MathF.Abs(r1 - p[1][b]) * ChannelWeights[1]);
-        distance += MathF.Abs(r2 - p[2][b]) * ChannelWeights[2];
+        float distance = (MathF.Abs(r0 - p[0][b]) * weights[0]) + (MathF.Abs(r1 - p[1][b]) * weights[1]);
+        distance += MathF.Abs(r2 - p[2][b]) * weights[2];
         return distance <= threshold;
     }
 
-    private static int Quantize(float v, int c) => (int)MathF.Truncate(Math.Clamp(v / ChannelDequant[c], -32768.0f, 32767.0f));
+    private static int Quantize(float v, int c, float[] dequant) => (int)MathF.Truncate(Math.Clamp(v / dequant[c], -32768.0f, 32767.0f));
 
     /// <summary>
     /// libjxl's FindTextLikePatches on XYB planes of <paramref name="stride"/> samples a row: 4×4 squares of one exact colour among
@@ -85,8 +128,10 @@ internal static class JxlPatchSearch
     /// of other pixels up to 32 on a side, ringed by background of one colour, is a patch; patches that occur twice or more stay,
     /// unless all are under 20 pixels.
     /// </summary>
-    internal static List<JxlPatchCandidate> FindTextLike(float[][] xyb, int stride, int width, int height, ParallelOptions parallel)
+    internal static List<JxlPatchCandidate> FindTextLike(float[][] xyb, int stride, int width, int height, ParallelOptions parallel, bool isXyb = true)
     {
+        float[] weights = isXyb ? XybWeights : RgbWeights;
+        float[] dequant = isXyb ? XybDequant : RgbDequant;
         List<JxlPatchCandidate> info = [];
         int pw = width / PatchSide, ph = height / PatchSide;
         int sw = (width + PatchSide - 1) / PatchSide;
@@ -202,7 +247,7 @@ internal static class JxlPatchSearch
                         continue;
                     }
 
-                    if (IsSimilar(xyb, srcAt, (ny * stride) + nx, 0.8f))
+                    if (IsSimilar(xyb, srcAt, (ny * stride) + nx, 0.8f, weights))
                     {
                         queue.Add(((ny * width) + nx, src));
                         isBackground[(ny * width) + nx] = 1;
@@ -268,7 +313,7 @@ internal static class JxlPatchSearch
                             {
                                 reference = next;
                             }
-                            else if (!IsSimilar(background, next, reference, 0.03f))
+                            else if (!IsSimilar(background, next, reference, 0.03f, weights))
                             {
                                 allSimilar = false;
                             }
@@ -287,7 +332,7 @@ internal static class JxlPatchSearch
                 {
                     for (int ix = Math.Max(minX - 2, 0); ix < Math.Min(maxX + 3, width); ix++)
                     {
-                        if (IsSimilar(r0, r1, r2, xyb, (iy * stride) + ix, 0.03f))
+                        if (IsSimilar(r0, r1, r2, xyb, (iy * stride) + ix, 0.03f, weights))
                         {
                             hasSimilar = true;
                         }
@@ -312,7 +357,7 @@ internal static class JxlPatchSearch
                             int offset = ((iy - minY) * patch.Width) + ix - minX;
                             float v = xyb[c][(iy * stride) + ix] - refColor[c];
                             patch.Values[c][offset] = v;
-                            int q = Quantize(v, c);
+                            int q = Quantize(v, c, dequant);
                             sbyte b = unchecked((sbyte)q);
                             patch.Quantized[c][offset] = b;
                             tooBig |= q != b;

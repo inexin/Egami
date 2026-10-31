@@ -50,6 +50,9 @@ internal sealed class JxlModularEncoder
     private int _lastPass;
     private bool _chunk;
 
+    // What opens the LF global section before the LF dequantization: a frame's patch dictionary.
+    private JxlBitWriter? _lfGlobalStart;
+
     private JxlModularEncoder(int effort, int width, int height, int groupShift, int streams, bool color, int parallelism)
     {
         _effort = effort;
@@ -73,7 +76,7 @@ internal sealed class JxlModularEncoder
     /// <paramref name="height"/> integers of <paramref name="bitDepth"/> bits) and gives its sections in TOC order; a Modular XYB
     /// frame names its LF dequantization multipliers (times 128) in <paramref name="lfDequant"/>.
     /// </summary>
-    internal static List<byte[]> Encode(List<JxlChannel> channels, int colorChannels, int bitDepth, int effort, int width, int height, int groupShift, int parallelism, float[]? lfDequant = null)
+    internal static List<byte[]> Encode(List<JxlChannel> channels, int colorChannels, int bitDepth, int effort, int width, int height, int groupShift, int parallelism, float[]? lfDequant = null, JxlBitWriter? lfGlobalStart = null)
     {
         int groupDim = 128 << groupShift;
         int groups = Ceil(width, groupDim) * Ceil(height, groupDim);
@@ -82,6 +85,7 @@ internal sealed class JxlModularEncoder
         int streams = 1 + (3 * lfGroups) + 17 + groups;
         JxlModularEncoder e = new(effort, width, height, groupShift, streams, colorChannels == 3, parallelism);
         e._lfDequant = lfDequant;
+        e._lfGlobalStart = lfGlobalStart;
         return e.Run(channels, bitDepth);
     }
 
@@ -636,6 +640,11 @@ internal sealed class JxlModularEncoder
 
         // LF global: the LF dequantization, the global tree and the data distributions, then the global stream.
         JxlBitWriter global = new();
+        if (_lfGlobalStart is not null)
+        {
+            global.AppendBits(_lfGlobalStart);
+        }
+
         global.WriteBool(_lfDequant is null);
         foreach (float m in _lfDequant ?? [])
         {
@@ -683,6 +692,11 @@ internal sealed class JxlModularEncoder
     {
         JxlHistogramParams p = JxlHistogramParams.ForModular(_effort);
         JxlBitWriter global = new();
+        if (_lfGlobalStart is not null)
+        {
+            global.AppendBits(_lfGlobalStart);
+        }
+
         global.WriteBool(true); // default LF dequantization
         global.WriteBool(false); // no global tree
         WriteLocalStream(global, 0, p);
