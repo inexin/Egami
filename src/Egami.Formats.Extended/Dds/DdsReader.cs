@@ -183,6 +183,7 @@ internal sealed class DdsReader : ExtendedReader, IMultiImageReader
         private readonly DdsPixelFormat _format;
         private readonly bool _reconstructZ;
         private readonly bool _unpremultiply;
+        private readonly StoredMips? _mips;
         private readonly IMemoryOwner<byte> _stored;
         private readonly IMemoryOwner<byte>? _strip;
         private readonly int _pixelBytes;
@@ -227,6 +228,7 @@ internal sealed class DdsReader : ExtendedReader, IMultiImageReader
                 IsSrgb = _format.Srgb,
                 Surface = source.Surface,
                 MipLevel = source.Mip,
+                Mips = _mips = KeepsMips(_header, source, options) ? new StoredMips { Dxgi = _format.Dxgi, Size = new Size(Width, Height), Count = _header.MipLevels - 1 } : null,
             };
             if (_format.Srgb)
             {
@@ -302,6 +304,41 @@ internal sealed class DdsReader : ExtendedReader, IMultiImageReader
             }
 
             return true;
+        }
+
+        /// <summary>Reads the mips after mip 0, so an unchanged raster saves with the file's own mips.</summary>
+        protected override void Finish()
+        {
+            if (_mips is null)
+            {
+                return;
+            }
+
+            long bytes = 0;
+            for (int m = 1; m < _header.MipLevels; m++)
+            {
+                bytes += _header.MipBytes(m);
+            }
+
+            if (bytes > Array.MaxLength)
+            {
+                return;
+            }
+
+            Input.CheckMemory(bytes);
+            byte[] mips = new byte[bytes];
+            if (ReadFully(mips) == mips.Length)
+            {
+                _mips.Bytes = mips;
+            }
+        }
+
+        /// <summary>Gets whether a load keeps the stored mips: mip 0 of a 2D surface whose bytes are its DXGI format's own.</summary>
+        private static bool KeepsMips(DdsHeader header, Source source, ReaderOptions options)
+        {
+            DdsPixelFormat f = header.Format;
+            return options.ReadMetadata && source.Mip == 0 && header.MipLevels > 1 && header.Dimension != DdsDimension.Texture3D
+                && header.AlphaMode != DdsAlphaMode.Premultiplied && f.Dxgi != 0 && DdsPixelFormat.FromDxgi(f.Dxgi)?.Name == f.Name;
         }
 
         protected override void Dispose(bool disposing)

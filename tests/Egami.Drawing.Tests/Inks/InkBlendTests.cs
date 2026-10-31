@@ -39,7 +39,10 @@ public class InkBlendTests
                     SceneColor backdrop = InkScenes.Backdrops[x / 8];
                     // The backdrop as the plates store it, so steep modes are judged on what they were given.
                     float[] b = [.. Tints(backdrop, names).Select(t => depth == InkDepth.Unorm8 ? MathF.Floor((t * 255) + 0.5f) / 255 : MathF.Floor((t * 65535) + 0.5f) / 65535)];
-                    (float[] expected, float alpha) = y < 8 ? (b, 1f) : Reference(mode, Tints(InkScenes.BlendSource, names), y is >= 16 and < 24 ? 0.5f : 1, b, 1, names);
+                    float opacity = y is >= 16 and < 24 ? 0.5f : 1;
+                    (float[] expected, float alpha) = y < 8 ? (b, 1f)
+                        : mode == BlendMode.Dissolve ? (BlendReference.Dissolves(opacity, x, y) ? Tints(InkScenes.BlendSource, names) : b, 1f)
+                        : Reference(mode, Tints(InkScenes.BlendSource, names), opacity, b, 1, names);
                     for (int p = 0; p <= names.Length; p++)
                     {
                         InkPlate plate = p < names.Length ? plates.Plates[p] : plates.Alpha;

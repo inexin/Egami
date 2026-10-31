@@ -101,7 +101,7 @@ internal sealed class DrawImageOperation(
                 // The same 8-bit type: the source's own rows go to the kernel as they are, with no copy.
                 for (int y = from; y < to; y++)
                 {
-                    rows.Blend(typed.Row(sy + y - area.Y).Slice(sx, area.Width), input.Destination.Row(y).Slice(area.X, area.Width));
+                    rows.Blend(typed.Row(sy + y - area.Y).Slice(sx, area.Width), input.Destination.Row(y).Slice(area.X, area.Width), default, area.X, y);
                 }
 
                 return;
@@ -116,7 +116,7 @@ internal sealed class DrawImageOperation(
                     for (int y = from; y < to; y++)
                     {
                         source.ReadRow(sy + y - area.Y, sx, row);
-                        rows.Blend(row, input.Destination.Row(y).Slice(area.X, area.Width));
+                        rows.Blend(row, input.Destination.Row(y).Slice(area.X, area.Width), default, area.X, y);
                     }
                 }
                 finally
@@ -134,7 +134,7 @@ internal sealed class DrawImageOperation(
                 for (int y = from; y < to; y++)
                 {
                     source.ReadRow(sy + y - area.Y, sx, row);
-                    rows.BlendStraight(row, input.Destination.Row(y).Slice(area.X, area.Width));
+                    rows.BlendStraight(row, input.Destination.Row(y).Slice(area.X, area.Width), default, area.X, y);
                 }
             }
             finally

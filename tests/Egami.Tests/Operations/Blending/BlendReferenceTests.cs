@@ -15,12 +15,13 @@ public class BlendReferenceTests
     private static readonly (double, double, double, double) HalfDestination = (0.375, 0.1875, 0.75, 0.75);
 
     [Fact]
-    public void ThereAre31ModesWithSourceOverFirst()
+    public void ThereAre40ModesWithSourceOverFirst()
     {
-        Assert.Equal(31, Enum.GetValues<BlendMode>().Length);
+        Assert.Equal(40, Enum.GetValues<BlendMode>().Length);
         Assert.Equal(0, (int)BlendMode.SourceOver);
         Assert.Equal(30, (int)BlendMode.Luminosity);
-        Assert.Equal(Enumerable.Range(0, 31), Enum.GetValues<BlendMode>().Select(m => (int)m));
+        Assert.Equal(39, (int)BlendMode.Dissolve);
+        Assert.Equal(Enumerable.Range(0, 40), Enum.GetValues<BlendMode>().Select(m => (int)m));
     }
 
     /// <summary>Opaque layers: the result is B(Cb, Cs) itself.</summary>

@@ -325,7 +325,8 @@ internal sealed class DdsHeader
 
         if ((flags & PfBumpDuDv) != 0)
         {
-            return (bits, r, g, b, a) switch
+            // texconv writes Q8W8V8U8 with its alpha mask but no alpha flag, so bump formats take the mask as it is.
+            return (bits, r, g, b, U32(h, 104)) switch
             {
                 (16, 0xFF, 0xFF00, 0, 0) => DdsPixelFormat.FromDxgi(51), // V8U8
                 (32, 0xFF, 0xFF00, 0xFF0000, 0xFF000000) => DdsPixelFormat.FromDxgi(31), // Q8W8V8U8

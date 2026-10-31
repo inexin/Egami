@@ -33,6 +33,7 @@ Commands:
   stats <inputs>                    Measure images: per-channel minimum, maximum, mean, deviation, skewness, kurtosis and entropy, as ImageMagick's identify -verbose.
   ocr <inputs>                      Read the text of images with an OCR program (Tesseract or any that writes hOCR or ALTO), as plain text, hOCR or ALTO.
   frames                            Split an animation (GIF, APNG, WebP) into still images, or join stills into one.
+  layers <input> <folder>           Write each layer of a PSD or PSB file as a PNG at its own size, its mask as a gray PNG, and layers.json listing every layer and group: name, place, size, blend mode, opacity, visibility and group.
   metadata                          Show, strip or copy metadata: color profile, EXIF, XMP, IPTC, text and resolution.
   color <inputs>                    Convert images to another color profile (ICC, 2.1.2), tone mapping HDR to SDR where needed (2.9.1).
   text <inputs>                     Draw a caption or watermark on images, with any font and script, wrapped to fit (2.8.2 layout).
@@ -452,6 +453,28 @@ Options:
   --quality <0-100>               Lossy quality for WebP.
   --lossless                      Lossless WebP.
   --preview-formats               Also read and write the formats in preview (none in this release); they may change or go in any minor release.
+```
+
+## layers
+
+Writes each layer of a Photoshop document as a PNG at its own size (16-bit for 16 and 32-bit files; CMYK layers as RGBA by the
+plain formula), each pixel mask as a gray PNG, and `layers.json`: the canvas size, color mode and depth, and for every layer and
+group its index, name, kind, type, parent group, place, size, blend mode (Photoshop's key and Egami's `BlendMode`), opacity, fill
+opacity, visibility, clipping, image file and mask.
+
+```text
+Description:
+  Write each layer of a PSD or PSB file as a PNG at its own size, its mask as a gray PNG, and layers.json listing every layer and group: name, place, size, blend mode, opacity, visibility and group.
+
+Usage:
+  egami layers <input> <folder> [options]
+
+Arguments:
+  <input>   The PSD or PSB file, or - for standard input.
+  <folder>  The folder to write the layers and layers.json into; made when missing.
+
+Options:
+  --preview-formats  Also read and write the formats in preview (none in this release); they may change or go in any minor release.
 ```
 
 ## metadata

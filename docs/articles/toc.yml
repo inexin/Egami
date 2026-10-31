@@ -162,6 +162,10 @@
   items:
     - name: Windows metafiles
       href: guides/metafiles.md
+- name: Egami.Formats.Extended
+  items:
+    - name: Textures
+      href: guides/textures.md
 - name: Egami.SystemDrawing
   items:
     - name: Migrating from System.Drawing to Egami

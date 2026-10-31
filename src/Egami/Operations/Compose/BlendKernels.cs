@@ -21,7 +21,7 @@ internal static class BlendKernels
     /// <summary>Gets whether a mode runs in exact integers on 8-bit rows.</summary>
     internal static bool IsInteger(BlendMode mode)
     {
-        return mode is not (BlendMode.ColorDodge or BlendMode.ColorBurn or BlendMode.SoftLight) && !BlendReference.IsNonSeparable(mode);
+        return mode <= BlendMode.Luminosity && mode is not (BlendMode.ColorDodge or BlendMode.ColorBurn or BlendMode.SoftLight) && !BlendReference.IsNonSeparable(mode);
     }
 
     /// <summary>
@@ -40,12 +40,20 @@ internal static class BlendKernels
     /// Whether the source row holds straight pixels, premultiplied here as each is loaded (round(c·α / 255), as
     /// PixelConvert premultiplies), which saves a pass over the row. A solid color is always premultiplied.
     /// </param>
+    /// <param name="x">The canvas column of the first pixel, which only <see cref="BlendMode.Dissolve"/> uses.</param>
+    /// <param name="y">The canvas row, which only <see cref="BlendMode.Dissolve"/> uses.</param>
     internal static void Blend8(
         BlendMode mode, ReadOnlySpan<uint> source, Span<uint> destination, ReadOnlySpan<byte> coverage, int opacity255, bool bgr, int vectorBits = -1,
-        bool straightSource = false)
+        bool straightSource = false, int x = 0, int y = 0)
     {
         if (mode == BlendMode.Destination || destination.IsEmpty)
         {
+            return;
+        }
+
+        if (mode == BlendMode.Dissolve)
+        {
+            Dissolve8(source, destination, coverage, opacity255, straightSource, x, y);
             return;
         }
 
@@ -97,10 +105,16 @@ internal static class BlendKernels
     /// Blends premultiplied float RGBA <paramref name="source"/> pixels onto <paramref name="destination"/> in place, every mode in
     /// single precision. A four-float source is a solid color; coverage works as in <see cref="Blend8"/>.
     /// </summary>
-    internal static void BlendFloat(BlendMode mode, ReadOnlySpan<float> source, Span<float> destination, ReadOnlySpan<byte> coverage, float opacity)
+    internal static void BlendFloat(BlendMode mode, ReadOnlySpan<float> source, Span<float> destination, ReadOnlySpan<byte> coverage, float opacity, int x = 0, int y = 0)
     {
         if (mode == BlendMode.Destination)
         {
+            return;
+        }
+
+        if (mode == BlendMode.Dissolve)
+        {
+            DissolveFloat(source, destination, coverage, opacity, x, y);
             return;
         }
 
@@ -124,6 +138,68 @@ internal static class BlendKernels
             destination[di + 1] = sg.V;
             destination[di + 2] = sb.V;
             destination[di + 3] = sa.V;
+        }
+    }
+
+    /// <summary>
+    /// Dissolve on 8-bit premultiplied rows: where <see cref="BlendReference.Dissolves"/> draws a source pixel, the destination
+    /// becomes its straight color, opaque (source-over of an opaque pixel); elsewhere it stays. Coverage mixes as in the kernels.
+    /// </summary>
+    private static void Dissolve8(ReadOnlySpan<uint> source, Span<uint> destination, ReadOnlySpan<byte> coverage, int opacity255, bool straightSource, int x, int y)
+    {
+        bool solid = source.Length == 1;
+        for (int i = 0; i < destination.Length; i++)
+        {
+            uint v = solid ? source[0] : source[i];
+            uint a = v >> 24;
+            uint scaled = ((a * (uint)opacity255) + 127) / 255;
+            if (scaled == 0 || !BlendReference.Dissolves(scaled / 255f, x + i, y))
+            {
+                continue;
+            }
+
+            uint result = 0xFF000000u;
+            for (int shift = 0; shift < 24; shift += 8)
+            {
+                uint c = (v >> shift) & 0xFF;
+                result |= (straightSource ? c : Math.Min(255, ((c * 255) + (a / 2)) / a)) << shift;
+            }
+
+            if (!coverage.IsEmpty && coverage[i] != 255)
+            {
+                uint k = coverage[i], o = destination[i], mixed = 0;
+                for (int shift = 0; shift < 32; shift += 8)
+                {
+                    mixed |= (((((result >> shift) & 0xFF) * k) + (((o >> shift) & 0xFF) * (255 - k)) + 127) / 255) << shift;
+                }
+
+                result = mixed;
+            }
+
+            destination[i] = result;
+        }
+    }
+
+    /// <summary>Dissolve on premultiplied float RGBA rows, as <see cref="Dissolve8"/>.</summary>
+    private static void DissolveFloat(ReadOnlySpan<float> source, Span<float> destination, ReadOnlySpan<byte> coverage, float opacity, int x, int y)
+    {
+        bool solid = source.Length == 4;
+        for (int p = 0, n = destination.Length / 4; p < n; p++)
+        {
+            int si = solid ? 0 : p * 4, di = p * 4;
+            float a = source[si + 3];
+            if (!(a * opacity > 0) || !BlendReference.Dissolves(a * opacity, x + p, y))
+            {
+                continue;
+            }
+
+            float t = coverage.IsEmpty ? 1 : coverage[p] / 255f;
+            for (int c = 0; c < 3; c++)
+            {
+                destination[di + c] += ((source[si + c] / a) - destination[di + c]) * t;
+            }
+
+            destination[di + 3] += (1 - destination[di + 3]) * t;
         }
     }
 
@@ -537,6 +613,40 @@ internal static class BlendKernels
             case BlendMode.Subtract:
                 return TF.Max(zero, cb - cs);
             default:
+                return PhotoshopSeparable<TF, TU>(mode, cb, cs);
+        }
+    }
+
+    /// <summary>
+    /// The separable modes Photoshop has beyond the W3C ones, kept out of the W3C modes' switch so that stays as small
+    /// as the W3C modes need.
+    /// </summary>
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static TF PhotoshopSeparable<TF, TU>(BlendMode mode, TF cb, TF cs)
+        where TF : struct, IFLanes<TF, TU>
+        where TU : struct, IULanes<TU>
+    {
+        TF one = TF.Splat(1), zero = TF.Splat(0), half = TF.Splat(0.5f), two = TF.Splat(2);
+        switch (mode)
+        {
+            case BlendMode.Divide:
+                {
+                    TF q = TF.Min(one, cb / TF.Max(cs, TF.Splat(1e-30f)));
+                    return TF.Select(TF.LessOrEqual(cb, zero), zero, TF.Select(TF.LessOrEqual(cs, zero), one, q));
+                }
+
+            case BlendMode.LinearBurn:
+                return TF.Max(zero, cb + cs - one);
+            case BlendMode.LinearLight:
+                return TF.Min(one, TF.Max(zero, cb + (two * cs) - one));
+            case BlendMode.VividLight:
+                return TF.Select(
+                    TF.LessOrEqual(cs, half), Separable<TF, TU>(BlendMode.ColorBurn, cb, two * cs), Separable<TF, TU>(BlendMode.ColorDodge, cb, (two * cs) - one));
+            case BlendMode.PinLight:
+                return TF.Select(TF.LessOrEqual(cs, half), TF.Min(cb, two * cs), TF.Max(cb, (two * cs) - one));
+            case BlendMode.HardMix:
+                return TF.Select(TF.LessOrEqual(TF.Splat(BlendReference.HardMixThreshold), cb + cs), one, zero);
+            default:
                 throw new ArgumentOutOfRangeException(nameof(mode), mode, null);
         }
     }
@@ -561,15 +671,30 @@ internal static class BlendKernels
                 (r, g, b) = (csR, csG, csB);
                 SetLum<TF, TU>(ref r, ref g, ref b, Lum(cbR, cbG, cbB), wr, wg, wb);
                 break;
-            default:
+            case BlendMode.Luminosity:
                 (r, g, b) = (cbR, cbG, cbB);
                 SetLum<TF, TU>(ref r, ref g, ref b, Lum(csR, csG, csB), wr, wg, wb);
+                break;
+            default:
+                PickColor<TF, TU>(mode == BlendMode.DarkerColor, wr, wg, wb, cbR, cbG, cbB, csR, csG, csB, out r, out g, out b);
                 break;
         }
 
         TF Lum(TF x, TF y, TF z) => (wr * x) + (wg * y) + (wb * z);
 
         static TF Sat(TF x, TF y, TF z) => TF.Max(x, TF.Max(y, z)) - TF.Min(x, TF.Min(y, z));
+    }
+
+    /// <summary>Darker Color and Lighter Color: the whole source or destination color, whichever has the lower (or higher) luminosity.</summary>
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static void PickColor<TF, TU>(
+        bool darker, TF wr, TF wg, TF wb, TF cbR, TF cbG, TF cbB, TF csR, TF csG, TF csB, out TF r, out TF g, out TF b)
+        where TF : struct, IFLanes<TF, TU>
+        where TU : struct, IULanes<TU>
+    {
+        TF ls = (wr * csR) + (wg * csG) + (wb * csB), lb = (wr * cbR) + (wg * cbG) + (wb * cbB);
+        TF pick = darker ? TF.Less(ls, lb) : TF.Less(lb, ls);
+        (r, g, b) = (TF.Select(pick, csR, cbR), TF.Select(pick, csG, cbG), TF.Select(pick, csB, cbB));
     }
 
     private static void SetSat<TF, TU>(TF r, TF g, TF b, TF s, out TF outR, out TF outG, out TF outB)

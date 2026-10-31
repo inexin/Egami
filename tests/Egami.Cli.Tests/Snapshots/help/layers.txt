@@ -1,0 +1,18 @@
+Description:
+  Write each layer of a PSD or PSB file as a PNG at its own size, its mask as a gray PNG, and layers.json listing every layer and group: name, place, size, blend mode, opacity, visibility and group.
+
+Usage:
+  egami layers <input> <folder> [options]
+
+Arguments:
+  <input>   The PSD or PSB file, or - for standard input.
+  <folder>  The folder to write the layers and layers.json into; made when missing.
+
+Options:
+  -?, -h, --help            Show help and usage information
+  -v, --verbose             Write information to standard error.
+  -vv, --debug              Write debugging detail to standard error.
+  -q, --quiet               Write only errors to standard error.
+  --limit <name=value,...>  Safety limits, such as pixels=100M,memory=2GB,frames=500 (names: pixels, width, height, frames, memory, metadata). EGAMI_LIMITS sets them too.
+  --preview-formats         Also read and write the formats in preview (none in this release); they may change or go in any minor release.
+

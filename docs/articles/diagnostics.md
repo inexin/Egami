@@ -280,10 +280,21 @@ The activity and tag names are never renamed once shipped, like the diagnostic i
 | `Pnm.SamplesClamped` | Warning | Samples above the maxval were clamped |
 | `Pnm.TupleTypeMismatch` | Warning | The PAM tuple type does not fit the depth; the image is read by its depth |
 | `Pnm.UnknownHeaderLine` | Warning | An unknown PAM header line was ignored |
+| `Psd.AdjustmentSkipped` | Warning | Flattening left out adjustment layers of a kind Egami does not apply; the warning names them |
+| `Psd.BlendModeUnknown` | Warning | Flattening blended layers with a blend mode Egami does not know as Normal; the warning names them |
 | `Psd.ChannelsDropped` | Warning | A multichannel file has no color model; its first channel was loaded as gray and the rest were not |
+| `Psd.ClippingBlendSkipped` | Warning | Clipped layers set to blend with the layers under their base were blended with the base alone |
 | `Psd.DataTruncated` | Warning | The file ends inside the flattened image; the missing pixels are 0 |
+| `Psd.EffectsSkipped` | Warning | Flattening did not draw layer effects; the warning names the layers |
+| `Psd.FillSkipped` | Warning | Flattening left out gradient and pattern fill layers; the warning names them |
+| `Psd.FlattenUnsupported` | Warning | Load was asked to flatten a Lab, bitmap, indexed or multichannel file; the stored composite was loaded |
+| `Psd.KnockoutSkipped` | Warning | Flattening did not apply knockout; the warning names the layers |
+| `Psd.LayerDataDamaged` | Warning | A layer channel's data is damaged or uses an unknown compression; its missing pixels are 0 |
+| `Psd.LayerDataTruncated` | Warning | A layer channel's data ends early; its missing pixels are 0 |
 | `Psd.LayersDamaged` | Warning | A layer record is damaged; the records after it were not read, which the flattened image does not need |
-| `Psd.NoComposite` | Warning | The file was saved without Maximize Compatibility; its stored placeholder was loaded, not the layers composited |
+| `Psd.MaskFeatherSkipped` | Warning | Flattening did not feather masks; the warning names the layers |
+| `Psd.NoComposite` | Warning | The file was saved without Maximize Compatibility and `PsdComposite.Stored` was asked for; its stored placeholder was loaded |
+| `Psd.ProfileUnreadable` | Warning | The embedded ICC profile of a CMYK file could not be read; its layers use FOGRA39's inks |
 | `Psd.ResourcesDamaged` | Warning | An image resource is damaged; the resources after it were skipped |
 | `Psd.RowShort` | Warning | A PackBits row decodes short; the rest of it is 0 |
 | `Qoi.DataAfterEnd` | Warning | Data follows the last pixel where the end marker should be |

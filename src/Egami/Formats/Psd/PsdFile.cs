@@ -19,6 +19,7 @@ internal sealed class PsdFile
     private const int TransparentIndexId = 1047;
     private const int AlphaNamesId = 1006;
     private const int UnicodeAlphaNamesId = 1045;
+    private const int IccProfileId = 1039;
 
     public int Version { get; private set; }
 
@@ -43,6 +44,9 @@ internal sealed class PsdFile
 
     public List<PsdLayer> Layers { get; } = [];
 
+    /// <summary>Gets the full layer records, kept when the file is read for its layers or its metadata.</summary>
+    public List<PsdLayerRecord> Records { get; } = [];
+
     public List<string> AlphaNames { get; } = [];
 
     public List<(int Id, string Name, byte[] Data)> Resources { get; } = [];
@@ -55,6 +59,11 @@ internal sealed class PsdFile
     public WarningList Warnings { get; } = new();
 
     public bool Big => Version == 2;
+
+    /// <summary>Gets whether the file is read for its layers: every record is kept, with the blocks the flattener reads.</summary>
+    private bool _layered;
+
+    private Action<PsdFile, EgamiInput, long>? _channels;
 
     /// <summary>Gets the channels that make the color: 1 for gray, bitmap, indexed, duotone and multichannel, 3 for RGB and Lab, 4 for CMYK.</summary>
     public int ColorChannels => Mode switch
@@ -70,9 +79,18 @@ internal sealed class PsdFile
     /// <summary>Reads everything before the flattened image's data and leaves the input at its first byte.</summary>
     /// <param name="input">The data, at the start of the file.</param>
     /// <param name="options">The caller's options: metadata and layer records are kept only when it reads metadata.</param>
-    public static PsdFile Read(EgamiInput input, ReaderOptions options)
+    /// <param name="layers">Whether to keep every layer record and where its channels lie, whatever the options say.</param>
+    /// <param name="channels">
+    /// Called with the input at the start of the layers' channel data, after the records, to read it in file order; it gets the
+    /// file and where the layer info ends. <see langword="null"/> skips the data.
+    /// </param>
+    /// <param name="wantsLayers">
+    /// Asked once the image resources are read: whether the layers are wanted after all. When it is given and says no, the
+    /// records are read as without it and <paramref name="channels"/> is not called.
+    /// </param>
+    public static PsdFile Read(EgamiInput input, ReaderOptions options, bool layers = false, Action<PsdFile, EgamiInput, long>? channels = null, Func<PsdFile, bool>? wantsLayers = null)
     {
-        PsdFile file = new();
+        PsdFile file = new() { _layered = layers || (channels is not null && wantsLayers is null), _channels = wantsLayers is null ? channels : null };
         file.ReadHeader(input);
         long colorLength = input.ReadUInt32BigEndian();
         Remaining(input, colorLength, "color mode data");
@@ -92,6 +110,12 @@ internal sealed class PsdFile
         }
 
         file.ReadResources(input, options);
+        if (wantsLayers?.Invoke(file) == true)
+        {
+            file._layered = true;
+            file._channels = channels;
+        }
+
         file.ReadLayerSection(input, options);
         file.Compression = (PsdCompression)input.ReadUInt16BigEndian();
         if (file.Compression is not (PsdCompression.Raw or PsdCompression.PackBits or PsdCompression.Deflate or PsdCompression.DeflatePredicted))
@@ -207,7 +231,7 @@ internal sealed class PsdFile
                 break;
             }
 
-            bool needed = id is VersionInfoId or TransparentIndexId or AlphaNamesId or UnicodeAlphaNamesId;
+            bool needed = id is VersionInfoId or TransparentIndexId or AlphaNamesId or UnicodeAlphaNamesId || (_layered && id == IccProfileId);
             if (needed || options.ReadMetadata)
             {
                 kept += size;
@@ -374,7 +398,7 @@ internal sealed class PsdFile
     private void ReadLayerInfo(EgamiInput input, long end, ReaderOptions options)
     {
         LayerCount = (short)input.ReadUInt16BigEndian();
-        if (!options.ReadMetadata)
+        if (!options.ReadMetadata && !_layered)
         {
             return;
         }
@@ -390,26 +414,52 @@ internal sealed class PsdFile
             }
 
             long start = input.Position;
-            PsdLayer layer = ReadRecord(input, end, ref level);
-            kept += input.Position - start + (layer.Name.Length * 2L);
+            PsdLayerRecord record = ReadRecord(input, end, ref level);
+            kept += input.Position - start + (record.Info.Name.Length * 2L);
             input.CheckMetadataBytes(kept);
-            Layers.Add(layer);
+            Records.Add(record);
+            Layers.Add(record.Info);
         }
+
+        // The channels' data follows the records, layer by layer, channel by channel, each led by its compression code.
+        long at = input.Position;
+        foreach (PsdLayerRecord record in Records)
+        {
+            PsdChannel[] channels = record.Channels;
+            for (int c = 0; c < channels.Length; c++)
+            {
+                channels[c] = channels[c] with { Offset = at };
+                at = channels[c].Length > end - at ? end + 1 : at + channels[c].Length;
+            }
+        }
+
+        if (at > end)
+        {
+            Warnings.Add("Psd.LayerDataTruncated", "The layers' channel data runs past the end of the layer info; the missing pixels are 0.", end);
+        }
+
+        _channels?.Invoke(this, input, end);
     }
 
-    private PsdLayer ReadRecord(EgamiInput input, long end, ref int level)
+    private PsdLayerRecord ReadRecord(EgamiInput input, long end, ref int level)
     {
         int top = (int)input.ReadUInt32BigEndian();
         int left = (int)input.ReadUInt32BigEndian();
         int bottom = (int)input.ReadUInt32BigEndian();
         int right = (int)input.ReadUInt32BigEndian();
-        int channels = input.ReadUInt16BigEndian();
-        if (channels > 56)
+        int channelCount = input.ReadUInt16BigEndian();
+        if (channelCount > 56)
         {
-            throw input.Corrupt(input.Position - 2, $"A layer has {channels} channels; PSD allows 56.");
+            throw input.Corrupt(input.Position - 2, $"A layer has {channelCount} channels; PSD allows 56.");
         }
 
-        input.Skip(channels * (Big ? 10L : 6L));
+        PsdChannel[] channels = new PsdChannel[channelCount];
+        for (int c = 0; c < channelCount; c++)
+        {
+            short id = (short)input.ReadUInt16BigEndian();
+            channels[c] = new PsdChannel(id, ReadLength(input), 0);
+        }
+
         Span<byte> blend = stackalloc byte[12];
         input.ReadExactly(blend);
         if (!blend[..4].SequenceEqual("8BIM"u8))
@@ -421,6 +471,7 @@ internal sealed class PsdFile
         float opacity = blend[8] / 255f;
         bool clipped = blend[9] != 0;
         bool visible = (blend[10] & 0x02) == 0;
+        bool irrelevant = (blend[10] & 0x18) == 0x18;
         long extra = input.ReadUInt32BigEndian();
         long extraEnd = input.Position + extra;
         if (extraEnd > end)
@@ -428,17 +479,31 @@ internal sealed class PsdFile
             throw input.Corrupt(input.Position - 4, "A layer record's extra data is longer than the layer info.");
         }
 
-        long maskLength = input.ReadUInt32BigEndian();
-        input.Skip(Math.Min(maskLength, Math.Max(0, extraEnd - input.Position)));
+        long maskLength = Math.Min(input.ReadUInt32BigEndian(), Math.Max(0, extraEnd - input.Position));
+        MaskData mask = maskLength >= 18 ? ReadMask(input, maskLength) : new MaskData { UserDensity = 255, VectorDensity = 255 };
+        input.Skip(Math.Max(0, maskLength - mask.Read));
+
         long rangesLength = Math.Min(input.ReadUInt32BigEndian(), Math.Max(0, extraEnd - input.Position));
-        input.Skip(rangesLength);
+        uint[] ranges = new uint[rangesLength / 4];
+        for (int r = 0; r < ranges.Length; r++)
+        {
+            ranges[r] = input.ReadUInt32BigEndian();
+        }
+
+        input.Skip(rangesLength - (ranges.Length * 4L));
         int nameLength = input.ReadByte();
         Span<byte> nameBytes = stackalloc byte[nameLength];
         input.ReadExactly(nameBytes);
         string name = Encoding.Latin1.GetString(nameBytes);
-        input.Skip((4 - ((nameLength + 1) % 4)) % 4);
+        input.Skip(Math.Min((4 - ((nameLength + 1) % 4)) % 4, Math.Max(0, extraEnd - input.Position)));
 
         PsdLayerKind kind = PsdLayerKind.Layer;
+        string? sectionKey = null;
+        float fill = 1;
+        bool clippedAsGroup = true;
+        int knockout = 0;
+        List<string> keys = [];
+        Dictionary<string, byte[]> blocks = [];
         Span<byte> head = stackalloc byte[8];
         while (input.Position + 12 <= extraEnd)
         {
@@ -455,23 +520,54 @@ internal sealed class PsdFile
                 break;
             }
 
-            if (head[4..].SequenceEqual("luni"u8) && blockLength >= 4)
+            string blockKey = Encoding.Latin1.GetString(head[4..]);
+            keys.Add(blockKey);
+            switch (blockKey)
             {
-                long units = input.ReadUInt32BigEndian();
-                int bytes = (int)Math.Min(units * 2, blockEnd - input.Position);
-                byte[] text = new byte[bytes & ~1];
-                input.ReadExactly(text);
-                name = Encoding.BigEndianUnicode.GetString(text).TrimEnd('\0');
-            }
-            else if ((head[4..].SequenceEqual("lsct"u8) || head[4..].SequenceEqual("lsdk"u8)) && blockLength >= 4)
-            {
-                kind = input.ReadUInt32BigEndian() switch
-                {
-                    1 => PsdLayerKind.OpenGroup,
-                    2 => PsdLayerKind.ClosedGroup,
-                    3 => PsdLayerKind.GroupEnd,
-                    _ => PsdLayerKind.Layer,
-                };
+                case "luni" when blockLength >= 4:
+                    long units = input.ReadUInt32BigEndian();
+                    int bytes = (int)Math.Min(units * 2, blockEnd - input.Position);
+                    byte[] text = new byte[bytes & ~1];
+                    input.ReadExactly(text);
+                    name = Encoding.BigEndianUnicode.GetString(text).TrimEnd('\0');
+                    break;
+                case "lsct" or "lsdk" when blockLength >= 4:
+                    kind = input.ReadUInt32BigEndian() switch
+                    {
+                        1 => PsdLayerKind.OpenGroup,
+                        2 => PsdLayerKind.ClosedGroup,
+                        3 => PsdLayerKind.GroupEnd,
+                        _ => PsdLayerKind.Layer,
+                    };
+                    if (blockLength >= 12)
+                    {
+                        input.ReadExactly(head);
+                        if (head[..4].SequenceEqual("8BIM"u8))
+                        {
+                            sectionKey = Encoding.Latin1.GetString(head[4..]);
+                        }
+                    }
+
+                    break;
+                case "iOpa" when blockLength >= 1:
+                    fill = input.ReadByte() / 255f;
+                    break;
+                case "clbl" when blockLength >= 1:
+                    clippedAsGroup = input.ReadByte() != 0;
+                    break;
+                case "knko" when blockLength >= 1:
+                    knockout = input.ReadByte();
+                    break;
+                default:
+                    if (_layered && PsdLayerRecord.Keeps(head[4..]))
+                    {
+                        input.CheckMetadataBytes(blockLength);
+                        byte[] data = new byte[blockLength];
+                        input.ReadExactly(data);
+                        blocks[blockKey] = data;
+                    }
+
+                    break;
             }
 
             input.Skip(blockEnd - input.Position);
@@ -489,7 +585,121 @@ internal sealed class PsdFile
         }
 
         Rect bounds = right > left && bottom > top ? new Rect(left, top, (int)Math.Min((long)right - left, int.MaxValue), (int)Math.Min((long)bottom - top, int.MaxValue)) : default;
-        return new PsdLayer(name, bounds, opacity, key, BlendModeOf(key), visible, clipped, kind, at);
+        PsdLayer info = new(name, bounds, opacity, key, BlendModeOf(key), visible, clipped, kind, at)
+        {
+            FillOpacity = fill,
+            LayerType = PsdLayerRecord.TypeOf(kind, keys),
+        };
+        PsdLayerRecord record = new()
+        {
+            Info = info,
+            Top = top,
+            Left = left,
+            Bottom = bottom,
+            Right = right,
+            Channels = channels,
+            PixelsIrrelevant = irrelevant,
+            Mask = mask.User,
+            RealMask = mask.Real,
+            UserMaskDensity = mask.UserDensity,
+            VectorMaskDensity = mask.VectorDensity,
+            UserMaskFeather = mask.UserFeather,
+            VectorMaskFeather = mask.VectorFeather,
+            BlendRanges = ranges,
+            BlendClippedAsGroup = clippedAsGroup,
+            Knockout = knockout,
+            SectionBlendKey = sectionKey,
+        };
+        record.Keys.AddRange(keys);
+        foreach ((string k, byte[] v) in blocks)
+        {
+            record.Blocks[k] = v;
+        }
+
+        return record;
+    }
+
+    /// <summary>
+    /// Reads a layer's mask data: the user mask's rectangle, default color and flags; then, in a longer record, the real user
+    /// mask's flags, default color and rectangle; then the mask parameters when the flags say there are some. The specification
+    /// lists the parameters before the real mask, but Photoshop writes them after it, as psd-tools and ag-psd read them; when
+    /// the layout is unclear, the real mask is taken to be there when the bytes after the user mask are a valid parameter block
+    /// only from 18 bytes on.
+    /// </summary>
+    private static MaskData ReadMask(EgamiInput input, long length)
+    {
+        Span<byte> bytes = stackalloc byte[64];
+        bytes = bytes[..(int)Math.Min(length, 64)];
+        input.ReadExactly(bytes);
+        MaskData data = new() { UserDensity = 255, VectorDensity = 255, Read = bytes.Length };
+        int flags = bytes[17];
+        data.User = Rectangle(bytes, bytes[16], flags);
+        ReadOnlySpan<byte> rest = bytes[18..];
+        bool parameters = (flags & 0x10) != 0;
+        bool real = rest.Length >= 18 && (!parameters || (!ParametersFit(rest) && (ParametersFit(rest[18..]) || rest.Length == 18 || rest.Length - 18 >= ParametersSize(rest[18]))));
+        if (real)
+        {
+            data.Real = Rectangle(rest[2..], rest[1], rest[0]);
+            rest = rest[18..];
+        }
+
+        if (parameters && !rest.IsEmpty)
+        {
+            int which = rest[0];
+            int at = 1;
+            if ((which & 1) != 0 && at + 1 <= rest.Length)
+            {
+                data.UserDensity = rest[at++];
+            }
+
+            if ((which & 2) != 0 && at + 8 <= rest.Length)
+            {
+                data.UserFeather = BinaryPrimitives.ReadDoubleBigEndian(rest[at..]);
+                at += 8;
+            }
+
+            if ((which & 4) != 0 && at + 1 <= rest.Length)
+            {
+                data.VectorDensity = rest[at++];
+            }
+
+            if ((which & 8) != 0 && at + 8 <= rest.Length)
+            {
+                data.VectorFeather = BinaryPrimitives.ReadDoubleBigEndian(rest[at..]);
+            }
+        }
+
+        return data;
+
+        static PsdMaskRecord Rectangle(ReadOnlySpan<byte> b, int color, int flags) => new(
+            BinaryPrimitives.ReadInt32BigEndian(b), BinaryPrimitives.ReadInt32BigEndian(b[4..]), BinaryPrimitives.ReadInt32BigEndian(b[8..]),
+            BinaryPrimitives.ReadInt32BigEndian(b[12..]), color, flags);
+
+        static int ParametersSize(int which) => 1 + ((which & 1) != 0 ? 1 : 0) + ((which & 2) != 0 ? 8 : 0) + ((which & 4) != 0 ? 1 : 0) + ((which & 8) != 0 ? 8 : 0);
+
+        // Whether the bytes are a parameter block followed by at most 3 bytes of zero padding and nothing else.
+        static bool ParametersFit(ReadOnlySpan<byte> b)
+        {
+            if (b.IsEmpty || b[0] == 0 || (b[0] & ~0x0F) != 0)
+            {
+                return false;
+            }
+
+            int size = ParametersSize(b[0]);
+            return b.Length >= size && b.Length - size <= 3 && !b[size..].ContainsAnyExcept((byte)0);
+        }
+    }
+
+    private struct MaskData
+
+    {
+        public PsdMaskRecord? User;
+        public PsdMaskRecord? Real;
+        public int UserDensity;
+        public int VectorDensity;
+        public double UserFeather;
+        public double VectorFeather;
+        public long Read;
     }
 
     /// <summary>Returns Egami's blend mode for a Photoshop blend key, or <see langword="null"/> when Egami has none like it.</summary>
@@ -511,6 +721,17 @@ internal sealed class PsdFile
         "sat " => BlendMode.Saturation,
         "colr" => BlendMode.Color,
         "lum " => BlendMode.Luminosity,
+        "lddg" => BlendMode.Add,
+        "fsub" => BlendMode.Subtract,
+        "fdiv" => BlendMode.Divide,
+        "lbrn" => BlendMode.LinearBurn,
+        "lLit" => BlendMode.LinearLight,
+        "vLit" => BlendMode.VividLight,
+        "pLit" => BlendMode.PinLight,
+        "hMix" => BlendMode.HardMix,
+        "dkCl" => BlendMode.DarkerColor,
+        "lgCl" => BlendMode.LighterColor,
+        "diss" => BlendMode.Dissolve,
         _ => null,
     };
 }

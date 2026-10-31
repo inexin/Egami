@@ -316,6 +316,11 @@ internal sealed partial class JpegDecoder<TPixel> : IDisposable
             c.AllocateCoefficients(input.Memory, _mcusX * c.H, _mcusY * c.V);
         }
 
+        // Rows pulled from a large buffered file come after all its scans, which decode on several cores as Load's do; only the
+        // last pass, transforming and converting rows, is left to the caller's reads.
+        JpegBitReader reader = _reader;
+        _scansDone = DecodeScansTogether(input, ref reader, scan, finish: false);
+        _reader = reader;
         _scan = scan;
         PumpScans();
     }
@@ -1015,7 +1020,7 @@ internal sealed partial class JpegDecoder<TPixel> : IDisposable
                 }
 
                 int end = zeros == 0 ? se + 1 : BitOperations.TrailingZeroCount(zeros);
-                RefineAll(reader, ref bits, ref count, block, nonzero & Range(k, end - 1), p1, m1);
+                RefineAll(reader, ref bits, ref count, block, nonzero & Range(k, end - 1), p1, al);
                 k = end;
                 if (value != 0 && k <= 63)
                 {
@@ -1032,7 +1037,7 @@ internal sealed partial class JpegDecoder<TPixel> : IDisposable
             // The band ends in this block: only the corrections of the nonzero coefficients remain.
             if (k <= se)
             {
-                RefineAll(reader, ref bits, ref count, block, nonzero & Range(k, se), p1, m1);
+                RefineAll(reader, ref bits, ref count, block, nonzero & Range(k, se), p1, al);
             }
 
             eobRun--;
@@ -1041,7 +1046,7 @@ internal sealed partial class JpegDecoder<TPixel> : IDisposable
 
     /// <summary>Applies a correction bit to each coefficient in <paramref name="positions"/>, in order, taking up to 32 bits at once.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static void RefineAll(JpegBitReader reader, ref ulong bits, ref int count, Span<short> block, ulong positions, int p1, int m1)
+    private static void RefineAll(JpegBitReader reader, ref ulong bits, ref int count, Span<short> block, ulong positions, int p1, int al)
     {
         while (positions != 0)
         {
@@ -1054,14 +1059,15 @@ internal sealed partial class JpegDecoder<TPixel> : IDisposable
             ulong taken = bits;
             bits <<= n;
             count -= n;
+            ref short first = ref MemoryMarshal.GetReference(block);
             for (int t = 0; t < n; t++)
             {
-                ref short coefficient = ref block[BitOperations.TrailingZeroCount(positions)];
-                if ((long)taken < 0 && (coefficient & p1) == 0)
-                {
-                    coefficient = (short)(coefficient + (coefficient >= 0 ? p1 : m1));
-                }
-
+                // Without branches: the correction bits are close to random, so a branch on them mispredicts half the time.
+                // A coefficient already holding this bit is left alone; otherwise the bit moves it away from zero.
+                ref short coefficient = ref Unsafe.Add(ref first, BitOperations.TrailingZeroCount(positions));
+                int c = coefficient;
+                int apply = (int)(taken >> 63) & (~c >> al) & 1;
+                coefficient = (short)(c + (apply * (((c >> 31) | 1) * p1)));
                 taken <<= 1;
                 positions &= positions - 1;
             }

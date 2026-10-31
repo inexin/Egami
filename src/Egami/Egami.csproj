@@ -36,6 +36,8 @@
     <!-- Egami.Heic plugs its HEVC decoder into the HEIF reader, at exactly this version (2.9.4 design, question 8). -->
     <InternalsVisibleTo Include="Egami.Heic" />
     <InternalsVisibleTo Include="Egami.Heic.Tests" />
+    <!-- Egami.Drawing's ink canvas blends with the ink math the PSD flattener uses (2.3.10, question 9); same release train. -->
+    <InternalsVisibleTo Include="Egami.Drawing" />
   </ItemGroup>
 
 </Project>

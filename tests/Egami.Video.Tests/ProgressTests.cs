@@ -6,7 +6,12 @@ using Egami.Video.Tests.Containers;
 
 namespace Egami.Video.Tests;
 
-/// <summary>Progress reports, cancellation and the stream overloads of <see cref="MediaFile.Remux(string, string, Func{TrackInfo, bool}?, MediaContext?, IProgress{MediaProgress}?, CancellationToken)"/> and Transcode.</summary>
+/// <summary>
+/// Progress reports, cancellation and the stream overloads of <see cref="MediaFile.Remux(string, string, Func{TrackInfo, bool}?, MediaContext?, IProgress{MediaProgress}?, CancellationToken)"/> and Transcode.
+/// Runs with no other test beside it: <see cref="NoHandlerAllocatesNothingPerPacket"/> counts the bytes the test thread
+/// allocates to within 8 a packet, which tests running alongside can push over.
+/// </summary>
+[Collection(nameof(MemoryTests))]
 public class ProgressTests
 {
     private static readonly string[] MediaExtensions = [".avi", ".mkv", ".webm", ".mka", ".ivf", ".y4m", ".mp4", ".mov", ".m4a", ".obu", ".flac", ".wav", ".w64", ".ogg", ".opus"];

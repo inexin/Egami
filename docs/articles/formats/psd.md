@@ -8,7 +8,8 @@ Photoshop stores after the layers, in every color mode and depth, and lists the 
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Psd.cs#psd-load)]
 
-A file saved without Maximize Compatibility holds only a placeholder; `PsdDetails.HasRealComposite` says so.
+A file saved without Maximize Compatibility holds only a placeholder; `PsdDetails.HasRealComposite` says so, and Load then
+flattens the layers instead (see [No real composite](#no-real-composite)).
 
 | Color mode | 1-bit | 8-bit | 16-bit | 32-bit |
 | --- | --- | --- | --- | --- |
@@ -42,9 +43,15 @@ read in `PsdDetails.OtherResources`.
 
 ## No real composite
 
-A file saved without Photoshop's Maximize Compatibility holds no real flattened image, only a placeholder. Egami loads it with
-the `Psd.NoComposite` warning and `PsdDetails.HasRealComposite` false; it does not composite the layers itself, which would need
-Photoshop's blend modes, adjustment layers, effects and text. ImageMagick flattens the layers instead.
+A file saved without Photoshop's Maximize Compatibility holds no real flattened image, only a placeholder, and
+`PsdDetails.HasRealComposite` is false. By default Load, Probe and the row readers then flatten the layers as
+`PsdDocument.Flatten` does, one layer at a time as they come in the file. `PsdReaderOptions.Composite` chooses:
+`PsdComposite.Auto` (the default), `Stored` (always the stored image, the placeholder with the `Psd.NoComposite` warning) or
+`Flatten` (always the layers flattened). A flattened image's type comes from the layer records before any pixel is read: with
+alpha unless an opaque Normal layer covers the canvas at the top level. Lab, bitmap, indexed and multichannel files give their stored
+image.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Psd.cs#psd-composite)]
 
 ## Layers
 
@@ -54,12 +61,47 @@ layer or one end of a group, with its nesting level. Their pixels are not loaded
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Psd.cs#psd-layers)]
 
+Each record also has `FillOpacity` and a `PsdLayerType`: pixels, text, shape, smart object, fill, adjustment or group.
+
+## Reading layers
+
+`PsdImage.ReadLayers` reads every layer with its pixels into a `PsdDocument`: its `Layers` are `PsdLayerImage`s, bottom to top,
+a group after its contents, each naming its group in `ParentIndex`. A layer's `Pixels` are at its own size, placed on the
+canvas at `X` and `Y`, in the type Load would use, always with straight alpha: `Rgba8`, `Rgba16` or `RgbaF32` for RGB and Lab
+(converted to sRGB), `GrayAlpha8`, `GrayAlpha16` or `RgbaF32` for gray. CMYK layers come as an `InkRaster` in `Ink`.
+`ReadLayers<TPixel>` converts every layer to one type. A layer's pixel mask is a `PsdMask`: a gray raster of its own size and
+place, the value outside it, and whether it is disabled. The channels are read in file order, so the stream need not seek.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Psd.cs#psd-read-layers)]
+
+## Flattening
+
+`PsdDocument.Flatten` composites the layers as Photoshop does, with each layer's `Info` as it is now, so a copy changed with
+`with` (a layer hidden, another opacity or blend mode) flattens differently. It covers visibility, opacity and fill opacity, all
+of Photoshop's blend modes (Soft Light with Photoshop's own formula), pixel masks (density, the default color outside them,
+disabled ones), vector masks (filled with the non-zero rule and antialiased), clipping (the clipped layers blend onto their base
+and keep its coverage), pass-through and isolated groups, blending ranges ("blend if") and solid color fill layers. Layer
+effects, gradient and pattern fills, knockout and mask feathering are left out with one warning a kind naming the layers.
+8 and 16-bit documents blend their stored values and 32-bit ones linear light, as Photoshop does. The result has the type Load
+gives the file, with alpha only when some pixel is not opaque. `PsdFlattenOptions.ApplyAdjustments` turns adjustment layers off.
+Lab, bitmap, indexed and multichannel documents are not flattened.
+
+Levels, curves and invert follow Photoshop's documented formulas. Hue/saturation and the current (not legacy)
+brightness/contrast are close approximations that have not been checked against Photoshop yet, so expect small color
+differences there. Hard Mix and Vivid Light can differ from Photoshop at pure black and white, and Photoshop's fill opacity in
+its eight special modes (Color Burn, Linear Burn, Color Dodge, Linear Dodge, Vivid Light, Linear Light, Hard Mix, Difference)
+works like opacity here.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Psd.cs#psd-flatten)]
+
 ## Streaming and speed
 
 Rows come from the channel planes as they are asked for: raw rows at computed offsets and PackBits rows through their byte counts,
 read where they lie on a seekable stream, so `Region` reads only the rows it needs and the layer data is skipped without being
 read. A stream that cannot seek is read to its end first, and Deflate data is inflated whole. On 12-megapixel files Egami decodes
-three to ten times faster than ImageMagick (Magick.NET).
+three to ten times faster than ImageMagick (Magick.NET). Flattening reads and composites one layer at a time, in float
+canvases from the shared pool, so its managed allocations do not grow with the image: a 12-megapixel file with three layers
+flattens in about 2.2 seconds, against 2.9 for ImageMagick.
 
 ## Damaged and hostile data
 
@@ -67,6 +109,9 @@ The header's size is checked against `SafetyLimits` before anything else; PSB's 
 default limits unless the caller raises them. Every section length is checked against the data that remains, the layer section
 is skipped by its length, the image resources and layer records count against `MaxMetadataBytes`, and the PackBits row table is
 bounded by the header before it is read. Damaged layer records or resources are warnings (`Psd.LayersDamaged`,
-`Psd.ResourcesDamaged`), since the flattened image does not depend on them. Image data that ends early loads with the missing
+`Psd.ResourcesDamaged`), since the stored flattened image does not depend on them; damaged or short layer channel data leaves
+the missing pixels 0 with `Psd.LayerDataDamaged` or `Psd.LayerDataTruncated`, and throws `CorruptDataException` in strict
+mode. Each layer and mask is checked against `SafetyLimits` before it is decoded, and the layers and flattening canvases
+together against `MaxTotalBytes`. Image data that ends early loads with the missing
 pixels 0 and the `Psd.DataTruncated` warning, and throws `CorruptDataException` in strict mode. The reader is fuzzed with AFL++
 through whole files and through the image data alone.

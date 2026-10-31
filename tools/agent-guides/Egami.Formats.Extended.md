@@ -14,6 +14,8 @@ format infos and options), with `Egami` and `Egami.Formats`.
   `WithWbmp()`, `WithFarbfeld()` and `WithDds()` one at a time.
 - DDS: Load gives mip 0 of the first surface; `DdsReaderOptions` (`Surface`, `MipLevel`, `IncludeMipLevels`,
   `ReconstructNormalZ`) and LoadAll reach every face, array slice, depth slice and mip; `DdsDetails` keeps the DXGI format.
+  Save writes a full mip chain; `DdsWriterOptions` (`Format`, `MipLevels`, `Effort`, `Srgb`, `Cube`) and SaveAll write
+  block formats, arrays and cube maps.
 - `EgamiContext.SetDefault(new EgamiContext().WithExtendedFormats())` at startup makes them work in every call.
 - Load, Probe, streaming decodes, Save and Transcode then work as they do for core formats, inside the same safety limits.
 

@@ -44,7 +44,7 @@ public sealed class McpTests : IAsyncDisposable
         string[] expected =
         [
             "info", "convert", "resize", "thumbnail", "crop", "rotate", "flip", "auto_orient", "run", "compare", "stats", "frames_split",
-            "frames_join", "metadata_show", "metadata_strip", "metadata_copy", "color", "text", "overlay", "montage", "formats",
+            "frames_join", "layers", "metadata_show", "metadata_strip", "metadata_copy", "color", "text", "overlay", "montage", "formats",
         ];
         Assert.Equal(expected, tools.Select(t => t.Name));
 
@@ -342,6 +342,7 @@ public sealed class McpTests : IAsyncDisposable
         string jpeg = _tool.Copy(Jpeg);
         string png = _tool.Copy(Png);
         _tool.Copy("gif/loop-3.gif", "anim.gif");
+        _tool.Copy("psd/layers.psd", "layers.psd");
         McpClient client = await Connect();
         Dictionary<string, Dictionary<string, object?>> calls = new()
         {
@@ -358,6 +359,7 @@ public sealed class McpTests : IAsyncDisposable
             ["stats"] = new() { ["inputs"] = new[] { png } },
             ["frames_split"] = new() { ["input"] = "anim.gif", ["output"] = "t/frames/{index}.png" },
             ["frames_join"] = new() { ["inputs"] = Files("t/frames/*.png"), ["output"] = "t/joined.gif" },
+            ["layers"] = new() { ["input"] = "layers.psd", ["folder"] = "t/layers" },
             ["metadata_show"] = new() { ["inputs"] = new[] { jpeg } },
             ["metadata_strip"] = new() { ["inputs"] = new[] { jpeg }, ["output"] = "t/strip.jpg" },
             ["metadata_copy"] = new() { ["inputs"] = new[] { png }, ["from"] = jpeg, ["output"] = "t/copy.png" },

@@ -59,11 +59,16 @@ internal readonly struct BlendRows<TPixel>
     }
 
     /// <summary>Blends <paramref name="source"/> onto <paramref name="destination"/>, both the same length.</summary>
-    internal void Blend(ReadOnlySpan<TPixel> source, Span<TPixel> destination, ReadOnlySpan<byte> coverage = default)
+    /// <param name="source">The source row.</param>
+    /// <param name="destination">The destination row.</param>
+    /// <param name="coverage">Per-pixel coverage, or empty.</param>
+    /// <param name="x">The canvas column of the first pixel, for <see cref="BlendMode.Dissolve"/>.</param>
+    /// <param name="y">The canvas row, for <see cref="BlendMode.Dissolve"/>.</param>
+    internal void Blend(ReadOnlySpan<TPixel> source, Span<TPixel> destination, ReadOnlySpan<byte> coverage = default, int x = 0, int y = 0)
     {
         if (UsesBytes && Premul8)
         {
-            BlendKernels.Blend8(_mode, MemoryMarshal.Cast<TPixel, uint>(source), MemoryMarshal.Cast<TPixel, uint>(destination), coverage, _opacity255, Bgr);
+            BlendKernels.Blend8(_mode, MemoryMarshal.Cast<TPixel, uint>(source), MemoryMarshal.Cast<TPixel, uint>(destination), coverage, _opacity255, Bgr, x: x, y: y);
             return;
         }
 
@@ -76,7 +81,7 @@ internal readonly struct BlendRows<TPixel>
                 // An opaque pixel is its own premultiplied form: blend the row where it is, and divide back in place only when the
                 // mode can leave it less than opaque.
                 Span<uint> d = MemoryMarshal.Cast<TPixel, uint>(destination);
-                BlendKernels.Blend8(_mode, s, d, coverage, _opacity255, Bgr, straightSource: true);
+                BlendKernels.Blend8(_mode, s, d, coverage, _opacity255, Bgr, straightSource: true, x: x, y: y);
                 if (!KeepsOpaque(_mode))
                 {
                     Unpremultiply(d, destination);
@@ -90,7 +95,7 @@ internal readonly struct BlendRows<TPixel>
             {
                 Span<uint> d = buffer.AsSpan(0, destination.Length);
                 Premultiply(destination, d);
-                BlendKernels.Blend8(_mode, s, d, coverage, _opacity255, Bgr, straightSource: true);
+                BlendKernels.Blend8(_mode, s, d, coverage, _opacity255, Bgr, straightSource: true, x: x, y: y);
                 Unpremultiply(d, destination);
             }
             finally
@@ -106,7 +111,7 @@ internal readonly struct BlendRows<TPixel>
         {
             Span<RgbaF32> row = straight.AsSpan(0, source.Length);
             PixelConvert.Convert(source, row);
-            BlendStraight(row, destination, coverage);
+            BlendStraight(row, destination, coverage, x, y);
         }
         finally
         {
@@ -115,7 +120,7 @@ internal readonly struct BlendRows<TPixel>
     }
 
     /// <summary>Blends straight float <paramref name="source"/> pixels onto <paramref name="destination"/>; only when not <see cref="UsesBytes"/>.</summary>
-    internal void BlendStraight(ReadOnlySpan<RgbaF32> source, Span<TPixel> destination, ReadOnlySpan<byte> coverage = default)
+    internal void BlendStraight(ReadOnlySpan<RgbaF32> source, Span<TPixel> destination, ReadOnlySpan<byte> coverage = default, int x = 0, int y = 0)
     {
         float[] floats = ArrayPool<float>.Shared.Rent(8 * destination.Length);
         try
@@ -124,7 +129,7 @@ internal readonly struct BlendRows<TPixel>
             Span<float> s = floats.AsSpan(0, source.Length * 4), d = floats.AsSpan(n, n);
             _source!.Load(source, s);
             _converter!.Load(destination, d);
-            BlendKernels.BlendFloat(_mode, s, d, coverage, _opacity);
+            BlendKernels.BlendFloat(_mode, s, d, coverage, _opacity, x, y);
             _converter.Store(d, destination, opaque: false);
         }
         finally
@@ -134,7 +139,7 @@ internal readonly struct BlendRows<TPixel>
     }
 
     /// <summary>Blends one straight color onto every pixel of <paramref name="destination"/>.</summary>
-    internal void BlendSolid(Rgba8 color, Span<TPixel> destination, ReadOnlySpan<byte> coverage = default)
+    internal void BlendSolid(Rgba8 color, Span<TPixel> destination, ReadOnlySpan<byte> coverage = default, int x = 0, int y = 0)
     {
         if (UsesBytes)
         {
@@ -142,13 +147,13 @@ internal readonly struct BlendRows<TPixel>
             ReadOnlySpan<uint> one = new(in solid);
             if (Premul8)
             {
-                BlendKernels.Blend8(_mode, one, MemoryMarshal.Cast<TPixel, uint>(destination), coverage, _opacity255, Bgr);
+                BlendKernels.Blend8(_mode, one, MemoryMarshal.Cast<TPixel, uint>(destination), coverage, _opacity255, Bgr, x: x, y: y);
                 return;
             }
 
             if (KeepsOpaque(_mode) && Opaque(destination))
             {
-                BlendKernels.Blend8(_mode, one, MemoryMarshal.Cast<TPixel, uint>(destination), coverage, _opacity255, Bgr);
+                BlendKernels.Blend8(_mode, one, MemoryMarshal.Cast<TPixel, uint>(destination), coverage, _opacity255, Bgr, x: x, y: y);
                 return;
             }
 
@@ -157,7 +162,7 @@ internal readonly struct BlendRows<TPixel>
             {
                 Span<uint> d = buffer.AsSpan(0, destination.Length);
                 Premultiply(destination, d);
-                BlendKernels.Blend8(_mode, one, d, coverage, _opacity255, Bgr);
+                BlendKernels.Blend8(_mode, one, d, coverage, _opacity255, Bgr, x: x, y: y);
                 Unpremultiply(d, destination);
             }
             finally
@@ -170,7 +175,7 @@ internal readonly struct BlendRows<TPixel>
 
         // A four-float source is a solid color to the float kernel.
         Span<RgbaF32> straight = [RgbaF32.FromRgba8(color)];
-        BlendStraight(straight, destination, coverage);
+        BlendStraight(straight, destination, coverage, x, y);
     }
 
     /// <summary>Gets whether a mode gives an opaque result wherever the destination is opaque, whatever the source.</summary>

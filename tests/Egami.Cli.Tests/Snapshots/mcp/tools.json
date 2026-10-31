@@ -1074,6 +1074,39 @@
       }
     },
     {
+      "name": "layers",
+      "title": "egami layers",
+      "description": "Write each layer of a PSD or PSB file as a PNG at its own size, its mask as a gray PNG, and layers.json listing every layer and group: name, place, size, blend mode, opacity, visibility and group.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "input": {
+            "type": "string",
+            "description": "The PSD or PSB file, or - for standard input."
+          },
+          "folder": {
+            "type": "string",
+            "description": "The folder to write the layers and layers.json into; made when missing."
+          },
+          "preview": {
+            "type": "boolean",
+            "description": "Also return the first file written as a picture, fit to 1024 pixels."
+          }
+        },
+        "required": [
+          "input",
+          "folder"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": false
+      }
+    },
+    {
       "name": "metadata_show",
       "title": "egami metadata show",
       "description": "Show every piece of metadata an image holds.",

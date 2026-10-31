@@ -53,7 +53,51 @@ DDS textures, stage A (reading). All additive; it ships with the rest of DDS in 
   `ReaderOptions.MinimumSize` picks the smallest mip that covers it. `DdsReaderOptions.ReconstructNormalZ` rebuilds blue for
   two-channel normal maps. `DdsDetails` keeps the DXGI format, mips, dimension, cube flag and alpha mode.
 
+DDS textures, stage B (writing).
+
+- Save writes DDS: the uncompressed formats and BC1 to BC5 (`DdsTextureFormat`), with a full mip chain made by `MipChain`
+  (`DdsWriterOptions.MipLevels`), an encoder effort of 0 to 6 (`Effort`), sRGB formats (`Srgb`), premultiplied alpha
+  (`PremultipliedAlpha`, DXT2 and DXT4 under the legacy header) and the legacy header whenever the format allows
+  (`Dx10Header` forces DX10). SaveAll writes texture arrays and cube maps (`Cube`). A raster loaded at mip 0 and unchanged
+  since writes the file's own mips.
+
+DDS textures, stage C (BC7 and BC6H encoders).
+
+- `DdsTextureFormat.Bc7`, `Bc6h` and `Bc6hSigned`: BC7 searches modes, partitions, rotations and p-bits by effort; BC6H fits
+  HDR colour in the decoder's domain, with the two-region modes from effort 3. The `egami` command writes them with
+  `--set dds.format=bc7` and the other `dds.` keys. A Textures guide says which format suits which content.
+- Against texconv 2026.5.8.1: every file it writes decodes to its own decode, on every mip (BC4 and BC5 SNORM within an
+  8-bit level, which texconv rounds through R8_SNORM), and at the default effort the encoders reach a higher PSNR on 28 photos:
+  BC1 +0.84 dB, BC3 +0.65, BC4 +0.96, BC5 +0.98, BC7 +0.71. BC7 encodes 15.7 times as fast as texconv's CPU path, and BC1 and
+  BC3 five times as fast as ImageMagick. Legacy Q8W8V8U8 files as texconv writes them (an alpha mask without the alpha flag)
+  now load.
+
 ## Egami, unreleased
+
+2.3.10: PSD layers. All additive.
+
+- `PsdImage.ReadLayers` (and `ReadLayers<TPixel>`) reads every layer of a PSD or PSB with its pixels into a `PsdDocument`:
+  `PsdLayerImage`s bottom to top, each in the type Load would use with straight alpha, at its own size and place, with its
+  group in `ParentIndex` and its pixel mask as a `PsdMask`; CMYK layers come as an `InkRaster`. The channels are read in file
+  order (raw, PackBits, Deflate and Deflate with prediction, 1 to 32 bits, PSD and PSB), so the stream need not seek; damaged
+  layer data is a warning outside strict mode. A file without layers reads as one Background layer.
+- `PsdDocument.Flatten` composites the layers as Photoshop does, with each layer's `Info` as changed: all of Photoshop's blend
+  modes (Soft Light by Photoshop's formula), opacity and fill opacity, pixel masks with density and default color, vector masks
+  (filled non-zero, antialiased), clipping, pass-through and isolated groups, blending ranges, solid color fills, and levels,
+  curves, hue/saturation, brightness/contrast and invert adjustment layers. 8 and 16-bit documents blend their stored values,
+  32-bit ones linear light. Effects, other adjustments, gradient and pattern fills, knockout and mask feathering are left out
+  with one warning a kind (`Psd.EffectsSkipped`, `Psd.AdjustmentSkipped`, `Psd.FillSkipped`, `Psd.KnockoutSkipped`,
+  `Psd.MaskFeatherSkipped`). `PsdDocument.FlattenInk` flattens CMYK documents onto inks with the ink canvas's math.
+  `PsdFlattenOptions.ApplyAdjustments` turns adjustment layers off. On Photoshop-saved files (psd-tools' and ag-psd's test sets)
+  the flattening is within a mean half level of Photoshop's own composite.
+- `PsdReaderOptions.Composite` (`PsdComposite.Auto`, `Stored`, `Flatten`): by default Load, Probe and the row readers flatten
+  the layers of a file saved without Maximize Compatibility, one layer at a time, instead of returning the white placeholder
+  with `Psd.NoComposite`; `Stored` keeps the old behavior and `Flatten` flattens any file.
+- `PsdLayer.FillOpacity` and `PsdLayer.LayerType` (`PsdLayerType`: pixel, text, shape, smart object, fill, adjustment, group);
+  PSD's Linear Dodge and Subtract keys now map to `BlendMode.Add` and `Subtract`.
+- `BlendMode` gains Photoshop's other modes: `Divide`, `LinearBurn`, `LinearLight`, `VividLight`, `PinLight`, `HardMix`,
+  `DarkerColor`, `LighterColor` and `Dissolve` (values 31 to 39), in DrawImage, BlendColor, Compositor and on inks. Dissolve's
+  pattern is a fixed hash of the pixel's place, not Photoshop's.
 
 Small format gaps from the on-demand list. All additive.
 
@@ -68,8 +112,9 @@ Small format gaps from the on-demand list. All additive.
 - `ColorProfile.ToIccV2` writes a version 2.4 ICC profile for software that reads only version 2: `curv` curves, text tags
   and the encoding's own white point. Little CMS converts through it as through the version 4 profile, within 1 in 255.
 
-- `IMultiImageReader` is public, so a format plugin's files can hold several images that LoadAll returns, as TIFF pages and
-  DDS surfaces are. Additive.
+- `IMultiImageReader` and `IMultiImageWriter` are public, so a format plugin's files can hold several images that LoadAll
+  returns and SaveAll writes, as TIFF pages and DDS surfaces are; `FormatDetails.PixelsChanged` is overridable, so a plugin's
+  details can drop what held only for the pixels as loaded. Additive.
 - Progress on long saves. All additive. `SaveProgress`, and overloads of `Save`, `SaveAsync`, `SaveAll`, `Transcode` and
   `TranscodeAsync` that take an `IProgress<SaveProgress>` and a `CancellationToken`, shaped like Egami.Video's
   `MediaProgress`: a report as the save starts, at most one every 250 ms, and a final one. Row writers (PNG, JPEG, BMP, TGA,
@@ -87,6 +132,9 @@ Small format gaps from the on-demand list. All additive.
   124 ns.
 
 ## Egami.Drawing, unreleased
+
+- The ink canvas blends with core Egami's ink math, which the PSD flattener shares, and takes the new blend modes (Divide to
+  Dissolve, 2.3.10); its pixels and speed are unchanged.
 
 - Text on premultiplied 8-bit canvases blends a run's glyphs a row at a time instead of a glyph row at a time, with the same
   pixels (glyphs that would cover the same pixel go one after the other): 20 lines of 16 px text take 0.50 ms instead of
@@ -125,6 +173,12 @@ Small format gaps from the on-demand list. All additive.
   font (up to 1,024, emptied when full), a family's face match is kept per style, and measuring builds no per-character
   list. A string not measured before still costs about 7 µs, the cost of shaping it. `DrawString` gets the same cache and
   allocates half as much (239 KB instead of 451 KB for 20 lines).
+
+## Egami.Cli, unreleased
+
+- `egami layers in.psd folder`: each layer of a PSD or PSB as a PNG at its own size, each pixel mask as a gray PNG, and
+  `layers.json` with every layer's and group's name, place, size, blend mode, opacity, visibility and group (2.3.10). Also an
+  MCP tool.
 
 ## Egami 1.3.1 (2026-10-29)
 
