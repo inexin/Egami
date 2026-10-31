@@ -300,3 +300,7 @@ zstd/
 
 ../reference/zstd/
   The inputs each zstd/ file decodes to, gzipped, and manifest.json, made by tools/make-zstd-references.py. Public domain.
+
+fuzz/zstd-write-seeds/
+  Seeds for the zstd-write fuzz target: a level byte, then pieces of the zstd/ inputs above or bytes written by a script for this
+  repository. Public domain.

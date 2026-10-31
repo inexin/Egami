@@ -42,7 +42,7 @@ Licenses were checked on 2026-10-07 (the HEVC libraries on 2026-10-15, the barco
 | [DirectXTex](https://github.com/microsoft/DirectXTex) | C++ | MIT | Every DXGI format, the legacy DDS header mappings and BC1 to BC7 codecs; its `texconv` is the DDS gate oracle | DDS |
 | [bcdec](https://github.com/iOrange/bcdec) | C | MIT or Unlicense | Compact BC1 to BC7 block decoders | DDS |
 | [bc7enc_rdo](https://github.com/richgel999/bc7enc_rdo) | C++ | MIT or public domain | Fast BC1 to BC7 encoders and their mode searches | DDS |
-| [zstd](https://github.com/facebook/zstd) | C | BSD-3 or GPL-2.0; read under BSD-3 only | How the reference Zstandard decoder behaves where RFC 8878 leaves room; its CLI makes the test corpus and the native speed | TIFF ZSTD |
+| [zstd](https://github.com/facebook/zstd) | C | BSD-3 or GPL-2.0; read under BSD-3 only | How the reference Zstandard decoder behaves where RFC 8878 leaves room; its compression level parameters and match finder ideas (fast, double fast, lazy, row and binary tree), as behaviour only; its CLI makes the test corpus and the native speed | TIFF ZSTD |
 | [ruzstd](https://github.com/KillingSpark/zstd-rs) | Rust | MIT | A pure Rust Zstandard decoder | TIFF ZSTD |
 
 Specifications, textbooks and papers are always fine.

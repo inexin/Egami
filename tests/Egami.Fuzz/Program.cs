@@ -36,7 +36,8 @@ using DrawingPath = Egami.Drawing.Path;
 // edges kept must give back the source's pixels, and the result must not depend on the core count. The ccitt target (Phase
 // 2.3.6) decodes raw CCITT data with PDF's parameters picked by its first bytes, through the filter call, Load and the row
 // reader, which must agree. The zstd target (TIFF ZSTD task 1) decodes Zstandard frames into a large output and into one of
-// exactly the size written, which must agree.
+// exactly the size written, which must agree; zstd-write (task 2) encodes its bytes at the level its first byte picks, which must
+// decode back exactly.
 // The ico target (Phase 2.3.3) loads ICO and CUR files every way (each entry, the
 // best one, MinimumSize, rows) and writes the entries back, which must read again to the same pixels; icoentry wraps its input
 // as the one entry of an icon, so mutations reach the BMP and PNG entry decoders and the AND mask directly. The psdfile target
@@ -172,6 +173,7 @@ static Action<Stream> Target(string name) => name switch
     "jbig2codec" => DecodeJbig2Codec,
     "ccitt" => DecodeCcitt,
     "zstd" => DecodeZstd,
+    "zstd-write" => EncodeZstd,
     "cube" => LoadCube,
     "jpeg2000" => LoadJpeg2000,
     "jpeg2000codec" => DecodeJpeg2000Codec,
@@ -839,6 +841,26 @@ static void DecodeZstd(Stream stream)
     if (Egami.Compression.Zstd.ZstdDecoder.Decode(data, exact) != written || !exact.AsSpan().SequenceEqual(output.AsSpan(0, written)))
     {
         throw new InvalidOperationException("The Zstandard decoder writes differently into an output of exactly the right size.");
+    }
+}
+
+static void EncodeZstd(Stream stream)
+{
+    // The first byte picks the level, the rest is the data: the frame must decode back to it exactly.
+    byte[] data = ReadAll(stream);
+    if (data.Length == 0)
+    {
+        return;
+    }
+
+    int level = 1 + (data[0] % Egami.Compression.Zstd.ZstdEncoder.MaxLevel);
+    ReadOnlySpan<byte> input = data.AsSpan(1);
+    byte[] packed = new byte[Egami.Compression.Zstd.ZstdEncoder.MaxEncodedLength(input.Length)];
+    int size = Egami.Compression.Zstd.ZstdEncoder.Encode(input, packed, level);
+    byte[] back = new byte[input.Length];
+    if (Egami.Compression.Zstd.ZstdDecoder.Decode(packed.AsSpan(0, size), back) != input.Length || !back.AsSpan().SequenceEqual(input))
+    {
+        throw new InvalidOperationException($"A Zstandard frame written at level {level} does not decode to its input.");
     }
 }
 

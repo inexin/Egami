@@ -273,7 +273,7 @@ internal static class ZstdHuffman
     }
 
     /// <summary>Decodes FSE-compressed Huffman weights (two interleaved states, accuracy log up to 6); returns how many.</summary>
-    private static int DecodeWeights(ReadOnlySpan<byte> source, Span<byte> weights)
+    internal static int DecodeWeights(ReadOnlySpan<byte> source, Span<byte> weights)
     {
         Span<short> counts = stackalloc short[16];
         int used = ZstdFse.ReadCounts(source, counts, 15, 6, out int log, out int symbols);

@@ -58,6 +58,13 @@ if (args is ["--time-zstd", string zstdFolder, .. string[] zstdOnly])
     return;
 }
 
+// Time Zstandard encoding against zstd -b (TIFF ZSTD task 2): -- --time-zstd-encode .cache/zstd [input-level...]
+if (args is ["--time-zstd-encode", string zstdEncodeFolder, .. string[] zstdEncodeOnly])
+{
+    ZstdEncodeTiming.Run(zstdEncodeFolder, zstdEncodeOnly);
+    return;
+}
+
 // Time VP8 decoding (Phase 2.3.5 speed gate) at one thread and all cores: -- --time-vp8 <file.ivf>...
 if (args is ["--time-vp8", .. string[] ivfs])
 {
