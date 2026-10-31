@@ -165,7 +165,7 @@ internal static class MakerParser
         {
             RawKind.Cr2 => Cr2(tiff, chain, all, note),
             RawKind.Nef => Nef(tiff, all, note),
-            RawKind.Pef => Pef(all, note),
+            RawKind.Pef => Pef(all, note, exif),
             RawKind.Arw => Arw(tiff, ifd0, all),
             RawKind.Orf => Orf(tiff, ifd0, note),
             RawKind.Rw2 => Rw2(tiff, ifd0),
@@ -229,8 +229,11 @@ internal static class MakerParser
                 // Adobe's baseline exposure follows the bias one for one: move it by this file's difference from the sample's.
                 frame.BaselineExposure += measured - bias;
             }
-            bool sameSize = camera.Width == frame.Sensor.Width && camera.Height == frame.Sensor.Height;
-            if (sameSize && camera.ActiveArea is Rect active && !frame.HasOwnCrop)
+            // The table's area applies when the raw is the measured size, or larger by padding Adobe's DNG leaves out (a NEF's
+            // extra columns at the right).
+            bool fits = camera.Width > 0 && camera.Width <= frame.Sensor.Width && camera.Height <= frame.Sensor.Height
+                && frame.Sensor.Width - camera.Width <= 64 && frame.Sensor.Height - camera.Height <= 64;
+            if (fits && camera.ActiveArea is Rect active && !frame.HasOwnCrop)
             {
                 frame.Active = active;
                 frame.Crop = camera.DefaultCrop is Rect c ? (c.X, c.Y, c.Width, c.Height) : (0, 0, active.Width, active.Height);
@@ -326,6 +329,17 @@ internal static class MakerParser
         return null;
     }
 
+    /// <summary>
+    /// Reads EXIF's CFAPattern (tag 0xA302: two 16-bit repeat sizes, then the colours row by row) when it is a 2 × 2 pattern,
+    /// as Pentax gives the pattern of its raw data (the K-5's is BGGR); or <see langword="null"/>.
+    /// </summary>
+    internal static RawCfa? ExifCfa(RawIfd? exif)
+    {
+        ReadOnlySpan<byte> b = exif is null ? [] : exif.Bytes(0xA302);
+        bool twoByTwo = b.Length >= 8 && ((b[0] == 0 && b[1] == 2 && b[2] == 0 && b[3] == 2) || (b[0] == 2 && b[1] == 0 && b[2] == 2 && b[3] == 0));
+        return twoByTwo && b[4..8].IndexOfAnyExceptInRange((byte)0, (byte)2) < 0 ? new RawCfa(2, 2, b[4..8].ToArray()) : null;
+    }
+
     /// <summary>Returns the largest strip-stored image among IFDs that pass <paramref name="accept"/>.</summary>
     private static RawIfd? Largest(List<RawIfd> all, Func<RawIfd, bool> accept)
     {
@@ -373,14 +387,14 @@ internal static class MakerParser
         return frame;
     }
 
-    private static RawFrame Pef(List<RawIfd> all, MakerNote? note)
+    private static RawFrame Pef(List<RawIfd> all, MakerNote? note, RawIfd? exif)
     {
         RawIfd raw = Largest(all, i => i.Int(RawTags.BitsPerSample, 8) >= 12) ?? throw new InvalidDataException("The PEF has no raw IFD.");
         int width = (int)raw.Int(RawTags.ImageWidth), height = (int)raw.Int(RawTags.ImageLength), bits = (int)raw.Int(RawTags.BitsPerSample, 12);
         int compression = (int)raw.Int(RawTags.Compression, 1);
         object? table = compression == 65535 ? PentaxTable(note) : null;
         RawFrame frame = new() { Sensor = Sensor(raw, compression == 65535 ? RawCodec.PentaxHuffman : RawCodec.Tiff, width, height, bits, table) };
-        frame.Cfa = TiffEpCfa(raw) ?? Bayer("RGGB");
+        frame.Cfa = TiffEpCfa(raw) ?? ExifCfa(exif) ?? Bayer("RGGB");
         if (note is not null)
         {
             // Tag 0x0200 does not hold the sensor's black on every body (a K-5 says 65 for about 512): black comes from the camera table.

@@ -186,6 +186,40 @@ public class RawMakerTests
         Assert.Throws<InvalidDataException>(() => LosslessJpeg.Open(jpeg, 0, jpeg.Length));
     }
 
+    [Fact]
+    public void MakerNotesLargerThanTheFirstReadAreRead()
+    {
+        // Gate finding: an IFD entry whose count was larger than the bytes read so far was dropped, so the E-M10's 1.4 MB maker
+        // note (and its white balance) went missing in a streamed load. Here the note's metadata block is padded to 300 KB.
+        byte[] meta = new byte[300_000];
+        meta[0] = 0x46;
+        meta[1] = 0x30;
+        BinaryPrimitives.WriteUInt16LittleEndian(meta.AsSpan(2), 100);
+        BitWriter bits = new();
+        for (int i = 0; i < 8; i++)
+        {
+            bits.Write(0b11110, 5);
+        }
+
+        using MemoryStream stream = new(NikonFile(meta, bits.ToArray()));
+        using Raster<Gray16> mosaic = Raster.Load<Gray16>(stream, Context, Mosaic);
+        Assert.Equal(100, mosaic.Row(0)[0].L);
+    }
+
+    [Theory]
+    [InlineData(new byte[] { 0, 2, 0, 2, 2, 1, 1, 0 }, "BGGR")]
+    [InlineData(new byte[] { 2, 0, 2, 0, 0, 1, 1, 2 }, "RGGB")]
+    [InlineData(new byte[] { 0, 3, 0, 2, 2, 1, 1, 0 }, null)]
+    public void ExifCfaPatternGivesPentaxsPattern(byte[] value, string? expected)
+    {
+        // Gate finding: the K-5's PEF is BGGR, which only EXIF's CFAPattern (0xA302) says.
+        TiffBuilder.Ifd ifd = new();
+        ifd.Tags.Add(TiffTag.Undefined(0xA302, value));
+        byte[] tiff = TiffBuilder.Write(ifd);
+        RawIfd? exif = new RawTiff(new RawSource(tiff, tiff.Length), false).ReadIfd(8);
+        Assert.Equal(expected, MakerParser.ExifCfa(exif)?.Name);
+    }
+
     [Theory]
     [InlineData(0xFFFFFFF0u)]
     [InlineData(0x7FFFFFFEu)]

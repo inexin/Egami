@@ -74,7 +74,9 @@ internal sealed class RawTiff
             int type = U16(e + 2);
             uint n = U32(e + 4);
             int size = RawEntry.Size(type);
-            if (size == 0 || n == 0 || n > Length)
+            // A count is checked against what the value needs, not against what is read so far: the file is read lazily, and a
+            // large value (a maker note of a megabyte or more) lies beyond the first bytes.
+            if (size == 0 || n == 0 || (long)n * size > int.MaxValue)
             {
                 continue;
             }
