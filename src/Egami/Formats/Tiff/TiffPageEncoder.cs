@@ -3,6 +3,7 @@ using System.Buffers.Binary;
 using System.IO.Compression;
 using System.Runtime.InteropServices;
 
+using Egami.Compression.Zstd;
 using Egami.Metadata;
 using Egami.Pixels;
 
@@ -106,9 +107,10 @@ internal sealed class TiffPageEncoder<TPixel> : RowEncoder<TPixel>
         int unitBytes = checked(tile > 0 ? tile * _plan.RowBytes(tile) : _unitRows * _rowBytes);
         _band = ArrayPool<byte>.Shared.Rent(checked(_bandRowBytes * _unitRows));
         _unit = ArrayPool<byte>.Shared.Rent(unitBytes);
-        _packed = ArrayPool<byte>.Shared.Rent(Math.Max(PackBits.MaxEncodedLength(unitBytes) + _unitRows, TiffLzwEncoder.MaxEncodedLength(unitBytes)));
+        _packed = ArrayPool<byte>.Shared.Rent(ScratchLength(unitBytes, _unitRows));
         _batch = _options.ParallelCompression && _start.Context.MaxParallelism > 1
-            && _plan.Compression is TiffCodes.Lzw or TiffCodes.Deflate or TiffCodes.PackBits or TiffCodes.CcittGroup3 or TiffCodes.CcittGroup4
+            && _plan.Compression is TiffCodes.Lzw or TiffCodes.Deflate or TiffCodes.Zstd or TiffCodes.PackBits or TiffCodes.CcittGroup3
+                or TiffCodes.CcittGroup4
             ? _start.Context.MaxParallelism * 2
             : 1;
         if (_plan.Compression == TiffCodes.Deflate)
@@ -319,7 +321,7 @@ internal sealed class TiffPageEncoder<TPixel> : RowEncoder<TPixel>
         Parallel.For(0, _pending.Count, new ParallelOptions { MaxDegreeOfParallelism = _start.Context.MaxParallelism }, i =>
         {
             (byte[] data, int length, int rowLength, int rows, int unitWidth) = _pending[i];
-            byte[] scratch = ArrayPool<byte>.Shared.Rent(Math.Max(PackBits.MaxEncodedLength(length) + rows, TiffLzwEncoder.MaxEncodedLength(length)));
+            byte[] scratch = ArrayPool<byte>.Shared.Rent(ScratchLength(length, rows));
             using MemoryStream? deflate = _plan.Compression == TiffCodes.Deflate ? new MemoryStream((length / 2) + 64) : null;
             try
             {
@@ -350,6 +352,10 @@ internal sealed class TiffPageEncoder<TPixel> : RowEncoder<TPixel>
         _file.Write(packed);
     }
 
+    /// <summary>The scratch a unit of <paramref name="length"/> bytes needs for any of the codecs that write into it.</summary>
+    private static int ScratchLength(int length, int rows) =>
+        Math.Max(Math.Max(PackBits.MaxEncodedLength(length) + rows, TiffLzwEncoder.MaxEncodedLength(length)), ZstdEncoder.MaxEncodedLength(length));
+
     /// <summary>Compresses one unit, into <paramref name="scratch"/> or <paramref name="deflate"/>; returns the compressed bytes.</summary>
     private ReadOnlySpan<byte> Compress(Span<byte> unit, int rowLength, int rows, int unitWidth, byte[] scratch, MemoryStream? deflate)
     {
@@ -359,6 +365,9 @@ internal sealed class TiffPageEncoder<TPixel> : RowEncoder<TPixel>
         {
             case TiffCodes.Lzw:
                 packed = scratch.AsSpan(0, TiffLzwEncoder.Encode(unit, scratch));
+                break;
+            case TiffCodes.Zstd:
+                packed = scratch.AsSpan(0, ZstdEncoder.Encode(unit, scratch, _options.ZstdLevel));
                 break;
             case TiffCodes.PackBits:
                 int n = 0;

@@ -51,6 +51,20 @@ if (args is ["--encode-av1", string av1Frames, string av1Quality, string av1Effo
     return;
 }
 
+// Time Zstandard decoding against zstd -b -d (TIFF ZSTD task 1): -- --time-zstd .cache/zstd [name part...]
+if (args is ["--time-zstd", string zstdFolder, .. string[] zstdOnly])
+{
+    ZstdTiming.Run(zstdFolder, zstdOnly);
+    return;
+}
+
+// Time Zstandard encoding against zstd -b (TIFF ZSTD task 2): -- --time-zstd-encode .cache/zstd [input-level...]
+if (args is ["--time-zstd-encode", string zstdEncodeFolder, .. string[] zstdEncodeOnly])
+{
+    ZstdEncodeTiming.Run(zstdEncodeFolder, zstdEncodeOnly);
+    return;
+}
+
 // Time VP8 decoding (Phase 2.3.5 speed gate) at one thread and all cores: -- --time-vp8 <file.ivf>...
 if (args is ["--time-vp8", .. string[] ivfs])
 {

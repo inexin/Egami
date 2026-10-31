@@ -302,6 +302,18 @@ fuzz/dds-seeds/
   Small DDS files for the dds fuzz target, one of each header and pixel format family, written byte by byte with random pixel
   data by a script for this repository. Public domain (CC0).
 
+zstd/
+  Zstandard files made by tools/make-zstd-references.py with zstd 1.5.6 (BSD-3) from generated text, noise and runs and from
+  crops of ops/duck.png and ops/egret.png above; skippable frames written byte by byte by the script. Public domain, as their
+  sources.
+
+../reference/zstd/
+  The inputs each zstd/ file decodes to, gzipped, and manifest.json, made by tools/make-zstd-references.py. Public domain.
+
+fuzz/zstd-write-seeds/
+  Seeds for the zstd-write fuzz target: a level byte, then pieces of the zstd/ inputs above or bytes written by a script for this
+  repository. Public domain.
+
 fuzz/raw-seeds/
   Small DNG files for the raw fuzz target, one of each sample layout, compression, CFA pattern, opcode list and camera profile
   path, written with the tests' own DNG builder (tests/Egami.Formats.Extended.Tests/Raw/DngFiles.cs) from computed values for

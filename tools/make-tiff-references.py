@@ -9,8 +9,8 @@ Corpus (tests/images/tiff; licenses in tests/images/LICENSES), all made here fro
     ReferenceBlackWhite); CIELab and ICCLab at 8 and 16 bits; every Orientation; multi-page files (pages of different kinds and
     sizes, a reduced-resolution page, SubIFD pyramids, a transparency mask).
   - tiffcp variants of those: None, LZW (with and without the predictor), Deflate (predictor 2, and 3 for float), PackBits,
-    JPEG (gray, RGB as YCbCr 2x2, RGB kept, CMYK), CCITT G3 1D, G3 2D, G3 2D with fill, G4, ZSTD (for the NotSupported
-    message); tiles of 16x16, 32x16 and 64x64; separate planes; 1 and 7 rows a strip; big-endian; BigTIFF; FillOrder 2.
+    JPEG (gray, RGB as YCbCr 2x2, RGB kept, CMYK), CCITT G3 1D, G3 2D, G3 2D with fill, G4, ZSTD; tiles of 16x16, 32x16 and
+    64x64; separate planes; 1 and 7 rows a strip; big-endian; BigTIFF; FillOrder 2.
   - tiffref (tools/tiffref/tiffref.c, compiled in the container) writes SGILog (LogL, LogLuv, LogLuv24) and WebP (lossless and
     lossy) files, which tiffcp cannot make from plain samples.
   - exiftool adds EXIF with GPS, XMP, IPTC and ICC profiles (icc/compact/DisplayP3-v4.icc, and icc/synthetic/cmyk-lut16-v2.icc
