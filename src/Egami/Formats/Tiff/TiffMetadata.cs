@@ -67,7 +67,7 @@ internal static class TiffMetadata
             // IPTC is stored as BYTE, UNDEFINED or (by Photoshop) LONG; the bytes are the IIM records either way.
             kept += iptcEntry.ByteCount;
             file.Input.CheckMetadataBytes(kept);
-            byte[] iim = iptcEntry.Type is 4 or 9 ? file.Bytes(iptcEntry) : file.Bytes(iptcEntry);
+            byte[] iim = file.Bytes(iptcEntry);
             metadata.SetIptcSource(iim, file.Input.Limits.MaxMetadataBytes);
         }
 

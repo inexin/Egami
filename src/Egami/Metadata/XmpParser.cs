@@ -156,7 +156,7 @@ internal static class XmpParser
             return Structure(node, language, depth);
         }
 
-        return (parseType == "Literal" ? node.Text : node.Text, Qualified(language));
+        return (node.Text, Qualified(language));
     }
 
     // Fields of a structure; with rdf:value it is a simple value whose other fields are qualifiers.

@@ -83,7 +83,7 @@ internal sealed class Mp4Muxer : IMuxer
         }
         else
         {
-            _media = new FileStream(Path.GetTempFileName(), FileMode.Create, FileAccess.ReadWrite, FileShare.None, 1 << 16, FileOptions.DeleteOnClose);
+            _media = new FileStream(Path.Combine(Path.GetTempPath(), Path.GetRandomFileName()), FileMode.CreateNew, FileAccess.ReadWrite, FileShare.None, 1 << 16, FileOptions.DeleteOnClose);
         }
 
         if (metadata.Attachments.Any(a => !IsCover(a)) || metadata.Chapters.Any(c => c.Language is not null))
