@@ -826,7 +826,7 @@ internal sealed partial class HevcSliceDecoder
         }
 
         bool crossComponent = _pps.CrossComponentPrediction && cbfLuma && (!_cuIntra || _chromaModeSyntax[ChromaPartIndex(x0, y0)] == 4);
-        if (_pps.CrossComponentPrediction && crossComponent && lumaHasResidual)
+        if (crossComponent && lumaHasResidual)
         {
             Array.Copy(_residual, _lumaResidual, 1 << (2 * log2));
         }

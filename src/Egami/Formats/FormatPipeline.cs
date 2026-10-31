@@ -42,6 +42,28 @@ internal static class FormatPipeline
     {
         if (options.ConvertColorTo is Colors.ColorProfile target)
         {
+            if (!Reshapes(options))
+            {
+                // Converted after the load, unless the format renders the colour space itself.
+                return Run(stream, context, options, (format, input) =>
+                {
+                    try
+                    {
+                        if (format.ConvertsColor)
+                        {
+                            return Loaded(input, format.Reader!.Read(input, options), format, options);
+                        }
+
+                        ReaderOptions stored = options with { ConvertColorTo = null };
+                        return ColorLoad.Natural(Named(Loaded(input, format.Reader!.Read(input, stored), format, stored), format), target);
+                    }
+                    catch (LimitExceededException e) when (LimitHit(input, e))
+                    {
+                        throw;
+                    }
+                }, cancellationToken);
+            }
+
             return ColorLoad.Natural(Load(stream, context, options with { ConvertColorTo = null }, cancellationToken), target);
         }
 
@@ -74,6 +96,27 @@ internal static class FormatPipeline
     {
         if (options.ConvertColorTo is Colors.ColorProfile target)
         {
+            if (!Reshapes(options))
+            {
+                return Run(stream, context, options, (format, input) =>
+                {
+                    try
+                    {
+                        if (format.ConvertsColor)
+                        {
+                            return Loaded(input, format.Reader!.Read<TPixel>(input, options), format, options);
+                        }
+
+                        ReaderOptions stored = options with { ConvertColorTo = null };
+                        return ColorLoad.Typed<TPixel>(Named(Loaded(input, format.Reader!.Read(input, stored), format, stored), format), target);
+                    }
+                    catch (LimitExceededException e) when (LimitHit(input, e))
+                    {
+                        throw;
+                    }
+                }, cancellationToken);
+            }
+
             return ColorLoad.Typed<TPixel>(Load(stream, context, options with { ConvertColorTo = null }, cancellationToken), target);
         }
 
@@ -579,7 +622,7 @@ internal static class FormatPipeline
     private static async Task<Raster<TPixel>> LoadAsyncCore<TPixel>(Stream stream, EgamiContext context, ReaderOptions options, CancellationToken cancellationToken)
         where TPixel : unmanaged, IPixelType<TPixel>
     {
-        if (options.ConvertColorTo is Colors.ColorProfile target)
+        if (options.ConvertColorTo is Colors.ColorProfile target && !stream.CanSeek)
         {
             return ColorLoad.Typed<TPixel>(await LoadAsync(stream, context, options with { ConvertColorTo = null }, cancellationToken).ConfigureAwait(false), target);
         }
@@ -596,7 +639,7 @@ internal static class FormatPipeline
 
     private static async Task<Raster> LoadAsyncCore(Stream stream, EgamiContext context, ReaderOptions options, CancellationToken cancellationToken)
     {
-        if (options.ConvertColorTo is Colors.ColorProfile target)
+        if (options.ConvertColorTo is Colors.ColorProfile target && !stream.CanSeek)
         {
             return ColorLoad.Natural(await LoadAsync(stream, context, options with { ConvertColorTo = null }, cancellationToken).ConfigureAwait(false), target);
         }

@@ -74,7 +74,10 @@ public sealed partial class Pen
                 _dashPattern = [.. GdiPlusPens.DashArray(new GdiPlusPen { DashStyle = (int)previous })!.Take(Pattern(previous))];
             }
 
-            _dashPattern ??= value == DashStyle.Custom ? [1] : _dashPattern;
+            if (value == DashStyle.Custom)
+            {
+                _dashPattern ??= [1];
+            }
         }
     }
 

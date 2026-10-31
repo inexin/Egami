@@ -27,7 +27,8 @@ internal sealed class AvifFile : HeifImage
     /// <summary>Gets whether the image has progressive layers (a1lx on the av01 item and no lsel picking one).</summary>
     internal bool Progressive { get; private set; }
 
-    internal override int BitDepth => Config.BitDepth;
+    /// <summary>Gets the bits a sample of the image Load gives has: the sample transform's depth when one is used, else the coding's.</summary>
+    internal override int BitDepth => SampleTransform?.Expression.Depth ?? Config.BitDepth;
 
     internal override bool Monochrome => Config.Monochrome;
 
@@ -53,10 +54,13 @@ internal sealed class AvifFile : HeifImage
     /// <summary>Reads the input into memory and finds the still image.</summary>
     internal static AvifFile Read(EgamiInput input) => Open(HeifFile.Read(input));
 
-    /// <summary>Finds the still image of a parsed container.</summary>
-    internal static AvifFile Open(HeifFile heif)
+    /// <summary>
+    /// Finds the still image of a parsed container: the output of a sample transform the file prefers to its primary item, unless
+    /// <paramref name="sampleTransforms"/> is false (AVIF extras design, question 4), else the primary item.
+    /// </summary>
+    internal static AvifFile Open(HeifFile heif, bool sampleTransforms = true)
     {
-        AvifFile avif = new(heif, FindPrimary(heif, AvifProperties.Understood.Contains, Av01, Grid, Iovl));
+        AvifFile avif = new(heif, FindPrimary(heif, AvifProperties.Understood.Contains, Av01, Grid, Iovl)) { UseSampleTransforms = sampleTransforms };
         avif.Resolve();
         return avif;
     }

@@ -29,7 +29,7 @@ internal sealed partial class Vp9Encoder<T>
             for (int p = 0; p < 3; p++)
             {
                 int w = p == 0 ? width : (width + subX) >> subX, h = p == 0 ? height : (height + subY) >> subY;
-                int border = p == 0 ? Border : Border >> (p == 0 ? 0 : subX);
+                int border = p == 0 ? Border : Border >> subX;
                 int borderY = p == 0 ? Border : Border >> subY;
                 Strides[p] = ((w + 63) & ~63) + (2 * border);
                 Origins[p] = (borderY * Strides[p]) + border;

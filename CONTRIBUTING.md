@@ -27,8 +27,25 @@ python tools/update-public-api.py                  # adds new public API to Publ
 ```
 
 Warnings are errors, and the build checks the public API baseline (`PublicAPI.Shipped.txt` and `PublicAPI.Unshipped.txt` in
-each package). While you work, run only the tests for your area, for example
-`dotnet test Egami.slnx --filter FullyQualifiedName~Jxl`, and run the whole solution before you open the pull request.
+each package). While you work, run only the tests for your area with `tools/test.py`, and run the whole solution before you
+open the pull request:
+
+```sh
+python tools/test.py jxl              # Egami.Tests.Formats.Jxl and the Jxl docs samples, without the slow tests
+python tools/test.py svg,fonts        # several areas: test projects, folders of tests/Egami.Tests or docs sample classes
+python tools/test.py jxl --slow       # the slow tests too
+python tools/test.py png --threads 2  # fewer tests at a time, to keep a shared machine responsive
+python tools/test.py --list           # the areas
+```
+
+An area is a test project (`svg`, `fonts`, `drawing`, `video`, `video-cli`, `heic` and so on), a folder of `tests/Egami.Tests`
+(`jxl`, `png`, `tiff`, `filters`, `streaming`, `colors` and so on), or `core` for all of `tests/Egami.Tests`; anything else is
+used as a `FullyQualifiedName~` filter. The script runs only the test projects the area needs, so it starts much faster than a
+filtered `dotnet test Egami.slnx`. Pass `--dry-run` to see the `dotnet test` commands it runs.
+
+Tests that take more than a few seconds on their own (fuzz-style sweeps, whole-suite runs, exhaustive SIMD checks, long video
+clips) carry `[Trait("Category", "Slow")]`. `tools/test.py` leaves them out unless you pass `--slow`; `dotnet test` without a
+filter and CI run them. Mark a new test `Slow` when it takes more than about 5 seconds in a Release build.
 
 To test the SIMD fallback paths locally, run the tests with `DOTNET_EnableHWIntrinsic=0`.
 
@@ -88,7 +105,7 @@ egami-compare repository (`video/`). Benchmarks: `dotnet run -c Release --projec
 | `docs/` | The documentation site (DocFX): guides with recipes, API reference. Build it with `docfx docs/docfx.json` (output in `docs/_site`) |
 | `benchmarks/` | BenchmarkDotNet benchmarks for Egami, Egami.Drawing and Egami.Fonts |
 | `branding/` | Package icons, logos and the favicon |
-| `tools/` | Scripts that regenerate references and the public API baseline, check the docs are complete, and the libpng checker used in CI |
+| `tools/` | Scripts that run the tests for one area (`test.py`), regenerate references and the public API baseline, check the docs are complete, and the libpng checker used in CI |
 
 ## Code style
 

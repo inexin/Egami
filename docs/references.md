@@ -55,6 +55,19 @@ For Zstandard (TIFF ZSTD), IETF RFC 8878 and the xxHash specification (XXH64, fo
 with zstd and ruzstd as the listed libraries. zstd is dual-licensed and is read under its BSD-3 licence only; its CLI runs in
 Docker to make the corpus (`tools/make-zstd-references.py`).
 
+For camera RAW, the Adobe DNG Specification 1.7.1 (with its opcode and camera profile chapters), TIFF 6.0, TIFF/EP (ISO
+12234-2), EXIF 3.0, ITU-T T.81 (lossless JPEG, process 14), ISO/IEC 14496-12 (ISO BMFF, for CR3) and published papers are the
+references: Malvar, He and Cutler, "High-quality linear interpolation for demosaicing of Bayer-patterned color images" (ICASSP
+2004); Hirakawa and Parks, "Adaptive homogeneity-directed demosaicing algorithm" (IEEE TIP 2005); Starck, Murtagh and Bijaoui,
+*Image Processing and Data Analysis: The Multiscale Approach* (1998) and Starck and Murtagh, *Astronomical Image and Data
+Analysis*, for the à trous wavelet transform and its noise levels; Donoho and Johnstone (1994) for soft thresholding; Mäkitalo
+and Foi, "Optimal inversion of the generalized Anscombe transformation for Poisson-Gaussian noise" (IEEE TIP 2013); Robertson,
+"Computation of correlated color temperature and distribution temperature" (JOSA 1968) and Wyszecki and Stiles, *Color
+Science*, for colour temperature; and the Bradford chromatic adaptation transform. Adobe DNG Converter, LibRaw through
+Magick.NET and Windows' Raw Image Extension run only as black boxes, for measurements and gates. dcraw, LibRaw and rawspeed
+(LGPL), RawTherapee, darktable, ART and Exiv2 (GPL), ExifTool's source, Lensfun's database (CC-BY-SA) and LibRaw's camera
+tables are never read; ExifTool's public tag-name pages may be read as facts. Sample files come from raw.pixls.us, CC0 only.
+
 For barcodes, ZBar (LGPL) is never used, and of zint only the backend library (BSD-3) may be studied: its frontends and GUI are
 under the GPL and are never used.
 

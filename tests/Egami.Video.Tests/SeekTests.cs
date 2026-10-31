@@ -4,6 +4,7 @@ namespace Egami.Video.Tests;
 
 public class SeekTests
 {
+    [Trait("Category", "Slow")]
     [Theory]
     [InlineData("vp8/v0-keyframes.webm")]
     [InlineData("vp8/v0-altref.webm")]

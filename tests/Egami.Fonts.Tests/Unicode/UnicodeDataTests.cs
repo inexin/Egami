@@ -105,6 +105,7 @@ public sealed class UnicodeDataTests
         }
     }
 
+    [Trait("Category", "Slow")]
     [Fact]
     public void MirroringAndBracketsMatchTheDatabase()
     {

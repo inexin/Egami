@@ -74,7 +74,14 @@ internal sealed class McpServerHost : IDisposable
         await using McpServer server = McpServer.Create(transport, options);
         _server = server;
         _session.Info($"{set.Name} mcp {McpToolSet.Version}: serving {_catalog.Tools.Count} tools on standard input and output");
-        await server.RunAsync().ConfigureAwait(false);
+        try
+        {
+            await server.RunAsync(_session.Cancellation).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException) when (_session.Cancellation.IsCancellationRequested)
+        {
+            // Ctrl+C stops the server as the client closing standard input does.
+        }
     }
 
     private async ValueTask<CallToolResult> CallAsync(RequestContext<CallToolRequestParams> context, CancellationToken cancellationToken)

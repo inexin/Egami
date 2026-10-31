@@ -2,7 +2,8 @@
 
 Egami reads and writes AVIF still images, written from the AV1 and HEIF specifications with no native code: the HEIF container,
 a managed AV1 intra decoder and a managed AV1 intra encoder. `AvifFormat.Info` is registered in `EgamiContext.Default`, so
-`Raster.Load` recognizes an ftyp box with the avif or avis brand and `Save` writes a file whose name ends in .avif.
+`Raster.Load` recognizes an ftyp box with the avif or avis brand (or a mini file's mif3 brand with avif as its minor version) and
+`Save` writes a file whose name ends in .avif.
 
 `Raster.Probe` reads the container alone: size, natural pixel type and orientation, without decoding any AV1.
 
@@ -27,6 +28,12 @@ coded; the grain's parameters are in `AvifDetails.FilmGrain` as an `AvifFilmGrai
 `YuvRaster.Load` gives the AV1 planes themselves, without the conversion to RGB (see [Planar YUV](../guides/planar-yuv.md)):
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Avif.cs#cookbook-yuv)]
+
+Files with a sample transform (a sato item, AVIF 1.2), such as the 16-bit files `avifenc --depth 16` writes from a 12-bit image
+and an 8-bit residual, load the transform's output at its own depth, as `Rgb16` or `Rgba16`: every expression the specification
+allows is evaluated over the input images' planes. `AvifReaderOptions.SampleTransform` set to `false` loads the file's fallback
+image instead, the 8- or 12-bit primary item that readers without sample transforms show. Files with the compact mini box (the
+mif3 brand of the HEIF amendment draft) load like any other, with their alpha, gain map, ICC, Exif and XMP.
 
 ## Writing
 
@@ -66,6 +73,42 @@ whatever the number of threads.
 
 Every file Egami writes decodes in dav1d and libavif to the same pixels as in Egami; `tools/check-avif-interop.py` checks this.
 
+`BitDepth = 16` writes 16 bits a sample through a sample transform: lossless images as an 8-bit image of the high bytes and a
+hidden 8-bit image of the low bytes, lossy ones as a 12-bit image and a hidden 8-bit residual that overlaps it by 4 bits, as
+libavif writes them. Readers without sample transforms show the first image.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Avif.cs#sato)]
+
+`TargetSize` searches the quality for the largest file not above a number of bytes, as `avifenc --target-size` does; when even
+quality 0 is larger, that file is written and an `Avif.TargetSizeExceeded` warning says so. `GainMapQuality` codes a gain map
+at its own quality, as `avifenc --qgain-map`.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Avif.cs#target-size)]
+
+`FilmGrainDenoise`, 1 to 50, takes film grain out before coding and writes AV1 film grain parameters that decoders use to put it
+back, so the grain costs a few bytes rather than many, as libaom's denoise-noise-level does for still images: on a picture with
+measurable noise, each plane is denoised by a Wiener filter and the noise modeled by its autoregressive pattern and its strength at
+each brightness. A clean picture gets no grain. A raster loaded with `AvifReaderOptions.FilmGrain` set to `false` keeps its
+`AvifDetails.FilmGrain`, and saving it as AVIF writes the parameters back, so the look survives a round trip.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Avif.cs#grain)]
+
+### Progressive AVIF
+
+`Progressive` writes two layers, as `avifenc --progressive` does: a small first layer at quality 2 that a viewer can show while
+the rest arrives, then the image at `Quality`. `Layers` gives up to four, each with its own quality and scale; the last is the
+image at full size. The layers are one AV1 stream with a spatial layer each, indexed by an a1lx property; each later layer is
+predicted from the one before when it is the same size, else coded on its own, as is the second of two after a near-empty first.
+Images larger than one AV1 frame are written in one layer.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Avif.cs#layers)]
+
+`Load` gives the best layer, or the one an lsel property or `AvifReaderOptions.Layer` picks, at the image's full size, and
+`AvifDetails.Layers` lists each layer's size. While a progressive file arrives, `RasterDecoder.RenderPreview` draws the best layer
+received so far at full size, as it draws a progressive JPEG's scans:
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Avif.cs#avif-preview)]
+
 ### Animated AVIF
 
 A raster with more than one frame saves as an image sequence (the avis brand), as libavif writes one: the frames as one AV1 stream of
@@ -101,6 +144,7 @@ metadata. `AvifImage.ReadItem` decodes any image item on its own.
 
 Image sequences (avis) load every frame, inter frames included, each with its duration from the sample table, and the loop
 count from the edit list; an alpha track gives each frame its alpha. Every frame equals avifdec's. A range of frames
-(`ReaderOptions.Frames`) decodes from the key frame before its first. Layered images load their base layer.
+(`ReaderOptions.Frames`) decodes from the key frame before its first. Layered images load their best layer (see
+[Progressive AVIF](#progressive-avif)).
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Avif.cs#cookbook-sequence)]

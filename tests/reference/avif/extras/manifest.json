@@ -1,0 +1,145 @@
+{
+ "files": {
+  "layered-scaled.avif": {
+   "avifdec_info": "Decoding with codec 'dav1d' (1 worker thread), please wait...\nImage decoded: /w/tests/images/avif/extras/layered-scaled.avif\n * Resolution     : 320x240\n * Bit Depth      : 8\n * Format         : YUV420\n * Chroma Sam. Pos: 0\n * Alpha          : Absent\n * Range          : Full\n * Color Primaries: 1\n * Transfer Char. : 13\n * Matrix Coeffs. : 6\n * ICC Profile    : Absent\n * XMP Metadata   : Absent\n * Exif Metadata  : Absent\n * Transformations: None\n * Progressive    : Available\n * Gain map       : Absent\n * 1 timescales per second, 1.00 seconds (1 timescales), 1 frame\n * Frame:\n   * Decoded frame [0] [pts 0.00 (0 timescales)] [duration 1.00 (1 timescales)] [320x240]",
+   "covers": "two layers, the first at half size",
+   "encoder": "Version: 1.4.2 (dav1d [dec]:1.5.4-0-g54706fc, aom [enc/dec]:3.15.2, rav1e [enc]:0.7.1 (UNKNOWN), svt [enc]:v2.3.0)",
+   "options": "-y 420 --layered --scaling-mode:u 1/2 -q:u 30 {in} --scaling-mode:u 1 -q:u 70 {in}",
+   "reference": "layered-scaled.png",
+   "source": "duck-mid+duck-mid",
+   "tool": "avifenc"
+  },
+  "mini-420.avif": {
+   "avifdec_info": "Decoding with codec 'dav1d' (1 worker thread), please wait...\nImage decoded: /w/tests/images/avif/extras/mini-420.avif\n * Resolution     : 256x192\n * Bit Depth      : 8\n * Format         : YUV420\n * Chroma Sam. Pos: 0\n * Alpha          : Absent\n * Range          : Full\n * Color Primaries: 1\n * Transfer Char. : 13\n * Matrix Coeffs. : 6\n * ICC Profile    : Absent\n * XMP Metadata   : Absent\n * Exif Metadata  : Absent\n * Transformations: None\n * Progressive    : Unavailable\n * Gain map       : Absent\n * 1 timescales per second, 1.00 seconds (1 timescales), 1 frame\n * Frame:\n   * Decoded frame [0] [pts 0.00 (0 timescales)] [duration 1.00 (1 timescales)] [256x192]",
+   "covers": "mini box, 4:2:0",
+   "encoder": "Version: 1.4.2 (dav1d [dec]:1.5.4-0-g54706fc, aom [enc/dec]:3.15.2)",
+   "options": "--mini -y 420 -q 60",
+   "reference": "mini-420.png",
+   "source": "duck-small",
+   "tool": "avifenc-mini"
+  },
+  "mini-444-10bit.avif": {
+   "avifdec_info": "Decoding with codec 'dav1d' (1 worker thread), please wait...\nImage decoded: /w/tests/images/avif/extras/mini-444-10bit.avif\n * Resolution     : 256x192\n * Bit Depth      : 10\n * Format         : YUV444\n * Alpha          : Absent\n * Range          : Full\n * Color Primaries: 1\n * Transfer Char. : 13\n * Matrix Coeffs. : 6\n * ICC Profile    : Absent\n * XMP Metadata   : Absent\n * Exif Metadata  : Absent\n * Transformations: None\n * Progressive    : Unavailable\n * Gain map       : Absent\n * 1 timescales per second, 1.00 seconds (1 timescales), 1 frame\n * Frame:\n   * Decoded frame [0] [pts 0.00 (0 timescales)] [duration 1.00 (1 timescales)] [256x192]",
+   "covers": "mini box, 10-bit 4:4:4",
+   "encoder": "Version: 1.4.2 (dav1d [dec]:1.5.4-0-g54706fc, aom [enc/dec]:3.15.2)",
+   "options": "--mini -y 444 -q 70 -d 10",
+   "reference": "mini-444-10bit.png",
+   "source": "duck-16bit",
+   "tool": "avifenc-mini"
+  },
+  "mini-alpha.avif": {
+   "avifdec_info": "Decoding with codec 'dav1d' (1 worker thread), please wait...\nImage decoded: /w/tests/images/avif/extras/mini-alpha.avif\n * Resolution     : 256x192\n * Bit Depth      : 8\n * Format         : YUV420\n * Chroma Sam. Pos: 0\n * Alpha          : Not premultiplied\n * Range          : Full\n * Color Primaries: 1\n * Transfer Char. : 13\n * Matrix Coeffs. : 6\n * ICC Profile    : Absent\n * XMP Metadata   : Absent\n * Exif Metadata  : Absent\n * Transformations: None\n * Progressive    : Unavailable\n * Gain map       : Absent\n * 1 timescales per second, 1.00 seconds (1 timescales), 1 frame\n * Frame:\n   * Decoded frame [0] [pts 0.00 (0 timescales)] [duration 1.00 (1 timescales)] [256x192]",
+   "covers": "mini box with alpha",
+   "encoder": "Version: 1.4.2 (dav1d [dec]:1.5.4-0-g54706fc, aom [enc/dec]:3.15.2)",
+   "options": "--mini -y 420 -q 60",
+   "reference": "mini-alpha.png",
+   "source": "duck-alpha",
+   "tool": "avifenc-mini"
+  },
+  "mini-hdr.avif": {
+   "avifdec_info": "Decoding with codec 'dav1d' (1 worker thread), please wait...\nImage decoded: /w/tests/images/avif/extras/mini-hdr.avif\n * Resolution     : 256x192\n * Bit Depth      : 10\n * Format         : YUV420\n * Chroma Sam. Pos: 0\n * Alpha          : Absent\n * Range          : Full\n * Color Primaries: 9\n * Transfer Char. : 16\n * Matrix Coeffs. : 9\n * ICC Profile    : Absent\n * XMP Metadata   : Absent\n * Exif Metadata  : Absent\n * Transformations: None\n * Progressive    : Unavailable\n * Gain map       : Absent\n * 1 timescales per second, 1.00 seconds (1 timescales), 1 frame\n * Frame:\n   * Decoded frame [0] [pts 0.00 (0 timescales)] [duration 1.00 (1 timescales)] [256x192]",
+   "covers": "mini box, PQ with clli",
+   "encoder": "Version: 1.4.2 (dav1d [dec]:1.5.4-0-g54706fc, aom [enc/dec]:3.15.2)",
+   "options": "--mini -y 420 -q 60 -d 10 --cicp 9/16/9 --clli 1000,400",
+   "reference": "mini-hdr.png",
+   "source": "duck-16bit",
+   "tool": "avifenc-mini"
+  },
+  "mini-icc-exif-xmp.avif": {
+   "avifdec_info": "Decoding with codec 'dav1d' (1 worker thread), please wait...\nImage decoded: /w/tests/images/avif/extras/mini-icc-exif-xmp.avif\n * Resolution     : 256x192\n * Bit Depth      : 8\n * Format         : YUV420\n * Chroma Sam. Pos: 0\n * Alpha          : Absent\n * Range          : Full\n * Color Primaries: 2\n * Transfer Char. : 2\n * Matrix Coeffs. : 6\n * ICC Profile    : Present (480 bytes)\n * XMP Metadata   : Present (114 bytes)\n * Exif Metadata  : Present (26 bytes)\n * Transformations: None\n * Progressive    : Unavailable\n * Gain map       : Absent\n * 1 timescales per second, 1.00 seconds (1 timescales), 1 frame\n * Frame:\n   * Decoded frame [0] [pts 0.00 (0 timescales)] [duration 1.00 (1 timescales)] [256x192]",
+   "covers": "mini box with ICC, Exif and XMP",
+   "encoder": "Version: 1.4.2 (dav1d [dec]:1.5.4-0-g54706fc, aom [enc/dec]:3.15.2)",
+   "options": "--mini -y 420 -q 60 --icc {icc} --exif {exif} --xmp {xmp}",
+   "reference": "mini-icc-exif-xmp.png",
+   "source": "duck-small",
+   "tool": "avifenc-mini"
+  },
+  "mini-irot-imir.avif": {
+   "avifdec_info": "Decoding with codec 'dav1d' (1 worker thread), please wait...\nImage decoded: /w/tests/images/avif/extras/mini-irot-imir.avif\n * Resolution     : 256x192\n * Bit Depth      : 8\n * Format         : YUV444\n * Alpha          : Absent\n * Range          : Full\n * Color Primaries: 1\n * Transfer Char. : 13\n * Matrix Coeffs. : 6\n * ICC Profile    : Absent\n * XMP Metadata   : Absent\n * Exif Metadata  : Absent\n * Transformations:\n    * irot (Rotation)      : 1\n    * imir (Mirror)        : 0 (top-to-bottom)\n * Progressive    : Unavailable\n * Gain map       : Absent\n * 1 timescales per second, 1.00 seconds (1 timescales), 1 frame\n * Frame:\n   * Decoded frame [0] [pts 0.00 (0 timescales)] [duration 1.00 (1 timescales)] [256x192]",
+   "covers": "mini box with irot and imir",
+   "encoder": "Version: 1.4.2 (dav1d [dec]:1.5.4-0-g54706fc, aom [enc/dec]:3.15.2)",
+   "options": "--mini -y 444 -q 60 --irot 1 --imir 0",
+   "reference": "mini-irot-imir.png",
+   "source": "duck-small",
+   "tool": "avifenc-mini"
+  },
+  "mini-lossless.avif": {
+   "avifdec_info": "Decoding with codec 'dav1d' (1 worker thread), please wait...\nImage decoded: /w/tests/images/avif/extras/mini-lossless.avif\n * Resolution     : 256x192\n * Bit Depth      : 8\n * Format         : YUV444\n * Alpha          : Absent\n * Range          : Full\n * Color Primaries: 1\n * Transfer Char. : 13\n * Matrix Coeffs. : 0\n * ICC Profile    : Absent\n * XMP Metadata   : Absent\n * Exif Metadata  : Absent\n * Transformations: None\n * Progressive    : Unavailable\n * Gain map       : Absent\n * 1 timescales per second, 1.00 seconds (1 timescales), 1 frame\n * Frame:\n   * Decoded frame [0] [pts 0.00 (0 timescales)] [duration 1.00 (1 timescales)] [256x192]",
+   "covers": "mini box, lossless",
+   "encoder": "Version: 1.4.2 (dav1d [dec]:1.5.4-0-g54706fc, aom [enc/dec]:3.15.2)",
+   "options": "--mini -l",
+   "reference": "mini-lossless.png",
+   "source": "duck-small",
+   "tool": "avifenc-mini"
+  },
+  "mini-odd.avif": {
+   "avifdec_info": "Decoding with codec 'dav1d' (1 worker thread), please wait...\nImage decoded: /w/tests/images/avif/extras/mini-odd.avif\n * Resolution     : 31x17\n * Bit Depth      : 8\n * Format         : YUV420\n * Chroma Sam. Pos: 0\n * Alpha          : Absent\n * Range          : Full\n * Color Primaries: 1\n * Transfer Char. : 13\n * Matrix Coeffs. : 6\n * ICC Profile    : Absent\n * XMP Metadata   : Absent\n * Exif Metadata  : Absent\n * Transformations: None\n * Progressive    : Unavailable\n * Gain map       : Absent\n * 1 timescales per second, 1.00 seconds (1 timescales), 1 frame\n * Frame:\n   * Decoded frame [0] [pts 0.00 (0 timescales)] [duration 1.00 (1 timescales)] [31x17]",
+   "covers": "mini box, odd size",
+   "encoder": "Version: 1.4.2 (dav1d [dec]:1.5.4-0-g54706fc, aom [enc/dec]:3.15.2)",
+   "options": "--mini -y 420 -q 60",
+   "reference": "mini-odd.png",
+   "source": "odd-31x17",
+   "tool": "avifenc-mini"
+  },
+  "sato-12b4b-lossless.avif": {
+   "avifdec_info": "Decoding with codec 'dav1d' (1 worker thread), please wait...\nImage decoded: /w/tests/images/avif/extras/sato-12b4b-lossless.avif\n * Resolution     : 256x192\n * Bit Depth      : 16\n * Format         : YUV444\n * Alpha          : Absent\n * Range          : Full\n * Color Primaries: 1\n * Transfer Char. : 13\n * Matrix Coeffs. : 0\n * ICC Profile    : Absent\n * XMP Metadata   : Absent\n * Exif Metadata  : Absent\n * Transformations: None\n * Progressive    : Unavailable\n * Gain map       : Absent\n * 1 timescales per second, 1.00 seconds (1 timescales), 1 frame\n * Frame:\n   * Decoded frame [0] [pts 0.00 (0 timescales)] [duration 1.00 (1 timescales)] [256x192]",
+   "covers": "16 bits lossless as 12-bit base and 4 bits",
+   "encoder": "Version: 1.4.2 (dav1d [dec]:1.5.4-0-g54706fc, aom [enc/dec]:3.15.2, rav1e [enc]:0.7.1 (UNKNOWN), svt [enc]:v2.3.0)",
+   "fallback": "sato-12b4b-lossless-fallback.png",
+   "options": "-l -d 12,4",
+   "reference": "sato-12b4b-lossless.png",
+   "source": "duck-16bit",
+   "tool": "avifenc"
+  },
+  "sato-12b8b-q60.avif": {
+   "avifdec_info": "Decoding with codec 'dav1d' (1 worker thread), please wait...\nImage decoded: /w/tests/images/avif/extras/sato-12b8b-q60.avif\n * Resolution     : 256x192\n * Bit Depth      : 16\n * Format         : YUV444\n * Alpha          : Absent\n * Range          : Full\n * Color Primaries: 1\n * Transfer Char. : 13\n * Matrix Coeffs. : 6\n * ICC Profile    : Absent\n * XMP Metadata   : Absent\n * Exif Metadata  : Absent\n * Transformations: None\n * Progressive    : Unavailable\n * Gain map       : Absent\n * 1 timescales per second, 1.00 seconds (1 timescales), 1 frame\n * Frame:\n   * Decoded frame [0] [pts 0.00 (0 timescales)] [duration 1.00 (1 timescales)] [256x192]",
+   "covers": "16 bits lossy, 12-bit base and 8-bit residual",
+   "encoder": "Version: 1.4.2 (dav1d [dec]:1.5.4-0-g54706fc, aom [enc/dec]:3.15.2, rav1e [enc]:0.7.1 (UNKNOWN), svt [enc]:v2.3.0)",
+   "fallback": "sato-12b8b-q60-fallback.png",
+   "options": "-y 444 -q 60 -d 12,8",
+   "reference": "sato-12b8b-q60.png",
+   "source": "duck-16bit",
+   "tool": "avifenc"
+  },
+  "sato-12b8b-q90-420.avif": {
+   "avifdec_info": "Decoding with codec 'dav1d' (1 worker thread), please wait...\nImage decoded: /w/tests/images/avif/extras/sato-12b8b-q90-420.avif\n * Resolution     : 256x192\n * Bit Depth      : 16\n * Format         : YUV420\n * Chroma Sam. Pos: 0\n * Alpha          : Absent\n * Range          : Full\n * Color Primaries: 1\n * Transfer Char. : 13\n * Matrix Coeffs. : 6\n * ICC Profile    : Absent\n * XMP Metadata   : Absent\n * Exif Metadata  : Absent\n * Transformations: None\n * Progressive    : Unavailable\n * Gain map       : Absent\n * 1 timescales per second, 1.00 seconds (1 timescales), 1 frame\n * Frame:\n   * Decoded frame [0] [pts 0.00 (0 timescales)] [duration 1.00 (1 timescales)] [256x192]",
+   "covers": "16 bits lossy 4:2:0",
+   "encoder": "Version: 1.4.2 (dav1d [dec]:1.5.4-0-g54706fc, aom [enc/dec]:3.15.2, rav1e [enc]:0.7.1 (UNKNOWN), svt [enc]:v2.3.0)",
+   "fallback": "sato-12b8b-q90-420-fallback.png",
+   "options": "-y 420 -q 90 -d 12,8",
+   "reference": "sato-12b8b-q90-420.png",
+   "source": "duck-16bit",
+   "tool": "avifenc"
+  },
+  "sato-8b8b-lossless.avif": {
+   "avifdec_info": "Decoding with codec 'dav1d' (1 worker thread), please wait...\nImage decoded: /w/tests/images/avif/extras/sato-8b8b-lossless.avif\n * Resolution     : 256x192\n * Bit Depth      : 16\n * Format         : YUV444\n * Alpha          : Absent\n * Range          : Full\n * Color Primaries: 1\n * Transfer Char. : 13\n * Matrix Coeffs. : 0\n * ICC Profile    : Absent\n * XMP Metadata   : Absent\n * Exif Metadata  : Absent\n * Transformations: None\n * Progressive    : Unavailable\n * Gain map       : Absent\n * 1 timescales per second, 1.00 seconds (1 timescales), 1 frame\n * Frame:\n   * Decoded frame [0] [pts 0.00 (0 timescales)] [duration 1.00 (1 timescales)] [256x192]",
+   "covers": "16 bits lossless as 8-bit base and 8-bit residual",
+   "encoder": "Version: 1.4.2 (dav1d [dec]:1.5.4-0-g54706fc, aom [enc/dec]:3.15.2, rav1e [enc]:0.7.1 (UNKNOWN), svt [enc]:v2.3.0)",
+   "fallback": "sato-8b8b-lossless-fallback.png",
+   "options": "-l -d 8,8",
+   "reference": "sato-8b8b-lossless.png",
+   "source": "duck-16bit",
+   "tool": "avifenc"
+  },
+  "sato-alpha.avif": {
+   "avifdec_info": "Decoding with codec 'dav1d' (1 worker thread), please wait...\nImage decoded: /w/tests/images/avif/extras/sato-alpha.avif\n * Resolution     : 256x192\n * Bit Depth      : 16\n * Format         : YUV444\n * Alpha          : Not premultiplied\n * Range          : Full\n * Color Primaries: 1\n * Transfer Char. : 13\n * Matrix Coeffs. : 0\n * ICC Profile    : Absent\n * XMP Metadata   : Absent\n * Exif Metadata  : Absent\n * Transformations: None\n * Progressive    : Unavailable\n * Gain map       : Absent\n * 1 timescales per second, 1.00 seconds (1 timescales), 1 frame\n * Frame:\n   * Decoded frame [0] [pts 0.00 (0 timescales)] [duration 1.00 (1 timescales)] [256x192]",
+   "covers": "16-bit color and alpha",
+   "encoder": "Version: 1.4.2 (dav1d [dec]:1.5.4-0-g54706fc, aom [enc/dec]:3.15.2, rav1e [enc]:0.7.1 (UNKNOWN), svt [enc]:v2.3.0)",
+   "fallback": "sato-alpha-fallback.png",
+   "options": "-l -d 8,8",
+   "reference": "sato-alpha.png",
+   "source": "duck-16bit-alpha",
+   "tool": "avifenc"
+  },
+  "sato-gray.avif": {
+   "avifdec_info": "Decoding with codec 'dav1d' (1 worker thread), please wait...\nImage decoded: /w/tests/images/avif/extras/sato-gray.avif\n * Resolution     : 256x192\n * Bit Depth      : 16\n * Format         : YUV400\n * Alpha          : Absent\n * Range          : Full\n * Color Primaries: 1\n * Transfer Char. : 13\n * Matrix Coeffs. : 6\n * ICC Profile    : Absent\n * XMP Metadata   : Absent\n * Exif Metadata  : Absent\n * Transformations: None\n * Progressive    : Unavailable\n * Gain map       : Absent\n * 1 timescales per second, 1.00 seconds (1 timescales), 1 frame\n * Frame:\n   * Decoded frame [0] [pts 0.00 (0 timescales)] [duration 1.00 (1 timescales)] [256x192]",
+   "covers": "16-bit gray",
+   "encoder": "Version: 1.4.2 (dav1d [dec]:1.5.4-0-g54706fc, aom [enc/dec]:3.15.2, rav1e [enc]:0.7.1 (UNKNOWN), svt [enc]:v2.3.0)",
+   "fallback": "sato-gray-fallback.png",
+   "options": "-l -d 12,8",
+   "reference": "sato-gray.png",
+   "source": "duck-16bit-gray",
+   "tool": "avifenc"
+  }
+ }
+}
