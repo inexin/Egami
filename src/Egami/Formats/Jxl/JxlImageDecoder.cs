@@ -165,7 +165,7 @@ internal static class JxlImageDecoder
             (JxlFile file, byte[] data) = Open(input, ReaderOptions.Default);
             List<(JxlFrameHeader Header, JxlToc Toc, long Offset)> sequence = Sequence(file);
             JxlParallel parallel = new(Math.Max(1, parallelism), CancellationToken.None);
-            float[][]?[] lfFrames = new float[4][][];
+            float[][]?[] lfFrames = new float[5][][];
             foreach ((JxlFrameHeader lf, JxlToc toc, long offset) in sequence.Where(s => s.Header.Type == JxlFrameType.Lf))
             {
                 JxlFrameDecoder lfDecoder = new(data, file.Header, lf, toc, offset, input.Limits) { Parallel = parallel };
@@ -401,7 +401,9 @@ internal static class JxlImageDecoder
     private static void Run(JxlFile file, byte[] codestream, EgamiInput input, List<(JxlFrameHeader Header, JxlToc Toc, long Offset)> sequence, bool lfOnly, bool layers, Func<JxlDecoded, JxlFrameHeader, bool> emit, long arrived = long.MaxValue)
     {
         JxlImageHeader h = file.Header;
-        float[][]?[] lfFrames = new float[4][][];
+
+        // Indexed by the LF level a frame reads (0 to 4: an LF frame of level 4 reads a slot no frame fills, found by fuzzing).
+        float[][]?[] lfFrames = new float[5][][];
         JxlReference?[] references = new JxlReference?[4];
         int visible = 0;
         int invisible = 0;
@@ -593,6 +595,11 @@ internal static class JxlImageDecoder
         int[] y = frame.Channels[0].Data;
         int[] x = frame.Channels[1].Data;
         int[] b = frame.Channels[2].Data;
+        if (Math.Min(y.Length, Math.Min(x.Length, b.Length)) < count)
+        {
+            throw new CorruptDataException(JxlFormat.Info.Name, -1, "A color channel is smaller than its frame.");
+        }
+
         float mx = frame.LfDequant[0] / 128;
         float my = frame.LfDequant[1] / 128;
         float mb = frame.LfDequant[2] / 128;
@@ -698,6 +705,12 @@ internal static class JxlImageDecoder
             for (int c = 0; c < 3; c++)
             {
                 int[] data = frame.Channels[Math.Min(c, frame.ColorChannels - 1)].Data;
+                if (data.Length < count)
+                {
+                    // Transforms of a damaged stream can leave a color channel smaller than the frame (found by fuzzing).
+                    throw new CorruptDataException(JxlFormat.Info.Name, -1, "A color channel is smaller than its frame.");
+                }
+
                 float[] plane = new float[count];
                 for (int i = 0; i < count; i++)
                 {

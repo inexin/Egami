@@ -41,13 +41,14 @@ internal static class JxlPartial
                 header = 16;
             }
 
-            long end = size == 0 ? long.MaxValue : at + size;
-            if (size != 0 && size < header)
+            int payload = header + (type == "jxlp" ? 4 : 0);
+            long end = size == 0 || size > long.MaxValue - at ? long.MaxValue : at + size;
+            if (size != 0 && size < payload)
             {
                 return null;
             }
 
-            int start = (int)at + header + (type == "jxlp" ? 4 : 0);
+            int start = (int)at + payload;
             if (type is "jxlc" or "jxlp" && start <= bytes.Length)
             {
                 int stop = (int)Math.Min(end, bytes.Length);

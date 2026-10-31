@@ -63,6 +63,46 @@ public class JxlPartialTests
     }
 
     [Theory]
+    [InlineData("short-jxlp-box.jxl")]
+    [InlineData("huge-box-size.jxl")]
+    [InlineData("lf-level-4.jxl")]
+    [InlineData("small-color-channel.jxl")]
+    public void DamagedFilesFailCleanly(string name)
+    {
+        // Found by the jxl-partial fuzz target: a jxlp box too short for its index, a 64-bit box size that overflowed, an LF
+        // frame of level 4, and a color channel smaller than its frame. Each is reported as damaged data, not a crash.
+        byte[] data = File.ReadAllBytes(Path.Combine(AppContext.BaseDirectory, "images", "fuzz", "jxl-partial", name));
+        try
+        {
+            using Raster whole = Raster.Load(new MemoryStream(data));
+        }
+        catch (EgamiException)
+        {
+        }
+
+        try
+        {
+            using RasterDecoder decoder = RasterDecoder.OpenIncremental();
+            Raster<Rgba8>? preview = null;
+            foreach (byte[] chunk in data.Chunk(Math.Max(1, data.Length / 7)))
+            {
+                decoder.Append(chunk);
+                if (decoder.HeaderRead)
+                {
+                    preview ??= Raster.Create<Rgba8>(decoder.Info.Width, decoder.Info.Height);
+                    decoder.RenderPreview(preview);
+                }
+            }
+
+            decoder.EndOfInput();
+            preview?.Dispose();
+        }
+        catch (EgamiException)
+        {
+        }
+    }
+
+    [Theory]
     [InlineData("duck-d1", 1)]
     [InlineData("duck-d1-progressive", 4096)]
     [InlineData("duck-lossless-e7", 65536)]
