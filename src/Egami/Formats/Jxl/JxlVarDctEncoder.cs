@@ -3147,6 +3147,14 @@ internal sealed partial class JxlVarDctEncoder
         JxlEntropyCode treeCode = JxlEntropyCode.Write(global, mp, 6, treeTokens);
         treeCode.WriteTokens(global, treeTokens[0]);
         JxlEntropyCode code = JxlEntropyCode.Write(global, mp with { ImageWidths = widths }, context.Max() + 1, modularTokens);
+
+        // LZ77 may replace the streams' tokens (from effort 8): what goes out is what the code was built for.
+        int extraAt = streamTokens.Length;
+        foreach (int id in extraTokens.Keys.ToArray())
+        {
+            extraTokens[id] = modularTokens[extraAt++];
+        }
+
         if (_extraStreams is not null)
         {
             JxlModularEncoder.WriteStream(global, _extraStreams[0], code, extraTokens.GetValueOrDefault(0, []));

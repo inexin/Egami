@@ -42,6 +42,33 @@ public class JxlLossyHighEffortTests
     }
 
     [Fact]
+    public void ExactAlphaSurvivesLz77()
+    {
+        // Found by fuzzing: from effort 8 LZ77 rewrites the alpha channel's tokens, which must be the ones written.
+        using Raster<Rgba8> image = Raster.Create<Rgba8>(300, 260);
+        for (int y = 0; y < image.Height; y++)
+        {
+            for (int x = 0; x < image.Width; x++)
+            {
+                int v = ((x * 7) + (y * 13)) % 29;
+                image.Row(y)[x] = new Rgba8((byte)(v * 8), (byte)(255 - (v * 8)), (byte)(x & 0xFF), (byte)(v < 10 ? 0 : v * 8));
+            }
+        }
+
+        using MemoryStream file = new();
+        image.Save(file, JxlFormat.Info, new JxlWriterOptions { Distance = 0.35f, Effort = 8 });
+        file.Position = 0;
+        using Raster<Rgba8> back = Raster.Load<Rgba8>(file);
+        for (int y = 0; y < image.Height; y++)
+        {
+            for (int x = 0; x < image.Width; x++)
+            {
+                Assert.Equal(image.Row(y)[x].A, back.Row(y)[x].A);
+            }
+        }
+    }
+
+    [Fact]
     public void LargeFramesAreCodedWhole()
     {
         // Above distance 0.5 effort 8 codes the frame whole, as libjxl's streaming rules: chunks would not be compared.
