@@ -17,12 +17,12 @@ internal sealed class RawLook
     private readonly HsvTable? _look;
     private readonly float[]? _curve;
     private readonly float _gain;
-    private readonly TransferFunction _transfer;
+    private readonly float[] _encode;
 
     public RawLook(RawFrame frame, RawCamera camera, ColorProfile target, double exposure, bool profile)
     {
         ColorPrimaries primaries = target.Primaries ?? ColorProfile.Srgb.Primaries!;
-        _transfer = target.Transfer ?? TransferFunction.Srgb;
+        _encode = EncodeTable(target.Transfer ?? TransferFunction.Srgb);
         double[] toTarget = RawColor.Multiply(RawColor.XyzToRgb(primaries), RawColor.Adaptation(RawColor.D50, (primaries.White.X, primaries.White.Y)));
         _gain = (float)Math.Pow(2, exposure);
         RawProfile p = frame.Profile;
@@ -102,7 +102,48 @@ internal sealed class RawLook
             }
         }
 
-        _transfer.FromLinear(output[..source.Length], output);
+        Encode(output[..source.Length]);
+    }
+
+    private const int EncodeSize = 1 << 16;
+
+    /// <summary>
+    /// Returns the transfer function sampled at 65,537 even steps of 0 to 1; linear interpolation between them is within a
+    /// thousandth of a 16-bit step of the function itself.
+    /// </summary>
+    private static float[] EncodeTable(TransferFunction transfer) => Tables.GetValue(transfer, MakeTable);
+
+    private static readonly System.Runtime.CompilerServices.ConditionalWeakTable<TransferFunction, float[]> Tables = [];
+
+    private static float[] MakeTable(TransferFunction transfer)
+    {
+        float[] linear = new float[EncodeSize + 1];
+        for (int i = 0; i <= EncodeSize; i++)
+        {
+            linear[i] = i / (float)EncodeSize;
+        }
+
+        float[] table = new float[EncodeSize + 1];
+        transfer.FromLinear(linear, table);
+        return table;
+    }
+
+    /// <summary>Encodes clipped linear values in place through the table.</summary>
+    private void Encode(Span<float> values)
+    {
+        float[] table = _encode;
+        for (int i = 0; i < values.Length; i++)
+        {
+            float f = values[i] * EncodeSize;
+            int k = (int)f;
+            if (k >= EncodeSize)
+            {
+                values[i] = table[EncodeSize];
+                continue;
+            }
+
+            values[i] = table[k] + ((table[k + 1] - table[k]) * (f - k));
+        }
     }
 
     private static float Clip(float v) => v > 0 ? (v < 1 ? v : 1) : 0;

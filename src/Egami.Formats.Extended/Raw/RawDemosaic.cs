@@ -58,6 +58,29 @@ internal static class RawDemosaic
     public static void Half(ReadOnlySpan<float> mosaic, int width, int height, RawCfa cfa, Span<float> rgb)
     {
         int w = width / 2, h = height / 2;
+        int red = cfa.BayerRed;
+        if (red >= 0)
+        {
+            // Bayer: red and blue once in each block, green twice.
+            int r0 = red, b0 = red ^ 3, g0 = red ^ 1, g1 = red ^ 2;
+            for (int y = 0; y < h; y++)
+            {
+                ReadOnlySpan<float> top = mosaic.Slice(y * 2 * width, width);
+                ReadOnlySpan<float> bottom = mosaic.Slice(((y * 2) + 1) * width, width);
+                Span<float> output = rgb.Slice(y * w * 3, w * 3);
+                for (int x = 0; x < w; x++)
+                {
+                    int i = x * 2;
+                    float p0 = top[i], p1 = top[i + 1], p2 = bottom[i], p3 = bottom[i + 1];
+                    output[x * 3] = Pick(r0, p0, p1, p2, p3);
+                    output[(x * 3) + 1] = (Pick(g0, p0, p1, p2, p3) + Pick(g1, p0, p1, p2, p3)) * 0.5f;
+                    output[(x * 3) + 2] = Pick(b0, p0, p1, p2, p3);
+                }
+            }
+
+            return;
+        }
+
         Span<float> sum = stackalloc float[3];
         Span<int> count = stackalloc int[3];
         int stepY = cfa.Rows == 1 ? 1 : 2;
@@ -90,6 +113,8 @@ internal static class RawDemosaic
             }
         }
     }
+
+    private static float Pick(int position, float p0, float p1, float p2, float p3) => position switch { 0 => p0, 1 => p1, 2 => p2, _ => p3 };
 
     private static void Bilinear(Scratch s, int width, int y0, int y1, int red, Span<float> output)
     {
@@ -345,7 +370,35 @@ internal static class RawDemosaic
         }
     }
 
-    private static float F(float t) => t > 0.008856f ? MathF.Cbrt(t) : (7.787f * t) + (16f / 116);
+    private static float F(float t)
+    {
+        // CIELab's f(t), through a table over 0 to 2 with linear interpolation; AHD compares Lab differences, so the table's
+        // error (below 1e-5) does not change a single decision that matters.
+        float x = t * (CubeSize / 2f);
+        if (x >= 0 && x < CubeSize)
+        {
+            int k = (int)x;
+            return Cube[k] + ((Cube[k + 1] - Cube[k]) * (x - k));
+        }
+
+        return t > 0.008856f ? MathF.Cbrt(t) : (7.787f * t) + (16f / 116);
+    }
+
+    private const int CubeSize = 1 << 14;
+
+    private static readonly float[] Cube = MakeCube();
+
+    private static float[] MakeCube()
+    {
+        float[] table = new float[CubeSize + 1];
+        for (int i = 0; i <= CubeSize; i++)
+        {
+            float t = i * (2f / CubeSize);
+            table[i] = t > 0.008856f ? MathF.Cbrt(t) : (7.787f * t) + (16f / 116);
+        }
+
+        return table;
+    }
 
     /// <summary>Any colour filter array: each missing colour is the average of that colour's samples in the 3 × 3, else 5 × 5, neighbourhood.</summary>
     private static void Generic(Scratch s, int width, int y0, int y1, RawCfa cfa, Span<float> output)

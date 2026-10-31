@@ -202,6 +202,40 @@ internal sealed class RawDeveloper
             double[]? dh = frame.BlackDeltaH, dv = frame.BlackDeltaV;
             bool floatData = pixels.IsFloat;
             RawPlane? source1 = stage1;
+            if (!floatData && source1 is null && dh is null)
+            {
+                // The usual case: stored integers, a black level per pattern position and row. Per row, each position of the
+                // pattern gets its offset and scale once; the loop is a table lookup and a multiply-add per sample.
+                Parallel.For(0, active.Height, parallel, () => new float[bc * samples * 2], (y, _, row) =>
+                {
+                    int sy = y + active.Y;
+                    double rowDelta = dv is null ? 0 : dv.Length == active.Height ? dv[y] : dv[Math.Min(sy, dv.Length - 1)];
+                    int period = bc * samples;
+                    for (int j = 0; j < period; j++)
+                    {
+                        int s = j % samples;
+                        double b = black[((((y % br) * bc) + (j / samples)) * samples) + s] + rowDelta;
+                        double range = white[s] - b;
+                        row[j * 2] = range > 0 ? (float)(1 / range) : 0;
+                        row[(j * 2) + 1] = range > 0 ? (float)(-b / range) : 0;
+                    }
+
+                    ReadOnlySpan<ushort> raw = pixels.U16Row(sy).Slice(active.X * samples, aw * samples);
+                    Span<float> target = mosaic.Span.Slice(y * aw * samples, aw * samples);
+                    for (int i = 0, j = 0; i < target.Length; i++)
+                    {
+                        target[i] = (lut[raw[i]] * row[j * 2]) + row[(j * 2) + 1];
+                        if (++j == period)
+                        {
+                            j = 0;
+                        }
+                    }
+
+                    return row;
+                }, _ => { });
+                return;
+            }
+
             Parallel.For(0, active.Height, parallel, y =>
             {
                 int sy = y + active.Y;
@@ -351,10 +385,21 @@ internal sealed class RawDeveloper
                 return;
             }
 
-            for (int x = 0; x < width; x++)
+            // The pattern's row, repeated: one multiplier per position across.
+            Span<float> across = stackalloc float[cfa.Columns];
+            for (int k = 0; k < cfa.Columns; k++)
             {
-                int c = cfa.ColorAt(x, y);
-                row[x] *= c < 3 ? m[c] : 1;
+                int c = cfa.ColorAt(k, y);
+                across[k] = c < 3 ? m[c] : 1;
+            }
+
+            for (int x = 0, k = 0; x < width; x++)
+            {
+                row[x] *= across[k];
+                if (++k == across.Length)
+                {
+                    k = 0;
+                }
             }
         });
     }
