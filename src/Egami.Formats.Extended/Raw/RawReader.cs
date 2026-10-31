@@ -148,6 +148,7 @@ internal sealed class RawReader : IFormatReader, IRowFormatReader, IMultiImageRe
 
         Raster<TPixel> raster;
         RawCamera? camera = null;
+        string? lensProfile = null;
         switch (plan.Output)
         {
             case RawOutput.Preview:
@@ -167,6 +168,7 @@ internal sealed class RawReader : IFormatReader, IRowFormatReader, IMultiImageRe
                         Raster<TPixel> target = raster;
                         developer.Run(pixels, input, (y, row) => PixelConvert.Convert(row, target.Row(y)));
                         camera = developer.Camera;
+                        lensProfile = developer.LensProfile;
                         Describe(raster.Metadata, space);
                     }
                     catch
@@ -190,7 +192,9 @@ internal sealed class RawReader : IFormatReader, IRowFormatReader, IMultiImageRe
         }
 
         RasterMetadata metadata = raster.Metadata;
-        metadata.FormatDetails = Details(file, plan, camera);
+        RawDetails details = Details(file, plan, camera);
+        details.LensProfile = lensProfile;
+        metadata.FormatDetails = details;
         if (options.ReadMetadata)
         {
             file.ReadMetadata(metadata, input);

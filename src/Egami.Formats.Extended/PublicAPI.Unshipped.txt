@@ -132,6 +132,8 @@ Egami.Formats.Extended.Raw.RawDetails.Iso.get -> double?
 Egami.Formats.Extended.Raw.RawDetails.Iso.set -> void
 Egami.Formats.Extended.Raw.RawDetails.LensModel.get -> string?
 Egami.Formats.Extended.Raw.RawDetails.LensModel.set -> void
+Egami.Formats.Extended.Raw.RawDetails.LensProfile.get -> string?
+Egami.Formats.Extended.Raw.RawDetails.LensProfile.set -> void
 Egami.Formats.Extended.Raw.RawDetails.Make.get -> string!
 Egami.Formats.Extended.Raw.RawDetails.Make.set -> void
 Egami.Formats.Extended.Raw.RawDetails.MakerNote.get -> System.ReadOnlyMemory<byte>
@@ -203,6 +205,8 @@ Egami.Formats.Extended.Raw.RawReaderOptions.Highlights.get -> Egami.Formats.Exte
 Egami.Formats.Extended.Raw.RawReaderOptions.Highlights.init -> void
 Egami.Formats.Extended.Raw.RawReaderOptions.LensCorrections.get -> bool
 Egami.Formats.Extended.Raw.RawReaderOptions.LensCorrections.init -> void
+Egami.Formats.Extended.Raw.RawReaderOptions.LensProfiles.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Egami.Formats.Extended.Raw.RawReaderOptions.LensProfiles.init -> void
 Egami.Formats.Extended.Raw.RawReaderOptions.LuminanceNoiseReduction.get -> double
 Egami.Formats.Extended.Raw.RawReaderOptions.LuminanceNoiseReduction.init -> void
 Egami.Formats.Extended.Raw.RawReaderOptions.Output.get -> Egami.Formats.Extended.Raw.RawOutput

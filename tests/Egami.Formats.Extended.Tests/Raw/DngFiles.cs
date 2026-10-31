@@ -363,6 +363,9 @@ internal sealed class DngFile
 
     public List<TiffTag> ExtraRaw { get; } = [];
 
+    /// <summary>Gets the tags of an EXIF IFD, written when there are any.</summary>
+    public List<TiffTag> Exif { get; } = [];
+
     public double[]? NoiseProfile { get; set; }
 
     public int SamplesPerPixel => LinearRaw ? 3 : 1;
@@ -420,6 +423,12 @@ internal sealed class DngFile
         }
 
         ifd0.SubIfds.Add(RawIfd());
+        if (Exif.Count > 0)
+        {
+            TiffBuilder.Ifd exif = new();
+            exif.Tags.AddRange(Exif);
+            ifd0.Exif = exif;
+        }
         return TiffBuilder.Write(ifd0, BigEndian);
     }
 

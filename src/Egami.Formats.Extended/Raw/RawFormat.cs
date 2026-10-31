@@ -229,6 +229,9 @@ public sealed class RawDetails : FormatDetails
     /// <summary>Gets or sets the lens model, or <see langword="null"/>.</summary>
     public string? LensModel { get; set; }
 
+    /// <summary>Gets or sets which lens profile corrected the image and what it corrected, or <see langword="null"/> for none.</summary>
+    public string? LensProfile { get; set; }
+
     /// <summary>Gets or sets the maker note as stored: maker-specific data Egami keeps but does not parse, or empty.</summary>
     public ReadOnlyMemory<byte> MakerNote { get; set; }
 
@@ -372,4 +375,12 @@ public sealed record RawReaderOptions : ReaderOptions
     /// <see langword="true"/>; without it, colours are the colour matrices' alone.
     /// </summary>
     public bool ApplyProfile { get; init; } = true;
+
+    /// <summary>
+    /// Gets the folders of lens profiles to correct with: Lensfun database files (<c>.xml</c>) and Adobe lens profiles
+    /// (<c>.lcp</c>), searched with their subfolders, and a system Lensfun install when there is one. A file whose own data
+    /// corrects the lens (DNG's lens opcodes) uses that instead. Egami ships no profiles: Lensfun's database is under CC BY-SA
+    /// and Adobe's profiles are Adobe's, so you supply them. Defaults to none. Applies only with <see cref="LensCorrections"/>.
+    /// </summary>
+    public IReadOnlyList<string> LensProfiles { get; init; } = [];
 }

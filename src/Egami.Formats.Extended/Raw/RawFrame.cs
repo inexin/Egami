@@ -232,6 +232,12 @@ internal sealed class RawFrame
 
     public double? FocalLength { get; set; }
 
+    /// <summary>Gets or sets EXIF's FocalLengthIn35mmFilm, from which the sensor's crop factor follows, or <see langword="null"/>.</summary>
+    public double? FocalLength35 { get; set; }
+
+    /// <summary>Gets or sets the focus distance in metres (EXIF SubjectDistance), or <see langword="null"/>.</summary>
+    public double? FocusDistance { get; set; }
+
     public string? LensModel { get; set; }
 
     /// <summary>Gets or sets the IFD whose tags hold the EXIF, XMP and ICC metadata (IFD0).</summary>

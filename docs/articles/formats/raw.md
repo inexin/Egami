@@ -68,6 +68,17 @@ carries its ICC profile. Other colour models (CMYK, gray) are converted to after
 
 The develop runs in parallel bands, and its output is the same for any `EgamiContext.MaxParallelism`.
 
+## Lens profiles
+
+A file that carries its own lens corrections (a DNG's warp and vignetting opcodes) is corrected with those. For other files,
+`RawReaderOptions.LensProfiles` names folders of lens profiles that Egami reads at run time: Lensfun database files (`.xml`)
+and Adobe lens profiles (`.lcp`). A system Lensfun install (such as `/usr/share/lensfun` on Linux) is searched too. The
+profile whose lens name matches the file's EXIF LensModel corrects vignetting, distortion and lateral chromatic aberration,
+its calibrations interpolated for the shot's focal length and aperture; `RawDetails.LensProfile` says which one did.
+
+Egami ships no profiles. Lensfun's database is under CC BY-SA 3.0 and Adobe's profiles come with Adobe's software, so you
+supply them and their terms apply to them. `LensCorrections = false` turns every lens correction off.
+
 ## Details and metadata
 
 `RawDetails`, in `RasterMetadata.FormatDetails`, says what the raster is (`Output`, `PreviewIndex`), the camera (`Make`,

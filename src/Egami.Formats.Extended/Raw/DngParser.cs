@@ -162,6 +162,8 @@ internal static class DngParser
         frame.ExposureTime = Exif(RawTags.ExposureTime);
         frame.FNumber = Exif(RawTags.FNumber);
         frame.FocalLength = Exif(RawTags.FocalLength);
+        frame.FocalLength35 = Exif(0xA405) is double f35 and > 0 ? f35 : null;
+        frame.FocusDistance = Exif(0x9206) is double d and > 0 ? d : null;
         frame.LensModel = exif?.Ascii(RawTags.LensModel) ?? ifd0.Ascii(RawTags.LensModel);
         frame.MakerNote = MakerNote(ifd0, exif);
     }

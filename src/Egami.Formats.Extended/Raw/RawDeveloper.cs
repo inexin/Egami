@@ -58,6 +58,9 @@ internal sealed class RawDeveloper
     /// <summary>Gets the colour transform the develop used, once it has run.</summary>
     public RawCamera? Camera { get; private set; }
 
+    /// <summary>Gets which lens profile corrected the image, once the develop has run, or <see langword="null"/>.</summary>
+    public string? LensProfile { get; private set; }
+
     /// <summary>
     /// Runs the develop and hands each output row, as encoded RGB in <see cref="Target"/>, to <paramref name="write"/>, which may be
     /// called from several threads at once for different rows.
@@ -119,6 +122,11 @@ internal sealed class RawDeveloper
             DngOpcodes.Apply(list3, new RawPlane(rgb, pw, ph, 3, null) { Scale = _half ? 2 : 1 }, 3, _options.LensCorrections, input, _warnings);
         }
 
+        if (_options.LensCorrections && !HasLensOpcodes(frame.Opcodes3))
+        {
+            LensProfile = CorrectLens(rgb, pw, ph, parallel);
+        }
+
         RawHighlights.Apply(rgb, pw, ph, camera.Multipliers, _options.Highlights, parallel);
         if (_options.ColorNoiseReduction > 0)
         {
@@ -139,6 +147,28 @@ internal sealed class RawDeveloper
 
             return row;
         }, _ => { });
+    }
+
+    private static bool HasLensOpcodes(byte[]? list) => list is not null && DngOpcodes.Ids(list).Exists(id => id is DngOpcodes.WarpRectilinear or DngOpcodes.WarpFisheye or DngOpcodes.FixVignetteRadial);
+
+    /// <summary>Corrects the lens from a runtime profile that matches the camera and lens, when one does.</summary>
+    private string? CorrectLens(Memory<float> rgb, int width, int height, ParallelOptions parallel)
+    {
+        RawFrame frame = _frame;
+        if (frame.FocalLength is not double focal || string.IsNullOrWhiteSpace(frame.LensModel))
+        {
+            return null;
+        }
+
+        List<RawLensProfile> profiles = RawLensProfiles.Load(_options.LensProfiles, _warnings);
+        if (RawLensProfiles.Match(profiles, frame.Make, frame.Model, frame.LensModel) is not RawLensProfile profile)
+        {
+            return null;
+        }
+
+        double crop = frame.FocalLength35 is double f35 && focal > 0 ? f35 / focal : profile.CropFactor;
+        string? applied = RawLens.Apply(rgb, width, height, profile, focal, frame.FNumber ?? 0, frame.FocusDistance ?? 1000, crop, parallel);
+        return applied is null ? null : $"{(profile.Format == RawLensFormat.Lcp ? "Adobe" : "Lensfun")}: {(profile.Maker.Length > 0 ? profile.Maker + " " : "")}{profile.Lens} ({applied})";
     }
 
     /// <summary>Returns the exposure, in stops: the file's baseline exposure (and the profile's offset) plus the option's.</summary>
