@@ -165,6 +165,74 @@ public static class JxlImage
     private static byte[] Recompress(byte[] jpeg, EgamiContext context) => JxlJpegEncoder.Recompress(jpeg, context);
 
     /// <summary>
+    /// Writes layers as one frame each, so that <see cref="ReadLayers(string, ReaderOptions?, EgamiContext?)"/> gives them back
+    /// with their place, blend mode, duration and name, and Load gives them blended. Each layer blends onto the canvas made by
+    /// the ones before it, the first onto a transparent black canvas. All layers take the first one's pixel format (gray or
+    /// color, and its sample type) and, when any layer has alpha, alpha; others are converted. The file is lossless unless
+    /// <paramref name="options"/> sets <see cref="JxlWriterOptions.Lossless"/> to <see langword="false"/> or a
+    /// <see cref="JxlWriterOptions.Distance"/>, and animated when any layer has a duration.
+    /// </summary>
+    /// <param name="path">The file to write.</param>
+    /// <param name="width">The canvas width.</param>
+    /// <param name="height">The canvas height.</param>
+    /// <param name="layers">The layers, bottom first.</param>
+    /// <param name="options">The options, or <see langword="null"/> for lossless at the default effort; <see cref="JxlWriterOptions.FirstFrameOnly"/> is ignored.</param>
+    /// <param name="context">The context, or <see langword="null"/> for <see cref="EgamiContext.Default"/>.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="path"/> or <paramref name="layers"/> is <see langword="null"/>, or holds <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="width"/> or <paramref name="height"/> is not positive, or above 2³⁰.</exception>
+    /// <exception cref="ArgumentException"><paramref name="layers"/> is empty.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../../tests/Egami.DocSamples/Jxl.cs" region="write-layers"/>
+    /// </example>
+    public static void WriteLayers(string path, int width, int height, IReadOnlyList<JxlLayer> layers, JxlWriterOptions? options = null, EgamiContext? context = null)
+    {
+        ArgumentNullException.ThrowIfNull(path);
+        byte[] file = Layers(width, height, layers, options, context);
+        File.WriteAllBytes(path, file);
+    }
+
+    /// <summary>Writes layers to a stream; see <see cref="WriteLayers(string, int, int, IReadOnlyList{JxlLayer}, JxlWriterOptions?, EgamiContext?)"/>.</summary>
+    /// <param name="stream">Where to write the file.</param>
+    /// <param name="width">The canvas width.</param>
+    /// <param name="height">The canvas height.</param>
+    /// <param name="layers">The layers, bottom first.</param>
+    /// <param name="options">The options, or <see langword="null"/> for lossless at the default effort.</param>
+    /// <param name="context">The context, or <see langword="null"/> for <see cref="EgamiContext.Default"/>.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="stream"/> or <paramref name="layers"/> is <see langword="null"/>, or holds <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="width"/> or <paramref name="height"/> is not positive, or above 2³⁰.</exception>
+    /// <exception cref="ArgumentException"><paramref name="layers"/> is empty.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../../tests/Egami.DocSamples/Jxl.cs" region="write-layers"/>
+    /// </example>
+    public static void WriteLayers(Stream stream, int width, int height, IReadOnlyList<JxlLayer> layers, JxlWriterOptions? options = null, EgamiContext? context = null)
+    {
+        ArgumentNullException.ThrowIfNull(stream);
+        stream.Write(Layers(width, height, layers, options, context));
+    }
+
+    private static byte[] Layers(int width, int height, IReadOnlyList<JxlLayer> layers, JxlWriterOptions? options, EgamiContext? context)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(width);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(height);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(width, 1 << 30);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(height, 1 << 30);
+        ArgumentNullException.ThrowIfNull(layers);
+        if (layers.Count == 0)
+        {
+            throw new ArgumentException("There must be at least one layer.", nameof(layers));
+        }
+
+        foreach (JxlLayer layer in layers)
+        {
+            ArgumentNullException.ThrowIfNull(layer, nameof(layers));
+        }
+
+        using MemoryStream file = new();
+        JxlWriter.WriteLayers(file, width, height, layers, options ?? JxlWriterOptions.Default, context ?? EgamiContext.Default);
+        return file.ToArray();
+    }
+
+    /// <summary>
     /// Reads one extra channel, such as depth, a selection mask, thermal data or a spot color, into a gray raster at the image
     /// size: as stored, scaled to 0 to 1 for integer samples, with a frame for each frame Load shows.
     /// </summary>
@@ -226,14 +294,47 @@ public enum JxlLayerBlend
     Multiply = 4,
 }
 
-/// <summary>A JPEG XL frame before blending, from <see cref="JxlImage.ReadLayers(string, ReaderOptions?, EgamiContext?)"/>.</summary>
+/// <summary>
+/// A JPEG XL frame before blending, from <see cref="JxlImage.ReadLayers(string, ReaderOptions?, EgamiContext?)"/>, or one to
+/// write with <see cref="JxlImage.WriteLayers(string, int, int, IReadOnlyList{JxlLayer}, JxlWriterOptions?, EgamiContext?)"/>.
+/// </summary>
 /// <example>
 /// <code language="csharp" source="../../../../tests/Egami.DocSamples/Jxl.cs" region="layers"/>
 /// </example>
 public sealed class JxlLayer : IDisposable
 {
-    internal JxlLayer(Raster raster, int x, int y, JxlLayerBlend blend, TimeSpan duration, string name)
+    /// <summary>Creates a layer to write. The layer takes the raster: disposing the layer disposes it.</summary>
+    /// <param name="raster">The layer's pixels, at its own size.</param>
+    /// <param name="x">The left edge on the canvas; it can be negative or reach past the canvas.</param>
+    /// <param name="y">The top edge on the canvas; it can be negative or reach past the canvas.</param>
+    /// <param name="blend">How the layer's color combines with the canvas below it.</param>
+    /// <param name="duration">How long the canvas shows after this layer in an animation; zero for a layer that is not shown alone.</param>
+    /// <param name="name">The layer's name, up to 1,071 bytes of UTF-8, or <see langword="null"/> for none.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="raster"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="blend"/> is not a defined mode, or <paramref name="duration"/> is negative or longer than 2³² − 1 ms.</exception>
+    /// <exception cref="ArgumentException"><paramref name="name"/> is longer than 1,071 bytes of UTF-8.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../../tests/Egami.DocSamples/Jxl.cs" region="write-layers"/>
+    /// </example>
+    public JxlLayer(Raster raster, int x = 0, int y = 0, JxlLayerBlend blend = JxlLayerBlend.Replace, TimeSpan duration = default, string? name = null)
     {
+        ArgumentNullException.ThrowIfNull(raster);
+        if (!Enum.IsDefined(blend))
+        {
+            throw new ArgumentOutOfRangeException(nameof(blend), blend, "The blend mode is not one JPEG XL has.");
+        }
+
+        if (duration < TimeSpan.Zero || duration.TotalMilliseconds > uint.MaxValue)
+        {
+            throw new ArgumentOutOfRangeException(nameof(duration), duration, "The duration must be from zero to 2³² − 1 milliseconds.");
+        }
+
+        name ??= string.Empty;
+        if (System.Text.Encoding.UTF8.GetByteCount(name) > JxlFrameWriter.MaxNameBytes)
+        {
+            throw new ArgumentException($"A JPEG XL layer name holds {JxlFrameWriter.MaxNameBytes} bytes of UTF-8.", nameof(name));
+        }
+
         Raster = raster;
         X = x;
         Y = y;

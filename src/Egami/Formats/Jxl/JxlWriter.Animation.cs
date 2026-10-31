@@ -32,6 +32,7 @@ internal sealed partial class JxlWriter
         private readonly int _height = start.Height;
         private TPixel[] _canvas = [];
         private TPixel[] _next = [];
+        private FrameCoder<TPixel>? _coder;
         private bool _alpha;
         private int _frames;
 
@@ -121,162 +122,60 @@ internal sealed partial class JxlWriter
                 Blending = new JxlBlending(JxlBlendMode.Replace, 0, false, CanvasSlot),
             };
 
-            RasterMetadata metadata = start.Metadata;
-            int orientation = metadata.Exif?.Orientation is ImageOrientation o && (int)o is >= 1 and <= 8 ? (int)o : 1;
-            JxlAnimation animation = new(TicksPerSecond, 1, (uint)Math.Max(0, metadata.LoopCount), false);
-            byte[] bytes = lossless ? Lossless(x, y, w, h, info, orientation, animation) : Lossy(x, y, w, h, info, orientation, animation);
-            _codestream.Write(bytes);
+            if (_coder is null)
+            {
+                RasterMetadata metadata = start.Metadata;
+                JxlAnimation animation = new(TicksPerSecond, 1, (uint)Math.Max(0, metadata.LoopCount), false);
+                _coder = new FrameCoder<TPixel>(metadata, options, start.Context.MaxParallelism, _width, _height, _alpha, lossless, animation);
+            }
+
+            _codestream.Write(_coder.Code(_next, _width, x, y, w, h, info, _frames > 0 ? planes => Hollow(planes, x, y, w, h) : null));
         }
 
-        /// <summary>Codes the rectangle lossless, blended over the canvas when every changed pixel in it is opaque.</summary>
-        private byte[] Lossless(int x, int y, int w, int h, JxlFrameInfo info, int orientation, JxlAnimation animation)
+        /// <summary>
+        /// Makes the unchanged pixels of a lossless rectangle transparent so that it blends, when every changed pixel in it is
+        /// opaque; otherwise leaves it to replace.
+        /// </summary>
+        private bool Hollow(Planes planes, int x, int y, int w, int h)
         {
-            Planes planes = new(TPixel.Layout, w, h);
-            IntermediateRow row = new(w);
+            if (!_alpha || planes.Alpha is not int[] alpha)
+            {
+                return false;
+            }
+
             bool[] changed = new bool[w * h];
+            int opaque = planes.Opaque;
             for (int r = 0; r < h; r++)
             {
-                ReadOnlySpan<TPixel> now = _next.AsSpan(((y + r) * _width) + x, w);
-                ReadOnlySpan<TPixel> before = _canvas.AsSpan(((y + r) * _width) + x, w);
-                switch (planes.Kind)
-                {
-                    case PixelChannelType.Unorm8:
-                        PixelConvert.Convert(now, row.Rgba8);
-                        planes.Add8(row.Rgba8, r);
-                        break;
-                    case PixelChannelType.Float32:
-                        PixelConvert.Convert(now, row.RgbaF32);
-                        planes.AddF32(row.RgbaF32, r);
-                        break;
-                    case PixelChannelType.Float16:
-                        PixelConvert.Convert(now, row.RgbaF16);
-                        planes.AddF16(row.RgbaF16, r);
-                        break;
-                    default:
-                        PixelConvert.Convert(now, row.Rgba16);
-                        planes.Add16(row.Rgba16, r);
-                        break;
-                }
-
-                ReadOnlySpan<byte> a = MemoryMarshal.AsBytes(now), b = MemoryMarshal.AsBytes(before);
+                ReadOnlySpan<byte> a = MemoryMarshal.AsBytes(_next.AsSpan(((y + r) * _width) + x, w));
+                ReadOnlySpan<byte> b = MemoryMarshal.AsBytes(_canvas.AsSpan(((y + r) * _width) + x, w));
                 int size = a.Length / w;
                 for (int i = 0; i < w; i++)
                 {
-                    changed[(r * w) + i] = _frames == 0 || !a.Slice(i * size, size).SequenceEqual(b.Slice(i * size, size));
-                }
-            }
-
-            if (_frames > 0 && _alpha && planes.Alpha is int[] alpha)
-            {
-                int opaque = planes.Opaque;
-                bool over = true;
-                for (int i = 0; i < changed.Length && over; i++)
-                {
-                    over = !changed[i] || alpha[i] == opaque;
-                }
-
-                if (over)
-                {
-                    // Blended over the canvas, an unchanged pixel made fully transparent comes out unchanged, and codes cheaply.
-                    for (int i = 0; i < changed.Length; i++)
+                    bool differs = !a.Slice(i * size, size).SequenceEqual(b.Slice(i * size, size));
+                    if (differs && alpha[(r * w) + i] != opaque)
                     {
-                        if (!changed[i])
-                        {
-                            alpha[i] = 0;
-                            foreach (int[] plane in planes.Color)
-                            {
-                                plane[i] = 0;
-                            }
-                        }
+                        return false;
                     }
 
-                    info = info with { Blending = new JxlBlending(JxlBlendMode.Blend, 0, false, CanvasSlot) };
+                    changed[(r * w) + i] = differs;
                 }
             }
 
-            (JxlColorEncoding color, byte[]? icc) = ColorOf(start.Metadata, options, planes.Color.Length == 1);
-            // libjxl's fast lossless path takes whole still images only; animation frames get effort 2 instead, as with cjxl -e 1.
-            JxlEncodeInput input = planes.ToInput(Math.Max(2, options.Effort), _alpha) with
+            // Blended over the canvas, an unchanged pixel made fully transparent comes out unchanged, and codes cheaply.
+            for (int i = 0; i < changed.Length; i++)
             {
-                Parallelism = start.Context.MaxParallelism,
-                ColorEncoding = color,
-                Icc = icc,
-                Orientation = orientation,
-                Animation = animation,
-            };
-
-            JxlBitWriter bits = new();
-            if (_frames == 0)
-            {
-                JxlLosslessEncoder.WriteHeaders(bits, input with { Width = _width, Height = _height });
-            }
-
-            return JxlLosslessEncoder.EncodeFrame(bits, input, info, _width, _height);
-        }
-
-        /// <summary>Codes the rectangle lossy, replacing the canvas there.</summary>
-        private byte[] Lossy(int x, int y, int w, int h, JxlFrameInfo info, int orientation, JxlAnimation animation)
-        {
-            ColorProfile profile = start.Metadata.GetColorProfile();
-            JxlLinearRows rows = new(w, h, profile, TPixel.Layout);
-            int alphaBits = TPixel.Layout.ChannelType == PixelChannelType.Unorm8 ? 8 : 16;
-            int[]? alpha = _alpha ? new int[w * h] : null;
-            Cmyk16[]? inks = rows.HasBlack ? new Cmyk16[w] : null;
-            Rgba16[] rgba = new Rgba16[w];
-            for (int r = 0; r < h; r++)
-            {
-                ReadOnlySpan<TPixel> now = _next.AsSpan(((y + r) * _width) + x, w);
-                if (inks is not null)
+                if (!changed[i])
                 {
-                    PixelConvert.Convert(now, inks.AsSpan());
-                    rows.Add<Cmyk16>(inks, r);
-                }
-                else
-                {
-                    rows.Add(now, r);
-                }
-
-                if (alpha is not null)
-                {
-                    PixelConvert.Convert(now, rgba.AsSpan());
-                    for (int i = 0; i < w; i++)
+                    alpha[i] = 0;
+                    foreach (int[] plane in planes.Color)
                     {
-                        alpha[(r * w) + i] = alphaBits == 8 ? (rgba[i].A + 128) / 257 : rgba[i].A;
+                        plane[i] = 0;
                     }
                 }
             }
 
-            JxlLinearImage image = rows.Image;
-            (JxlColorEncoding color, byte[]? icc) = ColorOf(start.Metadata, options, image.IsGray, lossy: true);
-            JxlEncodeInput header = new()
-            {
-                Width = _width,
-                Height = _height,
-                Color = image.IsGray ? [[]] : [[], [], []],
-                ColorEncoding = color,
-                Icc = icc,
-                Orientation = orientation,
-                BitDepth = TPixel.Layout.ChannelType switch
-                {
-                    PixelChannelType.Unorm8 => new JxlBitDepth(8, 0),
-                    PixelChannelType.Float16 => new JxlBitDepth(16, 5),
-                    PixelChannelType.Float32 => new JxlBitDepth(32, 8),
-                    _ => new JxlBitDepth(16, 0),
-                },
-                Alpha = alpha,
-                AlphaBitDepth = new JxlBitDepth(alphaBits, 0),
-                HasBlack = image.Black is not null,
-                IntensityTarget = rows.IntensityTarget,
-                Animation = animation,
-            };
-
-            JxlBitWriter bits = new();
-            if (_frames == 0)
-            {
-                JxlVarDctEncoder.WriteHeaders(bits, header);
-            }
-
-            return JxlVarDctEncoder.EncodeFrame(bits, image, header, LossySettings(options, start.Context.MaxParallelism), info, rows.IntensityTarget);
+            return true;
         }
 
         /// <summary>Returns the smallest rectangle holding every pixel that differs from the canvas (one pixel when none does).</summary>
@@ -307,6 +206,146 @@ internal sealed partial class JxlWriter
             }
 
             return right < 0 ? (0, 0, 1, 1) : (left, top, right - left + 1, bottom - top + 1);
+        }
+    }
+
+    /// <summary>
+    /// Codes the frames of one codestream, the headers before the first: each a rectangle of <typeparamref name="TPixel"/>
+    /// pixels, lossless or lossy, placed on the canvas as its <see cref="JxlFrameInfo"/> says.
+    /// </summary>
+    private sealed class FrameCoder<TPixel>(RasterMetadata metadata, JxlWriterOptions options, int parallelism, int width, int height, bool alpha, bool lossless, JxlAnimation? animation)
+        where TPixel : unmanaged, IPixelType<TPixel>
+    {
+        private readonly int _orientation = metadata.Exif?.Orientation is ImageOrientation o && (int)o is >= 1 and <= 8 ? (int)o : 1;
+        private bool _started;
+
+        /// <summary>
+        /// Codes the <paramref name="w"/> by <paramref name="h"/> rectangle at (<paramref name="x"/>, <paramref name="y"/>) of
+        /// <paramref name="pixels"/>, rows <paramref name="stride"/> apart. A lossless frame's planes go through
+        /// <paramref name="blend"/> first, which may change them and returns whether the frame then blends instead of replacing.
+        /// </summary>
+        internal byte[] Code(TPixel[] pixels, int stride, int x, int y, int w, int h, JxlFrameInfo info, Func<Planes, bool>? blend = null)
+        {
+            byte[] bytes = lossless ? Lossless(pixels, stride, x, y, w, h, info, blend) : Lossy(pixels, stride, x, y, w, h, info);
+            _started = true;
+            return bytes;
+        }
+
+        private byte[] Lossless(TPixel[] pixels, int stride, int x, int y, int w, int h, JxlFrameInfo info, Func<Planes, bool>? blend)
+        {
+            Planes planes = new(TPixel.Layout, w, h);
+            IntermediateRow row = new(w);
+            for (int r = 0; r < h; r++)
+            {
+                ReadOnlySpan<TPixel> now = pixels.AsSpan(((y + r) * stride) + x, w);
+                switch (planes.Kind)
+                {
+                    case PixelChannelType.Unorm8:
+                        PixelConvert.Convert(now, row.Rgba8);
+                        planes.Add8(row.Rgba8, r);
+                        break;
+                    case PixelChannelType.Float32:
+                        PixelConvert.Convert(now, row.RgbaF32);
+                        planes.AddF32(row.RgbaF32, r);
+                        break;
+                    case PixelChannelType.Float16:
+                        PixelConvert.Convert(now, row.RgbaF16);
+                        planes.AddF16(row.RgbaF16, r);
+                        break;
+                    default:
+                        PixelConvert.Convert(now, row.Rgba16);
+                        planes.Add16(row.Rgba16, r);
+                        break;
+                }
+            }
+
+            if (blend?.Invoke(planes) == true)
+            {
+                info = info with { Blending = info.Blending with { Mode = JxlBlendMode.Blend } };
+            }
+
+            (JxlColorEncoding color, byte[]? icc) = ColorOf(metadata, options, planes.Color.Length == 1);
+            // libjxl's fast lossless path takes whole still images only; other frames get effort 2 instead, as with cjxl -e 1.
+            JxlEncodeInput input = planes.ToInput(Math.Max(2, options.Effort), alpha) with
+            {
+                Parallelism = parallelism,
+                ColorEncoding = color,
+                Icc = icc,
+                Orientation = _orientation,
+                Animation = animation,
+            };
+
+            JxlBitWriter bits = new();
+            if (!_started)
+            {
+                JxlLosslessEncoder.WriteHeaders(bits, input with { Width = width, Height = height });
+            }
+
+            return JxlLosslessEncoder.EncodeFrame(bits, input, info, width, height);
+        }
+
+        private byte[] Lossy(TPixel[] pixels, int stride, int x, int y, int w, int h, JxlFrameInfo info)
+        {
+            ColorProfile profile = metadata.GetColorProfile();
+            JxlLinearRows rows = new(w, h, profile, TPixel.Layout);
+            int alphaBits = TPixel.Layout.ChannelType == PixelChannelType.Unorm8 ? 8 : 16;
+            int[]? alphaPlane = alpha ? new int[w * h] : null;
+            Cmyk16[]? inks = rows.HasBlack ? new Cmyk16[w] : null;
+            Rgba16[] rgba = new Rgba16[w];
+            for (int r = 0; r < h; r++)
+            {
+                ReadOnlySpan<TPixel> now = pixels.AsSpan(((y + r) * stride) + x, w);
+                if (inks is not null)
+                {
+                    PixelConvert.Convert(now, inks.AsSpan());
+                    rows.Add<Cmyk16>(inks, r);
+                }
+                else
+                {
+                    rows.Add(now, r);
+                }
+
+                if (alphaPlane is not null)
+                {
+                    PixelConvert.Convert(now, rgba.AsSpan());
+                    for (int i = 0; i < w; i++)
+                    {
+                        alphaPlane[(r * w) + i] = alphaBits == 8 ? (rgba[i].A + 128) / 257 : rgba[i].A;
+                    }
+                }
+            }
+
+            JxlLinearImage image = rows.Image;
+            (JxlColorEncoding color, byte[]? icc) = ColorOf(metadata, options, image.IsGray, lossy: true);
+            JxlEncodeInput header = new()
+            {
+                Width = width,
+                Height = height,
+                Color = image.IsGray ? [[]] : [[], [], []],
+                ColorEncoding = color,
+                Icc = icc,
+                Orientation = _orientation,
+                BitDepth = TPixel.Layout.ChannelType switch
+                {
+                    PixelChannelType.Unorm8 => new JxlBitDepth(8, 0),
+                    PixelChannelType.Float16 => new JxlBitDepth(16, 5),
+                    PixelChannelType.Float32 => new JxlBitDepth(32, 8),
+                    _ => new JxlBitDepth(16, 0),
+                },
+                Alpha = alphaPlane,
+                AlphaBitDepth = new JxlBitDepth(alphaBits, 0),
+                HasBlack = image.Black is not null,
+                IntensityTarget = rows.IntensityTarget,
+                Animation = animation,
+            };
+
+            JxlBitWriter bits = new();
+            if (!_started)
+            {
+                JxlVarDctEncoder.WriteHeaders(bits, header);
+            }
+
+            return JxlVarDctEncoder.EncodeFrame(bits, image, header, LossySettings(options, parallelism), info, rows.IntensityTarget);
         }
     }
 }

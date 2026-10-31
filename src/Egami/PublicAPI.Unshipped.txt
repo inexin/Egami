@@ -224,3 +224,6 @@ static Egami.Formats.Avif.AvifLayer.operator !=(Egami.Formats.Avif.AvifLayer? le
 static Egami.Formats.Avif.AvifLayer.operator ==(Egami.Formats.Avif.AvifLayer? left, Egami.Formats.Avif.AvifLayer? right) -> bool
 Egami.Formats.Jxl.JxlWriterOptions.FirstFrameOnly.get -> bool
 Egami.Formats.Jxl.JxlWriterOptions.FirstFrameOnly.init -> void
+static Egami.Formats.Jxl.JxlImage.WriteLayers(string! path, int width, int height, System.Collections.Generic.IReadOnlyList<Egami.Formats.Jxl.JxlLayer!>! layers, Egami.Formats.Jxl.JxlWriterOptions? options = null, Egami.EgamiContext? context = null) -> void
+static Egami.Formats.Jxl.JxlImage.WriteLayers(System.IO.Stream! stream, int width, int height, System.Collections.Generic.IReadOnlyList<Egami.Formats.Jxl.JxlLayer!>! layers, Egami.Formats.Jxl.JxlWriterOptions? options = null, Egami.EgamiContext? context = null) -> void
+Egami.Formats.Jxl.JxlLayer.JxlLayer(Egami.Raster! raster, int x = 0, int y = 0, Egami.Formats.Jxl.JxlLayerBlend blend = Egami.Formats.Jxl.JxlLayerBlend.Replace, System.TimeSpan duration = default(System.TimeSpan), string? name = null) -> void
