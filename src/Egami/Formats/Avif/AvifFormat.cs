@@ -26,8 +26,9 @@ public static class AvifFormat
     };
 
     /// <summary>
-    /// Gets whether the data starts with an ftyp box whose major or compatible brands include avif or avis. A HEIF file without
-    /// those brands, such as HEIC, is left to other readers.
+    /// Gets whether the data starts with an ftyp box whose major or compatible brands include avif or avis, or, for a mini file (major
+    /// brand mif3), whose minor version is avif, where such a file names its codec. A HEIF file without those brands, such as HEIC,
+    /// is left to other readers.
     /// </summary>
     internal static bool Matches(ReadOnlySpan<byte> header)
     {
@@ -38,11 +39,12 @@ public static class AvifFormat
 
         uint size = BinaryPrimitives.ReadUInt32BigEndian(header);
         int end = (int)Math.Min(size < 16 ? 12 : size, (uint)header.Length);
+        bool mini = header.Length >= 16 && BinaryPrimitives.ReadUInt32BigEndian(header[8..]) == HeifMini.Mif3;
         for (int at = 8; at + 4 <= end; at += 4)
         {
-            // Byte 12 holds the minor version, not a brand.
+            // Byte 12 holds the minor version, not a brand, except that a mini file names its codec there (AVIF extras question 6).
             uint brand = BinaryPrimitives.ReadUInt32BigEndian(header[at..]);
-            if (at != 12 && (brand == AvifFile.Avif || brand == AvifFile.Avis))
+            if ((at != 12 || mini) && (brand == AvifFile.Avif || brand == AvifFile.Avis))
             {
                 return true;
             }
