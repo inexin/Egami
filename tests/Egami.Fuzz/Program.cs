@@ -35,7 +35,8 @@ using DrawingPath = Egami.Drawing.Path;
 // with options picked from the input's hash: a result must load at the size the transform reports, a flip done twice with its
 // edges kept must give back the source's pixels, and the result must not depend on the core count. The ccitt target (Phase
 // 2.3.6) decodes raw CCITT data with PDF's parameters picked by its first bytes, through the filter call, Load and the row
-// reader, which must agree.
+// reader, which must agree. The zstd target (TIFF ZSTD task 1) decodes Zstandard frames into a large output and into one of
+// exactly the size written, which must agree.
 // The ico target (Phase 2.3.3) loads ICO and CUR files every way (each entry, the
 // best one, MinimumSize, rows) and writes the entries back, which must read again to the same pixels; icoentry wraps its input
 // as the one entry of an icon, so mutations reach the BMP and PNG entry decoders and the AND mask directly. The psdfile target
@@ -170,6 +171,7 @@ static Action<Stream> Target(string name) => name switch
     "jbig2" => LoadJbig2,
     "jbig2codec" => DecodeJbig2Codec,
     "ccitt" => DecodeCcitt,
+    "zstd" => DecodeZstd,
     "cube" => LoadCube,
     "jpeg2000" => LoadJpeg2000,
     "jpeg2000codec" => DecodeJpeg2000Codec,
@@ -810,6 +812,33 @@ static void DecodeTiffCodec(Stream stream)
         Egami.Formats.Tiff.TiffDecoder.UndoHorizontal(output.AsSpan(0, n), samples, 8 << (width % 4));
         Egami.Formats.Tiff.TiffDecoder.UndoFloatPredictor(output.AsSpan(0, n), samples, 4);
         return n;
+    }
+}
+
+static void DecodeZstd(Stream stream)
+{
+    // Into a large output, then into exactly what that wrote, which must give the same bytes; only EgamiExceptions may escape.
+    byte[] data = ReadAll(stream);
+    byte[] output = new byte[512 * 1024];
+    int written;
+    try
+    {
+        written = Egami.Compression.Zstd.ZstdDecoder.Decode(data, output);
+    }
+    catch (EgamiException)
+    {
+        return;
+    }
+
+    if (written < 0 || written > output.Length)
+    {
+        throw new InvalidOperationException($"The Zstandard decoder reports {written} bytes written.");
+    }
+
+    byte[] exact = new byte[written];
+    if (Egami.Compression.Zstd.ZstdDecoder.Decode(data, exact) != written || !exact.AsSpan().SequenceEqual(output.AsSpan(0, written)))
+    {
+        throw new InvalidOperationException("The Zstandard decoder writes differently into an output of exactly the right size.");
     }
 }
 

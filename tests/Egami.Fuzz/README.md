@@ -45,6 +45,7 @@ Targets:
 | `exr` | OpenEXR files: probed and loaded leniently and strictly, every part, the first layers in the display window and the first channels alone, then written back as ZIP and PIZ | `tests/images/exr/*.exr` |
 | `gainmap` | JPEGs with an MPF index and a gain map: every MP image, the HDR rendition at full capacity and at a headroom of 2, the map applied, a crop and turn saved as JPEG, which must keep the map | `tests/images/gainmap/*.jpg tests/images/mpf/stereo*.jpg tests/images/mpf/preview.jpg` |
 | `ccitt` | Six bytes pick PDF's CCITTFaxDecode parameters (K, EndOfLine, EncodedByteAlign, EndOfBlock, BlackIs1, Columns, Rows, DamagedRowsBeforeError), the rest is the data: decoded by `CcittFax.Decode`, loaded leniently and strictly and read row by row; the three must agree on every pixel and the row count | `tests/images/fuzz/ccitt-seeds/*` |
+| `zstd` | Zstandard frames (TIFF ZSTD): decoded into a large output and into one of exactly the size written, which must give the same bytes; only an `EgamiException` may escape | `tests/images/zstd/*.zst` |
 
 ## Running locally (Linux or WSL)
 
