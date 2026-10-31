@@ -191,6 +191,10 @@ Egami.Formats.Tiff.TiffWriterOptions.ZstdLevel.get -> int
 Egami.Formats.Tiff.TiffWriterOptions.ZstdLevel.init -> void
 Egami.Formats.FormatInfo.ConvertsColor.get -> bool
 Egami.Formats.FormatInfo.ConvertsColor.init -> void
+Egami.Formats.Jpeg.JpegTransformOptions.Arithmetic.get -> bool
+Egami.Formats.Jpeg.JpegTransformOptions.Arithmetic.init -> void
+Egami.Formats.Jpeg.JpegWriterOptions.Arithmetic.get -> bool
+Egami.Formats.Jpeg.JpegWriterOptions.Arithmetic.init -> void
 Egami.Formats.Avif.AvifDetails.Layers.get -> System.Collections.Generic.IReadOnlyList<Egami.Size>!
 Egami.Formats.Avif.AvifDetails.Layers.set -> void
 Egami.Formats.Avif.AvifReaderOptions.Layer.get -> int?
