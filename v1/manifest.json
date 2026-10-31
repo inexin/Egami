@@ -7671,6 +7671,20 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Jpeg.JpegLosslessOptions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Jpeg.JpegLosslessOptions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Jpeg.JpegLosslessOptions",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Jpeg.JpegLosslessOptions.yml\" sourcestartlinenumber=\"1\">How a lossless JPEG (T.81 annex H; SOF3, or SOF11 with <xref href=\"Egami.Formats.Jpeg.JpegWriterOptions.Arithmetic\" data-throw-if-not-resolved=\"false\"></xref>) is written: no DCT and no\nquantization, each sample predicted from its neighbors and the difference coded, so the samples come back exactly. Set as\n<xref href=\"Egami.Formats.Jpeg.JpegWriterOptions.Lossless\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.Formats.Jpeg.JpegReaderOptions.yml",
       "output": {
         ".html": {

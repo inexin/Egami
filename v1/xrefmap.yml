@@ -46922,6 +46922,51 @@ references:
   isSpec: "True"
   fullName: Egami.Formats.Jpeg.JpegFormat.Info
   nameWithType: JpegFormat.Info
+- uid: Egami.Formats.Jpeg.JpegLosslessOptions
+  name: JpegLosslessOptions
+  href: api/Egami.Formats.Jpeg.JpegLosslessOptions.html
+  commentId: T:Egami.Formats.Jpeg.JpegLosslessOptions
+  fullName: Egami.Formats.Jpeg.JpegLosslessOptions
+  nameWithType: JpegLosslessOptions
+- uid: Egami.Formats.Jpeg.JpegLosslessOptions.PointTransform
+  name: PointTransform
+  href: api/Egami.Formats.Jpeg.JpegLosslessOptions.html#Egami_Formats_Jpeg_JpegLosslessOptions_PointTransform
+  commentId: P:Egami.Formats.Jpeg.JpegLosslessOptions.PointTransform
+  fullName: Egami.Formats.Jpeg.JpegLosslessOptions.PointTransform
+  nameWithType: JpegLosslessOptions.PointTransform
+- uid: Egami.Formats.Jpeg.JpegLosslessOptions.PointTransform*
+  name: PointTransform
+  href: api/Egami.Formats.Jpeg.JpegLosslessOptions.html#Egami_Formats_Jpeg_JpegLosslessOptions_PointTransform_
+  commentId: Overload:Egami.Formats.Jpeg.JpegLosslessOptions.PointTransform
+  isSpec: "True"
+  fullName: Egami.Formats.Jpeg.JpegLosslessOptions.PointTransform
+  nameWithType: JpegLosslessOptions.PointTransform
+- uid: Egami.Formats.Jpeg.JpegLosslessOptions.Precision
+  name: Precision
+  href: api/Egami.Formats.Jpeg.JpegLosslessOptions.html#Egami_Formats_Jpeg_JpegLosslessOptions_Precision
+  commentId: P:Egami.Formats.Jpeg.JpegLosslessOptions.Precision
+  fullName: Egami.Formats.Jpeg.JpegLosslessOptions.Precision
+  nameWithType: JpegLosslessOptions.Precision
+- uid: Egami.Formats.Jpeg.JpegLosslessOptions.Precision*
+  name: Precision
+  href: api/Egami.Formats.Jpeg.JpegLosslessOptions.html#Egami_Formats_Jpeg_JpegLosslessOptions_Precision_
+  commentId: Overload:Egami.Formats.Jpeg.JpegLosslessOptions.Precision
+  isSpec: "True"
+  fullName: Egami.Formats.Jpeg.JpegLosslessOptions.Precision
+  nameWithType: JpegLosslessOptions.Precision
+- uid: Egami.Formats.Jpeg.JpegLosslessOptions.Predictor
+  name: Predictor
+  href: api/Egami.Formats.Jpeg.JpegLosslessOptions.html#Egami_Formats_Jpeg_JpegLosslessOptions_Predictor
+  commentId: P:Egami.Formats.Jpeg.JpegLosslessOptions.Predictor
+  fullName: Egami.Formats.Jpeg.JpegLosslessOptions.Predictor
+  nameWithType: JpegLosslessOptions.Predictor
+- uid: Egami.Formats.Jpeg.JpegLosslessOptions.Predictor*
+  name: Predictor
+  href: api/Egami.Formats.Jpeg.JpegLosslessOptions.html#Egami_Formats_Jpeg_JpegLosslessOptions_Predictor_
+  commentId: Overload:Egami.Formats.Jpeg.JpegLosslessOptions.Predictor
+  isSpec: "True"
+  fullName: Egami.Formats.Jpeg.JpegLosslessOptions.Predictor
+  nameWithType: JpegLosslessOptions.Predictor
 - uid: Egami.Formats.Jpeg.JpegReaderOptions
   name: JpegReaderOptions
   href: api/Egami.Formats.Jpeg.JpegReaderOptions.html
@@ -47321,6 +47366,19 @@ references:
   isSpec: "True"
   fullName: Egami.Formats.Jpeg.JpegWriterOptions.KeepGainMap
   nameWithType: JpegWriterOptions.KeepGainMap
+- uid: Egami.Formats.Jpeg.JpegWriterOptions.Lossless
+  name: Lossless
+  href: api/Egami.Formats.Jpeg.JpegWriterOptions.html#Egami_Formats_Jpeg_JpegWriterOptions_Lossless
+  commentId: P:Egami.Formats.Jpeg.JpegWriterOptions.Lossless
+  fullName: Egami.Formats.Jpeg.JpegWriterOptions.Lossless
+  nameWithType: JpegWriterOptions.Lossless
+- uid: Egami.Formats.Jpeg.JpegWriterOptions.Lossless*
+  name: Lossless
+  href: api/Egami.Formats.Jpeg.JpegWriterOptions.html#Egami_Formats_Jpeg_JpegWriterOptions_Lossless_
+  commentId: Overload:Egami.Formats.Jpeg.JpegWriterOptions.Lossless
+  isSpec: "True"
+  fullName: Egami.Formats.Jpeg.JpegWriterOptions.Lossless
+  nameWithType: JpegWriterOptions.Lossless
 - uid: Egami.Formats.Jpeg.JpegWriterOptions.OptimizeHuffman
   name: OptimizeHuffman
   href: api/Egami.Formats.Jpeg.JpegWriterOptions.html#Egami_Formats_Jpeg_JpegWriterOptions_OptimizeHuffman

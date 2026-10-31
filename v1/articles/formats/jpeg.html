@@ -96,7 +96,7 @@ Lossless JPEG, the kind inside DNG tiles and many DICOM files, decodes to its ex
 <code>Gray8</code> or <code>Rgb8</code>, deeper as <code>Gray16</code> or <code>Rgb16</code>. Three-component lossless files are RGB unless a JFIF segment or Adobe
 transform says YCbCr. Lossless files have no DCT, so <code>MinimumSize</code> reduces them after a full decode. <code>JpegDetails.Precision</code>,
 <code>Arithmetic</code> and <code>Lossless</code> say what a file is. Hierarchical files are refused with <code>UnsupportedFormatException</code>.</p>
-<p>Browsers show none of these modes. Egami writes 12-bit and arithmetic-coded files on request (below), but no lossless ones.</p>
+<p>Browsers show none of these modes. Egami writes each of them on request (below).</p>
 <h2 id="threads">Threads</h2>
 <p>A large file decodes on up to <code>MaxParallelism</code> threads with the same pixels as one thread. A file with restart markers is split
 at the markers already in it; a progressive file's scans run as a pipeline, each refinement scan a few rows behind the scan
@@ -162,6 +162,11 @@ image.Save(output, JpegFormat.Info, new JpegWriterOptions
 <td>Arithmetic coding instead of Huffman: smaller files, same pixels, no browser support</td>
 </tr>
 <tr>
+<td><code>Lossless</code></td>
+<td>none</td>
+<td>A <code>JpegLosslessOptions</code> writes lossless JPEG: the exact samples, no DCT</td>
+</tr>
+<tr>
 <td><code>Precision</code></td>
 <td>8</td>
 <td>12 keeps more of 16-bit and float pixels</td>
@@ -221,6 +226,53 @@ settings (libjpeg adds a 12-byte DAC segment Egami leaves out). A sequential fil
 either precision and ignores <code>OptimizeHuffman</code>. libjpeg-turbo, ImageMagick and Egami read these files; browsers do not, and
 Pillow fails on some. They suit archives, not the web. An Ultra HDR gain map is left out with a <code>Save.GainMapDropped</code> warning,
 and <code>GainMap</code> with <code>Arithmetic</code> throws <code>NotSupportedException</code>. Re-saving an arithmetic file writes Huffman codes unless you set it.</p>
+<h3 id="lossless">Lossless</h3>
+<pre><code class="lang-csharp">// Lossless JPEG: the exact samples back, here 16-bit; the predictor is picked for the image unless you name one.
+image.As&lt;Rgb16&gt;().Save(&quot;duck-lossless.jpg&quot;, new JpegWriterOptions { Lossless = new JpegLosslessOptions() });
+
+// Predictor 1 (the sample to the left), arithmetic-coded (SOF11, which only Egami and Richter's libjpeg read).
+image.Save(&quot;duck-lossless-arithmetic.jpg&quot;, new JpegWriterOptions
+{
+    Lossless = new JpegLosslessOptions { Predictor = 1 },
+    Arithmetic = true,
+});
+</code></pre>
+<p><code>Lossless</code> writes lossless JPEG (T.81 annex H, the kind DNG raw tiles and DICOM use): no DCT and no quantization, each sample
+predicted from its neighbors and the difference coded, so the file loads back to exactly the samples written. The components are
+the pixels' own: gray, RGB behind an Adobe marker, or CMYK, never subsampled or converted to YCbCr. <code>Quality</code>, <code>Subsampling</code>,
+<code>OptimizeHuffman</code> and <code>Precision</code> do not apply; <code>Progressive</code> or <code>ColorType = Ycck</code> with it throws <code>ArgumentException</code>.</p>
+<table>
+<thead>
+<tr>
+<th><code>JpegLosslessOptions</code></th>
+<th>Default</th>
+<th>Does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Predictor</code></td>
+<td>automatic</td>
+<td>1 to 7, T.81's predictors (1 left, 2 above, 3 above left, 4 to 7 combinations); automatic tries each on rows spread through the image and keeps the smallest</td>
+</tr>
+<tr>
+<td><code>PointTransform</code></td>
+<td>0</td>
+<td>Drops that many low bits from every sample first: smaller, no longer lossless (reported as <code>Save.DepthReduced</code>)</td>
+</tr>
+<tr>
+<td><code>Precision</code></td>
+<td>the pixel type's</td>
+<td>2 to 16 bits; 8 for 8-bit pixel types, 16 for 16-bit and float ones. Fewer bits round the samples (reported)</td>
+</tr>
+</tbody>
+</table>
+<p>The Huffman tables are always made for the image, so every sample is held until the end, about 2 bytes each, counted against
+<code>SafetyLimits.MaxTotalBytes</code>. <code>RestartInterval</code> is rounded up to whole rows of pixels, as T.81 asks of lossless files. With
+<code>Arithmetic</code> the file is SOF11, up to a few percent smaller (6 % on an 8-bit photo, the same at 16 bits); only Egami and Thomas
+Richter's libjpeg read SOF11, while libjpeg-turbo, DNG and DICOM readers read the Huffman-coded SOF3. libjpeg-turbo's <code>djpeg</code>
+decodes Egami's SOF3 files to exactly the samples written, and at the same predictor they are within 0.2 % of <code>cjpeg -lossless</code>'s size. No browser reads either. An Ultra HDR gain map is left out with a <code>Save.GainMapDropped</code> warning, and
+<code>GainMap</code> with <code>Lossless</code> throws <code>NotSupportedException</code>.</p>
 <h2 id="lossless-rotation-flips-and-crops">Lossless rotation, flips and crops</h2>
 <pre><code class="lang-csharp">// Turns the photo upright by its EXIF orientation without re-encoding: no quality is lost, and the tag is reset.
 JpegTransform.Apply(&quot;sideways.jpg&quot;, &quot;upright.jpg&quot;, new JpegTransformOptions { Operation = JpegTransformOperation.AutoOrient });

@@ -212,7 +212,7 @@ arithmetic-coded file writes Huffman codes unless this is set. Defaults to <a hr
 
   <h3 id="Egami_Formats_Jpeg_JpegWriterOptions_Background" data-uid="Egami.Formats.Jpeg.JpegWriterOptions.Background">
   Background
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Jpeg/JpegWriterOptions.cs/#L152"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Jpeg/JpegWriterOptions.cs/#L169"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the color that transparent pixels are composited onto before writing, since JPEG has no alpha, or
@@ -246,7 +246,7 @@ arithmetic-coded file writes Huffman codes unless this is set. Defaults to <a hr
 
   <h3 id="Egami_Formats_Jpeg_JpegWriterOptions_ColorType" data-uid="Egami.Formats.Jpeg.JpegWriterOptions.ColorType">
   ColorType
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Jpeg/JpegWriterOptions.cs/#L145"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Jpeg/JpegWriterOptions.cs/#L162"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets which components to write. Defaults to <a class="xref" href="Egami.Formats.Jpeg.JpegColorType.html#Egami_Formats_Jpeg_JpegColorType_Auto">Auto</a>.</p>
@@ -310,7 +310,7 @@ arithmetic-coded file writes Huffman codes unless this is set. Defaults to <a hr
 
   <h3 id="Egami_Formats_Jpeg_JpegWriterOptions_GainMap" data-uid="Egami.Formats.Jpeg.JpegWriterOptions.GainMap">
   GainMap
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Jpeg/JpegWriterOptions.cs/#L177"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Jpeg/JpegWriterOptions.cs/#L194"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets how to write an HDR raster as an Ultra HDR JPEG (HDR Design question 10), or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> (the default) to
@@ -357,7 +357,7 @@ sdr.Save("graded.jpg", new JpegWriterOptions { Quality = 90 });</code></pre>
 
   <h3 id="Egami_Formats_Jpeg_JpegWriterOptions_KeepGainMap" data-uid="Egami.Formats.Jpeg.JpegWriterOptions.KeepGainMap">
   KeepGainMap
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Jpeg/JpegWriterOptions.cs/#L164"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Jpeg/JpegWriterOptions.cs/#L181"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets a value indicating whether a gain map the raster carries (<a class="xref" href="Egami.Metadata.RasterMetadata.html#Egami_Metadata_RasterMetadata_GainMap">GainMap</a>, from an Ultra
@@ -393,6 +393,58 @@ cropped.Save("cropped.jpg");                                             // stil
 // Operations that change pixel values drop it (Operation.GainMapDropped), and so do formats other than JPEG
 // (Save.GainMapDropped); KeepGainMap = false leaves it out on purpose.
 cropped.Save("sdr-only.jpg", new JpegWriterOptions { KeepGainMap = false });</code></pre>
+
+
+
+
+
+
+  <a id="Egami_Formats_Jpeg_JpegWriterOptions_Lossless_" data-uid="Egami.Formats.Jpeg.JpegWriterOptions.Lossless*"></a>
+
+  <h3 id="Egami_Formats_Jpeg_JpegWriterOptions_Lossless" data-uid="Egami.Formats.Jpeg.JpegWriterOptions.Lossless">
+  Lossless
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Jpeg/JpegWriterOptions.cs/#L139"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets how to write a lossless JPEG (T.81 annex H: SOF3, or SOF11 with <a class="xref" href="Egami.Formats.Jpeg.JpegWriterOptions.html#Egami_Formats_Jpeg_JpegWriterOptions_Arithmetic">Arithmetic</a>), or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>
+(the default) for a DCT file. Set, the samples are written exactly as the pixels hold them, gray, RGB (behind an Adobe
+marker) or CMYK, never subsampled or color-converted, at 2 to 16 bits, so they load back unchanged; <a class="xref" href="Egami.Formats.Jpeg.JpegWriterOptions.html#Egami_Formats_Jpeg_JpegWriterOptions_Quality">Quality</a>,
+<a class="xref" href="Egami.Formats.Jpeg.JpegWriterOptions.html#Egami_Formats_Jpeg_JpegWriterOptions_Subsampling">Subsampling</a>, <a class="xref" href="Egami.Formats.Jpeg.JpegWriterOptions.html#Egami_Formats_Jpeg_JpegWriterOptions_OptimizeHuffman">OptimizeHuffman</a> and <a class="xref" href="Egami.Formats.Jpeg.JpegWriterOptions.html#Egami_Formats_Jpeg_JpegWriterOptions_Precision">Precision</a> are ignored, and the Huffman tables are
+always made for the image. The encoder holds every sample until the end, about 2 bytes each, counted against
+<a class="xref" href="Egami.SafetyLimits.html#Egami_SafetyLimits_MaxTotalBytes">MaxTotalBytes</a>. libjpeg-turbo, DNG and DICOM readers read SOF3; only Egami and Thomas Richter's
+libjpeg read SOF11; no web browser reads either. <a class="xref" href="Egami.Formats.Jpeg.JpegWriterOptions.html#Egami_Formats_Jpeg_JpegWriterOptions_RestartInterval">RestartInterval</a> is rounded up to whole rows of pixels, as T.81
+asks of lossless files. With <a class="xref" href="Egami.Formats.Jpeg.JpegWriterOptions.html#Egami_Formats_Jpeg_JpegWriterOptions_Progressive">Progressive</a> or <a class="xref" href="Egami.Formats.Jpeg.JpegColorType.html#Egami_Formats_Jpeg_JpegColorType_Ycck">Ycck</a> the save
+throws <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a>. An Ultra HDR gain map is left out, and <a class="xref" href="Egami.Formats.Jpeg.JpegWriterOptions.html#Egami_Formats_Jpeg_JpegWriterOptions_GainMap">GainMap</a> with this throws
+<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.notsupportedexception">NotSupportedException</a>. Defaults to <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public JpegLosslessOptions? Lossless { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Formats.Jpeg.JpegLosslessOptions.html">JpegLosslessOptions</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+  <h4 class="section" id="Egami_Formats_Jpeg_JpegWriterOptions_Lossless_examples">Examples</h4>
+  <pre><code class="lang-csharp">// Lossless JPEG: the exact samples back, here 16-bit; the predictor is picked for the image unless you name one.
+image.As&lt;Rgb16&gt;().Save("duck-lossless.jpg", new JpegWriterOptions { Lossless = new JpegLosslessOptions() });
+
+// Predictor 1 (the sample to the left), arithmetic-coded (SOF11, which only Egami and Richter's libjpeg read).
+image.Save("duck-lossless-arithmetic.jpg", new JpegWriterOptions
+{
+    Lossless = new JpegLosslessOptions { Predictor = 1 },
+    Arithmetic = true,
+});</code></pre>
 
 
 
@@ -436,7 +488,7 @@ usually 5 to 10% smaller files, and slower. Defaults to <a href="https://learn.m
 
   <h3 id="Egami_Formats_Jpeg_JpegWriterOptions_Precision" data-uid="Egami.Formats.Jpeg.JpegWriterOptions.Precision">
   Precision
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Jpeg/JpegWriterOptions.cs/#L130"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Jpeg/JpegWriterOptions.cs/#L147"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the bits per sample, 8 or 12. 12 keeps the detail of 16-bit and float images (written as SOF1, or SOF2 when
