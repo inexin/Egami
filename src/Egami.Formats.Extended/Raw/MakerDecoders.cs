@@ -14,6 +14,11 @@ internal static class MakerDecoders
 {
     public static void Decode(RawSensor sensor, RawTiff tiff, RawPixels pixels, ParallelOptions parallel, Action<int, string> damaged)
     {
+        if (sensor.Codec == RawCodec.CanonCrx)
+        {
+            throw new NotSupportedException("Egami reads a CR3's previews and metadata, not its CRX-coded sensor data; load it with RawOutput.Preview.");
+        }
+
         long offset = tiff.Origin + (sensor.Offsets.Length > 0 ? sensor.Offsets[0] : 0);
         // A count of 0 means the data runs to the end of the file (Panasonic).
         long count = sensor.Counts.Length > 0 && sensor.Counts.Sum() > 0 ? sensor.Counts.Sum() : tiff.Length - offset;

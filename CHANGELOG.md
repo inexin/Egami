@@ -60,6 +60,12 @@ Camera RAW, stage A (DNG). All additive; it ships with the rest of camera RAW in
   each preview. `RawDetails` keeps the camera, sensor layout, levels, the develop's white balance and colour matrix, opcodes,
   previews, exposure settings and the maker note; EXIF, GPS and XMP come through.
 
+Camera RAW, stage C (Canon CR3). All additive.
+
+- `RawFormat` reads Canon CR3 files' previews (the full-size JPEG, the medium preview and the thumbnail) and metadata (EXIF,
+  GPS and the maker note), and `Raster.Probe` gives their size. Their CRX-coded sensor data is not decoded: a develop or the
+  mosaic throws `NotSupportedException`.
+
 Camera RAW, stage B (maker formats). All additive.
 
 - `RawFormat` reads Canon CR2 (with sRAW and mRAW), Nikon NEF and NRW, Pentax PEF, Sony ARW and SR2, Olympus ORF, Panasonic RW2

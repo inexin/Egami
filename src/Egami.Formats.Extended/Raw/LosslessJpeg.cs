@@ -447,6 +447,12 @@ internal sealed class LosslessJpeg
                 _valPtr[length] = k - code;
                 for (int i = 0; i < counts[length - 1]; i++, k++, code++)
                 {
+                    if (code >= 1 << length)
+                    {
+                        // More codes of this length than the code space holds (T.81 C.2 never builds such a table).
+                        throw new InvalidDataException("A lossless JPEG Huffman table has more codes than its lengths allow.");
+                    }
+
                     if (length <= FastBits)
                     {
                         int shift = FastBits - length;
