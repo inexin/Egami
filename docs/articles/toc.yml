@@ -6,6 +6,8 @@
   href: guides/index.md
 - name: "Egami: basics"
   items:
+    - name: Benchmarks
+      href: benchmarks.md
     - name: Diagnostics
       href: diagnostics.md
     - name: Memory and threading

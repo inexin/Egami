@@ -29,6 +29,8 @@ anyone can reproduce them.
 
 ## Egami's numbers
 
+[Benchmarks](benchmarks.md) compares Egami with other .NET imaging libraries on the same tasks.
+
 Median times on one machine (24 cores, .NET 10, x64 with AVX2), decoding from memory into the file's natural pixel type:
 
 | Scenario | 1 thread | All cores |

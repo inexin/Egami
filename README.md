@@ -19,7 +19,7 @@ text, SVG, barcodes, a System.Drawing drop-in, video and audio, and the `egami` 
 - **Trimming and Native AOT clean**, on every OS and CPU .NET 10 supports.
 
 Egami is not a drop-in replacement for ImageSharp or SkiaSharp: it has its own API. The aim is to cover what they do, at the
-same speed or faster.
+same speed or faster: see the [benchmarks](https://inexin.github.io/Egami/v1/articles/benchmarks.html).
 
 ```sh
 dotnet add package Egami
