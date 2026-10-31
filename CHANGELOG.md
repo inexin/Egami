@@ -8,6 +8,8 @@ changes that break code come only in a new major version.
 - Each NuGet package carries `AGENTS.md`, a short guide for coding agents next to its readme: Egami's own names, the package's
   entry points, samples from the tested docs samples and common mistakes. The same guides are on the docs site under
   `agents/`, linked from `llms.txt`.
+- Each NuGet package carries `THIRD-PARTY-NOTICES.md` at its root, so the notices of the third-party tables, data and code
+  Egami uses (libtiff, Unicode, GS1, HarfBuzz and the rest) travel with the package, not only with the repository.
 
 ## Egami.Metafiles, unreleased
 

@@ -37,6 +37,21 @@ public class AvifFuzzRegressionTests
         }
     }
 
+    /// <summary>
+    /// A gain map grid the file does not locate is dropped with a warning that names no offset, rather than -1, which no
+    /// diagnostic may carry (found by the avif target, 2026-10-31).
+    /// </summary>
+    [Fact]
+    public void ADroppedGainMapGridWarnsWithoutAnOffset()
+    {
+        List<EgamiDiagnostic> diagnostics = [];
+        EgamiContext context = EgamiContext.Default with { Diagnostics = diagnostics.Add, DiagnosticLevel = DiagnosticLevel.Debug };
+        using Raster raster = Raster.Load(File.ReadAllBytes(Path.Combine(Folder, "avif", "gain-map-grid-unlocated.avif")), context);
+        EgamiDiagnostic dropped = Assert.Single(diagnostics, d => d.Id == "Avif.GainMapDropped");
+        Assert.Null(dropped.Offset);
+        Assert.All(diagnostics, d => Assert.True(d.Offset is null or >= 0));
+    }
+
     /// <summary>The raw AV1 inputs decode, on one thread and on four, or throw a <see cref="CorruptDataException"/> either way.</summary>
     [Theory]
     [MemberData(nameof(Av1Files))]

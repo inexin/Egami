@@ -22,4 +22,10 @@
   <ItemGroup Condition="Exists('$(MSBuildThisFileDirectory)docs/agents/$(PackageId).md')">
     <None Include="$(MSBuildThisFileDirectory)docs/agents/$(PackageId).md" Pack="true" PackagePath="AGENTS.md" Visible="false" />
   </ItemGroup>
+
+  <!-- Every package carries THIRD-PARTY-NOTICES.md: the notices of the third-party tables, data and code Egami uses, which
+       their licences ask to travel with copies. The package licence itself is the MIT expression in Directory.Build.props. -->
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)THIRD-PARTY-NOTICES.md" Pack="true" PackagePath="\" Visible="false" />
+  </ItemGroup>
 </Project>

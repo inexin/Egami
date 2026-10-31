@@ -28,6 +28,14 @@ internal static class Av1MotionField
 
     private static int Round2Signed(int v, int n) => v < 0 ? -((-v + (1 << (n - 1))) >> n) : (v + (1 << (n - 1))) >> n;
 
+    /// <summary><see cref="Project"/> of one component, with its factor num * DivMult[den] worked out already.</summary>
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+    private static int Scaled(int v, int factor) => Math.Clamp(Round2Signed(v * factor, 14), -(1 << 14) + 1, (1 << 14) - 1);
+
+    /// <summary>Divides by 2^<paramref name="n"/>, rounding toward zero.</summary>
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+    private static int Toward0(int v, int n) => v >= 0 ? v >> n : -((-v) >> n);
+
     /// <summary>
     /// av1_copy_frame_mvs over a decoded frame: each 8x8 block's vector toward an earlier reference, taken from its bottom right
     /// 4x4 unit (the last decoded one).
@@ -136,56 +144,67 @@ internal static class Av1MotionField
             return false;
         }
 
-        Span<int> refOffset = stackalloc int[8];
-        for (int rf = Ref.Last; rf <= Ref.Alt; rf++)
-        {
-            refOffset[rf] = h.RelativeDist(s.OrderHint, s.OrderHints[rf]);
-        }
-
         int startToCurrent = h.RelativeDist(s.OrderHint, h.OrderHint);
         if (dir == 2)
         {
             startToCurrent = -startToCurrent;
         }
 
+        if (Math.Abs(startToCurrent) > MaxFrameDistance)
+        {
+            return true;
+        }
+
+        // Per reference: its distance, or 0 when its vectors are not projected, and Project's factor num * DivMult[den].
+        Span<int> refOffset = stackalloc int[8];
+        Span<int> factor = stackalloc int[8];
+        refOffset.Clear();
+        for (int rf = Ref.Last; rf <= Ref.Alt; rf++)
+        {
+            int offset = h.RelativeDist(s.OrderHint, s.OrderHints[rf]);
+            if (offset > 0 && offset <= MaxFrameDistance)
+            {
+                refOffset[rf] = offset;
+                factor[rf] = startToCurrent * DivMult[offset];
+            }
+        }
+
+        sbyte[] savedRefs = start.SavedRefFrames;
+        int[] savedRows = start.SavedMvRows!, savedCols = start.SavedMvCols!;
+        short[] fieldRows = frame.MotionFieldRows!, fieldCols = frame.MotionFieldCols!;
+        sbyte[] fieldOffsets = frame.MotionFieldOffsets!;
         int rows = (frame.MiRows + 1) >> 1, cols = (frame.MiCols + 1) >> 1;
         int rowLimit = frame.MiRows >> 1, colLimit = frame.MiCols >> 1;
+        int sign = dir == 2 ? -1 : 1;
         for (int blkRow = 0; blkRow < rows; blkRow++)
         {
+            int baseRow = (blkRow >> 3) << 3;
             for (int blkCol = 0; blkCol < cols; blkCol++)
             {
                 int at = (blkRow * cols) + blkCol;
-                int rf = start.SavedRefFrames![at];
-                if (rf <= Ref.Intra)
+                int rf = savedRefs[at];
+                if (rf <= Ref.Intra || refOffset[rf] == 0)
                 {
                     continue;
                 }
 
-                int offset = refOffset[rf];
-                if (offset <= 0 || offset > MaxFrameDistance || Math.Abs(startToCurrent) > MaxFrameDistance)
-                {
-                    continue;
-                }
-
-                int mvRow = start.SavedMvRows![at], mvCol = start.SavedMvCols![at];
-                (int pr, int pc) = Project(mvRow, mvCol, startToCurrent, offset);
+                int mvRow = savedRows[at], mvCol = savedCols[at];
+                int pr = Scaled(mvRow, factor[rf]), pc = Scaled(mvCol, factor[rf]);
 
                 // get_block_position
-                int rowOffset = pr >= 0 ? pr >> 6 : -((-pr) >> 6);
-                int colOffset = pc >= 0 ? pc >> 6 : -((-pc) >> 6);
-                int row = dir == 2 ? blkRow - rowOffset : blkRow + rowOffset;
-                int col = dir == 2 ? blkCol - colOffset : blkCol + colOffset;
-                int baseRow = (blkRow >> 3) << 3, baseCol = (blkCol >> 3) << 3;
-                if (row < 0 || row >= rowLimit || col < 0 || col >= colLimit || row < baseRow || row >= baseRow + 8
+                int row = blkRow + (sign * Toward0(pr, 6));
+                int col = blkCol + (sign * Toward0(pc, 6));
+                int baseCol = (blkCol >> 3) << 3;
+                if ((uint)row >= (uint)rowLimit || (uint)col >= (uint)colLimit || row < baseRow || row >= baseRow + 8
                     || col < baseCol - 8 || col >= baseCol + 16)
                 {
                     continue;
                 }
 
                 int to = (row * cols) + col;
-                frame.MotionFieldRows![to] = (short)mvRow;
-                frame.MotionFieldCols![to] = (short)mvCol;
-                frame.MotionFieldOffsets![to] = (sbyte)offset;
+                fieldRows[to] = (short)mvRow;
+                fieldCols[to] = (short)mvCol;
+                fieldOffsets[to] = (sbyte)refOffset[rf];
             }
         }
 

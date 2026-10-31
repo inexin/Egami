@@ -1,6 +1,8 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
+using System.Runtime.Intrinsics.X86;
 
 namespace Egami.Formats.Av1;
 
@@ -187,8 +189,139 @@ internal static class Av1Cdef
         return variance != 0 ? ((strength * (4 + i)) + 8) >> 4 : 0;
     }
 
+    // The weight of each position's square, DivTable[n] for a partial sum of n samples: positions 0-3, 4-7, 8-11 and 12-15 of
+    // the diagonal directions (0, 4) and of the steep ones (1, 3, 5, 7); lanes past the last position are 0.
+    private static readonly Vector128<int> Diagonal0 = Vector128.Create(840, 420, 280, 210), Diagonal1 = Vector128.Create(168, 140, 120, 105);
+    private static readonly Vector128<int> Diagonal2 = Vector128.Create(120, 140, 168, 210), Diagonal3 = Vector128.Create(280, 420, 840, 0);
+    private static readonly Vector128<int> Steep0 = Vector128.Create(420, 210, 140, 105), Steep1 = Vector128.Create(105);
+    private static readonly Vector128<int> Steep2 = Vector128.Create(140, 210, 420, 0);
+
     /// <summary>cdef_find_dir: the direction of an 8x8 luma block, and how much more variance it has across than along.</summary>
-    private static int FindDirection<T>(T[] img, int at, int stride, int coeffShift, out int variance)
+    internal static int FindDirection<T>(T[] img, int at, int stride, int coeffShift, out int variance)
+        where T : unmanaged
+    {
+        if (Ssse3.IsSupported && Sse41.IsSupported)
+        {
+            ArgumentOutOfRangeException.ThrowIfGreaterThan((uint)(at + (7 * stride) + 8), (uint)img.Length, nameof(at));
+            return FindDirectionVector(ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(img), at), stride, coeffShift, out variance);
+        }
+
+        return FindDirectionScalar(img, at, stride, coeffShift, out variance);
+    }
+
+    /// <summary>
+    /// <see cref="FindDirection"/> with each row of the block in a vector of eight 16-bit lanes. A direction's partial sums are
+    /// rows (or a row's column pairs, or pairs of rows) moved along by their offset into a low and a high vector of positions 0-7
+    /// and 8-15, and its cost is the squares weighted by position: the same integers as the scalar form, in the same wrapping
+    /// 32-bit arithmetic.
+    /// </summary>
+    private static int FindDirectionVector<T>(ref T origin, int stride, int coeffShift, out int variance)
+        where T : unmanaged
+    {
+        Vector128<short> r0 = Row(ref origin, 0, stride, coeffShift), r1 = Row(ref origin, 1, stride, coeffShift);
+        Vector128<short> r2 = Row(ref origin, 2, stride, coeffShift), r3 = Row(ref origin, 3, stride, coeffShift);
+        Vector128<short> r4 = Row(ref origin, 4, stride, coeffShift), r5 = Row(ref origin, 5, stride, coeffShift);
+        Vector128<short> r6 = Row(ref origin, 6, stride, coeffShift), r7 = Row(ref origin, 7, stride, coeffShift);
+        Span<int> cost = stackalloc int[8];
+
+        // Direction 2: the sum of each row; 6: of each column.
+        Vector128<short> rows = Ssse3.HorizontalAdd(Ssse3.HorizontalAdd(Ssse3.HorizontalAdd(r0, r1), Ssse3.HorizontalAdd(r2, r3)),
+            Ssse3.HorizontalAdd(Ssse3.HorizontalAdd(r4, r5), Ssse3.HorizontalAdd(r6, r7)));
+        cost[2] = SumOfSquares(rows) * DivTable[8];
+        cost[6] = SumOfSquares(r0 + r1 + r2 + r3 + r4 + r5 + r6 + r7) * DivTable[8];
+
+        // Direction 0: row i at offset i; 4: each row reversed, at offset i.
+        (Vector128<short> lo, Vector128<short> hi) = Diagonal(r0, r1, r2, r3, r4, r5, r6, r7);
+        cost[0] = Weighted(lo, hi, steep: false);
+        Vector128<byte> reverse = Vector128.Create((byte)14, 15, 12, 13, 10, 11, 8, 9, 6, 7, 4, 5, 2, 3, 0, 1);
+        (lo, hi) = Diagonal(Shuffle(r0, reverse), Shuffle(r1, reverse), Shuffle(r2, reverse), Shuffle(r3, reverse), Shuffle(r4, reverse),
+            Shuffle(r5, reverse), Shuffle(r6, reverse), Shuffle(r7, reverse));
+        cost[4] = Weighted(lo, hi, steep: false);
+
+        // Direction 1: row i's column pairs at offset i; 3: the pairs reversed. 7: pairs of rows at offset i / 2; 5: at 3 - i / 2.
+        Vector128<short> zero = Vector128<short>.Zero;
+        Vector128<short> p0 = Ssse3.HorizontalAdd(r0, zero), p1 = Ssse3.HorizontalAdd(r1, zero), p2 = Ssse3.HorizontalAdd(r2, zero);
+        Vector128<short> p3 = Ssse3.HorizontalAdd(r3, zero), p4 = Ssse3.HorizontalAdd(r4, zero), p5 = Ssse3.HorizontalAdd(r5, zero);
+        Vector128<short> p6 = Ssse3.HorizontalAdd(r6, zero), p7 = Ssse3.HorizontalAdd(r7, zero);
+        (lo, hi) = Diagonal(p0, p1, p2, p3, p4, p5, p6, p7);
+        cost[1] = Weighted(lo, hi, steep: true);
+        Vector128<byte> reversePairs = Vector128.Create((byte)6, 7, 4, 5, 2, 3, 0, 1, 8, 9, 10, 11, 12, 13, 14, 15);
+        (lo, hi) = Diagonal(Shuffle(p0, reversePairs), Shuffle(p1, reversePairs), Shuffle(p2, reversePairs), Shuffle(p3, reversePairs),
+            Shuffle(p4, reversePairs), Shuffle(p5, reversePairs), Shuffle(p6, reversePairs), Shuffle(p7, reversePairs));
+        cost[3] = Weighted(lo, hi, steep: true);
+        Vector128<short> q0 = r0 + r1, q1 = r2 + r3, q2 = r4 + r5, q3 = r6 + r7;
+        lo = q0 + Up(q1, 2) + Up(q2, 4) + Up(q3, 6);
+        hi = Down(q1, 14) + Down(q2, 12) + Down(q3, 10);
+        cost[7] = Weighted(lo, hi, steep: true);
+        lo = Up(q0, 6) + Up(q1, 4) + Up(q2, 2) + q3;
+        hi = Down(q0, 10) + Down(q1, 12) + Down(q2, 14);
+        cost[5] = Weighted(lo, hi, steep: true);
+
+        int bestCost = 0, bestDir = 0;
+        for (int i = 0; i < 8; i++)
+        {
+            if (cost[i] > bestCost)
+            {
+                bestCost = cost[i];
+                bestDir = i;
+            }
+        }
+
+        variance = (bestCost - cost[(bestDir + 4) & 7]) >> 10;
+        return bestDir;
+    }
+
+    /// <summary>Row <paramref name="i"/> of the block as (sample >> coeffShift) - 128 in 16-bit lanes.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static Vector128<short> Row<T>(ref T origin, int i, int stride, int coeffShift)
+        where T : unmanaged
+    {
+        ref T row = ref Unsafe.Add(ref origin, i * stride);
+        Vector128<short> samples = Av1Samples.IsByte<T>()
+            ? Sse41.ConvertToVector128Int16(Vector128.CreateScalarUnsafe(Unsafe.ReadUnaligned<ulong>(ref Unsafe.As<T, byte>(ref row))).AsByte())
+            : Vector128.ShiftRightLogical(Vector128.LoadUnsafe(ref Unsafe.As<T, ushort>(ref row)), coeffShift).AsInt16();
+        return samples - Vector128.Create((short)128);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static Vector128<short> Shuffle(Vector128<short> v, Vector128<byte> order) => Ssse3.Shuffle(v.AsByte(), order).AsInt16();
+
+    /// <summary>Lanes at offsets 0 to 7: positions 0-7 in the first vector, 8-15 in the second.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static (Vector128<short> Low, Vector128<short> High) Diagonal(Vector128<short> a0, Vector128<short> a1, Vector128<short> a2,
+        Vector128<short> a3, Vector128<short> a4, Vector128<short> a5, Vector128<short> a6, Vector128<short> a7)
+    {
+        Vector128<short> lo = a0 + Up(a1, 2) + Up(a2, 4) + Up(a3, 6) + Up(a4, 8) + Up(a5, 10) + Up(a6, 12) + Up(a7, 14);
+        Vector128<short> hi = Down(a1, 14) + Down(a2, 12) + Down(a3, 10) + Down(a4, 8) + Down(a5, 6) + Down(a6, 4) + Down(a7, 2);
+        return (lo, hi);
+    }
+
+    /// <summary>Moves lanes up by <paramref name="bytes"/> / 2, zeros coming in.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static Vector128<short> Up(Vector128<short> v, [ConstantExpected] byte bytes) => Sse2.ShiftLeftLogical128BitLane(v, bytes);
+
+    /// <summary>Moves lanes down by <paramref name="bytes"/> / 2, zeros coming in.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static Vector128<short> Down(Vector128<short> v, [ConstantExpected] byte bytes) => Sse2.ShiftRightLogical128BitLane(v, bytes);
+
+    /// <summary>The sum of the squares of eight lanes, in wrapping 32-bit arithmetic.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static int SumOfSquares(Vector128<short> v) => Vector128.Sum(Sse2.MultiplyAddAdjacent(v, v));
+
+    /// <summary>The sum of each position's square times its weight, in wrapping 32-bit arithmetic.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static int Weighted(Vector128<short> lo, Vector128<short> hi, bool steep)
+    {
+        Vector128<int> l0 = Sse41.ConvertToVector128Int32(lo), l1 = Sse41.ConvertToVector128Int32(Sse2.ShiftRightLogical128BitLane(lo, 8));
+        Vector128<int> h0 = Sse41.ConvertToVector128Int32(hi), h1 = Sse41.ConvertToVector128Int32(Sse2.ShiftRightLogical128BitLane(hi, 8));
+        Vector128<int> sum = steep
+            ? (l0 * l0 * Steep0) + (l1 * l1 * Steep1) + (h0 * h0 * Steep2)
+            : (l0 * l0 * Diagonal0) + (l1 * l1 * Diagonal1) + (h0 * h0 * Diagonal2) + (h1 * h1 * Diagonal3);
+        return Vector128.Sum(sum);
+    }
+
+    /// <summary><see cref="FindDirection"/> one sample at a time, where SSSE3 or SSE4.1 is missing.</summary>
+    internal static int FindDirectionScalar<T>(T[] img, int at, int stride, int coeffShift, out int variance)
         where T : unmanaged
     {
         Span<int> cost = stackalloc int[8];

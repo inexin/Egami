@@ -265,7 +265,7 @@ internal static partial class Av1InverseTransform
                 Vector256<int> prediction = Vector256.WidenLower(Av1Samples.Load8(ref d0, at).AsUInt16().ToVector256()).AsInt32();
                 Vector256<int> sum = prediction + Vector256.ShiftRightArithmetic(output[udFlip ? h - 1 - r : r] + round, 4);
                 sum = Vector256.Min(Vector256.Max(sum, Vector256<int>.Zero), top);
-                Av1Samples.Store8(ref d0, at, Vector128.Narrow(sum.GetLower().AsUInt32(), sum.GetUpper().AsUInt32()));
+                Av1Samples.Store8(ref d0, at, Av1Samples.Pack(sum));
             }
         }
 
@@ -333,10 +333,10 @@ internal static partial class Av1InverseTransform
                 Vector128<int> prediction = Vector128.WidenLower(Av1Samples.Load4(ref at, 0).AsUInt16()).AsInt32();
                 Vector128<int> sum = prediction + Vector128.ShiftRightArithmetic(output[udFlip ? h - 1 - r : r] + round, 4);
                 sum = Vector128.Min(Vector128.Max(sum, Vector128<int>.Zero), top);
-                Vector128<ushort> samples = Vector128.Narrow(sum.AsUInt32(), sum.AsUInt32());
+                Vector128<ushort> samples = Av1Samples.Pack(sum);
                 if (Av1Samples.IsByte<TSample>())
                 {
-                    Unsafe.WriteUnaligned(ref Unsafe.As<TSample, byte>(ref at), Vector128.Narrow(samples, samples).AsUInt32().ToScalar());
+                    Unsafe.WriteUnaligned(ref Unsafe.As<TSample, byte>(ref at), Av1Samples.PackBytes(samples).AsUInt32().ToScalar());
                 }
                 else
                 {
