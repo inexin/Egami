@@ -29,8 +29,8 @@ internal sealed record HeifReference(uint Type, uint[] To);
 /// <param name="Entities">The ids of the items (or tracks) in the group, in order.</param>
 internal sealed record HeifEntityGroup(uint Type, uint Id, uint[] Entities);
 
-/// <summary>A problem a lenient read recovered from, such as an item entry it skipped.</summary>
-internal readonly record struct HeifProblem(string Id, string Message, long Offset);
+/// <summary>A problem a lenient read recovered from, such as an item entry it skipped, at its file offset when one is known.</summary>
+internal readonly record struct HeifProblem(string Id, string Message, long? Offset);
 
 /// <summary>
 /// An item of the HEIF item model (ISO/IEC 23008-12): its entry in iinf, its location in iloc, its properties in ipma and its
