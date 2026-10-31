@@ -162,7 +162,7 @@ internal sealed class JpegProgressiveEncoder
 
     /// <summary>Returns a bit for each coefficient whose magnitude is at least <paramref name="threshold"/>.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static ulong AtLeast(ReadOnlySpan<short> block, int threshold)
+    internal static ulong AtLeast(ReadOnlySpan<short> block, int threshold)
     {
         ref short first = ref MemoryMarshal.GetReference(block);
         Vector256<short> below = Vector256.Create((short)(threshold - 1));
@@ -176,7 +176,7 @@ internal sealed class JpegProgressiveEncoder
     }
 
     /// <summary>Returns the bits <paramref name="ss"/> to <paramref name="se"/>.</summary>
-    private static ulong Band(int ss, int se) => (se == 63 ? ulong.MaxValue : (1UL << (se + 1)) - 1) & ~((1UL << ss) - 1);
+    internal static ulong Band(int ss, int se) => (se == 63 ? ulong.MaxValue : (1UL << (se + 1)) - 1) & ~((1UL << ss) - 1);
 
     private static void AddBands(List<Scan> scans, int components, int ss, int se, int ah, int al)
     {

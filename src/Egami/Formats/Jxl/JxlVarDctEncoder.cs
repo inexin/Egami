@@ -1376,43 +1376,7 @@ internal sealed partial class JxlVarDctEncoder
     /// Writes the patch dictionary (PatchDictionaryEncoder::Encode): per patch its reference frame, place and size, how many
     /// times it occurs, and each occurrence's position (the first, then offsets) and blend mode (add).
     /// </summary>
-    private void WritePatches(JxlBitWriter w)
-    {
-        List<JxlToken> tokens = [new JxlToken(0, (uint)_patches!.Length)];
-        foreach (JxlPatch p in _patches)
-        {
-            tokens.Add(new JxlToken(1, (uint)p.Reference));
-            tokens.Add(new JxlToken(3, (uint)p.X0));
-            tokens.Add(new JxlToken(3, (uint)p.Y0));
-            tokens.Add(new JxlToken(2, (uint)(p.Width - 1)));
-            tokens.Add(new JxlToken(2, (uint)(p.Height - 1)));
-            tokens.Add(new JxlToken(7, (uint)(p.Targets.Length - 1)));
-            for (int j = 0; j < p.Targets.Length; j++)
-            {
-                if (j == 0)
-                {
-                    tokens.Add(new JxlToken(4, (uint)p.Targets[j].X));
-                    tokens.Add(new JxlToken(4, (uint)p.Targets[j].Y));
-                }
-                else
-                {
-                    tokens.Add(new JxlToken(6, PackSigned(p.Targets[j].X - p.Targets[j - 1].X)));
-                    tokens.Add(new JxlToken(6, PackSigned(p.Targets[j].Y - p.Targets[j - 1].Y)));
-                }
-
-                foreach (JxlPatchBlending b in p.Targets[j].Blending)
-                {
-                    tokens.Add(new JxlToken(5, (uint)b.Mode));
-                }
-            }
-        }
-
-        List<List<JxlToken>> streams = [tokens];
-        JxlEntropyCode code = JxlEntropyCode.Write(w, new JxlHistogramParams { Rle = true }, 10, streams);
-        code.WriteTokens(w, tokens);
-    }
-
-    private static uint PackSigned(int v) => v >= 0 ? (uint)v << 1 : ((uint)(-(v + 1)) << 1) | 1;
+    private void WritePatches(JxlBitWriter w) => JxlPatchSearch.WriteDictionary(w, _patches!);
 
     /// <summary>The EPF iterations libjxl's LoopFilterFromParams gives a distance: one each from 0.7, 1.5 and 4.</summary>
     private static int _epfIterationsFor(float distance)

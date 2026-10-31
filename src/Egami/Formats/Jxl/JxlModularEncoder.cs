@@ -11,6 +11,9 @@ internal sealed class JxlEncodeImage(int bitDepth)
 
     internal int BitDepth { get; } = bitDepth;
 
+    /// <summary>Gets or sets the weighted predictor's parameters for this stream (the default set unless effort 8 and up picked another).</summary>
+    internal JxlWpParams Wp { get; set; } = new();
+
     /// <summary>Gets the number of channels a stream codes: meta channels, then channels up to the first larger than a group.</summary>
     internal int CodedPrefix(int maxSize)
     {
@@ -50,6 +53,9 @@ internal sealed class JxlModularEncoder
     private int _lastPass;
     private bool _chunk;
 
+    // What opens the LF global section before the LF dequantization: a frame's patch dictionary.
+    private JxlBitWriter? _lfGlobalStart;
+
     private JxlModularEncoder(int effort, int width, int height, int groupShift, int streams, bool color, int parallelism)
     {
         _effort = effort;
@@ -73,7 +79,7 @@ internal sealed class JxlModularEncoder
     /// <paramref name="height"/> integers of <paramref name="bitDepth"/> bits) and gives its sections in TOC order; a Modular XYB
     /// frame names its LF dequantization multipliers (times 128) in <paramref name="lfDequant"/>.
     /// </summary>
-    internal static List<byte[]> Encode(List<JxlChannel> channels, int colorChannels, int bitDepth, int effort, int width, int height, int groupShift, int parallelism, float[]? lfDequant = null)
+    internal static List<byte[]> Encode(List<JxlChannel> channels, int colorChannels, int bitDepth, int effort, int width, int height, int groupShift, int parallelism, float[]? lfDequant = null, JxlBitWriter? lfGlobalStart = null)
     {
         int groupDim = 128 << groupShift;
         int groups = Ceil(width, groupDim) * Ceil(height, groupDim);
@@ -82,6 +88,7 @@ internal sealed class JxlModularEncoder
         int streams = 1 + (3 * lfGroups) + 17 + groups;
         JxlModularEncoder e = new(effort, width, height, groupShift, streams, colorChannels == 3, parallelism);
         e._lfDequant = lfDequant;
+        e._lfGlobalStart = lfGlobalStart;
         return e.Run(channels, bitDepth);
     }
 
@@ -564,8 +571,9 @@ internal sealed class JxlModularEncoder
         float channelColors = _effort >= 2 || bitDepth > 8 ? 95 : 0;
 
         // libjxl codes a frame of more than 8 groups group by group (its streaming mode, CanDoStreamingEncoding): no global
-        // palettes, and at effort 2 each group with its own fixed tree and distributions.
-        bool local = _effort == 2 && _groups > 8 && _lfDequant is null;
+        // palettes, and each group with its own tree and distributions, a fixed one at effort 2 and a learned one at 8 and 9.
+        // Efforts 3 to 7 keep one tree for the frame, which comes out as small; effort 10 never streams.
+        bool local = (_effort == 2 || _effort is 8 or 9) && _groups > 8 && _lfDequant is null;
         if (!local)
         {
             TryPalettes(gi, channelColors);
@@ -619,7 +627,7 @@ internal sealed class JxlModularEncoder
         Parallel.For(0, units.Count, _parallel, u =>
         {
             (int st, int ch) = units[u];
-            parts[u] = Tokenize(_streams[st].Channels[ch], ch, st, property, value, left, right, predictor, context, usesWp);
+            parts[u] = Tokenize(_streams[st].Channels[ch], ch, st, property, value, left, right, predictor, context, usesWp, wpParams: _streams[st].Wp);
         });
 
         List<List<JxlToken>> tokens = [.. _streams.Select(_ => new List<JxlToken>())];
@@ -635,6 +643,11 @@ internal sealed class JxlModularEncoder
 
         // LF global: the LF dequantization, the global tree and the data distributions, then the global stream.
         JxlBitWriter global = new();
+        if (_lfGlobalStart is not null)
+        {
+            global.AppendBits(_lfGlobalStart);
+        }
+
         global.WriteBool(_lfDequant is null);
         foreach (float m in _lfDequant ?? [])
         {
@@ -682,6 +695,11 @@ internal sealed class JxlModularEncoder
     {
         JxlHistogramParams p = JxlHistogramParams.ForModular(_effort);
         JxlBitWriter global = new();
+        if (_lfGlobalStart is not null)
+        {
+            global.AppendBits(_lfGlobalStart);
+        }
+
         global.WriteBool(true); // default LF dequantization
         global.WriteBool(false); // no global tree
         WriteLocalStream(global, 0, p);
@@ -724,23 +742,26 @@ internal sealed class JxlModularEncoder
             width = Math.Max(width, image.Channels[c].Width);
         }
 
-        List<JxlTreeNode> tree = FixedTree(9, 5, Math.Max(1, pixels), image.BitDepth);
+        List<JxlTreeNode> tree = _effort == 2 ? FixedTree(9, 5, Math.Max(1, pixels), image.BitDepth) : LearnTree([stream], sequential: true);
         List<List<JxlToken>> treeTokens = [[]];
         (int[] property, int[] value, int[] left, int[] right, int[] predictor, int[] context) = TokenizeTree(tree, treeTokens[0]);
+        bool usesWp = property.Any(q => q == 15) || property.Select((q, i) => q < 0 && predictor[i] == 6).Any(b => b);
         List<JxlToken> tokens = [];
         for (int c = 0; c < prefix; c++)
         {
             if (image.Channels[c].Width > 0 && image.Channels[c].Height > 0)
             {
-                tokens.AddRange(Tokenize(image.Channels[c], c, stream, property, value, left, right, predictor, context, false));
+                tokens.AddRange(Tokenize(image.Channels[c], c, stream, property, value, left, right, predictor, context, usesWp, wpParams: image.Wp));
             }
         }
 
         WriteStreamHeader(w, image, useGlobalTree: false);
         JxlEntropyCode treeCode = JxlEntropyCode.Write(w, p, 6, treeTokens);
         treeCode.WriteTokens(w, treeTokens[0]);
-        JxlEntropyCode code = JxlEntropyCode.Write(w, p with { ImageWidths = [width] }, context.Max() + 1, [tokens]);
-        code.WriteTokens(w, tokens);
+        // LZ77 may replace the stream's tokens: what goes out is what the code was built for.
+        List<List<JxlToken>> streams = [tokens];
+        JxlEntropyCode code = JxlEntropyCode.Write(w, p with { ImageWidths = [width] }, context.Max() + 1, streams);
+        code.WriteTokens(w, streams[0]);
     }
 
     /// <summary>Writes a stream: its header (global tree, default WP parameters, transforms) and tokens, or nothing when it has no channels.</summary>
@@ -762,7 +783,22 @@ internal sealed class JxlModularEncoder
     private static void WriteStreamHeader(JxlBitWriter w, JxlEncodeImage image, bool useGlobalTree)
     {
         w.WriteBool(useGlobalTree);
-        w.WriteBool(true); // default WP parameters
+        JxlWpParams wp = image.Wp;
+        bool defaultWp = wp == new JxlWpParams();
+        w.WriteBool(defaultWp);
+        if (!defaultWp)
+        {
+            foreach (int v in (ReadOnlySpan<int>)[wp.P1, wp.P2, wp.P3a, wp.P3b, wp.P3c, wp.P3d, wp.P3e])
+            {
+                w.Write((ulong)v, 5);
+            }
+
+            foreach (int v in (ReadOnlySpan<int>)[wp.W0, wp.W1, wp.W2, wp.W3])
+            {
+                w.Write((ulong)v, 4);
+            }
+        }
+
         w.WriteU32(new JxlU32(0, 0, 1, 0, 2, 4, 18, 8), (uint)image.Transforms.Count);
         JxlU32 beginC = new(0, 3, 8, 6, 72, 10, 1096, 13);
         foreach (JxlTransform t in image.Transforms)
@@ -885,12 +921,108 @@ internal sealed class JxlModularEncoder
         }
 
         SearchRct(gi);
+        ChooseWp(gi);
+    }
+
+    // weighted::PredictorMode: libjxl's five parameter sets of the weighted predictor.
+    private static readonly JxlWpParams[] WpModes =
+    [
+        new(16, 10, 7, 7, 7, 0, 0, 13, 12, 12, 12),
+        new(8, 8, 4, 0, 3, 23, 2, 13, 12, 12, 11),
+        new(10, 9, 7, 0, 0, 16, 9, 13, 12, 13, 12),
+        new(16, 8, 0, 16, 0, 23, 0, 13, 13, 12, 12),
+        new(10, 10, 5, 5, 5, 12, 4, 13, 12, 12, 12),
+    ];
+
+    private static readonly int[] WpCutoffs = [-500, -392, -255, -191, -127, -95, -63, -47, -31, -23, -15, -11, -7, -4, -3, -1, 0, 1, 3, 5, 7, 11, 15, 23, 31, 47, 63, 95, 127, 191, 255, 392, 500];
+
+    /// <summary>At effort 8 (two sets) and 9 and up (five), gives the stream the weighted predictor parameters that cost least (EstimateWPCost).</summary>
+    private void ChooseWp(JxlEncodeImage gi)
+    {
+        int modes = _effort >= 9 ? 5 : _effort == 8 ? 2 : 1;
+        if (modes == 1)
+        {
+            return;
+        }
+
+        float best = float.MaxValue;
+        foreach (JxlWpParams mode in WpModes.Take(modes))
+        {
+            float cost = WpCost(gi, mode);
+            if (cost < best)
+            {
+                (best, gi.Wp) = (cost, mode);
+            }
+        }
+    }
+
+    /// <summary>Estimates the bits of a stream's channels under the weighted predictor alone, by the entropy of residuals sorted by its error property.</summary>
+    private static float WpCost(JxlEncodeImage gi, JxlWpParams mode)
+    {
+        JxlUintConfig config = JxlEntropyCode.Config(4, 2, 0);
+        JxlHistogram[] histograms = new JxlHistogram[WpCutoffs.Length + 1];
+        float cost = 0;
+        long extra = 0;
+        foreach (JxlChannel ch in gi.Channels)
+        {
+            int width = ch.Width, height = ch.Height;
+            int[] d = ch.Data;
+            if (width == 0 || height == 0 || d.Length == 0)
+            {
+                continue;
+            }
+
+            for (int i = 0; i < histograms.Length; i++)
+            {
+                histograms[i] = new JxlHistogram();
+            }
+
+            JxlWeightedPredictor wp = new(width, mode);
+            for (int y = 0; y < height; y++)
+            {
+                int row = y * width;
+                for (int x = 0; x < width; x++)
+                {
+                    int at = row + x;
+                    int w = x > 0 ? d[at - 1] : y > 0 ? d[at - width] : 0;
+                    int n = y > 0 ? d[at - width] : w;
+                    int nw = x > 0 && y > 0 ? d[at - width - 1] : w;
+                    int ne = x + 1 < width && y > 0 ? d[at - width + 1] : n;
+                    int nn = y > 1 ? d[at - (2 * width)] : n;
+                    long prediction = wp.Predict(n, nw, ne, w, nn);
+                    int ctx = 0;
+                    foreach (int c in WpCutoffs)
+                    {
+                        ctx += c >= wp.MaxError ? 1 : 0;
+                    }
+
+                    long guess = JxlModularDecoder.Predict(6, w, n, nw, ne, nn, w, ne, prediction);
+                    long residual = d[at] - guess;
+                    if (residual is > int.MaxValue or < int.MinValue)
+                    {
+                        return float.MaxValue;
+                    }
+
+                    (uint tok, int nbits, _) = JxlEntropyCode.Split(config, JxlTreeLearner.PackSigned((int)residual));
+                    histograms[ctx].Add(tok);
+                    extra += nbits;
+                    wp.Record(d[at]);
+                }
+            }
+
+            foreach (JxlHistogram h in histograms)
+            {
+                cost += h.ShannonEntropy();
+            }
+        }
+
+        return cost + extra;
     }
 
     /// <summary>At effort 5 and up, keeps whichever of a few RCTs (none and YCoCg first) makes the cheapest estimate (PrepareStreamParams).</summary>
     private void SearchRct(JxlEncodeImage gi)
     {
-        int tries = _effort switch { >= 7 => 7, 6 => 5, 5 => 4, _ => 0 };
+        int tries = _effort switch { >= 9 => 19, 8 => 9, 7 => 7, 6 => 5, 5 => 4, _ => 0 };
         if (!_color || gi.Channels.Count - gi.Meta < 3 || tries == 0)
         {
             return;
@@ -1488,35 +1620,43 @@ internal sealed class JxlModularEncoder
     }
 
     /// <summary>Learns the tree from samples of every stream (libjxl's LearnTree, CollectPixelSamples and GatherTreeData).</summary>
-    private List<JxlTreeNode> LearnTree()
+    /// <summary>Learns one tree from samples of the given streams, or of every stream.</summary>
+    /// <param name="only">The streams to learn from, or <see langword="null"/> for all.</param>
+    /// <param name="sequential">Whether to learn on one thread, as each group does when the groups learn side by side.</param>
+    private List<JxlTreeNode> LearnTree(int[]? only = null, bool sequential = false)
     {
-        int count = _effort switch { >= 7 => 7, 6 => 5, 5 => 4, _ => 3 };
-        int maxValues = _effort switch { >= 7 => 96, 6 => 64, 5 => 48, _ => 32 };
-        float repeats = 0.5f * _effort switch { >= 7 => 1f, 6 => 0.7f, 5 => 0.5f, _ => 0.3f };
+        ParallelOptions parallel = sequential ? new ParallelOptions { MaxDegreeOfParallelism = 1 } : _parallel;
+        // enc_modular's settings by speed tier: e8 (kitten) 10 properties, e9 and e10 (tortoise, glacier) all 16.
+        int count = _effort switch { >= 9 => 16, 8 => 10, 7 => 7, 6 => 5, 5 => 4, _ => 3 };
+        int maxValues = _effort switch { >= 9 => 256, 8 => 128, 7 => 96, 6 => 64, 5 => 48, _ => 32 };
+        float repeats = 0.5f * _effort switch { >= 9 => 1.3f, 8 => 1.1f, 7 => 1f, 6 => 0.7f, 5 => 0.5f, _ => 0.3f };
         float threshold = 75 + (14 * (10 - _effort));
         List<int> order = [.. PropertyOrder];
-        if (_streams.Length < 30 || _chunk)
+        if ((_streams.Length < 30 && _effort < 9) || _chunk)
         {
             // Few groups: the group is no use as a property.
             order.RemoveAt(1);
         }
 
         int[] properties = [.. order.Take(count)];
-        int[] predictors = [6, 5];
+
+        // Weighted and gradient (libjxl's Best) up to e9; every predictor (Variable) at e10.
+        int[] predictors = _effort >= 10 ? [.. Enumerable.Range(0, 14)] : [6, 5];
         JxlTreeLearner learner = new(predictors, properties, 1 << 16);
 
         List<long> groupPixels = [];
         List<long> channelPixels = [];
         List<int> pixelSamples = [];
         List<int> diffSamples = [];
-        for (int s = 0; s < _streams.Length; s++)
+        int[] streams = only ?? [.. Enumerable.Range(0, _streams.Length)];
+        foreach (int s in streams)
         {
             CollectPixelSamples(_streams[s], s, repeats, groupPixels, channelPixels, pixelSamples, diffSamples);
         }
 
         learner.Quantize(groupPixels, channelPixels, pixelSamples, diffSamples, maxValues);
 
-        int start = Array.FindIndex(_streams, s => s.Channels.Count > 0);
+        int start = streams.FirstOrDefault(s => _streams[s].Channels.Count > 0, -1);
         long totalPixels = 0;
         if (start >= 0)
         {
@@ -1528,9 +1668,9 @@ internal sealed class JxlModularEncoder
         }
 
         totalPixels = Math.Max(totalPixels, 1);
-        List<(int Stream, int Channel)> units = Units();
+        List<(int Stream, int Channel)> units = [.. Units().Where(u => only is null || only.Contains(u.Stream))];
         SampleBuffer[] buffers = new SampleBuffer[units.Count];
-        Parallel.For(0, units.Count, _parallel, u => buffers[u] = GatherTreeData(_streams[units[u].Stream].Channels[units[u].Channel], units[u].Channel, units[u].Stream, repeats, predictors, properties));
+        Parallel.For(0, units.Count, parallel, u => buffers[u] = GatherTreeData(_streams[units[u].Stream].Channels[units[u].Channel], units[u].Channel, units[u].Stream, repeats, predictors, properties, _streams[units[u].Stream].Wp));
         Span<int> props = stackalloc int[16];
         Span<long> preds = stackalloc long[14];
         foreach (SampleBuffer b in buffers)
@@ -1559,7 +1699,7 @@ internal sealed class JxlModularEncoder
 
         float fraction = learner.SampleCount * 1f / totalPixels;
         float required = (fraction * 0.9f) + 0.1f;
-        return learner.Learn(threshold * required, 1.001f, _parallel.MaxDegreeOfParallelism);
+        return learner.Learn(threshold * required, 1.001f, parallel.MaxDegreeOfParallelism);
     }
 
     private void CollectPixelSamples(JxlEncodeImage img, int stream, float repeats, List<long> groupPixels, List<long> channelPixels, List<int> pixelSamples, List<int> diffSamples)
@@ -1652,7 +1792,7 @@ internal sealed class JxlModularEncoder
     }
 
     /// <summary>Takes samples of one channel, chosen by libjxl's xorshift (GatherTreeData).</summary>
-    private static SampleBuffer GatherTreeData(JxlChannel ch, int c, int stream, float repeats, int[] predictors, int[] properties)
+    private static SampleBuffer GatherTreeData(JxlChannel ch, int c, int stream, float repeats, int[] predictors, int[] properties, JxlWpParams wpParams)
     {
         int width = ch.Width;
         int height = ch.Height;
@@ -1670,7 +1810,7 @@ internal sealed class JxlModularEncoder
         Span<long> near = stackalloc long[8];
         props[0] = c;
         props[1] = stream;
-        JxlWeightedPredictor wp = new(width, new JxlWpParams());
+        JxlWeightedPredictor wp = new(width, wpParams);
         int[] d = ch.Data;
         for (int y = 0; y < height; y++)
         {
@@ -1858,11 +1998,11 @@ internal sealed class JxlModularEncoder
     }
 
     /// <summary>Codes one channel as residual tokens through the tree (ModularCompress's per-channel loop).</summary>
-    internal static List<JxlToken> Tokenize(JxlChannel ch, int c, int stream, int[] property, int[] value, int[] left, int[] right, int[] predictor, int[] context, bool usesWp, int[]? multiplier = null)
+    internal static List<JxlToken> Tokenize(JxlChannel ch, int c, int stream, int[] property, int[] value, int[] left, int[] right, int[] predictor, int[] context, bool usesWp, int[]? multiplier = null, JxlWpParams? wpParams = null)
     {
         if (SingleProperty(property, value, left, right, c, stream, out int only, out int range) is int[] lut)
         {
-            return TokenizeLookup(ch, only, lut, range, predictor, context, multiplier);
+            return TokenizeLookup(ch, only, lut, range, predictor, context, multiplier, wpParams);
         }
 
         List<JxlToken> tokens = new(ch.Width * ch.Height);
@@ -1870,7 +2010,7 @@ internal sealed class JxlModularEncoder
         Span<long> near = stackalloc long[8];
         int width = ch.Width;
         int[] d = ch.Data;
-        JxlWeightedPredictor? wp = usesWp ? new JxlWeightedPredictor(width, new JxlWpParams()) : null;
+        JxlWeightedPredictor? wp = usesWp ? new JxlWeightedPredictor(width, wpParams ?? new JxlWpParams()) : null;
         props[0] = c;
         props[1] = stream;
         for (int y = 0; y < ch.Height; y++)
@@ -1961,13 +2101,13 @@ internal sealed class JxlModularEncoder
     }
 
     /// <summary>Codes one channel through a lookup table on one property, as libjxl's gradient-only and WP-only paths do.</summary>
-    private static List<JxlToken> TokenizeLookup(JxlChannel ch, int only, int[] lut, int range, int[] predictor, int[] context, int[]? multiplier)
+    private static List<JxlToken> TokenizeLookup(JxlChannel ch, int only, int[] lut, int range, int[] predictor, int[] context, int[]? multiplier, JxlWpParams? wpParams)
     {
         int width = ch.Width;
         int height = ch.Height;
         int[] d = ch.Data;
         bool usesWp = only == 15 || lut.Any(leaf => predictor[leaf] == 6);
-        JxlWeightedPredictor? wp = usesWp ? new JxlWeightedPredictor(width, new JxlWpParams()) : null;
+        JxlWeightedPredictor? wp = usesWp ? new JxlWeightedPredictor(width, wpParams ?? new JxlWpParams()) : null;
         List<JxlToken> tokens = new(width * height);
         for (int y = 0; y < height; y++)
         {

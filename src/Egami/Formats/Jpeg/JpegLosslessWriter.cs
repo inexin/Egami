@@ -31,6 +31,7 @@ internal sealed class JpegLosslessWriter<TPixel> : RowEncoder<TPixel>
     private readonly ushort[][] _rows;
     private readonly ushort[] _wide;
     private readonly Rgb16[]? _composited;
+    private readonly byte[]? _narrow;
     private int _rowsIn;
 
     internal JpegLosslessWriter(Stream output, EncodeStart<TPixel> start, JpegWriterOptions jpeg)
@@ -93,6 +94,16 @@ internal sealed class JpegLosslessWriter<TPixel> : RowEncoder<TPixel>
         _rows = new ushort[_height][];
         _wide = ArrayPool<ushort>.Shared.Rent(_width * 4);
         _composited = jpeg.Background is null ? null : new Rgb16[_width];
+
+        // 8-bit pixels written at 8 bits as their own components convert straight to bytes, which is the same as the 16-bit
+        // path's widen and round back.
+        Kind natural = TPixel.Layout.ChannelOrder switch
+        {
+            PixelChannelOrder.Gray or PixelChannelOrder.GrayAlpha => Kind.Gray,
+            PixelChannelOrder.Cmyk => Kind.Cmyk,
+            _ => Kind.Rgb,
+        };
+        _narrow = source == 8 && _precision == 8 && jpeg.Background is null && _kind == natural ? ArrayPool<byte>.Shared.Rent(_width * _count) : null;
         _writer = new JpegBitWriter(output);
         _writer.Marker(JpegMarker.Soi);
         if (_kind == Kind.Gray)
@@ -145,23 +156,38 @@ internal sealed class JpegLosslessWriter<TPixel> : RowEncoder<TPixel>
 
         int predictor = _options.Lossless!.Predictor ?? ChoosePredictor();
         int restart = RestartInterval(_options.RestartInterval, _width);
+        int restartRows = restart / _width;
+        long[] counts = new long[_count * 17];
+        Differences(predictor, restartRows, counts);
         if (_options.Arithmetic)
         {
             WriteScanHeader(predictor, restart);
             JpegArithmeticEncoder coder = new(_writer);
-            ArithmeticSink sink = new(_writer, coder);
-            Code(predictor, restart, ref sink);
+            for (int y = 0; y < _height; y++)
+            {
+                bool reset = y == 0 || (restartRows > 0 && y % restartRows == 0);
+                if (y > 0 && reset)
+                {
+                    coder.Finish();
+                    _writer.Align();
+                    _writer.Marker((byte)(JpegMarker.Rst0 + (((y / restartRows) - 1) & 7)));
+                    coder.Restart();
+                }
+
+                coder.EncodeDifferences(_count, _rows[y].AsSpan(0, _width * _count), reset ? default : _rows[y - 1].AsSpan(0, _width * _count));
+            }
+
             coder.Finish();
         }
         else
         {
-            long[] counts = new long[_count * 256];
-            CountSink counting = new(counts);
-            Code(predictor, restart, ref counting);
             JpegHuffmanCodes[] tables = new JpegHuffmanCodes[_count];
+            Span<long> frequencies = stackalloc long[256];
             for (int i = 0; i < _count; i++)
             {
-                tables[i] = JpegHuffmanCodes.Optimal(counts.AsSpan(i * 256, 256));
+                frequencies.Clear();
+                counts.AsSpan(i * 17, 17).CopyTo(frequencies);
+                tables[i] = JpegHuffmanCodes.Optimal(frequencies);
                 byte[] dht = new byte[17 + tables[i].Symbols.Length];
                 dht[0] = (byte)i;
                 tables[i].Counts.CopyTo(dht, 1);
@@ -170,8 +196,7 @@ internal sealed class JpegLosslessWriter<TPixel> : RowEncoder<TPixel>
             }
 
             WriteScanHeader(predictor, restart);
-            HuffmanSink sink = new(_writer, tables);
-            Code(predictor, restart, ref sink);
+            EmitHuffman(tables, restartRows);
         }
 
         _writer.Align();
@@ -191,6 +216,10 @@ internal sealed class JpegLosslessWriter<TPixel> : RowEncoder<TPixel>
         }
 
         ArrayPool<ushort>.Shared.Return(_wide);
+        if (_narrow is not null)
+        {
+            ArrayPool<byte>.Shared.Return(_narrow);
+        }
         _writer.Dispose();
         base.Dispose(disposing);
     }
@@ -256,6 +285,32 @@ internal sealed class JpegLosslessWriter<TPixel> : RowEncoder<TPixel>
     /// </summary>
     private void Samples(ReadOnlySpan<TPixel> row, Span<ushort> samples)
     {
+        if (_narrow is byte[] narrow)
+        {
+            Span<byte> bytes = narrow.AsSpan(0, samples.Length);
+            switch (_kind)
+            {
+                case Kind.Gray:
+                    PixelConvert.Convert(row, MemoryMarshal.Cast<byte, Gray8>(bytes));
+                    break;
+                case Kind.Rgb:
+                    PixelConvert.Convert(row, MemoryMarshal.Cast<byte, Rgb8>(bytes));
+                    break;
+                default:
+                    PixelConvert.Convert(row, MemoryMarshal.Cast<byte, Cmyk8>(bytes));
+                    break;
+            }
+
+            int pt = _pointTransform;
+            int flip = _kind == Kind.Cmyk ? 0xFF : 0;
+            for (int i = 0; i < bytes.Length; i++)
+            {
+                samples[i] = (ushort)((bytes[i] ^ flip) >> pt);
+            }
+
+            return;
+        }
+
         Span<ushort> wide = _wide.AsSpan(0, _width * _count);
         if (_options.Background is Rgba8 background)
         {
@@ -373,53 +428,136 @@ internal sealed class JpegLosslessWriter<TPixel> : RowEncoder<TPixel>
     }
 
     /// <summary>
-    /// Codes (or counts) every sample in scan order, each component of a pixel in turn: the prediction from the reconstructed
-    /// neighbors as T.81 H.1.2.1 sets it out, its first line and the start of each restart interval predicted from the left and
-    /// the first sample from 2^(P - Pt - 1), then the difference modulo 2^16.
+    /// Replaces every row's samples with their differences from the prediction (T.81 H.1.2.1), modulo 2^16, counting each
+    /// component's categories: the first line of the image and of each restart interval predicted from the left, its first
+    /// sample from 2^(P - Pt - 1), the first column of other lines from above. The interval is a whole number of rows.
     /// </summary>
-    private void Code<TSink>(int predictor, int restart, ref TSink sink)
-        where TSink : struct, ISink
+    private void Differences(int predictor, int restartRows, long[] counts)
+    {
+        switch (predictor)
+        {
+            case 1: Differences<Left>(restartRows, counts); break;
+            case 2: Differences<Above>(restartRows, counts); break;
+            case 3: Differences<AboveLeft>(restartRows, counts); break;
+            case 4: Differences<Plane>(restartRows, counts); break;
+            case 5: Differences<LeftGradient>(restartRows, counts); break;
+            case 6: Differences<AboveGradient>(restartRows, counts); break;
+            default: Differences<Average>(restartRows, counts); break;
+        }
+    }
+
+    private void Differences<TPredictor>(int restartRows, long[] counts)
+        where TPredictor : struct, IPredictor
     {
         int n = _count;
         int stride = _width * n;
         int initial = 1 << (_precision - _pointTransform - 1);
-        int[] differences = new int[2 * stride];
-        int resetRow = 0;
-        int resetX = 0;
-        int marker = 0;
-        long mcu = 0;
-        for (int y = 0; y < _height; y++)
+        ushort[] current = ArrayPool<ushort>.Shared.Rent(stride);
+        ushort[] above = ArrayPool<ushort>.Shared.Rent(stride);
+        try
         {
-            ushort[] row = _rows[y];
-            ushort[]? above = y > 0 ? _rows[y - 1] : null;
-            Span<int> current = differences.AsSpan((y & 1) * stride, stride);
-            Span<int> previous = differences.AsSpan(((y + 1) & 1) * stride, stride);
-            for (int x = 0; x < _width; x++, mcu++)
+            for (int y = 0; y < _height; y++)
             {
-                if (restart > 0 && mcu > 0 && mcu % restart == 0)
-                {
-                    sink.Restart(marker);
-                    marker = (marker + 1) & 7;
-                    resetRow = y;
-                    resetX = x;
-                }
-
-                bool firstLine = y == resetRow;
+                Span<ushort> row = _rows[y].AsSpan(0, stride);
+                row.CopyTo(current);
+                ReadOnlySpan<ushort> s = current.AsSpan(0, stride);
+                ReadOnlySpan<ushort> up = above.AsSpan(0, stride);
+                bool reset = y == 0 || (restartRows > 0 && y % restartRows == 0);
                 for (int i = 0; i < n; i++)
                 {
-                    int j = (x * n) + i;
-                    int prediction = firstLine
-                        ? x <= resetX ? initial : row[j - n]
-                        : x == 0 ? above![j] : Predict(predictor, row[j - n], above![j], above[j - n]);
-                    int difference = Difference(row[j], prediction);
-                    int left = x == 0 || (x <= resetX && firstLine) ? 0 : current[j - n];
-                    int up = firstLine ? 0 : previous[j];
-                    current[j] = difference;
-                    sink.Sample(i, difference, left, up);
+                    row[i] = (ushort)(s[i] - (reset ? initial : up[i]));
                 }
+
+                if (reset)
+                {
+                    for (int j = n; j < stride; j++)
+                    {
+                        row[j] = (ushort)(s[j] - s[j - n]);
+                    }
+                }
+                else
+                {
+                    for (int j = n; j < stride; j++)
+                    {
+                        row[j] = (ushort)(s[j] - TPredictor.Predict(s[j - n], up[j], up[j - n]));
+                    }
+                }
+
+                Count(row, n, counts);
+                (current, above) = (above, current);
+            }
+        }
+        finally
+        {
+            ArrayPool<ushort>.Shared.Return(current);
+            ArrayPool<ushort>.Shared.Return(above);
+        }
+    }
+
+    /// <summary>Adds a row of differences to each component's category counts.</summary>
+    private static void Count(ReadOnlySpan<ushort> row, int n, long[] counts)
+    {
+        ref long first = ref MemoryMarshal.GetArrayDataReference(counts);
+        for (int j = 0, i = 0; j < row.Length; j++)
+        {
+            Unsafe.Add(ref first, (i * 17) + Category(Signed(row[j])))++;
+            if (++i == n)
+            {
+                i = 0;
             }
         }
     }
+
+    /// <summary>
+    /// Writes every difference as its category's code and, below 16, that many low bits (negative values less one), the bit
+    /// buffer held in locals, with a restart marker before each interval but the first.
+    /// </summary>
+    private void EmitHuffman(JpegHuffmanCodes[] tables, int restartRows)
+    {
+        int n = _count;
+        int stride = _width * n;
+        int[][] entries = [.. tables.Select(t => t.Entries)];
+        JpegBitWriter writer = _writer;
+        writer.Load(out ulong bits, out int count);
+        for (int y = 0; y < _height; y++)
+        {
+            if (y > 0 && restartRows > 0 && y % restartRows == 0)
+            {
+                writer.Store(bits, count);
+                writer.Align();
+                writer.Marker((byte)(JpegMarker.Rst0 + (((y / restartRows) - 1) & 7)));
+                writer.Load(out bits, out count);
+            }
+
+            ReadOnlySpan<ushort> row = _rows[y].AsSpan(0, stride);
+            for (int j = 0, i = 0; j < row.Length; j++)
+            {
+                int difference = Signed(row[j]);
+                int category = Category(difference);
+                int entry = entries[i][category];
+                int size = category & 15;
+                int length = (entry >> 16) + size;
+                uint payload = ((uint)(entry & 0xFFFF) << size) | ((uint)(difference - (int)((uint)difference >> 31)) & ((1u << size) - 1));
+                bits = (bits << length) | payload;
+                count += length;
+                if (count >= 32)
+                {
+                    writer.Drain32(ref bits, ref count);
+                }
+
+                if (++i == n)
+                {
+                    i = 0;
+                }
+            }
+        }
+
+        writer.Store(bits, count);
+    }
+
+    /// <summary>A stored difference as -32767 to 32768: 0x8000 is 32768, the only value of category 16 (T.81 H.1.2.2).</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal static int Signed(ushort stored) => stored == 0x8000 ? 32768 : (short)stored;
 
     /// <summary>The predictors of T.81 table H.1, from the samples to the left (a), above (b) and above left (c).</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -449,62 +587,44 @@ internal sealed class JpegLosslessWriter<TPixel> : RowEncoder<TPixel>
         return 32 - BitOperations.LeadingZeroCount((uint)Math.Abs(difference));
     }
 
-    /// <summary>Takes the coded differences: Huffman codes, their counts or the arithmetic coder.</summary>
-    private interface ISink
+    /// <summary>A predictor of T.81 table H.1, as a type, so each gets its own loop.</summary>
+    private interface IPredictor
     {
-        void Sample(int component, int difference, int left, int above);
-
-        void Restart(int marker);
+        static abstract int Predict(int a, int b, int c);
     }
 
-    /// <summary>Counts each component's categories, for its Huffman table.</summary>
-    private readonly struct CountSink(long[] counts) : ISink
+    private readonly struct Left : IPredictor
     {
-        public void Sample(int component, int difference, int left, int above)
-        {
-            counts[(component * 256) + Category(difference)]++;
-        }
-
-        public void Restart(int marker)
-        {
-        }
+        public static int Predict(int a, int b, int c) => a;
     }
 
-    /// <summary>Writes each difference as its category's code and, below 16, that many low bits (negative values less one).</summary>
-    private readonly struct HuffmanSink(JpegBitWriter writer, JpegHuffmanCodes[] tables) : ISink
+    private readonly struct Above : IPredictor
     {
-        public void Sample(int component, int difference, int left, int above)
-        {
-            int category = Category(difference);
-            JpegHuffmanCodes codes = tables[component];
-            writer.Put(codes.Code(category), codes.Length(category));
-            if (category is > 0 and < 16)
-            {
-                writer.Put(difference < 0 ? difference - 1 : difference, category);
-            }
-        }
-
-        public void Restart(int marker)
-        {
-            writer.Align();
-            writer.Marker((byte)(JpegMarker.Rst0 + marker));
-        }
+        public static int Predict(int a, int b, int c) => b;
     }
 
-    /// <summary>Codes each difference with the arithmetic coder, in its component's conditioning table.</summary>
-    private readonly struct ArithmeticSink(JpegBitWriter writer, JpegArithmeticEncoder coder) : ISink
+    private readonly struct AboveLeft : IPredictor
     {
-        public void Sample(int component, int difference, int left, int above)
-        {
-            coder.EncodeDifference(component, left, above, difference);
-        }
+        public static int Predict(int a, int b, int c) => c;
+    }
 
-        public void Restart(int marker)
-        {
-            coder.Finish();
-            writer.Align();
-            writer.Marker((byte)(JpegMarker.Rst0 + marker));
-            coder.Restart();
-        }
+    private readonly struct Plane : IPredictor
+    {
+        public static int Predict(int a, int b, int c) => a + b - c;
+    }
+
+    private readonly struct LeftGradient : IPredictor
+    {
+        public static int Predict(int a, int b, int c) => a + ((b - c) >> 1);
+    }
+
+    private readonly struct AboveGradient : IPredictor
+    {
+        public static int Predict(int a, int b, int c) => b + ((a - c) >> 1);
+    }
+
+    private readonly struct Average : IPredictor
+    {
+        public static int Predict(int a, int b, int c) => (a + b) >> 1;
     }
 }

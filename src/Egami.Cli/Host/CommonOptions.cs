@@ -82,13 +82,15 @@ internal sealed class ImageOptions
 
     public Option<int?> Quality { get; } = new("--quality") { Description = "Lossy quality from 0 to 100 (JPEG, WebP, AVIF, JPEG XL, TIFF's JPEG).", HelpName = "0-100" };
 
-    public Option<bool?> Lossless { get; } = new("--lossless") { Description = "Lossless encoding (WebP, AVIF, JPEG XL)." };
+    public Option<bool?> Lossless { get; } = new("--lossless") { Description = "Lossless encoding (WebP, AVIF, JPEG XL, and lossless JPEG with the predictor picked per image)." };
 
     public Option<int?> Effort { get; } = new("--effort") { Description = "Encoder effort: higher is smaller and slower (WebP, AVIF, JPEG XL).", HelpName = "level" };
 
     public Option<int?> BitDepth { get; } = new("--bit-depth") { Description = "Bits per channel to write (PNG, AVIF).", HelpName = "bits" };
 
     public Option<bool?> Progressive { get; } = new("--progressive") { Description = "Write the image so viewers show it coarse first, then sharper as it arrives (AVIF layers, JPEG and JPEG XL progressive)." };
+
+    public Option<bool?> Arithmetic { get; } = new("--arithmetic") { Description = "Arithmetic coding instead of Huffman: smaller files with the same pixels, which browsers do not read (JPEG)." };
 
     public Option<int?> TargetSize { get; } = new("--target-size") { Description = "Search the quality for the largest file not above this many bytes (AVIF).", HelpName = "bytes" };
 
@@ -134,6 +136,7 @@ internal sealed class ImageOptions
             command.Options.Add(Effort);
             command.Options.Add(BitDepth);
             command.Options.Add(Progressive);
+            command.Options.Add(Arithmetic);
             command.Options.Add(TargetSize);
             command.Options.Add(GainMapQuality);
             command.Options.Add(Denoise);
@@ -184,6 +187,11 @@ internal sealed class ImageOptions
         if (result.GetValue(Progressive) is { } progressive)
         {
             common["progressive"] = progressive ? "true" : "false";
+        }
+
+        if (result.GetValue(Arithmetic) is { } arithmetic)
+        {
+            common["arithmetic"] = arithmetic ? "true" : "false";
         }
 
         if (result.GetValue(TargetSize) is { } target)
