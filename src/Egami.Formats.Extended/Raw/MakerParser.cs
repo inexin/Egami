@@ -98,7 +98,7 @@ internal static class MakerParser
     /// <summary>Reads an ASCII tag of the IFD at <paramref name="first"/> when it lies within <paramref name="header"/>.</summary>
     private static string? Ascii(ReadOnlySpan<byte> header, bool bigEndian, uint first, int tag)
     {
-        if (first + 2 > header.Length)
+        if (first + 2L > header.Length)
         {
             return null;
         }
@@ -106,25 +106,25 @@ internal static class MakerParser
         int count = U16(header, (int)first, bigEndian);
         for (int i = 0; i < count; i++)
         {
-            int at = (int)first + 2 + (i * 12);
+            long at = first + 2L + (i * 12L);
             if (at + 12 > header.Length)
             {
                 return null;
             }
 
-            if (U16(header, at, bigEndian) != tag)
+            if (U16(header, (int)at, bigEndian) != tag)
             {
                 continue;
             }
 
-            int n = (int)U32(header, at + 4, bigEndian);
-            int offset = n <= 4 ? at + 8 : (int)U32(header, at + 8, bigEndian);
-            if (n <= 0 || offset < 0 || offset + n > header.Length)
+            long n = U32(header, (int)at + 4, bigEndian);
+            long offset = n <= 4 ? at + 8 : U32(header, (int)at + 8, bigEndian);
+            if (n <= 0 || offset + n > header.Length)
             {
                 return null;
             }
 
-            ReadOnlySpan<byte> bytes = header.Slice(offset, n);
+            ReadOnlySpan<byte> bytes = header.Slice((int)offset, (int)n);
             int end = bytes.IndexOf((byte)0);
             return Encoding.Latin1.GetString(end < 0 ? bytes : bytes[..end]).Trim();
         }

@@ -13,7 +13,7 @@ internal static class RawDetect
     /// <summary>Gets whether a header is a DNG's: a TIFF header whose IFD0 has DNGVersion.</summary>
     public static bool IsDng(ReadOnlySpan<byte> header)
     {
-        if (!RawTiff.TryHeader(header, out bool bigEndian, out ushort magic, out uint first) || magic != 42 || first < 8 || first + 2 > header.Length)
+        if (!RawTiff.TryHeader(header, out bool bigEndian, out ushort magic, out uint first) || magic != 42 || first < 8 || first + 2L > header.Length)
         {
             return false;
         }
