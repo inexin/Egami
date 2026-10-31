@@ -21,6 +21,7 @@ public class RenderTreeTests
         AssertSameNode(document.RenderTree, again.RenderTree, name);
     }
 
+    [Trait("Category", "Slow")]
     [Fact]
     public void SuiteFilesResolveWithoutThrowing()
     {
@@ -129,6 +130,7 @@ public class RenderTreeTests
         Assert.Throws<SvgException>(() => SvgDocument.Parse($"<svg {Ns} width='10' height='10'><g id='a'><use href='#a'/></g></svg>", new SvgLoadOptions { Strict = true }));
     }
 
+    [Trait("Category", "Slow")]
     [Fact]
     public void UseChainsStopAtTheElementLimit()
     {

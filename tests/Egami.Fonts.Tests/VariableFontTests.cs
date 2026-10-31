@@ -97,6 +97,7 @@ public class VariableFontTests
         }
     }
 
+    [Trait("Category", "Slow")]
     [Theory]
     [MemberData(nameof(Fonts))]
     public void MetricsAndKerningEqualTheInstancer(string file)

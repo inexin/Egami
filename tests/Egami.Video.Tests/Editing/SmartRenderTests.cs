@@ -39,6 +39,7 @@ public class SmartRenderTests
 
     public static TheoryData<string> Codecs() => ["vp8", "vp9", "av1"];
 
+    [Trait("Category", "Slow")]
     [Theory]
     [MemberData(nameof(Codecs))]
     public void CopiesUntouchedPartsAndDecodesCleanly(string name)

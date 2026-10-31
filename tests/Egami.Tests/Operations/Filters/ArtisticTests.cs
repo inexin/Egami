@@ -29,6 +29,7 @@ public class ArtisticTests
         return a == 0 ? new Rgba8(0, 0, 0, Round(0, n)) : new Rgba8(Round(r, a), Round(g, a), Round(b, a), Round(a, n));
     }
 
+    [Trait("Category", "Slow")]
     [Theory]
     [InlineData(8, 0, 0)]
     [InlineData(7, 3, -2)]

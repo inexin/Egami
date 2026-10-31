@@ -309,6 +309,7 @@ public class RasterDecoderTests
         Assert.True(peak.PeakPixelBytes >= 480 * 640 * 3);
     }
 
+    [Trait("Category", "Slow")]
     [Fact]
     public void TheFramesOptionSelectsFramesAsInLoad()
     {

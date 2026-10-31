@@ -47,6 +47,7 @@ public sealed class ParagraphRobustnessTests
         }
     }
 
+    [Trait("Category", "Slow")]
     [Fact]
     public void RandomMutationsNeverThrow()
     {

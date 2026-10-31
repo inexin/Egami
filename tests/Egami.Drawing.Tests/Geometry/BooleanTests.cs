@@ -23,6 +23,7 @@ public class BooleanTests
         Assert.Equal(2, A.Xor(B).Contours.Count);
     }
 
+    [Trait("Category", "Slow")]
     [Fact]
     public void ResultsKeepCurves()
     {
@@ -119,6 +120,7 @@ public class BooleanTests
     }
 
     /// <summary>Inputs the 2.6.2 fuzz run found slow: huge cubic loops running along each other. Their cutting has a budget.</summary>
+    [Trait("Category", "Slow")]
     [Theory]
     [InlineData("M45 45 L80 80 C80 80 45 4545 80 80 C115 -4385 45 45 0 0")]
     [InlineData("M81 80 S 45 45, 0, 0,3 1 1 045 0 13 210 L20 20M.58 0.5 3 1910 145 80 S 45 45, 0, 0,3 1 1 0  ,0 Z")]
