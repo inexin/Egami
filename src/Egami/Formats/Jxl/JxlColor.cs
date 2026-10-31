@@ -31,16 +31,21 @@ internal static class JxlColor
 
     /// <summary>Converts samples <paramref name="start"/> to <paramref name="end"/> of the X, Y, B planes to linear sRGB.</summary>
     internal static void XybToLinear(float[][] planes, int start, int end, JxlImageHeader image, float[]? opsin)
+        => XybToLinear(planes, start, end, opsin ?? image.OpsinInverse ?? DefaultOpsin, image.ToneMapping.IntensityTarget);
+
+    /// <summary>Converts the first <paramref name="count"/> samples of the X, Y, B planes to linear sRGB with the default opsin inverse.</summary>
+    internal static void XybToLinear(float[][] planes, int count, float intensityTarget) => XybToLinear(planes, 0, count, DefaultOpsin, intensityTarget);
+
+    private static void XybToLinear(float[][] planes, int start, int end, float[] m, float intensityTarget)
     {
         // A target matrix folded into the opsin inverse, as libjxl does, rounds as libjxl does.
-        float[] m = opsin ?? image.OpsinInverse ?? DefaultOpsin;
         float b0 = m[9];
         float b1 = m[10];
         float b2 = m[11];
         float c0 = MathF.Cbrt(b0);
         float c1 = MathF.Cbrt(b1);
         float c2 = MathF.Cbrt(b2);
-        float scale = 255 / image.ToneMapping.IntensityTarget;
+        float scale = 255 / intensityTarget;
         float[] x = planes[0];
         float[] y = planes[1];
         float[] b = planes[2];

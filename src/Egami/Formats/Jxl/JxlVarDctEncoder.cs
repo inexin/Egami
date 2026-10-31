@@ -6,7 +6,7 @@ internal sealed record JxlLossySettings
     /// <summary>Gets the Butteraugli-style distance, 1.0 visually lossless.</summary>
     internal float Distance { get; init; } = 1;
 
-    /// <summary>Gets the effort, 1 to 7, on libjxl's scale (its speed tiers Lightning to Squirrel).</summary>
+    /// <summary>Gets the effort, 1 to 10, on libjxl's scale (its speed tiers Lightning to Glacier).</summary>
     internal int Effort { get; init; } = 5;
 
     internal int Parallelism { get; init; } = Environment.ProcessorCount;
@@ -143,6 +143,11 @@ internal sealed partial class JxlVarDctEncoder
     private int[] _extraShifts = [];
     private readonly Dictionary<int, (int Width, int Height, int Shift)> _extraSizes = [];
     private readonly float _originalDistance;
+    private readonly float _intensityTarget;
+
+    // At effort 8 and up, the image in linear light for Butteraugli, and the quantization field before rounding.
+    private readonly float[][]? _linear;
+    private float[]? _field;
     private readonly (float Dx, float Db, float ExposedBlue) _pixelStats;
     private readonly float[]? _noise;
 
@@ -164,7 +169,13 @@ internal sealed partial class JxlVarDctEncoder
         _parallel = new ParallelOptions { MaxDegreeOfParallelism = Math.Max(1, settings.Parallelism) };
         _upsampling = upsampling;
         _originalDistance = originalDistance;
+        _intensityTarget = intensityTarget;
         _frame = frame;
+        if (settings.Effort >= 8 && frame is null && upsampling == 1)
+        {
+            _linear = image.Color;
+        }
+
         _chunk = chunk;
         int fullWidth = Ceil(image.Width, 8) * 8, fullHeight = Ceil(image.Height, 8) * 8;
         float[][] xyb = Pad(image, intensityTarget, fullWidth, fullHeight, _parallel);
@@ -510,6 +521,9 @@ internal sealed partial class JxlVarDctEncoder
 
     private int Speed => Math.Clamp(_settings.Effort, 1, 7);
 
+    // The effort with 8 to 10 too, for what libjxl's Kitten, Tortoise and Glacier tiers add.
+    private int Effort => Math.Clamp(_settings.Effort, 1, 10);
+
     /// <summary>Encodes the image as a bare codestream: the image header from <paramref name="header"/>, then one VarDCT frame.</summary>
     internal static byte[] Encode(JxlLinearImage image, JxlEncodeInput header, JxlLossySettings settings, float intensityTarget = 255)
     {
@@ -555,6 +569,7 @@ internal sealed partial class JxlVarDctEncoder
         e._frameHeight = image.Height;
         e.PrepareExtraChannels(image, header);
         e.ChooseParameters();
+        e.FindBestQuantization(header);
         report?.Advance(1);
         e.ComputeCoefficients();
         report?.Advance(1);
@@ -835,6 +850,7 @@ internal sealed partial class JxlVarDctEncoder
 
                 ChromaFromLumaTile(tx, ty, useDct8: false);
             });
+            _field = field;
         }
         else
         {
@@ -1545,6 +1561,180 @@ internal sealed partial class JxlVarDctEncoder
 
         return (float)((12.339445295782363 * e0) + (1.0 * e1) + (0.2 * e2));
     }
+
+    /// <summary>
+    /// libjxl's FindBestQuantization at effort 8 (two rounds) and 9 and up (four): the frame is decoded with the quantization
+    /// field as it stands and compared with the image by Butteraugli; each block whose tile distance (a 16-norm of the map over
+    /// the varblock) is above the distance asked for gets a finer step in proportion, and in the first two rounds the others a
+    /// coarser one by its 0.2th power, within bounds set by the first field. The second round keeps each block at least
+    /// 40 % of the way back to its first value. Not for chunks or frames coded at half size.
+    /// </summary>
+    private void FindBestQuantization(JxlEncodeInput header)
+    {
+        if (_linear is null || _field is null)
+        {
+            return;
+        }
+
+        float target = _originalDistance;
+        float quantDc = InitialQuantDc(_settings.Distance);
+        float[] field = _field;
+        AdjustQuantField(field, target, 0, 0, _blocksX, _blocksY);
+        float[] initial = (float[])field.Clone();
+        float min = initial.Min(), max = initial.Max();
+        float deviationLow = MathF.Sqrt(250 / (max / min));
+        float asymmetry = MathF.Min(2, deviationLow);
+        float lower = min / (asymmetry * deviationLow);
+        float higher = max * (deviationLow / asymmetry);
+        int iterations = Effort >= 9 ? 4 : 2;
+        Analysis.Butteraugli comparator = new(_linear, _width, _height);
+        for (int i = 0; i <= iterations; i++)
+        {
+            SetQuantField(quantDc, field);
+            float[] tiles = TileDistances(comparator.Diffmap(Roundtrip(header)));
+            if (i == iterations)
+            {
+                break;
+            }
+
+            if (i == 1)
+            {
+                // The field may not get much coarser than the first guess, so the AC keeps the precision the LF needs.
+                const double InitMul = 0.6;
+                for (int b = 0; b < field.Length; b++)
+                {
+                    double clamp = ((1.0 - InitMul) * field[b]) + (InitMul * initial[b]);
+                    if (field[b] < clamp)
+                    {
+                        field[b] = Math.Clamp((float)clamp, lower, higher);
+                    }
+                }
+            }
+
+            double power = i < 2 ? 0.2 : 0.0;
+            float inv = (float)(1.0 * GlobalScaleDenom / _globalScale);
+            for (int b = 0; b < field.Length; b++)
+            {
+                float diff = tiles[b] / target;
+                if (diff <= 1.0f)
+                {
+                    if (power != 0)
+                    {
+                        field[b] = (float)(field[b] * Math.Pow(diff, power));
+                    }
+                }
+                else
+                {
+                    float old = field[b];
+                    field[b] *= diff;
+                    if (Math.Round(old * inv, MidpointRounding.AwayFromZero) == Math.Round(field[b] * inv, MidpointRounding.AwayFromZero))
+                    {
+                        field[b] = old + Scale;
+                    }
+                }
+
+                field[b] = Math.Clamp(field[b], lower, higher);
+            }
+        }
+
+        SetQuantField(quantDc, field);
+    }
+
+    /// <summary>libjxl's Quantizer::SetQuantField: the global scale from the field's median and median deviation, then each block's value.</summary>
+    private void SetQuantField(float quantDc, float[] field)
+    {
+        float[] sorted = (float[])field.Clone();
+        Array.Sort(sorted);
+        float median = sorted[sorted.Length / 2];
+        for (int i = 0; i < sorted.Length; i++)
+        {
+            sorted[i] = MathF.Abs(field[i] - median);
+        }
+
+        Array.Sort(sorted);
+        ComputeGlobalScaleAndQuant(quantDc, median, sorted[sorted.Length / 2]);
+        float inv = (float)(1.0 * GlobalScaleDenom / _globalScale);
+        for (int i = 0; i < field.Length; i++)
+        {
+            _quantField[i] = ClampQuant((field[i] * inv) + 0.5f);
+        }
+    }
+
+    /// <summary>
+    /// libjxl's RoundtripImage: the frame coded as a draft with the quantization field as it stands, decoded, filtered as the
+    /// decoder does (Gaborish, the EPF at sharpness 4 everywhere, patches; no noise), in linear sRGB.
+    /// </summary>
+    private float[][] Roundtrip(JxlEncodeInput header)
+    {
+        ComputeCoefficients();
+        QuantizeLf();
+        _passCoeffs = [_coeffs];
+        ComputeOrders();
+        FindBlockEntropyModel();
+        _draft = true;
+        float[][] planes = JxlImageDecoder.DecodeXyb(Codestream(header), _settings.Parallelism);
+        _draft = false;
+        JxlLoopFilter filter = new() { Gaborish = _gaborish, EpfIterations = _epfIterations };
+        JxlParallel parallel = new(Math.Max(1, _settings.Parallelism), CancellationToken.None);
+        if (_gaborish)
+        {
+            JxlFilters.Gaborish(planes, _width, _height, _width, filter.GaborishWeights, parallel);
+        }
+
+        float sigmaBase = filter.QuantMul * 65536f / _globalScale;
+        JxlFilters.Epf(planes, _width, _height, _width, filter, (bx, by) => sigmaBase / _quantField[(by * _blocksX) + bx] * filter.SharpLut[_epfSharpness[(by * _blocksX) + bx]], parallel);
+        AddPatches(planes, _width, 1);
+        JxlColor.XybToLinear(planes, _width * _height, _intensityTarget);
+        return planes;
+    }
+
+    /// <summary>libjxl's TileDistMap: for each varblock, 1.2 times the 16-norm of the distance map over its pixels, given to each of its blocks.</summary>
+    private float[] TileDistances(float[] map)
+    {
+        float[] tiles = new float[_blocksX * _blocksY];
+        for (int by = 0; by < _blocksY; by++)
+        {
+            for (int bx = 0; bx < _blocksX; bx++)
+            {
+                int at = (by * _blocksX) + bx;
+                if (!_isFirst[at])
+                {
+                    continue;
+                }
+
+                (int w8, int h8) = JxlTransforms8.Size((JxlTransformType)_strategy[at]);
+                int x1 = Math.Min(_width, (bx + w8) * 8), y1 = Math.Min(_height, (by + h8) * 8);
+                float norm = 0;
+                double pixels = 0;
+                for (int y = by * 8; y < y1; y++)
+                {
+                    for (int x = bx * 8; x < x1; x++)
+                    {
+                        float v = map[(y * _width) + x];
+                        v *= v;
+                        v *= v;
+                        v *= v;
+                        v *= v;
+                        norm += v;
+                        pixels += 1;
+                    }
+                }
+
+                const float TileNorm = 1.2f;
+                float distance = TileNorm * MathF.Pow((float)(norm / Math.Max(1, pixels)), 1.0f / 16.0f);
+                for (int iy = 0; iy < h8 && by + iy < _blocksY; iy++)
+                {
+                    for (int ix = 0; ix < w8 && bx + ix < _blocksX; ix++)
+                    {
+                        tiles[at + (iy * _blocksX) + ix] = distance;
+                    }
+                }
+            }
+        }
+
+        return tiles;
+    }
+
 
     /// <summary>libjxl's InitialQuantDC: the DC quantizer for a distance, with a gentler slope at high distances.</summary>
     internal static float InitialQuantDc(float distance)
