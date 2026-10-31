@@ -419,4 +419,206 @@ internal static class JxlFuzzTarget
 
         using Raster raster = Raster.Load(jxl, context);
     }
+
+    /// <summary>
+    /// The jxl-frames target (JPEG XL extras PR A): the frame writer. Byte 0 picks animation, layers or extra channels, lossless
+    /// or lossy; the next bytes the size (for extra channels sometimes past one group), frame count and effort, the rest the
+    /// pixels (frames mostly repeat the one before, with a changed patch, so frames get cut). Lossless animations must load back
+    /// to the same frames, layers through ReadLayers to the same places, blend modes, names and pixels, and extra channels to the
+    /// same samples; lossy files must load at their size with every frame.
+    /// </summary>
+    public static void Frames(byte[] data, EgamiContext context)
+    {
+        if (data.Length < 8)
+        {
+            return;
+        }
+
+        bool lossless = (data[0] & 1) == 0;
+        int width = 1 + (data[1] % 40), height = 1 + (data[2] % 40), count = 1 + (data[3] % 5);
+        JxlWriterOptions options = new() { Lossless = lossless, Effort = 1 + (data[4] % 7), Distance = lossless ? null : 0.5f + (data[5] % 8) };
+        ReadOnlySpan<byte> pixels = data.AsSpan(8);
+        switch ((data[0] >> 1) % 3)
+        {
+            case 0:
+                Animation(pixels, width, height, count, options, context);
+                break;
+            case 1:
+                Layers(pixels, width, height, count, data[6], options, context);
+                break;
+            default:
+                // Now and then past one group each way, so channels subsampled 3 times reach the LF groups' streams.
+                if (data[7] >= 240)
+                {
+                    (width, height) = (width + 260 + (data[7] & 7), height + 260 + (data[7] & 8));
+                }
+
+                ExtraChannels(pixels, width, height, data[6], options, context);
+                break;
+        }
+    }
+
+    private static Raster<Rgba8> Pixels(ReadOnlySpan<byte> bytes, int width, int height, int seed, EgamiContext context)
+    {
+        Raster<Rgba8> r = Raster.Create<Rgba8>(width, height, context);
+        for (int y = 0; y < height; y++)
+        {
+            Span<byte> row = MemoryMarshal.AsBytes(r.Row(y));
+            for (int i = 0; i < row.Length; i++)
+            {
+                row[i] = bytes.IsEmpty ? (byte)(seed + i) : bytes[((y * row.Length) + i + (seed * 7)) % bytes.Length];
+            }
+        }
+
+        return r;
+    }
+
+    private static void Animation(ReadOnlySpan<byte> bytes, int width, int height, int count, JxlWriterOptions options, EgamiContext context)
+    {
+        using Raster<Rgba8> animation = Pixels(bytes, width, height, 0, context);
+        for (int f = 1; f < count; f++)
+        {
+            // The frame before with a patch changed, or opaque, or as it was.
+            using Raster<Rgba8> next = Raster.Create<Rgba8>(width, height, context);
+            for (int y = 0; y < height; y++)
+            {
+                animation.Frames[f - 1].Row(y).CopyTo(next.Row(y));
+            }
+
+            int x0 = bytes.IsEmpty ? 0 : bytes[f % bytes.Length] % width, y0 = bytes.IsEmpty ? 0 : bytes[(f * 3) % bytes.Length] % height;
+            for (int y = y0; y < Math.Min(height, y0 + 1 + (f * 3)); y++)
+            {
+                for (int x = x0; x < Math.Min(width, x0 + 1 + (f * 5)); x++)
+                {
+                    Rgba8 p = next.Row(y)[x];
+                    next.Row(y)[x] = new Rgba8((byte)(p.R + 40), p.G, (byte)(p.B ^ f), (f & 1) == 0 ? (byte)255 : p.A);
+                }
+            }
+
+            animation.Frames.Add(next.Frames[0]).Metadata.Delay = TimeSpan.FromMilliseconds(f * 30);
+        }
+
+        using MemoryStream file = new();
+        animation.Save(file, JxlFormat.Info, options);
+        using Raster<Rgba8> again = Raster.Load<Rgba8>(file.ToArray(), context);
+        if (again.FrameCount != animation.FrameCount || again.Width != width || again.Height != height)
+        {
+            throw new InvalidOperationException($"A {animation.FrameCount}-frame animation loads as {again.FrameCount} frames of {again.Width}×{again.Height}.");
+        }
+
+        for (int f = 0; f < animation.FrameCount && options.Lossless == true; f++)
+        {
+            for (int y = 0; y < height; y++)
+            {
+                if (!animation.Frames[f].Row(y).SequenceEqual(again.Frames[f].Row(y)))
+                {
+                    throw new InvalidOperationException($"Frame {f} of a lossless animation differs in row {y}.");
+                }
+            }
+        }
+    }
+
+    private static void Layers(ReadOnlySpan<byte> bytes, int width, int height, int count, byte modes, JxlWriterOptions options, EgamiContext context)
+    {
+        List<JxlLayer> layers = [];
+        try
+        {
+            for (int i = 0; i < count; i++)
+            {
+                int w = 1 + ((width * (i + 2)) % 37), h = 1 + ((height * (i + 3)) % 37);
+                int x = (bytes.IsEmpty ? i : bytes[i % bytes.Length]) % (width + 20) - 10, y = (bytes.IsEmpty ? i : bytes[(i + 1) % bytes.Length]) % (height + 20) - 10;
+                JxlLayerBlend blend = (JxlLayerBlend)((modes >> i) % 5);
+                layers.Add(new JxlLayer(Pixels(bytes, w, h, i, context), x, y, blend, name: i % 2 == 0 ? $"layer {i}" : null));
+            }
+
+            using MemoryStream file = new();
+            JxlImage.WriteLayers(file, width, height, layers, options, context);
+            file.Position = 0;
+            IReadOnlyList<JxlLayer> read = JxlImage.ReadLayers(file, context: context);
+            try
+            {
+                if (read.Count != layers.Count)
+                {
+                    throw new InvalidOperationException($"{layers.Count} layers read back as {read.Count}.");
+                }
+
+                for (int i = 0; i < read.Count; i++)
+                {
+                    JxlLayer a = layers[i], b = read[i];
+                    if ((a.X, a.Y, a.Blend, a.Name, a.Raster.Width, a.Raster.Height) != (b.X, b.Y, b.Blend, b.Name, b.Raster.Width, b.Raster.Height))
+                    {
+                        throw new InvalidOperationException($"Layer {i} reads back as another place, size, blend mode or name.");
+                    }
+
+                    using Raster<Rgba8> pa = a.Raster.As<Rgba8>();
+                    using Raster<Rgba8> pb = b.Raster.As<Rgba8>();
+                    for (int y = 0; y < pa.Height && options.Lossless == true; y++)
+                    {
+                        if (!pa.Row(y).SequenceEqual(pb.Row(y)))
+                        {
+                            throw new InvalidOperationException($"Layer {i} differs in row {y}.");
+                        }
+                    }
+                }
+            }
+            finally
+            {
+                foreach (JxlLayer layer in read)
+                {
+                    layer.Dispose();
+                }
+            }
+
+            file.Position = 0;
+            using Raster blended = Raster.Load(file, context);
+        }
+        finally
+        {
+            foreach (JxlLayer layer in layers)
+            {
+                layer.Dispose();
+            }
+        }
+    }
+
+    private static void ExtraChannels(ReadOnlySpan<byte> bytes, int width, int height, byte kind, JxlWriterOptions options, EgamiContext context)
+    {
+        using Raster<Rgba8> image = Pixels(bytes, width, height, 0, context);
+        int shift = kind % 4, bits = 1 + (kind >> 2) % 16;
+        int w = (width + (1 << shift) - 1) >> shift, h = (height + (1 << shift) - 1) >> shift;
+        using Raster<GrayF32> samples = Raster.Create<GrayF32>(w, h, context);
+        float max = (1 << bits) - 1;
+        for (int y = 0; y < h; y++)
+        {
+            for (int x = 0; x < w; x++)
+            {
+                int v = bytes.IsEmpty ? x + y : bytes[((y * w) + x) % bytes.Length] | (bytes[((y * w) + x + 1) % bytes.Length] << 8);
+                samples.Row(y)[x] = new GrayF32((v % (int)(max + 1)) / max);
+            }
+        }
+
+        JxlExtraChannel channel = new() { Kind = JxlExtraChannelKind.Depth, BitsPerSample = bits, Subsampling = shift, Name = "fuzz" };
+        options = new JxlWriterOptions { Lossless = options.Lossless, Effort = options.Effort, Distance = options.Distance, ExtraChannels = [new JxlExtraChannelImage(channel, samples)] };
+        using MemoryStream file = new();
+        image.Save(file, JxlFormat.Info, options);
+        byte[] jxl = file.ToArray();
+        using Raster again = Raster.Load(jxl, context);
+        if (shift == 0)
+        {
+            // Full size: exactly the samples, in lossy files too (below distance 10, where the frame is coded at full size).
+            // Alpha, when the image has it, comes first.
+            int index = ((JxlDetails)again.Metadata.FormatDetails!).ExtraChannels.Count - 1;
+            using Raster<GrayF32> back = JxlImage.ReadExtraChannel(new MemoryStream(jxl), index, context: context);
+            for (int y = 0; y < h; y++)
+            {
+                for (int x = 0; x < w; x++)
+                {
+                    if (Math.Abs(back.Row(y)[x].L - samples.Row(y)[x].L) > 1e-6f)
+                    {
+                        throw new InvalidOperationException($"The extra channel differs at ({x}, {y}).");
+                    }
+                }
+            }
+        }
+    }
 }

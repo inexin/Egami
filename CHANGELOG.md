@@ -94,6 +94,18 @@ DDS textures, stage C (BC7 and BC6H encoders).
 
 ## Egami, unreleased
 
+Arithmetic and lossless JPEG writing, stage A: arithmetic coding. All additive.
+
+- `JpegWriterOptions.Arithmetic` writes arithmetic-coded JPEG (T.81 annex D's QM-coder with the models of annexes F and G):
+  sequential (SOF9) and, with `Progressive`, progressive (SOF10) files, 8 and 12-bit, gray, YCbCr, CMYK and YCCK, any
+  subsampling and restart interval, at the default conditioning so no DAC segment is written. Each file decodes, in Egami and
+  in libjpeg-turbo's `djpeg`, to exactly the pixels of the Huffman file with the same options, and is no larger than
+  `cjpeg -arithmetic`'s file. A sequential arithmetic file streams in one pass at either precision. An Ultra HDR gain map is
+  left out with a `Save.GainMapDropped` warning; `GainMap` with `Arithmetic` throws `NotSupportedException`. The Huffman paths
+  are unchanged.
+- `JpegTransformOptions.Arithmetic` writes the transform's result arithmetic-coded, so a Huffman file can be repacked smaller
+  with no change to its pixels, as `jpegtran -arithmetic` does. The default stays Huffman.
+
 TIFF ZSTD (Build Plan "Egami TIFF: ZSTD, LZMA and LERC", tasks 1 to 4). All additive.
 
 - TIFF reads ZSTD compression (50000), with the horizontal and floating-point predictors, through a fully managed Zstandard
@@ -131,6 +143,21 @@ For camera RAW (Egami.Formats.Extended). Additive.
 - `FormatInfo.ConvertsColor`: a format whose reader renders `ReaderOptions.ConvertColorTo`'s colour space itself (a RAW
   develop) gets the option passed through, instead of Egami converting the pixels after the load. Every other format loads
   as before.
+
+JPEG XL extras, PR A: animations, layers and extra channels written. All additive.
+
+- JPEG XL animations through `Save`: a raster with more than one frame is written as an animation, lossless or lossy, with
+  each frame's delay (1 ms ticks) and the loop count, each frame cut to the rectangle that changed and blended or replaced as
+  cjxl does from an APNG. Sizes are within 2 % of cjxl 0.12's at efforts 1 to 4 and lossy (at equal Butteraugli and
+  SSIMULACRA2), and djxl decodes them to the same frames. `JxlWriterOptions.FirstFrameOnly` writes a still on purpose; before,
+  only the first frame was written, with a `Save.FramesDropped` warning.
+- `JxlImage.WriteLayers` and a public `JxlLayer` constructor: layers with their place, blend mode, duration and name, which
+  `ReadLayers` reads back field for field.
+- `JxlWriterOptions.ExtraChannels` and `JxlExtraChannelImage`: depth, selection masks, thermal data, spot colors and other
+  extra channels of any bit depth and subsampling, coded lossless in lossless and lossy files. Lossless CMYK keeps its black
+  channel instead of being converted to RGB.
+- Lossless JPEG XL at effort 2 codes a frame of more than eight groups group by group, each with its own context model, as
+  libjxl does: screenshots are up to 20 % smaller and match cjxl -e 2 within 0.01 %. Smaller images are written as before.
 
 2.3.10: PSD layers. All additive.
 

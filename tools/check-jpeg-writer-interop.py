@@ -1,6 +1,8 @@
 """Checks the Phase 2.4.3 JPEG writer against libjpeg-turbo, ImageMagick and Pillow: CMYK, YCCK, 12-bit and progressive files
 decode in each to within 1 level of what Egami reads back, and progressive files are within 1 % of cjpeg -progressive's size at
-the same quality and sampling.
+the same quality and sampling. Arithmetic-coded files (ac-, SOF9 and SOF10) decode in djpeg to exactly the pixels of their
+Huffman twin (.huffman, written with the same options), as well as within 1 level of Egami's decode of that twin, and the size
+cases are within 0.5 % of cjpeg -arithmetic at the same settings.
 
 Runs the JpegWriterInteropFiles test with EGAMI_INTEROP_DIR=.cache/jpeg-interop, which writes the files and, next to each,
 Egami's decode as 8-bit RGB (.rgb), inks (.cmyk) and 12-bit samples scaled to 16 bits (.wide); then, in Docker (alpine:3.20,
@@ -23,7 +25,8 @@ IMAGE = "alpine:3.20"
 PACKAGES = "python3 py3-pillow imagemagick libjpeg-turbo-utils"
 OUT = ".cache/jpeg-interop"
 
-KNOWN = {"pillow-12": "Pillow reads no 12-bit JPEG", "magick-12": "Alpine's ImageMagick has no 12-bit JPEG"}
+KNOWN = {"pillow-12": "Pillow reads no 12-bit JPEG", "magick-12": "Alpine's ImageMagick has no 12-bit JPEG",
+         "pillow-ac": "Pillow fails on some arithmetic files, cjpeg -arithmetic's 4:4:4 ones too"}
 
 
 def parse_pnm(data):
@@ -63,7 +66,7 @@ def gray_to_rgb(values):
 
 def check_file(name):
     path = os.path.join(OUT, name)
-    twelve = name.startswith("p12-")
+    twelve = "p12-" in name
     cmyk = os.path.exists(path + ".cmyk")
     rgb = list(open(path + ".rgb", "rb").read())
     inks = list(open(path + ".cmyk", "rb").read()) if cmyk else None
@@ -94,6 +97,11 @@ def check_file(name):
         ok = d is not None and d <= 1
         failures += 0 if ok else 1
         results.append(f"djpeg {'ok' if ok else 'DIFFERS'} ({d})")
+        if os.path.exists(path + ".huffman"):
+            twin = subprocess.run(["djpeg", "-pnm", path + ".huffman"], capture_output=True)
+            same = twin.returncode == 0 and twin.stdout == out.stdout
+            failures += 0 if same else 1
+            results.append("same pixels as Huffman twin" if same else "DIFFERS FROM HUFFMAN TWIN")
 
     # ImageMagick
     if cmyk:
@@ -132,6 +140,8 @@ def check_file(name):
     except Exception:
         if twelve:
             results.append("pillow: " + KNOWN["pillow-12"] + " (known)")
+        elif name.startswith("ac-"):
+            results.append("pillow: " + KNOWN["pillow-ac"] + " (known)")
         else:
             results.append("pillow: unreadable")
             failures += 1
@@ -141,27 +151,30 @@ def check_file(name):
 def check_size(name):
     path = os.path.join(OUT, name)
     settings = json.load(open(path[:-4] + ".json"))
-    args = ["cjpeg", "-progressive", "-quality", str(settings["quality"]), "-sample", settings["sample"]]
+    modes = (["-arithmetic"] if settings["arithmetic"] else []) + (["-progressive"] if settings["progressive"] else [])
+    args = ["cjpeg"] + modes + ["-quality", str(settings["quality"]), "-sample", settings["sample"]]
+    if settings["restart"]:
+        args += ["-restart", f"{settings['restart']}b"]
     if settings["gray"]:
         args.append("-grayscale")
     theirs = subprocess.run(args + [os.path.join(OUT, settings["source"])], capture_output=True, check=True).stdout
     mine = open(path, "rb").read()
     ratio = len(mine) / len(theirs)
-    ok = ratio <= 1.01
+    ok = ratio <= 1 + settings["limit"] / 100
     same = " (same bytes)" if mine == theirs else ""
-    return (0 if ok else 1), f"size {len(mine):,} vs cjpeg -progressive {len(theirs):,} ({(ratio - 1) * 100:+.2f} %){same} {'ok' if ok else 'TOO LARGE'}"
+    return (0 if ok else 1), f"size {len(mine):,} vs cjpeg {' '.join(modes)} {len(theirs):,} ({(ratio - 1) * 100:+.2f} %){same} {'ok' if ok else 'TOO LARGE'}"
 
 
 def inside():
     failures = 0
     for name in sorted(f for f in os.listdir(OUT) if f.endswith(".jpg")):
         bad, results = check_file(name)
-        if name.startswith("prog-"):
+        if os.path.exists(os.path.join(OUT, name[:-4] + ".json")):
             more, text = check_size(name)
             bad += more
             results.append(text)
         failures += bad
-        print(f"{name:26} " + ", ".join(results))
+        print(f"{name:28} " + ", ".join(results))
     print("all readers agree" if failures == 0 else f"{failures} failures")
     sys.exit(1 if failures else 0)
 

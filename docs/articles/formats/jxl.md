@@ -43,7 +43,7 @@ decodes only the groups it touches.
 
 Animations load as their blended frames with delays and loop count. `JxlImage.ReadLayers` gives the frames before blending, each
 a `JxlLayer` with its offset, duration and `JxlLayerBlend` mode, for an editor; `JxlImage.ReadPreview` gives the preview a file
-may carry.
+may carry. Writing them is under [Writing](#animations).
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Jxl.cs#layers)]
 
@@ -84,6 +84,8 @@ orientation. `JxlWriterOptions` follows cjxl's own knobs, so the same numbers gi
 | `KeepTransparentColors` | `true` | Lossy files keep the color under fully transparent pixels; `false` gives smaller files |
 | `Progressive` | `false` | Lossy files as cjxl `-p` makes them: a coarse image first that sharpens |
 | `PhotonNoiseIso` | `null` | Film-like noise the decoder adds, as cjxl's `--photon_noise_iso` |
+| `FirstFrameOnly` | `false` | Writes only the first frame of a multi-frame raster, as a still |
+| `ExtraChannels` | `null` | Extra channels to write beside the pixels: depth, masks, thermal data, spot colors |
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Jxl.cs#save)]
 
@@ -109,3 +111,38 @@ Alpha is an extra channel coded apart from the color, exact by default, so cut-o
 from there cjxl and Egami code the whole image at half size). `AlphaDistance` above 0 codes it lossy as cjxl's
 `--alpha_distance` does. Fully transparent pixels keep their color unless `KeepTransparentColors` is false, which lets the
 encoder replace it, as libjxl does by default, for a smaller file.
+
+A frame of more than eight groups (256-pixel squares) is coded group by group at lossless effort 2, each group with its own
+context model, as libjxl does by default; screenshots and other images with flat areas come out much smaller that way.
+
+### Animations
+
+A raster with more than one frame is saved as an animation, through the same `Save`, lossless or lossy, as cjxl makes one from
+an APNG or GIF: each frame's `FrameMetadata.Delay` (in ticks of a millisecond, at least one) and the raster's `LoopCount`. Each
+frame is cut to the rectangle that changed from the one before. A lossless rectangle whose changed pixels are all opaque is
+blended over the canvas, its unchanged pixels made transparent; any other rectangle, and every lossy one, replaces the pixels,
+so lossy errors cannot pile up from frame to frame. Effort 1 codes animation frames at effort 2, as cjxl does.
+`FirstFrameOnly` writes the first frame alone. An animation is coded a whole frame at a time, so only `Save` writes one, not a
+streamed encode.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Jxl.cs#write-animation)]
+
+### Layers
+
+`JxlImage.WriteLayers` writes `JxlLayer`s as one frame each, for an editor: each at its own place on the canvas (offsets can be
+negative or reach past it), with its `JxlLayerBlend` mode (replace, blend, add, multiply-add or multiply), duration and name,
+blended onto the layers below. `ReadLayers` gives every field back, and `Load` gives the image they make. All layers take the
+first one's pixel format, with alpha when any layer has it; the file is lossless unless the options ask for lossy, and
+animated when a layer has a duration.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Jxl.cs#write-layers)]
+
+### Extra channels
+
+`ExtraChannels` writes more channels beside the pixels: a `JxlExtraChannelImage` each, a `JxlExtraChannel` description (kind,
+name, 1 to 24 integer bits or a 16 or 32-bit float, subsampling 0 to 3, and a spot color's color) with its samples as a
+`Raster<GrayF32>` at the subsampled size. They are coded lossless in lossless and lossy files alike, after the raster's own
+alpha, and `ReadExtraChannel` gives them back exactly. Still images only. A CMYK raster (`Cmyk8` or `Cmyk16` with a CMYK ICC
+profile) keeps its black channel in lossless files too.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Jxl.cs#write-extra-channels)]

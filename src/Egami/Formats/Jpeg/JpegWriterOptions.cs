@@ -112,6 +112,16 @@ public sealed class JpegWriterOptions : WriterOptions
     public bool Progressive { get; init; }
 
     /// <summary>
+    /// Gets a value indicating whether to code the scans with T.81's arithmetic coder instead of Huffman codes, as
+    /// <c>cjpeg -arithmetic</c> writes (SOF9, or SOF10 when <see cref="Progressive"/>): files are about 4 to 8% smaller than with
+    /// optimized Huffman tables and decode to the same pixels, but no web browser reads them; libjpeg-turbo, ImageMagick and Egami
+    /// do. <see cref="OptimizeHuffman"/> is ignored, and a sequential file streams in one pass at either precision. An Ultra HDR gain
+    /// map is left out, and setting <see cref="GainMap"/> with this throws <see cref="NotSupportedException"/>. Re-saving an
+    /// arithmetic-coded file writes Huffman codes unless this is set. Defaults to <see langword="false"/>.
+    /// </summary>
+    public bool Arithmetic { get; init; }
+
+    /// <summary>
     /// Gets the bits per sample, 8 or 12. 12 keeps the detail of 16-bit and float images (written as SOF1, or SOF2 when
     /// progressive, with Huffman tables always optimized), but no browser shows 12-bit JPEG; 8-bit pixel types gain nothing from
     /// it. Defaults to 8.

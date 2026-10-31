@@ -172,4 +172,86 @@ public class Jxl
         Assert.Equal((photo.Width, photo.Height), (back.Width, back.Height));
         Assert.True(File.Exists("logo-small.jxl"));
     }
+
+    [Fact]
+    public void WriteAnimation()
+    {
+        using SampleFiles files = new();
+
+        #region write-animation
+        // A raster with several frames is saved as an animation: each frame cut to what changed, with its delay and the loop count.
+        using Raster animation = Raster.Load("loop.gif");
+        animation.Save("loop.jxl", new JxlWriterOptions { Lossless = true });
+
+        // Or only the first frame, as a still.
+        animation.Save("first.jxl", new JxlWriterOptions { Lossless = true, FirstFrameOnly = true });
+        #endregion
+
+        using Raster back = Raster.Load("loop.jxl");
+        Assert.Equal(animation.FrameCount, back.FrameCount);
+        Assert.Equal(1, Raster.Probe("first.jxl").FrameCount);
+    }
+
+    [Fact]
+    public void WriteLayers()
+    {
+        using SampleFiles files = new();
+
+        #region write-layers
+        // Layers for an editor: each at its own place, blended onto the ones below, and named. ReadLayers gives them back.
+        using Raster<Rgba8> photo = Raster.Load<Rgba8>("duck.png");
+        Raster<Rgba8> badge = Raster.Create<Rgba8>(120, 60, new Rgba8(255, 200, 0, 160));
+        List<JxlLayer> layers =
+        [
+            new(photo.As<Rgba8>(), name: "photo"),
+            new(badge, x: -20, y: 30, blend: JxlLayerBlend.Blend, name: "badge"),
+        ];
+        JxlImage.WriteLayers("layered.jxl", photo.Width, photo.Height, layers);
+        foreach (JxlLayer layer in layers)
+        {
+            layer.Dispose();
+        }
+
+        // Load gives them blended; ReadLayers as they were written.
+        using Raster flat = Raster.Load("layered.jxl");
+        IReadOnlyList<JxlLayer> read = JxlImage.ReadLayers("layered.jxl");
+        #endregion
+
+        Assert.Equal((photo.Width, photo.Height), (flat.Width, flat.Height));
+        Assert.Equal(("badge", -20, 30, JxlLayerBlend.Blend), (read[1].Name, read[1].X, read[1].Y, read[1].Blend));
+        foreach (JxlLayer layer in read)
+        {
+            layer.Dispose();
+        }
+    }
+
+    [Fact]
+    public void WriteExtraChannels()
+    {
+        using SampleFiles files = new();
+
+        #region write-extra-channels
+        // A depth map written beside the color, 16 bits, at half the size each way.
+        using Raster photo = Raster.Load("duck.png");
+        using Raster<GrayF32> depth = Raster.Create<GrayF32>((photo.Width + 1) / 2, (photo.Height + 1) / 2);
+        for (int y = 0; y < depth.Height; y++)
+        {
+            for (int x = 0; x < depth.Width; x++)
+            {
+                depth.Row(y)[x] = new GrayF32((float)y / depth.Height);
+            }
+        }
+
+        JxlExtraChannel description = new() { Kind = JxlExtraChannelKind.Depth, Name = "depth", BitsPerSample = 16, Subsampling = 1 };
+        photo.Save("with-depth.jxl", new JxlWriterOptions { Lossless = true, ExtraChannels = [new JxlExtraChannelImage(description, depth)] });
+
+        // The channels of a loaded file are not on its raster: read them, and pass them on to keep them.
+        using Raster loaded = Raster.Load("with-depth.jxl");
+        JxlDetails details = (JxlDetails)loaded.Metadata.FormatDetails!;
+        using Raster<GrayF32> again = JxlImage.ReadExtraChannel("with-depth.jxl", 0);
+        #endregion
+
+        Assert.Equal(JxlExtraChannelKind.Depth, details.ExtraChannels[0].Kind);
+        Assert.Equal((photo.Width, photo.Height), (again.Width, again.Height));
+    }
 }

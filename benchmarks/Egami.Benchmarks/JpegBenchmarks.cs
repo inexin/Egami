@@ -110,12 +110,18 @@ internal static class BenchFiles
     }
 }
 
-/// <summary>The JPEG design's encode scenarios: the 4000 × 3000 benchmark photo as Rgb8, at quality 75 4:2:0 with the standard tables and at quality 90 4:4:4 with optimized tables.</summary>
+/// <summary>
+/// The JPEG design's encode scenarios: the 4000 × 3000 benchmark photo as Rgb8, at quality 75 4:2:0 with the standard tables and
+/// at quality 90 4:4:4 with optimized tables; and the same arithmetic-coded, plus progressive arithmetic.
+/// </summary>
 [MemoryDiagnoser]
 public class JpegEncodeBenchmarks
 {
     private static readonly JpegWriterOptions Standard = new() { Quality = 75 };
     private static readonly JpegWriterOptions Optimized = new() { Quality = 90, Subsampling = ChromaSubsampling.Subsample444, OptimizeHuffman = true };
+    private static readonly JpegWriterOptions StandardArithmetic = new() { Quality = 75, Arithmetic = true };
+    private static readonly JpegWriterOptions FullArithmetic = new() { Quality = 90, Subsampling = ChromaSubsampling.Subsample444, Arithmetic = true };
+    private static readonly JpegWriterOptions ProgressiveArithmetic = new() { Quality = 75, Progressive = true, Arithmetic = true };
 
     private Raster<Rgb8> _photo = null!;
 
@@ -144,6 +150,65 @@ public class JpegEncodeBenchmarks
     {
         _photo.Save(Stream.Null, JpegFormat.Info, Optimized);
         return _photo.Width;
+    }
+
+    [Benchmark]
+    public int Quality75HalfArithmetic()
+    {
+        _photo.Save(Stream.Null, JpegFormat.Info, StandardArithmetic);
+        return _photo.Width;
+    }
+
+    [Benchmark]
+    public int Quality90FullArithmetic()
+    {
+        _photo.Save(Stream.Null, JpegFormat.Info, FullArithmetic);
+        return _photo.Width;
+    }
+
+    [Benchmark]
+    public int Quality75ProgressiveArithmetic()
+    {
+        _photo.Save(Stream.Null, JpegFormat.Info, ProgressiveArithmetic);
+        return _photo.Width;
+    }
+}
+
+/// <summary>Decoding the 4000 × 3000 benchmark photo written arithmetic-coded at quality 75 4:2:0, sequential and progressive.</summary>
+[MemoryDiagnoser]
+public class JpegArithmeticDecodeBenchmarks
+{
+    private byte[] _sequential = null!;
+    private byte[] _progressive = null!;
+
+    [GlobalSetup]
+    public void Setup()
+    {
+        using Raster<Rgba8> photo = BenchImages.Photo(4000, 3000);
+        using Raster<Rgb8> rgb = photo.As<Rgb8>();
+        _sequential = Encode(rgb, new JpegWriterOptions { Arithmetic = true });
+        _progressive = Encode(rgb, new JpegWriterOptions { Arithmetic = true, Progressive = true });
+    }
+
+    [Benchmark(Baseline = true)]
+    public int Sequential()
+    {
+        using Raster<Rgb8> raster = Raster.Load<Rgb8>(_sequential);
+        return raster.Width;
+    }
+
+    [Benchmark]
+    public int Progressive()
+    {
+        using Raster<Rgb8> raster = Raster.Load<Rgb8>(_progressive);
+        return raster.Width;
+    }
+
+    private static byte[] Encode(Raster<Rgb8> raster, JpegWriterOptions options)
+    {
+        using MemoryStream stream = new();
+        raster.Save(stream, JpegFormat.Info, options);
+        return stream.ToArray();
     }
 }
 
