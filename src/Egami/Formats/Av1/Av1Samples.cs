@@ -74,6 +74,40 @@ internal static class Av1Samples
             : Vector256.LoadUnsafe(ref Unsafe.As<byte, short>(ref b));
     }
 
+    /// <summary>
+    /// Packs eight 32-bit lanes, each 0 to 65535, into 16-bit lanes: one saturating pack where SSE4.1 has it, which keeps such
+    /// values exactly, rather than the masks a truncating narrow costs.
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal static Vector128<ushort> Pack(Vector256<int> v) =>
+        Sse41.IsSupported ? Sse41.PackUnsignedSaturate(v.GetLower(), v.GetUpper()) : Vector128.Narrow(v.GetLower().AsUInt32(), v.GetUpper().AsUInt32());
+
+    /// <summary>Packs four 32-bit lanes, each 0 to 65535, into the low four 16-bit lanes, as <see cref="Pack(Vector256{int})"/> does.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal static Vector128<ushort> Pack(Vector128<int> v) =>
+        Sse41.IsSupported ? Sse41.PackUnsignedSaturate(v, v) : Vector128.Narrow(v.AsUInt32(), v.AsUInt32());
+
+    /// <summary>Packs 16-bit lanes, each 0 to 255, into bytes (twice over), with one saturating pack where SSE2 has it.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal static Vector128<byte> PackBytes(Vector128<ushort> v) =>
+        Sse2.IsSupported ? Sse2.PackUnsignedSaturate(v.AsInt16(), v.AsInt16()) : Vector128.Narrow(v, v);
+
+    /// <summary>Stores the low four 16-bit lanes, already in the sample range, as samples at <paramref name="at"/>.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal static void Store4<T>(ref T p, nint at, Vector128<ushort> value)
+        where T : unmanaged
+    {
+        ref byte b = ref Unsafe.As<T, byte>(ref Unsafe.Add(ref p, at));
+        if (typeof(T) == typeof(byte))
+        {
+            Unsafe.WriteUnaligned(ref b, PackBytes(value).AsUInt32().ToScalar());
+        }
+        else
+        {
+            Unsafe.WriteUnaligned(ref b, value.AsUInt64().ToScalar());
+        }
+    }
+
     /// <summary>Stores eight 16-bit lanes, already in the sample range, as samples at <paramref name="at"/>.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static void Store8<T>(ref T p, nint at, Vector128<ushort> value)
@@ -82,7 +116,7 @@ internal static class Av1Samples
         ref byte b = ref Unsafe.As<T, byte>(ref Unsafe.Add(ref p, at));
         if (typeof(T) == typeof(byte))
         {
-            Unsafe.WriteUnaligned(ref b, Vector128.Narrow(value, value).AsUInt64().ToScalar());
+            Unsafe.WriteUnaligned(ref b, PackBytes(value).AsUInt64().ToScalar());
         }
         else
         {
@@ -103,7 +137,18 @@ internal static class Av1Samples
         {
             byte[] bytes = (byte[])planes[plane];
             ushort[] to = new ushort[bytes.Length];
-            for (int i = 0; i < bytes.Length; i++)
+            int i = 0;
+            if (Avx2.IsSupported)
+            {
+                ref byte from = ref bytes[0];
+                ref ushort into = ref to[0];
+                for (; i + 16 <= bytes.Length; i += 16)
+                {
+                    Avx2.ConvertToVector256Int16(Vector128.LoadUnsafe(ref from, (nuint)i)).AsUInt16().StoreUnsafe(ref into, (nuint)i);
+                }
+            }
+
+            for (; i < bytes.Length; i++)
             {
                 to[i] = bytes[i];
             }

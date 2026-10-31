@@ -430,7 +430,7 @@ internal abstract class HeifImage
                     }
                     catch (EgamiException e)
                     {
-                        heif.Problems.Add(new HeifProblem($"{DiagnosticPrefix}.GainMapDropped", $"The gain map grid could not be read ({e.Message}); the image loads as SDR only.", -1));
+                        heif.Problems.Add(new HeifProblem($"{DiagnosticPrefix}.GainMapDropped", $"The gain map grid could not be read ({e.Message}); the image loads as SDR only.", null));
                         return;
                     }
                 }
@@ -477,7 +477,7 @@ internal abstract class HeifImage
             }
             catch (EgamiException e)
             {
-                heif.Problems.Add(new HeifProblem($"{DiagnosticPrefix}.GainMapDropped", $"The gain map grid could not be read ({e.Message}); the image loads as SDR only.", -1));
+                heif.Problems.Add(new HeifProblem($"{DiagnosticPrefix}.GainMapDropped", $"The gain map grid could not be read ({e.Message}); the image loads as SDR only.", null));
                 return;
             }
 

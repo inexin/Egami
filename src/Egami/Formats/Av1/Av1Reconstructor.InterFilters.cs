@@ -21,7 +21,7 @@ internal sealed partial class Av1Reconstructor<T>
     /// <see cref="BlockInterPrediction"/> does with steps of 1024.
     /// </summary>
     private void UnscaledPrediction(T[] src, int stride, int lastX, int lastY, int x, int y, int w, int h, short[] fx, short[] fy,
-        int round0, int round1, int[] pred)
+        int round0, int round1, int[] pred, Picture? picture)
     {
         int fracX = (x >> 6) & 15, fracY = (y >> 6) & 15;
         int x0 = (x >> 10) - 3, y0 = (y >> 10) - 3;
@@ -59,6 +59,12 @@ internal sealed partial class Av1Reconstructor<T>
         {
             // Only the rows the vertical filter's middle tap reads, and that tap is 128: Round2(v * 128, round1).
             Horizontal(src, at + (3 * stride), stride, fracX, fx, w, h, round0, inter);
+            if (picture is Picture whole)
+            {
+                CenterTapToPicture(inter, w, h, round1, whole);
+                return;
+            }
+
             int half = 1 << (round1 - 1);
             int i = 0;
             if (Avx2.IsSupported)
@@ -81,7 +87,14 @@ internal sealed partial class Av1Reconstructor<T>
         }
 
         Horizontal(src, at, stride, fracX, fx, w, windowH, round0, inter);
-        Vertical(inter, fracY, fy, w, h, round1, pred);
+        if (picture is Picture target)
+        {
+            VerticalToPicture(inter, fracY, fy, w, h, round1, target);
+        }
+        else
+        {
+            Vertical(inter, fracY, fy, w, h, round1, pred);
+        }
     }
 
     /// <summary>The horizontal pass over <paramref name="rows"/> rows of the window: 8-tap, or a copy shifted to the filter's scale.</summary>
@@ -270,6 +283,128 @@ internal sealed partial class Av1Reconstructor<T>
             return Vector256.Create(lane, lane);
         }
     }
+
+    /// <summary>
+    /// <see cref="Vertical"/> for a single prediction, written straight into the frame: its last rounding gives samples, which are
+    /// only clamped, so the 32-bit prediction and the copy out of it are skipped.
+    /// </summary>
+    private static void VerticalToPicture(short[] inter, int frac, short[] filters, int w, int h, int round1, Picture picture)
+    {
+        ReadOnlySpan<short> f = filters.AsSpan(frac * 8, 8);
+        int half = 1 << (round1 - 1);
+        ref short i0 = ref MemoryMarshal.GetArrayDataReference(inter);
+        ref T d0 = ref MemoryMarshal.GetArrayDataReference(picture.Samples);
+        int c0 = 0;
+        if (Avx2.IsSupported && w >= 16)
+        {
+            Vector256<short> c01 = Pair(f[0], f[1]), c23 = Pair(f[2], f[3]), c45 = Pair(f[4], f[5]), c67 = Pair(f[6], f[7]);
+            Vector256<int> halfV = Vector256.Create(half), maxV = Vector256.Create(picture.Max);
+            for (int r = 0; r < h; r++)
+            {
+                int to = picture.At + (r * picture.Stride);
+                for (int c = 0; c + 16 <= w; c += 16)
+                {
+                    ref short p = ref Unsafe.Add(ref i0, (r * w) + c);
+                    Vector256<int> lo = halfV, hi = halfV;
+                    Rows16(ref p, 0, w, c01, ref lo, ref hi);
+                    Rows16(ref p, 2, w, c23, ref lo, ref hi);
+                    Rows16(ref p, 4, w, c45, ref lo, ref hi);
+                    Rows16(ref p, 6, w, c67, ref lo, ref hi);
+                    lo = Vector256.Min(Vector256.Max(Vector256.ShiftRightArithmetic(lo, round1), Vector256<int>.Zero), maxV);
+                    hi = Vector256.Min(Vector256.Max(Vector256.ShiftRightArithmetic(hi, round1), Vector256<int>.Zero), maxV);
+                    Av1Samples.Store8(ref d0, to + c, Av1Samples.Pack(Avx2.Permute2x128(lo, hi, 0x20)));
+                    Av1Samples.Store8(ref d0, to + c + 8, Av1Samples.Pack(Avx2.Permute2x128(lo, hi, 0x31)));
+                }
+            }
+
+            c0 = w & ~15;
+        }
+
+        if (Sse41.IsSupported && w - c0 >= 8)
+        {
+            Vector128<short> c01 = Pair(f[0], f[1]).GetLower(), c23 = Pair(f[2], f[3]).GetLower();
+            Vector128<short> c45 = Pair(f[4], f[5]).GetLower(), c67 = Pair(f[6], f[7]).GetLower();
+            Vector128<int> halfV = Vector128.Create(half), maxV = Vector128.Create(picture.Max);
+            for (int r = 0; r < h; r++)
+            {
+                int to = picture.At + (r * picture.Stride);
+                for (int c = c0; c + 8 <= w; c += 8)
+                {
+                    ref short p = ref Unsafe.Add(ref i0, (r * w) + c);
+                    Vector128<int> lo = halfV, hi = halfV;
+                    Rows8(ref p, 0, w, c01, ref lo, ref hi);
+                    Rows8(ref p, 2, w, c23, ref lo, ref hi);
+                    Rows8(ref p, 4, w, c45, ref lo, ref hi);
+                    Rows8(ref p, 6, w, c67, ref lo, ref hi);
+                    lo = Vector128.Min(Vector128.Max(Vector128.ShiftRightArithmetic(lo, round1), Vector128<int>.Zero), maxV);
+                    hi = Vector128.Min(Vector128.Max(Vector128.ShiftRightArithmetic(hi, round1), Vector128<int>.Zero), maxV);
+                    Av1Samples.Store8(ref d0, to + c, Sse41.PackUnsignedSaturate(lo, hi));
+                }
+            }
+
+            c0 += (w - c0) & ~7;
+        }
+
+        if (Sse41.IsSupported && w - c0 >= 4)
+        {
+            Vector128<short> c01 = Pair(f[0], f[1]).GetLower(), c23 = Pair(f[2], f[3]).GetLower();
+            Vector128<short> c45 = Pair(f[4], f[5]).GetLower(), c67 = Pair(f[6], f[7]).GetLower();
+            Vector128<int> halfV = Vector128.Create(half), maxV = Vector128.Create(picture.Max);
+            for (int r = 0; r < h; r++)
+            {
+                ref short p = ref Unsafe.Add(ref i0, (r * w) + c0);
+                Vector128<int> acc = Sse2.Add(Sse2.Add(Sse2.MultiplyAddAdjacent(Rows4(ref p, 0, w), c01), Sse2.MultiplyAddAdjacent(Rows4(ref p, 2, w), c23)),
+                    Sse2.Add(Sse2.MultiplyAddAdjacent(Rows4(ref p, 4, w), c45), Sse2.MultiplyAddAdjacent(Rows4(ref p, 6, w), c67)));
+                acc = Vector128.Min(Vector128.Max(Vector128.ShiftRightArithmetic(acc + halfV, round1), Vector128<int>.Zero), maxV);
+                Av1Samples.Store4(ref d0, picture.At + (r * picture.Stride) + c0, Av1Samples.Pack(acc));
+            }
+
+            c0 += 4;
+        }
+
+        for (int r = 0; r < h; r++)
+        {
+            int to = picture.At + (r * picture.Stride);
+            for (int c = c0; c < w; c++)
+            {
+                ref short p = ref Unsafe.Add(ref i0, (r * w) + c);
+                int sum = (f[0] * p) + (f[1] * Unsafe.Add(ref p, w)) + (f[2] * Unsafe.Add(ref p, 2 * w)) + (f[3] * Unsafe.Add(ref p, 3 * w))
+                    + (f[4] * Unsafe.Add(ref p, 4 * w)) + (f[5] * Unsafe.Add(ref p, 5 * w)) + (f[6] * Unsafe.Add(ref p, 6 * w)) + (f[7] * Unsafe.Add(ref p, 7 * w));
+                Unsafe.Add(ref d0, to + c) = Av1Samples.From<T>(Math.Clamp((sum + half) >> round1, 0, picture.Max));
+            }
+        }
+    }
+
+    /// <summary>A single prediction whose vertical position is whole: the middle tap alone, 128, written straight into the frame.</summary>
+    private static void CenterTapToPicture(short[] inter, int w, int h, int round1, Picture picture)
+    {
+        int half = 1 << (round1 - 1);
+        ref short i0 = ref MemoryMarshal.GetArrayDataReference(inter);
+        ref T d0 = ref MemoryMarshal.GetArrayDataReference(picture.Samples);
+        for (int r = 0; r < h; r++)
+        {
+            int to = picture.At + (r * picture.Stride);
+            int c = 0;
+            if (Avx2.IsSupported)
+            {
+                Vector256<int> halfV = Vector256.Create(half), maxV = Vector256.Create(picture.Max);
+                for (; c + 8 <= w; c += 8)
+                {
+                    Vector256<int> v = Avx2.ConvertToVector256Int32(Vector128.LoadUnsafe(ref i0, (nuint)((r * w) + c)));
+                    v = Vector256.Min(Vector256.Max(Vector256.ShiftRightArithmetic(Vector256.ShiftLeft(v, 7) + halfV, round1), Vector256<int>.Zero), maxV);
+                    Av1Samples.Store8(ref d0, to + c, Av1Samples.Pack(v));
+                }
+            }
+
+            for (; c < w; c++)
+            {
+                Unsafe.Add(ref d0, to + c) = Av1Samples.From<T>(Math.Clamp(((Unsafe.Add(ref i0, (r * w) + c) * 128) + half) >> round1, 0, picture.Max));
+            }
+        }
+    }
+
+    /// <summary>Where a single prediction is written in the frame, and the largest sample value.</summary>
+    private readonly record struct Picture(T[] Samples, int At, int Stride, int Max);
 
     /// <summary>The vertical 8-tap pass over the intermediate rows, rows (m, m + 1) interleaved for vpmaddwd.</summary>
     internal static void Vertical(short[] inter, int frac, short[] filters, int w, int h, int round1, int[] pred)

@@ -12,6 +12,12 @@ internal static class Av1Timing
 {
     internal static void Run(string[] files)
     {
+        if (files.Contains("--md5"))
+        {
+            Md5(files);
+            return;
+        }
+
         // --one-thread times one thread only, for profiling; --runs=N runs N times (tools/video/count-instructions.py).
         int[] counts = files.Contains("--one-thread") ? [1] : [1, Environment.ProcessorCount];
         int runs = files.FirstOrDefault(f => f.StartsWith("--runs=", StringComparison.Ordinal)) is { } r
@@ -41,6 +47,46 @@ internal static class Av1Timing
 
                 Console.WriteLine($"{Path.GetFileName(file)}: {best:F2} ms a unit on {threads} thread{(threads == 1 ? "" : "s")}{(threads == 1 ? $", {bestCycles:F1} M cycles" : "")}");
             }
+        }
+    }
+
+    /// <summary>
+    /// Prints the MD5 of every decoded frame's planes, one after another, film grain applied, for checking that a change
+    /// decodes the same as before: <c>-- --time-av1 --md5 file.ivf</c>. Only 8-bit frames are hashed.
+    /// </summary>
+    private static void Md5(string[] files)
+    {
+        foreach (string file in files.Where(f => !f.StartsWith("--", StringComparison.Ordinal)))
+        {
+            Av1Stream stream = new("AV1") { Parallelism = 1 };
+            using System.Security.Cryptography.IncrementalHash md5 = System.Security.Cryptography.IncrementalHash.CreateHash(System.Security.Cryptography.HashAlgorithmName.MD5);
+            int frames = 0;
+            foreach (byte[] unit in Vp8Timing.ReadIvf(file))
+            {
+                foreach (Av1Frame frame in stream.Decode(unit, 0, unit.Length))
+                {
+                    Av1FilmGrainSynthesis.Apply(frame);
+                    if (!frame.Compact)
+                    {
+                        continue;
+                    }
+
+                    for (int plane = 0; plane < frame.Header.NumPlanes; plane++)
+                    {
+                        int ssx = plane > 0 ? frame.Sequence.SubsamplingX : 0, ssy = plane > 0 ? frame.Sequence.SubsamplingY : 0;
+                        int w = (frame.Header.UpscaledWidth + ssx) >> ssx, h = (frame.Header.FrameHeight + ssy) >> ssy;
+                        byte[] samples = frame.Plane<byte>(plane);
+                        for (int y = 0; y < h; y++)
+                        {
+                            md5.AppendData(samples, y * frame.Strides[plane], w);
+                        }
+                    }
+
+                    frames++;
+                }
+            }
+
+            Console.WriteLine($"{Path.GetFileName(file)}: {frames} frames, MD5={Convert.ToHexStringLower(md5.GetHashAndReset())}");
         }
     }
 
