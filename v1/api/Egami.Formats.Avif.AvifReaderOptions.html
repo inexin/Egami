@@ -89,7 +89,7 @@
 
 
   <h1 id="Egami_Formats_Avif_AvifReaderOptions" data-uid="Egami.Formats.Avif.AvifReaderOptions" class="text-break">
-Class AvifReaderOptions  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Avif/AvifFormat.cs/#L195"><i class="bi bi-code-slash"></i></a>
+Class AvifReaderOptions  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Avif/AvifFormat.cs/#L232"><i class="bi bi-code-slash"></i></a>
   </h1>
 
   <div class="facts text-secondary">
@@ -194,7 +194,7 @@ AvifFilmGrain? grain = ((AvifDetails)clean.Metadata.FormatDetails!).FilmGrain;  
 
   <h3 id="Egami_Formats_Avif_AvifReaderOptions_FilmGrain" data-uid="Egami.Formats.Avif.AvifReaderOptions.FilmGrain">
   FilmGrain
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Avif/AvifFormat.cs/#L202"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Avif/AvifFormat.cs/#L241"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets whether the film grain an AV1 image carries is added to its pixels, as the AV1 specification's output process does
@@ -224,11 +224,110 @@ either way.</p>
 
 
 
+  <a id="Egami_Formats_Avif_AvifReaderOptions_Layer_" data-uid="Egami.Formats.Avif.AvifReaderOptions.Layer*"></a>
+
+  <h3 id="Egami_Formats_Avif_AvifReaderOptions_Layer" data-uid="Egami.Formats.Avif.AvifReaderOptions.Layer">
+  Layer
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Avif/AvifFormat.cs/#L253"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the layer of a layered (progressive) image to load, counted from 0 for the first and lowest quality one in decoding
+order, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> (the default) for the layer the file picks with its lsel property, else the best. A layer
+past the last gives the last; a layer smaller than the image is scaled up to its full size. Images that are not layered
+ignore it; <a class="xref" href="Egami.Formats.Avif.AvifDetails.html#Egami_Formats_Avif_AvifDetails_Layers">Layers</a> lists the layers.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int? Layer { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a>?</dt>
+    <dd></dd>
+  </dl>
+
+
+
+  <h4 class="section" id="Egami_Formats_Avif_AvifReaderOptions_Layer_examples">Examples</h4>
+  <pre><code class="lang-csharp">// A progressive file: a small first layer a viewer can show early, then the image (as avifenc --progressive writes it).
+duck.Save("duck-progressive.avif", new AvifWriterOptions { Quality = 60, Progressive = true });
+
+// Or up to four layers, each with its own quality and size; the last is the image at full size.
+duck.Save("duck-layers.avif", new AvifWriterOptions
+{
+    Layers = [new AvifLayer { Quality = 20, Scale = 0.5 }, new AvifLayer { Quality = 45 }, new AvifLayer { Quality = 75 }],
+});
+
+// Load gives the best layer; AvifReaderOptions.Layer picks another, at full size.
+using Raster best = Raster.Load("duck-layers.avif");
+IReadOnlyList&lt;Size&gt; layers = ((AvifDetails)best.Metadata.FormatDetails!).Layers;   // 160x120, 320x240, 320x240
+using Raster first = Raster.Load("duck-layers.avif", options: new AvifReaderOptions { Layer = 0 });</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>The value is negative.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Formats_Avif_AvifReaderOptions_SampleTransform_" data-uid="Egami.Formats.Avif.AvifReaderOptions.SampleTransform*"></a>
+
+  <h3 id="Egami_Formats_Avif_AvifReaderOptions_SampleTransform" data-uid="Egami.Formats.Avif.AvifReaderOptions.SampleTransform">
+  SampleTransform
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Avif/AvifFormat.cs/#L267"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether a sample transform derived image (a sato item, AVIF 1.2.0) that the file prefers to its primary image is applied,
+giving its output at its own depth, such as 16 bits from a 12-bit image and an 8-bit residual (the default, true), or left
+out, giving the primary image the file keeps as the fallback for readers without sample transforms.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool SampleTransform { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+  <h4 class="section" id="Egami_Formats_Avif_AvifReaderOptions_SampleTransform_examples">Examples</h4>
+  <pre><code class="lang-csharp">// 16 bits a sample, which AV1 cannot code, as a sample transform (AVIF 1.2): a 12-bit image and an 8-bit residual (or,
+// lossless, the high and low bytes), with the first image as the fallback for readers without sample transforms.
+using Raster&lt;Rgb16&gt; wide = duck.As&lt;Rgb16&gt;();
+wide.Save("duck-16bit.avif", new AvifWriterOptions { BitDepth = 16, Quality = 90 });
+using Raster deep = Raster.Load("duck-16bit.avif");
+bool transformed = ((AvifDetails)deep.Metadata.FormatDetails!).HasSampleTransform;   // true, at 16 bits
+using Raster fallback = Raster.Load("duck-16bit.avif", options: new AvifReaderOptions { SampleTransform = false });</code></pre>
+
+
+
+
+
+
 
 </article>
 
         <div class="contribution d-print-none">
-          <a href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Avif/AvifFormat.cs/#L195" class="edit-link">Edit this page</a>
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Avif/AvifFormat.cs/#L232" class="edit-link">Edit this page</a>
         </div>
 
 

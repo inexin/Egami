@@ -89,7 +89,7 @@
 
 
   <h1 id="Egami_Formats_Avif_AvifWriterOptions" data-uid="Egami.Formats.Avif.AvifWriterOptions" class="text-break">
-Class AvifWriterOptions  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Avif/AvifFormat.cs/#L270"><i class="bi bi-code-slash"></i></a>
+Class AvifWriterOptions  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Avif/AvifFormat.cs/#L335"><i class="bi bi-code-slash"></i></a>
   </h1>
 
   <div class="facts text-secondary">
@@ -170,7 +170,7 @@ duck.Save("duck-lossless.avif", new AvifWriterOptions { Lossless = true });</cod
 
   <h3 id="Egami_Formats_Avif_AvifWriterOptions_AlphaQuality" data-uid="Egami.Formats.Avif.AvifWriterOptions.AlphaQuality">
   AlphaQuality
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Avif/AvifFormat.cs/#L332"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Avif/AvifFormat.cs/#L407"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the quality of the alpha plane, 0 to 100 on the same scale as <a class="xref" href="Egami.Formats.Avif.AvifWriterOptions.html#Egami_Formats_Avif_AvifWriterOptions_Quality">Quality</a>: 100 (the default) keeps alpha
@@ -209,11 +209,14 @@ exactly. Alpha is written straight, not premultiplied.</p>
 
   <h3 id="Egami_Formats_Avif_AvifWriterOptions_BitDepth" data-uid="Egami.Formats.Avif.AvifWriterOptions.BitDepth">
   BitDepth
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Avif/AvifFormat.cs/#L321"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Avif/AvifFormat.cs/#L396"><i class="bi bi-code-slash"></i></a>
   </h3>
 
-  <div class="markdown level1 summary"><p>Gets the bits a sample has, 8, 10 or 12, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> (the default) for 8 with 8-bit pixels and 10 with
-deeper ones; a lossless file of deeper pixels takes the depth of the AVIF file they were read from, else 12.</p>
+  <div class="markdown level1 summary"><p>Gets the bits a sample has, 8, 10, 12 or 16, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> (the default) for 8 with 8-bit pixels and 10 with
+deeper ones; a lossless file of deeper pixels takes the depth of the AVIF file they were read from, else 12. 16 bits, which
+AV1 cannot code, are written as a sample transform (AVIF 1.2.0): lossless as an 8-bit image of the high bytes and a hidden
+8-bit image of the low bytes, lossy as a 12-bit image and a hidden 8-bit residual that overlaps it by 4 bits. Readers without
+sample transforms show the 8- or 12-bit image.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
 
@@ -233,12 +236,21 @@ deeper ones; a lossless file of deeper pixels takes the depth of the AVIF file t
 
 
 
+  <h4 class="section" id="Egami_Formats_Avif_AvifWriterOptions_BitDepth_examples">Examples</h4>
+  <pre><code class="lang-csharp">// 16 bits a sample, which AV1 cannot code, as a sample transform (AVIF 1.2): a 12-bit image and an 8-bit residual (or,
+// lossless, the high and low bytes), with the first image as the fallback for readers without sample transforms.
+using Raster&lt;Rgb16&gt; wide = duck.As&lt;Rgb16&gt;();
+wide.Save("duck-16bit.avif", new AvifWriterOptions { BitDepth = 16, Quality = 90 });
+using Raster deep = Raster.Load("duck-16bit.avif");
+bool transformed = ((AvifDetails)deep.Metadata.FormatDetails!).HasSampleTransform;   // true, at 16 bits
+using Raster fallback = Raster.Load("duck-16bit.avif", options: new AvifReaderOptions { SampleTransform = false });</code></pre>
+
 
 
   <h4 class="section">Exceptions</h4>
   <dl class="parameters">
     <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
-    <dd><p>The value is not 8, 10 or 12.</p>
+    <dd><p>The value is not 8, 10, 12 or 16.</p>
 </dd>
   </dl>
 
@@ -248,7 +260,7 @@ deeper ones; a lossless file of deeper pixels takes the depth of the AVIF file t
 
   <h3 id="Egami_Formats_Avif_AvifWriterOptions_Chroma" data-uid="Egami.Formats.Avif.AvifWriterOptions.Chroma">
   Chroma
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Avif/AvifFormat.cs/#L314"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Avif/AvifFormat.cs/#L383"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the chroma format of lossy color, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> (the default) to choose: 4:0:0 for gray images, 4:4:4 from
@@ -282,7 +294,7 @@ choose as <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/
 
   <h3 id="Egami_Formats_Avif_AvifWriterOptions_Default" data-uid="Egami.Formats.Avif.AvifWriterOptions.Default">
   Default
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Avif/AvifFormat.cs/#L279"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Avif/AvifFormat.cs/#L348"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the default options.</p>
@@ -314,7 +326,7 @@ choose as <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/
 
   <h3 id="Egami_Formats_Avif_AvifWriterOptions_Effort" data-uid="Egami.Formats.Avif.AvifWriterOptions.Effort">
   Effort
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Avif/AvifFormat.cs/#L296"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Avif/AvifFormat.cs/#L365"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets how hard the encoder works, 0 (fastest) to 10 (smallest files): 10 minus avifenc's speed, so the default 4 matches
@@ -349,11 +361,107 @@ avifenc's default speed 6.</p>
 
 
 
+  <a id="Egami_Formats_Avif_AvifWriterOptions_FilmGrainDenoise_" data-uid="Egami.Formats.Avif.AvifWriterOptions.FilmGrainDenoise*"></a>
+
+  <h3 id="Egami_Formats_Avif_AvifWriterOptions_FilmGrainDenoise" data-uid="Egami.Formats.Avif.AvifWriterOptions.FilmGrainDenoise">
+  FilmGrainDenoise
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Avif/AvifFormat.cs/#L493"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets how strongly to take film grain out before coding and put it back on decoding, 0 (the default, off) to 50, as libaom's
+denoise-noise-level: the image is denoised, the grain measured and written as AV1 film grain parameters that decoders add
+back, so the grain costs few bits. A raster loaded without its grain (<a class="xref" href="Egami.Formats.Avif.AvifReaderOptions.html#Egami_Formats_Avif_AvifReaderOptions_FilmGrain">FilmGrain</a> false)
+gets its <a class="xref" href="Egami.Formats.Avif.AvifDetails.html#Egami_Formats_Avif_AvifDetails_FilmGrain">FilmGrain</a> written back when this is 0. Ignored for lossless images.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int FilmGrainDenoise { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+  <h4 class="section" id="Egami_Formats_Avif_AvifWriterOptions_FilmGrainDenoise_examples">Examples</h4>
+  <pre><code class="lang-csharp">// Grain is costly to code: denoise first and let decoders add it back from AV1 film grain parameters.
+duck.Save("duck-grain.avif", new AvifWriterOptions { Quality = 60, FilmGrainDenoise = 20 });
+
+// A raster loaded without its grain keeps the parameters, and saving writes them back.
+using Raster plain = Raster.Load("duck-grain.avif", options: new AvifReaderOptions { FilmGrain = false });
+plain.Save("duck-grain-again.avif");</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>The value is outside 0 to 50.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Formats_Avif_AvifWriterOptions_GainMapQuality_" data-uid="Egami.Formats.Avif.AvifWriterOptions.GainMapQuality*"></a>
+
+  <h3 id="Egami_Formats_Avif_AvifWriterOptions_GainMapQuality" data-uid="Egami.Formats.Avif.AvifWriterOptions.GainMapQuality">
+  GainMapQuality
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Avif/AvifFormat.cs/#L477"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the quality of a gain map, 0 to 100 on the same scale as <a class="xref" href="Egami.Formats.Avif.AvifWriterOptions.html#Egami_Formats_Avif_AvifWriterOptions_Quality">Quality</a>, as avifenc --qgain-map sets it, or
+<a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> (the default) for the image's quality.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int? GainMapQuality { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a>?</dt>
+    <dd></dd>
+  </dl>
+
+
+
+  <h4 class="section" id="Egami_Formats_Avif_AvifWriterOptions_GainMapQuality_examples">Examples</h4>
+  <pre><code class="lang-csharp">// Save picks AVIF from the extension; the defaults are lossy at quality 60 on avifenc's scale, effort 4.
+duck.Save("duck-q60.avif");
+
+// Smaller and softer, or every sample exact (4:4:4 RGB with the identity matrix).
+duck.Save("duck-q35.avif", new AvifWriterOptions { Quality = 35 });
+duck.Save("duck-lossless.avif", new AvifWriterOptions { Lossless = true });</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>The value is outside 0 to 100.</p>
+</dd>
+  </dl>
+
+
+
   <a id="Egami_Formats_Avif_AvifWriterOptions_GridTileSize_" data-uid="Egami.Formats.Avif.AvifWriterOptions.GridTileSize*"></a>
 
   <h3 id="Egami_Formats_Avif_AvifWriterOptions_GridTileSize" data-uid="Egami.Formats.Avif.AvifWriterOptions.GridTileSize">
   GridTileSize
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Avif/AvifFormat.cs/#L343"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Avif/AvifFormat.cs/#L418"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the size of the cells of a grid image, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> (the default) to write one frame up to 8192 x 4352
@@ -388,11 +496,67 @@ and a grid of equal cells only for larger images.</p>
 
 
 
+  <a id="Egami_Formats_Avif_AvifWriterOptions_Layers_" data-uid="Egami.Formats.Avif.AvifWriterOptions.Layers*"></a>
+
+  <h3 id="Egami_Formats_Avif_AvifWriterOptions_Layers" data-uid="Egami.Formats.Avif.AvifWriterOptions.Layers">
+  Layers
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Avif/AvifFormat.cs/#L445"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the layers of a progressive image, 1 to 4, from the first and smallest to the last, each with its own quality and scale;
+<a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> (the default) for one layer, or the two <a class="xref" href="Egami.Formats.Avif.AvifWriterOptions.html#Egami_Formats_Avif_AvifWriterOptions_Progressive">Progressive</a> makes. The last layer is the
+image at full size; when the image is lossless it is coded lossless. Images larger than one AV1 frame (written as a grid)
+are written in one layer.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public IReadOnlyList&lt;AvifLayer&gt;? Layers { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="Egami.Formats.Avif.AvifLayer.html">AvifLayer</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+  <h4 class="section" id="Egami_Formats_Avif_AvifWriterOptions_Layers_examples">Examples</h4>
+  <pre><code class="lang-csharp">// A progressive file: a small first layer a viewer can show early, then the image (as avifenc --progressive writes it).
+duck.Save("duck-progressive.avif", new AvifWriterOptions { Quality = 60, Progressive = true });
+
+// Or up to four layers, each with its own quality and size; the last is the image at full size.
+duck.Save("duck-layers.avif", new AvifWriterOptions
+{
+    Layers = [new AvifLayer { Quality = 20, Scale = 0.5 }, new AvifLayer { Quality = 45 }, new AvifLayer { Quality = 75 }],
+});
+
+// Load gives the best layer; AvifReaderOptions.Layer picks another, at full size.
+using Raster best = Raster.Load("duck-layers.avif");
+IReadOnlyList&lt;Size&gt; layers = ((AvifDetails)best.Metadata.FormatDetails!).Layers;   // 160x120, 320x240, 320x240
+using Raster first = Raster.Load("duck-layers.avif", options: new AvifReaderOptions { Layer = 0 });</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>The list is empty, has more than 4 layers, or its last layer is not at scale 1.</p>
+</dd>
+  </dl>
+
+
+
   <a id="Egami_Formats_Avif_AvifWriterOptions_Lossless_" data-uid="Egami.Formats.Avif.AvifWriterOptions.Lossless*"></a>
 
   <h3 id="Egami_Formats_Avif_AvifWriterOptions_Lossless" data-uid="Egami.Formats.Avif.AvifWriterOptions.Lossless">
   Lossless
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Avif/AvifFormat.cs/#L307"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Avif/AvifFormat.cs/#L376"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets whether to write lossless (every sample of the RGB or gray image exact, 4:4:4 with the identity matrix) or lossy
@@ -422,11 +586,60 @@ otherwise.</p>
 
 
 
+  <a id="Egami_Formats_Avif_AvifWriterOptions_Progressive_" data-uid="Egami.Formats.Avif.AvifWriterOptions.Progressive*"></a>
+
+  <h3 id="Egami_Formats_Avif_AvifWriterOptions_Progressive" data-uid="Egami.Formats.Avif.AvifWriterOptions.Progressive">
+  Progressive
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Avif/AvifFormat.cs/#L433"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether to write a progressive image of two layers, as avifenc --progressive does: a small first layer at quality 2,
+which a viewer can show while the rest arrives, then the image at <a class="xref" href="Egami.Formats.Avif.AvifWriterOptions.html#Egami_Formats_Avif_AvifWriterOptions_Quality">Quality</a>. Defaults to false. Ignored when
+<a class="xref" href="Egami.Formats.Avif.AvifWriterOptions.html#Egami_Formats_Avif_AvifWriterOptions_Layers">Layers</a> is set, and below Quality 10, where a first layer saves nothing.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool Progressive { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+  <h4 class="section" id="Egami_Formats_Avif_AvifWriterOptions_Progressive_examples">Examples</h4>
+  <pre><code class="lang-csharp">// A progressive file: a small first layer a viewer can show early, then the image (as avifenc --progressive writes it).
+duck.Save("duck-progressive.avif", new AvifWriterOptions { Quality = 60, Progressive = true });
+
+// Or up to four layers, each with its own quality and size; the last is the image at full size.
+duck.Save("duck-layers.avif", new AvifWriterOptions
+{
+    Layers = [new AvifLayer { Quality = 20, Scale = 0.5 }, new AvifLayer { Quality = 45 }, new AvifLayer { Quality = 75 }],
+});
+
+// Load gives the best layer; AvifReaderOptions.Layer picks another, at full size.
+using Raster best = Raster.Load("duck-layers.avif");
+IReadOnlyList&lt;Size&gt; layers = ((AvifDetails)best.Metadata.FormatDetails!).Layers;   // 160x120, 320x240, 320x240
+using Raster first = Raster.Load("duck-layers.avif", options: new AvifReaderOptions { Layer = 0 });</code></pre>
+
+
+
+
+
+
   <a id="Egami_Formats_Avif_AvifWriterOptions_Quality_" data-uid="Egami.Formats.Avif.AvifWriterOptions.Quality*"></a>
 
   <h3 id="Egami_Formats_Avif_AvifWriterOptions_Quality" data-uid="Egami.Formats.Avif.AvifWriterOptions.Quality">
   Quality
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Avif/AvifFormat.cs/#L285"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Avif/AvifFormat.cs/#L354"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the lossy quality, 0 (smallest) to 100 (best), on avifenc's -q scale. Defaults to 60. Ignored for lossless images.</p>
@@ -460,11 +673,55 @@ otherwise.</p>
 
 
 
+  <a id="Egami_Formats_Avif_AvifWriterOptions_TargetSize_" data-uid="Egami.Formats.Avif.AvifWriterOptions.TargetSize*"></a>
+
+  <h3 id="Egami_Formats_Avif_AvifWriterOptions_TargetSize" data-uid="Egami.Formats.Avif.AvifWriterOptions.TargetSize">
+  TargetSize
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Avif/AvifFormat.cs/#L463"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the largest size the file may have, in bytes, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> (the default) to code at <a class="xref" href="Egami.Formats.Avif.AvifWriterOptions.html#Egami_Formats_Avif_AvifWriterOptions_Quality">Quality</a>:
+the quality is searched, as avifenc --target-size searches it, for the largest file not above the size. When even quality 0
+is larger, that file is written and an Avif.TargetSizeExceeded warning says so. Ignored for lossless images.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int? TargetSize { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a>?</dt>
+    <dd></dd>
+  </dl>
+
+
+
+  <h4 class="section" id="Egami_Formats_Avif_AvifWriterOptions_TargetSize_examples">Examples</h4>
+  <pre><code class="lang-csharp">// The quality is searched for the largest file not above the size, as avifenc --target-size does.
+duck.Save("duck-8k.avif", new AvifWriterOptions { TargetSize = 8000 });</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>The value is below 1.</p>
+</dd>
+  </dl>
+
+
+
 
 </article>
 
         <div class="contribution d-print-none">
-          <a href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Avif/AvifFormat.cs/#L270" class="edit-link">Edit this page</a>
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Avif/AvifFormat.cs/#L335" class="edit-link">Edit this page</a>
         </div>
 
 

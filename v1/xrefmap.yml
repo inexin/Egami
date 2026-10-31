@@ -39426,6 +39426,19 @@ references:
   isSpec: "True"
   fullName: Egami.Formats.Avif.AvifDetails.HasFilmGrain
   nameWithType: AvifDetails.HasFilmGrain
+- uid: Egami.Formats.Avif.AvifDetails.HasSampleTransform
+  name: HasSampleTransform
+  href: api/Egami.Formats.Avif.AvifDetails.html#Egami_Formats_Avif_AvifDetails_HasSampleTransform
+  commentId: P:Egami.Formats.Avif.AvifDetails.HasSampleTransform
+  fullName: Egami.Formats.Avif.AvifDetails.HasSampleTransform
+  nameWithType: AvifDetails.HasSampleTransform
+- uid: Egami.Formats.Avif.AvifDetails.HasSampleTransform*
+  name: HasSampleTransform
+  href: api/Egami.Formats.Avif.AvifDetails.html#Egami_Formats_Avif_AvifDetails_HasSampleTransform_
+  commentId: Overload:Egami.Formats.Avif.AvifDetails.HasSampleTransform
+  isSpec: "True"
+  fullName: Egami.Formats.Avif.AvifDetails.HasSampleTransform
+  nameWithType: AvifDetails.HasSampleTransform
 - uid: Egami.Formats.Avif.AvifDetails.IsProgressive
   name: IsProgressive
   href: api/Egami.Formats.Avif.AvifDetails.html#Egami_Formats_Avif_AvifDetails_IsProgressive
@@ -39465,6 +39478,19 @@ references:
   isSpec: "True"
   fullName: Egami.Formats.Avif.AvifDetails.Items
   nameWithType: AvifDetails.Items
+- uid: Egami.Formats.Avif.AvifDetails.Layers
+  name: Layers
+  href: api/Egami.Formats.Avif.AvifDetails.html#Egami_Formats_Avif_AvifDetails_Layers
+  commentId: P:Egami.Formats.Avif.AvifDetails.Layers
+  fullName: Egami.Formats.Avif.AvifDetails.Layers
+  nameWithType: AvifDetails.Layers
+- uid: Egami.Formats.Avif.AvifDetails.Layers*
+  name: Layers
+  href: api/Egami.Formats.Avif.AvifDetails.html#Egami_Formats_Avif_AvifDetails_Layers_
+  commentId: Overload:Egami.Formats.Avif.AvifDetails.Layers
+  isSpec: "True"
+  fullName: Egami.Formats.Avif.AvifDetails.Layers
+  nameWithType: AvifDetails.Layers
 - uid: Egami.Formats.Avif.AvifDetails.Level
   name: Level
   href: api/Egami.Formats.Avif.AvifDetails.html#Egami_Formats_Avif_AvifDetails_Level
@@ -39951,6 +39977,38 @@ references:
   commentId: F:Egami.Formats.Avif.AvifItemRole.Thumbnail
   fullName: Egami.Formats.Avif.AvifItemRole.Thumbnail
   nameWithType: AvifItemRole.Thumbnail
+- uid: Egami.Formats.Avif.AvifLayer
+  name: AvifLayer
+  href: api/Egami.Formats.Avif.AvifLayer.html
+  commentId: T:Egami.Formats.Avif.AvifLayer
+  fullName: Egami.Formats.Avif.AvifLayer
+  nameWithType: AvifLayer
+- uid: Egami.Formats.Avif.AvifLayer.Quality
+  name: Quality
+  href: api/Egami.Formats.Avif.AvifLayer.html#Egami_Formats_Avif_AvifLayer_Quality
+  commentId: P:Egami.Formats.Avif.AvifLayer.Quality
+  fullName: Egami.Formats.Avif.AvifLayer.Quality
+  nameWithType: AvifLayer.Quality
+- uid: Egami.Formats.Avif.AvifLayer.Quality*
+  name: Quality
+  href: api/Egami.Formats.Avif.AvifLayer.html#Egami_Formats_Avif_AvifLayer_Quality_
+  commentId: Overload:Egami.Formats.Avif.AvifLayer.Quality
+  isSpec: "True"
+  fullName: Egami.Formats.Avif.AvifLayer.Quality
+  nameWithType: AvifLayer.Quality
+- uid: Egami.Formats.Avif.AvifLayer.Scale
+  name: Scale
+  href: api/Egami.Formats.Avif.AvifLayer.html#Egami_Formats_Avif_AvifLayer_Scale
+  commentId: P:Egami.Formats.Avif.AvifLayer.Scale
+  fullName: Egami.Formats.Avif.AvifLayer.Scale
+  nameWithType: AvifLayer.Scale
+- uid: Egami.Formats.Avif.AvifLayer.Scale*
+  name: Scale
+  href: api/Egami.Formats.Avif.AvifLayer.html#Egami_Formats_Avif_AvifLayer_Scale_
+  commentId: Overload:Egami.Formats.Avif.AvifLayer.Scale
+  isSpec: "True"
+  fullName: Egami.Formats.Avif.AvifLayer.Scale
+  nameWithType: AvifLayer.Scale
 - uid: Egami.Formats.Avif.AvifReaderOptions
   name: AvifReaderOptions
   href: api/Egami.Formats.Avif.AvifReaderOptions.html
@@ -39970,6 +40028,32 @@ references:
   isSpec: "True"
   fullName: Egami.Formats.Avif.AvifReaderOptions.FilmGrain
   nameWithType: AvifReaderOptions.FilmGrain
+- uid: Egami.Formats.Avif.AvifReaderOptions.Layer
+  name: Layer
+  href: api/Egami.Formats.Avif.AvifReaderOptions.html#Egami_Formats_Avif_AvifReaderOptions_Layer
+  commentId: P:Egami.Formats.Avif.AvifReaderOptions.Layer
+  fullName: Egami.Formats.Avif.AvifReaderOptions.Layer
+  nameWithType: AvifReaderOptions.Layer
+- uid: Egami.Formats.Avif.AvifReaderOptions.Layer*
+  name: Layer
+  href: api/Egami.Formats.Avif.AvifReaderOptions.html#Egami_Formats_Avif_AvifReaderOptions_Layer_
+  commentId: Overload:Egami.Formats.Avif.AvifReaderOptions.Layer
+  isSpec: "True"
+  fullName: Egami.Formats.Avif.AvifReaderOptions.Layer
+  nameWithType: AvifReaderOptions.Layer
+- uid: Egami.Formats.Avif.AvifReaderOptions.SampleTransform
+  name: SampleTransform
+  href: api/Egami.Formats.Avif.AvifReaderOptions.html#Egami_Formats_Avif_AvifReaderOptions_SampleTransform
+  commentId: P:Egami.Formats.Avif.AvifReaderOptions.SampleTransform
+  fullName: Egami.Formats.Avif.AvifReaderOptions.SampleTransform
+  nameWithType: AvifReaderOptions.SampleTransform
+- uid: Egami.Formats.Avif.AvifReaderOptions.SampleTransform*
+  name: SampleTransform
+  href: api/Egami.Formats.Avif.AvifReaderOptions.html#Egami_Formats_Avif_AvifReaderOptions_SampleTransform_
+  commentId: Overload:Egami.Formats.Avif.AvifReaderOptions.SampleTransform
+  isSpec: "True"
+  fullName: Egami.Formats.Avif.AvifReaderOptions.SampleTransform
+  nameWithType: AvifReaderOptions.SampleTransform
 - uid: Egami.Formats.Avif.AvifWriterOptions
   name: AvifWriterOptions
   href: api/Egami.Formats.Avif.AvifWriterOptions.html
@@ -40041,6 +40125,32 @@ references:
   isSpec: "True"
   fullName: Egami.Formats.Avif.AvifWriterOptions.Effort
   nameWithType: AvifWriterOptions.Effort
+- uid: Egami.Formats.Avif.AvifWriterOptions.FilmGrainDenoise
+  name: FilmGrainDenoise
+  href: api/Egami.Formats.Avif.AvifWriterOptions.html#Egami_Formats_Avif_AvifWriterOptions_FilmGrainDenoise
+  commentId: P:Egami.Formats.Avif.AvifWriterOptions.FilmGrainDenoise
+  fullName: Egami.Formats.Avif.AvifWriterOptions.FilmGrainDenoise
+  nameWithType: AvifWriterOptions.FilmGrainDenoise
+- uid: Egami.Formats.Avif.AvifWriterOptions.FilmGrainDenoise*
+  name: FilmGrainDenoise
+  href: api/Egami.Formats.Avif.AvifWriterOptions.html#Egami_Formats_Avif_AvifWriterOptions_FilmGrainDenoise_
+  commentId: Overload:Egami.Formats.Avif.AvifWriterOptions.FilmGrainDenoise
+  isSpec: "True"
+  fullName: Egami.Formats.Avif.AvifWriterOptions.FilmGrainDenoise
+  nameWithType: AvifWriterOptions.FilmGrainDenoise
+- uid: Egami.Formats.Avif.AvifWriterOptions.GainMapQuality
+  name: GainMapQuality
+  href: api/Egami.Formats.Avif.AvifWriterOptions.html#Egami_Formats_Avif_AvifWriterOptions_GainMapQuality
+  commentId: P:Egami.Formats.Avif.AvifWriterOptions.GainMapQuality
+  fullName: Egami.Formats.Avif.AvifWriterOptions.GainMapQuality
+  nameWithType: AvifWriterOptions.GainMapQuality
+- uid: Egami.Formats.Avif.AvifWriterOptions.GainMapQuality*
+  name: GainMapQuality
+  href: api/Egami.Formats.Avif.AvifWriterOptions.html#Egami_Formats_Avif_AvifWriterOptions_GainMapQuality_
+  commentId: Overload:Egami.Formats.Avif.AvifWriterOptions.GainMapQuality
+  isSpec: "True"
+  fullName: Egami.Formats.Avif.AvifWriterOptions.GainMapQuality
+  nameWithType: AvifWriterOptions.GainMapQuality
 - uid: Egami.Formats.Avif.AvifWriterOptions.GridTileSize
   name: GridTileSize
   href: api/Egami.Formats.Avif.AvifWriterOptions.html#Egami_Formats_Avif_AvifWriterOptions_GridTileSize
@@ -40054,6 +40164,19 @@ references:
   isSpec: "True"
   fullName: Egami.Formats.Avif.AvifWriterOptions.GridTileSize
   nameWithType: AvifWriterOptions.GridTileSize
+- uid: Egami.Formats.Avif.AvifWriterOptions.Layers
+  name: Layers
+  href: api/Egami.Formats.Avif.AvifWriterOptions.html#Egami_Formats_Avif_AvifWriterOptions_Layers
+  commentId: P:Egami.Formats.Avif.AvifWriterOptions.Layers
+  fullName: Egami.Formats.Avif.AvifWriterOptions.Layers
+  nameWithType: AvifWriterOptions.Layers
+- uid: Egami.Formats.Avif.AvifWriterOptions.Layers*
+  name: Layers
+  href: api/Egami.Formats.Avif.AvifWriterOptions.html#Egami_Formats_Avif_AvifWriterOptions_Layers_
+  commentId: Overload:Egami.Formats.Avif.AvifWriterOptions.Layers
+  isSpec: "True"
+  fullName: Egami.Formats.Avif.AvifWriterOptions.Layers
+  nameWithType: AvifWriterOptions.Layers
 - uid: Egami.Formats.Avif.AvifWriterOptions.Lossless
   name: Lossless
   href: api/Egami.Formats.Avif.AvifWriterOptions.html#Egami_Formats_Avif_AvifWriterOptions_Lossless
@@ -40067,6 +40190,19 @@ references:
   isSpec: "True"
   fullName: Egami.Formats.Avif.AvifWriterOptions.Lossless
   nameWithType: AvifWriterOptions.Lossless
+- uid: Egami.Formats.Avif.AvifWriterOptions.Progressive
+  name: Progressive
+  href: api/Egami.Formats.Avif.AvifWriterOptions.html#Egami_Formats_Avif_AvifWriterOptions_Progressive
+  commentId: P:Egami.Formats.Avif.AvifWriterOptions.Progressive
+  fullName: Egami.Formats.Avif.AvifWriterOptions.Progressive
+  nameWithType: AvifWriterOptions.Progressive
+- uid: Egami.Formats.Avif.AvifWriterOptions.Progressive*
+  name: Progressive
+  href: api/Egami.Formats.Avif.AvifWriterOptions.html#Egami_Formats_Avif_AvifWriterOptions_Progressive_
+  commentId: Overload:Egami.Formats.Avif.AvifWriterOptions.Progressive
+  isSpec: "True"
+  fullName: Egami.Formats.Avif.AvifWriterOptions.Progressive
+  nameWithType: AvifWriterOptions.Progressive
 - uid: Egami.Formats.Avif.AvifWriterOptions.Quality
   name: Quality
   href: api/Egami.Formats.Avif.AvifWriterOptions.html#Egami_Formats_Avif_AvifWriterOptions_Quality
@@ -40080,6 +40216,19 @@ references:
   isSpec: "True"
   fullName: Egami.Formats.Avif.AvifWriterOptions.Quality
   nameWithType: AvifWriterOptions.Quality
+- uid: Egami.Formats.Avif.AvifWriterOptions.TargetSize
+  name: TargetSize
+  href: api/Egami.Formats.Avif.AvifWriterOptions.html#Egami_Formats_Avif_AvifWriterOptions_TargetSize
+  commentId: P:Egami.Formats.Avif.AvifWriterOptions.TargetSize
+  fullName: Egami.Formats.Avif.AvifWriterOptions.TargetSize
+  nameWithType: AvifWriterOptions.TargetSize
+- uid: Egami.Formats.Avif.AvifWriterOptions.TargetSize*
+  name: TargetSize
+  href: api/Egami.Formats.Avif.AvifWriterOptions.html#Egami_Formats_Avif_AvifWriterOptions_TargetSize_
+  commentId: Overload:Egami.Formats.Avif.AvifWriterOptions.TargetSize
+  isSpec: "True"
+  fullName: Egami.Formats.Avif.AvifWriterOptions.TargetSize
+  nameWithType: AvifWriterOptions.TargetSize
 - uid: Egami.Formats.Bmp
   name: Egami.Formats.Bmp
   href: api/Egami.Formats.Bmp.html

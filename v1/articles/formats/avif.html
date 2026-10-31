@@ -89,7 +89,8 @@
 
 <p>Egami reads and writes AVIF still images, written from the AV1 and HEIF specifications with no native code: the HEIF container,
 a managed AV1 intra decoder and a managed AV1 intra encoder. <code>AvifFormat.Info</code> is registered in <code>EgamiContext.Default</code>, so
-<code>Raster.Load</code> recognizes an ftyp box with the avif or avis brand and <code>Save</code> writes a file whose name ends in .avif.</p>
+<code>Raster.Load</code> recognizes an ftyp box with the avif or avis brand (or a mini file's mif3 brand with avif as its minor version) and
+<code>Save</code> writes a file whose name ends in .avif.</p>
 <p><code>Raster.Probe</code> reads the container alone: size, natural pixel type and orientation, without decoding any AV1.</p>
 <pre><code class="lang-csharp">// The container alone: size, natural pixel type and orientation, without decoding any AV1.
 RasterInfo info = Raster.Probe(&quot;duck.avif&quot;);
@@ -118,7 +119,13 @@ AvifFilmGrain? grain = ((AvifDetails)clean.Metadata.FormatDetails!).FilmGrain;  
 <pre><code class="lang-csharp">// The AV1 planes themselves, without the conversion to RGB: luma, then chroma at the file's subsampling.
 using YuvRaster planes = YuvRaster.Load(&quot;duck.avif&quot;);
 ChromaFormat chroma = planes.ChromaFormat;          // Yuv420 for most AVIF files
-</code></pre><h2 id="writing">Writing</h2>
+</code></pre>
+<p>Files with a sample transform (a sato item, AVIF 1.2), such as the 16-bit files <code>avifenc --depth 16</code> writes from a 12-bit image
+and an 8-bit residual, load the transform's output at its own depth, as <code>Rgb16</code> or <code>Rgba16</code>: every expression the specification
+allows is evaluated over the input images' planes. <code>AvifReaderOptions.SampleTransform</code> set to <code>false</code> loads the file's fallback
+image instead, the 8- or 12-bit primary item that readers without sample transforms show. Files with the compact mini box (the
+mif3 brand of the HEIF amendment draft) load like any other, with their alpha, gain map, ICC, Exif and XMP.</p>
+<h2 id="writing">Writing</h2>
 <p><code>Save</code> codes the image with Egami's own AV1 encoder. Lossy images use avifenc's quality scale, so <code>AvifWriterOptions.Quality</code>
 gives about the same file as <code>avifenc -q</code> with the same number; the default is 60. <code>Lossless</code> keeps every sample: the image is
 written as 4:4:4 RGB with the identity matrix, at its own bit depth. A file read from a lossless AVIF is written lossless again
@@ -157,7 +164,75 @@ profile is written only when the colors have no code points and it is not plain 
 image is written as a grid of equal cells, or of the <code>GridTileSize</code> you choose, coded in parallel too. The file is the same
 whatever the number of threads.</p>
 <p>Every file Egami writes decodes in dav1d and libavif to the same pixels as in Egami; <code>tools/check-avif-interop.py</code> checks this.</p>
-<h3 id="animated-avif">Animated AVIF</h3>
+<p><code>BitDepth = 16</code> writes 16 bits a sample through a sample transform: lossless images as an 8-bit image of the high bytes and a
+hidden 8-bit image of the low bytes, lossy ones as a 12-bit image and a hidden 8-bit residual that overlaps it by 4 bits, as
+libavif writes them. Readers without sample transforms show the first image.</p>
+<pre><code class="lang-csharp">// 16 bits a sample, which AV1 cannot code, as a sample transform (AVIF 1.2): a 12-bit image and an 8-bit residual (or,
+// lossless, the high and low bytes), with the first image as the fallback for readers without sample transforms.
+using Raster&lt;Rgb16&gt; wide = duck.As&lt;Rgb16&gt;();
+wide.Save(&quot;duck-16bit.avif&quot;, new AvifWriterOptions { BitDepth = 16, Quality = 90 });
+using Raster deep = Raster.Load(&quot;duck-16bit.avif&quot;);
+bool transformed = ((AvifDetails)deep.Metadata.FormatDetails!).HasSampleTransform;   // true, at 16 bits
+using Raster fallback = Raster.Load(&quot;duck-16bit.avif&quot;, options: new AvifReaderOptions { SampleTransform = false });
+</code></pre>
+<p><code>TargetSize</code> searches the quality for the largest file not above a number of bytes, as <code>avifenc --target-size</code> does; when even
+quality 0 is larger, that file is written and an <code>Avif.TargetSizeExceeded</code> warning says so. <code>GainMapQuality</code> codes a gain map
+at its own quality, as <code>avifenc --qgain-map</code>.</p>
+<pre><code class="lang-csharp">// The quality is searched for the largest file not above the size, as avifenc --target-size does.
+duck.Save(&quot;duck-8k.avif&quot;, new AvifWriterOptions { TargetSize = 8000 });
+</code></pre>
+<p><code>FilmGrainDenoise</code>, 1 to 50, takes film grain out before coding and writes AV1 film grain parameters that decoders use to put it
+back, so the grain costs a few bytes rather than many, as libaom's denoise-noise-level does for still images: on a picture with
+measurable noise, each plane is denoised by a Wiener filter and the noise modeled by its autoregressive pattern and its strength at
+each brightness. A clean picture gets no grain. A raster loaded with <code>AvifReaderOptions.FilmGrain</code> set to <code>false</code> keeps its
+<code>AvifDetails.FilmGrain</code>, and saving it as AVIF writes the parameters back, so the look survives a round trip.</p>
+<pre><code class="lang-csharp">// Grain is costly to code: denoise first and let decoders add it back from AV1 film grain parameters.
+duck.Save(&quot;duck-grain.avif&quot;, new AvifWriterOptions { Quality = 60, FilmGrainDenoise = 20 });
+
+// A raster loaded without its grain keeps the parameters, and saving writes them back.
+using Raster plain = Raster.Load(&quot;duck-grain.avif&quot;, options: new AvifReaderOptions { FilmGrain = false });
+plain.Save(&quot;duck-grain-again.avif&quot;);
+</code></pre><h3 id="progressive-avif">Progressive AVIF</h3>
+<p><code>Progressive</code> writes two layers, as <code>avifenc --progressive</code> does: a small first layer at quality 2 that a viewer can show while
+the rest arrives, then the image at <code>Quality</code>. <code>Layers</code> gives up to four, each with its own quality and scale; the last is the
+image at full size. The layers are one AV1 stream with a spatial layer each, indexed by an a1lx property; each later layer is
+predicted from the one before when it is the same size, else coded on its own, as is the second of two after a near-empty first.
+Images larger than one AV1 frame are written in one layer.</p>
+<pre><code class="lang-csharp">// A progressive file: a small first layer a viewer can show early, then the image (as avifenc --progressive writes it).
+duck.Save(&quot;duck-progressive.avif&quot;, new AvifWriterOptions { Quality = 60, Progressive = true });
+
+// Or up to four layers, each with its own quality and size; the last is the image at full size.
+duck.Save(&quot;duck-layers.avif&quot;, new AvifWriterOptions
+{
+    Layers = [new AvifLayer { Quality = 20, Scale = 0.5 }, new AvifLayer { Quality = 45 }, new AvifLayer { Quality = 75 }],
+});
+
+// Load gives the best layer; AvifReaderOptions.Layer picks another, at full size.
+using Raster best = Raster.Load(&quot;duck-layers.avif&quot;);
+IReadOnlyList&lt;Size&gt; layers = ((AvifDetails)best.Metadata.FormatDetails!).Layers;   // 160x120, 320x240, 320x240
+using Raster first = Raster.Load(&quot;duck-layers.avif&quot;, options: new AvifReaderOptions { Layer = 0 });
+</code></pre>
+<p><code>Load</code> gives the best layer, or the one an lsel property or <code>AvifReaderOptions.Layer</code> picks, at the image's full size, and
+<code>AvifDetails.Layers</code> lists each layer's size. While a progressive file arrives, <code>RasterDecoder.RenderPreview</code> draws the best layer
+received so far at full size, as it draws a progressive JPEG's scans:</p>
+<pre><code class="lang-csharp">// While a progressive file downloads, RenderPreview draws the best layer received so far at full size.
+byte[] file = File.ReadAllBytes(&quot;duck-progressive.avif&quot;);
+using RasterDecoder decoder = RasterDecoder.OpenIncremental();
+Raster&lt;Rgb8&gt;? preview = null;
+int previews = 0;
+foreach (byte[] chunk in file.Chunk(1024))
+{
+    decoder.Append(chunk);
+    if (decoder.HeaderRead)
+    {
+        preview ??= Raster.Create&lt;Rgb8&gt;(decoder.Info.Width, decoder.Info.Height);
+        previews += decoder.RenderPreview(preview) ? 1 : 0;
+    }
+}
+
+decoder.EndOfInput();
+preview?.Dispose();
+</code></pre><h3 id="animated-avif">Animated AVIF</h3>
 <p>A raster with more than one frame saves as an image sequence (the avis brand), as libavif writes one: the frames as one AV1 stream of
 a key frame and inter frames in a track, each with its delay, and the loop count in the edit list. When any frame has transparency
 the alpha goes into a second, monochrome track; it is exact unless <code>AlphaQuality</code> is below 100. The first frame is also the file's
@@ -202,7 +277,8 @@ foreach (AvifItem item in details.Items.Where(i =&gt; i.IsImage &amp;&amp; i.Rol
 </code></pre><h2 id="sequences-and-layers">Sequences and layers</h2>
 <p>Image sequences (avis) load every frame, inter frames included, each with its duration from the sample table, and the loop
 count from the edit list; an alpha track gives each frame its alpha. Every frame equals avifdec's. A range of frames
-(<code>ReaderOptions.Frames</code>) decodes from the key frame before its first. Layered images load their base layer.</p>
+(<code>ReaderOptions.Frames</code>) decodes from the key frame before its first. Layered images load their best layer (see
+<a href="#progressive-avif">Progressive AVIF</a>).</p>
 <pre><code class="lang-csharp">// An image sequence whose frames are all key frames loads as an animation; save it as an animated WebP.
 using Raster&lt;Rgba8&gt; frames = Raster.Load&lt;Rgba8&gt;(&quot;sequence.avif&quot;);
 TimeSpan firstDelay = frames.Frames[0].Metadata.Delay;
