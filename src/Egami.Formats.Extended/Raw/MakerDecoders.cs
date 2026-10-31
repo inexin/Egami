@@ -385,7 +385,7 @@ internal static class MakerDecoders
         if (ver0 == 0x44 && (ver1 is 0x20 or 0x40) && csize > 1)
         {
             int step = max / (csize - 1);
-            if (ver1 == 0x20 || step > 3)
+            if (step > 0 && (ver1 == 0x20 || step > 3))
             {
                 stepped = true;
                 if (ver1 == 0x40)
@@ -812,7 +812,7 @@ internal static class MakerDecoders
 
                 // Logical order: the bytes from the split on, then the bytes before it.
                 int tail = Math.Max(0, Math.Min(length, 0x4000) - split);
-                file.AsSpan(start + split, Math.Max(0, Math.Min(tail, length - split))).CopyTo(block);
+                file.AsSpan(Math.Min(start + split, file.Length), Math.Max(0, Math.Min(tail, length - split))).CopyTo(block);
                 file.AsSpan(start, Math.Min(split, length)).CopyTo(block.AsSpan(0x4000 - split));
                 Span<ushort> all = pixels.U16;
                 for (int k = 0; k < packetsPerBlock; k++)
