@@ -118,12 +118,16 @@ internal sealed class RawReader : IFormatReader, IRowFormatReader, IMultiImageRe
         };
     }
 
-    private static Raster<TPixel> Load<TPixel>(RawFile file, Plan plan, ReaderOptions options, EgamiInput input)
+    /// <summary>
+    /// Loads the plan's output. <paramref name="convert"/> converts to a <see cref="ReaderOptions.ConvertColorTo"/> the develop
+    /// cannot render into; a streaming decode leaves that to the decoder, which converts from what the rows' metadata says.
+    /// </summary>
+    private static Raster<TPixel> Load<TPixel>(RawFile file, Plan plan, ReaderOptions options, EgamiInput input, bool convert = true)
         where TPixel : unmanaged, IPixelType<TPixel>
     {
         try
         {
-            return LoadCore<TPixel>(file, plan, options, input);
+            return LoadCore<TPixel>(file, plan, options, input, convert);
         }
         catch (InvalidDataException e)
         {
@@ -131,7 +135,7 @@ internal sealed class RawReader : IFormatReader, IRowFormatReader, IMultiImageRe
         }
     }
 
-    private static Raster<TPixel> LoadCore<TPixel>(RawFile file, Plan plan, ReaderOptions options, EgamiInput input)
+    private static Raster<TPixel> LoadCore<TPixel>(RawFile file, Plan plan, ReaderOptions options, EgamiInput input, bool convert)
         where TPixel : unmanaged, IPixelType<TPixel>
     {
         RawFrame frame = file.Frame;
@@ -176,12 +180,12 @@ internal sealed class RawReader : IFormatReader, IRowFormatReader, IMultiImageRe
         }
 
         // A colour space the develop cannot render into (CMYK, gray, HDR) is converted to here, as Egami would after any load.
-        if (plan.Output != RawOutput.Mosaic && options.ConvertColorTo is ColorProfile convert && (plan.Output == RawOutput.Preview || RenderSpace(options) is null))
+        if (convert && plan.Output != RawOutput.Mosaic && options.ConvertColorTo is ColorProfile convertTo && (plan.Output == RawOutput.Preview || RenderSpace(options) is null))
         {
             Raster<TPixel> stored = raster;
             using (stored)
             {
-                raster = stored.ConvertColor<TPixel>(convert);
+                raster = stored.ConvertColor<TPixel>(convertTo);
             }
         }
 
@@ -534,8 +538,13 @@ internal sealed class RawReader : IFormatReader, IRowFormatReader, IMultiImageRe
             Metadata = new RasterMetadata { FormatName = RawFormat.Info.Name, FormatDetails = Details(file, plan, null) };
             if (plan.Output is RawOutput.Developed or RawOutput.HalfSize)
             {
-                // Known before the develop runs, so a streaming decode converts from what the rows will be.
+                // Known before the develop runs, so a streaming decode converts from what the rows will be: nothing when the
+                // develop renders the asked-for space, else from sRGB.
                 Describe(Metadata, RenderSpace(options) ?? ColorProfile.Srgb);
+            }
+            else if (plan.Output == RawOutput.Preview)
+            {
+                Metadata.ColorSpace = ColorSpaceHint.Srgb;
             }
         }
 
@@ -566,7 +575,7 @@ internal sealed class RawReader : IFormatReader, IRowFormatReader, IMultiImageRe
         {
             if (_raster is null)
             {
-                _raster = Load<TNatural>(_file, _plan, _options, _input);
+                _raster = Load<TNatural>(_file, _plan, _options, _input, convert: false);
                 RasterMetadata loaded = _raster.Metadata;
                 Metadata.FormatDetails = loaded.FormatDetails?.Copy();
                 Metadata.ColorSpace = loaded.ColorSpace;

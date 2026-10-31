@@ -238,8 +238,6 @@ internal static class DngParser
         frame.BlackRows = blackRows;
         frame.BlackColumns = blackColumns;
         frame.Black = black;
-        frame.BlackDeltaH = raw.Doubles(RawTags.BlackLevelDeltaH, sensor.Width) is { } dh && dh.Length == sensor.Width ? dh : null;
-        frame.BlackDeltaV = raw.Doubles(RawTags.BlackLevelDeltaV, sensor.Height) is { } dv && dv.Length == sensor.Height ? dv : null;
         double defaultWhite = sensor.Float ? 1.0 : Math.Pow(2, Math.Min(sensor.Bits, 16)) - 1;
         double[] white = new double[samples];
         double[]? whites = raw.Doubles(RawTags.WhiteLevel, 16);
@@ -264,6 +262,10 @@ internal static class DngParser
         }
 
         frame.Active = active;
+
+        // The specification counts the deltas over the active area; a file that counts them over the whole image is read too.
+        frame.BlackDeltaH = raw.Doubles(RawTags.BlackLevelDeltaH, sensor.Width) is { } dh && (dh.Length == active.Width || dh.Length == sensor.Width) ? dh : null;
+        frame.BlackDeltaV = raw.Doubles(RawTags.BlackLevelDeltaV, sensor.Height) is { } dv && (dv.Length == active.Height || dv.Length == sensor.Height) ? dv : null;
         (double X, double Y, double Width, double Height) crop = (0, 0, active.Width, active.Height);
         if (raw.Doubles(RawTags.DefaultCropOrigin, 2) is { Length: 2 } origin && raw.Doubles(RawTags.DefaultCropSize, 2) is { Length: 2 } size)
         {
@@ -306,14 +308,15 @@ internal static class DngParser
         {
             long[]? offsets = ifd.Ints(RawTags.StripOffsets, 1);
             long[]? counts = ifd.Ints(RawTags.StripByteCounts, 1);
-            if (offsets is { Length: 1 } && counts is { Length: 1 } && offsets[0] > 0 && offsets[0] + counts[0] <= ifd.File.Length)
+            if (offsets is { Length: 1 } && counts is { Length: 1 } && offsets[0] > 0 && counts[0] > 0)
             {
                 return new RawPreviewSource(width, height, true, ifd.File.Origin + offsets[0], counts[0], ifd);
             }
 
             long at = ifd.Int(RawTags.JpegInterchangeFormat);
             long length = ifd.Int(RawTags.JpegInterchangeFormatLength);
-            if (at > 0 && length > 0 && at + length <= ifd.File.Length)
+            // Where the preview's bytes lie is checked when they are read: Probe has not read that far into the file.
+            if (at > 0 && length > 0)
             {
                 return new RawPreviewSource(width, height, true, ifd.File.Origin + at, length, ifd);
             }

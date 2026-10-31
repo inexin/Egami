@@ -81,26 +81,48 @@ internal static class RawDemosaic
             return;
         }
 
+        // Any other pattern (X-Trans among them): each colour is the mean of its samples in the 2 × 2 block, or, when the block
+        // lacks it, in a ring around the block grown until the colour is found.
         Span<float> sum = stackalloc float[3];
         Span<int> count = stackalloc int[3];
-        int stepY = cfa.Rows == 1 ? 1 : 2;
+        Span<float> ringSum = stackalloc float[3];
+        Span<int> ringCount = stackalloc int[3];
+        int reach = Math.Max(cfa.Rows, cfa.Columns);
         for (int y = 0; y < h; y++)
         {
             for (int x = 0; x < w; x++)
             {
                 sum.Clear();
                 count.Clear();
-                for (int dy = 0; dy < 2; dy++)
+                for (int grow = 0; grow <= reach && (count[0] == 0 || count[1] == 0 || count[2] == 0); grow++)
                 {
-                    for (int dx = 0; dx < 2; dx++)
+                    ringSum.Clear();
+                    ringCount.Clear();
+                    for (int sy = (y * 2) - grow; sy <= (y * 2) + 1 + grow; sy++)
                     {
-                        int sx = (x * 2) + dx, sy = (y * stepY) + dy;
-                        sy = Math.Min(sy, height - 1);
-                        int c = cfa.ColorAt(sx, sy);
-                        if (c < 3)
+                        for (int sx = (x * 2) - grow; sx <= (x * 2) + 1 + grow; sx++)
                         {
-                            sum[c] += mosaic[(sy * width) + sx];
-                            count[c]++;
+                            bool ring = grow == 0 || sy == (y * 2) - grow || sy == (y * 2) + 1 + grow || sx == (x * 2) - grow || sx == (x * 2) + 1 + grow;
+                            if (!ring || (uint)sx >= (uint)width || (uint)sy >= (uint)height)
+                            {
+                                continue;
+                            }
+
+                            int c = cfa.ColorAt(sx, sy);
+                            if (c < 3)
+                            {
+                                ringSum[c] += mosaic[(sy * width) + sx];
+                                ringCount[c]++;
+                            }
+                        }
+                    }
+
+                    for (int c = 0; c < 3; c++)
+                    {
+                        if (count[c] == 0)
+                        {
+                            sum[c] = ringSum[c];
+                            count[c] = ringCount[c];
                         }
                     }
                 }

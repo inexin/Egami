@@ -357,6 +357,8 @@ internal sealed class DngFile
 
     public List<TiffTag> ExtraIfd0 { get; } = [];
 
+    public List<TiffTag> ExtraRaw { get; } = [];
+
     public double[]? NoiseProfile { get; set; }
 
     public int SamplesPerPixel => LinearRaw ? 3 : 1;
@@ -471,6 +473,8 @@ internal sealed class DngFile
         {
             raw.Tags.Add(TiffTag.Double(51041, NoiseProfile));
         }
+
+        raw.Tags.AddRange(ExtraRaw);
 
         foreach ((int tag, byte[]? list) in new[] { (51008, Opcodes1), (51009, Opcodes2), (51022, Opcodes3) })
         {

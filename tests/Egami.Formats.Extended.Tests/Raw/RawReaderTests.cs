@@ -543,6 +543,101 @@ public class RawReaderTests
     }
 
     [Fact]
+    public void FindsAPreviewBeyondTheFirstRead()
+    {
+        // The preview's bytes come after 128 KB of sensor data, past what Probe reads of the file.
+        using Raster<Rgb8> picture = Raster.Create<Rgb8>(64, 48);
+        using MemoryStream jpeg = new();
+        picture.Save(jpeg, JpegFormat.Info);
+        DngFile dng = Flat(10000, 256);
+        dng.Preview = jpeg.ToArray();
+        dng.PreviewSize = (64, 48);
+        byte[] file = dng.Build();
+        Assert.True(file.AsSpan().IndexOf(dng.Preview) > 128 * 1024);
+        RasterInfo info = Raster.Probe(new MemoryStream(file), Context, new RawReaderOptions { Output = RawOutput.Preview });
+        Assert.Equal((64, 48), (info.Width, info.Height));
+        Assert.Equal(2, info.ImageCount);
+        using Raster preview = Raster.Load(file, Context, new ReaderOptions { MinimumSize = new Size(64, 48) });
+        Assert.Equal(RawOutput.Preview, Assert.IsType<RawDetails>(preview.Metadata.FormatDetails).Output);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void BlackDeltasOverTheActiveAreaOrTheImage(bool overActive)
+    {
+        // Columns of the active area get 0, 100, 200, … added to the black level; a sample of 4000 + that delta is 4000 above black.
+        DngFile dng = new DngFile { Width = 20, Height = 16, ActiveArea = [0, 4, 16, 20] }.Fill((x, _, _) => 4000 + (Math.Max(0, x - 4) * 100));
+        int columns = overActive ? 16 : 20;
+        dng.ExtraRaw.Add(TiffTag.SRational(50715, [.. Enumerable.Range(0, columns).Select(i => (double)(overActive ? i * 100 : Math.Max(0, i - 4) * 100))]));
+        using Raster<Rgb16> raster = Raster.Load<Rgb16>(dng.Build(), Context, new RawReaderOptions { ColorNoiseReduction = 0 });
+        for (int x = 2; x < 14; x++)
+        {
+            Near(Srgb(4000 / (65535.0 - (x * 100))), raster.Row(8)[x].G, 120);
+        }
+
+        Assert.Equal(16, Assert.IsType<RawDetails>(raster.Metadata.FormatDetails).ActiveArea.Width);
+    }
+
+    [Fact]
+    public void HalfSizeOfAnXTransPattern()
+    {
+        // X-Trans's 6 × 6 pattern has 2 × 2 blocks without red or blue; each colour still comes from its nearest samples.
+        byte[] xtrans = [1, 1, 0, 1, 1, 2, 1, 1, 2, 1, 1, 0, 2, 0, 1, 0, 2, 1, 1, 1, 2, 1, 1, 0, 1, 1, 0, 1, 1, 2, 0, 2, 1, 2, 0, 1];
+        double[] colour = [0.5, 0.25, 0.1];
+        DngFile dng = new DngFile { Width = 24, Height = 24, Cfa = xtrans }.Fill((x, y, _) => (int)(colour[xtrans[((y % 6) * 6) + (x % 6)]] * 65535));
+        using Raster<Rgb16> half = Raster.Load<Rgb16>(dng.Build(), Context, new RawReaderOptions { Output = RawOutput.HalfSize, ColorNoiseReduction = 0 });
+        Assert.Equal((12, 12), (half.Width, half.Height));
+        for (int y = 0; y < 12; y++)
+        {
+            for (int x = 0; x < 12; x++)
+            {
+                Rgb16 p = half.Row(y)[x];
+                Near(Srgb(0.5), p.R);
+                Near(Srgb(0.25), p.G);
+                Near(Srgb(0.1), p.B);
+            }
+        }
+    }
+
+    [Fact]
+    public void StreamingConvertsColourOnce()
+    {
+        using Raster<Rgb8> picture = Raster.Create<Rgb8>(8, 6);
+        for (int y = 0; y < 6; y++)
+        {
+            picture.Row(y).Fill(new Rgb8(40, 180, 90));
+        }
+
+        using MemoryStream jpeg = new();
+        picture.Save(jpeg, JpegFormat.Info);
+        DngFile dng = new DngFile { Width = 16, Height = 16 }.Fill((x, y, _) => ((y & 1) << 1 | (x & 1)) == 0 ? 30000 : 9000);
+        dng.Preview = jpeg.ToArray();
+        dng.PreviewSize = (8, 6);
+        byte[] file = dng.Build();
+        foreach (ReaderOptions options in new ReaderOptions[]
+        {
+            new RawReaderOptions { Output = RawOutput.Preview, ConvertColorTo = Colors.ColorProfile.DisplayP3 },
+            new RawReaderOptions { ConvertColorTo = Colors.ColorProfile.Fogra39, ColorNoiseReduction = 0 },
+            new RawReaderOptions { ConvertColorTo = Colors.ColorProfile.GraySrgb, ColorNoiseReduction = 0 },
+        })
+        {
+            using Raster<Rgba16> loaded = Raster.Load<Rgba16>(file, Context, options);
+            using RasterDecoder decoder = RasterDecoder.Open(new MemoryStream(file), Context, options);
+            using Raster<Rgba16> band = Raster.Create<Rgba16>(loaded.Width, loaded.Height);
+            Assert.Equal(loaded.Height, decoder.ReadRows(band));
+            for (int y = 0; y < loaded.Height; y++)
+            {
+                for (int x = 0; x < loaded.Width; x++)
+                {
+                    Rgba16 a = loaded.Row(y)[x], b = band.Row(y)[x];
+                    Assert.True(Math.Abs(a.R - b.R) <= 300 && Math.Abs(a.G - b.G) <= 300 && Math.Abs(a.B - b.B) <= 300, $"{options.ConvertColorTo!.Name} pixel {x},{y}: Load {a}, streamed {b}.");
+                }
+            }
+        }
+    }
+
+    [Fact]
     public void OptionsValidate()
     {
         Assert.Throws<ArgumentOutOfRangeException>(() => new RawReaderOptions { Temperature = 1000 });
