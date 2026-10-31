@@ -401,7 +401,9 @@ internal static class MakerParser
     private static RawFrame Arw(RawTiff tiff, RawIfd ifd0, List<RawIfd> all)
     {
         RawIfd raw = Largest(all, i => i.Int(RawTags.Compression) is 32767 or 7 or 1 && i.Int(RawTags.BitsPerSample, 8) >= 8 && i.Int(RawTags.Photometric, DngParser.PhotometricCfa) == DngParser.PhotometricCfa && i.Int(RawTags.ImageWidth) > 640)
-            ?? throw new InvalidDataException("The ARW has no raw IFD.");
+            ?? ((ifd0.Ascii(RawTags.Model) ?? "").Equals("DSLR-A100", StringComparison.OrdinalIgnoreCase)
+                ? throw new NotSupportedException("Egami does not read the Sony A100's raw layout yet.")
+                : throw new InvalidDataException("The ARW has no raw IFD."));
         int width = (int)raw.Int(RawTags.ImageWidth), height = (int)raw.Int(RawTags.ImageLength), bits = (int)raw.Int(RawTags.BitsPerSample, 12);
         int compression = (int)raw.Int(RawTags.Compression, 1);
         long count = raw.Ints(RawTags.StripByteCounts)?.Sum() ?? 0;
