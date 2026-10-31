@@ -54,6 +54,18 @@ internal sealed partial class Av1Reconstructor<T>
             at = 0;
         }
 
+        if (fracX == 0 && fracY == 0 && picture is Picture copy)
+        {
+            // A whole-sample vector: the passes shift by 7 - round0 and 7, and round1 = 14 - round0 takes it all back, so the
+            // prediction is the reference's samples.
+            for (int r = 0; r < h; r++)
+            {
+                src.AsSpan(at + ((r + 3) * stride) + 3, w).CopyTo(copy.Samples.AsSpan(copy.At + (r * copy.Stride), w));
+            }
+
+            return;
+        }
+
         short[] inter = _inter16;
         if (fracY == 0)
         {
