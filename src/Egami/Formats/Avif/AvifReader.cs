@@ -21,7 +21,7 @@ internal sealed partial class AvifReader : IFormatReader, IYuvFormatReader, IRow
     internal static readonly AvifReader Instance = new();
 
     private static readonly HeifDiagnosticIds Ids = new("Avif.MatrixApproximated", "Avif.MatrixUnknown", "Avif.ExifDamaged", "Avif.GainMapDropped",
-        "Avif.SequenceFirstFrame", "Avif.FramesDropped", "Egami decodes inter frames from 2.9.5", "Avif.BaseLayerOnly");
+        "Avif.SequenceFirstFrame", "Avif.FramesDropped", "Egami decodes inter frames from 2.9.5");
 
     /// <summary>The HEIF image layer with the AV1 codec, film grain as the options say, and AvifDetails.</summary>
     private static readonly HeifImageReader Still = new(() => AvifFormat.Info, Ids, Codec)
@@ -31,9 +31,9 @@ internal sealed partial class AvifReader : IFormatReader, IYuvFormatReader, IRow
             AvifDetails details = AvifDetails.From((AvifFile)file);
             details.FilmGrain = ((AvifCodec)codec).FilmGrain;
             details.Lossless = ((AvifCodec)codec).Lossless;
+            details.Layers = ((AvifCodec)codec).Layers;
             metadata.FormatDetails = details;
         },
-        Layered = file => file.Heif.Property(file.Cells[0], AvifProperties.A1lx) is not null,
     };
 
     public RasterInfo ReadInfo(EgamiInput input, ReaderOptions options)
@@ -44,17 +44,7 @@ internal sealed partial class AvifReader : IFormatReader, IYuvFormatReader, IRow
             return SequenceInfo(sequence, input, options);
         }
 
-        AvifFile file = AvifFile.Open(heif);
-        (int Width, int Height)? size = null;
-        if (file.Overlay is null && file.Primary.Type != AvifFile.Grid && file.Heif.Property(file.Cells[0], AvifProperties.A1lx) is not null
-            && Av1.Av1Decoder.FirstFrameSize(file.Heif.ItemData(file.Cells[0], input.Limits).ToArray(), input.FormatName) is (int w, int h)
-            && (w, h) != (file.Width, file.Height))
-        {
-            // Load gives a spatially layered image's base layer, at its own size (design question 15).
-            size = (w, h);
-        }
-
-        return Still.Info(file, input, options, size);
+        return Still.Info(AvifFile.Open(heif), input, options);
     }
 
     public Raster Read(EgamiInput input, ReaderOptions options)
@@ -140,8 +130,12 @@ internal sealed partial class AvifReader : IFormatReader, IYuvFormatReader, IRow
     /// <summary>Gets the natural pixel layout (design question 7).</summary>
     internal static PixelLayoutInfo NaturalLayout(int bitDepth, bool monochrome, bool alpha) => HeifImageReader.NaturalLayout(bitDepth, monochrome, alpha);
 
-    /// <summary>Makes the AV1 codec for one read: film grain applied unless the options turn it off (design question 6).</summary>
-    private static AvifCodec Codec(ReaderOptions options) => new(options is not AvifReaderOptions { FilmGrain: false });
+    /// <summary>
+    /// Makes the AV1 codec for one read: film grain applied unless the options turn it off (design question 6), and the layer of a
+    /// layered image the options pick (AVIF extras design, question 2).
+    /// </summary>
+    private static AvifCodec Codec(ReaderOptions options) =>
+        new(options is not AvifReaderOptions { FilmGrain: false }, (options as AvifReaderOptions)?.Layer);
 
     /// <summary>
     /// Reads image item <paramref name="itemId"/> for <see cref="AvifImage.ReadItem(Stream, uint, ReaderOptions?, EgamiContext?)"/>:

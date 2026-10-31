@@ -109,8 +109,20 @@ public sealed class AvifDetails : FormatDetails
     /// <summary>Gets or sets the columns of a grid image, or 1.</summary>
     public int GridColumns { get; set; } = 1;
 
-    /// <summary>Gets or sets whether the image is layered for progressive display; Egami decodes the best layer (design question 15).</summary>
+    /// <summary>
+    /// Gets or sets whether the image is layered for progressive display (a1lx without an lsel picking one layer). Load gives the
+    /// best layer, or the one <see cref="AvifReaderOptions.Layer"/> picks, at the image's full size.
+    /// </summary>
     public bool IsProgressive { get; set; }
+
+    /// <summary>
+    /// Gets or sets the size of each layer of a layered image, in the order they decode (the first is the lowest quality), as Load
+    /// found them; empty when the image is not layered.
+    /// </summary>
+    /// <example>
+    /// <code language="csharp" source="../../../../tests/Egami.DocSamples/Avif.cs" region="layers"/>
+    /// </example>
+    public IReadOnlyList<Size> Layers { get; set; } = [];
 
     /// <summary>Gets or sets whether the file is an image sequence (the avis brand).</summary>
     public bool IsSequence { get; set; }
@@ -150,6 +162,7 @@ public sealed class AvifDetails : FormatDetails
             GridRows = GridRows,
             GridColumns = GridColumns,
             IsProgressive = IsProgressive,
+            Layers = Layers,
             IsSequence = IsSequence,
             HasFilmGrain = HasFilmGrain,
             FilmGrain = FilmGrain,
@@ -194,12 +207,30 @@ public sealed class AvifDetails : FormatDetails
 /// </example>
 public sealed record AvifReaderOptions : ReaderOptions
 {
+    private readonly int? _layer;
+
     /// <summary>
     /// Gets whether the film grain an AV1 image carries is added to its pixels, as the AV1 specification's output process does
     /// (the default, true), or left out, giving the image as coded; the parameters are in <see cref="AvifDetails.FilmGrain"/>
     /// either way.
     /// </summary>
     public bool FilmGrain { get; init; } = true;
+
+    /// <summary>
+    /// Gets the layer of a layered (progressive) image to load, counted from 0 for the first and lowest quality one in decoding
+    /// order, or <see langword="null"/> (the default) for the layer the file picks with its lsel property, else the best. A layer
+    /// past the last gives the last; a layer smaller than the image is scaled up to its full size. Images that are not layered
+    /// ignore it; <see cref="AvifDetails.Layers"/> lists the layers.
+    /// </summary>
+    /// <exception cref="ArgumentOutOfRangeException">The value is negative.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../../tests/Egami.DocSamples/Avif.cs" region="layers"/>
+    /// </example>
+    public int? Layer
+    {
+        get => _layer;
+        init => _layer = value is null or >= 0 ? value : throw new ArgumentOutOfRangeException(nameof(value), value, "The layer is 0 or more.");
+    }
 }
 
 /// <summary>

@@ -36,13 +36,8 @@ internal sealed partial class HeifImageReader(Func<FormatInfo> format, HeifDiagn
     /// </summary>
     internal bool TruncateFill { get; init; }
 
-    /// <summary>
-    /// Gets or sets whether an image is coded in layers whose base layer alone loads, at its own size (AVIF's a1lx without lsel).
-    /// </summary>
-    internal Func<HeifImage, bool>? Layered { get; init; }
-
-    /// <summary>Gets the RasterInfo of a still image, <paramref name="size"/> replacing the output size when given.</summary>
-    internal RasterInfo Info(HeifImage file, EgamiInput input, ReaderOptions options, (int Width, int Height)? size = null)
+    /// <summary>Gets the RasterInfo of a still image.</summary>
+    internal RasterInfo Info(HeifImage file, EgamiInput input, ReaderOptions options)
     {
         if (input.Reports(DiagnosticLevel.Warning))
         {
@@ -53,7 +48,7 @@ internal sealed partial class HeifImageReader(Func<FormatInfo> format, HeifDiagn
             }
         }
 
-        (int width, int height) = size ?? OutputSize(file);
+        (int width, int height) = OutputSize(file);
         input.Limits.CheckFrameSize(width, height);
         PixelLayoutInfo layout = options.Hdr is not null && (file.ToneMap is not null || file.AppleGainMap is not null) ? RgbaF16.Layout : NaturalLayout(file);
         return new RasterInfo
@@ -382,7 +377,6 @@ internal sealed partial class HeifImageReader(Func<FormatInfo> format, HeifDiagn
         (int width, int height) = OutputSize(file);
         input.Limits.CheckFrameSize(width, height);
         (int x, int y) = file.Crop is (int cx, int cy, _, _) ? (cx, cy) : (0, 0);
-        bool layered = file.Overlay is null && Layered?.Invoke(file) == true;
         PixelLayoutInfo natural = NaturalLayout(file);
         IHeifCodec codec = createCodec(options);
         ColorCodePoints points = file.CodePoints;
@@ -399,12 +393,6 @@ internal sealed partial class HeifImageReader(Func<FormatInfo> format, HeifDiagn
         {
             Rect? needed = region is Rect r ? r with { X = r.X + x, Y = r.Y + y } : null;
             (HeifPlanes color, HeifPlanes? alpha) = Decode(file, codec, input, needed, out points);
-            if (layered && (color.Width, color.Height) != (file.Width, file.Height))
-            {
-                // A spatially layered image's base layer is smaller than the image; it loads whole, at its own size.
-                (x, y, width, height) = (0, 0, color.Width, color.Height);
-            }
-
             if (x + width > color.Width || y + height > color.Height)
             {
                 throw input.Corrupt(-1, $"The image is {color.Width} x {color.Height}, smaller than its {width} x {height} clean aperture at ({x}, {y}).");
@@ -432,11 +420,6 @@ internal sealed partial class HeifImageReader(Func<FormatInfo> format, HeifDiagn
         else if (file.AppleGainMap is not null && options.ReadMetadata)
         {
             ReadAppleGainMap(file, codec, input, metadata);
-        }
-
-        if (layered)
-        {
-            metadata.WarningList.Add(ids.BaseLayerOnly!, "The image is coded in layers whose later ones are inter frames, which Egami decodes from 2.9.5; its first (lowest quality) layer was loaded.");
         }
 
         if (unsupported.Count > 0)
@@ -1065,6 +1048,5 @@ internal sealed partial class HeifImageReader(Func<FormatInfo> format, HeifDiagn
 /// <param name="SequenceFirstFrame">A sequence's frames are not all key frames, so only the first loaded.</param>
 /// <param name="FramesDropped">A damaged frame ended a sequence's lenient load.</param>
 /// <param name="InterFrames">Why a sequence with inter frames gives its first frame only, as the end of a sentence.</param>
-/// <param name="BaseLayerOnly">Only a layered image's base layer was loaded, for formats that have layers.</param>
 internal sealed record HeifDiagnosticIds(string MatrixApproximated, string MatrixUnknown, string ExifDamaged, string GainMapDropped,
-    string SequenceFirstFrame, string FramesDropped, string InterFrames, string? BaseLayerOnly = null);
+    string SequenceFirstFrame, string FramesDropped, string InterFrames);

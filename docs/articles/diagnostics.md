@@ -122,7 +122,6 @@ The activity and tag names are never renamed once shipped, like the diagnostic i
 | `Ani.SizeMissing` | Warning | A frame of an animated cursor has no image at the size loaded; its nearest image was resized, hotspot and all |
 | `Ani.StepCount` | Warning | An animated cursor's header gives a step count its `seq ` chunk or frames contradict; theirs was used |
 | `Ani.ZeroRate` | Warning | An animated cursor's default rate, or a step's rate, is 0; the step uses the default rate, or one jiffy (1/60 s) when that is 0 too |
-| `Avif.BaseLayerOnly` | Warning | An AVIF image is coded in layers whose later ones are inter frames, which Egami does not decode yet; its first layer was loaded |
 | `Avif.ExifDamaged` | Warning | An AVIF Exif item's TIFF header offset points past its end; the item was skipped |
 | `Avif.FramesDropped` | Warning | A frame of an AVIF sequence after the first cannot be decoded; a lenient load keeps the frames before it |
 | `Avif.GainMapDropped` | Warning | An AVIF gain map (tmap item) has metadata or an image that cannot be read, or a version Egami does not know; the image loads as SDR only |
