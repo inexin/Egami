@@ -125,7 +125,7 @@ using Raster first = pages.Detach(0);
 </thead>
 <tbody>
 <tr>
-<td>None, LZW (and TIFF 5.0's bit-reversed LZW), Deflate, PackBits</td>
+<td>None, LZW (and TIFF 5.0's bit-reversed LZW), Deflate, PackBits, ZSTD</td>
 <td>Yes, with the horizontal and floating-point predictors</td>
 </tr>
 <tr>
@@ -153,7 +153,7 @@ using Raster first = pages.Detach(0);
 <td>Chunky gray, RGB and YCbCr pages of 8 or 16-bit or float samples, lossless and lossy, through Egami's JPEG XL decoder; each strip or tile as its codestream decodes alone. DNG's camera RAW pages (CFA, LinearRaw) are not read</td>
 </tr>
 <tr>
-<td>ZSTD, LZMA, LERC</td>
+<td>LZMA, LERC</td>
 <td>Not yet: <code>NotSupportedException</code> names the code. Added on real demand</td>
 </tr>
 </tbody>
@@ -236,7 +236,7 @@ photo.Save(&quot;photo.tif&quot;, new TiffWriterOptions { Compression = TiffComp
 <tr>
 <td><code>Compression</code></td>
 <td>the TIFF source's, else <code>Deflate</code></td>
-<td><code>None</code>, <code>Lzw</code>, <code>Deflate</code>, <code>PackBits</code>, <code>CcittGroup3</code> and <code>CcittGroup4</code> (1-bit), <code>Jpeg</code> (8-bit gray, RGB and CMYK), <code>Webp</code> (lossless at <code>Quality</code> 100, else lossy)</td>
+<td><code>None</code>, <code>Lzw</code>, <code>Deflate</code>, <code>Zstd</code>, <code>PackBits</code>, <code>CcittGroup3</code> and <code>CcittGroup4</code> (1-bit), <code>Jpeg</code> (8-bit gray, RGB and CMYK), <code>Webp</code> (lossless at <code>Quality</code> 100, else lossy)</td>
 </tr>
 <tr>
 <td><code>CompressionLevel</code></td>
@@ -244,9 +244,14 @@ photo.Save(&quot;photo.tif&quot;, new TiffWriterOptions { Compression = TiffComp
 <td>Deflate level, 0 to 9</td>
 </tr>
 <tr>
+<td><code>ZstdLevel</code></td>
+<td>9</td>
+<td>Zstandard level, 1 to 22, as libtiff's <code>ZSTD_LEVEL</code></td>
+</tr>
+<tr>
 <td><code>Predictor</code></td>
 <td>the source's, else <code>Horizontal</code> for integers and <code>FloatingPoint</code> for floats</td>
-<td>For LZW and Deflate; <code>None</code> turns it off</td>
+<td>For LZW, Deflate and Zstd; <code>None</code> turns it off</td>
 </tr>
 <tr>
 <td><code>Quality</code></td>
@@ -290,6 +295,17 @@ as pages.</p>
 page.Save(&quot;fax.tif&quot;, new TiffWriterOptions { Compression = TiffCompression.CcittGroup4 });
 </code></pre>
 <p>Group 4 is the usual choice for scanned text; it takes 1-bit pages only, so threshold first or set <code>Reduce</code>.</p>
+<pre><code class="lang-csharp">// Zstandard with the predictor: lossless, read by libtiff and GDAL. Level 1 writes fastest, 19 writes smallest.
+photo.Save(&quot;zstd.tif&quot;, new TiffWriterOptions { Compression = TiffCompression.Zstd });
+photo.Save(&quot;zstd-small.tif&quot;, new TiffWriterOptions { Compression = TiffCompression.Zstd, ZstdLevel = 19 });
+</code></pre>
+<p>ZSTD (code 50000, libtiff's and GDAL's) is lossless like Deflate. In Egami's benchmarks a TIFF loads about as fast as with
+Deflate (the predictor and the pixel conversion take most of the time); level 3 writes about as fast as Deflate's default and
+level 9 (the default) a little smaller than it, while on flat images such as screenshots the files are a third smaller. Higher
+levels write smaller and slower. Egami's
+Zstandard codec is its own managed code from RFC 8878: one frame a strip or tile, with the content size and no checksum, as
+libtiff writes. Up to level 15 it follows libzstd's settings and stays within 5 % of its size; from 16, where libzstd switches to
+optimal parsing, Egami's files are a few percent larger. libtiff and GDAL read Egami's ZSTD files and Egami reads theirs.</p>
 <p>Files are checked against libtiff (no tiffinfo warnings, identical samples), ImageMagick and Pillow, and open in Windows' WIC
 except for BigTIFF and tiled gray-with-alpha or 16-bit CMYK, which WIC does not read from any writer.</p>
 <h2 id="format-details-and-metadata">Format details and metadata</h2>

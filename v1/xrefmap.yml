@@ -52377,6 +52377,12 @@ references:
   commentId: F:Egami.Formats.Tiff.TiffCompression.Webp
   fullName: Egami.Formats.Tiff.TiffCompression.Webp
   nameWithType: TiffCompression.Webp
+- uid: Egami.Formats.Tiff.TiffCompression.Zstd
+  name: Zstd
+  href: api/Egami.Formats.Tiff.TiffCompression.html#Egami_Formats_Tiff_TiffCompression_Zstd
+  commentId: F:Egami.Formats.Tiff.TiffCompression.Zstd
+  fullName: Egami.Formats.Tiff.TiffCompression.Zstd
+  nameWithType: TiffCompression.Zstd
 - uid: Egami.Formats.Tiff.TiffDetails
   name: TiffDetails
   href: api/Egami.Formats.Tiff.TiffDetails.html
@@ -53055,6 +53061,19 @@ references:
   isSpec: "True"
   fullName: Egami.Formats.Tiff.TiffWriterOptions.TileSize
   nameWithType: TiffWriterOptions.TileSize
+- uid: Egami.Formats.Tiff.TiffWriterOptions.ZstdLevel
+  name: ZstdLevel
+  href: api/Egami.Formats.Tiff.TiffWriterOptions.html#Egami_Formats_Tiff_TiffWriterOptions_ZstdLevel
+  commentId: P:Egami.Formats.Tiff.TiffWriterOptions.ZstdLevel
+  fullName: Egami.Formats.Tiff.TiffWriterOptions.ZstdLevel
+  nameWithType: TiffWriterOptions.ZstdLevel
+- uid: Egami.Formats.Tiff.TiffWriterOptions.ZstdLevel*
+  name: ZstdLevel
+  href: api/Egami.Formats.Tiff.TiffWriterOptions.html#Egami_Formats_Tiff_TiffWriterOptions_ZstdLevel_
+  commentId: Overload:Egami.Formats.Tiff.TiffWriterOptions.ZstdLevel
+  isSpec: "True"
+  fullName: Egami.Formats.Tiff.TiffWriterOptions.ZstdLevel
+  nameWithType: TiffWriterOptions.ZstdLevel
 - uid: Egami.Formats.Webp
   name: Egami.Formats.Webp
   href: api/Egami.Formats.Webp.html
