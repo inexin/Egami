@@ -94,6 +94,18 @@ DDS textures, stage C (BC7 and BC6H encoders).
 
 ## Egami, unreleased
 
+Arithmetic and lossless JPEG writing, stage B: lossless. All additive.
+
+- `JpegWriterOptions.Lossless` and `JpegLosslessOptions` write lossless JPEG (T.81 annex H): SOF3, or SOF11 with `Arithmetic`,
+  predictors 1 to 7 (`Predictor`, or picked per image when left null), point transform 0 to 15 and 2 to 16 bits (`Precision`,
+  from the pixel type when null), gray, RGB (Adobe transform 0) and CMYK, never subsampled or color-converted, so the samples
+  load back exactly. Huffman tables are made for the image (annex K.2); every sample is held until the end, counted against
+  `SafetyLimits.MaxTotalBytes`. The restart interval is rounded up to whole rows, as T.81 asks. libjpeg-turbo's `djpeg` decodes
+  the SOF3 files exactly, within 0.2 % of `cjpeg -lossless`'s size at the same predictor, and Richter's libjpeg decodes the
+  SOF11 ones exactly. A point transform or a lower precision is reported as `Save.DepthReduced`; `Progressive` or
+  `ColorType = Ycck` with `Lossless` throws `ArgumentException`, and `GainMap` with it `NotSupportedException`.
+- The jpeg-write fuzz target also writes arithmetic and lossless files.
+
 Arithmetic and lossless JPEG writing, stage A: arithmetic coding. All additive.
 
 - `JpegWriterOptions.Arithmetic` writes arithmetic-coded JPEG (T.81 annex D's QM-coder with the models of annexes F and G):

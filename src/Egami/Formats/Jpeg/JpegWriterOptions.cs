@@ -122,6 +122,23 @@ public sealed class JpegWriterOptions : WriterOptions
     public bool Arithmetic { get; init; }
 
     /// <summary>
+    /// Gets how to write a lossless JPEG (T.81 annex H: SOF3, or SOF11 with <see cref="Arithmetic"/>), or <see langword="null"/>
+    /// (the default) for a DCT file. Set, the samples are written exactly as the pixels hold them, gray, RGB (behind an Adobe
+    /// marker) or CMYK, never subsampled or color-converted, at 2 to 16 bits, so they load back unchanged; <see cref="Quality"/>,
+    /// <see cref="Subsampling"/>, <see cref="OptimizeHuffman"/> and <see cref="Precision"/> are ignored, and the Huffman tables are
+    /// always made for the image. The encoder holds every sample until the end, about 2 bytes each, counted against
+    /// <see cref="SafetyLimits.MaxTotalBytes"/>. libjpeg-turbo, DNG and DICOM readers read SOF3; only Egami and Thomas Richter's
+    /// libjpeg read SOF11; no web browser reads either. <see cref="RestartInterval"/> is rounded up to whole rows of pixels, as T.81
+    /// asks of lossless files. With <see cref="Progressive"/> or <see cref="JpegColorType.Ycck"/> the save
+    /// throws <see cref="ArgumentException"/>. An Ultra HDR gain map is left out, and <see cref="GainMap"/> with this throws
+    /// <see cref="NotSupportedException"/>. Defaults to <see langword="null"/>.
+    /// </summary>
+    /// <example>
+    /// <code language="csharp" source="../../../../tests/Egami.DocSamples/AnimationAndMetadata.cs" region="jpeg-lossless"/>
+    /// </example>
+    public JpegLosslessOptions? Lossless { get; init; }
+
+    /// <summary>
     /// Gets the bits per sample, 8 or 12. 12 keeps the detail of 16-bit and float images (written as SOF1, or SOF2 when
     /// progressive, with Huffman tables always optimized), but no browser shows 12-bit JPEG; 8-bit pixel types gain nothing from
     /// it. Defaults to 8.
