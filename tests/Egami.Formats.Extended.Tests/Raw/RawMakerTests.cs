@@ -178,6 +178,14 @@ public class RawMakerTests
         Assert.True(error is null or CorruptDataException, error?.ToString());
     }
 
+    [Fact]
+    public void LosslessJpegHuffmanTableWithTooManyCodesIsInvalid()
+    {
+        // Fuzz finding: three codes of length 1 overran the table's lookup.
+        byte[] jpeg = [0xFF, 0xD8, 0xFF, 0xC4, 0, 23, 0x00, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 0xFF, 0xD9];
+        Assert.Throws<InvalidDataException>(() => LosslessJpeg.Open(jpeg, 0, jpeg.Length));
+    }
+
     [Theory]
     [InlineData(0xFFFFFFF0u)]
     [InlineData(0x7FFFFFFEu)]

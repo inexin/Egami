@@ -16,6 +16,7 @@ internal enum RawKind
     Orf,
     Rw2,
     Raf,
+    Cr3,
 }
 
 /// <summary>The codecs of maker sensor data, decoded by <see cref="MakerDecoders"/>; <see cref="Tiff"/> is TIFF's own compressions.</summary>
@@ -39,6 +40,7 @@ internal enum RawCodec
     Unpacked16,
     FujiCompressed,
     CanonSraw,
+    CanonCrx,
 }
 
 /// <summary>
@@ -55,6 +57,11 @@ internal static class MakerParser
         if (header.Length >= 16 && header.StartsWith("FUJIFILMCCD-RAW"u8))
         {
             return RawKind.Raf;
+        }
+
+        if (Cr3Parser.IsCr3(header))
+        {
+            return RawKind.Cr3;
         }
 
         if (!RawTiff.TryHeader(header, out bool bigEndian, out ushort magic, out uint first))
