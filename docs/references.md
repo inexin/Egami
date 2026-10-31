@@ -44,6 +44,8 @@ Licenses were checked on 2026-10-07 (the HEVC libraries on 2026-10-15, the barco
 | [bc7enc_rdo](https://github.com/richgel999/bc7enc_rdo) | C++ | MIT or public domain | Fast BC1 to BC7 encoders and their mode searches | DDS |
 | [zstd](https://github.com/facebook/zstd) | C | BSD-3 or GPL-2.0; read under BSD-3 only | How the reference Zstandard decoder behaves where RFC 8878 leaves room; its compression level parameters and match finder ideas (fast, double fast, lazy, row and binary tree), as behaviour only; its CLI makes the test corpus and the native speed | TIFF ZSTD |
 | [ruzstd](https://github.com/KillingSpark/zstd-rs) | Rust | MIT | A pure Rust Zstandard decoder | TIFF ZSTD |
+| [LZMA SDK](https://www.7-zip.org/sdk.html) | C, C++, C# | Public domain | LZMA and LZMA2 as Igor Pavlov specifies them (lzma-specification.txt) | TIFF LZMA |
+| [XZ Utils](https://tukaani.org/xz/) (liblzma) | C | 0BSD (liblzma), public domain (older releases) | How liblzma reads and writes xz streams and LZMA2, as behaviour; its xz CLI makes the test corpus and the native speed | TIFF LZMA |
 
 Specifications, textbooks and papers are always fine.
 
@@ -66,7 +68,14 @@ and Foi, "Optimal inversion of the generalized Anscombe transformation for Poiss
 Science*, for colour temperature; and the Bradford chromatic adaptation transform. Adobe DNG Converter, LibRaw through
 Magick.NET and Windows' Raw Image Extension run only as black boxes, for measurements and gates. dcraw, LibRaw and rawspeed
 (LGPL), RawTherapee, darktable, ART and Exiv2 (GPL), ExifTool's source, Lensfun's database (CC-BY-SA) and LibRaw's camera
-tables are never read; ExifTool's public tag-name pages may be read as facts. Sample files come from raw.pixls.us, CC0 only.
+tables are never read by the sessions that implement Egami; ExifTool's public tag-name pages may be read as facts. The maker
+codecs (Fujifilm compressed RAF, NEF, PEF, ARW, ORF, RW2 and CR2) were written from clean-room specifications that a separate,
+study-only session wrote after reading LibRaw and rawspeed for structure only (the maintainer's 2026-10-24 study-only rule);
+the implementing sessions never read those sources, and nothing was copied. Sample files come from raw.pixls.us, CC0 only.
+
+For LZMA (TIFF LZMA), The .xz File Format 1.2.1 and the LZMA SDK's lzma-specification.txt (both public domain) are the
+references, with the LZMA SDK and XZ Utils as the listed libraries. The xz CLI runs in Docker to make the corpus
+(`tools/make-xz-references.py`) and to time liblzma.
 
 For barcodes, ZBar (LGPL) is never used, and of zint only the backend library (BSD-3) may be studied: its frontends and GUI are
 under the GPL and are never used.

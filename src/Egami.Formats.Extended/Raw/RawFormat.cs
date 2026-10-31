@@ -18,8 +18,8 @@ public static class RawFormat
     public static FormatInfo Info { get; } = new()
     {
         Name = "RAW",
-        MimeTypes = ["image/x-adobe-dng", "image/dng"],
-        Extensions = ["dng"],
+        MimeTypes = ["image/x-adobe-dng", "image/dng", "image/x-canon-cr2", "image/x-nikon-nef", "image/x-nikon-nrw", "image/x-pentax-pef", "image/x-sony-arw", "image/x-sony-sr2", "image/x-olympus-orf", "image/x-panasonic-rw2", "image/x-fuji-raf", "image/x-canon-cr3"],
+        Extensions = ["dng", "cr2", "nef", "nrw", "pef", "arw", "sr2", "orf", "rw2", "raf", "cr3"],
         SignatureLength = RawDetect.SignatureLength,
         Matches = RawDetect.Matches,
         Reader = new RawReader(),
@@ -229,6 +229,9 @@ public sealed class RawDetails : FormatDetails
     /// <summary>Gets or sets the lens model, or <see langword="null"/>.</summary>
     public string? LensModel { get; set; }
 
+    /// <summary>Gets or sets which lens profile corrected the image and what it corrected, or <see langword="null"/> for none.</summary>
+    public string? LensProfile { get; set; }
+
     /// <summary>Gets or sets the maker note as stored: maker-specific data Egami keeps but does not parse, or empty.</summary>
     public ReadOnlyMemory<byte> MakerNote { get; set; }
 
@@ -372,4 +375,23 @@ public sealed record RawReaderOptions : ReaderOptions
     /// <see langword="true"/>; without it, colours are the colour matrices' alone.
     /// </summary>
     public bool ApplyProfile { get; init; } = true;
+
+    /// <summary>
+    /// Gets the folders of lens profiles to correct with: Lensfun database files (<c>.xml</c>) and Adobe lens profiles
+    /// (<c>.lcp</c>), searched with their subfolders, and a system Lensfun install when there is one. A file whose own data
+    /// corrects the lens (DNG's lens opcodes) uses that instead. Egami ships no profiles: Lensfun's database is under CC BY-SA
+    /// and Adobe's profiles are Adobe's, so you supply them. Defaults to none. Applies only with <see cref="LensCorrections"/>.
+    /// </summary>
+    public IReadOnlyList<string> LensProfiles { get; init; } = [];
+
+    /// <summary>
+    /// Gets whether a file that no lens correction covers (no lens opcodes, no matching profile) has its lateral chromatic
+    /// aberration measured from the image and corrected: red and blue are scaled about the centre to line their edges up with
+    /// green's. Defaults to <see langword="false"/>, since the measurement costs about as much as the demosaic. Applies only
+    /// with <see cref="LensCorrections"/>.
+    /// </summary>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/FormatsExtended.cs" region="raw-develop"/>
+    /// </example>
+    public bool AutoChromaticAberration { get; init; }
 }

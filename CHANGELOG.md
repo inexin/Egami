@@ -60,6 +60,25 @@ Camera RAW, stage A (DNG). All additive; it ships with the rest of camera RAW in
   each preview. `RawDetails` keeps the camera, sensor layout, levels, the develop's white balance and colour matrix, opcodes,
   previews, exposure settings and the maker note; EXIF, GPS and XMP come through.
 
+Camera RAW, stage C (Canon CR3). All additive.
+
+- `RawFormat` reads Canon CR3 files' previews (the full-size JPEG, the medium preview and the thumbnail) and metadata (EXIF,
+  GPS and the maker note), and `Raster.Probe` gives their size. Their CRX-coded sensor data is not decoded: a develop or the
+  mosaic throws `NotSupportedException`.
+
+Camera RAW, stage B (maker formats). All additive.
+
+- `RawFormat` reads Canon CR2 (with sRAW and mRAW), Nikon NEF and NRW, Pentax PEF, Sony ARW and SR2, Olympus ORF, Panasonic RW2
+  (RawFormat 4 to 8) and Fujifilm RAF (uncompressed and compressed, lossless and lossy, X-Trans and Bayer), with each maker's
+  white balance, black levels and crops; decoded mosaics match Adobe DNG Converter's bit for bit on 22 CC0 sample files.
+- A camera table of 556 cameras, measured from Adobe DNG Converter's output as a black box, gives colour matrices and the
+  levels and crops a file does not give.
+- X-Trans sensors get their own demosaic; Panasonic's zeroed defective pixels are filled.
+- Lens corrections (`LensCorrections`) use Lensfun XML and Adobe LCP profiles loaded at run time from
+  `RawReaderOptions.LensProfiles` and the system's Lensfun folders (no profile data ships), else, with
+  `AutoChromaticAberration` (off by default), an automatic lateral chromatic aberration correction; `RawDetails.LensProfile`
+  names what was applied.
+
 DDS textures, stage A (reading). All additive; it ships with the rest of DDS in one release.
 
 - `DdsFormat`, registered by `WithExtendedFormats()` and `WithDds()`, reads DDS textures: the legacy header (DXT1 to DXT5,
@@ -106,6 +125,18 @@ JPEG XL extras, PR B: lossless efforts 8 to 10 and patches. All additive.
   code and documentation page), within 0.1 % of cjxl's; larger frames find patches at effort 10, as cjxl's do. Photos, and
   efforts 1 to 4, write the same bytes as before.
 
+Arithmetic and lossless JPEG writing, stage B: lossless. All additive.
+
+- `JpegWriterOptions.Lossless` and `JpegLosslessOptions` write lossless JPEG (T.81 annex H): SOF3, or SOF11 with `Arithmetic`,
+  predictors 1 to 7 (`Predictor`, or picked per image when left null), point transform 0 to 15 and 2 to 16 bits (`Precision`,
+  from the pixel type when null), gray, RGB (Adobe transform 0) and CMYK, never subsampled or color-converted, so the samples
+  load back exactly. Huffman tables are made for the image (annex K.2); every sample is held until the end, counted against
+  `SafetyLimits.MaxTotalBytes`. The restart interval is rounded up to whole rows, as T.81 asks. libjpeg-turbo's `djpeg` decodes
+  the SOF3 files exactly, within 0.2 % of `cjpeg -lossless`'s size at the same predictor, and Richter's libjpeg decodes the
+  SOF11 ones exactly. A point transform or a lower precision is reported as `Save.DepthReduced`; `Progressive` or
+  `ColorType = Ycck` with `Lossless` throws `ArgumentException`, and `GainMap` with it `NotSupportedException`.
+- The jpeg-write fuzz target also writes arithmetic and lossless files.
+
 Arithmetic and lossless JPEG writing, stage A: arithmetic coding. All additive.
 
 - `JpegWriterOptions.Arithmetic` writes arithmetic-coded JPEG (T.81 annex D's QM-coder with the models of annexes F and G):
@@ -117,6 +148,18 @@ Arithmetic and lossless JPEG writing, stage A: arithmetic coding. All additive.
   are unchanged.
 - `JpegTransformOptions.Arithmetic` writes the transform's result arithmetic-coded, so a Huffman file can be repacked smaller
   with no change to its pixels, as `jpegtran -arithmetic` does. The default stays Huffman.
+
+TIFF LZMA (Build Plan "Egami TIFF: ZSTD, LZMA and LERC", tasks 5 to 9). All additive.
+
+- TIFF reads LZMA compression (34925), with the horizontal and floating-point predictors, through a fully managed xz and
+  LZMA2 decoder written from the xz format specification and the LZMA SDK's (no native code, no packages): every stream the xz
+  CLI writes at presets 0 to 9 and -e, with the delta filter and any check (CRC32, CRC64 and SHA-256 verified), decodes byte for
+  byte, at about 0.6 times liblzma's speed. Filters other than delta and LZMA2 are refused by name.
+- `TiffCompression.Lzma` and `TiffWriterOptions.LzmaPreset` (0 to 9, default 6, as libtiff's): TIFF writes LZMA as libtiff does,
+  each strip or tile an xz stream of the delta filter and LZMA2, with a managed encoder on xz's presets (fast mode on hash
+  chains, normal mode on binary trees with price-based parsing), within 4 % of liblzma's size and at 0.5 times its speed or
+  better. libtiff and GDAL read Egami's LZMA files, and Egami reads theirs, with identical samples. LZMA is slow by nature: the
+  default compression stays Deflate.
 
 TIFF ZSTD (Build Plan "Egami TIFF: ZSTD, LZMA and LERC", tasks 1 to 4). All additive.
 

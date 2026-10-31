@@ -69,16 +69,21 @@ public class AllocationTests
     }
 
     [Theory]
-    [InlineData(1, 0)]
-    [InlineData(9, 0)]
-    [InlineData(19, 0)]
-    [InlineData(9, 64)]
-    public void TiffZstdSaveAndLoadAllocateOnlyTheStripTables(int level, int tile)
+    [InlineData(TiffCompression.Zstd, 1, 0)]
+    [InlineData(TiffCompression.Zstd, 9, 0)]
+    [InlineData(TiffCompression.Zstd, 19, 0)]
+    [InlineData(TiffCompression.Zstd, 9, 64)]
+    [InlineData(TiffCompression.Lzma, 1, 0)]
+    [InlineData(TiffCompression.Lzma, 6, 0)]
+    [InlineData(TiffCompression.Lzma, 6, 64)]
+    public void TiffZstdAndLzmaSaveAndLoadAllocateOnlyTheStripTables(TiffCompression compression, int level, int tile)
     {
-        // The Zstandard codec keeps its tables and buffers per thread, so a page costs its strip or tile offsets (two 8-byte
-        // entries each, written and read) and nothing per byte.
+        // The Zstandard and LZMA codecs keep their tables and buffers per thread, so a page costs its strip or tile offsets (two
+        // 8-byte entries each, written and read) and nothing per byte.
         AllocationMeter.SkipUnlessOnDemand();
-        TiffWriterOptions options = new() { Compression = TiffCompression.Zstd, ZstdLevel = level, TileSize = tile };
+        TiffWriterOptions options = compression == TiffCompression.Zstd
+            ? new() { Compression = compression, ZstdLevel = level, TileSize = tile }
+            : new() { Compression = compression, LzmaPreset = level, TileSize = tile };
         using Raster<Rgb8> small = Formats.Tiff.TiffWriterTests.Pattern<Rgb8>(300, 64);
         using Raster<Rgb8> large = Formats.Tiff.TiffWriterTests.Pattern<Rgb8>(300, 3000);
         using MemoryStream smallFile = new();

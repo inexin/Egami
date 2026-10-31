@@ -38,6 +38,12 @@ internal sealed class RawSensor
     /// <summary>Gets the byte order of uncompressed samples wider than 8 bits.</summary>
     public bool BigEndian { get; init; }
 
+    /// <summary>Gets the codec of maker sensor data, or <see cref="RawCodec.Tiff"/> for TIFF's own compressions.</summary>
+    public RawCodec Codec { get; init; }
+
+    /// <summary>Gets what the codec needs from the file's tags (its tables, curve or parameters), or <see langword="null"/>.</summary>
+    public object? CodecData { get; init; }
+
     /// <summary>Gets the number of units across.</summary>
     public int UnitsAcross => (Width + UnitWidth - 1) / UnitWidth;
 
@@ -152,6 +158,9 @@ internal sealed class RawProfile
 
     public double BaselineExposureOffset { get; set; }
 
+    /// <summary>Gets or sets the camera's BaselineExposure, for a profile from the camera table; a file's own value wins.</summary>
+    public double BaselineExposure { get; set; }
+
     public string? Name { get; set; }
 }
 
@@ -207,6 +216,9 @@ internal sealed class RawFrame
 
     public double BaselineExposure { get; set; }
 
+    /// <summary>Gets or sets a RAF's RawExposureBias in EV (its dynamic-range setting moves it), or <see langword="null"/>.</summary>
+    public double? ExposureBias { get; set; }
+
     public RawProfile Profile { get; set; } = new();
 
     public byte[]? Opcodes1 { get; set; }
@@ -229,12 +241,33 @@ internal sealed class RawFrame
 
     public double? FocalLength { get; set; }
 
+    /// <summary>Gets or sets EXIF's FocalLengthIn35mmFilm, from which the sensor's crop factor follows, or <see langword="null"/>.</summary>
+    public double? FocalLength35 { get; set; }
+
+    /// <summary>Gets or sets the focus distance in metres (EXIF SubjectDistance), or <see langword="null"/>.</summary>
+    public double? FocusDistance { get; set; }
+
     public string? LensModel { get; set; }
 
     /// <summary>Gets or sets the IFD whose tags hold the EXIF, XMP and ICC metadata (IFD0).</summary>
     public RawIfd? MetadataIfd { get; set; }
 
+    /// <summary>Gets or sets the Exif IFD when it is not one IFD0 points at (a CR3's CMT2 block), or <see langword="null"/>.</summary>
+    public RawIfd? ExifIfd { get; set; }
+
+    /// <summary>Gets or sets the GPS IFD when it is not one IFD0 points at (a CR3's CMT4 block), or <see langword="null"/>.</summary>
+    public RawIfd? GpsIfd { get; set; }
+
     public byte[]? MakerNote { get; set; }
 
     public List<(string Id, string Message)> Repairs { get; } = [];
+
+    /// <summary>Gets or sets whether the file gave its own active area and crop, which the camera table must not replace.</summary>
+    public bool HasOwnCrop { get; set; }
+
+    /// <summary>Gets or sets whether the file gave its own black levels, which the camera table must not replace.</summary>
+    public bool HasOwnLevels { get; set; }
+
+    /// <summary>Gets or sets masked sensor pixels to measure black from when no black level is known, or <see langword="null"/>.</summary>
+    public Rect? MaskedArea { get; set; }
 }

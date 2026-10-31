@@ -226,6 +226,16 @@ override Egami.Formats.Avif.AvifLayer.GetHashCode() -> int
 override Egami.Formats.Avif.AvifLayer.ToString() -> string!
 static Egami.Formats.Avif.AvifLayer.operator !=(Egami.Formats.Avif.AvifLayer? left, Egami.Formats.Avif.AvifLayer? right) -> bool
 static Egami.Formats.Avif.AvifLayer.operator ==(Egami.Formats.Avif.AvifLayer? left, Egami.Formats.Avif.AvifLayer? right) -> bool
+Egami.Formats.Jpeg.JpegLosslessOptions
+Egami.Formats.Jpeg.JpegLosslessOptions.JpegLosslessOptions() -> void
+Egami.Formats.Jpeg.JpegLosslessOptions.PointTransform.get -> int
+Egami.Formats.Jpeg.JpegLosslessOptions.PointTransform.init -> void
+Egami.Formats.Jpeg.JpegLosslessOptions.Precision.get -> int?
+Egami.Formats.Jpeg.JpegLosslessOptions.Precision.init -> void
+Egami.Formats.Jpeg.JpegLosslessOptions.Predictor.get -> int?
+Egami.Formats.Jpeg.JpegLosslessOptions.Predictor.init -> void
+Egami.Formats.Jpeg.JpegWriterOptions.Lossless.get -> Egami.Formats.Jpeg.JpegLosslessOptions?
+Egami.Formats.Jpeg.JpegWriterOptions.Lossless.init -> void
 Egami.Formats.Jxl.JxlWriterOptions.FirstFrameOnly.get -> bool
 Egami.Formats.Jxl.JxlWriterOptions.FirstFrameOnly.init -> void
 static Egami.Formats.Jxl.JxlImage.WriteLayers(string! path, int width, int height, System.Collections.Generic.IReadOnlyList<Egami.Formats.Jxl.JxlLayer!>! layers, Egami.Formats.Jxl.JxlWriterOptions? options = null, Egami.EgamiContext? context = null) -> void
@@ -237,3 +247,6 @@ Egami.Formats.Jxl.JxlExtraChannelImage.Channel.get -> Egami.Formats.Jxl.JxlExtra
 Egami.Formats.Jxl.JxlExtraChannelImage.Samples.get -> Egami.Raster<Egami.Pixels.GrayF32>!
 Egami.Formats.Jxl.JxlWriterOptions.ExtraChannels.get -> System.Collections.Generic.IReadOnlyList<Egami.Formats.Jxl.JxlExtraChannelImage!>?
 Egami.Formats.Jxl.JxlWriterOptions.ExtraChannels.init -> void
+Egami.Formats.Tiff.TiffCompression.Lzma = 34925 -> Egami.Formats.Tiff.TiffCompression
+Egami.Formats.Tiff.TiffWriterOptions.LzmaPreset.get -> int
+Egami.Formats.Tiff.TiffWriterOptions.LzmaPreset.init -> void

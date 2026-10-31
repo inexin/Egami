@@ -147,6 +147,22 @@ public class Tiff
     }
 
     [Fact]
+    public void Lzma()
+    {
+        using SampleFiles files = new();
+        using Raster<Rgb16> photo = Raster.Load<Rgb16>("duck.png");
+
+        #region tiff-lzma
+        // LZMA with the predictor: the smallest lossless TIFF, slow to write; preset 6 is libtiff's default, 9 the smallest.
+        photo.Save("archive.tif", new TiffWriterOptions { Compression = TiffCompression.Lzma });
+        photo.Save("archive-fast.tif", new TiffWriterOptions { Compression = TiffCompression.Lzma, LzmaPreset = 1 });
+        #endregion
+
+        Assert.Equal(TiffCompression.Lzma, ((TiffDetails)Raster.Load("archive.tif").Metadata.FormatDetails!).Compression);
+        Assert.True(new FileInfo("archive.tif").Length <= new FileInfo("archive-fast.tif").Length);
+    }
+
+    [Fact]
     public void Details()
     {
         using SampleFiles files = new();

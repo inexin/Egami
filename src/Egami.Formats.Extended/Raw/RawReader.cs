@@ -148,6 +148,7 @@ internal sealed class RawReader : IFormatReader, IRowFormatReader, IMultiImageRe
 
         Raster<TPixel> raster;
         RawCamera? camera = null;
+        string? lensProfile = null;
         switch (plan.Output)
         {
             case RawOutput.Preview:
@@ -159,6 +160,7 @@ internal sealed class RawReader : IFormatReader, IRowFormatReader, IMultiImageRe
             default:
                 {
                     using RawPixels pixels = Pixels(file, frame.Sensor, input, strict, warnings);
+                    MeasureBlack(frame, pixels);
                     ColorProfile space = RenderSpace(options) ?? ColorProfile.Srgb;
                     RawDeveloper developer = new(frame, Raw(options), plan.Output == RawOutput.HalfSize, space, warnings);
                     raster = input.CreateRaster<TPixel>(plan.Width, plan.Height);
@@ -167,6 +169,7 @@ internal sealed class RawReader : IFormatReader, IRowFormatReader, IMultiImageRe
                         Raster<TPixel> target = raster;
                         developer.Run(pixels, input, (y, row) => PixelConvert.Convert(row, target.Row(y)));
                         camera = developer.Camera;
+                        lensProfile = developer.LensProfile;
                         Describe(raster.Metadata, space);
                     }
                     catch
@@ -190,7 +193,9 @@ internal sealed class RawReader : IFormatReader, IRowFormatReader, IMultiImageRe
         }
 
         RasterMetadata metadata = raster.Metadata;
-        metadata.FormatDetails = Details(file, plan, camera);
+        RawDetails details = Details(file, plan, camera);
+        details.LensProfile = lensProfile;
+        metadata.FormatDetails = details;
         if (options.ReadMetadata)
         {
             file.ReadMetadata(metadata, input);
@@ -223,6 +228,39 @@ internal sealed class RawReader : IFormatReader, IRowFormatReader, IMultiImageRe
         metadata.ColorSpace = ColorSpaceHint.EmbeddedIcc;
     }
 
+    /// <summary>
+    /// Measures the black level from masked sensor pixels, per position of the 2 × 2 pattern, when the file and the camera
+    /// table give none (some converters' DNGs, which the table comes from, hold black already subtracted).
+    /// </summary>
+    private static void MeasureBlack(RawFrame frame, RawPixels pixels)
+    {
+        if (frame.MaskedArea is not Rect area || frame.HasOwnLevels || frame.Black.Average() > 1 || pixels.IsFloat || area.Width < 4 || area.Height < 4)
+        {
+            return;
+        }
+
+        double[] sum = new double[4];
+        long[] count = new long[4];
+        for (int y = area.Y; y < Math.Min(area.Bottom, pixels.Height); y++)
+        {
+            ReadOnlySpan<ushort> row = pixels.U16Row(y);
+            for (int x = area.X; x < Math.Min(area.Right, pixels.Width); x++)
+            {
+                int p = ((y & 1) << 1) | (x & 1);
+                sum[p] += row[x];
+                count[p]++;
+            }
+        }
+
+        if (count.All(c => c > 0))
+        {
+            // The pattern of the measurement is anchored at the sensor's origin; the black pattern at the active area's.
+            int ox = frame.Active.X & 1, oy = frame.Active.Y & 1;
+            frame.BlackRows = frame.BlackColumns = 2;
+            frame.Black = [.. Enumerable.Range(0, 4).Select(i => sum[(((i >> 1) ^ oy) << 1) | ((i & 1) ^ ox)] / count[(((i >> 1) ^ oy) << 1) | ((i & 1) ^ ox)])];
+        }
+    }
+
     /// <summary>Reads and decodes the sensor data; damage throws when strict, else is noted.</summary>
     private static RawPixels Pixels(RawFile file, RawSensor sensor, EgamiInput input, bool strict, RawWarnings warnings)
     {
@@ -233,7 +271,14 @@ internal sealed class RawReader : IFormatReader, IRowFormatReader, IMultiImageRe
             end = Math.Max(end, file.Tiff.Origin + sensor.Offsets[u] + sensor.Counts[u]);
         }
 
-        file.Source.Ensure(end);
+        if (sensor.Counts.Length == 0 || sensor.Counts.Any(c => c <= 0))
+        {
+            file.Source.ReadAll();
+        }
+        else
+        {
+            file.Source.Ensure(end);
+        }
         return RawDecoder.Decode(sensor, file.Tiff, input, (unit, message) =>
         {
             if (strict)
