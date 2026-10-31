@@ -51,6 +51,20 @@ if (args is ["--encode-av1", string av1Frames, string av1Quality, string av1Effo
     return;
 }
 
+// Decode an xz file n times on one thread, for counting cycles with perf (tools/count-xz-cycles.py): -- --decode-xz <file.xz> <length> <n>
+if (args is ["--decode-xz", string xzFile, string xzLength, string xzRuns])
+{
+    XzTiming.Repeat(xzFile, int.Parse(xzLength, System.Globalization.CultureInfo.InvariantCulture), int.Parse(xzRuns, System.Globalization.CultureInfo.InvariantCulture));
+    return;
+}
+
+// Time xz decoding against xz -dc, timed live in Docker (TIFF LZMA task 5): -- --time-xz .cache/xz [name part...]
+if (args is ["--time-xz", string xzFolder, .. string[] xzOnly])
+{
+    XzTiming.Run(xzFolder, xzOnly);
+    return;
+}
+
 // Time Zstandard decoding against zstd -b -d (TIFF ZSTD task 1): -- --time-zstd .cache/zstd [name part...]
 if (args is ["--time-zstd", string zstdFolder, .. string[] zstdOnly])
 {

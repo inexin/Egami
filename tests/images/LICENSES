@@ -318,3 +318,10 @@ fuzz/raw-seeds/
   Small DNG files for the raw fuzz target, one of each sample layout, compression, CFA pattern, opcode list and camera profile
   path, written with the tests' own DNG builder (tests/Egami.Formats.Extended.Tests/Raw/DngFiles.cs) from computed values for
   this repository. Public domain (CC0).
+
+xz/
+  xz files made by tools/make-xz-references.py with XZ Utils 5.8 (0BSD) from the same inputs as zstd/ above. Public domain, as
+  their sources.
+
+../reference/xz/
+  The inputs each xz/ file decodes to, gzipped, and manifest.json, made by tools/make-xz-references.py. Public domain.

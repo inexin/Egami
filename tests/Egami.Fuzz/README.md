@@ -47,6 +47,7 @@ Targets:
 | `ccitt` | Six bytes pick PDF's CCITTFaxDecode parameters (K, EndOfLine, EncodedByteAlign, EndOfBlock, BlackIs1, Columns, Rows, DamagedRowsBeforeError), the rest is the data: decoded by `CcittFax.Decode`, loaded leniently and strictly and read row by row; the three must agree on every pixel and the row count | `tests/images/fuzz/ccitt-seeds/*` |
 | `zstd` | Zstandard frames (TIFF ZSTD): decoded into a large output and into one of exactly the size written, which must give the same bytes; only an `EgamiException` may escape | `tests/images/zstd/*.zst` |
 | `zstd-write` | A level byte, then data for the Zstandard encoder: the frame must decode back to the data exactly | `tests/images/fuzz/zstd-write-seeds/*` |
+| `xz` | xz streams (TIFF LZMA): decoded into a large output and into one of exactly the size written, which must give the same bytes; only an `EgamiException` may escape | `tests/images/xz/*.xz` |
 
 ## Running locally (Linux or WSL)
 
