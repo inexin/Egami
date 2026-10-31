@@ -3,7 +3,9 @@
 Camera RAW files hold the sensor data a camera recorded, before any processing. Egami reads DNG (.dng), the open RAW format
 Adobe publishes, which phones, Leica, Pentax, Ricoh, Hasselblad and Adobe DNG Converter write, and the makers' own formats:
 Canon CR2, Nikon NEF and NRW, Pentax PEF, Sony ARW and SR2, Olympus ORF, Panasonic RW2 and Fujifilm RAF. It develops them into
-an image on load. Of Canon's CR3 it reads the previews and the metadata ([Canon CR3](#canon-cr3)). It reads through the Egami.Formats.Extended package: register it with `WithRaw()` or `WithExtendedFormats()`
+an image on load. Of Canon's CR3 it reads the previews and the metadata ([Canon CR3](#canon-cr3)).
+[Developing camera RAW](../guides/camera-raw.md) is about choosing the develop. It reads through the Egami.Formats.Extended
+package: register it with `WithRaw()` or `WithExtendedFormats()`
 ([Extended formats](extended.md)). RAW is detected ahead of TIFF, since a DNG file (like most maker formats) is a TIFF file;
 without it, a DNG opens as TIFF and only its preview pages load.
 

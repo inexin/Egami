@@ -120,6 +120,7 @@ settings, safety limits and registered formats a call uses.
 
 ## Egami.Formats.Extended
 
+- [Developing camera RAW](https://inexin.github.io/Egami/v1/articles/guides/camera-raw.html): A camera RAW file holds what the sensor recorded.
 - [Textures](https://inexin.github.io/Egami/v1/articles/guides/textures.html): Game engines and 3D tools keep their textures in DDS files.
 
 ## Egami.SystemDrawing
