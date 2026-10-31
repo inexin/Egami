@@ -80,10 +80,11 @@ Options:
   -o, --output <path>       Where to write: a file, a folder, a template with {name}, {ext}, {dir}, {index} and {format}, or - for standard output.
   -f, --format <format>     The output format by name or extension, when -o's extension does not say (and always for -o -).
   --quality <0-100>         Lossy quality from 0 to 100 (JPEG, WebP, AVIF, JPEG XL, TIFF's JPEG).
-  --lossless                Lossless encoding (WebP, AVIF, JPEG XL).
+  --lossless                Lossless encoding (WebP, AVIF, JPEG XL, and lossless JPEG with the predictor picked per image).
   --effort <level>          Encoder effort: higher is smaller and slower (WebP, AVIF, JPEG XL).
   --bit-depth <bits>        Bits per channel to write (PNG, AVIF).
   --progressive             Write the image so viewers show it coarse first, then sharper as it arrives (AVIF layers, JPEG and JPEG XL progressive).
+  --arithmetic              Arithmetic coding instead of Huffman: smaller files with the same pixels, which browsers do not read (JPEG).
   --target-size <bytes>     Search the quality for the largest file not above this many bytes (AVIF).
   --qgain-map <0-100>       Quality of the gain map from 0 to 100, as avifenc's --qgain-map (AVIF).
   --denoise <0-50>          Take film grain out before coding and write it as AV1 film grain, 0 to 50 (AVIF).
@@ -114,10 +115,11 @@ Options:
   -o, --output <path>           Where to write: a file, a folder, a template with {name}, {ext}, {dir}, {index} and {format}, or - for standard output.
   -f, --format <format>         The output format by name or extension, when -o's extension does not say (and always for -o -).
   --quality <0-100>             Lossy quality from 0 to 100 (JPEG, WebP, AVIF, JPEG XL, TIFF's JPEG).
-  --lossless                    Lossless encoding (WebP, AVIF, JPEG XL).
+  --lossless                    Lossless encoding (WebP, AVIF, JPEG XL, and lossless JPEG with the predictor picked per image).
   --effort <level>              Encoder effort: higher is smaller and slower (WebP, AVIF, JPEG XL).
   --bit-depth <bits>            Bits per channel to write (PNG, AVIF).
   --progressive                 Write the image so viewers show it coarse first, then sharper as it arrives (AVIF layers, JPEG and JPEG XL progressive).
+  --arithmetic                  Arithmetic coding instead of Huffman: smaller files with the same pixels, which browsers do not read (JPEG).
   --target-size <bytes>         Search the quality for the largest file not above this many bytes (AVIF).
   --qgain-map <0-100>           Quality of the gain map from 0 to 100, as avifenc's --qgain-map (AVIF).
   --denoise <0-50>              Take film grain out before coding and write it as AV1 film grain, 0 to 50 (AVIF).
@@ -154,10 +156,11 @@ Options:
   -o, --output <path>       Where to write: a file, a folder, a template with {name}, {ext}, {dir}, {index} and {format}, or - for standard output.
   -f, --format <format>     The output format by name or extension, when -o's extension does not say (and always for -o -).
   --quality <0-100>         Lossy quality from 0 to 100 (JPEG, WebP, AVIF, JPEG XL, TIFF's JPEG).
-  --lossless                Lossless encoding (WebP, AVIF, JPEG XL).
+  --lossless                Lossless encoding (WebP, AVIF, JPEG XL, and lossless JPEG with the predictor picked per image).
   --effort <level>          Encoder effort: higher is smaller and slower (WebP, AVIF, JPEG XL).
   --bit-depth <bits>        Bits per channel to write (PNG, AVIF).
   --progressive             Write the image so viewers show it coarse first, then sharper as it arrives (AVIF layers, JPEG and JPEG XL progressive).
+  --arithmetic              Arithmetic coding instead of Huffman: smaller files with the same pixels, which browsers do not read (JPEG).
   --target-size <bytes>     Search the quality for the largest file not above this many bytes (AVIF).
   --qgain-map <0-100>       Quality of the gain map from 0 to 100, as avifenc's --qgain-map (AVIF).
   --denoise <0-50>          Take film grain out before coding and write it as AV1 film grain, 0 to 50 (AVIF).
@@ -195,10 +198,11 @@ Options:
   -o, --output <path>          Where to write: a file, a folder, a template with {name}, {ext}, {dir}, {index} and {format}, or - for standard output.
   -f, --format <format>        The output format by name or extension, when -o's extension does not say (and always for -o -).
   --quality <0-100>            Lossy quality from 0 to 100 (JPEG, WebP, AVIF, JPEG XL, TIFF's JPEG).
-  --lossless                   Lossless encoding (WebP, AVIF, JPEG XL).
+  --lossless                   Lossless encoding (WebP, AVIF, JPEG XL, and lossless JPEG with the predictor picked per image).
   --effort <level>             Encoder effort: higher is smaller and slower (WebP, AVIF, JPEG XL).
   --bit-depth <bits>           Bits per channel to write (PNG, AVIF).
   --progressive                Write the image so viewers show it coarse first, then sharper as it arrives (AVIF layers, JPEG and JPEG XL progressive).
+  --arithmetic                 Arithmetic coding instead of Huffman: smaller files with the same pixels, which browsers do not read (JPEG).
   --target-size <bytes>        Search the quality for the largest file not above this many bytes (AVIF).
   --qgain-map <0-100>          Quality of the gain map from 0 to 100, as avifenc's --qgain-map (AVIF).
   --denoise <0-50>             Take film grain out before coding and write it as AV1 film grain, 0 to 50 (AVIF).
@@ -230,10 +234,11 @@ Options:
   -o, --output <path>       Where to write: a file, a folder, a template with {name}, {ext}, {dir}, {index} and {format}, or - for standard output.
   -f, --format <format>     The output format by name or extension, when -o's extension does not say (and always for -o -).
   --quality <0-100>         Lossy quality from 0 to 100 (JPEG, WebP, AVIF, JPEG XL, TIFF's JPEG).
-  --lossless                Lossless encoding (WebP, AVIF, JPEG XL).
+  --lossless                Lossless encoding (WebP, AVIF, JPEG XL, and lossless JPEG with the predictor picked per image).
   --effort <level>          Encoder effort: higher is smaller and slower (WebP, AVIF, JPEG XL).
   --bit-depth <bits>        Bits per channel to write (PNG, AVIF).
   --progressive             Write the image so viewers show it coarse first, then sharper as it arrives (AVIF layers, JPEG and JPEG XL progressive).
+  --arithmetic              Arithmetic coding instead of Huffman: smaller files with the same pixels, which browsers do not read (JPEG).
   --target-size <bytes>     Search the quality for the largest file not above this many bytes (AVIF).
   --qgain-map <0-100>       Quality of the gain map from 0 to 100, as avifenc's --qgain-map (AVIF).
   --denoise <0-50>          Take film grain out before coding and write it as AV1 film grain, 0 to 50 (AVIF).
@@ -268,10 +273,11 @@ Options:
   -o, --output <path>          Where to write: a file, a folder, a template with {name}, {ext}, {dir}, {index} and {format}, or - for standard output.
   -f, --format <format>        The output format by name or extension, when -o's extension does not say (and always for -o -).
   --quality <0-100>            Lossy quality from 0 to 100 (JPEG, WebP, AVIF, JPEG XL, TIFF's JPEG).
-  --lossless                   Lossless encoding (WebP, AVIF, JPEG XL).
+  --lossless                   Lossless encoding (WebP, AVIF, JPEG XL, and lossless JPEG with the predictor picked per image).
   --effort <level>             Encoder effort: higher is smaller and slower (WebP, AVIF, JPEG XL).
   --bit-depth <bits>           Bits per channel to write (PNG, AVIF).
   --progressive                Write the image so viewers show it coarse first, then sharper as it arrives (AVIF layers, JPEG and JPEG XL progressive).
+  --arithmetic                 Arithmetic coding instead of Huffman: smaller files with the same pixels, which browsers do not read (JPEG).
   --target-size <bytes>        Search the quality for the largest file not above this many bytes (AVIF).
   --qgain-map <0-100>          Quality of the gain map from 0 to 100, as avifenc's --qgain-map (AVIF).
   --denoise <0-50>             Take film grain out before coding and write it as AV1 film grain, 0 to 50 (AVIF).
@@ -304,10 +310,11 @@ Options:
   -o, --output <path>       Where to write: a file, a folder, a template with {name}, {ext}, {dir}, {index} and {format}, or - for standard output.
   -f, --format <format>     The output format by name or extension, when -o's extension does not say (and always for -o -).
   --quality <0-100>         Lossy quality from 0 to 100 (JPEG, WebP, AVIF, JPEG XL, TIFF's JPEG).
-  --lossless                Lossless encoding (WebP, AVIF, JPEG XL).
+  --lossless                Lossless encoding (WebP, AVIF, JPEG XL, and lossless JPEG with the predictor picked per image).
   --effort <level>          Encoder effort: higher is smaller and slower (WebP, AVIF, JPEG XL).
   --bit-depth <bits>        Bits per channel to write (PNG, AVIF).
   --progressive             Write the image so viewers show it coarse first, then sharper as it arrives (AVIF layers, JPEG and JPEG XL progressive).
+  --arithmetic              Arithmetic coding instead of Huffman: smaller files with the same pixels, which browsers do not read (JPEG).
   --target-size <bytes>     Search the quality for the largest file not above this many bytes (AVIF).
   --qgain-map <0-100>       Quality of the gain map from 0 to 100, as avifenc's --qgain-map (AVIF).
   --denoise <0-50>          Take film grain out before coding and write it as AV1 film grain, 0 to 50 (AVIF).
@@ -559,10 +566,11 @@ Options:
   -o, --output <path>       Where to write: a file, a folder, a template with {name}, {ext}, {dir}, {index} and {format}, or - for standard output.
   -f, --format <format>     The output format by name or extension, when -o's extension does not say (and always for -o -).
   --quality <0-100>         Lossy quality from 0 to 100 (JPEG, WebP, AVIF, JPEG XL, TIFF's JPEG).
-  --lossless                Lossless encoding (WebP, AVIF, JPEG XL).
+  --lossless                Lossless encoding (WebP, AVIF, JPEG XL, and lossless JPEG with the predictor picked per image).
   --effort <level>          Encoder effort: higher is smaller and slower (WebP, AVIF, JPEG XL).
   --bit-depth <bits>        Bits per channel to write (PNG, AVIF).
   --progressive             Write the image so viewers show it coarse first, then sharper as it arrives (AVIF layers, JPEG and JPEG XL progressive).
+  --arithmetic              Arithmetic coding instead of Huffman: smaller files with the same pixels, which browsers do not read (JPEG).
   --target-size <bytes>     Search the quality for the largest file not above this many bytes (AVIF).
   --qgain-map <0-100>       Quality of the gain map from 0 to 100, as avifenc's --qgain-map (AVIF).
   --denoise <0-50>          Take film grain out before coding and write it as AV1 film grain, 0 to 50 (AVIF).
@@ -593,10 +601,11 @@ Options:
   -o, --output <path>        Where to write: a file, a folder, a template with {name}, {ext}, {dir}, {index} and {format}, or - for standard output.
   -f, --format <format>      The output format by name or extension, when -o's extension does not say (and always for -o -).
   --quality <0-100>          Lossy quality from 0 to 100 (JPEG, WebP, AVIF, JPEG XL, TIFF's JPEG).
-  --lossless                 Lossless encoding (WebP, AVIF, JPEG XL).
+  --lossless                 Lossless encoding (WebP, AVIF, JPEG XL, and lossless JPEG with the predictor picked per image).
   --effort <level>           Encoder effort: higher is smaller and slower (WebP, AVIF, JPEG XL).
   --bit-depth <bits>         Bits per channel to write (PNG, AVIF).
   --progressive              Write the image so viewers show it coarse first, then sharper as it arrives (AVIF layers, JPEG and JPEG XL progressive).
+  --arithmetic               Arithmetic coding instead of Huffman: smaller files with the same pixels, which browsers do not read (JPEG).
   --target-size <bytes>      Search the quality for the largest file not above this many bytes (AVIF).
   --qgain-map <0-100>        Quality of the gain map from 0 to 100, as avifenc's --qgain-map (AVIF).
   --denoise <0-50>           Take film grain out before coding and write it as AV1 film grain, 0 to 50 (AVIF).
@@ -628,10 +637,11 @@ Options:
   -o, --output <path>         Where to write: a file, a folder, a template with {name}, {ext}, {dir}, {index} and {format}, or - for standard output.
   -f, --format <format>       The output format by name or extension, when -o's extension does not say (and always for -o -).
   --quality <0-100>           Lossy quality from 0 to 100 (JPEG, WebP, AVIF, JPEG XL, TIFF's JPEG).
-  --lossless                  Lossless encoding (WebP, AVIF, JPEG XL).
+  --lossless                  Lossless encoding (WebP, AVIF, JPEG XL, and lossless JPEG with the predictor picked per image).
   --effort <level>            Encoder effort: higher is smaller and slower (WebP, AVIF, JPEG XL).
   --bit-depth <bits>          Bits per channel to write (PNG, AVIF).
   --progressive               Write the image so viewers show it coarse first, then sharper as it arrives (AVIF layers, JPEG and JPEG XL progressive).
+  --arithmetic                Arithmetic coding instead of Huffman: smaller files with the same pixels, which browsers do not read (JPEG).
   --target-size <bytes>       Search the quality for the largest file not above this many bytes (AVIF).
   --qgain-map <0-100>         Quality of the gain map from 0 to 100, as avifenc's --qgain-map (AVIF).
   --denoise <0-50>            Take film grain out before coding and write it as AV1 film grain, 0 to 50 (AVIF).
@@ -667,10 +677,11 @@ Options:
   -o, --output <path>       Where to write: a file, a folder, a template with {name}, {ext}, {dir}, {index} and {format}, or - for standard output.
   -f, --format <format>     The output format by name or extension, when -o's extension does not say (and always for -o -).
   --quality <0-100>         Lossy quality from 0 to 100 (JPEG, WebP, AVIF, JPEG XL, TIFF's JPEG).
-  --lossless                Lossless encoding (WebP, AVIF, JPEG XL).
+  --lossless                Lossless encoding (WebP, AVIF, JPEG XL, and lossless JPEG with the predictor picked per image).
   --effort <level>          Encoder effort: higher is smaller and slower (WebP, AVIF, JPEG XL).
   --bit-depth <bits>        Bits per channel to write (PNG, AVIF).
   --progressive             Write the image so viewers show it coarse first, then sharper as it arrives (AVIF layers, JPEG and JPEG XL progressive).
+  --arithmetic              Arithmetic coding instead of Huffman: smaller files with the same pixels, which browsers do not read (JPEG).
   --target-size <bytes>     Search the quality for the largest file not above this many bytes (AVIF).
   --qgain-map <0-100>       Quality of the gain map from 0 to 100, as avifenc's --qgain-map (AVIF).
   --denoise <0-50>          Take film grain out before coding and write it as AV1 film grain, 0 to 50 (AVIF).
@@ -712,10 +723,11 @@ Options:
   -o, --output <path>       Where to write: a file, a folder, a template with {name}, {ext}, {dir}, {index} and {format}, or - for standard output.
   -f, --format <format>     The output format by name or extension, when -o's extension does not say (and always for -o -).
   --quality <0-100>         Lossy quality from 0 to 100 (JPEG, WebP, AVIF, JPEG XL, TIFF's JPEG).
-  --lossless                Lossless encoding (WebP, AVIF, JPEG XL).
+  --lossless                Lossless encoding (WebP, AVIF, JPEG XL, and lossless JPEG with the predictor picked per image).
   --effort <level>          Encoder effort: higher is smaller and slower (WebP, AVIF, JPEG XL).
   --bit-depth <bits>        Bits per channel to write (PNG, AVIF).
   --progressive             Write the image so viewers show it coarse first, then sharper as it arrives (AVIF layers, JPEG and JPEG XL progressive).
+  --arithmetic              Arithmetic coding instead of Huffman: smaller files with the same pixels, which browsers do not read (JPEG).
   --target-size <bytes>     Search the quality for the largest file not above this many bytes (AVIF).
   --qgain-map <0-100>       Quality of the gain map from 0 to 100, as avifenc's --qgain-map (AVIF).
   --denoise <0-50>          Take film grain out before coding and write it as AV1 film grain, 0 to 50 (AVIF).
