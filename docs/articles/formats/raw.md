@@ -87,7 +87,9 @@ The develop follows the DNG specification's processing order:
 9. The default crop; camera RGB to XYZ D50 through the ForwardMatrix, or the inverted ColorMatrix and Bradford adaptation; the
    camera profile's HueSatMap, then exposure (`Exposure` plus the file's BaselineExposure unless `ApplyBaselineExposure` is
    off), then its LookTable and tone curve, all in linear ProPhoto RGB (`ApplyProfile = false` leaves them out); and the output
-   colour space.
+   colour space. A profile without a tone curve (every maker file's) leaves the develop scene-linear; `DefaultToneCurve = true`
+   gives it a contrast curve measured from Adobe Camera Raw's default rendering instead (`tools/measure-raw-tone-curve.py`),
+   which lifts the midtones (18 % gray comes out at about 38 %) and rolls off the highlights.
 
 The output is sRGB unless `ReaderOptions.ConvertColorTo` names another RGB space (Display P3, Adobe RGB, ProPhoto, Rec. 2020
 or a linear one): the develop renders straight into it, so wide-gamut colours are never clipped to sRGB first, and the raster

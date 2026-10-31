@@ -60,6 +60,13 @@ Camera RAW, stage A (DNG). All additive; it ships with the rest of camera RAW in
   each preview. `RawDetails` keeps the camera, sensor layout, levels, the develop's white balance and colour matrix, opcodes,
   previews, exposure settings and the maker note; EXIF, GPS and XMP come through.
 
+Camera RAW, stage D (gates and finish). All additive.
+
+- `RawReaderOptions.DefaultToneCurve` (off by default) gives a develop whose profile has no tone curve the contrast curve of
+  Adobe Camera Raw's default rendering, measured as a black box.
+- Lens corrections also search, read-only, the folders Adobe's software installs its lens profiles in (Windows and macOS), and
+  match an LCP profile by the lens name as cameras write it as well as the one shown to people.
+
 Camera RAW, stage C (Canon CR3). All additive.
 
 - `RawFormat` reads Canon CR3 files' previews (the full-size JPEG, the medium preview and the thumbnail) and metadata (EXIF,

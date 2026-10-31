@@ -207,6 +207,8 @@ Egami.Formats.Extended.Raw.RawReaderOptions.LensCorrections.get -> bool
 Egami.Formats.Extended.Raw.RawReaderOptions.LensCorrections.init -> void
 Egami.Formats.Extended.Raw.RawReaderOptions.LensProfiles.get -> System.Collections.Generic.IReadOnlyList<string!>!
 Egami.Formats.Extended.Raw.RawReaderOptions.AutoChromaticAberration.get -> bool
+Egami.Formats.Extended.Raw.RawReaderOptions.DefaultToneCurve.get -> bool
+Egami.Formats.Extended.Raw.RawReaderOptions.DefaultToneCurve.init -> void
 Egami.Formats.Extended.Raw.RawReaderOptions.AutoChromaticAberration.init -> void
 Egami.Formats.Extended.Raw.RawReaderOptions.LensProfiles.init -> void
 Egami.Formats.Extended.Raw.RawReaderOptions.LuminanceNoiseReduction.get -> double

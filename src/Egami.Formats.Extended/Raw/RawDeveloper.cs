@@ -133,7 +133,7 @@ internal sealed class RawDeveloper
             RawDenoise.Chroma(rgb, pw, ph, _options.ColorNoiseReduction / 100.0, parallel, input);
         }
 
-        RawLook look = new(frame, camera, Target, Exposure(), _options.ApplyProfile);
+        RawLook look = new(frame, camera, Target, Exposure(), _options.ApplyProfile, _options.DefaultToneCurve);
         Rect output = Output;
         Parallel.For(0, (output.Height + 15) / 16, parallel, () => new float[output.Width * 3], (band, _, row) =>
         {

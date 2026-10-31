@@ -377,6 +377,17 @@ public sealed record RawReaderOptions : ReaderOptions
     public bool ApplyProfile { get; init; } = true;
 
     /// <summary>
+    /// Gets whether a develop whose camera profile has no tone curve of its own gets a default one: the contrast curve of Adobe
+    /// Camera Raw's default rendering, measured as a black box, which lifts the midtones and rolls off the highlights the way
+    /// most raw converters' default looks do. Defaults to <see langword="false"/>, which keeps the develop scene-linear (only
+    /// the output's transfer function); maker files, whose profiles come from the camera table, have no tone curve.
+    /// </summary>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/FormatsExtended.cs" region="raw-develop"/>
+    /// </example>
+    public bool DefaultToneCurve { get; init; }
+
+    /// <summary>
     /// Gets the folders of lens profiles to correct with: Lensfun database files (<c>.xml</c>) and Adobe lens profiles
     /// (<c>.lcp</c>), searched with their subfolders; a system Lensfun install and the folders Adobe's software installs its lens
     /// profiles in are searched too when they are there. A file whose own data
