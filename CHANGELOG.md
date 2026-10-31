@@ -40,6 +40,24 @@ Video Build Plan task 31: HEVC decode speed. No API changes.
 
 ## Egami.Formats.Extended, unreleased
 
+Camera RAW, stage A (DNG). All additive; it ships with the rest of camera RAW in one release.
+
+- `RawFormat`, registered by `WithExtendedFormats()` and `WithRaw()` ahead of TIFF, reads DNG 1.0 to 1.7: colour filter arrays
+  of any pattern and LinearRaw, uncompressed integer and floating-point samples, lossless JPEG, Deflate with the integer and
+  floating-point predictors, lossy JPEG and JPEG XL, in strips or tiles, with the linearization table, black level patterns
+  and deltas, white levels, active area and default crop.
+- Load develops the image (`RawReaderOptions`): white balance as shot, automatic or custom (`Temperature`, `Tint`) with
+  dual-illuminant matrix interpolation and ForwardMatrix; bilinear, Malvar-He-Cutler and AHD demosaicing (`Demosaic`, AHD by
+  default); exposure and BaselineExposure; highlights clipped, blended or rebuilt (`Highlights`); DNG opcode lists 1 to 3 and
+  camera profiles (HueSatMap, LookTable, ProfileToneCurve); raw-domain wavelet luminance noise reduction with the file's noise
+  profile (`LuminanceNoiseReduction`, off by default) and chroma noise reduction (`ColorNoiseReduction`, 25 by default); lens
+  corrections from the file's opcodes (`LensCorrections`). Output is `Rgb16` sRGB, or rendered straight into the RGB space
+  `ConvertColorTo` names, its ICC profile attached.
+- `RawOutput.Preview`, `HalfSize` and `Mosaic` return an embedded preview, a half-size develop or the untouched sensor data;
+  `ReaderOptions.MinimumSize` picks the smallest preview or half-size develop that covers it, and LoadAll gives the develop and
+  each preview. `RawDetails` keeps the camera, sensor layout, levels, the develop's white balance and colour matrix, opcodes,
+  previews, exposure settings and the maker note; EXIF, GPS and XMP come through.
+
 DDS textures, stage A (reading). All additive; it ships with the rest of DDS in one release.
 
 - `DdsFormat`, registered by `WithExtendedFormats()` and `WithDds()`, reads DDS textures: the legacy header (DXT1 to DXT5,
@@ -73,6 +91,12 @@ DDS textures, stage C (BC7 and BC6H encoders).
   now load.
 
 ## Egami, unreleased
+
+For camera RAW (Egami.Formats.Extended). Additive.
+
+- `FormatInfo.ConvertsColor`: a format whose reader renders `ReaderOptions.ConvertColorTo`'s colour space itself (a RAW
+  develop) gets the option passed through, instead of Egami converting the pixels after the load. Every other format loads
+  as before.
 
 2.3.10: PSD layers. All additive.
 
