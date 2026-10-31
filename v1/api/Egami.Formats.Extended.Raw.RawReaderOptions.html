@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class RawReaderOptions | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class RawReaderOptions | Egami ">
+      
+      <meta name="description" content="Options for reading camera RAW files: what Load returns, and how it develops.">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_Formats_Extended_Raw_RawReaderOptions.md&amp;value=---%0Auid%3A%20Egami.Formats.Extended.Raw.RawReaderOptions%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.Formats.Extended.Raw.RawReaderOptions">
+
+
+
+  <h1 id="Egami_Formats_Extended_Raw_RawReaderOptions" data-uid="Egami.Formats.Extended.Raw.RawReaderOptions" class="text-break">
+Class RawReaderOptions  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Raw/RawFormat.cs/#L246"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a>.<a class="xref" href="Egami.Formats.html">Formats</a>.<a class="xref" href="Egami.Formats.Extended.html">Extended</a>.<a class="xref" href="Egami.Formats.Extended.Raw.html">Raw</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.Formats.Extended.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>Options for reading camera RAW files: what Load returns, and how it develops.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public sealed record RawReaderOptions : ReaderOptions, IEquatable&lt;ReaderOptions&gt;, IEquatable&lt;RawReaderOptions&gt;</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><a class="xref" href="Egami.Formats.ReaderOptions.html">ReaderOptions</a></div>
+      <div><span class="xref">RawReaderOptions</span></div>
+    </dd>
+  </dl>
+
+  <dl class="typelist implements">
+    <dt>Implements</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.iequatable-1">IEquatable</a>&lt;<a class="xref" href="Egami.Formats.ReaderOptions.html">ReaderOptions</a>&gt;</div>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.iequatable-1">IEquatable</a>&lt;<a class="xref" href="Egami.Formats.Extended.Raw.RawReaderOptions.html">RawReaderOptions</a>&gt;</div>
+    </dd>
+  </dl>
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="Egami.Formats.ReaderOptions.html#Egami_Formats_ReaderOptions_Default">ReaderOptions.Default</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Formats.ReaderOptions.html#Egami_Formats_ReaderOptions_Recovery">ReaderOptions.Recovery</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Formats.ReaderOptions.html#Egami_Formats_ReaderOptions_ReadMetadata">ReaderOptions.ReadMetadata</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Formats.ReaderOptions.html#Egami_Formats_ReaderOptions_ConvertColorTo">ReaderOptions.ConvertColorTo</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Formats.ReaderOptions.html#Egami_Formats_ReaderOptions_Hdr">ReaderOptions.Hdr</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Formats.ReaderOptions.html#Egami_Formats_ReaderOptions_Frames">ReaderOptions.Frames</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Formats.ReaderOptions.html#Egami_Formats_ReaderOptions_MinimumSize">ReaderOptions.MinimumSize</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Formats.ReaderOptions.html#Egami_Formats_ReaderOptions_Region">ReaderOptions.Region</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+  </dd></dl>
+
+
+
+  <h2 id="Egami_Formats_Extended_Raw_RawReaderOptions_examples">Examples</h2>
+  <pre><code class="lang-csharp">RawReaderOptions develop = new()
+{
+    WhiteBalance = RawWhiteBalance.Custom,
+    Temperature = 4800,                    // kelvin
+    Tint = 5,                              // toward magenta
+    Exposure = -0.5,                       // stops
+    Highlights = RawHighlightMode.Rebuild, // recover clipped colour from what was not clipped
+    Demosaic = RawDemosaicMethod.Malvar,   // faster than the default AHD
+    LuminanceNoiseReduction = 20,          // 0 to 100; off by default
+    ColorNoiseReduction = 40,              // 0 to 100; 25 by default
+    ConvertColorTo = Colors.ColorProfile.DisplayP3, // rendered straight into P3, the profile attached
+};
+using Raster photo = Raster.Load("photo.dng", context, develop);
+photo.Save("photo-p3.png");</code></pre>
+
+
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="Egami_Formats_Extended_Raw_RawReaderOptions_ApplyBaselineExposure_" data-uid="Egami.Formats.Extended.Raw.RawReaderOptions.ApplyBaselineExposure*"></a>
+
+  <h3 id="Egami_Formats_Extended_Raw_RawReaderOptions_ApplyBaselineExposure" data-uid="Egami.Formats.Extended.Raw.RawReaderOptions.ApplyBaselineExposure">
+  ApplyBaselineExposure
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Raw/RawFormat.cs/#L330"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether the file's own exposure correction (DNG's BaselineExposure) is applied. Defaults to <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool ApplyBaselineExposure { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_Extended_Raw_RawReaderOptions_ApplyProfile_" data-uid="Egami.Formats.Extended.Raw.RawReaderOptions.ApplyProfile*"></a>
+
+  <h3 id="Egami_Formats_Extended_Raw_RawReaderOptions_ApplyProfile" data-uid="Egami.Formats.Extended.Raw.RawReaderOptions.ApplyProfile">
+  ApplyProfile
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Raw/RawFormat.cs/#L374"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether the camera profile's look is applied: its HueSatMap, LookTable and tone curve. Defaults to
+<a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>; without it, colours are the colour matrices' alone.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool ApplyProfile { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_Extended_Raw_RawReaderOptions_ColorNoiseReduction_" data-uid="Egami.Formats.Extended.Raw.RawReaderOptions.ColorNoiseReduction*"></a>
+
+  <h3 id="Egami_Formats_Extended_Raw_RawReaderOptions_ColorNoiseReduction" data-uid="Egami.Formats.Extended.Raw.RawReaderOptions.ColorNoiseReduction">
+  ColorNoiseReduction
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Raw/RawFormat.cs/#L353"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the strength, 0 to 100, of colour noise reduction after demosaicing. Defaults to 25.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public double ColorNoiseReduction { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>The value is outside 0 to 100.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Formats_Extended_Raw_RawReaderOptions_Demosaic_" data-uid="Egami.Formats.Extended.Raw.RawReaderOptions.Demosaic*"></a>
+
+  <h3 id="Egami_Formats_Extended_Raw_RawReaderOptions_Demosaic" data-uid="Egami.Formats.Extended.Raw.RawReaderOptions.Demosaic">
+  Demosaic
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Raw/RawFormat.cs/#L282"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the demosaicing method. Defaults to <a class="xref" href="Egami.Formats.Extended.Raw.RawDemosaicMethod.html#Egami_Formats_Extended_Raw_RawDemosaicMethod_Ahd">Ahd</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public RawDemosaicMethod Demosaic { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Formats.Extended.Raw.RawDemosaicMethod.html">RawDemosaicMethod</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_Extended_Raw_RawReaderOptions_Exposure_" data-uid="Egami.Formats.Extended.Raw.RawReaderOptions.Exposure*"></a>
+
+  <h3 id="Egami_Formats_Extended_Raw_RawReaderOptions_Exposure" data-uid="Egami.Formats.Extended.Raw.RawReaderOptions.Exposure">
+  Exposure
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Raw/RawFormat.cs/#L318"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the exposure to add, in stops, −10 to 10. Defaults to 0.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public double Exposure { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>The value is outside −10 to 10.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Formats_Extended_Raw_RawReaderOptions_Highlights_" data-uid="Egami.Formats.Extended.Raw.RawReaderOptions.Highlights*"></a>
+
+  <h3 id="Egami_Formats_Extended_Raw_RawReaderOptions_Highlights" data-uid="Egami.Formats.Extended.Raw.RawReaderOptions.Highlights">
+  Highlights
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Raw/RawFormat.cs/#L333"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets what happens where the sensor clipped. Defaults to <a class="xref" href="Egami.Formats.Extended.Raw.RawHighlightMode.html#Egami_Formats_Extended_Raw_RawHighlightMode_Clip">Clip</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public RawHighlightMode Highlights { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Formats.Extended.Raw.RawHighlightMode.html">RawHighlightMode</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_Extended_Raw_RawReaderOptions_LensCorrections_" data-uid="Egami.Formats.Extended.Raw.RawReaderOptions.LensCorrections*"></a>
+
+  <h3 id="Egami_Formats_Extended_Raw_RawReaderOptions_LensCorrections" data-uid="Egami.Formats.Extended.Raw.RawReaderOptions.LensCorrections">
+  LensCorrections
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Raw/RawFormat.cs/#L368"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether the lens corrections the file carries (distortion, vignetting and lateral chromatic aberration, from DNG
+opcodes) are applied. Defaults to <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool LensCorrections { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_Extended_Raw_RawReaderOptions_LuminanceNoiseReduction_" data-uid="Egami.Formats.Extended.Raw.RawReaderOptions.LuminanceNoiseReduction*"></a>
+
+  <h3 id="Egami_Formats_Extended_Raw_RawReaderOptions_LuminanceNoiseReduction" data-uid="Egami.Formats.Extended.Raw.RawReaderOptions.LuminanceNoiseReduction">
+  LuminanceNoiseReduction
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Raw/RawFormat.cs/#L340"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the strength, 0 to 100, of luminance noise reduction, done on the sensor data before demosaicing with the file's
+noise model, or one measured from the image. Defaults to 0 (off).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public double LuminanceNoiseReduction { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>The value is outside 0 to 100.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Formats_Extended_Raw_RawReaderOptions_Output_" data-uid="Egami.Formats.Extended.Raw.RawReaderOptions.Output*"></a>
+
+  <h3 id="Egami_Formats_Extended_Raw_RawReaderOptions_Output" data-uid="Egami.Formats.Extended.Raw.RawReaderOptions.Output">
+  Output
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Raw/RawFormat.cs/#L260"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets what Load returns. Defaults to <a class="xref" href="Egami.Formats.Extended.Raw.RawOutput.html#Egami_Formats_Extended_Raw_RawOutput_Developed">Developed</a>. When it is that and
+<a class="xref" href="Egami.Formats.ReaderOptions.html#Egami_Formats_ReaderOptions_MinimumSize">MinimumSize</a> is set, Load returns the smallest embedded preview, or else a half-size develop,
+that covers it.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public RawOutput Output { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Formats.Extended.Raw.RawOutput.html">RawOutput</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_Extended_Raw_RawReaderOptions_PreviewIndex_" data-uid="Egami.Formats.Extended.Raw.RawReaderOptions.PreviewIndex*"></a>
+
+  <h3 id="Egami_Formats_Extended_Raw_RawReaderOptions_PreviewIndex" data-uid="Egami.Formats.Extended.Raw.RawReaderOptions.PreviewIndex">
+  PreviewIndex
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Raw/RawFormat.cs/#L267"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets which preview <a class="xref" href="Egami.Formats.Extended.Raw.RawOutput.html#Egami_Formats_Extended_Raw_RawOutput_Preview">Preview</a> returns, as an index into <a class="xref" href="Egami.Formats.Extended.Raw.RawDetails.html#Egami_Formats_Extended_Raw_RawDetails_Previews">Previews</a>, or
+<a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> (the default) for the largest.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int? PreviewIndex { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a>?</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>The value is negative.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Formats_Extended_Raw_RawReaderOptions_Temperature_" data-uid="Egami.Formats.Extended.Raw.RawReaderOptions.Temperature*"></a>
+
+  <h3 id="Egami_Formats_Extended_Raw_RawReaderOptions_Temperature" data-uid="Egami.Formats.Extended.Raw.RawReaderOptions.Temperature">
+  Temperature
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Raw/RawFormat.cs/#L289"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the colour temperature in kelvin, 2,000 to 50,000, that <a class="xref" href="Egami.Formats.Extended.Raw.RawWhiteBalance.html#Egami_Formats_Extended_Raw_RawWhiteBalance_Custom">Custom</a> balances for. Defaults to 5,500.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public double Temperature { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>The value is outside 2,000 to 50,000.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Formats_Extended_Raw_RawReaderOptions_Tint_" data-uid="Egami.Formats.Extended.Raw.RawReaderOptions.Tint*"></a>
+
+  <h3 id="Egami_Formats_Extended_Raw_RawReaderOptions_Tint" data-uid="Egami.Formats.Extended.Raw.RawReaderOptions.Tint">
+  Tint
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Raw/RawFormat.cs/#L305"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the tint, −150 to 150, that <a class="xref" href="Egami.Formats.Extended.Raw.RawWhiteBalance.html#Egami_Formats_Extended_Raw_RawWhiteBalance_Custom">Custom</a> balances for: positive for light that is magenta,
+negative for light that is green. Defaults to 0.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public double Tint { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>The value is outside −150 to 150.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Formats_Extended_Raw_RawReaderOptions_WhiteBalance_" data-uid="Egami.Formats.Extended.Raw.RawReaderOptions.WhiteBalance*"></a>
+
+  <h3 id="Egami_Formats_Extended_Raw_RawReaderOptions_WhiteBalance" data-uid="Egami.Formats.Extended.Raw.RawReaderOptions.WhiteBalance">
+  WhiteBalance
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Raw/RawFormat.cs/#L285"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets where the white balance comes from. Defaults to <a class="xref" href="Egami.Formats.Extended.Raw.RawWhiteBalance.html#Egami_Formats_Extended_Raw_RawWhiteBalance_AsShot">AsShot</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public RawWhiteBalance WhiteBalance { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Formats.Extended.Raw.RawWhiteBalance.html">RawWhiteBalance</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Raw/RawFormat.cs/#L246" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

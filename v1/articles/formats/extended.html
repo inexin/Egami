@@ -88,7 +88,7 @@
 <h1 id="extended-formats">Extended formats</h1>
 
 <p>Egami.Formats.Extended reads and writes image formats that most apps never meet but some still need: PCX, SGI, Sun raster,
-XBM, XPM, WBMP, Farbfeld and DDS textures. They are plugins on core Egami's public format API, the one <a href="custom.html">your own format</a> uses,
+XBM, XPM, WBMP, Farbfeld and DDS textures, and reads camera RAW files (DNG). They are plugins on core Egami's public format API, the one <a href="custom.html">your own format</a> uses,
 so they load, probe, stream and save as the core formats do, inside the same safety limits. The package depends on core
 Egami only and ships with every Egami release.</p>
 <h2 id="registering-the-formats">Registering the formats</h2>
@@ -176,6 +176,12 @@ Console.WriteLine($&quot;{info.Format.Name} {info.Width}×{info.Height} {info.La
 <td>Legacy and DX10 headers, BC1 to BC7, every DXGI format DirectXTex reads; every surface and mip through <code>DdsReaderOptions</code></td>
 <td>Uncompressed formats and BC1 to BC7 with mips, arrays and cube maps</td>
 </tr>
+<tr>
+<td><a href="raw.html">Camera RAW</a></td>
+<td><code>RawFormat</code></td>
+<td>DNG, developed on load or as its previews or mosaic, through <code>RawReaderOptions</code>; detected ahead of TIFF</td>
+<td>—</td>
+</tr>
 </tbody>
 </table>
 <p>SGI and Farbfeld keep 16-bit samples and alpha. PCX, Sun raster and WBMP have no alpha, XPM only on or off, and a save that
@@ -194,7 +200,7 @@ using (FileStream sun = File.Create(&quot;duck.ras&quot;))
 </code></pre>
 <p>What a header says that the pixels do not is kept in <code>RasterMetadata.FormatDetails</code>: <code>PcxDetails</code> (version, planes, palette),
 <code>SgiDetails</code> (image name, channels, depth), <code>SunRasterDetails</code> (depth, colormap, coding), <code>XbmDetails</code> and <code>XpmDetails</code> (the
-C name and the cursor hotspot), and <code>DdsDetails</code> (DXGI format, mips, cube and array layout, alpha mode). The SGI, XBM and XPM writers take the name and hotspot back from them.</p>
+C name and the cursor hotspot), <code>DdsDetails</code> (DXGI format, mips, cube and array layout, alpha mode), and <code>RawDetails</code> (camera, sensor layout, the develop's white balance and colour). The SGI, XBM and XPM writers take the name and hotspot back from them.</p>
 <pre><code class="lang-csharp">// What the header said that the pixels do not: PcxDetails, SgiDetails, SunRasterDetails, XbmDetails and XpmDetails.
 using Raster image = Raster.Load(&quot;arrow.xbm&quot;, context);
 if (image.Metadata.FormatDetails is XbmDetails xbm)
@@ -209,7 +215,7 @@ image.Save(&quot;pointer.xbm&quot;);
 <p>PCX, Sun raster, WBMP and Farbfeld decode their rows from the input as <code>RasterDecoder</code> asks for them; an 8-bit PCX first
 reads to its end, where its palette is. SGI stores each channel as its own plane of bottom-up rows, and XBM and XPM are C
 source, so those three read the file whole. DDS skips to the surface it reads and decodes it a row of
-4 × 4 blocks at a time. A lenient read of a file that ends early keeps the rows it has and leaves the rest
+4 × 4 blocks at a time. Camera RAW reads the file whole and develops the image before the first row. A lenient read of a file that ends early keeps the rows it has and leaves the rest
 transparent black, with a <code>RowsMissing</code> warning such as <code>Pcx.RowsMissing</code>; a strict read throws <code>CorruptDataException</code>.</p>
 <h2 id="formats-in-preview">Formats in preview</h2>
 <p>The package also holds formats still in development, as previews. A preview is never part of <code>WithExtendedFormats()</code>: its own

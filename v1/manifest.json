@@ -6551,6 +6551,146 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Extended.Raw.RawDemosaicMethod.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Extended.Raw.RawDemosaicMethod.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Extended.Raw.RawDemosaicMethod",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Extended.Raw.RawDemosaicMethod.yml\" sourcestartlinenumber=\"1\">How a develop fills in the colours a colour filter array did not sample.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Extended.Raw.RawDetails.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Extended.Raw.RawDetails.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Extended.Raw.RawDetails",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Extended.Raw.RawDetails.yml\" sourcestartlinenumber=\"1\">Details only RAW files have, kept in <xref href=\"Egami.Metadata.RasterMetadata.FormatDetails\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Extended.Raw.RawFormat.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Extended.Raw.RawFormat.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Extended.Raw.RawFormat",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Extended.Raw.RawFormat.yml\" sourcestartlinenumber=\"1\">Camera RAW files: the sensor data a camera recorded, developed into an image on load. Reads DNG (Adobe's open RAW format,\nwhich phones, Leica, Pentax, Ricoh, Hasselblad and Adobe DNG Converter write). Load develops the image with the file's own\nwhite balance and colour data; <xref href=\"Egami.Formats.Extended.Raw.RawReaderOptions\" data-throw-if-not-resolved=\"false\"></xref> picks an embedded preview, a half-size develop or the\nuntouched sensor mosaic instead, and sets the develop. Registered with <xref href=\"Egami.Formats.Extended.ExtendedContextExtensions.WithRaw(Egami.EgamiContext)\" data-throw-if-not-resolved=\"false\"></xref>,\nwhich places it ahead of TIFF, since DNG files are TIFF files.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Extended.Raw.RawHighlightMode.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Extended.Raw.RawHighlightMode.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Extended.Raw.RawHighlightMode",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Extended.Raw.RawHighlightMode.yml\" sourcestartlinenumber=\"1\">What a develop does where the sensor clipped some colours but not others.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Extended.Raw.RawOutput.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Extended.Raw.RawOutput.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Extended.Raw.RawOutput",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Extended.Raw.RawOutput.yml\" sourcestartlinenumber=\"1\">What a RAW load returns.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Extended.Raw.RawPreview.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Extended.Raw.RawPreview.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Extended.Raw.RawPreview",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Extended.Raw.RawPreview.yml\" sourcestartlinenumber=\"1\">An embedded preview a RAW file carries.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Extended.Raw.RawPreviewKind.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Extended.Raw.RawPreviewKind.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Extended.Raw.RawPreviewKind",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Extended.Raw.RawPreviewKind.yml\" sourcestartlinenumber=\"1\">The kind of an embedded preview.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Extended.Raw.RawReaderOptions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Extended.Raw.RawReaderOptions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Extended.Raw.RawReaderOptions",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Extended.Raw.RawReaderOptions.yml\" sourcestartlinenumber=\"1\">Options for reading camera RAW files: what Load returns, and how it develops.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Extended.Raw.RawWhiteBalance.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Extended.Raw.RawWhiteBalance.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Extended.Raw.RawWhiteBalance",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Extended.Raw.RawWhiteBalance.yml\" sourcestartlinenumber=\"1\">Where a develop's white balance comes from.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Extended.Raw.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Extended.Raw.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Extended.Raw",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.Formats.Extended.Sgi.SgiDetails.yml",
       "output": {
         ".html": {
@@ -18918,6 +19058,16 @@
       "output": {
         ".html": {
           "relative_path": "articles/formats/radiance.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "articles/formats/raw.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/formats/raw.html"
         }
       },
       "version": ""

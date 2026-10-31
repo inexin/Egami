@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Camera RAW | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Camera RAW | Egami ">
+      
+      
+      <link rel="icon" href="../../images/favicon.ico">
+      <link rel="stylesheet" href="../../public/docfx.min.css">
+      <link rel="stylesheet" href="../../public/main.css">
+      <meta name="docfx:navrel" content="../../toc.html">
+      <meta name="docfx:tocrel" content="../toc.html">
+      
+      <meta name="docfx:rel" content="../../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/blob/main/docs/articles/formats/raw.md/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../../index.html">
+            <img id="logo" class="svg" src="../../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="camera-raw">Camera RAW</h1>
+
+<p>Camera RAW files hold the sensor data a camera recorded, before any processing. Egami reads DNG (.dng), the open RAW format
+Adobe publishes, which phones, Leica, Pentax, Ricoh, Hasselblad and Adobe DNG Converter write, and develops it into an image on
+load. It reads through the Egami.Formats.Extended package: register it with <code>WithRaw()</code> or <code>WithExtendedFormats()</code>
+(<a href="extended.html">Extended formats</a>). RAW is detected ahead of TIFF, since a DNG file is a TIFF file; without it, a DNG opens as
+TIFF and only its preview pages load.</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Reads</td>
+<td>DNG 1.0 to 1.7: colour filter arrays of any pattern and LinearRaw, uncompressed 1 to 32-bit integers and 16, 24 or 32-bit floats, lossless JPEG, Deflate with the integer and floating-point predictors, lossy JPEG and JPEG XL, in strips or tiles; linearization tables, black level patterns and deltas, white levels, active area and default crop; opcode lists 1 to 3; camera profiles (dual-illuminant colour matrices, ForwardMatrix, HueSatMap, LookTable, tone curve); embedded previews</td>
+</tr>
+<tr>
+<td>Writes</td>
+<td>Nothing (camera RAW is read-only)</td>
+</tr>
+<tr>
+<td>Natural pixel type</td>
+<td><code>Rgb16</code> in sRGB for a develop, or in the RGB space <code>ConvertColorTo</code> names; for <code>RawOutput.Mosaic</code>, <code>Gray16</code> (CFA) or <code>Rgb16</code> (LinearRaw), <code>GrayF32</code> or <code>RgbF32</code> for float data; for a preview, the JPEG's <code>Rgb8</code></td>
+</tr>
+<tr>
+<td><code>FormatInfo</code></td>
+<td><code>RawFormat.Info</code>: name <code>RAW</code>, extension <code>.dng</code>, MIME types <code>image/x-adobe-dng</code> and <code>image/dng</code></td>
+</tr>
+</tbody>
+</table>
+<pre><code class="lang-csharp">// RAW goes ahead of TIFF, since a DNG is a TIFF file; WithExtendedFormats() registers it too.
+EgamiContext context = EgamiContext.Default.WithRaw();
+
+// Load develops the sensor data: the camera's white balance and colour, AHD demosaicing, sRGB in Rgb16.
+using Raster photo = Raster.Load(&quot;photo.dng&quot;, context);
+photo.Save(&quot;photo.png&quot;);
+
+// Probe reads the structure alone: the developed size, the camera and the embedded previews.
+RasterInfo info = Raster.Probe(&quot;photo.dng&quot;, context);
+Console.WriteLine($&quot;{info.Width}×{info.Height}, {info.ImageCount} image(s)&quot;);
+</code></pre><h2 id="what-load-returns">What Load returns</h2>
+<p><code>RawReaderOptions.Output</code> (a <code>RawOutput</code>) picks it:</p>
+<ul>
+<li><code>Developed</code> (the default) runs the whole develop below.</li>
+<li><code>HalfSize</code> develops at half the width and height: each 2 × 2 block of the mosaic is one pixel, so there is no demosaicing and
+the develop is about four times faster.</li>
+<li><code>Preview</code> returns an embedded preview as the camera or converter rendered it, the largest unless <code>PreviewIndex</code> picks
+another. A file without one gives a half-size develop.</li>
+<li><code>Mosaic</code> returns the sensor data as stored, nothing scaled, cropped or balanced, for a pipeline of your own; the pattern, the
+black and white levels and the rest are in <code>RawDetails</code>.</li>
+</ul>
+<p>With <code>ReaderOptions.MinimumSize</code> (and no <code>Region</code>), Load returns the smallest preview that covers the size, else a half-size
+develop if that does, else the full develop. LoadAll gives the developed image, then each preview.</p>
+<pre><code class="lang-csharp">// The untouched sensor data for a pipeline of your own: Gray16, one value per photosite.
+using Raster mosaic = Raster.Load(&quot;photo.dng&quot;, context, new RawReaderOptions { Output = RawOutput.Mosaic });
+RawDetails raw = (RawDetails)mosaic.Metadata.FormatDetails!;
+Console.WriteLine($&quot;{raw.CfaPattern}, black {raw.BlackLevels[0]}, white {raw.WhiteLevels[0]}&quot;);
+
+// Half the size and about four times faster: each 2 × 2 block of photosites is one pixel.
+using Raster&lt;Rgba8&gt; half = Raster.Load&lt;Rgba8&gt;(&quot;photo.dng&quot;, context, new RawReaderOptions { Output = RawOutput.HalfSize });
+
+// A thumbnail: MinimumSize takes the smallest embedded preview or half-size develop that covers it.
+using Raster thumb = Raster.Load(&quot;photo.dng&quot;, context, new ReaderOptions { MinimumSize = new Size(32, 32) });
+</code></pre><h2 id="the-develop">The develop</h2>
+<p>The develop follows the DNG specification's processing order:</p>
+<ol>
+<li>Opcode list 1 on the stored values; then the linearization table, the black levels (per position of the black level pattern,
+plus the per-row and per-column deltas) and the white level map the active area to 0 (black) to 1 (clipping).</li>
+<li>Opcode list 2 (gain maps for lens shading, polynomial and table maps, bad-pixel fixes).</li>
+<li>Luminance noise reduction, when <code>LuminanceNoiseReduction</code> (0 to 100) is above 0: wavelet shrinkage of each CFA position's
+samples, with the file's NoiseProfile as the noise model, or one measured from the image.</li>
+<li>White balance (<code>RawWhiteBalance</code>): as shot (the camera's AsShotNeutral or AsShotWhiteXY), automatic (the image's average as
+gray), or custom (<code>Temperature</code> in kelvin and <code>Tint</code>). The colour matrices of the two calibration illuminants are
+interpolated for the white's temperature.</li>
+<li>Demosaicing (<code>RawDemosaicMethod</code>): <code>Bilinear</code>, <code>Malvar</code> (Malvar, He and Cutler's gradient-corrected interpolation) or <code>Ahd</code>
+(Hirakawa and Parks' adaptive homogeneity-directed method, the default). A pattern other than a 2 × 2 Bayer one gets a
+same-colour neighbourhood average.</li>
+<li>Opcode list 3 (lens distortion through WarpRectilinear and WarpFisheye, radial vignetting); <code>LensCorrections = false</code> skips
+the lens opcodes.</li>
+<li>Highlights (<code>RawHighlightMode</code>): <code>Clip</code> cuts every colour where the least amplified one clips, so clipped areas turn white;
+<code>Blend</code> lifts what clipping removed evenly across the colours; <code>Rebuild</code> estimates clipped colours from unclipped ones with
+the colour of the surroundings, which brings detail back when <code>Exposure</code> is lowered.</li>
+<li>Colour noise reduction (<code>ColorNoiseReduction</code>, 0 to 100, default 25): wavelet shrinkage of two colour-difference planes,
+leaving luminance alone.</li>
+<li>The default crop; camera RGB to XYZ D50 through the ForwardMatrix, or the inverted ColorMatrix and Bradford adaptation; the
+camera profile's HueSatMap, then exposure (<code>Exposure</code> plus the file's BaselineExposure unless <code>ApplyBaselineExposure</code> is
+off), then its LookTable and tone curve, all in linear ProPhoto RGB (<code>ApplyProfile = false</code> leaves them out); and the output
+colour space.</li>
+</ol>
+<p>The output is sRGB unless <code>ReaderOptions.ConvertColorTo</code> names another RGB space (Display P3, Adobe RGB, ProPhoto, Rec. 2020
+or a linear one): the develop renders straight into it, so wide-gamut colours are never clipped to sRGB first, and the raster
+carries its ICC profile. Other colour models (CMYK, gray) are converted to after the develop. Orientation is not applied:
+<code>RasterInfo.Orientation</code> and the EXIF Orientation say how to turn the image, and <code>AutoOrient</code> does it.</p>
+<pre><code class="lang-csharp">RawReaderOptions develop = new()
+{
+    WhiteBalance = RawWhiteBalance.Custom,
+    Temperature = 4800,                    // kelvin
+    Tint = 5,                              // toward magenta
+    Exposure = -0.5,                       // stops
+    Highlights = RawHighlightMode.Rebuild, // recover clipped colour from what was not clipped
+    Demosaic = RawDemosaicMethod.Malvar,   // faster than the default AHD
+    LuminanceNoiseReduction = 20,          // 0 to 100; off by default
+    ColorNoiseReduction = 40,              // 0 to 100; 25 by default
+    ConvertColorTo = Colors.ColorProfile.DisplayP3, // rendered straight into P3, the profile attached
+};
+using Raster photo = Raster.Load(&quot;photo.dng&quot;, context, develop);
+photo.Save(&quot;photo-p3.png&quot;);
+</code></pre>
+<p>The develop runs in parallel bands, and its output is the same for any <code>EgamiContext.MaxParallelism</code>.</p>
+<h2 id="details-and-metadata">Details and metadata</h2>
+<p><code>RawDetails</code>, in <code>RasterMetadata.FormatDetails</code>, says what the raster is (<code>Output</code>, <code>PreviewIndex</code>), the camera (<code>Make</code>,
+<code>Model</code>, <code>UniqueCameraModel</code>, <code>DngVersion</code>), the sensor data (<code>SensorWidth</code>, <code>SensorHeight</code>, <code>ActiveArea</code>, <code>CropArea</code>,
+<code>CfaPattern</code>, <code>BitsPerSample</code>, <code>Compression</code>, <code>BlackLevels</code>, <code>WhiteLevels</code>), the colour the develop used (<code>AsShotNeutral</code>,
+<code>WhiteBalance</code>, <code>Temperature</code>, <code>Tint</code>, <code>CameraToXyz</code>, <code>ProfileName</code>, <code>BaselineExposure</code>), the <code>Opcodes</code>, the <code>Previews</code> (each a
+<code>RawPreview</code> of a <code>RawPreviewKind</code>), the exposure settings and lens, and the maker note as bytes.</p>
+<p>EXIF (with GPS) and XMP come through as for TIFF.</p>
+<pre><code class="lang-csharp">using Raster photo = Raster.Load(&quot;photo.dng&quot;, context);
+RawDetails details = (RawDetails)photo.Metadata.FormatDetails!;
+Console.WriteLine($&quot;{details.Make} {details.Model}, DNG {details.DngVersion}&quot;);
+Console.WriteLine($&quot;Sensor {details.SensorWidth}×{details.SensorHeight}, crop {details.CropArea}&quot;);
+Console.WriteLine($&quot;White balance {details.Temperature:F0} K, tint {details.Tint:F0}, multipliers {string.Join(&quot;, &quot;, details.WhiteBalance)}&quot;);
+foreach (RawPreview preview in details.Previews)
+{
+    Console.WriteLine($&quot;Preview {preview.Width}×{preview.Height} {preview.Kind}&quot;);
+}
+</code></pre><h2 id="limits">Limits</h2>
+<ul>
+<li>DNG only for now. CR2, NEF, ARW, PEF, ORF, RW2 and RAF follow; CR3 will give its previews and metadata.</li>
+<li>Three-colour data only: monochrome DNGs and four-colour (CMYG) sensors are not developed (their mosaic loads).</li>
+<li>Non-square pixels (DefaultScale other than 1) are developed square. The third calibration illuminant of DNG 1.6, profile gain
+table maps, semantic masks and extra camera profiles are not read; opcode TrimBounds and WarpRectilinear2 are skipped with a
+warning.</li>
+<li>Egami writes no RAW or DNG files.</li>
+</ul>
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/docs/articles/formats/raw.md/#L1" class="edit-link">Edit this page</a>
+        </div>
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

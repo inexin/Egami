@@ -92,7 +92,7 @@ map), TIFF, Radiance .hdr, OpenEXR, JPEG XL, AVIF, and Windows icons and cursors
 2000, Windows animated cursors (ANI) and Photoshop's PSD and PSB. HEIC phone photos load through the separate, opt-in Egami.Heic
 package; core Egami detects and probes them. SVG and Windows metafiles (WMF, EMF) load through the separate
 <a href="../guides/svg.html">Egami.Svg</a> and <a href="../guides/metafiles.html">Egami.Metafiles</a> packages, and PCX, SGI, Sun raster, XBM, XPM, WBMP
-Farbfeld and DDS textures through <a href="extended.html">Egami.Formats.Extended</a>. The Package column says which package holds each format. Every reader checks sizes against the
+Farbfeld, DDS textures and camera RAW (DNG) through <a href="extended.html">Egami.Formats.Extended</a>. The Package column says which package holds each format. Every reader checks sizes against the
 safety limits before it allocates, and every reader has been fuzzed.</p>
 <p>Each format has its own page with its options and what it keeps from the file; the table below links them. VP8 and AV1 video frames decode
 through <a href="vp8.html"><code>Vp8StreamDecoder</code></a> and <a href="av1.html"><code>Av1StreamDecoder</code></a>, VP8 and AV1 frames encode through <a href="vp8.html#encoding"><code>Vp8StreamEncoder</code></a> and <a href="av1.html#encoding"><code>Av1StreamEncoder</code></a>, and the boxes of MP4, QuickTime and HEIF files can be walked with <a href="iso-boxes.html"><code>IsoBoxReader</code></a>. This page covers what all formats share: natural pixel types, detection, files with several images, and what writers drop.</p>
@@ -316,6 +316,13 @@ through <a href="vp8.html"><code>Vp8StreamDecoder</code></a> and <a href="av1.ht
 <td>Legacy and DX10 headers, BC1 to BC7, every DXGI format DirectXTex reads; mips, cube maps, arrays and volumes</td>
 <td>Uncompressed formats and BC1 to BC7, with mips, arrays and cube maps</td>
 <td>The nearest to the stored format: <code>Rgba8</code>, <code>Gray8</code>, <code>Rgb8</code>, <code>Rgba16</code>, <code>RgbaF16</code>, <code>RgbaF32</code> and others</td>
+<td>Egami.Formats.Extended</td>
+</tr>
+<tr>
+<td><a href="raw.html">Camera RAW</a></td>
+<td>DNG 1.0 to 1.7, developed on load (white balance, demosaicing, noise reduction, opcodes, camera profiles), or its previews or sensor mosaic</td>
+<td>—</td>
+<td><code>Rgb16</code> sRGB when developed; <code>Gray16</code> for the mosaic</td>
 <td>Egami.Formats.Extended</td>
 </tr>
 </tbody>
