@@ -75,6 +75,24 @@ internal sealed partial class HeifImageReader(Func<FormatInfo> format, HeifDiagn
     internal Raster<TPixel> Read<TPixel>(EgamiInput input, HeifImage file, ReaderOptions options)
         where TPixel : unmanaged, IPixelType<TPixel> => Read<TPixel>(input, Prepare(input, file, options, null));
 
+    /// <summary>Decodes the still image (only the grid cells <see cref="ReaderOptions.Region"/> needs) and gives how to read its rows.</summary>
+    internal Prepared PrepareStill(EgamiInput input, HeifImage file, ReaderOptions options) => Prepare(input, file, options, options.Region);
+
+    /// <summary>
+    /// Gives how to read the rows of planes decoded on their own (an incremental preview), converted with the color as Load converts
+    /// the image, and cropped to its clean aperture.
+    /// </summary>
+    internal PixelRows PlaneRows(HeifImage file, HeifPlanes color, ColorCodePoints points)
+    {
+        (int x, int y) = file.Crop is (int cx, int cy, _, _) ? (cx, cy) : (0, 0);
+        IHeifRgbConverter converter = Converter(new HeifConversion(color, null, false, points, false));
+        return new PixelRows(converter.Channels, converter.OutputDepth, (row, column, samples) =>
+            converter.Row(y + row, x + column, samples.Length / converter.Channels, samples))
+        {
+            Write = (row, column, width, target) => converter.Write(y + row, x + column, width, target),
+        };
+    }
+
     /// <summary>Opens the still image as a row source, decoding only the grid cells <see cref="ReaderOptions.Region"/> needs.</summary>
     internal RowSource Open(EgamiInput input, HeifImage file, ReaderOptions options) => new Rows(input, Prepare(input, file, options, options.Region));
 
@@ -915,7 +933,7 @@ internal sealed partial class HeifImageReader(Func<FormatInfo> format, HeifDiagn
     }
 
     /// <summary>Reads part of an output row into <paramref name="destination"/> through the natural type.</summary>
-    private static void ReadRow<TPixel>(PixelRows rows, PixelLayoutInfo natural, int row, int column, Span<int> samples, Span<byte> packed, Span<TPixel> destination)
+    internal static void ReadRow<TPixel>(PixelRows rows, PixelLayoutInfo natural, int row, int column, Span<int> samples, Span<byte> packed, Span<TPixel> destination)
         where TPixel : unmanaged, IPixelType<TPixel>
     {
         bool direct = TPixel.Layout == natural;

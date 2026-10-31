@@ -91,6 +91,11 @@ internal sealed partial class AvifReader : IFormatReader, IYuvFormatReader, IRow
     {
         try
         {
+            if (OpenProgressive(input, options) is RowSource progressive)
+            {
+                return progressive;
+            }
+
             HeifFile heif = HeifFile.Read(input);
             if (AvifSequence.Find(heif) is AvifSequence sequence)
             {
