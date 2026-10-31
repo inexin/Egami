@@ -3,7 +3,7 @@
 Camera RAW files hold the sensor data a camera recorded, before any processing. Egami reads DNG (.dng), the open RAW format
 Adobe publishes, which phones, Leica, Pentax, Ricoh, Hasselblad and Adobe DNG Converter write, and the makers' own formats:
 Canon CR2, Nikon NEF and NRW, Pentax PEF, Sony ARW and SR2, Olympus ORF, Panasonic RW2 and Fujifilm RAF. It develops them into
-an image on load. It reads through the Egami.Formats.Extended package: register it with `WithRaw()` or `WithExtendedFormats()`
+an image on load. Of Canon's CR3 it reads the previews and the metadata ([Canon CR3](#canon-cr3)). It reads through the Egami.Formats.Extended package: register it with `WithRaw()` or `WithExtendedFormats()`
 ([Extended formats](extended.md)). RAW is detected ahead of TIFF, since a DNG file (like most maker formats) is a TIFF file;
 without it, a DNG opens as TIFF and only its preview pages load.
 
@@ -12,7 +12,7 @@ without it, a DNG opens as TIFF and only its preview pages load.
 | Reads | DNG 1.0 to 1.7: colour filter arrays of any pattern and LinearRaw, uncompressed 1 to 32-bit integers and 16, 24 or 32-bit floats, lossless JPEG, Deflate with the integer and floating-point predictors, lossy JPEG and JPEG XL, in strips or tiles; linearization tables, black level patterns and deltas, white levels, active area and default crop; opcode lists 1 to 3; camera profiles (dual-illuminant colour matrices, ForwardMatrix, HueSatMap, LookTable, tone curve); embedded previews. The maker formats of [Maker formats](#maker-formats) |
 | Writes | Nothing (camera RAW is read-only) |
 | Natural pixel type | `Rgb16` in sRGB for a develop, or in the RGB space `ConvertColorTo` names; for `RawOutput.Mosaic`, `Gray16` (CFA) or `Rgb16` (LinearRaw), `GrayF32` or `RgbF32` for float data; for a preview, the JPEG's `Rgb8` |
-| `FormatInfo` | `RawFormat.Info`: name `RAW`, extensions `.dng`, `.cr2`, `.nef`, `.nrw`, `.pef`, `.arw`, `.sr2`, `.orf`, `.rw2` and `.raf`, with each format's MIME type |
+| `FormatInfo` | `RawFormat.Info`: name `RAW`, extensions `.dng`, `.cr2`, `.nef`, `.nrw`, `.pef`, `.arw`, `.sr2`, `.orf`, `.rw2`, `.raf` and `.cr3`, with each format's MIME type |
 
 [!code-csharp[](../../../tests/Egami.DocSamples/FormatsExtended.cs#raw-load)]
 
@@ -49,8 +49,18 @@ A maker file goes through the same develop as a DNG. What a DNG carries in its t
   sensors (6 × 6 pattern) are demosaiced by Egami's own gradient-weighted method whatever `Demosaic` says. A RAF's
   dynamic-range setting moves the baseline exposure as it does in Adobe's DNGs.
 
-Not read: Canon CR3 (stage C will give its previews and metadata), Sony SRF, Nikon's small (sNEF) and High Efficiency raws, the
-Sony A100, RAFs from before 2012 whose CFA section is not a TIFF, and 14-bit packed RAFs. They throw `NotSupportedException`.
+Not read: Sony SRF, Nikon's small (sNEF) and High Efficiency raws, the Sony A100, RAFs from before 2012 whose CFA section is not
+a TIFF, and 14-bit packed RAFs. They throw `NotSupportedException`.
+
+## Canon CR3
+
+Canon's CR3 files (EOS R and M bodies, the 250D, 850D and 90D, the 1D X Mark III and recent PowerShots) are an ISO base media
+file. Egami reads their three previews, all JPEGs: the full-size one, a 1620 × 1080 (or 1440 × 1080) one and a 160 × 120
+thumbnail; and their metadata: EXIF, GPS, and Canon's maker note as bytes in `RawDetails.MakerNote`. `Raster.Probe` gives the
+sensor data's size, and `RawOutput.Preview` (with `PreviewIndex`, or `ReaderOptions.MinimumSize`) loads a preview.
+
+The sensor data itself is coded with Canon's CRX codec, which Egami does not decode yet: a develop, a half-size develop or the
+mosaic of a CR3 throws `NotSupportedException` saying so.
 
 ## The develop
 
@@ -117,7 +127,7 @@ EXIF (with GPS) and XMP come through as for TIFF.
 
 ## Limits
 
-- The maker formats above; CR3 will give its previews and metadata.
+- The maker formats above; of CR3, only the previews and metadata.
 - Fujifilm GFX 100 files (100 MP) need `MaxTotalBytes` above its 2 GB default for a full develop; their previews, half-size
   develop and mosaic fit.
 - Three-colour data only: monochrome DNGs and four-colour (CMYG) sensors are not developed (their mosaic loads).

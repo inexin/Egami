@@ -321,4 +321,5 @@ fuzz/raw-seeds/
   uncompressed one) written by tests/Egami.Formats.Extended.Tests/Raw/RawMakerTests.cs from computed values, and truncated
   copies of them. Public domain (CC0). The *-head.* files are the first 24 KB of CC0 samples from raw.pixls.us (Canon EOS
   350D and EOS 80D sRAW, Nikon D90, Pentax K-3, Sony ILCE-6000, Olympus E-M10, Panasonic DC-GH6, Fujifilm X-T3), kept for
-  their headers and maker notes. Public domain (CC0).
+  their headers and maker notes; canon-r6-head.cr3 is the first 64 KB of a CC0 Canon EOS R6 CR3 from raw.pixls.us. Public
+  domain (CC0). canon-synthetic.cr3 is written by tests/Egami.Formats.Extended.Tests/Raw/RawCr3Tests.cs. Public domain (CC0).

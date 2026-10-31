@@ -84,6 +84,23 @@ internal sealed class RawFile : IDisposable
     {
         source.Ensure(RawDetect.SignatureLength);
         RawKind? maker = MakerParser.Detect(source.Data.AsSpan(0, source.Length));
+        if (maker == RawKind.Cr3)
+        {
+            try
+            {
+                (RawFrame cr3, RawTiff cmt1) = Cr3Parser.Parse(source);
+                return new RawFile(source, cmt1, cr3);
+            }
+            catch (InvalidDataException e)
+            {
+                throw input.Corrupt(0, e.Message);
+            }
+            catch (Exception e) when (MakerDecoders.Malformed(e))
+            {
+                throw input.Corrupt(0, "The CR3's structure is malformed.");
+            }
+        }
+
         if (maker == RawKind.Raf)
         {
             try
@@ -150,8 +167,8 @@ internal sealed class RawFile : IDisposable
             }
         }
 
-        any |= Sub(ifd0.Sub(RawTags.ExifIfd), ExifIfd.Exif, exif, input, ref kept);
-        any |= Sub(ifd0.Sub(RawTags.GpsIfd), ExifIfd.Gps, exif, input, ref kept);
+        any |= Sub(Frame.ExifIfd ?? ifd0.Sub(RawTags.ExifIfd), ExifIfd.Exif, exif, input, ref kept);
+        any |= Sub(Frame.GpsIfd ?? ifd0.Sub(RawTags.GpsIfd), ExifIfd.Gps, exif, input, ref kept);
         if (any)
         {
             metadata.Exif = exif;
