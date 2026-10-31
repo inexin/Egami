@@ -19,7 +19,7 @@ composited to full size, as a browser shows them, so each frame is a complete pi
 
 ## Writing animations
 
-Saving a raster with more than one frame as GIF or PNG writes an animation. The writers work out each frame's stored rectangle,
+Saving a raster with more than one frame as GIF, PNG, WebP or JPEG XL writes an animation. The writers work out each frame's stored rectangle,
 disposal and blend from the pixels, so an edited animation stays small: only what changed between frames is stored.
 
 GIF holds at most 256 colors per frame and has on-or-off transparency; APNG keeps full color and partial alpha. The [GIF](../formats/gif.md)

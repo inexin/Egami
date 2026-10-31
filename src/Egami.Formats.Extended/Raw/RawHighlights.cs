@@ -18,7 +18,7 @@ internal static class RawHighlights
             Rebuild(rgb, width, height, clip, parallel);
         }
 
-        Parallel.For(0, height, parallel, y =>
+        RawParallel.For(0, height, parallel, y =>
         {
             Span<float> row = rgb.Span.Slice(y * width * 3, width * 3);
             for (int i = 0; i < row.Length; i += 3)
@@ -82,7 +82,7 @@ internal static class RawHighlights
         }
 
         Fill(share, weight, cw, ch);
-        Parallel.For(0, height, parallel, y =>
+        RawParallel.For(0, height, parallel, y =>
         {
             Span<float> row = rgb.Span.Slice(y * width * 3, width * 3);
             Span<float> q = stackalloc float[3];

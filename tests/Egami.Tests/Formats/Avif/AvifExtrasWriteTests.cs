@@ -143,11 +143,9 @@ public class AvifExtrasWriteTests
         byte[] file = AvifWriterTests.Save(photo, new AvifWriterOptions { TargetSize = target });
         Assert.True(file.Length <= target, $"{file.Length} bytes for a target of {target}");
 
-        // Within 5 % below the target (the gate), or one quality step up is above it: sizes do not always grow with quality, so a
-        // binary search can stop short.
-        int quality = Enumerable.Range(0, 101).First(q => AvifWriterTests.Save(photo, new AvifWriterOptions { Quality = q }).Length == file.Length);
-        int next = quality == 100 ? int.MaxValue : AvifWriterTests.Save(photo, new AvifWriterOptions { Quality = quality + 1 }).Length;
-        Assert.True(file.Length >= target * 0.95 || next > target, $"quality {quality}: {file.Length} bytes, quality {quality + 1}: {next} bytes, target {target}");
+        // Within 5 % below the target (the gate), unless even the best quality fits.
+        long best = AvifWriterTests.Save(photo, new AvifWriterOptions { Quality = 100 }).Length;
+        Assert.True(file.Length >= target * 0.95 || best <= target, $"{file.Length} bytes for a target of {target}");
     }
 
     [Fact]

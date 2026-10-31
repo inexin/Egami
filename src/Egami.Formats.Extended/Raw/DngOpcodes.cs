@@ -303,7 +303,8 @@ internal static class DngOpcodes
         double cx = p.F64(), cy = p.F64();
         (double ox, double oy, double scale) = Center(plane, cx, cy);
         int planes = plane.Planes, width = plane.Width, height = plane.Height;
-        float[] source = plane.Values.Span[..(width * height * planes)].ToArray();
+        float[] source = System.Buffers.ArrayPool<float>.Shared.Rent(width * height * planes);
+        plane.Values.Span[..(width * height * planes)].CopyTo(source);
         double inv = plane.Scale;
         for (int y = 0; y < height; y++)
         {
@@ -338,6 +339,8 @@ internal static class DngOpcodes
                 }
             }
         }
+
+        System.Buffers.ArrayPool<float>.Shared.Return(source);
     }
 
     private static float Bilinear(float[] s, int w, int h, int planes, int c, double x, double y)

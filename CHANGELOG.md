@@ -60,6 +60,19 @@ Camera RAW, stage A (DNG). All additive; it ships with the rest of camera RAW in
   each preview. `RawDetails` keeps the camera, sensor layout, levels, the develop's white balance and colour matrix, opcodes,
   previews, exposure settings and the maker note; EXIF, GPS and XMP come through.
 
+Camera RAW, stage B (maker formats). All additive.
+
+- `RawFormat` reads Canon CR2 (with sRAW and mRAW), Nikon NEF and NRW, Pentax PEF, Sony ARW and SR2, Olympus ORF, Panasonic RW2
+  (RawFormat 4 to 8) and Fujifilm RAF (uncompressed and compressed, lossless and lossy, X-Trans and Bayer), with each maker's
+  white balance, black levels and crops; decoded mosaics match Adobe DNG Converter's bit for bit on 22 CC0 sample files.
+- A camera table of 556 cameras, measured from Adobe DNG Converter's output as a black box, gives colour matrices and the
+  levels and crops a file does not give.
+- X-Trans sensors get their own demosaic; Panasonic's zeroed defective pixels are filled.
+- Lens corrections (`LensCorrections`) use Lensfun XML and Adobe LCP profiles loaded at run time from
+  `RawReaderOptions.LensProfiles` and the system's Lensfun folders (no profile data ships), else, with
+  `AutoChromaticAberration` (off by default), an automatic lateral chromatic aberration correction; `RawDetails.LensProfile`
+  names what was applied.
+
 DDS textures, stage A (reading). All additive; it ships with the rest of DDS in one release.
 
 - `DdsFormat`, registered by `WithExtendedFormats()` and `WithDds()`, reads DDS textures: the legacy header (DXT1 to DXT5,
@@ -149,12 +162,30 @@ they did, except that a layered image now loads its best layer.
   `FilmGrainDenoise` (1 to 50) denoises and writes AV1 film grain parameters that decoders add back. A raster loaded with
   `AvifReaderOptions.FilmGrain = false` gets its grain parameters written back on save. Layered images larger than one AV1
   frame are written in one layer (`Avif.LayersDropped`).
+- AVIF extras gates (egami-compare): `TargetSize` then searches the quantizer between quality steps, so files land within 5% under
+  the size, and a progressive image's first layer is coded without Variance Boost, which makes it 2 to 6% of the file instead of 4
+  to 8%.
 
 For camera RAW (Egami.Formats.Extended). Additive.
 
 - `FormatInfo.ConvertsColor`: a format whose reader renders `ReaderOptions.ConvertColorTo`'s colour space itself (a RAW
   develop) gets the option passed through, instead of Egami converting the pixels after the load. Every other format loads
   as before.
+
+JPEG XL extras, PR A: animations, layers and extra channels written. All additive.
+
+- JPEG XL animations through `Save`: a raster with more than one frame is written as an animation, lossless or lossy, with
+  each frame's delay (1 ms ticks) and the loop count, each frame cut to the rectangle that changed and blended or replaced as
+  cjxl does from an APNG. Sizes are within 2 % of cjxl 0.12's at efforts 1 to 4 and lossy (at equal Butteraugli and
+  SSIMULACRA2), and djxl decodes them to the same frames. `JxlWriterOptions.FirstFrameOnly` writes a still on purpose; before,
+  only the first frame was written, with a `Save.FramesDropped` warning.
+- `JxlImage.WriteLayers` and a public `JxlLayer` constructor: layers with their place, blend mode, duration and name, which
+  `ReadLayers` reads back field for field.
+- `JxlWriterOptions.ExtraChannels` and `JxlExtraChannelImage`: depth, selection masks, thermal data, spot colors and other
+  extra channels of any bit depth and subsampling, coded lossless in lossless and lossy files. Lossless CMYK keeps its black
+  channel instead of being converted to RGB.
+- Lossless JPEG XL at effort 2 codes a frame of more than eight groups group by group, each with its own context model, as
+  libjxl does: screenshots are up to 20 % smaller and match cjxl -e 2 within 0.01 %. Smaller images are written as before.
 
 2.3.10: PSD layers. All additive.
 

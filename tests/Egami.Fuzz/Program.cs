@@ -59,7 +59,8 @@ using DrawingPath = Egami.Drawing.Path;
 // and a gain map (every MP image, the HDR rendition at two headrooms, a crop and turn, and a JPEG save that must keep the map).
 // The jxl, jxlbox, jxlentropy, jxl-write and jxl-jpeg targets (Phase 2.9.3, JxlFuzzTarget.cs) load JPEG XL files every way,
 // reach the box reader, the entropy decoder, MA trees, Modular streams and the ICC decoder directly, and run the lossless encoder
-// and JPEG recompression, whose round trips must be exact; jxl-lossy (Phase 2.9.7) runs the lossy encoder on every option.
+// and JPEG recompression, whose round trips must be exact; jxl-lossy (Phase 2.9.7) runs the lossy encoder on every option, and
+// jxl-frames (JPEG XL extras) the frame writer: animations, layers and extra channels, which must read back as written.
 // The avif, avifbox and av1 targets (Phase 2.9.2, AvifFuzzTarget.cs) load AVIF files every way (stills, grids, overlays, gain
 // maps, sequences, YUV planes, items), reach the HEIF box reader directly, and feed raw OBU streams to the AV1 decoder; the
 // av1stream target (Phase 2.9.5) feeds temporal units of inter-coded streams to the public AV1 stream decoder.
@@ -211,6 +212,7 @@ static Action<Stream> Target(string name) => name switch
     "avif-write" => stream => Egami.Fuzz.AvifFuzzTarget.Write(ReadAll(stream), Context()),
     "jxl-jpeg" => stream => Egami.Fuzz.JxlFuzzTarget.Recompress(ReadAll(stream), Context()),
     "jxl-lossy" => stream => Egami.Fuzz.JxlFuzzTarget.Lossy(ReadAll(stream), Context()),
+    "jxl-frames" => stream => Egami.Fuzz.JxlFuzzTarget.Frames(ReadAll(stream), Context()),
     "avif" => stream => Egami.Fuzz.AvifFuzzTarget.Load(ReadAll(stream), Context()),
     "avifbox" => stream => Egami.Fuzz.AvifFuzzTarget.LoadBoxes(ReadAll(stream), Context()),
     "av1" => stream => Egami.Fuzz.AvifFuzzTarget.DecodeAv1(ReadAll(stream), Context()),
@@ -237,7 +239,7 @@ static Action<Stream> Target(string name) => name switch
         => stream => Egami.Fuzz.BarcodeFuzzTarget.Encode(name["barcode-".Length..], ReadAll(stream)),
     "barcode-read" => stream => Egami.Fuzz.BarcodeFuzzTarget.Read(ReadAll(stream)),
     "paragraph" => stream => Egami.Fuzz.ParagraphFuzzTarget.Run(ReadAll(stream), ParagraphFaces(), DrawParagraph),
-    _ => throw new ArgumentException($"Unknown fuzz target '{name}'. Targets: hinting, radiance, exr, gainmap, avif, avifbox, av1, av1stream, avif-write, heic, heicbox, hevc, hevcstream, isobox, jxl, jxlbox, jxlentropy, jxl-write, jxl-jpeg, jxl-lossy, png, jpeg, jpeg-depth, jpeg-write, jpeg-transform, exif, icc, iptc, psd, xmp, rawprofile, gif, apng, lzw, bmp, tga, qoi, pnm, pfm, detect, stream, tiff, tiffcodec, webp, webpcodec, vp8video, jbig2, jbig2codec, ccitt, cube, jpeg2000, jpeg2000codec, font, cff, subset, woff2, gvar, cff2, colr, instance, svgpath, ico, icoentry, psdfile, psddata, psdlayers, egdr, inktiff, shaping, bidi, css, hocr, alto, paragraph, svg, wmf, emf, emfplus, sysdrawing, barcode-qr, barcode-datamatrix, barcode-pdf417, barcode-aztec, barcode-code128, barcode-code39, barcode-itf, barcode-eanupc, barcode-read."),
+    _ => throw new ArgumentException($"Unknown fuzz target '{name}'. Targets: hinting, radiance, exr, gainmap, avif, avifbox, av1, av1stream, avif-write, heic, heicbox, hevc, hevcstream, isobox, jxl, jxlbox, jxlentropy, jxl-write, jxl-jpeg, jxl-lossy, jxl-frames, png, jpeg, jpeg-depth, jpeg-write, jpeg-transform, exif, icc, iptc, psd, xmp, rawprofile, gif, apng, lzw, bmp, tga, qoi, pnm, pfm, detect, stream, tiff, tiffcodec, webp, webpcodec, vp8video, jbig2, jbig2codec, ccitt, cube, jpeg2000, jpeg2000codec, font, cff, subset, woff2, gvar, cff2, colr, instance, svgpath, ico, icoentry, psdfile, psddata, psdlayers, egdr, inktiff, shaping, bidi, css, hocr, alto, paragraph, svg, wmf, emf, emfplus, sysdrawing, barcode-qr, barcode-datamatrix, barcode-pdf417, barcode-aztec, barcode-code128, barcode-code39, barcode-itf, barcode-eanupc, barcode-read."),
 };
 
 static EgamiContext Context()
