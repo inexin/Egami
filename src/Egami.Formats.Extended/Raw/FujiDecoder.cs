@@ -80,6 +80,17 @@ internal static class FujiDecoder
         }
 
         byte[] q = h.Lossless ? [] : data.Slice(qbases, h.Blocks * l16).ToArray();
+
+        // The tables are the same for every strip: the main table of each q base the file uses, and the three small ones.
+        int max = (1 << h.Bits) - 1;
+        QTable[] mains = new QTable[256];
+        mains[0] = new QTable(max, 0, 18, 67, 276, 9);
+        foreach (byte b in q)
+        {
+            mains[b] ??= new QTable(max, b, (3 * b) + 18, (5 * b) + 67, (7 * b) + 276, 9);
+        }
+
+        QTable[] small = [new QTable(max, 0, 18, 67, 276, 3), new QTable(max, 1, 21, 72, 283, 3), new QTable(max, 2, 24, 77, 290, 3)];
         List<(int, string)> reports = [];
         RawParallel.For(0, h.Blocks, parallel, b =>
         {
@@ -87,7 +98,7 @@ internal static class FujiDecoder
             int length = (int)Math.Max(0, Math.Min(sizes[b], file.Length - start));
             try
             {
-                new Strip(h, b, file.AsSpan(start, length), h.Lossless ? default : q.AsSpan(b * l16, h.Lines), pixels).Run();
+                new Strip(h, b, file.AsSpan(start, length), h.Lossless ? default : q.AsSpan(b * l16, h.Lines), pixels, mains, small).Run();
             }
             catch (InvalidDataException e)
             {
@@ -176,12 +187,13 @@ internal static class FujiDecoder
         private readonly int[] _sa;
         private readonly int[] _sn;
         private readonly QTable[] _small;
+        private readonly QTable[] _mains;
         private QTable _main;
         private int _pos;
         private ulong _buffer;
         private int _count;
 
-        public Strip(Header h, int strip, ReadOnlySpan<byte> data, ReadOnlySpan<byte> q, RawPixels pixels)
+        public Strip(Header h, int strip, ReadOnlySpan<byte> data, ReadOnlySpan<byte> q, RawPixels pixels, QTable[] mains, QTable[] small)
         {
             _h = h;
             _strip = strip;
@@ -196,8 +208,9 @@ internal static class FujiDecoder
             _n = new int[6 * 41];
             _sa = new int[6 * 3 * 5];
             _sn = new int[6 * 3 * 5];
-            _main = new QTable(_max, 0, 18, 67, 276, 9);
-            _small = [new QTable(_max, 0, 18, 67, 276, 3), new QTable(_max, 1, 21, 72, 283, 3), new QTable(_max, 2, 24, 77, 290, 3)];
+            _mains = mains;
+            _main = mains[0];
+            _small = small;
             for (int i = 0; i < _sa.Length; i++)
             {
                 _sa[i] = _small[i / 5 % 3].Initial;
@@ -230,7 +243,7 @@ internal static class FujiDecoder
                     int q = _q[line];
                     if (q != previousQ)
                     {
-                        _main = new QTable(_max, q, (3 * q) + 18, (5 * q) + 67, (7 * q) + 276, 9);
+                        _main = _mains[q];
                         ResetMain();
                         previousQ = q;
                     }
@@ -335,10 +348,9 @@ internal static class FujiDecoder
             int baseIndex = set * 41;
             if (!_h.Lossless)
             {
-                int[] limits = [5, 6, 7];
                 for (int i = 1; i <= 3 && i <= _main.Q; i++)
                 {
-                    if (m <= limits[i - 1])
+                    if (m <= 4 + i) // the selection limits 5, 6 and 7
                     {
                         t = _small[i - 1];
                         a = _sa;
