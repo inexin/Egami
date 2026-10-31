@@ -1480,11 +1480,11 @@ static void WriteJpeg(Stream stream)
 
     if (lossless && llPrecision is null && pt == 0 && (more & 4) == 0 && (flags >> 5) % 4 is 0 or 3)
     {
-        // Nothing asked for a loss: the samples come back exactly, alpha aside.
+        // Nothing asked for a loss: the samples come back exactly, alpha aside. 8-bit CMYK loads as RGB unless asked for inks.
         if (raster.Layout.ChannelOrder == PixelChannelOrder.Cmyk)
         {
             using Raster<Cmyk16> written = raster.As<Cmyk16>();
-            using Raster<Cmyk16> read = back.As<Cmyk16>();
+            using Raster<Cmyk16> read = Raster.Load<Cmyk16>(file, context);
             Same(written, read, "the lossless file", "the pixels written");
         }
         else
