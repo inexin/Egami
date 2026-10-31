@@ -7,7 +7,7 @@ namespace Egami.Benchmarks;
 
 /// <summary>
 /// The Zstandard encoder against libzstd (TIFF ZSTD, task 2): each local input (tools/make-zstd-references.py --local) at the
-/// levels in native-encode.json (--native-encode), encoded on one thread, the best of three runs of at least half a second in processor time, with
+/// levels in native-encode.json (--native-encode), encoded on one thread, the best of 10 runs of at least 0.2 s (wall time, as zstd -b), with
 /// the size; outputs go to .cache/zstd/encoded for `make-zstd-references.py --check`. The decided bars are 0.5 times libzstd's
 /// speed and sizes within 5 % of its at levels 1 to 15.
 /// </summary>
@@ -19,6 +19,8 @@ internal static class ZstdEncodeTiming
         string encoded = Path.Combine(folder, "encoded");
         Directory.CreateDirectory(encoded);
         WriteSmall(folder, encoded);
+        using ZstdNative? live = only.Contains("--live") ? new ZstdNative(folder) : null;
+        only = [.. only.Where(o => o != "--live")];
         Dictionary<string, byte[]> inputs = [];
         foreach (JsonProperty entry in native.RootElement.GetProperty("results").EnumerateObject().OrderBy(e => e.Name, StringComparer.Ordinal))
         {
@@ -38,22 +40,19 @@ internal static class ZstdEncodeTiming
             byte[] output = new byte[ZstdEncoder.MaxEncodedLength(data.Length)];
             int size = ZstdEncoder.Encode(data, output, level);
             double best = double.MaxValue;
-            for (int run = 0; run < 3; run++)
+            for (int run = 0; run < 10; run++)
             {
-                // Processor time, not wall time, so other work on the machine counts less.
+                // Wall time, as zstd -b measures, over short runs, so the best of them catches a quiet moment on a busy machine.
                 int times = 0;
-                using Process process = Process.GetCurrentProcess();
-                TimeSpan cpu = process.TotalProcessorTime;
                 long start = Stopwatch.GetTimestamp();
                 do
                 {
                     ZstdEncoder.Encode(data, output, level);
                     times++;
                 }
-                while (Stopwatch.GetElapsedTime(start).TotalSeconds < 0.5);
+                while (Stopwatch.GetElapsedTime(start).TotalSeconds < 0.2);
 
-                process.Refresh();
-                best = Math.Min(best, (process.TotalProcessorTime - cpu).TotalSeconds / times);
+                best = Math.Min(best, Stopwatch.GetElapsedTime(start).TotalSeconds / times);
             }
 
             byte[] back = new byte[data.Length];
@@ -65,7 +64,7 @@ internal static class ZstdEncodeTiming
             }
 
             double speed = data.Length / best / 1e6;
-            double nativeSpeed = entry.Value.GetProperty("speed").GetDouble();
+            double nativeSpeed = live?.Encode(source + ".bin", level).Speed ?? entry.Value.GetProperty("speed").GetDouble();
             int nativeSize = entry.Value.GetProperty("size").GetInt32();
             Console.WriteLine($"{entry.Name,-16} {size,10} bytes ({(double)size / nativeSize - 1,7:+0.0%;-0.0%} vs {nativeSize,10})   "
                 + $"{speed,7:F1} MB/s ({speed / nativeSpeed:F2}x of {nativeSpeed,6:F1}){(same ? "" : "   ROUND TRIP FAILS")}");

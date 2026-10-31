@@ -76,6 +76,17 @@ DDS textures, stage C (BC7 and BC6H encoders).
 
 ## Egami, unreleased
 
+TIFF ZSTD (Build Plan "Egami TIFF: ZSTD, LZMA and LERC", tasks 1 to 4). All additive.
+
+- TIFF reads ZSTD compression (50000), with the horizontal and floating-point predictors, through a fully managed Zstandard
+  decoder written from RFC 8878 (no native code, no packages): every frame the zstd CLI writes at levels 1 to 22, with
+  `--long`, with and without the checksum, decodes byte for byte, at about three quarters of libzstd's speed on one thread. A
+  damaged strip keeps what decoded before the damage, with the usual short-strip warning.
+- `TiffCompression.Zstd` and `TiffWriterOptions.ZstdLevel` (1 to 22, default 9, as libtiff's): TIFF writes ZSTD with a managed
+  Zstandard encoder following libzstd's level ladder, within 5 % of libzstd's size at levels 1 to 15 and at 0.6 times its speed
+  or better. libtiff and GDAL read Egami's ZSTD files, and Egami reads theirs, with identical samples. The predictor defaults as
+  for Deflate; `ParallelCompression` and streamed saves work; `CompressionLevel` stays Deflate's.
+
 2.3.10: PSD layers. All additive.
 
 - `PsdImage.ReadLayers` (and `ReadLayers<TPixel>`) reads every layer of a PSD or PSB with its pixels into a `PsdDocument`:

@@ -7,8 +7,9 @@ namespace Egami.Benchmarks;
 
 /// <summary>
 /// The Zstandard decoder's throughput (TIFF ZSTD, task 1): each file of the local corpus (tools/make-zstd-references.py --local
-/// writes .cache/zstd) decoded on one thread, the best of five runs of at least half a second each, in MB of decoded data a
-/// second, next to zstd -b -d's speed for the same file from native.json. The decided bar is 0.6 times native.
+/// writes .cache/zstd) decoded on one thread, the best of 15 runs of at least 0.2 s each (wall time, as zstd -b), in MB of decoded data a
+/// second, next to zstd -b -d's speed for the same file from native.json, or with --live measured just before in Docker
+/// (<see cref="ZstdNative"/>). The decided bar is 0.6 times native.
 /// </summary>
 internal static class ZstdTiming
 {
@@ -18,6 +19,8 @@ internal static class ZstdTiming
         using JsonDocument nativeJson = JsonDocument.Parse(File.ReadAllText(Path.Combine(folder, "native.json")));
         JsonElement speeds = nativeJson.RootElement.GetProperty("speeds");
         List<double> ratios = [];
+        using ZstdNative? live = only.Contains("--live") ? new ZstdNative(folder) : null;
+        only = [.. only.Where(o => o != "--live")];
         foreach (JsonProperty file in manifest.RootElement.GetProperty("files").EnumerateObject().OrderBy(f => f.Name, StringComparer.Ordinal))
         {
             if ((only.Length > 0 && !only.Any(o => file.Name.Contains(o, StringComparison.Ordinal))) || !speeds.TryGetProperty(file.Name, out JsonElement native))
@@ -29,8 +32,9 @@ internal static class ZstdTiming
             byte[] output = new byte[file.Value.GetProperty("length").GetInt32()];
             ZstdDecoder.Decode(data, output);
             double best = double.MaxValue;
-            for (int run = 0; run < 5; run++)
+            for (int run = 0; run < 15; run++)
             {
+                // Wall time, as zstd -b measures, over short runs, so the best of them catches a quiet moment on a busy machine.
                 int times = 0;
                 long start = Stopwatch.GetTimestamp();
                 do
@@ -38,14 +42,14 @@ internal static class ZstdTiming
                     ZstdDecoder.Decode(data, output);
                     times++;
                 }
-                while (Stopwatch.GetElapsedTime(start).TotalSeconds < 0.5);
+                while (Stopwatch.GetElapsedTime(start).TotalSeconds < 0.2);
 
                 best = Math.Min(best, Stopwatch.GetElapsedTime(start).TotalSeconds / times);
             }
 
             // zstd reports MB as 1,000,000 bytes.
             double speed = output.Length / best / 1e6;
-            double reference = native.GetDouble();
+            double reference = live?.Decode(file.Name + ".zst") ?? native.GetDouble();
             ratios.Add(speed / reference);
             Console.WriteLine($"{file.Name,-24} {speed,8:F0} MB/s   zstd {reference,6:F0} MB/s   {speed / reference:F2}x");
         }

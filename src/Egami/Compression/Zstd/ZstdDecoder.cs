@@ -1,4 +1,5 @@
 using System.Buffers.Binary;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
@@ -102,6 +103,10 @@ internal sealed class ZstdDecoder
 
     // The output written by every block decoded whole, for DecodePartial.
     private int _progress;
+
+    // The block's sequences, decoded before they are carried out, and where the block starts in the input, for messages.
+    private readonly Sequence[] _sequences = new Sequence[(MaxBlockSize / 3) + 1];
+    private long _blockOffset;
 
     /// <summary>
     /// Decodes the frames of <paramref name="input"/> one after another into <paramref name="output"/>; returns the bytes written.
@@ -592,50 +597,67 @@ internal sealed class ZstdDecoder
     private int Sequences(ReadOnlySpan<byte> stream, int count, int literalCount, Span<byte> output, int written, int frameStart, long window,
         long offset)
     {
-        if (!ZstdBitReader.TryStart(stream, out ZstdBitReader reader))
+        // Each sequence makes at least three bytes, so a block holds at most a third of its size in them.
+        if (count > _sequences.Length)
         {
-            throw Corrupt("A sequences bit stream has no end mark.", offset);
+            throw Corrupt("A block has more sequences than its size allows.", offset);
         }
 
+        _blockOffset = offset;
+        DecodeSequences(stream, count);
+        return ExecuteSequences(count, literalCount, output, written, frameStart, (int)Math.Min(window, int.MaxValue));
+    }
+
+    /// <summary>
+    /// Decodes the block's sequences into <see cref="_sequences"/>, repeat offsets resolved, apart from copying them out, so
+    /// neither loop holds more values than the processor has registers for.
+    /// </summary>
+    private void DecodeSequences(ReadOnlySpan<byte> stream, int count)
+    {
+        if (!ZstdBitReader.TryStart(stream, out ZstdBitReader initial))
+        {
+            ThrowCorrupt("A sequences bit stream has no end mark.");
+        }
+
+        // The reader's fields as plain locals, so the compiler keeps them in registers through the loop.
+        ulong bits = initial.Container;
+        int used = initial.Consumed;
+        int at = initial.Position;
         ref byte start = ref MemoryMarshal.GetReference(stream);
         ref ZstdFseEntry lengths = ref MemoryMarshal.GetArrayDataReference(literalLengthTable!);
         ref ZstdFseEntry offsets = ref MemoryMarshal.GetArrayDataReference(offsetTable!);
         ref ZstdFseEntry matches = ref MemoryMarshal.GetArrayDataReference(matchLengthTable!);
-        uint lengthState = reader.ReadBits(literalLengthLog);
-        uint offsetState = reader.ReadBits(offsetLog);
-        uint matchState = reader.ReadBits(matchLengthLog);
-        reader.Reload(ref start);
-
-        ref byte target = ref MemoryMarshal.GetReference(output);
-        ref byte source = ref MemoryMarshal.GetArrayDataReference(literals);
-        int outputLength = output.Length;
-        int literal = 0;
+        ref Sequence sequence = ref MemoryMarshal.GetArrayDataReference(_sequences);
+        uint lengthState = Take(bits, ref used, literalLengthLog);
+        uint offsetState = Take(bits, ref used, offsetLog);
+        uint matchState = Take(bits, ref used, matchLengthLog);
+        Refill(ref start, ref bits, ref used, ref at);
         uint rep1 = repeat1;
         uint rep2 = repeat2;
         uint rep3 = repeat3;
-        for (int left = count; left > 0; left--)
+        for (int i = 0; i < count; i++)
         {
             ZstdFseEntry o = Unsafe.Add(ref offsets, offsetState);
             ZstdFseEntry m = Unsafe.Add(ref matches, matchState);
             ZstdFseEntry l = Unsafe.Add(ref lengths, lengthState);
 
             // Offset, match length, then literal length bits; the states update in the other order.
-            uint offsetValue = o.BaseValue + reader.ReadBits(o.ExtraBits);
-            int matchLength = (int)(m.BaseValue + reader.ReadBits(m.ExtraBits));
-            if (reader.Consumed > 22)
+            uint offsetValue = o.BaseValue + Take(bits, ref used, o.ExtraBits);
+            uint matchLength = m.BaseValue + Take(bits, ref used, m.ExtraBits);
+            if (used > 22)
             {
-                reader.Reload(ref start);
+                Refill(ref start, ref bits, ref used, ref at);
             }
 
-            int literalLength = (int)(l.BaseValue + reader.ReadBits(l.ExtraBits));
-            if (left > 1)
+            uint literalLength = l.BaseValue + Take(bits, ref used, l.ExtraBits);
+            if (i + 1 < count)
             {
-                lengthState = l.NextState + reader.ReadBits(l.StateBits);
-                matchState = m.NextState + reader.ReadBits(m.StateBits);
-                offsetState = o.NextState + reader.ReadBits(o.StateBits);
+                lengthState = l.NextState + Take(bits, ref used, l.StateBits);
+                matchState = m.NextState + Take(bits, ref used, m.StateBits);
+                offsetState = o.NextState + Take(bits, ref used, o.StateBits);
             }
 
-            reader.Reload(ref start);
+            Refill(ref start, ref bits, ref used, ref at);
 
             uint distance;
             if (offsetValue > 3)
@@ -671,15 +693,43 @@ internal sealed class ZstdDecoder
                 }
             }
 
+            ref Sequence next = ref Unsafe.Add(ref sequence, i);
+            next.Literals = literalLength;
+            next.Match = matchLength;
+            next.Distance = distance;
+        }
+
+        if (at != 0 || used != 64)
+        {
+            ThrowCorrupt("A sequences bit stream's length does not match its sequences.");
+        }
+
+        repeat1 = rep1;
+        repeat2 = rep2;
+        repeat3 = rep3;
+    }
+
+    private int ExecuteSequences(int count, int literalCount, Span<byte> output, int written, int frameStart, int window)
+    {
+        ref byte target = ref MemoryMarshal.GetReference(output);
+        ref byte source = ref MemoryMarshal.GetArrayDataReference(literals);
+        ref Sequence sequence = ref MemoryMarshal.GetArrayDataReference(_sequences);
+        int outputLength = output.Length;
+        int literal = 0;
+        for (int i = 0; i < count; i++)
+        {
+            Sequence s = Unsafe.Add(ref sequence, i);
+            int literalLength = (int)s.Literals;
+            int matchLength = (int)s.Match;
             if (literalLength > literalCount - literal)
             {
-                throw Corrupt("A sequence takes more literals than the block has.", offset);
+                ThrowCorrupt("A sequence takes more literals than the block has.");
             }
 
             long end = (long)written + literalLength + matchLength;
             if (end > outputLength)
             {
-                throw Corrupt("The data holds more than the output has room for.", offset);
+                ThrowCorrupt("The data holds more than the output has room for.");
             }
 
             bool roomy = end + CopySlack <= outputLength;
@@ -694,31 +744,67 @@ internal sealed class ZstdDecoder
 
             written += literalLength;
             literal += literalLength;
-            if (distance == 0 || distance > (uint)(written - frameStart) || distance > window)
+            if (s.Distance - 1 >= (uint)Math.Min(written - frameStart, window))
             {
-                throw Corrupt("A match reaches back before the frame or its window.", offset);
+                ThrowCorrupt("A match reaches back before the frame or its window.");
             }
 
-            Match(ref Unsafe.Add(ref target, written), (int)distance, matchLength, roomy);
+            Match(ref Unsafe.Add(ref target, written), (int)s.Distance, matchLength, roomy);
             written += matchLength;
         }
 
-        if (!reader.Finished)
-        {
-            throw Corrupt("A sequences bit stream's length does not match its sequences.", offset);
-        }
-
-        repeat1 = rep1;
-        repeat2 = rep2;
-        repeat3 = rep3;
         int tail = literalCount - literal;
         if (tail > outputLength - written)
         {
-            throw Corrupt("The data holds more than the output has room for.", offset);
+            ThrowCorrupt("The data holds more than the output has room for.");
         }
 
         Unsafe.CopyBlockUnaligned(ref Unsafe.Add(ref target, written), ref Unsafe.Add(ref source, literal), (uint)tail);
         return written + tail;
+    }
+
+    /// <summary>Reads <paramref name="count"/> bits (0 to 56) of a backward stream held as plain locals; see <see cref="ZstdBitReader"/>.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static uint Take(ulong bits, ref int used, int count)
+    {
+        uint value = (uint)(((bits << used) >> 1) >> (63 - count));
+        used += count;
+        return value;
+    }
+
+    /// <summary><see cref="ZstdBitReader.Reload"/> on plain locals.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static void Refill(ref byte start, ref ulong bits, ref int used, ref int at)
+    {
+        if (at >= 8)
+        {
+            at -= used >> 3;
+            used &= 7;
+        }
+        else if (at > 0)
+        {
+            int back = Math.Min(used >> 3, at);
+            at -= back;
+            used -= back << 3;
+        }
+        else
+        {
+            return;
+        }
+
+        ulong value = Unsafe.ReadUnaligned<ulong>(ref Unsafe.Add(ref start, at));
+        bits = BitConverter.IsLittleEndian ? value : BinaryPrimitives.ReverseEndianness(value);
+    }
+
+    [DoesNotReturn]
+    private void ThrowCorrupt(string problem) => throw Corrupt(problem, _blockOffset);
+
+    /// <summary>One sequence: literals to copy, then a match of some length at some distance back.</summary>
+    private struct Sequence
+    {
+        public uint Literals;
+        public uint Match;
+        public uint Distance;
     }
 
     /// <summary>Copies 16 bytes at a time, so up to 15 bytes past <paramref name="length"/> are read and written.</summary>

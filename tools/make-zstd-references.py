@@ -21,10 +21,11 @@ side of the throughput comparison (benchmarks/Egami.Benchmarks -- --time-zstd .c
 Encoder comparison: `--native-encode` writes .cache/zstd/native-encode.json, zstd -b's compressed size and speed for the local
 inputs at levels 1, 3, 9, 15 and 16 to 22 (benchmarks/Egami.Benchmarks -- --time-zstd-encode .cache/zstd compares the managed
 encoder with it and writes its outputs to .cache/zstd/encoded), and `--check <folder>` runs zstd -t on every .zst file in a
-folder under the repo, so the CLI must decode every encoder output.
+folder under the repo, so the CLI must decode every encoder output. `--native-decode` measures native.json again without
+remaking the corpus, for timing both sides under the same load.
 
 Usage, from the repo root with Docker running:
-  python tools/make-zstd-references.py [--local | --native-encode | --check <folder>]
+  python tools/make-zstd-references.py [--local | --native-encode | --native-decode | --check <folder>]
 The script runs alpine:3.20 and installs zstd (1.5.6), Python and Pillow inside it with apk.
 """
 import gzip
@@ -272,6 +273,22 @@ def native_encode():
                    "results": results}, f, indent=1, sort_keys=True)
 
 
+def native_decode():
+    """zstd -b -d's decode speed for every local corpus file with a content size, again, into native.json."""
+    manifest = json.load(open(f"{LOCAL}/manifest.json"))
+    native = {}
+    for name, entry in sorted(manifest["files"].items()):
+        if "stdin" in entry["arguments"]:
+            continue
+        bench = subprocess.run(["zstd", "-b", "-d", "-i2", f"{LOCAL}/{name}.zst"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                               check=True).stdout.decode()
+        native[name] = float(re.findall(r"([\d.]+) MB/s", bench)[-1])
+        print(f"{name}: zstd decodes {native[name]} MB/s", flush=True)
+    with open(f"{LOCAL}/native.json", "w", newline="\n") as f:
+        json.dump({"zstd": run("zstd", "--version").decode().strip(), "unit": "MB/s of decoded data, zstd -b -d -i2, one thread",
+                   "speeds": native}, f, indent=1, sort_keys=True)
+
+
 def check_folder(folder):
     """zstd -t on every .zst file in a folder (the encoder's outputs), which must all decode."""
     names = sorted(n for n in os.listdir(folder) if n.endswith(".zst"))
@@ -286,6 +303,8 @@ def main():
         os.makedirs(WORK, exist_ok=True)
         if "--native-encode" in sys.argv:
             native_encode()
+        elif "--native-decode" in sys.argv:
+            native_decode()
         elif "--check" in sys.argv:
             check_folder(sys.argv[sys.argv.index("--check") + 1])
         else:
@@ -295,7 +314,7 @@ def main():
     if "--check" in sys.argv:
         extra = " --check " + os.path.relpath(sys.argv[sys.argv.index("--check") + 1], repo).replace(os.sep, "/")
     else:
-        extra = "".join(f" {a}" for a in ("--local", "--native-encode") if a in sys.argv)
+        extra = "".join(f" {a}" for a in ("--local", "--native-encode", "--native-decode") if a in sys.argv)
     subprocess.run(["docker", "run", "--rm", "-v", f"{repo}:/work", "-w", "/work", IMAGE, "sh", "-c",
                     f"apk add --no-cache {PACKAGES} > /dev/null && python3 tools/make-zstd-references.py --inside{extra}"],
                    check=True)
