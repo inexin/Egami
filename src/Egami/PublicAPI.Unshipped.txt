@@ -222,3 +222,5 @@ override Egami.Formats.Avif.AvifLayer.GetHashCode() -> int
 override Egami.Formats.Avif.AvifLayer.ToString() -> string!
 static Egami.Formats.Avif.AvifLayer.operator !=(Egami.Formats.Avif.AvifLayer? left, Egami.Formats.Avif.AvifLayer? right) -> bool
 static Egami.Formats.Avif.AvifLayer.operator ==(Egami.Formats.Avif.AvifLayer? left, Egami.Formats.Avif.AvifLayer? right) -> bool
+Egami.Formats.Jxl.JxlWriterOptions.FirstFrameOnly.get -> bool
+Egami.Formats.Jxl.JxlWriterOptions.FirstFrameOnly.init -> void

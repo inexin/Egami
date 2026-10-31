@@ -589,7 +589,7 @@ internal sealed partial class JxlVarDctEncoder
     /// <summary>Gets the frame as a still image of its own size, as the encoder decodes its drafts.</summary>
     private byte[] Codestream(JxlEncodeInput header)
     {
-        JxlEncodeInput still = header with { Width = _frameWidth, Height = _frameHeight, Animation = null };
+        JxlEncodeInput still = _place.Crop ? header with { Width = _frameWidth, Height = _frameHeight, Animation = null } : header with { Animation = null };
         JxlFrameInfo place = _place;
         _place = JxlFrameInfo.Still;
         try

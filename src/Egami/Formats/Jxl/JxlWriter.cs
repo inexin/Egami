@@ -15,7 +15,7 @@ namespace Egami.Formats.Jxl;
 /// boxes of the container, which a file without them does without, and the EXIF orientation also into the codestream header.
 /// Every pixel is needed before the first byte, so rows are gathered and encoded at <see cref="RowEncoder{TPixel}.Complete"/>.
 /// </summary>
-internal sealed class JxlWriter : IFormatWriter, IRowFormatWriter
+internal sealed partial class JxlWriter : IFormatWriter, IRowFormatWriter
 {
     internal static readonly JxlWriter Instance = new();
 
@@ -29,6 +29,16 @@ internal sealed class JxlWriter : IFormatWriter, IRowFormatWriter
         where TPixel : unmanaged, IPixelType<TPixel>
     {
         JxlWriterOptions jxl = start.Options as JxlWriterOptions ?? JxlWriterOptions.Default;
+        if (!jxl.FirstFrameOnly && start.Whole is { FrameCount: > 1 })
+        {
+            // An animation: each frame is coded whole, so only Save writes one.
+            bool lossless = jxl.WritesLossless(start.Metadata);
+            SaveKeeps animationKeeps = SaveKeeps.Alpha | SaveKeeps.Wide | SaveKeeps.FloatingPoint | SaveKeeps.Exif | SaveKeeps.Xmp | SaveKeeps.Icc | SaveKeeps.GainMap | SaveKeeps.Frames;
+            SaveLosses.Report(start, "JPEG XL", animationKeeps | (lossless ? SaveKeeps.None : SaveKeeps.Cmyk));
+            return new AnimationEncoder<TPixel>(output, start, jxl, lossless);
+        }
+
+        SaveKeeps frames = jxl.FirstFrameOnly ? SaveKeeps.Frames : SaveKeeps.None;
         if (!jxl.WritesLossless(start.Metadata))
         {
             // Large images go in chunks as libjxl's streaming mode codes them, so they can also come as rows.
@@ -39,7 +49,7 @@ internal sealed class JxlWriter : IFormatWriter, IRowFormatWriter
                 start.Refuse("JPEG XL", "Lossy encoding of an image this small, at this distance, or with these options", "Save from a whole raster.");
             }
 
-            SaveLosses.Report(start, "JPEG XL", SaveKeeps.Alpha | SaveKeeps.Wide | SaveKeeps.FloatingPoint | SaveKeeps.Cmyk | SaveKeeps.Exif | SaveKeeps.Xmp | SaveKeeps.Icc | SaveKeeps.GainMap);
+            SaveLosses.Report(start, "JPEG XL", SaveKeeps.Alpha | SaveKeeps.Wide | SaveKeeps.FloatingPoint | SaveKeeps.Cmyk | SaveKeeps.Exif | SaveKeeps.Xmp | SaveKeeps.Icc | SaveKeeps.GainMap | frames);
             if (!chunked)
             {
                 // The rows are only gathered; the encode at the end counts its own stages.
@@ -50,7 +60,7 @@ internal sealed class JxlWriter : IFormatWriter, IRowFormatWriter
         }
 
         start.Refuse("JPEG XL", "Lossless encoding", "Save from a whole raster.");
-        SaveKeeps keeps = SaveKeeps.Alpha | SaveKeeps.Wide | SaveKeeps.FloatingPoint | SaveKeeps.Exif | SaveKeeps.Xmp | SaveKeeps.Icc | SaveKeeps.GainMap;
+        SaveKeeps keeps = SaveKeeps.Alpha | SaveKeeps.Wide | SaveKeeps.FloatingPoint | SaveKeeps.Exif | SaveKeeps.Xmp | SaveKeeps.Icc | SaveKeeps.GainMap | frames;
         SaveLosses.Report(start, "JPEG XL", keeps);
         SaveReporter.Current?.Claim();
         return new Encoder<TPixel>(output, start, jxl);
@@ -619,6 +629,15 @@ internal sealed class JxlWriter : IFormatWriter, IRowFormatWriter
 
         internal PixelChannelType Kind { get; }
 
+        /// <summary>Gets the alpha sample of an opaque pixel: the integer maximum, or 1.0's bits for floats.</summary>
+        internal int Opaque => Kind switch
+        {
+            PixelChannelType.Unorm8 => 255,
+            PixelChannelType.Float32 => BitConverter.SingleToInt32Bits(1f),
+            PixelChannelType.Float16 => BitConverter.HalfToUInt16Bits((Half)1),
+            _ => 65535,
+        };
+
         internal void Add8(ReadOnlySpan<Rgba8> row, int y) => Add(MemoryMarshal.AsBytes(row), y, static (b, i) => b[i]);
 
         internal void Add16(ReadOnlySpan<Rgba16> row, int y) => Add(MemoryMarshal.Cast<Rgba16, ushort>(row), y, static (s, i) => s[i]);
@@ -627,8 +646,14 @@ internal sealed class JxlWriter : IFormatWriter, IRowFormatWriter
 
         internal void AddF16(ReadOnlySpan<RgbaF16> row, int y) => Add(MemoryMarshal.Cast<RgbaF16, ushort>(row), y, static (s, i) => s[i]);
 
-        /// <summary>Gets the encoder's input; alpha that is opaque everywhere is left out.</summary>
-        internal JxlEncodeInput ToInput(int effort)
+        /// <summary>Gets the alpha plane, or <see langword="null"/>.</summary>
+        internal int[]? Alpha => _alpha;
+
+        /// <summary>Gets the color planes.</summary>
+        internal int[][] Color => _color;
+
+        /// <summary>Gets the encoder's input; alpha that is opaque everywhere is left out unless <paramref name="keepAlpha"/> says otherwise.</summary>
+        internal JxlEncodeInput ToInput(int effort, bool? keepAlpha = null)
         {
             JxlBitDepth depth = Kind switch
             {
@@ -637,8 +662,8 @@ internal sealed class JxlWriter : IFormatWriter, IRowFormatWriter
                 PixelChannelType.Float16 => new JxlBitDepth(16, 5),
                 _ => new JxlBitDepth(16, 0),
             };
-            int[]? alpha = _alpha;
-            if (alpha is not null)
+            int[]? alpha = keepAlpha == false ? null : _alpha;
+            if (alpha is not null && keepAlpha is null)
             {
                 int opaque = depth.IsFloat ? (depth.BitsPerSample == 32 ? BitConverter.SingleToInt32Bits(1f) : BitConverter.HalfToUInt16Bits((Half)1)) : (1 << depth.BitsPerSample) - 1;
                 if (Array.TrueForAll(alpha, v => v == opaque))
@@ -815,6 +840,13 @@ public sealed class JxlWriterOptions : WriterOptions
             _alphaDistance = value;
         }
     }
+
+    /// <summary>
+    /// Gets whether only the first frame of a multi-frame raster is written, as a still image. Defaults to
+    /// <see langword="false"/>: Save writes every frame as an animation, each with its <see cref="FrameMetadata.Delay"/> and the
+    /// raster's <see cref="RasterMetadata.LoopCount"/>.
+    /// </summary>
+    public bool FirstFrameOnly { get; init; }
 
     /// <summary>Gets the distance lossy data is written at: <see cref="Distance"/>, or <see cref="Quality"/> on cjxl's mapping, at least 0.1.</summary>
     internal float EffectiveDistance => _distance ?? MathF.Max(0.1f, DistanceFromQuality(_quality));
