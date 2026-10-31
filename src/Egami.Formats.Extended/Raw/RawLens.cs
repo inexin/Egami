@@ -49,12 +49,13 @@ internal static class RawLens
             RawParallel.For(0, height, parallel, y =>
             {
                 Span<float> row = rgb.Span.Slice(y * width * 3, width * 3);
+                Span<double> at = stackalloc double[6];
                 for (int x = 0; x < width; x++)
                 {
+                    Source(g, distortion, tca, x, y, at);
                     for (int c = 0; c < 3; c++)
                     {
-                        (double sx, double sy) = Source(g, distortion, tca, x, y, c);
-                        row[(x * 3) + c] = Sample(source, width, height, c, sx, sy);
+                        row[(x * 3) + c] = Sample(source, width, height, c, at[c * 2], at[(c * 2) + 1]);
                     }
                 }
             });
@@ -138,8 +139,11 @@ internal static class RawLens
         return 1 + (r2 * (p[0] + (r2 * (p[1] + (r2 * p[2])))));
     }
 
-    /// <summary>Returns where an output pixel's channel lies in the source: the lens's distortion, then its colour's TCA.</summary>
-    private static (double X, double Y) Source(Geometry g, RawLensSample? distortion, RawLensSample? tca, int x, int y, int channel)
+    /// <summary>
+    /// Writes where an output pixel's three channels lie in the source, as x, y pairs in red, green, blue order: the lens's
+    /// distortion, worked out once, then each colour's TCA.
+    /// </summary>
+    private static void Source(Geometry g, RawLensSample? distortion, RawLensSample? tca, int x, int y, Span<double> at)
     {
         double px = x + 0.5, py = y + 0.5;
         if (g.Profile.Format == RawLensFormat.Lcp)
@@ -151,17 +155,23 @@ internal static class RawLens
                 (nx, ny) = LcpDistort(distortion, nx, ny);
             }
 
-            if (tca is not null && channel != 1)
+            double r2 = (nx * nx) + (ny * ny);
+            double cx = g.LcpCenterX(geometry), cy = g.LcpCenterY(geometry);
+            for (int c = 0; c < 3; c++)
             {
-                double[] t = tca.Parameters;
-                int o = channel == 0 ? 4 : 8;
-                double r2 = (nx * nx) + (ny * ny);
-                double scale = t[o] * (1 + (r2 * (t[o + 1] + (r2 * (t[o + 2] + (r2 * t[o + 3]))))));
-                nx *= scale;
-                ny *= scale;
+                double scale = 1;
+                if (tca is not null && c != 1)
+                {
+                    double[] t = tca.Parameters;
+                    int o = c == 0 ? 4 : 8;
+                    scale = t[o] * (1 + (r2 * (t[o + 1] + (r2 * (t[o + 2] + (r2 * t[o + 3]))))));
+                }
+
+                at[c * 2] = ((((nx * scale) * geometry[0]) + cx) * g.Longer) + g.OriginX - 0.5;
+                at[(c * 2) + 1] = ((((ny * scale) * geometry[1]) + cy) * g.Longer) + g.OriginY - 0.5;
             }
 
-            return ((((nx * geometry[0]) + g.LcpCenterX(geometry)) * g.Longer) + g.OriginX - 0.5, (((ny * geometry[1]) + g.LcpCenterY(geometry)) * g.Longer) + g.OriginY - 0.5);
+            return;
         }
 
         // Lensfun: radii with 1 at the calibration sensor's half shorter side.
@@ -175,18 +185,21 @@ internal static class RawLens
             dy = (py - g.CenterY) / unit * (rd / ru);
         }
 
-        if (tca is not null && channel != 1)
+        double r = Math.Sqrt((dx * dx) + (dy * dy));
+        for (int c = 0; c < 3; c++)
         {
-            double r = Math.Sqrt((dx * dx) + (dy * dy));
-            double[] t = tca.Parameters;
-            double scale = tca.Model == "linear" ? t[channel == 0 ? 0 : 1]
-                : channel == 0 ? (t[2] * r * r) + (t[1] * r) + t[0]
-                : (t[5] * r * r) + (t[4] * r) + t[3];
-            dx *= scale;
-            dy *= scale;
-        }
+            double scale = 1;
+            if (tca is not null && c != 1)
+            {
+                double[] t = tca.Parameters;
+                scale = tca.Model == "linear" ? t[c == 0 ? 0 : 1]
+                    : c == 0 ? (t[2] * r * r) + (t[1] * r) + t[0]
+                    : (t[5] * r * r) + (t[4] * r) + t[3];
+            }
 
-        return ((dx * unit) + g.CenterX - 0.5, (dy * unit) + g.CenterY - 0.5);
+            at[c * 2] = (dx * scale * unit) + g.CenterX - 0.5;
+            at[(c * 2) + 1] = (dy * scale * unit) + g.CenterY - 0.5;
+        }
     }
 
     private static double LensfunDistort(RawLensSample s, double ru, double x, double y, out double xd, out double yd)

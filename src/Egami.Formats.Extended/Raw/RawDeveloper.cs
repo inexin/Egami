@@ -86,7 +86,7 @@ internal sealed class RawDeveloper
         pixels.Dispose();
         if (frame.Opcodes2 is byte[] list2)
         {
-            DngOpcodes.Apply(list2, new RawPlane(mosaic, aw, ah, samples, cfa), 2, _options.LensCorrections, input, _warnings);
+            DngOpcodes.Apply(list2, new RawPlane(mosaic, aw, ah, samples, cfa) { Parallel = parallel }, 2, _options.LensCorrections, input, _warnings);
         }
 
         if (cfa is not null && _options.LuminanceNoiseReduction > 0)
@@ -119,7 +119,7 @@ internal sealed class RawDeveloper
         mosaicOwner.Dispose();
         if (frame.Opcodes3 is byte[] list3)
         {
-            DngOpcodes.Apply(list3, new RawPlane(rgb, pw, ph, 3, null) { Scale = _half ? 2 : 1 }, 3, _options.LensCorrections, input, _warnings);
+            DngOpcodes.Apply(list3, new RawPlane(rgb, pw, ph, 3, null) { Scale = _half ? 2 : 1, Parallel = parallel }, 3, _options.LensCorrections, input, _warnings);
         }
 
         if (_options.LensCorrections && !HasLensOpcodes(frame.Opcodes3))
@@ -500,6 +500,9 @@ internal sealed class RawPlane(Memory<float> values, int width, int height, int 
 
     /// <summary>Gets how many full-size pixels one pixel of this plane stands for (2 for a half-size develop).</summary>
     public int Scale { get; init; } = 1;
+
+    /// <summary>Gets how the opcodes that resample the plane may run in parallel (one thread unless the develop says).</summary>
+    public ParallelOptions Parallel { get; init; } = new() { MaxDegreeOfParallelism = 1 };
 
     public Span<float> Row(int y) => Values.Span.Slice(y * Width * Planes, Width * Planes);
 }
