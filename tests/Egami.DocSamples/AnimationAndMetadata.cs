@@ -189,6 +189,29 @@ public class AnimationAndMetadata
         JpegTransform.Apply("duck-progressive.jpg", "duck-repacked.jpg", new JpegTransformOptions { Arithmetic = true });
         #endregion
 
+        #region jpeg-lossless
+        // Lossless JPEG: the exact samples back, here 16-bit; the predictor is picked for the image unless you name one.
+        image.As<Rgb16>().Save("duck-lossless.jpg", new JpegWriterOptions { Lossless = new JpegLosslessOptions() });
+
+        // Predictor 1 (the sample to the left), arithmetic-coded (SOF11, which only Egami and Richter's libjpeg read).
+        image.Save("duck-lossless-arithmetic.jpg", new JpegWriterOptions
+        {
+            Lossless = new JpegLosslessOptions { Predictor = 1 },
+            Arithmetic = true,
+        });
+        #endregion
+
+        using (Raster<Rgb16> exact = Raster.Load<Rgb16>("duck-lossless.jpg"))
+        using (Raster<Rgb16> wide = image.As<Rgb16>())
+        {
+            Assert.True(((JpegDetails)exact.Metadata.FormatDetails!).Lossless);
+            for (int y = 0; y < wide.Height; y++)
+            {
+                Assert.True(wide.Row(y).SequenceEqual(exact.Row(y)));
+            }
+        }
+
+        Assert.True(((JpegDetails)Raster.Load("duck-lossless-arithmetic.jpg").Metadata.FormatDetails!).Arithmetic);
         Assert.True(((JpegDetails)Raster.Load("duck-arithmetic.jpg").Metadata.FormatDetails!).Arithmetic);
         Assert.True(((JpegDetails)Raster.Load("duck-repacked.jpg").Metadata.FormatDetails!).Arithmetic);
         Assert.True(((JpegDetails)Raster.Load("duck-progressive.jpg").Metadata.FormatDetails!).Progressive);

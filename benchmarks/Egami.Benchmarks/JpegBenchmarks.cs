@@ -112,7 +112,8 @@ internal static class BenchFiles
 
 /// <summary>
 /// The JPEG design's encode scenarios: the 4000 × 3000 benchmark photo as Rgb8, at quality 75 4:2:0 with the standard tables and
-/// at quality 90 4:4:4 with optimized tables; and the same arithmetic-coded, plus progressive arithmetic.
+/// at quality 90 4:4:4 with optimized tables; and the same arithmetic-coded, plus progressive arithmetic; and lossless, with
+/// predictor 1, the automatic choice, and arithmetic-coded.
 /// </summary>
 [MemoryDiagnoser]
 public class JpegEncodeBenchmarks
@@ -122,6 +123,9 @@ public class JpegEncodeBenchmarks
     private static readonly JpegWriterOptions StandardArithmetic = new() { Quality = 75, Arithmetic = true };
     private static readonly JpegWriterOptions FullArithmetic = new() { Quality = 90, Subsampling = ChromaSubsampling.Subsample444, Arithmetic = true };
     private static readonly JpegWriterOptions ProgressiveArithmetic = new() { Quality = 75, Progressive = true, Arithmetic = true };
+    private static readonly JpegWriterOptions Lossless = new() { Lossless = new JpegLosslessOptions { Predictor = 1 } };
+    private static readonly JpegWriterOptions LosslessAuto = new() { Lossless = new JpegLosslessOptions() };
+    private static readonly JpegWriterOptions LosslessArithmeticOptions = new() { Lossless = new JpegLosslessOptions { Predictor = 1 }, Arithmetic = true };
 
     private Raster<Rgb8> _photo = null!;
 
@@ -170,6 +174,27 @@ public class JpegEncodeBenchmarks
     public int Quality75ProgressiveArithmetic()
     {
         _photo.Save(Stream.Null, JpegFormat.Info, ProgressiveArithmetic);
+        return _photo.Width;
+    }
+
+    [Benchmark]
+    public int LosslessPredictor1()
+    {
+        _photo.Save(Stream.Null, JpegFormat.Info, Lossless);
+        return _photo.Width;
+    }
+
+    [Benchmark]
+    public int LosslessAutomatic()
+    {
+        _photo.Save(Stream.Null, JpegFormat.Info, LosslessAuto);
+        return _photo.Width;
+    }
+
+    [Benchmark]
+    public int LosslessArithmetic()
+    {
+        _photo.Save(Stream.Null, JpegFormat.Info, LosslessArithmeticOptions);
         return _photo.Width;
     }
 }

@@ -50,13 +50,18 @@ internal sealed class JpegWriter : IFormatWriter, IRowFormatWriter
 
         if (jpeg.GainMap is Colors.GainMapOptions gainMap)
         {
-            if (jpeg.Arithmetic)
+            if (jpeg.Arithmetic || jpeg.Lossless is not null)
             {
-                throw new NotSupportedException("JpegWriterOptions.GainMap writes Ultra HDR, which HDR viewers decode only from a Huffman-coded base image; leave Arithmetic off.");
+                throw new NotSupportedException("JpegWriterOptions.GainMap writes Ultra HDR, which HDR viewers decode only from a Huffman-coded DCT base image; leave Arithmetic and Lossless off.");
             }
 
             Raster<TPixel> hdr = start.Whole ?? throw new NotSupportedException("JpegWriterOptions.GainMap needs the whole raster to make the gain map; save the raster rather than streaming its rows.");
             return new UltraHdrWriter<TPixel>(output, hdr, gainMap, jpeg);
+        }
+
+        if (jpeg.Lossless is not null)
+        {
+            return new JpegLosslessWriter<TPixel>(output, start, jpeg);
         }
 
         return new RowWriter<TPixel>(output, start, jpeg);
@@ -71,6 +76,11 @@ internal sealed class JpegWriter : IFormatWriter, IRowFormatWriter
         if (planes.Width > ushort.MaxValue || planes.Height > ushort.MaxValue)
         {
             throw new InvalidOperationException($"JPEG holds at most 65,535 × 65,535 pixels; the image is {planes.Width} × {planes.Height}.");
+        }
+
+        if (options.Lossless is not null)
+        {
+            throw new ArgumentException("JPEG: YUV planes are written as DCT YCbCr; a lossless file holds gray, RGB or CMYK. Save a raster instead.", nameof(options));
         }
 
         EncodeStart<Rgb8> start = new(planes.Width, planes.Height, planes.Metadata, options, planes.Context, whole: null, seekable: false);
@@ -273,7 +283,7 @@ internal sealed class JpegWriter : IFormatWriter, IRowFormatWriter
     }
 
     /// <summary>JFIF APP0, version 1.01, with the density from <paramref name="resolution"/> or 1:1 without a unit.</summary>
-    private static void WriteJfif(JpegBitWriter writer, Resolution? resolution)
+    internal static void WriteJfif(JpegBitWriter writer, Resolution? resolution)
     {
         Span<byte> data = stackalloc byte[14];
         JfifId.CopyTo(data);
@@ -294,7 +304,7 @@ internal sealed class JpegWriter : IFormatWriter, IRowFormatWriter
     /// Adobe APP14, version 100, with the color transform: 0 for CMYK (or RGB), 2 for YCCK. libjpeg writes it in place of JFIF for
     /// four components, and readers take it to mean the values are inverted, as Photoshop writes them.
     /// </summary>
-    private static void WriteAdobe(JpegBitWriter writer, byte transform)
+    internal static void WriteAdobe(JpegBitWriter writer, byte transform)
     {
         ReadOnlySpan<byte> data = [(byte)'A', (byte)'d', (byte)'o', (byte)'b', (byte)'e', 0, 100, 0, 0, 0, 0, transform];
         Segment(writer, JpegMarker.App14, data);
@@ -304,7 +314,7 @@ internal sealed class JpegWriter : IFormatWriter, IRowFormatWriter
     /// EXIF (APP1), ICC (APP2 chunks), XMP (APP1, with extended XMP when large), Photoshop resources with the IPTC (APP13) and
     /// comments, in that order.
     /// </summary>
-    private static void WriteMetadata(JpegBitWriter writer, RasterMetadata metadata, ReadOnlyMemory<byte> profile, EgamiContext? context = null, ReadOnlyMemory<byte>? xmp = null)
+    internal static void WriteMetadata(JpegBitWriter writer, RasterMetadata metadata, ReadOnlyMemory<byte> profile, EgamiContext? context = null, ReadOnlyMemory<byte>? xmp = null)
     {
         // An EXIF block too large for one segment loses its thumbnail first; if it is still too large it is left out.
         if (metadata.Exif is ExifData exifData)
