@@ -555,3 +555,46 @@ public class RawReaderTests
         Assert.Equal(RawDemosaicMethod.Ahd, new RawReaderOptions().Demosaic);
     }
 }
+
+/// <summary>
+/// RAW Build Plan task 4: a develop's managed allocations must not grow with the image. The file's bytes, the mosaic, the
+/// RGB plane and the band buffers come from pools; only fixed-size objects reach the GC (EGAMI_ALLOCATION_TESTS=1).
+/// </summary>
+public class RawAllocationTests
+{
+    [Trait("Category", "Allocation")]
+    [Theory]
+    [InlineData(RawOutput.Developed, RawDemosaicMethod.Ahd)]
+    [InlineData(RawOutput.Developed, RawDemosaicMethod.Malvar)]
+    [InlineData(RawOutput.HalfSize, RawDemosaicMethod.Ahd)]
+    [InlineData(RawOutput.Mosaic, RawDemosaicMethod.Ahd)]
+    public void DevelopAllocatesTheSameForFewRowsAndMany(RawOutput output, RawDemosaicMethod method)
+    {
+        Assert.SkipUnless(Environment.GetEnvironmentVariable("EGAMI_ALLOCATION_TESTS") == "1", "Allocation budgets run on demand: set EGAMI_ALLOCATION_TESTS=1.");
+        EgamiContext context = TestImages.Context with { MaxParallelism = 1 };
+        byte[] small = new DngFile { Width = 256, Height = 32, Compression = 7, Tile = 64 }.Fill((x, y, _) => (x * 97) + (y * 31)).Build();
+        byte[] large = new DngFile { Width = 256, Height = 1024, Compression = 7, Tile = 64 }.Fill((x, y, _) => (x * 97) + (y * 31)).Build();
+        RawReaderOptions options = new() { Output = output, Demosaic = method };
+        long few = Fewest(() => Raster.Load(small, context, options).Dispose());
+        long many = Fewest(() => Raster.Load(large, context, options).Dispose());
+        Assert.True(many - few < 16 * 1024, $"1,024 rows allocated {many:N0} bytes against {few:N0} for 32.");
+    }
+
+    private static long Fewest(Action action)
+    {
+        for (int i = 0; i < 3; i++)
+        {
+            action();
+        }
+
+        long fewest = long.MaxValue;
+        for (int i = 0; i < 8; i++)
+        {
+            long before = GC.GetAllocatedBytesForCurrentThread();
+            action();
+            fewest = Math.Min(fewest, GC.GetAllocatedBytesForCurrentThread() - before);
+        }
+
+        return fewest;
+    }
+}

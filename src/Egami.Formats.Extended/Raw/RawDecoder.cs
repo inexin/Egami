@@ -148,17 +148,17 @@ internal static class RawDecoder
                     break;
                 case CompressionDeflate:
                 case CompressionDeflateOld:
-                    Deflated(sensor, data, pixels, x0, y0, cols, rows, input, damaged, u);
+                    Deflated(sensor, tiff.Data.AsMemory((int)offset, (int)count), pixels, x0, y0, cols, rows, input, damaged, u);
                     break;
                 case CompressionJpeg when IsLossless(data):
                     Lossless(sensor, tiff.Data, (int)offset, (int)count, pixels, x0, y0, cols, rows, damaged, u);
                     break;
                 case CompressionJpeg:
                 case CompressionLossyJpeg:
-                    Decoded(sensor, data.ToArray(), JpegFormat.Info, pixels, x0, y0, cols, rows, input);
+                    Decoded(sensor, tiff.Data.AsMemory((int)offset, (int)count), JpegFormat.Info, pixels, x0, y0, cols, rows, input);
                     break;
                 default:
-                    Decoded(sensor, data.ToArray(), JxlFormat.Info, pixels, x0, y0, cols, rows, input);
+                    Decoded(sensor, tiff.Data.AsMemory((int)offset, (int)count), JxlFormat.Info, pixels, x0, y0, cols, rows, input);
                     break;
             }
         }
@@ -318,7 +318,7 @@ internal static class RawDecoder
         return sign == 0 ? value : -value;
     }
 
-    private static void Deflated(RawSensor sensor, ReadOnlySpan<byte> data, RawPixels pixels, int x0, int y0, int cols, int rows, EgamiInput input, Action<int, string> damaged, int u)
+    private static void Deflated(RawSensor sensor, ReadOnlyMemory<byte> data, RawPixels pixels, int x0, int y0, int cols, int rows, EgamiInput input, Action<int, string> damaged, int u)
     {
         int unitWidth = sensor.UnitWidth;
         int rowBytes = RowBytes(sensor, unitWidth);
@@ -374,9 +374,14 @@ internal static class RawDecoder
         }
     }
 
-    private static int Inflate(ReadOnlySpan<byte> data, Span<byte> output)
+    private static int Inflate(ReadOnlyMemory<byte> data, Span<byte> output)
     {
-        using MemoryStream source = new(data.ToArray(), writable: false);
+        if (!System.Runtime.InteropServices.MemoryMarshal.TryGetArray(data, out ArraySegment<byte> segment))
+        {
+            segment = data.ToArray();
+        }
+
+        using MemoryStream source = new(segment.Array!, segment.Offset, segment.Count, writable: false);
         using ZLibStream zlib = new(source, CompressionMode.Decompress);
         int total = 0;
         try
@@ -486,7 +491,7 @@ internal static class RawDecoder
 
     private static void Lossless(RawSensor sensor, byte[] file, int offset, int count, RawPixels pixels, int x0, int y0, int cols, int rows, Action<int, string> damaged, int u)
     {
-        LosslessJpeg jpeg = LosslessJpeg.Open(file, offset, count);
+        LosslessJpeg jpeg = LosslessJpeg.OpenReused(file, offset, count);
         long samples = jpeg.SampleCount;
         long unitSamples = (long)sensor.UnitWidth * (sensor.Tiled ? sensor.UnitHeight : rows) * sensor.Samples;
         if (samples > unitSamples * 2 + 65536)
@@ -531,7 +536,7 @@ internal static class RawDecoder
     }
 
     /// <summary>Decodes a lossy JPEG or JPEG XL unit through Egami's own decoders.</summary>
-    private static void Decoded(RawSensor sensor, byte[] data, FormatInfo format, RawPixels pixels, int x0, int y0, int cols, int rows, EgamiInput input)
+    private static void Decoded(RawSensor sensor, ReadOnlyMemory<byte> data, FormatInfo format, RawPixels pixels, int x0, int y0, int cols, int rows, EgamiInput input)
     {
         EgamiContext context = input.Context with { Formats = [format] };
         ReaderOptions options = new() { ReadMetadata = false };

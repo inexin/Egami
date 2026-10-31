@@ -143,19 +143,22 @@ internal sealed class RawTiff
 
 /// <summary>
 /// A RAW file's bytes, read from the input as far as they are needed: Probe reads only up to the last IFD and tag value it
-/// looks at, a load reads on to the sensor data. The whole file stays in one array, within the load's memory budget.
+/// looks at, a load reads on to the sensor data. The whole file stays in one pooled array, within the load's memory budget, and
+/// goes back to the pool on <see cref="Dispose"/>.
 /// </summary>
-internal sealed class RawSource
+internal sealed class RawSource : IDisposable
 {
     private readonly EgamiInput? _input;
     private readonly long _max;
     private bool _ended;
+    private bool _pooled;
 
     public RawSource(EgamiInput input)
     {
         _input = input;
         _max = Math.Min(input.Limits.MaxTotalBytes, Array.MaxLength);
-        Data = new byte[64 * 1024];
+        Data = System.Buffers.ArrayPool<byte>.Shared.Rent(64 * 1024);
+        _pooled = true;
     }
 
     public RawSource(byte[] data, int length)
@@ -186,9 +189,11 @@ internal sealed class RawSource
         {
             long size = Math.Min(Math.Max(end, Math.Min((long)Data.Length * 2, _max)), _max);
             _input.CheckMemory(size);
-            byte[] larger = new byte[size];
+            byte[] larger = System.Buffers.ArrayPool<byte>.Shared.Rent((int)size);
             Data.AsSpan(0, Length).CopyTo(larger);
+            Return();
             Data = larger;
+            _pooled = true;
         }
 
         while (Length < end)
@@ -204,6 +209,23 @@ internal sealed class RawSource
         }
 
         return end <= Length;
+    }
+
+    public void Dispose()
+    {
+        Return();
+        Data = [];
+        Length = 0;
+        _ended = true;
+    }
+
+    private void Return()
+    {
+        if (_pooled)
+        {
+            System.Buffers.ArrayPool<byte>.Shared.Return(Data);
+            _pooled = false;
+        }
     }
 
     /// <summary>Reads the rest of the file.</summary>

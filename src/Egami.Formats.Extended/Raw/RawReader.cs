@@ -13,7 +13,7 @@ internal sealed class RawReader : IFormatReader, IRowFormatReader, IMultiImageRe
 {
     public RasterInfo ReadInfo(EgamiInput input, ReaderOptions options)
     {
-        RawFile file = RawFile.Open(input);
+        using RawFile file = RawFile.Open(input);
         Plan plan = Plan.Choose(file, options, input);
         int orientation = file.Frame.Orientation;
         return new RasterInfo
@@ -35,13 +35,13 @@ internal sealed class RawReader : IFormatReader, IRowFormatReader, IMultiImageRe
     public Raster<TPixel> Read<TPixel>(EgamiInput input, ReaderOptions options)
         where TPixel : unmanaged, IPixelType<TPixel>
     {
-        RawFile file = RawFile.Open(input);
+        using RawFile file = RawFile.Open(input);
         return Load<TPixel>(file, Plan.Choose(file, options, input), options, input);
     }
 
     public Raster Read(EgamiInput input, ReaderOptions options)
     {
-        RawFile file = RawFile.Open(input);
+        using RawFile file = RawFile.Open(input);
         Plan plan = Plan.Choose(file, options, input);
         if (plan.Output != RawOutput.Mosaic && options.ConvertColorTo is { Model: not ColorModel.Rgb } other)
         {
@@ -70,21 +70,30 @@ internal sealed class RawReader : IFormatReader, IRowFormatReader, IMultiImageRe
     public RowReader Open(EgamiInput input, ReaderOptions options)
     {
         RawFile file = RawFile.Open(input);
-        Plan plan = Plan.Choose(file, options, input);
-        return plan.Natural switch
+        try
         {
-            Natural.Gray16 => new Rows<Gray16>(this, file, plan, options, input),
-            Natural.GrayF32 => new Rows<GrayF32>(this, file, plan, options, input),
-            Natural.RgbF32 => new Rows<RgbF32>(this, file, plan, options, input),
-            Natural.Rgb8 => new Rows<Rgb8>(this, file, plan, options, input),
-            Natural.Gray8 => new Rows<Gray8>(this, file, plan, options, input),
-            _ => new Rows<Rgb16>(this, file, plan, options, input),
-        };
+            // The rows own the file from here, and give it back when they are disposed.
+            Plan plan = Plan.Choose(file, options, input);
+            return plan.Natural switch
+            {
+                Natural.Gray16 => new Rows<Gray16>(file, plan, options, input),
+                Natural.GrayF32 => new Rows<GrayF32>(file, plan, options, input),
+                Natural.RgbF32 => new Rows<RgbF32>(file, plan, options, input),
+                Natural.Rgb8 => new Rows<Rgb8>(file, plan, options, input),
+                Natural.Gray8 => new Rows<Gray8>(file, plan, options, input),
+                _ => new Rows<Rgb16>(file, plan, options, input),
+            };
+        }
+        catch
+        {
+            file.Dispose();
+            throw;
+        }
     }
 
     public IReadOnlyList<ReaderOptions> Images(EgamiInput input, ReaderOptions options)
     {
-        RawFile file = RawFile.Open(input);
+        using RawFile file = RawFile.Open(input);
         RawReaderOptions raw = Raw(options);
         List<ReaderOptions> list = [raw with { Output = raw.Output == RawOutput.Preview ? RawOutput.Developed : raw.Output, PreviewIndex = null }];
         for (int i = 0; i < file.Previews.Count; i++)
@@ -286,7 +295,7 @@ internal sealed class RawReader : IFormatReader, IRowFormatReader, IMultiImageRe
                 throw input.Corrupt(preview.Offset, "The preview runs past the end of the file.");
             }
 
-            byte[] bytes = file.Source.Data.AsSpan((int)preview.Offset, (int)preview.Length).ToArray();
+            ReadOnlyMemory<byte> bytes = file.Source.Data.AsMemory((int)preview.Offset, (int)preview.Length);
             EgamiContext context = input.Context with { Formats = [JpegFormat.Info] };
             Raster<TPixel> jpeg = Raster.Load<TPixel>(bytes, JpegFormat.Info, context, new ReaderOptions { Recovery = strict ? RecoveryMode.Strict : RecoveryMode.Lenient });
             jpeg.Metadata.Exif = null;
@@ -457,7 +466,7 @@ internal sealed class RawReader : IFormatReader, IRowFormatReader, IMultiImageRe
                     }
                     else if (p.Jpeg && file.Source.Ensure(p.Offset + p.Length))
                     {
-                        byte[] bytes = file.Source.Data.AsSpan((int)p.Offset, (int)Math.Min(p.Length, 64 * 1024)).ToArray();
+                        ReadOnlyMemory<byte> bytes = file.Source.Data.AsMemory((int)p.Offset, (int)Math.Min(p.Length, 64 * 1024));
                         try
                         {
                             // The JPEG's own size and layout are what a load gives, whatever the IFD says.
@@ -509,7 +518,6 @@ internal sealed class RawReader : IFormatReader, IRowFormatReader, IMultiImageRe
     private sealed class Rows<TNatural> : RowReader<TNatural>
         where TNatural : unmanaged, IPixelType<TNatural>
     {
-        private readonly RawReader _reader;
         private readonly RawFile _file;
         private readonly Plan _plan;
         private readonly ReaderOptions _options;
@@ -517,9 +525,8 @@ internal sealed class RawReader : IFormatReader, IRowFormatReader, IMultiImageRe
         private Raster<TNatural>? _raster;
         private bool _started;
 
-        public Rows(RawReader reader, RawFile file, Plan plan, ReaderOptions options, EgamiInput input)
+        public Rows(RawFile file, Plan plan, ReaderOptions options, EgamiInput input)
         {
-            _reader = reader;
             _file = file;
             _plan = plan;
             _options = options;
@@ -579,6 +586,7 @@ internal sealed class RawReader : IFormatReader, IRowFormatReader, IMultiImageRe
         {
             _raster?.Dispose();
             _raster = null;
+            _file.Dispose();
             base.Dispose(disposing);
         }
     }

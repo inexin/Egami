@@ -142,14 +142,12 @@ internal static class RawDenoise
     /// </summary>
     private static (double S, double O) Estimate(ReadOnlySpan<float> plane, int w, int h)
     {
-        const int Bins = 16;
-        List<float>[] diffs = new List<float>[Bins];
-        for (int i = 0; i < Bins; i++)
-        {
-            diffs[i] = [];
-        }
-
-        int step = Math.Max(1, (int)Math.Sqrt((double)w * h / 400_000));
+        // Neighbour differences in 16 bands of brightness, at most 8,192 per band from a grid over the plane.
+        const int Bins = 16, PerBin = 8192;
+        float[] diffs = ArrayPool<float>.Shared.Rent(Bins * PerBin);
+        Span<int> counts = stackalloc int[Bins];
+        counts.Clear();
+        int step = Math.Max(1, (int)Math.Ceiling(Math.Sqrt((double)w * h / (Bins * PerBin))));
         for (int y = 0; y < h; y += step)
         {
             for (int x = 0; x + 1 < w; x += step)
@@ -161,21 +159,26 @@ internal static class RawDenoise
                     continue;
                 }
 
-                diffs[Math.Min(Bins - 1, (int)(mean * Bins))].Add(MathF.Abs(a - b) / MathF.Sqrt(2));
+                int bin = Math.Min(Bins - 1, (int)(mean * Bins));
+                if (counts[bin] < PerBin)
+                {
+                    diffs[(bin * PerBin) + counts[bin]++] = MathF.Abs(a - b) / MathF.Sqrt(2);
+                }
             }
         }
 
         double sx = 0, sy = 0, sxx = 0, sxy = 0, n = 0;
         for (int i = 0; i < Bins; i++)
         {
-            if (diffs[i].Count < 64)
+            if (counts[i] < 64)
             {
                 continue;
             }
 
-            diffs[i].Sort();
-            double sigma = diffs[i][diffs[i].Count / 2] * 1.4826;
-            double x = (i + 0.5) / Bins, v = sigma * sigma, wgt = diffs[i].Count;
+            Span<float> bin = diffs.AsSpan(i * PerBin, counts[i]);
+            bin.Sort();
+            double sigma = bin[counts[i] / 2] * 1.4826;
+            double x = (i + 0.5) / Bins, v = sigma * sigma, wgt = counts[i];
             sx += wgt * x;
             sy += wgt * v;
             sxx += wgt * x * x;
@@ -183,6 +186,7 @@ internal static class RawDenoise
             n += wgt;
         }
 
+        ArrayPool<float>.Shared.Return(diffs);
         if (n == 0)
         {
             return (0, 1e-6);
@@ -238,25 +242,36 @@ internal static class RawDenoise
     /// <summary>Returns the noise of a plane from its finest detail level: the median absolute coefficient over 0.6745.</summary>
     private static float Sigma(ReadOnlySpan<float> plane, int w, int h)
     {
-        int step = Math.Max(1, (int)Math.Sqrt((double)w * h / 200_000));
-        List<float> values = [];
-        for (int y = 1; y + 1 < h; y += step)
+        // A grid of at most about 65,536 samples, so the cost and memory do not grow with the image.
+        const int Samples = 1 << 16;
+        int step = Math.Max(1, (int)Math.Ceiling(Math.Sqrt((double)w * h / Samples)));
+        float[] values = ArrayPool<float>.Shared.Rent(Samples * 2);
+        try
         {
-            for (int x = 1; x + 1 < w; x += step)
+            int count = 0;
+            for (int y = 1; y + 1 < h; y += step)
             {
-                int i = (y * w) + x;
-                float smooth = ((4 * plane[i]) + (2 * (plane[i - 1] + plane[i + 1] + plane[i - w] + plane[i + w])) + plane[i - w - 1] + plane[i - w + 1] + plane[i + w - 1] + plane[i + w + 1]) / 16;
-                values.Add(MathF.Abs(plane[i] - smooth));
+                for (int x = 1; x + 1 < w && count < values.Length; x += step)
+                {
+                    int i = (y * w) + x;
+                    float smooth = ((4 * plane[i]) + (2 * (plane[i - 1] + plane[i + 1] + plane[i - w] + plane[i + w])) + plane[i - w - 1] + plane[i - w + 1] + plane[i + w - 1] + plane[i + w + 1]) / 16;
+                    values[count++] = MathF.Abs(plane[i] - smooth);
+                }
             }
-        }
 
-        if (values.Count == 0)
+            if (count == 0)
+            {
+                return 0;
+            }
+
+            Span<float> used = values.AsSpan(0, count);
+            used.Sort();
+            return used[count / 2] / 0.6745f / 0.8f;
+        }
+        finally
         {
-            return 0;
+            ArrayPool<float>.Shared.Return(values);
         }
-
-        values.Sort();
-        return values[values.Count / 2] / 0.6745f / 0.8f;
     }
 
     /// <summary>

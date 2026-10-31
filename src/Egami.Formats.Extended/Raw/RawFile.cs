@@ -43,7 +43,7 @@ internal static class RawDetect
 }
 
 /// <summary>An open RAW file: its bytes as far as read, its TIFF structure and the frame parsed from it.</summary>
-internal sealed class RawFile
+internal sealed class RawFile : IDisposable
 {
     private RawFile(RawSource source, RawTiff tiff, RawFrame frame)
     {
@@ -61,9 +61,24 @@ internal sealed class RawFile
     /// <summary>Gets the previews, largest first.</summary>
     public List<RawPreviewSource> Previews => [.. Frame.Previews.OrderByDescending(p => (long)p.Width * p.Height)];
 
+    public void Dispose() => Source.Dispose();
+
     public static RawFile Open(EgamiInput input)
     {
         RawSource source = new(input);
+        try
+        {
+            return Open(input, source);
+        }
+        catch
+        {
+            source.Dispose();
+            throw;
+        }
+    }
+
+    private static RawFile Open(EgamiInput input, RawSource source)
+    {
         if (!source.Ensure(8) || !RawTiff.TryHeader(source.Data.AsSpan(0, source.Length), out bool bigEndian, out ushort magic, out uint first) || magic != 42)
         {
             throw input.Corrupt(0, "The RAW file's TIFF header is wrong.");

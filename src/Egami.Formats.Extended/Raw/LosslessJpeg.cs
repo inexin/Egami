@@ -10,10 +10,16 @@ namespace Egami.Formats.Extended.Raw;
 /// </summary>
 internal sealed class LosslessJpeg
 {
+    [ThreadStatic]
+    private static LosslessJpeg? t_reused;
+
     private readonly HuffmanTable?[] _tables = new HuffmanTable?[4];
-    private readonly byte[] _data;
-    private readonly int _start;
-    private readonly int _end;
+    private readonly bool[] _defined = new bool[4];
+    private byte[] _data;
+    private int _start;
+    private int _end;
+    private HuffmanTable[] _slotTables = [];
+    private int[] _slotComponents = [];
     private int _scanAt;
     private int _restartInterval;
     private int _predictor;
@@ -64,6 +70,22 @@ internal sealed class LosslessJpeg
     public static LosslessJpeg Open(byte[] data, int start, int length)
     {
         LosslessJpeg jpeg = new(data, start, start + length);
+        jpeg.ReadMarkers();
+        return jpeg;
+    }
+
+    /// <summary>
+    /// Like <see cref="Open"/>, but reuses this thread's decoder and its tables, so decoding thousands of tiles does not allocate
+    /// for each. The decoder is valid until the thread opens the next one.
+    /// </summary>
+    public static LosslessJpeg OpenReused(byte[] data, int start, int length)
+    {
+        LosslessJpeg jpeg = t_reused ??= new LosslessJpeg([], 0, 0);
+        jpeg._data = data;
+        jpeg._start = start;
+        jpeg._end = start + length;
+        jpeg._restartInterval = 0;
+        Array.Clear(jpeg._defined);
         jpeg.ReadMarkers();
         return jpeg;
     }
@@ -157,10 +179,13 @@ internal sealed class LosslessJpeg
             throw new InvalidDataException("The lossless JPEG frame header is not valid.");
         }
 
-        _componentIds = new int[Components];
-        _h = new int[Components];
-        _v = new int[Components];
-        _tableOf = new int[Components];
+        if (_componentIds.Length != Components)
+        {
+            _componentIds = new int[Components];
+            _h = new int[Components];
+            _v = new int[Components];
+            _tableOf = new int[Components];
+        }
         SamplesPerMcu = 0;
         for (int c = 0; c < Components; c++)
         {
@@ -198,7 +223,8 @@ internal sealed class LosslessJpeg
                 throw new InvalidDataException("A lossless JPEG Huffman table is cut short.");
             }
 
-            _tables[id] = new HuffmanTable(_data.AsSpan(p + 1, 16), _data.AsSpan(p + 17, total));
+            (_tables[id] ??= new HuffmanTable()).Build(_data.AsSpan(p + 1, 16), _data.AsSpan(p + 17, total));
+            _defined[id] = true;
             p += 17 + total;
         }
     }
@@ -216,7 +242,7 @@ internal sealed class LosslessJpeg
             int id = _data[p + 1 + (i * 2)];
             int table = _data[p + 2 + (i * 2)] >> 4;
             int c = Array.IndexOf(_componentIds, id);
-            if (c < 0 || table > 3 || _tables[table] is null)
+            if (c < 0 || table > 3 || !_defined[table])
             {
                 throw new InvalidDataException("The lossless JPEG scan names a component or table that is not there.");
             }
@@ -246,8 +272,14 @@ internal sealed class LosslessJpeg
 
         int perMcu = SamplesPerMcu;
         int lineSamples = McusPerLine * perMcu;
-        HuffmanTable[] tables = new HuffmanTable[perMcu];
-        int[] componentOf = new int[perMcu];
+        if (_slotTables.Length != perMcu)
+        {
+            _slotTables = new HuffmanTable[perMcu];
+            _slotComponents = new int[perMcu];
+        }
+
+        HuffmanTable[] tables = _slotTables;
+        int[] componentOf = _slotComponents;
         for (int s = 0, c = 0; c < Components; c++)
         {
             for (int k = 0; k < _h[c] * _v[c]; k++, s++)
@@ -348,11 +380,15 @@ internal sealed class LosslessJpeg
         private readonly ushort[] _fast = new ushort[1 << FastBits];
         private readonly int[] _maxCode = new int[18];
         private readonly int[] _valPtr = new int[17];
-        private readonly byte[] _values;
+        private readonly byte[] _values = new byte[256];
+        private int _count;
 
-        public HuffmanTable(ReadOnlySpan<byte> counts, ReadOnlySpan<byte> values)
+        /// <summary>Builds the table from a DHT segment's 16 code counts and its symbols, reusing its arrays.</summary>
+        public void Build(ReadOnlySpan<byte> counts, ReadOnlySpan<byte> values)
         {
-            _values = values.ToArray();
+            Array.Clear(_fast);
+            values.CopyTo(_values);
+            _count = values.Length;
             int code = 0;
             int k = 0;
             for (int length = 1; length <= 16; length++)
@@ -408,7 +444,7 @@ internal sealed class LosslessJpeg
 
                 bits.Skip(length);
                 int index = _valPtr[length] + code;
-                if ((uint)index >= (uint)_values.Length)
+                if ((uint)index >= (uint)_count)
                 {
                     bits.Fail();
                     return 0;
