@@ -126,9 +126,9 @@ internal static class JxlPatchSearch
     /// libjxl's FindTextLikePatches on XYB planes of <paramref name="stride"/> samples a row: 4×4 squares of one exact colour among
     /// at least seven like them seed a flood of background (pixels close in colour within 50 of a seed), and each connected group
     /// of other pixels up to 32 on a side, ringed by background of one colour, is a patch; patches that occur twice or more stay,
-    /// unless all are under 20 pixels.
+    /// unless all are under 20 pixels. Fewer seeds than <c>minSeedFraction</c> of the blocks end the search early (photos have few).
     /// </summary>
-    internal static List<JxlPatchCandidate> FindTextLike(float[][] xyb, int stride, int width, int height, ParallelOptions parallel, bool isXyb = true)
+    internal static List<JxlPatchCandidate> FindTextLike(float[][] xyb, int stride, int width, int height, ParallelOptions parallel, bool isXyb = true, float minSeedFraction = 0)
     {
         float[] weights = isXyb ? XybWeights : RgbWeights;
         float[] dequant = isXyb ? XybDequant : RgbDequant;
@@ -192,7 +192,7 @@ internal static class JxlPatchSearch
             });
         }
 
-        if (seeds == 0)
+        if (seeds == 0 || seeds < minSeedFraction * Math.Max(1, (pw - 2) * (ph - 3)))
         {
             return info;
         }

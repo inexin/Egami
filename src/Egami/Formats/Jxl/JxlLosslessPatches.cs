@@ -38,7 +38,10 @@ internal static class JxlLosslessPatches
         }
 
         ParallelOptions parallel = new() { MaxDegreeOfParallelism = Math.Max(1, input.Parallelism) };
-        List<JxlPatchCandidate> info = JxlPatchSearch.FindTextLike(planes, width, width, height, parallel, isXyb: false);
+        // Text-like patches grow from flat 4×4 blocks. A photo has few (under 10 % on the rate corpus, where none gave a patch)
+        // and a screen many (over half), so a frame with fewer than one in eight skips the search, which would cost a photo
+        // up to 7 % more time for nothing.
+        List<JxlPatchCandidate> info = JxlPatchSearch.FindTextLike(planes, width, width, height, parallel, isXyb: false, minSeedFraction: 1f / 8);
         if (info.Count == 0)
         {
             return null;
