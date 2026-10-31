@@ -124,6 +124,37 @@ public sealed class RawLensTests : IDisposable
     }
 
     [Fact]
+    public void LcpDistortionUsesTheNearestFocusDistanceAtEachFocalLength()
+    {
+        // The focal lengths were calibrated at different distances; a far shot takes each one's farthest calibration.
+        RawLensProfile profile = new(RawLensFormat.Lcp, "", "Zoom");
+        profile.Distortion.AddRange([Lcp(18, 0.38, -0.2), Lcp(18, 5, -0.1), Lcp(24, 0.5, -0.05), Lcp(24, 4, 0)]);
+        Assert.Equal(-0.05, RawLens.Interpolate(profile.Distortion, 21, 0, 1000)!.Parameters[4], 6);
+        Assert.Equal(-0.2, RawLens.Interpolate(profile.Distortion, 18, 0, 0.4)!.Parameters[4], 6);
+
+        static RawLensSample Lcp(double focal, double distance, double k1) => new(focal, 8, distance, "lcp", [1, 1, double.NaN, double.NaN, k1, 0, 0, 0, 0, 1]);
+    }
+
+    [Fact]
+    public void LcpWithoutAnOpticalCentreCentresOnTheOutputImage()
+    {
+        // The model measures from the output image (the default crop, not the whole plane): a dot at its centre stays put.
+        const int Width = 72, Height = 44;
+        Rect frame = new(6, 8, 64, 32);
+        RawLensProfile profile = new(RawLensFormat.Lcp, "", "Lens");
+        profile.Distortion.Add(new RawLensSample(50, 8, 1000, "lcp", [1, 1, double.NaN, double.NaN, 2, 0, 0, 0, 0, 1]));
+        float[] rgb = new float[Width * Height * 3];
+        (int X, int Y)[] dot = [(37, 23), (38, 23), (37, 24), (38, 24)];
+        foreach ((int x, int y) in dot)
+        {
+            rgb[((y * Width) + x) * 3] = 1;
+        }
+
+        Assert.NotNull(RawLens.Apply(rgb, Width, Height, frame, profile, 50, 0, 1000, 1, new ParallelOptions()));
+        Assert.Equal(4, dot.Sum(p => rgb[((p.Y * Width) + p.X) * 3]), 2);
+    }
+
+    [Fact]
     public void LensfunVignettingBrightensTheCorners()
     {
         File.WriteAllText(Path.Combine(_folder, "lenses.xml"), Lensfun);

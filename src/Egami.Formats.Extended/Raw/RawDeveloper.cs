@@ -167,7 +167,7 @@ internal sealed class RawDeveloper
         }
 
         double crop = frame.FocalLength35 is double f35 && focal > 0 ? f35 / focal : profile.CropFactor;
-        string? applied = RawLens.Apply(rgb, width, height, profile, focal, frame.FNumber ?? 0, frame.FocusDistance ?? 1000, crop, parallel);
+        string? applied = RawLens.Apply(rgb, width, height, Output, profile, focal, frame.FNumber ?? 0, frame.FocusDistance ?? 1000, crop, parallel);
         return applied is null ? null : $"{(profile.Format == RawLensFormat.Lcp ? "Adobe" : "Lensfun")}: {(profile.Maker.Length > 0 ? profile.Maker + " " : "")}{profile.Lens} ({applied})";
     }
 

@@ -5,25 +5,28 @@ namespace Egami.Formats.Extended.Raw;
 /// then distortion and lateral chromatic aberration as one resampling, every output pixel sampling the source where the lens put
 /// it (bilinearly, red and blue at their own radii). Lensfun's models measure distortion and TCA radii with 1 at half the shorter
 /// side of the calibration sensor and vignetting with 1 at half its diagonal, scaled to this camera by the two crop factors;
-/// Adobe's camera model measures in units of the focal length, its centre and focal length given in units of the image's
-/// longer side. Parameters between calibrated focal lengths and apertures are interpolated linearly.
+/// Adobe's camera model measures in units of the focal length, which is given in units of the image's longer side, about an
+/// optical centre given as fractions of the width and height. Parameters between calibrated focal lengths and apertures are interpolated linearly.
 /// </summary>
 internal static class RawLens
 {
     private const double FullFrameDiagonal = 43.2666;
 
-    /// <summary>Corrects the plane; returns what it applied, or <see langword="null"/> when the profile had nothing for this shot.</summary>
-    public static string? Apply(Memory<float> rgb, int width, int height, RawLensProfile profile, double focal, double aperture, double distance, double cropFactor, ParallelOptions parallel)
+    /// <summary>
+    /// Corrects the plane, measuring from the part of it that is output (<paramref name="frame"/>, the default crop: the image the
+    /// profiles were made for); returns what it applied, or <see langword="null"/> when the profile had nothing for this shot.
+    /// </summary>
+    public static string? Apply(Memory<float> rgb, int width, int height, Rect frame, RawLensProfile profile, double focal, double aperture, double distance, double cropFactor, ParallelOptions parallel)
     {
-        RawLensSample? distortion = Interpolate(profile.Distortion, focal, 0, 0);
-        RawLensSample? tca = Interpolate(profile.Tca, focal, 0, 0);
+        RawLensSample? distortion = Interpolate(profile.Distortion, focal, 0, distance);
+        RawLensSample? tca = Interpolate(profile.Tca, focal, 0, distance);
         RawLensSample? vignetting = Interpolate(profile.Vignetting, focal, aperture, distance);
         if (distortion is null && tca is null && vignetting is null)
         {
             return null;
         }
 
-        Geometry g = new(profile, width, height, cropFactor);
+        Geometry g = new(profile, frame, cropFactor);
         if (vignetting is not null)
         {
             RawParallel.For(0, height, parallel, y =>
@@ -64,13 +67,18 @@ internal static class RawLens
     /// <summary>The image's geometry in the units each profile format measures in.</summary>
     private sealed class Geometry
     {
-        public Geometry(RawLensProfile profile, int width, int height, double cropFactor)
+        public Geometry(RawLensProfile profile, Rect frame, double cropFactor)
         {
+            int width = frame.Width, height = frame.Height;
             Profile = profile;
             Longer = Math.Max(width, height);
+            Width = width;
+            Height = height;
+            OriginX = frame.X;
+            OriginY = frame.Y;
             double shorter = Math.Min(width, height);
-            CenterX = (width / 2.0) + (profile.CenterX * shorter / 2);
-            CenterY = (height / 2.0) + (profile.CenterY * shorter / 2);
+            CenterX = frame.X + (width / 2.0) + (profile.CenterX * shorter / 2);
+            CenterY = frame.Y + (height / 2.0) + (profile.CenterY * shorter / 2);
 
             // Millimetres per pixel on this camera's sensor, then the calibration sensor's half shorter side and half diagonal.
             double diagonalMm = FullFrameDiagonal / Math.Max(cropFactor, 0.1);
@@ -84,6 +92,23 @@ internal static class RawLens
         public RawLensProfile Profile { get; }
 
         public double Longer { get; }
+
+        public int Width { get; }
+
+        public int OriginX { get; }
+
+        public int OriginY { get; }
+
+        public int Height { get; }
+
+        /// <summary>
+        /// Gets an Adobe profile's optical centre across in units of the longer side: the profile gives it as a fraction of the
+        /// width (0.5 when it gives none).
+        /// </summary>
+        public double LcpCenterX(double[] p) => (double.IsNaN(p[2]) ? 0.5 : p[2]) * Width / Longer;
+
+        /// <summary>Gets an Adobe profile's optical centre down in units of the longer side, from a fraction of the height.</summary>
+        public double LcpCenterY(double[] p) => (double.IsNaN(p[3]) ? 0.5 : p[3]) * Height / Longer;
 
         public double CenterX { get; }
 
@@ -136,7 +161,7 @@ internal static class RawLens
                 ny *= scale;
             }
 
-            return ((((nx * geometry[0]) + geometry[2]) * g.Longer) - 0.5, (((ny * geometry[1]) + geometry[3]) * g.Longer) - 0.5);
+            return ((((nx * geometry[0]) + g.LcpCenterX(geometry)) * g.Longer) + g.OriginX - 0.5, (((ny * geometry[1]) + g.LcpCenterY(geometry)) * g.Longer) + g.OriginY - 0.5);
         }
 
         // Lensfun: radii with 1 at the calibration sensor's half shorter side.
@@ -212,7 +237,7 @@ internal static class RawLens
     /// <summary>Returns a pixel's position in an Adobe profile's units: from the optical centre, over the focal length.</summary>
     private static (double X, double Y) Focal(Geometry g, double[] p, double px, double py)
     {
-        return (((px / g.Longer) - p[2]) / p[0], ((py / g.Longer) - p[3]) / p[1]);
+        return ((((px - g.OriginX) / g.Longer) - g.LcpCenterX(p)) / p[0], (((py - g.OriginY) / g.Longer) - g.LcpCenterY(p)) / p[1]);
     }
 
     private static float Sample(float[] s, int w, int h, int c, double x, double y)
@@ -228,7 +253,8 @@ internal static class RawLens
 
     /// <summary>
     /// Returns the calibration for a shot: linear between the two calibrated focal lengths around it (and, for vignetting, the
-    /// two apertures around it at each), the nearest when the shot lies outside them; the nearest focus distance is taken.
+    /// two apertures around it at each), the nearest when the shot lies outside them; each focal length uses its calibrations
+    /// at the focus distance nearest the shot's.
     /// </summary>
     internal static RawLensSample? Interpolate(List<RawLensSample> samples, double focal, double aperture, double distance)
     {
@@ -239,17 +265,18 @@ internal static class RawLens
 
         string model = samples[0].Model;
         List<RawLensSample> same = [.. samples.Where(s => s.Model == model)];
-        if (distance > 0 && same.Any(s => s.Aperture > 0))
-        {
-            double nearest = same.MinBy(s => Math.Abs(Math.Log(Math.Max(s.Distance, 0.01) / Math.Max(distance, 0.01))))!.Distance;
-            same = [.. same.Where(s => s.Distance == nearest)];
-        }
-
         double[] focals = [.. same.Select(s => s.Focal).Distinct().Order()];
         (double f0, double f1, double tf) = Bracket(focals, focal);
         double[] AtFocal(double f)
         {
+            // Each focal length's calibrations at the focus distance nearest the shot's (in ratio), then its apertures.
             List<RawLensSample> atF = [.. same.Where(s => s.Focal == f)];
+            if (distance > 0)
+            {
+                double nearest = atF.MinBy(s => Math.Abs(Math.Log(Math.Max(s.Distance, 0.01) / distance)))!.Distance;
+                atF = [.. atF.Where(s => s.Distance == nearest)];
+            }
+
             if (aperture <= 0 || atF.Count == 1)
             {
                 return atF[0].Parameters;

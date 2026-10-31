@@ -292,7 +292,8 @@ internal static class RawLensProfiles
             }
 
             double M(XElement e, string name, double fallback = 0) => Number(Value(e, name)) ?? fallback;
-            double[] geometry = [M(model, "FocalLengthX", 1), M(model, "FocalLengthY", 1), M(model, "ImageXCenter", 0.5), M(model, "ImageYCenter", 0.5)];
+            // Without ImageXCenter and ImageYCenter (fractions of the width and height) the optical centre is the image's.
+            double[] geometry = [M(model, "FocalLengthX", 1), M(model, "FocalLengthY", 1), M(model, "ImageXCenter", double.NaN), M(model, "ImageYCenter", double.NaN)];
             profile.Fisheye = fisheye is not null && perspective is null;
             if (fisheye is not null && perspective is null)
             {
