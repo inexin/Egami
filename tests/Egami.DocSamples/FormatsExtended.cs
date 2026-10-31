@@ -2,6 +2,7 @@ using Egami.Formats;
 using Egami.Formats.Extended;
 using Egami.Formats.Extended.Dds;
 using Egami.Formats.Extended.Pcx;
+using Egami.Formats.Extended.Raw;
 using Egami.Formats.Extended.Sgi;
 using Egami.Formats.Extended.SunRaster;
 using Egami.Formats.Extended.Xbm;
@@ -256,6 +257,210 @@ public class FormatsExtended
     }
 
     /// <summary>Writes an R8G8B8A8 DDS of <paramref name="faces"/> faces (6 makes a cube map) with a full mip chain.</summary>
+    [Fact]
+    public void RawLoad()
+    {
+        using SampleFiles files = new();
+        WriteDng("photo.dng");
+
+        #region raw-load
+        // RAW goes ahead of TIFF, since a DNG is a TIFF file; WithExtendedFormats() registers it too.
+        EgamiContext context = EgamiContext.Default.WithRaw();
+
+        // Load develops the sensor data: the camera's white balance and colour, AHD demosaicing, sRGB in Rgb16.
+        using Raster photo = Raster.Load("photo.dng", context);
+        photo.Save("photo.png");
+
+        // Probe reads the structure alone: the developed size, the camera and the embedded previews.
+        RasterInfo info = Raster.Probe("photo.dng", context);
+        Console.WriteLine($"{info.Width}×{info.Height}, {info.ImageCount} image(s)");
+        #endregion
+
+        Assert.Equal((photo.Width, photo.Height), (info.Width, info.Height));
+        Assert.Equal(Rgb16.Layout, photo.Layout);
+    }
+
+    [Fact]
+    public void RawOutputs()
+    {
+        using SampleFiles files = new();
+        WriteDng("photo.dng");
+        EgamiContext context = EgamiContext.Default.WithRaw();
+
+        #region raw-outputs
+        // The untouched sensor data for a pipeline of your own: Gray16, one value per photosite.
+        using Raster mosaic = Raster.Load("photo.dng", context, new RawReaderOptions { Output = RawOutput.Mosaic });
+        RawDetails raw = (RawDetails)mosaic.Metadata.FormatDetails!;
+        Console.WriteLine($"{raw.CfaPattern}, black {raw.BlackLevels[0]}, white {raw.WhiteLevels[0]}");
+
+        // Half the size and about four times faster: each 2 × 2 block of photosites is one pixel.
+        using Raster<Rgba8> half = Raster.Load<Rgba8>("photo.dng", context, new RawReaderOptions { Output = RawOutput.HalfSize });
+
+        // A thumbnail: MinimumSize takes the smallest embedded preview or half-size develop that covers it.
+        using Raster thumb = Raster.Load("photo.dng", context, new ReaderOptions { MinimumSize = new Size(32, 32) });
+        #endregion
+
+        Assert.Equal("RGGB", raw.CfaPattern);
+        Assert.Equal(Gray16.Layout, mosaic.Layout);
+        Assert.True(half.Width * 2 <= mosaic.Width);
+        Assert.True(thumb.Width >= 32);
+    }
+
+    [Fact]
+    public void RawDevelop()
+    {
+        using SampleFiles files = new();
+        WriteDng("photo.dng");
+        EgamiContext context = EgamiContext.Default.WithRaw();
+
+        #region raw-develop
+        RawReaderOptions develop = new()
+        {
+            WhiteBalance = RawWhiteBalance.Custom,
+            Temperature = 4800,                    // kelvin
+            Tint = 5,                              // toward magenta
+            Exposure = -0.5,                       // stops
+            Highlights = RawHighlightMode.Rebuild, // recover clipped colour from what was not clipped
+            Demosaic = RawDemosaicMethod.Malvar,   // faster than the default AHD
+            LuminanceNoiseReduction = 20,          // 0 to 100; off by default
+            ColorNoiseReduction = 40,              // 0 to 100; 25 by default
+            ConvertColorTo = Colors.ColorProfile.DisplayP3, // rendered straight into P3, the profile attached
+        };
+        using Raster photo = Raster.Load("photo.dng", context, develop);
+        photo.Save("photo-p3.png");
+        #endregion
+
+        Assert.True(photo.Metadata.GetColorProfile().IsEquivalentTo(Colors.ColorProfile.DisplayP3));
+    }
+
+    [Fact]
+    public void RawDetailsSample()
+    {
+        using SampleFiles files = new();
+        WriteDng("photo.dng");
+        EgamiContext context = EgamiContext.Default.WithRaw();
+
+        #region raw-details
+        using Raster photo = Raster.Load("photo.dng", context);
+        RawDetails details = (RawDetails)photo.Metadata.FormatDetails!;
+        Console.WriteLine($"{details.Make} {details.Model}, DNG {details.DngVersion}");
+        Console.WriteLine($"Sensor {details.SensorWidth}×{details.SensorHeight}, crop {details.CropArea}");
+        Console.WriteLine($"White balance {details.Temperature:F0} K, tint {details.Tint:F0}, multipliers {string.Join(", ", details.WhiteBalance)}");
+        foreach (RawPreview preview in details.Previews)
+        {
+            Console.WriteLine($"Preview {preview.Width}×{preview.Height} {preview.Kind}");
+        }
+        #endregion
+
+        Assert.Equal("Egami", details.Make);
+        Assert.Single(details.Previews);
+    }
+
+    /// <summary>
+    /// Writes a small DNG made from duck.png, from the DNG specification: the duck's pixels sampled through an RGGB colour filter
+    /// as 14-bit values, a camera whose RGB is linear sRGB (D65), and a JPEG preview.
+    /// </summary>
+    private static void WriteDng(string path)
+    {
+        using Raster<RgbF32> duck = Raster.Load<RgbF32>("duck.png");
+        int w = duck.Width & ~1, h = duck.Height & ~1;
+        byte[] data = new byte[w * h * 2];
+        for (int y = 0; y < h; y++)
+        {
+            for (int x = 0; x < w; x++)
+            {
+                RgbF32 p = duck.Row(y)[x];
+                float encoded = (((y & 1) << 1) | (x & 1)) switch { 0 => p.R, 3 => p.B, _ => p.G };
+                double linear = encoded <= 0.04045 ? encoded / 12.92 : Math.Pow((encoded + 0.055) / 1.055, 2.4);
+                BitConverter.TryWriteBytes(data.AsSpan(((y * w) + x) * 2), (ushort)(512 + (linear * 15000)));
+            }
+        }
+
+        using MemoryStream preview = new();
+        using (Raster<Rgb8> small = Raster.Load<Rgb8>("duck.png").Derive(r => r.Resize(w / 4, h / 4)))
+        {
+            small.Save(preview, Egami.Formats.Jpeg.JpegFormat.Info);
+        }
+
+        List<(int Tag, int Type, byte[] Value)> ifd0 =
+        [
+            (254, 4, U32(1)), (256, 4, U32((uint)(w / 4))), (257, 4, U32((uint)(h / 4))), (258, 3, [8, 0, 8, 0, 8, 0]), (259, 3, U16(7)),
+            (262, 3, U16(6)), (271, 2, [.. "Egami"u8, 0]), (272, 2, [.. "Sample"u8, 0]), (273, 4, U32(0)), (277, 3, U16(3)),
+            (279, 4, U32((uint)preview.Length)), (330, 4, U32(0)), (50706, 1, [1, 4, 0, 0]),
+            (50721, 10, SRationals(3.2404542, -1.5371385, -0.4985314, -0.9692660, 1.8760108, 0.0415560, 0.0556434, -0.2040259, 1.0572252)),
+            (50728, 5, Rationals(1, 1, 1)), (50778, 3, U16(21)),
+        ];
+        List<(int Tag, int Type, byte[] Value)> raw =
+        [
+            (254, 4, U32(0)), (256, 4, U32((uint)w)), (257, 4, U32((uint)h)), (258, 3, U16(16)), (259, 3, U16(1)), (262, 3, U16(32803)),
+            (273, 4, U32(0)), (277, 3, U16(1)), (278, 4, U32((uint)h)), (279, 4, U32((uint)data.Length)), (33421, 3, [2, 0, 2, 0]),
+            (33422, 1, [0, 1, 1, 2]), (50714, 3, U16(512)), (50717, 3, U16(15512)),
+        ];
+
+        // Header, IFD0, the raw IFD, the preview, then the sensor data; the offsets are known once the sizes are.
+        int ifd0At = 8, rawAt = ifd0At + IfdSize(ifd0), previewAt = rawAt + IfdSize(raw), dataAt = previewAt + (int)preview.Length;
+        Patch(ifd0, 273, U32((uint)previewAt));
+        Patch(ifd0, 330, U32((uint)rawAt));
+        Patch(raw, 273, U32((uint)dataAt));
+        using FileStream file = File.Create(path);
+        file.Write([(byte)'I', (byte)'I', 42, 0]);
+        file.Write(U32((uint)ifd0At));
+        WriteIfd(file, ifd0, ifd0At);
+        WriteIfd(file, raw, rawAt);
+        file.Write(preview.ToArray());
+        file.Write(data);
+    }
+
+    private static byte[] U16(ushort v) => BitConverter.GetBytes(v);
+
+    private static byte[] U32(uint v) => BitConverter.GetBytes(v);
+
+    private static byte[] Rationals(params double[] values) => [.. values.SelectMany(v => U32((uint)Math.Round(v * 10000)).Concat(U32(10000)))];
+
+    private static byte[] SRationals(params double[] values) => [.. values.SelectMany(v => BitConverter.GetBytes((int)Math.Round(v * 1000000)).Concat(U32(1000000)))];
+
+    private static void Patch(List<(int Tag, int Type, byte[] Value)> ifd, int tag, byte[] value)
+    {
+        int i = ifd.FindIndex(e => e.Tag == tag);
+        ifd[i] = (tag, ifd[i].Type, value);
+    }
+
+    /// <summary>Returns the bytes an IFD takes: its entries, the next-IFD link, and the values that do not fit in an entry.</summary>
+    private static int IfdSize(List<(int Tag, int Type, byte[] Value)> ifd) => 2 + (ifd.Count * 12) + 4 + ifd.Sum(e => e.Value.Length > 4 ? (e.Value.Length + 1) & ~1 : 0);
+
+    private static void WriteIfd(Stream file, List<(int Tag, int Type, byte[] Value)> ifd, int at)
+    {
+        int values = at + 2 + (ifd.Count * 12) + 4;
+        file.Write(U16((ushort)ifd.Count));
+        List<byte> outside = [];
+        foreach ((int tag, int type, byte[] value) in ifd)
+        {
+            file.Write(U16((ushort)tag));
+            file.Write(U16((ushort)type));
+            file.Write(U32((uint)(value.Length / TypeSize(type))));
+            if (value.Length <= 4)
+            {
+                byte[] field = new byte[4];
+                value.CopyTo(field, 0);
+                file.Write(field);
+            }
+            else
+            {
+                file.Write(U32((uint)(values + outside.Count)));
+                outside.AddRange(value);
+                if ((outside.Count & 1) != 0)
+                {
+                    outside.Add(0);
+                }
+            }
+        }
+
+        file.Write(U32(0));
+        file.Write(outside.ToArray());
+    }
+
+    private static int TypeSize(int type) => type switch { 3 => 2, 4 => 4, 5 or 10 => 8, _ => 1 };
+
     private static void WriteTexture(string path, int faces, int size)
     {
         int mips = (int)Math.Log2(size) + 1;

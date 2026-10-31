@@ -32,6 +32,8 @@
       href: formats/av1.md
     - name: BMP
       href: formats/bmp.md
+    - name: Camera RAW
+      href: formats/raw.md
     - name: CCITT fax
       href: formats/ccitt.md
     - name: DDS

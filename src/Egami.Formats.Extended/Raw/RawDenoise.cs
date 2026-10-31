@@ -44,7 +44,7 @@ internal static class RawDenoise
                 int color = cfa.ColorAt(px, py);
                 (double s, double o) = Model(noiseProfile, color) ?? Estimate(plane.AsSpan(0, w * h), w, h);
                 Anscombe(plane.AsSpan(0, w * h), s, o);
-                Shrink(plane.AsSpan(0, w * h), w, h, k, 1, 5);
+                Shrink(plane, w * h, w, h, k, 1, 5, parallel);
                 InverseAnscombe(plane.AsSpan(0, w * h), s, o);
                 m = mosaic.Span;
                 for (int y = 0; y < h; y++)
@@ -93,7 +93,7 @@ internal static class RawDenoise
                 float sigma = Sigma(plane.AsSpan(0, count), width, height);
                 if (sigma > 0)
                 {
-                    Shrink(plane.AsSpan(0, count), width, height, k, sigma, 5);
+                    Shrink(plane, count, width, height, k, sigma, 4, parallel);
                 }
             }
 
@@ -261,30 +261,35 @@ internal static class RawDenoise
 
     /// <summary>
     /// The à trous transform with soft thresholds: each level's details shrink by <paramref name="k"/> × <paramref name="sigma"/>
-    /// × that level's noise attenuation, and the plane is rebuilt from the shrunk details and the coarsest approximation.
+    /// × that level's noise attenuation, and the plane is rebuilt from the shrunk details and the coarsest approximation. Rows
+    /// run in parallel; each output value depends only on the level before, so the thread count does not change the result.
     /// </summary>
-    private static void Shrink(Span<float> plane, int w, int h, float k, float sigma, int levels)
+    private static void Shrink(float[] plane, int count, int w, int h, float k, float sigma, int levels, ParallelOptions parallel)
     {
-        int count = w * h;
         float[] current = ArrayPool<float>.Shared.Rent(count);
         float[] next = ArrayPool<float>.Shared.Rent(count);
         float[] temp = ArrayPool<float>.Shared.Rent(count);
         float[] sum = ArrayPool<float>.Shared.Rent(count);
         try
         {
-            plane.CopyTo(current);
+            plane.AsSpan(0, count).CopyTo(current);
             Array.Clear(sum, 0, count);
             for (int level = 0; level < levels; level++)
             {
                 int hole = 1 << level;
-                Smooth(current, next, temp, w, h, hole);
                 float t = k * sigma * Attenuation[Math.Min(level, Attenuation.Length - 1)];
-                for (int i = 0; i < count; i++)
+                float[] c = current, n = next, tmp = temp, acc = sum;
+                Parallel.For(0, h, parallel, y => SmoothRow(c, tmp, w, y, hole));
+                Parallel.For(0, h, parallel, y =>
                 {
-                    float d = current[i] - next[i];
-                    sum[i] += d > t ? d - t : d < -t ? d + t : 0;
-                }
-
+                    SmoothColumn(tmp, n, w, h, y, hole);
+                    int row = y * w;
+                    for (int x = row; x < row + w; x++)
+                    {
+                        float d = c[x] - n[x];
+                        acc[x] += d > t ? d - t : d < -t ? d + t : 0;
+                    }
+                });
                 (current, next) = (next, current);
             }
 
@@ -302,29 +307,43 @@ internal static class RawDenoise
         }
     }
 
-    /// <summary>Convolves with the B3-spline kernel [1 4 6 4 1] / 16, its taps <paramref name="hole"/> apart, mirrored at the edges.</summary>
-    private static void Smooth(float[] source, float[] target, float[] temp, int w, int h, int hole)
+    /// <summary>Convolves one row with the B3-spline kernel [1 4 6 4 1] / 16, its taps <paramref name="hole"/> apart, mirrored at the edges.</summary>
+    private static void SmoothRow(float[] source, float[] target, int w, int y, int hole)
     {
-        for (int y = 0; y < h; y++)
+        int row = y * w;
+        int inner0 = Math.Min(2 * hole, w), inner1 = Math.Max(inner0, w - (2 * hole));
+        for (int x = 0; x < w; x++)
         {
-            int row = y * w;
-            for (int x = 0; x < w; x++)
+            if (x == inner0)
             {
-                temp[row + x] = ((6 * source[row + x])
-                    + (4 * (source[row + Mirror(x - hole, w)] + source[row + Mirror(x + hole, w)]))
-                    + source[row + Mirror(x - (2 * hole), w)] + source[row + Mirror(x + (2 * hole), w)]) / 16;
-            }
-        }
+                // Away from the edges, no mirroring is needed.
+                for (; x < inner1; x++)
+                {
+                    int i = row + x;
+                    target[i] = ((6 * source[i]) + (4 * (source[i - hole] + source[i + hole])) + source[i - (2 * hole)] + source[i + (2 * hole)]) * (1f / 16);
+                }
 
-        for (int y = 0; y < h; y++)
-        {
-            int up1 = Mirror(y - hole, h) * w, down1 = Mirror(y + hole, h) * w;
-            int up2 = Mirror(y - (2 * hole), h) * w, down2 = Mirror(y + (2 * hole), h) * w;
-            int row = y * w;
-            for (int x = 0; x < w; x++)
-            {
-                target[row + x] = ((6 * temp[row + x]) + (4 * (temp[up1 + x] + temp[down1 + x])) + temp[up2 + x] + temp[down2 + x]) / 16;
+                if (x >= w)
+                {
+                    break;
+                }
             }
+
+            target[row + x] = ((6 * source[row + x])
+                + (4 * (source[row + Mirror(x - hole, w)] + source[row + Mirror(x + hole, w)]))
+                + source[row + Mirror(x - (2 * hole), w)] + source[row + Mirror(x + (2 * hole), w)]) * (1f / 16);
+        }
+    }
+
+    /// <summary>Convolves one row's pixels down the columns with the same kernel.</summary>
+    private static void SmoothColumn(float[] temp, float[] target, int w, int h, int y, int hole)
+    {
+        int up1 = Mirror(y - hole, h) * w, down1 = Mirror(y + hole, h) * w;
+        int up2 = Mirror(y - (2 * hole), h) * w, down2 = Mirror(y + (2 * hole), h) * w;
+        int row = y * w;
+        for (int x = 0; x < w; x++)
+        {
+            target[row + x] = ((6 * temp[row + x]) + (4 * (temp[up1 + x] + temp[down1 + x])) + temp[up2 + x] + temp[down2 + x]) * (1f / 16);
         }
     }
 

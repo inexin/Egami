@@ -55,6 +55,9 @@ public enum RawOutput
 }
 
 /// <summary>How a develop fills in the colours a colour filter array did not sample.</summary>
+/// <example>
+/// <code language="csharp" source="../../../tests/Egami.DocSamples/FormatsExtended.cs" region="raw-develop"/>
+/// </example>
 public enum RawDemosaicMethod
 {
     /// <summary>The average of the nearest samples of each colour. Fastest, softest.</summary>
@@ -68,6 +71,9 @@ public enum RawDemosaicMethod
 }
 
 /// <summary>Where a develop's white balance comes from.</summary>
+/// <example>
+/// <code language="csharp" source="../../../tests/Egami.DocSamples/FormatsExtended.cs" region="raw-develop"/>
+/// </example>
 public enum RawWhiteBalance
 {
     /// <summary>The white balance the camera recorded. The default.</summary>
@@ -81,6 +87,9 @@ public enum RawWhiteBalance
 }
 
 /// <summary>What a develop does where the sensor clipped some colours but not others.</summary>
+/// <example>
+/// <code language="csharp" source="../../../tests/Egami.DocSamples/FormatsExtended.cs" region="raw-develop"/>
+/// </example>
 public enum RawHighlightMode
 {
     /// <summary>Cuts every colour at the clipping level, so clipped areas turn white. The default.</summary>
@@ -97,6 +106,9 @@ public enum RawHighlightMode
 }
 
 /// <summary>The kind of an embedded preview.</summary>
+/// <example>
+/// <code language="csharp" source="../../../tests/Egami.DocSamples/FormatsExtended.cs" region="raw-details"/>
+/// </example>
 public enum RawPreviewKind
 {
     /// <summary>A baseline JPEG.</summary>
@@ -110,6 +122,9 @@ public enum RawPreviewKind
 /// <param name="Width">The preview's width in pixels.</param>
 /// <param name="Height">The preview's height in pixels.</param>
 /// <param name="Kind">How the preview is stored.</param>
+/// <example>
+/// <code language="csharp" source="../../../tests/Egami.DocSamples/FormatsExtended.cs" region="raw-details"/>
+/// </example>
 public sealed record RawPreview(int Width, int Height, RawPreviewKind Kind);
 
 /// <summary>Details only RAW files have, kept in <see cref="RasterMetadata.FormatDetails"/>.</summary>
