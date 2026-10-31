@@ -1,4 +1,5 @@
 using System.Buffers.Binary;
+
 using Egami.Formats.Extended.Raw;
 using Egami.Pixels;
 

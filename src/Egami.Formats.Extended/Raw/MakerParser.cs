@@ -1,7 +1,7 @@
-using System.Globalization;
-using System.Text.RegularExpressions;
 using System.Buffers.Binary;
+using System.Globalization;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace Egami.Formats.Extended.Raw;
 
