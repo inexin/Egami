@@ -46,7 +46,7 @@ SEEDS = {"png": "tests/images/pngsuite/*.png tests/images/fuzz/png-seeds/*.png",
          "jxl": "tests/images/fuzz/jxl-seeds/*", "jxlbox": "tests/images/fuzz/jxlbox-seeds/*", "jxlentropy": "tests/images/fuzz/jxlentropy-seeds/*",
          "jxl-write": "tests/images/fuzz/jpeg-write-seeds/*", "jxl-lossy": "tests/images/fuzz/jpeg-write-seeds/*", "jxl-jpeg": "tests/images/jpeg/duck-q50.jpg tests/images/jpeg/odd-*.jpg tests/images/jpeg/transform/t4*.jpg tests/images/jpeg/transform/tprog.jpg tests/images/jpeg/testorig.jpg",
          "css": "tests/images/fuzz/css-seeds/*", "hocr": "tests/images/ocr/*.hocr", "alto": "tests/images/ocr/*.xml", "paragraph": "tests/images/fuzz/paragraph-seeds/*",
-         "svg": "tests/images/fuzz/svg-seeds/*", "dds": "tests/images/fuzz/dds-seeds/*",
+         "svg": "tests/images/fuzz/svg-seeds/*", "dds": "tests/images/fuzz/dds-seeds/*", "raw": "tests/images/fuzz/raw-seeds/*",
          "wmf": "tests/images/metafiles/synthetic/*.wmf", "emf": "tests/images/metafiles/synthetic/gdi-*.emf",
          "emfplus": "tests/images/fuzz/emfplus-seeds/*",
          "sysdrawing": "tests/images/bmp/rgb24.bmp tests/images/gif/loop-3.gif tests/images/ico/set.ico tests/images/pngsuite/basn6a08.png tests/images/pngsuite/basn3p04.png tests/images/metafiles/synthetic/gdi-shapes-basic.emf tests/images/metafiles/synthetic/gdi-shapes-basic.wmf",
@@ -77,6 +77,7 @@ if [ -f /out/Egami.Metafiles.dll ]; then sharpfuzz /out/Egami.Metafiles.dll; fi
 if [ -f /out/Egami.SystemDrawing.dll ]; then sharpfuzz /out/Egami.SystemDrawing.dll; fi
 if [ -f /out/Egami.Barcodes.dll ]; then sharpfuzz /out/Egami.Barcodes.dll; fi
 if [ -f /out/Egami.Cli.dll ]; then sharpfuzz /out/Egami.Cli.dll; fi
+if [ -f /out/Egami.Formats.Extended.dll ]; then sharpfuzz /out/Egami.Formats.Extended.dll; fi
 mkdir -p /seeds && cp {seeds} /seeds/
 afl-fuzz -V {seconds} -i /seeds -o /findings/{target} {role} -t 5000 -m none -- /out/Egami.Fuzz {target}
 """

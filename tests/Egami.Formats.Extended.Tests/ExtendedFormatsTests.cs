@@ -17,8 +17,10 @@ public class ExtendedFormatsTests
     {
         EgamiContext core = new();
         EgamiContext context = core.WithExtendedFormats();
-        Assert.Equal(core.Formats, context.Formats.Take(core.Formats.Count));
-        Assert.Equal(["PCX", "SGI", "Sun raster", "XBM", "XPM", "WBMP", "Farbfeld", "DDS"], context.Formats.Skip(core.Formats.Count).Select(f => f.Name));
+        // RAW goes first, ahead of TIFF (a DNG is a TIFF file); the others after the context's own.
+        Assert.Equal("RAW", context.Formats[0].Name);
+        Assert.Equal(core.Formats, context.Formats.Skip(1).Take(core.Formats.Count));
+        Assert.Equal(["PCX", "SGI", "Sun raster", "XBM", "XPM", "WBMP", "Farbfeld", "DDS"], context.Formats.Skip(core.Formats.Count + 1).Select(f => f.Name));
 
         // Registering again replaces in place.
         Assert.Equal(context.Formats.Count, context.WithExtendedFormats().WithPcx().Formats.Count);
