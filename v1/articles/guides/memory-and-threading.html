@@ -104,8 +104,9 @@ that passes none; <code>EgamiContext.SetDefault</code> replaces it once, at star
 <p>Operations split the image into bands of rows and run them on up to <code>MaxParallelism</code> threads (the processor count by default).
 Small images run on one thread, where splitting would cost more than it saves. Decoding is mostly sequential by nature; JPEG
 splits files at their restart markers, pipelines progressive scans and converts in parallel bands, and animated formats map
-frames in parallel. PNG compresses large images on several threads when
-<code>PngWriterOptions.ParallelCompression</code> is set, with the same bytes at any thread count.</p>
+frames in parallel. PNG decompresses a large image on a second thread while the first reverses the filters and converts the
+rows, and compresses large images on several threads when <code>PngWriterOptions.ParallelCompression</code> is set, with the same bytes at
+any thread count.</p>
 <p>Rasters are not thread-safe: do not run two chains on the same raster at once. Separate rasters, contexts and loads are
 independent, and readers, writers and contexts can be shared freely.</p>
 <h2 id="streaming">Streaming</h2>
