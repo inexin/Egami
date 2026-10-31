@@ -752,6 +752,9 @@ internal static class MakerParser
             frame.AsShotNeutral = [neutral[0] / levels[0], 1, neutral[2] / levels[2]];
         }
 
+        // The data is the sensor's scaled by those levels' inverse: an analog balance in front of the camera's own matrices,
+        // as Adobe's DNGs of these files give it, so the illuminant is read in the sensor's colour space.
+        frame.AnalogBalance = [1 / levels[0], 1, 1 / levels[2]];
         frame.HasOwnLevels = true;
         frame.HasOwnCrop = true;
         frame.Active = new Rect(0, 0, width, height);
