@@ -46,7 +46,15 @@ internal static class RawDemosaic
                     Ahd(scratch, width, y0, y1, red, xyz, output);
                     break;
                 default:
-                    Generic(scratch, width, y0, y1, cfa, output);
+                    if (cfa.Rows == 6 && cfa.Columns == 6)
+                    {
+                        XTrans(scratch, width, y0, y1, cfa, output);
+                    }
+                    else
+                    {
+                        Generic(scratch, width, y0, y1, cfa, output);
+                    }
+
                     break;
             }
 
@@ -420,6 +428,110 @@ internal static class RawDemosaic
         }
 
         return table;
+    }
+
+    /// <summary>
+    /// Fujifilm's 6 × 6 X-Trans pattern, Egami's own method: green first, at each red or blue sample, from the nearest greens
+    /// left and right and above and below, the two axes weighted against their gradients so edges are followed rather than
+    /// crossed; then red and blue as colour differences from green, averaged over that colour's samples within two pixels,
+    /// each weighted by its distance and by how close its green is to this pixel's, which keeps colour from bleeding across edges.
+    /// </summary>
+    private static void XTrans(Scratch s, int width, int y0, int y1, RawCfa cfa, Span<float> output)
+    {
+        const float Epsilon = 1e-5f;
+        const int Margin = 2;
+        int st = s.Stride;
+        float[] m = s.Mosaic;
+        float[] g = s.GreenH;
+        byte[] colour = s.HomH;
+        int rows = y1 - y0 + (2 * Pad);
+        for (int r = 0; r < rows; r++)
+        {
+            int yy = Reflect(y0 - Pad + r, s.Height);
+            for (int c = 0; c < st; c++)
+            {
+                colour[(r * st) + c] = (byte)cfa.ColorAt(Reflect(c - Pad, width), yy);
+            }
+        }
+
+        // Green, over the band and a margin around it, so the colour-difference step finds green at every neighbour.
+        for (int r = Pad - Margin; r < rows - Pad + Margin; r++)
+        {
+            for (int c = Pad - Margin; c < width + Pad + Margin; c++)
+            {
+                int i = (r * st) + c;
+                if (colour[i] == 1)
+                {
+                    g[i] = m[i];
+                    continue;
+                }
+
+                // The nearest green on each side, one or two pixels away.
+                int e = colour[i + 1] == 1 ? 1 : 2, w = colour[i - 1] == 1 ? 1 : 2;
+                int n = colour[i - st] == 1 ? 1 : 2, so = colour[i + st] == 1 ? 1 : 2;
+                float ge = m[i + e], gw = m[i - w], gn = m[i - (n * st)], gs = m[i + (so * st)];
+                float horizontal = ((ge * w) + (gw * e)) / (e + w);
+                float vertical = ((gn * so) + (gs * n)) / (n + so);
+                float dh = Math.Abs(ge - gw) + (Math.Abs(m[i + 2 + e] - m[i + e] + m[i - w] - m[i - 2 - w]) * 0.5f) + Epsilon;
+                float dv = Math.Abs(gn - gs) + (Math.Abs(m[i + ((2 + so) * st)] - gs + gn - m[i - ((2 + n) * st)]) * 0.5f) + Epsilon;
+                g[i] = ((horizontal * dv) + (vertical * dh)) / (dh + dv);
+            }
+        }
+
+        for (int y = y0; y < y1; y++)
+        {
+            int o = (y - y0) * width * 3;
+            int row = (y - y0 + Pad) * st;
+            for (int x = 0; x < width; x++)
+            {
+                int i = row + x + Pad;
+                int own = colour[i];
+                float green = g[i];
+                float red = 0, blue = 0;
+                for (int target = 0; target <= 2; target += 2)
+                {
+                    float value;
+                    if (target == own)
+                    {
+                        value = m[i];
+                    }
+                    else
+                    {
+                        float sum = 0, weights = 0;
+                        for (int dy = -2; dy <= 2; dy++)
+                        {
+                            for (int dx = -2; dx <= 2; dx++)
+                            {
+                                int j = i + (dy * st) + dx;
+                                if (colour[j] != target)
+                                {
+                                    continue;
+                                }
+
+                                float weight = 1f / ((1 + (dx * dx) + (dy * dy)) * (Math.Abs(g[j] - green) + Epsilon));
+                                sum += weight * (m[j] - g[j]);
+                                weights += weight;
+                            }
+                        }
+
+                        value = weights > 0 ? green + (sum / weights) : green;
+                    }
+
+                    if (target == 0)
+                    {
+                        red = value;
+                    }
+                    else
+                    {
+                        blue = value;
+                    }
+                }
+
+                output[o++] = red;
+                output[o++] = green;
+                output[o++] = blue;
+            }
+        }
     }
 
     /// <summary>Any colour filter array: each missing colour is the average of that colour's samples in the 3 × 3, else 5 × 5, neighbourhood.</summary>

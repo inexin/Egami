@@ -68,7 +68,10 @@ and Foi, "Optimal inversion of the generalized Anscombe transformation for Poiss
 Science*, for colour temperature; and the Bradford chromatic adaptation transform. Adobe DNG Converter, LibRaw through
 Magick.NET and Windows' Raw Image Extension run only as black boxes, for measurements and gates. dcraw, LibRaw and rawspeed
 (LGPL), RawTherapee, darktable, ART and Exiv2 (GPL), ExifTool's source, Lensfun's database (CC-BY-SA) and LibRaw's camera
-tables are never read; ExifTool's public tag-name pages may be read as facts. Sample files come from raw.pixls.us, CC0 only.
+tables are never read by the sessions that implement Egami; ExifTool's public tag-name pages may be read as facts. The maker
+codecs (Fujifilm compressed RAF, NEF, PEF, ARW, ORF, RW2 and CR2) were written from clean-room specifications that a separate,
+study-only session wrote after reading LibRaw and rawspeed for structure only (the maintainer's 2026-10-24 study-only rule);
+the implementing sessions never read those sources, and nothing was copied. Sample files come from raw.pixls.us, CC0 only.
 
 For LZMA (TIFF LZMA), The .xz File Format 1.2.1 and the LZMA SDK's lzma-specification.txt (both public domain) are the
 references, with the LZMA SDK and XZ Utils as the listed libraries. The xz CLI runs in Docker to make the corpus

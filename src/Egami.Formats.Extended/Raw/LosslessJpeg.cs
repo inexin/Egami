@@ -373,6 +373,57 @@ internal sealed class LosslessJpeg
         return true;
     }
 
+    /// <summary>
+    /// Decodes a Canon sRAW or mRAW frame (CR2 spec, section 5): groups of H0 × V0 luma values then Cb and Cr, the luma values
+    /// sharing one running predictor, Cb and Cr each predicted from the group before, and each frame row starting from the
+    /// first group of the row above. Writes <see cref="SampleCount"/> values in decode order; returns <see langword="false"/>
+    /// when the data ends early.
+    /// </summary>
+    public bool DecodeSraw(Span<ushort> output)
+    {
+        int luma = H0 * V0;
+        int perMcu = SamplesPerMcu;
+        if (Components != 3 || perMcu != luma + 2 || output.Length < SampleCount)
+        {
+            throw new InvalidDataException("The frame is not a Canon sRAW frame.");
+        }
+
+        HuffmanTable[] tables = [_tables[_tableOf[0]]!, _tables[_tableOf[1]]!, _tables[_tableOf[2]]!];
+        BitReader bits = new(_data, _scanAt, _end);
+        int initial = 1 << (Precision - 1);
+        int lineSamples = McusPerLine * perMcu;
+        int y = initial, cb = initial, cr = initial;
+        for (int line = 0; line < McuLines; line++)
+        {
+            Span<ushort> row = output.Slice(line * lineSamples, lineSamples);
+            if (line > 0)
+            {
+                ReadOnlySpan<ushort> above = output.Slice((line - 1) * lineSamples, perMcu);
+                (y, cb, cr) = (above[0], above[luma], above[luma + 1]);
+            }
+
+            for (int at = 0; at < lineSamples; at += perMcu)
+            {
+                for (int k = 0; k < luma; k++)
+                {
+                    y = (y + tables[0].Decode(ref bits)) & 0xFFFF;
+                    row[at + k] = (ushort)y;
+                }
+
+                cb = (cb + tables[1].Decode(ref bits)) & 0xFFFF;
+                cr = (cr + tables[2].Decode(ref bits)) & 0xFFFF;
+                row[at + luma] = (ushort)cb;
+                row[at + luma + 1] = (ushort)cr;
+                if (bits.Ended)
+                {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
     /// <summary>A Huffman table: a 9-bit lookup for short codes and the canonical code ranges for the rest (T.81 Annex C).</summary>
     private sealed class HuffmanTable
     {

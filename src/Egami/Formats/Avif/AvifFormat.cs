@@ -453,7 +453,8 @@ public sealed class AvifWriterOptions : WriterOptions
 
     /// <summary>
     /// Gets the largest size the file may have, in bytes, or <see langword="null"/> (the default) to code at <see cref="Quality"/>:
-    /// the quality is searched, as avifenc --target-size searches it, for the largest file not above the size. When even quality 0
+    /// the quality is searched, as avifenc --target-size searches it, for the largest file not above the size, then the quantizer
+    /// between that quality and the next (in one layer), so the file lands close under the size. When even quality 0
     /// is larger, that file is written and an Avif.TargetSizeExceeded warning says so. Ignored for lossless images.
     /// </summary>
     /// <exception cref="ArgumentOutOfRangeException">The value is below 1.</exception>
