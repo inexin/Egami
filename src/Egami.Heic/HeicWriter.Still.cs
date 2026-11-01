@@ -129,6 +129,8 @@ internal sealed partial class HeicWriter
             TransferCharacteristics = transfer,
             MatrixCoefficients = matrix,
             FullRange = true,
+            AdaptiveQp = !lossless && Tuning.AdaptiveQp,
+            ChromaQpOffset = Tuning.ChromaQpOffset,
             Parallelism = Math.Max(1, _context.MaxParallelism),
         };
 

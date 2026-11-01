@@ -31,7 +31,9 @@ internal sealed partial class HevcCtuSearch
         }
 
         HevcCodingUnit cu = Partition(x0, y0, log2, depth, false, qp, out cost);
-        if (!tryNxN)
+
+        // Four 4x4 predictions rarely pay where one 8x8 prediction leaves no luma residual.
+        if (!tryNxN || (_profile.EarlyStop && !LumaCoefficients(cu.Tree)))
         {
             return cu;
         }
@@ -114,6 +116,9 @@ internal sealed partial class HevcCtuSearch
         Commit(cu);
         return cu;
     }
+
+    private static bool LumaCoefficients(HevcTransformNode node) =>
+        node.Split ? node.Children!.Any(LumaCoefficients) : node.CbfLuma;
 
     /// <summary>The sum of squared differences between the source and the reconstruction of a block.</summary>
     private long Distortion(int c, int x, int y, int log2, bool chroma = false)

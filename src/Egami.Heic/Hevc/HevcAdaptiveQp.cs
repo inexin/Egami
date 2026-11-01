@@ -7,8 +7,8 @@ namespace Egami.Heic.Hevc;
 /// </summary>
 internal static class HevcAdaptiveQp
 {
-    /// <summary>The QP change per doubling of a group's variance against the mean.</summary>
-    internal const double Strength = 1.0;
+    /// <summary>Gets or sets the QP change per doubling of a group's variance against the mean.</summary>
+    internal static double Strength { get; set; } = 1.0;
 
     /// <summary>The largest change either way.</summary>
     internal const int MaxOffset = 6;

@@ -19,6 +19,12 @@ internal static class HevcEncoder
     {
         Check(settings);
         HevcEncoderProfile profile = HevcEncoderProfile.For(settings.Effort);
+        if (settings.AdaptiveQp && !settings.Lossless)
+        {
+            // A 64x64 unit takes one QP for four 32x32 groups of the adaptive quantizer; measured on photos, files at equal
+            // SSIMULACRA2 are 5 % smaller without them.
+            profile = profile with { MaxCuLog2 = Math.Min(profile.MaxCuLog2, 5) };
+        }
         settings = settings with { MaxTransformDepth = profile.TransformDepth, Sao = settings.Sao && profile.Sao && !settings.Lossless };
         HevcSource source = new(settings, planes, strides);
         byte[] vps = HevcParameterWriter.Vps(settings), sps = HevcParameterWriter.Sps(settings), pps = HevcParameterWriter.Pps(settings);

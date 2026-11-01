@@ -41,68 +41,112 @@ internal static class HevcForward
         return matrices;
     }
 
+    /// <summary>The n x n DCT matrices as ints, and transposed: entry x n + k is row k, column x.</summary>
+    private static readonly int[][] Wide = [.. Matrices.Select(m => m is null ? null! : m.Select(v => (int)v).ToArray())];
+
+    private static readonly int[][] Transposed = [.. Matrices.Select((m, log2) => m is null ? null! : Transpose(m, 1 << log2))];
+
+    private static int[] Transpose(short[] m, int n)
+    {
+        int[] t = new int[n * n];
+        for (int k = 0; k < n; k++)
+        {
+            for (int x = 0; x < n; x++)
+            {
+                t[(x * n) + k] = m[(k * n) + x];
+            }
+        }
+
+        return t;
+    }
+
     /// <summary>
     /// The forward transform of an n x n residual block (raster order) into coefficients: the DST for 4x4 luma intra blocks,
-    /// the DCT otherwise.
+    /// the DCT otherwise. Each stage adds a matrix row (or column) times one input to eight outputs at once.
     /// </summary>
     [SkipLocalsInit]
     internal static void Transform(ReadOnlySpan<int> residual, Span<int> coefficients, int log2, int bitDepth, bool dst)
     {
         int n = 1 << log2;
-        short[] matrix = dst ? Dst : Matrices[log2];
         int shift1 = log2 + bitDepth - 9, shift2 = log2 + 6;
         int round1 = 1 << (shift1 - 1), round2 = 1 << (shift2 - 1);
-        Span<int> temp = stackalloc int[32 * 32];
-        ref short m0 = ref MemoryMarshal.GetArrayDataReference(matrix);
+        if (n == 4 || !Vector256.IsHardwareAccelerated)
+        {
+            TransformScalar(residual, coefficients, log2, dst ? Dst : Matrices[log2], shift1, shift2);
+            return;
+        }
 
-        // First stage, along each row: temp[k][y] = sum over x of matrix[k][x] residual[y][x] (stored transposed).
+        Span<int> temp = stackalloc int[32 * 32];
+        ref int t0 = ref MemoryMarshal.GetArrayDataReference(Transposed[log2]);
+        ref int m0 = ref MemoryMarshal.GetArrayDataReference(Wide[log2]);
+        ref int r0 = ref MemoryMarshal.GetReference(residual);
+        ref int temp0 = ref MemoryMarshal.GetReference(temp);
+        ref int c0 = ref MemoryMarshal.GetReference(coefficients);
+        Vector256<int> add1 = Vector256.Create(round1), add2 = Vector256.Create(round2);
+
+        // First stage, along each row: temp[y][k] = sum over x of matrix[k][x] residual[y][x].
         for (int y = 0; y < n; y++)
         {
-            ReadOnlySpan<int> row = residual.Slice(y * n, n);
-            for (int k = 0; k < n; k++)
+            for (int k = 0; k < n; k += 8)
             {
-                int sum = Dot(row, ref Unsafe.Add(ref m0, k * n), n);
-                temp[(k * n) + y] = (sum + round1) >> shift1;
+                Vector256<int> acc = add1;
+                for (int x = 0; x < n; x++)
+                {
+                    acc += Vector256.LoadUnsafe(ref t0, (nuint)((x * n) + k)) * Unsafe.Add(ref r0, (y * n) + x);
+                }
+
+                Vector256.ShiftRightArithmetic(acc, shift1).StoreUnsafe(ref temp0, (nuint)((y * n) + k));
             }
         }
 
-        // Second stage, along each column: coefficients[k][x] = sum over y of matrix[k][y] temp[x][y].
-        for (int x = 0; x < n; x++)
+        // Second stage, along each column: coefficients[k][x] = sum over y of matrix[k][y] temp[y][x].
+        for (int k = 0; k < n; k++)
         {
-            ReadOnlySpan<int> column = temp.Slice(x * n, n);
-            for (int k = 0; k < n; k++)
+            for (int x = 0; x < n; x += 8)
             {
-                int sum = Dot(column, ref Unsafe.Add(ref m0, k * n), n);
-                coefficients[(k * n) + x] = (sum + round2) >> shift2;
+                Vector256<int> acc = add2;
+                for (int y = 0; y < n; y++)
+                {
+                    acc += Vector256.LoadUnsafe(ref temp0, (nuint)((y * n) + x)) * Unsafe.Add(ref m0, (k * n) + y);
+                }
+
+                Vector256.ShiftRightArithmetic(acc, shift2).StoreUnsafe(ref c0, (nuint)((k * n) + x));
             }
         }
     }
 
-    /// <summary>The dot product of n ints and n matrix entries.</summary>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static int Dot(ReadOnlySpan<int> values, ref short matrix, int n)
+    private static void TransformScalar(ReadOnlySpan<int> residual, Span<int> coefficients, int log2, short[] matrix, int shift1, int shift2)
     {
-        ref int v0 = ref MemoryMarshal.GetReference(values);
-        int i = 0;
-        int sum = 0;
-        if (Vector256.IsHardwareAccelerated && n >= 8)
+        int n = 1 << log2;
+        int round1 = 1 << (shift1 - 1), round2 = 1 << (shift2 - 1);
+        Span<int> temp = stackalloc int[32 * 32];
+        for (int y = 0; y < n; y++)
         {
-            Vector256<int> acc = Vector256<int>.Zero;
-            for (; i + 8 <= n; i += 8)
+            for (int k = 0; k < n; k++)
             {
-                Vector256<int> m = Vector256.WidenLower(Vector128.LoadUnsafe(ref matrix, (nuint)i).ToVector256Unsafe());
-                acc += Vector256.LoadUnsafe(ref v0, (nuint)i) * m;
+                int sum = round1;
+                for (int x = 0; x < n; x++)
+                {
+                    sum += matrix[(k * n) + x] * residual[(y * n) + x];
+                }
+
+                temp[(y * n) + k] = sum >> shift1;
             }
-
-            sum = Vector256.Sum(acc);
         }
 
-        for (; i < n; i++)
+        for (int k = 0; k < n; k++)
         {
-            sum += Unsafe.Add(ref v0, i) * Unsafe.Add(ref matrix, i);
-        }
+            for (int x = 0; x < n; x++)
+            {
+                int sum = round2;
+                for (int y = 0; y < n; y++)
+                {
+                    sum += matrix[(k * n) + y] * temp[(y * n) + x];
+                }
 
-        return sum;
+                coefficients[(k * n) + x] = sum >> shift2;
+            }
+        }
     }
 
     /// <summary>Transform skip (the inverse of 8.6.4.2's): each residual scaled up by 2^(15 - bitDepth - log2).</summary>

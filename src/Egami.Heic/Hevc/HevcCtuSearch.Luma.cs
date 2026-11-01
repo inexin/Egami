@@ -65,7 +65,9 @@ internal sealed partial class HevcCtuSearch
         cu.LumaModes[part] = bestMode;
 
         // The transform tree of the mode chosen, now with its splits searched.
-        if (_profile.TransformSearch && count > 1 && log2 > _sps.MinTbLog2Size && depth < maxDepth)
+        // A unit that leaves no luma residual seldom gains from smaller transforms.
+        if (_profile.TransformSearch && count > 1 && log2 > _sps.MinTbLog2Size && depth < maxDepth
+            && !(_profile.EarlyStop && bestNode is { Split: false, CbfLuma: false }))
         {
             bool forced = log2 > _sps.MaxTbLog2Size || (cu.NxN && depth == 0);
             if (forced)
@@ -138,8 +140,8 @@ internal sealed partial class HevcCtuSearch
             CopyBlock(_source.Planes[0], _picture.Planes[0], (y * _picture.Widths[0]) + x, _picture.Widths[0], 64, 64);
         }
 
-        // Coarse: planar, DC and every angle (or every other one); then the neighbours of the two best angles.
-        int step = _profile.AllRoughModes ? 1 : 2;
+        // Coarse: planar, DC and every RoughStep-th angle; then around the two best angles at half the step, and so on to 1.
+        int step = _profile.RoughStep;
         int count = 0;
         for (int m = 0; m < 35; m = m < 2 ? m + 1 : m + step)
         {
@@ -148,7 +150,7 @@ internal sealed partial class HevcCtuSearch
 
         RoughCosts(x, y, log2, modes[..count], mpm, sqrtLambda, tried);
         count = 0;
-        if (step > 1)
+        for (int distance = step / 2; distance >= 1; distance /= 2)
         {
             int first = -1, second = -1;
             for (int m = 2; m < 35; m++)
@@ -170,7 +172,7 @@ internal sealed partial class HevcCtuSearch
 
             foreach (int center in (ReadOnlySpan<int>)[first, second])
             {
-                for (int d = -1; d <= 1; d += 2)
+                for (int d = -distance; d <= distance; d += 2 * distance)
                 {
                     int m = center + d;
                     if (center >= 2 && m >= 2 && m <= 34 && !tried[m] && !modes[..count].Contains(m))
@@ -178,6 +180,12 @@ internal sealed partial class HevcCtuSearch
                         modes[count++] = m;
                     }
                 }
+            }
+
+            if (distance > 1 && count > 0)
+            {
+                RoughCosts(x, y, log2, modes[..count], mpm, sqrtLambda, tried);
+                count = 0;
             }
         }
 
@@ -212,7 +220,8 @@ internal sealed partial class HevcCtuSearch
                 }
             }
 
-            if (best < 0)
+            // A mode far behind the best by SATD seldom wins the full decision.
+            if (best < 0 || (kept > 0 && _roughCosts[best] > _roughCosts[_candidates[0]] * (1 + _profile.CandidateMargin)))
             {
                 break;
             }
@@ -417,7 +426,9 @@ internal sealed partial class HevcCtuSearch
         }
 
         BlockResult result = Quantized(c, plane, source, at, stride, log2, mode, qpc, bitDepth, false, lambda, weight, _levels);
-        if (!tryTs)
+
+        // Transform skip pays on sharp-edged luma (screen content); where the transform leaves nothing to code it rarely does.
+        if (!tryTs || (_profile.EarlyStop && (c != 0 || result.Levels is null)))
         {
             return result;
         }

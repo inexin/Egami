@@ -68,14 +68,28 @@ internal sealed class HevcTransformNode
     internal bool CbfLuma { get; set; }
 
     /// <summary>
-    /// Gets the levels of a transform unit's blocks, raster order, null where a block has none: luma, then Cb and Cr (with the
-    /// lower 4:2:2 blocks at 3 and 4).
+    /// The levels of a transform unit's blocks, raster order, null where a block has none: luma, then Cb and Cr (with the lower
+    /// 4:2:2 blocks at 3 and 4). Held in the node, so a node is one allocation.
     /// </summary>
-    internal short[]?[] Levels { get; } = new short[]?[5];
+    internal BlockLevels Levels;
 
-    /// <summary>Gets transform_skip_flag of each block, as <see cref="Levels"/>.</summary>
-    internal bool[] TransformSkip { get; } = new bool[5];
+    /// <summary>transform_skip_flag of each block, as <see cref="Levels"/>.</summary>
+    internal BlockFlags TransformSkip;
 
     /// <summary>Gets the block of <paramref name="c"/> (0 luma, 1 Cb, 2 Cr), <paramref name="t"/> 1 for a lower 4:2:2 block.</summary>
     internal static int Block(int c, int t) => c + (2 * t);
+
+    /// <summary>Five level arrays.</summary>
+    [System.Runtime.CompilerServices.InlineArray(5)]
+    internal struct BlockLevels
+    {
+        private short[]? _first;
+    }
+
+    /// <summary>Five flags.</summary>
+    [System.Runtime.CompilerServices.InlineArray(5)]
+    internal struct BlockFlags
+    {
+        private bool _first;
+    }
 }

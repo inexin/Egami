@@ -32,6 +32,17 @@ internal sealed partial class HeicWriter : IFormatWriter, IRowFormatWriter
     /// <summary>The size of the cells of a grid the image's size needs, as iPhones write them.</summary>
     internal const int GridCell = 512;
 
+    /// <summary>Gets or sets the built-in perceptual tuning (design question 6): the adaptive quantizer and the chroma QP offset.</summary>
+    internal static HeicTuning Tuning { get; set; } = new();
+
+    /// <summary>The perceptual tuning's settings, which tests and the calibration may change.</summary>
+    internal sealed record HeicTuning
+    {
+        internal bool AdaptiveQp { get; init; } = true;
+
+        internal int ChromaQpOffset { get; init; }
+    }
+
     public void Write<TPixel>(Raster<TPixel> raster, Stream output, WriterOptions options)
         where TPixel : unmanaged, IPixelType<TPixel>
     {
@@ -70,10 +81,11 @@ internal sealed partial class HeicWriter : IFormatWriter, IRowFormatWriter
     }
 
     /// <summary>
-    /// Gets the slice QP a quality codes with: a curve fitted to heif-enc with x265 (libheif's quality scale), so a quality gives
-    /// about the file size heif-enc gives at it.
+    /// Gets the slice QP a quality codes with: a line fitted to the sizes heif-enc -e x265 -p preset=medium gives (libheif's quality
+    /// scale) on 28 photos (Kodak's 24 and four others), so a quality gives about the file size heif-enc gives at it. The geometric
+    /// means of the sizes match within a fifth of a QP from quality 10 to 90.
     /// </summary>
-    internal static int QpFor(int quality) => Math.Clamp((int)Math.Round(42 - (0.36 * Math.Clamp(quality, 0, 100))), 0, 51);
+    internal static int QpFor(int quality) => Math.Clamp((int)Math.Round(46.9 - (0.495 * Math.Clamp(quality, 0, 100))), 0, 51);
 
     /// <summary>Encodes an image and writes its file.</summary>
     internal static void WriteImage(Raster raster, RasterMetadata metadata, HeicWriterOptions options, EgamiContext context, Stream output)

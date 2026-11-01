@@ -103,4 +103,128 @@ public class HevcEncoderProbe(ITestOutputHelper output)
 
         File.WriteAllLines(Path.Combine(target, "probe.csv"), lines);
     }
+
+    /// <summary>
+    /// With EGAMI_HEIC_RATE set to a folder of PNG photos, writes each as HEIC at the QPs of EGAMI_HEVC_PROBE_QPS (or the qualities
+    /// of EGAMI_HEIC_RATE_QUALITIES) into EGAMI_HEVC_PROBE_OUT as name-qpNN.heic, with the tuning EGAMI_HEIC_AQ (0 or 1),
+    /// EGAMI_HEIC_AQ_STRENGTH and EGAMI_HEIC_CHROMA_OFFSET give, for scoring with other tools; the time each takes goes to
+    /// times.csv.
+    /// </summary>
+    [Fact]
+    public void RateFiles()
+    {
+        if (Environment.GetEnvironmentVariable("EGAMI_HEIC_RATE") is not string folder)
+        {
+            return;
+        }
+
+        string target = Environment.GetEnvironmentVariable("EGAMI_HEVC_PROBE_OUT") ?? Path.GetTempPath();
+        int effort = int.Parse(Environment.GetEnvironmentVariable("EGAMI_HEVC_PROBE_EFFORT") ?? "4", CultureInfo.InvariantCulture);
+        string? qualities = Environment.GetEnvironmentVariable("EGAMI_HEIC_RATE_QUALITIES");
+        int[] points = [.. (qualities ?? Environment.GetEnvironmentVariable("EGAMI_HEVC_PROBE_QPS") ?? "22,27,32,37").Split(',').Select(int.Parse)];
+        HeicWriter.HeicTuning saved = HeicWriter.Tuning;
+        double strength = HevcAdaptiveQp.Strength;
+        try
+        {
+            HeicWriter.Tuning = new HeicWriter.HeicTuning
+            {
+                AdaptiveQp = Environment.GetEnvironmentVariable("EGAMI_HEIC_AQ") != "0",
+                ChromaQpOffset = int.Parse(Environment.GetEnvironmentVariable("EGAMI_HEIC_CHROMA_OFFSET") ?? "0", CultureInfo.InvariantCulture),
+            };
+            HevcAdaptiveQp.Strength = double.Parse(Environment.GetEnvironmentVariable("EGAMI_HEIC_AQ_STRENGTH") ?? "1", CultureInfo.InvariantCulture);
+            if (Environment.GetEnvironmentVariable("EGAMI_HEVC_PROFILE") is string changes)
+            {
+                // Name=value pairs, as "MaxCuLog2=5;SmallCandidates=2", applied to the effort's profile by reflection.
+                HevcEncoderProfile.Adjust = profile =>
+                {
+                    foreach (string change in changes.Split(';', StringSplitOptions.RemoveEmptyEntries))
+                    {
+                        string[] parts = change.Split('=');
+                        System.Reflection.PropertyInfo property = typeof(HevcEncoderProfile).GetProperty(parts[0], System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!;
+                        profile = profile with { };
+                        property.SetValue(profile, Convert.ChangeType(parts[1], property.PropertyType, CultureInfo.InvariantCulture));
+                    }
+
+                    return profile;
+                };
+            }
+            int threads = int.Parse(Environment.GetEnvironmentVariable("EGAMI_HEVC_PROBE_THREADS") ?? "0", CultureInfo.InvariantCulture);
+            EgamiContext context = threads > 0 ? new EgamiContext { MaxParallelism = threads }.WithHeic() : new EgamiContext().WithHeic();
+            List<string> times = ["file,point,bytes,seconds"];
+            foreach (string file in Directory.GetFiles(folder, "*.png").Order())
+            {
+                string name = Path.GetFileNameWithoutExtension(file);
+                using Raster raster = Raster.Load(file, context);
+                using HeicWriter.HeicStill still = new(raster, raster.Metadata, new HeicWriterOptions { Effort = effort }, context);
+                foreach (int point in points)
+                {
+                    string path = Path.Combine(target, qualities is null ? $"{name}-qp{point:D2}.heic" : $"{name}-q{point:D3}.heic");
+                    TimeSpan cpu = Process.GetCurrentProcess().TotalProcessorTime;
+                    using (FileStream stream = File.Create(path))
+                    {
+                        if (qualities is null)
+                        {
+                            still.Write(50, stream, null, point);
+                        }
+                        else
+                        {
+                            still.Write(point, stream, null);
+                        }
+                    }
+
+                    double seconds = (Process.GetCurrentProcess().TotalProcessorTime - cpu).TotalSeconds;
+                    times.Add(string.Create(CultureInfo.InvariantCulture, $"{name},{point},{new FileInfo(path).Length},{seconds:F3}"));
+                }
+            }
+
+            File.WriteAllLines(Path.Combine(target, "times.csv"), times);
+        }
+        finally
+        {
+            HeicWriter.Tuning = saved;
+            HevcAdaptiveQp.Strength = strength;
+            HevcEncoderProfile.Adjust = null;
+        }
+    }
+
+    /// <summary>
+    /// With EGAMI_HEIC_WRITE_PROBE set to a folder of PNG files, writes each as HEIC in several ways into EGAMI_HEVC_PROBE_OUT, with
+    /// each file's Annex B stream and Egami's own decode beside it, for other decoders to check.
+    /// </summary>
+    [Fact]
+    public void WriteFiles()
+    {
+        if (Environment.GetEnvironmentVariable("EGAMI_HEIC_WRITE_PROBE") is not string folder)
+        {
+            return;
+        }
+
+        string target = Environment.GetEnvironmentVariable("EGAMI_HEVC_PROBE_OUT") ?? Path.GetTempPath();
+        EgamiContext context = new EgamiContext().WithHeic();
+        foreach (string file in Directory.GetFiles(folder, "*.png").Order())
+        {
+            string name = Path.GetFileNameWithoutExtension(file);
+            using Raster loaded = Raster.Load(file, context);
+            (string Suffix, HeicWriterOptions Options)[] ways =
+            [
+                ("q50", new HeicWriterOptions()),
+                ("q90-444", new HeicWriterOptions { Quality = 90, Chroma = ChromaFormat.Yuv444 }),
+                ("lossless", new HeicWriterOptions { Lossless = true }),
+                ("grid", new HeicWriterOptions { GridTileSize = new Size(256, 256), ThumbnailSize = 160 }),
+                ("10bit", new HeicWriterOptions { BitDepth = 10, Quality = 70 }),
+            ];
+            foreach ((string suffix, HeicWriterOptions options) in ways)
+            {
+                using Raster<Rgba8> raster = loaded.As<Rgba8>();
+                string path = Path.Combine(target, $"{name}-{suffix}.heic");
+                using (FileStream stream = File.Create(path))
+                {
+                    raster.Save(stream, "heic", options);
+                }
+
+                using Raster<Rgba8> decoded = Raster.Load<Rgba8>(path, context);
+                decoded.Save(Path.ChangeExtension(path, ".egami.png"));
+            }
+        }
+    }
 }
