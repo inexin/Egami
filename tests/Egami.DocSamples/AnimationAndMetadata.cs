@@ -211,6 +211,25 @@ public class AnimationAndMetadata
             }
         }
 
+        #region jpeg-lossless-samples
+        // Samples that are not pixels, such as a camera's 14-bit sensor data, as a lossless JPEG stream (a DNG or TIFF tile).
+        ushort[] samples = new ushort[64 * 32];
+        for (int i = 0; i < samples.Length; i++)
+        {
+            samples[i] = (ushort)((i * 37) % 16384);
+        }
+
+        using (MemoryStream tile = new())
+        {
+            JpegLosslessWriter.Write(tile, samples, components: 1, width: 64, precision: 14, predictor: null);
+
+            // A colour filter array tile as DNG lays it out: each row's photosites coded in pairs, half as wide.
+            using MemoryStream cfa = new();
+            JpegLosslessWriter.WriteCfa(cfa, samples, width: 64, precision: 14);
+            Assert.True(tile.Length > 0 && cfa.Length > 0);
+        }
+        #endregion
+
         Assert.True(((JpegDetails)Raster.Load("duck-lossless-arithmetic.jpg").Metadata.FormatDetails!).Arithmetic);
         Assert.True(((JpegDetails)Raster.Load("duck-arithmetic.jpg").Metadata.FormatDetails!).Arithmetic);
         Assert.True(((JpegDetails)Raster.Load("duck-repacked.jpg").Metadata.FormatDetails!).Arithmetic);

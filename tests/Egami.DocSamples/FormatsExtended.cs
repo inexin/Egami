@@ -281,6 +281,30 @@ public class FormatsExtended
     }
 
     [Fact]
+    public void RawDng()
+    {
+        using SampleFiles files = new();
+        WriteDng("photo.dng");
+        EgamiContext context = EgamiContext.Default.WithRaw();
+
+        #region raw-dng
+        // Any RAW file Egami reads becomes a DNG with its sensor data unchanged: levels, crop, colour data and EXIF come along.
+        RawFormat.ConvertToDng("photo.dng", "copy.dng", new DngWriterOptions { Preview = DngPreview.Thumbnail }, context);
+
+        // A transcode with no operations takes the same route; with operations, the develop is saved as a linear DNG.
+        Raster.Transcode("photo.dng", "same.dng", context: context);
+        Raster.Transcode("photo.dng", "small.dng", ops => ops.Fit(800, 800), context: context);
+        #endregion
+
+        using Raster original = Raster.Load("photo.dng", context, new RawReaderOptions { Output = RawOutput.Mosaic });
+        using Raster copy = Raster.Load("copy.dng", context, new RawReaderOptions { Output = RawOutput.Mosaic });
+        using Raster same = Raster.Load("same.dng", context, new RawReaderOptions { Output = RawOutput.Mosaic });
+        Assert.True(double.IsPositiveInfinity(Raster.Compare(original, copy).Overall.Psnr));
+        Assert.True(double.IsPositiveInfinity(Raster.Compare(original, same).Overall.Psnr));
+        Assert.Null(((RawDetails)Raster.Load("small.dng", context, new RawReaderOptions { Output = RawOutput.Mosaic }).Metadata.FormatDetails!).CfaPattern);
+    }
+
+    [Fact]
     public void RawOutputs()
     {
         using SampleFiles files = new();

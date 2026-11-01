@@ -58,6 +58,18 @@ Video Build Plan task 31: HEVC decode speed. No API changes.
 
 ## Egami.Formats.Extended, unreleased
 
+DNG writing, PR B. Additive.
+
+- `RawFormat.ConvertToDng` converts any RAW file Egami reads to DNG with its sensor data as decoded, laid out as Adobe DNG
+  Converter does: a 256-pixel thumbnail and the camera tags in IFD0, the raw data in 256 × 256 tiles in a SubIFD, a JPEG preview
+  in another. Levels, areas, CFA pattern, linearization and opcode lists come from the file, both illuminants' matrices and the
+  baseline exposure from the file or the camera table, and EXIF, XMP and the maker note (in Adobe's MakN form) come along; a DNG
+  source keeps every tag. All 38 files of the RAW corpus Egami reads load back with their mosaic bit for bit. CR3 is refused.
+- `RawFormat.Info` writes DNG, so `Save` with it, `egami convert x.nef x.dng` and `Raster.Transcode` work: a RAW mosaic raster
+  becomes a CFA DNG, any other raster LinearRaw. A transcode from RAW to DNG with no operations keeps the sensor data.
+- `DngWriterOptions` with `DngCompression` (lossless JPEG, default, with CFA rows as pairs; Deflate; None; JPEG XL) and
+  `DngPreview` (None, Thumbnail, Medium, Full).
+
 Camera RAW. All additive; it ships in one release.
 
 - `RawFormat`, registered by `WithExtendedFormats()` and `WithRaw()` ahead of TIFF, reads DNG 1.0 to 1.7 (colour filter arrays
@@ -126,6 +138,26 @@ HEIC encoder, core side. No public API change.
 - Saving to HEIC with core Egami alone says that the Egami.Heic package writes it, rather than that the format has no writer.
   The still image item layout of the AVIF writer is shared with Egami.Heic's HEIC writer; AVIF files are unchanged byte for
   byte.
+
+DNG writing, PR B: what format packages need from core.
+
+- `IFormatConverter`: a writer may convert a file of another format without decoding it to pixels; `Raster.Transcode` asks it
+  when there are no operations and the reader options ask for nothing. Egami.Formats.Extended's DNG writer uses it.
+- `JpegLosslessWriter.Write` and `WriteCfa` are public, for formats that store lossless JPEG streams (DNG tiles).
+- `EgamiInput` has a public constructor and `Dispose`, for a format package that runs a load itself.
+
+DNG writing, PR A: lossless JPEG in TIFF. No public API change.
+
+- TIFF compression 7 at `Quality` 100 writes lossless JPEG (SOF3, T.81 annex H), as `Quality` 100 already does for WebP: 8 and
+  16-bit gray, RGB and CMYK, in strips and tiles, each unit a whole stream with its own tables and the predictor that codes it
+  smallest, with `ParallelCompression`. RGB stays RGB and inks stay as they are. Other qualities write baseline JPEG as before,
+  and a lossless JPEG source keeps its compression on re-save even after an edit.
+- The TIFF reader reads lossless JPEG strips and tiles at every depth from 2 to 16 bits (before, compression 7 was read at 8
+  bits only), as raw samples without colour conversion, including DNG's layout of a CFA row as two components half as wide.
+  8-bit lossless JPEG pages now load their samples as they are, CMYK inks included, instead of through the JPEG colour path.
+- The lossless JPEG writer codes rows of samples as well as pixels, internally, for DNG tiles: a CFA mosaic coded as two
+  components half as wide, as Adobe DNG Converter writes it, is 20.5 % smaller than one component on 32 corpus mosaics (15 to
+  38 % on Bayer sensors, under 2 % on X-Trans). Lossless JPEG encoding of images is as fast as before.
 
 JPEG XL extras, PR D: partial display. No public API change.
 

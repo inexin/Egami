@@ -99,6 +99,7 @@ internal static class TiffMetadata
             ExtraSamples = [.. page.Extra.Select(e => (TiffExtraSample)e)],
             InkNames = [.. page.InkNames],
             Unchanged = true,
+            JpegLossless = page.LosslessJpeg,
         };
         return details;
     }

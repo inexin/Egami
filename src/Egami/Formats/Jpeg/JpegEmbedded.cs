@@ -18,6 +18,17 @@ internal static class JpegEmbedded
     internal static ushort[] DecodeLosslessSamples(
         ReadOnlyMemory<byte> tables, ReadOnlyMemory<byte> data, EgamiContext context, out JpegDetails details, CancellationToken cancellationToken = default)
     {
+        return DecodeLosslessSamples(tables, data, context, out details, out _, out _, out _, cancellationToken);
+    }
+
+    /// <summary>
+    /// Decodes a lossless JPEG stream to its samples as the overload without the frame's size does, also giving the frame's width
+    /// and component count, and whether the decode warned (the data was damaged or ended early; what decoded is kept).
+    /// </summary>
+    internal static ushort[] DecodeLosslessSamples(
+        ReadOnlyMemory<byte> tables, ReadOnlyMemory<byte> data, EgamiContext context, out JpegDetails details, out int width, out int components,
+        out bool damaged, CancellationToken cancellationToken = default)
+    {
         JpegHeader header = ReadHeader(tables, data, context, cancellationToken, out EgamiInput input);
         if (!header.Lossless)
         {
@@ -37,6 +48,9 @@ internal static class JpegEmbedded
         decoder.Decode(input);
         decoder.CopySamples(samples);
         details = header.Details;
+        width = header.Width;
+        components = header.Components.Length;
+        damaged = header.Metadata.WarningList.Count > 0;
         return samples;
     }
 

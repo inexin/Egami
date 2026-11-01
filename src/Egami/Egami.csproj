@@ -38,6 +38,8 @@
     <InternalsVisibleTo Include="Egami.Heic.Tests" />
     <!-- Egami.Drawing's ink canvas blends with the ink math the PSD flattener uses (2.3.10, question 9); same release train. -->
     <InternalsVisibleTo Include="Egami.Drawing" />
+    <!-- The RAW reader's tests decode the lossless JPEG writer's CFA tiles, which DNG writing codes (DNG writing design). -->
+    <InternalsVisibleTo Include="Egami.Formats.Extended.Tests" />
   </ItemGroup>
 
 </Project>

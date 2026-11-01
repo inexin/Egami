@@ -143,7 +143,7 @@ public class TiffJxlTests
     }
 
     /// <summary>Writes a little-endian TIFF with one page whose strips or tiles are <paramref name="units"/>.</summary>
-    private static byte[] Build(int width, int height, bool tiled, int unitHeight, int bits, int samples, int photometric, bool fl, int compression, List<byte[]> units, bool planar = false)
+    internal static byte[] Build(int width, int height, bool tiled, int unitHeight, int bits, int samples, int photometric, bool fl, int compression, List<byte[]> units, bool planar = false, int tileWidth = Tile)
     {
         List<(int Tag, int Type, uint[] Values)> tags =
         [
@@ -189,7 +189,7 @@ public class TiffJxlTests
 
         if (tiled)
         {
-            tags.Add((322, 3, [Tile]));
+            tags.Add((322, 3, [(uint)tileWidth]));
             tags.Add((323, 3, [(uint)unitHeight]));
             tags.Add((324, 4, offsets));
             tags.Add((325, 4, counts));

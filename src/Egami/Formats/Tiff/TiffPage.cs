@@ -121,8 +121,18 @@ internal sealed class TiffPage
     /// <summary>Gets whether the page is YCbCr in data units (subsampled, not JPEG or JPEG XL, whose decoders give RGB).</summary>
     public bool Subsampled => Photometric == 6 && (SubH, SubV) != (1, 1) && !Encoded;
 
-    /// <summary>Gets whether each strip or tile is a whole JPEG, WebP or JPEG XL stream, decoded by its own reader.</summary>
-    public bool Encoded => Compression is TiffCodes.Jpeg or TiffCodes.OldJpeg or TiffCodes.Webp or TiffCodes.JpegXl or TiffCodes.DngJpegXl;
+    /// <summary>
+    /// Gets whether each strip or tile is a whole JPEG, WebP or JPEG XL stream, decoded by its own reader. Lossless JPEG is not:
+    /// its samples are decoded raw, as any other compression's.
+    /// </summary>
+    public bool Encoded => Compression is TiffCodes.OldJpeg or TiffCodes.Webp or TiffCodes.JpegXl or TiffCodes.DngJpegXl
+        || (Compression == TiffCodes.Jpeg && !LosslessJpeg);
+
+    /// <summary>
+    /// Gets whether a JPEG page's strips or tiles are lossless JPEG (SOF3 or SOF11), as its first unit's frame says: their samples
+    /// are the page's own at any depth from 2 to 16 bits, with no colour conversion. YCbCr pages go through the JPEG decoder still.
+    /// </summary>
+    public bool LosslessJpeg { get; private set; }
 
     public double[] Coefficients { get; private set; } = [0.299, 0.587, 0.114];
 
@@ -309,9 +319,10 @@ internal sealed class TiffPage
 
         if (page.Compression is TiffCodes.Jpeg or TiffCodes.OldJpeg)
         {
-            if (page.Bits != 8 || page.Float)
+            // Other depths than 8 are read as lossless JPEG only, which is known once the units are.
+            if (page.Float || (page.Bits != 8 && (page.Compression == TiffCodes.OldJpeg || page.Bits is < 2 or > 16 || page.Photometric == 6)))
             {
-                throw new NotSupportedException($"TIFF: JPEG compression of {page.Bits}-bit samples is not read.");
+                throw new NotSupportedException($"TIFF: JPEG compression of {page.Bits}-bit {(page.Float ? "floating-point " : string.Empty)}samples is not read.");
             }
 
             if (ifd.TryGet(TiffTags.JpegTables, out TiffEntry tables) && tables.ValueAt >= 0)
@@ -339,6 +350,15 @@ internal sealed class TiffPage
 
         page.ChooseNatural();
         page.ReadUnits(strict);
+        if (page.Compression == TiffCodes.Jpeg && page.Photometric != 6)
+        {
+            page.LosslessJpeg = TiffJpeg.IsLossless(page);
+            if (page.Bits != 8 && !page.LosslessJpeg)
+            {
+                throw new NotSupportedException($"TIFF: JPEG compression of {page.Bits}-bit samples is read only as lossless JPEG.");
+            }
+        }
+
         return page;
     }
 

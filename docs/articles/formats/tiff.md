@@ -24,6 +24,7 @@ reduced-resolution pages and SubIFDs come too, each after the page it belongs to
 | None, LZW (and TIFF 5.0's bit-reversed LZW), Deflate, PackBits, ZSTD, LZMA | Yes, with the horizontal and floating-point predictors |
 | CCITT modified Huffman, Group 3 (1-D and 2-D), Group 4 | 1-bit pages |
 | JPEG, old-style JPEG | 8-bit pages, through Egami's JPEG decoder; old-style JPEG is best effort |
+| Lossless JPEG (code 7 with SOF3 or SOF11 units) | Gray, RGB and CMYK pages of 2 to 16 bits, each strip or tile decoded to its samples as they are, including DNG's layout of a row as two components half as wide |
 | ThunderScan | 4-bit gray |
 | SGILog, SGILog24 | LogL and LogLuv pages, as linear `GrayF32` or `RgbF32` |
 | WebP | Lossless and lossy, through Egami's WebP decoder |
@@ -54,12 +55,12 @@ them through it.
 
 | Option | Default | Does |
 | --- | --- | --- |
-| `Compression` | the TIFF source's, else `Deflate` | `None`, `Lzw`, `Deflate`, `Zstd`, `Lzma`, `PackBits`, `CcittGroup3` and `CcittGroup4` (1-bit), `Jpeg` (8-bit gray, RGB and CMYK), `Webp` (lossless at `Quality` 100, else lossy) |
+| `Compression` | the TIFF source's, else `Deflate` | `None`, `Lzw`, `Deflate`, `Zstd`, `Lzma`, `PackBits`, `CcittGroup3` and `CcittGroup4` (1-bit), `Jpeg` (8-bit gray, RGB and CMYK; lossless JPEG at `Quality` 100, 8 and 16-bit), `Webp` (lossless at `Quality` 100, else lossy) |
 | `CompressionLevel` | 5 | Deflate level, 0 to 9 |
 | `ZstdLevel` | 9 | Zstandard level, 1 to 22, as libtiff's `ZSTD_LEVEL` |
 | `LzmaPreset` | 6 | LZMA preset, 0 to 9, with xz's meanings, as libtiff's `LZMA_PRESET` |
 | `Predictor` | the source's, else `Horizontal` for integers and `FloatingPoint` for floats | For LZW, Deflate, Zstd and LZMA; `None` turns it off |
-| `Quality` | 75 | JPEG and lossy WebP quality |
+| `Quality` | 75 | JPEG and lossy WebP quality; 100 writes lossless JPEG or lossless WebP |
 | `TileSize` | the source's, else strips of about 64 KB | A multiple of 16 writes square tiles; 0 forces strips |
 | `Layout` | `Classic` | `Big` writes BigTIFF; `Auto` switches when the pixels pass 4 GB; `Classic` throws before writing when they would |
 | `Reduce` | `false` | Writes the smallest exact form: 1 bit, gray, a palette of up to 256 colors, or 8 bits from 16 |
@@ -70,7 +71,7 @@ Every pixel type is written at its own depth: gray and RGB at 8 and 16 bits with
 `RgbaF32` and `RgbaF16` as floats, `Cmyk8` and `Cmyk16` as separated, premultiplied types as associated alpha; packed types widen
 to 8 or 16 bits. The writer is deterministic and little-endian, except that re-saving a big-endian TIFF keeps its byte order, as
 it keeps the source's compression, predictor and tiling. A JPEG, WebP or CCITT source keeps its compression only while no
-operation has changed the pixels, so a lossy file is never compressed twice by accident. `Raster.SaveAll` writes several rasters
+operation has changed the pixels, so a lossy file is never compressed twice by accident; a lossless JPEG source keeps it always. `Raster.SaveAll` writes several rasters
 as pages.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Tiff.cs#tiff-fax)]
@@ -86,6 +87,14 @@ levels write smaller and slower. Egami's
 Zstandard codec is its own managed code from RFC 8878: one frame a strip or tile, with the content size and no checksum, as
 libtiff writes. Up to level 15 it follows libzstd's settings and stays within 5 % of its size; from 16, where libzstd switches to
 optimal parsing, Egami's files are a few percent larger. libtiff and GDAL read Egami's ZSTD files and Egami reads theirs.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Tiff.cs#tiff-lossless-jpeg)]
+
+Lossless JPEG (ITU-T T.81 annex H) keeps 8 and 16-bit gray, RGB and CMYK as they are: RGB is not turned into YCbCr, and inks are
+stored as they are, not inverted. Each strip or tile is a whole SOF3 stream with its own Huffman tables and the predictor that
+codes it smallest, so `ParallelCompression` applies and there are no JPEGTables. It is the coding DNG uses for camera RAW data;
+libtiff's JPEG codec does not read it, so choose Deflate, ZSTD or LZMA for files other TIFF readers must open. Float pages are
+written at 16 bits and alpha is refused, as with baseline JPEG.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Tiff.cs#tiff-lzma)]
 
