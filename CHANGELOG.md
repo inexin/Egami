@@ -42,6 +42,20 @@ Video Build Plan task 31: HEVC decode speed. No API changes.
 
 ## Egami.Formats.Extended, unreleased
 
+DNG writing, PR C: gates, fixes and docs.
+
+- DNGs are smaller: rows of a tile past the image's edge code to almost nothing, tiles are sized near 256 pixels per axis to
+  leave the least padding, as Adobe sizes them (`DngWriterOptions.TileSize` is now `int?`, `null` by default), and previews are
+  JPEG quality 80. Over egami-compare's RAW corpus, a lossless DNG with the medium preview is 0.3 % smaller than Adobe DNG
+  Converter's, within 2 % file by file but for a lossy Nikon NEF (21 % larger: Adobe keeps its codes before the tone curve).
+- A DNG source's own tag values are kept exactly, not re-encoded from what Egami read, and a measured black level keeps seven
+  decimals: every converted file develops as its source does, within a level in 16 bits.
+- X-Trans tiles code as one component, as Adobe writes them, so LibRaw reads them. Adobe's dng_validate finds nothing of
+  Egami's own: PreviewColorSpace is LONG, a source's raw tags stay out of a thumbnail IFD0, stale raw digests and malformed
+  EXIF resolutions, UserComment and LensSpecification are left out.
+- Previews develop faster (half-size ones without colour noise reduction, LinearRaw ones from a 2 × 2 average): on one thread
+  the corpus converts in 73 % of the time Adobe DNG Converter takes on one core.
+
 DNG writing, PR B. Additive.
 
 - `RawFormat.ConvertToDng` converts any RAW file Egami reads to DNG with its sensor data as decoded, laid out as Adobe DNG

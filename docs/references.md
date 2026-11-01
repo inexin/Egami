@@ -182,6 +182,7 @@ LGPL code is never read.
 | Tool | License | Use |
 | --- | --- | --- |
 | FFmpeg, ffprobe | LGPL/GPL | Make test clips, decode and probe for comparison, in Docker |
+| Adobe DNG SDK's dng_validate (1.7.1, built from Adobe's download outside the repository) | Adobe DNG SDK license | Validate the DNGs Egami writes in egami-compare's DNG writing gates (Lars's decision, 2026-11-01); its source is never read |
 | libvpx vpxenc and vpxdec | BSD-3 | Make VP8 and VP9 clips and give the expected frames, and decode the VP8 encoder's streams, in Docker (`tools/vp8ref`, `tools/video/vp9ref`) |
 | MKVToolNix (mkvinfo, mkvmerge, mkvextract) | GPL-2.0 | Check our Matroska files and make and check subtitle tracks, in Docker |
 | GPAC MP4Box | LGPL-2.1 | Make and check MP4 subtitle tracks (`tools/video/make-subtitle-tracks.py`), in Docker |

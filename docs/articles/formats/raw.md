@@ -160,9 +160,42 @@ EXIF (with GPS) and XMP come through as for TIFF.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/FormatsExtended.cs#raw-dng)]
 
-`DngWriterOptions` sets the raw data's `Compression`, a `DngCompression` (lossless JPEG by default, as Adobe writes, with a colour filter array row
-coded as pairs; Deflate for floating-point data; `None`; or DNG 1.7's lossless JPEG XL), the `TileSize` (256), the `Preview`
-(a 256-pixel thumbnail and a 1024-pixel JPEG by default) and `ParallelCompression` (on). A converted file keeps the source's
-levels, active area, crop, colour filter pattern, linearization table and opcode lists, a colour profile from the file or the
-camera table (a camera in neither gets the one Egami develops it with, and a `Raw.DngCameraUnknown` warning), EXIF, XMP and
-the maker note in DNGPrivateData; a DNG source keeps every tag it had.
+`RawFormat.ConvertToDng` copies the sensor data as Egami decodes it: not demosaiced, scaled or cropped. The file is laid out
+as Adobe DNG Converter writes it: a 256-pixel thumbnail and the camera tags in IFD0, the raw data in tiles in a SubIFD, and a
+JPEG preview in another. A converted file keeps the source's levels, active area, crop, colour filter pattern, linearization
+table and opcode lists, a colour profile from the file or the camera table (both illuminants' ColorMatrix, CameraCalibration
+and ForwardMatrix, and the baseline exposure), EXIF, XMP and the maker note, which goes into DNGPrivateData in Adobe's form. A
+DNG source keeps every tag it had, its values exactly. A camera with colour data in neither the file nor the table gets the
+profile Egami develops it with (the camera treated as sRGB) and a `Raw.DngCameraUnknown` warning through
+`EgamiContext.Diagnostics`.
+
+`Raster.Transcode` and `egami convert` take the same route when the output is .dng and there are no operations: the RAW
+format's writer is an `IFormatConverter` ([Custom formats](custom.md#converting-without-decoding)). With operations, the
+developed image is saved instead, as LinearRaw.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/FormatsExtended.cs#raw-dng-rasters)]
+
+`Save` with `RawFormat.Info` writes a `Gray16` or `GrayF32` raster whose `FormatDetails` is a RAW mosaic's `RawDetails` as a
+colour filter array DNG, with the details' pattern, levels and areas and the camera table's profile (or, for a camera not in
+it, one worked out from `CameraToXyz`). Any other raster becomes LinearRaw: linear RGB in its own primaries (sRGB when it has
+no RGB profile), 16-bit or float, black 0, with a ColorMatrix and ForwardMatrix for D50 worked out from the primaries. Its
+previews show the raster itself.
+
+| `DngWriterOptions` | Default | Does |
+| --- | --- | --- |
+| `Compression` | `DngCompression.LosslessJpeg` | Lossless JPEG, as Adobe writes, a Bayer row coded as pairs (other patterns as one component); floating-point data goes in `Deflate` instead. `None`, `Deflate` (with TIFF's integer or floating-point predictor), or DNG 1.7's lossless `JpegXl` |
+| `TileSize` | `null` | Tiles near 256 pixels, sized along each axis to leave the least padding, as Adobe sizes them; or a square size, a multiple of 16 |
+| `Preview` | `DngPreview.Medium` | A 256-pixel thumbnail and a 1024-pixel JPEG; `Thumbnail`, `Full` (a full-size JPEG) or `None` (the raw data is the first image) |
+| `ParallelCompression` | `true` | Codes tiles on several threads; the file is the same |
+
+On the 39 corpus files Egami reads as RAW, a converted DNG loads back with its mosaic, levels, areas and pattern bit for bit,
+and develops to the source's develop within a level in 16 bits. Adobe DNG Converter, LibRaw (through Magick.NET), Windows'
+Raw Image Extension and Adobe's dng_validate open it. Its colour tags are Adobe's for the same file. With lossless JPEG and
+the medium preview it is 0.3 % smaller than Adobe's DNG over the corpus, within 2 % file by file but for a lossy Nikon NEF,
+which Adobe stores as the codes before the camera's tone curve, with a linearization table (21 % smaller). On one thread it
+converts the corpus in 73 % of the time Adobe DNG Converter takes pinned to one core.
+
+Limits: Egami does not convert CR3 files. A DNG past 4 GB is written as BigTIFF, which Egami's own RAW reader does not open.
+`Save` has no context, so it reports no `Raw.DngCameraUnknown` warning; `ConvertToDng` and `Transcode` do. Some maker files'
+active area is their crop, as Egami reads them, which dng_validate warns leaves little padding for a develop (Canon EOS 350D,
+Panasonic).

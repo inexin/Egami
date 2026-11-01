@@ -305,6 +305,34 @@ public class FormatsExtended
     }
 
     [Fact]
+    public void RawDngRasters()
+    {
+        using SampleFiles files = new();
+        WriteDng("photo.dng");
+        EgamiContext context = EgamiContext.Default.WithRaw();
+
+        #region raw-dng-rasters
+        // A mosaic keeps its RawDetails, so it saves as a colour filter array DNG again, after work of your own on the photosites.
+        using Raster<Gray16> mosaic = Raster.Load<Gray16>("photo.dng", context, new RawReaderOptions { Output = RawOutput.Mosaic });
+        using (FileStream file = File.Create("mosaic.dng"))
+        {
+            mosaic.Save(file, RawFormat.Info, new DngWriterOptions { Compression = DngCompression.Deflate });
+        }
+
+        // Any other raster saves as a linear DNG, which raw converters open as a finished photo they can still white-balance.
+        using Raster<Rgb16> developed = Raster.Load<Rgb16>("photo.dng", context);
+        using (FileStream file = File.Create("linear.dng"))
+        {
+            developed.Save(file, RawFormat.Info, new DngWriterOptions { Preview = DngPreview.Thumbnail });
+        }
+        #endregion
+
+        using Raster again = Raster.Load("mosaic.dng", context, new RawReaderOptions { Output = RawOutput.Mosaic });
+        Assert.True(double.IsPositiveInfinity(Raster.Compare(mosaic, again).Overall.Psnr));
+        Assert.Null(((RawDetails)Raster.Load("linear.dng", context, new RawReaderOptions { Output = RawOutput.Mosaic }).Metadata.FormatDetails!).CfaPattern);
+    }
+
+    [Fact]
     public void RawOutputs()
     {
         using SampleFiles files = new();
