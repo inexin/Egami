@@ -4,7 +4,7 @@ Egami.SystemDrawing gives code written for System.Drawing.Common its API on ever
 `Icon`, pixel formats, `LockBits`, the codecs and their encoder parameters, frames and property items. System.Drawing.Common
 runs only on Windows since .NET 6; with this package the same code runs on Linux, macOS and in containers, drawn by Egami.
 
-The package is a preview (1.0.0-preview.2). This release has bitmaps, pixel access, codecs, icons, and `Graphics` with pens,
+The package is a preview (1.0.0-preview.3). This release has bitmaps, pixel access, codecs, icons, and `Graphics` with pens,
 brushes, paths, transforms, clipping, regions and images, fonts and text, metafiles, effects, off-screen buffers and the image
 animator.
 
