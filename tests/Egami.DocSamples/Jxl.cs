@@ -1,6 +1,7 @@
 using Egami.Formats;
 using Egami.Formats.Jxl;
 using Egami.Pixels;
+using Egami.Streaming;
 
 namespace Egami.DocSamples;
 
@@ -140,6 +141,44 @@ public class Jxl
         Assert.True(File.Exists("duck.png"));
         Assert.True(File.Exists("hdr-as-sdr.jpg"));
         Assert.True(File.Exists("duck-lossless.jxl"));
+    }
+
+    [Fact]
+    public void PartialDisplay()
+    {
+        using SampleFiles files = new();
+        using (Raster duck = Raster.Load("duck.png"))
+        {
+            duck.Save("duck-download.jxl", new JxlWriterOptions { Lossless = false, Progressive = true });
+        }
+
+        byte[] file = File.ReadAllBytes("duck-download.jxl");
+        int previews = 0;
+
+        #region partial-display
+        // A JPEG XL file shown while it downloads: each preview is what djxl's progressive flush shows of the bytes so far
+        // (the LF image upsampled, then each pass and group as it arrives); the rows come once the last byte has.
+        using RasterDecoder decoder = RasterDecoder.OpenIncremental();
+        Raster<Rgba8>? view = null;
+        foreach (byte[] chunk in file.Chunk(16384))
+        {
+            decoder.Append(chunk);
+            if (decoder.HeaderRead)
+            {
+                view ??= Raster.Create<Rgba8>(decoder.Info.Width, decoder.Info.Height);
+                if (decoder.RenderPreview(view))
+                {
+                    previews++; // show view
+                }
+            }
+        }
+
+        decoder.EndOfInput();
+        decoder.ReadRows(view!); // the finished image
+        #endregion
+
+        view?.Dispose();
+        Assert.True(previews > 0);
     }
 
     [Fact]

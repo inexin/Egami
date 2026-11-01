@@ -105,6 +105,17 @@ DDS textures, stage C (BC7 and BC6H encoders).
 
 ## Egami, unreleased
 
+JPEG XL extras, PR D: partial display. No public API change.
+
+- `RasterDecoder.OpenIncremental` opens a JPEG XL file once its image header has arrived, and `RenderPreview` draws what has
+  arrived of a still as libjxl's progressive flush does: nothing until a frame's LF sections are in, then the LF image
+  upsampled, sharpening group by group and pass by pass; lossless files fill in group by group or, squeezed, level by level. At
+  every cut of the test files and the 144 cuts of egami-compare's truncated set it shows a preview exactly when djxl
+  `--allow_partial_files` does, within one level at 8 bits of its picture. Rows come out after the last byte, the same pixels as a
+  whole-file load.
+- JPEG XL files with an LF frame of level 4, or a Modular color channel smaller than its frame, are reported as damaged
+  (`CorruptDataException`) instead of crashing the decoder; found by the new jxl-partial fuzz target.
+
 JPEG XL extras, PR C: Butteraugli and lossy efforts 8 to 10. All additive.
 
 - `CompareOptions.Butteraugli` adds libjxl's psychovisual distance to `Raster.Compare`: `CompareResult.Butteraugli` (the

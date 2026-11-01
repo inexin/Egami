@@ -47,6 +47,17 @@ may carry. Writing them is under [Writing](#animations).
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Jxl.cs#layers)]
 
+## Partly downloaded files
+
+While a file arrives through `RasterDecoder.OpenIncremental`, `RenderPreview` draws what libjxl's progressive flush draws of the
+bytes so far (djxl `--allow_partial_files`), within one level at 8 bits of it. Nothing shows until a frame's LF global section and
+LF groups have arrived. Then a lossy file shows its LF image upsampled 8 times, each 256-pixel group sharpening as its passes
+arrive (`Progressive` files in three steps). A lossless file fills in group by group, with the groups still missing black, or
+level by level when it is squeezed (cjxl `-R 1`). Rows come out once the last byte has, and are the same pixels as a whole-file
+load. Animations show nothing before the end.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Jxl.cs#partial-display)]
+
 ## Extra channels
 
 Alpha loads straight (premultiplied color is divided out). `JxlDetails.ExtraChannels` lists every channel as a

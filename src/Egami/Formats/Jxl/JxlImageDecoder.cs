@@ -165,7 +165,7 @@ internal static class JxlImageDecoder
             (JxlFile file, byte[] data) = Open(input, ReaderOptions.Default);
             List<(JxlFrameHeader Header, JxlToc Toc, long Offset)> sequence = Sequence(file);
             JxlParallel parallel = new(Math.Max(1, parallelism), CancellationToken.None);
-            float[][]?[] lfFrames = new float[4][][];
+            float[][]?[] lfFrames = new float[5][][];
             foreach ((JxlFrameHeader lf, JxlToc toc, long offset) in sequence.Where(s => s.Header.Type == JxlFrameType.Lf))
             {
                 JxlFrameDecoder lfDecoder = new(data, file.Header, lf, toc, offset, input.Limits) { Parallel = parallel };
@@ -398,10 +398,12 @@ internal static class JxlImageDecoder
     /// Decodes the frames in order and calls <paramref name="emit"/> with each frame shown (the canvas after each key frame) or,
     /// with <paramref name="layers"/>, with each regular frame before blending; stops when it returns <see langword="false"/>.
     /// </summary>
-    private static void Run(JxlFile file, byte[] codestream, EgamiInput input, List<(JxlFrameHeader Header, JxlToc Toc, long Offset)> sequence, bool lfOnly, bool layers, Func<JxlDecoded, JxlFrameHeader, bool> emit)
+    private static void Run(JxlFile file, byte[] codestream, EgamiInput input, List<(JxlFrameHeader Header, JxlToc Toc, long Offset)> sequence, bool lfOnly, bool layers, Func<JxlDecoded, JxlFrameHeader, bool> emit, long arrived = long.MaxValue)
     {
         JxlImageHeader h = file.Header;
-        float[][]?[] lfFrames = new float[4][][];
+
+        // Indexed by the LF level a frame reads (0 to 4: an LF frame of level 4 reads a slot no frame fills, found by fuzzing).
+        float[][]?[] lfFrames = new float[5][][];
         JxlReference?[] references = new JxlReference?[4];
         int visible = 0;
         int invisible = 0;
@@ -427,7 +429,7 @@ internal static class JxlImageDecoder
             }
 
             bool referenced = !f.IsLast && f.Type != JxlFrameType.Lf && (f.Duration == 0 || f.SaveAsReference != 0);
-            JxlFrameDecoder decoder = new(codestream, h, f, toc, offset, input.Limits) { Parallel = file.Parallel, Needed = f.IsLast && file.DisplayedFrames == 1 && !lfOnly && !layers ? file.Needed(f) : null };
+            JxlFrameDecoder decoder = new(codestream, h, f, toc, offset, input.Limits) { Parallel = file.Parallel, Needed = f.IsLast && file.DisplayedFrames == 1 && !lfOnly && !layers ? file.Needed(f) : null, Arrived = arrived };
             if (lfOnly && f.Type != JxlFrameType.Lf)
             {
                 // From the LF frame when the frame has one, from its own LF groups otherwise.
@@ -519,12 +521,85 @@ internal static class JxlImageDecoder
         }
     }
 
+    /// <summary>
+    /// Decodes what has arrived of a still image (PR D's partial display), from the first <paramref name="length"/> bytes of the
+    /// file: libjxl's progressive flush, with the pass groups not yet arrived shown from the LF image upsampled, a squeezed
+    /// Modular image at the levels that have arrived and an unsqueezed one with its missing groups black. Nothing shows until the
+    /// frame's LF global section and LF groups have arrived (a progressive file's LF frame alone shows nothing either, as with
+    /// djxl). Returns <see langword="null"/> while nothing can be shown, and for animations.
+    /// </summary>
+    internal static Raster? DecodePartial(byte[] data, int length, EgamiInput input, ReaderOptions options)
+    {
+        byte[]? codestream = JxlPartial.Codestream(data, length);
+        if (codestream is null)
+        {
+            return null;
+        }
+
+        using MemoryStream stream = new(codestream, writable: false);
+        EgamiInput copy = new(stream, input.Context, input.CancellationToken);
+        try
+        {
+            JxlFile file;
+            try
+            {
+                file = JxlFile.ReadPartial(copy);
+            }
+            catch (Exception e) when (e is EgamiException or EndOfStreamException)
+            {
+                return null;
+            }
+
+            if (file.Header.Animation is not null || file.Frames.Count == 0)
+            {
+                return null;
+            }
+
+            file.Output = JxlOutput.For(file, options is JxlReaderOptions { LinearOutput: true }, input.Context);
+            file.Parallel = new JxlParallel(Math.Max(1, input.Context.MaxParallelism), input.CancellationToken);
+
+            // Up to the first frame shown; the frames before it (LF, reference and patch frames) as far as they have arrived.
+            List<(JxlFrameHeader Header, JxlToc Toc, long Offset)> sequence = Sequence(file);
+            int shown = sequence.FindIndex(s => s.Header.IsNormal && s.Header.IsKeyFrame);
+            if (shown < 0)
+            {
+                return null;
+            }
+
+            Raster? result = null;
+            try
+            {
+                Run(file, codestream, copy, sequence[..(shown + 1)], lfOnly: false, layers: false, (decoded, f) =>
+                {
+                    result = Natural(copy, file, layout => Single(layout, copy, file, decoded, f));
+                    return false;
+                }, codestream.Length);
+            }
+            catch (Exception e) when (e is JxlNotArrivedException or EgamiException or EndOfStreamException)
+            {
+                // An earlier frame (an LF or reference frame) has not arrived whole, or the frame's first sections have not.
+                return null;
+            }
+
+            return result;
+        }
+        finally
+        {
+            copy.Dispose();
+        }
+    }
+
     /// <summary>Converts a Modular XYB frame's integer Y, X and B into X, Y and B floats (B coded as B - Y).</summary>
     private static float[][] ModularXyb(JxlFrameChannels frame, int count)
     {
         int[] y = frame.Channels[0].Data;
         int[] x = frame.Channels[1].Data;
         int[] b = frame.Channels[2].Data;
+        if (Math.Min(y.Length, Math.Min(x.Length, b.Length)) < count)
+        {
+            throw new CorruptDataException(JxlFormat.Info.Name, -1, "A color channel is smaller than its frame.");
+        }
+
         float mx = frame.LfDequant[0] / 128;
         float my = frame.LfDequant[1] / 128;
         float mb = frame.LfDequant[2] / 128;
@@ -630,6 +705,12 @@ internal static class JxlImageDecoder
             for (int c = 0; c < 3; c++)
             {
                 int[] data = frame.Channels[Math.Min(c, frame.ColorChannels - 1)].Data;
+                if (data.Length < count)
+                {
+                    // Transforms of a damaged stream can leave a color channel smaller than the frame (found by fuzzing).
+                    throw new CorruptDataException(JxlFormat.Info.Name, -1, "A color channel is smaller than its frame.");
+                }
+
                 float[] plane = new float[count];
                 for (int i = 0; i < count; i++)
                 {

@@ -40,8 +40,8 @@ independent, and readers, writers and contexts can be shared freely.
 
 `RasterDecoder.OpenIncremental` decodes while the bytes are still arriving: `Append` each chunk as it comes, read the rows
 finished so far, and call `EndOfInput` after the last. `Status` (a `DecodeStatus`) says whether rows are ready, more bytes are
-needed, or the frame or image is done, and `RenderPreview` draws an interlaced PNG, a progressive JPEG or a GIF frame as far
-as it has arrived. Files that are decoded into a buffer first (such as bottom-up BMP and TGA) wait for the end.
+needed, or the frame or image is done, and `RenderPreview` draws an interlaced PNG, a progressive JPEG, a GIF frame, a layered AVIF
+or a JPEG XL still as far as it has arrived. Files that are decoded into a buffer first (such as bottom-up BMP and TGA) wait for the end.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Streaming.cs#incremental)]
 

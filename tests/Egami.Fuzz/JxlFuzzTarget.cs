@@ -429,6 +429,59 @@ internal static class JxlFuzzTarget
     /// to the same frames, layers through ReadLayers to the same places, blend modes, names and pixels, and extra channels to the
     /// same samples; lossy files must load at their size with every frame.
     /// </summary>
+    /// <summary>
+    /// Decodes a file as it arrives in seven chunks (JPEG XL extras PR D), drawing a preview after each: previews of truncated
+    /// data must not crash, and the rows after the last byte must be those of a whole-file load.
+    /// </summary>
+    public static void Partial(byte[] data, EgamiContext context)
+    {
+        Raster<Rgba16>? whole = null;
+        try
+        {
+            whole = Raster.Load<Rgba16>(new MemoryStream(data), context);
+        }
+        catch (EgamiException)
+        {
+        }
+
+        try
+        {
+            int chunk = Math.Max(1, data.Length / 7);
+            using RasterDecoder decoder = RasterDecoder.OpenIncremental(context);
+            Raster<Rgba16>? rows = null;
+            for (int at = 0; at < data.Length; at += chunk)
+            {
+                decoder.Append(data.AsSpan(at, Math.Min(chunk, data.Length - at)));
+                if (decoder.HeaderRead)
+                {
+                    rows ??= Raster.Create<Rgba16>(decoder.Info.Width, decoder.Info.Height, context);
+                    decoder.RenderPreview(rows);
+                }
+            }
+
+            decoder.EndOfInput();
+            if (rows is not null && whole is not null && decoder.ReadRows(rows) == whole.Height && (rows.Width, rows.Height) == (whole.Width, whole.Height))
+            {
+                for (int y = 0; y < whole.Height; y++)
+                {
+                    if (!whole.Row(y).SequenceEqual(rows.Row(y)))
+                    {
+                        throw new InvalidOperationException($"Row {y} of the incremental decode differs from a whole-file load.");
+                    }
+                }
+            }
+
+            rows?.Dispose();
+        }
+        catch (EgamiException)
+        {
+        }
+        finally
+        {
+            whole?.Dispose();
+        }
+    }
+
     public static void Frames(byte[] data, EgamiContext context)
     {
         if (data.Length < 8)

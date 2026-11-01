@@ -81,6 +81,28 @@ internal sealed class JxlFile
         return file;
     }
 
+    /// <summary>
+    /// Reads the headers of a codestream cut short (a partly downloaded file): the frames whose header and TOC have arrived. Throws
+    /// when the image header itself has not.
+    /// </summary>
+    internal static JxlFile ReadPartial(EgamiInput input)
+    {
+        JxlContainer container = JxlContainer.Open(input);
+        JxlBitReader r = new(container);
+        JxlFile file = new(container, JxlImageHeader.Read(r, input.Limits));
+        try
+        {
+            file.WalkFrames(r, input);
+        }
+        catch (Exception e) when (e is EgamiException or EndOfStreamException)
+        {
+            // The frames whose TOC arrived are known; the rest has not come yet.
+            file.FramesKnown = false;
+        }
+
+        return file;
+    }
+
     private void WalkFrames(JxlBitReader r, EgamiInput input)
     {
         if (Header.Color.WantIcc)
