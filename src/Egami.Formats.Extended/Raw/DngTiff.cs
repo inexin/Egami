@@ -9,6 +9,7 @@ namespace Egami.Formats.Extended.Raw;
 internal sealed class DngIfd
 {
     private readonly SortedDictionary<int, (int Type, int Count, byte[] Value)> _entries = [];
+    private readonly HashSet<int> _kept = [];
 
     /// <summary>Gets the IFDs listed in SubIFDs (tag 330), in order.</summary>
     public List<DngIfd> SubIfds { get; } = [];
@@ -30,10 +31,27 @@ internal sealed class DngIfd
 
     public bool Has(int tag) => _entries.ContainsKey(tag);
 
-    public void Remove(int tag) => _entries.Remove(tag);
+    public void Remove(int tag)
+    {
+        _entries.Remove(tag);
+        _kept.Remove(tag);
+    }
 
-    /// <summary>Sets an entry from its little-endian value bytes.</summary>
-    public void Raw(int tag, int type, int count, byte[] value) => _entries[tag] = (type, count, value);
+    /// <summary>Sets an entry from its little-endian value bytes, unless it was kept from a source with <see cref="Keep"/>.</summary>
+    public void Raw(int tag, int type, int count, byte[] value)
+    {
+        if (!_kept.Contains(tag))
+        {
+            _entries[tag] = (type, count, value);
+        }
+    }
+
+    /// <summary>Sets an entry copied from a source DNG, which later sets leave as it is, so its exact values stay.</summary>
+    public void Keep(int tag, int type, int count, byte[] value)
+    {
+        _entries[tag] = (type, count, value);
+        _kept.Add(tag);
+    }
 
     public void Short(int tag, params ReadOnlySpan<int> values)
     {
@@ -88,18 +106,17 @@ internal sealed class DngIfd
         Raw(tag, 2, b.Length, b);
     }
 
-    /// <summary>Sets RATIONAL values, each as a fraction over a denominator that keeps about nine significant digits.</summary>
+    /// <summary>
+    /// Sets RATIONAL values: whole numbers over 1, others over the largest denominator up to 10^9 that keeps the numerator in 32
+    /// bits, so a measured black level keeps about seven decimals.
+    /// </summary>
     public void Rational(int tag, params ReadOnlySpan<double> values)
     {
         byte[] b = new byte[values.Length * 8];
         for (int i = 0; i < values.Length; i++)
         {
             double v = Math.Max(0, values[i]);
-            uint d = v == 0 ? 1 : (uint)Math.Clamp(Math.Pow(10, Math.Floor(9 - Math.Log10(Math.Max(v, 1e-9)))), 1, 1_000_000_000);
-            while ((ulong)Math.Round(v * d) > uint.MaxValue && d > 1)
-            {
-                d /= 10;
-            }
+            uint d = v == Math.Floor(v) ? 1 : (uint)Math.Clamp(Math.Floor(uint.MaxValue / Math.Max(v, 1)), 1, 1_000_000_000);
 
             BinaryPrimitives.WriteUInt32LittleEndian(b.AsSpan(i * 8), (uint)Math.Round(v * d));
             BinaryPrimitives.WriteUInt32LittleEndian(b.AsSpan((i * 8) + 4), d);

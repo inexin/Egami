@@ -47,7 +47,7 @@ public enum DngPreview
 /// </example>
 public sealed class DngWriterOptions : WriterOptions
 {
-    private readonly int _tileSize = 256;
+    private readonly int? _tileSize;
 
     /// <summary>Gets the default options.</summary>
     public static new DngWriterOptions Default { get; } = new();
@@ -58,14 +58,18 @@ public sealed class DngWriterOptions : WriterOptions
     /// </summary>
     public DngCompression Compression { get; init; } = DngCompression.LosslessJpeg;
 
-    /// <summary>Gets the width and height of the raw data's tiles: a multiple of 16 from 16 to 4096. Defaults to 256, as Adobe writes.</summary>
+    /// <summary>
+    /// Gets the width and height of the raw data's tiles, a multiple of 16 from 16 to 4096, or <see langword="null"/> (the
+    /// default) for tiles near 256 pixels sized along each axis to leave the least padding past the edges, as Adobe DNG
+    /// Converter sizes them.
+    /// </summary>
     /// <exception cref="ArgumentOutOfRangeException">The value is not a multiple of 16 from 16 to 4096.</exception>
-    public int TileSize
+    public int? TileSize
     {
         get => _tileSize;
         init
         {
-            if (value is < 16 or > 4096 || value % 16 != 0)
+            if (value is int size && (size is < 16 or > 4096 || size % 16 != 0))
             {
                 throw new ArgumentOutOfRangeException(nameof(value), value, "A DNG tile size is a multiple of 16 from 16 to 4096.");
             }

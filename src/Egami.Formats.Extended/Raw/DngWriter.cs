@@ -58,6 +58,9 @@ internal static class DngWriter
     private const int NoiseProfile = 51041;
     private const int PreviewColorSpace = 50970;
 
+    /// <summary>The JPEG quality of the previews: about the size Adobe DNG Converter's are at the same pixel size.</summary>
+    private const int PreviewQuality = 80;
+
     /// <summary>The tags that describe an IFD's own image layout or point at other data, which a copied IFD never keeps.</summary>
     private static readonly HashSet<int> Structural =
     [
@@ -67,6 +70,18 @@ internal static class DngWriter
         RawTags.SampleFormat, RawTags.JpegTables, RawTags.JpegInterchangeFormat, RawTags.JpegInterchangeFormatLength,
         RawTags.YCbCrSubSampling, RawTags.Xmp, RawTags.ExifIfd, RawTags.GpsIfd, RawTags.DngVersion, RawTags.DngBackwardVersion,
         RawTags.Software, 50966, 50967, 50968, 50969, PreviewColorSpace, 50971, 0x0201, 0x0202, 0x0212, 0x0213, 0x0214,
+
+        // RawImageDigest and NewRawImageDigest: the raw data is coded anew, so a source's digests no longer match it.
+        50972, 51111,
+    ];
+
+    /// <summary>The tags only a raw IFD may hold, which a source whose raw data is in IFD0 must not carry into a thumbnail IFD0.</summary>
+    private static readonly HashSet<int> RawOnly =
+    [
+        RawTags.CfaRepeatPatternDim, RawTags.CfaPattern, RawTags.CfaPlaneColor, RawTags.CfaLayout, RawTags.LinearizationTable,
+        RawTags.BlackLevelRepeatDim, RawTags.BlackLevel, RawTags.BlackLevelDeltaH, RawTags.BlackLevelDeltaV, RawTags.WhiteLevel,
+        RawTags.DefaultScale, RawTags.DefaultCropOrigin, RawTags.DefaultCropSize, 50733, 50738, 50780, RawTags.ActiveArea,
+        RawTags.MaskedAreas, OpcodeList1, OpcodeList2, OpcodeList3, 51125,
     ];
 
     public static void Write(Stream output, DngContent content, DngWriterOptions options, EgamiContext context, RawWarnings warnings)
@@ -114,13 +129,16 @@ internal static class DngWriter
         RawFrame frame = content.Frame;
         RawPixels pixels = content.Pixels;
         DngIfd ifd = new();
-        if (content.SourceRaw is RawIfd sourceRaw && sourceRaw != content.SourceIfd0)
+        if (content.SourceRaw is RawIfd sourceRaw)
         {
             Copy(ifd, sourceRaw);
+
+            // A raw IFD that was the source's IFD0 brings its Orientation, which belongs to IFD0 only.
+            ifd.Remove(RawTags.Orientation);
         }
 
         int samples = pixels.Samples;
-        int tile = options.TileSize;
+        int tileWidth = options.TileSize ?? TileFor(pixels.Width), tileHeight = options.TileSize ?? TileFor(pixels.Height);
         int bits = pixels.IsFloat ? 32 : 16;
         int precision = 16;
         if (compression == DngCompression.LosslessJpeg)
@@ -143,8 +161,8 @@ internal static class DngWriter
         ifd.Short(RawTags.Photometric, frame.Cfa is null ? PhotometricLinearRaw : PhotometricCfa);
         ifd.Short(RawTags.SamplesPerPixel, samples);
         ifd.Short(RawTags.PlanarConfiguration, 1);
-        ifd.Long(RawTags.TileWidth, tile);
-        ifd.Long(RawTags.TileLength, tile);
+        ifd.Long(RawTags.TileWidth, tileWidth);
+        ifd.Long(RawTags.TileLength, tileHeight);
         if (compression == DngCompression.Deflate)
         {
             ifd.Short(RawTags.Predictor, pixels.IsFloat ? 3 : 2);
@@ -210,26 +228,50 @@ internal static class DngWriter
 
         ifd.OffsetsTag = RawTags.TileOffsets;
         ifd.CountsTag = RawTags.TileByteCounts;
-        ifd.Units.AddRange(Tiles(content, compression, tile, precision, options.ParallelCompression ? context.MaxParallelism : 1));
+        ifd.Units.AddRange(Tiles(content, compression, tileWidth, tileHeight, precision, options.ParallelCompression ? context.MaxParallelism : 1));
         return ifd;
     }
 
-    /// <summary>Codes the raw data in tiles, row by row of tiles; those past the edges repeat the last whole pattern.</summary>
-    private static byte[][] Tiles(DngContent content, DngCompression compression, int tile, int precision, int parallelism)
+    /// <summary>
+    /// Codes the raw data in tiles, row by row of tiles. Columns past the right edge repeat the last whole pattern period and rows
+    /// past the bottom one period of the row above, so the padding codes to almost nothing.
+    /// </summary>
+    /// <summary>
+    /// Returns the tile size along an axis when none is asked for: the multiple of 16 from 128 to 256 that leaves the least
+    /// padding past the edge (the larger of equals), as Adobe DNG Converter sizes its tiles. Padding costs bits even when it
+    /// repeats one value.
+    /// </summary>
+    internal static int TileFor(int size)
+    {
+        int best = 256, waste = int.MaxValue;
+        for (int t = 256; t >= 128; t -= 16)
+        {
+            int pad = ((size + t - 1) / t * t) - size;
+            if (pad < waste)
+            {
+                (best, waste) = (t, pad);
+            }
+        }
+
+        return best;
+    }
+
+    private static byte[][] Tiles(DngContent content, DngCompression compression, int tileWidth, int tileHeight, int precision, int parallelism)
     {
         RawPixels pixels = content.Pixels;
-        int across = (pixels.Width + tile - 1) / tile;
-        int down = (pixels.Height + tile - 1) / tile;
+        int across = (pixels.Width + tileWidth - 1) / tileWidth;
+        int down = (pixels.Height + tileHeight - 1) / tileHeight;
         int periodX = content.Frame.Cfa?.Columns ?? 1;
-        int periodY = content.Frame.Cfa?.Rows ?? 1;
-        bool pairs = content.Frame.Cfa is not null && pixels.Samples == 1;
+        // Bayer rows code as pairs, as Adobe writes them; other patterns (X-Trans's 6 × 6) as one component, as Adobe does, which
+        // is what other readers expect.
+        bool pairs = content.Frame.Cfa is { Rows: 2, Columns: 2 } && pixels.Samples == 1;
         byte[][] tiles = new byte[across * down][];
         Parallel.For(0, tiles.Length, new ParallelOptions { MaxDegreeOfParallelism = Math.Max(1, parallelism) }, i =>
         {
-            int x0 = i % across * tile, y0 = i / across * tile;
+            int x0 = i % across * tileWidth, y0 = i / across * tileHeight;
             tiles[i] = pixels.IsFloat
-                ? FloatTile(pixels, x0, y0, tile, periodX, periodY, compression)
-                : IntTile(pixels, x0, y0, tile, periodX, periodY, compression, precision, pairs);
+                ? FloatTile(pixels, x0, y0, tileWidth, tileHeight, periodX, compression)
+                : IntTile(pixels, x0, y0, tileWidth, tileHeight, periodX, compression, precision, pairs);
         });
         return tiles;
     }
@@ -246,18 +288,39 @@ internal static class DngWriter
         return last < 0 ? size - 1 : last + ((x - size) % period);
     }
 
-    private static byte[] IntTile(RawPixels pixels, int x0, int y0, int tile, int periodX, int periodY, DngCompression compression, int precision, bool pairs)
+    /// <summary>
+    /// Fills a tile row below the image with the first pattern period of the row above, repeated: its samples cost almost
+    /// nothing to code, where repeating whole image rows would cost as much as the image (a reader never looks at them).
+    /// </summary>
+    private static void Pad<T>(T[] samples, int y, int stride, int period)
+    {
+        Span<T> to = samples.AsSpan(y * stride, stride);
+        ReadOnlySpan<T> above = samples.AsSpan((y - 1) * stride, Math.Min(period, stride));
+        for (int x = 0; x < stride; x += above.Length)
+        {
+            above[..Math.Min(above.Length, stride - x)].CopyTo(to[x..]);
+        }
+    }
+
+    private static byte[] IntTile(RawPixels pixels, int x0, int y0, int tileWidth, int tileHeight, int periodX, DngCompression compression, int precision, bool pairs)
     {
         int s = pixels.Samples;
-        int stride = tile * s;
-        ushort[] samples = new ushort[tile * stride];
-        for (int y = 0; y < tile; y++)
+        int stride = tileWidth * s;
+        ushort[] samples = new ushort[tileHeight * stride];
+        int rows = Math.Clamp(pixels.Height - y0, 0, tileHeight);
+        for (int y = 0; y < tileHeight; y++)
         {
-            ReadOnlySpan<ushort> row = pixels.U16Row(Edge(y0 + y, pixels.Height, periodY));
             Span<ushort> to = samples.AsSpan(y * stride, stride);
-            int whole = Math.Clamp(pixels.Width - x0, 0, tile);
+            if (y >= rows)
+            {
+                Pad<ushort>(samples, y, stride, periodX * s);
+                continue;
+            }
+
+            ReadOnlySpan<ushort> row = pixels.U16Row(y0 + y);
+            int whole = Math.Clamp(pixels.Width - x0, 0, tileWidth);
             row.Slice(x0 * s, whole * s).CopyTo(to);
-            for (int x = whole; x < tile; x++)
+            for (int x = whole; x < tileWidth; x++)
             {
                 row.Slice(Edge(x0 + x, pixels.Width, periodX) * s, s).CopyTo(to[(x * s)..]);
             }
@@ -270,20 +333,20 @@ internal static class DngWriter
                     using MemoryStream stream = new();
                     if (pairs)
                     {
-                        JpegLosslessWriter.WriteCfa(stream, samples, tile, precision);
+                        JpegLosslessWriter.WriteCfa(stream, samples, tileWidth, precision);
                     }
                     else
                     {
-                        JpegLosslessWriter.Write(stream, samples, s, tile, precision, 1);
+                        JpegLosslessWriter.Write(stream, samples, s, tileWidth, precision, 1);
                     }
 
                     return stream.ToArray();
                 }
 
             case DngCompression.JpegXl:
-                return s == 1 ? Jxl<Gray16>(MemoryMarshal.AsBytes(samples.AsSpan()), tile) : Jxl<Rgb16>(MemoryMarshal.AsBytes(samples.AsSpan()), tile);
+                return s == 1 ? Jxl<Gray16>(MemoryMarshal.AsBytes(samples.AsSpan()), tileWidth, tileHeight) : Jxl<Rgb16>(MemoryMarshal.AsBytes(samples.AsSpan()), tileWidth, tileHeight);
             case DngCompression.Deflate:
-                for (int y = 0; y < tile; y++)
+                for (int y = 0; y < tileHeight; y++)
                 {
                     // TIFF's horizontal predictor: each sample less the one a pixel before.
                     Span<ushort> row = samples.AsSpan(y * stride, stride);
@@ -299,16 +362,23 @@ internal static class DngWriter
         }
     }
 
-    private static byte[] FloatTile(RawPixels pixels, int x0, int y0, int tile, int periodX, int periodY, DngCompression compression)
+    private static byte[] FloatTile(RawPixels pixels, int x0, int y0, int tileWidth, int tileHeight, int periodX, DngCompression compression)
     {
         int s = pixels.Samples;
-        int stride = tile * s;
-        float[] samples = new float[tile * stride];
-        for (int y = 0; y < tile; y++)
+        int stride = tileWidth * s;
+        float[] samples = new float[tileHeight * stride];
+        int rows = Math.Clamp(pixels.Height - y0, 0, tileHeight);
+        for (int y = 0; y < tileHeight; y++)
         {
-            ReadOnlySpan<float> row = pixels.F32Row(Edge(y0 + y, pixels.Height, periodY));
             Span<float> to = samples.AsSpan(y * stride, stride);
-            for (int x = 0; x < tile; x++)
+            if (y >= rows)
+            {
+                Pad<float>(samples, y, stride, periodX * s);
+                continue;
+            }
+
+            ReadOnlySpan<float> row = pixels.F32Row(y0 + y);
+            for (int x = 0; x < tileWidth; x++)
             {
                 row.Slice(Edge(x0 + x, pixels.Width, periodX) * s, s).CopyTo(to[(x * s)..]);
             }
@@ -316,7 +386,7 @@ internal static class DngWriter
 
         if (compression == DngCompression.JpegXl)
         {
-            return s == 1 ? Jxl<GrayF32>(MemoryMarshal.AsBytes(samples.AsSpan()), tile) : Jxl<RgbF32>(MemoryMarshal.AsBytes(samples.AsSpan()), tile);
+            return s == 1 ? Jxl<GrayF32>(MemoryMarshal.AsBytes(samples.AsSpan()), tileWidth, tileHeight) : Jxl<RgbF32>(MemoryMarshal.AsBytes(samples.AsSpan()), tileWidth, tileHeight);
         }
 
         byte[] bytes = new byte[samples.Length * 4];
@@ -333,7 +403,7 @@ internal static class DngWriter
         // TIFF's floating-point predictor (Adobe's TIFF Technical Note 3): each row's bytes by significance, the most
         // significant of every sample first, then each byte less the one a pixel before.
         byte[] copy = new byte[stride * 4];
-        for (int y = 0; y < tile; y++)
+        for (int y = 0; y < tileHeight; y++)
         {
             Span<byte> row = bytes.AsSpan(y * stride * 4, stride * 4);
             row.CopyTo(copy);
@@ -354,10 +424,10 @@ internal static class DngWriter
         return Deflate(bytes);
     }
 
-    private static byte[] Jxl<TPixel>(ReadOnlySpan<byte> pixels, int tile)
+    private static byte[] Jxl<TPixel>(ReadOnlySpan<byte> pixels, int width, int height)
         where TPixel : unmanaged, IPixelType<TPixel>
     {
-        using Raster<TPixel> raster = Raster.Create<TPixel>(tile, tile);
+        using Raster<TPixel> raster = Raster.Create<TPixel>(width, height);
         raster.CopyPixelsFrom(pixels);
         raster.Metadata.ColorSpace = ColorSpaceHint.Linear;
         using MemoryStream stream = new();
@@ -415,19 +485,72 @@ internal static class DngWriter
             return null;
         }
 
-        RawDeveloper developer = new(frame, new RawReaderOptions(), half, ColorProfile.Srgb, warnings);
         using EgamiInput input = new(Stream.Null, context, CancellationToken.None);
-        Raster<Rgb8> raster = Raster.Create<Rgb8>(developer.Output.Width, developer.Output.Height, context);
+        RawPixels pixels = content.Pixels;
+        RawPixels? halved = null;
+        (Rect active, (double, double, double, double) crop) = (frame.Active, frame.Crop);
+        if (half && frame.Cfa is null && frame.Opcodes1 is null && frame.Opcodes2 is null && frame.Opcodes3 is null)
+        {
+            // LinearRaw has no half-size develop of its own: develop a copy averaged 2 × 2, with the areas halved to match.
+            halved = Halve(pixels, input);
+            pixels = halved;
+            (double cx, double cy, double cw, double ch) = crop;
+            frame.Active = new Rect(active.X / 2, active.Y / 2, Math.Max(1, active.Width / 2), Math.Max(1, active.Height / 2));
+            frame.Crop = (cx / 2, cy / 2, Math.Max(1, cw / 2), Math.Max(1, ch / 2));
+        }
+
         try
         {
-            developer.Run(content.Pixels, input, (y, row) => PixelConvert.Convert(row, raster.Row(y)));
-            return raster;
+            // A half-size develop feeds previews of 1024 pixels at most, where colour noise reduction shows nothing but costs most
+            // of the time; a full preview gets the default develop.
+            RawDeveloper developer = new(frame, half ? new RawReaderOptions { ColorNoiseReduction = 0 } : new RawReaderOptions(), half, ColorProfile.Srgb, warnings);
+            Raster<Rgb8> raster = Raster.Create<Rgb8>(developer.Output.Width, developer.Output.Height, context);
+            try
+            {
+                developer.Run(pixels, input, (y, row) => PixelConvert.Convert(row, raster.Row(y)));
+                return raster;
+            }
+            catch
+            {
+                raster.Dispose();
+                throw;
+            }
         }
-        catch
+        finally
         {
-            raster.Dispose();
-            throw;
+            (frame.Active, frame.Crop) = (active, crop);
+            halved?.Dispose();
         }
+    }
+
+    /// <summary>Returns LinearRaw data at half the width and height, each sample the mean of a 2 × 2 block.</summary>
+    private static RawPixels Halve(RawPixels pixels, EgamiInput input)
+    {
+        int width = Math.Max(1, pixels.Width / 2), height = Math.Max(1, pixels.Height / 2), s = pixels.Samples;
+        RawPixels half = new(input, width, height, s, pixels.IsFloat);
+        for (int y = 0; y < height; y++)
+        {
+            int y0 = Math.Min(2 * y, pixels.Height - 1), y1 = Math.Min((2 * y) + 1, pixels.Height - 1);
+            for (int x = 0; x < width; x++)
+            {
+                int x0 = Math.Min(2 * x, pixels.Width - 1) * s, x1 = Math.Min((2 * x) + 1, pixels.Width - 1) * s;
+                for (int c = 0; c < s; c++)
+                {
+                    if (pixels.IsFloat)
+                    {
+                        Span<float> a = pixels.F32Row(y0), b = pixels.F32Row(y1);
+                        half.F32Row(y)[(x * s) + c] = (a[x0 + c] + a[x1 + c] + b[x0 + c] + b[x1 + c]) / 4;
+                    }
+                    else
+                    {
+                        Span<ushort> a = pixels.U16Row(y0), b = pixels.U16Row(y1);
+                        half.U16Row(y)[(x * s) + c] = (ushort)((a[x0 + c] + a[x1 + c] + b[x0 + c] + b[x1 + c] + 2) / 4);
+                    }
+                }
+            }
+        }
+
+        return half;
     }
 
     /// <summary>Makes IFD0 the thumbnail: uncompressed 8-bit RGB in one strip.</summary>
@@ -441,7 +564,7 @@ internal static class DngWriter
         ifd.Short(RawTags.SamplesPerPixel, 3);
         ifd.Long(RawTags.RowsPerStrip, thumbnail.Height);
         ifd.Short(RawTags.PlanarConfiguration, 1);
-        ifd.Short(PreviewColorSpace, 2);
+        ifd.Long(PreviewColorSpace, 2);
         byte[] strip = new byte[thumbnail.Width * thumbnail.Height * 3];
         thumbnail.CopyPixelsTo(strip);
         ifd.Units.Add(strip);
@@ -451,7 +574,7 @@ internal static class DngWriter
     private static DngIfd Preview(Raster<Rgb8> preview)
     {
         using MemoryStream jpeg = new();
-        preview.Save(jpeg, JpegFormat.Info, new JpegWriterOptions { Quality = 90, StripMetadata = true });
+        preview.Save(jpeg, JpegFormat.Info, new JpegWriterOptions { Quality = PreviewQuality, StripMetadata = true });
         DngIfd ifd = new();
         ifd.Long(RawTags.NewSubFileType, 1);
         ifd.Long(RawTags.ImageWidth, preview.Width);
@@ -463,7 +586,7 @@ internal static class DngWriter
         ifd.Long(RawTags.RowsPerStrip, preview.Height);
         ifd.Short(RawTags.PlanarConfiguration, 1);
         ifd.Short(RawTags.YCbCrSubSampling, 2, 2);
-        ifd.Short(PreviewColorSpace, 2);
+        ifd.Long(PreviewColorSpace, 2);
         ifd.Units.Add(jpeg.ToArray());
         return ifd;
     }
@@ -474,7 +597,7 @@ internal static class DngWriter
         RawFrame frame = content.Frame;
         if (content.SourceIfd0 is RawIfd source)
         {
-            Copy(ifd0, source);
+            Copy(ifd0, source, raw: ifd0.SubIfds.Count == 0);
         }
 
         bool jxl = compression == DngCompression.JpegXl;
@@ -595,6 +718,11 @@ internal static class DngWriter
             foreach (ExifEntry entry in exif.Entries)
             {
                 int tag = entry.Key.Tag;
+                if (!Valid(entry))
+                {
+                    continue;
+                }
+
                 switch (entry.Key.Ifd)
                 {
                     case ExifIfd.Primary when !Structural.Contains(tag) && tag is not (RawTags.Make or RawTags.Model or RawTags.Orientation) && !ifd0.Has(tag):
@@ -617,6 +745,25 @@ internal static class DngWriter
         {
             ifd0.Bytes(RawTags.Xmp, xmp);
         }
+    }
+
+    /// <summary>
+    /// Gets whether an EXIF entry is one DNG readers take as it is: some cameras write resolutions of the wrong type, a
+    /// UserComment without its encoding prefix, or zeros in LensSpecification where EXIF wants 0/0 for unknown. Adobe DNG
+    /// Converter leaves those out too.
+    /// </summary>
+    private static bool Valid(ExifEntry entry)
+    {
+        ReadOnlySpan<byte> value = entry.RawValue.Span;
+        return (entry.Key.Ifd, entry.Key.Tag) switch
+        {
+            (ExifIfd.Primary, 282 or 283) => entry.Type == ExifType.Rational && entry.Count == 1,
+            (ExifIfd.Primary, 296) => entry.Type == ExifType.Short && entry.Count == 1,
+            (ExifIfd.Exif, 0x9286) => value.Length >= 8 && (value[..8].SequenceEqual("ASCII\0\0\0"u8) || value[..8].SequenceEqual("UNICODE\0"u8)
+                || value[..8].SequenceEqual("JIS\0\0\0\0\0"u8)),
+            (ExifIfd.Exif, 0xA432) => entry.Type == ExifType.Rational && entry.Count == 4 && !Enumerable.Range(0, 4).Any(i => entry.AsFraction(i).Numerator == 0 && entry.AsFraction(i).Denominator != 0),
+            _ => true,
+        };
     }
 
     private static byte[] LittleEndian(ExifEntry entry)
@@ -646,12 +793,15 @@ internal static class DngWriter
         }
     }
 
-    /// <summary>Copies a source IFD's tags that carry values, not layout or pointers, into <paramref name="to"/>, little-endian.</summary>
-    private static void Copy(DngIfd to, RawIfd from)
+    /// <summary>
+    /// Copies a source IFD's tags that carry values, not layout or pointers, into <paramref name="to"/>, little-endian, kept as
+    /// they are: the frame's values of the same tags, read from them, would only round them.
+    /// </summary>
+    private static void Copy(DngIfd to, RawIfd from, bool raw = true)
     {
         foreach (RawEntry entry in from.Entries.Values)
         {
-            if (entry.ValueAt < 0 || entry.Type is < 1 or > 12 || Structural.Contains(entry.Tag) || entry.ByteCount > int.MaxValue)
+            if (entry.ValueAt < 0 || entry.Type is < 1 or > 12 || Structural.Contains(entry.Tag) || entry.ByteCount > int.MaxValue || (!raw && RawOnly.Contains(entry.Tag)))
             {
                 continue;
             }
@@ -662,7 +812,7 @@ internal static class DngWriter
                 Reverse(bytes, entry.Type);
             }
 
-            to.Raw(entry.Tag, entry.Type, (int)entry.Count, bytes);
+            to.Keep(entry.Tag, entry.Type, (int)entry.Count, bytes);
         }
     }
 }
