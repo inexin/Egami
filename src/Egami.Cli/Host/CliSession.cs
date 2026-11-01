@@ -34,6 +34,12 @@ internal sealed class CliSession : CliHostSession
     /// <summary>Gets or sets the inputs and steps of a <c>run</c> given as values rather than words (<c>egami mcp</c>'s run tool).</summary>
     public RunRequest? Run { get; set; }
 
+    /// <summary>Gets or sets how camera RAW inputs are developed (the <c>--raw-*</c> options), or <see langword="null"/> for the defaults.</summary>
+    public Formats.Extended.Raw.RawReaderOptions? Raw { get; set; }
+
+    /// <summary>Gets the reader options of an input: <paramref name="read"/> with the <c>--raw-*</c> options.</summary>
+    public ReaderOptions? Reading(ReaderOptions? read) => RawOptions.Merge(Raw, read);
+
     /// <summary>Gets the formats the tool reads and writes.</summary>
     public IReadOnlyList<FormatInfo> Formats => Context.Formats;
 

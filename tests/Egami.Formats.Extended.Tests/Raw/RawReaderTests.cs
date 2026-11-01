@@ -517,6 +517,24 @@ public class RawReaderTests
     }
 
     [Fact]
+    public void DefaultToneCurveIsOptInAndYieldsToTheProfiles()
+    {
+        // 18 % gray: scene-linear by default; the default curve lifts it (to about 38 % linear); a profile's own curve wins.
+        DngFile gray = Flat(11796);
+        byte[] file = gray.Build();
+        using Raster<Rgb16> linear = Raster.Load<Rgb16>(file, Context, new RawReaderOptions { ColorNoiseReduction = 0 });
+        using Raster<Rgb16> curved = Raster.Load<Rgb16>(file, Context, new RawReaderOptions { ColorNoiseReduction = 0, DefaultToneCurve = true });
+        Near(Srgb(0.18), linear.Row(8)[8].G, 300);
+        Near(Srgb(0.38), curved.Row(8)[8].G, 1500);
+
+        gray.ExtraIfd0.Add(TiffTag.Float(50940, Curve));
+        byte[] withProfile = gray.Build();
+        using Raster<Rgb16> profile = Raster.Load<Rgb16>(withProfile, Context, new RawReaderOptions { ColorNoiseReduction = 0 });
+        using Raster<Rgb16> both = Raster.Load<Rgb16>(withProfile, Context, new RawReaderOptions { ColorNoiseReduction = 0, DefaultToneCurve = true });
+        Assert.Equal(profile.Row(8)[8], both.Row(8)[8]);
+    }
+
+    [Fact]
     public void RendersIntoConvertColorTo()
     {
         // A camera whose RGB is linear Display P3 sees P3's green, beyond sRGB: rendered into P3 it keeps its colour, through

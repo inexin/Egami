@@ -25,7 +25,8 @@ internal sealed class InputSource
     {
         if (_info is null)
         {
-            _info = File.Path is { } path ? Raster.Probe(path, session.Context) : Raster.Probe(Stdin(session), session.Context);
+            ReaderOptions? read = session.Reading(null);
+            _info = File.Path is { } path ? Raster.Probe(path, session.Context, read) : Raster.Probe(Stdin(session), session.Context, read);
             session.Info($"{File.Display}: {_info.Format.Name} {_info.Width}x{_info.Height}");
         }
 
@@ -43,12 +44,14 @@ internal sealed class InputSource
     /// <summary>Decodes the input.</summary>
     public Raster Load(CliSession session, ReaderOptions? options = null)
     {
+        options = session.Reading(options);
         return File.Path is { } path ? Raster.Load(path, session.Context, options) : Raster.Load(Stdin(session), session.Context, options);
     }
 
     /// <summary>Decodes every image of the input as a list (frames of an animation, pages, icon entries).</summary>
     public RasterList LoadAll(CliSession session, ReaderOptions? options = null)
     {
+        options = session.Reading(options);
         return File.Path is { } path ? Raster.LoadAll(path, session.Context, options) : Raster.LoadAll(Stdin(session), session.Context, options);
     }
 

@@ -30,6 +30,9 @@ internal sealed class GlobalOptions
         Recursive = true,
     };
 
+    /// <summary>Gets the <c>--raw-*</c> options of camera RAW inputs.</summary>
+    public RawOptions Raw { get; } = new();
+
     /// <summary>Adds the shared options to the root command and keeps them on the session.</summary>
     public static void AddTo(Command root, CliSession session)
     {
@@ -39,6 +42,7 @@ internal sealed class GlobalOptions
         root.Options.Add(options.Quiet);
         root.Options.Add(options.Limit);
         root.Options.Add(options.PreviewFormats);
+        options.Raw.AddTo(root);
         session.Globals = options;
     }
 
@@ -51,6 +55,7 @@ internal sealed class GlobalOptions
             : result.GetValue(options.Verbose) ? Verbosity.Verbose
             : Verbosity.Normal;
         session.Configure(verbosity, result.GetValue(options.Limit), maxParallelism, result.GetValue(options.PreviewFormats));
+        session.Raw = options.Raw.From(result);
     }
 }
 

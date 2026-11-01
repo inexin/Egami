@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using System.Globalization;
+using System.Text.RegularExpressions;
 using System.Xml;
 using System.Xml.Linq;
 
@@ -8,27 +9,74 @@ namespace Egami.Formats.Extended.Raw;
 /// <summary>
 /// Lens profiles read at run time from files the user supplies: Lensfun's XML database files and Adobe's LCP lens profiles. Egami
 /// ships no profile data (Lensfun's database is CC BY-SA, Adobe's profiles are Adobe's); <see cref="RawReaderOptions.LensProfiles"/>
-/// names the folders, and a system Lensfun install is searched when there is one. The formats come from their published
+/// names the folders, and a system Lensfun install and Adobe's own lens profile folders (where Adobe software put its profiles)
+/// are searched when they are there. The formats come from their published
 /// documentation: Lensfun's database format pages and its model descriptions, and the XMP layout of LCP files, whose camera model
 /// is the one Lensfun documents as "ACM" (distances in units of the focal length).
 /// </summary>
 internal static class RawLensProfiles
 {
-    /// <summary>Folders a system Lensfun install keeps its database in, searched after the user's.</summary>
+    /// <summary>
+    /// Folders searched after the user's: a system Lensfun install's database, and the folders Adobe's installers (Camera Raw,
+    /// Lightroom, DNG Converter) put their LCP profiles in, for all users and for the current one. Nothing is written there.
+    /// </summary>
     private static readonly string[] SystemFolders =
     [
         "/usr/share/lensfun/version_1", "/usr/local/share/lensfun/version_1", "/usr/share/lensfun", "/usr/local/share/lensfun",
         "/opt/homebrew/share/lensfun/version_1",
+        .. AdobeFolders(),
     ];
 
-    /// <summary>Gets whether a system Lensfun install is there to search.</summary>
+    /// <summary>Gets whether a system Lensfun install or Adobe's lens profiles are there to search.</summary>
     public static bool HasSystemProfiles { get; } = SystemFolders.Any(Directory.Exists);
+
+    /// <summary>Adobe's lens profile folders: under ProgramData and the roaming AppData on Windows, Application Support on macOS.</summary>
+    private static IEnumerable<string> AdobeFolders()
+    {
+        const string Profiles = "Adobe/CameraRaw/LensProfiles/1.0";
+        if (OperatingSystem.IsWindows())
+        {
+            yield return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), Profiles);
+            yield return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), Profiles);
+        }
+        else if (OperatingSystem.IsMacOS())
+        {
+            yield return Path.Combine("/Library/Application Support", Profiles);
+            yield return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Library/Application Support", Profiles);
+        }
+    }
+
+    private static readonly ConcurrentDictionary<string, (DateTime[] Stamps, string[] Directories, string[] Files)> Listings = new(StringComparer.Ordinal);
+
+    /// <summary>
+    /// Lists a folder's files with its subfolders', listing again only when one of the folders changed: Adobe's folder holds
+    /// thousands of files in a few dozen folders, so checking the folders' times is far cheaper than listing every develop.
+    /// </summary>
+    private static string[] Files(string folder)
+    {
+        if (Listings.TryGetValue(folder, out var listing) && listing.Directories.Length == listing.Stamps.Length
+            && listing.Directories.Select((d, i) => Directory.GetLastWriteTimeUtc(d) == listing.Stamps[i]).All(same => same))
+        {
+            return listing.Files;
+        }
+
+        string[] directories = [folder, .. Directory.EnumerateDirectories(folder, "*", SearchOption.AllDirectories)];
+        DateTime[] stamps = [.. directories.Select(Directory.GetLastWriteTimeUtc)];
+        string[] files = [.. Directory.EnumerateFiles(folder, "*", SearchOption.AllDirectories)];
+        Listings[folder] = (stamps, directories, files);
+        return files;
+    }
 
     private static readonly ConcurrentDictionary<string, (DateTime Stamp, List<RawLensProfile> Profiles)> Cache = new(StringComparer.Ordinal);
 
-    /// <summary>Returns the profiles of the given folders and of a system Lensfun install, read once per folder and file time.</summary>
-    public static List<RawLensProfile> Load(IReadOnlyList<string> folders, RawWarnings? warnings)
+    /// <summary>
+    /// Returns the profiles of the given folders and of the system and Adobe folders, each file read once per file time. With
+    /// <paramref name="lens"/>, an LCP file whose name gives focal lengths (Adobe names its files after the lens) is read only
+    /// when one of them is the lens's: Adobe's folder holds thousands, and only a handful can be the lens.
+    /// </summary>
+    public static List<RawLensProfile> Load(IReadOnlyList<string> folders, RawWarnings? warnings, string? lens = null)
     {
+        string? focal = lens is null ? null : FocalToken(lens);
         List<RawLensProfile> all = [];
         foreach (string folder in folders.Concat(SystemFolders.Where(Directory.Exists)))
         {
@@ -38,10 +86,15 @@ internal static class RawLensProfiles
                 continue;
             }
 
-            foreach (string file in Directory.EnumerateFiles(folder, "*", SearchOption.AllDirectories))
+            foreach (string file in Files(folder))
             {
                 string ext = Path.GetExtension(file).ToUpperInvariant();
                 if (ext is not (".XML" or ".LCP"))
+                {
+                    continue;
+                }
+
+                if (ext == ".LCP" && focal is not null && FocalTokens(Path.GetFileNameWithoutExtension(file)) is { Count: > 0 } named && !named.Contains(focal))
                 {
                     continue;
                 }
@@ -88,8 +141,9 @@ internal static class RawLensProfiles
         int bestScore = -1;
         foreach (RawLensProfile p in profiles)
         {
-            string[] candidate = Words(p.Lens);
-            if (candidate.Length == 0 || !candidate.All(w => words.Contains(w, StringComparer.Ordinal)))
+            string[]? candidate = p.Names.Select(Words).Where(c => Distinctive(c) && c.All(w => words.Contains(w, StringComparer.Ordinal)))
+                .OrderByDescending(c => c.Length).FirstOrDefault();
+            if (candidate is null)
             {
                 continue;
             }
@@ -116,6 +170,27 @@ internal static class RawLensProfiles
     }
 
     private static string[] Words(string s) => s.ToUpperInvariant().Split([' ', ',', '(', ')', '/'], StringSplitOptions.RemoveEmptyEntries);
+
+    /// <summary>
+    /// Gets whether a name says which lens it is: some word other than a focal length, "mm", an f-number or "lens" (LCP files
+    /// often give a third-party lens's Lens as just "24-70mm", "24.0-70.0 mm f/2.8" or "Sigma Lens", which fits many lenses).
+    /// </summary>
+    private static bool Distinctive(string[] words) => words.Length >= 2 && words.Any(w => w.Any(char.IsLetter) && w is not ("MM" or "LENS" or "F")
+        && !Regex.IsMatch(w, @"^F?[0-9.]+(-[0-9.]+)?(MM)?$"));
+
+    /// <summary>Gets a lens name's focal length as written, such as "16-35" or "50" (from "16-35mm", "EF16-35mm" or "50 mm").</summary>
+    internal static string? FocalToken(string lens) => FocalTokens(lens).FirstOrDefault();
+
+    private static List<string> FocalTokens(string text)
+    {
+        List<string> tokens = [];
+        foreach (Match m in Regex.Matches(text, @"(\d+(?:\.\d+)?(?:-\d+(?:\.\d+)?)?)\s*mm", RegexOptions.IgnoreCase))
+        {
+            tokens.Add(m.Groups[1].Value);
+        }
+
+        return tokens;
+    }
 
     /// <summary>Reads a Lensfun database file: each <c>lens</c> with its maker, model, crop factor, aspect ratio and calibration.</summary>
     internal static List<RawLensProfile> Lensfun(XDocument xml)
@@ -193,8 +268,10 @@ internal static class RawLensProfiles
 
             if (!byLens.TryGetValue(lens, out RawLensProfile? profile))
             {
+                // The Lens value is the name cameras write in EXIF's LensModel; LensPrettyName is the one shown to people.
                 profile = new RawLensProfile(RawLensFormat.Lcp, "", lens)
                 {
+                    OtherName = Value(entry, "Lens"),
                     CameraMake = Value(entry, "Make"),
                     CameraModel = Value(entry, "Model"),
                     CropFactor = Number(Value(entry, "SensorFormatFactor")) ?? 1,
@@ -215,7 +292,8 @@ internal static class RawLensProfiles
             }
 
             double M(XElement e, string name, double fallback = 0) => Number(Value(e, name)) ?? fallback;
-            double[] geometry = [M(model, "FocalLengthX", 1), M(model, "FocalLengthY", 1), M(model, "ImageXCenter", 0.5), M(model, "ImageYCenter", 0.5)];
+            // Without ImageXCenter and ImageYCenter (fractions of the width and height) the optical centre is the image's.
+            double[] geometry = [M(model, "FocalLengthX", 1), M(model, "FocalLengthY", 1), M(model, "ImageXCenter", double.NaN), M(model, "ImageYCenter", double.NaN)];
             profile.Fisheye = fisheye is not null && perspective is null;
             if (fisheye is not null && perspective is null)
             {
@@ -317,6 +395,12 @@ internal sealed class RawLensProfile(RawLensFormat format, string maker, string 
     public string Maker { get; } = maker;
 
     public string Lens { get; } = lens;
+
+    /// <summary>Gets another name the lens is written as (an LCP's Lens, as cameras write it), or <see langword="null"/>.</summary>
+    public string? OtherName { get; init; }
+
+    /// <summary>Gets the names a camera's lens model is matched against.</summary>
+    public IEnumerable<string> Names => OtherName is null || OtherName == Lens ? [Lens] : [Lens, OtherName];
 
     public string? CameraMake { get; init; }
 

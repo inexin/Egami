@@ -166,6 +166,8 @@
       href: guides/metafiles.md
 - name: Egami.Formats.Extended
   items:
+    - name: Developing camera RAW
+      href: guides/camera-raw.md
     - name: Textures
       href: guides/textures.md
 - name: Egami.SystemDrawing

@@ -291,7 +291,9 @@ internal static class JxlFuzzTarget
         JxlWriterOptions options = new()
         {
             Lossless = false,
-            Effort = 1 + (data[2] % 7),
+            // Efforts 9 and 10 parse LZ77 optimally, which on the input's repeating pixels takes as long as cjxl's (seconds),
+            // so large frames stop at 8.
+            Effort = 1 + (data[2] % (large ? 8 : 10)),
             Distance = distance,
             Progressive = (data[4] & 1) != 0,
             PhotonNoiseIso = (data[4] & 2) != 0 ? 100 + (data[5] * 100) : null,

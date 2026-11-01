@@ -325,6 +325,7 @@ public class FormatsExtended
             LuminanceNoiseReduction = 20,          // 0 to 100; off by default
             ColorNoiseReduction = 40,              // 0 to 100; 25 by default
             AutoChromaticAberration = true,        // fix colour fringes when no lens profile covers the file
+            DefaultToneCurve = true,               // a contrast curve like Adobe Camera Raw's default; off by default
             ConvertColorTo = Colors.ColorProfile.DisplayP3, // rendered straight into P3, the profile attached
         };
         using Raster photo = Raster.Load("photo.dng", context, develop);
@@ -355,6 +356,53 @@ public class FormatsExtended
 
         Assert.Equal("Egami", details.Make);
         Assert.Single(details.Previews);
+    }
+
+    [Fact]
+    public void RawThumbnails()
+    {
+        using SampleFiles files = new();
+        Directory.CreateDirectory("shoot");
+        WriteDng("shoot/a.dng");
+        WriteDng("shoot/b.dng");
+        Directory.CreateDirectory("thumbs");
+        EgamiContext context = EgamiContext.Default.WithExtendedFormats();
+
+        #region raw-thumbnails
+        // Contact sheets and galleries: take each file's embedded preview, or a half-size develop, whichever first covers 256 px.
+        foreach (string path in Directory.EnumerateFiles("shoot"))
+        {
+            ReaderOptions small = new() { MinimumSize = new Size(256, 256) };
+            using Raster image = Raster.Load(path, context, small);
+            image.Apply(ops => ops.AutoOrient().Fit(256, 256));
+            image.Save(Path.Combine("thumbs", Path.GetFileNameWithoutExtension(path) + ".jpg"));
+        }
+        #endregion
+
+        Assert.Equal(2, Directory.GetFiles("thumbs").Length);
+    }
+
+    [Fact]
+    public void RawLensAndLook()
+    {
+        using SampleFiles files = new();
+        WriteDng("photo.dng");
+        Directory.CreateDirectory("lens-profiles");
+        EgamiContext context = EgamiContext.Default.WithExtendedFormats();
+
+        #region raw-lens
+        RawReaderOptions finished = new()
+        {
+            LensProfiles = ["lens-profiles"],      // your Lensfun .xml and Adobe .lcp files; Adobe's own folders are searched too
+            DefaultToneCurve = true,               // contrast like a camera's own JPEG, for files whose profile has no curve
+            Exposure = 0.3,
+        };
+        using Raster photo = Raster.Load("photo.dng", context, finished);
+        RawDetails details = (RawDetails)photo.Metadata.FormatDetails!;
+        Console.WriteLine(details.LensProfile ?? "no lens profile applied");
+        #endregion
+
+        Assert.Null(details.LensProfile);
     }
 
     /// <summary>

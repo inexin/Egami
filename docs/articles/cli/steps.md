@@ -243,7 +243,7 @@ blend-color: Blends one color over every pixel by mode: Multiply tints, Screen w
   blend-color <color> <mode> [--opacity <number>] [--color-space <choice>]
     --color <color>, required
         The color, with straight alpha.
-    --mode <source-over|clear|source|destination|destination-over|source-in|destination-in|source-out|destination-out|source-atop|destination-atop|xor|plus|modulate|multiply|screen|overlay|darken|lighten|color-dodge|color-burn|hard-light|soft-light|difference|exclusion|add|subtract|hue|saturation|color|luminosity>, required
+    --mode <source-over|clear|source|destination|destination-over|source-in|destination-in|source-out|destination-out|source-atop|destination-atop|xor|plus|modulate|multiply|screen|overlay|darken|lighten|color-dodge|color-burn|hard-light|soft-light|difference|exclusion|add|subtract|hue|saturation|color|luminosity|divide|linear-burn|linear-light|vivid-light|pin-light|hard-mix|darker-color|lighter-color|dissolve>, required
         How the color combines with each pixel.
     --opacity <number>, default 1
         Multiplies the color's alpha before the mode: 1 uses it as it is.
@@ -419,7 +419,7 @@ cover: Scales the image to cover width × height with its aspect ratio kept, kee
         The output height, at least 1.
     --anchor <center|top-left|top|top-right|left|right|bottom-left|bottom|bottom-right>, default center
         Which part of the image to keep.
-    --filter <bicubic|nearest|box|bilinear|mitchell|lanczos3|lanczos2|hermite|gaussian|spline>, default bicubic
+    --filter <bicubic|nearest|box|bilinear|mitchell|lanczos3|lanczos2|hermite|gaussian|spline|gdi-plus-bilinear|gdi-plus-bicubic|gdi-plus-high-quality-bilinear|gdi-plus-high-quality-bicubic>, default bicubic
         The resampling kernel.
     --color-space <encoded|linear>, default encoded
         Where pixels are blended.
@@ -457,7 +457,7 @@ deskew: Straightens a scanned or photographed page: detects the tilt of its text
         The color of the uncovered corners, or null (the default) for the top-left pixel's, the border color Trim would use.
     --keep-size <bool>, default true
         Whether the page keeps its size (the default, as a scanner user expects), or the canvas grows to the turned bounds as Rotate does.
-    --filter <bicubic|nearest|box|bilinear|mitchell|lanczos3|lanczos2|hermite|gaussian|spline>, default bicubic
+    --filter <bicubic|nearest|box|bilinear|mitchell|lanczos3|lanczos2|hermite|gaussian|spline|gdi-plus-bilinear|gdi-plus-bicubic|gdi-plus-high-quality-bilinear|gdi-plus-high-quality-bicubic>, default bicubic
         The resampling kernel for the turn.
 ```
 
@@ -563,7 +563,7 @@ draw-image: Draws the part of image inside sourceArea onto this raster with that
         The part of the image to draw, clipped to the image.
     --position <x,y>, required
         Where the area's top-left corner goes; may be negative.
-    --mode <source-over|clear|source|destination|destination-over|source-in|destination-in|source-out|destination-out|source-atop|destination-atop|xor|plus|modulate|multiply|screen|overlay|darken|lighten|color-dodge|color-burn|hard-light|soft-light|difference|exclusion|add|subtract|hue|saturation|color|luminosity>, required
+    --mode <source-over|clear|source|destination|destination-over|source-in|destination-in|source-out|destination-out|source-atop|destination-atop|xor|plus|modulate|multiply|screen|overlay|darken|lighten|color-dodge|color-burn|hard-light|soft-light|difference|exclusion|add|subtract|hue|saturation|color|luminosity|divide|linear-burn|linear-light|vivid-light|pin-light|hard-mix|darker-color|lighter-color|dissolve>, required
         How each pixel combines with the one under it.
     --opacity <number>, default 1
         Multiplies the image's alpha before the mode: 1 draws it as it is.
@@ -575,7 +575,7 @@ draw-image: Draws the part of image inside sourceArea onto this raster with that
         The image to draw, of any pixel type.
     --position <x,y>, required
         Where its top-left corner goes; may be negative.
-    --mode <source-over|clear|source|destination|destination-over|source-in|destination-in|source-out|destination-out|source-atop|destination-atop|xor|plus|modulate|multiply|screen|overlay|darken|lighten|color-dodge|color-burn|hard-light|soft-light|difference|exclusion|add|subtract|hue|saturation|color|luminosity>, required
+    --mode <source-over|clear|source|destination|destination-over|source-in|destination-in|source-out|destination-out|source-atop|destination-atop|xor|plus|modulate|multiply|screen|overlay|darken|lighten|color-dodge|color-burn|hard-light|soft-light|difference|exclusion|add|subtract|hue|saturation|color|luminosity|divide|linear-burn|linear-light|vivid-light|pin-light|hard-mix|darker-color|lighter-color|dissolve>, required
         How each pixel combines with the one under it.
     --opacity <number>, default 1
         Multiplies the image's alpha before the mode: 1 draws it as it is.
@@ -727,7 +727,7 @@ fit: Scales the image to fit inside width × height with its aspect ratio kept, 
         The width of the box, at least 1.
     --height <int>, required
         The height of the box, at least 1.
-    --filter <bicubic|nearest|box|bilinear|mitchell|lanczos3|lanczos2|hermite|gaussian|spline>, default bicubic
+    --filter <bicubic|nearest|box|bilinear|mitchell|lanczos3|lanczos2|hermite|gaussian|spline|gdi-plus-bilinear|gdi-plus-bicubic|gdi-plus-high-quality-bilinear|gdi-plus-high-quality-bicubic>, default bicubic
         The resampling kernel.
     --color-space <encoded|linear>, default encoded
         Where pixels are blended.
@@ -1131,7 +1131,7 @@ resize: Resizes to a size in the size syntax (W, xH, WxH, P%, with !, ^, > or <)
         How the image fills a WxH box: inside it (contain), filling and cropped (cover), stretched (fill) or inside and padded (pad).
     --gravity <center|top-left|top|top-right|left|right|bottom-left|bottom|bottom-right>, default center
         Which part stays for cover, and where the image sits for pad.
-    --filter <bicubic|nearest|box|bilinear|mitchell|lanczos3|lanczos2|hermite|gaussian|spline>, default bicubic
+    --filter <bicubic|nearest|box|bilinear|mitchell|lanczos3|lanczos2|hermite|gaussian|spline|gdi-plus-bilinear|gdi-plus-bicubic|gdi-plus-high-quality-bilinear|gdi-plus-high-quality-bicubic>, default bicubic
         The resampling kernel; bicubic is Catmull-Rom.
     --linear <bool>, default false
         Blend pixels in linear light rather than as encoded.
@@ -1165,7 +1165,7 @@ rotate: Rotates the image clockwise.
   rotate <degrees> [--filter <choice>] [--background <color>]
     --degrees <number>, required
         The angle, clockwise.
-    --filter <bicubic|nearest|box|bilinear|mitchell|lanczos3|lanczos2|hermite|gaussian|spline>, default bicubic
+    --filter <bicubic|nearest|box|bilinear|mitchell|lanczos3|lanczos2|hermite|gaussian|spline|gdi-plus-bilinear|gdi-plus-bicubic|gdi-plus-high-quality-bilinear|gdi-plus-high-quality-bicubic>, default bicubic
         The resampling kernel for angles that are not multiples of 90°.
     --background <color>
         The color of the canvas outside the rotated image.

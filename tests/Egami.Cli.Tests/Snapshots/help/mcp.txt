@@ -5,12 +5,27 @@ Usage:
   egami mcp [options]
 
 Options:
-  --allow <folder>          A folder the tools may read and write, besides the folders the assistant opened; give it once per folder. With neither, the working folder.
-  --max-inputs <count>      The most files one tool call may take; 1000 by default. [default: 1000]
-  -?, -h, --help            Show help and usage information
-  -v, --verbose             Write information to standard error.
-  -vv, --debug              Write debugging detail to standard error.
-  -q, --quiet               Write only errors to standard error.
-  --limit <name=value,...>  Safety limits, such as pixels=100M,memory=2GB,frames=500 (names: pixels, width, height, frames, memory, metadata). EGAMI_LIMITS sets them too.
-  --preview-formats         Also read and write the formats in preview (none in this release); they may change or go in any minor release.
+  --allow <folder>                     A folder the tools may read and write, besides the folders the assistant opened; give it once per folder. With neither, the working folder.
+  --max-inputs <count>                 The most files one tool call may take; 1000 by default. [default: 1000]
+  -?, -h, --help                       Show help and usage information
+  -v, --verbose                        Write information to standard error.
+  -vv, --debug                         Write debugging detail to standard error.
+  -q, --quiet                          Write only errors to standard error.
+  --limit <name=value,...>             Safety limits, such as pixels=100M,memory=2GB,frames=500 (names: pixels, width, height, frames, memory, metadata). EGAMI_LIMITS sets them too.
+  --preview-formats                    Also read and write the formats in preview (none in this release); they may change or go in any minor release.
+  --raw-output <value>                 What a camera RAW input loads as: developed (default), half-size, preview or mosaic.
+  --raw-preview <value>                Which embedded preview --raw-output preview loads, 0 for the largest.
+  --raw-white-balance <value>          White balance of a RAW develop: as-shot (default), auto or custom (with --raw-temperature and --raw-tint).
+  --raw-temperature <value>            Color temperature in kelvin for --raw-white-balance custom.
+  --raw-tint <value>                   Tint for --raw-white-balance custom, positive toward magenta.
+  --raw-exposure <value>               Exposure of a RAW develop in stops, such as +0.5 or -1.
+  --raw-demosaic <value>               Demosaic method: ahd (default), malvar or bilinear.
+  --raw-highlights <value>             Clipped highlights: clip (default), blend or rebuild.
+  --raw-noise-reduction <value>        Luminance noise reduction of a RAW develop, 0 to 100 (default 0).
+  --raw-color-noise-reduction <value>  Color noise reduction of a RAW develop, 0 to 100 (default 25).
+  --raw-lens-profiles <value>          Folders of Lensfun (.xml) and Adobe (.lcp) lens profiles, separated by the system's path separator.
+  --raw-no-lens-corrections            Apply no lens corrections.
+  --raw-auto-ca                        Measure and correct lateral chromatic aberration when no lens profile covers the file.
+  --raw-tone-curve                     Give a develop without a profile tone curve the default contrast curve.
+  --raw-no-profile                     Leave out the camera profile's look (HueSatMap, LookTable and tone curve).
 

@@ -54,8 +54,9 @@ internal sealed class RawTiff
     /// <summary>Reads the IFD at <paramref name="offset"/> (counted from <see cref="Origin"/>), or returns <see langword="null"/> when it does not fit.</summary>
     public RawIfd? ReadIfd(long offset)
     {
+        // An offset beyond what an array can hold is no IFD (and would overflow the arithmetic below).
         long at = Origin + offset;
-        if (offset <= 0 || !Source.Ensure(at + 2))
+        if (offset <= 0 || offset > int.MaxValue - 16L - Origin || !Source.Ensure(at + 2))
         {
             return null;
         }
@@ -74,7 +75,9 @@ internal sealed class RawTiff
             int type = U16(e + 2);
             uint n = U32(e + 4);
             int size = RawEntry.Size(type);
-            if (size == 0 || n == 0 || n > Length)
+            // A count is checked against what the value needs, not against what is read so far: the file is read lazily, and a
+            // large value (a maker note of a megabyte or more) lies beyond the first bytes.
+            if (size == 0 || n == 0 || (long)n * size > int.MaxValue)
             {
                 continue;
             }
@@ -185,20 +188,22 @@ internal sealed class RawSource : IDisposable
             return false;
         }
 
-        if (end > Data.Length)
-        {
-            long size = Math.Min(Math.Max(end, Math.Min((long)Data.Length * 2, _max)), _max);
-            _input.CheckMemory(size);
-            byte[] larger = System.Buffers.ArrayPool<byte>.Shared.Rent((int)size);
-            Data.AsSpan(0, Length).CopyTo(larger);
-            Return();
-            Data = larger;
-            _pooled = true;
-        }
-
+        // The buffer grows only as data arrives, doubling when full: a count a small file only claims (an IFD entry of a
+        // gigabyte) never makes it rent more than the file holds.
         while (Length < end)
         {
-            int n = _input.Read(Data.AsSpan(Length, (int)Math.Min(Data.Length - Length, Math.Max(end - Length, 256 * 1024))));
+            if (Length == Data.Length)
+            {
+                long size = Math.Min(Math.Min(Math.Max((long)Data.Length * 2, 64 * 1024), Math.Max(end, Length + (256 * 1024))), _max);
+                _input.CheckMemory(size);
+                byte[] larger = System.Buffers.ArrayPool<byte>.Shared.Rent((int)size);
+                Data.AsSpan(0, Length).CopyTo(larger);
+                Return();
+                Data = larger;
+                _pooled = true;
+            }
+
+            int n = _input.Read(Data.AsSpan(Length, Data.Length - Length));
             if (n == 0)
             {
                 _ended = true;

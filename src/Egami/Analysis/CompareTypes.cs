@@ -28,7 +28,7 @@ public sealed record CompareOptions
     private readonly float _fuzz;
     private readonly int _frame;
 
-    /// <summary>Gets the default options: premultiplied alpha, no fuzz, no SSIM, the whole first frame.</summary>
+    /// <summary>Gets the default options: premultiplied alpha, no fuzz, no SSIM or Butteraugli, the whole first frame.</summary>
     public static CompareOptions Default { get; } = new();
 
     /// <summary>Gets how alpha is treated. Defaults to <see cref="AlphaCompare.Premultiplied"/>.</summary>
@@ -55,6 +55,13 @@ public sealed record CompareOptions
     /// <see cref="ChannelDifference.Ssim"/> is NaN.
     /// </summary>
     public bool Ssim { get; init; }
+
+    /// <summary>
+    /// Gets whether the Butteraugli distance is computed too (<see cref="CompareResult.Butteraugli"/> and
+    /// <see cref="CompareResult.Butteraugli3Norm"/>). It models the eye and costs far more than SSIM, so it is off by default
+    /// and both are NaN.
+    /// </summary>
+    public bool Butteraugli { get; init; }
 
     /// <summary>Gets the rectangle compared, or <see langword="null"/> (the default) for the whole image.</summary>
     public Rect? Region { get; init; }
@@ -106,8 +113,10 @@ public readonly record struct ChannelDifference
 /// </example>
 public sealed class CompareResult
 {
-    internal CompareResult(ChannelDifference red, ChannelDifference green, ChannelDifference blue, ChannelDifference alpha, bool withAlpha, long different, long pixels)
+    internal CompareResult(ChannelDifference red, ChannelDifference green, ChannelDifference blue, ChannelDifference alpha, bool withAlpha, long different, long pixels, double butteraugli = double.NaN, double butteraugli3Norm = double.NaN)
     {
+        Butteraugli = butteraugli;
+        Butteraugli3Norm = butteraugli3Norm;
         Red = red;
         Green = green;
         Blue = blue;
@@ -145,6 +154,23 @@ public sealed class CompareResult
 
     /// <summary>Gets how many pixels were compared.</summary>
     public long PixelCount { get; }
+
+    /// <summary>
+    /// Gets the Butteraugli distance (libjxl's psychovisual metric, as butteraugli_main prints it): the largest difference the
+    /// model of the eye finds anywhere, where under about 1 the images look the same. NaN unless
+    /// <see cref="CompareOptions.Butteraugli"/> was set.
+    /// </summary>
+    /// <remarks>
+    /// The color channels are read as sRGB, or as linear light when the image's profile has a linear curve, with sRGB
+    /// primaries, 1.0 being 80 nits. Images with alpha are compared over black and over white, and the larger distance counts.
+    /// </remarks>
+    public double Butteraugli { get; }
+
+    /// <summary>
+    /// Gets the Butteraugli 3-norm: the mean of the distance map's 3-, 6- and 12-norms, which follows the overall quality more
+    /// than the single worst spot does. NaN unless <see cref="CompareOptions.Butteraugli"/> was set.
+    /// </summary>
+    public double Butteraugli3Norm { get; }
 
     /// <summary>Gets whether every compared channel of every pixel is equal.</summary>
     public bool IsIdentical => Overall.PeakError == 0;

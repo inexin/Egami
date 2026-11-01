@@ -186,6 +186,74 @@ public class RawMakerTests
         Assert.Throws<InvalidDataException>(() => LosslessJpeg.Open(jpeg, 0, jpeg.Length));
     }
 
+    [Fact]
+    public void MakerNotesLargerThanTheFirstReadAreRead()
+    {
+        // Gate finding: an IFD entry whose count was larger than the bytes read so far was dropped, so the E-M10's 1.4 MB maker
+        // note (and its white balance) went missing in a streamed load. Here the note's metadata block is padded to 300 KB.
+        byte[] meta = new byte[300_000];
+        meta[0] = 0x46;
+        meta[1] = 0x30;
+        BinaryPrimitives.WriteUInt16LittleEndian(meta.AsSpan(2), 100);
+        BitWriter bits = new();
+        for (int i = 0; i < 8; i++)
+        {
+            bits.Write(0b11110, 5);
+        }
+
+        using MemoryStream stream = new(NikonFile(meta, bits.ToArray()));
+        using Raster<Gray16> mosaic = Raster.Load<Gray16>(stream, Context, Mosaic);
+        Assert.Equal(100, mosaic.Row(0)[0].L);
+    }
+
+    [Theory]
+    [InlineData(new byte[] { 0, 2, 0, 2, 2, 1, 1, 0 }, "BGGR")]
+    [InlineData(new byte[] { 2, 0, 2, 0, 0, 1, 1, 2 }, "RGGB")]
+    [InlineData(new byte[] { 0, 3, 0, 2, 2, 1, 1, 0 }, null)]
+    public void ExifCfaPatternGivesPentaxsPattern(byte[] value, string? expected)
+    {
+        // Gate finding: the K-5's PEF is BGGR, which only EXIF's CFAPattern (0xA302) says.
+        TiffBuilder.Ifd ifd = new();
+        ifd.Tags.Add(TiffTag.Undefined(0xA302, value));
+        byte[] tiff = TiffBuilder.Write(ifd);
+        RawIfd? exif = new RawTiff(new RawSource(tiff, tiff.Length), false).ReadIfd(8);
+        Assert.Equal(expected, MakerParser.ExifCfa(exif)?.Name);
+    }
+
+    [Fact]
+    public void IfdOffsetsBeyondAnArrayAreNoIfd()
+    {
+        // Fuzz finding: a SubIFDs value read as long.MaxValue overflowed the IFD reader's bounds check.
+        byte[] tiff = TiffBuilder.Write(new TiffBuilder.Ifd { Tags = { TiffTag.Long(256, 1) } });
+        RawTiff file = new(new RawSource(tiff, tiff.Length), false);
+        Assert.Null(file.ReadIfd(long.MaxValue));
+        Assert.Null(file.ReadIfd(uint.MaxValue));
+        Assert.NotNull(file.ReadIfd(8));
+    }
+
+    [Fact]
+    public void EntriesASmallFileOnlyClaimsRentNoMoreThanItHolds()
+    {
+        // Review finding: an IFD entry that claims 1.5 GB in a 200 KB file made the streamed reader rent the whole claim
+        // before finding the file short. (A file within the first 64 KB read is safe: that read reaches its end.)
+        DngFile dng = new DngFile { Width = 16, Height = 16 }.Fill((_, _, _) => 20000);
+        dng.ExtraIfd0.Add(TiffTag.Undefined(0xC5FF, new byte[8]));
+        byte[] file = dng.Build();
+        int at = (int)BinaryPrimitives.ReadUInt32LittleEndian(file.AsSpan(4));
+        int count = BinaryPrimitives.ReadUInt16LittleEndian(file.AsSpan(at));
+        int entry = Enumerable.Range(0, count).Select(i => at + 2 + (i * 12)).First(e => BinaryPrimitives.ReadUInt16LittleEndian(file.AsSpan(e)) == 0xC5FF);
+        BinaryPrimitives.WriteUInt32LittleEndian(file.AsSpan(entry + 4), 1_500_000_000);
+        Array.Resize(ref file, 200_000);
+        long before = GC.GetAllocatedBytesForCurrentThread();
+        // A stream that is not a MemoryStream, so the reader streams it rather than reading the array in place.
+        using (BufferedStream stream = new(new MemoryStream(file)))
+        {
+            Assert.Equal(16, Raster.Probe(stream, Context).Width);
+        }
+
+        Assert.True(GC.GetAllocatedBytesForCurrentThread() - before < 64L << 20, "the reader rented the entry's claimed size");
+    }
+
     [Theory]
     [InlineData(0xFFFFFFF0u)]
     [InlineData(0x7FFFFFFEu)]

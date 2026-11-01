@@ -47,6 +47,10 @@ SEEDS = {"png": "tests/images/pngsuite/*.png tests/images/fuzz/png-seeds/*.png",
          "jxl-write": "tests/images/fuzz/jpeg-write-seeds/*", "jxl-lossy": "tests/images/fuzz/jpeg-write-seeds/*", "jxl-frames": "tests/images/fuzz/jpeg-write-seeds/*", "jxl-partial": "tests/images/fuzz/jxl-seeds/*", "jxl-jpeg": "tests/images/jpeg/duck-q50.jpg tests/images/jpeg/odd-*.jpg tests/images/jpeg/transform/t4*.jpg tests/images/jpeg/transform/tprog.jpg tests/images/jpeg/testorig.jpg",
          "css": "tests/images/fuzz/css-seeds/*", "hocr": "tests/images/ocr/*.hocr", "alto": "tests/images/ocr/*.xml", "paragraph": "tests/images/fuzz/paragraph-seeds/*",
          "svg": "tests/images/fuzz/svg-seeds/*", "dds": "tests/images/fuzz/dds-seeds/*", "raw": "tests/images/fuzz/raw-seeds/*",
+         # One RAW format family at a time: the raw target with that family's seeds.
+         "raw-dng": "tests/images/fuzz/raw-seeds/*.dng", "raw-canon": "tests/images/fuzz/raw-seeds/*.cr2 tests/images/fuzz/raw-seeds/*.cr3",
+         "raw-nikon": "tests/images/fuzz/raw-seeds/*.nef", "raw-fuji": "tests/images/fuzz/raw-seeds/*.raf",
+         "raw-tiff": "tests/images/fuzz/raw-seeds/*.pef tests/images/fuzz/raw-seeds/*.arw tests/images/fuzz/raw-seeds/*.orf tests/images/fuzz/raw-seeds/*.rw2",
          "wmf": "tests/images/metafiles/synthetic/*.wmf", "emf": "tests/images/metafiles/synthetic/gdi-*.emf",
          "emfplus": "tests/images/fuzz/emfplus-seeds/*",
          "sysdrawing": "tests/images/bmp/rgb24.bmp tests/images/gif/loop-3.gif tests/images/ico/set.ico tests/images/pngsuite/basn6a08.png tests/images/pngsuite/basn3p04.png tests/images/metafiles/synthetic/gdi-shapes-basic.emf tests/images/metafiles/synthetic/gdi-shapes-basic.wmf",
@@ -79,7 +83,7 @@ if [ -f /out/Egami.Barcodes.dll ]; then sharpfuzz /out/Egami.Barcodes.dll; fi
 if [ -f /out/Egami.Cli.dll ]; then sharpfuzz /out/Egami.Cli.dll; fi
 if [ -f /out/Egami.Formats.Extended.dll ]; then sharpfuzz /out/Egami.Formats.Extended.dll; fi
 mkdir -p /seeds && cp {seeds} /seeds/
-afl-fuzz -V {seconds} -i /seeds -o /findings/{target} {role} -t 5000 -m none -- /out/Egami.Fuzz {target}
+afl-fuzz -V {seconds} -i /seeds -o /findings/{target} {role} -t 5000 -m none -- /out/Egami.Fuzz {harness}
 """
 
 
@@ -96,7 +100,8 @@ def main():
             name = f"egami-afl-{target}" + (f"-{i}" if instances > 1 else "")
             role = "" if instances == 1 else "-M main" if i == 0 else f"-S secondary{i}"
             subprocess.run(["docker", "rm", "-f", name], capture_output=True)
-            script = SCRIPT.format(seeds=" ".join("/src/" + pattern for pattern in SEEDS[target].split()), seconds=int(hours * 3600), target=target, role=role)
+            script = SCRIPT.format(seeds=" ".join("/src/" + pattern for pattern in SEEDS[target].split()), seconds=int(hours * 3600), target=target, role=role,
+                                   harness="raw" if target.startswith("raw-") else target)
             # AFL_AUTORESUME carries on from an earlier run's queue in the same findings directory.
             subprocess.run(["docker", "run", "-d", "--name", name, "-e", "AFL_AUTORESUME=1", "-v", f"{repo}:/src:ro", "-v", f"{findings}:/findings",
                             "egami-fuzz", "bash", "-c", script], check=True)
