@@ -7,6 +7,7 @@ using Egami.Video.Audio;
 using Egami.Video.Audio.Filters;
 using Egami.Video.Codecs;
 using Egami.Video.Containers;
+using Egami.Video.Filters;
 using Egami.Video.Subtitles;
 
 using SharpFuzz;
@@ -101,7 +102,8 @@ static Action<Stream> Target(string name) => name switch
     "ffv1raw" => DecodeFfv1Packets,
     "ffv1enc" => EncodeFfv1,
     "afilters" => FilterAudio,
-    _ => throw new ArgumentException($"Unknown fuzz target '{name}'. Targets: avi, mkv, y4m, ivf, webm, mp4, obu, ac3, mp4mux, mjpeg, vp8, vp9, vp9raw, h264, hevc, av1, av1raw, wav, flac, ogg, aiff, caf, opusraw, vorbisraw, vp8enc, mp3, mp3raw, ac3raw, alac, opusenc, subs, subtrack, vp9enc, av1enc, trim, ffv1, ffv1raw, ffv1enc, afilters."),
+    "deinterlace" => Deinterlace,
+    _ => throw new ArgumentException($"Unknown fuzz target '{name}'. Targets: avi, mkv, y4m, ivf, webm, mp4, obu, ac3, mp4mux, mjpeg, vp8, vp9, vp9raw, h264, hevc, av1, av1raw, wav, flac, ogg, aiff, caf, opusraw, vorbisraw, vp8enc, mp3, mp3raw, ac3raw, alac, opusenc, subs, subtrack, vp9enc, av1enc, trim, ffv1, ffv1raw, ffv1enc, afilters, deinterlace."),
 };
 
 static MediaContext Context() => MediaContext.Default with
@@ -1790,6 +1792,139 @@ static void FilterAudio(Stream stream)
 
     chain.Flush();
     Check();
+}
+
+// The deinterlacer (Video 1.2.0): the first 16 bytes pick the size, chroma format, depth, alpha, mode, rate, frame selection,
+// field order, each frame's flag, a size change and a Reset; the rest fills the planes. Nothing may throw, every frame out must
+// have the input's layout, every sample must stay within the depth, and the frame count must be one or two per frame in.
+static void Deinterlace(Stream stream)
+{
+    byte[] data = ReadAll(stream);
+    if (data.Length < 16)
+    {
+        return;
+    }
+
+    int width = 1 + (data[0] % 72), height = 1 + (data[1] % 48);
+    ChromaFormat chroma = (ChromaFormat)(data[2] % 6);
+    int depth = (data[3] % 4) switch { 0 => 8, 1 => 10, 2 => 12, _ => 16 };
+    bool alpha = (data[4] & 1) != 0 && chroma != ChromaFormat.Yuv400;
+    DeinterlacerOptions options = new()
+    {
+        Mode = (DeinterlaceMode)(data[5] % 2),
+        Rate = (DeinterlaceRate)(data[6] % 2),
+        Frames = (DeinterlaceFrames)(data[7] % 2),
+        FieldOrder = (data[8] % 3) switch { 0 => null, 1 => FieldOrder.TopFieldFirst, _ => FieldOrder.BottomFieldFirst },
+    };
+    int frames = 1 + (data[9] % 8), resetAt = data[11] % 10, resizeAt = data[12] % 10;
+    MediaContext context = Context();
+    YuvColor color = new(YuvMatrix.Bt709, YuvRange.Limited, ChromaSiting.Left);
+    int max = (1 << depth) - 1;
+    int position = 16;
+    YuvVideoFrame Make(int index, int w, int h)
+    {
+        YuvRaster raster = depth == 8
+            ? YuvRaster.Create(w, h, chroma, color, alpha, context.Egami)
+            : YuvRaster.Create(w, h, chroma, depth, color, alpha, context.Egami);
+        foreach ((Func<int, int> sample, int pw, int ph, Action<int, int, int> set) in Planes(raster))
+        {
+            for (int y = 0; y < ph; y++)
+            {
+                for (int x = 0; x < pw; x++)
+                {
+                    int value = data[position++ % data.Length] | (data[position++ % data.Length] << 8);
+                    set(x, y, value & max);
+                }
+            }
+        }
+
+        FieldOrder flag = ((data[10] >> (index % 8)) & 1) == 0 ? FieldOrder.Progressive : index % 3 == 0 ? FieldOrder.BottomFieldFirst : FieldOrder.TopFieldFirst;
+        return new YuvVideoFrame(raster, new MediaTime(index, new Rational(1, 25)), index % 4 == 0 ? null : new MediaTime(1, new Rational(1, 25))) { FieldOrder = flag };
+    }
+
+    using Deinterlacer deinterlacer = new(options, context);
+    int sent = 0, received = 0, sinceReset = 0;
+    void Drain()
+    {
+        while (deinterlacer.TryReceive(out YuvVideoFrame? output))
+        {
+            using (output)
+            {
+                received++;
+                YuvRaster r = output.Raster;
+                if (r.ChromaFormat != chroma || r.BitDepth != depth || r.HasAlpha != alpha)
+                {
+                    throw new InvalidOperationException($"A {chroma} {depth}-bit frame came out as {r.ChromaFormat} {r.BitDepth}-bit.");
+                }
+
+                foreach ((Func<int, int> sample, int pw, int ph, _) in Planes(r))
+                {
+                    for (int y = 0; y < ph; y++)
+                    {
+                        for (int x = 0; x < pw; x++)
+                        {
+                            if (sample(y * pw + x) > max)
+                            {
+                                throw new InvalidOperationException($"A sample went over {max}.");
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    for (int i = 0; i < frames; i++)
+    {
+        bool small = i >= resizeAt && resizeAt < frames;
+        using YuvVideoFrame frame = Make(i, small ? Math.Max(1, width / 2) : width, small ? Math.Max(1, height / 3) : height);
+        deinterlacer.Send(frame);
+        sent++;
+        sinceReset++;
+        Drain();
+        if (i == resetAt)
+        {
+            deinterlacer.Reset();
+            sinceReset = 0;
+        }
+    }
+
+    deinterlacer.Flush();
+    Drain();
+
+    int perFrame = options.Rate == DeinterlaceRate.Field ? 2 : 1;
+    if (received > perFrame * sent || received < perFrame * sinceReset)
+    {
+        throw new InvalidOperationException($"{sent} frames in ({sinceReset} since the reset) gave {received} out.");
+    }
+
+    // A plane's samples as ints: a reader by index, the size, and a writer by position.
+    static IEnumerable<(Func<int, int> Sample, int Width, int Height, Action<int, int, int> Set)> Planes(YuvRaster raster)
+    {
+        if (raster is YuvRaster<byte> bytes)
+        {
+            foreach (YuvPlane<byte>? plane in new[] { bytes.Y, bytes.U, bytes.V, bytes.A })
+            {
+                if (plane is not null)
+                {
+                    YuvPlane<byte> p = plane;
+                    yield return (i => p.Row(i / p.Width)[i % p.Width], p.Width, p.Height, (x, y, v) => p.Row(y)[x] = (byte)v);
+                }
+            }
+
+            yield break;
+        }
+
+        YuvRaster<ushort> words = (YuvRaster<ushort>)raster;
+        foreach (YuvPlane<ushort>? plane in new[] { words.Y, words.U, words.V, words.A })
+        {
+            if (plane is not null)
+            {
+                YuvPlane<ushort> p = plane;
+                yield return (i => p.Row(i / p.Width)[i % p.Width], p.Width, p.Height, (x, y, v) => p.Row(y)[x] = (ushort)v);
+            }
+        }
+    }
 }
 
 static byte[] ReadAll(Stream stream)

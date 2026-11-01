@@ -86,4 +86,11 @@ if (args is ["--time-deinterlace", .. string[] interlaced])
     return;
 }
 
+// Write frames of an interlaced file deinterlaced, for a review by eye: -- --look-deinterlace <file> [--at=10 --count=6 --out=look]
+if (args is ["--look-deinterlace", .. string[] looked])
+{
+    DeinterlaceTiming.Look(looked);
+    return;
+}
+
 BenchmarkSwitcher.FromAssembly(typeof(Program).Assembly).Run(args);

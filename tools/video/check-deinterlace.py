@@ -16,8 +16,9 @@ Usage, from the repo root with Docker running and the CLI and benchmarks built i
   python tools/video/check-deinterlace.py --quality    the PSNR gate only
   python tools/video/check-deinterlace.py --speed      the speed gate only
   python tools/video/check-deinterlace.py --frames <interlaced file> [--at 10]
-                                                       PNGs of a real interlaced file's frames for a look by eye: woven,
-                                                       Egami adaptive, Egami bob and yadif, side by side as files
+                                                       PNGs of six frames of a real interlaced file (H.264 and HEVC too)
+                                                       for a look by eye: woven, Egami adaptive, bob and adaptive at the
+                                                       field rate, and yadif
 The clips go to .cache/video/deinterlace; results.json there holds the numbers.
 """
 import json
@@ -190,17 +191,18 @@ def speed():
 
 
 def frames(path, at):
-    """A real file's frames around a time as PNGs, for Lars to look at."""
+    """A real file's frames from a time as PNGs, for Lars to look at: Egami's from the benchmark project (which decodes H.264
+    and HEVC too), yadif's from FFmpeg in Docker."""
     folder = os.path.join(OUT, "look")
     os.makedirs(folder, exist_ok=True)
     stem = os.path.splitext(os.path.basename(path))[0]
-    for label, extra in (("woven", []), ("adaptive", ["--deinterlace", "adaptive"]), ("bob", ["--deinterlace", "bob"])):
-        egami("frames", path, "--from", str(at), "--to", str(at + 1), "-o", os.path.join(folder, f"{stem}-{label}-{{frame:0000}}.png"), *extra)
+    out = subprocess.run(["dotnet", BENCH, "--look-deinterlace", path, f"--at={at}", "--count=6", f"--out={folder}"], check=True, capture_output=True, text=True).stdout
+    print(out.strip())
     local = os.path.abspath(path)
     subprocess.run(["docker", "run", "--rm", "-v", f"{os.path.dirname(local)}:/in:ro", "-v", f"{os.path.abspath(folder)}:/work", IMAGE, "sh", "-c",
-                    f"ffmpeg -y -v error -nostdin -ss {at} -t 1 -i '/in/{os.path.basename(local)}' -vf yadif -start_number 0 {stem}-yadif-%04d.png"],
+                    f"ffmpeg -y -v error -nostdin -ss {at} -i '/in/{os.path.basename(local)}' -vf yadif=deint=all -frames:v 6 -start_number 0 {stem}-yadif-%02d.png"],
                    check=True, env=ENV)
-    print(f"wrote {folder}: {stem}-woven, -adaptive, -bob and -yadif frames")
+    print(f"wrote {folder}: {stem}-woven, -adaptive, -bob, -adaptive-field and -yadif frames")
 
 
 def main():
