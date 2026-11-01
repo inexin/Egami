@@ -1,5 +1,9 @@
 #nullable enable
 const Egami.EgamiTracing.SourceName = "Egami" -> string!
+Egami.Analysis.CompareOptions.Butteraugli.get -> bool
+Egami.Analysis.CompareOptions.Butteraugli.init -> void
+Egami.Analysis.CompareResult.Butteraugli.get -> double
+Egami.Analysis.CompareResult.Butteraugli3Norm.get -> double
 Egami.Colors.ColorProfile.ToIccV2() -> byte[]!
 Egami.EgamiTracing
 Egami.Formats.Bmp.BmpCompression.Huffman1D = 8 -> Egami.Formats.Bmp.BmpCompression

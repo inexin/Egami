@@ -105,6 +105,17 @@ DDS textures, stage C (BC7 and BC6H encoders).
 
 ## Egami, unreleased
 
+JPEG XL extras, PR C: Butteraugli and lossy efforts 8 to 10. All additive.
+
+- `CompareOptions.Butteraugli` adds libjxl's psychovisual distance to `Raster.Compare`: `CompareResult.Butteraugli` (the
+  largest difference anywhere, under about 1 for images that look the same) and `Butteraugli3Norm`. Translated from libjxl
+  0.12; within 0.1 % of butteraugli_main on the analysis corpus. Off by default; about half a second a megapixel.
+- Lossy JPEG XL takes efforts 8 to 10 as cjxl does: from 8 the encoder decodes its frame, measures it with Butteraugli and
+  refines the quantization field (two rounds at 8, four from 9), with slower entropy coding; 10 also tries every 32 × 32 block
+  position and downsamples iteratively from distance 10. Efforts 8 and 9 above distance 0.5, and 10 always, code the frame
+  whole rather than in chunks. Kodak photos come out within 0.2 % of cjxl's size at distance 1 with the same Butteraugli and
+  SSIMULACRA2 scores, at 1.2 to 1.3 times cjxl's time.
+
 JPEG XL extras, PR B: lossless efforts 8 to 10 and patches. All additive.
 
 - `JxlWriterOptions.Effort` takes 1 to 10. Lossless 8 and 9 learn their context tree from more properties, try more color

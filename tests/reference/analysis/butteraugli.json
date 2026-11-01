@@ -1,0 +1,26 @@
+{
+  "duck.png~duck-q75.png": {
+    "distance": 4.0765924454,
+    "norm3": 1.547392
+  },
+  "egret.png~egret-q75.png": {
+    "distance": 2.3260338306,
+    "norm3": 1.021137
+  },
+  "grad16-a.png~grad16-b.png": {
+    "distance": 0.6284769773,
+    "norm3": 0.388503
+  },
+  "alpha-a.png~alpha-b.png": {
+    "distance": 1.4306151867,
+    "norm3": 0.759964
+  },
+  "tiny-a.png~tiny-b.png": {
+    "distance": 0.0,
+    "norm3": 0.0
+  },
+  "duck.png~duck.png": {
+    "distance": 0.0,
+    "norm3": 0.0
+  }
+}

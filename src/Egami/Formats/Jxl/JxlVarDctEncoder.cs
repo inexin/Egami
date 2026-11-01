@@ -6,7 +6,7 @@ internal sealed record JxlLossySettings
     /// <summary>Gets the Butteraugli-style distance, 1.0 visually lossless.</summary>
     internal float Distance { get; init; } = 1;
 
-    /// <summary>Gets the effort, 1 to 7, on libjxl's scale (its speed tiers Lightning to Squirrel).</summary>
+    /// <summary>Gets the effort, 1 to 10, on libjxl's scale (its speed tiers Lightning to Glacier).</summary>
     internal int Effort { get; init; } = 5;
 
     internal int Parallelism { get; init; } = Environment.ProcessorCount;
@@ -143,6 +143,11 @@ internal sealed partial class JxlVarDctEncoder
     private int[] _extraShifts = [];
     private readonly Dictionary<int, (int Width, int Height, int Shift)> _extraSizes = [];
     private readonly float _originalDistance;
+    private readonly float _intensityTarget;
+
+    // At effort 8 and up, the image in linear light for Butteraugli, and the quantization field before rounding.
+    private readonly float[][]? _linear;
+    private float[]? _field;
     private readonly (float Dx, float Db, float ExposedBlue) _pixelStats;
     private readonly float[]? _noise;
 
@@ -164,7 +169,14 @@ internal sealed partial class JxlVarDctEncoder
         _parallel = new ParallelOptions { MaxDegreeOfParallelism = Math.Max(1, settings.Parallelism) };
         _upsampling = upsampling;
         _originalDistance = originalDistance;
+        _intensityTarget = intensityTarget;
         _frame = frame;
+        // A frame coded at half size takes part only far beyond libjxl's resampling distances.
+        if (settings.Effort >= 8 && frame is null && (upsampling == 1 || originalDistance > 4 * upsampling))
+        {
+            _linear = image.Color;
+        }
+
         _chunk = chunk;
         int fullWidth = Ceil(image.Width, 8) * 8, fullHeight = Ceil(image.Height, 8) * 8;
         float[][] xyb = Pad(image, intensityTarget, fullWidth, fullHeight, _parallel);
@@ -228,12 +240,12 @@ internal sealed partial class JxlVarDctEncoder
 
         if (upsampling == 2)
         {
-            // DownsampleImage2_Sharper of the padded planes, padded again to whole blocks.
+            // DownsampleImage2_Sharper (DownsampleImage2_Iterative at effort 10) of the padded planes, padded again to whole blocks.
             int hw = fullWidth / 2, hh = fullHeight / 2;
             int pw = _blocksX * 8, ph = _blocksY * 8;
             for (int c = 0; c < 3; c++)
             {
-                float[] small = DownsampleSharper(xyb[c], fullWidth, fullHeight, _parallel);
+                float[] small = Effort >= 10 ? DownsampleIterative(xyb[c], fullWidth, fullHeight, _parallel) : DownsampleSharper(xyb[c], fullWidth, fullHeight, _parallel);
                 float[] padded = new float[pw * ph];
                 for (int y = 0; y < ph; y++)
                 {
@@ -411,11 +423,8 @@ internal sealed partial class JxlVarDctEncoder
         return (MathF.Max(xmax, ymax), MathF.Max(bx, by), eb);
     }
 
-    /// <summary>
-    /// libjxl's DownsampleImage2_Sharper: a 12×12 kernel fitted to the decoder's 2× upsampling, each result clamped to the range
-    /// of the 2×2 source pixels it covers widened by the second smallest step around it in the box-downsampled image.
-    /// </summary>
-    private static float[] DownsampleSharper(float[] input, int xsize, int ysize, ParallelOptions parallel)
+    /// <summary>libjxl's DownsampleImage by 2: each pixel the mean of the 2 × 2 it covers, fewer at the edges.</summary>
+    private static float[] BoxHalf(float[] input, int xsize, int ysize)
     {
         int ow = (xsize + 1) / 2, oh = (ysize + 1) / 2;
         float[] box = new float[ow * oh];
@@ -438,6 +447,12 @@ internal sealed partial class JxlVarDctEncoder
             }
         }
 
+        return box;
+    }
+
+    /// <summary>libjxl's CreateMask: each pixel's second smallest step to its four neighbours in the box-downsampled image.</summary>
+    private static float[] DownsampleMask(float[] box, int ow, int oh)
+    {
         float[] mask = new float[ow * oh];
         for (int y = 0; y < oh; y++)
         {
@@ -467,6 +482,167 @@ internal sealed partial class JxlVarDctEncoder
                 mask[row + x] = min2;
             }
         }
+
+        return mask;
+    }
+
+    // The decoder's default 2× upsampling kernel for the top-left output pixel; the other three mirror it.
+    private static readonly float[] UpsampleKernel =
+    [
+        -0.01716200f, -0.03452303f, -0.04022174f, -0.02921014f, -0.00624645f,
+        -0.03452303f, 0.14111091f, 0.28896755f, 0.00278718f, -0.01610267f,
+        -0.04022174f, 0.28896755f, 0.56661550f, 0.03777607f, -0.01986694f,
+        -0.02921014f, 0.00278718f, 0.03777607f, -0.03144731f, -0.01185068f,
+        -0.00624645f, -0.01610267f, -0.01986694f, -0.01185068f, -0.00213539f,
+    ];
+
+    /// <summary>The upsampling kernel's weight at (<paramref name="kx"/>, <paramref name="ky"/>) for an output pixel of parity (<paramref name="x"/>, <paramref name="y"/>).</summary>
+    private static float UpsampleWeight(int x, int y, int kx, int ky) => UpsampleKernel[(((y & 1) != 0 ? 4 - ky : ky) * 5) + ((x & 1) != 0 ? 4 - kx : kx)];
+
+    /// <summary>
+    /// libjxl's DownsampleImage2_Iterative at effort 10: the sharper downsampling refined by three rounds that upsample as the
+    /// decoder does, take the error against the original back through the upsampler's transpose, and add it; then each pixel
+    /// is clamped to its 3 × 3 neighbourhood in the first result, widened by twice the mask.
+    /// </summary>
+    private static float[] DownsampleIterative(float[] input, int xsize, int ysize, ParallelOptions parallel)
+    {
+        int ow = (xsize + 1) / 2, oh = (ysize + 1) / 2;
+        float[] mask = DownsampleMask(BoxHalf(input, xsize, ysize), ow, oh);
+        float[] initial = DownsampleSharper(input, xsize, ysize, parallel);
+        float[] down = (float[])initial.Clone();
+        float[] up = new float[xsize * ysize];
+        float[] corr = new float[xsize * ysize];
+        float[] ones = new float[xsize * ysize];
+        Array.Fill(ones, 1f);
+        float[] weights2 = AntiUpsample(ones, xsize, ysize, ow, oh, parallel);
+        for (int it = 0; it < 3; it++)
+        {
+            Upsample(down, ow, oh, up, xsize, ysize, parallel);
+            for (int i = 0; i < corr.Length; i++)
+            {
+                corr[i] = ((1f * input[i]) + (-1f * up[i])) * 1f;
+            }
+
+            float[] corr2 = AntiUpsample(corr, xsize, ysize, ow, oh, parallel);
+            for (int i = 0; i < down.Length; i++)
+            {
+                down[i] = (1f * down[i]) + (1f * (corr2[i] / weights2[i]));
+            }
+        }
+
+        // ReduceRinging.
+        float[] output = new float[ow * oh];
+        for (int y = 0; y < oh; y++)
+        {
+            for (int x = 0; x < ow; x++)
+            {
+                float min = initial[(y * ow) + x], max = min;
+                for (int yi = -1; yi < 2; yi++)
+                {
+                    for (int xi = -1; xi < 2; xi++)
+                    {
+                        int x2 = x + xi, y2 = y + yi;
+                        if (x2 < 0 || y2 < 0 || x2 >= ow || y2 >= oh)
+                        {
+                            continue;
+                        }
+
+                        min = MathF.Min(min, initial[(y2 * ow) + x2]);
+                        max = MathF.Max(max, initial[(y2 * ow) + x2]);
+                    }
+                }
+
+                float v = down[(y * ow) + x];
+                float a = mask[(y * ow) + x] * 2;
+                float clipMin = min - a, clipMax = max + a;
+                if (v < clipMin)
+                {
+                    v = clipMin;
+                }
+
+                if (v > clipMax)
+                {
+                    v = clipMax;
+                }
+
+                output[(y * ow) + x] = v;
+            }
+        }
+
+        return output;
+    }
+
+    /// <summary>libjxl's UpsampleImage: the decoder's 2× upsampling, each result clamped to the range of the 5 × 5 pixels it reads.</summary>
+    private static void Upsample(float[] input, int xsize, int ysize, float[] output, int xsize2, int ysize2, ParallelOptions parallel)
+    {
+        Parallel.For(0, ysize2, parallel, y =>
+        {
+            for (int x = 0; x < xsize2; x++)
+            {
+                int x2 = x / 2, y2 = y / 2;
+                float min = float.MaxValue, max = 1.17549435E-38f;
+                float sum = 0;
+                for (int ky = 0; ky < 5; ky++)
+                {
+                    int yi = Math.Clamp(y2 - 2 + ky, 0, ysize - 1);
+                    for (int kx = 0; kx < 5; kx++)
+                    {
+                        float v = input[(yi * xsize) + Math.Clamp(x2 - 2 + kx, 0, xsize - 1)];
+                        min = MathF.Min(min, v);
+                        max = MathF.Max(max, v);
+                    }
+                }
+
+                for (int ky = 0; ky < 5; ky++)
+                {
+                    int yi = Math.Clamp(y2 - 2 + ky, 0, ysize - 1);
+                    for (int kx = 0; kx < 5; kx++)
+                    {
+                        sum += input[(yi * xsize) + Math.Clamp(x2 - 2 + kx, 0, xsize - 1)] * UpsampleWeight(x, y, kx, ky);
+                    }
+                }
+
+                output[(y * xsize2) + x] = sum < min ? min : sum > max ? max : sum;
+            }
+        });
+    }
+
+    /// <summary>libjxl's AntiUpsample: the upsampler's transpose, each small pixel the weighted sum of the large ones it reaches.</summary>
+    private static float[] AntiUpsample(float[] input, int xsize, int ysize, int xsize2, int ysize2, ParallelOptions parallel)
+    {
+        float[] d = new float[xsize2 * ysize2];
+        Parallel.For(0, ysize2, parallel, y2 =>
+        {
+            for (int x2 = 0; x2 < xsize2; x2++)
+            {
+                int x0 = Math.Max(0, (x2 * 2) - 4), x1 = Math.Min(xsize, (x2 * 2) + 6);
+                int y0 = Math.Max(0, (y2 * 2) - 4), y1 = Math.Min(ysize, (y2 * 2) + 6);
+                float sum = 0;
+                for (int y = y0; y < y1; y++)
+                {
+                    for (int x = x0; x < x1; x++)
+                    {
+                        int kx = x2 - (x / 2) + 2, ky = y2 - (y / 2) + 2;
+                        double deriv = kx < 0 || kx >= 5 || ky < 0 || ky >= 5 ? 0 : UpsampleWeight(x, y, kx, ky);
+                        sum = (float)(sum + (deriv * input[(y * xsize) + x]));
+                    }
+                }
+
+                d[(y2 * xsize2) + x2] = sum;
+            }
+        });
+
+        return d;
+    }
+
+    /// <summary>
+    /// libjxl's DownsampleImage2_Sharper: a 12×12 kernel fitted to the decoder's 2× upsampling, each result clamped to the range
+    /// of the 2×2 source pixels it covers widened by the second smallest step around it in the box-downsampled image.
+    /// </summary>
+    private static float[] DownsampleSharper(float[] input, int xsize, int ysize, ParallelOptions parallel)
+    {
+        int ow = (xsize + 1) / 2, oh = (ysize + 1) / 2;
+        float[] mask = DownsampleMask(BoxHalf(input, xsize, ysize), ow, oh);
 
         float[] output = new float[ow * oh];
         Parallel.For(0, oh, parallel, y =>
@@ -509,6 +685,9 @@ internal sealed partial class JxlVarDctEncoder
     }
 
     private int Speed => Math.Clamp(_settings.Effort, 1, 7);
+
+    // The effort with 8 to 10 too, for what libjxl's Kitten, Tortoise and Glacier tiers add.
+    private int Effort => Math.Clamp(_settings.Effort, 1, 10);
 
     /// <summary>Encodes the image as a bare codestream: the image header from <paramref name="header"/>, then one VarDCT frame.</summary>
     internal static byte[] Encode(JxlLinearImage image, JxlEncodeInput header, JxlLossySettings settings, float intensityTarget = 255)
@@ -555,6 +734,7 @@ internal sealed partial class JxlVarDctEncoder
         e._frameHeight = image.Height;
         e.PrepareExtraChannels(image, header);
         e.ChooseParameters();
+        e.FindBestQuantization(header);
         report?.Advance(1);
         e.ComputeCoefficients();
         report?.Advance(1);
@@ -810,7 +990,7 @@ internal sealed partial class JxlVarDctEncoder
             // sizes, the quantization field over them, then the factors again for the chosen blocks.
             float inv = (float)(1.0 * GlobalScaleDenom / _globalScale);
             float[] field = (float[])_aq.QuantField.Clone();
-            JxlAcStrategySearch search = new(_xyb, _blocksX, _blocksY, _aq.QuantField, _aq.Mask1x1, d, Speed, _strategy, _isFirst);
+            JxlAcStrategySearch search = new(_xyb, _blocksX, _blocksY, _aq.QuantField, _aq.Mask1x1, d, Effort, _strategy, _isFirst);
             Parallel.For(0, _tilesX * _tilesY, _parallel, tile =>
             {
                 int tx = tile % _tilesX;
@@ -835,6 +1015,7 @@ internal sealed partial class JxlVarDctEncoder
 
                 ChromaFromLumaTile(tx, ty, useDct8: false);
             });
+            _field = field;
         }
         else
         {
@@ -1545,6 +1726,203 @@ internal sealed partial class JxlVarDctEncoder
 
         return (float)((12.339445295782363 * e0) + (1.0 * e1) + (0.2 * e2));
     }
+
+    /// <summary>
+    /// libjxl's FindBestQuantization at effort 8 (two rounds) and 9 and up (four): the frame is decoded with the quantization
+    /// field as it stands and compared with the image by Butteraugli; each block whose tile distance (a 16-norm of the map over
+    /// the varblock) is above the distance asked for gets a finer step in proportion, and in the first two rounds the others a
+    /// coarser one by its 0.2th power, within bounds set by the first field. The second round keeps each block at least
+    /// 40 % of the way back to its first value. Not for chunks, nor frames coded at half size below distance 8.
+    /// </summary>
+    private void FindBestQuantization(JxlEncodeInput header)
+    {
+        if (_linear is null || _field is null)
+        {
+            return;
+        }
+
+        float target = _originalDistance;
+        float quantDc = InitialQuantDc(_settings.Distance);
+        float[] field = _field;
+        AdjustQuantField(field, target, 0, 0, _blocksX, _blocksY);
+        float[] initial = (float[])field.Clone();
+        float min = initial.Min(), max = initial.Max();
+        float deviationLow = MathF.Sqrt(250 / (max / min));
+        float asymmetry = MathF.Min(2, deviationLow);
+        float lower = min / (asymmetry * deviationLow);
+        float higher = max * (deviationLow / asymmetry);
+        int iterations = Effort >= 9 ? 4 : 2;
+        Analysis.Butteraugli comparator = new(_linear, _frameWidth, _frameHeight);
+        for (int i = 0; i <= iterations; i++)
+        {
+            SetQuantField(quantDc, field);
+            float[] tiles = TileDistances(comparator.Diffmap(Roundtrip(header)));
+            if (i == iterations)
+            {
+                break;
+            }
+
+            if (i == 1)
+            {
+                // The field may not get much coarser than the first guess, so the AC keeps the precision the LF needs.
+                const double InitMul = 0.6;
+                for (int b = 0; b < field.Length; b++)
+                {
+                    double clamp = ((1.0 - InitMul) * field[b]) + (InitMul * initial[b]);
+                    if (field[b] < clamp)
+                    {
+                        field[b] = Math.Clamp((float)clamp, lower, higher);
+                    }
+                }
+            }
+
+            double power = i < 2 ? 0.2 : 0.0;
+            float inv = (float)(1.0 * GlobalScaleDenom / _globalScale);
+            for (int b = 0; b < field.Length; b++)
+            {
+                float diff = tiles[b] / target;
+                if (diff <= 1.0f)
+                {
+                    if (power != 0)
+                    {
+                        field[b] = (float)(field[b] * Math.Pow(diff, power));
+                    }
+                }
+                else
+                {
+                    float old = field[b];
+                    field[b] *= diff;
+                    if (Math.Round(old * inv, MidpointRounding.AwayFromZero) == Math.Round(field[b] * inv, MidpointRounding.AwayFromZero))
+                    {
+                        field[b] = old + Scale;
+                    }
+                }
+
+                field[b] = Math.Clamp(field[b], lower, higher);
+            }
+        }
+
+        SetQuantField(quantDc, field);
+    }
+
+    /// <summary>libjxl's Quantizer::SetQuantField: the global scale from the field's median and median deviation, then each block's value.</summary>
+    private void SetQuantField(float quantDc, float[] field)
+    {
+        float[] sorted = (float[])field.Clone();
+        Array.Sort(sorted);
+        float median = sorted[sorted.Length / 2];
+        for (int i = 0; i < sorted.Length; i++)
+        {
+            sorted[i] = MathF.Abs(field[i] - median);
+        }
+
+        Array.Sort(sorted);
+        ComputeGlobalScaleAndQuant(quantDc, median, sorted[sorted.Length / 2]);
+        float inv = (float)(1.0 * GlobalScaleDenom / _globalScale);
+        for (int i = 0; i < field.Length; i++)
+        {
+            _quantField[i] = ClampQuant((field[i] * inv) + 0.5f);
+        }
+    }
+
+    /// <summary>
+    /// libjxl's RoundtripImage: the frame coded as a draft with the quantization field as it stands, decoded, filtered as the
+    /// decoder does (Gaborish, the EPF at sharpness 4 everywhere, patches, the 2× upsampling; no noise), in linear sRGB.
+    /// </summary>
+    private float[][] Roundtrip(JxlEncodeInput header)
+    {
+        ComputeCoefficients();
+        QuantizeLf();
+        if (_settings.Progressive)
+        {
+            // The draft is coded in the frame's own passes, as the frame header says.
+            MakeProgressive();
+        }
+        else
+        {
+            _passCoeffs = [_coeffs];
+        }
+
+        ComputeOrders();
+        FindBlockEntropyModel();
+        _draft = true;
+        float[][] planes = JxlImageDecoder.DecodeXyb(Codestream(header), _settings.Parallelism);
+        _draft = false;
+        JxlLoopFilter filter = new() { Gaborish = _gaborish, EpfIterations = _epfIterations };
+        JxlParallel parallel = new(Math.Max(1, _settings.Parallelism), CancellationToken.None);
+        if (_gaborish)
+        {
+            JxlFilters.Gaborish(planes, _width, _height, _width, filter.GaborishWeights, parallel);
+        }
+
+        float sigmaBase = filter.QuantMul * 65536f / _globalScale;
+        JxlFilters.Epf(planes, _width, _height, _width, filter, (bx, by) => sigmaBase / _quantField[(by * _blocksX) + bx] * filter.SharpLut[_epfSharpness[(by * _blocksX) + bx]], parallel);
+        AddPatches(planes, _width, 1);
+        if (_upsampling == 2)
+        {
+            for (int c = 0; c < 3; c++)
+            {
+                float[] full = new float[_frameWidth * _frameHeight];
+                Upsample(planes[c], _width, _height, full, _frameWidth, _frameHeight, _parallel);
+                planes[c] = full;
+            }
+        }
+
+        JxlColor.XybToLinear(planes, _frameWidth * _frameHeight, _intensityTarget);
+        return planes;
+    }
+
+    /// <summary>
+    /// libjxl's TileDistMap: for each varblock, 1.2 times the 16-norm of the distance map over its pixels (at the image's size,
+    /// so a block covers 16 pixels at half size), given to each of its blocks.
+    /// </summary>
+    private float[] TileDistances(float[] map)
+    {
+        float[] tiles = new float[_blocksX * _blocksY];
+        for (int by = 0; by < _blocksY; by++)
+        {
+            for (int bx = 0; bx < _blocksX; bx++)
+            {
+                int at = (by * _blocksX) + bx;
+                if (!_isFirst[at])
+                {
+                    continue;
+                }
+
+                (int w8, int h8) = JxlTransforms8.Size((JxlTransformType)_strategy[at]);
+                int tile = 8 * _upsampling;
+                int x1 = Math.Min(_frameWidth, (bx + w8) * tile), y1 = Math.Min(_frameHeight, (by + h8) * tile);
+                float norm = 0;
+                double pixels = 0;
+                for (int y = by * tile; y < y1; y++)
+                {
+                    for (int x = bx * tile; x < x1; x++)
+                    {
+                        float v = map[(y * _frameWidth) + x];
+                        v *= v;
+                        v *= v;
+                        v *= v;
+                        v *= v;
+                        norm += v;
+                        pixels += 1;
+                    }
+                }
+
+                const float TileNorm = 1.2f;
+                float distance = TileNorm * MathF.Pow((float)(norm / Math.Max(1, pixels)), 1.0f / 16.0f);
+                for (int iy = 0; iy < h8 && by + iy < _blocksY; iy++)
+                {
+                    for (int ix = 0; ix < w8 && bx + ix < _blocksX; ix++)
+                    {
+                        tiles[at + (iy * _blocksX) + ix] = distance;
+                    }
+                }
+            }
+        }
+
+        return tiles;
+    }
+
 
     /// <summary>libjxl's InitialQuantDC: the DC quantizer for a distance, with a gentler slope at high distances.</summary>
     internal static float InitialQuantDc(float distance)
@@ -2756,18 +3134,36 @@ internal sealed partial class JxlVarDctEncoder
         WriteBlockContexts(global);
         global.WriteBool(true); // default chroma from luma
         global.WriteBool(true); // global tree
-        // HistogramParams::ForModular for VarDCT data: fast clustering, approximate ANS histograms, and a hybrid integer search
-        // when the LF image has extra precision.
-        JxlHistogramParams mp = new()
-        {
-            Clustering = JxlHistogramParams.ClusteringKind.Fast,
-            AnsStrategy = JxlHistogramParams.AnsKind.Approximate,
-            UintMethod = _lfPrecision != 0 && !_draft ? JxlHistogramParams.UintKind.Fast : JxlHistogramParams.UintKind.None,
-            MaxHistograms = maxHistograms,
-        };
+        // HistogramParams::ForModular for VarDCT data: up to effort 7 fast clustering, approximate ANS histograms, and a hybrid
+        // integer search when the LF image has extra precision; from effort 8 the defaults (best clustering and hybrid integers,
+        // precise histograms) with LZ77, greedy at 8 and optimal from 9.
+        bool slow = Effort >= 8 && !_draft;
+        JxlHistogramParams mp = slow
+            ? new()
+            {
+                Clustering = JxlHistogramParams.ClusteringKind.Best,
+                AnsStrategy = JxlHistogramParams.AnsKind.Precise,
+                UintMethod = JxlHistogramParams.UintKind.Best,
+                Lz77 = Effort >= 9 ? JxlHistogramParams.Lz77Kind.Optimal : JxlHistogramParams.Lz77Kind.Greedy,
+            }
+            : new()
+            {
+                Clustering = JxlHistogramParams.ClusteringKind.Fast,
+                AnsStrategy = JxlHistogramParams.AnsKind.Approximate,
+                UintMethod = _lfPrecision != 0 && !_draft ? JxlHistogramParams.UintKind.Fast : JxlHistogramParams.UintKind.None,
+                MaxHistograms = maxHistograms,
+            };
         JxlEntropyCode treeCode = JxlEntropyCode.Write(global, mp, 6, treeTokens);
         treeCode.WriteTokens(global, treeTokens[0]);
         JxlEntropyCode code = JxlEntropyCode.Write(global, mp with { ImageWidths = widths }, context.Max() + 1, modularTokens);
+
+        // LZ77 may replace the streams' tokens (from effort 8): what goes out is what the code was built for.
+        int extraAt = streamTokens.Length;
+        foreach (int id in extraTokens.Keys.ToArray())
+        {
+            extraTokens[id] = modularTokens[extraAt++];
+        }
+
         if (_extraStreams is not null)
         {
             JxlModularEncoder.WriteStream(global, _extraStreams[0], code, extraTokens.GetValueOrDefault(0, []));
@@ -2801,12 +3197,14 @@ internal sealed partial class JxlVarDctEncoder
         hf.WriteBool(true);
         hf.Write(0, CeilLog2(_groups));
 
-        // HistogramParams for the HF tokens: at most four clusters above effort 3 (libjxl's kFastest), then fast clustering.
+        // HistogramParams for the HF tokens: at most four clusters above effort 3 (libjxl's kFastest), then fast clustering;
+        // precise histograms from effort 8, and from 9 best clustering, the hybrid integer search and runs of repeats.
         JxlHistogramParams acp = new()
         {
-            Clustering = JxlHistogramParams.ClusteringKind.Fast,
-            UintMethod = JxlHistogramParams.UintKind.None,
-            AnsStrategy = JxlHistogramParams.AnsKind.Approximate,
+            Clustering = slow && Effort >= 9 ? JxlHistogramParams.ClusteringKind.Best : JxlHistogramParams.ClusteringKind.Fast,
+            UintMethod = slow && Effort >= 9 ? JxlHistogramParams.UintKind.Best : JxlHistogramParams.UintKind.None,
+            AnsStrategy = slow ? JxlHistogramParams.AnsKind.Precise : JxlHistogramParams.AnsKind.Approximate,
+            Rle = slow && Effort >= 9,
             MaxHistograms = Math.Min(maxHistograms, effort <= 2 ? 4 : int.MaxValue),
         };
         JxlEntropyCode[] acCodes = new JxlEntropyCode[_passes];
@@ -2820,6 +3218,12 @@ internal sealed partial class JxlVarDctEncoder
 
             List<List<JxlToken>> ac = [.. acTokens.Skip(pass * _groups).Take(_groups)];
             acCodes[pass] = JxlEntropyCode.Write(hf, acp, (NonZeroBuckets + ZeroDensityContexts) * _blockClusters, ac);
+
+            // Runs of repeats may replace a group's tokens: what goes out is what the code was built for.
+            for (int g = 0; g < _groups; g++)
+            {
+                acTokens[(pass * _groups) + g] = ac[g];
+            }
         }
 
         // The extra channels not squeezed go with the last pass; squeezed ones with the pass of their shift.

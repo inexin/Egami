@@ -115,7 +115,8 @@ internal static class Comparer
         long pixels = (long)region.Width * region.Height;
         ChannelDifference Channel(int c) => new() { Mae = total.Abs[c] / pixels, Mse = total.Square[c] / pixels, PeakError = total.Peak[c], Ssim = ssim[c] };
         ChannelDifference alpha = withAlpha ? Channel(3) : new ChannelDifference { Ssim = options.Ssim ? 1 : double.NaN };
-        return new CompareResult(Channel(0), Channel(1), Channel(2), alpha, withAlpha, total.Different, pixels);
+        (double butteraugli, double norm) = options.Butteraugli ? Analysis.Butteraugli.Compare(a, b, region, options.Frame, withAlpha) : (double.NaN, double.NaN);
+        return new CompareResult(Channel(0), Channel(1), Channel(2), alpha, withAlpha, total.Different, pixels, butteraugli, norm);
     }
 
     /// <summary>Checks the two rasters, the frame and the region, and returns the rectangle compared.</summary>

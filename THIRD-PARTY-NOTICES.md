@@ -422,7 +422,10 @@ orders kept across chunks, the HF histogram budget with its fixed flat histogram
 in the Modular distributions (enc_frame, enc_ans, enc_coeff_order; `JxlVarDctChunked.cs`). Its JPEG recompression is translated
 from libjxl 0.12.0 too: the JPEG reader with its padding bits, reset points and extra zero runs (jpeg/enc_jpeg_data_reader;
 `JxlJpegReader.cs`), and the jbrd box, chroma from luma search, DC contexts, coefficient orders and coefficient tokens
-(jpeg/enc_jpeg_data, jpeg/jpeg_data, enc_frame, enc_coeff_order, enc_entropy_coder; `JxlJpegEncoder.cs`). libjxl is
+(jpeg/enc_jpeg_data, jpeg/jpeg_data, enc_frame, enc_coeff_order, enc_entropy_coder; `JxlJpegEncoder.cs`). The Butteraugli
+distance behind `CompareOptions.Butteraugli` is translated from libjxl 0.12.0's butteraugli.cc: the opsin dynamics, the frequency
+bands, the Malta line filters, masking and the half-size pass, with the 5-tap blur's mirrored edges (enc_convolve_separable5), the
+alpha blending over black and white (enc_comparator) and the p-norm (extras/metrics; `Analysis/Butteraugli.cs`). libjxl is
 distributed under the BSD 3-clause license:
 
     Copyright (c) the JPEG XL Project Authors. All rights reserved.

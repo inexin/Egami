@@ -96,8 +96,9 @@ internal sealed class JxlChunkedFrame
     /// <summary>Gets whether libjxl codes a frame like this in chunks (CanDoStreamingEncoding with its default buffering).</summary>
     internal static bool Applies(int width, int height, JxlLossySettings settings, bool lossyExtras)
     {
-        int effort = Math.Clamp(settings.Effort, 1, 7);
-        if (effort == 7 && settings.Distance >= 3)
+        // CanDoStreamingEncoding: never at effort 10, nor at 8 and 9 above distance 0.5, nor at 7 from distance 3.
+        int effort = Math.Clamp(settings.Effort, 1, 10);
+        if (effort >= 10 || (effort >= 8 && settings.Distance > 0.5f) || (effort == 7 && settings.Distance >= 3))
         {
             return false;
         }

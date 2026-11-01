@@ -77,7 +77,7 @@ orientation. `JxlWriterOptions` follows cjxl's own knobs, so the same numbers gi
 | Option | Default | Does |
 | --- | --- | --- |
 | `Lossless` | `null` | `true` writes Modular, `false` VarDCT; `null` keeps the kind of the JPEG XL file the raster came from and writes lossy otherwise |
-| `Effort` | 5 | 1 (fastest) to 10 (smallest), cjxl's `-e`; lossy files take 8 to 10 as 7 |
+| `Effort` | 5 | 1 (fastest) to 10 (smallest), cjxl's `-e` |
 | `Quality` | 90 | Lossy quality, 0 to 100, cjxl's `-q` scale; 90 is distance 1.0, visually lossless |
 | `Distance` | `null` | A distance as cjxl's `-d` instead of a quality, 0.1 to 25 |
 | `AlphaDistance` | 0 | Lossy files: 0 keeps alpha exact, larger values code it lossy |
@@ -103,7 +103,11 @@ Lossy files are VarDCT in XYB, as cjxl writes them for PNG input, and come out w
 same settings (libjxl 0.12.0). Pick either a quality or a distance: `Quality` is cjxl's `-q` (90 by default, 100 lossless) and
 `Distance` its `-d`, where 1.0 is visually lossless and each step up gives a smaller file with more visible loss; a distance,
 when set, wins. `Effort` 6 adds the full block-size search and a per-block edge-preserving filter strength, 7 patches for
-repeated shapes such as text. Large images are coded in 2048-pixel chunks, as cjxl does, so memory stays bounded.
+repeated shapes such as text. From effort 8 the encoder decodes its own frame and measures it with Butteraugli, then spends
+bits where the distance asked for is exceeded and saves them elsewhere: two rounds at effort 8, four from 9, with slower
+entropy coding; effort 10 also tries every 32 × 32 block position and, from distance 10, downsamples iteratively. These
+efforts cost several times effort 7, as cjxl's do. Large images are coded in 2048-pixel chunks, as cjxl does, so memory stays
+bounded, except at efforts 8 and 9 above distance 0.5 and always at 10, which code the whole image at once.
 
 A JPEG source is better recompressed than re-encoded: [recompressing](#recompressed-jpegs) keeps its pixels exactly and the
 original file recoverable, where lossy encoding its decoded pixels loses detail a second time.
