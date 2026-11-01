@@ -447,7 +447,7 @@ read, or every frame has.</p>
 
   <h3 id="Egami_RasterDecoder_Dispose" data-uid="Egami.RasterDecoder.Dispose">
   Dispose()
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Streaming/RasterDecoder.cs/#L879"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Streaming/RasterDecoder.cs/#L880"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Returns the source's buffers and closes the file when the decoder opened it.</p>
@@ -1466,11 +1466,12 @@ while ((rows = await decoder.ReadRowsAsync(band, TestContext.Current.Cancellatio
 
   <h3 id="Egami_RasterDecoder_RenderPreview__1_Egami_Raster___0__" data-uid="Egami.RasterDecoder.RenderPreview``1(Egami.Raster{``0})">
   RenderPreview&lt;TPixel&gt;(Raster&lt;TPixel&gt;)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Streaming/RasterDecoder.cs/#L858"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Streaming/RasterDecoder.cs/#L859"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Draws what is known of the frame in progress: an interlaced PNG from the passes received so far, a progressive JPEG from its
-scans so far, a progressive (layered) AVIF from its best layer received so far at full size, a GIF frame from the rows
+scans so far, a progressive (layered) AVIF from its best layer received so far at full size, a JPEG XL still as libjxl's
+progressive flush draws it (its LF image upsampled, then each pass and group as it arrives), a GIF frame from the rows
 received so far (interlaced ones repeated over the rows they stand for), each later pass sharpening it. Region and
 reduction apply as to rows. The decode does not move on.</p>
 </div>

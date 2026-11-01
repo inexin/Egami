@@ -166,6 +166,32 @@ using Raster? preview = JxlImage.ReadPreview(&quot;duck.jxl&quot;);
 
 // A lossy still at an eighth of its size, from its LF image alone.
 using Raster thumbnail = Raster.Load(&quot;duck.jxl&quot;, options: new JxlReaderOptions { MaxDownscale = 8 });
+</code></pre><h2 id="partly-downloaded-files">Partly downloaded files</h2>
+<p>While a file arrives through <code>RasterDecoder.OpenIncremental</code>, <code>RenderPreview</code> draws what libjxl's progressive flush draws of the
+bytes so far (djxl <code>--allow_partial_files</code>), within one level at 8 bits of it. Nothing shows until a frame's LF global section and
+LF groups have arrived. Then a lossy file shows its LF image upsampled 8 times, each 256-pixel group sharpening as its passes
+arrive (<code>Progressive</code> files in three steps). A lossless file fills in group by group, with the groups still missing black, or
+level by level when it is squeezed (cjxl <code>-R 1</code>). Rows come out once the last byte has, and are the same pixels as a whole-file
+load. Animations show nothing before the end.</p>
+<pre><code class="lang-csharp">// A JPEG XL file shown while it downloads: each preview is what djxl's progressive flush shows of the bytes so far
+// (the LF image upsampled, then each pass and group as it arrives); the rows come once the last byte has.
+using RasterDecoder decoder = RasterDecoder.OpenIncremental();
+Raster&lt;Rgba8&gt;? view = null;
+foreach (byte[] chunk in file.Chunk(16384))
+{
+    decoder.Append(chunk);
+    if (decoder.HeaderRead)
+    {
+        view ??= Raster.Create&lt;Rgba8&gt;(decoder.Info.Width, decoder.Info.Height);
+        if (decoder.RenderPreview(view))
+        {
+            previews++; // show view
+        }
+    }
+}
+
+decoder.EndOfInput();
+decoder.ReadRows(view!); // the finished image
 </code></pre><h2 id="extra-channels">Extra channels</h2>
 <p>Alpha loads straight (premultiplied color is divided out). <code>JxlDetails.ExtraChannels</code> lists every channel as a
 <code>JxlExtraChannel</code> with its <code>JxlExtraChannelKind</code> (alpha, depth, spot color, selection mask and others), and

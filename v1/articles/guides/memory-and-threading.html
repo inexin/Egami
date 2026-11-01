@@ -150,8 +150,8 @@ while (gif.ReadFrame(canvas) is Metadata.FrameMetadata frame)
 </code></pre>
 <p><code>RasterDecoder.OpenIncremental</code> decodes while the bytes are still arriving: <code>Append</code> each chunk as it comes, read the rows
 finished so far, and call <code>EndOfInput</code> after the last. <code>Status</code> (a <code>DecodeStatus</code>) says whether rows are ready, more bytes are
-needed, or the frame or image is done, and <code>RenderPreview</code> draws an interlaced PNG, a progressive JPEG or a GIF frame as far
-as it has arrived. Files that are decoded into a buffer first (such as bottom-up BMP and TGA) wait for the end.</p>
+needed, or the frame or image is done, and <code>RenderPreview</code> draws an interlaced PNG, a progressive JPEG, a GIF frame, a layered AVIF
+or a JPEG XL still as far as it has arrived. Files that are decoded into a buffer first (such as bottom-up BMP and TGA) wait for the end.</p>
 <pre><code class="lang-csharp">// Decode while the bytes arrive, a chunk at a time, as from a download.
 using RasterDecoder decoder = RasterDecoder.OpenIncremental();
 Raster&lt;Rgb8&gt;? band = null;
