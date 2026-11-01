@@ -69,7 +69,7 @@ public sealed class DngWriterOptions : WriterOptions
         get => _tileSize;
         init
         {
-            if (value is < 16 or > 4096 || value % 16 != 0)
+            if (value is int size && (size is < 16 or > 4096 || size % 16 != 0))
             {
                 throw new ArgumentOutOfRangeException(nameof(value), value, "A DNG tile size is a multiple of 16 from 16 to 4096.");
             }
