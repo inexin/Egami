@@ -10,6 +10,7 @@ namespace Egami.Heic.Hevc;
 /// the search and writes the final bitstream. Contexts that depend on neighbours (split_cu_flag, the most probable modes) read the
 /// picture's block maps, which hold every block decoded before the current one, as the decoder's do.
 /// </summary>
+[SkipLocalsInit]
 internal sealed class HevcSyntaxWriter
 {
     private readonly HevcPicture _picture;

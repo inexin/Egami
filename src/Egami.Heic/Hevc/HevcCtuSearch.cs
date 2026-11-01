@@ -9,6 +9,7 @@ namespace Egami.Heic.Hevc;
 /// decoder's own (<see cref="HevcIntra"/>, <see cref="HevcTransform"/>), written into the picture, whose block maps it fills as
 /// the decoder does; so the final bitstream decodes to it exactly.
 /// </summary>
+[SkipLocalsInit]
 internal sealed partial class HevcCtuSearch
 {
     private readonly HevcEncoderSettings _settings;

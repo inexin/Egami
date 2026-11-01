@@ -12,6 +12,7 @@ internal sealed partial class HevcCtuSearch
 {
     private readonly long[] _roughCosts = new long[35];
     private readonly int[] _candidates = new int[35];
+    private readonly ushort[] _roughBlock = new ushort[32 * 32];
 
     /// <summary>Decides a luma prediction block's mode and transform tree; reconstructs it and gives the tree.</summary>
     private HevcTransformNode LumaPredictionUnit(HevcCodingUnit cu, int part, int x, int y, int log2, int depth, int qp, double lambda)
@@ -66,13 +67,29 @@ internal sealed partial class HevcCtuSearch
         // The transform tree of the mode chosen, now with its splits searched.
         if (_profile.TransformSearch && count > 1 && log2 > _sps.MinTbLog2Size && depth < maxDepth)
         {
-            if (count > 1)
+            bool forced = log2 > _sps.MaxTbLog2Size || (cu.NxN && depth == 0);
+            if (forced)
             {
                 before.Restore();
                 Array.Copy(before.Contexts, _bins.Contexts, HevcContexts.Count);
+                LumaTree(cu, out bestNode, x, y, log2, depth, maxDepth, bestMode, qp, lambda, false);
+                return bestNode;
             }
 
-            LumaTree(cu, out bestNode, x, y, log2, depth, maxDepth, bestMode, qp, lambda, false);
+            // The unsplit tree is the one just coded: try the split from the same start, and keep the better.
+            best.Capture(x, y, 1 << log2, false, false);
+            Array.Copy(_bins.Contexts, best.Contexts, HevcContexts.Count);
+            before.Restore();
+            Array.Copy(before.Contexts, _bins.Contexts, HevcContexts.Count);
+            double leafCost = bestCost - (lambda * ModeBits(bestMode, mpm) / Nal.CabacCost.Bit);
+            double splitCost = SplitLumaTree(cu, out HevcTransformNode split, x, y, log2, depth, maxDepth, bestMode, qp, lambda, leafCost);
+            if (splitCost < leafCost)
+            {
+                return split;
+            }
+
+            best.Restore();
+            Array.Copy(best.Contexts, _bins.Contexts, HevcContexts.Count);
         }
 
         return bestNode!;
@@ -98,8 +115,6 @@ internal sealed partial class HevcCtuSearch
     /// </summary>
     private int Candidates(int x, int y, int log2, ReadOnlySpan<int> mpm, double lambda, int keep)
     {
-        double sqrtLambda = Math.Sqrt(lambda);
-        Span<bool> tried = stackalloc bool[35];
         if (keep >= 35)
         {
             for (int m = 0; m < 35; m++)
@@ -110,22 +125,31 @@ internal sealed partial class HevcCtuSearch
             return 35;
         }
 
-        // Coarse: planar, DC and every other angle (or every fourth at low effort); then the neighbours of the best angles.
-        int step = _profile.AllRoughModes ? 1 : 2;
-        for (int m = 0; m < 35; m++)
+        double sqrtLambda = Math.Sqrt(lambda);
+        Span<bool> tried = stackalloc bool[35];
+        tried.Clear();
+        Span<int> modes = stackalloc int[35];
+        _roughCosts.AsSpan().Fill(long.MaxValue);
+
+        // A 64x64 block predicts its four 32x32 quarters (the largest transform), each from the source samples of the quarters
+        // before it, which stand in for their reconstruction.
+        if (log2 > 5)
         {
-            _roughCosts[m] = long.MaxValue;
+            CopyBlock(_source.Planes[0], _picture.Planes[0], (y * _picture.Widths[0]) + x, _picture.Widths[0], 64, 64);
         }
 
+        // Coarse: planar, DC and every angle (or every other one); then the neighbours of the two best angles.
+        int step = _profile.AllRoughModes ? 1 : 2;
+        int count = 0;
         for (int m = 0; m < 35; m = m < 2 ? m + 1 : m + step)
         {
-            _roughCosts[m] = RoughCost(x, y, log2, m, mpm, sqrtLambda);
-            tried[m] = true;
+            modes[count++] = m;
         }
 
+        RoughCosts(x, y, log2, modes[..count], mpm, sqrtLambda, tried);
+        count = 0;
         if (step > 1)
         {
-            // Refine around the two best angles.
             int first = -1, second = -1;
             for (int m = 2; m < 35; m++)
             {
@@ -149,10 +173,9 @@ internal sealed partial class HevcCtuSearch
                 for (int d = -1; d <= 1; d += 2)
                 {
                     int m = center + d;
-                    if (center >= 2 && m >= 2 && m <= 34 && !tried[m])
+                    if (center >= 2 && m >= 2 && m <= 34 && !tried[m] && !modes[..count].Contains(m))
                     {
-                        _roughCosts[m] = RoughCost(x, y, log2, m, mpm, sqrtLambda);
-                        tried[m] = true;
+                        modes[count++] = m;
                     }
                 }
             }
@@ -162,17 +185,22 @@ internal sealed partial class HevcCtuSearch
         {
             foreach (int m in mpm)
             {
-                if (!tried[m])
+                if (!tried[m] && !modes[..count].Contains(m))
                 {
-                    _roughCosts[m] = RoughCost(x, y, log2, m, mpm, sqrtLambda);
-                    tried[m] = true;
+                    modes[count++] = m;
                 }
             }
         }
 
+        if (count > 0)
+        {
+            RoughCosts(x, y, log2, modes[..count], mpm, sqrtLambda, tried);
+        }
+
         // The best keep, then the most probable modes not among them.
-        int count = 0;
+        int kept = 0;
         Span<bool> taken = stackalloc bool[35];
+        taken.Clear();
         for (int k = 0; k < keep; k++)
         {
             int best = -1;
@@ -190,7 +218,7 @@ internal sealed partial class HevcCtuSearch
             }
 
             taken[best] = true;
-            _candidates[count++] = best;
+            _candidates[kept++] = best;
         }
 
         if (_profile.MostProbableCandidates)
@@ -200,41 +228,40 @@ internal sealed partial class HevcCtuSearch
                 if (!taken[m])
                 {
                     taken[m] = true;
-                    _candidates[count++] = m;
+                    _candidates[kept++] = m;
                 }
             }
         }
 
-        return count;
+        return kept;
     }
 
     /// <summary>
-    /// SATD of the prediction of a mode plus sqrt(lambda) times its bits. A 64x64 block predicts its four 32x32 quarters (the
-    /// largest transform), each from the source samples of the quarters before it.
+    /// The rough cost of each of <paramref name="modes"/>: SATD of its prediction plus sqrt(lambda) times its bits, the reference
+    /// samples gathered once and every mode predicted into a scratch block.
     /// </summary>
-    private long RoughCost(int x, int y, int log2, int mode, ReadOnlySpan<int> mpm, double sqrtLambda)
+    private void RoughCosts(int x, int y, int log2, ReadOnlySpan<int> modes, ReadOnlySpan<int> mpm, double sqrtLambda, Span<bool> tried)
     {
-        long satd = 0;
         int stride = _picture.Widths[0];
-        ushort[] plane = _picture.Planes[0], source = _source.Planes[0];
-        if (log2 > 5)
+        ushort[] source = _source.Planes[0];
+        int size = Math.Min(log2, 5), n = 1 << size;
+        foreach (int m in modes)
         {
-            for (int q = 0; q < 4; q++)
-            {
-                int xq = x + ((q & 1) << 5), yq = y + ((q >> 1) << 5);
-                _intra.Predict(_picture, 0, xq, yq, 5, mode, false);
-                satd += Satd(source, plane, (yq * stride) + xq, stride, 32);
-                CopyBlock(source, plane, (yq * stride) + xq, stride, 32, 32);
-            }
-        }
-        else
-        {
-            _intra.Predict(_picture, 0, x, y, log2, mode, false);
-            satd = Satd(source, plane, (y * stride) + x, stride, 1 << log2);
+            int bits = mpm[0] == m ? 2 : mpm[1] == m || mpm[2] == m ? 3 : 6;
+            _roughCosts[m] = (long)(sqrtLambda * bits);
+            tried[m] = true;
         }
 
-        int bits = mpm[0] == mode ? 2 : mpm[1] == mode || mpm[2] == mode ? 3 : 6;
-        return satd + (long)(sqrtLambda * bits);
+        for (int q = 0; q < (log2 > 5 ? 4 : 1); q++)
+        {
+            int xq = x + ((q & 1) << 5), yq = y + ((q >> 1) << 5);
+            _intra.Gather(_picture, 0, xq, yq, size);
+            foreach (int m in modes)
+            {
+                _intra.PredictGathered(_sps, m, false, _roughBlock, 0, n);
+                _roughCosts[m] += HevcSatd.Compute(source, (yq * stride) + xq, stride, _roughBlock, 0, n, n);
+            }
+        }
     }
 
     /// <summary>
@@ -293,16 +320,7 @@ internal sealed partial class HevcCtuSearch
         before.Restore();
         Array.Copy(before.Contexts, _bins.Contexts, HevcContexts.Count);
 
-        _bins.Cost = 0;
-        _bins.Encode(HevcContexts.SplitTransform + 5 - log2, 1);
-        double splitCost = lambda * _bins.Cost / Nal.CabacCost.Bit;
-        _bins.Cost = saved;
-        HevcTransformNode split = new() { Split = true, Children = new HevcTransformNode[4] };
-        for (int i = 0; i < 4 && splitCost < leafCost; i++)
-        {
-            splitCost += LumaTree(cu, out split.Children[i], x + ((i & 1) * half), y + ((i >> 1) * half), log2 - 1, depth + 1, maxDepth, mode, qp, lambda, false);
-        }
-
+        double splitCost = SplitLumaTree(cu, out HevcTransformNode split, x, y, log2, depth, maxDepth, mode, qp, lambda, leafCost);
         if (splitCost < leafCost)
         {
             node = split;
@@ -312,6 +330,28 @@ internal sealed partial class HevcCtuSearch
         best.Restore();
         Array.Copy(best.Contexts, _bins.Contexts, HevcContexts.Count);
         return leafCost;
+    }
+
+    /// <summary>
+    /// A luma transform tree split once at the top and searched below, from the current state; stops counting once its cost
+    /// passes <paramref name="limit"/>.
+    /// </summary>
+    private double SplitLumaTree(HevcCodingUnit cu, out HevcTransformNode split, int x, int y, int log2, int depth, int maxDepth, int mode, int qp, double lambda,
+        double limit)
+    {
+        long saved = _bins.Cost;
+        _bins.Cost = 0;
+        _bins.Encode(HevcContexts.SplitTransform + 5 - log2, 1);
+        double cost = lambda * _bins.Cost / Nal.CabacCost.Bit;
+        _bins.Cost = saved;
+        split = new HevcTransformNode { Split = true, Children = new HevcTransformNode[4] };
+        int half = 1 << (log2 - 1);
+        for (int i = 0; i < 4 && cost < limit; i++)
+        {
+            cost += LumaTree(cu, out split.Children[i], x + ((i & 1) * half), y + ((i >> 1) * half), log2 - 1, depth + 1, maxDepth, mode, qp, lambda, false);
+        }
+
+        return cost;
     }
 
     // ---------------------------------------------------------------- one block
@@ -426,16 +466,19 @@ internal sealed partial class HevcCtuSearch
         }
 
         int scanIdx = HevcSyntaxWriter.ScanIndex(log2, c, mode, _chroma);
+        int scanEnd = count;
+        long bits = -1;
         int nonZero = _profile.Rdoq
-            ? Rdoq(_coefficients, levels, log2, c, scanIdx, qp, bitDepth, lambda / weight, skip)
+            ? Rdoq(_coefficients, levels, log2, c, scanIdx, qp, bitDepth, lambda / weight, out scanEnd, out bits)
             : HevcForward.Quantize(_coefficients, levels, log2, qp, bitDepth);
         if (nonZero != 0 && _pps.SignDataHiding)
         {
-            HevcForward.HideSigns(_coefficients, levels, log2, qp, bitDepth, scanIdx);
+            HevcForward.HideSigns(_coefficients, levels, log2, qp, bitDepth, scanIdx, scanEnd >> 4);
         }
 
         if (nonZero == 0)
         {
+            ClearLevels(levels, scanIdx, log2, scanEnd);
             return new BlockResult(null, false, weight * Sse(source, plane, at, stride, n, n), 0);
         }
 
@@ -443,9 +486,9 @@ internal sealed partial class HevcCtuSearch
         for (int i = 0; i < count; i++)
         {
             int level = levels[i];
-            _scaled[i] = level;
             if (level != 0)
             {
+                _scaled[i] = level;
                 lastRow = Math.Max(lastRow, i >> log2);
                 lastColumn = Math.Max(lastColumn, i & (n - 1));
             }
@@ -462,14 +505,44 @@ internal sealed partial class HevcCtuSearch
         }
 
         HevcTransform.Add(plane, at, stride, _inverse, log2, bitDepth);
-        Array.Clear(_scaled, 0, count);
+        for (int r = 0; r <= lastRow; r++)
+        {
+            Array.Clear(_scaled, r * n, lastColumn + 1);
+        }
 
-        long saved = _bins.Cost;
-        _bins.Cost = 0;
-        _writer.Residual(levels, log2, c, mode, skip, false);
-        long bits = _bins.Cost;
-        _bins.Cost = saved;
-        return new BlockResult(levels.AsSpan(0, count).ToArray(), skip, weight * Sse(source, plane, at, stride, n, n), bits);
+        // The residual's rate: RDOQ's own count, or the bins counted (and the contexts moved on).
+        if (bits < 0)
+        {
+            long saved = _bins.Cost;
+            _bins.Cost = 0;
+            _writer.Residual(levels, log2, c, mode, skip, false);
+            bits = _bins.Cost;
+            _bins.Cost = saved;
+        }
+        else if (_pps.TransformSkipEnabled && log2 <= _pps.Log2MaxTransformSkipSize)
+        {
+            bits += Nal.CabacCost.Of(_bins.Contexts[HevcContexts.TransformSkip + (c == 0 ? 0 : 1)], skip ? 1 : 0);
+        }
+
+        short[] kept = levels.AsSpan(0, count).ToArray();
+        ClearLevels(levels, scanIdx, log2, scanEnd);
+        return new BlockResult(kept, skip, weight * Sse(source, plane, at, stride, n, n), bits);
+    }
+
+    /// <summary>Clears the first <paramref name="scanEnd"/> positions in scan order of a level buffer, which is all zeros between blocks.</summary>
+    private static void ClearLevels(short[] levels, int scanIdx, int log2, int scanEnd)
+    {
+        if (scanEnd >= 1 << (2 * log2))
+        {
+            Array.Clear(levels, 0, 1 << (2 * log2));
+            return;
+        }
+
+        int[] rasters = ScanRasters[(scanIdx * 6) + log2];
+        for (int s = 0; s < scanEnd; s++)
+        {
+            levels[rasters[s]] = 0;
+        }
     }
 
     // ---------------------------------------------------------------- sample helpers
@@ -512,87 +585,5 @@ internal sealed partial class HevcCtuSearch
         }
 
         return sum;
-    }
-
-    /// <summary>The sum of absolute Hadamard-transformed differences of a square block: 8x8 transforms, or 4x4 for a 4x4 block.</summary>
-    internal static long Satd(ushort[] a, ushort[] b, int at, int stride, int size)
-    {
-        long sum = 0;
-        Span<int> d = stackalloc int[64];
-        int t = size == 4 ? 4 : 8;
-        for (int by = 0; by < size; by += t)
-        {
-            for (int bx = 0; bx < size; bx += t)
-            {
-                int origin = at + (by * stride) + bx;
-                for (int r = 0; r < t; r++)
-                {
-                    for (int k = 0; k < t; k++)
-                    {
-                        d[(r * t) + k] = a[origin + (r * stride) + k] - b[origin + (r * stride) + k];
-                    }
-                }
-
-                sum += t == 4 ? (Hadamard4(d) + 1) >> 1 : (Hadamard8(d) + 2) >> 2;
-            }
-        }
-
-        return sum;
-    }
-
-    private static long Hadamard4(Span<int> d)
-    {
-        Span<int> m = stackalloc int[16];
-        for (int r = 0; r < 4; r++)
-        {
-            int a0 = d[(r * 4) + 0] + d[(r * 4) + 1], a1 = d[(r * 4) + 0] - d[(r * 4) + 1];
-            int a2 = d[(r * 4) + 2] + d[(r * 4) + 3], a3 = d[(r * 4) + 2] - d[(r * 4) + 3];
-            (m[(r * 4) + 0], m[(r * 4) + 1], m[(r * 4) + 2], m[(r * 4) + 3]) = (a0 + a2, a1 + a3, a0 - a2, a1 - a3);
-        }
-
-        long sum = 0;
-        for (int k = 0; k < 4; k++)
-        {
-            int a0 = m[k] + m[4 + k], a1 = m[k] - m[4 + k], a2 = m[8 + k] + m[12 + k], a3 = m[8 + k] - m[12 + k];
-            sum += Math.Abs(a0 + a2) + Math.Abs(a1 + a3) + Math.Abs(a0 - a2) + Math.Abs(a1 - a3);
-        }
-
-        return sum;
-    }
-
-    private static long Hadamard8(Span<int> d)
-    {
-        Span<int> m = stackalloc int[64];
-        for (int r = 0; r < 8; r++)
-        {
-            Butterfly8(d.Slice(r * 8, 8), m.Slice(r * 8, 8));
-        }
-
-        long sum = 0;
-        Span<int> column = stackalloc int[8];
-        Span<int> output = stackalloc int[8];
-        for (int k = 0; k < 8; k++)
-        {
-            for (int r = 0; r < 8; r++)
-            {
-                column[r] = m[(r * 8) + k];
-            }
-
-            Butterfly8(column, output);
-            for (int r = 0; r < 8; r++)
-            {
-                sum += Math.Abs(output[r]);
-            }
-        }
-
-        return sum;
-    }
-
-    private static void Butterfly8(ReadOnlySpan<int> v, Span<int> o)
-    {
-        int a0 = v[0] + v[1], a1 = v[0] - v[1], a2 = v[2] + v[3], a3 = v[2] - v[3];
-        int a4 = v[4] + v[5], a5 = v[4] - v[5], a6 = v[6] + v[7], a7 = v[6] - v[7];
-        int b0 = a0 + a2, b1 = a1 + a3, b2 = a0 - a2, b3 = a1 - a3, b4 = a4 + a6, b5 = a5 + a7, b6 = a4 - a6, b7 = a5 - a7;
-        (o[0], o[1], o[2], o[3], o[4], o[5], o[6], o[7]) = (b0 + b4, b1 + b5, b2 + b6, b3 + b7, b0 - b4, b1 - b5, b2 - b6, b3 - b7);
     }
 }

@@ -49,7 +49,25 @@ internal static class HevcEncoder
         if (sao)
         {
             saoChoices = HevcSaoSearch.Choose(picture, source, slice, settings.Parallelism, cancellationToken);
-            HevcLoopFilter.Sao(picture, settings.Parallelism, cancellationToken);
+            bool used = false;
+            for (int i = 0; i < ctbs && !used; i++)
+            {
+                used = picture.Sao[i].TypeY != 0 || picture.Sao[i].TypeCb != 0;
+            }
+
+            if (used)
+            {
+                HevcLoopFilter.Sao(picture, settings.Parallelism, cancellationToken);
+            }
+            else
+            {
+                // No CTB gains from SAO: the slice turns it off, which saves each CTB's syntax.
+                slice = store.Parse(HevcNal.Parse(HevcParameterWriter.SliceNal(settings, false, [[0x80]])), out _)!;
+                for (int i = 0; i < ctbs; i++)
+                {
+                    picture.CtbSliceHeader[i] = slice;
+                }
+            }
         }
 
         byte[] sliceNal = Write(settings, picture, slice, ctus, saoChoices, wavefronts);

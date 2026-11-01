@@ -33,17 +33,16 @@ internal sealed partial class HevcCtuSearch
         }
     }
 
-    /// <summary>Tries the chroma modes on one part of the tree and keeps the best.</summary>
+    /// <summary>Tries the chroma modes on one part of the tree and keeps the best, the luma mode's (4) tried last.</summary>
     private void ChromaPart(HevcCodingUnit cu, int part, HevcTransformNode node, int x, int y, int xBase, int yBase, int log2, int depth, int blkIdx, int qp,
         double lambda)
     {
-        ReadOnlySpan<int> all = [4, 0, 1, 2, 3];
-        ReadOnlySpan<int> few = [4, 0];
+        ReadOnlySpan<int> all = [0, 1, 2, 3, 4];
+        ReadOnlySpan<int> few = [0, 4];
         ReadOnlySpan<int> syntaxes = cu.Bypass && !_profile.AllChromaModes ? [4] : _profile.AllChromaModes ? all : few;
         int size = 1 << log2;
         double bestCost = double.MaxValue;
         int bestSyntax = 4;
-        HevcChromaChoice bestChoice = default;
         if (syntaxes.Length > 1)
         {
             _chromaBefore.Capture(x, y, size, false, true, false);
@@ -52,42 +51,39 @@ internal sealed partial class HevcCtuSearch
 
         for (int i = 0; i < syntaxes.Length; i++)
         {
-            int syntax = syntaxes[i];
             if (i > 0)
             {
                 _chromaBefore.Restore();
                 Array.Copy(_chromaBefore.Contexts, _bins.Contexts, HevcContexts.Count);
             }
 
-            cu.ChromaSyntax[part] = syntax;
-            int mode = HevcSyntaxWriter.ChromaPredictionMode(syntax, cu.LumaModes[part], _chroma);
-            long saved = _bins.Cost;
-            _bins.Cost = 0;
-            _writer.ChromaMode(syntax);
-            double cost = lambda * _bins.Cost / Nal.CabacCost.Bit;
-            _bins.Cost = saved;
-            cost += ChromaTree(cu, node, x, y, xBase, yBase, log2, depth, blkIdx, mode, qp, lambda);
+            double cost = ChromaMode(cu, part, syntaxes[i], node, x, y, xBase, yBase, log2, depth, blkIdx, qp, lambda);
             if (cost < bestCost)
             {
-                bestCost = cost;
-                bestSyntax = syntax;
-                bestChoice = HevcChromaChoice.Take(node);
-                if (i + 1 < syntaxes.Length)
-                {
-                    _chromaBest.Capture(x, y, size, false, true, false);
-                    Array.Copy(_bins.Contexts, _chromaBest.Contexts, HevcContexts.Count);
-                }
+                (bestCost, bestSyntax) = (cost, syntaxes[i]);
             }
         }
 
-        if (cu.ChromaSyntax[part] != bestSyntax)
+        // The search is deterministic: the best mode coded again from the same state gives the same blocks.
+        if (bestSyntax != syntaxes[^1])
         {
-            _chromaBest.Restore();
-            Array.Copy(_chromaBest.Contexts, _bins.Contexts, HevcContexts.Count);
-            bestChoice.Put(node);
+            _chromaBefore.Restore();
+            Array.Copy(_chromaBefore.Contexts, _bins.Contexts, HevcContexts.Count);
+            ChromaMode(cu, part, bestSyntax, node, x, y, xBase, yBase, log2, depth, blkIdx, qp, lambda);
         }
+    }
 
-        cu.ChromaSyntax[part] = bestSyntax;
+    private double ChromaMode(HevcCodingUnit cu, int part, int syntax, HevcTransformNode node, int x, int y, int xBase, int yBase, int log2, int depth, int blkIdx,
+        int qp, double lambda)
+    {
+        cu.ChromaSyntax[part] = syntax;
+        int mode = HevcSyntaxWriter.ChromaPredictionMode(syntax, cu.LumaModes[part], _chroma);
+        long saved = _bins.Cost;
+        _bins.Cost = 0;
+        _writer.ChromaMode(syntax);
+        double cost = lambda * _bins.Cost / Nal.CabacCost.Bit;
+        _bins.Cost = saved;
+        return cost + ChromaTree(cu, node, x, y, xBase, yBase, log2, depth, blkIdx, mode, qp, lambda);
     }
 
     /// <summary>
@@ -191,34 +187,5 @@ internal sealed partial class HevcCtuSearch
 
         _bins.Contexts[context] = state;
         return lambda * cost / Nal.CabacCost.Bit;
-    }
-
-    /// <summary>A node's chroma flags and levels, kept while other chroma modes are tried on it.</summary>
-    private readonly record struct HevcChromaChoice(HevcChromaChoice.Snapshot Root)
-    {
-        internal static HevcChromaChoice Take(HevcTransformNode node) => new(Snapshot.Of(node));
-
-        internal void Put(HevcTransformNode node) => Root.Into(node);
-
-        internal sealed record Snapshot(bool Cb0, bool Cb1, bool Cr0, bool Cr1, short[]?[] Levels, bool[] Skips, Snapshot[]? Children)
-        {
-            internal static Snapshot Of(HevcTransformNode node) => new(node.Cb0, node.Cb1, node.Cr0, node.Cr1, [.. node.Levels], [.. node.TransformSkip],
-                node.Children is null ? null : [.. node.Children.Select(Of)]);
-
-            internal void Into(HevcTransformNode node)
-            {
-                (node.Cb0, node.Cb1, node.Cr0, node.Cr1) = (Cb0, Cb1, Cr0, Cr1);
-                for (int b = 1; b < 5; b++)
-                {
-                    node.Levels[b] = Levels[b];
-                    node.TransformSkip[b] = Skips[b];
-                }
-
-                for (int i = 0; Children is not null && i < 4; i++)
-                {
-                    Children[i].Into(node.Children![i]);
-                }
-            }
-        }
     }
 }

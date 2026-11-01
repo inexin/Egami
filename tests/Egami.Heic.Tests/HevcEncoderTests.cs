@@ -15,6 +15,14 @@ public class HevcEncoderTests
     [InlineData(130, 70, 1, 8, 37, 2)]
     [InlineData(96, 80, 1, 10, 30, 4)]
     [InlineData(120, 72, 1, 8, 22, 8)]
+    [InlineData(72, 56, 3, 8, 30, 4)]
+    [InlineData(72, 56, 3, 8, 30, 8)]
+    [InlineData(80, 48, 2, 8, 30, 4)]
+    [InlineData(80, 48, 2, 10, 26, 8)]
+    [InlineData(88, 40, 0, 8, 30, 4)]
+    [InlineData(64, 72, 1, 12, 30, 4)]
+    [InlineData(64, 72, 3, 12, 30, 6)]
+    [InlineData(48, 48, 0, 10, 30, 10)]
     public void DecoderMatchesReconstruction(int width, int height, int chroma, int bitDepth, int qp, int effort)
     {
         HevcEncoderSettings settings = new() { Width = width, Height = height, ChromaFormat = chroma, BitDepth = bitDepth, Qp = qp, Effort = effort };
@@ -23,6 +31,50 @@ public class HevcEncoderTests
         HevcPicture decoded = Decode(encoded);
         AssertSame(encoded.Reconstruction, decoded);
         Assert.InRange(Psnr(settings, planes, strides, decoded), qp < 30 ? 32 : 26, 99);
+    }
+
+    [Theory]
+    [InlineData(1, 8)]
+    [InlineData(3, 8)]
+    [InlineData(2, 10)]
+    [InlineData(0, 12)]
+    public void LosslessIsExact(int chroma, int bitDepth)
+    {
+        HevcEncoderSettings settings = new() { Width = 72, Height = 40, ChromaFormat = chroma, BitDepth = bitDepth, Lossless = true, Effort = 4 };
+        (ushort[][] planes, int[] strides) = Synthetic(settings, 2);
+        HevcEncodedPicture encoded = HevcEncoder.Encode(settings, planes, strides, TestContext.Current.CancellationToken);
+        HevcPicture decoded = Decode(encoded);
+        AssertSame(encoded.Reconstruction, decoded);
+        for (int c = 0; c < planes.Length; c++)
+        {
+            for (int y = 0; y < planes[c].Length / strides[c]; y++)
+            {
+                Assert.True(planes[c].AsSpan(y * strides[c], strides[c]).SequenceEqual(decoded.Planes[c].AsSpan(y * decoded.Widths[c], strides[c])), $"Component {c} row {y} differs.");
+            }
+        }
+    }
+
+    [Fact]
+    public void OutputDoesNotDependOnThreads()
+    {
+        HevcEncoderSettings settings = new() { Width = 300, Height = 260, Qp = 28, Effort = 4, AdaptiveQp = true };
+        (ushort[][] planes, int[] strides) = Synthetic(settings, 3);
+        byte[] one = HevcEncoder.Encode(settings, planes, strides, TestContext.Current.CancellationToken).Slice;
+        byte[] four = HevcEncoder.Encode(settings with { Parallelism = 4 }, planes, strides, TestContext.Current.CancellationToken).Slice;
+        Assert.Equal(one, four);
+        HevcEncodedPicture encoded = HevcEncoder.Encode(settings with { Parallelism = 3 }, planes, strides, TestContext.Current.CancellationToken);
+        AssertSame(encoded.Reconstruction, Decode(encoded));
+    }
+
+    [Theory]
+    [InlineData(5)]
+    [InlineData(4)]
+    public void AdaptiveQpGroupsDecode(int groupLog2)
+    {
+        HevcEncoderSettings settings = new() { Width = 136, Height = 96, Qp = 30, Effort = 5, AdaptiveQp = true, QpGroupLog2 = groupLog2, ChromaQpOffset = -2 };
+        (ushort[][] planes, int[] strides) = Synthetic(settings, 4);
+        HevcEncodedPicture encoded = HevcEncoder.Encode(settings, planes, strides, TestContext.Current.CancellationToken);
+        AssertSame(encoded.Reconstruction, Decode(encoded));
     }
 
     internal static HevcPicture Decode(HevcEncodedPicture encoded) =>

@@ -55,7 +55,7 @@ internal sealed record HevcEncoderProfile
         1 => new() { MinCuLog2 = 3, MaxCuLog2 = 5, NxN = false, AllRoughModes = false, SmallCandidates = 2, LargeCandidates = 1, MostProbableCandidates = false, TransformDepth = 1, TransformSearch = false, AllChromaModes = false, Rdoq = false, TransformSkip = false, Sao = true },
         2 => new() { MaxCuLog2 = 5, NxN = false, AllRoughModes = false, SmallCandidates = 2, LargeCandidates = 1, TransformDepth = 1, TransformSearch = false, AllChromaModes = false, Rdoq = true, TransformSkip = false },
         3 => new() { MaxCuLog2 = 5, AllRoughModes = false, SmallCandidates = 3, LargeCandidates = 2, TransformDepth = 1, TransformSearch = false, AllChromaModes = false },
-        4 => new() { SmallCandidates = 3, LargeCandidates = 2, TransformDepth = 1, AllChromaModes = false },
+        4 => new() { AllRoughModes = false, SmallCandidates = 3, LargeCandidates = 2, MostProbableCandidates = false, TransformDepth = 1, AllChromaModes = false },
         5 => new() { SmallCandidates = 4, LargeCandidates = 2, TransformDepth = 1 },
         6 => new() { SmallCandidates = 5, LargeCandidates = 3, TransformDepth = 2 },
         7 => new() { SmallCandidates = 6, LargeCandidates = 3, TransformDepth = 2, EarlyStop = false },

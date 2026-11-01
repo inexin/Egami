@@ -10,6 +10,7 @@ namespace Egami.Heic.Hevc;
 /// scaling (<see cref="HevcTransform.Scale"/>) turns back into the coefficients, and sign data hiding. Coefficients come out
 /// scaled by 2^(15 - bitDepth - log2) against an orthonormal transform of the samples, which the quantizer and RDOQ count on.
 /// </summary>
+[SkipLocalsInit]
 internal static class HevcForward
 {
     /// <summary>The quantizer's scales by QP % 6, about 2^20 / the decoder's levelScale.</summary>
@@ -146,7 +147,7 @@ internal static class HevcForward
     /// than 3 positions apart, makes the parity of the sum of absolute levels give the first level's sign, changing one level by
     /// one where the quantization error says it costs least. <paramref name="coefficients"/> are the unquantized coefficients.
     /// </summary>
-    internal static void HideSigns(ReadOnlySpan<int> coefficients, Span<short> levels, int log2, int qp, int bitDepth, int scanIdx)
+    internal static void HideSigns(ReadOnlySpan<int> coefficients, Span<short> levels, int log2, int qp, int bitDepth, int scanIdx, int subBlocks = int.MaxValue)
     {
         int n = 1 << log2;
         int scale = QuantScale[qp % 6];
@@ -155,7 +156,7 @@ internal static class HevcForward
         int log2Sb = log2 - 2;
         byte[] outer = HevcScan.Get(scanIdx, log2Sb);
         Span<int> positions = stackalloc int[16];
-        for (int i = (1 << (2 * log2Sb)) - 1; i >= 0; i--)
+        for (int i = Math.Min(1 << (2 * log2Sb), subBlocks) - 1; i >= 0; i--)
         {
             int origin = (outer[(2 * i) + 1] << 2) * n + (outer[2 * i] << 2);
             int first = -1, last = -1, sum = 0;
