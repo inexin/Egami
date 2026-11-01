@@ -53,6 +53,7 @@ internal static class EncodeCommand
         command.Options.Add(fragment);
         filters.AddTo(command);
         EncoderExtras.AddTo(command);
+        Deinterlacing.AddTo(command);
         command.SetAction(result =>
         {
             string text = result.GetValue(output)
@@ -68,6 +69,7 @@ internal static class EncodeCommand
                 Audio = result.GetValue(audio),
                 AudioFilters = filters.Plan(result) is { IsEmpty: false } plan ? plan : null,
                 Extras = EncoderExtras.Parse(result),
+                Deinterlace = Deinterlacing.Parse(result),
             };
             if (settings.AudioFilters is { } given && settings.Audio is null)
             {
@@ -79,6 +81,11 @@ internal static class EncodeCommand
                 throw new UsageException("--trim-silence would put the sound out of step with the video; use egami-video audio on the sound alone.");
             }
             Source source = Source.Find(session, result.GetValue(inputs) ?? []);
+            if (settings.Deinterlace is not null && !source.KeepsTimes)
+            {
+                throw new UsageException("--deinterlace is for a video input, not images.");
+            }
+
             InputFile first = source.Display;
             MediaTarget target = Fragments.Apply(MediaIO.Resolve(session, first, OutputTemplate.Parse(text), result.GetValue(format), "mkv"), Fragments.Parse(result, fragment));
             if (target.IsStdout && target.Container is AviFormat)
@@ -144,7 +151,7 @@ internal static class EncodeCommand
         MediaIO.Write(session, target.Path, stream =>
         {
             CountingStream counted = new(stream);
-            Rational frameRate = settings.Rate ?? source.Rate ?? new Rational(25, 1);
+            Rational frameRate = settings.Rate ?? Deinterlacing.OutputRate(source.Rate, settings.Deinterlace) ?? new Rational(25, 1);
             VideoWriterOptions options = new()
             {
                 Codec = settings.Codec!,
@@ -356,6 +363,9 @@ internal static class EncodeCommand
         public VideoCodec? Codec { get; init; }
 
         public EncoderExtras Extras { get; init; } = new();
+
+        /// <summary>Gets how a video's frames are deinterlaced, or <see langword="null"/> to take them as they are.</summary>
+        public Filters.DeinterlacerOptions? Deinterlace { get; init; }
     }
 
     /// <summary>Where the frames come from: image files, an image sequence, or a video (a file or standard input).</summary>
@@ -441,7 +451,7 @@ internal static class EncodeCommand
         private static IEnumerable<VideoFrame> Video(VideoSession session, FrameSource source, Settings settings)
         {
             bool jpeg = settings.Codec == VideoCodecs.MotionJpeg;
-            foreach (YuvVideoFrame frame in source.Frames())
+            foreach (YuvVideoFrame frame in source.Frames(settings.Deinterlace, session.Context))
             {
                 YuvRaster planes = frame.Raster;
 

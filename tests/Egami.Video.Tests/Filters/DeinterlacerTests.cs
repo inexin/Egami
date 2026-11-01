@@ -147,6 +147,13 @@ public sealed class DeinterlacerTests
         double byDefault = MeanPsnr(Run(new Deinterlacer(all), unflagged), pictures);
         Assert.Equal(right, byTrack, 6);
         Assert.Equal(wrong, byDefault, 6);
+
+        // Frames of a codec whose decoder does not flag them take the track's flag; H.264 frames keep their own.
+        DeinterlacerOptions flagged = new() { Rate = DeinterlaceRate.Field };
+        Assert.Equal(right, MeanPsnr(Run(new Deinterlacer(track, flagged), unflagged), pictures), 6);
+        List<YuvVideoFrame> passed = Run(new Deinterlacer(track with { CodecId = CodecIds.Avc }, flagged), unflagged);
+        Assert.Equal(100, WovenClips.Psnr(passed[1].Raster, unflagged[0].Raster));
+        passed.ForEach(f => f.Dispose());
         Dispose(frames, unflagged, pictures);
     }
 
@@ -256,6 +263,21 @@ public sealed class DeinterlacerTests
         Assert.Throws<ObjectDisposedException>(() => filter.Flush());
     }
 
+    [Fact]
+    public void ClipsKeepTheirDeinterlacingInJson()
+    {
+        Egami.Video.Editing.VideoEdit edit = new();
+        DeinterlacerOptions options = new() { Mode = DeinterlaceMode.Bob, Rate = DeinterlaceRate.Field, Frames = DeinterlaceFrames.All, FieldOrder = FieldOrder.BottomFieldFirst };
+        edit.Track.Add(Egami.Video.Editing.Clip.Open("a.mkv").Deinterlace(options));
+        edit.Track.Add(Egami.Video.Editing.Clip.Open("b.mkv").Deinterlace());
+        edit.Track.Add(Egami.Video.Editing.Clip.Open("c.mkv"));
+        Egami.Video.Editing.VideoEdit back = Egami.Video.Editing.VideoEdit.FromJson(edit.ToJson());
+        Assert.Equal(options, back.Track[0].Clip.Deinterlacing);
+        Assert.Equal(DeinterlacerOptions.Default, back.Track[1].Clip.Deinterlacing);
+        Assert.Null(back.Track[2].Clip.Deinterlacing);
+        Assert.Throws<ArgumentOutOfRangeException>(() => Egami.Video.Editing.Clip.Open("a.mkv").Deinterlace(new DeinterlacerOptions { Rate = (DeinterlaceRate)5 }));
+    }
+
     internal static List<YuvVideoFrame> Run(IVideoFilter filter, IEnumerable<YuvVideoFrame> frames)
     {
         List<YuvVideoFrame> output = [];
@@ -351,5 +373,52 @@ public sealed class DeinterlacerTests
                 item.Dispose();
             }
         }
+    }
+}
+
+/// <summary>
+/// Video 1.2.0 Build Plan task 2: once warm, the deinterlacer allocates only the small objects of each output frame; its held
+/// frames are reused and the planes come from the memory source (EGAMI_ALLOCATION_TESTS=1).
+/// </summary>
+public sealed class DeinterlacerAllocationTests
+{
+    [Trait("Category", "Allocation")]
+    [Theory]
+    [InlineData(DeinterlaceMode.Adaptive, DeinterlaceRate.Frame, 8)]
+    [InlineData(DeinterlaceMode.Adaptive, DeinterlaceRate.Field, 10)]
+    [InlineData(DeinterlaceMode.Bob, DeinterlaceRate.Frame, 8)]
+    public void WarmFramesAllocateTheSameForSmallFramesAndLarge(DeinterlaceMode mode, DeinterlaceRate rate, int depth)
+    {
+        Assert.SkipUnless(Environment.GetEnvironmentVariable("EGAMI_ALLOCATION_TESTS") == "1", "Allocation budgets run on demand: set EGAMI_ALLOCATION_TESTS=1.");
+        long small = PerFrame(mode, rate, depth, 64, 32);
+        long large = PerFrame(mode, rate, depth, 1920, 1080);
+        Assert.True(large - small < 256, $"1080 lines allocated {large:N0} bytes a frame against {small:N0} for 32.");
+        Assert.True(large < 4096, $"{large:N0} bytes a frame");
+    }
+
+    private static long PerFrame(DeinterlaceMode mode, DeinterlaceRate rate, int depth, int width, int height)
+    {
+        MediaContext context = MediaContext.Default with { Egami = EgamiContext.Default with { Memory = new PooledPixelMemorySource(), MaxParallelism = 1 } };
+        (List<YuvVideoFrame> frames, List<YuvRaster> pictures) = WovenClips.Clip("bar", 4, width, height, depth: depth);
+        using Deinterlacer deinterlacer = new(new DeinterlacerOptions { Mode = mode, Rate = rate }, context);
+        long fewest = long.MaxValue;
+        for (int round = 0; round < 6; round++)
+        {
+            long before = GC.GetAllocatedBytesForCurrentThread();
+            foreach (YuvVideoFrame frame in frames)
+            {
+                deinterlacer.Send(frame);
+                while (deinterlacer.TryReceive(out YuvVideoFrame? output))
+                {
+                    output.Dispose();
+                }
+            }
+
+            fewest = Math.Min(fewest, (GC.GetAllocatedBytesForCurrentThread() - before) / frames.Count);
+        }
+
+        frames.ForEach(f => f.Dispose());
+        pictures.ForEach(p => p.Dispose());
+        return fewest;
     }
 }

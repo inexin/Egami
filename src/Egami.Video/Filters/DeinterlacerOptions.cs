@@ -86,7 +86,11 @@ public enum DeinterlaceRate
 /// </example>
 public enum DeinterlaceFrames
 {
-    /// <summary>Frames whose <see cref="VideoFrame.FieldOrder"/> is not <see cref="FieldOrder.Progressive"/>; others pass unchanged.</summary>
+    /// <summary>
+    /// Frames whose <see cref="VideoFrame.FieldOrder"/> is not <see cref="FieldOrder.Progressive"/>, and every frame of a track
+    /// the container calls interlaced when its decoder does not flag frames (see <see cref="Deinterlacer(VideoTrackInfo, DeinterlacerOptions?, MediaContext?)"/>);
+    /// others pass unchanged.
+    /// </summary>
     Flagged,
 
     /// <summary>Every frame, for sources whose decoder or container does not flag interlaced frames.</summary>

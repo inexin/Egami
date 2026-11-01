@@ -21,6 +21,7 @@ public sealed class Deinterlacer : IVideoFilter
 
     private readonly DeinterlacerOptions _options;
     private readonly FieldOrder _trackOrder;
+    private readonly bool _trackFlags;
     private readonly MediaTime? _trackStep;
     private readonly MediaContext _context;
     private readonly Queue<YuvVideoFrame> _ready = new();
@@ -43,7 +44,8 @@ public sealed class Deinterlacer : IVideoFilter
 
     /// <summary>
     /// Creates a deinterlacer for a track: frames that do not give their field order take the track's
-    /// <see cref="VideoTrackInfo.FieldOrder"/>, and the track's frame rate times frames that give no duration.
+    /// <see cref="VideoTrackInfo.FieldOrder"/>, and the track's frame rate times frames that give no duration. Only the H.264
+    /// decoder flags each frame; frames of other codecs count as flagged when the container calls the track interlaced.
     /// </summary>
     /// <param name="track">The track the frames come from.</param>
     /// <param name="options">How it works, or <see langword="null"/> for <see cref="DeinterlacerOptions.Default"/>.</param>
@@ -55,6 +57,7 @@ public sealed class Deinterlacer : IVideoFilter
     {
         ArgumentNullException.ThrowIfNull(track);
         _trackOrder = track.FieldOrder;
+        _trackFlags = track.FieldOrder != FieldOrder.Progressive && track.CodecId != CodecIds.Avc;
         if (track.FrameRate is { Numerator: > 0 } rate)
         {
             _trackStep = new MediaTime(1, rate.Reciprocal());
@@ -151,7 +154,7 @@ public sealed class Deinterlacer : IVideoFilter
 
     private void Emit(Held? previous, Held current, Held? next)
     {
-        bool deinterlace = _options.Frames == DeinterlaceFrames.All || current.FieldOrder != FieldOrder.Progressive;
+        bool deinterlace = _options.Frames == DeinterlaceFrames.All || _trackFlags || current.FieldOrder != FieldOrder.Progressive;
         bool fields = _options.Rate == DeinterlaceRate.Field;
         MediaTime? duration = current.Duration;
         if (!deinterlace)

@@ -1,4 +1,7 @@
 #nullable enable
+Egami.Video.Editing.Clip.Deinterlace(Egami.Video.Filters.DeinterlacerOptions? options = null) -> Egami.Video.Editing.Clip!
+Egami.Video.Editing.Clip.Deinterlacing.get -> Egami.Video.Filters.DeinterlacerOptions?
+Egami.Video.Editing.Clip.Deinterlacing.init -> void
 Egami.Video.Filters.DeinterlaceFrames
 Egami.Video.Filters.DeinterlaceFrames.All = 1 -> Egami.Video.Filters.DeinterlaceFrames
 Egami.Video.Filters.DeinterlaceFrames.Flagged = 0 -> Egami.Video.Filters.DeinterlaceFrames
