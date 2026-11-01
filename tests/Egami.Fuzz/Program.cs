@@ -1679,7 +1679,7 @@ static void WriteLosslessJpegSamples(Stream stream)
         byte[] written = new byte[width * height * T.Layout.BytesPerPixel];
         for (int i = 0; i < written.Length; i++)
         {
-            written[i] = data[6 + (i % (data.Length - 6))];
+            written[i] = data.Length == 6 ? (byte)0 : data[6 + (i % (data.Length - 6))];
         }
 
         raster.CopyPixelsFrom(written);
