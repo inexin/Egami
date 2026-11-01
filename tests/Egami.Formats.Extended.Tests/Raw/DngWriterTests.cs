@@ -230,6 +230,8 @@ public class DngWriterTests
     {
         Assert.Throws<ArgumentOutOfRangeException>(() => new DngWriterOptions { TileSize = 100 });
         Assert.Throws<ArgumentOutOfRangeException>(() => new DngWriterOptions { TileSize = 0 });
+        Assert.Null(new DngWriterOptions { TileSize = null }.TileSize);
+        Assert.Equal((256, 240), (DngWriter.TileFor(4096), DngWriter.TileFor(2400)));
     }
 
     [Fact]

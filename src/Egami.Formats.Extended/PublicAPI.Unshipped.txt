@@ -272,7 +272,7 @@ Egami.Formats.Extended.Raw.DngWriterOptions.ParallelCompression.get -> bool
 Egami.Formats.Extended.Raw.DngWriterOptions.ParallelCompression.init -> void
 Egami.Formats.Extended.Raw.DngWriterOptions.Preview.get -> Egami.Formats.Extended.Raw.DngPreview
 Egami.Formats.Extended.Raw.DngWriterOptions.Preview.init -> void
-Egami.Formats.Extended.Raw.DngWriterOptions.TileSize.get -> int
+Egami.Formats.Extended.Raw.DngWriterOptions.TileSize.get -> int?
 Egami.Formats.Extended.Raw.DngWriterOptions.TileSize.init -> void
 static Egami.Formats.Extended.Raw.DngWriterOptions.Default.get -> Egami.Formats.Extended.Raw.DngWriterOptions!
 static Egami.Formats.Extended.Raw.RawFormat.ConvertToDng(System.IO.Stream! input, System.IO.Stream! output, Egami.Formats.Extended.Raw.DngWriterOptions? options = null, Egami.EgamiContext? context = null) -> void
