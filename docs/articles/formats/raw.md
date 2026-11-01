@@ -188,12 +188,13 @@ previews show the raster itself.
 | `Preview` | `DngPreview.Medium` | A 256-pixel thumbnail and a 1024-pixel JPEG; `Thumbnail`, `Full` (a full-size JPEG) or `None` (the raw data is the first image) |
 | `ParallelCompression` | `true` | Codes tiles on several threads; the file is the same |
 
-On the 39 corpus files Egami reads as RAW, a converted DNG loads back with its mosaic, levels, areas and pattern bit for bit,
+On the 41 corpus files Egami reads as RAW, a converted DNG loads back with its mosaic, levels, areas and pattern bit for bit,
 and develops to the source's develop within a level in 16 bits. Adobe DNG Converter, LibRaw (through Magick.NET), Windows'
 Raw Image Extension and Adobe's dng_validate open it. Its colour tags are Adobe's for the same file. With lossless JPEG and
-the medium preview it is 0.3 % smaller than Adobe's DNG over the corpus, within 2 % file by file but for a lossy Nikon NEF,
+the medium preview it is 0.7 % smaller than Adobe's DNG over the corpus, within 2 % file by file but for a lossy Nikon NEF,
 which Adobe stores as the codes before the camera's tone curve, with a linearization table (21 % smaller). On one thread it
-converts the corpus in 73 % of the time Adobe DNG Converter takes pinned to one core.
+converts the corpus in 70 % of the time Adobe DNG Converter takes pinned to one core (one large Fujifilm file takes 3 %
+longer than Adobe).
 
 Limits: Egami does not convert CR3 files. A DNG past 4 GB is written as BigTIFF, which Egami's own RAW reader does not open.
 `Save` has no context, so it reports no `Raw.DngCameraUnknown` warning; `ConvertToDng` and `Transcode` do. Some maker files'
