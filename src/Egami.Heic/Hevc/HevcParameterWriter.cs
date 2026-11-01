@@ -292,6 +292,16 @@ internal static class HevcParameterWriter
     internal static byte[] ConfigurationRecord(HevcEncoderSettings s, byte[] vps, byte[] sps, byte[] pps)
     {
         (int profile, uint compatibility, ulong constraints) = Profile(s);
+
+        // Profile() keeps flag j in bit j, as the SPS writes them one by one; hvcC carries the 32 flags in bitstream order, flag 0
+        // in the top bit (ISO/IEC 14496-15, 8.3.3.1), so the word is reversed before it is written big-endian.
+        uint reversed = 0;
+        for (int j = 0; j < 32; j++)
+        {
+            reversed |= ((compatibility >> j) & 1) << (31 - j);
+        }
+
+        compatibility = reversed;
         List<byte> record =
         [
             1, // configurationVersion
