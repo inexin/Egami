@@ -16,6 +16,9 @@ internal interface ITranscodeTarget
 
     /// <summary>Writes a whole raster, for chains that cannot stream.</summary>
     Task Save(Raster raster, bool async, CancellationToken cancellationToken);
+
+    /// <summary>Hands the input to the output format's <see cref="IFormatConverter"/>, if it has one; returns whether it converted.</summary>
+    bool TryConvert(Stream input, FormatInfo inputFormat, EgamiContext context);
 }
 
 internal sealed class PathTarget(string path, WriterOptions? options) : ITranscodeTarget
@@ -36,6 +39,29 @@ internal sealed class PathTarget(string path, WriterOptions? options) : ITransco
         raster.Save(path, options);
         return Task.CompletedTask;
     }
+
+    public bool TryConvert(Stream input, FormatInfo inputFormat, EgamiContext context)
+    {
+        FormatInfo format = FormatPipeline.FormatForPath(context, path);
+        if (format.Writer is not IFormatConverter converter)
+        {
+            return false;
+        }
+
+        WriterOptions writerOptions = FormatPipeline.OptionsForPath(format, path, options) ?? WriterOptions.Default;
+        bool converted = false;
+        using (FileStream output = new(path, FileMode.Create, FileAccess.ReadWrite, FileShare.None))
+        {
+            converted = converter.TryConvert(input, inputFormat, output, writerOptions, context);
+        }
+
+        if (!converted)
+        {
+            File.Delete(path);
+        }
+
+        return converted;
+    }
 }
 
 internal sealed class StreamTarget(Stream stream, FormatInfo format, WriterOptions? options) : ITranscodeTarget
@@ -55,6 +81,11 @@ internal sealed class StreamTarget(Stream stream, FormatInfo format, WriterOptio
 
         raster.Save(stream, format, options);
         return Task.CompletedTask;
+    }
+
+    public bool TryConvert(Stream input, FormatInfo inputFormat, EgamiContext context)
+    {
+        return format.Writer is IFormatConverter converter && converter.TryConvert(input, inputFormat, stream, options ?? WriterOptions.Default, context);
     }
 }
 
@@ -188,14 +219,20 @@ internal static class Transcoder
         Stream source = replay ?? input;
         long start = input.CanSeek ? input.Position : 0;
         TranscodePlan plan;
+        FormatInfo inputFormat;
         using (RasterDecoder probe = RasterDecoder.Open(source, context, options))
         {
             probe.Quiet = true;
             span.Tag(probe.Info);
+            inputFormat = probe.Info.Format;
             plan = TranscodePlan.Create(build, probe.Info, options, options.ConvertColorTo ?? probe.Metadata.GetColorProfile(), options.ConvertColorTo is null ? probe.Metadata.Hdr : null);
         }
 
         Restart(input, replay, start, context);
+        if (Convertible(build, options) && target.TryConvert(source, inputFormat, context))
+        {
+            return;
+        }
         if (plan.WholeImage is Action<RasterOps> whole)
         {
             using Raster raster = Raster.Load(source, context, plan.Options);
@@ -227,14 +264,20 @@ internal static class Transcoder
         Stream source = replay ?? input;
         long start = input.CanSeek ? input.Position : 0;
         TranscodePlan plan;
+        FormatInfo inputFormat;
         using (RasterDecoder probe = await RasterDecoder.OpenAsync(source, context, options, cancellationToken).ConfigureAwait(false))
         {
             probe.Quiet = true;
             span.Tag(probe.Info);
+            inputFormat = probe.Info.Format;
             plan = TranscodePlan.Create(build, probe.Info, options, options.ConvertColorTo ?? probe.Metadata.GetColorProfile(), options.ConvertColorTo is null ? probe.Metadata.Hdr : null);
         }
 
         Restart(input, replay, start, context);
+        if (Convertible(build, options) && target.TryConvert(source, inputFormat, context))
+        {
+            return;
+        }
         if (plan.WholeImage is Action<RasterOps> whole)
         {
             using Raster raster = await Raster.LoadAsync(source, context, plan.Options, cancellationToken).ConfigureAwait(false);
@@ -246,6 +289,13 @@ internal static class Transcoder
         using RasterDecoder decoder = await RasterDecoder.OpenAsync(source, context, plan.Options, cancellationToken).ConfigureAwait(false);
         await decoder.WithNaturalType(new AsyncWork(decoder, plan, target, context, cancellationToken)).ConfigureAwait(false);
     }
+
+    /// <summary>
+    /// Gets whether a transcode may go to the output format's <see cref="IFormatConverter"/>: no operations, and nothing asked of
+    /// the reader that a conversion would not give (a colour conversion, a region, a smaller size, a frame range).
+    /// </summary>
+    private static bool Convertible(Action<RasterOps>? build, ReaderOptions options) => build is null && options.ConvertColorTo is null
+        && options.Region is null && options.MinimumSize is null && options.Frames.Equals(Range.All);
 
     private static void Restart(Stream input, ReplayStream? replay, long start, EgamiContext context)
     {

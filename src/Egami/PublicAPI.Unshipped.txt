@@ -254,3 +254,10 @@ Egami.Formats.Jxl.JxlWriterOptions.ExtraChannels.init -> void
 Egami.Formats.Tiff.TiffCompression.Lzma = 34925 -> Egami.Formats.Tiff.TiffCompression
 Egami.Formats.Tiff.TiffWriterOptions.LzmaPreset.get -> int
 Egami.Formats.Tiff.TiffWriterOptions.LzmaPreset.init -> void
+Egami.Formats.IFormatConverter
+Egami.Formats.IFormatConverter.TryConvert(System.IO.Stream! input, Egami.Formats.FormatInfo! inputFormat, System.IO.Stream! output, Egami.Formats.WriterOptions! options, Egami.EgamiContext! context) -> bool
+Egami.Formats.Jpeg.JpegLosslessWriter
+static Egami.Formats.Jpeg.JpegLosslessWriter.Write(System.IO.Stream! output, System.ReadOnlySpan<ushort> samples, int components, int width, int precision, int? predictor, int restartInterval = 0, bool arithmetic = false) -> void
+static Egami.Formats.Jpeg.JpegLosslessWriter.WriteCfa(System.IO.Stream! output, System.ReadOnlySpan<ushort> mosaic, int width, int precision, int predictor = 1) -> void
+Egami.Formats.EgamiInput.Dispose() -> void
+Egami.Formats.EgamiInput.EgamiInput(System.IO.Stream! stream, Egami.EgamiContext! context, System.Threading.CancellationToken cancellationToken) -> void

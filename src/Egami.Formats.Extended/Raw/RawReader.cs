@@ -232,7 +232,7 @@ internal sealed class RawReader : IFormatReader, IRowFormatReader, IMultiImageRe
     /// Measures the black level from masked sensor pixels, per position of the 2 × 2 pattern, when the file and the camera
     /// table give none (some converters' DNGs, which the table comes from, hold black already subtracted).
     /// </summary>
-    private static void MeasureBlack(RawFrame frame, RawPixels pixels)
+    internal static void MeasureBlack(RawFrame frame, RawPixels pixels)
     {
         if (frame.MaskedArea is not Rect area || frame.HasOwnLevels || frame.Black.Average() > 1 || pixels.IsFloat || area.Width < 4 || area.Height < 4)
         {
@@ -262,7 +262,7 @@ internal sealed class RawReader : IFormatReader, IRowFormatReader, IMultiImageRe
     }
 
     /// <summary>Reads and decodes the sensor data; damage throws when strict, else is noted.</summary>
-    private static RawPixels Pixels(RawFile file, RawSensor sensor, EgamiInput input, bool strict, RawWarnings warnings)
+    internal static RawPixels Pixels(RawFile file, RawSensor sensor, EgamiInput input, bool strict, RawWarnings warnings)
     {
         long end = 0;
         int units = Math.Min(sensor.Offsets.Length, sensor.Counts.Length);
