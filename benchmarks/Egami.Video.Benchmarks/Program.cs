@@ -79,4 +79,11 @@ if (args is ["--encode-av1", .. string[] rest1])
     return;
 }
 
+// Time deinterlacing (Video 1.2.0 speed gate): -- --time-deinterlace <file.y4m>... [--bob --field --runs=N]
+if (args is ["--time-deinterlace", .. string[] interlaced])
+{
+    DeinterlaceTiming.Run(interlaced);
+    return;
+}
+
 BenchmarkSwitcher.FromAssembly(typeof(Program).Assembly).Run(args);
