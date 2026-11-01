@@ -330,7 +330,32 @@ public static class StreamingRaw8Format
 <p>A format without them still works everywhere: the decoder reads the whole image with <code>Read</code> and serves rows from it, and the
 encoder gathers the image and calls <code>Write</code> at the end.</p>
 <p>Writing your own operation or pixel type is covered in <a href="../guides/extending.html">Custom operations and formats</a>.</p>
-<h2 id="files-with-several-images">Files with several images</h2>
+<h2 id="converting-without-decoding">Converting without decoding</h2>
+<p>A writer that can turn a file of another format into its own without decoding it to pixels, as DNG keeps a camera's sensor
+data, also implements <code>IFormatConverter</code>. <code>Transcode</code> offers it the input when there are no operations and the reader options
+ask for nothing; it decides by the input's format, before reading anything, and returns <code>false</code> to have the file decoded as
+usual.</p>
+<pre><code class="lang-csharp">/// &lt;summary&gt;Writes RAW8 files; a RAW8 file transcoded to RAW8 with no operations is copied as it is, without decoding it.&lt;/summary&gt;
+public sealed class CopyingRaw8Writer : IFormatWriter, IFormatConverter
+{
+    public void Write&lt;TPixel&gt;(Raster&lt;TPixel&gt; raster, Stream output, WriterOptions options)
+        where TPixel : unmanaged, IPixelType&lt;TPixel&gt;
+    {
+        Raw8Format.Info.Writer!.Write(raster, output, options);
+    }
+
+    public bool TryConvert(Stream input, FormatInfo inputFormat, Stream output, WriterOptions options, EgamiContext context)
+    {
+        if (inputFormat.Name != Raw8Format.Info.Name)
+        {
+            return false;
+        }
+
+        input.CopyTo(output);
+        return true;
+    }
+}
+</code></pre><h2 id="files-with-several-images">Files with several images</h2>
 <p>A format whose files hold several images, as TIFF holds pages, also implements <code>IMultiImageReader</code>. LoadAll asks it for one
 <code>ReaderOptions</code> per image, usually a subclass of your own that names the image, and loads each as Load would with those options. A writer that writes several images to one file implements
 <code>IMultiImageWriter</code>, which SaveAll hands every raster.</p>

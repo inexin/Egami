@@ -151,6 +151,14 @@ which names the natural pixel type.</p>
 Interfaces
 </h3>
     <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Formats.IFormatConverter.html">IFormatConverter</a></dt>
+      <dd><p>A writer that can convert a file of another format to its own without decoding it to pixels first, such as camera RAW data
+copied into a DNG unchanged. <a class="xref" href="Egami.Raster.html#Egami_Raster_Transcode_System_String_System_String_System_Action_Egami_Operations_RasterOps__Egami_Formats_ReaderOptions_Egami_Formats_WriterOptions_Egami_EgamiContext_">Transcode(string, string, Action&lt;RasterOps&gt;?, ReaderOptions?, WriterOptions?, EgamiContext?)</a>
+asks the output format's writer when there are no operations and the reader options ask for nothing beyond the format's
+defaults; a writer that declines is used as usual.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
       <dt><a class="xref" href="Egami.Formats.IFormatReader.html">IFormatReader</a></dt>
       <dd><p>Reads one file format. Readers are stateless and safe to share across threads.
 They read only through <a class="xref" href="Egami.Formats.EgamiInput.html">EgamiInput</a> and allocate pixel memory only through <a class="xref" href="Egami.Formats.EgamiInput.html#Egami_Formats_EgamiInput_CreateRaster__1_System_Int64_System_Int64_Egami_ClearMode_">CreateRaster&lt;TPixel&gt;(long, long, ClearMode)</a>,

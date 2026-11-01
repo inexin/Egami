@@ -40759,6 +40759,25 @@ references:
   commentId: T:Egami.Formats.EgamiInput
   fullName: Egami.Formats.EgamiInput
   nameWithType: EgamiInput
+- uid: Egami.Formats.EgamiInput.#ctor(System.IO.Stream,Egami.EgamiContext,System.Threading.CancellationToken)
+  name: EgamiInput(Stream, EgamiContext, CancellationToken)
+  href: api/Egami.Formats.EgamiInput.html#Egami_Formats_EgamiInput__ctor_System_IO_Stream_Egami_EgamiContext_System_Threading_CancellationToken_
+  commentId: M:Egami.Formats.EgamiInput.#ctor(System.IO.Stream,Egami.EgamiContext,System.Threading.CancellationToken)
+  name.vb: New(Stream, EgamiContext, CancellationToken)
+  fullName: Egami.Formats.EgamiInput.EgamiInput(System.IO.Stream, Egami.EgamiContext, System.Threading.CancellationToken)
+  fullName.vb: Egami.Formats.EgamiInput.New(System.IO.Stream, Egami.EgamiContext, System.Threading.CancellationToken)
+  nameWithType: EgamiInput.EgamiInput(Stream, EgamiContext, CancellationToken)
+  nameWithType.vb: EgamiInput.New(Stream, EgamiContext, CancellationToken)
+- uid: Egami.Formats.EgamiInput.#ctor*
+  name: EgamiInput
+  href: api/Egami.Formats.EgamiInput.html#Egami_Formats_EgamiInput__ctor_
+  commentId: Overload:Egami.Formats.EgamiInput.#ctor
+  isSpec: "True"
+  name.vb: New
+  fullName: Egami.Formats.EgamiInput.EgamiInput
+  fullName.vb: Egami.Formats.EgamiInput.New
+  nameWithType: EgamiInput.EgamiInput
+  nameWithType.vb: EgamiInput.New
 - uid: Egami.Formats.EgamiInput.AddFrame*
   name: AddFrame
   href: api/Egami.Formats.EgamiInput.html#Egami_Formats_EgamiInput_AddFrame_
@@ -40910,6 +40929,19 @@ references:
   isSpec: "True"
   fullName: Egami.Formats.EgamiInput.Diagnostics
   nameWithType: EgamiInput.Diagnostics
+- uid: Egami.Formats.EgamiInput.Dispose
+  name: Dispose()
+  href: api/Egami.Formats.EgamiInput.html#Egami_Formats_EgamiInput_Dispose
+  commentId: M:Egami.Formats.EgamiInput.Dispose
+  fullName: Egami.Formats.EgamiInput.Dispose()
+  nameWithType: EgamiInput.Dispose()
+- uid: Egami.Formats.EgamiInput.Dispose*
+  name: Dispose
+  href: api/Egami.Formats.EgamiInput.html#Egami_Formats_EgamiInput_Dispose_
+  commentId: Overload:Egami.Formats.EgamiInput.Dispose
+  isSpec: "True"
+  fullName: Egami.Formats.EgamiInput.Dispose
+  nameWithType: EgamiInput.Dispose
 - uid: Egami.Formats.EgamiInput.FormatName
   name: FormatName
   href: api/Egami.Formats.EgamiInput.html#Egami_Formats_EgamiInput_FormatName
@@ -43021,6 +43053,137 @@ references:
   commentId: N:Egami.Formats.Extended.Raw
   fullName: Egami.Formats.Extended.Raw
   nameWithType: Egami.Formats.Extended.Raw
+- uid: Egami.Formats.Extended.Raw.DngCompression
+  name: DngCompression
+  href: api/Egami.Formats.Extended.Raw.DngCompression.html
+  commentId: T:Egami.Formats.Extended.Raw.DngCompression
+  fullName: Egami.Formats.Extended.Raw.DngCompression
+  nameWithType: DngCompression
+- uid: Egami.Formats.Extended.Raw.DngCompression.Deflate
+  name: Deflate
+  href: api/Egami.Formats.Extended.Raw.DngCompression.html#Egami_Formats_Extended_Raw_DngCompression_Deflate
+  commentId: F:Egami.Formats.Extended.Raw.DngCompression.Deflate
+  fullName: Egami.Formats.Extended.Raw.DngCompression.Deflate
+  nameWithType: DngCompression.Deflate
+- uid: Egami.Formats.Extended.Raw.DngCompression.JpegXl
+  name: JpegXl
+  href: api/Egami.Formats.Extended.Raw.DngCompression.html#Egami_Formats_Extended_Raw_DngCompression_JpegXl
+  commentId: F:Egami.Formats.Extended.Raw.DngCompression.JpegXl
+  fullName: Egami.Formats.Extended.Raw.DngCompression.JpegXl
+  nameWithType: DngCompression.JpegXl
+- uid: Egami.Formats.Extended.Raw.DngCompression.LosslessJpeg
+  name: LosslessJpeg
+  href: api/Egami.Formats.Extended.Raw.DngCompression.html#Egami_Formats_Extended_Raw_DngCompression_LosslessJpeg
+  commentId: F:Egami.Formats.Extended.Raw.DngCompression.LosslessJpeg
+  fullName: Egami.Formats.Extended.Raw.DngCompression.LosslessJpeg
+  nameWithType: DngCompression.LosslessJpeg
+- uid: Egami.Formats.Extended.Raw.DngCompression.None
+  name: None
+  href: api/Egami.Formats.Extended.Raw.DngCompression.html#Egami_Formats_Extended_Raw_DngCompression_None
+  commentId: F:Egami.Formats.Extended.Raw.DngCompression.None
+  fullName: Egami.Formats.Extended.Raw.DngCompression.None
+  nameWithType: DngCompression.None
+- uid: Egami.Formats.Extended.Raw.DngPreview
+  name: DngPreview
+  href: api/Egami.Formats.Extended.Raw.DngPreview.html
+  commentId: T:Egami.Formats.Extended.Raw.DngPreview
+  fullName: Egami.Formats.Extended.Raw.DngPreview
+  nameWithType: DngPreview
+- uid: Egami.Formats.Extended.Raw.DngPreview.Full
+  name: Full
+  href: api/Egami.Formats.Extended.Raw.DngPreview.html#Egami_Formats_Extended_Raw_DngPreview_Full
+  commentId: F:Egami.Formats.Extended.Raw.DngPreview.Full
+  fullName: Egami.Formats.Extended.Raw.DngPreview.Full
+  nameWithType: DngPreview.Full
+- uid: Egami.Formats.Extended.Raw.DngPreview.Medium
+  name: Medium
+  href: api/Egami.Formats.Extended.Raw.DngPreview.html#Egami_Formats_Extended_Raw_DngPreview_Medium
+  commentId: F:Egami.Formats.Extended.Raw.DngPreview.Medium
+  fullName: Egami.Formats.Extended.Raw.DngPreview.Medium
+  nameWithType: DngPreview.Medium
+- uid: Egami.Formats.Extended.Raw.DngPreview.None
+  name: None
+  href: api/Egami.Formats.Extended.Raw.DngPreview.html#Egami_Formats_Extended_Raw_DngPreview_None
+  commentId: F:Egami.Formats.Extended.Raw.DngPreview.None
+  fullName: Egami.Formats.Extended.Raw.DngPreview.None
+  nameWithType: DngPreview.None
+- uid: Egami.Formats.Extended.Raw.DngPreview.Thumbnail
+  name: Thumbnail
+  href: api/Egami.Formats.Extended.Raw.DngPreview.html#Egami_Formats_Extended_Raw_DngPreview_Thumbnail
+  commentId: F:Egami.Formats.Extended.Raw.DngPreview.Thumbnail
+  fullName: Egami.Formats.Extended.Raw.DngPreview.Thumbnail
+  nameWithType: DngPreview.Thumbnail
+- uid: Egami.Formats.Extended.Raw.DngWriterOptions
+  name: DngWriterOptions
+  href: api/Egami.Formats.Extended.Raw.DngWriterOptions.html
+  commentId: T:Egami.Formats.Extended.Raw.DngWriterOptions
+  fullName: Egami.Formats.Extended.Raw.DngWriterOptions
+  nameWithType: DngWriterOptions
+- uid: Egami.Formats.Extended.Raw.DngWriterOptions.Compression
+  name: Compression
+  href: api/Egami.Formats.Extended.Raw.DngWriterOptions.html#Egami_Formats_Extended_Raw_DngWriterOptions_Compression
+  commentId: P:Egami.Formats.Extended.Raw.DngWriterOptions.Compression
+  fullName: Egami.Formats.Extended.Raw.DngWriterOptions.Compression
+  nameWithType: DngWriterOptions.Compression
+- uid: Egami.Formats.Extended.Raw.DngWriterOptions.Compression*
+  name: Compression
+  href: api/Egami.Formats.Extended.Raw.DngWriterOptions.html#Egami_Formats_Extended_Raw_DngWriterOptions_Compression_
+  commentId: Overload:Egami.Formats.Extended.Raw.DngWriterOptions.Compression
+  isSpec: "True"
+  fullName: Egami.Formats.Extended.Raw.DngWriterOptions.Compression
+  nameWithType: DngWriterOptions.Compression
+- uid: Egami.Formats.Extended.Raw.DngWriterOptions.Default
+  name: Default
+  href: api/Egami.Formats.Extended.Raw.DngWriterOptions.html#Egami_Formats_Extended_Raw_DngWriterOptions_Default
+  commentId: P:Egami.Formats.Extended.Raw.DngWriterOptions.Default
+  fullName: Egami.Formats.Extended.Raw.DngWriterOptions.Default
+  nameWithType: DngWriterOptions.Default
+- uid: Egami.Formats.Extended.Raw.DngWriterOptions.Default*
+  name: Default
+  href: api/Egami.Formats.Extended.Raw.DngWriterOptions.html#Egami_Formats_Extended_Raw_DngWriterOptions_Default_
+  commentId: Overload:Egami.Formats.Extended.Raw.DngWriterOptions.Default
+  isSpec: "True"
+  fullName: Egami.Formats.Extended.Raw.DngWriterOptions.Default
+  nameWithType: DngWriterOptions.Default
+- uid: Egami.Formats.Extended.Raw.DngWriterOptions.ParallelCompression
+  name: ParallelCompression
+  href: api/Egami.Formats.Extended.Raw.DngWriterOptions.html#Egami_Formats_Extended_Raw_DngWriterOptions_ParallelCompression
+  commentId: P:Egami.Formats.Extended.Raw.DngWriterOptions.ParallelCompression
+  fullName: Egami.Formats.Extended.Raw.DngWriterOptions.ParallelCompression
+  nameWithType: DngWriterOptions.ParallelCompression
+- uid: Egami.Formats.Extended.Raw.DngWriterOptions.ParallelCompression*
+  name: ParallelCompression
+  href: api/Egami.Formats.Extended.Raw.DngWriterOptions.html#Egami_Formats_Extended_Raw_DngWriterOptions_ParallelCompression_
+  commentId: Overload:Egami.Formats.Extended.Raw.DngWriterOptions.ParallelCompression
+  isSpec: "True"
+  fullName: Egami.Formats.Extended.Raw.DngWriterOptions.ParallelCompression
+  nameWithType: DngWriterOptions.ParallelCompression
+- uid: Egami.Formats.Extended.Raw.DngWriterOptions.Preview
+  name: Preview
+  href: api/Egami.Formats.Extended.Raw.DngWriterOptions.html#Egami_Formats_Extended_Raw_DngWriterOptions_Preview
+  commentId: P:Egami.Formats.Extended.Raw.DngWriterOptions.Preview
+  fullName: Egami.Formats.Extended.Raw.DngWriterOptions.Preview
+  nameWithType: DngWriterOptions.Preview
+- uid: Egami.Formats.Extended.Raw.DngWriterOptions.Preview*
+  name: Preview
+  href: api/Egami.Formats.Extended.Raw.DngWriterOptions.html#Egami_Formats_Extended_Raw_DngWriterOptions_Preview_
+  commentId: Overload:Egami.Formats.Extended.Raw.DngWriterOptions.Preview
+  isSpec: "True"
+  fullName: Egami.Formats.Extended.Raw.DngWriterOptions.Preview
+  nameWithType: DngWriterOptions.Preview
+- uid: Egami.Formats.Extended.Raw.DngWriterOptions.TileSize
+  name: TileSize
+  href: api/Egami.Formats.Extended.Raw.DngWriterOptions.html#Egami_Formats_Extended_Raw_DngWriterOptions_TileSize
+  commentId: P:Egami.Formats.Extended.Raw.DngWriterOptions.TileSize
+  fullName: Egami.Formats.Extended.Raw.DngWriterOptions.TileSize
+  nameWithType: DngWriterOptions.TileSize
+- uid: Egami.Formats.Extended.Raw.DngWriterOptions.TileSize*
+  name: TileSize
+  href: api/Egami.Formats.Extended.Raw.DngWriterOptions.html#Egami_Formats_Extended_Raw_DngWriterOptions_TileSize_
+  commentId: Overload:Egami.Formats.Extended.Raw.DngWriterOptions.TileSize
+  isSpec: "True"
+  fullName: Egami.Formats.Extended.Raw.DngWriterOptions.TileSize
+  nameWithType: DngWriterOptions.TileSize
 - uid: Egami.Formats.Extended.Raw.RawDemosaicMethod
   name: RawDemosaicMethod
   href: api/Egami.Formats.Extended.Raw.RawDemosaicMethod.html
@@ -43499,6 +43662,31 @@ references:
   commentId: T:Egami.Formats.Extended.Raw.RawFormat
   fullName: Egami.Formats.Extended.Raw.RawFormat
   nameWithType: RawFormat
+- uid: Egami.Formats.Extended.Raw.RawFormat.ConvertToDng(System.IO.Stream,System.IO.Stream,Egami.Formats.Extended.Raw.DngWriterOptions,Egami.EgamiContext)
+  name: ConvertToDng(Stream, Stream, DngWriterOptions?, EgamiContext?)
+  href: api/Egami.Formats.Extended.Raw.RawFormat.html#Egami_Formats_Extended_Raw_RawFormat_ConvertToDng_System_IO_Stream_System_IO_Stream_Egami_Formats_Extended_Raw_DngWriterOptions_Egami_EgamiContext_
+  commentId: M:Egami.Formats.Extended.Raw.RawFormat.ConvertToDng(System.IO.Stream,System.IO.Stream,Egami.Formats.Extended.Raw.DngWriterOptions,Egami.EgamiContext)
+  name.vb: ConvertToDng(Stream, Stream, DngWriterOptions, EgamiContext)
+  fullName: Egami.Formats.Extended.Raw.RawFormat.ConvertToDng(System.IO.Stream, System.IO.Stream, Egami.Formats.Extended.Raw.DngWriterOptions?, Egami.EgamiContext?)
+  fullName.vb: Egami.Formats.Extended.Raw.RawFormat.ConvertToDng(System.IO.Stream, System.IO.Stream, Egami.Formats.Extended.Raw.DngWriterOptions, Egami.EgamiContext)
+  nameWithType: RawFormat.ConvertToDng(Stream, Stream, DngWriterOptions?, EgamiContext?)
+  nameWithType.vb: RawFormat.ConvertToDng(Stream, Stream, DngWriterOptions, EgamiContext)
+- uid: Egami.Formats.Extended.Raw.RawFormat.ConvertToDng(System.String,System.String,Egami.Formats.Extended.Raw.DngWriterOptions,Egami.EgamiContext)
+  name: ConvertToDng(string, string, DngWriterOptions?, EgamiContext?)
+  href: api/Egami.Formats.Extended.Raw.RawFormat.html#Egami_Formats_Extended_Raw_RawFormat_ConvertToDng_System_String_System_String_Egami_Formats_Extended_Raw_DngWriterOptions_Egami_EgamiContext_
+  commentId: M:Egami.Formats.Extended.Raw.RawFormat.ConvertToDng(System.String,System.String,Egami.Formats.Extended.Raw.DngWriterOptions,Egami.EgamiContext)
+  name.vb: ConvertToDng(String, String, DngWriterOptions, EgamiContext)
+  fullName: Egami.Formats.Extended.Raw.RawFormat.ConvertToDng(string, string, Egami.Formats.Extended.Raw.DngWriterOptions?, Egami.EgamiContext?)
+  fullName.vb: Egami.Formats.Extended.Raw.RawFormat.ConvertToDng(String, String, Egami.Formats.Extended.Raw.DngWriterOptions, Egami.EgamiContext)
+  nameWithType: RawFormat.ConvertToDng(string, string, DngWriterOptions?, EgamiContext?)
+  nameWithType.vb: RawFormat.ConvertToDng(String, String, DngWriterOptions, EgamiContext)
+- uid: Egami.Formats.Extended.Raw.RawFormat.ConvertToDng*
+  name: ConvertToDng
+  href: api/Egami.Formats.Extended.Raw.RawFormat.html#Egami_Formats_Extended_Raw_RawFormat_ConvertToDng_
+  commentId: Overload:Egami.Formats.Extended.Raw.RawFormat.ConvertToDng
+  isSpec: "True"
+  fullName: Egami.Formats.Extended.Raw.RawFormat.ConvertToDng
+  nameWithType: RawFormat.ConvertToDng
 - uid: Egami.Formats.Extended.Raw.RawFormat.Info
   name: Info
   href: api/Egami.Formats.Extended.Raw.RawFormat.html#Egami_Formats_Extended_Raw_RawFormat_Info
@@ -45139,6 +45327,25 @@ references:
   commentId: F:Egami.Formats.Heic.HeicItemRole.Thumbnail
   fullName: Egami.Formats.Heic.HeicItemRole.Thumbnail
   nameWithType: HeicItemRole.Thumbnail
+- uid: Egami.Formats.IFormatConverter
+  name: IFormatConverter
+  href: api/Egami.Formats.IFormatConverter.html
+  commentId: T:Egami.Formats.IFormatConverter
+  fullName: Egami.Formats.IFormatConverter
+  nameWithType: IFormatConverter
+- uid: Egami.Formats.IFormatConverter.TryConvert(System.IO.Stream,Egami.Formats.FormatInfo,System.IO.Stream,Egami.Formats.WriterOptions,Egami.EgamiContext)
+  name: TryConvert(Stream, FormatInfo, Stream, WriterOptions, EgamiContext)
+  href: api/Egami.Formats.IFormatConverter.html#Egami_Formats_IFormatConverter_TryConvert_System_IO_Stream_Egami_Formats_FormatInfo_System_IO_Stream_Egami_Formats_WriterOptions_Egami_EgamiContext_
+  commentId: M:Egami.Formats.IFormatConverter.TryConvert(System.IO.Stream,Egami.Formats.FormatInfo,System.IO.Stream,Egami.Formats.WriterOptions,Egami.EgamiContext)
+  fullName: Egami.Formats.IFormatConverter.TryConvert(System.IO.Stream, Egami.Formats.FormatInfo, System.IO.Stream, Egami.Formats.WriterOptions, Egami.EgamiContext)
+  nameWithType: IFormatConverter.TryConvert(Stream, FormatInfo, Stream, WriterOptions, EgamiContext)
+- uid: Egami.Formats.IFormatConverter.TryConvert*
+  name: TryConvert
+  href: api/Egami.Formats.IFormatConverter.html#Egami_Formats_IFormatConverter_TryConvert_
+  commentId: Overload:Egami.Formats.IFormatConverter.TryConvert
+  isSpec: "True"
+  fullName: Egami.Formats.IFormatConverter.TryConvert
+  nameWithType: IFormatConverter.TryConvert
 - uid: Egami.Formats.IFormatReader
   name: IFormatReader
   href: api/Egami.Formats.IFormatReader.html
@@ -47019,6 +47226,44 @@ references:
   isSpec: "True"
   fullName: Egami.Formats.Jpeg.JpegLosslessOptions.Predictor
   nameWithType: JpegLosslessOptions.Predictor
+- uid: Egami.Formats.Jpeg.JpegLosslessWriter
+  name: JpegLosslessWriter
+  href: api/Egami.Formats.Jpeg.JpegLosslessWriter.html
+  commentId: T:Egami.Formats.Jpeg.JpegLosslessWriter
+  fullName: Egami.Formats.Jpeg.JpegLosslessWriter
+  nameWithType: JpegLosslessWriter
+- uid: Egami.Formats.Jpeg.JpegLosslessWriter.Write(System.IO.Stream,System.ReadOnlySpan{System.UInt16},System.Int32,System.Int32,System.Int32,System.Nullable{System.Int32},System.Int32,System.Boolean)
+  name: Write(Stream, ReadOnlySpan<ushort>, int, int, int, int?, int, bool)
+  href: api/Egami.Formats.Jpeg.JpegLosslessWriter.html#Egami_Formats_Jpeg_JpegLosslessWriter_Write_System_IO_Stream_System_ReadOnlySpan_System_UInt16__System_Int32_System_Int32_System_Int32_System_Nullable_System_Int32__System_Int32_System_Boolean_
+  commentId: M:Egami.Formats.Jpeg.JpegLosslessWriter.Write(System.IO.Stream,System.ReadOnlySpan{System.UInt16},System.Int32,System.Int32,System.Int32,System.Nullable{System.Int32},System.Int32,System.Boolean)
+  name.vb: Write(Stream, ReadOnlySpan(Of UShort), Integer, Integer, Integer, Integer?, Integer, Boolean)
+  fullName: Egami.Formats.Jpeg.JpegLosslessWriter.Write(System.IO.Stream, System.ReadOnlySpan<ushort>, int, int, int, int?, int, bool)
+  fullName.vb: Egami.Formats.Jpeg.JpegLosslessWriter.Write(System.IO.Stream, System.ReadOnlySpan(Of UShort), Integer, Integer, Integer, Integer?, Integer, Boolean)
+  nameWithType: JpegLosslessWriter.Write(Stream, ReadOnlySpan<ushort>, int, int, int, int?, int, bool)
+  nameWithType.vb: JpegLosslessWriter.Write(Stream, ReadOnlySpan(Of UShort), Integer, Integer, Integer, Integer?, Integer, Boolean)
+- uid: Egami.Formats.Jpeg.JpegLosslessWriter.Write*
+  name: Write
+  href: api/Egami.Formats.Jpeg.JpegLosslessWriter.html#Egami_Formats_Jpeg_JpegLosslessWriter_Write_
+  commentId: Overload:Egami.Formats.Jpeg.JpegLosslessWriter.Write
+  isSpec: "True"
+  fullName: Egami.Formats.Jpeg.JpegLosslessWriter.Write
+  nameWithType: JpegLosslessWriter.Write
+- uid: Egami.Formats.Jpeg.JpegLosslessWriter.WriteCfa(System.IO.Stream,System.ReadOnlySpan{System.UInt16},System.Int32,System.Int32,System.Int32)
+  name: WriteCfa(Stream, ReadOnlySpan<ushort>, int, int, int)
+  href: api/Egami.Formats.Jpeg.JpegLosslessWriter.html#Egami_Formats_Jpeg_JpegLosslessWriter_WriteCfa_System_IO_Stream_System_ReadOnlySpan_System_UInt16__System_Int32_System_Int32_System_Int32_
+  commentId: M:Egami.Formats.Jpeg.JpegLosslessWriter.WriteCfa(System.IO.Stream,System.ReadOnlySpan{System.UInt16},System.Int32,System.Int32,System.Int32)
+  name.vb: WriteCfa(Stream, ReadOnlySpan(Of UShort), Integer, Integer, Integer)
+  fullName: Egami.Formats.Jpeg.JpegLosslessWriter.WriteCfa(System.IO.Stream, System.ReadOnlySpan<ushort>, int, int, int)
+  fullName.vb: Egami.Formats.Jpeg.JpegLosslessWriter.WriteCfa(System.IO.Stream, System.ReadOnlySpan(Of UShort), Integer, Integer, Integer)
+  nameWithType: JpegLosslessWriter.WriteCfa(Stream, ReadOnlySpan<ushort>, int, int, int)
+  nameWithType.vb: JpegLosslessWriter.WriteCfa(Stream, ReadOnlySpan(Of UShort), Integer, Integer, Integer)
+- uid: Egami.Formats.Jpeg.JpegLosslessWriter.WriteCfa*
+  name: WriteCfa
+  href: api/Egami.Formats.Jpeg.JpegLosslessWriter.html#Egami_Formats_Jpeg_JpegLosslessWriter_WriteCfa_
+  commentId: Overload:Egami.Formats.Jpeg.JpegLosslessWriter.WriteCfa
+  isSpec: "True"
+  fullName: Egami.Formats.Jpeg.JpegLosslessWriter.WriteCfa
+  nameWithType: JpegLosslessWriter.WriteCfa
 - uid: Egami.Formats.Jpeg.JpegReaderOptions
   name: JpegReaderOptions
   href: api/Egami.Formats.Jpeg.JpegReaderOptions.html

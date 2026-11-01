@@ -109,7 +109,7 @@ without it, a DNG opens as TIFF and only its preview pages load.</p>
 </tr>
 <tr>
 <td>Writes</td>
-<td>Nothing (camera RAW is read-only)</td>
+<td>DNG: any RAW file Egami reads, with its sensor data unchanged (<code>RawFormat.ConvertToDng</code>), and any raster (<code>Save</code> with <code>RawFormat.Info</code>): a RAW mosaic as a colour filter array DNG, anything else as LinearRaw</td>
 </tr>
 <tr>
 <td>Natural pixel type</td>
@@ -278,8 +278,23 @@ scenes reads higher than Adobe's calibrated profiles do, so the same setting red
 the mosaic, so Canon sRAW and mRAW files get colour noise reduction only.</li>
 <li>Adobe gives some Canon sRAW and mRAW files a brighter baseline exposure than the camera's normal raws (+0.25 EV for the EOS 5D
 Mark II, +0.34 EV for the EOS 70D, by a rule not yet known); Egami uses the camera's raw one.</li>
-<li>Egami writes no RAW or DNG files.</li>
+<li>DNG writing does not take CR3 files (Egami does not decode their CRX data for it), writes BigTIFF past 4 GB (which DNG
+readers, Egami's included, may not open), and makes previews from Egami's own develop.</li>
 </ul>
+<h2 id="writing-dng">Writing DNG</h2>
+<pre><code class="lang-csharp">// Any RAW file Egami reads becomes a DNG with its sensor data unchanged: levels, crop, colour data and EXIF come along.
+RawFormat.ConvertToDng(&quot;photo.dng&quot;, &quot;copy.dng&quot;, new DngWriterOptions { Preview = DngPreview.Thumbnail }, context);
+
+// A transcode with no operations takes the same route; with operations, the develop is saved as a linear DNG.
+Raster.Transcode(&quot;photo.dng&quot;, &quot;same.dng&quot;, context: context);
+Raster.Transcode(&quot;photo.dng&quot;, &quot;small.dng&quot;, ops =&gt; ops.Fit(800, 800), context: context);
+</code></pre>
+<p><code>DngWriterOptions</code> sets the raw data's <code>Compression</code>, a <code>DngCompression</code> (lossless JPEG by default, as Adobe writes, with a colour filter array row
+coded as pairs; Deflate for floating-point data; <code>None</code>; or DNG 1.7's lossless JPEG XL), the <code>TileSize</code> (256), the <code>Preview</code>
+(a 256-pixel thumbnail and a 1024-pixel JPEG by default) and <code>ParallelCompression</code> (on). A converted file keeps the source's
+levels, active area, crop, colour filter pattern, linearization table and opcode lists, a colour profile from the file or the
+camera table (a camera in neither gets the one Egami develops it with, and a <code>Raw.DngCameraUnknown</code> warning), EXIF, XMP and
+the maker note in DNGPrivateData; a DNG source keeps every tag it had.</p>
 
 </article>
 

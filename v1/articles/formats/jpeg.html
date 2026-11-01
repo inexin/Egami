@@ -241,6 +241,25 @@ image.Save(&quot;duck-lossless-arithmetic.jpg&quot;, new JpegWriterOptions
 predicted from its neighbors and the difference coded, so the file loads back to exactly the samples written. The components are
 the pixels' own: gray, RGB behind an Adobe marker, or CMYK, never subsampled or converted to YCbCr. <code>Quality</code>, <code>Subsampling</code>,
 <code>OptimizeHuffman</code> and <code>Precision</code> do not apply; <code>Progressive</code> or <code>ColorType = Ycck</code> with it throws <code>ArgumentException</code>.</p>
+<pre><code class="lang-csharp">// Samples that are not pixels, such as a camera's 14-bit sensor data, as a lossless JPEG stream (a DNG or TIFF tile).
+ushort[] samples = new ushort[64 * 32];
+for (int i = 0; i &lt; samples.Length; i++)
+{
+    samples[i] = (ushort)((i * 37) % 16384);
+}
+
+using (MemoryStream tile = new())
+{
+    JpegLosslessWriter.Write(tile, samples, components: 1, width: 64, precision: 14, predictor: null);
+
+    // A colour filter array tile as DNG lays it out: each row's photosites coded in pairs, half as wide.
+    using MemoryStream cfa = new();
+    JpegLosslessWriter.WriteCfa(cfa, samples, width: 64, precision: 14);
+    Assert.True(tile.Length &gt; 0 &amp;&amp; cfa.Length &gt; 0);
+}
+</code></pre>
+<p><code>JpegLosslessWriter</code> codes samples that are not pixels, at 2 to 16 bits with 1 to 4 components, exactly as saving the same
+samples as pixels codes them; it is how TIFF's and DNG's lossless JPEG tiles are written.</p>
 <table>
 <thead>
 <tr>

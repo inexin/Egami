@@ -6565,6 +6565,48 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Extended.Raw.DngCompression.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Extended.Raw.DngCompression.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Extended.Raw.DngCompression",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Extended.Raw.DngCompression.yml\" sourcestartlinenumber=\"1\">How a DNG stores its raw data.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Extended.Raw.DngPreview.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Extended.Raw.DngPreview.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Extended.Raw.DngPreview",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Extended.Raw.DngPreview.yml\" sourcestartlinenumber=\"1\">Which rendered images a DNG carries besides its raw data.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Extended.Raw.DngWriterOptions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Extended.Raw.DngWriterOptions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Extended.Raw.DngWriterOptions",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Extended.Raw.DngWriterOptions.yml\" sourcestartlinenumber=\"1\">Options for writing DNG files: how the raw data is stored and which previews come with it.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.Formats.Extended.Raw.RawDemosaicMethod.yml",
       "output": {
         ".html": {
@@ -7125,6 +7167,20 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.IFormatConverter.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.IFormatConverter.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.IFormatConverter",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.IFormatConverter.yml\" sourcestartlinenumber=\"1\">A writer that can convert a file of another format to its own without decoding it to pixels first, such as camera RAW data\ncopied into a DNG unchanged. <xref href=\"Egami.Raster.Transcode(System.String%2cSystem.String%2cSystem.Action%7bEgami.Operations.RasterOps%7d%2cEgami.Formats.ReaderOptions%2cEgami.Formats.WriterOptions%2cEgami.EgamiContext)\" data-throw-if-not-resolved=\"false\"></xref>\nasks the output format's writer when there are no operations and the reader options ask for nothing beyond the format's\ndefaults; a writer that declines is used as usual.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.Formats.IFormatReader.yml",
       "output": {
         ".html": {
@@ -7682,6 +7738,20 @@
       "IsMRef": true,
       "Title": "Egami.Formats.Jpeg.JpegLosslessOptions",
       "Summary": "<p sourcefile=\"api/Egami.Formats.Jpeg.JpegLosslessOptions.yml\" sourcestartlinenumber=\"1\">How a lossless JPEG (T.81 annex H; SOF3, or SOF11 with <xref href=\"Egami.Formats.Jpeg.JpegWriterOptions.Arithmetic\" data-throw-if-not-resolved=\"false\"></xref>) is written: no DCT and no\nquantization, each sample predicted from its neighbors and the difference coded, so the samples come back exactly. Set as\n<xref href=\"Egami.Formats.Jpeg.JpegWriterOptions.Lossless\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Jpeg.JpegLosslessWriter.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Jpeg.JpegLosslessWriter.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Jpeg.JpegLosslessWriter",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Jpeg.JpegLosslessWriter.yml\" sourcestartlinenumber=\"1\">Writes lossless JPEG (ITU-T T.81 annex H, SOF3 or SOF11) from samples that are not pixels: TIFF compression 7 strips and\ntiles, DNG's sensor tiles and any other format that stores lossless JPEG streams. The samples are coded exactly as saving the\nsame samples as pixels with <xref href=\"Egami.Formats.Jpeg.JpegLosslessOptions\" data-throw-if-not-resolved=\"false\"></xref> codes them.</p>\n"
     },
     {
       "type": "ManagedReference",

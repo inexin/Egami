@@ -103,7 +103,7 @@ It also carries the context, limits and cancellation token for the load, and is 
   <div class="markdown conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public sealed class EgamiInput</code></pre>
+    <pre><code class="lang-csharp hljs">public sealed class EgamiInput : IDisposable</code></pre>
   </div>
 
 
@@ -117,6 +117,12 @@ It also carries the context, limits and cancellation token for the load, and is 
     </dd>
   </dl>
 
+  <dl class="typelist implements">
+    <dt>Implements</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.idisposable">IDisposable</a></div>
+    </dd>
+  </dl>
 
 
   <dl class="typelist inheritedMembers">
@@ -218,6 +224,56 @@ public static class Raw8Format
 </div>
 
 
+  <h2 class="section" id="constructors">Constructors
+</h2>
+
+
+  <a id="Egami_Formats_EgamiInput__ctor_" data-uid="Egami.Formats.EgamiInput.#ctor*"></a>
+
+  <h3 id="Egami_Formats_EgamiInput__ctor_System_IO_Stream_Egami_EgamiContext_System_Threading_CancellationToken_" data-uid="Egami.Formats.EgamiInput.#ctor(System.IO.Stream,Egami.EgamiContext,System.Threading.CancellationToken)">
+  EgamiInput(Stream, EgamiContext, CancellationToken)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/EgamiInput.cs/#L46"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Creates the input of a load a plug-in runs itself, outside <a class="xref" href="Egami.Raster.html#Egami_Raster_Load_System_IO_Stream_Egami_EgamiContext_Egami_Formats_ReaderOptions_">Load(Stream, EgamiContext?, ReaderOptions?)</a>:
+a format package that reads a file to convert it, say. Dispose it when the load ends.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public EgamiInput(Stream stream, EgamiContext context, CancellationToken cancellationToken)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>stream</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.io.stream">Stream</a></dt>
+    <dd><p>The data, from its current position. It is left open.</p>
+</dd>
+    <dt><code>context</code> <a class="xref" href="Egami.EgamiContext.html">EgamiContext</a></dt>
+    <dd><p>The context of the load: its limits, memory and diagnostics.</p>
+</dd>
+    <dt><code>cancellationToken</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken">CancellationToken</a></dt>
+    <dd><p>Cancels the load.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentnullexception">ArgumentNullException</a></dt>
+    <dd><p><code class="paramref">stream</code> or <code class="paramref">context</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</dd>
+  </dl>
+
+
+
   <h2 class="section" id="properties">Properties
 </h2>
 
@@ -226,7 +282,7 @@ public static class Raw8Format
 
   <h3 id="Egami_Formats_EgamiInput_CancellationToken" data-uid="Egami.Formats.EgamiInput.CancellationToken">
   CancellationToken
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/EgamiInput.cs/#L71"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/EgamiInput.cs/#L81"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the token that cancels the load. Readers check it between rows.</p>
@@ -258,7 +314,7 @@ public static class Raw8Format
 
   <h3 id="Egami_Formats_EgamiInput_Context" data-uid="Egami.Formats.EgamiInput.Context">
   Context
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/EgamiInput.cs/#L55"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/EgamiInput.cs/#L65"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the context of the load.</p>
@@ -290,7 +346,7 @@ public static class Raw8Format
 
   <h3 id="Egami_Formats_EgamiInput_Diagnostics" data-uid="Egami.Formats.EgamiInput.Diagnostics">
   Diagnostics
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/EgamiInput.cs/#L61"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/EgamiInput.cs/#L71"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the load's link to <a class="xref" href="Egami.EgamiContext.html#Egami_EgamiContext_Diagnostics">Diagnostics</a>, for a reader's Info and Debug events. Warnings go through
@@ -323,7 +379,7 @@ public static class Raw8Format
 
   <h3 id="Egami_Formats_EgamiInput_FormatName" data-uid="Egami.Formats.EgamiInput.FormatName">
   FormatName
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/EgamiInput.cs/#L77"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/EgamiInput.cs/#L87"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the name of the format being read, used in <a class="xref" href="Egami.CorruptDataException.html">CorruptDataException</a> messages.</p>
@@ -355,7 +411,7 @@ public static class Raw8Format
 
   <h3 id="Egami_Formats_EgamiInput_Limits" data-uid="Egami.Formats.EgamiInput.Limits">
   Limits
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/EgamiInput.cs/#L68"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/EgamiInput.cs/#L78"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the safety limits of the load.</p>
@@ -387,7 +443,7 @@ public static class Raw8Format
 
   <h3 id="Egami_Formats_EgamiInput_Position" data-uid="Egami.Formats.EgamiInput.Position">
   Position
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/EgamiInput.cs/#L74"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/EgamiInput.cs/#L84"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the number of bytes consumed since the start of the image.</p>
@@ -423,7 +479,7 @@ public static class Raw8Format
 
   <h3 id="Egami_Formats_EgamiInput_AddFrame__1_Egami_Raster___0__Egami_ClearMode_" data-uid="Egami.Formats.EgamiInput.AddFrame``1(Egami.Raster{``0},Egami.ClearMode)">
   AddFrame&lt;TPixel&gt;(Raster&lt;TPixel&gt;, ClearMode)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/EgamiInput.cs/#L246"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/EgamiInput.cs/#L256"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Appends a new frame the raster's size to a raster this load created with <a class="xref" href="Egami.Formats.EgamiInput.html#Egami_Formats_EgamiInput_CreateRaster__1_System_Int64_System_Int64_Egami_ClearMode_">CreateRaster&lt;TPixel&gt;(long, long, ClearMode)</a>, for readers of animated
@@ -479,7 +535,7 @@ formats. The frame counts against <a class="xref" href="Egami.SafetyLimits.html#
 
   <h3 id="Egami_Formats_EgamiInput_CheckFrameCount_System_Int64_" data-uid="Egami.Formats.EgamiInput.CheckFrameCount(System.Int64)">
   CheckFrameCount(long)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/EgamiInput.cs/#L296"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/EgamiInput.cs/#L306"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Checks a frame count against <a class="xref" href="Egami.SafetyLimits.html#Egami_SafetyLimits_MaxFrames">MaxFrames</a>.</p>
@@ -518,7 +574,7 @@ formats. The frame counts against <a class="xref" href="Egami.SafetyLimits.html#
 
   <h3 id="Egami_Formats_EgamiInput_CheckFrameSize_System_Int64_System_Int64_" data-uid="Egami.Formats.EgamiInput.CheckFrameSize(System.Int64,System.Int64)">
   CheckFrameSize(long, long)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/EgamiInput.cs/#L288"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/EgamiInput.cs/#L298"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Checks a frame size against <a class="xref" href="Egami.SafetyLimits.html#Egami_SafetyLimits_MaxWidth">MaxWidth</a>, <a class="xref" href="Egami.SafetyLimits.html#Egami_SafetyLimits_MaxHeight">MaxHeight</a> and
@@ -562,7 +618,7 @@ before it creates a raster, such as an <a class="xref" href="Egami.Formats.IRowF
 
   <h3 id="Egami_Formats_EgamiInput_CheckMemory_System_Int64_" data-uid="Egami.Formats.EgamiInput.CheckMemory(System.Int64)">
   CheckMemory(long)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/EgamiInput.cs/#L275"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/EgamiInput.cs/#L285"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Checks that <code class="paramref">bytes</code> more would fit the load's memory budget, without allocating.</p>
@@ -601,7 +657,7 @@ before it creates a raster, such as an <a class="xref" href="Egami.Formats.IRowF
 
   <h3 id="Egami_Formats_EgamiInput_CheckMetadataBytes_System_Int64_" data-uid="Egami.Formats.EgamiInput.CheckMetadataBytes(System.Int64)">
   CheckMetadataBytes(long)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/EgamiInput.cs/#L304"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/EgamiInput.cs/#L314"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Checks a metadata size against <a class="xref" href="Egami.SafetyLimits.html#Egami_SafetyLimits_MaxMetadataBytes">MaxMetadataBytes</a>.</p>
@@ -640,7 +696,7 @@ before it creates a raster, such as an <a class="xref" href="Egami.Formats.IRowF
 
   <h3 id="Egami_Formats_EgamiInput_Corrupt_System_Int64_System_String_" data-uid="Egami.Formats.EgamiInput.Corrupt(System.Int64,System.String)">
   Corrupt(long, string)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/EgamiInput.cs/#L501"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/EgamiInput.cs/#L511"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Creates a <a class="xref" href="Egami.CorruptDataException.html">CorruptDataException</a> for this format.</p>
@@ -682,7 +738,7 @@ before it creates a raster, such as an <a class="xref" href="Egami.Formats.IRowF
 
   <h3 id="Egami_Formats_EgamiInput_CreateRaster__1_System_Int64_System_Int64_Egami_ClearMode_" data-uid="Egami.Formats.EgamiInput.CreateRaster``1(System.Int64,System.Int64,Egami.ClearMode)">
   CreateRaster&lt;TPixel&gt;(long, long, ClearMode)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/EgamiInput.cs/#L222"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/EgamiInput.cs/#L232"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Creates the raster a reader decodes into, after checking the size against <a class="xref" href="Egami.SafetyLimits.html">SafetyLimits</a> and the memory budget.
@@ -739,11 +795,38 @@ Unless <code class="paramref">clear</code> asks for it, pixels are not cleared a
 
 
 
+  <a id="Egami_Formats_EgamiInput_Dispose_" data-uid="Egami.Formats.EgamiInput.Dispose*"></a>
+
+  <h3 id="Egami_Formats_EgamiInput_Dispose" data-uid="Egami.Formats.EgamiInput.Dispose">
+  Dispose()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/EgamiInput.cs/#L517"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns the buffer to the pool. Leaves the stream open.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Dispose()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
   <a id="Egami_Formats_EgamiInput_Peek_" data-uid="Egami.Formats.EgamiInput.Peek*"></a>
 
   <h3 id="Egami_Formats_EgamiInput_Peek_System_Int32_" data-uid="Egami.Formats.EgamiInput.Peek(System.Int32)">
   Peek(int)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/EgamiInput.cs/#L86"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/EgamiInput.cs/#L96"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Returns up to <code class="paramref">count</code> upcoming bytes without consuming them. The span is shorter only at the end of the data.
@@ -789,7 +872,7 @@ It is valid until the next read.</p>
 
   <h3 id="Egami_Formats_EgamiInput_Read_System_Span_System_Byte__" data-uid="Egami.Formats.EgamiInput.Read(System.Span{System.Byte})">
   Read(Span&lt;byte&gt;)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/EgamiInput.cs/#L97"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/EgamiInput.cs/#L107"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Reads as many bytes as are available, up to the length of <code class="paramref">destination</code>.</p>
@@ -828,7 +911,7 @@ It is valid until the next read.</p>
 
   <h3 id="Egami_Formats_EgamiInput_ReadByte" data-uid="Egami.Formats.EgamiInput.ReadByte">
   ReadByte()
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/EgamiInput.cs/#L168"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/EgamiInput.cs/#L178"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Reads one byte.</p>
@@ -867,7 +950,7 @@ It is valid until the next read.</p>
 
   <h3 id="Egami_Formats_EgamiInput_ReadExactly_System_Span_System_Byte__" data-uid="Egami.Formats.EgamiInput.ReadExactly(System.Span{System.Byte})">
   ReadExactly(Span&lt;byte&gt;)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/EgamiInput.cs/#L135"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/EgamiInput.cs/#L145"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Reads exactly <code class="paramref">destination</code>.Length bytes.</p>
@@ -906,7 +989,7 @@ It is valid until the next read.</p>
 
   <h3 id="Egami_Formats_EgamiInput_ReadUInt16BigEndian" data-uid="Egami.Formats.EgamiInput.ReadUInt16BigEndian">
   ReadUInt16BigEndian()
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/EgamiInput.cs/#L182"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/EgamiInput.cs/#L192"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Reads a big-endian 16-bit unsigned integer.</p>
@@ -945,7 +1028,7 @@ It is valid until the next read.</p>
 
   <h3 id="Egami_Formats_EgamiInput_ReadUInt16LittleEndian" data-uid="Egami.Formats.EgamiInput.ReadUInt16LittleEndian">
   ReadUInt16LittleEndian()
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/EgamiInput.cs/#L190"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/EgamiInput.cs/#L200"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Reads a little-endian 16-bit unsigned integer.</p>
@@ -984,7 +1067,7 @@ It is valid until the next read.</p>
 
   <h3 id="Egami_Formats_EgamiInput_ReadUInt32BigEndian" data-uid="Egami.Formats.EgamiInput.ReadUInt32BigEndian">
   ReadUInt32BigEndian()
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/EgamiInput.cs/#L198"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/EgamiInput.cs/#L208"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Reads a big-endian 32-bit unsigned integer.</p>
@@ -1023,7 +1106,7 @@ It is valid until the next read.</p>
 
   <h3 id="Egami_Formats_EgamiInput_ReadUInt32LittleEndian" data-uid="Egami.Formats.EgamiInput.ReadUInt32LittleEndian">
   ReadUInt32LittleEndian()
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/EgamiInput.cs/#L206"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/EgamiInput.cs/#L216"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Reads a little-endian 32-bit unsigned integer.</p>
@@ -1062,7 +1145,7 @@ It is valid until the next read.</p>
 
   <h3 id="Egami_Formats_EgamiInput_RentScratch_System_Int32_Egami_ClearMode_" data-uid="Egami.Formats.EgamiInput.RentScratch(System.Int32,Egami.ClearMode)">
   RentScratch(int, ClearMode)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/EgamiInput.cs/#L266"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/EgamiInput.cs/#L276"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Rents scratch memory (a canvas row, a previous frame, a decompression buffer) counted against the load's memory budget
@@ -1111,7 +1194,7 @@ with the raster. Dispose it when done.</p>
 
   <h3 id="Egami_Formats_EgamiInput_Skip_System_Int64_" data-uid="Egami.Formats.EgamiInput.Skip(System.Int64)">
   Skip(long)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/EgamiInput.cs/#L147"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/EgamiInput.cs/#L157"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Skips <code class="paramref">count</code> bytes.</p>
@@ -1150,7 +1233,7 @@ with the raster. Dispose it when done.</p>
 
   <h3 id="Egami_Formats_EgamiInput_Warn_Egami_Metadata_RasterMetadata_System_String_System_String_System_Nullable_System_Int64__" data-uid="Egami.Formats.EgamiInput.Warn(Egami.Metadata.RasterMetadata,System.String,System.String,System.Nullable{System.Int64})">
   Warn(RasterMetadata, string, string, long?)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/EgamiInput.cs/#L345"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/EgamiInput.cs/#L355"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Notes a problem a lenient read recovered from in <code class="paramref">metadata</code>'s <a class="xref" href="Egami.Metadata.RasterMetadata.html#Egami_Metadata_RasterMetadata_Warnings">Warnings</a>, for an
@@ -1200,7 +1283,7 @@ with the raster. Dispose it when done.</p>
 
   <h3 id="Egami_Formats_EgamiInput_Warn_Egami_Raster_System_String_System_String_System_Nullable_System_Int64__" data-uid="Egami.Formats.EgamiInput.Warn(Egami.Raster,System.String,System.String,System.Nullable{System.Int64})">
   Warn(Raster, string, string, long?)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/EgamiInput.cs/#L321"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/EgamiInput.cs/#L331"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Notes a problem a lenient read recovered from in the raster's <a class="xref" href="Egami.Metadata.RasterMetadata.html#Egami_Metadata_RasterMetadata_Warnings">Warnings</a>, which also sends it to
