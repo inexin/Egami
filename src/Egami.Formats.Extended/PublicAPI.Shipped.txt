@@ -81,3 +81,281 @@ static Egami.Formats.Extended.SunRaster.SunRasterWriterOptions.Default.get -> Eg
 static Egami.Formats.Extended.Wbmp.WbmpFormat.Info.get -> Egami.Formats.FormatInfo!
 static Egami.Formats.Extended.Xbm.XbmFormat.Info.get -> Egami.Formats.FormatInfo!
 static Egami.Formats.Extended.Xpm.XpmFormat.Info.get -> Egami.Formats.FormatInfo!
+Egami.Formats.Extended.Dds.DdsAlphaMode
+Egami.Formats.Extended.Dds.DdsAlphaMode.Custom = 4 -> Egami.Formats.Extended.Dds.DdsAlphaMode
+Egami.Formats.Extended.Dds.DdsAlphaMode.Opaque = 3 -> Egami.Formats.Extended.Dds.DdsAlphaMode
+Egami.Formats.Extended.Dds.DdsAlphaMode.Premultiplied = 2 -> Egami.Formats.Extended.Dds.DdsAlphaMode
+Egami.Formats.Extended.Dds.DdsAlphaMode.Straight = 1 -> Egami.Formats.Extended.Dds.DdsAlphaMode
+Egami.Formats.Extended.Dds.DdsAlphaMode.Unknown = 0 -> Egami.Formats.Extended.Dds.DdsAlphaMode
+Egami.Formats.Extended.Dds.DdsDetails
+Egami.Formats.Extended.Dds.DdsDetails.AlphaMode.get -> Egami.Formats.Extended.Dds.DdsAlphaMode
+Egami.Formats.Extended.Dds.DdsDetails.AlphaMode.set -> void
+Egami.Formats.Extended.Dds.DdsDetails.ArraySize.get -> int
+Egami.Formats.Extended.Dds.DdsDetails.ArraySize.set -> void
+Egami.Formats.Extended.Dds.DdsDetails.DdsDetails() -> void
+Egami.Formats.Extended.Dds.DdsDetails.Depth.get -> int
+Egami.Formats.Extended.Dds.DdsDetails.Depth.set -> void
+Egami.Formats.Extended.Dds.DdsDetails.Dimension.get -> Egami.Formats.Extended.Dds.DdsDimension
+Egami.Formats.Extended.Dds.DdsDetails.Dimension.set -> void
+Egami.Formats.Extended.Dds.DdsDetails.Dx10Header.get -> bool
+Egami.Formats.Extended.Dds.DdsDetails.Dx10Header.set -> void
+Egami.Formats.Extended.Dds.DdsDetails.DxgiFormat.get -> int
+Egami.Formats.Extended.Dds.DdsDetails.DxgiFormat.set -> void
+Egami.Formats.Extended.Dds.DdsDetails.FormatName.get -> string!
+Egami.Formats.Extended.Dds.DdsDetails.FormatName.set -> void
+Egami.Formats.Extended.Dds.DdsDetails.FourCC.get -> string?
+Egami.Formats.Extended.Dds.DdsDetails.FourCC.set -> void
+Egami.Formats.Extended.Dds.DdsDetails.IsCube.get -> bool
+Egami.Formats.Extended.Dds.DdsDetails.IsCube.set -> void
+Egami.Formats.Extended.Dds.DdsDetails.IsSrgb.get -> bool
+Egami.Formats.Extended.Dds.DdsDetails.IsSrgb.set -> void
+Egami.Formats.Extended.Dds.DdsDetails.MipLevel.get -> int
+Egami.Formats.Extended.Dds.DdsDetails.MipLevel.set -> void
+Egami.Formats.Extended.Dds.DdsDetails.MipLevels.get -> int
+Egami.Formats.Extended.Dds.DdsDetails.MipLevels.set -> void
+Egami.Formats.Extended.Dds.DdsDetails.Surface.get -> int
+Egami.Formats.Extended.Dds.DdsDetails.Surface.set -> void
+Egami.Formats.Extended.Dds.DdsDimension
+Egami.Formats.Extended.Dds.DdsDimension.Texture1D = 0 -> Egami.Formats.Extended.Dds.DdsDimension
+Egami.Formats.Extended.Dds.DdsDimension.Texture2D = 1 -> Egami.Formats.Extended.Dds.DdsDimension
+Egami.Formats.Extended.Dds.DdsDimension.Texture3D = 2 -> Egami.Formats.Extended.Dds.DdsDimension
+Egami.Formats.Extended.Dds.DdsFormat
+Egami.Formats.Extended.Dds.DdsReaderOptions
+Egami.Formats.Extended.Dds.DdsReaderOptions.DdsReaderOptions() -> void
+Egami.Formats.Extended.Dds.DdsReaderOptions.Equals(Egami.Formats.Extended.Dds.DdsReaderOptions? other) -> bool
+Egami.Formats.Extended.Dds.DdsReaderOptions.IncludeMipLevels.get -> bool
+Egami.Formats.Extended.Dds.DdsReaderOptions.IncludeMipLevels.init -> void
+Egami.Formats.Extended.Dds.DdsReaderOptions.MipLevel.get -> int?
+Egami.Formats.Extended.Dds.DdsReaderOptions.MipLevel.init -> void
+Egami.Formats.Extended.Dds.DdsReaderOptions.ReconstructNormalZ.get -> bool
+Egami.Formats.Extended.Dds.DdsReaderOptions.ReconstructNormalZ.init -> void
+Egami.Formats.Extended.Dds.DdsReaderOptions.Surface.get -> int?
+Egami.Formats.Extended.Dds.DdsReaderOptions.Surface.init -> void
+Egami.Formats.Extended.Dds.DdsTextureFormat
+Egami.Formats.Extended.Dds.DdsTextureFormat.A8 = 5 -> Egami.Formats.Extended.Dds.DdsTextureFormat
+Egami.Formats.Extended.Dds.DdsTextureFormat.Bc1 = 19 -> Egami.Formats.Extended.Dds.DdsTextureFormat
+Egami.Formats.Extended.Dds.DdsTextureFormat.Bc2 = 20 -> Egami.Formats.Extended.Dds.DdsTextureFormat
+Egami.Formats.Extended.Dds.DdsTextureFormat.Bc3 = 21 -> Egami.Formats.Extended.Dds.DdsTextureFormat
+Egami.Formats.Extended.Dds.DdsTextureFormat.Bc4 = 22 -> Egami.Formats.Extended.Dds.DdsTextureFormat
+Egami.Formats.Extended.Dds.DdsTextureFormat.Bc5 = 23 -> Egami.Formats.Extended.Dds.DdsTextureFormat
+Egami.Formats.Extended.Dds.DdsTextureFormat.Bc6h = 25 -> Egami.Formats.Extended.Dds.DdsTextureFormat
+Egami.Formats.Extended.Dds.DdsTextureFormat.Bc6hSigned = 26 -> Egami.Formats.Extended.Dds.DdsTextureFormat
+Egami.Formats.Extended.Dds.DdsTextureFormat.Bc7 = 24 -> Egami.Formats.Extended.Dds.DdsTextureFormat
+Egami.Formats.Extended.Dds.DdsTextureFormat.Bgr565 = 16 -> Egami.Formats.Extended.Dds.DdsTextureFormat
+Egami.Formats.Extended.Dds.DdsTextureFormat.Bgra4444 = 18 -> Egami.Formats.Extended.Dds.DdsTextureFormat
+Egami.Formats.Extended.Dds.DdsTextureFormat.Bgra5551 = 17 -> Egami.Formats.Extended.Dds.DdsTextureFormat
+Egami.Formats.Extended.Dds.DdsTextureFormat.Bgra8 = 1 -> Egami.Formats.Extended.Dds.DdsTextureFormat
+Egami.Formats.Extended.Dds.DdsTextureFormat.Bgrx8 = 2 -> Egami.Formats.Extended.Dds.DdsTextureFormat
+Egami.Formats.Extended.Dds.DdsTextureFormat.R11G11B10F = 14 -> Egami.Formats.Extended.Dds.DdsTextureFormat
+Egami.Formats.Extended.Dds.DdsTextureFormat.R16 = 6 -> Egami.Formats.Extended.Dds.DdsTextureFormat
+Egami.Formats.Extended.Dds.DdsTextureFormat.R32F = 10 -> Egami.Formats.Extended.Dds.DdsTextureFormat
+Egami.Formats.Extended.Dds.DdsTextureFormat.R8 = 3 -> Egami.Formats.Extended.Dds.DdsTextureFormat
+Egami.Formats.Extended.Dds.DdsTextureFormat.Rg16 = 7 -> Egami.Formats.Extended.Dds.DdsTextureFormat
+Egami.Formats.Extended.Dds.DdsTextureFormat.Rg8 = 4 -> Egami.Formats.Extended.Dds.DdsTextureFormat
+Egami.Formats.Extended.Dds.DdsTextureFormat.Rgb10A2 = 13 -> Egami.Formats.Extended.Dds.DdsTextureFormat
+Egami.Formats.Extended.Dds.DdsTextureFormat.Rgb9E5 = 15 -> Egami.Formats.Extended.Dds.DdsTextureFormat
+Egami.Formats.Extended.Dds.DdsTextureFormat.Rgba16 = 8 -> Egami.Formats.Extended.Dds.DdsTextureFormat
+Egami.Formats.Extended.Dds.DdsTextureFormat.Rgba8 = 0 -> Egami.Formats.Extended.Dds.DdsTextureFormat
+Egami.Formats.Extended.Dds.DdsTextureFormat.RgbaF16 = 9 -> Egami.Formats.Extended.Dds.DdsTextureFormat
+Egami.Formats.Extended.Dds.DdsTextureFormat.RgbaF32 = 12 -> Egami.Formats.Extended.Dds.DdsTextureFormat
+Egami.Formats.Extended.Dds.DdsTextureFormat.RgbF32 = 11 -> Egami.Formats.Extended.Dds.DdsTextureFormat
+Egami.Formats.Extended.Dds.DdsWriterOptions
+Egami.Formats.Extended.Dds.DdsWriterOptions.Cube.get -> bool
+Egami.Formats.Extended.Dds.DdsWriterOptions.Cube.init -> void
+Egami.Formats.Extended.Dds.DdsWriterOptions.DdsWriterOptions() -> void
+Egami.Formats.Extended.Dds.DdsWriterOptions.Dx10Header.get -> bool
+Egami.Formats.Extended.Dds.DdsWriterOptions.Dx10Header.init -> void
+Egami.Formats.Extended.Dds.DdsWriterOptions.Effort.get -> int
+Egami.Formats.Extended.Dds.DdsWriterOptions.Effort.init -> void
+Egami.Formats.Extended.Dds.DdsWriterOptions.Format.get -> Egami.Formats.Extended.Dds.DdsTextureFormat?
+Egami.Formats.Extended.Dds.DdsWriterOptions.Format.init -> void
+Egami.Formats.Extended.Dds.DdsWriterOptions.MipLevels.get -> int
+Egami.Formats.Extended.Dds.DdsWriterOptions.MipLevels.init -> void
+Egami.Formats.Extended.Dds.DdsWriterOptions.PremultipliedAlpha.get -> bool
+Egami.Formats.Extended.Dds.DdsWriterOptions.PremultipliedAlpha.init -> void
+Egami.Formats.Extended.Dds.DdsWriterOptions.Srgb.get -> bool?
+Egami.Formats.Extended.Dds.DdsWriterOptions.Srgb.init -> void
+Egami.Formats.Extended.Raw.RawDemosaicMethod
+Egami.Formats.Extended.Raw.RawDemosaicMethod.Ahd = 2 -> Egami.Formats.Extended.Raw.RawDemosaicMethod
+Egami.Formats.Extended.Raw.RawDemosaicMethod.Bilinear = 0 -> Egami.Formats.Extended.Raw.RawDemosaicMethod
+Egami.Formats.Extended.Raw.RawDemosaicMethod.Malvar = 1 -> Egami.Formats.Extended.Raw.RawDemosaicMethod
+Egami.Formats.Extended.Raw.RawDetails
+Egami.Formats.Extended.Raw.RawDetails.ActiveArea.get -> Egami.Rect
+Egami.Formats.Extended.Raw.RawDetails.ActiveArea.set -> void
+Egami.Formats.Extended.Raw.RawDetails.AsShotNeutral.get -> System.Collections.Generic.IReadOnlyList<double>!
+Egami.Formats.Extended.Raw.RawDetails.AsShotNeutral.set -> void
+Egami.Formats.Extended.Raw.RawDetails.BaselineExposure.get -> double
+Egami.Formats.Extended.Raw.RawDetails.BaselineExposure.set -> void
+Egami.Formats.Extended.Raw.RawDetails.BitsPerSample.get -> int
+Egami.Formats.Extended.Raw.RawDetails.BitsPerSample.set -> void
+Egami.Formats.Extended.Raw.RawDetails.BlackLevels.get -> System.Collections.Generic.IReadOnlyList<double>!
+Egami.Formats.Extended.Raw.RawDetails.BlackLevels.set -> void
+Egami.Formats.Extended.Raw.RawDetails.CameraToXyz.get -> System.Collections.Generic.IReadOnlyList<double>!
+Egami.Formats.Extended.Raw.RawDetails.CameraToXyz.set -> void
+Egami.Formats.Extended.Raw.RawDetails.CfaHeight.get -> int
+Egami.Formats.Extended.Raw.RawDetails.CfaHeight.set -> void
+Egami.Formats.Extended.Raw.RawDetails.CfaPattern.get -> string?
+Egami.Formats.Extended.Raw.RawDetails.CfaPattern.set -> void
+Egami.Formats.Extended.Raw.RawDetails.CfaWidth.get -> int
+Egami.Formats.Extended.Raw.RawDetails.CfaWidth.set -> void
+Egami.Formats.Extended.Raw.RawDetails.Compression.get -> int
+Egami.Formats.Extended.Raw.RawDetails.Compression.set -> void
+Egami.Formats.Extended.Raw.RawDetails.CropArea.get -> Egami.Rect
+Egami.Formats.Extended.Raw.RawDetails.CropArea.set -> void
+Egami.Formats.Extended.Raw.RawDetails.DngVersion.get -> System.Version?
+Egami.Formats.Extended.Raw.RawDetails.DngVersion.set -> void
+Egami.Formats.Extended.Raw.RawDetails.ExposureTime.get -> double?
+Egami.Formats.Extended.Raw.RawDetails.ExposureTime.set -> void
+Egami.Formats.Extended.Raw.RawDetails.FNumber.get -> double?
+Egami.Formats.Extended.Raw.RawDetails.FNumber.set -> void
+Egami.Formats.Extended.Raw.RawDetails.FocalLength.get -> double?
+Egami.Formats.Extended.Raw.RawDetails.FocalLength.set -> void
+Egami.Formats.Extended.Raw.RawDetails.Iso.get -> double?
+Egami.Formats.Extended.Raw.RawDetails.Iso.set -> void
+Egami.Formats.Extended.Raw.RawDetails.LensModel.get -> string?
+Egami.Formats.Extended.Raw.RawDetails.LensModel.set -> void
+Egami.Formats.Extended.Raw.RawDetails.LensProfile.get -> string?
+Egami.Formats.Extended.Raw.RawDetails.LensProfile.set -> void
+Egami.Formats.Extended.Raw.RawDetails.Make.get -> string!
+Egami.Formats.Extended.Raw.RawDetails.Make.set -> void
+Egami.Formats.Extended.Raw.RawDetails.MakerNote.get -> System.ReadOnlyMemory<byte>
+Egami.Formats.Extended.Raw.RawDetails.MakerNote.set -> void
+Egami.Formats.Extended.Raw.RawDetails.Model.get -> string!
+Egami.Formats.Extended.Raw.RawDetails.Model.set -> void
+Egami.Formats.Extended.Raw.RawDetails.Opcodes.get -> System.Collections.Generic.IReadOnlyList<(int List, int Opcode)>!
+Egami.Formats.Extended.Raw.RawDetails.Opcodes.set -> void
+Egami.Formats.Extended.Raw.RawDetails.Output.get -> Egami.Formats.Extended.Raw.RawOutput
+Egami.Formats.Extended.Raw.RawDetails.Output.set -> void
+Egami.Formats.Extended.Raw.RawDetails.PreviewIndex.get -> int?
+Egami.Formats.Extended.Raw.RawDetails.PreviewIndex.set -> void
+Egami.Formats.Extended.Raw.RawDetails.Previews.get -> System.Collections.Generic.IReadOnlyList<Egami.Formats.Extended.Raw.RawPreview!>!
+Egami.Formats.Extended.Raw.RawDetails.Previews.set -> void
+Egami.Formats.Extended.Raw.RawDetails.ProfileName.get -> string?
+Egami.Formats.Extended.Raw.RawDetails.ProfileName.set -> void
+Egami.Formats.Extended.Raw.RawDetails.RawDetails() -> void
+Egami.Formats.Extended.Raw.RawDetails.SensorHeight.get -> int
+Egami.Formats.Extended.Raw.RawDetails.SensorHeight.set -> void
+Egami.Formats.Extended.Raw.RawDetails.SensorWidth.get -> int
+Egami.Formats.Extended.Raw.RawDetails.SensorWidth.set -> void
+Egami.Formats.Extended.Raw.RawDetails.Temperature.get -> double
+Egami.Formats.Extended.Raw.RawDetails.Temperature.set -> void
+Egami.Formats.Extended.Raw.RawDetails.Tint.get -> double
+Egami.Formats.Extended.Raw.RawDetails.Tint.set -> void
+Egami.Formats.Extended.Raw.RawDetails.UniqueCameraModel.get -> string?
+Egami.Formats.Extended.Raw.RawDetails.UniqueCameraModel.set -> void
+Egami.Formats.Extended.Raw.RawDetails.WhiteBalance.get -> System.Collections.Generic.IReadOnlyList<double>!
+Egami.Formats.Extended.Raw.RawDetails.WhiteBalance.set -> void
+Egami.Formats.Extended.Raw.RawDetails.WhiteLevels.get -> System.Collections.Generic.IReadOnlyList<double>!
+Egami.Formats.Extended.Raw.RawDetails.WhiteLevels.set -> void
+Egami.Formats.Extended.Raw.RawFormat
+Egami.Formats.Extended.Raw.RawHighlightMode
+Egami.Formats.Extended.Raw.RawHighlightMode.Blend = 1 -> Egami.Formats.Extended.Raw.RawHighlightMode
+Egami.Formats.Extended.Raw.RawHighlightMode.Clip = 0 -> Egami.Formats.Extended.Raw.RawHighlightMode
+Egami.Formats.Extended.Raw.RawHighlightMode.Rebuild = 2 -> Egami.Formats.Extended.Raw.RawHighlightMode
+Egami.Formats.Extended.Raw.RawOutput
+Egami.Formats.Extended.Raw.RawOutput.Developed = 0 -> Egami.Formats.Extended.Raw.RawOutput
+Egami.Formats.Extended.Raw.RawOutput.HalfSize = 3 -> Egami.Formats.Extended.Raw.RawOutput
+Egami.Formats.Extended.Raw.RawOutput.Mosaic = 2 -> Egami.Formats.Extended.Raw.RawOutput
+Egami.Formats.Extended.Raw.RawOutput.Preview = 1 -> Egami.Formats.Extended.Raw.RawOutput
+Egami.Formats.Extended.Raw.RawPreview
+Egami.Formats.Extended.Raw.RawPreview.<Clone>$() -> Egami.Formats.Extended.Raw.RawPreview!
+Egami.Formats.Extended.Raw.RawPreview.Deconstruct(out int Width, out int Height, out Egami.Formats.Extended.Raw.RawPreviewKind Kind) -> void
+Egami.Formats.Extended.Raw.RawPreview.Equals(Egami.Formats.Extended.Raw.RawPreview? other) -> bool
+Egami.Formats.Extended.Raw.RawPreview.Height.get -> int
+Egami.Formats.Extended.Raw.RawPreview.Height.init -> void
+Egami.Formats.Extended.Raw.RawPreview.Kind.get -> Egami.Formats.Extended.Raw.RawPreviewKind
+Egami.Formats.Extended.Raw.RawPreview.Kind.init -> void
+Egami.Formats.Extended.Raw.RawPreview.RawPreview(int Width, int Height, Egami.Formats.Extended.Raw.RawPreviewKind Kind) -> void
+Egami.Formats.Extended.Raw.RawPreview.Width.get -> int
+Egami.Formats.Extended.Raw.RawPreview.Width.init -> void
+Egami.Formats.Extended.Raw.RawPreviewKind
+Egami.Formats.Extended.Raw.RawPreviewKind.Jpeg = 0 -> Egami.Formats.Extended.Raw.RawPreviewKind
+Egami.Formats.Extended.Raw.RawPreviewKind.Uncompressed = 1 -> Egami.Formats.Extended.Raw.RawPreviewKind
+Egami.Formats.Extended.Raw.RawReaderOptions
+Egami.Formats.Extended.Raw.RawReaderOptions.ApplyBaselineExposure.get -> bool
+Egami.Formats.Extended.Raw.RawReaderOptions.ApplyBaselineExposure.init -> void
+Egami.Formats.Extended.Raw.RawReaderOptions.ApplyProfile.get -> bool
+Egami.Formats.Extended.Raw.RawReaderOptions.ApplyProfile.init -> void
+Egami.Formats.Extended.Raw.RawReaderOptions.ColorNoiseReduction.get -> double
+Egami.Formats.Extended.Raw.RawReaderOptions.ColorNoiseReduction.init -> void
+Egami.Formats.Extended.Raw.RawReaderOptions.Demosaic.get -> Egami.Formats.Extended.Raw.RawDemosaicMethod
+Egami.Formats.Extended.Raw.RawReaderOptions.Demosaic.init -> void
+Egami.Formats.Extended.Raw.RawReaderOptions.Equals(Egami.Formats.Extended.Raw.RawReaderOptions? other) -> bool
+Egami.Formats.Extended.Raw.RawReaderOptions.Exposure.get -> double
+Egami.Formats.Extended.Raw.RawReaderOptions.Exposure.init -> void
+Egami.Formats.Extended.Raw.RawReaderOptions.Highlights.get -> Egami.Formats.Extended.Raw.RawHighlightMode
+Egami.Formats.Extended.Raw.RawReaderOptions.Highlights.init -> void
+Egami.Formats.Extended.Raw.RawReaderOptions.LensCorrections.get -> bool
+Egami.Formats.Extended.Raw.RawReaderOptions.LensCorrections.init -> void
+Egami.Formats.Extended.Raw.RawReaderOptions.LensProfiles.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Egami.Formats.Extended.Raw.RawReaderOptions.AutoChromaticAberration.get -> bool
+Egami.Formats.Extended.Raw.RawReaderOptions.DefaultToneCurve.get -> bool
+Egami.Formats.Extended.Raw.RawReaderOptions.DefaultToneCurve.init -> void
+Egami.Formats.Extended.Raw.RawReaderOptions.AutoChromaticAberration.init -> void
+Egami.Formats.Extended.Raw.RawReaderOptions.LensProfiles.init -> void
+Egami.Formats.Extended.Raw.RawReaderOptions.LuminanceNoiseReduction.get -> double
+Egami.Formats.Extended.Raw.RawReaderOptions.LuminanceNoiseReduction.init -> void
+Egami.Formats.Extended.Raw.RawReaderOptions.Output.get -> Egami.Formats.Extended.Raw.RawOutput
+Egami.Formats.Extended.Raw.RawReaderOptions.Output.init -> void
+Egami.Formats.Extended.Raw.RawReaderOptions.PreviewIndex.get -> int?
+Egami.Formats.Extended.Raw.RawReaderOptions.PreviewIndex.init -> void
+Egami.Formats.Extended.Raw.RawReaderOptions.RawReaderOptions() -> void
+Egami.Formats.Extended.Raw.RawReaderOptions.Temperature.get -> double
+Egami.Formats.Extended.Raw.RawReaderOptions.Temperature.init -> void
+Egami.Formats.Extended.Raw.RawReaderOptions.Tint.get -> double
+Egami.Formats.Extended.Raw.RawReaderOptions.Tint.init -> void
+Egami.Formats.Extended.Raw.RawReaderOptions.WhiteBalance.get -> Egami.Formats.Extended.Raw.RawWhiteBalance
+Egami.Formats.Extended.Raw.RawReaderOptions.WhiteBalance.init -> void
+Egami.Formats.Extended.Raw.RawWhiteBalance
+Egami.Formats.Extended.Raw.RawWhiteBalance.AsShot = 0 -> Egami.Formats.Extended.Raw.RawWhiteBalance
+Egami.Formats.Extended.Raw.RawWhiteBalance.Auto = 1 -> Egami.Formats.Extended.Raw.RawWhiteBalance
+Egami.Formats.Extended.Raw.RawWhiteBalance.Custom = 2 -> Egami.Formats.Extended.Raw.RawWhiteBalance
+override Egami.Formats.Extended.Dds.DdsDetails.Copy() -> Egami.Metadata.FormatDetails!
+override Egami.Formats.Extended.Dds.DdsReaderOptions.<Clone>$() -> Egami.Formats.Extended.Dds.DdsReaderOptions!
+override Egami.Formats.Extended.Dds.DdsReaderOptions.Equals(object? obj) -> bool
+override Egami.Formats.Extended.Dds.DdsReaderOptions.GetHashCode() -> int
+override Egami.Formats.Extended.Dds.DdsReaderOptions.ToString() -> string!
+override Egami.Formats.Extended.Raw.RawDetails.Copy() -> Egami.Metadata.FormatDetails!
+override Egami.Formats.Extended.Raw.RawPreview.Equals(object? obj) -> bool
+override Egami.Formats.Extended.Raw.RawPreview.GetHashCode() -> int
+override Egami.Formats.Extended.Raw.RawPreview.ToString() -> string!
+override Egami.Formats.Extended.Raw.RawReaderOptions.<Clone>$() -> Egami.Formats.Extended.Raw.RawReaderOptions!
+override Egami.Formats.Extended.Raw.RawReaderOptions.Equals(object? obj) -> bool
+override Egami.Formats.Extended.Raw.RawReaderOptions.GetHashCode() -> int
+override Egami.Formats.Extended.Raw.RawReaderOptions.ToString() -> string!
+override sealed Egami.Formats.Extended.Dds.DdsReaderOptions.Equals(Egami.Formats.ReaderOptions? other) -> bool
+override sealed Egami.Formats.Extended.Raw.RawReaderOptions.Equals(Egami.Formats.ReaderOptions? other) -> bool
+static Egami.Formats.Extended.Dds.DdsFormat.Info.get -> Egami.Formats.FormatInfo!
+static Egami.Formats.Extended.Dds.DdsReaderOptions.operator !=(Egami.Formats.Extended.Dds.DdsReaderOptions? left, Egami.Formats.Extended.Dds.DdsReaderOptions? right) -> bool
+static Egami.Formats.Extended.Dds.DdsReaderOptions.operator ==(Egami.Formats.Extended.Dds.DdsReaderOptions? left, Egami.Formats.Extended.Dds.DdsReaderOptions? right) -> bool
+static Egami.Formats.Extended.Dds.DdsWriterOptions.Default.get -> Egami.Formats.Extended.Dds.DdsWriterOptions!
+static Egami.Formats.Extended.ExtendedContextExtensions.WithDds(this Egami.EgamiContext! context) -> Egami.EgamiContext!
+static Egami.Formats.Extended.ExtendedContextExtensions.WithRaw(this Egami.EgamiContext! context) -> Egami.EgamiContext!
+static Egami.Formats.Extended.Raw.RawFormat.Info.get -> Egami.Formats.FormatInfo!
+static Egami.Formats.Extended.Raw.RawPreview.operator !=(Egami.Formats.Extended.Raw.RawPreview? left, Egami.Formats.Extended.Raw.RawPreview? right) -> bool
+static Egami.Formats.Extended.Raw.RawPreview.operator ==(Egami.Formats.Extended.Raw.RawPreview? left, Egami.Formats.Extended.Raw.RawPreview? right) -> bool
+static Egami.Formats.Extended.Raw.RawReaderOptions.operator !=(Egami.Formats.Extended.Raw.RawReaderOptions? left, Egami.Formats.Extended.Raw.RawReaderOptions? right) -> bool
+static Egami.Formats.Extended.Raw.RawReaderOptions.operator ==(Egami.Formats.Extended.Raw.RawReaderOptions? left, Egami.Formats.Extended.Raw.RawReaderOptions? right) -> bool
+Egami.Formats.Extended.Raw.DngCompression
+Egami.Formats.Extended.Raw.DngCompression.Deflate = 2 -> Egami.Formats.Extended.Raw.DngCompression
+Egami.Formats.Extended.Raw.DngCompression.JpegXl = 3 -> Egami.Formats.Extended.Raw.DngCompression
+Egami.Formats.Extended.Raw.DngCompression.LosslessJpeg = 0 -> Egami.Formats.Extended.Raw.DngCompression
+Egami.Formats.Extended.Raw.DngCompression.None = 1 -> Egami.Formats.Extended.Raw.DngCompression
+Egami.Formats.Extended.Raw.DngPreview
+Egami.Formats.Extended.Raw.DngPreview.Full = 3 -> Egami.Formats.Extended.Raw.DngPreview
+Egami.Formats.Extended.Raw.DngPreview.Medium = 2 -> Egami.Formats.Extended.Raw.DngPreview
+Egami.Formats.Extended.Raw.DngPreview.None = 0 -> Egami.Formats.Extended.Raw.DngPreview
+Egami.Formats.Extended.Raw.DngPreview.Thumbnail = 1 -> Egami.Formats.Extended.Raw.DngPreview
+Egami.Formats.Extended.Raw.DngWriterOptions
+Egami.Formats.Extended.Raw.DngWriterOptions.Compression.get -> Egami.Formats.Extended.Raw.DngCompression
+Egami.Formats.Extended.Raw.DngWriterOptions.Compression.init -> void
+Egami.Formats.Extended.Raw.DngWriterOptions.DngWriterOptions() -> void
+Egami.Formats.Extended.Raw.DngWriterOptions.ParallelCompression.get -> bool
+Egami.Formats.Extended.Raw.DngWriterOptions.ParallelCompression.init -> void
+Egami.Formats.Extended.Raw.DngWriterOptions.Preview.get -> Egami.Formats.Extended.Raw.DngPreview
+Egami.Formats.Extended.Raw.DngWriterOptions.Preview.init -> void
+Egami.Formats.Extended.Raw.DngWriterOptions.TileSize.get -> int?
+Egami.Formats.Extended.Raw.DngWriterOptions.TileSize.init -> void
+static Egami.Formats.Extended.Raw.DngWriterOptions.Default.get -> Egami.Formats.Extended.Raw.DngWriterOptions!
+static Egami.Formats.Extended.Raw.RawFormat.ConvertToDng(System.IO.Stream! input, System.IO.Stream! output, Egami.Formats.Extended.Raw.DngWriterOptions? options = null, Egami.EgamiContext? context = null) -> void
+static Egami.Formats.Extended.Raw.RawFormat.ConvertToDng(string! inputPath, string! outputPath, Egami.Formats.Extended.Raw.DngWriterOptions? options = null, Egami.EgamiContext? context = null) -> void
