@@ -1,5 +1,6 @@
 using Egami.Video;
 using Egami.Video.Codecs;
+using Egami.Video.Editing;
 using Egami.Video.Filters;
 
 namespace Egami.DocSamples;
@@ -58,5 +59,20 @@ public class VideoFilters
 
         using VideoReader check = VideoReader.Open("movie.webm");
         Assert.Equal(check.ReadFrames().Count(f => { f.Dispose(); return true; }), written);
+    }
+
+    [Fact]
+    public void EditDeinterlace()
+    {
+        using SampleFiles files = new();
+
+        #region edit-deinterlace
+        // Deinterlace a broadcast clip as the edit decodes it; one frame per field fills a 50 fps canvas with every field.
+        VideoEdit edit = new(new EditCanvas(320, 240, new Rational(50, 1)));
+        edit.Track.Add(Clip.Open("movie.webm").Deinterlace(new DeinterlacerOptions { Rate = DeinterlaceRate.Field }));
+        edit.Render("smooth.mkv");
+        #endregion
+
+        Assert.True(File.Exists("smooth.mkv"));
     }
 }

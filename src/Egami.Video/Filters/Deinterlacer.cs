@@ -35,6 +35,9 @@ public sealed class Deinterlacer : IVideoFilter
     /// <param name="options">How it works, or <see langword="null"/> for <see cref="DeinterlacerOptions.Default"/>.</param>
     /// <param name="context">The context output frames are allocated from, or <see langword="null"/> for <see cref="MediaContext.Default"/>.</param>
     /// <exception cref="ArgumentOutOfRangeException">An option is out of range.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/VideoFilters.cs" region="deinterlace"/>
+    /// </example>
     public Deinterlacer(DeinterlacerOptions? options = null, MediaContext? context = null)
     {
         _options = options ?? DeinterlacerOptions.Default;
@@ -52,6 +55,9 @@ public sealed class Deinterlacer : IVideoFilter
     /// <param name="context">The context output frames are allocated from, or <see langword="null"/> for <see cref="MediaContext.Default"/>.</param>
     /// <exception cref="ArgumentNullException"><paramref name="track"/> is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentOutOfRangeException">An option is out of range.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/VideoFilters.cs" region="deinterlace"/>
+    /// </example>
     public Deinterlacer(VideoTrackInfo track, DeinterlacerOptions? options = null, MediaContext? context = null)
         : this(options, context)
     {

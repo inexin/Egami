@@ -474,6 +474,24 @@ Where GDI+ puts text in a layout box (2.7.6 task 28), measured on Windows. Addit
   linked face's aliased bitmaps), and grid-fitted metrics apply to fallback runs too. Fonts that set none of these shape and
   draw as before.
 
+## Egami.Video, unreleased
+
+Video 1.2.0 extras (Build Plan tasks 1 to 4). All additive.
+
+- Deinterlacing: `Deinterlacer`, the first `IVideoFilter` (a new interface in `Egami.Video.Filters`, shaped like
+  `IAudioFilter`: `Send`, `TryReceive`, `Flush`, `Reset`, `Latency`), turns interlaced `YuvVideoFrame`s progressive.
+  `DeinterlaceMode.Adaptive` (the default) keeps still parts woven and guesses moving ones along edges, held within what the
+  fields before and after allow; `Bob` uses the kept field alone. `DeinterlaceRate.Field` gives one frame per field;
+  `DeinterlaceFrames.All` deinterlaces frames that are not flagged; `DeinterlacerOptions.FieldOrder` overrides the order. Every
+  planar format from 8 to 16 bits with alpha, chroma per field. On a synthetic woven set its PSNR is within 0.1 dB of
+  FFmpeg's yadif, and a 1080i frame takes about 3.3 ms on one thread (yadif -threads 1: 6.1 ms on the same machine).
+- `Clip.Deinterlace` and `Clip.Deinterlacing`: an edit deinterlaces a clip as it decodes it; off by default, kept in the
+  edit's JSON (`"deinterlace"`).
+- `AudioPictures.Waveform(Stream, ...)`, `AudioPictures.Spectrogram(Stream, ...)` and `MediaAnalysis.Run(Stream, ...)`, with the
+  path versions' parameters. Unseekable streams are read once; the caller owns the stream.
+- `--time-deinterlace` in the video benchmarks, and `tools/video/check-deinterlace.py`, the quality and speed gates against
+  yadif.
+
 ## Egami.Video.H264, unreleased
 
 Video Build Plan task 30: general H.264 decode speed. No API changes.
@@ -497,6 +515,10 @@ V8: HEVC decode (H.264 and HEVC Build Plan tasks 26 to 28). A new opt-in package
 - An `hevc` fuzz target, and `--time-hevc` in the video benchmarks.
 
 ## Egami.Video.Cli, unreleased
+
+- `--deinterlace [adaptive|bob]`, `--deinterlace-rate frame|field`, `--deinterlace-frames flagged|all` and `--field-order
+  tff|bff` on `encode`, `run`, `frames` and the editing commands. ffmpeg mode takes `-vf yadif` and `-vf bwdif` with their
+  `mode`, `parity` and `deint` options (bwdif runs as the adaptive deinterlacer, with a warning).
 
 - `egami-video overlay --key auto` reads the screen colour from the overlay's first frame: the median of its green or blue
   pixels, whichever covers more of the frame (refused when neither covers 5 %). Without `--blend`, auto also picks a softer
