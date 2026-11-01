@@ -34,6 +34,32 @@ public static class AudioPictures
         return FromFile(path, options.Track, context, progress, (frames, duration) => Waveform(frames, duration, options, context, cancellationToken), cancellationToken);
     }
 
+    /// <summary>
+    /// Draws the waveform of a stream's audio track, as <see cref="Waveform(string, WaveformOptions?, MediaContext?, IProgress{MediaProgress}?, CancellationToken)"/>
+    /// does a file's. A stream that cannot seek is read once; when its container does not say how long the audio runs, it is
+    /// copied to a temporary file on the way, which is deleted after. The caller owns the stream: it is read from its current
+    /// position and not disposed.
+    /// </summary>
+    /// <param name="stream">The media stream.</param>
+    /// <param name="options">The size, layout and colors, or <see langword="null"/> for <see cref="WaveformOptions.Default"/>.</param>
+    /// <param name="context">The context, or <see langword="null"/> for <see cref="MediaContext.Default"/>.</param>
+    /// <param name="progress">Receives <see cref="MediaProgress"/> reports, or <see langword="null"/>.</param>
+    /// <param name="cancellationToken">Stops the drawing between frames.</param>
+    /// <returns>The picture.</returns>
+    /// <exception cref="ArgumentOutOfRangeException">An option is out of range.</exception>
+    /// <exception cref="OperationCanceledException">The drawing was canceled.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/VideoAnalysis.cs" region="analysis-stream"/>
+    /// </example>
+    public static Raster<Rgba8> Waveform(Stream stream, WaveformOptions? options = null, MediaContext? context = null,
+        IProgress<MediaProgress>? progress = null, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(stream);
+        options ??= WaveformOptions.Default;
+        options.Validate();
+        return FromStream(stream, options.Track, context, progress, (frames, duration) => Waveform(frames, duration, options, context, cancellationToken), cancellationToken);
+    }
+
     /// <summary>Draws the waveform of a run of audio frames.</summary>
     /// <param name="frames">The frames, in time order, in any sample format; they are read once and not disposed.</param>
     /// <param name="duration">How long the audio runs, which sets how many samples each column covers.</param>
@@ -83,6 +109,32 @@ public static class AudioPictures
         return FromFile(path, options.Track, context, progress, (frames, duration) => Spectrogram(frames, duration, options, context, cancellationToken), cancellationToken);
     }
 
+    /// <summary>
+    /// Draws the spectrogram of a stream's audio track, as <see cref="Spectrogram(string, SpectrogramOptions?, MediaContext?, IProgress{MediaProgress}?, CancellationToken)"/>
+    /// does a file's. A stream that cannot seek is read once; when its container does not say how long the audio runs, it is
+    /// copied to a temporary file on the way, which is deleted after. The caller owns the stream: it is read from its current
+    /// position and not disposed.
+    /// </summary>
+    /// <param name="stream">The media stream.</param>
+    /// <param name="options">The size, window, scale and colors, or <see langword="null"/> for <see cref="SpectrogramOptions.Default"/>.</param>
+    /// <param name="context">The context, or <see langword="null"/> for <see cref="MediaContext.Default"/>.</param>
+    /// <param name="progress">Receives <see cref="MediaProgress"/> reports, or <see langword="null"/>.</param>
+    /// <param name="cancellationToken">Stops the drawing between frames.</param>
+    /// <returns>The picture.</returns>
+    /// <exception cref="ArgumentOutOfRangeException">An option is out of range.</exception>
+    /// <exception cref="OperationCanceledException">The drawing was canceled.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/VideoAnalysis.cs" region="analysis-stream"/>
+    /// </example>
+    public static Raster<Rgba8> Spectrogram(Stream stream, SpectrogramOptions? options = null, MediaContext? context = null,
+        IProgress<MediaProgress>? progress = null, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(stream);
+        options ??= SpectrogramOptions.Default;
+        options.Validate();
+        return FromStream(stream, options.Track, context, progress, (frames, duration) => Spectrogram(frames, duration, options, context, cancellationToken), cancellationToken);
+    }
+
     /// <summary>Draws the spectrogram of a run of audio frames.</summary>
     /// <param name="frames">The frames, in time order, in any sample format; they are read once and not disposed.</param>
     /// <param name="duration">How long the audio runs, which sets where each column's window sits.</param>
@@ -127,8 +179,60 @@ public static class AudioPictures
     {
         ArgumentNullException.ThrowIfNull(path);
         AudioReaderOptions readerOptions = new() { TrackNumber = track };
+        return FromSource(() => AudioReader.Open(path, readerOptions, context), progress, draw, cancellationToken);
+    }
+
+    /// <summary>
+    /// <see cref="FromFile"/> for a stream: a seekable one is opened twice from its position; an unseekable one is drawn in one
+    /// pass when its container gives the duration, else copied to a temporary file as it is read, and drawn from that.
+    /// </summary>
+    private static Raster<Rgba8> FromStream(Stream stream, int? track, MediaContext? context, IProgress<MediaProgress>? progress,
+        Func<IEnumerable<AudioFrame>, MediaTime, Raster<Rgba8>> draw, CancellationToken cancellationToken)
+    {
+        AudioReaderOptions readerOptions = new() { TrackNumber = track };
+        if (stream.CanSeek)
+        {
+            long start = stream.Position;
+            return FromSource(
+                () =>
+                {
+                    stream.Position = start;
+                    return AudioReader.Open(stream, readerOptions, context, leaveOpen: true);
+                },
+                progress,
+                draw,
+                cancellationToken);
+        }
+
+        StreamSources.Recording recording = new(stream);
+        using (AudioReader reader = AudioReader.Open(recording, readerOptions, context, leaveOpen: true))
+        {
+            if ((reader.Track.Duration ?? reader.Info.Duration) is { Ticks: > 0 } known)
+            {
+                return Draw(reader, known, progress, draw);
+            }
+        }
+
+        using FileStream copy = StreamSources.TemporaryFile();
+        recording.CopyAllTo(copy, cancellationToken);
+        copy.Position = 0;
+        return FromSource(
+            () =>
+            {
+                copy.Position = 0;
+                return AudioReader.Open(copy, readerOptions, context, leaveOpen: true);
+            },
+            progress,
+            draw,
+            cancellationToken);
+    }
+
+    /// <summary>Opens the reader, counting samples in a first pass when the source does not give the duration, and draws.</summary>
+    private static Raster<Rgba8> FromSource(Func<AudioReader> open, IProgress<MediaProgress>? progress,
+        Func<IEnumerable<AudioFrame>, MediaTime, Raster<Rgba8>> draw, CancellationToken cancellationToken)
+    {
         MediaTime? duration;
-        using (AudioReader probe = AudioReader.Open(path, readerOptions, context))
+        using (AudioReader probe = open())
         {
             duration = probe.Track.Duration ?? probe.Info.Duration;
             if (duration is null || duration.Value.Ticks <= 0)
@@ -147,10 +251,15 @@ public static class AudioPictures
             }
         }
 
-        using AudioReader reader = AudioReader.Open(path, readerOptions, context);
+        using AudioReader reader = open();
+        return Draw(reader, duration.Value, progress, draw);
+    }
+
+    private static Raster<Rgba8> Draw(AudioReader reader, MediaTime duration, IProgress<MediaProgress>? progress, Func<IEnumerable<AudioFrame>, MediaTime, Raster<Rgba8>> draw)
+    {
         AnalysisReporter? reporter = progress is null ? null : new(progress, duration, MediaTime.Zero);
-        Raster<Rgba8> picture = draw(Disposing(reader.ReadFrames(), reporter), duration.Value);
-        reporter?.Finish(duration.Value, 0);
+        Raster<Rgba8> picture = draw(Disposing(reader.ReadFrames(), reporter), duration);
+        reporter?.Finish(duration, 0);
         return picture;
     }
 

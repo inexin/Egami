@@ -185,7 +185,7 @@ public sealed class AudioReader : IDisposable
         _diagnostics?.Dispose();
     }
 
-    private static AudioReader Create(IDemuxer demuxer, AudioReaderOptions? options, MediaContext context)
+    internal static AudioReader Create(IDemuxer demuxer, AudioReaderOptions? options, MediaContext context)
     {
         try
         {

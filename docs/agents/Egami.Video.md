@@ -37,6 +37,8 @@ and no `Configuration`.
 - `MediaFile.Remux` and `MediaFile.Trim`: copy packets into another container, or cut, without decoding what need not be.
 - `MediaFile.OpenDemuxer` and `MediaFile.CreateMuxer`: packet by packet.
 - `VideoEdit` with `Clip`: joins, transitions, layers and titles, rendered to a file.
+- `Deinterlacer` (an `IVideoFilter` in `Egami.Video.Filters`): interlaced frames in, progressive frames out; `Send`,
+  `TryReceive` and `Flush` at the end.
 - `MediaContext`: like `EgamiContext`, for video; `MediaContext.SetDefault` at startup. The long-running calls take an
   `IProgress<MediaProgress>` and a `CancellationToken`.
 
@@ -200,6 +202,8 @@ Console.WriteLine($"{plan.FrameCount} frames, {plan.Duration.Seconds} s");
 - Expecting an H.264 or HEVC encoder. There is none; encode AV1, VP9 or VP8 for delivery and FFV1 for lossless archives.
 - Converting every frame to RGB when YUV is enough. `reader.ReadFrames()` without a pixel type gives the decoder's planar YUV
   frames, with no conversion.
+- Calling `ToRaster` on interlaced broadcast frames and getting combs on motion: run them through a `Deinterlacer` first
+  (`Clip.Deinterlace` in an edit).
 - Trimming at keyframes when frame accuracy matters: the default `MediaFile.Trim` mode is frame-exact; `TrimMode.Keyframe`
   only copies.
 

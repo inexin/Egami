@@ -34,7 +34,7 @@ internal sealed partial class EditRenderer
             PlannedClip planned = clips[i];
             Clip c = planned.Clip;
             if (c.Source is not FileClipSource file || c.SpeedFactor != 1 || c.IsReversed || c.LoopCount != 1 || c.HoldDuration != MediaTime.Zero
-                || c.Freezes.Count > 0 || c.Motion is not null || c.Stabilization is not null || c.Effects.Count > 0
+                || c.Freezes.Count > 0 || c.Motion is not null || c.Stabilization is not null || c.Deinterlacing is not null || c.Effects.Count > 0
                 || !_plan.Sources.TryGetValue(c, out SourceInfo? info) || info.Size.Width != _canvas.Width || info.Size.Height != _canvas.Height
                 || info.FrameRate != _canvas.FrameRate)
             {

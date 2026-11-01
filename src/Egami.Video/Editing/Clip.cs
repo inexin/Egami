@@ -70,6 +70,12 @@ public sealed record Clip
     /// <summary>Gets the stabilization of the clip's picture, or <see langword="null"/> for none.</summary>
     public ClipStabilization? Stabilization { get; init; }
 
+    /// <summary>
+    /// Gets how the clip's frames are deinterlaced as they are decoded, or <see langword="null"/> (the default) to take them as
+    /// they are. Set it with <see cref="Deinterlace"/> for interlaced sources.
+    /// </summary>
+    public Filters.DeinterlacerOptions? Deinterlacing { get; init; }
+
     internal ClipSource Source { get; init; }
 
     /// <summary>Returns a clip that reads a file's first video track and its first audio track.</summary>
@@ -289,6 +295,23 @@ public sealed record Clip
         options ??= StabilizeOptions.Default;
         ArgumentOutOfRangeException.ThrowIfNegative(options.Smoothing, nameof(options));
         return this with { Stabilization = new ClipStabilization(motion, options) };
+    }
+
+    /// <summary>
+    /// Returns the clip with its frames deinterlaced as they are decoded (<see cref="Filters.Deinterlacer"/>), for interlaced
+    /// sources such as broadcast H.264. Field rate frames let a canvas at the field rate show every field.
+    /// </summary>
+    /// <param name="options">How to deinterlace, or <see langword="null"/> for <see cref="Filters.DeinterlacerOptions.Default"/>.</param>
+    /// <returns>The clip.</returns>
+    /// <exception cref="ArgumentOutOfRangeException">An option is out of range.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/VideoFilters.cs" region="edit-deinterlace"/>
+    /// </example>
+    public Clip Deinterlace(Filters.DeinterlacerOptions? options = null)
+    {
+        options ??= Filters.DeinterlacerOptions.Default;
+        options.Validate();
+        return this with { Deinterlacing = options };
     }
 
     internal static Clip FromSource(ClipSource source) => new(source);
