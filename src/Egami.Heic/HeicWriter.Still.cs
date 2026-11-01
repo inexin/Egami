@@ -184,7 +184,7 @@ internal sealed partial class HeicWriter
             Coded coded = Encode(planes, width, height, Settings(planes, false, QpFor(quality), _primaries, _transfer, matrix), cancel);
             byte[]? clap = coded.Image.CellWidth == width && coded.Image.CellHeight == height ? null
                 : HeifImageLayout.CleanAperture(coded.Image.CellWidth, coded.Image.CellHeight, width, height);
-            return new HeifThumbnailImage(coded.Image.Cells[0], coded.Image.CellWidth, coded.Image.CellHeight, depth, false, clap);
+            return new HeifThumbnailImage(coded.Image.Cells[0], coded.Image.CellWidth, coded.Image.CellHeight, depth, false, matrix, true, clap);
         }
 
         private static bool Opaque(Raster<Rgba16> rgba)

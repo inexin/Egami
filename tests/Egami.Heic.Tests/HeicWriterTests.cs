@@ -103,6 +103,39 @@ public class HeicWriterTests
         Assert.Equal(Pixels(source), Pixels(loaded));
     }
 
+    [Theory]
+    [InlineData(null, null, 1, 0x60000000u)]
+    [InlineData(10, null, 2, 0x20000000u)]
+    [InlineData(null, ChromaFormat.Yuv444, 4, 0x08000000u)]
+    [InlineData(12, null, 4, 0x08000000u)]
+    public void HvcCRecordsTheStreamsProfile(int? bitDepth, ChromaFormat? chroma, int profile, uint compatibility)
+    {
+        // general_profile_compatibility_flag[0] is the record's top bit, as in the bitstream: Main is 0x60000000 (flags 1 and 2).
+        using Raster<Rgb8> source = Pattern<Rgb8>(32, 24, (x, y) => new Rgb8((byte)(x * 8), (byte)(y * 10), 90));
+        byte[] file = Save(source, new HeicWriterOptions { BitDepth = bitDepth, Chroma = chroma });
+        HeifFile heif = HeifFile.Parse(file, "HEIC");
+        HevcConfig config = HevcConfig.Read(heif, heif.Property(heif.PrimaryItem!, HeicFile.HvcC)!);
+        Assert.Equal((profile, compatibility), (config.Profile, config.ProfileCompatibility));
+
+        // The same as the SPS the record carries, whose flag j the decoder keeps at bit j.
+        Hevc.HevcParameterSetStore store = new();
+        foreach (ReadOnlyMemory<byte> nal in config.NalUnits)
+        {
+            store.Parse(Hevc.HevcNal.Parse(nal.Span), out _);
+        }
+
+        Hevc.HevcSps sps = store.Active(0).Sps;
+        uint reversed = 0;
+        for (int j = 0; j < 32; j++)
+        {
+            reversed |= ((sps.ProfileTierLevel.Compatibility >> j) & 1) << (31 - j);
+        }
+
+        Assert.Equal((sps.ProfileTierLevel.ProfileIdc, sps.ProfileTierLevel.LevelIdc, reversed), (config.Profile, config.Level, config.ProfileCompatibility));
+        Assert.Equal(Hevc.HevcParameterWriter.Profile(new Hevc.HevcEncoderSettings { Width = 32, Height = 24, BitDepth = bitDepth ?? 8, ChromaFormat = chroma == ChromaFormat.Yuv444 ? 3 : 1 }).Constraints,
+            config.Constraints);
+    }
+
     [Fact]
     public void GridCellsLoadBack()
     {
@@ -140,6 +173,40 @@ public class HeicWriterTests
         HeicItem thumbnail = Assert.Single(((HeicDetails)loaded.Metadata.FormatDetails!).Items, i => i.Role == HeicItemRole.Thumbnail);
         Assert.Equal(new Size(64, 38), thumbnail.Size);
         Assert.Equal((200, 120), (loaded.Width, loaded.Height));
+    }
+
+    [Theory]
+    [InlineData(true, null)]
+    [InlineData(false, ChromaFormat.Yuv400)]
+    public void AThumbnailOfLosslessOrGrayIsMarkedAsCoded(bool lossless, ChromaFormat? chroma)
+    {
+        // The image is GBR (matrix 0) or 4:0:0 (matrix 2); its thumbnail is 4:2:0 BT.601, and its own colr says so, as its VUI does.
+        using Raster<Rgb8> source = Pattern<Rgb8>(96, 64, (x, y) => new Rgb8(200, (byte)(40 + x), 30));
+        byte[] file = Save(source, new HeicWriterOptions { Lossless = lossless, Chroma = chroma, ThumbnailSize = 48 });
+        HeifFile heif = HeifFile.Parse(file, "HEIC");
+        HeifItem thumb = heif.Items.Single(i => i.References.Any(r => r.Type == IsoTypes.Of("thmb")));
+        HeifProperty colr = heif.Property(thumb, IsoTypes.Of("colr"))!;
+        ReadOnlySpan<byte> nclx = heif.Content(colr);
+        Assert.True(nclx[..4].SequenceEqual("nclx"u8));
+        Assert.Equal(6, (nclx[8] << 8) | nclx[9]);
+        HevcConfig config = HevcConfig.Read(heif, heif.Property(thumb, HeicFile.HvcC)!);
+        Hevc.HevcParameterSetStore store = new();
+        foreach (ReadOnlyMemory<byte> nal in config.NalUnits)
+        {
+            store.Parse(Hevc.HevcNal.Parse(nal.Span), out _);
+        }
+
+        Assert.Equal(6, store.Active(0).Sps.Vui!.MatrixCoefficients);
+
+        // Read on its own, the thumbnail keeps the image's colors.
+        using MemoryStream stream = new(file);
+        using Raster<Rgb8> small = HeicImage.ReadItem(stream, thumb.Id, context: Context).As<Rgb8>();
+        Rgb8 middle = small.Row(small.Height / 2)[small.Width / 2];
+        Assert.InRange(chroma == ChromaFormat.Yuv400 ? middle.G : middle.R, chroma == ChromaFormat.Yuv400 ? 60 : 180, 220);
+        if (chroma != ChromaFormat.Yuv400)
+        {
+            Assert.InRange(middle.B, 10, 60);
+        }
     }
 
     [Fact]

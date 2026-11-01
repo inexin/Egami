@@ -22,8 +22,11 @@ internal sealed record HeifImageCodec(string ItemType, string AlphaUrn);
 /// <summary>A coded gain map, with its metadata and the alternate rendition's color.</summary>
 internal sealed record HeifGainMapImage(HeifCodedItem Item, int Width, int Height, bool Monochrome, GainMapInfo Info, int AlternatePrimaries, int AlternateTransfer);
 
-/// <summary>A coded thumbnail of the image, linked to it by a thmb reference.</summary>
-internal sealed record HeifThumbnailImage(HeifCodedItem Item, int Width, int Height, int Depth, bool Monochrome, byte[]? Clap = null);
+/// <summary>
+/// A coded thumbnail of the image, linked to it by a thmb reference, with the matrix and range it was coded with (a lossless or
+/// gray image's thumbnail is YCbCr, unlike the image).
+/// </summary>
+internal sealed record HeifThumbnailImage(HeifCodedItem Item, int Width, int Height, int Depth, bool Monochrome, int Matrix, bool FullRange, byte[]? Clap = null);
 
 /// <summary>What goes into a file beside the pixels, as the options allow.</summary>
 internal sealed record HeifImageMetadata(ReadOnlyMemory<byte> Icc, ReadOnlyMemory<byte> Exif, ReadOnlyMemory<byte> Xmp, ImageOrientation Orientation, HdrMetadata? Hdr)
@@ -121,7 +124,7 @@ internal static class HeifImageLayout
             heif.AddProperty(thumbItem, HeifWriter.SpatialExtents(thumbnail.Width, thumbnail.Height));
             heif.AddProperty(thumbItem, HeifWriter.PixelInformation(thumbnail.Depth, thumbnail.Monochrome ? 1 : 3));
             heif.AddProperty(thumbItem, thumbnail.Item.Configuration, essential: true);
-            heif.AddProperty(thumbItem, nclx);
+            heif.AddProperty(thumbItem, HeifWriter.ColorNclx(primaries, transfer, thumbnail.Matrix, thumbnail.FullRange));
             if (thumbnail.Clap is byte[] thumbClap)
             {
                 heif.AddProperty(thumbItem, thumbClap, essential: true);
