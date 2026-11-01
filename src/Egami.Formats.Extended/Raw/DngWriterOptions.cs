@@ -8,7 +8,7 @@ public enum DngCompression
 {
     /// <summary>
     /// Lossless JPEG (compression 7) in tiles, a colour filter array row coded as pairs as Adobe DNG Converter writes it. Integer
-    /// data only.
+    /// data only: floating-point data is written with Deflate instead. The default.
     /// </summary>
     LosslessJpeg,
 
@@ -53,10 +53,10 @@ public sealed class DngWriterOptions : WriterOptions
     public static new DngWriterOptions Default { get; } = new();
 
     /// <summary>
-    /// Gets how the raw data is stored, or <see langword="null"/> (the default) for <see cref="DngCompression.LosslessJpeg"/> for
-    /// integer data and <see cref="DngCompression.Deflate"/> for floating-point data.
+    /// Gets how the raw data is stored. Defaults to <see cref="DngCompression.LosslessJpeg"/>, as Adobe writes; floating-point
+    /// data, which lossless JPEG cannot hold, is then written with <see cref="DngCompression.Deflate"/>.
     /// </summary>
-    public DngCompression? Compression { get; init; }
+    public DngCompression Compression { get; init; } = DngCompression.LosslessJpeg;
 
     /// <summary>Gets the width and height of the raw data's tiles: a multiple of 16 from 16 to 4096. Defaults to 256, as Adobe writes.</summary>
     /// <exception cref="ArgumentOutOfRangeException">The value is not a multiple of 16 from 16 to 4096.</exception>

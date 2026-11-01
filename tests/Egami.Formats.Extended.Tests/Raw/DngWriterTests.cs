@@ -68,12 +68,11 @@ public class DngWriterTests
     }
 
     [Theory]
-    [InlineData(null)]
     [InlineData(DngCompression.LosslessJpeg)]
     [InlineData(DngCompression.None)]
     [InlineData(DngCompression.Deflate)]
     [InlineData(DngCompression.JpegXl)]
-    public void ConversionKeepsTheMosaicBitForBit(DngCompression? compression)
+    public void ConversionKeepsTheMosaicBitForBit(DngCompression compression)
     {
         DngFile dng = Source();
         dng.Opcodes1 = new OpcodeList().Add(8, p => p.Area(0, 0, 16, 16).U32(1).F64(0, 3)).Build();
@@ -203,7 +202,7 @@ public class DngWriterTests
     }
 
     [Fact]
-    public void FloatRastersUseDeflateAndRefuseLosslessJpeg()
+    public void FloatRastersUseDeflate()
     {
         using Raster<RgbF32> hdr = Raster.Create<RgbF32>(20, 16);
         hdr.Row(5)[3] = new RgbF32(2.5f, 0.25f, 0.125f);
@@ -212,7 +211,9 @@ public class DngWriterTests
         using Raster<RgbF32> back = Raster.Load<RgbF32>(saved.ToArray(), Context, Mosaic);
         Assert.Equal(8, ((RawDetails)back.Metadata.FormatDetails!).Compression);
         Assert.Equal(hdr.Row(5)[3], back.Row(5)[3]);
-        Assert.Throws<ArgumentException>(() => hdr.Save(new MemoryStream(), RawFormat.Info, new DngWriterOptions { Compression = DngCompression.LosslessJpeg }));
+        using MemoryStream none = new();
+        hdr.Save(none, RawFormat.Info, new DngWriterOptions { Compression = DngCompression.None });
+        Assert.Equal(1, ((RawDetails)Raster.Load<RgbF32>(none.ToArray(), Context, Mosaic).Metadata.FormatDetails!).Compression);
     }
 
     [Fact]
@@ -256,9 +257,28 @@ public class DngWriterTests
         foreach (string path in Directory.EnumerateFiles(folder!).Order())
         {
             byte[] raw = File.ReadAllBytes(path);
+            Raster<Gray16> before;
             try
             {
-                using Raster<Gray16> before = Raster.Load<Gray16>(raw, Context, Mosaic);
+                if (Raster.Probe(raw, Context).Format != RawFormat.Info)
+                {
+                    // A TIFF that Egami reads as an ordinary TIFF, not as camera RAW (the Canon 1Ds's .tif).
+                    TestContext.Current.TestOutputHelper?.WriteLine($"{Path.GetFileName(path)}: not a RAW file to Egami");
+                    continue;
+                }
+
+                before = Raster.Load<Gray16>(raw, Context, Mosaic);
+            }
+            catch (Exception e) when (e is EgamiException or NotSupportedException or InvalidCastException)
+            {
+                // What Egami cannot read as a mosaic (CR3's CRX data, a few old layouts, LinearRaw as Gray16) is not converted here.
+                TestContext.Current.TestOutputHelper?.WriteLine($"{Path.GetFileName(path)}: not read as a mosaic, {e.Message}");
+                continue;
+            }
+
+            using (before)
+            try
+            {
                 byte[] dng = Convert(raw, new DngWriterOptions { Preview = DngPreview.None });
                 using Raster<Gray16> after = Raster.Load<Gray16>(dng, Context, Mosaic);
                 bool same = before.Width == after.Width && before.Height == after.Height
@@ -276,6 +296,11 @@ public class DngWriterTests
             catch (InvalidCastException)
             {
                 // LinearRaw and float files load as other pixel types; the RGB tests cover those.
+            }
+            catch (EgamiException e)
+            {
+                TestContext.Current.TestOutputHelper?.WriteLine($"{Path.GetFileName(path)}: FAILED, {e.Message}");
+                failures.Add(Path.GetFileName(path));
             }
         }
 

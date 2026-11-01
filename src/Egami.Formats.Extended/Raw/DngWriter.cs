@@ -73,11 +73,8 @@ internal static class DngWriter
     {
         RawFrame frame = content.Frame;
         RawPixels pixels = content.Pixels;
-        DngCompression compression = options.Compression ?? (pixels.IsFloat ? DngCompression.Deflate : DngCompression.LosslessJpeg);
-        if (compression == DngCompression.LosslessJpeg && pixels.IsFloat)
-        {
-            throw new ArgumentException("DNG: lossless JPEG takes integer raw data; choose Deflate, None or JpegXl for floating-point data.", nameof(options));
-        }
+        // Lossless JPEG holds integers only; floating-point data goes in Deflate, as Adobe writes it.
+        DngCompression compression = options.Compression == DngCompression.LosslessJpeg && pixels.IsFloat ? DngCompression.Deflate : options.Compression;
 
         DngIfd raw = RawIfd(content, compression, options, context);
 
