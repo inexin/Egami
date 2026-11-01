@@ -6,10 +6,14 @@ using Egami.Pixels;
 namespace Egami.Formats.Jpeg;
 
 /// <summary>
-/// The lossless JPEG writer's entry point for samples that are not pixels: TIFF compression 7 strips and tiles and DNG's
-/// sensor tiles, coded by <see cref="JpegLosslessScan"/> exactly as the pixel path codes the same samples.
+/// Writes lossless JPEG (ITU-T T.81 annex H, SOF3 or SOF11) from samples that are not pixels: TIFF compression 7 strips and
+/// tiles, DNG's sensor tiles and any other format that stores lossless JPEG streams. The samples are coded exactly as saving the
+/// same samples as pixels with <see cref="JpegLosslessOptions"/> codes them.
 /// </summary>
-internal static class JpegLosslessWriter
+/// <example>
+/// <code language="csharp" source="../../../../tests/Egami.DocSamples/AnimationAndMetadata.cs" region="jpeg-lossless-samples"/>
+/// </example>
+public static class JpegLosslessWriter
 {
     /// <summary>
     /// Writes <paramref name="samples"/>, rows of <paramref name="width"/> pixels of <paramref name="components"/> samples each,
@@ -19,9 +23,20 @@ internal static class JpegLosslessWriter
     /// is in samples per component, rounded up to whole rows. The component ids are 1 for one component, R, G, B for three, C,
     /// M, Y, K for four and 1, 2 for two.
     /// </summary>
-    internal static void Write(Stream output, ReadOnlySpan<ushort> samples, int components, int width, int precision, int? predictor,
+    /// <param name="output">Where to write. It is left open.</param>
+    /// <param name="samples">The samples, row after row, the components of each pixel next to each other.</param>
+    /// <param name="components">The components of a pixel, 1 to 4.</param>
+    /// <param name="width">The pixels in a row, 1 to 65535.</param>
+    /// <param name="precision">The bits of a sample, 2 to 16.</param>
+    /// <param name="predictor">The T.81 predictor, 1 to 7, or <see langword="null"/> for the one that codes smallest.</param>
+    /// <param name="restartInterval">The restart interval in pixels, rounded up to whole rows, or 0 for none.</param>
+    /// <param name="arithmetic">Whether to code with the arithmetic coder (SOF11) instead of Huffman tables (SOF3).</param>
+    /// <exception cref="ArgumentOutOfRangeException">A count, the precision or the predictor is out of range.</exception>
+    /// <exception cref="ArgumentException"><paramref name="samples"/> is not 1 to 65535 whole rows.</exception>
+    public static void Write(Stream output, ReadOnlySpan<ushort> samples, int components, int width, int precision, int? predictor,
         int restartInterval = 0, bool arithmetic = false)
     {
+        ArgumentNullException.ThrowIfNull(output);
         ArgumentOutOfRangeException.ThrowIfLessThan(components, 1);
         ArgumentOutOfRangeException.ThrowIfGreaterThan(components, 4);
         ArgumentOutOfRangeException.ThrowIfLessThan(precision, 2);
@@ -60,7 +75,13 @@ internal static class JpegLosslessWriter
     /// each row coded as pairs of photosites, a two-component frame half as wide, so the two colours of a row each predict from
     /// their own kind. Predictor 1, as Adobe DNG Converter writes. The width must be even.
     /// </summary>
-    internal static void WriteCfa(Stream output, ReadOnlySpan<ushort> mosaic, int width, int precision, int predictor = 1)
+    /// <param name="output">Where to write. It is left open.</param>
+    /// <param name="mosaic">The photosites, row after row.</param>
+    /// <param name="width">The photosites in a row: even, 2 to 131070.</param>
+    /// <param name="precision">The bits of a sample, 2 to 16.</param>
+    /// <param name="predictor">The T.81 predictor, 1 to 7.</param>
+    /// <exception cref="ArgumentException"><paramref name="width"/> is odd, or <paramref name="mosaic"/> is not whole rows.</exception>
+    public static void WriteCfa(Stream output, ReadOnlySpan<ushort> mosaic, int width, int precision, int predictor = 1)
     {
         if (width < 2 || width % 2 != 0)
         {

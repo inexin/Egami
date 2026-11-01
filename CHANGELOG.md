@@ -42,6 +42,18 @@ Video Build Plan task 31: HEVC decode speed. No API changes.
 
 ## Egami.Formats.Extended, unreleased
 
+DNG writing, PR B. Additive.
+
+- `RawFormat.ConvertToDng` converts any RAW file Egami reads to DNG with its sensor data as decoded, laid out as Adobe DNG
+  Converter does: a 256-pixel thumbnail and the camera tags in IFD0, the raw data in 256 × 256 tiles in a SubIFD, a JPEG preview
+  in another. Levels, areas, CFA pattern, linearization and opcode lists come from the file, both illuminants' matrices and the
+  baseline exposure from the file or the camera table, and EXIF, XMP and the maker note (in Adobe's MakN form) come along; a DNG
+  source keeps every tag. All 38 files of the RAW corpus Egami reads load back with their mosaic bit for bit. CR3 is refused.
+- `RawFormat.Info` writes DNG, so `Save` with it, `egami convert x.nef x.dng` and `Raster.Transcode` work: a RAW mosaic raster
+  becomes a CFA DNG, any other raster LinearRaw. A transcode from RAW to DNG with no operations keeps the sensor data.
+- `DngWriterOptions` with `DngCompression` (lossless JPEG, default, with CFA rows as pairs; Deflate; None; JPEG XL) and
+  `DngPreview` (None, Thumbnail, Medium, Full).
+
 Camera RAW. All additive; it ships in one release.
 
 - `RawFormat`, registered by `WithExtendedFormats()` and `WithRaw()` ahead of TIFF, reads DNG 1.0 to 1.7 (colour filter arrays
@@ -104,6 +116,13 @@ DDS textures, stage C (BC7 and BC6H encoders).
   now load.
 
 ## Egami, unreleased
+
+DNG writing, PR B: what format packages need from core.
+
+- `IFormatConverter`: a writer may convert a file of another format without decoding it to pixels; `Raster.Transcode` asks it
+  when there are no operations and the reader options ask for nothing. Egami.Formats.Extended's DNG writer uses it.
+- `JpegLosslessWriter.Write` and `WriteCfa` are public, for formats that store lossless JPEG streams (DNG tiles).
+- `EgamiInput` has a public constructor and `Dispose`, for a format package that runs a load itself.
 
 DNG writing, PR A: lossless JPEG in TIFF. No public API change.
 

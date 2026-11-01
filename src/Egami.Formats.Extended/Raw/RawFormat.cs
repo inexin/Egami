@@ -23,8 +23,53 @@ public static class RawFormat
         SignatureLength = RawDetect.SignatureLength,
         Matches = RawDetect.Matches,
         Reader = new RawReader(),
+        Writer = new DngFormatWriter(),
         ConvertsColor = true,
     };
+
+    /// <summary>
+    /// Converts a RAW file to DNG, keeping its sensor data as decoded: not demosaiced, scaled or cropped. The levels, areas,
+    /// colour filter pattern and opcodes come from the file, the colour profile from the file or Egami's camera table, and
+    /// EXIF, XMP and the maker note (in DNGPrivateData) come along. A DNG source keeps every tag it had. A camera with no colour
+    /// data anywhere gets the profile Egami develops it with, and a warning through <see cref="EgamiContext.Diagnostics"/>.
+    /// </summary>
+    /// <param name="inputPath">The RAW file.</param>
+    /// <param name="outputPath">The DNG file to write.</param>
+    /// <param name="options">How to write, or <see langword="null"/> for the defaults.</param>
+    /// <param name="context">The context, or <see langword="null"/> for <see cref="EgamiContext.Default"/>.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="inputPath"/> or <paramref name="outputPath"/> is <see langword="null"/>.</exception>
+    /// <exception cref="NotSupportedException">The file is a CR3, or its raw data is of a kind DNG writing does not take.</exception>
+    /// <exception cref="CorruptDataException">The file is damaged.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/FormatsExtended.cs" region="raw-dng"/>
+    /// </example>
+    public static void ConvertToDng(string inputPath, string outputPath, DngWriterOptions? options = null, EgamiContext? context = null)
+    {
+        ArgumentNullException.ThrowIfNull(inputPath);
+        ArgumentNullException.ThrowIfNull(outputPath);
+        using FileStream input = File.OpenRead(inputPath);
+        using MemoryStream output = new();
+        ConvertToDng(input, output, options, context);
+        File.WriteAllBytes(outputPath, output.ToArray());
+    }
+
+    /// <summary>Converts a RAW file to DNG, from one stream to another. See <see cref="ConvertToDng(string, string, DngWriterOptions?, EgamiContext?)"/>.</summary>
+    /// <param name="input">The RAW file, from its current position. It is left open.</param>
+    /// <param name="output">Where to write the DNG. It is left open.</param>
+    /// <param name="options">How to write, or <see langword="null"/> for the defaults.</param>
+    /// <param name="context">The context, or <see langword="null"/> for <see cref="EgamiContext.Default"/>.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="input"/> or <paramref name="output"/> is <see langword="null"/>.</exception>
+    /// <exception cref="NotSupportedException">The file is a CR3, or its raw data is of a kind DNG writing does not take.</exception>
+    /// <exception cref="CorruptDataException">The file is damaged.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/FormatsExtended.cs" region="raw-dng"/>
+    /// </example>
+    public static void ConvertToDng(Stream input, Stream output, DngWriterOptions? options = null, EgamiContext? context = null)
+    {
+        ArgumentNullException.ThrowIfNull(input);
+        ArgumentNullException.ThrowIfNull(output);
+        DngFormatWriter.Convert(input, output, options ?? DngWriterOptions.Default, context ?? EgamiContext.Default);
+    }
 }
 
 /// <summary>What a RAW load returns.</summary>

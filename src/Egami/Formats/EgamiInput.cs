@@ -14,7 +14,7 @@ namespace Egami.Formats;
 /// <example>
 /// <code language="csharp" source="../../../tests/Egami.DocSamples/Extending.cs" region="custom-format"/>
 /// </example>
-public sealed class EgamiInput
+public sealed class EgamiInput : IDisposable
 {
     private const int BufferSize = 64 * 1024;
 
@@ -35,8 +35,18 @@ public sealed class EgamiInput
     // The bytes of an incremental decode, which are the stream itself.
     private Streaming.AppendBuffer? Append => _stream as Streaming.AppendBuffer;
 
-    internal EgamiInput(Stream stream, EgamiContext context, CancellationToken cancellationToken)
+    /// <summary>
+    /// Creates the input of a load a plug-in runs itself, outside <see cref="Raster.Load(Stream, EgamiContext?, ReaderOptions?)"/>:
+    /// a format package that reads a file to convert it, say. Dispose it when the load ends.
+    /// </summary>
+    /// <param name="stream">The data, from its current position. It is left open.</param>
+    /// <param name="context">The context of the load: its limits, memory and diagnostics.</param>
+    /// <param name="cancellationToken">Cancels the load.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="stream"/> or <paramref name="context"/> is <see langword="null"/>.</exception>
+    public EgamiInput(Stream stream, EgamiContext context, CancellationToken cancellationToken)
     {
+        ArgumentNullException.ThrowIfNull(stream);
+        ArgumentNullException.ThrowIfNull(context);
         _stream = stream;
         Context = context;
         CancellationToken = cancellationToken;
@@ -504,7 +514,7 @@ public sealed class EgamiInput
     }
 
     /// <summary>Returns the buffer to the pool. Leaves the stream open.</summary>
-    internal void Dispose()
+    public void Dispose()
     {
         byte[]? buffer = Interlocked.Exchange(ref _buffer, null);
         if (buffer is not null)

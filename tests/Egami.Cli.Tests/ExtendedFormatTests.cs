@@ -100,4 +100,48 @@ public sealed class ExtendedFormatTests : IDisposable
         Assert.Equal(0, _tool.Run("run", "out.pcx", "--preview-formats", "save", "again.xpm").Code);
         Assert.True(File.Exists(_tool.PathOf("again.xpm")));
     }
+
+    [Fact]
+    public void ConvertToDngKeepsTheSensorData()
+    {
+        // A mosaic saved as DNG by the library, then converted by the tool: the sensor data must come through unchanged.
+        using Raster<Pixels.Gray16> mosaic = Raster.Create<Pixels.Gray16>(64, 48);
+        Random random = new(5);
+        for (int y = 0; y < 48; y++)
+        {
+            Span<Pixels.Gray16> row = mosaic.Row(y);
+            for (int x = 0; x < 64; x++)
+            {
+                row[x] = new Pixels.Gray16((ushort)random.Next(512, 16000));
+            }
+        }
+
+        mosaic.Metadata.FormatDetails = new Egami.Formats.Extended.Raw.RawDetails
+        {
+            Output = Egami.Formats.Extended.Raw.RawOutput.Mosaic,
+            CfaPattern = "RGGB",
+            CfaWidth = 2,
+            CfaHeight = 2,
+            BlackLevels = [512],
+            WhiteLevels = [16383],
+            AsShotNeutral = [0.5, 1, 0.6],
+            Make = "Egami",
+            Model = "Tool Test",
+        };
+        using (FileStream file = File.Create(_tool.PathOf("source.dng")))
+        {
+            mosaic.Save(file, Egami.Formats.Extended.Raw.RawFormat.Info);
+        }
+
+        ToolRun run = _tool.Run("convert", "source.dng", "-o", "out.dng", "--set", "dng.compression=deflate", "--set", "dng.preview=none");
+        Assert.True(run.Code == 0, run.Error);
+        Egami.Formats.Extended.Raw.RawReaderOptions raw = new() { Output = Egami.Formats.Extended.Raw.RawOutput.Mosaic };
+        using Raster<Pixels.Gray16> before = Raster.Load<Pixels.Gray16>(_tool.PathOf("source.dng"), Context, raw);
+        using Raster<Pixels.Gray16> after = Raster.Load<Pixels.Gray16>(_tool.PathOf("out.dng"), Context, raw);
+        Assert.Equal(8, ((Egami.Formats.Extended.Raw.RawDetails)after.Metadata.FormatDetails!).Compression);
+        for (int y = 0; y < 48; y++)
+        {
+            Assert.True(before.Row(y).SequenceEqual(after.Row(y)), $"Row {y} differs.");
+        }
+    }
 }
