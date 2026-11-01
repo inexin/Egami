@@ -160,6 +160,14 @@ egami convert in.tif -o out.png --set png.compression-level=9 --set png.filter=p
 not part of the tool, since HEVC is covered by patents. Formats Egami.Formats.Extended has in preview are read and written only
 with <code>--preview-formats</code>, which every command takes; they may change or go in any minor release, and there are none in this
 release.</p>
+<p>Camera RAW files (DNG, CR2, NEF, ARW, RAF and the rest; <a href="../formats/raw.html">Camera RAW</a>) are developed as they load, and the
+<code>--raw-*</code> options, which every command takes, set how: <code>--raw-output preview</code> (or <code>half-size</code>, <code>mosaic</code>) loads something other
+than a full develop, <code>--raw-white-balance auto</code>, <code>--raw-exposure +0.5</code>, <code>--raw-demosaic malvar</code>, <code>--raw-highlights rebuild</code>,
+<code>--raw-noise-reduction 30</code>, <code>--raw-tone-curve</code>, <code>--raw-lens-profiles &lt;folders&gt;</code> and the rest map to <code>RawReaderOptions</code>. They
+change nothing for other inputs.</p>
+<pre><code class="lang-text">egami convert IMG_0001.CR2 -o photo.jpg --raw-exposure +0.5 --raw-tone-curve
+egami convert IMG_0002.CR3 -o preview.jpg --raw-output preview
+</code></pre>
 <h2 id="sizes">Sizes</h2>
 <p><code>resize</code>, <code>thumbnail</code> and the <code>resize</code> step take the size syntax, the common subset of ImageMagick's geometry:</p>
 <table>

@@ -90,7 +90,9 @@
 <p>Camera RAW files hold the sensor data a camera recorded, before any processing. Egami reads DNG (.dng), the open RAW format
 Adobe publishes, which phones, Leica, Pentax, Ricoh, Hasselblad and Adobe DNG Converter write, and the makers' own formats:
 Canon CR2, Nikon NEF and NRW, Pentax PEF, Sony ARW and SR2, Olympus ORF, Panasonic RW2 and Fujifilm RAF. It develops them into
-an image on load. Of Canon's CR3 it reads the previews and the metadata (<a href="#canon-cr3">Canon CR3</a>). It reads through the Egami.Formats.Extended package: register it with <code>WithRaw()</code> or <code>WithExtendedFormats()</code>
+an image on load. Of Canon's CR3 it reads the previews and the metadata (<a href="#canon-cr3">Canon CR3</a>).
+<a href="../guides/camera-raw.html">Developing camera RAW</a> is about choosing the develop. It reads through the Egami.Formats.Extended
+package: register it with <code>WithRaw()</code> or <code>WithExtendedFormats()</code>
 (<a href="extended.html">Extended formats</a>). RAW is detected ahead of TIFF, since a DNG file (like most maker formats) is a TIFF file;
 without it, a DNG opens as TIFF and only its preview pages load.</p>
 <table>
@@ -200,7 +202,9 @@ leaving luminance alone.</li>
 <li>The default crop; camera RGB to XYZ D50 through the ForwardMatrix, or the inverted ColorMatrix and Bradford adaptation; the
 camera profile's HueSatMap, then exposure (<code>Exposure</code> plus the file's BaselineExposure unless <code>ApplyBaselineExposure</code> is
 off), then its LookTable and tone curve, all in linear ProPhoto RGB (<code>ApplyProfile = false</code> leaves them out); and the output
-colour space.</li>
+colour space. A profile without a tone curve (every maker file's) leaves the develop scene-linear; <code>DefaultToneCurve = true</code>
+gives it a contrast curve measured from Adobe Camera Raw's default rendering instead (<code>tools/measure-raw-tone-curve.py</code>),
+which lifts the midtones (18 % gray comes out at about 38 %) and rolls off the highlights.</li>
 </ol>
 <p>The output is sRGB unless <code>ReaderOptions.ConvertColorTo</code> names another RGB space (Display P3, Adobe RGB, ProPhoto, Rec. 2020
 or a linear one): the develop renders straight into it, so wide-gamut colours are never clipped to sRGB first, and the raster
@@ -217,6 +221,7 @@ carries its ICC profile. Other colour models (CMYK, gray) are converted to after
     LuminanceNoiseReduction = 20,          // 0 to 100; off by default
     ColorNoiseReduction = 40,              // 0 to 100; 25 by default
     AutoChromaticAberration = true,        // fix colour fringes when no lens profile covers the file
+    DefaultToneCurve = true,               // a contrast curve like Adobe Camera Raw's default; off by default
     ConvertColorTo = Colors.ColorProfile.DisplayP3, // rendered straight into P3, the profile attached
 };
 using Raster photo = Raster.Load(&quot;photo.dng&quot;, context, develop);
@@ -226,11 +231,18 @@ photo.Save(&quot;photo-p3.png&quot;);
 <h2 id="lens-profiles">Lens profiles</h2>
 <p>A file that carries its own lens corrections (a DNG's warp and vignetting opcodes) is corrected with those. For other files,
 <code>RawReaderOptions.LensProfiles</code> names folders of lens profiles that Egami reads at run time: Lensfun database files (<code>.xml</code>)
-and Adobe lens profiles (<code>.lcp</code>). A system Lensfun install (such as <code>/usr/share/lensfun</code> on Linux) is searched too. The
-profile whose lens name matches the file's EXIF LensModel corrects vignetting, distortion and lateral chromatic aberration,
-its calibrations interpolated for the shot's focal length and aperture; <code>RawDetails.LensProfile</code> says which one did.</p>
+and Adobe lens profiles (<code>.lcp</code>). Two kinds of folders are searched as well when they are there: a system Lensfun install (such
+as <code>/usr/share/lensfun</code> on Linux), and the folders Adobe's software (Camera Raw, Lightroom, DNG Converter) installs its lens
+profiles in, <code>%ProgramData%\Adobe\CameraRaw\LensProfiles\1.0</code> and <code>%AppData%\Adobe\CameraRaw\LensProfiles\1.0</code> on Windows and
+<code>/Library/Application Support/Adobe/CameraRaw/LensProfiles/1.0</code> and its counterpart in your own Library on macOS. Egami only
+reads them. The profile whose lens name matches the file's EXIF LensModel (an Adobe profile's name as people read it, or as
+cameras write it) corrects vignetting, distortion and lateral chromatic aberration, its calibrations interpolated for the
+shot's focal length and aperture, at the calibrated focus distance nearest the shot's; <code>RawDetails.LensProfile</code> says which one
+did. The corrections measure from the output image (the default crop), the image the profiles were made for.</p>
+<p>Adobe's folder holds thousands of profiles, so Egami reads only those whose file name has the lens's focal length, the first
+time a lens is developed (about two seconds for a common zoom), and keeps them for the process.</p>
 <p>Egami ships no profiles. Lensfun's database is under CC BY-SA 3.0 and Adobe's profiles come with Adobe's software, so you
-supply them and their terms apply to them. <code>LensCorrections = false</code> turns every lens correction off.</p>
+supply them, or install that software, and their terms apply to them. <code>LensCorrections = false</code> turns every lens correction off.</p>
 <p>For a file no profile covers, <code>AutoChromaticAberration = true</code> measures lateral chromatic aberration from the image itself and
 scales red and blue about the centre to line their edges up with green's. It is off by default: the measurement costs about as
 much as the demosaic.</p>
@@ -259,6 +271,13 @@ develop and mosaic fit.</li>
 <li>Non-square pixels (DefaultScale other than 1) are developed square. The third calibration illuminant of DNG 1.6, profile gain
 table maps, semantic masks and extra camera profiles are not read; opcode TrimBounds and WarpRectilinear2 are skipped with a
 warning.</li>
+<li>Lens corrections that cameras record in their own maker notes (Fujifilm, Micro Four Thirds, Nikon Z, Sony) are not read;
+a lens profile, or <code>AutoChromaticAberration</code>, corrects those files instead.</li>
+<li>Without a NoiseProfile (maker formats), luminance noise reduction measures the noise from the image, which for textured
+scenes reads higher than Adobe's calibrated profiles do, so the same setting reduces more. Luminance noise reduction works on
+the mosaic, so Canon sRAW and mRAW files get colour noise reduction only.</li>
+<li>Adobe gives some Canon sRAW and mRAW files a brighter baseline exposure than the camera's normal raws (+0.25 EV for the EOS 5D
+Mark II, +0.34 EV for the EOS 70D, by a rule not yet known); Egami uses the camera's raw one.</li>
 <li>Egami writes no RAW or DNG files.</li>
 </ul>
 

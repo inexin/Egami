@@ -187,6 +187,7 @@ Class RawReaderOptions  <a class="header-action link-secondary" title="View sour
     LuminanceNoiseReduction = 20,          // 0 to 100; off by default
     ColorNoiseReduction = 40,              // 0 to 100; 25 by default
     AutoChromaticAberration = true,        // fix colour fringes when no lens profile covers the file
+    DefaultToneCurve = true,               // a contrast curve like Adobe Camera Raw's default; off by default
     ConvertColorTo = Colors.ColorProfile.DisplayP3, // rendered straight into P3, the profile attached
 };
 using Raster photo = Raster.Load("photo.dng", context, develop);
@@ -268,7 +269,7 @@ photo.Save("photo-p3.png");</code></pre>
 
   <h3 id="Egami_Formats_Extended_Raw_RawReaderOptions_AutoChromaticAberration" data-uid="Egami.Formats.Extended.Raw.RawReaderOptions.AutoChromaticAberration">
   AutoChromaticAberration
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Raw/RawFormat.cs/#L396"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Raw/RawFormat.cs/#L408"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets whether a file that no lens correction covers (no lens opcodes, no matching profile) has its lateral chromatic
@@ -306,6 +307,7 @@ with <a class="xref" href="Egami.Formats.Extended.Raw.RawReaderOptions.html#Egam
     LuminanceNoiseReduction = 20,          // 0 to 100; off by default
     ColorNoiseReduction = 40,              // 0 to 100; 25 by default
     AutoChromaticAberration = true,        // fix colour fringes when no lens profile covers the file
+    DefaultToneCurve = true,               // a contrast curve like Adobe Camera Raw's default; off by default
     ConvertColorTo = Colors.ColorProfile.DisplayP3, // rendered straight into P3, the profile attached
 };
 using Raster photo = Raster.Load("photo.dng", context, develop);
@@ -351,6 +353,59 @@ photo.Save("photo-p3.png");</code></pre>
     <dd><p>The value is outside 0 to 100.</p>
 </dd>
   </dl>
+
+
+
+  <a id="Egami_Formats_Extended_Raw_RawReaderOptions_DefaultToneCurve_" data-uid="Egami.Formats.Extended.Raw.RawReaderOptions.DefaultToneCurve*"></a>
+
+  <h3 id="Egami_Formats_Extended_Raw_RawReaderOptions_DefaultToneCurve" data-uid="Egami.Formats.Extended.Raw.RawReaderOptions.DefaultToneCurve">
+  DefaultToneCurve
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Raw/RawFormat.cs/#L388"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether a develop whose camera profile has no tone curve of its own gets a default one: the contrast curve of Adobe
+Camera Raw's default rendering, measured as a black box, which lifts the midtones and rolls off the highlights the way
+most raw converters' default looks do. Defaults to <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>, which keeps the develop scene-linear (only
+the output's transfer function); maker files, whose profiles come from the camera table, have no tone curve.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool DefaultToneCurve { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+  <h4 class="section" id="Egami_Formats_Extended_Raw_RawReaderOptions_DefaultToneCurve_examples">Examples</h4>
+  <pre><code class="lang-csharp">RawReaderOptions develop = new()
+{
+    WhiteBalance = RawWhiteBalance.Custom,
+    Temperature = 4800,                    // kelvin
+    Tint = 5,                              // toward magenta
+    Exposure = -0.5,                       // stops
+    Highlights = RawHighlightMode.Rebuild, // recover clipped colour from what was not clipped
+    Demosaic = RawDemosaicMethod.Malvar,   // faster than the default AHD
+    LuminanceNoiseReduction = 20,          // 0 to 100; off by default
+    ColorNoiseReduction = 40,              // 0 to 100; 25 by default
+    AutoChromaticAberration = true,        // fix colour fringes when no lens profile covers the file
+    DefaultToneCurve = true,               // a contrast curve like Adobe Camera Raw's default; off by default
+    ConvertColorTo = Colors.ColorProfile.DisplayP3, // rendered straight into P3, the profile attached
+};
+using Raster photo = Raster.Load("photo.dng", context, develop);
+photo.Save("photo-p3.png");</code></pre>
+
+
+
 
 
 
@@ -493,11 +548,12 @@ opcodes) are applied. Defaults to <a href="https://learn.microsoft.com/dotnet/cs
 
   <h3 id="Egami_Formats_Extended_Raw_RawReaderOptions_LensProfiles" data-uid="Egami.Formats.Extended.Raw.RawReaderOptions.LensProfiles">
   LensProfiles
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Raw/RawFormat.cs/#L385"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Raw/RawFormat.cs/#L397"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the folders of lens profiles to correct with: Lensfun database files (<code>.xml</code>) and Adobe lens profiles
-(<code>.lcp</code>), searched with their subfolders, and a system Lensfun install when there is one. A file whose own data
+(<code>.lcp</code>), searched with their subfolders; a system Lensfun install and the folders Adobe's software installs its lens
+profiles in are searched too when they are there. A file whose own data
 corrects the lens (DNG's lens opcodes) uses that instead. Egami ships no profiles: Lensfun's database is under CC BY-SA
 and Adobe's profiles are Adobe's, so you supply them. Defaults to none. Applies only with <a class="xref" href="Egami.Formats.Extended.Raw.RawReaderOptions.html#Egami_Formats_Extended_Raw_RawReaderOptions_LensCorrections">LensCorrections</a>.</p>
 </div>

@@ -43667,6 +43667,19 @@ references:
   isSpec: "True"
   fullName: Egami.Formats.Extended.Raw.RawReaderOptions.ColorNoiseReduction
   nameWithType: RawReaderOptions.ColorNoiseReduction
+- uid: Egami.Formats.Extended.Raw.RawReaderOptions.DefaultToneCurve
+  name: DefaultToneCurve
+  href: api/Egami.Formats.Extended.Raw.RawReaderOptions.html#Egami_Formats_Extended_Raw_RawReaderOptions_DefaultToneCurve
+  commentId: P:Egami.Formats.Extended.Raw.RawReaderOptions.DefaultToneCurve
+  fullName: Egami.Formats.Extended.Raw.RawReaderOptions.DefaultToneCurve
+  nameWithType: RawReaderOptions.DefaultToneCurve
+- uid: Egami.Formats.Extended.Raw.RawReaderOptions.DefaultToneCurve*
+  name: DefaultToneCurve
+  href: api/Egami.Formats.Extended.Raw.RawReaderOptions.html#Egami_Formats_Extended_Raw_RawReaderOptions_DefaultToneCurve_
+  commentId: Overload:Egami.Formats.Extended.Raw.RawReaderOptions.DefaultToneCurve
+  isSpec: "True"
+  fullName: Egami.Formats.Extended.Raw.RawReaderOptions.DefaultToneCurve
+  nameWithType: RawReaderOptions.DefaultToneCurve
 - uid: Egami.Formats.Extended.Raw.RawReaderOptions.Demosaic
   name: Demosaic
   href: api/Egami.Formats.Extended.Raw.RawReaderOptions.html#Egami_Formats_Extended_Raw_RawReaderOptions_Demosaic

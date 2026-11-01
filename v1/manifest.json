@@ -19276,6 +19276,16 @@
     },
     {
       "type": "Conceptual",
+      "source_relative_path": "articles/guides/camera-raw.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/guides/camera-raw.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
       "source_relative_path": "articles/guides/color-management.md",
       "output": {
         ".html": {
