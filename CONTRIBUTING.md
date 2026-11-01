@@ -156,7 +156,8 @@ their project file: a tag `<package>-v<version>`, for example `Egami.Barcodes-v1
 package at that version, so it releases on its own. Only maintainers tag releases. A package that only other Egami packages
 or tools use sets `<EgamiUnlisted>true</EgamiUnlisted>` in its project file (Egami.Css and Egami.Cli.Host do): nuget.org
 cannot take a package unlisted, so `release.yml` unlists that version right after the push. It stays out of search but
-still restores as a dependency.
+still restores as a dependency. The trusted publishing policy has to allow unlisting too; when it does not, nuget.org answers
+403, the run warns and the version has to be unlisted by hand on nuget.org.
 
 ## Pull requests
 

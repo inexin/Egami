@@ -12,7 +12,8 @@ name: Release
 # native program for win-x64, linux-x64 and osx-arm64 and attaches the three to a GitHub release named after the tag.
 # nuget.org cannot take a package unlisted, so a package that sets EgamiUnlisted in its project file (Egami.Css and
 # Egami.Cli.Host, which only other Egami packages and tools use) is unlisted right after the push. Unlisted versions are
-# hidden from search but still restore as dependencies.
+# hidden from search but still restore as dependencies. The trusted publishing policy must allow unlisting as well as pushing:
+# without it nuget.org answers the unlist with 403, and the step warns and names the versions to unlist by hand.
 
 on:
   push:
@@ -90,11 +91,15 @@ jobs:
           for entry in $UNLISTED; do
             id=${entry%@*}
             version=${entry#*@}
+            # A version just pushed may still be validating (404), so that is retried for up to ten minutes; a refused key
+            # (403: the trusted publishing policy does not allow unlisting) will not change, so it stops at once.
             for attempt in 1 2 3 4 5 6 7 8 9 10; do
-              if dotnet nuget delete "$id" "$version" --api-key "$NUGET_API_KEY" --source https://api.nuget.org/v3/index.json --non-interactive; then
+              if output=$(dotnet nuget delete "$id" "$version" --api-key "$NUGET_API_KEY" --source https://api.nuget.org/v3/index.json --non-interactive 2>&1); then
                 echo "Unlisted $id $version" >> "$GITHUB_STEP_SUMMARY"
                 continue 2
               fi
+              echo "$output"
+              case "$output" in *403*) break ;; esac
               sleep 60
             done
             echo "::warning::Could not unlist $id $version; unlist it on nuget.org"
