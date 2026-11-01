@@ -148,3 +148,31 @@ public class HevcEncoderTests
         return 10 * Math.Log10(max * max * width * height / Math.Max(sse, 1e-9));
     }
 }
+
+/// <summary>What encoding allocates, per sample of the picture (EGAMI_ALLOCATION_TESTS=1).</summary>
+public class HevcEncoderAllocationTests
+{
+    [Trait("Category", "Allocation")]
+    [Fact]
+    public void AllocationsPerSampleStayFlat()
+    {
+        Assert.SkipUnless(Environment.GetEnvironmentVariable("EGAMI_ALLOCATION_TESTS") == "1", "Allocation budgets run on demand: set EGAMI_ALLOCATION_TESTS=1.");
+        static double Measure(int size)
+        {
+            HevcEncoderSettings settings = new() { Width = size, Height = size, Qp = 27, Effort = 4, AdaptiveQp = true };
+            (ushort[][] planes, int[] strides) = HevcEncoderTests.Synthetic(settings, 5);
+            HevcEncoder.Encode(settings, planes, strides, TestContext.Current.CancellationToken);
+            long before = GC.GetAllocatedBytesForCurrentThread();
+            HevcEncoder.Encode(settings, planes, strides, TestContext.Current.CancellationToken);
+            return (GC.GetAllocatedBytesForCurrentThread() - before) / (double)(size * size);
+        }
+
+        double small = Measure(256), large = Measure(512);
+        TestContext.Current.TestOutputHelper?.WriteLine($"{small:F1} and {large:F1} bytes a luma sample at 256 and 512");
+
+        // The picture, its block maps and the coding units' decisions (their levels kept for the CABAC pass) grow with the picture;
+        // the search's own buffers do not, so a larger picture allocates no more per sample.
+        Assert.True(large < small * 1.15, $"{large:F1} bytes a sample at 512, {small:F1} at 256.");
+        Assert.True(large < 120, $"{large:F1} bytes a sample.");
+    }
+}

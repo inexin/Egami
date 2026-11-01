@@ -1,9 +1,9 @@
 using Egami.Colors;
 using Egami.Formats;
 using Egami.Formats.Heif;
-using Egami.Metadata;
 using Egami.Formats.Webp;
 using Egami.Heic.Hevc;
+using Egami.Metadata;
 using Egami.Pixels;
 using Egami.Streaming;
 

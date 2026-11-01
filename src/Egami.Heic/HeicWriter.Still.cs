@@ -1,8 +1,8 @@
 using Egami.Colors;
 using Egami.Formats;
 using Egami.Formats.Heif;
-using Egami.Metadata;
 using Egami.Heic.Hevc;
+using Egami.Metadata;
 using Egami.Pixels;
 
 namespace Egami.Heic;
