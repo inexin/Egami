@@ -42,42 +42,34 @@ Video Build Plan task 31: HEVC decode speed. No API changes.
 
 ## Egami.Formats.Extended, unreleased
 
-Camera RAW, stage A (DNG). All additive; it ships with the rest of camera RAW in one release.
+Camera RAW. All additive; it ships in one release.
 
-- `RawFormat`, registered by `WithExtendedFormats()` and `WithRaw()` ahead of TIFF, reads DNG 1.0 to 1.7: colour filter arrays
-  of any pattern and LinearRaw, uncompressed integer and floating-point samples, lossless JPEG, Deflate with the integer and
-  floating-point predictors, lossy JPEG and JPEG XL, in strips or tiles, with the linearization table, black level patterns
-  and deltas, white levels, active area and default crop.
+- `RawFormat`, registered by `WithExtendedFormats()` and `WithRaw()` ahead of TIFF, reads DNG 1.0 to 1.7 (colour filter arrays
+  of any pattern and LinearRaw; uncompressed, lossless JPEG, Deflate, lossy JPEG and JPEG XL data in strips or tiles; the
+  linearization table, black level patterns and deltas, white levels, active area and default crop) and the makers' formats:
+  Canon CR2 (with sRAW and mRAW), Nikon NEF and NRW, Pentax PEF, Sony ARW and SR2, Olympus ORF, Panasonic RW2 (RawFormat 4 to
+  8) and Fujifilm RAF (uncompressed and compressed, lossless and lossy, X-Trans and Bayer), with each maker's white balance,
+  black levels and crops. Decoded mosaics match Adobe DNG Converter's bit for bit on 22 CC0 sample files. Of Canon CR3 it
+  reads the previews and metadata; its CRX-coded sensor data is not decoded, so a develop throws `NotSupportedException`.
 - Load develops the image (`RawReaderOptions`): white balance as shot, automatic or custom (`Temperature`, `Tint`) with
   dual-illuminant matrix interpolation and ForwardMatrix; bilinear, Malvar-He-Cutler and AHD demosaicing (`Demosaic`, AHD by
-  default); exposure and BaselineExposure; highlights clipped, blended or rebuilt (`Highlights`); DNG opcode lists 1 to 3 and
-  camera profiles (HueSatMap, LookTable, ProfileToneCurve); raw-domain wavelet luminance noise reduction with the file's noise
-  profile (`LuminanceNoiseReduction`, off by default) and chroma noise reduction (`ColorNoiseReduction`, 25 by default); lens
-  corrections from the file's opcodes (`LensCorrections`). Output is `Rgb16` sRGB, or rendered straight into the RGB space
-  `ConvertColorTo` names, its ICC profile attached.
+  default) and Egami's own X-Trans demosaic; exposure and BaselineExposure; highlights clipped, blended or rebuilt
+  (`Highlights`); DNG opcode lists 1 to 3 and camera profiles (HueSatMap, LookTable, ProfileToneCurve), and an opt-in default
+  tone curve measured from Adobe Camera Raw's default rendering (`DefaultToneCurve`); raw-domain wavelet luminance noise
+  reduction (`LuminanceNoiseReduction`, off by default) and chroma noise reduction (`ColorNoiseReduction`, 25 by default).
+  Output is `Rgb16` sRGB, or rendered straight into the RGB space `ConvertColorTo` names, its ICC profile attached.
+- Colour for the maker formats comes from a camera table of 556 cameras, measured from Adobe DNG Converter's output as a black
+  box, which also gives the levels and crops a file does not.
+- Lens corrections (`LensCorrections`): the file's own DNG opcodes, else Lensfun XML and Adobe LCP profiles read at run time from
+  `RawReaderOptions.LensProfiles`, a system Lensfun install and the folders Adobe's software installs its profiles in (no
+  profile data ships), else, with `AutoChromaticAberration` (off by default), an automatic lateral chromatic aberration
+  correction. `RawDetails.LensProfile` names what was applied.
 - `RawOutput.Preview`, `HalfSize` and `Mosaic` return an embedded preview, a half-size develop or the untouched sensor data;
   `ReaderOptions.MinimumSize` picks the smallest preview or half-size develop that covers it, and LoadAll gives the develop and
   each preview. `RawDetails` keeps the camera, sensor layout, levels, the develop's white balance and colour matrix, opcodes,
-  previews, exposure settings and the maker note; EXIF, GPS and XMP come through.
-
-Camera RAW, stage C (Canon CR3). All additive.
-
-- `RawFormat` reads Canon CR3 files' previews (the full-size JPEG, the medium preview and the thumbnail) and metadata (EXIF,
-  GPS and the maker note), and `Raster.Probe` gives their size. Their CRX-coded sensor data is not decoded: a develop or the
-  mosaic throws `NotSupportedException`.
-
-Camera RAW, stage B (maker formats). All additive.
-
-- `RawFormat` reads Canon CR2 (with sRAW and mRAW), Nikon NEF and NRW, Pentax PEF, Sony ARW and SR2, Olympus ORF, Panasonic RW2
-  (RawFormat 4 to 8) and Fujifilm RAF (uncompressed and compressed, lossless and lossy, X-Trans and Bayer), with each maker's
-  white balance, black levels and crops; decoded mosaics match Adobe DNG Converter's bit for bit on 22 CC0 sample files.
-- A camera table of 556 cameras, measured from Adobe DNG Converter's output as a black box, gives colour matrices and the
-  levels and crops a file does not give.
-- X-Trans sensors get their own demosaic; Panasonic's zeroed defective pixels are filled.
-- Lens corrections (`LensCorrections`) use Lensfun XML and Adobe LCP profiles loaded at run time from
-  `RawReaderOptions.LensProfiles` and the system's Lensfun folders (no profile data ships), else, with
-  `AutoChromaticAberration` (off by default), an automatic lateral chromatic aberration correction; `RawDetails.LensProfile`
-  names what was applied.
+  previews, exposure settings, lens profile and the maker note; EXIF, GPS and XMP come through.
+- The `egami` command develops RAW inputs in every command, and its `--raw-*` options set the develop. A "Developing camera RAW"
+  guide says which options suit which work.
 
 DDS textures, stage A (reading). All additive; it ships with the rest of DDS in one release.
 

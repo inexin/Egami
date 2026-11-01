@@ -19,7 +19,20 @@ internal sealed class RawLook
     private readonly float _gain;
     private readonly float[] _encode;
 
-    public RawLook(RawFrame frame, RawCamera camera, ColorProfile target, double exposure, bool profile)
+    /// <summary>
+    /// The default tone curve, as (input, output) pairs of linear values: measured from Adobe Camera Raw's default rendering (a
+    /// full-size preview Adobe DNG Converter wrote for a linear neutral ramp DNG with no profile tone curve), smoothed, its
+    /// shadows below 0.4 % a straight line through black where 8-bit output cannot resolve them.
+    /// </summary>
+    internal static readonly float[] DefaultCurve =
+    [
+        0f, 0f, 0.003861f, 0.002580f, 0.005051f, 0.003370f, 0.006836f, 0.004596f, 0.009277f, 0.006529f, 0.012100f, 0.009134f,
+        0.016403f, 0.013964f, 0.022248f, 0.022002f, 0.030167f, 0.034742f, 0.039368f, 0.051439f, 0.053391f, 0.079200f,
+        0.072389f, 0.121020f, 0.094469f, 0.173814f, 0.128099f, 0.259378f, 0.173678f, 0.367273f, 0.226688f, 0.473480f,
+        0.307362f, 0.602878f, 0.416754f, 0.730328f, 0.565057f, 0.849116f, 0.737530f, 0.935005f, 1f, 1f,
+    ];
+
+    public RawLook(RawFrame frame, RawCamera camera, ColorProfile target, double exposure, bool profile, bool defaultCurve = false)
     {
         ColorPrimaries primaries = target.Primaries ?? ColorProfile.Srgb.Primaries!;
         _encode = EncodeTable(target.Transfer ?? TransferFunction.Srgb);
@@ -49,6 +62,11 @@ internal sealed class RawLook
             {
                 _curve = Curve(points);
             }
+        }
+
+        if (_curve is null && defaultCurve)
+        {
+            _curve = Curve(DefaultCurve);
         }
 
         if (_hueSat is not null || _look is not null || _curve is not null)

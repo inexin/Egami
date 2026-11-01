@@ -62,6 +62,36 @@ public sealed class ExtendedFormatTests : IDisposable
     }
 
     [Fact]
+    public void RawOptionsDevelopEveryCommandsInputs()
+    {
+        // RAW Build Plan task 13: the --raw-* options reach the reader in convert, info and run, and bad values are usage errors.
+        string dng = _tool.Copy("fuzz/raw-seeds/uncompressed-16.dng");
+        ToolRun plain = _tool.Run("convert", dng, "-o", "plain.png");
+        Assert.True(plain.Code == 0, plain.Error);
+        ToolRun bright = _tool.Run("convert", dng, "-o", "bright.png", "--raw-exposure", "+1", "--raw-demosaic", "bilinear", "--raw-tone-curve");
+        Assert.True(bright.Code == 0, bright.Error);
+        using (Raster<Pixels.Rgb16> a = Raster.Load<Pixels.Rgb16>(_tool.PathOf("plain.png")), b = Raster.Load<Pixels.Rgb16>(_tool.PathOf("bright.png")))
+        {
+            long Sum(Raster<Pixels.Rgb16> r) => Enumerable.Range(0, r.Height).Sum(y => r.Row(y).ToArray().Sum(p => (long)p.G));
+            Assert.True(Sum(b) > Sum(a), "--raw-exposure +1 brightens the develop.");
+        }
+
+        ToolRun mosaic = _tool.Run("info", dng, "--raw-output", "mosaic");
+        Assert.True(mosaic.Code == 0, mosaic.Error);
+        Assert.Contains("Gray", mosaic.Text, StringComparison.OrdinalIgnoreCase);
+        Assert.Equal(0, _tool.Run("run", dng, "--raw-output", "half-size", "save", "half.png").Code);
+
+        string cr3 = _tool.Copy("fuzz/raw-seeds/canon-synthetic.cr3");
+        ToolRun preview = _tool.Run("convert", cr3, "-o", "preview.png", "--raw-output", "preview", "--raw-preview", "1");
+        Assert.True(preview.Code == 0, preview.Error);
+        Assert.Equal(24, Raster.Probe(_tool.PathOf("preview.png")).Width);
+
+        ToolRun bad = _tool.Run("convert", dng, "-o", "bad.png", "--raw-demosaic", "fancy");
+        Assert.NotEqual(0, bad.Code);
+        Assert.Contains("--raw-demosaic takes", bad.Error, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void TakesPreviewFormats()
     {
         string png = _tool.Copy(Png);

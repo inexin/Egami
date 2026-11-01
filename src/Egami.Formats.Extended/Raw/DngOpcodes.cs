@@ -306,7 +306,7 @@ internal static class DngOpcodes
         float[] source = System.Buffers.ArrayPool<float>.Shared.Rent(width * height * planes);
         plane.Values.Span[..(width * height * planes)].CopyTo(source);
         double inv = plane.Scale;
-        for (int y = 0; y < height; y++)
+        RawParallel.For(0, height, plane.Parallel, y =>
         {
             Span<float> row = plane.Row(y);
             double dy = ((y * inv) + (inv / 2) - oy) * scale;
@@ -338,7 +338,7 @@ internal static class DngOpcodes
                     row[(x * planes) + c] = Bilinear(source, width, height, planes, c, px, py);
                 }
             }
-        }
+        });
 
         System.Buffers.ArrayPool<float>.Shared.Return(source);
     }

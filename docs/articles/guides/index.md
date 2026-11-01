@@ -102,6 +102,7 @@ Operations that run on a raster through `Apply` and `Derive`.
 
 ## Egami.Formats.Extended
 
+- [Developing camera RAW](camera-raw.md): develop DNG and maker RAW files: what to load, white balance, exposure and contrast, noise, lenses and batches.
 - [Textures](textures.md): read and write DDS textures: block formats, mips, cube maps, normal maps and HDR.
 
 ## Egami.SystemDrawing

@@ -1,3 +1,5 @@
+using System.Xml.Linq;
+
 using Egami.Formats.Extended.Raw;
 using Egami.Pixels;
 
@@ -79,6 +81,37 @@ public sealed class RawLensTests : IDisposable
         Directory.Delete(_folder, recursive: true);
     }
 
+    [Theory]
+    [InlineData("EF24-70mm f/4L IS USM", "Canon EF 24-70mm f/4 L IS USM")]
+    [InlineData("NIKKOR Z 24-70mm f/4 S", null)]
+    [InlineData("Some Lens", null)]
+    public void LcpLensNamesMatchAsCamerasWriteThemButNotGenerically(string exifLens, string? expected)
+    {
+        // Adobe's files give the lens as cameras write it (Lens) and as people read it (LensPrettyName); a third-party lens's
+        // Lens is often only "24-70mm", which must not match every 24-70mm.
+        static XDocument Entry(string pretty, string lens) => XDocument.Parse($"""
+            <x:xmpmeta xmlns:x="adobe:ns:meta/"><rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+             <rdf:Description xmlns:photoshop="http://ns.adobe.com/photoshop/1.0/" xmlns:stCamera="http://ns.adobe.com/photoshop/1.0/camera-profile">
+              <photoshop:CameraProfiles><rdf:Seq><rdf:li><rdf:Description stCamera:Make="Maker" stCamera:LensPrettyName="{pretty}"
+               stCamera:Lens="{lens}" stCamera:FocalLength="24"><stCamera:PerspectiveModel stCamera:RadialDistortParam1="0.01" />
+              </rdf:Description></rdf:li></rdf:Seq></photoshop:CameraProfiles></rdf:Description></rdf:RDF></x:xmpmeta>
+            """);
+        List<RawLensProfile> profiles = [.. RawLensProfiles.Lcp(Entry("Canon EF 24-70mm f/4 L IS USM", "EF24-70mm f/4L IS USM")),
+            .. RawLensProfiles.Lcp(Entry("SIGMA 24-70mm F2.8 EX DG MACRO", "24-70mm")), .. RawLensProfiles.Lcp(Entry("Generic", "Sigma Lens"))];
+        Assert.Equal(expected, RawLensProfiles.Match(profiles, "Canon", "Camera", exifLens)?.Lens);
+    }
+
+    [Theory]
+    [InlineData("EF24-70mm f/4L IS USM", "24-70")]
+    [InlineData("XF35mmF2 R WR", "35")]
+    [InlineData("OLYMPUS M.12-40mm F2.8", "12-40")]
+    [InlineData("50 mm f/1.8", "50")]
+    [InlineData("Some Lens", null)]
+    public void FocalTokensNameTheLensFocalLength(string lens, string? expected)
+    {
+        Assert.Equal(expected, RawLensProfiles.FocalToken(lens));
+    }
+
     [Fact]
     public void ParsesLensfunAndInterpolates()
     {
@@ -88,6 +121,37 @@ public sealed class RawLensTests : IDisposable
         Assert.Equal(0.02, RawLens.Interpolate(profile.Distortion, 47, 0, 0)!.Parameters[0], 6);
         Assert.Equal(-0.3, RawLens.Interpolate(profile.Vignetting, 24, 5.4, 1000)!.Parameters[0], 6);
         Assert.Equal(0.04, RawLens.Interpolate(profile.Distortion, 10, 0, 0)!.Parameters[0], 6);
+    }
+
+    [Fact]
+    public void LcpDistortionUsesTheNearestFocusDistanceAtEachFocalLength()
+    {
+        // The focal lengths were calibrated at different distances; a far shot takes each one's farthest calibration.
+        RawLensProfile profile = new(RawLensFormat.Lcp, "", "Zoom");
+        profile.Distortion.AddRange([Lcp(18, 0.38, -0.2), Lcp(18, 5, -0.1), Lcp(24, 0.5, -0.05), Lcp(24, 4, 0)]);
+        Assert.Equal(-0.05, RawLens.Interpolate(profile.Distortion, 21, 0, 1000)!.Parameters[4], 6);
+        Assert.Equal(-0.2, RawLens.Interpolate(profile.Distortion, 18, 0, 0.4)!.Parameters[4], 6);
+
+        static RawLensSample Lcp(double focal, double distance, double k1) => new(focal, 8, distance, "lcp", [1, 1, double.NaN, double.NaN, k1, 0, 0, 0, 0, 1]);
+    }
+
+    [Fact]
+    public void LcpWithoutAnOpticalCentreCentresOnTheOutputImage()
+    {
+        // The model measures from the output image (the default crop, not the whole plane): a dot at its centre stays put.
+        const int Width = 72, Height = 44;
+        Rect frame = new(6, 8, 64, 32);
+        RawLensProfile profile = new(RawLensFormat.Lcp, "", "Lens");
+        profile.Distortion.Add(new RawLensSample(50, 8, 1000, "lcp", [1, 1, double.NaN, double.NaN, 2, 0, 0, 0, 0, 1]));
+        float[] rgb = new float[Width * Height * 3];
+        (int X, int Y)[] dot = [(37, 23), (38, 23), (37, 24), (38, 24)];
+        foreach ((int x, int y) in dot)
+        {
+            rgb[((y * Width) + x) * 3] = 1;
+        }
+
+        Assert.NotNull(RawLens.Apply(rgb, Width, Height, frame, profile, 50, 0, 1000, 1, new ParallelOptions()));
+        Assert.Equal(4, dot.Sum(p => rgb[((p.Y * Width) + p.X) * 3]), 2);
     }
 
     [Fact]

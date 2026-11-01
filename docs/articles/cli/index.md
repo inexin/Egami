@@ -72,6 +72,17 @@ not part of the tool, since HEVC is covered by patents. Formats Egami.Formats.Ex
 with `--preview-formats`, which every command takes; they may change or go in any minor release, and there are none in this
 release.
 
+Camera RAW files (DNG, CR2, NEF, ARW, RAF and the rest; [Camera RAW](../formats/raw.md)) are developed as they load, and the
+`--raw-*` options, which every command takes, set how: `--raw-output preview` (or `half-size`, `mosaic`) loads something other
+than a full develop, `--raw-white-balance auto`, `--raw-exposure +0.5`, `--raw-demosaic malvar`, `--raw-highlights rebuild`,
+`--raw-noise-reduction 30`, `--raw-tone-curve`, `--raw-lens-profiles <folders>` and the rest map to `RawReaderOptions`. They
+change nothing for other inputs.
+
+```text
+egami convert IMG_0001.CR2 -o photo.jpg --raw-exposure +0.5 --raw-tone-curve
+egami convert IMG_0002.CR3 -o preview.jpg --raw-output preview
+```
+
 ## Sizes
 
 `resize`, `thumbnail` and the `resize` step take the size syntax, the common subset of ImageMagick's geometry:
