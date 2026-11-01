@@ -149,14 +149,16 @@ branch, add the new version at the top of `docs/versions.json` and build each fo
 Egami, Egami.Drawing, Egami.Fonts, Egami.Svg, Egami.Css, Egami.Heic and Egami.Cli form one release train: they share one
 version, `EgamiVersion` in `Directory.Build.props`, and release together, so never set a version in their project files. A
 tag `v<version>` (that version) runs `.github/workflows/release.yml`: it tests, packs the seven packages and pushes them to
-nuget.org with trusted publishing, after a maintainer approves the `nuget` environment. The repository holds no NuGet API
+nuget.org with trusted publishing, after a maintainer approves the `nuget` environment. The repository holds no NuGet push
 key: a trusted publishing policy on nuget.org names this repository, `release.yml` and the `nuget` environment, and the secret `NUGET_USER` holds the
 nuget.org account name. Egami.Barcodes, Egami.Metafiles, Egami.Fonts.Substitutes and Egami.Video keep their own version in
 their project file: a tag `<package>-v<version>`, for example `Egami.Barcodes-v1.0.1`, runs the same workflow for that one
 package at that version, so it releases on its own. Only maintainers tag releases. A package that only other Egami packages
 or tools use sets `<EgamiUnlisted>true</EgamiUnlisted>` in its project file (Egami.Css and Egami.Cli.Host do): nuget.org
 cannot take a package unlisted, so `release.yml` unlists that version right after the push. It stays out of search but
-still restores as a dependency.
+still restores as a dependency. The trusted publishing key cannot unlist, so that step uses the secret `NUGET_UNLIST_KEY`, a
+nuget.org API key with only the "Unlist package" scope for those packages; without it the run warns and the version has to be
+unlisted by hand on nuget.org.
 
 ## Pull requests
 

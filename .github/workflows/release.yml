@@ -5,14 +5,16 @@ name: Release
 # that version. A tag <package>-v<version>, for example Egami.Barcodes-v1.0.1, publishes that one package, which must be at
 # that version; that is how the packages with their own version release: Egami.Barcodes, Egami.Metafiles,
 # Egami.Fonts.Substitutes and Egami.Video, as Egami.Barcodes-v1.0.0 did. The push uses nuget.org trusted publishing:
-# NuGet/login trades the job's OIDC token for a short-lived API key, so the repository keeps no NuGet key. The trusted
+# NuGet/login trades the job's OIDC token for a short-lived API key, so the repository keeps no NuGet push key. The trusted
 # publishing policy on nuget.org names this repository, this workflow file and the nuget environment, and the nuget
 # environment requires Lars's approval before the job starts.
 # The secret NUGET_USER is the nuget.org account name. After the NuGet push, a v* tag also builds the egami command as a
 # native program for win-x64, linux-x64 and osx-arm64 and attaches the three to a GitHub release named after the tag.
 # nuget.org cannot take a package unlisted, so a package that sets EgamiUnlisted in its project file (Egami.Css and
 # Egami.Cli.Host, which only other Egami packages and tools use) is unlisted right after the push. Unlisted versions are
-# hidden from search but still restore as dependencies.
+# hidden from search but still restore as dependencies. The trusted publishing key may push but not unlist (nuget.org answers
+# 403), so the unlist step uses the secret NUGET_UNLIST_KEY: a nuget.org API key with only the "Unlist package" scope, for the
+# packages Egami.Css and Egami.Cli.Host. Without that secret the step only warns and names the packages to unlist by hand.
 
 on:
   push:
@@ -90,18 +92,27 @@ jobs:
           for entry in $UNLISTED; do
             id=${entry%@*}
             version=${entry#*@}
+            if [ -z "$NUGET_UNLIST_KEY" ]; then
+              echo "::warning::NUGET_UNLIST_KEY is not set, so $id $version stays listed; unlist it on nuget.org"
+              echo "Not unlisted (no NUGET_UNLIST_KEY), do it by hand: dotnet nuget delete $id $version --source https://api.nuget.org/v3/index.json" >> "$GITHUB_STEP_SUMMARY"
+              continue
+            fi
+            # A version just pushed may still be validating (404), so that is retried for up to ten minutes; a refused key
+            # (403) will not change, so it stops at once.
             for attempt in 1 2 3 4 5 6 7 8 9 10; do
-              if dotnet nuget delete "$id" "$version" --api-key "$NUGET_API_KEY" --source https://api.nuget.org/v3/index.json --non-interactive; then
+              if output=$(dotnet nuget delete "$id" "$version" --api-key "$NUGET_UNLIST_KEY" --source https://api.nuget.org/v3/index.json --non-interactive 2>&1); then
                 echo "Unlisted $id $version" >> "$GITHUB_STEP_SUMMARY"
                 continue 2
               fi
+              echo "$output"
+              case "$output" in *403*) break ;; esac
               sleep 60
             done
             echo "::warning::Could not unlist $id $version; unlist it on nuget.org"
             echo "Not unlisted, do it by hand: dotnet nuget delete $id $version --source https://api.nuget.org/v3/index.json" >> "$GITHUB_STEP_SUMMARY"
           done
         env:
-          NUGET_API_KEY: ${{ steps.login.outputs.NUGET_API_KEY }}
+          NUGET_UNLIST_KEY: ${{ secrets.NUGET_UNLIST_KEY }}
 
   # A release-train tag (v*) also gets a GitHub release with the egami command as a native program for Windows, Linux and
   # macOS, which needs no .NET runtime. It runs only after the NuGet job, so Lars's approval of that job covers it too.
