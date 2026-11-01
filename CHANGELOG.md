@@ -105,6 +105,19 @@ DDS textures, stage C (BC7 and BC6H encoders).
 
 ## Egami, unreleased
 
+DNG writing, PR A: lossless JPEG in TIFF. No public API change.
+
+- TIFF compression 7 at `Quality` 100 writes lossless JPEG (SOF3, T.81 annex H), as `Quality` 100 already does for WebP: 8 and
+  16-bit gray, RGB and CMYK, in strips and tiles, each unit a whole stream with its own tables and the predictor that codes it
+  smallest, with `ParallelCompression`. RGB stays RGB and inks stay as they are. Other qualities write baseline JPEG as before,
+  and a lossless JPEG source keeps its compression on re-save even after an edit.
+- The TIFF reader reads lossless JPEG strips and tiles at every depth from 2 to 16 bits (before, compression 7 was read at 8
+  bits only), as raw samples without colour conversion, including DNG's layout of a CFA row as two components half as wide.
+  8-bit lossless JPEG pages now load their samples as they are, CMYK inks included, instead of through the JPEG colour path.
+- The lossless JPEG writer codes rows of samples as well as pixels, internally, for DNG tiles: a CFA mosaic coded as two
+  components half as wide, as Adobe DNG Converter writes it, is 20.5 % smaller than one component on 33 corpus mosaics (15 to
+  38 % on Bayer sensors, under 2 % on X-Trans). Lossless JPEG encoding of images is as fast as before.
+
 JPEG XL extras, PR D: partial display. No public API change.
 
 - `RasterDecoder.OpenIncremental` opens a JPEG XL file once its image header has arrived, and `RenderPreview` draws what has
