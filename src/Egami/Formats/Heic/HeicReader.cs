@@ -26,6 +26,10 @@ internal static class HeicSupport
     /// <summary>Gets core Egami's HEIC registration: detection and Probe, with Load naming the package it needs.</summary>
     internal static FormatInfo Info { get; } = Create(() => Info!, PackageNeeded, null);
 
+    /// <summary>Gets the message Save gives when the Egami.Heic package is not registered.</summary>
+    internal const string WritePackageNeeded = "Writing HEIC codes HEVC, which is covered by patents, so core Egami does not encode it: "
+        + "add the Egami.Heic package and register it with WithHeic(), for example EgamiContext.SetDefault(new EgamiContext().WithHeic()) at startup.";
+
     /// <summary>
     /// Makes a HEIC registration. With <paramref name="codec"/> (Egami.Heic's HEVC decoder) it loads through the HEIF image layer;
     /// without, it probes and Load throws <paramref name="loadMessage"/>.
@@ -33,7 +37,8 @@ internal static class HeicSupport
     /// <param name="self">Gets the registration, which Probe reports as the format.</param>
     /// <param name="loadMessage">What Load throws without a codec.</param>
     /// <param name="codec">Makes the HEVC codec for one read, or null.</param>
-    internal static FormatInfo Create(Func<FormatInfo> self, string loadMessage, Func<ReaderOptions, IHeifCodec>? codec) => new()
+    /// <param name="writer">Egami.Heic's writer, or null: then Save throws <see cref="WritePackageNeeded"/>.</param>
+    internal static FormatInfo Create(Func<FormatInfo> self, string loadMessage, Func<ReaderOptions, IHeifCodec>? codec, IFormatWriter? writer = null) => new()
     {
         Name = "HEIC",
         MimeTypes = ["image/heic", "image/heif", "image/heic-sequence", "image/heif-sequence"],
@@ -41,6 +46,8 @@ internal static class HeicSupport
         SignatureLength = 64,
         Matches = Matches,
         Reader = new HeicReader(self, loadMessage, codec),
+        Writer = writer,
+        MissingWriter = writer is null ? WritePackageNeeded : null,
     };
 
     /// <summary>

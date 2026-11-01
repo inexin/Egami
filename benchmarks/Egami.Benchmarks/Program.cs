@@ -125,6 +125,13 @@ if (args is ["--time-avif", .. string[] avifs])
     return;
 }
 
+// Encode HEIC (HEIC encoder), timed, with size and PSNR: -- --encode-heic <quality, or 101 for lossless> <effort> <in> <out.heic>... [--one-thread]
+if (args is ["--encode-heic", string heicQuality, string heicEffort, .. string[] heicPairs])
+{
+    HeicTiming.Encode(int.Parse(heicQuality, System.Globalization.CultureInfo.InvariantCulture), int.Parse(heicEffort, System.Globalization.CultureInfo.InvariantCulture), heicPairs);
+    return;
+}
+
 // Encode AVIF (Phase 2.9.6), timed, with size and PSNR: -- --encode-avif <quality, or 101 for lossless> <effort> <in> <out.avif>... [--one-thread]
 if (args is ["--encode-avif", string avifQuality, string avifEffort, .. string[] avifPairs])
 {

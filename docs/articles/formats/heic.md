@@ -1,12 +1,13 @@
 # HEIC
 
 HEIC is the format iPhones and most Android phones save photos in: HEIF files whose images are coded with HEVC (H.265). HEVC is
-covered by patents, so Egami reads HEIC through a separate package, Egami.Heic, that an app opts in to. The core Egami package
-contains no HEVC code and never depends on Egami.Heic.
+covered by patents, so Egami reads and writes HEIC through a separate package, Egami.Heic, that an app opts in to. The core
+Egami package contains no HEVC code and never depends on Egami.Heic.
 
 Egami.Heic decodes HEIC images with a managed HEVC decoder: intra and inter pictures of the Main, Main 10, Main Still Picture
 and format range extensions profiles, up to 12 bits and from 4:0:0 to 4:4:4. Gain maps, the photo's other images (thumbnails,
-depth maps, mattes) and image sequences are read too, and `HevcStreamDecoder` decodes HEVC video streams.
+depth maps, mattes) and image sequences are read too, and `HevcStreamDecoder` decodes HEVC video streams. Saving to HEIC
+codes the image with a managed HEVC intra encoder.
 
 ## Without Egami.Heic
 
@@ -95,9 +96,43 @@ hash.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Heic.cs#stream)]
 
+## Writing
+
+With Egami.Heic registered, `Save` writes HEIC for the `.heic` and `.heif` extensions and the `image/heic` MIME type, through
+`HeicWriterOptions`. Core Egami alone cannot write HEIC: its `UnsupportedFormatException` names the package.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Heic.cs#write)]
+
+- **Quality.** `Quality` runs from 0 to 100 on heif-enc's scale, 50 by default, so the same number gives about the file size
+  heif-enc gives with x265. Files are about as small as x265's at the same SSIMULACRA2 score. A built-in perceptual tuning gives
+  busy areas a coarser quantizer and flat ones a finer one.
+- **Effort.** `Effort` runs from 0 (fastest) to 10 (smallest files), 4 by default: about the size and the time of x265's medium
+  preset. Higher efforts search more intra modes, block sizes and transform splits.
+- **Format.** Lossy images are 4:2:0 at 8 bits (Main) or 10 bits for deeper pixels and HDR (Main 10), which every phone, PC and
+  HEVC decoder reads. `Chroma` asks for 4:4:4, 4:2:2 or 4:0:0 and `BitDepth` for 12 bits; those use HEVC's format range
+  extensions, which some phones and operating systems cannot decode. `Lossless` keeps every sample: 4:4:4 RGB with the identity
+  matrix, coded without transform or quantization, which needs a range extensions decoder too.
+- **Color.** RGB is converted with the BT.601 matrix for SDR images (as iPhones and libheif write) and BT.2020 for PQ and HLG,
+  full range, with sharp chroma downsampling from effort 5. The `colr` box gives the code points; an ICC profile they cannot
+  describe is written too. PQ and HLG images get `clli` and `mdcv` from `RasterMetadata.Hdr`.
+- **Alpha.** Transparency is an auxiliary image coded as Main 4:2:0, which every decoder reads, straight and exact by default;
+  `AlphaQuality` below 100 codes it lossy.
+- **Size.** An image up to 8,912,896 samples (HEVC level 5.1, such as 4096 x 2176) is one picture; a larger one is a grid of 512 x
+  512 cells, as iPhones write. `GridTileSize` asks for a grid of other cells. Cells and the picture's CTB rows (wavefronts) code
+  in parallel; the file is the same on any number of threads.
+- **Metadata and extras.** Exif and XMP are kept as items, the orientation as `irot` and `imir` (the pixels are not rotated), a
+  gain map as an ISO 21496-1 tone-map item, and `ThumbnailSize` adds a thumbnail. `TargetSize` searches the quality for the
+  largest file not above a size.
+- **Not written.** Image sequences: a raster of several frames writes its first, with a `Save.FramesDropped` warning.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Heic.cs#write-options)]
+
+Every stream Egami.Heic writes decodes to the encoder's own reconstruction in Egami's decoder, and libheif's heif-dec gives the
+same pixels.
+
 ## Patents
 
-Egami.Heic decodes HEVC (H.265), a format covered by patents. Egami's authors grant no patent rights and are not lawyers.
+Egami.Heic decodes and encodes HEVC (H.265), a format covered by patents. Egami's authors grant no patent rights and are not lawyers.
 Whether you need a patent licence depends on your country and on how you use and distribute this package; commercial products
 may need one from the HEVC patent pools or holders. The core Egami package contains no HEVC code and does not depend on this
 package.

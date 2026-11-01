@@ -444,7 +444,7 @@ internal static class FormatPipeline
 
     private static void SaveAllCore(IReadOnlyList<Raster> rasters, Stream output, FormatInfo format, WriterOptions options)
     {
-        IFormatWriter writer = format.Writer ?? throw new UnsupportedFormatException($"The {format.Name} format has no writer.");
+        IFormatWriter writer = format.Writer ?? throw new UnsupportedFormatException(format.MissingWriter ?? $"The {format.Name} format has no writer.");
         if (rasters.Count == 0)
         {
             throw new ArgumentException("SaveAll needs at least one raster.", nameof(rasters));
@@ -471,7 +471,7 @@ internal static class FormatPipeline
 
     internal static void Save(Stream output, FormatInfo format, WriterOptions options, Action<IFormatWriter, Stream, WriterOptions> write)
     {
-        IFormatWriter writer = format.Writer ?? throw new UnsupportedFormatException($"The {format.Name} format has no writer.");
+        IFormatWriter writer = format.Writer ?? throw new UnsupportedFormatException(format.MissingWriter ?? $"The {format.Name} format has no writer.");
         write(writer, output, options);
     }
 
@@ -503,7 +503,7 @@ internal static class FormatPipeline
     private static async Task SaveAsyncCore<TPixel>(Raster<TPixel> raster, Stream stream, FormatInfo format, WriterOptions options, SaveReporter? reporter, CancellationToken cancellationToken)
         where TPixel : unmanaged, IPixelType<TPixel>
     {
-        IFormatWriter writer = format.Writer ?? throw new UnsupportedFormatException($"The {format.Name} format has no writer.");
+        IFormatWriter writer = format.Writer ?? throw new UnsupportedFormatException(format.MissingWriter ?? $"The {format.Name} format has no writer.");
         using SaveReporter.Scope scope = reporter?.Enter(stream) ?? default;
         if (writer is not IRowFormatWriter rows)
         {

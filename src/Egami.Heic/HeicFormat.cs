@@ -10,7 +10,7 @@ namespace Egami.Heic;
 /// does not load them.
 /// </summary>
 /// <remarks>
-/// HEVC is covered by patents. Egami's authors grant no patent rights and are not lawyers. Whether you need a patent licence
+/// HEVC is covered by patents, encoding as well as decoding. Egami's authors grant no patent rights and are not lawyers. Whether you need a patent licence
 /// depends on your country and on how you use and distribute this package; commercial products may need one from the HEVC patent
 /// pools or holders. The core Egami package contains no HEVC code and does not depend on this package.
 /// </remarks>
@@ -19,6 +19,6 @@ namespace Egami.Heic;
 /// </example>
 public static class HeicFormat
 {
-    /// <summary>Gets the format's registration: name, MIME types, extensions, signature and reader.</summary>
-    public static FormatInfo Info { get; } = HeicSupport.Create(() => Info!, HeicSupport.PackageNeeded, _ => new HevcCodec());
+    /// <summary>Gets the format's registration: name, MIME types, extensions, signature, reader and writer.</summary>
+    public static FormatInfo Info { get; } = HeicSupport.Create(() => Info!, HeicSupport.PackageNeeded, _ => new HevcCodec(), HeicWriter.Instance);
 }

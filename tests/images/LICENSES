@@ -314,6 +314,10 @@ fuzz/zstd-write-seeds/
   Seeds for the zstd-write fuzz target: a level byte, then pieces of the zstd/ inputs above or bytes written by a script for this
   repository. Public domain.
 
+fuzz/heic-write-seeds/
+  Seeds for the heic-write fuzz target: eight bytes that choose the size, bit depth, chroma format, QP, effort and tuning, then
+  bytes written by a script for this repository. Public domain.
+
 fuzz/raw-seeds/
   Small DNG files for the raw fuzz target, one of each sample layout, compression, CFA pattern, opcode list and camera profile
   path, written with the tests' own DNG builder (tests/Egami.Formats.Extended.Tests/Raw/DngFiles.cs) from computed values for

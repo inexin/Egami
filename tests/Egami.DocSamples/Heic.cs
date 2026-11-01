@@ -132,4 +132,33 @@ public class Heic
         Assert.Equal(4, frames);
         Assert.Equal(12, shown);
     }
+
+    [Fact]
+    public void Write()
+    {
+        using SampleFiles files = new();
+        EgamiContext heic = new EgamiContext().WithHeic();
+        using Raster duck = Raster.Load("duck.png", heic);
+
+        #region write
+        // With Egami.Heic registered, Save picks HEIC from the extension: lossy 4:2:0 at quality 50 on heif-enc's scale, effort 4.
+        duck.Save("duck-q50.heic");
+
+        // Smaller and softer, or every sample exact (4:4:4 RGB with the identity matrix, which needs a range extensions decoder).
+        duck.Save("duck-q30.heic", new HeicWriterOptions { Quality = 30 });
+        duck.Save("duck-lossless.heic", new HeicWriterOptions { Lossless = true });
+        #endregion
+
+        #region write-options
+        // A thumbnail for file browsers, iPhone-style grid cells, and a file of at most 4 KB.
+        duck.Save("duck-thumb.heic", new HeicWriterOptions { ThumbnailSize = 64, GridTileSize = new Size(64, 64) });
+        duck.Save("duck-4k.heic", new HeicWriterOptions { TargetSize = 4_000 });
+        #endregion
+
+        Assert.True(new FileInfo("duck-q30.heic").Length < new FileInfo("duck-q50.heic").Length);
+        Assert.True(new FileInfo("duck-4k.heic").Length <= 4_000);
+        using Raster again = Raster.Load("duck-thumb.heic", heic);
+        Assert.Equal((duck.Width, duck.Height), (again.Width, again.Height));
+        Assert.Contains(((HeicDetails)again.Metadata.FormatDetails!).Items, i => i.Role == HeicItemRole.Thumbnail);
+    }
 }

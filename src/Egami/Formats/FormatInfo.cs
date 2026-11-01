@@ -46,6 +46,9 @@ public sealed record FormatInfo
     /// <summary>Gets the writer, or <see langword="null"/> if the format can only be read.</summary>
     public IFormatWriter? Writer { get; init; }
 
+    /// <summary>Gets what Save says when the format has no writer, or null for the general message.</summary>
+    internal string? MissingWriter { get; init; }
+
     /// <summary>
     /// Gets whether the reader produces <see cref="ReaderOptions.ConvertColorTo"/>'s colour space itself, as part of its own
     /// rendering (a camera RAW develop renders straight into it), so a load passes the option to the reader rather than

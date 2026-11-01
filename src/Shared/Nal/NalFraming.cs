@@ -36,6 +36,58 @@ internal static class NalFraming
         return output[..written];
     }
 
+    /// <summary>
+    /// Adds emulation_prevention_three_byte to an RBSP, the inverse of <see cref="Unescape"/>: a 03 after each 00 00 that comes
+    /// before 00, 01, 02 or 03, and after a final 00. <paramref name="inserted"/>, when given, gets the RBSP position of the byte
+    /// each 03 goes before (the RBSP's length for a final one).
+    /// </summary>
+    internal static byte[] Escape(ReadOnlySpan<byte> rbsp, List<int>? inserted = null)
+    {
+        int count = 0, zeros = 0;
+        for (int i = 0; i < rbsp.Length; i++)
+        {
+            byte b = rbsp[i];
+            if (zeros >= 2 && b <= 3)
+            {
+                count++;
+                zeros = 0;
+            }
+
+            zeros = b == 0 ? zeros + 1 : 0;
+        }
+
+        bool final = rbsp.Length > 0 && rbsp[^1] == 0;
+        if (count == 0 && !final)
+        {
+            return rbsp.ToArray();
+        }
+
+        byte[] output = new byte[rbsp.Length + count + (final ? 1 : 0)];
+        int written = 0;
+        zeros = 0;
+        for (int i = 0; i < rbsp.Length; i++)
+        {
+            byte b = rbsp[i];
+            if (zeros >= 2 && b <= 3)
+            {
+                inserted?.Add(i);
+                output[written++] = 3;
+                zeros = 0;
+            }
+
+            output[written++] = b;
+            zeros = b == 0 ? zeros + 1 : 0;
+        }
+
+        if (final)
+        {
+            inserted?.Add(rbsp.Length);
+            output[written] = 3;
+        }
+
+        return output;
+    }
+
     /// <summary>Splits data of NAL units, each after a big-endian size field of <paramref name="lengthSize"/> bytes (1 to 4).</summary>
     /// <exception cref="CorruptDataException">A size runs past the end.</exception>
     internal static List<ReadOnlyMemory<byte>> SplitLengthPrefixed(ReadOnlyMemory<byte> data, int lengthSize)

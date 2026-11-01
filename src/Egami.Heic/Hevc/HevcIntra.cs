@@ -22,11 +22,29 @@ internal sealed class HevcIntra
     private readonly int[] _line = new int[(3 * 64) + 1];
     private readonly ushort[] _block = new ushort[32 * 32];
 
+    // The block the references were gathered for, and whether _filtered holds them filtered (8.4.4.2.3, the same for every mode
+    // that filters).
+    private int _c;
+    private int _log2;
+    private int _bitDepth;
+    private bool _filteredReady;
+
     /// <summary>
     /// Predicts a square block of component <paramref name="c"/> at (x0, y0) in component samples, 1 &lt;&lt; log2 wide, with
     /// intra mode <paramref name="mode"/> (already mapped for 4:2:2 chroma).
     /// </summary>
     internal void Predict(HevcPicture picture, int c, int x0, int y0, int log2, int mode, bool disableBoundaryFilter)
+    {
+        Gather(picture, c, x0, y0, log2);
+        int stride = picture.Widths[c];
+        PredictGathered(picture.Sps, mode, disableBoundaryFilter, picture.Planes[c], (y0 * stride) + x0, stride);
+    }
+
+    /// <summary>
+    /// Gathers the reference samples of a block (8.4.4.2.2: availability and substitution), so that
+    /// <see cref="PredictGathered"/> can predict it with one mode after another, as an encoder's mode search does.
+    /// </summary>
+    internal void Gather(HevcPicture picture, int c, int x0, int y0, int log2)
     {
         HevcSps sps = picture.Sps;
         int n = 1 << log2;
@@ -35,6 +53,7 @@ internal sealed class HevcIntra
         int stride = picture.Widths[c];
         int sx = c == 0 ? 1 : sps.SubWidthC, sy = c == 0 ? 1 : sps.SubHeightC;
         int corner = 2 * n;
+        (_c, _log2, _bitDepth, _filteredReady) = (c, log2, bitDepth, false);
 
         // Availability (6.4.1) is the same for all samples of a 4x4 luma unit: checked once per unit. The units are segments of
         // _ref: the left column's from the bottom up, the corner, then the top row's.
@@ -107,12 +126,27 @@ internal sealed class HevcIntra
                 }
             }
         }
+    }
 
+    /// <summary>
+    /// Predicts the block <see cref="Gather"/> gathered the references of with mode <paramref name="mode"/>, into
+    /// <paramref name="target"/> at <paramref name="at"/> with rows <paramref name="stride"/> apart.
+    /// </summary>
+    internal void PredictGathered(HevcSps sps, int mode, bool disableBoundaryFilter, ushort[] target, int at, int stride)
+    {
+        int c = _c, log2 = _log2, n = 1 << log2, bitDepth = _bitDepth;
+        int corner = 2 * n;
+        ushort[] plane = target;
         int[] p = _ref;
         bool filter = mode != 1 && n != 4 && !sps.IntraSmoothingDisabled && (c == 0 || sps.ChromaArrayType == 3)
             && Math.Min(Math.Abs(mode - 26), Math.Abs(mode - 10)) > (n == 8 ? 7 : n == 16 ? 1 : 0);
-        if (filter)
+        if (filter && _filteredReady)
         {
+            p = _filtered;
+        }
+        else if (filter)
+        {
+            _filteredReady = true;
             int last = 4 * n;
             int threshold = 1 << (bitDepth - 5);
             if (sps.StrongIntraSmoothing && c == 0 && n == 32
@@ -156,7 +190,6 @@ internal sealed class HevcIntra
         }
 
         int max = (1 << bitDepth) - 1;
-        int at = (y0 * stride) + x0;
         if (mode == 0)
         {
             // Planar (8.4.4.2.5).

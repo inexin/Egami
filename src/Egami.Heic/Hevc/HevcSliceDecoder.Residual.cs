@@ -320,7 +320,7 @@ internal sealed partial class HevcSliceDecoder
     /// The context index increment of sig_coeff_flag (9.3.4.2.5) without transform_skip_context_enabled_flag, by luma or chroma,
     /// log2TrafoSize, scanIdx and the coded sub-block flags to the right and below: one entry for each position in the block.
     /// </summary>
-    private static readonly byte[][] SigContexts = MakeSigContexts();
+    internal static readonly byte[][] SigContexts = MakeSigContexts();
 
     private static byte[][] MakeSigContexts()
     {

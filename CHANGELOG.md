@@ -19,6 +19,22 @@ changes that break code come only in a new major version.
 
 ## Egami.Heic, unreleased
 
+HEIC encoder (HEIC encoder Build Plan tasks 1 to 14). All additive.
+
+- `Save` writes HEIC with Egami.Heic registered (`WithHeic()`), through `HeicWriterOptions`: a managed HEVC intra encoder (CTUs
+  of 64, coding units 32 to 8 and 4x4 prediction, the 35 intra modes by SATD then rate-distortion search, transform trees to
+  4x4, RDOQ, sign data hiding, transform skip, deblocking, SAO by rate-distortion, an adaptive quantizer, wavefront rows on
+  several threads with the same file on any number). `Quality` follows heif-enc's scale, so a quality gives about heif-enc's
+  size with x265; at `Effort` 4 the files are about as small as x265's medium preset at the same SSIMULACRA2 score, in about
+  its time.
+- Lossy files are Main (8-bit) or Main 10 4:2:0; `Chroma` and `BitDepth` ask for 4:4:4, 4:2:2, 4:0:0 and 12 bits (format
+  range extensions), and `Lossless` writes 4:4:4 RGB exactly, coded without transform or quantization.
+- The file: hvc1 items, or a grid of 512 x 512 cells above 8,912,896 samples (`GridTileSize` for others); alpha as an auxiliary
+  Main 4:2:0 image (`AlphaQuality`); nclx color, an ICC profile when needed, `clli` and `mdcv` for HDR; Exif and XMP items,
+  `irot` and `imir` for the orientation; an ISO 21496-1 gain map (`GainMapQuality`); a thumbnail (`ThumbnailSize`); and a
+  `TargetSize` search. A raster of several frames writes its first, with a warning.
+- The patent notice in the README, the NuGet description and the XML docs names encoding too.
+
 2.9.10: HEVC inter frames (H.264 and HEVC Build Plan tasks 19 to 25). All additive.
 
 - Egami.Heic's HEVC decoder decodes inter pictures: reference picture sets and the decoded picture buffer with output in order
@@ -116,6 +132,12 @@ DDS textures, stage C (BC7 and BC6H encoders).
   now load.
 
 ## Egami, unreleased
+
+HEIC encoder, core side. No public API change.
+
+- Saving to HEIC with core Egami alone says that the Egami.Heic package writes it, rather than that the format has no writer.
+  The still image item layout of the AVIF writer is shared with Egami.Heic's HEIC writer; AVIF files are unchanged byte for
+  byte.
 
 DNG writing, PR B: what format packages need from core.
 

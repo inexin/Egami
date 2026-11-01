@@ -7,12 +7,12 @@ namespace Egami.Heic;
 public static class HeicContextExtensions
 {
     /// <summary>
-    /// Returns a copy of <paramref name="context"/> that reads HEIC with Egami.Heic. Nothing registers it on its own: an app calls
+    /// Returns a copy of <paramref name="context"/> that reads and writes HEIC with Egami.Heic. Nothing registers it on its own: an app calls
     /// this once, for example <c>EgamiContext.SetDefault(new EgamiContext().WithHeic())</c> at startup, and so opts in to
-    /// decoding HEVC.
+    /// decoding and encoding HEVC.
     /// </summary>
     /// <remarks>
-    /// HEVC is covered by patents. Egami's authors grant no patent rights and are not lawyers. Whether you need a patent licence
+    /// HEVC is covered by patents, encoding as well as decoding. Egami's authors grant no patent rights and are not lawyers. Whether you need a patent licence
     /// depends on your country and on how you use and distribute this package; commercial products may need one from the HEVC
     /// patent pools or holders. The core Egami package contains no HEVC code and does not depend on this package.
     /// </remarks>

@@ -4,6 +4,8 @@ using Egami.Formats.Heif;
 using Egami.Metadata;
 using Egami.Pixels;
 
+using FileMetadata = Egami.Formats.Heif.HeifImageMetadata;
+
 namespace Egami.Formats.Avif;
 
 /// <summary>
@@ -179,6 +181,11 @@ internal sealed partial class AvifWriter : IFormatWriter, IRowFormatWriter
 
         internal bool IsGrid => Cells.Length > 1;
 
+        /// <summary>Gets the cells as the HEIF layout takes them: data, av1C, and a1lx for a layered image.</summary>
+        internal HeifCodedImage Layout() =>
+            new([.. Cells.Select(c => new HeifCodedItem(c.Stream, ConfigurationBox(c), LayerSizes is int[] sizes ? LayerIndex(sizes) : null))], Columns, Rows,
+                CellWidth, CellHeight, First.Sequence.BitDepth);
+
         /// <summary>Codes the planes whole, or in cells of the size given when the image is larger, each cell on its own.</summary>
         internal static CodedImage Encode(Av1EncoderInput input, int cellWidth, int cellHeight, Av1EncoderSettings settings)
         {
@@ -283,27 +290,6 @@ internal sealed partial class AvifWriter : IFormatWriter, IRowFormatWriter
         return new GainMapItem(stream, map.Width, map.Height, map.Info, primaries, map.Info.BaseRenditionIsHdr ? 13 : 16);
     }
 
-    /// <summary>What goes into a file beside the pixels, as the options allow.</summary>
-    internal sealed record FileMetadata(ReadOnlyMemory<byte> Icc, ReadOnlyMemory<byte> Exif, ReadOnlyMemory<byte> Xmp, ImageOrientation Orientation, HdrMetadata? Hdr)
-    {
-        internal static readonly FileMetadata None = new(default, default, default, ImageOrientation.Normal, null);
-
-        /// <summary>
-        /// Gets the metadata to write: the ICC profile only when the colors have no code points and it is not plain sRGB (design
-        /// question 13), EXIF and XMP as they are, the orientation for irot and imir, and the HDR luminances for clli and mdcv.
-        /// </summary>
-        internal static FileMetadata From(RasterMetadata metadata, WriterOptions options)
-        {
-            if (options.StripMetadata)
-            {
-                return None with { Hdr = metadata.Hdr };
-            }
-
-            ReadOnlyMemory<byte> icc = metadata.CodePoints is null ? new AvifWriterOptions { OmitSrgbProfile = true }.ProfileToWrite(metadata) : default;
-            return new FileMetadata(icc, metadata.Exif?.ToBytes() ?? default, metadata.Xmp, metadata.Exif?.Orientation ?? ImageOrientation.Normal, metadata.Hdr);
-        }
-    }
-
     /// <summary>
     /// Writes the HEIF file: ftyp, meta, mdat, with the color item first and the alpha item after it, each with its properties in
     /// libavif's order (ispe, pixi, av1C, then colr or auxC).
@@ -313,11 +299,13 @@ internal sealed partial class AvifWriter : IFormatWriter, IRowFormatWriter
         WriteFile(output, width, height, new CodedImage([color], 1, 1, width, height), alpha is null ? null : new CodedImage([alpha], 1, 1, width, height),
             primaries, transfer, matrix, metadata, gainMap);
 
+    /// <summary>The AV1 codec's part of the HEIF item layout.</summary>
+    internal static readonly HeifImageCodec Codec = new("av01", AvifProperties.AlphaUrn);
+
     /// <summary>Writes the HEIF file of an image coded whole or as a grid.</summary>
     internal static void WriteFile(Stream output, int width, int height, CodedImage color, CodedImage? alpha, int primaries, int transfer, int matrix,
         FileMetadata? metadata = null, GainMapItem? gainMap = null)
     {
-        metadata ??= FileMetadata.None;
         Av1SequenceHeader sequence = color.First.Sequence;
         List<string> brands = ["avif", "mif1", "miaf"];
         if (sequence.BitDepth <= 10 && sequence.Chroma == ChromaFormat.Yuv420)
@@ -334,168 +322,20 @@ internal sealed partial class AvifWriter : IFormatWriter, IRowFormatWriter
             brands.Add("tmap");
         }
 
-        HeifWriter heif = new("avif", [.. brands]);
-        int ispe = heif.AddProperty(HeifWriter.SpatialExtents(width, height));
-        byte[] nclx = HeifWriter.ColorNclx(primaries, transfer, matrix, sequence.FullRange);
-        uint colorItem = AddImage(heif, color, width, height, "Color", hidden: false, ispe, sequence.Monochrome ? 1 : 3, nclx);
-        heif.PrimaryItemId = colorItem;
-        if (!metadata.Icc.IsEmpty)
-        {
-            heif.AddProperty(colorItem, HeifWriter.ColorIcc(metadata.Icc.Span));
-        }
-
-        heif.AddProperty(colorItem, nclx);
-        AddHdrProperties(heif, colorItem, metadata.Hdr);
-        AddOrientation(heif, colorItem, metadata.Orientation);
-        if (alpha is not null)
-        {
-            byte[] auxC = HeifWriter.AuxiliaryType(AvifProperties.AlphaUrn);
-            uint alphaItem = AddImage(heif, alpha, width, height, "Alpha", hidden: true, ispe, 1, auxC);
-            heif.AddProperty(alphaItem, auxC);
-            heif.Reference("auxl", alphaItem, colorItem);
-            AddOrientation(heif, alphaItem, metadata.Orientation);
-        }
-
-        if (gainMap is not null)
-        {
-            // libavif's layout: a tmap item of the alternate rendition, derived from the color item and the hidden gain map item,
-            // in an altr group that prefers it, so readers without gain maps show the base image.
-            byte[] iso = Jpeg.JpegGainMapWriter.Iso(gainMap.Info.BaseRenditionIsHdr
-                ? gainMap.Info with { BaseRenditionIsHdr = false, HdrCapacityMin = gainMap.Info.HdrCapacityMax, HdrCapacityMax = gainMap.Info.HdrCapacityMin }
-                : gainMap.Info);
-            uint tmapItem = heif.AddItem("tmap", (byte[])[0, .. iso], "GMap");
-            uint mapItem = heif.AddItem("av01", gainMap.Stream.Stream, "GMap", hidden: true);
-            heif.Associate(tmapItem, ispe);
-            heif.AddProperty(tmapItem, HeifWriter.ColorNclx(gainMap.AlternatePrimaries, gainMap.AlternateTransfer, matrix, true));
-            AddOrientation(heif, tmapItem, metadata.Orientation);
-            heif.AddProperty(mapItem, HeifWriter.SpatialExtents(gainMap.Width, gainMap.Height));
-            heif.AddProperty(mapItem, HeifWriter.PixelInformation(8, gainMap.Stream.Sequence.Monochrome ? 1 : 3));
-            heif.AddProperty(mapItem, ConfigurationBox(gainMap.Stream), essential: true);
-            heif.AddProperty(mapItem, HeifWriter.ColorNclx(2, 2, gainMap.Stream.Sequence.Monochrome ? 2 : 0, true));
-            AddOrientation(heif, mapItem, metadata.Orientation);
-            heif.Reference("dimg", tmapItem, colorItem, mapItem);
-            heif.Group("altr", tmapItem, colorItem);
-        }
-
-        if (!metadata.Exif.IsEmpty)
-        {
-            // An Exif item starts with the offset of its TIFF header, 0 here.
-            uint exifItem = heif.AddItem("Exif", (byte[])[0, 0, 0, 0, .. metadata.Exif.Span], "Exif");
-            heif.Reference("cdsc", exifItem, colorItem);
-        }
-
-        if (!metadata.Xmp.IsEmpty)
-        {
-            uint xmpItem = heif.AddItem("mime", metadata.Xmp, "XMP", contentType: "application/rdf+xml");
-            heif.Reference("cdsc", xmpItem, colorItem);
-        }
-
-        heif.Write(output);
+        HeifGainMapImage? map = gainMap is null ? null
+            : new HeifGainMapImage(new HeifCodedItem(gainMap.Stream.Stream, ConfigurationBox(gainMap.Stream)), gainMap.Width, gainMap.Height,
+                gainMap.Stream.Sequence.Monochrome, gainMap.Info, gainMap.AlternatePrimaries, gainMap.AlternateTransfer);
+        HeifImageLayout.WriteFile(output, Codec, "avif", brands, width, height, sequence.Monochrome, sequence.FullRange, color.Layout(), alpha?.Layout(), primaries,
+            transfer, matrix, metadata, map);
     }
 
-    /// <summary>
-    /// Adds an image's items: one av01 item, or a grid item (its layout in the idat) over hidden av01 cells, which carry their own
-    /// size, pixel information, configuration and <paramref name="cellProperty"/>. Returns the image's item, which has its size
-    /// and pixel information; the caller adds the rest.
-    /// </summary>
-    private static uint AddImage(HeifWriter heif, CodedImage image, int width, int height, string name, bool hidden, int ispe, int channels, byte[] cellProperty)
-    {
-        int depth = image.First.Sequence.BitDepth;
-        if (!image.IsGrid)
-        {
-            uint item = heif.AddItem("av01", image.First.Stream, name, hidden);
-            heif.Associate(item, ispe);
-            heif.AddProperty(item, HeifWriter.PixelInformation(depth, channels));
-            heif.AddProperty(item, ConfigurationBox(image.First), essential: true);
-            if (image.LayerSizes is int[] sizes)
-            {
-                // The layers' sizes, so a reader can show each as it arrives (AV1-ISOBMFF 2.3.4); no lsel, so all are shown.
-                heif.AddProperty(item, LayerIndex(sizes));
-            }
+    /// <summary>Adds an image's items (<see cref="HeifImageLayout.AddImage"/>) for AV1 cells.</summary>
+    private static uint AddImage(HeifWriter heif, CodedImage image, int width, int height, string name, bool hidden, int ispe, int channels, byte[] cellProperty) =>
+        HeifImageLayout.AddImage(heif, Codec, image.Layout(), width, height, name, hidden, ispe, channels, cellProperty);
 
-            return item;
-        }
+    private static void AddHdrProperties(HeifWriter heif, uint item, HdrMetadata? hdr) => HeifImageLayout.AddHdrProperties(heif, item, hdr);
 
-        // ImageGrid (HEIF 6.6.2.3): version, flags (32-bit sizes), rows and columns less one, the output size.
-        bool wide = width > ushort.MaxValue || height > ushort.MaxValue;
-        byte[] layout = wide
-            ? [0, 1, (byte)(image.Rows - 1), (byte)(image.Columns - 1), .. HeifWriter.U32((uint)width), .. HeifWriter.U32((uint)height)]
-            : [0, 0, (byte)(image.Rows - 1), (byte)(image.Columns - 1), (byte)(width >> 8), (byte)width, (byte)(height >> 8), (byte)height];
-        uint grid = heif.AddItem("grid", layout, name, hidden, inIdat: true);
-        uint[] cells = new uint[image.Cells.Length];
-        int cellIspe = heif.AddProperty(HeifWriter.SpatialExtents(image.CellWidth, image.CellHeight));
-        for (int i = 0; i < cells.Length; i++)
-        {
-            cells[i] = heif.AddItem("av01", image.Cells[i].Stream, name, hidden: true);
-            heif.Associate(cells[i], cellIspe);
-            heif.AddProperty(cells[i], HeifWriter.PixelInformation(depth, channels));
-            heif.AddProperty(cells[i], ConfigurationBox(image.Cells[i]), essential: true);
-            heif.AddProperty(cells[i], cellProperty);
-        }
-
-        heif.Reference("dimg", grid, cells);
-        heif.Associate(grid, ispe);
-        heif.AddProperty(grid, HeifWriter.PixelInformation(depth, channels));
-        return grid;
-    }
-
-    /// <summary>The clli and mdcv properties of the HDR luminances the metadata holds.</summary>
-    private static void AddHdrProperties(HeifWriter heif, uint item, HdrMetadata? hdr)
-    {
-        if (hdr is null)
-        {
-            return;
-        }
-
-        if (hdr.MaxContentLightLevel is double cll || hdr.MaxFrameAverageLightLevel is not null)
-        {
-            int maxCll = (int)Math.Clamp(Math.Round(hdr.MaxContentLightLevel ?? 0), 0, 65535);
-            int maxFall = (int)Math.Clamp(Math.Round(hdr.MaxFrameAverageLightLevel ?? 0), 0, 65535);
-            heif.AddProperty(item, HeifWriter.ContentLightLevel(maxCll, maxFall));
-        }
-
-        if (hdr.MasteringPrimaries is ColorPrimaries p && hdr.MasteringMaxLuminance is double max)
-        {
-            // Green, blue, red, as SMPTE ST 2086 orders them, in 0.00002 units; luminance in 0.0001 cd/m².
-            ushort[] xy = [Unit(p.Green.X), Unit(p.Green.Y), Unit(p.Blue.X), Unit(p.Blue.Y), Unit(p.Red.X), Unit(p.Red.Y)];
-            heif.AddProperty(item, HeifWriter.MasteringDisplay(xy, Unit(p.White.X), Unit(p.White.Y), Luminance(max), Luminance(hdr.MasteringMinLuminance ?? 0)));
-        }
-
-        static ushort Unit(double v) => (ushort)Math.Clamp(Math.Round(v * 50000), 0, 65535);
-
-        static uint Luminance(double v) => (uint)Math.Clamp(Math.Round(v * 10000), 0, uint.MaxValue);
-    }
-
-    /// <summary>The irot and imir properties of an EXIF orientation: a mirror about the vertical axis or none, after a rotation.</summary>
-    private static void AddOrientation(HeifWriter heif, uint item, ImageOrientation orientation)
-    {
-        if (orientation is ImageOrientation.Normal or ImageOrientation.Unknown)
-        {
-            return;
-        }
-
-        // The rotation (and mirror) whose display the reader's AvifFile.Orient gives as this orientation.
-        for (int turns = 0; turns < 4; turns++)
-        {
-            foreach (int? mirror in (ReadOnlySpan<int?>)[null, 0, 1])
-            {
-                if (AvifFile.Orient(turns, mirror) == orientation)
-                {
-                    if (turns != 0)
-                    {
-                        heif.AddProperty(item, HeifWriter.Rotation(turns), essential: true);
-                    }
-
-                    if (mirror is int axis)
-                    {
-                        heif.AddProperty(item, HeifWriter.Mirror(axis), essential: true);
-                    }
-
-                    return;
-                }
-            }
-        }
-    }
+    private static void AddOrientation(HeifWriter heif, uint item, ImageOrientation orientation) => HeifImageLayout.AddOrientation(heif, item, orientation);
 
     /// <summary>The av1C property (AV1 Codec ISO Media File Format Binding, section 2.3): the configuration, then the sequence header OBU.</summary>
     internal static byte[] ConfigurationBox(Av1Encoder encoded) => ConfigurationBox(encoded.Sequence, encoded.SequenceHeaderObu);

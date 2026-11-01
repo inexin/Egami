@@ -35,7 +35,7 @@ through [`Vp8StreamDecoder`](vp8.md) and [`Av1StreamDecoder`](av1.md), VP8 and A
 | [OpenEXR](openexr.md) | Scanline and tiled, single and multi-part, every OpenEXR 3 compression but HTJ2K, half, float and uint channels, luminance-chroma; any part, layer or channel | One scanline part, R, G, B and A, ZIP, ZIPS, RLE, PIZ or none, in half or float | `RgbaF16` when the channels are half, `RgbaF32` otherwise, `GrayF32` for luminance alone; linear | Egami |
 | [JPEG XL](jxl.md) | Every still, lossless Modular and lossy VarDCT or Modular, at 1 to 31 bits and float, with alpha, CMYK, extra channels, animations and layers, previews, PQ and HLG, gain maps, and recompressed JPEGs (given back byte for byte) | Lossless in the raster's own precision, or lossy VarDCT in XYB, at cjxl's effort and quality scales; JPEGs recompressed losslessly | By bit depth: `Rgb8`, `Rgba8`, `Gray8`, their 16-bit forms, `RgbaF16` for 16-bit float, `RgbF32`, `RgbaF32` or `GrayF32` beyond | Egami |
 | [AVIF](avif.md) | Still images: AV1 intra frames with every coding tool, equal to dav1d's decode and converted to RGB as libavif does; alpha, grids, overlays, clean aperture, orientation, ICC, CICP, HDR, gain maps, every item, and animated sequences | Yes: lossy and lossless still images and animations with alpha, 8, 10 and 12 bits, 4:2:0, 4:2:2, 4:4:4 and 4:0:0 | By bit depth: `Rgb8` or `Rgba8` for 8-bit files, `Rgb16` or `Rgba16` for 10 and 12 bits, `Gray8` or `Gray16` (with alpha, `GrayAlpha8` or `GrayAlpha16`) for monochrome | Egami |
-| [HEIC](heic.md) | With Egami.Heic: HEVC intra pictures up to 12 bits, grids, alpha, gain maps, depth maps, mattes and all-intra sequences; core Egami probes them | No | `Rgb8` for 8-bit files, `Rgb16` for 10 and 12 bits, with alpha when the file has it, gray for monochrome | Egami.Heic |
+| [HEIC](heic.md) | With Egami.Heic: HEVC intra pictures up to 12 bits, grids, alpha, gain maps, depth maps, mattes and all-intra sequences; core Egami probes them | With Egami.Heic: lossy and lossless stills, alpha, grids, gain maps | `Rgb8` for 8-bit files, `Rgb16` for 10 and 12 bits, with alpha when the file has it, gray for monochrome | Egami.Heic |
 | [PNM](pnm.md) | P1 to P6 plain and binary, maxval 1 to 65,535, P7 PAM with alpha, PF and Pf float maps | P1 to P7, plain or binary; PF and Pf | `Gray8`, `Gray16`, `GrayAlpha8`, `Rgb8`, `Rgba8` or `Rgba16`; `RgbF32` or `GrayF32` for PFM | Egami |
 | [PCX](pcx.md) | 1 to 8-bit indexed, EGA planes, 24 and 32-bit, coded or not | 8-bit gray or 24-bit, run-length coded | `Gray8`, `Rgb8` or `Rgba8` | Egami.Formats.Extended |
 | [SGI](sgi.md) | 1 to 4 channels of 8 or 16 bits, plain or run-length coded | The raster's channels and depth, coded or not | `Gray8`, `GrayAlpha8`, `Rgb8`, `Rgba8` or their 16-bit forms | Egami.Formats.Extended |
@@ -84,7 +84,7 @@ Writers never change the raster. When a format cannot hold something, it is left
 
 - **Alpha**: JPEG (unless `JpegWriterOptions.Background` blends it onto a color), BMP and TGA with `Bgr24`, PPM, QOI with
   `IncludeAlpha = false`.
-- **Frames after the first**: JPEG, BMP, TGA, QOI and PNM.
+- **Frames after the first**: JPEG, BMP, TGA, QOI, PNM and HEIC.
 - **Metadata**: every writer keeps what its format can carry; `StripMetadata = true` on any writer options drops it all.
 
 See the [API reference](../../api/Egami.Formats.yml) for every option.
