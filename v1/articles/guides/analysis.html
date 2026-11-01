@@ -109,6 +109,16 @@ compares the stored channels.</p>
 <p><strong>SSIM.</strong> With <code>Ssim = true</code>, each channel also gets the structural similarity of Wang et al. (2004) with an 11 × 11 Gaussian window
 (σ 1.5) and DSSIM = (1 − SSIM) / 2. It costs about as much as four blurs. ImageMagick 7.1 computes SSIM on straight channels, so
 use <code>AlphaCompare.Straight</code> to reproduce its numbers on images with transparency.</p>
+<p><strong>Butteraugli.</strong> With <code>Butteraugli = true</code>, <code>CompareResult.Butteraugli</code> gets libjxl's psychovisual distance, the number cjxl's
+<code>-d</code> aims at: under about 1 the images look the same, and each step up is a more visible difference. It models the eye (light
+sensitivity, frequency bands, edges, masking by busy areas), so it costs far more than SSIM, about half a second a megapixel.
+<code>Butteraugli3Norm</code> is its 3-norm, which follows the overall quality more than the single worst spot. The scores match libjxl
+0.12's butteraugli_main within 0.1 %: colors are read as sRGB (or linear light when the profile says so) at 80 nits, and images
+with alpha are compared over black and over white, the larger distance counting.</p>
+<pre><code class="lang-csharp">// How far a lossy save moved the picture to the eye: under about 1 it looks the same.
+CompareResult result = Raster.Compare(original, saved, new CompareOptions { Butteraugli = true });
+Console.WriteLine($&quot;Butteraugli {result.Butteraugli:F2}, 3-norm {result.Butteraugli3Norm:F2}&quot;);
+</code></pre>
 <p><code>Region</code> compares one rectangle and <code>Frame</code> another frame. Results do not depend on the thread count.</p>
 <h2 id="visual-regression-tests">Visual regression tests</h2>
 <pre><code class="lang-csharp">// A visual regression check: pass when the render is close to the stored baseline, else save a picture of what moved.

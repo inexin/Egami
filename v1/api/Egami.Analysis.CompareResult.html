@@ -89,7 +89,7 @@
 
 
   <h1 id="Egami_Analysis_CompareResult" data-uid="Egami.Analysis.CompareResult" class="text-break">
-Class CompareResult  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Analysis/CompareTypes.cs/#L107"><i class="bi bi-code-slash"></i></a>
+Class CompareResult  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Analysis/CompareTypes.cs/#L114"><i class="bi bi-code-slash"></i></a>
   </h1>
 
   <div class="facts text-secondary">
@@ -160,7 +160,7 @@ bool sameLook = result.Overall.Psnr &gt;= 40;</code></pre>
 
   <h3 id="Egami_Analysis_CompareResult_Alpha" data-uid="Egami.Analysis.CompareResult.Alpha">
   Alpha
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Analysis/CompareTypes.cs/#L135"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Analysis/CompareTypes.cs/#L144"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the alpha channel's difference: zero when neither image has alpha.</p>
@@ -192,7 +192,7 @@ bool sameLook = result.Overall.Psnr &gt;= 40;</code></pre>
 
   <h3 id="Egami_Analysis_CompareResult_Blue" data-uid="Egami.Analysis.CompareResult.Blue">
   Blue
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Analysis/CompareTypes.cs/#L132"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Analysis/CompareTypes.cs/#L141"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the blue channel's difference.</p>
@@ -220,11 +220,82 @@ bool sameLook = result.Overall.Psnr &gt;= 40;</code></pre>
 
 
 
+  <a id="Egami_Analysis_CompareResult_Butteraugli_" data-uid="Egami.Analysis.CompareResult.Butteraugli*"></a>
+
+  <h3 id="Egami_Analysis_CompareResult_Butteraugli" data-uid="Egami.Analysis.CompareResult.Butteraugli">
+  Butteraugli
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Analysis/CompareTypes.cs/#L167"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Butteraugli distance (libjxl's psychovisual metric, as butteraugli_main prints it): the largest difference the
+model of the eye finds anywhere, where under about 1 the images look the same. NaN unless
+<a class="xref" href="Egami.Analysis.CompareOptions.html#Egami_Analysis_CompareOptions_Butteraugli">Butteraugli</a> was set.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public double Butteraugli { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+  <h4 class="section" id="Egami_Analysis_CompareResult_Butteraugli_remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>The color channels are read as sRGB, or as linear light when the image's profile has a linear curve, with sRGB
+primaries, 1.0 being 80 nits. Images with alpha are compared over black and over white, and the larger distance counts.</p>
+</div>
+
+
+
+
+  <a id="Egami_Analysis_CompareResult_Butteraugli3Norm_" data-uid="Egami.Analysis.CompareResult.Butteraugli3Norm*"></a>
+
+  <h3 id="Egami_Analysis_CompareResult_Butteraugli3Norm" data-uid="Egami.Analysis.CompareResult.Butteraugli3Norm">
+  Butteraugli3Norm
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Analysis/CompareTypes.cs/#L173"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Butteraugli 3-norm: the mean of the distance map's 3-, 6- and 12-norms, which follows the overall quality more
+than the single worst spot does. NaN unless <a class="xref" href="Egami.Analysis.CompareOptions.html#Egami_Analysis_CompareOptions_Butteraugli">Butteraugli</a> was set.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public double Butteraugli3Norm { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
   <a id="Egami_Analysis_CompareResult_DifferentPixels_" data-uid="Egami.Analysis.CompareResult.DifferentPixels*"></a>
 
   <h3 id="Egami_Analysis_CompareResult_DifferentPixels" data-uid="Egami.Analysis.CompareResult.DifferentPixels">
   DifferentPixels
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Analysis/CompareTypes.cs/#L144"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Analysis/CompareTypes.cs/#L153"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets how many pixels have a channel that differs by more than <a class="xref" href="Egami.Analysis.CompareOptions.html#Egami_Analysis_CompareOptions_Fuzz">Fuzz</a> (ImageMagick's AE).</p>
@@ -256,7 +327,7 @@ bool sameLook = result.Overall.Psnr &gt;= 40;</code></pre>
 
   <h3 id="Egami_Analysis_CompareResult_Green" data-uid="Egami.Analysis.CompareResult.Green">
   Green
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Analysis/CompareTypes.cs/#L129"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Analysis/CompareTypes.cs/#L138"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the green channel's difference.</p>
@@ -288,7 +359,7 @@ bool sameLook = result.Overall.Psnr &gt;= 40;</code></pre>
 
   <h3 id="Egami_Analysis_CompareResult_IsIdentical" data-uid="Egami.Analysis.CompareResult.IsIdentical">
   IsIdentical
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Analysis/CompareTypes.cs/#L150"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Analysis/CompareTypes.cs/#L176"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets whether every compared channel of every pixel is equal.</p>
@@ -320,7 +391,7 @@ bool sameLook = result.Overall.Psnr &gt;= 40;</code></pre>
 
   <h3 id="Egami_Analysis_CompareResult_Overall" data-uid="Egami.Analysis.CompareResult.Overall">
   Overall
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Analysis/CompareTypes.cs/#L141"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Analysis/CompareTypes.cs/#L150"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the difference over every channel: the mean of the color channels' errors, plus alpha's when either image has alpha,
@@ -353,7 +424,7 @@ as ImageMagick's &quot;all&quot; line; <a class="xref" href="Egami.Analysis.Chan
 
   <h3 id="Egami_Analysis_CompareResult_PixelCount" data-uid="Egami.Analysis.CompareResult.PixelCount">
   PixelCount
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Analysis/CompareTypes.cs/#L147"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Analysis/CompareTypes.cs/#L156"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets how many pixels were compared.</p>
@@ -385,7 +456,7 @@ as ImageMagick's &quot;all&quot; line; <a class="xref" href="Egami.Analysis.Chan
 
   <h3 id="Egami_Analysis_CompareResult_Red" data-uid="Egami.Analysis.CompareResult.Red">
   Red
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Analysis/CompareTypes.cs/#L126"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Analysis/CompareTypes.cs/#L135"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the red channel's difference (premultiplied by alpha unless <a class="xref" href="Egami.Analysis.AlphaCompare.html#Egami_Analysis_AlphaCompare_Straight">Straight</a>).</p>
@@ -417,7 +488,7 @@ as ImageMagick's &quot;all&quot; line; <a class="xref" href="Egami.Analysis.Chan
 </article>
 
         <div class="contribution d-print-none">
-          <a href="https://github.com/inexin/Egami/blob/main/src/Egami/Analysis/CompareTypes.cs/#L107" class="edit-link">Edit this page</a>
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami/Analysis/CompareTypes.cs/#L114" class="edit-link">Edit this page</a>
         </div>
 
 

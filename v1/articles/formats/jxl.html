@@ -219,7 +219,7 @@ orientation. <code>JxlWriterOptions</code> follows cjxl's own knobs, so the same
 <tr>
 <td><code>Effort</code></td>
 <td>5</td>
-<td>1 (fastest) to 10 (smallest), cjxl's <code>-e</code>; lossy files take 8 to 10 as 7</td>
+<td>1 (fastest) to 10 (smallest), cjxl's <code>-e</code></td>
 </tr>
 <tr>
 <td><code>Quality</code></td>
@@ -285,7 +285,11 @@ photo.Save(&quot;duck-small.jxl&quot;, new JxlWriterOptions { Lossless = false, 
 same settings (libjxl 0.12.0). Pick either a quality or a distance: <code>Quality</code> is cjxl's <code>-q</code> (90 by default, 100 lossless) and
 <code>Distance</code> its <code>-d</code>, where 1.0 is visually lossless and each step up gives a smaller file with more visible loss; a distance,
 when set, wins. <code>Effort</code> 6 adds the full block-size search and a per-block edge-preserving filter strength, 7 patches for
-repeated shapes such as text. Large images are coded in 2048-pixel chunks, as cjxl does, so memory stays bounded.</p>
+repeated shapes such as text. From effort 8 the encoder decodes its own frame and measures it with Butteraugli, then spends
+bits where the distance asked for is exceeded and saves them elsewhere: two rounds at effort 8, four from 9, with slower
+entropy coding; effort 10 also tries every 32 × 32 block position and, from distance 10, downsamples iteratively. These
+efforts cost several times effort 7, as cjxl's do. Large images are coded in 2048-pixel chunks, as cjxl does, so memory stays
+bounded, except at efforts 8 and 9 above distance 0.5 and always at 10, which code the whole image at once.</p>
 <p>A JPEG source is better recompressed than re-encoded: <a href="#recompressed-jpegs">recompressing</a> keeps its pixels exactly and the
 original file recoverable, where lossy encoding its decoded pixels loses detail a second time.</p>
 <pre><code class="lang-csharp">// Alpha stays exact in lossy files by default, and fully transparent pixels keep their color.

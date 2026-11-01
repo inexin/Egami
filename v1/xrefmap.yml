@@ -268,6 +268,19 @@ references:
   isSpec: "True"
   fullName: Egami.Analysis.CompareOptions.Alpha
   nameWithType: CompareOptions.Alpha
+- uid: Egami.Analysis.CompareOptions.Butteraugli
+  name: Butteraugli
+  href: api/Egami.Analysis.CompareOptions.html#Egami_Analysis_CompareOptions_Butteraugli
+  commentId: P:Egami.Analysis.CompareOptions.Butteraugli
+  fullName: Egami.Analysis.CompareOptions.Butteraugli
+  nameWithType: CompareOptions.Butteraugli
+- uid: Egami.Analysis.CompareOptions.Butteraugli*
+  name: Butteraugli
+  href: api/Egami.Analysis.CompareOptions.html#Egami_Analysis_CompareOptions_Butteraugli_
+  commentId: Overload:Egami.Analysis.CompareOptions.Butteraugli
+  isSpec: "True"
+  fullName: Egami.Analysis.CompareOptions.Butteraugli
+  nameWithType: CompareOptions.Butteraugli
 - uid: Egami.Analysis.CompareOptions.Default
   name: Default
   href: api/Egami.Analysis.CompareOptions.html#Egami_Analysis_CompareOptions_Default
@@ -365,6 +378,32 @@ references:
   isSpec: "True"
   fullName: Egami.Analysis.CompareResult.Blue
   nameWithType: CompareResult.Blue
+- uid: Egami.Analysis.CompareResult.Butteraugli
+  name: Butteraugli
+  href: api/Egami.Analysis.CompareResult.html#Egami_Analysis_CompareResult_Butteraugli
+  commentId: P:Egami.Analysis.CompareResult.Butteraugli
+  fullName: Egami.Analysis.CompareResult.Butteraugli
+  nameWithType: CompareResult.Butteraugli
+- uid: Egami.Analysis.CompareResult.Butteraugli*
+  name: Butteraugli
+  href: api/Egami.Analysis.CompareResult.html#Egami_Analysis_CompareResult_Butteraugli_
+  commentId: Overload:Egami.Analysis.CompareResult.Butteraugli
+  isSpec: "True"
+  fullName: Egami.Analysis.CompareResult.Butteraugli
+  nameWithType: CompareResult.Butteraugli
+- uid: Egami.Analysis.CompareResult.Butteraugli3Norm
+  name: Butteraugli3Norm
+  href: api/Egami.Analysis.CompareResult.html#Egami_Analysis_CompareResult_Butteraugli3Norm
+  commentId: P:Egami.Analysis.CompareResult.Butteraugli3Norm
+  fullName: Egami.Analysis.CompareResult.Butteraugli3Norm
+  nameWithType: CompareResult.Butteraugli3Norm
+- uid: Egami.Analysis.CompareResult.Butteraugli3Norm*
+  name: Butteraugli3Norm
+  href: api/Egami.Analysis.CompareResult.html#Egami_Analysis_CompareResult_Butteraugli3Norm_
+  commentId: Overload:Egami.Analysis.CompareResult.Butteraugli3Norm
+  isSpec: "True"
+  fullName: Egami.Analysis.CompareResult.Butteraugli3Norm
+  nameWithType: CompareResult.Butteraugli3Norm
 - uid: Egami.Analysis.CompareResult.DifferentPixels
   name: DifferentPixels
   href: api/Egami.Analysis.CompareResult.html#Egami_Analysis_CompareResult_DifferentPixels
