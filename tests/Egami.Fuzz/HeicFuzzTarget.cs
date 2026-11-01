@@ -182,4 +182,100 @@ internal static class HeicFuzzTarget
             }
         }
     }
+
+    /// <summary>
+    /// heic-write (HEIC encoder design, task 13): the HEVC encoder on arbitrary planes, chosen by the first bytes (size, bit depth,
+    /// chroma format, QP, effort, lossless, the adaptive quantizer, threads), whose stream must decode to exactly its reconstruction,
+    /// and to the source when lossless; every fourth input also goes through the HEIC writer, lossless, and must load back exactly.
+    /// </summary>
+    public static void Write(byte[] data, EgamiContext context)
+    {
+        if (data.Length < 8)
+        {
+            return;
+        }
+
+        int chroma = data[2] % 4, sx = chroma is 1 or 2 ? 2 : 1, sy = chroma == 1 ? 2 : 1;
+        int width = sx * (1 + (data[0] % 36)), bitDepth = (data[1] % 3) switch { 0 => 8, 1 => 10, _ => 12 };
+        int qp = (data[3] % 64) - 12, effort = data[4] % 11;
+        bool lossless = qp < 0, adaptive = (data[5] & 1) != 0;
+        int planes = chroma == 0 ? 1 : 3;
+        int height = sy * Math.Clamp((data.Length - 8) / (width * planes * 2 * sy), 1, 36);
+        int max = (1 << bitDepth) - 1, at = 8;
+        ushort[][] samples = new ushort[planes][];
+        int[] strides = new int[planes];
+        for (int plane = 0; plane < planes; plane++)
+        {
+            int w = plane > 0 ? width / sx : width, h = plane > 0 ? height / sy : height;
+            samples[plane] = new ushort[w * h];
+            strides[plane] = w;
+            for (int i = 0; i < samples[plane].Length; i++, at += 2)
+            {
+                samples[plane][i] = (ushort)((at + 1 < data.Length ? data[at] | (data[at + 1] << 8) : at * 37) & max);
+            }
+        }
+
+        HevcEncoderSettings settings = new()
+        {
+            Width = width,
+            Height = height,
+            ChromaFormat = chroma,
+            BitDepth = bitDepth,
+            Qp = Math.Clamp(qp, -6 * (bitDepth - 8), 51),
+            Effort = effort,
+            Lossless = lossless,
+            AdaptiveQp = adaptive,
+            Parallelism = 1 + ((data[5] >> 1) & 3),
+        };
+        HevcEncodedPicture encoded = HevcEncoder.Encode(settings, samples, strides);
+        HevcPicture decoded = HevcDecoder.Decode([HevcNal.Parse(encoded.Vps), HevcNal.Parse(encoded.Sps), HevcNal.Parse(encoded.Pps), HevcNal.Parse(encoded.Slice)],
+            SafetyLimits.Default, out _);
+        HevcPicture reconstructed = encoded.Reconstruction;
+        for (int plane = 0; plane < planes; plane++)
+        {
+            int w = strides[plane], h = samples[plane].Length / w;
+            for (int y = 0; y < h; y++)
+            {
+                for (int x = 0; x < w; x++)
+                {
+                    int got = decoded.Planes[plane][(y * decoded.Widths[plane]) + x], want = reconstructed.Planes[plane][(y * reconstructed.Widths[plane]) + x];
+                    if (got != want || (lossless && got != samples[plane][(y * w) + x]))
+                    {
+                        throw new InvalidOperationException($"The {(lossless ? "lossless" : "lossy")} HEVC round trip differs in plane {plane} at {x}, {y}: decoded {got}, reconstructed {want}, source {samples[plane][(y * w) + x]} ({width} x {height}, {bitDepth} bits, chroma {chroma}, QP {qp}, effort {effort}, adaptive {adaptive}).");
+                    }
+                }
+            }
+        }
+
+        if (data[6] % 4 == 0)
+        {
+            WriteHeic(data, width, height, effort, context);
+        }
+    }
+
+    private static void WriteHeic(byte[] data, int width, int height, int effort, EgamiContext context)
+    {
+        context = context.WithHeic();
+        using Raster<Rgba8> raster = Raster.Create<Rgba8>(width, height, context);
+        for (int y = 0; y < height; y++)
+        {
+            Span<byte> row = System.Runtime.InteropServices.MemoryMarshal.AsBytes(raster.Row(y));
+            for (int i = 0; i < row.Length; i++)
+            {
+                row[i] = data[(8 + (y * row.Length) + i) % data.Length];
+            }
+        }
+
+        HeicWriterOptions options = new() { Lossless = true, Effort = effort, GridTileSize = data[7] % 2 == 0 ? new Size(64, 64) : null };
+        using MemoryStream file = new();
+        raster.Save(file, HeicFormat.Info, options);
+        using Raster<Rgba8> again = Raster.Load<Rgba8>(file.ToArray(), context);
+        for (int y = 0; y < height; y++)
+        {
+            if (!raster.Row(y).SequenceEqual(again.Row(y)))
+            {
+                throw new InvalidOperationException($"A lossless HEIC file of {width} x {height} loads back different in row {y}.");
+            }
+        }
+    }
 }

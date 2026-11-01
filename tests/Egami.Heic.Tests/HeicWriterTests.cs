@@ -91,6 +91,18 @@ public class HeicWriterTests
         Assert.Contains(heif.Items, i => i.Type == IsoTypes.Of("hvc1") && i.Hidden);
     }
 
+    [Theory]
+    [InlineData(21, 23, null)]
+    [InlineData(141, 99, 65)]
+    public void LosslessAlphaOfOddSizeLoadsBackExactly(int width, int height, int? cell)
+    {
+        // The 4:2:0 alpha image needs even sides; the 4:4:4 color image takes the same, both cropped by clap (or the grid).
+        using Raster<Rgba8> source = Pattern<Rgba8>(width, height, (x, y) => new Rgba8((byte)(x * 11), (byte)(y * 7), (byte)(x ^ y), (byte)(255 - (x * 3))));
+        byte[] file = Save(source, new HeicWriterOptions { Lossless = true, GridTileSize = cell is int c ? new Size(c, c) : null });
+        using Raster<Rgba8> loaded = Raster.Load<Rgba8>(file, Context);
+        Assert.Equal(Pixels(source), Pixels(loaded));
+    }
+
     [Fact]
     public void GridCellsLoadBack()
     {

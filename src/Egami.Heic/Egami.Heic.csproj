@@ -6,7 +6,7 @@
     <!-- Egami.Heic ships with every Egami release, at Egami's version, and depends on exactly that version (2.9.4 design,
          question 8): it uses core Egami's internal HEIF code. -->
     <Version>$(EgamiVersion)</Version>
-    <Description>HEIC for Egami: reads HEIF files with HEVC-coded images, such as iPhone and Android photos, in managed code. HEVC is covered by patents; Egami's authors grant no patent rights and are not lawyers. Whether you need a patent licence depends on your country and on how you use and distribute this package; commercial products may need one from the HEVC patent pools or holders. The core Egami package contains no HEVC code and does not depend on this package.</Description>
+    <Description>HEIC for Egami: reads and writes HEIF files with HEVC-coded images, such as iPhone and Android photos, in managed code. HEVC is covered by patents, encoding as well as decoding; Egami's authors grant no patent rights and are not lawyers. Whether you need a patent licence depends on your country and on how you use and distribute this package; commercial products may need one from the HEVC patent pools or holders. The core Egami package contains no HEVC code and does not depend on this package.</Description>
     <PackageTags>$(EgamiPackageTags);heic;heif;hevc;h265</PackageTags>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <IsTrimmable>true</IsTrimmable>

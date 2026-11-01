@@ -76,6 +76,8 @@ using DrawingPath = Egami.Drawing.Path;
 // The isobox target (Phase 2.9.8, IsoBoxFuzzTarget.cs) walks the public ISO BMFF box walker over arbitrary bytes as a tree.
 // The avif-write target (Phase 2.9.6) runs the AV1 encoder on arbitrary planes and options, which must decode exactly to its
 // reconstruction (and its source when lossless), and the AVIF writer with alpha and grids, whose lossless files load back exactly.
+// The heic-write target (HEIC encoder) does the same for the HEVC encoder (every chroma format, bit depth, effort, the adaptive
+// quantizer and wavefront threads) and the HEIC writer.
 // The inktiff target (Phase 2.6.5) loads separated TIFFs as plates, which must save and load again to the same plates; the
 // icc target also builds the ink set of an n-colour profile and converts through it both ways.
 // The css target (Phase 2.10, CssFuzzTarget.cs) parses its bytes as a style sheet and a declaration list, matches, cascades and
@@ -227,6 +229,7 @@ static Action<Stream> Target(string name) => name switch
     "isobox" => stream => Egami.Fuzz.IsoBoxFuzzTarget.Walk(ReadAll(stream)),
     "heicbox" => stream => Egami.Fuzz.HeicFuzzTarget.LoadBoxes(ReadAll(stream), Context()),
     "hevc" => stream => Egami.Fuzz.HeicFuzzTarget.DecodeHevc(ReadAll(stream), Context()),
+    "heic-write" => stream => Egami.Fuzz.HeicFuzzTarget.Write(ReadAll(stream), Context()),
     "hevcstream" => stream => Egami.Fuzz.HeicFuzzTarget.DecodeHevcStream(ReadAll(stream), Context()),
     "css" => stream => Egami.Fuzz.CssFuzzTarget.Run(ReadAll(stream)),
     "hocr" => stream => Egami.Fuzz.OcrFuzzTarget.Hocr(ReadAll(stream)),
@@ -244,7 +247,7 @@ static Action<Stream> Target(string name) => name switch
         => stream => Egami.Fuzz.BarcodeFuzzTarget.Encode(name["barcode-".Length..], ReadAll(stream)),
     "barcode-read" => stream => Egami.Fuzz.BarcodeFuzzTarget.Read(ReadAll(stream)),
     "paragraph" => stream => Egami.Fuzz.ParagraphFuzzTarget.Run(ReadAll(stream), ParagraphFaces(), DrawParagraph),
-    _ => throw new ArgumentException($"Unknown fuzz target '{name}'. Targets: hinting, radiance, exr, gainmap, avif, avifbox, av1, av1stream, avif-write, heic, heicbox, hevc, hevcstream, isobox, jxl, jxlbox, jxlentropy, jxl-write, jxl-jpeg, jxl-lossy, jxl-frames, jxl-partial, png, jpeg, jpeg-depth, jpeg-write, jpeg-transform, exif, icc, iptc, psd, xmp, rawprofile, gif, apng, lzw, bmp, tga, qoi, pnm, pfm, detect, stream, tiff, tiffcodec, webp, webpcodec, vp8video, jbig2, jbig2codec, ccitt, cube, jpeg2000, jpeg2000codec, font, cff, subset, woff2, gvar, cff2, colr, instance, svgpath, ico, icoentry, psdfile, psddata, psdlayers, egdr, inktiff, shaping, bidi, css, hocr, alto, paragraph, svg, wmf, emf, emfplus, sysdrawing, barcode-qr, barcode-datamatrix, barcode-pdf417, barcode-aztec, barcode-code128, barcode-code39, barcode-itf, barcode-eanupc, barcode-read."),
+    _ => throw new ArgumentException($"Unknown fuzz target '{name}'. Targets: hinting, radiance, exr, gainmap, avif, avifbox, av1, av1stream, avif-write, heic, heicbox, hevc, hevcstream, heic-write, isobox, jxl, jxlbox, jxlentropy, jxl-write, jxl-jpeg, jxl-lossy, jxl-frames, jxl-partial, png, jpeg, jpeg-depth, jpeg-write, jpeg-transform, exif, icc, iptc, psd, xmp, rawprofile, gif, apng, lzw, bmp, tga, qoi, pnm, pfm, detect, stream, tiff, tiffcodec, webp, webpcodec, vp8video, jbig2, jbig2codec, ccitt, cube, jpeg2000, jpeg2000codec, font, cff, subset, woff2, gvar, cff2, colr, instance, svgpath, ico, icoentry, psdfile, psddata, psdlayers, egdr, inktiff, shaping, bidi, css, hocr, alto, paragraph, svg, wmf, emf, emfplus, sysdrawing, barcode-qr, barcode-datamatrix, barcode-pdf417, barcode-aztec, barcode-code128, barcode-code39, barcode-itf, barcode-eanupc, barcode-read."),
 };
 
 static EgamiContext Context()

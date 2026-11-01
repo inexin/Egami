@@ -67,9 +67,11 @@ internal sealed partial class HeicWriter
         {
             CancellationToken cancel = reporter?.Cancellation ?? default;
             Planes planes = _planes ??= ColorPlanes();
-            (int cellWidth, int cellHeight) = GridCells(_raster.Width, _raster.Height, _chroma, _options.GridTileSize);
+            // An alpha image is 4:2:0, so with one the color image takes even sides too: the two share their size (and clap).
+            ChromaFormat layout = _hasAlpha ? ChromaFormat.Yuv420 : _chroma;
+            (int cellWidth, int cellHeight) = GridCells(_raster.Width, _raster.Height, layout, _options.GridTileSize);
             reporter?.Part(0, _hasAlpha ? 0.75 : 1);
-            Coded color = Encode(planes, cellWidth, cellHeight, Settings(planes, Lossless, qp ?? QpFor(quality), _primaries, _transfer, _matrix), cancel);
+            Coded color = Encode(planes, cellWidth, cellHeight, Settings(planes, Lossless, qp ?? QpFor(quality), _primaries, _transfer, _matrix), cancel, layout);
             if (_hasAlpha && _alpha is null)
             {
                 reporter?.Part(0.75, 1);
@@ -206,12 +208,13 @@ internal sealed partial class HeicWriter
     internal sealed record Coded(HeifCodedImage Image, HevcEncodedPicture[] Pictures);
 
     /// <summary>
-    /// Codes planes as one picture (padded to even sides when chroma is subsampled; the file's clap crops the padding), or as a grid
-    /// of cells of the size given, each picture on its own and the cells in parallel.
+    /// Codes planes as one picture (padded to even sides when chroma is subsampled, or as <paramref name="padding"/>'s would be; the
+    /// file's clap crops the padding), or as a grid of cells of the size given, each picture on its own and the cells in parallel.
     /// </summary>
-    internal static Coded Encode(Planes planes, int cellWidth, int cellHeight, HevcEncoderSettings settings, CancellationToken cancel)
+    internal static Coded Encode(Planes planes, int cellWidth, int cellHeight, HevcEncoderSettings settings, CancellationToken cancel, ChromaFormat? padding = null)
     {
-        int sx = planes.Chroma is ChromaFormat.Yuv420 or ChromaFormat.Yuv422 ? 2 : 1, sy = planes.Chroma == ChromaFormat.Yuv420 ? 2 : 1;
+        ChromaFormat align = padding ?? planes.Chroma;
+        int sx = align is ChromaFormat.Yuv420 or ChromaFormat.Yuv422 ? 2 : 1, sy = align == ChromaFormat.Yuv420 ? 2 : 1;
         if (cellWidth >= planes.Width && cellHeight >= planes.Height)
         {
             int width = (planes.Width + sx - 1) / sx * sx, height = (planes.Height + sy - 1) / sy * sy;

@@ -10,7 +10,7 @@ namespace Egami.Heic;
 /// does not load them.
 /// </summary>
 /// <remarks>
-/// HEVC is covered by patents. Egami's authors grant no patent rights and are not lawyers. Whether you need a patent licence
+/// HEVC is covered by patents, encoding as well as decoding. Egami's authors grant no patent rights and are not lawyers. Whether you need a patent licence
 /// depends on your country and on how you use and distribute this package; commercial products may need one from the HEVC patent
 /// pools or holders. The core Egami package contains no HEVC code and does not depend on this package.
 /// </remarks>

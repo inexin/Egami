@@ -1,6 +1,6 @@
 # Egami.Heic
 
-Egami.Heic reads HEIC, the HEIF files with HEVC-coded images that iPhones and most Android phones save photos in.
+Egami.Heic reads and writes HEIC, the HEIF files with HEVC-coded images that iPhones and most Android phones save photos in.
 
 - Register it once with `WithHeic()`; nothing registers it on its own. Without it, core Egami still detects HEIC files and
   `Raster.Probe` gives their size, depth and orientation, and `Raster.Load` says that this package is needed.
@@ -9,11 +9,12 @@ Egami.Heic reads HEIC, the HEIF files with HEVC-coded images that iPhones and mo
 - A managed HEVC decoder for still images: the Main, Main 10, Main Still Picture and format range extensions profiles, up to 12
   bits. Grid tiles decode in parallel, and the pixels equal libheif's heif-dec output.
 
-Image sequences, gain maps and auxiliary items such as depth maps come in a later version.
+- A managed HEVC intra encoder behind `Save`: lossy at heif-enc's quality scale (about the size of x265's medium preset at the
+  same quality), lossless, alpha, grids, Exif, XMP, ICC, orientation, gain maps and thumbnails, through `HeicWriterOptions`.
 
 ## Patents
 
-Egami.Heic decodes HEVC (H.265), a format covered by patents. Egami's authors grant no patent rights and are not lawyers.
+Egami.Heic decodes and encodes HEVC (H.265), a format covered by patents, encoding as well as decoding. Egami's authors grant no patent rights and are not lawyers.
 Whether you need a patent licence depends on your country and on how you use and distribute this package; commercial products
 may need one from the HEVC patent pools or holders. The core Egami package contains no HEVC code and does not depend on this
 package.
