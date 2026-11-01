@@ -1,4 +1,5 @@
 using System.Buffers;
+using System.Runtime.InteropServices;
 
 using Egami.Formats.Jpeg;
 using Egami.Pixels;
@@ -7,8 +8,8 @@ namespace Egami.Formats.Tiff;
 
 /// <summary>
 /// JPEG (7), old-style JPEG (6), WebP (50001) and JPEG XL (50002, and DNG 1.7's 52546) strips and tiles, each a whole stream for
-/// Egami's own decoders: JPEG through the 1.3 decoder with the page's JPEGTables, WebP through the 2.3.1 reader, JPEG XL through
-/// the 2.9.3 one.
+/// Egami's own decoders: JPEG through the 1.3 decoder with the page's JPEGTables (lossless JPEG to its raw samples, T.81 annex H),
+/// WebP through the 2.3.1 reader, JPEG XL through the 2.9.3 one.
 /// </summary>
 internal static class TiffJpeg
 {
@@ -59,6 +60,142 @@ internal static class TiffJpeg
         {
             input.Dispose();
         }
+    }
+
+    /// <summary>
+    /// Returns whether a JPEG page's first strip or tile that has data is lossless JPEG (SOF3 or SOF11), by the frame marker of
+    /// its first megabyte.
+    /// </summary>
+    public static bool IsLossless(TiffPage page)
+    {
+        for (long unit = 0; unit < page.UnitCount; unit++)
+        {
+            (long offset, long count) = page.Unit(unit);
+            if (count <= 0)
+            {
+                continue;
+            }
+
+            int length = (int)Math.Min(count, 1 << 20);
+            byte[] head = ArrayPool<byte>.Shared.Rent(length);
+            try
+            {
+                int n = page.File.Source.Read(offset, head.AsSpan(0, length));
+                return FrameMarker(head.AsSpan(0, n)) is JpegMarker.Sof3 or JpegMarker.Sof11;
+            }
+            finally
+            {
+                ArrayPool<byte>.Shared.Return(head);
+            }
+        }
+
+        return false;
+    }
+
+    /// <summary>Returns a JPEG stream's frame marker (SOF0 to SOF15), or -1 when none comes before the scan or the data ends.</summary>
+    private static int FrameMarker(ReadOnlySpan<byte> jpeg)
+    {
+        if (jpeg.Length < 4 || jpeg[0] != 0xFF || jpeg[1] != 0xD8)
+        {
+            return -1;
+        }
+
+        int at = 2;
+        while (at + 4 <= jpeg.Length && jpeg[at] == 0xFF)
+        {
+            byte marker = jpeg[at + 1];
+            if (marker == 0xFF)
+            {
+                at++;
+                continue;
+            }
+
+            if (marker is >= 0xC0 and <= 0xCF and not (JpegMarker.Dht or 0xC8 or 0xCC))
+            {
+                return marker;
+            }
+
+            if (marker is JpegMarker.Sos or JpegMarker.Eoi)
+            {
+                return -1;
+            }
+
+            at += 2 + ((jpeg[at + 2] << 8) | jpeg[at + 3]);
+        }
+
+        return -1;
+    }
+
+    /// <summary>
+    /// Decodes a lossless JPEG unit to the page's raw samples: <paramref name="rows"/> rows of the unit, 8-bit samples as bytes,
+    /// 16-bit ones in the host's order, other depths packed from the high bit and each row padded to a byte, as TIFF stores them.
+    /// The frame may lay a row out as any number of components that fill it, as DNG's two-component tiles do. Returns the bytes
+    /// filled: none for a unit that does not decode or does not fit the page, and one short of the whole for a damaged one, so
+    /// the caller reports both and keeps what decoded.
+    /// </summary>
+    public static int DecodeLossless(TiffPage page, ReadOnlySpan<byte> unit, int rows, Span<byte> target)
+    {
+        ushort[] samples;
+        int width, components;
+        bool damaged;
+        try
+        {
+            samples = JpegEmbedded.DecodeLosslessSamples(page.JpegTables ?? default(ReadOnlyMemory<byte>), unit.ToArray(), page.File.Input.Context, out _,
+                out width, out components, out damaged);
+        }
+        catch (Exception e) when (e is CorruptDataException or InvalidDataException or UnsupportedFormatException or EndOfStreamException)
+        {
+            return 0;
+        }
+
+        int rowSamples = page.UnitWidth * page.UnitSamples;
+        int rowBytes = (int)page.UnitRowBytes;
+        if (width * components != rowSamples || rowBytes == 0)
+        {
+            return 0;
+        }
+
+        int whole = Math.Min(Math.Min(rows, samples.Length / rowSamples), target.Length / rowBytes);
+        int bits = page.Bits;
+        int mask = (1 << bits) - 1;
+        for (int r = 0; r < whole; r++)
+        {
+            ReadOnlySpan<ushort> from = samples.AsSpan(r * rowSamples, rowSamples);
+            Span<byte> to = target.Slice(r * rowBytes, rowBytes);
+            if (bits == 8)
+            {
+                for (int i = 0; i < from.Length; i++)
+                {
+                    to[i] = (byte)from[i];
+                }
+            }
+            else if (bits == 16)
+            {
+                from.CopyTo(MemoryMarshal.Cast<byte, ushort>(to));
+            }
+            else
+            {
+                ulong buffer = 0;
+                int count = 0, at = 0;
+                foreach (ushort sample in from)
+                {
+                    buffer = (buffer << bits) | (uint)(sample & mask);
+                    count += bits;
+                    while (count >= 8)
+                    {
+                        count -= 8;
+                        to[at++] = (byte)(buffer >> count);
+                    }
+                }
+
+                if (count > 0)
+                {
+                    to[at] = (byte)(buffer << (8 - count));
+                }
+            }
+        }
+
+        return (whole * rowBytes) - (damaged && whole > 0 ? 1 : 0);
     }
 
     /// <summary>

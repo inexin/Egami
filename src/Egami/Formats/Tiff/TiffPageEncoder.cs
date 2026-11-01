@@ -63,7 +63,8 @@ internal sealed class TiffPageEncoder<TPixel> : RowEncoder<TPixel>
         }
 
         _plan = TiffPlan.For(start.Metadata, start.Options, start.Whole);
-        SaveKeeps depth = _plan.Compression is TiffCodes.Jpeg or TiffCodes.Webp ? SaveKeeps.None : SaveKeeps.Wide | SaveKeeps.FloatingPoint;
+        SaveKeeps depth = _plan.Compression == TiffCodes.Jpeg && _plan.Lossless ? SaveKeeps.Wide
+            : _plan.Compression is TiffCodes.Jpeg or TiffCodes.Webp ? SaveKeeps.None : SaveKeeps.Wide | SaveKeeps.FloatingPoint;
         SaveKeeps pages = pageCount > 1 ? SaveKeeps.Frames : SaveKeeps.None;
         SaveLosses.Report(start, "TIFF", depth | pages | SaveKeeps.Alpha | SaveKeeps.Cmyk | SaveKeeps.Exif | SaveKeeps.Xmp | SaveKeeps.Iptc | SaveKeeps.Icc | SaveKeeps.Resolution);
         _rowBytes = _plan.RowBytes(_width);
@@ -79,7 +80,7 @@ internal sealed class TiffPageEncoder<TPixel> : RowEncoder<TPixel>
             // About 64 KB of uncompressed rows, or 8 KB for LZW, whose table restarts with each strip and adapts better in short ones
             // (as libtiff's strips are).
             int rows = (_plan.Compression == TiffCodes.Lzw ? 8192 : 65536) / Math.Max(1, _rowBytes);
-            if (_plan.Compression == TiffCodes.Jpeg)
+            if (_plan.Compression == TiffCodes.Jpeg && !_plan.Lossless)
             {
                 // JPEG strips hold whole MCU rows: 16 for 4:2:0, 8 for gray.
                 int mcu = _plan.Photometric == 6 ? 16 : 8;
@@ -111,7 +112,7 @@ internal sealed class TiffPageEncoder<TPixel> : RowEncoder<TPixel>
         _packed = ArrayPool<byte>.Shared.Rent(ScratchLength(unitBytes, _unitRows));
         _batch = _options.ParallelCompression && _start.Context.MaxParallelism > 1
             && _plan.Compression is TiffCodes.Lzw or TiffCodes.Deflate or TiffCodes.Zstd or TiffCodes.Lzma or TiffCodes.PackBits or TiffCodes.CcittGroup3
-                or TiffCodes.CcittGroup4
+                or TiffCodes.CcittGroup4 || (_plan.Compression == TiffCodes.Jpeg && _plan.Lossless)
             ? _start.Context.MaxParallelism * 2
             : 1;
         if (_plan.Compression == TiffCodes.Deflate)
@@ -286,8 +287,9 @@ internal sealed class TiffPageEncoder<TPixel> : RowEncoder<TPixel>
                 }
             }
 
-            if (_file.BigEndian && sampleBytes > 1)
+            if (_file.BigEndian && sampleBytes > 1 && plan.Compression != TiffCodes.Jpeg)
             {
+                // Lossless JPEG codes the samples' values, so they stay in the host's order for it.
                 TiffFile.Swap(unit, sampleBytes);
             }
         }
@@ -386,6 +388,9 @@ internal sealed class TiffPageEncoder<TPixel> : RowEncoder<TPixel>
                 break;
             case TiffCodes.CcittGroup3 or TiffCodes.CcittGroup4:
                 packed = CcittEncoder.Encode(unit, unitWidth, rows, plan.Compression == TiffCodes.CcittGroup4);
+                break;
+            case TiffCodes.Jpeg when plan.Lossless:
+                packed = TiffUnitWriter.LosslessJpeg(unit, unitWidth, rows, plan.Samples, plan.Bits);
                 break;
             case TiffCodes.Jpeg:
                 packed = TiffUnitWriter.Jpeg(unit, unitWidth, rows, plan.Photometric, plan.Quality, _start.Context, ref _jpegTables);

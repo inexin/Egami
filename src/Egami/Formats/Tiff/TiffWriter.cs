@@ -246,7 +246,7 @@ internal sealed record TiffPlan(TiffStore Store, int Photometric, int Samples, i
     /// <summary>Gets the quality of JPEG and lossy WebP compression.</summary>
     public int Quality { get; init; } = 75;
 
-    /// <summary>Gets whether WebP units are lossless.</summary>
+    /// <summary>Gets whether WebP or JPEG units are lossless: lossless WebP, or lossless JPEG (SOF3).</summary>
     public bool Lossless { get; init; }
 
     /// <summary>Returns the bytes of a stored row of <paramref name="width"/> pixels.</summary>
@@ -288,6 +288,9 @@ internal sealed record TiffPlan(TiffStore Store, int Photometric, int Samples, i
 
         bool kept = tiff.Compression is null;
         bool lossless = false;
+
+        // Lossless JPEG is asked for as WebP's lossless form is, with quality 100, or kept from a lossless JPEG source.
+        bool losslessJpeg = compression == TiffCodes.Jpeg && (tiff.Quality == 100 || (kept && source is { Compression: TiffCompression.Jpeg, JpegLossless: true }));
         if (ccitt && store != TiffStore.Bilevel)
         {
             if (!kept)
@@ -300,7 +303,7 @@ internal sealed record TiffPlan(TiffStore Store, int Photometric, int Samples, i
         }
 
         if (kept && compression == TiffCodes.Jpeg && store is not (TiffStore.Rgb8 or TiffStore.Rgb16 or TiffStore.RgbF32 or TiffStore.Gray8
-            or TiffStore.Gray16 or TiffStore.GrayF32))
+            or TiffStore.Gray16 or TiffStore.GrayF32) && !(losslessJpeg && store is TiffStore.Cmyk8 or TiffStore.Cmyk16))
         {
             compression = TiffCodes.Deflate;
         }
@@ -351,7 +354,22 @@ internal sealed record TiffPlan(TiffStore Store, int Photometric, int Samples, i
             _ => (2, 4, 32, 3, 1),
         };
 
-        if (compression == TiffCodes.Jpeg)
+        if (compression == TiffCodes.Jpeg && losslessJpeg)
+        {
+            // Lossless JPEG (SOF3) keeps 8 and 16-bit samples as they are, RGB as RGB and the inks as they are; floats go to 16 bits.
+            (store, photometric, samples, bits, format, extra) = store switch
+            {
+                TiffStore.Gray8 => (TiffStore.Gray8, 1, 1, 8, 1, -1),
+                TiffStore.Gray16 or TiffStore.GrayF32 => (TiffStore.Gray16, 1, 1, 16, 1, -1),
+                TiffStore.Rgb8 => (TiffStore.Rgb8, 2, 3, 8, 1, -1),
+                TiffStore.Rgb16 or TiffStore.RgbF32 => (TiffStore.Rgb16, 2, 3, 16, 1, -1),
+                TiffStore.Cmyk8 => (TiffStore.Cmyk8, 5, 4, 8, 1, -1),
+                TiffStore.Cmyk16 => (TiffStore.Cmyk16, 5, 4, 16, 1, -1),
+                _ => throw new ArgumentException("TIFF: lossless JPEG compression takes gray, RGB and CMYK images without alpha.", nameof(options)),
+            };
+            lossless = true;
+        }
+        else if (compression == TiffCodes.Jpeg)
         {
             if (store is TiffStore.Rgb8 or TiffStore.Rgb16 or TiffStore.RgbF32)
             {
@@ -424,7 +442,7 @@ internal sealed record TiffPlan(TiffStore Store, int Photometric, int Samples, i
         TiffCompression.PackBits => TiffCodes.PackBits,
         TiffCompression.CcittGroup3 when source.BitsPerSample == 1 && (options.Reduce || source.Unchanged) => TiffCodes.CcittGroup3,
         TiffCompression.CcittGroup4 when source.BitsPerSample == 1 && (options.Reduce || source.Unchanged) => TiffCodes.CcittGroup4,
-        TiffCompression.Jpeg when source.Unchanged => TiffCodes.Jpeg,
+        TiffCompression.Jpeg when source.Unchanged || source.JpegLossless => TiffCodes.Jpeg,
         TiffCompression.Webp when source.Unchanged => TiffCodes.Webp,
         _ => TiffCodes.Deflate,
     };

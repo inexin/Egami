@@ -10,8 +10,8 @@ namespace Egami.Formats.Tiff;
 
 /// <summary>
 /// Decodes one strip or tile of a page into its raw samples: decompressed, bits put back in order (FillOrder 2), multi-byte
-/// samples in little-endian order whatever the file's, and the predictor undone. JPEG and WebP units go through their own
-/// readers instead (<see cref="TiffRows{TNatural}"/>).
+/// samples in little-endian order whatever the file's, and the predictor undone. Lossless JPEG units decode here to their raw
+/// samples; other JPEG and WebP units go through their own readers instead (<see cref="TiffRows{TNatural}"/>).
 /// </summary>
 internal sealed class TiffDecoder : IDisposable
 {
@@ -61,6 +61,7 @@ internal sealed class TiffDecoder : IDisposable
                     => Ccitt.CcittDecoder.DecodeTiff(packed, target, page.UnitWidth, rows, page.Compression, page.FaxOptions),
                 TiffCodes.SgiLog or TiffCodes.SgiLog24
                     => SgiLog.DecodeStrip(packed, target, page.UnitWidth, rows, page.Photometric == 32844, page.Compression == TiffCodes.SgiLog24),
+                TiffCodes.Jpeg => TiffJpeg.DecodeLossless(page, packed, rows, target),
                 _ => throw new NotSupportedException($"TIFF: compression {page.Compression} is not read here."),
             };
         }
@@ -92,7 +93,8 @@ internal sealed class TiffDecoder : IDisposable
             return written;
         }
 
-        if (page.File.BigEndian && page.Bits is 16 or 24 or 32 or 64)
+        // Lossless JPEG's samples come out in the host's order already.
+        if (page.File.BigEndian && page.Bits is 16 or 24 or 32 or 64 && page.Compression != TiffCodes.Jpeg)
         {
             if (page.Bits == 24)
             {
