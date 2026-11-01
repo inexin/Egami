@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class HeicWriterOptions | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class HeicWriterOptions | Egami ">
+      
+      <meta name="description" content="Options for writing HEIC. Lossy images are coded on heif-enc&#39;s quality scale, so the same  gives about the same file as heif-enc -q with x265; lossless images keep every sample of 4:4:4 RGB. The names and meanings match  where the two formats share an option.">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_Heic_HeicWriterOptions.md&amp;value=---%0Auid%3A%20Egami.Heic.HeicWriterOptions%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.Heic.HeicWriterOptions">
+
+
+
+  <h1 id="Egami_Heic_HeicWriterOptions" data-uid="Egami.Heic.HeicWriterOptions" class="text-break">
+Class HeicWriterOptions  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Heic/HeicWriterOptions.cs/#L19"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a>.<a class="xref" href="Egami.Heic.html">Heic</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.Heic.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>Options for writing HEIC. Lossy images are coded on heif-enc's quality scale, so the same <a class="xref" href="Egami.Heic.HeicWriterOptions.html#Egami_Heic_HeicWriterOptions_Quality">Quality</a> gives about the
+same file as heif-enc -q with x265; lossless images keep every sample of 4:4:4 RGB. The names and meanings match
+<a class="xref" href="Egami.Formats.Avif.AvifWriterOptions.html">AvifWriterOptions</a> where the two formats share an option.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public sealed class HeicWriterOptions : WriterOptions</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><a class="xref" href="Egami.Formats.WriterOptions.html">WriterOptions</a></div>
+      <div><span class="xref">HeicWriterOptions</span></div>
+    </dd>
+  </dl>
+
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="Egami.Formats.WriterOptions.html#Egami_Formats_WriterOptions_StripMetadata">WriterOptions.StripMetadata</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Formats.WriterOptions.html#Egami_Formats_WriterOptions_OmitSrgbProfile">WriterOptions.OmitSrgbProfile</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+  </dd></dl>
+
+
+
+  <h2 id="Egami_Heic_HeicWriterOptions_examples">Examples</h2>
+  <pre><code class="lang-csharp">// With Egami.Heic registered, Save picks HEIC from the extension: lossy 4:2:0 at quality 50 on heif-enc's scale, effort 4.
+duck.Save("duck-q50.heic");
+
+// Smaller and softer, or every sample exact (4:4:4 RGB with the identity matrix, which needs a range extensions decoder).
+duck.Save("duck-q30.heic", new HeicWriterOptions { Quality = 30 });
+duck.Save("duck-lossless.heic", new HeicWriterOptions { Lossless = true });</code></pre>
+
+
+  <h2 id="Egami_Heic_HeicWriterOptions_remarks">Remarks</h2>
+  <div class="markdown level0 remarks"><p>HEVC is covered by patents, encoding as well as decoding. Egami's authors grant no patent rights and are not lawyers. Whether
+you need a patent licence depends on your country and on how you use and distribute this package; commercial products may need
+one from the HEVC patent pools or holders.</p>
+</div>
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="Egami_Heic_HeicWriterOptions_AlphaQuality_" data-uid="Egami.Heic.HeicWriterOptions.AlphaQuality*"></a>
+
+  <h3 id="Egami_Heic_HeicWriterOptions_AlphaQuality" data-uid="Egami.Heic.HeicWriterOptions.AlphaQuality">
+  AlphaQuality
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Heic/HeicWriterOptions.cs/#L85"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the quality of the alpha plane, 0 to 100 on the same scale as <a class="xref" href="Egami.Heic.HeicWriterOptions.html#Egami_Heic_HeicWriterOptions_Quality">Quality</a>: 100 (the default) keeps alpha
+exactly. Alpha is written straight, not premultiplied, as an auxiliary image every HEVC decoder reads.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int AlphaQuality { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>The value is outside 0 to 100.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Heic_HeicWriterOptions_BitDepth_" data-uid="Egami.Heic.HeicWriterOptions.BitDepth*"></a>
+
+  <h3 id="Egami_Heic_HeicWriterOptions_BitDepth" data-uid="Egami.Heic.HeicWriterOptions.BitDepth">
+  BitDepth
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Heic/HeicWriterOptions.cs/#L74"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the bits a sample has, 8, 10 or 12, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> (the default) for 8 with 8-bit pixels and 10 (Main 10)
+with deeper ones; a lossless file of deeper pixels takes 12. 12 bits use HEVC's format range extensions.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int? BitDepth { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a>?</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>The value is not 8, 10 or 12.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Heic_HeicWriterOptions_Chroma_" data-uid="Egami.Heic.HeicWriterOptions.Chroma*"></a>
+
+  <h3 id="Egami_Heic_HeicWriterOptions_Chroma" data-uid="Egami.Heic.HeicWriterOptions.Chroma">
+  Chroma
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Heic/HeicWriterOptions.cs/#L67"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the chroma format of lossy color, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> (the default) for 4:2:0, which every HEVC decoder reads.
+4:4:4, 4:2:2 and 4:0:0 use HEVC's format range extensions, which some phones and operating systems cannot decode. 4:1:1 and
+4:1:0 choose as <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> does.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public ChromaFormat? Chroma { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Pixels.ChromaFormat.html">ChromaFormat</a>?</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Heic_HeicWriterOptions_Default_" data-uid="Egami.Heic.HeicWriterOptions.Default*"></a>
+
+  <h3 id="Egami_Heic_HeicWriterOptions_Default" data-uid="Egami.Heic.HeicWriterOptions.Default">
+  Default
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Heic/HeicWriterOptions.cs/#L31"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the default options.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static HeicWriterOptions Default { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Heic.HeicWriterOptions.html">HeicWriterOptions</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Heic_HeicWriterOptions_Effort_" data-uid="Egami.Heic.HeicWriterOptions.Effort*"></a>
+
+  <h3 id="Egami_Heic_HeicWriterOptions_Effort" data-uid="Egami.Heic.HeicWriterOptions.Effort">
+  Effort
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Heic/HeicWriterOptions.cs/#L49"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets how hard the encoder works, 0 (fastest) to 10 (smallest files). Defaults to 4, which makes files about the size of x265's
+medium preset in about its time.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int Effort { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>The value is outside 0 to 10.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Heic_HeicWriterOptions_GainMapQuality_" data-uid="Egami.Heic.HeicWriterOptions.GainMapQuality*"></a>
+
+  <h3 id="Egami_Heic_HeicWriterOptions_GainMapQuality" data-uid="Egami.Heic.HeicWriterOptions.GainMapQuality">
+  GainMapQuality
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Heic/HeicWriterOptions.cs/#L122"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the quality of a gain map, 0 to 100 on the same scale as <a class="xref" href="Egami.Heic.HeicWriterOptions.html#Egami_Heic_HeicWriterOptions_Quality">Quality</a> (100 is lossless), or
+<a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> (the default) for the image's quality.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int? GainMapQuality { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a>?</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>The value is outside 0 to 100.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Heic_HeicWriterOptions_GridTileSize_" data-uid="Egami.Heic.HeicWriterOptions.GridTileSize*"></a>
+
+  <h3 id="Egami_Heic_HeicWriterOptions_GridTileSize" data-uid="Egami.Heic.HeicWriterOptions.GridTileSize">
+  GridTileSize
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Heic/HeicWriterOptions.cs/#L97"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the size of the cells of a grid image, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> (the default) to write one picture up to 8,912,896
+samples (HEVC level 5.1, which phone and PC decoders take) and a grid of 512 x 512 cells, as iPhones write, for larger
+images.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Size? GridTileSize { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Size.html">Size</a>?</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>A side is below 64 or above 8192.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Heic_HeicWriterOptions_Lossless_" data-uid="Egami.Heic.HeicWriterOptions.Lossless*"></a>
+
+  <h3 id="Egami_Heic_HeicWriterOptions_Lossless" data-uid="Egami.Heic.HeicWriterOptions.Lossless">
+  Lossless
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Heic/HeicWriterOptions.cs/#L60"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether to write lossless (every sample of the RGB or gray image exact: 4:4:4 with the identity matrix, coded without
+transform or quantization) or lossy data, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> (the default) for lossy. Lossless HEIC needs a decoder of
+HEVC's format range extensions, which some phones and operating systems lack.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool? Lossless { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a>?</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Heic_HeicWriterOptions_Quality_" data-uid="Egami.Heic.HeicWriterOptions.Quality*"></a>
+
+  <h3 id="Egami_Heic_HeicWriterOptions_Quality" data-uid="Egami.Heic.HeicWriterOptions.Quality">
+  Quality
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Heic/HeicWriterOptions.cs/#L38"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the lossy quality, 0 (smallest) to 100 (best), on heif-enc's -q scale. Defaults to 50, as heif-enc does. Ignored for
+lossless images.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int Quality { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>The value is outside 0 to 100.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Heic_HeicWriterOptions_TargetSize_" data-uid="Egami.Heic.HeicWriterOptions.TargetSize*"></a>
+
+  <h3 id="Egami_Heic_HeicWriterOptions_TargetSize" data-uid="Egami.Heic.HeicWriterOptions.TargetSize">
+  TargetSize
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Heic/HeicWriterOptions.cs/#L111"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the largest size the file may have, in bytes, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> (the default) to code at <a class="xref" href="Egami.Heic.HeicWriterOptions.html#Egami_Heic_HeicWriterOptions_Quality">Quality</a>:
+the quality is searched for the largest file not above the size, then the quantizer between that quality and the next, so the
+file lands close under the size. When even quality 0 is larger, that file is written and a Heic.TargetSizeExceeded warning
+says so. Ignored for lossless images.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int? TargetSize { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a>?</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>The value is below 1.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Heic_HeicWriterOptions_ThumbnailSize_" data-uid="Egami.Heic.HeicWriterOptions.ThumbnailSize*"></a>
+
+  <h3 id="Egami_Heic_HeicWriterOptions_ThumbnailSize" data-uid="Egami.Heic.HeicWriterOptions.ThumbnailSize">
+  ThumbnailSize
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Heic/HeicWriterOptions.cs/#L134"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the size of the square a thumbnail fits in, 16 to 1024 samples, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> (the default) for no
+thumbnail. A thumbnail is a small HEVC image linked to the image, which file browsers show without decoding the whole picture;
+iPhones write one 320 samples wide.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int? ThumbnailSize { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a>?</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>The value is outside 16 to 1024.</p>
+</dd>
+  </dl>
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Heic/HeicWriterOptions.cs/#L19" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

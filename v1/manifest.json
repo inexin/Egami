@@ -9491,6 +9491,20 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Heic.HeicWriterOptions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Heic.HeicWriterOptions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Heic.HeicWriterOptions",
+      "Summary": "<p sourcefile=\"api/Egami.Heic.HeicWriterOptions.yml\" sourcestartlinenumber=\"1\">Options for writing HEIC. Lossy images are coded on heif-enc's quality scale, so the same <xref href=\"Egami.Heic.HeicWriterOptions.Quality\" data-throw-if-not-resolved=\"false\"></xref> gives about the\nsame file as heif-enc -q with x265; lossless images keep every sample of 4:4:4 RGB. The names and meanings match\n<xref href=\"Egami.Formats.Avif.AvifWriterOptions\" data-throw-if-not-resolved=\"false\"></xref> where the two formats share an option.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.Heic.HevcDecoderOptions.yml",
       "output": {
         ".html": {

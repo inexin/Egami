@@ -167,9 +167,9 @@ bool fromPackage = info.Format == HeicFormat.Info;</code></pre>
   <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Heic/HeicContextExtensions.cs/#L22"><i class="bi bi-code-slash"></i></a>
   </h3>
 
-  <div class="markdown level1 summary"><p>Returns a copy of <code class="paramref">context</code> that reads HEIC with Egami.Heic. Nothing registers it on its own: an app calls
+  <div class="markdown level1 summary"><p>Returns a copy of <code class="paramref">context</code> that reads and writes HEIC with Egami.Heic. Nothing registers it on its own: an app calls
 this once, for example <code>EgamiContext.SetDefault(new EgamiContext().WithHeic())</code> at startup, and so opts in to
-decoding HEVC.</p>
+decoding and encoding HEVC.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
 
@@ -198,7 +198,7 @@ decoding HEVC.</p>
 
 
   <h4 class="section" id="Egami_Heic_HeicContextExtensions_WithHeic_Egami_EgamiContext__remarks">Remarks</h4>
-  <div class="markdown level1 remarks"><p>HEVC is covered by patents. Egami's authors grant no patent rights and are not lawyers. Whether you need a patent licence
+  <div class="markdown level1 remarks"><p>HEVC is covered by patents, encoding as well as decoding. Egami's authors grant no patent rights and are not lawyers. Whether you need a patent licence
 depends on your country and on how you use and distribute this package; commercial products may need one from the HEVC
 patent pools or holders. The core Egami package contains no HEVC code and does not depend on this package.</p>
 </div>

@@ -251,7 +251,7 @@ through <a href="vp8.html"><code>Vp8StreamDecoder</code></a> and <a href="av1.ht
 <tr>
 <td><a href="heic.html">HEIC</a></td>
 <td>With Egami.Heic: HEVC intra pictures up to 12 bits, grids, alpha, gain maps, depth maps, mattes and all-intra sequences; core Egami probes them</td>
-<td>No</td>
+<td>With Egami.Heic: lossy and lossless stills, alpha, grids, gain maps</td>
 <td><code>Rgb8</code> for 8-bit files, <code>Rgb16</code> for 10 and 12 bits, with alpha when the file has it, gray for monochrome</td>
 <td>Egami.Heic</td>
 </tr>
@@ -379,7 +379,7 @@ using Raster first = pages.Detach(0);
 <ul>
 <li><strong>Alpha</strong>: JPEG (unless <code>JpegWriterOptions.Background</code> blends it onto a color), BMP and TGA with <code>Bgr24</code>, PPM, QOI with
 <code>IncludeAlpha = false</code>.</li>
-<li><strong>Frames after the first</strong>: JPEG, BMP, TGA, QOI and PNM.</li>
+<li><strong>Frames after the first</strong>: JPEG, BMP, TGA, QOI, PNM and HEIC.</li>
 <li><strong>Metadata</strong>: every writer keeps what its format can carry; <code>StripMetadata = true</code> on any writer options drops it all.</li>
 </ul>
 <p>See the <a href="../../api/Egami.Formats.html">API reference</a> for every option.</p>
