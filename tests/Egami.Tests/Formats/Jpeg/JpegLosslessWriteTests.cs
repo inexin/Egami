@@ -81,7 +81,7 @@ public class JpegLosslessWriteTests
     public void RestartIntervalIsWholeRows(int asked, int width, int written)
     {
         // T.81 asks a lossless restart interval to be a whole number of MCU rows; libjpeg-turbo refuses any other.
-        Assert.Equal(written, JpegLosslessWriter<Rgb8>.RestartInterval(asked, width));
+        Assert.Equal(written, JpegLosslessScan.RestartInterval(asked, width));
         using Raster<Rgb8> source = Noisy(width, 3, 15);
         byte[] file = Encode(source, new JpegWriterOptions { Lossless = new JpegLosslessOptions(), RestartInterval = asked });
         int dri = file.AsSpan().IndexOf((ReadOnlySpan<byte>)[0xFF, JpegMarker.Dri]);
@@ -365,7 +365,7 @@ public class JpegLosslessWriteTests
     }
 
     /// <summary>A gradient with noise and hard edges, so every predictor sees both signs and large differences.</summary>
-    private static Raster<Rgb8> Noisy(int width, int height, int seed)
+    internal static Raster<Rgb8> Noisy(int width, int height, int seed)
     {
         Random random = new(seed);
         byte[] noise = new byte[width * height * 3];

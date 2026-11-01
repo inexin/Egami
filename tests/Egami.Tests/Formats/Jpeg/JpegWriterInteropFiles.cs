@@ -153,7 +153,7 @@ public class JpegWriterInteropFiles
 
             int bits = precision ?? (source.Layout.BitsPerChannel > 8 ? 16 : 8);
             File.WriteAllBytes(path[..^4] + ".src.pnm", Pnm(source, bits));
-            File.WriteAllText(path[..^4] + ".json", JsonSerializer.Serialize(new { lossless = true, predictor, pt, precision = bits, restart = JpegLosslessWriter<Rgb8>.RestartInterval(restart, source.Width), arithmetic, gray = source.Layout.ChannelCount == 1 }));
+            File.WriteAllText(path[..^4] + ".json", JsonSerializer.Serialize(new { lossless = true, predictor, pt, precision = bits, restart = JpegLosslessScan.RestartInterval(restart, source.Width), arithmetic, gray = source.Layout.ChannelCount == 1 }));
         }
     }
 
