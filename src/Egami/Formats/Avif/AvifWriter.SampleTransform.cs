@@ -4,6 +4,8 @@ using Egami.Formats.Heif;
 using Egami.Metadata;
 using Egami.Pixels;
 
+using FileMetadata = Egami.Formats.Heif.HeifImageMetadata;
+
 namespace Egami.Formats.Avif;
 
 /// <content>
