@@ -137,6 +137,10 @@ using Raster first = pages.Detach(0);
 <td>8-bit pages, through Egami's JPEG decoder; old-style JPEG is best effort</td>
 </tr>
 <tr>
+<td>Lossless JPEG (code 7 with SOF3 or SOF11 units)</td>
+<td>Gray, RGB and CMYK pages of 2 to 16 bits, each strip or tile decoded to its samples as they are, including DNG's layout of a row as two components half as wide</td>
+</tr>
+<tr>
 <td>ThunderScan</td>
 <td>4-bit gray</td>
 </tr>
@@ -236,7 +240,7 @@ photo.Save(&quot;photo.tif&quot;, new TiffWriterOptions { Compression = TiffComp
 <tr>
 <td><code>Compression</code></td>
 <td>the TIFF source's, else <code>Deflate</code></td>
-<td><code>None</code>, <code>Lzw</code>, <code>Deflate</code>, <code>Zstd</code>, <code>Lzma</code>, <code>PackBits</code>, <code>CcittGroup3</code> and <code>CcittGroup4</code> (1-bit), <code>Jpeg</code> (8-bit gray, RGB and CMYK), <code>Webp</code> (lossless at <code>Quality</code> 100, else lossy)</td>
+<td><code>None</code>, <code>Lzw</code>, <code>Deflate</code>, <code>Zstd</code>, <code>Lzma</code>, <code>PackBits</code>, <code>CcittGroup3</code> and <code>CcittGroup4</code> (1-bit), <code>Jpeg</code> (8-bit gray, RGB and CMYK; lossless JPEG at <code>Quality</code> 100, 8 and 16-bit), <code>Webp</code> (lossless at <code>Quality</code> 100, else lossy)</td>
 </tr>
 <tr>
 <td><code>CompressionLevel</code></td>
@@ -261,7 +265,7 @@ photo.Save(&quot;photo.tif&quot;, new TiffWriterOptions { Compression = TiffComp
 <tr>
 <td><code>Quality</code></td>
 <td>75</td>
-<td>JPEG and lossy WebP quality</td>
+<td>JPEG and lossy WebP quality; 100 writes lossless JPEG or lossless WebP</td>
 </tr>
 <tr>
 <td><code>TileSize</code></td>
@@ -294,7 +298,7 @@ photo.Save(&quot;photo.tif&quot;, new TiffWriterOptions { Compression = TiffComp
 <code>RgbaF32</code> and <code>RgbaF16</code> as floats, <code>Cmyk8</code> and <code>Cmyk16</code> as separated, premultiplied types as associated alpha; packed types widen
 to 8 or 16 bits. The writer is deterministic and little-endian, except that re-saving a big-endian TIFF keeps its byte order, as
 it keeps the source's compression, predictor and tiling. A JPEG, WebP or CCITT source keeps its compression only while no
-operation has changed the pixels, so a lossy file is never compressed twice by accident. <code>Raster.SaveAll</code> writes several rasters
+operation has changed the pixels, so a lossy file is never compressed twice by accident; a lossless JPEG source keeps it always. <code>Raster.SaveAll</code> writes several rasters
 as pages.</p>
 <pre><code class="lang-csharp">// A page where every pixel is black or white saves as a 1-bit CCITT Group 4 fax.
 page.Save(&quot;fax.tif&quot;, new TiffWriterOptions { Compression = TiffCompression.CcittGroup4 });
@@ -311,6 +315,14 @@ levels write smaller and slower. Egami's
 Zstandard codec is its own managed code from RFC 8878: one frame a strip or tile, with the content size and no checksum, as
 libtiff writes. Up to level 15 it follows libzstd's settings and stays within 5 % of its size; from 16, where libzstd switches to
 optimal parsing, Egami's files are a few percent larger. libtiff and GDAL read Egami's ZSTD files and Egami reads theirs.</p>
+<pre><code class="lang-csharp">// Lossless JPEG in each strip or tile: quality 100 asks for it, as it asks for WebP's lossless form. 16 bits stay 16.
+photo.Save(&quot;lossless-jpeg.tif&quot;, new TiffWriterOptions { Compression = TiffCompression.Jpeg, Quality = 100 });
+</code></pre>
+<p>Lossless JPEG (ITU-T T.81 annex H) keeps 8 and 16-bit gray, RGB and CMYK as they are: RGB is not turned into YCbCr, and inks are
+stored as they are, not inverted. Each strip or tile is a whole SOF3 stream with its own Huffman tables and the predictor that
+codes it smallest, so <code>ParallelCompression</code> applies and there are no JPEGTables. It is the coding DNG uses for camera RAW data;
+libtiff's JPEG codec does not read it, so choose Deflate, ZSTD or LZMA for files other TIFF readers must open. Float pages are
+written at 16 bits and alpha is refused, as with baseline JPEG.</p>
 <pre><code class="lang-csharp">// LZMA with the predictor: the smallest lossless TIFF, slow to write; preset 6 is libtiff's default, 9 the smallest.
 photo.Save(&quot;archive.tif&quot;, new TiffWriterOptions { Compression = TiffCompression.Lzma });
 photo.Save(&quot;archive-fast.tif&quot;, new TiffWriterOptions { Compression = TiffCompression.Lzma, LzmaPreset = 1 });
