@@ -435,6 +435,9 @@ public sealed class TiffDetails : FormatDetails
     /// <summary>Gets or sets whether a WebP page's first unit was lossless, which a re-save keeps.</summary>
     internal bool WebpLossless { get; set; }
 
+    /// <summary>Gets or sets whether a JPEG page is lossless JPEG (SOF3), which a re-save keeps whether or not the pixels changed.</summary>
+    internal bool JpegLossless { get; set; }
+
     /// <inheritdoc/>
     protected internal override void PixelsChanged() => Unchanged = false;
 
@@ -460,6 +463,7 @@ public sealed class TiffDetails : FormatDetails
             InkNames = [.. InkNames],
             Unchanged = Unchanged,
             WebpLossless = WebpLossless,
+            JpegLossless = JpegLossless,
         };
         foreach (TiffTag tag in OtherTags)
         {

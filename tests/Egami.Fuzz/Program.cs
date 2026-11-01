@@ -172,6 +172,7 @@ static Action<Stream> Target(string name) => name switch
     "stream" => DecodeStreaming,
     "tiff" => LoadTiff,
     "tiffcodec" => DecodeTiffCodec,
+    "lossless-write" => WriteLosslessJpegSamples,
     "webp" => LoadWebp,
     "webpcodec" => DecodeWebpCodec,
     "vp8video" => DecodeVp8Video,
@@ -244,7 +245,7 @@ static Action<Stream> Target(string name) => name switch
         => stream => Egami.Fuzz.BarcodeFuzzTarget.Encode(name["barcode-".Length..], ReadAll(stream)),
     "barcode-read" => stream => Egami.Fuzz.BarcodeFuzzTarget.Read(ReadAll(stream)),
     "paragraph" => stream => Egami.Fuzz.ParagraphFuzzTarget.Run(ReadAll(stream), ParagraphFaces(), DrawParagraph),
-    _ => throw new ArgumentException($"Unknown fuzz target '{name}'. Targets: hinting, radiance, exr, gainmap, avif, avifbox, av1, av1stream, avif-write, heic, heicbox, hevc, hevcstream, isobox, jxl, jxlbox, jxlentropy, jxl-write, jxl-jpeg, jxl-lossy, jxl-frames, jxl-partial, png, jpeg, jpeg-depth, jpeg-write, jpeg-transform, exif, icc, iptc, psd, xmp, rawprofile, gif, apng, lzw, bmp, tga, qoi, pnm, pfm, detect, stream, tiff, tiffcodec, webp, webpcodec, vp8video, jbig2, jbig2codec, ccitt, cube, jpeg2000, jpeg2000codec, font, cff, subset, woff2, gvar, cff2, colr, instance, svgpath, ico, icoentry, psdfile, psddata, psdlayers, egdr, inktiff, shaping, bidi, css, hocr, alto, paragraph, svg, wmf, emf, emfplus, sysdrawing, barcode-qr, barcode-datamatrix, barcode-pdf417, barcode-aztec, barcode-code128, barcode-code39, barcode-itf, barcode-eanupc, barcode-read."),
+    _ => throw new ArgumentException($"Unknown fuzz target '{name}'. Targets: hinting, radiance, exr, gainmap, avif, avifbox, av1, av1stream, avif-write, heic, heicbox, hevc, hevcstream, isobox, jxl, jxlbox, jxlentropy, jxl-write, jxl-jpeg, jxl-lossy, jxl-frames, jxl-partial, png, jpeg, jpeg-depth, jpeg-write, jpeg-transform, exif, icc, iptc, psd, xmp, rawprofile, gif, apng, lzw, bmp, tga, qoi, pnm, pfm, detect, stream, tiff, tiffcodec, lossless-write, webp, webpcodec, vp8video, jbig2, jbig2codec, ccitt, cube, jpeg2000, jpeg2000codec, font, cff, subset, woff2, gvar, cff2, colr, instance, svgpath, ico, icoentry, psdfile, psddata, psdlayers, egdr, inktiff, shaping, bidi, css, hocr, alto, paragraph, svg, wmf, emf, emfplus, sysdrawing, barcode-qr, barcode-datamatrix, barcode-pdf417, barcode-aztec, barcode-code128, barcode-code39, barcode-itf, barcode-eanupc, barcode-read."),
 };
 
 static EgamiContext Context()
@@ -1613,6 +1614,93 @@ static void WriteJpeg(Stream stream)
 
         raster.CopyPixelsFrom(pixels);
         return raster;
+    }
+}
+
+// DNG writing PR A: the lossless JPEG writer's sample entry point and lossless JPEG in TIFF. The input picks a precision, a
+// component count, a size, a predictor, a restart interval and arithmetic coding, and the samples; the stream must decode to
+// exactly those samples, a CFA mosaic coded as two components too, and a TIFF of the same samples at quality 100, in strips or
+// tiles, must load them back exactly.
+static void WriteLosslessJpegSamples(Stream stream)
+{
+    byte[] data = ReadAll(stream);
+    if (data.Length < 6)
+    {
+        return;
+    }
+
+    EgamiContext context = Context() with { MaxParallelism = 1 + (data[5] % 4) };
+    int precision = 2 + (data[0] % 15);
+    int components = 1 + ((data[1] >> 6) & 3);
+    int width = 1 + (data[1] % 64);
+    int height = 1 + (data[2] % 64);
+    int? predictor = data[3] % 8 == 0 ? null : data[3] % 8;
+    int restart = (data[3] & 8) != 0 ? data[3] >> 4 : 0;
+    bool arithmetic = (data[4] & 1) != 0;
+    ReadOnlySpan<byte> source = data.AsSpan(6);
+    ushort[] samples = new ushort[width * height * components];
+    for (int i = 0; i < samples.Length; i++)
+    {
+        int at = (2 * i) % Math.Max(1, source.Length - 1);
+        samples[i] = source.Length < 2 ? (ushort)0 : (ushort)(((source[at] << 8) | source[at + 1]) & ((1 << precision) - 1));
+    }
+
+    using (MemoryStream coded = new())
+    {
+        JpegLosslessWriter.Write(coded, samples, components, width, precision, predictor, restart, arithmetic);
+        Exact(coded.ToArray(), samples, "the sample stream");
+    }
+
+    if (components == 1 && width % 2 == 0)
+    {
+        using MemoryStream cfa = new();
+        JpegLosslessWriter.WriteCfa(cfa, samples, width, precision);
+        Exact(cfa.ToArray(), samples, "the CFA stream");
+    }
+
+    // The TIFF side: 8 or 16-bit gray, RGB or CMYK at quality 100.
+    bool wide = (data[4] & 2) != 0;
+    int tile = (data[4] & 4) != 0 ? 16 : 0;
+    Egami.Formats.Tiff.TiffWriterOptions options = new() { Compression = Egami.Formats.Tiff.TiffCompression.Jpeg, Quality = 100, TileSize = tile, ParallelCompression = (data[4] & 8) != 0 };
+    switch ((data[4] >> 4) % 3, wide)
+    {
+        case (0, false): TiffRoundTrip<Gray8>(); break;
+        case (0, true): TiffRoundTrip<Gray16>(); break;
+        case (1, false): TiffRoundTrip<Rgb8>(); break;
+        case (1, true): TiffRoundTrip<Rgb16>(); break;
+        case (_, false): TiffRoundTrip<Cmyk8>(); break;
+        default: TiffRoundTrip<Cmyk16>(); break;
+    }
+
+    void TiffRoundTrip<T>()
+        where T : unmanaged, IPixelType<T>
+    {
+        using Raster<T> raster = Raster.Create<T>(width, height, context);
+        byte[] written = new byte[width * height * T.Layout.BytesPerPixel];
+        for (int i = 0; i < written.Length; i++)
+        {
+            written[i] = data.Length == 6 ? (byte)0 : data[6 + (i % (data.Length - 6))];
+        }
+
+        raster.CopyPixelsFrom(written);
+        using MemoryStream file = new();
+        raster.Save(file, Egami.Formats.Tiff.TiffFormat.Info, options);
+        using Raster<T> back = Raster.Load<T>(file.ToArray(), context, new ReaderOptions { Recovery = RecoveryMode.Strict });
+        byte[] read = new byte[written.Length];
+        back.CopyPixelsTo(read);
+        if (back.Width != width || back.Height != height || back.Metadata.Warnings.Count > 0 || !written.AsSpan().SequenceEqual(read))
+        {
+            throw new InvalidOperationException($"The lossless JPEG TIFF of {typeof(T).Name} did not load back the pixels written.");
+        }
+    }
+
+    void Exact(byte[] coded, ushort[] expected, string what)
+    {
+        ushort[] decoded = JpegEmbedded.DecodeLosslessSamples(default, coded, context, out _);
+        if (!decoded.AsSpan().SequenceEqual(expected))
+        {
+            throw new InvalidOperationException($"{what} did not decode to the samples written.");
+        }
     }
 }
 

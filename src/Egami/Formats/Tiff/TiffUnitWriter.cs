@@ -1,3 +1,4 @@
+using System.Buffers;
 using System.Runtime.InteropServices;
 
 using Egami.Formats.Jpeg;
@@ -8,7 +9,7 @@ namespace Egami.Formats.Tiff;
 
 /// <summary>
 /// JPEG and WebP strips and tiles for the writer, through Egami's own encoders: JPEG as Adobe's TIFF Technical Note 2 has it, the
-/// tables shared in JPEGTables and each unit an abbreviated stream; WebP as a whole file per unit.
+/// tables shared in JPEGTables and each unit an abbreviated stream; lossless JPEG and WebP as a whole stream per unit.
 /// </summary>
 internal static class TiffUnitWriter
 {
@@ -58,6 +59,37 @@ internal static class TiffUnitWriter
 
         // Fixed tables make every unit's the same; a unit whose tables differ keeps them in its own stream.
         return tables.AsSpan().SequenceEqual(shared) ? abbreviated : stream.ToArray();
+    }
+
+    /// <summary>
+    /// Encodes a unit of 8 or 16-bit samples (16-bit in the host's order), <paramref name="samples"/> to a pixel, as a whole
+    /// lossless JPEG stream (SOF3, T.81 annex H) with its own Huffman tables and the predictor that codes it smallest.
+    /// </summary>
+    public static byte[] LosslessJpeg(ReadOnlySpan<byte> unit, int width, int rows, int samples, int bits)
+    {
+        int count = width * rows * samples;
+        using MemoryStream stream = new();
+        if (bits == 16)
+        {
+            JpegLosslessWriter.Write(stream, MemoryMarshal.Cast<byte, ushort>(unit)[..count], samples, width, 16, predictor: null);
+            return stream.ToArray();
+        }
+
+        ushort[] wide = ArrayPool<ushort>.Shared.Rent(count);
+        try
+        {
+            for (int i = 0; i < count; i++)
+            {
+                wide[i] = unit[i];
+            }
+
+            JpegLosslessWriter.Write(stream, wide.AsSpan(0, count), samples, width, 8, predictor: null);
+            return stream.ToArray();
+        }
+        finally
+        {
+            ArrayPool<ushort>.Shared.Return(wide);
+        }
     }
 
     private static void Copy<TPixel>(ReadOnlySpan<byte> unit, Raster<TPixel> raster)

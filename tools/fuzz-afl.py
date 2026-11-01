@@ -23,6 +23,8 @@ SEEDS = {"png": "tests/images/pngsuite/*.png tests/images/fuzz/png-seeds/*.png",
          "detect": "tests/images/fuzz/detect-seeds/*",
          "stream": "tests/images/fuzz/stream-seeds/*",
          "tiff": "tests/images/tiff/*.tif", "tiffcodec": "tests/images/fuzz/tiffcodec-seeds/*",
+         # Lossless JPEG in TIFF (DNG writing PR A): the tiff target with lossless JPEG seeds, and the writer's own target.
+         "tiff-lossless": "tests/images/fuzz/tiff-lossless-seeds/*", "lossless-write": "tests/images/fuzz/jpeg-write-seeds/*",
          "webp": "tests/images/webp/*.webp", "webpcodec": "tests/images/fuzz/webpcodec-seeds/*", "vp8video": "tests/images/fuzz/vp8video-seeds/*",
          "jbig2": "tests/images/jbig2/*", "jbig2codec": "tests/images/fuzz/jbig2codec-seeds/*", "ccitt": "tests/images/fuzz/ccitt-seeds/*", "zstd": "tests/images/zstd/*.zst", "zstd-write": "tests/images/fuzz/zstd-write-seeds/*", "xz": "tests/images/xz/*.xz", "xz-write": "tests/images/fuzz/zstd-write-seeds/*",
          "cube": "tests/images/fuzz/cube-seeds/*", "inktiff": "tests/images/fuzz/inktiff-seeds/*",
@@ -101,7 +103,7 @@ def main():
             role = "" if instances == 1 else "-M main" if i == 0 else f"-S secondary{i}"
             subprocess.run(["docker", "rm", "-f", name], capture_output=True)
             script = SCRIPT.format(seeds=" ".join("/src/" + pattern for pattern in SEEDS[target].split()), seconds=int(hours * 3600), target=target, role=role,
-                                   harness="raw" if target.startswith("raw-") else target)
+                                   harness="raw" if target.startswith("raw-") else "tiff" if target == "tiff-lossless" else target)
             # AFL_AUTORESUME carries on from an earlier run's queue in the same findings directory.
             subprocess.run(["docker", "run", "-d", "--name", name, "-e", "AFL_AUTORESUME=1", "-v", f"{repo}:/src:ro", "-v", f"{findings}:/findings",
                             "egami-fuzz", "bash", "-c", script], check=True)

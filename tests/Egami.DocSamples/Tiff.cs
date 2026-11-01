@@ -147,6 +147,22 @@ public class Tiff
     }
 
     [Fact]
+    public void LosslessJpeg()
+    {
+        using SampleFiles files = new();
+        using Raster<Rgb16> photo = Raster.Load<Rgb16>("duck.png");
+
+        #region tiff-lossless-jpeg
+        // Lossless JPEG in each strip or tile: quality 100 asks for it, as it asks for WebP's lossless form. 16 bits stay 16.
+        photo.Save("lossless-jpeg.tif", new TiffWriterOptions { Compression = TiffCompression.Jpeg, Quality = 100 });
+        #endregion
+
+        using Raster<Rgb16> back = Raster.Load<Rgb16>("lossless-jpeg.tif");
+        Assert.Equal(TiffCompression.Jpeg, ((TiffDetails)back.Metadata.FormatDetails!).Compression);
+        Assert.True(double.IsPositiveInfinity(Raster.Compare(photo, back).Overall.Psnr));
+    }
+
+    [Fact]
     public void Lzma()
     {
         using SampleFiles files = new();
