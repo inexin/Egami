@@ -19,6 +19,6 @@ namespace Egami.Heic;
 /// </example>
 public static class HeicFormat
 {
-    /// <summary>Gets the format's registration: name, MIME types, extensions, signature and reader.</summary>
-    public static FormatInfo Info { get; } = HeicSupport.Create(() => Info!, HeicSupport.PackageNeeded, _ => new HevcCodec());
+    /// <summary>Gets the format's registration: name, MIME types, extensions, signature, reader and writer.</summary>
+    public static FormatInfo Info { get; } = HeicSupport.Create(() => Info!, HeicSupport.PackageNeeded, _ => new HevcCodec(), HeicWriter.Instance);
 }
