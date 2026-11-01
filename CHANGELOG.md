@@ -115,7 +115,7 @@ DNG writing, PR A: lossless JPEG in TIFF. No public API change.
   bits only), as raw samples without colour conversion, including DNG's layout of a CFA row as two components half as wide.
   8-bit lossless JPEG pages now load their samples as they are, CMYK inks included, instead of through the JPEG colour path.
 - The lossless JPEG writer codes rows of samples as well as pixels, internally, for DNG tiles: a CFA mosaic coded as two
-  components half as wide, as Adobe DNG Converter writes it, is 20.5 % smaller than one component on 33 corpus mosaics (15 to
+  components half as wide, as Adobe DNG Converter writes it, is 20.5 % smaller than one component on 32 corpus mosaics (15 to
   38 % on Bayer sensors, under 2 % on X-Trans). Lossless JPEG encoding of images is as fast as before.
 
 JPEG XL extras, PR D: partial display. No public API change.
