@@ -31,6 +31,13 @@ internal static class HevcLoopFilter
     /// </summary>
     internal static void Apply(HevcPicture picture, int parallelism = 1, CancellationToken cancellationToken = default)
     {
+        Deblock(picture, parallelism, cancellationToken);
+        Sao(picture, parallelism, cancellationToken);
+    }
+
+    /// <summary>Deblocks a picture (8.7.2), for the encoder, which chooses the SAO parameters on the deblocked samples.</summary>
+    internal static void Deblock(HevcPicture picture, int parallelism = 1, CancellationToken cancellationToken = default)
+    {
         HevcSps sps = picture.Sps;
         int rows = sps.HeightInCtbs, rowHeight4 = 1 << (sps.CtbLog2Size - 2);
         foreach (bool vertical in (ReadOnlySpan<bool>)[true, false])
@@ -38,8 +45,6 @@ internal static class HevcLoopFilter
             HevcThreads.For(rows, parallelism, row =>
                 Deblock(picture, vertical, row * rowHeight4, Math.Min((row + 1) * rowHeight4, picture.Height4)), cancellationToken);
         }
-
-        Sao(picture, parallelism, cancellationToken);
     }
 
     // ---------------------------------------------------------------- deblocking (8.7.2)
@@ -697,7 +702,8 @@ internal static class HevcLoopFilter
 
     private static readonly int[][] EdgeOffsets = [[-1, 0, 1, 0], [0, -1, 0, 1], [-1, -1, 1, 1], [1, -1, -1, 1]];
 
-    private static void Sao(HevcPicture picture, int parallelism, CancellationToken cancellationToken)
+    /// <summary>Applies SAO (8.7.3) with each CTB's parameters to a deblocked picture.</summary>
+    internal static void Sao(HevcPicture picture, int parallelism, CancellationToken cancellationToken)
     {
         HevcSps sps = picture.Sps;
         if (!sps.SaoEnabled)

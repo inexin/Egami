@@ -15,7 +15,7 @@ internal sealed partial class HevcSliceDecoder
     private static readonly byte[] ChromaQpTable = [29, 30, 31, 32, 33, 33, 34, 34, 35, 35, 36, 36, 37, 37];
 
     /// <summary>The 4:2:2 intra mode mapping for chroma (Table 8-3).</summary>
-    private static readonly byte[] Mode422 = [0, 1, 2, 2, 2, 2, 3, 5, 7, 8, 10, 12, 13, 15, 17, 18, 19, 20, 21, 22, 23, 23, 24, 24, 25, 25, 26, 27, 27, 28, 28, 29, 29, 30, 31];
+    internal static readonly byte[] Mode422 = [0, 1, 2, 2, 2, 2, 3, 5, 7, 8, 10, 12, 13, 15, 17, 18, 19, 20, 21, 22, 23, 23, 24, 24, 25, 25, 26, 27, 27, 28, 28, 29, 29, 30, 31];
 
     private readonly HevcPicture _picture;
     private readonly HevcSps _sps;
