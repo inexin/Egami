@@ -39,6 +39,12 @@ internal static class DngSources
         try
         {
             RawReader.MeasureBlack(frame, pixels);
+            bool dngSource = RawDetect.IsDng(file.Source.Data.AsSpan(0, Math.Min(file.Source.Length, RawDetect.SignatureLength)));
+            if (!dngSource && frame.Cfa is { Rows: not 2 } or { Columns: not 2 })
+            {
+                pixels = CropToActive(frame, pixels, input);
+            }
+
             if (frame.Profile.ColorMatrix1 is null)
             {
                 Unknown(frame, warnings);
@@ -46,7 +52,7 @@ internal static class DngSources
 
             RasterMetadata metadata = new();
             file.ReadMetadata(metadata, input);
-            bool dng = RawDetect.IsDng(file.Source.Data.AsSpan(0, Math.Min(file.Source.Length, RawDetect.SignatureLength)));
+            bool dng = dngSource;
             (bool noteBigEndian, long noteOffset) = MakerNoteSource(file);
             return new DngContent
             {
@@ -65,6 +71,32 @@ internal static class DngSources
             pixels.Dispose();
             throw;
         }
+    }
+
+    /// <summary>
+    /// Keeps only the active area of a maker file whose colour filter array is not 2 × 2 (Fujifilm's X-Trans), with the pattern
+    /// turned to start there, as Adobe DNG Converter stores such files: LibRaw reads an X-Trans DNG only when its active area
+    /// starts at the image's corner. Files with opcode lists, whose areas are in the full image's coordinates, keep it whole.
+    /// </summary>
+    private static RawPixels CropToActive(RawFrame frame, RawPixels pixels, EgamiInput input)
+    {
+        Rect active = frame.Active;
+        if ((active.X == 0 && active.Y == 0 && active.Width == pixels.Width && active.Height == pixels.Height)
+            || frame.Opcodes1 is not null || frame.Opcodes2 is not null || frame.Opcodes3 is not null || pixels.IsFloat)
+        {
+            return pixels;
+        }
+
+        RawPixels cropped = new(input, active.Width, active.Height, pixels.Samples, false);
+        for (int y = 0; y < active.Height; y++)
+        {
+            pixels.U16Row(active.Y + y).Slice(active.X * pixels.Samples, active.Width * pixels.Samples).CopyTo(cropped.U16Row(y));
+        }
+
+        frame.Cfa = frame.Cfa!.Shift(active.X, active.Y);
+        frame.Active = new Rect(0, 0, active.Width, active.Height);
+        pixels.Dispose();
+        return cropped;
     }
 
     /// <summary>Where the maker note was: its file's byte order and the offset of EXIF's MakerNote, for DNGPrivateData.</summary>
