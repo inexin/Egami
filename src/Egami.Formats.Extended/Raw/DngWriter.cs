@@ -485,19 +485,72 @@ internal static class DngWriter
             return null;
         }
 
-        RawDeveloper developer = new(frame, new RawReaderOptions(), half, ColorProfile.Srgb, warnings);
         using EgamiInput input = new(Stream.Null, context, CancellationToken.None);
-        Raster<Rgb8> raster = Raster.Create<Rgb8>(developer.Output.Width, developer.Output.Height, context);
+        RawPixels pixels = content.Pixels;
+        RawPixels? halved = null;
+        (Rect active, (double, double, double, double) crop) = (frame.Active, frame.Crop);
+        if (half && frame.Cfa is null && frame.Opcodes1 is null && frame.Opcodes2 is null && frame.Opcodes3 is null)
+        {
+            // LinearRaw has no half-size develop of its own: develop a copy averaged 2 × 2, with the areas halved to match.
+            halved = Halve(pixels, input);
+            pixels = halved;
+            (double cx, double cy, double cw, double ch) = crop;
+            frame.Active = new Rect(active.X / 2, active.Y / 2, Math.Max(1, active.Width / 2), Math.Max(1, active.Height / 2));
+            frame.Crop = (cx / 2, cy / 2, Math.Max(1, cw / 2), Math.Max(1, ch / 2));
+        }
+
         try
         {
-            developer.Run(content.Pixels, input, (y, row) => PixelConvert.Convert(row, raster.Row(y)));
-            return raster;
+            // A half-size develop feeds previews of 1024 pixels at most, where colour noise reduction shows nothing but costs most
+            // of the time; a full preview gets the default develop.
+            RawDeveloper developer = new(frame, half ? new RawReaderOptions { ColorNoiseReduction = 0 } : new RawReaderOptions(), half, ColorProfile.Srgb, warnings);
+            Raster<Rgb8> raster = Raster.Create<Rgb8>(developer.Output.Width, developer.Output.Height, context);
+            try
+            {
+                developer.Run(pixels, input, (y, row) => PixelConvert.Convert(row, raster.Row(y)));
+                return raster;
+            }
+            catch
+            {
+                raster.Dispose();
+                throw;
+            }
         }
-        catch
+        finally
         {
-            raster.Dispose();
-            throw;
+            (frame.Active, frame.Crop) = (active, crop);
+            halved?.Dispose();
         }
+    }
+
+    /// <summary>Returns LinearRaw data at half the width and height, each sample the mean of a 2 × 2 block.</summary>
+    private static RawPixels Halve(RawPixels pixels, EgamiInput input)
+    {
+        int width = Math.Max(1, pixels.Width / 2), height = Math.Max(1, pixels.Height / 2), s = pixels.Samples;
+        RawPixels half = new(input, width, height, s, pixels.IsFloat);
+        for (int y = 0; y < height; y++)
+        {
+            int y0 = Math.Min(2 * y, pixels.Height - 1), y1 = Math.Min((2 * y) + 1, pixels.Height - 1);
+            for (int x = 0; x < width; x++)
+            {
+                int x0 = Math.Min(2 * x, pixels.Width - 1) * s, x1 = Math.Min((2 * x) + 1, pixels.Width - 1) * s;
+                for (int c = 0; c < s; c++)
+                {
+                    if (pixels.IsFloat)
+                    {
+                        Span<float> a = pixels.F32Row(y0), b = pixels.F32Row(y1);
+                        half.F32Row(y)[(x * s) + c] = (a[x0 + c] + a[x1 + c] + b[x0 + c] + b[x1 + c]) / 4;
+                    }
+                    else
+                    {
+                        Span<ushort> a = pixels.U16Row(y0), b = pixels.U16Row(y1);
+                        half.U16Row(y)[(x * s) + c] = (ushort)((a[x0 + c] + a[x1 + c] + b[x0 + c] + b[x1 + c] + 2) / 4);
+                    }
+                }
+            }
+        }
+
+        return half;
     }
 
     /// <summary>Makes IFD0 the thumbnail: uncompressed 8-bit RGB in one strip.</summary>
