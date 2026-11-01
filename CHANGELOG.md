@@ -3,7 +3,16 @@
 All notable changes to Egami are listed here. Egami follows [Semantic Versioning](https://semver.org): from 1.0, public API
 changes that break code come only in a new major version.
 
-## Every library package, unreleased
+## Egami train 1.4.0, Egami.SystemDrawing 1.0.0-preview.3 and Egami.Metafiles 1.0.2 (2026-11-01)
+
+The release train (Egami, Egami.Drawing, Egami.Fonts, Egami.Svg, Egami.Css, Egami.Heic, Egami.Formats.Extended and Egami.Cli)
+moves to 1.4.0 together. It adds API and removes none. The sections below list the changes package by package: DDS
+textures, PSD layers, RAW camera formats and DNG writing, a HEIC encoder, JPEG XL and AVIF extras, TIFF Zstd and LZMA,
+arithmetic and lossless JPEG writing, and speed work in Egami.Drawing and Egami.Fonts. Egami.Svg has no changes and ships as
+1.4.0 to keep the train together; Egami.Css and Egami.Cli.Host are unlisted on NuGet from this release on (they still
+restore as dependencies). Egami.SystemDrawing 1.0.0-preview.3 and Egami.Metafiles 1.0.2 need Egami 1.4.0.
+
+## Every library package, from the 2026-11-01 releases on
 
 - Each NuGet package carries `AGENTS.md`, a short guide for coding agents next to its readme: Egami's own names, the package's
   entry points, samples from the tested docs samples and common mistakes. The same guides are on the docs site under
@@ -11,13 +20,13 @@ changes that break code come only in a new major version.
 - Each NuGet package carries `THIRD-PARTY-NOTICES.md` at its root, so the notices of the third-party tables, data and code
   Egami uses (libtiff, Unicode, GS1, HarfBuzz and the rest) travel with the package, not only with the repository.
 
-## Egami.Metafiles, unreleased
+## Egami.Metafiles 1.0.2 (2026-11-01)
 
 - A GDI pen whose dash pattern is shorter than a device pixel (zero-length user-style entries, say) draws solid instead of
   cutting each line into tens of thousands of dashes it could not show: fuzz-found 600-byte EMF files rendered four times at
   128 pixels took 0.9 s and now take 0.09 s. Pens with longer patterns draw as before.
 
-## Egami.Heic, unreleased
+## Egami.Heic 1.4.0 (2026-11-01)
 
 HEIC encoder (HEIC encoder Build Plan tasks 1 to 14). All additive.
 
@@ -56,7 +65,7 @@ Video Build Plan task 31: HEVC decode speed. No API changes.
   elsewhere, with the same output), and the merge and AMVP candidate lists stop at the candidate the stream picks. In
   instructions a frame it now takes 1.99 times FFmpeg's at 1080p and 1.73 times at 4K 10-bit, from 13.9 and 19.3 times.
 
-## Egami.Formats.Extended, unreleased
+## Egami.Formats.Extended 1.4.0 (2026-11-01)
 
 DNG writing, PR B. Additive.
 
@@ -131,7 +140,7 @@ DDS textures, stage C (BC7 and BC6H encoders).
   BC3 five times as fast as ImageMagick. Legacy Q8W8V8U8 files as texconv writes them (an alpha mask without the alpha flag)
   now load.
 
-## Egami, unreleased
+## Egami 1.4.0 (2026-11-01)
 
 HEIC encoder, core side. No public API change.
 
@@ -352,7 +361,7 @@ Small format gaps from the on-demand list. All additive.
   splat. A 512-pixel solid source-over row through coverage takes 0.78 µs instead of 2.35 µs; a 10-pixel row 54 ns instead of
   124 ns.
 
-## Egami.Drawing, unreleased
+## Egami.Drawing 1.4.0 (2026-11-01)
 
 - The ink canvas blends with core Egami's ink math, which the PSD flattener shares, and takes the new blend modes (Divide to
   Dissolve, 2.3.10); its pixels and speed are unchanged.
@@ -379,7 +388,7 @@ Small format gaps from the on-demand list. All additive.
   scaled `DrawImage` of a 640 × 480 photo allocates 6 KB instead of 4.9 MB, and drawing a 64 × 64 part of it takes 0.7 ms
   instead of 2.6 ms.
 
-## Egami.Fonts, unreleased
+## Egami.Fonts 1.4.0 (2026-11-01)
 
 - Shaping text for the first time takes about 30 % less: each glyph's GDEF properties are looked up in the class tables once
   per face and kept (the tables are searched for every glyph before, and again after each substitution), code points 0 to 255
@@ -387,7 +396,7 @@ Small format gaps from the on-demand list. All additive.
   growing lists and copying them. The glyphs and positions are the same. Egami.SystemDrawing's `MeasureString` of a line it has
   not measured before takes about 8.3 µs instead of 12 µs on a slow cloud machine.
 
-## Egami.SystemDrawing, unreleased
+## Egami.SystemDrawing 1.0.0-preview.3 (2026-11-01)
 
 - `Graphics.MeasureString` takes about 0.7 µs instead of 7.1 µs for a 43-character line it has measured before, and allocates
   0.7 KB instead of 13 KB, with the same sizes; GDI+ takes 0.56 µs. Shaped runs of strings up to 256 characters are kept per
@@ -395,7 +404,7 @@ Small format gaps from the on-demand list. All additive.
   list. A string not measured before still costs about 7 µs, the cost of shaping it. `DrawString` gets the same cache and
   allocates half as much (239 KB instead of 451 KB for 20 lines).
 
-## Egami.Cli, unreleased
+## Egami.Cli 1.4.0 (2026-11-01)
 
 - `--lossless` also writes lossless JPEG when the output is JPEG (the predictor picked per image, no point transform;
   `--set jpeg.lossless.predictor=N` and the other `jpeg.lossless.*` settings choose more), and the new `--arithmetic` writes
