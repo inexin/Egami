@@ -42,6 +42,9 @@ Egami.Video.Filters.IVideoFilter.TryReceive(out Egami.Video.YuvVideoFrame? frame
 override Egami.Video.Filters.DeinterlacerOptions.Equals(object? obj) -> bool
 override Egami.Video.Filters.DeinterlacerOptions.GetHashCode() -> int
 override Egami.Video.Filters.DeinterlacerOptions.ToString() -> string!
+static Egami.Video.Analysis.AudioPictures.Spectrogram(System.IO.Stream! stream, Egami.Video.Analysis.SpectrogramOptions? options = null, Egami.Video.MediaContext? context = null, System.IProgress<Egami.Video.MediaProgress>? progress = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> Egami.Raster<Egami.Pixels.Rgba8>!
+static Egami.Video.Analysis.AudioPictures.Waveform(System.IO.Stream! stream, Egami.Video.Analysis.WaveformOptions? options = null, Egami.Video.MediaContext? context = null, System.IProgress<Egami.Video.MediaProgress>? progress = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> Egami.Raster<Egami.Pixels.Rgba8>!
+static Egami.Video.Analysis.MediaAnalysis.Run(System.IO.Stream! stream, Egami.Video.Analysis.MediaAnalysisOptions? options = null, Egami.Video.MediaContext? context = null, System.IProgress<Egami.Video.MediaProgress>? progress = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> Egami.Video.Analysis.MediaAnalysisResult!
 static Egami.Video.Filters.DeinterlacerOptions.Default.get -> Egami.Video.Filters.DeinterlacerOptions!
 static Egami.Video.Filters.DeinterlacerOptions.operator !=(Egami.Video.Filters.DeinterlacerOptions? left, Egami.Video.Filters.DeinterlacerOptions? right) -> bool
 static Egami.Video.Filters.DeinterlacerOptions.operator ==(Egami.Video.Filters.DeinterlacerOptions? left, Egami.Video.Filters.DeinterlacerOptions? right) -> bool
