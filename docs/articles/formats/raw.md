@@ -12,7 +12,7 @@ without it, a DNG opens as TIFF and only its preview pages load.
 | | |
 | --- | --- |
 | Reads | DNG 1.0 to 1.7: colour filter arrays of any pattern and LinearRaw, uncompressed 1 to 32-bit integers and 16, 24 or 32-bit floats, lossless JPEG, Deflate with the integer and floating-point predictors, lossy JPEG and JPEG XL, in strips or tiles; linearization tables, black level patterns and deltas, white levels, active area and default crop; opcode lists 1 to 3; camera profiles (dual-illuminant colour matrices, ForwardMatrix, HueSatMap, LookTable, tone curve); embedded previews. The maker formats of [Maker formats](#maker-formats) |
-| Writes | Nothing (camera RAW is read-only) |
+| Writes | DNG: any RAW file Egami reads, with its sensor data unchanged (`RawFormat.ConvertToDng`), and any raster (`Save` with `RawFormat.Info`): a RAW mosaic as a colour filter array DNG, anything else as LinearRaw |
 | Natural pixel type | `Rgb16` in sRGB for a develop, or in the RGB space `ConvertColorTo` names; for `RawOutput.Mosaic`, `Gray16` (CFA) or `Rgb16` (LinearRaw), `GrayF32` or `RgbF32` for float data; for a preview, the JPEG's `Rgb8` |
 | `FormatInfo` | `RawFormat.Info`: name `RAW`, extensions `.dng`, `.cr2`, `.nef`, `.nrw`, `.pef`, `.arw`, `.sr2`, `.orf`, `.rw2`, `.raf` and `.cr3`, with each format's MIME type |
 
@@ -153,4 +153,16 @@ EXIF (with GPS) and XMP come through as for TIFF.
   the mosaic, so Canon sRAW and mRAW files get colour noise reduction only.
 - Adobe gives some Canon sRAW and mRAW files a brighter baseline exposure than the camera's normal raws (+0.25 EV for the EOS 5D
   Mark II, +0.34 EV for the EOS 70D, by a rule not yet known); Egami uses the camera's raw one.
-- Egami writes no RAW or DNG files.
+- DNG writing does not take CR3 files (Egami does not decode their CRX data for it), writes BigTIFF past 4 GB (which DNG
+  readers, Egami's included, may not open), and makes previews from Egami's own develop.
+
+## Writing DNG
+
+[!code-csharp[](../../../tests/Egami.DocSamples/FormatsExtended.cs#raw-dng)]
+
+`DngWriterOptions` sets the raw data's `Compression`, a `DngCompression` (lossless JPEG by default, as Adobe writes, with a colour filter array row
+coded as pairs; Deflate for floating-point data; `None`; or DNG 1.7's lossless JPEG XL), the `TileSize` (256), the `Preview`
+(a 256-pixel thumbnail and a 1024-pixel JPEG by default) and `ParallelCompression` (on). A converted file keeps the source's
+levels, active area, crop, colour filter pattern, linearization table and opcode lists, a colour profile from the file or the
+camera table (a camera in neither gets the one Egami develops it with, and a `Raw.DngCameraUnknown` warning), EXIF, XMP and
+the maker note in DNGPrivateData; a DNG source keeps every tag it had.

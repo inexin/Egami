@@ -44,6 +44,15 @@ encoder gathers the image and calls `Write` at the end.
 
 Writing your own operation or pixel type is covered in [Custom operations and formats](../guides/extending.md).
 
+## Converting without decoding
+
+A writer that can turn a file of another format into its own without decoding it to pixels, as DNG keeps a camera's sensor
+data, also implements `IFormatConverter`. `Transcode` offers it the input when there are no operations and the reader options
+ask for nothing; it decides by the input's format, before reading anything, and returns `false` to have the file decoded as
+usual.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Extending.cs#format-converter)]
+
 ## Files with several images
 
 A format whose files hold several images, as TIFF holds pages, also implements `IMultiImageReader`. LoadAll asks it for one

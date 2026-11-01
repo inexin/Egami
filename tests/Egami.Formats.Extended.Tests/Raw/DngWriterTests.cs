@@ -277,31 +277,31 @@ public class DngWriterTests
             }
 
             using (before)
-            try
-            {
-                byte[] dng = Convert(raw, new DngWriterOptions { Preview = DngPreview.None });
-                using Raster<Gray16> after = Raster.Load<Gray16>(dng, Context, Mosaic);
-                bool same = before.Width == after.Width && before.Height == after.Height
-                    && Enumerable.Range(0, before.Height).All(y => before.Row(y).SequenceEqual(after.Row(y)));
-                TestContext.Current.TestOutputHelper?.WriteLine($"{Path.GetFileName(path)}: {raw.Length:N0} → {dng.Length:N0} B, {(same ? "same" : "DIFFERENT")}");
-                if (!same)
+                try
                 {
+                    byte[] dng = Convert(raw, new DngWriterOptions { Preview = DngPreview.None });
+                    using Raster<Gray16> after = Raster.Load<Gray16>(dng, Context, Mosaic);
+                    bool same = before.Width == after.Width && before.Height == after.Height
+                        && Enumerable.Range(0, before.Height).All(y => before.Row(y).SequenceEqual(after.Row(y)));
+                    TestContext.Current.TestOutputHelper?.WriteLine($"{Path.GetFileName(path)}: {raw.Length:N0} → {dng.Length:N0} B, {(same ? "same" : "DIFFERENT")}");
+                    if (!same)
+                    {
+                        failures.Add(Path.GetFileName(path));
+                    }
+                }
+                catch (NotSupportedException e)
+                {
+                    TestContext.Current.TestOutputHelper?.WriteLine($"{Path.GetFileName(path)}: not supported, {e.Message}");
+                }
+                catch (InvalidCastException)
+                {
+                    // LinearRaw and float files load as other pixel types; the RGB tests cover those.
+                }
+                catch (EgamiException e)
+                {
+                    TestContext.Current.TestOutputHelper?.WriteLine($"{Path.GetFileName(path)}: FAILED, {e.Message}");
                     failures.Add(Path.GetFileName(path));
                 }
-            }
-            catch (NotSupportedException e)
-            {
-                TestContext.Current.TestOutputHelper?.WriteLine($"{Path.GetFileName(path)}: not supported, {e.Message}");
-            }
-            catch (InvalidCastException)
-            {
-                // LinearRaw and float files load as other pixel types; the RGB tests cover those.
-            }
-            catch (EgamiException e)
-            {
-                TestContext.Current.TestOutputHelper?.WriteLine($"{Path.GetFileName(path)}: FAILED, {e.Message}");
-                failures.Add(Path.GetFileName(path));
-            }
         }
 
         Assert.Empty(failures);

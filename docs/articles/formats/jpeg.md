@@ -102,6 +102,11 @@ predicted from its neighbors and the difference coded, so the file loads back to
 the pixels' own: gray, RGB behind an Adobe marker, or CMYK, never subsampled or converted to YCbCr. `Quality`, `Subsampling`,
 `OptimizeHuffman` and `Precision` do not apply; `Progressive` or `ColorType = Ycck` with it throws `ArgumentException`.
 
+[!code-csharp[](../../../tests/Egami.DocSamples/AnimationAndMetadata.cs#jpeg-lossless-samples)]
+
+`JpegLosslessWriter` codes samples that are not pixels, at 2 to 16 bits with 1 to 4 components, exactly as saving the same
+samples as pixels codes them; it is how TIFF's and DNG's lossless JPEG tiles are written.
+
 | `JpegLosslessOptions` | Default | Does |
 | --- | --- | --- |
 | `Predictor` | automatic | 1 to 7, T.81's predictors (1 left, 2 above, 3 above left, 4 to 7 combinations); automatic tries each on rows spread through the image and keeps the smallest |

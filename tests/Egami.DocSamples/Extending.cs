@@ -9,6 +9,29 @@ using Egami.Pixels;
 
 namespace Egami.DocSamples;
 
+#region format-converter
+/// <summary>Writes RAW8 files; a RAW8 file transcoded to RAW8 with no operations is copied as it is, without decoding it.</summary>
+public sealed class CopyingRaw8Writer : IFormatWriter, IFormatConverter
+{
+    public void Write<TPixel>(Raster<TPixel> raster, Stream output, WriterOptions options)
+        where TPixel : unmanaged, IPixelType<TPixel>
+    {
+        Raw8Format.Info.Writer!.Write(raster, output, options);
+    }
+
+    public bool TryConvert(Stream input, FormatInfo inputFormat, Stream output, WriterOptions options, EgamiContext context)
+    {
+        if (inputFormat.Name != Raw8Format.Info.Name)
+        {
+            return false;
+        }
+
+        input.CopyTo(output);
+        return true;
+    }
+}
+#endregion
+
 #region custom-operation
 /// <summary>Swaps red and blue, in parallel bands of rows.</summary>
 public sealed class SwapRedBlue : IRasterOperation
@@ -290,6 +313,20 @@ public static class StreamingRaw8Format
 [Collection("Samples")]
 public class Extending
 {
+    [Fact]
+    public void FormatConverter()
+    {
+        using Raster<Rgba8> raster = Raster.Create<Rgba8>(3, 2);
+        using MemoryStream raw8 = new();
+        raster.Save(raw8, Raw8Format.Info);
+        EgamiContext context = EgamiContext.Default.WithFormat(Raw8Format.Info);
+        FormatInfo copying = Raw8Format.Info with { Name = "RAW8 copy", Writer = new CopyingRaw8Writer() };
+        raw8.Position = 0;
+        using MemoryStream output = new();
+        Raster.Transcode(raw8, output, copying, context: context);
+        Assert.Equal(raw8.ToArray(), output.ToArray());
+    }
+
     [Fact]
     public void Reach()
     {

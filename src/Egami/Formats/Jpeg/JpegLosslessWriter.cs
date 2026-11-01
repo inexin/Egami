@@ -10,6 +10,9 @@ namespace Egami.Formats.Jpeg;
 /// tiles, DNG's sensor tiles and any other format that stores lossless JPEG streams. The samples are coded exactly as saving the
 /// same samples as pixels with <see cref="JpegLosslessOptions"/> codes them.
 /// </summary>
+/// <example>
+/// <code language="csharp" source="../../../../tests/Egami.DocSamples/AnimationAndMetadata.cs" region="jpeg-lossless-samples"/>
+/// </example>
 public static class JpegLosslessWriter
 {
     /// <summary>

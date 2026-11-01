@@ -66,6 +66,9 @@ public interface IFormatWriter
 /// asks the output format's writer when there are no operations and the reader options ask for nothing beyond the format's
 /// defaults; a writer that declines is used as usual.
 /// </summary>
+/// <example>
+/// <code language="csharp" source="../../../tests/Egami.DocSamples/Extending.cs" region="format-converter"/>
+/// </example>
 public interface IFormatConverter
 {
     /// <summary>
@@ -78,5 +81,8 @@ public interface IFormatConverter
     /// <param name="options">How to write.</param>
     /// <param name="context">The context of the call: its formats, limits and diagnostics.</param>
     /// <returns><see langword="true"/> when the file was converted; <see langword="false"/>, with nothing read or written, to decode it as usual.</returns>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/Extending.cs" region="format-converter"/>
+    /// </example>
     bool TryConvert(Stream input, FormatInfo inputFormat, Stream output, WriterOptions options, EgamiContext context);
 }
