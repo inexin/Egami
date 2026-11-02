@@ -1,7 +1,7 @@
 # Extended formats
 
 Egami.Formats.Extended reads and writes image formats that most apps never meet but some still need: PCX, SGI, Sun raster,
-XBM, XPM, WBMP, Farbfeld and DDS textures, and reads camera RAW files (DNG). They are plugins on core Egami's public format API, the one [your own format](custom.md) uses,
+XBM, XPM, WBMP, Farbfeld and DDS textures, reads camera RAW files (DNG, CR2, NEF, PEF, ARW, ORF, RW2 and RAF) and writes DNG. They are plugins on core Egami's public format API, the one [your own format](custom.md) uses,
 so they load, probe, stream and save as the core formats do, inside the same safety limits. The package depends on core
 Egami only and ships with every Egami release.
 

@@ -3,24 +3,17 @@
 A fully managed, MIT-licensed video library for .NET 10, built on [Egami](https://github.com/inexin/Egami). Video frames are
 Egami rasters, so resizing, color conversion and drawing from Egami work on video with no copying.
 
-Version 0.1 (V1) covers:
+- Containers: MP4 and QuickTime (fragmented MP4 too), Matroska and WebM, AVI (OpenDML over 1 GB), IVF, YUV4MPEG2, Ogg, and the
+  audio files WAV, FLAC, MP3, AIFF and CAF.
+- Video codecs: AV1, VP9 and VP8 decode and encode (AV1 decodes equal to libaom, VP9 to libvpx), FFV1 for lossless
+  archives and Motion JPEG. H.264 and HEVC decode through the opt-in packages Egami.Video.H264 and Egami.Video.Hevc.
+- Audio codecs: PCM, FLAC, Opus and ALAC decode and encode; Vorbis, MP3, AC-3 and G.711 decode; audio filters.
+- Remuxing, trimming with smart cut and seeking without decoding what need not be; SRT, WebVTT and ASS subtitles.
+- Editing (`VideoEdit`, `Clip`): joins, transitions, overlays, keying, layouts and titles, rendered to a file.
+- Deinterlacing (`Deinterlacer`), HDR metadata, scene detection, waveforms and spectrograms.
 
-- AVI read and write, including files over 1 GB (OpenDML).
-- Matroska read and write; the reader also accepts WebM.
-- Motion JPEG decode and encode on top of Egami's JPEG codec, with planar YUV frames (`YuvRaster`) or RGB rasters.
-- Audio and other tracks copied through untouched, so remuxing keeps the sound.
-- Seeking to the nearest keyframe, from any `Stream`.
-
-Version 0.2 (V2) adds VP8 decode, WebM alpha, IVF and exact seeking. Version 0.3 (V3) adds VP9 decode in all four profiles
-(8, 10 and 12 bit; 4:2:0, 4:2:2, 4:4:4 and RGB), equal to libvpx frame for frame, from WebM, Matroska and IVF. Version 0.4
-(V4.1) adds MP4 and QuickTime. Version 0.5 (V4.2) adds AV1 decode (8, 10 and 12 bit, 4:0:0 to 4:4:4, film grain), equal to
-libaom frame for frame, from WebM, Matroska, MP4 and IVF. Version 0.6 adds fragmented MP4 writing and SRT, WebVTT and ASS
-subtitle files (`SubtitleDocument`): read, edit, retime and convert.
-
-Audio (V5) adds PCM and FLAC decode and encode, Opus decode and encode, Vorbis and MP3 decode, and WAV, FLAC, Ogg and MP3 files.
-Version 0.6 (V5.9) adds ALAC decode and encode, AC-3 and G.711 decode, and AIFF, CAF and raw AC-3 files.
-
-Royalty-free codecs only (the MP3 and AC-3 patents have expired). No native code, no wrapped C or C++ libraries.
+Royalty-free codecs only in this package (the MP3 and AC-3 patents have expired). No native code, no wrapped C or C++
+libraries.
 
 ## Read frames
 

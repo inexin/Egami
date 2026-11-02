@@ -6,8 +6,9 @@ Egami.Heic reads and writes HEIC, the HEIF files with HEVC-coded images that iPh
   `Raster.Probe` gives their size, depth and orientation, and `Raster.Load` says that this package is needed.
 - Grids, alpha, color profiles, orientation, Exif and XMP come from core Egami's HEIF reader, shared with AVIF.
 
-- A managed HEVC decoder for still images: the Main, Main 10, Main Still Picture and format range extensions profiles, up to 12
-  bits. Grid tiles decode in parallel, and the pixels equal libheif's heif-dec output.
+- A managed HEVC decoder: the Main, Main 10, Main Still Picture and format range extensions profiles, up to 12 bits, intra and
+  inter pictures. Grid tiles decode in parallel, image sequences such as bursts load every frame, and the pixels equal libheif's
+  heif-dec output. `HevcStreamDecoder` decodes HEVC video streams, for Egami.Video.Hevc or any other source.
 
 - A managed HEVC intra encoder behind `Save`: lossy at heif-enc's quality scale (about the size of x265's medium preset at the
   same quality), lossless, alpha, grids, Exif, XMP, ICC, orientation, gain maps and thumbnails, through `HeicWriterOptions`.

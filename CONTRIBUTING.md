@@ -80,7 +80,8 @@ in `tests/video/corpus` and fetch the VP8 and VP9 test vectors into `.cache/vide
 codecs; `profile-vp9.py` profiles VP9 against libvpx; `make-subtitle-tracks.py`, `check-subtitle-tracks.py`,
 `make-subtitle-references.py` and `time-subtitles.py` make and check the subtitle files against FFmpeg, MKVToolNix and MP4Box;
 `make-h264-corpus.py` makes the H.264 clips and their FFmpeg frame hashes, and `make-h264-tables.py` regenerates Egami.Video.H264's
-CAVLC and CABAC tables from OpenH264; `count-instructions.py` counts a decoder's instructions, branches and cycles per frame
+CAVLC and CABAC tables from OpenH264; `make-hevc-corpus.py` makes the HEVC clips and their FFmpeg frame hashes;
+`check-deinterlace.py` gates the deinterlacer's quality and speed against FFmpeg's yadif; `count-instructions.py` counts a decoder's instructions, branches and cycles per frame
 from the CPU's counters against FFmpeg's, repeatably even on a busy machine (also Opus per packet, and per operation the image
 scenarios of `Egami.Benchmarks -- --time-image`), and `make-count-clips.py` makes the clips it counts for each codec. Its gates against FFmpeg, libvpx and the Matroska tools live in the
 egami-compare repository (`video/`). Benchmarks: `dotnet run -c Release --project benchmarks/Egami.Video.Benchmarks`.
@@ -90,7 +91,8 @@ egami-compare repository (`video/`). Benchmarks: `dotnet run -c Release --projec
 | Path | Contents |
 | --- | --- |
 | `src/Egami/` | The core library |
-| `src/Egami.Drawing/`, `src/Egami.Fonts/`, `src/Egami.Fonts.Substitutes/`, `src/Egami.Svg/`, `src/Egami.Css/`, `src/Egami.Metafiles/`, `src/Egami.Barcodes/`, `src/Egami.Heic/`, `src/Egami.Video/`, `src/Egami.Video.H264/` | The other packages ([Packages](docs/articles/packages.md)) |
+| `src/Egami.Drawing/`, `src/Egami.Fonts/`, `src/Egami.Fonts.Substitutes/`, `src/Egami.Svg/`, `src/Egami.Css/`, `src/Egami.Metafiles/`, `src/Egami.Barcodes/`, `src/Egami.Heic/`, `src/Egami.Formats.Extended/`, `src/Egami.SystemDrawing/`, `src/Egami.Video/`, `src/Egami.Video.H264/`, `src/Egami.Video.Hevc/` | The other packages ([Packages](docs/articles/packages.md)) |
+| `src/Egami.Cli/`, `src/Egami.Video.Cli/`, `src/Egami.Cli.Host/`, `src/Egami.Cli.Generators/` | The `egami` and `egami-video` commands, the command and MCP host code both build on, and its source generator |
 | `src/Shared/` | Internal source compiled into more than one package as linked files: `src/Shared/Nal/` is the NAL code H.264 and HEVC share, `src/Shared/GdiPlus/` the GDI+ semantics Egami.Metafiles and Egami.SystemDrawing share (their READMEs say how) |
 | `tests/Egami.Tests/` | Unit, conformance, round-trip and SIMD equivalence tests (xUnit) for core Egami |
 | `tests/Egami.<Package>.Tests/` | The tests of each other package |
@@ -146,13 +148,15 @@ branch, add the new version at the top of `docs/versions.json` and build each fo
 
 ## Releases
 
-Egami, Egami.Drawing, Egami.Fonts, Egami.Svg, Egami.Css, Egami.Heic and Egami.Cli form one release train: they share one
+Egami, Egami.Drawing, Egami.Fonts, Egami.Svg, Egami.Css, Egami.Heic, Egami.Formats.Extended and Egami.Cli form one release train: they share one
 version, `EgamiVersion` in `Directory.Build.props`, and release together, so never set a version in their project files. A
-tag `v<version>` (that version) runs `.github/workflows/release.yml`: it tests, packs the seven packages and pushes them to
+tag `v<version>` (that version) runs `.github/workflows/release.yml`: it tests, packs the eight packages and pushes them to
 nuget.org with trusted publishing, after a maintainer approves the `nuget` environment. The repository holds no NuGet API
 key: a trusted publishing policy on nuget.org names this repository, `release.yml` and the `nuget` environment, and the secret `NUGET_USER` holds the
-nuget.org account name. Egami.Barcodes, Egami.Metafiles, Egami.Fonts.Substitutes and Egami.Video keep their own version in
-their project file: a tag `<package>-v<version>`, for example `Egami.Barcodes-v1.0.1`, runs the same workflow for that one
+nuget.org account name. Egami.Barcodes, Egami.Metafiles, Egami.Fonts.Substitutes and Egami.SystemDrawing keep their own
+version in their project file; Egami.Video, Egami.Video.H264, Egami.Video.Hevc and Egami.Video.Cli share `EgamiVideoVersion` in
+`Directory.Build.props`, and Egami.Cli.Host takes `EgamiVersion` but is tagged on its own (`Egami.Cli.Host-v<version>`). A tag
+`<package>-v<version>`, for example `Egami.Barcodes-v1.0.1`, runs the same workflow for that one
 package at that version, so it releases on its own. Only maintainers tag releases. A package that only other Egami packages
 or tools use sets `<EgamiUnlisted>true</EgamiUnlisted>` in its project file (Egami.Css and Egami.Cli.Host do): nuget.org
 cannot take a package unlisted, so `release.yml` unlists that version right after the push. It stays out of search but
