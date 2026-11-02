@@ -474,6 +474,23 @@ Where GDI+ puts text in a layout box (2.7.6 task 28), measured on Windows. Addit
   linked face's aliased bitmaps), and grid-fitted metrics apply to fallback runs too. Fonts that set none of these shape and
   draw as before.
 
+## Egami.Video 1.2.1 and Egami.Video.Cli 1.2.1 (unreleased)
+
+Fixes, no API changes. Egami.Video.H264 and Egami.Video.Hevc have no changes; they move to 1.2.1 only when released with
+Egami.Video.
+
+- Edits rendered with FFV1 or uncompressed video no longer fail on a fade (`egami-video fade --codec ffv1`): the renderer sends
+  source planes for plain frames and composed RGBA frames for fades, and those encoders refused a frame whose layout differed
+  from the first. FFV1 and uncompressed video now convert such a frame to the stream's layout.
+- Encoding interlaced frames keeps their field order. The FFV1 encoder codes each frame's order in its slice headers
+  (picture_structure) and states the first frame's on its track; the FFV1 decoder reports picture_structure as the frame's
+  `FieldOrder`; `VideoWriter` gives the track the first frame's field order when the encoder states none, so Matroska (and
+  every other codec) keeps it; `egami-video encode` carries a source's field order, the frame's or else the container's, unless
+  it deinterlaces or scales.
+- Matroska `FieldOrder` 9 now reads as top field first and 14 as bottom field first, as RFC 9559 defines them (they read
+  swapped). FFmpeg writes 9 for top-field-first FFV1, uncompressed and most other video, so those files read with the wrong
+  order before.
+
 ## Egami.Video 1.2.0 (2026-11-02)
 
 With Egami.Video.H264, Egami.Video.Hevc (new) and Egami.Video.Cli 1.2.0, all at Egami.Video's version. All additive to 1.1.

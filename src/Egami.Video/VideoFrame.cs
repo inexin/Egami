@@ -53,9 +53,10 @@ public abstract class VideoFrame : IDisposable
     /// <summary>
     /// Gets whether the frame is two interlaced fields woven together, and which of them comes first in time, or
     /// <see cref="FieldOrder.Progressive"/>. H.264 tells it per frame: from the picture timing SEI's pic_struct, else from how
-    /// the frame was coded (two field pictures or an MBAFF frame) and its fields' order counts, as FFmpeg reports it. Other
-    /// decoders give <see cref="FieldOrder.Progressive"/>; the track's <see cref="VideoTrackInfo.FieldOrder"/> says what the
-    /// container states.
+    /// the frame was coded (two field pictures or an MBAFF frame) and its fields' order counts, as FFmpeg reports it; FFV1 from
+    /// its slice headers' picture_structure. Other decoders give <see cref="FieldOrder.Progressive"/>; the track's
+    /// <see cref="VideoTrackInfo.FieldOrder"/> says what the container states. Encoders and <c>VideoWriter</c> take the first
+    /// frame's field order for the track when the encoder states none, and the FFV1 encoder codes each frame's.
     /// </summary>
     public FieldOrder FieldOrder { get; init; }
 

@@ -180,7 +180,15 @@ internal static class EncodeCommand
                     MediaTime time = settings.Rate is null && source.KeepsTimes ? frame.Timestamp : new MediaTime(index, frameRate.Reciprocal());
                     try
                     {
-                        if (frame is YuvVideoFrame yuv)
+                        if (frame.FieldOrder != FieldOrder.Progressive)
+                        {
+                            // An interlaced frame keeps its field order, which the track and the encoder state. The wrapper borrows
+                            // the frame's planes or pixels, so it is not disposed.
+                            writer.WriteFrame(frame is YuvVideoFrame interlaced
+                                ? new YuvVideoFrame(interlaced.Raster, time) { FieldOrder = frame.FieldOrder }
+                                : new VideoFrame<Rgba8>(((VideoFrame<Rgba8>)frame).Raster, time) { FieldOrder = frame.FieldOrder });
+                        }
+                        else if (frame is YuvVideoFrame yuv)
                         {
                             writer.WriteFrame(yuv.Raster, time);
                         }
@@ -451,8 +459,14 @@ internal static class EncodeCommand
         private static IEnumerable<VideoFrame> Video(VideoSession session, FrameSource source, Settings settings)
         {
             bool jpeg = settings.Codec == VideoCodecs.MotionJpeg;
-            foreach (YuvVideoFrame frame in source.Frames(settings.Deinterlace, session.Context))
+
+            // Frames that do not state their field order take the container's, unless they are deinterlaced.
+            FieldOrder stated = settings.Deinterlace is null ? source.Track.FieldOrder : FieldOrder.Progressive;
+            foreach (YuvVideoFrame decoded in source.Frames(settings.Deinterlace, session.Context))
             {
+                YuvVideoFrame frame = decoded.FieldOrder != FieldOrder.Progressive || stated == FieldOrder.Progressive
+                    ? decoded
+                    : new YuvVideoFrame(decoded.Raster, decoded.Timestamp, decoded.Duration, decoded.Color) { FieldOrder = stated, Hdr = decoded.Hdr, RenderSize = decoded.RenderSize };
                 YuvRaster planes = frame.Raster;
 
                 // Uncompressed video keeps the planes exactly; Motion JPEG takes 8-bit planes without alpha.
@@ -467,12 +481,14 @@ internal static class EncodeCommand
 
                 Raster<Rgba8> image;
                 MediaTime time = frame.Timestamp;
+                // Scaling mixes the fields, so only a frame kept at its size stays interlaced.
+                FieldOrder fields = settings.Size is not { } resize || (resize.Width == frame.Width && resize.Height == frame.Height) ? frame.FieldOrder : FieldOrder.Progressive;
                 using (frame)
                 {
                     image = frame.Color?.TransferCharacteristics is 16 or 18 ? frame.ToRaster<Rgba8>(ColorProfile.Srgb) : FrameSource.ToImage(session, frame);
                 }
 
-                yield return new VideoFrame<Rgba8>(Fit(image, settings.Size ?? new Size(image.Width, image.Height)), time);
+                yield return new VideoFrame<Rgba8>(Fit(image, settings.Size ?? new Size(image.Width, image.Height)), time) { FieldOrder = fields };
             }
         }
 

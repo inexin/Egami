@@ -138,6 +138,47 @@ public class EditTests
     }
 
     [Theory]
+    [InlineData("ffv1")]
+    [InlineData("raw")]
+    public void FadesRenderWithCodecsThatKeepOneLayout(string codec)
+    {
+        // Video 1.2.1: the fades are composed in RGBA and the rest goes out as the source's planes; FFV1 and uncompressed video
+        // refused the second kind.
+        string a = EditClips.Make("lossless", 32, 32, Rate10, 10, 200, tone: null);
+        VideoEdit edit = new(new EditCanvas(32, 32, Rate10));
+        edit.Track.Add(Clip.Open(a).FadeIn(S(0.3)).FadeOut(S(0.3)));
+        string output = Path.Combine(Path.GetTempPath(), $"egami-edit-{Guid.NewGuid():N}.mkv");
+        try
+        {
+            Egami.Video.Codecs.VideoCodec chosen = codec == "ffv1" ? Egami.Video.Codecs.VideoCodecs.Ffv1 : Egami.Video.Codecs.RawVideoCodec.Instance;
+            edit.Render(output, new EditRenderOptions { Writer = new VideoWriterOptions { Codec = chosen } }, null, TestContext.Current.CancellationToken);
+            using VideoReader reader = VideoReader.Open(output);
+            List<YuvVideoFrame> frames = [.. reader.ReadFrames()];
+            try
+            {
+                Assert.Equal(10, frames.Count);
+                Assert.All(frames, f => Assert.Equal(frames[0].Raster.ChromaFormat, f.Raster.ChromaFormat));
+                List<int> green = [.. frames.Select(f =>
+                {
+                    using Raster<Rgba8> rgb = f.ToRaster<Rgba8>();
+                    return (int)rgb.Row(16)[16].G;
+                })];
+                Assert.InRange(green[0], 0, 6);
+                Assert.InRange(green[5], 194, 206);
+                Assert.InRange(green[9], 50, 80);
+            }
+            finally
+            {
+                frames.ForEach(f => f.Dispose());
+            }
+        }
+        finally
+        {
+            File.Delete(output);
+        }
+    }
+
+    [Theory]
     [InlineData(TransitionKind.Fade)]
     [InlineData(TransitionKind.FadeThroughColor)]
     [InlineData(TransitionKind.Dissolve)]

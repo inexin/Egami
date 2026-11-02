@@ -31,6 +31,7 @@ public sealed class VideoWriter : IDisposable
 
     // The video track as the first encoder described it, kept when a smart render restarts the encoder.
     private VideoTrackInfo? _track;
+    private FieldOrder _fieldOrder;
     private long _frames;
     private bool _finished;
 
@@ -61,7 +62,7 @@ public sealed class VideoWriter : IDisposable
     public AudioTrackInfo? AudioTrack => _audio is null ? null : _audio.Track with { Number = _videoNumber + 1 };
 
     /// <summary>Gets the video track, once the first frame has been written.</summary>
-    public VideoTrackInfo? Track => (_encoder?.Track ?? _track) is { } track ? track with { Number = _videoNumber } : null;
+    public VideoTrackInfo? Track => (_encoder?.Track ?? _track) is { } track ? Stated(track) : null;
 
     /// <summary>Gets the video codec the writer encodes with.</summary>
     internal VideoCodec Codec => _options.Codec;
@@ -349,15 +350,24 @@ public sealed class VideoWriter : IDisposable
     private void OpenMuxer(VideoTrackInfo track)
     {
         _muxer = _createMuxer(AudioTrack is { } audioTrack
-            ? [.. _options.OtherTracks, track with { Number = _videoNumber }, audioTrack]
-            : [.. _options.OtherTracks, track with { Number = _videoNumber }]);
+            ? [.. _options.OtherTracks, Stated(track), audioTrack]
+            : [.. _options.OtherTracks, Stated(track)]);
     }
+
+    /// <summary>The track numbered for the file, with the first frame's field order when the encoder states none.</summary>
+    private VideoTrackInfo Stated(VideoTrackInfo track) =>
+        track with { Number = _videoNumber, FieldOrder = track.FieldOrder != FieldOrder.Progressive ? track.FieldOrder : _fieldOrder };
 
     private void Encode(VideoFrame frame)
     {
         ObjectDisposedException.ThrowIf(_finished, this);
         if (_encoder is null)
         {
+            if (_muxer is null)
+            {
+                _fieldOrder = frame.FieldOrder;
+            }
+
             _encoder = CreateEncoder(frame.Width, frame.Height);
             _encoder.Send(frame);
 

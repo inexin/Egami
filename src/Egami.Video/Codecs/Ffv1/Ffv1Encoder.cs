@@ -19,6 +19,7 @@ internal sealed class Ffv1Encoder
     private readonly ParallelOptions _options = new();
     private YuvRaster? _source;
     private bool _keyframe;
+    private int _structure;
 
     public Ffv1Encoder(int width, int height, Ffv1Parameters parameters, int storageDepth)
     {
@@ -54,9 +55,10 @@ internal sealed class Ffv1Encoder
     /// <param name="keyframe">Whether the frame resets the coder's states.</param>
     /// <param name="maxParallelism">The most slices coded at once.</param>
     /// <param name="output">Receives the frame; grown as needed.</param>
-    public int Encode(YuvRaster source, bool keyframe, int maxParallelism, ref byte[] output)
+    /// <param name="structure">The slice headers' picture_structure: 0 unknown, 1 top field first, 2 bottom field first.</param>
+    public int Encode(YuvRaster source, bool keyframe, int maxParallelism, ref byte[] output, int structure = 0)
     {
-        (_source, _keyframe) = (source, keyframe);
+        (_source, _keyframe, _structure) = (source, keyframe, structure);
         try
         {
             int workers = Math.Min(Math.Max(1, maxParallelism), _slices.Length);
@@ -156,8 +158,9 @@ internal sealed class Ffv1Encoder
                 rc.WriteSymbol(state, 0, false);
             }
 
-            // Field order unknown; aspect ratio unknown, written 0:1 as FFmpeg expects (a 0 numerator is what RFC 9043 asks for).
-            rc.WriteSymbol(state, 0, false);
+            // The frame's field order (0 when progressive or not stated); aspect ratio unknown, written 0:1 as FFmpeg expects (a 0
+            // numerator is what RFC 9043 asks for).
+            rc.WriteSymbol(state, _owner._structure, false);
             rc.WriteSymbol(state, 0, false);
             rc.WriteSymbol(state, 1, false);
             if (_owner._keyframe)
