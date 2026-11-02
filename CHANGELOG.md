@@ -474,9 +474,10 @@ Where GDI+ puts text in a layout box (2.7.6 task 28), measured on Windows. Addit
   linked face's aliased bitmaps), and grid-fitted metrics apply to fallback runs too. Fonts that set none of these shape and
   draw as before.
 
-## Egami.Video, unreleased
+## Egami.Video 1.2.0 (2026-11-02)
 
-Video 1.2.0 extras (Build Plan tasks 1 to 4). All additive.
+With Egami.Video.H264, Egami.Video.Hevc (new) and Egami.Video.Cli 1.2.0, all at Egami.Video's version. All additive to 1.1.
+Video 1.2.0 extras (#238): all 10 design questions decided as recommended on 2026-11-01.
 
 - Deinterlacing: `Deinterlacer`, the first `IVideoFilter` (a new interface in `Egami.Video.Filters`, shaped like
   `IAudioFilter`: `Send`, `TryReceive`, `Flush`, `Reset`, `Latency`), turns interlaced `YuvVideoFrame`s progressive.
@@ -492,17 +493,23 @@ Video 1.2.0 extras (Build Plan tasks 1 to 4). All additive.
 - `--time-deinterlace` in the video benchmarks, and `tools/video/check-deinterlace.py`, the quality and speed gates against
   yadif.
 
-## Egami.Video.H264, unreleased
+## Egami.Video.H264 1.2.0 (2026-11-02)
 
-Video Build Plan task 30: general H.264 decode speed. No API changes.
+No API changes; the output is bit for bit as before.
 
-- H.264 decoding takes about 2% fewer instructions a frame at 1080p, progressive and MBAFF, with the same output: small hot
-  helpers of the deblocking strengths, motion and CABAC syntax inline, the CABAC engine's saved state stays in registers,
-  and short row fills are single stores.
+- V7.1 task 29 (#184): MBAFF frames decode about 3.3 times faster. A frame macroblock whose neighbours are all frame
+  macroblocks decodes straight in the frame, as in a progressive frame; a field macroblock decodes in a window per field
+  parity, so only neighbours in frame pairs are copied in and converted; MBAFF deblocking uses vector strengths and the
+  progressive filter wherever an edge is not mixed. At 1080i, instructions a frame fell from 7.1x FFmpeg's to 2.0x on a
+  progressive source coded MBAFF, and from 6.6x to 2.4x on a woven 50p source.
+- Video Build Plan task 30 (#195): H.264 decoding takes about 2% fewer instructions a frame at 1080p, progressive and MBAFF:
+  small hot helpers of the deblocking strengths, motion and CABAC syntax inline, the CABAC engine's saved state stays in
+  registers, and short row fills are single stores.
 
-## Egami.Video.Hevc, unreleased
+## Egami.Video.Hevc 1.2.0 (2026-11-02)
 
-V8: HEVC decode (H.264 and HEVC Build Plan tasks 26 to 28). A new opt-in package at Egami.Video's version.
+V8: HEVC decode (H.264 and HEVC Build Plan tasks 26 to 28, #189). A new opt-in package at Egami.Video's version; it depends
+on Egami.Heic 1.4.0 or later.
 
 - `HevcCodec`, `HevcFormat` and `WithHevc()`: HEVC video in MP4, MOV, Matroska and raw Annex B `.h265` files decodes through
   Egami.Heic's `HevcStreamDecoder`, Main, Main 10, Main 12 and the format range extensions to 12 bits. Frames equal FFmpeg's on
@@ -512,17 +519,19 @@ V8: HEVC decode (H.264 and HEVC Build Plan tasks 26 to 28). A new opt-in package
   and dvhe tracks decode as their HEVC base layer.
 - Decoding starts at an IRAP picture, after a seek too, and drops the RASL pictures a CRA picture skips there; broken data
   reports `Hevc.CorruptFrame` and follows the error mode.
+- Speed (Video task 31, #193, in Egami.Heic 1.4.0): 1.99x FFmpeg's instructions a frame at 1080p and 1.73x at 4K 10-bit,
+  from 13.9x and 19.3x.
 - An `hevc` fuzz target, and `--time-hevc` in the video benchmarks.
 
-## Egami.Video.Cli, unreleased
+## Egami.Video.Cli 1.2.0 (2026-11-02)
 
-- `--deinterlace [adaptive|bob]`, `--deinterlace-rate frame|field`, `--deinterlace-frames flagged|all` and `--field-order
-  tff|bff` on `encode`, `run`, `frames` and the editing commands. ffmpeg mode takes `-vf yadif` and `-vf bwdif` with their
-  `mode`, `parity` and `deint` options (bwdif runs as the adaptive deinterlacer, with a warning).
-
-- `egami-video overlay --key auto` reads the screen colour from the overlay's first frame: the median of its green or blue
-  pixels, whichever covers more of the frame (refused when neither covers 5 %). Without `--blend`, auto also picks a softer
-  edge for a pale screen, so grays and whites in front of it stay solid.
+- Deinterlacing (#238): `--deinterlace [adaptive|bob]`, `--deinterlace-rate frame|field`, `--deinterlace-frames
+  flagged|all` and `--field-order tff|bff` on `encode`, `run`, `frames` and the editing commands. ffmpeg mode takes `-vf
+  yadif` and `-vf bwdif` with their `mode`, `parity` and `deint` options (bwdif runs as the adaptive deinterlacer, with a
+  warning).
+- `egami-video overlay --key auto` (#187) reads the screen colour from the overlay's first frame: the median of its green or
+  blue pixels, whichever covers more of the frame (refused when neither covers 5 %). Without `--blend`, auto also picks a
+  softer edge for a pale screen, so grays and whites in front of it stay solid.
 
 ## Egami.Video.Cli 1.1.0 (2026-10-29)
 
