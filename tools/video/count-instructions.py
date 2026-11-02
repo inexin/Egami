@@ -102,9 +102,10 @@ def main():
     parser.add_argument("clip", help="clip path relative to the repo root")
     parser.add_argument("--mode", default="time-h264", help="the benchmark project's timing mode, without dashes")
     parser.add_argument("--bench", help="folder of the built benchmark project (default: the mode's project in Release)")
-    parser.add_argument("--runs", default="8,24", help="the two run counts A,B whose difference is measured")
+    parser.add_argument("--runs", help="the two run counts A,B whose difference is measured (default 8,24; 20,60 for time-image, "
+                        "whose few operations still find the JIT tiering up at 8)")
     parser.add_argument("--pgo", action="store_true", help="keep dynamic PGO on (counts then vary by about 4%%)")
-    parser.add_argument("--egami-only", action="store_true", help="skip FFmpeg")
+    parser.add_argument("--egami-only", action="store_true", help="skip FFmpeg and cjpeg")
     parser.add_argument("--ffmpeg-args", default="", help="extra ffmpeg input options, such as -c:v libdav1d")
     args = parser.parse_args()
     image_mode, audio = args.mode in IMAGE_MODES, args.mode in AUDIO_MODES
@@ -115,7 +116,7 @@ def main():
     scenario = args.mode == "time-image"
     n = 1 if scenario else frames(clip, audio)
     unit = "operation" if scenario else "packet" if audio else "frame"
-    a, b = (int(x) for x in args.runs.split(","))
+    a, b = (int(x) for x in (args.runs or ("20,60" if scenario else "8,24")).split(","))
     target = clip if scenario else f"/work/{clip}"
     egami = [counters(f"dotnet /bench/{dll} --{args.mode} --one-thread --runs={r} {target}", args.pgo) for r in (a, b)]
     rows = {"Egami": per_frame(egami[0], egami[1], n * (b - a))}
