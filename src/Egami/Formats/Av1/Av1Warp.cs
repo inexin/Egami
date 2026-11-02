@@ -197,19 +197,19 @@ internal static class Av1Warp
         ref short taps = ref MemoryMarshal.GetArrayDataReference(ShortFilters);
         ref T samples = ref MemoryMarshal.GetArrayDataReference(reference);
         Vector128<int> half0 = Vector128.Create(1 << (round0 - 1)), half1 = Vector128.Create(1 << (round1 - 1));
+        // Each row's eight outputs (they fit 16 bits), then turned into columns eight rows at a time.
+        Span<Vector128<short>> rows = stackalloc Vector128<short>[16];
         for (int k = -7; k < 8; k++)
         {
             ref T row = ref Unsafe.Add(ref samples, (Math.Clamp(iy4 + k, 0, height - 1) * stride) + ix4 - 7);
             int sx = sx4 + (beta * (k + 4));
             (Vector128<int> lo, Vector128<int> hi) = DotRow(ref row, ref taps, sx, alpha);
-            lo = Vector128.ShiftRightArithmetic(lo + half0, round0);
-            hi = Vector128.ShiftRightArithmetic(hi + half0, round0);
-            for (int l = 0; l < 4; l++)
-            {
-                tmp[(l * 16) + k + 7] = (short)lo.GetElement(l);
-                tmp[((l + 4) * 16) + k + 7] = (short)hi.GetElement(l);
-            }
+            rows[k + 7] = Sse2.PackSignedSaturate(Vector128.ShiftRightArithmetic(lo + half0, round0), Vector128.ShiftRightArithmetic(hi + half0, round0));
         }
+
+        rows[15] = Vector128<short>.Zero;
+        Columns(rows[..8], tmp, 0);
+        Columns(rows[8..], tmp, 8);
 
         ref short columns = ref MemoryMarshal.GetReference(tmp);
         for (int k = -4; k < Math.Min(4, h - 4); k++)
@@ -219,6 +219,26 @@ internal static class Av1Warp
             Vector128.ShiftRightArithmetic(lo + half1, round1).CopyTo(pred.AsSpan(predOffset + ((k + 4) * predStride)));
             Vector128.ShiftRightArithmetic(hi + half1, round1).CopyTo(pred.AsSpan(predOffset + ((k + 4) * predStride) + 4));
         }
+    }
+
+    /// <summary>Turns eight rows of eight 16-bit values into columns: column l goes to <paramref name="tmp"/> at l * 16 + <paramref name="at"/>.</summary>
+    private static void Columns(ReadOnlySpan<Vector128<short>> a, Span<short> tmp, int at)
+    {
+        Vector128<short> t0 = Sse2.UnpackLow(a[0], a[1]), t1 = Sse2.UnpackHigh(a[0], a[1]), t2 = Sse2.UnpackLow(a[2], a[3]), t3 = Sse2.UnpackHigh(a[2], a[3]);
+        Vector128<short> t4 = Sse2.UnpackLow(a[4], a[5]), t5 = Sse2.UnpackHigh(a[4], a[5]), t6 = Sse2.UnpackLow(a[6], a[7]), t7 = Sse2.UnpackHigh(a[6], a[7]);
+        Vector128<int> u0 = Sse2.UnpackLow(t0.AsInt32(), t2.AsInt32()), u1 = Sse2.UnpackHigh(t0.AsInt32(), t2.AsInt32());
+        Vector128<int> u2 = Sse2.UnpackLow(t1.AsInt32(), t3.AsInt32()), u3 = Sse2.UnpackHigh(t1.AsInt32(), t3.AsInt32());
+        Vector128<int> u4 = Sse2.UnpackLow(t4.AsInt32(), t6.AsInt32()), u5 = Sse2.UnpackHigh(t4.AsInt32(), t6.AsInt32());
+        Vector128<int> u6 = Sse2.UnpackLow(t5.AsInt32(), t7.AsInt32()), u7 = Sse2.UnpackHigh(t5.AsInt32(), t7.AsInt32());
+        ref short to = ref MemoryMarshal.GetReference(tmp);
+        Sse2.UnpackLow(u0.AsInt64(), u4.AsInt64()).AsInt16().StoreUnsafe(ref to, (nuint)at);
+        Sse2.UnpackHigh(u0.AsInt64(), u4.AsInt64()).AsInt16().StoreUnsafe(ref to, (nuint)(16 + at));
+        Sse2.UnpackLow(u1.AsInt64(), u5.AsInt64()).AsInt16().StoreUnsafe(ref to, (nuint)(32 + at));
+        Sse2.UnpackHigh(u1.AsInt64(), u5.AsInt64()).AsInt16().StoreUnsafe(ref to, (nuint)(48 + at));
+        Sse2.UnpackLow(u2.AsInt64(), u6.AsInt64()).AsInt16().StoreUnsafe(ref to, (nuint)(64 + at));
+        Sse2.UnpackHigh(u2.AsInt64(), u6.AsInt64()).AsInt16().StoreUnsafe(ref to, (nuint)(80 + at));
+        Sse2.UnpackLow(u3.AsInt64(), u7.AsInt64()).AsInt16().StoreUnsafe(ref to, (nuint)(96 + at));
+        Sse2.UnpackHigh(u3.AsInt64(), u7.AsInt64()).AsInt16().StoreUnsafe(ref to, (nuint)(112 + at));
     }
 
     /// <summary>
