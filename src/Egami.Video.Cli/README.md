@@ -15,9 +15,11 @@ egami-video ffmpeg -i in.avi -c copy out.mkv
 ```
 
 - Commands: info, remux, trim, concat, segment, timestamps, extract, embed, metadata, subs, frames, encode, run, thumbnail, scenes,
-  sheet, animate, hash, compare, verify, audio and formats.
+  analyze, waveform, spectrum, generate, sheet, animate, hash, compare, verify and audio; editing with join, fade, overlay
+  (green screens with `--key auto`), pip, stack, speed, reverse, loop, freeze, slideshow, stabilize and edit; and formats.
+- `--deinterlace` turns interlaced video progressive on encode, run, frames and the editing commands.
 - Reads AVI, Matroska and WebM, MP4 and QuickTime, IVF, YUV4MPEG2, raw AV1, WAV, FLAC and Ogg; decodes Motion JPEG, VP8, VP9, FFV1,
-  AV1, PCM, FLAC, Opus and Vorbis; copies any track as packets.
+  AV1, PCM, FLAC, Opus and Vorbis; copies any track as packets, H.264 and HEVC included.
 - `run` applies any of egami's image steps to every frame. `egami video ...` runs it from the `egami` tool.
 - `egami-video ffmpeg` and `egami-video ffprobe` take a documented subset of FFmpeg's command lines and stop on anything else.
 - `egami-video mcp` serves the commands as tools to AI assistants over the Model Context Protocol.

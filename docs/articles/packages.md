@@ -10,8 +10,8 @@ one version and release together; the other packages have versions of their own.
 | Package | Version | What it does | Needs | Docs |
 | --- | --- | --- | --- | --- |
 | [Egami](https://github.com/inexin/Egami/tree/main/src/Egami) | 1.x | Rasters and pixel types, every format reader and writer, operations, color management, metadata, streaming decode | Nothing | [Getting started](getting-started.md), [formats](formats/index.md), [all guides](guides/index.md) |
-| [Egami.Heic](https://github.com/inexin/Egami/tree/main/src/Egami.Heic) | 1.x | Reads HEIC phone photos (HEVC-coded HEIF), opt-in because HEVC is covered by patents | Egami, the same version | [HEIC](formats/heic.md) |
-| [Egami.Formats.Extended](https://github.com/inexin/Egami/tree/main/src/Egami.Formats.Extended) | 1.x | Extra image formats as plugins on core Egami's format API: PCX, SGI, Sun raster, XBM, XPM, WBMP and Farbfeld, read and written | Egami, the same version | [Extended formats](formats/extended.md) |
+| [Egami.Heic](https://github.com/inexin/Egami/tree/main/src/Egami.Heic) | 1.x | Reads and writes HEIC phone photos (HEVC-coded HEIF) and decodes HEVC video streams for Egami.Video.Hevc, opt-in because HEVC is covered by patents | Egami, the same version | [HEIC](formats/heic.md) |
+| [Egami.Formats.Extended](https://github.com/inexin/Egami/tree/main/src/Egami.Formats.Extended) | 1.x | Extra image formats as plugins on core Egami's format API: PCX, SGI, Sun raster, XBM, XPM, WBMP, Farbfeld and DDS textures, read and written, and camera RAW, developed on load and converted to DNG | Egami, the same version | [Extended formats](formats/extended.md) |
 
 ## Drawing and text
 
@@ -41,7 +41,7 @@ one version and release together; the other packages have versions of their own.
 | Package | Version | What it does | Needs | Docs |
 | --- | --- | --- | --- | --- |
 | [Egami.Video](https://github.com/inexin/Egami/tree/main/src/Egami.Video) | 1.2 | Reads and writes video and audio with Egami rasters as frames: MP4, WebM, Matroska, AVI, IVF, YUV4MPEG2, Ogg, WAV, FLAC, MP3, AIFF and CAF; AV1, VP9 and VP8 decode and encode, Motion JPEG, Opus, Vorbis, FLAC, MP3, AC-3 and ALAC; subtitles, smart cut and scene detection | Egami | [Video](guides/video.md) |
-| [Egami.Video.H264](https://github.com/inexin/Egami/tree/main/src/Egami.Video.H264) | 1.2 | H.264 (AVC) decoding for Egami.Video: progressive Constrained Baseline, Main, High, High 10 and High 4:2:2 in MP4, MOV, Matroska, AVI and raw .h264 files. Opt-in because H.264 is covered by patents | Egami.Video, the same version | [H.264](guides/h264.md) |
+| [Egami.Video.H264](https://github.com/inexin/Egami/tree/main/src/Egami.Video.H264) | 1.2 | H.264 (AVC) decoding for Egami.Video: Constrained Baseline, Main, High, High 10 and High 4:2:2, progressive and interlaced (PAFF and MBAFF), in MP4, MOV, Matroska, AVI and raw .h264 files. Opt-in because H.264 is covered by patents | Egami.Video, the same version | [H.264](guides/h264.md) |
 | [Egami.Video.Hevc](https://github.com/inexin/Egami/tree/main/src/Egami.Video.Hevc) | 1.2 | HEVC (H.265) decoding for Egami.Video: Main, Main 10, Main 12 and the range extensions to 12 bits in MP4, MOV, Matroska and raw .h265 files, through Egami.Heic's decoder. Opt-in because HEVC is covered by patents | Egami.Video, the same version, and Egami.Heic | [HEVC](guides/hevc.md) |
 
 ## Command-line tools

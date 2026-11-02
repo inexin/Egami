@@ -6,11 +6,13 @@ Egami is an open source 2D imaging library for .NET 10 that loads, edits, draws 
 - **Fully managed C#**: no native binaries, no P/Invoke, and no third-party dependencies.
 - **Safe on untrusted files**: sizes are checked before anything is allocated, and every reader is fuzz-tested.
 - **Trimming and Native AOT clean**, on every OS and CPU .NET 10 supports.
-- **Formats**: PNG and APNG, JPEG, GIF, WebP, BMP, TGA, QOI, the Netpbm formats, TIFF, Radiance and OpenEXR, JPEG XL, ICO,
-  CUR and ANI read and written; AVIF, JPEG 2000, JBIG2, CCITT fax and PSD read. See [Formats](articles/formats/index.md).
+- **Formats**: PNG and APNG, JPEG, GIF, WebP, BMP, TGA, QOI, the Netpbm formats, TIFF, Radiance and OpenEXR, JPEG XL, AVIF,
+  ICO, CUR and ANI read and written; JPEG 2000, JBIG2, CCITT fax and PSD (with its layers) read. HEIC (Egami.Heic), camera RAW
+  and DNG, DDS textures and more (Egami.Formats.Extended) come as packages. See [Formats](articles/formats/index.md).
 - **Operations**: resizing and geometry, color management, tone and color, filters, compositing, masks, analysis and palettes.
 - **More packages**: vector drawing (Egami.Drawing), fonts and text layout (Egami.Fonts), SVG (Egami.Svg), CSS (Egami.Css),
-  Windows metafiles (Egami.Metafiles) and barcodes (Egami.Barcodes). See [Packages](articles/packages.md).
+  Windows metafiles (Egami.Metafiles), barcodes (Egami.Barcodes), a System.Drawing drop-in (Egami.SystemDrawing), video and
+  audio (Egami.Video), and the `egami` and `egami-video` commands. See [Packages](articles/packages.md).
 
 ```csharp
 using Egami;
