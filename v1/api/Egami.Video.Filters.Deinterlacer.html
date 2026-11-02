@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class Deinterlacer | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class Deinterlacer | Egami ">
+      
+      <meta name="description" content="Turns interlaced frames into progressive ones. Each output frame keeps one field&#39;s lines and makes the other field&#39;s:  keeps the woven lines where the picture holds still and guesses along edges where it moves, using the fields before and after;  guesses from the kept field alone. Every plane is done on its own lines, so a 4:2:0 field keeps its own chroma rows; 8- to 16-bit samples, any chroma format and alpha work. The filter holds one frame back to look at the next.">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_Video_Filters_Deinterlacer.md&amp;value=---%0Auid%3A%20Egami.Video.Filters.Deinterlacer%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.Video.Filters.Deinterlacer">
+
+
+
+  <h1 id="Egami_Video_Filters_Deinterlacer" data-uid="Egami.Video.Filters.Deinterlacer" class="text-break">
+Class Deinterlacer  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Filters/Deinterlacer.cs/#L18"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a>.<a class="xref" href="Egami.Video.html">Video</a>.<a class="xref" href="Egami.Video.Filters.html">Filters</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.Video.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>Turns interlaced frames into progressive ones. Each output frame keeps one field's lines and makes the other field's:
+<a class="xref" href="Egami.Video.Filters.DeinterlaceMode.html#Egami_Video_Filters_DeinterlaceMode_Adaptive">Adaptive</a> keeps the woven lines where the picture holds still and guesses along edges where it
+moves, using the fields before and after; <a class="xref" href="Egami.Video.Filters.DeinterlaceMode.html#Egami_Video_Filters_DeinterlaceMode_Bob">Bob</a> guesses from the kept field alone. Every plane is
+done on its own lines, so a 4:2:0 field keeps its own chroma rows; 8- to 16-bit samples, any chroma format and alpha work.
+The filter holds one frame back to look at the next.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public sealed class Deinterlacer : IVideoFilter, IDisposable</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><span class="xref">Deinterlacer</span></div>
+    </dd>
+  </dl>
+
+  <dl class="typelist implements">
+    <dt>Implements</dt>
+    <dd>
+      <div><a class="xref" href="Egami.Video.Filters.IVideoFilter.html">IVideoFilter</a></div>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.idisposable">IDisposable</a></div>
+    </dd>
+  </dl>
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+  </dd></dl>
+
+
+
+  <h2 id="Egami_Video_Filters_Deinterlacer_examples">Examples</h2>
+  <pre><code class="lang-csharp">// Deinterlace a file: interlaced frames come out progressive, one per frame in, and progressive frames pass unchanged.
+// The track gives the field order for frames that do not carry their own.
+using VideoReader reader = VideoReader.Open("movie.webm");
+using Deinterlacer deinterlacer = new(reader.Track, new DeinterlacerOptions
+{
+    Mode = DeinterlaceMode.Adaptive,      // or Bob: from each field alone
+    Rate = DeinterlaceRate.Frame,         // or Field: one frame per field, 50i becomes 50p
+    Frames = DeinterlaceFrames.All,       // also frames the decoder does not flag as interlaced
+});
+VideoWriterOptions options = new() { Codec = VideoCodecs.Ffv1, FrameRate = reader.Track.FrameRate ?? new Rational(25, 1) };
+using (VideoWriter writer = VideoWriter.Create("progressive.mkv", options))
+{
+    foreach (YuvVideoFrame frame in reader.ReadFrames())
+    {
+        using (frame)
+        {
+            deinterlacer.Send(frame);
+        }
+
+        while (deinterlacer.TryReceive(out YuvVideoFrame? output))
+        {
+            using (output)
+            {
+                writer.WriteFrame(output);
+                written++;
+            }
+        }
+    }
+
+    // The deinterlacer holds one frame back to look at the next; Flush hands it out.
+    deinterlacer.Flush();
+    while (deinterlacer.TryReceive(out YuvVideoFrame? output))
+    {
+        using (output)
+        {
+            writer.WriteFrame(output);
+            written++;
+        }
+    }
+}</code></pre>
+
+
+
+
+  <h2 class="section" id="constructors">Constructors
+</h2>
+
+
+  <a id="Egami_Video_Filters_Deinterlacer__ctor_" data-uid="Egami.Video.Filters.Deinterlacer.#ctor*"></a>
+
+  <h3 id="Egami_Video_Filters_Deinterlacer__ctor_Egami_Video_Filters_DeinterlacerOptions_Egami_Video_MediaContext_" data-uid="Egami.Video.Filters.Deinterlacer.#ctor(Egami.Video.Filters.DeinterlacerOptions,Egami.Video.MediaContext)">
+  Deinterlacer(DeinterlacerOptions?, MediaContext?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Filters/Deinterlacer.cs/#L41"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Creates a deinterlacer.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Deinterlacer(DeinterlacerOptions? options = null, MediaContext? context = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>options</code> <a class="xref" href="Egami.Video.Filters.DeinterlacerOptions.html">DeinterlacerOptions</a></dt>
+    <dd><p>How it works, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.Video.Filters.DeinterlacerOptions.html#Egami_Video_Filters_DeinterlacerOptions_Default">Default</a>.</p>
+</dd>
+    <dt><code>context</code> <a class="xref" href="Egami.Video.MediaContext.html">MediaContext</a></dt>
+    <dd><p>The context output frames are allocated from, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.Video.MediaContext.html#Egami_Video_MediaContext_Default">Default</a>.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Video_Filters_Deinterlacer__ctor_Egami_Video_Filters_DeinterlacerOptions_Egami_Video_MediaContext__examples">Examples</h4>
+  <pre><code class="lang-csharp">// Deinterlace a file: interlaced frames come out progressive, one per frame in, and progressive frames pass unchanged.
+// The track gives the field order for frames that do not carry their own.
+using VideoReader reader = VideoReader.Open("movie.webm");
+using Deinterlacer deinterlacer = new(reader.Track, new DeinterlacerOptions
+{
+    Mode = DeinterlaceMode.Adaptive,      // or Bob: from each field alone
+    Rate = DeinterlaceRate.Frame,         // or Field: one frame per field, 50i becomes 50p
+    Frames = DeinterlaceFrames.All,       // also frames the decoder does not flag as interlaced
+});
+VideoWriterOptions options = new() { Codec = VideoCodecs.Ffv1, FrameRate = reader.Track.FrameRate ?? new Rational(25, 1) };
+using (VideoWriter writer = VideoWriter.Create("progressive.mkv", options))
+{
+    foreach (YuvVideoFrame frame in reader.ReadFrames())
+    {
+        using (frame)
+        {
+            deinterlacer.Send(frame);
+        }
+
+        while (deinterlacer.TryReceive(out YuvVideoFrame? output))
+        {
+            using (output)
+            {
+                writer.WriteFrame(output);
+                written++;
+            }
+        }
+    }
+
+    // The deinterlacer holds one frame back to look at the next; Flush hands it out.
+    deinterlacer.Flush();
+    while (deinterlacer.TryReceive(out YuvVideoFrame? output))
+    {
+        using (output)
+        {
+            writer.WriteFrame(output);
+            written++;
+        }
+    }
+}</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>An option is out of range.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Video_Filters_Deinterlacer__ctor_" data-uid="Egami.Video.Filters.Deinterlacer.#ctor*"></a>
+
+  <h3 id="Egami_Video_Filters_Deinterlacer__ctor_Egami_Video_VideoTrackInfo_Egami_Video_Filters_DeinterlacerOptions_Egami_Video_MediaContext_" data-uid="Egami.Video.Filters.Deinterlacer.#ctor(Egami.Video.VideoTrackInfo,Egami.Video.Filters.DeinterlacerOptions,Egami.Video.MediaContext)">
+  Deinterlacer(VideoTrackInfo, DeinterlacerOptions?, MediaContext?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Filters/Deinterlacer.cs/#L61"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Creates a deinterlacer for a track: frames that do not give their field order take the track's
+<a class="xref" href="Egami.Video.VideoTrackInfo.html#Egami_Video_VideoTrackInfo_FieldOrder">FieldOrder</a>, and the track's frame rate times frames that give no duration. Only the H.264
+decoder flags each frame; frames of other codecs count as flagged when the container calls the track interlaced.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Deinterlacer(VideoTrackInfo track, DeinterlacerOptions? options = null, MediaContext? context = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>track</code> <a class="xref" href="Egami.Video.VideoTrackInfo.html">VideoTrackInfo</a></dt>
+    <dd><p>The track the frames come from.</p>
+</dd>
+    <dt><code>options</code> <a class="xref" href="Egami.Video.Filters.DeinterlacerOptions.html">DeinterlacerOptions</a></dt>
+    <dd><p>How it works, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.Video.Filters.DeinterlacerOptions.html#Egami_Video_Filters_DeinterlacerOptions_Default">Default</a>.</p>
+</dd>
+    <dt><code>context</code> <a class="xref" href="Egami.Video.MediaContext.html">MediaContext</a></dt>
+    <dd><p>The context output frames are allocated from, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.Video.MediaContext.html#Egami_Video_MediaContext_Default">Default</a>.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Video_Filters_Deinterlacer__ctor_Egami_Video_VideoTrackInfo_Egami_Video_Filters_DeinterlacerOptions_Egami_Video_MediaContext__examples">Examples</h4>
+  <pre><code class="lang-csharp">// Deinterlace a file: interlaced frames come out progressive, one per frame in, and progressive frames pass unchanged.
+// The track gives the field order for frames that do not carry their own.
+using VideoReader reader = VideoReader.Open("movie.webm");
+using Deinterlacer deinterlacer = new(reader.Track, new DeinterlacerOptions
+{
+    Mode = DeinterlaceMode.Adaptive,      // or Bob: from each field alone
+    Rate = DeinterlaceRate.Frame,         // or Field: one frame per field, 50i becomes 50p
+    Frames = DeinterlaceFrames.All,       // also frames the decoder does not flag as interlaced
+});
+VideoWriterOptions options = new() { Codec = VideoCodecs.Ffv1, FrameRate = reader.Track.FrameRate ?? new Rational(25, 1) };
+using (VideoWriter writer = VideoWriter.Create("progressive.mkv", options))
+{
+    foreach (YuvVideoFrame frame in reader.ReadFrames())
+    {
+        using (frame)
+        {
+            deinterlacer.Send(frame);
+        }
+
+        while (deinterlacer.TryReceive(out YuvVideoFrame? output))
+        {
+            using (output)
+            {
+                writer.WriteFrame(output);
+                written++;
+            }
+        }
+    }
+
+    // The deinterlacer holds one frame back to look at the next; Flush hands it out.
+    deinterlacer.Flush();
+    while (deinterlacer.TryReceive(out YuvVideoFrame? output))
+    {
+        using (output)
+        {
+            writer.WriteFrame(output);
+            written++;
+        }
+    }
+}</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentnullexception">ArgumentNullException</a></dt>
+    <dd><p><code class="paramref">track</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>An option is out of range.</p>
+</dd>
+  </dl>
+
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="Egami_Video_Filters_Deinterlacer_Latency_" data-uid="Egami.Video.Filters.Deinterlacer.Latency*"></a>
+
+  <h3 id="Egami_Video_Filters_Deinterlacer_Latency" data-uid="Egami.Video.Filters.Deinterlacer.Latency">
+  Latency
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Filters/Deinterlacer.cs/#L77"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets one frame's time, as the deinterlacer holds one frame back; zero before the first frame.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public MediaTime Latency { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Video.MediaTime.html">MediaTime</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Filters_Deinterlacer_Options_" data-uid="Egami.Video.Filters.Deinterlacer.Options*"></a>
+
+  <h3 id="Egami_Video_Filters_Deinterlacer_Options" data-uid="Egami.Video.Filters.Deinterlacer.Options">
+  Options
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Filters/Deinterlacer.cs/#L74"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the options the deinterlacer runs with.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public DeinterlacerOptions Options { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Video.Filters.DeinterlacerOptions.html">DeinterlacerOptions</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="Egami_Video_Filters_Deinterlacer_Dispose_" data-uid="Egami.Video.Filters.Deinterlacer.Dispose*"></a>
+
+  <h3 id="Egami_Video_Filters_Deinterlacer_Dispose" data-uid="Egami.Video.Filters.Deinterlacer.Dispose">
+  Dispose()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Filters/Deinterlacer.cs/#L140"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Dispose()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Filters_Deinterlacer_Flush_" data-uid="Egami.Video.Filters.Deinterlacer.Flush*"></a>
+
+  <h3 id="Egami_Video_Filters_Deinterlacer_Flush" data-uid="Egami.Video.Filters.Deinterlacer.Flush">
+  Flush()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Filters/Deinterlacer.cs/#L114"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Tells the filter no more input comes, so it hands out the frames it still holds.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Flush()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Filters_Deinterlacer_Reset_" data-uid="Egami.Video.Filters.Deinterlacer.Reset*"></a>
+
+  <h3 id="Egami_Video_Filters_Deinterlacer_Reset" data-uid="Egami.Video.Filters.Deinterlacer.Reset">
+  Reset()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Filters/Deinterlacer.cs/#L127"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Drops the input held and the frames ready, for example after a seek; the next frame starts the stream again.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Reset()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Filters_Deinterlacer_Send_" data-uid="Egami.Video.Filters.Deinterlacer.Send*"></a>
+
+  <h3 id="Egami_Video_Filters_Deinterlacer_Send_Egami_Video_YuvVideoFrame_" data-uid="Egami.Video.Filters.Deinterlacer.Send(Egami.Video.YuvVideoFrame)">
+  Send(YuvVideoFrame)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Filters/Deinterlacer.cs/#L82"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gives the filter a frame. The caller keeps the frame.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Send(YuvVideoFrame frame)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>frame</code> <a class="xref" href="Egami.Video.YuvVideoFrame.html">YuvVideoFrame</a></dt>
+    <dd><p>The frame.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentnullexception">ArgumentNullException</a></dt>
+    <dd><p><code class="paramref">frame</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.objectdisposedexception">ObjectDisposedException</a></dt>
+    <dd><p>The deinterlacer is disposed.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Video_Filters_Deinterlacer_TryReceive_" data-uid="Egami.Video.Filters.Deinterlacer.TryReceive*"></a>
+
+  <h3 id="Egami_Video_Filters_Deinterlacer_TryReceive_Egami_Video_YuvVideoFrame__" data-uid="Egami.Video.Filters.Deinterlacer.TryReceive(Egami.Video.YuvVideoFrame@)">
+  TryReceive(out YuvVideoFrame?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Filters/Deinterlacer.cs/#L111"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Takes the next filtered frame.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool TryReceive(out YuvVideoFrame? frame)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>frame</code> <a class="xref" href="Egami.Video.YuvVideoFrame.html">YuvVideoFrame</a></dt>
+    <dd><p>The frame, which the caller must dispose.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>Whether a frame was ready.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Filters/Deinterlacer.cs/#L18" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

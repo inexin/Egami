@@ -153,6 +153,10 @@ egami-video ffprobe -v error -show_entries format=duration -of default=noprint_w
 <td><code>run</code></td>
 </tr>
 <tr>
+<td><code>-vf yadif</code> or <code>bwdif</code>, alone or before the filters above</td>
+<td><code>--deinterlace</code> on <code>run</code>, <code>encode</code> or <code>frames</code></td>
+</tr>
+<tr>
 <td><code>-vf thumbnail</code>, <code>select='gt(scene,0.4)'</code>, <code>tile=4x4</code></td>
 <td><code>thumbnail</code>, <code>scenes</code>, <code>sheet</code></td>
 </tr>
@@ -242,13 +246,23 @@ atempo, reverse without areverse and loop without aloop, unless the sound is dro
 the picture. freezeframes stops, since it replaces frames where V9's freeze adds time (<code>tpad=stop_mode=clone</code> or
 <code>egami-video freeze</code> hold a frame), and loudnorm in an edit stops too (alone in <code>-af</code> it normalizes, above). <code>deshake</code>, <code>vidstabdetect</code> (to <code>-f null</code>, writing its <code>result</code>
 file as Egami.Video's camera motion) and <code>vidstabtransform</code> (its <code>input</code> and <code>smoothing</code>) become <code>egami-video stabilize</code>.</p>
+<h2 id="deinterlacing">Deinterlacing</h2>
+<p><code>-vf yadif</code> and <code>-vf bwdif</code> become <code>--deinterlace adaptive</code>, Egami.Video's motion-adaptive deinterlacer. Their options map as
+follows: <code>mode</code> send_frame gives <code>--deinterlace-rate frame</code> and send_field <code>--deinterlace-rate field</code> (the <code>_nospatial</code>
+modes deinterlace the same way, with the spatial check), <code>parity</code> tff or bff gives <code>--field-order</code> (auto takes the frames'
+and the track's order), and <code>deint</code> all or interlaced gives <code>--deinterlace-frames all</code> or <code>flagged</code>. As in ffmpeg, yadif
+sends one frame per frame and bwdif one per field by default, and both deinterlace every frame unless <code>deint=interlaced</code>.
+bwdif's own refinements, a cubic spatial guess and blending where the fields differ, are not implemented; egami-video warns
+and deinterlaces as yadif does.</p>
+<pre><code class="lang-text">egami-video ffmpeg -i broadcast.ts -vf yadif=mode=send_field -c:v ffv1 progressive.mkv
+</code></pre>
 <h2 id="the-options">The options</h2>
 <p>ffmpeg mode takes <code>-i</code>, <code>-f</code>, <code>-y</code>, <code>-n</code>, <code>-ss</code>, <code>-to</code>, <code>-t</code>, <code>-itsoffset</code>, <code>-framerate</code>, <code>-safe</code>, <code>-map</code>, <code>-c</code>, <code>-codec</code>, <code>-c:v</code>,
 <code>-c:a</code>, <code>-c:s</code>, <code>-vcodec</code>, <code>-acodec</code>, <code>-scodec</code>, <code>-an</code>, <code>-vn</code>, <code>-sn</code>, <code>-dn</code>, <code>-r</code>, <code>-s</code>, <code>-frames:v</code>, <code>-vframes</code>, <code>-q:v</code>,
 <code>-qscale:v</code>, <code>-g</code>, <code>-level 3</code>, <code>-coder</code>, <code>-context</code>, <code>-slices</code>, <code>-slicecrc</code> (the last five with <code>-c:v ffv1</code>), <code>-ar</code>, <code>-b:a</code>, <code>-ab</code>, <code>-ac</code>, <code>-sample_fmt</code>, <code>-metadata</code>, <code>-map_metadata</code>, <code>-map_chapters</code>, <code>-vf</code>, <code>-filter:v</code>, <code>-lavfi</code> and
 <code>-filter_complex</code> (psnr, ssim, showwavespic, showspectrumpic and the editing filters), <code>-af</code> and <code>-filter:a</code> (detection, audio and editing filters), <code>-loop 1</code> before an image, <code>-segment_time</code>, <code>-segment_times</code>, <code>-movflags</code> (faststart, frag_keyframe, empty_moov and default_base_moof), <code>-frag_duration</code> (with frag_keyframe), <code>-update</code>, <code>-progress</code>, <code>-stats</code>, <code>-nostats</code>,
 <code>-stats_period</code>, <code>-hide_banner</code>, <code>-loglevel</code>, <code>-v</code> and <code>-nostdin</code>, with <code>pipe:</code> and <code>%d</code> patterns. The filters are scale, crop,
-pad, transpose, hflip, vflip, fps, thumbnail, select (scene) and tile, and with <code>-f null</code> the detection filters above; the
+pad, transpose, hflip, vflip, fps, thumbnail, select (scene), tile, yadif and bwdif, and with <code>-f null</code> the detection filters above; the
 <code>-f lavfi</code> sources are testsrc, testsrc2, smptebars, smptehdbars, color, sine, anullsrc and anoisesrc. Codecs: <code>copy</code>, <code>mjpeg</code>, <code>ffv1</code> and <code>rawvideo</code> for video, <code>flac</code>,
 <code>alac</code>, <code>libopus</code> (or <code>opus</code>) and the <code>pcm_</code> codecs for audio.</p>
 <p>ffprobe mode takes <code>-i</code>, <code>-show_streams</code>, <code>-show_format</code>, <code>-show_packets</code>, <code>-show_frames</code>, <code>-show_chapters</code>, <code>-select_streams</code>,

@@ -18059,6 +18059,104 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Filters.DeinterlaceFrames.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Filters.DeinterlaceFrames.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Filters.DeinterlaceFrames",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Filters.DeinterlaceFrames.yml\" sourcestartlinenumber=\"1\">Which frames a <xref href=\"Egami.Video.Filters.Deinterlacer\" data-throw-if-not-resolved=\"false\"></xref> deinterlaces.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Filters.DeinterlaceMode.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Filters.DeinterlaceMode.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Filters.DeinterlaceMode",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Filters.DeinterlaceMode.yml\" sourcestartlinenumber=\"1\">How a <xref href=\"Egami.Video.Filters.Deinterlacer\" data-throw-if-not-resolved=\"false\"></xref> makes the lines a field lacks.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Filters.DeinterlaceRate.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Filters.DeinterlaceRate.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Filters.DeinterlaceRate",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Filters.DeinterlaceRate.yml\" sourcestartlinenumber=\"1\">How many frames a <xref href=\"Egami.Video.Filters.Deinterlacer\" data-throw-if-not-resolved=\"false\"></xref> hands out per frame in.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Filters.Deinterlacer.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Filters.Deinterlacer.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Filters.Deinterlacer",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Filters.Deinterlacer.yml\" sourcestartlinenumber=\"1\">Turns interlaced frames into progressive ones. Each output frame keeps one field's lines and makes the other field's:\n<xref href=\"Egami.Video.Filters.DeinterlaceMode.Adaptive\" data-throw-if-not-resolved=\"false\"></xref> keeps the woven lines where the picture holds still and guesses along edges where it\nmoves, using the fields before and after; <xref href=\"Egami.Video.Filters.DeinterlaceMode.Bob\" data-throw-if-not-resolved=\"false\"></xref> guesses from the kept field alone. Every plane is\ndone on its own lines, so a 4:2:0 field keeps its own chroma rows; 8- to 16-bit samples, any chroma format and alpha work.\nThe filter holds one frame back to look at the next.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Filters.DeinterlacerOptions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Filters.DeinterlacerOptions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Filters.DeinterlacerOptions",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Filters.DeinterlacerOptions.yml\" sourcestartlinenumber=\"1\">How a <xref href=\"Egami.Video.Filters.Deinterlacer\" data-throw-if-not-resolved=\"false\"></xref> works. The defaults deinterlace the frames the decoder flags, one frame out per frame in.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Filters.IVideoFilter.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Filters.IVideoFilter.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Filters.IVideoFilter",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Filters.IVideoFilter.yml\" sourcestartlinenumber=\"1\">A streaming video filter on decoded planes: frames go in through <xref href=\"Egami.Video.Filters.IVideoFilter.Send(Egami.Video.YuvVideoFrame)\" data-throw-if-not-resolved=\"false\"></xref> and come out through\n<xref href=\"Egami.Video.Filters.IVideoFilter.TryReceive(Egami.Video.YuvVideoFrame%40)\" data-throw-if-not-resolved=\"false\"></xref>, the same shape as decoders, encoders and <xref href=\"Egami.Video.Audio.Filters.IAudioFilter\" data-throw-if-not-resolved=\"false\"></xref>, so a filter sits\nbetween a decoder and an encoder. A filter may hold frames back (<xref href=\"Egami.Video.Filters.IVideoFilter.Latency\" data-throw-if-not-resolved=\"false\"></xref>) and may hand out more or fewer\nframes than it took, such as one per field.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Filters.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Filters.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Filters",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.Video.Hdr10PlusMetadata.yml",
       "output": {
         ".html": {

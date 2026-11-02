@@ -105192,6 +105192,15 @@ references:
   fullName.vb: Egami.Video.Analysis.AudioPictures.Spectrogram(System.Collections.Generic.IEnumerable(Of Egami.Video.Audio.AudioFrame), Egami.Video.MediaTime, Egami.Video.Analysis.SpectrogramOptions, Egami.Video.MediaContext, System.Threading.CancellationToken)
   nameWithType: AudioPictures.Spectrogram(IEnumerable<AudioFrame>, MediaTime, SpectrogramOptions?, MediaContext?, CancellationToken)
   nameWithType.vb: AudioPictures.Spectrogram(IEnumerable(Of AudioFrame), MediaTime, SpectrogramOptions, MediaContext, CancellationToken)
+- uid: Egami.Video.Analysis.AudioPictures.Spectrogram(System.IO.Stream,Egami.Video.Analysis.SpectrogramOptions,Egami.Video.MediaContext,System.IProgress{Egami.Video.MediaProgress},System.Threading.CancellationToken)
+  name: Spectrogram(Stream, SpectrogramOptions?, MediaContext?, IProgress<MediaProgress>?, CancellationToken)
+  href: api/Egami.Video.Analysis.AudioPictures.html#Egami_Video_Analysis_AudioPictures_Spectrogram_System_IO_Stream_Egami_Video_Analysis_SpectrogramOptions_Egami_Video_MediaContext_System_IProgress_Egami_Video_MediaProgress__System_Threading_CancellationToken_
+  commentId: M:Egami.Video.Analysis.AudioPictures.Spectrogram(System.IO.Stream,Egami.Video.Analysis.SpectrogramOptions,Egami.Video.MediaContext,System.IProgress{Egami.Video.MediaProgress},System.Threading.CancellationToken)
+  name.vb: Spectrogram(Stream, SpectrogramOptions, MediaContext, IProgress(Of MediaProgress), CancellationToken)
+  fullName: Egami.Video.Analysis.AudioPictures.Spectrogram(System.IO.Stream, Egami.Video.Analysis.SpectrogramOptions?, Egami.Video.MediaContext?, System.IProgress<Egami.Video.MediaProgress>?, System.Threading.CancellationToken)
+  fullName.vb: Egami.Video.Analysis.AudioPictures.Spectrogram(System.IO.Stream, Egami.Video.Analysis.SpectrogramOptions, Egami.Video.MediaContext, System.IProgress(Of Egami.Video.MediaProgress), System.Threading.CancellationToken)
+  nameWithType: AudioPictures.Spectrogram(Stream, SpectrogramOptions?, MediaContext?, IProgress<MediaProgress>?, CancellationToken)
+  nameWithType.vb: AudioPictures.Spectrogram(Stream, SpectrogramOptions, MediaContext, IProgress(Of MediaProgress), CancellationToken)
 - uid: Egami.Video.Analysis.AudioPictures.Spectrogram(System.String,Egami.Video.Analysis.SpectrogramOptions,Egami.Video.MediaContext,System.IProgress{Egami.Video.MediaProgress},System.Threading.CancellationToken)
   name: Spectrogram(string, SpectrogramOptions?, MediaContext?, IProgress<MediaProgress>?, CancellationToken)
   href: api/Egami.Video.Analysis.AudioPictures.html#Egami_Video_Analysis_AudioPictures_Spectrogram_System_String_Egami_Video_Analysis_SpectrogramOptions_Egami_Video_MediaContext_System_IProgress_Egami_Video_MediaProgress__System_Threading_CancellationToken_
@@ -105217,6 +105226,15 @@ references:
   fullName.vb: Egami.Video.Analysis.AudioPictures.Waveform(System.Collections.Generic.IEnumerable(Of Egami.Video.Audio.AudioFrame), Egami.Video.MediaTime, Egami.Video.Analysis.WaveformOptions, Egami.Video.MediaContext, System.Threading.CancellationToken)
   nameWithType: AudioPictures.Waveform(IEnumerable<AudioFrame>, MediaTime, WaveformOptions?, MediaContext?, CancellationToken)
   nameWithType.vb: AudioPictures.Waveform(IEnumerable(Of AudioFrame), MediaTime, WaveformOptions, MediaContext, CancellationToken)
+- uid: Egami.Video.Analysis.AudioPictures.Waveform(System.IO.Stream,Egami.Video.Analysis.WaveformOptions,Egami.Video.MediaContext,System.IProgress{Egami.Video.MediaProgress},System.Threading.CancellationToken)
+  name: Waveform(Stream, WaveformOptions?, MediaContext?, IProgress<MediaProgress>?, CancellationToken)
+  href: api/Egami.Video.Analysis.AudioPictures.html#Egami_Video_Analysis_AudioPictures_Waveform_System_IO_Stream_Egami_Video_Analysis_WaveformOptions_Egami_Video_MediaContext_System_IProgress_Egami_Video_MediaProgress__System_Threading_CancellationToken_
+  commentId: M:Egami.Video.Analysis.AudioPictures.Waveform(System.IO.Stream,Egami.Video.Analysis.WaveformOptions,Egami.Video.MediaContext,System.IProgress{Egami.Video.MediaProgress},System.Threading.CancellationToken)
+  name.vb: Waveform(Stream, WaveformOptions, MediaContext, IProgress(Of MediaProgress), CancellationToken)
+  fullName: Egami.Video.Analysis.AudioPictures.Waveform(System.IO.Stream, Egami.Video.Analysis.WaveformOptions?, Egami.Video.MediaContext?, System.IProgress<Egami.Video.MediaProgress>?, System.Threading.CancellationToken)
+  fullName.vb: Egami.Video.Analysis.AudioPictures.Waveform(System.IO.Stream, Egami.Video.Analysis.WaveformOptions, Egami.Video.MediaContext, System.IProgress(Of Egami.Video.MediaProgress), System.Threading.CancellationToken)
+  nameWithType: AudioPictures.Waveform(Stream, WaveformOptions?, MediaContext?, IProgress<MediaProgress>?, CancellationToken)
+  nameWithType.vb: AudioPictures.Waveform(Stream, WaveformOptions, MediaContext, IProgress(Of MediaProgress), CancellationToken)
 - uid: Egami.Video.Analysis.AudioPictures.Waveform(System.String,Egami.Video.Analysis.WaveformOptions,Egami.Video.MediaContext,System.IProgress{Egami.Video.MediaProgress},System.Threading.CancellationToken)
   name: Waveform(string, WaveformOptions?, MediaContext?, IProgress<MediaProgress>?, CancellationToken)
   href: api/Egami.Video.Analysis.AudioPictures.html#Egami_Video_Analysis_AudioPictures_Waveform_System_String_Egami_Video_Analysis_WaveformOptions_Egami_Video_MediaContext_System_IProgress_Egami_Video_MediaProgress__System_Threading_CancellationToken_
@@ -107005,6 +107023,15 @@ references:
   commentId: T:Egami.Video.Analysis.MediaAnalysis
   fullName: Egami.Video.Analysis.MediaAnalysis
   nameWithType: MediaAnalysis
+- uid: Egami.Video.Analysis.MediaAnalysis.Run(System.IO.Stream,Egami.Video.Analysis.MediaAnalysisOptions,Egami.Video.MediaContext,System.IProgress{Egami.Video.MediaProgress},System.Threading.CancellationToken)
+  name: Run(Stream, MediaAnalysisOptions?, MediaContext?, IProgress<MediaProgress>?, CancellationToken)
+  href: api/Egami.Video.Analysis.MediaAnalysis.html#Egami_Video_Analysis_MediaAnalysis_Run_System_IO_Stream_Egami_Video_Analysis_MediaAnalysisOptions_Egami_Video_MediaContext_System_IProgress_Egami_Video_MediaProgress__System_Threading_CancellationToken_
+  commentId: M:Egami.Video.Analysis.MediaAnalysis.Run(System.IO.Stream,Egami.Video.Analysis.MediaAnalysisOptions,Egami.Video.MediaContext,System.IProgress{Egami.Video.MediaProgress},System.Threading.CancellationToken)
+  name.vb: Run(Stream, MediaAnalysisOptions, MediaContext, IProgress(Of MediaProgress), CancellationToken)
+  fullName: Egami.Video.Analysis.MediaAnalysis.Run(System.IO.Stream, Egami.Video.Analysis.MediaAnalysisOptions?, Egami.Video.MediaContext?, System.IProgress<Egami.Video.MediaProgress>?, System.Threading.CancellationToken)
+  fullName.vb: Egami.Video.Analysis.MediaAnalysis.Run(System.IO.Stream, Egami.Video.Analysis.MediaAnalysisOptions, Egami.Video.MediaContext, System.IProgress(Of Egami.Video.MediaProgress), System.Threading.CancellationToken)
+  nameWithType: MediaAnalysis.Run(Stream, MediaAnalysisOptions?, MediaContext?, IProgress<MediaProgress>?, CancellationToken)
+  nameWithType.vb: MediaAnalysis.Run(Stream, MediaAnalysisOptions, MediaContext, IProgress(Of MediaProgress), CancellationToken)
 - uid: Egami.Video.Analysis.MediaAnalysis.Run(System.String,Egami.Video.Analysis.MediaAnalysisOptions,Egami.Video.MediaContext,System.IProgress{Egami.Video.MediaProgress},System.Threading.CancellationToken)
   name: Run(string, MediaAnalysisOptions?, MediaContext?, IProgress<MediaProgress>?, CancellationToken)
   href: api/Egami.Video.Analysis.MediaAnalysis.html#Egami_Video_Analysis_MediaAnalysis_Run_System_String_Egami_Video_Analysis_MediaAnalysisOptions_Egami_Video_MediaContext_System_IProgress_Egami_Video_MediaProgress__System_Threading_CancellationToken_
@@ -121074,6 +121101,35 @@ references:
   isSpec: "True"
   fullName: Egami.Video.Editing.Clip.Color
   nameWithType: Clip.Color
+- uid: Egami.Video.Editing.Clip.Deinterlace(Egami.Video.Filters.DeinterlacerOptions)
+  name: Deinterlace(DeinterlacerOptions?)
+  href: api/Egami.Video.Editing.Clip.html#Egami_Video_Editing_Clip_Deinterlace_Egami_Video_Filters_DeinterlacerOptions_
+  commentId: M:Egami.Video.Editing.Clip.Deinterlace(Egami.Video.Filters.DeinterlacerOptions)
+  name.vb: Deinterlace(DeinterlacerOptions)
+  fullName: Egami.Video.Editing.Clip.Deinterlace(Egami.Video.Filters.DeinterlacerOptions?)
+  fullName.vb: Egami.Video.Editing.Clip.Deinterlace(Egami.Video.Filters.DeinterlacerOptions)
+  nameWithType: Clip.Deinterlace(DeinterlacerOptions?)
+  nameWithType.vb: Clip.Deinterlace(DeinterlacerOptions)
+- uid: Egami.Video.Editing.Clip.Deinterlace*
+  name: Deinterlace
+  href: api/Egami.Video.Editing.Clip.html#Egami_Video_Editing_Clip_Deinterlace_
+  commentId: Overload:Egami.Video.Editing.Clip.Deinterlace
+  isSpec: "True"
+  fullName: Egami.Video.Editing.Clip.Deinterlace
+  nameWithType: Clip.Deinterlace
+- uid: Egami.Video.Editing.Clip.Deinterlacing
+  name: Deinterlacing
+  href: api/Egami.Video.Editing.Clip.html#Egami_Video_Editing_Clip_Deinterlacing
+  commentId: P:Egami.Video.Editing.Clip.Deinterlacing
+  fullName: Egami.Video.Editing.Clip.Deinterlacing
+  nameWithType: Clip.Deinterlacing
+- uid: Egami.Video.Editing.Clip.Deinterlacing*
+  name: Deinterlacing
+  href: api/Egami.Video.Editing.Clip.html#Egami_Video_Editing_Clip_Deinterlacing_
+  commentId: Overload:Egami.Video.Editing.Clip.Deinterlacing
+  isSpec: "True"
+  fullName: Egami.Video.Editing.Clip.Deinterlacing
+  nameWithType: Clip.Deinterlacing
 - uid: Egami.Video.Editing.Clip.Effects
   name: Effects
   href: api/Egami.Video.Editing.Clip.html#Egami_Video_Editing_Clip_Effects
@@ -124362,6 +124418,339 @@ references:
   commentId: F:Egami.Video.FieldOrder.TopFieldFirst
   fullName: Egami.Video.FieldOrder.TopFieldFirst
   nameWithType: FieldOrder.TopFieldFirst
+- uid: Egami.Video.Filters
+  name: Egami.Video.Filters
+  href: api/Egami.Video.Filters.html
+  commentId: N:Egami.Video.Filters
+  fullName: Egami.Video.Filters
+  nameWithType: Egami.Video.Filters
+- uid: Egami.Video.Filters.DeinterlaceFrames
+  name: DeinterlaceFrames
+  href: api/Egami.Video.Filters.DeinterlaceFrames.html
+  commentId: T:Egami.Video.Filters.DeinterlaceFrames
+  fullName: Egami.Video.Filters.DeinterlaceFrames
+  nameWithType: DeinterlaceFrames
+- uid: Egami.Video.Filters.DeinterlaceFrames.All
+  name: All
+  href: api/Egami.Video.Filters.DeinterlaceFrames.html#Egami_Video_Filters_DeinterlaceFrames_All
+  commentId: F:Egami.Video.Filters.DeinterlaceFrames.All
+  fullName: Egami.Video.Filters.DeinterlaceFrames.All
+  nameWithType: DeinterlaceFrames.All
+- uid: Egami.Video.Filters.DeinterlaceFrames.Flagged
+  name: Flagged
+  href: api/Egami.Video.Filters.DeinterlaceFrames.html#Egami_Video_Filters_DeinterlaceFrames_Flagged
+  commentId: F:Egami.Video.Filters.DeinterlaceFrames.Flagged
+  fullName: Egami.Video.Filters.DeinterlaceFrames.Flagged
+  nameWithType: DeinterlaceFrames.Flagged
+- uid: Egami.Video.Filters.DeinterlaceMode
+  name: DeinterlaceMode
+  href: api/Egami.Video.Filters.DeinterlaceMode.html
+  commentId: T:Egami.Video.Filters.DeinterlaceMode
+  fullName: Egami.Video.Filters.DeinterlaceMode
+  nameWithType: DeinterlaceMode
+- uid: Egami.Video.Filters.DeinterlaceMode.Adaptive
+  name: Adaptive
+  href: api/Egami.Video.Filters.DeinterlaceMode.html#Egami_Video_Filters_DeinterlaceMode_Adaptive
+  commentId: F:Egami.Video.Filters.DeinterlaceMode.Adaptive
+  fullName: Egami.Video.Filters.DeinterlaceMode.Adaptive
+  nameWithType: DeinterlaceMode.Adaptive
+- uid: Egami.Video.Filters.DeinterlaceMode.Bob
+  name: Bob
+  href: api/Egami.Video.Filters.DeinterlaceMode.html#Egami_Video_Filters_DeinterlaceMode_Bob
+  commentId: F:Egami.Video.Filters.DeinterlaceMode.Bob
+  fullName: Egami.Video.Filters.DeinterlaceMode.Bob
+  nameWithType: DeinterlaceMode.Bob
+- uid: Egami.Video.Filters.DeinterlaceRate
+  name: DeinterlaceRate
+  href: api/Egami.Video.Filters.DeinterlaceRate.html
+  commentId: T:Egami.Video.Filters.DeinterlaceRate
+  fullName: Egami.Video.Filters.DeinterlaceRate
+  nameWithType: DeinterlaceRate
+- uid: Egami.Video.Filters.DeinterlaceRate.Field
+  name: Field
+  href: api/Egami.Video.Filters.DeinterlaceRate.html#Egami_Video_Filters_DeinterlaceRate_Field
+  commentId: F:Egami.Video.Filters.DeinterlaceRate.Field
+  fullName: Egami.Video.Filters.DeinterlaceRate.Field
+  nameWithType: DeinterlaceRate.Field
+- uid: Egami.Video.Filters.DeinterlaceRate.Frame
+  name: Frame
+  href: api/Egami.Video.Filters.DeinterlaceRate.html#Egami_Video_Filters_DeinterlaceRate_Frame
+  commentId: F:Egami.Video.Filters.DeinterlaceRate.Frame
+  fullName: Egami.Video.Filters.DeinterlaceRate.Frame
+  nameWithType: DeinterlaceRate.Frame
+- uid: Egami.Video.Filters.Deinterlacer
+  name: Deinterlacer
+  href: api/Egami.Video.Filters.Deinterlacer.html
+  commentId: T:Egami.Video.Filters.Deinterlacer
+  fullName: Egami.Video.Filters.Deinterlacer
+  nameWithType: Deinterlacer
+- uid: Egami.Video.Filters.Deinterlacer.#ctor(Egami.Video.Filters.DeinterlacerOptions,Egami.Video.MediaContext)
+  name: Deinterlacer(DeinterlacerOptions?, MediaContext?)
+  href: api/Egami.Video.Filters.Deinterlacer.html#Egami_Video_Filters_Deinterlacer__ctor_Egami_Video_Filters_DeinterlacerOptions_Egami_Video_MediaContext_
+  commentId: M:Egami.Video.Filters.Deinterlacer.#ctor(Egami.Video.Filters.DeinterlacerOptions,Egami.Video.MediaContext)
+  name.vb: New(DeinterlacerOptions, MediaContext)
+  fullName: Egami.Video.Filters.Deinterlacer.Deinterlacer(Egami.Video.Filters.DeinterlacerOptions?, Egami.Video.MediaContext?)
+  fullName.vb: Egami.Video.Filters.Deinterlacer.New(Egami.Video.Filters.DeinterlacerOptions, Egami.Video.MediaContext)
+  nameWithType: Deinterlacer.Deinterlacer(DeinterlacerOptions?, MediaContext?)
+  nameWithType.vb: Deinterlacer.New(DeinterlacerOptions, MediaContext)
+- uid: Egami.Video.Filters.Deinterlacer.#ctor(Egami.Video.VideoTrackInfo,Egami.Video.Filters.DeinterlacerOptions,Egami.Video.MediaContext)
+  name: Deinterlacer(VideoTrackInfo, DeinterlacerOptions?, MediaContext?)
+  href: api/Egami.Video.Filters.Deinterlacer.html#Egami_Video_Filters_Deinterlacer__ctor_Egami_Video_VideoTrackInfo_Egami_Video_Filters_DeinterlacerOptions_Egami_Video_MediaContext_
+  commentId: M:Egami.Video.Filters.Deinterlacer.#ctor(Egami.Video.VideoTrackInfo,Egami.Video.Filters.DeinterlacerOptions,Egami.Video.MediaContext)
+  name.vb: New(VideoTrackInfo, DeinterlacerOptions, MediaContext)
+  fullName: Egami.Video.Filters.Deinterlacer.Deinterlacer(Egami.Video.VideoTrackInfo, Egami.Video.Filters.DeinterlacerOptions?, Egami.Video.MediaContext?)
+  fullName.vb: Egami.Video.Filters.Deinterlacer.New(Egami.Video.VideoTrackInfo, Egami.Video.Filters.DeinterlacerOptions, Egami.Video.MediaContext)
+  nameWithType: Deinterlacer.Deinterlacer(VideoTrackInfo, DeinterlacerOptions?, MediaContext?)
+  nameWithType.vb: Deinterlacer.New(VideoTrackInfo, DeinterlacerOptions, MediaContext)
+- uid: Egami.Video.Filters.Deinterlacer.#ctor*
+  name: Deinterlacer
+  href: api/Egami.Video.Filters.Deinterlacer.html#Egami_Video_Filters_Deinterlacer__ctor_
+  commentId: Overload:Egami.Video.Filters.Deinterlacer.#ctor
+  isSpec: "True"
+  name.vb: New
+  fullName: Egami.Video.Filters.Deinterlacer.Deinterlacer
+  fullName.vb: Egami.Video.Filters.Deinterlacer.New
+  nameWithType: Deinterlacer.Deinterlacer
+  nameWithType.vb: Deinterlacer.New
+- uid: Egami.Video.Filters.Deinterlacer.Dispose
+  name: Dispose()
+  href: api/Egami.Video.Filters.Deinterlacer.html#Egami_Video_Filters_Deinterlacer_Dispose
+  commentId: M:Egami.Video.Filters.Deinterlacer.Dispose
+  fullName: Egami.Video.Filters.Deinterlacer.Dispose()
+  nameWithType: Deinterlacer.Dispose()
+- uid: Egami.Video.Filters.Deinterlacer.Dispose*
+  name: Dispose
+  href: api/Egami.Video.Filters.Deinterlacer.html#Egami_Video_Filters_Deinterlacer_Dispose_
+  commentId: Overload:Egami.Video.Filters.Deinterlacer.Dispose
+  isSpec: "True"
+  fullName: Egami.Video.Filters.Deinterlacer.Dispose
+  nameWithType: Deinterlacer.Dispose
+- uid: Egami.Video.Filters.Deinterlacer.Flush
+  name: Flush()
+  href: api/Egami.Video.Filters.Deinterlacer.html#Egami_Video_Filters_Deinterlacer_Flush
+  commentId: M:Egami.Video.Filters.Deinterlacer.Flush
+  fullName: Egami.Video.Filters.Deinterlacer.Flush()
+  nameWithType: Deinterlacer.Flush()
+- uid: Egami.Video.Filters.Deinterlacer.Flush*
+  name: Flush
+  href: api/Egami.Video.Filters.Deinterlacer.html#Egami_Video_Filters_Deinterlacer_Flush_
+  commentId: Overload:Egami.Video.Filters.Deinterlacer.Flush
+  isSpec: "True"
+  fullName: Egami.Video.Filters.Deinterlacer.Flush
+  nameWithType: Deinterlacer.Flush
+- uid: Egami.Video.Filters.Deinterlacer.Latency
+  name: Latency
+  href: api/Egami.Video.Filters.Deinterlacer.html#Egami_Video_Filters_Deinterlacer_Latency
+  commentId: P:Egami.Video.Filters.Deinterlacer.Latency
+  fullName: Egami.Video.Filters.Deinterlacer.Latency
+  nameWithType: Deinterlacer.Latency
+- uid: Egami.Video.Filters.Deinterlacer.Latency*
+  name: Latency
+  href: api/Egami.Video.Filters.Deinterlacer.html#Egami_Video_Filters_Deinterlacer_Latency_
+  commentId: Overload:Egami.Video.Filters.Deinterlacer.Latency
+  isSpec: "True"
+  fullName: Egami.Video.Filters.Deinterlacer.Latency
+  nameWithType: Deinterlacer.Latency
+- uid: Egami.Video.Filters.Deinterlacer.Options
+  name: Options
+  href: api/Egami.Video.Filters.Deinterlacer.html#Egami_Video_Filters_Deinterlacer_Options
+  commentId: P:Egami.Video.Filters.Deinterlacer.Options
+  fullName: Egami.Video.Filters.Deinterlacer.Options
+  nameWithType: Deinterlacer.Options
+- uid: Egami.Video.Filters.Deinterlacer.Options*
+  name: Options
+  href: api/Egami.Video.Filters.Deinterlacer.html#Egami_Video_Filters_Deinterlacer_Options_
+  commentId: Overload:Egami.Video.Filters.Deinterlacer.Options
+  isSpec: "True"
+  fullName: Egami.Video.Filters.Deinterlacer.Options
+  nameWithType: Deinterlacer.Options
+- uid: Egami.Video.Filters.Deinterlacer.Reset
+  name: Reset()
+  href: api/Egami.Video.Filters.Deinterlacer.html#Egami_Video_Filters_Deinterlacer_Reset
+  commentId: M:Egami.Video.Filters.Deinterlacer.Reset
+  fullName: Egami.Video.Filters.Deinterlacer.Reset()
+  nameWithType: Deinterlacer.Reset()
+- uid: Egami.Video.Filters.Deinterlacer.Reset*
+  name: Reset
+  href: api/Egami.Video.Filters.Deinterlacer.html#Egami_Video_Filters_Deinterlacer_Reset_
+  commentId: Overload:Egami.Video.Filters.Deinterlacer.Reset
+  isSpec: "True"
+  fullName: Egami.Video.Filters.Deinterlacer.Reset
+  nameWithType: Deinterlacer.Reset
+- uid: Egami.Video.Filters.Deinterlacer.Send(Egami.Video.YuvVideoFrame)
+  name: Send(YuvVideoFrame)
+  href: api/Egami.Video.Filters.Deinterlacer.html#Egami_Video_Filters_Deinterlacer_Send_Egami_Video_YuvVideoFrame_
+  commentId: M:Egami.Video.Filters.Deinterlacer.Send(Egami.Video.YuvVideoFrame)
+  fullName: Egami.Video.Filters.Deinterlacer.Send(Egami.Video.YuvVideoFrame)
+  nameWithType: Deinterlacer.Send(YuvVideoFrame)
+- uid: Egami.Video.Filters.Deinterlacer.Send*
+  name: Send
+  href: api/Egami.Video.Filters.Deinterlacer.html#Egami_Video_Filters_Deinterlacer_Send_
+  commentId: Overload:Egami.Video.Filters.Deinterlacer.Send
+  isSpec: "True"
+  fullName: Egami.Video.Filters.Deinterlacer.Send
+  nameWithType: Deinterlacer.Send
+- uid: Egami.Video.Filters.Deinterlacer.TryReceive(Egami.Video.YuvVideoFrame@)
+  name: TryReceive(out YuvVideoFrame?)
+  href: api/Egami.Video.Filters.Deinterlacer.html#Egami_Video_Filters_Deinterlacer_TryReceive_Egami_Video_YuvVideoFrame__
+  commentId: M:Egami.Video.Filters.Deinterlacer.TryReceive(Egami.Video.YuvVideoFrame@)
+  name.vb: TryReceive(YuvVideoFrame)
+  fullName: Egami.Video.Filters.Deinterlacer.TryReceive(out Egami.Video.YuvVideoFrame?)
+  fullName.vb: Egami.Video.Filters.Deinterlacer.TryReceive(Egami.Video.YuvVideoFrame)
+  nameWithType: Deinterlacer.TryReceive(out YuvVideoFrame?)
+  nameWithType.vb: Deinterlacer.TryReceive(YuvVideoFrame)
+- uid: Egami.Video.Filters.Deinterlacer.TryReceive*
+  name: TryReceive
+  href: api/Egami.Video.Filters.Deinterlacer.html#Egami_Video_Filters_Deinterlacer_TryReceive_
+  commentId: Overload:Egami.Video.Filters.Deinterlacer.TryReceive
+  isSpec: "True"
+  fullName: Egami.Video.Filters.Deinterlacer.TryReceive
+  nameWithType: Deinterlacer.TryReceive
+- uid: Egami.Video.Filters.DeinterlacerOptions
+  name: DeinterlacerOptions
+  href: api/Egami.Video.Filters.DeinterlacerOptions.html
+  commentId: T:Egami.Video.Filters.DeinterlacerOptions
+  fullName: Egami.Video.Filters.DeinterlacerOptions
+  nameWithType: DeinterlacerOptions
+- uid: Egami.Video.Filters.DeinterlacerOptions.Default
+  name: Default
+  href: api/Egami.Video.Filters.DeinterlacerOptions.html#Egami_Video_Filters_DeinterlacerOptions_Default
+  commentId: P:Egami.Video.Filters.DeinterlacerOptions.Default
+  fullName: Egami.Video.Filters.DeinterlacerOptions.Default
+  nameWithType: DeinterlacerOptions.Default
+- uid: Egami.Video.Filters.DeinterlacerOptions.Default*
+  name: Default
+  href: api/Egami.Video.Filters.DeinterlacerOptions.html#Egami_Video_Filters_DeinterlacerOptions_Default_
+  commentId: Overload:Egami.Video.Filters.DeinterlacerOptions.Default
+  isSpec: "True"
+  fullName: Egami.Video.Filters.DeinterlacerOptions.Default
+  nameWithType: DeinterlacerOptions.Default
+- uid: Egami.Video.Filters.DeinterlacerOptions.FieldOrder
+  name: FieldOrder
+  href: api/Egami.Video.Filters.DeinterlacerOptions.html#Egami_Video_Filters_DeinterlacerOptions_FieldOrder
+  commentId: P:Egami.Video.Filters.DeinterlacerOptions.FieldOrder
+  fullName: Egami.Video.Filters.DeinterlacerOptions.FieldOrder
+  nameWithType: DeinterlacerOptions.FieldOrder
+- uid: Egami.Video.Filters.DeinterlacerOptions.FieldOrder*
+  name: FieldOrder
+  href: api/Egami.Video.Filters.DeinterlacerOptions.html#Egami_Video_Filters_DeinterlacerOptions_FieldOrder_
+  commentId: Overload:Egami.Video.Filters.DeinterlacerOptions.FieldOrder
+  isSpec: "True"
+  fullName: Egami.Video.Filters.DeinterlacerOptions.FieldOrder
+  nameWithType: DeinterlacerOptions.FieldOrder
+- uid: Egami.Video.Filters.DeinterlacerOptions.Frames
+  name: Frames
+  href: api/Egami.Video.Filters.DeinterlacerOptions.html#Egami_Video_Filters_DeinterlacerOptions_Frames
+  commentId: P:Egami.Video.Filters.DeinterlacerOptions.Frames
+  fullName: Egami.Video.Filters.DeinterlacerOptions.Frames
+  nameWithType: DeinterlacerOptions.Frames
+- uid: Egami.Video.Filters.DeinterlacerOptions.Frames*
+  name: Frames
+  href: api/Egami.Video.Filters.DeinterlacerOptions.html#Egami_Video_Filters_DeinterlacerOptions_Frames_
+  commentId: Overload:Egami.Video.Filters.DeinterlacerOptions.Frames
+  isSpec: "True"
+  fullName: Egami.Video.Filters.DeinterlacerOptions.Frames
+  nameWithType: DeinterlacerOptions.Frames
+- uid: Egami.Video.Filters.DeinterlacerOptions.Mode
+  name: Mode
+  href: api/Egami.Video.Filters.DeinterlacerOptions.html#Egami_Video_Filters_DeinterlacerOptions_Mode
+  commentId: P:Egami.Video.Filters.DeinterlacerOptions.Mode
+  fullName: Egami.Video.Filters.DeinterlacerOptions.Mode
+  nameWithType: DeinterlacerOptions.Mode
+- uid: Egami.Video.Filters.DeinterlacerOptions.Mode*
+  name: Mode
+  href: api/Egami.Video.Filters.DeinterlacerOptions.html#Egami_Video_Filters_DeinterlacerOptions_Mode_
+  commentId: Overload:Egami.Video.Filters.DeinterlacerOptions.Mode
+  isSpec: "True"
+  fullName: Egami.Video.Filters.DeinterlacerOptions.Mode
+  nameWithType: DeinterlacerOptions.Mode
+- uid: Egami.Video.Filters.DeinterlacerOptions.Rate
+  name: Rate
+  href: api/Egami.Video.Filters.DeinterlacerOptions.html#Egami_Video_Filters_DeinterlacerOptions_Rate
+  commentId: P:Egami.Video.Filters.DeinterlacerOptions.Rate
+  fullName: Egami.Video.Filters.DeinterlacerOptions.Rate
+  nameWithType: DeinterlacerOptions.Rate
+- uid: Egami.Video.Filters.DeinterlacerOptions.Rate*
+  name: Rate
+  href: api/Egami.Video.Filters.DeinterlacerOptions.html#Egami_Video_Filters_DeinterlacerOptions_Rate_
+  commentId: Overload:Egami.Video.Filters.DeinterlacerOptions.Rate
+  isSpec: "True"
+  fullName: Egami.Video.Filters.DeinterlacerOptions.Rate
+  nameWithType: DeinterlacerOptions.Rate
+- uid: Egami.Video.Filters.IVideoFilter
+  name: IVideoFilter
+  href: api/Egami.Video.Filters.IVideoFilter.html
+  commentId: T:Egami.Video.Filters.IVideoFilter
+  fullName: Egami.Video.Filters.IVideoFilter
+  nameWithType: IVideoFilter
+- uid: Egami.Video.Filters.IVideoFilter.Flush
+  name: Flush()
+  href: api/Egami.Video.Filters.IVideoFilter.html#Egami_Video_Filters_IVideoFilter_Flush
+  commentId: M:Egami.Video.Filters.IVideoFilter.Flush
+  fullName: Egami.Video.Filters.IVideoFilter.Flush()
+  nameWithType: IVideoFilter.Flush()
+- uid: Egami.Video.Filters.IVideoFilter.Flush*
+  name: Flush
+  href: api/Egami.Video.Filters.IVideoFilter.html#Egami_Video_Filters_IVideoFilter_Flush_
+  commentId: Overload:Egami.Video.Filters.IVideoFilter.Flush
+  isSpec: "True"
+  fullName: Egami.Video.Filters.IVideoFilter.Flush
+  nameWithType: IVideoFilter.Flush
+- uid: Egami.Video.Filters.IVideoFilter.Latency
+  name: Latency
+  href: api/Egami.Video.Filters.IVideoFilter.html#Egami_Video_Filters_IVideoFilter_Latency
+  commentId: P:Egami.Video.Filters.IVideoFilter.Latency
+  fullName: Egami.Video.Filters.IVideoFilter.Latency
+  nameWithType: IVideoFilter.Latency
+- uid: Egami.Video.Filters.IVideoFilter.Latency*
+  name: Latency
+  href: api/Egami.Video.Filters.IVideoFilter.html#Egami_Video_Filters_IVideoFilter_Latency_
+  commentId: Overload:Egami.Video.Filters.IVideoFilter.Latency
+  isSpec: "True"
+  fullName: Egami.Video.Filters.IVideoFilter.Latency
+  nameWithType: IVideoFilter.Latency
+- uid: Egami.Video.Filters.IVideoFilter.Reset
+  name: Reset()
+  href: api/Egami.Video.Filters.IVideoFilter.html#Egami_Video_Filters_IVideoFilter_Reset
+  commentId: M:Egami.Video.Filters.IVideoFilter.Reset
+  fullName: Egami.Video.Filters.IVideoFilter.Reset()
+  nameWithType: IVideoFilter.Reset()
+- uid: Egami.Video.Filters.IVideoFilter.Reset*
+  name: Reset
+  href: api/Egami.Video.Filters.IVideoFilter.html#Egami_Video_Filters_IVideoFilter_Reset_
+  commentId: Overload:Egami.Video.Filters.IVideoFilter.Reset
+  isSpec: "True"
+  fullName: Egami.Video.Filters.IVideoFilter.Reset
+  nameWithType: IVideoFilter.Reset
+- uid: Egami.Video.Filters.IVideoFilter.Send(Egami.Video.YuvVideoFrame)
+  name: Send(YuvVideoFrame)
+  href: api/Egami.Video.Filters.IVideoFilter.html#Egami_Video_Filters_IVideoFilter_Send_Egami_Video_YuvVideoFrame_
+  commentId: M:Egami.Video.Filters.IVideoFilter.Send(Egami.Video.YuvVideoFrame)
+  fullName: Egami.Video.Filters.IVideoFilter.Send(Egami.Video.YuvVideoFrame)
+  nameWithType: IVideoFilter.Send(YuvVideoFrame)
+- uid: Egami.Video.Filters.IVideoFilter.Send*
+  name: Send
+  href: api/Egami.Video.Filters.IVideoFilter.html#Egami_Video_Filters_IVideoFilter_Send_
+  commentId: Overload:Egami.Video.Filters.IVideoFilter.Send
+  isSpec: "True"
+  fullName: Egami.Video.Filters.IVideoFilter.Send
+  nameWithType: IVideoFilter.Send
+- uid: Egami.Video.Filters.IVideoFilter.TryReceive(Egami.Video.YuvVideoFrame@)
+  name: TryReceive(out YuvVideoFrame?)
+  href: api/Egami.Video.Filters.IVideoFilter.html#Egami_Video_Filters_IVideoFilter_TryReceive_Egami_Video_YuvVideoFrame__
+  commentId: M:Egami.Video.Filters.IVideoFilter.TryReceive(Egami.Video.YuvVideoFrame@)
+  name.vb: TryReceive(YuvVideoFrame)
+  fullName: Egami.Video.Filters.IVideoFilter.TryReceive(out Egami.Video.YuvVideoFrame?)
+  fullName.vb: Egami.Video.Filters.IVideoFilter.TryReceive(Egami.Video.YuvVideoFrame)
+  nameWithType: IVideoFilter.TryReceive(out YuvVideoFrame?)
+  nameWithType.vb: IVideoFilter.TryReceive(YuvVideoFrame)
+- uid: Egami.Video.Filters.IVideoFilter.TryReceive*
+  name: TryReceive
+  href: api/Egami.Video.Filters.IVideoFilter.html#Egami_Video_Filters_IVideoFilter_TryReceive_
+  commentId: Overload:Egami.Video.Filters.IVideoFilter.TryReceive
+  isSpec: "True"
+  fullName: Egami.Video.Filters.IVideoFilter.TryReceive
+  nameWithType: IVideoFilter.TryReceive
 - uid: Egami.Video.Hdr10PlusMetadata
   name: Hdr10PlusMetadata
   href: api/Egami.Video.Hdr10PlusMetadata.html

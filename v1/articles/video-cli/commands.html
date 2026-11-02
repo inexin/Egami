@@ -526,21 +526,25 @@ Arguments:
   &lt;inputs&gt;  Media files, globs (*, ?, **) expanded the same way in every shell, folders with --recursive, or - for standard input.
 
 Options:
-  -r, --recursive                Take every media file in folders given as inputs, at any depth.
-  -j, --jobs &lt;count&gt;             How many files to work on at once; 0 (the default) for one per processor.
-  --fail-fast                    Stop at the first file that fails.
-  -o, --output &lt;template&gt;        Where to write: a template with {frame} (the frame number from 0, padded as in {frame:0000}), {name}, {dir}, {index} and {format}, a folder, or - for standard output (one frame, with --format).
-  -f, --format &lt;format&gt;          The image format by name or extension (png, jpg, webp, ...), when -o's extension does not say; always for -o -.
-  --quality &lt;0-100&gt;              Lossy quality from 0 to 100 (JPEG, WebP, AVIF, JPEG XL).
-  --set &lt;fmt.key=value&gt;          Any writer setting as fmt.key=value, such as png.compression-level=9; 'egami formats png' lists the keys.
-  -t, --track &lt;track&gt;            Which tracks: v, a, s or d with an optional :index or :language (a:1, s:eng), or a track number as info shows it. Repeat it or separate with commas; all tracks by default.
-  --every &lt;time|#n&gt;              One frame per length of time (10s, 1:00), or every nth frame with #n (#25).
-  --at &lt;t1,t2,...&gt;               Only the frames shown at these times, separated by commas (5, 1:30, #100).
-  --keyframes                    Only the keyframes.
-  --count &lt;n&gt;                    This many frames, evenly spaced from the first frame to the last.
-  --from &lt;time&gt;                  Start at this time, or at a frame number with #n.
-  --to &lt;time&gt;                    Stop before this time, or before a frame number with #n.
-  --auto-orient                  Turn the frames upright by the track's rotation, as players show them.
+  -r, --recursive                     Take every media file in folders given as inputs, at any depth.
+  -j, --jobs &lt;count&gt;                  How many files to work on at once; 0 (the default) for one per processor.
+  --fail-fast                         Stop at the first file that fails.
+  -o, --output &lt;template&gt;             Where to write: a template with {frame} (the frame number from 0, padded as in {frame:0000}), {name}, {dir}, {index} and {format}, a folder, or - for standard output (one frame, with --format).
+  -f, --format &lt;format&gt;               The image format by name or extension (png, jpg, webp, ...), when -o's extension does not say; always for -o -.
+  --quality &lt;0-100&gt;                   Lossy quality from 0 to 100 (JPEG, WebP, AVIF, JPEG XL).
+  --set &lt;fmt.key=value&gt;               Any writer setting as fmt.key=value, such as png.compression-level=9; 'egami formats png' lists the keys.
+  -t, --track &lt;track&gt;                 Which tracks: v, a, s or d with an optional :index or :language (a:1, s:eng), or a track number as info shows it. Repeat it or separate with commas; all tracks by default.
+  --every &lt;time|#n&gt;                   One frame per length of time (10s, 1:00), or every nth frame with #n (#25).
+  --at &lt;t1,t2,...&gt;                    Only the frames shown at these times, separated by commas (5, 1:30, #100).
+  --keyframes                         Only the keyframes.
+  --count &lt;n&gt;                         This many frames, evenly spaced from the first frame to the last.
+  --from &lt;time&gt;                       Start at this time, or at a frame number with #n.
+  --to &lt;time&gt;                         Stop before this time, or before a frame number with #n.
+  --auto-orient                       Turn the frames upright by the track's rotation, as players show them.
+  --deinterlace &lt;adaptive|bob&gt;        Deinterlace the frames the decoder or container flags as interlaced: adaptive (the default) keeps the still parts sharp and guesses the moving ones, bob makes each frame from one field alone.
+  --deinterlace-rate &lt;frame|field&gt;    With --deinterlace: frame (the default) gives one frame per frame, field one per field, doubling the frame rate (50i becomes 50p).
+  --deinterlace-frames &lt;flagged|all&gt;  With --deinterlace: flagged (the default) deinterlaces the frames flagged as interlaced, all every frame, for sources that flag none.
+  --field-order &lt;tff|bff&gt;             With --deinterlace: the field order to use, tff (top field first) or bff, instead of what the frames and the track say.
 </code></pre>
 <h2 id="encode">encode</h2>
 <pre><code class="lang-text">Description:
@@ -576,6 +580,10 @@ Options:
   --no-slice-crc                        FFV1: leave out the slice CRCs that let verify check the file.
   --coder &lt;range|range-default|golomb&gt;  FFV1: range (the default, smallest), range-default (the default state table) or golomb (faster, 8 bits at most).
   --context &lt;small|large&gt;               FFV1: the context model, small or large; picked from --effort by default.
+  --deinterlace &lt;adaptive|bob&gt;          Deinterlace the frames the decoder or container flags as interlaced: adaptive (the default) keeps the still parts sharp and guesses the moving ones, bob makes each frame from one field alone.
+  --deinterlace-rate &lt;frame|field&gt;      With --deinterlace: frame (the default) gives one frame per frame, field one per field, doubling the frame rate (50i becomes 50p).
+  --deinterlace-frames &lt;flagged|all&gt;    With --deinterlace: flagged (the default) deinterlaces the frames flagged as interlaced, all every frame, for sources that flag none.
+  --field-order &lt;tff|bff&gt;               With --deinterlace: the field order to use, tff (top field first) or bff, instead of what the frames and the track say.
 </code></pre>
 <h2 id="run">run</h2>
 <pre><code class="lang-text">Description:
@@ -596,6 +604,10 @@ Options:
   --no-slice-crc                        FFV1: leave out the slice CRCs that let verify check the file.
   --coder &lt;range|range-default|golomb&gt;  FFV1: range (the default, smallest), range-default (the default state table) or golomb (faster, 8 bits at most).
   --context &lt;small|large&gt;               FFV1: the context model, small or large; picked from --effort by default.
+  --deinterlace &lt;adaptive|bob&gt;          Deinterlace the frames the decoder or container flags as interlaced: adaptive (the default) keeps the still parts sharp and guesses the moving ones, bob makes each frame from one field alone.
+  --deinterlace-rate &lt;frame|field&gt;      With --deinterlace: frame (the default) gives one frame per frame, field one per field, doubling the frame rate (50i becomes 50p).
+  --deinterlace-frames &lt;flagged|all&gt;    With --deinterlace: flagged (the default) deinterlaces the frames flagged as interlaced, all every frame, for sources that flag none.
+  --field-order &lt;tff|bff&gt;               With --deinterlace: the field order to use, tff (top field first) or bff, instead of what the frames and the track say.
   --quality &lt;1-100&gt;                     The encoder's quality from 1 to 100.
   --crop &lt;auto&gt;                         auto finds the black bars of letterbox, pillarbox and windowbox video, as the analyze command's crop detector does, and crops them off before the other steps.
   --rate &lt;fps&gt;                          Frames per second of the output, dropping or repeating frames to match; frames keep their own times by default.
@@ -976,17 +988,21 @@ Arguments:
   &lt;inputs&gt;  The clips, in order.
 
 Options:
-  --transition &lt;kind:time&gt;       The transition between clips, as kind:duration, such as dissolve:1s or wipeleft:0.5; kinds: fade, fadeblack, fadewhite, dissolve, wipeleft, wiperight, wipeup, wipedown, slideleft, slideright, slideup, slidedown, circleopen, circleclose, clock, zoom, pixelize, blur. A cut by default.
-  -o, --output &lt;path&gt;            The file to write; its extension names the container (webm, mkv, mp4, avi).
-  --size &lt;WxH&gt;                   The canvas size, such as 1920x1080. Default the first clip's.
-  --rate &lt;fps&gt;                   The frame rate, such as 30 or 30000/1001. Default the first clip's.
-  --fit &lt;mode&gt;                   How clips of another size fit the canvas: contain (the default, with bars), cover (cropped), stretch or none.
-  --background &lt;color&gt;           The colour behind clips that do not cover the canvas. Default black.
-  -c, --codec &lt;codec&gt;            The video codec: vp9 (the default for webm), vp8, av1, mjpeg (the default otherwise) or raw.
-  --quality &lt;0-100&gt;              Quality from 0 to 100.
-  -an, --no-audio                Write no audio track.
-  --smart                        Copy the untouched parts of clips instead of encoding them again (smart render), where the source matches the canvas and the encoder's stream.
-  --save-edit &lt;file.json&gt;        Also write the edit as a JSON file that 'egami-video edit' renders; with no -o, write only the file.
+  --transition &lt;kind:time&gt;            The transition between clips, as kind:duration, such as dissolve:1s or wipeleft:0.5; kinds: fade, fadeblack, fadewhite, dissolve, wipeleft, wiperight, wipeup, wipedown, slideleft, slideright, slideup, slidedown, circleopen, circleclose, clock, zoom, pixelize, blur. A cut by default.
+  -o, --output &lt;path&gt;                 The file to write; its extension names the container (webm, mkv, mp4, avi).
+  --size &lt;WxH&gt;                        The canvas size, such as 1920x1080. Default the first clip's.
+  --rate &lt;fps&gt;                        The frame rate, such as 30 or 30000/1001. Default the first clip's.
+  --fit &lt;mode&gt;                        How clips of another size fit the canvas: contain (the default, with bars), cover (cropped), stretch or none.
+  --background &lt;color&gt;                The colour behind clips that do not cover the canvas. Default black.
+  -c, --codec &lt;codec&gt;                 The video codec: vp9 (the default for webm), vp8, av1, mjpeg (the default otherwise) or raw.
+  --quality &lt;0-100&gt;                   Quality from 0 to 100.
+  -an, --no-audio                     Write no audio track.
+  --smart                             Copy the untouched parts of clips instead of encoding them again (smart render), where the source matches the canvas and the encoder's stream.
+  --save-edit &lt;file.json&gt;             Also write the edit as a JSON file that 'egami-video edit' renders; with no -o, write only the file.
+  --deinterlace &lt;adaptive|bob&gt;        Deinterlace the frames the decoder or container flags as interlaced: adaptive (the default) keeps the still parts sharp and guesses the moving ones, bob makes each frame from one field alone.
+  --deinterlace-rate &lt;frame|field&gt;    With --deinterlace: frame (the default) gives one frame per frame, field one per field, doubling the frame rate (50i becomes 50p).
+  --deinterlace-frames &lt;flagged|all&gt;  With --deinterlace: flagged (the default) deinterlaces the frames flagged as interlaced, all every frame, for sources that flag none.
+  --field-order &lt;tff|bff&gt;             With --deinterlace: the field order to use, tff (top field first) or bff, instead of what the frames and the track say.
 </code></pre>
 <h2 id="fade">fade</h2>
 <pre><code class="lang-text">Description:
@@ -999,19 +1015,23 @@ Arguments:
   &lt;input&gt;  The clip.
 
 Options:
-  --in &lt;time&gt;                    Fade in from the colour over this long at the start, such as 1s.
-  --out &lt;time&gt;                   Fade out to the colour over this long at the end.
-  --color &lt;color&gt;                The colour, as a name or hex such as #000000. Default black.
-  -o, --output &lt;path&gt;            The file to write; its extension names the container (webm, mkv, mp4, avi).
-  --size &lt;WxH&gt;                   The canvas size, such as 1920x1080. Default the first clip's.
-  --rate &lt;fps&gt;                   The frame rate, such as 30 or 30000/1001. Default the first clip's.
-  --fit &lt;mode&gt;                   How clips of another size fit the canvas: contain (the default, with bars), cover (cropped), stretch or none.
-  --background &lt;color&gt;           The colour behind clips that do not cover the canvas. Default black.
-  -c, --codec &lt;codec&gt;            The video codec: vp9 (the default for webm), vp8, av1, mjpeg (the default otherwise) or raw.
-  --quality &lt;0-100&gt;              Quality from 0 to 100.
-  -an, --no-audio                Write no audio track.
-  --smart                        Copy the untouched parts of clips instead of encoding them again (smart render), where the source matches the canvas and the encoder's stream.
-  --save-edit &lt;file.json&gt;        Also write the edit as a JSON file that 'egami-video edit' renders; with no -o, write only the file.
+  --in &lt;time&gt;                         Fade in from the colour over this long at the start, such as 1s.
+  --out &lt;time&gt;                        Fade out to the colour over this long at the end.
+  --color &lt;color&gt;                     The colour, as a name or hex such as #000000. Default black.
+  -o, --output &lt;path&gt;                 The file to write; its extension names the container (webm, mkv, mp4, avi).
+  --size &lt;WxH&gt;                        The canvas size, such as 1920x1080. Default the first clip's.
+  --rate &lt;fps&gt;                        The frame rate, such as 30 or 30000/1001. Default the first clip's.
+  --fit &lt;mode&gt;                        How clips of another size fit the canvas: contain (the default, with bars), cover (cropped), stretch or none.
+  --background &lt;color&gt;                The colour behind clips that do not cover the canvas. Default black.
+  -c, --codec &lt;codec&gt;                 The video codec: vp9 (the default for webm), vp8, av1, mjpeg (the default otherwise) or raw.
+  --quality &lt;0-100&gt;                   Quality from 0 to 100.
+  -an, --no-audio                     Write no audio track.
+  --smart                             Copy the untouched parts of clips instead of encoding them again (smart render), where the source matches the canvas and the encoder's stream.
+  --save-edit &lt;file.json&gt;             Also write the edit as a JSON file that 'egami-video edit' renders; with no -o, write only the file.
+  --deinterlace &lt;adaptive|bob&gt;        Deinterlace the frames the decoder or container flags as interlaced: adaptive (the default) keeps the still parts sharp and guesses the moving ones, bob makes each frame from one field alone.
+  --deinterlace-rate &lt;frame|field&gt;    With --deinterlace: frame (the default) gives one frame per frame, field one per field, doubling the frame rate (50i becomes 50p).
+  --deinterlace-frames &lt;flagged|all&gt;  With --deinterlace: flagged (the default) deinterlaces the frames flagged as interlaced, all every frame, for sources that flag none.
+  --field-order &lt;tff|bff&gt;             With --deinterlace: the field order to use, tff (top field first) or bff, instead of what the frames and the track say.
 </code></pre>
 <h2 id="overlay">overlay</h2>
 <pre><code class="lang-text">Description:
@@ -1025,29 +1045,33 @@ Arguments:
   &lt;over&gt;  The clip drawn over it.
 
 Options:
-  --at &lt;x,y&gt;                     Where the top-left corner goes, as x,y in pixels, or right-N,top-N and the like from the edges (left, right, top, bottom, center). Centred by default.
-  --scale &lt;factor&gt;               The overlay's size as a factor of its own. Default 1.
-  --key &lt;color&gt;                  Chroma key the overlay: auto (the screen colour read from its first frame), green, blue or a hex colour such as #00b140.
-  --similarity &lt;0-1&gt;             With --key: how close to the colour is keyed out, from 0 to 1. Default 0.05.
-  --blend &lt;0-1&gt;                  With --key: the soft edge beyond --similarity, from 0 to 1. Default 0.35.
-  --despill &lt;0-1&gt;                With --key: how much of the screen's colour to take out of the edges, from 0 to 1. Default 0.5.
-  --from &lt;time&gt;                  When the layer appears, in the main clip's time: seconds or [HH:]MM:SS[.mmm]. Default the start.
-  --to &lt;time&gt;                    When it disappears. Default when its clip ends.
-  --opacity &lt;0-1&gt;                Its opacity, from 0 to 1. Default 1.
-  --fade-in &lt;time&gt;               Fade it in over this long.
-  --fade-out &lt;time&gt;              Fade it out over this long.
-  --hold                         Keep showing its last frame until --to or the end, when its clip is shorter.
-  --mute                         Leave out its audio.
-  -o, --output &lt;path&gt;            The file to write; its extension names the container (webm, mkv, mp4, avi).
-  --size &lt;WxH&gt;                   The canvas size, such as 1920x1080. Default the first clip's.
-  --rate &lt;fps&gt;                   The frame rate, such as 30 or 30000/1001. Default the first clip's.
-  --fit &lt;mode&gt;                   How clips of another size fit the canvas: contain (the default, with bars), cover (cropped), stretch or none.
-  --background &lt;color&gt;           The colour behind clips that do not cover the canvas. Default black.
-  -c, --codec &lt;codec&gt;            The video codec: vp9 (the default for webm), vp8, av1, mjpeg (the default otherwise) or raw.
-  --quality &lt;0-100&gt;              Quality from 0 to 100.
-  -an, --no-audio                Write no audio track.
-  --smart                        Copy the untouched parts of clips instead of encoding them again (smart render), where the source matches the canvas and the encoder's stream.
-  --save-edit &lt;file.json&gt;        Also write the edit as a JSON file that 'egami-video edit' renders; with no -o, write only the file.
+  --at &lt;x,y&gt;                          Where the top-left corner goes, as x,y in pixels, or right-N,top-N and the like from the edges (left, right, top, bottom, center). Centred by default.
+  --scale &lt;factor&gt;                    The overlay's size as a factor of its own. Default 1.
+  --key &lt;color&gt;                       Chroma key the overlay: auto (the screen colour read from its first frame), green, blue or a hex colour such as #00b140.
+  --similarity &lt;0-1&gt;                  With --key: how close to the colour is keyed out, from 0 to 1. Default 0.05.
+  --blend &lt;0-1&gt;                       With --key: the soft edge beyond --similarity, from 0 to 1. Default 0.35.
+  --despill &lt;0-1&gt;                     With --key: how much of the screen's colour to take out of the edges, from 0 to 1. Default 0.5.
+  --from &lt;time&gt;                       When the layer appears, in the main clip's time: seconds or [HH:]MM:SS[.mmm]. Default the start.
+  --to &lt;time&gt;                         When it disappears. Default when its clip ends.
+  --opacity &lt;0-1&gt;                     Its opacity, from 0 to 1. Default 1.
+  --fade-in &lt;time&gt;                    Fade it in over this long.
+  --fade-out &lt;time&gt;                   Fade it out over this long.
+  --hold                              Keep showing its last frame until --to or the end, when its clip is shorter.
+  --mute                              Leave out its audio.
+  -o, --output &lt;path&gt;                 The file to write; its extension names the container (webm, mkv, mp4, avi).
+  --size &lt;WxH&gt;                        The canvas size, such as 1920x1080. Default the first clip's.
+  --rate &lt;fps&gt;                        The frame rate, such as 30 or 30000/1001. Default the first clip's.
+  --fit &lt;mode&gt;                        How clips of another size fit the canvas: contain (the default, with bars), cover (cropped), stretch or none.
+  --background &lt;color&gt;                The colour behind clips that do not cover the canvas. Default black.
+  -c, --codec &lt;codec&gt;                 The video codec: vp9 (the default for webm), vp8, av1, mjpeg (the default otherwise) or raw.
+  --quality &lt;0-100&gt;                   Quality from 0 to 100.
+  -an, --no-audio                     Write no audio track.
+  --smart                             Copy the untouched parts of clips instead of encoding them again (smart render), where the source matches the canvas and the encoder's stream.
+  --save-edit &lt;file.json&gt;             Also write the edit as a JSON file that 'egami-video edit' renders; with no -o, write only the file.
+  --deinterlace &lt;adaptive|bob&gt;        Deinterlace the frames the decoder or container flags as interlaced: adaptive (the default) keeps the still parts sharp and guesses the moving ones, bob makes each frame from one field alone.
+  --deinterlace-rate &lt;frame|field&gt;    With --deinterlace: frame (the default) gives one frame per frame, field one per field, doubling the frame rate (50i becomes 50p).
+  --deinterlace-frames &lt;flagged|all&gt;  With --deinterlace: flagged (the default) deinterlaces the frames flagged as interlaced, all every frame, for sources that flag none.
+  --field-order &lt;tff|bff&gt;             With --deinterlace: the field order to use, tff (top field first) or bff, instead of what the frames and the track say.
 </code></pre>
 <h2 id="pip">pip</h2>
 <pre><code class="lang-text">Description:
@@ -1061,26 +1085,30 @@ Arguments:
   &lt;inset&gt;  The clip shown small in a corner.
 
 Options:
-  --corner &lt;corner&gt;              The corner: top-left, top-right, bottom-left or bottom-right (the default).
-  --scale &lt;fraction&gt;             The inset's width as a fraction of the canvas. Default 0.3.
-  --margin &lt;pixels&gt;              The space to the canvas edges in pixels. Default 16.
-  --from &lt;time&gt;                  When the layer appears, in the main clip's time: seconds or [HH:]MM:SS[.mmm]. Default the start.
-  --to &lt;time&gt;                    When it disappears. Default when its clip ends.
-  --opacity &lt;0-1&gt;                Its opacity, from 0 to 1. Default 1.
-  --fade-in &lt;time&gt;               Fade it in over this long.
-  --fade-out &lt;time&gt;              Fade it out over this long.
-  --hold                         Keep showing its last frame until --to or the end, when its clip is shorter.
-  --mute                         Leave out its audio.
-  -o, --output &lt;path&gt;            The file to write; its extension names the container (webm, mkv, mp4, avi).
-  --size &lt;WxH&gt;                   The canvas size, such as 1920x1080. Default the first clip's.
-  --rate &lt;fps&gt;                   The frame rate, such as 30 or 30000/1001. Default the first clip's.
-  --fit &lt;mode&gt;                   How clips of another size fit the canvas: contain (the default, with bars), cover (cropped), stretch or none.
-  --background &lt;color&gt;           The colour behind clips that do not cover the canvas. Default black.
-  -c, --codec &lt;codec&gt;            The video codec: vp9 (the default for webm), vp8, av1, mjpeg (the default otherwise) or raw.
-  --quality &lt;0-100&gt;              Quality from 0 to 100.
-  -an, --no-audio                Write no audio track.
-  --smart                        Copy the untouched parts of clips instead of encoding them again (smart render), where the source matches the canvas and the encoder's stream.
-  --save-edit &lt;file.json&gt;        Also write the edit as a JSON file that 'egami-video edit' renders; with no -o, write only the file.
+  --corner &lt;corner&gt;                   The corner: top-left, top-right, bottom-left or bottom-right (the default).
+  --scale &lt;fraction&gt;                  The inset's width as a fraction of the canvas. Default 0.3.
+  --margin &lt;pixels&gt;                   The space to the canvas edges in pixels. Default 16.
+  --from &lt;time&gt;                       When the layer appears, in the main clip's time: seconds or [HH:]MM:SS[.mmm]. Default the start.
+  --to &lt;time&gt;                         When it disappears. Default when its clip ends.
+  --opacity &lt;0-1&gt;                     Its opacity, from 0 to 1. Default 1.
+  --fade-in &lt;time&gt;                    Fade it in over this long.
+  --fade-out &lt;time&gt;                   Fade it out over this long.
+  --hold                              Keep showing its last frame until --to or the end, when its clip is shorter.
+  --mute                              Leave out its audio.
+  -o, --output &lt;path&gt;                 The file to write; its extension names the container (webm, mkv, mp4, avi).
+  --size &lt;WxH&gt;                        The canvas size, such as 1920x1080. Default the first clip's.
+  --rate &lt;fps&gt;                        The frame rate, such as 30 or 30000/1001. Default the first clip's.
+  --fit &lt;mode&gt;                        How clips of another size fit the canvas: contain (the default, with bars), cover (cropped), stretch or none.
+  --background &lt;color&gt;                The colour behind clips that do not cover the canvas. Default black.
+  -c, --codec &lt;codec&gt;                 The video codec: vp9 (the default for webm), vp8, av1, mjpeg (the default otherwise) or raw.
+  --quality &lt;0-100&gt;                   Quality from 0 to 100.
+  -an, --no-audio                     Write no audio track.
+  --smart                             Copy the untouched parts of clips instead of encoding them again (smart render), where the source matches the canvas and the encoder's stream.
+  --save-edit &lt;file.json&gt;             Also write the edit as a JSON file that 'egami-video edit' renders; with no -o, write only the file.
+  --deinterlace &lt;adaptive|bob&gt;        Deinterlace the frames the decoder or container flags as interlaced: adaptive (the default) keeps the still parts sharp and guesses the moving ones, bob makes each frame from one field alone.
+  --deinterlace-rate &lt;frame|field&gt;    With --deinterlace: frame (the default) gives one frame per frame, field one per field, doubling the frame rate (50i becomes 50p).
+  --deinterlace-frames &lt;flagged|all&gt;  With --deinterlace: flagged (the default) deinterlaces the frames flagged as interlaced, all every frame, for sources that flag none.
+  --field-order &lt;tff|bff&gt;             With --deinterlace: the field order to use, tff (top field first) or bff, instead of what the frames and the track say.
 </code></pre>
 <h2 id="stack">stack</h2>
 <pre><code class="lang-text">Description:
@@ -1093,21 +1121,25 @@ Arguments:
   &lt;inputs&gt;  The clips, in order.
 
 Options:
-  --vertical                     One above the other, like vstack, instead of side by side.
-  --grid &lt;CxR&gt;                   A grid of columns by rows, such as 2x2, filled row by row.
-  --gap &lt;pixels&gt;                 The gap between clips in pixels. Default 0.
-  --shortest                     End with the shortest clip instead of the longest.
-  --mix-audio                    Mix every clip's audio instead of keeping the first clip's.
-  -o, --output &lt;path&gt;            The file to write; its extension names the container (webm, mkv, mp4, avi).
-  --size &lt;WxH&gt;                   The canvas size, such as 1920x1080. Default the first clip's.
-  --rate &lt;fps&gt;                   The frame rate, such as 30 or 30000/1001. Default the first clip's.
-  --fit &lt;mode&gt;                   How clips of another size fit the canvas: contain (the default, with bars), cover (cropped), stretch or none.
-  --background &lt;color&gt;           The colour behind clips that do not cover the canvas. Default black.
-  -c, --codec &lt;codec&gt;            The video codec: vp9 (the default for webm), vp8, av1, mjpeg (the default otherwise) or raw.
-  --quality &lt;0-100&gt;              Quality from 0 to 100.
-  -an, --no-audio                Write no audio track.
-  --smart                        Copy the untouched parts of clips instead of encoding them again (smart render), where the source matches the canvas and the encoder's stream.
-  --save-edit &lt;file.json&gt;        Also write the edit as a JSON file that 'egami-video edit' renders; with no -o, write only the file.
+  --vertical                          One above the other, like vstack, instead of side by side.
+  --grid &lt;CxR&gt;                        A grid of columns by rows, such as 2x2, filled row by row.
+  --gap &lt;pixels&gt;                      The gap between clips in pixels. Default 0.
+  --shortest                          End with the shortest clip instead of the longest.
+  --mix-audio                         Mix every clip's audio instead of keeping the first clip's.
+  -o, --output &lt;path&gt;                 The file to write; its extension names the container (webm, mkv, mp4, avi).
+  --size &lt;WxH&gt;                        The canvas size, such as 1920x1080. Default the first clip's.
+  --rate &lt;fps&gt;                        The frame rate, such as 30 or 30000/1001. Default the first clip's.
+  --fit &lt;mode&gt;                        How clips of another size fit the canvas: contain (the default, with bars), cover (cropped), stretch or none.
+  --background &lt;color&gt;                The colour behind clips that do not cover the canvas. Default black.
+  -c, --codec &lt;codec&gt;                 The video codec: vp9 (the default for webm), vp8, av1, mjpeg (the default otherwise) or raw.
+  --quality &lt;0-100&gt;                   Quality from 0 to 100.
+  -an, --no-audio                     Write no audio track.
+  --smart                             Copy the untouched parts of clips instead of encoding them again (smart render), where the source matches the canvas and the encoder's stream.
+  --save-edit &lt;file.json&gt;             Also write the edit as a JSON file that 'egami-video edit' renders; with no -o, write only the file.
+  --deinterlace &lt;adaptive|bob&gt;        Deinterlace the frames the decoder or container flags as interlaced: adaptive (the default) keeps the still parts sharp and guesses the moving ones, bob makes each frame from one field alone.
+  --deinterlace-rate &lt;frame|field&gt;    With --deinterlace: frame (the default) gives one frame per frame, field one per field, doubling the frame rate (50i becomes 50p).
+  --deinterlace-frames &lt;flagged|all&gt;  With --deinterlace: flagged (the default) deinterlaces the frames flagged as interlaced, all every frame, for sources that flag none.
+  --field-order &lt;tff|bff&gt;             With --deinterlace: the field order to use, tff (top field first) or bff, instead of what the frames and the track say.
 </code></pre>
 <h2 id="speed">speed</h2>
 <pre><code class="lang-text">Description:
@@ -1121,17 +1153,21 @@ Arguments:
   &lt;factor&gt;  How much faster, from 0.1 to 10: 2 is twice as fast, 0.5 half as fast.
 
 Options:
-  --pitch                        Let the sound's pitch follow the speed, like a tape, instead of keeping it.
-  -o, --output &lt;path&gt;            The file to write; its extension names the container (webm, mkv, mp4, avi).
-  --size &lt;WxH&gt;                   The canvas size, such as 1920x1080. Default the first clip's.
-  --rate &lt;fps&gt;                   The frame rate, such as 30 or 30000/1001. Default the first clip's.
-  --fit &lt;mode&gt;                   How clips of another size fit the canvas: contain (the default, with bars), cover (cropped), stretch or none.
-  --background &lt;color&gt;           The colour behind clips that do not cover the canvas. Default black.
-  -c, --codec &lt;codec&gt;            The video codec: vp9 (the default for webm), vp8, av1, mjpeg (the default otherwise) or raw.
-  --quality &lt;0-100&gt;              Quality from 0 to 100.
-  -an, --no-audio                Write no audio track.
-  --smart                        Copy the untouched parts of clips instead of encoding them again (smart render), where the source matches the canvas and the encoder's stream.
-  --save-edit &lt;file.json&gt;        Also write the edit as a JSON file that 'egami-video edit' renders; with no -o, write only the file.
+  --pitch                             Let the sound's pitch follow the speed, like a tape, instead of keeping it.
+  -o, --output &lt;path&gt;                 The file to write; its extension names the container (webm, mkv, mp4, avi).
+  --size &lt;WxH&gt;                        The canvas size, such as 1920x1080. Default the first clip's.
+  --rate &lt;fps&gt;                        The frame rate, such as 30 or 30000/1001. Default the first clip's.
+  --fit &lt;mode&gt;                        How clips of another size fit the canvas: contain (the default, with bars), cover (cropped), stretch or none.
+  --background &lt;color&gt;                The colour behind clips that do not cover the canvas. Default black.
+  -c, --codec &lt;codec&gt;                 The video codec: vp9 (the default for webm), vp8, av1, mjpeg (the default otherwise) or raw.
+  --quality &lt;0-100&gt;                   Quality from 0 to 100.
+  -an, --no-audio                     Write no audio track.
+  --smart                             Copy the untouched parts of clips instead of encoding them again (smart render), where the source matches the canvas and the encoder's stream.
+  --save-edit &lt;file.json&gt;             Also write the edit as a JSON file that 'egami-video edit' renders; with no -o, write only the file.
+  --deinterlace &lt;adaptive|bob&gt;        Deinterlace the frames the decoder or container flags as interlaced: adaptive (the default) keeps the still parts sharp and guesses the moving ones, bob makes each frame from one field alone.
+  --deinterlace-rate &lt;frame|field&gt;    With --deinterlace: frame (the default) gives one frame per frame, field one per field, doubling the frame rate (50i becomes 50p).
+  --deinterlace-frames &lt;flagged|all&gt;  With --deinterlace: flagged (the default) deinterlaces the frames flagged as interlaced, all every frame, for sources that flag none.
+  --field-order &lt;tff|bff&gt;             With --deinterlace: the field order to use, tff (top field first) or bff, instead of what the frames and the track say.
 </code></pre>
 <h2 id="reverse">reverse</h2>
 <pre><code class="lang-text">Description:
@@ -1144,16 +1180,20 @@ Arguments:
   &lt;input&gt;  The clip.
 
 Options:
-  -o, --output &lt;path&gt;            The file to write; its extension names the container (webm, mkv, mp4, avi).
-  --size &lt;WxH&gt;                   The canvas size, such as 1920x1080. Default the first clip's.
-  --rate &lt;fps&gt;                   The frame rate, such as 30 or 30000/1001. Default the first clip's.
-  --fit &lt;mode&gt;                   How clips of another size fit the canvas: contain (the default, with bars), cover (cropped), stretch or none.
-  --background &lt;color&gt;           The colour behind clips that do not cover the canvas. Default black.
-  -c, --codec &lt;codec&gt;            The video codec: vp9 (the default for webm), vp8, av1, mjpeg (the default otherwise) or raw.
-  --quality &lt;0-100&gt;              Quality from 0 to 100.
-  -an, --no-audio                Write no audio track.
-  --smart                        Copy the untouched parts of clips instead of encoding them again (smart render), where the source matches the canvas and the encoder's stream.
-  --save-edit &lt;file.json&gt;        Also write the edit as a JSON file that 'egami-video edit' renders; with no -o, write only the file.
+  -o, --output &lt;path&gt;                 The file to write; its extension names the container (webm, mkv, mp4, avi).
+  --size &lt;WxH&gt;                        The canvas size, such as 1920x1080. Default the first clip's.
+  --rate &lt;fps&gt;                        The frame rate, such as 30 or 30000/1001. Default the first clip's.
+  --fit &lt;mode&gt;                        How clips of another size fit the canvas: contain (the default, with bars), cover (cropped), stretch or none.
+  --background &lt;color&gt;                The colour behind clips that do not cover the canvas. Default black.
+  -c, --codec &lt;codec&gt;                 The video codec: vp9 (the default for webm), vp8, av1, mjpeg (the default otherwise) or raw.
+  --quality &lt;0-100&gt;                   Quality from 0 to 100.
+  -an, --no-audio                     Write no audio track.
+  --smart                             Copy the untouched parts of clips instead of encoding them again (smart render), where the source matches the canvas and the encoder's stream.
+  --save-edit &lt;file.json&gt;             Also write the edit as a JSON file that 'egami-video edit' renders; with no -o, write only the file.
+  --deinterlace &lt;adaptive|bob&gt;        Deinterlace the frames the decoder or container flags as interlaced: adaptive (the default) keeps the still parts sharp and guesses the moving ones, bob makes each frame from one field alone.
+  --deinterlace-rate &lt;frame|field&gt;    With --deinterlace: frame (the default) gives one frame per frame, field one per field, doubling the frame rate (50i becomes 50p).
+  --deinterlace-frames &lt;flagged|all&gt;  With --deinterlace: flagged (the default) deinterlaces the frames flagged as interlaced, all every frame, for sources that flag none.
+  --field-order &lt;tff|bff&gt;             With --deinterlace: the field order to use, tff (top field first) or bff, instead of what the frames and the track say.
 </code></pre>
 <h2 id="loop">loop</h2>
 <pre><code class="lang-text">Description:
@@ -1166,17 +1206,21 @@ Arguments:
   &lt;input&gt;  The clip.
 
 Options:
-  --count &lt;times&gt;                How many times it plays in all. Default 2. [default: 2]
-  -o, --output &lt;path&gt;            The file to write; its extension names the container (webm, mkv, mp4, avi).
-  --size &lt;WxH&gt;                   The canvas size, such as 1920x1080. Default the first clip's.
-  --rate &lt;fps&gt;                   The frame rate, such as 30 or 30000/1001. Default the first clip's.
-  --fit &lt;mode&gt;                   How clips of another size fit the canvas: contain (the default, with bars), cover (cropped), stretch or none.
-  --background &lt;color&gt;           The colour behind clips that do not cover the canvas. Default black.
-  -c, --codec &lt;codec&gt;            The video codec: vp9 (the default for webm), vp8, av1, mjpeg (the default otherwise) or raw.
-  --quality &lt;0-100&gt;              Quality from 0 to 100.
-  -an, --no-audio                Write no audio track.
-  --smart                        Copy the untouched parts of clips instead of encoding them again (smart render), where the source matches the canvas and the encoder's stream.
-  --save-edit &lt;file.json&gt;        Also write the edit as a JSON file that 'egami-video edit' renders; with no -o, write only the file.
+  --count &lt;times&gt;                     How many times it plays in all. Default 2. [default: 2]
+  -o, --output &lt;path&gt;                 The file to write; its extension names the container (webm, mkv, mp4, avi).
+  --size &lt;WxH&gt;                        The canvas size, such as 1920x1080. Default the first clip's.
+  --rate &lt;fps&gt;                        The frame rate, such as 30 or 30000/1001. Default the first clip's.
+  --fit &lt;mode&gt;                        How clips of another size fit the canvas: contain (the default, with bars), cover (cropped), stretch or none.
+  --background &lt;color&gt;                The colour behind clips that do not cover the canvas. Default black.
+  -c, --codec &lt;codec&gt;                 The video codec: vp9 (the default for webm), vp8, av1, mjpeg (the default otherwise) or raw.
+  --quality &lt;0-100&gt;                   Quality from 0 to 100.
+  -an, --no-audio                     Write no audio track.
+  --smart                             Copy the untouched parts of clips instead of encoding them again (smart render), where the source matches the canvas and the encoder's stream.
+  --save-edit &lt;file.json&gt;             Also write the edit as a JSON file that 'egami-video edit' renders; with no -o, write only the file.
+  --deinterlace &lt;adaptive|bob&gt;        Deinterlace the frames the decoder or container flags as interlaced: adaptive (the default) keeps the still parts sharp and guesses the moving ones, bob makes each frame from one field alone.
+  --deinterlace-rate &lt;frame|field&gt;    With --deinterlace: frame (the default) gives one frame per frame, field one per field, doubling the frame rate (50i becomes 50p).
+  --deinterlace-frames &lt;flagged|all&gt;  With --deinterlace: flagged (the default) deinterlaces the frames flagged as interlaced, all every frame, for sources that flag none.
+  --field-order &lt;tff|bff&gt;             With --deinterlace: the field order to use, tff (top field first) or bff, instead of what the frames and the track say.
 </code></pre>
 <h2 id="freeze">freeze</h2>
 <pre><code class="lang-text">Description:
@@ -1189,18 +1233,22 @@ Arguments:
   &lt;input&gt;  The clip.
 
 Options:
-  --at &lt;time&gt;                    The time of the frame to freeze, or end for the last one.
-  --for &lt;time&gt;                   How long it stays, such as 2s. Default 1s.
-  -o, --output &lt;path&gt;            The file to write; its extension names the container (webm, mkv, mp4, avi).
-  --size &lt;WxH&gt;                   The canvas size, such as 1920x1080. Default the first clip's.
-  --rate &lt;fps&gt;                   The frame rate, such as 30 or 30000/1001. Default the first clip's.
-  --fit &lt;mode&gt;                   How clips of another size fit the canvas: contain (the default, with bars), cover (cropped), stretch or none.
-  --background &lt;color&gt;           The colour behind clips that do not cover the canvas. Default black.
-  -c, --codec &lt;codec&gt;            The video codec: vp9 (the default for webm), vp8, av1, mjpeg (the default otherwise) or raw.
-  --quality &lt;0-100&gt;              Quality from 0 to 100.
-  -an, --no-audio                Write no audio track.
-  --smart                        Copy the untouched parts of clips instead of encoding them again (smart render), where the source matches the canvas and the encoder's stream.
-  --save-edit &lt;file.json&gt;        Also write the edit as a JSON file that 'egami-video edit' renders; with no -o, write only the file.
+  --at &lt;time&gt;                         The time of the frame to freeze, or end for the last one.
+  --for &lt;time&gt;                        How long it stays, such as 2s. Default 1s.
+  -o, --output &lt;path&gt;                 The file to write; its extension names the container (webm, mkv, mp4, avi).
+  --size &lt;WxH&gt;                        The canvas size, such as 1920x1080. Default the first clip's.
+  --rate &lt;fps&gt;                        The frame rate, such as 30 or 30000/1001. Default the first clip's.
+  --fit &lt;mode&gt;                        How clips of another size fit the canvas: contain (the default, with bars), cover (cropped), stretch or none.
+  --background &lt;color&gt;                The colour behind clips that do not cover the canvas. Default black.
+  -c, --codec &lt;codec&gt;                 The video codec: vp9 (the default for webm), vp8, av1, mjpeg (the default otherwise) or raw.
+  --quality &lt;0-100&gt;                   Quality from 0 to 100.
+  -an, --no-audio                     Write no audio track.
+  --smart                             Copy the untouched parts of clips instead of encoding them again (smart render), where the source matches the canvas and the encoder's stream.
+  --save-edit &lt;file.json&gt;             Also write the edit as a JSON file that 'egami-video edit' renders; with no -o, write only the file.
+  --deinterlace &lt;adaptive|bob&gt;        Deinterlace the frames the decoder or container flags as interlaced: adaptive (the default) keeps the still parts sharp and guesses the moving ones, bob makes each frame from one field alone.
+  --deinterlace-rate &lt;frame|field&gt;    With --deinterlace: frame (the default) gives one frame per frame, field one per field, doubling the frame rate (50i becomes 50p).
+  --deinterlace-frames &lt;flagged|all&gt;  With --deinterlace: flagged (the default) deinterlaces the frames flagged as interlaced, all every frame, for sources that flag none.
+  --field-order &lt;tff|bff&gt;             With --deinterlace: the field order to use, tff (top field first) or bff, instead of what the frames and the track say.
 </code></pre>
 <h2 id="slideshow">slideshow</h2>
 <pre><code class="lang-text">Description:
@@ -1213,20 +1261,24 @@ Arguments:
   &lt;images&gt;  The images, in order (files or globs, sorted by name).
 
 Options:
-  --each &lt;time&gt;                  How long each image shows, its transitions included. Default 4s.
-  --transition &lt;kind:time&gt;       The transition between images, as kind:duration; fade:0.5 by default, cut for none.
-  --pan-zoom                     Slowly pan and zoom each image (Ken Burns).
-  --seed &lt;number&gt;                The seed the pan and zoom directions come from. Default 1. [default: 1]
-  -o, --output &lt;path&gt;            The file to write; its extension names the container (webm, mkv, mp4, avi).
-  --size &lt;WxH&gt;                   The canvas size, such as 1920x1080. Default the first clip's.
-  --rate &lt;fps&gt;                   The frame rate, such as 30 or 30000/1001. Default the first clip's.
-  --fit &lt;mode&gt;                   How clips of another size fit the canvas: contain (the default, with bars), cover (cropped), stretch or none.
-  --background &lt;color&gt;           The colour behind clips that do not cover the canvas. Default black.
-  -c, --codec &lt;codec&gt;            The video codec: vp9 (the default for webm), vp8, av1, mjpeg (the default otherwise) or raw.
-  --quality &lt;0-100&gt;              Quality from 0 to 100.
-  -an, --no-audio                Write no audio track.
-  --smart                        Copy the untouched parts of clips instead of encoding them again (smart render), where the source matches the canvas and the encoder's stream.
-  --save-edit &lt;file.json&gt;        Also write the edit as a JSON file that 'egami-video edit' renders; with no -o, write only the file.
+  --each &lt;time&gt;                       How long each image shows, its transitions included. Default 4s.
+  --transition &lt;kind:time&gt;            The transition between images, as kind:duration; fade:0.5 by default, cut for none.
+  --pan-zoom                          Slowly pan and zoom each image (Ken Burns).
+  --seed &lt;number&gt;                     The seed the pan and zoom directions come from. Default 1. [default: 1]
+  -o, --output &lt;path&gt;                 The file to write; its extension names the container (webm, mkv, mp4, avi).
+  --size &lt;WxH&gt;                        The canvas size, such as 1920x1080. Default the first clip's.
+  --rate &lt;fps&gt;                        The frame rate, such as 30 or 30000/1001. Default the first clip's.
+  --fit &lt;mode&gt;                        How clips of another size fit the canvas: contain (the default, with bars), cover (cropped), stretch or none.
+  --background &lt;color&gt;                The colour behind clips that do not cover the canvas. Default black.
+  -c, --codec &lt;codec&gt;                 The video codec: vp9 (the default for webm), vp8, av1, mjpeg (the default otherwise) or raw.
+  --quality &lt;0-100&gt;                   Quality from 0 to 100.
+  -an, --no-audio                     Write no audio track.
+  --smart                             Copy the untouched parts of clips instead of encoding them again (smart render), where the source matches the canvas and the encoder's stream.
+  --save-edit &lt;file.json&gt;             Also write the edit as a JSON file that 'egami-video edit' renders; with no -o, write only the file.
+  --deinterlace &lt;adaptive|bob&gt;        Deinterlace the frames the decoder or container flags as interlaced: adaptive (the default) keeps the still parts sharp and guesses the moving ones, bob makes each frame from one field alone.
+  --deinterlace-rate &lt;frame|field&gt;    With --deinterlace: frame (the default) gives one frame per frame, field one per field, doubling the frame rate (50i becomes 50p).
+  --deinterlace-frames &lt;flagged|all&gt;  With --deinterlace: flagged (the default) deinterlaces the frames flagged as interlaced, all every frame, for sources that flag none.
+  --field-order &lt;tff|bff&gt;             With --deinterlace: the field order to use, tff (top field first) or bff, instead of what the frames and the track say.
 </code></pre>
 <h2 id="stabilize">stabilize</h2>
 <pre><code class="lang-text">Description:
@@ -1239,21 +1291,25 @@ Arguments:
   &lt;input&gt;  The shaky clip.
 
 Options:
-  --smoothing &lt;frames&gt;           How many frames either way the camera path is smoothed over: more keeps only slow intended motion. Default 15.
-  --edges &lt;mode&gt;                 What fills the edges a correction uncovers: zoom (the default, the least zoom that hides them), black or blur.
-  --zoom &lt;auto|none&gt;             auto (the default) zooms to hide the edges, the same as --edges zoom; none keeps the size and fills them with black.
-  --motion &lt;file.json&gt;           Use a camera motion saved by --save-motion instead of measuring it again.
-  --save-motion &lt;file.json&gt;      Write the measured camera motion (pass 1) to a JSON file; with no -o, only that.
-  -o, --output &lt;path&gt;            The file to write; its extension names the container (webm, mkv, mp4, avi).
-  --size &lt;WxH&gt;                   The canvas size, such as 1920x1080. Default the first clip's.
-  --rate &lt;fps&gt;                   The frame rate, such as 30 or 30000/1001. Default the first clip's.
-  --fit &lt;mode&gt;                   How clips of another size fit the canvas: contain (the default, with bars), cover (cropped), stretch or none.
-  --background &lt;color&gt;           The colour behind clips that do not cover the canvas. Default black.
-  -c, --codec &lt;codec&gt;            The video codec: vp9 (the default for webm), vp8, av1, mjpeg (the default otherwise) or raw.
-  --quality &lt;0-100&gt;              Quality from 0 to 100.
-  -an, --no-audio                Write no audio track.
-  --smart                        Copy the untouched parts of clips instead of encoding them again (smart render), where the source matches the canvas and the encoder's stream.
-  --save-edit &lt;file.json&gt;        Also write the edit as a JSON file that 'egami-video edit' renders; with no -o, write only the file.
+  --smoothing &lt;frames&gt;                How many frames either way the camera path is smoothed over: more keeps only slow intended motion. Default 15.
+  --edges &lt;mode&gt;                      What fills the edges a correction uncovers: zoom (the default, the least zoom that hides them), black or blur.
+  --zoom &lt;auto|none&gt;                  auto (the default) zooms to hide the edges, the same as --edges zoom; none keeps the size and fills them with black.
+  --motion &lt;file.json&gt;                Use a camera motion saved by --save-motion instead of measuring it again.
+  --save-motion &lt;file.json&gt;           Write the measured camera motion (pass 1) to a JSON file; with no -o, only that.
+  -o, --output &lt;path&gt;                 The file to write; its extension names the container (webm, mkv, mp4, avi).
+  --size &lt;WxH&gt;                        The canvas size, such as 1920x1080. Default the first clip's.
+  --rate &lt;fps&gt;                        The frame rate, such as 30 or 30000/1001. Default the first clip's.
+  --fit &lt;mode&gt;                        How clips of another size fit the canvas: contain (the default, with bars), cover (cropped), stretch or none.
+  --background &lt;color&gt;                The colour behind clips that do not cover the canvas. Default black.
+  -c, --codec &lt;codec&gt;                 The video codec: vp9 (the default for webm), vp8, av1, mjpeg (the default otherwise) or raw.
+  --quality &lt;0-100&gt;                   Quality from 0 to 100.
+  -an, --no-audio                     Write no audio track.
+  --smart                             Copy the untouched parts of clips instead of encoding them again (smart render), where the source matches the canvas and the encoder's stream.
+  --save-edit &lt;file.json&gt;             Also write the edit as a JSON file that 'egami-video edit' renders; with no -o, write only the file.
+  --deinterlace &lt;adaptive|bob&gt;        Deinterlace the frames the decoder or container flags as interlaced: adaptive (the default) keeps the still parts sharp and guesses the moving ones, bob makes each frame from one field alone.
+  --deinterlace-rate &lt;frame|field&gt;    With --deinterlace: frame (the default) gives one frame per frame, field one per field, doubling the frame rate (50i becomes 50p).
+  --deinterlace-frames &lt;flagged|all&gt;  With --deinterlace: flagged (the default) deinterlaces the frames flagged as interlaced, all every frame, for sources that flag none.
+  --field-order &lt;tff|bff&gt;             With --deinterlace: the field order to use, tff (top field first) or bff, instead of what the frames and the track say.
 </code></pre>
 <h2 id="edit">edit</h2>
 <pre><code class="lang-text">Description:
@@ -1266,16 +1322,20 @@ Arguments:
   &lt;file&gt;  The edit file: JSON as --save-edit writes it, with effects as egami run steps such as &quot;blur 8&quot;.
 
 Options:
-  -o, --output &lt;path&gt;            The file to write; its extension names the container (webm, mkv, mp4, avi).
-  --size &lt;WxH&gt;                   The canvas size, such as 1920x1080. Default the first clip's.
-  --rate &lt;fps&gt;                   The frame rate, such as 30 or 30000/1001. Default the first clip's.
-  --fit &lt;mode&gt;                   How clips of another size fit the canvas: contain (the default, with bars), cover (cropped), stretch or none.
-  --background &lt;color&gt;           The colour behind clips that do not cover the canvas. Default black.
-  -c, --codec &lt;codec&gt;            The video codec: vp9 (the default for webm), vp8, av1, mjpeg (the default otherwise) or raw.
-  --quality &lt;0-100&gt;              Quality from 0 to 100.
-  -an, --no-audio                Write no audio track.
-  --smart                        Copy the untouched parts of clips instead of encoding them again (smart render), where the source matches the canvas and the encoder's stream.
-  --save-edit &lt;file.json&gt;        Also write the edit as a JSON file that 'egami-video edit' renders; with no -o, write only the file.
+  -o, --output &lt;path&gt;                 The file to write; its extension names the container (webm, mkv, mp4, avi).
+  --size &lt;WxH&gt;                        The canvas size, such as 1920x1080. Default the first clip's.
+  --rate &lt;fps&gt;                        The frame rate, such as 30 or 30000/1001. Default the first clip's.
+  --fit &lt;mode&gt;                        How clips of another size fit the canvas: contain (the default, with bars), cover (cropped), stretch or none.
+  --background &lt;color&gt;                The colour behind clips that do not cover the canvas. Default black.
+  -c, --codec &lt;codec&gt;                 The video codec: vp9 (the default for webm), vp8, av1, mjpeg (the default otherwise) or raw.
+  --quality &lt;0-100&gt;                   Quality from 0 to 100.
+  -an, --no-audio                     Write no audio track.
+  --smart                             Copy the untouched parts of clips instead of encoding them again (smart render), where the source matches the canvas and the encoder's stream.
+  --save-edit &lt;file.json&gt;             Also write the edit as a JSON file that 'egami-video edit' renders; with no -o, write only the file.
+  --deinterlace &lt;adaptive|bob&gt;        Deinterlace the frames the decoder or container flags as interlaced: adaptive (the default) keeps the still parts sharp and guesses the moving ones, bob makes each frame from one field alone.
+  --deinterlace-rate &lt;frame|field&gt;    With --deinterlace: frame (the default) gives one frame per frame, field one per field, doubling the frame rate (50i becomes 50p).
+  --deinterlace-frames &lt;flagged|all&gt;  With --deinterlace: flagged (the default) deinterlaces the frames flagged as interlaced, all every frame, for sources that flag none.
+  --field-order &lt;tff|bff&gt;             With --deinterlace: the field order to use, tff (top field first) or bff, instead of what the frames and the track say.
 </code></pre>
 <h2 id="formats">formats</h2>
 <pre><code class="lang-text">Description:

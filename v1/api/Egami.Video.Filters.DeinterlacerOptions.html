@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class DeinterlacerOptions | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class DeinterlacerOptions | Egami ">
+      
+      <meta name="description" content="How a  works. The defaults deinterlace the frames the decoder flags, one frame out per frame in.">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_Video_Filters_DeinterlacerOptions.md&amp;value=---%0Auid%3A%20Egami.Video.Filters.DeinterlacerOptions%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.Video.Filters.DeinterlacerOptions">
+
+
+
+  <h1 id="Egami_Video_Filters_DeinterlacerOptions" data-uid="Egami.Video.Filters.DeinterlacerOptions" class="text-break">
+Class DeinterlacerOptions  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Filters/DeinterlacerOptions.cs/#L7"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a>.<a class="xref" href="Egami.Video.html">Video</a>.<a class="xref" href="Egami.Video.Filters.html">Filters</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.Video.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>How a <a class="xref" href="Egami.Video.Filters.Deinterlacer.html">Deinterlacer</a> works. The defaults deinterlace the frames the decoder flags, one frame out per frame in.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public sealed record DeinterlacerOptions : IEquatable&lt;DeinterlacerOptions&gt;</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><span class="xref">DeinterlacerOptions</span></div>
+    </dd>
+  </dl>
+
+  <dl class="typelist implements">
+    <dt>Implements</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.iequatable-1">IEquatable</a>&lt;<a class="xref" href="Egami.Video.Filters.DeinterlacerOptions.html">DeinterlacerOptions</a>&gt;</div>
+    </dd>
+  </dl>
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+  </dd></dl>
+
+
+
+  <h2 id="Egami_Video_Filters_DeinterlacerOptions_examples">Examples</h2>
+  <pre><code class="lang-csharp">// Deinterlace a file: interlaced frames come out progressive, one per frame in, and progressive frames pass unchanged.
+// The track gives the field order for frames that do not carry their own.
+using VideoReader reader = VideoReader.Open("movie.webm");
+using Deinterlacer deinterlacer = new(reader.Track, new DeinterlacerOptions
+{
+    Mode = DeinterlaceMode.Adaptive,      // or Bob: from each field alone
+    Rate = DeinterlaceRate.Frame,         // or Field: one frame per field, 50i becomes 50p
+    Frames = DeinterlaceFrames.All,       // also frames the decoder does not flag as interlaced
+});
+VideoWriterOptions options = new() { Codec = VideoCodecs.Ffv1, FrameRate = reader.Track.FrameRate ?? new Rational(25, 1) };
+using (VideoWriter writer = VideoWriter.Create("progressive.mkv", options))
+{
+    foreach (YuvVideoFrame frame in reader.ReadFrames())
+    {
+        using (frame)
+        {
+            deinterlacer.Send(frame);
+        }
+
+        while (deinterlacer.TryReceive(out YuvVideoFrame? output))
+        {
+            using (output)
+            {
+                writer.WriteFrame(output);
+                written++;
+            }
+        }
+    }
+
+    // The deinterlacer holds one frame back to look at the next; Flush hands it out.
+    deinterlacer.Flush();
+    while (deinterlacer.TryReceive(out YuvVideoFrame? output))
+    {
+        using (output)
+        {
+            writer.WriteFrame(output);
+            written++;
+        }
+    }
+}</code></pre>
+
+
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="Egami_Video_Filters_DeinterlacerOptions_Default_" data-uid="Egami.Video.Filters.DeinterlacerOptions.Default*"></a>
+
+  <h3 id="Egami_Video_Filters_DeinterlacerOptions_Default" data-uid="Egami.Video.Filters.DeinterlacerOptions.Default">
+  Default
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Filters/DeinterlacerOptions.cs/#L10"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the default options.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static DeinterlacerOptions Default { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Video.Filters.DeinterlacerOptions.html">DeinterlacerOptions</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Filters_DeinterlacerOptions_FieldOrder_" data-uid="Egami.Video.Filters.DeinterlacerOptions.FieldOrder*"></a>
+
+  <h3 id="Egami_Video_Filters_DeinterlacerOptions_FieldOrder" data-uid="Egami.Video.Filters.DeinterlacerOptions.FieldOrder">
+  FieldOrder
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Filters/DeinterlacerOptions.cs/#L25"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the field order to use for every frame, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> to take each frame's
+<a class="xref" href="Egami.Video.VideoFrame.html#Egami_Video_VideoFrame_FieldOrder">FieldOrder</a>; a frame that does not say takes the track's, then top field first.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public FieldOrder? FieldOrder { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Video.FieldOrder.html">FieldOrder</a>?</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Filters_DeinterlacerOptions_Frames_" data-uid="Egami.Video.Filters.DeinterlacerOptions.Frames*"></a>
+
+  <h3 id="Egami_Video_Filters_DeinterlacerOptions_Frames" data-uid="Egami.Video.Filters.DeinterlacerOptions.Frames">
+  Frames
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Filters/DeinterlacerOptions.cs/#L19"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets which frames are deinterlaced. Default <a class="xref" href="Egami.Video.Filters.DeinterlaceFrames.html#Egami_Video_Filters_DeinterlaceFrames_Flagged">Flagged</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public DeinterlaceFrames Frames { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Video.Filters.DeinterlaceFrames.html">DeinterlaceFrames</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Filters_DeinterlacerOptions_Mode_" data-uid="Egami.Video.Filters.DeinterlacerOptions.Mode*"></a>
+
+  <h3 id="Egami_Video_Filters_DeinterlacerOptions_Mode" data-uid="Egami.Video.Filters.DeinterlacerOptions.Mode">
+  Mode
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Filters/DeinterlacerOptions.cs/#L13"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets how the missing lines are made. Default <a class="xref" href="Egami.Video.Filters.DeinterlaceMode.html#Egami_Video_Filters_DeinterlaceMode_Adaptive">Adaptive</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public DeinterlaceMode Mode { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Video.Filters.DeinterlaceMode.html">DeinterlaceMode</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Filters_DeinterlacerOptions_Rate_" data-uid="Egami.Video.Filters.DeinterlacerOptions.Rate*"></a>
+
+  <h3 id="Egami_Video_Filters_DeinterlacerOptions_Rate" data-uid="Egami.Video.Filters.DeinterlacerOptions.Rate">
+  Rate
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Filters/DeinterlacerOptions.cs/#L16"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets how many frames come out per frame in. Default <a class="xref" href="Egami.Video.Filters.DeinterlaceRate.html#Egami_Video_Filters_DeinterlaceRate_Frame">Frame</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public DeinterlaceRate Rate { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Video.Filters.DeinterlaceRate.html">DeinterlaceRate</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Filters/DeinterlacerOptions.cs/#L7" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>
