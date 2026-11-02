@@ -19,26 +19,36 @@ internal static class Av1FilmGrainSynthesis
     private const int SubGrainHeight = 38;
 
     /// <summary>
-    /// Returns the frame's planes with grain added, as 16-bit planes, or the planes themselves (of the frame's sample type) when
-    /// the frame applies none.
+    /// Returns the frame's planes with grain added, of the frame's sample type, or the planes themselves when the frame applies
+    /// none. A plane that gets no grain is returned as it is.
     /// </summary>
     internal static Array[] Apply(Av1Frame frame)
     {
-        Av1FilmGrain g = frame.Header.FilmGrain;
-        if (!g.ApplyGrain)
+        if (!frame.Header.FilmGrain.ApplyGrain)
         {
             return frame.Planes!;
         }
 
-        ushort[][] input = frame.WidePlanes();
+        return frame.Planes![0] is byte[] ? Apply<byte>(frame) : Apply<ushort>(frame);
+    }
 
+    private static T[][] Apply<T>(Av1Frame frame)
+        where T : unmanaged
+    {
+        T[][] input = [.. frame.Planes!.Select(p => (T[])p)];
         Av1SequenceHeader seq = frame.Sequence;
         int bd = seq.BitDepth;
         int width = frame.Header.UpscaledWidth, height = frame.Header.FrameHeight;
         int ssx = seq.SubsamplingX, ssy = seq.SubsamplingY;
         bool mono = seq.Monochrome;
-        ushort[][] output = [.. input.Select(p => (ushort[])p.Clone())];
-        Data d = new(g);
+        Data d = new(frame.Header.FilmGrain);
+        bool[] grained = [d.YPoints.Length > 0, !mono && (d.ChromaScalingFromLuma || d.UvPoints[0].Length > 0),
+            !mono && (d.ChromaScalingFromLuma || d.UvPoints[1].Length > 0)];
+        T[][] output = new T[input.Length][];
+        for (int plane = 0; plane < input.Length; plane++)
+        {
+            output[plane] = grained[Math.Min(plane, 2)] ? (T[])input[plane].Clone() : input[plane];
+        }
 
         int[] lumaGrain = new int[GrainHeight * GrainWidth];
         GenerateLuma(lumaGrain, d, bd);
@@ -72,37 +82,28 @@ internal static class Av1FilmGrainSynthesis
         // Each band of 32 rows seeds its own random numbers, so the bands add grain on their own.
         frame.For(rows, row =>
         {
-            if (d.YPoints.Length > 0)
+            if (grained[0])
             {
                 int bh = Math.Min(height - (row * BlockSize), BlockSize);
                 ApplyLuma(output[0], input[0], row * BlockSize * lumaStride, lumaStride, d, width, scaling[0], lumaGrain, bh, row, bd);
             }
 
-            if (mono || (d.UvPoints[0].Length == 0 && d.UvPoints[1].Length == 0 && !d.ChromaScalingFromLuma))
+            if (!grained[1] && !grained[2])
             {
                 return;
             }
 
             int cbh = (Math.Min(height - (row * BlockSize), BlockSize) + ssy) >> ssy;
             int lumaRow = row * BlockSize * lumaStride;
-            if ((width & ssx) != 0)
-            {
-                // Repeat the last luma column for the chroma sample past the frame's odd width.
-                for (int y = 0, at = lumaRow; y < cbh; y++, at += lumaStride << ssy)
-                {
-                    input[0][at + width] = input[0][at + width - 1];
-                }
-            }
-
             int chromaStride = frame.Strides[1];
             int cpw = (width + ssx) >> ssx;
             int uvOffset = (row * BlockSize * chromaStride) >> ssy;
             for (int uv = 0; uv < 2; uv++)
             {
-                if (d.ChromaScalingFromLuma || d.UvPoints[uv].Length > 0)
+                if (grained[1 + uv])
                 {
                     ApplyChroma(output[1 + uv], input[1 + uv], uvOffset, chromaStride, d, cpw, d.ChromaScalingFromLuma ? scaling[0] : scaling[1 + uv],
-                        chromaGrain[uv], cbh, row, input[0], lumaRow, lumaStride, uv, isIdentity, ssx, ssy, bd);
+                        chromaGrain[uv], cbh, row, input[0], lumaRow, lumaStride, width, uv, isIdentity, ssx, ssy, bd);
                 }
             }
         });
@@ -263,122 +264,199 @@ internal static class Av1FilmGrainSynthesis
     }
 
     /// <summary>Where in the grain template the block's sample (0, 0) is.</summary>
-    private static int SampleLutAt(int[,] offsets, int subx, int suby, int bx, int by)
+    private static int SampleLutAt(ReadOnlySpan<int> offsets, int subx, int suby, int bx, int by)
     {
-        int randval = offsets[bx, by];
+        int randval = offsets[(bx * 2) + by];
         int offx = 3 + ((2 >> subx) * (3 + (randval >> 4)));
         int offy = 3 + ((2 >> suby) * (3 + (randval & 0xF)));
         return ((offy + ((BlockSize >> suby) * by)) * GrainWidth) + offx + ((BlockSize >> subx) * bx);
     }
 
-    private static void ApplyLuma(ushort[] dst, ushort[] src, int rowStart, int stride, Data d, int pw, int[] scaling, int[] lut, int bh, int rowNum, int bd)
+    private static void ApplyLuma<T>(T[] dst, T[] src, int rowStart, int stride, Data d, int pw, int[] scaling, int[] lut, int bh, int rowNum, int bd)
+        where T : unmanaged
     {
         int rows = 1 + (d.OverlapFlag && rowNum > 0 ? 1 : 0);
         int grainMin = -(128 << (bd - 8)), grainMax = (128 << (bd - 8)) - 1;
         int minValue = d.ClipToRestrictedRange ? 16 << (bd - 8) : 0;
         int maxValue = d.ClipToRestrictedRange ? 235 << (bd - 8) : (1 << bd) - 1;
         Span<uint> seed = stackalloc uint[2];
-        for (int i = 0; i < rows; i++)
-        {
-            seed[i] = (uint)d.Seed;
-            seed[i] ^= (uint)(((((rowNum - i) * 37) + 178) & 0xFF) << 8);
-            seed[i] ^= (uint)((((rowNum - i) * 173) + 105) & 0xFF);
-        }
-
-        int[,] offsets = new int[2, 2];
-        ReadOnlySpan<int> w0 = [27, 17], w1 = [17, 27];
+        Seeds(seed, rows, d.Seed, rowNum);
+        Span<int> offsets = stackalloc int[4];
+        Span<int> blended = stackalloc int[BlockSize];
         for (int bx = 0; bx < pw; bx += BlockSize)
         {
             int bw = Math.Min(BlockSize, pw - bx);
-            if (d.OverlapFlag && bx != 0)
-            {
-                for (int i = 0; i < rows; i++)
-                {
-                    offsets[1, i] = offsets[0, i];
-                }
-            }
-
-            for (int i = 0; i < rows; i++)
-            {
-                offsets[0, i] = RandomNumber(8, ref seed[i]);
-            }
-
+            NextOffsets(offsets, seed, rows, d.OverlapFlag && bx != 0);
             int ystart = d.OverlapFlag && rowNum != 0 ? Math.Min(2, bh) : 0;
             int xstart = d.OverlapFlag && bx != 0 ? Math.Min(2, bw) : 0;
-            int lutBase = SampleLutAt(offsets, 0, 0, 0, 0);
-            // Where the blocks the overlaps blend with start (read only where there are overlaps).
-            int lutLeft = SampleLutAt(offsets, 0, 0, 1, 0), lutTop = SampleLutAt(offsets, 0, 0, 0, 1), lutTopLeft = SampleLutAt(offsets, 0, 0, 1, 1);
-            int shift = d.ScalingShift;
-            for (int y = ystart; y < bh; y++)
-            {
-                ReadOnlySpan<int> grains = lut.AsSpan(lutBase + (y * GrainWidth) + xstart, bw - xstart);
-                Span<ushort> line = dst.AsSpan(rowStart + (y * stride) + bx + xstart, bw - xstart);
-                ReadOnlySpan<ushort> source = src.AsSpan(rowStart + (y * stride) + bx + xstart, line.Length);
-                LumaRow(grains, source, line, scaling, shift, minValue, maxValue);
-            }
-
+            Block block = new(offsets, 0, 0, xstart, ystart, grainMin, grainMax);
             for (int y = 0; y < bh; y++)
             {
-                for (int x = 0; x < (y < ystart ? bw : xstart); x++)
-                {
-                    int grain = lut[lutBase + (y * GrainWidth) + x];
-                    if (x < xstart)
-                    {
-                        int old = lut[lutLeft + (y * GrainWidth) + x];
-                        grain = Math.Clamp(Round2((old * (x == 0 ? w0 : w1)[0]) + (grain * (x == 0 ? w0 : w1)[1]), 5), grainMin, grainMax);
-                    }
-
-                    if (y < ystart)
-                    {
-                        int top = lut[lutTop + (y * GrainWidth) + x];
-                        if (x < xstart)
-                        {
-                            int oldTop = lut[lutTopLeft + (y * GrainWidth) + x];
-                            top = Math.Clamp(Round2((oldTop * (x == 0 ? w0 : w1)[0]) + (top * (x == 0 ? w0 : w1)[1]), 5), grainMin, grainMax);
-                        }
-
-                        grain = Math.Clamp(Round2((top * (y == 0 ? w0 : w1)[0]) + (grain * (y == 0 ? w0 : w1)[1]), 5), grainMin, grainMax);
-                    }
-
-                    int at = rowStart + (y * stride) + bx + x;
-                    int noise = Round2(scaling[src[at]] * grain, d.ScalingShift);
-                    dst[at] = (ushort)Math.Clamp(src[at] + noise, minValue, maxValue);
-                }
+                ReadOnlySpan<int> grains = block.Row(lut, blended, y, bw);
+                int at = rowStart + (y * stride) + bx;
+                LumaRow(grains, src.AsSpan(at, bw), dst.AsSpan(at, bw), scaling, d.ScalingShift, minValue, maxValue);
             }
         }
     }
 
+    /// <summary>The random number states of the band's row of blocks and, where blocks overlap, of the row above.</summary>
+    private static void Seeds(Span<uint> seed, int rows, int initial, int rowNum)
+    {
+        for (int i = 0; i < rows; i++)
+        {
+            seed[i] = (uint)initial;
+            seed[i] ^= (uint)(((((rowNum - i) * 37) + 178) & 0xFF) << 8);
+            seed[i] ^= (uint)((((rowNum - i) * 173) + 105) & 0xFF);
+        }
+    }
+
+    /// <summary>The next block's offsets, at [bx * 2 + by]: this block's at bx 0, the block to the left's at bx 1 when they overlap.</summary>
+    private static void NextOffsets(Span<int> offsets, Span<uint> seed, int rows, bool keepLeft)
+    {
+        for (int i = 0; i < rows; i++)
+        {
+            if (keepLeft)
+            {
+                offsets[2 + i] = offsets[i];
+            }
+
+            offsets[i] = RandomNumber(8, ref seed[i]);
+        }
+    }
+
+    /// <summary>
+    /// Where a block's grain is in the template and how its overlaps blend: a row of the block's grain is the template's row, or,
+    /// where the row overlaps the block to the left or the one above, a copy with those samples blended with theirs.
+    /// </summary>
+    private readonly ref struct Block
+    {
+        private readonly int _base, _left, _top, _topLeft, _xstart, _ystart, _subX, _subY, _grainMin, _grainMax;
+
+        internal Block(ReadOnlySpan<int> offsets, int subx, int suby, int xstart, int ystart, int grainMin, int grainMax)
+        {
+            _base = SampleLutAt(offsets, subx, suby, 0, 0);
+            // Where the blocks the overlaps blend with start (read only where there are overlaps).
+            _left = SampleLutAt(offsets, subx, suby, 1, 0);
+            _top = SampleLutAt(offsets, subx, suby, 0, 1);
+            _topLeft = SampleLutAt(offsets, subx, suby, 1, 1);
+            (_xstart, _ystart, _subX, _subY, _grainMin, _grainMax) = (xstart, ystart, subx, suby, grainMin, grainMax);
+        }
+
+        internal ReadOnlySpan<int> Row(int[] lut, Span<int> blended, int y, int bw)
+        {
+            int row = y * GrainWidth;
+            if (y >= _ystart && _xstart == 0)
+            {
+                return lut.AsSpan(_base + row, bw);
+            }
+
+            lut.AsSpan(_base + row, bw).CopyTo(blended);
+            for (int x = 0; x < (y < _ystart ? bw : _xstart); x++)
+            {
+                int grain = blended[x];
+                if (x < _xstart)
+                {
+                    grain = Blend(lut[_left + row + x], grain, _subX, x);
+                }
+
+                if (y < _ystart)
+                {
+                    int top = lut[_top + row + x];
+                    if (x < _xstart)
+                    {
+                        top = Blend(lut[_topLeft + row + x], top, _subX, x);
+                    }
+
+                    grain = Blend(top, grain, _subY, y);
+                }
+
+                blended[x] = grain;
+            }
+
+            return blended[..bw];
+        }
+
+        // w[sub][off]: { { 27, 17 }, { 17, 27 } } without subsampling, { 23, 22 } with it.
+        private int Blend(int old, int grain, int sub, int offset) =>
+            Math.Clamp(Round2((old * (sub != 0 ? 23 : offset == 0 ? 27 : 17)) + (grain * (sub != 0 ? 22 : offset == 0 ? 17 : 27)), 5), _grainMin, _grainMax);
+    }
+
+    private static int ToInt<T>(T sample)
+        where T : unmanaged => typeof(T) == typeof(byte) ? Unsafe.As<T, byte>(ref sample) : Unsafe.As<T, ushort>(ref sample);
+
+    private static T FromInt<T>(int value)
+        where T : unmanaged
+    {
+        if (typeof(T) == typeof(byte))
+        {
+            byte b = (byte)value;
+            return Unsafe.As<byte, T>(ref b);
+        }
+
+        ushort w = (ushort)value;
+        return Unsafe.As<ushort, T>(ref w);
+    }
+
+    /// <summary>Loads eight samples at <paramref name="x"/> as 32-bit lanes.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static Vector256<int> Load8<T>(ref T p, int x)
+        where T : unmanaged
+    {
+        ref T at = ref Unsafe.Add(ref p, x);
+        return typeof(T) == typeof(byte)
+            ? Avx2.ConvertToVector256Int32(Vector128.CreateScalarUnsafe(Unsafe.ReadUnaligned<ulong>(ref Unsafe.As<T, byte>(ref at))).AsByte())
+            : Avx2.ConvertToVector256Int32(Vector128.LoadUnsafe(ref Unsafe.As<T, ushort>(ref at)));
+    }
+
+    /// <summary>Stores eight 32-bit lanes, each a sample value, at <paramref name="x"/>.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static void Store8<T>(Vector256<int> v, ref T p, int x)
+        where T : unmanaged
+    {
+        Vector128<ushort> words = Sse41.PackUnsignedSaturate(v.GetLower(), v.GetUpper());
+        ref T at = ref Unsafe.Add(ref p, x);
+        if (typeof(T) == typeof(byte))
+        {
+            Unsafe.WriteUnaligned(ref Unsafe.As<T, byte>(ref at), Sse2.PackUnsignedSaturate(words.AsInt16(), words.AsInt16()).AsUInt64().ToScalar());
+        }
+        else
+        {
+            words.StoreUnsafe(ref Unsafe.As<T, ushort>(ref at));
+        }
+    }
+
     /// <summary>Adds grain to a row of luma: each sample plus Round2(scaling[sample] * grain, shift), clamped; eight a step on AVX2.</summary>
-    private static unsafe void LumaRow(ReadOnlySpan<int> grains, ReadOnlySpan<ushort> source, Span<ushort> line, int[] scaling, int shift, int minValue, int maxValue)
+    private static unsafe void LumaRow<T>(ReadOnlySpan<int> grains, ReadOnlySpan<T> source, Span<T> line, int[] scaling, int shift, int minValue, int maxValue)
+        where T : unmanaged
     {
         int half = (1 << shift) >> 1;
         int x = 0;
         if (Avx2.IsSupported)
         {
             ref int g0 = ref MemoryMarshal.GetReference(grains);
-            ref ushort s0 = ref MemoryMarshal.GetReference(source), d0 = ref MemoryMarshal.GetReference(line);
+            ref T s0 = ref MemoryMarshal.GetReference(source), d0 = ref MemoryMarshal.GetReference(line);
             Vector256<int> halfV = Vector256.Create(half), minV = Vector256.Create(minValue), maxV = Vector256.Create(maxValue);
             fixed (int* table = scaling)
             {
                 for (; x + 8 <= line.Length; x += 8)
                 {
-                    Vector256<int> value = Avx2.ConvertToVector256Int32(Vector128.LoadUnsafe(ref s0, (nuint)x));
+                    Vector256<int> value = Load8(ref s0, x);
                     Vector256<int> noise = Vector256.ShiftRightArithmetic((Avx2.GatherVector256(table, value, 4) * Vector256.LoadUnsafe(ref g0, (nuint)x)) + halfV, shift);
-                    Vector256<int> result = Vector256.Min(Vector256.Max(value + noise, minV), maxV);
-                    Sse41.PackUnsignedSaturate(result.GetLower(), result.GetUpper()).StoreUnsafe(ref d0, (nuint)x);
+                    Store8(Vector256.Min(Vector256.Max(value + noise, minV), maxV), ref d0, x);
                 }
             }
         }
 
         for (; x < line.Length; x++)
         {
-            int value = source[x];
-            line[x] = (ushort)Math.Clamp(value + (((scaling[value] * grains[x]) + half) >> shift), minValue, maxValue);
+            int value = ToInt(source[x]);
+            line[x] = FromInt<T>(Math.Clamp(value + (((scaling[value] * grains[x]) + half) >> shift), minValue, maxValue));
         }
     }
 
-    private static void ApplyChroma(ushort[] dst, ushort[] src, int rowStart, int stride, Data d, int pw, int[] scaling, int[] lut, int bh, int rowNum,
-        ushort[] luma, int lumaRow, int lumaStride, int uv, bool isIdentity, int sx, int sy, int bd)
+    private static void ApplyChroma<T>(T[] dst, T[] src, int rowStart, int stride, Data d, int pw, int[] scaling, int[] lut, int bh, int rowNum,
+        T[] luma, int lumaRow, int lumaStride, int lumaWidth, int uv, bool isIdentity, int sx, int sy, int bd)
+        where T : unmanaged
     {
         int rows = 1 + (d.OverlapFlag && rowNum > 0 ? 1 : 0);
         int grainMin = -(128 << (bd - 8)), grainMax = (128 << (bd - 8)) - 1;
@@ -386,96 +464,29 @@ internal static class Av1FilmGrainSynthesis
         int maxValue = d.ClipToRestrictedRange ? (isIdentity ? 235 : 240) << (bd - 8) : (1 << bd) - 1;
         int pixelMax = (1 << bd) - 1;
         Span<uint> seed = stackalloc uint[2];
-        for (int i = 0; i < rows; i++)
-        {
-            seed[i] = (uint)d.Seed;
-            seed[i] ^= (uint)(((((rowNum - i) * 37) + 178) & 0xFF) << 8);
-            seed[i] ^= (uint)((((rowNum - i) * 173) + 105) & 0xFF);
-        }
-
-        int[,] offsets = new int[2, 2];
+        Seeds(seed, rows, d.Seed, rowNum);
+        Span<int> offsets = stackalloc int[4];
+        Span<int> blended = stackalloc int[BlockSize];
         for (int bx = 0; bx < pw; bx += BlockSize >> sx)
         {
             int bw = Math.Min(BlockSize >> sx, pw - bx);
-            if (d.OverlapFlag && bx != 0)
-            {
-                for (int i = 0; i < rows; i++)
-                {
-                    offsets[1, i] = offsets[0, i];
-                }
-            }
-
-            for (int i = 0; i < rows; i++)
-            {
-                offsets[0, i] = RandomNumber(8, ref seed[i]);
-            }
-
+            NextOffsets(offsets, seed, rows, d.OverlapFlag && bx != 0);
             int ystart = d.OverlapFlag && rowNum != 0 ? Math.Min(2 >> sy, bh) : 0;
             int xstart = d.OverlapFlag && bx != 0 ? Math.Min(2 >> sx, bw) : 0;
-            int lutBase = SampleLutAt(offsets, sx, sy, 0, 0);
-            // Where the blocks the overlaps blend with start (read only where there are overlaps).
-            int lutLeft = SampleLutAt(offsets, sx, sy, 1, 0), lutTop = SampleLutAt(offsets, sx, sy, 0, 1), lutTopLeft = SampleLutAt(offsets, sx, sy, 1, 1);
-            for (int y = ystart; y < bh; y++)
-            {
-                // As Add does for each sample, over a row's spans: the checks once a row, and a loop for each way of getting the value.
-                ReadOnlySpan<int> grains = lut.AsSpan(lutBase + (y * GrainWidth) + xstart, bw - xstart);
-                ReadOnlySpan<ushort> source = src.AsSpan(rowStart + (y * stride) + bx + xstart, bw - xstart);
-                Span<ushort> line = dst.AsSpan(rowStart + (y * stride) + bx + xstart, bw - xstart);
-                ReadOnlySpan<ushort> lumaLine = luma.AsSpan(lumaRow + ((y << sy) * lumaStride) + ((bx + xstart) << sx), (bw - xstart) << sx);
-                AddRow(grains, source, line, lumaLine, sx, d.ChromaScalingFromLuma, d.UvLumaMult[uv], d.UvMult[uv], d.UvOffset[uv] * (1 << (bd - 8)),
-                    pixelMax, scaling, d.ScalingShift, minValue, maxValue);
-            }
-
+            Block block = new(offsets, sx, sy, xstart, ystart, grainMin, grainMax);
+            // The luma samples the block's chroma averages: past an odd frame width, the last chroma sample has only one.
+            int lumaCount = Math.Min(bw << sx, lumaWidth - (bx << sx));
             for (int y = 0; y < bh; y++)
             {
-                for (int x = 0; x < (y < ystart ? bw : xstart); x++)
-                {
-                    int grain = lut[lutBase + (y * GrainWidth) + x];
-                    if (x < xstart)
-                    {
-                        int old = lut[lutLeft + (y * GrainWidth) + x];
-                        grain = Math.Clamp(Round2((old * Weight(sx, x, 0)) + (grain * Weight(sx, x, 1)), 5), grainMin, grainMax);
-                    }
-
-                    if (y < ystart)
-                    {
-                        int top = lut[lutTop + (y * GrainWidth) + x];
-                        if (x < xstart)
-                        {
-                            int oldTop = lut[lutTopLeft + (y * GrainWidth) + x];
-                            top = Math.Clamp(Round2((oldTop * Weight(sx, x, 0)) + (top * Weight(sx, x, 1)), 5), grainMin, grainMax);
-                        }
-
-                        grain = Math.Clamp(Round2((top * Weight(sy, y, 0)) + (grain * Weight(sy, y, 1)), 5), grainMin, grainMax);
-                    }
-
-                    Add(grain, x, y);
-                }
-            }
-
-            void Add(int grain, int x, int y)
-            {
-                int lumaAt = lumaRow + ((y << sy) * lumaStride) + ((bx + x) << sx);
-                int average = luma[lumaAt];
-                if (sx != 0)
-                {
-                    average = (average + luma[lumaAt + 1] + 1) >> 1;
-                }
-
-                int at = rowStart + (y * stride) + bx + x;
-                int value = average;
-                if (!d.ChromaScalingFromLuma)
-                {
-                    int combined = (average * d.UvLumaMult[uv]) + (src[at] * d.UvMult[uv]);
-                    value = Math.Clamp((combined >> 6) + (d.UvOffset[uv] * (1 << (bd - 8))), 0, pixelMax);
-                }
-
-                int noise = Round2(scaling[value] * grain, d.ScalingShift);
-                dst[at] = (ushort)Math.Clamp(src[at] + noise, minValue, maxValue);
+                ReadOnlySpan<int> grains = block.Row(lut, blended, y, bw);
+                int at = rowStart + (y * stride) + bx;
+                ReadOnlySpan<T> lumaLine = luma.AsSpan(lumaRow + ((y << sy) * lumaStride) + (bx << sx), lumaCount);
+                AddRow(grains, src.AsSpan(at, bw), dst.AsSpan(at, bw), lumaLine, sx, d.ChromaScalingFromLuma, d.UvLumaMult[uv], d.UvMult[uv],
+                    d.UvOffset[uv] * (1 << (bd - 8)), pixelMax, scaling, d.ScalingShift, minValue, maxValue);
             }
         }
 
-        static void AddRow(ReadOnlySpan<int> grains, ReadOnlySpan<ushort> source, Span<ushort> line, ReadOnlySpan<ushort> lumaLine, int sx,
+        static void AddRow(ReadOnlySpan<int> grains, ReadOnlySpan<T> source, Span<T> line, ReadOnlySpan<T> lumaLine, int sx,
             bool fromLuma, int lumaMult, int mult, int offset, int pixelMax, int[] scaling, int shift, int minValue, int maxValue)
         {
             int half = (1 << shift) >> 1;
@@ -487,52 +498,51 @@ internal static class Av1FilmGrainSynthesis
 
             for (; x < line.Length; x++)
             {
-                int average = sx != 0 ? (lumaLine[2 * x] + lumaLine[(2 * x) + 1] + 1) >> 1 : lumaLine[x];
-                int value = fromLuma ? average : Math.Clamp((((average * lumaMult) + (source[x] * mult)) >> 6) + offset, 0, pixelMax);
-                line[x] = (ushort)Math.Clamp(source[x] + (((scaling[value] * grains[x]) + half) >> shift), minValue, maxValue);
+                int average = sx != 0 ? (ToInt(lumaLine[2 * x]) + ToInt(lumaLine[Math.Min((2 * x) + 1, lumaLine.Length - 1)]) + 1) >> 1 : ToInt(lumaLine[x]);
+                int src = ToInt(source[x]);
+                int value = fromLuma ? average : Math.Clamp((((average * lumaMult) + (src * mult)) >> 6) + offset, 0, pixelMax);
+                line[x] = FromInt<T>(Math.Clamp(src + (((scaling[value] * grains[x]) + half) >> shift), minValue, maxValue));
             }
         }
 
         // Eight samples a step: the luma average, the value, the scaling gathered from its table, then as the scalar loop.
-        static unsafe int AddRowVector(ReadOnlySpan<int> grains, ReadOnlySpan<ushort> source, Span<ushort> line, ReadOnlySpan<ushort> lumaLine, int sx,
+        static unsafe int AddRowVector(ReadOnlySpan<int> grains, ReadOnlySpan<T> source, Span<T> line, ReadOnlySpan<T> lumaLine, int sx,
             bool fromLuma, int lumaMult, int mult, int offset, int pixelMax, int[] scaling, int shift, int minValue, int maxValue)
         {
             ref int g0 = ref MemoryMarshal.GetReference(grains);
-            ref ushort s0 = ref MemoryMarshal.GetReference(source), l0 = ref MemoryMarshal.GetReference(lumaLine), d0 = ref MemoryMarshal.GetReference(line);
+            ref T s0 = ref MemoryMarshal.GetReference(source), l0 = ref MemoryMarshal.GetReference(lumaLine), d0 = ref MemoryMarshal.GetReference(line);
             Vector256<int> halfV = Vector256.Create((1 << shift) >> 1), minV = Vector256.Create(minValue), maxV = Vector256.Create(maxValue);
             Vector256<int> lumaMultV = Vector256.Create(lumaMult), multV = Vector256.Create(mult), offsetV = Vector256.Create(offset);
             Vector256<int> pixelMaxV = Vector256.Create(pixelMax), low = Vector256.Create(0xFFFF), one = Vector256.Create(1);
             int x = 0;
             fixed (int* table = scaling)
             {
-                for (; x + 8 <= line.Length; x += 8)
+                for (; x + 8 <= line.Length && (x + 8) << sx <= lumaLine.Length; x += 8)
                 {
                     Vector256<int> average;
                     if (sx != 0)
                     {
                         // Each 32-bit lane holds a pair of luma samples.
-                        Vector256<int> pairs = Vector256.LoadUnsafe(ref Unsafe.As<ushort, int>(ref Unsafe.Add(ref l0, 2 * x)));
+                        Vector256<int> pairs = typeof(T) == typeof(byte)
+                            ? Avx2.ConvertToVector256Int16(Vector128.LoadUnsafe(ref Unsafe.As<T, byte>(ref Unsafe.Add(ref l0, 2 * x)))).AsInt32()
+                            : Vector256.LoadUnsafe(ref Unsafe.As<T, int>(ref Unsafe.Add(ref l0, 2 * x)));
                         average = Vector256.ShiftRightArithmetic((pairs & low) + Vector256.ShiftRightLogical(pairs, 16) + one, 1);
                     }
                     else
                     {
-                        average = Avx2.ConvertToVector256Int32(Vector128.LoadUnsafe(ref l0, (nuint)x));
+                        average = Load8(ref l0, x);
                     }
 
-                    Vector256<int> src = Avx2.ConvertToVector256Int32(Vector128.LoadUnsafe(ref s0, (nuint)x));
+                    Vector256<int> src = Load8(ref s0, x);
                     Vector256<int> value = fromLuma ? average
                         : Vector256.Min(Vector256.Max(Vector256.ShiftRightArithmetic((average * lumaMultV) + (src * multV), 6) + offsetV, Vector256<int>.Zero), pixelMaxV);
                     Vector256<int> noise = Vector256.ShiftRightArithmetic((Avx2.GatherVector256(table, value, 4) * Vector256.LoadUnsafe(ref g0, (nuint)x)) + halfV, shift);
-                    Vector256<int> result = Vector256.Min(Vector256.Max(src + noise, minV), maxV);
-                    Sse41.PackUnsignedSaturate(result.GetLower(), result.GetUpper()).StoreUnsafe(ref d0, (nuint)x);
+                    Store8(Vector256.Min(Vector256.Max(src + noise, minV), maxV), ref d0, x);
                 }
             }
 
             return x;
         }
-
-        // w[sub][off][i]: { { 27, 17 }, { 17, 27 } } without subsampling, { 23, 22 } with it.
-        static int Weight(int sub, int offset, int i) => sub != 0 ? (i == 0 ? 23 : 22) : offset == 0 ? (i == 0 ? 27 : 17) : (i == 0 ? 17 : 27);
     }
 
     /// <summary>The grain parameters as dav1d holds them: coefficients and multipliers centred, shifts with their offsets added.</summary>

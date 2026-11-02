@@ -65,7 +65,8 @@ internal static class Av1Timing
             {
                 foreach (Av1Frame frame in stream.Decode(unit, 0, unit.Length))
                 {
-                    Av1FilmGrainSynthesis.Apply(frame);
+                    // The frame as output, with its film grain: 8-bit samples whether the grain comes back as bytes or words.
+                    Array[] planes = Av1FilmGrainSynthesis.Apply(frame);
                     if (!frame.Compact)
                     {
                         continue;
@@ -75,7 +76,7 @@ internal static class Av1Timing
                     {
                         int ssx = plane > 0 ? frame.Sequence.SubsamplingX : 0, ssy = plane > 0 ? frame.Sequence.SubsamplingY : 0;
                         int w = (frame.Header.UpscaledWidth + ssx) >> ssx, h = (frame.Header.FrameHeight + ssy) >> ssy;
-                        byte[] samples = frame.Plane<byte>(plane);
+                        byte[] samples = planes[plane] as byte[] ?? [.. ((ushort[])planes[plane]).Select(v => (byte)v)];
                         for (int y = 0; y < h; y++)
                         {
                             md5.AppendData(samples, y * frame.Strides[plane], w);
