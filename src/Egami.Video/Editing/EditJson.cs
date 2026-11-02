@@ -6,6 +6,7 @@ using Egami.Operations;
 using Egami.Pixels;
 using Egami.Video.Audio;
 using Egami.Video.Audio.Filters;
+using Egami.Video.Filters;
 
 namespace Egami.Video.Editing;
 
@@ -279,6 +280,32 @@ internal static class EditJson
 
             json.WritePropertyName("motion");
             stabilization.Motion.Write(json);
+            json.WriteEndObject();
+        }
+
+        if (clip.Deinterlacing is DeinterlacerOptions deinterlace)
+        {
+            json.WriteStartObject("deinterlace");
+            if (deinterlace.Mode != DeinterlaceMode.Adaptive)
+            {
+                json.WriteString("mode", Name(deinterlace.Mode));
+            }
+
+            if (deinterlace.Rate != DeinterlaceRate.Frame)
+            {
+                json.WriteString("rate", Name(deinterlace.Rate));
+            }
+
+            if (deinterlace.Frames != DeinterlaceFrames.Flagged)
+            {
+                json.WriteString("frames", Name(deinterlace.Frames));
+            }
+
+            if (deinterlace.FieldOrder is FieldOrder order)
+            {
+                json.WriteString("fieldOrder", Name(order));
+            }
+
             json.WriteEndObject();
         }
 
@@ -620,6 +647,19 @@ internal static class EditJson
                 }
 
                 clip = clip.Stabilize(camera, new StabilizeOptions { Smoothing = Int(stabilize, "smoothing", at) ?? 15, Edges = Enum<StabilizeEdges>(stabilize, "edges", at) ?? StabilizeEdges.Zoom, MaxZoom = Number(stabilize, "maxZoom", at) ?? 1.5 });
+            }
+
+            if (e.TryGetProperty("deinterlace", out JsonElement deinterlace))
+            {
+                string at = where + ".deinterlace";
+                Expect(deinterlace, JsonValueKind.Object, at);
+                clip = clip.Deinterlace(new DeinterlacerOptions
+                {
+                    Mode = Enum<DeinterlaceMode>(deinterlace, "mode", at) ?? DeinterlaceMode.Adaptive,
+                    Rate = Enum<DeinterlaceRate>(deinterlace, "rate", at) ?? DeinterlaceRate.Frame,
+                    Frames = Enum<DeinterlaceFrames>(deinterlace, "frames", at) ?? DeinterlaceFrames.Flagged,
+                    FieldOrder = Enum<FieldOrder>(deinterlace, "fieldOrder", at),
+                });
             }
 
             if (e.TryGetProperty("panZoom", out JsonElement panZoom))

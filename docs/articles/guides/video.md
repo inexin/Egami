@@ -124,6 +124,30 @@ The jobs are synchronous and block a thread while the network is slow; run them 
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Video.cs#video-streams)]
 
+## Deinterlacing
+
+Broadcast and camcorder video is often interlaced: each frame holds two fields, the even lines and the odd lines, shown a
+field apart in time. `Deinterlacer` turns such frames into progressive ones: each frame it hands out keeps one field's lines
+and makes the other's. `DeinterlaceMode.Adaptive`, the default, keeps the other field's lines where the picture holds still,
+so fine detail stays sharp, and where it moves guesses each missing pixel along the edge through it, held within what the
+fields before and after allow, as the published yadif method does. `DeinterlaceMode.Bob` guesses from the kept field alone:
+it never combs, but halves the vertical detail of still parts.
+
+`DeinterlaceRate.Frame`, the default, gives one frame per frame from the first field in time, so 50i becomes 25p;
+`DeinterlaceRate.Field` gives one per field, at twice the rate and half the duration each, so motion stays as smooth as it was
+shot. `DeinterlaceFrames.Flagged`, the default, deinterlaces the frames that say they are interlaced (H.264 flags each frame;
+for other codecs the track's field order counts) and passes the rest unchanged; `All` deinterlaces every frame. The field
+order comes from the frame, then the track, then top field first; `DeinterlacerOptions.FieldOrder` overrides it.
+
+The deinterlacer is an `IVideoFilter`: frames go in with `Send` and come out with `TryReceive`, like a decoder, and it holds one
+frame back to look at the next, so call `Flush` at the end. It works on the decoder's planes: 8 to 16 bits, any chroma format,
+with alpha, each plane on its own lines, so a 4:2:0 field keeps its own chroma rows. On one thread it deinterlaces a 1080i
+frame in about 3.3 ms, and it allocates no pixel memory per frame once running.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/VideoFilters.cs#deinterlace)]
+
+An edit deinterlaces a clip with `Clip.Deinterlace`, which is off by default; see [Video editing](video-editing.md).
+
 ## Codecs by hand
 
 `VideoCodecs` finds the codec for a track and creates an `IVideoDecoder`: send packets, receive frames. `VideoCodecs.CreateDecoder<TPixel>`
@@ -299,6 +323,14 @@ frequency over time with a Hann-windowed FFT per column, on a linear or logarith
 pictures carry no text: add axes and labels with Egami.Drawing.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/VideoAnalysis.cs#analysis-pictures)]
+
+`MediaAnalysis.Run`, `AudioPictures.Waveform` and `AudioPictures.Spectrogram` also take a `Stream`, with the same options, for
+an upload or a download. A seekable stream is read from its position as a file would be. A stream that cannot seek is read
+once: the analysis shares its video and audio packets out as they come and decodes up to `Start` instead of seeking, and the
+pictures draw in the same pass when the container gives the duration, or else copy the stream to a temporary file on the
+way, deleted after. The caller owns the stream; it is never disposed.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/VideoAnalysis.cs#analysis-stream)]
 
 ## Limits and warnings
 

@@ -215,7 +215,7 @@ internal static class EditCommands
         common.AddTo(command);
         command.SetAction(result =>
         {
-            Clip[] clips = [.. (result.GetValue(inputs) ?? []).Select(f => Clip.Open(session.ResolvePath(f)))];
+            Clip[] clips = [.. (result.GetValue(inputs) ?? []).Select(f => Common.Deinterlaced(result, Clip.Open(session.ResolvePath(f))))];
             StackOptions options = new() { Gap = result.GetValue(gap) ?? 0, Shortest = result.GetValue(shortest), MixAudio = result.GetValue(mixAudio) };
             Clip stack;
             if (result.GetValue(grid) is { } g)
@@ -769,7 +769,13 @@ internal static class EditCommands
             {
                 command.Options.Add(option);
             }
+
+            Deinterlacing.AddTo(command);
         }
+
+        /// <summary>The clip deinterlaced as --deinterlace asks, unless it is not from a file or has its own setting.</summary>
+        public static Clip Deinterlaced(ParseResult result, Clip clip) =>
+            Deinterlacing.Parse(result) is { } options && clip.Path is not null && clip.Deinterlacing is null ? clip.Deinterlace(options) : clip;
 
         public EditCanvas? Canvas(VideoSession session, ParseResult result, VideoEdit edit)
         {
@@ -816,6 +822,16 @@ internal static class EditCommands
 
         public int Run(VideoSession session, ParseResult result, VideoEdit edit)
         {
+            for (int i = 0; i < edit.Track.Count; i++)
+            {
+                edit.Track.Set(i, edit.Track[i] with { Clip = Deinterlaced(result, edit.Track[i].Clip) });
+            }
+
+            for (int i = 0; i < edit.Layers.Count; i++)
+            {
+                edit.Layers[i] = edit.Layers[i] with { Clip = Deinterlaced(result, edit.Layers[i].Clip) };
+            }
+
             if (Canvas(session, result, edit) is { } canvas)
             {
                 edit.Canvas = canvas;

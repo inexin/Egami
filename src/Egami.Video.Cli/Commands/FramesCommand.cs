@@ -57,6 +57,7 @@ internal static class FramesCommand
         command.Options.Add(from);
         command.Options.Add(to);
         command.Options.Add(autoOrient);
+        Deinterlacing.AddTo(command);
         command.SetAction(result =>
         {
             BatchOptions batch = media.Batch(session, result);
@@ -99,9 +100,11 @@ internal static class FramesCommand
 
             Dictionary<string, string> settings = ImageOptions.SetValues(result.GetValue(set));
             WriterOptions writerOptions = Runner.Options(session.Images, new SaveSpec(null, formatName, settings, common), image);
+            Filters.DeinterlacerOptions? deinterlace = Deinterlacing.Parse(result);
             Job job = new(session, pick, template, folder, image, writerOptions, result.GetValue(autoOrient), TrackSelection.Parse(result.GetValue(media.Track), false, false), inputs.Count)
             {
-                CopyJpeg = image == JpegFormat.Info && lossy is null && settings.Count == 0,
+                Deinterlace = deinterlace,
+                CopyJpeg = image == JpegFormat.Info && lossy is null && settings.Count == 0 && deinterlace is null,
             };
             return Batch.Run(session, inputs, batch, job.Run);
         });
@@ -157,6 +160,9 @@ internal static class FramesCommand
         /// <summary>Gets a value indicating whether Motion JPEG packets are written as they are.</summary>
         public bool CopyJpeg { get; init; }
 
+        /// <summary>Gets how the frames are deinterlaced, or <see langword="null"/> to take them as they are.</summary>
+        public Filters.DeinterlacerOptions? Deinterlace { get; init; }
+
         public List<string> Run(InputFile input)
         {
             Writer writer = new(session, input, template, folder, image, writerOptions, autoOrient);
@@ -204,7 +210,7 @@ internal static class FramesCommand
                 }
 
                 Picker<YuvVideoFrame> picker = new(session, input, pick, source.Info.Duration, (frame, number) => writer.Frame(frame, number));
-                foreach (YuvVideoFrame frame in source.Frames())
+                foreach (YuvVideoFrame frame in source.Frames(Deinterlace, session.Context))
                 {
                     if (index < 0)
                     {
@@ -274,7 +280,7 @@ internal static class FramesCommand
             {
                 progress.Frame(time);
                 source.Reader.Seek(time);
-                using YuvVideoFrame? frame = source.Reader.ReadFrame();
+                using YuvVideoFrame? frame = source.ReadFrame(Deinterlace, session.Context);
                 if (frame is null)
                 {
                     session.Warn($"{input.Display}: no frame at {text}; skipped.");

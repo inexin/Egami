@@ -4,7 +4,7 @@ namespace Egami.Video.Analysis;
 
 /// <summary>
 /// A detector that looks at decoded pictures one at a time, such as <see cref="SceneDetector"/>. Feed it every frame in
-/// presentation order with <see cref="Add"/>, then call <see cref="Complete"/> once at the end; <see cref="MediaAnalysis.Run"/>
+/// presentation order with <see cref="Add"/>, then call <see cref="Complete"/> once at the end; <see cref="MediaAnalysis.Run(string, MediaAnalysisOptions?, MediaContext?, IProgress{MediaProgress}?, CancellationToken)"/>
 /// does both for every detector from one decode, and an app with its own decode loop can do the same. A detector reads the frame
 /// while <see cref="Add"/> runs and keeps no reference to it, so the caller may dispose the frame right after.
 /// </summary>
@@ -24,7 +24,7 @@ public interface IVideoDetector
 
 /// <summary>
 /// A detector that listens to decoded audio one frame at a time. Feed it every frame in time order with <see cref="Add"/>, then
-/// call <see cref="Complete"/> once at the end; <see cref="MediaAnalysis.Run"/> does both from one decode. A detector reads the
+/// call <see cref="Complete"/> once at the end; <see cref="MediaAnalysis.Run(string, MediaAnalysisOptions?, MediaContext?, IProgress{MediaProgress}?, CancellationToken)"/> does both from one decode. A detector reads the
 /// samples while <see cref="Add"/> runs and keeps no reference to the frame.
 /// </summary>
 /// <example>

@@ -1,1 +1,50 @@
 #nullable enable
+Egami.Video.Editing.Clip.Deinterlace(Egami.Video.Filters.DeinterlacerOptions? options = null) -> Egami.Video.Editing.Clip!
+Egami.Video.Editing.Clip.Deinterlacing.get -> Egami.Video.Filters.DeinterlacerOptions?
+Egami.Video.Editing.Clip.Deinterlacing.init -> void
+Egami.Video.Filters.DeinterlaceFrames
+Egami.Video.Filters.DeinterlaceFrames.All = 1 -> Egami.Video.Filters.DeinterlaceFrames
+Egami.Video.Filters.DeinterlaceFrames.Flagged = 0 -> Egami.Video.Filters.DeinterlaceFrames
+Egami.Video.Filters.DeinterlaceMode
+Egami.Video.Filters.DeinterlaceMode.Adaptive = 0 -> Egami.Video.Filters.DeinterlaceMode
+Egami.Video.Filters.DeinterlaceMode.Bob = 1 -> Egami.Video.Filters.DeinterlaceMode
+Egami.Video.Filters.Deinterlacer
+Egami.Video.Filters.Deinterlacer.Deinterlacer(Egami.Video.Filters.DeinterlacerOptions? options = null, Egami.Video.MediaContext? context = null) -> void
+Egami.Video.Filters.Deinterlacer.Deinterlacer(Egami.Video.VideoTrackInfo! track, Egami.Video.Filters.DeinterlacerOptions? options = null, Egami.Video.MediaContext? context = null) -> void
+Egami.Video.Filters.Deinterlacer.Dispose() -> void
+Egami.Video.Filters.Deinterlacer.Flush() -> void
+Egami.Video.Filters.Deinterlacer.Latency.get -> Egami.Video.MediaTime
+Egami.Video.Filters.Deinterlacer.Options.get -> Egami.Video.Filters.DeinterlacerOptions!
+Egami.Video.Filters.Deinterlacer.Reset() -> void
+Egami.Video.Filters.Deinterlacer.Send(Egami.Video.YuvVideoFrame! frame) -> void
+Egami.Video.Filters.Deinterlacer.TryReceive(out Egami.Video.YuvVideoFrame? frame) -> bool
+Egami.Video.Filters.DeinterlaceRate
+Egami.Video.Filters.DeinterlaceRate.Field = 1 -> Egami.Video.Filters.DeinterlaceRate
+Egami.Video.Filters.DeinterlaceRate.Frame = 0 -> Egami.Video.Filters.DeinterlaceRate
+Egami.Video.Filters.DeinterlacerOptions
+Egami.Video.Filters.DeinterlacerOptions.<Clone>$() -> Egami.Video.Filters.DeinterlacerOptions!
+Egami.Video.Filters.DeinterlacerOptions.DeinterlacerOptions() -> void
+Egami.Video.Filters.DeinterlacerOptions.Equals(Egami.Video.Filters.DeinterlacerOptions? other) -> bool
+Egami.Video.Filters.DeinterlacerOptions.FieldOrder.get -> Egami.Video.FieldOrder?
+Egami.Video.Filters.DeinterlacerOptions.FieldOrder.init -> void
+Egami.Video.Filters.DeinterlacerOptions.Frames.get -> Egami.Video.Filters.DeinterlaceFrames
+Egami.Video.Filters.DeinterlacerOptions.Frames.init -> void
+Egami.Video.Filters.DeinterlacerOptions.Mode.get -> Egami.Video.Filters.DeinterlaceMode
+Egami.Video.Filters.DeinterlacerOptions.Mode.init -> void
+Egami.Video.Filters.DeinterlacerOptions.Rate.get -> Egami.Video.Filters.DeinterlaceRate
+Egami.Video.Filters.DeinterlacerOptions.Rate.init -> void
+Egami.Video.Filters.IVideoFilter
+Egami.Video.Filters.IVideoFilter.Flush() -> void
+Egami.Video.Filters.IVideoFilter.Latency.get -> Egami.Video.MediaTime
+Egami.Video.Filters.IVideoFilter.Reset() -> void
+Egami.Video.Filters.IVideoFilter.Send(Egami.Video.YuvVideoFrame! frame) -> void
+Egami.Video.Filters.IVideoFilter.TryReceive(out Egami.Video.YuvVideoFrame? frame) -> bool
+override Egami.Video.Filters.DeinterlacerOptions.Equals(object? obj) -> bool
+override Egami.Video.Filters.DeinterlacerOptions.GetHashCode() -> int
+override Egami.Video.Filters.DeinterlacerOptions.ToString() -> string!
+static Egami.Video.Analysis.AudioPictures.Spectrogram(System.IO.Stream! stream, Egami.Video.Analysis.SpectrogramOptions? options = null, Egami.Video.MediaContext? context = null, System.IProgress<Egami.Video.MediaProgress>? progress = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> Egami.Raster<Egami.Pixels.Rgba8>!
+static Egami.Video.Analysis.AudioPictures.Waveform(System.IO.Stream! stream, Egami.Video.Analysis.WaveformOptions? options = null, Egami.Video.MediaContext? context = null, System.IProgress<Egami.Video.MediaProgress>? progress = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> Egami.Raster<Egami.Pixels.Rgba8>!
+static Egami.Video.Analysis.MediaAnalysis.Run(System.IO.Stream! stream, Egami.Video.Analysis.MediaAnalysisOptions? options = null, Egami.Video.MediaContext? context = null, System.IProgress<Egami.Video.MediaProgress>? progress = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> Egami.Video.Analysis.MediaAnalysisResult!
+static Egami.Video.Filters.DeinterlacerOptions.Default.get -> Egami.Video.Filters.DeinterlacerOptions!
+static Egami.Video.Filters.DeinterlacerOptions.operator !=(Egami.Video.Filters.DeinterlacerOptions? left, Egami.Video.Filters.DeinterlacerOptions? right) -> bool
+static Egami.Video.Filters.DeinterlacerOptions.operator ==(Egami.Video.Filters.DeinterlacerOptions? left, Egami.Video.Filters.DeinterlacerOptions? right) -> bool

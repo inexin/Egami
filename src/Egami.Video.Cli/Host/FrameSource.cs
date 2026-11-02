@@ -1,4 +1,5 @@
 using Egami.Pixels;
+using Egami.Video.Filters;
 
 namespace Egami.Video.Cli.Host;
 
@@ -67,6 +68,67 @@ internal sealed class FrameSource : IDisposable
 
     /// <summary>The frames in presentation order. The caller disposes each.</summary>
     public IEnumerable<YuvVideoFrame> Frames() => _reader.ReadFrames();
+
+    /// <summary>The frames in presentation order, deinterlaced when <paramref name="deinterlace"/> is given. The caller disposes each.</summary>
+    public IEnumerable<YuvVideoFrame> Frames(DeinterlacerOptions? deinterlace, MediaContext context) =>
+        deinterlace is null ? _reader.ReadFrames() : Deinterlaced(deinterlace, context);
+
+    /// <summary>
+    /// The next frame, after a seek, deinterlaced when <paramref name="deinterlace"/> is given: the frame after it is read too,
+    /// for the adaptive mode to look at. <see langword="null"/> at the end.
+    /// </summary>
+    public YuvVideoFrame? ReadFrame(DeinterlacerOptions? deinterlace, MediaContext context)
+    {
+        if (deinterlace is null)
+        {
+            return _reader.ReadFrame();
+        }
+
+        using Deinterlacer deinterlacer = new(Track, deinterlace with { Rate = DeinterlaceRate.Frame }, context);
+        using (YuvVideoFrame? frame = _reader.ReadFrame())
+        {
+            if (frame is null)
+            {
+                return null;
+            }
+
+            deinterlacer.Send(frame);
+        }
+
+        using (YuvVideoFrame? next = _reader.ReadFrame())
+        {
+            if (next is not null)
+            {
+                deinterlacer.Send(next);
+            }
+        }
+
+        deinterlacer.Flush();
+        return deinterlacer.TryReceive(out YuvVideoFrame? output) ? output : null;
+    }
+
+    private IEnumerable<YuvVideoFrame> Deinterlaced(DeinterlacerOptions options, MediaContext context)
+    {
+        using Deinterlacer deinterlacer = new(Track, options, context);
+        foreach (YuvVideoFrame frame in _reader.ReadFrames())
+        {
+            using (frame)
+            {
+                deinterlacer.Send(frame);
+            }
+
+            while (deinterlacer.TryReceive(out YuvVideoFrame? output))
+            {
+                yield return output;
+            }
+        }
+
+        deinterlacer.Flush();
+        while (deinterlacer.TryReceive(out YuvVideoFrame? output))
+        {
+            yield return output;
+        }
+    }
 
     /// <summary>A frame as RGBA pixels for Egami's operations, allocated from the session's Egami context.</summary>
     public static Raster<Rgba8> ToImage(VideoSession session, YuvVideoFrame frame) => frame.ToRaster<Rgba8>(session.Images.Context);

@@ -290,6 +290,60 @@ public class VideoAnalysis
         Assert.InRange(top, 51, 53);
     }
 
+    [Fact]
+    public void FromStreams()
+    {
+        using SampleFiles files = new();
+        WriteClip("shots.mkv");
+        using Stream download = new NoSeek(File.OpenRead("shots.mkv"));
+
+        #region analysis-stream
+        // From a stream, such as an upload or a download, with the same options as from a file. A stream that cannot seek
+        // is read once; the caller keeps the stream and disposes it.
+        using Raster<Rgba8> picture = AudioPictures.Waveform(download, new WaveformOptions { Width = 800, Height = 120 });
+        picture.Save("upload-waveform.png");
+
+        using FileStream file = File.OpenRead("shots.mkv");
+        MediaAnalysisResult result = MediaAnalysis.Run(file, new MediaAnalysisOptions { AudioDetectors = [new SilenceDetector()] });
+        Console.WriteLine($"{result.Scenes.Count} scenes in {result.VideoFrames} frames");
+        #endregion
+
+        Assert.Equal(800, picture.Width);
+        Assert.True(result.VideoFrames > 0);
+    }
+
+    /// <summary>A file read as a pipe or a download is: forwards only.</summary>
+    private sealed class NoSeek(Stream inner) : Stream
+    {
+        public override bool CanRead => true;
+
+        public override bool CanSeek => false;
+
+        public override bool CanWrite => false;
+
+        public override long Length => throw new NotSupportedException();
+
+        public override long Position { get => throw new NotSupportedException(); set => throw new NotSupportedException(); }
+
+        public override int Read(byte[] buffer, int offset, int count) => inner.Read(buffer, offset, count);
+
+        public override long Seek(long offset, SeekOrigin origin) => throw new NotSupportedException();
+
+        public override void Flush()
+        {
+        }
+
+        public override void SetLength(long value) => throw new NotSupportedException();
+
+        public override void Write(byte[] buffer, int offset, int count) => throw new NotSupportedException();
+
+        protected override void Dispose(bool disposing)
+        {
+            inner.Dispose();
+            base.Dispose(disposing);
+        }
+    }
+
     private sealed class DarkestFrame : IVideoDetector
     {
         private double _lowest = double.MaxValue;

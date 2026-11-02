@@ -34,6 +34,7 @@ prints `egami-video run in.mkv resize 640 + flip horizontal -o out.mkv --codec m
 | an image output, `%04d` patterns, `-vf fps=`, `-frames:v` | `frames` |
 | image or Y4M input (`-framerate`, `%04d`, `-f yuv4mpegpipe`) | `encode` |
 | `-vf` with scale, crop, pad, transpose, hflip, vflip; `-s`; `-c:v mjpeg` or `rawvideo` | `run` |
+| `-vf yadif` or `bwdif`, alone or before the filters above | `--deinterlace` on `run`, `encode` or `frames` |
 | `-vf thumbnail`, `select='gt(scene,0.4)'`, `tile=4x4` | `thumbnail`, `scenes`, `sheet` |
 | `.gif`, `.apng` or `.webp` output | `animate` |
 | `-vn`, `-c:a flac`, `-c:a alac`, `-c:a libopus`, `-b:a`, `-ar`, `-ac`, `-sample_fmt`, an .aiff or .caf output | `audio` |
@@ -119,6 +120,20 @@ the picture. freezeframes stops, since it replaces frames where V9's freeze adds
 `egami-video freeze` hold a frame), and loudnorm in an edit stops too (alone in `-af` it normalizes, above). `deshake`, `vidstabdetect` (to `-f null`, writing its `result`
 file as Egami.Video's camera motion) and `vidstabtransform` (its `input` and `smoothing`) become `egami-video stabilize`.
 
+## Deinterlacing
+
+`-vf yadif` and `-vf bwdif` become `--deinterlace adaptive`, Egami.Video's motion-adaptive deinterlacer. Their options map as
+follows: `mode` send_frame gives `--deinterlace-rate frame` and send_field `--deinterlace-rate field` (the `_nospatial`
+modes deinterlace the same way, with the spatial check), `parity` tff or bff gives `--field-order` (auto takes the frames'
+and the track's order), and `deint` all or interlaced gives `--deinterlace-frames all` or `flagged`. As in ffmpeg, yadif
+sends one frame per frame and bwdif one per field by default, and both deinterlace every frame unless `deint=interlaced`.
+bwdif's own refinements, a cubic spatial guess and blending where the fields differ, are not implemented; egami-video warns
+and deinterlaces as yadif does.
+
+```text
+egami-video ffmpeg -i broadcast.ts -vf yadif=mode=send_field -c:v ffv1 progressive.mkv
+```
+
 ## The options
 
 ffmpeg mode takes `-i`, `-f`, `-y`, `-n`, `-ss`, `-to`, `-t`, `-itsoffset`, `-framerate`, `-safe`, `-map`, `-c`, `-codec`, `-c:v`,
@@ -126,7 +141,7 @@ ffmpeg mode takes `-i`, `-f`, `-y`, `-n`, `-ss`, `-to`, `-t`, `-itsoffset`, `-fr
 `-qscale:v`, `-g`, `-level 3`, `-coder`, `-context`, `-slices`, `-slicecrc` (the last five with `-c:v ffv1`), `-ar`, `-b:a`, `-ab`, `-ac`, `-sample_fmt`, `-metadata`, `-map_metadata`, `-map_chapters`, `-vf`, `-filter:v`, `-lavfi` and
 `-filter_complex` (psnr, ssim, showwavespic, showspectrumpic and the editing filters), `-af` and `-filter:a` (detection, audio and editing filters), `-loop 1` before an image, `-segment_time`, `-segment_times`, `-movflags` (faststart, frag_keyframe, empty_moov and default_base_moof), `-frag_duration` (with frag_keyframe), `-update`, `-progress`, `-stats`, `-nostats`,
 `-stats_period`, `-hide_banner`, `-loglevel`, `-v` and `-nostdin`, with `pipe:` and `%d` patterns. The filters are scale, crop,
-pad, transpose, hflip, vflip, fps, thumbnail, select (scene) and tile, and with `-f null` the detection filters above; the
+pad, transpose, hflip, vflip, fps, thumbnail, select (scene), tile, yadif and bwdif, and with `-f null` the detection filters above; the
 `-f lavfi` sources are testsrc, testsrc2, smptebars, smptehdbars, color, sine, anullsrc and anoisesrc. Codecs: `copy`, `mjpeg`, `ffv1` and `rawvideo` for video, `flac`,
 `alac`, `libopus` (or `opus`) and the `pcm_` codecs for audio.
 
