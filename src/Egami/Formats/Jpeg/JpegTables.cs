@@ -130,6 +130,7 @@ internal static class JpegBlock
     /// Returns a mask with bit k set where coefficient k in zigzag order is nonzero, for a block stored in natural order. With
     /// AVX2 the compare results are moved into zigzag order with byte shuffles, sixteen bytes per source lane.
     /// </summary>
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     internal static ulong NonZeroZigZag(ReadOnlySpan<short> natural)
     {
         natural = natural[..64];

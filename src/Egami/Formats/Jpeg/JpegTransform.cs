@@ -557,6 +557,7 @@ internal static class JpegTransformer
 
             sos[^2] = 63;
             JpegWriter.Segment(writer, JpegMarker.Sos, sos);
+            bool wide = _header.Precision > 8;
             for (int my = 0; my < McusY; my++)
             {
                 FillRow(my, row);
@@ -568,7 +569,14 @@ internal static class JpegTransformer
                         int t = Table(i);
                         for (int n = 0; n < _h[i] * _v[i]; n++, b++)
                         {
-                            JpegBlockCoder.Encode(writer, row.AsSpan(b * 64, 64), ref predictors[i], dc[t], ac[t]);
+                            if (wide)
+                            {
+                                JpegBlockCoder.EncodeWide(writer, row.AsSpan(b * 64, 64), ref predictors[i], dc[t], ac[t]);
+                            }
+                            else
+                            {
+                                JpegBlockCoder.Encode(writer, row.AsSpan(b * 64, 64), ref predictors[i], dc[t], ac[t]);
+                            }
                         }
                     }
                 }
