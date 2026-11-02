@@ -125,6 +125,11 @@ internal static partial class Av1LoopFilter
         T[] buf = frame.Plane<T>(plane);
         int stride = frame.Strides[plane];
         int bitDepth = frame.Sequence.BitDepth;
+        if (Runs<T>(bitDepth))
+        {
+            FilterPlaneRuns((byte[])(object)buf, stride, units, planeMiRows, planeMiCols, plane, width, height, h.LoopFilterSharpness, vertical, frame);
+            return;
+        }
 
         // Vertical edges touch only their own rows, horizontal edges only their own columns: bands of 16 run on their own.
         if (vertical)
