@@ -89,7 +89,8 @@
 
 <p>Egami reads Adobe Photoshop documents (.psd) and large documents (.psb), written from Adobe's Photoshop File Format
 Specification. <code>PsdFormat.Info</code> is registered in <code>EgamiContext.Default</code>; PSD is never written. Egami reads the flattened image
-Photoshop stores after the layers, in every color mode and depth, and lists the layers as metadata without their pixels.</p>
+Photoshop stores after the layers, in every color mode and depth, and lists the layers as metadata; <code>PsdImage.ReadLayers</code> reads
+every layer with its pixels and mask (see <a href="#reading-layers">Reading layers</a>).</p>
 <h2 id="reading-files">Reading files</h2>
 <pre><code class="lang-csharp">// Load gives the flattened image Photoshop stores after the layers, in the type that fits the file: Rgb8 here, Rgba16 for
 // a 16-bit file with transparency, Cmyk8 for CMYK. Save it as anything.

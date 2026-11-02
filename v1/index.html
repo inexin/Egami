@@ -79,11 +79,13 @@
 <li><strong>Fully managed C#</strong>: no native binaries, no P/Invoke, and no third-party dependencies.</li>
 <li><strong>Safe on untrusted files</strong>: sizes are checked before anything is allocated, and every reader is fuzz-tested.</li>
 <li><strong>Trimming and Native AOT clean</strong>, on every OS and CPU .NET 10 supports.</li>
-<li><strong>Formats</strong>: PNG and APNG, JPEG, GIF, WebP, BMP, TGA, QOI, the Netpbm formats, TIFF, Radiance and OpenEXR, JPEG XL, ICO,
-CUR and ANI read and written; AVIF, JPEG 2000, JBIG2, CCITT fax and PSD read. See <a href="articles/formats/index.html">Formats</a>.</li>
+<li><strong>Formats</strong>: PNG and APNG, JPEG, GIF, WebP, BMP, TGA, QOI, the Netpbm formats, TIFF, Radiance and OpenEXR, JPEG XL, AVIF,
+ICO, CUR and ANI read and written; JPEG 2000, JBIG2, CCITT fax and PSD (with its layers) read. HEIC (Egami.Heic), camera RAW
+and DNG, DDS textures and more (Egami.Formats.Extended) come as packages. See <a href="articles/formats/index.html">Formats</a>.</li>
 <li><strong>Operations</strong>: resizing and geometry, color management, tone and color, filters, compositing, masks, analysis and palettes.</li>
 <li><strong>More packages</strong>: vector drawing (Egami.Drawing), fonts and text layout (Egami.Fonts), SVG (Egami.Svg), CSS (Egami.Css),
-Windows metafiles (Egami.Metafiles) and barcodes (Egami.Barcodes). See <a href="articles/packages.html">Packages</a>.</li>
+Windows metafiles (Egami.Metafiles), barcodes (Egami.Barcodes), a System.Drawing drop-in (Egami.SystemDrawing), video and
+audio (Egami.Video), and the <code>egami</code> and <code>egami-video</code> commands. See <a href="articles/packages.html">Packages</a>.</li>
 </ul>
 <pre><code class="lang-csharp">using Egami;
 

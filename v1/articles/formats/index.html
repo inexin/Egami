@@ -89,10 +89,11 @@
 
 <p>Egami reads and writes PNG, APNG, JPEG, GIF, WebP, BMP, TGA, QOI and the Netpbm formats (PBM, PGM, PPM, PAM and the PFM float
 map), TIFF, Radiance .hdr, OpenEXR, JPEG XL, AVIF, and Windows icons and cursors, and reads JBIG2, raw CCITT fax data, JPEG
-2000, Windows animated cursors (ANI) and Photoshop's PSD and PSB. HEIC phone photos load through the separate, opt-in Egami.Heic
-package; core Egami detects and probes them. SVG and Windows metafiles (WMF, EMF) load through the separate
+2000, Windows animated cursors (ANI) and Photoshop's PSD and PSB, layers included. HEIC phone photos load and save through the
+separate, opt-in Egami.Heic package; core Egami detects and probes them. SVG and Windows metafiles (WMF, EMF) load through the separate
 <a href="../guides/svg.html">Egami.Svg</a> and <a href="../guides/metafiles.html">Egami.Metafiles</a> packages, and PCX, SGI, Sun raster, XBM, XPM, WBMP
-Farbfeld, DDS textures and camera RAW (DNG) through <a href="extended.html">Egami.Formats.Extended</a>. The Package column says which package holds each format. Every reader checks sizes against the
+Farbfeld, DDS textures and camera RAW (DNG and the camera makers' formats, with DNG written) through
+<a href="extended.html">Egami.Formats.Extended</a>. The Package column says which package holds each format. Every reader checks sizes against the
 safety limits before it allocates, and every reader has been fuzzed.</p>
 <p>Each format has its own page with its options and what it keeps from the file; the table below links them. VP8 and AV1 video frames decode
 through <a href="vp8.html"><code>Vp8StreamDecoder</code></a> and <a href="av1.html"><code>Av1StreamDecoder</code></a>, VP8 and AV1 frames encode through <a href="vp8.html#encoding"><code>Vp8StreamEncoder</code></a> and <a href="av1.html#encoding"><code>Av1StreamEncoder</code></a>, and the boxes of MP4, QuickTime and HEIF files can be walked with <a href="iso-boxes.html"><code>IsoBoxReader</code></a>. This page covers what all formats share: natural pixel types, detection, files with several images, and what writers drop.</p>
@@ -125,7 +126,7 @@ through <a href="vp8.html"><code>Vp8StreamDecoder</code></a> and <a href="av1.ht
 <tr>
 <td><a href="jpeg.html">JPEG</a></td>
 <td>Baseline, extended and progressive, Huffman or arithmetic, 8 and 12-bit, lossless at 2 to 16 bits, any subsampling, gray, CMYK, YCCK, scaled decode, EXIF, XMP, ICC</td>
-<td>Baseline or progressive, 8 or 12-bit, quality 1 to 100, 4:4:4, 4:2:2, 4:2:0, gray, CMYK or YCCK, optimized Huffman tables</td>
+<td>Baseline or progressive, 8 or 12-bit, quality 1 to 100, 4:4:4, 4:2:2, 4:2:0, gray, CMYK or YCCK, optimized Huffman tables or arithmetic coding; lossless at 2 to 16 bits</td>
 <td><code>Gray8</code> or <code>Rgb8</code>; <code>Gray16</code>, <code>Rgb16</code> or <code>Cmyk16</code> above 8 bits</td>
 <td>Egami</td>
 </tr>
@@ -166,8 +167,8 @@ through <a href="vp8.html"><code>Vp8StreamDecoder</code></a> and <a href="av1.ht
 </tr>
 <tr>
 <td><a href="tiff.html">TIFF</a></td>
-<td>Every page, strips and tiles, chunky and planar, classic and BigTIFF; None, LZW, Deflate, PackBits, CCITT G3 and G4, JPEG, old-style JPEG, ThunderScan, SGILog, WebP, JPEG XL; gray, palette, RGB, CMYK, YCbCr, Lab and LogLuv at 1 to 64 bits</td>
-<td>Every pixel type at its own depth, strips or tiles, classic or BigTIFF; None, LZW, Deflate, PackBits, CCITT G3 and G4, JPEG, WebP</td>
+<td>Every page, strips and tiles, chunky and planar, classic and BigTIFF; None, LZW, Deflate, PackBits, CCITT G3 and G4, JPEG, old-style JPEG, ThunderScan, SGILog, WebP, JPEG XL, Zstd, LZMA, lossless JPEG at 2 to 16 bits; gray, palette, RGB, CMYK, YCbCr, Lab and LogLuv at 1 to 64 bits</td>
+<td>Every pixel type at its own depth, strips or tiles, classic or BigTIFF; None, LZW, Deflate, Zstd, LZMA, PackBits, CCITT G3 and G4, JPEG (lossless at <code>Quality</code> 100), WebP</td>
 <td>The page's own: <code>Gray8</code>, <code>Gray16</code>, <code>Rgb8</code>, <code>Rgb16</code>, <code>Cmyk8</code>, <code>Cmyk16</code>, float types and more</td>
 <td>Egami</td>
 </tr>
@@ -215,7 +216,7 @@ through <a href="vp8.html"><code>Vp8StreamDecoder</code></a> and <a href="av1.ht
 </tr>
 <tr>
 <td><a href="psd.html">PSD, PSB</a></td>
-<td>The flattened image in every color mode (bitmap, gray, indexed, RGB, CMYK, Lab, duotone, multichannel) at 1 to 32 bits, raw, PackBits and Deflate; layer records and resources as metadata</td>
+<td>The flattened image in every color mode (bitmap, gray, indexed, RGB, CMYK, Lab, duotone, multichannel) at 1 to 32 bits, raw, PackBits and Deflate; every layer with its pixels and mask (<code>PsdImage.ReadLayers</code>); resources as metadata</td>
 <td>No</td>
 <td>By mode and depth: <code>Gray8</code>, <code>Rgb8</code>, <code>Rgba8</code>, <code>Cmyk8</code>, their 16-bit forms, float types</td>
 <td>Egami</td>
@@ -250,8 +251,8 @@ through <a href="vp8.html"><code>Vp8StreamDecoder</code></a> and <a href="av1.ht
 </tr>
 <tr>
 <td><a href="heic.html">HEIC</a></td>
-<td>With Egami.Heic: HEVC intra pictures up to 12 bits, grids, alpha, gain maps, depth maps, mattes and all-intra sequences; core Egami probes them</td>
-<td>With Egami.Heic: lossy and lossless stills, alpha, grids, gain maps</td>
+<td>With Egami.Heic: HEVC pictures up to 12 bits, grids, alpha, gain maps, depth maps, mattes and image sequences with inter frames; core Egami probes them</td>
+<td>With Egami.Heic: lossy and lossless stills, 8 to 12 bits, 4:0:0 to 4:4:4, alpha, grids, gain maps, thumbnails</td>
 <td><code>Rgb8</code> for 8-bit files, <code>Rgb16</code> for 10 and 12 bits, with alpha when the file has it, gray for monochrome</td>
 <td>Egami.Heic</td>
 </tr>
@@ -320,8 +321,8 @@ through <a href="vp8.html"><code>Vp8StreamDecoder</code></a> and <a href="av1.ht
 </tr>
 <tr>
 <td><a href="raw.html">Camera RAW</a></td>
-<td>DNG 1.0 to 1.7, developed on load (white balance, demosaicing, noise reduction, opcodes, camera profiles), or its previews or sensor mosaic</td>
-<td>—</td>
+<td>DNG 1.0 to 1.7, Canon CR2, Nikon NEF and NRW, Pentax PEF, Sony ARW and SR2, Olympus ORF, Panasonic RW2 and Fujifilm RAF, developed on load (white balance, demosaicing, noise reduction, opcodes, camera profiles, lens corrections), or their previews or sensor mosaic; CR3 previews and metadata</td>
+<td>DNG: any RAW file converted with its sensor data unchanged (<code>RawFormat.ConvertToDng</code>), or any raster</td>
 <td><code>Rgb16</code> sRGB when developed; <code>Gray16</code> for the mosaic</td>
 <td>Egami.Formats.Extended</td>
 </tr>
