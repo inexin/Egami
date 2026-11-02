@@ -28,8 +28,14 @@ internal static class Av1Timing
             foreach (int threads in counts)
             {
                 double best = double.MaxValue, bestCycles = double.MaxValue;
+                long allocated = 0;
+                int gen0 = 0, gen2 = 0;
+                double pause = 0;
                 for (int run = 0; run < runs; run++)
                 {
+                    long bytes = GC.GetTotalAllocatedBytes(true);
+                    TimeSpan paused = GC.GetTotalPauseDuration();
+                    (int c0, int c2) = (GC.CollectionCount(0), GC.CollectionCount(2));
                     long cycles = Vp8Timing.ThreadCycles();
                     Av1Stream stream = new("AV1") { Parallelism = threads };
                     long start = Stopwatch.GetTimestamp();
@@ -43,9 +49,12 @@ internal static class Av1Timing
 
                     best = Math.Min(best, Stopwatch.GetElapsedTime(start).TotalMilliseconds / units.Count);
                     bestCycles = Math.Min(bestCycles, (Vp8Timing.ThreadCycles() - cycles) / 1e6 / units.Count);
+                    (allocated, gen0, gen2) = (GC.GetTotalAllocatedBytes(true) - bytes, GC.CollectionCount(0) - c0, GC.CollectionCount(2) - c2);
+                    pause = (GC.GetTotalPauseDuration() - paused).TotalMilliseconds / units.Count;
                 }
 
-                Console.WriteLine($"{Path.GetFileName(file)}: {best:F2} ms a unit on {threads} thread{(threads == 1 ? "" : "s")}{(threads == 1 ? $", {bestCycles:F1} M cycles" : "")}");
+                Console.WriteLine($"{Path.GetFileName(file)}: {best:F2} ms a unit on {threads} thread{(threads == 1 ? "" : "s")}{(threads == 1 ? $", {bestCycles:F1} M cycles" : "")}"
+                    + $"; last run {allocated / 1e6 / units.Count:F2} MB allocated a unit, {gen0} gen-0 and {gen2} gen-2 collections pausing {pause:F2} ms a unit");
             }
         }
     }

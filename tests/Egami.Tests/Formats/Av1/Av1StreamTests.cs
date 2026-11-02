@@ -163,9 +163,12 @@ public class Av1StreamTests
             byte[] data = File.ReadAllBytes(VectorPath(cache, vector));
             foreach ((int offset, int length) in IvfFrames(data))
             {
+                // A decoded frame lets go of its references, so the slots they come from are kept as the unit's first frame sees them
+                // (a reference decoded in the same unit is not among them).
+                Av1Frame?[] slots = [.. stream.Slots];
                 foreach (Av1Frame frame in stream.Decode(data, offset, length, TestContext.Current.CancellationToken))
                 {
-                    Count(frame);
+                    Count(frame, slots);
                 }
             }
         }
@@ -180,7 +183,7 @@ public class Av1StreamTests
 
         void Add(string tool) => uses[tool] = uses.GetValueOrDefault(tool) + 1;
 
-        void Count(Av1Frame frame)
+        void Count(Av1Frame frame, Av1Frame?[] slots)
         {
             Av1FrameHeader h = frame.Header;
             if (h.FrameType == Av1FrameType.Switch)
@@ -200,7 +203,7 @@ public class Av1StreamTests
 
             for (int rf = Ref.Last; rf <= Ref.Alt && !h.FrameIsIntra; rf++)
             {
-                if (h.RefFrames[rf]!.Header.UpscaledWidth != h.FrameWidth || h.RefFrames[rf]!.Header.FrameHeight != h.FrameHeight)
+                if (slots[h.RefFrameIdx[rf - Ref.Last]]?.Header is { } reference && (reference.UpscaledWidth != h.FrameWidth || reference.FrameHeight != h.FrameHeight))
                 {
                     Add("scaled reference");
                 }

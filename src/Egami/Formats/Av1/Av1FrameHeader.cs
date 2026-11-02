@@ -308,6 +308,16 @@ internal sealed class Av1FrameHeader
     /// <summary>Gets the frame the CDFs, segmentation, loop filter deltas and global motion are loaded from, or null.</summary>
     internal Av1Frame? PrimaryRef { get; private set; }
 
+    /// <summary>
+    /// Lets go of the reference frames once the frame is decoded: nothing reads them after that, and holding them would keep every
+    /// frame since the last key frame alive through its references' references.
+    /// </summary>
+    internal void ReleaseReferences()
+    {
+        Array.Clear(RefFrames);
+        PrimaryRef = null;
+    }
+
     /// <summary>Gets the identity warp's parameters.</summary>
     internal static int[] DefaultWarpParams() => [0, 0, 1 << WarpPrecBits, 0, 0, 1 << WarpPrecBits];
 

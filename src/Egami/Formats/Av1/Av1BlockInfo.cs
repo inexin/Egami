@@ -114,11 +114,13 @@ internal sealed class Av1BlockInfo
     /// <summary>Gets or sets whether <see cref="WarpParams"/> make a valid warp (LocalValid and the shear check).</summary>
     internal bool WarpValid { get; set; }
 
-    /// <summary>Gets the palette sizes of luma and chroma (0 for none).</summary>
-    internal int[] PaletteSize { get; } = new int[2];
+    /// <summary>The palette sizes of luma and chroma (0 for none), held in the block rather than as an array of its own.</summary>
+    internal Two PaletteSize;
 
-    /// <summary>Gets the palette colors: Y at 0, U at 8 and V at 16.</summary>
-    internal ushort[] PaletteColors { get; } = new ushort[24];
+    private ushort[]? _paletteColors;
+
+    /// <summary>Gets the palette colors: Y at 0, U at 8 and V at 16, made when first asked for (only palette blocks have them).</summary>
+    internal ushort[] PaletteColors => _paletteColors ??= new ushort[24];
 
     /// <summary>Gets or sets whether the block uses filter intra prediction.</summary>
     internal bool UseFilterIntra { get; set; }
@@ -132,8 +134,8 @@ internal sealed class Av1BlockInfo
     /// <summary>Gets or sets the block's quantizer index (CurrentQIndex).</summary>
     internal int QIndex { get; set; }
 
-    /// <summary>Gets the block's loop filter deltas (delta_lf, or delta_lf_from_base at 0 when not multi).</summary>
-    internal int[] DeltaLf { get; } = new int[4];
+    /// <summary>The block's loop filter deltas (delta_lf, or delta_lf_from_base at 0 when not multi).</summary>
+    internal Four DeltaLf;
 
     /// <summary>Gets whether the block is predicted from a reference: true for inter blocks and intra block copies.</summary>
     internal bool IsInter => UseIntrabc || RefFrame0 > Ref.Intra;
@@ -143,4 +145,18 @@ internal sealed class Av1BlockInfo
 
     /// <summary>Gets the chroma prediction mode as a luma one: chroma from luma counts as DC.</summary>
     internal int UvModeAsY => UvMode == Pred.UvCfl ? Pred.Dc : UvMode;
+}
+
+/// <summary>Two integers held in place.</summary>
+[System.Runtime.CompilerServices.InlineArray(2)]
+internal struct Two
+{
+    private int _element;
+}
+
+/// <summary>Four integers held in place.</summary>
+[System.Runtime.CompilerServices.InlineArray(4)]
+internal struct Four
+{
+    private int _element;
 }
