@@ -29,7 +29,7 @@ internal static class Av1FilmGrainSynthesis
             return frame.Planes!;
         }
 
-        return frame.Planes![0] is byte[] ? Apply<byte>(frame) : Apply<ushort>(frame);
+        return frame.Compact ? Apply<byte>(frame) : Apply<ushort>(frame);
     }
 
     private static T[][] Apply<T>(Av1Frame frame)
