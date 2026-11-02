@@ -394,11 +394,12 @@ using IVideoDecoder&lt;Rgba8&gt; rgb = VideoCodecs.CreateDecoder&lt;Rgba8&gt;(tr
 
   <h3 id="Egami_Video_Codecs_RawVideoCodec_CreateEncoder_Egami_Video_Codecs_VideoEncoderOptions_Egami_Video_MediaContext_" data-uid="Egami.Video.Codecs.RawVideoCodec.CreateEncoder(Egami.Video.Codecs.VideoEncoderOptions,Egami.Video.MediaContext)">
   CreateEncoder(VideoEncoderOptions, MediaContext)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Codecs/RawVideoCodec.cs/#L65"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Codecs/RawVideoCodec.cs/#L66"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Creates an encoder for planar frames. The layout is the first frame's chroma format, bit depth and alpha, named by
-FourCC when one exists (I420, Y42B, 444P, Y800); RGB frames are converted to 4:2:0 or <a class="xref" href="Egami.Video.Codecs.VideoEncoderOptions.html#Egami_Video_Codecs_VideoEncoderOptions_ChromaFormat">ChromaFormat</a>.</p>
+FourCC when one exists (I420, Y42B, 444P, Y800); RGB frames are converted to 4:2:0 or <a class="xref" href="Egami.Video.Codecs.VideoEncoderOptions.html#Egami_Video_Codecs_VideoEncoderOptions_ChromaFormat">ChromaFormat</a>,
+and a later frame of another layout to the first one's.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
 

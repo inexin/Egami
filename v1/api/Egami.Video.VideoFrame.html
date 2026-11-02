@@ -246,14 +246,15 @@ container gives one. Motion JPEG frames report BT.601 full range, as JFIF define
 
   <h3 id="Egami_Video_VideoFrame_FieldOrder" data-uid="Egami.Video.VideoFrame.FieldOrder">
   FieldOrder
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/VideoFrame.cs/#L60"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/VideoFrame.cs/#L61"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets whether the frame is two interlaced fields woven together, and which of them comes first in time, or
 <a class="xref" href="Egami.Video.FieldOrder.html#Egami_Video_FieldOrder_Progressive">Progressive</a>. H.264 tells it per frame: from the picture timing SEI's pic_struct, else from how
-the frame was coded (two field pictures or an MBAFF frame) and its fields' order counts, as FFmpeg reports it. Other
-decoders give <a class="xref" href="Egami.Video.FieldOrder.html#Egami_Video_FieldOrder_Progressive">Progressive</a>; the track's <a class="xref" href="Egami.Video.VideoTrackInfo.html#Egami_Video_VideoTrackInfo_FieldOrder">FieldOrder</a> says what the
-container states.</p>
+the frame was coded (two field pictures or an MBAFF frame) and its fields' order counts, as FFmpeg reports it; FFV1 from
+its slice headers' picture_structure. Other decoders give <a class="xref" href="Egami.Video.FieldOrder.html#Egami_Video_FieldOrder_Progressive">Progressive</a>; the track's
+<a class="xref" href="Egami.Video.VideoTrackInfo.html#Egami_Video_VideoTrackInfo_FieldOrder">FieldOrder</a> says what the container states. Encoders and <code>VideoWriter</code> take the first
+frame's field order for the track when the encoder states none, and the FFV1 encoder codes each frame's.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
 
@@ -348,7 +349,7 @@ from WebM's BlockAdditional with BlockAddID 4.</p>
 
   <h3 id="Egami_Video_VideoFrame_Height" data-uid="Egami.Video.VideoFrame.Height">
   Height
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/VideoFrame.cs/#L73"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/VideoFrame.cs/#L74"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the height in pixels.</p>
@@ -380,7 +381,7 @@ from WebM's BlockAdditional with BlockAddID 4.</p>
 
   <h3 id="Egami_Video_VideoFrame_Pixels" data-uid="Egami.Video.VideoFrame.Pixels">
   Pixels
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/VideoFrame.cs/#L79"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/VideoFrame.cs/#L80"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the pixels of a <a class="xref" href="Egami.Video.VideoFrame-1.html">VideoFrame&lt;TPixel&gt;</a>, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for other frames. Lets encoders take any frame.</p>
@@ -412,7 +413,7 @@ from WebM's BlockAdditional with BlockAddID 4.</p>
 
   <h3 id="Egami_Video_VideoFrame_Planes" data-uid="Egami.Video.VideoFrame.Planes">
   Planes
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/VideoFrame.cs/#L76"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/VideoFrame.cs/#L77"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the planes of a <a class="xref" href="Egami.Video.YuvVideoFrame.html">YuvVideoFrame</a>, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for other frames. Lets encoders take any frame.</p>
@@ -477,7 +478,7 @@ It is reported, not applied: the frame keeps its coded size, as libvpx and FFmpe
 
   <h3 id="Egami_Video_VideoFrame_RepeatFields" data-uid="Egami.Video.VideoFrame.RepeatFields">
   RepeatFields
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/VideoFrame.cs/#L67"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/VideoFrame.cs/#L68"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets how many fields longer than its two the frame is shown (H.264 pic_struct): 1 for top, bottom, top or bottom, top,
@@ -543,7 +544,7 @@ periods; <a class="xref" href="Egami.Video.VideoFrame.html#Egami_Video_VideoFram
 
   <h3 id="Egami_Video_VideoFrame_Width" data-uid="Egami.Video.VideoFrame.Width">
   Width
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/VideoFrame.cs/#L70"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/VideoFrame.cs/#L71"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the width in pixels.</p>
@@ -579,7 +580,7 @@ periods; <a class="xref" href="Egami.Video.VideoFrame.html#Egami_Video_VideoFram
 
   <h3 id="Egami_Video_VideoFrame_Dispose" data-uid="Egami.Video.VideoFrame.Dispose">
   Dispose()
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/VideoFrame.cs/#L82"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/VideoFrame.cs/#L83"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Releases the frame's pixel memory.</p>
@@ -606,7 +607,7 @@ periods; <a class="xref" href="Egami.Video.VideoFrame.html#Egami_Video_VideoFram
 
   <h3 id="Egami_Video_VideoFrame_Dispose_System_Boolean_" data-uid="Egami.Video.VideoFrame.Dispose(System.Boolean)">
   Dispose(bool)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/VideoFrame.cs/#L90"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/VideoFrame.cs/#L91"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Releases the frame's pixel memory.</p>
