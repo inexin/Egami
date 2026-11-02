@@ -477,7 +477,7 @@ internal static class JpegBlockCoder
         ref short coefficients = ref MemoryMarshal.GetReference(block);
         ref byte zigzag = ref MemoryMarshal.GetReference(JpegTables.ZigZag);
         ref int acCodes = ref MemoryMarshal.GetArrayDataReference(ac.Entries);
-        ulong nonzero = JpegBlock.NonZeroZigZag(block) & ~1UL;
+        ulong nonzero = JpegBlock.NonZeroZigZagInlined(block) & ~1UL;
 
         // The DC symbol is the first of the first pair.
         int diff = coefficients - predictor;
@@ -630,7 +630,7 @@ internal static class JpegBlockCoder
         ref short coefficients = ref MemoryMarshal.GetReference(block);
         ref byte zigzag = ref MemoryMarshal.GetReference(JpegTables.ZigZag);
         ref long counts = ref MemoryMarshal.GetReference(ac);
-        ulong nonzero = JpegBlock.NonZeroZigZag(block) & ~1UL;
+        ulong nonzero = JpegBlock.NonZeroZigZagInlined(block) & ~1UL;
         int last = 0;
         while (nonzero != 0)
         {
