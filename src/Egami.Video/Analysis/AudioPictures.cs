@@ -209,6 +209,8 @@ public static class AudioPictures
         {
             if ((reader.Track.Duration ?? reader.Info.Duration) is { Ticks: > 0 } known)
             {
+                // Drawn in this pass: the bytes read from here on need no copy.
+                recording.StopRecording();
                 return Draw(reader, known, progress, draw);
             }
         }

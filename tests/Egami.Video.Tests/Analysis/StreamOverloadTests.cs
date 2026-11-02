@@ -1,3 +1,5 @@
+using System.Buffers.Binary;
+
 using Egami.Pixels;
 using Egami.Video.Analysis;
 
@@ -100,6 +102,8 @@ public sealed class StreamOverloadTests
         return result;
     }
 
+    internal static Stream Unseekable(byte[] data) => new Tracked(data, seekable: false);
+
     private static Tracked Open(string path, bool seekable, out Tracked tracked)
     {
         tracked = new Tracked(File.ReadAllBytes(path), seekable);
@@ -154,5 +158,53 @@ public sealed class StreamOverloadTests
             Disposed = true;
             base.Dispose(disposing);
         }
+    }
+}
+
+/// <summary>
+/// The review fix on #238: an unseekable stream whose container gives the duration draws in one pass without keeping a copy of
+/// what it read. Runs alone, in <see cref="MemoryTests"/>' collection, since it measures allocations and the memory tests
+/// measure the process.
+/// </summary>
+[Collection(nameof(MemoryTests))]
+public sealed class StreamOverloadMemoryTests
+{
+    [Fact]
+    public void AnUnseekableStreamWithADurationIsNotHeldInMemory()
+    {
+        // 30 s of 48 kHz stereo WAV, 5.8 MB: the header gives the duration, so the picture draws in one pass and must not keep
+        // the bytes it has read.
+        const int Rate = 48000, Seconds = 30;
+        byte[] wav = new byte[44 + (Rate * Seconds * 4)];
+        "RIFF"u8.CopyTo(wav);
+        BinaryPrimitives.WriteInt32LittleEndian(wav.AsSpan(4), wav.Length - 8);
+        "WAVEfmt "u8.CopyTo(wav.AsSpan(8));
+        BinaryPrimitives.WriteInt32LittleEndian(wav.AsSpan(16), 16);
+        BinaryPrimitives.WriteInt16LittleEndian(wav.AsSpan(20), 1);
+        BinaryPrimitives.WriteInt16LittleEndian(wav.AsSpan(22), 2);
+        BinaryPrimitives.WriteInt32LittleEndian(wav.AsSpan(24), Rate);
+        BinaryPrimitives.WriteInt32LittleEndian(wav.AsSpan(28), Rate * 4);
+        BinaryPrimitives.WriteInt16LittleEndian(wav.AsSpan(32), 4);
+        BinaryPrimitives.WriteInt16LittleEndian(wav.AsSpan(34), 16);
+        "data"u8.CopyTo(wav.AsSpan(36));
+        BinaryPrimitives.WriteInt32LittleEndian(wav.AsSpan(40), Rate * Seconds * 4);
+        for (int i = 0; i < Rate * Seconds; i++)
+        {
+            short value = (short)(8000 * Math.Sin(i * 0.05));
+            BinaryPrimitives.WriteInt16LittleEndian(wav.AsSpan(44 + (i * 4)), value);
+            BinaryPrimitives.WriteInt16LittleEndian(wav.AsSpan(46 + (i * 4)), value);
+        }
+
+        WaveformOptions options = new() { Width = 100, Height = 40 };
+        using (Stream warm = StreamOverloadTests.Unseekable(wav))
+        using (Raster<Rgba8> first = AudioPictures.Waveform(warm, options, cancellationToken: TestContext.Current.CancellationToken))
+        {
+        }
+
+        using Stream stream = StreamOverloadTests.Unseekable(wav);
+        long before = GC.GetAllocatedBytesForCurrentThread();
+        using Raster<Rgba8> picture = AudioPictures.Waveform(stream, options, cancellationToken: TestContext.Current.CancellationToken);
+        long allocated = GC.GetAllocatedBytesForCurrentThread() - before;
+        Assert.True(allocated < wav.Length / 4, $"{allocated:N0} bytes allocated for a {wav.Length:N0}-byte stream");
     }
 }

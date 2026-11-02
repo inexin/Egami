@@ -80,6 +80,9 @@ internal static class StreamSources
             set => throw new NotSupportedException();
         }
 
+        /// <summary>Stops keeping a copy and drops what was kept, once the header showed no copy is needed.</summary>
+        public void StopRecording() => _recorded = null;
+
         /// <summary>Copies what was read and the rest of the stream into <paramref name="target"/>.</summary>
         public void CopyAllTo(Stream target, CancellationToken cancellationToken)
         {
