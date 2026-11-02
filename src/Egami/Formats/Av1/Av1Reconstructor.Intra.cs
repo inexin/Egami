@@ -1,3 +1,8 @@
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+using System.Runtime.Intrinsics;
+using System.Runtime.Intrinsics.X86;
+
 namespace Egami.Formats.Av1;
 
 /// <summary>Intra prediction: av1_predict_intra_block and the high bit depth predictors of reconintra.c and intrapred.c.</summary>
@@ -17,6 +22,7 @@ internal sealed partial class Av1Reconstructor<T>
 
     private readonly T[] _aboveData = new T[(64 * 2) + 32 + EdgeBase];
     private readonly T[] _leftData = new T[(64 * 2) + 32 + EdgeBase];
+    private readonly int[] _filterIntra = new int[33 * 33];
 
     private void PredictIntra(Av1TileState tile, int plane, int colOff, int rowOff, int txSize, int mode, int angleDelta, bool palette,
         int filterMode, T[] buf, int offset, int stride)
@@ -722,35 +728,105 @@ internal sealed partial class Av1Reconstructor<T>
 
     private void FilterIntra(T[] buf, int offset, int stride, int bw, int bh, int mode)
     {
-        Span<T> buffer = stackalloc T[33 * 33];
+        int[] buffer = _filterIntra;
         int max = (1 << _bitDepth) - 1;
         for (int r = 0; r < bh; r++)
         {
-            buffer[(r + 1) * 33] = _leftData[EdgeBase + r];
+            buffer[(r + 1) * 33] = Av1Samples.Get(_leftData[EdgeBase + r]);
         }
 
-        _aboveData.AsSpan(EdgeBase - 1, bw + 1).CopyTo(buffer);
-        ReadOnlySpan<sbyte> taps = Av1Tables.FilterIntraTaps.AsSpan(mode * 64, 64);
-        for (int r = 1; r < bh + 1; r += 2)
+        for (int c = 0; c <= bw; c++)
         {
-            for (int c = 1; c < bw + 1; c += 4)
+            buffer[c] = Av1Samples.Get(_aboveData[EdgeBase - 1 + c]);
+        }
+
+        if (Avx2.IsSupported)
+        {
+            FilterIntraVector(buffer, bw, bh, mode, max);
+        }
+        else
+        {
+            ReadOnlySpan<sbyte> taps = Av1Tables.FilterIntraTaps.AsSpan(mode * 64, 64);
+            for (int r = 1; r < bh + 1; r += 2)
             {
-                int p0 = Av1Samples.Get(buffer[((r - 1) * 33) + c - 1]), p1 = Av1Samples.Get(buffer[((r - 1) * 33) + c]), p2 = Av1Samples.Get(buffer[((r - 1) * 33) + c + 1]);
-                int p3 = Av1Samples.Get(buffer[((r - 1) * 33) + c + 2]), p4 = Av1Samples.Get(buffer[((r - 1) * 33) + c + 3]);
-                int p5 = Av1Samples.Get(buffer[(r * 33) + c - 1]), p6 = Av1Samples.Get(buffer[((r + 1) * 33) + c - 1]);
-                for (int k = 0; k < 8; k++)
+                for (int c = 1; c < bw + 1; c += 4)
                 {
-                    ReadOnlySpan<sbyte> t = taps.Slice(k * 8, 8);
-                    int pr = (t[0] * p0) + (t[1] * p1) + (t[2] * p2) + (t[3] * p3) + (t[4] * p4) + (t[5] * p5) + (t[6] * p6);
-                    int value = pr < 0 ? -((-pr + 8) >> 4) : (pr + 8) >> 4;
-                    buffer[((r + (k >> 2)) * 33) + c + (k & 3)] = Av1Samples.From<T>(Math.Clamp(value, 0, max));
+                    int p0 = buffer[((r - 1) * 33) + c - 1], p1 = buffer[((r - 1) * 33) + c], p2 = buffer[((r - 1) * 33) + c + 1];
+                    int p3 = buffer[((r - 1) * 33) + c + 2], p4 = buffer[((r - 1) * 33) + c + 3];
+                    int p5 = buffer[(r * 33) + c - 1], p6 = buffer[((r + 1) * 33) + c - 1];
+                    for (int k = 0; k < 8; k++)
+                    {
+                        ReadOnlySpan<sbyte> t = taps.Slice(k * 8, 8);
+                        int pr = (t[0] * p0) + (t[1] * p1) + (t[2] * p2) + (t[3] * p3) + (t[4] * p4) + (t[5] * p5) + (t[6] * p6);
+                        int value = pr < 0 ? -((-pr + 8) >> 4) : (pr + 8) >> 4;
+                        buffer[((r + (k >> 2)) * 33) + c + (k & 3)] = Math.Clamp(value, 0, max);
+                    }
                 }
             }
         }
 
         for (int r = 0; r < bh; r++)
         {
-            buffer.Slice(((r + 1) * 33) + 1, bw).CopyTo(buf.AsSpan(offset + (r * stride)));
+            int from = ((r + 1) * 33) + 1, to = offset + (r * stride);
+            for (int c = 0; c < bw; c++)
+            {
+                buf[to + c] = Av1Samples.From<T>(buffer[from + c]);
+            }
         }
+    }
+
+    /// <summary>
+    /// The recursive filter's 4x2 cells with every output at once: each of the seven neighbours, paired for vpmaddwd, times its
+    /// taps for the eight outputs, then the rounding away from zero and the clamp.
+    /// </summary>
+    private static void FilterIntraVector(int[] buffer, int bw, int bh, int mode, int max)
+    {
+        ReadOnlySpan<Vector256<short>> taps = FilterIntraPairs.AsSpan(mode * 4, 4);
+        Vector256<short> t01 = taps[0], t23 = taps[1], t45 = taps[2], t6 = taps[3];
+        Vector256<int> eight = Vector256.Create(8), maxV = Vector256.Create(max);
+        ref int b0 = ref MemoryMarshal.GetArrayDataReference(buffer);
+        for (int r = 1; r < bh + 1; r += 2)
+        {
+            for (int c = 1; c < bw + 1; c += 4)
+            {
+                ref int above = ref Unsafe.Add(ref b0, ((r - 1) * 33) + c - 1);
+                Vector256<int> sum = Avx2.MultiplyAddAdjacent(Pair(above, Unsafe.Add(ref above, 1)), t01)
+                    + Avx2.MultiplyAddAdjacent(Pair(Unsafe.Add(ref above, 2), Unsafe.Add(ref above, 3)), t23)
+                    + Avx2.MultiplyAddAdjacent(Pair(Unsafe.Add(ref above, 4), Unsafe.Add(ref b0, (r * 33) + c - 1)), t45)
+                    + Avx2.MultiplyAddAdjacent(Pair(Unsafe.Add(ref b0, ((r + 1) * 33) + c - 1), 0), t6);
+                Vector256<int> sign = Vector256.ShiftRightArithmetic(sum, 31);
+                Vector256<int> value = (Vector256.ShiftRightArithmetic(Vector256.Abs(sum) + eight, 4) ^ sign) - sign;
+                value = Vector256.Min(Vector256.Max(value, Vector256<int>.Zero), maxV);
+                value.GetLower().StoreUnsafe(ref b0, (nuint)((r * 33) + c));
+                value.GetUpper().StoreUnsafe(ref b0, (nuint)(((r + 1) * 33) + c));
+            }
+        }
+
+        static Vector256<short> Pair(int first, int second) => Vector256.Create(first | (second << 16)).AsInt16();
+    }
+
+    /// <summary>Each filter intra mode's taps for vpmaddwd: four vectors of the eight outputs' taps (0, 1), (2, 3), (4, 5) and (6, 0).</summary>
+    private static readonly Vector256<short>[] FilterIntraPairs = MakeFilterIntraPairs();
+
+    private static Vector256<short>[] MakeFilterIntraPairs()
+    {
+        sbyte[] taps = Av1Tables.FilterIntraTaps;
+        Vector256<short>[] pairs = new Vector256<short>[(taps.Length / 64) * 4];
+        Span<short> lanes = stackalloc short[16];
+        for (int mode = 0; mode < taps.Length / 64; mode++)
+        {
+            for (int pair = 0; pair < 4; pair++)
+            {
+                for (int k = 0; k < 8; k++)
+                {
+                    lanes[2 * k] = taps[(mode * 64) + (k * 8) + (2 * pair)];
+                    lanes[(2 * k) + 1] = pair == 3 ? (short)0 : taps[(mode * 64) + (k * 8) + (2 * pair) + 1];
+                }
+
+                pairs[(mode * 4) + pair] = Vector256.Create<short>(lanes);
+            }
+        }
+
+        return pairs;
     }
 }
