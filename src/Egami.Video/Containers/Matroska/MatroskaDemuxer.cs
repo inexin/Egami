@@ -1471,7 +1471,7 @@ internal sealed class MatroskaDemuxer : IDemuxer
                         HasAlpha = _alpha,
                         FourCC = _fourCC,
                         Hdr = _hdr,
-                        FieldOrder = _interlaced == 1 ? _fieldOrder is 6 or 9 ? FieldOrder.BottomFieldFirst : FieldOrder.TopFieldFirst : FieldOrder.Progressive,
+                        FieldOrder = _interlaced == 1 ? _fieldOrder is 6 or 14 ? FieldOrder.BottomFieldFirst : FieldOrder.TopFieldFirst : FieldOrder.Progressive,
                         Language = Language,
                         Name = _name,
                         IsDefault = _default,

@@ -82,7 +82,8 @@ internal sealed class Ffv1VideoDecoder : IVideoDecoder
             }
 
             ColorCodePoints color = _trackColor ?? (raster.Color.Matrix == YuvMatrix.Identity ? new ColorCodePoints(2, 2, 0, true) : DefaultColor);
-            _ready.Enqueue(new YuvVideoFrame(raster, packet.Timestamp, packet.Duration, color));
+            FieldOrder fields = info.PictureStructure switch { 1 => FieldOrder.TopFieldFirst, 2 => FieldOrder.BottomFieldFirst, _ => FieldOrder.Progressive };
+            _ready.Enqueue(new YuvVideoFrame(raster, packet.Timestamp, packet.Duration, color) { FieldOrder = fields });
             raster = null;
         }
         catch (Ffv1MissingKeyframeException) when (_errors != DecodeErrorMode.Throw)

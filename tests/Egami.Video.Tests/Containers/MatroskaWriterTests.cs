@@ -1,3 +1,4 @@
+using Egami.Pixels;
 using Egami.Video.Containers;
 
 namespace Egami.Video.Tests.Containers;
@@ -9,6 +10,33 @@ public class MatroskaWriterTests
     public static TheoryData<string> AllClips => [.. Corpus.Clips(".mkv", ".webm", ".avi")];
 
     public static TheoryData<string> AviClips => [.. Corpus.Clips(".avi")];
+
+    [Theory]
+    [InlineData(1, FieldOrder.TopFieldFirst)]
+    [InlineData(6, FieldOrder.BottomFieldFirst)]
+    [InlineData(9, FieldOrder.TopFieldFirst)]
+    [InlineData(14, FieldOrder.BottomFieldFirst)]
+    public void FieldOrderValuesReadAsRfc9559Defines(byte value, FieldOrder expected)
+    {
+        // RFC 9559: 9 and 14 are interleaved storage with the top field displayed first and the bottom field displayed first;
+        // FFmpeg writes 9 for top-field-first frames of most codecs. Video 1.2.1 read them swapped.
+        using YuvRaster planes = YuvRaster.Create(16, 16, ChromaFormat.Yuv420, YuvColor.Bt601Limited);
+        using YuvVideoFrame frame = new(planes, MediaTime.Zero) { FieldOrder = FieldOrder.TopFieldFirst };
+        MemoryStream output = new();
+        using (VideoWriter writer = VideoWriter.Create(output, "mkv", new VideoWriterOptions { Codec = Egami.Video.Codecs.RawVideoCodec.Instance }, leaveOpen: true))
+        {
+            writer.WriteFrame(frame);
+            writer.Finish();
+        }
+
+        // FlagInterlaced 1, then FieldOrder 1 (top field first) as the writer puts it.
+        byte[] file = output.ToArray();
+        int at = file.AsSpan().IndexOf((byte[])[0x9A, 0x81, 0x01, 0x9D, 0x81, 0x01]);
+        Assert.True(at >= 0);
+        file[at + 5] = value;
+        using IDemuxer demuxer = MediaFile.OpenDemuxer(new MemoryStream(file));
+        Assert.Equal(expected, Assert.IsType<VideoTrackInfo>(demuxer.Tracks[0]).FieldOrder);
+    }
 
     [Theory]
     [MemberData(nameof(Clips))]

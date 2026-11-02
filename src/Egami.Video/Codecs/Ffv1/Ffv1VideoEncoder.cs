@@ -6,8 +6,8 @@ namespace Egami.Video.Codecs.Ffv1;
 
 /// <summary>
 /// The FFV1 codec adapter: V1's send and receive loop over <see cref="Ffv1Encoder"/>. The first frame sets the layout (planes keep
-/// theirs; RGB rasters are coded as RGB), so <see cref="Track"/> describes the stream once a frame is sent; every later frame
-/// must have the same layout.
+/// theirs; RGB rasters are coded as RGB), so <see cref="Track"/> describes the stream once a frame is sent; a later frame of
+/// another layout is converted to it.
 /// </summary>
 internal sealed class Ffv1VideoEncoder : IVideoEncoder
 {
@@ -18,6 +18,7 @@ internal sealed class Ffv1VideoEncoder : IVideoEncoder
     private readonly Queue<EncodedPacket> _ready = new();
     private Ffv1Encoder? _encoder;
     private Layout _layout;
+    private YuvColor _color;
     private byte[] _output = [];
     private long _frames;
     private bool _qualityReported;
@@ -82,14 +83,25 @@ internal sealed class Ffv1VideoEncoder : IVideoEncoder
             if (_encoder is null)
             {
                 Start(layout);
+                _color = planes.Color;
+                Track = Track with { FieldOrder = frame.FieldOrder };
             }
             else if (layout != _layout)
             {
-                throw new ArgumentException($"The frame's layout ({Name(layout)}) differs from the stream's ({Name(_layout)}); FFV1 keeps one layout per stream.", nameof(frame));
+                // FFV1 keeps one layout per stream: an edit's composed RGBA frames go out in its source planes' layout, and back.
+                YuvRaster conformed = LayoutConversion.Convert(frame, _layout.Format, _layout.Depth, _color, _layout.Alpha);
+                converted?.Dispose();
+                converted = planes = conformed;
+                layout = LayoutOf(planes);
+                if (layout != _layout)
+                {
+                    throw new ArgumentException($"The frame's layout ({Name(layout)}) differs from the stream's ({Name(_layout)}); FFV1 keeps one layout per stream.", nameof(frame));
+                }
             }
 
             bool keyframe = _frames % _keyframeInterval == 0 || options.ForceKeyframe;
-            int length = _encoder!.Encode(planes, keyframe, _context.Egami.MaxParallelism, ref _output);
+            int structure = frame.FieldOrder switch { FieldOrder.TopFieldFirst => 1, FieldOrder.BottomFieldFirst => 2, _ => 0 };
+            int length = _encoder!.Encode(planes, keyframe, _context.Egami.MaxParallelism, ref _output, structure);
             MediaTime timestamp = frame.Timestamp.Rescale(Track.TimeBase);
             EncodedPacket packet = EncodedPacket.Rent(Track.Number, length, timestamp);
             _output.AsSpan(0, length).CopyTo(packet.GetWritableData().Span);

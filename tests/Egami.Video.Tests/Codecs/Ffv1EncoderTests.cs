@@ -149,15 +149,58 @@ public class Ffv1EncoderTests
     }
 
     [Fact]
-    public void ALayoutChangeIsRefused()
+    public void ALaterFrameOfAnotherLayoutIsConvertedToTheFirst()
     {
-        using VideoReader a = VideoReader.Open(Ffv1Tests.PathOf("v3-slices-1.mkv"));
-        using YuvVideoFrame first = a.ReadFrame()!;
-        using YuvRaster other = YuvRaster.Create(first.Width, first.Height, ChromaFormat.Yuv420, YuvColor.Bt601Limited);
-        using YuvVideoFrame second = new(other, new MediaTime(1, new Rational(1, 25)));
-        using IVideoEncoder encoder = VideoCodecs.Ffv1.CreateEncoder(new VideoEncoderOptions { Width = first.Width, Height = first.Height }, MediaContext.Default);
-        encoder.Send(first);
-        Assert.Throws<ArgumentException>(() => encoder.Send(second));
+        // An edit sends source planes and composed RGBA frames to one encoder (Video 1.2.1: fade with FFV1 failed).
+        using Raster<Rgba8> image = Raster.Create(32, 16, new Rgba8(40, 200, 90, 255));
+        using YuvRaster planes = YuvRaster.FromRaster(image, ChromaFormat.Yuv420, YuvColor.Bt601Limited);
+        MemoryStream output = new();
+        using (VideoWriter writer = VideoWriter.Create(output, "mkv", new VideoWriterOptions { Codec = VideoCodecs.Ffv1 }, leaveOpen: true))
+        {
+            writer.WriteFrame(planes);
+            writer.WriteFrame(image);
+            writer.WriteFrame(planes);
+            writer.Finish();
+        }
+
+        using VideoReader reader = VideoReader.Open(new MemoryStream(output.ToArray()), new VideoReaderOptions { Errors = DecodeErrorMode.Throw });
+        List<YuvVideoFrame> frames = [.. reader.ReadFrames()];
+        try
+        {
+            Assert.Equal(3, frames.Count);
+            Assert.All(frames, f => Assert.Equal(ChromaFormat.Yuv420, f.Raster.ChromaFormat));
+            Assert.All(frames, f => Assert.False(f.Raster.HasAlpha));
+            using Raster<Rgba8> middle = frames[1].ToRaster<Rgba8>();
+            Rgba8 pixel = middle.Row(8)[16];
+            Assert.InRange(pixel.G, 195, 205);
+            Assert.InRange(pixel.R, 35, 45);
+        }
+        finally
+        {
+            frames.ForEach(f => f.Dispose());
+        }
+    }
+
+    [Theory]
+    [InlineData(FieldOrder.TopFieldFirst)]
+    [InlineData(FieldOrder.BottomFieldFirst)]
+    public void FieldOrderReachesTheTrackAndTheSlices(FieldOrder order)
+    {
+        // Video 1.2.1: encoding interlaced frames to FFV1 in Matroska dropped the field order.
+        using YuvRaster planes = YuvRaster.Create(32, 16, ChromaFormat.Yuv420, YuvColor.Bt601Limited);
+        using YuvVideoFrame frame = new(planes, MediaTime.Zero) { FieldOrder = order };
+        MemoryStream output = new();
+        using (VideoWriter writer = VideoWriter.Create(output, "mkv", new VideoWriterOptions { Codec = VideoCodecs.Ffv1 }, leaveOpen: true))
+        {
+            writer.WriteFrame(frame);
+            Assert.Equal(order, writer.Track!.FieldOrder);
+            writer.Finish();
+        }
+
+        using VideoReader reader = VideoReader.Open(new MemoryStream(output.ToArray()));
+        Assert.Equal(order, reader.Track.FieldOrder);
+        using YuvVideoFrame back = reader.ReadFrame()!;
+        Assert.Equal(order, back.FieldOrder);
     }
 
     [Theory]

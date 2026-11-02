@@ -54,7 +54,8 @@ public sealed class RawVideoCodec : VideoCodec
 
     /// <summary>
     /// Creates an encoder for planar frames. The layout is the first frame's chroma format, bit depth and alpha, named by
-    /// FourCC when one exists (I420, Y42B, 444P, Y800); RGB frames are converted to 4:2:0 or <see cref="VideoEncoderOptions.ChromaFormat"/>.
+    /// FourCC when one exists (I420, Y42B, 444P, Y800); RGB frames are converted to 4:2:0 or <see cref="VideoEncoderOptions.ChromaFormat"/>,
+    /// and a later frame of another layout to the first one's.
     /// </summary>
     /// <param name="options">The picture size and frame rate.</param>
     /// <param name="context">The context.</param>
@@ -128,6 +129,7 @@ public sealed class RawVideoCodec : VideoCodec
         private readonly Queue<EncodedPacket> _ready = new();
         private RawLayout? _layout;
         private VideoTrackInfo? _track;
+        private YuvColor _color;
 
         public VideoTrackInfo Track => _track ?? Describe(RawLayout.Planar(options.ChromaFormat ?? ChromaFormat.Yuv420, 8, false));
 
@@ -143,11 +145,18 @@ public sealed class RawVideoCodec : VideoCodec
             YuvRaster planes = frame.Planes ?? (converted = YuvRaster.FromRaster(frame.Pixels!, options.ChromaFormat ?? ChromaFormat.Yuv420, new YuvColor(YuvMatrix.Bt601, YuvRange.Limited, ChromaSiting.Left)));
             try
             {
-                _layout ??= RawLayout.Planar(planes.ChromaFormat, planes.BitDepth, planes.HasAlpha);
-                _track ??= Describe(_layout) with { Color = frame.Color };
-                if (!_layout.Matches(planes))
+                if (_layout is null)
                 {
-                    throw new ArgumentException("Every frame must have the first frame's chroma format, bit depth and alpha.", nameof(frame));
+                    _layout = RawLayout.Planar(planes.ChromaFormat, planes.BitDepth, planes.HasAlpha);
+                    _track = Describe(_layout) with { Color = frame.Color };
+                    _color = planes.Color;
+                }
+                else if (!_layout.Matches(planes))
+                {
+                    // Every frame goes out in the first one's layout: an edit mixes source planes with composed RGBA frames.
+                    YuvRaster conformed = LayoutConversion.Convert(frame, _layout.Chroma, _layout.BitDepth, _color, _layout.Alpha);
+                    converted?.Dispose();
+                    converted = planes = conformed;
                 }
 
                 int size = checked((int)_layout.FrameSize(planes.Width, planes.Height));

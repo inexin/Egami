@@ -86,7 +86,8 @@ stream.
 
 `VideoCodecs.Ffv1` writes FFV1 version 3 (RFC 9043), the lossless codec archives use, in Matroska or AVI: a decode gives back
 every sample. Frames given as planes keep their layout (4:2:0, 4:2:2, 4:4:4, 4:1:1, 4:1:0 or gray, with or without alpha, 8 to
-16 bits); RGB rasters, and 4:4:4 planes tagged `YuvMatrix.Identity`, are coded as RGB. The first frame sets the stream's layout.
+16 bits); RGB rasters, and 4:4:4 planes tagged `YuvMatrix.Identity`, are coded as RGB. The first frame sets the stream's layout;
+a later frame of another layout is converted to it, and each frame's `FieldOrder` is coded with it.
 
 The defaults are the archival profile: every frame a keyframe, slice CRCs on (so `Ffv1Codec.Verify` can check the file), the range
 coder with a custom state table, and a slice grid picked from the frame size (16 slices at 1080p). `KeyframeInterval` spaces
