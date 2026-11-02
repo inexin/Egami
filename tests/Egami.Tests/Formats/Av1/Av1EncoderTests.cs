@@ -169,8 +169,8 @@ public class Av1EncoderTests
 
         Av1Encoder palettes = Av1Encoder.Encode(screen, new Av1EncoderSettings { QIndex = 60 });
         Av1Encoder without = Av1Encoder.Encode(screen, new Av1EncoderSettings { QIndex = 60, ScreenContent = false });
-        Assert.Contains(palettes.Reconstruction.Grid, b => b is { PaletteSize: [> 0, _] });
-        Assert.Contains(palettes.Reconstruction.Grid, b => b is { PaletteSize: [_, > 0] });
+        Assert.Contains(palettes.Reconstruction.Grid, b => b is not null && b.PaletteSize[0] > 0);
+        Assert.Contains(palettes.Reconstruction.Grid, b => b is not null && b.PaletteSize[1] > 0);
         Assert.True(palettes.Stream.Length < without.Stream.Length, $"{palettes.Stream.Length} bytes with palettes, {without.Stream.Length} without.");
     }
 

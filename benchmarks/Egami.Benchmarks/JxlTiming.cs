@@ -11,6 +11,25 @@ internal static class JxlTiming
 {
     internal static void Run(string[] files)
     {
+        if (files.Contains("--md5"))
+        {
+            // The decoded pixels' MD5, to check a change decodes the same: -- --time-avif --md5 file.avif.
+            foreach (string file in files.Where(f => !f.StartsWith("--", StringComparison.Ordinal)))
+            {
+                using Raster raster = Raster.Load(File.ReadAllBytes(file), EgamiContext.Default with { MaxParallelism = 1 });
+                using Raster<Pixels.Rgba16> pixels = raster.As<Pixels.Rgba16>();
+                using System.Security.Cryptography.IncrementalHash md5 = System.Security.Cryptography.IncrementalHash.CreateHash(System.Security.Cryptography.HashAlgorithmName.MD5);
+                for (int y = 0; y < pixels.Height; y++)
+                {
+                    md5.AppendData(System.Runtime.InteropServices.MemoryMarshal.AsBytes(pixels.Row(y)));
+                }
+
+                Console.WriteLine($"{file}: MD5={Convert.ToHexStringLower(md5.GetHashAndReset())}");
+            }
+
+            return;
+        }
+
         int[] counts = files.Contains("--one-thread") ? [1] : [1, Environment.ProcessorCount];
         foreach (string file in files.Where(f => !f.StartsWith("--", StringComparison.Ordinal)))
         {

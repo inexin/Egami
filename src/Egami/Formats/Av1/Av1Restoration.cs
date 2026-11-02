@@ -5,7 +5,7 @@ namespace Egami.Formats.Av1;
 /// self-guided filter, applied stripe by stripe (64 luma rows, the first 8 shorter) with the two rows beyond a stripe taken
 /// from the deblocked frame rather than the CDEF output, and samples beyond the frame's edges repeated.
 /// </summary>
-internal static class Av1Restoration
+internal static partial class Av1Restoration
 {
     /// <summary>av1_sgr_params: each self-guided parameter set's radii and scales.</summary>
     private static ReadOnlySpan<int> SgrParams =>
@@ -35,7 +35,7 @@ internal static class Av1Restoration
         }
     }
 
-    private sealed class PlaneFilter<T>
+    private sealed partial class PlaneFilter<T>
         where T : unmanaged
     {
         private readonly T[] _cdef, _deblocked, _output;
@@ -102,7 +102,18 @@ internal static class Av1Restoration
                 int h = Math.Min(nominal, vEnd - v);
                 _stripeStart = (stripe * fullStripe) - offset;
                 _stripeEnd = _stripeStart + fullStripe - 1;
-                if (unit.Type == 1)
+                if (System.Runtime.Intrinsics.X86.Avx2.IsSupported)
+                {
+                    if (unit.Type == 1)
+                    {
+                        WienerVector(ref unit, hStart, hEnd, v, h);
+                    }
+                    else
+                    {
+                        SelfGuidedVector(ref unit, hStart, hEnd, v, h);
+                    }
+                }
+                else if (unit.Type == 1)
                 {
                     Wiener(ref unit, hStart, hEnd, v, h);
                 }

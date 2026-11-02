@@ -15,7 +15,6 @@ internal sealed partial class Av1Reconstructor<T>
 
     private readonly int[] _pred0 = new int[128 * 128];
     private readonly int[] _pred1 = new int[128 * 128];
-    private readonly int[] _intermediate = new int[MaxIntermediate * 128];
     private readonly byte[] _mask = new byte[128 * 128];
     private int _maskStride;
 
@@ -299,43 +298,7 @@ internal sealed partial class Av1Reconstructor<T>
             return;
         }
 
-        int interH = ((((h - 1) * stepY) + (1 << 10) - 1) >> 10) + 8;
-        int[] inter = _intermediate;
-        int half0 = 1 << (round0 - 1), half1 = 1 << (round1 - 1);
-        for (int r = 0; r < interH; r++)
-        {
-            int row = Math.Clamp((y >> 10) + r - 3, 0, lastY) * stride;
-            for (int c = 0; c < w; c++)
-            {
-                int p = x + (stepX * c);
-                int f = ((p >> 6) & 15) * 8;
-                int col = (p >> 10) - 3;
-                int s = 0;
-                for (int t = 0; t < 8; t++)
-                {
-                    s += fx[f + t] * Av1Samples.Get(src[row + Math.Clamp(col + t, 0, lastX)]);
-                }
-
-                inter[(r * w) + c] = (s + half0) >> round0;
-            }
-        }
-
-        for (int r = 0; r < h; r++)
-        {
-            int p = (y & 1023) + (stepY * r);
-            int f = ((p >> 6) & 15) * 8;
-            int baseRow = (p >> 10) * w;
-            for (int c = 0; c < w; c++)
-            {
-                int s = 0;
-                for (int t = 0; t < 8; t++)
-                {
-                    s += fy[f + t] * inter[baseRow + (t * w) + c];
-                }
-
-                pred[(r * w) + c] = (s + half1) >> round1;
-            }
-        }
+        ScaledPrediction(src, stride, lastX, lastY, x, y, stepX, stepY, w, h, fx, fy, round0, round1, pred);
     }
 
     /// <summary>The distance weights process: the two predictions' weights from the references' distances.</summary>

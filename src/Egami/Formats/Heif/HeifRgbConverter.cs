@@ -1,5 +1,7 @@
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
+using System.Runtime.Intrinsics.X86;
 
 namespace Egami.Formats.Heif;
 
@@ -185,7 +187,31 @@ internal sealed class HeifRgbConverter : IHeifRgbConverter
             int last = Math.Min(c.ChromaWidth - 1, ((x + width - 1) >> ssx) + 1);
             count = last - first + 1;
             terms = System.Buffers.ArrayPool<float>.Shared.Rent(8 * count);
-            for (int k = 0; k < count; k++)
+            int k0 = 0;
+            if (Vector256.IsHardwareAccelerated)
+            {
+                // Eight chroma samples at a time: each lookup is the table's value worked out as the table was.
+                Vector256<int> maxV = Vector256.Create(max);
+                Vector256<float> bias = Vector256.Create(_biasUv), range = Vector256.Create(_rangeUv);
+                ref ushort u0 = ref MemoryMarshal.GetArrayDataReference(uPlane), v0 = ref MemoryMarshal.GetArrayDataReference(vPlane);
+                ref float t0 = ref MemoryMarshal.GetArrayDataReference(terms);
+                for (; k0 + 8 <= count; k0 += 8)
+                {
+                    int at = uvRow + first + k0;
+                    Vector256<float> u = Lookup(ref u0, at, maxV, bias, range), ua = Lookup(ref u0, at + adjRow, maxV, bias, range);
+                    Vector256<float> v = Lookup(ref v0, at, maxV, bias, range), va = Lookup(ref v0, at + adjRow, maxV, bias, range);
+                    (u * (9.0f / 16.0f)).StoreUnsafe(ref t0, (nuint)k0);
+                    (u * (3.0f / 16.0f)).StoreUnsafe(ref t0, (nuint)(count + k0));
+                    (ua * (3.0f / 16.0f)).StoreUnsafe(ref t0, (nuint)((2 * count) + k0));
+                    (ua * (1.0f / 16.0f)).StoreUnsafe(ref t0, (nuint)((3 * count) + k0));
+                    (v * (9.0f / 16.0f)).StoreUnsafe(ref t0, (nuint)((4 * count) + k0));
+                    (v * (3.0f / 16.0f)).StoreUnsafe(ref t0, (nuint)((5 * count) + k0));
+                    (va * (3.0f / 16.0f)).StoreUnsafe(ref t0, (nuint)((6 * count) + k0));
+                    (va * (1.0f / 16.0f)).StoreUnsafe(ref t0, (nuint)((7 * count) + k0));
+                }
+            }
+
+            for (int k = k0; k < count; k++)
             {
                 int at = uvRow + first + k;
                 float u = tableUv[Math.Min(uPlane[at], max)], ua = tableUv[Math.Min(uPlane[at + adjRow], max)];
@@ -288,8 +314,16 @@ internal sealed class HeifRgbConverter : IHeifRgbConverter
         {
             if (terms is not null)
             {
-                // The bilinear chroma of each pixel, summed as WriteCoefficients sums it.
-                for (int i = 0; i < width; i++)
+                // The bilinear chroma of each pixel, summed as WriteCoefficients sums it: eight at a time from the first even column
+                // past the frame's first, where halved chroma allows, and one at a time before and after.
+                int start = 0;
+                while (start < width && ((x + start) < 2 || ((x + start) & 1) != 0))
+                {
+                    start++;
+                }
+
+                int end = ssx == 1 && Avx2.IsSupported ? HorizontalPairs(x, start, width, terms, first, count, cbs, crs) : start;
+                for (int i = start == 0 ? end : 0; i < width; i = i + 1 == start ? end : i + 1)
                 {
                     int px = x + i;
                     int k = (px >> ssx) - first;
@@ -338,19 +372,26 @@ internal sealed class HeifRgbConverter : IHeifRgbConverter
                 Vector256.ConvertToInt32(half + (r * maxF)).StoreUnsafe(ref rgbRef, 0);
                 Vector256.ConvertToInt32(half + (g * maxF)).StoreUnsafe(ref rgbRef, 8);
                 Vector256.ConvertToInt32(half + (b * maxF)).StoreUnsafe(ref rgbRef, 16);
-                for (int k = 0, at = i * 3; k < 8; k++, at += 3)
+                if (!wide && Ssse3.IsSupported)
                 {
-                    if (wide)
+                    StoreRgb8(ref rgbRef, target.Slice(i * 3, 24));
+                }
+                else
+                {
+                    for (int k = 0, at = i * 3; k < 8; k++, at += 3)
                     {
-                        words[at] = (ushort)rgb[k];
-                        words[at + 1] = (ushort)rgb[8 + k];
-                        words[at + 2] = (ushort)rgb[16 + k];
-                    }
-                    else
-                    {
-                        target[at] = (byte)rgb[k];
-                        target[at + 1] = (byte)rgb[8 + k];
-                        target[at + 2] = (byte)rgb[16 + k];
+                        if (wide)
+                        {
+                            words[at] = (ushort)rgb[k];
+                            words[at + 1] = (ushort)rgb[8 + k];
+                            words[at + 2] = (ushort)rgb[16 + k];
+                        }
+                        else
+                        {
+                            target[at] = (byte)rgb[k];
+                            target[at + 1] = (byte)rgb[8 + k];
+                            target[at + 2] = (byte)rgb[16 + k];
+                        }
                     }
                 }
 
@@ -366,9 +407,63 @@ internal sealed class HeifRgbConverter : IHeifRgbConverter
             System.Buffers.ArrayPool<float>.Shared.Return(crs);
         }
 
+        // Eight pixels' 8-bit red, green and blue (each 0 to 255, at 0, 8 and 16 of rgb), interleaved into 24 bytes.
+        static void StoreRgb8(ref int rgb, Span<byte> to)
+        {
+            Vector128<short> r = Sse41.PackUnsignedSaturate(Vector128.LoadUnsafe(ref rgb), Vector128.LoadUnsafe(ref rgb, 4)).AsInt16();
+            Vector128<short> g = Sse41.PackUnsignedSaturate(Vector128.LoadUnsafe(ref rgb, 8), Vector128.LoadUnsafe(ref rgb, 12)).AsInt16();
+            Vector128<short> b = Sse41.PackUnsignedSaturate(Vector128.LoadUnsafe(ref rgb, 16), Vector128.LoadUnsafe(ref rgb, 20)).AsInt16();
+            Vector128<byte> rg = Sse2.PackUnsignedSaturate(r, g), bb = Sse2.PackUnsignedSaturate(b, b);
+            const byte Z = 0x80;
+            Vector128<byte> head = Ssse3.Shuffle(rg, Vector128.Create((byte)0, 8, Z, 1, 9, Z, 2, 10, Z, 3, 11, Z, 4, 12, Z, 5))
+                | Ssse3.Shuffle(bb, Vector128.Create(Z, Z, 0, Z, Z, 1, Z, Z, 2, Z, Z, 3, Z, Z, 4, Z));
+            Vector128<byte> tail = Ssse3.Shuffle(rg, Vector128.Create((byte)13, Z, 6, 14, Z, 7, 15, Z, Z, Z, Z, Z, Z, Z, Z, Z))
+                | Ssse3.Shuffle(bb, Vector128.Create(Z, 5, Z, Z, 6, Z, Z, 7, Z, Z, Z, Z, Z, Z, Z, Z));
+            head.StoreUnsafe(ref MemoryMarshal.GetReference(to));
+            Unsafe.WriteUnaligned(ref to[16], tail.AsUInt64().ToScalar());
+        }
+
         // Eight samples widened to 32 bits, at most the largest code value (as the scalar path's lookups clamp them).
         static Vector256<int> Sample(ref ushort plane, int at, Vector256<int> max) =>
             Vector256.Min(Vector256.WidenLower(Vector128.LoadUnsafe(ref plane, (nuint)at).ToVector256()).AsInt32(), max);
+    }
+
+    /// <summary>Eight samples' table values, (sample - bias) / range with the sample at most the largest code value, as the tables hold them.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static Vector256<float> Lookup(ref ushort plane, int at, Vector256<int> max, Vector256<float> bias, Vector256<float> range) =>
+        (Vector256.ConvertToSingle(Vector256.Min(Vector256.WidenLower(Vector128.LoadUnsafe(ref plane, (nuint)at).ToVector256()).AsInt32(), max)) - bias) / range;
+
+    /// <summary>
+    /// The bilinear chroma of horizontally halved planes, eight pixels at a time from <paramref name="start"/> (an even column past
+    /// the frame's first): the four chroma samples under them each serve two pixels, an even pixel's horizontal neighbour is the
+    /// sample before its own and an odd pixel's the one after, summed in WriteCoefficients' order. Stops before the frame's last
+    /// column, which has no neighbour, and returns the pixel it stopped at.
+    /// </summary>
+    private int HorizontalPairs(int x, int start, int width, float[] terms, int first, int count, float[] cbs, float[] crs)
+    {
+        Vector256<int> pairs = Vector256.Create(0, 0, 1, 1, 2, 2, 3, 3), sides = Vector256.Create(0, 4, 1, 5, 2, 6, 3, 7);
+        ref float t = ref MemoryMarshal.GetArrayDataReference(terms);
+        int i = start;
+        for (; i + 8 <= width && x + i + 8 <= _color.Width - 1; i += 8)
+        {
+            int k = ((x + i) >> 1) - first;
+            Sum(ref t, k, count, 0, pairs, sides).StoreUnsafe(ref cbs[i]);
+            Sum(ref t, k, count, 4, pairs, sides).StoreUnsafe(ref crs[i]);
+        }
+
+        return i;
+
+        // ((t0[k] + t1[k + adj]) + t2[k]) + t3[k + adj] for the eight pixels, from term rows from to from + 3.
+        static Vector256<float> Sum(ref float t, int k, int count, int from, Vector256<int> pairs, Vector256<int> sides)
+        {
+            Vector256<float> own0 = Avx2.PermuteVar8x32(Vector128.LoadUnsafe(ref t, (nuint)((from * count) + k)).ToVector256Unsafe(), pairs);
+            Vector256<float> side1 = Avx2.PermuteVar8x32(Vector256.Create(Vector128.LoadUnsafe(ref t, (nuint)(((from + 1) * count) + k - 1)),
+                Vector128.LoadUnsafe(ref t, (nuint)(((from + 1) * count) + k + 1))), sides);
+            Vector256<float> own2 = Avx2.PermuteVar8x32(Vector128.LoadUnsafe(ref t, (nuint)(((from + 2) * count) + k)).ToVector256Unsafe(), pairs);
+            Vector256<float> side3 = Avx2.PermuteVar8x32(Vector256.Create(Vector128.LoadUnsafe(ref t, (nuint)(((from + 3) * count) + k - 1)),
+                Vector128.LoadUnsafe(ref t, (nuint)(((from + 3) * count) + k + 1))), sides);
+            return ((own0 + side1) + own2) + side3;
+        }
     }
 
     /// <summary>Converts <paramref name="width"/> pixels of row <paramref name="y"/> from column <paramref name="x"/> into <paramref name="row"/> (<see cref="Channels"/> samples each).</summary>

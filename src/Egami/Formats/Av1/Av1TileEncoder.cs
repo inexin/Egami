@@ -146,7 +146,7 @@ internal sealed partial class Av1TileEncoder : Av1TileCoder
             if (partition == Partition.None)
             {
                 noneCost = cost;
-                noneMode = cost != long.MaxValue && _frame.Grid[(miRow * _miCols) + miCol] is { UseIntrabc: false, PaletteSize: [0, _] } noneBlock
+                noneMode = cost != long.MaxValue && _frame.Grid[(miRow * _miCols) + miCol] is { UseIntrabc: false } noneBlock && noneBlock.PaletteSize[0] == 0
                     ? noneBlock.YMode : -1;
             }
             else if (partition == Partition.Split)

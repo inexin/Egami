@@ -190,6 +190,7 @@ internal sealed class Av1Stream
         }
 
         Av1MotionField.Save(frame);
+        frame.Header.ReleaseReferences();
         for (int i = 0; i < 8; i++)
         {
             if (((frame.Header.RefreshFrameFlags >> i) & 1) != 0)

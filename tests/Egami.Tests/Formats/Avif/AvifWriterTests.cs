@@ -262,7 +262,7 @@ public class AvifWriterTests
         HeifFile heif = HeifFile.Parse(file, "AVIF");
         Av1Frame frame = Av1Decoder.DecodeFirstFrame(heif.ItemData(heif.PrimaryItem!).ToArray(), "AVIF", cancellationToken: TestContext.Current.CancellationToken);
         Assert.True(frame.Header.AllowIntrabc);
-        Assert.Contains(frame.Grid, b => b is { PaletteSize: [> 0, _] });
+        Assert.Contains(frame.Grid, b => b is not null && b.PaletteSize[0] > 0);
         Assert.Contains(frame.Grid, b => b is { UseIntrabc: true });
     }
 
