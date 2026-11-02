@@ -43,6 +43,10 @@ internal static class RunVideoCommand
         ["--no-slice-crc"] = false,
         ["--coder"] = true,
         ["--context"] = true,
+        [Deinterlacing.Mode] = false,
+        [Deinterlacing.Rate] = true,
+        [Deinterlacing.Frames] = true,
+        [Deinterlacing.Order] = true,
     };
 
     /// <summary>The command, for help; the tool parses run's arguments itself, since steps carry their own options.</summary>
@@ -61,6 +65,7 @@ internal static class RunVideoCommand
         command.Options.Add(new Option<string?>("--format", "-f") { Description = "The output container (mkv, avi …), when the output's extension does not say.", HelpName = "container" });
         command.Options.Add(new Option<string?>("--codec") { Description = "The video codec to encode with: mjpeg, vp8, vp9, av1, ffv1 or raw. The input's codec when Egami.Video can encode it, else mjpeg.", HelpName = "codec" });
         EncoderExtras.AddTo(command);
+        Deinterlacing.AddTo(command);
         command.Options.Add(new Option<int?>("--quality") { Description = "The encoder's quality from 1 to 100.", HelpName = "1-100" });
         command.Options.Add(new Option<string?>("--crop") { Description = "auto finds the black bars of letterbox, pillarbox and windowbox video, as the analyze command's crop detector does, and crops them off before the other steps.", HelpName = "auto" });
         command.Options.Add(new Option<string?>("--rate") { Description = "Frames per second of the output, dropping or repeating frames to match; frames keep their own times by default.", HelpName = "fps" });
@@ -197,6 +202,7 @@ internal static class RunVideoCommand
             Windows = stepWindows,
             Audio = AudioPlan(own),
             Extras = EncoderExtras.Parse(name => own.ContainsKey(name) ? Last(own, name) ?? string.Empty : null),
+            Deinterlace = Deinterlacing.Parse(name => own.ContainsKey(name) ? Last(own, name) ?? string.Empty : null),
         };
 
         if (parsed.Flags.Contains("--dry-run"))
@@ -376,7 +382,14 @@ internal static class RunVideoCommand
                 _ => name,
             };
             string value = "true";
-            if (takesValue)
+            if (canonical == Deinterlacing.Mode)
+            {
+                // --deinterlace takes its mode only when one follows: --deinterlace bob, --deinterlace=bob, or --deinterlace alone.
+                value = equals > 0 && name != token ? token[(equals + 1)..]
+                    : i + 1 < args.Length && args[i + 1] is "adaptive" or "bob" ? args[++i]
+                    : string.Empty;
+            }
+            else if (takesValue)
             {
                 value = equals > 0 && name != token ? token[(equals + 1)..]
                     : i + 1 < args.Length && args[i + 1] != "+" ? args[++i]
@@ -505,6 +518,9 @@ internal static class RunVideoCommand
         /// <summary>Gets the keyframe interval and FFV1 settings.</summary>
         public EncoderExtras Extras { get; init; } = new();
 
+        /// <summary>Gets how the frames are deinterlaced before the steps, or <see langword="null"/> to take them as they are.</summary>
+        public Filters.DeinterlacerOptions? Deinterlace { get; init; }
+
         /// <summary>Decodes an input's video, runs the steps over every frame and encodes the frames into <paramref name="target"/>.</summary>
         public void Run(VideoSession session, InputFile input, MediaTarget target, int count)
         {
@@ -522,7 +538,7 @@ internal static class RunVideoCommand
             VideoWriterOptions options = new()
             {
                 Codec = encoder,
-                FrameRate = rate ?? (track.FrameRate is { Numerator: > 0 } own ? own : new Rational(30, 1)),
+                FrameRate = rate ?? Deinterlacing.OutputRate(track.FrameRate is { Numerator: > 0 } own ? own : new Rational(30, 1), Deinterlace)!.Value,
                 Quality = quality,
 
                 // Uncompressed output keeps every pixel's color; other codecs take their usual subsampling.
@@ -541,11 +557,11 @@ internal static class RunVideoCommand
                 FrameSteps frames = new(session, input.Display, steps, Windows);
                 if (rate is { } fps)
                 {
-                    Resample(source, writer, frames, others, progress, fps);
+                    Resample(source.Frames(Deinterlace, session.Context), source, writer, frames, others, progress, fps);
                 }
                 else
                 {
-                    foreach (YuvVideoFrame frame in source.Frames())
+                    foreach (YuvVideoFrame frame in source.Frames(Deinterlace, session.Context))
                     {
                         using (frame)
                         {
@@ -591,7 +607,7 @@ internal static class RunVideoCommand
         }
 
         /// <summary>Writes the frames shown at each step of <paramref name="fps"/>, from the first frame's time: frames are dropped or repeated.</summary>
-        private static void Resample(FrameSource source, VideoWriter writer, FrameSteps frames, OtherPackets others, JobProgress progress, Rational fps)
+        private static void Resample(IEnumerable<YuvVideoFrame> decoded, FrameSource source, VideoWriter writer, FrameSteps frames, OtherPackets others, JobProgress progress, Rational fps)
         {
             YuvVideoFrame? held = null;
             MediaTime start = MediaTime.Zero;
@@ -601,7 +617,7 @@ internal static class RunVideoCommand
             MediaTime Slot(long k) => start + new MediaTime(k, step);
             try
             {
-                foreach (YuvVideoFrame frame in source.Frames())
+                foreach (YuvVideoFrame frame in decoded)
                 {
                     progress.Frame(frame.Timestamp);
                     if (held is null)

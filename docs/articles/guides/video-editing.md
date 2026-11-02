@@ -150,6 +150,16 @@ bit depth, chroma, color and, for AV1, sequence header), its packets are copied 
 the encoder starts again with a keyframe after each copied part. A source that does not match is encoded as usual, with a
 `MediaWarning`. The sound is always mixed and encoded. It is off by default.
 
+## Interlaced clips
+
+`Clip.Deinterlace` deinterlaces a clip's frames as the edit decodes them, with the `Deinterlacer` of the
+[video guide](video.md#deinterlacing): adaptive or bob, at the frame or the field rate. It is off by default, so edits render
+as they always did; turn it on for interlaced sources, such as broadcast H.264. At the field rate a canvas at the field rate
+(50 fps for 50i) shows every field. The setting is kept in the edit's JSON, and `--deinterlace` sets it on the CLI's editing
+commands. A deinterlaced clip is always encoded again, never copied by smart render.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/VideoFilters.cs#edit-deinterlace)]
+
 ## Stabilizing
 
 Stabilizing takes two passes, like FFmpeg's vidstabdetect and vidstabtransform. `Stabilizer.Analyze` measures the camera's

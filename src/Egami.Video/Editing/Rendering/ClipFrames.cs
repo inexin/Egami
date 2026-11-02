@@ -109,6 +109,7 @@ internal abstract class ClipFrames(ClipTiming timing) : IDisposable
 internal sealed class FileFrames : ClipFrames
 {
     private readonly VideoReader? _reader;
+    private readonly Filters.Deinterlacer? _deinterlacer;
     private readonly MediaContext _context;
     private readonly MediaTime _in;
     private readonly List<YuvVideoFrame> _window = [];
@@ -117,6 +118,7 @@ internal sealed class FileFrames : ClipFrames
     private Raster<Rgba8>? _current;
     private MediaTime _currentTime;
     private bool _ended;
+    private bool _drained;
 
     public FileFrames(Clip clip, SourceInfo info, ClipTiming timing, MediaContext context)
         : base(timing)
@@ -136,6 +138,11 @@ internal sealed class FileFrames : ClipFrames
             FileClipSource f => VideoReader.Open(f.Path, options, context),
             _ => throw new InvalidOperationException(),
         };
+        if (clip.Deinterlacing is { } deinterlacing)
+        {
+            _deinterlacer = new Filters.Deinterlacer(_reader.Track, deinterlacing, context);
+        }
+
         if (_in > MediaTime.Zero && !timing.Reversed)
         {
             _reader.Seek(_in);
@@ -148,6 +155,7 @@ internal sealed class FileFrames : ClipFrames
         _planes?.Dispose();
         _current?.Dispose();
         ClearWindow();
+        _deinterlacer?.Dispose();
         _reader?.Dispose();
     }
 
@@ -186,12 +194,12 @@ internal sealed class FileFrames : ClipFrames
             _next = null;
             Drop();
             _ended = false;
-            _reader!.Seek(target);
+            Seek(target, SeekMode.Exact);
         }
 
         while (!_ended)
         {
-            _next ??= _reader!.ReadFrame();
+            _next ??= Read();
             if (_next is null)
             {
                 _ended = true;
@@ -263,8 +271,8 @@ internal sealed class FileFrames : ClipFrames
         ClearWindow();
         _next?.Dispose();
         _next = null;
-        _reader!.Seek(target, SeekMode.Keyframe);
-        while (_reader.ReadFrame() is { } frame)
+        Seek(target, SeekMode.Keyframe);
+        while (Read() is { } frame)
         {
             if (frame.Timestamp > target && _window.Count > 0)
             {
@@ -274,6 +282,45 @@ internal sealed class FileFrames : ClipFrames
 
             _window.Add(frame);
         }
+    }
+
+    /// <summary>The next frame, deinterlaced when the clip asks.</summary>
+    private YuvVideoFrame? Read()
+    {
+        if (_deinterlacer is null)
+        {
+            return _reader!.ReadFrame();
+        }
+
+        while (true)
+        {
+            if (_deinterlacer.TryReceive(out YuvVideoFrame? ready))
+            {
+                return ready;
+            }
+
+            if (_drained)
+            {
+                return null;
+            }
+
+            using YuvVideoFrame? frame = _reader!.ReadFrame();
+            if (frame is null)
+            {
+                _deinterlacer.Flush();
+                _drained = true;
+                continue;
+            }
+
+            _deinterlacer.Send(frame);
+        }
+    }
+
+    private void Seek(MediaTime target, SeekMode mode)
+    {
+        _reader!.Seek(target, mode);
+        _deinterlacer?.Reset();
+        _drained = false;
     }
 
     private MediaTime Spacing() => _window.Count > 1 ? Times.Sub(_window[^1].Timestamp, _window[^2].Timestamp) : MediaTime.Zero;

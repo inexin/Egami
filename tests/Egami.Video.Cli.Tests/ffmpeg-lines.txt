@@ -75,6 +75,14 @@
 => run in.mkv pad 1920 1080 -o out.mkv | ffmpeg -i in.mkv -vf pad=1920:1080:(ow-iw)/2:(oh-ih)/2 -c:v mjpeg out.mkv
 => run in.mkv rotate 90 -o out.mkv | ffmpeg -i in.mkv -vf transpose=1 -c:v mjpeg out.mkv
 => run in.mkv rotate 270 -o out.mkv | ffmpeg -i in.mkv -vf transpose=2 -c:v mjpeg out.mkv
+=> run in.mkv --deinterlace adaptive --deinterlace-rate frame --deinterlace-frames all -o out.mkv | ffmpeg -i in.mkv -vf yadif -c:v mjpeg out.mkv
+=> run in.ts --deinterlace adaptive --deinterlace-rate field --deinterlace-frames flagged -o out.mkv | ffmpeg -i in.ts -vf yadif=1:-1:1 out.mkv
+=> run in.mkv --deinterlace adaptive --deinterlace-rate frame --field-order bff --deinterlace-frames all resize 1280x720! -o out.mkv | ffmpeg -i in.mkv -vf yadif=mode=send_frame:parity=bff,scale=1280:720 out.mkv
+=> run in.mkv --deinterlace adaptive --deinterlace-rate field --deinterlace-frames all -o out.mkv | ffmpeg -i in.mkv -vf bwdif out.mkv
+=> encode - -o out.mkv --deinterlace adaptive --deinterlace-rate frame --deinterlace-frames all | ffmpeg -f yuv4mpegpipe -i - -vf yadif out.mkv
+=> frames in.mkv -o f{frame:000}.png --deinterlace adaptive --deinterlace-rate frame --deinterlace-frames all | ffmpeg -i in.mkv -vf yadif f%03d.png
+!! yadif mode=4 | ffmpeg -i in.mkv -vf yadif=4 out.mkv
+!! -vf yadif to an animation | ffmpeg -i in.mkv -vf yadif out.gif
 => run in.mkv rotate 270 + flip vertical -o out.mkv | ffmpeg -i in.mkv -vf transpose=0 -c:v mjpeg out.mkv
 => run in.mkv flip horizontal -o out.mkv | ffmpeg -i in.mkv -vf hflip -c:v mjpeg out.mkv
 => run in.mkv flip vertical + flip horizontal -o out.mkv | ffmpeg -i in.mkv -vf vflip,hflip -c:v mjpeg out.mkv

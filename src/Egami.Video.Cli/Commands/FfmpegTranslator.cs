@@ -188,6 +188,7 @@ internal static class FfmpegTranslator
             return [[.. segment]];
         }
 
+        List<string> deinterlace = TakeDeinterlace(line, session);
         bool imagesIn = first.Format is "image2" || first.Path.Contains('%', StringComparison.Ordinal) || ImageExtensions.Contains(System.IO.Path.GetExtension(first.Path).ToLowerInvariant());
         if (imagesIn || first.Format == "yuv4mpegpipe")
         {
@@ -214,18 +215,30 @@ internal static class FfmpegTranslator
 
             if (line.VideoFilter is not null)
             {
-                throw FfmpegMode.Unsupported($"-vf {line.VideoFilter}", why: "egami-video encode takes no filters; resize with -s");
+                throw FfmpegMode.Unsupported($"-vf {line.VideoFilter}", why: "egami-video encode takes no filters but yadif and bwdif; resize with -s");
             }
 
-            return [[.. encode]];
+            if (deinterlace.Count > 0 && imagesIn)
+            {
+                throw FfmpegMode.Unsupported("-vf yadif with images", why: "egami-video deinterlaces a video's frames");
+            }
+
+            return [[.. encode, .. deinterlace]];
         }
 
         if (line.Inputs.Count > 1)
         {
-            return [Embed(line, outputWords, common)];
+            return deinterlace.Count > 0
+                ? throw FfmpegMode.Unsupported("-vf yadif with several inputs", why: "egami-video's editing commands take --deinterlace themselves")
+                : [Embed(line, outputWords, common)];
         }
 
         List<string> steps = Filters(line.VideoFilter, out string? fps, out string? special);
+        if (deinterlace.Count > 0 && special is not null)
+        {
+            throw FfmpegMode.Unsupported($"-vf yadif with {special.Split('|')[0]}", why: "thumbnail, select and tile run on their own");
+        }
+
         if (special is not null)
         {
             string[] parts = special.Split('|');
@@ -239,6 +252,11 @@ internal static class FfmpegTranslator
 
         if (extension is ".gif" or ".apng" || (extension == ".webp" && !line.Codecs.ContainsKey("v")))
         {
+            if (deinterlace.Count > 0)
+            {
+                throw FfmpegMode.Unsupported("-vf yadif to an animation", why: "egami-video deinterlaces into video and images");
+            }
+
             List<string> animate = ["animate", input, "-o", output, .. Range(line, first, durations: false), .. common];
             if ((fps ?? line.Rate) is { } rate)
             {
@@ -259,14 +277,14 @@ internal static class FfmpegTranslator
 
         if (ImageExtensions.Contains(extension) || line.Format == "image2" || output.Contains('%', StringComparison.Ordinal))
         {
-            return [Frames(line, first, input, output, steps, fps, common)];
+            return [[.. Frames(line, first, input, output, steps, fps, common), .. deinterlace]];
         }
 
         bool copiesAudio = (line.Codecs.TryGetValue("a", out string? audioCopy) ? audioCopy : line.Codecs.GetValueOrDefault(string.Empty)) == "copy";
         bool audioJob = filtered is not null || AudioExtensions.Contains(extension) || (CopyableAudioExtensions.Contains(extension) && !copiesAudio) || line.NoVideo || line.SampleRate is not null || line.Channels is not null || line.SampleFormat is not null
             || line.AudioBitrate is not null
             || (line.Codecs.TryGetValue("a", out string? audioCodec) && audioCodec != "copy");
-        if (audioJob)
+        if (audioJob && deinterlace.Count == 0)
         {
             List<string> audio = ["audio", input, .. outputWords, .. Streams(line), .. common];
             if (line.Codecs.TryGetValue("a", out string? codec) && codec != "copy")
@@ -307,9 +325,9 @@ internal static class FfmpegTranslator
             return [[.. audio]];
         }
 
-        if (steps.Count > 0 || (line.Codecs.TryGetValue("v", out string? videoCodec) && videoCodec != "copy") || line.Size is not null || line.Quality is not null)
+        if (steps.Count > 0 || deinterlace.Count > 0 || (line.Codecs.TryGetValue("v", out string? videoCodec) && videoCodec != "copy") || line.Size is not null || line.Quality is not null)
         {
-            List<string> run = ["run", input, .. steps];
+            List<string> run = ["run", input, .. deinterlace, .. steps];
             if (line.Size is { } size)
             {
                 run.AddRange([.. steps.Count > 0 ? (string[])["+"] : [], "resize", size + "!"]);
@@ -384,6 +402,73 @@ internal static class FfmpegTranslator
         return cut
             ? [["trim", input, .. outputWords, .. Range(line, first), .. Streams(line), .. common]]
             : [["remux", input, .. outputWords, .. Streams(line), .. common]];
+    }
+
+    /// <summary>
+    /// Takes yadif and bwdif out of the <c>-vf</c> chain and returns the deinterlace options they ask for (empty for none): both
+    /// run as the adaptive deinterlacer. mode gives the rate (send_frame or send_field; the nospatial modes keep the spatial
+    /// check), parity the field order (auto takes the frames' and the track's) and deint the frames (all or interlaced). bwdif's
+    /// own refinements, a cubic spatial guess and blending where fields differ, are not implemented.
+    /// </summary>
+    private static List<string> TakeDeinterlace(FfmpegLine line, VideoSession session)
+    {
+        List<string> words = [];
+        if (line.VideoFilter is not { } chain)
+        {
+            return words;
+        }
+
+        List<string> rest = [];
+        foreach (string filter in SplitChain(chain))
+        {
+            int equals = filter.IndexOf('=', StringComparison.Ordinal);
+            string name = (equals < 0 ? filter : filter[..equals]).Trim();
+            if (name is not ("yadif" or "bwdif"))
+            {
+                rest.Add(filter);
+                continue;
+            }
+
+            if (words.Count > 0)
+            {
+                throw FfmpegMode.Unsupported($"-vf {chain}", why: "one deinterlace filter is");
+            }
+
+            string[] options = equals < 0 ? [] : Positional(filter[(equals + 1)..].Trim(), ["mode", "parity", "deint"]);
+            string mode = options.Length > 0 && options[0].Length > 0 ? options[0] : name == "bwdif" ? "send_field" : "send_frame";
+            string rate = mode switch
+            {
+                "0" or "send_frame" or "2" or "send_frame_nospatial" => "frame",
+                "1" or "send_field" or "3" or "send_field_nospatial" => "field",
+                _ => throw FfmpegMode.Unsupported($"{name} mode={mode}", why: "send_frame and send_field are"),
+            };
+            words.AddRange([Deinterlacing.Mode, "adaptive", Deinterlacing.Rate, rate]);
+            string parity = options.Length > 1 ? options[1] : string.Empty;
+            if (parity is not ("" or "-1" or "auto"))
+            {
+                words.AddRange([Deinterlacing.Order, parity switch
+                {
+                    "0" or "tff" => "tff",
+                    "1" or "bff" => "bff",
+                    _ => throw FfmpegMode.Unsupported($"{name} parity={parity}", why: "auto, tff and bff are"),
+                }]);
+            }
+
+            string deint = options.Length > 2 ? options[2] : string.Empty;
+            words.AddRange([Deinterlacing.Frames, deint switch
+            {
+                "" or "0" or "all" => "all",
+                "1" or "interlaced" => "flagged",
+                _ => throw FfmpegMode.Unsupported($"{name} deint={deint}", why: "all and interlaced are"),
+            }]);
+            if (name == "bwdif")
+            {
+                session.Warn("bwdif runs as egami-video's adaptive deinterlacer; its cubic interpolation and blending are not implemented.");
+            }
+        }
+
+        line.VideoFilter = rest.Count > 0 ? string.Join(',', rest) : null;
+        return words;
     }
 
     /// <summary>

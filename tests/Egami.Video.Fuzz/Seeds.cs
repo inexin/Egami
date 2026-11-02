@@ -252,6 +252,7 @@ internal static class Seeds
         WriteTrim(directory);
         WriteFfv1(directory);
         WriteAudioFilters(directory);
+        WriteDeinterlace(directory);
         File.WriteAllBytes(Path.Combine(y4m, "420.y4m"), [.. "YUV4MPEG2 W4 H2 F25:1 Ip A1:1 C420jpeg XCOLORRANGE=FULL\n"u8, .. "FRAME\n"u8, .. new byte[12], .. "FRAME\n"u8, .. new byte[12]]);
         File.WriteAllBytes(Path.Combine(y4m, "444p10.y4m"), [.. "YUV4MPEG2 W2 H2 F30000:1001 It A4:3 C444p10\n"u8, .. "FRAME\n"u8, .. new byte[24]]);
 
@@ -276,6 +277,24 @@ internal static class Seeds
             Chapters = [new ChapterInfo(MediaTime.Zero, new MediaTime(1, new Rational(1, 25)), "c")],
             Attachments = [new AttachmentInfo("cover.jpg", "image/jpeg", frame)],
         }));
+    }
+
+    /// <summary>Video 1.2.0 deinterlace seeds: settings bytes for each mode, rate and layout, then a ramp and noise to fill the planes.</summary>
+    public static void WriteDeinterlace(string directory)
+    {
+        string folder = Directory.CreateDirectory(Path.Combine(directory, "deinterlace")).FullName;
+        Random random = new(120);
+        for (int seed = 0; seed < 8; seed++)
+        {
+            byte[] settings = [64, 36, (byte)(seed % 6), (byte)(seed % 4), (byte)(seed & 1), (byte)(seed >> 1), (byte)(seed >> 2), (byte)seed, (byte)(seed % 3), 5, 0xF6, 7, 9, 0, 0, 0];
+            byte[] pixels = new byte[4096];
+            for (int i = 0; i < pixels.Length; i++)
+            {
+                pixels[i] = seed % 2 == 0 ? (byte)(i * 7) : (byte)random.Next(256);
+            }
+
+            File.WriteAllBytes(Path.Combine(folder, $"frames{seed}.bin"), [.. settings, .. pixels]);
+        }
     }
 
     /// <summary>V9.1 audio filter seeds: settings bytes over a second of noise, a tone and silence, 16-bit stereo at 8 kHz.</summary>

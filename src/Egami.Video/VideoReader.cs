@@ -321,7 +321,7 @@ public sealed class VideoReader : IDisposable
         _diagnostics?.Dispose();
     }
 
-    private static VideoReader Create(IDemuxer demuxer, VideoReaderOptions? options, MediaContext context)
+    internal static VideoReader Create(IDemuxer demuxer, VideoReaderOptions? options, MediaContext context)
     {
         try
         {

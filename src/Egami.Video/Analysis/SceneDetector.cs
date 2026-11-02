@@ -5,7 +5,7 @@ namespace Egami.Video.Analysis;
 /// is summarized from its planes (a 16 by 9 grid of mean Y, Cb and Cr and a luma histogram) and scored against the frame before
 /// by <see cref="SceneOptions.Method"/>; a high enough score starts a scene, unless it comes within the minimum scene length or
 /// turns out to be a flash. Feed it every frame with <see cref="Add"/> and call <see cref="Complete"/> at the end, or let
-/// <see cref="MediaAnalysis.Run"/> do it. Memory stays flat over any length of video unless <see cref="SceneOptions.KeepSeries"/>
+/// <see cref="MediaAnalysis.Run(string, MediaAnalysisOptions?, MediaContext?, IProgress{MediaProgress}?, CancellationToken)"/> do it. Memory stays flat over any length of video unless <see cref="SceneOptions.KeepSeries"/>
 /// is set.
 /// </summary>
 /// <example>
