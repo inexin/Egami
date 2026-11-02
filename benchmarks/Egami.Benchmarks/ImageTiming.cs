@@ -13,6 +13,8 @@ namespace Egami.Benchmarks;
 /// counts under perf to count instructions per operation. JPEG and PNG decode and encode, resize, compose, YUV conversion and
 /// the byte blur, on the benchmark photo (4000 × 3000) unless the name says otherwise. Run: <c>-- --time-image [name...]</c>,
 /// where a name selects that scenario, or every scenario it starts when no scenario has that exact name; --list prints the names.
+/// The jpeg-stage-* scenarios run one stage of the baseline encoder alone (<see cref="JpegStageTiming"/>), and
+/// <c>--write-ppm=path [--copies=N]</c> writes the photo as PPM for count-instructions.py's cjpeg side instead of timing.
 /// </summary>
 internal static class ImageTiming
 {
@@ -29,6 +31,14 @@ internal static class ImageTiming
         if (args.Contains("--list"))
         {
             Console.WriteLine(string.Join(Environment.NewLine, Scenarios.Keys));
+            return;
+        }
+
+        if (args.FirstOrDefault(a => a.StartsWith("--write-ppm=", StringComparison.Ordinal)) is { } ppm)
+        {
+            int copies = args.FirstOrDefault(a => a.StartsWith("--copies=", StringComparison.Ordinal)) is { } c
+                ? int.Parse(c["--copies=".Length..], System.Globalization.CultureInfo.InvariantCulture) : 1;
+            WritePpm(ppm["--write-ppm=".Length..], copies);
             return;
         }
 
@@ -85,6 +95,8 @@ internal static class ImageTiming
         AddEncode(scenarios, "jpeg-encode-q90-444", PhotoRgb, JpegFormat.Info, new JpegWriterOptions { Quality = 90, Subsampling = ChromaSubsampling.Subsample444 });
         AddEncode(scenarios, "jpeg-encode-q90-444-optimized", PhotoRgb, JpegFormat.Info,
             new JpegWriterOptions { Quality = 90, Subsampling = ChromaSubsampling.Subsample444, OptimizeHuffman = true });
+        AddStages(scenarios, "jpeg-stage-q75-420", new(() => new JpegStageTiming(PhotoRgb.Value, PhotoRgba.Value, 75, subsample: true, optimize: false)), "count");
+        AddStages(scenarios, "jpeg-stage-q90-444-optimized", new(() => new JpegStageTiming(PhotoRgb.Value, PhotoRgba.Value, 90, subsample: false, optimize: true)), "downsample");
         AddEncode(scenarios, "jpeg-encode-progressive", PhotoRgb, JpegFormat.Info, new JpegWriterOptions { Quality = 75, Progressive = true });
         foreach (string scenario in BenchImages.DecodeScenarios)
         {
@@ -127,6 +139,32 @@ internal static class ImageTiming
             Raster<TPixel> copy = Copy(image.Value, context);
             return () => copy.Save(Stream.Null, format, options);
         };
+    }
+
+    private static void AddStages(Dictionary<string, Func<EgamiContext, Action>> scenarios, string name, Lazy<JpegStageTiming> stages, string skip)
+    {
+        foreach (string stage in JpegStageTiming.Stages.Where(s => s != skip))
+        {
+            scenarios[$"{name}-{stage}"] = _ => stages.Value.Stage(stage);
+        }
+    }
+
+    /// <summary>
+    /// Writes the benchmark photo as a binary PPM, <paramref name="copies"/> times stacked top to bottom, for cjpeg in
+    /// count-instructions.py: the difference between two stack heights is that many encodes of the same pixels.
+    /// </summary>
+    private static void WritePpm(string path, int copies)
+    {
+        Raster<Rgb8> photo = PhotoRgb.Value;
+        using FileStream file = File.Create(path);
+        file.Write(System.Text.Encoding.ASCII.GetBytes($"P6\n{photo.Width} {photo.Height * copies}\n255\n"));
+        for (int copy = 0; copy < copies; copy++)
+        {
+            for (int y = 0; y < photo.Height; y++)
+            {
+                file.Write(System.Runtime.InteropServices.MemoryMarshal.AsBytes(photo.Row(y)));
+            }
+        }
     }
 
     private static Action Derive(Lazy<Raster<Rgba8>> image, EgamiContext context, Action<RasterOps> chain)

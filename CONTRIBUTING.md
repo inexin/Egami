@@ -83,7 +83,7 @@ codecs; `profile-vp9.py` profiles VP9 against libvpx; `make-subtitle-tracks.py`,
 CAVLC and CABAC tables from OpenH264; `make-hevc-corpus.py` makes the HEVC clips and their FFmpeg frame hashes;
 `check-deinterlace.py` gates the deinterlacer's quality and speed against FFmpeg's yadif; `count-instructions.py` counts a decoder's instructions, branches and cycles per frame
 from the CPU's counters against FFmpeg's, repeatably even on a busy machine (also Opus per packet, and per operation the image
-scenarios of `Egami.Benchmarks -- --time-image`), and `make-count-clips.py` makes the clips it counts for each codec. Its gates against FFmpeg, libvpx and the Matroska tools live in the
+scenarios of `Egami.Benchmarks -- --time-image`, its JPEG encodes against cjpeg's and its `jpeg-stage-*` encoder stages alone), and `make-count-clips.py` makes the clips it counts for each codec. Its gates against FFmpeg, libvpx and the Matroska tools live in the
 egami-compare repository (`video/`). Benchmarks: `dotnet run -c Release --project benchmarks/Egami.Video.Benchmarks`.
 
 ## Repository layout
