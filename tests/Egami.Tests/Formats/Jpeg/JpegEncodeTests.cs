@@ -91,7 +91,10 @@ public class JpegEncodeTests(ITestOutputHelper output)
                 row[x] = new Rgb8((byte)(x ^ y), (byte)((x * 3) + y), (byte)(x * y >> 4));
             }
         }, TestContext.Current.CancellationToken);
-        foreach (JpegWriterOptions options in (JpegWriterOptions[])[new(), new() { OptimizeHuffman = true, Subsampling = ChromaSubsampling.Subsample444 }, new() { RestartInterval = 7 }])
+        foreach (JpegWriterOptions options in (JpegWriterOptions[])[
+            new(), new() { OptimizeHuffman = true, Subsampling = ChromaSubsampling.Subsample444 }, new() { RestartInterval = 7 },
+            new() { OptimizeHuffman = true, RestartInterval = 5 }, new() { Precision = 12 },
+        ])
         {
             byte[] one = Encode(serial, options);
             using MemoryStream stream = new();

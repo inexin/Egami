@@ -130,7 +130,15 @@ internal static class JpegBlock
     /// Returns a mask with bit k set where coefficient k in zigzag order is nonzero, for a block stored in natural order. With
     /// AVX2 the compare results are moved into zigzag order with byte shuffles, sixteen bytes per source lane.
     /// </summary>
-    internal static ulong NonZeroZigZag(ReadOnlySpan<short> natural)
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    internal static ulong NonZeroZigZag(ReadOnlySpan<short> natural) => NonZeroZigZagInlined(natural);
+
+    /// <summary>
+    /// <see cref="NonZeroZigZag"/> inlined into the caller, for the Huffman coder's block loops, where the call was a tenth of
+    /// the work per block. The arithmetic coder, whose blocks cost far more, keeps the call.
+    /// </summary>
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+    internal static ulong NonZeroZigZagInlined(ReadOnlySpan<short> natural)
     {
         natural = natural[..64];
         if (!Avx2.IsSupported)

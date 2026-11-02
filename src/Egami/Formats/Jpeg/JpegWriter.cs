@@ -541,13 +541,16 @@ internal sealed class JpegWriter : IFormatWriter, IRowFormatWriter
         void Restart();
     }
 
-    /// <summary>Huffman coding with the tables in the DHT segments.</summary>
-    private readonly struct HuffmanBlocks(JpegBitWriter writer, JpegHuffmanCodes[] dc, JpegHuffmanCodes[] ac) : IBlockCoder
+    /// <summary>
+    /// Huffman coding of a 12-bit frame with the tables in the DHT segments, a block at a time; 8-bit frames are coded a stretch of
+    /// MCUs at a time instead (<see cref="Encoder{TPixel}"/>'s CodeHuffmanRow).
+    /// </summary>
+    private readonly struct WideHuffmanBlocks(JpegBitWriter writer, JpegHuffmanCodes[] dc, JpegHuffmanCodes[] ac) : IBlockCoder
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Encode(ReadOnlySpan<short> block, int index, ref int predictor, int table)
         {
-            JpegBlockCoder.Encode(writer, block, ref predictor, dc[table], ac[table]);
+            JpegBlockCoder.EncodeWide(writer, block, ref predictor, dc[table], ac[table]);
         }
 
         public void Finish()
@@ -611,6 +614,9 @@ internal sealed class JpegWriter : IFormatWriter, IRowFormatWriter
         private readonly List<short[]>? _kept;
         private readonly YuvRaster<byte>? _yuv;
         private short[]? _blocks;
+
+        // When workers count the symbols (CountsAsTransformed): each block's DC as it leaves the quantizer, in coding order.
+        private readonly short[]? _dcs;
         private JpegArithmeticEncoder? _coder;
         private int _mcu;
         private int _restart;
@@ -661,9 +667,18 @@ internal sealed class JpegWriter : IFormatWriter, IRowFormatWriter
             _dc = single ? [JpegHuffmanCodes.DcLuma] : [JpegHuffmanCodes.DcLuma, JpegHuffmanCodes.DcChroma];
             _ac = single ? [JpegHuffmanCodes.AcLuma] : [JpegHuffmanCodes.AcLuma, JpegHuffmanCodes.AcChroma];
 
+            // Large images transform MCU rows on other threads while this one Huffman-codes the rows before them. Streamed rows
+            // come one MCU row at a time, so there is nothing to transform ahead.
+            _workers = (raster is not null || planes is not null) && start.Context.MaxParallelism > 1 && (long)_width * _height >= ParallelPixels && _mcusY > 1
+                ? Math.Min(start.Context.MaxParallelism - 1, MaxWorkers)
+                : 0;
             _main = CreateWorkspace();
             _planes = _main.Planes;
             _predictors = new int[_planes.Length];
+            if (CountsAsTransformed)
+            {
+                _dcs = ArrayPool<short>.Shared.Rent(BlocksPerRow() * _mcusY);
+            }
 
             // The new modes that hold every quantized block count them against the memory limit (optimized baseline tables have
             // always held them unchecked, and still do).
@@ -676,11 +691,6 @@ internal sealed class JpegWriter : IFormatWriter, IRowFormatWriter
                 }
             }
 
-            // Large images transform MCU rows on other threads while this one Huffman-codes the rows before them. Streamed rows
-            // come one MCU row at a time, so there is nothing to transform ahead.
-            _workers = (raster is not null || planes is not null) && start.Context.MaxParallelism > 1 && (long)_width * _height >= ParallelPixels && _mcusY > 1
-                ? Math.Min(start.Context.MaxParallelism - 1, MaxWorkers)
-                : 0;
             if (raster is not null)
             {
                 _rowAt = y => raster.Row(y);
@@ -836,7 +846,7 @@ internal sealed class JpegWriter : IFormatWriter, IRowFormatWriter
 
             if (_optimize)
             {
-                Optimize(rows.Get);
+                Optimize(rows.Get, rows.Workspaces(_main));
             }
 
             BeginScan(writer);
@@ -897,7 +907,7 @@ internal sealed class JpegWriter : IFormatWriter, IRowFormatWriter
             }
             else if (_kept is not null)
             {
-                Optimize(my => _kept[my]);
+                Optimize(my => _kept[my], [_main]);
                 BeginScan(writer);
                 foreach (short[] row in _kept)
                 {
@@ -909,13 +919,27 @@ internal sealed class JpegWriter : IFormatWriter, IRowFormatWriter
             writer.Align();
         }
 
-        /// <summary>Counts every symbol of every MCU row and replaces the standard tables with optimal ones.</summary>
-        private void Optimize(Func<int, short[]> rows)
+        /// <summary>
+        /// Gets whether the symbols are counted as the rows are transformed, when workers transform them: the AC symbols of each
+        /// row by the thread that transforms it, into its workspace's counts (their order does not matter), and the DC of each
+        /// block kept in coding order for the DC symbols, which depend on the block before. On one thread the counting pass that
+        /// follows each row's transform is as fast and needs no kept DC values.
+        /// </summary>
+        private bool CountsAsTransformed => _optimize && !_options.Progressive && _workers > 0;
+
+        /// <summary>
+        /// Counts every symbol of every MCU row and replaces the standard tables with optimal ones. Each row is counted as
+        /// <paramref name="rows"/> hands it over, just transformed on this thread; or, when the workers counted the AC symbols as
+        /// they transformed, those counts are summed from <paramref name="workspaces"/> and only the DC symbols are counted here,
+        /// from the kept DC values.
+        /// </summary>
+        private void Optimize(Func<int, short[]> rows, Workspace[] workspaces)
         {
             Span<long> counts = stackalloc long[4 * 256];
             counts.Clear();
             Span<int> predictors = stackalloc int[_planes.Length];
             predictors.Clear();
+            short[]? dcs = _dcs;
             int mcu = 0;
             for (int my = 0; my < _mcusY; my++)
             {
@@ -933,8 +957,28 @@ internal sealed class JpegWriter : IFormatWriter, IRowFormatWriter
                         int t = _planes[i].Table;
                         for (int n = 0; n < _planes[i].BlocksPerMcu; n++, b++)
                         {
-                            JpegBlockCoder.Count(row.AsSpan(b * 64, 64), ref predictors[i], counts.Slice(t * 512, 256), counts.Slice((t * 512) + 256, 256));
+                            if (dcs is null)
+                            {
+                                JpegBlockCoder.Count(row.AsSpan(b * 64, 64), ref predictors[i], counts.Slice(t * 512, 256), counts.Slice((t * 512) + 256, 256));
+                            }
+                            else
+                            {
+                                JpegBlockCoder.CountDc(dcs[(my * BlocksPerRow()) + b], ref predictors[i], counts.Slice(t * 512, 256));
+                            }
                         }
+                    }
+                }
+            }
+
+            foreach (Workspace workspace in workspaces)
+            {
+                for (int t = 0; t < _dc.Length && workspace.AcCounts.Length > 0; t++)
+                {
+                    ReadOnlySpan<long> ac = workspace.AcCounts.AsSpan(t * 256, 256);
+                    Span<long> total = counts.Slice((t * 512) + 256, 256);
+                    for (int i = 0; i < 256; i++)
+                    {
+                        total[i] += ac[i];
                     }
                 }
             }
@@ -1004,14 +1048,56 @@ internal sealed class JpegWriter : IFormatWriter, IRowFormatWriter
         /// <summary>Entropy-codes one transformed MCU row, with a restart marker where one is due.</summary>
         private void CodeRow(JpegBitWriter writer, short[] row)
         {
-            if (_coder is null)
+            if (_coder is null && !_wide)
             {
-                CodeRow(writer, row, new HuffmanBlocks(writer, _dc, _ac));
+                CodeHuffmanRow(writer, row);
+            }
+            else if (_coder is null)
+            {
+                CodeRow(writer, row, new WideHuffmanBlocks(writer, _dc, _ac));
             }
             else
             {
                 CodeRow(writer, row, new ArithmeticBlocks(_coder));
             }
+        }
+
+        /// <summary>
+        /// Huffman-codes one MCU row of an 8-bit frame: each stretch of MCUs up to the next restart in one call, which keeps the
+        /// bit buffer in registers across blocks.
+        /// </summary>
+        private void CodeHuffmanRow(JpegBitWriter writer, short[] row)
+        {
+            Plane[] planes = _planes;
+            Span<int> blocksPerMcu = stackalloc int[planes.Length];
+            Span<int> tables = stackalloc int[planes.Length];
+            int perMcu = 0;
+            for (int i = 0; i < planes.Length; i++)
+            {
+                blocksPerMcu[i] = planes[i].BlocksPerMcu;
+                tables[i] = planes[i].Table;
+                perMcu += planes[i].BlocksPerMcu;
+            }
+
+            int interval = _options.RestartInterval;
+            int mcu = _mcu;
+            for (int mx = 0; mx < _mcusX;)
+            {
+                if (RestartDue(mcu))
+                {
+                    writer.Align();
+                    writer.Marker((byte)(JpegMarker.Rst0 + _restart));
+                    _restart = (_restart + 1) & 7;
+                    Array.Clear(_predictors);
+                }
+
+                int stretch = interval > 0 ? Math.Min(_mcusX - mx, interval - (mcu % interval)) : _mcusX - mx;
+                JpegBlockCoder.EncodeMcus(writer, row.AsSpan(mx * perMcu * 64, stretch * perMcu * 64), stretch, blocksPerMcu, tables, _predictors, _dc, _ac);
+                mx += stretch;
+                mcu += stretch;
+            }
+
+            _mcu = mcu;
         }
 
         /// <summary>Codes one MCU row with <paramref name="coder"/>, a struct so the JIT compiles the loop for each coding.</summary>
@@ -1061,6 +1147,11 @@ internal sealed class JpegWriter : IFormatWriter, IRowFormatWriter
                 ArrayPool<short>.Shared.Return(_blocks);
             }
 
+            if (_dcs is not null)
+            {
+                ArrayPool<short>.Shared.Return(_dcs);
+            }
+
             foreach (short[] row in _kept ?? [])
             {
                 ArrayPool<short>.Shared.Return(row);
@@ -1095,7 +1186,7 @@ internal sealed class JpegWriter : IFormatWriter, IRowFormatWriter
                 Space.Ycck => [Full(0), Chroma(), Chroma(), Full(0)],
                 _ => [Full(0), Chroma(), Chroma()],
             };
-            return new Workspace(planes, _width, _paddedWidth * 8 * _maxV, _wide);
+            return new Workspace(planes, _width, _paddedWidth * 8 * _maxV, _wide, CountsAsTransformed);
         }
 
         /// <summary>
@@ -1147,6 +1238,9 @@ internal sealed class JpegWriter : IFormatWriter, IRowFormatWriter
                     _tasks[i] = Task.Factory.StartNew(Work, CancellationToken.None, TaskCreationOptions.LongRunning, TaskScheduler.Default);
                 }
             }
+
+            /// <summary>Gets every workspace rows are transformed with: <paramref name="main"/> and the workers'.</summary>
+            internal Workspace[] Workspaces(Workspace main) => [main, .. _workspaces];
 
             /// <summary>Returns MCU row <paramref name="my"/>, transformed; rows are asked for in order.</summary>
             internal short[] Get(int my)
@@ -1293,6 +1387,35 @@ internal sealed class JpegWriter : IFormatWriter, IRowFormatWriter
                                 block[0] = blocks[(b - 1) * 64];
                             }
                         }
+                    }
+                }
+            }
+
+            if (workspace.AcCounts.Length > 0)
+            {
+                CountRow(my, blocks, workspace.AcCounts);
+            }
+        }
+
+        /// <summary>
+        /// Counts the AC symbols of MCU row <paramref name="my"/>, just transformed into <paramref name="blocks"/> and still in
+        /// cache, into <paramref name="counts"/>, and keeps the DC of each block for <see cref="Optimize"/>.
+        /// </summary>
+        private void CountRow(int my, short[] blocks, long[] counts)
+        {
+            Plane[] planes = _planes;
+            Span<short> dcs = _dcs.AsSpan(my * BlocksPerRow(), BlocksPerRow());
+            int b = 0;
+            for (int mx = 0; mx < _mcusX; mx++)
+            {
+                for (int i = 0; i < planes.Length; i++)
+                {
+                    Span<long> ac = counts.AsSpan(planes[i].Table * 256, 256);
+                    for (int n = 0; n < planes[i].BlocksPerMcu; n++, b++)
+                    {
+                        ReadOnlySpan<short> block = blocks.AsSpan(b * 64, 64);
+                        JpegBlockCoder.CountAc(block, ac);
+                        dcs[b] = block[0];
                     }
                 }
             }
@@ -1647,9 +1770,15 @@ internal sealed class JpegWriter : IFormatWriter, IRowFormatWriter
     /// <summary>One thread's planes and row buffers for converting MCU rows; the 16-bit ones only for 12-bit output.</summary>
     private sealed class Workspace : IDisposable
     {
-        internal Workspace(Plane[] planes, int width, int fullChroma, bool wide)
+        internal Workspace(Plane[] planes, int width, int fullChroma, bool wide, bool counts)
         {
             Planes = planes;
+            if (counts)
+            {
+                AcCounts = ArrayPool<long>.Shared.Rent(2 * 256);
+                Array.Clear(AcCounts);
+            }
+
             Rgb = ArrayPool<byte>.Shared.Rent(width * 3);
             Rgba = ArrayPool<byte>.Shared.Rent(width * 4);
             FullCb = ArrayPool<byte>.Shared.Rent(fullChroma);
@@ -1681,6 +1810,9 @@ internal sealed class JpegWriter : IFormatWriter, IRowFormatWriter
 
         internal ushort[] WideCr { get; private set; } = [];
 
+        /// <summary>Gets the AC symbol counts of the blocks transformed with this workspace, 256 per table; empty when not counted.</summary>
+        internal long[] AcCounts { get; private set; } = [];
+
         public void Dispose()
         {
             foreach (Plane plane in Planes)
@@ -1693,6 +1825,12 @@ internal sealed class JpegWriter : IFormatWriter, IRowFormatWriter
             ArrayPool<byte>.Shared.Return(FullCb);
             ArrayPool<byte>.Shared.Return(FullCr);
             (Rgb, Rgba, FullCb, FullCr) = ([], [], [], []);
+            if (AcCounts.Length > 0)
+            {
+                ArrayPool<long>.Shared.Return(AcCounts);
+                AcCounts = [];
+            }
+
             foreach (ushort[] buffer in (ushort[][])[Wide3, Wide4, WideCb, WideCr])
             {
                 if (buffer.Length > 0)

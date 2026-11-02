@@ -8,11 +8,139 @@ namespace Egami.Tests.Formats.Jpeg;
 /// Step 2.4.10's exactness harness for the encoder's vector kernels: the AVX2 forward DCT with quantization, RGB to YCbCr, luma
 /// and chroma downsampling each give exactly the scalar result, on random blocks and rows from fixed seeds and on worst cases
 /// (all 0, all 255, checkerboards, stripes, single spikes), and the conversion on every RGB triple. Faster kernels must keep these
-/// passing.
+/// passing. The Huffman coder that adds two symbols per buffer check gives the bytes of the one that tests after every symbol.
 /// </summary>
 public class JpegEncodeExactnessTests
 {
     public static TheoryData<int> Qualities() => [1, 5, 25, 50, 75, 90, 95, 100];
+
+    public static TheoryData<string> BlockKinds() => ["sparse", "dense", "extreme", "long-runs", "ones", "dc-only"];
+
+    [Theory]
+    [MemberData(nameof(BlockKinds))]
+    public void HuffmanCodingGivesTheBytesOfTheSymbolAtATimeCoder(string kind)
+    {
+        // Enough blocks that the coded data crosses the bit writer's 64 KB buffer several times.
+        const int Mcus = 6000;
+        Random random = new(kind.GetHashCode(StringComparison.Ordinal) & 0xFFFF);
+        short[] blocks = new short[Mcus * 6 * 64];
+        for (int b = 0; b < Mcus * 6; b++)
+        {
+            FillBlock(kind, random, blocks.AsSpan(b * 64, 64));
+        }
+
+        JpegHuffmanCodes[] dc = [JpegHuffmanCodes.DcLuma, JpegHuffmanCodes.DcChroma];
+        JpegHuffmanCodes[] ac = [JpegHuffmanCodes.AcLuma, JpegHuffmanCodes.AcChroma];
+        int[] blocksPerMcu = [4, 1, 1];
+        int[] tables = [0, 1, 1];
+        byte[] Code(Action<JpegBitWriter> code)
+        {
+            using MemoryStream stream = new();
+            using (JpegBitWriter writer = new(stream))
+            {
+                code(writer);
+                writer.Align();
+                writer.Flush();
+            }
+
+            return stream.ToArray();
+        }
+
+        void PerBlock(JpegBitWriter writer, bool wide)
+        {
+            int[] predictors = new int[3];
+            int b = 0;
+            for (int m = 0; m < Mcus; m++)
+            {
+                for (int i = 0; i < 3; i++)
+                {
+                    for (int n = 0; n < blocksPerMcu[i]; n++, b++)
+                    {
+                        ReadOnlySpan<short> block = blocks.AsSpan(b * 64, 64);
+                        if (wide)
+                        {
+                            JpegBlockCoder.EncodeWide(writer, block, ref predictors[i], dc[tables[i]], ac[tables[i]]);
+                        }
+                        else
+                        {
+                            JpegBlockCoder.Encode(writer, block, ref predictors[i], dc[tables[i]], ac[tables[i]]);
+                        }
+                    }
+                }
+            }
+        }
+
+        byte[] expected = Code(writer => PerBlock(writer, wide: true));
+        Assert.Equal(expected, Code(writer => PerBlock(writer, wide: false)));
+        Assert.Equal(expected, Code(writer => JpegBlockCoder.EncodeMcus(writer, blocks, Mcus, blocksPerMcu, tables, new int[3], dc, ac)));
+
+        // In stretches, as restarts split a row, with symbols already buffered before each.
+        Assert.Equal(expected, Code(writer =>
+        {
+            int[] predictors = new int[3];
+            for (int m = 0; m < Mcus;)
+            {
+                int stretch = Math.Min(Mcus - m, 1 + random.Next(40));
+                JpegBlockCoder.EncodeMcus(writer, blocks.AsSpan(m * 6 * 64, stretch * 6 * 64), stretch, blocksPerMcu, tables, predictors, dc, ac);
+                m += stretch;
+            }
+        }));
+    }
+
+    /// <summary>Quantized coefficients within the 8-bit baseline range: AC to ±1023, DC so that differences reach ±2047.</summary>
+    private static void FillBlock(string kind, Random random, Span<short> block)
+    {
+        block.Clear();
+        switch (kind)
+        {
+            case "sparse":
+                block[0] = (short)random.Next(-1024, 1024);
+                for (int n = random.Next(8); n > 0; n--)
+                {
+                    block[random.Next(1, 64)] = (short)(random.Next(1, 40) * (random.Next(2) * 2 - 1));
+                }
+
+                break;
+            case "dense":
+                for (int i = 0; i < 64; i++)
+                {
+                    block[i] = (short)random.Next(-1023, 1024);
+                }
+
+                break;
+            case "extreme":
+                // DC alternating between the ends, so the differences are the largest; AC at the limits.
+                block[0] = (short)(random.Next(2) == 0 ? -1024 : 1023);
+                for (int i = 1; i < 64; i++)
+                {
+                    block[i] = (short)(random.Next(3) switch { 0 => 1023, 1 => -1023, _ => 0 });
+                }
+
+                break;
+            case "long-runs":
+                // Runs over 15 zeros, which need ZRL codes, ending at the last coefficient or before it.
+                block[0] = (short)random.Next(-50, 50);
+                block[JpegTables.ZigZag[random.Next(17, 64)]] = (short)random.Next(-5, 6);
+                if (random.Next(2) == 0)
+                {
+                    block[JpegTables.ZigZag[63]] = 1;
+                }
+
+                break;
+            case "ones":
+                // Values whose bits are all ones, so the coded data is full of 0xFF bytes to stuff.
+                block[0] = (short)(random.Next(2) == 0 ? 1023 : 511);
+                for (int i = 1; i < 64; i++)
+                {
+                    block[i] = (short)(random.Next(4) == 0 ? 0 : (1 << random.Next(1, 11)) - 1);
+                }
+
+                break;
+            default:
+                block[0] = (short)random.Next(-1024, 1024);
+                break;
+        }
+    }
 
     [Theory]
     [MemberData(nameof(Qualities))]
