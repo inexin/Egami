@@ -232,6 +232,14 @@ internal sealed partial class Av1Reconstructor<T>
                 if (Vector128.IsHardwareAccelerated)
                 {
                     ref T row = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(src), s);
+                    if (Avx2.IsSupported)
+                    {
+                        for (; c + 16 <= w; c += 16)
+                        {
+                            Vector256.ShiftLeft(Av1Samples.Load16(ref row, c), shift).StoreUnsafe(ref inter[0], (nuint)(d + c));
+                        }
+                    }
+
                     for (; c + 8 <= w; c += 8)
                     {
                         Vector128.ShiftLeft(Av1Samples.Load8(ref row, c), shift).StoreUnsafe(ref inter[0], (nuint)(d + c));
