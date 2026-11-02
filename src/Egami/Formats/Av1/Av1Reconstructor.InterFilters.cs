@@ -15,6 +15,8 @@ internal sealed partial class Av1Reconstructor<T>
 {
     private readonly T[] _edge = new T[((128 + 7) * (128 + 7)) + Av1Samples.Padding];
     private readonly short[] _inter16 = new short[(128 + 7) * 128];
+    private readonly short[] _scaledInter = new short[MaxIntermediate * 128];
+    private readonly short[] _scaledRow = new short[(2 * 128) + 16];
 
     /// <summary>
     /// Predicts a block from an unscaled reference at (<paramref name="x"/>, <paramref name="y"/>) in 1/1024 samples, as
@@ -106,6 +108,114 @@ internal sealed partial class Av1Reconstructor<T>
         else
         {
             Vertical(inter, fracY, fy, w, h, round1, pred);
+        }
+    }
+
+    /// <summary>
+    /// Predicts a block from a scaled reference, stepping <paramref name="stepX"/> and <paramref name="stepY"/> 1/1024 samples an
+    /// output: each row of the reference the block reads is copied once with its edges repeated, every output's 8 taps are summed
+    /// with one vpmaddwd, and the vertical pass, whose phase is the same along a row, sums sixteen columns at a time.
+    /// </summary>
+    private void ScaledPrediction(T[] src, int stride, int lastX, int lastY, int x, int y, int stepX, int stepY, int w, int h, short[] fx, short[] fy,
+        int round0, int round1, int[] pred)
+    {
+        int interH = ((((h - 1) * stepY) + (1 << 10) - 1) >> 10) + 8;
+        int col0 = (x >> 10) - 3;
+        int span = ((x + (stepX * (w - 1))) >> 10) - 3 - col0 + 8;
+        Span<int> columns = stackalloc int[w], phases = stackalloc int[w];
+        for (int c = 0; c < w; c++)
+        {
+            int p = x + (stepX * c);
+            phases[c] = ((p >> 6) & 15) * 8;
+            columns[c] = (p >> 10) - 3 - col0;
+        }
+
+        short[] row = _scaledRow, inter = _scaledInter;
+        int half0 = 1 << (round0 - 1);
+        int lo = Math.Clamp(-col0, 0, span), hi = Math.Clamp(lastX + 1 - col0, lo, span);
+        ref short r0 = ref MemoryMarshal.GetArrayDataReference(row);
+        ref short f0 = ref MemoryMarshal.GetArrayDataReference(fx);
+        for (int r = 0; r < interH; r++)
+        {
+            // The row's samples from col0 on, those past the reference's edges repeating its first and last.
+            int rowAt = Math.Clamp((y >> 10) + r - 3, 0, lastY) * stride;
+            row.AsSpan(0, lo).Fill((short)Av1Samples.Get(src[rowAt]));
+            row.AsSpan(hi, span - hi).Fill((short)Av1Samples.Get(src[rowAt + lastX]));
+            for (int k = lo; k < hi; k++)
+            {
+                row[k] = (short)Av1Samples.Get(src[rowAt + col0 + k]);
+            }
+
+            for (int c = 0; c < w; c++)
+            {
+                int sum;
+                if (Ssse3.IsSupported)
+                {
+                    Vector128<int> m = Sse2.MultiplyAddAdjacent(Vector128.LoadUnsafe(ref r0, (nuint)columns[c]), Vector128.LoadUnsafe(ref f0, (nuint)phases[c]));
+                    m = Ssse3.HorizontalAdd(m, m);
+                    sum = Ssse3.HorizontalAdd(m, m).ToScalar();
+                }
+                else
+                {
+                    sum = 0;
+                    for (int t = 0; t < 8; t++)
+                    {
+                        sum += fx[phases[c] + t] * row[columns[c] + t];
+                    }
+                }
+
+                inter[(r * w) + c] = (short)((sum + half0) >> round0);
+            }
+        }
+
+        int half1 = 1 << (round1 - 1);
+        ref short i0 = ref MemoryMarshal.GetArrayDataReference(inter);
+        ref int p0 = ref MemoryMarshal.GetArrayDataReference(pred);
+        for (int r = 0; r < h; r++)
+        {
+            int p = (y & 1023) + (stepY * r);
+            ReadOnlySpan<short> f = fy.AsSpan(((p >> 6) & 15) * 8, 8);
+            int baseRow = (p >> 10) * w;
+            int c = 0;
+            if (Avx2.IsSupported)
+            {
+                Vector256<short> c01 = Pair(f[0], f[1]), c23 = Pair(f[2], f[3]), c45 = Pair(f[4], f[5]), c67 = Pair(f[6], f[7]);
+                Vector256<int> halfV = Vector256.Create(half1);
+                for (; c + 16 <= w; c += 16)
+                {
+                    ref short at = ref Unsafe.Add(ref i0, baseRow + c);
+                    Vector256<int> lo16 = halfV, hi16 = halfV;
+                    Rows16(ref at, 0, w, c01, ref lo16, ref hi16);
+                    Rows16(ref at, 2, w, c23, ref lo16, ref hi16);
+                    Rows16(ref at, 4, w, c45, ref lo16, ref hi16);
+                    Rows16(ref at, 6, w, c67, ref lo16, ref hi16);
+                    Avx2.Permute2x128(Vector256.ShiftRightArithmetic(lo16, round1), Vector256.ShiftRightArithmetic(hi16, round1), 0x20).StoreUnsafe(ref Unsafe.Add(ref p0, (r * w) + c));
+                    Avx2.Permute2x128(Vector256.ShiftRightArithmetic(lo16, round1), Vector256.ShiftRightArithmetic(hi16, round1), 0x31).StoreUnsafe(ref Unsafe.Add(ref p0, (r * w) + c + 8));
+                }
+
+                for (; c + 8 <= w; c += 8)
+                {
+                    ref short at = ref Unsafe.Add(ref i0, baseRow + c);
+                    Vector128<int> lo8 = halfV.GetLower(), hi8 = halfV.GetLower();
+                    Rows8(ref at, 0, w, c01.GetLower(), ref lo8, ref hi8);
+                    Rows8(ref at, 2, w, c23.GetLower(), ref lo8, ref hi8);
+                    Rows8(ref at, 4, w, c45.GetLower(), ref lo8, ref hi8);
+                    Rows8(ref at, 6, w, c67.GetLower(), ref lo8, ref hi8);
+                    Vector128.ShiftRightArithmetic(lo8, round1).StoreUnsafe(ref Unsafe.Add(ref p0, (r * w) + c));
+                    Vector128.ShiftRightArithmetic(hi8, round1).StoreUnsafe(ref Unsafe.Add(ref p0, (r * w) + c + 4));
+                }
+            }
+
+            for (; c < w; c++)
+            {
+                int s = 0;
+                for (int t = 0; t < 8; t++)
+                {
+                    s += f[t] * inter[baseRow + (t * w) + c];
+                }
+
+                pred[(r * w) + c] = (s + half1) >> round1;
+            }
         }
     }
 
