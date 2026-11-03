@@ -17,6 +17,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Include="../images/ktx/*" LinkBase="images/ktx" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../reference/ktx/*" LinkBase="reference/ktx" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\src\Egami.Formats.Extended\Egami.Formats.Extended.csproj" />
   </ItemGroup>
 </Project>

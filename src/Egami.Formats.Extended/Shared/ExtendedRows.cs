@@ -132,6 +132,8 @@ internal abstract class ExtendedRows<TNatural, TWork> : RowReader<TNatural>, IWh
             metadata.FormatDetails = Metadata.FormatDetails?.Copy();
             metadata.Resolution = Metadata.Resolution;
             metadata.ColorSpace = Metadata.ColorSpace;
+            metadata.CodePoints = Metadata.CodePoints;
+            metadata.Primaries = Metadata.Primaries;
             foreach (EgamiDiagnostic warning in Metadata.Warnings)
             {
                 input.Warn(raster, warning.Id, warning.Message, warning.Offset);
