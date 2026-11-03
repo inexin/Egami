@@ -126,7 +126,13 @@ internal sealed class JxlJbrd
 
         for (int i = 0; i < scans; i++)
         {
-            j.Scans.Add(JbrdScan.Read(r));
+            JbrdScan scan = JbrdScan.Read(r);
+            if (scan.Components.Exists(c => c.Component >= j.Components.Count))
+            {
+                throw r.Corrupt("A scan of the jbrd box names a component the frame does not have.");
+            }
+
+            j.Scans.Add(scan);
         }
 
         j.RestartInterval = dri ? (int)r.ReadBits(16) : 0;
@@ -172,20 +178,28 @@ internal sealed class JxlJbrd
             using MemoryStream compressed = new(box, start, box.Length - start, writable: false);
             using BrotliStream brotli = new(compressed, CompressionMode.Decompress);
             int read = 0;
-            while (read < data.Length)
+            try
             {
-                int n = brotli.Read(data, read, data.Length - read);
-                if (n == 0)
+                while (read < data.Length)
                 {
-                    throw r.Corrupt("The jbrd box's data section is shorter than its header says.");
+                    int n = brotli.Read(data, read, data.Length - read);
+                    if (n == 0)
+                    {
+                        throw r.Corrupt("The jbrd box's data section is shorter than its header says.");
+                    }
+
+                    read += n;
                 }
 
-                read += n;
+                if (brotli.ReadByte() >= 0)
+                {
+                    throw r.Corrupt("The jbrd box's data section is longer than its header says.");
+                }
             }
-
-            if (brotli.ReadByte() >= 0)
+            catch (InvalidOperationException)
             {
-                throw r.Corrupt("The jbrd box's data section is longer than its header says.");
+                // BrotliStream reports a broken stream this way.
+                throw r.Corrupt("The jbrd box's data section is not valid Brotli data.");
             }
         }
 
