@@ -240,8 +240,11 @@ internal sealed partial class JxlWriter : IFormatWriter, IRowFormatWriter
         return (new JxlColorEncoding(), null);
     }
 
-    /// <summary>Wraps the codestream in the container (ISO/IEC 18181-2) with jbrd, Exif and xml boxes, or returns it bare when there are none.</summary>
-    internal static void WriteFile(Stream output, byte[] codestream, byte[]? exif, byte[]? xmp, byte[]? jbrd = null, bool compressBoxes = false, byte[]? gainMap = null)
+    /// <summary>
+    /// Wraps the codestream in the container (ISO/IEC 18181-2) with jbrd, Exif and xml boxes, or returns it bare when there are
+    /// none. Exif and XMP go in brob boxes, Brotli compressed, as cjxl writes them.
+    /// </summary>
+    internal static void WriteFile(Stream output, byte[] codestream, byte[]? exif, byte[]? xmp, byte[]? jbrd = null, byte[]? gainMap = null)
     {
         if (exif is null && xmp is null && jbrd is null && gainMap is null)
         {
@@ -264,12 +267,12 @@ internal sealed partial class JxlWriter : IFormatWriter, IRowFormatWriter
         if (exif is not null)
         {
             // The box starts with the offset of the TIFF header within it: none here.
-            MetadataBox(output, "Exif", [0, 0, 0, 0, .. exif], compressBoxes);
+            MetadataBox(output, "Exif", [0, 0, 0, 0, .. exif]);
         }
 
         if (xmp is not null)
         {
-            MetadataBox(output, "xml ", xmp, compressBoxes);
+            MetadataBox(output, "xml ", xmp);
         }
 
         Box(output, "jxlc", codestream);
@@ -308,18 +311,12 @@ internal sealed partial class JxlWriter : IFormatWriter, IRowFormatWriter
         return bundle.ToArray();
     }
 
-    /// <summary>Writes a metadata box, or a brob box holding it Brotli compressed at quality 4, as cjxl does for recompressed JPEGs.</summary>
-    private static void MetadataBox(Stream output, string type, byte[] payload, bool compress)
+    /// <summary>Writes a metadata box as a brob box holding it Brotli compressed at quality 9 with a 4 MiB window, as cjxl does.</summary>
+    private static void MetadataBox(Stream output, string type, byte[] payload)
     {
-        if (!compress)
-        {
-            Box(output, type, payload);
-            return;
-        }
-
         byte[] packed = new byte[4 + BrotliEncoder.GetMaxCompressedLength(payload.Length)];
         System.Text.Encoding.Latin1.GetBytes(type, packed);
-        if (!BrotliEncoder.TryCompress(payload, packed.AsSpan(4), out int written, 4, 22))
+        if (!BrotliEncoder.TryCompress(payload, packed.AsSpan(4), out int written, 9, 22))
         {
             throw new InvalidOperationException("Brotli compression failed.");
         }

@@ -200,7 +200,7 @@ internal sealed class JxlJpegEncoder
 
         byte[] codestream = e.Codestream(icc, orientation);
         using MemoryStream output = new();
-        JxlWriter.WriteFile(output, codestream, exif, xmp, jbrd, compressBoxes: true);
+        JxlWriter.WriteFile(output, codestream, exif, xmp, jbrd);
         return output.ToArray();
     }
 
