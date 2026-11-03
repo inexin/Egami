@@ -1,3 +1,5 @@
+using System.Runtime.Intrinsics;
+
 namespace Egami.Formats.Jxl;
 
 /// <summary>What the lossy encoder is asked for: the distance, the effort and the threads it may use.</summary>
@@ -1708,6 +1710,33 @@ internal sealed partial class JxlVarDctEncoder
         int x1 = Math.Min(x0 + 8, _width), y1 = Math.Min(y0 + 8, _height);
         float e0 = 0, e1 = 0, e2 = 0;
         int maskStride = _blocksX * 8;
+        if (x1 - x0 == 8 && Vector256.IsHardwareAccelerated)
+        {
+            // The products eight at a time, summed lane by lane in the scalar order: the same sums.
+            float[] a0 = a[0], a1 = a[1], a2 = a[2], b0 = b[0], b1 = b[1], b2 = b[2];
+            Span<float> p = stackalloc float[24];
+            for (int y = y0; y < y1; y++)
+            {
+                int at = (y * _width) + x0;
+                Vector256<float> m = Vector256.Create(mask, (y * maskStride) + x0);
+                Vector256<float> m2 = m * m;
+                Vector256<float> d0 = Vector256.Create(a0, at) - Vector256.Create(b0, at);
+                Vector256<float> d1 = Vector256.Create(a1, at) - Vector256.Create(b1, at);
+                Vector256<float> d2 = Vector256.Create(a2, at) - Vector256.Create(b2, at);
+                (m2 * d0 * d0).CopyTo(p);
+                (m2 * d1 * d1).CopyTo(p[8..]);
+                (m2 * d2 * d2).CopyTo(p[16..]);
+                for (int i = 0; i < 8; i++)
+                {
+                    e0 += p[i];
+                    e1 += p[8 + i];
+                    e2 += p[16 + i];
+                }
+            }
+
+            return (float)((12.339445295782363 * e0) + (1.0 * e1) + (0.2 * e2));
+        }
+
         for (int y = y0; y < y1; y++)
         {
             for (int x = x0; x < x1; x++)
