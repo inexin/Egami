@@ -6,12 +6,14 @@ namespace Egami.Formats.Jxl;
 /// </summary>
 internal sealed class JxlBitWriter : IJxlBitSink
 {
-    private readonly List<byte> _bytes = [];
+    // Whole bytes so far, then up to 31 pending bits; four bytes go out at a time.
+    private byte[] _bytes = new byte[64];
+    private int _length;
     private ulong _buffer;
     private int _count;
 
     /// <summary>Gets the bits written so far.</summary>
-    internal long BitLength => ((long)_bytes.Count * 8) + _count;
+    internal long BitLength => ((long)_length * 8) + _count;
 
     public void Write(ulong value, int bits)
     {
@@ -20,7 +22,7 @@ internal sealed class JxlBitWriter : IJxlBitSink
             return;
         }
 
-        if (bits > 56)
+        if (bits > 32)
         {
             Write(value & 0xFFFF_FFFF, 32);
             Write(value >> 32, bits - 32);
@@ -29,9 +31,31 @@ internal sealed class JxlBitWriter : IJxlBitSink
 
         _buffer |= (value & ((1UL << bits) - 1)) << _count;
         _count += bits;
+        if (_count >= 32)
+        {
+            Reserve(4);
+            System.Buffers.Binary.BinaryPrimitives.WriteUInt32LittleEndian(_bytes.AsSpan(_length), (uint)_buffer);
+            _length += 4;
+            _buffer >>= 32;
+            _count -= 32;
+        }
+    }
+
+    private void Reserve(int more)
+    {
+        if (_length + more > _bytes.Length)
+        {
+            Array.Resize(ref _bytes, Math.Max(_bytes.Length * 2, _length + more));
+        }
+    }
+
+    /// <summary>Moves the pending whole bytes out of the bit buffer.</summary>
+    private void FlushBytes()
+    {
         while (_count >= 8)
         {
-            _bytes.Add((byte)_buffer);
+            Reserve(1);
+            _bytes[_length++] = (byte)_buffer;
             _buffer >>= 8;
             _count -= 8;
         }
@@ -139,40 +163,63 @@ internal sealed class JxlBitWriter : IJxlBitSink
 
     internal void ZeroPadToByte()
     {
-        if (_count > 0)
+        if (_count % 8 != 0)
         {
-            Write(0, 8 - _count);
+            Write(0, 8 - (_count % 8));
         }
     }
 
     /// <summary>Appends another writer's whole bytes (it must be byte-aligned, as sections are).</summary>
     internal void Append(JxlBitWriter other)
     {
+        FlushBytes();
+        other.FlushBytes();
         if (_count != 0 || other._count != 0)
         {
             throw new InvalidOperationException("Only byte-aligned writers can be joined.");
         }
 
-        _bytes.AddRange(other._bytes);
+        Append(other._bytes.AsSpan(0, other._length));
     }
 
     /// <summary>Appends whole bytes; the writer must be byte-aligned.</summary>
-    internal void Append(byte[] bytes)
+    internal void Append(byte[] bytes) => Append(bytes.AsSpan());
+
+    private void Append(ReadOnlySpan<byte> bytes)
     {
+        FlushBytes();
         if (_count != 0)
         {
             throw new InvalidOperationException("Bytes can only be appended at a byte boundary.");
         }
 
-        _bytes.AddRange(bytes);
+        Reserve(bytes.Length);
+        bytes.CopyTo(_bytes.AsSpan(_length));
+        _length += bytes.Length;
     }
 
     /// <summary>Appends another writer's bits, unaligned, as if they had been written here.</summary>
     internal void AppendBits(JxlBitWriter other)
     {
-        foreach (byte b in other._bytes)
+        if (_count % 8 == 0)
         {
-            Write(b, 8);
+            // Aligned here: the whole bytes go across as they are.
+            FlushBytes();
+            Append(other._bytes.AsSpan(0, other._length));
+        }
+        else
+        {
+            ReadOnlySpan<byte> bytes = other._bytes.AsSpan(0, other._length);
+            int i = 0;
+            for (; i + 4 <= bytes.Length; i += 4)
+            {
+                Write(System.Buffers.Binary.BinaryPrimitives.ReadUInt32LittleEndian(bytes[i..]), 32);
+            }
+
+            for (; i < bytes.Length; i++)
+            {
+                Write(bytes[i], 8);
+            }
         }
 
         Write(other._buffer, other._count);
@@ -181,9 +228,10 @@ internal sealed class JxlBitWriter : IJxlBitSink
     internal byte[] ToArray()
     {
         ZeroPadToByte();
-        return [.. _bytes];
+        FlushBytes();
+        return _bytes.AsSpan(0, _length).ToArray();
     }
 
     /// <summary>Gets the byte count once padded.</summary>
-    internal int ByteLength => _bytes.Count + (_count > 0 ? 1 : 0);
+    internal int ByteLength => _length + ((_count + 7) / 8);
 }

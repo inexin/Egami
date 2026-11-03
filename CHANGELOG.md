@@ -38,6 +38,10 @@ Faster lossy JPEG XL encoding (roadmap 2.4.11). No API changes; every file is by
   3.8), effort 5 about 30 % fewer (2.2 to 2.4 times, from 3.1 to 3.4), effort 3 7 to 9 % fewer. flower (3.4 MP) at effort 7
   from 4.10 to 2.98 s on one thread and 609 to 507 ms on 24; it allocates 752 MiB a run instead of 1,036. Lossy decoding
   runs 3 to 8 % fewer instructions from the same DCTs.
+- Quantization works on eight coefficients at a time, the bit writer keeps a byte array and writes four bytes at a time,
+  and each block's tokens are written through a span: effort 3 runs 12 to 16 % fewer instructions again (2.1 to 3.4 times
+  cjxl's, from 2.5 to 3.9), efforts 5 and 7 about 2 to 3 % fewer. Allocation-budget tests now cap what an encode allocates
+  per pixel.
 
 KTX and KTX 2 textures, stage A (reading; roadmap 2.3.11). All additive.
 
