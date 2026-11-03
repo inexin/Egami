@@ -333,6 +333,22 @@ public class KtxReaderTests
         // Bad identifiers and impossible counts are corrupt.
         byte[] faces = KtxFiles.Ktx2(37, 1, 1, [new byte[4]], faces: 3);
         Assert.Throws<CorruptDataException>(() => Raster.Load(faces, Context));
+
+        // A level index that points back into the header is corrupt (found by fuzzing).
+        byte[] back = KtxFiles.Ktx2(37, 1, 1, [[1, 2, 3, 4]]);
+        BinaryPrimitives.WriteUInt64LittleEndian(back.AsSpan(80), 16);
+        Assert.Throws<CorruptDataException>(() => Raster.Load(back, Context));
+
+        // A zlib level whose stream breaks so ZLibStream throws an IOException reads as black, or throws when strict (found by
+        // fuzzing: the bytes below land in a small mip of rgb8-zlib.ktx2).
+        byte[] zlib = File.ReadAllBytes(KtxFiles.Corpus("rgb8-zlib.ktx2"));
+        new byte[] { 0x7D, 0xDA, 0x35, 0x3C, 0x50, 0x7F, 0xA4, 0xB3, 0x6A, 0x78, 0x4F, 0xE4 }.CopyTo(zlib, 395);
+        using (RasterList levels = Raster.LoadAll(zlib, Context, new KtxReaderOptions { IncludeMipLevels = true }))
+        {
+            Assert.Contains(levels.SelectMany(r => r.Metadata.Warnings), w => w.Id == "Ktx2.LevelDamaged");
+        }
+
+        Assert.Throws<CorruptDataException>(() => Raster.LoadAll(zlib, Context, new KtxReaderOptions { IncludeMipLevels = true, Recovery = RecoveryMode.Strict }));
     }
 
     [Fact]

@@ -369,7 +369,7 @@ internal sealed class KtxReader(KtxContainer container) : ExtendedReader, IMulti
 
             if (!_plan.Buffered)
             {
-                Input.Skip(_plan.ImageOffset - Input.Position);
+                SkipTo(_plan.ImageOffset);
             }
 
             if (_plan.Available < _plan.ImageBytes)
@@ -534,7 +534,7 @@ internal sealed class KtxReader(KtxContainer container) : ExtendedReader, IMulti
             }
 
             Input.CheckMemory(bytes);
-            Input.Skip(_plan.ImageOffset - Input.Position);
+            SkipTo(_plan.ImageOffset);
             _whole = Input.RentScratch((int)bytes, ClearMode.Zero);
             _wholeStart = 0;
             _wholeLength = ReadFully(_whole.Memory.Span[..(int)bytes]);
@@ -555,12 +555,7 @@ internal sealed class KtxReader(KtxContainer container) : ExtendedReader, IMulti
             }
 
             Input.CheckMemory(packed + size);
-            if (_plan.LevelOffset < Input.Position)
-            {
-                throw Input.Corrupt(_plan.LevelOffset, "The mip level lies before the data read so far.");
-            }
-
-            Input.Skip(_plan.LevelOffset - Input.Position);
+            SkipTo(_plan.LevelOffset);
             using IMemoryOwner<byte> source = Input.RentScratch((int)packed);
             Span<byte> compressed = source.Memory.Span[..(int)packed];
             int read = ReadFully(compressed);
@@ -598,6 +593,17 @@ internal sealed class KtxReader(KtxContainer container) : ExtendedReader, IMulti
             _wholeLength = (int)Math.Clamp(inflated - _plan.ImageOffset, 0, _plan.ImageBytes);
         }
 
+        /// <summary>Skips to <paramref name="offset"/>, which a damaged level index can put inside the data read so far.</summary>
+        private void SkipTo(long offset)
+        {
+            if (offset < Input.Position)
+            {
+                throw Input.Corrupt(offset, "The mip level lies before the data read so far.");
+            }
+
+            Input.Skip(offset - Input.Position);
+        }
+
         private int Zlib(Memory<byte> compressed, Span<byte> level)
         {
             MemoryStream packed = MemoryMarshal.TryGetArray(compressed, out ArraySegment<byte> segment)
@@ -620,8 +626,9 @@ internal sealed class KtxReader(KtxContainer container) : ExtendedReader, IMulti
 
                 return total;
             }
-            catch (InvalidDataException e)
+            catch (Exception e) when (e is InvalidDataException or IOException)
             {
+                // ZLibStream throws InvalidDataException for bad data and ZLibException, an IOException, for some broken streams.
                 throw Input.Corrupt(_plan.LevelOffset, $"The zlib data is damaged: {e.Message}");
             }
         }
