@@ -1,1 +1,8 @@
 #nullable enable
+const Egami.Compression.Zstandard.DefaultLevel = 3 -> int
+const Egami.Compression.Zstandard.MaxLevel = 22 -> int
+const Egami.Compression.Zstandard.MinLevel = 1 -> int
+Egami.Compression.Zstandard
+static Egami.Compression.Zstandard.Compress(System.ReadOnlySpan<byte> source, System.Span<byte> destination, int level = 3) -> int
+static Egami.Compression.Zstandard.Decompress(System.ReadOnlySpan<byte> source, System.Span<byte> destination) -> int
+static Egami.Compression.Zstandard.MaxCompressedLength(int length) -> int
