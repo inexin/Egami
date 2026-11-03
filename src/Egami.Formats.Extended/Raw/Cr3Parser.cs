@@ -191,6 +191,12 @@ internal static class Cr3Parser
             // follows the file's specular white (measured: 11892 and 14338 on two M50 files).
             frame.White = [camera.White];
         }
+        else if (frame.HasOwnLevels && RawCameraTable.Find(frame.Make, frame.Model) is { White: > 0 } older && frame.White[0] != older.White)
+        {
+            // An older body whose file's white is not the table's (a C-RAW M50: 14338 against the lossless file's 11892) gets
+            // Adobe's baseline exposure raised by their ratio, measured: 0.28 EV against the table's 0.02.
+            frame.BaselineExposure += Math.Log2(frame.White[0] / older.White);
+        }
         foreach (RawPreviewSource? p in new[] { fullJpeg, preview, thumbnail })
         {
             if (p is not null)
