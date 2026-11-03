@@ -69,7 +69,7 @@ internal static class JxlModularDecoder
             2 => n,
             3 => ((long)w + n) / 2,
             4 => Math.Abs((long)n - nw) < Math.Abs((long)w - nw) ? w : n,
-            5 => Math.Clamp((long)n + w - nw, Math.Min(w, n), Math.Max(w, n)),
+            5 => Gradient(w, n, nw),
             6 => (wpPrediction + 3) >> 3,
             7 => ne,
             8 => nw,
@@ -106,7 +106,7 @@ internal static class JxlModularDecoder
         JxlChannelPlan plan = tree.Plan(root);
         if (decoder.UsesLz77)
         {
-            Decode(r, new JxlAnyUintReader(decoder, multiplier), tree, plan, root, wp, c, previous, channel, stream);
+            Decode(r, new JxlLz77UintReader(decoder, multiplier), tree, plan, root, wp, c, previous, channel, stream);
         }
         else if (decoder.IsAns)
         {
@@ -158,28 +158,25 @@ internal static class JxlModularDecoder
         int width = c.Width;
         int height = c.Height;
         ref int data = ref Samples(c);
-        for (int y = 0; y < height; y++)
-        {
-            int row = y * width;
-            for (int x = 0; x < width; x++)
-            {
-                int w, n, nw;
-                if (y > 0 && x > 0)
-                {
-                    int up = row - width + x;
-                    w = Unsafe.Add(ref data, row + x - 1);
-                    n = Unsafe.Add(ref data, up);
-                    nw = Unsafe.Add(ref data, up - 1);
-                }
-                else
-                {
-                    w = x > 0 ? Unsafe.Add(ref data, row + x - 1) : y > 0 ? Unsafe.Add(ref data, row - width + x) : 0;
-                    n = y > 0 ? Unsafe.Add(ref data, row - width + x) : w;
-                    nw = w;
-                }
 
-                long prediction = Math.Clamp((long)n + w - nw, Math.Min(w, n), Math.Max(w, n));
-                Unsafe.Add(ref data, row + x) = unchecked((int)prediction + Residual(r, residuals, leaf));
+        // The first row predicts W (0 at its start); later rows start from N, and W is the last sample.
+        int w = 0;
+        for (int x = 0; x < width; x++)
+        {
+            w = unchecked(w + Residual(r, residuals, leaf));
+            Unsafe.Add(ref data, x) = w;
+        }
+
+        for (int y = 1; y < height; y++)
+        {
+            ref int row = ref Unsafe.Add(ref data, y * width);
+            ref int up = ref Unsafe.Add(ref row, -width);
+            w = unchecked(up + Residual(r, residuals, leaf));
+            row = w;
+            for (int x = 1; x < width; x++)
+            {
+                w = unchecked((int)Gradient(w, Unsafe.Add(ref up, x), Unsafe.Add(ref up, x - 1)) + Residual(r, residuals, leaf));
+                Unsafe.Add(ref row, x) = w;
             }
         }
     }
@@ -228,7 +225,7 @@ internal static class JxlModularDecoder
                 long wpPrediction = weighted?.Predict(n, nw, ne, w, nn) ?? 0;
                 int grad = unchecked(w + n - nw);
                 int v = Property(property, channel, stream, x, y, w, n, nw, ne, nn, ww, prevGrad, grad, weighted);
-                JxlLeaf leaf = leaves[lookup[Math.Clamp(v, min, max) - min]];
+                JxlLeaf leaf = leaves[lookup[Math.Min(Math.Max(v, min), max) - min]];
                 prevGrad = grad;
                 long prediction = default(TPredictor).Predict(leaf.Predictor, w, n, nw, ne, nn, ww, nee, wpPrediction);
                 int sample = unchecked((int)prediction + Residual(r, residuals, leaf));
@@ -310,6 +307,10 @@ internal static class JxlModularDecoder
             }
         }
     }
+
+    /// <summary>Gets predictor 5: W + N - NW clamped between W and N.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static long Gradient(int w, int n, int nw) => Math.Min(Math.Max((long)n + w - nw, Math.Min(w, n)), Math.Max(w, n));
 
     /// <summary>Gets a reference to a channel's first sample, after checking it holds width × height samples.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -423,7 +424,7 @@ internal static class JxlModularDecoder
     /// <summary>Predictor 5, the clamped gradient, for subtrees whose leaves all use it.</summary>
     private readonly struct GradientPredictor : IPredictor
     {
-        public long Predict(int predictor, int w, int n, int nw, int ne, int nn, int ww, int nee, long wpPrediction) => Math.Clamp((long)n + w - nw, Math.Min(w, n), Math.Max(w, n));
+        public long Predict(int predictor, int w, int n, int nw, int ne, int nn, int ww, int nee, long wpPrediction) => Gradient(w, n, nw);
     }
 
     /// <summary>Predictor 6, the weighted predictor, for subtrees whose leaves all use it.</summary>

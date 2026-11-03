@@ -341,7 +341,7 @@ internal sealed class JxlVarDct
         decoder.Begin(r);
         if (decoder.UsesLz77)
         {
-            DecodePassGroup(r, new JxlAnyUintReader(decoder, 0), hfPass, clusters, shift, bx0, by0, gbw, gbh);
+            DecodePassGroup(r, new JxlLz77UintReader(decoder, 0), hfPass, clusters, shift, bx0, by0, gbw, gbh);
         }
         else if (decoder.IsAns)
         {

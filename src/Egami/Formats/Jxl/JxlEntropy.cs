@@ -174,11 +174,13 @@ internal sealed class JxlEntropyDecoder
     /// <summary>Decodes one integer with the cluster already looked up; <paramref name="distanceMultiplier"/> enables LZ77's special distances.</summary>
     internal uint ReadUintClustered(JxlBitReader r, int cluster, uint distanceMultiplier)
     {
-        if (!_lz77)
-        {
-            return ReadUint(r, _configs[cluster], ReadSymbol(r, cluster));
-        }
+        return _lz77 ? ReadLz77Uint(r, cluster, distanceMultiplier) : ReadUint(r, _configs[cluster], ReadSymbol(r, cluster));
+    }
 
+    /// <summary>Decodes one integer of a stream with LZ77; the copy's start and the window's growth are out of line.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal uint ReadLz77Uint(JxlBitReader r, int cluster, uint distanceMultiplier)
+    {
         uint value;
         if (_numToCopy > 0)
         {
@@ -188,55 +190,62 @@ internal sealed class JxlEntropyDecoder
         else
         {
             uint token = ReadSymbol(r, cluster);
-            if (token >= _minSymbol)
-            {
-                if (_numDecoded == 0)
-                {
-                    throw r.Corrupt("An LZ77 copy comes before any value was decoded.");
-                }
-
-                int distanceCluster = _clusters[^1];
-                ulong length = (ulong)ReadUint(r, _lengthConfig, token - _minSymbol) + _minLength;
-                if (length > uint.MaxValue)
-                {
-                    throw r.Corrupt("An LZ77 copy is too long.");
-                }
-
-                _numToCopy = (uint)length;
-                uint distance = ReadUint(r, _configs[distanceCluster], ReadSymbol(r, distanceCluster));
-                if (distanceMultiplier != 0)
-                {
-                    if (distance < 120)
-                    {
-                        int d = SpecialDistances[2 * distance] + ((int)distanceMultiplier * SpecialDistances[(2 * distance) + 1]);
-                        distance = (uint)Math.Max(d - 1, 0);
-                    }
-                    else
-                    {
-                        distance -= 120;
-                    }
-                }
-
-                distance = Math.Min(Math.Min(distance, (1u << 20) - 1) + 1, _numDecoded);
-                _copyPos = _numDecoded - distance;
-                value = _window![_copyPos++ & 0xFFFFF];
-                _numToCopy--;
-            }
-            else
-            {
-                value = ReadUint(r, _configs[cluster], token);
-            }
+            value = token < _minSymbol ? ReadUint(r, _configs[cluster], token) : StartCopy(r, token, distanceMultiplier);
         }
 
         int at = (int)(_numDecoded & 0xFFFFF);
-        if (_window is null || at >= _window.Length)
+        uint[]? window = _window;
+        if (window is null || at >= window.Length)
         {
-            Array.Resize(ref _window, Math.Min(Math.Max(4096, (_window?.Length ?? 0) * 2), 1 << 20));
+            window = GrowWindow();
         }
 
-        _window[at] = value;
+        window[at] = value;
         _numDecoded++;
         return value;
+    }
+
+    /// <summary>Starts an LZ77 copy from its length token and gives its first value.</summary>
+    private uint StartCopy(JxlBitReader r, uint token, uint distanceMultiplier)
+    {
+        if (_numDecoded == 0)
+        {
+            throw r.Corrupt("An LZ77 copy comes before any value was decoded.");
+        }
+
+        int distanceCluster = _clusters[^1];
+        ulong length = (ulong)ReadUint(r, _lengthConfig, token - _minSymbol) + _minLength;
+        if (length > uint.MaxValue)
+        {
+            throw r.Corrupt("An LZ77 copy is too long.");
+        }
+
+        _numToCopy = (uint)length;
+        uint distance = ReadUint(r, _configs[distanceCluster], ReadSymbol(r, distanceCluster));
+        if (distanceMultiplier != 0)
+        {
+            if (distance < 120)
+            {
+                int d = SpecialDistances[2 * distance] + ((int)distanceMultiplier * SpecialDistances[(2 * distance) + 1]);
+                distance = (uint)Math.Max(d - 1, 0);
+            }
+            else
+            {
+                distance -= 120;
+            }
+        }
+
+        distance = Math.Min(Math.Min(distance, (1u << 20) - 1) + 1, _numDecoded);
+        _copyPos = _numDecoded - distance;
+        uint value = _window![_copyPos++ & 0xFFFFF];
+        _numToCopy--;
+        return value;
+    }
+
+    private uint[] GrowWindow()
+    {
+        Array.Resize(ref _window, Math.Min(Math.Max(4096, (_window?.Length ?? 0) * 2), 1 << 20));
+        return _window;
     }
 
     /// <summary>Gets whether the distributions are ANS rather than prefix codes.</summary>
@@ -427,10 +436,10 @@ internal readonly struct JxlPrefixUintReader(JxlEntropyDecoder decoder) : IJxlUi
     public uint Read(JxlBitReader r, int cluster) => decoder.ReadPrefixUint(r, cluster);
 }
 
-/// <summary>Reads any stream, LZ77 included, with the special distances for <paramref name="multiplier"/> samples a row (0 for none).</summary>
-internal readonly struct JxlAnyUintReader(JxlEntropyDecoder decoder, uint multiplier) : IJxlUintReader
+/// <summary>Reads a stream with LZ77, with the special distances for <paramref name="multiplier"/> samples a row (0 for none).</summary>
+internal readonly struct JxlLz77UintReader(JxlEntropyDecoder decoder, uint multiplier) : IJxlUintReader
 {
-    public uint Read(JxlBitReader r, int cluster) => decoder.ReadUintClustered(r, cluster, multiplier);
+    public uint Read(JxlBitReader r, int cluster) => decoder.ReadLz77Uint(r, cluster, multiplier);
 }
 
 /// <summary>A hybrid unsigned integer configuration (C.2.6).</summary>
