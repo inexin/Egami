@@ -25,7 +25,6 @@ internal static class JxlModularDecoder
         JxlEntropyDecoder decoder = tree.Decoder.Clone();
         decoder.Begin(r);
         int maxPrevious = tree.MaxProperty >= 16 ? ((tree.MaxProperty - 16) / 4) + 1 : 0;
-        Span<int> properties = stackalloc int[16 + (4 * maxPrevious)];
         List<JxlChannel> previous = [];
         for (int i = first; i < end; i++)
         {
@@ -52,7 +51,7 @@ internal static class JxlModularDecoder
                 continue;
             }
 
-            DecodeChannel(r, tree, decoder, root, wp, c, previous, properties, i - first, stream, multiplier);
+            DecodeChannel(r, tree, decoder, root, wp, c, previous, i - first, stream, multiplier);
         }
 
         decoder.Finish(r);
@@ -100,106 +99,262 @@ internal static class JxlModularDecoder
         }
     }
 
-    private static void DecodeChannel(JxlBitReader r, JxlTree tree, JxlEntropyDecoder decoder, int root, JxlWpParams wp, JxlChannel c, List<JxlChannel> previous, Span<int> properties, int channel, int stream, uint multiplier)
+    private static void DecodeChannel(JxlBitReader r, JxlTree tree, JxlEntropyDecoder decoder, int root, JxlWpParams wp, JxlChannel c, List<JxlChannel> previous, int channel, int stream, uint multiplier)
+    {
+        // The residual reader is a type argument, so each loop is compiled without the per-sample LZ77 and coding checks.
+        JxlChannelPlan plan = tree.Plan(root);
+        if (decoder.UsesLz77)
+        {
+            Decode(r, new Lz77Residuals(decoder, multiplier), tree, plan, root, wp, c, previous, channel, stream);
+        }
+        else if (decoder.IsAns)
+        {
+            Decode(r, new AnsResiduals(decoder), tree, plan, root, wp, c, previous, channel, stream);
+        }
+        else
+        {
+            Decode(r, new PrefixResiduals(decoder), tree, plan, root, wp, c, previous, channel, stream);
+        }
+    }
+
+    private static void Decode<TResiduals>(JxlBitReader r, TResiduals residuals, JxlTree tree, JxlChannelPlan plan, int root, JxlWpParams wp, JxlChannel c, List<JxlChannel> previous, int channel, int stream)
+        where TResiduals : struct, IResiduals
+    {
+        switch (plan.Kind)
+        {
+            case JxlChannelPlanKind.Single when plan.Leaf.Predictor == 5:
+                DecodeGradient(r, residuals, plan.Leaf, c);
+                break;
+            case JxlChannelPlanKind.Single:
+                DecodeSingle(r, residuals, plan.Leaf, plan.UsesWp ? new JxlWeightedPredictor(c.Width, wp) : null, c);
+                break;
+            case JxlChannelPlanKind.Lookup:
+                DecodeLookup(r, residuals, tree.Leaves, plan, plan.UsesWp ? new JxlWeightedPredictor(c.Width, wp) : null, c, channel, stream);
+                break;
+            default:
+                DecodeWalk(r, residuals, tree, plan, plan.UsesWp ? new JxlWeightedPredictor(c.Width, wp) : null, c, previous, channel, stream);
+                break;
+        }
+    }
+
+    /// <summary>Decodes a channel whose one leaf predicts with the clamped gradient, the usual lossless leaf.</summary>
+    private static void DecodeGradient<TResiduals>(JxlBitReader r, TResiduals residuals, JxlLeaf leaf, JxlChannel c)
+        where TResiduals : struct, IResiduals
     {
         int width = c.Width;
         int height = c.Height;
         int[] data = c.Data;
-        JxlWeightedPredictor? weighted = tree.UsesWp ? new JxlWeightedPredictor(width, wp) : null;
-        int[] property = tree.Properties;
-        int[] value = tree.Values;
-        int[] left = tree.Lefts;
-        int[] right = tree.Rights;
         for (int y = 0; y < height; y++)
         {
             int row = y * width;
-            int prevGrad = 0;
-            bool inner = y > 1;
             for (int x = 0; x < width; x++)
             {
-                int w, n, nw, ne, nn, ww, nee;
-                if (inner && x > 1 && x + 2 < width)
+                int w, n, nw;
+                if (y > 0 && x > 0)
                 {
-                    // Away from the edges every neighbour exists.
                     int up = row - width + x;
                     w = data[row + x - 1];
                     n = data[up];
                     nw = data[up - 1];
-                    ne = data[up + 1];
-                    nn = data[up - width];
-                    ww = data[row + x - 2];
-                    nee = data[up + 2];
                 }
                 else
                 {
-                    // Neighbours with the spec's edge rules.
                     w = x > 0 ? data[row + x - 1] : y > 0 ? data[row - width + x] : 0;
                     n = y > 0 ? data[row - width + x] : w;
-                    nw = x > 0 && y > 0 ? data[row - width + x - 1] : w;
-                    ne = x + 1 < width && y > 0 ? data[row - width + x + 1] : n;
-                    nn = y > 1 ? data[row - (2 * width) + x] : n;
-                    ww = x > 1 ? data[row + x - 2] : w;
-                    nee = x + 2 < width && y > 0 ? data[row - width + x + 2] : ne;
+                    nw = w;
                 }
 
+                long prediction = Math.Clamp((long)n + w - nw, Math.Min(w, n), Math.Max(w, n));
+                data[row + x] = unchecked((int)prediction + Residual(r, residuals, leaf));
+            }
+        }
+    }
+
+    /// <summary>Decodes a channel with one leaf and any predictor.</summary>
+    private static void DecodeSingle<TResiduals>(JxlBitReader r, TResiduals residuals, JxlLeaf leaf, JxlWeightedPredictor? weighted, JxlChannel c)
+        where TResiduals : struct, IResiduals
+    {
+        int width = c.Width;
+        int height = c.Height;
+        int[] data = c.Data;
+        for (int y = 0; y < height; y++)
+        {
+            int row = y * width;
+            for (int x = 0; x < width; x++)
+            {
+                Neighbours(data, row, width, x, y, out int w, out int n, out int nw, out int ne, out int nn, out int ww, out int nee);
                 long wpPrediction = weighted?.Predict(n, nw, ne, w, nn) ?? 0;
-                int grad = unchecked(w + n - nw);
-
-                // The tree is walked with each property worked out only when a node tests it.
-                int leaf = root;
-                while (true)
-                {
-                    int p = property[leaf];
-                    if (p < 0)
-                    {
-                        break;
-                    }
-
-                    int v = p switch
-                    {
-                        0 => channel,
-                        1 => stream,
-                        2 => y,
-                        3 => x,
-                        4 => (int)(uint)Math.Abs((long)n),
-                        5 => (int)(uint)Math.Abs((long)w),
-                        6 => n,
-                        7 => w,
-                        8 => unchecked(w - prevGrad),
-                        9 => grad,
-                        10 => unchecked(w - nw),
-                        11 => unchecked(nw - n),
-                        12 => unchecked(n - ne),
-                        13 => unchecked(n - nn),
-                        14 => unchecked(w - ww),
-                        15 => weighted?.MaxError ?? 0,
-                        _ => PreviousProperty(previous, p, x, y),
-                    };
-                    leaf = v > value[leaf] ? left[leaf] : right[leaf];
-                }
-
-                prevGrad = grad;
-                long prediction = Predict(tree.Predictor(leaf), w, n, nw, ne, nn, ww, nee, wpPrediction);
-                int diff = unchecked((JxlHeaders.UnpackSigned(decoder.ReadUintClustered(r, tree.Cluster(leaf), multiplier)) * tree.Multiplier(leaf)) + tree.Offset(leaf));
-                int sample = unchecked((int)prediction + diff);
+                long prediction = Predict(leaf.Predictor, w, n, nw, ne, nn, ww, nee, wpPrediction);
+                int sample = unchecked((int)prediction + Residual(r, residuals, leaf));
                 data[row + x] = sample;
                 weighted?.Record(sample);
             }
         }
     }
 
-    /// <summary>Gets property 16 or above: one of the four a previous channel gives, or 0 when there is no such channel.</summary>
-    private static int PreviousProperty(List<JxlChannel> previous, int p, int x, int y)
+    /// <summary>Decodes a channel whose subtree tests one property, its leaf found in a table.</summary>
+    private static void DecodeLookup<TResiduals>(JxlBitReader r, TResiduals residuals, JxlLeaf[] leaves, JxlChannelPlan plan, JxlWeightedPredictor? weighted, JxlChannel c, int channel, int stream)
+        where TResiduals : struct, IResiduals
     {
-        int k = (p - 16) / 4;
-        if (k >= previous.Count)
+        int width = c.Width;
+        int height = c.Height;
+        int[] data = c.Data;
+        int[] lookup = plan.Lookup!;
+        int property = plan.Property;
+        int min = plan.Min;
+        int max = plan.Max;
+        for (int y = 0; y < height; y++)
         {
-            return 0;
+            int row = y * width;
+            int prevGrad = 0;
+            for (int x = 0; x < width; x++)
+            {
+                Neighbours(data, row, width, x, y, out int w, out int n, out int nw, out int ne, out int nn, out int ww, out int nee);
+                long wpPrediction = weighted?.Predict(n, nw, ne, w, nn) ?? 0;
+                int grad = unchecked(w + n - nw);
+                int v = Property(property, channel, stream, x, y, w, n, nw, ne, nn, ww, prevGrad, grad, weighted);
+                JxlLeaf leaf = leaves[lookup[Math.Clamp(v, min, max) - min]];
+                prevGrad = grad;
+                long prediction = Predict(leaf.Predictor, w, n, nw, ne, nn, ww, nee, wpPrediction);
+                int sample = unchecked((int)prediction + Residual(r, residuals, leaf));
+                data[row + x] = sample;
+                weighted?.Record(sample);
+            }
         }
+    }
 
-        Span<int> four = stackalloc int[4];
-        PreviousProperties(previous[k], x, y, four);
-        return four[(p - 16) % 4];
+    /// <summary>Decodes a channel by walking its flattened subtree for every sample, with every property worked out first.</summary>
+    private static void DecodeWalk<TResiduals>(JxlBitReader r, TResiduals residuals, JxlTree tree, JxlChannelPlan plan, JxlWeightedPredictor? weighted, JxlChannel c, List<JxlChannel> previous, int channel, int stream)
+        where TResiduals : struct, IResiduals
+    {
+        int width = c.Width;
+        int height = c.Height;
+        int[] data = c.Data;
+        JxlFlatNode[] flat = plan.Flat!;
+        JxlLeaf[] leaves = tree.Leaves;
+        bool usesPrevious = plan.UsesPrevious;
+        int maxPrevious = tree.MaxProperty >= 16 ? ((tree.MaxProperty - 16) / 4) + 1 : 0;
+
+        // Properties of channels this stream does not have stay 0.
+        Span<int> props = stackalloc int[16 + (4 * maxPrevious)];
+        props.Clear();
+        props[0] = channel;
+        props[1] = stream;
+        for (int y = 0; y < height; y++)
+        {
+            int row = y * width;
+            int prevGrad = 0;
+            props[2] = y;
+            for (int x = 0; x < width; x++)
+            {
+                Neighbours(data, row, width, x, y, out int w, out int n, out int nw, out int ne, out int nn, out int ww, out int nee);
+                long wpPrediction = weighted?.Predict(n, nw, ne, w, nn) ?? 0;
+                int grad = unchecked(w + n - nw);
+                props[3] = x;
+                props[4] = (int)(uint)Math.Abs((long)n);
+                props[5] = (int)(uint)Math.Abs((long)w);
+                props[6] = n;
+                props[7] = w;
+                props[8] = unchecked(w - prevGrad);
+                props[9] = grad;
+                props[10] = unchecked(w - nw);
+                props[11] = unchecked(nw - n);
+                props[12] = unchecked(n - ne);
+                props[13] = unchecked(n - nn);
+                props[14] = unchecked(w - ww);
+                props[15] = weighted?.MaxError ?? 0;
+                if (usesPrevious)
+                {
+                    for (int k = 0; k < previous.Count; k++)
+                    {
+                        PreviousProperties(previous[k], x, y, props.Slice(16 + (4 * k), 4));
+                    }
+                }
+
+                int at = 0;
+                while (true)
+                {
+                    JxlFlatNode f = flat[at];
+                    if (f.Leaf >= 0)
+                    {
+                        at = f.Leaf;
+                        break;
+                    }
+
+                    int inLeft = props[f.LeftProperty] > f.LeftValue ? 0 : 1;
+                    int inRight = props[f.RightProperty] > f.RightValue ? 2 : 3;
+                    at = f.Child + (props[f.Property] > f.Value ? inLeft : inRight);
+                }
+
+                prevGrad = grad;
+                JxlLeaf leaf = leaves[at];
+                long prediction = Predict(leaf.Predictor, w, n, nw, ne, nn, ww, nee, wpPrediction);
+                int sample = unchecked((int)prediction + Residual(r, residuals, leaf));
+                data[row + x] = sample;
+                weighted?.Record(sample);
+            }
+        }
+    }
+
+    /// <summary>Gets sample (x, y)'s neighbours, with the spec's edge rules near the edges.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static void Neighbours(int[] data, int row, int width, int x, int y, out int w, out int n, out int nw, out int ne, out int nn, out int ww, out int nee)
+    {
+        if (y > 1 && x > 1 && x + 2 < width)
+        {
+            // Away from the edges every neighbour exists.
+            int up = row - width + x;
+            w = data[row + x - 1];
+            n = data[up];
+            nw = data[up - 1];
+            ne = data[up + 1];
+            nn = data[up - width];
+            ww = data[row + x - 2];
+            nee = data[up + 2];
+        }
+        else
+        {
+            w = x > 0 ? data[row + x - 1] : y > 0 ? data[row - width + x] : 0;
+            n = y > 0 ? data[row - width + x] : w;
+            nw = x > 0 && y > 0 ? data[row - width + x - 1] : w;
+            ne = x + 1 < width && y > 0 ? data[row - width + x + 1] : n;
+            nn = y > 1 ? data[row - (2 * width) + x] : n;
+            ww = x > 1 ? data[row + x - 2] : w;
+            nee = x + 2 < width && y > 0 ? data[row - width + x + 2] : ne;
+        }
+    }
+
+    /// <summary>Gets property <paramref name="p"/>, below 16, of the current sample (H.4.1).</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static int Property(int p, int channel, int stream, int x, int y, int w, int n, int nw, int ne, int nn, int ww, int prevGrad, int grad, JxlWeightedPredictor? weighted)
+    {
+        return p switch
+        {
+            0 => channel,
+            1 => stream,
+            2 => y,
+            3 => x,
+            4 => (int)(uint)Math.Abs((long)n),
+            5 => (int)(uint)Math.Abs((long)w),
+            6 => n,
+            7 => w,
+            8 => unchecked(w - prevGrad),
+            9 => grad,
+            10 => unchecked(w - nw),
+            11 => unchecked(nw - n),
+            12 => unchecked(n - ne),
+            13 => unchecked(n - nn),
+            14 => unchecked(w - ww),
+            _ => weighted?.MaxError ?? 0,
+        };
+    }
+
+    /// <summary>Decodes the next residual in the leaf's context, scaled and offset.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static int Residual<TResiduals>(JxlBitReader r, TResiduals residuals, JxlLeaf leaf)
+        where TResiduals : struct, IResiduals
+    {
+        return unchecked((JxlHeaders.UnpackSigned(residuals.Read(r, leaf.Cluster)) * leaf.Multiplier) + leaf.Offset);
     }
 
     /// <summary>The four properties a previous channel gives: |c|, c, |c - g| and c - g, with g its clamped gradient.</summary>
@@ -233,5 +388,25 @@ internal static class JxlModularDecoder
         output[1] = c;
         output[2] = (int)(uint)Math.Abs((long)c - g);
         output[3] = unchecked(c - g);
+    }
+
+    private interface IResiduals
+    {
+        uint Read(JxlBitReader r, int cluster);
+    }
+
+    private readonly struct AnsResiduals(JxlEntropyDecoder decoder) : IResiduals
+    {
+        public uint Read(JxlBitReader r, int cluster) => decoder.ReadAnsUint(r, cluster);
+    }
+
+    private readonly struct PrefixResiduals(JxlEntropyDecoder decoder) : IResiduals
+    {
+        public uint Read(JxlBitReader r, int cluster) => decoder.ReadPrefixUint(r, cluster);
+    }
+
+    private readonly struct Lz77Residuals(JxlEntropyDecoder decoder, uint multiplier) : IResiduals
+    {
+        public uint Read(JxlBitReader r, int cluster) => decoder.ReadUintClustered(r, cluster, multiplier);
     }
 }

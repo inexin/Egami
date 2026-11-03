@@ -1,3 +1,5 @@
+using System.Runtime.CompilerServices;
+
 namespace Egami.Formats.Jxl;
 
 /// <summary>
@@ -236,6 +238,17 @@ internal sealed class JxlEntropyDecoder
         _numDecoded++;
         return value;
     }
+
+    /// <summary>Gets whether the distributions are ANS rather than prefix codes.</summary>
+    internal bool IsAns => _ans is not null;
+
+    /// <summary>Decodes one integer of an ANS stream without LZ77 that <see cref="Begin"/> started.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal uint ReadAnsUint(JxlBitReader r, int cluster) => ReadUint(r, _configs[cluster], _ans![cluster].ReadSymbol(r, ref _state));
+
+    /// <summary>Decodes one integer of a prefix-coded stream without LZ77.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal uint ReadPrefixUint(JxlBitReader r, int cluster) => ReadUint(r, _configs[cluster], _prefix![cluster].ReadSymbol(r));
 
     /// <summary>Reads a permutation (C.6.3): a Lehmer code of <paramref name="size"/> entries after <paramref name="skip"/> fixed ones.</summary>
     internal int[] ReadPermutation(JxlBitReader r, int size, int skip)
