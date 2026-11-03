@@ -1,4 +1,5 @@
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace Egami.Formats.Jxl;
 
@@ -129,7 +130,20 @@ internal static class JxlModularDecoder
                 DecodeSingle(r, residuals, plan.Leaf, plan.UsesWp ? new JxlWeightedPredictor(c.Width, wp) : null, c);
                 break;
             case JxlChannelPlanKind.Lookup:
-                DecodeLookup(r, residuals, tree.Leaves, plan, plan.UsesWp ? new JxlWeightedPredictor(c.Width, wp) : null, c, channel, stream);
+                JxlWeightedPredictor? weighted = plan.UsesWp ? new JxlWeightedPredictor(c.Width, wp) : null;
+                switch (plan.Predictor)
+                {
+                    case 5:
+                        DecodeLookup<TResiduals, GradientPredictor>(r, residuals, tree.Leaves, plan, weighted, c, channel, stream);
+                        break;
+                    case 6:
+                        DecodeLookup<TResiduals, WeightedPredictor>(r, residuals, tree.Leaves, plan, weighted, c, channel, stream);
+                        break;
+                    default:
+                        DecodeLookup<TResiduals, AnyPredictor>(r, residuals, tree.Leaves, plan, weighted, c, channel, stream);
+                        break;
+                }
+
                 break;
             default:
                 DecodeWalk(r, residuals, tree, plan, plan.UsesWp ? new JxlWeightedPredictor(c.Width, wp) : null, c, previous, channel, stream);
@@ -143,7 +157,7 @@ internal static class JxlModularDecoder
     {
         int width = c.Width;
         int height = c.Height;
-        int[] data = c.Data;
+        ref int data = ref Samples(c);
         for (int y = 0; y < height; y++)
         {
             int row = y * width;
@@ -153,19 +167,19 @@ internal static class JxlModularDecoder
                 if (y > 0 && x > 0)
                 {
                     int up = row - width + x;
-                    w = data[row + x - 1];
-                    n = data[up];
-                    nw = data[up - 1];
+                    w = Unsafe.Add(ref data, row + x - 1);
+                    n = Unsafe.Add(ref data, up);
+                    nw = Unsafe.Add(ref data, up - 1);
                 }
                 else
                 {
-                    w = x > 0 ? data[row + x - 1] : y > 0 ? data[row - width + x] : 0;
-                    n = y > 0 ? data[row - width + x] : w;
+                    w = x > 0 ? Unsafe.Add(ref data, row + x - 1) : y > 0 ? Unsafe.Add(ref data, row - width + x) : 0;
+                    n = y > 0 ? Unsafe.Add(ref data, row - width + x) : w;
                     nw = w;
                 }
 
                 long prediction = Math.Clamp((long)n + w - nw, Math.Min(w, n), Math.Max(w, n));
-                data[row + x] = unchecked((int)prediction + Residual(r, residuals, leaf));
+                Unsafe.Add(ref data, row + x) = unchecked((int)prediction + Residual(r, residuals, leaf));
             }
         }
     }
@@ -176,29 +190,30 @@ internal static class JxlModularDecoder
     {
         int width = c.Width;
         int height = c.Height;
-        int[] data = c.Data;
+        ref int data = ref Samples(c);
         for (int y = 0; y < height; y++)
         {
             int row = y * width;
             for (int x = 0; x < width; x++)
             {
-                Neighbours(data, row, width, x, y, out int w, out int n, out int nw, out int ne, out int nn, out int ww, out int nee);
+                Neighbours(ref data, row, width, x, y, out int w, out int n, out int nw, out int ne, out int nn, out int ww, out int nee);
                 long wpPrediction = weighted?.Predict(n, nw, ne, w, nn) ?? 0;
                 long prediction = Predict(leaf.Predictor, w, n, nw, ne, nn, ww, nee, wpPrediction);
                 int sample = unchecked((int)prediction + Residual(r, residuals, leaf));
-                data[row + x] = sample;
+                Unsafe.Add(ref data, row + x) = sample;
                 weighted?.Record(sample);
             }
         }
     }
 
     /// <summary>Decodes a channel whose subtree tests one property, its leaf found in a table.</summary>
-    private static void DecodeLookup<TResiduals>(JxlBitReader r, TResiduals residuals, JxlLeaf[] leaves, JxlChannelPlan plan, JxlWeightedPredictor? weighted, JxlChannel c, int channel, int stream)
+    private static void DecodeLookup<TResiduals, TPredictor>(JxlBitReader r, TResiduals residuals, JxlLeaf[] leaves, JxlChannelPlan plan, JxlWeightedPredictor? weighted, JxlChannel c, int channel, int stream)
         where TResiduals : struct, IJxlUintReader
+        where TPredictor : struct, IPredictor
     {
         int width = c.Width;
         int height = c.Height;
-        int[] data = c.Data;
+        ref int data = ref Samples(c);
         int[] lookup = plan.Lookup!;
         int property = plan.Property;
         int min = plan.Min;
@@ -209,15 +224,15 @@ internal static class JxlModularDecoder
             int prevGrad = 0;
             for (int x = 0; x < width; x++)
             {
-                Neighbours(data, row, width, x, y, out int w, out int n, out int nw, out int ne, out int nn, out int ww, out int nee);
+                Neighbours(ref data, row, width, x, y, out int w, out int n, out int nw, out int ne, out int nn, out int ww, out int nee);
                 long wpPrediction = weighted?.Predict(n, nw, ne, w, nn) ?? 0;
                 int grad = unchecked(w + n - nw);
                 int v = Property(property, channel, stream, x, y, w, n, nw, ne, nn, ww, prevGrad, grad, weighted);
                 JxlLeaf leaf = leaves[lookup[Math.Clamp(v, min, max) - min]];
                 prevGrad = grad;
-                long prediction = Predict(leaf.Predictor, w, n, nw, ne, nn, ww, nee, wpPrediction);
+                long prediction = default(TPredictor).Predict(leaf.Predictor, w, n, nw, ne, nn, ww, nee, wpPrediction);
                 int sample = unchecked((int)prediction + Residual(r, residuals, leaf));
-                data[row + x] = sample;
+                Unsafe.Add(ref data, row + x) = sample;
                 weighted?.Record(sample);
             }
         }
@@ -229,7 +244,7 @@ internal static class JxlModularDecoder
     {
         int width = c.Width;
         int height = c.Height;
-        int[] data = c.Data;
+        ref int data = ref Samples(c);
         JxlFlatNode[] flat = plan.Flat!;
         JxlLeaf[] leaves = tree.Leaves;
         bool usesPrevious = plan.UsesPrevious;
@@ -247,7 +262,7 @@ internal static class JxlModularDecoder
             props[2] = y;
             for (int x = 0; x < width; x++)
             {
-                Neighbours(data, row, width, x, y, out int w, out int n, out int nw, out int ne, out int nn, out int ww, out int nee);
+                Neighbours(ref data, row, width, x, y, out int w, out int n, out int nw, out int ne, out int nn, out int ww, out int nee);
                 long wpPrediction = weighted?.Predict(n, nw, ne, w, nn) ?? 0;
                 int grad = unchecked(w + n - nw);
                 props[3] = x;
@@ -290,37 +305,41 @@ internal static class JxlModularDecoder
                 JxlLeaf leaf = leaves[at];
                 long prediction = Predict(leaf.Predictor, w, n, nw, ne, nn, ww, nee, wpPrediction);
                 int sample = unchecked((int)prediction + Residual(r, residuals, leaf));
-                data[row + x] = sample;
+                Unsafe.Add(ref data, row + x) = sample;
                 weighted?.Record(sample);
             }
         }
     }
 
+    /// <summary>Gets a reference to a channel's first sample, after checking it holds width × height samples.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static ref int Samples(JxlChannel c) => ref MemoryMarshal.GetReference(c.Data.AsSpan(0, c.Width * c.Height));
+
     /// <summary>Gets sample (x, y)'s neighbours, with the spec's edge rules near the edges.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static void Neighbours(int[] data, int row, int width, int x, int y, out int w, out int n, out int nw, out int ne, out int nn, out int ww, out int nee)
+    private static void Neighbours(ref int data, int row, int width, int x, int y, out int w, out int n, out int nw, out int ne, out int nn, out int ww, out int nee)
     {
         if (y > 1 && x > 1 && x + 2 < width)
         {
             // Away from the edges every neighbour exists.
             int up = row - width + x;
-            w = data[row + x - 1];
-            n = data[up];
-            nw = data[up - 1];
-            ne = data[up + 1];
-            nn = data[up - width];
-            ww = data[row + x - 2];
-            nee = data[up + 2];
+            w = Unsafe.Add(ref data, row + x - 1);
+            n = Unsafe.Add(ref data, up);
+            nw = Unsafe.Add(ref data, up - 1);
+            ne = Unsafe.Add(ref data, up + 1);
+            nn = Unsafe.Add(ref data, up - width);
+            ww = Unsafe.Add(ref data, row + x - 2);
+            nee = Unsafe.Add(ref data, up + 2);
         }
         else
         {
-            w = x > 0 ? data[row + x - 1] : y > 0 ? data[row - width + x] : 0;
-            n = y > 0 ? data[row - width + x] : w;
-            nw = x > 0 && y > 0 ? data[row - width + x - 1] : w;
-            ne = x + 1 < width && y > 0 ? data[row - width + x + 1] : n;
-            nn = y > 1 ? data[row - (2 * width) + x] : n;
-            ww = x > 1 ? data[row + x - 2] : w;
-            nee = x + 2 < width && y > 0 ? data[row - width + x + 2] : ne;
+            w = x > 0 ? Unsafe.Add(ref data, row + x - 1) : y > 0 ? Unsafe.Add(ref data, row - width + x) : 0;
+            n = y > 0 ? Unsafe.Add(ref data, row - width + x) : w;
+            nw = x > 0 && y > 0 ? Unsafe.Add(ref data, row - width + x - 1) : w;
+            ne = x + 1 < width && y > 0 ? Unsafe.Add(ref data, row - width + x + 1) : n;
+            nn = y > 1 ? Unsafe.Add(ref data, row - (2 * width) + x) : n;
+            ww = x > 1 ? Unsafe.Add(ref data, row + x - 2) : w;
+            nee = x + 2 < width && y > 0 ? Unsafe.Add(ref data, row - width + x + 2) : ne;
         }
     }
 
@@ -388,5 +407,28 @@ internal static class JxlModularDecoder
         output[1] = c;
         output[2] = (int)(uint)Math.Abs((long)c - g);
         output[3] = unchecked(c - g);
+    }
+
+    private interface IPredictor
+    {
+        long Predict(int predictor, int w, int n, int nw, int ne, int nn, int ww, int nee, long wpPrediction);
+    }
+
+    /// <summary>Any predictor, chosen per leaf.</summary>
+    private readonly struct AnyPredictor : IPredictor
+    {
+        public long Predict(int predictor, int w, int n, int nw, int ne, int nn, int ww, int nee, long wpPrediction) => JxlModularDecoder.Predict(predictor, w, n, nw, ne, nn, ww, nee, wpPrediction);
+    }
+
+    /// <summary>Predictor 5, the clamped gradient, for subtrees whose leaves all use it.</summary>
+    private readonly struct GradientPredictor : IPredictor
+    {
+        public long Predict(int predictor, int w, int n, int nw, int ne, int nn, int ww, int nee, long wpPrediction) => Math.Clamp((long)n + w - nw, Math.Min(w, n), Math.Max(w, n));
+    }
+
+    /// <summary>Predictor 6, the weighted predictor, for subtrees whose leaves all use it.</summary>
+    private readonly struct WeightedPredictor : IPredictor
+    {
+        public long Predict(int predictor, int w, int n, int nw, int ne, int nn, int ww, int nee, long wpPrediction) => (wpPrediction + 3) >> 3;
     }
 }

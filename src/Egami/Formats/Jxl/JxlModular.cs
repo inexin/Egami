@@ -355,6 +355,9 @@ internal sealed class JxlChannelPlan
     /// <summary>Gets whether the subtree tests a property of a previous channel (16 and up).</summary>
     internal bool UsesPrevious { get; private init; }
 
+    /// <summary>Gets the predictor every leaf of the subtree uses, or -1 when they differ.</summary>
+    internal int Predictor { get; private init; }
+
     internal static JxlChannelPlan Build(JxlTree tree, int root)
     {
         int[] property = tree.Properties;
@@ -362,11 +365,12 @@ internal sealed class JxlChannelPlan
         if (property[root] < 0)
         {
             JxlLeaf only = tree.Leaves[root];
-            return new JxlChannelPlan { Kind = JxlChannelPlanKind.Single, Leaf = only, UsesWp = only.Predictor == 6 };
+            return new JxlChannelPlan { Kind = JxlChannelPlanKind.Single, Leaf = only, UsesWp = only.Predictor == 6, Predictor = only.Predictor };
         }
 
         bool usesWp = false;
         bool usesPrevious = false;
+        int predictor = -2;
         int tested = property[root];
         bool oneProperty = tested < 16;
         long min = long.MaxValue;
@@ -380,6 +384,7 @@ internal sealed class JxlChannelPlan
             if (p < 0)
             {
                 usesWp |= tree.Predictor(node) == 6;
+                predictor = predictor == -2 || predictor == tree.Predictor(node) ? tree.Predictor(node) : -1;
                 continue;
             }
 
@@ -395,7 +400,7 @@ internal sealed class JxlChannelPlan
         // A value above every split goes the way max + 1 does, and one at or below every split the way min does.
         if (!oneProperty || max == int.MaxValue || max + 1 - min + 1 > MaxLookup)
         {
-            return new JxlChannelPlan { Kind = JxlChannelPlanKind.Walk, Flat = Flatten(tree, root), UsesWp = usesWp, UsesPrevious = usesPrevious };
+            return new JxlChannelPlan { Kind = JxlChannelPlanKind.Walk, Flat = Flatten(tree, root), UsesWp = usesWp, UsesPrevious = usesPrevious, Predictor = predictor };
         }
 
         int[] lookup = new int[(int)(max + 1 - min + 1)];
@@ -411,7 +416,7 @@ internal sealed class JxlChannelPlan
             lookup[i] = node;
         }
 
-        return new JxlChannelPlan { Kind = JxlChannelPlanKind.Lookup, Property = tested, Min = (int)min, Max = (int)(max + 1), Lookup = lookup, UsesWp = usesWp };
+        return new JxlChannelPlan { Kind = JxlChannelPlanKind.Lookup, Property = tested, Min = (int)min, Max = (int)(max + 1), Lookup = lookup, UsesWp = usesWp, Predictor = predictor };
     }
 
     /// <summary>Flattens the subtree at <paramref name="root"/>, a decision, into two-level steps.</summary>
