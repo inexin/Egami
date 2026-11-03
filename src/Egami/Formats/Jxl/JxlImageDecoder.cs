@@ -339,7 +339,7 @@ internal static class JxlImageDecoder
         int seen = 0;
         try
         {
-            Run(file, codestream, input, Sequence(file), lfOnly, layers: false, (decoded, f) =>
+            Run(file, codestream, input, Sequence(file), lfOnly, layers: false, pixels: extra < 0, emit: (decoded, f) =>
             {
                 int index = seen++;
                 if (index >= first && index < end)
@@ -398,8 +398,10 @@ internal static class JxlImageDecoder
     /// <summary>
     /// Decodes the frames in order and calls <paramref name="emit"/> with each frame shown (the canvas after each key frame) or,
     /// with <paramref name="layers"/>, with each regular frame before blending; stops when it returns <see langword="false"/>.
+    /// With <paramref name="pixels"/>, <paramref name="emit"/> only puts the frame into a pixel type, so a frame the
+    /// <see cref="JxlGroupPipeline"/> can take is left to it, to decode straight into the pixels then.
     /// </summary>
-    private static void Run(JxlFile file, byte[] codestream, EgamiInput input, List<(JxlFrameHeader Header, JxlToc Toc, long Offset)> sequence, bool lfOnly, bool layers, Func<JxlDecoded, JxlFrameHeader, bool> emit, long arrived = long.MaxValue)
+    private static void Run(JxlFile file, byte[] codestream, EgamiInput input, List<(JxlFrameHeader Header, JxlToc Toc, long Offset)> sequence, bool lfOnly, bool layers, Func<JxlDecoded, JxlFrameHeader, bool> emit, long arrived = long.MaxValue, bool pixels = false)
     {
         JxlImageHeader h = file.Header;
 
@@ -449,6 +451,12 @@ internal static class JxlImageDecoder
 
                 ToColorSpace(lf, lw * lh, file);
                 emit(new JxlDecoded(file, lw, lh, lf, []), f);
+                return;
+            }
+
+            if (pixels && !layers && f.IsKeyFrame && JxlGroupPipeline.For(decoder, f, h, file, sequence.Count) is JxlGroupPipeline pipeline)
+            {
+                emit(new JxlDecoded(file, f.Width, f.Height, pipeline), f);
                 return;
             }
 
@@ -836,7 +844,7 @@ internal static class JxlImageDecoder
     }
 
     /// <summary>Converts samples <paramref name="start"/> to <paramref name="end"/> of each plane.</summary>
-    private static void ToColorSpace(float[][] color, int start, int end, JxlFile file)
+    internal static void ToColorSpace(float[][] color, int start, int end, JxlFile file)
     {
         JxlImageHeader h = file.Header;
         JxlOutput output = file.Output!;
@@ -1032,6 +1040,22 @@ internal static class JxlImageDecoder
         where TPixel : unmanaged, IPixelType<TPixel>
     {
         JxlImageHeader h = d.File.Header;
+        if (d.Pipeline is JxlGroupPipeline pipeline)
+        {
+            input.CheckMemory((long)d.Width * d.Height * System.Runtime.CompilerServices.Unsafe.SizeOf<TPixel>());
+            PixelPlane<TPixel> pixels = PixelPlane.Allocate<TPixel>(d.Width, d.Height, input.Memory);
+            try
+            {
+                pipeline.Render(pixels);
+                return pixels;
+            }
+            catch
+            {
+                pixels.Dispose();
+                throw;
+            }
+        }
+
         if (extra >= 0 || TPixel.Layout == Cmyk8.Layout || TPixel.Layout == Cmyk16.Layout)
         {
             d.ForceFloat();
@@ -1185,9 +1209,20 @@ internal static class JxlImageDecoder
         return top == max ? (int)clamped : (int)(((clamped * max * 2) + top) / (2 * top));
     }
 
-    /// <summary>A decoded image: either the Modular integers as coded (lossless), or float planes after filters and color.</summary>
+    /// <summary>
+    /// A decoded image: the Modular integers as coded (lossless), float planes after filters and color, or a frame the group
+    /// pipeline decodes when its pixels are asked for.
+    /// </summary>
     private sealed class JxlDecoded
     {
+        internal JxlDecoded(JxlFile file, int width, int height, JxlGroupPipeline pipeline)
+        {
+            File = file;
+            Width = width;
+            Height = height;
+            Pipeline = pipeline;
+        }
+
         internal JxlDecoded(JxlFile file, int width, int height, JxlFrameChannels ints)
         {
             File = file;
@@ -1216,6 +1251,9 @@ internal static class JxlImageDecoder
         internal float[][]? Color { get; private set; }
 
         internal float[][]? Extras { get; private set; }
+
+        /// <summary>Gets the group pipeline that decodes the frame into a pixel plane, or <see langword="null"/>.</summary>
+        internal JxlGroupPipeline? Pipeline { get; }
 
         /// <summary>Turns the integer form into floats, unclamped.</summary>
         internal void ForceFloat()
