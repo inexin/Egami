@@ -219,11 +219,15 @@ internal static class Etc1sEncoder
         }
 
         int selectorCount = Math.Min(size, blocks);
-        int[] blockSelector = Vq(selectorFeatures, blocks, 16, selectorCount, effort switch { <= 1 => 0, <= 4 => 1, 5 => 2, _ => 4 }, options, out int selectorClusters);
+        // Lloyd iterations and reassignment cost blocks × codebook size each, so large codebooks get fewer of them.
+        long work = (long)blocks * selectorCount;
+        int lloyd = effort switch { <= 1 => 0, <= 4 => 1, 5 => 2, _ => 4 };
+        lloyd = (int)Math.Min(lloyd, Math.Max(1, (1L << 29) / Math.Max(1, work)));
+        int[] blockSelector = Vq(selectorFeatures, blocks, 16, selectorCount, lloyd, options, out int selectorClusters);
         uint[] selectors = new uint[selectorClusters];
 
         // Refit selectors texel by texel to their blocks, then reassign blocks by real error where the budget allows, and repeat.
-        long budget = effort switch { <= 1 => 0, <= 3 => 1L << 26, 4 => 1L << 28, 5 => 1L << 30, _ => 1L << 32 };
+        long budget = effort switch { <= 1 => 0, <= 3 => 1L << 26, _ => 1L << 28 };
         int rounds = effort switch { <= 1 => 1, <= 4 => 2, 5 => 3, _ => 4 };
         for (int round = 0; round < rounds; round++)
         {

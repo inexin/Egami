@@ -129,6 +129,16 @@ Samsung SRW (RAW coverage, Build Plan tasks 13 to 15). Egami.Formats.Extended ad
   Adobe DNG Converter does; Samsung writes the time and f-number themselves) and ends an EXIF ASCII value without one in NUL,
   so converted SRWs of the NX3000, NX3300, NX mini and NX500 pass dng_validate.
 
+KTX stage C (Basis Universal; roadmap 2.3.11). No API changes.
+
+- KTX 2 reads Basis Universal: ETC1S (BasisLZ supercompression, with or without an alpha slice, and ETC1S video, whose
+  P-frames decode from the last I-frame), UASTC LDR 4 × 4 in all 19 modes (to `Rgba8`, or `Rgb8` when the descriptor has no
+  alpha) and UASTC HDR 4 × 4 (as ASTC HDR, to `RgbaF16`). Decoding goes straight to pixels and is bit for bit basisu's own
+  unpack. UASTC HDR 6 × 6, XUASTC LDR and XUBC7 are refused by name.
+- Internal ETC1S (codebook clustering; quality 1 to 255 sets the codebook size, effort 0 to 6) and UASTC LDR (effort 0 to 6,
+  with optional rate-distortion optimization for Zstandard) encoders for the KTX writer to come; their output does not depend
+  on the number of threads, and ETC1S files they make pass `ktx validate` and decode the same in libktx.
+
 ## Egami train 1.4.0, Egami.SystemDrawing 1.0.0-preview.3 and Egami.Metafiles 1.0.2 (2026-11-01)
 
 The release train (Egami, Egami.Drawing, Egami.Fonts, Egami.Svg, Egami.Css, Egami.Heic, Egami.Formats.Extended and Egami.Cli)

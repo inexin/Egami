@@ -448,6 +448,18 @@ internal static class TextureDecode
         }
     }
 
+    /// <summary>Decodes an ETC1S block with alpha: the colour slice's ETC1 block, then the alpha slice's, whose green is the alpha.</summary>
+    private static void Etc1sAlpha(ReadOnlySpan<byte> b, Span<byte> block)
+    {
+        Etc.DecodeRgb(b, block, 4, punchThrough: false);
+        Span<byte> alpha = block[64..];
+        Etc.DecodeRgb(b[8..], alpha, 3, punchThrough: false);
+        for (int i = 0; i < 16; i++)
+        {
+            block[(i * 4) + 3] = alpha[(i * 3) + 1];
+        }
+    }
+
     /// <summary>
     /// Decodes one row of 4 × 4 blocks into <paramref name="rows"/> rows of <paramref name="width"/> natural pixels, the
     /// rows <paramref name="stride"/> bytes apart.
@@ -515,18 +527,8 @@ internal static class TextureDecode
                     Etc.DecodeRgb(b, block, 3, punchThrough: false);
                     break;
                 case TextureCodec.Etc1sAlpha:
-                    {
-                        Etc.DecodeRgb(b, block, 4, punchThrough: false);
-                        Span<byte> alpha = block[64..];
-                        Etc.DecodeRgb(b[8..], alpha, 3, punchThrough: false);
-                        for (int i = 0; i < 16; i++)
-                        {
-                            block[(i * 4) + 3] = alpha[(i * 3) + 1];
-                        }
-
-                        break;
-                    }
-
+                    Etc1sAlpha(b, block);
+                    break;
                 case TextureCodec.Uastc:
                     Uastc.Decode(b, block, f.Natural == TextureNatural.Rgba8 ? 4 : 3);
                     break;
