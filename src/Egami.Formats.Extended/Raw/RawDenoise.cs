@@ -137,32 +137,56 @@ internal static class RawDenoise
     }
 
     /// <summary>
-    /// Measures the noise model of a plane: the spread of neighbour differences (median absolute deviation) in bands of
-    /// brightness, and a straight line through variance against brightness.
+    /// Measures the noise model of a plane from its flattest parts, in the way of noise estimation from flat patches: in 8 × 8
+    /// blocks the variance of the Laplacian residual (which cancels gradients) against the block's mean, and in each of 16 bands
+    /// of brightness a low percentile of those variances (texture only ever adds to a block's variance), scaled to the noise's
+    /// own; then a straight line through variance against brightness.
     /// </summary>
-    private static (double S, double O) Estimate(ReadOnlySpan<float> plane, int w, int h)
+    internal static (double S, double O) Estimate(ReadOnlySpan<float> plane, int w, int h)
     {
-        // Neighbour differences in 16 bands of brightness, at most 8,192 per band from a grid over the plane.
-        const int Bins = 16, PerBin = 8192;
-        float[] diffs = ArrayPool<float>.Shared.Rent(Bins * PerBin);
+        const int Bins = 16, PerBin = 2048, Block = 8;
+        // The 2nd percentile of the blocks' variances is this fraction of the noise's variance: measured on synthetic
+        // Poisson-Gaussian planes (RawNoiseTests), as the residuals are correlated and no textbook distribution applies.
+        const double Percentile = 0.02, Low = 0.58;
+        float[] variances = ArrayPool<float>.Shared.Rent(Bins * PerBin);
         Span<int> counts = stackalloc int[Bins];
         counts.Clear();
-        int step = Math.Max(1, (int)Math.Ceiling(Math.Sqrt((double)w * h / (Bins * PerBin))));
-        for (int y = 0; y < h; y += step)
+        int blocksX = (w - 2) / Block, blocksY = (h - 2) / Block;
+        int step = Math.Max(1, (int)Math.Sqrt((double)blocksX * blocksY / (Bins * PerBin / 4)));
+        for (int by = 0; by < blocksY; by += step)
         {
-            for (int x = 0; x + 1 < w; x += step)
+            for (int bx = 0; bx < blocksX; bx += step)
             {
-                float a = plane[(y * w) + x], b = plane[(y * w) + x + 1];
-                float mean = (a + b) / 2;
-                if (mean <= 0 || mean >= 0.95f)
+                double sum = 0, squares = 0;
+                bool clipped = false;
+                for (int y = 1 + (by * Block); y < 1 + ((by + 1) * Block) && !clipped; y++)
+                {
+                    int at = y * w;
+                    for (int x = 1 + (bx * Block); x < 1 + ((bx + 1) * Block); x++)
+                    {
+                        float c = plane[at + x];
+                        if (c <= 0 || c >= 0.95f)
+                        {
+                            clipped = true;
+                            break;
+                        }
+
+                        float r = (4 * c) - plane[at + x - 1] - plane[at + x + 1] - plane[at + x - w] - plane[at + x + w];
+                        sum += c;
+                        squares += r * r;
+                    }
+                }
+
+                if (clipped)
                 {
                     continue;
                 }
 
+                double mean = sum / (Block * Block);
                 int bin = Math.Min(Bins - 1, (int)(mean * Bins));
                 if (counts[bin] < PerBin)
                 {
-                    diffs[(bin * PerBin) + counts[bin]++] = MathF.Abs(a - b) / MathF.Sqrt(2);
+                    variances[(bin * PerBin) + counts[bin]++] = (float)(squares / (Block * Block * 20));
                 }
             }
         }
@@ -170,15 +194,14 @@ internal static class RawDenoise
         double sx = 0, sy = 0, sxx = 0, sxy = 0, n = 0;
         for (int i = 0; i < Bins; i++)
         {
-            if (counts[i] < 64)
+            if (counts[i] < 32)
             {
                 continue;
             }
 
-            Span<float> bin = diffs.AsSpan(i * PerBin, counts[i]);
+            Span<float> bin = variances.AsSpan(i * PerBin, counts[i]);
             bin.Sort();
-            double sigma = bin[counts[i] / 2] * 1.4826;
-            double x = (i + 0.5) / Bins, v = sigma * sigma, wgt = counts[i];
+            double x = (i + 0.5) / Bins, v = bin[(int)(counts[i] * Percentile)] / Low, wgt = counts[i];
             sx += wgt * x;
             sy += wgt * v;
             sxx += wgt * x * x;
@@ -186,7 +209,7 @@ internal static class RawDenoise
             n += wgt;
         }
 
-        ArrayPool<float>.Shared.Return(diffs);
+        ArrayPool<float>.Shared.Return(variances);
         if (n == 0)
         {
             return (0, 1e-6);
