@@ -32,6 +32,20 @@ internal sealed class JxlAcStrategySearch
     private static readonly float[][][] Inverse = BuildInverse();
     private static readonly float[] MaskOffset = [12.0f, 0.0f, 4.0f];
 
+    // (type, priority, entropy multiplier) of the merges into larger transforms, in libjxl's order.
+    private static readonly (JxlTransformType Type, byte Priority, float EntropyMul)[] Merges =
+    [
+        (JxlTransformType.Dct16x8, 2, 1.21f),
+        (JxlTransformType.Dct8x16, 2, 1.21f),
+        (JxlTransformType.Dct16x32, 4, 1.49f),
+        (JxlTransformType.Dct32x16, 4, 1.49f),
+        (JxlTransformType.Dct64x32, 6, 2.25f),
+        (JxlTransformType.Dct32x64, 6, 2.25f),
+    ];
+
+    [ThreadStatic]
+    private static Scratch? t_scratch;
+
     private readonly float[][] _xyb;
     private readonly int _stride;
     private readonly int _blocksX;
@@ -70,9 +84,13 @@ internal sealed class JxlAcStrategySearch
     /// <summary>Chooses the transforms of the 64×64 tile at block (<paramref name="bx"/>, <paramref name="by"/>), with the tile's chroma-from-luma factors.</summary>
     internal void ProcessTile(int bx, int by, int w, int h, float xFactor, float bFactor)
     {
-        float[] cmap = [xFactor, 0f, bFactor];
-        Scratch s = new();
-        float[] entropyEstimate = new float[64];
+        // One scratch per thread: every buffer is written before it is read, so the tiles share it.
+        Scratch s = t_scratch ??= new();
+        float[] cmap = s.Cmap;
+        cmap[0] = xFactor;
+        cmap[2] = bFactor;
+        float[] entropyEstimate = s.EntropyEstimate;
+        Array.Clear(entropyEstimate);
         const float K8x8Mul1 = -0.4f;
         const float K8x8Mul2 = 1.0f;
         const float K8x8Base = 1.4f;
@@ -91,19 +109,10 @@ internal sealed class JxlAcStrategySearch
         const float Mul16X16 = 1.34f;
         const float Mul16X32 = 1.49f;
         const float Mul32X32 = 1.48f;
-        const float Mul64X32 = 2.25f;
         const float Mul64X64 = 2.25f;
-        (JxlTransformType Type, byte Priority, float EntropyMul)[] merges =
-        [
-            (JxlTransformType.Dct16x8, 2, Mul16X8),
-            (JxlTransformType.Dct8x16, 2, Mul16X8),
-            (JxlTransformType.Dct16x32, 4, Mul16X32),
-            (JxlTransformType.Dct32x16, 4, Mul16X32),
-            (JxlTransformType.Dct64x32, 6, Mul64X32),
-            (JxlTransformType.Dct32x64, 6, Mul64X32),
-        ];
-        byte[] priority = new byte[64];
-        foreach ((JxlTransformType type, byte prio, float entropyMul) in merges)
+        byte[] priority = s.Priority;
+        Array.Clear(priority);
+        foreach ((JxlTransformType type, byte prio, float entropyMul) in Merges)
         {
             (int cw, int ch) = JxlTransforms8.Size(type);
             for (int cy = 0; cy + ch - 1 < h; cy += ch)
@@ -277,6 +286,9 @@ internal sealed class JxlAcStrategySearch
         internal readonly float[][] Block = [new float[64 * 64], new float[64 * 64], new float[64 * 64]];
         internal readonly float[] Pixels = new float[64 * 64];
         internal readonly float[] Error = new float[64 * 64];
+        internal readonly float[] Cmap = new float[3];
+        internal readonly float[] EntropyEstimate = new float[64];
+        internal readonly byte[] Priority = new byte[64];
     }
 
     /// <summary>
@@ -355,27 +367,35 @@ internal sealed class JxlAcStrategySearch
             // The error back in pixels, in the natural layout (which untransposed coefficients already have).
             int width = w8 * 8;
             float[] pixels = s.Error;
-            if (transposed)
+            if (transposed && JxlDct.InverseTransposed(s.Error, s.Pixels, width, width, h8 * 8))
             {
-                // Coefficient layout (cx, cy) is natural (cy, cx).
+                // The coefficient layout is the transpose the DCT works on: no turning there and back.
                 pixels = s.Pixels;
-                if (System.Runtime.Intrinsics.X86.Avx.IsSupported)
+            }
+            else
+            {
+                if (transposed)
                 {
-                    JxlDct.TransposeBlock(s.Error, cw, pixels, width, ch, cw);
-                }
-                else
-                {
-                    for (int cy = 0; cy < ch; cy++)
+                    // Coefficient layout (cx, cy) is natural (cy, cx).
+                    pixels = s.Pixels;
+                    if (System.Runtime.Intrinsics.X86.Avx.IsSupported)
                     {
-                        for (int cx = 0; cx < cw; cx++)
+                        JxlDct.TransposeBlock(s.Error, cw, pixels, width, ch, cw);
+                    }
+                    else
+                    {
+                        for (int cy = 0; cy < ch; cy++)
                         {
-                            pixels[(cx * width) + cy] = s.Error[(cy * cw) + cx];
+                            for (int cx = 0; cx < cw; cx++)
+                            {
+                                pixels[(cx * width) + cy] = s.Error[(cy * cw) + cx];
+                            }
                         }
                     }
                 }
-            }
 
-            JxlDct.Inverse(t, pixels, 0, width);
+                JxlDct.Inverse(t, pixels, 0, width);
+            }
             Vector256<float> maskOffset = Vector256.Create(MaskOffset[c]);
             Vector256<float> lossc = Vector256<float>.Zero;
             for (int py = 0; py < h8 * 8; py++)
@@ -469,12 +489,7 @@ internal sealed class JxlAcStrategySearch
 
         // Untransposed coefficients keep the natural layout: the transform runs in place in the output.
         float[] work = transposed ? scratch : output;
-        for (int y = 0; y < height; y++)
-        {
-            plane.AsSpan(offset + (y * stride), width).CopyTo(work.AsSpan(y * width, width));
-        }
-
-        JxlForwardDct.Forward(t, work, 0, width);
+        JxlForwardDct.Forward(t, plane.AsSpan(offset), stride, work);
         if (transposed)
         {
             if (System.Runtime.Intrinsics.X86.Avx.IsSupported)

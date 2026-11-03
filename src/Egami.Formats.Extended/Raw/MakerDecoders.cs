@@ -8,17 +8,12 @@ namespace Egami.Formats.Extended.Raw;
 /// The maker sensor-data codecs, each written from its clean-room specification (a study-only session read LibRaw and rawspeed
 /// for structure and described the formats in its own words; these decoders were written from those descriptions alone):
 /// Pentax Huffman, Nikon Huffman with its curve, Sony ARW2 blocks, ARW1 and tiled lossless JPEG, Olympus, Panasonic RawFormat 4
-/// to 8, Canon CR2's sliced lossless JPEG, and the plain packings several makers use.
+/// to 8, Canon CR2's sliced lossless JPEG, Canon CR3's CRX (<see cref="CrxDecoder"/>), and the plain packings several makers use.
 /// </summary>
 internal static class MakerDecoders
 {
     public static void Decode(RawSensor sensor, RawTiff tiff, RawPixels pixels, ParallelOptions parallel, Action<int, string> damaged)
     {
-        if (sensor.Codec == RawCodec.CanonCrx)
-        {
-            throw new NotSupportedException("Egami reads a CR3's previews and metadata, not its CRX-coded sensor data; load it with RawOutput.Preview.");
-        }
-
         long offset = tiff.Origin + (sensor.Offsets.Length > 0 ? sensor.Offsets[0] : 0);
         // A count of 0 means the data runs to the end of the file (Panasonic).
         long count = sensor.Counts.Length > 0 && sensor.Counts.Sum() > 0 ? sensor.Counts.Sum() : tiff.Length - offset;
@@ -32,7 +27,7 @@ internal static class MakerDecoders
             count = tiff.Length - offset;
             // Panasonic's data has no count, and some Fujifilm bodies (the X-H2S) record one past the end of the file; their
             // decoders report what is really missing themselves.
-            if (sensor.Codec is not (RawCodec.PanasonicV4 or RawCodec.PanasonicV5 or RawCodec.PanasonicV6 or RawCodec.PanasonicV7 or RawCodec.PanasonicV8 or RawCodec.FujiCompressed))
+            if (sensor.Codec is not (RawCodec.PanasonicV4 or RawCodec.PanasonicV5 or RawCodec.PanasonicV6 or RawCodec.PanasonicV7 or RawCodec.PanasonicV8 or RawCodec.FujiCompressed or RawCodec.CanonCrx))
             {
                 damaged(0, "The raw data runs past the end of the file; what is missing reads as black.");
             }
@@ -92,6 +87,14 @@ internal static class MakerDecoders
             case RawCodec.OlympusPacked:
                 OlympusPacked(data, pixels, (OlympusPacking)sensor.CodecData!, sensor.BigEndian);
                 break;
+            case RawCodec.PanasonicV4 when !((PanasonicTags)sensor.CodecData!).Modern && data.Length >= 2L * pixels.Width * pixels.Height:
+                // An old file without tag 0x0118 is told apart by its data's size (RW2 spec, section 1): 16-bit words holding
+                // left-aligned 12-bit values, 12-bit packing with a control byte after every ten values, or RawFormat 4.
+                OlympusPacked(data, pixels, OlympusPacking.LeftAligned, false);
+                break;
+            case RawCodec.PanasonicV4 when !((PanasonicTags)sensor.CodecData!).Modern && data.Length >= 3L * pixels.Width * pixels.Height / 2:
+                OlympusPacked(data, pixels, OlympusPacking.WithControl, false);
+                break;
             case RawCodec.PanasonicV4:
             case RawCodec.PanasonicV5:
                 PanasonicBlocks(data, pixels, sensor, parallel);
@@ -113,6 +116,9 @@ internal static class MakerDecoders
                 break;
             case RawCodec.FujiCompressed:
                 FujiDecoder.Decode(tiff.Data, (int)offset, (int)count, pixels, parallel, damaged);
+                break;
+            case RawCodec.CanonCrx:
+                CrxDecoder.Decode(tiff.Data, offset, count, pixels, (CrxHeader)sensor.CodecData!, parallel, damaged);
                 break;
             default:
                 throw new NotSupportedException($"Egami does not read the {sensor.Codec} raw codec yet.");

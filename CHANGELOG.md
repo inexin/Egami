@@ -28,6 +28,21 @@ JPEG XL metadata boxes (roadmap 2.4.11). No API changes.
   three wesaturate photos at distance 1 were 6.2 to 7 KB larger than cjxl's and are now within 0.15 % at effort 3, 5 and 7.
   A reader that does not open `brob` boxes no longer sees the Exif and XMP of Egami's files, as with cjxl's.
 
+Faster lossy JPEG XL encoding (roadmap 2.4.11). No API changes; every file is byte for byte the same as before.
+
+- The vector DCTs keep 4×4, 4×8, 8×8 and 16-point transforms in registers, multiply by 0.5 and 0.25 instead of dividing,
+  read each block straight from the plane instead of copying it out first, and start the inverse of a transposed varblock
+  from its coefficient layout. The block-size search, which tries every transform on every block, gains most.
+- The block-size search and chroma from luma keep their buffers per thread instead of allocating them for every tile.
+- One thread, instructions per megapixel: distance 1 at effort 7 about 31 % fewer (2.4 to 2.7 times cjxl's, from 3.6 to
+  3.8), effort 5 about 30 % fewer (2.2 to 2.4 times, from 3.1 to 3.4), effort 3 7 to 9 % fewer. flower (3.4 MP) at effort 7
+  from 4.10 to 2.98 s on one thread and 609 to 507 ms on 24; it allocates 752 MiB a run instead of 1,036. Lossy decoding
+  runs 3 to 8 % fewer instructions from the same DCTs.
+- Quantization works on eight coefficients at a time, the bit writer keeps a byte array and writes four bytes at a time,
+  and each block's tokens are written through a span: effort 3 runs 12 to 16 % fewer instructions again (2.1 to 3.4 times
+  cjxl's, from 2.5 to 3.9), efforts 5 and 7 about 2 to 3 % fewer. Allocation-budget tests now cap what an encode allocates
+  per pixel.
+
 KTX and KTX 2 textures, stage A (reading; roadmap 2.3.11). All additive.
 
 - `KtxFormat` (.ktx) and `Ktx2Format` (.ktx2) in Egami.Formats.Extended, registered by `WithExtendedFormats()`, `WithKtx()`
@@ -41,6 +56,40 @@ KTX and KTX 2 textures, stage A (reading; roadmap 2.3.11). All additive.
 - DDS and KTX share their BC1 to BC7 decoders and one texture format table; DDS reads as before.
 - `Egami.Compression.Zstandard` in core Egami makes the managed Zstandard codec public: `Compress`, `Decompress` and
   `MaxCompressedLength`.
+
+More RAW cameras (RAW coverage plan, PR A). Egami.Formats.Extended adds the `.rwl` extension and its MIME type
+(`image/x-leica-rwl`) to `RawFormat.Info`; no other API changes.
+
+- Leica RWL files and Panasonic's older RAW files load: the RW2 reader takes files without a RawFormat tag (0x0118), whose data
+  is 12-bit packed with a control byte after every ten values or 16-bit, as for the DMC-FZ8, FZ50 and LX1 and the Leica
+  Digilux 3, and the white balance of the oldest files, which give only red and blue (tags 0x0011 and 0x0012, as in the
+  Leica Digilux 2). The camera table gains 28 Leica and Panasonic bodies measured from Adobe DNG Converter's DNGs: the Leica
+  C (Typ 112), C-Lux, D-Lux 3 to 7, D-Lux (Typ 109), Digilux 2 and 3, V-Lux 1, 4 and 5 and V-Lux (Typ 114), and the
+  Panasonic DMC-FZ8, FZ18, FZ30, FZ50, FZ72, G1, GF3, GF5, GX7, L1, L10, LX1, LX2 and LX5. Of these, the 14 bodies whose only
+  samples on raw.pixls.us are CC BY-NC-SA were measured from those files locally, and the files were not kept. The DMC-L10
+  decodes as Adobe's DNG does, but Adobe stores its values 15 levels lower (a black level it subtracts by a rule not found),
+  so Egami's develop of it has slightly lighter blacks.
+- A maker file's `ActiveArea` is the sensor's own, from its sensor border tags or the area Adobe gives the camera, instead of
+  its crop; the default crop, and so every developed size, is unchanged. Converted DNGs of the Canon EOS 350D and of Panasonic
+  and Leica files no longer draw dng_validate's warning about too little padding around the crop.
+- Without a NoiseProfile, luminance noise reduction measures the noise from the flattest 8 × 8 blocks at each brightness
+  instead of all of them. Over the corpus the measure went from a median 2.2 times the NoiseProfile Adobe DNG Converter writes
+  for the same file to 1.2 times (90th percentile from 12 to 4.3 times), so the same setting now reduces about as much as on
+  Adobe's DNG of the file.
+
+Canon CR3 develops (RAW coverage, Build Plan tasks 8 to 12). No API changes.
+
+- The CRX codec of CR3's sensor data decodes, lossless and C-RAW (quantised 5/3 wavelet, both quantiser versions), its tiles
+  and planes in parallel. Over the five corpus CR3s (EOS 250D, M50 C-RAW, R6, 1D X Mark III and PowerShot SX70 HS) the mosaic
+  is bit for bit Adobe DNG Converter's inside the active area. Black and white levels, the as-shot white balance, the active
+  area and the crop come from the file, and 29 CR3 bodies join the camera table.
+- A CR3 now develops, loads as a mosaic and converts to DNG (`RawFormat.ConvertToDng` refused it before). A Dual Pixel RAW
+  gives its main image and a RAW burst its first frame. CRX encoding type 1 and the 8-bit single-plane form, which no camera is
+  known to write, throw `NotSupportedException`.
+- A CR3 of an older body whose white level is not the camera table's (an EOS M50 C-RAW file) gets Adobe's baseline exposure:
+  the table's raised by the ratio of the two whites (0.28 EV against 0.02); its develop was 5 CIEDE2000 from Adobe's, now 0.14.
+- DNG writing widens BitsPerSample to hold the white level, so a CR3 whose white is 16384 over 14-bit data (EOS R6, R5 crop)
+  passes dng_validate.
 
 KTX stage B (ETC, EAC and ASTC; roadmap 2.3.11). No API changes.
 

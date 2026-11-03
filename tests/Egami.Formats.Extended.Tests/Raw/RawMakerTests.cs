@@ -167,6 +167,91 @@ public class RawMakerTests
     }
 
     [Fact]
+    public void OldPanasonicFileWithSixteenBitWordsDecodes()
+    {
+        // Gate finding: a .RAW without tag 0x0118 (DMC-FZ50, DMC-LX1, Digilux 3) holding 16-bit words was read as RawFormat 4.
+        const int w = 20, h = 4;
+        byte[] data = new byte[2 * w * h];
+        for (int i = 0; i < w * h; i++)
+        {
+            BinaryPrimitives.WriteUInt16LittleEndian(data.AsSpan(2 * i), (ushort)(OldValue(i) << 4));
+        }
+
+        AssertOldPanasonic(OldPanasonicFile(w, h, data), w, h);
+    }
+
+    [Fact]
+    public void OldPanasonicFileWithTwelveBitPackingDecodes()
+    {
+        // Gate finding: a .RAW without tag 0x0118 (DMC-FZ8) holding 12-bit values with a control byte after every ten.
+        const int w = 20, h = 3;
+        int rowBytes = (w * 3 / 2) + ((w + 2) / 10);
+        byte[] data = new byte[rowBytes * h];
+        for (int y = 0; y < h; y++)
+        {
+            int p = y * rowBytes;
+            for (int x = 0; x < w; x += 2)
+            {
+                int a = OldValue((y * w) + x), b = OldValue((y * w) + x + 1);
+                data[p] = (byte)a;
+                data[p + 1] = (byte)((a >> 8) | (b << 4));
+                data[p + 2] = (byte)(b >> 4);
+                p += (x + 2) % 10 == 0 ? 4 : 3;
+            }
+        }
+
+        AssertOldPanasonic(OldPanasonicFile(w, h, data), w, h);
+    }
+
+    [Fact]
+    public void OldPanasonicWhiteBalanceFromRedAndBlueOnly()
+    {
+        // Gate finding: the Leica Digilux 2 gives only tags 0x0011 and 0x0012 (red, blue; green 256), as Adobe reads them.
+        const int w = 20, h = 4;
+        byte[] file = OldPanasonicFile(w, h, new byte[2 * w * h], TiffTag.Short(0x0011, 410), TiffTag.Short(0x0012, 373));
+        using Raster mosaic = Raster.Load(file, Context, Mosaic);
+        RawDetails details = (RawDetails)mosaic.Metadata.FormatDetails!;
+        Assert.Equal([256 / 410.0, 1, 256 / 373.0], details.AsShotNeutral);
+    }
+
+    [Theory]
+    [InlineData("rwl", "image/x-leica-rwl")]
+    [InlineData("rw2", "image/x-panasonic-rw2")]
+    public void PanasonicAndLeicaExtensionsAreRaw(string extension, string mime)
+    {
+        Assert.Contains(extension, RawFormat.Info.Extensions);
+        Assert.Contains(mime, RawFormat.Info.MimeTypes);
+    }
+
+    /// <summary>A 12-bit test value for pixel <paramref name="i"/>, never 0 (Panasonic's mark for a defective pixel).</summary>
+    private static int OldValue(int i) => (i * 97 % 4000) + 1;
+
+    private static void AssertOldPanasonic(byte[] file, int width, int height)
+    {
+        using Raster<Gray16> mosaic = Raster.Load<Gray16>(file, Context, Mosaic);
+        Assert.Equal((width, height), (mosaic.Width, mosaic.Height));
+        for (int y = 0; y < height; y++)
+        {
+            for (int x = 0; x < width; x++)
+            {
+                Assert.Equal(OldValue((y * width) + x), mosaic.Row(y)[x].L);
+            }
+        }
+    }
+
+    /// <summary>An old Panasonic file: magic 0x55, the sensor size in tags 2 and 3, StripOffsets and no tag 0x0118.</summary>
+    private static byte[] OldPanasonicFile(int width, int height, byte[] data, params TiffTag[] extra)
+    {
+        TiffBuilder.Ifd ifd0 = new();
+        ifd0.Tags.AddRange([TiffTag.Ascii(271, "Panasonic"), TiffTag.Ascii(272, "DMC-TEST"), TiffTag.Short(0x0002, width), TiffTag.Short(0x0003, height),
+            TiffTag.Short(0x000A, 12), .. extra]);
+        ifd0.Units.Add(data);
+        byte[] file = TiffBuilder.Write(ifd0);
+        file[2] = 0x55;
+        return file;
+    }
+
+    [Fact]
     public void NikonCurveWithMorePointsThanValuesIsNotADivisionByZero()
     {
         // Review finding: a stepped curve (0x44, 0x20) with more points than sample values made its step 0.

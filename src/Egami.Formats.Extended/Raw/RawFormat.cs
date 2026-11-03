@@ -18,8 +18,8 @@ public static class RawFormat
     public static FormatInfo Info { get; } = new()
     {
         Name = "RAW",
-        MimeTypes = ["image/x-adobe-dng", "image/dng", "image/x-canon-cr2", "image/x-nikon-nef", "image/x-nikon-nrw", "image/x-pentax-pef", "image/x-sony-arw", "image/x-sony-sr2", "image/x-olympus-orf", "image/x-panasonic-rw2", "image/x-fuji-raf", "image/x-canon-cr3"],
-        Extensions = ["dng", "cr2", "nef", "nrw", "pef", "arw", "sr2", "orf", "rw2", "raf", "cr3"],
+        MimeTypes = ["image/x-adobe-dng", "image/dng", "image/x-canon-cr2", "image/x-nikon-nef", "image/x-nikon-nrw", "image/x-pentax-pef", "image/x-sony-arw", "image/x-sony-sr2", "image/x-olympus-orf", "image/x-panasonic-rw2", "image/x-leica-rwl", "image/x-fuji-raf", "image/x-canon-cr3"],
+        Extensions = ["dng", "cr2", "nef", "nrw", "pef", "arw", "sr2", "orf", "rw2", "rwl", "raf", "cr3"],
         SignatureLength = RawDetect.SignatureLength,
         Matches = RawDetect.Matches,
         Reader = new RawReader(),
@@ -38,7 +38,7 @@ public static class RawFormat
     /// <param name="options">How to write, or <see langword="null"/> for the defaults.</param>
     /// <param name="context">The context, or <see langword="null"/> for <see cref="EgamiContext.Default"/>.</param>
     /// <exception cref="ArgumentNullException"><paramref name="inputPath"/> or <paramref name="outputPath"/> is <see langword="null"/>.</exception>
-    /// <exception cref="NotSupportedException">The file is a CR3, or its raw data is of a kind DNG writing does not take.</exception>
+    /// <exception cref="NotSupportedException">The file's raw data is of a kind DNG writing does not take.</exception>
     /// <exception cref="CorruptDataException">The file is damaged.</exception>
     /// <example>
     /// <code language="csharp" source="../../../tests/Egami.DocSamples/FormatsExtended.cs" region="raw-dng"/>
@@ -59,7 +59,7 @@ public static class RawFormat
     /// <param name="options">How to write, or <see langword="null"/> for the defaults.</param>
     /// <param name="context">The context, or <see langword="null"/> for <see cref="EgamiContext.Default"/>.</param>
     /// <exception cref="ArgumentNullException"><paramref name="input"/> or <paramref name="output"/> is <see langword="null"/>.</exception>
-    /// <exception cref="NotSupportedException">The file is a CR3, or its raw data is of a kind DNG writing does not take.</exception>
+    /// <exception cref="NotSupportedException">The file's raw data is of a kind DNG writing does not take.</exception>
     /// <exception cref="CorruptDataException">The file is damaged.</exception>
     /// <example>
     /// <code language="csharp" source="../../../tests/Egami.DocSamples/FormatsExtended.cs" region="raw-dng"/>

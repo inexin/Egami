@@ -28,9 +28,13 @@ Usage, from the repo root on a PC with Adobe DNG Converter installed:
   python tools/make-raw-camera-table.py                 every CC0 camera of the maker formats Egami reads
   python tools/make-raw-camera-table.py --formats cr2,nef --limit 5
   python tools/make-raw-camera-table.py --keep          keep the downloads and DNGs in .cache/raw-cameras
+  python tools/make-raw-camera-table.py --formats raw,rwl   measure only these; the table's other lines are kept
+  python tools/make-raw-camera-table.py --formats rw2,raw --cameras "Panasonic DMC-L1,Panasonic DMC-G1"       --non-commercial "Panasonic DMC-L1,Panasonic DMC-G1"   only these cameras, which have only CC BY-NC-SA samples:
+                                                        measured for the table, the file deleted once read
 
 The downloads (one file at a time, SHA-256 checked) and the DNGs go to .cache/raw-cameras and are deleted once read unless
 --keep is given. Progress is kept in .cache/raw-cameras/progress.json, so a run that stops carries on where it left off.
+Lines already in the table whose camera this run did not measure are kept as they are.
 """
 import argparse
 import hashlib
@@ -45,7 +49,9 @@ import urllib.request
 
 REPOSITORY = "https://raw.pixls.us/json/getrepository.php?set=all"
 CONVERTER = r"C:\Program Files\Adobe\Adobe DNG Converter\Adobe DNG Converter.exe"
-FORMATS = ["cr2", "nef", "nrw", "pef", "arw", "sr2", "orf", "rw2", "raf"]
+FORMATS = ["cr2", "cr3", "nef", "nrw", "pef", "arw", "sr2", "orf", "rw2", "raw", "rwl", "raf"]
+# .raw names many unrelated formats; only Panasonic's and Leica's (RW2's layout, RW2 spec section 1) are Egami's.
+RAW_MAKES = ("panasonic", "leica")
 CACHE = os.path.join(".cache", "raw-cameras")
 OUTPUT = os.path.join("src", "Egami.Formats.Extended", "Raw", "RawCameras.txt")
 
@@ -66,23 +72,28 @@ def reduced(row):
     return re.search(r"\b(sRAW|mRAW|sNEF)", row[2]) is not None
 
 
-def samples(repository, formats, reduced_only=False):
-    """Returns the smallest full-resolution (or, with reduced_only, reduced) CC0 file of each camera in the given formats."""
+def samples(repository, formats, reduced_only=False, non_commercial=()):
+    """Returns the smallest full-resolution (or, with reduced_only, reduced) CC0 file of each camera in the given formats.
+
+    Cameras named in non_commercial ("Make Model", lowercase) with no CC0 file take their smallest CC BY-NC-SA file instead,
+    for measurement only: it is deleted once read and never kept or committed."""
     cameras = {}
     for row in repository["data"]:
-        if "zero" not in row[5] or reduced(row) != reduced_only:
+        cc0 = "zero" in row[5]
+        nc = "Non-Commercial" in row[5] and f"{row[0].strip()} {row[1].strip()}".lower() in non_commercial
+        if not (cc0 or nc) or reduced(row) != reduced_only:
             continue
         m = re.search(r"href='([^']+)'>([^<]+)</a>.*?sha256 Checksum'>([0-9a-f]+)</span>&nbsp;\(([\d.]+)MB\)", row[7])
         if not m:
             continue
         url, name, sha, mb = m.groups()
         ext = name.rsplit(".", 1)[-1].lower()
-        if ext not in formats:
+        if ext not in formats or (ext == "raw" and not row[0].strip().lower().startswith(RAW_MAKES)):
             continue
         key = (row[0].strip(), row[1].strip())
-        if key not in cameras or float(mb) < cameras[key]["mb"]:
+        if key not in cameras or (cc0, -float(mb)) > (cameras[key]["cc0"], -cameras[key]["mb"]):
             cameras[key] = {"make": key[0], "model": key[1], "url": url, "name": name, "sha": sha, "mb": float(mb), "ext": ext,
-                            "id": int(re.search(r"getfile.php/(\d+)/", url).group(1))}
+                            "id": int(re.search(r"getfile.php/(\d+)/", url).group(1)), "cc0": cc0}
     return sorted(cameras.values(), key=lambda c: (c["make"].lower(), c["model"].lower()))
 
 
@@ -252,7 +263,12 @@ def main():
     parser.add_argument("--formats", default=",".join(FORMATS), help="comma-separated extensions")
     parser.add_argument("--limit", type=int, default=0, help="at most this many cameras (for a trial run)")
     parser.add_argument("--keep", action="store_true", help="keep downloads and DNGs")
+    parser.add_argument("--non-commercial", default="", help="comma-separated 'Make Model' cameras that may be measured from a "
+                        "CC BY-NC-SA sample when they have no CC0 one (deleted once read, even with --keep)")
+    parser.add_argument("--cameras", default="", help="comma-separated 'Make Model' cameras: measure only these")
     args = parser.parse_args()
+    non_commercial = tuple(c.strip().lower() for c in args.non_commercial.split(",") if c.strip())
+    only = {c.strip().lower() for c in args.cameras.split(",") if c.strip()}
     if not os.path.exists(CONVERTER):
         sys.exit(f"Adobe DNG Converter is not at {CONVERTER}; install it (free) from Adobe.")
     os.makedirs(CACHE, exist_ok=True)
@@ -260,7 +276,9 @@ def main():
     if not os.path.exists(listing):
         with open(listing, "wb") as f:
             f.write(urllib.request.urlopen(REPOSITORY, timeout=600).read())
-    todo = samples(json.load(open(listing, encoding="utf-8")), args.formats.split(","))
+    todo = samples(json.load(open(listing, encoding="utf-8")), args.formats.split(","), non_commercial=non_commercial)
+    if only:
+        todo = [t for t in todo if f"{t['make']} {t['model']}".lower() in only]
     if args.limit:
         todo = todo[:args.limit]
     progress_path = os.path.join(CACHE, "progress.json")
@@ -282,7 +300,7 @@ def main():
             print(f"   skipped: {e}", flush=True)
             progress[key] = {"error": str(e), "make": sample["make"], "model": sample["model"], "ext": sample["ext"], "version": VERSION}
         finally:
-            if not args.keep:
+            if not args.keep or not sample["cc0"]:
                 for path in (dng, source):
                     if path and os.path.exists(path):
                         os.remove(path)
@@ -343,7 +361,13 @@ def main():
             continue
         name = (entry["dngMake"].lower(), entry["dngModel"].lower())
         seen.setdefault(name, {**entry, "reducedWhite": reduced_white.get(name)})
-    lines = sorted((line(e) for e in seen.values()), key=str.lower)
+    measured = {(e["dngMake"].strip().lower(), e["dngModel"].strip().lower()): line(e) for e in seen.values()}
+    if os.path.exists(OUTPUT):
+        for text in open(OUTPUT, encoding="utf-8").read().splitlines():
+            f = text.split("\t")
+            if text and not text.startswith("#") and len(f) > 2:
+                measured.setdefault((f[0].strip().lower(), f[1].strip().lower()), text)
+    lines = sorted(measured.values(), key=str.lower)
     with open(OUTPUT, "w", encoding="utf-8", newline="\n") as f:
         f.write("# Egami camera colour table, made by tools/make-raw-camera-table.py from Adobe DNG Converter output on CC0 samples\n")
         f.write("# from raw.pixls.us. Columns: Make, Model, UniqueCameraModel, Illuminant1, ColorMatrix1, Illuminant2,\n")
