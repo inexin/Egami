@@ -43,6 +43,18 @@ Faster lossy JPEG XL encoding (roadmap 2.4.11). No API changes; every file is by
   cjxl's, from 2.5 to 3.9), efforts 5 and 7 about 2 to 3 % fewer. Allocation-budget tests now cap what an encode allocates
   per pixel.
 
+Faster JPEG XL decoding of lossy images, group by group (roadmap 2.4.11). No API changes; decoded pixels are the same as
+before.
+
+- A VarDCT frame alone in its file (single-pass or progressive, with or without straight alpha) decodes in libjxl's
+  group-local way: each pass group's varblocks are dequantized and transformed as their coefficients are read, then the
+  group is filtered (Gaborish, EPF), converted to the output color space and written into the raster from a per-thread
+  buffer, and the rows and columns along the group seams are finished from strips once their neighbours are in. A
+  single-pass frame no longer has frame-sized coefficient or float planes: decoding allocates about 2 bytes per pixel
+  besides the raster, down from about 40. Other frames (Modular, layers, animations, patches, splines, noise, upsampling,
+  JPEG recompressions, regions and partial files) keep the whole-frame path.
+- 8-bit gray, RGB and RGBA rows are written eight pixels at a time.
+
 Faster JPEG XL decoding of entropy-coded data and Modular images (roadmap 2.4.11). No API changes; decoded pixels are the
 same as before.
 

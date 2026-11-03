@@ -84,6 +84,9 @@ internal sealed class JxlGroupPipeline
     private static readonly int[] EpfDistance1 = [0, -1, 0, 0, 0, 1, -1, 0, 1, 0];
     private static readonly int[] EpfDistance2 = [0, 0];
 
+    [ThreadStatic]
+    private static bool t_disabled;
+
     private readonly JxlFrameDecoder _decoder;
     private readonly JxlFrameHeader _frame;
     private readonly JxlFile _file;
@@ -143,6 +146,13 @@ internal sealed class JxlGroupPipeline
         _border = _reach.Sum();
     }
 
+    /// <summary>Gets or sets whether decodes started on this thread take the whole-frame path, for tests that compare the two.</summary>
+    internal static bool Disabled
+    {
+        get => t_disabled;
+        set => t_disabled = value;
+    }
+
     /// <summary>
     /// Gets a pipeline for the frame when it can take one: a VarDCT frame alone in the codestream, with XYB or plain color but
     /// no subsampled chroma, LF frame, patches, splines, noise, upsampling, crop or blending, and no extra channel other than
@@ -151,7 +161,7 @@ internal sealed class JxlGroupPipeline
     /// </summary>
     internal static JxlGroupPipeline? For(JxlFrameDecoder decoder, JxlFrameHeader f, JxlImageHeader h, JxlFile file, int frames)
     {
-        bool fits = frames == 1 && f is { Modular: false, YCbCr: false, Upsampling: 1, HaveCrop: false, Type: JxlFrameType.Regular, IsLast: true }
+        bool fits = !t_disabled && frames == 1 && f is { Modular: false, YCbCr: false, Upsampling: 1, HaveCrop: false, Type: JxlFrameType.Regular, IsLast: true }
             && (f.Flags & (0x01 | 0x02 | 0x10 | 0x20)) == 0 && f.Blending.Mode == JxlBlendMode.Replace
             && f.ExtraChannelBlending.All(b => b.Mode == JxlBlendMode.Replace) && f.ExtraChannelUpsampling.All(u => u == 1)
             && !h.ExtraChannels.Any(e => e.Type is JxlExtraChannelType.SpotColor or JxlExtraChannelType.Black || e.AlphaAssociated)

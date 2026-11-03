@@ -23,6 +23,9 @@ internal sealed class JxlVarDct
         206, 206, 206, 206, 206, 206, 206, 206, 206, 206, 206,
     ];
 
+    // The products of the LLF scales a large varblock's LF coefficients are divided by, by log2 of its width and height in blocks.
+    private static readonly float[]?[] LlfDivisors = new float[36][];
+
     private readonly JxlImageHeader _image;
     private readonly JxlFrameHeader _frame;
     private readonly JxlVarDctGlobal _global;
@@ -689,16 +692,43 @@ internal sealed class JxlVarDct
             JxlDct.Dct2D(plane, o, stride, bw, bh, forward: true);
             int logW = System.Numerics.BitOperations.Log2((uint)bw);
             int logH = System.Numerics.BitOperations.Log2((uint)bh);
+            float[] divisors = LlfDivisors[(logH * 6) + logW] ??= MakeLlfDivisors(logW, logH);
             for (int y = 0; y < bh; y++)
             {
-                for (int x = 0; x < bw; x++)
+                int x = 0;
+                if (Vector256.IsHardwareAccelerated)
                 {
-                    plane[o + (y * stride) + x] /= JxlDct.Scale(y, 5 - logH) * JxlDct.Scale(x, 5 - logW);
+                    for (; x + 8 <= bw; x += 8)
+                    {
+                        Span<float> row = plane.AsSpan(o + (y * stride) + x, 8);
+                        (Vector256.Create(row) / Vector256.Create(divisors.AsSpan((y * bw) + x, 8))).CopyTo(row);
+                    }
+                }
+
+                for (; x < bw; x++)
+                {
+                    plane[o + (y * stride) + x] /= divisors[(y * bw) + x];
                 }
             }
         }
 
         JxlDct.Inverse(t, plane, o, stride);
+    }
+
+    private static float[] MakeLlfDivisors(int logW, int logH)
+    {
+        int bw = 1 << logW;
+        int bh = 1 << logH;
+        float[] divisors = new float[bw * bh];
+        for (int y = 0; y < bh; y++)
+        {
+            for (int x = 0; x < bw; x++)
+            {
+                divisors[(y * bw) + x] = JxlDct.Scale(y, 5 - logH) * JxlDct.Scale(x, 5 - logW);
+            }
+        }
+
+        return divisors;
     }
 
     /// <summary>Gets the LF image alone (1:8, X, Y and B, cropped to the frame), after chroma from luma and smoothing.</summary>
