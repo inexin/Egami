@@ -8,8 +8,9 @@ using Egami.Pixels;
 namespace Egami.Benchmarks;
 
 /// <summary>
-/// The ETC, EAC, ASTC and UASTC block encoders the KTX writer will use, one thread, at the default effort 4: a 2048 × 2048 photo-like
-/// picture encoded block by block, so a change shows up in time and allocations. The encoders are slow next to the decoders, so
+/// The ETC, EAC, ASTC and UASTC block encoders and the ETC1S encoder (quality 128) the KTX writer will use, one thread, at the
+/// default effort 4: a 2048 × 2048 photo-like picture encoded block by block (ETC1S whole), so a change shows up in time and
+/// allocations. The encoders are slow next to the decoders, so
 /// a run measures three iterations after one warmup.
 /// </summary>
 [MemoryDiagnoser]
@@ -21,7 +22,7 @@ public class KtxEncodeBenchmarks
     private byte[] _rgba = [];
     private byte[] _blocks = [];
 
-    [Params("ETC1", "ETC2-RGB", "ETC2-RGBA", "EAC-R11", "ASTC-4x4", "ASTC-6x6", "ASTC-8x8", "UASTC")]
+    [Params("ETC1", "ETC2-RGB", "ETC2-RGBA", "EAC-R11", "ASTC-4x4", "ASTC-6x6", "ASTC-8x8", "UASTC", "ETC1S")]
     public string Format { get; set; } = "";
 
     [GlobalSetup]
@@ -40,6 +41,11 @@ public class KtxEncodeBenchmarks
     [Benchmark]
     public int Encode()
     {
+        if (Format == "ETC1S")
+        {
+            return Etc1sEncoder.Encode([new Etc1sImage(_rgba, Size, Size, 0)], false, 128, Effort, threads: 1).Levels[0].Length;
+        }
+
         if (Format.StartsWith("ASTC", StringComparison.Ordinal))
         {
             int footprint = Format[5] - '0';
