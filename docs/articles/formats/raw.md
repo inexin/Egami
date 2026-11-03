@@ -2,8 +2,8 @@
 
 Camera RAW files hold the sensor data a camera recorded, before any processing. Egami reads DNG (.dng), the open RAW format
 Adobe publishes, which phones, Leica, Pentax, Ricoh, Hasselblad and Adobe DNG Converter write, and the makers' own formats:
-Canon CR2 and CR3, Nikon NEF and NRW, Pentax PEF, Sony ARW and SR2, Olympus ORF, Panasonic RW2 and Fujifilm RAF. It develops
-them into an image on load ([Canon CR3](#canon-cr3) has what is particular to CR3).
+Canon CR2 and CR3, Nikon NEF and NRW, Pentax PEF, Sony ARW and SR2, Olympus ORF, Panasonic RW2 and RAW, Leica RWL and
+Fujifilm RAF. It develops them into an image on load ([Canon CR3](#canon-cr3) has what is particular to CR3).
 [Developing camera RAW](../guides/camera-raw.md) is about choosing the develop. It reads through the Egami.Formats.Extended
 package: register it with `WithRaw()` or `WithExtendedFormats()`
 ([Extended formats](extended.md)). RAW is detected ahead of TIFF, since a DNG file (like most maker formats) is a TIFF file;
@@ -14,7 +14,7 @@ without it, a DNG opens as TIFF and only its preview pages load.
 | Reads | DNG 1.0 to 1.7: colour filter arrays of any pattern and LinearRaw, uncompressed 1 to 32-bit integers and 16, 24 or 32-bit floats, lossless JPEG, Deflate with the integer and floating-point predictors, lossy JPEG and JPEG XL, in strips or tiles; linearization tables, black level patterns and deltas, white levels, active area and default crop; opcode lists 1 to 3; camera profiles (dual-illuminant colour matrices, ForwardMatrix, HueSatMap, LookTable, tone curve); embedded previews. The maker formats of [Maker formats](#maker-formats) |
 | Writes | DNG: any RAW file Egami reads, with its sensor data unchanged (`RawFormat.ConvertToDng`), and any raster (`Save` with `RawFormat.Info`): a RAW mosaic as a colour filter array DNG, anything else as LinearRaw |
 | Natural pixel type | `Rgb16` in sRGB for a develop, or in the RGB space `ConvertColorTo` names; for `RawOutput.Mosaic`, `Gray16` (CFA) or `Rgb16` (LinearRaw), `GrayF32` or `RgbF32` for float data; for a preview, the JPEG's `Rgb8` |
-| `FormatInfo` | `RawFormat.Info`: name `RAW`, extensions `.dng`, `.cr2`, `.nef`, `.nrw`, `.pef`, `.arw`, `.sr2`, `.orf`, `.rw2`, `.raf` and `.cr3`, with each format's MIME type |
+| `FormatInfo` | `RawFormat.Info`: name `RAW`, extensions `.dng`, `.cr2`, `.nef`, `.nrw`, `.pef`, `.arw`, `.sr2`, `.orf`, `.rw2`, `.rwl`, `.raf` and `.cr3`, with each format's MIME type. Panasonic's older `.raw` files are found by their header, not their extension |
 
 [!code-csharp[](../../../tests/Egami.DocSamples/FormatsExtended.cs#raw-load)]
 
@@ -41,9 +41,13 @@ A maker file goes through the same develop as a DNG. What a DNG carries in its t
 
 - The sensor data is decoded by each maker's codec: Canon's sliced lossless JPEG and sRAW and mRAW, Nikon's Huffman coding and
   curve, Pentax's Huffman coding, Sony's ARW2, ARW1 and lossless JPEG tiles, Olympus's and Panasonic's own codings (Panasonic
-  RawFormat 4 to 8), Fujifilm's compressed codec (lossless and lossy, X-Trans and Bayer) and the plain packings. Decoded
-  mosaics are bit for bit those Adobe DNG Converter stores (on 22 CC0 sample files), but for defective pixels and clipping.
-- White balance, black levels and crops come from the file and its maker note where it has them.
+  RawFormat 4 to 8, and the 12-bit packed and 16-bit data of older files without a RawFormat tag, such as the DMC-FZ8, FZ50
+  and LX1 and the Leica Digilux 3), Fujifilm's compressed codec (lossless and lossy, X-Trans and Bayer) and the plain
+  packings. Decoded mosaics are bit for bit those Adobe DNG Converter stores (on 41 CC0 sample files), but for defective
+  pixels and clipping.
+- White balance, black levels and crops come from the file and its maker note where it has them. The active area is the
+  sensor's own (from the maker's sensor border tags, or the one Adobe gives the camera), with the default crop inside it, so a
+  develop has the pixels around the crop to work with.
 - Colour matrices, and levels and crops a file does not give, come from Egami's camera table: for each camera, what Adobe DNG
   Converter writes in a DNG of a sample file, measured as a black box. A camera that is not in the table develops with a
   generic matrix and a `CameraUnknown` warning.
@@ -152,9 +156,12 @@ EXIF (with GPS) and XMP come through as for TIFF.
   warning.
 - Lens corrections that cameras record in their own maker notes (Fujifilm, Micro Four Thirds, Nikon Z, Sony) are not read;
   a lens profile, or `AutoChromaticAberration`, corrects those files instead.
-- Without a NoiseProfile (maker formats), luminance noise reduction measures the noise from the image, which for textured
-  scenes reads higher than Adobe's calibrated profiles do, so the same setting reduces more. Luminance noise reduction works on
-  the mosaic, so Canon sRAW and mRAW files get colour noise reduction only.
+- Without a NoiseProfile (maker formats), luminance noise reduction measures the noise from the flattest parts of the image.
+  Over the corpus the measure is a median 1.2 times Adobe's calibrated profiles, but for a few files (strongly textured scenes,
+  the Canon EOS 350D, the Panasonic GH6) it reads up to several times higher, so the same setting reduces more. Luminance
+  noise reduction works on the mosaic, so Canon sRAW and mRAW files get colour noise reduction only.
+- Adobe DNG Converter stores the Panasonic DMC-L10's values 15 levels below the file's, by a rule not yet known; Egami keeps
+  the file's, so its develop has slightly lighter blacks.
 - Adobe gives some Canon sRAW and mRAW files a brighter baseline exposure than the camera's normal raws (+0.25 EV for the EOS 5D
   Mark II, +0.34 EV for the EOS 70D, by a rule not yet known); Egami uses the camera's raw one.
 - DNG writing writes BigTIFF past 4 GB (which DNG readers, Egami's included, may not open), and makes previews from Egami's
@@ -192,7 +199,7 @@ previews show the raster itself.
 | `Preview` | `DngPreview.Medium` | A 256-pixel thumbnail and a 1024-pixel JPEG; `Thumbnail`, `Full` (a full-size JPEG) or `None` (the raw data is the first image) |
 | `ParallelCompression` | `true` | Codes tiles on several threads; the file is the same |
 
-On the 41 corpus files Egami reads as RAW, a converted DNG loads back with its mosaic, levels, areas and pattern bit for bit,
+On the 57 corpus files Egami reads as RAW, a converted DNG loads back with its mosaic, levels, areas and pattern bit for bit,
 and develops to the source's develop within a level in 16 bits. Adobe DNG Converter, LibRaw (through Magick.NET), Windows'
 Raw Image Extension and Adobe's dng_validate open it. Its colour tags are Adobe's for the same file. With lossless JPEG and
 the medium preview it is 0.7 % smaller than Adobe's DNG over the corpus, within 2 % file by file but for a lossy Nikon NEF,
@@ -201,6 +208,6 @@ converts the corpus in 70 % of the time Adobe DNG Converter takes pinned to one 
 longer than Adobe).
 
 Limits: a DNG past 4 GB is written as BigTIFF, which Egami's own RAW reader does not open.
-`Save` has no context, so it reports no `Raw.DngCameraUnknown` warning; `ConvertToDng` and `Transcode` do. Some maker files'
-active area is their crop, as Egami reads them, which dng_validate warns leaves little padding for a develop (Canon EOS 350D,
-Panasonic).
+`Save` has no context, so it reports no `Raw.DngCameraUnknown` warning; `ConvertToDng` and `Transcode` do. dng_validate warns of
+too little padding around the crop of Fujifilm files and the Leica C-Lux, as it does for Adobe's own DNGs of them, and of DNGs
+converted from phone DNGs, whose own areas leave none.

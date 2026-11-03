@@ -87,6 +87,14 @@ internal static class MakerDecoders
             case RawCodec.OlympusPacked:
                 OlympusPacked(data, pixels, (OlympusPacking)sensor.CodecData!, sensor.BigEndian);
                 break;
+            case RawCodec.PanasonicV4 when !((PanasonicTags)sensor.CodecData!).Modern && data.Length >= 2L * pixels.Width * pixels.Height:
+                // An old file without tag 0x0118 is told apart by its data's size (RW2 spec, section 1): 16-bit words holding
+                // left-aligned 12-bit values, 12-bit packing with a control byte after every ten values, or RawFormat 4.
+                OlympusPacked(data, pixels, OlympusPacking.LeftAligned, false);
+                break;
+            case RawCodec.PanasonicV4 when !((PanasonicTags)sensor.CodecData!).Modern && data.Length >= 3L * pixels.Width * pixels.Height / 2:
+                OlympusPacked(data, pixels, OlympusPacking.WithControl, false);
+                break;
             case RawCodec.PanasonicV4:
             case RawCodec.PanasonicV5:
                 PanasonicBlocks(data, pixels, sensor, parallel);

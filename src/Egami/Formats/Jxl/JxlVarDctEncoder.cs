@@ -1,3 +1,4 @@
+using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
 
 namespace Egami.Formats.Jxl;
@@ -2199,6 +2200,36 @@ internal sealed partial class JxlVarDctEncoder
         // The coefficient layout is the wider side across.
         int cw = Math.Max(w8, h8) * 8;
         int ch = Math.Min(w8, h8) * 8;
+        if (Vector256.IsHardwareAccelerated)
+        {
+            // Eight at a time, each lane as the scalar loop below; then the lowest frequencies are cleared.
+            Vector256<float> vqac = Vector256.Create(qac);
+            for (int y = 0; y < ch; y++)
+            {
+                int yfix = (y >= ch / 2 ? 1 : 0) * 2;
+                Vector256<float> left = Vector256.Create(thresholds[yfix]);
+                Vector256<float> right = Vector256.Create(thresholds[yfix + 1]);
+                int row = y * cw;
+                for (int x = 0; x < cw; x += 8)
+                {
+                    Vector256<float> threshold = cw == 8
+                        ? Vector256.Create(left.GetLower(), right.GetLower())
+                        : x >= cw / 2 ? right : left;
+                    Vector256<float> val = Vector256.Create(block, row + x) * (vqac / Vector256.Create(qm, row + x));
+                    Vector256<int> q = Vector256.ConvertToInt32(Vector256.Round(val));
+                    Vector256.ConditionalSelect(Vector256.GreaterThanOrEqual(Vector256.Abs(val), threshold).AsInt32(), q, Vector256<int>.Zero)
+                        .CopyTo(output, row + x);
+                }
+
+                if (y < ch / 8)
+                {
+                    output.AsSpan(row, cw / 8).Clear();
+                }
+            }
+
+            return;
+        }
+
         for (int y = 0; y < ch; y++)
         {
             int yfix = (y >= ch / 2 ? 1 : 0) * 2;
@@ -2945,6 +2976,11 @@ internal sealed partial class JxlVarDctEncoder
                     }
                 }
 
+                // Room for the block's tokens at most, written through a span: the list grows as Add would make it.
+                int count = tokens.Count;
+                tokens.EnsureCapacity(count + (3 * (size + 1)));
+                CollectionsMarshal.SetCount(tokens, count + (3 * (size + 1)));
+                Span<JxlToken> span = CollectionsMarshal.AsSpan(tokens);
                 for (int k = 0; k < 3; k++)
                 {
                     int c = channels[k];
@@ -2967,18 +3003,20 @@ internal sealed partial class JxlVarDctEncoder
 
                     int blockCtx = _blockContexts[(((k * NumOrders) + orderId) * (_qfThresholds.Length + 1)) + qfIndex];
                     int nzIndex = predicted >= 8 ? 4 + (Math.Min(predicted, 64) / 2) : predicted;
-                    tokens.Add(new JxlToken(blockCtx + (nzIndex * _blockClusters), (uint)nz));
+                    span[count++] = new JxlToken(blockCtx + (nzIndex * _blockClusters), (uint)nz);
                     int baseCtx = (blockCtx * ZeroDensityContexts) + (NonZeroBuckets * _blockClusters);
                     int prev = nz > size / 16 ? 0 : 1;
                     for (int i = covered; i < size && nz != 0; i++)
                     {
                         int coeff = block[order[i]];
                         int ctx = baseCtx + ((CoeffNumNonzeroContext[(nz - 1) >> logCovered] + CoeffFreqContext[(i - covered) >> logCovered]) * 2) + prev;
-                        tokens.Add(new JxlToken(ctx, JxlTreeLearner.PackSigned(coeff)));
+                        span[count++] = new JxlToken(ctx, JxlTreeLearner.PackSigned(coeff));
                         prev = coeff != 0 ? 1 : 0;
                         nz -= prev;
                     }
                 }
+
+                CollectionsMarshal.SetCount(tokens, count);
             }
         }
 
