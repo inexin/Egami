@@ -86,6 +86,12 @@ internal sealed class KtxTexture
     /// <summary>Gets the key/value pairs with text values, other than the orientation and swizzle.</summary>
     public Dictionary<string, string> KeyValues { get; } = new(StringComparer.Ordinal);
 
+    /// <summary>Gets a BasisLZ file's supercompression global data, else <see langword="null"/>.</summary>
+    public byte[]? GlobalData { get; set; }
+
+    /// <summary>Gets whether a KTX 2 file is a texture video: it has the <c>KTXanimData</c> key, and its layers are frames.</summary>
+    public bool IsVideo { get; private set; }
+
     /// <summary>Gets the alpha mode.</summary>
     public KtxAlphaMode AlphaMode { get; set; }
 
@@ -136,6 +142,18 @@ internal sealed class KtxTexture
 
     /// <summary>Returns the bytes of all images of mip <paramref name="mip"/>, as a KTX 2 level holds them uncompressed.</summary>
     public long LevelImageBytes(int mip) => checked(ImageBytes(mip) * Layers * Faces * MipDepth(mip));
+
+    /// <summary>Returns the number of 2D images (layers × faces × depth slices) of every mip level before <paramref name="mip"/>.</summary>
+    public long ImagesBefore(int mip)
+    {
+        long count = 0;
+        for (int m = 0; m < mip; m++)
+        {
+            count += (long)Layers * Faces * MipDepth(m);
+        }
+
+        return count;
+    }
 
     /// <summary>Splits a surface into its layer, face and depth slice at mip 0.</summary>
     public (int Layer, int Face, int Slice) Split(int surface) => (surface / (Faces * Depth), surface / Depth % Faces, surface % Depth);
@@ -210,6 +228,13 @@ internal sealed class KtxTexture
             }
             catch (DecoderFallbackException)
             {
+                continue;
+            }
+
+            if (key == "KTXanimData")
+            {
+                // A binary value: the frame duration, timescale and loop count of a texture video.
+                IsVideo = true;
                 continue;
             }
 
@@ -446,6 +471,8 @@ internal static class Ktx2Header
         uint dfdLength = U(52);
         uint kvdOffset = U(56);
         uint kvdLength = U(60);
+        ulong sgdOffset = BinaryPrimitives.ReadUInt64LittleEndian(h.AsSpan(64));
+        ulong sgdLength = BinaryPrimitives.ReadUInt64LittleEndian(h.AsSpan(72));
         if (width == 0 || (depth > 0 && height == 0))
         {
             throw input.Corrupt(20, $"The texture size {width}×{height}×{depth} is invalid.");
@@ -487,7 +514,7 @@ internal static class Ktx2Header
 
         // The descriptor and key/value data follow the index, in that order; a reader that cannot seek skips forward to each.
         byte[] dfd = Block(input, dfdOffset, dfdLength, "data format descriptor");
-        (int model, int primaries, int transfer, bool premultiplied, string? problem) = Descriptor(dfd);
+        (int model, int primaries, int transfer, bool premultiplied, int samples, int channel, string? problem) = Descriptor(dfd);
         if (problem is not null && strict)
         {
             throw input.Corrupt(dfdOffset, problem);
@@ -495,8 +522,18 @@ internal static class Ktx2Header
 
         TextureFormat format = (vk, (KtxSupercompression)scheme) switch
         {
-            (_, KtxSupercompression.BasisLZ) => throw KtxTexture.Unsupported("KTX 2", "Basis Universal ETC1S (BasisLZ)", $"VkFormat {vk}"),
-            (0, _) when model == 166 => throw KtxTexture.Unsupported("KTX 2", "Basis Universal UASTC", "VK_FORMAT_UNDEFINED"),
+            (0, KtxSupercompression.BasisLZ) when model == Etc1sModel => TextureFormat.Basis(false, samples > 1, transfer == 2),
+            (_, KtxSupercompression.BasisLZ) => throw input.Corrupt(44, $"BasisLZ supercompresses ETC1S only, not VkFormat {vk} with colour model {model}."),
+            (0, _) when model == UastcModel => TextureFormat.Basis(true, channel is 3 or 5, transfer == 2),
+
+            // UASTC HDR 4 × 4 blocks are ASTC 4 × 4 HDR blocks; Basis Universal's tools label them VK_FORMAT_ASTC_4x4_SFLOAT_BLOCK too.
+            (0, _) when model == UastcHdr4x4Model => TextureFormat.FromVk(1000066000)!,
+            (0, _) when model is 168 or 169 or 170 => throw KtxTexture.Unsupported("KTX 2", model switch
+            {
+                168 => "Basis Universal UASTC HDR 6x6",
+                169 => "Basis Universal XUASTC",
+                _ => "Basis Universal XUBC7",
+            }, $"colour model {model}"),
             (0, _) => throw new UnsupportedFormatException($"The KTX 2 file's format is undefined (VkFormat 0, colour model {model})."),
             _ => TextureFormat.FromVk(vk) ?? throw KtxTexture.Unsupported("KTX 2", TextureFormat.UnsupportedVkFamily(vk), $"VkFormat {vk}"),
         };
@@ -532,9 +569,26 @@ internal static class Ktx2Header
             texture.ReadKeyValues(kvd, false, strict, input, kvdOffset);
         }
 
+        if (texture.Supercompression == KtxSupercompression.BasisLZ)
+        {
+            if (sgdLength == 0 || sgdLength > uint.MaxValue || sgdOffset > uint.MaxValue)
+            {
+                throw input.Corrupt(64, "A BasisLZ file needs its supercompression global data.");
+            }
+
+            texture.GlobalData = Block(input, (uint)sgdOffset, (uint)sgdLength, "supercompression global data");
+        }
+
         texture.Check(input, strict, 40);
         return texture;
     }
+
+    /// <summary>The colour models of Basis Universal ETC1S and UASTC LDR 4 × 4 (Khronos Data Format Specification 1.4).</summary>
+    private const int Etc1sModel = 163;
+    private const int UastcModel = 166;
+
+    /// <summary>The colour model Basis Universal gives UASTC HDR 4 × 4; the Data Format Specification does not list it yet.</summary>
+    private const int UastcHdr4x4Model = 167;
 
     private static long Long(ReadOnlySpan<byte> bytes) => (long)Math.Min(BinaryPrimitives.ReadUInt64LittleEndian(bytes), long.MaxValue);
 
@@ -555,13 +609,14 @@ internal static class Ktx2Header
 
     /// <summary>
     /// Reads the basic descriptor block of a data format descriptor (Khronos Data Format Specification, section 5): its
-    /// colour model, primaries, transfer function and whether alpha is premultiplied. Returns a problem when it is malformed.
+    /// colour model, primaries, transfer function, whether alpha is premultiplied, the number of samples and the channel type
+    /// of the first. Returns a problem when it is malformed.
     /// </summary>
-    private static (int Model, int Primaries, int Transfer, bool Premultiplied, string? Problem) Descriptor(ReadOnlySpan<byte> dfd)
+    private static (int Model, int Primaries, int Transfer, bool Premultiplied, int Samples, int Channel, string? Problem) Descriptor(ReadOnlySpan<byte> dfd)
     {
         if (dfd.Length < 4 + 24)
         {
-            return (0, 0, 0, false, "The data format descriptor is too short for its basic block.");
+            return (0, 0, 0, false, 0, 0, "The data format descriptor is too short for its basic block.");
         }
 
         uint total = BinaryPrimitives.ReadUInt32LittleEndian(dfd);
@@ -570,9 +625,11 @@ internal static class Ktx2Header
         int blockSize = (int)(word1 >> 16);
         if (total != dfd.Length || (word0 & 0x1FFFF) != 0 || (word0 >> 17) != 0 || blockSize < 24 || blockSize > dfd.Length - 4)
         {
-            return (0, 0, 0, false, "The data format descriptor does not start with a basic descriptor block.");
+            return (0, 0, 0, false, 0, 0, "The data format descriptor does not start with a basic descriptor block.");
         }
 
-        return (dfd[12], dfd[13], dfd[14], (dfd[15] & 1) != 0, null);
+        int samples = (blockSize - 24) / 16;
+        int channel = samples > 0 ? dfd[4 + 24 + 3] & 15 : 0;
+        return (dfd[12], dfd[13], dfd[14], (dfd[15] & 1) != 0, samples, channel, null);
     }
 }

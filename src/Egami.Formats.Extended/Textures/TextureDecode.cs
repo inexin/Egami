@@ -511,6 +511,25 @@ internal static class TextureDecode
                 case TextureCodec.Etc2RgbA1:
                     Etc.DecodeRgb(b, block, 4, punchThrough: true);
                     break;
+                case TextureCodec.Etc1s:
+                    Etc.DecodeRgb(b, block, 3, punchThrough: false);
+                    break;
+                case TextureCodec.Etc1sAlpha:
+                    {
+                        Etc.DecodeRgb(b, block, 4, punchThrough: false);
+                        Span<byte> alpha = block[64..];
+                        Etc.DecodeRgb(b[8..], alpha, 3, punchThrough: false);
+                        for (int i = 0; i < 16; i++)
+                        {
+                            block[(i * 4) + 3] = alpha[(i * 3) + 1];
+                        }
+
+                        break;
+                    }
+
+                case TextureCodec.Uastc:
+                    Uastc.Decode(b, block, f.Natural == TextureNatural.Rgba8 ? 4 : 3);
+                    break;
                 case TextureCodec.Etc2Rgba:
                     Etc.DecodeRgb(b[8..], block, 4, punchThrough: false);
                     Etc.DecodeEac8(b, block[3..], 4);

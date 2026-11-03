@@ -118,6 +118,15 @@ internal enum TextureCodec : byte
 
     /// <summary>ASTC, HDR (SFLOAT).</summary>
     AstcHdr,
+
+    /// <summary>Basis Universal ETC1S, as the ETC1 blocks a BasisLZ slice decodes to.</summary>
+    Etc1s,
+
+    /// <summary>Basis Universal ETC1S with alpha: the ETC1 block of the colour slice, then that of the alpha slice (its green).</summary>
+    Etc1sAlpha,
+
+    /// <summary>Basis Universal UASTC LDR 4 × 4.</summary>
+    Uastc,
 }
 
 /// <summary>
@@ -677,6 +686,18 @@ internal sealed record TextureFormat(int Dxgi, string Name, TextureNatural Natur
         >= 1000054000 and <= 1000054007 => "PVRTC",
         _ => null,
     };
+
+    /// <summary>
+    /// Returns the format of a Basis Universal texture in KTX 2 (VkFormat 0): ETC1S, whose BasisLZ slices the reader decodes
+    /// to ETC1 blocks first, or UASTC LDR 4 × 4. <paramref name="alpha"/> loads it as <c>Rgba8</c>, else <c>Rgb8</c>.
+    /// </summary>
+    public static TextureFormat Basis(bool uastc, bool alpha, bool srgb)
+    {
+        string name = (uastc ? "UASTC_4x4" : "ETC1S") + (alpha ? "_RGBA" : "_RGB") + (srgb ? "_SRGB" : "_UNORM");
+        TextureNatural natural = alpha ? TextureNatural.Rgba8 : TextureNatural.Rgb8;
+        TextureCodec codec = uastc ? TextureCodec.Uastc : alpha ? TextureCodec.Etc1sAlpha : TextureCodec.Etc1s;
+        return new TextureFormat(0, name, natural, codec, uastc || alpha ? 16 : 8) { Srgb = srgb };
+    }
 
     /// <summary>Returns the family of a compressed OpenGL internal format Egami does not read, or <see langword="null"/>.</summary>
     public static string? UnsupportedGlFamily(int internalFormat) => internalFormat switch

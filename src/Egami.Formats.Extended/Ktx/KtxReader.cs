@@ -7,6 +7,7 @@ using System.Runtime.InteropServices;
 using Egami.Colors;
 using Egami.Compression;
 using Egami.Formats.Extended.Textures;
+using Egami.Formats.Extended.Textures.Blocks;
 using Egami.Metadata;
 using Egami.Pixels;
 
@@ -191,6 +192,9 @@ internal sealed class KtxReader(KtxContainer container) : ExtendedReader, IMulti
 
         public bool ReconstructZ { get; init; }
 
+        /// <summary>Gets the index of the image among its mip level's images.</summary>
+        public int ImageIndex { get; init; }
+
         /// <summary>Gets where the image starts in the file, or in the inflated level of a supercompressed one.</summary>
         public long ImageOffset { get; init; }
 
@@ -239,9 +243,19 @@ internal sealed class KtxReader(KtxContainer container) : ExtendedReader, IMulti
                     long inLevel = checked(index * imageBytes);
                     levelOffset = level.Offset;
                     levelLength = level.Length;
-                    levelUncompressed = texture.Supercompression == KtxSupercompression.None ? level.Length : level.UncompressedLength;
-                    imageOffset = texture.Supercompression == KtxSupercompression.None ? checked(level.Offset + inLevel) : inLevel;
-                    available = Math.Clamp(levelUncompressed - inLevel, 0, imageBytes);
+                    levelUncompressed = texture.Supercompression switch
+                    {
+                        KtxSupercompression.None => level.Length,
+                        KtxSupercompression.BasisLZ => imageBytes, // the one image's ETC1 blocks
+                        _ => level.UncompressedLength,
+                    };
+                    imageOffset = texture.Supercompression switch
+                    {
+                        KtxSupercompression.None => checked(level.Offset + inLevel),
+                        KtxSupercompression.BasisLZ => 0,
+                        _ => inLevel,
+                    };
+                    available = texture.Supercompression == KtxSupercompression.BasisLZ ? imageBytes : Math.Clamp(levelUncompressed - inLevel, 0, imageBytes);
                 }
             }
             catch (OverflowException)
@@ -255,6 +269,7 @@ internal sealed class KtxReader(KtxContainer container) : ExtendedReader, IMulti
                 Texture = texture,
                 Surface = surface,
                 Mip = mip,
+                ImageIndex = index,
                 Work = swizzle is null ? texture.Format.Natural : Widened(texture.Format.Natural),
                 Swizzle = swizzle,
                 FlipX = !keep && texture.FlipX,
@@ -524,6 +539,12 @@ internal sealed class KtxReader(KtxContainer container) : ExtendedReader, IMulti
         /// <summary>Reads the whole image, or inflates the whole supercompressed level, before the first row.</summary>
         private void ReadWhole()
         {
+            if (_texture.Supercompression == KtxSupercompression.BasisLZ)
+            {
+                Transcode();
+                return;
+            }
+
             if (_plan.Supercompressed)
             {
                 Inflate();
@@ -595,6 +616,110 @@ internal sealed class KtxReader(KtxContainer container) : ExtendedReader, IMulti
             _wholeStart = (int)Math.Min(_plan.ImageOffset, size);
             _wholeLength = (int)Math.Clamp(inflated - _plan.ImageOffset, 0, _plan.ImageBytes);
         }
+
+        /// <summary>
+        /// Decodes the image's BasisLZ slices into ETC1 blocks in a pooled buffer: its colour slice, and its alpha slice into
+        /// the second half of each block. A P-frame of a texture video builds on the frames before it, back to an I-frame.
+        /// </summary>
+        private void Transcode()
+        {
+            long packed = _plan.LevelLength;
+            long size = _plan.ImageBytes;
+            if (packed > Array.MaxLength || size > Array.MaxLength)
+            {
+                throw new LimitExceededException("MaxMemoryBytes", Array.MaxLength, Math.Max(packed, size));
+            }
+
+            BasisLz basis;
+            try
+            {
+                basis = BasisLz.Read(_texture.GlobalData, _texture.ImagesBefore(_texture.MipLevels));
+            }
+            catch (InvalidDataException e)
+            {
+                throw Input.Corrupt(-1, e.Message);
+            }
+
+            int blocksX = (Width + 3) / 4;
+            int blocksY = (Height + 3) / 4;
+            int stride = _format.UnitBytes;
+            Input.CheckMemory(packed + size + (blocksX * blocksY * 8L));
+            SkipTo(_plan.LevelOffset);
+            using IMemoryOwner<byte> source = Input.RentScratch((int)packed);
+            Span<byte> level = source.Memory.Span[..(int)packed];
+            int read = ReadFully(level);
+            _whole = Input.RentScratch((int)size);
+            Span<byte> blocks = _whole.Memory.Span[..(int)size];
+            _wholeStart = 0;
+            _wholeLength = (int)size;
+
+            // Blocks a damaged slice leaves undecoded read as transparent black.
+            for (int at = 0; at < size; at += 8)
+            {
+                BinaryPrimitives.WriteUInt64BigEndian(blocks[at..], Black);
+            }
+
+            int first = (int)_texture.ImagesBefore(_plan.Mip);
+            int frame = _plan.ImageIndex;
+            bool video = _texture.IsVideo;
+            try
+            {
+                if (read < packed)
+                {
+                    throw new InvalidDataException("The file ends inside the BasisLZ mip level.");
+                }
+
+                int start = frame;
+                while (video && start > 0 && basis.Images[first + start].IsPFrame)
+                {
+                    start--;
+                }
+
+                if (basis.Images[first + start].IsPFrame)
+                {
+                    throw new InvalidDataException(video ? "A texture video starts with a P-frame." : "A texture that is not a video holds a P-frame.");
+                }
+
+                uint[]? previousRgb = video ? new uint[blocksX * blocksY] : null;
+                uint[]? previousAlpha = video && stride == 16 ? new uint[blocksX * blocksY] : null;
+                for (int f = start; f <= frame; f++)
+                {
+                    BasisImage image = basis.Images[first + f];
+                    basis.DecodeSlice(Slice(level, image.RgbOffset, image.RgbLength), blocksX, blocksY, image.IsPFrame, previousRgb, blocks, stride);
+                    if (stride == 16)
+                    {
+                        if (image.AlphaLength == 0)
+                        {
+                            throw new InvalidDataException("An image of a texture with alpha has no alpha slice.");
+                        }
+
+                        basis.DecodeSlice(Slice(level, image.AlphaOffset, image.AlphaLength), blocksX, blocksY, image.IsPFrame, previousAlpha, blocks[8..], stride);
+                    }
+                }
+            }
+            catch (InvalidDataException e)
+            {
+                if (Strict)
+                {
+                    throw Input.Corrupt(_plan.LevelOffset, e.Message);
+                }
+
+                Warn("LevelDamaged", $"The BasisLZ data is damaged ({e.Message}); what does not decode reads as black.", _plan.LevelOffset);
+            }
+
+            static ReadOnlySpan<byte> Slice(ReadOnlySpan<byte> level, uint offset, uint length)
+            {
+                if (offset > level.Length || length > level.Length - offset)
+                {
+                    throw new InvalidDataException("An ETC1S slice lies outside its mip level.");
+                }
+
+                return level.Slice((int)offset, (int)length);
+            }
+        }
+
+        /// <summary>A differential ETC1 block of black: colour 0 and table 0, every texel 0 − 2.</summary>
+        private const ulong Black = 0x00000002_FFFF0000;
 
         /// <summary>Skips to <paramref name="offset"/>, which a damaged level index can put inside the data read so far.</summary>
         private void SkipTo(long offset)
