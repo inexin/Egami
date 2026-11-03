@@ -19,6 +19,11 @@
     <DefineConstants>$(DefineConstants);VP8_STAGE_TIMERS</DefineConstants>
   </PropertyGroup>
 
+  <!-- The roadmap 2.4.11 JPEG XL stage timers (Formats/Jxl/JxlStageTimes.cs), likewise: -p:JxlStageTimers=true, never shipped. -->
+  <PropertyGroup Condition="'$(JxlStageTimers)' == 'true'">
+    <DefineConstants>$(DefineConstants);JXL_STAGE_TIMERS</DefineConstants>
+  </PropertyGroup>
+
   <!-- Build-time analyzer only; ships nothing. The only package reference allowed in src/ (checked in ci.yml). -->
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" PrivateAssets="all" />

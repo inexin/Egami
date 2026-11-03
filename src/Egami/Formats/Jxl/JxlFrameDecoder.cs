@@ -112,6 +112,7 @@ internal sealed class JxlFrameDecoder
     /// </summary>
     internal JxlFrameChannels Decode(float[][]? lfFrame, bool lfOnly)
     {
+        JxlStageTimes.Lap(JxlStage.Headers);
         (long w, long h) = _frame.CodedSize;
         int width = (int)w;
         int height = (int)h;
@@ -226,6 +227,7 @@ internal sealed class JxlFrameDecoder
             DecodeGroup(lr, 1 + lfGroups + lf, global, rects, parts, bitDepth);
             varDct?.DecodeHfMetadata(lr, lf, GlobalTree, lfGroups);
         });
+        JxlStageTimes.Lap(JxlStage.LfGroups);
 
         if (lfOnly && varDct is not null)
         {
@@ -297,7 +299,9 @@ internal sealed class JxlFrameDecoder
             Complete = false;
         }
 
+        JxlStageTimes.Lap(JxlStage.Entropy);
         global.Inverse(r);
+        JxlStageTimes.Lap(JxlStage.ModularInverse);
         if (varDct is null)
         {
             return new JxlFrameChannels(width, height, global.Channels, colorChannels, extraStart) { LfDequant = lfDequant, Patches = patches, Splines = splines, Noise = noise };
