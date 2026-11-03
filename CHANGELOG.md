@@ -28,6 +28,31 @@ JPEG XL metadata boxes (roadmap 2.4.11). No API changes.
   three wesaturate photos at distance 1 were 6.2 to 7 KB larger than cjxl's and are now within 0.15 % at effort 3, 5 and 7.
   A reader that does not open `brob` boxes no longer sees the Exif and XMP of Egami's files, as with cjxl's.
 
+Faster lossy JPEG XL encoding (roadmap 2.4.11). No API changes; every file is byte for byte the same as before.
+
+- The vector DCTs keep 4×4, 4×8, 8×8 and 16-point transforms in registers, multiply by 0.5 and 0.25 instead of dividing,
+  read each block straight from the plane instead of copying it out first, and start the inverse of a transposed varblock
+  from its coefficient layout. The block-size search, which tries every transform on every block, gains most.
+- The block-size search and chroma from luma keep their buffers per thread instead of allocating them for every tile.
+- One thread, instructions per megapixel: distance 1 at effort 7 about 31 % fewer (2.4 to 2.7 times cjxl's, from 3.6 to
+  3.8), effort 5 about 30 % fewer (2.2 to 2.4 times, from 3.1 to 3.4), effort 3 7 to 9 % fewer. flower (3.4 MP) at effort 7
+  from 4.10 to 2.98 s on one thread and 609 to 507 ms on 24; it allocates 752 MiB a run instead of 1,036. Lossy decoding
+  runs 3 to 8 % fewer instructions from the same DCTs.
+
+KTX and KTX 2 textures, stage A (reading; roadmap 2.3.11). All additive.
+
+- `KtxFormat` (.ktx) and `Ktx2Format` (.ktx2) in Egami.Formats.Extended, registered by `WithExtendedFormats()`, `WithKtx()`
+  and `WithKtx2()`, read KTX 1.1 (both byte orders) and KTX 2.0 (uncompressed, or Zstandard and zlib supercompressed): the
+  uncompressed Vulkan and OpenGL formats and BC1 to BC7, in the same natural pixel types as DDS. 1D and 2D textures, arrays,
+  cube maps and volumes with their mips, through LoadAll and `KtxReaderOptions` (`Surface`, `MipLevel`, `IncludeMipLevels`,
+  `ReconstructNormalZ`); `ReaderOptions.MinimumSize` picks the smallest mip that covers it. Load applies `KTXorientation` and
+  `KTXswizzle` unless `KtxReaderOptions.KeepStoredLayout` is set. A KTX 2 data format descriptor tags the colour (sRGB,
+  linear or H.273 code points) and premultiplied alpha. `KtxDetails` keeps the format, supercompression, layout, mips,
+  orientation, swizzle and key/value pairs. ETC, ASTC, PVRTC and Basis Universal throw `UnsupportedFormatException` for now.
+- DDS and KTX share their BC1 to BC7 decoders and one texture format table; DDS reads as before.
+- `Egami.Compression.Zstandard` in core Egami makes the managed Zstandard codec public: `Compress`, `Decompress` and
+  `MaxCompressedLength`.
+
 ## Egami train 1.4.0, Egami.SystemDrawing 1.0.0-preview.3 and Egami.Metafiles 1.0.2 (2026-11-01)
 
 The release train (Egami, Egami.Drawing, Egami.Fonts, Egami.Svg, Egami.Css, Egami.Heic, Egami.Formats.Extended and Egami.Cli)

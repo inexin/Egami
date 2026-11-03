@@ -1098,7 +1098,7 @@ SOFTWARE.
 
 Egami.Formats.Extended's DDS reader is written from Microsoft's DDS programming guide and the Direct3D 11 BC6H and BC7 format
 specifications. Its tables of BC6H and BC7 partition shapes and anchor pixels and of BC6H's per-mode header bit layouts
-(`src/Egami.Formats.Extended/Dds/Blocks/BcTables.cs`) are the specification's data, transcribed from DirectXTex
+(`src/Egami.Formats.Extended/Textures/Blocks/BcTables.cs`) are the specification's data, transcribed from DirectXTex
 (`DirectXTex/BC6HBC7.cpp`); its mapping of legacy DDS pixel formats to DXGI formats and its YUV integer conversions follow
 DirectXTex's, so files decode as `texconv` decodes them. DirectXTex is distributed under the MIT license:
 

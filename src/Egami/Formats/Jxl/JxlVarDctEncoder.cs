@@ -1,3 +1,5 @@
+using System.Runtime.Intrinsics;
+
 namespace Egami.Formats.Jxl;
 
 /// <summary>What the lossy encoder is asked for: the distance, the effort and the threads it may use.</summary>
@@ -1131,11 +1133,13 @@ internal sealed partial class JxlVarDctEncoder
         int stride = _blocksX * 8;
         int x0 = tx * TileBlocks, y0 = ty * TileBlocks;
         int x1 = Math.Min(x0 + TileBlocks, _blocksX), y1 = Math.Min(y0 + TileBlocks, _blocksY);
-        // A tile holds at most 64×64 coefficients a channel (its varblocks cover it once).
-        float[] yx = new float[64 * 64], xs = new float[64 * 64], yb = new float[64 * 64], bs = new float[64 * 64];
+        // A tile holds at most 64×64 coefficients a channel (its varblocks cover it once). The buffers are the thread's, each
+        // written before it is read.
+        CflScratch cfl = t_cflScratch ??= new();
+        float[] yx = cfl.Yx, xs = cfl.Xs, yb = cfl.Yb, bs = cfl.Bs;
         int n = 0;
-        float[] scratch = new float[64 * 64];
-        float[][] block = [new float[64 * 64], new float[64 * 64], new float[64 * 64]];
+        float[] scratch = cfl.Scratch;
+        float[][] block = cfl.Block;
         for (int y = y0; y < y1; y++)
         {
             for (int x = x0; x < x1; x++)
@@ -1179,6 +1183,7 @@ internal sealed partial class JxlVarDctEncoder
                     Array.Resize(ref xs, n + size);
                     Array.Resize(ref yb, n + size);
                     Array.Resize(ref bs, n + size);
+                    (cfl.Yx, cfl.Xs, cfl.Yb, cfl.Bs) = (yx, xs, yb, bs);
                 }
 
                 for (int i = 0; i < size; i++)
@@ -1198,6 +1203,20 @@ internal sealed partial class JxlVarDctEncoder
         int tile = (ty * _tilesX) + tx;
         _yToX[tile] = (sbyte)JxlChromaFromLuma.FindBestMultiplier(yx.AsSpan(0, n), xs.AsSpan(0, n), 0f, fast);
         _yToB[tile] = (sbyte)JxlChromaFromLuma.FindBestMultiplier(yb.AsSpan(0, n), bs.AsSpan(0, n), 1f, fast);
+    }
+
+    [ThreadStatic]
+    private static CflScratch? t_cflScratch;
+
+    /// <summary>A thread's buffers for <see cref="ChromaFromLumaTile"/>.</summary>
+    private sealed class CflScratch
+    {
+        internal float[] Yx = new float[64 * 64];
+        internal float[] Xs = new float[64 * 64];
+        internal float[] Yb = new float[64 * 64];
+        internal float[] Bs = new float[64 * 64];
+        internal readonly float[] Scratch = new float[64 * 64];
+        internal readonly float[][] Block = [new float[64 * 64], new float[64 * 64], new float[64 * 64]];
     }
 
     /// <summary>
@@ -1720,6 +1739,33 @@ internal sealed partial class JxlVarDctEncoder
         int x1 = Math.Min(x0 + 8, _width), y1 = Math.Min(y0 + 8, _height);
         float e0 = 0, e1 = 0, e2 = 0;
         int maskStride = _blocksX * 8;
+        if (x1 - x0 == 8 && Vector256.IsHardwareAccelerated)
+        {
+            // The products eight at a time, summed lane by lane in the scalar order: the same sums.
+            float[] a0 = a[0], a1 = a[1], a2 = a[2], b0 = b[0], b1 = b[1], b2 = b[2];
+            Span<float> p = stackalloc float[24];
+            for (int y = y0; y < y1; y++)
+            {
+                int at = (y * _width) + x0;
+                Vector256<float> m = Vector256.Create(mask, (y * maskStride) + x0);
+                Vector256<float> m2 = m * m;
+                Vector256<float> d0 = Vector256.Create(a0, at) - Vector256.Create(b0, at);
+                Vector256<float> d1 = Vector256.Create(a1, at) - Vector256.Create(b1, at);
+                Vector256<float> d2 = Vector256.Create(a2, at) - Vector256.Create(b2, at);
+                (m2 * d0 * d0).CopyTo(p);
+                (m2 * d1 * d1).CopyTo(p[8..]);
+                (m2 * d2 * d2).CopyTo(p[16..]);
+                for (int i = 0; i < 8; i++)
+                {
+                    e0 += p[i];
+                    e1 += p[8 + i];
+                    e2 += p[16 + i];
+                }
+            }
+
+            return (float)((12.339445295782363 * e0) + (1.0 * e1) + (0.2 * e2));
+        }
+
         for (int y = y0; y < y1; y++)
         {
             for (int x = x0; x < x1; x++)
@@ -2076,12 +2122,7 @@ internal sealed partial class JxlVarDctEncoder
 
         // Untransposed coefficients keep the natural layout: the transform runs in place in the output.
         float[] work = transposed ? scratch : output;
-        for (int y = 0; y < height; y++)
-        {
-            plane.AsSpan(offset + (y * stride), width).CopyTo(work.AsSpan(y * width, width));
-        }
-
-        JxlForwardDct.Forward(t, work, 0, width);
+        JxlForwardDct.Forward(t, plane.AsSpan(offset), stride, work);
         if (transposed)
         {
             // The coefficient layout is height wide: natural (x, y) is stored at (y, x).
