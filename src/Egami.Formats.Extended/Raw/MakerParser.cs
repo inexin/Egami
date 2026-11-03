@@ -219,6 +219,12 @@ internal static class MakerParser
             }
         }
 
+        CameraTable(frame);
+    }
+
+    /// <summary>Applies the camera table's colour, and its area and levels where the format gave none, to a frame.</summary>
+    internal static void CameraTable(RawFrame frame)
+    {
         RawCameraEntry? camera = RawCameraTable.Find(frame.Make, frame.Model);
         if (camera is not null)
         {
@@ -638,7 +644,7 @@ internal static class MakerParser
     /// Canon's as-shot white balance as a neutral: ColorData's WB_RGGBLevelsAsShot, at the index its version (told by its
     /// length) puts it, as ExifTool's Canon tag page lists them; or <see langword="null"/>.
     /// </summary>
-    private static double[]? CanonAsShot(MakerNote? note)
+    internal static double[]? CanonAsShot(MakerNote? note)
     {
         if (note?.Ifd.Ints(0x4001, 8192) is not long[] color)
         {
