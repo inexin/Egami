@@ -454,6 +454,12 @@ internal static class TextureDecode
     /// </summary>
     public static void Blocks(TextureFormat f, ReadOnlySpan<byte> src, Span<byte> dst, int width, int rows, int stride)
     {
+        if (f.IsAstc)
+        {
+            AstcBlocks(f, src, dst, width, rows, stride);
+            return;
+        }
+
         int pixel = NaturalBytes(f.Natural);
         Span<byte> block = stackalloc byte[16 * 8];
         int blocks = (width + 3) / 4;
@@ -499,6 +505,35 @@ internal static class TextureDecode
                 case TextureCodec.Bc6hSigned:
                     Bc6h.Decode(b, MemoryMarshal.Cast<byte, ushort>(block), f.Codec == TextureCodec.Bc6hSigned);
                     break;
+                case TextureCodec.Etc2Rgb:
+                    Etc.DecodeRgb(b, block, 3, punchThrough: false);
+                    break;
+                case TextureCodec.Etc2RgbA1:
+                    Etc.DecodeRgb(b, block, 4, punchThrough: true);
+                    break;
+                case TextureCodec.Etc2Rgba:
+                    Etc.DecodeRgb(b[8..], block, 4, punchThrough: false);
+                    Etc.DecodeEac8(b, block[3..], 4);
+                    break;
+                case TextureCodec.EacR11:
+                case TextureCodec.EacR11Snorm:
+                    Etc.DecodeEac11(b, MemoryMarshal.Cast<byte, ushort>(block), 1, f.Codec == TextureCodec.EacR11Snorm);
+                    break;
+                case TextureCodec.EacRg11:
+                case TextureCodec.EacRg11Snorm:
+                    {
+                        Span<ushort> rgb = MemoryMarshal.Cast<byte, ushort>(block);
+                        bool signed = f.Codec == TextureCodec.EacRg11Snorm;
+                        Etc.DecodeEac11(b, rgb, 3, signed);
+                        Etc.DecodeEac11(b[8..], rgb[1..], 3, signed);
+                        for (int i = 2; i < 48; i += 3)
+                        {
+                            rgb[i] = 0;
+                        }
+
+                        break;
+                    }
+
                 default:
                     Bc7.Decode(b, block);
                     break;
@@ -509,6 +544,35 @@ internal static class TextureDecode
             for (int y = 0; y < rows; y++)
             {
                 block.Slice(y * 4 * pixel, columns * pixel).CopyTo(dst.Slice((y * stride) + (x0 * pixel), columns * pixel));
+            }
+        }
+    }
+
+    /// <summary>Decodes one row of ASTC blocks, whose footprint is the format's block size, as <see cref="Blocks"/> does.</summary>
+    private static void AstcBlocks(TextureFormat f, ReadOnlySpan<byte> src, Span<byte> dst, int width, int rows, int stride)
+    {
+        int bw = f.BlockWidth;
+        Astc astc = Astc.For(bw, f.BlockHeight)!;
+        int pixel = NaturalBytes(f.Natural);
+        Span<byte> block = stackalloc byte[astc.Texels * 8];
+        int blocks = (width + bw - 1) / bw;
+        for (int bx = 0; bx < blocks; bx++)
+        {
+            ReadOnlySpan<byte> b = src.Slice(bx * 16, 16);
+            if (f.Codec == TextureCodec.AstcHdr)
+            {
+                astc.DecodeHdr(b, MemoryMarshal.Cast<byte, ushort>(block));
+            }
+            else
+            {
+                astc.DecodeLdr(b, block, f.Codec == TextureCodec.AstcSrgb);
+            }
+
+            int x0 = bx * bw;
+            int columns = Math.Min(bw, width - x0);
+            for (int y = 0; y < rows; y++)
+            {
+                block.Slice(y * bw * pixel, columns * pixel).CopyTo(dst.Slice((y * stride) + (x0 * pixel), columns * pixel));
             }
         }
     }
