@@ -451,6 +451,9 @@ internal static partial class JxlDct
                 }
 
                 return;
+            case 16:
+                Dct16Vector(ref io, forward);
+                return;
         }
 
         int half = n / 2;
@@ -507,6 +510,87 @@ internal static partial class JxlDct
                 Unsafe.Add(ref out1, half - i - 1) = a - b;
             }
         }
+    }
+
+    /// <summary>
+    /// The 16-point case of <see cref="DctVector(ref Vector256{float}, ref Vector256{float}, int, bool)"/> in locals: the halves,
+    /// their 8-point transforms and the merge, with the same operations in the same order.
+    /// </summary>
+    private static void Dct16Vector(ref Vector256<float> io, bool forward)
+    {
+        ref float sec = ref MemoryMarshal.GetReference(SecHalf(16));
+        Vector256<float> sqrt2 = Vector256.Create(Sqrt2);
+        if (forward)
+        {
+            Vector256<float> half = Vector256.Create(0.5f);
+            Vector256<float> a0 = Pair(ref io, 0, half, out Vector256<float> b0, ref sec);
+            Vector256<float> a1 = Pair(ref io, 1, half, out Vector256<float> b1, ref sec);
+            Vector256<float> a2 = Pair(ref io, 2, half, out Vector256<float> b2, ref sec);
+            Vector256<float> a3 = Pair(ref io, 3, half, out Vector256<float> b3, ref sec);
+            Vector256<float> a4 = Pair(ref io, 4, half, out Vector256<float> b4, ref sec);
+            Vector256<float> a5 = Pair(ref io, 5, half, out Vector256<float> b5, ref sec);
+            Vector256<float> a6 = Pair(ref io, 6, half, out Vector256<float> b6, ref sec);
+            Vector256<float> a7 = Pair(ref io, 7, half, out Vector256<float> b7, ref sec);
+            Forward8(ref a0, ref a1, ref a2, ref a3, ref a4, ref a5, ref a6, ref a7);
+            Forward8(ref b0, ref b1, ref b2, ref b3, ref b4, ref b5, ref b6, ref b7);
+            b0 *= sqrt2;
+            io = a0;
+            Unsafe.Add(ref io, 1) = b0 + b1;
+            Unsafe.Add(ref io, 2) = a1;
+            Unsafe.Add(ref io, 3) = b1 + b2;
+            Unsafe.Add(ref io, 4) = a2;
+            Unsafe.Add(ref io, 5) = b2 + b3;
+            Unsafe.Add(ref io, 6) = a3;
+            Unsafe.Add(ref io, 7) = b3 + b4;
+            Unsafe.Add(ref io, 8) = a4;
+            Unsafe.Add(ref io, 9) = b4 + b5;
+            Unsafe.Add(ref io, 10) = a5;
+            Unsafe.Add(ref io, 11) = b5 + b6;
+            Unsafe.Add(ref io, 12) = a6;
+            Unsafe.Add(ref io, 13) = b6 + b7;
+            Unsafe.Add(ref io, 14) = a7;
+            Unsafe.Add(ref io, 15) = b7;
+        }
+        else
+        {
+            Vector256<float> a0 = io, a1 = Unsafe.Add(ref io, 2), a2 = Unsafe.Add(ref io, 4), a3 = Unsafe.Add(ref io, 6);
+            Vector256<float> a4 = Unsafe.Add(ref io, 8), a5 = Unsafe.Add(ref io, 10), a6 = Unsafe.Add(ref io, 12), a7 = Unsafe.Add(ref io, 14);
+            Vector256<float> o0 = Unsafe.Add(ref io, 1), o1 = Unsafe.Add(ref io, 3), o2 = Unsafe.Add(ref io, 5), o3 = Unsafe.Add(ref io, 7);
+            Vector256<float> o4 = Unsafe.Add(ref io, 9), o5 = Unsafe.Add(ref io, 11), o6 = Unsafe.Add(ref io, 13), o7 = Unsafe.Add(ref io, 15);
+
+            // in1[half - i] += in1[half - i - 1], from the top down.
+            Vector256<float> b7 = o7 + o6, b6 = o6 + o5, b5 = o5 + o4, b4 = o4 + o3, b3 = o3 + o2, b2 = o2 + o1, b1 = o1 + o0;
+            Vector256<float> b0 = o0 * sqrt2;
+            Inverse8(ref a0, ref a1, ref a2, ref a3, ref a4, ref a5, ref a6, ref a7);
+            Inverse8(ref b0, ref b1, ref b2, ref b3, ref b4, ref b5, ref b6, ref b7);
+            Merge(ref io, 0, a0, b0, ref sec);
+            Merge(ref io, 1, a1, b1, ref sec);
+            Merge(ref io, 2, a2, b2, ref sec);
+            Merge(ref io, 3, a3, b3, ref sec);
+            Merge(ref io, 4, a4, b4, ref sec);
+            Merge(ref io, 5, a5, b5, ref sec);
+            Merge(ref io, 6, a6, b6, ref sec);
+            Merge(ref io, 7, a7, b7, ref sec);
+        }
+    }
+
+    /// <summary>The forward split of input pair (i, 15 − i): the half sum, and the half difference times the secant.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static Vector256<float> Pair(ref Vector256<float> io, int i, Vector256<float> half, out Vector256<float> difference, ref float sec)
+    {
+        Vector256<float> a = Unsafe.Add(ref io, i);
+        Vector256<float> b = Unsafe.Add(ref io, 15 - i);
+        difference = (a - b) * half * Vector256.Create(Unsafe.Add(ref sec, i));
+        return (a + b) * half;
+    }
+
+    /// <summary>The inverse merge of output pair (i, 15 − i).</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static void Merge(ref Vector256<float> io, int i, Vector256<float> a, Vector256<float> b, ref float sec)
+    {
+        Vector256<float> r = b * Vector256.Create(Unsafe.Add(ref sec, i));
+        Unsafe.Add(ref io, i) = a + r;
+        Unsafe.Add(ref io, 15 - i) = a - r;
     }
 
     /// <summary>The forward 1D DCT of length 8 (<see cref="Dct8"/> with forward true) on eight vectors at once, in registers.</summary>
