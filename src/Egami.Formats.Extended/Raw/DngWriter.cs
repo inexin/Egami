@@ -718,6 +718,9 @@ internal static class DngWriter
         {
             DngIfd exifIfd = new();
             DngIfd gps = new();
+            double? Value(int tag) => exif.Entries.FirstOrDefault(e => e.Key.Ifd == ExifIfd.Exif && e.Key.Tag == tag) is { Count: 1, Type: ExifType.Rational } e
+                && e.AsFraction(0) is { Denominator: > 0, Numerator: > 0 } f ? (double)f.Numerator / f.Denominator : null;
+            double? exposure = Value(RawTags.ExposureTime), fNumber = Value(RawTags.FNumber);
             foreach (ExifEntry entry in exif.Entries)
             {
                 int tag = entry.Key.Tag;
@@ -730,6 +733,18 @@ internal static class DngWriter
                 {
                     case ExifIfd.Primary when !Structural.Contains(tag) && tag is not (RawTags.Make or RawTags.Model or RawTags.Orientation) && !ifd0.Has(tag):
                         ifd0.Raw(tag, (int)entry.Type, entry.Count, LittleEndian(entry));
+                        break;
+                    case ExifIfd.Exif when tag == 0x9201 && exposure is double t && Apex(entry) is double tv && Math.Abs(tv + Math.Log2(t)) > 0.05:
+                        // Samsung writes the exposure time itself as ShutterSpeedValue, and the f-number as ApertureValue; both are
+                        // APEX values, which Adobe DNG Converter writes from ExposureTime and FNumber (and dng_validate checks).
+                        exifIfd.Raw(tag, 10, 1, Fraction(-Math.Log2(t)));
+                        break;
+                    case ExifIfd.Exif when tag == 0x9202 && fNumber is double n && Apex(entry) is double av && Math.Abs(av - (2 * Math.Log2(n))) > 0.05:
+                        exifIfd.Raw(tag, 5, 1, Fraction(2 * Math.Log2(n)));
+                        break;
+                    case ExifIfd.Exif when entry.Type == ExifType.Ascii && entry.RawValue.Length > 0 && entry.RawValue.Span[^1] != 0:
+                        // An ASCII value must end in NUL (the NX500's LensModel does not).
+                        exifIfd.Raw(tag, 2, entry.Count + 1, [.. entry.RawValue.Span, 0]);
                         break;
                     case ExifIfd.Exif when tag is not (RawTags.MakerNote or 0xA005):
                         exifIfd.Raw(tag, (int)entry.Type, entry.Count, LittleEndian(entry));
@@ -767,6 +782,19 @@ internal static class DngWriter
             (ExifIfd.Exif, 0xA432) => entry.Type == ExifType.Rational && entry.Count == 4 && !Enumerable.Range(0, 4).Any(i => entry.AsFraction(i).Numerator == 0 && entry.AsFraction(i).Denominator != 0),
             _ => true,
         };
+    }
+
+    /// <summary>Gets an APEX rational's value, or <see langword="null"/>.</summary>
+    private static double? Apex(ExifEntry entry) => entry is { Count: 1, Type: ExifType.Rational or ExifType.SRational } && entry.AsFraction(0) is { Denominator: not 0 } f
+        ? (double)f.Numerator / f.Denominator : null;
+
+    /// <summary>A value as a little-endian rational over 1 000 000 (its sign in the numerator, for SRATIONAL).</summary>
+    private static byte[] Fraction(double value)
+    {
+        byte[] bytes = new byte[8];
+        BinaryPrimitives.WriteInt32LittleEndian(bytes, (int)Math.Round(value * 1_000_000));
+        BinaryPrimitives.WriteInt32LittleEndian(bytes.AsSpan(4), 1_000_000);
+        return bytes;
     }
 
     private static byte[] LittleEndian(ExifEntry entry)

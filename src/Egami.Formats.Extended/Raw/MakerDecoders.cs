@@ -120,6 +120,18 @@ internal static class MakerDecoders
             case RawCodec.CanonCrx:
                 CrxDecoder.Decode(tiff.Data, offset, count, pixels, (CrxHeader)sensor.CodecData!, parallel, damaged);
                 break;
+            case RawCodec.SamsungUncompressed:
+                SamsungDecoder.Uncompressed(tiff.Data, (int)offset, (int)count, pixels, (SamsungLayout)sensor.CodecData!, parallel);
+                break;
+            case RawCodec.SamsungV0:
+                SamsungDecoder.V0(tiff.Data, offset, count, pixels, (SamsungRows)sensor.CodecData!, tiff.Length, parallel);
+                break;
+            case RawCodec.SamsungV1:
+                SamsungDecoder.V1(data, pixels, sensor.Bits);
+                break;
+            case RawCodec.SamsungV2:
+                SamsungDecoder.V2(data, pixels, sensor.Bits);
+                break;
             default:
                 throw new NotSupportedException($"Egami does not read the {sensor.Codec} raw codec yet.");
         }
@@ -322,7 +334,7 @@ internal static class MakerDecoders
     }
 
     /// <summary>The JPEG sign extension of r read in <paramref name="length"/> bits (T.81 F.2.2.1).</summary>
-    private static int Extend(uint r, int length) => length == 0 ? 0 : (r & (1u << (length - 1))) == 0 ? (int)r - ((1 << length) - 1) : (int)r;
+    internal static int Extend(uint r, int length) => length == 0 ? 0 : (r & (1u << (length - 1))) == 0 ? (int)r - ((1 << length) - 1) : (int)r;
 
     /// <summary>Pentax PEF Huffman (PEF spec, sections 2 to 4).</summary>
     /// <summary>Builds the Huffman decoder from maker-note tag 0x0220, or the default table (PEF spec, section 2).</summary>

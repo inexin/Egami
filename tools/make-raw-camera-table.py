@@ -49,7 +49,7 @@ import urllib.request
 
 REPOSITORY = "https://raw.pixls.us/json/getrepository.php?set=all"
 CONVERTER = r"C:\Program Files\Adobe\Adobe DNG Converter\Adobe DNG Converter.exe"
-FORMATS = ["cr2", "cr3", "nef", "nrw", "pef", "arw", "sr2", "orf", "rw2", "raw", "rwl", "raf"]
+FORMATS = ["cr2", "cr3", "nef", "nrw", "pef", "arw", "sr2", "orf", "rw2", "raw", "rwl", "raf", "srw"]
 # .raw names many unrelated formats; only Panasonic's and Leica's (RW2's layout, RW2 spec section 1) are Egami's.
 RAW_MAKES = ("panasonic", "leica")
 CACHE = os.path.join(".cache", "raw-cameras")

@@ -86,7 +86,9 @@ codecs (Fujifilm compressed RAF, NEF, PEF, ARW, ORF, RW2 and CR2) were written f
 study-only session wrote after reading LibRaw and rawspeed for structure only (the maintainer's 2026-10-24 study-only rule);
 the implementing sessions never read those sources, and nothing was copied. Canon's CRX codec (CR3) was written the same way,
 from a specification a study-only session wrote after reading LibRaw and the canon_cr3 repository for structure only, and was
-checked against the sample files and Adobe DNG Converter's output. Sample files come from raw.pixls.us, CC0 only (BY-NC-SA ones
+checked against the sample files and Adobe DNG Converter's output. Samsung's SRW layouts and codecs were written the same way,
+from a specification a study-only session wrote after reading LibRaw and rawspeed for structure only, and checked bit for bit
+against Adobe DNG Converter's DNGs of the sample files. Sample files come from raw.pixls.us, CC0 only (BY-NC-SA ones
 are measured locally, never committed).
 
 For LZMA (TIFF LZMA), The .xz File Format 1.2.1 and the LZMA SDK's lzma-specification.txt (both public domain) are the

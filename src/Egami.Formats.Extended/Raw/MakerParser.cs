@@ -17,6 +17,7 @@ internal enum RawKind
     Rw2,
     Raf,
     Cr3,
+    Srw,
 }
 
 /// <summary>The codecs of maker sensor data, decoded by <see cref="MakerDecoders"/>; <see cref="Tiff"/> is TIFF's own compressions.</summary>
@@ -41,6 +42,10 @@ internal enum RawCodec
     FujiCompressed,
     CanonSraw,
     CanonCrx,
+    SamsungUncompressed,
+    SamsungV0,
+    SamsungV1,
+    SamsungV2,
 }
 
 /// <summary>
@@ -99,6 +104,7 @@ internal static class MakerParser
         return upper.StartsWith("NIKON", StringComparison.Ordinal) ? RawKind.Nef
             : upper.StartsWith("PENTAX", StringComparison.Ordinal) || upper.StartsWith("RICOH IMAGING", StringComparison.Ordinal) || upper.StartsWith("SAMSUNG TECHWIN", StringComparison.Ordinal) ? RawKind.Pef
             : upper.StartsWith("SONY", StringComparison.Ordinal) ? RawKind.Arw
+            : upper.StartsWith("SAMSUNG", StringComparison.Ordinal) ? RawKind.Srw
             : null;
     }
 
@@ -169,6 +175,7 @@ internal static class MakerParser
             RawKind.Arw => Arw(tiff, ifd0, all),
             RawKind.Orf => Orf(tiff, ifd0, note),
             RawKind.Rw2 => Rw2(tiff, ifd0),
+            RawKind.Srw => Srw(ifd0, all, note),
             _ => throw new InvalidDataException("The RAW file is not a format Egami reads."),
         };
         Common(frame, ifd0, exif, all, note);
@@ -602,6 +609,107 @@ internal static class MakerParser
         return frame;
     }
 
+    /// <summary>
+    /// A Samsung SRW (SRW spec, sections 1, 3 and 7 to 8): the raw IFD's compression picks the layout or codec, and the maker
+    /// note's levels and white balance are stored plus the key in tag 0xA020.
+    /// </summary>
+    private static RawFrame Srw(RawIfd ifd0, List<RawIfd> all, MakerNote? note)
+    {
+        RawIfd raw = Largest(all, i => i.Int(RawTags.Compression) is >= 32769 and <= 32773) ?? throw new InvalidDataException("The SRW has no raw IFD.");
+        int width = (int)raw.Int(RawTags.ImageWidth), height = (int)raw.Int(RawTags.ImageLength), bits = (int)raw.Int(RawTags.BitsPerSample, 12);
+        int compression = (int)raw.Int(RawTags.Compression);
+        if (raw.Ints(RawTags.StripOffsets) is not { Length: 1 } || raw.Ints(RawTags.StripByteCounts) is not { Length: 1 } counts)
+        {
+            throw new NotSupportedException("Egami reads SRW raw data in one strip.");
+        }
+
+        if (width <= 0 || height <= 0 || bits is not (12 or 14))
+        {
+            throw new InvalidDataException("The SRW raw IFD has no valid size or depth.");
+        }
+
+        string model = ifd0.Ascii(RawTags.Model) ?? "";
+        long perRow = counts[0] / height;
+        RawCodec codec;
+        object? data = null;
+        if (compression == 32772)
+        {
+            codec = RawCodec.SamsungV1;
+        }
+        else if (compression == 32773)
+        {
+            codec = RawCodec.SamsungV2;
+        }
+        else if (compression == 32770 && raw.Has(0xA010))
+        {
+            codec = RawCodec.SamsungV0;
+            data = new SamsungRows(raw.Int(0xA010));
+        }
+        else
+        {
+            codec = RawCodec.SamsungUncompressed;
+            // Rows of 1.5 bytes a sample are 12-bit packed: least significant bits first on the five bodies of raw width 5632
+            // (measured against Adobe DNG Converter), most significant first on the others.
+            data = perRow >= 2L * width ? SamsungLayout.Words16
+                : compression == 32769 ? SamsungLayout.Packed12Unknown
+                : width == 5632 ? SamsungLayout.Packed12Lsb : SamsungLayout.Packed12Msb;
+        }
+
+        RawFrame frame = new() { Sensor = Sensor(raw, codec, width, height, bits, data) };
+        frame.Cfa = SrwCfa(model) ?? TiffEpCfa(raw) ?? Bayer("RGGB");
+        if (note is not null && note.Ifd.Ints(0xA020, 11) is { Length: >= 4 } key)
+        {
+            if (note.Ifd.Ints(0xA021, 4) is { Length: 4 } wb && wb[0] > key[0] && wb[1] > key[1] && wb[3] > key[3])
+            {
+                // The as-shot levels without the black subtracted, as Adobe DNG Converter's AsShotNeutral reads them (open point 6),
+                // scaled like Adobe's so the largest is 1.
+                double r = wb[0] - key[0], g = wb[1] - key[1], b = wb[3] - key[3], top = Math.Max(1, Math.Max(g / r, g / b));
+                frame.AsShotNeutral = [g / r / top, 1 / top, g / b / top];
+            }
+
+            if (note.Ifd.Ints(0xA028, 4) is { Length: 4 } black && black.Zip(key).All(p => p.First >= p.Second))
+            {
+                // R, G, G, B: each cell of the 2 × 2 pattern takes its colour's level, the first green on the first row.
+                double[] levels = [.. black.Zip(key, (v, k) => (double)(v - k))];
+                RawCfa cfa = frame.Cfa;
+                frame.Black = [.. Enumerable.Range(0, 4).Select(i => cfa.Colors[i] switch { 0 => levels[0], 2 => levels[3], _ => i < 2 ? levels[1] : levels[2] })];
+                frame.BlackRows = frame.BlackColumns = 2;
+                int white = RawCameraTable.Find(ifd0.Ascii(RawTags.Make) ?? "", model)?.White ?? 0, max = (1 << bits) - 1;
+                if (codec == RawCodec.SamsungV2 && white > 0 && (white > max || white <= max / 2))
+                {
+                    // The NX1 and NX500 write 12 or 14 bits; the table measured one. Adobe's levels for the two (NX500 samples).
+                    white = bits == 14 ? 16100 : 4000;
+                }
+
+                frame.White = [white > 0 ? white : max];
+                frame.HasOwnLevels = true;
+            }
+        }
+
+        if (!frame.HasOwnLevels)
+        {
+            frame.White = [(1 << bits) - 1];
+        }
+
+        return frame;
+    }
+
+    /// <summary>
+    /// The colour pattern at the raw array's top-left by body (SRW spec, section 8, confirmed against Adobe DNG Converter): the
+    /// V0 and V1 bodies' CFAPattern tags do not describe the decoded array.
+    /// </summary>
+    private static RawCfa? SrwCfa(string model)
+    {
+        string m = model.ToUpperInvariant().Replace(" ", "", StringComparison.Ordinal);
+        return m switch
+        {
+            "NX5" or "NX10" or "NX11" or "NX100" => Bayer("BGGR"),
+            "NX20" or "NX200" or "NX210" or "NX1000" or "NX1100" or "NX2000" or "NX30" or "NX300" or "NX300M" or "NX3000" or "NX3300" or "EK-GN120" or "NX1" or "NX500" => Bayer("GRBG"),
+            "NXMINI" or "EX1" or "EX2F" or "WB2000" => Bayer("RGGB"),
+            _ => null,
+        };
+    }
+
     private static RawFrame Rw2(RawTiff tiff, RawIfd ifd0)
     {
         int width = (int)ifd0.Int(0x0002), height = (int)ifd0.Int(0x0003), bits = (int)ifd0.Int(0x000A, 12);
@@ -869,6 +977,12 @@ internal sealed class MakerNote(RawIfd ifd, byte[] bytes)
         ReadOnlySpan<byte> b = bytes;
         try
         {
+            if (kind == RawKind.Srw)
+            {
+                // Samsung: a bare IFD, its offsets counted from the note's start (SRW spec, section 7).
+                return new RawTiff(tiff.Source, tiff.BigEndian, at).ReadIfd(0, atOrigin: true) is RawIfd srw ? new MakerNote(srw, bytes) : null;
+            }
+
             if (b.StartsWith("Nikon\0"u8) && b.Length > 18)
             {
                 bool be = b[10] == 'M';

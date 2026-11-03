@@ -51,7 +51,7 @@ SEEDS = {"png": "tests/images/pngsuite/*.png tests/images/fuzz/png-seeds/*.png",
          "svg": "tests/images/fuzz/svg-seeds/*", "dds": "tests/images/fuzz/dds-seeds/*", "ktx": "tests/images/fuzz/ktx-seeds/*", "ktx2": "tests/images/fuzz/ktx2-seeds/*", "raw": "tests/images/fuzz/raw-seeds/*",
          # One RAW format family at a time: the raw target with that family's seeds.
          "raw-dng": "tests/images/fuzz/raw-seeds/*.dng", "raw-canon": "tests/images/fuzz/raw-seeds/*.cr2 tests/images/fuzz/raw-seeds/*.cr3",
-         "raw-nikon": "tests/images/fuzz/raw-seeds/*.nef", "raw-fuji": "tests/images/fuzz/raw-seeds/*.raf",
+         "raw-nikon": "tests/images/fuzz/raw-seeds/*.nef", "raw-fuji": "tests/images/fuzz/raw-seeds/*.raf", "raw-samsung": "tests/images/fuzz/raw-seeds/*.srw",
          # DNGs Egami wrote (DNG writing PR B): every compression, preview setting, LinearRaw and float.
          "raw-written": "tests/images/fuzz/raw-written-seeds/*",
          "raw-tiff": "tests/images/fuzz/raw-seeds/*.pef tests/images/fuzz/raw-seeds/*.arw tests/images/fuzz/raw-seeds/*.orf tests/images/fuzz/raw-seeds/*.rw2",
