@@ -81,7 +81,8 @@ internal static partial class JxlDct
 
     /// <summary>
     /// Runs Dct2D on a 4×4, 4×8 or 8×4 area with vectors, rows then columns as the scalar path, each 1D transform run on all
-    /// rows (or columns) at once by <see cref="DctVector"/>, which keeps the scalar operations: the samples are the same.
+    /// rows (or columns) at once by <see cref="DctVector"/>, which keeps the scalar operations: the samples are the same. The
+    /// area is held as an 8×8 block of registers, zero outside it, and turned with <see cref="Transpose"/>.
     /// </summary>
     [SkipLocalsInit]
     private static bool Dct2DSmall(Span<float> data, int offset, int stride, int width, int height, bool forward)
@@ -96,60 +97,31 @@ internal static partial class JxlDct
             throw new ArgumentOutOfRangeException(nameof(offset));
         }
 
-        Span<float> t = stackalloc float[64];
+        ref float d = ref Unsafe.Add(ref MemoryMarshal.GetReference(data), offset);
         Span<Vector256<float>> v = stackalloc Vector256<float>[8];
         Span<Vector256<float>> scratch = stackalloc Vector256<float>[8];
-        t.Clear();
-        ref float d = ref Unsafe.Add(ref MemoryMarshal.GetReference(data), offset);
-        ref float tr = ref MemoryMarshal.GetReference(t);
-
-        // Rows: each vector one column x, its lanes the rows y.
+        v.Clear();
         for (int y = 0; y < height; y++)
         {
-            ref float row = ref Unsafe.Add(ref d, y * stride);
-            for (int x = 0; x < width; x++)
-            {
-                Unsafe.Add(ref tr, (x * 8) + y) = Unsafe.Add(ref row, x);
-            }
+            v[y] = width == 8 ? Load(ref d, y * stride) : Vector128.LoadUnsafe(ref d, (nuint)(y * stride)).ToVector256();
         }
 
-        for (int x = 0; x < width; x++)
-        {
-            v[x] = Vector256.LoadUnsafe(ref tr, (nuint)(x * 8));
-        }
-
+        // Rows: each vector one column x, its lanes the rows y.
+        Transpose(ref v[0], ref v[1], ref v[2], ref v[3], ref v[4], ref v[5], ref v[6], ref v[7]);
         DctVector(v[..width], scratch, forward);
 
         // Columns: each vector one row y, its lanes the columns x.
-        for (int x = 0; x < width; x++)
-        {
-            v[x].StoreUnsafe(ref tr, (nuint)(x * 8));
-        }
-
-        Span<float> r = stackalloc float[64];
-        r.Clear();
-        ref float rr = ref MemoryMarshal.GetReference(r);
-        for (int y = 0; y < height; y++)
-        {
-            for (int x = 0; x < width; x++)
-            {
-                Unsafe.Add(ref rr, (y * 8) + x) = Unsafe.Add(ref tr, (x * 8) + y);
-            }
-        }
-
-        for (int y = 0; y < height; y++)
-        {
-            v[y] = Vector256.LoadUnsafe(ref rr, (nuint)(y * 8));
-        }
-
+        Transpose(ref v[0], ref v[1], ref v[2], ref v[3], ref v[4], ref v[5], ref v[6], ref v[7]);
         DctVector(v[..height], scratch, forward);
         for (int y = 0; y < height; y++)
         {
-            v[y].StoreUnsafe(ref rr, (nuint)(y * 8));
-            ref float row = ref Unsafe.Add(ref d, y * stride);
-            for (int x = 0; x < width; x++)
+            if (width == 8)
             {
-                Unsafe.Add(ref row, x) = Unsafe.Add(ref rr, (y * 8) + x);
+                Store(v[y], ref d, y * stride);
+            }
+            else
+            {
+                v[y].GetLower().StoreUnsafe(ref d, (nuint)(y * stride));
             }
         }
 
@@ -336,7 +308,7 @@ internal static partial class JxlDct
     private static void DctVector(Span<Vector256<float>> io, Span<Vector256<float>> scratch, bool forward)
     {
         int n = io.Length;
-        Vector256<float> two = Vector256.Create(2f);
+        Vector256<float> half2 = Vector256.Create(0.5f);
         switch (n)
         {
             case <= 1:
@@ -345,8 +317,8 @@ internal static partial class JxlDct
                 {
                     Vector256<float> t0 = io[0] + io[1];
                     Vector256<float> t1 = io[0] - io[1];
-                    io[0] = forward ? t0 / two : t0;
-                    io[1] = forward ? t1 / two : t1;
+                    io[0] = forward ? t0 * half2 : t0;
+                    io[1] = forward ? t1 * half2 : t1;
                     return;
                 }
 
@@ -368,8 +340,8 @@ internal static partial class JxlDct
         {
             for (int i = 0; i < half; i++)
             {
-                in0[i] = (io[i] + io[n - i - 1]) / two;
-                in1[i] = (io[i] - io[n - i - 1]) / two;
+                in0[i] = (io[i] + io[n - i - 1]) * half2;
+                in1[i] = (io[i] - io[n - i - 1]) * half2;
             }
 
             for (int i = 0; i < half; i++)
@@ -423,31 +395,7 @@ internal static partial class JxlDct
     /// <summary><see cref="Dct4Small"/> on vectors.</summary>
     private static void Dct4Vector(Span<Vector256<float>> io, bool forward)
     {
-        Vector256<float> sec0 = Vector256.Create(0.5411961f);
-        Vector256<float> sec1 = Vector256.Create(1.306563f);
-        Vector256<float> sqrt2 = Vector256.Create(Sqrt2);
-        Vector256<float> four = Vector256.Create(4f);
-        Vector256<float> i0 = io[0];
-        Vector256<float> i1 = io[1];
-        Vector256<float> i2 = io[2];
-        Vector256<float> i3 = io[3];
-        if (forward)
-        {
-            Vector256<float> sum03 = i0 + i3;
-            Vector256<float> sum12 = i1 + i2;
-            Vector256<float> tmp0 = (i0 - i3) * sec0;
-            Vector256<float> tmp1 = (i1 - i2) * sec1;
-            Vector256<float> out0 = (tmp0 + tmp1) / four;
-            Vector256<float> out1 = (tmp0 - tmp1) / four;
-            io[0] = (sum03 + sum12) / four;
-            io[1] = (out0 * sqrt2) + out1;
-            io[2] = (sum03 - sum12) / four;
-            io[3] = out1;
-        }
-        else
-        {
-            (io[0], io[1], io[2], io[3]) = Inverse4(i0, i1, i2, i3);
-        }
+        (io[0], io[1], io[2], io[3]) = forward ? Forward4(io[0], io[1], io[2], io[3]) : Inverse4(io[0], io[1], io[2], io[3]);
     }
 
     /// <summary><see cref="Dct8"/> on vectors.</summary>
@@ -459,29 +407,42 @@ internal static partial class JxlDct
             return;
         }
 
+        Forward8(ref io[0], ref io[1], ref io[2], ref io[3], ref io[4], ref io[5], ref io[6], ref io[7]);
+    }
+
+    /// <summary>The forward 1D DCT of length 8 (<see cref="Dct8"/> with forward true) on eight vectors at once, in registers.</summary>
+    private static void Forward8(ref Vector256<float> i0, ref Vector256<float> i1, ref Vector256<float> i2, ref Vector256<float> i3, ref Vector256<float> i4, ref Vector256<float> i5, ref Vector256<float> i6, ref Vector256<float> i7)
+    {
         ReadOnlySpan<float> sec = SecHalf(8);
-        Vector256<float> two = Vector256.Create(2f);
-        Span<Vector256<float>> a = stackalloc Vector256<float>[4];
-        Span<Vector256<float>> b = stackalloc Vector256<float>[4];
-        for (int i = 0; i < 4; i++)
-        {
-            a[i] = (io[i] + io[7 - i]) / two;
-            b[i] = (io[i] - io[7 - i]) * Vector256.Create(sec[i]) / two;
-        }
+        Vector256<float> half = Vector256.Create(0.5f);
+        (Vector256<float> a0, Vector256<float> a1, Vector256<float> a2, Vector256<float> a3) =
+            Forward4((i0 + i7) * half, (i1 + i6) * half, (i2 + i5) * half, (i3 + i4) * half);
+        (Vector256<float> b0, Vector256<float> b1, Vector256<float> b2, Vector256<float> b3) = Forward4(
+            (i0 - i7) * Vector256.Create(sec[0]) * half,
+            (i1 - i6) * Vector256.Create(sec[1]) * half,
+            (i2 - i5) * Vector256.Create(sec[2]) * half,
+            (i3 - i4) * Vector256.Create(sec[3]) * half);
+        b0 *= Vector256.Create(Sqrt2);
+        i0 = a0;
+        i2 = a1;
+        i4 = a2;
+        i6 = a3;
+        i1 = b0 + b1;
+        i3 = b1 + b2;
+        i5 = b2 + b3;
+        i7 = b3;
+    }
 
-        Dct4Vector(a, forward: true);
-        Dct4Vector(b, forward: true);
-        for (int i = 0; i < 4; i++)
-        {
-            io[i * 2] = a[i];
-        }
-
-        b[0] *= Vector256.Create(Sqrt2);
-        for (int i = 0; i < 3; i++)
-        {
-            io[(i * 2) + 1] = b[i] + b[i + 1];
-        }
-
-        io[7] = b[3];
+    /// <summary>The forward 1D DCT of length 4 (<see cref="Dct4Small"/> with forward true) on four vectors.</summary>
+    private static (Vector256<float>, Vector256<float>, Vector256<float>, Vector256<float>) Forward4(Vector256<float> i0, Vector256<float> i1, Vector256<float> i2, Vector256<float> i3)
+    {
+        Vector256<float> quarter = Vector256.Create(0.25f);
+        Vector256<float> sum03 = i0 + i3;
+        Vector256<float> sum12 = i1 + i2;
+        Vector256<float> tmp0 = (i0 - i3) * Vector256.Create(0.5411961f);
+        Vector256<float> tmp1 = (i1 - i2) * Vector256.Create(1.306563f);
+        Vector256<float> out0 = (tmp0 + tmp1) * quarter;
+        Vector256<float> out1 = (tmp0 - tmp1) * quarter;
+        return ((sum03 + sum12) * quarter, (out0 * Vector256.Create(Sqrt2)) + out1, (sum03 - sum12) * quarter, out1);
     }
 }
