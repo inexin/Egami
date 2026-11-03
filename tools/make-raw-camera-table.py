@@ -28,9 +28,11 @@ Usage, from the repo root on a PC with Adobe DNG Converter installed:
   python tools/make-raw-camera-table.py                 every CC0 camera of the maker formats Egami reads
   python tools/make-raw-camera-table.py --formats cr2,nef --limit 5
   python tools/make-raw-camera-table.py --keep          keep the downloads and DNGs in .cache/raw-cameras
+  python tools/make-raw-camera-table.py --formats raw,rwl   measure only these; the table's other lines are kept
 
 The downloads (one file at a time, SHA-256 checked) and the DNGs go to .cache/raw-cameras and are deleted once read unless
 --keep is given. Progress is kept in .cache/raw-cameras/progress.json, so a run that stops carries on where it left off.
+Lines already in the table whose camera this run did not measure are kept as they are.
 """
 import argparse
 import hashlib
@@ -45,7 +47,9 @@ import urllib.request
 
 REPOSITORY = "https://raw.pixls.us/json/getrepository.php?set=all"
 CONVERTER = r"C:\Program Files\Adobe\Adobe DNG Converter\Adobe DNG Converter.exe"
-FORMATS = ["cr2", "nef", "nrw", "pef", "arw", "sr2", "orf", "rw2", "raf"]
+FORMATS = ["cr2", "nef", "nrw", "pef", "arw", "sr2", "orf", "rw2", "raw", "rwl", "raf"]
+# .raw names many unrelated formats; only Panasonic's and Leica's (RW2's layout, RW2 spec section 1) are Egami's.
+RAW_MAKES = ("panasonic", "leica")
 CACHE = os.path.join(".cache", "raw-cameras")
 OUTPUT = os.path.join("src", "Egami.Formats.Extended", "Raw", "RawCameras.txt")
 
@@ -77,7 +81,7 @@ def samples(repository, formats, reduced_only=False):
             continue
         url, name, sha, mb = m.groups()
         ext = name.rsplit(".", 1)[-1].lower()
-        if ext not in formats:
+        if ext not in formats or (ext == "raw" and not row[0].strip().lower().startswith(RAW_MAKES)):
             continue
         key = (row[0].strip(), row[1].strip())
         if key not in cameras or float(mb) < cameras[key]["mb"]:
@@ -343,7 +347,13 @@ def main():
             continue
         name = (entry["dngMake"].lower(), entry["dngModel"].lower())
         seen.setdefault(name, {**entry, "reducedWhite": reduced_white.get(name)})
-    lines = sorted((line(e) for e in seen.values()), key=str.lower)
+    measured = {(e["dngMake"].strip().lower(), e["dngModel"].strip().lower()): line(e) for e in seen.values()}
+    if os.path.exists(OUTPUT):
+        for text in open(OUTPUT, encoding="utf-8").read().splitlines():
+            f = text.split("\t")
+            if text and not text.startswith("#") and len(f) > 2:
+                measured.setdefault((f[0].strip().lower(), f[1].strip().lower()), text)
+    lines = sorted(measured.values(), key=str.lower)
     with open(OUTPUT, "w", encoding="utf-8", newline="\n") as f:
         f.write("# Egami camera colour table, made by tools/make-raw-camera-table.py from Adobe DNG Converter output on CC0 samples\n")
         f.write("# from raw.pixls.us. Columns: Make, Model, UniqueCameraModel, Illuminant1, ColorMatrix1, Illuminant2,\n")
