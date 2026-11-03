@@ -113,6 +113,32 @@ public class RawCrxTests
     }
 
     [Fact]
+    public void AnOlderBodysOwnWhiteRaisesTheBaselineExposure()
+    {
+        // The table's M50 row is from a lossless file (white 11892, baseline exposure 0.02); Adobe gives a C-RAW file of white
+        // 14338 a baseline exposure 0.27 EV higher, their ratio.
+        Spec spec = new() { Model = "Canon EOS M50", White = 14338 };
+        using Raster<Gray16> mosaic = Raster.Load<Gray16>(Build(spec, Image(spec, 3)), Context, Mosaic);
+        RawDetails details = Assert.IsType<RawDetails>(mosaic.Metadata.FormatDetails);
+        Assert.Equal(14338.0, Assert.Single(details.WhiteLevels));
+        Assert.Equal(0.02 + Math.Log2(14338 / 11892.0), details.BaselineExposure, 3);
+    }
+
+    [Fact]
+    public void AWhiteAboveTheSampleBitsWidensTheDngsSamples()
+    {
+        // Adobe gives some CR3 bodies a white of 16384 over 14-bit data; WhiteLevel may not pass what BitsPerSample holds.
+        Spec spec = new() { White = 16384 };
+        byte[] file = Build(spec, Image(spec, 4));
+        using MemoryStream dng = new();
+        RawFormat.ConvertToDng(new MemoryStream(file), dng, null, Context);
+        using Raster<Gray16> fromDng = Raster.Load<Gray16>(dng.ToArray(), Context, Mosaic);
+        RawDetails details = Assert.IsType<RawDetails>(fromDng.Metadata.FormatDetails);
+        Assert.Equal(16384.0, Assert.Single(details.WhiteLevels));
+        Assert.True(details.BitsPerSample >= 15, $"{details.BitsPerSample} bits");
+    }
+
+    [Fact]
     public void DevelopsAndConvertsToDng()
     {
         Spec spec = new();
@@ -212,6 +238,28 @@ public class RawCrxTests
         Assert.True(Math.Abs(crawAgain - crawTwo) < 4096, $"{crawTwo} B, then {crawAgain} B");
     }
 
+    /// <summary>Writes the raw fuzz target's CRX seeds (tests/images/fuzz/raw-seeds) when EGAMI_WRITE_SEEDS names a folder.</summary>
+    [Fact]
+    public void WritesTheFuzzSeedsOnRequest()
+    {
+        string? folder = Environment.GetEnvironmentVariable("EGAMI_WRITE_SEEDS");
+        Assert.SkipUnless(folder is { Length: > 0 }, "Set EGAMI_WRITE_SEEDS to a folder to write the CRX fuzz seeds.");
+        (string Name, Spec Spec)[] seeds =
+        [
+            ("crx-lossless", new Spec { TilesAcross = 2, CfaLayout = 1 }),
+            ("crx-craw-v1", new Spec { Levels = 3, PerLineQ = true, Width = 120, Height = 100 }),
+            ("crx-craw-v2", new Spec { Levels = 2, Version2 = true, Width = 120, Height = 100 }),
+        ];
+        foreach ((string name, Spec spec) in seeds)
+        {
+            File.WriteAllBytes(Path.Combine(folder!, name + ".cr3"), Build(spec, Image(spec, 9)));
+        }
+
+        Spec roll = new() { EncType = 3 };
+        int[][] planes = [.. Enumerable.Range(0, 4).Select(p => Enumerable.Range(0, roll.Width * roll.Height / 4).Select(i => ((i * 7) % 61) - 30).ToArray())];
+        File.WriteAllBytes(Path.Combine(folder!, "crx-roll.cr3"), Build(roll, null, planes));
+    }
+
     private static void AssertEqual(Spec spec, ushort[] expected, Raster<Gray16> mosaic)
     {
         Assert.Equal((spec.Width, spec.Height), (mosaic.Width, mosaic.Height));
@@ -273,6 +321,10 @@ public class RawCrxTests
         public int EncType { get; init; }
 
         public int MedianBits { get; init; } = 14;
+
+        public string Model { get; init; } = "Canon EOS CRX TEST";
+
+        public int White { get; init; } = 15000;
     }
 
     /// <summary>
@@ -408,9 +460,9 @@ public class RawCrxTests
         color[0x48] = color[0x49] = 1024;
         color[0x4A] = 1536;
         (color[0x318], color[0x319], color[0x31A], color[0x31B]) = (510, 511, 512, 513);
-        (color[0x31C], color[0x31D]) = (14000, 15000);
+        (color[0x31C], color[0x31D]) = (14000, (ushort)spec.White);
         TiffBuilder.Ifd ifd0 = new();
-        ifd0.Tags.AddRange([TiffTag.Ascii(271, "Canon"), TiffTag.Ascii(272, "Canon EOS CRX TEST"), TiffTag.Short(274, 1)]);
+        ifd0.Tags.AddRange([TiffTag.Ascii(271, "Canon"), TiffTag.Ascii(272, spec.Model), TiffTag.Short(274, 1)]);
         TiffBuilder.Ifd note = new();
         note.Tags.Add(TiffTag.Short(0x4001, [.. color.Select(c => (int)c)]));
         byte[] Build(long rawAt)

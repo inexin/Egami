@@ -64,6 +64,10 @@ Canon CR3 develops (RAW coverage, Build Plan tasks 8 to 12). No API changes.
 - A CR3 now develops, loads as a mosaic and converts to DNG (`RawFormat.ConvertToDng` refused it before). A Dual Pixel RAW
   gives its main image and a RAW burst its first frame. CRX encoding type 1 and the 8-bit single-plane form, which no camera is
   known to write, throw `NotSupportedException`.
+- A CR3 of an older body whose white level is not the camera table's (an EOS M50 C-RAW file) gets Adobe's baseline exposure:
+  the table's raised by the ratio of the two whites (0.28 EV against 0.02); its develop was 5 CIEDE2000 from Adobe's, now 0.14.
+- DNG writing widens BitsPerSample to hold the white level, so a CR3 whose white is 16384 over 14-bit data (EOS R6, R5 crop)
+  passes dng_validate.
 
 ## Egami train 1.4.0, Egami.SystemDrawing 1.0.0-preview.3 and Egami.Metafiles 1.0.2 (2026-11-01)
 
