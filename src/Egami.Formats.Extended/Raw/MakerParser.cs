@@ -661,9 +661,10 @@ internal static class MakerParser
         {
             if (note.Ifd.Ints(0xA021, 4) is { Length: 4 } wb && wb[0] > key[0] && wb[1] > key[1] && wb[3] > key[3])
             {
-                // The as-shot levels without the black subtracted, as Adobe DNG Converter's AsShotNeutral reads them (open point 6).
-                double r = wb[0] - key[0], g = wb[1] - key[1], b = wb[3] - key[3];
-                frame.AsShotNeutral = [g / r, 1, g / b];
+                // The as-shot levels without the black subtracted, as Adobe DNG Converter's AsShotNeutral reads them (open point 6),
+                // scaled like Adobe's so the largest is 1.
+                double r = wb[0] - key[0], g = wb[1] - key[1], b = wb[3] - key[3], top = Math.Max(1, Math.Max(g / r, g / b));
+                frame.AsShotNeutral = [g / r / top, 1 / top, g / b / top];
             }
 
             if (note.Ifd.Ints(0xA028, 4) is { Length: 4 } black && black.Zip(key).All(p => p.First >= p.Second))
@@ -674,7 +675,7 @@ internal static class MakerParser
                 frame.Black = [.. Enumerable.Range(0, 4).Select(i => cfa.Colors[i] switch { 0 => levels[0], 2 => levels[3], _ => i < 2 ? levels[1] : levels[2] })];
                 frame.BlackRows = frame.BlackColumns = 2;
                 int white = RawCameraTable.Find(ifd0.Ascii(RawTags.Make) ?? "", model)?.White ?? 0, max = (1 << bits) - 1;
-                if (white > 0 && (white > max || white <= max / 2))
+                if (codec == RawCodec.SamsungV2 && white > 0 && (white > max || white <= max / 2))
                 {
                     // The NX1 and NX500 write 12 or 14 bits; the table measured one. Adobe's levels for the two (NX500 samples).
                     white = bits == 14 ? 16100 : 4000;

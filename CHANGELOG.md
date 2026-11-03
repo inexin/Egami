@@ -91,6 +91,17 @@ Canon CR3 develops (RAW coverage, Build Plan tasks 8 to 12). No API changes.
 - DNG writing widens BitsPerSample to hold the white level, so a CR3 whose white is 16384 over 14-bit data (EOS R6, R5 crop)
   passes dng_validate.
 
+Samsung SRW (RAW coverage, Build Plan tasks 13 to 15). Egami.Formats.Extended adds the `.srw` extension and its MIME type
+(`image/x-samsung-srw`) to `RawFormat.Info`; no other API changes.
+
+- SRW files load, develop and convert to DNG: 12-bit packed (both bit orders) and 16-bit uncompressed data, and Samsung's V0,
+  V1 and V2 codecs. Over 22 CC0 samples (the NX5, NX10, NX11, NX20, NX200, NX210, NX1000, NX1100, NX300, NX2000, NX30,
+  NX3000, NX3300, NX mini, NX1, NX500 in its four modes, Galaxy NX, EX1 and WB2000) the mosaic is bit for bit Adobe DNG
+  Converter's inside the active area, and the black levels, white levels, as-shot white balance and crops are Adobe's.
+- The black levels and white balance come from the maker note (less its key, tag 0xA020); 22 Samsung bodies join the camera
+  table, three of them (NX100, NX300M, EX2F) measured from CC BY-NC-SA samples that were not kept. 12-bit packed data under
+  compression 32769, which no sample is known to have, throws `NotSupportedException`.
+
 ## Egami train 1.4.0, Egami.SystemDrawing 1.0.0-preview.3 and Egami.Metafiles 1.0.2 (2026-11-01)
 
 The release train (Egami, Egami.Drawing, Egami.Fonts, Egami.Svg, Egami.Css, Egami.Heic, Egami.Formats.Extended and Egami.Cli)
