@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
@@ -82,56 +83,77 @@ internal static class JpegFdct
     }
 
     /// <summary>
-    /// <see cref="Forward"/> with AVX2: both passes on eight rows or columns at a time in 32-bit lanes, the same integer steps as the
-    /// scalar code, and quantization by a float reciprocal corrected by one step to the exact quotient. The output is identical.
+    /// <see cref="Forward"/> with AVX2 for one block: the two-block kernel with the block in both halves, keeping the first.
     /// </summary>
     [SkipLocalsInit]
     internal static void ForwardAvx2(ReadOnlySpan<byte> samples, int stride, ReadOnlySpan<ushort> reciprocals, Span<short> output)
     {
         _ = samples.Slice(7 * stride, 8);
+        Span<short> unused = stackalloc short[64];
+        Forward2(ref MemoryMarshal.GetReference(samples), stride, false, reciprocals, output, unused);
+    }
+
+    /// <summary>
+    /// <see cref="Forward"/> with AVX2 for two blocks side by side: <paramref name="first"/> from the first 8 columns of
+    /// <paramref name="samples"/> and <paramref name="second"/> from the next 8. The output is identical to the scalar code.
+    /// </summary>
+    internal static void ForwardAvx2(ReadOnlySpan<byte> samples, int stride, ReadOnlySpan<ushort> reciprocals, Span<short> first, Span<short> second)
+    {
+        _ = samples.Slice(7 * stride, 16);
+        Forward2(ref MemoryMarshal.GetReference(samples), stride, true, reciprocals, first, second);
+    }
+
+    /// <summary>
+    /// Both passes in 16-bit lanes, one block in each 128-bit half. Sums and differences are 16-bit adds; every rotation is a
+    /// multiply-add of interleaved pairs into 32 bits, rounded and shifted as <see cref="Descale"/> does, then packed back. For 8-bit
+    /// samples every 16-bit value fits (the tests bound them), and the multiply-adds expand the scalar products exactly, so the
+    /// result is the scalar code's. Quantization uses <see cref="Reciprocals"/>.
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static void Forward2(ref byte s, int stride, bool pair, ReadOnlySpan<ushort> reciprocals, Span<short> first, Span<short> second)
+    {
         reciprocals = reciprocals[..192];
-        output = output[..64];
-        ref byte s = ref MemoryMarshal.GetReference(samples);
-        Vector256<int> center = Vector256.Create(128);
-        Vector256<int> r0 = Row(ref s, 0) - center;
-        Vector256<int> r1 = Row(ref s, stride) - center;
-        Vector256<int> r2 = Row(ref s, 2 * stride) - center;
-        Vector256<int> r3 = Row(ref s, 3 * stride) - center;
-        Vector256<int> r4 = Row(ref s, 4 * stride) - center;
-        Vector256<int> r5 = Row(ref s, 5 * stride) - center;
-        Vector256<int> r6 = Row(ref s, 6 * stride) - center;
-        Vector256<int> r7 = Row(ref s, 7 * stride) - center;
+        first = first[..64];
+        second = second[..64];
+        Vector256<short> center = Vector256.Create((short)128);
+        Vector256<short> r0 = Row(ref s, 0, pair) - center;
+        Vector256<short> r1 = Row(ref s, stride, pair) - center;
+        Vector256<short> r2 = Row(ref s, 2 * stride, pair) - center;
+        Vector256<short> r3 = Row(ref s, 3 * stride, pair) - center;
+        Vector256<short> r4 = Row(ref s, 4 * stride, pair) - center;
+        Vector256<short> r5 = Row(ref s, 5 * stride, pair) - center;
+        Vector256<short> r6 = Row(ref s, 6 * stride, pair) - center;
+        Vector256<short> r7 = Row(ref s, 7 * stride, pair) - center;
 
         // Pass 1 on the transpose, so each lane is one row: vector k holds sample k of every row.
         Transpose(ref r0, ref r1, ref r2, ref r3, ref r4, ref r5, ref r6, ref r7);
-        Butterfly(r0, r1, r2, r3, r4, r5, r6, r7, out Vector256<int> e0, out Vector256<int> e4, out Vector256<int> o2, out Vector256<int> o6, out Vector256<int> o1, out Vector256<int> o3, out Vector256<int> o5, out Vector256<int> o7);
-        const int Shift1 = ConstBits - Pass1Bits;
-        Vector256<int> round1 = Vector256.Create(1 << (Shift1 - 1));
+        Butterfly(r0, r1, r2, r3, r4, r5, r6, r7, ConstBits - Pass1Bits, out Vector256<short> e0, out Vector256<short> e4, out r2, out r6, out r1, out r3, out r5, out r7);
         r0 = e0 << Pass1Bits;
         r4 = e4 << Pass1Bits;
-        r2 = (o2 + round1) >> Shift1;
-        r6 = (o6 + round1) >> Shift1;
-        r1 = (o1 + round1) >> Shift1;
-        r3 = (o3 + round1) >> Shift1;
-        r5 = (o5 + round1) >> Shift1;
-        r7 = (o7 + round1) >> Shift1;
 
         // Pass 2 on the transpose back: vector u holds frequency u of every row, lanes the rows; outputs are rows of frequencies.
         Transpose(ref r0, ref r1, ref r2, ref r3, ref r4, ref r5, ref r6, ref r7);
-        Butterfly(r0, r1, r2, r3, r4, r5, r6, r7, out e0, out e4, out o2, out o6, out o1, out o3, out o5, out o7);
-        const int Shift2 = ConstBits + Pass1Bits;
-        Vector256<int> round2 = Vector256.Create(1 << (Shift2 - 1));
-        Vector256<int> roundDc = Vector256.Create(1 << (Pass1Bits - 1));
-        // Rows in natural order, two to a vector of 16-bit lanes (the pack interleaves 64-bit groups; the permute puts them back).
+        Butterfly(r0, r1, r2, r3, r4, r5, r6, r7, ConstBits + Pass1Bits, out e0, out e4, out r2, out r6, out r1, out r3, out r5, out r7);
+        Vector256<short> roundDc = Vector256.Create((short)(1 << (Pass1Bits - 1)));
+        r0 = (e0 + roundDc) >> Pass1Bits;
+        r4 = (e4 + roundDc) >> Pass1Bits;
+
+        // Rows in natural order, the first block's from the low halves and the second's from the high halves.
         ref ushort table = ref MemoryMarshal.GetReference(reciprocals);
-        ref short target = ref MemoryMarshal.GetReference(output);
-        Quantize(Pack((e0 + roundDc) >> Pass1Bits, (o1 + round2) >> Shift2), ref table, 0).StoreUnsafe(ref target, 0);
-        Quantize(Pack((o2 + round2) >> Shift2, (o3 + round2) >> Shift2), ref table, 16).StoreUnsafe(ref target, 16);
-        Quantize(Pack((e4 + roundDc) >> Pass1Bits, (o5 + round2) >> Shift2), ref table, 32).StoreUnsafe(ref target, 32);
-        Quantize(Pack((o6 + round2) >> Shift2, (o7 + round2) >> Shift2), ref table, 48).StoreUnsafe(ref target, 48);
+        ref short a = ref MemoryMarshal.GetReference(first);
+        ref short b = ref MemoryMarshal.GetReference(second);
+        Quantize(Avx2.Permute2x128(r0, r1, 0x20), ref table, 0).StoreUnsafe(ref a, 0);
+        Quantize(Avx2.Permute2x128(r2, r3, 0x20), ref table, 16).StoreUnsafe(ref a, 16);
+        Quantize(Avx2.Permute2x128(r4, r5, 0x20), ref table, 32).StoreUnsafe(ref a, 32);
+        Quantize(Avx2.Permute2x128(r6, r7, 0x20), ref table, 48).StoreUnsafe(ref a, 48);
+        Quantize(Avx2.Permute2x128(r0, r1, 0x31), ref table, 0).StoreUnsafe(ref b, 0);
+        Quantize(Avx2.Permute2x128(r2, r3, 0x31), ref table, 16).StoreUnsafe(ref b, 16);
+        Quantize(Avx2.Permute2x128(r4, r5, 0x31), ref table, 32).StoreUnsafe(ref b, 32);
+        Quantize(Avx2.Permute2x128(r6, r7, 0x31), ref table, 48).StoreUnsafe(ref b, 48);
 
         // The DC is not limited to 10 bits; restore it from the unclamped result.
-        output[0] = (short)Quantize(((e0 + roundDc) >> Pass1Bits).ToScalar(), reciprocals);
+        a = (short)Quantize(r0.GetElement(0), reciprocals);
+        b = (short)Quantize(r0.GetElement(8), reciprocals);
     }
 
     /// <summary>Runs the vector quantization (AC coefficients, limited to 10 bits) on one value, for tests.</summary>
@@ -142,7 +164,7 @@ internal static class JpegFdct
     }
 
     /// <summary>
-    /// Returns, for each divisor (natural order), the three 16-bit factors <see cref="ForwardAvx2"/> quantizes with: a reciprocal
+    /// Returns, for each divisor (natural order), the three 16-bit factors the AVX2 kernels quantizes with: a reciprocal
     /// at 0, a correction at 64 and a scale at 128. Adding the correction to the magnitude, then keeping the high halves of the
     /// products with the reciprocal and the scale, divides with rounding exactly as <see cref="Quantize(int, int)"/> does for
     /// every magnitude the DCT gives (the tests check all of them); this is the reciprocal scheme of libjpeg-turbo's SIMD code.
@@ -203,93 +225,124 @@ internal static class JpegFdct
         return value < 0 ? -(int)magnitude : (int)magnitude;
     }
 
-    /// <summary>Two rows of 32-bit lanes as one vector of 16-bit lanes, in order.</summary>
+    /// <summary>Row <paramref name="offset"/> of both blocks, or of one block twice, widened to 16 bits.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static Vector256<short> Pack(Vector256<int> first, Vector256<int> second)
+    private static Vector256<short> Row(ref byte samples, int offset, bool pair)
     {
-        return Avx2.Permute4x64(Avx2.PackSignedSaturate(first, second).AsInt64(), 0b11_01_10_00).AsInt16();
+        ref byte row = ref Unsafe.Add(ref samples, offset);
+        Vector128<byte> bytes = pair ? Vector128.LoadUnsafe(ref row) : Vector128.Create(Unsafe.ReadUnaligned<ulong>(ref row)).AsByte();
+        return Avx2.ConvertToVector256Int16(bytes);
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static Vector256<int> Row(ref byte samples, int offset)
-    {
-        return Avx2.ConvertToVector256Int32(Vector128.CreateScalarUnsafe(Unsafe.ReadUnaligned<ulong>(ref Unsafe.Add(ref samples, offset))).AsByte());
-    }
-
-    /// <summary>Transposes an 8×8 block of 32-bit lanes.</summary>
+    /// <summary>Transposes the 8×8 block of 16-bit lanes in each 128-bit half.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static void Transpose(
-        ref Vector256<int> r0, ref Vector256<int> r1, ref Vector256<int> r2, ref Vector256<int> r3,
-        ref Vector256<int> r4, ref Vector256<int> r5, ref Vector256<int> r6, ref Vector256<int> r7)
+        ref Vector256<short> r0, ref Vector256<short> r1, ref Vector256<short> r2, ref Vector256<short> r3,
+        ref Vector256<short> r4, ref Vector256<short> r5, ref Vector256<short> r6, ref Vector256<short> r7)
     {
-        Vector256<long> t0 = Avx2.UnpackLow(r0, r1).AsInt64();
-        Vector256<long> t1 = Avx2.UnpackHigh(r0, r1).AsInt64();
-        Vector256<long> t2 = Avx2.UnpackLow(r2, r3).AsInt64();
-        Vector256<long> t3 = Avx2.UnpackHigh(r2, r3).AsInt64();
-        Vector256<long> t4 = Avx2.UnpackLow(r4, r5).AsInt64();
-        Vector256<long> t5 = Avx2.UnpackHigh(r4, r5).AsInt64();
-        Vector256<long> t6 = Avx2.UnpackLow(r6, r7).AsInt64();
-        Vector256<long> t7 = Avx2.UnpackHigh(r6, r7).AsInt64();
-        Vector256<int> u0 = Avx2.UnpackLow(t0, t2).AsInt32();
-        Vector256<int> u1 = Avx2.UnpackHigh(t0, t2).AsInt32();
-        Vector256<int> u2 = Avx2.UnpackLow(t1, t3).AsInt32();
-        Vector256<int> u3 = Avx2.UnpackHigh(t1, t3).AsInt32();
-        Vector256<int> u4 = Avx2.UnpackLow(t4, t6).AsInt32();
-        Vector256<int> u5 = Avx2.UnpackHigh(t4, t6).AsInt32();
-        Vector256<int> u6 = Avx2.UnpackLow(t5, t7).AsInt32();
-        Vector256<int> u7 = Avx2.UnpackHigh(t5, t7).AsInt32();
-        r0 = Avx2.Permute2x128(u0, u4, 0x20);
-        r1 = Avx2.Permute2x128(u1, u5, 0x20);
-        r2 = Avx2.Permute2x128(u2, u6, 0x20);
-        r3 = Avx2.Permute2x128(u3, u7, 0x20);
-        r4 = Avx2.Permute2x128(u0, u4, 0x31);
-        r5 = Avx2.Permute2x128(u1, u5, 0x31);
-        r6 = Avx2.Permute2x128(u2, u6, 0x31);
-        r7 = Avx2.Permute2x128(u3, u7, 0x31);
+        Vector256<int> t0 = Avx2.UnpackLow(r0, r1).AsInt32();
+        Vector256<int> t1 = Avx2.UnpackHigh(r0, r1).AsInt32();
+        Vector256<int> t2 = Avx2.UnpackLow(r2, r3).AsInt32();
+        Vector256<int> t3 = Avx2.UnpackHigh(r2, r3).AsInt32();
+        Vector256<int> t4 = Avx2.UnpackLow(r4, r5).AsInt32();
+        Vector256<int> t5 = Avx2.UnpackHigh(r4, r5).AsInt32();
+        Vector256<int> t6 = Avx2.UnpackLow(r6, r7).AsInt32();
+        Vector256<int> t7 = Avx2.UnpackHigh(r6, r7).AsInt32();
+        Vector256<long> u0 = Avx2.UnpackLow(t0, t2).AsInt64();
+        Vector256<long> u1 = Avx2.UnpackHigh(t0, t2).AsInt64();
+        Vector256<long> u2 = Avx2.UnpackLow(t1, t3).AsInt64();
+        Vector256<long> u3 = Avx2.UnpackHigh(t1, t3).AsInt64();
+        Vector256<long> u4 = Avx2.UnpackLow(t4, t6).AsInt64();
+        Vector256<long> u5 = Avx2.UnpackHigh(t4, t6).AsInt64();
+        Vector256<long> u6 = Avx2.UnpackLow(t5, t7).AsInt64();
+        Vector256<long> u7 = Avx2.UnpackHigh(t5, t7).AsInt64();
+        r0 = Avx2.UnpackLow(u0, u4).AsInt16();
+        r1 = Avx2.UnpackHigh(u0, u4).AsInt16();
+        r2 = Avx2.UnpackLow(u1, u5).AsInt16();
+        r3 = Avx2.UnpackHigh(u1, u5).AsInt16();
+        r4 = Avx2.UnpackLow(u2, u6).AsInt16();
+        r5 = Avx2.UnpackHigh(u2, u6).AsInt16();
+        r6 = Avx2.UnpackLow(u3, u7).AsInt16();
+        r7 = Avx2.UnpackHigh(u3, u7).AsInt16();
     }
 
-    /// <summary>The scalar 1D pass on eight lanes, operation for operation.</summary>
+    /// <summary>
+    /// The scalar 1D pass on 16 lanes. The even outputs 0 and 4 come back unscaled. Each rotated output is expanded to one
+    /// constant per input (the scalar code's shared products multiplied out, exact in integers): one or two multiply-adds of
+    /// interleaved pairs per half, descaled by <paramref name="shift"/>.
+    /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static void Butterfly(
-        Vector256<int> d0, Vector256<int> d1, Vector256<int> d2, Vector256<int> d3, Vector256<int> d4, Vector256<int> d5, Vector256<int> d6, Vector256<int> d7,
-        out Vector256<int> even0, out Vector256<int> even4, out Vector256<int> o2, out Vector256<int> o6, out Vector256<int> o1, out Vector256<int> o3, out Vector256<int> o5, out Vector256<int> o7)
+        Vector256<short> d0, Vector256<short> d1, Vector256<short> d2, Vector256<short> d3, Vector256<short> d4, Vector256<short> d5, Vector256<short> d6, Vector256<short> d7, [ConstantExpected] int shift,
+        out Vector256<short> even0, out Vector256<short> even4, out Vector256<short> o2, out Vector256<short> o6, out Vector256<short> o1, out Vector256<short> o3, out Vector256<short> o5, out Vector256<short> o7)
     {
-        Vector256<int> tmp0 = d0 + d7;
-        Vector256<int> tmp7 = d0 - d7;
-        Vector256<int> tmp1 = d1 + d6;
-        Vector256<int> tmp6 = d1 - d6;
-        Vector256<int> tmp2 = d2 + d5;
-        Vector256<int> tmp5 = d2 - d5;
-        Vector256<int> tmp3 = d3 + d4;
-        Vector256<int> tmp4 = d3 - d4;
+        Vector256<short> tmp0 = d0 + d7;
+        Vector256<short> tmp7 = d0 - d7;
+        Vector256<short> tmp1 = d1 + d6;
+        Vector256<short> tmp6 = d1 - d6;
+        Vector256<short> tmp2 = d2 + d5;
+        Vector256<short> tmp5 = d2 - d5;
+        Vector256<short> tmp3 = d3 + d4;
+        Vector256<short> tmp4 = d3 - d4;
 
-        Vector256<int> tmp10 = tmp0 + tmp3;
-        Vector256<int> tmp13 = tmp0 - tmp3;
-        Vector256<int> tmp11 = tmp1 + tmp2;
-        Vector256<int> tmp12 = tmp1 - tmp2;
+        Vector256<short> tmp10 = tmp0 + tmp3;
+        Vector256<short> tmp13 = tmp0 - tmp3;
+        Vector256<short> tmp11 = tmp1 + tmp2;
+        Vector256<short> tmp12 = tmp1 - tmp2;
         even0 = tmp10 + tmp11;
         even4 = tmp10 - tmp11;
-        Vector256<int> z1 = (tmp12 + tmp13) * Vector256.Create(Fix0_541196100);
-        o2 = z1 + (tmp13 * Vector256.Create(Fix0_765366865));
-        o6 = z1 + (tmp12 * Vector256.Create(-Fix1_847759065));
 
-        Vector256<int> a1 = tmp4 + tmp7;
-        Vector256<int> a2 = tmp5 + tmp6;
-        Vector256<int> a3 = tmp4 + tmp6;
-        Vector256<int> a4 = tmp5 + tmp7;
-        Vector256<int> a5 = (a3 + a4) * Vector256.Create(Fix1_175875602);
-        tmp4 *= Vector256.Create(Fix0_298631336);
-        tmp5 *= Vector256.Create(Fix2_053119869);
-        tmp6 *= Vector256.Create(Fix3_072711026);
-        tmp7 *= Vector256.Create(Fix1_501321110);
-        a1 *= Vector256.Create(-Fix0_899976223);
-        a2 *= Vector256.Create(-Fix2_562915447);
-        a3 = (a3 * Vector256.Create(-Fix1_961570560)) + a5;
-        a4 = (a4 * Vector256.Create(-Fix0_390180644)) + a5;
-        o7 = tmp4 + a1 + a3;
-        o5 = tmp5 + a2 + a4;
-        o3 = tmp6 + a2 + a3;
-        o1 = tmp7 + a1 + a4;
+        // o2 = tmp13 × (0.541 + 0.765) + tmp12 × 0.541 and o6 = tmp13 × 0.541 + tmp12 × (0.541 − 1.848).
+        Vector256<int> round = Vector256.Create(1 << (shift - 1));
+        Vector256<short> low = Avx2.UnpackLow(tmp13, tmp12);
+        Vector256<short> high = Avx2.UnpackHigh(tmp13, tmp12);
+        o2 = Rotate(low, high, Pair(Fix0_541196100 + Fix0_765366865, Fix0_541196100), round, shift);
+        o6 = Rotate(low, high, Pair(Fix0_541196100, Fix0_541196100 - Fix1_847759065), round, shift);
+
+        // Each odd output as a sum over tmp4..tmp7: its own factor, those of the a1..a4 sums it takes, and the shared 1.176.
+        Vector256<short> low45 = Avx2.UnpackLow(tmp4, tmp5);
+        Vector256<short> high45 = Avx2.UnpackHigh(tmp4, tmp5);
+        Vector256<short> low67 = Avx2.UnpackLow(tmp6, tmp7);
+        Vector256<short> high67 = Avx2.UnpackHigh(tmp6, tmp7);
+        o7 = Rotate(
+            low45, high45, Pair(Fix0_298631336 - Fix0_899976223 - Fix1_961570560 + Fix1_175875602, Fix1_175875602),
+            low67, high67, Pair(Fix1_175875602 - Fix1_961570560, Fix1_175875602 - Fix0_899976223), round, shift);
+        o5 = Rotate(
+            low45, high45, Pair(Fix1_175875602, Fix2_053119869 - Fix2_562915447 - Fix0_390180644 + Fix1_175875602),
+            low67, high67, Pair(Fix1_175875602 - Fix2_562915447, Fix1_175875602 - Fix0_390180644), round, shift);
+        o3 = Rotate(
+            low45, high45, Pair(Fix1_175875602 - Fix1_961570560, Fix1_175875602 - Fix2_562915447),
+            low67, high67, Pair(Fix3_072711026 - Fix2_562915447 - Fix1_961570560 + Fix1_175875602, Fix1_175875602), round, shift);
+        o1 = Rotate(
+            low45, high45, Pair(Fix1_175875602 - Fix0_899976223, Fix1_175875602 - Fix0_390180644),
+            low67, high67, Pair(Fix1_175875602, Fix1_501321110 - Fix0_899976223 - Fix0_390180644 + Fix1_175875602), round, shift);
+    }
+
+    /// <summary>Two 16-bit constants for the first and second value of interleaved pairs.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static Vector256<short> Pair(int first, int second)
+    {
+        return Vector256.Create((int)(ushort)first | (second << 16)).AsInt16();
+    }
+
+    /// <summary>One rotation of interleaved pairs, descaled and packed back to the lane order of the inputs.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static Vector256<short> Rotate(Vector256<short> low, Vector256<short> high, Vector256<short> factors, Vector256<int> round, [ConstantExpected] int shift)
+    {
+        Vector256<int> l = Avx2.MultiplyAddAdjacent(low, factors);
+        Vector256<int> h = Avx2.MultiplyAddAdjacent(high, factors);
+        return Avx2.PackSignedSaturate((l + round) >> shift, (h + round) >> shift);
+    }
+
+    /// <summary>Two rotations of interleaved pairs summed, descaled and packed back.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static Vector256<short> Rotate(
+        Vector256<short> low1, Vector256<short> high1, Vector256<short> factors1,
+        Vector256<short> low2, Vector256<short> high2, Vector256<short> factors2, Vector256<int> round, [ConstantExpected] int shift)
+    {
+        Vector256<int> l = Avx2.MultiplyAddAdjacent(low1, factors1) + Avx2.MultiplyAddAdjacent(low2, factors2);
+        Vector256<int> h = Avx2.MultiplyAddAdjacent(high1, factors1) + Avx2.MultiplyAddAdjacent(high2, factors2);
+        return Avx2.PackSignedSaturate((l + round) >> shift, (h + round) >> shift);
     }
 
     /// <summary>Divides with rounding to nearest, halves away from zero.</summary>

@@ -164,8 +164,11 @@ public class JpegEncodeExactnessTests
                 for (int trial = 0; trial < 2000; trial++)
                 {
                     // Uniform noise, then noise in a narrow band around a random level, which keeps the high frequencies small.
+                    // Every third block is only 0 and 255, the corners where the transform's values are largest.
                     int level = random.Next(256), spread = trial % 2 == 0 ? 256 : 1 + random.Next(32);
-                    Fill(samples, stride, (_, _) => Math.Clamp(level + random.Next(spread) - (spread / 2), 0, 255));
+                    Fill(samples, stride, trial % 3 == 2
+                        ? (_, _) => random.Next(2) * 255
+                        : (_, _) => Math.Clamp(level + random.Next(spread) - (spread / 2), 0, 255));
                     Check(samples, stride, divisors, reciprocals, $"random trial {trial}, q{quality}, stride {stride}");
                 }
             }
@@ -276,6 +279,109 @@ public class JpegEncodeExactnessTests
         JpegFdct.Forward(samples, stride, divisors, scalar);
         JpegFdct.ForwardAvx2(samples, stride, reciprocals, vector);
         Assert.True(scalar.AsSpan().SequenceEqual(vector), $"{what}: the vector FDCT differs from the scalar one.");
+
+        // The two-block kernel, with the block on the left and its inverse on the right, then the other way round.
+        int wide = Math.Max(stride, 16);
+        byte[] pair = new byte[(7 * wide) + 16];
+        byte[] inverse = new byte[(7 * stride) + 8];
+        for (int y = 0; y < 8; y++)
+        {
+            for (int x = 0; x < 8; x++)
+            {
+                inverse[(y * stride) + x] = (byte)(255 - samples[(y * stride) + x]);
+            }
+        }
+
+        short[] other = new short[64];
+        JpegFdct.Forward(inverse, stride, divisors, other);
+        foreach (bool swap in (bool[])[false, true])
+        {
+            for (int y = 0; y < 8; y++)
+            {
+                samples.AsSpan(y * stride, 8).CopyTo(pair.AsSpan((y * wide) + (swap ? 8 : 0)));
+                inverse.AsSpan(y * stride, 8).CopyTo(pair.AsSpan((y * wide) + (swap ? 0 : 8)));
+            }
+
+            short[] left = new short[64], right = new short[64];
+            JpegFdct.ForwardAvx2(pair, wide, reciprocals, left, right);
+            Assert.True((swap ? right : left).AsSpan().SequenceEqual(scalar), $"{what}: the two-block FDCT differs from the scalar one.");
+            Assert.True((swap ? left : right).AsSpan().SequenceEqual(other), $"{what}, inverted: the two-block FDCT differs from the scalar one.");
+        }
+    }
+
+    /// <summary>
+    /// Bounds every 16-bit value the AVX2 forward DCT keeps, for any 8-bit block. Pass 1 takes eight samples level-shifted to
+    /// −128..127; pass 2 takes one pass-1 output from each of eight rows, which vary independently. Every sum and difference
+    /// adds distinct inputs, so interval arithmetic gives the exact bounds.
+    /// </summary>
+    [Fact]
+    public void ForwardDctSixteenBitValuesFitForEightBitSamples()
+    {
+        (long Low, long High)[] pass1 = DctPassBounds([.. Enumerable.Repeat((-128L, 127L), 8)], first: true);
+        for (int k = 0; k < 8; k++)
+        {
+            DctPassBounds([.. Enumerable.Repeat(pass1[k], 8)], first: false);
+        }
+    }
+
+    /// <summary>One pass of the 16-bit kernel on input bounds: asserts each kept value fits and returns the output bounds.</summary>
+    private static (long Low, long High)[] DctPassBounds((long Low, long High)[] d, bool first)
+    {
+        static (long, long) Add((long Low, long High) a, (long Low, long High) b) => (a.Low + b.Low, a.High + b.High);
+        static (long, long) Sub((long Low, long High) a, (long Low, long High) b) => (a.Low - b.High, a.High - b.Low);
+        static (long Low, long High) Fit((long Low, long High) v, string name)
+        {
+            Assert.True(v.Low >= short.MinValue && v.High <= short.MaxValue, $"{name} spans {v.Low}..{v.High}, beyond 16 bits.");
+            return v;
+        }
+
+        // The kernel's multiply-add factors per input (the scalar products multiplied out) and the descale.
+        int shift = first ? 11 : 15;
+        (long, long) Rotate(string name, (long Low, long High)[] inputs, int[] factors)
+        {
+            long low = 0, high = 0;
+            for (int i = 0; i < inputs.Length; i++)
+            {
+                Fit((factors[i], factors[i]), $"{name} factor {i}");
+                low += Math.Min(factors[i] * inputs[i].Low, factors[i] * inputs[i].High);
+                high += Math.Max(factors[i] * inputs[i].Low, factors[i] * inputs[i].High);
+            }
+
+            long round = 1L << (shift - 1);
+            Assert.True(low + round >= int.MinValue && high + round <= int.MaxValue, $"{name} overflows 32 bits.");
+            return Fit(((low + round) >> shift, (high + round) >> shift), name);
+        }
+
+        (long, long) tmp0 = Fit(Add(d[0], d[7]), "tmp0");
+        (long, long) tmp7 = Fit(Sub(d[0], d[7]), "tmp7");
+        (long, long) tmp1 = Fit(Add(d[1], d[6]), "tmp1");
+        (long, long) tmp6 = Fit(Sub(d[1], d[6]), "tmp6");
+        (long, long) tmp2 = Fit(Add(d[2], d[5]), "tmp2");
+        (long, long) tmp5 = Fit(Sub(d[2], d[5]), "tmp5");
+        (long, long) tmp3 = Fit(Add(d[3], d[4]), "tmp3");
+        (long, long) tmp4 = Fit(Sub(d[3], d[4]), "tmp4");
+        (long, long) tmp10 = Fit(Add(tmp0, tmp3), "tmp10");
+        (long, long) tmp13 = Fit(Sub(tmp0, tmp3), "tmp13");
+        (long, long) tmp11 = Fit(Add(tmp1, tmp2), "tmp11");
+        (long, long) tmp12 = Fit(Sub(tmp1, tmp2), "tmp12");
+        (long, long) even0 = Fit(Add(tmp10, tmp11), "even0");
+        (long, long) even4 = Fit(Sub(tmp10, tmp11), "even4");
+        (long Low, long High)[] output = new (long, long)[8];
+        foreach ((int k, (long Low, long High) even) in (ReadOnlySpan<(int, (long, long))>)[(0, even0), (4, even4)])
+        {
+            // Pass 1 scales the even outputs up by 2 bits; pass 2 rounds them and shifts the 2 bits out.
+            (long Low, long High) kept = Fit(first ? (even.Low << 2, even.High << 2) : Add(even, (2, 2)), $"even {k}");
+            output[k] = first ? kept : (kept.Low >> 2, kept.High >> 2);
+        }
+
+        output[2] = Rotate("o2", [tmp13, tmp12], [10703, 4433]);
+        output[6] = Rotate("o6", [tmp13, tmp12], [4433, -10704]);
+        (long, long)[] odd = [tmp4, tmp5, tmp6, tmp7];
+        output[7] = Rotate("o7", odd, [-11363, 9633, -6436, 2260]);
+        output[5] = Rotate("o5", odd, [9633, 2261, -11362, 6437]);
+        output[3] = Rotate("o3", odd, [-6436, -11362, -2259, 9633]);
+        output[1] = Rotate("o1", odd, [2260, 6437, 9633, 11363]);
+        return output;
     }
 
     private static void Fill(byte[] samples, int stride, Func<int, int, int> sample)

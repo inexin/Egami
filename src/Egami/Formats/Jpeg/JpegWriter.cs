@@ -1340,55 +1340,114 @@ internal sealed class JpegWriter : IFormatWriter, IRowFormatWriter
             }
         }
 
-        /// <summary>Converts MCU row <paramref name="my"/> and codes its blocks into <paramref name="blocks"/>, in MCU order, each in natural order.</summary>
-        private void TransformRow(int my, short[] blocks, Workspace workspace)
+        /// <summary>
+        /// Fills the blocks of MCU row <paramref name="my"/> that lie outside the image (libjpeg's dummy blocks): flat, with the DC
+        /// of the block before in MCU order, which the transform has written by now.
+        /// </summary>
+        private void PadRow(int my, short[] blocks, Plane[] planes)
         {
-            int rows = 8 * _maxV;
-            ConvertRows(my * rows, rows, workspace);
-            Plane[] planes = workspace.Planes;
-            bool vector = Avx2.IsSupported;
             int b = 0;
             for (int mx = 0; mx < _mcusX; mx++)
             {
-                for (int i = 0; i < planes.Length; i++)
+                foreach (Plane p in planes)
                 {
-                    Plane p = planes[i];
-                    int[] divisors = _divisors[p.Table];
-                    ushort[] reciprocals = _reciprocals[p.Table];
                     for (int v = 0; v < p.V; v++)
                     {
                         for (int h = 0; h < p.H; h++, b++)
                         {
-                            Span<short> block = blocks.AsSpan(b * 64, 64);
-                            int bx = (mx * p.H) + h;
-                            int by = (my * p.V) + v;
-                            if (bx < p.BlocksWide && by < p.BlocksHigh)
+                            if ((mx * p.H) + h >= p.BlocksWide || (my * p.V) + v >= p.BlocksHigh)
                             {
-                                if (_wide)
-                                {
-                                    JpegFdct12.Forward(p.Wide.AsSpan((v * 8 * p.Stride) + (bx * 8)), p.Stride, _quant[p.Table], block);
-                                    continue;
-                                }
-
-                                ReadOnlySpan<byte> samples = p.Samples.AsSpan((v * 8 * p.Stride) + (bx * 8));
-                                if (vector)
-                                {
-                                    JpegFdct.ForwardAvx2(samples, p.Stride, reciprocals, block);
-                                }
-                                else
-                                {
-                                    JpegFdct.Forward(samples, p.Stride, divisors, block);
-                                }
-                            }
-                            else
-                            {
-                                // Padding blocks outside the image (libjpeg's dummy blocks): flat, with the DC of the block before.
+                                Span<short> block = blocks.AsSpan(b * 64, 64);
                                 block.Clear();
                                 block[0] = blocks[(b - 1) * 64];
                             }
                         }
                     }
                 }
+            }
+        }
+
+        /// <summary>Converts MCU row <paramref name="my"/> and codes its blocks into <paramref name="blocks"/>, in MCU order, each in natural order.</summary>
+        private void TransformRow(int my, short[] blocks, Workspace workspace)
+        {
+            int rows = 8 * _maxV;
+            ConvertRows(my * rows, rows, workspace);
+            Plane[] planes = workspace.Planes;
+            bool vector = Avx2.IsSupported && !_wide;
+            int perMcu = 0;
+            foreach (Plane p in planes)
+            {
+                perMcu += p.BlocksPerMcu;
+            }
+
+            // Each plane's block rows left to right, two blocks at a time with AVX2, into their places in MCU order.
+            bool padded = false;
+            int offset = 0;
+            foreach (Plane p in planes)
+            {
+                int[] divisors = _divisors[p.Table];
+                ushort[] reciprocals = _reciprocals[p.Table];
+                padded |= p.BlocksWide < _mcusX * p.H;
+                for (int v = 0; v < p.V; v++, offset += p.H)
+                {
+                    if ((my * p.V) + v >= p.BlocksHigh)
+                    {
+                        padded = true;
+                        continue;
+                    }
+
+                    int row = v * 8 * p.Stride;
+                    int bx = 0, mx = 0, h = 0;
+                    if (vector)
+                    {
+                        for (; bx + 1 < p.BlocksWide; bx += 2)
+                        {
+                            Span<short> first = blocks.AsSpan(((mx * perMcu) + offset + h) * 64, 64);
+                            if (++h == p.H)
+                            {
+                                h = 0;
+                                mx++;
+                            }
+
+                            Span<short> second = blocks.AsSpan(((mx * perMcu) + offset + h) * 64, 64);
+                            if (++h == p.H)
+                            {
+                                h = 0;
+                                mx++;
+                            }
+
+                            JpegFdct.ForwardAvx2(p.Samples.AsSpan(row + (bx * 8)), p.Stride, reciprocals, first, second);
+                        }
+                    }
+
+                    for (; bx < p.BlocksWide; bx++)
+                    {
+                        Span<short> block = blocks.AsSpan(((mx * perMcu) + offset + h) * 64, 64);
+                        if (++h == p.H)
+                        {
+                            h = 0;
+                            mx++;
+                        }
+
+                        if (_wide)
+                        {
+                            JpegFdct12.Forward(p.Wide.AsSpan(row + (bx * 8)), p.Stride, _quant[p.Table], block);
+                        }
+                        else if (vector)
+                        {
+                            JpegFdct.ForwardAvx2(p.Samples.AsSpan(row + (bx * 8)), p.Stride, reciprocals, block);
+                        }
+                        else
+                        {
+                            JpegFdct.Forward(p.Samples.AsSpan(row + (bx * 8)), p.Stride, divisors, block);
+                        }
+                    }
+                }
+            }
+
+            if (padded)
+            {
+                PadRow(my, blocks, planes);
             }
 
             if (workspace.AcCounts.Length > 0)
