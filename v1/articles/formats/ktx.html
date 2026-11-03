@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>KTX and KTX 2 | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="KTX and KTX 2 | Egami ">
+      
+      
+      <link rel="icon" href="../../images/favicon.ico">
+      <link rel="stylesheet" href="../../public/docfx.min.css">
+      <link rel="stylesheet" href="../../public/main.css">
+      <meta name="docfx:navrel" content="../../toc.html">
+      <meta name="docfx:tocrel" content="../toc.html">
+      
+      <meta name="docfx:rel" content="../../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/blob/main/docs/articles/formats/ktx.md/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../../index.html">
+            <img id="logo" class="svg" src="../../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="ktx-and-ktx-2">KTX and KTX 2</h1>
+
+<p>KTX (Khronos Texture) is the texture container of OpenGL, Vulkan and glTF: a header that names the GPU format, then every mip
+level of every array layer, cube face and depth slice. KTX 1.1 (.ktx) names OpenGL formats; KTX 2.0 (.ktx2) names Vulkan formats,
+describes its colour in a data format descriptor and can compress each mip level again with Zstandard or zlib. Both read through
+the Egami.Formats.Extended package: register them with <code>WithKtx()</code> and <code>WithKtx2()</code>, or <code>WithExtendedFormats()</code>
+(<a href="extended.html">Extended formats</a>). They are two formats, <code>KtxFormat</code> and <code>Ktx2Format</code>, with one set of options and details.</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Reads</td>
+<td>KTX 1.1 in both byte orders and KTX 2.0, uncompressed or Zstandard and zlib supercompressed: the 8, 16 and 32-bit UNORM, SNORM, sRGB, UINT, SINT and float formats, BGRA, the 565, 5551 and 4444 packed formats, A2B10G10R10, B10G11R11 and E5B9G9R9 floats, and BC1 to BC7 with BC6H unsigned and signed. 1D and 2D textures, arrays, cube maps and volume textures, with their mips</td>
+</tr>
+<tr>
+<td>Writes</td>
+<td>No</td>
+</tr>
+<tr>
+<td>Natural pixel type</td>
+<td>As <a href="dds.html">DDS</a>: <code>Rgba8</code> for BC1, BC2, BC3, BC7 and 8-bit RGBA; <code>Gray8</code> for BC4 and R8; <code>Rgb8</code> for BC5, RG8 and RGB8; <code>Rgba16</code> for 16-bit UNORM; <code>RgbaF16</code> for BC6H, half floats and the packed floats; <code>RgbaF32</code> for 32-bit floats; <code>Bgr565</code>, <code>Bgra5551</code> and <code>Bgra4444</code> for the packed formats. A swizzle that moves channels widens the type to its RGBA form</td>
+</tr>
+<tr>
+<td><code>FormatInfo</code></td>
+<td><code>KtxFormat.Info</code>: name <code>KTX</code>, extension <code>.ktx</code>, MIME type <code>image/ktx</code>. <code>Ktx2Format.Info</code>: name <code>KTX2</code>, extension <code>.ktx2</code>, MIME type <code>image/ktx2</code></td>
+</tr>
+</tbody>
+</table>
+<pre><code class="lang-csharp">// KTX 1.1 (.ktx) and KTX 2.0 (.ktx2) are two formats; WithExtendedFormats() registers both.
+EgamiContext context = EgamiContext.Default.WithKtx().WithKtx2();
+
+// Load gives mip 0 of the first surface, upright, in the format's natural pixel type (Rgba8 for RGBA8 and BC7).
+using Raster texture = Raster.Load(&quot;texture.ktx2&quot;, context);
+texture.Save(&quot;texture.png&quot;);
+
+// Probe reads the headers alone: the surfaces at mip 0 are its images.
+RasterInfo info = Raster.Probe(&quot;sky.ktx2&quot;, context);
+Console.WriteLine($&quot;{info.Width}×{info.Height}, {info.ImageCount} surface(s)&quot;);
+</code></pre>
+<p>ETC1, ETC2 and EAC, ASTC, PVRTC and Basis Universal (ETC1S with BasisLZ, and UASTC) are not read yet: a load or probe throws
+<code>UnsupportedFormatException</code> that names the family, such as &quot;KTX 2 textures in ASTC compression are not supported yet&quot;.</p>
+<h2 id="surfaces-and-mips">Surfaces and mips</h2>
+<p>Load reads mip 0 of the first surface. The surfaces are the array layers, each with its cube faces (in the order +X, −X, +Y,
+−Y, +Z, −Z) or depth slices; <code>RasterInfo.ImageCount</code> counts them. LoadAll gives each at mip 0, and with
+<code>KtxReaderOptions.IncludeMipLevels</code> every mip after the surface it belongs to. <code>KtxReaderOptions.Surface</code> and
+<code>KtxReaderOptions.MipLevel</code> pick one; for a volume, depth slice <code>Surface</code> at mip <code>m</code> is slice <code>Surface &gt;&gt; m</code> of that mip.
+<code>ReaderOptions.MinimumSize</code> (without a <code>Region</code>) picks the smallest mip that still covers the size.</p>
+<pre><code class="lang-csharp">// One surface and mip: cube face -Y (faces go +X, -X, +Y, -Y, +Z, -Z), second mip if it has one.
+using Raster face = Raster.Load(&quot;sky.ktx2&quot;, context, new KtxReaderOptions { Surface = 3 });
+
+// Every face at mip 0, or with every mip after its face.
+using RasterList faces = Raster.LoadAll(&quot;sky.ktx2&quot;, context);
+using RasterList all = Raster.LoadAll(&quot;texture.ktx2&quot;, context, new KtxReaderOptions { IncludeMipLevels = true });
+
+// The pixels as the file stores them: no KTXorientation flip and no KTXswizzle.
+using Raster stored = Raster.Load(&quot;texture.ktx2&quot;, context, new KtxReaderOptions { KeepStoredLayout = true });
+</code></pre>
+<p>A KTX 2 file stores its smallest mip first, and a supercompressed level is inflated whole into a pooled buffer before its rows
+are read; an uncompressed level streams a row of pixels or blocks at a time, as DDS does.</p>
+<h2 id="orientation-and-swizzle">Orientation and swizzle</h2>
+<p>The <code>KTXorientation</code> key says which way the rows and columns run: <code>rd</code> (right, down) is the default, and OpenGL tools often
+write <code>ru</code>, bottom row first. Load turns the texture to <code>rd</code>, so it comes out upright as other formats do. The <code>KTXswizzle</code> key
+says where each channel comes from (<code>rgba</code>, <code>rrr1</code> for a gray texture stored as red, <code>rg01</code>); load applies it. Set
+<code>KtxReaderOptions.KeepStoredLayout</code> to read the pixels as stored. <code>KtxDetails.Orientation</code> and <code>KtxDetails.Swizzle</code> keep the
+keys either way, so a renderer can apply them itself. A malformed key is ignored with an <code>OrientationIgnored</code> or
+<code>SwizzleIgnored</code> warning.</p>
+<h2 id="values">Values</h2>
+<p>Block formats decode as DDS's do, with the same shared decoders: BC4, BC5, BC6H and BC7 exactly, BC1 to BC3 from the exact
+interpolation of their endpoints. <code>BC1_RGB</code> formats load opaque. Two-channel formats load with blue 0;
+<code>KtxReaderOptions.ReconstructNormalZ</code> rebuilds blue as a normal map's Z. SNORM, SINT and UINT formats map as DDS's do. A KTX 1
+file written big-endian is swapped by its <code>glTypeSize</code>, and the 4-byte row padding of KTX 1 uncompressed data is skipped.</p>
+<h2 id="colour-alpha-and-details">Colour, alpha and details</h2>
+<p>A KTX 2 file's data format descriptor names its colour primaries and transfer function. sRGB transfer with BT.709 primaries is
+tagged <code>ColorSpaceHint.Srgb</code>, linear with BT.709 <code>ColorSpaceHint.Linear</code>, and other pairs (Display P3, BT.2020 with PQ or HLG
+and the rest) set <code>RasterMetadata.CodePoints</code> to their H.273 values. In a KTX 1 file only an <code>_SRGB</code> format says anything, and
+is tagged sRGB. Colours the descriptor marks premultiplied are un-premultiplied on load.</p>
+<p><code>KtxDetails</code>, in <code>RasterMetadata.FormatDetails</code>, keeps what the file says: the Vulkan format (<code>VkFormat</code>, <code>FormatName</code>) or KTX 1's
+<code>GlInternalFormat</code>, the <code>KtxSupercompression</code>, the <code>KtxDimension</code>, cube flag, layers, faces and depth, the mip count, sRGB, the
+<code>KtxAlphaMode</code>, the orientation and swizzle, the key/value pairs that hold text (<code>KTXwriter</code>, <code>KTXglFormat</code> and your own), and
+which surface and mip the raster is.</p>
+<pre><code class="lang-csharp">// What the file says: the Vulkan format, supercompression, layout, mips, colour, orientation and key/value data.
+using Raster texture = Raster.Load(&quot;texture.ktx2&quot;, context);
+if (texture.Metadata.FormatDetails is KtxDetails ktx)
+{
+    Console.WriteLine($&quot;{ktx.FormatName} (VkFormat {ktx.VkFormat}), {ktx.Supercompression}, {ktx.MipLevels} mips&quot;);
+    Console.WriteLine($&quot;{ktx.Dimension}, cube: {ktx.IsCube}, sRGB {ktx.IsSrgb}, alpha {ktx.AlphaMode}, orientation {ktx.Orientation}&quot;);
+    foreach ((string key, string value) in ktx.KeyValues)
+    {
+        Console.WriteLine($&quot;{key} = {value}&quot;);
+    }
+}
+</code></pre><h2 id="streaming-and-damaged-files">Streaming and damaged files</h2>
+<p>Warnings start <code>Ktx.</code> for a KTX 1 file and <code>Ktx2.</code> for a KTX 2 file. A lenient read of a file that ends early keeps the rows
+it has and leaves the rest black with <code>LevelShort</code> or <code>DataMissing</code>; a supercompressed level that does not inflate reads as
+black with <code>LevelDamaged</code>; a header that claims more mips than its size allows is read with the mips it can have and
+<code>MipCountRepaired</code>; a KTX 1 <code>imageSize</code> word that disagrees with the format gets <code>ImageSizeWrong</code>, and the format's size is
+used; damaged key/value data or descriptor is skipped with <code>KeyValueDamaged</code> or <code>DescriptorDamaged</code>. A strict read throws
+<code>CorruptDataException</code> for each. Probe reads the headers, the level index, the descriptor and the key/value data, never the
+pixels.</p>
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/docs/articles/formats/ktx.md/#L1" class="edit-link">Edit this page</a>
+        </div>
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

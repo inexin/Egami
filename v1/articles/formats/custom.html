@@ -430,6 +430,17 @@ public static class Raw8PagesFormat
         }
     }
 }
+</code></pre><h2 id="compressed-data">Compressed data</h2>
+<p>.NET's <code>ZLibStream</code>, <code>DeflateStream</code>, <code>GZipStream</code> and <code>BrotliStream</code> cover the common codecs. For Zstandard, which .NET does
+not have, core Egami's <code>Zstandard</code> class (in <code>Egami.Compression</code>) compresses and decompresses spans with the managed codec
+TIFF and KTX 2 use; a warm call allocates nothing.</p>
+<pre><code class="lang-csharp">// Compress into a buffer sized for the worst case, then keep the bytes written.
+byte[] packed = new byte[Zstandard.MaxCompressedLength(data.Length)];
+int written = Zstandard.Compress(data, packed, level: 9);
+
+// Decompress into a buffer of the size you know (KTX 2 stores each level's): it returns the bytes written.
+byte[] unpacked = new byte[data.Length];
+int length = Zstandard.Decompress(packed.AsSpan(0, written), unpacked);
 </code></pre>
 </article>
 

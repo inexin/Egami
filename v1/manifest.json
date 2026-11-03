@@ -1231,6 +1231,34 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Compression.Zstandard.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Compression.Zstandard.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Compression.Zstandard",
+      "Summary": "<p sourcefile=\"api/Egami.Compression.Zstandard.yml\" sourcestartlinenumber=\"1\">Zstandard (RFC 8878) compression in managed code: the codec TIFF's ZSTD compression uses, for format plugins and apps that\nneed it too, such as KTX 2's supercompressed mip levels. Both directions work on spans the caller sizes, and each thread\nkeeps its tables, so a warm call allocates nothing.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Compression.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Compression.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Compression",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.CorruptDataException.yml",
       "output": {
         ".html": {
@@ -6519,6 +6547,118 @@
       "Uid": null,
       "IsMRef": true,
       "Title": "Egami.Formats.Extended.Farbfeld",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Extended.Ktx.Ktx2Format.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Extended.Ktx.Ktx2Format.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Extended.Ktx.Ktx2Format",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Extended.Ktx.Ktx2Format.yml\" sourcestartlinenumber=\"1\">KTX 2.0, the Khronos texture container for Vulkan, glTF and the web: a header naming the Vulkan format, a level index, a\ndata format descriptor with the colour space, key/value data, then the mip levels smallest first, each optionally\nsupercompressed with Zstandard or zlib. Load gives mip 0 of the first surface, turned upright and swizzled as the file\nsays; LoadAll and <xref href=\"Egami.Formats.Extended.Ktx.KtxReaderOptions\" data-throw-if-not-resolved=\"false\"></xref> reach the others. Uncompressed and BC1 to BC7 textures read; ETC, ASTC and\nBasis Universal ones are refused for now. Read only. Registered with <xref href=\"Egami.Formats.Extended.ExtendedContextExtensions.WithKtx2(Egami.EgamiContext)\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Extended.Ktx.KtxAlphaMode.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Extended.Ktx.KtxAlphaMode.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Extended.Ktx.KtxAlphaMode",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Extended.Ktx.KtxAlphaMode.yml\" sourcestartlinenumber=\"1\">How a KTX file's alpha channel is meant to be read.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Extended.Ktx.KtxDetails.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Extended.Ktx.KtxDetails.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Extended.Ktx.KtxDetails",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Extended.Ktx.KtxDetails.yml\" sourcestartlinenumber=\"1\">Details only KTX and KTX 2 have, kept in <xref href=\"Egami.Metadata.RasterMetadata.FormatDetails\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Extended.Ktx.KtxDimension.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Extended.Ktx.KtxDimension.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Extended.Ktx.KtxDimension",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Extended.Ktx.KtxDimension.yml\" sourcestartlinenumber=\"1\">The kind of texture a KTX file holds.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Extended.Ktx.KtxFormat.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Extended.Ktx.KtxFormat.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Extended.Ktx.KtxFormat",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Extended.Ktx.KtxFormat.yml\" sourcestartlinenumber=\"1\">KTX 1.1, the Khronos texture container for OpenGL: a header naming the OpenGL format, key/value data, then every mip level\nof every array layer, cube face and depth slice, uncompressed or in BC1 to BC7 blocks, in either byte order. Load gives mip 0\nof the first surface, turned upright and swizzled as the file's <code>KTXorientation</code> and <code>KTXswizzle</code> say; LoadAll and\n<xref href=\"Egami.Formats.Extended.Ktx.KtxReaderOptions\" data-throw-if-not-resolved=\"false\"></xref> reach the others. Read only. Registered with <xref href=\"Egami.Formats.Extended.ExtendedContextExtensions.WithKtx(Egami.EgamiContext)\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Extended.Ktx.KtxReaderOptions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Extended.Ktx.KtxReaderOptions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Extended.Ktx.KtxReaderOptions",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Extended.Ktx.KtxReaderOptions.yml\" sourcestartlinenumber=\"1\">Options for reading KTX and KTX 2.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Extended.Ktx.KtxSupercompression.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Extended.Ktx.KtxSupercompression.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Extended.Ktx.KtxSupercompression",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Extended.Ktx.KtxSupercompression.yml\" sourcestartlinenumber=\"1\">How a KTX 2 file's mip levels are compressed on top of their texture format.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Extended.Ktx.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Extended.Ktx.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Extended.Ktx",
       "Summary": null
     },
     {
@@ -19212,6 +19352,16 @@
       "output": {
         ".html": {
           "relative_path": "articles/formats/jxl.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "articles/formats/ktx.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/formats/ktx.html"
         }
       },
       "version": ""
