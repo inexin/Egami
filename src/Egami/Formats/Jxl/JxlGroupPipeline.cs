@@ -144,14 +144,17 @@ internal sealed class JxlGroupPipeline
     }
 
     /// <summary>
-    /// Gets a pipeline for the frame when it can take one: a single-pass VarDCT frame, alone in the codestream, with XYB or
-    /// plain color but no subsampled chroma, LF frame, patches, splines, noise, upsampling, crop, blending or extra channels,
-    /// decoded whole; otherwise <see langword="null"/>, and the frame takes the whole-frame path.
+    /// Gets a pipeline for the frame when it can take one: a VarDCT frame alone in the codestream, with XYB or plain color but
+    /// no subsampled chroma, LF frame, patches, splines, noise, upsampling, crop or blending, and no extra channel other than
+    /// straight alpha and channels the pixels do not show, none upsampled; decoded whole. Otherwise <see langword="null"/>, and
+    /// the frame takes the whole-frame path.
     /// </summary>
     internal static JxlGroupPipeline? For(JxlFrameDecoder decoder, JxlFrameHeader f, JxlImageHeader h, JxlFile file, int frames)
     {
-        bool fits = frames == 1 && f is { Modular: false, YCbCr: false, Passes: 1, Upsampling: 1, HaveCrop: false, Type: JxlFrameType.Regular, IsLast: true }
-            && (f.Flags & (0x01 | 0x02 | 0x10 | 0x20)) == 0 && f.Blending.Mode == JxlBlendMode.Replace && h.ExtraChannels.Count == 0
+        bool fits = frames == 1 && f is { Modular: false, YCbCr: false, Upsampling: 1, HaveCrop: false, Type: JxlFrameType.Regular, IsLast: true }
+            && (f.Flags & (0x01 | 0x02 | 0x10 | 0x20)) == 0 && f.Blending.Mode == JxlBlendMode.Replace
+            && f.ExtraChannelBlending.All(b => b.Mode == JxlBlendMode.Replace) && f.ExtraChannelUpsampling.All(u => u == 1)
+            && !h.ExtraChannels.Any(e => e.Type is JxlExtraChannelType.SpotColor or JxlExtraChannelType.Black || e.AlphaAssociated)
             && decoder.Needed is null && decoder.Arrived == long.MaxValue && !decoder.CoefficientsOnly;
         return fits ? new JxlGroupPipeline(decoder, f, file) : null;
     }
@@ -253,6 +256,9 @@ internal sealed class JxlGroupPipeline
                     _workers.Add(worker);
                 }
             }, minimumPerThread: 4);
+
+            // Last, as every color step writes an alpha of 1.
+            WriteAlpha(output);
             JxlStageTimes.Lap(JxlStage.Render);
         }
         finally
@@ -262,6 +268,49 @@ internal sealed class JxlGroupPipeline
                 worker.Return();
             }
         }
+    }
+
+    /// <summary>Writes the alpha sample of every pixel from the alpha channel, as <c>JxlImageDecoder.Plane</c> does; the color steps left it 1.</summary>
+    private void WriteAlpha<TPixel>(PixelPlane<TPixel> output)
+        where TPixel : unmanaged, IPixelType<TPixel>
+    {
+        JxlImageHeader h = _file.Header;
+        int index = h.AlphaIndex;
+        PixelLayoutInfo layout = TPixel.Layout;
+        if (index < 0 || !layout.HasAlpha)
+        {
+            return;
+        }
+
+        int[] data = _decoder.ExtraChannel(index).Data;
+        JxlBitDepth depth = h.ExtraChannels[index].BitDepth;
+        int samples = layout.ChannelCount;
+        int width = _width;
+        _decoder.Parallel.For(_height, y =>
+        {
+            Span<byte> bytes = MemoryMarshal.AsBytes(output.Row(y));
+            int at = y * width;
+            for (int x = 0; x < width; x++)
+            {
+                float f = JxlImageDecoder.Float(data[at + x], depth);
+                int i = (x * samples) + samples - 1;
+                switch (layout.ChannelType)
+                {
+                    case PixelChannelType.Unorm8:
+                        bytes[i] = (byte)MathF.Round(Math.Clamp(f, 0, 1) * 255);
+                        break;
+                    case PixelChannelType.Unorm16:
+                        MemoryMarshal.Cast<byte, ushort>(bytes)[i] = (ushort)MathF.Round(Math.Clamp(f, 0, 1) * 65535);
+                        break;
+                    case PixelChannelType.Float16:
+                        MemoryMarshal.Cast<byte, Half>(bytes)[i] = (Half)f;
+                        break;
+                    default:
+                        MemoryMarshal.Cast<byte, float>(bytes)[i] = f;
+                        break;
+                }
+            }
+        }, minimumPerThread: 16);
     }
 
     private Worker Take() => _workers.TryTake(out Worker? worker) ? worker : new Worker(_groupDim, _border);
@@ -692,6 +741,12 @@ internal sealed class JxlGroupPipeline
         int colorSamples = alpha ? samples - 1 : samples;
         int width = row.Length;
         Span<byte> bytes = MemoryMarshal.AsBytes(row);
+        if (layout.ChannelType == PixelChannelType.Unorm8 && (samples is 1 or 3 ? !alpha : samples == 4 && alpha) && System.Runtime.Intrinsics.X86.Avx2.IsSupported)
+        {
+            WriteBytes(bytes, color, at, samples);
+            return;
+        }
+
         for (int s = 0; s < samples; s++)
         {
             float[]? plane = alpha && s == samples - 1 ? null : color[Math.Min(s, colorSamples - 1) % 3];
@@ -762,6 +817,90 @@ internal sealed class JxlGroupPipeline
                     }
             }
         }
+    }
+
+    /// <summary>
+    /// Writes a row of 8-bit gray, RGB or RGBA (alpha 255), eight pixels at a time: each sample clamped, scaled and rounded to nearest even as
+    /// <see cref="WriteRow"/> does, then narrowed to bytes and the three channels interleaved with byte shuffles.
+    /// </summary>
+    private static void WriteBytes(Span<byte> bytes, float[][] color, int at, int samples)
+    {
+        int width = bytes.Length / samples;
+        ref byte to = ref MemoryMarshal.GetReference(bytes);
+        float[] p0 = color[0];
+        float[] p1 = color[samples == 1 ? 0 : 1];
+        float[] p2 = color[samples == 1 ? 0 : 2];
+        int x = 0;
+        if (samples == 3)
+        {
+            Vector128<byte> lowR = Vector128.Create((byte)0, 8, 0x80, 1, 9, 0x80, 2, 10, 0x80, 3, 11, 0x80, 4, 12, 0x80, 5);
+            Vector128<byte> lowB = Vector128.Create((byte)0x80, 0x80, 0, 0x80, 0x80, 1, 0x80, 0x80, 2, 0x80, 0x80, 3, 0x80, 0x80, 4, 0x80);
+            Vector128<byte> highR = Vector128.Create((byte)13, 0x80, 6, 14, 0x80, 7, 15, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80);
+            Vector128<byte> highB = Vector128.Create((byte)0x80, 5, 0x80, 0x80, 6, 0x80, 0x80, 7, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80);
+            for (; x + 8 <= width; x += 8)
+            {
+                Vector256<short> rg = Vector256.Narrow(Round8(p0, at + x), Round8(p1, at + x));
+                Vector256<short> b = Vector256.Narrow(Round8(p2, at + x), Vector256<int>.Zero);
+                Vector256<byte> all = Vector256.Narrow(rg.AsUInt16(), b.AsUInt16());
+                Vector128<byte> first = all.GetLower();
+                Vector128<byte> second = all.GetUpper();
+                Vector128<byte> out0 = System.Runtime.Intrinsics.X86.Ssse3.Shuffle(first, lowR) | System.Runtime.Intrinsics.X86.Ssse3.Shuffle(second, lowB);
+                Vector128<byte> out1 = System.Runtime.Intrinsics.X86.Ssse3.Shuffle(first, highR) | System.Runtime.Intrinsics.X86.Ssse3.Shuffle(second, highB);
+                out0.StoreUnsafe(ref to, (nuint)(x * 3));
+                Unsafe.WriteUnaligned(ref Unsafe.Add(ref to, (x * 3) + 16), out1.AsUInt64().ToScalar());
+            }
+        }
+        else if (samples == 4)
+        {
+            // R, G, B and an alpha of 255 (the alpha channel, if any, is written later).
+            Vector128<byte> lowRg = Vector128.Create((byte)0, 8, 0x80, 0x80, 1, 9, 0x80, 0x80, 2, 10, 0x80, 0x80, 3, 11, 0x80, 0x80);
+            Vector128<byte> lowBa = Vector128.Create((byte)0x80, 0x80, 0, 8, 0x80, 0x80, 1, 9, 0x80, 0x80, 2, 10, 0x80, 0x80, 3, 11);
+            Vector128<byte> highRg = Vector128.Create((byte)4, 12, 0x80, 0x80, 5, 13, 0x80, 0x80, 6, 14, 0x80, 0x80, 7, 15, 0x80, 0x80);
+            Vector128<byte> highBa = Vector128.Create((byte)0x80, 0x80, 4, 12, 0x80, 0x80, 5, 13, 0x80, 0x80, 6, 14, 0x80, 0x80, 7, 15);
+            Vector256<int> opaque = Vector256.Create(255);
+            for (; x + 8 <= width; x += 8)
+            {
+                Vector256<short> rg = Vector256.Narrow(Round8(p0, at + x), Round8(p1, at + x));
+                Vector256<short> ba = Vector256.Narrow(Round8(p2, at + x), opaque);
+                Vector256<byte> all = Vector256.Narrow(rg.AsUInt16(), ba.AsUInt16());
+                Vector128<byte> first = all.GetLower();
+                Vector128<byte> second = all.GetUpper();
+                (System.Runtime.Intrinsics.X86.Ssse3.Shuffle(first, lowRg) | System.Runtime.Intrinsics.X86.Ssse3.Shuffle(second, lowBa)).StoreUnsafe(ref to, (nuint)(x * 4));
+                (System.Runtime.Intrinsics.X86.Ssse3.Shuffle(first, highRg) | System.Runtime.Intrinsics.X86.Ssse3.Shuffle(second, highBa)).StoreUnsafe(ref to, (nuint)((x * 4) + 16));
+            }
+        }
+        else
+        {
+            for (; x + 8 <= width; x += 8)
+            {
+                Vector256<short> v = Vector256.Narrow(Round8(p0, at + x), Vector256<int>.Zero);
+                Unsafe.WriteUnaligned(ref Unsafe.Add(ref to, x), Vector256.Narrow(v.AsUInt16(), Vector256<ushort>.Zero).GetLower().AsUInt64().ToScalar());
+            }
+        }
+
+        for (; x < width; x++)
+        {
+            bytes[x * samples] = (byte)MathF.Round(Math.Clamp(p0[at + x], 0, 1) * 255);
+            if (samples >= 3)
+            {
+                bytes[(x * samples) + 1] = (byte)MathF.Round(Math.Clamp(p1[at + x], 0, 1) * 255);
+                bytes[(x * samples) + 2] = (byte)MathF.Round(Math.Clamp(p2[at + x], 0, 1) * 255);
+            }
+
+            if (samples == 4)
+            {
+                bytes[(x * 4) + 3] = 255;
+            }
+        }
+    }
+
+    /// <summary>Eight samples clamped to 0 to 1, scaled to 255 and rounded to nearest even.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static Vector256<int> Round8(float[] plane, int at)
+    {
+        Vector256<float> f = Vector256.LoadUnsafe(ref MemoryMarshal.GetArrayDataReference(plane), (nuint)at);
+        f = Vector256.Min(Vector256.Max(f, Vector256<float>.Zero), Vector256<float>.One) * Vector256.Create(255f);
+        return System.Runtime.Intrinsics.X86.Avx.ConvertToVector256Int32(System.Runtime.Intrinsics.X86.Avx.RoundToNearestInteger(f));
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

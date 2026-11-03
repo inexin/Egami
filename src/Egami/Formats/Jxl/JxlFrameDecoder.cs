@@ -145,15 +145,22 @@ internal sealed class JxlFrameDecoder
     }
 
     /// <summary>
-    /// Decodes a single-pass VarDCT frame up to its pass groups for <see cref="JxlGroupPipeline"/>: LF global, the LF groups and
-    /// HF global, with no frame-wide coefficient planes and the LF prepared, so that <see cref="DecodeGroupPixels"/> can take
-    /// each group straight to pixels.
+    /// Decodes a VarDCT frame up to its pass groups for <see cref="JxlGroupPipeline"/>: LF global, the LF groups and HF global,
+    /// with the LF prepared, so that <see cref="DecodeGroupPixels"/> can take each group to pixels. A single-pass frame has no
+    /// frame-wide coefficient planes, as each group decodes straight to pixels; a frame of several passes decodes every pass
+    /// into them here, as the passes add to the same coefficients.
     /// </summary>
     internal JxlVarDct BeginGroups()
     {
-        DecodeLf(null, keepCoefficients: false);
+        bool passes = _frame.Passes > 1;
+        DecodeLf(null, keepCoefficients: passes);
         JxlVarDct varDct = _varDct!;
         varDct.ReadHfGlobal(Section(1 + (int)_frame.LfGroups), GlobalTree, (int)_frame.LfGroups, (int)_frame.Groups);
+        if (passes)
+        {
+            DecodeAllPasses(new int[_frame.Groups], hfGlobal: true);
+        }
+
         varDct.PrepareDirect();
         JxlStageTimes.Lap(JxlStage.Dequantize);
         return varDct;
@@ -165,12 +172,21 @@ internal sealed class JxlFrameDecoder
     /// <summary>Decodes pass group <paramref name="g"/> of a frame begun with <see cref="BeginGroups"/> into the scratch's pixels.</summary>
     internal void DecodeGroupPixels(int g, JxlGroupScratch scratch)
     {
+        if (_frame.Passes > 1)
+        {
+            _varDct!.ReconstructGroup(g, scratch);
+            return;
+        }
+
         int lfGroups = (int)_frame.LfGroups;
         Interlocked.Increment(ref _decodedGroups);
         JxlBitReader pr = Section(1 + lfGroups + 1 + g);
         _varDct!.DecodePassGroup(pr, 0, g, scratch);
         DecodeGroupChannels(pr, 0, g);
     }
+
+    /// <summary>Gets extra channel <paramref name="e"/> of a frame begun with <see cref="BeginGroups"/>, after <see cref="EndGroups"/>.</summary>
+    internal JxlChannel ExtraChannel(int e) => _global!.Channels[_extraStart + e];
 
     /// <summary>Ends a frame begun with <see cref="BeginGroups"/>: the global Modular stream's inverse transforms.</summary>
     internal void EndGroups()
@@ -328,28 +344,7 @@ internal sealed class JxlFrameDecoder
 
         // How many passes of each group were decoded: a pass group comes after the group's earlier passes only.
         int[] done = new int[groups];
-        for (int p = 0; p < passes && hfGlobal; p++)
-        {
-            // Passes add to the same coefficients, so they run in order; the groups of a pass are independent.
-            GroupParallel.For(groups, g =>
-            {
-                if (!Touches(g % groupsPerRow, g / groupsPerRow, groupDim))
-                {
-                    return;
-                }
-
-                if (done[g] != p || !Has(1 + lfGroups + 1 + (p * groups) + g))
-                {
-                    return;
-                }
-
-                done[g]++;
-                Interlocked.Increment(ref _decodedGroups);
-                JxlBitReader pr = Section(1 + lfGroups + 1 + (p * groups) + g);
-                varDct?.DecodePassGroup(pr, p, g);
-                DecodeGroupChannels(pr, p, g);
-            });
-        }
+        DecodeAllPasses(done, hfGlobal);
 
         if (done.Any(d => d < passes) && Arrived != long.MaxValue)
         {
@@ -385,6 +380,39 @@ internal sealed class JxlFrameDecoder
             Splines = _splines,
             Noise = _noise,
         };
+    }
+
+    /// <summary>Decodes every pass of the needed groups that has arrived, counting each group's passes in <paramref name="done"/>.</summary>
+    private void DecodeAllPasses(int[] done, bool hfGlobal)
+    {
+        JxlVarDct? varDct = _varDct;
+        int groupDim = _frame.GroupDim;
+        int lfGroups = (int)_frame.LfGroups;
+        int groups = (int)_frame.Groups;
+        int groupsPerRow = (int)Ceil(_frame.CodedSize.Item1, groupDim);
+        int passes = _frame.Passes;
+        for (int p = 0; p < passes && hfGlobal; p++)
+        {
+            // Passes add to the same coefficients, so they run in order; the groups of a pass are independent.
+            GroupParallel.For(groups, g =>
+            {
+                if (!Touches(g % groupsPerRow, g / groupsPerRow, groupDim))
+                {
+                    return;
+                }
+
+                if (done[g] != p || !Has(1 + lfGroups + 1 + (p * groups) + g))
+                {
+                    return;
+                }
+
+                done[g]++;
+                Interlocked.Increment(ref _decodedGroups);
+                JxlBitReader pr = Section(1 + lfGroups + 1 + (p * groups) + g);
+                varDct?.DecodePassGroup(pr, p, g);
+                DecodeGroupChannels(pr, p, g);
+            });
+        }
     }
 
     /// <summary>Decodes the Modular group channels that pass <paramref name="p"/> of group <paramref name="g"/> codes, after its VarDCT part.</summary>

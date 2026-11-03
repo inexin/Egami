@@ -521,6 +521,46 @@ internal sealed class JxlVarDct
     }
 
     /// <summary>
+    /// Transforms the varblocks of pass group <paramref name="group"/> into the scratch's pixels from the frame's coefficient
+    /// planes, for a frame of several passes once every pass is decoded (after <see cref="PrepareDirect"/>).
+    /// </summary>
+    internal void ReconstructGroup(int group, JxlGroupScratch s)
+    {
+        int groupsPerRow = (int)Ceil(Width, _groupDim);
+        int gb = _groupDim / 8;
+        int bx0 = group % groupsPerRow * gb;
+        int by0 = group / groupsPerRow * gb;
+        int gbw = Math.Min(gb, BlocksX - bx0);
+        int gbh = Math.Min(gb, BlocksY - by0);
+        int stride = BlocksX * 8;
+        s.Begin(bx0, by0);
+        for (int y = 0; y < gbh; y++)
+        {
+            for (int x = 0; x < gbw; x++)
+            {
+                int at = ((by0 + y) * BlocksX) + bx0 + x;
+                int type = _blockType[at];
+                if (type < 0)
+                {
+                    continue;
+                }
+
+                JxlTransformType t = (JxlTransformType)type;
+                (int w8, int h8) = JxlTransforms8.Size(t);
+                for (int c = 0; c < 3; c++)
+                {
+                    for (int row = 0; row < h8 * 8; row++)
+                    {
+                        _coeffs[c].AsSpan(((((by0 + y) * 8) + row) * stride) + ((bx0 + x) * 8), w8 * 8).CopyTo(s.Coefficients[c].AsSpan(row * w8 * 8));
+                    }
+                }
+
+                ReconstructVarblock(s, bx0 + x, by0 + y, t, _hfMul[at]);
+            }
+        }
+    }
+
+    /// <summary>
     /// Gets ready for <see cref="DecodePassGroup(JxlBitReader, int, int, JxlGroupScratch?)"/> to transform varblocks as their
     /// group decodes: the LF prepared (chroma from luma and smoothing, as <see cref="Reconstruct"/> does first) and the
     /// dequantization constants worked out.
