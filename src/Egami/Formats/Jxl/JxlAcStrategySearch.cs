@@ -481,12 +481,7 @@ internal sealed class JxlAcStrategySearch
 
         // Untransposed coefficients keep the natural layout: the transform runs in place in the output.
         float[] work = transposed ? scratch : output;
-        for (int y = 0; y < height; y++)
-        {
-            plane.AsSpan(offset + (y * stride), width).CopyTo(work.AsSpan(y * width, width));
-        }
-
-        JxlForwardDct.Forward(t, work, 0, width);
+        JxlForwardDct.Forward(t, plane.AsSpan(offset), stride, work);
         if (transposed)
         {
             if (System.Runtime.Intrinsics.X86.Avx.IsSupported)

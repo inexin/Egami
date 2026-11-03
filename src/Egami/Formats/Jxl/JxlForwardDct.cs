@@ -47,6 +47,29 @@ internal static class JxlForwardDct
     }
 
     /// <summary>
+    /// Runs <see cref="Forward(JxlTransformType, Span{float}, int, int)"/> on a copy of the varblock at <paramref name="from"/> in <paramref name="to"/> (as wide as the
+    /// varblock), reading the plane directly where the transform allows: the same coefficients without the copy.
+    /// </summary>
+    internal static void Forward(JxlTransformType t, ReadOnlySpan<float> from, int fromStride, Span<float> to)
+    {
+        (int w, int h) = JxlTransforms8.Size(t);
+        int width = w * 8, height = h * 8;
+        bool special = t is JxlTransformType.Dct2 or JxlTransformType.Dct4 or JxlTransformType.Hornuss or JxlTransformType.Dct4x8
+            or JxlTransformType.Dct8x4 or >= JxlTransformType.Afv0 and <= JxlTransformType.Afv3;
+        if (!special && JxlDct.ForwardFrom(from, fromStride, to, width, width, height))
+        {
+            return;
+        }
+
+        for (int y = 0; y < height; y++)
+        {
+            from.Slice(y * fromStride, width).CopyTo(to.Slice(y * width, width));
+        }
+
+        Forward(t, to, 0, width);
+    }
+
+    /// <summary>
     /// Writes the varblock's LF samples (one per 8×8 block, row by row at <paramref name="lfStride"/>) from its coefficients:
     /// the first coefficient for the 8×8 transforms, else the inverse of the decoder's LLF step (I.6: a DCT of the LF samples
     /// divided by the LLF scales).

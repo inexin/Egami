@@ -51,25 +51,30 @@ internal static partial class JxlDct
     }
 
     /// <summary>
-    /// Runs the forward or inverse 8×8 DCT in place as <see cref="Dct2DVector"/> does (rows, then columns, with the same
+    /// Runs the forward or inverse 8×8 DCT in place as <see cref="Dct2DVector(Span{float}, int, int, int, int, bool)"/> does (rows, then columns, with the same
     /// operations), the block kept in eight registers: the lossy encoder runs it for every block it tries.
     /// </summary>
-    private static void Dct8x8(Span<float> data, int offset, int stride, bool forward)
+    private static void Dct8x8(Span<float> data, int offset, int stride, bool forward) =>
+        Dct8x8(data[offset..], stride, data[offset..], stride, forward);
+
+    /// <summary><see cref="Dct8x8(Span{float}, int, int, bool)"/> from the block at <paramref name="from"/> into the one at <paramref name="to"/>.</summary>
+    private static void Dct8x8(ReadOnlySpan<float> from, int fromStride, Span<float> to, int stride, bool forward)
     {
-        ref float origin = ref Unsafe.Add(ref MemoryMarshal.GetReference(data), offset);
-        if (offset + (7 * stride) + 8 > data.Length)
+        if ((7 * fromStride) + 8 > from.Length || (7 * stride) + 8 > to.Length)
         {
-            throw new ArgumentOutOfRangeException(nameof(offset));
+            throw new ArgumentOutOfRangeException(nameof(from));
         }
 
-        Vector256<float> r0 = Load(ref origin, 0);
-        Vector256<float> r1 = Load(ref origin, stride);
-        Vector256<float> r2 = Load(ref origin, 2 * stride);
-        Vector256<float> r3 = Load(ref origin, 3 * stride);
-        Vector256<float> r4 = Load(ref origin, 4 * stride);
-        Vector256<float> r5 = Load(ref origin, 5 * stride);
-        Vector256<float> r6 = Load(ref origin, 6 * stride);
-        Vector256<float> r7 = Load(ref origin, 7 * stride);
+        ref float source = ref MemoryMarshal.GetReference(from);
+        ref float origin = ref MemoryMarshal.GetReference(to);
+        Vector256<float> r0 = Load(ref source, 0);
+        Vector256<float> r1 = Load(ref source, fromStride);
+        Vector256<float> r2 = Load(ref source, 2 * fromStride);
+        Vector256<float> r3 = Load(ref source, 3 * fromStride);
+        Vector256<float> r4 = Load(ref source, 4 * fromStride);
+        Vector256<float> r5 = Load(ref source, 5 * fromStride);
+        Vector256<float> r6 = Load(ref source, 6 * fromStride);
+        Vector256<float> r7 = Load(ref source, 7 * fromStride);
         Transpose(ref r0, ref r1, ref r2, ref r3, ref r4, ref r5, ref r6, ref r7);
         if (forward)
         {
@@ -258,8 +263,19 @@ internal static partial class JxlDct
     /// Runs Dct2D with vectors when both sides are multiples of 8: the rows through a transposed copy and the columns in place,
     /// eight at a time, each with the scalar 1D transform's operations in the same order.
     /// </summary>
+    private static bool Dct2DVector(Span<float> data, int offset, int stride, int width, int height, bool forward) =>
+        Dct2DVector(data[offset..], stride, data[offset..], stride, width, height, forward);
+
+    /// <summary>
+    /// Runs the forward 2D DCT of the <paramref name="width"/>×<paramref name="height"/> area at <paramref name="from"/> into
+    /// <paramref name="to"/> (as a copy there, then <see cref="Dct2D"/>, would), when both sides are multiples of 8 and AVX is
+    /// there; returns false otherwise. The encoder transforms its planes this way without copying each block out first.
+    /// </summary>
+    internal static bool ForwardFrom(ReadOnlySpan<float> from, int fromStride, Span<float> to, int stride, int width, int height) =>
+        Dct2DVector(from, fromStride, to, stride, width, height, forward: true);
+
     [System.Runtime.CompilerServices.SkipLocalsInit]
-    private static bool Dct2DVector(Span<float> data, int offset, int stride, int width, int height, bool forward)
+    private static bool Dct2DVector(ReadOnlySpan<float> from, int fromStride, Span<float> to, int stride, int width, int height, bool forward)
     {
         if (!Avx.IsSupported || width < 8 || height < 8 || width % 8 != 0 || height % 8 != 0)
         {
@@ -268,7 +284,7 @@ internal static partial class JxlDct
 
         if (width == 8 && height == 8)
         {
-            Dct8x8(data, offset, stride, forward);
+            Dct8x8(from, fromStride, to, stride, forward);
             return true;
         }
 
@@ -280,7 +296,7 @@ internal static partial class JxlDct
         try
         {
             // Rows: the block transposed (width rows of height samples), each column of that transformed, then transposed back.
-            TransposeBlock(data[offset..], stride, transposed, height, height, width);
+            TransposeBlock(from, fromStride, transposed, height, height, width);
             ref float t = ref MemoryMarshal.GetReference(transposed);
             for (int y = 0; y < height; y += 8)
             {
@@ -296,10 +312,10 @@ internal static partial class JxlDct
                 }
             }
 
-            TransposeBlock(transposed, height, data[offset..], stride, width, height);
+            TransposeBlock(transposed, height, to, stride, width, height);
 
             // Columns, eight at a time.
-            ref float d = ref Unsafe.Add(ref MemoryMarshal.GetReference(data), offset);
+            ref float d = ref MemoryMarshal.GetReference(to);
             for (int x = 0; x < width; x += 8)
             {
                 for (int y = 0; y < height; y++)
