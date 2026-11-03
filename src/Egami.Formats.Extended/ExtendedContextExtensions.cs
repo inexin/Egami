@@ -1,5 +1,6 @@
 using Egami.Formats.Extended.Dds;
 using Egami.Formats.Extended.Farbfeld;
+using Egami.Formats.Extended.Ktx;
 using Egami.Formats.Extended.Pcx;
 using Egami.Formats.Extended.Raw;
 using Egami.Formats.Extended.Sgi;
@@ -21,7 +22,7 @@ public static class ExtendedContextExtensions
 {
     /// <summary>
     /// Returns a copy of <paramref name="context"/> with every stable format of this package registered: PCX, SGI, Sun raster,
-    /// XBM, XPM, WBMP, Farbfeld, DDS and camera RAW. Formats in preview are never included; each has its own method. Call it once, for example
+    /// XBM, XPM, WBMP, Farbfeld, DDS, KTX, KTX 2 and camera RAW. Formats in preview are never included; each has its own method. Call it once, for example
     /// <c>EgamiContext.SetDefault(new EgamiContext().WithExtendedFormats())</c> at startup.
     /// </summary>
     /// <param name="context">The context to add the formats to.</param>
@@ -33,7 +34,7 @@ public static class ExtendedContextExtensions
     public static EgamiContext WithExtendedFormats(this EgamiContext context)
     {
         ArgumentNullException.ThrowIfNull(context);
-        return context.WithPcx().WithSgi().WithSunRaster().WithXbm().WithXpm().WithWbmp().WithFarbfeld().WithDds().WithRaw();
+        return context.WithPcx().WithSgi().WithSunRaster().WithXbm().WithXpm().WithWbmp().WithFarbfeld().WithDds().WithKtx().WithKtx2().WithRaw();
     }
 
     /// <summary>Returns a copy of <paramref name="context"/> that reads and writes PCX (<see cref="PcxFormat"/>).</summary>
@@ -83,6 +84,18 @@ public static class ExtendedContextExtensions
     /// <returns>The new context.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="context"/> is <see langword="null"/>.</exception>
     public static EgamiContext WithDds(this EgamiContext context) => Add(context, DdsFormat.Info);
+
+    /// <summary>Returns a copy of <paramref name="context"/> that reads KTX 1.1 textures (<see cref="KtxFormat"/>).</summary>
+    /// <param name="context">The context to add the format to.</param>
+    /// <returns>The new context.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="context"/> is <see langword="null"/>.</exception>
+    public static EgamiContext WithKtx(this EgamiContext context) => Add(context, KtxFormat.Info);
+
+    /// <summary>Returns a copy of <paramref name="context"/> that reads KTX 2.0 textures (<see cref="Ktx2Format"/>).</summary>
+    /// <param name="context">The context to add the format to.</param>
+    /// <returns>The new context.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="context"/> is <see langword="null"/>.</exception>
+    public static EgamiContext WithKtx2(this EgamiContext context) => Add(context, Ktx2Format.Info);
 
     /// <summary>
     /// Returns a copy of <paramref name="context"/> that reads camera RAW files (<see cref="RawFormat"/>). RAW is detected ahead
