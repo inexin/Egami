@@ -77,6 +77,20 @@ More RAW cameras (RAW coverage plan, PR A). Egami.Formats.Extended adds the `.rw
   for the same file to 1.2 times (90th percentile from 12 to 4.3 times), so the same setting now reduces about as much as on
   Adobe's DNG of the file.
 
+Canon CR3 develops (RAW coverage, Build Plan tasks 8 to 12). No API changes.
+
+- The CRX codec of CR3's sensor data decodes, lossless and C-RAW (quantised 5/3 wavelet, both quantiser versions), its tiles
+  and planes in parallel. Over the five corpus CR3s (EOS 250D, M50 C-RAW, R6, 1D X Mark III and PowerShot SX70 HS) the mosaic
+  is bit for bit Adobe DNG Converter's inside the active area. Black and white levels, the as-shot white balance, the active
+  area and the crop come from the file, and 29 CR3 bodies join the camera table.
+- A CR3 now develops, loads as a mosaic and converts to DNG (`RawFormat.ConvertToDng` refused it before). A Dual Pixel RAW
+  gives its main image and a RAW burst its first frame. CRX encoding type 1 and the 8-bit single-plane form, which no camera is
+  known to write, throw `NotSupportedException`.
+- A CR3 of an older body whose white level is not the camera table's (an EOS M50 C-RAW file) gets Adobe's baseline exposure:
+  the table's raised by the ratio of the two whites (0.28 EV against 0.02); its develop was 5 CIEDE2000 from Adobe's, now 0.14.
+- DNG writing widens BitsPerSample to hold the white level, so a CR3 whose white is 16384 over 14-bit data (EOS R6, R5 crop)
+  passes dng_validate.
+
 ## Egami train 1.4.0, Egami.SystemDrawing 1.0.0-preview.3 and Egami.Metafiles 1.0.2 (2026-11-01)
 
 The release train (Egami, Egami.Drawing, Egami.Fonts, Egami.Svg, Egami.Css, Egami.Heic, Egami.Formats.Extended and Egami.Cli)
