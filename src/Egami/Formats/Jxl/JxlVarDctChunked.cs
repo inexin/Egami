@@ -172,7 +172,9 @@ internal sealed partial class JxlVarDctEncoder
     internal static void EncodeChunk(JxlChunkedFrame frame, int chunk, JxlLinearImage patch, (int L, int T, int R, int B) border, int[]? alpha, int alphaBits, float[]? black)
     {
         JxlLossySettings settings = frame.Settings;
+        JxlStageTimes.Lap(JxlStage.Input);
         JxlVarDctEncoder e = new(patch, settings, frame.IntensityTarget, 1, settings.Distance, alpha, frame, chunk, border);
+        JxlStageTimes.Lap(JxlStage.Xyb);
         e.ChooseParameters();
         if (chunk > 0)
         {
@@ -182,6 +184,7 @@ internal sealed partial class JxlVarDctEncoder
         e.ComputeCoefficients();
         e.QuantizeLf();
         e._passCoeffs = [e._coeffs];
+        JxlStageTimes.Lap(JxlStage.Quantize);
         e.ComputeOrders();
         e.CommitOrders();
         if (chunk == 0)
@@ -195,8 +198,11 @@ internal sealed partial class JxlVarDctEncoder
             (e._blockContexts, e._blockClusters, e._qfThresholds) = (frame.BlockContexts, frame.BlockClusters, frame.QfThresholds);
         }
 
+        JxlStageTimes.Lap(JxlStage.Orders);
+
         // The EPF search decodes the chunk as an image of its own, without extra channels.
         e.ChooseEpfSharpness(frame.Header with { Width = e._width, Height = e._height, Alpha = null, HasBlack = false });
+        JxlStageTimes.Lap(JxlStage.EpfSharpness);
         e.PrepareChunkExtras(patch.Width, border, alpha, alphaBits, black);
         e.ChunkSections();
     }
@@ -434,6 +440,7 @@ internal sealed partial class JxlVarDctEncoder
         // The pass groups: the chunk's own HF distributions, chosen as preset _chunk.
         List<JxlToken>[] acTokens = new List<JxlToken>[_groups];
         Parallel.For(0, _groups, _parallel, g => acTokens[g] = TokenizeGroup(g, 0));
+        JxlStageTimes.Lap(JxlStage.Tokens);
         JxlHistogramParams acp = new()
         {
             Clustering = JxlHistogramParams.ClusteringKind.Fast,
@@ -444,6 +451,7 @@ internal sealed partial class JxlVarDctEncoder
         int budget = Math.Min(JxlChunkedFrame.HistogramBudget(previous?.Clusters ?? 1), effort <= 2 ? 4 : int.MaxValue);
         JxlEntropyCode part = JxlEntropyCode.BuildPart(acp, (NonZeroBuckets + ZeroDensityContexts) * _blockClusters, [.. acTokens], previous, budget);
         frame.HfParts[_chunk] = part;
+        JxlStageTimes.Lap(JxlStage.Histograms);
         int presetBits = CeilLog2(frame.LfGroups);
         Dictionary<int, int> extraOf = [];
         for (int k = 0; k < extras.Count; k++)
@@ -465,5 +473,6 @@ internal sealed partial class JxlVarDctEncoder
             w.ZeroPadToByte();
             frame.Sections[2 + lf + FrameGroup(g)] = w.ToArray();
         });
+        JxlStageTimes.Lap(JxlStage.Write);
     }
 }

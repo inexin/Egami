@@ -612,12 +612,14 @@ internal sealed class JxlModularEncoder
             gi.Channels[c].Data = [];
         }
 
+        JxlStageTimes.Lap(JxlStage.Transforms);
         if (local)
         {
             return WriteLocal();
         }
 
         List<JxlTreeNode> tree = BuildTree();
+        JxlStageTimes.Lap(JxlStage.Tree);
         List<List<JxlToken>> treeTokens = [[]];
         (int[] property, int[] value, int[] left, int[] right, int[] predictor, int[] context) = TokenizeTree(tree, treeTokens[0]);
         bool usesWp = property.Any(p => p == 15) || property.Select((p, i) => p < 0 && predictor[i] == 6).Any(b => b);
@@ -629,6 +631,7 @@ internal sealed class JxlModularEncoder
             (int st, int ch) = units[u];
             parts[u] = Tokenize(_streams[st].Channels[ch], ch, st, property, value, left, right, predictor, context, usesWp, wpParams: _streams[st].Wp);
         });
+        JxlStageTimes.Lap(JxlStage.Tokens);
 
         List<List<JxlToken>> tokens = [.. _streams.Select(_ => new List<JxlToken>())];
         int[] widths = new int[_streams.Length];
@@ -658,6 +661,7 @@ internal sealed class JxlModularEncoder
         JxlEntropyCode treeCode = JxlEntropyCode.Write(global, p, 6, treeTokens);
         treeCode.WriteTokens(global, treeTokens[0]);
         JxlEntropyCode code = JxlEntropyCode.Write(global, p with { ImageWidths = widths }, context.Max() + 1, tokens);
+        JxlStageTimes.Lap(JxlStage.Histograms);
         WriteStream(global, _streams[0], code, tokens[0]);
 
         if (_groups == 1)
