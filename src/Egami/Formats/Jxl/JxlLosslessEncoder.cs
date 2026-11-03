@@ -92,6 +92,7 @@ internal static class JxlLosslessEncoder
     /// </summary>
     internal static byte[] EncodeFrame(JxlBitWriter w, JxlEncodeInput input, JxlFrameInfo frame, int canvasWidth, int canvasHeight)
     {
+        JxlStageTimes.Lap(JxlStage.Input);
         int bits = Math.Max(input.BitDepth.BitsPerSample, input.Alpha is null ? 0 : input.AlphaBitDepth.BitsPerSample);
         bits = Math.Max(bits, input.Black is null ? 0 : input.BlackBitDepth.BitsPerSample);
         bits = input.Extras.Aggregate(bits, (b, e) => Math.Max(b, e.Info.BitDepth.BitsPerSample));
@@ -124,9 +125,12 @@ internal static class JxlLosslessEncoder
             patches = JxlLosslessPatches.Find(channels, input, effort, input.Width, input.Height, extraShifts);
         }
 
+        JxlStageTimes.Lap(JxlStage.Patches);
+
         List<byte[]> sections = fast
             ? JxlFastLossless.Encode(planes, input.Width, input.Height, bits, input.Parallelism)
             : JxlModularEncoder.Encode(channels, input.Color.Count, input.BitDepth.BitsPerSample, effort, input.Width, input.Height, groupShift, input.Parallelism, lfGlobalStart: patches?.Dictionary);
+        JxlStageTimes.Lap(fast ? JxlStage.FastLossless : JxlStage.Write);
 
         if (patches is (byte[] reference, _))
         {
@@ -153,6 +157,7 @@ internal static class JxlLosslessEncoder
             at += s.Length;
         }
 
+        JxlStageTimes.Lap(JxlStage.Write);
         return file;
     }
 

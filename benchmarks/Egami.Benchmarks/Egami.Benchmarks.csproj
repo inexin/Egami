@@ -11,6 +11,11 @@
     <DefineConstants>$(DefineConstants);VP8_STAGE_TIMERS</DefineConstants>
   </PropertyGroup>
 
+  <!-- The JPEG XL stage timers (src/Egami/Formats/Jxl/JxlStageTimes.cs), for EGAMI_JXL_STAGES=1 (JxlTiming); build with -p:JxlStageTimers=true. -->
+  <PropertyGroup Condition="'$(JxlStageTimers)' == 'true'">
+    <DefineConstants>$(DefineConstants);JXL_STAGE_TIMERS</DefineConstants>
+  </PropertyGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\..\src\Egami\Egami.csproj" />
     <ProjectReference Include="..\..\src\Egami.Barcodes\Egami.Barcodes.csproj" />
