@@ -106,7 +106,8 @@ palettes and color transforms, 8 and 9 learn from more properties, try more colo
 and find LZ77 copies, and 10 tries every predictor under one context tree for the whole image, for files within a few bytes of
 cjxl's at each effort. Effort 10 is slow, as cjxl's is (seconds a megapixel), and keeps the whole image in memory. From
 effort 5, shapes that repeat, such as the letters of a screenshot, are coded once as patches. The ICC profile (or an
-enumerated sRGB, linear or HDR space), EXIF, XMP and orientation are kept.
+enumerated sRGB, linear or HDR space), EXIF, XMP and orientation are kept; EXIF and XMP go in Brotli-compressed (`brob`)
+boxes, as cjxl writes them, in lossless and lossy files alike.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Jxl.cs#save-lossy)]
 

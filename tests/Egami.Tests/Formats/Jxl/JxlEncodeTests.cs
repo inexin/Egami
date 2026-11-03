@@ -1,4 +1,5 @@
 using Egami.Colors;
+using Egami.Formats;
 using Egami.Formats.Jxl;
 using Egami.Metadata;
 using Egami.Pixels;
@@ -135,6 +136,32 @@ public class JxlEncodeTests
             case "RgbaF32": RoundTrip<RgbaF32>(); break;
             default: RoundTrip<RgbaF16>(); break;
         }
+    }
+
+    /// <summary>Roadmap 2.4.11: Exif and XMP go in brob boxes, Brotli compressed as cjxl writes them, and read back unchanged.</summary>
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void ExifAndXmpAreWrittenBrotliCompressed(bool lossless)
+    {
+        using Raster<Rgba8> source = Noise<Rgba8>(40, 30, 7);
+        source.Metadata.Exif = new ExifData { Orientation = ImageOrientation.Rotate90 };
+        source.Metadata.Xmp = "<x:xmpmeta xmlns:x='adobe:ns:meta/'/>"u8.ToArray();
+        using MemoryStream file = new();
+        source.Save(file, JxlFormat.Info, new JxlWriterOptions { Lossless = lossless });
+        byte[] data = file.ToArray();
+
+        JxlFile parsed = JxlInfoText.Read(data);
+        Assert.Contains(parsed.Container.Boxes, b => b is { Type: "brob", CompressedType: "Exif" });
+        Assert.Contains(parsed.Container.Boxes, b => b is { Type: "brob", CompressedType: "xml " });
+        Assert.DoesNotContain(parsed.Container.Boxes, b => b.Type is "Exif" or "xml ");
+
+        RasterInfo info = Raster.Probe(data);
+        Assert.True(info.HasMetadata);
+        Assert.Equal(ImageOrientation.Rotate90, info.Orientation);
+        using Raster<Rgba8> back = Raster.Load<Rgba8>(data);
+        Assert.Equal(ImageOrientation.Rotate90, back.Metadata.Exif?.Orientation);
+        Assert.Equal(source.Metadata.Xmp.ToArray(), back.Metadata.Xmp.ToArray());
     }
 
     [Fact]

@@ -20,6 +20,14 @@ libjpeg-turbo's `cjpeg` with the same settings.
   Egami now takes 0.91 to 1.07 times cjpeg's time at quality 75 (1.69 times before) and 0.55 to 0.58 times with optimized
   tables at quality 90 4:4:4.
 
+JPEG XL metadata boxes (roadmap 2.4.11). No API changes.
+
+- The JPEG XL writer puts Exif and XMP in Brotli-compressed `brob` boxes, at Brotli quality 9 as cjxl does, in lossless and
+  lossy files (recompressed JPEGs already used `brob`, at quality 4, and now use 9 too). Pixels and metadata read back as before;
+  files without Exif or XMP are byte for byte the same. Photos with camera Exif lose most of their gap to cjxl: egami-compare's
+  three wesaturate photos at distance 1 were 6.2 to 7 KB larger than cjxl's and are now within 0.15 % at effort 3, 5 and 7.
+  A reader that does not open `brob` boxes no longer sees the Exif and XMP of Egami's files, as with cjxl's.
+
 ## Egami train 1.4.0, Egami.SystemDrawing 1.0.0-preview.3 and Egami.Metafiles 1.0.2 (2026-11-01)
 
 The release train (Egami, Egami.Drawing, Egami.Fonts, Egami.Svg, Egami.Css, Egami.Heic, Egami.Formats.Extended and Egami.Cli)
