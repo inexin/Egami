@@ -1,3 +1,4 @@
+using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
 
 namespace Egami.Formats.Jxl;
@@ -2975,6 +2976,11 @@ internal sealed partial class JxlVarDctEncoder
                     }
                 }
 
+                // Room for the block's tokens at most, written through a span: the list grows as Add would make it.
+                int count = tokens.Count;
+                tokens.EnsureCapacity(count + (3 * (size + 1)));
+                CollectionsMarshal.SetCount(tokens, count + (3 * (size + 1)));
+                Span<JxlToken> span = CollectionsMarshal.AsSpan(tokens);
                 for (int k = 0; k < 3; k++)
                 {
                     int c = channels[k];
@@ -2997,18 +3003,20 @@ internal sealed partial class JxlVarDctEncoder
 
                     int blockCtx = _blockContexts[(((k * NumOrders) + orderId) * (_qfThresholds.Length + 1)) + qfIndex];
                     int nzIndex = predicted >= 8 ? 4 + (Math.Min(predicted, 64) / 2) : predicted;
-                    tokens.Add(new JxlToken(blockCtx + (nzIndex * _blockClusters), (uint)nz));
+                    span[count++] = new JxlToken(blockCtx + (nzIndex * _blockClusters), (uint)nz);
                     int baseCtx = (blockCtx * ZeroDensityContexts) + (NonZeroBuckets * _blockClusters);
                     int prev = nz > size / 16 ? 0 : 1;
                     for (int i = covered; i < size && nz != 0; i++)
                     {
                         int coeff = block[order[i]];
                         int ctx = baseCtx + ((CoeffNumNonzeroContext[(nz - 1) >> logCovered] + CoeffFreqContext[(i - covered) >> logCovered]) * 2) + prev;
-                        tokens.Add(new JxlToken(ctx, JxlTreeLearner.PackSigned(coeff)));
+                        span[count++] = new JxlToken(ctx, JxlTreeLearner.PackSigned(coeff));
                         prev = coeff != 0 ? 1 : 0;
                         nz -= prev;
                     }
                 }
+
+                CollectionsMarshal.SetCount(tokens, count);
             }
         }
 
