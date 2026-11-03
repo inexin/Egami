@@ -97,8 +97,8 @@ internal static class KtxFiles
         int dfdOffset = indexEnd;
         int kvdOffset = dfdOffset + dfd.Length;
         globalData ??= [];
-        long sgdOffset = Align(kvdOffset + kvd.Length, 8);
-        int alignment = scheme == 1 ? 1 : 16; // BasisLZ levels are not padded
+        long sgdOffset = globalData.Length > 0 ? Align(kvdOffset + kvd.Length, 8) : kvdOffset + kvd.Length;
+        int alignment = scheme != 0 ? 1 : 16; // Supercompressed levels are not padded
         long data = Align(sgdOffset + globalData.Length, alignment);
         long[] offsets = new long[levels.Count];
         for (int m = levels.Count - 1; m >= 0; m--)
