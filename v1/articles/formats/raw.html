@@ -89,8 +89,8 @@
 
 <p>Camera RAW files hold the sensor data a camera recorded, before any processing. Egami reads DNG (.dng), the open RAW format
 Adobe publishes, which phones, Leica, Pentax, Ricoh, Hasselblad and Adobe DNG Converter write, and the makers' own formats:
-Canon CR2, Nikon NEF and NRW, Pentax PEF, Sony ARW and SR2, Olympus ORF, Panasonic RW2 and RAW, Leica RWL and Fujifilm RAF. It
-develops them into an image on load. Of Canon's CR3 it reads the previews and the metadata (<a href="#canon-cr3">Canon CR3</a>).
+Canon CR2 and CR3, Nikon NEF and NRW, Pentax PEF, Sony ARW and SR2, Olympus ORF, Panasonic RW2 and RAW, Leica RWL and
+Fujifilm RAF. It develops them into an image on load (<a href="#canon-cr3">Canon CR3</a> has what is particular to CR3).
 <a href="../guides/camera-raw.html">Developing camera RAW</a> is about choosing the develop. It reads through the Egami.Formats.Extended
 package: register it with <code>WithRaw()</code> or <code>WithExtendedFormats()</code>
 (<a href="extended.html">Extended formats</a>). RAW is detected ahead of TIFF, since a DNG file (like most maker formats) is a TIFF file;
@@ -180,8 +180,12 @@ a TIFF, and 14-bit packed RAFs. They throw <code>NotSupportedException</code>.</
 file. Egami reads their three previews, all JPEGs: the full-size one, a 1620 × 1080 (or 1440 × 1080) one and a 160 × 120
 thumbnail; and their metadata: EXIF, GPS, and Canon's maker note as bytes in <code>RawDetails.MakerNote</code>. <code>Raster.Probe</code> gives the
 sensor data's size, and <code>RawOutput.Preview</code> (with <code>PreviewIndex</code>, or <code>ReaderOptions.MinimumSize</code>) loads a preview.</p>
-<p>The sensor data itself is coded with Canon's CRX codec, which Egami does not decode yet: a develop, a half-size develop or the
-mosaic of a CR3 throws <code>NotSupportedException</code> saying so.</p>
+<p>The sensor data is coded with Canon's CRX codec, which Egami decodes in both its forms: lossless, and C-RAW (a quantised 5/3
+wavelet). The mosaic matches Adobe DNG Converter's bit for bit inside the active area, and the black and white levels, the
+as-shot white balance, the active area and the crop are read from the file, so a CR3 develops, loads as a mosaic and converts
+to DNG like the other maker formats. A Dual Pixel RAW develops its main image, and a RAW burst (roll) file its first frame.
+CRX data of encoding type 1 and the 8-bit single-plane form, which no camera is known to write, throw
+<code>NotSupportedException</code>; their previews still load. The tiles and planes decode in parallel.</p>
 <h2 id="the-develop">The develop</h2>
 <p>The develop follows the DNG specification's processing order:</p>
 <ol>
@@ -268,7 +272,7 @@ foreach (RawPreview preview in details.Previews)
 }
 </code></pre><h2 id="limits">Limits</h2>
 <ul>
-<li>The maker formats above; of CR3, only the previews and metadata.</li>
+<li>The maker formats above.</li>
 <li>Fujifilm GFX 100 files (100 MP) need <code>MaxTotalBytes</code> above its 2 GB default for a full develop; their previews, half-size
 develop and mosaic fit.</li>
 <li>Three-colour data only: monochrome DNGs and four-colour (CMYG) sensors are not developed (their mosaic loads).</li>
@@ -285,8 +289,8 @@ noise reduction works on the mosaic, so Canon sRAW and mRAW files get colour noi
 the file's, so its develop has slightly lighter blacks.</li>
 <li>Adobe gives some Canon sRAW and mRAW files a brighter baseline exposure than the camera's normal raws (+0.25 EV for the EOS 5D
 Mark II, +0.34 EV for the EOS 70D, by a rule not yet known); Egami uses the camera's raw one.</li>
-<li>DNG writing does not take CR3 files (Egami does not decode their CRX data for it), writes BigTIFF past 4 GB (which DNG
-readers, Egami's included, may not open), and makes previews from Egami's own develop.</li>
+<li>DNG writing writes BigTIFF past 4 GB (which DNG readers, Egami's included, may not open), and makes previews from Egami's
+own develop.</li>
 </ul>
 <h2 id="writing-dng">Writing DNG</h2>
 <pre><code class="lang-csharp">// Any RAW file Egami reads becomes a DNG with its sensor data unchanged: levels, crop, colour data and EXIF come along.
@@ -364,7 +368,7 @@ the medium preview it is 0.7 % smaller than Adobe's DNG over the corpus, within 
 which Adobe stores as the codes before the camera's tone curve, with a linearization table (21 % smaller). On one thread it
 converts the corpus in 70 % of the time Adobe DNG Converter takes pinned to one core (one large Fujifilm file takes 3 %
 longer than Adobe).</p>
-<p>Limits: Egami does not convert CR3 files. A DNG past 4 GB is written as BigTIFF, which Egami's own RAW reader does not open.
+<p>Limits: a DNG past 4 GB is written as BigTIFF, which Egami's own RAW reader does not open.
 <code>Save</code> has no context, so it reports no <code>Raw.DngCameraUnknown</code> warning; <code>ConvertToDng</code> and <code>Transcode</code> do. dng_validate warns of
 too little padding around the crop of Fujifilm files and the Leica C-Lux, as it does for Adobe's own DNGs of them, and of DNGs
 converted from phone DNGs, whose own areas leave none.</p>
