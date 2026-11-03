@@ -143,7 +143,10 @@ internal static class DngWriter
         int precision = 16;
         if (compression == DngCompression.LosslessJpeg)
         {
-            precision = Math.Clamp(Math.Max(frame.Sensor.Bits, BitsFor(Max(pixels))), 2, 16);
+            // WhiteLevel may not pass the largest value BitsPerSample holds (DNG 1.7.1, WhiteLevel): Adobe gives some CR3 bodies
+            // a white of 16384 over 14-bit data.
+            int white = (int)Math.Clamp(frame.White.Length > 0 ? Math.Round(frame.White.Max()) : 0, 0, 65535);
+            precision = Math.Clamp(Math.Max(Math.Max(frame.Sensor.Bits, BitsFor(Max(pixels))), BitsFor(white)), 2, 16);
             bits = precision;
         }
 
