@@ -13,12 +13,12 @@ Each library has its own column with its typical time relative to Egami's on the
 the cases). Egami is the 1.00× baseline: 2.00× means that library takes twice as long, and below 1.00× it is faster than Egami.
 An empty cell means that library was not measured for the area. Cases counts the scenarios in the area; a
 scenario timed against two libraries makes two comparisons. Areas marked Oct 30 were rerun
-on 30 October 2026; the rest come from runs between 9 and 22 October.
+on 30 October 2026 and JPEG encode on 3 November; the rest come from runs between 9 and 22 October.
 
 | Area | Cases | Egami | ImageSharp | SkiaSharp | Magick.NET |
 | --- | --- | --- | --- | --- | --- |
 | JPEG decode (Oct 30) | 24 | 1.00× | 1.47× | 2.11× |  |
-| JPEG encode (Oct 30) | 4 | 1.00× | 1.41× |  |  |
+| JPEG encode (Nov 3) | 4 | 1.00× | 2.45× |  |  |
 | JPEG probe, EXIF and thumbnail | 6 | 1.00× | 3.03× |  |  |
 | PNG decode (Oct 30) | 6 | 1.00× | 2.27× | 2.09× |  |
 | PNG probe | 6 | 1.00× | 38.09× | 1.44× |  |
@@ -67,8 +67,8 @@ The JPEG quality 90 case is not like for like: Egami writes optimized Huffman ta
 
 The numbers come from a comparison harness kept apart from the Egami repository, so that Egami itself never references the
 other libraries. Most areas were run between 9 and 22 October 2026 against Egami's main branch on that day. JPEG and PNG were
-rerun on 30 October against Egami cd0e6b41 (decode, after the speed work in #208) and 35d45808 (encode); WebP was rerun the same
-evening against 6b8b07b9. Compare libraries within one run only: absolute times differ a little between runs.
+rerun on 30 October against Egami cd0e6b41 (decode, after the speed work in #208) and 35d45808 (encode), and JPEG encode again
+on 3 November against c7adaa2e (after the encode speed work in #244 to #246); WebP was rerun on 30 October against 6b8b07b9. Compare libraries within one run only: absolute times differ a little between runs.
 
 - **Machine:** AMD Ryzen 9 3900X, 12 cores and 24 threads, Windows 10 22H2, .NET 10.0.12 x64 (AVX2).
 - **Libraries:** ImageSharp 3.1.12, SkiaSharp (native Skia, libpng and libwebp), Magick.NET Q16 (native ImageMagick).
@@ -124,16 +124,20 @@ Rerun Oct 30 against Egami cd0e6b41, the JPEG and PNG speed work merged as #208.
 
 ### JPEG encode
 
-Rerun Oct 30 against Egami main 35d45808. Quality 90 is now timed both plain, like ImageSharp, and with Egami's optimized Huffman tables, which ImageSharp does not offer.
+Rerun Nov 3 against Egami main c7adaa2e, after the JPEG encode speed work (#244 to #246). Quality 90 is timed both plain, like ImageSharp, and with Egami's optimized Huffman tables, which ImageSharp does not offer.
 
 | Case | Threads | Egami | ImageSharp | ImageSharp ÷ Egami |
 | --- | --- | --- | --- | --- |
-| Quality 75, half chroma | All cores | 46.81 ms | 67.60 ms | 1.44× |
-| Quality 90, full chroma | All cores | 57.06 ms | 117 ms | 2.05× |
-| Quality 90, full chroma, optimized | All cores | 150 ms |  |  |
-| Quality 75, half chroma | 1 thread | 53.34 ms | 67.40 ms | 1.26× |
-| Quality 90, full chroma | 1 thread | 110 ms | 117 ms | 1.06× |
-| Quality 90, full chroma, optimized | 1 thread | 152 ms |  |  |
+| Quality 75, half chroma | All cores | 15.96 ms | 59.22 ms | 3.71× |
+| Quality 90, full chroma | All cores | 38.08 ms | 102 ms | 2.67× |
+| Quality 90, full chroma, optimized | All cores | 50.69 ms |  |  |
+| Quality 75, half chroma | 1 thread | 28.22 ms | 57.44 ms | 2.04× |
+| Quality 90, full chroma | 1 thread | 56.06 ms | 99.79 ms | 1.78× |
+| Quality 90, full chroma, optimized | 1 thread | 81.45 ms |  |  |
+
+Against libjpeg-turbo's cjpeg (3.0.3, with its SIMD), egami-compare's 24-megapixel gate encodes on one thread, from a PPM
+in memory to a null output for both: Egami takes 0.91 to 1.07 times cjpeg's time at quality 75 4:2:0 and 0.55 to 0.58 times
+at quality 90 4:4:4 with optimized tables (`cjpeg -optimize`). The files are byte for byte cjpeg's.
 
 ### JPEG probe, EXIF and thumbnail
 
