@@ -601,6 +601,140 @@
    "tool": "EtcTool",
    "validate": "not checked (ktx validate reads KTX 2 only)"
   },
+  "etc1s-array.ktx2": {
+   "arguments": [
+    "--format",
+    "R8G8B8_SRGB",
+    "--encode",
+    "basis-lz",
+    "--layers",
+    "3"
+   ],
+   "inputs": [
+    "slice0.png",
+    "slice1.png",
+    "slice2.png"
+   ],
+   "sha256": "47ce6955bea372242b8d4181aea9f445f99520c848c66f5c173fdf230cddf4f7",
+   "tool": "ktx create",
+   "validate": "valid"
+  },
+  "etc1s-cube.ktx2": {
+   "arguments": [
+    "--format",
+    "R8G8B8_SRGB",
+    "--encode",
+    "basis-lz",
+    "--cubemap"
+   ],
+   "inputs": [
+    "face0.png",
+    "face1.png",
+    "face2.png",
+    "face3.png",
+    "face4.png",
+    "face5.png"
+   ],
+   "sha256": "1af207ce5f2bfa3b6aa98dccbb3997ef137f628d97b9772b1646e305cd6c3264",
+   "tool": "ktx create",
+   "validate": "valid"
+  },
+  "etc1s-gray.ktx2": {
+   "arguments": [
+    "--format",
+    "R8_UNORM",
+    "--encode",
+    "basis-lz"
+   ],
+   "inputs": [
+    "gray.png"
+   ],
+   "sha256": "498dae60db619377df0cf538073024127cd905ad71ecbd4126e788d02b3c1776",
+   "tool": "ktx create",
+   "validate": "valid"
+  },
+  "etc1s-mips.ktx2": {
+   "arguments": [
+    "--format",
+    "R8G8B8A8_SRGB",
+    "--encode",
+    "basis-lz",
+    "--generate-mipmap"
+   ],
+   "inputs": [
+    "alpha.png"
+   ],
+   "sha256": "9be7ca0397b8dcd1b51e36a7a94e35fc3018d091e3c57161d043cff35f884fbd",
+   "tool": "ktx create",
+   "validate": "valid"
+  },
+  "etc1s-q255.ktx2": {
+   "arguments": [
+    "--format",
+    "R8G8B8A8_SRGB",
+    "--encode",
+    "basis-lz",
+    "--qlevel",
+    "255",
+    "--clevel",
+    "4"
+   ],
+   "inputs": [
+    "alpha.png"
+   ],
+   "sha256": "01648b363a1a5439ed25687ba0001fc07ddeba22c82f49804d23d988893bb89b",
+   "tool": "ktx create",
+   "validate": "valid"
+  },
+  "etc1s-rgb.ktx2": {
+   "arguments": [
+    "--format",
+    "R8G8B8_SRGB",
+    "--encode",
+    "basis-lz"
+   ],
+   "inputs": [
+    "rgb.png"
+   ],
+   "sha256": "e1ad99c18ebd843dca132b5f40a690c6a80f3c776970094948b4d38fe80a89a8",
+   "tool": "ktx create",
+   "validate": "valid"
+  },
+  "etc1s-rgba.ktx2": {
+   "arguments": [
+    "--format",
+    "R8G8B8A8_SRGB",
+    "--encode",
+    "basis-lz"
+   ],
+   "inputs": [
+    "alpha.png"
+   ],
+   "sha256": "adc8ef43118982ad44c6be379b4bc729d60d2da67722f9ee7e2ced84126416c1",
+   "tool": "ktx create",
+   "validate": "valid"
+  },
+  "etc1s-video.ktx2": {
+   "arguments": [
+    "-tex_type",
+    "video",
+    "-multifile_printf",
+    "/tmp/ktxwork/frame%u.png",
+    "-multifile_num",
+    "3",
+    "-multifile_first",
+    "0",
+    "-ktx2"
+   ],
+   "inputs": [
+    "frame0.png",
+    "frame1.png",
+    "frame2.png"
+   ],
+   "sha256": "d9aadddc689aceaf8c39e9269a80bbf5b9c41a2c491855914c6faa5a356e10eb",
+   "tool": "basisu",
+   "validate": "valid"
+  },
   "etc2-a1.ktx": {
    "arguments": [
     "-format",
@@ -1324,33 +1458,147 @@
    "tool": "toktx",
    "validate": "not checked (ktx validate reads KTX 2 only)"
   },
-  "unsupported-etc1s.ktx2": {
+  "uastc-gray.ktx2": {
    "arguments": [
     "--format",
-    "R8G8B8A8_SRGB",
-    "--encode",
-    "basis-lz"
-   ],
-   "inputs": [
-    "rgba.png"
-   ],
-   "sha256": "e1ad99c18ebd843dca132b5f40a690c6a80f3c776970094948b4d38fe80a89a8",
-   "tool": "ktx create",
-   "validate": "valid"
-  },
-  "unsupported-uastc.ktx2": {
-   "arguments": [
-    "--format",
-    "R8G8B8A8_SRGB",
+    "R8_UNORM",
     "--encode",
     "uastc"
    ],
    "inputs": [
-    "rgba.png"
+    "gray.png"
+   ],
+   "sha256": "ee523cdef2e6920139ccc93e1f9c780670a99554dc94385fe4a459495b478ea2",
+   "tool": "ktx create",
+   "validate": "valid"
+  },
+  "uastc-hdr.ktx2": {
+   "arguments": [
+    "-hdr",
+    "-ktx2"
+   ],
+   "inputs": [
+    "hdr.hdr"
+   ],
+   "sha256": "16994d03aaaff26b92813ef2522926727cc5b7fede287d5512d2df944b18aa2b",
+   "tool": "basisu",
+   "validate": "Validation failed\n\nerror-6016: Invalid colorModel in basic DFD block for block compressed VkFormat.\n    DFD block #1 colorModel in basic DFD block is (0xA7) but for VkFormat VK_FORMAT_ASTC_4x4_SFLOAT_BLOCK it must be KHR_DF_MODEL_ASTC.\nerror-6028: Invalid sample in basic DFD block. The samples must match the expected samples of the VkFormat.\n    DFD block #1 sample #1 qualifierSigned in basic DFD block is 0 but the expected value is 1 for VK_FORMAT_ASTC_4x4_SFLOAT_BLOCK.\nerror-6028: Invalid sample in basic DFD block. The samples must match the expected samples of the VkFormat.\n    DFD block #1 sample #1 sampleLower in basic DFD block is 0 but the expected value is 3212836864 for VK_FORMAT_ASTC_4x4_SFLOAT_BLOCK.\nerror-7009: Invalid key in Key/Value Data. Keys with \"KTX\" or \"ktx\" prefix are reserved.\n    The key is \"KTXmapRange\" but its not recognized and keys with \"KTX\" or \"ktx\" prefix are reserved.\nwarning-5004: Non-conformant texture file accepted by libktx.\n    KTX 2.0 file does not conform to the specification but it is currently accepted by libktx."
+  },
+  "uastc-mips.ktx2": {
+   "arguments": [
+    "--format",
+    "R8G8B8A8_SRGB",
+    "--encode",
+    "uastc",
+    "--generate-mipmap"
+   ],
+   "inputs": [
+    "alpha.png"
+   ],
+   "sha256": "60210d6b250b44d15ce5ed5b6d502c63e9c190294dbec6214d49704d2b94ded4",
+   "tool": "ktx create",
+   "validate": "valid"
+  },
+  "uastc-random.ktx2": {
+   "arguments": [
+    "--encode",
+    "uastc",
+    "level 0 replaced"
+   ],
+   "inputs": [
+    "alpha.png"
+   ],
+   "sha256": "1f54e0f09a76054f3738545dab5bc98ead434bb33203f2e9ba9eb6f133a85259",
+   "tool": "ktx create + generated blocks",
+   "validate": "valid"
+  },
+  "uastc-rdo.ktx2": {
+   "arguments": [
+    "--format",
+    "R8G8B8A8_SRGB",
+    "--encode",
+    "uastc",
+    "--uastc-rdo",
+    "--uastc-rdo-m",
+    "--zstd",
+    "19"
+   ],
+   "inputs": [
+    "alpha.png"
+   ],
+   "sha256": "a6d1b2ebb54d49a703ecfbd05f724a9dd1f49d4c54726c466a014d4eae9dd822",
+   "tool": "ktx create",
+   "validate": "valid"
+  },
+  "uastc-rgb.ktx2": {
+   "arguments": [
+    "--format",
+    "R8G8B8_SRGB",
+    "--encode",
+    "uastc"
+   ],
+   "inputs": [
+    "rgb.png"
    ],
    "sha256": "1423e31e16b7c6508bf8f5ca3c42b9001414694aeb3a47b1ad2957f47293ca81",
    "tool": "ktx create",
    "validate": "valid"
+  },
+  "uastc-rgba.ktx2": {
+   "arguments": [
+    "--format",
+    "R8G8B8A8_SRGB",
+    "--encode",
+    "uastc",
+    "--uastc-quality",
+    "3"
+   ],
+   "inputs": [
+    "alpha.png"
+   ],
+   "sha256": "dd4b9baf783e88b09c504b1b285b223b3ca3a41eb0bbc9eaa95c1314f66af201",
+   "tool": "ktx create",
+   "validate": "valid"
+  },
+  "uastc-zstd.ktx2": {
+   "arguments": [
+    "--format",
+    "R8G8B8A8_UNORM",
+    "--assign-tf",
+    "linear",
+    "--encode",
+    "uastc",
+    "--zstd",
+    "19"
+   ],
+   "inputs": [
+    "alpha.png"
+   ],
+   "sha256": "0c10c3f8da6f89fb1526c23cd0252fd355dfd0f3f672500c755bb5669e6991f5",
+   "tool": "ktx create",
+   "validate": "valid"
+  },
+  "unsupported-uastc-hdr-6x6.ktx2": {
+   "arguments": [
+    "-hdr_6x6i"
+   ],
+   "inputs": [
+    "hdr.hdr"
+   ],
+   "sha256": "4681951e9c805d418afe78ee0f3e9f1c91af9710398419d48c9f38638d9d5c98",
+   "tool": "basisu",
+   "validate": "Validation failed\n\nerror-3019: Invalid supercompressionScheme.\n    Invalid supercompressionScheme: (0x00000004).\nerror-4009: Invalid uncompressedByteLength in Level Index. For non-BasisLZ files with VK_FORMAT_UNDEFINED uncompressedByteLength must not be 0.\n    Level 0 uncompressedByteLength is 0 but for non-BasisLZ files with VK_FORMAT_UNDEFINED uncompressedByteLength must not be 0.\nerror-7009: Invalid key in Key/Value Data. Keys with \"KTX\" or \"ktx\" prefix are reserved.\n    The key is \"KTXmapRange\" but its not recognized and keys with \"KTX\" or \"ktx\" prefix are reserved."
+  },
+  "unsupported-xuastc.ktx2": {
+   "arguments": [
+    "-ldr_4x4i"
+   ],
+   "inputs": [
+    "alpha.png"
+   ],
+   "sha256": "026e4590e078910907b71be0d79be11a96d611e938779494169df1eed914d80c",
+   "tool": "basisu",
+   "validate": "Validation failed\n\nerror-3019: Invalid supercompressionScheme.\n    Invalid supercompressionScheme: (0x00000005).\nerror-4009: Invalid uncompressedByteLength in Level Index. For non-BasisLZ files with VK_FORMAT_UNDEFINED uncompressedByteLength must not be 0.\n    Level 0 uncompressedByteLength is 0 but for non-BasisLZ files with VK_FORMAT_UNDEFINED uncompressedByteLength must not be 0."
   }
  },
  "ktx-software": "ktx version: v4.4.2"

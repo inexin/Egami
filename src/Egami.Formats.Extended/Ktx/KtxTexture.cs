@@ -489,9 +489,16 @@ internal static class Ktx2Header
             throw input.Corrupt(36, "A cube map must be 2D.");
         }
 
+        // Schemes 4 to 6 are Basis Universal's newer codecs, which Khronos has not registered yet.
         if (scheme > 3)
         {
-            throw new UnsupportedFormatException($"The KTX 2 file's supercompression scheme {scheme} is not one Egami knows.");
+            throw scheme switch
+            {
+                4 => KtxTexture.Unsupported("KTX 2", "Basis Universal UASTC HDR 6x6", "supercompression scheme 4"),
+                5 => KtxTexture.Unsupported("KTX 2", "Basis Universal XUASTC LDR", "supercompression scheme 5"),
+                6 => KtxTexture.Unsupported("KTX 2", "Basis Universal XUBC7", "supercompression scheme 6"),
+                _ => new UnsupportedFormatException($"The KTX 2 file's supercompression scheme {scheme} is not one Egami knows."),
+            };
         }
 
         int levelCount = Math.Max(levels, 1);

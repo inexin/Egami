@@ -101,6 +101,103 @@ public class KtxReaderTests
         { "etc2-random.ktx2", "etc2-random.png" },
     };
 
+    public static TheoryData<string, string, int, int, bool> Basis => new()
+    {
+        // File, basisu's decode (or ktx extract's of another surface or mip), surface, mip, whether it loads with alpha.
+        { "etc1s-rgb.ktx2", "etc1s-rgb.png", 0, 0, false },
+        { "etc1s-rgba.ktx2", "etc1s-rgba.png", 0, 0, true },
+        { "etc1s-gray.ktx2", "etc1s-gray.png", 0, 0, false },
+        { "etc1s-mips.ktx2", "etc1s-mips.png", 0, 0, true },
+        { "etc1s-mips.ktx2", "etc1s-mips-l1.png", 0, 1, true },
+        { "etc1s-cube.ktx2", "etc1s-cube.png", 0, 0, false },
+        { "etc1s-cube.ktx2", "etc1s-cube-s5.png", 5, 0, false },
+        { "etc1s-array.ktx2", "etc1s-array.png", 0, 0, false },
+        { "etc1s-array.ktx2", "etc1s-array-s2.png", 2, 0, false },
+        { "etc1s-q255.ktx2", "etc1s-q255.png", 0, 0, true },
+        { "etc1s-video.ktx2", "etc1s-video-s0.png", 0, 0, false },
+        { "etc1s-video.ktx2", "etc1s-video-s1.png", 1, 0, false },
+        { "etc1s-video.ktx2", "etc1s-video-s2.png", 2, 0, false },
+        { "uastc-rgb.ktx2", "uastc-rgb.png", 0, 0, false },
+        { "uastc-rgba.ktx2", "uastc-rgba.png", 0, 0, true },
+        { "uastc-gray.ktx2", "uastc-gray.png", 0, 0, false },
+        { "uastc-zstd.ktx2", "uastc-zstd.png", 0, 0, true },
+        { "uastc-rdo.ktx2", "uastc-rdo.png", 0, 0, true },
+        { "uastc-mips.ktx2", "uastc-mips.png", 0, 0, true },
+        { "uastc-mips.ktx2", "uastc-mips-l1.png", 0, 1, true },
+        { "uastc-random.ktx2", "uastc-random.png", 0, 0, true },
+    };
+
+    [Theory]
+    [MemberData(nameof(Basis))]
+    public void DecodesBasisUniversalAsBasisu(string file, string reference, int surface, int mip, bool alpha)
+    {
+        KtxReaderOptions options = new() { Surface = surface, MipLevel = mip, Recovery = RecoveryMode.Strict };
+        using Raster texture = Raster.Load(KtxFiles.Corpus(file), Context, options);
+        Assert.Equal(alpha, texture is Raster<Rgba8>);
+        Assert.True(alpha || texture is Raster<Rgb8>);
+        using Raster<Rgba8> expected = Raster.Load<Rgba8>(KtxFiles.Reference(reference));
+        using Raster<Rgba8> actual = texture.As<Rgba8>();
+        if (!alpha)
+        {
+            // basisu's own decode keeps a UASTC block's alpha even where the descriptor says the texture has none.
+            for (int y = 0; y < expected.Height; y++)
+            {
+                foreach (ref Rgba8 p in expected.Row(y))
+                {
+                    p = p with { A = 255 };
+                }
+            }
+        }
+
+        TestImages.AssertEqual(expected, actual);
+        Assert.Empty(actual.Metadata.Warnings);
+    }
+
+    [Fact]
+    public void ReadsTheBasisDescriptor()
+    {
+        using Raster texture = Raster.Load(KtxFiles.Corpus("etc1s-rgba.ktx2"), Context);
+        KtxDetails details = Assert.IsType<KtxDetails>(texture.Metadata.FormatDetails);
+        Assert.Equal(KtxSupercompression.BasisLZ, details.Supercompression);
+        Assert.Equal("ETC1S_RGBA_SRGB", details.FormatName);
+        Assert.Equal(0, details.VkFormat);
+        Assert.Equal(ColorSpaceHint.Srgb, texture.Metadata.ColorSpace);
+        using Raster uastc = Raster.Load(KtxFiles.Corpus("uastc-zstd.ktx2"), Context);
+        Assert.Equal("UASTC_4x4_RGBA_UNORM", Assert.IsType<KtxDetails>(uastc.Metadata.FormatDetails).FormatName);
+        Assert.Equal(ColorSpaceHint.Linear, uastc.Metadata.ColorSpace);
+    }
+
+    [Fact]
+    public void ReadsDamagedBasisLzLeniently()
+    {
+        // A BasisLZ level cut in half: strict reading fails, lenient reading warns and fills what is missing with black.
+        byte[] file = File.ReadAllBytes(KtxFiles.Corpus("etc1s-rgba.ktx2"));
+        long offset = BinaryPrimitives.ReadInt64LittleEndian(file.AsSpan(80));
+        long length = BinaryPrimitives.ReadInt64LittleEndian(file.AsSpan(88));
+        file.AsSpan((int)(offset + (length / 2)), (int)(length / 2)).Fill(0xA5);
+        Assert.Throws<CorruptDataException>(() => Raster.Load(file, Context, new KtxReaderOptions { Recovery = RecoveryMode.Strict }));
+        using Raster damaged = Raster.Load(file, Context);
+        Assert.Contains(damaged.Metadata.Warnings, w => w.Id.EndsWith("LevelDamaged", StringComparison.Ordinal));
+
+        // A P-frame in a texture that is not a video.
+        byte[] video = File.ReadAllBytes(KtxFiles.Corpus("etc1s-video.ktx2"));
+        int key = video.AsSpan().IndexOf("KTXanimData"u8);
+        video[key] = (byte)'X';
+        Assert.Contains("P-frame", Assert.Throws<CorruptDataException>(
+            () => Raster.Load(video, Context, new KtxReaderOptions { Surface = 1, Recovery = RecoveryMode.Strict })).Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void DecodesReservedUastcBlocksAsMagenta()
+    {
+        // Mode 19 is reserved: its code is 0x45 in 7 bits.
+        byte[] block = new byte[16];
+        block[0] = 0x45;
+        byte[] file = KtxFiles.Ktx2(0, 4, 4, [block], model: 166, channels: [3]);
+        using Raster<Rgba8> texture = Raster.Load<Rgba8>(file, Context);
+        Assert.Equal(new Rgba8(255, 0, 255, 255), texture.Row(0)[0]);
+    }
+
     [Theory]
     [MemberData(nameof(Blocks))]
     public void DecodesEtcAndAstcAsTheReferenceDecoders(string file, string reference)
@@ -137,6 +234,7 @@ public class KtxReaderTests
     [Theory]
     [InlineData("astc-6x6-hdr.ktx2")]
     [InlineData("astc-8x8-hdr-mutated.ktx2")]
+    [InlineData("uastc-hdr.ktx2")]
     public void DecodesAstcHdrAsAstcenc(string file)
     {
         using Raster<RgbaF16> actual = Raster.Load<RgbaF16>(KtxFiles.Corpus(file), Context);
@@ -360,8 +458,8 @@ public class KtxReaderTests
     }
 
     [Theory]
-    [InlineData("unsupported-uastc.ktx2", "UASTC")]
-    [InlineData("unsupported-etc1s.ktx2", "ETC1S")]
+    [InlineData("unsupported-uastc-hdr-6x6.ktx2", "UASTC HDR 6x6")]
+    [InlineData("unsupported-xuastc.ktx2", "XUASTC")]
     public void RefusesFormatsNotSupportedYet(string file, string family)
     {
         UnsupportedFormatException e = Assert.Throws<UnsupportedFormatException>(() => Raster.Probe(KtxFiles.Corpus(file), Context));

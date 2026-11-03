@@ -60,15 +60,34 @@ internal static class KtxFiles
 
     /// <summary>
     /// A KTX 2.0 file whose levels are given mip 0 first and stored smallest first, with a basic data format descriptor
-    /// (colour model, primaries, transfer function, flags) and optional key/value pairs.
+    /// (colour model, primaries, transfer function, flags, and a sample of each channel type in <paramref name="channels"/>),
+    /// optional key/value pairs and optional supercompression global data.
     /// </summary>
     public static byte[] Ktx2(int vk, int width, int height, IReadOnlyList<byte[]> levels, int depth = 0, int layers = 0, int faces = 1, int scheme = 0,
         IReadOnlyList<long>? uncompressed = null, byte model = 1, byte primaries = 1, byte transfer = 1, byte flags = 0,
-        IReadOnlyList<(string Key, string Value)>? keyValues = null)
+        IReadOnlyList<(string Key, string Value)>? keyValues = null, byte[]? globalData = null, byte[]? channels = null)
     {
-        byte[] dfd = new byte[4 + 24];
+        channels ??= [];
+        byte[] dfd = new byte[4 + 24 + (16 * channels.Length)];
         BinaryPrimitives.WriteUInt32LittleEndian(dfd, (uint)dfd.Length);
-        BinaryPrimitives.WriteUInt32LittleEndian(dfd.AsSpan(8), 2 | (24u << 16));
+        BinaryPrimitives.WriteUInt32LittleEndian(dfd.AsSpan(8), 2 | ((24u + (16u * (uint)channels.Length)) << 16));
+        if (channels.Length > 0)
+        {
+            // A Basis Universal descriptor: 4 × 4 blocks of 8 bytes a slice (ETC1S) or 16 (UASTC), a sample per slice.
+            bool uastc = model == 166;
+            dfd[4 + 12] = 3;
+            dfd[4 + 13] = 3;
+            dfd[4 + 16] = (byte)(uastc ? 16 : 8 * channels.Length);
+            for (int c = 0; c < channels.Length; c++)
+            {
+                Span<byte> sample = dfd.AsSpan(4 + 24 + (16 * c));
+                BinaryPrimitives.WriteUInt16LittleEndian(sample, (ushort)(c * 64));
+                sample[2] = (byte)(uastc ? 127 : 63);
+                sample[3] = channels[c];
+                BinaryPrimitives.WriteUInt32LittleEndian(sample[12..], uint.MaxValue);
+            }
+        }
+
         dfd[12] = model;
         dfd[13] = primaries;
         dfd[14] = transfer;
@@ -77,12 +96,15 @@ internal static class KtxFiles
         int indexEnd = 80 + (levels.Count * 24);
         int dfdOffset = indexEnd;
         int kvdOffset = dfdOffset + dfd.Length;
-        long data = Align(kvdOffset + kvd.Length, 16);
+        globalData ??= [];
+        long sgdOffset = Align(kvdOffset + kvd.Length, 8);
+        int alignment = scheme == 1 ? 1 : 16; // BasisLZ levels are not padded
+        long data = Align(sgdOffset + globalData.Length, alignment);
         long[] offsets = new long[levels.Count];
         for (int m = levels.Count - 1; m >= 0; m--)
         {
             offsets[m] = data;
-            data = Align(data + levels[m].Length, 16);
+            data = Align(data + levels[m].Length, alignment);
         }
 
         byte[] file = new byte[data];
@@ -101,6 +123,13 @@ internal static class KtxFiles
             BinaryPrimitives.WriteUInt64LittleEndian(h[(88 + (m * 24))..], (ulong)levels[m].Length);
             BinaryPrimitives.WriteUInt64LittleEndian(h[(96 + (m * 24))..], (ulong)(uncompressed?[m] ?? levels[m].Length));
             levels[m].CopyTo(h[(int)offsets[m]..]);
+        }
+
+        if (globalData.Length > 0)
+        {
+            BinaryPrimitives.WriteUInt64LittleEndian(h[64..], (ulong)sgdOffset);
+            BinaryPrimitives.WriteUInt64LittleEndian(h[72..], (ulong)globalData.Length);
+            globalData.CopyTo(h[(int)sgdOffset..]);
         }
 
         dfd.CopyTo(h[dfdOffset..]);
