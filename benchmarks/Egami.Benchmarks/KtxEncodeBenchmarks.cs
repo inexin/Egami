@@ -8,7 +8,7 @@ using Egami.Pixels;
 namespace Egami.Benchmarks;
 
 /// <summary>
-/// The ETC, EAC and ASTC block encoders the KTX writer will use, one thread, at the default effort 4: a 2048 × 2048 photo-like
+/// The ETC, EAC, ASTC and UASTC block encoders the KTX writer will use, one thread, at the default effort 4: a 2048 × 2048 photo-like
 /// picture encoded block by block, so a change shows up in time and allocations. The encoders are slow next to the decoders, so
 /// a run measures three iterations after one warmup.
 /// </summary>
@@ -21,7 +21,7 @@ public class KtxEncodeBenchmarks
     private byte[] _rgba = [];
     private byte[] _blocks = [];
 
-    [Params("ETC1", "ETC2-RGB", "ETC2-RGBA", "EAC-R11", "ASTC-4x4", "ASTC-6x6", "ASTC-8x8")]
+    [Params("ETC1", "ETC2-RGB", "ETC2-RGBA", "EAC-R11", "ASTC-4x4", "ASTC-6x6", "ASTC-8x8", "UASTC")]
     public string Format { get; set; } = "";
 
     [GlobalSetup]
@@ -48,7 +48,7 @@ public class KtxEncodeBenchmarks
 
         Span<byte> texels = stackalloc byte[64];
         Span<ushort> red = stackalloc ushort[16];
-        int unit = Format == "ETC2-RGBA" ? 16 : 8;
+        int unit = Format is "ETC2-RGBA" or "UASTC" ? 16 : 8;
         int at = 0;
         for (int by = 0; by < Size; by += 4)
         {
@@ -70,6 +70,9 @@ public class KtxEncodeBenchmarks
                         break;
                     case "ETC2-RGBA":
                         EtcEncoder.EncodeRgba(texels, block, Effort);
+                        break;
+                    case "UASTC":
+                        UastcEncoder.Encode(texels, block, Effort);
                         break;
                     default:
                         for (int i = 0; i < 16; i++)

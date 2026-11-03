@@ -22,7 +22,7 @@ internal static class AstcEncoder
     private static readonly Footprint?[] Footprints = new Footprint?[14];
 
     /// <summary>The nearest colour value index of each 8-bit value, per colour range.</summary>
-    private static readonly byte[][] ColorQuantize = BuildColorQuantize();
+    internal static readonly byte[][] ColorQuantize = BuildColorQuantize();
 
     /// <summary>Per weight range: the nearest value index of each weight 0 to 64, and the indices in value order with their ranks.</summary>
     private static readonly WeightTables[] Weights = BuildWeightTables();
