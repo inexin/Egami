@@ -93,4 +93,15 @@ public class JxlJpegReconstructionTests
             File.Delete(output);
         }
     }
+
+    [Theory]
+    [InlineData("bad-brotli.jxl")]
+    [InlineData("scan-component.jxl")]
+    public void DamagedJbrdBoxesFailCleanly(string name)
+    {
+        // Found by the jxl fuzz target (roadmap 2.4.11): a jbrd box whose data section is not Brotli, and a scan that names
+        // a component the frame does not have. Each is reported as damaged data, not a crash.
+        string path = Path.Combine(Images, "fuzz", "jxl-jbrd", name);
+        Assert.Throws<CorruptDataException>(() => JxlImage.ReconstructJpeg(new MemoryStream(File.ReadAllBytes(path)), new MemoryStream()));
+    }
 }

@@ -43,6 +43,22 @@ Faster lossy JPEG XL encoding (roadmap 2.4.11). No API changes; every file is by
   cjxl's, from 2.5 to 3.9), efforts 5 and 7 about 2 to 3 % fewer. Allocation-budget tests now cap what an encode allocates
   per pixel.
 
+Faster JPEG XL decoding of entropy-coded data and Modular images (roadmap 2.4.11). No API changes; decoded pixels are the
+same as before.
+
+- Modular channels decode by the shape of their MA tree, as libjxl's decoder does: a channel with one leaf has no tree walk
+  (and the usual gradient leaf a loop with no edge tests), a subtree that tests one property finds its leaf in a table, and
+  a subtree whose leaves share the gradient or the weighted predictor runs with that predictor fixed. Other trees walk two
+  levels per step on properties worked out first. The weighted predictor runs only for subtrees that use it, inlined, with
+  its error rows interleaved.
+- The ANS alias table is one 64-bit entry per bucket, and the Modular and HF coefficient loops are compiled for their
+  stream's kind (ANS, prefix codes or LZ77), so symbol reads inline without per-symbol checks.
+- One thread, instructions per megapixel against main: lossless effort 1 37 % fewer, effort 2 49 %, effort 3 40 %, effort 5
+  24 %, effort 7 20 to 27 % and effort 9 27 % (1.6 to 2.6 times djxl's, from 2.1 to 4.9); lossy distance 1 at effort 7 9 to
+  20 % fewer (1.8 to 2.6 times djxl's, from 2.2 to 2.8). Allocation-budget tests now cap what a decode allocates per pixel.
+- JPEG reconstruction reports a `jbrd` box whose data is not valid Brotli, or whose scan names a missing component, as
+  damaged data instead of crashing (found by fuzzing).
+
 KTX and KTX 2 textures, stage A (reading; roadmap 2.3.11). All additive.
 
 - `KtxFormat` (.ktx) and `Ktx2Format` (.ktx2) in Egami.Formats.Extended, registered by `WithExtendedFormats()`, `WithKtx()`
