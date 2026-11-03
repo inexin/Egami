@@ -42,12 +42,23 @@ internal static class AstcIse
 
     /// <summary>
     /// Decodes <paramref name="output"/>.Length values of range <paramref name="range"/> from <paramref name="data"/>, starting
-    /// at bit <paramref name="offset"/> (bits beyond the data read as zero).
+    /// at bit <paramref name="offset"/>. A last, partial trit or quint group reads the bits past the sequence as zero, as the
+    /// specification pads it.
     /// </summary>
     public static void Decode(int range, ReadOnlySpan<byte> data, int offset, Span<int> output)
     {
         int bits = Bits[range];
         int count = output.Length;
+        int end = offset + BitCount(count, range);
+        Span<byte> clean = stackalloc byte[16];
+        scoped ReadOnlySpan<byte> source = data;
+        if (Kind[range] != 0 && data.Length <= clean.Length && end < data.Length * 8)
+        {
+            data.CopyTo(clean);
+            clean[(end >> 3)] &= (byte)((1 << (end & 7)) - 1);
+            clean[((end >> 3) + 1)..].Clear();
+            source = clean[..data.Length];
+        }
         switch (Kind[range])
         {
             case 1:
@@ -56,16 +67,16 @@ internal static class AstcIse
                 {
                     Span<int> m = m5;
                     int t = 0;
-                    m[0] = Read(data, ref offset, bits);
-                    t |= Read(data, ref offset, 2);
-                    m[1] = Read(data, ref offset, bits);
-                    t |= Read(data, ref offset, 2) << 2;
-                    m[2] = Read(data, ref offset, bits);
-                    t |= Read(data, ref offset, 1) << 4;
-                    m[3] = Read(data, ref offset, bits);
-                    t |= Read(data, ref offset, 2) << 5;
-                    m[4] = Read(data, ref offset, bits);
-                    t |= Read(data, ref offset, 1) << 7;
+                    m[0] = Read(source, ref offset, bits);
+                    t |= Read(source, ref offset, 2);
+                    m[1] = Read(source, ref offset, bits);
+                    t |= Read(source, ref offset, 2) << 2;
+                    m[2] = Read(source, ref offset, bits);
+                    t |= Read(source, ref offset, 1) << 4;
+                    m[3] = Read(source, ref offset, bits);
+                    t |= Read(source, ref offset, 2) << 5;
+                    m[4] = Read(source, ref offset, bits);
+                    t |= Read(source, ref offset, 1) << 7;
                     byte[] trits = TritTable[t];
                     for (int j = 0; j < 5 && i + j < count; j++)
                     {
@@ -80,12 +91,12 @@ internal static class AstcIse
                 {
                     Span<int> m = m3;
                     int q = 0;
-                    m[0] = Read(data, ref offset, bits);
-                    q |= Read(data, ref offset, 3);
-                    m[1] = Read(data, ref offset, bits);
-                    q |= Read(data, ref offset, 2) << 3;
-                    m[2] = Read(data, ref offset, bits);
-                    q |= Read(data, ref offset, 2) << 5;
+                    m[0] = Read(source, ref offset, bits);
+                    q |= Read(source, ref offset, 3);
+                    m[1] = Read(source, ref offset, bits);
+                    q |= Read(source, ref offset, 2) << 3;
+                    m[2] = Read(source, ref offset, bits);
+                    q |= Read(source, ref offset, 2) << 5;
                     byte[] quints = QuintTable[q];
                     for (int j = 0; j < 3 && i + j < count; j++)
                     {
@@ -97,7 +108,7 @@ internal static class AstcIse
             default:
                 for (int i = 0; i < count; i++)
                 {
-                    output[i] = Read(data, ref offset, bits);
+                    output[i] = Read(source, ref offset, bits);
                 }
 
                 break;

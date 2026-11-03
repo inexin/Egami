@@ -228,6 +228,10 @@ internal sealed class Astc
                 {
                     value = (c == 3 ? hdrAlpha[p] : hdrRgb[p]) ? LnsToHalf(value) : Unorm16ToHalf(value);
                 }
+                else if (profile == AstcProfile.Srgb)
+                {
+                    value *= 257;
+                }
 
                 output[(t * 4) + c] = (ushort)value;
             }
@@ -407,7 +411,7 @@ internal sealed class Astc
         {
             if (profile == AstcProfile.Hdr)
             {
-                output[i] = output[i + 1] = output[i + 2] = output[i + 3] = 0x7E00;
+                output[i] = output[i + 1] = output[i + 2] = output[i + 3] = 0xFFFF;
             }
             else
             {
@@ -576,9 +580,14 @@ internal sealed class Astc
                     hdrRgb = hdrAlpha = false;
                 }
 
-                for (int c = 0; c < 8; c++)
+                // sRGB interpolates the 8-bit endpoints (the specification's (e << 8) | 0x80 with the low byte dropped) and
+                // widens the result; linear LDR interpolates e × 257.
+                if (profile == AstcProfile.Ldr)
                 {
-                    e[c] = profile == AstcProfile.Srgb && (c & 3) != 3 ? (e[c] << 8) | 0x80 : e[c] * 257;
+                    for (int c = 0; c < 8; c++)
+                    {
+                        e[c] *= 257;
+                    }
                 }
 
                 break;
