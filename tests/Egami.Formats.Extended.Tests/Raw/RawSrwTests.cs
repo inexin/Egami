@@ -2,6 +2,7 @@ using System.Buffers.Binary;
 using System.Numerics;
 
 using Egami.Formats.Extended.Raw;
+using Egami.Metadata;
 using Egami.Pixels;
 
 namespace Egami.Formats.Extended.Tests.Raw;
@@ -160,6 +161,26 @@ public class RawSrwTests
     }
 
     [Fact]
+    public void DngConversionWritesApexValuesAndEndsAsciiInNul()
+    {
+        // Gate finding: Samsung writes the exposure time as ShutterSpeedValue and the f-number as ApertureValue, and the NX500 a
+        // LensModel without its NUL; dng_validate warns of each, and Adobe DNG Converter writes the APEX values.
+        const int Width = 42, Height = 4;
+        TiffTag[] exif = [TiffTag.Rational(0x829A, 0.003125), TiffTag.Rational(0x829D, 8), TiffTag.SRational(0x9201, 0.003125), TiffTag.Rational(0x9202, 8),
+            new TiffTag(0xA434, 2, [], [.. "NX 16-50mm"u8])];
+        byte[] file = Srw("NX10", Width, Height, 12, V0, new byte[Width * Height * 3 / 2], exifTags: exif);
+        using MemoryStream dng = new();
+        RawFormat.ConvertToDng(new MemoryStream(file), dng, null, Context);
+        using Raster fromDng = Raster.Load(dng.ToArray(), Context, Mosaic);
+        ExifData data = Assert.IsType<ExifData>(fromDng.Metadata.Exif);
+        double Get(ushort tag) => Assert.IsType<ExifEntry>(data.TryGet(new ExifKey(tag, ExifIfd.Exif), out ExifEntry? e) ? e : null).AsFraction().ToDouble();
+        Assert.Equal(-Math.Log2(0.003125), Get(0x9201), 5);
+        Assert.Equal(6, Get(0x9202), 5);
+        Assert.True(data.TryGet(new ExifKey(0xA434, ExifIfd.Exif), out ExifEntry? lens));
+        Assert.Equal((byte)0, lens!.RawValue.Span[^1]);
+    }
+
+    [Fact]
     [Trait("Category", "Allocation")]
     public void CodecsAllocateNothingPerRow()
     {
@@ -246,7 +267,7 @@ public class RawSrwTests
     }
 
     /// <summary>An SRW: IFD0 is the raw IFD; Make SAMSUNG; for V0 tag 0xA010 points at the row table at the strip's start.</summary>
-    private static byte[] Srw(string model, int width, int height, int bits, int compression, byte[] strip, bool bigEndian = false, bool rowTable = false, byte[]? note = null, string make = "SAMSUNG")
+    private static byte[] Srw(string model, int width, int height, int bits, int compression, byte[] strip, bool bigEndian = false, bool rowTable = false, byte[]? note = null, string make = "SAMSUNG", TiffTag[]? exifTags = null)
     {
         TiffBuilder.Ifd ifd0 = new();
         ifd0.Tags.AddRange([TiffTag.Long(256, width), TiffTag.Long(257, height), TiffTag.Short(258, bits), TiffTag.Short(259, compression),
@@ -257,10 +278,15 @@ public class RawSrwTests
         }
 
         ifd0.Units.Add(strip);
-        if (note is not null)
+        if (note is not null || exifTags is not null)
         {
             TiffBuilder.Ifd exif = new();
-            exif.Tags.Add(TiffTag.Undefined(0x927C, note));
+            exif.Tags.AddRange(exifTags ?? []);
+            if (note is not null)
+            {
+                exif.Tags.Add(TiffTag.Undefined(0x927C, note));
+            }
+
             ifd0.Exif = exif;
         }
 

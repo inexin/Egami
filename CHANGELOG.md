@@ -101,6 +101,9 @@ Samsung SRW (RAW coverage, Build Plan tasks 13 to 15). Egami.Formats.Extended ad
 - The black levels and white balance come from the maker note (less its key, tag 0xA020); 22 Samsung bodies join the camera
   table, three of them (NX100, NX300M, EX2F) measured from CC BY-NC-SA samples that were not kept. 12-bit packed data under
   compression 32769, which no sample is known to have, throws `NotSupportedException`.
+- DNG writing replaces a ShutterSpeedValue or ApertureValue that contradicts ExposureTime or FNumber with the APEX value (as
+  Adobe DNG Converter does; Samsung writes the time and f-number themselves) and ends an EXIF ASCII value without one in NUL,
+  so converted SRWs of the NX3000, NX3300, NX mini and NX500 pass dng_validate.
 
 ## Egami train 1.4.0, Egami.SystemDrawing 1.0.0-preview.3 and Egami.Metafiles 1.0.2 (2026-11-01)
 
