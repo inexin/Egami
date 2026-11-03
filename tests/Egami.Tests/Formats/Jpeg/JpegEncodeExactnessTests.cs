@@ -186,24 +186,37 @@ public class JpegEncodeExactnessTests
         byte[][] scalar = [new byte[Width], new byte[Width], new byte[Width]];
         byte[][] vector = [new byte[Width], new byte[Width], new byte[Width]];
         byte[] luma = new byte[Width];
+        byte[] rgba = new byte[Width * 4];
+        byte[][] fromRgba = [new byte[Width], new byte[Width], new byte[Width]];
+        byte[] lumaFromRgba = new byte[Width];
+        Random random = new(7);
         for (int red = 0; red < 256; red++)
         {
             for (int green = 0; green < 256; green++)
             {
                 for (int blue = 0; blue < Width; blue++)
                 {
-                    rgb[3 * blue] = (byte)red;
-                    rgb[(3 * blue) + 1] = (byte)green;
-                    rgb[(3 * blue) + 2] = (byte)blue;
+                    rgb[3 * blue] = rgba[4 * blue] = (byte)red;
+                    rgb[(3 * blue) + 1] = rgba[(4 * blue) + 1] = (byte)green;
+                    rgb[(3 * blue) + 2] = rgba[(4 * blue) + 2] = (byte)blue;
+                    rgba[(4 * blue) + 3] = (byte)random.Next(256);
                 }
 
                 JpegEncodeKernels.YCbCrScalar(rgb, scalar[0], scalar[1], scalar[2], 0);
                 Assert.Equal(Width, JpegEncodeKernels.YCbCrAvx2(rgb, vector[0], vector[1], vector[2], lumaOnly: false));
                 JpegEncodeKernels.Luma(rgb, luma);
+                Assert.Equal(Width, JpegEncodeKernels.YCbCrFromRgbaAvx2(rgba, fromRgba[0], fromRgba[1], fromRgba[2], lumaOnly: false));
+                JpegEncodeKernels.LumaFromRgba(rgba, lumaFromRgba);
                 if (!scalar[0].AsSpan().SequenceEqual(vector[0]) || !scalar[1].AsSpan().SequenceEqual(vector[1])
                     || !scalar[2].AsSpan().SequenceEqual(vector[2]) || !scalar[0].AsSpan().SequenceEqual(luma))
                 {
                     Assert.Fail($"The vector conversion differs from the scalar one at red {red}, green {green}.");
+                }
+
+                if (!scalar[0].AsSpan().SequenceEqual(fromRgba[0]) || !scalar[1].AsSpan().SequenceEqual(fromRgba[1])
+                    || !scalar[2].AsSpan().SequenceEqual(fromRgba[2]) || !scalar[0].AsSpan().SequenceEqual(lumaFromRgba))
+                {
+                    Assert.Fail($"The conversion from RGBA differs from the scalar one at red {red}, green {green}.");
                 }
             }
         }
@@ -239,6 +252,23 @@ public class JpegEncodeExactnessTests
                 }
 
                 Assert.True(scalar[0].AsSpan().SequenceEqual(luma), $"{name}, width {width}: luma alone differs.");
+
+                // The same pixels as RGBA, with the alpha from the next byte of the pattern; the vector tail stops at the row end.
+                byte[] rgba = new byte[width * 4];
+                for (int x = 0; x < width; x++)
+                {
+                    rgb.AsSpan(3 * x, 3).CopyTo(rgba.AsSpan(4 * x));
+                    rgba[(4 * x) + 3] = (byte)value(rgb.Length + x);
+                }
+
+                JpegEncodeKernels.YCbCrFromRgba(rgba, vector[0], vector[1], vector[2]);
+                JpegEncodeKernels.LumaFromRgba(rgba, luma);
+                for (int c = 0; c < 3; c++)
+                {
+                    Assert.True(scalar[c].AsSpan().SequenceEqual(vector[c]), $"{name}, width {width}, from RGBA: component {c} differs.");
+                }
+
+                Assert.True(scalar[0].AsSpan().SequenceEqual(luma), $"{name}, width {width}, from RGBA: luma alone differs.");
             }
         }
     }

@@ -41,6 +41,7 @@ AUDIO_MODES = {"time-opus"}
 # The cjpeg settings of each time-image JPEG encode scenario.
 CJPEG = {
     "jpeg-encode-q75-420": "-quality 75 -sample 2x2",
+    "jpeg-encode-q75-420-rgba": "-quality 75 -sample 2x2",
     "jpeg-encode-q90-444": "-quality 90 -sample 1x1",
     "jpeg-encode-q90-444-optimized": "-quality 90 -sample 1x1 -optimize",
 }
@@ -105,6 +106,9 @@ def main():
     parser.add_argument("--runs", help="the two run counts A,B whose difference is measured (default 8,24; 20,60 for time-image, "
                         "whose few operations still find the JIT tiering up at 8)")
     parser.add_argument("--pgo", action="store_true", help="keep dynamic PGO on (counts then vary by about 4%%)")
+    parser.add_argument("--full-opts", action="store_true",
+                        help="compile Egami fully optimized at once (no tiering): steady counts, where a hot loop otherwise "
+                             "lands in one of several code versions from run to run")
     parser.add_argument("--egami-only", action="store_true", help="skip FFmpeg and cjpeg")
     parser.add_argument("--ffmpeg-args", default="", help="extra ffmpeg input options, such as -c:v libdav1d")
     args = parser.parse_args()
@@ -118,7 +122,8 @@ def main():
     unit = "operation" if scenario else "packet" if audio else "frame"
     a, b = (int(x) for x in (args.runs or ("20,60" if scenario else "8,24")).split(","))
     target = clip if scenario else f"/work/{clip}"
-    egami = [counters(f"dotnet /bench/{dll} --{args.mode} --one-thread --runs={r} {target}", args.pgo) for r in (a, b)]
+    tiering = "export DOTNET_TieredCompilation=0; " if args.full_opts else ""
+    egami = [counters(f"dotnet /bench/{dll} --{args.mode} --one-thread --runs={r} {target}", args.pgo, tiering) for r in (a, b)]
     rows = {"Egami": per_frame(egami[0], egami[1], n * (b - a))}
     if not args.egami_only and scenario and clip in CJPEG:
         ppms = photo_ppms()
