@@ -19,9 +19,12 @@ internal static class KtxFiles
     public static string Reference(string name) => Path.Combine(AppContext.BaseDirectory, "reference", "ktx", name);
 
     /// <summary>The raw bytes a raw-*.ktx2 file of the corpus was made from.</summary>
-    public static byte[] RawBytes(string name)
+    public static byte[] RawBytes(string name) => Gunzip(name + ".bin.gz");
+
+    /// <summary>A gzipped reference file, unzipped.</summary>
+    public static byte[] Gunzip(string name)
     {
-        using FileStream file = File.OpenRead(Reference(name + ".bin.gz"));
+        using FileStream file = File.OpenRead(Reference(name));
         using GZipStream gzip = new(file, CompressionMode.Decompress);
         using MemoryStream bytes = new();
         gzip.CopyTo(bytes);

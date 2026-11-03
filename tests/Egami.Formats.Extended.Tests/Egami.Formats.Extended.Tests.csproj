@@ -19,6 +19,7 @@
   <ItemGroup>
     <None Include="../images/ktx/*" LinkBase="images/ktx" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../reference/ktx/*" LinkBase="reference/ktx" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../images/ops/duck.png" LinkBase="images/ops" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>

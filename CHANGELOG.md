@@ -107,6 +107,14 @@ Canon CR3 develops (RAW coverage, Build Plan tasks 8 to 12). No API changes.
 - DNG writing widens BitsPerSample to hold the white level, so a CR3 whose white is 16384 over 14-bit data (EOS R6, R5 crop)
   passes dng_validate.
 
+KTX stage B (ETC, EAC and ASTC; roadmap 2.3.11). No API changes.
+
+- KTX and KTX 2 read ETC1, ETC2 (RGB8, RGB8A1 and RGBA8, UNORM and sRGB) and EAC R11 and RG11 (unsigned and signed), exactly
+  as the Khronos Data Format Specification says, and ASTC in all 14 2D footprints, LDR (UNORM and sRGB, to `Rgba8`) and HDR
+  (to `RgbaF16`), bit for bit as ARM's astcenc decodes them. 3D ASTC, PVRTC and Basis Universal are still refused.
+- Internal ETC1, ETC2, EAC and ASTC LDR block encoders (effort 0 to 6) for the KTX writer to come; their output does not depend
+  on the number of threads.
+
 ## Egami train 1.4.0, Egami.SystemDrawing 1.0.0-preview.3 and Egami.Metafiles 1.0.2 (2026-11-01)
 
 The release train (Egami, Egami.Drawing, Egami.Fonts, Egami.Svg, Egami.Css, Egami.Heic, Egami.Formats.Extended and Egami.Cli)

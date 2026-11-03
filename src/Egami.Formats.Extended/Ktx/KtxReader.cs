@@ -143,7 +143,7 @@ internal sealed class KtxReader(KtxContainer container) : ExtendedReader, IMulti
     {
         long natural = (long)width * TextureDecode.NaturalBytes(texture.Format.Natural);
         long work = (long)width * TextureDecode.NaturalBytes(plan.Work);
-        long rows = texture.Format.IsBlock ? natural * 4 : natural;
+        long rows = texture.Format.IsBlock ? natural * texture.Format.BlockHeight : natural;
         long whole = plan.Supercompressed ? plan.LevelLength + plan.LevelUncompressed : plan.Buffered ? plan.ImageBytes : 0;
         return texture.RowPitch(plan.Mip) + rows + work + whole;
     }
@@ -313,6 +313,7 @@ internal sealed class KtxReader(KtxContainer container) : ExtendedReader, IMulti
         private int _wholeLength;
         private long _streamed;
         private int _stripRow = -1;
+        private readonly int _blockHeight = 1;
 
         public Rows(EgamiInput input, ReaderOptions options, FormatInfo info, Plan plan)
             : base(input, options, info, info == KtxFormat.Info ? "Ktx" : "Ktx2", plan.Texture.MipWidth(plan.Mip), plan.Texture.MipHeight(plan.Mip))
@@ -333,7 +334,9 @@ internal sealed class KtxReader(KtxContainer container) : ExtendedReader, IMulti
 
             if (_format.IsBlock)
             {
-                _strip = input.RentScratch(checked(Width * _naturalBytes * 4), ClearMode.Zero);
+                _blockHeight = _format.BlockHeight;
+                int columns = (Width + _format.BlockWidth - 1) / _format.BlockWidth * _format.BlockWidth;
+                _strip = input.RentScratch(checked(columns * _naturalBytes * _blockHeight), ClearMode.Zero);
             }
 
             Metadata.FormatDetails = new KtxDetails
@@ -397,19 +400,19 @@ internal sealed class KtxReader(KtxContainer container) : ExtendedReader, IMulti
             {
                 Span<byte> strip = _strip!.Memory.Span;
                 int stride = Width * _naturalBytes;
-                if (sy >> 2 != _stripRow)
+                if (sy / _blockHeight != _stripRow)
                 {
-                    _stripRow = sy >> 2;
+                    _stripRow = sy / _blockHeight;
                     if (!Fetch(_stripRow, stored))
                     {
                         row.Clear();
                         return false;
                     }
 
-                    TextureDecode.Blocks(_format, stored, strip, Width, Math.Min(4, Height - (_stripRow * 4)), stride);
+                    TextureDecode.Blocks(_format, stored, strip, Width, Math.Min(_blockHeight, Height - (_stripRow * _blockHeight)), stride);
                 }
 
-                strip.Slice((sy & 3) * stride, stride).CopyTo(natural);
+                strip.Slice(sy % _blockHeight * stride, stride).CopyTo(natural);
             }
             else
             {
