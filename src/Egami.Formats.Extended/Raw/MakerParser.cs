@@ -238,6 +238,20 @@ internal static class MakerParser
                 frame.Active = active;
                 frame.Crop = camera.DefaultCrop is Rect c ? (c.X, c.Y, c.Width, c.Height) : (0, 0, active.Width, active.Height);
             }
+            else if (frame.HasOwnCrop && camera.ActiveArea is Rect adobeArea && camera.DefaultCrop is Rect adobeCrop
+                && (frame.Crop.Width, frame.Crop.Height) == (adobeCrop.Width, adobeCrop.Height))
+            {
+                // The file's own crop (a CR2's SensorInfo, a RAF's crop tags, a RW2's borders) is the one Adobe measured: the
+                // active area is Adobe's around it, moved by where the two crops lie (Adobe's DNG leaves out some bodies' first
+                // columns), so demosaic and lens corrections see the pixels past the crop's edge. The crop stays put.
+                int left = frame.Active.X + (int)frame.Crop.X, top = frame.Active.Y + (int)frame.Crop.Y;
+                Rect wider = new(left - adobeCrop.X, top - adobeCrop.Y, adobeArea.Width, adobeArea.Height);
+                if (wider.X >= 0 && wider.Y >= 0 && wider.Right <= frame.Sensor.Width && wider.Bottom <= frame.Sensor.Height)
+                {
+                    frame.Active = wider;
+                    frame.Crop = (left - wider.X, top - wider.Y, frame.Crop.Width, frame.Crop.Height);
+                }
+            }
 
             if (!frame.HasOwnLevels && camera.White > 0)
             {
@@ -621,13 +635,23 @@ internal static class MakerParser
                 frame.AsShotNeutral = [g / r, 1, g / b];
             }
         }
+        else if (ifd0.Has(0x0011) && ifd0.Has(0x0012) && ifd0.Double(0x0011) > 0 && ifd0.Double(0x0012) > 0)
+        {
+            // The oldest files (Leica Digilux 2) give only red and blue, with green at 256: Adobe DNG Converter's AsShotNeutral
+            // for them is exactly 256 / red, 1, 256 / blue.
+            frame.AsShotNeutral = [256 / ifd0.Double(0x0011), 1, 256 / ifd0.Double(0x0012)];
+        }
 
         if (ifd0.Ints(0x0004, 1) is { Length: 1 } top && ifd0.Ints(0x0005, 1) is { Length: 1 } left
             && ifd0.Ints(0x0006, 1) is { Length: 1 } bottom && ifd0.Ints(0x0007, 1) is { Length: 1 } right
             && bottom[0] > top[0] && right[0] > left[0] && bottom[0] <= height && right[0] <= width)
         {
-            frame.Active = new Rect((int)left[0], (int)top[0], (int)(right[0] - left[0]), (int)(bottom[0] - top[0]));
-            frame.Crop = (0, 0, frame.Active.Width, frame.Active.Height);
+            // The sensor borders (RW2 spec, section 1) are the image's crop. Every row above and below is sensor data, and to
+            // the right as many columns as the left border holds (past them some bodies store no image): the active area, as
+            // Adobe DNG Converter's DNGs of these files give it within a few columns.
+            int activeWidth = (int)Math.Min(width, right[0] + left[0]);
+            frame.Active = new Rect(0, 0, activeWidth, height);
+            frame.Crop = (left[0], top[0], right[0] - left[0], bottom[0] - top[0]);
             frame.HasOwnCrop = true;
         }
 
