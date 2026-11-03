@@ -1,6 +1,6 @@
 using System.Buffers.Binary;
 
-namespace Egami.Formats.Extended.Dds.Blocks;
+namespace Egami.Formats.Extended.Textures.Blocks;
 
 /// <summary>
 /// Decodes the S3TC and RGTC blocks, BC1 to BC5, written from the Direct3D 11 block compression specification and the Khronos

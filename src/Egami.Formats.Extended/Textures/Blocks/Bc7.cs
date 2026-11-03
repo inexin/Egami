@@ -1,6 +1,6 @@
 using System.Buffers.Binary;
 
-namespace Egami.Formats.Extended.Dds.Blocks;
+namespace Egami.Formats.Extended.Textures.Blocks;
 
 /// <summary>
 /// Decodes BC7 blocks (16 bytes, 4 × 4 RGBA pixels), written from the Direct3D 11 BC7 format specification. The decode is exact

@@ -1,6 +1,6 @@
 using System.Buffers.Binary;
 
-namespace Egami.Formats.Extended.Dds.Blocks;
+namespace Egami.Formats.Extended.Textures.Blocks;
 
 /// <summary>
 /// Encodes BC6H blocks, unsigned (UF16) and signed (SF16), written from the Direct3D 11 BC6H format specification. Colours are

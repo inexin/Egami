@@ -1,6 +1,6 @@
 using System.Buffers.Binary;
 
-namespace Egami.Formats.Extended.Dds.Blocks;
+namespace Egami.Formats.Extended.Textures.Blocks;
 
 /// <summary>
 /// Encodes BC7 blocks, written from the Direct3D 11 BC7 format specification, with a search shaped after bc7enc_rdo's: rank the

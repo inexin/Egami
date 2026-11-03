@@ -1,4 +1,4 @@
-namespace Egami.Formats.Extended.Dds.Blocks;
+namespace Egami.Formats.Extended.Textures.Blocks;
 
 /// <summary>
 /// The tables BC6H and BC7 share, from the Direct3D 11 block compression specification as DirectXTex (MIT) tabulates them:

@@ -1,6 +1,6 @@
 using System.Buffers.Binary;
 
-namespace Egami.Formats.Extended.Dds.Blocks;
+namespace Egami.Formats.Extended.Textures.Blocks;
 
 /// <summary>
 /// Encodes BC1 to BC5 blocks. Colour blocks fit their endpoints along the principal axis of the block's colours, then refine

@@ -2,27 +2,27 @@ using System.Buffers.Binary;
 using System.Numerics;
 using System.Runtime.InteropServices;
 
-using Egami.Formats.Extended.Dds.Blocks;
+using Egami.Formats.Extended.Textures.Blocks;
 
-namespace Egami.Formats.Extended.Dds;
+namespace Egami.Formats.Extended.Textures;
 
 /// <summary>
-/// Turns a DDS format's stored bytes into its natural pixel type's memory: a row of pixels, a row of 4 × 4 blocks, or a row of
+/// Turns a texture format's stored bytes into its natural pixel type's memory: a row of pixels, a row of 4 × 4 blocks, or a row of
 /// a planar video surface. YUV converts with the BT.601 studio-range integer formulas of Microsoft's "Recommended 8-Bit YUV
 /// Formats for Video Rendering" and its 10- and 16-bit counterparts, as DirectXTex converts them.
 /// </summary>
-internal static class DdsDecode
+internal static class TextureDecode
 {
     /// <summary>Returns the bytes of one natural pixel.</summary>
-    public static int NaturalBytes(DdsNatural natural) => natural switch
+    public static int NaturalBytes(TextureNatural natural) => natural switch
     {
-        DdsNatural.Gray8 or DdsNatural.Alpha8 => 1,
-        DdsNatural.Gray16 or DdsNatural.GrayAlpha8 or DdsNatural.Bgr565 or DdsNatural.Bgr555 or DdsNatural.Bgra5551 or DdsNatural.Bgra4444 => 2,
-        DdsNatural.Rgb8 => 3,
-        DdsNatural.GrayF32 or DdsNatural.GrayAlpha16 or DdsNatural.Rgba8 or DdsNatural.Rgb10A2 => 4,
-        DdsNatural.Rgb16 => 6,
-        DdsNatural.Rgba16 or DdsNatural.RgbaF16 => 8,
-        DdsNatural.RgbF32 => 12,
+        TextureNatural.Gray8 or TextureNatural.Alpha8 => 1,
+        TextureNatural.Gray16 or TextureNatural.GrayAlpha8 or TextureNatural.Bgr565 or TextureNatural.Bgr555 or TextureNatural.Bgra5551 or TextureNatural.Bgra4444 => 2,
+        TextureNatural.Rgb8 => 3,
+        TextureNatural.GrayF32 or TextureNatural.GrayAlpha16 or TextureNatural.Rgba8 or TextureNatural.Rgb10A2 => 4,
+        TextureNatural.Rgb16 => 6,
+        TextureNatural.Rgba16 or TextureNatural.RgbaF16 => 8,
+        TextureNatural.RgbF32 => 12,
         _ => 16,
     };
 
@@ -30,14 +30,14 @@ internal static class DdsDecode
     /// Decodes one stored row of a pixel or pair format into <paramref name="width"/> natural pixels.
     /// <paramref name="palette"/> is the palette of a P8 or A8P8 file.
     /// </summary>
-    public static void Row(DdsPixelFormat f, ReadOnlySpan<byte> src, Span<byte> dst, int width, uint[] palette)
+    public static void Row(TextureFormat f, ReadOnlySpan<byte> src, Span<byte> dst, int width, uint[] palette)
     {
         switch (f.Codec)
         {
-            case DdsCodec.Copy:
+            case TextureCodec.Copy:
                 src[..(width * f.UnitBytes)].CopyTo(dst);
                 break;
-            case DdsCodec.Bgra8ToRgba8:
+            case TextureCodec.Bgra8ToRgba8:
                 for (int x = 0; x < width; x++)
                 {
                     int s = x * 4;
@@ -48,7 +48,7 @@ internal static class DdsDecode
                 }
 
                 break;
-            case DdsCodec.Bgrx8ToRgb8:
+            case TextureCodec.Bgrx8ToRgb8:
                 for (int x = 0; x < width; x++)
                 {
                     dst[x * 3] = src[(x * 4) + 2];
@@ -57,7 +57,16 @@ internal static class DdsDecode
                 }
 
                 break;
-            case DdsCodec.Rgbx8ToRgb8:
+            case TextureCodec.Bgr8ToRgb8:
+                for (int x = 0; x < width; x++)
+                {
+                    dst[x * 3] = src[(x * 3) + 2];
+                    dst[(x * 3) + 1] = src[(x * 3) + 1];
+                    dst[(x * 3) + 2] = src[x * 3];
+                }
+
+                break;
+            case TextureCodec.Rgbx8ToRgb8:
                 for (int x = 0; x < width; x++)
                 {
                     dst[x * 3] = src[x * 4];
@@ -66,7 +75,7 @@ internal static class DdsDecode
                 }
 
                 break;
-            case DdsCodec.Rg8ToRgb8:
+            case TextureCodec.Rg8ToRgb8:
                 for (int x = 0; x < width; x++)
                 {
                     dst[x * 3] = src[x * 2];
@@ -75,27 +84,27 @@ internal static class DdsDecode
                 }
 
                 break;
-            case DdsCodec.Rg8Snorm:
-            case DdsCodec.Rg8Sint:
+            case TextureCodec.Rg8Snorm:
+            case TextureCodec.Rg8Sint:
                 for (int x = 0; x < width; x++)
                 {
-                    dst[x * 3] = Signed8(src[x * 2], f.Codec == DdsCodec.Rg8Snorm);
-                    dst[(x * 3) + 1] = Signed8(src[(x * 2) + 1], f.Codec == DdsCodec.Rg8Snorm);
+                    dst[x * 3] = Signed8(src[x * 2], f.Codec == TextureCodec.Rg8Snorm);
+                    dst[(x * 3) + 1] = Signed8(src[(x * 2) + 1], f.Codec == TextureCodec.Rg8Snorm);
                     dst[(x * 3) + 2] = 0;
                 }
 
                 break;
-            case DdsCodec.Snorm8:
-            case DdsCodec.Sint8:
+            case TextureCodec.Snorm8:
+            case TextureCodec.Sint8:
                 for (int i = 0; i < width * f.UnitBytes; i++)
                 {
-                    dst[i] = Signed8(src[i], f.Codec == DdsCodec.Snorm8);
+                    dst[i] = Signed8(src[i], f.Codec == TextureCodec.Snorm8);
                 }
 
                 break;
-            case DdsCodec.Rg16ToRgb16:
-            case DdsCodec.Rg16Snorm:
-            case DdsCodec.Rg16Sint:
+            case TextureCodec.Rg16ToRgb16:
+            case TextureCodec.Rg16Snorm:
+            case TextureCodec.Rg16Sint:
                 {
                     Span<ushort> d = MemoryMarshal.Cast<byte, ushort>(dst);
                     for (int x = 0; x < width; x++)
@@ -108,8 +117,8 @@ internal static class DdsDecode
                     break;
                 }
 
-            case DdsCodec.Snorm16:
-            case DdsCodec.Sint16:
+            case TextureCodec.Snorm16:
+            case TextureCodec.Sint16:
                 {
                     Span<ushort> d = MemoryMarshal.Cast<byte, ushort>(dst);
                     for (int i = 0; i < width * f.UnitBytes / 2; i++)
@@ -120,7 +129,7 @@ internal static class DdsDecode
                     break;
                 }
 
-            case DdsCodec.Rg16FToRgbaF16:
+            case TextureCodec.Rg16FToRgbaF16:
                 {
                     Span<ushort> d = MemoryMarshal.Cast<byte, ushort>(dst);
                     for (int x = 0; x < width; x++)
@@ -134,7 +143,21 @@ internal static class DdsDecode
                     break;
                 }
 
-            case DdsCodec.R16FToGrayF32:
+            case TextureCodec.Rgb16FToRgbaF16:
+                {
+                    Span<ushort> d = MemoryMarshal.Cast<byte, ushort>(dst);
+                    for (int x = 0; x < width; x++)
+                    {
+                        d[x * 4] = BinaryPrimitives.ReadUInt16LittleEndian(src[(x * 6)..]);
+                        d[(x * 4) + 1] = BinaryPrimitives.ReadUInt16LittleEndian(src[((x * 6) + 2)..]);
+                        d[(x * 4) + 2] = BinaryPrimitives.ReadUInt16LittleEndian(src[((x * 6) + 4)..]);
+                        d[(x * 4) + 3] = HalfOne;
+                    }
+
+                    break;
+                }
+
+            case TextureCodec.R16FToGrayF32:
                 {
                     Span<float> d = MemoryMarshal.Cast<byte, float>(dst);
                     for (int x = 0; x < width; x++)
@@ -145,7 +168,7 @@ internal static class DdsDecode
                     break;
                 }
 
-            case DdsCodec.Rg32FToRgbF32:
+            case TextureCodec.Rg32FToRgbF32:
                 {
                     Span<float> d = MemoryMarshal.Cast<byte, float>(dst);
                     for (int x = 0; x < width; x++)
@@ -158,12 +181,12 @@ internal static class DdsDecode
                     break;
                 }
 
-            case DdsCodec.Int32:
-            case DdsCodec.UInt32:
-            case DdsCodec.Rgb32Int:
-            case DdsCodec.Rgb32UInt:
+            case TextureCodec.Int32:
+            case TextureCodec.UInt32:
+            case TextureCodec.Rgb32Int:
+            case TextureCodec.Rgb32UInt:
                 {
-                    bool signed = f.Codec is DdsCodec.Int32 or DdsCodec.Rgb32Int;
+                    bool signed = f.Codec is TextureCodec.Int32 or TextureCodec.Rgb32Int;
                     Span<float> d = MemoryMarshal.Cast<byte, float>(dst);
                     for (int i = 0; i < width * f.UnitBytes / 4; i++)
                     {
@@ -173,8 +196,8 @@ internal static class DdsDecode
                     break;
                 }
 
-            case DdsCodec.Rg32Int:
-            case DdsCodec.Rg32UInt:
+            case TextureCodec.Rg32Int:
+            case TextureCodec.Rg32UInt:
                 {
                     Span<float> d = MemoryMarshal.Cast<byte, float>(dst);
                     for (int x = 0; x < width; x++)
@@ -182,7 +205,7 @@ internal static class DdsDecode
                         for (int c = 0; c < 2; c++)
                         {
                             ReadOnlySpan<byte> s = src[((x * 8) + (c * 4))..];
-                            d[(x * 3) + c] = f.Codec == DdsCodec.Rg32Int ? BinaryPrimitives.ReadInt32LittleEndian(s) : BinaryPrimitives.ReadUInt32LittleEndian(s);
+                            d[(x * 3) + c] = f.Codec == TextureCodec.Rg32Int ? BinaryPrimitives.ReadInt32LittleEndian(s) : BinaryPrimitives.ReadUInt32LittleEndian(s);
                         }
 
                         d[(x * 3) + 2] = 0;
@@ -191,7 +214,7 @@ internal static class DdsDecode
                     break;
                 }
 
-            case DdsCodec.R11G11B10FToRgbaF16:
+            case TextureCodec.R11G11B10FToRgbaF16:
                 {
                     Span<ushort> d = MemoryMarshal.Cast<byte, ushort>(dst);
                     for (int x = 0; x < width; x++)
@@ -208,7 +231,7 @@ internal static class DdsDecode
                     break;
                 }
 
-            case DdsCodec.R9G9B9E5ToRgbaF16:
+            case TextureCodec.R9G9B9E5ToRgbaF16:
                 {
                     Span<Half> d = MemoryMarshal.Cast<byte, Half>(dst);
                     for (int x = 0; x < width; x++)
@@ -224,7 +247,7 @@ internal static class DdsDecode
                     break;
                 }
 
-            case DdsCodec.XrBiasToRgbaF16:
+            case TextureCodec.XrBiasToRgbaF16:
                 {
                     Span<Half> d = MemoryMarshal.Cast<byte, Half>(dst);
                     for (int x = 0; x < width; x++)
@@ -239,21 +262,21 @@ internal static class DdsDecode
                     break;
                 }
 
-            case DdsCodec.D32S8:
+            case TextureCodec.D32S8:
                 for (int x = 0; x < width; x++)
                 {
                     src.Slice(x * 8, 4).CopyTo(dst[(x * 4)..]);
                 }
 
                 break;
-            case DdsCodec.Stencil32:
+            case TextureCodec.Stencil32:
                 for (int x = 0; x < width; x++)
                 {
                     dst[x] = src[(x * 8) + 4];
                 }
 
                 break;
-            case DdsCodec.D24S8:
+            case TextureCodec.D24S8:
                 {
                     Span<float> d = MemoryMarshal.Cast<byte, float>(dst);
                     for (int x = 0; x < width; x++)
@@ -264,38 +287,38 @@ internal static class DdsDecode
                     break;
                 }
 
-            case DdsCodec.Stencil24:
+            case TextureCodec.Stencil24:
                 for (int x = 0; x < width; x++)
                 {
                     dst[x] = src[(x * 4) + 3];
                 }
 
                 break;
-            case DdsCodec.R1:
+            case TextureCodec.R1:
                 for (int x = 0; x < width; x++)
                 {
                     dst[x] = (byte)((src[x >> 3] >> (7 - (x & 7))) & 1) == 0 ? (byte)0 : (byte)255;
                 }
 
                 break;
-            case DdsCodec.Rgbg:
-            case DdsCodec.Grgb:
+            case TextureCodec.Rgbg:
+            case TextureCodec.Grgb:
                 for (int x = 0; x < width; x++)
                 {
                     ReadOnlySpan<byte> s = src[((x / 2) * 4)..];
-                    bool rgbg = f.Codec == DdsCodec.Rgbg;
+                    bool rgbg = f.Codec == TextureCodec.Rgbg;
                     dst[x * 3] = rgbg ? s[0] : s[1];
                     dst[(x * 3) + 1] = rgbg ? s[(x & 1) == 0 ? 1 : 3] : s[(x & 1) == 0 ? 0 : 2];
                     dst[(x * 3) + 2] = rgbg ? s[2] : s[3];
                 }
 
                 break;
-            case DdsCodec.Yuy2:
-            case DdsCodec.Uyvy:
+            case TextureCodec.Yuy2:
+            case TextureCodec.Uyvy:
                 for (int x = 0; x < width; x++)
                 {
                     ReadOnlySpan<byte> s = src[((x / 2) * 4)..];
-                    bool yuy2 = f.Codec == DdsCodec.Yuy2;
+                    bool yuy2 = f.Codec == TextureCodec.Yuy2;
                     int y = yuy2 ? s[(x & 1) * 2] : s[((x & 1) * 2) + 1];
                     int u = yuy2 ? s[1] : s[0];
                     int v = yuy2 ? s[3] : s[2];
@@ -303,15 +326,15 @@ internal static class DdsDecode
                 }
 
                 break;
-            case DdsCodec.Y210:
-            case DdsCodec.Y216:
+            case TextureCodec.Y210:
+            case TextureCodec.Y216:
                 for (int x = 0; x < width; x++)
                 {
                     ReadOnlySpan<byte> s = src[((x / 2) * 8)..];
                     int y = BinaryPrimitives.ReadUInt16LittleEndian(s[((x & 1) * 4)..]);
                     int u = BinaryPrimitives.ReadUInt16LittleEndian(s[2..]);
                     int v = BinaryPrimitives.ReadUInt16LittleEndian(s[6..]);
-                    if (f.Codec == DdsCodec.Y210)
+                    if (f.Codec == TextureCodec.Y210)
                     {
                         Yuv10(y >> 6, u >> 6, v >> 6, 3, dst[(x * 4)..]);
                     }
@@ -322,7 +345,7 @@ internal static class DdsDecode
                 }
 
                 break;
-            case DdsCodec.Ayuv:
+            case TextureCodec.Ayuv:
                 for (int x = 0; x < width; x++)
                 {
                     ReadOnlySpan<byte> s = src[(x * 4)..];
@@ -331,7 +354,7 @@ internal static class DdsDecode
                 }
 
                 break;
-            case DdsCodec.Y410:
+            case TextureCodec.Y410:
                 for (int x = 0; x < width; x++)
                 {
                     uint v = BinaryPrimitives.ReadUInt32LittleEndian(src[(x * 4)..]);
@@ -339,7 +362,7 @@ internal static class DdsDecode
                 }
 
                 break;
-            case DdsCodec.Y416:
+            case TextureCodec.Y416:
                 for (int x = 0; x < width; x++)
                 {
                     ReadOnlySpan<byte> s = src[(x * 8)..];
@@ -348,7 +371,7 @@ internal static class DdsDecode
                 }
 
                 break;
-            case DdsCodec.A4B4G4R4:
+            case TextureCodec.A4B4G4R4:
                 {
                     Span<ushort> d = MemoryMarshal.Cast<byte, ushort>(dst);
                     for (int x = 0; x < width; x++)
@@ -360,7 +383,7 @@ internal static class DdsDecode
                     break;
                 }
 
-            case DdsCodec.X4R4G4B4:
+            case TextureCodec.X4R4G4B4:
                 {
                     Span<ushort> d = MemoryMarshal.Cast<byte, ushort>(dst);
                     for (int x = 0; x < width; x++)
@@ -371,24 +394,24 @@ internal static class DdsDecode
                     break;
                 }
 
-            case DdsCodec.Masks:
+            case TextureCodec.Masks:
                 Masks(f, src, dst, width);
                 break;
-            case DdsCodec.Palette8:
+            case TextureCodec.Palette8:
                 for (int x = 0; x < width; x++)
                 {
                     BinaryPrimitives.WriteUInt32LittleEndian(dst[(x * 4)..], palette[src[x]]);
                 }
 
                 break;
-            case DdsCodec.Palette8Alpha:
+            case TextureCodec.Palette8Alpha:
                 for (int x = 0; x < width; x++)
                 {
                     BinaryPrimitives.WriteUInt32LittleEndian(dst[(x * 4)..], (palette[src[x * 2]] & 0xFFFFFF) | ((uint)src[(x * 2) + 1] << 24));
                 }
 
                 break;
-            case DdsCodec.L6V5U5:
+            case TextureCodec.L6V5U5:
                 for (int x = 0; x < width; x++)
                 {
                     int t = BinaryPrimitives.ReadUInt16LittleEndian(src[(x * 2)..]);
@@ -401,7 +424,7 @@ internal static class DdsDecode
                 }
 
                 break;
-            case DdsCodec.X8L8V8U8:
+            case TextureCodec.X8L8V8U8:
                 for (int x = 0; x < width; x++)
                 {
                     ReadOnlySpan<byte> s = src[(x * 4)..];
@@ -412,7 +435,7 @@ internal static class DdsDecode
                 }
 
                 break;
-            case DdsCodec.A2W10V10U10:
+            case TextureCodec.A2W10V10U10:
                 for (int x = 0; x < width; x++)
                 {
                     uint t = BinaryPrimitives.ReadUInt32LittleEndian(src[(x * 4)..]);
@@ -429,7 +452,7 @@ internal static class DdsDecode
     /// Decodes one row of 4 × 4 blocks into <paramref name="rows"/> rows of <paramref name="width"/> natural pixels, the
     /// rows <paramref name="stride"/> bytes apart.
     /// </summary>
-    public static void Blocks(DdsPixelFormat f, ReadOnlySpan<byte> src, Span<byte> dst, int width, int rows, int stride)
+    public static void Blocks(TextureFormat f, ReadOnlySpan<byte> src, Span<byte> dst, int width, int rows, int stride)
     {
         int pixel = NaturalBytes(f.Natural);
         Span<byte> block = stackalloc byte[16 * 8];
@@ -439,34 +462,42 @@ internal static class DdsDecode
             ReadOnlySpan<byte> b = src.Slice(bx * f.UnitBytes, f.UnitBytes);
             switch (f.Codec)
             {
-                case DdsCodec.Bc1:
+                case TextureCodec.Bc1:
                     Bc1To5.DecodeBc1(b, block, fourColors: false);
                     break;
-                case DdsCodec.Bc2:
+                case TextureCodec.Bc1Opaque:
+                    Bc1To5.DecodeBc1(b, block, fourColors: false);
+                    for (int i = 3; i < 64; i += 4)
+                    {
+                        block[i] = 255;
+                    }
+
+                    break;
+                case TextureCodec.Bc2:
                     Bc1To5.DecodeBc2(b, block);
                     break;
-                case DdsCodec.Bc3:
+                case TextureCodec.Bc3:
                     Bc1To5.DecodeBc3(b, block);
                     break;
-                case DdsCodec.Bc4:
+                case TextureCodec.Bc4:
                     Bc1To5.DecodeUnorm(b, block, 1);
                     break;
-                case DdsCodec.Bc4Snorm:
+                case TextureCodec.Bc4Snorm:
                     Bc1To5.DecodeSnorm(b, block, 1);
                     break;
-                case DdsCodec.Bc5:
+                case TextureCodec.Bc5:
                     Bc1To5.DecodeUnorm(b, block, 3);
                     Bc1To5.DecodeUnorm(b[8..], block[1..], 3);
                     ClearBlue(block);
                     break;
-                case DdsCodec.Bc5Snorm:
+                case TextureCodec.Bc5Snorm:
                     Bc1To5.DecodeSnorm(b, block, 3);
                     Bc1To5.DecodeSnorm(b[8..], block[1..], 3);
                     ClearBlue(block);
                     break;
-                case DdsCodec.Bc6h:
-                case DdsCodec.Bc6hSigned:
-                    Bc6h.Decode(b, MemoryMarshal.Cast<byte, ushort>(block), f.Codec == DdsCodec.Bc6hSigned);
+                case TextureCodec.Bc6h:
+                case TextureCodec.Bc6hSigned:
+                    Bc6h.Decode(b, MemoryMarshal.Cast<byte, ushort>(block), f.Codec == TextureCodec.Bc6hSigned);
                     break;
                 default:
                     Bc7.Decode(b, block);
@@ -486,7 +517,7 @@ internal static class DdsDecode
     /// Decodes row <paramref name="y"/> of a planar video surface held whole in <paramref name="surface"/> (as many bytes as
     /// were read; missing chroma reads as neutral).
     /// </summary>
-    public static void Planar(DdsPixelFormat f, ReadOnlySpan<byte> surface, int y, Span<byte> dst, int width, int height)
+    public static void Planar(TextureFormat f, ReadOnlySpan<byte> surface, int y, Span<byte> dst, int width, int height)
     {
         long pitch = f.RowBytes(width);
         long luma = pitch * height;
@@ -494,23 +525,23 @@ internal static class DdsDecode
         {
             switch (f.Codec)
             {
-                case DdsCodec.Nv12:
-                case DdsCodec.P208:
+                case TextureCodec.Nv12:
+                case TextureCodec.P208:
                     {
-                        long chromaRow = f.Codec == DdsCodec.Nv12 ? y / 2 : y;
+                        long chromaRow = f.Codec == TextureCodec.Nv12 ? y / 2 : y;
                         long at = luma + (chromaRow * pitch) + ((x / 2) * 2);
                         Yuv8(Byte(surface, (y * pitch) + x, 16), Byte(surface, at, 128), Byte(surface, at + 1, 128), dst[(x * 3)..]);
                         break;
                     }
 
-                case DdsCodec.Nv11:
+                case TextureCodec.Nv11:
                     {
                         long at = luma + (y * (pitch / 2)) + ((x / 4) * 2);
                         Yuv8(Byte(surface, (y * pitch) + x, 16), Byte(surface, at, 128), Byte(surface, at + 1, 128), dst[(x * 3)..]);
                         break;
                     }
 
-                case DdsCodec.V208:
+                case TextureCodec.V208:
                     {
                         long half = (height + 1) / 2;
                         long u = luma + ((y / 2) * pitch) + x;
@@ -519,7 +550,7 @@ internal static class DdsDecode
                         break;
                     }
 
-                case DdsCodec.V408:
+                case TextureCodec.V408:
                     {
                         long u = luma + (y * pitch) + x;
                         long v = luma + (height * pitch) + (y * pitch) + x;
@@ -534,7 +565,7 @@ internal static class DdsDecode
                         int yy = Word(surface, (y * pitch) + (x * 2), 4096);
                         int u = Word(surface, chroma, 32768);
                         int v = Word(surface, chroma + 2, 32768);
-                        if (f.Natural == DdsNatural.Rgb10A2)
+                        if (f.Natural == TextureNatural.Rgb10A2)
                         {
                             Yuv10(yy >> 6, u >> 6, v >> 6, 3, dst[(x * 4)..]);
                         }
@@ -548,6 +579,118 @@ internal static class DdsDecode
             }
         }
     }
+
+    /// <summary>Divides the colour of premultiplied natural pixels by their alpha.</summary>
+    public static void Unpremultiply(TextureNatural natural, Span<byte> pixels)
+    {
+        switch (natural)
+        {
+            case TextureNatural.Rgba8:
+                for (int i = 0; i < pixels.Length; i += 4)
+                {
+                    int a = pixels[i + 3];
+                    for (int c = 0; c < 3; c++)
+                    {
+                        pixels[i + c] = a == 0 ? (byte)0 : (byte)Math.Min(255, ((pixels[i + c] * 255) + (a / 2)) / a);
+                    }
+                }
+
+                break;
+            case TextureNatural.Rgba16:
+                {
+                    Span<ushort> p = MemoryMarshal.Cast<byte, ushort>(pixels);
+                    for (int i = 0; i < p.Length; i += 4)
+                    {
+                        int a = p[i + 3];
+                        for (int c = 0; c < 3; c++)
+                        {
+                            p[i + c] = a == 0 ? (ushort)0 : (ushort)Math.Min(65535, ((p[i + c] * 65535L) + (a / 2)) / a);
+                        }
+                    }
+
+                    break;
+                }
+
+            case TextureNatural.RgbaF16:
+                {
+                    Span<Half> p = MemoryMarshal.Cast<byte, Half>(pixels);
+                    for (int i = 0; i < p.Length; i += 4)
+                    {
+                        float a = (float)p[i + 3];
+                        for (int c = 0; c < 3; c++)
+                        {
+                            p[i + c] = a == 0 ? Half.Zero : (Half)((float)p[i + c] / a);
+                        }
+                    }
+
+                    break;
+                }
+
+            case TextureNatural.RgbaF32:
+                {
+                    Span<float> p = MemoryMarshal.Cast<byte, float>(pixels);
+                    for (int i = 0; i < p.Length; i += 4)
+                    {
+                        float a = p[i + 3];
+                        for (int c = 0; c < 3; c++)
+                        {
+                            p[i + c] = a == 0 ? 0 : p[i + c] / a;
+                        }
+                    }
+
+                    break;
+                }
+        }
+    }
+
+    /// <summary>Rebuilds the blue channel of a two-channel normal map's natural pixels as the normal's Z.</summary>
+    public static void ReconstructZ(TextureNatural natural, Span<byte> pixels)
+    {
+        switch (natural)
+        {
+            case TextureNatural.Rgb8:
+                for (int i = 0; i < pixels.Length; i += 3)
+                {
+                    pixels[i + 2] = (byte)Math.Round(Z((pixels[i] / 127.5f) - 1, (pixels[i + 1] / 127.5f) - 1) * 127.5f + 127.5f);
+                }
+
+                break;
+            case TextureNatural.Rgb16:
+                {
+                    Span<ushort> p = MemoryMarshal.Cast<byte, ushort>(pixels);
+                    for (int i = 0; i < p.Length; i += 3)
+                    {
+                        p[i + 2] = (ushort)Math.Round(Z((p[i] / 32767.5f) - 1, (p[i + 1] / 32767.5f) - 1) * 32767.5f + 32767.5f);
+                    }
+
+                    break;
+                }
+
+            case TextureNatural.RgbaF16:
+                {
+                    Span<Half> p = MemoryMarshal.Cast<byte, Half>(pixels);
+                    for (int i = 0; i < p.Length; i += 4)
+                    {
+                        p[i + 2] = (Half)Z((float)p[i], (float)p[i + 1]);
+                    }
+
+                    break;
+                }
+
+            case TextureNatural.RgbF32:
+                {
+                    Span<float> p = MemoryMarshal.Cast<byte, float>(pixels);
+                    for (int i = 0; i < p.Length; i += 3)
+                    {
+                        p[i + 2] = Z(p[i], p[i + 1]);
+                    }
+
+                    break;
+                }
+        }
+    }
+
+    private static float Z(float x, float y) => MathF.Sqrt(MathF.Max(0, 1 - (x * x) - (y * y)));
 
     private const ushort HalfOne = 0x3C00;
 
@@ -571,13 +714,13 @@ internal static class DdsDecode
         return snorm ? Bc1To5.SnormToByte(Math.Max((int)(sbyte)value, -127), 1) : (byte)(value ^ 0x80);
     }
 
-    private static ushort Sample16(DdsCodec codec, ReadOnlySpan<byte> src)
+    private static ushort Sample16(TextureCodec codec, ReadOnlySpan<byte> src)
     {
         ushort v = BinaryPrimitives.ReadUInt16LittleEndian(src);
         return codec switch
         {
-            DdsCodec.Rg16Snorm or DdsCodec.Snorm16 => (ushort)(((((long)Math.Max((short)v, (short)-32767) + 32767) * 65535 * 2) + 65534) / 131068),
-            DdsCodec.Rg16Sint or DdsCodec.Sint16 => (ushort)(v ^ 0x8000),
+            TextureCodec.Rg16Snorm or TextureCodec.Snorm16 => (ushort)(((((long)Math.Max((short)v, (short)-32767) + 32767) * 65535 * 2) + 65534) / 131068),
+            TextureCodec.Rg16Sint or TextureCodec.Sint16 => (ushort)(v ^ 0x8000),
             _ => v,
         };
     }
@@ -615,16 +758,16 @@ internal static class DdsDecode
     }
 
     /// <summary>Decodes a legacy bit-mask format: each mask's field scaled to 8 or 16 bits, rounding to nearest.</summary>
-    private static void Masks(DdsPixelFormat f, ReadOnlySpan<byte> src, Span<byte> dst, int width)
+    private static void Masks(TextureFormat f, ReadOnlySpan<byte> src, Span<byte> dst, int width)
     {
         uint[] masks = f.Masks;
-        bool wide = f.Natural is DdsNatural.Gray16 or DdsNatural.GrayAlpha16 or DdsNatural.Rgb16 or DdsNatural.Rgba16;
+        bool wide = f.Natural is TextureNatural.Gray16 or TextureNatural.GrayAlpha16 or TextureNatural.Rgb16 or TextureNatural.Rgba16;
         int[] channels = f.Natural switch
         {
-            DdsNatural.Gray8 or DdsNatural.Gray16 => [0],
-            DdsNatural.GrayAlpha8 or DdsNatural.GrayAlpha16 => [0, 3],
-            DdsNatural.Alpha8 => [3],
-            DdsNatural.Rgb8 or DdsNatural.Rgb16 => [0, 1, 2],
+            TextureNatural.Gray8 or TextureNatural.Gray16 => [0],
+            TextureNatural.GrayAlpha8 or TextureNatural.GrayAlpha16 => [0, 3],
+            TextureNatural.Alpha8 => [3],
+            TextureNatural.Rgb8 or TextureNatural.Rgb16 => [0, 1, 2],
             _ => [0, 1, 2, 3],
         };
         int max = wide ? 65535 : 255;

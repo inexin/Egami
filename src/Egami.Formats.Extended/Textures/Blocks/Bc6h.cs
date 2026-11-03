@@ -1,6 +1,6 @@
 using System.Buffers.Binary;
 
-namespace Egami.Formats.Extended.Dds.Blocks;
+namespace Egami.Formats.Extended.Textures.Blocks;
 
 /// <summary>
 /// Decodes BC6H blocks (16 bytes, 4 × 4 RGB half-float pixels), unsigned (UF16) and signed (SF16), written from the Direct3D 11
