@@ -64,13 +64,16 @@ internal static class JxlTiming
     /// <summary>
     /// Times encoding each input image as JPEG XL with <c>--setting=</c>: d<i>distance</i>e<i>effort</i> for lossy (with a
     /// trailing p for progressive) or ll-e<i>effort</i> for lossless, as roadmap 2.4.11's profile runs them; the best of
-    /// <c>--runs=N</c> runs (default ten after ten warm-up runs), at one thread (<c>--one-thread</c>) or at one and all cores.
+    /// <c>--runs=N</c> runs (default ten after ten warm-up runs), at one thread (<c>--one-thread</c>), at the listed counts
+    /// (<c>--threads=1,4,24</c>) or at one and all cores.
     /// </summary>
     internal static void EncodeTimed(string[] args)
     {
         string setting = args.FirstOrDefault(a => a.StartsWith("--setting=", StringComparison.Ordinal))?["--setting=".Length..] ?? "d1e7";
         JxlWriterOptions options = Options(setting);
-        int[] counts = args.Contains("--one-thread") ? [1] : [1, Environment.ProcessorCount];
+        string? listed = args.FirstOrDefault(a => a.StartsWith("--threads=", StringComparison.Ordinal))?["--threads=".Length..];
+        int[] counts = listed is not null ? [.. listed.Split(',').Select(t => int.Parse(t, CultureInfo.InvariantCulture))]
+            : args.Contains("--one-thread") ? [1] : [1, Environment.ProcessorCount];
         int? runs = Runs(args);
         foreach (string file in args.Where(f => !f.StartsWith("--", StringComparison.Ordinal)))
         {
