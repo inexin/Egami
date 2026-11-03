@@ -1121,11 +1121,13 @@ internal sealed partial class JxlVarDctEncoder
         int stride = _blocksX * 8;
         int x0 = tx * TileBlocks, y0 = ty * TileBlocks;
         int x1 = Math.Min(x0 + TileBlocks, _blocksX), y1 = Math.Min(y0 + TileBlocks, _blocksY);
-        // A tile holds at most 64×64 coefficients a channel (its varblocks cover it once).
-        float[] yx = new float[64 * 64], xs = new float[64 * 64], yb = new float[64 * 64], bs = new float[64 * 64];
+        // A tile holds at most 64×64 coefficients a channel (its varblocks cover it once). The buffers are the thread's, each
+        // written before it is read.
+        CflScratch cfl = t_cflScratch ??= new();
+        float[] yx = cfl.Yx, xs = cfl.Xs, yb = cfl.Yb, bs = cfl.Bs;
         int n = 0;
-        float[] scratch = new float[64 * 64];
-        float[][] block = [new float[64 * 64], new float[64 * 64], new float[64 * 64]];
+        float[] scratch = cfl.Scratch;
+        float[][] block = cfl.Block;
         for (int y = y0; y < y1; y++)
         {
             for (int x = x0; x < x1; x++)
@@ -1169,6 +1171,7 @@ internal sealed partial class JxlVarDctEncoder
                     Array.Resize(ref xs, n + size);
                     Array.Resize(ref yb, n + size);
                     Array.Resize(ref bs, n + size);
+                    (cfl.Yx, cfl.Xs, cfl.Yb, cfl.Bs) = (yx, xs, yb, bs);
                 }
 
                 for (int i = 0; i < size; i++)
@@ -1188,6 +1191,20 @@ internal sealed partial class JxlVarDctEncoder
         int tile = (ty * _tilesX) + tx;
         _yToX[tile] = (sbyte)JxlChromaFromLuma.FindBestMultiplier(yx.AsSpan(0, n), xs.AsSpan(0, n), 0f, fast);
         _yToB[tile] = (sbyte)JxlChromaFromLuma.FindBestMultiplier(yb.AsSpan(0, n), bs.AsSpan(0, n), 1f, fast);
+    }
+
+    [ThreadStatic]
+    private static CflScratch? t_cflScratch;
+
+    /// <summary>A thread's buffers for <see cref="ChromaFromLumaTile"/>.</summary>
+    private sealed class CflScratch
+    {
+        internal float[] Yx = new float[64 * 64];
+        internal float[] Xs = new float[64 * 64];
+        internal float[] Yb = new float[64 * 64];
+        internal float[] Bs = new float[64 * 64];
+        internal readonly float[] Scratch = new float[64 * 64];
+        internal readonly float[][] Block = [new float[64 * 64], new float[64 * 64], new float[64 * 64]];
     }
 
     /// <summary>
