@@ -55,8 +55,9 @@ internal sealed class JxlVarDct
     private float[] _qmScale = [];
 
     /// <summary>
-    /// Creates the frame's VarDCT state; without <paramref name="keepCoefficients"/> no frame-wide coefficient planes are made,
-    /// as each pass group then goes straight to pixels (<see cref="DecodePassGroup(JxlBitReader, int, int, JxlGroupScratch?)"/>).
+    /// Creates the frame's VarDCT state; without <paramref name="keepCoefficients"/> no frame-wide coefficient planes are made
+    /// (unless chroma is subsampled), as each pass group then goes straight to pixels
+    /// (<see cref="DecodePassGroup(JxlBitReader, int, int, JxlGroupScratch?)"/>).
     /// </summary>
     internal JxlVarDct(JxlImageHeader image, JxlFrameHeader frame, JxlVarDctGlobal global, float[] lfDequant, SafetyLimits limits, bool keepCoefficients = true)
     {
@@ -109,7 +110,7 @@ internal sealed class JxlVarDct
         {
             _lf[c] = new float[(long)PlaneBlocksX(c) * PlaneBlocksY(c)];
             _lfQuant[c] = new int[_lf[c].Length];
-            _coeffs[c] = keepCoefficients ? new int[_lf[c].Length * 64] : [];
+            _coeffs[c] = keepCoefficients || _hasH || _hasV ? new int[_lf[c].Length * 64] : [];
         }
     }
 
@@ -517,7 +518,7 @@ internal sealed class JxlVarDct
 
                 if (direct is not null)
                 {
-                    ReconstructVarblock(direct, bx0 + x, by0 + y, t, qf);
+                    ReconstructVarblock(direct, bx0 + x, by0 + y, t, qf, direct.Coefficients, 0, w8 * 8);
                 }
             }
         }
@@ -525,9 +526,10 @@ internal sealed class JxlVarDct
 
     /// <summary>
     /// Transforms the varblocks of pass group <paramref name="group"/> into the scratch's pixels from the frame's coefficient
-    /// planes, for a frame of several passes once every pass is decoded (after <see cref="PrepareDirect"/>).
+    /// planes, once every pass that arrived is decoded (after <see cref="PrepareDirect"/>). With <paramref name="clear"/>, the
+    /// group's pixels start at 0, as places no varblock covers (groups not decoded) are 0 in <see cref="Reconstruct"/>'s planes.
     /// </summary>
-    internal void ReconstructGroup(int group, JxlGroupScratch s)
+    internal void ReconstructGroup(int group, JxlGroupScratch s, bool clear)
     {
         int groupsPerRow = (int)Ceil(Width, _groupDim);
         int gb = _groupDim / 8;
@@ -537,6 +539,20 @@ internal sealed class JxlVarDct
         int gbh = Math.Min(gb, BlocksY - by0);
         int stride = BlocksX * 8;
         s.Begin(bx0, by0);
+        if (clear)
+        {
+            foreach (float[] plane in s.Planes)
+            {
+                Array.Clear(plane, 0, s.Stride * s.Stride);
+            }
+        }
+
+        if (_hf is null)
+        {
+            // HF global has not arrived: the group shows its LF alone, filled in by the caller.
+            return;
+        }
+
         for (int y = 0; y < gbh; y++)
         {
             for (int x = 0; x < gbw; x++)
@@ -548,29 +564,19 @@ internal sealed class JxlVarDct
                     continue;
                 }
 
-                JxlTransformType t = (JxlTransformType)type;
-                (int w8, int h8) = JxlTransforms8.Size(t);
-                for (int c = 0; c < 3; c++)
-                {
-                    for (int row = 0; row < h8 * 8; row++)
-                    {
-                        _coeffs[c].AsSpan(((((by0 + y) * 8) + row) * stride) + ((bx0 + x) * 8), w8 * 8).CopyTo(s.Coefficients[c].AsSpan(row * w8 * 8));
-                    }
-                }
-
-                ReconstructVarblock(s, bx0 + x, by0 + y, t, _hfMul[at]);
+                ReconstructVarblock(s, bx0 + x, by0 + y, (JxlTransformType)type, _hfMul[at], _coeffs, ((by0 + y) * 8 * stride) + ((bx0 + x) * 8), stride);
             }
         }
     }
 
     /// <summary>
     /// Gets ready for <see cref="DecodePassGroup(JxlBitReader, int, int, JxlGroupScratch?)"/> to transform varblocks as their
-    /// group decodes: the LF prepared (chroma from luma and smoothing, as <see cref="Reconstruct"/> does first) and the
-    /// dequantization constants worked out.
+    /// group decodes: the LF prepared (from <paramref name="lfFrame"/>, or with chroma from luma and smoothing, as
+    /// <see cref="Reconstruct"/> does first) and the dequantization constants worked out.
     /// </summary>
-    internal void PrepareDirect()
+    internal void PrepareDirect(float[][]? lfFrame)
     {
-        PrepareLf(null);
+        PrepareLf(lfFrame);
         float[]? oim = _image.OpsinInverse;
         _quantBias = oim is null ? [1 - 0.05465007330715401f, 1 - 0.07005449891748593f, 1 - 0.049935103337343655f] : [oim[12], oim[13], oim[14]];
         _numerator = oim is null ? 0.145f : oim[15];
@@ -580,9 +586,11 @@ internal sealed class JxlVarDct
     /// <summary>
     /// Dequantizes the varblock at (<paramref name="bx"/>, <paramref name="by"/>) from the scratch's coefficients, applies chroma
     /// from luma, places its LF and runs its inverse transform into the scratch's group pixels: the steps of
-    /// <see cref="Reconstruct"/>, in its order and with its arithmetic, for one varblock. Clears the coefficients it used.
+    /// <see cref="Reconstruct"/>, in its order and with its arithmetic, for one varblock. The coefficients are read from
+    /// <paramref name="coefficients"/> from <paramref name="from"/>, <paramref name="rowStride"/> a row; the scratch's own are
+    /// cleared after use.
     /// </summary>
-    private void ReconstructVarblock(JxlGroupScratch s, int bx, int by, JxlTransformType t, int hfMul)
+    private void ReconstructVarblock(JxlGroupScratch s, int bx, int by, JxlTransformType t, int hfMul, int[][] coefficients, int from, int rowStride)
     {
         JxlHfGlobal hf = _hf!;
         (int w8, int h8) = JxlTransforms8.Size(t);
@@ -592,7 +600,7 @@ internal sealed class JxlVarDct
         int o = ((by - s.By0) * 8 * stride) + ((bx - s.Bx0) * 8);
         for (int c = 0; c < 3; c++)
         {
-            Span<int> coeffs = s.Coefficients[c].AsSpan(0, width * height);
+            int[] coeffs = coefficients[c];
             float[] plane = s.Planes[c];
             float mul = 65536f / (_global.GlobalScale * (float)hfMul) * _qmScale[c];
             float[] matrix = hf.Matrices.Get(c, t);
@@ -609,7 +617,7 @@ internal sealed class JxlVarDct
                     Vector256<float> vMul = Vector256.Create(mul);
                     for (; x + 8 <= width; x += 8)
                     {
-                        Vector256<float> q = Vector256.ConvertToSingle(Vector256.Create(coeffs.Slice((y * width) + x, 8)));
+                        Vector256<float> q = Vector256.ConvertToSingle(Vector256.Create(coeffs.AsSpan(from + (y * rowStride) + x, 8)));
                         Vector256<float> small = Vector256.LessThanOrEqual(Vector256.Abs(q), Vector256<float>.One);
                         q = Vector256.ConditionalSelect(small, q * vBias, q - (vNumerator / q));
                         (q * Vector256.Create(matrix.AsSpan((y * width) + x, 8)) * vMul).CopyTo(plane.AsSpan(row + x, 8));
@@ -618,13 +626,16 @@ internal sealed class JxlVarDct
 
                 for (; x < width; x++)
                 {
-                    float q = coeffs[(y * width) + x];
+                    float q = coeffs[from + (y * rowStride) + x];
                     q = MathF.Abs(q) <= 1 ? q * bias : q - (numerator / q);
                     plane[row + x] = q * matrix[(y * width) + x] * mul;
                 }
             }
 
-            coeffs.Clear();
+            if (coefficients == s.Coefficients)
+            {
+                coeffs.AsSpan(0, width * height).Clear();
+            }
         }
 
         // Chroma from luma, with each 64×64 tile's factors (the last tile also takes any columns or rows past it).

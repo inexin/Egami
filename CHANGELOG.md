@@ -51,9 +51,14 @@ before.
   group is filtered (Gaborish, EPF), converted to the output color space and written into the raster from a per-thread
   buffer, and the rows and columns along the group seams are finished from strips once their neighbours are in. A
   single-pass frame no longer has frame-sized coefficient or float planes: decoding allocates about 2 bytes per pixel
-  besides the raster, down from about 40. Other frames (Modular, layers, animations, patches, splines, noise, upsampling,
-  JPEG recompressions, regions and partial files) keep the whole-frame path.
-- 8-bit gray, RGB and RGBA rows are written eight pixels at a time.
+  besides the raster, down from about 40.
+- 8-bit gray, RGB and RGBA rows are written eight pixels at a time; from XYB to plain sRGB, the color conversion runs in the
+  same eight-pixel step.
+- Every other lossy frame takes the group pipeline as far as its filters: layers, animation frames, LF frames, frames with
+  patches, splines, noise or upsampling, regions and partial files are dequantized, transformed and filtered group by group
+  into frame-sized planes, and the steps after the filters work on those. A file with an LF frame (cjxl's progressive DC)
+  decodes straight into pixels too, and allocates about 16 bytes a pixel instead of 55. Modular frames and subsampled JPEG
+  recompressions run the filters in tiles; the decoder no longer filters a whole frame at once.
 
 Faster JPEG XL decoding of entropy-coded data and Modular images (roadmap 2.4.11). No API changes; decoded pixels are the
 same as before.

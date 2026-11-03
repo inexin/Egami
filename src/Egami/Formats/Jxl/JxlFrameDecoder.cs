@@ -28,6 +28,9 @@ internal sealed class JxlFrameChannels
     /// <summary>Gets a VarDCT frame's three color planes (X, Y, B; or Cb, Y, Cr), at block-padded size, or <see langword="null"/>.</summary>
     internal float[][]? ColorPlanes { get; init; }
 
+    /// <summary>Gets whether <see cref="ColorPlanes"/> already had the restoration filters (Gaborish, EPF), from <see cref="JxlGroupPipeline"/>.</summary>
+    internal bool Filtered { get; init; }
+
     /// <summary>Gets the row stride of each of <see cref="ColorPlanes"/>.</summary>
     internal int[] ColorStrides { get; init; } = [];
 
@@ -76,6 +79,14 @@ internal sealed class JxlFrameDecoder
     private int _extraStart;
     private int _prefix;
     private int[]? _passOfShift;
+    private bool _lfDecoded;
+
+    // For JxlGroupPipeline: whether the pass groups were decoded into coefficient planes first, how many passes of each group
+    // arrived, whether HF global did, and the LF image upsampled for the groups that show it.
+    private bool _keep;
+    private int[] _done = [];
+    private bool _hfGlobal = true;
+    private float[][]? _lfUp;
 
     internal JxlFrameDecoder(byte[] codestream, JxlImageHeader image, JxlFrameHeader frame, JxlToc toc, long offset, SafetyLimits limits)
     {
@@ -110,6 +121,9 @@ internal sealed class JxlFrameDecoder
     /// </summary>
     internal long Arrived { get; init; } = long.MaxValue;
 
+    /// <summary>Gets a value indicating whether a VarDCT frame's color planes skip the restoration filters, for the encoder's reconstruction.</summary>
+    internal bool Unfiltered { get; init; }
+
     /// <summary>Gets whether every section of the frame was decoded; false when <see cref="Arrived"/> left some out.</summary>
     internal bool Complete { get; private set; } = true;
 
@@ -125,7 +139,7 @@ internal sealed class JxlFrameDecoder
     /// </summary>
     internal JxlFrameChannels Decode(float[][]? lfFrame, bool lfOnly)
     {
-        DecodeLf(lfFrame, keepCoefficients: true);
+        DecodeLf(lfFrame, keepCoefficients: lfOnly || !Direct);
         JxlVarDct? varDct = _varDct;
         (long w, long h) = _frame.CodedSize;
         if (lfOnly && varDct is not null)
@@ -145,23 +159,48 @@ internal sealed class JxlFrameDecoder
     }
 
     /// <summary>
-    /// Decodes a VarDCT frame up to its pass groups for <see cref="JxlGroupPipeline"/>: LF global, the LF groups and HF global,
-    /// with the LF prepared, so that <see cref="DecodeGroupPixels"/> can take each group to pixels. A single-pass frame has no
-    /// frame-wide coefficient planes, as each group decodes straight to pixels; a frame of several passes decodes every pass
-    /// into them here, as the passes add to the same coefficients.
+    /// Decodes a VarDCT frame up to its pass groups for <see cref="JxlGroupPipeline"/>: LF global and the LF groups (unless
+    /// <see cref="Decode(float[][], bool)"/> already did), HF global, and the LF prepared (from <paramref name="lfFrame"/> when
+    /// the frame uses an LF frame), so that <see cref="DecodeGroupPixels"/> can take each group to pixels. A single-pass frame
+    /// decoded whole has no frame-wide coefficient planes, as each group decodes straight to pixels; a frame of several passes,
+    /// a region or a partial file decodes every pass that arrived into them here, as the passes add to the same coefficients.
     /// </summary>
-    internal JxlVarDct BeginGroups()
+    internal JxlVarDct BeginGroups(float[][]? lfFrame)
     {
-        bool passes = _frame.Passes > 1;
-        DecodeLf(null, keepCoefficients: passes);
-        JxlVarDct varDct = _varDct!;
-        varDct.ReadHfGlobal(Section(1 + (int)_frame.LfGroups), GlobalTree, (int)_frame.LfGroups, (int)_frame.Groups);
-        if (passes)
+        if (!_lfDecoded)
         {
-            DecodeAllPasses(new int[_frame.Groups], hfGlobal: true);
+            DecodeLf(lfFrame, keepCoefficients: !Direct);
         }
 
-        varDct.PrepareDirect();
+        JxlVarDct varDct = _varDct!;
+        int lfGroups = (int)_frame.LfGroups;
+        _keep = !Direct;
+        _hfGlobal = Has(1 + lfGroups);
+        if (_hfGlobal)
+        {
+            varDct.ReadHfGlobal(Section(1 + lfGroups), GlobalTree, lfGroups, (int)_frame.Groups);
+        }
+
+        if (_keep)
+        {
+            // How many passes of each group were decoded: a pass group comes after the group's earlier passes only.
+            _done = new int[_frame.Groups];
+            DecodeAllPasses(_done, _hfGlobal);
+            if (_done.Any(d => d < _frame.Passes) && Arrived != long.MaxValue)
+            {
+                Complete = false;
+            }
+        }
+
+        varDct.PrepareDirect((_frame.Flags & 0x20) != 0 ? lfFrame : null);
+        if (!Complete)
+        {
+            // As libjxl's progressive flush: the groups with no pass yet show the LF image upsampled 8 times.
+            int lw = (int)Ceil(_frame.CodedSize.Item1, 8);
+            int lh = (int)Ceil(_frame.CodedSize.Item2, 8);
+            _lfUp = [.. varDct.PreparedLfImage().Select(p => JxlFilters.Upsample(p, lw, lh, lw, 8, _image, Parallel))];
+        }
+
         JxlStageTimes.Lap(JxlStage.Dequantize);
         return varDct;
     }
@@ -172,9 +211,14 @@ internal sealed class JxlFrameDecoder
     /// <summary>Decodes pass group <paramref name="g"/> of a frame begun with <see cref="BeginGroups"/> into the scratch's pixels.</summary>
     internal void DecodeGroupPixels(int g, JxlGroupScratch scratch)
     {
-        if (_frame.Passes > 1)
+        if (_keep)
         {
-            _varDct!.ReconstructGroup(g, scratch);
+            _varDct!.ReconstructGroup(g, scratch, clear: Needed is not null);
+            if (_lfUp is not null && (!_hfGlobal || _done[g] == 0))
+            {
+                FillGroupFromLf(g, scratch);
+            }
+
             return;
         }
 
@@ -194,12 +238,36 @@ internal sealed class JxlFrameDecoder
         _global!.Inverse(_lfGlobal!);
     }
 
+    /// <summary>Gets whether the frame is decoded whole in one pass, so that its pass groups can go straight to pixels.</summary>
+    private bool Direct => _frame.Passes == 1 && Needed is null && Arrived == long.MaxValue && !CoefficientsOnly;
+
+    /// <summary>Copies the LF image upsampled (<see cref="_lfUp"/>) over group <paramref name="g"/>'s pixels, as <see cref="FillFromLf"/> does for a frame.</summary>
+    private void FillGroupFromLf(int g, JxlGroupScratch s)
+    {
+        JxlVarDct varDct = _varDct!;
+        int groupDim = _frame.GroupDim;
+        int groupsPerRow = (int)Ceil(_frame.CodedSize.Item1, groupDim);
+        int uw = (int)Ceil(_frame.CodedSize.Item1, 8) * 8;
+        int lh = (int)Ceil(_frame.CodedSize.Item2, 8);
+        int x0 = g % groupsPerRow * groupDim, y0 = g / groupsPerRow * groupDim;
+        for (int c = 0; c < 3; c++)
+        {
+            int stride = varDct.PlaneBlocksX(c) * 8;
+            int x1 = Math.Min(x0 + groupDim, Math.Min(stride, uw)), y1 = Math.Min(y0 + groupDim, lh * 8);
+            for (int y = y0; y < y1; y++)
+            {
+                _lfUp![c].AsSpan((y * uw) + x0, x1 - x0).CopyTo(s.Planes[c].AsSpan((y - y0) * s.Stride));
+            }
+        }
+    }
+
     /// <summary>
     /// Decodes LF global, then the LF groups: the VarDCT LF coefficients and HF metadata, and the Modular channels squeezed by 3
     /// or more both ways. Leaves the frame's state in the fields for the passes.
     /// </summary>
     private void DecodeLf(float[][]? lfFrame, bool keepCoefficients)
     {
+        _lfDecoded = true;
         JxlStageTimes.Lap(JxlStage.Headers);
         (long w, long h) = _frame.CodedSize;
         int width = (int)w;
@@ -322,7 +390,10 @@ internal sealed class JxlFrameDecoder
         JxlStageTimes.Lap(JxlStage.LfGroups);
     }
 
-    /// <summary>Decodes HF global and the pass groups of a frame whose LF <see cref="DecodeLf"/> decoded, then reconstructs its color.</summary>
+    /// <summary>
+    /// Decodes HF global and the pass groups of a frame whose LF <see cref="DecodeLf"/> decoded, then reconstructs its color:
+    /// through <see cref="JxlGroupPipeline"/>, or for subsampled chroma (and JPEG reconstruction) frame-wide.
+    /// </summary>
     private JxlFrameChannels DecodePasses(float[][]? lfFrame)
     {
         (long w, long h) = _frame.CodedSize;
@@ -335,6 +406,24 @@ internal sealed class JxlFrameDecoder
         int groups = (int)_frame.Groups;
         int groupsPerRow = (int)Ceil(width, groupDim);
         bool useLfFrame = (_frame.Flags & 0x20) != 0;
+        if (varDct is not null && !CoefficientsOnly && !varDct.Subsampled)
+        {
+            // The group pipeline: each group transformed and filtered on its own, into frame-sized planes.
+            float[][] filtered = JxlGroupPipeline.Planes(this, _frame, lfFrame, filters: !Unfiltered);
+            JxlStageTimes.Lap(JxlStage.Epf);
+            return new JxlFrameChannels(width, height, global.Channels, 3, _extraStart)
+            {
+                ColorPlanes = filtered,
+                ColorStrides = [width, width, width],
+                Filtered = !Unfiltered,
+                LfDequant = _lfDequant,
+                VarDct = varDct,
+                Patches = _patches,
+                Splines = _splines,
+                Noise = _noise,
+            };
+        }
+
         int passes = _frame.Passes;
         bool hfGlobal = Has(1 + lfGroups);
         if (hfGlobal)

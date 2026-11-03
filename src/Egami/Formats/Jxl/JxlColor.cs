@@ -339,6 +339,28 @@ internal static class JxlColor
     }
 
     /// <summary>
+    /// Encodes eight linear samples with the sRGB curve: <see cref="EncodeSrgb"/>'s vector arithmetic, for a caller that keeps
+    /// the samples in registers (needs FMA).
+    /// </summary>
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+    internal static Vector256<float> EncodeSrgb8(Vector256<float> v)
+    {
+        Vector256<float> sign = v & Vector256.Create(-0f);
+        Vector256<float> x = Vector256.AndNot(v, Vector256.Create(-0f));
+        Vector256<float> r = Vector256.Sqrt(x);
+        Vector256<float> yp = Vector256.Create(SrgbP[4]);
+        Vector256<float> yq = Vector256.Create(SrgbQ[4]);
+        for (int k = 3; k >= 0; k--)
+        {
+            yp = System.Runtime.Intrinsics.X86.Fma.MultiplyAdd(yp, r, Vector256.Create(SrgbP[k]));
+            yq = System.Runtime.Intrinsics.X86.Fma.MultiplyAdd(yq, r, Vector256.Create(SrgbQ[k]));
+        }
+
+        Vector256<float> magnitude = Vector256.ConditionalSelect(Vector256.GreaterThan(x, Vector256.Create(0.0031308f)), yp / yq, x * Vector256.Create(12.92f));
+        return magnitude | sign;
+    }
+
+    /// <summary>
     /// The sRGB curve as libjxl's high-precision TF_SRGB computes it: a rational polynomial in √x above 0.0031308 (error about
     /// 5e-7), 12.92·x below, sign kept. Several samples at a time with AVX and FMA, the rest with the same operations.
     /// </summary>
@@ -382,6 +404,44 @@ internal static class JxlColor
 
             plane[i] = MathF.CopySign(x > 0.0031308f ? yp / yq : x * 12.92f, v);
         }
+    }
+}
+
+/// <summary>
+/// XYB to linear sRGB for eight samples at a time, with the constants worked out once: <c>JxlColor.XybToLinear</c>'s vector
+/// arithmetic, for a caller that keeps the samples in registers (needs FMA).
+/// </summary>
+internal readonly struct JxlXyb8
+{
+    private readonly Vector256<float> _c0, _c1, _c2, _b0, _b1, _b2, _scale;
+    private readonly Vector256<float> _m0, _m1, _m2, _m3, _m4, _m5, _m6, _m7, _m8;
+
+    /// <summary>Initializes a new instance of the <see cref="JxlXyb8"/> struct from the opsin inverse <paramref name="m"/> (12 values) and the intensity target.</summary>
+    internal JxlXyb8(float[] m, float intensityTarget)
+    {
+        _b0 = Vector256.Create(m[9]);
+        _b1 = Vector256.Create(m[10]);
+        _b2 = Vector256.Create(m[11]);
+        _c0 = Vector256.Create(MathF.Cbrt(m[9]));
+        _c1 = Vector256.Create(MathF.Cbrt(m[10]));
+        _c2 = Vector256.Create(MathF.Cbrt(m[11]));
+        _scale = Vector256.Create(255 / intensityTarget);
+        (_m0, _m1, _m2) = (Vector256.Create(m[0]), Vector256.Create(m[1]), Vector256.Create(m[2]));
+        (_m3, _m4, _m5) = (Vector256.Create(m[3]), Vector256.Create(m[4]), Vector256.Create(m[5]));
+        (_m6, _m7, _m8) = (Vector256.Create(m[6]), Vector256.Create(m[7]), Vector256.Create(m[8]));
+    }
+
+    /// <summary>Converts X, Y and B to linear R, G and B.</summary>
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+    internal (Vector256<float> R, Vector256<float> G, Vector256<float> B) ToLinear(Vector256<float> vx, Vector256<float> vy, Vector256<float> vb)
+    {
+        Vector256<float> gl = vy + vx - _c0;
+        Vector256<float> gm = vy - vx - _c1;
+        Vector256<float> gs = vb - _c2;
+        Vector256<float> l = System.Runtime.Intrinsics.X86.Fma.MultiplyAdd(gl * gl, gl, _b0) * _scale;
+        Vector256<float> mm = System.Runtime.Intrinsics.X86.Fma.MultiplyAdd(gm * gm, gm, _b1) * _scale;
+        Vector256<float> ss = System.Runtime.Intrinsics.X86.Fma.MultiplyAdd(gs * gs, gs, _b2) * _scale;
+        return ((_m0 * l) + (_m1 * mm) + (_m2 * ss), (_m3 * l) + (_m4 * mm) + (_m5 * ss), (_m6 * l) + (_m7 * mm) + (_m8 * ss));
     }
 }
 
