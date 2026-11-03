@@ -97,7 +97,7 @@ ImageSharp, Egami is typically 1.5 to 3 times faster.</p>
 the cases). Egami is the 1.00× baseline: 2.00× means that library takes twice as long, and below 1.00× it is faster than Egami.
 An empty cell means that library was not measured for the area. Cases counts the scenarios in the area; a
 scenario timed against two libraries makes two comparisons. Areas marked Oct 30 were rerun
-on 30 October 2026; the rest come from runs between 9 and 22 October.</p>
+on 30 October 2026 and JPEG encode on 3 November; the rest come from runs between 9 and 22 October.</p>
 <table>
 <thead>
 <tr>
@@ -119,10 +119,10 @@ on 30 October 2026; the rest come from runs between 9 and 22 October.</p>
 <td></td>
 </tr>
 <tr>
-<td>JPEG encode (Oct 30)</td>
+<td>JPEG encode (Nov 3)</td>
 <td>4</td>
 <td>1.00×</td>
-<td>1.41×</td>
+<td>2.45×</td>
 <td></td>
 <td></td>
 </tr>
@@ -383,8 +383,8 @@ on 30 October 2026; the rest come from runs between 9 and 22 October.</p>
 <h2 id="how-it-was-measured">How it was measured</h2>
 <p>The numbers come from a comparison harness kept apart from the Egami repository, so that Egami itself never references the
 other libraries. Most areas were run between 9 and 22 October 2026 against Egami's main branch on that day. JPEG and PNG were
-rerun on 30 October against Egami cd0e6b41 (decode, after the speed work in #208) and 35d45808 (encode); WebP was rerun the same
-evening against 6b8b07b9. Compare libraries within one run only: absolute times differ a little between runs.</p>
+rerun on 30 October against Egami cd0e6b41 (decode, after the speed work in #208) and 35d45808 (encode), and JPEG encode again
+on 3 November against c7adaa2e (after the encode speed work in #244 to #246); WebP was rerun on 30 October against 6b8b07b9. Compare libraries within one run only: absolute times differ a little between runs.</p>
 <ul>
 <li><strong>Machine:</strong> AMD Ryzen 9 3900X, 12 cores and 24 threads, Windows 10 22H2, .NET 10.0.12 x64 (AVX2).</li>
 <li><strong>Libraries:</strong> ImageSharp 3.1.12, SkiaSharp (native Skia, libpng and libwebp), Magick.NET Q16 (native ImageMagick).</li>
@@ -736,7 +736,7 @@ time divided by Egami's.</p>
 </tbody>
 </table>
 <h3 id="jpeg-encode">JPEG encode</h3>
-<p>Rerun Oct 30 against Egami main 35d45808. Quality 90 is now timed both plain, like ImageSharp, and with Egami's optimized Huffman tables, which ImageSharp does not offer.</p>
+<p>Rerun Nov 3 against Egami main c7adaa2e, after the JPEG encode speed work (#244 to #246). Quality 90 is timed both plain, like ImageSharp, and with Egami's optimized Huffman tables, which ImageSharp does not offer.</p>
 <table>
 <thead>
 <tr>
@@ -751,47 +751,50 @@ time divided by Egami's.</p>
 <tr>
 <td>Quality 75, half chroma</td>
 <td>All cores</td>
-<td>46.81 ms</td>
-<td>67.60 ms</td>
-<td>1.44×</td>
+<td>15.96 ms</td>
+<td>59.22 ms</td>
+<td>3.71×</td>
 </tr>
 <tr>
 <td>Quality 90, full chroma</td>
 <td>All cores</td>
-<td>57.06 ms</td>
-<td>117 ms</td>
-<td>2.05×</td>
+<td>38.08 ms</td>
+<td>102 ms</td>
+<td>2.67×</td>
 </tr>
 <tr>
 <td>Quality 90, full chroma, optimized</td>
 <td>All cores</td>
-<td>150 ms</td>
+<td>50.69 ms</td>
 <td></td>
 <td></td>
 </tr>
 <tr>
 <td>Quality 75, half chroma</td>
 <td>1 thread</td>
-<td>53.34 ms</td>
-<td>67.40 ms</td>
-<td>1.26×</td>
+<td>28.22 ms</td>
+<td>57.44 ms</td>
+<td>2.04×</td>
 </tr>
 <tr>
 <td>Quality 90, full chroma</td>
 <td>1 thread</td>
-<td>110 ms</td>
-<td>117 ms</td>
-<td>1.06×</td>
+<td>56.06 ms</td>
+<td>99.79 ms</td>
+<td>1.78×</td>
 </tr>
 <tr>
 <td>Quality 90, full chroma, optimized</td>
 <td>1 thread</td>
-<td>152 ms</td>
+<td>81.45 ms</td>
 <td></td>
 <td></td>
 </tr>
 </tbody>
 </table>
+<p>Against libjpeg-turbo's cjpeg (3.0.3, with its SIMD), egami-compare's 24-megapixel gate encodes on one thread, from a PPM
+in memory to a null output for both: Egami takes 0.91 to 1.07 times cjpeg's time at quality 75 4:2:0 and 0.55 to 0.58 times
+at quality 90 4:4:4 with optimized tables (<code>cjpeg -optimize</code>). The files are byte for byte cjpeg's.</p>
 <h3 id="jpeg-probe-exif-and-thumbnail">JPEG probe, EXIF and thumbnail</h3>
 <p>Run Oct 9.</p>
 <table>
