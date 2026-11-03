@@ -1,4 +1,5 @@
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace Egami.Formats.Jxl;
 
@@ -473,8 +474,9 @@ internal sealed class JxlWeightedPredictor
     private readonly int _width;
     private readonly long _p1, _p2, _p3a, _p3b, _p3c, _p3d, _p3e;
     private readonly uint _w0, _w1, _w2, _w3;
-    private readonly int[] _trueErrRow;
-    private readonly uint[] _subErrRow;
+    // The row above's errors, five per sample (the true error, then the four sub-predictors' errors), so a neighbour's are
+    // one load apart.
+    private readonly uint[] _errRow;
     private int _x;
     private int _y;
     private int _errW;
@@ -494,8 +496,7 @@ internal sealed class JxlWeightedPredictor
         _width = width;
         (_p1, _p2, _p3a, _p3b, _p3c, _p3d, _p3e) = (wp.P1, wp.P2, wp.P3a, wp.P3b, wp.P3c, wp.P3d, wp.P3e);
         (_w0, _w1, _w2, _w3) = ((uint)wp.W0, (uint)wp.W1, (uint)wp.W2, (uint)wp.W3);
-        _trueErrRow = new int[width];
-        _subErrRow = new uint[width * 4];
+        _errRow = new uint[width * 5];
     }
 
     /// <summary>Gets the max-error property (15) of the last <see cref="Predict"/>.</summary>
@@ -530,7 +531,8 @@ internal sealed class JxlWeightedPredictor
         w3w >>= logWeight;
         sum = w0 + w1 + w2 + w3w;
         long s = ((long)sum >> 1) - 1 + (_s0 * w0) + (_s1 * w1) + (_s2 * w2) + (_s3 * w3w);
-        long prediction = (s * DivLookup[sum]) >> 24;
+        // Each weight is at least 4, so sum >> 4 is at least 1, and after the shift the sum is below 32.
+        long prediction = (s * Divide(sum)) >> 24;
         if (((errN ^ errW) | (errN ^ errNw)) <= 0)
         {
             long min = Math.Min(n3, Math.Min(w3, ne3));
@@ -570,20 +572,22 @@ internal sealed class JxlWeightedPredictor
         uint e2 = (uint)((Abs(_s2 - s8) + 3) >> 3);
         uint e3 = (uint)((Abs(_s3 - s8) + 3) >> 3);
         int x = _x;
-        _trueErrRow[x] = trueErr;
-        _subErrRow[4 * x] = e0;
-        _subErrRow[(4 * x) + 1] = e1;
-        _subErrRow[(4 * x) + 2] = e2;
-        _subErrRow[(4 * x) + 3] = e3;
+        Span<uint> at = _errRow.AsSpan(5 * x, 5);
+        at[0] = (uint)trueErr;
+        at[1] = e0;
+        at[2] = e1;
+        at[3] = e2;
+        at[4] = e3;
         _x++;
         if (_x >= _width)
         {
             _y++;
             _x = 0;
             _errW = 0;
-            _errN = _trueErrRow[0];
+            ReadOnlySpan<uint> first = _errRow.AsSpan(0, 5);
+            _errN = (int)first[0];
             _errNw = _errN;
-            (_subNW0, _subNW1, _subNW2, _subNW3) = (_subErrRow[0], _subErrRow[1], _subErrRow[2], _subErrRow[3]);
+            (_subNW0, _subNW1, _subNW2, _subNW3) = (first[1], first[2], first[3], first[4]);
             (_subNwWw0, _subNwWw1, _subNwWw2, _subNwWw3) = (_subNW0, _subNW1, _subNW2, _subNW3);
             if (_width <= 1)
             {
@@ -592,8 +596,9 @@ internal sealed class JxlWeightedPredictor
             }
             else
             {
-                _errNe = _trueErrRow[1];
-                (_subNe0, _subNe1, _subNe2, _subNe3) = (_subErrRow[4], _subErrRow[5], _subErrRow[6], _subErrRow[7]);
+                ReadOnlySpan<uint> second = _errRow.AsSpan(5, 5);
+                _errNe = (int)second[0];
+                (_subNe0, _subNe1, _subNe2, _subNe3) = (second[1], second[2], second[3], second[4]);
             }
 
             return;
@@ -614,9 +619,9 @@ internal sealed class JxlWeightedPredictor
         }
         else if (_y != 0)
         {
-            int nx = _x + 1;
-            _errNe = _trueErrRow[nx];
-            (_subNe0, _subNe1, _subNe2, _subNe3) = (_subErrRow[4 * nx], _subErrRow[(4 * nx) + 1], _subErrRow[(4 * nx) + 2], _subErrRow[(4 * nx) + 3]);
+            ReadOnlySpan<uint> next = _errRow.AsSpan(5 * (_x + 1), 5);
+            _errNe = (int)next[0];
+            (_subNe0, _subNe1, _subNe2, _subNe3) = (next[1], next[2], next[3], next[4]);
         }
     }
 
@@ -627,8 +632,13 @@ internal sealed class JxlWeightedPredictor
     {
         uint shifted = (uint)(((ulong)errorSum + 1) >> 5);
         int shift = shifted == 0 ? 0 : System.Numerics.BitOperations.Log2(shifted);
-        return 4 + ((maxWeight * DivLookup[(errorSum >> shift) + 1]) >> shift);
+        // errorSum + 1 is below 2^(shift + 6), so the index is at most 64.
+        return 4 + ((maxWeight * Divide((errorSum >> shift) + 1)) >> shift);
     }
+
+    /// <summary>Gets 2^24 / <paramref name="i"/> (0 for 0) from the table; callers keep <paramref name="i"/> at most 64.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static uint Divide(uint i) => Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(DivLookup), (nint)i);
 
     private static uint[] BuildDivLookup()
     {

@@ -388,8 +388,9 @@ internal sealed class JxlVarDct
                 int logBlocks = System.Numerics.BitOperations.Log2((uint)numBlocks);
                 int orderId = JxlTransforms8.OrderId(t);
                 int qf = _hfMul[at];
+                // Without LF thresholds (the usual case) every block has LF index 0.
                 int lfIndex = 0;
-                foreach (int c2 in (ReadOnlySpan<int>)[0, 2, 1])
+                foreach (int c2 in lfMul > 1 ? (ReadOnlySpan<int>)[0, 2, 1] : [])
                 {
                     int[] thresholds = lfThresholds[c2];
                     lfIndex *= thresholds.Length + 1;
