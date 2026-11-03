@@ -20,11 +20,6 @@ internal static class DngSources
     {
         RawFrame frame = file.Frame;
         RawSensor sensor = frame.Sensor;
-        if (sensor.Codec == RawCodec.CanonCrx)
-        {
-            throw new NotSupportedException("DNG: Egami cannot convert CR3 files yet; their CRX sensor data is not decoded for DNG writing.");
-        }
-
         if (sensor.Samples is not (1 or 3) || (frame.Cfa is null && sensor.Samples != 3) || (frame.Cfa is not null && sensor.Samples != 1))
         {
             throw new NotSupportedException($"DNG: Egami writes raw data with 1 sample a pixel (a colour filter array) or 3 (LinearRaw), not {sensor.Samples}.");

@@ -38,7 +38,7 @@ public static class RawFormat
     /// <param name="options">How to write, or <see langword="null"/> for the defaults.</param>
     /// <param name="context">The context, or <see langword="null"/> for <see cref="EgamiContext.Default"/>.</param>
     /// <exception cref="ArgumentNullException"><paramref name="inputPath"/> or <paramref name="outputPath"/> is <see langword="null"/>.</exception>
-    /// <exception cref="NotSupportedException">The file is a CR3, or its raw data is of a kind DNG writing does not take.</exception>
+    /// <exception cref="NotSupportedException">The file's raw data is of a kind DNG writing does not take.</exception>
     /// <exception cref="CorruptDataException">The file is damaged.</exception>
     /// <example>
     /// <code language="csharp" source="../../../tests/Egami.DocSamples/FormatsExtended.cs" region="raw-dng"/>
@@ -59,7 +59,7 @@ public static class RawFormat
     /// <param name="options">How to write, or <see langword="null"/> for the defaults.</param>
     /// <param name="context">The context, or <see langword="null"/> for <see cref="EgamiContext.Default"/>.</param>
     /// <exception cref="ArgumentNullException"><paramref name="input"/> or <paramref name="output"/> is <see langword="null"/>.</exception>
-    /// <exception cref="NotSupportedException">The file is a CR3, or its raw data is of a kind DNG writing does not take.</exception>
+    /// <exception cref="NotSupportedException">The file's raw data is of a kind DNG writing does not take.</exception>
     /// <exception cref="CorruptDataException">The file is damaged.</exception>
     /// <example>
     /// <code language="csharp" source="../../../tests/Egami.DocSamples/FormatsExtended.cs" region="raw-dng"/>

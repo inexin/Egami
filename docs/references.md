@@ -84,7 +84,10 @@ Magick.NET and Windows' Raw Image Extension run only as black boxes, for measure
 tables are never read by the sessions that implement Egami; ExifTool's public tag-name pages may be read as facts. The maker
 codecs (Fujifilm compressed RAF, NEF, PEF, ARW, ORF, RW2 and CR2) were written from clean-room specifications that a separate,
 study-only session wrote after reading LibRaw and rawspeed for structure only (the maintainer's 2026-10-24 study-only rule);
-the implementing sessions never read those sources, and nothing was copied. Sample files come from raw.pixls.us, CC0 only.
+the implementing sessions never read those sources, and nothing was copied. Canon's CRX codec (CR3) was written the same way,
+from a specification a study-only session wrote after reading LibRaw and the canon_cr3 repository for structure only, and was
+checked against the sample files and Adobe DNG Converter's output. Sample files come from raw.pixls.us, CC0 only (BY-NC-SA ones
+are measured locally, never committed).
 
 For LZMA (TIFF LZMA), The .xz File Format 1.2.1 and the LZMA SDK's lzma-specification.txt (both public domain) are the
 references, with the LZMA SDK and XZ Utils as the listed libraries. The xz CLI runs in Docker to make the corpus
