@@ -56,6 +56,8 @@ same as before.
 - One thread, instructions per megapixel against main: lossless effort 1 37 % fewer, effort 2 49 %, effort 3 40 %, effort 5
   24 %, effort 7 20 to 27 % and effort 9 27 % (1.6 to 2.6 times djxl's, from 2.1 to 4.9); lossy distance 1 at effort 7 9 to
   20 % fewer (1.8 to 2.6 times djxl's, from 2.2 to 2.8). Allocation-budget tests now cap what a decode allocates per pixel.
+- JPEG reconstruction reports a `jbrd` box whose data is not valid Brotli, or whose scan names a missing component, as
+  damaged data instead of crashing (found by fuzzing).
 
 KTX and KTX 2 textures, stage A (reading; roadmap 2.3.11). All additive.
 
