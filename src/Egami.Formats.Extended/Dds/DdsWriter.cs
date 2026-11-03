@@ -1,7 +1,8 @@
 using System.Buffers.Binary;
 using System.Runtime.InteropServices;
 
-using Egami.Formats.Extended.Dds.Blocks;
+using Egami.Formats.Extended.Textures;
+using Egami.Formats.Extended.Textures.Blocks;
 using Egami.Metadata;
 using Egami.Operations;
 using Egami.Pixels;
@@ -248,7 +249,7 @@ internal sealed class DdsWriter : IFormatWriter, IMultiImageWriter
             Premultiply(work, target.Work);
         }
 
-        int pixel = DdsDecode.NaturalBytes(target.Work);
+        int pixel = TextureDecode.NaturalBytes(target.Work);
         if (!target.IsBlock)
         {
             byte[] stored = new byte[(long)width * height * target.PixelBytes];
@@ -305,24 +306,24 @@ internal sealed class DdsWriter : IFormatWriter, IMultiImageWriter
     }
 
     /// <summary>Converts a raster into the working pixel type's memory, rows packed.</summary>
-    private static byte[] Work(Raster level, DdsNatural natural)
+    private static byte[] Work(Raster level, TextureNatural natural)
     {
         return natural switch
         {
-            DdsNatural.Gray8 => Bytes(level.As<Gray8>()),
-            DdsNatural.Gray16 => Bytes(level.As<Gray16>()),
-            DdsNatural.GrayF32 => Bytes(level.As<GrayF32>()),
-            DdsNatural.Alpha8 => Bytes(level.As<Alpha8>()),
-            DdsNatural.Rgb8 => Bytes(level.As<Rgb8>()),
-            DdsNatural.Rgb16 => Bytes(level.As<Rgb16>()),
-            DdsNatural.RgbF32 => Bytes(level.As<RgbF32>()),
-            DdsNatural.Rgba16 => Bytes(level.As<Rgba16>()),
-            DdsNatural.RgbaF16 => Bytes(level.As<RgbaF16>()),
-            DdsNatural.RgbaF32 => Bytes(level.As<RgbaF32>()),
-            DdsNatural.Rgb10A2 => Bytes(level.As<Rgb10A2>()),
-            DdsNatural.Bgr565 => Bytes(level.As<Bgr565>()),
-            DdsNatural.Bgra5551 => Bytes(level.As<Bgra5551>()),
-            DdsNatural.Bgra4444 => Bytes(level.As<Bgra4444>()),
+            TextureNatural.Gray8 => Bytes(level.As<Gray8>()),
+            TextureNatural.Gray16 => Bytes(level.As<Gray16>()),
+            TextureNatural.GrayF32 => Bytes(level.As<GrayF32>()),
+            TextureNatural.Alpha8 => Bytes(level.As<Alpha8>()),
+            TextureNatural.Rgb8 => Bytes(level.As<Rgb8>()),
+            TextureNatural.Rgb16 => Bytes(level.As<Rgb16>()),
+            TextureNatural.RgbF32 => Bytes(level.As<RgbF32>()),
+            TextureNatural.Rgba16 => Bytes(level.As<Rgba16>()),
+            TextureNatural.RgbaF16 => Bytes(level.As<RgbaF16>()),
+            TextureNatural.RgbaF32 => Bytes(level.As<RgbaF32>()),
+            TextureNatural.Rgb10A2 => Bytes(level.As<Rgb10A2>()),
+            TextureNatural.Bgr565 => Bytes(level.As<Bgr565>()),
+            TextureNatural.Bgra5551 => Bytes(level.As<Bgra5551>()),
+            TextureNatural.Bgra4444 => Bytes(level.As<Bgra4444>()),
             _ => Bytes(level.As<Rgba8>()),
         };
     }
@@ -343,11 +344,11 @@ internal sealed class DdsWriter : IFormatWriter, IMultiImageWriter
         }
     }
 
-    private static void Premultiply(byte[] work, DdsNatural natural)
+    private static void Premultiply(byte[] work, TextureNatural natural)
     {
         switch (natural)
         {
-            case DdsNatural.Rgba8:
+            case TextureNatural.Rgba8:
                 for (int i = 0; i < work.Length; i += 4)
                 {
                     int a = work[i + 3];
@@ -358,7 +359,7 @@ internal sealed class DdsWriter : IFormatWriter, IMultiImageWriter
                 }
 
                 break;
-            case DdsNatural.Rgba16:
+            case TextureNatural.Rgba16:
                 {
                     Span<ushort> p = MemoryMarshal.Cast<byte, ushort>(work.AsSpan());
                     for (int i = 0; i < p.Length; i += 4)
@@ -373,7 +374,7 @@ internal sealed class DdsWriter : IFormatWriter, IMultiImageWriter
                     break;
                 }
 
-            case DdsNatural.RgbaF16:
+            case TextureNatural.RgbaF16:
                 {
                     Span<Half> p = MemoryMarshal.Cast<byte, Half>(work.AsSpan());
                     for (int i = 0; i < p.Length; i += 4)
@@ -388,7 +389,7 @@ internal sealed class DdsWriter : IFormatWriter, IMultiImageWriter
                     break;
                 }
 
-            case DdsNatural.RgbaF32:
+            case TextureNatural.RgbaF32:
                 {
                     Span<float> p = MemoryMarshal.Cast<byte, float>(work.AsSpan());
                     for (int i = 0; i < p.Length; i += 4)
@@ -505,7 +506,7 @@ internal sealed class DdsWriter : IFormatWriter, IMultiImageWriter
     private readonly record struct Legacy(uint Flags, uint FourCC, uint Bits, uint R, uint G, uint B, uint A);
 
     /// <summary>What a writable format is: its DXGI numbers, how it is made and its legacy header, if it has one.</summary>
-    private sealed record Target(DdsTextureFormat Format, int Dxgi, int SrgbDxgi, DdsNatural Work, int PixelBytes, int BlockBytes, Legacy? Legacy)
+    private sealed record Target(DdsTextureFormat Format, int Dxgi, int SrgbDxgi, TextureNatural Work, int PixelBytes, int BlockBytes, Legacy? Legacy)
     {
         public bool IsBlock => BlockBytes > 0;
 
@@ -514,33 +515,33 @@ internal sealed class DdsWriter : IFormatWriter, IMultiImageWriter
             const uint Rgb = 0x40, RgbA = 0x41, Lum = 0x20000, FourCC = 0x4;
             return format switch
             {
-                DdsTextureFormat.Rgba8 => new(format, 28, 29, DdsNatural.Rgba8, 4, 0, new Legacy(RgbA, 0, 32, 0xFF, 0xFF00, 0xFF0000, 0xFF000000)),
-                DdsTextureFormat.Bgra8 => new(format, 87, 91, DdsNatural.Rgba8, 4, 0, new Legacy(RgbA, 0, 32, 0xFF0000, 0xFF00, 0xFF, 0xFF000000)),
-                DdsTextureFormat.Bgrx8 => new(format, 88, 93, DdsNatural.Rgba8, 4, 0, new Legacy(Rgb, 0, 32, 0xFF0000, 0xFF00, 0xFF, 0)),
-                DdsTextureFormat.R8 => new(format, 61, 0, DdsNatural.Gray8, 1, 0, new Legacy(Lum, 0, 8, 0xFF, 0, 0, 0)),
-                DdsTextureFormat.Rg8 => new(format, 49, 0, DdsNatural.Rgb8, 2, 0, null),
-                DdsTextureFormat.A8 => new(format, 65, 0, DdsNatural.Alpha8, 1, 0, new Legacy(0x2, 0, 8, 0, 0, 0, 0xFF)),
-                DdsTextureFormat.R16 => new(format, 56, 0, DdsNatural.Gray16, 2, 0, new Legacy(Lum, 0, 16, 0xFFFF, 0, 0, 0)),
-                DdsTextureFormat.Rg16 => new(format, 35, 0, DdsNatural.Rgb16, 4, 0, new Legacy(Rgb, 0, 32, 0xFFFF, 0xFFFF0000, 0, 0)),
-                DdsTextureFormat.Rgba16 => new(format, 11, 0, DdsNatural.Rgba16, 8, 0, new Legacy(FourCC, 36, 0, 0, 0, 0, 0)),
-                DdsTextureFormat.RgbaF16 => new(format, 10, 0, DdsNatural.RgbaF16, 8, 0, null),
-                DdsTextureFormat.R32F => new(format, 41, 0, DdsNatural.GrayF32, 4, 0, null),
-                DdsTextureFormat.RgbF32 => new(format, 6, 0, DdsNatural.RgbF32, 12, 0, null),
-                DdsTextureFormat.RgbaF32 => new(format, 2, 0, DdsNatural.RgbaF32, 16, 0, null),
-                DdsTextureFormat.Rgb10A2 => new(format, 24, 0, DdsNatural.Rgb10A2, 4, 0, null),
-                DdsTextureFormat.R11G11B10F => new(format, 26, 0, DdsNatural.RgbaF32, 4, 0, null),
-                DdsTextureFormat.Rgb9E5 => new(format, 67, 0, DdsNatural.RgbaF32, 4, 0, null),
-                DdsTextureFormat.Bgr565 => new(format, 85, 0, DdsNatural.Bgr565, 2, 0, new Legacy(Rgb, 0, 16, 0xF800, 0x7E0, 0x1F, 0)),
-                DdsTextureFormat.Bgra5551 => new(format, 86, 0, DdsNatural.Bgra5551, 2, 0, new Legacy(RgbA, 0, 16, 0x7C00, 0x3E0, 0x1F, 0x8000)),
-                DdsTextureFormat.Bgra4444 => new(format, 115, 0, DdsNatural.Bgra4444, 2, 0, new Legacy(RgbA, 0, 16, 0xF00, 0xF0, 0xF, 0xF000)),
-                DdsTextureFormat.Bc1 => new(format, 71, 72, DdsNatural.Rgba8, 0, 8, new Legacy(FourCC, 0x31545844, 0, 0, 0, 0, 0)),
-                DdsTextureFormat.Bc2 => new(format, 74, 75, DdsNatural.Rgba8, 0, 16, new Legacy(FourCC, 0x33545844, 0, 0, 0, 0, 0)),
-                DdsTextureFormat.Bc3 => new(format, 77, 78, DdsNatural.Rgba8, 0, 16, new Legacy(FourCC, 0x35545844, 0, 0, 0, 0, 0)),
-                DdsTextureFormat.Bc4 => new(format, 80, 0, DdsNatural.Gray8, 0, 8, new Legacy(FourCC, 0x31495441, 0, 0, 0, 0, 0)),
-                DdsTextureFormat.Bc5 => new(format, 83, 0, DdsNatural.Rgb8, 0, 16, new Legacy(FourCC, 0x32495441, 0, 0, 0, 0, 0)),
-                DdsTextureFormat.Bc7 => new(format, 98, 99, DdsNatural.Rgba8, 0, 16, null),
-                DdsTextureFormat.Bc6h => new(format, 95, 0, DdsNatural.RgbaF16, 0, 16, null),
-                DdsTextureFormat.Bc6hSigned => new(format, 96, 0, DdsNatural.RgbaF16, 0, 16, null),
+                DdsTextureFormat.Rgba8 => new(format, 28, 29, TextureNatural.Rgba8, 4, 0, new Legacy(RgbA, 0, 32, 0xFF, 0xFF00, 0xFF0000, 0xFF000000)),
+                DdsTextureFormat.Bgra8 => new(format, 87, 91, TextureNatural.Rgba8, 4, 0, new Legacy(RgbA, 0, 32, 0xFF0000, 0xFF00, 0xFF, 0xFF000000)),
+                DdsTextureFormat.Bgrx8 => new(format, 88, 93, TextureNatural.Rgba8, 4, 0, new Legacy(Rgb, 0, 32, 0xFF0000, 0xFF00, 0xFF, 0)),
+                DdsTextureFormat.R8 => new(format, 61, 0, TextureNatural.Gray8, 1, 0, new Legacy(Lum, 0, 8, 0xFF, 0, 0, 0)),
+                DdsTextureFormat.Rg8 => new(format, 49, 0, TextureNatural.Rgb8, 2, 0, null),
+                DdsTextureFormat.A8 => new(format, 65, 0, TextureNatural.Alpha8, 1, 0, new Legacy(0x2, 0, 8, 0, 0, 0, 0xFF)),
+                DdsTextureFormat.R16 => new(format, 56, 0, TextureNatural.Gray16, 2, 0, new Legacy(Lum, 0, 16, 0xFFFF, 0, 0, 0)),
+                DdsTextureFormat.Rg16 => new(format, 35, 0, TextureNatural.Rgb16, 4, 0, new Legacy(Rgb, 0, 32, 0xFFFF, 0xFFFF0000, 0, 0)),
+                DdsTextureFormat.Rgba16 => new(format, 11, 0, TextureNatural.Rgba16, 8, 0, new Legacy(FourCC, 36, 0, 0, 0, 0, 0)),
+                DdsTextureFormat.RgbaF16 => new(format, 10, 0, TextureNatural.RgbaF16, 8, 0, null),
+                DdsTextureFormat.R32F => new(format, 41, 0, TextureNatural.GrayF32, 4, 0, null),
+                DdsTextureFormat.RgbF32 => new(format, 6, 0, TextureNatural.RgbF32, 12, 0, null),
+                DdsTextureFormat.RgbaF32 => new(format, 2, 0, TextureNatural.RgbaF32, 16, 0, null),
+                DdsTextureFormat.Rgb10A2 => new(format, 24, 0, TextureNatural.Rgb10A2, 4, 0, null),
+                DdsTextureFormat.R11G11B10F => new(format, 26, 0, TextureNatural.RgbaF32, 4, 0, null),
+                DdsTextureFormat.Rgb9E5 => new(format, 67, 0, TextureNatural.RgbaF32, 4, 0, null),
+                DdsTextureFormat.Bgr565 => new(format, 85, 0, TextureNatural.Bgr565, 2, 0, new Legacy(Rgb, 0, 16, 0xF800, 0x7E0, 0x1F, 0)),
+                DdsTextureFormat.Bgra5551 => new(format, 86, 0, TextureNatural.Bgra5551, 2, 0, new Legacy(RgbA, 0, 16, 0x7C00, 0x3E0, 0x1F, 0x8000)),
+                DdsTextureFormat.Bgra4444 => new(format, 115, 0, TextureNatural.Bgra4444, 2, 0, new Legacy(RgbA, 0, 16, 0xF00, 0xF0, 0xF, 0xF000)),
+                DdsTextureFormat.Bc1 => new(format, 71, 72, TextureNatural.Rgba8, 0, 8, new Legacy(FourCC, 0x31545844, 0, 0, 0, 0, 0)),
+                DdsTextureFormat.Bc2 => new(format, 74, 75, TextureNatural.Rgba8, 0, 16, new Legacy(FourCC, 0x33545844, 0, 0, 0, 0, 0)),
+                DdsTextureFormat.Bc3 => new(format, 77, 78, TextureNatural.Rgba8, 0, 16, new Legacy(FourCC, 0x35545844, 0, 0, 0, 0, 0)),
+                DdsTextureFormat.Bc4 => new(format, 80, 0, TextureNatural.Gray8, 0, 8, new Legacy(FourCC, 0x31495441, 0, 0, 0, 0, 0)),
+                DdsTextureFormat.Bc5 => new(format, 83, 0, TextureNatural.Rgb8, 0, 16, new Legacy(FourCC, 0x32495441, 0, 0, 0, 0, 0)),
+                DdsTextureFormat.Bc7 => new(format, 98, 99, TextureNatural.Rgba8, 0, 16, null),
+                DdsTextureFormat.Bc6h => new(format, 95, 0, TextureNatural.RgbaF16, 0, 16, null),
+                DdsTextureFormat.Bc6hSigned => new(format, 96, 0, TextureNatural.RgbaF16, 0, 16, null),
                 _ => throw new ArgumentOutOfRangeException(nameof(format), format, "The DDS format is not defined."),
             };
         }

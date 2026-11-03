@@ -728,13 +728,16 @@ internal sealed partial class JxlVarDctEncoder
         // A save's progress counts the stages, each about as long as the next.
         SaveReporter? report = settings.Report;
         report?.Plan(8);
+        JxlStageTimes.Lap(JxlStage.Input);
         JxlVarDctEncoder e = new(image, settings, intensityTarget, upsampling, original, header.Alpha);
         e._place = frame;
         e._frameWidth = image.Width;
         e._frameHeight = image.Height;
         e.PrepareExtraChannels(image, header);
+        JxlStageTimes.Lap(JxlStage.Xyb);
         e.ChooseParameters();
         e.FindBestQuantization(header);
+        JxlStageTimes.Lap(JxlStage.QuantSearch);
         report?.Advance(1);
         e.ComputeCoefficients();
         report?.Advance(1);
@@ -748,17 +751,22 @@ internal sealed partial class JxlVarDctEncoder
             e._passCoeffs = [e._coeffs];
         }
 
+        JxlStageTimes.Lap(JxlStage.Quantize);
         report?.Advance(1);
         e.ComputeOrders();
         report?.Advance(1);
         e.FindBlockEntropyModel();
+        JxlStageTimes.Lap(JxlStage.Orders);
         report?.Advance(1);
         e.ChooseEpfSharpness(header);
+        JxlStageTimes.Lap(JxlStage.EpfSharpness);
         report?.Advance(1);
 
         e.WriteFrame(w, header);
         report?.Advance(2);
-        return w.ToArray();
+        byte[] bytes = w.ToArray();
+        JxlStageTimes.Lap(JxlStage.Write);
+        return bytes;
     }
 
     /// <summary>Writes the codestream with the frame as it stands: image header, frame header, TOC and sections.</summary>
@@ -954,6 +962,8 @@ internal sealed partial class JxlVarDctEncoder
             FindPatches();
         }
 
+        JxlStageTimes.Lap(JxlStage.Patches);
+
         if (Speed >= 5)
         {
             // InitialQuantField on the image before Gaborish, at a lower distance when Gaborish is off.
@@ -968,6 +978,7 @@ internal sealed partial class JxlVarDctEncoder
             }
 
             ComputeGlobalScaleAndQuant(quantDc, 0.39f / d, 0);
+            JxlStageTimes.Lap(JxlStage.Aq);
 
             if (_gaborish && _bordered is not null)
             {
@@ -1044,6 +1055,7 @@ internal sealed partial class JxlVarDctEncoder
         _xQmScale = Math.Max(_xQmScale, 2 + xAdd);
         _bQmScale = 2 + (db > 0.38f ? 2 + bAdd : db > 0.33f ? 1 + bAdd : db > 0.28f ? bAdd : 0);
         _epfIterations = _epfIterationsFor(d);
+        JxlStageTimes.Lap(JxlStage.AcStrategy);
     }
 
     /// <summary>
@@ -3115,6 +3127,7 @@ internal sealed partial class JxlVarDctEncoder
         // The HF tokens of every pass group, pass after pass.
         List<JxlToken>[] acTokens = new List<JxlToken>[_groups * _passes];
         Parallel.For(0, _groups * _passes, _parallel, i => acTokens[i] = TokenizeGroup(i % _groups, i / _groups));
+        JxlStageTimes.Lap(JxlStage.Tokens, skip: _draft);
 
         // LF global.
         JxlBitWriter global = new();
@@ -3156,6 +3169,7 @@ internal sealed partial class JxlVarDctEncoder
         JxlEntropyCode treeCode = JxlEntropyCode.Write(global, mp, 6, treeTokens);
         treeCode.WriteTokens(global, treeTokens[0]);
         JxlEntropyCode code = JxlEntropyCode.Write(global, mp with { ImageWidths = widths }, context.Max() + 1, modularTokens);
+        JxlStageTimes.Lap(JxlStage.Histograms, skip: _draft);
 
         // LZ77 may replace the streams' tokens (from effort 8): what goes out is what the code was built for.
         int extraAt = streamTokens.Length;
@@ -3191,6 +3205,7 @@ internal sealed partial class JxlVarDctEncoder
             WriteStream(w, code, modularTokens[_lfGroups + g]);
             lfGroups[g] = w;
         });
+        JxlStageTimes.Lap(JxlStage.Write, skip: _draft);
 
         // HF global: the default matrices, one HF preset, then per pass the orders and the HF distributions.
         JxlBitWriter hf = new();
@@ -3225,6 +3240,8 @@ internal sealed partial class JxlVarDctEncoder
                 acTokens[(pass * _groups) + g] = ac[g];
             }
         }
+
+        JxlStageTimes.Lap(JxlStage.Histograms, skip: _draft);
 
         // The extra channels not squeezed go with the last pass; squeezed ones with the pass of their shift.
         JxlBitWriter[] passGroups = new JxlBitWriter[_groups * _passes];

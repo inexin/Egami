@@ -111,10 +111,17 @@ if (args is ["--time-barcodes", .. string[] barcodeArgs])
     return;
 }
 
-// Time JPEG XL decoding (Phase 2.9.3 speed gate) at one thread and all cores: -- --time-jxl <file.jxl>...
+// Time JPEG XL decoding (Phase 2.9.3 speed gate) at one thread and all cores: -- --time-jxl [--one-thread] [--runs=N] <file.jxl>...
 if (args is ["--time-jxl", .. string[] jxls])
 {
     JxlTiming.Run(jxls);
+    return;
+}
+
+// Time JPEG XL encoding (roadmap 2.4.11): -- --time-jxl-encode --setting=d1e7|d1e7p|ll-e3 [--one-thread] [--runs=N] <image>...
+if (args is ["--time-jxl-encode", .. string[] jxlEncodeArgs])
+{
+    JxlTiming.EncodeTimed(jxlEncodeArgs);
     return;
 }
 

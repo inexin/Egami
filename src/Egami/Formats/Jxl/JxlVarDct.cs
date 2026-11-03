@@ -570,6 +570,8 @@ internal sealed class JxlVarDct
             ChromaFromLumaHf(planes, parallel);
         }
 
+        JxlStageTimes.Lap(JxlStage.Dequantize);
+
         for (int c = 0; c < 3; c++)
         {
             int stride = PlaneBlocksX(c) * 8;
@@ -610,6 +612,7 @@ internal sealed class JxlVarDct
             });
         }
 
+        JxlStageTimes.Lap(JxlStage.Idct);
         return planes;
     }
 

@@ -1,6 +1,7 @@
 using System.Buffers;
 using System.Runtime.InteropServices;
 
+using Egami.Formats.Extended.Textures;
 using Egami.Metadata;
 using Egami.Pixels;
 
@@ -50,23 +51,23 @@ internal sealed class DdsReader : ExtendedReader, IMultiImageReader
         Source source = new(header, surface, mip, z);
         return header.Format.Natural switch
         {
-            DdsNatural.Gray8 => new Rows<Gray8>(input, options, source),
-            DdsNatural.Gray16 => new Rows<Gray16>(input, options, source),
-            DdsNatural.GrayF32 => new Rows<GrayF32>(input, options, source),
-            DdsNatural.GrayAlpha8 => new Rows<GrayAlpha8>(input, options, source),
-            DdsNatural.GrayAlpha16 => new Rows<GrayAlpha16>(input, options, source),
-            DdsNatural.Alpha8 => new Rows<Alpha8>(input, options, source),
-            DdsNatural.Rgb8 => new Rows<Rgb8>(input, options, source),
-            DdsNatural.Rgb16 => new Rows<Rgb16>(input, options, source),
-            DdsNatural.RgbF32 => new Rows<RgbF32>(input, options, source),
-            DdsNatural.Rgba8 => new Rows<Rgba8>(input, options, source),
-            DdsNatural.Rgba16 => new Rows<Rgba16>(input, options, source),
-            DdsNatural.RgbaF16 => new Rows<RgbaF16>(input, options, source),
-            DdsNatural.RgbaF32 => new Rows<RgbaF32>(input, options, source),
-            DdsNatural.Rgb10A2 => new Rows<Rgb10A2>(input, options, source),
-            DdsNatural.Bgr565 => new Rows<Bgr565>(input, options, source),
-            DdsNatural.Bgr555 => new Rows<Bgr555>(input, options, source),
-            DdsNatural.Bgra5551 => new Rows<Bgra5551>(input, options, source),
+            TextureNatural.Gray8 => new Rows<Gray8>(input, options, source),
+            TextureNatural.Gray16 => new Rows<Gray16>(input, options, source),
+            TextureNatural.GrayF32 => new Rows<GrayF32>(input, options, source),
+            TextureNatural.GrayAlpha8 => new Rows<GrayAlpha8>(input, options, source),
+            TextureNatural.GrayAlpha16 => new Rows<GrayAlpha16>(input, options, source),
+            TextureNatural.Alpha8 => new Rows<Alpha8>(input, options, source),
+            TextureNatural.Rgb8 => new Rows<Rgb8>(input, options, source),
+            TextureNatural.Rgb16 => new Rows<Rgb16>(input, options, source),
+            TextureNatural.RgbF32 => new Rows<RgbF32>(input, options, source),
+            TextureNatural.Rgba8 => new Rows<Rgba8>(input, options, source),
+            TextureNatural.Rgba16 => new Rows<Rgba16>(input, options, source),
+            TextureNatural.RgbaF16 => new Rows<RgbaF16>(input, options, source),
+            TextureNatural.RgbaF32 => new Rows<RgbaF32>(input, options, source),
+            TextureNatural.Rgb10A2 => new Rows<Rgb10A2>(input, options, source),
+            TextureNatural.Bgr565 => new Rows<Bgr565>(input, options, source),
+            TextureNatural.Bgr555 => new Rows<Bgr555>(input, options, source),
+            TextureNatural.Bgra5551 => new Rows<Bgra5551>(input, options, source),
             _ => new Rows<Bgra4444>(input, options, source),
         };
     }
@@ -140,35 +141,35 @@ internal sealed class DdsReader : ExtendedReader, IMultiImageReader
 
     private static long WorkingBytes(DdsHeader header, int width, int height)
     {
-        DdsPixelFormat f = header.Format;
+        TextureFormat f = header.Format;
         if (f.IsPlanar)
         {
             return f.SurfaceBytes(width, height);
         }
 
-        long row = (long)width * DdsDecode.NaturalBytes(f.Natural);
+        long row = (long)width * TextureDecode.NaturalBytes(f.Natural);
         return f.RowBytes(width) + (f.IsBlock ? row * 4 : row);
     }
 
-    private static PixelLayoutInfo Layout(DdsNatural natural) => natural switch
+    private static PixelLayoutInfo Layout(TextureNatural natural) => natural switch
     {
-        DdsNatural.Gray8 => Gray8.Layout,
-        DdsNatural.Gray16 => Gray16.Layout,
-        DdsNatural.GrayF32 => GrayF32.Layout,
-        DdsNatural.GrayAlpha8 => GrayAlpha8.Layout,
-        DdsNatural.GrayAlpha16 => GrayAlpha16.Layout,
-        DdsNatural.Alpha8 => Alpha8.Layout,
-        DdsNatural.Rgb8 => Rgb8.Layout,
-        DdsNatural.Rgb16 => Rgb16.Layout,
-        DdsNatural.RgbF32 => RgbF32.Layout,
-        DdsNatural.Rgba8 => Rgba8.Layout,
-        DdsNatural.Rgba16 => Rgba16.Layout,
-        DdsNatural.RgbaF16 => RgbaF16.Layout,
-        DdsNatural.RgbaF32 => RgbaF32.Layout,
-        DdsNatural.Rgb10A2 => Rgb10A2.Layout,
-        DdsNatural.Bgr565 => Bgr565.Layout,
-        DdsNatural.Bgr555 => Bgr555.Layout,
-        DdsNatural.Bgra5551 => Bgra5551.Layout,
+        TextureNatural.Gray8 => Gray8.Layout,
+        TextureNatural.Gray16 => Gray16.Layout,
+        TextureNatural.GrayF32 => GrayF32.Layout,
+        TextureNatural.GrayAlpha8 => GrayAlpha8.Layout,
+        TextureNatural.GrayAlpha16 => GrayAlpha16.Layout,
+        TextureNatural.Alpha8 => Alpha8.Layout,
+        TextureNatural.Rgb8 => Rgb8.Layout,
+        TextureNatural.Rgb16 => Rgb16.Layout,
+        TextureNatural.RgbF32 => RgbF32.Layout,
+        TextureNatural.Rgba8 => Rgba8.Layout,
+        TextureNatural.Rgba16 => Rgba16.Layout,
+        TextureNatural.RgbaF16 => RgbaF16.Layout,
+        TextureNatural.RgbaF32 => RgbaF32.Layout,
+        TextureNatural.Rgb10A2 => Rgb10A2.Layout,
+        TextureNatural.Bgr565 => Bgr565.Layout,
+        TextureNatural.Bgr555 => Bgr555.Layout,
+        TextureNatural.Bgra5551 => Bgra5551.Layout,
         _ => Bgra4444.Layout,
     };
 
@@ -180,7 +181,7 @@ internal sealed class DdsReader : ExtendedReader, IMultiImageReader
         where TNatural : unmanaged, IPixelType<TNatural>
     {
         private readonly DdsHeader _header;
-        private readonly DdsPixelFormat _format;
+        private readonly TextureFormat _format;
         private readonly bool _reconstructZ;
         private readonly bool _unpremultiply;
         private readonly StoredMips? _mips;
@@ -197,14 +198,14 @@ internal sealed class DdsReader : ExtendedReader, IMultiImageReader
             _format = source.Header.Format;
             _reconstructZ = source.ReconstructZ;
             _unpremultiply = _header.AlphaMode == DdsAlphaMode.Premultiplied;
-            _pixelBytes = DdsDecode.NaturalBytes(_format.Natural);
+            _pixelBytes = TextureDecode.NaturalBytes(_format.Natural);
             _stored = input.RentScratch(checked((int)Math.Max(_format.RowBytes(Width), 16)), ClearMode.Zero);
             if (_format.IsBlock)
             {
                 _strip = input.RentScratch(checked(Width * _pixelBytes * 4), ClearMode.Zero);
             }
 
-            if (_format.Codec == DdsCodec.Palette8 && Array.TrueForAll(_header.Palette, e => e >> 24 == 0))
+            if (_format.Codec == TextureCodec.Palette8 && Array.TrueForAll(_header.Palette, e => e >> 24 == 0))
             {
                 // A P8 palette whose entries all have flags 0 has no alpha: read it opaque.
                 for (int i = 0; i < 256; i++)
@@ -263,7 +264,7 @@ internal sealed class DdsReader : ExtendedReader, IMultiImageReader
                     }
                 }
 
-                DdsDecode.Planar(_format, _surface.AsSpan(0, _surfaceLength), y, pixels, Width, Height);
+                TextureDecode.Planar(_format, _surface.AsSpan(0, _surfaceLength), y, pixels, Width, Height);
             }
             else if (_format.IsBlock)
             {
@@ -277,7 +278,7 @@ internal sealed class DdsReader : ExtendedReader, IMultiImageReader
                         return false;
                     }
 
-                    DdsDecode.Blocks(_format, stored, strip, Width, Math.Min(4, Height - y), stride);
+                    TextureDecode.Blocks(_format, stored, strip, Width, Math.Min(4, Height - y), stride);
                 }
 
                 strip.Slice((y & 3) * stride, stride).CopyTo(pixels);
@@ -290,17 +291,17 @@ internal sealed class DdsReader : ExtendedReader, IMultiImageReader
                     return false;
                 }
 
-                DdsDecode.Row(_format, stored, pixels, Width, _header.Palette);
+                TextureDecode.Row(_format, stored, pixels, Width, _header.Palette);
             }
 
             if (_unpremultiply)
             {
-                Unpremultiply(pixels);
+                TextureDecode.Unpremultiply(_format.Natural, pixels);
             }
 
             if (_reconstructZ)
             {
-                ReconstructZ(pixels);
+                TextureDecode.ReconstructZ(_format.Natural, pixels);
             }
 
             return true;
@@ -336,9 +337,9 @@ internal sealed class DdsReader : ExtendedReader, IMultiImageReader
         /// <summary>Gets whether a load keeps the stored mips: mip 0 of a 2D surface whose bytes are its DXGI format's own.</summary>
         private static bool KeepsMips(DdsHeader header, Source source, ReaderOptions options)
         {
-            DdsPixelFormat f = header.Format;
+            TextureFormat f = header.Format;
             return options.ReadMetadata && source.Mip == 0 && header.MipLevels > 1 && header.Dimension != DdsDimension.Texture3D
-                && header.AlphaMode != DdsAlphaMode.Premultiplied && f.Dxgi != 0 && DdsPixelFormat.FromDxgi(f.Dxgi)?.Name == f.Name;
+                && header.AlphaMode != DdsAlphaMode.Premultiplied && f.Dxgi != 0 && TextureFormat.FromDxgi(f.Dxgi)?.Name == f.Name;
         }
 
         protected override void Dispose(bool disposing)
@@ -364,115 +365,5 @@ internal sealed class DdsReader : ExtendedReader, IMultiImageReader
 
             return total;
         }
-
-        private void Unpremultiply(Span<byte> pixels)
-        {
-            switch (_format.Natural)
-            {
-                case DdsNatural.Rgba8:
-                    for (int i = 0; i < pixels.Length; i += 4)
-                    {
-                        int a = pixels[i + 3];
-                        for (int c = 0; c < 3; c++)
-                        {
-                            pixels[i + c] = a == 0 ? (byte)0 : (byte)Math.Min(255, ((pixels[i + c] * 255) + (a / 2)) / a);
-                        }
-                    }
-
-                    break;
-                case DdsNatural.Rgba16:
-                    {
-                        Span<ushort> p = MemoryMarshal.Cast<byte, ushort>(pixels);
-                        for (int i = 0; i < p.Length; i += 4)
-                        {
-                            int a = p[i + 3];
-                            for (int c = 0; c < 3; c++)
-                            {
-                                p[i + c] = a == 0 ? (ushort)0 : (ushort)Math.Min(65535, ((p[i + c] * 65535L) + (a / 2)) / a);
-                            }
-                        }
-
-                        break;
-                    }
-
-                case DdsNatural.RgbaF16:
-                    {
-                        Span<Half> p = MemoryMarshal.Cast<byte, Half>(pixels);
-                        for (int i = 0; i < p.Length; i += 4)
-                        {
-                            float a = (float)p[i + 3];
-                            for (int c = 0; c < 3; c++)
-                            {
-                                p[i + c] = a == 0 ? Half.Zero : (Half)((float)p[i + c] / a);
-                            }
-                        }
-
-                        break;
-                    }
-
-                case DdsNatural.RgbaF32:
-                    {
-                        Span<float> p = MemoryMarshal.Cast<byte, float>(pixels);
-                        for (int i = 0; i < p.Length; i += 4)
-                        {
-                            float a = p[i + 3];
-                            for (int c = 0; c < 3; c++)
-                            {
-                                p[i + c] = a == 0 ? 0 : p[i + c] / a;
-                            }
-                        }
-
-                        break;
-                    }
-            }
-        }
-
-        private void ReconstructZ(Span<byte> pixels)
-        {
-            switch (_format.Natural)
-            {
-                case DdsNatural.Rgb8:
-                    for (int i = 0; i < pixels.Length; i += 3)
-                    {
-                        pixels[i + 2] = (byte)Math.Round(Z((pixels[i] / 127.5f) - 1, (pixels[i + 1] / 127.5f) - 1) * 127.5f + 127.5f);
-                    }
-
-                    break;
-                case DdsNatural.Rgb16:
-                    {
-                        Span<ushort> p = MemoryMarshal.Cast<byte, ushort>(pixels);
-                        for (int i = 0; i < p.Length; i += 3)
-                        {
-                            p[i + 2] = (ushort)Math.Round(Z((p[i] / 32767.5f) - 1, (p[i + 1] / 32767.5f) - 1) * 32767.5f + 32767.5f);
-                        }
-
-                        break;
-                    }
-
-                case DdsNatural.RgbaF16:
-                    {
-                        Span<Half> p = MemoryMarshal.Cast<byte, Half>(pixels);
-                        for (int i = 0; i < p.Length; i += 4)
-                        {
-                            p[i + 2] = (Half)Z((float)p[i], (float)p[i + 1]);
-                        }
-
-                        break;
-                    }
-
-                case DdsNatural.RgbF32:
-                    {
-                        Span<float> p = MemoryMarshal.Cast<byte, float>(pixels);
-                        for (int i = 0; i < p.Length; i += 3)
-                        {
-                            p[i + 2] = Z(p[i], p[i + 1]);
-                        }
-
-                        break;
-                    }
-            }
-        }
-
-        private static float Z(float x, float y) => MathF.Sqrt(MathF.Max(0, 1 - (x * x) - (y * y)));
     }
 }

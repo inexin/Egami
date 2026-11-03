@@ -350,6 +350,7 @@ internal static class JxlImageDecoder
                     }
 
                     frames.Add(new Frame<TPixel>(Plane<TPixel>(input, decoded, spots, extra), new FrameMetadata { Delay = Delay(f, file.Header) }));
+                    JxlStageTimes.Lap(JxlStage.Pixels);
                 }
 
                 return seen < end;
@@ -488,7 +489,9 @@ internal static class JxlImageDecoder
                 JxlColor.YCbCrToRgb(planes.Planes, planes.Width * planes.Height, file.Parallel);
             }
 
+            JxlStageTimes.Lap(JxlStage.Render);
             ToColorSpace(planes.Planes, planes.Width * planes.Height, file);
+            JxlStageTimes.Lap(JxlStage.Color);
             JxlPlanes canvas = planes;
             if (f.IsNormal)
             {
@@ -721,11 +724,13 @@ internal static class JxlImageDecoder
             }
         }
 
+        JxlStageTimes.Lap(JxlStage.Planes);
         if (f.Gaborish)
         {
             JxlFilters.Gaborish(color, width, height, width, f.LoopFilter.GaborishWeights, parallel);
         }
 
+        JxlStageTimes.Lap(JxlStage.Gaborish);
         if (f.EpfIterations > 0)
         {
             float[]? sigma = frame.VarDct?.EpfSigma;
@@ -733,6 +738,8 @@ internal static class JxlImageDecoder
             float modularSigma = f.LoopFilter.SigmaForModular;
             JxlFilters.Epf(color, width, height, width, f.LoopFilter, sigma is null ? (_, _) => modularSigma : (bx, by) => sigma[(by * blocksX) + bx], parallel);
         }
+
+        JxlStageTimes.Lap(JxlStage.Epf);
 
         (int outWidth, int outHeight) = f.Type == JxlFrameType.Lf ? (width, height) : (f.Width, f.Height);
 
