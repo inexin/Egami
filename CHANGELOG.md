@@ -3,6 +3,23 @@
 All notable changes to Egami are listed here. Egami follows [Semantic Versioning](https://semver.org): from 1.0, public API
 changes that break code come only in a new major version.
 
+## Egami (unreleased)
+
+Faster JPEG encoding (step 2.4.10). No API changes; every file is byte for byte the same as before, and so the same as
+libjpeg-turbo's `cjpeg` with the same settings.
+
+- Huffman coding adds two symbols to its 64-bit buffer per check, writes eight bytes at a time with one test for the 0xFF
+  bytes that need stuffing, and finds each value's size without a branch on its sign, which was most of the encoder's branch
+  mispredictions (#244). With worker threads, optimized tables count their symbols on the workers while they transform.
+- The AVX2 forward DCT works in 16-bit lanes, two blocks per call, with each rotation as paired multiply-adds; the result is
+  exactly the scalar transform's (#245).
+- RGB to YCbCr with AVX2 uses paired 16-bit multiply-adds instead of 32-bit multiplies, and `Raster<Rgba8>` rows convert
+  directly instead of being copied to RGB first (#246).
+- The 12-megapixel benchmark photo on one thread: quality 75 4:2:0 from 37.4 to 22.9 ms (from Rgba8, about 41 to 23.5 ms),
+  quality 90 4:4:4 from 75.5 to 49.9 ms, and with optimized tables from 106.5 to 72.1 ms. On egami-compare's 24-megapixel gate
+  Egami now takes 0.91 to 1.07 times cjpeg's time at quality 75 (1.69 times before) and 0.55 to 0.58 times with optimized
+  tables at quality 90 4:4:4.
+
 ## Egami train 1.4.0, Egami.SystemDrawing 1.0.0-preview.3 and Egami.Metafiles 1.0.2 (2026-11-01)
 
 The release train (Egami, Egami.Drawing, Egami.Fonts, Egami.Svg, Egami.Css, Egami.Heic, Egami.Formats.Extended and Egami.Cli)
