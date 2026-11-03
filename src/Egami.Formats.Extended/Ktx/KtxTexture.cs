@@ -129,7 +129,7 @@ internal sealed class KtxTexture
     public long RowPitch(int mip) => Align(Format.RowBytes(MipWidth(mip)), RowAlign);
 
     /// <summary>Returns the stored rows of mip <paramref name="mip"/>: rows of blocks for the block formats.</summary>
-    public int StoredRows(int mip) => Format.IsBlock ? (MipHeight(mip) + Format.BlockHeight - 1) / Format.BlockHeight : MipHeight(mip);
+    public int StoredRows(int mip) => Format.IsBlock ? (int)(((long)MipHeight(mip) + Format.BlockHeight - 1) / Format.BlockHeight) : MipHeight(mip);
 
     /// <summary>Returns the stored bytes of one 2D image (a face or depth slice) at mip <paramref name="mip"/>.</summary>
     public long ImageBytes(int mip) => checked(RowPitch(mip) * StoredRows(mip));

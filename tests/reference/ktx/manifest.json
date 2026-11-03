@@ -14,6 +14,463 @@
    "tool": "toktx",
    "validate": "not checked (ktx validate reads KTX 2 only)"
   },
+  "astc-10x10.ktx2": {
+   "arguments": [
+    "astcenc",
+    "-cl",
+    "10x10",
+    "-medium",
+    "ktx create",
+    "--raw",
+    "--format",
+    "ASTC_10x10_UNORM_BLOCK",
+    "--width",
+    "37",
+    "--height",
+    "23"
+   ],
+   "inputs": [
+    "rgba.png"
+   ],
+   "sha256": "ecca1c4fc0dcf9e0b23236216fd09a81e252c2da72f6eaf4fe7187897e17c012",
+   "tool": "astcenc + ktx create",
+   "validate": "valid"
+  },
+  "astc-10x5.ktx2": {
+   "arguments": [
+    "astcenc",
+    "-cl",
+    "10x5",
+    "-medium",
+    "ktx create",
+    "--raw",
+    "--format",
+    "ASTC_10x5_UNORM_BLOCK",
+    "--width",
+    "37",
+    "--height",
+    "23"
+   ],
+   "inputs": [
+    "rgba.png"
+   ],
+   "sha256": "bdb9cc20eba4bae717dbbe53c1207959a3f713c59e7f5f0299d0a4b620428480",
+   "tool": "astcenc + ktx create",
+   "validate": "valid"
+  },
+  "astc-10x6.ktx2": {
+   "arguments": [
+    "astcenc",
+    "-cl",
+    "10x6",
+    "-medium",
+    "ktx create",
+    "--raw",
+    "--format",
+    "ASTC_10x6_UNORM_BLOCK",
+    "--width",
+    "37",
+    "--height",
+    "23"
+   ],
+   "inputs": [
+    "rgba.png"
+   ],
+   "sha256": "16ca8ac030998989edbb629c11d802e5d2a4bcf8ae6d2e561d8ea7cadd628309",
+   "tool": "astcenc + ktx create",
+   "validate": "valid"
+  },
+  "astc-10x8.ktx2": {
+   "arguments": [
+    "astcenc",
+    "-cl",
+    "10x8",
+    "-medium",
+    "ktx create",
+    "--raw",
+    "--format",
+    "ASTC_10x8_UNORM_BLOCK",
+    "--width",
+    "37",
+    "--height",
+    "23"
+   ],
+   "inputs": [
+    "rgba.png"
+   ],
+   "sha256": "fd8a91da3eaf4d0a36c11cdb07d74e68c2911700b4e9026283d4a396e0cece25",
+   "tool": "astcenc + ktx create",
+   "validate": "valid"
+  },
+  "astc-12x10-srgb.ktx2": {
+   "arguments": [
+    "astcenc",
+    "-cs",
+    "12x10",
+    "-medium",
+    "ktx create",
+    "--raw",
+    "--format",
+    "ASTC_12x10_SRGB_BLOCK",
+    "--width",
+    "37",
+    "--height",
+    "23"
+   ],
+   "inputs": [
+    "rgba.png"
+   ],
+   "sha256": "4385a59833a0334715912aad79dd1ca2cad4b56954053d1bfe4e424ee587ddb5",
+   "tool": "astcenc + ktx create",
+   "validate": "valid"
+  },
+  "astc-12x10.ktx2": {
+   "arguments": [
+    "astcenc",
+    "-cl",
+    "12x10",
+    "-medium",
+    "ktx create",
+    "--raw",
+    "--format",
+    "ASTC_12x10_UNORM_BLOCK",
+    "--width",
+    "37",
+    "--height",
+    "23"
+   ],
+   "inputs": [
+    "rgba.png"
+   ],
+   "sha256": "58782e865e98ad03ab75850fceaee769c38636155b95e61af4d6a53257ed65ff",
+   "tool": "astcenc + ktx create",
+   "validate": "valid"
+  },
+  "astc-12x12.ktx2": {
+   "arguments": [
+    "astcenc",
+    "-cl",
+    "12x12",
+    "-medium",
+    "ktx create",
+    "--raw",
+    "--format",
+    "ASTC_12x12_UNORM_BLOCK",
+    "--width",
+    "37",
+    "--height",
+    "23"
+   ],
+   "inputs": [
+    "rgba.png"
+   ],
+   "sha256": "390717aa7d8733409d91844ba22f84a634d798c19547daa6969324f1ff36e442",
+   "tool": "astcenc + ktx create",
+   "validate": "valid"
+  },
+  "astc-4x4-mutated.ktx2": {
+   "arguments": [
+    "astcenc",
+    "-cl",
+    "4x4",
+    "-medium",
+    "flip 1 to 3 bits per block",
+    "ktx create",
+    "--raw",
+    "--format",
+    "ASTC_4x4_UNORM_BLOCK",
+    "--width",
+    "37",
+    "--height",
+    "23"
+   ],
+   "inputs": [
+    "rgba.png"
+   ],
+   "sha256": "e8c275fa3b6afb241a50a1af930833c0f7ee770880437b8553d9a33d77dba411",
+   "tool": "astcenc + ktx create",
+   "validate": "valid"
+  },
+  "astc-4x4.ktx2": {
+   "arguments": [
+    "astcenc",
+    "-cl",
+    "4x4",
+    "-medium",
+    "ktx create",
+    "--raw",
+    "--format",
+    "ASTC_4x4_UNORM_BLOCK",
+    "--width",
+    "37",
+    "--height",
+    "23"
+   ],
+   "inputs": [
+    "rgba.png"
+   ],
+   "sha256": "7b9c4ab11e064fbdecb3db3f5ebd2f4e8be739144c87d22b579464d90e1dfb05",
+   "tool": "astcenc + ktx create",
+   "validate": "valid"
+  },
+  "astc-5x4.ktx2": {
+   "arguments": [
+    "astcenc",
+    "-cl",
+    "5x4",
+    "-medium",
+    "ktx create",
+    "--raw",
+    "--format",
+    "ASTC_5x4_UNORM_BLOCK",
+    "--width",
+    "37",
+    "--height",
+    "23"
+   ],
+   "inputs": [
+    "rgba.png"
+   ],
+   "sha256": "9cbeb706cdcbbd9f0ef71b0dfead664c8eed8deaeeaddc28b2a1a805a56ddc72",
+   "tool": "astcenc + ktx create",
+   "validate": "valid"
+  },
+  "astc-5x5.ktx": {
+   "arguments": [
+    "astcenc",
+    "-cl",
+    "5x5",
+    "-medium"
+   ],
+   "inputs": [
+    "rgba.png"
+   ],
+   "sha256": "1664058c9407374b3c5a15a1a9cce608e5992560b4b69a43cd9bb3b23dae3a67",
+   "tool": "astcenc + KTX 1.1 header",
+   "validate": "not checked (ktx validate reads KTX 2 only)"
+  },
+  "astc-5x5.ktx2": {
+   "arguments": [
+    "astcenc",
+    "-cl",
+    "5x5",
+    "-medium",
+    "ktx create",
+    "--raw",
+    "--format",
+    "ASTC_5x5_UNORM_BLOCK",
+    "--width",
+    "37",
+    "--height",
+    "23"
+   ],
+   "inputs": [
+    "rgba.png"
+   ],
+   "sha256": "ea8d87181e2c6f51245225dc0fee92a6542d03b7ad87afe6488757a36c07e7da",
+   "tool": "astcenc + ktx create",
+   "validate": "valid"
+  },
+  "astc-6x5.ktx2": {
+   "arguments": [
+    "astcenc",
+    "-cl",
+    "6x5",
+    "-medium",
+    "ktx create",
+    "--raw",
+    "--format",
+    "ASTC_6x5_UNORM_BLOCK",
+    "--width",
+    "37",
+    "--height",
+    "23"
+   ],
+   "inputs": [
+    "rgba.png"
+   ],
+   "sha256": "ecec4f74416ac4ee2ffddebd137fbea1622b0ba21c5600af98a4fc3d7713f58a",
+   "tool": "astcenc + ktx create",
+   "validate": "valid"
+  },
+  "astc-6x6-hdr.ktx2": {
+   "arguments": [
+    "astcenc",
+    "-cH",
+    "6x6",
+    "-medium",
+    "ktx create",
+    "--raw",
+    "--format",
+    "ASTC_6x6_SFLOAT_BLOCK",
+    "--width",
+    "37",
+    "--height",
+    "23"
+   ],
+   "inputs": [
+    "hdr.ktx"
+   ],
+   "sha256": "381c03bdfcc28bc41b6235e9f68d11817d0651d1c75fff194f854d3e1d1a66b2",
+   "tool": "astcenc + ktx create",
+   "validate": "valid"
+  },
+  "astc-6x6-srgb.ktx2": {
+   "arguments": [
+    "astcenc",
+    "-cs",
+    "6x6",
+    "-medium",
+    "ktx create",
+    "--raw",
+    "--format",
+    "ASTC_6x6_SRGB_BLOCK",
+    "--width",
+    "37",
+    "--height",
+    "23"
+   ],
+   "inputs": [
+    "rgba.png"
+   ],
+   "sha256": "a6cb026c77d9da886dff1749f75fd97bdbc4ba1ca93019818e55664b852534c5",
+   "tool": "astcenc + ktx create",
+   "validate": "valid"
+  },
+  "astc-6x6.ktx2": {
+   "arguments": [
+    "astcenc",
+    "-cl",
+    "6x6",
+    "-medium",
+    "ktx create",
+    "--raw",
+    "--format",
+    "ASTC_6x6_UNORM_BLOCK",
+    "--width",
+    "37",
+    "--height",
+    "23"
+   ],
+   "inputs": [
+    "rgba.png"
+   ],
+   "sha256": "345e7f458dab9192dd42b20b3f1d5ad692f94ab8c61923e25b163d73394bfdf4",
+   "tool": "astcenc + ktx create",
+   "validate": "valid"
+  },
+  "astc-8x5-mutated.ktx2": {
+   "arguments": [
+    "astcenc",
+    "-cl",
+    "8x5",
+    "-medium",
+    "flip 1 to 3 bits per block",
+    "ktx create",
+    "--raw",
+    "--format",
+    "ASTC_8x5_UNORM_BLOCK",
+    "--width",
+    "37",
+    "--height",
+    "23"
+   ],
+   "inputs": [
+    "rgba.png"
+   ],
+   "sha256": "4b2e1daf8ba2e10ee189948fa4b752657b2c66b4b67069ecc67fdb6935287549",
+   "tool": "astcenc + ktx create",
+   "validate": "valid"
+  },
+  "astc-8x5.ktx2": {
+   "arguments": [
+    "astcenc",
+    "-cl",
+    "8x5",
+    "-medium",
+    "ktx create",
+    "--raw",
+    "--format",
+    "ASTC_8x5_UNORM_BLOCK",
+    "--width",
+    "37",
+    "--height",
+    "23"
+   ],
+   "inputs": [
+    "rgba.png"
+   ],
+   "sha256": "61b225321c60422c5d47559476c2528aea3c371544b2b266ee3248207bdcbecc",
+   "tool": "astcenc + ktx create",
+   "validate": "valid"
+  },
+  "astc-8x6.ktx2": {
+   "arguments": [
+    "astcenc",
+    "-cl",
+    "8x6",
+    "-medium",
+    "ktx create",
+    "--raw",
+    "--format",
+    "ASTC_8x6_UNORM_BLOCK",
+    "--width",
+    "37",
+    "--height",
+    "23"
+   ],
+   "inputs": [
+    "rgba.png"
+   ],
+   "sha256": "d0c499778df2e0be8faceb1a07adaba42d41e0497d95a546a5e661fde74df548",
+   "tool": "astcenc + ktx create",
+   "validate": "valid"
+  },
+  "astc-8x8-hdr-mutated.ktx2": {
+   "arguments": [
+    "astcenc",
+    "-cH",
+    "8x8",
+    "-medium",
+    "flip 1 to 3 bits per block",
+    "ktx create",
+    "--raw",
+    "--format",
+    "ASTC_8x8_SFLOAT_BLOCK",
+    "--width",
+    "37",
+    "--height",
+    "23"
+   ],
+   "inputs": [
+    "hdr.ktx"
+   ],
+   "sha256": "eca99da4224ce618b2c8e7b877efcf085005d1fc0205f3d41defd0e09c19f83c",
+   "tool": "astcenc + ktx create",
+   "validate": "valid"
+  },
+  "astc-8x8.ktx2": {
+   "arguments": [
+    "astcenc",
+    "-cl",
+    "8x8",
+    "-medium",
+    "ktx create",
+    "--raw",
+    "--format",
+    "ASTC_8x8_UNORM_BLOCK",
+    "--width",
+    "37",
+    "--height",
+    "23"
+   ],
+   "inputs": [
+    "rgba.png"
+   ],
+   "sha256": "4fd6627ec34e59093291de24e29bf8fede3141c01905989c1f267a295ef8046b",
+   "tool": "astcenc + ktx create",
+   "validate": "valid"
+  },
   "cube.ktx": {
    "arguments": [
     "--cubemap"
@@ -29,6 +486,281 @@
    "sha256": "bc7302a2315f6a7e21298291a86d43897c3a8923c4b40ba433782f9b616d740c",
    "tool": "toktx",
    "validate": "not checked (ktx validate reads KTX 2 only)"
+  },
+  "eac-r11-signed.ktx": {
+   "arguments": [
+    "-format",
+    "SIGNED_R11",
+    "-effort",
+    "40"
+   ],
+   "inputs": [
+    "rgba.png"
+   ],
+   "sha256": "8a08102fda08bb4e38adcab5ebd24bb13b0d454fac8249189096c909788b2006",
+   "tool": "EtcTool",
+   "validate": "not checked (ktx validate reads KTX 2 only)"
+  },
+  "eac-r11.ktx": {
+   "arguments": [
+    "-format",
+    "R11",
+    "-effort",
+    "40"
+   ],
+   "inputs": [
+    "rgba.png"
+   ],
+   "sha256": "c65346060273ce577602c2b6773f9c8907aa4cf73d16a78ede9edea4b80dd325",
+   "tool": "EtcTool",
+   "validate": "not checked (ktx validate reads KTX 2 only)"
+  },
+  "eac-rg11-signed.ktx": {
+   "arguments": [
+    "-format",
+    "SIGNED_RG11",
+    "-effort",
+    "40"
+   ],
+   "inputs": [
+    "rgba.png"
+   ],
+   "sha256": "b120007a5b5c6614e03c368f5fc34207b5be3827ee74a7a0c00cee3165754f30",
+   "tool": "EtcTool",
+   "validate": "not checked (ktx validate reads KTX 2 only)"
+  },
+  "eac-rg11-signed.ktx2": {
+   "arguments": [
+    "-format",
+    "SIGNED_RG11",
+    "-effort",
+    "40",
+    "ktx create",
+    "--raw",
+    "--format",
+    "EAC_R11G11_SNORM_BLOCK",
+    "--width",
+    "37",
+    "--height",
+    "23"
+   ],
+   "inputs": [
+    "rgba.png"
+   ],
+   "sha256": "70cdf25fe33525c2b85b607c8f50d18da7874ef6bf32dfdd41f189233078be3c",
+   "tool": "EtcTool + ktx create",
+   "validate": "valid"
+  },
+  "eac-rg11.ktx": {
+   "arguments": [
+    "-format",
+    "RG11",
+    "-effort",
+    "40"
+   ],
+   "inputs": [
+    "rgba.png"
+   ],
+   "sha256": "c58f711cb7d405a80a96e3eeec9f28a6183c2f06f2241903db341457d57ed9c8",
+   "tool": "EtcTool",
+   "validate": "not checked (ktx validate reads KTX 2 only)"
+  },
+  "eac-rg11.ktx2": {
+   "arguments": [
+    "-format",
+    "RG11",
+    "-effort",
+    "40",
+    "ktx create",
+    "--raw",
+    "--format",
+    "EAC_R11G11_UNORM_BLOCK",
+    "--width",
+    "37",
+    "--height",
+    "23"
+   ],
+   "inputs": [
+    "rgba.png"
+   ],
+   "sha256": "97cd05f7c6e222d20f85b6b85c8c1d8add27b783dffad86667494e6dfc7b1122",
+   "tool": "EtcTool + ktx create",
+   "validate": "valid"
+  },
+  "etc1.ktx": {
+   "arguments": [
+    "-format",
+    "ETC1",
+    "-effort",
+    "40"
+   ],
+   "inputs": [
+    "rgba.png"
+   ],
+   "sha256": "880d859425a21f177cd7afeb59452fcba50290766b68e324488c1d5f5b8397d7",
+   "tool": "EtcTool",
+   "validate": "not checked (ktx validate reads KTX 2 only)"
+  },
+  "etc2-a1.ktx": {
+   "arguments": [
+    "-format",
+    "RGB8A1",
+    "-effort",
+    "40"
+   ],
+   "inputs": [
+    "rgba.png"
+   ],
+   "sha256": "8ebe931d8a8a9521a4fbbdf4f20bd737071eac4eeaea8ebe436824042d7528e1",
+   "tool": "EtcTool",
+   "validate": "not checked (ktx validate reads KTX 2 only)"
+  },
+  "etc2-a1.ktx2": {
+   "arguments": [
+    "-format",
+    "RGB8A1",
+    "-effort",
+    "40",
+    "ktx create",
+    "--raw",
+    "--format",
+    "ETC2_R8G8B8A1_UNORM_BLOCK",
+    "--width",
+    "37",
+    "--height",
+    "23"
+   ],
+   "inputs": [
+    "rgba.png"
+   ],
+   "sha256": "e9926df4bd9ae0485f851ced4c9796b6655ea42e0ff94ecdca019cdb1bffe9b6",
+   "tool": "EtcTool + ktx create",
+   "validate": "valid"
+  },
+  "etc2-random.ktx2": {
+   "arguments": [
+    "--raw",
+    "--format",
+    "ETC2_R8G8B8_UNORM_BLOCK",
+    "--width",
+    "37",
+    "--height",
+    "23"
+   ],
+   "inputs": [
+    "etc2-random.bin"
+   ],
+   "sha256": "e8f51491c85c62ab7b88ae1c893a1f47c492713f1c36cddb84cfad48a2a8202d",
+   "tool": "ktx create",
+   "validate": "valid"
+  },
+  "etc2-rgb.ktx": {
+   "arguments": [
+    "-format",
+    "RGB8",
+    "-effort",
+    "40"
+   ],
+   "inputs": [
+    "rgba.png"
+   ],
+   "sha256": "32863262bb149f984541883aa02b0871f7848423bb469ea17191fb9c8c1d7878",
+   "tool": "EtcTool",
+   "validate": "not checked (ktx validate reads KTX 2 only)"
+  },
+  "etc2-rgb.ktx2": {
+   "arguments": [
+    "-format",
+    "RGB8",
+    "-effort",
+    "40",
+    "ktx create",
+    "--raw",
+    "--format",
+    "ETC2_R8G8B8_UNORM_BLOCK",
+    "--width",
+    "37",
+    "--height",
+    "23"
+   ],
+   "inputs": [
+    "rgba.png"
+   ],
+   "sha256": "2c17b0d388c67b235cc0cf91ca5ced06eea1757174f9e8fdcd8e566c993c4cfa",
+   "tool": "EtcTool + ktx create",
+   "validate": "valid"
+  },
+  "etc2-rgba.ktx": {
+   "arguments": [
+    "-format",
+    "RGBA8",
+    "-effort",
+    "40"
+   ],
+   "inputs": [
+    "rgba.png"
+   ],
+   "sha256": "a101eac65caad32432d1525dfe88397bc31e8c130160892c4c29462c9db2e111",
+   "tool": "EtcTool",
+   "validate": "not checked (ktx validate reads KTX 2 only)"
+  },
+  "etc2-rgba.ktx2": {
+   "arguments": [
+    "-format",
+    "RGBA8",
+    "-effort",
+    "40",
+    "ktx create",
+    "--raw",
+    "--format",
+    "ETC2_R8G8B8A8_UNORM_BLOCK",
+    "--width",
+    "37",
+    "--height",
+    "23"
+   ],
+   "inputs": [
+    "rgba.png"
+   ],
+   "sha256": "a80d33c74b3f75b227c515058d84e56ceb71dea5dc79d7f7dde2fa3799ff3ce3",
+   "tool": "EtcTool + ktx create",
+   "validate": "valid"
+  },
+  "etc2-srgb.ktx": {
+   "arguments": [
+    "-format",
+    "SRGB8",
+    "-effort",
+    "40"
+   ],
+   "inputs": [
+    "rgba.png"
+   ],
+   "sha256": "32863262bb149f984541883aa02b0871f7848423bb469ea17191fb9c8c1d7878",
+   "tool": "EtcTool",
+   "validate": "not checked (ktx validate reads KTX 2 only)"
+  },
+  "etc2-srgb.ktx2": {
+   "arguments": [
+    "-format",
+    "SRGB8",
+    "-effort",
+    "40",
+    "ktx create",
+    "--raw",
+    "--format",
+    "ETC2_R8G8B8_SRGB_BLOCK",
+    "--width",
+    "37",
+    "--height",
+    "23"
+   ],
+   "inputs": [
+    "rgba.png"
+   ],
+   "sha256": "52e818c40977bd5780c07d3b58d702ce34f3d8b182f20490146b0193d8002cc7",
+   "tool": "EtcTool + ktx create",
+   "validate": "valid"
   },
   "r8-srgb.ktx2": {
    "arguments": [
@@ -591,18 +1323,6 @@
    "sha256": "c9c4b6f80156b05c16a118b5ba103ad2e1e314542dd66f9b60110e4c90c62bd8",
    "tool": "toktx",
    "validate": "not checked (ktx validate reads KTX 2 only)"
-  },
-  "unsupported-astc.ktx2": {
-   "arguments": [
-    "--format",
-    "ASTC_4x4_SRGB_BLOCK"
-   ],
-   "inputs": [
-    "rgba.png"
-   ],
-   "sha256": "fc5553ead8fdaac0c4a84a6c9167637e40cfcb63e8bccf868079eaea11c5029b",
-   "tool": "ktx create",
-   "validate": "valid"
   },
   "unsupported-etc1s.ktx2": {
    "arguments": [

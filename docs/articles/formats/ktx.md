@@ -8,15 +8,15 @@ the Egami.Formats.Extended package: register them with `WithKtx()` and `WithKtx2
 
 | | |
 | --- | --- |
-| Reads | KTX 1.1 in both byte orders and KTX 2.0, uncompressed or Zstandard and zlib supercompressed: the 8, 16 and 32-bit UNORM, SNORM, sRGB, UINT, SINT and float formats, BGRA, the 565, 5551 and 4444 packed formats, A2B10G10R10, B10G11R11 and E5B9G9R9 floats, and BC1 to BC7 with BC6H unsigned and signed. 1D and 2D textures, arrays, cube maps and volume textures, with their mips |
+| Reads | KTX 1.1 in both byte orders and KTX 2.0, uncompressed or Zstandard and zlib supercompressed: the 8, 16 and 32-bit UNORM, SNORM, sRGB, UINT, SINT and float formats, BGRA, the 565, 5551 and 4444 packed formats, A2B10G10R10, B10G11R11 and E5B9G9R9 floats, BC1 to BC7 with BC6H unsigned and signed, ETC1, ETC2 (RGB8, RGB8A1, RGBA8, UNORM and sRGB), EAC R11 and RG11 (unsigned and signed), and ASTC in all 14 2D footprints, UNORM, sRGB and HDR (SFLOAT). 1D and 2D textures, arrays, cube maps and volume textures, with their mips |
 | Writes | No |
-| Natural pixel type | As [DDS](dds.md): `Rgba8` for BC1, BC2, BC3, BC7 and 8-bit RGBA; `Gray8` for BC4 and R8; `Rgb8` for BC5, RG8 and RGB8; `Rgba16` for 16-bit UNORM; `RgbaF16` for BC6H, half floats and the packed floats; `RgbaF32` for 32-bit floats; `Bgr565`, `Bgra5551` and `Bgra4444` for the packed formats. A swizzle that moves channels widens the type to its RGBA form |
+| Natural pixel type | As [DDS](dds.md): `Rgba8` for BC1, BC2, BC3, BC7, ETC2 RGB8A1 and RGBA8, ASTC LDR and 8-bit RGBA; `Gray8` for BC4 and R8; `Rgb8` for BC5, ETC1, ETC2 RGB8, RG8 and RGB8; `Gray16` for EAC R11; `Rgb16` for EAC RG11; `Rgba16` for 16-bit UNORM; `RgbaF16` for BC6H, ASTC HDR, half floats and the packed floats; `RgbaF32` for 32-bit floats; `Bgr565`, `Bgra5551` and `Bgra4444` for the packed formats. A swizzle that moves channels widens the type to its RGBA form |
 | `FormatInfo` | `KtxFormat.Info`: name `KTX`, extension `.ktx`, MIME type `image/ktx`. `Ktx2Format.Info`: name `KTX2`, extension `.ktx2`, MIME type `image/ktx2` |
 
 [!code-csharp[](../../../tests/Egami.DocSamples/FormatsExtended.cs#ktx-load)]
 
-ETC1, ETC2 and EAC, ASTC, PVRTC and Basis Universal (ETC1S with BasisLZ, and UASTC) are not read yet: a load or probe throws
-`UnsupportedFormatException` that names the family, such as "KTX 2 textures in ASTC compression are not supported yet".
+3D ASTC, PVRTC and Basis Universal (ETC1S with BasisLZ, and UASTC) are not read: a load or probe throws `UnsupportedFormatException`
+that names the family, such as "KTX 2 textures in Basis Universal UASTC compression are not supported yet".
 
 ## Surfaces and mips
 
@@ -43,7 +43,11 @@ keys either way, so a renderer can apply them itself. A malformed key is ignored
 ## Values
 
 Block formats decode as DDS's do, with the same shared decoders: BC4, BC5, BC6H and BC7 exactly, BC1 to BC3 from the exact
-interpolation of their endpoints. `BC1_RGB` formats load opaque. Two-channel formats load with blue 0;
+interpolation of their endpoints. `BC1_RGB` formats load opaque. ETC1, ETC2 and EAC decode exactly as their specification
+(the Khronos Data Format Specification) says; an ETC1 file decodes with the ETC2 decoder, which reads every valid ETC1 block the
+same. EAC's 11-bit values widen to 16 bits by bit replication, and signed EAC maps −1 to 1 onto 0 to 65535. ASTC decodes as ARM's
+astcenc does, bit for bit: LDR blocks to 8 bits per channel (sRGB files interpolate their 8-bit endpoints as the sRGB decode mode
+says), HDR blocks to half floats, an illegal block to magenta (LDR) or NaN (HDR), and blocks of any of the 14 2D footprints. Two-channel formats load with blue 0;
 `KtxReaderOptions.ReconstructNormalZ` rebuilds blue as a normal map's Z. SNORM, SINT and UINT formats map as DDS's do. A KTX 1
 file written big-endian is swapped by its `glTypeSize`, and the 4-byte row padding of KTX 1 uncompressed data is skipped.
 

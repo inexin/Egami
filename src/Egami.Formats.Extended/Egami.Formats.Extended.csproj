@@ -30,6 +30,7 @@
   <ItemGroup>
     <InternalsVisibleTo Include="Egami.Formats.Extended.Tests" />
     <InternalsVisibleTo Include="Egami.Fuzz" />
+    <InternalsVisibleTo Include="Egami.Benchmarks" />
   </ItemGroup>
 
 </Project>

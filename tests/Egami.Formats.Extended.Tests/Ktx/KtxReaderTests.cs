@@ -1,7 +1,9 @@
 using System.Buffers.Binary;
+using System.Runtime.InteropServices;
 
 using Egami.Colors;
 using Egami.Formats.Extended.Ktx;
+using Egami.Formats.Extended.Textures.Blocks;
 using Egami.Metadata;
 using Egami.Pixels;
 
@@ -66,6 +68,128 @@ public class KtxReaderTests
         { "raw-b10g11r11", 26 },
         { "raw-e5b9g9r9", 67 },
     };
+
+    public static TheoryData<string, string> Blocks => new()
+    {
+        // File, the reference decode: astcenc for ASTC, etcpak or Compressonator for ETC.
+        { "astc-4x4.ktx2", "astc-4x4.png" },
+        { "astc-5x4.ktx2", "astc-5x4.png" },
+        { "astc-5x5.ktx2", "astc-5x5.png" },
+        { "astc-5x5.ktx", "astc-5x5.png" },
+        { "astc-6x5.ktx2", "astc-6x5.png" },
+        { "astc-6x6.ktx2", "astc-6x6.png" },
+        { "astc-8x5.ktx2", "astc-8x5.png" },
+        { "astc-8x6.ktx2", "astc-8x6.png" },
+        { "astc-8x8.ktx2", "astc-8x8.png" },
+        { "astc-10x5.ktx2", "astc-10x5.png" },
+        { "astc-10x6.ktx2", "astc-10x6.png" },
+        { "astc-10x8.ktx2", "astc-10x8.png" },
+        { "astc-10x10.ktx2", "astc-10x10.png" },
+        { "astc-12x10.ktx2", "astc-12x10.png" },
+        { "astc-12x12.ktx2", "astc-12x12.png" },
+        { "astc-6x6-srgb.ktx2", "astc-6x6-srgb.png" },
+        { "astc-12x10-srgb.ktx2", "astc-12x10-srgb.png" },
+        { "astc-4x4-mutated.ktx2", "astc-4x4-mutated.png" },
+        { "astc-8x5-mutated.ktx2", "astc-8x5-mutated.png" },
+        { "etc1.ktx", "etc1.png" },
+        { "etc2-rgb.ktx", "etc2-rgb.png" },
+        { "etc2-rgb.ktx2", "etc2-rgb.png" },
+        { "etc2-a1.ktx", "etc2-a1.png" },
+        { "etc2-a1.ktx2", "etc2-a1.png" },
+        { "etc2-rgba.ktx", "etc2-rgba.png" },
+        { "etc2-rgba.ktx2", "etc2-rgba.png" },
+        { "etc2-random.ktx2", "etc2-random.png" },
+    };
+
+    [Theory]
+    [MemberData(nameof(Blocks))]
+    public void DecodesEtcAndAstcAsTheReferenceDecoders(string file, string reference)
+    {
+        using Raster<Rgba8> expected = Raster.Load<Rgba8>(KtxFiles.Reference(reference));
+        using Raster<Rgba8> actual = Raster.Load<Rgba8>(KtxFiles.Corpus(file), Context);
+        TestImages.AssertEqual(expected, actual);
+        Assert.Empty(actual.Metadata.Warnings);
+    }
+
+    [Theory]
+    [InlineData("eac-r11.ktx", "eac-r11.png", 1)]
+    [InlineData("eac-rg11.ktx", "eac-rg11.png", 2)]
+    [InlineData("eac-rg11.ktx2", "eac-rg11.png", 2)]
+    public void DecodesEacAsEtcpak(string file, string reference, int channels)
+    {
+        // etcpak writes the top 8 of the 11 bits; Egami widens the 11 bits to 16 by replication, so its top 8 bits are those.
+        using Raster<Rgba8> expected = Raster.Load<Rgba8>(KtxFiles.Reference(reference));
+        using Raster texture = Raster.Load(KtxFiles.Corpus(file), Context);
+        Assert.True(channels == 1 ? texture is Raster<Gray16> : texture is Raster<Rgb16>);
+        using Raster<Rgba16> actual = texture.As<Rgba16>();
+        for (int y = 0; y < expected.Height; y++)
+        {
+            for (int x = 0; x < expected.Width; x++)
+            {
+                Rgba8 e = expected.Row(y)[x];
+                Rgba16 a = actual.Row(y)[x];
+                Assert.Equal(e.R, a.R >> 8);
+                Assert.Equal(channels == 1 ? a.R >> 8 : e.G, a.G >> 8);
+            }
+        }
+    }
+
+    [Theory]
+    [InlineData("astc-6x6-hdr.ktx2")]
+    [InlineData("astc-8x8-hdr-mutated.ktx2")]
+    public void DecodesAstcHdrAsAstcenc(string file)
+    {
+        using Raster<RgbaF16> actual = Raster.Load<RgbaF16>(KtxFiles.Corpus(file), Context);
+        byte[] expected = KtxFiles.Gunzip(file.Replace(".ktx2", ".f16.gz", StringComparison.Ordinal));
+        for (int y = 0; y < actual.Height; y++)
+        {
+            Assert.Equal(expected.AsSpan(y * actual.Width * 8, actual.Width * 8), MemoryMarshal.AsBytes(actual.Row(y)));
+        }
+    }
+
+    [Theory]
+    [InlineData("eac-r11-signed.ktx", 1)]
+    [InlineData("eac-rg11-signed.ktx", 2)]
+    [InlineData("eac-rg11-signed.ktx2", 2)]
+    [InlineData("etc2-srgb.ktx", 3)]
+    [InlineData("etc2-srgb.ktx2", 3)]
+    public void ReadsTheFormatsWithoutAReferenceDecoder(string file, int channels)
+    {
+        using Raster texture = Raster.Load(KtxFiles.Corpus(file), Context);
+        Assert.True(channels switch { 1 => texture is Raster<Gray16>, 2 => texture is Raster<Rgb16>, _ => texture is Raster<Rgb8> });
+        Assert.Equal((37, 23), (texture.Width, texture.Height));
+        // EtcTool writes SRGB8 under the plain RGB8 internal format, so only the KTX 2 copy says sRGB.
+        Assert.Equal(file == "etc2-srgb.ktx2", texture.Metadata.ColorSpace == ColorSpaceHint.Srgb);
+
+        // The same blocks in the other container read the same.
+        string other = file.EndsWith(".ktx2", StringComparison.Ordinal) ? file[..^1] : file + "2";
+        if (File.Exists(KtxFiles.Corpus(other)))
+        {
+            using Raster twin = Raster.Load(KtxFiles.Corpus(other), Context);
+            Assert.Equal(KtxFiles.Floats(twin), KtxFiles.Floats(texture));
+        }
+    }
+
+    [Theory]
+    [InlineData(0x80, 0, 0, 7, 673)] // −128 reads as −127: −1016 + 14 = −1002.
+    [InlineData(0x81, 15, 0, 3, 0)] // −1016 − 15 × 15 × 8 clamps to −1023, which is −1.
+    [InlineData(0x7F, 15, 0, 7, 65535)] // 1016 + 14 × 15 × 8 clamps to 1023, which is 1.
+    [InlineData(0x00, 0, 0, 4, 32832)] // Multiplier 0 adds the modifier unscaled: 0 + 2.
+    [InlineData(0x00, 1, 0, 0, 31999)] // 0 − 3 × 8 = −24.
+    public void DecodesSignedEacAsTheSpecificationSays(int baseCodeword, int multiplier, int table, int index, int expected)
+    {
+        ulong bits = ((ulong)baseCodeword << 56) | ((ulong)multiplier << 52) | ((ulong)table << 48);
+        for (int k = 0; k < 16; k++)
+        {
+            bits |= (ulong)index << (45 - (3 * k));
+        }
+
+        byte[] block = new byte[8];
+        BinaryPrimitives.WriteUInt64BigEndian(block, bits);
+        ushort[] values = new ushort[16];
+        Etc.DecodeEac11(block, values, 1, signed: true);
+        Assert.All(values, v => Assert.Equal(expected, v));
+    }
 
     [Theory]
     [MemberData(nameof(Created))]
@@ -238,7 +362,6 @@ public class KtxReaderTests
     [Theory]
     [InlineData("unsupported-uastc.ktx2", "UASTC")]
     [InlineData("unsupported-etc1s.ktx2", "ETC1S")]
-    [InlineData("unsupported-astc.ktx2", "ASTC")]
     public void RefusesFormatsNotSupportedYet(string file, string family)
     {
         UnsupportedFormatException e = Assert.Throws<UnsupportedFormatException>(() => Raster.Probe(KtxFiles.Corpus(file), Context));
@@ -248,10 +371,12 @@ public class KtxReaderTests
     }
 
     [Fact]
-    public void RefusesEtcByFormatNumber()
+    public void RefusesThreeDimensionalAstcAndPvrtc()
     {
-        Assert.Contains("ETC2", Assert.Throws<UnsupportedFormatException>(() => Raster.Load(KtxFiles.Ktx2(147, 4, 4, [new byte[8]]), Context)).Message, StringComparison.Ordinal);
-        Assert.Contains("ETC1", Assert.Throws<UnsupportedFormatException>(() => Raster.Load(KtxFiles.Ktx1(0, 1, 0, 0x8D64, 4, 4, [new byte[8]]), Context)).Message, StringComparison.Ordinal);
+        Assert.Contains("3D ASTC", Assert.Throws<UnsupportedFormatException>(() => Raster.Load(KtxFiles.Ktx2(1000288000, 4, 4, [new byte[16]]), Context)).Message, StringComparison.Ordinal);
+        Assert.Contains("PVRTC", Assert.Throws<UnsupportedFormatException>(() => Raster.Load(KtxFiles.Ktx2(1000054000, 4, 4, [new byte[8]]), Context)).Message, StringComparison.Ordinal);
+        Assert.Contains("3D ASTC", Assert.Throws<UnsupportedFormatException>(() => Raster.Load(KtxFiles.Ktx1(0, 1, 0, 0x93C0, 4, 4, [new byte[16]]), Context)).Message, StringComparison.Ordinal);
+        Assert.Contains("PVRTC", Assert.Throws<UnsupportedFormatException>(() => Raster.Load(KtxFiles.Ktx1(0, 1, 0, 0x8C00, 4, 4, [new byte[8]]), Context)).Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -306,6 +431,17 @@ public class KtxReaderTests
         using Raster<Rgba8> raster = Assert.IsType<Raster<Rgba8>>(Raster.Load(KtxFiles.Ktx2(37, 1, 1, [[50, 25, 0, 100]], flags: 1), Context));
         Assert.Equal(new Rgba8(128, 64, 0, 100), raster.Row(0)[0]);
         Assert.Equal(KtxAlphaMode.Premultiplied, ((KtxDetails)raster.Metadata.FormatDetails!).AlphaMode);
+    }
+
+    [Fact]
+    public void CountsBlockRowsOfHugeTexturesWithoutOverflow()
+    {
+        // A fuzz finding: a height near 2^31 overflowed the count of block rows, and the plan threw ArgumentException.
+        byte[] file = KtxFiles.Ktx2(147, 37, int.MaxValue, [new byte[80]]);
+        Exception? e = Record.Exception(() => Raster.Probe(file, Context));
+        Assert.True(e is null or EgamiException, e?.ToString());
+        e = Record.Exception(() => Raster.Load(file, Context).Dispose());
+        Assert.True(e is null or EgamiException, e?.ToString());
     }
 
     [Fact]
