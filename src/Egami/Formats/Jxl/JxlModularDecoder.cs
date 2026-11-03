@@ -105,20 +105,20 @@ internal static class JxlModularDecoder
         JxlChannelPlan plan = tree.Plan(root);
         if (decoder.UsesLz77)
         {
-            Decode(r, new Lz77Residuals(decoder, multiplier), tree, plan, root, wp, c, previous, channel, stream);
+            Decode(r, new JxlAnyUintReader(decoder, multiplier), tree, plan, root, wp, c, previous, channel, stream);
         }
         else if (decoder.IsAns)
         {
-            Decode(r, new AnsResiduals(decoder), tree, plan, root, wp, c, previous, channel, stream);
+            Decode(r, new JxlAnsUintReader(decoder), tree, plan, root, wp, c, previous, channel, stream);
         }
         else
         {
-            Decode(r, new PrefixResiduals(decoder), tree, plan, root, wp, c, previous, channel, stream);
+            Decode(r, new JxlPrefixUintReader(decoder), tree, plan, root, wp, c, previous, channel, stream);
         }
     }
 
     private static void Decode<TResiduals>(JxlBitReader r, TResiduals residuals, JxlTree tree, JxlChannelPlan plan, int root, JxlWpParams wp, JxlChannel c, List<JxlChannel> previous, int channel, int stream)
-        where TResiduals : struct, IResiduals
+        where TResiduals : struct, IJxlUintReader
     {
         switch (plan.Kind)
         {
@@ -139,7 +139,7 @@ internal static class JxlModularDecoder
 
     /// <summary>Decodes a channel whose one leaf predicts with the clamped gradient, the usual lossless leaf.</summary>
     private static void DecodeGradient<TResiduals>(JxlBitReader r, TResiduals residuals, JxlLeaf leaf, JxlChannel c)
-        where TResiduals : struct, IResiduals
+        where TResiduals : struct, IJxlUintReader
     {
         int width = c.Width;
         int height = c.Height;
@@ -172,7 +172,7 @@ internal static class JxlModularDecoder
 
     /// <summary>Decodes a channel with one leaf and any predictor.</summary>
     private static void DecodeSingle<TResiduals>(JxlBitReader r, TResiduals residuals, JxlLeaf leaf, JxlWeightedPredictor? weighted, JxlChannel c)
-        where TResiduals : struct, IResiduals
+        where TResiduals : struct, IJxlUintReader
     {
         int width = c.Width;
         int height = c.Height;
@@ -194,7 +194,7 @@ internal static class JxlModularDecoder
 
     /// <summary>Decodes a channel whose subtree tests one property, its leaf found in a table.</summary>
     private static void DecodeLookup<TResiduals>(JxlBitReader r, TResiduals residuals, JxlLeaf[] leaves, JxlChannelPlan plan, JxlWeightedPredictor? weighted, JxlChannel c, int channel, int stream)
-        where TResiduals : struct, IResiduals
+        where TResiduals : struct, IJxlUintReader
     {
         int width = c.Width;
         int height = c.Height;
@@ -225,7 +225,7 @@ internal static class JxlModularDecoder
 
     /// <summary>Decodes a channel by walking its flattened subtree for every sample, with every property worked out first.</summary>
     private static void DecodeWalk<TResiduals>(JxlBitReader r, TResiduals residuals, JxlTree tree, JxlChannelPlan plan, JxlWeightedPredictor? weighted, JxlChannel c, List<JxlChannel> previous, int channel, int stream)
-        where TResiduals : struct, IResiduals
+        where TResiduals : struct, IJxlUintReader
     {
         int width = c.Width;
         int height = c.Height;
@@ -352,7 +352,7 @@ internal static class JxlModularDecoder
     /// <summary>Decodes the next residual in the leaf's context, scaled and offset.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static int Residual<TResiduals>(JxlBitReader r, TResiduals residuals, JxlLeaf leaf)
-        where TResiduals : struct, IResiduals
+        where TResiduals : struct, IJxlUintReader
     {
         return unchecked((JxlHeaders.UnpackSigned(residuals.Read(r, leaf.Cluster)) * leaf.Multiplier) + leaf.Offset);
     }
@@ -388,25 +388,5 @@ internal static class JxlModularDecoder
         output[1] = c;
         output[2] = (int)(uint)Math.Abs((long)c - g);
         output[3] = unchecked(c - g);
-    }
-
-    private interface IResiduals
-    {
-        uint Read(JxlBitReader r, int cluster);
-    }
-
-    private readonly struct AnsResiduals(JxlEntropyDecoder decoder) : IResiduals
-    {
-        public uint Read(JxlBitReader r, int cluster) => decoder.ReadAnsUint(r, cluster);
-    }
-
-    private readonly struct PrefixResiduals(JxlEntropyDecoder decoder) : IResiduals
-    {
-        public uint Read(JxlBitReader r, int cluster) => decoder.ReadPrefixUint(r, cluster);
-    }
-
-    private readonly struct Lz77Residuals(JxlEntropyDecoder decoder, uint multiplier) : IResiduals
-    {
-        public uint Read(JxlBitReader r, int cluster) => decoder.ReadUintClustered(r, cluster, multiplier);
     }
 }

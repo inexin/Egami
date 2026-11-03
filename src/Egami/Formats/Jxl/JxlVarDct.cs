@@ -339,6 +339,27 @@ internal sealed class JxlVarDct
         JxlEntropyDecoder decoder = hfPass.Decoder.Clone();
         ReadOnlySpan<byte> clusters = decoder.Clusters.Slice(ctxSize * preset, ctxSize);
         decoder.Begin(r);
+        if (decoder.UsesLz77)
+        {
+            DecodePassGroup(r, new JxlAnyUintReader(decoder, 0), hfPass, clusters, shift, bx0, by0, gbw, gbh);
+        }
+        else if (decoder.IsAns)
+        {
+            DecodePassGroup(r, new JxlAnsUintReader(decoder), hfPass, clusters, shift, bx0, by0, gbw, gbh);
+        }
+        else
+        {
+            DecodePassGroup(r, new JxlPrefixUintReader(decoder), hfPass, clusters, shift, bx0, by0, gbw, gbh);
+        }
+
+        decoder.Finish(r);
+    }
+
+    /// <summary>Decodes a pass group's varblocks with the stream's reader as a type argument.</summary>
+    private void DecodePassGroup<TReader>(JxlBitReader r, TReader decoder, JxlHfPass hfPass, ReadOnlySpan<byte> clusters, int shift, int bx0, int by0, int gbw, int gbh)
+        where TReader : struct, IJxlUintReader
+    {
+        int nbc = _global.BlockClusters;
         int[][] lfThresholds = _global.LfThresholds;
         int[] qfThresholds = _global.QfThresholds;
         int lfMul = (lfThresholds[0].Length + 1) * (lfThresholds[1].Length + 1) * (lfThresholds[2].Length + 1);
@@ -415,7 +436,7 @@ internal sealed class JxlVarDct
                     int predicted = sy == 0 ? (sx == 0 ? 32 : row[sx - 1]) : sx == 0 ? row[sx] : (row[sx] + row[sx - 1] + 1) >> 1;
                     int nzIndex = predicted >= 8 ? 4 + (predicted / 2) : predicted;
                     int nzCtx = blockCtx + (nzIndex * nbc);
-                    uint nz = decoder.ReadUintClustered(r, clusters[nzCtx], 0);
+                    uint nz = decoder.Read(r, clusters[nzCtx]);
                     if (nz > (uint)(63 << logBlocks))
                     {
                         throw r.Corrupt("A varblock has too many nonzero coefficients.");
@@ -438,7 +459,8 @@ internal sealed class JxlVarDct
                     int py0 = ((by0 >> _vs[c]) + sy) * 8;
                     int prevNonzero = nz <= (uint)(numBlocks * 4) ? 1 : 0;
                     int[] order = hfPass.Order(orderId, c);
-                    int orderWidth = JxlHfPass.OrderWidth(orderId);
+                    int logWidth = System.Numerics.BitOperations.Log2((uint)JxlHfPass.OrderWidth(orderId));
+                    int widthMask = (1 << logWidth) - 1;
                     bool transposed = JxlTransforms8.Transposed(t);
                     int coeffBase = (blockCtx * 458) + (37 * nbc);
                     for (int i = numBlocks; i < order.Length; i++)
@@ -449,7 +471,7 @@ internal sealed class JxlVarDct
                             throw r.Corrupt("Too many zeros in a varblock's HF coefficients.");
                         }
 
-                        uint u = decoder.ReadUintClustered(r, clusters[coeffBase + ctx], 0);
+                        uint u = decoder.Read(r, clusters[coeffBase + ctx]);
                         if (u == 0)
                         {
                             prevNonzero = 0;
@@ -458,8 +480,8 @@ internal sealed class JxlVarDct
 
                         int coeff = JxlHeaders.UnpackSigned(u) << shift;
                         int pos = order[i];
-                        int dx = pos % orderWidth;
-                        int dy = pos / orderWidth;
+                        int dx = pos & widthMask;
+                        int dy = pos >> logWidth;
                         if (transposed)
                         {
                             (dx, dy) = (dy, dx);
@@ -475,8 +497,6 @@ internal sealed class JxlVarDct
                 }
             }
         }
-
-        decoder.Finish(r);
     }
 
     /// <summary>Gets the LF image alone (1:8, X, Y and B, cropped to the frame), after chroma from luma and smoothing.</summary>

@@ -1,3 +1,5 @@
+using System.Runtime.CompilerServices;
+
 namespace Egami.Formats.Jxl;
 
 /// <summary>Supplies codestream bytes to <see cref="JxlBitReader"/>: the bare file, or the payload of its jxlc or jxlp boxes.</summary>
@@ -64,6 +66,7 @@ internal sealed class JxlBitReader
     }
 
     /// <summary>Gets up to 32 bits ahead without consuming them; bits past the end read as zero.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal uint PeekBits(int n)
     {
         if (_count < n)
@@ -75,6 +78,7 @@ internal sealed class JxlBitReader
     }
 
     /// <summary>Consumes <paramref name="n"/> bits a <see cref="PeekBits"/> looked at.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal void Consume(int n)
     {
         if (_count < n)
@@ -90,6 +94,7 @@ internal sealed class JxlBitReader
     internal long BitPosition => (_bytesTaken * 8) - _count;
 
     /// <summary>Reads <paramref name="n"/> bits, 0 to 32.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal uint ReadBits(int n)
     {
         if (n == 0)
