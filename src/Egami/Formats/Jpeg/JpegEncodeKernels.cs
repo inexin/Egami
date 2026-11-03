@@ -29,39 +29,79 @@ internal static class JpegEncodeKernels
     internal static void YCbCr(ReadOnlySpan<byte> rgb, Span<byte> y, Span<byte> cb, Span<byte> cr)
     {
         int done = Avx2.IsSupported ? YCbCrAvx2(rgb, y, cb, cr, lumaOnly: false) : 0;
-        YCbCrScalar(rgb, y, cb, cr, done);
+        YCbCrScalar(rgb, 3, y, cb, cr, done);
+    }
+
+    /// <summary>Converts packed RGBA to luma and chroma rows, as wide as <paramref name="y"/>, ignoring the alpha.</summary>
+    internal static void YCbCrFromRgba(ReadOnlySpan<byte> rgba, Span<byte> y, Span<byte> cb, Span<byte> cr)
+    {
+        int done = Avx2.IsSupported ? YCbCrFromRgbaAvx2(rgba, y, cb, cr, lumaOnly: false) : 0;
+        YCbCrScalar(rgba, 4, y, cb, cr, done);
     }
 
     /// <summary>Converts packed RGB to luma alone, as <c>cjpeg -grayscale</c> does.</summary>
     internal static void Luma(ReadOnlySpan<byte> rgb, Span<byte> y)
     {
         int done = Avx2.IsSupported ? YCbCrAvx2(rgb, y, default, default, lumaOnly: true) : 0;
-        for (int x = done; x < y.Length; x++)
-        {
-            y[x] = (byte)(((RY * rgb[3 * x]) + (GY * rgb[(3 * x) + 1]) + (BY * rgb[(3 * x) + 2]) + Half) >> ScaleBits);
-        }
+        LumaScalar(rgb, 3, y, done);
+    }
+
+    /// <summary>Converts packed RGBA to luma alone, ignoring the alpha.</summary>
+    internal static void LumaFromRgba(ReadOnlySpan<byte> rgba, Span<byte> y)
+    {
+        int done = Avx2.IsSupported ? YCbCrFromRgbaAvx2(rgba, y, default, default, lumaOnly: true) : 0;
+        LumaScalar(rgba, 4, y, done);
     }
 
     /// <summary>The scalar conversion from pixel <paramref name="start"/> on.</summary>
     internal static void YCbCrScalar(ReadOnlySpan<byte> rgb, Span<byte> y, Span<byte> cb, Span<byte> cr, int start)
     {
+        YCbCrScalar(rgb, 3, y, cb, cr, start);
+    }
+
+    private static void YCbCrScalar(ReadOnlySpan<byte> pixels, int size, Span<byte> y, Span<byte> cb, Span<byte> cr, int start)
+    {
         for (int x = start; x < y.Length; x++)
         {
-            int red = rgb[3 * x], green = rgb[(3 * x) + 1], blue = rgb[(3 * x) + 2];
+            int red = pixels[size * x], green = pixels[(size * x) + 1], blue = pixels[(size * x) + 2];
             y[x] = (byte)(((RY * red) + (GY * green) + (BY * blue) + Half) >> ScaleBits);
             cb[x] = (byte)(((RCb * red) + (GCb * green) + (BCbRCr * blue) + CbCrOffset + Half - 1) >> ScaleBits);
             cr[x] = (byte)(((BCbRCr * red) + (GCr * green) + (BCr * blue) + CbCrOffset + Half - 1) >> ScaleBits);
         }
     }
 
+    private static void LumaScalar(ReadOnlySpan<byte> pixels, int size, Span<byte> y, int start)
+    {
+        for (int x = start; x < y.Length; x++)
+        {
+            y[x] = (byte)(((RY * pixels[size * x]) + (GY * pixels[(size * x) + 1]) + (BY * pixels[(size * x) + 2]) + Half) >> ScaleBits);
+        }
+    }
+
     /// <summary>
-    /// Converts 16 pixels at a time: the RGB bytes are split into planes with byte shuffles, then each output is computed in 32-bit
-    /// lanes with the scalar code's constants. Returns how many pixels it did.
+    /// Converts 16 pixels at a time: the RGB bytes are split into planes with byte shuffles and widened to 16 bits, then each output
+    /// is two multiply-adds of interleaved pairs per 8 pixels, summed in 32-bit lanes. A factor of 0.5 or more does not fit 16 bits,
+    /// so it is split across both pairs (G's luma factor and the chroma ones of 0.5), which keeps each sum exactly the scalar
+    /// expression. Returns how many pixels it did.
     /// </summary>
     internal static int YCbCrAvx2(ReadOnlySpan<byte> rgb, Span<byte> y, Span<byte> cb, Span<byte> cr, bool lumaOnly)
     {
+        return YCbCrAvx2<Rgb>(rgb, y, cb, cr, lumaOnly);
+    }
+
+    /// <summary><see cref="YCbCrAvx2(ReadOnlySpan{byte}, Span{byte}, Span{byte}, Span{byte}, bool)"/> from packed RGBA.</summary>
+    internal static int YCbCrFromRgbaAvx2(ReadOnlySpan<byte> rgba, Span<byte> y, Span<byte> cb, Span<byte> cr, bool lumaOnly)
+    {
+        return YCbCrAvx2<Rgba>(rgba, y, cb, cr, lumaOnly);
+    }
+
+    /// <summary>The conversion for one pixel layout; generic so that each layout compiles to its own loop.</summary>
+    private static int YCbCrAvx2<TLayout>(ReadOnlySpan<byte> pixels, Span<byte> y, Span<byte> cb, Span<byte> cr, bool lumaOnly)
+        where TLayout : struct, ILayout
+    {
+        int size = TLayout.Size;
         int width = y.Length;
-        ref byte source = ref MemoryMarshal.GetReference(rgb);
+        ref byte source = ref MemoryMarshal.GetReference(pixels);
         Vector128<byte> r0 = Vector128.Create((byte)0, 3, 6, 9, 12, 15, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128);
         Vector128<byte> r1 = Vector128.Create((byte)128, 128, 128, 128, 128, 128, 2, 5, 8, 11, 14, 128, 128, 128, 128, 128);
         Vector128<byte> r2 = Vector128.Create((byte)128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 1, 4, 7, 10, 13);
@@ -71,24 +111,75 @@ internal static class JpegEncodeKernels
         Vector128<byte> b0 = Vector128.Create((byte)2, 5, 8, 11, 14, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128);
         Vector128<byte> b1 = Vector128.Create((byte)128, 128, 128, 128, 128, 1, 4, 7, 10, 13, 128, 128, 128, 128, 128, 128);
         Vector128<byte> b2 = Vector128.Create((byte)128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 0, 3, 6, 9, 12, 15);
+
+        // RGBA: within each 128-bit lane, the four pixels' R, then G, B and A bytes; then 32-bit groups in plane order.
+        Vector256<byte> planar = Vector256.Create((byte)0, 4, 8, 12, 1, 5, 9, 13, 2, 6, 10, 14, 3, 7, 11, 15, 0, 4, 8, 12, 1, 5, 9, 13, 2, 6, 10, 14, 3, 7, 11, 15);
+        Vector256<int> order = Vector256.Create(0, 4, 1, 5, 2, 6, 3, 7);
+
+        // Y = R·RY + G·(GY − 2^14) + B·BY + G·2^14; Cb = R·RCb + G·GCb + B·0.5 in two halves; Cr = R·0.5 in two halves + G·GCr + B·BCr.
+        int halfOfHalf = BCbRCr / 2;
+        Vector256<short> yRg = Pair(RY, GY - (1 << 14)), yBg = Pair(BY, 1 << 14);
+        Vector256<short> cbRg = Pair(RCb, GCb), cbBb = Pair(halfOfHalf, BCbRCr - halfOfHalf);
+        Vector256<short> crRg = Pair(halfOfHalf, GCr), crBr = Pair(BCr, BCbRCr - halfOfHalf);
+        Vector256<int> yAdd = Vector256.Create(Half), cAdd = Vector256.Create(CbCrOffset + Half - 1);
         int x = 0;
-        for (; x + 16 <= width && (3 * x) + 48 <= rgb.Length && (lumaOnly || (x + 16 <= cb.Length && x + 16 <= cr.Length)); x += 16)
+        for (; x + 16 <= width && (size * x) + (16 * size) <= pixels.Length && (lumaOnly || (x + 16 <= cb.Length && x + 16 <= cr.Length)); x += 16)
         {
-            Vector128<byte> v0 = Vector128.LoadUnsafe(ref source, (nuint)(3 * x));
-            Vector128<byte> v1 = Vector128.LoadUnsafe(ref source, (nuint)((3 * x) + 16));
-            Vector128<byte> v2 = Vector128.LoadUnsafe(ref source, (nuint)((3 * x) + 32));
-            Vector128<byte> red = Ssse3.Shuffle(v0, r0) | Ssse3.Shuffle(v1, r1) | Ssse3.Shuffle(v2, r2);
-            Vector128<byte> green = Ssse3.Shuffle(v0, g0) | Ssse3.Shuffle(v1, g1) | Ssse3.Shuffle(v2, g2);
-            Vector128<byte> blue = Ssse3.Shuffle(v0, b0) | Ssse3.Shuffle(v1, b1) | Ssse3.Shuffle(v2, b2);
-            Store(Combine(red, green, blue, RY, GY, BY, Half), y, x);
-            if (!lumaOnly)
+            Vector256<short> red, green, blue;
+            if (TLayout.Size == 4)
             {
-                Store(Combine(red, green, blue, RCb, GCb, BCbRCr, CbCrOffset + Half - 1), cb, x);
-                Store(Combine(red, green, blue, BCbRCr, GCr, BCr, CbCrOffset + Half - 1), cr, x);
+                // Pixels 0-7 and 8-15 as R | G | B | A groups of 8 bytes per 128-bit lane pair, then R and B, and G, side by side.
+                Vector256<ulong> first = Avx2.PermuteVar8x32(Avx2.Shuffle(Vector256.LoadUnsafe(ref source, (nuint)(4 * x)), planar).AsInt32(), order).AsUInt64();
+                Vector256<ulong> second = Avx2.PermuteVar8x32(Avx2.Shuffle(Vector256.LoadUnsafe(ref source, (nuint)((4 * x) + 32)), planar).AsInt32(), order).AsUInt64();
+                Vector256<byte> redBlue = Avx2.UnpackLow(first, second).AsByte();
+                red = Avx2.ConvertToVector256Int16(redBlue.GetLower());
+                blue = Avx2.ConvertToVector256Int16(redBlue.GetUpper());
+                green = Avx2.ConvertToVector256Int16(Avx2.UnpackHigh(first, second).AsByte().GetLower());
             }
+            else
+            {
+                Vector128<byte> v0 = Vector128.LoadUnsafe(ref source, (nuint)(3 * x));
+                Vector128<byte> v1 = Vector128.LoadUnsafe(ref source, (nuint)((3 * x) + 16));
+                Vector128<byte> v2 = Vector128.LoadUnsafe(ref source, (nuint)((3 * x) + 32));
+                red = Avx2.ConvertToVector256Int16(Ssse3.Shuffle(v0, r0) | Ssse3.Shuffle(v1, r1) | Ssse3.Shuffle(v2, r2));
+                green = Avx2.ConvertToVector256Int16(Ssse3.Shuffle(v0, g0) | Ssse3.Shuffle(v1, g1) | Ssse3.Shuffle(v2, g2));
+                blue = Avx2.ConvertToVector256Int16(Ssse3.Shuffle(v0, b0) | Ssse3.Shuffle(v1, b1) | Ssse3.Shuffle(v2, b2));
+            }
+
+            // Pixels 0-3 and 8-11 in the low unpacks, 4-7 and 12-15 in the high ones; the packs put them back in order.
+            Vector256<short> rgLow = Avx2.UnpackLow(red, green), rgHigh = Avx2.UnpackHigh(red, green);
+            Vector256<short> luma = Channel(rgLow, rgHigh, yRg, Avx2.UnpackLow(blue, green), Avx2.UnpackHigh(blue, green), yBg, yAdd);
+            if (lumaOnly)
+            {
+                Avx2.Permute4x64(Avx2.PackUnsignedSaturate(luma, luma).AsUInt64(), 0b00_00_10_00).AsByte().GetLower().StoreUnsafe(ref MemoryMarshal.GetReference(y), (nuint)x);
+                continue;
+            }
+
+            Vector256<short> blueCb = Channel(rgLow, rgHigh, cbRg, Avx2.UnpackLow(blue, blue), Avx2.UnpackHigh(blue, blue), cbBb, cAdd);
+            Vector256<short> redCr = Channel(rgLow, rgHigh, crRg, Avx2.UnpackLow(blue, red), Avx2.UnpackHigh(blue, red), crBr, cAdd);
+            Vector256<byte> lumaCb = Avx2.Permute4x64(Avx2.PackUnsignedSaturate(luma, blueCb).AsUInt64(), 0b11_01_10_00).AsByte();
+            lumaCb.GetLower().StoreUnsafe(ref MemoryMarshal.GetReference(y), (nuint)x);
+            lumaCb.GetUpper().StoreUnsafe(ref MemoryMarshal.GetReference(cb), (nuint)x);
+            Avx2.Permute4x64(Avx2.PackUnsignedSaturate(redCr, redCr).AsUInt64(), 0b00_00_10_00).AsByte().GetLower().StoreUnsafe(ref MemoryMarshal.GetReference(cr), (nuint)x);
         }
 
         return x;
+    }
+
+    /// <summary>The bytes per pixel of a packed layout the colour conversion reads.</summary>
+    private interface ILayout
+    {
+        static abstract int Size { get; }
+    }
+
+    private readonly struct Rgb : ILayout
+    {
+        public static int Size => 3;
+    }
+
+    private readonly struct Rgba : ILayout
+    {
+        public static int Size => 4;
     }
 
     /// <summary>Averages full-size rows down: 2×2 (bias 1, 2, 1, 2, …) or 2×1 (bias 0, 1, …), into <paramref name="output"/>.</summary>
@@ -145,25 +236,24 @@ internal static class JpegEncodeKernels
         return x;
     }
 
-    /// <summary>One output channel of 16 pixels: (cr R + cg G + cb B + add) &gt;&gt; 16 in 32-bit lanes, as bytes.</summary>
+    /// <summary>
+    /// One output channel of 16 pixels from two sets of interleaved pairs: (pairs · factors summed + <paramref name="add"/>) &gt;&gt; 16,
+    /// as 16-bit lanes in pixel order.
+    /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static Vector128<byte> Combine(Vector128<byte> red, Vector128<byte> green, Vector128<byte> blue, int cr, int cg, int cb, int add)
+    private static Vector256<short> Channel(
+        Vector256<short> low1, Vector256<short> high1, Vector256<short> factors1,
+        Vector256<short> low2, Vector256<short> high2, Vector256<short> factors2, Vector256<int> add)
     {
-        Vector256<int> low = Lanes(red, green, blue, cr, cg, cb, add);
-        Vector256<int> high = Lanes(Sse2.ShiftRightLogical128BitLane(red, 8), Sse2.ShiftRightLogical128BitLane(green, 8), Sse2.ShiftRightLogical128BitLane(blue, 8), cr, cg, cb, add);
-        // The packs work within 128-bit lanes, leaving pixels 0-3, 8-11 | 4-7, 12-15 in 4-byte groups; the permute orders them.
-        Vector256<short> shorts = Avx2.PackSignedSaturate(low, high);
-        Vector256<byte> bytes = Avx2.PackUnsignedSaturate(shorts, shorts);
-        return Avx2.PermuteVar8x32(bytes.AsInt32(), Vector256.Create(0, 4, 1, 5, 0, 0, 0, 0)).AsByte().GetLower();
+        Vector256<int> low = Avx2.MultiplyAddAdjacent(low1, factors1) + Avx2.MultiplyAddAdjacent(low2, factors2) + add;
+        Vector256<int> high = Avx2.MultiplyAddAdjacent(high1, factors1) + Avx2.MultiplyAddAdjacent(high2, factors2) + add;
+        return Avx2.PackSignedSaturate(low >> ScaleBits, high >> ScaleBits);
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static Vector256<int> Lanes(Vector128<byte> red, Vector128<byte> green, Vector128<byte> blue, int cr, int cg, int cb, int add)
+    /// <summary>Two 16-bit factors for the first and second value of interleaved pairs.</summary>
+    private static Vector256<short> Pair(int first, int second)
     {
-        Vector256<int> r = Avx2.ConvertToVector256Int32(red);
-        Vector256<int> g = Avx2.ConvertToVector256Int32(green);
-        Vector256<int> b = Avx2.ConvertToVector256Int32(blue);
-        return ((r * Vector256.Create(cr)) + (g * Vector256.Create(cg)) + (b * Vector256.Create(cb)) + Vector256.Create(add)) >> ScaleBits;
+        return Vector256.Create((int)(ushort)first | (second << 16)).AsInt16();
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -204,8 +294,8 @@ internal static class JpegEncodeKernels
     }
 
     /// <summary>
-    /// <see cref="InksFromRgb"/> sixteen pixels at a time: the bytes split into planes as <see cref="YCbCrAvx2"/> splits them, and
-    /// each ink as floor((n + 0.5) / max) in single precision, which is exact for these n and max (the fraction stays at least
+    /// <see cref="InksFromRgb"/> sixteen pixels at a time: the bytes split into planes as
+    /// <see cref="YCbCrAvx2(ReadOnlySpan{byte}, Span{byte}, Span{byte}, Span{byte}, bool)"/> splits them, and each ink as floor((n + 0.5) / max) in single precision, which is exact for these n and max (the fraction stays at least
     /// 0.5 / max from a whole number, far above the rounding error). Returns how many pixels it did.
     /// </summary>
     internal static int InksFromRgbAvx2(ReadOnlySpan<byte> rgb, Span<byte> cmyk)

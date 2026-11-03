@@ -1518,10 +1518,20 @@ internal sealed class JpegWriter : IFormatWriter, IRowFormatWriter
                     continue;
                 }
 
-                ReadOnlySpan<byte> rgb = RgbRow(y, workspace);
+                // Rgba8 rows convert as they are, the alpha ignored as the copy to Rgb8 would drop it; other pixels go through Rgb8.
+                bool rgba = typeof(TPixel) == typeof(Rgba8) && _options.Background is null;
+                ReadOnlySpan<byte> pixels = rgba ? MemoryMarshal.AsBytes(_rowAt(y)) : RgbRow(y, workspace);
                 if (_gray)
                 {
-                    JpegEncodeKernels.Luma(rgb, lumaRow[.._width]);
+                    if (rgba)
+                    {
+                        JpegEncodeKernels.LumaFromRgba(pixels, lumaRow[.._width]);
+                    }
+                    else
+                    {
+                        JpegEncodeKernels.Luma(pixels, lumaRow[.._width]);
+                    }
+
                     lumaRow[_width..].Fill(lumaRow[_width - 1]);
                     continue;
                 }
@@ -1529,7 +1539,14 @@ internal sealed class JpegWriter : IFormatWriter, IRowFormatWriter
                 // Chroma goes straight to its plane at full sampling, or to full-size rows to be averaged down.
                 Span<byte> cb = subsampled ? workspace.FullCb.AsSpan(r * _paddedWidth, _paddedWidth) : planes[1].Samples.AsSpan(r * planes[1].Stride, _paddedWidth);
                 Span<byte> cr = subsampled ? workspace.FullCr.AsSpan(r * _paddedWidth, _paddedWidth) : planes[2].Samples.AsSpan(r * planes[2].Stride, _paddedWidth);
-                JpegEncodeKernels.YCbCr(rgb, lumaRow[.._width], cb[.._width], cr[.._width]);
+                if (rgba)
+                {
+                    JpegEncodeKernels.YCbCrFromRgba(pixels, lumaRow[.._width], cb[.._width], cr[.._width]);
+                }
+                else
+                {
+                    JpegEncodeKernels.YCbCr(pixels, lumaRow[.._width], cb[.._width], cr[.._width]);
+                }
                 lumaRow[_width..].Fill(lumaRow[_width - 1]);
                 cb[_width..].Fill(cb[_width - 1]);
                 cr[_width..].Fill(cr[_width - 1]);

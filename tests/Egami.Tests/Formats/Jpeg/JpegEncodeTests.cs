@@ -80,6 +80,25 @@ public class JpegEncodeTests(ITestOutputHelper output)
     }
 
     [Fact]
+    public void RgbaWithoutBackgroundIgnoresTheAlphaInColorAndGray()
+    {
+        // Rgba8 converts straight from its rows; any alpha must give the bytes of the Rgb8 copy.
+        using Raster<Rgb8> rgb = Gradient(100, 37);
+        using Raster<Rgba8> rgba = rgb.As<Rgba8>();
+        rgba.ForEachRow((row, y) =>
+        {
+            for (int x = 0; x < row.Length; x++)
+            {
+                row[x] = new Rgba8(row[x].R, row[x].G, row[x].B, (byte)((x * 37) + (y * 101)));
+            }
+        }, TestContext.Current.CancellationToken);
+        foreach (JpegWriterOptions options in (JpegWriterOptions[])[new() { Quality = 90 }, new() { Quality = 90, ColorType = JpegColorType.Gray }])
+        {
+            Assert.Equal(Encode(rgb, options), Encode(rgba, options));
+        }
+    }
+
+    [Fact]
     public void ParallelEncodingWritesTheSameFile()
     {
         // Over a megapixel, rows are transformed on several threads while the coder runs; the file must not change.
