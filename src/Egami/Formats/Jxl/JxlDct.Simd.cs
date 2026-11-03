@@ -133,6 +133,7 @@ internal static partial class JxlDct
     private static void Store(Vector256<float> v, ref float origin, int at) => v.StoreUnsafe(ref origin, (nuint)at);
 
     /// <summary>The inverse 1D DCT of length 8 (<see cref="Dct8"/> with forward false) on eight vectors at once.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static void Inverse8(ref Vector256<float> i0, ref Vector256<float> i1, ref Vector256<float> i2, ref Vector256<float> i3, ref Vector256<float> i4, ref Vector256<float> i5, ref Vector256<float> i6, ref Vector256<float> i7)
     {
         ReadOnlySpan<float> sec = SecHalf(8);
@@ -156,6 +157,7 @@ internal static partial class JxlDct
     }
 
     /// <summary>The inverse 1D DCT of length 4 (<see cref="Dct4Small"/> with forward false) on four vectors.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static (Vector256<float>, Vector256<float>, Vector256<float>, Vector256<float>) Inverse4(Vector256<float> i0, Vector256<float> i1, Vector256<float> i2, Vector256<float> i3)
     {
         Vector256<float> tmp0 = i1 * Vector256.Create(Sqrt2);
@@ -168,6 +170,7 @@ internal static partial class JxlDct
     }
 
     /// <summary>Transposes the 8×8 matrix whose rows are the eight vectors.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static void Transpose(ref Vector256<float> r0, ref Vector256<float> r1, ref Vector256<float> r2, ref Vector256<float> r3, ref Vector256<float> r4, ref Vector256<float> r5, ref Vector256<float> r6, ref Vector256<float> r7)
     {
         Vector256<float> t0 = Avx.UnpackLow(r0, r1);
@@ -411,6 +414,7 @@ internal static partial class JxlDct
     }
 
     /// <summary>The forward 1D DCT of length 8 (<see cref="Dct8"/> with forward true) on eight vectors at once, in registers.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static void Forward8(ref Vector256<float> i0, ref Vector256<float> i1, ref Vector256<float> i2, ref Vector256<float> i3, ref Vector256<float> i4, ref Vector256<float> i5, ref Vector256<float> i6, ref Vector256<float> i7)
     {
         ReadOnlySpan<float> sec = SecHalf(8);
@@ -434,6 +438,7 @@ internal static partial class JxlDct
     }
 
     /// <summary>The forward 1D DCT of length 4 (<see cref="Dct4Small"/> with forward true) on four vectors.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static (Vector256<float>, Vector256<float>, Vector256<float>, Vector256<float>) Forward4(Vector256<float> i0, Vector256<float> i1, Vector256<float> i2, Vector256<float> i3)
     {
         Vector256<float> quarter = Vector256.Create(0.25f);
