@@ -89,8 +89,9 @@
 
 <p>Camera RAW files hold the sensor data a camera recorded, before any processing. Egami reads DNG (.dng), the open RAW format
 Adobe publishes, which phones, Leica, Pentax, Ricoh, Hasselblad and Adobe DNG Converter write, and the makers' own formats:
-Canon CR2 and CR3, Nikon NEF and NRW, Pentax PEF, Sony ARW and SR2, Olympus ORF, Panasonic RW2 and RAW, Leica RWL and
-Fujifilm RAF. It develops them into an image on load (<a href="#canon-cr3">Canon CR3</a> has what is particular to CR3).
+Canon CR2 and CR3, Nikon NEF and NRW, Pentax PEF, Sony ARW and SR2, Olympus ORF, Panasonic RW2 and RAW, Leica RWL,
+Fujifilm RAF and Samsung SRW. It develops them into an image on load (<a href="#canon-cr3">Canon CR3</a> and <a href="#samsung-srw">Samsung SRW</a>
+have what is particular to those).
 <a href="../guides/camera-raw.html">Developing camera RAW</a> is about choosing the develop. It reads through the Egami.Formats.Extended
 package: register it with <code>WithRaw()</code> or <code>WithExtendedFormats()</code>
 (<a href="extended.html">Extended formats</a>). RAW is detected ahead of TIFF, since a DNG file (like most maker formats) is a TIFF file;
@@ -117,7 +118,7 @@ without it, a DNG opens as TIFF and only its preview pages load.</p>
 </tr>
 <tr>
 <td><code>FormatInfo</code></td>
-<td><code>RawFormat.Info</code>: name <code>RAW</code>, extensions <code>.dng</code>, <code>.cr2</code>, <code>.nef</code>, <code>.nrw</code>, <code>.pef</code>, <code>.arw</code>, <code>.sr2</code>, <code>.orf</code>, <code>.rw2</code>, <code>.rwl</code>, <code>.raf</code> and <code>.cr3</code>, with each format's MIME type. Panasonic's older <code>.raw</code> files are found by their header, not their extension</td>
+<td><code>RawFormat.Info</code>: name <code>RAW</code>, extensions <code>.dng</code>, <code>.cr2</code>, <code>.nef</code>, <code>.nrw</code>, <code>.pef</code>, <code>.arw</code>, <code>.sr2</code>, <code>.orf</code>, <code>.rw2</code>, <code>.rwl</code>, <code>.raf</code>, <code>.cr3</code> and <code>.srw</code>, with each format's MIME type. Panasonic's older <code>.raw</code> files are found by their header, not their extension</td>
 </tr>
 </tbody>
 </table>
@@ -160,8 +161,8 @@ using Raster thumb = Raster.Load(&quot;photo.dng&quot;, context, new ReaderOptio
 <li>The sensor data is decoded by each maker's codec: Canon's sliced lossless JPEG and sRAW and mRAW, Nikon's Huffman coding and
 curve, Pentax's Huffman coding, Sony's ARW2, ARW1 and lossless JPEG tiles, Olympus's and Panasonic's own codings (Panasonic
 RawFormat 4 to 8, and the 12-bit packed and 16-bit data of older files without a RawFormat tag, such as the DMC-FZ8, FZ50
-and LX1 and the Leica Digilux 3), Fujifilm's compressed codec (lossless and lossy, X-Trans and Bayer) and the plain
-packings. Decoded mosaics are bit for bit those Adobe DNG Converter stores (on 41 CC0 sample files), but for defective
+and LX1 and the Leica Digilux 3), Fujifilm's compressed codec (lossless and lossy, X-Trans and Bayer), Samsung's three
+SRW codecs and the plain packings. Decoded mosaics are bit for bit those Adobe DNG Converter stores (on 41 CC0 sample files), but for defective
 pixels and clipping.</li>
 <li>White balance, black levels and crops come from the file and its maker note where it has them. The active area is the
 sensor's own (from the maker's sensor border tags, or the one Adobe gives the camera), with the default crop inside it, so a
@@ -186,6 +187,16 @@ as-shot white balance, the active area and the crop are read from the file, so a
 to DNG like the other maker formats. A Dual Pixel RAW develops its main image, and a RAW burst (roll) file its first frame.
 CRX data of encoding type 1 and the 8-bit single-plane form, which no camera is known to write, throw
 <code>NotSupportedException</code>; their previews still load. The tiles and planes decode in parallel.</p>
+<h2 id="samsung-srw">Samsung SRW</h2>
+<p>Samsung's SRW files (the NX system cameras from the NX5 and NX10 to the NX1 and NX500, the Galaxy NX, and the EX1, EX2F and
+WB2000 compacts) are TIFF files whose raw IFD's compression names the layout: 12-bit packed or 16-bit uncompressed data (the
+NX5 to NX1100 generation, the EX1 and WB2000), or one of Samsung's three codecs: V0 (the NX300, NX2000, NX30 and Galaxy NX),
+V1 (the NX mini, NX3000 and NX3300) and V2 (the NX1 and NX500, 12 or 14-bit). Over 22 CC0 sample files, one per body and
+mode, the mosaic matches Adobe DNG Converter's bit for bit inside the active area. The black levels and the as-shot white
+balance come from the maker note, the white level, active area, crop and colour matrices from the camera table. 12-bit packed
+data under compression 32769, which no sample is known to have, throws <code>NotSupportedException</code>. The three codecs predict
+from the rows above, so they decode on one thread. The Pentax-made GX-10, GX-20 and GX-1 (make SAMSUNG TECHWIN) are PEF
+files.</p>
 <h2 id="the-develop">The develop</h2>
 <p>The develop follows the DNG specification's processing order:</p>
 <ol>
