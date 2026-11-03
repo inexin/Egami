@@ -2,7 +2,7 @@
 
 Egami.Formats.Extended reads and writes image formats that most apps never meet but some still need: PCX, SGI, Sun raster,
 XBM, XPM, WBMP, Farbfeld and DDS textures (BC1 to BC7, mipmaps, cube maps and arrays; writes BC1 to BC7 and uncompressed), and
-reads KTX and KTX 2 textures (BC1 to BC7 and uncompressed, Zstandard and zlib supercompression) and camera RAW files (DNG, CR2, NEF, PEF, ARW, ORF, RW2 and RAF; CR3 previews and metadata), developed on load: white balance, AHD demosaicing, noise reduction, DNG opcodes and camera
+reads KTX and KTX 2 textures (BC1 to BC7, ETC1, ETC2, EAC, 2D ASTC LDR and HDR, and uncompressed; Zstandard and zlib supercompression) and camera RAW files (DNG, CR2, NEF, PEF, ARW, ORF, RW2 and RAF; CR3 previews and metadata), developed on load: white balance, AHD demosaicing, noise reduction, DNG opcodes and camera
 profiles, into sRGB or any RGB colour space. Each is a plugin on core Egami's public format API, the same one your own formats use.
 
 - Register them all once with `WithExtendedFormats()`, for example
