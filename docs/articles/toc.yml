@@ -60,6 +60,8 @@
       href: formats/jpeg2000.md
     - name: JPEG XL
       href: formats/jxl.md
+    - name: KTX and KTX 2
+      href: formats/ktx.md
     - name: Netpbm
       href: formats/pnm.md
     - name: OpenEXR
