@@ -834,6 +834,17 @@ internal sealed class JxlEntropyCode
         }
 
         w.Write(state, 32);
+        if (w is JxlBitWriter writer)
+        {
+            // The sealed writer directly, without an interface call per chunk.
+            for (int i = chunks.Count - 1; i >= 0; i--)
+            {
+                writer.Write(chunks[i].Bits, chunks[i].Count);
+            }
+
+            return;
+        }
+
         for (int i = chunks.Count - 1; i >= 0; i--)
         {
             w.Write(chunks[i].Bits, chunks[i].Count);
