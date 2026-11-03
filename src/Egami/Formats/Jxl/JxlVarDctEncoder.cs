@@ -2199,6 +2199,36 @@ internal sealed partial class JxlVarDctEncoder
         // The coefficient layout is the wider side across.
         int cw = Math.Max(w8, h8) * 8;
         int ch = Math.Min(w8, h8) * 8;
+        if (Vector256.IsHardwareAccelerated)
+        {
+            // Eight at a time, each lane as the scalar loop below; then the lowest frequencies are cleared.
+            Vector256<float> vqac = Vector256.Create(qac);
+            for (int y = 0; y < ch; y++)
+            {
+                int yfix = (y >= ch / 2 ? 1 : 0) * 2;
+                Vector256<float> left = Vector256.Create(thresholds[yfix]);
+                Vector256<float> right = Vector256.Create(thresholds[yfix + 1]);
+                int row = y * cw;
+                for (int x = 0; x < cw; x += 8)
+                {
+                    Vector256<float> threshold = cw == 8
+                        ? Vector256.Create(left.GetLower(), right.GetLower())
+                        : x >= cw / 2 ? right : left;
+                    Vector256<float> val = Vector256.Create(block, row + x) * (vqac / Vector256.Create(qm, row + x));
+                    Vector256<int> q = Vector256.ConvertToInt32(Vector256.Round(val));
+                    Vector256.ConditionalSelect(Vector256.GreaterThanOrEqual(Vector256.Abs(val), threshold).AsInt32(), q, Vector256<int>.Zero)
+                        .CopyTo(output, row + x);
+                }
+
+                if (y < ch / 8)
+                {
+                    output.AsSpan(row, cw / 8).Clear();
+                }
+            }
+
+            return;
+        }
+
         for (int y = 0; y < ch; y++)
         {
             int yfix = (y >= ch / 2 ? 1 : 0) * 2;
