@@ -74,15 +74,15 @@ internal static class JxlTiming
         int? runs = Runs(args);
         foreach (string file in args.Where(f => !f.StartsWith("--", StringComparison.Ordinal)))
         {
-            using Raster raster = Raster.Load(file);
             foreach (int threads in counts)
             {
-                EgamiContext context = EgamiContext.Default with { MaxParallelism = threads };
+                // The raster's context sets the encoder's threads.
+                using Raster raster = Raster.Load(file, EgamiContext.Default with { MaxParallelism = threads });
                 using MemoryStream output = new();
                 void Encode()
                 {
                     output.SetLength(0);
-                    raster.Save(output, JxlFormat.Info, options, context);
+                    raster.Save(output, JxlFormat.Info, options);
                 }
 
                 double best = Timed(runs, Encode);
