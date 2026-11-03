@@ -2,7 +2,7 @@
 # Egami.Formats.Extended: guide for coding agents
 
 Egami.Formats.Extended reads and writes image formats that most apps never meet but some still need: PCX, SGI, Sun raster, XBM,
-XPM, WBMP, Farbfeld and DDS textures (BC1 to BC7, mips, cube maps, arrays and volumes), and reads camera RAW (DNG, CR2, NEF, PEF, ARW, ORF, RW2 and RAF; CR3 previews and metadata), developed on
+XPM, WBMP, Farbfeld and DDS textures (BC1 to BC7, mips, cube maps, arrays and volumes), reads KTX and KTX 2 textures (BC1 to BC7 and uncompressed, Zstandard and zlib supercompressed), and reads camera RAW (DNG, CR2, NEF, PEF, ARW, ORF, RW2 and RAF; CR3 previews and metadata), developed on
 load. Each is a plugin on core Egami's public format API.
 
 Namespaces: `Egami.Formats.Extended` (the `With...` methods), `Egami.Formats.Extended.<Format>` (`PcxFormat` and the other
@@ -28,11 +28,14 @@ and no `Configuration`.
 ## Entry points
 
 - `WithExtendedFormats()`: every format in a context; `WithPcx()`, `WithSgi()`, `WithSunRaster()`, `WithXbm()`, `WithXpm()`,
-  `WithWbmp()`, `WithFarbfeld()`, `WithDds()` and `WithRaw()` one at a time.
+  `WithWbmp()`, `WithFarbfeld()`, `WithDds()`, `WithKtx()`, `WithKtx2()` and `WithRaw()` one at a time.
 - DDS: Load gives mip 0 of the first surface; `DdsReaderOptions` (`Surface`, `MipLevel`, `IncludeMipLevels`,
   `ReconstructNormalZ`) and LoadAll reach every face, array slice, depth slice and mip; `DdsDetails` keeps the DXGI format.
   Save writes a full mip chain; `DdsWriterOptions` (`Format`, `MipLevels`, `Effort`, `Srgb`, `Cube`) and SaveAll write
   block formats, arrays and cube maps.
+- KTX and KTX 2 (read only): `KtxFormat` and `Ktx2Format`; `KtxReaderOptions` (`Surface`, `MipLevel`, `IncludeMipLevels`,
+  `ReconstructNormalZ`, `KeepStoredLayout`) as DDS's; `KtxDetails` keeps the Vulkan or OpenGL format, supercompression,
+  orientation, swizzle and key/value pairs. ETC, ASTC, PVRTC and Basis Universal throw `UnsupportedFormatException`.
 - RAW: Load develops a DNG into `Rgb16` sRGB (or straight into the RGB space `ConvertColorTo` names); `RawReaderOptions`
   (`Output` = `Developed`, `HalfSize`, `Preview` or `Mosaic`; `WhiteBalance`, `Temperature`, `Tint`, `Exposure`, `Demosaic`,
   `Highlights`, `LuminanceNoiseReduction`, `ColorNoiseReduction`, `LensCorrections`, `ApplyProfile`) sets it; `RawDetails`
@@ -89,6 +92,20 @@ using Raster thumbnail = Raster.Load("sky.dds", context, new ReaderOptions { Min
 using Raster normals = Raster.Load("sky.dds", context, new DdsReaderOptions { ReconstructNormalZ = true });
 ```
 
+KTX surfaces, mips and the stored layout:
+
+```csharp
+// One surface and mip: cube face -Y (faces go +X, -X, +Y, -Y, +Z, -Z), second mip if it has one.
+using Raster face = Raster.Load("sky.ktx2", context, new KtxReaderOptions { Surface = 3 });
+
+// Every face at mip 0, or with every mip after its face.
+using RasterList faces = Raster.LoadAll("sky.ktx2", context);
+using RasterList all = Raster.LoadAll("texture.ktx2", context, new KtxReaderOptions { IncludeMipLevels = true });
+
+// The pixels as the file stores them: no KTXorientation flip and no KTXswizzle.
+using Raster stored = Raster.Load("texture.ktx2", context, new KtxReaderOptions { KeepStoredLayout = true });
+```
+
 A RAW develop:
 
 ```csharp
@@ -117,6 +134,8 @@ photo.Save("photo-p3.png");
 - Saving to a path with a context that lacks them. `Save(path)` picks the writer through the raster's context, so a raster loaded
   without the formats cannot save as .pcx by extension; pass the format info (`PcxFormat.Info`) or load with the context.
 - Expecting a DDS cube map or array to load whole with Load: it gives one surface. Use LoadAll, or `DdsReaderOptions.Surface`.
+- Expecting a KTX texture written bottom-up (`KTXorientation` `ru`) to load bottom-up: Load turns it upright and applies
+  `KTXswizzle`; `KtxReaderOptions.KeepStoredLayout` keeps the stored rows and channels.
 - Expecting BC5 normal maps to have blue: it loads as 0 unless `DdsReaderOptions.ReconstructNormalZ` is set.
 - Expecting a RAW load to turn the image upright: like every Egami load it returns the pixels as stored; `AutoOrient` turns
   them by `RasterInfo.Orientation`.

@@ -1,6 +1,7 @@
 using Egami.Formats;
 using Egami.Formats.Extended;
 using Egami.Formats.Extended.Dds;
+using Egami.Formats.Extended.Ktx;
 using Egami.Formats.Extended.Pcx;
 using Egami.Formats.Extended.Raw;
 using Egami.Formats.Extended.Sgi;
@@ -254,6 +255,79 @@ public class FormatsExtended
         #endregion
 
         Assert.InRange((float)back.Row(5)[5].R, 4.4f, 4.6f);
+    }
+
+    [Fact]
+    public void KtxLoad()
+    {
+        using SampleFiles files = new();
+
+        #region ktx-load
+        // KTX 1.1 (.ktx) and KTX 2.0 (.ktx2) are two formats; WithExtendedFormats() registers both.
+        EgamiContext context = EgamiContext.Default.WithKtx().WithKtx2();
+
+        // Load gives mip 0 of the first surface, upright, in the format's natural pixel type (Rgba8 for RGBA8 and BC7).
+        using Raster texture = Raster.Load("texture.ktx2", context);
+        texture.Save("texture.png");
+
+        // Probe reads the headers alone: the surfaces at mip 0 are its images.
+        RasterInfo info = Raster.Probe("sky.ktx2", context);
+        Console.WriteLine($"{info.Width}×{info.Height}, {info.ImageCount} surface(s)");
+        #endregion
+
+        Assert.Equal(6, info.ImageCount);
+        Assert.True(texture.Width > 1);
+    }
+
+    [Fact]
+    public void KtxDetailsSample()
+    {
+        using SampleFiles files = new();
+        EgamiContext context = EgamiContext.Default.WithKtx2();
+
+        #region ktx-details
+        // What the file says: the Vulkan format, supercompression, layout, mips, colour, orientation and key/value data.
+        using Raster texture = Raster.Load("texture.ktx2", context);
+        if (texture.Metadata.FormatDetails is KtxDetails ktx)
+        {
+            Console.WriteLine($"{ktx.FormatName} (VkFormat {ktx.VkFormat}), {ktx.Supercompression}, {ktx.MipLevels} mips");
+            Console.WriteLine($"{ktx.Dimension}, cube: {ktx.IsCube}, sRGB {ktx.IsSrgb}, alpha {ktx.AlphaMode}, orientation {ktx.Orientation}");
+            foreach ((string key, string value) in ktx.KeyValues)
+            {
+                Console.WriteLine($"{key} = {value}");
+            }
+        }
+        #endregion
+
+        KtxDetails details = Assert.IsType<KtxDetails>(texture.Metadata.FormatDetails);
+        Assert.Equal((KtxSupercompression.Zstandard, KtxDimension.Texture2D, KtxAlphaMode.Straight), (details.Supercompression, details.Dimension, details.AlphaMode));
+        Assert.True(details.IsSrgb);
+        Assert.True(details.MipLevels > 1);
+    }
+
+    [Fact]
+    public void KtxSurfaces()
+    {
+        using SampleFiles files = new();
+        EgamiContext context = EgamiContext.Default.WithKtx2();
+
+        #region ktx-surfaces
+        // One surface and mip: cube face -Y (faces go +X, -X, +Y, -Y, +Z, -Z), second mip if it has one.
+        using Raster face = Raster.Load("sky.ktx2", context, new KtxReaderOptions { Surface = 3 });
+
+        // Every face at mip 0, or with every mip after its face.
+        using RasterList faces = Raster.LoadAll("sky.ktx2", context);
+        using RasterList all = Raster.LoadAll("texture.ktx2", context, new KtxReaderOptions { IncludeMipLevels = true });
+
+        // The pixels as the file stores them: no KTXorientation flip and no KTXswizzle.
+        using Raster stored = Raster.Load("texture.ktx2", context, new KtxReaderOptions { KeepStoredLayout = true });
+        #endregion
+
+        Assert.Equal(3, ((KtxDetails)face.Metadata.FormatDetails!).Surface);
+        Assert.Equal(6, faces.Count);
+        Assert.True(all.Count > 1);
+        Assert.Equal(face.Width, faces[0].Width);
+        Assert.Equal(stored.Width, all[0].Width);
     }
 
     /// <summary>Writes an R8G8B8A8 DDS of <paramref name="faces"/> faces (6 makes a cube map) with a full mip chain.</summary>

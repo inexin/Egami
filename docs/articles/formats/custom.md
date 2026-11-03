@@ -60,3 +60,11 @@ A format whose files hold several images, as TIFF holds pages, also implements `
 `IMultiImageWriter`, which SaveAll hands every raster.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Extending.cs#multi-image-format)]
+
+## Compressed data
+
+.NET's `ZLibStream`, `DeflateStream`, `GZipStream` and `BrotliStream` cover the common codecs. For Zstandard, which .NET does
+not have, core Egami's `Zstandard` class (in `Egami.Compression`) compresses and decompresses spans with the managed codec
+TIFF and KTX 2 use; a warm call allocates nothing.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Compression.cs#zstandard)]

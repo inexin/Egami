@@ -1,13 +1,14 @@
 using Egami.Formats;
 using Egami.Formats.Extended;
 using Egami.Formats.Extended.Dds;
+using Egami.Formats.Extended.Ktx;
 using Egami.Formats.Extended.Raw;
 using Egami.Pixels;
 
 namespace Egami.Fuzz;
 
 /// <summary>
-/// The Egami.Formats.Extended fuzz targets (pcx, sgi, sun, xbm, xpm, wbmp, farbfeld, dds and raw): each loads its format every way, Probe,
+/// The Egami.Formats.Extended fuzz targets (pcx, sgi, sun, xbm, xpm, wbmp, farbfeld, dds, ktx, ktx2 and raw): each loads its format every way, Probe,
 /// Load leniently and strictly, as Rgba8 from a stream that cannot seek and row by row through RasterDecoder, which must agree
 /// with Load; a file that loads is saved back in its format and must load again at its size. Only EgamiExceptions may escape.
 /// </summary>
@@ -50,6 +51,13 @@ internal static class ExtendedFuzzTarget
                 if (format == DdsFormat.Info)
                 {
                     using RasterList all = Raster.LoadAll(data, format, context, new DdsReaderOptions { Recovery = recovery, IncludeMipLevels = true, ReconstructNormalZ = true });
+                    using Raster small = Raster.Load(data, format, context, options with { MinimumSize = new Size(1, 1) });
+                }
+
+                if (format == KtxFormat.Info || format == Ktx2Format.Info)
+                {
+                    using RasterList all = Raster.LoadAll(data, format, context, new KtxReaderOptions { Recovery = recovery, IncludeMipLevels = true, ReconstructNormalZ = true });
+                    using RasterList stored = Raster.LoadAll(data, format, context, new KtxReaderOptions { Recovery = recovery, KeepStoredLayout = true });
                     using Raster small = Raster.Load(data, format, context, options with { MinimumSize = new Size(1, 1) });
                 }
 

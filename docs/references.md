@@ -42,6 +42,12 @@ Licenses were checked on 2026-10-07 (the HEVC libraries on 2026-10-15, the barco
 | [DirectXTex](https://github.com/microsoft/DirectXTex) | C++ | MIT | Every DXGI format, the legacy DDS header mappings and BC1 to BC7 codecs; its `texconv` is the DDS gate oracle | DDS |
 | [bcdec](https://github.com/iOrange/bcdec) | C | MIT or Unlicense | Compact BC1 to BC7 block decoders | DDS |
 | [bc7enc_rdo](https://github.com/richgel999/bc7enc_rdo) | C++ | MIT or public domain | Fast BC1 to BC7 encoders and their mode searches | DDS |
+| [KTX-Software](https://github.com/KhronosGroup/KTX-Software) | C++ | Apache 2.0 | How KTX 1.1 and KTX 2.0 files are written and read; its `ktx` tool (`ktx create`, `ktx extract`, `ktx validate`) and `toktx` make the KTX corpus and are the container oracle | KTX |
+| [astc-encoder](https://github.com/ARM-software/astc-encoder) | C++ | Apache 2.0 | ASTC block decoding and encoding, LDR and HDR | KTX |
+| [basis_universal](https://github.com/BinomialLLC/basis_universal) | C++ | Apache 2.0 | Basis Universal ETC1S (BasisLZ) and UASTC, and transcoding them | KTX |
+| [etc2comp](https://github.com/google/etc2comp) | C++ | Apache 2.0 | ETC1, ETC2 and EAC block decoding and encoding | KTX |
+| [etcpak](https://github.com/wolfpld/etcpak) | C++ | BSD-3 | Fast ETC1, ETC2 and EAC block codecs | KTX |
+| [Compressonator](https://github.com/GPUOpen-Tools/compressonator) | C++ | MIT | BC, ETC and ASTC codecs and how texture tools map their formats | KTX |
 | [zstd](https://github.com/facebook/zstd) | C | BSD-3 or GPL-2.0; read under BSD-3 only | How the reference Zstandard decoder behaves where RFC 8878 leaves room; its compression level parameters and match finder ideas (fast, double fast, lazy, row and binary tree), as behaviour only; its CLI makes the test corpus and the native speed | TIFF ZSTD |
 | [ruzstd](https://github.com/KillingSpark/zstd-rs) | Rust | MIT | A pure Rust Zstandard decoder | TIFF ZSTD |
 | [LZMA SDK](https://www.7-zip.org/sdk.html) | C, C++, C# | Public domain | LZMA and LZMA2 as Igor Pavlov specifies them (lzma-specification.txt) | TIFF LZMA |
@@ -52,6 +58,13 @@ Specifications, textbooks and papers are always fine.
 For DDS textures, Microsoft's DDS programming guide, the Direct3D 11 BC6H and BC7 format pages and the Khronos Data Format
 Specification (its S3TC, RGTC and BPTC chapters) are the references, with DirectXTex, Pfim, bcdec, stb_dxt and bc7enc_rdo as
 the listed libraries. ImageSharp.Textures and GIMP's DDS plug-in (GPL) are never read. Code under GPL, LGPL or AGPL, and code with no license, is never used.
+
+For KTX textures, the Khronos KTX File Format Specification 1.1 and KTX 2.0 Specification, the Khronos Data Format
+Specification 1.3 (its data format descriptor, S3TC, RGTC, BPTC, ETC and ASTC chapters), the Vulkan and OpenGL format tables
+and ITU-T H.273 (to map the descriptor's primaries and transfer function) are the references, with KTX-Software, astc-encoder,
+basis_universal, etc2comp, etcpak and Compressonator as the listed libraries, besides DDS's. KTX-Software runs in Docker to make
+the corpus (`tools/make-ktx-references.py`). ImageSharp.Textures is never read. Code under GPL, LGPL or AGPL, and code with no
+license, is never used.
 
 For Zstandard (TIFF ZSTD), IETF RFC 8878 and the xxHash specification (XXH64, for the content checksum) are the references,
 with zstd and ruzstd as the listed libraries. zstd is dual-licensed and is read under its BSD-3 licence only; its CLI runs in
