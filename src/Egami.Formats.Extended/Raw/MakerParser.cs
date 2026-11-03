@@ -635,6 +635,12 @@ internal static class MakerParser
                 frame.AsShotNeutral = [g / r, 1, g / b];
             }
         }
+        else if (ifd0.Has(0x0011) && ifd0.Has(0x0012) && ifd0.Double(0x0011) > 0 && ifd0.Double(0x0012) > 0)
+        {
+            // The oldest files (Leica Digilux 2) give only red and blue, with green at 256: Adobe DNG Converter's AsShotNeutral
+            // for them is exactly 256 / red, 1, 256 / blue.
+            frame.AsShotNeutral = [256 / ifd0.Double(0x0011), 1, 256 / ifd0.Double(0x0012)];
+        }
 
         if (ifd0.Ints(0x0004, 1) is { Length: 1 } top && ifd0.Ints(0x0005, 1) is { Length: 1 } left
             && ifd0.Ints(0x0006, 1) is { Length: 1 } bottom && ifd0.Ints(0x0007, 1) is { Length: 1 } right

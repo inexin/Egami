@@ -203,6 +203,17 @@ public class RawMakerTests
         AssertOldPanasonic(OldPanasonicFile(w, h, data), w, h);
     }
 
+    [Fact]
+    public void OldPanasonicWhiteBalanceFromRedAndBlueOnly()
+    {
+        // Gate finding: the Leica Digilux 2 gives only tags 0x0011 and 0x0012 (red, blue; green 256), as Adobe reads them.
+        const int w = 20, h = 4;
+        byte[] file = OldPanasonicFile(w, h, new byte[2 * w * h], TiffTag.Short(0x0011, 410), TiffTag.Short(0x0012, 373));
+        using Raster mosaic = Raster.Load(file, Context, Mosaic);
+        RawDetails details = (RawDetails)mosaic.Metadata.FormatDetails!;
+        Assert.Equal([256 / 410.0, 1, 256 / 373.0], details.AsShotNeutral);
+    }
+
     [Theory]
     [InlineData("rwl", "image/x-leica-rwl")]
     [InlineData("rw2", "image/x-panasonic-rw2")]
@@ -229,11 +240,11 @@ public class RawMakerTests
     }
 
     /// <summary>An old Panasonic file: magic 0x55, the sensor size in tags 2 and 3, StripOffsets and no tag 0x0118.</summary>
-    private static byte[] OldPanasonicFile(int width, int height, byte[] data)
+    private static byte[] OldPanasonicFile(int width, int height, byte[] data, params TiffTag[] extra)
     {
         TiffBuilder.Ifd ifd0 = new();
         ifd0.Tags.AddRange([TiffTag.Ascii(271, "Panasonic"), TiffTag.Ascii(272, "DMC-TEST"), TiffTag.Short(0x0002, width), TiffTag.Short(0x0003, height),
-            TiffTag.Short(0x000A, 12)]);
+            TiffTag.Short(0x000A, 12), .. extra]);
         ifd0.Units.Add(data);
         byte[] file = TiffBuilder.Write(ifd0);
         file[2] = 0x55;

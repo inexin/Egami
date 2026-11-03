@@ -33,9 +33,13 @@ More RAW cameras (RAW coverage plan, PR A). Egami.Formats.Extended adds the `.rw
 
 - Leica RWL files and Panasonic's older RAW files load: the RW2 reader takes files without a RawFormat tag (0x0118), whose data
   is 12-bit packed with a control byte after every ten values or 16-bit, as for the DMC-FZ8, FZ50 and LX1 and the Leica
-  Digilux 3. The camera table gains 14 Leica and Panasonic bodies measured from Adobe DNG Converter's DNGs: the Leica C
-  (Typ 112), C-Lux, D-Lux 4 to 7, D-Lux (Typ 109), Digilux 3, V-Lux 4 and 5 and V-Lux (Typ 114), and the Panasonic DMC-FZ8,
-  FZ50 and LX1.
+  Digilux 3, and the white balance of the oldest files, which give only red and blue (tags 0x0011 and 0x0012, as in the
+  Leica Digilux 2). The camera table gains 28 Leica and Panasonic bodies measured from Adobe DNG Converter's DNGs: the Leica
+  C (Typ 112), C-Lux, D-Lux 3 to 7, D-Lux (Typ 109), Digilux 2 and 3, V-Lux 1, 4 and 5 and V-Lux (Typ 114), and the
+  Panasonic DMC-FZ8, FZ18, FZ30, FZ50, FZ72, G1, GF3, GF5, GX7, L1, L10, LX1, LX2 and LX5. Of these, the 14 bodies whose only
+  samples on raw.pixls.us are CC BY-NC-SA were measured from those files locally, and the files were not kept. The DMC-L10
+  decodes as Adobe's DNG does, but Adobe stores its values 15 levels lower (a black level it subtracts by a rule not found),
+  so Egami's develop of it has slightly lighter blacks.
 - A maker file's `ActiveArea` is the sensor's own, from its sensor border tags or the area Adobe gives the camera, instead of
   its crop; the default crop, and so every developed size, is unchanged. Converted DNGs of the Canon EOS 350D and of Panasonic
   and Leica files no longer draw dng_validate's warning about too little padding around the crop.
