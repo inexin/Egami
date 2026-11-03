@@ -367,27 +367,35 @@ internal sealed class JxlAcStrategySearch
             // The error back in pixels, in the natural layout (which untransposed coefficients already have).
             int width = w8 * 8;
             float[] pixels = s.Error;
-            if (transposed)
+            if (transposed && JxlDct.InverseTransposed(s.Error, s.Pixels, width, width, h8 * 8))
             {
-                // Coefficient layout (cx, cy) is natural (cy, cx).
+                // The coefficient layout is the transpose the DCT works on: no turning there and back.
                 pixels = s.Pixels;
-                if (System.Runtime.Intrinsics.X86.Avx.IsSupported)
+            }
+            else
+            {
+                if (transposed)
                 {
-                    JxlDct.TransposeBlock(s.Error, cw, pixels, width, ch, cw);
-                }
-                else
-                {
-                    for (int cy = 0; cy < ch; cy++)
+                    // Coefficient layout (cx, cy) is natural (cy, cx).
+                    pixels = s.Pixels;
+                    if (System.Runtime.Intrinsics.X86.Avx.IsSupported)
                     {
-                        for (int cx = 0; cx < cw; cx++)
+                        JxlDct.TransposeBlock(s.Error, cw, pixels, width, ch, cw);
+                    }
+                    else
+                    {
+                        for (int cy = 0; cy < ch; cy++)
                         {
-                            pixels[(cx * width) + cy] = s.Error[(cy * cw) + cx];
+                            for (int cx = 0; cx < cw; cx++)
+                            {
+                                pixels[(cx * width) + cy] = s.Error[(cy * cw) + cx];
+                            }
                         }
                     }
                 }
-            }
 
-            JxlDct.Inverse(t, pixels, 0, width);
+                JxlDct.Inverse(t, pixels, 0, width);
+            }
             Vector256<float> maskOffset = Vector256.Create(MaskOffset[c]);
             Vector256<float> lossc = Vector256<float>.Zero;
             for (int py = 0; py < h8 * 8; py++)

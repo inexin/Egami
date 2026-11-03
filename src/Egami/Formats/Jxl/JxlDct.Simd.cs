@@ -291,44 +291,11 @@ internal static partial class JxlDct
         // Up to 64×64 the transposed copy lives on the stack; larger ones (the decoder's 128 and 256) come from the pool.
         float[]? rented = width * height > 4096 ? System.Buffers.ArrayPool<float>.Shared.Rent(width * height) : null;
         Span<float> transposed = rented is null ? stackalloc float[width * height] : rented;
-        Span<Vector256<float>> lines = stackalloc Vector256<float>[Math.Max(width, height)];
-        Span<Vector256<float>> scratch = stackalloc Vector256<float>[Math.Max(width, height)];
         try
         {
             // Rows: the block transposed (width rows of height samples), each column of that transformed, then transposed back.
             TransposeBlock(from, fromStride, transposed, height, height, width);
-            ref float t = ref MemoryMarshal.GetReference(transposed);
-            for (int y = 0; y < height; y += 8)
-            {
-                for (int x = 0; x < width; x++)
-                {
-                    lines[x] = Vector256.LoadUnsafe(ref t, (nuint)((x * height) + y));
-                }
-
-                DctVector(lines[..width], scratch, forward);
-                for (int x = 0; x < width; x++)
-                {
-                    lines[x].StoreUnsafe(ref t, (nuint)((x * height) + y));
-                }
-            }
-
-            TransposeBlock(transposed, height, to, stride, width, height);
-
-            // Columns, eight at a time.
-            ref float d = ref MemoryMarshal.GetReference(to);
-            for (int x = 0; x < width; x += 8)
-            {
-                for (int y = 0; y < height; y++)
-                {
-                    lines[y] = Vector256.LoadUnsafe(ref d, (nuint)((y * stride) + x));
-                }
-
-                DctVector(lines[..height], scratch, forward);
-                for (int y = 0; y < height; y++)
-                {
-                    lines[y].StoreUnsafe(ref d, (nuint)((y * stride) + x));
-                }
-            }
+            Dct2DTransposed(transposed, to, stride, width, height, forward);
         }
         finally
         {
@@ -339,6 +306,68 @@ internal static partial class JxlDct
         }
 
         return true;
+    }
+
+    /// <summary>
+    /// Runs the inverse 2D DCT as <see cref="Dct2D"/> would on the <paramref name="width"/>×<paramref name="height"/> block whose
+    /// transpose is <paramref name="columns"/> (sample (x, y) at x · height + y, which is the coefficient layout of the
+    /// transposed varblocks), writing the block to <paramref name="to"/> and using <paramref name="columns"/> as scratch. Returns
+    /// false, with nothing done, unless both sides are multiples of 8, the block is larger than 8×8 and AVX is there.
+    /// </summary>
+    internal static bool InverseTransposed(Span<float> columns, Span<float> to, int stride, int width, int height)
+    {
+        if (!Avx.IsSupported || width < 8 || height < 8 || width % 8 != 0 || height % 8 != 0 || (width == 8 && height == 8))
+        {
+            return false;
+        }
+
+        if (columns.Length < width * height)
+        {
+            throw new ArgumentOutOfRangeException(nameof(columns));
+        }
+
+        Dct2DTransposed(columns, to, stride, width, height, forward: false);
+        return true;
+    }
+
+    /// <summary>The rest of <see cref="Dct2DVector(ReadOnlySpan{float}, int, Span{float}, int, int, int, bool)"/> once the block is transposed into <paramref name="transposed"/>.</summary>
+    [SkipLocalsInit]
+    private static void Dct2DTransposed(Span<float> transposed, Span<float> to, int stride, int width, int height, bool forward)
+    {
+        Span<Vector256<float>> lines = stackalloc Vector256<float>[Math.Max(width, height)];
+        Span<Vector256<float>> scratch = stackalloc Vector256<float>[Math.Max(width, height)];
+        ref float t = ref MemoryMarshal.GetReference(transposed);
+        for (int y = 0; y < height; y += 8)
+        {
+            for (int x = 0; x < width; x++)
+            {
+                lines[x] = Vector256.LoadUnsafe(ref t, (nuint)((x * height) + y));
+            }
+
+            DctVector(lines[..width], scratch, forward);
+            for (int x = 0; x < width; x++)
+            {
+                lines[x].StoreUnsafe(ref t, (nuint)((x * height) + y));
+            }
+        }
+
+        TransposeBlock(transposed, height, to, stride, width, height);
+
+        // Columns, eight at a time.
+        ref float d = ref MemoryMarshal.GetReference(to);
+        for (int x = 0; x < width; x += 8)
+        {
+            for (int y = 0; y < height; y++)
+            {
+                lines[y] = Vector256.LoadUnsafe(ref d, (nuint)((y * stride) + x));
+            }
+
+            DctVector(lines[..height], scratch, forward);
+            for (int y = 0; y < height; y++)
+            {
+                lines[y].StoreUnsafe(ref d, (nuint)((y * stride) + x));
+            }
+        }
     }
 
     /// <summary>Writes the <paramref name="rows"/>×<paramref name="columns"/> block at <paramref name="from"/> transposed to <paramref name="to"/>, by 8×8 tiles.</summary>
