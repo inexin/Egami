@@ -8,7 +8,7 @@ namespace Egami.Compression;
 /// keeps its tables, so a warm call allocates nothing.
 /// </summary>
 /// <example>
-/// <code language="csharp" source="../../tests/Egami.DocSamples/Compression.cs" region="zstandard"/>
+/// <code language="csharp" source="../../../tests/Egami.DocSamples/Compression.cs" region="zstandard"/>
 /// </example>
 public static class Zstandard
 {
