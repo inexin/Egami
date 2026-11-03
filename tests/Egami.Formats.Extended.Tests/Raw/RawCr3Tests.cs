@@ -43,10 +43,10 @@ public class RawCr3Tests
     }
 
     [Fact]
-    public void DevelopingSaysTheSensorDataIsNotRead()
+    public void DevelopingWithAnInvalidCodecHeaderIsCorrupt()
     {
-        NotSupportedException error = Assert.ThrowsAny<NotSupportedException>(() => Raster.Load<Rgb16>(Cr3(), Context).Dispose());
-        Assert.Contains("RawOutput.Preview", error.Message, StringComparison.Ordinal);
+        // This file's CMP1 box is all zeros; RawCrxTests builds valid CRX data.
+        Assert.ThrowsAny<EgamiException>(() => Raster.Load<Rgb16>(Cr3(), Context).Dispose());
     }
 
     [Theory]

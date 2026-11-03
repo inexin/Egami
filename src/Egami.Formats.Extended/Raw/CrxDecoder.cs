@@ -153,12 +153,18 @@ internal static class CrxDecoder
             }
 
             int jobs = tiles.Length * 4;
+            List<(int Job, string Message)> reports = [];
             RawParallel.For(0, jobs, parallel, j =>
             {
                 Tile tile = tiles[j >> 2];
-                if (!tile.Missing)
+                if (tile.Missing)
                 {
-                    Output output = new(pixels, h, planes, pw, j & 3, tile);
+                    return;
+                }
+
+                Output output = new(pixels, h, planes, pw, j & 3, tile);
+                try
+                {
                     if (h.Levels == 0)
                     {
                         Lossless(file, tile, tile.Planes[j & 3], output);
@@ -168,7 +174,20 @@ internal static class CrxDecoder
                         Wavelet(file, tile, tile.Planes[j & 3], h.Levels, output);
                     }
                 }
+                catch (InvalidDataException e)
+                {
+                    lock (reports)
+                    {
+                        reports.Add((j, $"CRX tile {j >> 2}, plane {j & 3} is damaged ({e.Message}); what did not decode reads as black."));
+                    }
+                }
             });
+
+            // Damage is reported after the jobs have run, in job order, so a strict read throws the first.
+            foreach ((int job, string message) in reports.OrderBy(r => r.Job))
+            {
+                damaged(job >> 2, message);
+            }
 
             if (planes is not null)
             {

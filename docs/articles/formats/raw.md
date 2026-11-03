@@ -2,8 +2,8 @@
 
 Camera RAW files hold the sensor data a camera recorded, before any processing. Egami reads DNG (.dng), the open RAW format
 Adobe publishes, which phones, Leica, Pentax, Ricoh, Hasselblad and Adobe DNG Converter write, and the makers' own formats:
-Canon CR2, Nikon NEF and NRW, Pentax PEF, Sony ARW and SR2, Olympus ORF, Panasonic RW2 and Fujifilm RAF. It develops them into
-an image on load. Of Canon's CR3 it reads the previews and the metadata ([Canon CR3](#canon-cr3)).
+Canon CR2 and CR3, Nikon NEF and NRW, Pentax PEF, Sony ARW and SR2, Olympus ORF, Panasonic RW2 and Fujifilm RAF. It develops
+them into an image on load ([Canon CR3](#canon-cr3) has what is particular to CR3).
 [Developing camera RAW](../guides/camera-raw.md) is about choosing the develop. It reads through the Egami.Formats.Extended
 package: register it with `WithRaw()` or `WithExtendedFormats()`
 ([Extended formats](extended.md)). RAW is detected ahead of TIFF, since a DNG file (like most maker formats) is a TIFF file;
@@ -61,8 +61,12 @@ file. Egami reads their three previews, all JPEGs: the full-size one, a 1620 × 
 thumbnail; and their metadata: EXIF, GPS, and Canon's maker note as bytes in `RawDetails.MakerNote`. `Raster.Probe` gives the
 sensor data's size, and `RawOutput.Preview` (with `PreviewIndex`, or `ReaderOptions.MinimumSize`) loads a preview.
 
-The sensor data itself is coded with Canon's CRX codec, which Egami does not decode yet: a develop, a half-size develop or the
-mosaic of a CR3 throws `NotSupportedException` saying so.
+The sensor data is coded with Canon's CRX codec, which Egami decodes in both its forms: lossless, and C-RAW (a quantised 5/3
+wavelet). The mosaic matches Adobe DNG Converter's bit for bit inside the active area, and the black and white levels, the
+as-shot white balance, the active area and the crop are read from the file, so a CR3 develops, loads as a mosaic and converts
+to DNG like the other maker formats. A Dual Pixel RAW develops its main image, and a RAW burst (roll) file its first frame.
+CRX data of encoding type 1 and the 8-bit single-plane form, which no camera is known to write, throw
+`NotSupportedException`; their previews still load. The tiles and planes decode in parallel.
 
 ## The develop
 
@@ -139,7 +143,7 @@ EXIF (with GPS) and XMP come through as for TIFF.
 
 ## Limits
 
-- The maker formats above; of CR3, only the previews and metadata.
+- The maker formats above.
 - Fujifilm GFX 100 files (100 MP) need `MaxTotalBytes` above its 2 GB default for a full develop; their previews, half-size
   develop and mosaic fit.
 - Three-colour data only: monochrome DNGs and four-colour (CMYG) sensors are not developed (their mosaic loads).
@@ -153,8 +157,8 @@ EXIF (with GPS) and XMP come through as for TIFF.
   the mosaic, so Canon sRAW and mRAW files get colour noise reduction only.
 - Adobe gives some Canon sRAW and mRAW files a brighter baseline exposure than the camera's normal raws (+0.25 EV for the EOS 5D
   Mark II, +0.34 EV for the EOS 70D, by a rule not yet known); Egami uses the camera's raw one.
-- DNG writing does not take CR3 files (Egami does not decode their CRX data for it), writes BigTIFF past 4 GB (which DNG
-  readers, Egami's included, may not open), and makes previews from Egami's own develop.
+- DNG writing writes BigTIFF past 4 GB (which DNG readers, Egami's included, may not open), and makes previews from Egami's
+  own develop.
 
 ## Writing DNG
 
@@ -196,7 +200,7 @@ which Adobe stores as the codes before the camera's tone curve, with a lineariza
 converts the corpus in 70 % of the time Adobe DNG Converter takes pinned to one core (one large Fujifilm file takes 3 %
 longer than Adobe).
 
-Limits: Egami does not convert CR3 files. A DNG past 4 GB is written as BigTIFF, which Egami's own RAW reader does not open.
+Limits: a DNG past 4 GB is written as BigTIFF, which Egami's own RAW reader does not open.
 `Save` has no context, so it reports no `Raw.DngCameraUnknown` warning; `ConvertToDng` and `Transcode` do. Some maker files'
 active area is their crop, as Egami reads them, which dng_validate warns leaves little padding for a develop (Canon EOS 350D,
 Panasonic).
