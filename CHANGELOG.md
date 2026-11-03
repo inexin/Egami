@@ -28,6 +28,22 @@ JPEG XL metadata boxes (roadmap 2.4.11). No API changes.
   three wesaturate photos at distance 1 were 6.2 to 7 KB larger than cjxl's and are now within 0.15 % at effort 3, 5 and 7.
   A reader that does not open `brob` boxes no longer sees the Exif and XMP of Egami's files, as with cjxl's.
 
+More RAW cameras (RAW coverage plan, PR A). Egami.Formats.Extended adds the `.rwl` extension and its MIME type
+(`image/x-leica-rwl`) to `RawFormat.Info`; no other API changes.
+
+- Leica RWL files and Panasonic's older RAW files load: the RW2 reader takes files without a RawFormat tag (0x0118), whose data
+  is 12-bit packed with a control byte after every ten values or 16-bit, as for the DMC-FZ8, FZ50 and LX1 and the Leica
+  Digilux 3. The camera table gains 14 Leica and Panasonic bodies measured from Adobe DNG Converter's DNGs: the Leica C
+  (Typ 112), C-Lux, D-Lux 4 to 7, D-Lux (Typ 109), Digilux 3, V-Lux 4 and 5 and V-Lux (Typ 114), and the Panasonic DMC-FZ8,
+  FZ50 and LX1.
+- A maker file's `ActiveArea` is the sensor's own, from its sensor border tags or the area Adobe gives the camera, instead of
+  its crop; the default crop, and so every developed size, is unchanged. Converted DNGs of the Canon EOS 350D and of Panasonic
+  and Leica files no longer draw dng_validate's warning about too little padding around the crop.
+- Without a NoiseProfile, luminance noise reduction measures the noise from the flattest 8 × 8 blocks at each brightness
+  instead of all of them. Over the corpus the measure went from a median 2.2 times the NoiseProfile Adobe DNG Converter writes
+  for the same file to 1.2 times (90th percentile from 12 to 4.3 times), so the same setting now reduces about as much as on
+  Adobe's DNG of the file.
+
 ## Egami train 1.4.0, Egami.SystemDrawing 1.0.0-preview.3 and Egami.Metafiles 1.0.2 (2026-11-01)
 
 The release train (Egami, Egami.Drawing, Egami.Fonts, Egami.Svg, Egami.Css, Egami.Heic, Egami.Formats.Extended and Egami.Cli)
