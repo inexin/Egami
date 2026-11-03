@@ -2,6 +2,7 @@ using System.Buffers.Binary;
 using System.Numerics;
 using System.Text;
 
+using Egami.Formats.Extended.Textures;
 namespace Egami.Formats.Extended.Dds;
 
 /// <summary>
@@ -60,7 +61,7 @@ internal sealed class DdsHeader
     public DdsAlphaMode AlphaMode { get; private init; }
 
     /// <summary>Gets the pixel format.</summary>
-    public required DdsPixelFormat Format { get; init; }
+    public required TextureFormat Format { get; init; }
 
     /// <summary>Gets whether the file has the DX10 header.</summary>
     public bool Dx10 { get; private init; }
@@ -120,7 +121,7 @@ internal sealed class DdsHeader
             uint misc = U32(x, 8);
             int arraySize = (int)Math.Min(Math.Max(U32(x, 12), 1u), int.MaxValue);
             uint misc2 = U32(x, 16);
-            DdsPixelFormat format = DdsPixelFormat.FromDxgi(dxgi)
+            TextureFormat format = TextureFormat.FromDxgi(dxgi)
                 ?? throw new UnsupportedFormatException($"The DDS file's DXGI format {dxgi} cannot be read.");
             bool cube = (misc & 0x4) != 0;
             DdsDimension dim = dimension switch
@@ -161,7 +162,7 @@ internal sealed class DdsHeader
         }
         else
         {
-            DdsPixelFormat format = Legacy(h, pfFlags, fourCC)
+            TextureFormat format = Legacy(h, pfFlags, fourCC)
                 ?? throw new UnsupportedFormatException($"The DDS file's pixel format ({Describe(pfFlags, fourCC, h)}) cannot be read.");
             if (nvttSrgb)
             {
@@ -191,7 +192,7 @@ internal sealed class DdsHeader
                 result.Repairs.Add(("FacesMissing", $"The cube map stores {faces} of its 6 faces; only those are read."));
             }
 
-            if (format.Codec is DdsCodec.Palette8 or DdsCodec.Palette8Alpha)
+            if (format.Codec is TextureCodec.Palette8 or TextureCodec.Palette8Alpha)
             {
                 byte[] palette = new byte[1024];
                 input.ReadExactly(palette);
@@ -295,7 +296,7 @@ internal sealed class DdsHeader
     private static uint U32(ReadOnlySpan<byte> bytes, int offset) => BinaryPrimitives.ReadUInt32LittleEndian(bytes[offset..]);
 
     /// <summary>Maps a legacy pixel format to the format it is, or <see langword="null"/> if it is none Egami reads.</summary>
-    private static DdsPixelFormat? Legacy(ReadOnlySpan<byte> h, uint flags, uint fourCC)
+    private static TextureFormat? Legacy(ReadOnlySpan<byte> h, uint flags, uint fourCC)
     {
         if ((flags & PfFourCC) != 0)
         {
@@ -317,8 +318,8 @@ internal sealed class DdsHeader
         {
             return bits switch
             {
-                8 => new DdsPixelFormat(0, "P8", DdsNatural.Rgba8, DdsCodec.Palette8, 1),
-                16 => new DdsPixelFormat(0, "A8P8", DdsNatural.Rgba8, DdsCodec.Palette8Alpha, 2),
+                8 => new TextureFormat(0, "P8", TextureNatural.Rgba8, TextureCodec.Palette8, 1),
+                16 => new TextureFormat(0, "A8P8", TextureNatural.Rgba8, TextureCodec.Palette8Alpha, 2),
                 _ => null,
             };
         }
@@ -328,10 +329,10 @@ internal sealed class DdsHeader
             // texconv writes Q8W8V8U8 with its alpha mask but no alpha flag, so bump formats take the mask as it is.
             return (bits, r, g, b, U32(h, 104)) switch
             {
-                (16, 0xFF, 0xFF00, 0, 0) => DdsPixelFormat.FromDxgi(51), // V8U8
-                (32, 0xFF, 0xFF00, 0xFF0000, 0xFF000000) => DdsPixelFormat.FromDxgi(31), // Q8W8V8U8
-                (32, 0xFFFF, 0xFFFF0000, 0, 0) => DdsPixelFormat.FromDxgi(37), // V16U16
-                (32, 0x3FF00000, 0xFFC00, 0x3FF, 0xC0000000) => new DdsPixelFormat(0, "A2W10V10U10", DdsNatural.Rgb10A2, DdsCodec.A2W10V10U10, 4),
+                (16, 0xFF, 0xFF00, 0, 0) => TextureFormat.FromDxgi(51), // V8U8
+                (32, 0xFF, 0xFF00, 0xFF0000, 0xFF000000) => TextureFormat.FromDxgi(31), // Q8W8V8U8
+                (32, 0xFFFF, 0xFFFF0000, 0, 0) => TextureFormat.FromDxgi(37), // V16U16
+                (32, 0x3FF00000, 0xFFC00, 0x3FF, 0xC0000000) => new TextureFormat(0, "A2W10V10U10", TextureNatural.Rgb10A2, TextureCodec.A2W10V10U10, 4),
                 _ => null,
             };
         }
@@ -340,8 +341,8 @@ internal sealed class DdsHeader
         {
             return (bits, r, g, b) switch
             {
-                (16, 0x1F, 0x3E0, 0xFC00) => new DdsPixelFormat(0, "L6V5U5", DdsNatural.Rgba8, DdsCodec.L6V5U5, 2),
-                (32, 0xFF, 0xFF00, 0xFF0000) => new DdsPixelFormat(0, "X8L8V8U8", DdsNatural.Rgba8, DdsCodec.X8L8V8U8, 4),
+                (16, 0x1F, 0x3E0, 0xFC00) => new TextureFormat(0, "L6V5U5", TextureNatural.Rgba8, TextureCodec.L6V5U5, 2),
+                (32, 0xFF, 0xFF00, 0xFF0000) => new TextureFormat(0, "X8L8V8U8", TextureNatural.Rgba8, TextureCodec.X8L8V8U8, 4),
                 _ => null,
             };
         }
@@ -351,17 +352,17 @@ internal sealed class DdsHeader
         {
             return (bits, r, a) switch
             {
-                (8, 0xFF, 0) => DdsPixelFormat.FromDxgi(61)! with { Name = "L8" },
-                (16, 0xFFFF, 0) => DdsPixelFormat.FromDxgi(56)! with { Name = "L16" },
-                (16, 0xFF, 0xFF00) => new DdsPixelFormat(49, "A8L8", DdsNatural.GrayAlpha8, DdsCodec.Copy, 2),
-                (32, 0xFFFFFFFF, 0) when (flags & PfRgb) != 0 => DdsPixelFormat.FromDxgi(41),
-                _ => Masks(bytes, a == 0 ? "L" : "AL", Wide(r, a) ? (a == 0 ? DdsNatural.Gray16 : DdsNatural.GrayAlpha16) : (a == 0 ? DdsNatural.Gray8 : DdsNatural.GrayAlpha8), r, 0, 0, a),
+                (8, 0xFF, 0) => TextureFormat.FromDxgi(61)! with { Name = "L8" },
+                (16, 0xFFFF, 0) => TextureFormat.FromDxgi(56)! with { Name = "L16" },
+                (16, 0xFF, 0xFF00) => new TextureFormat(49, "A8L8", TextureNatural.GrayAlpha8, TextureCodec.Copy, 2),
+                (32, 0xFFFFFFFF, 0) when (flags & PfRgb) != 0 => TextureFormat.FromDxgi(41),
+                _ => Masks(bytes, a == 0 ? "L" : "AL", Wide(r, a) ? (a == 0 ? TextureNatural.Gray16 : TextureNatural.GrayAlpha16) : (a == 0 ? TextureNatural.Gray8 : TextureNatural.GrayAlpha8), r, 0, 0, a),
             };
         }
 
         if ((flags & PfRgb) == 0)
         {
-            return (flags & PfAlpha) != 0 && a != 0 ? (bits == 8 && a == 0xFF ? DdsPixelFormat.FromDxgi(65) : Masks(bytes, "A", DdsNatural.Alpha8, 0, 0, 0, a)) : null;
+            return (flags & PfAlpha) != 0 && a != 0 ? (bits == 8 && a == 0xFF ? TextureFormat.FromDxgi(65) : Masks(bytes, "A", TextureNatural.Alpha8, 0, 0, 0, a)) : null;
         }
 
         if (bits == 32 && BitOperations.PopCount(r) == 10 && BitOperations.PopCount(g) == 10 && BitOperations.PopCount(b) == 10 && BitOperations.PopCount(a) == 2)
@@ -370,29 +371,29 @@ internal sealed class DdsHeader
             (r, b) = (b, r);
             if (r == 0x3FF && g == 0xFFC00 && b == 0x3FF00000 && a == 0xC0000000)
             {
-                return DdsPixelFormat.FromDxgi(24);
+                return TextureFormat.FromDxgi(24);
             }
         }
 
         return (bits, r, g, b, a) switch
         {
-            (32, 0xFF0000, 0xFF00, 0xFF, 0xFF000000) => DdsPixelFormat.FromDxgi(87),
-            (32, 0xFF0000, 0xFF00, 0xFF, 0) => DdsPixelFormat.FromDxgi(88),
-            (32, 0xFF, 0xFF00, 0xFF0000, 0xFF000000) => DdsPixelFormat.FromDxgi(28),
-            (32, 0xFF, 0xFF00, 0xFF0000, 0) => new DdsPixelFormat(28, "X8B8G8R8", DdsNatural.Rgb8, DdsCodec.Rgbx8ToRgb8, 4),
-            (32, 0xFFFF, 0xFFFF0000, 0, 0) => DdsPixelFormat.FromDxgi(35),
-            (16, 0xF800, 0x7E0, 0x1F, 0) => DdsPixelFormat.FromDxgi(85),
-            (16, 0x7C00, 0x3E0, 0x1F, 0x8000) => DdsPixelFormat.FromDxgi(86),
-            (16, 0x7C00, 0x3E0, 0x1F, 0) => new DdsPixelFormat(86, "X1R5G5B5", DdsNatural.Bgr555, DdsCodec.Copy, 2),
-            (16, 0xF00, 0xF0, 0xF, 0xF000) => DdsPixelFormat.FromDxgi(115),
-            (16, 0xF00, 0xF0, 0xF, 0) => new DdsPixelFormat(115, "X4R4G4B4", DdsNatural.Bgra4444, DdsCodec.X4R4G4B4, 2),
-            _ => Masks(bytes, a == 0 ? "RGB" : "RGBA", Wide(r, g, b, a) ? (a == 0 ? DdsNatural.Rgb16 : DdsNatural.Rgba16) : (a == 0 ? DdsNatural.Rgb8 : DdsNatural.Rgba8), r, g, b, a),
+            (32, 0xFF0000, 0xFF00, 0xFF, 0xFF000000) => TextureFormat.FromDxgi(87),
+            (32, 0xFF0000, 0xFF00, 0xFF, 0) => TextureFormat.FromDxgi(88),
+            (32, 0xFF, 0xFF00, 0xFF0000, 0xFF000000) => TextureFormat.FromDxgi(28),
+            (32, 0xFF, 0xFF00, 0xFF0000, 0) => new TextureFormat(28, "X8B8G8R8", TextureNatural.Rgb8, TextureCodec.Rgbx8ToRgb8, 4),
+            (32, 0xFFFF, 0xFFFF0000, 0, 0) => TextureFormat.FromDxgi(35),
+            (16, 0xF800, 0x7E0, 0x1F, 0) => TextureFormat.FromDxgi(85),
+            (16, 0x7C00, 0x3E0, 0x1F, 0x8000) => TextureFormat.FromDxgi(86),
+            (16, 0x7C00, 0x3E0, 0x1F, 0) => new TextureFormat(86, "X1R5G5B5", TextureNatural.Bgr555, TextureCodec.Copy, 2),
+            (16, 0xF00, 0xF0, 0xF, 0xF000) => TextureFormat.FromDxgi(115),
+            (16, 0xF00, 0xF0, 0xF, 0) => new TextureFormat(115, "X4R4G4B4", TextureNatural.Bgra4444, TextureCodec.X4R4G4B4, 2),
+            _ => Masks(bytes, a == 0 ? "RGB" : "RGBA", Wide(r, g, b, a) ? (a == 0 ? TextureNatural.Rgb16 : TextureNatural.Rgba16) : (a == 0 ? TextureNatural.Rgb8 : TextureNatural.Rgba8), r, g, b, a),
         };
     }
 
-    private static DdsPixelFormat? FromFourCC(uint fourCC)
+    private static TextureFormat? FromFourCC(uint fourCC)
     {
-        static DdsPixelFormat? Dxgi(int value) => DdsPixelFormat.FromDxgi(value);
+        static TextureFormat? Dxgi(int value) => TextureFormat.FromDxgi(value);
         return FourCCText(fourCC) switch
         {
             "DXT1" => Dxgi(71),
@@ -409,7 +410,7 @@ internal sealed class DdsHeader
             "RGBG" => Dxgi(68),
             "GRGB" => Dxgi(69),
             "YUY2" => Dxgi(107),
-            "UYVY" => Dxgi(107)! with { Name = "UYVY", Codec = DdsCodec.Uyvy },
+            "UYVY" => Dxgi(107)! with { Name = "UYVY", Codec = TextureCodec.Uyvy },
             _ => fourCC switch
             {
                 36 => Dxgi(11),
@@ -425,9 +426,9 @@ internal sealed class DdsHeader
         };
     }
 
-    private static DdsPixelFormat Masks(int bytes, string channels, DdsNatural natural, uint r, uint g, uint b, uint a)
+    private static TextureFormat Masks(int bytes, string channels, TextureNatural natural, uint r, uint g, uint b, uint a)
     {
-        return new DdsPixelFormat(0, $"{channels} masks, {bytes * 8} bits", natural, DdsCodec.Masks, bytes) { Masks = [r, g, b, a] };
+        return new TextureFormat(0, $"{channels} masks, {bytes * 8} bits", natural, TextureCodec.Masks, bytes) { Masks = [r, g, b, a] };
     }
 
     private static bool Wide(params ReadOnlySpan<uint> masks)

@@ -1,1 +1,76 @@
 #nullable enable
+Egami.Formats.Extended.Ktx.Ktx2Format
+Egami.Formats.Extended.Ktx.KtxAlphaMode
+Egami.Formats.Extended.Ktx.KtxAlphaMode.Premultiplied = 1 -> Egami.Formats.Extended.Ktx.KtxAlphaMode
+Egami.Formats.Extended.Ktx.KtxAlphaMode.Straight = 0 -> Egami.Formats.Extended.Ktx.KtxAlphaMode
+Egami.Formats.Extended.Ktx.KtxDetails
+Egami.Formats.Extended.Ktx.KtxDetails.AlphaMode.get -> Egami.Formats.Extended.Ktx.KtxAlphaMode
+Egami.Formats.Extended.Ktx.KtxDetails.AlphaMode.set -> void
+Egami.Formats.Extended.Ktx.KtxDetails.Depth.get -> int
+Egami.Formats.Extended.Ktx.KtxDetails.Depth.set -> void
+Egami.Formats.Extended.Ktx.KtxDetails.Dimension.get -> Egami.Formats.Extended.Ktx.KtxDimension
+Egami.Formats.Extended.Ktx.KtxDetails.Dimension.set -> void
+Egami.Formats.Extended.Ktx.KtxDetails.Faces.get -> int
+Egami.Formats.Extended.Ktx.KtxDetails.Faces.set -> void
+Egami.Formats.Extended.Ktx.KtxDetails.FormatName.get -> string!
+Egami.Formats.Extended.Ktx.KtxDetails.FormatName.set -> void
+Egami.Formats.Extended.Ktx.KtxDetails.GlInternalFormat.get -> int
+Egami.Formats.Extended.Ktx.KtxDetails.GlInternalFormat.set -> void
+Egami.Formats.Extended.Ktx.KtxDetails.IsCube.get -> bool
+Egami.Formats.Extended.Ktx.KtxDetails.IsCube.set -> void
+Egami.Formats.Extended.Ktx.KtxDetails.IsSrgb.get -> bool
+Egami.Formats.Extended.Ktx.KtxDetails.IsSrgb.set -> void
+Egami.Formats.Extended.Ktx.KtxDetails.KeyValues.get -> System.Collections.Generic.IReadOnlyDictionary<string!, string!>!
+Egami.Formats.Extended.Ktx.KtxDetails.KeyValues.set -> void
+Egami.Formats.Extended.Ktx.KtxDetails.KtxDetails() -> void
+Egami.Formats.Extended.Ktx.KtxDetails.Layers.get -> int
+Egami.Formats.Extended.Ktx.KtxDetails.Layers.set -> void
+Egami.Formats.Extended.Ktx.KtxDetails.MipLevel.get -> int
+Egami.Formats.Extended.Ktx.KtxDetails.MipLevel.set -> void
+Egami.Formats.Extended.Ktx.KtxDetails.MipLevels.get -> int
+Egami.Formats.Extended.Ktx.KtxDetails.MipLevels.set -> void
+Egami.Formats.Extended.Ktx.KtxDetails.Orientation.get -> string!
+Egami.Formats.Extended.Ktx.KtxDetails.Orientation.set -> void
+Egami.Formats.Extended.Ktx.KtxDetails.Supercompression.get -> Egami.Formats.Extended.Ktx.KtxSupercompression
+Egami.Formats.Extended.Ktx.KtxDetails.Supercompression.set -> void
+Egami.Formats.Extended.Ktx.KtxDetails.Surface.get -> int
+Egami.Formats.Extended.Ktx.KtxDetails.Surface.set -> void
+Egami.Formats.Extended.Ktx.KtxDetails.Swizzle.get -> string!
+Egami.Formats.Extended.Ktx.KtxDetails.Swizzle.set -> void
+Egami.Formats.Extended.Ktx.KtxDetails.VkFormat.get -> int
+Egami.Formats.Extended.Ktx.KtxDetails.VkFormat.set -> void
+Egami.Formats.Extended.Ktx.KtxDimension
+Egami.Formats.Extended.Ktx.KtxDimension.Texture1D = 0 -> Egami.Formats.Extended.Ktx.KtxDimension
+Egami.Formats.Extended.Ktx.KtxDimension.Texture2D = 1 -> Egami.Formats.Extended.Ktx.KtxDimension
+Egami.Formats.Extended.Ktx.KtxDimension.Texture3D = 2 -> Egami.Formats.Extended.Ktx.KtxDimension
+Egami.Formats.Extended.Ktx.KtxFormat
+Egami.Formats.Extended.Ktx.KtxReaderOptions
+Egami.Formats.Extended.Ktx.KtxReaderOptions.Equals(Egami.Formats.Extended.Ktx.KtxReaderOptions? other) -> bool
+Egami.Formats.Extended.Ktx.KtxReaderOptions.IncludeMipLevels.get -> bool
+Egami.Formats.Extended.Ktx.KtxReaderOptions.IncludeMipLevels.init -> void
+Egami.Formats.Extended.Ktx.KtxReaderOptions.KeepStoredLayout.get -> bool
+Egami.Formats.Extended.Ktx.KtxReaderOptions.KeepStoredLayout.init -> void
+Egami.Formats.Extended.Ktx.KtxReaderOptions.KtxReaderOptions() -> void
+Egami.Formats.Extended.Ktx.KtxReaderOptions.MipLevel.get -> int?
+Egami.Formats.Extended.Ktx.KtxReaderOptions.MipLevel.init -> void
+Egami.Formats.Extended.Ktx.KtxReaderOptions.ReconstructNormalZ.get -> bool
+Egami.Formats.Extended.Ktx.KtxReaderOptions.ReconstructNormalZ.init -> void
+Egami.Formats.Extended.Ktx.KtxReaderOptions.Surface.get -> int?
+Egami.Formats.Extended.Ktx.KtxReaderOptions.Surface.init -> void
+Egami.Formats.Extended.Ktx.KtxSupercompression
+Egami.Formats.Extended.Ktx.KtxSupercompression.BasisLZ = 1 -> Egami.Formats.Extended.Ktx.KtxSupercompression
+Egami.Formats.Extended.Ktx.KtxSupercompression.None = 0 -> Egami.Formats.Extended.Ktx.KtxSupercompression
+Egami.Formats.Extended.Ktx.KtxSupercompression.Zlib = 3 -> Egami.Formats.Extended.Ktx.KtxSupercompression
+Egami.Formats.Extended.Ktx.KtxSupercompression.Zstandard = 2 -> Egami.Formats.Extended.Ktx.KtxSupercompression
+override Egami.Formats.Extended.Ktx.KtxDetails.Copy() -> Egami.Metadata.FormatDetails!
+override Egami.Formats.Extended.Ktx.KtxReaderOptions.<Clone>$() -> Egami.Formats.Extended.Ktx.KtxReaderOptions!
+override Egami.Formats.Extended.Ktx.KtxReaderOptions.Equals(object? obj) -> bool
+override Egami.Formats.Extended.Ktx.KtxReaderOptions.GetHashCode() -> int
+override Egami.Formats.Extended.Ktx.KtxReaderOptions.ToString() -> string!
+override sealed Egami.Formats.Extended.Ktx.KtxReaderOptions.Equals(Egami.Formats.ReaderOptions? other) -> bool
+static Egami.Formats.Extended.ExtendedContextExtensions.WithKtx(this Egami.EgamiContext! context) -> Egami.EgamiContext!
+static Egami.Formats.Extended.ExtendedContextExtensions.WithKtx2(this Egami.EgamiContext! context) -> Egami.EgamiContext!
+static Egami.Formats.Extended.Ktx.Ktx2Format.Info.get -> Egami.Formats.FormatInfo!
+static Egami.Formats.Extended.Ktx.KtxFormat.Info.get -> Egami.Formats.FormatInfo!
+static Egami.Formats.Extended.Ktx.KtxReaderOptions.operator !=(Egami.Formats.Extended.Ktx.KtxReaderOptions? left, Egami.Formats.Extended.Ktx.KtxReaderOptions? right) -> bool
+static Egami.Formats.Extended.Ktx.KtxReaderOptions.operator ==(Egami.Formats.Extended.Ktx.KtxReaderOptions? left, Egami.Formats.Extended.Ktx.KtxReaderOptions? right) -> bool
