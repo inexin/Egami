@@ -1,3 +1,5 @@
+using System.Runtime.CompilerServices;
+
 namespace Egami.Formats.Jxl;
 
 /// <summary>
@@ -172,11 +174,13 @@ internal sealed class JxlEntropyDecoder
     /// <summary>Decodes one integer with the cluster already looked up; <paramref name="distanceMultiplier"/> enables LZ77's special distances.</summary>
     internal uint ReadUintClustered(JxlBitReader r, int cluster, uint distanceMultiplier)
     {
-        if (!_lz77)
-        {
-            return ReadUint(r, _configs[cluster], ReadSymbol(r, cluster));
-        }
+        return _lz77 ? ReadLz77Uint(r, cluster, distanceMultiplier) : ReadUint(r, _configs[cluster], ReadSymbol(r, cluster));
+    }
 
+    /// <summary>Decodes one integer of a stream with LZ77; the copy's start and the window's growth are out of line.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal uint ReadLz77Uint(JxlBitReader r, int cluster, uint distanceMultiplier)
+    {
         uint value;
         if (_numToCopy > 0)
         {
@@ -186,56 +190,74 @@ internal sealed class JxlEntropyDecoder
         else
         {
             uint token = ReadSymbol(r, cluster);
-            if (token >= _minSymbol)
-            {
-                if (_numDecoded == 0)
-                {
-                    throw r.Corrupt("An LZ77 copy comes before any value was decoded.");
-                }
-
-                int distanceCluster = _clusters[^1];
-                ulong length = (ulong)ReadUint(r, _lengthConfig, token - _minSymbol) + _minLength;
-                if (length > uint.MaxValue)
-                {
-                    throw r.Corrupt("An LZ77 copy is too long.");
-                }
-
-                _numToCopy = (uint)length;
-                uint distance = ReadUint(r, _configs[distanceCluster], ReadSymbol(r, distanceCluster));
-                if (distanceMultiplier != 0)
-                {
-                    if (distance < 120)
-                    {
-                        int d = SpecialDistances[2 * distance] + ((int)distanceMultiplier * SpecialDistances[(2 * distance) + 1]);
-                        distance = (uint)Math.Max(d - 1, 0);
-                    }
-                    else
-                    {
-                        distance -= 120;
-                    }
-                }
-
-                distance = Math.Min(Math.Min(distance, (1u << 20) - 1) + 1, _numDecoded);
-                _copyPos = _numDecoded - distance;
-                value = _window![_copyPos++ & 0xFFFFF];
-                _numToCopy--;
-            }
-            else
-            {
-                value = ReadUint(r, _configs[cluster], token);
-            }
+            value = token < _minSymbol ? ReadUint(r, _configs[cluster], token) : StartCopy(r, token, distanceMultiplier);
         }
 
         int at = (int)(_numDecoded & 0xFFFFF);
-        if (_window is null || at >= _window.Length)
+        uint[]? window = _window;
+        if (window is null || at >= window.Length)
         {
-            Array.Resize(ref _window, Math.Min(Math.Max(4096, (_window?.Length ?? 0) * 2), 1 << 20));
+            window = GrowWindow();
         }
 
-        _window[at] = value;
+        window[at] = value;
         _numDecoded++;
         return value;
     }
+
+    /// <summary>Starts an LZ77 copy from its length token and gives its first value.</summary>
+    private uint StartCopy(JxlBitReader r, uint token, uint distanceMultiplier)
+    {
+        if (_numDecoded == 0)
+        {
+            throw r.Corrupt("An LZ77 copy comes before any value was decoded.");
+        }
+
+        int distanceCluster = _clusters[^1];
+        ulong length = (ulong)ReadUint(r, _lengthConfig, token - _minSymbol) + _minLength;
+        if (length > uint.MaxValue)
+        {
+            throw r.Corrupt("An LZ77 copy is too long.");
+        }
+
+        _numToCopy = (uint)length;
+        uint distance = ReadUint(r, _configs[distanceCluster], ReadSymbol(r, distanceCluster));
+        if (distanceMultiplier != 0)
+        {
+            if (distance < 120)
+            {
+                int d = SpecialDistances[2 * distance] + ((int)distanceMultiplier * SpecialDistances[(2 * distance) + 1]);
+                distance = (uint)Math.Max(d - 1, 0);
+            }
+            else
+            {
+                distance -= 120;
+            }
+        }
+
+        distance = Math.Min(Math.Min(distance, (1u << 20) - 1) + 1, _numDecoded);
+        _copyPos = _numDecoded - distance;
+        uint value = _window![_copyPos++ & 0xFFFFF];
+        _numToCopy--;
+        return value;
+    }
+
+    private uint[] GrowWindow()
+    {
+        Array.Resize(ref _window, Math.Min(Math.Max(4096, (_window?.Length ?? 0) * 2), 1 << 20));
+        return _window;
+    }
+
+    /// <summary>Gets whether the distributions are ANS rather than prefix codes.</summary>
+    internal bool IsAns => _ans is not null;
+
+    /// <summary>Decodes one integer of an ANS stream without LZ77 that <see cref="Begin"/> started.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal uint ReadAnsUint(JxlBitReader r, int cluster) => ReadUint(r, _configs[cluster], _ans![cluster].ReadSymbol(r, ref _state));
+
+    /// <summary>Decodes one integer of a prefix-coded stream without LZ77.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal uint ReadPrefixUint(JxlBitReader r, int cluster) => ReadUint(r, _configs[cluster], _prefix![cluster].ReadSymbol(r));
 
     /// <summary>Reads a permutation (C.6.3): a Lehmer code of <paramref name="size"/> entries after <paramref name="skip"/> fixed ones.</summary>
     internal int[] ReadPermutation(JxlBitReader r, int size, int skip)
@@ -286,6 +308,7 @@ internal sealed class JxlEntropyDecoder
 
     private static int PermutationContext(uint x) => Math.Min(CeilLog2Plus1(x), 7);
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private uint ReadSymbol(JxlBitReader r, int cluster)
     {
         if (_prefix is not null)
@@ -302,13 +325,15 @@ internal sealed class JxlEntropyDecoder
         return _ans![cluster].ReadSymbol(r, ref _state);
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static uint ReadUint(JxlBitReader r, in JxlUintConfig c, uint token)
     {
-        if (token < c.Split)
-        {
-            return token;
-        }
+        // Most tokens are below the split and are the value itself.
+        return token < c.Split ? token : ReadLargeUint(r, c, token);
+    }
 
+    private static uint ReadLargeUint(JxlBitReader r, in JxlUintConfig c, uint token)
+    {
         int inToken = c.MsbInToken + c.LsbInToken;
         int n = (c.SplitExponent - inToken + (int)((token - c.Split) >> inToken)) & 31;
         ulong rest = r.ReadBits(n);
@@ -390,6 +415,33 @@ internal sealed class JxlEntropyDecoder
     }
 }
 
+/// <summary>
+/// Reads integers from one stream of a <see cref="JxlEntropyDecoder"/>. Hot loops take the reader as a type argument, so each is
+/// compiled for one kind of stream, without the per-symbol LZ77 and coding checks.
+/// </summary>
+internal interface IJxlUintReader
+{
+    uint Read(JxlBitReader r, int cluster);
+}
+
+/// <summary>Reads an ANS stream without LZ77 that <see cref="JxlEntropyDecoder.Begin"/> started.</summary>
+internal readonly struct JxlAnsUintReader(JxlEntropyDecoder decoder) : IJxlUintReader
+{
+    public uint Read(JxlBitReader r, int cluster) => decoder.ReadAnsUint(r, cluster);
+}
+
+/// <summary>Reads a prefix-coded stream without LZ77.</summary>
+internal readonly struct JxlPrefixUintReader(JxlEntropyDecoder decoder) : IJxlUintReader
+{
+    public uint Read(JxlBitReader r, int cluster) => decoder.ReadPrefixUint(r, cluster);
+}
+
+/// <summary>Reads a stream with LZ77, with the special distances for <paramref name="multiplier"/> samples a row (0 for none).</summary>
+internal readonly struct JxlLz77UintReader(JxlEntropyDecoder decoder, uint multiplier) : IJxlUintReader
+{
+    public uint Read(JxlBitReader r, int cluster) => decoder.ReadLz77Uint(r, cluster, multiplier);
+}
+
 /// <summary>A hybrid unsigned integer configuration (C.2.6).</summary>
 internal readonly record struct JxlUintConfig(int SplitExponent, uint Split, int MsbInToken, int LsbInToken)
 {
@@ -421,18 +473,19 @@ internal readonly record struct JxlUintConfig(int SplitExponent, uint Split, int
 /// <summary>An ANS distribution with its alias table (C.2.4, C.2.5).</summary>
 internal sealed class JxlAnsHistogram
 {
-    private readonly ushort[] _dist;
-    private readonly byte[] _aliasSymbol;
-    private readonly ushort[] _cutoff;
-    private readonly ushort[] _offset;
+    // One entry per bucket, as libjxl packs its alias table: the cutoff in bits 0 to 12, the other symbol in 13 to 20, its
+    // offset in 21 to 36, and the frequencies of the bucket's own symbol (37 to 49) and of the other one (50 to 62).
+    private readonly ulong[] _table;
     private readonly int _logBucket;
 
     private JxlAnsHistogram(ushort[] dist, byte[] aliasSymbol, ushort[] cutoff, ushort[] offset, int logBucket, int single)
     {
-        _dist = dist;
-        _aliasSymbol = aliasSymbol;
-        _cutoff = cutoff;
-        _offset = offset;
+        _table = new ulong[dist.Length];
+        for (int i = 0; i < _table.Length; i++)
+        {
+            _table[i] = cutoff[i] | ((ulong)aliasSymbol[i] << 13) | ((ulong)offset[i] << 21) | ((ulong)dist[i] << 37) | ((ulong)dist[aliasSymbol[i]] << 50);
+        }
+
         _logBucket = logBucket;
         SingleSymbol = single;
     }
@@ -582,25 +635,30 @@ internal sealed class JxlAnsHistogram
         return Build(dist, alphabet, logAlphabet);
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal uint ReadSymbol(JxlBitReader r, ref uint state)
     {
         uint index = state & 0xFFF;
-        int i = (int)(index >> _logBucket);
+        uint i = index >> _logBucket;
         uint pos = index & ((1u << _logBucket) - 1);
+        ulong entry = _table[i];
         uint symbol;
         uint offset;
-        if (pos >= _cutoff[i])
+        uint frequency;
+        if (pos >= ((uint)entry & 0x1FFF))
         {
-            symbol = _aliasSymbol[i];
-            offset = _offset[i] + pos;
+            symbol = (uint)(entry >> 13) & 0xFF;
+            offset = ((uint)(entry >> 21) & 0xFFFF) + pos;
+            frequency = (uint)(entry >> 50) & 0x1FFF;
         }
         else
         {
-            symbol = (uint)i;
+            symbol = i;
             offset = pos;
+            frequency = (uint)(entry >> 37) & 0x1FFF;
         }
 
-        uint next = ((state >> 12) * _dist[symbol]) + offset;
+        uint next = ((state >> 12) * frequency) + offset;
         if (next < 1 << 16)
         {
             next = (next << 16) | r.PeekBits(16);
@@ -769,6 +827,7 @@ internal sealed class JxlPrefixHistogram
         return hskip == 1 ? ReadSimple(r, alphabet) : ReadComplex(r, alphabet, (int)hskip);
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal uint ReadSymbol(JxlBitReader r)
     {
         if (_rootBits == 0)

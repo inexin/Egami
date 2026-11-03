@@ -1,3 +1,6 @@
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+
 namespace Egami.Formats.Jxl;
 
 /// <summary>A Modular channel: 32-bit samples, row by row, with its shifts against the image (-1 for a palette's meta channel).</summary>
@@ -56,6 +59,8 @@ internal sealed class JxlTree
     private readonly int[] _offset;
     private readonly int[] _multiplier;
     private readonly int[] _cluster;
+    private JxlLeaf[]? _leaves;
+    private JxlChannelPlan?[]? _plans;
 
     private JxlTree(int[] property, int[] value, int[] left, int[] right, int[] predictor, int[] offset, int[] multiplier, int[] cluster, JxlEntropyDecoder decoder)
     {
@@ -239,6 +244,19 @@ internal sealed class JxlTree
     /// <summary>Gets each decision node's other child.</summary>
     internal int[] Rights => _right;
 
+    /// <summary>Gets each node's leaf data in one entry (zero for a decision), for decoders that walk the tree themselves.</summary>
+    internal JxlLeaf[] Leaves => _leaves ??= BuildLeaves();
+
+    /// <summary>
+    /// Gets how to decode a channel whose subtree starts at <paramref name="root"/>: worked out once per root and shared by
+    /// every group and thread (two threads may both build it; the results are the same).
+    /// </summary>
+    internal JxlChannelPlan Plan(int root)
+    {
+        JxlChannelPlan?[] plans = _plans ??= new JxlChannelPlan?[_property.Length];
+        return plans[root] ??= JxlChannelPlan.Build(this, root);
+    }
+
     internal int Predictor(int leaf) => _predictor[leaf];
 
     internal int Offset(int leaf) => _offset[leaf];
@@ -246,6 +264,20 @@ internal sealed class JxlTree
     internal int Multiplier(int leaf) => _multiplier[leaf];
 
     internal int Cluster(int leaf) => _cluster[leaf];
+
+    private JxlLeaf[] BuildLeaves()
+    {
+        JxlLeaf[] leaves = new JxlLeaf[_property.Length];
+        for (int i = 0; i < leaves.Length; i++)
+        {
+            if (_property[i] < 0)
+            {
+                leaves[i] = new JxlLeaf(_predictor[i], _cluster[i], _multiplier[i], _offset[i]);
+            }
+        }
+
+        return leaves;
+    }
 
     private int Depth()
     {
@@ -265,6 +297,177 @@ internal sealed class JxlTree
     }
 }
 
+/// <summary>An MA tree leaf: its predictor, its context's cluster, and the multiplier and offset applied to each residual.</summary>
+internal readonly record struct JxlLeaf(int Predictor, int Cluster, int Multiplier, int Offset);
+
+/// <summary>How a channel's subtree is decoded: the shape of its tree after the channel and stream decisions (H.4.2).</summary>
+internal enum JxlChannelPlanKind
+{
+    /// <summary>One leaf for every sample, so no tree walk.</summary>
+    Single,
+
+    /// <summary>Every decision tests one property, so a table indexed by its clamped value gives the leaf.</summary>
+    Lookup,
+
+    /// <summary>Any other tree, walked per sample.</summary>
+    Walk,
+}
+
+/// <summary>
+/// A step of a flattened tree walk: a decision and both its children's decisions, so one step picks one of four nodes two
+/// levels down without a branch on the first result (libjxl's flat decision nodes). A child that is a leaf tests
+/// property 0 against <see cref="int.MaxValue"/>, which always fails, and both its slots hold the leaf.
+/// </summary>
+internal readonly record struct JxlFlatNode(int Property, int Value, int LeftProperty, int LeftValue, int RightProperty, int RightValue, int Child, int Leaf);
+
+/// <summary>
+/// What a channel's subtree needs, worked out once per root: libjxl's decoder specializes the same shapes (a single leaf,
+/// and a tree on one property through a lookup table), and the weighted predictor runs only when a node or leaf uses it.
+/// </summary>
+internal sealed class JxlChannelPlan
+{
+    // A lookup table covers at most this many property values.
+    private const int MaxLookup = 4096;
+
+    internal JxlChannelPlanKind Kind { get; private init; }
+
+    /// <summary>Gets the leaf of a <see cref="JxlChannelPlanKind.Single"/> plan.</summary>
+    internal JxlLeaf Leaf { get; private init; }
+
+    /// <summary>Gets the property a <see cref="JxlChannelPlanKind.Lookup"/> plan tests.</summary>
+    internal int Property { get; private init; }
+
+    /// <summary>Gets the lowest property value the table tells apart; lower values take the same leaf.</summary>
+    internal int Min { get; private init; }
+
+    /// <summary>Gets the highest property value the table tells apart; higher values take the same leaf.</summary>
+    internal int Max { get; private init; }
+
+    /// <summary>Gets the leaf node for each property value from <see cref="Min"/> to <see cref="Max"/>.</summary>
+    internal int[]? Lookup { get; private init; }
+
+    /// <summary>Gets a <see cref="JxlChannelPlanKind.Walk"/> plan's flattened subtree, its first step at index 0.</summary>
+    internal JxlFlatNode[]? Flat { get; private init; }
+
+    /// <summary>Gets whether the subtree tests the max-error property or has a weighted-predictor leaf.</summary>
+    internal bool UsesWp { get; private init; }
+
+    /// <summary>Gets whether the subtree tests a property of a previous channel (16 and up).</summary>
+    internal bool UsesPrevious { get; private init; }
+
+    /// <summary>Gets the predictor every leaf of the subtree uses, or -1 when they differ.</summary>
+    internal int Predictor { get; private init; }
+
+    internal static JxlChannelPlan Build(JxlTree tree, int root)
+    {
+        int[] property = tree.Properties;
+        int[] value = tree.Values;
+        if (property[root] < 0)
+        {
+            JxlLeaf only = tree.Leaves[root];
+            return new JxlChannelPlan { Kind = JxlChannelPlanKind.Single, Leaf = only, UsesWp = only.Predictor == 6, Predictor = only.Predictor };
+        }
+
+        bool usesWp = false;
+        bool usesPrevious = false;
+        int predictor = -2;
+        int tested = property[root];
+        bool oneProperty = tested < 16;
+        long min = long.MaxValue;
+        long max = long.MinValue;
+        Stack<int> pending = new();
+        pending.Push(root);
+        while (pending.Count > 0)
+        {
+            int node = pending.Pop();
+            int p = property[node];
+            if (p < 0)
+            {
+                usesWp |= tree.Predictor(node) == 6;
+                predictor = predictor == -2 || predictor == tree.Predictor(node) ? tree.Predictor(node) : -1;
+                continue;
+            }
+
+            usesWp |= p == 15;
+            usesPrevious |= p >= 16;
+            oneProperty &= p == tested;
+            min = Math.Min(min, value[node]);
+            max = Math.Max(max, value[node]);
+            pending.Push(tree.Lefts[node]);
+            pending.Push(tree.Rights[node]);
+        }
+
+        // A value above every split goes the way max + 1 does, and one at or below every split the way min does.
+        if (!oneProperty || max == int.MaxValue || max + 1 - min + 1 > MaxLookup)
+        {
+            return new JxlChannelPlan { Kind = JxlChannelPlanKind.Walk, Flat = Flatten(tree, root), UsesWp = usesWp, UsesPrevious = usesPrevious, Predictor = predictor };
+        }
+
+        int[] lookup = new int[(int)(max + 1 - min + 1)];
+        for (int i = 0; i < lookup.Length; i++)
+        {
+            long v = min + i;
+            int node = root;
+            while (property[node] >= 0)
+            {
+                node = v > value[node] ? tree.Lefts[node] : tree.Rights[node];
+            }
+
+            lookup[i] = node;
+        }
+
+        return new JxlChannelPlan { Kind = JxlChannelPlanKind.Lookup, Property = tested, Min = (int)min, Max = (int)(max + 1), Lookup = lookup, UsesWp = usesWp, Predictor = predictor };
+    }
+
+    /// <summary>Flattens the subtree at <paramref name="root"/>, a decision, into two-level steps.</summary>
+    private static JxlFlatNode[] Flatten(JxlTree tree, int root)
+    {
+        int[] property = tree.Properties;
+        int[] value = tree.Values;
+        int[] left = tree.Lefts;
+        int[] right = tree.Rights;
+        List<JxlFlatNode> flat = [default];
+        Queue<(int Node, int Slot)> pending = new();
+        pending.Enqueue((root, 0));
+        while (pending.Count > 0)
+        {
+            (int node, int slot) = pending.Dequeue();
+            if (property[node] < 0)
+            {
+                flat[slot] = new JxlFlatNode(0, 0, 0, 0, 0, 0, 0, node);
+                continue;
+            }
+
+            int child = flat.Count;
+            for (int i = 0; i < 4; i++)
+            {
+                flat.Add(default);
+            }
+
+            (int leftProperty, int leftValue) = Grandchildren(left[node], child);
+            (int rightProperty, int rightValue) = Grandchildren(right[node], child + 2);
+            flat[slot] = new JxlFlatNode(property[node], value[node], leftProperty, leftValue, rightProperty, rightValue, child, -1);
+        }
+
+        return [.. flat];
+
+        // Queues the two nodes below a child at slots at and at + 1, and gives the child's test.
+        (int Property, int Value) Grandchildren(int node, int at)
+        {
+            if (property[node] < 0)
+            {
+                pending.Enqueue((node, at));
+                pending.Enqueue((node, at + 1));
+                return (0, int.MaxValue);
+            }
+
+            pending.Enqueue((left[node], at));
+            pending.Enqueue((right[node], at + 1));
+            return (property[node], value[node]);
+        }
+    }
+}
+
 /// <summary>
 /// The self-correcting predictor's running state over one channel (H.5.2), ported from jxl-oxide so the error bookkeeping at
 /// row starts and ends matches libjxl exactly.
@@ -273,10 +476,12 @@ internal sealed class JxlWeightedPredictor
 {
     private static readonly uint[] DivLookup = BuildDivLookup();
 
-    private readonly JxlWpParams _wp;
     private readonly int _width;
-    private readonly int[] _trueErrRow;
-    private readonly uint[] _subErrRow;
+    private readonly long _p1, _p2, _p3a, _p3b, _p3c, _p3d, _p3e;
+    private readonly uint _w0, _w1, _w2, _w3;
+    // The row above's errors, five per sample (the true error, then the four sub-predictors' errors), so a neighbour's are
+    // one load apart.
+    private readonly uint[] _errRow;
     private int _x;
     private int _y;
     private int _errW;
@@ -293,16 +498,17 @@ internal sealed class JxlWeightedPredictor
 
     internal JxlWeightedPredictor(int width, JxlWpParams wp)
     {
-        _wp = wp;
         _width = width;
-        _trueErrRow = new int[width];
-        _subErrRow = new uint[width * 4];
+        (_p1, _p2, _p3a, _p3b, _p3c, _p3d, _p3e) = (wp.P1, wp.P2, wp.P3a, wp.P3b, wp.P3c, wp.P3d, wp.P3e);
+        (_w0, _w1, _w2, _w3) = ((uint)wp.W0, (uint)wp.W1, (uint)wp.W2, (uint)wp.W3);
+        _errRow = new uint[width * 5];
     }
 
     /// <summary>Gets the max-error property (15) of the last <see cref="Predict"/>.</summary>
     internal int MaxError { get; private set; }
 
     /// <summary>Predicts at the current position, times 8; also sets <see cref="MaxError"/>.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal long Predict(int n, int nw, int ne, int w, int nn)
     {
         long errW = _errW;
@@ -315,13 +521,13 @@ internal sealed class JxlWeightedPredictor
         long w3 = (long)w << 3;
         long nn3 = (long)nn << 3;
         _s0 = w3 + ne3 - n3;
-        _s1 = n3 - (((errW + errN + errNe) * _wp.P1) >> 5);
-        _s2 = w3 - (((errW + errN + errNw) * _wp.P2) >> 5);
-        _s3 = n3 - (((errNw * _wp.P3a) + (errN * _wp.P3b) + (errNe * _wp.P3c) + ((nn3 - n3) * _wp.P3d) + ((nw3 - w3) * _wp.P3e)) >> 5);
-        uint w0 = Weight(unchecked(_subNwWw0 + _subNW0 + _subNe0), (uint)_wp.W0);
-        uint w1 = Weight(unchecked(_subNwWw1 + _subNW1 + _subNe1), (uint)_wp.W1);
-        uint w2 = Weight(unchecked(_subNwWw2 + _subNW2 + _subNe2), (uint)_wp.W2);
-        uint w3w = Weight(unchecked(_subNwWw3 + _subNW3 + _subNe3), (uint)_wp.W3);
+        _s1 = n3 - (((errW + errN + errNe) * _p1) >> 5);
+        _s2 = w3 - (((errW + errN + errNw) * _p2) >> 5);
+        _s3 = n3 - (((errNw * _p3a) + (errN * _p3b) + (errNe * _p3c) + ((nn3 - n3) * _p3d) + ((nw3 - w3) * _p3e)) >> 5);
+        uint w0 = Weight(unchecked(_subNwWw0 + _subNW0 + _subNe0), _w0);
+        uint w1 = Weight(unchecked(_subNwWw1 + _subNW1 + _subNe1), _w1);
+        uint w2 = Weight(unchecked(_subNwWw2 + _subNW2 + _subNe2), _w2);
+        uint w3w = Weight(unchecked(_subNwWw3 + _subNW3 + _subNe3), _w3);
         uint sum = w0 + w1 + w2 + w3w;
         int logWeight = System.Numerics.BitOperations.Log2(sum >> 4);
         w0 >>= logWeight;
@@ -330,7 +536,8 @@ internal sealed class JxlWeightedPredictor
         w3w >>= logWeight;
         sum = w0 + w1 + w2 + w3w;
         long s = ((long)sum >> 1) - 1 + (_s0 * w0) + (_s1 * w1) + (_s2 * w2) + (_s3 * w3w);
-        long prediction = (s * DivLookup[sum]) >> 24;
+        // Each weight is at least 4, so sum >> 4 is at least 1, and after the shift the sum is below 32.
+        long prediction = (s * Divide(sum)) >> 24;
         if (((errN ^ errW) | (errN ^ errNw)) <= 0)
         {
             long min = Math.Min(n3, Math.Min(w3, ne3));
@@ -360,6 +567,7 @@ internal sealed class JxlWeightedPredictor
     }
 
     /// <summary>Records the decoded sample at the current position and moves to the next.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal void Record(int sample)
     {
         long s8 = (long)sample << 3;
@@ -369,20 +577,22 @@ internal sealed class JxlWeightedPredictor
         uint e2 = (uint)((Abs(_s2 - s8) + 3) >> 3);
         uint e3 = (uint)((Abs(_s3 - s8) + 3) >> 3);
         int x = _x;
-        _trueErrRow[x] = trueErr;
-        _subErrRow[4 * x] = e0;
-        _subErrRow[(4 * x) + 1] = e1;
-        _subErrRow[(4 * x) + 2] = e2;
-        _subErrRow[(4 * x) + 3] = e3;
+        Span<uint> at = _errRow.AsSpan(5 * x, 5);
+        at[0] = (uint)trueErr;
+        at[1] = e0;
+        at[2] = e1;
+        at[3] = e2;
+        at[4] = e3;
         _x++;
         if (_x >= _width)
         {
             _y++;
             _x = 0;
             _errW = 0;
-            _errN = _trueErrRow[0];
+            ReadOnlySpan<uint> first = _errRow.AsSpan(0, 5);
+            _errN = (int)first[0];
             _errNw = _errN;
-            (_subNW0, _subNW1, _subNW2, _subNW3) = (_subErrRow[0], _subErrRow[1], _subErrRow[2], _subErrRow[3]);
+            (_subNW0, _subNW1, _subNW2, _subNW3) = (first[1], first[2], first[3], first[4]);
             (_subNwWw0, _subNwWw1, _subNwWw2, _subNwWw3) = (_subNW0, _subNW1, _subNW2, _subNW3);
             if (_width <= 1)
             {
@@ -391,8 +601,9 @@ internal sealed class JxlWeightedPredictor
             }
             else
             {
-                _errNe = _trueErrRow[1];
-                (_subNe0, _subNe1, _subNe2, _subNe3) = (_subErrRow[4], _subErrRow[5], _subErrRow[6], _subErrRow[7]);
+                ReadOnlySpan<uint> second = _errRow.AsSpan(5, 5);
+                _errNe = (int)second[0];
+                (_subNe0, _subNe1, _subNe2, _subNe3) = (second[1], second[2], second[3], second[4]);
             }
 
             return;
@@ -413,20 +624,26 @@ internal sealed class JxlWeightedPredictor
         }
         else if (_y != 0)
         {
-            int nx = _x + 1;
-            _errNe = _trueErrRow[nx];
-            (_subNe0, _subNe1, _subNe2, _subNe3) = (_subErrRow[4 * nx], _subErrRow[(4 * nx) + 1], _subErrRow[(4 * nx) + 2], _subErrRow[(4 * nx) + 3]);
+            ReadOnlySpan<uint> next = _errRow.AsSpan(5 * (_x + 1), 5);
+            _errNe = (int)next[0];
+            (_subNe0, _subNe1, _subNe2, _subNe3) = (next[1], next[2], next[3], next[4]);
         }
     }
 
     private static ulong Abs(long v) => v < 0 ? (ulong)-v : (ulong)v;
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static uint Weight(uint errorSum, uint maxWeight)
     {
         uint shifted = (uint)(((ulong)errorSum + 1) >> 5);
         int shift = shifted == 0 ? 0 : System.Numerics.BitOperations.Log2(shifted);
-        return 4 + ((maxWeight * DivLookup[(errorSum >> shift) + 1]) >> shift);
+        // errorSum + 1 is below 2^(shift + 6), so the index is at most 64.
+        return 4 + ((maxWeight * Divide((errorSum >> shift) + 1)) >> shift);
     }
+
+    /// <summary>Gets 2^24 / <paramref name="i"/> (0 for 0) from the table; callers keep <paramref name="i"/> at most 64.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static uint Divide(uint i) => Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(DivLookup), (nint)i);
 
     private static uint[] BuildDivLookup()
     {

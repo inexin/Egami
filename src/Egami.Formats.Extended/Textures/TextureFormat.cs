@@ -96,6 +96,28 @@ internal enum TextureCodec : byte
 
     /// <summary>BC1 without alpha (Vulkan's BC1_RGB, OpenGL's DXT1 RGB): the punch-through texels read as opaque black.</summary>
     Bc1Opaque,
+
+    /// <summary>ETC2 RGB8, and ETC1, which is a subset of it.</summary>
+    Etc2Rgb,
+
+    /// <summary>ETC2 RGB8 with punch-through alpha.</summary>
+    Etc2RgbA1,
+
+    /// <summary>ETC2 RGBA8: an EAC alpha block, then an ETC2 colour block.</summary>
+    Etc2Rgba,
+    EacR11,
+    EacR11Snorm,
+    EacRg11,
+    EacRg11Snorm,
+
+    /// <summary>ASTC, LDR UNORM; the footprint is the format's block size.</summary>
+    AstcLdr,
+
+    /// <summary>ASTC, LDR sRGB.</summary>
+    AstcSrgb,
+
+    /// <summary>ASTC, HDR (SFLOAT).</summary>
+    AstcHdr,
 }
 
 /// <summary>
@@ -117,8 +139,14 @@ internal sealed record TextureFormat(int Dxgi, string Name, TextureNatural Natur
     /// <summary>Gets the bit masks of a legacy mask format: red (or luminance), green, blue and alpha.</summary>
     public uint[] Masks { get; init; } = [];
 
-    /// <summary>Gets whether data is in 4 × 4 blocks of <see cref="UnitBytes"/> bytes.</summary>
+    private readonly int _blockWidth;
+    private readonly int _blockHeight;
+
+    /// <summary>Gets whether data is in blocks of <see cref="BlockWidth"/> × <see cref="BlockHeight"/> texels and <see cref="UnitBytes"/> bytes.</summary>
     public bool IsBlock => Codec >= TextureCodec.Bc1;
+
+    /// <summary>Gets whether the format is one of the ASTC formats.</summary>
+    public bool IsAstc => Codec is TextureCodec.AstcLdr or TextureCodec.AstcSrgb or TextureCodec.AstcHdr;
 
     /// <summary>Gets whether one unit of <see cref="UnitBytes"/> holds two pixels side by side.</summary>
     public bool IsPair => Codec is TextureCodec.Rgbg or TextureCodec.Grgb or TextureCodec.Yuy2 or TextureCodec.Uyvy or TextureCodec.Y210 or TextureCodec.Y216;
@@ -128,13 +156,22 @@ internal sealed record TextureFormat(int Dxgi, string Name, TextureNatural Natur
 
     /// <summary>Gets whether the format has only two channels (red and green), so a reader's ReconstructNormalZ applies.</summary>
     public bool IsTwoChannel => Codec is TextureCodec.Rg8ToRgb8 or TextureCodec.Rg16ToRgb16 or TextureCodec.Rg8Snorm or TextureCodec.Rg8Sint or TextureCodec.Rg16Snorm
-        or TextureCodec.Rg16Sint or TextureCodec.Bc5 or TextureCodec.Bc5Snorm or TextureCodec.Rg16FToRgbaF16 or TextureCodec.Rg32FToRgbF32;
+        or TextureCodec.Rg16Sint or TextureCodec.Bc5 or TextureCodec.Bc5Snorm or TextureCodec.Rg16FToRgbaF16 or TextureCodec.Rg32FToRgbF32
+        or TextureCodec.EacRg11 or TextureCodec.EacRg11Snorm;
 
-    /// <summary>Gets the width of one block of texels: 4 for the block formats, 2 for the pair formats, else 1.</summary>
-    public int BlockWidth => IsBlock ? 4 : IsPair ? 2 : 1;
+    /// <summary>Gets the width of one block of texels: 4 for most block formats (ASTC's footprint varies), 2 for the pair formats, else 1.</summary>
+    public int BlockWidth
+    {
+        get => _blockWidth != 0 ? _blockWidth : IsBlock ? 4 : IsPair ? 2 : 1;
+        init => _blockWidth = value;
+    }
 
-    /// <summary>Gets the height of one block of texels: 4 for the block formats, else 1.</summary>
-    public int BlockHeight => IsBlock ? 4 : 1;
+    /// <summary>Gets the height of one block of texels: 4 for most block formats (ASTC's footprint varies), else 1.</summary>
+    public int BlockHeight
+    {
+        get => _blockHeight != 0 ? _blockHeight : IsBlock ? 4 : 1;
+        init => _blockHeight = value;
+    }
 
     /// <summary>Gets the bytes of one block of texels (of one texel, for the pixel formats).</summary>
     public int BytesPerBlock => UnitBytes;
@@ -144,7 +181,7 @@ internal sealed record TextureFormat(int Dxgi, string Name, TextureNatural Natur
     {
         _ when IsTwoChannel => 2,
         TextureCodec.Bc1Opaque => 3,
-        TextureCodec.Bc4 or TextureCodec.Bc4Snorm => 1,
+        TextureCodec.Bc4 or TextureCodec.Bc4Snorm or TextureCodec.EacR11 or TextureCodec.EacR11Snorm => 1,
         TextureCodec.Masks => Masks.Count(m => m != 0),
         _ => Natural switch
         {
@@ -158,7 +195,8 @@ internal sealed record TextureFormat(int Dxgi, string Name, TextureNatural Natur
     /// <summary>Gets whether the stored values are signed (SNORM, SINT or signed float blocks); they load mapped to unsigned.</summary>
     public bool Signed => Codec is TextureCodec.Snorm8 or TextureCodec.Sint8 or TextureCodec.Snorm16 or TextureCodec.Sint16 or TextureCodec.Int32
         or TextureCodec.Rg8Snorm or TextureCodec.Rg8Sint or TextureCodec.Rg16Snorm or TextureCodec.Rg16Sint or TextureCodec.Rg32Int
-        or TextureCodec.Rgb32Int or TextureCodec.Bc4Snorm or TextureCodec.Bc5Snorm or TextureCodec.Bc6hSigned;
+        or TextureCodec.Rgb32Int or TextureCodec.Bc4Snorm or TextureCodec.Bc5Snorm or TextureCodec.Bc6hSigned or TextureCodec.EacR11Snorm
+        or TextureCodec.EacRg11Snorm;
 
     /// <summary>Gets whether the format holds high dynamic range values, which load as floating point.</summary>
     public bool Hdr => Natural is TextureNatural.GrayF32 or TextureNatural.RgbF32 or TextureNatural.RgbaF16 or TextureNatural.RgbaF32;
@@ -168,7 +206,7 @@ internal sealed record TextureFormat(int Dxgi, string Name, TextureNatural Natur
     {
         if (IsBlock)
         {
-            return Math.Max(1, (width + 3) / 4) * UnitBytes;
+            return Math.Max(1, (width + BlockWidth - 1) / BlockWidth) * UnitBytes;
         }
 
         if (IsPair)
@@ -192,7 +230,7 @@ internal sealed record TextureFormat(int Dxgi, string Name, TextureNatural Natur
         long half = (height + 1) / 2;
         return Codec switch
         {
-            _ when IsBlock => row * Math.Max(1, (height + 3) / 4),
+            _ when IsBlock => row * Math.Max(1, (height + BlockHeight - 1) / BlockHeight),
             TextureCodec.Nv12 or TextureCodec.P016 => row * (height + half),
             TextureCodec.Nv11 or TextureCodec.P208 => row * height * 2,
             TextureCodec.V208 => row * (height + (half * 2)),
@@ -428,6 +466,18 @@ internal sealed record TextureFormat(int Dxgi, string Name, TextureNatural Natur
             144 => Dxgi(96, "BC6H_SFLOAT_BLOCK"),
             145 => Dxgi(98, "BC7_UNORM_BLOCK"),
             146 => Dxgi(99, "BC7_SRGB_BLOCK"),
+            147 => new(0, "ETC2_R8G8B8_UNORM_BLOCK", TextureNatural.Rgb8, TextureCodec.Etc2Rgb, 8),
+            148 => new(0, "ETC2_R8G8B8_SRGB_BLOCK", TextureNatural.Rgb8, TextureCodec.Etc2Rgb, 8) { Srgb = true },
+            149 => new(0, "ETC2_R8G8B8A1_UNORM_BLOCK", TextureNatural.Rgba8, TextureCodec.Etc2RgbA1, 8),
+            150 => new(0, "ETC2_R8G8B8A1_SRGB_BLOCK", TextureNatural.Rgba8, TextureCodec.Etc2RgbA1, 8) { Srgb = true },
+            151 => new(0, "ETC2_R8G8B8A8_UNORM_BLOCK", TextureNatural.Rgba8, TextureCodec.Etc2Rgba, 16),
+            152 => new(0, "ETC2_R8G8B8A8_SRGB_BLOCK", TextureNatural.Rgba8, TextureCodec.Etc2Rgba, 16) { Srgb = true },
+            153 => new(0, "EAC_R11_UNORM_BLOCK", TextureNatural.Gray16, TextureCodec.EacR11, 8),
+            154 => new(0, "EAC_R11_SNORM_BLOCK", TextureNatural.Gray16, TextureCodec.EacR11Snorm, 8),
+            155 => new(0, "EAC_R11G11_UNORM_BLOCK", TextureNatural.Rgb16, TextureCodec.EacRg11, 16),
+            156 => new(0, "EAC_R11G11_SNORM_BLOCK", TextureNatural.Rgb16, TextureCodec.EacRg11Snorm, 16),
+            >= 157 and <= 184 => Astc((vk - 157) / 2, (vk & 1) == 0 ? TextureCodec.AstcSrgb : TextureCodec.AstcLdr),
+            >= 1000066000 and <= 1000066013 => Astc(vk - 1000066000, TextureCodec.AstcHdr),
             1000340000 => Dxgi(115, "A4R4G4B4_UNORM_PACK16"),
             1000340001 => Packed("A4B4G4R4_UNORM_PACK16", TextureNatural.Rgba8, 2, 0xF, 0xF0, 0xF00, 0xF000),
             _ => null,
@@ -435,6 +485,20 @@ internal sealed record TextureFormat(int Dxgi, string Name, TextureNatural Natur
         return format is null ? null : format with { Vk = vk };
 
         static TextureFormat Dxgi(int dxgi, string name) => FromDxgi(dxgi)! with { Name = name };
+
+        static TextureFormat Astc(int footprint, TextureCodec codec)
+        {
+            int w = Blocks.Astc.Footprints[footprint * 2];
+            int h = Blocks.Astc.Footprints[(footprint * 2) + 1];
+            string suffix = codec switch { TextureCodec.AstcSrgb => "SRGB", TextureCodec.AstcHdr => "SFLOAT", _ => "UNORM" };
+            TextureNatural natural = codec == TextureCodec.AstcHdr ? TextureNatural.RgbaF16 : TextureNatural.Rgba8;
+            return new(0, $"ASTC_{w}x{h}_{suffix}_BLOCK", natural, codec, 16)
+            {
+                Srgb = codec == TextureCodec.AstcSrgb,
+                BlockWidth = w,
+                BlockHeight = h,
+            };
+        }
 
         static TextureFormat Packed(string name, TextureNatural natural, int bytes, uint r, uint g, uint b, uint a)
         {
@@ -469,6 +533,19 @@ internal sealed record TextureFormat(int Dxgi, string Name, TextureNatural Natur
             0x8E8D => 146,
             0x8E8E => 144, // COMPRESSED_RGB_BPTC_SIGNED_FLOAT
             0x8E8F => 143,
+            0x8D64 => -2, // ETC1_RGB8_OES
+            0x9274 => 147, // COMPRESSED_RGB8_ETC2
+            0x9275 => 148,
+            0x9276 => 149, // COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2
+            0x9277 => 150,
+            0x9278 => 151, // COMPRESSED_RGBA8_ETC2_EAC
+            0x9279 => 152,
+            0x9270 => 153, // COMPRESSED_R11_EAC
+            0x9271 => 154,
+            0x9272 => 155,
+            0x9273 => 156,
+            >= 0x93B0 and <= 0x93BD => 157 + ((internalFormat - 0x93B0) * 2), // COMPRESSED_RGBA_ASTC_4x4_KHR and on
+            >= 0x93D0 and <= 0x93DD => 158 + ((internalFormat - 0x93D0) * 2), // COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR and on
             0x8229 => 9, // R8
             0x8F94 => 10,
             0x8232 => 13,
@@ -538,6 +615,11 @@ internal sealed record TextureFormat(int Dxgi, string Name, TextureNatural Natur
             return FromVk(vk);
         }
 
+        if (vk == -2)
+        {
+            return FromVk(147)! with { Name = "ETC1_RGB8_OES", Vk = 0 };
+        }
+
         return (internalFormat, format, type) switch
         {
             (0x8040, _, _) or (0x1909, 0x1909, 0x1401) => new(0, "LUMINANCE8", TextureNatural.Gray8, TextureCodec.Copy, 1),
@@ -586,25 +668,20 @@ internal sealed record TextureFormat(int Dxgi, string Name, TextureNatural Natur
     }
 
     /// <summary>
-    /// Returns the family of a compressed Vulkan format Egami does not read yet (ETC2, EAC, ASTC, PVRTC), for a clear message,
-    /// or <see langword="null"/>.
+    /// Returns the family of a compressed Vulkan format Egami does not read (3D ASTC, PVRTC), for a clear message, or
+    /// <see langword="null"/>.
     /// </summary>
     public static string? UnsupportedVkFamily(int vk) => vk switch
     {
-        >= 147 and <= 152 => "ETC2",
-        >= 153 and <= 156 => "EAC",
-        (>= 157 and <= 184) or (>= 1000066000 and <= 1000066013) or (>= 1000288000 and <= 1000288029) => "ASTC",
+        >= 1000288000 and <= 1000288029 => "3D ASTC",
         >= 1000054000 and <= 1000054007 => "PVRTC",
         _ => null,
     };
 
-    /// <summary>Returns the family of a compressed OpenGL internal format Egami does not read yet, or <see langword="null"/>.</summary>
+    /// <summary>Returns the family of a compressed OpenGL internal format Egami does not read, or <see langword="null"/>.</summary>
     public static string? UnsupportedGlFamily(int internalFormat) => internalFormat switch
     {
-        0x8D64 => "ETC1",
-        >= 0x9274 and <= 0x9279 => "ETC2",
-        >= 0x9270 and <= 0x9273 => "EAC",
-        (>= 0x93B0 and <= 0x93BD) or (>= 0x93C0 and <= 0x93C9) or (>= 0x93D0 and <= 0x93DD) or (>= 0x93E0 and <= 0x93E9) => "ASTC",
+        (>= 0x93C0 and <= 0x93C9) or (>= 0x93E0 and <= 0x93E9) => "3D ASTC",
         (>= 0x8C00 and <= 0x8C03) or (>= 0x8A54 and <= 0x8A57) or 0x9137 or 0x9138 => "PVRTC",
         _ => null,
     };

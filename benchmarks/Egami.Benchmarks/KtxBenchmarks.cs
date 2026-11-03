@@ -1,16 +1,21 @@
 using System.Buffers.Binary;
+using System.Runtime.InteropServices;
 
 using BenchmarkDotNet.Attributes;
 
 using Egami.Compression;
 using Egami.Formats.Extended;
+using Egami.Formats.Extended.Textures.Blocks;
+using Egami.Pixels;
 
 namespace Egami.Benchmarks;
 
 /// <summary>
-/// KTX 2.0 decoding, one thread: a 2048 × 2048 texture in BC1, BC7 and RGBA8, and BC7 supercompressed with Zstandard, loaded in
-/// its natural pixel type, so a change shows up in time and allocations. The blocks are pseudo-random bytes from a fixed seed, as
-/// in <see cref="DdsBenchmarks"/>, so the block decoders the two formats share cost the same; the gap is the container.
+/// KTX 2.0 decoding, one thread: a 2048 × 2048 texture in BC1, BC7, ETC2 RGBA8, EAC RG11, ASTC 6 × 6 LDR and HDR, and RGBA8, and
+/// BC7 supercompressed with Zstandard, loaded in its natural pixel type, so a change shows up in time and allocations. The BC and
+/// ETC blocks are pseudo-random bytes from a fixed seed, as in <see cref="DdsBenchmarks"/>, so the block decoders the two formats
+/// share cost the same; the gap is the container. Random bytes are mostly illegal ASTC blocks, so the LDR blocks are a photo-like
+/// picture encoded at effort 2, and the HDR blocks those of tests/images/ktx/astc-6x6-hdr.ktx2 (astcenc -medium) repeated.
 /// </summary>
 [MemoryDiagnoser]
 public class KtxBenchmarks
@@ -18,21 +23,34 @@ public class KtxBenchmarks
     private readonly EgamiContext _context = EgamiContext.Default.WithKtx2() with { MaxParallelism = 1 };
     private byte[] _file = [];
 
-    [Params("BC1", "BC7", "RGBA8", "BC7-Zstd")]
+    [Params("BC1", "BC7", "ETC2-RGBA", "EAC-RG11", "ASTC-6x6", "ASTC-6x6-HDR", "RGBA8", "BC7-Zstd")]
     public string Format { get; set; } = "";
 
     [GlobalSetup]
     public void Setup()
     {
         const int Size = 2048;
+        const int AstcBytes = 342 * 342 * 16;
         (int vk, int bytes) = Format switch
         {
             "BC1" => (133, Size * Size / 2),
             "BC7" or "BC7-Zstd" => (145, Size * Size),
+            "ETC2-RGBA" => (151, Size * Size),
+            "EAC-RG11" => (155, Size * Size),
+            "ASTC-6x6" => (165, AstcBytes),
+            "ASTC-6x6-HDR" => (1000066004, AstcBytes),
             _ => (37, Size * Size * 4),
         };
         byte[] level = new byte[bytes];
         new Random(42).NextBytes(level);
+        if (Format == "ASTC-6x6")
+        {
+            Tile(EncodedAstc(), level);
+        }
+        else if (Format == "ASTC-6x6-HDR")
+        {
+            Tile(CorpusBlocks("astc-6x6-hdr.ktx2"), level);
+        }
         int scheme = 0;
         long uncompressed = bytes;
         if (Format == "BC7-Zstd")
@@ -70,5 +88,48 @@ public class KtxBenchmarks
     {
         using Raster raster = Raster.Load(_file, _context);
         return raster.Width;
+    }
+
+    private static void Tile(byte[] blocks, byte[] level)
+    {
+        for (int i = 0; i < level.Length; i += blocks.Length)
+        {
+            blocks.AsSpan(0, Math.Min(blocks.Length, level.Length - i)).CopyTo(level.AsSpan(i));
+        }
+    }
+
+    /// <summary>A 384 × 384 photo-like picture (64 × 64 blocks) in ASTC 6 × 6 at effort 2.</summary>
+    private static byte[] EncodedAstc()
+    {
+        Astc astc = Astc.For(6, 6)!;
+        using Raster<Rgba8> photo = BenchImages.Photo(384, 384);
+        byte[] blocks = new byte[64 * 64 * 16];
+        byte[] texels = new byte[36 * 4];
+        for (int b = 0; b < 64 * 64; b++)
+        {
+            for (int y = 0; y < 6; y++)
+            {
+                MemoryMarshal.AsBytes(photo.Row(((b / 64) * 6) + y).Slice((b % 64) * 6, 6)).CopyTo(texels.AsSpan(y * 24));
+            }
+
+            AstcEncoder.Encode(astc, texels, blocks.AsSpan(b * 16, 16), 2, srgb: false);
+        }
+
+        return blocks;
+    }
+
+    /// <summary>The blocks of a single-level KTX 2 file of the test corpus.</summary>
+    private static byte[] CorpusBlocks(string name)
+    {
+        string root = AppContext.BaseDirectory;
+        while (!Directory.Exists(Path.Combine(root, "tests", "images", "ktx")))
+        {
+            root = Path.GetDirectoryName(root)!;
+        }
+
+        byte[] file = File.ReadAllBytes(Path.Combine(root, "tests", "images", "ktx", name));
+        int offset = (int)BinaryPrimitives.ReadUInt64LittleEndian(file.AsSpan(80));
+        int length = (int)BinaryPrimitives.ReadUInt64LittleEndian(file.AsSpan(88));
+        return file[offset..(offset + length)];
     }
 }

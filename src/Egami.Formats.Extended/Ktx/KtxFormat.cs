@@ -4,9 +4,9 @@ namespace Egami.Formats.Extended.Ktx;
 
 /// <summary>
 /// KTX 1.1, the Khronos texture container for OpenGL: a header naming the OpenGL format, key/value data, then every mip level
-/// of every array layer, cube face and depth slice, uncompressed or in BC1 to BC7 blocks, in either byte order. Load gives mip 0
-/// of the first surface, turned upright and swizzled as the file's <c>KTXorientation</c> and <c>KTXswizzle</c> say; LoadAll and
-/// <see cref="KtxReaderOptions"/> reach the others. Read only. Registered with <see cref="ExtendedContextExtensions.WithKtx"/>.
+/// of every array layer, cube face and depth slice, uncompressed or in BC1 to BC7, ETC1, ETC2, EAC or 2D ASTC blocks, in either
+/// byte order. Load gives mip 0 of the first surface, turned upright and swizzled as the file's <c>KTXorientation</c> and
+/// <c>KTXswizzle</c> say; LoadAll and <see cref="KtxReaderOptions"/> reach the others. Read only. Registered with <see cref="ExtendedContextExtensions.WithKtx"/>.
 /// </summary>
 /// <example>
 /// <code language="csharp" source="../../../tests/Egami.DocSamples/FormatsExtended.cs" region="ktx-load"/>
@@ -29,8 +29,8 @@ public static class KtxFormat
 /// KTX 2.0, the Khronos texture container for Vulkan, glTF and the web: a header naming the Vulkan format, a level index, a
 /// data format descriptor with the colour space, key/value data, then the mip levels smallest first, each optionally
 /// supercompressed with Zstandard or zlib. Load gives mip 0 of the first surface, turned upright and swizzled as the file
-/// says; LoadAll and <see cref="KtxReaderOptions"/> reach the others. Uncompressed and BC1 to BC7 textures read; ETC, ASTC and
-/// Basis Universal ones are refused for now. Read only. Registered with <see cref="ExtendedContextExtensions.WithKtx2"/>.
+/// says; LoadAll and <see cref="KtxReaderOptions"/> reach the others. Uncompressed, BC1 to BC7, ETC2, EAC and 2D ASTC (LDR and
+/// HDR) textures read; Basis Universal, 3D ASTC and PVRTC ones are refused. Read only. Registered with <see cref="ExtendedContextExtensions.WithKtx2"/>.
 /// </summary>
 /// <example>
 /// <code language="csharp" source="../../../tests/Egami.DocSamples/FormatsExtended.cs" region="ktx-load"/>

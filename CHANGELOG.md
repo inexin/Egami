@@ -43,6 +43,22 @@ Faster lossy JPEG XL encoding (roadmap 2.4.11). No API changes; every file is by
   cjxl's, from 2.5 to 3.9), efforts 5 and 7 about 2 to 3 % fewer. Allocation-budget tests now cap what an encode allocates
   per pixel.
 
+Faster JPEG XL decoding of entropy-coded data and Modular images (roadmap 2.4.11). No API changes; decoded pixels are the
+same as before.
+
+- Modular channels decode by the shape of their MA tree, as libjxl's decoder does: a channel with one leaf has no tree walk
+  (and the usual gradient leaf a loop with no edge tests), a subtree that tests one property finds its leaf in a table, and
+  a subtree whose leaves share the gradient or the weighted predictor runs with that predictor fixed. Other trees walk two
+  levels per step on properties worked out first. The weighted predictor runs only for subtrees that use it, inlined, with
+  its error rows interleaved.
+- The ANS alias table is one 64-bit entry per bucket, and the Modular and HF coefficient loops are compiled for their
+  stream's kind (ANS, prefix codes or LZ77), so symbol reads inline without per-symbol checks.
+- One thread, instructions per megapixel against main: lossless effort 1 37 % fewer, effort 2 49 %, effort 3 40 %, effort 5
+  24 %, effort 7 20 to 27 % and effort 9 27 % (1.6 to 2.6 times djxl's, from 2.1 to 4.9); lossy distance 1 at effort 7 9 to
+  20 % fewer (1.8 to 2.6 times djxl's, from 2.2 to 2.8). Allocation-budget tests now cap what a decode allocates per pixel.
+- JPEG reconstruction reports a `jbrd` box whose data is not valid Brotli, or whose scan names a missing component, as
+  damaged data instead of crashing (found by fuzzing).
+
 KTX and KTX 2 textures, stage A (reading; roadmap 2.3.11). All additive.
 
 - `KtxFormat` (.ktx) and `Ktx2Format` (.ktx2) in Egami.Formats.Extended, registered by `WithExtendedFormats()`, `WithKtx()`
@@ -90,6 +106,14 @@ Canon CR3 develops (RAW coverage, Build Plan tasks 8 to 12). No API changes.
   the table's raised by the ratio of the two whites (0.28 EV against 0.02); its develop was 5 CIEDE2000 from Adobe's, now 0.14.
 - DNG writing widens BitsPerSample to hold the white level, so a CR3 whose white is 16384 over 14-bit data (EOS R6, R5 crop)
   passes dng_validate.
+
+KTX stage B (ETC, EAC and ASTC; roadmap 2.3.11). No API changes.
+
+- KTX and KTX 2 read ETC1, ETC2 (RGB8, RGB8A1 and RGBA8, UNORM and sRGB) and EAC R11 and RG11 (unsigned and signed), exactly
+  as the Khronos Data Format Specification says, and ASTC in all 14 2D footprints, LDR (UNORM and sRGB, to `Rgba8`) and HDR
+  (to `RgbaF16`), bit for bit as ARM's astcenc decodes them. 3D ASTC, PVRTC and Basis Universal are still refused.
+- Internal ETC1, ETC2, EAC and ASTC LDR block encoders (effort 0 to 6) for the KTX writer to come; their output does not depend
+  on the number of threads.
 
 Samsung SRW (RAW coverage, Build Plan tasks 13 to 15). Egami.Formats.Extended adds the `.srw` extension and its MIME type
 (`image/x-samsung-srw`) to `RawFormat.Info`; no other API changes.
