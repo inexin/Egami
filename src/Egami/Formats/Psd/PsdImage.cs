@@ -191,7 +191,8 @@ public sealed partial class PsdDocument : IDisposable
     private PsdFlattener Flattener(PsdFlattenOptions? options, WarningList warnings)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
-        if (ColorMode is not (PsdColorMode.Rgb or PsdColorMode.Grayscale or PsdColorMode.Duotone or PsdColorMode.Cmyk))
+        if (ColorMode is not (PsdColorMode.Rgb or PsdColorMode.Grayscale or PsdColorMode.Duotone or PsdColorMode.Cmyk)
+            && !(ColorMode == PsdColorMode.Lab && _file.Depth is 8 or 16))
         {
             throw new UnsupportedFormatException($"{ColorMode} documents are not flattened; Load gives the composite Photoshop stored.");
         }
@@ -200,7 +201,7 @@ public sealed partial class PsdDocument : IDisposable
         for (int i = 0; i < _imageOf.Length; i++)
         {
             PsdLayerImage? layer = _imageOf[i] >= 0 ? _layers[_imageOf[i]] : null;
-            flattener.Add(i, layer?.Pixels, layer?.Mask, layer?.Ink);
+            flattener.Add(i, ColorMode == PsdColorMode.Lab ? layer?.Encoded : layer?.Pixels, layer?.Mask, layer?.Ink);
         }
 
         return flattener;
@@ -290,10 +291,14 @@ public sealed class PsdLayerImage : IDisposable
 
     internal PsdLayerRecord Record { get; }
 
+    /// <summary>Gets a Lab layer's pixels as Photoshop stores them (L*, a*, b* encoded, straight alpha), which the flattener blends.</summary>
+    internal Raster? Encoded { get; init; }
+
     /// <summary>Disposes the pixels and the mask.</summary>
     public void Dispose()
     {
         Pixels?.Dispose();
+        Encoded?.Dispose();
         Ink?.Dispose();
         Mask?.Release();
     }

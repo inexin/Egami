@@ -55,6 +55,34 @@ internal sealed partial class PsdFlattener
         _vectorFor = null;
     }
 
+    /// <summary>
+    /// Adjusts one premultiplied encoded Lab pixel through sRGB: the adjusted color goes back to Lab, blends there with the
+    /// layer's mode over the color under it and mixes in by <paramref name="t"/>.
+    /// </summary>
+    private void LabAdjust(PsdAdjustment adjustment, BlendMode mode, float[] target, int at, float a, float t, int x, int y)
+    {
+        float l = target[at] / a, la = target[at + 1] / a, lb = target[at + 2] / a;
+        (double sr, double sg, double sb) = SrgbOf(l, la, lb);
+        float r = (float)sr, g = (float)sg, b = (float)sb;
+        adjustment.Apply(ref r, ref g, ref b);
+        (float al, float aa, float ab) = LabOf(Math.Clamp(r, 0, 1), Math.Clamp(g, 0, 1), Math.Clamp(b, 0, 1));
+        if (IsLabNonSeparable(mode))
+        {
+            Span<float> under = [l, la, lb];
+            LabBlend(mode, under, [al, aa, ab], LabCenter);
+            (al, aa, ab) = (under[0], under[1], under[2]);
+        }
+        else if (mode != BlendMode.SourceOver)
+        {
+            (double R, double G, double B, double A) m = BlendReference.Blend(mode, (al, aa, ab, 1), (l, la, lb, 1), 1, x, y);
+            (al, aa, ab) = ((float)m.R, (float)m.G, (float)m.B);
+        }
+
+        target[at] = (l + ((al - l) * t)) * a;
+        target[at + 1] = (la + ((aa - la) * t)) * a;
+        target[at + 2] = (lb + ((ab - lb) * t)) * a;
+    }
+
     /// <summary>Applies an adjustment layer to the canvas under it, or to its clipping base's content when it is clipped.</summary>
     /// <remarks>
     /// The adjusted color is the source of a blend with the layer's mode over the color under it, taken as opaque, through the
@@ -97,6 +125,11 @@ internal sealed partial class PsdFlattener
                 {
                     // CMYK adjusts through RGB by the plain formula, black kept.
                     (r, g, b) = (1 - Math.Clamp(target[at] / a, 0, 1), 1 - Math.Clamp(target[at + 1] / a, 0, 1), 1 - Math.Clamp(target[at + 2] / a, 0, 1));
+                }
+                else if (_lab)
+                {
+                    LabAdjust(adjustment, mode, target, at, a, t, area.X + x, y);
+                    continue;
                 }
                 else
                 {

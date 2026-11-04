@@ -35,6 +35,7 @@ internal sealed partial class PsdFlattener
     private readonly int _stride;
     private readonly Dictionary<float[], long> _rented = new(ReferenceEqualityComparer.Instance);
     private readonly bool _knocks;
+    private readonly bool _lab;
     private float[]? _scratch;
     private long _bytes;
 
@@ -57,6 +58,7 @@ internal sealed partial class PsdFlattener
         _stride = _channels + 1;
         _row = new float[_stride * _width];
         _knocks = file.Records.Exists(r => r.Knockout is 1 or 2);
+        _lab = file.Mode == PsdColorMode.Lab;
 
         // Each group's hidden start record (its GroupEnd) is matched with the group record that ends it, above its contents.
         Stack<int> open = new();
@@ -485,6 +487,10 @@ internal sealed partial class PsdFlattener
                 else if (_channels == 4)
                 {
                     InkRow(mode, s, d, opacity, area.X, y);
+                }
+                else if (_lab && IsLabNonSeparable(mode))
+                {
+                    LabRow(mode, s, d, opacity);
                 }
                 else if (mode == BlendMode.SoftLight)
                 {

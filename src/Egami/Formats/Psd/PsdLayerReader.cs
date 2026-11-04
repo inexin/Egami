@@ -18,6 +18,7 @@ internal static class PsdLayerReader
     public static PsdDocument Read(EgamiInput input, ReaderOptions options, EgamiContext context, Func<Raster, Raster>? convert)
     {
         Dictionary<int, (Raster? Pixels, InkRaster? Ink, PsdMask? Mask)> built = [];
+        Dictionary<int, Raster> encoded = [];
         InkSet? inks = null;
         try
         {
@@ -26,12 +27,21 @@ internal static class PsdLayerReader
                 {
                     inks ??= f.Mode == PsdColorMode.Cmyk ? InksOf(f) : null;
                     built[index] = Build(planes, f, i, inks, convert);
+                    if (f.Mode == PsdColorMode.Lab && HasPixels(planes))
+                    {
+                        // The flattener blends Lab as stored; the public pixels are sRGB.
+                        encoded[index] = Pixels(planes, f, i, encodedLab: true);
+                    }
                 }));
             RasterMetadata metadata = PsdReader.Metadata(input, file, options);
             if (file.Records.Count == 0 && file.Mode is not (PsdColorMode.Bitmap or PsdColorMode.Indexed or PsdColorMode.Multichannel))
             {
                 // A file without layers is its stored image: it comes as one background layer, so it flattens to itself.
-                built[0] = Background(input, file, options, metadata, convert, ref inks);
+                built[0] = Background(input, file, options, metadata, convert, ref inks, out Raster? lab);
+                if (lab is not null)
+                {
+                    encoded[0] = lab;
+                }
             }
 
             List<PsdLayerImage> layers = [];
@@ -43,6 +53,11 @@ internal static class PsdLayerReader
                 (Raster? pixels, InkRaster? ink, PsdMask? mask) = built.Remove(r, out var made) ? made : default;
                 if (record.Info.Kind == PsdLayerKind.GroupEnd)
                 {
+                    if (encoded.Remove(r, out Raster? unused))
+                    {
+                        unused.Dispose();
+                    }
+
                     pixels?.Dispose();
                     ink?.Dispose();
                     mask?.Release();
@@ -52,7 +67,7 @@ internal static class PsdLayerReader
                 }
 
                 imageOf[r] = layers.Count;
-                PsdLayerImage layer = new(record, layers.Count, pixels, ink, mask);
+                PsdLayerImage layer = new(record, layers.Count, pixels, ink, mask) { Encoded = encoded.Remove(r, out Raster? lab) ? lab : null };
                 if (record.Info.Kind != PsdLayerKind.Layer && open.Count > 0)
                 {
                     foreach (int child in open[^1])
@@ -82,14 +97,20 @@ internal static class PsdLayerReader
                 mask?.Release();
             }
 
+            foreach (Raster lab in encoded.Values)
+            {
+                lab.Dispose();
+            }
+
             throw;
         }
     }
 
     /// <summary>Reads the stored composite of a file without layers as its one layer, named Background, in the layer's natural type.</summary>
     private static (Raster? Pixels, InkRaster? Ink, PsdMask? Mask) Background(
-        EgamiInput input, PsdFile file, ReaderOptions options, RasterMetadata metadata, Func<Raster, Raster>? convert, ref InkSet? inks)
+        EgamiInput input, PsdFile file, ReaderOptions options, RasterMetadata metadata, Func<Raster, Raster>? convert, ref InkSet? inks, out Raster? lab)
     {
+        lab = null;
         file.Records.Add(new PsdLayerRecord
         {
             Info = new PsdLayer("Background", new Rect(0, 0, file.Width, file.Height), 1, "norm", Operations.BlendMode.SourceOver, true, false, PsdLayerKind.Layer, 0),
@@ -151,6 +172,11 @@ internal static class PsdLayerReader
             (false, 32) => Read<RgbaF32>(input, rows, file),
             _ => Read<Rgba8>(input, rows, file),
         };
+        if (file.Mode == PsdColorMode.Lab)
+        {
+            lab = EncodeLab(pixels, file.Depth, input);
+        }
+
         if (convert is not null)
         {
             Raster converted = convert(pixels);
@@ -199,16 +225,16 @@ internal static class PsdLayerReader
     }
 
     /// <summary>Turns one layer's planes into its pixels and mask.</summary>
-    internal static (Raster? Pixels, InkRaster? Ink, PsdMask? Mask) Build(PsdPlaneSet planes, PsdFile file, EgamiInput input, InkSet? inks, Func<Raster, Raster>? convert)
+    /// <remarks>With <paramref name="encodedLab"/> a Lab layer's pixels are its Lab values as stored, which the flattener blends.</remarks>
+    internal static (Raster? Pixels, InkRaster? Ink, PsdMask? Mask) Build(
+        PsdPlaneSet planes, PsdFile file, EgamiInput input, InkSet? inks, Func<Raster, Raster>? convert, bool encodedLab = false)
     {
         PsdMask? mask = MaskOf(planes, file, input);
         Raster? pixels = null;
         InkRaster? ink = null;
         try
         {
-            bool hasPixels = planes.Width > 0 && planes.Height > 0 && planes.Record.Info.Kind == PsdLayerKind.Layer
-                && (planes.Alpha is not null || Array.Exists(planes.Color, c => c is not null));
-            if (hasPixels)
+            if (HasPixels(planes))
             {
                 if (file.Mode == PsdColorMode.Cmyk)
                 {
@@ -220,7 +246,7 @@ internal static class PsdLayerReader
                 }
                 else
                 {
-                    pixels = Pixels(planes, file, input);
+                    pixels = Pixels(planes, file, input, encodedLab);
                     if (convert is not null)
                     {
                         Raster converted = convert(pixels);
@@ -237,6 +263,39 @@ internal static class PsdLayerReader
             pixels?.Dispose();
             ink?.Dispose();
             mask?.Release();
+            throw;
+        }
+    }
+
+    private static bool HasPixels(PsdPlaneSet planes) => planes.Width > 0 && planes.Height > 0 && planes.Record.Info.Kind == PsdLayerKind.Layer
+        && (planes.Alpha is not null || Array.Exists(planes.Color, c => c is not null));
+
+    /// <summary>
+    /// Returns sRGB pixels as Lab encoded as Photoshop stores it at a depth, alpha kept, in floats so that the flattener gets
+    /// back the same sRGB.
+    /// </summary>
+    private static Raster<RgbaF32> EncodeLab(Raster pixels, int depth, EgamiInput input)
+    {
+        Raster<RgbaF32> raster = input.CreateRaster<RgbaF32>(pixels.Width, pixels.Height);
+        try
+        {
+            for (int y = 0; y < pixels.Height; y++)
+            {
+                Span<RgbaF32> row = raster.Row(y);
+                pixels.ReadRow(y, 0, row);
+                for (int x = 0; x < row.Length; x++)
+                {
+                    (double l, double a, double b) = PsdLab.FromSrgb(row[x].R, row[x].G, row[x].B);
+                    (l, a, b) = PsdLab.Encode(depth, l, a, b);
+                    row[x] = new RgbaF32((float)l, (float)a, (float)b, row[x].A);
+                }
+            }
+
+            return raster;
+        }
+        catch
+        {
+            raster.Dispose();
             throw;
         }
     }
@@ -332,8 +391,10 @@ internal static class PsdLayerReader
     }
 
     /// <summary>Builds the layer's raster in its natural type with straight alpha; missing color channels are 0, a missing transparency opaque.</summary>
-    private static Raster Pixels(PsdPlaneSet planes, PsdFile file, EgamiInput input)
+    /// <remarks>With <paramref name="encodedLab"/> a Lab layer keeps its Lab values as stored instead of sRGB.</remarks>
+    private static Raster Pixels(PsdPlaneSet planes, PsdFile file, EgamiInput input, bool encodedLab = false)
     {
+        bool lab = file.Mode == PsdColorMode.Lab && !encodedLab;
         int width = planes.Width, height = planes.Height, rowBytes = planes.RowBytes;
         bool gray = file.Mode is PsdColorMode.Grayscale or PsdColorMode.Duotone or PsdColorMode.Multichannel or PsdColorMode.Bitmap;
         switch (file.Depth)
@@ -373,7 +434,7 @@ internal static class PsdLayerReader
                                     row[(4 * x) + 1] = file.ColorData[256 + c0];
                                     row[(4 * x) + 2] = file.ColorData[512 + c0];
                                     break;
-                                case PsdColorMode.Lab:
+                                case PsdColorMode.Lab when lab:
                                     (double r, double g, double b) = PsdLab.ToSrgb(c0 * 100.0 / 255, (planes.Color[1]?[i] ?? 128) - 128.0, (planes.Color[2]?[i] ?? 128) - 128.0);
                                     row[4 * x] = PsdLab.Unorm8(r);
                                     row[(4 * x) + 1] = PsdLab.Unorm8(g);
@@ -419,7 +480,7 @@ internal static class PsdLayerReader
                         for (int x = 0; x < width; x++)
                         {
                             int i = (y * rowBytes) + (2 * x);
-                            if (file.Mode == PsdColorMode.Lab)
+                            if (lab)
                             {
                                 (double r, double g, double b) = PsdLab.ToSrgb(
                                     Sample16(planes.Color[0], i, 0) * 100.0 / 65535, (Sample16(planes.Color[1], i, 32768) - 32768.0) / 256, (Sample16(planes.Color[2], i, 32768) - 32768.0) / 256);
