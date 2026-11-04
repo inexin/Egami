@@ -499,7 +499,7 @@ internal sealed class DdsWriter : IFormatWriter, IMultiImageWriter, ITextureWrit
     }
 
     /// <summary>Turns working pixels into stored ones.</summary>
-    private static void Pack(DdsTextureFormat format, byte[] work, byte[] stored)
+    internal static void Pack(DdsTextureFormat format, byte[] work, byte[] stored)
     {
         switch (format)
         {

@@ -2,14 +2,14 @@
 
 KTX (Khronos Texture) is the texture container of OpenGL, Vulkan and glTF: a header that names the GPU format, then every mip
 level of every array layer, cube face and depth slice. KTX 1.1 (.ktx) names OpenGL formats; KTX 2.0 (.ktx2) names Vulkan formats,
-describes its colour in a data format descriptor and can compress each mip level again with Zstandard or zlib. Both read through
+describes its colour in a data format descriptor and can compress each mip level again with Zstandard or zlib. Both read, and KTX 2 writes, through
 the Egami.Formats.Extended package: register them with `WithKtx()` and `WithKtx2()`, or `WithExtendedFormats()`
 ([Extended formats](extended.md)). They are two formats, `KtxFormat` and `Ktx2Format`, with one set of options and details.
 
 | | |
 | --- | --- |
 | Reads | KTX 1.1 in both byte orders and KTX 2.0, uncompressed or Zstandard and zlib supercompressed: the 8, 16 and 32-bit UNORM, SNORM, sRGB, UINT, SINT and float formats, BGRA, the 565, 5551 and 4444 packed formats, A2B10G10R10, B10G11R11 and E5B9G9R9 floats, BC1 to BC7 with BC6H unsigned and signed, ETC1, ETC2 (RGB8, RGB8A1, RGBA8, UNORM and sRGB), EAC R11 and RG11 (unsigned and signed), ASTC in all 14 2D footprints, UNORM, sRGB and HDR (SFLOAT), and Basis Universal: ETC1S (BasisLZ, with or without an alpha slice, video included), UASTC LDR 4 × 4 and UASTC HDR 4 × 4. 1D and 2D textures, arrays, cube maps and volume textures, with their mips |
-| Writes | No |
+| Writes | KTX 2.0 only: 8-bit R, RG, RGB, RGBA and BGRA (UNORM and sRGB), 16-bit UNORM R, RG, RGB and RGBA, half-float RGBA, float R, RGB and RGBA, UINT and SINT in 8, 16 and 32 bits, D16 and D32 depth, A2B10G10R10, B10G11R11, E5B9G9R9 and the 565, 1555 and 4444 packed formats (not SNORM), BC1 to BC7 with BC6H, ETC1, ETC2, EAC (unsigned and signed), ASTC LDR in all 14 2D footprints, and Basis Universal ETC1S and UASTC LDR 4 × 4; mips, arrays, cube maps, Zstandard and zlib. [Texture](#textures) also writes volumes |
 | Natural pixel type | As [DDS](dds.md): `Rgba8` for BC1, BC2, BC3, BC7, ETC2 RGB8A1 and RGBA8, ASTC LDR, Basis Universal with alpha and 8-bit RGBA; `Gray8` for BC4 and R8; `Rgb8` for BC5, ETC1, ETC2 RGB8, Basis Universal without alpha, RG8 and RGB8; `Gray16` for EAC R11; `Rgb16` for EAC RG11; `Rgba16` for 16-bit UNORM; `RgbaF16` for BC6H, ASTC HDR, UASTC HDR, half floats and the packed floats; `RgbaF32` for 32-bit floats; `Bgr565`, `Bgra5551` and `Bgra4444` for the packed formats. A swizzle that moves channels widens the type to its RGBA form |
 | `FormatInfo` | `KtxFormat.Info`: name `KTX`, extension `.ktx`, MIME type `image/ktx`. `Ktx2Format.Info`: name `KTX2`, extension `.ktx2`, MIME type `image/ktx2` |
 
@@ -80,6 +80,55 @@ is tagged sRGB. Colours the descriptor marks premultiplied are un-premultiplied 
 which surface and mip the raster is.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/FormatsExtended.cs#ktx-details)]
+
+## Writing
+
+`Ktx2WriterOptions` mirrors `DdsWriterOptions`. With no options a raster is written in the uncompressed format nearest its
+pixel type (`R8G8B8A8` for `Rgba8`, `R8` for `Gray8`, `R16G16B16A16_SFLOAT` for half floats and so on), with the full mip chain
+and no supercompression. A raster loaded from KTX, KTX 2 or DDS keeps its file's format when the writer has it, ETC1S and UASTC
+included; a block format is otherwise only chosen with `Ktx2WriterOptions.Format`, a `KtxTextureFormat`:
+
+| Family | Formats | Encoder |
+| --- | --- | --- |
+| BC | `Bc1` to `Bc5`, `Bc6h`, `Bc6hSigned`, `Bc7` | The DDS writer's encoders |
+| ETC | `Etc1`, `Etc2Rgb`, `Etc2RgbA1`, `Etc2Rgba`, `EacR11`, `EacRg11` and their signed forms | Mode search for ETC1, plus T, H and planar for ETC2 from effort 3 up; EAC is a table search |
+| ASTC | `Astc4x4` to `Astc12x12`, LDR | Partition, block mode and weight search; ASTC HDR is not encoded |
+| Basis Universal | `Etc1s`, `Uastc` | ETC1S codebooks (`BasisQuality`, 1 to 255) with BasisLZ; UASTC's 19 modes with transcoder hints and optional RDO (`UastcRdo`) |
+
+`Effort` runs 0 (fastest) to 6 (best) and defaults to 4. `Srgb` picks a format's _SRGB form; left `null`, it follows the
+source file, or else the raster's tag: an untagged raster is sRGB, as Egami reads it, and a linear one is not. Formats with no
+sRGB form write UNORM. `MipLevels` is 0 for the full chain, made with `MipChain` (premultiplied, in linear light for sRGB), or
+that many; integer and depth formats write mip 0 alone unless a count is given. `Supercompression` is `Zstandard` or `Zlib` with an optional `CompressionLevel`; ETC1S is always BasisLZ. `Cube` makes
+SaveAll write cube maps (six faces a cube, a cube map array for more); without it SaveAll writes a texture array.
+`PremultipliedAlpha` premultiplies the colour and flags it so.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/FormatsExtended.cs#ktx-save)]
+
+The data format descriptor is the one KTX-Software writes for the format, with the primaries and transfer function of the
+raster's tag (`ColorCodePoints` such as Display P3 or BT.2100 PQ go in as KHR_DF values). The key/value data holds
+`KTXorientation` (`rd`, or `rdi` for a volume) and `KTXwriter`. Every file the writer makes in the test corpus passes
+`ktx validate`, and libktx reads back the same level data; `tools/make-ktx-references.py --written` checks them again. The
+output is the same for any number of threads: blocks encode on their own, ETC1S builds its codebooks deterministically and
+UASTC's rate-distortion pass works in fixed bands.
+
+Recipes:
+
+- **glTF and the web:** `Uastc` with `UastcRdo` 1 to 4 and `Zstandard` for colour that must look right; `Etc1s` at
+  `BasisQuality` 64 to 128 for the smallest downloads. Viewers transcode both to the GPU's own format.
+- **Desktop:** `Bc7` for colour, `Bc5` for normal maps, `Bc4` for masks, `Bc6h` for HDR.
+- **Mobile:** `Astc6x6` (or `Astc4x4` for more quality, `Astc8x8` for less space) on recent GPUs, `Etc2Rgba` or `Etc2Rgb` where
+  ASTC is missing, `EacRg11` for normal maps.
+
+## Textures
+
+`Texture` (namespace `Egami.Formats.Extended.Textures`) holds a whole texture: every layer, cube face and depth slice at every
+mip, loaded with `Texture.Load` from DDS, KTX or KTX 2 whether or not the formats are registered. `GetImage` and `SetImage` reach
+one image by mip, layer, face and slice; `GenerateMips` makes the mips again from mip 0 (2D textures and cube maps) and
+`TrimMips` drops the smallest. `Save` writes DDS or KTX 2 with exactly the mips the texture holds, so a texture with hand-made
+mips, or a volume, survives a round trip; the writer options choose the format as for a raster. A volume saves to either
+format, an array of volumes only to KTX 2. `Texture.FromSurfaces` and `Texture.FromSlices` build one from rasters.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/FormatsExtended.cs#texture)]
 
 ## Streaming and damaged files
 

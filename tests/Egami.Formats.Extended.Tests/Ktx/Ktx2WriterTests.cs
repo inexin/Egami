@@ -23,7 +23,10 @@ public class Ktx2WriterTests
         KtxTextureFormat.Rgba8, KtxTextureFormat.Bgra8, KtxTextureFormat.Rgb8, KtxTextureFormat.R8, KtxTextureFormat.Rg8, KtxTextureFormat.R16,
         KtxTextureFormat.Rg16, KtxTextureFormat.Rgb16, KtxTextureFormat.Rgba16, KtxTextureFormat.RgbaF16, KtxTextureFormat.R32F, KtxTextureFormat.RgbF32,
         KtxTextureFormat.RgbaF32, KtxTextureFormat.Rgb10A2, KtxTextureFormat.R11G11B10F, KtxTextureFormat.Rgb9E5, KtxTextureFormat.Bgr565,
-        KtxTextureFormat.Bgra5551, KtxTextureFormat.Bgra4444,
+        KtxTextureFormat.Bgra5551, KtxTextureFormat.Bgra4444, KtxTextureFormat.R8UInt, KtxTextureFormat.R8SInt, KtxTextureFormat.Rg8UInt,
+        KtxTextureFormat.Rg8SInt, KtxTextureFormat.Rgba8UInt, KtxTextureFormat.Rgba8SInt, KtxTextureFormat.R16UInt, KtxTextureFormat.R16SInt,
+        KtxTextureFormat.Rg16UInt, KtxTextureFormat.Rg16SInt, KtxTextureFormat.Rgba16UInt, KtxTextureFormat.Rgba16SInt, KtxTextureFormat.D16,
+        KtxTextureFormat.D32F,
     ];
 
     /// <summary>Every block format with the PSNR its 37 × 23 photo keeps at effort 4, over the channels it stores.</summary>
@@ -66,6 +69,45 @@ public class Ktx2WriterTests
 
         Assert.Empty(loaded.Metadata.Warnings);
         Assert.Equal(KtxSupercompression.None, Details(file).Supercompression);
+    }
+
+    [Theory]
+    [InlineData(KtxTextureFormat.R32UInt)]
+    [InlineData(KtxTextureFormat.R32SInt)]
+    [InlineData(KtxTextureFormat.Rg32UInt)]
+    [InlineData(KtxTextureFormat.Rgb32SInt)]
+    [InlineData(KtxTextureFormat.Rgba32UInt)]
+    [InlineData(KtxTextureFormat.Rgba32SInt)]
+    public void RoundTrips32BitIntegers(KtxTextureFormat format)
+    {
+        // The reader gives 32-bit integers as floats; whole numbers come back exactly, and the integer formats keep mip 0 alone.
+        // A one-channel format stores the raster's gray, so its test colours are grays.
+        int channels = format.ToString().StartsWith("Rgba", StringComparison.Ordinal) ? 4 : format.ToString().StartsWith("Rgb", StringComparison.Ordinal) ? 3
+            : format.ToString().StartsWith("Rg", StringComparison.Ordinal) ? 2 : 1;
+        using Raster<RgbaF32> values = Raster.Create<RgbaF32>(5, 3);
+        for (int y = 0; y < values.Height; y++)
+        {
+            for (int x = 0; x < values.Width; x++)
+            {
+                values.Row(y)[x] = channels == 1 ? new RgbaF32(x * 1000, x * 1000, x * 1000, 1) : new RgbaF32(x * 1000, y * 7, x + y, 3);
+            }
+        }
+
+        byte[] file = Save(values, new Ktx2WriterOptions { Format = format });
+        Assert.Equal(1, Details(file).MipLevels);
+        using Raster<RgbaF32> back = Raster.Load<RgbaF32>(file, Context);
+        for (int y = 0; y < values.Height; y++)
+        {
+            for (int x = 0; x < values.Width; x++)
+            {
+                RgbaF32 e = values.Row(y)[x], a = back.Row(y)[x];
+                float[] expected = [e.R, e.G, e.B, e.A], actual = [a.R, a.G, a.B, a.A];
+                for (int c = 0; c < channels; c++)
+                {
+                    Assert.Equal(expected[c], actual[c]);
+                }
+            }
+        }
     }
 
     [Theory]
@@ -452,7 +494,8 @@ public class Ktx2WriterTests
     {
         Raster<Rgba8> expected = format switch
         {
-            KtxTextureFormat.R8 or KtxTextureFormat.R16 or KtxTextureFormat.R32F => colors.As<Gray8>().As<Rgba8>(),
+            KtxTextureFormat.R8 or KtxTextureFormat.R16 or KtxTextureFormat.R32F or KtxTextureFormat.R8UInt or KtxTextureFormat.R8SInt
+                or KtxTextureFormat.R16UInt or KtxTextureFormat.R16SInt or KtxTextureFormat.D16 or KtxTextureFormat.D32F => colors.As<Gray8>().As<Rgba8>(),
             KtxTextureFormat.Rgb10A2 => colors.As<Rgb10A2>().As<Rgba8>(),
             KtxTextureFormat.Bgr565 => colors.As<Bgr565>().As<Rgba8>(),
             KtxTextureFormat.Bgra5551 => colors.As<Bgra5551>().As<Rgba8>(),
@@ -467,7 +510,8 @@ public class Ktx2WriterTests
                 row[x] = format switch
                 {
                     KtxTextureFormat.Rgb8 or KtxTextureFormat.Rgb16 or KtxTextureFormat.RgbF32 or KtxTextureFormat.R11G11B10F or KtxTextureFormat.Rgb9E5 => row[x] with { A = 255 },
-                    KtxTextureFormat.Rg8 or KtxTextureFormat.Rg16 => row[x] with { B = 0, A = 255 },
+                    KtxTextureFormat.Rg8 or KtxTextureFormat.Rg16 or KtxTextureFormat.Rg8UInt or KtxTextureFormat.Rg8SInt or KtxTextureFormat.Rg16UInt
+                        or KtxTextureFormat.Rg16SInt => row[x] with { B = 0, A = 255 },
                     _ => row[x],
                 };
             }

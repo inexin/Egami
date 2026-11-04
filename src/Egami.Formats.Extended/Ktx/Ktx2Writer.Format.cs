@@ -1,5 +1,6 @@
 using System.Buffers.Binary;
 
+using Egami.Formats.Extended.Dds;
 using Egami.Formats.Extended.Textures;
 using Egami.Metadata;
 
@@ -26,7 +27,7 @@ internal sealed partial class Ktx2Writer
         BinaryPrimitives.WriteUInt16LittleEndian(d[8..], 2);
         BinaryPrimitives.WriteUInt16LittleEndian(d[10..], (ushort)(24 + (16 * samples.Length)));
         d[12] = target.Model;
-        d[13] = Primaries(metadata);
+        d[13] = target.IsDepth ? (byte)0 : Primaries(metadata);
         d[14] = srgb ? (byte)2 : Transfer(metadata);
         d[15] = premultiplied ? (byte)1 : (byte)0;
         if (target.IsBlock)
@@ -128,6 +129,28 @@ internal sealed partial class Ktx2Writer
             KtxTextureFormat.EacRg11Signed => [new(0, 64, Signed, 0x80000000, 0x7FFFFFFF), new(64, 64, Signed | 1, 0x80000000, 0x7FFFFFFF)],
             KtxTextureFormat.Etc1s => alpha ? [new(0, 64, 0, 0, Max), new(64, 64, 0xF, 0, Max)] : [new(0, 64, 0, 0, Max)],
             KtxTextureFormat.Uastc => [new(0, 128, alpha ? (byte)3 : (byte)0, 0, Max)],
+            KtxTextureFormat.R8UInt => Integers(8, false, 0),
+            KtxTextureFormat.R8SInt => Integers(8, true, 0),
+            KtxTextureFormat.Rg8UInt => Integers(8, false, 0, 1),
+            KtxTextureFormat.Rg8SInt => Integers(8, true, 0, 1),
+            KtxTextureFormat.Rgba8UInt => Integers(8, false, 0, 1, 2, 0xF),
+            KtxTextureFormat.Rgba8SInt => Integers(8, true, 0, 1, 2, 0xF),
+            KtxTextureFormat.R16UInt => Integers(16, false, 0),
+            KtxTextureFormat.R16SInt => Integers(16, true, 0),
+            KtxTextureFormat.Rg16UInt => Integers(16, false, 0, 1),
+            KtxTextureFormat.Rg16SInt => Integers(16, true, 0, 1),
+            KtxTextureFormat.Rgba16UInt => Integers(16, false, 0, 1, 2, 0xF),
+            KtxTextureFormat.Rgba16SInt => Integers(16, true, 0, 1, 2, 0xF),
+            KtxTextureFormat.R32UInt => Integers(32, false, 0),
+            KtxTextureFormat.R32SInt => Integers(32, true, 0),
+            KtxTextureFormat.Rg32UInt => Integers(32, false, 0, 1),
+            KtxTextureFormat.Rg32SInt => Integers(32, true, 0, 1),
+            KtxTextureFormat.Rgb32UInt => Integers(32, false, 0, 1, 2),
+            KtxTextureFormat.Rgb32SInt => Integers(32, true, 0, 1, 2),
+            KtxTextureFormat.Rgba32UInt => Integers(32, false, 0, 1, 2, 0xF),
+            KtxTextureFormat.Rgba32SInt => Integers(32, true, 0, 1, 2, 0xF),
+            KtxTextureFormat.D16 => Unorm((14, 16)),
+            KtxTextureFormat.D32F => Floats(32, 14),
             _ => [new(0, 128, 0, 0, Max)], // BC7 and ASTC
         };
 
@@ -139,6 +162,17 @@ internal sealed partial class Ktx2Writer
             {
                 samples[i] = new(offset, channels[i].Bits, (byte)channels[i].Channel, 0, (uint)((1L << channels[i].Bits) - 1));
                 offset += channels[i].Bits;
+            }
+
+            return samples;
+        }
+
+        static Sample[] Integers(int bits, bool signed, params ReadOnlySpan<byte> channels)
+        {
+            Sample[] samples = new Sample[channels.Length];
+            for (int i = 0; i < channels.Length; i++)
+            {
+                samples[i] = new(i * bits, bits, (byte)(channels[i] | (signed ? Signed : 0)), signed ? Max : 0, 1);
             }
 
             return samples;
@@ -167,6 +201,14 @@ internal sealed partial class Ktx2Writer
         public bool HasSrgb => SrgbVk != 0 || Format is KtxTextureFormat.Etc1s or KtxTextureFormat.Uastc;
 
         public bool IsAstc => Format is >= KtxTextureFormat.Astc4x4 and <= KtxTextureFormat.Astc12x12;
+
+        /// <summary>Gets whether the format holds integer or depth data, which averaged mips would corrupt.</summary>
+        public bool IsData => Format is >= KtxTextureFormat.R8UInt and <= KtxTextureFormat.D32F;
+
+        public bool IsDepth => Format is KtxTextureFormat.D16 or KtxTextureFormat.D32F;
+
+        /// <summary>Gets the DDS format whose packing makes the stored pixels, for the integer and depth formats.</summary>
+        public DdsTextureFormat? Pack { get; init; }
 
         public int VkFor(bool srgb) => srgb && SrgbVk != 0 ? SrgbVk : Vk;
 
@@ -216,6 +258,28 @@ internal sealed partial class Ktx2Writer
                 KtxTextureFormat.EacRg11Signed => Block(format, 156, 0, TextureNatural.Rgb16, 16, 161),
                 KtxTextureFormat.Etc1s => Block(format, 0, 0, TextureNatural.Rgba8, 8, 163),
                 KtxTextureFormat.Uastc => Block(format, 0, 0, TextureNatural.Rgba8, 16, 166),
+                KtxTextureFormat.R8UInt => Plain(format, 13, 0, TextureNatural.Gray8, 1, 1) with { Pack = DdsTextureFormat.R8UInt },
+                KtxTextureFormat.R8SInt => Plain(format, 14, 0, TextureNatural.Gray8, 1, 1) with { Pack = DdsTextureFormat.R8SInt },
+                KtxTextureFormat.Rg8UInt => Plain(format, 20, 0, TextureNatural.Rgb8, 2, 1) with { Pack = DdsTextureFormat.Rg8UInt },
+                KtxTextureFormat.Rg8SInt => Plain(format, 21, 0, TextureNatural.Rgb8, 2, 1) with { Pack = DdsTextureFormat.Rg8SInt },
+                KtxTextureFormat.Rgba8UInt => Plain(format, 41, 0, TextureNatural.Rgba8, 4, 1) with { Pack = DdsTextureFormat.Rgba8UInt },
+                KtxTextureFormat.Rgba8SInt => Plain(format, 42, 0, TextureNatural.Rgba8, 4, 1) with { Pack = DdsTextureFormat.Rgba8SInt },
+                KtxTextureFormat.R16UInt => Plain(format, 74, 0, TextureNatural.Gray16, 2, 2) with { Pack = DdsTextureFormat.R16UInt },
+                KtxTextureFormat.R16SInt => Plain(format, 75, 0, TextureNatural.Gray16, 2, 2) with { Pack = DdsTextureFormat.R16SInt },
+                KtxTextureFormat.Rg16UInt => Plain(format, 81, 0, TextureNatural.Rgb16, 4, 2) with { Pack = DdsTextureFormat.Rg16UInt },
+                KtxTextureFormat.Rg16SInt => Plain(format, 82, 0, TextureNatural.Rgb16, 4, 2) with { Pack = DdsTextureFormat.Rg16SInt },
+                KtxTextureFormat.Rgba16UInt => Plain(format, 95, 0, TextureNatural.Rgba16, 8, 2) with { Pack = DdsTextureFormat.Rgba16UInt },
+                KtxTextureFormat.Rgba16SInt => Plain(format, 96, 0, TextureNatural.Rgba16, 8, 2) with { Pack = DdsTextureFormat.Rgba16SInt },
+                KtxTextureFormat.R32UInt => Plain(format, 98, 0, TextureNatural.GrayF32, 4, 4) with { Pack = DdsTextureFormat.R32UInt },
+                KtxTextureFormat.R32SInt => Plain(format, 99, 0, TextureNatural.GrayF32, 4, 4) with { Pack = DdsTextureFormat.R32SInt },
+                KtxTextureFormat.Rg32UInt => Plain(format, 101, 0, TextureNatural.RgbF32, 8, 4) with { Pack = DdsTextureFormat.Rg32UInt },
+                KtxTextureFormat.Rg32SInt => Plain(format, 102, 0, TextureNatural.RgbF32, 8, 4) with { Pack = DdsTextureFormat.Rg32SInt },
+                KtxTextureFormat.Rgb32UInt => Plain(format, 104, 0, TextureNatural.RgbF32, 12, 4) with { Pack = DdsTextureFormat.Rgb32UInt },
+                KtxTextureFormat.Rgb32SInt => Plain(format, 105, 0, TextureNatural.RgbF32, 12, 4) with { Pack = DdsTextureFormat.Rgb32SInt },
+                KtxTextureFormat.Rgba32UInt => Plain(format, 107, 0, TextureNatural.RgbaF32, 16, 4) with { Pack = DdsTextureFormat.Rgba32UInt },
+                KtxTextureFormat.Rgba32SInt => Plain(format, 108, 0, TextureNatural.RgbaF32, 16, 4) with { Pack = DdsTextureFormat.Rgba32SInt },
+                KtxTextureFormat.D16 => Plain(format, 124, 0, TextureNatural.Gray16, 2, 2) with { Pack = DdsTextureFormat.D16 },
+                KtxTextureFormat.D32F => Plain(format, 126, 0, TextureNatural.GrayF32, 4, 4) with { Pack = DdsTextureFormat.D32F },
                 _ => throw new ArgumentOutOfRangeException(nameof(format), format, "The KTX 2 format is not defined."),
             };
 

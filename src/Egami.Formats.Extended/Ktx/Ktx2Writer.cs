@@ -55,7 +55,7 @@ internal sealed partial class Ktx2Writer : IFormatWriter, IMultiImageWriter, ITe
         }
 
         int full = 1 + (int)Math.Log2(Math.Max(first.Width, first.Height));
-        int mips = ktx.MipLevels == 0 ? full : Math.Min(ktx.MipLevels, full);
+        int mips = ktx.MipLevels == 0 ? (Choose(ktx, first).IsData ? 1 : full) : Math.Min(ktx.MipLevels, full);
         int layers = ktx.Cube ? rasters.Count / 6 : rasters.Count;
         Write(output, ktx, rasters, first.Width, first.Height, 0, layers > 1 ? layers : 0, ktx.Cube ? 6 : 1, mips, _ => rasters.Count, srgb => Chains(rasters, mips, srgb));
     }
@@ -118,7 +118,7 @@ internal sealed partial class Ktx2Writer : IFormatWriter, IMultiImageWriter, ITe
         Raster first = surfaces[0];
         KtxDetails? ktxSource = first.Metadata.FormatDetails as KtxDetails;
         DdsDetails? ddsSource = first.Metadata.FormatDetails as DdsDetails;
-        Target target = Target.For(ktx.Format ?? FromKtx(ktxSource) ?? FromDds(ddsSource) ?? FromPixels(first.Layout));
+        Target target = Choose(ktx, first);
         bool srgb = ktx.Srgb ?? ktxSource?.IsSrgb ?? ddsSource?.IsSrgb ?? TaggedSrgb(first.Metadata);
         if (srgb && !target.HasSrgb)
         {
@@ -205,6 +205,10 @@ internal sealed partial class Ktx2Writer : IFormatWriter, IMultiImageWriter, ITe
         byte[] kvd = KeyValues(depth > 0 ? "rdi" : "rd");
         Assemble(output, target.VkFor(srgb), target, width, height, depth, layers, faces, scheme, dfd, kvd, globalData, levels, uncompressed);
     }
+
+    /// <summary>Returns the format to write: the options', a KTX or DDS source's own, or the one nearest the pixel type.</summary>
+    private static Target Choose(Ktx2WriterOptions ktx, Raster first) =>
+        Target.For(ktx.Format ?? FromKtx(first.Metadata.FormatDetails as KtxDetails) ?? FromDds(first.Metadata.FormatDetails as DdsDetails) ?? FromPixels(first.Layout));
 
     /// <summary>Returns whether any pixel of a raster with an alpha channel is not opaque.</summary>
     private static bool HasTransparency(Raster raster)
@@ -350,7 +354,15 @@ internal sealed partial class Ktx2Writer : IFormatWriter, IMultiImageWriter, ITe
         if (!target.IsBlock)
         {
             byte[] stored = new byte[(long)width * height * target.PixelBytes];
-            Pack(target.Format, work, stored);
+            if (target.Pack is DdsTextureFormat dds)
+            {
+                DdsWriter.Pack(dds, work, stored);
+            }
+            else
+            {
+                Pack(target.Format, work, stored);
+            }
+
             return stored;
         }
 

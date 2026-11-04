@@ -171,6 +171,72 @@ public enum KtxTextureFormat
     /// <see cref="KtxSupercompression.Zstandard"/> and <see cref="Ktx2WriterOptions.UastcRdo"/>.
     /// </summary>
     Uastc,
+
+    /// <summary>R8_UINT: unsigned integers.</summary>
+    R8UInt,
+
+    /// <summary>R8_SINT: signed integers. The raster's 0 to the full scale map to the type's minimum to maximum, as the reader maps back.</summary>
+    R8SInt,
+
+    /// <summary>R8G8_UINT: unsigned integers.</summary>
+    Rg8UInt,
+
+    /// <summary>R8G8_SINT: signed integers. The raster's 0 to the full scale map to the type's minimum to maximum, as the reader maps back.</summary>
+    Rg8SInt,
+
+    /// <summary>R8G8B8A8_UINT: unsigned integers.</summary>
+    Rgba8UInt,
+
+    /// <summary>R8G8B8A8_SINT: signed integers. The raster's 0 to the full scale map to the type's minimum to maximum, as the reader maps back.</summary>
+    Rgba8SInt,
+
+    /// <summary>R16_UINT: unsigned integers.</summary>
+    R16UInt,
+
+    /// <summary>R16_SINT: signed integers. The raster's 0 to the full scale map to the type's minimum to maximum, as the reader maps back.</summary>
+    R16SInt,
+
+    /// <summary>R16G16_UINT: unsigned integers.</summary>
+    Rg16UInt,
+
+    /// <summary>R16G16_SINT: signed integers. The raster's 0 to the full scale map to the type's minimum to maximum, as the reader maps back.</summary>
+    Rg16SInt,
+
+    /// <summary>R16G16B16A16_UINT: unsigned integers.</summary>
+    Rgba16UInt,
+
+    /// <summary>R16G16B16A16_SINT: signed integers. The raster's 0 to the full scale map to the type's minimum to maximum, as the reader maps back.</summary>
+    Rgba16SInt,
+
+    /// <summary>R32_UINT: unsigned integers. The raster's float values round to the nearest integer and clamp to the type's range.</summary>
+    R32UInt,
+
+    /// <summary>R32_SINT: signed integers. The raster's float values round to the nearest integer and clamp to the type's range.</summary>
+    R32SInt,
+
+    /// <summary>R32G32_UINT: unsigned integers. The raster's float values round to the nearest integer and clamp to the type's range.</summary>
+    Rg32UInt,
+
+    /// <summary>R32G32_SINT: signed integers. The raster's float values round to the nearest integer and clamp to the type's range.</summary>
+    Rg32SInt,
+
+    /// <summary>R32G32B32_UINT: unsigned integers. The raster's float values round to the nearest integer and clamp to the type's range.</summary>
+    Rgb32UInt,
+
+    /// <summary>R32G32B32_SINT: signed integers. The raster's float values round to the nearest integer and clamp to the type's range.</summary>
+    Rgb32SInt,
+
+    /// <summary>R32G32B32A32_UINT: unsigned integers. The raster's float values round to the nearest integer and clamp to the type's range.</summary>
+    Rgba32UInt,
+
+    /// <summary>R32G32B32A32_SINT: signed integers. The raster's float values round to the nearest integer and clamp to the type's range.</summary>
+    Rgba32SInt,
+
+    /// <summary>D16_UNORM: 16-bit depth, the raster's gray.</summary>
+    D16,
+
+    /// <summary>D32_SFLOAT: float depth, the raster's gray.</summary>
+    D32F,
 }
 
 /// <summary>Options for writing KTX 2.</summary>
@@ -203,7 +269,8 @@ public sealed class Ktx2WriterOptions : WriterOptions
     /// <summary>
     /// Gets how many mip levels to write: 0 (the default) for the full chain down to 1 × 1, 1 for mip 0 alone, or that many, at
     /// most the full chain. Mips average 2 × 2 blocks of premultiplied pixels (<see cref="MipChain"/>), in linear light for an
-    /// sRGB format.
+    /// sRGB format. An integer or depth format writes mip 0 alone unless a count is given, since averaging its values rarely
+    /// means anything.
     /// </summary>
     /// <exception cref="ArgumentOutOfRangeException">The value is negative.</exception>
     public int MipLevels
