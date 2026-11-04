@@ -541,7 +541,7 @@ internal sealed class JxlWeightedPredictor
 
         // Clamped to the neighbours when the errors agree in sign; this and the largest error below avoid branches, which the
         // data would mispredict.
-        long clamped = Min(Max(prediction, Min(n3, Min(w3, ne3))), Max(n3, Max(w3, ne3)));
+        long clamped = JxlBranchFree.Clamp(prediction, JxlBranchFree.Min(n3, JxlBranchFree.Min(w3, ne3)), JxlBranchFree.Max(n3, JxlBranchFree.Max(w3, ne3)));
         long agree = (((errN ^ errW) | (errN ^ errNw)) - 1) >> 63;
         prediction ^= (prediction ^ clamped) & agree;
         MaxError = (int)LargestError(errW, errN, errNw, errNe);
@@ -620,7 +620,7 @@ internal sealed class JxlWeightedPredictor
     private static long LargestError(long errW, long errN, long errNw, long errNe)
     {
         long largest = errW;
-        long magnitude = AbsL(errW);
+        long magnitude = JxlBranchFree.Abs(errW);
         Larger(ref largest, ref magnitude, errN);
         Larger(ref largest, ref magnitude, errNw);
         Larger(ref largest, ref magnitude, errNe);
@@ -630,33 +630,12 @@ internal sealed class JxlWeightedPredictor
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static void Larger(ref long largest, ref long magnitude, long e)
     {
-        long a = AbsL(e);
+        long a = JxlBranchFree.Abs(e);
         long more = (magnitude - a) >> 63;
         largest ^= (largest ^ e) & more;
         magnitude ^= (magnitude ^ a) & more;
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static long AbsL(long v)
-    {
-        long m = v >> 63;
-        return (v ^ m) - m;
-    }
-
-    // Branch-free minimum and maximum, for values far from the ends of the range.
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static long Min(long a, long b)
-    {
-        long d = a - b;
-        return b + (d & (d >> 63));
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static long Max(long a, long b)
-    {
-        long d = a - b;
-        return a - (d & (d >> 63));
-    }
 
     /// <summary>
     /// Predicts every sample of row <paramref name="y"/> of a channel whose samples are all known, the encoder's case, and
@@ -742,7 +721,7 @@ internal sealed class JxlWeightedPredictor
                 long sw = ((long)sum >> 1) - 1 + (s0 * w0) + (s1 * w1) + (s2 * w2) + (s3 * w3w);
                 long predicted = (sw * Divide(sum)) >> 24;
 
-                long clamped = Min(Max(predicted, Min(n3, Min(w3, ne3))), Max(n3, Max(w3, ne3)));
+                long clamped = JxlBranchFree.Clamp(predicted, JxlBranchFree.Min(n3, JxlBranchFree.Min(w3, ne3)), JxlBranchFree.Max(n3, JxlBranchFree.Max(w3, ne3)));
                 long agree = ((long)((errN ^ errW) | (errN ^ errNw)) - 1) >> 63;
                 predicted ^= (predicted ^ clamped) & agree;
 
@@ -754,10 +733,10 @@ internal sealed class JxlWeightedPredictor
                 // Record.
                 long s8 = (long)Unsafe.Add(ref pc, x) << 3;
                 int trueErr = (int)(predicted - s8);
-                uint e0 = (uint)((AbsL(s0 - s8) + 3) >> 3);
-                uint e1 = (uint)((AbsL(s1 - s8) + 3) >> 3);
-                uint e2 = (uint)((AbsL(s2 - s8) + 3) >> 3);
-                uint e3 = (uint)((AbsL(s3 - s8) + 3) >> 3);
+                uint e0 = (uint)((JxlBranchFree.Abs(s0 - s8) + 3) >> 3);
+                uint e1 = (uint)((JxlBranchFree.Abs(s1 - s8) + 3) >> 3);
+                uint e2 = (uint)((JxlBranchFree.Abs(s2 - s8) + 3) >> 3);
+                uint e3 = (uint)((JxlBranchFree.Abs(s3 - s8) + 3) >> 3);
                 ref uint here = ref Unsafe.Add(ref errors, 5 * x);
                 here = (uint)trueErr;
                 Unsafe.Add(ref here, 1) = e0;
@@ -838,4 +817,36 @@ internal sealed class JxlWeightedPredictor
         299593, 294337, 289262, 284359, 279620, 275036, 270600, 266305,
         262144,
     ];
+}
+
+/// <summary>
+/// Minimum, maximum and magnitude without branches, for hot loops whose data would mispredict them; the values must be far
+/// enough from the ends of the range that their difference does not overflow.
+/// </summary>
+internal static class JxlBranchFree
+{
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal static long Min(long a, long b)
+    {
+        long d = a - b;
+        return b + (d & (d >> 63));
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal static long Max(long a, long b)
+    {
+        long d = a - b;
+        return a - (d & (d >> 63));
+    }
+
+    /// <summary>Clamps <paramref name="v"/> to <paramref name="min"/> and <paramref name="max"/>, which must be in order.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal static long Clamp(long v, long min, long max) => Min(Max(v, min), max);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal static long Abs(long v)
+    {
+        long m = v >> 63;
+        return (v ^ m) - m;
+    }
 }

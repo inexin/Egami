@@ -1164,9 +1164,10 @@ internal sealed class JxlModularEncoder
     /// <summary>One channel's part of <see cref="EstimateCost"/>.</summary>
     private static (long Histo, float Frac, long Extra) ChannelCost(JxlChannel ch)
     {
-        // The context is the number of cutoffs (0, 1, 3, 5, ..., 500) the spread is below, looked up for spreads up to 500.
+        // The context is the number of cutoffs (0, 1, 3, 5, ..., 500) the spread is below, looked up for spreads up to 500;
+        // entry 501 stands for every larger spread.
         ReadOnlySpan<uint> cutoffs = [0, 1, 3, 5, 7, 11, 15, 23, 31, 47, 63, 95, 127, 191, 255, 392, 500];
-        Span<byte> contextOf = stackalloc byte[501];
+        Span<byte> contextOf = stackalloc byte[502];
         for (int v = 0; v <= 500; v++)
         {
             int ctx = 0;
@@ -1177,6 +1178,8 @@ internal sealed class JxlModularEncoder
 
             contextOf[v] = (byte)ctx;
         }
+
+        contextOf[501] = 0;
 
         const int Tokens = 256;
         long histoCost = 0;
@@ -1189,6 +1192,12 @@ internal sealed class JxlModularEncoder
             for (int y = 0; y < ch.Height; y++)
             {
                 int row = y * w;
+                if (y > 0 && w > 1)
+                {
+                    extra += CostRow(d, row, w, contextOf, histo);
+                    continue;
+                }
+
                 for (int x = 0; x < w; x++)
                 {
                     int at = row + x;
@@ -1229,6 +1238,40 @@ internal sealed class JxlModularEncoder
         }
 
         return (histoCost, frac, extra);
+    }
+
+    /// <summary>
+    /// Counts a row below the first into <see cref="ChannelCost"/>'s histograms, without branches the data would mispredict,
+    /// and gives back its raw bits.
+    /// </summary>
+    private static long CostRow(int[] data, int row, int width, ReadOnlySpan<byte> contextOf, int[] histo)
+    {
+        ref int d = ref MemoryMarshal.GetArrayDataReference(data);
+        ref int h = ref MemoryMarshal.GetArrayDataReference(histo);
+        ref byte contexts = ref MemoryMarshal.GetReference(contextOf);
+        long extra = 0;
+        int up = row - width;
+        for (int x = 0; x < width; x++)
+        {
+            // The first column's left and top-left are its top.
+            long top = Unsafe.Add(ref d, up + x);
+            long left = x > 0 ? Unsafe.Add(ref d, row + x - 1) : top;
+            long topleft = x > 0 ? Unsafe.Add(ref d, up + x - 1) : top;
+            long max = JxlBranchFree.Max(left, JxlBranchFree.Max(top, topleft));
+            long min = JxlBranchFree.Min(left, JxlBranchFree.Min(top, topleft));
+            int ctx = Unsafe.Add(ref contexts, (nint)JxlBranchFree.Min(max - min, 501));
+            long grad = JxlBranchFree.Clamp(top + left - topleft, min, max);
+            uint v = JxlTreeLearner.PackSigned(unchecked(Unsafe.Add(ref d, row + x) - (int)grad));
+
+            // The 4, 2, 0 hybrid integer token and raw bits; values below 16 are their own token.
+            int n = System.Numerics.BitOperations.Log2(v | 16);
+            long large = (15L - v) >> 63;
+            uint tok = (uint)(v ^ ((v ^ (uint)(16 + ((n - 4) << 2) + ((v - (1u << n)) >> (n - 2)))) & (uint)large));
+            extra += (n - 2) & large;
+            Unsafe.Add(ref h, (ctx * 256) + (int)tok)++;
+        }
+
+        return extra;
     }
 
     private static float Entropy(ReadOnlySpan<int> counts)
@@ -1818,15 +1861,18 @@ internal sealed class JxlModularEncoder
         props[0] = c;
         props[1] = stream;
         JxlWeightedPredictor wp = new(width, wpParams);
+        long[] wpRow = new long[width];
+        int[] errorRow = new int[width];
         int[] d = ch.Data;
         for (int y = 0; y < height; y++)
         {
             props[2] = y;
             props[9] = 0;
             int row = y * width;
+            wp.Row(d, y, wpRow, errorRow);
             for (int x = 0; x < width; x++)
             {
-                Compute(d, width, x, y, row, props, near, wp, false);
+                Compute(d, width, x, y, row, props, near, wpRow[x], errorRow[x], false);
                 ulong a = s0;
                 ulong b = s1;
                 ulong bits = a + b;
@@ -1857,8 +1903,6 @@ internal sealed class JxlModularEncoder
 
                     buffer.Count++;
                 }
-
-                wp.Record(d[row + x]);
             }
         }
 
@@ -1869,7 +1913,7 @@ internal sealed class JxlModularEncoder
     /// Works out the properties (H.4.1) of sample (x, y) into <paramref name="p"/>, whose channel, stream and row entries the
     /// caller sets and whose entry 9 carries the previous sample's gradient, and every predictor's prediction.
     /// </summary>
-    private static void Compute(int[] d, int width, int x, int y, int row, Span<int> p, Span<long> preds, JxlWeightedPredictor? wp, bool all)
+    private static void Compute(int[] d, int width, int x, int y, int row, Span<int> p, Span<long> preds, long wpPrediction, int maxError, bool all)
     {
         int at = row + x;
         int w = x > 0 ? d[at - 1] : y > 0 ? d[at - width] : 0;
@@ -1895,16 +1939,7 @@ internal sealed class JxlModularEncoder
             p[14] = w - ww;
         }
 
-        long wpPrediction = 0;
-        if (wp is not null)
-        {
-            wpPrediction = wp.Predict(n, nw, ne, w, nn);
-            p[15] = wp.MaxError;
-        }
-        else
-        {
-            p[15] = 0;
-        }
+        p[15] = maxError;
 
         if (all)
         {
@@ -2018,6 +2053,8 @@ internal sealed class JxlModularEncoder
         int width = ch.Width;
         int[] d = ch.Data;
         JxlWeightedPredictor? wp = usesWp ? new JxlWeightedPredictor(width, wpParams ?? new JxlWpParams()) : null;
+        long[] wpRow = new long[width];
+        int[] errorRow = new int[width];
         props[0] = c;
         props[1] = stream;
         for (int y = 0; y < ch.Height; y++)
@@ -2025,9 +2062,10 @@ internal sealed class JxlModularEncoder
             props[2] = y;
             props[9] = 0;
             int row = y * width;
+            wp?.Row(d, y, wpRow, errorRow);
             for (int x = 0; x < width; x++)
             {
-                Compute(d, width, x, y, row, props, near, wp, false);
+                Compute(d, width, x, y, row, props, near, wpRow[x], errorRow[x], false);
                 int node = 0;
                 while (property[node] >= 0)
                 {
@@ -2042,7 +2080,6 @@ internal sealed class JxlModularEncoder
                 }
 
                 tokens.Add(new JxlToken(context[node], JxlTreeLearner.PackSigned(residual)));
-                wp?.Record(d[row + x]);
             }
         }
 

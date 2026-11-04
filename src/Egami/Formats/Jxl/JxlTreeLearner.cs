@@ -674,37 +674,62 @@ internal sealed class JxlTreeLearner
         (float Cost, float Extra, int Predictor)[] costsR = scratch.CostsR;
         {
             Array.Clear(used, 0, size);
-            Array.Clear(valueTotal, 0, size);
             int first = size;
             int last = 0;
-            if (prop < _staticCount)
+            if ((long)(n.End - n.Begin) * 4 >= (long)size * maxSymbols * predictors)
             {
-                Count(_static[prop], n.Begin, n.End, used, valueTotal, ref first, ref last);
+                // A large node: one pass counts every value's tokens, and the totals and raw bits follow from those counts.
+                Array.Clear(countIncrease, 0, predictors * size * maxSymbols);
+                if (prop < _staticCount)
+                {
+                    GatherAll(_static[prop], n.Begin, n.End, used, countIncrease, size, maxSymbols);
+                }
+                else
+                {
+                    GatherAll(_props[prop - _staticCount], n.Begin, n.End, used, countIncrease, size, maxSymbols);
+                }
+
+                first = used.AsSpan(0, size).IndexOfAnyExcept(0);
+                last = used.AsSpan(0, size).LastIndexOfAnyExcept(0);
+                if (last <= first)
+                {
+                    return Candidates.None;
+                }
+
+                Totals(countIncrease, valueTotal, extraIncrease, first, last, size, maxSymbols);
             }
             else
             {
-                Count(_props[prop - _staticCount], n.Begin, n.End, used, valueTotal, ref first, ref last);
-            }
+                Array.Clear(valueTotal, 0, size);
+                if (prop < _staticCount)
+                {
+                    Count(_static[prop], n.Begin, n.End, used, valueTotal, ref first, ref last);
+                }
+                else
+                {
+                    Count(_props[prop - _staticCount], n.Begin, n.End, used, valueTotal, ref first, ref last);
+                }
 
-            if (last <= first)
-            {
-                return Candidates.None;
-            }
+                if (last <= first)
+                {
+                    return Candidates.None;
+                }
 
-            // Only the values that occur need clearing.
-            for (int pr = 0; pr < predictors; pr++)
-            {
-                Array.Clear(countIncrease, ((pr * size) + first) * maxSymbols, (last - first + 1) * maxSymbols);
-                Array.Clear(extraIncrease, (pr * size) + first, last - first + 1);
-            }
+                // Only the values that occur need clearing.
+                for (int pr = 0; pr < predictors; pr++)
+                {
+                    Array.Clear(countIncrease, ((pr * size) + first) * maxSymbols, (last - first + 1) * maxSymbols);
+                    Array.Clear(extraIncrease, (pr * size) + first, last - first + 1);
+                }
 
-            if (prop < _staticCount)
-            {
-                Gather(_static[prop], n.Begin, n.End, countIncrease, extraIncrease, size, maxSymbols);
-            }
-            else
-            {
-                Gather(_props[prop - _staticCount], n.Begin, n.End, countIncrease, extraIncrease, size, maxSymbols);
+                if (prop < _staticCount)
+                {
+                    Gather(_static[prop], n.Begin, n.End, countIncrease, extraIncrease, size, maxSymbols);
+                }
+                else
+                {
+                    Gather(_props[prop - _staticCount], n.Begin, n.End, countIncrease, extraIncrease, size, maxSymbols);
+                }
             }
 
             Array.Fill(costsL, (float.MaxValue, 0f, 0), 0, last - first);
@@ -820,6 +845,73 @@ internal sealed class JxlTreeLearner
 
         first = lo;
         last = hi;
+    }
+
+    /// <summary>One pass for a large node: which values occur and each predictor's token counts per value.</summary>
+    private void GatherAll<T>(T[] values, int begin, int end, int[] used, int[] countIncrease, int size, int maxSymbols)
+        where T : IBinaryInteger<T>
+    {
+        int predictors = _predictors.Length;
+        ushort[] counts = _counts;
+        if (predictors == 2)
+        {
+            byte[] t0 = _tokens[0];
+            byte[] t1 = _tokens[1];
+            int second = size * maxSymbols;
+            for (int i = begin; i < end; i++)
+            {
+                int p = int.CreateTruncating(values[i]);
+                int c = counts[i];
+                used[p]++;
+                countIncrease[(p * maxSymbols) + t0[i]] += c;
+                countIncrease[second + (p * maxSymbols) + t1[i]] += c;
+            }
+
+            return;
+        }
+
+        for (int i = begin; i < end; i++)
+        {
+            int p = int.CreateTruncating(values[i]);
+            int c = counts[i];
+            used[p]++;
+            for (int pr = 0; pr < predictors; pr++)
+            {
+                countIncrease[(((pr * size) + p) * maxSymbols) + _tokens[pr][i]] += c;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Works out, from <see cref="GatherAll"/>'s token counts, each value's total count and each predictor's raw bits per value
+    /// (a token of 16 or more carries 1 + (token − 16) / 8 raw bits, see <see cref="ResidualToken"/>).
+    /// </summary>
+    private void Totals(int[] countIncrease, int[] valueTotal, long[] extraIncrease, int first, int last, int size, int maxSymbols)
+    {
+        for (int pr = 0; pr < _predictors.Length; pr++)
+        {
+            for (int p = first; p <= last; p++)
+            {
+                ReadOnlySpan<int> tokens = countIncrease.AsSpan(((pr * size) + p) * maxSymbols, maxSymbols);
+                long extra = 0;
+                for (int t = 16; t < tokens.Length; t++)
+                {
+                    extra += (long)tokens[t] * (1 + ((t - 16) >> 3));
+                }
+
+                extraIncrease[(pr * size) + p] = extra;
+                if (pr == 0)
+                {
+                    int total = 0;
+                    foreach (int count in tokens)
+                    {
+                        total += count;
+                    }
+
+                    valueTotal[p] = total;
+                }
+            }
+        }
     }
 
     /// <summary>A second pass: each predictor's token counts and raw bits per property value.</summary>
