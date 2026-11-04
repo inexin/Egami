@@ -82,11 +82,11 @@ internal static class EtcEncoder
             return;
         }
 
-        int baseSpread = effort switch { 0 => 0, <= 2 => 1, <= 4 => 2, _ => 4 };
-        int multiplierSpread = effort switch { 0 => 0, <= 3 => 1, _ => 2 };
+        (int multiplierSpread, int keep, int baseSpread) = EacSearch(effort);
         Vector128<short> v0 = Vector128.Create((short)v[0], (short)v[1], (short)v[2], (short)v[3], (short)v[4], (short)v[5], (short)v[6], (short)v[7]);
         Vector128<short> v1 = Vector128.Create((short)v[8], (short)v[9], (short)v[10], (short)v[11], (short)v[12], (short)v[13], (short)v[14], (short)v[15]);
         int bestBase = 0, bestMultiplier = 1, bestTable = 0;
+        Shortlist shortlist = new(stackalloc long[Shortlist.Max], stackalloc int[Shortlist.Max], keep);
         for (int t = 0; t < 16; t++)
         {
             ReadOnlySpan<sbyte> table = Etc.EacTables.Slice(t * 8, 8);
@@ -94,26 +94,28 @@ internal static class EtcEncoder
             int guess = Math.Max(1, (int)Math.Round((max - min) / (double)(high - low)));
             for (int m = Math.Max(1, guess - multiplierSpread); m <= Math.Min(15, guess + multiplierSpread); m++)
             {
-                int center = (int)Math.Round(((min + max) / 2.0) - ((low + high) * m / 2.0));
-                for (int b = Math.Max(0, center - baseSpread); b <= Math.Min(255, center + baseSpread); b++)
+                int center = Math.Clamp((int)Math.Round(((min + max) / 2.0) - ((low + high) * m / 2.0)), 0, 255);
+                long error = Eac8Error(v0, v1, center, table, m);
+                if (error < bestError)
                 {
-                    // The distance to the nearest of the eight values, eight texels at a time; its square fits 16 bits.
-                    Vector128<short> d0 = Vector128.Create((short)Math.Clamp(b + (table[0] * m), 0, 255));
-                    Vector128<short> d1 = Vector128.Abs(v1 - d0);
-                    d0 = Vector128.Abs(v0 - d0);
-                    for (int i = 1; i < 8; i++)
-                    {
-                        Vector128<short> value = Vector128.Create((short)Math.Clamp(b + (table[i] * m), 0, 255));
-                        d0 = Vector128.Min(d0, Vector128.Abs(v0 - value));
-                        d1 = Vector128.Min(d1, Vector128.Abs(v1 - value));
-                    }
+                    (bestError, bestBase, bestMultiplier, bestTable) = (error, center, m, t);
+                }
 
-                    Vector128<ushort> s0 = d0.AsUInt16() * d0.AsUInt16(), s1 = d1.AsUInt16() * d1.AsUInt16();
-                    long error = Vector128.Sum(Vector128.WidenLower(s0) + Vector128.WidenUpper(s0) + Vector128.WidenLower(s1) + Vector128.WidenUpper(s1));
-                    if (error < bestError)
-                    {
-                        (bestError, bestBase, bestMultiplier, bestTable) = (error, b, m, t);
-                    }
+                shortlist.Add(error, (center << 8) | (t << 4) | m);
+            }
+        }
+
+        // Around the base values of the best table and multiplier pairs.
+        for (int i = 0; i < shortlist.Count; i++)
+        {
+            int key = shortlist.Key(i), center = key >> 8, t = (key >> 4) & 15, m = key & 15;
+            ReadOnlySpan<sbyte> table = Etc.EacTables.Slice(t * 8, 8);
+            for (int b = Math.Max(0, center - baseSpread); b <= Math.Min(255, center + baseSpread); b++)
+            {
+                long error = b == center ? Impossible : Eac8Error(v0, v1, b, table, m);
+                if (error < bestError)
+                {
+                    (bestError, bestBase, bestMultiplier, bestTable) = (error, b, m, t);
                 }
             }
         }
@@ -159,13 +161,13 @@ internal static class EtcEncoder
             max = Math.Max(max, target[i]);
         }
 
-        int baseSpread = effort switch { 0 => 0, <= 2 => 1, <= 4 => 2, _ => 3 };
-        int multiplierSpread = effort switch { 0 => 0, <= 3 => 1, _ => 2 };
+        (int multiplierSpread, int keep, int baseSpread) = EacSearch(effort);
         long bestError = Impossible;
         int bestBase = 0, bestMultiplier = 0, bestTable = 0;
         int baseLow = signed ? -127 : 0, baseHigh = signed ? 127 : 255;
         Vector128<int> w0 = Vector128.Create(wide[0], wide[1], wide[2], wide[3]), w1 = Vector128.Create(wide[4], wide[5], wide[6], wide[7]);
         Vector128<int> w2 = Vector128.Create(wide[8], wide[9], wide[10], wide[11]), w3 = Vector128.Create(wide[12], wide[13], wide[14], wide[15]);
+        Shortlist shortlist = new(stackalloc long[Shortlist.Max], stackalloc int[Shortlist.Max], keep);
         for (int t = 0; t < 16; t++)
         {
             ReadOnlySpan<sbyte> table = Etc.EacTables.Slice(t * 8, 8);
@@ -176,26 +178,29 @@ internal static class EtcEncoder
             {
                 int scale = m == 0 ? 1 : m * 8;
                 double center = ((min + max) / 2.0) - ((low + high) * scale / 2.0);
-                int baseGuess = (int)Math.Round(signed ? center / 8.0 : (center - 4) / 8.0);
-                for (int b = Math.Max(baseLow, baseGuess - baseSpread); b <= Math.Min(baseHigh, baseGuess + baseSpread); b++)
+                int b = Math.Clamp((int)Math.Round(signed ? center / 8.0 : (center - 4) / 8.0), baseLow, baseHigh);
+                long error = Eac11Error(w0, w1, w2, w3, b, table, scale, signed);
+                if (error < bestError)
                 {
-                    // The distance to the nearest of the eight values, four texels at a time; its square fits 32 bits unsigned.
-                    Vector128<int> value = Vector128.Create(Decoded(b, table[0] * scale, signed));
-                    Vector128<int> d0 = Vector128.Abs(w0 - value), d1 = Vector128.Abs(w1 - value), d2 = Vector128.Abs(w2 - value), d3 = Vector128.Abs(w3 - value);
-                    for (int i = 1; i < 8; i++)
-                    {
-                        value = Vector128.Create(Decoded(b, table[i] * scale, signed));
-                        d0 = Vector128.Min(d0, Vector128.Abs(w0 - value));
-                        d1 = Vector128.Min(d1, Vector128.Abs(w1 - value));
-                        d2 = Vector128.Min(d2, Vector128.Abs(w2 - value));
-                        d3 = Vector128.Min(d3, Vector128.Abs(w3 - value));
-                    }
+                    (bestError, bestBase, bestMultiplier, bestTable) = (error, b, m, t);
+                }
 
-                    long error = (long)(SquareSum(d0) + SquareSum(d1) + SquareSum(d2) + SquareSum(d3));
-                    if (error < bestError)
-                    {
-                        (bestError, bestBase, bestMultiplier, bestTable) = (error, b, m, t);
-                    }
+                shortlist.Add(error, ((b + 128) << 8) | (t << 4) | m);
+            }
+        }
+
+        // Around the base values of the best table and multiplier pairs.
+        for (int i = 0; i < shortlist.Count; i++)
+        {
+            int key = shortlist.Key(i), center = (key >> 8) - 128, t = (key >> 4) & 15, m = key & 15;
+            ReadOnlySpan<sbyte> table = Etc.EacTables.Slice(t * 8, 8);
+            int scale = m == 0 ? 1 : m * 8;
+            for (int b = Math.Max(baseLow, center - baseSpread); b <= Math.Min(baseHigh, center + baseSpread); b++)
+            {
+                long error = b == center ? Impossible : Eac11Error(w0, w1, w2, w3, b, table, scale, signed);
+                if (error < bestError)
+                {
+                    (bestError, bestBase, bestMultiplier, bestTable) = (error, b, m, t);
                 }
             }
         }
@@ -221,6 +226,95 @@ internal static class EtcEncoder
         }
 
         BinaryPrimitives.WriteUInt64BigEndian(block, Eac((ulong)(bestBase & 0xFF), bestMultiplier, bestTable, 0) | indices);
+    }
+
+    /// <summary>
+    /// The EAC search at each effort: how far the multiplier strays from its guess, how many of the best table and multiplier
+    /// pairs (scored at their guessed base) then try the base values around it, and how far.
+    /// </summary>
+    private static (int Multipliers, int Keep, int Bases) EacSearch(int effort) => effort switch
+    {
+        0 => (0, 0, 0),
+        1 => (1, 2, 1),
+        2 => (1, 3, 2),
+        3 => (1, 6, 3),
+        4 => (2, 12, 3),
+        5 => (3, 16, 5),
+        _ => (4, 32, 8),
+    };
+
+    /// <summary>Returns the error of 16 8-bit values from the nearest of base + table × multiplier, eight at a time.</summary>
+    private static long Eac8Error(Vector128<short> v0, Vector128<short> v1, int b, ReadOnlySpan<sbyte> table, int m)
+    {
+        // The distance to the nearest of the eight values; its square fits 16 bits.
+        Vector128<short> d0 = Vector128.Create((short)Math.Clamp(b + (table[0] * m), 0, 255));
+        Vector128<short> d1 = Vector128.Abs(v1 - d0);
+        d0 = Vector128.Abs(v0 - d0);
+        for (int i = 1; i < 8; i++)
+        {
+            Vector128<short> value = Vector128.Create((short)Math.Clamp(b + (table[i] * m), 0, 255));
+            d0 = Vector128.Min(d0, Vector128.Abs(v0 - value));
+            d1 = Vector128.Min(d1, Vector128.Abs(v1 - value));
+        }
+
+        Vector128<ushort> s0 = d0.AsUInt16() * d0.AsUInt16(), s1 = d1.AsUInt16() * d1.AsUInt16();
+        return Vector128.Sum(Vector128.WidenLower(s0) + Vector128.WidenUpper(s0) + Vector128.WidenLower(s1) + Vector128.WidenUpper(s1));
+    }
+
+    /// <summary>Returns the error of 16 16-bit values from the nearest of the values an EAC R11 block decodes, four at a time.</summary>
+    private static long Eac11Error(Vector128<int> w0, Vector128<int> w1, Vector128<int> w2, Vector128<int> w3, int b, ReadOnlySpan<sbyte> table, int scale, bool signed)
+    {
+        // The distance to the nearest of the eight values; its square fits 32 bits unsigned.
+        Vector128<int> value = Vector128.Create(Decoded(b, table[0] * scale, signed));
+        Vector128<int> d0 = Vector128.Abs(w0 - value), d1 = Vector128.Abs(w1 - value), d2 = Vector128.Abs(w2 - value), d3 = Vector128.Abs(w3 - value);
+        for (int i = 1; i < 8; i++)
+        {
+            value = Vector128.Create(Decoded(b, table[i] * scale, signed));
+            d0 = Vector128.Min(d0, Vector128.Abs(w0 - value));
+            d1 = Vector128.Min(d1, Vector128.Abs(w1 - value));
+            d2 = Vector128.Min(d2, Vector128.Abs(w2 - value));
+            d3 = Vector128.Min(d3, Vector128.Abs(w3 - value));
+        }
+
+        return (long)(SquareSum(d0) + SquareSum(d1) + SquareSum(d2) + SquareSum(d3));
+    }
+
+    /// <summary>The few lowest-error keys seen, kept in order.</summary>
+    private ref struct Shortlist
+    {
+        public const int Max = 32;
+        private readonly Span<long> _errors;
+        private readonly Span<int> _keys;
+        private readonly int _capacity;
+
+        public Shortlist(Span<long> errors, Span<int> keys, int capacity)
+        {
+            _errors = errors;
+            _keys = keys;
+            _capacity = capacity;
+        }
+
+        public int Count { get; private set; }
+
+        public readonly int Key(int i) => _keys[i];
+
+        public void Add(long error, int key)
+        {
+            if (_capacity == 0 || (Count == _capacity && error >= _errors[Count - 1]))
+            {
+                return;
+            }
+
+            int i = Count < _capacity ? Count++ : Count - 1;
+            for (; i > 0 && _errors[i - 1] > error; i--)
+            {
+                _errors[i] = _errors[i - 1];
+                _keys[i] = _keys[i - 1];
+            }
+
+            _errors[i] = error;
+            _keys[i] = key;
+        }
     }
 
     /// <summary>Returns the sum of the squares of four distances below 65536.</summary>
