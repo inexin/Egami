@@ -40,6 +40,12 @@ internal static class AstcEncoder
     /// <summary>The partition of every texel of a one-partition block.</summary>
     private static readonly byte[] Zeros = new byte[MaxTexels];
 
+    /// <summary>Per channel, a vector of ones with that channel zero, to leave the second weight plane's channel out of a line.</summary>
+    private static readonly Vector256<double>[] ChannelKeep = [.. Enumerable.Range(0, 4).Select(c => Vector256.Create(c == 0 ? 0.0 : 1, c == 1 ? 0.0 : 1, c == 2 ? 0.0 : 1, c == 3 ? 0.0 : 1))];
+
+    /// <summary>Per channel, the unit vector along it.</summary>
+    private static readonly Vector256<double>[] ChannelOne = [.. Enumerable.Range(0, 4).Select(c => Vector256.Create(c == 0 ? 1.0 : 0, c == 1 ? 1.0 : 0, c == 2 ? 1.0 : 0, c == 3 ? 1.0 : 0))];
+
     /// <summary>A lane mask per channel, to give the second weight plane's channel its own weight.</summary>
     private static readonly Vector128<int>[] PlaneMasks = [.. Enumerable.Range(0, 4).Select(c => Vector128.Create(c == 0 ? -1 : 0, c == 1 ? -1 : 0, c == 2 ? -1 : 0, c == 3 ? -1 : 0))];
 
@@ -196,9 +202,16 @@ internal static class AstcEncoder
 
         /// <summary>
         /// Returns the PSNR above which one partition is good enough for a block of <paramref name="texels"/>: small
-        /// footprints aim higher, since they have the bits to reach it (40 dB at 4x4, 30 dB at 8x8, 26 dB at 12x12).
+        /// footprints aim higher, since they have the bits to reach it (38 dB at 4x4, 32 dB at 8x8, 28 dB at 12x12).
         /// </summary>
-        public double LimitDb(int texels) => LimitShift + (texels <= 64 ? 30 + (10 * Math.Min((64 - texels) / 48.0, 1)) : 30 - (4 * Math.Min((texels - 64) / 80.0, 1)));
+        public double LimitDb(int texels) => LimitShift + (texels <= 64 ? 32 + (6 * Math.Min((64 - texels) / 48.0, 1)) : 32 - (4 * Math.Min((texels - 64) / 80.0, 1)));
+
+        /// <summary>
+        /// Returns the PSNR at which a block of <paramref name="texels"/> needs no more search at all: 50 dB at 4x4, 37 dB at
+        /// 8x8 and 33 dB at 12x12, where a smooth block already lands after its first encode.
+        /// </summary>
+        public double StopDb(int texels) => LimitShift + (texels <= 64 ? 30 + (10 * Math.Min((64 - texels) / 48.0, 1)) : 30 - (4 * Math.Min((texels - 64) / 80.0, 1)))
+            + 10 - (3 * Math.Clamp((texels - 16) / 20.0, 0, 1));
 
         /// <summary>Returns the squared error per texel (four channels) of a block at <paramref name="db"/> dB PSNR.</summary>
         public static double Mse(double db) => 4 * 255 * 255 * Math.Pow(10, -db / 10);
@@ -274,19 +287,21 @@ internal static class AstcEncoder
             }
 
             // Grids that thin one axis only, to estimate any grid's error as the sum of its two axes' errors.
-            Columns = new Grid[astc.Width + 1];
-            Rows = new Grid[astc.Height + 1];
+            Columns = new Line[astc.Width + 1];
+            Rows = new Line[astc.Height + 1];
             for (int w = 2; w < astc.Width; w++)
             {
-                Columns[w] = Prepare(new Grid(w, astc.Height, astc.InfillFor(w, astc.Height)), astc);
+                Columns[w] = new Line(astc.Width, w, astc.InfillFor(w, astc.Height), 1, 1);
             }
 
             for (int h = 2; h < astc.Height; h++)
             {
-                Rows[h] = Prepare(new Grid(astc.Width, h, astc.InfillFor(astc.Width, h)), astc);
+                Rows[h] = new Line(astc.Height, h, astc.InfillFor(astc.Width, h), astc.Width, astc.Width);
             }
 
             Grids = grids.Values.OrderBy(g => (g.Width * 16) + g.Height).ToArray();
+            GridWidths = [.. Grids.Select(g => (byte)g.Width)];
+            GridHeights = [.. Grids.Select(g => (byte)g.Height)];
             Partitionings = new Partitioning[3][];
             for (int count = 2; count <= 4; count++)
             {
@@ -320,6 +335,12 @@ internal static class AstcEncoder
         }
 
         public Grid[] Grids { get; }
+
+        /// <summary>Gets each grid's width, in the order of <see cref="Grids"/>.</summary>
+        public byte[] GridWidths { get; }
+
+        /// <summary>Gets each grid's height, in the order of <see cref="Grids"/>.</summary>
+        public byte[] GridHeights { get; }
 
         /// <summary>Gets the row length of every grid's least-squares matrix: the texel count rounded up to 8.</summary>
         public static int Stride(int texels) => (texels + 7) & ~7;
@@ -413,11 +434,11 @@ internal static class AstcEncoder
             return solve;
         }
 
-        /// <summary>Gets the grids of every width with one row per texel row (null for the full width).</summary>
-        public Grid?[] Columns { get; }
+        /// <summary>Gets the grids of every width with one row per texel row, along a row (null for the full width).</summary>
+        public Line?[] Columns { get; }
 
-        /// <summary>Gets the grids of every height with one column per texel column (null for the full height).</summary>
-        public Grid?[] Rows { get; }
+        /// <summary>Gets the grids of every height with one column per texel column, along a column (null for the full height).</summary>
+        public Line?[] Rows { get; }
 
         public Partitioning[][] Partitionings { get; }
 
@@ -506,6 +527,133 @@ internal static class AstcEncoder
 
             return list.ToArray();
         }
+    }
+
+    /// <summary>
+    /// A grid that thins one axis of the block only, seen along that axis: every texel position's two grid points and their
+    /// infill weights (of 16), and the reciprocal of each grid point's total weight.
+    /// </summary>
+    private sealed class Line
+    {
+        /// <summary>
+        /// Reads the taps of the texels along one axis from <paramref name="infill"/>: texel i sits at index
+        /// <c>i * texelStep</c> and grid point g at <c>g * gridStep</c>.
+        /// </summary>
+        public Line(int length, int count, Astc.Infill infill, int texelStep, int gridStep)
+        {
+            Count = count;
+            Point0 = new int[length];
+            Point1 = new int[length];
+            Tap0 = new double[length];
+            Tap1 = new double[length];
+            Scale = new double[count];
+            ReadOnlySpan<short> index = infill.Indices;
+            ReadOnlySpan<byte> weight = infill.Weights;
+            Span<double> total = stackalloc double[count];
+            for (int i = 0; i < length; i++)
+            {
+                int t = i * texelStep;
+                int first = -1;
+                for (int k = 0; k < 4; k++)
+                {
+                    int w = weight[(t * 4) + k];
+                    if (w == 0)
+                    {
+                        continue;
+                    }
+
+                    int g = index[(t * 4) + k] / gridStep;
+                    if (first < 0 || first == g)
+                    {
+                        first = g;
+                        Point0[i] = g;
+                        Tap0[i] += w;
+                    }
+                    else
+                    {
+                        Point1[i] = g;
+                        Tap1[i] += w;
+                    }
+
+                    total[g] += w;
+                }
+
+                if (Tap1[i] == 0)
+                {
+                    Point1[i] = Point0[i];
+                }
+            }
+
+            for (int g = 0; g < count; g++)
+            {
+                Scale[g] = total[g] > 0 ? 1 / total[g] : 0;
+            }
+
+            // Each grid point's feeds as a band of texels, weights normalised, so the fit needs no scatter.
+            var feedFirst = new int[count];
+            var last = new int[count];
+            Array.Fill(feedFirst, int.MaxValue);
+            Array.Fill(last, -1);
+            for (int i = 0; i < length; i++)
+            {
+                foreach ((int g, double tap) in (ReadOnlySpan<(int, double)>)[(Point0[i], Tap0[i]), (Point1[i], Tap1[i])])
+                {
+                    if (tap > 0)
+                    {
+                        feedFirst[g] = Math.Min(feedFirst[g], i);
+                        last[g] = Math.Max(last[g], i);
+                    }
+                }
+            }
+
+            int width = 1;
+            for (int g = 0; g < count; g++)
+            {
+                width = Math.Max(width, last[g] - feedFirst[g] + 1);
+            }
+
+            FeedWidth = width;
+            FeedFirst = new int[count];
+            FeedWeights = new double[count * width];
+            for (int g = 0; g < count; g++)
+            {
+                int start = last[g] < 0 ? 0 : Math.Min(feedFirst[g], length - width);
+                FeedFirst[g] = start;
+                for (int k = 0; k < width; k++)
+                {
+                    int i = start + k;
+                    double tap = (Point0[i] == g ? Tap0[i] : 0) + (Point1[i] == g && Point1[i] != Point0[i] ? Tap1[i] : 0);
+                    FeedWeights[(g * width) + k] = tap * Scale[g];
+                }
+            }
+
+            for (int i = 0; i < length; i++)
+            {
+                Tap0[i] /= 16;
+                Tap1[i] /= 16;
+            }
+        }
+
+        /// <summary>Gets the width of every grid point's band of feeding texels.</summary>
+        public int FeedWidth { get; }
+
+        /// <summary>Gets the first texel of each grid point's band.</summary>
+        public int[] FeedFirst { get; }
+
+        /// <summary>Gets each grid point's band of texel weights, normalised to sum to 1.</summary>
+        public double[] FeedWeights { get; }
+
+        public int Count { get; }
+
+        public int[] Point0 { get; }
+
+        public int[] Point1 { get; }
+
+        public double[] Tap0 { get; }
+
+        public double[] Tap1 { get; }
+
+        public double[] Scale { get; }
     }
 
     /// <summary>A grid and weight range, with the mean squared quantisation error of a weight and of a colour value.</summary>
@@ -597,17 +745,23 @@ internal static class AstcEncoder
     private sealed class Search
     {
         private readonly int[] _px = new int[MaxTexels * 4];
+        private readonly double[] _pxd = new double[MaxTexels * 4];
         private readonly float[] _fitInput = new float[MaxTexels];
         private readonly int[] _fitKeys = new int[48];
         private readonly double[] _fitValues = new double[48 * 128];
         private int _fitCount;
         private readonly byte[] _trial = new byte[16];
-        private readonly byte[] _best = new byte[16];
+        private readonly int[] _bestWeights = new int[MaxTexels * 2];
+        private readonly int[] _bestColors = new int[18];
+        private readonly int[] _bestCems = new int[4];
+        private (int Mode, int Config, int Range, int ColorRange, int Weights, int Colors) _bestPick;
         private readonly Config[] _configs = Enumerable.Range(0, MaxConfigs).Select(_ => new Config()).ToArray();
         private readonly double[] _gridError = new double[2 * 256];
         private readonly double[] _gridErrorDual = new double[2 * 256];
         private readonly double[] _endpoints = new double[4 * 8];
         private readonly double[] _gridIdeal = new double[MaxTexels];
+        private readonly double[] _lineValues = new double[MaxTexels];
+        private readonly double[] _lineLengths = new double[MaxTexels];
         private readonly int[] _weights = new int[MaxTexels * 2];
         private readonly int[] _sums = new int[MaxTexels * 2];
         private readonly int[] _colors = new int[18];
@@ -634,6 +788,7 @@ internal static class AstcEncoder
             for (int i = 0; i < _texels * 4; i++)
             {
                 _px[i] = rgba[i];
+                _pxd[i] = rgba[i];
             }
 
             _cem = cem;
@@ -645,11 +800,29 @@ internal static class AstcEncoder
             _firstDual = -1;
             _fitCount = 0;
             double limitDb = settings.LimitDb(_texels);
-            double limit = _texels * Settings.Mse(limitDb);
-            _stopError = _texels * Settings.Mse(limitDb + 6);
+
+            // Opaque blocks have their error in three channels, not four: the limit holds per channel.
+            double share = cem is 0 or 8 ? 0.75 : 1;
+            double limit = _texels * share * Settings.Mse(limitDb);
+            _stopError = _texels * Settings.Mse(settings.StopDb(_texels));
 
             // One partition, one plane: its weights also stand in for every configuration's grid estimate.
             AddConfig(1, 0, -1, null, false);
+            if (settings.Exact)
+            {
+                // A first encode of the plain configuration with the best estimated block mode, one refit and no second
+                // pass: smooth blocks need no more.
+                RankTrials(0, 1);
+                _probing = true;
+                Trial(0, _trials[0].Grid, _trials[0].Range, quick: false);
+                _probing = false;
+                if (_bestError <= _stopError)
+                {
+                    PackBest(block);
+                    return;
+                }
+            }
+
             bool scale = cem >= 8 && settings.Exact;
             if (scale)
             {
@@ -730,7 +903,7 @@ internal static class AstcEncoder
                 RunStage(from, settings.Candidates, settings.Trials);
             }
 
-            _best.CopyTo(block);
+            PackBest(block);
         }
 
         /// <summary>
@@ -772,6 +945,8 @@ internal static class AstcEncoder
 
             return count;
         }
+
+        private bool _probing;
 
         /// <summary>Ranks the configurations from <paramref name="from"/> on, quick-encodes the best candidates and fully encodes the best few.</summary>
         private void RunStage(int from, int candidates, int full)
@@ -1177,109 +1352,72 @@ internal static class AstcEncoder
         {
             byte[]? table = config.Table;
             int plane2 = config.Plane2;
-            Span<double> mean = stackalloc double[4];
+            ref double px = ref MemoryMarshal.GetArrayDataReference(_pxd);
+
+            // The second plane's channel ranges on its own: it takes no part in the line.
+            Vector256<double> keep = plane2 >= 0 ? ChannelKeep[plane2] : Vector256<double>.One;
+            Vector256<double> sum = Vector256<double>.Zero;
+            Vector256<double> row0 = Vector256<double>.Zero, row1 = row0, row2 = row0, row3 = row0;
             int n = 0;
             for (int t = 0; t < _texels; t++)
             {
                 if (table is null || table[t] == p)
                 {
-                    for (int c = 0; c < 4; c++)
-                    {
-                        mean[c] += _px[(t * 4) + c];
-                    }
-
+                    Vector256<double> x = Vector256.LoadUnsafe(ref px, (nuint)(t * 4)) * keep;
+                    sum += x;
+                    row0 += x * x.GetElement(0);
+                    row1 += x * x.GetElement(1);
+                    row2 += x * x.GetElement(2);
+                    row3 += x * x.GetElement(3);
                     n++;
                 }
             }
 
-            for (int c = 0; c < 4; c++)
-            {
-                mean[c] /= Math.Max(n, 1);
-            }
-
-            Span<double> cov = stackalloc double[16];
-            for (int t = 0; t < _texels; t++)
-            {
-                if (table is not null && table[t] != p)
-                {
-                    continue;
-                }
-
-                for (int a = 0; a < 4; a++)
-                {
-                    if (a == plane2)
-                    {
-                        continue;
-                    }
-
-                    double da = _px[(t * 4) + a] - mean[a];
-                    for (int b = a; b < 4; b++)
-                    {
-                        if (b != plane2)
-                        {
-                            cov[(a * 4) + b] += da * (_px[(t * 4) + b] - mean[b]);
-                        }
-                    }
-                }
-            }
-
-            for (int a = 0; a < 4; a++)
-            {
-                for (int b = 0; b < a; b++)
-                {
-                    cov[(a * 4) + b] = cov[(b * 4) + a];
-                }
-            }
+            // The covariance from the raw moments.
+            double inverse = 1.0 / Math.Max(n, 1);
+            Vector256<double> mean = sum * inverse;
+            row0 -= sum * mean.GetElement(0);
+            row1 -= sum * mean.GetElement(1);
+            row2 -= sum * mean.GetElement(2);
+            row3 -= sum * mean.GetElement(3);
 
             // Power iteration from the channel with the most variance.
+            ReadOnlySpan<double> diagonal = [row0.GetElement(0), row1.GetElement(1), row2.GetElement(2), row3.GetElement(3)];
             int start = 0;
             for (int c = 1; c < 4; c++)
             {
-                if (cov[(c * 4) + c] > cov[(start * 4) + start])
+                if (diagonal[c] > diagonal[start])
                 {
                     start = c;
                 }
             }
 
-            Span<double> axis = stackalloc double[4];
-            Span<double> next = stackalloc double[4];
-            axis[start] = 1;
+            Vector256<double> axis = ChannelOne[start];
             for (int i = 0; i < 8; i++)
             {
-                next.Clear();
-                for (int a = 0; a < 4; a++)
-                {
-                    for (int b = 0; b < 4; b++)
-                    {
-                        next[a] += cov[(a * 4) + b] * axis[b];
-                    }
-                }
-
-                double length = Math.Sqrt((next[0] * next[0]) + (next[1] * next[1]) + (next[2] * next[2]) + (next[3] * next[3]));
+                Vector256<double> next = (row0 * axis.GetElement(0)) + (row1 * axis.GetElement(1)) + (row2 * axis.GetElement(2)) + (row3 * axis.GetElement(3));
+                double length = Math.Sqrt(Vector256.Dot(next, next));
                 if (length < 1e-9)
                 {
                     break;
                 }
 
-                for (int a = 0; a < 4; a++)
-                {
-                    axis[a] = next[a] / length;
-                }
+                axis = next / length;
             }
 
             // Point the axis towards rising RGB so endpoint 1 is the brighter one, as the direct modes need.
-            double rise = axis[0] + axis[1] + axis[2];
-            if (rise < 0 || (rise == 0 && axis[3] < 0))
+            double rise = axis.GetElement(0) + axis.GetElement(1) + axis.GetElement(2);
+            if (rise < 0 || (rise == 0 && axis.GetElement(3) < 0))
             {
-                for (int a = 0; a < 4; a++)
-                {
-                    axis[a] = -axis[a];
-                }
+                axis = -axis;
             }
 
+            // The texels' squared distance from the line: their total variance less the variance along it.
+            Vector256<double> spread = (row0 * axis.GetElement(0)) + (row1 * axis.GetElement(1)) + (row2 * axis.GetElement(2)) + (row3 * axis.GetElement(3));
+            double residual = Math.Max(0, row0.GetElement(0) + row1.GetElement(1) + row2.GetElement(2) + row3.GetElement(3) - Vector256.Dot(spread, axis));
             double low = double.MaxValue, high = double.MinValue;
             double lowAlone = double.MaxValue, highAlone = double.MinValue;
-            double residual = 0;
+            double offset = Vector256.Dot(mean * keep, axis);
             for (int t = 0; t < _texels; t++)
             {
                 if (table is not null && table[t] != p)
@@ -1287,32 +1425,23 @@ internal static class AstcEncoder
                     continue;
                 }
 
-                double s = 0, total = 0;
-                for (int c = 0; c < 4; c++)
-                {
-                    if (c != plane2)
-                    {
-                        double d = _px[(t * 4) + c] - mean[c];
-                        s += d * axis[c];
-                        total += d * d;
-                    }
-                }
-
-                residual += Math.Max(0, total - (s * s));
-                low = Math.Min(low, s);
-                high = Math.Max(high, s);
+                Vector256<double> x = Vector256.LoadUnsafe(ref px, (nuint)(t * 4));
+                Vector256<double> product = x * axis;
+                double along = ((product.GetElement(0) + product.GetElement(1)) + (product.GetElement(2) + product.GetElement(3))) - offset;
+                low = Math.Min(low, along);
+                high = Math.Max(high, along);
                 if (plane2 >= 0)
                 {
-                    lowAlone = Math.Min(lowAlone, _px[(t * 4) + plane2]);
-                    highAlone = Math.Max(highAlone, _px[(t * 4) + plane2]);
+                    lowAlone = Math.Min(lowAlone, x.GetElement(plane2));
+                    highAlone = Math.Max(highAlone, x.GetElement(plane2));
                 }
             }
 
             Span<double> e = config.Endpoints.AsSpan(p * 8, 8);
             for (int c = 0; c < 4; c++)
             {
-                e[c] = Math.Clamp(mean[c] + (low * axis[c]), 0, 255);
-                e[4 + c] = Math.Clamp(mean[c] + (high * axis[c]), 0, 255);
+                e[c] = Math.Clamp(mean.GetElement(c) + (low * axis.GetElement(c)), 0, 255);
+                e[4 + c] = Math.Clamp(mean.GetElement(c) + (high * axis.GetElement(c)), 0, 255);
             }
 
             if (plane2 >= 0)
@@ -1452,77 +1581,142 @@ internal static class AstcEncoder
         private void Project(Config config, ReadOnlySpan<double> endpoints, Span<double> ideal, Span<double> lengths)
         {
             int plane2 = config.Plane2;
-            for (int t = 0; t < _texels; t++)
+            Vector256<double> keep = plane2 >= 0 ? ChannelKeep[plane2] : Vector256<double>.One;
+            Span<Vector256<double>> low = stackalloc Vector256<double>[4];
+            Span<Vector256<double>> span = stackalloc Vector256<double>[4];
+            Span<double> inverse = stackalloc double[4];
+            Span<double> squared = stackalloc double[4];
+            Span<double> lowAlone = stackalloc double[4];
+            Span<double> inverseAlone = stackalloc double[4];
+            Span<double> squaredAlone = stackalloc double[4];
+            ref double e = ref MemoryMarshal.GetReference(endpoints);
+            for (int p = 0; p < config.Partitions; p++)
             {
-                int p = config.Table is null ? 0 : config.Table[t];
-                ReadOnlySpan<double> e = endpoints.Slice(p * 8, 8);
-                double dd = 0, s = 0;
-                for (int c = 0; c < 4; c++)
-                {
-                    if (c != plane2)
-                    {
-                        double d = e[4 + c] - e[c];
-                        dd += d * d;
-                        s += (_px[(t * 4) + c] - e[c]) * d;
-                    }
-                }
-
-                ideal[t] = dd > 1e-9 ? Math.Clamp(s / dd, 0, 1) : 0.5;
-                lengths[t] = dd;
+                low[p] = Vector256.LoadUnsafe(ref e, (nuint)(p * 8));
+                span[p] = (Vector256.LoadUnsafe(ref e, (nuint)((p * 8) + 4)) - low[p]) * keep;
+                squared[p] = Vector256.Dot(span[p], span[p]);
+                inverse[p] = squared[p] > 1e-9 ? 1 / squared[p] : 0;
                 if (plane2 >= 0)
                 {
-                    double alone = e[4 + plane2] - e[plane2];
-                    ideal[_texels + t] = Math.Abs(alone) > 1e-9 ? Math.Clamp((_px[(t * 4) + plane2] - e[plane2]) / alone, 0, 1) : 0.5;
-                    lengths[_texels + t] = alone * alone;
+                    double alone = endpoints[(p * 8) + 4 + plane2] - endpoints[(p * 8) + plane2];
+                    lowAlone[p] = endpoints[(p * 8) + plane2];
+                    squaredAlone[p] = alone * alone;
+                    inverseAlone[p] = Math.Abs(alone) > 1e-9 ? 1 / alone : 0;
+                }
+            }
+
+            byte[] table = config.Table ?? Zeros;
+            ref double px = ref MemoryMarshal.GetArrayDataReference(_pxd);
+            for (int t = 0; t < _texels; t++)
+            {
+                int p = table[t];
+                double along = Vector256.Dot(Vector256.LoadUnsafe(ref px, (nuint)(t * 4)) - low[p], span[p]);
+                ideal[t] = inverse[p] > 0 ? Math.Clamp(along * inverse[p], 0, 1) : 0.5;
+                lengths[t] = squared[p];
+                if (plane2 >= 0)
+                {
+                    ideal[_texels + t] = inverseAlone[p] != 0 ? Math.Clamp((_pxd[(t * 4) + plane2] - lowAlone[p]) * inverseAlone[p], 0, 1) : 0.5;
+                    lengths[_texels + t] = squaredAlone[p];
                 }
             }
         }
 
-        /// <summary>Estimates for every grid, per plane, the error its resolution adds (in colour units squared).</summary>
+        /// <summary>
+        /// Estimates for every grid, per plane, the error its resolution adds (in colour units squared): the sum of the errors
+        /// of thinning the columns alone and the rows alone, each grid point the weighted mean of the texels it feeds.
+        /// </summary>
         private void GridErrors(Config config, double[] output, int planes)
         {
             Span<double> columns = stackalloc double[13];
             Span<double> rows = stackalloc double[13];
-            Grid[] grids = _fp.Grids;
+            int width = _astc.Width, height = _astc.Height;
+            int rowStride = (width + 3) & ~3, columnStride = (height + 3) & ~3;
+            Span<double> values = _lineValues;
+            Span<double> lengths = _lineLengths;
             for (int plane = 0; plane < planes; plane++)
             {
                 ReadOnlySpan<double> ideal = config.Ideal.AsSpan(plane * _texels, _texels);
-                ReadOnlySpan<double> lengths = config.Lengths.AsSpan(plane * _texels, _texels);
+                ReadOnlySpan<double> length = config.Lengths.AsSpan(plane * _texels, _texels);
                 columns.Clear();
                 rows.Clear();
-                for (int w = 2; w < _astc.Width; w++)
+
+                // Thinned rows: lines run down the columns, a vector lane per column.
+                values.Clear();
+                lengths.Clear();
+                for (int y = 0; y < height; y++)
                 {
-                    Fit(_fp.Columns[w]!, ideal, _gridIdeal);
-                    columns[w] = Residual(_fp.Columns[w]!, _gridIdeal, ideal, lengths);
+                    ideal.Slice(y * width, width).CopyTo(values[(y * rowStride)..]);
+                    length.Slice(y * width, width).CopyTo(lengths[(y * rowStride)..]);
                 }
 
-                for (int h = 2; h < _astc.Height; h++)
+                for (int h = 2; h < height; h++)
                 {
-                    Fit(_fp.Rows[h]!, ideal, _gridIdeal);
-                    rows[h] = Residual(_fp.Rows[h]!, _gridIdeal, ideal, lengths);
+                    rows[h] = LineError(_fp.Rows[h]!, values, lengths, height, rowStride);
                 }
 
-                for (int g = 0; g < grids.Length; g++)
+                // Thinned columns: the block transposed.
+                values.Clear();
+                lengths.Clear();
+                for (int y = 0; y < height; y++)
                 {
-                    output[(plane * 256) + g] = columns[grids[g].Width] + rows[grids[g].Height];
+                    for (int x = 0; x < width; x++)
+                    {
+                        values[(x * columnStride) + y] = ideal[(y * width) + x];
+                        lengths[(x * columnStride) + y] = length[(y * width) + x];
+                    }
+                }
+
+                for (int w = 2; w < width; w++)
+                {
+                    columns[w] = LineError(_fp.Columns[w]!, values, lengths, width, columnStride);
+                }
+
+                byte[] gridWidths = _fp.GridWidths, gridHeights = _fp.GridHeights;
+                for (int g = 0; g < gridWidths.Length; g++)
+                {
+                    output[(plane * 256) + g] = columns[gridWidths[g]] + rows[gridHeights[g]];
                 }
             }
         }
 
-        private double Residual(Grid grid, ReadOnlySpan<double> gridWeights, ReadOnlySpan<double> ideal, ReadOnlySpan<double> lengths)
+        /// <summary>
+        /// Returns the error of thinning <paramref name="count"/> lines of texel weights (one per row of
+        /// <paramref name="values"/>, <paramref name="stride"/> lanes wide) to <paramref name="line"/>'s grid points.
+        /// </summary>
+        private static double LineError(Line line, ReadOnlySpan<double> values, ReadOnlySpan<double> lengths, int count, int stride)
         {
-            int[] index = grid.TapIndex;
-            int[] tap = grid.TapWeight;
-            double sum = 0;
-            for (int t = 0; t < _texels; t++)
+            Span<Vector256<double>> points = stackalloc Vector256<double>[12];
+            int[] point0 = line.Point0, point1 = line.Point1;
+            double[] tap0 = line.Tap0, tap1 = line.Tap1;
+            int width = line.FeedWidth;
+            int[] feedFirst = line.FeedFirst;
+            double[] feedWeights = line.FeedWeights;
+            ref double v = ref MemoryMarshal.GetReference(values);
+            ref double l = ref MemoryMarshal.GetReference(lengths);
+            Vector256<double> sum = Vector256<double>.Zero;
+            for (int lane = 0; lane < stride; lane += 4)
             {
-                int i = t * 4;
-                double w = (gridWeights[index[i]] * tap[i]) + (gridWeights[index[i + 1]] * tap[i + 1]) + (gridWeights[index[i + 2]] * tap[i + 2]) + (gridWeights[index[i + 3]] * tap[i + 3]);
-                double d = (w / 16) - ideal[t];
-                sum += d * d * lengths[t];
+                for (int g = 0; g < line.Count; g++)
+                {
+                    Vector256<double> point = Vector256<double>.Zero;
+                    int at = (feedFirst[g] * stride) + lane;
+                    for (int k = 0; k < width; k++)
+                    {
+                        point += Vector256.LoadUnsafe(ref v, (nuint)(at + (k * stride))) * feedWeights[(g * width) + k];
+                    }
+
+                    points[g] = point;
+                }
+
+                for (int i = 0; i < count; i++)
+                {
+                    nuint at = (nuint)((i * stride) + lane);
+                    Vector256<double> d = (points[point0[i]] * tap0[i]) + (points[point1[i]] * tap1[i]) - Vector256.LoadUnsafe(ref v, at);
+                    sum += d * d * Vector256.LoadUnsafe(ref l, at);
+                }
             }
 
-            return sum;
+            return (sum.GetElement(0) + sum.GetElement(1)) + (sum.GetElement(2) + sum.GetElement(3));
         }
 
         /// <summary>Fits grid weights to texel weights by least squares, with the grid's precomputed matrix.</summary>
@@ -1694,6 +1888,12 @@ internal static class AstcEncoder
             Infill(grid, weights, planes, tables);
             if (quick)
             {
+                // Two to four weight levels leave the first fit's endpoints far off: refit them, as the full encode will.
+                if (range <= 2 && _settings.Refits > 0)
+                {
+                    RefitEndpoints(config);
+                }
+
                 QuantizeColors(config, colorRange, colors, tryDelta: false);
                 return BlockError(config);
             }
@@ -1712,7 +1912,7 @@ internal static class AstcEncoder
                 if (_settings.Realign > 0)
                 {
                     Realign(config, grid, weights, planes, tables);
-                    if (RealignColors(config, colorRange, colors))
+                    if (!(_probing && _texels > 64) && RealignColors(config, colorRange, colors))
                     {
                         Realign(config, grid, weights, planes, tables);
                     }
@@ -1722,11 +1922,13 @@ internal static class AstcEncoder
                 if (error < _bestError)
                 {
                     _bestError = error;
-                    Pack(mode, config, range, colorRange, weights, colors);
-                    _trial.CopyTo(_best, 0);
+                    _bestPick = (mode, configIndex, range, colorRange, weights.Length, colors.Length);
+                    weights.CopyTo(_bestWeights);
+                    colors.CopyTo(_bestColors);
+                    _cems.CopyTo(_bestCems, 0);
                 }
 
-                if (error >= previous)
+                if (error >= previous || _probing)
                 {
                     break;
                 }
@@ -2389,6 +2591,15 @@ internal static class AstcEncoder
 
             slope = Vector128.Sum(gradient);
             return Vector128.Sum(sum);
+        }
+
+        /// <summary>Writes the best encoding found to <paramref name="block"/>.</summary>
+        private void PackBest(Span<byte> block)
+        {
+            (int mode, int config, int range, int colorRange, int weights, int colors) = _bestPick;
+            _bestCems.CopyTo(_cems, 0);
+            Pack(mode, _configs[config], range, colorRange, _bestWeights.AsSpan(0, weights), _bestColors.AsSpan(0, colors));
+            _trial.CopyTo(block);
         }
 
         private void Pack(int mode, Config config, int weightRange, int colorRange, ReadOnlySpan<int> weights, ReadOnlySpan<int> colors)
