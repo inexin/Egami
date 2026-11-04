@@ -15,7 +15,7 @@ namespace Egami.Formats.Extended.Dds;
 /// blocks in parallel; each block depends only on its own pixels, so the bytes never depend on the thread count. A texture is
 /// written whole, so the writer has no row encoder: Save and a streamed encode gather the image first.
 /// </summary>
-internal sealed class DdsWriter : IFormatWriter, IMultiImageWriter
+internal sealed class DdsWriter : IFormatWriter, IMultiImageWriter, ITextureWriter
 {
     public void Write<TPixel>(Raster<TPixel> raster, Stream output, WriterOptions options)
         where TPixel : unmanaged, IPixelType<TPixel>
@@ -43,22 +43,9 @@ internal sealed class DdsWriter : IFormatWriter, IMultiImageWriter
             throw new ArgumentException($"A cube map needs square faces, six a cube; {rasters.Count} rasters of {first.Width}×{first.Height} were given.", nameof(rasters));
         }
 
-        DdsDetails? source = first.Metadata.FormatDetails as DdsDetails;
-        Target target = Target.For(dds.Format ?? FromSource(source) ?? FromPixels(first.Layout));
-        bool srgb = dds.Srgb ?? source?.IsSrgb ?? false;
-        if (srgb && target.SrgbDxgi == 0)
-        {
-            if (dds.Srgb == true)
-            {
-                throw new ArgumentException($"DDS: {target.Format} has no sRGB form.", nameof(options));
-            }
-
-            srgb = false;
-        }
-
-        int dxgi = srgb ? target.SrgbDxgi : target.Dxgi;
-        int full = 1 + (int)Math.Log2(Math.Max(first.Width, first.Height));
-        int mips = dds.MipLevels == 0 ? full : Math.Min(dds.MipLevels, full);
+        (Target target, bool srgb, int dxgi) = Choose(dds, first);
+        int full = target.IsPlanar ? 1 : 1 + (int)Math.Log2(Math.Max(first.Width, first.Height));
+        int mips = dds.MipLevels == 0 ? (target.IsData ? 1 : full) : Math.Min(dds.MipLevels, full);
         bool premultiplied = dds.PremultipliedAlpha;
         StoredMips?[] stored = [.. rasters.Select(r => (r.Metadata.FormatDetails as DdsDetails)?.Mips)];
         if (!premultiplied && stored.All(s => s is { Bytes: not null } && s.Dxgi == dxgi && s.Size == new Size(first.Width, first.Height))
@@ -76,7 +63,7 @@ internal sealed class DdsWriter : IFormatWriter, IMultiImageWriter
         int arraySize = dds.Cube ? cubes : rasters.Count;
         bool dx10 = dds.Dx10Header || srgb || target.Legacy is null || arraySize > 1 || (premultiplied && target.Format is not (DdsTextureFormat.Bc2 or DdsTextureFormat.Bc3));
         Span<byte> header = stackalloc byte[DdsHeader.Length + DdsHeader.Dx10Length];
-        int headerLength = Header(header, first.Width, first.Height, mips, target, dxgi, dx10, dds.Cube, arraySize, premultiplied);
+        int headerLength = Header(header, first.Width, first.Height, 1, mips, target, dxgi, dx10, dds.Cube, arraySize, premultiplied);
         output.Write(header[..headerLength]);
         for (int i = 0; i < rasters.Count; i++)
         {
@@ -112,6 +99,78 @@ internal sealed class DdsWriter : IFormatWriter, IMultiImageWriter
                 }
             }
         }
+    }
+
+    public void WriteTexture(Texture texture, Stream output, WriterOptions options)
+    {
+        ArgumentNullException.ThrowIfNull(texture);
+        ArgumentNullException.ThrowIfNull(output);
+        DdsWriterOptions dds = options as DdsWriterOptions ?? DdsWriterOptions.Default;
+        if (texture.IsVolume && texture.Layers > 1)
+        {
+            throw new NotSupportedException("DDS holds one volume texture, not an array of them; save it as KTX 2.");
+        }
+
+        Raster first = texture.Level(0)[0];
+        (Target target, bool srgb, int dxgi) = Choose(dds, first);
+        int mips = dds.MipLevels == 0 ? texture.MipLevels : Math.Min(dds.MipLevels, texture.MipLevels);
+        if (target.IsPlanar && mips > 1)
+        {
+            throw new ArgumentException($"DDS: {target.Format} holds mip 0 alone; the texture has {mips} mips (TrimMips(1) drops the rest).", nameof(options));
+        }
+
+        bool premultiplied = dds.PremultipliedAlpha;
+        int arraySize = texture.IsVolume ? 1 : texture.Layers;
+        bool dx10 = dds.Dx10Header || srgb || target.Legacy is null || arraySize > 1 || (premultiplied && target.Format is not (DdsTextureFormat.Bc2 or DdsTextureFormat.Bc3));
+        Span<byte> header = stackalloc byte[DdsHeader.Length + DdsHeader.Dx10Length];
+        int headerLength = Header(header, texture.Width, texture.Height, texture.Depth, mips, target, dxgi, dx10, texture.IsCube, arraySize, premultiplied);
+        output.Write(header[..headerLength]);
+        if (texture.IsVolume)
+        {
+            // A volume is stored mip by mip, each mip's slices front to back.
+            for (int m = 0; m < mips; m++)
+            {
+                foreach (Raster slice in texture.Level(m))
+                {
+                    output.Write(Encode(slice, target, dds.Effort, premultiplied));
+                }
+            }
+
+            return;
+        }
+
+        // Surfaces are stored one after another, each with its mips.
+        for (int i = 0; i < texture.Level(0).Count; i++)
+        {
+            for (int m = 0; m < mips; m++)
+            {
+                output.Write(Encode(texture.Level(m)[i], target, dds.Effort, premultiplied));
+            }
+        }
+    }
+
+    /// <summary>Picks the format, its sRGB form and DXGI number for what is written, from the options or the first image.</summary>
+    private static (Target Target, bool Srgb, int Dxgi) Choose(DdsWriterOptions dds, Raster first)
+    {
+        DdsDetails? source = first.Metadata.FormatDetails as DdsDetails;
+        Target target = Target.For(dds.Format ?? FromSource(source) ?? FromPixels(first.Layout));
+        bool srgb = dds.Srgb ?? source?.IsSrgb ?? false;
+        if (srgb && target.SrgbDxgi == 0)
+        {
+            if (dds.Srgb == true)
+            {
+                throw new ArgumentException($"DDS: {target.Format} has no sRGB form.", nameof(dds));
+            }
+
+            srgb = false;
+        }
+
+        if (target.IsPlanar && (first.Width % 2 != 0 || first.Height % 2 != 0))
+        {
+            throw new ArgumentException($"DDS: {target.Format} is 4:2:0 and needs an even width and height; {first.Width}×{first.Height} was given.", nameof(dds));
+        }
+
+        return (target, srgb, srgb ? target.SrgbDxgi : target.Dxgi);
     }
 
     /// <summary>Returns a DDS source's format when the writer can write it.</summary>
@@ -151,6 +210,33 @@ internal sealed class DdsWriter : IFormatWriter, IMultiImageWriter
             97 or 98 or 99 => DdsTextureFormat.Bc7,
             94 or 95 => DdsTextureFormat.Bc6h,
             96 => DdsTextureFormat.Bc6hSigned,
+            62 => DdsTextureFormat.R8UInt,
+            64 => DdsTextureFormat.R8SInt,
+            50 => DdsTextureFormat.Rg8UInt,
+            52 => DdsTextureFormat.Rg8SInt,
+            30 => DdsTextureFormat.Rgba8UInt,
+            32 => DdsTextureFormat.Rgba8SInt,
+            57 => DdsTextureFormat.R16UInt,
+            59 => DdsTextureFormat.R16SInt,
+            36 => DdsTextureFormat.Rg16UInt,
+            38 => DdsTextureFormat.Rg16SInt,
+            12 => DdsTextureFormat.Rgba16UInt,
+            14 => DdsTextureFormat.Rgba16SInt,
+            42 => DdsTextureFormat.R32UInt,
+            43 => DdsTextureFormat.R32SInt,
+            17 => DdsTextureFormat.Rg32UInt,
+            18 => DdsTextureFormat.Rg32SInt,
+            7 => DdsTextureFormat.Rgb32UInt,
+            8 => DdsTextureFormat.Rgb32SInt,
+            3 => DdsTextureFormat.Rgba32UInt,
+            4 => DdsTextureFormat.Rgba32SInt,
+            55 => DdsTextureFormat.D16,
+            44 or 45 or 46 => DdsTextureFormat.D24S8,
+            40 => DdsTextureFormat.D32F,
+            19 or 20 or 21 => DdsTextureFormat.D32FS8,
+            103 => DdsTextureFormat.Nv12,
+            104 => DdsTextureFormat.P010,
+            105 => DdsTextureFormat.P016,
             _ => null,
         };
     }
@@ -193,28 +279,30 @@ internal sealed class DdsWriter : IFormatWriter, IMultiImageWriter
     }
 
     /// <summary>Writes the header and returns its length.</summary>
-    private static int Header(Span<byte> h, int width, int height, int mips, Target target, int dxgi, bool dx10, bool cube, int arraySize, bool premultiplied)
+    private static int Header(Span<byte> h, int width, int height, int depth, int mips, Target target, int dxgi, bool dx10, bool cube, int arraySize, bool premultiplied)
     {
         h.Clear();
         long pitch = target.IsBlock ? Math.Max(1, (width + 3) / 4) * (long)target.BlockBytes * Math.Max(1, (height + 3) / 4) : (long)width * target.PixelBytes;
-        uint flags = 0x1007 | (mips > 1 ? 0x20000u : 0) | (target.IsBlock ? 0x80000u : 0x8u);
+        bool volume = depth > 1;
+        uint flags = 0x1007 | (mips > 1 ? 0x20000u : 0) | (target.IsBlock ? 0x80000u : 0x8u) | (volume ? 0x800000u : 0);
         BinaryPrimitives.WriteUInt32LittleEndian(h, DdsHeader.Magic);
         BinaryPrimitives.WriteUInt32LittleEndian(h[4..], 124);
         BinaryPrimitives.WriteUInt32LittleEndian(h[8..], flags);
         BinaryPrimitives.WriteUInt32LittleEndian(h[12..], (uint)height);
         BinaryPrimitives.WriteUInt32LittleEndian(h[16..], (uint)width);
         BinaryPrimitives.WriteUInt32LittleEndian(h[20..], (uint)Math.Min(pitch, uint.MaxValue));
+        BinaryPrimitives.WriteUInt32LittleEndian(h[24..], volume ? (uint)depth : 0);
         BinaryPrimitives.WriteUInt32LittleEndian(h[28..], (uint)mips);
         BinaryPrimitives.WriteUInt32LittleEndian(h[76..], 32);
-        uint caps = 0x1000 | (mips > 1 || cube ? 0x8u : 0) | (mips > 1 ? 0x400000u : 0);
+        uint caps = 0x1000 | (mips > 1 || cube || volume ? 0x8u : 0) | (mips > 1 ? 0x400000u : 0);
         BinaryPrimitives.WriteUInt32LittleEndian(h[108..], caps);
-        BinaryPrimitives.WriteUInt32LittleEndian(h[112..], cube ? 0xFE00u : 0);
+        BinaryPrimitives.WriteUInt32LittleEndian(h[112..], cube ? 0xFE00u : volume ? 0x200000u : 0);
         if (dx10)
         {
             BinaryPrimitives.WriteUInt32LittleEndian(h[80..], 0x4);
             BinaryPrimitives.WriteUInt32LittleEndian(h[84..], 0x30315844);
             BinaryPrimitives.WriteUInt32LittleEndian(h[128..], (uint)dxgi);
-            BinaryPrimitives.WriteUInt32LittleEndian(h[132..], 3);
+            BinaryPrimitives.WriteUInt32LittleEndian(h[132..], volume ? 4u : 3);
             BinaryPrimitives.WriteUInt32LittleEndian(h[136..], cube ? 4u : 0);
             BinaryPrimitives.WriteUInt32LittleEndian(h[140..], (uint)arraySize);
             BinaryPrimitives.WriteUInt32LittleEndian(h[144..], premultiplied ? 2u : 0);
@@ -250,6 +338,11 @@ internal sealed class DdsWriter : IFormatWriter, IMultiImageWriter
         }
 
         int pixel = TextureDecode.NaturalBytes(target.Work);
+        if (target.IsPlanar)
+        {
+            return Planar(target.Format, work, width, height);
+        }
+
         if (!target.IsBlock)
         {
             byte[] stored = new byte[(long)width * height * target.PixelBytes];
@@ -306,7 +399,7 @@ internal sealed class DdsWriter : IFormatWriter, IMultiImageWriter
     }
 
     /// <summary>Converts a raster into the working pixel type's memory, rows packed.</summary>
-    private static byte[] Work(Raster level, TextureNatural natural)
+    internal static byte[] Work(Raster level, TextureNatural natural)
     {
         return natural switch
         {
@@ -344,7 +437,7 @@ internal sealed class DdsWriter : IFormatWriter, IMultiImageWriter
         }
     }
 
-    private static void Premultiply(byte[] work, TextureNatural natural)
+    internal static void Premultiply(byte[] work, TextureNatural natural)
     {
         switch (natural)
         {
@@ -406,7 +499,7 @@ internal sealed class DdsWriter : IFormatWriter, IMultiImageWriter
     }
 
     /// <summary>Turns working pixels into stored ones.</summary>
-    private static void Pack(DdsTextureFormat format, byte[] work, byte[] stored)
+    internal static void Pack(DdsTextureFormat format, byte[] work, byte[] stored)
     {
         switch (format)
         {
@@ -422,17 +515,96 @@ internal sealed class DdsWriter : IFormatWriter, IMultiImageWriter
 
                 break;
             case DdsTextureFormat.Rg8:
-                for (int i = 0, o = 0; i < work.Length; i += 3, o += 2)
+            case DdsTextureFormat.Rg8UInt:
+            case DdsTextureFormat.Rg8SInt:
                 {
-                    stored[o] = work[i];
-                    stored[o + 1] = work[i + 1];
+                    byte flip = format == DdsTextureFormat.Rg8SInt ? (byte)0x80 : (byte)0;
+                    for (int i = 0, o = 0; i < work.Length; i += 3, o += 2)
+                    {
+                        stored[o] = (byte)(work[i] ^ flip);
+                        stored[o + 1] = (byte)(work[i + 1] ^ flip);
+                    }
+
+                    break;
                 }
 
-                break;
             case DdsTextureFormat.Rg16:
+            case DdsTextureFormat.Rg16UInt:
+            case DdsTextureFormat.Rg16SInt:
                 for (int i = 0, o = 0; i < work.Length; i += 6, o += 4)
                 {
                     work.AsSpan(i, 4).CopyTo(stored.AsSpan(o));
+                }
+
+                if (format == DdsTextureFormat.Rg16SInt)
+                {
+                    FlipSign16(stored);
+                }
+
+                break;
+            case DdsTextureFormat.R8SInt:
+            case DdsTextureFormat.Rgba8SInt:
+                // The reader maps a signed integer v to v + 128; storing the raster's byte with its top bit flipped is the inverse.
+                for (int i = 0; i < work.Length; i++)
+                {
+                    stored[i] = (byte)(work[i] ^ 0x80);
+                }
+
+                break;
+            case DdsTextureFormat.R16SInt:
+            case DdsTextureFormat.Rgba16SInt:
+                work.CopyTo(stored, 0);
+                FlipSign16(stored);
+                break;
+            case DdsTextureFormat.R32UInt:
+            case DdsTextureFormat.R32SInt:
+            case DdsTextureFormat.Rg32UInt:
+            case DdsTextureFormat.Rg32SInt:
+            case DdsTextureFormat.Rgb32UInt:
+            case DdsTextureFormat.Rgb32SInt:
+            case DdsTextureFormat.Rgba32UInt:
+            case DdsTextureFormat.Rgba32SInt:
+                {
+                    // Floats in (gray, RGB or RGBA), integers out; R32G32 drops the working RGB's blue.
+                    ReadOnlySpan<float> p = MemoryMarshal.Cast<byte, float>(work.AsSpan());
+                    bool signed = format is DdsTextureFormat.R32SInt or DdsTextureFormat.Rg32SInt or DdsTextureFormat.Rgb32SInt or DdsTextureFormat.Rgba32SInt;
+                    int channels = format switch
+                    {
+                        DdsTextureFormat.R32UInt or DdsTextureFormat.R32SInt => 1,
+                        DdsTextureFormat.Rg32UInt or DdsTextureFormat.Rg32SInt => 2,
+                        DdsTextureFormat.Rgb32UInt or DdsTextureFormat.Rgb32SInt => 3,
+                        _ => 4,
+                    };
+                    int step = channels == 2 ? 3 : channels;
+                    for (int i = 0, o = 0; i < p.Length; i += step)
+                    {
+                        for (int c = 0; c < channels; c++, o += 4)
+                        {
+                            BinaryPrimitives.WriteUInt32LittleEndian(stored.AsSpan(o), Integer32(p[i + c], signed));
+                        }
+                    }
+
+                    break;
+                }
+
+            case DdsTextureFormat.D24S8:
+                {
+                    ReadOnlySpan<float> p = MemoryMarshal.Cast<byte, float>(work.AsSpan());
+                    for (int i = 0; i < p.Length; i++)
+                    {
+                        // Stencil, the top byte, stays 0.
+                        uint depth = p[i] > 0 ? (uint)Math.Round(Math.Min(p[i], 1f) * 16777215.0) : 0;
+                        BinaryPrimitives.WriteUInt32LittleEndian(stored.AsSpan(i * 4), depth);
+                    }
+
+                    break;
+                }
+
+            case DdsTextureFormat.D32FS8:
+                for (int i = 0; i < work.Length / 4; i++)
+                {
+                    // Depth, then the stencil byte and 24 unused bits, all 0.
+                    work.AsSpan(i * 4, 4).CopyTo(stored.AsSpan(i * 8));
                 }
 
                 break;
@@ -452,6 +624,88 @@ internal sealed class DdsWriter : IFormatWriter, IMultiImageWriter
             default:
                 work.CopyTo(stored, 0);
                 break;
+        }
+    }
+
+    /// <summary>Flips the sign bit of every little-endian 16-bit sample: the inverse of the reader's v + 32768 for a SINT format.</summary>
+    private static void FlipSign16(byte[] stored)
+    {
+        for (int i = 1; i < stored.Length; i += 2)
+        {
+            stored[i] ^= 0x80;
+        }
+    }
+
+    /// <summary>Rounds a float to the nearest 32-bit integer, clamped to the type's range (NaN becomes 0), as stored bits.</summary>
+    private static uint Integer32(float value, bool signed)
+    {
+        if (float.IsNaN(value))
+        {
+            return 0;
+        }
+
+        double rounded = Math.Round((double)value, MidpointRounding.ToEven);
+        return signed ? (uint)(int)Math.Clamp(rounded, int.MinValue, int.MaxValue) : (uint)Math.Clamp(rounded, 0, uint.MaxValue);
+    }
+
+    /// <summary>
+    /// Converts working RGB (<see cref="Rgb8"/> for NV12, <see cref="Rgb16"/> for P010 and P016) into a 4:2:0 surface: BT.601
+    /// Y′CbCr in studio range, the inverse of the reader's conversion (Microsoft's "Recommended 8-Bit YUV Formats for Video
+    /// Rendering" and its 10- and 16-bit forms), chroma the mean of each 2 × 2 block's.
+    /// </summary>
+    private static byte[] Planar(DdsTextureFormat format, byte[] work, int width, int height)
+    {
+        bool wide = format != DdsTextureFormat.Nv12;
+        int bits = format == DdsTextureFormat.P010 ? 10 : wide ? 16 : 8;
+        int sample = wide ? 2 : 1;
+        int shift = format == DdsTextureFormat.P010 ? 6 : 0;
+        double input = wide ? 65535 : 255;
+        double unit = Math.ScaleB(1.0, bits - 8);
+        double maximum = Math.ScaleB(1.0, bits) - 1;
+        double yScale = 219 * unit / input;
+        double cScale = 224 * unit / input;
+        long pitch = (long)width * sample;
+        long luma = pitch * height;
+        byte[] surface = new byte[luma + (pitch * (height / 2))];
+        ReadOnlySpan<ushort> words = MemoryMarshal.Cast<byte, ushort>(work.AsSpan());
+        for (int cy = 0; cy < height / 2; cy++)
+        {
+            for (int cx = 0; cx < width / 2; cx++)
+            {
+                double cb = 0, cr = 0;
+                for (int i = 0; i < 4; i++)
+                {
+                    int x = (cx * 2) + (i & 1);
+                    int y = (cy * 2) + (i >> 1);
+                    int at = ((y * width) + x) * 3;
+                    double r = wide ? words[at] : work[at];
+                    double g = wide ? words[at + 1] : work[at + 1];
+                    double b = wide ? words[at + 2] : work[at + 2];
+                    double l = (0.299 * r) + (0.587 * g) + (0.114 * b);
+                    Store(surface, (y * pitch) + (x * sample), (16 * unit) + (yScale * l));
+                    cb += (b - l) / 1.772;
+                    cr += (r - l) / 1.402;
+                }
+
+                long chroma = luma + (cy * pitch) + (cx * 2 * sample);
+                Store(surface, chroma, (128 * unit) + (cScale * cb / 4));
+                Store(surface, chroma + sample, (128 * unit) + (cScale * cr / 4));
+            }
+        }
+
+        return surface;
+
+        void Store(byte[] to, long at, double value)
+        {
+            int code = (int)Math.Clamp(Math.Round(value), 0, maximum);
+            if (wide)
+            {
+                BinaryPrimitives.WriteUInt16LittleEndian(to.AsSpan((int)at), (ushort)(code << shift));
+            }
+            else
+            {
+                to[at] = (byte)code;
+            }
         }
     }
 
@@ -510,6 +764,12 @@ internal sealed class DdsWriter : IFormatWriter, IMultiImageWriter
     {
         public bool IsBlock => BlockBytes > 0;
 
+        /// <summary>Gets whether the format is a 4:2:0 planar video surface.</summary>
+        public bool IsPlanar => Format is DdsTextureFormat.Nv12 or DdsTextureFormat.P010 or DdsTextureFormat.P016;
+
+        /// <summary>Gets whether the format holds integer or depth data, which averaged mips would corrupt.</summary>
+        public bool IsData => Format is >= DdsTextureFormat.R8UInt and <= DdsTextureFormat.D32FS8;
+
         public static Target For(DdsTextureFormat format)
         {
             const uint Rgb = 0x40, RgbA = 0x41, Lum = 0x20000, FourCC = 0x4;
@@ -542,6 +802,33 @@ internal sealed class DdsWriter : IFormatWriter, IMultiImageWriter
                 DdsTextureFormat.Bc7 => new(format, 98, 99, TextureNatural.Rgba8, 0, 16, null),
                 DdsTextureFormat.Bc6h => new(format, 95, 0, TextureNatural.RgbaF16, 0, 16, null),
                 DdsTextureFormat.Bc6hSigned => new(format, 96, 0, TextureNatural.RgbaF16, 0, 16, null),
+                DdsTextureFormat.R8UInt => new(format, 62, 0, TextureNatural.Gray8, 1, 0, null),
+                DdsTextureFormat.R8SInt => new(format, 64, 0, TextureNatural.Gray8, 1, 0, null),
+                DdsTextureFormat.Rg8UInt => new(format, 50, 0, TextureNatural.Rgb8, 2, 0, null),
+                DdsTextureFormat.Rg8SInt => new(format, 52, 0, TextureNatural.Rgb8, 2, 0, null),
+                DdsTextureFormat.Rgba8UInt => new(format, 30, 0, TextureNatural.Rgba8, 4, 0, null),
+                DdsTextureFormat.Rgba8SInt => new(format, 32, 0, TextureNatural.Rgba8, 4, 0, null),
+                DdsTextureFormat.R16UInt => new(format, 57, 0, TextureNatural.Gray16, 2, 0, null),
+                DdsTextureFormat.R16SInt => new(format, 59, 0, TextureNatural.Gray16, 2, 0, null),
+                DdsTextureFormat.Rg16UInt => new(format, 36, 0, TextureNatural.Rgb16, 4, 0, null),
+                DdsTextureFormat.Rg16SInt => new(format, 38, 0, TextureNatural.Rgb16, 4, 0, null),
+                DdsTextureFormat.Rgba16UInt => new(format, 12, 0, TextureNatural.Rgba16, 8, 0, null),
+                DdsTextureFormat.Rgba16SInt => new(format, 14, 0, TextureNatural.Rgba16, 8, 0, null),
+                DdsTextureFormat.R32UInt => new(format, 42, 0, TextureNatural.GrayF32, 4, 0, null),
+                DdsTextureFormat.R32SInt => new(format, 43, 0, TextureNatural.GrayF32, 4, 0, null),
+                DdsTextureFormat.Rg32UInt => new(format, 17, 0, TextureNatural.RgbF32, 8, 0, null),
+                DdsTextureFormat.Rg32SInt => new(format, 18, 0, TextureNatural.RgbF32, 8, 0, null),
+                DdsTextureFormat.Rgb32UInt => new(format, 7, 0, TextureNatural.RgbF32, 12, 0, null),
+                DdsTextureFormat.Rgb32SInt => new(format, 8, 0, TextureNatural.RgbF32, 12, 0, null),
+                DdsTextureFormat.Rgba32UInt => new(format, 3, 0, TextureNatural.RgbaF32, 16, 0, null),
+                DdsTextureFormat.Rgba32SInt => new(format, 4, 0, TextureNatural.RgbaF32, 16, 0, null),
+                DdsTextureFormat.D16 => new(format, 55, 0, TextureNatural.Gray16, 2, 0, null),
+                DdsTextureFormat.D24S8 => new(format, 45, 0, TextureNatural.GrayF32, 4, 0, null),
+                DdsTextureFormat.D32F => new(format, 40, 0, TextureNatural.GrayF32, 4, 0, null),
+                DdsTextureFormat.D32FS8 => new(format, 20, 0, TextureNatural.GrayF32, 8, 0, null),
+                DdsTextureFormat.Nv12 => new(format, 103, 0, TextureNatural.Rgb8, 1, 0, null),
+                DdsTextureFormat.P010 => new(format, 104, 0, TextureNatural.Rgb16, 2, 0, null),
+                DdsTextureFormat.P016 => new(format, 105, 0, TextureNatural.Rgb16, 2, 0, null),
                 _ => throw new ArgumentOutOfRangeException(nameof(format), format, "The DDS format is not defined."),
             };
         }

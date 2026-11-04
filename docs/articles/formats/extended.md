@@ -1,7 +1,7 @@
 # Extended formats
 
 Egami.Formats.Extended reads and writes image formats that most apps never meet but some still need: PCX, SGI, Sun raster,
-XBM, XPM, WBMP, Farbfeld and DDS textures, reads KTX and KTX 2 textures and camera RAW files (DNG, CR2, NEF, PEF, ARW, ORF, RW2 and RAF) and writes DNG. They are plugins on core Egami's public format API, the one [your own format](custom.md) uses,
+XBM, XPM, WBMP, Farbfeld, DDS and KTX 2 textures, reads KTX 1.1 textures and camera RAW files (DNG, CR2, NEF, PEF, ARW, ORF, RW2 and RAF) and writes DNG. They are plugins on core Egami's public format API, the one [your own format](custom.md) uses,
 so they load, probe, stream and save as the core formats do, inside the same safety limits. The package depends on core
 Egami only and ships with every Egami release.
 
@@ -29,7 +29,7 @@ Each format also has its own method and its own `FormatInfo`, for an app that wa
 | [WBMP](wbmp.md) | `WbmpFormat` | type 0, extension headers skipped | type 0, white where gray is at least half |
 | [Farbfeld](farbfeld.md) | `FarbfeldFormat` | 16-bit RGBA | 16-bit RGBA |
 | [DDS](dds.md) | `DdsFormat` | Legacy and DX10 headers, BC1 to BC7, every DXGI format DirectXTex reads; every surface and mip through `DdsReaderOptions` | Uncompressed formats and BC1 to BC7 with mips, arrays and cube maps |
-| [KTX and KTX 2](ktx.md) | `KtxFormat`, `Ktx2Format` | KTX 1.1 and KTX 2.0, Zstandard and zlib supercompression, BC1 to BC7, ETC1, ETC2, EAC, 2D ASTC (LDR and HDR), Basis Universal (ETC1S, UASTC LDR and HDR 4 × 4) and the uncompressed formats; every surface and mip through `KtxReaderOptions` | — |
+| [KTX and KTX 2](ktx.md) | `KtxFormat`, `Ktx2Format` | KTX 1.1 and KTX 2.0, Zstandard and zlib supercompression, BC1 to BC7, ETC1, ETC2, EAC, 2D ASTC (LDR and HDR), Basis Universal (ETC1S, UASTC LDR and HDR 4 × 4) and the uncompressed formats; every surface and mip through `KtxReaderOptions` | KTX 2: uncompressed, BC1 to BC7, ETC1, ETC2, EAC, ASTC LDR and Basis Universal ETC1S and UASTC, with mips, arrays, cube maps and supercompression (`Ktx2WriterOptions`) |
 | [Camera RAW](raw.md) | `RawFormat` | DNG, developed on load or as its previews or mosaic, through `RawReaderOptions`; detected ahead of TIFF | — |
 
 SGI and Farbfeld keep 16-bit samples and alpha. PCX, Sun raster and WBMP have no alpha, XPM only on or off, and a save that

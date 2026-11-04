@@ -12,17 +12,21 @@ namespace Egami.Formats.Extended.Textures.Blocks;
 /// every subset's endpoints along the principal axis of its texels, quantises them, picks each texel's weight with the
 /// decoder's own interpolation, then refits the endpoints by least squares (and, at efforts 5 and 6, nudges each quantised
 /// endpoint a level either way). A subset whose anchor texel's weight has its top bit set swaps its endpoints and inverts its
-/// weights, which decodes identically. The transcoder hints are filled in for the winner: the ETC1 flip, mode and intensity
-/// tables that suit the decoded texels best (with the neutral bias, 13), the ETC2 EAC alpha table and multiplier, and for a
-/// solid block its ETC1 colour, table and selector; the BC1 hints are left clear, so a transcoder fits BC1 from scratch. The
-/// work for one block depends only on that block. <see cref="Rdo"/> then trades a little quality for a block stream Zstandard
-/// compresses better.
+/// weights, which decodes identically. The transcoder hints are filled in for the winner: the ETC1 flip, mode and
+/// intensity tables that suit the decoded texels best and the bias (in the modes that have one), the ETC2 EAC alpha
+/// table and multiplier, and for a solid block its ETC1 colour, table and selector; the two BC1 hints are set where
+/// taking the block's endpoints and mapped weights as they are (or the weights with refitted endpoints) gives a BC1
+/// block nearly as good as a full BC1 encode. The work for one block depends only on that block. <see cref="Rdo"/> then
+/// trades a little quality for a block stream Zstandard compresses better.
 /// </summary>
 internal static class UastcEncoder
 {
     private const int SolidMode = 8;
     private const int BandRows = 16;
     private const int MinMatch = 4;
+
+    /// <summary>The effort of the BC1 encode the BC1 hints are judged against.</summary>
+    private const int Bc1Effort = 2;
 
     /// <summary>The modes of each family, in the order they are tried; an effort tries a prefix.</summary>
     private static ReadOnlySpan<byte> OpaqueModes => [0, 18, 4, 2, 6, 1, 5, 7, 3];
@@ -32,6 +36,16 @@ internal static class UastcEncoder
     private static ReadOnlySpan<byte> GrayModes => [15, 16, 17];
 
     private static ReadOnlySpan<byte> GrayOpaqueModes => [15, 18, 16, 17];
+
+    /// <summary>The BC1 codes of UASTC's weight indices for 1 to 5 weight bits (KDFS Table 237), each table at 2^bits - 2.</summary>
+    private static ReadOnlySpan<byte> Bc1Codes =>
+    [
+        0, 1,
+        0, 2, 3, 1,
+        0, 0, 2, 2, 3, 3, 1, 1,
+        0, 0, 0, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 1, 1, 1,
+        0, 0, 0, 0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 1, 1, 1, 1, 1, 1,
+    ];
 
     private static readonly Pattern[] Patterns2 = BuildPatterns(Uastc.Seeds2, 2);
     private static readonly Pattern[] Patterns3 = BuildPatterns(Uastc.Seeds3, 3);
@@ -441,17 +455,18 @@ internal static class UastcEncoder
     private static uint Read(UInt128 bits, int at, int count) => count == 0 ? 0 : (uint)((bits >> at) & ((UInt128.One << count) - 1));
 
     /// <summary>
-    /// The hints for a block of <paramref name="mode"/> that decodes to <paramref name="decoded"/>, in field order: the BC1 hints
-    /// (clear), the ETC1 flip, differential bit and two intensity tables, the neutral ETC1 bias and the ETC2 EAC alpha table and
-    /// multiplier.
+    /// The hints for block <paramref name="b"/>, encoded from <paramref name="original"/>'s texels, that decodes to
+    /// <paramref name="decoded"/>, in field order: the BC1 hints (see <see cref="Bc1Hints"/>), the ETC1 flip, differential bit,
+    /// two intensity tables and bias (see <see cref="EtcHints"/>), and the ETC2 EAC alpha table and multiplier.
     /// </summary>
-    private static int Hints(ReadOnlySpan<byte> decoded, int mode)
+    private static int Hints(ReadOnlySpan<byte> original, ReadOnlySpan<byte> decoded, BlockFields b)
     {
+        int mode = b.Mode;
         bool hasHint1 = mode is not (10 or 11 or 12);
         bool hasBias = hasHint1;
         bool alpha = Uastc.Components[mode] != 3;
-        (int flip, int diff, int i0, int i1) = EtcHints(decoded, hasBias);
-        int value = 0;
+        (int flip, int diff, int i0, int i1, int bias) = EtcHints(decoded, original, hasBias);
+        int value = Bc1Hints(original, decoded, b);
         int at = hasHint1 ? 2 : 1;
         value |= flip << at++;
         value |= diff << at++;
@@ -461,7 +476,7 @@ internal static class UastcEncoder
         at += 3;
         if (hasBias)
         {
-            value |= 13 << at;
+            value |= bias << at;
             at += 5;
         }
 
@@ -473,110 +488,410 @@ internal static class UastcEncoder
         return value;
     }
 
+    /// <summary>The mask of a mode's BC1 hint bits within its hints: BC1H0, and BC1H1 outside modes 10 to 12.</summary>
+    private static int Bc1HintMask(int mode) => mode is 10 or 11 or 12 ? 1 : 3;
+
     /// <summary>
-    /// Picks the ETC1 hints a transcoder will use with the block's texels: it averages each sub-block, quantises the averages to
-    /// 5 bits (differential) or 4, applies the bias field (the neutral 13 here, which only moves a channel off 0 or its top)
-    /// and picks each texel's modifier; the hints are the flip, mode and intensity tables with the least squared error.
+    /// The BC1 hint bits (KDFS 25.8.4): bit 0 (BC1H0) lets a transcoder take the first subset's endpoints, scaled to 5:6:5, and
+    /// the first plane's weights mapped to BC1 codes as they are; bit 1 (BC1H1, not in modes 10 to 12) lets it keep the mapped
+    /// codes and fit only the endpoints by least squares. A bit is set when that shortcut's BC1 block, decoded, is within 7.5 %
+    /// in root-mean-square RGB error against <paramref name="original"/> of a BC1 encode of the decoded texels, so a transcoder
+    /// that takes the shortcut loses little against one that encodes BC1 in full.
     /// </summary>
-    private static (int Flip, int Diff, int I0, int I1) EtcHints(ReadOnlySpan<byte> px, bool applyBias)
+    private static int Bc1Hints(ReadOnlySpan<byte> original, ReadOnlySpan<byte> decoded, BlockFields b)
     {
-        long best = long.MaxValue;
-        (int, int, int, int) result = (0, 0, 0, 0);
-        Span<int> colours = stackalloc int[6];
-        Span<int> sums = stackalloc int[6];
-        Span<int> intenError = stackalloc int[8];
-        Span<int> modifiers = stackalloc int[4];
-        Span<int> inten = stackalloc int[2];
-        for (int flip = 0; flip < 2; flip++)
+        Span<byte> bc1 = stackalloc byte[8];
+        Span<byte> texels = stackalloc byte[64];
+        Bc1To5Encoder.EncodeBc1(decoded, bc1, transparent: false, Bc1Effort, fourColorsOnly: true);
+        long reference = Bc1Error(bc1, original, texels);
+        int hints = 0;
+        Bc1Direct(b, bc1);
+        if (Close(Bc1Error(bc1, original, texels), reference))
         {
-            sums.Clear();
-            for (int t = 0; t < 16; t++)
+            hints |= 1;
+        }
+
+        if (Bc1HintMask(b.Mode) == 3 && Bc1Fitted(b, decoded, bc1) && Close(Bc1Error(bc1, original, texels), reference))
+        {
+            hints |= 2;
+        }
+
+        return hints;
+
+        // Within 7.5 % in root-mean-square error: 1.075 squared is 1.155625.
+        static bool Close(long error, long reference) => error * 1_000_000 <= reference * 1_155_625;
+    }
+
+    /// <summary>A BC1 block's squared RGB error against 16 RGBA texels, decoded with four colours.</summary>
+    private static long Bc1Error(ReadOnlySpan<byte> bc1, ReadOnlySpan<byte> original, Span<byte> texels)
+    {
+        Bc1To5.DecodeBc1(bc1, texels, fourColors: true);
+        long error = 0;
+        for (int i = 0; i < 64; i++)
+        {
+            if ((i & 3) != 3)
             {
-                int sub = flip == 0 ? ((t & 3) >= 2 ? 1 : 0) : (t >= 8 ? 1 : 0);
-                for (int c = 0; c < 3; c++)
-                {
-                    sums[(sub * 3) + c] += px[(t * 4) + c];
-                }
+                int d = texels[i] - original[i];
+                error += d * d;
+            }
+        }
+
+        return error;
+    }
+
+    /// <summary>
+    /// The BC1 block a BC1H0 transcoder makes: the first subset's low and high endpoints (luminance in the gray modes) scaled to
+    /// 5:6:5 as colours 0 and 1 and the first plane's weights mapped to codes. Colour 0 below colour 1 swaps them and the codes,
+    /// as BC1's four-colour mode needs colour 0 above colour 1; equal colours become a block of one colour.
+    /// </summary>
+    private static void Bc1Direct(BlockFields b, Span<byte> bc1)
+    {
+        int mode = b.Mode;
+        ReadOnlySpan<byte> unq = AstcIse.ColorUnquantized[Uastc.EndpointRanges[mode]];
+        bool gray = Uastc.Components[mode] == 2;
+        int lr = unq[b.Endpoints[0]], hr = unq[b.Endpoints[1]];
+        int lg = gray ? lr : unq[b.Endpoints[2]], hg = gray ? hr : unq[b.Endpoints[3]];
+        int lb = gray ? lr : unq[b.Endpoints[4]], hb = gray ? hr : unq[b.Endpoints[5]];
+        int c0 = To565(lr, lg, lb);
+        int c1 = To565(hr, hg, hb);
+        uint codes = 0;
+        if (c0 == c1)
+        {
+            if (c1 > 0)
+            {
+                c1--;
+            }
+            else
+            {
+                (c0, c1, codes) = (1, 0, 0x55555555);
+            }
+        }
+        else
+        {
+            uint invert = 0;
+            if (c0 < c1)
+            {
+                (c0, c1, invert) = (c1, c0, 0x55555555);
             }
 
-            for (int diff = 0; diff < 2; diff++)
-            {
-                int limit = diff == 1 ? 31 : 15;
-                for (int i = 0; i < 6; i++)
-                {
-                    int v = ((sums[i] * limit) + 1020) / (8 * 255);
-                    colours[i] = !applyBias ? v : v == 0 ? 1 : v == limit ? limit - 1 : v;
-                }
+            codes = MappedCodes(b) ^ invert;
+        }
 
-                if (diff == 1)
+        WriteBc1(bc1, c0, c1, codes);
+    }
+
+    /// <summary>
+    /// The BC1 block a BC1H1 transcoder makes: the mapped codes kept and colours 0 and 1 fitted to the decoded texels by least
+    /// squares. Returns <see langword="false"/> when the codes cannot fix two different colours.
+    /// </summary>
+    private static bool Bc1Fitted(BlockFields b, ReadOnlySpan<byte> decoded, Span<byte> bc1)
+    {
+        uint codes = MappedCodes(b);
+        Span<double> xa = stackalloc double[3];
+        Span<double> xb = stackalloc double[3];
+        double aa = 0, ab = 0, bb = 0;
+        for (int t = 0; t < 16; t++)
+        {
+            // Codes 0 to 3 lie 0, 3, 1 and 2 thirds of the way from colour 0 to colour 1.
+            double w = (int)((codes >> (t * 2)) & 3) switch { 0 => 0, 1 => 1, 2 => 1 / 3.0, _ => 2 / 3.0 };
+            aa += (1 - w) * (1 - w);
+            ab += (1 - w) * w;
+            bb += w * w;
+            for (int c = 0; c < 3; c++)
+            {
+                xa[c] += (1 - w) * decoded[(t * 4) + c];
+                xb[c] += w * decoded[(t * 4) + c];
+            }
+        }
+
+        double det = (aa * bb) - (ab * ab);
+        if (Math.Abs(det) < 1e-9)
+        {
+            return false;
+        }
+
+        Span<int> lo = stackalloc int[3];
+        Span<int> hi = stackalloc int[3];
+        for (int c = 0; c < 3; c++)
+        {
+            lo[c] = (int)Math.Round(Math.Clamp(((xa[c] * bb) - (xb[c] * ab)) / det, 0, 255));
+            hi[c] = (int)Math.Round(Math.Clamp(((xb[c] * aa) - (xa[c] * ab)) / det, 0, 255));
+        }
+
+        int c0 = To565(lo[0], lo[1], lo[2]);
+        int c1 = To565(hi[0], hi[1], hi[2]);
+        if (c0 == c1)
+        {
+            return false;
+        }
+
+        if (c0 < c1)
+        {
+            (c0, c1) = (c1, c0);
+            codes ^= 0x55555555;
+        }
+
+        WriteBc1(bc1, c0, c1, codes);
+        return true;
+    }
+
+    /// <summary>The first plane's weights as BC1 codes (KDFS Table 237), texel 0 in the low bits.</summary>
+    private static uint MappedCodes(BlockFields b)
+    {
+        int bits = Uastc.WeightBits[b.Mode];
+        int planes = Uastc.Planes[b.Mode];
+        ReadOnlySpan<byte> map = Bc1Codes.Slice((1 << bits) - 2, 1 << bits);
+        uint codes = 0;
+        for (int t = 0; t < 16; t++)
+        {
+            codes |= (uint)map[b.Weights[t * planes]] << (t * 2);
+        }
+
+        return codes;
+    }
+
+    /// <summary>An 8-bit colour scaled to BC1's 5:6:5 as the UASTC transcoder does.</summary>
+    private static int To565(int r, int g, int b) => ((((r * 31) + 127) / 255) << 11) | ((((g * 63) + 127) / 255) << 5) | (((b * 31) + 127) / 255);
+
+    private static void WriteBc1(Span<byte> bc1, int c0, int c1, uint codes)
+    {
+        BinaryPrimitives.WriteUInt16LittleEndian(bc1, (ushort)c0);
+        BinaryPrimitives.WriteUInt16LittleEndian(bc1[2..], (ushort)c1);
+        BinaryPrimitives.WriteUInt32LittleEndian(bc1[4..], codes);
+    }
+
+    /// <summary>
+    /// Picks the ETC1 hints a transcoder will use with the block's decoded texels: it averages each sub-block of
+    /// <paramref name="decoded"/>, quantises the averages to 5 bits (differential) or 4, moves them by the bias field (in the
+    /// modes that have one) and picks each texel's modifier. Each sub-block takes the intensity table with the least squared error
+    /// against <paramref name="original"/>; every flip and mode is tried with the neutral bias (13), then every bias with the best
+    /// of them, and the hints are the choice with the least error.
+    /// </summary>
+    private static (int Flip, int Diff, int I0, int I1, int Bias) EtcHints(ReadOnlySpan<byte> decoded, ReadOnlySpan<byte> original, bool hasBias)
+    {
+        long best = long.MaxValue;
+        (int, int, int, int, int) result = (0, 0, 0, 0, 13);
+        Span<int> sums = stackalloc int[6];
+        Span<int> quantized = stackalloc int[6];
+        Span<int> colours = stackalloc int[6];
+        Span<byte> members = stackalloc byte[16];
+
+        // Per sub-block, the colours already scored (15-bit keys) with their error and table.
+        Span<int> seenKey = stackalloc int[2 * 32];
+        Span<long> seenError = stackalloc long[2 * 32];
+        Span<int> seenTable = stackalloc int[2 * 32];
+        Span<int> seenCount = stackalloc int[2];
+        Span<long> subError = stackalloc long[2];
+        Span<int> subTable = stackalloc int[2];
+        // First every flip and mode with the neutral bias, then every bias with the best of them.
+        for (int pass = 0; pass < (hasBias ? 2 : 1); pass++)
+        {
+            for (int flip = 0; flip < 2; flip++)
+            {
+                sums.Clear();
+                for (int t = 0; t < 16; t++)
                 {
+                    int sub = flip == 0 ? ((t & 3) >= 2 ? 1 : 0) : (t >= 8 ? 1 : 0);
+                    members[t] = (byte)sub;
                     for (int c = 0; c < 3; c++)
                     {
-                        colours[3 + c] = colours[c] + Math.Clamp(colours[3 + c] - colours[c], -4, 3);
+                        sums[(sub * 3) + c] += decoded[(t * 4) + c];
                     }
                 }
 
-                for (int i = 0; i < 6; i++)
+                for (int diff = 0; diff < 2; diff++)
                 {
-                    colours[i] = diff == 1 ? Etc.Extend5(colours[i]) : Etc.Extend4(colours[i]);
-                }
-
-                long total = 0;
-                for (int sub = 0; sub < 2; sub++)
-                {
-                    intenError.Clear();
-                    for (int t = 0; t < 16; t++)
+                    int limit = diff == 1 ? 31 : 15;
+                    for (int i = 0; i < 6; i++)
                     {
-                        if ((flip == 0 ? ((t & 3) >= 2 ? 1 : 0) : (t >= 8 ? 1 : 0)) != sub)
+                        quantized[i] = ((sums[i] * limit) + 1020) / (8 * 255);
+                    }
+
+                    seenCount.Clear();
+                    if (pass == 1 && (flip != result.Item1 || diff != result.Item2))
+                    {
+                        continue;
+                    }
+
+                    int first = !hasBias ? -1 : pass == 0 ? 13 : 0;
+                    int last = !hasBias ? -1 : pass == 0 ? 13 : 31;
+                    for (int bias = first; bias <= last; bias++)
+                    {
+                        quantized.CopyTo(colours);
+                        if (bias >= 0)
                         {
-                            continue;
+                            ApplyBias(colours, limit, bias);
                         }
 
-                        for (int table = 0; table < 8; table++)
+                        if (diff == 1)
                         {
-                            modifiers[2] = Etc.Modifiers[table * 2];
-                            modifiers[3] = Etc.Modifiers[(table * 2) + 1];
-                            modifiers[1] = -modifiers[2];
-                            modifiers[0] = -modifiers[3];
-                            int e = int.MaxValue;
-                            for (int m = 0; m < 4; m++)
+                            for (int c = 0; c < 3; c++)
                             {
-                                int d = 0;
-                                for (int c = 0; c < 3; c++)
-                                {
-                                    int v = Math.Clamp(colours[(sub * 3) + c] + modifiers[m], 0, 255) - px[(t * 4) + c];
-                                    d += v * v;
-                                }
+                                colours[3 + c] = colours[c] + Math.Clamp(colours[3 + c] - colours[c], -4, 3);
+                            }
+                        }
 
-                                e = Math.Min(e, d);
+                        long total = 0;
+                        for (int sub = 0; sub < 2 && total < best; sub++)
+                        {
+                            int key = (colours[sub * 3] << 10) | (colours[(sub * 3) + 1] << 5) | colours[(sub * 3) + 2];
+                            int found = -1;
+                            for (int j = 0; j < seenCount[sub]; j++)
+                            {
+                                if (seenKey[(sub * 32) + j] == key)
+                                {
+                                    found = (sub * 32) + j;
+                                    break;
+                                }
                             }
 
-                            intenError[table] += e;
-                        }
-                    }
+                            if (found < 0)
+                            {
+                                found = (sub * 32) + seenCount[sub]++;
+                                seenKey[found] = key;
+                                (seenError[found], seenTable[found]) = SubBlockError(original, members, sub, colours.Slice(sub * 3, 3), diff == 1);
+                            }
 
-                    int pick = 0;
-                    for (int table = 1; table < 8; table++)
-                    {
-                        if (intenError[table] < intenError[pick])
+                            subError[sub] = seenError[found];
+                            subTable[sub] = seenTable[found];
+                            total += subError[sub];
+                        }
+
+                        if (total < best)
                         {
-                            pick = table;
+                            best = total;
+                            result = (flip, diff, subTable[0], subTable[1], bias < 0 ? 13 : bias);
                         }
                     }
-
-                    inten[sub] = pick;
-                    total += intenError[pick];
-                }
-
-                if (total < best)
-                {
-                    best = total;
-                    result = (flip, diff, inten[0], inten[1]);
                 }
             }
         }
 
         return result;
+    }
+
+    /// <summary>
+    /// A sub-block's least squared error over the intensity tables with each texel's best modifier, and that table. Where no
+    /// modifier of a table clamps, a texel's error with modifier m is its error to the base colour plus 3m² − 2m·s (s the sum of
+    /// its differences from the base colour), so only the sign that matches s and the two sizes need a look.
+    /// </summary>
+    private static (long Error, int Table) SubBlockError(ReadOnlySpan<byte> original, ReadOnlySpan<byte> members, int sub, ReadOnlySpan<int> colour, bool differential)
+    {
+        int r = differential ? Etc.Extend5(colour[0]) : Etc.Extend4(colour[0]);
+        int g = differential ? Etc.Extend5(colour[1]) : Etc.Extend4(colour[1]);
+        int b = differential ? Etc.Extend5(colour[2]) : Etc.Extend4(colour[2]);
+        int low = Math.Min(r, Math.Min(g, b));
+        int high = Math.Max(r, Math.Max(g, b));
+        Span<int> base0 = stackalloc int[8];
+        Span<int> sum = stackalloc int[8];
+        Span<int> texel = stackalloc int[8];
+        int n = 0;
+        for (int t = 0; t < 16; t++)
+        {
+            if (members[t] == sub)
+            {
+                int dr = original[t * 4] - r, dg = original[(t * 4) + 1] - g, db = original[(t * 4) + 2] - b;
+                base0[n] = (dr * dr) + (dg * dg) + (db * db);
+                sum[n] = Math.Abs(dr + dg + db);
+                texel[n++] = t;
+            }
+        }
+
+        long best = long.MaxValue;
+        int pick = 0;
+        for (int table = 0; table < 8; table++)
+        {
+            int small = Etc.Modifiers[table * 2];
+            int large = Etc.Modifiers[(table * 2) + 1];
+            long error = 0;
+            if (low - large >= 0 && high + large <= 255)
+            {
+                int smallCost = 3 * small * small, largeCost = 3 * large * large;
+                for (int j = 0; j < n; j++)
+                {
+                    error += base0[j] + Math.Min(smallCost - (2 * small * sum[j]), largeCost - (2 * large * sum[j]));
+                }
+            }
+            else
+            {
+                for (int j = 0; j < n && error < best; j++)
+                {
+                    int t = texel[j];
+                    int pr = original[t * 4], pg = original[(t * 4) + 1], pb = original[(t * 4) + 2];
+                    error += Math.Min(
+                        Math.Min(Distance(r, g, b, -large, pr, pg, pb), Distance(r, g, b, -small, pr, pg, pb)),
+                        Math.Min(Distance(r, g, b, small, pr, pg, pb), Distance(r, g, b, large, pr, pg, pb)));
+                }
+            }
+
+            if (error < best)
+            {
+                best = error;
+                pick = table;
+            }
+        }
+
+        return (best, pick);
+
+        static int Distance(int r, int g, int b, int m, int pr, int pg, int pb)
+        {
+            int dr = Math.Clamp(r + m, 0, 255) - pr;
+            int dg = Math.Clamp(g + m, 0, 255) - pg;
+            int db = Math.Clamp(b + m, 0, 255) - pb;
+            return (dr * dr) + (dg * dg) + (db * db);
+        }
+    }
+
+    /// <summary>Moves one sub-block's quantised colours by an ETC1 bias field value (KDFS 25.8.3.2, "Applying ETCBI").</summary>
+    private static void ApplyBias(Span<int> colours, int limit, int bias)
+    {
+        for (int sub = 0; sub < 2; sub++)
+        {
+            for (int c = 0; c < 3; c++)
+            {
+                int delta = bias switch
+                {
+                    2 => sub == 0 && c == 0 ? -1 : 0,
+                    5 => sub == 0 && c == 1 ? -1 : 0,
+                    6 => sub == 0 && c == 2 ? -1 : 0,
+                    7 => sub == 0 && c == 0 ? 1 : 0,
+                    11 => sub == 0 && c == 1 ? 1 : 0,
+                    15 => sub == 0 && c == 2 ? 1 : 0,
+                    18 => sub == 1 && c == 0 ? -1 : 0,
+                    19 => sub == 1 && c == 1 ? -1 : 0,
+                    20 => sub == 1 && c == 2 ? -1 : 0,
+                    21 => sub == 1 && c == 0 ? 1 : 0,
+                    24 => sub == 1 && c == 1 ? 1 : 0,
+                    8 => sub == 1 && c == 2 ? 1 : 0,
+                    10 => -2,
+                    27 => sub == 1 ? 0 : -1,
+                    28 => sub == 1 ? -1 : 1,
+                    29 => sub == 1 ? 1 : 0,
+                    30 => sub == 1 ? -1 : 0,
+                    31 => sub == 1 ? 0 : 1,
+                    _ => ((bias / (c == 0 ? 1 : c == 1 ? 3 : 9)) % 3) - 1,
+                };
+                int v = colours[(sub * 3) + c];
+                if (v == 0)
+                {
+                    v = delta == -2 ? 3 : delta + 1;
+                }
+                else if (v == limit)
+                {
+                    v += delta - 1;
+                }
+                else
+                {
+                    v += delta;
+                    if (v < 0 || v > limit)
+                    {
+                        v = v - delta - delta;
+                    }
+                }
+
+                colours[(sub * 3) + c] = v;
+            }
+        }
     }
 
     /// <summary>
@@ -742,7 +1057,7 @@ internal static class UastcEncoder
 
             Pack(_best, block);
             Uastc.Unpack(block, _decoded);
-            _best.Hints = Hints(_decoded, _best.Mode);
+            _best.Hints = Hints(rgba, _decoded, _best);
             Pack(_best, block);
             return _best.Error;
         }
@@ -1581,6 +1896,7 @@ internal static class UastcEncoder
         private readonly bool[] _inside = new bool[16];
         private readonly byte[] _candidate = new byte[16];
         private readonly byte[] _best = new byte[16];
+        private readonly byte[] _kept = new byte[16];
         private readonly byte[] _scratch = new byte[64];
         private readonly int[] _window = new int[64 + 3];
         private readonly BlockFields _source = new();
@@ -1640,15 +1956,24 @@ internal static class UastcEncoder
                     if (Parse(block, _trial))
                     {
                         Decode(block, decoded);
-                        int hints = Hints(decoded, _trial.Mode);
+                        int hints = Hints(_texels, decoded, _trial);
                         if (hints != _trial.Hints)
                         {
+                            // Kept hints must not claim a BC1 shortcut that this block's own hints reject.
+                            _trial.Hints &= ~(Bc1HintMask(_trial.Mode) & ~hints);
+                            Pack(_trial, _kept);
                             _trial.Hints = hints;
                             Pack(_trial, _candidate);
-                            if (Bits(_candidate, blocks, start, i, out int distance) <= Bits(block, blocks, start, i, out _))
+                            double keptBits = Bits(_kept, blocks, start, i, out int keptDistance);
+                            if (Bits(_candidate, blocks, start, i, out int distance) <= keptBits)
                             {
                                 _candidate.CopyTo(block);
                                 _bestDistance = distance;
+                            }
+                            else
+                            {
+                                _kept.CopyTo(block);
+                                _bestDistance = keptDistance;
                             }
                         }
                     }

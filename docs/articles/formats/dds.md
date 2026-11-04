@@ -7,7 +7,7 @@ Egami.Formats.Extended package: register it with `WithDds()` or `WithExtendedFor
 | | |
 | --- | --- |
 | Reads | The legacy header (DXT1 to DXT5, ATI1 and ATI2, bit masks, luminance, alpha, P8 and A8P8 palettes, YUY2 and UYVY, the D3D9 float and bump formats) and the DX10 header's DXGI formats: BC1 to BC7 with BC6H unsigned and signed, UNORM, SNORM, sRGB, float, UINT and SINT formats, R10G10B10A2, R11G11B10 and R9G9B9E5 floats, the 565, 5551 and 4444 packed formats, depth and stencil, and the packed and planar video formats (AYUV, Y410, Y416, YUY2, Y210, Y216, NV12, P010, P016, NV11, P208, V208, V408). 2D textures, arrays, cube maps and volume textures, with their mips |
-| Writes | Uncompressed formats (8-bit RGBA, BGRA and BGRX, R8, R8G8, A8, 16-bit R, RG and RGBA, half and float RGBA, R32 float, float RGB, R10G10B10A2, R11G11B10 and R9G9B9E5 floats, 565, 5551 and 4444) and BC1 to BC7 with BC6H unsigned and signed, with mips, texture arrays and cube maps (`DdsWriterOptions`) |
+| Writes | Uncompressed formats (8-bit RGBA, BGRA and BGRX, R8, R8G8, A8, 16-bit R, RG and RGBA, half and float RGBA, R32 float, float RGB, R10G10B10A2, R11G11B10 and R9G9B9E5 floats, 565, 5551 and 4444), UINT and SINT in 8, 16 and 32 bits, D16, D24S8, D32F and D32FS8 depth, NV12, P010 and P016, and BC1 to BC7 with BC6H unsigned and signed, with mips, texture arrays and cube maps (`DdsWriterOptions`); volume textures through [Texture](ktx.md#textures) |
 | Natural pixel type | The nearest to the stored format: `Rgba8` for BC1, BC2, BC3, BC7 and 8-bit RGBA; `Gray8` for BC4 and R8; `Rgb8` for BC5 and R8G8; `Rgba16` for 16-bit UNORM; `RgbaF16` for BC6H, half floats and the packed floats; `RgbaF32`, `RgbF32` or `GrayF32` for 32-bit floats; `Rgb10A2`; `Bgr565`, `Bgra5551` and `Bgra4444` for the packed formats |
 | `FormatInfo` | `DdsFormat.Info`: name `DDS`, extension `.dds`, MIME types `image/vnd-ms.dds` and `image/x-dds` |
 
@@ -78,6 +78,17 @@ Save writes one texture with its full mip chain; `DdsWriterOptions` picks the re
 BC1 keeps alpha as on or off: a pixel below half alpha becomes transparent black. BC4 and the R formats take the raster's gray,
 BC5 and R8G8 its red and green. BC6H keeps no alpha; the unsigned form writes negative values as 0. The [Textures](../guides/textures.md)
 guide says which format suits which content.
+
+The writer also writes what the reader reads back for data rather than colour, each with the DX10 header. The UINT and SINT
+formats (`R8UInt` to `Rgba32SInt`, in 8, 16 and 32 bits) store the raster's channels as integers: 8- and 16-bit ones as they
+are, SINT offset by 128 or 32768 the way the reader maps them back (128 stores 0), and 32-bit ones from a float raster rounded
+and clamped to the type, exact up to 2²⁴. The depth formats `D16`, `D24S8`, `D32F` and `D32FS8` store the raster's gray as depth
+and 0 as stencil. `Nv12`, `P010` and `P016` store 4:2:0 video in BT.601 studio range, as the reader converts it back; they need
+an even width and height and write mip 0 alone, as Direct3D allows no mips for planar formats. The integer and depth formats
+also write mip 0 alone unless `MipLevels` asks for more, since averaged integers or depths rarely mean anything.
+
+`Texture` (in `Egami.Formats.Extended.Textures`, shared with KTX 2; see [KTX](ktx.md#textures)) loads a whole DDS file and saves
+one with exactly the mips it holds, hand-made ones included, and writes volume textures, which Save and SaveAll cannot express.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/FormatsExtended.cs#dds-save)]
 

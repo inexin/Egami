@@ -86,6 +86,96 @@ public enum DdsTextureFormat
 
     /// <summary>BC6H_SF16: signed half-float RGB for HDR, 8 bits a pixel. DX10 header.</summary>
     Bc6hSigned,
+
+    /// <summary>R8_UINT: one 8-bit unsigned integer, the raster's gray as 0 to 255. DX10 header.</summary>
+    R8UInt,
+
+    /// <summary>
+    /// R8_SINT: one 8-bit signed integer from the raster's gray, offset as the reader maps it back: 0 stores −128, 128 stores 0
+    /// and 255 stores 127. DX10 header.
+    /// </summary>
+    R8SInt,
+
+    /// <summary>R8G8_UINT: red and green as 8-bit unsigned integers. DX10 header.</summary>
+    Rg8UInt,
+
+    /// <summary>R8G8_SINT: red and green as 8-bit signed integers, offset by 128 as in <see cref="R8SInt"/>. DX10 header.</summary>
+    Rg8SInt,
+
+    /// <summary>R8G8B8A8_UINT: RGBA as 8-bit unsigned integers. DX10 header.</summary>
+    Rgba8UInt,
+
+    /// <summary>R8G8B8A8_SINT: RGBA as 8-bit signed integers, offset by 128 as in <see cref="R8SInt"/>. DX10 header.</summary>
+    Rgba8SInt,
+
+    /// <summary>R16_UINT: one 16-bit unsigned integer, the raster's gray as 0 to 65535. DX10 header.</summary>
+    R16UInt,
+
+    /// <summary>R16_SINT: one 16-bit signed integer from the raster's gray, offset by 32768: 32768 stores 0. DX10 header.</summary>
+    R16SInt,
+
+    /// <summary>R16G16_UINT: red and green as 16-bit unsigned integers. DX10 header.</summary>
+    Rg16UInt,
+
+    /// <summary>R16G16_SINT: red and green as 16-bit signed integers, offset by 32768 as in <see cref="R16SInt"/>. DX10 header.</summary>
+    Rg16SInt,
+
+    /// <summary>R16G16B16A16_UINT: RGBA as 16-bit unsigned integers. DX10 header.</summary>
+    Rgba16UInt,
+
+    /// <summary>R16G16B16A16_SINT: RGBA as 16-bit signed integers, offset by 32768 as in <see cref="R16SInt"/>. DX10 header.</summary>
+    Rgba16SInt,
+
+    /// <summary>
+    /// R32_UINT: one 32-bit unsigned integer, the raster's float gray rounded to the nearest integer and clamped to the type's
+    /// range; values up to 2²⁴ survive a float raster exactly. DX10 header.
+    /// </summary>
+    R32UInt,
+
+    /// <summary>R32_SINT: one 32-bit signed integer, the raster's float gray rounded as in <see cref="R32UInt"/>. DX10 header.</summary>
+    R32SInt,
+
+    /// <summary>R32G32_UINT: red and green as 32-bit unsigned integers, rounded as in <see cref="R32UInt"/>. DX10 header.</summary>
+    Rg32UInt,
+
+    /// <summary>R32G32_SINT: red and green as 32-bit signed integers, rounded as in <see cref="R32UInt"/>. DX10 header.</summary>
+    Rg32SInt,
+
+    /// <summary>R32G32B32_UINT: RGB as 32-bit unsigned integers, rounded as in <see cref="R32UInt"/>. DX10 header.</summary>
+    Rgb32UInt,
+
+    /// <summary>R32G32B32_SINT: RGB as 32-bit signed integers, rounded as in <see cref="R32UInt"/>. DX10 header.</summary>
+    Rgb32SInt,
+
+    /// <summary>R32G32B32A32_UINT: RGBA as 32-bit unsigned integers, rounded as in <see cref="R32UInt"/>. DX10 header.</summary>
+    Rgba32UInt,
+
+    /// <summary>R32G32B32A32_SINT: RGBA as 32-bit signed integers, rounded as in <see cref="R32UInt"/>. DX10 header.</summary>
+    Rgba32SInt,
+
+    /// <summary>D16_UNORM: 16-bit depth, the raster's gray. DX10 header.</summary>
+    D16,
+
+    /// <summary>D24_UNORM_S8_UINT: 24-bit depth from the raster's gray, stencil 0. DX10 header.</summary>
+    D24S8,
+
+    /// <summary>D32_FLOAT: float depth, the raster's gray. DX10 header.</summary>
+    D32F,
+
+    /// <summary>D32_FLOAT_S8X24_UINT: float depth from the raster's gray, stencil 0. DX10 header.</summary>
+    D32FS8,
+
+    /// <summary>
+    /// NV12: 8-bit 4:2:0 video, a Y′ plane then interleaved Cb and Cr at half size, BT.601 studio range. Width and height must be
+    /// even, and only mip 0 is written, as Direct3D has no mips for planar formats. DX10 header.
+    /// </summary>
+    Nv12,
+
+    /// <summary>P010: 10-bit 4:2:0 video, as <see cref="Nv12"/> with 16-bit samples holding 10 bits in their high bits. DX10 header.</summary>
+    P010,
+
+    /// <summary>P016: 16-bit 4:2:0 video, as <see cref="Nv12"/> with 16-bit samples. DX10 header.</summary>
+    P016,
 }
 
 /// <summary>Options for writing DDS.</summary>
@@ -116,7 +206,9 @@ public sealed class DdsWriterOptions : WriterOptions
     /// <summary>
     /// Gets how many mip levels to write: 0 (the default) for the full chain down to 1 × 1, 1 for mip 0 alone, or that many, at
     /// most the full chain. Mips average 2 × 2 blocks of premultiplied pixels (<see cref="MipChain"/>), in linear light for an
-    /// sRGB format.
+    /// sRGB format. A planar video format (<see cref="DdsTextureFormat.Nv12"/>, <see cref="DdsTextureFormat.P010"/>,
+    /// <see cref="DdsTextureFormat.P016"/>) writes mip 0 alone; an integer or depth format writes mip 0 alone unless a count is
+    /// given, since averaging its values rarely means anything.
     /// </summary>
     /// <exception cref="ArgumentOutOfRangeException">The value is negative.</exception>
     public int MipLevels

@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Runtime.InteropServices;
 
 using BenchmarkDotNet.Attributes;
@@ -9,8 +10,8 @@ namespace Egami.Benchmarks;
 
 /// <summary>
 /// The ETC, EAC, ASTC and UASTC block encoders and the ETC1S encoder (quality 128) the KTX writer will use, one thread, at the
-/// default effort 4: a 2048 × 2048 photo-like picture encoded block by block (ETC1S whole), so a change shows up in time and
-/// allocations. The encoders are slow next to the decoders, so
+/// default effort 4 (ETC1-E0 is ETC1 at effort 0): a 2048 × 2048 photo-like picture encoded block by block (ETC1S whole), so a
+/// change shows up in time and allocations. The encoders are slow next to the decoders, so
 /// a run measures three iterations after one warmup.
 /// </summary>
 [MemoryDiagnoser]
@@ -22,7 +23,7 @@ public class KtxEncodeBenchmarks
     private byte[] _rgba = [];
     private byte[] _blocks = [];
 
-    [Params("ETC1", "ETC2-RGB", "ETC2-RGBA", "EAC-R11", "ASTC-4x4", "ASTC-6x6", "ASTC-8x8", "UASTC", "ETC1S")]
+    [Params("ETC1", "ETC1-E0", "ETC2-RGB", "ETC2-RGBA", "EAC-R11", "ASTC-4x4", "ASTC-6x6", "ASTC-8x8", "ASTC-12x12", "UASTC", "ETC1S")]
     public string Format { get; set; } = "";
 
     [GlobalSetup]
@@ -48,13 +49,14 @@ public class KtxEncodeBenchmarks
 
         if (Format.StartsWith("ASTC", StringComparison.Ordinal))
         {
-            int footprint = Format[5] - '0';
+            int footprint = int.Parse(Format.AsSpan(5, Format.IndexOf('x') - 5), CultureInfo.InvariantCulture);
             return EncodeAstc(Astc.For(footprint, footprint)!);
         }
 
         Span<byte> texels = stackalloc byte[64];
         Span<ushort> red = stackalloc ushort[16];
         int unit = Format is "ETC2-RGBA" or "UASTC" ? 16 : 8;
+        int effort = Format == "ETC1-E0" ? 0 : Effort;
         int at = 0;
         for (int by = 0; by < Size; by += 4)
         {
@@ -68,8 +70,8 @@ public class KtxEncodeBenchmarks
                 Span<byte> block = _blocks.AsSpan(at, unit);
                 switch (Format)
                 {
-                    case "ETC1":
-                        EtcEncoder.EncodeRgb(texels, block, Effort, etc2: false, punchThrough: false);
+                    case "ETC1" or "ETC1-E0":
+                        EtcEncoder.EncodeRgb(texels, block, effort, etc2: false, punchThrough: false);
                         break;
                     case "ETC2-RGB":
                         EtcEncoder.EncodeRgb(texels, block, Effort, etc2: true, punchThrough: false);
