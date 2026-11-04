@@ -5,7 +5,8 @@ using Egami.Tests.Memory;
 namespace Egami.Tests.Formats.Jxl;
 
 /// <summary>
-/// The JPEG XL decoder holds its channels, coefficients and planes in managed arrays, so what it allocates grows with the image;
+/// The JPEG XL decoder holds its Modular channels, and for frames of several passes its coefficients, in managed arrays, and a
+/// single-pass lossy frame keeps the strips beside its group seams, so what it allocates grows with the image;
 /// these budgets cap the bytes per added pixel (roadmap 2.4.11) so that the growth cannot creep back up unnoticed. One thread,
 /// so every allocation is on the calling thread where the meter counts it.
 /// </summary>
@@ -17,8 +18,8 @@ public class JxlDecodeAllocationTests
     /// <summary>The settings the files are written with and their budgets in bytes per pixel, about a fifth above what each allocated when set.</summary>
     public static TheoryData<string, int> Budgets => AllocationMeter.Rows(new TheoryData<string, int>
     {
-        { "d1e3", 45 }, // 37.7 when set
-        { "d1e7", 50 }, // 41.9
+        { "d1e3", 3 }, // 2.0 when set, in the group pipeline (37.7 before it)
+        { "d1e7", 3 }, // 2.4 (41.9)
         { "ll-e1", 69 }, // 57.5
         { "ll-e3", 31 }, // 26.1
         { "ll-e7", 32 }, // 27

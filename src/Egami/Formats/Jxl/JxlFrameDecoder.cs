@@ -64,6 +64,19 @@ internal sealed class JxlFrameDecoder
     private JxlBitReader? _single;
     private int _decodedGroups;
 
+    // What LF global and the LF groups leave for the passes.
+    private JxlBitReader? _lfGlobal;
+    private JxlPatch[]? _patches;
+    private JxlSplines? _splines;
+    private float[]? _noise;
+    private float[] _lfDequant = [1f / 32, 1f / 4, 1f / 2];
+    private JxlVarDct? _varDct;
+    private JxlModularImage? _global;
+    private int _colorChannels;
+    private int _extraStart;
+    private int _prefix;
+    private int[]? _passOfShift;
+
     internal JxlFrameDecoder(byte[] codestream, JxlImageHeader image, JxlFrameHeader frame, JxlToc toc, long offset, SafetyLimits limits)
     {
         _codestream = codestream;
@@ -112,6 +125,81 @@ internal sealed class JxlFrameDecoder
     /// </summary>
     internal JxlFrameChannels Decode(float[][]? lfFrame, bool lfOnly)
     {
+        DecodeLf(lfFrame, keepCoefficients: true);
+        JxlVarDct? varDct = _varDct;
+        (long w, long h) = _frame.CodedSize;
+        if (lfOnly && varDct is not null)
+        {
+            int lw = (int)Ceil(w, 8);
+            int lh = (int)Ceil(h, 8);
+            return new JxlFrameChannels(lw, lh, _global!.Channels, 3, _extraStart)
+            {
+                ColorPlanes = varDct.LfImage(),
+                ColorStrides = [lw, lw, lw],
+                LfDequant = _lfDequant,
+                VarDct = varDct,
+            };
+        }
+
+        return DecodePasses(lfFrame);
+    }
+
+    /// <summary>
+    /// Decodes a VarDCT frame up to its pass groups for <see cref="JxlGroupPipeline"/>: LF global, the LF groups and HF global,
+    /// with the LF prepared, so that <see cref="DecodeGroupPixels"/> can take each group to pixels. A single-pass frame has no
+    /// frame-wide coefficient planes, as each group decodes straight to pixels; a frame of several passes decodes every pass
+    /// into them here, as the passes add to the same coefficients.
+    /// </summary>
+    internal JxlVarDct BeginGroups()
+    {
+        bool passes = _frame.Passes > 1;
+        DecodeLf(null, keepCoefficients: passes);
+        JxlVarDct varDct = _varDct!;
+        varDct.ReadHfGlobal(Section(1 + (int)_frame.LfGroups), GlobalTree, (int)_frame.LfGroups, (int)_frame.Groups);
+        if (passes)
+        {
+            DecodeAllPasses(new int[_frame.Groups], hfGlobal: true);
+        }
+
+        varDct.PrepareDirect();
+        JxlStageTimes.Lap(JxlStage.Dequantize);
+        return varDct;
+    }
+
+    /// <summary>Gets how many threads the pass groups may decode on: one when the frame is a single section, read in order.</summary>
+    internal JxlParallel GroupParallel => _toc.Sizes.Length > 1 ? Parallel : JxlParallel.Single;
+
+    /// <summary>Decodes pass group <paramref name="g"/> of a frame begun with <see cref="BeginGroups"/> into the scratch's pixels.</summary>
+    internal void DecodeGroupPixels(int g, JxlGroupScratch scratch)
+    {
+        if (_frame.Passes > 1)
+        {
+            _varDct!.ReconstructGroup(g, scratch);
+            return;
+        }
+
+        int lfGroups = (int)_frame.LfGroups;
+        Interlocked.Increment(ref _decodedGroups);
+        JxlBitReader pr = Section(1 + lfGroups + 1 + g);
+        _varDct!.DecodePassGroup(pr, 0, g, scratch);
+        DecodeGroupChannels(pr, 0, g);
+    }
+
+    /// <summary>Gets extra channel <paramref name="e"/> of a frame begun with <see cref="BeginGroups"/>, after <see cref="EndGroups"/>.</summary>
+    internal JxlChannel ExtraChannel(int e) => _global!.Channels[_extraStart + e];
+
+    /// <summary>Ends a frame begun with <see cref="BeginGroups"/>: the global Modular stream's inverse transforms.</summary>
+    internal void EndGroups()
+    {
+        _global!.Inverse(_lfGlobal!);
+    }
+
+    /// <summary>
+    /// Decodes LF global, then the LF groups: the VarDCT LF coefficients and HF metadata, and the Modular channels squeezed by 3
+    /// or more both ways. Leaves the frame's state in the fields for the passes.
+    /// </summary>
+    private void DecodeLf(float[][]? lfFrame, bool keepCoefficients)
+    {
         JxlStageTimes.Lap(JxlStage.Headers);
         (long w, long h) = _frame.CodedSize;
         int width = (int)w;
@@ -124,27 +212,31 @@ internal sealed class JxlFrameDecoder
         }
 
         JxlBitReader r = Section(0);
-        JxlPatch[]? patches = (_frame.Flags & 0x02) != 0 ? JxlFeatures.ReadPatches(r, _image, _frame) : null;
-        JxlSplines? splines = (_frame.Flags & 0x10) != 0 ? JxlFeatures.ReadSplines(r, _frame) : null;
-        float[]? noise = (_frame.Flags & 0x01) != 0 ? JxlFeatures.ReadNoise(r) : null;
+        _lfGlobal = r;
+        _patches = (_frame.Flags & 0x02) != 0 ? JxlFeatures.ReadPatches(r, _image, _frame) : null;
+        _splines = (_frame.Flags & 0x10) != 0 ? JxlFeatures.ReadSplines(r, _frame) : null;
+        _noise = (_frame.Flags & 0x01) != 0 ? JxlFeatures.ReadNoise(r) : null;
         float[] lfDequant = [1f / 32, 1f / 4, 1f / 2];
         if (!r.ReadBool())
         {
             lfDequant = [r.ReadF16(), r.ReadF16(), r.ReadF16()];
         }
 
+        _lfDequant = lfDequant;
         JxlVarDct? varDct = null;
         if (!_frame.Modular)
         {
-            varDct = new JxlVarDct(_image, _frame, JxlVarDctGlobal.Read(r), lfDequant, _limits);
+            varDct = new JxlVarDct(_image, _frame, JxlVarDctGlobal.Read(r), lfDequant, _limits, keepCoefficients);
         }
 
-        if (splines is not null)
+        _varDct = varDct;
+        if (_splines is not null)
         {
-            JxlFeatures.CheckSplineArea(splines, varDct?.Global.BaseCorrelationX ?? 0, varDct?.Global.BaseCorrelationB ?? 1, (long)_frame.Width * _frame.Height);
+            JxlFeatures.CheckSplineArea(_splines, varDct?.Global.BaseCorrelationX ?? 0, varDct?.Global.BaseCorrelationB ?? 1, (long)_frame.Width * _frame.Height);
         }
 
         int colorChannels = !_image.XybEncoded && !_frame.YCbCr && _image.ColorChannels == 1 ? 1 : 3;
+        _colorChannels = colorChannels;
         long samples = (long)width * height * (colorChannels + _image.ExtraChannels.Count);
         if (r.ReadBool())
         {
@@ -161,7 +253,7 @@ internal sealed class JxlFrameDecoder
             }
         }
 
-        int extraStart = coded.Count;
+        _extraStart = coded.Count;
         int colorUpsampling = System.Numerics.BitOperations.Log2((uint)_frame.Upsampling);
         for (int e = 0; e < _image.ExtraChannels.Count; e++)
         {
@@ -171,6 +263,7 @@ internal sealed class JxlFrameDecoder
 
         int bitDepth = _image.BitDepth.BitsPerSample;
         JxlModularImage global = JxlModularImage.Read(r, coded, GlobalTree, bitDepth, _limits);
+        _global = global;
         int groupDim = _frame.GroupDim;
         int prefix = 0;
         while (prefix < global.Channels.Count && (prefix < global.MetaChannels || (global.Channels[prefix].Width <= groupDim && global.Channels[prefix].Height <= groupDim)))
@@ -178,12 +271,12 @@ internal sealed class JxlFrameDecoder
             prefix++;
         }
 
+        _prefix = prefix;
+        _passOfShift = PassOfShift();
         global.Decode(r, 0, 0, prefix);
 
         // LF groups: VarDCT LF coefficients, the Modular channels squeezed by 3 or more both ways, then the VarDCT HF metadata.
         int lfGroups = (int)_frame.LfGroups;
-        int groups = (int)_frame.Groups;
-        int groupsPerRow = (int)Ceil(width, groupDim);
         int lfGroupsPerRow = (int)Ceil(width, groupDim * 8L);
         bool useLfFrame = (_frame.Flags & 0x20) != 0;
         if (varDct is not null && useLfFrame && lfFrame is null)
@@ -191,8 +284,7 @@ internal sealed class JxlFrameDecoder
             throw new CorruptDataException(JxlFormat.Info.Name, -1, "A frame uses an LF frame that the codestream did not give.");
         }
 
-        JxlParallel parallel = _toc.Sizes.Length > 1 ? Parallel : JxlParallel.Single;
-        parallel.For(lfGroups, lf =>
+        GroupParallel.For(lfGroups, lf =>
         {
             if (!Touches(lf % lfGroupsPerRow, lf / lfGroupsPerRow, groupDim * 8))
             {
@@ -228,20 +320,21 @@ internal sealed class JxlFrameDecoder
             varDct?.DecodeHfMetadata(lr, lf, GlobalTree, lfGroups);
         });
         JxlStageTimes.Lap(JxlStage.LfGroups);
+    }
 
-        if (lfOnly && varDct is not null)
-        {
-            int lw = (int)Ceil(width, 8);
-            int lh = (int)Ceil(height, 8);
-            return new JxlFrameChannels(lw, lh, global.Channels, 3, extraStart)
-            {
-                ColorPlanes = varDct.LfImage(),
-                ColorStrides = [lw, lw, lw],
-                LfDequant = lfDequant,
-                VarDct = varDct,
-            };
-        }
-
+    /// <summary>Decodes HF global and the pass groups of a frame whose LF <see cref="DecodeLf"/> decoded, then reconstructs its color.</summary>
+    private JxlFrameChannels DecodePasses(float[][]? lfFrame)
+    {
+        (long w, long h) = _frame.CodedSize;
+        int width = (int)w;
+        int height = (int)h;
+        JxlVarDct? varDct = _varDct;
+        JxlModularImage global = _global!;
+        int groupDim = _frame.GroupDim;
+        int lfGroups = (int)_frame.LfGroups;
+        int groups = (int)_frame.Groups;
+        int groupsPerRow = (int)Ceil(width, groupDim);
+        bool useLfFrame = (_frame.Flags & 0x20) != 0;
         int passes = _frame.Passes;
         bool hfGlobal = Has(1 + lfGroups);
         if (hfGlobal)
@@ -251,11 +344,57 @@ internal sealed class JxlFrameDecoder
 
         // How many passes of each group were decoded: a pass group comes after the group's earlier passes only.
         int[] done = new int[groups];
-        int[] passOfShift = PassOfShift();
+        DecodeAllPasses(done, hfGlobal);
+
+        if (done.Any(d => d < passes) && Arrived != long.MaxValue)
+        {
+            Complete = false;
+        }
+
+        JxlStageTimes.Lap(JxlStage.Entropy);
+        global.Inverse(_lfGlobal!);
+        JxlStageTimes.Lap(JxlStage.ModularInverse);
+        if (varDct is null)
+        {
+            return new JxlFrameChannels(width, height, global.Channels, _colorChannels, _extraStart) { LfDequant = _lfDequant, Patches = _patches, Splines = _splines, Noise = _noise };
+        }
+
+        if (CoefficientsOnly)
+        {
+            return new JxlFrameChannels(width, height, global.Channels, 3, _extraStart) { VarDct = varDct, LfDequant = _lfDequant };
+        }
+
+        float[][] planes = varDct.Reconstruct(useLfFrame ? lfFrame : null, Parallel);
+        if (!Complete)
+        {
+            FillFromLf(varDct, planes, done, hfGlobal, groupDim, groupsPerRow, (int)Ceil(width, 8), (int)Ceil(height, 8));
+        }
+
+        return new JxlFrameChannels(width, height, global.Channels, 3, _extraStart)
+        {
+            ColorPlanes = planes,
+            ColorStrides = [varDct.PlaneBlocksX(0) * 8, varDct.PlaneBlocksX(1) * 8, varDct.PlaneBlocksX(2) * 8],
+            LfDequant = _lfDequant,
+            VarDct = varDct,
+            Patches = _patches,
+            Splines = _splines,
+            Noise = _noise,
+        };
+    }
+
+    /// <summary>Decodes every pass of the needed groups that has arrived, counting each group's passes in <paramref name="done"/>.</summary>
+    private void DecodeAllPasses(int[] done, bool hfGlobal)
+    {
+        JxlVarDct? varDct = _varDct;
+        int groupDim = _frame.GroupDim;
+        int lfGroups = (int)_frame.LfGroups;
+        int groups = (int)_frame.Groups;
+        int groupsPerRow = (int)Ceil(_frame.CodedSize.Item1, groupDim);
+        int passes = _frame.Passes;
         for (int p = 0; p < passes && hfGlobal; p++)
         {
             // Passes add to the same coefficients, so they run in order; the groups of a pass are independent.
-            parallel.For(groups, g =>
+            GroupParallel.For(groups, g =>
             {
                 if (!Touches(g % groupsPerRow, g / groupsPerRow, groupDim))
                 {
@@ -271,63 +410,39 @@ internal sealed class JxlFrameDecoder
                 Interlocked.Increment(ref _decodedGroups);
                 JxlBitReader pr = Section(1 + lfGroups + 1 + (p * groups) + g);
                 varDct?.DecodePassGroup(pr, p, g);
-                List<(int Index, int X, int Y)> rects = [];
-                List<JxlChannel> parts = [];
-                for (int i = prefix; i < global.Channels.Count; i++)
-                {
-                    JxlChannel c = global.Channels[i];
-                    if (c.HShift >= 3 && c.VShift >= 3)
-                    {
-                        continue;
-                    }
-
-                    int shift = Math.Min(c.HShift, c.VShift);
-                    if (shift < 0 || passOfShift[shift] != p)
-                    {
-                        continue;
-                    }
-
-                    AddRect(c, i, g % groupsPerRow, g / groupsPerRow, groupDim >> c.HShift, groupDim >> c.VShift, rects, parts);
-                }
-
-                DecodeGroup(pr, 1 + (3 * lfGroups) + 17 + (p * groups) + g, global, rects, parts, bitDepth);
+                DecodeGroupChannels(pr, p, g);
             });
         }
+    }
 
-        if (done.Any(d => d < passes) && Arrived != long.MaxValue)
+    /// <summary>Decodes the Modular group channels that pass <paramref name="p"/> of group <paramref name="g"/> codes, after its VarDCT part.</summary>
+    private void DecodeGroupChannels(JxlBitReader pr, int p, int g)
+    {
+        JxlModularImage global = _global!;
+        int groupDim = _frame.GroupDim;
+        int groups = (int)_frame.Groups;
+        int lfGroups = (int)_frame.LfGroups;
+        int groupsPerRow = (int)Ceil(_frame.CodedSize.Item1, groupDim);
+        List<(int Index, int X, int Y)> rects = [];
+        List<JxlChannel> parts = [];
+        for (int i = _prefix; i < global.Channels.Count; i++)
         {
-            Complete = false;
+            JxlChannel c = global.Channels[i];
+            if (c.HShift >= 3 && c.VShift >= 3)
+            {
+                continue;
+            }
+
+            int shift = Math.Min(c.HShift, c.VShift);
+            if (shift < 0 || _passOfShift![shift] != p)
+            {
+                continue;
+            }
+
+            AddRect(c, i, g % groupsPerRow, g / groupsPerRow, groupDim >> c.HShift, groupDim >> c.VShift, rects, parts);
         }
 
-        JxlStageTimes.Lap(JxlStage.Entropy);
-        global.Inverse(r);
-        JxlStageTimes.Lap(JxlStage.ModularInverse);
-        if (varDct is null)
-        {
-            return new JxlFrameChannels(width, height, global.Channels, colorChannels, extraStart) { LfDequant = lfDequant, Patches = patches, Splines = splines, Noise = noise };
-        }
-
-        if (CoefficientsOnly)
-        {
-            return new JxlFrameChannels(width, height, global.Channels, 3, extraStart) { VarDct = varDct, LfDequant = lfDequant };
-        }
-
-        float[][] planes = varDct.Reconstruct(useLfFrame ? lfFrame : null, Parallel);
-        if (!Complete)
-        {
-            FillFromLf(varDct, planes, done, hfGlobal, groupDim, groupsPerRow, (int)Ceil(width, 8), (int)Ceil(height, 8));
-        }
-
-        return new JxlFrameChannels(width, height, global.Channels, 3, extraStart)
-        {
-            ColorPlanes = planes,
-            ColorStrides = [varDct.PlaneBlocksX(0) * 8, varDct.PlaneBlocksX(1) * 8, varDct.PlaneBlocksX(2) * 8],
-            LfDequant = lfDequant,
-            VarDct = varDct,
-            Patches = patches,
-            Splines = splines,
-            Noise = noise,
-        };
+        DecodeGroup(pr, 1 + (3 * lfGroups) + 17 + (p * groups) + g, global, rects, parts, _image.BitDepth.BitsPerSample);
     }
 
     /// <summary>
