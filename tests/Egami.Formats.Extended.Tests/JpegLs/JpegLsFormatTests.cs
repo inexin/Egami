@@ -276,6 +276,73 @@ public sealed class JpegLsFormatTests
         Assert.Equal(new Rgb8(0, 0, 0), back.Row(8)[9]);
     }
 
+    [Theory]
+    [InlineData(JpegLsInterleave.None)]
+    [InlineData(JpegLsInterleave.Line)]
+    [InlineData(JpegLsInterleave.Sample)]
+    public void KeepsRowsInPlaceWhereverARestartIntervalBreaks(JpegLsInterleave interleave)
+    {
+        // Cut the second interval (rows 8 to 15) at every byte, so decoding fails in each component and at each line of a group;
+        // the rows before and after it must stay where they belong, in planes and in streamed rows.
+        const int Size = 24;
+        ushort[] samples = [.. Enumerable.Range(0, Size * Size * 3).Select(i => (ushort)((i * 7919 / 3) % 251))];
+        byte[] clean = JpegLsTesting.Encode(samples, 3, Size, 8, new JpegLsWriterOptions { Interleave = interleave, RestartInterval = 8 });
+        int rst0 = Find(clean, 0xD0);
+        int rst1 = Find(clean, 0xD1);
+        int[] keep = [.. Enumerable.Range(0, 8).Concat(Enumerable.Range(16, Size - 16))];
+        for (int cut = rst0 + 3; cut < rst1 - 1; cut++)
+        {
+            byte[] file = (byte[])clean.Clone();
+            file[cut] = 0xFF;
+            file[cut + 1] = 0xD5;
+            try
+            {
+                JpegLsTesting.Decode(file, strict: false);
+            }
+            catch (Exception e)
+            {
+                throw new InvalidOperationException($"Cut at {cut - rst0} of {rst1 - rst0}: {e.Message}", e);
+            }
+
+            if (interleave == JpegLsInterleave.None)
+            {
+                // One scan per component: the first scan's damage must not shift the others.
+                (_, ushort[][] planes, _) = JpegLsTesting.Decode(file, strict: false);
+                Check(planes[0], 0);
+                Check(planes[1], 1);
+                Check(planes[2], 2);
+                continue;
+            }
+
+            (_, ushort[][] whole, _) = JpegLsTesting.Decode(file, strict: false);
+            for (int c = 0; c < 3; c++)
+            {
+                Check(whole[c], c);
+            }
+
+            using Raster<Rgb8> back = Raster.Load<Rgb8>(file, TestImages.Context);
+            foreach (int y in keep)
+            {
+                for (int x = 0; x < Size; x++)
+                {
+                    int at = ((y * Size) + x) * 3;
+                    Assert.True(new Rgb8((byte)samples[at], (byte)samples[at + 1], (byte)samples[at + 2]) == back.Row(y)[x], $"Cut at {cut - rst0}: streamed row {y}, column {x} differs.");
+                }
+            }
+
+            void Check(ushort[] plane, int c)
+            {
+                foreach (int y in keep)
+                {
+                    for (int x = 0; x < Size; x++)
+                    {
+                        Assert.True(samples[(((y * Size) + x) * 3) + c] == plane[(y * Size) + x], $"Cut at {cut - rst0}: component {c}, row {y}, column {x} differs.");
+                    }
+                }
+            }
+        }
+    }
+
     [Fact]
     public void ChecksTheSampleWritersArguments()
     {

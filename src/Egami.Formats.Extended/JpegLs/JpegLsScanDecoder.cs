@@ -28,6 +28,7 @@ internal sealed class JpegLsScanDecoder
     private readonly int _restart;
     private readonly Action<string, string> _warn;
     private readonly int[] _sampleQ;
+    private readonly int[] _groupStart;
     private JpegLsBitReader _reader;
     private int _segmentEnd;
     private int _group;
@@ -102,6 +103,7 @@ internal sealed class JpegLsScanDecoder
 
         _state = new JpegLsState(_p);
         _sampleQ = new int[count];
+        _groupStart = new int[_lanes.Length];
         _restart = header.RestartInterval;
         Near = near;
         Interleave = _interleave;
@@ -163,6 +165,11 @@ internal sealed class JpegLsScanDecoder
 
         if (!_skipToRestart)
         {
+            for (int i = 0; i < _lanes.Length; i++)
+            {
+                _groupStart[i] = _lanes[i].Y;
+            }
+
             try
             {
                 DecodeLines(sink);
@@ -181,10 +188,20 @@ internal sealed class JpegLsScanDecoder
                 _skipToRestart = true;
             }
         }
-
-        foreach (Lane lane in _lanes)
+        else
         {
-            for (int i = 0; i < lane.Lines && lane.Y < lane.Component.Height; i++)
+            for (int i = 0; i < _lanes.Length; i++)
+            {
+                _groupStart[i] = _lanes[i].Y;
+            }
+        }
+
+        // Blank the lines of the group no line was given for: those after the ones decoded before the damage, if any.
+        for (int i = 0; i < _lanes.Length; i++)
+        {
+            Lane lane = _lanes[i];
+            int end = (int)Math.Min((long)_groupStart[i] + lane.Lines, lane.Component.Height);
+            while (lane.Y < end)
             {
                 sink.Line(lane.Component.Index, lane.Y++, new int[lane.Component.Width]);
             }
@@ -249,6 +266,13 @@ internal sealed class JpegLsScanDecoder
                 {
                     at = m;
                     break;
+                }
+
+                if (_data[m + 1] == 0xFF)
+                {
+                    // A fill byte before a marker.
+                    search = m + 1;
+                    continue;
                 }
 
                 if (_data[m + 1] is < JpegLsMarker.Rst0 or > JpegLsMarker.Rst0 + 7)
