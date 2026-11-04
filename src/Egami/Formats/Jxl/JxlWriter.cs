@@ -1,6 +1,9 @@
 using System.Buffers.Binary;
 using System.IO.Compression;
+using System.Numerics;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Runtime.Intrinsics;
 
 using Egami.Colors;
 using Egami.Metadata;
@@ -723,13 +726,42 @@ internal sealed partial class JxlWriter : IFormatWriter, IRowFormatWriter
             _ => 65535,
         };
 
-        internal void Add8(ReadOnlySpan<Rgba8> row, int y) => Add(MemoryMarshal.AsBytes(row), y, static (b, i) => b[i]);
+        // Fully optimized from the first call: its vector code is slow before tiering.
+        [MethodImpl(MethodImplOptions.AggressiveOptimization)]
+        internal void Add8(ReadOnlySpan<Rgba8> row, int y)
+        {
+            // Eight pixels at a time: each channel is a byte of the pixel's 32 bits.
+            int x = 0;
+            if (Vector256.IsHardwareAccelerated)
+            {
+                int at = y * _width;
+                ReadOnlySpan<uint> pixels = MemoryMarshal.Cast<Rgba8, uint>(row);
+                Vector256<uint> mask = Vector256.Create(0xFFu);
+                for (; x + 8 <= _width; x += 8)
+                {
+                    Vector256<uint> v = Vector256.Create(pixels.Slice(x, 8));
+                    (v & mask).AsInt32().CopyTo(_color[0].AsSpan(at + x));
+                    if (_color.Length == 3)
+                    {
+                        ((v >> 8) & mask).AsInt32().CopyTo(_color[1].AsSpan(at + x));
+                        ((v >> 16) & mask).AsInt32().CopyTo(_color[2].AsSpan(at + x));
+                    }
 
-        internal void Add16(ReadOnlySpan<Rgba16> row, int y) => Add(MemoryMarshal.Cast<Rgba16, ushort>(row), y, static (s, i) => s[i]);
+                    if (_alpha is not null)
+                    {
+                        (v >> 24).AsInt32().CopyTo(_alpha.AsSpan(at + x));
+                    }
+                }
+            }
 
-        internal void AddF32(ReadOnlySpan<RgbaF32> row, int y) => Add(MemoryMarshal.Cast<RgbaF32, int>(row), y, static (s, i) => s[i]);
+            Add(MemoryMarshal.AsBytes(row), y, x);
+        }
 
-        internal void AddF16(ReadOnlySpan<RgbaF16> row, int y) => Add(MemoryMarshal.Cast<RgbaF16, ushort>(row), y, static (s, i) => s[i]);
+        internal void Add16(ReadOnlySpan<Rgba16> row, int y) => Add(MemoryMarshal.Cast<Rgba16, ushort>(row), y, 0);
+
+        internal void AddF32(ReadOnlySpan<RgbaF32> row, int y) => Add(MemoryMarshal.Cast<RgbaF32, int>(row), y, 0);
+
+        internal void AddF16(ReadOnlySpan<RgbaF16> row, int y) => Add(MemoryMarshal.Cast<RgbaF16, ushort>(row), y, 0);
 
         /// <summary>Gets the alpha plane, or <see langword="null"/>.</summary>
         internal int[]? Alpha => _alpha;
@@ -770,22 +802,24 @@ internal sealed partial class JxlWriter : IFormatWriter, IRowFormatWriter
             };
         }
 
-        private void Add<T>(ReadOnlySpan<T> samples, int y, Func<ReadOnlySpan<T>, int, int> get)
+        /// <summary>Splits a row's samples (four a pixel) into the planes, from pixel <paramref name="from"/> on.</summary>
+        private void Add<T>(ReadOnlySpan<T> samples, int y, int from)
+            where T : IBinaryInteger<T>
         {
             int at = y * _width;
-            for (int x = 0; x < _width; x++)
+            for (int x = from; x < _width; x++)
             {
                 int s = x * 4;
-                _color[0][at + x] = get(samples, s);
+                _color[0][at + x] = int.CreateTruncating(samples[s]);
                 if (_color.Length == 3)
                 {
-                    _color[1][at + x] = get(samples, s + 1);
-                    _color[2][at + x] = get(samples, s + 2);
+                    _color[1][at + x] = int.CreateTruncating(samples[s + 1]);
+                    _color[2][at + x] = int.CreateTruncating(samples[s + 2]);
                 }
 
                 if (_alpha is not null)
                 {
-                    _alpha[at + x] = get(samples, s + 3);
+                    _alpha[at + x] = int.CreateTruncating(samples[s + 3]);
                 }
             }
         }
