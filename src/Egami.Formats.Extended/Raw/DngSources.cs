@@ -1,3 +1,4 @@
+using System.Buffers;
 using System.Runtime.InteropServices;
 
 using Egami.Colors;
@@ -38,6 +39,11 @@ internal static class DngSources
             if (!dngSource && frame.Cfa is { Rows: not 2 } or { Columns: not 2 })
             {
                 pixels = CropToActive(frame, pixels, input);
+            }
+
+            if (!dngSource && sensor.Codec == RawCodec.Nikon && sensor.CodecData is NikonMeta meta && !pixels.IsFloat)
+            {
+                Uncurve(frame, pixels, MakerDecoders.NikonCurve(meta, sensor.Bits));
             }
 
             if (frame.Profile.ColorMatrix1 is null)
@@ -92,6 +98,77 @@ internal static class DngSources
         frame.Active = new Rect(0, 0, active.Width, active.Height);
         pixels.Dispose();
         return cropped;
+    }
+
+    /// <summary>
+    /// Stores a lossy NEF's codes as decoded, before its curve, with the curve as the DNG's LinearizationTable, as Adobe DNG
+    /// Converter does: the codes span a few hundred values where the curve's span thousands, so they compress much smaller,
+    /// and a reader applying the table gets the same values back. Kept as they are when the curve is the identity over the
+    /// codes used, falls anywhere over them, or misses a value the data holds.
+    /// </summary>
+    private static void Uncurve(RawFrame frame, RawPixels pixels, ushort[] curve)
+    {
+        // The decoder clamps its codes to 14 bits; each value gets the smallest code the curve maps to it.
+        int[] code = ArrayPool<int>.Shared.Rent(65536);
+        try
+        {
+            Uncurve(frame, pixels, curve, code);
+        }
+        finally
+        {
+            ArrayPool<int>.Shared.Return(code);
+        }
+    }
+
+    private static void Uncurve(RawFrame frame, RawPixels pixels, ushort[] curve, int[] code)
+    {
+        const int Codes = 0x4000;
+        Array.Fill(code, -1, 0, 65536);
+        for (int c = Codes - 1; c >= 0; c--)
+        {
+            code[curve[c]] = c;
+        }
+
+        int most = 0, width = pixels.Width * pixels.Samples;
+        for (int y = 0; y < pixels.Height; y++)
+        {
+            foreach (ushort v in pixels.U16Row(y)[..width])
+            {
+                int c = code[v];
+                if (c < 0)
+                {
+                    return;
+                }
+
+                most = Math.Max(most, c);
+            }
+        }
+
+        bool identity = true;
+        for (int c = 0; c <= most; c++)
+        {
+            identity &= curve[c] == c;
+            if (c > 0 && curve[c] < curve[c - 1])
+            {
+                return;
+            }
+        }
+
+        if (identity)
+        {
+            return;
+        }
+
+        for (int y = 0; y < pixels.Height; y++)
+        {
+            Span<ushort> row = pixels.U16Row(y)[..width];
+            for (int x = 0; x < row.Length; x++)
+            {
+                row[x] = (ushort)code[row[x]];
+            }
+        }
+
+        frame.Linearization = curve[..(most + 1)];
     }
 
     /// <summary>Where the maker note was: its file's byte order and the offset of EXIF's MakerNote, for DNGPrivateData.</summary>
