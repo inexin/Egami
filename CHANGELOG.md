@@ -182,6 +182,10 @@ KTX stage D (writing and whole textures; roadmap 2.3.11). Additive.
   exactly the mips it holds. DDS volume textures are written through it.
 - The DDS writer adds the UINT and SINT formats, D16, D24S8, D32F and D32FS8 depth, and NV12, P010 and P016. Integer and depth
   formats, in DDS and KTX 2, write mip 0 alone unless `MipLevels` asks for more.
+- Faster, better block encoders, one thread on a 2048² photo: ETC1 and ETC2 at effort 4 about 4.5 times faster with the same
+  output (effort 0 is a new fast tier, about 30 megapixels a second), EAC searched in vectors; ASTC at effort 4 0.4 to 0.6 dB
+  better and about twice as fast, within 0.25 dB of astcenc `-medium` at 0.5 times its speed or better; ETC1S 1.8 dB better
+  and 3.3 times faster; UASTC fills the BC1 and ETC1 bias transcoder hints.
 
 ## Egami train 1.4.0, Egami.SystemDrawing 1.0.0-preview.3 and Egami.Metafiles 1.0.2 (2026-11-01)
 
