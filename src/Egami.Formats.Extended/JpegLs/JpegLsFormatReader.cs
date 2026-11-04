@@ -19,7 +19,7 @@ internal sealed class JpegLsFormatReader : ExtendedReader
 
     public override RasterInfo ReadInfo(EgamiInput input, ReaderOptions options)
     {
-        byte[] prefix = ReadPrefix(input, out int length);
+        byte[] prefix = ReadHead(input, out int length, out _);
         JpegLsDecoder decoder = Open(input, prefix, length, static (_, _) => { });
         Plan plan = Plan.For(decoder.Header, decoder.FirstScan, static (_, _) => { });
         return Describe(JpegLsFormat.Info, decoder.Header.Width, decoder.Header.Height, plan.Layout,
@@ -28,22 +28,28 @@ internal sealed class JpegLsFormatReader : ExtendedReader
 
     public override RowReader Open(EgamiInput input, ReaderOptions options)
     {
-        byte[] prefix = ReadPrefix(input, out int prefixLength);
+        byte[] prefix = ReadHead(input, out int prefixLength, out bool whole);
         JpegLsDecoder probe = Open(input, prefix, prefixLength, static (_, _) => { });
         JpegLsHeader header = probe.Header;
         input.CheckFrameSize(header.Width, header.Height);
+        byte[] data = prefix;
+        int length = prefixLength;
+        if (!whole)
+        {
+            // The coded data is at most about LIMIT bits a sample; anything far beyond is not image data.
+            long samples = header.Components.Sum(c => (long)c.Width * c.Height);
+            long max = prefixLength + (samples * 8) + (1 << 20);
+            byte[] rest = InputData.ReadToEnd(input, max - prefixLength, out int restLength);
+            input.CheckMemory(prefixLength + (long)restLength);
+            data = new byte[prefixLength + restLength];
+            prefix.AsSpan(0, prefixLength).CopyTo(data);
+            rest.AsSpan(0, restLength).CopyTo(data.AsSpan(prefixLength));
+            length = data.Length;
+        }
 
-        // The coded data is at most about LIMIT bits a sample; anything far beyond is not image data.
-        long samples = header.Components.Sum(c => (long)c.Width * c.Height);
-        long max = prefixLength + (samples * 8) + (1 << 20);
-        byte[] rest = InputData.ReadToEnd(input, max - prefixLength, out int restLength);
-        input.CheckMemory(prefixLength + (long)restLength);
-        byte[] data = new byte[prefixLength + restLength];
-        prefix.AsSpan(0, prefixLength).CopyTo(data);
-        rest.AsSpan(0, restLength).CopyTo(data.AsSpan(prefixLength));
         List<(string Name, string Message)> warnings = [];
         void Warn(string name, string message) => warnings.Add((name, message));
-        JpegLsDecoder decoder = Open(input, data, data.Length, Warn);
+        JpegLsDecoder decoder = Open(input, data, length, Warn);
         Plan plan = Plan.For(decoder.Header, decoder.FirstScan, Warn);
         RowReader rows = plan.Layout.ChannelOrder switch
         {
@@ -75,6 +81,40 @@ internal sealed class JpegLsFormatReader : ExtendedReader
     {
         long lines = header.Components.Sum(c => (c.Width + 2L) * 4 * 2);
         return streams ? lines : lines + header.Components.Sum(c => (long)c.Width * c.Height * 2);
+    }
+
+    /// <summary>
+    /// Reads the stream up to and including the first SOS segment, or, when the frame leaves the height to a DNL segment after
+    /// the scan data, the whole stream (<paramref name="whole"/>), each step checked against the memory budget and the width
+    /// checked against the limits first.
+    /// </summary>
+    private static byte[] ReadHead(EgamiInput input, out int length, out bool whole)
+    {
+        byte[] prefix = ReadPrefix(input, out length);
+        JpegLsHeader? later;
+        try
+        {
+            later = JpegLsDecoder.HeightAfterScan(prefix, length);
+        }
+        catch (JpegLsDataException e)
+        {
+            throw input.Corrupt(0, e.Message);
+        }
+
+        whole = later is not null;
+        if (later is null)
+        {
+            return prefix;
+        }
+
+        input.CheckFrameSize((int)Math.Min(later.Oversize?.Width is > 0 and long w ? w : later.Width, int.MaxValue), 1);
+        byte[] rest = InputData.ReadToEnd(input, Array.MaxLength - length, out int restLength);
+        input.CheckMemory(length + (long)restLength);
+        byte[] data = new byte[length + restLength];
+        prefix.AsSpan(0, length).CopyTo(data);
+        rest.AsSpan(0, restLength).CopyTo(data.AsSpan(length));
+        length = data.Length;
+        return data;
     }
 
     /// <summary>Reads the stream up to and including the first SOS segment.</summary>

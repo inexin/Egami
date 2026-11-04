@@ -55,6 +55,18 @@ internal sealed class JpegLsDecoder
         Streams = !Header.Subsampled && _scan.Components.Count() == Header.Components.Length;
     }
 
+    /// <summary>
+    /// Returns the header up to the first scan when its frame gives no height (0 lines and no LSE size), so the height comes
+    /// from a DNL segment after the scan data; otherwise <see langword="null"/>.
+    /// </summary>
+    public static JpegLsHeader? HeightAfterScan(byte[] data, int length)
+    {
+        JpegLsHeader header = new();
+        int at = 2;
+        int sos = JpegLsSegments.NextScan(data, length, ref at, header, false, static (_, _) => { });
+        return sos >= 0 && header.HeightLater && header.Oversize is not { Height: > 0 } ? header : null;
+    }
+
     /// <summary>Gets what the header says.</summary>
     public JpegLsHeader Header { get; } = new();
 

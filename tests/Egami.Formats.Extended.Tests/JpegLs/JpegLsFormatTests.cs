@@ -207,6 +207,57 @@ public sealed class JpegLsFormatTests
     }
 
     [Fact]
+    public void ReadsTheHeightFromADnlSegment()
+    {
+        // A frame header of 0 lines with the height in a DNL segment after the scan (T.87 C.2.5).
+        using Raster<Gray8> photo = Photo<Gray8>(9, 7);
+        byte[] file = TestImages.Save(photo, "JPEG-LS");
+        int sof = Find(file, 0xF7);
+        file[sof + 5] = 0;
+        file[sof + 6] = 0;
+        byte[] dnl = [0xFF, 0xDC, 0, 4, 0, 7];
+        file = [.. file[..^2], .. dnl, 0xFF, 0xD9];
+        RasterInfo info = Raster.Probe(file, TestImages.Context);
+        Assert.Equal((9, 7), (info.Width, info.Height));
+        using Raster<Gray8> back = Raster.Load<Gray8>(file, TestImages.Context);
+        for (int y = 0; y < 7; y++)
+        {
+            Assert.True(photo.Row(y).SequenceEqual(back.Row(y)), $"Row {y} differs.");
+        }
+
+        // Without the DNL segment the height is unknown.
+        byte[] missing = [.. file[..^8], 0xFF, 0xD9];
+        Assert.ThrowsAny<EgamiException>(() => Raster.Probe(missing, TestImages.Context));
+    }
+
+    [Fact]
+    public void BlanksOnlyTheDamagedRowsOfASampleInterleavedScan()
+    {
+        const int Size = 32;
+        ushort[] samples = [.. Enumerable.Range(0, Size * Size * 3).Select(i => (ushort)((i * 7919 / 3) % 251))];
+        byte[] file = JpegLsTesting.Encode(samples, 3, Size, 8, new JpegLsWriterOptions { Interleave = JpegLsInterleave.Sample, RestartInterval = 8 });
+
+        // A stray marker inside the second interval (rows 8 to 15) cuts it short.
+        int rst0 = Find(file, 0xD0);
+        int rst1 = Find(file, 0xD1);
+        int middle = (rst0 + rst1) / 2;
+        file[middle] = 0xFF;
+        file[middle + 1] = 0xD5;
+        (_, ushort[][] planes, List<string> warnings) = JpegLsTesting.Decode(file, strict: false);
+        Assert.Contains(warnings, w => w.StartsWith("IntervalDamaged", StringComparison.Ordinal));
+        for (int c = 0; c < 3; c++)
+        {
+            foreach (int y in Enumerable.Range(0, 8).Concat(Enumerable.Range(16, Size - 16)))
+            {
+                for (int x = 0; x < Size; x++)
+                {
+                    Assert.True(samples[(((y * Size) + x) * 3) + c] == planes[c][(y * Size) + x], $"Component {c}, row {y}, column {x} differs.");
+                }
+            }
+        }
+    }
+
+    [Fact]
     public void ChecksTheSampleWritersArguments()
     {
         ushort[] samples = new ushort[12];

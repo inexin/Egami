@@ -286,12 +286,12 @@ internal sealed class JpegLsScanDecoder
     {
         if (_interleave == 2)
         {
+            // Every lane is on the same row; each moves on, so a damaged interval later blanks the right rows of all of them.
             DecodeSampleLine();
-            int y = _lanes[0].Y++;
             foreach (Lane lane in _lanes)
             {
                 lane.Swap();
-                sink.Line(lane.Component.Index, y, lane.Previous.AsSpan(1, lane.Component.Width));
+                sink.Line(lane.Component.Index, lane.Y++, lane.Previous.AsSpan(1, lane.Component.Width));
             }
 
             return;
