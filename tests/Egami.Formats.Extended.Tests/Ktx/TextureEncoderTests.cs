@@ -239,6 +239,66 @@ public class TextureEncoderTests
     }
 
     [Fact]
+    public void UastcFillsTheTranscoderHints()
+    {
+        byte[] opaque = (byte[])Duck.Value.Clone();
+        for (int i = 3; i < opaque.Length; i += 4)
+        {
+            opaque[i] = 255;
+        }
+
+        foreach (byte[] image in new[] { opaque, Duck.Value })
+        {
+            byte[] blocks = EncodeUastc(image, 4, parallel: true);
+            int interpolated = 0, hint0 = 0, hint1 = 0, biased = 0;
+            byte[] expected = new byte[64];
+            byte[] actual = new byte[64];
+            for (int b = 0; b < blocks.Length; b += 16)
+            {
+                byte[] block = blocks[b..(b + 16)];
+                int mode = Uastc.Mode(block[0]);
+                if (mode == 8)
+                {
+                    continue;
+                }
+
+                // The hints follow the mode: BC1H0, BC1H1 (not in modes 10 to 12), the ETC1 flip, mode and tables, then the bias.
+                interpolated++;
+                int at = Uastc.ModeLengths[mode];
+                bool hasHint1 = mode is not (10 or 11 or 12);
+                hint0 += Bit(block, at);
+                hint1 += hasHint1 ? Bit(block, at + 1) : 0;
+                if (hasHint1)
+                {
+                    int bias = 0;
+                    for (int i = 0; i < 5; i++)
+                    {
+                        bias |= Bit(block, at + 10 + i) << i;
+                    }
+
+                    biased += bias != 13 ? 1 : 0;
+                }
+
+                // Hints only guide transcoders: clearing them leaves the decoded texels as they were.
+                Assert.True(Uastc.Unpack(block, expected));
+                for (int i = at; i < at + Uastc.HintBits[mode]; i++)
+                {
+                    block[i >> 3] &= (byte)~(1 << (i & 7));
+                }
+
+                Assert.True(Uastc.Unpack(block, actual));
+                Assert.Equal(expected, actual);
+            }
+
+            Assert.True(hint0 > interpolated / 10, $"BC1H0 in {hint0} of {interpolated} blocks");
+            Assert.True(image != opaque || hint1 > interpolated / 10, $"BC1H1 in {hint1} of {interpolated} blocks");
+            Assert.True(biased > interpolated / 20, $"an ETC1 bias other than 13 in {biased} of {interpolated} blocks");
+        }
+
+        static int Bit(byte[] block, int i) => (block[i >> 3] >> (i & 7)) & 1;
+    }
+
+    [Fact]
     public void UastcRdoShrinksTheZstandardStream()
     {
         byte[] blocks = EncodeUastc(Duck.Value, 4, parallel: false);
