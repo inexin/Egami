@@ -45,7 +45,7 @@ internal static class PsdLayerReader
                 {
                     pixels?.Dispose();
                     ink?.Dispose();
-                    mask?.Pixels.Dispose();
+                    mask?.Release();
                     open.Add([]);
                     imageOf[r] = -1;
                     continue;
@@ -79,7 +79,7 @@ internal static class PsdLayerReader
             {
                 pixels?.Dispose();
                 ink?.Dispose();
-                mask?.Pixels.Dispose();
+                mask?.Release();
             }
 
             throw;
@@ -236,19 +236,46 @@ internal static class PsdLayerReader
         {
             pixels?.Dispose();
             ink?.Dispose();
-            mask?.Pixels.Dispose();
+            mask?.Release();
             throw;
         }
     }
 
     private static PsdMask? MaskOf(PsdPlaneSet planes, PsdFile file, EgamiInput input)
     {
-        PsdMaskRecord? record = planes.Record.Mask;
-        if (record is null || planes.Mask is null)
+        PsdLayerRecord layer = planes.Record;
+        if (layer.Mask is not PsdMaskRecord record || planes.Mask is null)
         {
             return null;
         }
 
+        Raster pixels = MaskPixels(planes.Mask, record, file, input);
+        Raster? real = null;
+        try
+        {
+            PsdMask? combined = null;
+            if (layer.RealMask is PsdMaskRecord r && planes.RealMask is not null && r.Size.Width > 0 && r.Size.Height > 0)
+            {
+                real = MaskPixels(planes.RealMask, r, file, input);
+                combined = new PsdMask(real, new Rect(r.Left, r.Top, r.Size.Width, r.Size.Height), r.DefaultColor, r.Disabled, 1, 0);
+            }
+
+            return new PsdMask(pixels, new Rect(record.Left, record.Top, record.Size.Width, record.Size.Height), record.DefaultColor, record.Disabled, layer.UserMaskDensity / 255f, layer.UserMaskFeather)
+            {
+                Real = combined,
+            };
+        }
+        catch
+        {
+            pixels.Dispose();
+            real?.Dispose();
+            throw;
+        }
+    }
+
+    /// <summary>Reads a mask plane into a gray raster of the file's depth.</summary>
+    private static Raster MaskPixels(byte[] plane, PsdMaskRecord record, PsdFile file, EgamiInput input)
+    {
         (int width, int height) = record.Size;
         Raster raster;
         int rowBytes = PsdChannels.RowBytes(width, file.Depth);
@@ -260,7 +287,7 @@ internal static class PsdLayerReader
                     for (int y = 0; y < height; y++)
                     {
                         Span<ushort> row = MemoryMarshal.Cast<Gray16, ushort>(gray.Row(y));
-                        ReadOnlySpan<byte> source = planes.Mask.AsSpan(y * rowBytes, rowBytes);
+                        ReadOnlySpan<byte> source = plane.AsSpan(y * rowBytes, rowBytes);
                         for (int x = 0; x < width; x++)
                         {
                             row[x] = BinaryPrimitives.ReadUInt16BigEndian(source[(2 * x)..]);
@@ -277,7 +304,7 @@ internal static class PsdLayerReader
                     for (int y = 0; y < height; y++)
                     {
                         Span<float> row = MemoryMarshal.Cast<GrayF32, float>(gray.Row(y));
-                        ReadOnlySpan<byte> source = planes.Mask.AsSpan(y * rowBytes, rowBytes);
+                        ReadOnlySpan<byte> source = plane.AsSpan(y * rowBytes, rowBytes);
                         for (int x = 0; x < width; x++)
                         {
                             row[x] = BinaryPrimitives.ReadSingleBigEndian(source[(4 * x)..]);
@@ -293,7 +320,7 @@ internal static class PsdLayerReader
                     Raster<Gray8> gray = input.CreateRaster<Gray8>(width, height);
                     for (int y = 0; y < height; y++)
                     {
-                        planes.Mask.AsSpan(y * rowBytes, width).CopyTo(MemoryMarshal.AsBytes(gray.Row(y)));
+                        plane.AsSpan(y * rowBytes, width).CopyTo(MemoryMarshal.AsBytes(gray.Row(y)));
                     }
 
                     raster = gray;
@@ -301,8 +328,7 @@ internal static class PsdLayerReader
                 }
         }
 
-        PsdLayerRecord layer = planes.Record;
-        return new PsdMask(raster, new Rect(record.Left, record.Top, width, height), record.DefaultColor, record.Disabled, layer.UserMaskDensity / 255f, layer.UserMaskFeather);
+        return raster;
     }
 
     /// <summary>Builds the layer's raster in its natural type with straight alpha; missing color channels are 0, a missing transparency opaque.</summary>

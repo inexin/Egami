@@ -204,7 +204,7 @@ internal sealed class PsdReader : IFormatReader, IRowSourceReader
                 {
                     pixels?.Dispose();
                     ink?.Dispose();
-                    mask?.Pixels.Dispose();
+                    mask?.Release();
                 }
             });
         }, wantsLayers: f => Flattens(f, options));

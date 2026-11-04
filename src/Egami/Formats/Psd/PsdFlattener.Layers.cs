@@ -20,7 +20,14 @@ internal sealed partial class PsdFlattener
         Rect canvas = new(0, 0, _width, _height);
         Rect area;
         float[]? solid = null;
-        if (pixels is not null && _channels == 3)
+        // A fill whose vector mask is thinned or feathered shows outside its shape, where Photoshop stored no pixels or only
+        // the hard edge: it is drawn afresh.
+        if ((record.VectorMaskDensity < 255 || record.VectorMaskFeather > 0) && FillColor(record) is float[] thinned)
+        {
+            solid = thinned;
+            area = canvas;
+        }
+        else if (pixels is not null && _channels == 3)
         {
             area = Intersect(new Rect(record.Left, record.Top, pixels.Width, pixels.Height), canvas);
         }
@@ -117,8 +124,20 @@ internal sealed partial class PsdFlattener
     {
         shape.Fill(1);
         // A shape layer's pixel mask that Photoshop rendered from its vector mask is already in its stored pixels.
-        bool rendered = (record.Mask?.Flags & 0x08) != 0 && record.RealMask is null && (record.Has("SoCo") || record.Has("GdFl") || record.Has("PtFl") || record.Has("vscg")) && !vector;
-        if (mask is { IsDisabled: false } && !rendered)
+        bool rendered = (record.Mask?.Flags & 0x08) != 0 && record.RealMask is null && (record.Has("SoCo") || record.Has("GdFl") || record.Has("PtFl") || record.Has("vscg")) && (!vector || record.Has("vmsk") || record.Has("vsms"));
+        if (mask is { IsDisabled: false, Real: { IsDisabled: false } real } && mask.Feather <= 0 && record.VectorMaskFeather <= 0)
+        {
+            // Photoshop's own combination of the user and vector masks replaces both: its vector edge is Photoshop's. It is
+            // not feathered, so a feathered layer combines its own.
+            mask = real;
+            vector = false;
+        }
+
+        if (mask is { IsDisabled: false, Feather: > 0 } && !rendered)
+        {
+            Feathered(mask).AsSpan((y * _width) + x0, shape.Length).CopyTo(shape);
+        }
+        else if (mask is { IsDisabled: false } && !rendered)
         {
             Rect bounds = mask.Bounds;
             float outside = mask.DefaultColor / 255f;
@@ -143,7 +162,8 @@ internal sealed partial class PsdFlattener
 
         if (vector)
         {
-            VectorRow(record, y, x0, shape);
+            // A user mask Photoshop rendered from the vector mask (flag bit 3) has the same edge, so the two combine by the lesser.
+            VectorRow(record, y, x0, shape, mask is { IsDisabled: false } && !rendered && (record.Mask?.Flags & 0x08) != 0);
         }
     }
 

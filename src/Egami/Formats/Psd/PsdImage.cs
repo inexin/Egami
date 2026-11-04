@@ -295,7 +295,7 @@ public sealed class PsdLayerImage : IDisposable
     {
         Pixels?.Dispose();
         Ink?.Dispose();
-        Mask?.Pixels.Dispose();
+        Mask?.Release();
     }
 }
 
@@ -327,4 +327,14 @@ public sealed class PsdMask
 
     /// <summary>Gets the feather radius in pixels Photoshop blurs the mask by when it draws; the values are not blurred.</summary>
     public double Feather { get; }
+
+    /// <summary>Gets the real user mask Photoshop stored with a layer that has a vector mask too: the two combined, or <see langword="null"/>.</summary>
+    internal PsdMask? Real { get; init; }
+
+    /// <summary>Disposes the mask's pixels and the real mask's.</summary>
+    internal void Release()
+    {
+        Pixels.Dispose();
+        Real?.Pixels.Dispose();
+    }
 }

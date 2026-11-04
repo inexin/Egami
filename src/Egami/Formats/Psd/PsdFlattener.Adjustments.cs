@@ -9,8 +9,12 @@ internal sealed partial class PsdFlattener
     private PsdLayerRecord? _vectorFor;
     private float[]? _vectorPlane;
 
-    /// <summary>Multiplies a row of coverage from canvas column <paramref name="x0"/> by the layer's vector mask, thinned by its density.</summary>
-    private void VectorRow(PsdLayerRecord record, int y, int x0, Span<float> shape)
+    /// <summary>
+    /// Multiplies a row of coverage from canvas column <paramref name="x0"/> by the layer's vector mask, thinned by its density
+    /// and blurred by its feather; or, when the user mask in <paramref name="shape"/> was rendered from the
+    /// vector mask (<paramref name="sameEdge"/>), takes the lesser of the two, so the shape's edge is not counted twice.
+    /// </summary>
+    private void VectorRow(PsdLayerRecord record, int y, int x0, Span<float> shape, bool sameEdge = false)
     {
         if (!ReferenceEquals(_vectorFor, record))
         {
@@ -19,6 +23,10 @@ internal sealed partial class PsdFlattener
             _vectorPlane = record.Blocks.TryGetValue("vmsk", out byte[]? data) || record.Blocks.TryGetValue("vsms", out data)
                 ? PsdVectorMask.Rasterize(data, _width, _height)
                 : null;
+            if (_vectorPlane is not null && record.VectorMaskFeather > 0)
+            {
+                Blur(_vectorPlane, _width, _height, record.VectorMaskFeather * FeatherSigma);
+            }
         }
 
         if (_vectorPlane is not float[] plane)
@@ -30,7 +38,8 @@ internal sealed partial class PsdFlattener
         int at = (y * _width) + x0;
         for (int i = 0; i < shape.Length; i++)
         {
-            shape[i] *= 1 - (density * (1 - plane[at + i]));
+            float v = 1 - (density * (1 - plane[at + i]));
+            shape[i] = sameEdge ? Math.Min(shape[i], v) : shape[i] * v;
         }
     }
 
