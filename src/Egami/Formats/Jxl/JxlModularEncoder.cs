@@ -56,6 +56,10 @@ internal sealed class JxlModularEncoder
     private int _lastPass;
     private bool _chunk;
 
+    // While a frame is coded, the weighted predictor's predictions and max errors of each (stream, channel) tree learning has
+    // worked out, for coding to take instead of running the predictor again.
+    private System.Collections.Concurrent.ConcurrentDictionary<(int Stream, int Channel), WpRows>? _wpRows;
+
     // What opens the LF global section before the LF dequantization: a frame's patch dictionary.
     private JxlBitWriter? _lfGlobalStart;
 
@@ -621,6 +625,7 @@ internal sealed class JxlModularEncoder
             return WriteLocal();
         }
 
+        _wpRows = new();
         List<JxlTreeNode> tree = BuildTree();
         JxlStageTimes.Lap(JxlStage.Tree);
         List<List<JxlToken>> treeTokens = [[]];
@@ -632,8 +637,9 @@ internal sealed class JxlModularEncoder
         Parallel.For(0, units.Count, _parallel, u =>
         {
             (int st, int ch) = units[u];
-            parts[u] = Tokenize(_streams[st].Channels[ch], ch, st, property, value, left, right, predictor, context, usesWp, wpParams: _streams[st].Wp);
+            parts[u] = Tokenize(_streams[st].Channels[ch], ch, st, property, value, left, right, predictor, context, usesWp, wpParams: _streams[st].Wp, wpRows: TakeWpRows(st, ch));
         });
+        _wpRows = null;
         JxlStageTimes.Lap(JxlStage.Tokens);
 
         List<List<JxlToken>> tokens = [.. _streams.Select(_ => new List<JxlToken>())];
@@ -700,6 +706,7 @@ internal sealed class JxlModularEncoder
     /// </summary>
     private List<byte[]> WriteLocal()
     {
+        _wpRows = new();
         JxlHistogramParams p = JxlHistogramParams.ForModular(_effort);
         JxlBitWriter global = new();
         if (_lfGlobalStart is not null)
@@ -728,6 +735,7 @@ internal sealed class JxlModularEncoder
             groupSections[g] = w.ToArray();
         });
         sections.AddRange(groupSections);
+        _wpRows = null;
         return sections;
     }
 
@@ -758,7 +766,7 @@ internal sealed class JxlModularEncoder
         {
             if (image.Channels[c].Width > 0 && image.Channels[c].Height > 0)
             {
-                tokens.AddRange(Tokenize(image.Channels[c], c, stream, property, value, left, right, predictor, context, usesWp, wpParams: image.Wp));
+                tokens.AddRange(Tokenize(image.Channels[c], c, stream, property, value, left, right, predictor, context, usesWp, wpParams: image.Wp, wpRows: TakeWpRows(stream, c)));
             }
         }
 
@@ -1760,7 +1768,16 @@ internal sealed class JxlModularEncoder
         totalPixels = Math.Max(totalPixels, 1);
         List<(int Stream, int Channel)> units = [.. Units().Where(u => only is null || only.Contains(u.Stream))];
         SampleBuffer[] buffers = new SampleBuffer[units.Count];
-        Parallel.For(0, units.Count, parallel, u => buffers[u] = GatherTreeData(_streams[units[u].Stream].Channels[units[u].Channel], units[u].Channel, units[u].Stream, repeats, predictors, properties, _streams[units[u].Stream].Wp));
+        Parallel.For(0, units.Count, parallel, u =>
+        {
+            (int st, int ch) = units[u];
+            buffers[u] = GatherTreeData(_streams[st].Channels[ch], ch, st, repeats, predictors, properties, _streams[st].Wp, _wpRows is not null);
+            if (buffers[u].Wp is { } rows)
+            {
+                _wpRows![(st, ch)] = rows;
+                buffers[u].Wp = null;
+            }
+        });
         Span<int> props = stackalloc int[16];
         Span<long> preds = stackalloc long[14];
         foreach (SampleBuffer b in buffers)
@@ -1874,6 +1891,7 @@ internal sealed class JxlModularEncoder
     /// <summary>Samples of one channel for the learner: values, the learner's properties and predictions, and the channel's pixel count.</summary>
     private sealed class SampleBuffer(int capacity, int properties, int predictors)
     {
+        internal WpRows? Wp;
         internal int Count;
         internal long Pixels;
         internal long[] Values = new long[capacity];
@@ -1882,7 +1900,7 @@ internal sealed class JxlModularEncoder
     }
 
     /// <summary>Takes samples of one channel, chosen by libjxl's xorshift (GatherTreeData).</summary>
-    private static SampleBuffer GatherTreeData(JxlChannel ch, int c, int stream, float repeats, int[] predictors, int[] properties, JxlWpParams wpParams)
+    private static SampleBuffer GatherTreeData(JxlChannel ch, int c, int stream, float repeats, int[] predictors, int[] properties, JxlWpParams wpParams, bool keepWp)
     {
         int width = ch.Width;
         int height = ch.Height;
@@ -1900,15 +1918,18 @@ internal sealed class JxlModularEncoder
         Span<long> near = stackalloc long[8];
         props[0] = c;
         props[1] = stream;
+        // With keepWp, the predictions of every row are kept for coding to take.
         JxlWeightedPredictor wp = new(width, wpParams);
-        long[] wpRow = new long[width];
-        int[] errorRow = new int[width];
+        WpRows rows = keepWp ? new(new long[width * height], new int[width * height]) : new(new long[width], new int[width]);
+        buffer.Wp = keepWp ? rows : null;
         int[] d = ch.Data;
         for (int y = 0; y < height; y++)
         {
             props[2] = y;
             props[9] = 0;
             int row = y * width;
+            Span<long> wpRow = rows.Prediction.AsSpan(keepWp ? row : 0, width);
+            Span<int> errorRow = rows.MaxError.AsSpan(keepWp ? row : 0, width);
             wp.Row(d, y, wpRow, errorRow);
             for (int x = 0; x < width; x++)
             {
@@ -2079,8 +2100,14 @@ internal sealed class JxlModularEncoder
         return units;
     }
 
+    /// <summary>Takes the weighted predictor's rows tree learning kept for a channel, if it kept them.</summary>
+    private WpRows? TakeWpRows(int stream, int channel) => _wpRows is { } kept && kept.TryRemove((stream, channel), out WpRows? rows) ? rows : null;
+
+    /// <summary>The weighted predictor's prediction and max error (property 15) for each sample of a channel, or of one row.</summary>
+    internal sealed record WpRows(long[] Prediction, int[] MaxError);
+
     /// <summary>Codes one channel as residual tokens through the tree (ModularCompress's per-channel loop).</summary>
-    internal static List<JxlToken> Tokenize(JxlChannel ch, int c, int stream, int[] property, int[] value, int[] left, int[] right, int[] predictor, int[] context, bool usesWp, int[]? multiplier = null, JxlWpParams? wpParams = null)
+    internal static List<JxlToken> Tokenize(JxlChannel ch, int c, int stream, int[] property, int[] value, int[] left, int[] right, int[] predictor, int[] context, bool usesWp, int[]? multiplier = null, JxlWpParams? wpParams = null, WpRows? wpRows = null)
     {
         if (SingleProperty(property, value, left, right, c, stream, out int only, out int range) is int[] lut)
         {
@@ -2092,9 +2119,10 @@ internal sealed class JxlModularEncoder
         Span<long> near = stackalloc long[8];
         int width = ch.Width;
         int[] d = ch.Data;
-        JxlWeightedPredictor? wp = usesWp ? new JxlWeightedPredictor(width, wpParams ?? new JxlWpParams()) : null;
-        long[] wpRow = new long[width];
-        int[] errorRow = new int[width];
+        // The predictions tree learning kept, or a row at a time.
+        bool kept = usesWp && wpRows is not null;
+        JxlWeightedPredictor? wp = usesWp && !kept ? new JxlWeightedPredictor(width, wpParams ?? new JxlWpParams()) : null;
+        WpRows rows = kept ? wpRows! : new(new long[width], new int[width]);
         props[0] = c;
         props[1] = stream;
         for (int y = 0; y < ch.Height; y++)
@@ -2102,6 +2130,8 @@ internal sealed class JxlModularEncoder
             props[2] = y;
             props[9] = 0;
             int row = y * width;
+            Span<long> wpRow = rows.Prediction.AsSpan(kept ? row : 0, width);
+            Span<int> errorRow = rows.MaxError.AsSpan(kept ? row : 0, width);
             wp?.Row(d, y, wpRow, errorRow);
             for (int x = 0; x < width; x++)
             {
