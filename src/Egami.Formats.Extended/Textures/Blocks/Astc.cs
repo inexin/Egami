@@ -452,7 +452,7 @@ internal sealed class Astc
     /// Decodes the endpoints of colour endpoint mode <paramref name="cem"/> from its unquantised values into eight 16-bit
     /// values: endpoint 0's RGBA, then endpoint 1's.
     /// </summary>
-    private static void Endpoints(int cem, ReadOnlySpan<int> v, AstcProfile profile, Span<int> e, out bool hdrRgb, out bool hdrAlpha)
+    internal static void Endpoints(int cem, ReadOnlySpan<int> v, AstcProfile profile, Span<int> e, out bool hdrRgb, out bool hdrAlpha)
     {
         hdrRgb = false;
         hdrAlpha = false;

@@ -6,8 +6,10 @@ using Egami.Formats.Extended.Pcx;
 using Egami.Formats.Extended.Raw;
 using Egami.Formats.Extended.Sgi;
 using Egami.Formats.Extended.SunRaster;
+using Egami.Formats.Extended.Textures;
 using Egami.Formats.Extended.Xbm;
 using Egami.Metadata;
+using Egami.Operations;
 using Egami.Pixels;
 
 namespace Egami.DocSamples;
@@ -328,6 +330,87 @@ public class FormatsExtended
         Assert.True(all.Count > 1);
         Assert.Equal(face.Width, faces[0].Width);
         Assert.Equal(stored.Width, all[0].Width);
+    }
+
+    [Fact]
+    public void KtxSave()
+    {
+        using SampleFiles files = new();
+        EgamiContext context = EgamiContext.Default.WithKtx2();
+        using Raster image = Raster.Load("duck.png");
+
+        #region ktx-save
+        // With no options: the nearest uncompressed format (R8G8B8A8_SRGB for 8-bit colour) and the full mip chain.
+        using (FileStream output = File.Create("duck.ktx2"))
+        {
+            image.Save(output, Ktx2Format.Info);
+        }
+
+        // A GPU block format: BC7 for desktop, ASTC or ETC2 for mobile; effort runs 0 (fastest) to 6 (best).
+        using (FileStream output = File.Create("duck-astc.ktx2"))
+        {
+            image.Save(output, Ktx2Format.Info, new Ktx2WriterOptions { Format = KtxTextureFormat.Astc6x6, Effort = 3 });
+        }
+
+        // Basis Universal, which a viewer transcodes to whatever its GPU reads: UASTC with RDO and Zstandard (glTF's usual
+        // pick), or ETC1S for the smallest files.
+        using (FileStream output = File.Create("duck-uastc.ktx2"))
+        {
+            image.Save(output, Ktx2Format.Info, new Ktx2WriterOptions
+            {
+                Format = KtxTextureFormat.Uastc,
+                UastcRdo = 2,
+                Supercompression = KtxSupercompression.Zstandard,
+            });
+        }
+
+        using (FileStream output = File.Create("duck-etc1s.ktx2"))
+        {
+            image.Save(output, Ktx2Format.Info, new Ktx2WriterOptions { Format = KtxTextureFormat.Etc1s, BasisQuality = 128 });
+        }
+
+        // Six faces into a cube map; SaveAll without Cube writes a texture array.
+        using RasterList faces = Raster.LoadAll("sky.ktx2", context);
+        using (FileStream output = File.Create("sky-bc1.ktx2"))
+        {
+            Raster.SaveAll(faces, output, Ktx2Format.Info, new Ktx2WriterOptions { Cube = true, Format = KtxTextureFormat.Bc1 });
+        }
+        #endregion
+
+        Assert.Equal("R8G8B8A8_SRGB", ((KtxDetails)Raster.Load("duck.ktx2", context).Metadata.FormatDetails!).FormatName);
+        Assert.Equal("ASTC_6x6_SRGB_BLOCK", ((KtxDetails)Raster.Load("duck-astc.ktx2", context).Metadata.FormatDetails!).FormatName);
+        Assert.Equal(KtxSupercompression.Zstandard, ((KtxDetails)Raster.Load("duck-uastc.ktx2", context).Metadata.FormatDetails!).Supercompression);
+        Assert.Equal(KtxSupercompression.BasisLZ, ((KtxDetails)Raster.Load("duck-etc1s.ktx2", context).Metadata.FormatDetails!).Supercompression);
+        Assert.True(((KtxDetails)Raster.Load("sky-bc1.ktx2", context).Metadata.FormatDetails!).IsCube);
+    }
+
+    [Fact]
+    public void TextureSample()
+    {
+        using SampleFiles files = new();
+
+        #region texture
+        // Every layer, face, depth slice and mip of a DDS, KTX or KTX 2 file.
+        using Texture sky = Texture.Load("sky.ktx2");
+        Console.WriteLine($"{sky.Width}×{sky.Height}, {sky.Layers} layer(s) of {sky.Faces} face(s), {sky.MipLevels} mips");
+
+        // Edit one face, make the mips again from mip 0, and save to DDS or KTX 2 with exactly those mips.
+        Raster top = sky.GetImage(mip: 0, face: 2);
+        sky.SetImage(top.Derive(x => x.Grayscale(), CancellationToken.None), mip: 0, face: 2);
+        sky.GenerateMips(colorSpace: ColorSpace.Linear);
+        sky.Save("sky-edited.dds", new DdsWriterOptions { Format = DdsTextureFormat.Bc7 });
+        sky.Save("sky-edited.ktx2", new Ktx2WriterOptions { Format = KtxTextureFormat.Bc7 });
+
+        // Or build one from images: here a texture array of two layers with its mip chain.
+        using Texture array = Texture.FromSurfaces([Raster.Load("duck.png"), Raster.Load("duck.png")]);
+        array.GenerateMips();
+        array.Save("ducks.ktx2");
+        #endregion
+
+        using Texture back = Texture.Load("sky-edited.dds");
+        Assert.Equal((true, sky.MipLevels), (back.IsCube, back.MipLevels));
+        using Texture ducks = Texture.Load("ducks.ktx2");
+        Assert.Equal(2, ducks.Layers);
     }
 
     /// <summary>Writes an R8G8B8A8 DDS of <paramref name="faces"/> faces (6 makes a cube map) with a full mip chain.</summary>

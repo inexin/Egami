@@ -37,14 +37,14 @@ public class Etc1sEncoderTests
     public static TheoryData<int, int, bool, double> Cases => new()
     {
         // Quality, effort, alpha, minimum PSNR (RGB, or RGBA with alpha).
-        { 1, 4, false, 20.9 },
-        { 64, 0, false, 23.0 },
-        { 64, 4, false, 24.4 },
-        { 128, 0, false, 27.6 },
-        { 128, 4, false, 28.4 },
-        { 128, 6, false, 28.4 },
+        { 1, 4, false, 21.6 },
+        { 64, 0, false, 24.8 },
+        { 64, 4, false, 25.5 },
+        { 128, 0, false, 28.75 },
+        { 128, 4, false, 29.3 },
+        { 128, 6, false, 29.7 },
         { 255, 4, false, 29.9 },
-        { 128, 4, true, 29.6 },
+        { 128, 4, true, 30.5 },
         { 255, 4, true, 31.1 },
     };
 

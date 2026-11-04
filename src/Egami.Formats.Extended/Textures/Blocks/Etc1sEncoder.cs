@@ -1,3 +1,6 @@
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+
 namespace Egami.Formats.Extended.Textures.Blocks;
 
 /// <summary>One 2D image an ETC1S encode takes: RGBA pixels in rows, and the mip level it belongs to.</summary>
@@ -10,18 +13,28 @@ internal sealed record Etc1sEncoded(byte[] GlobalData, byte[][] Levels, int Endp
 /// Encodes images to Basis Universal ETC1S in BasisLZ form (KTX 2.0 Specification, Appendices C and D) at a quality of 1 to 255
 /// and an effort of 0 to 6. Every block of every image (and of the alpha channel, as gray blocks, when there is alpha) shares
 /// one codebook of endpoints (a 5-bit colour and an intensity table) and one of selectors (16 two-bit modifier choices); the
-/// quality sets their sizes, from 16 entries each at 1 to 16128 at 255. Endpoints are found by vector quantization of each
-/// block's mean colour and spread (splitting the cluster with the largest error, then Lloyd iterations as effort allows), then
-/// fitted to their blocks' pixels; selectors are quantized the same way from each block's best modifiers under its endpoint,
-/// then refitted texel by texel to their blocks' pixels and reassigned by real error. The slices then code each block's two
-/// indices with BasisLZ's predictions, history buffer and run lengths, and the Huffman tables are built from the counts.
-/// Every step runs in a fixed order or sums integers, so the output does not depend on the number of threads.
+/// quality sets the selector codebook's size, from 16 entries at 1 to 16128 at 255, and the endpoint codebook gets three times
+/// as many (at most 16128). Endpoints are found by vector quantization of each block's mean colour and spread (splitting the
+/// cluster with the largest error), fitted to their blocks' pixels, and refined by moving each block to the endpoint near its
+/// mean colour that codes it best and fitting again. Below quality 255 a block then takes the endpoint of its left, upper or
+/// upper left neighbour, which BasisLZ codes as a cheap prediction, when that costs little more error (up to 1.5 times at
+/// quality 128 and below). Selectors are quantized from each block's best modifiers under its endpoint, weighting each block by
+/// its variance, then refitted texel by texel to their blocks' pixels while every block moves to the selector with the least
+/// real error (a selector's error is four lookups in tables of the block's per-row errors; with a large codebook a block
+/// searches only the groups of similar selectors whose representatives suit it best). Last the endpoints are refitted to the
+/// settled selectors. The slices then code each block's two indices with BasisLZ's predictions, history buffer and run
+/// lengths, and the Huffman tables are built from the counts. Every step runs in a fixed order or sums integers, so the output
+/// does not depend on the number of threads.
 /// </summary>
 internal static class Etc1sEncoder
 {
     private const int MaxCodebook = 16128;
     private const int HistorySize = 64;
     private const int PredRepeatSymbol = 256;
+    private const int GroupSize = 32;
+
+    /// <summary>The endpoint codebook's size as a multiple of the selector codebook's (at most <see cref="MaxCodebook"/>).</summary>
+    private const int EndpointsPerSelector = 3;
 
     /// <summary>Returns the codebook size quality <paramref name="quality"/> (1 to 255) asks for, before the number of blocks caps it.</summary>
     public static int CodebookSize(int quality) => (int)Math.Min(MaxCodebook, Math.Round(Math.Pow(2, 4 + (9.98 * (Math.Clamp(quality, 1, 255) - 1) / 254))));
@@ -63,7 +76,17 @@ internal static class Etc1sEncoder
             }
         }
 
-        Codebooks books = Quantize(pixels, total, CodebookSize(quality), effort, options);
+        List<(int First, int BlocksX, int BlocksY)> slices = [];
+        foreach ((int bx, int by, int rgb, int a) in layout)
+        {
+            slices.Add((rgb, bx, by));
+            if (a >= 0)
+            {
+                slices.Add((a, bx, by));
+            }
+        }
+
+        Codebooks books = Quantize(pixels, total, slices, Math.Clamp(quality, 1, 255), effort, options);
         return Write(books, layout, images);
     }
 
@@ -157,19 +180,24 @@ internal static class Etc1sEncoder
         return error;
     }
 
-    private static Codebooks Quantize(byte[] pixels, int blocks, int size, int effort, ParallelOptions options)
+    private static Codebooks Quantize(byte[] pixels, int blocks, List<(int First, int BlocksX, int BlocksY)> slices, int quality, int effort, ParallelOptions options)
     {
-        // Endpoint features: the mean colour (as sums of 16 texels) and the spread, as the small modifier of the block's best table.
+        int size = CodebookSize(quality);
+        Plan plan = Plan.For(effort);
+
+        // Endpoint features: the mean colour (as sums of 16 texels) and the spread, as the small modifier of the block's best
+        // table; and the mean colour at 5 bits, where the search for a block's endpoint starts.
         int[] features = new int[blocks * 4];
+        int[] meanColor = new int[blocks];
         Parallel.For(0, blocks, options, i =>
         {
             ReadOnlySpan<byte> px = pixels.AsSpan(i * 48, 48);
-            Span<int> sum = stackalloc int[3];
-            for (int t = 0; t < 16; t++)
+            int r = 0, g = 0, b = 0;
+            for (int t = 0; t < 48; t += 3)
             {
-                sum[0] += px[t * 3];
-                sum[1] += px[(t * 3) + 1];
-                sum[2] += px[(t * 3) + 2];
+                r += px[t];
+                g += px[t + 1];
+                b += px[t + 2];
             }
 
             Span<int> palette = stackalloc int[12];
@@ -177,7 +205,7 @@ internal static class Etc1sEncoder
             int inten = 0;
             for (int t = 0; t < 8; t++)
             {
-                Palette(new Endpoint(Q5(sum[0]), Q5(sum[1]), Q5(sum[2]), (byte)t), palette);
+                Palette(new Endpoint(Q5(r), Q5(g), Q5(b), (byte)t), palette);
                 long e = BestSelectors(px, palette, out _);
                 if (e < best)
                 {
@@ -186,19 +214,36 @@ internal static class Etc1sEncoder
                 }
             }
 
-            features[i * 4] = sum[0];
-            features[(i * 4) + 1] = sum[1];
-            features[(i * 4) + 2] = sum[2];
+            features[i * 4] = r;
+            features[(i * 4) + 1] = g;
+            features[(i * 4) + 2] = b;
             features[(i * 4) + 3] = Etc.Modifiers[inten * 2] * 32;
+            meanColor[i] = (Q5(r) << 10) | (Q5(g) << 5) | Q5(b);
         });
 
-        int endpointCount = Math.Min(size, blocks);
-        int[] blockEndpoint = Vq(features, blocks, 4, endpointCount, effort switch { 0 => 0, <= 2 => 1, <= 4 => 2, 5 => 4, _ => 8 }, options, out int clusters);
-
-        // Fit each endpoint to its blocks' pixels.
-        List<int>[] members = Members(blockEndpoint, clusters);
+        int endpointCount = Math.Min(Math.Min(MaxCodebook, size * EndpointsPerSelector), blocks);
+        int[] blockEndpoint = Vq(features, null, blocks, 4, endpointCount, plan.EndpointLloyd, options, out int clusters);
         Endpoint[] endpoints = new Endpoint[clusters];
-        Parallel.For(0, clusters, options, k => endpoints[k] = FitEndpoint(pixels, members[k], effort));
+        FitEndpoints(pixels, blockEndpoint, endpoints, plan.Steps, plan.IntenReach, options);
+
+        // Move each block to the endpoint near its mean colour that codes it best, and refit the endpoints to their new blocks.
+        for (int round = 0; round < plan.EndpointRounds; round++)
+        {
+            if (!ReassignEndpoints(pixels, meanColor, endpoints, blockEndpoint, plan.Reach, options))
+            {
+                break;
+            }
+
+            FitEndpoints(pixels, blockEndpoint, endpoints, plan.Steps, plan.IntenReach, options);
+        }
+
+        // Rate-distortion: from quality 128 down, a block shares a neighbour's endpoint at up to 1.5 times its own error; above
+        // it the allowance shrinks to none at 255.
+        double rdo = 1 + (0.5 * Math.Min(1, (255 - quality) / 127.0));
+        if (rdo > 1)
+        {
+            ShareEndpoints(pixels, endpoints, blockEndpoint, slices, rdo, options);
+        }
 
         // Each block's best selectors under its endpoint, quantized to the selector codebook.
         uint[] ideal = new uint[blocks];
@@ -207,6 +252,24 @@ internal static class Etc1sEncoder
             Span<int> palette = stackalloc int[12];
             Palette(endpoints[blockEndpoint[i]], palette);
             BestSelectors(pixels.AsSpan(i * 48, 48), palette, out ideal[i]);
+        });
+
+        // Selector training weights: the block's variance, so the codebook spends its entries where selectors matter.
+        int[] selectorWeights = new int[blocks];
+        Parallel.For(0, blocks, options, i =>
+        {
+            ReadOnlySpan<byte> px = pixels.AsSpan(i * 48, 48);
+            long squares = 0, r = 0, g = 0, b = 0;
+            for (int t = 0; t < 48; t += 3)
+            {
+                r += px[t];
+                g += px[t + 1];
+                b += px[t + 2];
+                squares += (px[t] * px[t]) + (px[t + 1] * px[t + 1]) + (px[t + 2] * px[t + 2]);
+            }
+
+            long variance = squares - (((r * r) + (g * g) + (b * b)) / 16);
+            selectorWeights[i] = (int)Math.Clamp(variance / 64, 1, 4096);
         });
 
         int[] selectorFeatures = new int[blocks * 16];
@@ -219,51 +282,372 @@ internal static class Etc1sEncoder
         }
 
         int selectorCount = Math.Min(size, blocks);
-        // Lloyd iterations and reassignment cost blocks × codebook size each, so large codebooks get fewer of them.
-        long work = (long)blocks * selectorCount;
-        int lloyd = effort switch { <= 1 => 0, <= 4 => 1, 5 => 2, _ => 4 };
-        lloyd = (int)Math.Min(lloyd, Math.Max(1, (1L << 29) / Math.Max(1, work)));
-        int[] blockSelector = Vq(selectorFeatures, blocks, 16, selectorCount, lloyd, options, out int selectorClusters);
+        int[] blockSelector = Vq(selectorFeatures, selectorWeights, blocks, 16, selectorCount, 0, options, out int selectorClusters);
         uint[] selectors = new uint[selectorClusters];
 
-        // Refit selectors texel by texel to their blocks, then reassign blocks by real error where the budget allows, and repeat.
-        long budget = effort switch { <= 1 => 0, <= 3 => 1L << 26, _ => 1L << 28 };
-        int rounds = effort switch { <= 1 => 1, <= 4 => 2, 5 => 3, _ => 4 };
-        for (int round = 0; round < rounds; round++)
+        // Refit selectors texel by texel to their blocks, then move each block to the selector that codes it best, and repeat.
+        for (int round = 0; round < plan.SelectorRounds; round++)
         {
-            members = Members(blockSelector, selectorClusters);
-            Parallel.For(0, selectorClusters, options, k => selectors[k] = FitSelector(pixels, members[k], blockEndpoint, endpoints, ideal));
-            if ((long)blocks * selectorClusters > budget)
-            {
-                break;
-            }
-
-            Parallel.For(0, blocks, options, i =>
-            {
-                Span<int> palette = stackalloc int[12];
-                Palette(endpoints[blockEndpoint[i]], palette);
-                ReadOnlySpan<byte> px = pixels.AsSpan(i * 48, 48);
-                long best = FixedError(px, palette, selectors[blockSelector[i]]);
-                for (int k = 0; k < selectors.Length; k++)
-                {
-                    long e = FixedError(px, palette, selectors[k]);
-                    if (e < best)
-                    {
-                        best = e;
-                        blockSelector[i] = k;
-                    }
-                }
-            });
+            List<int>[] members = Members(blockSelector, selectorClusters);
+            Parallel.For(0, selectorClusters, options, k => selectors[k] = FitSelector(pixels, members[k], blockEndpoint, endpoints, ideal, selectors[k]));
+            ReassignSelectors(pixels, endpoints, blockEndpoint, selectors, blockSelector, plan.Probe, options);
         }
 
         // With the selectors settled, refit each endpoint to them.
-        if (effort >= 2)
+        if (plan.Refit)
         {
-            members = Members(blockEndpoint, clusters);
-            Parallel.For(0, clusters, options, k => endpoints[k] = RefitEndpoint(pixels, members[k], endpoints[k], blockSelector, selectors));
+            List<int>[] members = Members(blockEndpoint, endpoints.Length);
+            Parallel.For(0, endpoints.Length, options, k => endpoints[k] = RefitEndpoint(pixels, members[k], endpoints[k], blockSelector, selectors, plan.Tables));
+            if (plan.FinalReassign)
+            {
+                ReassignSelectors(pixels, endpoints, blockEndpoint, selectors, blockSelector, plan.Probe, options);
+            }
         }
 
         return Compact(endpoints, selectors, blockEndpoint, blockSelector);
+    }
+
+    /// <summary>How hard each effort searches.</summary>
+    private readonly record struct Plan(int EndpointLloyd, int Steps, int IntenReach, int EndpointRounds, int Reach, int SelectorRounds, int Probe, bool Refit, int Tables, bool FinalReassign)
+    {
+        public static Plan For(int effort) => effort switch
+        {
+            0 => new(0, 0, 0, 0, 0, 1, 2, false, 0, false),
+            1 => new(0, 0, 0, 1, 1, 1, 2, false, 0, false),
+            2 => new(0, 0, 0, 1, 1, 1, 3, true, 1, false),
+            3 => new(0, 1, 0, 1, 1, 2, 3, true, 2, false),
+            4 => new(0, 1, 0, 1, 1, 2, 4, true, 2, true),
+            5 => new(1, 3, 1, 2, 2, 3, 8, true, 3, true),
+            _ => new(2, 4, 1, 3, 2, 4, 0, true, 4, true),
+        };
+    }
+
+    /// <summary>Fits every endpoint to its blocks' pixels; an endpoint with no blocks stays as it is.</summary>
+    private static void FitEndpoints(byte[] pixels, int[] blockEndpoint, Endpoint[] endpoints, int steps, int intenReach, ParallelOptions options)
+    {
+        List<int>[] members = Members(blockEndpoint, endpoints.Length);
+        Parallel.For(0, endpoints.Length, options, k =>
+        {
+            if (members[k].Count > 0)
+            {
+                endpoints[k] = FitEndpoint(pixels, members[k], steps, intenReach);
+            }
+        });
+    }
+
+    /// <summary>
+    /// Moves each block to the endpoint with the least error (each texel taking its best selector) among those whose colour lies
+    /// within <paramref name="reach"/> steps of the block's mean colour in every channel, keeping its own on a tie. Returns
+    /// whether any block moved.
+    /// </summary>
+    private static bool ReassignEndpoints(byte[] pixels, int[] meanColor, Endpoint[] endpoints, int[] blockEndpoint, int reach, ParallelOptions options)
+    {
+        // The endpoints by colour, as lists in colour order, and their palettes.
+        int[] start = new int[(32 * 32 * 32) + 1];
+        foreach (Endpoint e in endpoints)
+        {
+            start[((e.R << 10) | (e.G << 5) | e.B) + 1]++;
+        }
+
+        for (int c = 0; c < 32 * 32 * 32; c++)
+        {
+            start[c + 1] += start[c];
+        }
+
+        int[] byColor = new int[endpoints.Length];
+        int[] fill = start[..^1];
+        int[] palettes = new int[endpoints.Length * 12];
+        for (int k = 0; k < endpoints.Length; k++)
+        {
+            Endpoint e = endpoints[k];
+            byColor[fill[(e.R << 10) | (e.G << 5) | e.B]++] = k;
+            Palette(e, palettes.AsSpan(k * 12, 12));
+        }
+
+        int moved = 0;
+        Parallel.For(0, blockEndpoint.Length, options, () => 0, (i, _, local) =>
+        {
+            ReadOnlySpan<byte> px = pixels.AsSpan(i * 48, 48);
+            int current = blockEndpoint[i];
+            int pick = current;
+            long best = BestError(px, palettes.AsSpan(current * 12, 12), long.MaxValue);
+            int mean = meanColor[i];
+            int r0 = mean >> 10, g0 = (mean >> 5) & 31, b0 = mean & 31;
+            for (int r = Math.Max(0, r0 - reach); r <= Math.Min(31, r0 + reach) && best > 0; r++)
+            {
+                for (int g = Math.Max(0, g0 - reach); g <= Math.Min(31, g0 + reach); g++)
+                {
+                    for (int b = Math.Max(0, b0 - reach); b <= Math.Min(31, b0 + reach); b++)
+                    {
+                        int cell = (r << 10) | (g << 5) | b;
+                        for (int j = start[cell]; j < start[cell + 1]; j++)
+                        {
+                            int k = byColor[j];
+                            long e = BestError(px, palettes.AsSpan(k * 12, 12), best);
+                            if (e < best)
+                            {
+                                best = e;
+                                pick = k;
+                            }
+                        }
+                    }
+                }
+            }
+
+            blockEndpoint[i] = pick;
+            return local + (pick != current ? 1 : 0);
+        }, local => Interlocked.Add(ref moved, local));
+
+        return moved > 0;
+    }
+
+    /// <summary>
+    /// Rate-distortion pass over the endpoints, in each slice's raster order: a block takes the endpoint of the block to its
+    /// left, above or above left (which code as a prediction rather than a delta) when that costs at most
+    /// <paramref name="threshold"/> times its own endpoint's error.
+    /// </summary>
+    private static void ShareEndpoints(byte[] pixels, Endpoint[] endpoints, int[] blockEndpoint, List<(int First, int BlocksX, int BlocksY)> slices, double threshold, ParallelOptions options)
+    {
+        int[] palettes = new int[endpoints.Length * 12];
+        for (int k = 0; k < endpoints.Length; k++)
+        {
+            Palette(endpoints[k], palettes.AsSpan(k * 12, 12));
+        }
+
+        Parallel.For(0, slices.Count, options, n =>
+        {
+            (int first, int blocksX, int blocksY) = slices[n];
+            for (int y = 0; y < blocksY; y++)
+            {
+                for (int x = 0; x < blocksX; x++)
+                {
+                    int i = first + (y * blocksX) + x;
+                    ReadOnlySpan<byte> px = pixels.AsSpan(i * 48, 48);
+                    int own = blockEndpoint[i];
+                    long limit = (long)(BestError(px, palettes.AsSpan(own * 12, 12), long.MaxValue) * threshold) + 1;
+                    long best = limit;
+                    int pick = own;
+                    for (int c = 0; c < 3; c++)
+                    {
+                        int nx = x - (c == 1 ? 0 : 1);
+                        int ny = y - (c == 0 ? 0 : 1);
+                        if (nx < 0 || ny < 0)
+                        {
+                            continue;
+                        }
+
+                        int k = blockEndpoint[first + (ny * blocksX) + nx];
+                        if (k == own)
+                        {
+                            pick = own;
+                            break;
+                        }
+
+                        long e = BestError(px, palettes.AsSpan(k * 12, 12), best);
+                        if (e < best)
+                        {
+                            best = e;
+                            pick = k;
+                        }
+                    }
+
+                    blockEndpoint[i] = pick;
+                }
+            }
+        });
+    }
+
+    /// <summary>Returns a block's error with each texel's best selector, stopping once it reaches <paramref name="limit"/>.</summary>
+    private static long BestError(ReadOnlySpan<byte> px, ReadOnlySpan<int> palette, long limit)
+    {
+        long error = 0;
+        for (int t = 0; t < 48 && error < limit; t += 3)
+        {
+            int r = px[t], g = px[t + 1], b = px[t + 2];
+            int best = int.MaxValue;
+            for (int s = 0; s < 12; s += 3)
+            {
+                int dr = r - palette[s], dg = g - palette[s + 1], db = b - palette[s + 2];
+                best = Math.Min(best, (dr * dr) + (dg * dg) + (db * db));
+            }
+
+            error += best;
+        }
+
+        return error;
+    }
+
+    /// <summary>
+    /// Moves each block to the selector of the codebook with the least error under its endpoint, keeping its own on a tie. A
+    /// block's errors are first summed per row of four texels for all 256 selector bytes, so a selector costs four lookups.
+    /// With <paramref name="probe"/> above 0 and a large codebook, the codebook is grouped by vector quantization into groups of
+    /// about 32, each with a representative (each texel's rounded mean selector), and a block searches only the
+    /// <paramref name="probe"/> groups whose representatives suit it best.
+    /// </summary>
+    private static void ReassignSelectors(byte[] pixels, Endpoint[] endpoints, int[] blockEndpoint, uint[] selectors, int[] blockSelector, int probe, ParallelOptions options)
+    {
+        int groups = probe > 0 ? selectors.Length / GroupSize : 0;
+        int[] start = [];
+        int[] order = [];
+        uint[] representatives = [];
+        if (groups > probe)
+        {
+            int[] features = new int[selectors.Length * 16];
+            for (int k = 0; k < selectors.Length; k++)
+            {
+                for (int t = 0; t < 16; t++)
+                {
+                    features[(k * 16) + t] = (int)((selectors[k] >> (t * 2)) & 3) * 16;
+                }
+            }
+
+            int[] groupOf = Vq(features, null, selectors.Length, 16, groups, 2, options, out groups);
+            if (groups <= probe)
+            {
+                groups = 0;
+            }
+            start = new int[groups + 1];
+            foreach (int g in groupOf)
+            {
+                start[g + 1]++;
+            }
+
+            for (int g = 0; g < groups; g++)
+            {
+                start[g + 1] += start[g];
+            }
+
+            order = new int[selectors.Length];
+            int[] fill = start[..^1];
+            int[] sums = new int[groups * 16];
+            for (int k = 0; k < selectors.Length; k++)
+            {
+                int g = groupOf[k];
+                order[fill[g]++] = k;
+                for (int t = 0; t < 16; t++)
+                {
+                    sums[(g * 16) + t] += (int)((selectors[k] >> (t * 2)) & 3);
+                }
+            }
+
+            representatives = new uint[groups];
+            for (int g = 0; g < groups; g++)
+            {
+                int n = start[g + 1] - start[g];
+                uint r = 0;
+                for (int t = 0; t < 16; t++)
+                {
+                    r |= (uint)(((2 * sums[(g * 16) + t]) + n) / (2 * n)) << (t * 2);
+                }
+
+                representatives[g] = r;
+            }
+
+            if (groups <= probe)
+            {
+                groups = 0;
+            }
+        }
+        else
+        {
+            groups = 0;
+        }
+
+        Parallel.For(0, blockEndpoint.Length, options, () => new int[1024 + 64 + 12], (i, _, scratch) =>
+        {
+            Span<int> palette = scratch.AsSpan(1024 + 64, 12);
+            Span<int> texel = scratch.AsSpan(1024, 64);
+            Palette(endpoints[blockEndpoint[i]], palette);
+            ReadOnlySpan<byte> px = pixels.AsSpan(i * 48, 48);
+            for (int t = 0; t < 16; t++)
+            {
+                for (int s = 0; s < 4; s++)
+                {
+                    texel[(t * 4) + s] = TexelError(px, t, palette, s);
+                }
+            }
+
+            Span<int> pair = stackalloc int[32];
+            for (int row = 0; row < 4; row++)
+            {
+                ReadOnlySpan<int> e = texel.Slice(row * 16, 16);
+                for (int x = 0; x < 16; x++)
+                {
+                    pair[x] = e[x & 3] + e[4 + (x >> 2)];
+                    pair[16 + x] = e[8 + (x & 3)] + e[12 + (x >> 2)];
+                }
+
+                Span<int> table = scratch.AsSpan(row * 256, 256);
+                for (int x = 0; x < 256; x++)
+                {
+                    table[x] = pair[x & 15] + pair[16 + (x >> 4)];
+                }
+            }
+
+            ref int t0 = ref scratch[0];
+            ref uint sel = ref selectors[0];
+            int pick = blockSelector[i];
+            int best = Cost(ref t0, selectors[pick]);
+            if (groups == 0)
+            {
+                for (int k = 0; k < selectors.Length; k++)
+                {
+                    int e = Cost(ref t0, Unsafe.Add(ref sel, k));
+                    if (e < best)
+                    {
+                        best = e;
+                        pick = k;
+                    }
+                }
+            }
+            else
+            {
+                // The probe groups with the cheapest representatives, cheapest first.
+                Span<int> top = stackalloc int[probe];
+                Span<int> topCost = stackalloc int[probe];
+                topCost.Fill(int.MaxValue);
+                for (int g = 0; g < groups; g++)
+                {
+                    int e = Cost(ref t0, representatives[g]);
+                    if (e >= topCost[probe - 1])
+                    {
+                        continue;
+                    }
+
+                    int j = probe - 1;
+                    for (; j > 0 && topCost[j - 1] > e; j--)
+                    {
+                        top[j] = top[j - 1];
+                        topCost[j] = topCost[j - 1];
+                    }
+
+                    top[j] = g;
+                    topCost[j] = e;
+                }
+
+                for (int j = 0; j < probe; j++)
+                {
+                    int g = top[j];
+                    for (int at = start[g]; at < start[g + 1]; at++)
+                    {
+                        int k = order[at];
+                        int e = Cost(ref t0, Unsafe.Add(ref sel, k));
+                        if (e < best)
+                        {
+                            best = e;
+                            pick = k;
+                        }
+                    }
+                }
+            }
+
+            blockSelector[i] = pick;
+            return scratch;
+        }, _ => { });
+
+        static int Cost(ref int tables, uint s) =>
+            Unsafe.Add(ref tables, (int)(s & 255)) + Unsafe.Add(ref tables, 256 + (int)((s >> 8) & 255))
+            + Unsafe.Add(ref tables, 512 + (int)((s >> 16) & 255)) + Unsafe.Add(ref tables, 768 + (int)(s >> 24));
     }
 
     private static byte Q5(int sum16) => (byte)Math.Clamp(((sum16 * 31) + (255 * 8)) / (255 * 16), 0, 31);
@@ -285,29 +669,30 @@ internal static class Etc1sEncoder
     }
 
     /// <summary>
-    /// Vector quantization of <paramref name="n"/> integer vectors of <paramref name="dims"/> values into at most
-    /// <paramref name="k"/> clusters: the cluster with the largest error splits at its mean along its widest dimension until
-    /// there are <paramref name="k"/>, then <paramref name="iterations"/> Lloyd iterations move vectors to their nearest centroid.
+    /// Vector quantization of <paramref name="n"/> integer vectors of <paramref name="dims"/> values, each with a weight in
+    /// <paramref name="weights"/> (or 1), into at most <paramref name="k"/> clusters: the cluster with the largest weighted error
+    /// splits at its weighted mean along its widest dimension until there are <paramref name="k"/>, then
+    /// <paramref name="iterations"/> (unweighted) Lloyd iterations move vectors to their nearest centroid.
     /// Returns each vector's cluster.
     /// </summary>
-    internal static int[] Vq(int[] features, int n, int dims, int k, int iterations, ParallelOptions options, out int clusters)
+    internal static int[] Vq(int[] features, int[]? weights, int n, int dims, int k, int iterations, ParallelOptions options, out int clusters)
     {
         int[] assignment = new int[n];
         List<int[]> groups = [Enumerable.Range(0, n).ToArray()];
-        PriorityQueue<int, (long, int)> queue = new();
-        queue.Enqueue(0, (-Spread(features, groups[0], dims, out _, out _), 0));
+        PriorityQueue<int, (double, int)> queue = new();
+        queue.Enqueue(0, (-Spread(features, weights, groups[0], dims, out _, out _, out _), 0));
         while (groups.Count < k && queue.Count > 0)
         {
-            queue.TryDequeue(out int g, out (long Error, int Order) key);
+            queue.TryDequeue(out int g, out (double Error, int Order) key);
             if (key.Error == 0)
             {
                 break;
             }
 
             int[] group = groups[g];
-            Spread(features, group, dims, out int dim, out long mean);
-            int[] left = [.. group.Where(i => (long)features[(i * dims) + dim] * group.Length < mean)];
-            int[] right = [.. group.Where(i => (long)features[(i * dims) + dim] * group.Length >= mean)];
+            Spread(features, weights, group, dims, out int dim, out long sum, out long weight);
+            int[] left = [.. group.Where(i => (long)features[(i * dims) + dim] * weight < sum)];
+            int[] right = [.. group.Where(i => (long)features[(i * dims) + dim] * weight >= sum)];
             if (left.Length == 0 || right.Length == 0)
             {
                 continue;
@@ -315,8 +700,8 @@ internal static class Etc1sEncoder
 
             groups[g] = left;
             groups.Add(right);
-            queue.Enqueue(g, (-Spread(features, left, dims, out _, out _), g));
-            queue.Enqueue(groups.Count - 1, (-Spread(features, right, dims, out _, out _), groups.Count - 1));
+            queue.Enqueue(g, (-Spread(features, weights, left, dims, out _, out _, out _), g));
+            queue.Enqueue(groups.Count - 1, (-Spread(features, weights, right, dims, out _, out _, out _), groups.Count - 1));
         }
 
         for (int g = 0; g < groups.Count; g++)
@@ -429,60 +814,74 @@ internal static class Etc1sEncoder
         return count;
     }
 
-    /// <summary>Returns a group's squared error about its mean, its widest dimension, and that dimension's sum.</summary>
-    private static long Spread(int[] features, int[] group, int dims, out int widest, out long mean)
+    /// <summary>Returns a group's weighted squared error about its mean, its widest dimension, that dimension's weighted sum, and the group's weight.</summary>
+    private static double Spread(int[] features, int[]? weights, int[] group, int dims, out int widest, out long widestSum, out long weight)
     {
         widest = 0;
-        mean = 0;
-        long total = 0;
+        widestSum = 0;
+        weight = 0;
+        foreach (int i in group)
+        {
+            weight += weights is null ? 1 : weights[i];
+        }
+
+        double total = 0;
         double widestVariance = -1;
         for (int d = 0; d < dims; d++)
         {
             long sum = 0;
-            long squares = 0;
+            double squares = 0;
             foreach (int i in group)
             {
                 long v = features[(i * dims) + d];
-                sum += v;
-                squares += v * v;
+                long w = weights is null ? 1 : weights[i];
+                sum += v * w;
+                squares += (double)(v * v * w);
             }
 
-            long variance = squares - (sum * sum / Math.Max(group.Length, 1));
+            double variance = squares - ((double)sum * sum / Math.Max(weight, 1));
             total += variance;
             if (variance > widestVariance)
             {
                 widestVariance = variance;
                 widest = d;
-                mean = sum;
+                widestSum = sum;
             }
         }
 
         return total;
     }
 
-    /// <summary>Finds the endpoint with the least error over a cluster's blocks, each texel taking its best selector.</summary>
-    private static Endpoint FitEndpoint(byte[] pixels, List<int> blocks, int effort)
+    /// <summary>
+    /// Finds the endpoint with the least error over a cluster's blocks, each texel taking its best selector: the mean colour
+    /// with each table, then up to <paramref name="steps"/> moves to the best of the 26 colours around the best so far (with
+    /// its table and, with <paramref name="intenReach"/>, the tables that near it), stopping when none is better. A candidate
+    /// stops being summed once it is worse than the best so far.
+    /// </summary>
+    private static Endpoint FitEndpoint(byte[] pixels, List<int> blocks, int steps, int intenReach)
     {
-        Span<long> sum = stackalloc long[3];
-        foreach (int i in blocks)
+        ReadOnlySpan<int> members = CollectionsMarshal.AsSpan(blocks);
+        long sr = 0, sg = 0, sb = 0;
+        foreach (int i in members)
         {
-            for (int t = 0; t < 16; t++)
+            ReadOnlySpan<byte> px = pixels.AsSpan(i * 48, 48);
+            for (int t = 0; t < 48; t += 3)
             {
-                for (int c = 0; c < 3; c++)
-                {
-                    sum[c] += pixels[(i * 48) + (t * 3) + c];
-                }
+                sr += px[t];
+                sg += px[t + 1];
+                sb += px[t + 2];
             }
         }
 
-        long count = blocks.Count * 16L;
+        long count = members.Length * 16L;
         Span<int> palette = stackalloc int[12];
+        byte r0 = Q5Mean(sr, count), g0 = Q5Mean(sg, count), b0 = Q5Mean(sb, count);
         Endpoint best = default;
         long bestError = long.MaxValue;
         for (int inten = 0; inten < 8; inten++)
         {
-            Endpoint e = new(Q5Mean(sum[0], count), Q5Mean(sum[1], count), Q5Mean(sum[2], count), (byte)inten);
-            long error = Error(pixels, blocks, e, palette);
+            Endpoint e = new(r0, g0, b0, (byte)inten);
+            long error = Error(pixels, members, e, palette, bestError);
             if (error < bestError)
             {
                 bestError = error;
@@ -490,43 +889,60 @@ internal static class Etc1sEncoder
             }
         }
 
-        if (effort >= 3)
+        for (int step = 0; step < steps; step++)
         {
-            // Try the neighbouring colours of the best one.
             Endpoint centre = best;
-            for (int dr = -1; dr <= 1; dr++)
+            for (int di = -intenReach; di <= intenReach; di++)
             {
-                for (int dg = -1; dg <= 1; dg++)
+                int inten = centre.Inten + di;
+                if ((uint)inten > 7)
                 {
-                    for (int db = -1; db <= 1; db++)
-                    {
-                        int r = centre.R + dr, g = centre.G + dg, b = centre.B + db;
-                        if ((dr | dg | db) == 0 || (uint)r > 31 || (uint)g > 31 || (uint)b > 31)
-                        {
-                            continue;
-                        }
+                    continue;
+                }
 
-                        Endpoint e = new((byte)r, (byte)g, (byte)b, centre.Inten);
-                        long error = Error(pixels, blocks, e, palette);
-                        if (error < bestError)
+                for (int dr = -1; dr <= 1; dr++)
+                {
+                    for (int dg = -1; dg <= 1; dg++)
+                    {
+                        for (int db = -1; db <= 1; db++)
                         {
-                            bestError = error;
-                            best = e;
+                            int r = centre.R + dr, g = centre.G + dg, b = centre.B + db;
+                            if ((dr | dg | db | di) == 0 || (uint)r > 31 || (uint)g > 31 || (uint)b > 31)
+                            {
+                                continue;
+                            }
+
+                            Endpoint e = new((byte)r, (byte)g, (byte)b, (byte)inten);
+                            long error = Error(pixels, members, e, palette, bestError);
+                            if (error < bestError)
+                            {
+                                bestError = error;
+                                best = e;
+                            }
                         }
                     }
                 }
+            }
+
+            if (best == centre)
+            {
+                break;
             }
         }
 
         return best;
 
-        static long Error(byte[] pixels, List<int> blocks, Endpoint e, Span<int> palette)
+        static long Error(byte[] pixels, ReadOnlySpan<int> members, Endpoint e, Span<int> palette, long limit)
         {
             Palette(e, palette);
             long error = 0;
-            foreach (int i in blocks)
+            foreach (int i in members)
             {
-                error += BestSelectors(pixels.AsSpan(i * 48, 48), palette, out _);
+                error += BestError(pixels.AsSpan(i * 48, 48), palette, limit - error);
+                if (error >= limit)
+                {
+                    break;
+                }
             }
 
             return error;
@@ -535,13 +951,41 @@ internal static class Etc1sEncoder
 
     private static byte Q5Mean(long sum, long count) => (byte)Math.Clamp(((sum * 31) + (count * 255 / 2)) / (count * 255), 0, 31);
 
-    /// <summary>Refits an endpoint to its blocks with their selectors fixed: for each table the mean of texel minus modifier, and its neighbours.</summary>
-    private static Endpoint RefitEndpoint(byte[] pixels, List<int> blocks, Endpoint current, int[] blockSelector, uint[] selectors)
+    /// <summary>
+    /// Refits an endpoint to its blocks with their selectors fixed. Ignoring clamping, a table's best colour is the mean of texel
+    /// minus modifier and its error follows from per-selector sums; the <paramref name="tables"/> tables with the least such
+    /// error are then tried exactly at the 5-bit colours either side of that mean in each channel.
+    /// </summary>
+    private static Endpoint RefitEndpoint(byte[] pixels, List<int> blocks, Endpoint current, int[] blockSelector, uint[] selectors, int tables)
     {
-        Span<int> palette = stackalloc int[12];
-        Endpoint best = current;
-        long bestError = Error(current, palette);
-        Span<long> sum = stackalloc long[3];
+        ReadOnlySpan<int> members = CollectionsMarshal.AsSpan(blocks);
+        if (members.IsEmpty)
+        {
+            return current;
+        }
+
+        // Per selector value: the texel count and channel sums; and the sum of squares.
+        Span<long> counts = stackalloc long[4];
+        Span<long> sums = stackalloc long[12];
+        counts.Clear();
+        sums.Clear();
+        foreach (int i in members)
+        {
+            uint s = selectors[blockSelector[i]];
+            ReadOnlySpan<byte> px = pixels.AsSpan(i * 48, 48);
+            for (int t = 0; t < 16; t++)
+            {
+                int k = (int)((s >> (t * 2)) & 3);
+                counts[k]++;
+                sums[k * 3] += px[t * 3];
+                sums[(k * 3) + 1] += px[(t * 3) + 1];
+                sums[(k * 3) + 2] += px[(t * 3) + 2];
+            }
+        }
+
+        long n = members.Length * 16L;
+        Span<double> approx = stackalloc double[8];
+        Span<double> mean = stackalloc double[24];
         Span<int> mods = stackalloc int[4];
         for (int inten = 0; inten < 8; inten++)
         {
@@ -551,55 +995,79 @@ internal static class Etc1sEncoder
             mods[1] = -a;
             mods[2] = a;
             mods[3] = b;
-            sum.Clear();
-            foreach (int i in blocks)
+
+            // Σ(p − m)² − (Σ(p − m))² / n per channel, less the Σp² every table shares.
+            double error = 0;
+            for (int c = 0; c < 3; c++)
             {
-                uint s = selectors[blockSelector[i]];
-                for (int t = 0; t < 16; t++)
+                double sum = 0;
+                double cross = 0;
+                for (int k = 0; k < 4; k++)
                 {
-                    int m = mods[(int)((s >> (t * 2)) & 3)];
-                    for (int c = 0; c < 3; c++)
-                    {
-                        sum[c] += pixels[(i * 48) + (t * 3) + c] - m;
-                    }
+                    sum += sums[(k * 3) + c] - (counts[k] * mods[k]);
+                    cross += (counts[k] * (double)mods[k] * mods[k]) - (2.0 * mods[k] * sums[(k * 3) + c]);
+                }
+
+                mean[(inten * 3) + c] = sum / n;
+                error += cross - (sum * sum / n);
+            }
+
+            approx[inten] = error;
+        }
+
+        Span<int> palette = stackalloc int[12];
+        Endpoint best = current;
+        long bestError = Error(current, palette, long.MaxValue);
+        Span<int> lo = stackalloc int[3];
+        Span<int> hi = stackalloc int[3];
+        for (int pass = 0; pass < tables; pass++)
+        {
+            int inten = 0;
+            for (int t = 1; t < 8; t++)
+            {
+                if (approx[t] < approx[inten])
+                {
+                    inten = t;
                 }
             }
 
-            long count = blocks.Count * 16L;
-            int r0 = Q5Mean(Math.Max(sum[0], 0), count), g0 = Q5Mean(Math.Max(sum[1], 0), count), b0 = Q5Mean(Math.Max(sum[2], 0), count);
-            for (int dr = -1; dr <= 1; dr++)
+            approx[inten] = double.MaxValue;
+            for (int c = 0; c < 3; c++)
             {
-                for (int dg = -1; dg <= 1; dg++)
-                {
-                    for (int db = -1; db <= 1; db++)
-                    {
-                        int r = r0 + dr, g = g0 + dg, bl = b0 + db;
-                        if ((uint)r > 31 || (uint)g > 31 || (uint)bl > 31)
-                        {
-                            continue;
-                        }
+                double m = Math.Clamp(mean[(inten * 3) + c], 0, 255);
+                int v = Math.Clamp((int)(m * 31 / 255), 0, 31);
+                lo[c] = v;
+                hi[c] = Math.Min(31, v + 1);
+            }
 
-                        Endpoint e = new((byte)r, (byte)g, (byte)bl, (byte)inten);
-                        long error = Error(e, palette);
-                        if (error < bestError)
-                        {
-                            bestError = error;
-                            best = e;
-                        }
-                    }
+            for (int corner = 0; corner < 8; corner++)
+            {
+                int r = (corner & 1) == 0 ? lo[0] : hi[0];
+                int g = (corner & 2) == 0 ? lo[1] : hi[1];
+                int bl = (corner & 4) == 0 ? lo[2] : hi[2];
+                Endpoint e = new((byte)r, (byte)g, (byte)bl, (byte)inten);
+                long error = Error(e, palette, bestError);
+                if (error < bestError)
+                {
+                    bestError = error;
+                    best = e;
                 }
             }
         }
 
         return best;
 
-        long Error(Endpoint e, Span<int> palette)
+        long Error(Endpoint e, Span<int> palette, long limit)
         {
             Palette(e, palette);
             long error = 0;
-            foreach (int i in blocks)
+            foreach (int i in CollectionsMarshal.AsSpan(blocks))
             {
                 error += FixedError(pixels.AsSpan(i * 48, 48), palette, selectors[blockSelector[i]]);
+                if (error >= limit)
+                {
+                    break;
+                }
             }
 
             return error;
@@ -607,11 +1075,11 @@ internal static class Etc1sEncoder
     }
 
     /// <summary>Fits a selector texel by texel: each texel takes the modifier with the least error summed over the cluster's blocks.</summary>
-    private static uint FitSelector(byte[] pixels, List<int> blocks, int[] blockEndpoint, Endpoint[] endpoints, uint[] ideal)
+    private static uint FitSelector(byte[] pixels, List<int> blocks, int[] blockEndpoint, Endpoint[] endpoints, uint[] ideal, uint current)
     {
         if (blocks.Count == 0)
         {
-            return 0;
+            return current;
         }
 
         if (blocks.Count == 1)

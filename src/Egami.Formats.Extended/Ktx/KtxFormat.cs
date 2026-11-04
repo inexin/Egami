@@ -31,14 +31,17 @@ public static class KtxFormat
 /// supercompressed with Zstandard or zlib. Load gives mip 0 of the first surface, turned upright and swizzled as the file
 /// says; LoadAll and <see cref="KtxReaderOptions"/> reach the others. Uncompressed, BC1 to BC7, ETC2, EAC, 2D ASTC (LDR and
 /// HDR) and Basis Universal (ETC1S, UASTC LDR and HDR 4 × 4) textures read; 3D ASTC, PVRTC and the newer Basis Universal
-/// families (UASTC HDR 6 × 6, XUASTC, XUBC7) are refused. Read only. Registered with <see cref="ExtendedContextExtensions.WithKtx2"/>.
+/// families (UASTC HDR 6 × 6, XUASTC, XUBC7) are refused. Save and SaveAll write every one of those but ASTC HDR and UASTC HDR,
+/// with mips, arrays, cube maps and supercompression (<see cref="Ktx2WriterOptions"/>). Registered with
+/// <see cref="ExtendedContextExtensions.WithKtx2"/>.
 /// </summary>
 /// <example>
 /// <code language="csharp" source="../../../tests/Egami.DocSamples/FormatsExtended.cs" region="ktx-load"/>
+/// <code language="csharp" source="../../../tests/Egami.DocSamples/FormatsExtended.cs" region="ktx-save"/>
 /// </example>
 public static class Ktx2Format
 {
-    /// <summary>Gets the format's registration: name, MIME type, extension, signature and reader.</summary>
+    /// <summary>Gets the format's registration: name, MIME type, extension, signature, reader and writer.</summary>
     public static FormatInfo Info { get; } = new()
     {
         Name = "KTX2",
@@ -47,6 +50,7 @@ public static class Ktx2Format
         SignatureLength = 12,
         Matches = Ktx2Header.Matches,
         Reader = new KtxReader(KtxContainer.Ktx2),
+        Writer = new Ktx2Writer(),
     };
 }
 

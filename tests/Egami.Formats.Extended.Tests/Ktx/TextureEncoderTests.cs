@@ -42,41 +42,41 @@ public class TextureEncoderTests
     {
         // Footprint width and height, effort, sRGB, minimum PSNR (RGBA).
         { 4, 4, 0, false, 33.9 },
-        { 4, 4, 4, false, 38.0 },
-        { 4, 4, 6, false, 38.2 },
-        { 5, 4, 4, false, 36.6 },
-        { 5, 5, 4, false, 34.5 },
-        { 6, 5, 4, false, 32.9 },
-        { 6, 6, 0, false, 29.2 },
-        { 6, 6, 4, false, 31.4 },
-        { 6, 6, 6, false, 31.6 },
-        { 6, 6, 4, true, 31.4 },
-        { 8, 5, 4, false, 30.4 },
-        { 8, 6, 4, false, 29.3 },
-        { 8, 8, 4, false, 27.5 },
-        { 10, 5, 4, false, 29.8 },
-        { 10, 6, 4, false, 28.8 },
-        { 10, 8, 4, false, 26.8 },
-        { 10, 10, 4, false, 25.8 },
-        { 12, 10, 4, false, 24.8 },
-        { 12, 12, 0, false, 22.5 },
-        { 12, 12, 4, false, 23.9 },
-        { 12, 12, 6, false, 24.0 },
+        { 4, 4, 4, false, 38.6 },
+        { 4, 4, 6, false, 38.9 },
+        { 5, 4, 4, false, 37.2 },
+        { 5, 5, 4, false, 35.3 },
+        { 6, 5, 4, false, 33.7 },
+        { 6, 6, 0, false, 29.3 },
+        { 6, 6, 4, false, 32.2 },
+        { 6, 6, 6, false, 32.5 },
+        { 6, 6, 4, true, 32.2 },
+        { 8, 5, 4, false, 31.4 },
+        { 8, 6, 4, false, 30.2 },
+        { 8, 8, 4, false, 28.5 },
+        { 10, 5, 4, false, 30.3 },
+        { 10, 6, 4, false, 29.4 },
+        { 10, 8, 4, false, 27.8 },
+        { 10, 10, 4, false, 26.4 },
+        { 12, 10, 4, false, 25.5 },
+        { 12, 12, 0, false, 22.6 },
+        { 12, 12, 4, false, 24.6 },
+        { 12, 12, 6, false, 24.7 },
     };
 
     public static TheoryData<string, int, double> EtcCases => new()
     {
         // Format, effort, minimum PSNR (RGB, or RGBA for the formats with alpha, or the EAC channel).
-        { "etc1", 0, 31.5 },
-        { "etc1", 4, 32.5 },
-        { "etc2", 0, 31.5 },
-        { "etc2", 4, 32.6 },
-        { "a1", 4, 33.0 },
-        { "rgba", 0, 32.8 },
-        { "rgba", 4, 33.9 },
-        { "r11", 0, 38.9 },
-        { "r11", 4, 39.6 },
-        { "r11-signed", 4, 39.6 },
+        { "etc1", 0, 31.6 },
+        { "etc1", 4, 32.65 },
+        { "etc2", 0, 31.6 },
+        { "etc2", 4, 32.75 },
+        { "a1", 4, 33.1 },
+        { "rgba", 0, 32.85 },
+        { "rgba", 4, 34.0 },
+        { "r11", 0, 39.0 },
+        { "r11", 4, 39.9 },
+        { "r11-signed", 4, 39.9 },
     };
 
     public static TheoryData<int, double, double> UastcCases => new()
@@ -108,8 +108,8 @@ public class TextureEncoderTests
 
     [Theory]
     [Trait("Category", "Slow")]
-    [InlineData("etc1", 6, 32.5)]
-    [InlineData("etc2", 6, 32.7)]
+    [InlineData("etc1", 6, 32.8)]
+    [InlineData("etc2", 6, 32.95)]
     public void EtcReachesItsQualityAtEffortSix(string format, int effort, double minimum) => EtcReachesItsQuality(format, effort, minimum);
 
     [Fact]
@@ -236,6 +236,66 @@ public class TextureEncoderTests
         byte[] decoded = new byte[64];
         Assert.True(Uastc.Unpack(block, decoded));
         Assert.Equal(texels, decoded);
+    }
+
+    [Fact]
+    public void UastcFillsTheTranscoderHints()
+    {
+        byte[] opaque = (byte[])Duck.Value.Clone();
+        for (int i = 3; i < opaque.Length; i += 4)
+        {
+            opaque[i] = 255;
+        }
+
+        foreach (byte[] image in new[] { opaque, Duck.Value })
+        {
+            byte[] blocks = EncodeUastc(image, 4, parallel: true);
+            int interpolated = 0, hint0 = 0, hint1 = 0, biased = 0;
+            byte[] expected = new byte[64];
+            byte[] actual = new byte[64];
+            for (int b = 0; b < blocks.Length; b += 16)
+            {
+                byte[] block = blocks[b..(b + 16)];
+                int mode = Uastc.Mode(block[0]);
+                if (mode == 8)
+                {
+                    continue;
+                }
+
+                // The hints follow the mode: BC1H0, BC1H1 (not in modes 10 to 12), the ETC1 flip, mode and tables, then the bias.
+                interpolated++;
+                int at = Uastc.ModeLengths[mode];
+                bool hasHint1 = mode is not (10 or 11 or 12);
+                hint0 += Bit(block, at);
+                hint1 += hasHint1 ? Bit(block, at + 1) : 0;
+                if (hasHint1)
+                {
+                    int bias = 0;
+                    for (int i = 0; i < 5; i++)
+                    {
+                        bias |= Bit(block, at + 10 + i) << i;
+                    }
+
+                    biased += bias != 13 ? 1 : 0;
+                }
+
+                // Hints only guide transcoders: clearing them leaves the decoded texels as they were.
+                Assert.True(Uastc.Unpack(block, expected));
+                for (int i = at; i < at + Uastc.HintBits[mode]; i++)
+                {
+                    block[i >> 3] &= (byte)~(1 << (i & 7));
+                }
+
+                Assert.True(Uastc.Unpack(block, actual));
+                Assert.Equal(expected, actual);
+            }
+
+            Assert.True(hint0 > interpolated / 10, $"BC1H0 in {hint0} of {interpolated} blocks");
+            Assert.True(image != opaque || hint1 > interpolated / 10, $"BC1H1 in {hint1} of {interpolated} blocks");
+            Assert.True(biased > interpolated / 20, $"an ETC1 bias other than 13 in {biased} of {interpolated} blocks");
+        }
+
+        static int Bit(byte[] block, int i) => (block[i >> 3] >> (i & 7)) & 1;
     }
 
     [Fact]
