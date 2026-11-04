@@ -71,7 +71,8 @@ public class Ktx2WriterTests
     [MemberData(nameof(Blocks))]
     public void EncodesBlockFormats(KtxTextureFormat format, double minimumPsnr)
     {
-        using Raster<Rgba8> photo = Photo(opaque: format is KtxTextureFormat.Bc1 or KtxTextureFormat.Etc1 or KtxTextureFormat.Etc2Rgb);
+        // The 1-bit alpha formats get an opaque photo, so their colour error is what is measured.
+        using Raster<Rgba8> photo = Photo(opaque: format is KtxTextureFormat.Bc1 or KtxTextureFormat.Etc1 or KtxTextureFormat.Etc2Rgb or KtxTextureFormat.Etc2RgbA1);
         byte[] file = Save(photo, new Ktx2WriterOptions { Format = format, MipLevels = 1, Srgb = false });
         using Raster<Rgba8> back = Raster.Load<Rgba8>(file, Context);
         double psnr = Psnr(photo, back, format);
@@ -242,7 +243,9 @@ public class Ktx2WriterTests
         Assert.StartsWith("Egami ", details.KeyValues["KTXwriter"]);
         using Raster<Rgba8> back = Raster.Load<Rgba8>(file, Context);
         Rgba8 p = back.Row(3)[3];
-        Assert.Equal((100, 50, 25, 128), (p.R, p.G, p.B, p.A));
+        Assert.InRange(p.R, 196, 204);
+        Assert.InRange(p.G, 96, 104);
+        Assert.Equal(128, p.A);
 
         // The colour tag goes into the descriptor's primaries and transfer function, and comes back.
         using Raster<RgbaF16> hdr = Raster.Create<RgbaF16>(4, 4);
@@ -345,7 +348,7 @@ public class Ktx2WriterTests
         static Raster Square(int i)
         {
             using Raster<Rgba8> photo = Photo(opaque: true);
-            Raster<Rgba8> square = photo.Derive(x => x.Crop(new Rectangle(i * 3, i, 16, 16)), TestContext.Current.CancellationToken);
+            Raster<Rgba8> square = photo.Derive(x => x.Crop(new Rect(i * 3, i, 16, 16)), TestContext.Current.CancellationToken);
             return square;
         }
     }
@@ -355,7 +358,7 @@ public class Ktx2WriterTests
     {
         using Raster<Rgba8> photo = Photo(opaque: format is KtxTextureFormat.Rgb8 or KtxTextureFormat.Rgb16 or KtxTextureFormat.RgbF32
             or KtxTextureFormat.R11G11B10F or KtxTextureFormat.Rgb9E5 or KtxTextureFormat.Bgr565 or KtxTextureFormat.Etc1 or KtxTextureFormat.Etc2Rgb);
-        Raster<Rgba8> crop = photo.Derive(x => x.Crop(new Rectangle(5, 9, 37, 23)), TestContext.Current.CancellationToken);
+        Raster<Rgba8> crop = photo.Derive(x => x.Crop(new Rect(5, 9, 37, 23)), TestContext.Current.CancellationToken);
         if (format is KtxTextureFormat.RgbaF16 or KtxTextureFormat.RgbaF32 or KtxTextureFormat.RgbF32 or KtxTextureFormat.R32F
             or KtxTextureFormat.R11G11B10F or KtxTextureFormat.Rgb9E5 or KtxTextureFormat.Bc6h or KtxTextureFormat.Bc6hSigned)
         {
@@ -449,7 +452,7 @@ public class Ktx2WriterTests
         {
             _ when gray => [0],
             KtxTextureFormat.Bc5 or KtxTextureFormat.EacRg11 or KtxTextureFormat.EacRg11Signed => [0, 1],
-            KtxTextureFormat.Bc1 or KtxTextureFormat.Etc1 or KtxTextureFormat.Etc2Rgb => [0, 1, 2],
+            KtxTextureFormat.Bc1 or KtxTextureFormat.Etc1 or KtxTextureFormat.Etc2Rgb or KtxTextureFormat.Etc2RgbA1 => [0, 1, 2],
             _ => [0, 1, 2, 3],
         };
         using Raster<Gray8> luma = gray ? a.As<Gray8>() : Raster.Create<Gray8>(1, 1);

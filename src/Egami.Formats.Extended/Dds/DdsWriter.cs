@@ -63,7 +63,7 @@ internal sealed class DdsWriter : IFormatWriter, IMultiImageWriter
 
         int dxgi = srgb ? target.SrgbDxgi : target.Dxgi;
         int full = target.IsPlanar ? 1 : 1 + (int)Math.Log2(Math.Max(first.Width, first.Height));
-        int mips = dds.MipLevels == 0 ? full : Math.Min(dds.MipLevels, full);
+        int mips = dds.MipLevels == 0 ? (target.IsData ? 1 : full) : Math.Min(dds.MipLevels, full);
         bool premultiplied = dds.PremultipliedAlpha;
         StoredMips?[] stored = [.. rasters.Select(r => (r.Metadata.FormatDetails as DdsDetails)?.Mips)];
         if (!premultiplied && stored.All(s => s is { Bytes: not null } && s.Dxgi == dxgi && s.Size == new Size(first.Width, first.Height))
@@ -710,6 +710,9 @@ internal sealed class DdsWriter : IFormatWriter, IMultiImageWriter
 
         /// <summary>Gets whether the format is a 4:2:0 planar video surface.</summary>
         public bool IsPlanar => Format is DdsTextureFormat.Nv12 or DdsTextureFormat.P010 or DdsTextureFormat.P016;
+
+        /// <summary>Gets whether the format holds integer or depth data, which averaged mips would corrupt.</summary>
+        public bool IsData => Format is >= DdsTextureFormat.R8UInt and <= DdsTextureFormat.D32FS8;
 
         public static Target For(DdsTextureFormat format)
         {

@@ -207,7 +207,8 @@ public sealed class DdsWriterOptions : WriterOptions
     /// Gets how many mip levels to write: 0 (the default) for the full chain down to 1 × 1, 1 for mip 0 alone, or that many, at
     /// most the full chain. Mips average 2 × 2 blocks of premultiplied pixels (<see cref="MipChain"/>), in linear light for an
     /// sRGB format. A planar video format (<see cref="DdsTextureFormat.Nv12"/>, <see cref="DdsTextureFormat.P010"/>,
-    /// <see cref="DdsTextureFormat.P016"/>) writes mip 0 alone.
+    /// <see cref="DdsTextureFormat.P016"/>) writes mip 0 alone; an integer or depth format writes mip 0 alone unless a count is
+    /// given, since averaging its values rarely means anything.
     /// </summary>
     /// <exception cref="ArgumentOutOfRangeException">The value is negative.</exception>
     public int MipLevels

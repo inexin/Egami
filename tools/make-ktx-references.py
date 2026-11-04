@@ -61,6 +61,7 @@ import shutil
 import struct
 import subprocess
 import sys
+import tempfile
 
 VERSION = "4.4.2"
 IMAGE = f"egami-ktx:{VERSION}-c"
@@ -613,16 +614,121 @@ def finite(vk, data):
     return bytes(out)
 
 
+def written_check(folder):
+    """Inside the image: checks every file Ktx2WriterTests.WritesTheCheckedFiles wrote and returns the verdicts."""
+    import zlib
+    from PIL import Image
+    import zstandard
+    result = {}
+    for file in sorted(os.listdir(folder)):
+        if not file.endswith(".ktx2"):
+            continue
+        name = file[:-5]
+        path = f"{folder}/{file}"
+        with open(path, "rb") as f:
+            data = f.read()
+        vk, _, width, height, _, layers, faces, levels, scheme = struct.unpack_from("<9I", data, 12)
+        dfd_offset, dfd_length = struct.unpack_from("<2I", data, 48)
+        descriptor = data[dfd_offset:dfd_offset + dfd_length]
+        with open(f"{folder}/{name}.txt", encoding="ascii") as f:
+            format_name = f.read().strip()
+        entry = {"validate": validate(path), "descriptor": descriptor.hex()}
+
+        # libktx reads the same pixels: Basis Universal transcoded to RGBA8 equals Egami's decode; any other format's data
+        # for mip 0 and the last mip, first and last surface, equals the level data as this script reads it from the file.
+        if vk == 0:
+            run("ktx", "extract", "--transcode", "rgba8", path, f"{WORK}/{name}.png")
+            with Image.open(f"{WORK}/{name}.png") as a, Image.open(f"{folder}/{name}.png") as b:
+                same = a.convert("RGBA").tobytes() == b.convert("RGBA").tobytes()
+            entry["libktx"] = "same" if same else "transcoded pixels differ from Egami's decode"
+        else:
+            surfaces = max(layers, 1) * faces
+            differences = []
+            for level in sorted({0, levels - 1}):
+                offset, length, uncompressed = struct.unpack_from("<3Q", data, 80 + (24 * level))
+                stored = data[offset:offset + length]
+                stored = zstandard.ZstdDecompressor().decompress(stored, max_output_size=uncompressed) if scheme == 2 \
+                    else zlib.decompress(stored) if scheme == 3 else stored
+                image = len(stored) // surfaces
+                for surface in sorted({0, surfaces - 1}):
+                    layer, face = divmod(surface, faces)
+                    out = f"{WORK}/{name}-{level}-{surface}.raw"
+                    where = (["--layer", layer] if layers > 0 else []) + (["--face", face] if faces > 1 else [])
+                    run("ktx", "extract", "--raw", "--level", level, *where, path, out)
+                    with open(out, "rb") as f:
+                        if f.read() != stored[surface * image:(surface + 1) * image]:
+                            differences.append(f"level {level} surface {surface}")
+            entry["libktx"] = "same" if not differences else "differs at " + ", ".join(differences)
+
+        # The descriptor is the one `ktx create` writes for the format, but for the colour tag and alpha mode (bytes 13 to 15).
+        if vk == 0:
+            base = "R8G8B8A8" if "_RGBA" in format_name else "R8G8B8"
+            srgb = "SRGB" if format_name.endswith("_SRGB") else "UNORM"
+            encode = "basis-lz" if format_name.startswith("ETC1S") else "uastc"
+            run("ktx", "create", "--format", f"{base}_{srgb}", "--assign-tf", "srgb" if srgb == "SRGB" else "linear", "--encode", encode,
+                f"{folder}/{name}.png", f"{WORK}/{name}-libktx.ktx2")
+        else:
+            block = (int(v) for v in format_name.split("_")[1].split("x")) if format_name.startswith("ASTC") else \
+                (4, 4) if format_name.endswith("_BLOCK") else (1, 1)
+            bw, bh = block
+            for unit in (1, 2, 3, 4, 6, 8, 12, 16):
+                with open(f"{WORK}/zeros.bin", "wb") as f:
+                    f.write(bytes(unit))
+                attempt = subprocess.run(["ktx", "create", "--raw", "--format", format_name, "--width", str(bw), "--height", str(bh),
+                                          f"{WORK}/zeros.bin", f"{WORK}/{name}-libktx.ktx2"], capture_output=True)
+                if attempt.returncode == 0:
+                    break
+        with open(f"{WORK}/{name}-libktx.ktx2", "rb") as f:
+            theirs = f.read()
+        offset, length = struct.unpack_from("<2I", theirs, 48)
+        theirs = theirs[offset:offset + length]
+        ours = bytearray(descriptor)
+        if len(ours) == len(theirs):
+            ours[13:16] = theirs[13:16]
+        entry["dfd"] = "same" if bytes(ours) == theirs else f"differs: ktx create writes {theirs.hex()}"
+        transfer_srgb = descriptor[14] == 2
+        if transfer_srgb != format_name.endswith(("_SRGB", "_SRGB_BLOCK")):
+            entry["dfd"] = f"transfer function {descriptor[14]} for {format_name}"
+        result[name] = entry
+    return result
+
+
+def written():
+    """Has the tests write the checked files, checks them in the image and writes tests/reference/ktx/written.json."""
+    folder = tempfile.mkdtemp(prefix="egami-ktx-written-")
+    subprocess.run(["dotnet", "test", "tests/Egami.Formats.Extended.Tests", "-c", "Release", "--filter",
+                    "FullyQualifiedName~Ktx2WriterTests.WritesTheCheckedFiles"], check=True, env={**os.environ, "EGAMI_KTX_WRITTEN": folder})
+    repo = os.getcwd()
+    out = subprocess.run(["docker", "run", "--rm", "-v", f"{repo}:/work", "-v", f"{folder}:/written", "-w", "/work", IMAGE, "python3",
+                          "tools/make-ktx-references.py", "--check-written", "/written"], check=True, stdout=subprocess.PIPE).stdout
+    result = json.loads(out)
+    shutil.rmtree(folder, ignore_errors=True)
+    bad = {name: e for name, e in result.items() if e["validate"] != "valid" or e["libktx"] != "same" or e["dfd"] != "same"}
+    with open(f"{TARGET}/written.json", "w", newline="\n") as f:
+        json.dump(result, f, indent=1, sort_keys=True)
+        f.write("\n")
+    print(f"{len(result)} written files checked, {len(bad)} with problems")
+    for name, e in bad.items():
+        print(name, e)
+
+
 def main():
     if len(sys.argv) > 1 and sys.argv[1] == "--inside":
         os.makedirs(WORK, exist_ok=True)
         committed()
         return
+    if len(sys.argv) > 2 and sys.argv[1] == "--check-written":
+        os.makedirs(WORK, exist_ok=True)
+        json.dump(written_check(sys.argv[2]), sys.stdout)
+        return
     repo = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+    os.chdir(repo)
     if subprocess.run(["docker", "image", "inspect", IMAGE], capture_output=True).returncode != 0:
         subprocess.run(["docker", "build", "-t", IMAGE, "-"], input=DOCKERFILE.encode(), check=True)
-    subprocess.run(["docker", "run", "--rm", "-v", f"{repo}:/work", "-w", "/work", IMAGE, "python3", "tools/make-ktx-references.py", "--inside"],
-                   check=True)
+    if not (len(sys.argv) > 1 and sys.argv[1] == "--written"):
+        subprocess.run(["docker", "run", "--rm", "-v", f"{repo}:/work", "-w", "/work", IMAGE, "python3", "tools/make-ktx-references.py", "--inside"],
+                       check=True)
+    written()
 
 
 if __name__ == "__main__":
