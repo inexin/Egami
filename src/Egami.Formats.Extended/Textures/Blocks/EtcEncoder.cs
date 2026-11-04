@@ -1445,6 +1445,6 @@ internal static class EtcEncoder
 
     private readonly record struct Candidate(int R, int G, int B, int Table, long Error, uint Indices)
     {
-        public const int Max = 64;
+        public const int Max = 128;
     }
 }
