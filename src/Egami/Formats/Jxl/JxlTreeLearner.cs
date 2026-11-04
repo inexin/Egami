@@ -48,6 +48,10 @@ internal sealed class JxlTreeLearner
     private ushort[] _counts;
     private int _n;
     private int[] _table = [];
+
+    // Each sample's tokens, static properties (two bytes each) and other properties packed in 16 bytes, when they fit, for
+    // hashing and comparing while samples are added; the raw bit counts follow from the tokens.
+    private UInt128[]? _keys;
     private int[][] _compact = [];
     private ushort[][] _staticMapping = [];
     private byte[][] _mapping = [];
@@ -64,6 +68,7 @@ internal sealed class JxlTreeLearner
         _static = [.. Enumerable.Range(0, _staticCount).Select(_ => new int[capacity])];
         _props = [.. Enumerable.Range(0, properties.Length - _staticCount).Select(_ => new byte[capacity])];
         _counts = new ushort[capacity];
+        _keys = predictors.Length + (2 * _staticCount) + _props.Length <= 16 ? new UInt128[capacity] : null;
         Rehash(BitOperations.RoundUpToPowerOf2((uint)capacity * 2));
     }
 
@@ -139,6 +144,29 @@ internal sealed class JxlTreeLearner
             _props[i - _staticCount][a] = _mapping[i - _staticCount][Math.Clamp(properties[_properties[i]], -PropertyRange, PropertyRange) + PropertyRange];
         }
 
+        if (_keys is not null)
+        {
+            Span<byte> key = stackalloc byte[16];
+            int k = 0;
+            for (int i = 0; i < _predictors.Length; i++)
+            {
+                key[k++] = _tokens[i][a];
+            }
+
+            for (int i = 0; i < _staticCount; i++)
+            {
+                key[k++] = (byte)_static[i][a];
+                key[k++] = (byte)(_static[i][a] >> 8);
+            }
+
+            for (int i = 0; i < _props.Length; i++)
+            {
+                key[k++] = _props[i][a];
+            }
+
+            _keys[a] = MemoryMarshal.Read<UInt128>(key);
+        }
+
         SampleCount++;
         int mask = _table.Length - 1;
         int slot = Hash(a) & mask;
@@ -181,6 +209,7 @@ internal sealed class JxlTreeLearner
     {
         List<JxlTreeNode> tree = [JxlTreeNode.Leaf(_predictors[0])];
         _table = [];
+        _keys = null;
         if (_n == 0)
         {
             return tree;
@@ -392,6 +421,10 @@ internal sealed class JxlTreeLearner
         }
 
         Array.Resize(ref _counts, size);
+        if (_keys is not null)
+        {
+            Array.Resize(ref _keys, size);
+        }
     }
 
     private void Rehash(long size)
@@ -418,6 +451,12 @@ internal sealed class JxlTreeLearner
 
     private int Hash(int a)
     {
+        if (_keys is not null)
+        {
+            UInt128 key = _keys[a];
+            return Mix((ulong)key ^ (BitOperations.RotateLeft((ulong)(key >> 64), 29) * 0x9E3779B97F4A7C15));
+        }
+
         ulong h = 0x1e35a7bd;
         for (int i = 0; i < _tokens.Length; i++)
         {
@@ -435,7 +474,12 @@ internal sealed class JxlTreeLearner
             h = (h * 0x1e35a7bd) + p[a];
         }
 
-        // A final mix (splitmix64's), so that samples differing only in their last fields still spread over the table.
+        return Mix(h);
+    }
+
+    /// <summary>A final mix (splitmix64's), so that samples differing only in their last fields still spread over the table.</summary>
+    private static int Mix(ulong h)
+    {
         h ^= h >> 30;
         h *= 0xbf58476d1ce4e5b9;
         h ^= h >> 27;
@@ -446,6 +490,11 @@ internal sealed class JxlTreeLearner
 
     private bool Same(int a, int b)
     {
+        if (_keys is not null)
+        {
+            return _keys[a] == _keys[b];
+        }
+
         for (int i = 0; i < _tokens.Length; i++)
         {
             if (_tokens[i][a] != _tokens[i][b] || _nbits[i][a] != _nbits[i][b])

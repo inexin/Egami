@@ -1740,7 +1740,6 @@ internal sealed class JxlModularEncoder
 
         // Weighted and gradient (libjxl's Best) up to e9; every predictor (Variable) at e10.
         int[] predictors = _effort >= 10 ? [.. Enumerable.Range(0, 14)] : [6, 5];
-        JxlTreeLearner learner = new(predictors, properties, 1 << 16);
 
         List<long> groupPixels = [];
         List<long> channelPixels = [];
@@ -1752,7 +1751,6 @@ internal sealed class JxlModularEncoder
             CollectPixelSamples(_streams[s], s, repeats, groupPixels, channelPixels, pixelSamples, diffSamples);
         }
 
-        learner.Quantize(groupPixels, channelPixels, pixelSamples, diffSamples, maxValues);
 
         int start = streams.FirstOrDefault(s => _streams[s].Channels.Count > 0, -1);
         long totalPixels = 0;
@@ -1778,6 +1776,9 @@ internal sealed class JxlModularEncoder
                 buffers[u].Wp = null;
             }
         });
+        // The learner sized for every sample, so it never grows.
+        JxlTreeLearner learner = new(predictors, properties, Math.Max(1 << 10, buffers.Sum(b => b.Count)));
+        learner.Quantize(groupPixels, channelPixels, pixelSamples, diffSamples, maxValues);
         Span<int> props = stackalloc int[16];
         Span<long> preds = stackalloc long[14];
         foreach (SampleBuffer b in buffers)
