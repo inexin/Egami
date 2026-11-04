@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Runtime.InteropServices;
 
 using BenchmarkDotNet.Attributes;
@@ -22,7 +23,7 @@ public class KtxEncodeBenchmarks
     private byte[] _rgba = [];
     private byte[] _blocks = [];
 
-    [Params("ETC1", "ETC1-E0", "ETC2-RGB", "ETC2-RGBA", "EAC-R11", "ASTC-4x4", "ASTC-6x6", "ASTC-8x8", "UASTC", "ETC1S")]
+    [Params("ETC1", "ETC1-E0", "ETC2-RGB", "ETC2-RGBA", "EAC-R11", "ASTC-4x4", "ASTC-6x6", "ASTC-8x8", "ASTC-12x12", "UASTC", "ETC1S")]
     public string Format { get; set; } = "";
 
     [GlobalSetup]
@@ -48,7 +49,7 @@ public class KtxEncodeBenchmarks
 
         if (Format.StartsWith("ASTC", StringComparison.Ordinal))
         {
-            int footprint = Format[5] - '0';
+            int footprint = int.Parse(Format.AsSpan(5, Format.IndexOf('x') - 5), CultureInfo.InvariantCulture);
             return EncodeAstc(Astc.For(footprint, footprint)!);
         }
 
