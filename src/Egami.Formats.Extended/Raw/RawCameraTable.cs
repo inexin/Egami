@@ -63,6 +63,7 @@ internal static class RawCameraTable
                     White = Int(f[15]),
                     ExposureBias = f.Length >= 17 && Numbers(f[16]) is { Length: 1 } bias ? bias[0] : null,
                     ReducedWhite = f.Length >= 18 && Numbers(f[17]) is { Length: 1 } reduced ? reduced[0] : null,
+                    ReducedExposure = f.Length >= 19 && Numbers(f[18]) is { Length: 1 } exposure ? exposure[0] : null,
                 };
             }
 
@@ -162,4 +163,11 @@ internal sealed record RawCameraEntry(RawProfile Profile)
 
     /// <summary>Gets, for a Canon body, the white level of its sRAW and mRAW data as Adobe stores it, or <see langword="null"/>.</summary>
     public double? ReducedWhite { get; init; }
+
+    /// <summary>
+    /// Gets, for a Canon body, the baseline exposure Adobe gives its sRAW and mRAW data with <see cref="ReducedWhite"/>, or
+    /// <see langword="null"/>. Adobe picks that white level by the file's ISO and moves the baseline exposure with it, so the
+    /// pair gives the same brightness at every ISO; it differs from the camera's full-resolution one.
+    /// </summary>
+    public double? ReducedExposure { get; init; }
 }

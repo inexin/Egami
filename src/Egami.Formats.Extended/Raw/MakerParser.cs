@@ -242,6 +242,12 @@ internal static class MakerParser
                 // Adobe's baseline exposure follows the bias one for one: move it by this file's difference from the sample's.
                 frame.BaselineExposure += measured - bias;
             }
+
+            if (frame.Sensor.Codec == RawCodec.CanonSraw && camera.ReducedExposure is double reduced)
+            {
+                // sRAW and mRAW data take the baseline exposure Adobe gives them with the table's white level for them.
+                frame.BaselineExposure = reduced;
+            }
             // The table's area applies when the raw is the measured size, or larger by padding Adobe's DNG leaves out (a NEF's
             // extra columns at the right).
             bool fits = camera.Width > 0 && camera.Width <= frame.Sensor.Width && camera.Height <= frame.Sensor.Height
