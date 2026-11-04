@@ -173,6 +173,35 @@ Enum DdsTextureFormat  <a class="header-action link-secondary" title="View sourc
   
   <dd><p>B8G8R8X8_UNORM: 8-bit BGR with an unused byte. Legacy header X8R8G8B8.</p>
 </dd>
+    <dt id="Egami_Formats_Extended_Dds_DdsTextureFormat_D16"><code>D16 = 47</code></dt>
+  
+  <dd><p>D16_UNORM: 16-bit depth, the raster's gray. DX10 header.</p>
+</dd>
+    <dt id="Egami_Formats_Extended_Dds_DdsTextureFormat_D24S8"><code>D24S8 = 48</code></dt>
+  
+  <dd><p>D24_UNORM_S8_UINT: 24-bit depth from the raster's gray, stencil 0. DX10 header.</p>
+</dd>
+    <dt id="Egami_Formats_Extended_Dds_DdsTextureFormat_D32F"><code>D32F = 49</code></dt>
+  
+  <dd><p>D32_FLOAT: float depth, the raster's gray. DX10 header.</p>
+</dd>
+    <dt id="Egami_Formats_Extended_Dds_DdsTextureFormat_D32FS8"><code>D32FS8 = 50</code></dt>
+  
+  <dd><p>D32_FLOAT_S8X24_UINT: float depth from the raster's gray, stencil 0. DX10 header.</p>
+</dd>
+    <dt id="Egami_Formats_Extended_Dds_DdsTextureFormat_Nv12"><code>Nv12 = 51</code></dt>
+  
+  <dd><p>NV12: 8-bit 4:2:0 video, a Y′ plane then interleaved Cb and Cr at half size, BT.601 studio range. Width and height must be
+even, and only mip 0 is written, as Direct3D has no mips for planar formats. DX10 header.</p>
+</dd>
+    <dt id="Egami_Formats_Extended_Dds_DdsTextureFormat_P010"><code>P010 = 52</code></dt>
+  
+  <dd><p>P010: 10-bit 4:2:0 video, as <a class="xref" href="Egami.Formats.Extended.Dds.DdsTextureFormat.html#Egami_Formats_Extended_Dds_DdsTextureFormat_Nv12">Nv12</a> with 16-bit samples holding 10 bits in their high bits. DX10 header.</p>
+</dd>
+    <dt id="Egami_Formats_Extended_Dds_DdsTextureFormat_P016"><code>P016 = 53</code></dt>
+  
+  <dd><p>P016: 16-bit 4:2:0 video, as <a class="xref" href="Egami.Formats.Extended.Dds.DdsTextureFormat.html#Egami_Formats_Extended_Dds_DdsTextureFormat_Nv12">Nv12</a> with 16-bit samples. DX10 header.</p>
+</dd>
     <dt id="Egami_Formats_Extended_Dds_DdsTextureFormat_R11G11B10F"><code>R11G11B10F = 14</code></dt>
   
   <dd><p>R11G11B10_FLOAT: unsigned 11-, 11- and 10-bit floats, for HDR colour without alpha.</p>
@@ -181,25 +210,83 @@ Enum DdsTextureFormat  <a class="header-action link-secondary" title="View sourc
   
   <dd><p>R16_UNORM: one 16-bit channel, the raster's gray. Legacy header L16.</p>
 </dd>
+    <dt id="Egami_Formats_Extended_Dds_DdsTextureFormat_R16SInt"><code>R16SInt = 34</code></dt>
+  
+  <dd><p>R16_SINT: one 16-bit signed integer from the raster's gray, offset by 32768: 32768 stores 0. DX10 header.</p>
+</dd>
+    <dt id="Egami_Formats_Extended_Dds_DdsTextureFormat_R16UInt"><code>R16UInt = 33</code></dt>
+  
+  <dd><p>R16_UINT: one 16-bit unsigned integer, the raster's gray as 0 to 65535. DX10 header.</p>
+</dd>
     <dt id="Egami_Formats_Extended_Dds_DdsTextureFormat_R32F"><code>R32F = 10</code></dt>
   
   <dd><p>R32_FLOAT: one float channel, the raster's gray.</p>
+</dd>
+    <dt id="Egami_Formats_Extended_Dds_DdsTextureFormat_R32SInt"><code>R32SInt = 40</code></dt>
+  
+  <dd><p>R32_SINT: one 32-bit signed integer, the raster's float gray rounded as in <a class="xref" href="Egami.Formats.Extended.Dds.DdsTextureFormat.html#Egami_Formats_Extended_Dds_DdsTextureFormat_R32UInt">R32UInt</a>. DX10 header.</p>
+</dd>
+    <dt id="Egami_Formats_Extended_Dds_DdsTextureFormat_R32UInt"><code>R32UInt = 39</code></dt>
+  
+  <dd><p>R32_UINT: one 32-bit unsigned integer, the raster's float gray rounded to the nearest integer and clamped to the type's
+range; values up to 2²⁴ survive a float raster exactly. DX10 header.</p>
 </dd>
     <dt id="Egami_Formats_Extended_Dds_DdsTextureFormat_R8"><code>R8 = 3</code></dt>
   
   <dd><p>R8_UNORM: one 8-bit channel, the raster's gray. Legacy header L8.</p>
 </dd>
+    <dt id="Egami_Formats_Extended_Dds_DdsTextureFormat_R8SInt"><code>R8SInt = 28</code></dt>
+  
+  <dd><p>R8_SINT: one 8-bit signed integer from the raster's gray, offset as the reader maps it back: 0 stores −128, 128 stores 0
+and 255 stores 127. DX10 header.</p>
+</dd>
+    <dt id="Egami_Formats_Extended_Dds_DdsTextureFormat_R8UInt"><code>R8UInt = 27</code></dt>
+  
+  <dd><p>R8_UINT: one 8-bit unsigned integer, the raster's gray as 0 to 255. DX10 header.</p>
+</dd>
     <dt id="Egami_Formats_Extended_Dds_DdsTextureFormat_Rg16"><code>Rg16 = 7</code></dt>
   
   <dd><p>R16G16_UNORM: red and green, 16 bits each. Legacy header G16R16.</p>
+</dd>
+    <dt id="Egami_Formats_Extended_Dds_DdsTextureFormat_Rg16SInt"><code>Rg16SInt = 36</code></dt>
+  
+  <dd><p>R16G16_SINT: red and green as 16-bit signed integers, offset by 32768 as in <a class="xref" href="Egami.Formats.Extended.Dds.DdsTextureFormat.html#Egami_Formats_Extended_Dds_DdsTextureFormat_R16SInt">R16SInt</a>. DX10 header.</p>
+</dd>
+    <dt id="Egami_Formats_Extended_Dds_DdsTextureFormat_Rg16UInt"><code>Rg16UInt = 35</code></dt>
+  
+  <dd><p>R16G16_UINT: red and green as 16-bit unsigned integers. DX10 header.</p>
+</dd>
+    <dt id="Egami_Formats_Extended_Dds_DdsTextureFormat_Rg32SInt"><code>Rg32SInt = 42</code></dt>
+  
+  <dd><p>R32G32_SINT: red and green as 32-bit signed integers, rounded as in <a class="xref" href="Egami.Formats.Extended.Dds.DdsTextureFormat.html#Egami_Formats_Extended_Dds_DdsTextureFormat_R32UInt">R32UInt</a>. DX10 header.</p>
+</dd>
+    <dt id="Egami_Formats_Extended_Dds_DdsTextureFormat_Rg32UInt"><code>Rg32UInt = 41</code></dt>
+  
+  <dd><p>R32G32_UINT: red and green as 32-bit unsigned integers, rounded as in <a class="xref" href="Egami.Formats.Extended.Dds.DdsTextureFormat.html#Egami_Formats_Extended_Dds_DdsTextureFormat_R32UInt">R32UInt</a>. DX10 header.</p>
 </dd>
     <dt id="Egami_Formats_Extended_Dds_DdsTextureFormat_Rg8"><code>Rg8 = 4</code></dt>
   
   <dd><p>R8G8_UNORM: red and green, 8 bits each, as two-channel normal maps keep them.</p>
 </dd>
+    <dt id="Egami_Formats_Extended_Dds_DdsTextureFormat_Rg8SInt"><code>Rg8SInt = 30</code></dt>
+  
+  <dd><p>R8G8_SINT: red and green as 8-bit signed integers, offset by 128 as in <a class="xref" href="Egami.Formats.Extended.Dds.DdsTextureFormat.html#Egami_Formats_Extended_Dds_DdsTextureFormat_R8SInt">R8SInt</a>. DX10 header.</p>
+</dd>
+    <dt id="Egami_Formats_Extended_Dds_DdsTextureFormat_Rg8UInt"><code>Rg8UInt = 29</code></dt>
+  
+  <dd><p>R8G8_UINT: red and green as 8-bit unsigned integers. DX10 header.</p>
+</dd>
     <dt id="Egami_Formats_Extended_Dds_DdsTextureFormat_Rgb10A2"><code>Rgb10A2 = 13</code></dt>
   
   <dd><p>R10G10B10A2_UNORM: 10-bit RGB and 2-bit alpha.</p>
+</dd>
+    <dt id="Egami_Formats_Extended_Dds_DdsTextureFormat_Rgb32SInt"><code>Rgb32SInt = 44</code></dt>
+  
+  <dd><p>R32G32B32_SINT: RGB as 32-bit signed integers, rounded as in <a class="xref" href="Egami.Formats.Extended.Dds.DdsTextureFormat.html#Egami_Formats_Extended_Dds_DdsTextureFormat_R32UInt">R32UInt</a>. DX10 header.</p>
+</dd>
+    <dt id="Egami_Formats_Extended_Dds_DdsTextureFormat_Rgb32UInt"><code>Rgb32UInt = 43</code></dt>
+  
+  <dd><p>R32G32B32_UINT: RGB as 32-bit unsigned integers, rounded as in <a class="xref" href="Egami.Formats.Extended.Dds.DdsTextureFormat.html#Egami_Formats_Extended_Dds_DdsTextureFormat_R32UInt">R32UInt</a>. DX10 header.</p>
 </dd>
     <dt id="Egami_Formats_Extended_Dds_DdsTextureFormat_Rgb9E5"><code>Rgb9E5 = 15</code></dt>
   
@@ -213,9 +300,33 @@ Enum DdsTextureFormat  <a class="header-action link-secondary" title="View sourc
   
   <dd><p>R16G16B16A16_UNORM: 16-bit RGBA. Legacy header D3DFMT 36.</p>
 </dd>
+    <dt id="Egami_Formats_Extended_Dds_DdsTextureFormat_Rgba16SInt"><code>Rgba16SInt = 38</code></dt>
+  
+  <dd><p>R16G16B16A16_SINT: RGBA as 16-bit signed integers, offset by 32768 as in <a class="xref" href="Egami.Formats.Extended.Dds.DdsTextureFormat.html#Egami_Formats_Extended_Dds_DdsTextureFormat_R16SInt">R16SInt</a>. DX10 header.</p>
+</dd>
+    <dt id="Egami_Formats_Extended_Dds_DdsTextureFormat_Rgba16UInt"><code>Rgba16UInt = 37</code></dt>
+  
+  <dd><p>R16G16B16A16_UINT: RGBA as 16-bit unsigned integers. DX10 header.</p>
+</dd>
+    <dt id="Egami_Formats_Extended_Dds_DdsTextureFormat_Rgba32SInt"><code>Rgba32SInt = 46</code></dt>
+  
+  <dd><p>R32G32B32A32_SINT: RGBA as 32-bit signed integers, rounded as in <a class="xref" href="Egami.Formats.Extended.Dds.DdsTextureFormat.html#Egami_Formats_Extended_Dds_DdsTextureFormat_R32UInt">R32UInt</a>. DX10 header.</p>
+</dd>
+    <dt id="Egami_Formats_Extended_Dds_DdsTextureFormat_Rgba32UInt"><code>Rgba32UInt = 45</code></dt>
+  
+  <dd><p>R32G32B32A32_UINT: RGBA as 32-bit unsigned integers, rounded as in <a class="xref" href="Egami.Formats.Extended.Dds.DdsTextureFormat.html#Egami_Formats_Extended_Dds_DdsTextureFormat_R32UInt">R32UInt</a>. DX10 header.</p>
+</dd>
     <dt id="Egami_Formats_Extended_Dds_DdsTextureFormat_Rgba8"><code>Rgba8 = 0</code></dt>
   
   <dd><p>R8G8B8A8_UNORM: 8-bit RGBA. Legacy header A8B8G8R8.</p>
+</dd>
+    <dt id="Egami_Formats_Extended_Dds_DdsTextureFormat_Rgba8SInt"><code>Rgba8SInt = 32</code></dt>
+  
+  <dd><p>R8G8B8A8_SINT: RGBA as 8-bit signed integers, offset by 128 as in <a class="xref" href="Egami.Formats.Extended.Dds.DdsTextureFormat.html#Egami_Formats_Extended_Dds_DdsTextureFormat_R8SInt">R8SInt</a>. DX10 header.</p>
+</dd>
+    <dt id="Egami_Formats_Extended_Dds_DdsTextureFormat_Rgba8UInt"><code>Rgba8UInt = 31</code></dt>
+  
+  <dd><p>R8G8B8A8_UINT: RGBA as 8-bit unsigned integers. DX10 header.</p>
 </dd>
     <dt id="Egami_Formats_Extended_Dds_DdsTextureFormat_RgbaF16"><code>RgbaF16 = 9</code></dt>
   

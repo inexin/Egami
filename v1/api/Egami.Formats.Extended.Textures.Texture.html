@@ -1,0 +1,1166 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class Texture | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class Texture | Egami ">
+      
+      <meta name="description" content="A whole GPU texture: every array layer, cube face and depth slice at every mip level, loaded from DDS, KTX or KTX 2, edited image by image, and saved to DDS or KTX 2 with exactly the mips it holds. Each image is a  in the pixel type the reader gives the format; the texture owns them and disposes them with itself.">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_Formats_Extended_Textures_Texture.md&amp;value=---%0Auid%3A%20Egami.Formats.Extended.Textures.Texture%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.Formats.Extended.Textures.Texture">
+
+
+
+  <h1 id="Egami_Formats_Extended_Textures_Texture" data-uid="Egami.Formats.Extended.Textures.Texture" class="text-break">
+Class Texture  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Textures/Texture.cs/#L20"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a>.<a class="xref" href="Egami.Formats.html">Formats</a>.<a class="xref" href="Egami.Formats.Extended.html">Extended</a>.<a class="xref" href="Egami.Formats.Extended.Textures.html">Textures</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.Formats.Extended.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>A whole GPU texture: every array layer, cube face and depth slice at every mip level, loaded from DDS, KTX or KTX 2, edited
+image by image, and saved to DDS or KTX 2 with exactly the mips it holds. Each image is a <a class="xref" href="Egami.Raster.html">Raster</a> in the pixel
+type the reader gives the format; the texture owns them and disposes them with itself.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public sealed class Texture : IDisposable</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><span class="xref">Texture</span></div>
+    </dd>
+  </dl>
+
+  <dl class="typelist implements">
+    <dt>Implements</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.idisposable">IDisposable</a></div>
+    </dd>
+  </dl>
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+  </dd></dl>
+
+
+
+  <h2 id="Egami_Formats_Extended_Textures_Texture_examples">Examples</h2>
+  <pre><code class="lang-csharp">// Every layer, face, depth slice and mip of a DDS, KTX or KTX 2 file.
+using Texture sky = Texture.Load("sky.ktx2");
+Console.WriteLine($"{sky.Width}×{sky.Height}, {sky.Layers} layer(s) of {sky.Faces} face(s), {sky.MipLevels} mips");
+
+// Edit one face, make the mips again from mip 0, and save to DDS or KTX 2 with exactly those mips.
+Raster top = sky.GetImage(mip: 0, face: 2);
+sky.SetImage(top.Derive(x =&gt; x.Grayscale(), CancellationToken.None), mip: 0, face: 2);
+sky.GenerateMips(colorSpace: ColorSpace.Linear);
+sky.Save("sky-edited.dds", new DdsWriterOptions { Format = DdsTextureFormat.Bc7 });
+sky.Save("sky-edited.ktx2", new Ktx2WriterOptions { Format = KtxTextureFormat.Bc7 });
+
+// Or build one from images: here a texture array of two layers with its mip chain.
+using Texture array = Texture.FromSurfaces([Raster.Load("duck.png"), Raster.Load("duck.png")]);
+array.GenerateMips();
+array.Save("ducks.ktx2");</code></pre>
+
+
+  <h2 id="Egami_Formats_Extended_Textures_Texture_remarks">Remarks</h2>
+  <div class="markdown level0 remarks"><p>A 2D texture, texture array or cube map has <a class="xref" href="Egami.Formats.Extended.Textures.Texture.html#Egami_Formats_Extended_Textures_Texture_Layers">Layers</a> × <a class="xref" href="Egami.Formats.Extended.Textures.Texture.html#Egami_Formats_Extended_Textures_Texture_Faces">Faces</a> surfaces, each with a chain of
+<a class="xref" href="Egami.Formats.Extended.Textures.Texture.html#Egami_Formats_Extended_Textures_Texture_MipLevels">MipLevels</a> images halving down. A volume texture (<a class="xref" href="Egami.Formats.Extended.Textures.Texture.html#Egami_Formats_Extended_Textures_Texture_IsVolume">IsVolume</a>) has <a class="xref" href="Egami.Formats.Extended.Textures.Texture.html#Egami_Formats_Extended_Textures_Texture_Depth">Depth</a> slices at mip 0,
+and half as many (at least one) at each mip after it, as both file formats store it.</p>
+</div>
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="Egami_Formats_Extended_Textures_Texture_Depth_" data-uid="Egami.Formats.Extended.Textures.Texture.Depth*"></a>
+
+  <h3 id="Egami_Formats_Extended_Textures_Texture_Depth" data-uid="Egami.Formats.Extended.Textures.Texture.Depth">
+  Depth
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Textures/Texture.cs/#L41"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the number of depth slices of mip 0: more than 1 for a volume texture, else 1.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int Depth { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_Extended_Textures_Texture_Faces_" data-uid="Egami.Formats.Extended.Textures.Texture.Faces*"></a>
+
+  <h3 id="Egami_Formats_Extended_Textures_Texture_Faces" data-uid="Egami.Formats.Extended.Textures.Texture.Faces">
+  Faces
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Textures/Texture.cs/#L53"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the number of faces of each layer: 6 for a cube map, else 1.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int Faces { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_Extended_Textures_Texture_Height_" data-uid="Egami.Formats.Extended.Textures.Texture.Height*"></a>
+
+  <h3 id="Egami_Formats_Extended_Textures_Texture_Height" data-uid="Egami.Formats.Extended.Textures.Texture.Height">
+  Height
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Textures/Texture.cs/#L38"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the height of mip 0.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int Height { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_Extended_Textures_Texture_IsCube_" data-uid="Egami.Formats.Extended.Textures.Texture.IsCube*"></a>
+
+  <h3 id="Egami_Formats_Extended_Textures_Texture_IsCube" data-uid="Egami.Formats.Extended.Textures.Texture.IsCube">
+  IsCube
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Textures/Texture.cs/#L47"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether every layer is a cube map of six faces in the order +X, −X, +Y, −Y, +Z, −Z.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool IsCube { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_Extended_Textures_Texture_IsVolume_" data-uid="Egami.Formats.Extended.Textures.Texture.IsVolume*"></a>
+
+  <h3 id="Egami_Formats_Extended_Textures_Texture_IsVolume" data-uid="Egami.Formats.Extended.Textures.Texture.IsVolume">
+  IsVolume
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Textures/Texture.cs/#L50"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether the texture is a volume: a stack of <a class="xref" href="Egami.Formats.Extended.Textures.Texture.html#Egami_Formats_Extended_Textures_Texture_Depth">Depth</a> slices that shrinks with each mip.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool IsVolume { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_Extended_Textures_Texture_Layers_" data-uid="Egami.Formats.Extended.Textures.Texture.Layers*"></a>
+
+  <h3 id="Egami_Formats_Extended_Textures_Texture_Layers" data-uid="Egami.Formats.Extended.Textures.Texture.Layers">
+  Layers
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Textures/Texture.cs/#L44"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the number of array layers (cubes, for a cube map), at least 1.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int Layers { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_Extended_Textures_Texture_MipLevels_" data-uid="Egami.Formats.Extended.Textures.Texture.MipLevels*"></a>
+
+  <h3 id="Egami_Formats_Extended_Textures_Texture_MipLevels" data-uid="Egami.Formats.Extended.Textures.Texture.MipLevels">
+  MipLevels
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Textures/Texture.cs/#L56"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the number of mip levels, at least 1.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int MipLevels { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_Extended_Textures_Texture_Width_" data-uid="Egami.Formats.Extended.Textures.Texture.Width*"></a>
+
+  <h3 id="Egami_Formats_Extended_Textures_Texture_Width" data-uid="Egami.Formats.Extended.Textures.Texture.Width">
+  Width
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Textures/Texture.cs/#L35"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the width of mip 0.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int Width { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="Egami_Formats_Extended_Textures_Texture_Dispose_" data-uid="Egami.Formats.Extended.Textures.Texture.Dispose*"></a>
+
+  <h3 id="Egami_Formats_Extended_Textures_Texture_Dispose" data-uid="Egami.Formats.Extended.Textures.Texture.Dispose">
+  Dispose()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Textures/Texture.cs/#L310"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Disposes every image.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Dispose()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_Extended_Textures_Texture_FromSlices_" data-uid="Egami.Formats.Extended.Textures.Texture.FromSlices*"></a>
+
+  <h3 id="Egami_Formats_Extended_Textures_Texture_FromSlices_System_Collections_Generic_IReadOnlyList_Egami_Raster__" data-uid="Egami.Formats.Extended.Textures.Texture.FromSlices(System.Collections.Generic.IReadOnlyList{Egami.Raster})">
+  FromSlices(IReadOnlyList&lt;Raster&gt;)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Textures/Texture.cs/#L84"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Creates a volume texture from the depth slices of its mip 0, front to back. The texture takes ownership of the rasters.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Texture FromSlices(IReadOnlyList&lt;Raster&gt; slices)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>slices</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="Egami.Raster.html">Raster</a>&gt;</dt>
+    <dd><p>The slices, all the same size; at least two.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Formats.Extended.Textures.Texture.html">Texture</a></dt>
+    <dd><p>The texture.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>There are fewer than two slices, or they differ in size.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Formats_Extended_Textures_Texture_FromSurfaces_" data-uid="Egami.Formats.Extended.Textures.Texture.FromSurfaces*"></a>
+
+  <h3 id="Egami_Formats_Extended_Textures_Texture_FromSurfaces_System_Collections_Generic_IReadOnlyList_Egami_Raster__System_Boolean_" data-uid="Egami.Formats.Extended.Textures.Texture.FromSurfaces(System.Collections.Generic.IReadOnlyList{Egami.Raster},System.Boolean)">
+  FromSurfaces(IReadOnlyList&lt;Raster&gt;, bool)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Textures/Texture.cs/#L66"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Creates a 2D texture, texture array or cube map from the mip 0 images of its surfaces, layer by layer and, for cube maps,
+face by face. The texture takes ownership of the rasters. <a class="xref" href="Egami.Formats.Extended.Textures.Texture.html#Egami_Formats_Extended_Textures_Texture_GenerateMips_System_Int32_Egami_Operations_ColorSpace_">GenerateMips(int, ColorSpace)</a> adds the mips.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Texture FromSurfaces(IReadOnlyList&lt;Raster&gt; surfaces, bool cube = false)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>surfaces</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="Egami.Raster.html">Raster</a>&gt;</dt>
+    <dd><p>The surfaces, all the same size.</p>
+</dd>
+    <dt><code>cube</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>Whether the surfaces are cube faces, six a layer.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Formats.Extended.Textures.Texture.html">Texture</a></dt>
+    <dd><p>The texture.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>There are no surfaces, they differ in size, or a cube map's faces are not square or not six a layer.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Formats_Extended_Textures_Texture_GenerateMips_" data-uid="Egami.Formats.Extended.Textures.Texture.GenerateMips*"></a>
+
+  <h3 id="Egami_Formats_Extended_Textures_Texture_GenerateMips_System_Int32_Egami_Operations_ColorSpace_" data-uid="Egami.Formats.Extended.Textures.Texture.GenerateMips(System.Int32,Egami.Operations.ColorSpace)">
+  GenerateMips(int, ColorSpace)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Textures/Texture.cs/#L218"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Replaces the mips after mip 0 with new ones made from it with <a class="xref" href="Egami.MipChain.html">MipChain</a>: each the average of 2 × 2 blocks of
+premultiplied pixels of the level before, down to 1 × 1 or to <code class="paramref">mipLevels</code> levels.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void GenerateMips(int mipLevels = 0, ColorSpace colorSpace = ColorSpace.Encoded)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>mipLevels</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>How many levels to keep in all, mip 0 included: 0 (the default) for the full chain.</p>
+</dd>
+    <dt><code>colorSpace</code> <a class="xref" href="Egami.Operations.ColorSpace.html">ColorSpace</a></dt>
+    <dd><p>Where to average: <a class="xref" href="Egami.Operations.ColorSpace.html#Egami_Operations_ColorSpace_Encoded">Encoded</a> (the default) as the values are stored, or <a class="xref" href="Egami.Operations.ColorSpace.html#Egami_Operations_ColorSpace_Linear">Linear</a>
+in linear light, right for sRGB colour.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.notsupportedexception">NotSupportedException</a></dt>
+    <dd><p>The texture is a volume, whose mips would average slices too.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Formats_Extended_Textures_Texture_GetImage_" data-uid="Egami.Formats.Extended.Textures.Texture.GetImage*"></a>
+
+  <h3 id="Egami_Formats_Extended_Textures_Texture_GetImage_System_Int32_System_Int32_System_Int32_System_Int32_" data-uid="Egami.Formats.Extended.Textures.Texture.GetImage(System.Int32,System.Int32,System.Int32,System.Int32)">
+  GetImage(int, int, int, int)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Textures/Texture.cs/#L174"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets one image. The texture keeps owning it; edit it in place or replace it with <a class="xref" href="Egami.Formats.Extended.Textures.Texture.html#Egami_Formats_Extended_Textures_Texture_SetImage_Egami_Raster_System_Int32_System_Int32_System_Int32_System_Int32_">SetImage(Raster, int, int, int, int)</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Raster GetImage(int mip = 0, int layer = 0, int face = 0, int slice = 0)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>mip</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The mip level.</p>
+</dd>
+    <dt><code>layer</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The array layer (the cube, for a cube map).</p>
+</dd>
+    <dt><code>face</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The cube face, 0 to 5, or 0.</p>
+</dd>
+    <dt><code>slice</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The depth slice of a volume at that mip, or 0.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Raster.html">Raster</a></dt>
+    <dd><p>The image.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>An index is out of range.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Formats_Extended_Textures_Texture_Load_" data-uid="Egami.Formats.Extended.Textures.Texture.Load*"></a>
+
+  <h3 id="Egami_Formats_Extended_Textures_Texture_Load_System_IO_Stream_Egami_EgamiContext_" data-uid="Egami.Formats.Extended.Textures.Texture.Load(System.IO.Stream,Egami.EgamiContext)">
+  Load(Stream, EgamiContext?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Textures/Texture.cs/#L112"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Loads every image of a DDS, KTX or KTX 2 file from a stream, read to its end.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Texture Load(Stream stream, EgamiContext? context = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>stream</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.io.stream">Stream</a></dt>
+    <dd><p>The stream.</p>
+</dd>
+    <dt><code>context</code> <a class="xref" href="Egami.EgamiContext.html">EgamiContext</a></dt>
+    <dd><p>The context, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for the default; the texture formats need not be registered in it.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Formats.Extended.Textures.Texture.html">Texture</a></dt>
+    <dd><p>The texture.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.UnsupportedFormatException.html">UnsupportedFormatException</a></dt>
+    <dd><p>The data is not DDS, KTX or KTX 2.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Formats_Extended_Textures_Texture_Load_" data-uid="Egami.Formats.Extended.Textures.Texture.Load*"></a>
+
+  <h3 id="Egami_Formats_Extended_Textures_Texture_Load_System_ReadOnlyMemory_System_Byte__Egami_EgamiContext_" data-uid="Egami.Formats.Extended.Textures.Texture.Load(System.ReadOnlyMemory{System.Byte},Egami.EgamiContext)">
+  Load(ReadOnlyMemory&lt;byte&gt;, EgamiContext?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Textures/Texture.cs/#L125"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Loads every image of a DDS, KTX or KTX 2 file in memory.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Texture Load(ReadOnlyMemory&lt;byte&gt; data, EgamiContext? context = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>data</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlymemory-1">ReadOnlyMemory</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.byte">byte</a>&gt;</dt>
+    <dd><p>The file's bytes.</p>
+</dd>
+    <dt><code>context</code> <a class="xref" href="Egami.EgamiContext.html">EgamiContext</a></dt>
+    <dd><p>The context, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for the default; the texture formats need not be registered in it.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Formats.Extended.Textures.Texture.html">Texture</a></dt>
+    <dd><p>The texture.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.UnsupportedFormatException.html">UnsupportedFormatException</a></dt>
+    <dd><p>The data is not DDS, KTX or KTX 2.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Formats_Extended_Textures_Texture_Load_" data-uid="Egami.Formats.Extended.Textures.Texture.Load*"></a>
+
+  <h3 id="Egami_Formats_Extended_Textures_Texture_Load_System_String_Egami_EgamiContext_" data-uid="Egami.Formats.Extended.Textures.Texture.Load(System.String,Egami.EgamiContext)">
+  Load(string, EgamiContext?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Textures/Texture.cs/#L101"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Loads every image of a DDS, KTX or KTX 2 file.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Texture Load(string path, EgamiContext? context = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>path</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The file.</p>
+</dd>
+    <dt><code>context</code> <a class="xref" href="Egami.EgamiContext.html">EgamiContext</a></dt>
+    <dd><p>The context, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for the default; the texture formats need not be registered in it.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Formats.Extended.Textures.Texture.html">Texture</a></dt>
+    <dd><p>The texture.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.UnsupportedFormatException.html">UnsupportedFormatException</a></dt>
+    <dd><p>The file is not DDS, KTX or KTX 2.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Formats_Extended_Textures_Texture_MipDepth_" data-uid="Egami.Formats.Extended.Textures.Texture.MipDepth*"></a>
+
+  <h3 id="Egami_Formats_Extended_Textures_Texture_MipDepth_System_Int32_" data-uid="Egami.Formats.Extended.Textures.Texture.MipDepth(System.Int32)">
+  MipDepth(int)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Textures/Texture.cs/#L165"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns the number of depth slices of a mip level: 1 unless the texture is a volume.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int MipDepth(int mip)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>mip</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The mip level.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The number of slices, at least 1.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_Extended_Textures_Texture_MipHeight_" data-uid="Egami.Formats.Extended.Textures.Texture.MipHeight*"></a>
+
+  <h3 id="Egami_Formats_Extended_Textures_Texture_MipHeight_System_Int32_" data-uid="Egami.Formats.Extended.Textures.Texture.MipHeight(System.Int32)">
+  MipHeight(int)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Textures/Texture.cs/#L160"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns the height of a mip level.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int MipHeight(int mip)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>mip</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The mip level.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The height, at least 1.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_Extended_Textures_Texture_MipWidth_" data-uid="Egami.Formats.Extended.Textures.Texture.MipWidth*"></a>
+
+  <h3 id="Egami_Formats_Extended_Textures_Texture_MipWidth_System_Int32_" data-uid="Egami.Formats.Extended.Textures.Texture.MipWidth(System.Int32)">
+  MipWidth(int)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Textures/Texture.cs/#L155"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns the width of a mip level.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int MipWidth(int mip)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>mip</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The mip level.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The width, at least 1.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_Extended_Textures_Texture_Save_" data-uid="Egami.Formats.Extended.Textures.Texture.Save*"></a>
+
+  <h3 id="Egami_Formats_Extended_Textures_Texture_Save_System_IO_Stream_Egami_Formats_FormatInfo_Egami_Formats_WriterOptions_" data-uid="Egami.Formats.Extended.Textures.Texture.Save(System.IO.Stream,Egami.Formats.FormatInfo,Egami.Formats.WriterOptions)">
+  Save(Stream, FormatInfo, WriterOptions?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Textures/Texture.cs/#L297"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Saves the texture with every image and mip it holds, in <a class="xref" href="Egami.Formats.Extended.Dds.DdsFormat.html#Egami_Formats_Extended_Dds_DdsFormat_Info">Info</a> or <a class="xref" href="Egami.Formats.Extended.Ktx.Ktx2Format.html#Egami_Formats_Extended_Ktx_Ktx2Format_Info">Info</a>. The
+options choose the format, effort and so on as for a raster; their mip count, when not 0, keeps only that many of the
+texture's mips, and their cube flag is ignored: the texture's own layout is written.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Save(Stream output, FormatInfo format, WriterOptions? options = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>output</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.io.stream">Stream</a></dt>
+    <dd><p>The stream.</p>
+</dd>
+    <dt><code>format</code> <a class="xref" href="Egami.Formats.FormatInfo.html">FormatInfo</a></dt>
+    <dd><p><a class="xref" href="Egami.Formats.Extended.Dds.DdsFormat.html#Egami_Formats_Extended_Dds_DdsFormat_Info">Info</a> or <a class="xref" href="Egami.Formats.Extended.Ktx.Ktx2Format.html#Egami_Formats_Extended_Ktx_Ktx2Format_Info">Info</a>.</p>
+</dd>
+    <dt><code>options</code> <a class="xref" href="Egami.Formats.WriterOptions.html">WriterOptions</a></dt>
+    <dd><p><a class="xref" href="Egami.Formats.Extended.Dds.DdsWriterOptions.html">DdsWriterOptions</a> or <a class="xref" href="Egami.Formats.Extended.Ktx.Ktx2WriterOptions.html">Ktx2WriterOptions</a>, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for the defaults.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Formats_Extended_Textures_Texture_Save_System_IO_Stream_Egami_Formats_FormatInfo_Egami_Formats_WriterOptions__examples">Examples</h4>
+  <pre><code class="lang-csharp">// Every layer, face, depth slice and mip of a DDS, KTX or KTX 2 file.
+using Texture sky = Texture.Load("sky.ktx2");
+Console.WriteLine($"{sky.Width}×{sky.Height}, {sky.Layers} layer(s) of {sky.Faces} face(s), {sky.MipLevels} mips");
+
+// Edit one face, make the mips again from mip 0, and save to DDS or KTX 2 with exactly those mips.
+Raster top = sky.GetImage(mip: 0, face: 2);
+sky.SetImage(top.Derive(x =&gt; x.Grayscale(), CancellationToken.None), mip: 0, face: 2);
+sky.GenerateMips(colorSpace: ColorSpace.Linear);
+sky.Save("sky-edited.dds", new DdsWriterOptions { Format = DdsTextureFormat.Bc7 });
+sky.Save("sky-edited.ktx2", new Ktx2WriterOptions { Format = KtxTextureFormat.Bc7 });
+
+// Or build one from images: here a texture array of two layers with its mip chain.
+using Texture array = Texture.FromSurfaces([Raster.Load("duck.png"), Raster.Load("duck.png")]);
+array.GenerateMips();
+array.Save("ducks.ktx2");</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.notsupportedexception">NotSupportedException</a></dt>
+    <dd><p>The format is not DDS or KTX 2, or DDS is asked to hold an array of volumes.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Formats_Extended_Textures_Texture_Save_" data-uid="Egami.Formats.Extended.Textures.Texture.Save*"></a>
+
+  <h3 id="Egami_Formats_Extended_Textures_Texture_Save_System_String_Egami_Formats_WriterOptions_" data-uid="Egami.Formats.Extended.Textures.Texture.Save(System.String,Egami.Formats.WriterOptions)">
+  Save(string, WriterOptions?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Textures/Texture.cs/#L272"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Saves the texture as DDS or KTX 2, chosen by the file's extension (<code>.dds</code> or <code>.ktx2</code>), with every image and
+mip it holds.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Save(string path, WriterOptions? options = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>path</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The file.</p>
+</dd>
+    <dt><code>options</code> <a class="xref" href="Egami.Formats.WriterOptions.html">WriterOptions</a></dt>
+    <dd><p><a class="xref" href="Egami.Formats.Extended.Dds.DdsWriterOptions.html">DdsWriterOptions</a> or <a class="xref" href="Egami.Formats.Extended.Ktx.Ktx2WriterOptions.html">Ktx2WriterOptions</a>, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for the defaults.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Formats_Extended_Textures_Texture_Save_System_String_Egami_Formats_WriterOptions__examples">Examples</h4>
+  <pre><code class="lang-csharp">// Every layer, face, depth slice and mip of a DDS, KTX or KTX 2 file.
+using Texture sky = Texture.Load("sky.ktx2");
+Console.WriteLine($"{sky.Width}×{sky.Height}, {sky.Layers} layer(s) of {sky.Faces} face(s), {sky.MipLevels} mips");
+
+// Edit one face, make the mips again from mip 0, and save to DDS or KTX 2 with exactly those mips.
+Raster top = sky.GetImage(mip: 0, face: 2);
+sky.SetImage(top.Derive(x =&gt; x.Grayscale(), CancellationToken.None), mip: 0, face: 2);
+sky.GenerateMips(colorSpace: ColorSpace.Linear);
+sky.Save("sky-edited.dds", new DdsWriterOptions { Format = DdsTextureFormat.Bc7 });
+sky.Save("sky-edited.ktx2", new Ktx2WriterOptions { Format = KtxTextureFormat.Bc7 });
+
+// Or build one from images: here a texture array of two layers with its mip chain.
+using Texture array = Texture.FromSurfaces([Raster.Load("duck.png"), Raster.Load("duck.png")]);
+array.GenerateMips();
+array.Save("ducks.ktx2");</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.notsupportedexception">NotSupportedException</a></dt>
+    <dd><p>The extension is neither <code>.dds</code> nor <code>.ktx2</code>.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Formats_Extended_Textures_Texture_SetImage_" data-uid="Egami.Formats.Extended.Textures.Texture.SetImage*"></a>
+
+  <h3 id="Egami_Formats_Extended_Textures_Texture_SetImage_Egami_Raster_System_Int32_System_Int32_System_Int32_System_Int32_" data-uid="Egami.Formats.Extended.Textures.Texture.SetImage(Egami.Raster,System.Int32,System.Int32,System.Int32,System.Int32)">
+  SetImage(Raster, int, int, int, int)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Textures/Texture.cs/#L191"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Replaces one image with a raster of the mip level's size, which the texture then owns; it disposes the image it replaces.
+The new image may be of another pixel type; saving converts it to the file's format.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void SetImage(Raster image, int mip = 0, int layer = 0, int face = 0, int slice = 0)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>image</code> <a class="xref" href="Egami.Raster.html">Raster</a></dt>
+    <dd><p>The new image.</p>
+</dd>
+    <dt><code>mip</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The mip level.</p>
+</dd>
+    <dt><code>layer</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The array layer (the cube, for a cube map).</p>
+</dd>
+    <dt><code>face</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The cube face, 0 to 5, or 0.</p>
+</dd>
+    <dt><code>slice</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The depth slice of a volume at that mip, or 0.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>An index is out of range.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>The image is not the mip level's size.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Formats_Extended_Textures_Texture_TrimMips_" data-uid="Egami.Formats.Extended.Textures.Texture.TrimMips*"></a>
+
+  <h3 id="Egami_Formats_Extended_Textures_Texture_TrimMips_System_Int32_" data-uid="Egami.Formats.Extended.Textures.Texture.TrimMips(System.Int32)">
+  TrimMips(int)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Textures/Texture.cs/#L252"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Keeps the first <code class="paramref">mipLevels</code> mip levels and disposes the rest.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void TrimMips(int mipLevels)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>mipLevels</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>How many levels to keep, at least 1.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p><code class="paramref">mipLevels</code> is less than 1.</p>
+</dd>
+  </dl>
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Textures/Texture.cs/#L20" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

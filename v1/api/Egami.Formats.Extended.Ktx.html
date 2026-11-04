@@ -101,7 +101,14 @@ data format descriptor with the colour space, key/value data, then the mip level
 supercompressed with Zstandard or zlib. Load gives mip 0 of the first surface, turned upright and swizzled as the file
 says; LoadAll and <a class="xref" href="Egami.Formats.Extended.Ktx.KtxReaderOptions.html">KtxReaderOptions</a> reach the others. Uncompressed, BC1 to BC7, ETC2, EAC, 2D ASTC (LDR and
 HDR) and Basis Universal (ETC1S, UASTC LDR and HDR 4 × 4) textures read; 3D ASTC, PVRTC and the newer Basis Universal
-families (UASTC HDR 6 × 6, XUASTC, XUBC7) are refused. Read only. Registered with <a class="xref" href="Egami.Formats.Extended.ExtendedContextExtensions.html#Egami_Formats_Extended_ExtendedContextExtensions_WithKtx2_Egami_EgamiContext_">WithKtx2(EgamiContext)</a>.</p>
+families (UASTC HDR 6 × 6, XUASTC, XUBC7) are refused. Save and SaveAll write every one of those but ASTC HDR and UASTC HDR,
+with mips, arrays, cube maps and supercompression (<a class="xref" href="Egami.Formats.Extended.Ktx.Ktx2WriterOptions.html">Ktx2WriterOptions</a>). Registered with
+<a class="xref" href="Egami.Formats.Extended.ExtendedContextExtensions.html#Egami_Formats_Extended_ExtendedContextExtensions_WithKtx2_Egami_EgamiContext_">WithKtx2(EgamiContext)</a>.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Formats.Extended.Ktx.Ktx2WriterOptions.html">Ktx2WriterOptions</a></dt>
+      <dd><p>Options for writing KTX 2.</p>
 </dd>
     </dl>
     <dl class="jumplist">
@@ -138,6 +145,12 @@ Enums
     <dl class="jumplist">
       <dt><a class="xref" href="Egami.Formats.Extended.Ktx.KtxSupercompression.html">KtxSupercompression</a></dt>
       <dd><p>How a KTX 2 file's mip levels are compressed on top of their texture format.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Formats.Extended.Ktx.KtxTextureFormat.html">KtxTextureFormat</a></dt>
+      <dd><p>The formats the KTX 2 writer writes, each a Vulkan <code>VkFormat</code> (or a Basis Universal format, VkFormat 0);
+<a class="xref" href="Egami.Formats.Extended.Ktx.Ktx2WriterOptions.html#Egami_Formats_Extended_Ktx_Ktx2WriterOptions_Srgb">Srgb</a> picks the _SRGB form where there is one.</p>
 </dd>
     </dl>
 

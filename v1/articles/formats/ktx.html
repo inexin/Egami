@@ -89,7 +89,7 @@
 
 <p>KTX (Khronos Texture) is the texture container of OpenGL, Vulkan and glTF: a header that names the GPU format, then every mip
 level of every array layer, cube face and depth slice. KTX 1.1 (.ktx) names OpenGL formats; KTX 2.0 (.ktx2) names Vulkan formats,
-describes its colour in a data format descriptor and can compress each mip level again with Zstandard or zlib. Both read through
+describes its colour in a data format descriptor and can compress each mip level again with Zstandard or zlib. Both read, and KTX 2 writes, through
 the Egami.Formats.Extended package: register them with <code>WithKtx()</code> and <code>WithKtx2()</code>, or <code>WithExtendedFormats()</code>
 (<a href="extended.html">Extended formats</a>). They are two formats, <code>KtxFormat</code> and <code>Ktx2Format</code>, with one set of options and details.</p>
 <table>
@@ -106,7 +106,7 @@ the Egami.Formats.Extended package: register them with <code>WithKtx()</code> an
 </tr>
 <tr>
 <td>Writes</td>
-<td>No</td>
+<td>KTX 2.0 only: 8-bit R, RG, RGB, RGBA and BGRA (UNORM and sRGB), 16-bit UNORM R, RG, RGB and RGBA, half-float RGBA, float R, RGB and RGBA, UINT and SINT in 8, 16 and 32 bits, D16 and D32 depth, A2B10G10R10, B10G11R11, E5B9G9R9 and the 565, 1555 and 4444 packed formats (not SNORM), BC1 to BC7 with BC6H, ETC1, ETC2, EAC (unsigned and signed), ASTC LDR in all 14 2D footprints, and Basis Universal ETC1S and UASTC LDR 4 × 4; mips, arrays, cube maps, Zstandard and zlib. <a href="#textures">Texture</a> also writes volumes</td>
 </tr>
 <tr>
 <td>Natural pixel type</td>
@@ -198,6 +198,123 @@ if (texture.Metadata.FormatDetails is KtxDetails ktx)
         Console.WriteLine($&quot;{key} = {value}&quot;);
     }
 }
+</code></pre><h2 id="writing">Writing</h2>
+<p><code>Ktx2WriterOptions</code> mirrors <code>DdsWriterOptions</code>. With no options a raster is written in the uncompressed format nearest its
+pixel type (<code>R8G8B8A8</code> for <code>Rgba8</code>, <code>R8</code> for <code>Gray8</code>, <code>R16G16B16A16_SFLOAT</code> for half floats and so on), with the full mip chain
+and no supercompression. A raster loaded from KTX, KTX 2 or DDS keeps its file's format when the writer has it, ETC1S and UASTC
+included; a block format is otherwise only chosen with <code>Ktx2WriterOptions.Format</code>, a <code>KtxTextureFormat</code>:</p>
+<table>
+<thead>
+<tr>
+<th>Family</th>
+<th>Formats</th>
+<th>Encoder</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>BC</td>
+<td><code>Bc1</code> to <code>Bc5</code>, <code>Bc6h</code>, <code>Bc6hSigned</code>, <code>Bc7</code></td>
+<td>The DDS writer's encoders</td>
+</tr>
+<tr>
+<td>ETC</td>
+<td><code>Etc1</code>, <code>Etc2Rgb</code>, <code>Etc2RgbA1</code>, <code>Etc2Rgba</code>, <code>EacR11</code>, <code>EacRg11</code> and their signed forms</td>
+<td>Mode search for ETC1, plus T, H and planar for ETC2 from effort 3 up; EAC is a table search. Effort 0 is a fast tier (about 30 megapixels a second on one thread); effort 4 matches etc2comp's quality at its effort 40</td>
+</tr>
+<tr>
+<td>ASTC</td>
+<td><code>Astc4x4</code> to <code>Astc12x12</code>, LDR</td>
+<td>Direct, base+offset, base+scale and mixed endpoint modes, dual planes and 2 to 4 partitions, with least-squares weight fits. Efforts 1 to 5 stop after one quick encode when a block already scores well, so smooth and noisy pictures go fast; effort 4 is within about 0.2 dB of astcenc <code>-medium</code>. ASTC HDR is not encoded</td>
+</tr>
+<tr>
+<td>Basis Universal</td>
+<td><code>Etc1s</code>, <code>Uastc</code></td>
+<td>ETC1S codebooks (<code>BasisQuality</code>, 1 to 255) with BasisLZ; UASTC's 19 modes with BC1 and ETC1 transcoder hints and optional RDO (<code>UastcRdo</code>)</td>
+</tr>
+</tbody>
+</table>
+<p><code>Effort</code> runs 0 (fastest) to 6 (best) and defaults to 4. <code>Srgb</code> picks a format's _SRGB form; left <code>null</code>, it follows the
+source file, or else the raster's tag: an untagged raster is sRGB, as Egami reads it, and a linear one is not. Formats with no
+sRGB form write UNORM. <code>MipLevels</code> is 0 for the full chain, made with <code>MipChain</code> (premultiplied, in linear light for sRGB), or
+that many; integer and depth formats write mip 0 alone unless a count is given. <code>Supercompression</code> is <code>Zstandard</code> or <code>Zlib</code> with an optional <code>CompressionLevel</code>; ETC1S is always BasisLZ. <code>Cube</code> makes
+SaveAll write cube maps (six faces a cube, a cube map array for more); without it SaveAll writes a texture array.
+<code>PremultipliedAlpha</code> premultiplies the colour and flags it so.</p>
+<pre><code class="lang-csharp">// With no options: the nearest uncompressed format (R8G8B8A8_SRGB for 8-bit colour) and the full mip chain.
+using (FileStream output = File.Create(&quot;duck.ktx2&quot;))
+{
+    image.Save(output, Ktx2Format.Info);
+}
+
+// A GPU block format: BC7 for desktop, ASTC or ETC2 for mobile; effort runs 0 (fastest) to 6 (best).
+using (FileStream output = File.Create(&quot;duck-astc.ktx2&quot;))
+{
+    image.Save(output, Ktx2Format.Info, new Ktx2WriterOptions { Format = KtxTextureFormat.Astc6x6, Effort = 3 });
+}
+
+// Basis Universal, which a viewer transcodes to whatever its GPU reads: UASTC with RDO and Zstandard (glTF's usual
+// pick), or ETC1S for the smallest files.
+using (FileStream output = File.Create(&quot;duck-uastc.ktx2&quot;))
+{
+    image.Save(output, Ktx2Format.Info, new Ktx2WriterOptions
+    {
+        Format = KtxTextureFormat.Uastc,
+        UastcRdo = 2,
+        Supercompression = KtxSupercompression.Zstandard,
+    });
+}
+
+using (FileStream output = File.Create(&quot;duck-etc1s.ktx2&quot;))
+{
+    image.Save(output, Ktx2Format.Info, new Ktx2WriterOptions { Format = KtxTextureFormat.Etc1s, BasisQuality = 128 });
+}
+
+// Six faces into a cube map; SaveAll without Cube writes a texture array.
+using RasterList faces = Raster.LoadAll(&quot;sky.ktx2&quot;, context);
+using (FileStream output = File.Create(&quot;sky-bc1.ktx2&quot;))
+{
+    Raster.SaveAll(faces, output, Ktx2Format.Info, new Ktx2WriterOptions { Cube = true, Format = KtxTextureFormat.Bc1 });
+}
+</code></pre>
+<p>The data format descriptor is the one KTX-Software writes for the format, with the primaries and transfer function of the
+raster's tag (<code>ColorCodePoints</code> such as Display P3 or BT.2100 PQ go in as KHR_DF values). The key/value data holds
+<code>KTXorientation</code> (<code>rd</code>, or <code>rdi</code> for a volume) and <code>KTXwriter</code>. Every file the writer makes in the test corpus passes
+<code>ktx validate</code>, and libktx reads back the same level data; <code>tools/make-ktx-references.py --written</code> checks them again. The
+output is the same for any number of threads: blocks encode on their own, ETC1S builds its codebooks deterministically and
+UASTC's rate-distortion pass works in fixed bands.</p>
+<p>Recipes:</p>
+<p><code>BasisQuality</code> is not basisu's <code>-q</code> scale: Egami's ETC1S at about 170 makes files the size of basisu's at 128, with slightly
+higher quality, and lower qualities also trade some quality for size in the endpoints. A UASTC block's BC1 hint is set only when
+the shortcut it allows stays close to a full BC1 encode, so a transcoder never takes a bad shortcut.</p>
+<ul>
+<li><strong>glTF and the web:</strong> <code>Uastc</code> with <code>UastcRdo</code> 1 to 4 and <code>Zstandard</code> for colour that must look right; <code>Etc1s</code> at
+<code>BasisQuality</code> 64 to 128 for the smallest downloads. Viewers transcode both to the GPU's own format.</li>
+<li><strong>Desktop:</strong> <code>Bc7</code> for colour, <code>Bc5</code> for normal maps, <code>Bc4</code> for masks, <code>Bc6h</code> for HDR.</li>
+<li><strong>Mobile:</strong> <code>Astc6x6</code> (or <code>Astc4x4</code> for more quality, <code>Astc8x8</code> for less space) on recent GPUs, <code>Etc2Rgba</code> or <code>Etc2Rgb</code> where
+ASTC is missing, <code>EacRg11</code> for normal maps.</li>
+</ul>
+<h2 id="textures">Textures</h2>
+<p><code>Texture</code> (namespace <code>Egami.Formats.Extended.Textures</code>) holds a whole texture: every layer, cube face and depth slice at every
+mip, loaded with <code>Texture.Load</code> from DDS, KTX or KTX 2 whether or not the formats are registered. <code>GetImage</code> and <code>SetImage</code> reach
+one image by mip, layer, face and slice; <code>GenerateMips</code> makes the mips again from mip 0 (2D textures and cube maps) and
+<code>TrimMips</code> drops the smallest. <code>Save</code> writes DDS or KTX 2 with exactly the mips the texture holds, so a texture with hand-made
+mips, or a volume, survives a round trip; the writer options choose the format as for a raster. A volume saves to either
+format, an array of volumes only to KTX 2. <code>Texture.FromSurfaces</code> and <code>Texture.FromSlices</code> build one from rasters.</p>
+<pre><code class="lang-csharp">// Every layer, face, depth slice and mip of a DDS, KTX or KTX 2 file.
+using Texture sky = Texture.Load(&quot;sky.ktx2&quot;);
+Console.WriteLine($&quot;{sky.Width}×{sky.Height}, {sky.Layers} layer(s) of {sky.Faces} face(s), {sky.MipLevels} mips&quot;);
+
+// Edit one face, make the mips again from mip 0, and save to DDS or KTX 2 with exactly those mips.
+Raster top = sky.GetImage(mip: 0, face: 2);
+sky.SetImage(top.Derive(x =&gt; x.Grayscale(), CancellationToken.None), mip: 0, face: 2);
+sky.GenerateMips(colorSpace: ColorSpace.Linear);
+sky.Save(&quot;sky-edited.dds&quot;, new DdsWriterOptions { Format = DdsTextureFormat.Bc7 });
+sky.Save(&quot;sky-edited.ktx2&quot;, new Ktx2WriterOptions { Format = KtxTextureFormat.Bc7 });
+
+// Or build one from images: here a texture array of two layers with its mip chain.
+using Texture array = Texture.FromSurfaces([Raster.Load(&quot;duck.png&quot;), Raster.Load(&quot;duck.png&quot;)]);
+array.GenerateMips();
+array.Save(&quot;ducks.ktx2&quot;);
 </code></pre><h2 id="streaming-and-damaged-files">Streaming and damaged files</h2>
 <p>Warnings start <code>Ktx.</code> for a KTX 1 file and <code>Ktx2.</code> for a KTX 2 file. A lenient read of a file that ends early keeps the rows
 it has and leaves the rest black with <code>LevelShort</code> or <code>DataMissing</code>; a supercompressed level that does not inflate reads as

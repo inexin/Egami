@@ -6,7 +6,7 @@
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <meta name="title" content="Class Ktx2Format | Egami ">
       
-      <meta name="description" content="KTX 2.0, the Khronos texture container for Vulkan, glTF and the web: a header naming the Vulkan format, a level index, a data format descriptor with the colour space, key/value data, then the mip levels smallest first, each optionally supercompressed with Zstandard or zlib. Load gives mip 0 of the first surface, turned upright and swizzled as the file says; LoadAll and  reach the others. Uncompressed, BC1 to BC7, ETC2, EAC, 2D ASTC (LDR and HDR) and Basis Universal (ETC1S, UASTC LDR and HDR 4 &#215; 4) textures read; 3D ASTC, PVRTC and the newer Basis Universal families (UASTC HDR 6 &#215; 6, XUASTC, XUBC7) are refused. Read only. Registered with .">
+      <meta name="description" content="KTX 2.0, the Khronos texture container for Vulkan, glTF and the web: a header naming the Vulkan format, a level index, a data format descriptor with the colour space, key/value data, then the mip levels smallest first, each optionally supercompressed with Zstandard or zlib. Load gives mip 0 of the first surface, turned upright and swizzled as the file says; LoadAll and  reach the others. Uncompressed, BC1 to BC7, ETC2, EAC, 2D ASTC (LDR and HDR) and Basis Universal (ETC1S, UASTC LDR and HDR 4 &#215; 4) textures read; 3D ASTC, PVRTC and the newer Basis Universal families (UASTC HDR 6 &#215; 6, XUASTC, XUBC7) are refused. Save and SaveAll write every one of those but ASTC HDR and UASTC HDR, with mips, arrays, cube maps and supercompression (). Registered with .">
       <link rel="icon" href="../images/favicon.ico">
       <link rel="stylesheet" href="../public/docfx.min.css">
       <link rel="stylesheet" href="../public/main.css">
@@ -89,7 +89,7 @@
 
 
   <h1 id="Egami_Formats_Extended_Ktx_Ktx2Format" data-uid="Egami.Formats.Extended.Ktx.Ktx2Format" class="text-break">
-Class Ktx2Format  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Ktx/KtxFormat.cs/#L39"><i class="bi bi-code-slash"></i></a>
+Class Ktx2Format  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Ktx/KtxFormat.cs/#L42"><i class="bi bi-code-slash"></i></a>
   </h1>
 
   <div class="facts text-secondary">
@@ -102,7 +102,9 @@ data format descriptor with the colour space, key/value data, then the mip level
 supercompressed with Zstandard or zlib. Load gives mip 0 of the first surface, turned upright and swizzled as the file
 says; LoadAll and <a class="xref" href="Egami.Formats.Extended.Ktx.KtxReaderOptions.html">KtxReaderOptions</a> reach the others. Uncompressed, BC1 to BC7, ETC2, EAC, 2D ASTC (LDR and
 HDR) and Basis Universal (ETC1S, UASTC LDR and HDR 4 × 4) textures read; 3D ASTC, PVRTC and the newer Basis Universal
-families (UASTC HDR 6 × 6, XUASTC, XUBC7) are refused. Read only. Registered with <a class="xref" href="Egami.Formats.Extended.ExtendedContextExtensions.html#Egami_Formats_Extended_ExtendedContextExtensions_WithKtx2_Egami_EgamiContext_">WithKtx2(EgamiContext)</a>.</p>
+families (UASTC HDR 6 × 6, XUASTC, XUBC7) are refused. Save and SaveAll write every one of those but ASTC HDR and UASTC HDR,
+with mips, arrays, cube maps and supercompression (<a class="xref" href="Egami.Formats.Extended.Ktx.Ktx2WriterOptions.html">Ktx2WriterOptions</a>). Registered with
+<a class="xref" href="Egami.Formats.Extended.ExtendedContextExtensions.html#Egami_Formats_Extended_ExtendedContextExtensions_WithKtx2_Egami_EgamiContext_">WithKtx2(EgamiContext)</a>.</p>
 </div>
   <div class="markdown conceptual"></div>
 
@@ -162,6 +164,41 @@ texture.Save("texture.png");
 // Probe reads the headers alone: the surfaces at mip 0 are its images.
 RasterInfo info = Raster.Probe("sky.ktx2", context);
 Console.WriteLine($"{info.Width}×{info.Height}, {info.ImageCount} surface(s)");</code></pre>
+<pre><code class="lang-csharp">// With no options: the nearest uncompressed format (R8G8B8A8_SRGB for 8-bit colour) and the full mip chain.
+using (FileStream output = File.Create("duck.ktx2"))
+{
+    image.Save(output, Ktx2Format.Info);
+}
+
+// A GPU block format: BC7 for desktop, ASTC or ETC2 for mobile; effort runs 0 (fastest) to 6 (best).
+using (FileStream output = File.Create("duck-astc.ktx2"))
+{
+    image.Save(output, Ktx2Format.Info, new Ktx2WriterOptions { Format = KtxTextureFormat.Astc6x6, Effort = 3 });
+}
+
+// Basis Universal, which a viewer transcodes to whatever its GPU reads: UASTC with RDO and Zstandard (glTF's usual
+// pick), or ETC1S for the smallest files.
+using (FileStream output = File.Create("duck-uastc.ktx2"))
+{
+    image.Save(output, Ktx2Format.Info, new Ktx2WriterOptions
+    {
+        Format = KtxTextureFormat.Uastc,
+        UastcRdo = 2,
+        Supercompression = KtxSupercompression.Zstandard,
+    });
+}
+
+using (FileStream output = File.Create("duck-etc1s.ktx2"))
+{
+    image.Save(output, Ktx2Format.Info, new Ktx2WriterOptions { Format = KtxTextureFormat.Etc1s, BasisQuality = 128 });
+}
+
+// Six faces into a cube map; SaveAll without Cube writes a texture array.
+using RasterList faces = Raster.LoadAll("sky.ktx2", context);
+using (FileStream output = File.Create("sky-bc1.ktx2"))
+{
+    Raster.SaveAll(faces, output, Ktx2Format.Info, new Ktx2WriterOptions { Cube = true, Format = KtxTextureFormat.Bc1 });
+}</code></pre>
 
 
 
@@ -174,10 +211,10 @@ Console.WriteLine($"{info.Width}×{info.Height}, {info.ImageCount} surface(s)");
 
   <h3 id="Egami_Formats_Extended_Ktx_Ktx2Format_Info" data-uid="Egami.Formats.Extended.Ktx.Ktx2Format.Info">
   Info
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Ktx/KtxFormat.cs/#L42"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Ktx/KtxFormat.cs/#L45"><i class="bi bi-code-slash"></i></a>
   </h3>
 
-  <div class="markdown level1 summary"><p>Gets the format's registration: name, MIME type, extension, signature and reader.</p>
+  <div class="markdown level1 summary"><p>Gets the format's registration: name, MIME type, extension, signature, reader and writer.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
 
@@ -206,7 +243,7 @@ Console.WriteLine($"{info.Width}×{info.Height}, {info.ImageCount} surface(s)");
 </article>
 
         <div class="contribution d-print-none">
-          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Ktx/KtxFormat.cs/#L39" class="edit-link">Edit this page</a>
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Ktx/KtxFormat.cs/#L42" class="edit-link">Edit this page</a>
         </div>
 
 

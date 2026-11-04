@@ -89,7 +89,7 @@
 
 
   <h1 id="Egami_Formats_Extended_Dds_DdsWriterOptions" data-uid="Egami.Formats.Extended.Dds.DdsWriterOptions" class="text-break">
-Class DdsWriterOptions  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dds/DdsWriterOptions.cs/#L100"><i class="bi bi-code-slash"></i></a>
+Class DdsWriterOptions  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dds/DdsWriterOptions.cs/#L190"><i class="bi bi-code-slash"></i></a>
   </h1>
 
   <div class="facts text-secondary">
@@ -186,7 +186,7 @@ ones (mip 0 is always written from the pixels).</p>
 
   <h3 id="Egami_Formats_Extended_Dds_DdsWriterOptions_Cube" data-uid="Egami.Formats.Extended.Dds.DdsWriterOptions.Cube">
   Cube
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dds/DdsWriterOptions.cs/#L171"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dds/DdsWriterOptions.cs/#L263"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets whether SaveAll writes its rasters as cube maps, six faces a cube in the order +X, −X, +Y, −Y, +Z, −Z, rather than as
@@ -219,7 +219,7 @@ a texture array. The rasters must then be square and a multiple of six. Defaults
 
   <h3 id="Egami_Formats_Extended_Dds_DdsWriterOptions_Default" data-uid="Egami.Formats.Extended.Dds.DdsWriterOptions.Default">
   Default
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dds/DdsWriterOptions.cs/#L106"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dds/DdsWriterOptions.cs/#L196"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the default options.</p>
@@ -251,7 +251,7 @@ a texture array. The rasters must then be square and a multiple of six. Defaults
 
   <h3 id="Egami_Formats_Extended_Dds_DdsWriterOptions_Dx10Header" data-uid="Egami.Formats.Extended.Dds.DdsWriterOptions.Dx10Header">
   Dx10Header
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dds/DdsWriterOptions.cs/#L159"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dds/DdsWriterOptions.cs/#L251"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets whether to write the DX10 header even when the format has a legacy one. Defaults to <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>: the
@@ -284,7 +284,7 @@ legacy header, which old tools read, whenever the format, sRGB flag, alpha mode 
 
   <h3 id="Egami_Formats_Extended_Dds_DdsWriterOptions_Effort" data-uid="Egami.Formats.Extended.Dds.DdsWriterOptions.Effort">
   Effort
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dds/DdsWriterOptions.cs/#L137"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dds/DdsWriterOptions.cs/#L229"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets how hard the block encoders search, 0 (fastest) to 6 (best), on WebP's scale. Defaults to 4. The output is the same
@@ -323,7 +323,7 @@ for any number of threads.</p>
 
   <h3 id="Egami_Formats_Extended_Dds_DdsWriterOptions_Format" data-uid="Egami.Formats.Extended.Dds.DdsWriterOptions.Format">
   Format
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dds/DdsWriterOptions.cs/#L114"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dds/DdsWriterOptions.cs/#L204"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the format to write, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> (the default) for a DDS source's own format when it is writable, else
@@ -358,12 +358,14 @@ DDS source.</p>
 
   <h3 id="Egami_Formats_Extended_Dds_DdsWriterOptions_MipLevels" data-uid="Egami.Formats.Extended.Dds.DdsWriterOptions.MipLevels">
   MipLevels
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dds/DdsWriterOptions.cs/#L122"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dds/DdsWriterOptions.cs/#L214"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets how many mip levels to write: 0 (the default) for the full chain down to 1 × 1, 1 for mip 0 alone, or that many, at
 most the full chain. Mips average 2 × 2 blocks of premultiplied pixels (<a class="xref" href="Egami.MipChain.html">MipChain</a>), in linear light for an
-sRGB format.</p>
+sRGB format. A planar video format (<a class="xref" href="Egami.Formats.Extended.Dds.DdsTextureFormat.html#Egami_Formats_Extended_Dds_DdsTextureFormat_Nv12">Nv12</a>, <a class="xref" href="Egami.Formats.Extended.Dds.DdsTextureFormat.html#Egami_Formats_Extended_Dds_DdsTextureFormat_P010">P010</a>,
+<a class="xref" href="Egami.Formats.Extended.Dds.DdsTextureFormat.html#Egami_Formats_Extended_Dds_DdsTextureFormat_P016">P016</a>) writes mip 0 alone; an integer or depth format writes mip 0 alone unless a count is
+given, since averaging its values rarely means anything.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
 
@@ -398,7 +400,7 @@ sRGB format.</p>
 
   <h3 id="Egami_Formats_Extended_Dds_DdsWriterOptions_PremultipliedAlpha" data-uid="Egami.Formats.Extended.Dds.DdsWriterOptions.PremultipliedAlpha">
   PremultipliedAlpha
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dds/DdsWriterOptions.cs/#L165"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dds/DdsWriterOptions.cs/#L257"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets whether to write colour premultiplied by alpha: the DX10 header's premultiplied alpha mode, or DXT2 and DXT4 for BC2
@@ -431,7 +433,7 @@ and BC3 under the legacy header. Defaults to <a href="https://learn.microsoft.co
 
   <h3 id="Egami_Formats_Extended_Dds_DdsWriterOptions_Srgb" data-uid="Egami.Formats.Extended.Dds.DdsWriterOptions.Srgb">
   Srgb
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dds/DdsWriterOptions.cs/#L153"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dds/DdsWriterOptions.cs/#L245"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets whether to write the format's _SRGB form, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> (the default) to write it when the DDS source was
@@ -465,7 +467,7 @@ and BC1 to BC3 have one; an sRGB format takes the DX10 header.</p>
 </article>
 
         <div class="contribution d-print-none">
-          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dds/DdsWriterOptions.cs/#L100" class="edit-link">Edit this page</a>
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dds/DdsWriterOptions.cs/#L190" class="edit-link">Edit this page</a>
         </div>
 
 

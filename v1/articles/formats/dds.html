@@ -104,7 +104,7 @@ Egami.Formats.Extended package: register it with <code>WithDds()</code> or <code
 </tr>
 <tr>
 <td>Writes</td>
-<td>Uncompressed formats (8-bit RGBA, BGRA and BGRX, R8, R8G8, A8, 16-bit R, RG and RGBA, half and float RGBA, R32 float, float RGB, R10G10B10A2, R11G11B10 and R9G9B9E5 floats, 565, 5551 and 4444) and BC1 to BC7 with BC6H unsigned and signed, with mips, texture arrays and cube maps (<code>DdsWriterOptions</code>)</td>
+<td>Uncompressed formats (8-bit RGBA, BGRA and BGRX, R8, R8G8, A8, 16-bit R, RG and RGBA, half and float RGBA, R32 float, float RGB, R10G10B10A2, R11G11B10 and R9G9B9E5 floats, 565, 5551 and 4444), UINT and SINT in 8, 16 and 32 bits, D16, D24S8, D32F and D32FS8 depth, NV12, P010 and P016, and BC1 to BC7 with BC6H unsigned and signed, with mips, texture arrays and cube maps (<code>DdsWriterOptions</code>); volume textures through <a href="ktx.html#textures">Texture</a></td>
 </tr>
 <tr>
 <td>Natural pixel type</td>
@@ -200,6 +200,15 @@ size, and cube faces are square.</li>
 <p>BC1 keeps alpha as on or off: a pixel below half alpha becomes transparent black. BC4 and the R formats take the raster's gray,
 BC5 and R8G8 its red and green. BC6H keeps no alpha; the unsigned form writes negative values as 0. The <a href="../guides/textures.html">Textures</a>
 guide says which format suits which content.</p>
+<p>The writer also writes what the reader reads back for data rather than colour, each with the DX10 header. The UINT and SINT
+formats (<code>R8UInt</code> to <code>Rgba32SInt</code>, in 8, 16 and 32 bits) store the raster's channels as integers: 8- and 16-bit ones as they
+are, SINT offset by 128 or 32768 the way the reader maps them back (128 stores 0), and 32-bit ones from a float raster rounded
+and clamped to the type, exact up to 2²⁴. The depth formats <code>D16</code>, <code>D24S8</code>, <code>D32F</code> and <code>D32FS8</code> store the raster's gray as depth
+and 0 as stencil. <code>Nv12</code>, <code>P010</code> and <code>P016</code> store 4:2:0 video in BT.601 studio range, as the reader converts it back; they need
+an even width and height and write mip 0 alone, as Direct3D allows no mips for planar formats. The integer and depth formats
+also write mip 0 alone unless <code>MipLevels</code> asks for more, since averaged integers or depths rarely mean anything.</p>
+<p><code>Texture</code> (in <code>Egami.Formats.Extended.Textures</code>, shared with KTX 2; see <a href="ktx.html#textures">KTX</a>) loads a whole DDS file and saves
+one with exactly the mips it holds, hand-made ones included, and writes volume textures, which Save and SaveAll cannot express.</p>
 <pre><code class="lang-csharp">// A BC3 texture with its full mip chain: the format, mip count, effort (0 to 6) and header are options.
 using (FileStream output = File.Create(&quot;duck.dds&quot;))
 {

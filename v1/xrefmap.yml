@@ -42680,6 +42680,48 @@ references:
   commentId: F:Egami.Formats.Extended.Dds.DdsTextureFormat.Bgrx8
   fullName: Egami.Formats.Extended.Dds.DdsTextureFormat.Bgrx8
   nameWithType: DdsTextureFormat.Bgrx8
+- uid: Egami.Formats.Extended.Dds.DdsTextureFormat.D16
+  name: D16
+  href: api/Egami.Formats.Extended.Dds.DdsTextureFormat.html#Egami_Formats_Extended_Dds_DdsTextureFormat_D16
+  commentId: F:Egami.Formats.Extended.Dds.DdsTextureFormat.D16
+  fullName: Egami.Formats.Extended.Dds.DdsTextureFormat.D16
+  nameWithType: DdsTextureFormat.D16
+- uid: Egami.Formats.Extended.Dds.DdsTextureFormat.D24S8
+  name: D24S8
+  href: api/Egami.Formats.Extended.Dds.DdsTextureFormat.html#Egami_Formats_Extended_Dds_DdsTextureFormat_D24S8
+  commentId: F:Egami.Formats.Extended.Dds.DdsTextureFormat.D24S8
+  fullName: Egami.Formats.Extended.Dds.DdsTextureFormat.D24S8
+  nameWithType: DdsTextureFormat.D24S8
+- uid: Egami.Formats.Extended.Dds.DdsTextureFormat.D32F
+  name: D32F
+  href: api/Egami.Formats.Extended.Dds.DdsTextureFormat.html#Egami_Formats_Extended_Dds_DdsTextureFormat_D32F
+  commentId: F:Egami.Formats.Extended.Dds.DdsTextureFormat.D32F
+  fullName: Egami.Formats.Extended.Dds.DdsTextureFormat.D32F
+  nameWithType: DdsTextureFormat.D32F
+- uid: Egami.Formats.Extended.Dds.DdsTextureFormat.D32FS8
+  name: D32FS8
+  href: api/Egami.Formats.Extended.Dds.DdsTextureFormat.html#Egami_Formats_Extended_Dds_DdsTextureFormat_D32FS8
+  commentId: F:Egami.Formats.Extended.Dds.DdsTextureFormat.D32FS8
+  fullName: Egami.Formats.Extended.Dds.DdsTextureFormat.D32FS8
+  nameWithType: DdsTextureFormat.D32FS8
+- uid: Egami.Formats.Extended.Dds.DdsTextureFormat.Nv12
+  name: Nv12
+  href: api/Egami.Formats.Extended.Dds.DdsTextureFormat.html#Egami_Formats_Extended_Dds_DdsTextureFormat_Nv12
+  commentId: F:Egami.Formats.Extended.Dds.DdsTextureFormat.Nv12
+  fullName: Egami.Formats.Extended.Dds.DdsTextureFormat.Nv12
+  nameWithType: DdsTextureFormat.Nv12
+- uid: Egami.Formats.Extended.Dds.DdsTextureFormat.P010
+  name: P010
+  href: api/Egami.Formats.Extended.Dds.DdsTextureFormat.html#Egami_Formats_Extended_Dds_DdsTextureFormat_P010
+  commentId: F:Egami.Formats.Extended.Dds.DdsTextureFormat.P010
+  fullName: Egami.Formats.Extended.Dds.DdsTextureFormat.P010
+  nameWithType: DdsTextureFormat.P010
+- uid: Egami.Formats.Extended.Dds.DdsTextureFormat.P016
+  name: P016
+  href: api/Egami.Formats.Extended.Dds.DdsTextureFormat.html#Egami_Formats_Extended_Dds_DdsTextureFormat_P016
+  commentId: F:Egami.Formats.Extended.Dds.DdsTextureFormat.P016
+  fullName: Egami.Formats.Extended.Dds.DdsTextureFormat.P016
+  nameWithType: DdsTextureFormat.P016
 - uid: Egami.Formats.Extended.Dds.DdsTextureFormat.R11G11B10F
   name: R11G11B10F
   href: api/Egami.Formats.Extended.Dds.DdsTextureFormat.html#Egami_Formats_Extended_Dds_DdsTextureFormat_R11G11B10F
@@ -42692,36 +42734,120 @@ references:
   commentId: F:Egami.Formats.Extended.Dds.DdsTextureFormat.R16
   fullName: Egami.Formats.Extended.Dds.DdsTextureFormat.R16
   nameWithType: DdsTextureFormat.R16
+- uid: Egami.Formats.Extended.Dds.DdsTextureFormat.R16SInt
+  name: R16SInt
+  href: api/Egami.Formats.Extended.Dds.DdsTextureFormat.html#Egami_Formats_Extended_Dds_DdsTextureFormat_R16SInt
+  commentId: F:Egami.Formats.Extended.Dds.DdsTextureFormat.R16SInt
+  fullName: Egami.Formats.Extended.Dds.DdsTextureFormat.R16SInt
+  nameWithType: DdsTextureFormat.R16SInt
+- uid: Egami.Formats.Extended.Dds.DdsTextureFormat.R16UInt
+  name: R16UInt
+  href: api/Egami.Formats.Extended.Dds.DdsTextureFormat.html#Egami_Formats_Extended_Dds_DdsTextureFormat_R16UInt
+  commentId: F:Egami.Formats.Extended.Dds.DdsTextureFormat.R16UInt
+  fullName: Egami.Formats.Extended.Dds.DdsTextureFormat.R16UInt
+  nameWithType: DdsTextureFormat.R16UInt
 - uid: Egami.Formats.Extended.Dds.DdsTextureFormat.R32F
   name: R32F
   href: api/Egami.Formats.Extended.Dds.DdsTextureFormat.html#Egami_Formats_Extended_Dds_DdsTextureFormat_R32F
   commentId: F:Egami.Formats.Extended.Dds.DdsTextureFormat.R32F
   fullName: Egami.Formats.Extended.Dds.DdsTextureFormat.R32F
   nameWithType: DdsTextureFormat.R32F
+- uid: Egami.Formats.Extended.Dds.DdsTextureFormat.R32SInt
+  name: R32SInt
+  href: api/Egami.Formats.Extended.Dds.DdsTextureFormat.html#Egami_Formats_Extended_Dds_DdsTextureFormat_R32SInt
+  commentId: F:Egami.Formats.Extended.Dds.DdsTextureFormat.R32SInt
+  fullName: Egami.Formats.Extended.Dds.DdsTextureFormat.R32SInt
+  nameWithType: DdsTextureFormat.R32SInt
+- uid: Egami.Formats.Extended.Dds.DdsTextureFormat.R32UInt
+  name: R32UInt
+  href: api/Egami.Formats.Extended.Dds.DdsTextureFormat.html#Egami_Formats_Extended_Dds_DdsTextureFormat_R32UInt
+  commentId: F:Egami.Formats.Extended.Dds.DdsTextureFormat.R32UInt
+  fullName: Egami.Formats.Extended.Dds.DdsTextureFormat.R32UInt
+  nameWithType: DdsTextureFormat.R32UInt
 - uid: Egami.Formats.Extended.Dds.DdsTextureFormat.R8
   name: R8
   href: api/Egami.Formats.Extended.Dds.DdsTextureFormat.html#Egami_Formats_Extended_Dds_DdsTextureFormat_R8
   commentId: F:Egami.Formats.Extended.Dds.DdsTextureFormat.R8
   fullName: Egami.Formats.Extended.Dds.DdsTextureFormat.R8
   nameWithType: DdsTextureFormat.R8
+- uid: Egami.Formats.Extended.Dds.DdsTextureFormat.R8SInt
+  name: R8SInt
+  href: api/Egami.Formats.Extended.Dds.DdsTextureFormat.html#Egami_Formats_Extended_Dds_DdsTextureFormat_R8SInt
+  commentId: F:Egami.Formats.Extended.Dds.DdsTextureFormat.R8SInt
+  fullName: Egami.Formats.Extended.Dds.DdsTextureFormat.R8SInt
+  nameWithType: DdsTextureFormat.R8SInt
+- uid: Egami.Formats.Extended.Dds.DdsTextureFormat.R8UInt
+  name: R8UInt
+  href: api/Egami.Formats.Extended.Dds.DdsTextureFormat.html#Egami_Formats_Extended_Dds_DdsTextureFormat_R8UInt
+  commentId: F:Egami.Formats.Extended.Dds.DdsTextureFormat.R8UInt
+  fullName: Egami.Formats.Extended.Dds.DdsTextureFormat.R8UInt
+  nameWithType: DdsTextureFormat.R8UInt
 - uid: Egami.Formats.Extended.Dds.DdsTextureFormat.Rg16
   name: Rg16
   href: api/Egami.Formats.Extended.Dds.DdsTextureFormat.html#Egami_Formats_Extended_Dds_DdsTextureFormat_Rg16
   commentId: F:Egami.Formats.Extended.Dds.DdsTextureFormat.Rg16
   fullName: Egami.Formats.Extended.Dds.DdsTextureFormat.Rg16
   nameWithType: DdsTextureFormat.Rg16
+- uid: Egami.Formats.Extended.Dds.DdsTextureFormat.Rg16SInt
+  name: Rg16SInt
+  href: api/Egami.Formats.Extended.Dds.DdsTextureFormat.html#Egami_Formats_Extended_Dds_DdsTextureFormat_Rg16SInt
+  commentId: F:Egami.Formats.Extended.Dds.DdsTextureFormat.Rg16SInt
+  fullName: Egami.Formats.Extended.Dds.DdsTextureFormat.Rg16SInt
+  nameWithType: DdsTextureFormat.Rg16SInt
+- uid: Egami.Formats.Extended.Dds.DdsTextureFormat.Rg16UInt
+  name: Rg16UInt
+  href: api/Egami.Formats.Extended.Dds.DdsTextureFormat.html#Egami_Formats_Extended_Dds_DdsTextureFormat_Rg16UInt
+  commentId: F:Egami.Formats.Extended.Dds.DdsTextureFormat.Rg16UInt
+  fullName: Egami.Formats.Extended.Dds.DdsTextureFormat.Rg16UInt
+  nameWithType: DdsTextureFormat.Rg16UInt
+- uid: Egami.Formats.Extended.Dds.DdsTextureFormat.Rg32SInt
+  name: Rg32SInt
+  href: api/Egami.Formats.Extended.Dds.DdsTextureFormat.html#Egami_Formats_Extended_Dds_DdsTextureFormat_Rg32SInt
+  commentId: F:Egami.Formats.Extended.Dds.DdsTextureFormat.Rg32SInt
+  fullName: Egami.Formats.Extended.Dds.DdsTextureFormat.Rg32SInt
+  nameWithType: DdsTextureFormat.Rg32SInt
+- uid: Egami.Formats.Extended.Dds.DdsTextureFormat.Rg32UInt
+  name: Rg32UInt
+  href: api/Egami.Formats.Extended.Dds.DdsTextureFormat.html#Egami_Formats_Extended_Dds_DdsTextureFormat_Rg32UInt
+  commentId: F:Egami.Formats.Extended.Dds.DdsTextureFormat.Rg32UInt
+  fullName: Egami.Formats.Extended.Dds.DdsTextureFormat.Rg32UInt
+  nameWithType: DdsTextureFormat.Rg32UInt
 - uid: Egami.Formats.Extended.Dds.DdsTextureFormat.Rg8
   name: Rg8
   href: api/Egami.Formats.Extended.Dds.DdsTextureFormat.html#Egami_Formats_Extended_Dds_DdsTextureFormat_Rg8
   commentId: F:Egami.Formats.Extended.Dds.DdsTextureFormat.Rg8
   fullName: Egami.Formats.Extended.Dds.DdsTextureFormat.Rg8
   nameWithType: DdsTextureFormat.Rg8
+- uid: Egami.Formats.Extended.Dds.DdsTextureFormat.Rg8SInt
+  name: Rg8SInt
+  href: api/Egami.Formats.Extended.Dds.DdsTextureFormat.html#Egami_Formats_Extended_Dds_DdsTextureFormat_Rg8SInt
+  commentId: F:Egami.Formats.Extended.Dds.DdsTextureFormat.Rg8SInt
+  fullName: Egami.Formats.Extended.Dds.DdsTextureFormat.Rg8SInt
+  nameWithType: DdsTextureFormat.Rg8SInt
+- uid: Egami.Formats.Extended.Dds.DdsTextureFormat.Rg8UInt
+  name: Rg8UInt
+  href: api/Egami.Formats.Extended.Dds.DdsTextureFormat.html#Egami_Formats_Extended_Dds_DdsTextureFormat_Rg8UInt
+  commentId: F:Egami.Formats.Extended.Dds.DdsTextureFormat.Rg8UInt
+  fullName: Egami.Formats.Extended.Dds.DdsTextureFormat.Rg8UInt
+  nameWithType: DdsTextureFormat.Rg8UInt
 - uid: Egami.Formats.Extended.Dds.DdsTextureFormat.Rgb10A2
   name: Rgb10A2
   href: api/Egami.Formats.Extended.Dds.DdsTextureFormat.html#Egami_Formats_Extended_Dds_DdsTextureFormat_Rgb10A2
   commentId: F:Egami.Formats.Extended.Dds.DdsTextureFormat.Rgb10A2
   fullName: Egami.Formats.Extended.Dds.DdsTextureFormat.Rgb10A2
   nameWithType: DdsTextureFormat.Rgb10A2
+- uid: Egami.Formats.Extended.Dds.DdsTextureFormat.Rgb32SInt
+  name: Rgb32SInt
+  href: api/Egami.Formats.Extended.Dds.DdsTextureFormat.html#Egami_Formats_Extended_Dds_DdsTextureFormat_Rgb32SInt
+  commentId: F:Egami.Formats.Extended.Dds.DdsTextureFormat.Rgb32SInt
+  fullName: Egami.Formats.Extended.Dds.DdsTextureFormat.Rgb32SInt
+  nameWithType: DdsTextureFormat.Rgb32SInt
+- uid: Egami.Formats.Extended.Dds.DdsTextureFormat.Rgb32UInt
+  name: Rgb32UInt
+  href: api/Egami.Formats.Extended.Dds.DdsTextureFormat.html#Egami_Formats_Extended_Dds_DdsTextureFormat_Rgb32UInt
+  commentId: F:Egami.Formats.Extended.Dds.DdsTextureFormat.Rgb32UInt
+  fullName: Egami.Formats.Extended.Dds.DdsTextureFormat.Rgb32UInt
+  nameWithType: DdsTextureFormat.Rgb32UInt
 - uid: Egami.Formats.Extended.Dds.DdsTextureFormat.Rgb9E5
   name: Rgb9E5
   href: api/Egami.Formats.Extended.Dds.DdsTextureFormat.html#Egami_Formats_Extended_Dds_DdsTextureFormat_Rgb9E5
@@ -42740,12 +42866,48 @@ references:
   commentId: F:Egami.Formats.Extended.Dds.DdsTextureFormat.Rgba16
   fullName: Egami.Formats.Extended.Dds.DdsTextureFormat.Rgba16
   nameWithType: DdsTextureFormat.Rgba16
+- uid: Egami.Formats.Extended.Dds.DdsTextureFormat.Rgba16SInt
+  name: Rgba16SInt
+  href: api/Egami.Formats.Extended.Dds.DdsTextureFormat.html#Egami_Formats_Extended_Dds_DdsTextureFormat_Rgba16SInt
+  commentId: F:Egami.Formats.Extended.Dds.DdsTextureFormat.Rgba16SInt
+  fullName: Egami.Formats.Extended.Dds.DdsTextureFormat.Rgba16SInt
+  nameWithType: DdsTextureFormat.Rgba16SInt
+- uid: Egami.Formats.Extended.Dds.DdsTextureFormat.Rgba16UInt
+  name: Rgba16UInt
+  href: api/Egami.Formats.Extended.Dds.DdsTextureFormat.html#Egami_Formats_Extended_Dds_DdsTextureFormat_Rgba16UInt
+  commentId: F:Egami.Formats.Extended.Dds.DdsTextureFormat.Rgba16UInt
+  fullName: Egami.Formats.Extended.Dds.DdsTextureFormat.Rgba16UInt
+  nameWithType: DdsTextureFormat.Rgba16UInt
+- uid: Egami.Formats.Extended.Dds.DdsTextureFormat.Rgba32SInt
+  name: Rgba32SInt
+  href: api/Egami.Formats.Extended.Dds.DdsTextureFormat.html#Egami_Formats_Extended_Dds_DdsTextureFormat_Rgba32SInt
+  commentId: F:Egami.Formats.Extended.Dds.DdsTextureFormat.Rgba32SInt
+  fullName: Egami.Formats.Extended.Dds.DdsTextureFormat.Rgba32SInt
+  nameWithType: DdsTextureFormat.Rgba32SInt
+- uid: Egami.Formats.Extended.Dds.DdsTextureFormat.Rgba32UInt
+  name: Rgba32UInt
+  href: api/Egami.Formats.Extended.Dds.DdsTextureFormat.html#Egami_Formats_Extended_Dds_DdsTextureFormat_Rgba32UInt
+  commentId: F:Egami.Formats.Extended.Dds.DdsTextureFormat.Rgba32UInt
+  fullName: Egami.Formats.Extended.Dds.DdsTextureFormat.Rgba32UInt
+  nameWithType: DdsTextureFormat.Rgba32UInt
 - uid: Egami.Formats.Extended.Dds.DdsTextureFormat.Rgba8
   name: Rgba8
   href: api/Egami.Formats.Extended.Dds.DdsTextureFormat.html#Egami_Formats_Extended_Dds_DdsTextureFormat_Rgba8
   commentId: F:Egami.Formats.Extended.Dds.DdsTextureFormat.Rgba8
   fullName: Egami.Formats.Extended.Dds.DdsTextureFormat.Rgba8
   nameWithType: DdsTextureFormat.Rgba8
+- uid: Egami.Formats.Extended.Dds.DdsTextureFormat.Rgba8SInt
+  name: Rgba8SInt
+  href: api/Egami.Formats.Extended.Dds.DdsTextureFormat.html#Egami_Formats_Extended_Dds_DdsTextureFormat_Rgba8SInt
+  commentId: F:Egami.Formats.Extended.Dds.DdsTextureFormat.Rgba8SInt
+  fullName: Egami.Formats.Extended.Dds.DdsTextureFormat.Rgba8SInt
+  nameWithType: DdsTextureFormat.Rgba8SInt
+- uid: Egami.Formats.Extended.Dds.DdsTextureFormat.Rgba8UInt
+  name: Rgba8UInt
+  href: api/Egami.Formats.Extended.Dds.DdsTextureFormat.html#Egami_Formats_Extended_Dds_DdsTextureFormat_Rgba8UInt
+  commentId: F:Egami.Formats.Extended.Dds.DdsTextureFormat.Rgba8UInt
+  fullName: Egami.Formats.Extended.Dds.DdsTextureFormat.Rgba8UInt
+  nameWithType: DdsTextureFormat.Rgba8UInt
 - uid: Egami.Formats.Extended.Dds.DdsTextureFormat.RgbaF16
   name: RgbaF16
   href: api/Egami.Formats.Extended.Dds.DdsTextureFormat.html#Egami_Formats_Extended_Dds_DdsTextureFormat_RgbaF16
@@ -43080,6 +43242,155 @@ references:
   isSpec: "True"
   fullName: Egami.Formats.Extended.Ktx.Ktx2Format.Info
   nameWithType: Ktx2Format.Info
+- uid: Egami.Formats.Extended.Ktx.Ktx2WriterOptions
+  name: Ktx2WriterOptions
+  href: api/Egami.Formats.Extended.Ktx.Ktx2WriterOptions.html
+  commentId: T:Egami.Formats.Extended.Ktx.Ktx2WriterOptions
+  fullName: Egami.Formats.Extended.Ktx.Ktx2WriterOptions
+  nameWithType: Ktx2WriterOptions
+- uid: Egami.Formats.Extended.Ktx.Ktx2WriterOptions.BasisQuality
+  name: BasisQuality
+  href: api/Egami.Formats.Extended.Ktx.Ktx2WriterOptions.html#Egami_Formats_Extended_Ktx_Ktx2WriterOptions_BasisQuality
+  commentId: P:Egami.Formats.Extended.Ktx.Ktx2WriterOptions.BasisQuality
+  fullName: Egami.Formats.Extended.Ktx.Ktx2WriterOptions.BasisQuality
+  nameWithType: Ktx2WriterOptions.BasisQuality
+- uid: Egami.Formats.Extended.Ktx.Ktx2WriterOptions.BasisQuality*
+  name: BasisQuality
+  href: api/Egami.Formats.Extended.Ktx.Ktx2WriterOptions.html#Egami_Formats_Extended_Ktx_Ktx2WriterOptions_BasisQuality_
+  commentId: Overload:Egami.Formats.Extended.Ktx.Ktx2WriterOptions.BasisQuality
+  isSpec: "True"
+  fullName: Egami.Formats.Extended.Ktx.Ktx2WriterOptions.BasisQuality
+  nameWithType: Ktx2WriterOptions.BasisQuality
+- uid: Egami.Formats.Extended.Ktx.Ktx2WriterOptions.CompressionLevel
+  name: CompressionLevel
+  href: api/Egami.Formats.Extended.Ktx.Ktx2WriterOptions.html#Egami_Formats_Extended_Ktx_Ktx2WriterOptions_CompressionLevel
+  commentId: P:Egami.Formats.Extended.Ktx.Ktx2WriterOptions.CompressionLevel
+  fullName: Egami.Formats.Extended.Ktx.Ktx2WriterOptions.CompressionLevel
+  nameWithType: Ktx2WriterOptions.CompressionLevel
+- uid: Egami.Formats.Extended.Ktx.Ktx2WriterOptions.CompressionLevel*
+  name: CompressionLevel
+  href: api/Egami.Formats.Extended.Ktx.Ktx2WriterOptions.html#Egami_Formats_Extended_Ktx_Ktx2WriterOptions_CompressionLevel_
+  commentId: Overload:Egami.Formats.Extended.Ktx.Ktx2WriterOptions.CompressionLevel
+  isSpec: "True"
+  fullName: Egami.Formats.Extended.Ktx.Ktx2WriterOptions.CompressionLevel
+  nameWithType: Ktx2WriterOptions.CompressionLevel
+- uid: Egami.Formats.Extended.Ktx.Ktx2WriterOptions.Cube
+  name: Cube
+  href: api/Egami.Formats.Extended.Ktx.Ktx2WriterOptions.html#Egami_Formats_Extended_Ktx_Ktx2WriterOptions_Cube
+  commentId: P:Egami.Formats.Extended.Ktx.Ktx2WriterOptions.Cube
+  fullName: Egami.Formats.Extended.Ktx.Ktx2WriterOptions.Cube
+  nameWithType: Ktx2WriterOptions.Cube
+- uid: Egami.Formats.Extended.Ktx.Ktx2WriterOptions.Cube*
+  name: Cube
+  href: api/Egami.Formats.Extended.Ktx.Ktx2WriterOptions.html#Egami_Formats_Extended_Ktx_Ktx2WriterOptions_Cube_
+  commentId: Overload:Egami.Formats.Extended.Ktx.Ktx2WriterOptions.Cube
+  isSpec: "True"
+  fullName: Egami.Formats.Extended.Ktx.Ktx2WriterOptions.Cube
+  nameWithType: Ktx2WriterOptions.Cube
+- uid: Egami.Formats.Extended.Ktx.Ktx2WriterOptions.Default
+  name: Default
+  href: api/Egami.Formats.Extended.Ktx.Ktx2WriterOptions.html#Egami_Formats_Extended_Ktx_Ktx2WriterOptions_Default
+  commentId: P:Egami.Formats.Extended.Ktx.Ktx2WriterOptions.Default
+  fullName: Egami.Formats.Extended.Ktx.Ktx2WriterOptions.Default
+  nameWithType: Ktx2WriterOptions.Default
+- uid: Egami.Formats.Extended.Ktx.Ktx2WriterOptions.Default*
+  name: Default
+  href: api/Egami.Formats.Extended.Ktx.Ktx2WriterOptions.html#Egami_Formats_Extended_Ktx_Ktx2WriterOptions_Default_
+  commentId: Overload:Egami.Formats.Extended.Ktx.Ktx2WriterOptions.Default
+  isSpec: "True"
+  fullName: Egami.Formats.Extended.Ktx.Ktx2WriterOptions.Default
+  nameWithType: Ktx2WriterOptions.Default
+- uid: Egami.Formats.Extended.Ktx.Ktx2WriterOptions.Effort
+  name: Effort
+  href: api/Egami.Formats.Extended.Ktx.Ktx2WriterOptions.html#Egami_Formats_Extended_Ktx_Ktx2WriterOptions_Effort
+  commentId: P:Egami.Formats.Extended.Ktx.Ktx2WriterOptions.Effort
+  fullName: Egami.Formats.Extended.Ktx.Ktx2WriterOptions.Effort
+  nameWithType: Ktx2WriterOptions.Effort
+- uid: Egami.Formats.Extended.Ktx.Ktx2WriterOptions.Effort*
+  name: Effort
+  href: api/Egami.Formats.Extended.Ktx.Ktx2WriterOptions.html#Egami_Formats_Extended_Ktx_Ktx2WriterOptions_Effort_
+  commentId: Overload:Egami.Formats.Extended.Ktx.Ktx2WriterOptions.Effort
+  isSpec: "True"
+  fullName: Egami.Formats.Extended.Ktx.Ktx2WriterOptions.Effort
+  nameWithType: Ktx2WriterOptions.Effort
+- uid: Egami.Formats.Extended.Ktx.Ktx2WriterOptions.Format
+  name: Format
+  href: api/Egami.Formats.Extended.Ktx.Ktx2WriterOptions.html#Egami_Formats_Extended_Ktx_Ktx2WriterOptions_Format
+  commentId: P:Egami.Formats.Extended.Ktx.Ktx2WriterOptions.Format
+  fullName: Egami.Formats.Extended.Ktx.Ktx2WriterOptions.Format
+  nameWithType: Ktx2WriterOptions.Format
+- uid: Egami.Formats.Extended.Ktx.Ktx2WriterOptions.Format*
+  name: Format
+  href: api/Egami.Formats.Extended.Ktx.Ktx2WriterOptions.html#Egami_Formats_Extended_Ktx_Ktx2WriterOptions_Format_
+  commentId: Overload:Egami.Formats.Extended.Ktx.Ktx2WriterOptions.Format
+  isSpec: "True"
+  fullName: Egami.Formats.Extended.Ktx.Ktx2WriterOptions.Format
+  nameWithType: Ktx2WriterOptions.Format
+- uid: Egami.Formats.Extended.Ktx.Ktx2WriterOptions.MipLevels
+  name: MipLevels
+  href: api/Egami.Formats.Extended.Ktx.Ktx2WriterOptions.html#Egami_Formats_Extended_Ktx_Ktx2WriterOptions_MipLevels
+  commentId: P:Egami.Formats.Extended.Ktx.Ktx2WriterOptions.MipLevels
+  fullName: Egami.Formats.Extended.Ktx.Ktx2WriterOptions.MipLevels
+  nameWithType: Ktx2WriterOptions.MipLevels
+- uid: Egami.Formats.Extended.Ktx.Ktx2WriterOptions.MipLevels*
+  name: MipLevels
+  href: api/Egami.Formats.Extended.Ktx.Ktx2WriterOptions.html#Egami_Formats_Extended_Ktx_Ktx2WriterOptions_MipLevels_
+  commentId: Overload:Egami.Formats.Extended.Ktx.Ktx2WriterOptions.MipLevels
+  isSpec: "True"
+  fullName: Egami.Formats.Extended.Ktx.Ktx2WriterOptions.MipLevels
+  nameWithType: Ktx2WriterOptions.MipLevels
+- uid: Egami.Formats.Extended.Ktx.Ktx2WriterOptions.PremultipliedAlpha
+  name: PremultipliedAlpha
+  href: api/Egami.Formats.Extended.Ktx.Ktx2WriterOptions.html#Egami_Formats_Extended_Ktx_Ktx2WriterOptions_PremultipliedAlpha
+  commentId: P:Egami.Formats.Extended.Ktx.Ktx2WriterOptions.PremultipliedAlpha
+  fullName: Egami.Formats.Extended.Ktx.Ktx2WriterOptions.PremultipliedAlpha
+  nameWithType: Ktx2WriterOptions.PremultipliedAlpha
+- uid: Egami.Formats.Extended.Ktx.Ktx2WriterOptions.PremultipliedAlpha*
+  name: PremultipliedAlpha
+  href: api/Egami.Formats.Extended.Ktx.Ktx2WriterOptions.html#Egami_Formats_Extended_Ktx_Ktx2WriterOptions_PremultipliedAlpha_
+  commentId: Overload:Egami.Formats.Extended.Ktx.Ktx2WriterOptions.PremultipliedAlpha
+  isSpec: "True"
+  fullName: Egami.Formats.Extended.Ktx.Ktx2WriterOptions.PremultipliedAlpha
+  nameWithType: Ktx2WriterOptions.PremultipliedAlpha
+- uid: Egami.Formats.Extended.Ktx.Ktx2WriterOptions.Srgb
+  name: Srgb
+  href: api/Egami.Formats.Extended.Ktx.Ktx2WriterOptions.html#Egami_Formats_Extended_Ktx_Ktx2WriterOptions_Srgb
+  commentId: P:Egami.Formats.Extended.Ktx.Ktx2WriterOptions.Srgb
+  fullName: Egami.Formats.Extended.Ktx.Ktx2WriterOptions.Srgb
+  nameWithType: Ktx2WriterOptions.Srgb
+- uid: Egami.Formats.Extended.Ktx.Ktx2WriterOptions.Srgb*
+  name: Srgb
+  href: api/Egami.Formats.Extended.Ktx.Ktx2WriterOptions.html#Egami_Formats_Extended_Ktx_Ktx2WriterOptions_Srgb_
+  commentId: Overload:Egami.Formats.Extended.Ktx.Ktx2WriterOptions.Srgb
+  isSpec: "True"
+  fullName: Egami.Formats.Extended.Ktx.Ktx2WriterOptions.Srgb
+  nameWithType: Ktx2WriterOptions.Srgb
+- uid: Egami.Formats.Extended.Ktx.Ktx2WriterOptions.Supercompression
+  name: Supercompression
+  href: api/Egami.Formats.Extended.Ktx.Ktx2WriterOptions.html#Egami_Formats_Extended_Ktx_Ktx2WriterOptions_Supercompression
+  commentId: P:Egami.Formats.Extended.Ktx.Ktx2WriterOptions.Supercompression
+  fullName: Egami.Formats.Extended.Ktx.Ktx2WriterOptions.Supercompression
+  nameWithType: Ktx2WriterOptions.Supercompression
+- uid: Egami.Formats.Extended.Ktx.Ktx2WriterOptions.Supercompression*
+  name: Supercompression
+  href: api/Egami.Formats.Extended.Ktx.Ktx2WriterOptions.html#Egami_Formats_Extended_Ktx_Ktx2WriterOptions_Supercompression_
+  commentId: Overload:Egami.Formats.Extended.Ktx.Ktx2WriterOptions.Supercompression
+  isSpec: "True"
+  fullName: Egami.Formats.Extended.Ktx.Ktx2WriterOptions.Supercompression
+  nameWithType: Ktx2WriterOptions.Supercompression
+- uid: Egami.Formats.Extended.Ktx.Ktx2WriterOptions.UastcRdo
+  name: UastcRdo
+  href: api/Egami.Formats.Extended.Ktx.Ktx2WriterOptions.html#Egami_Formats_Extended_Ktx_Ktx2WriterOptions_UastcRdo
+  commentId: P:Egami.Formats.Extended.Ktx.Ktx2WriterOptions.UastcRdo
+  fullName: Egami.Formats.Extended.Ktx.Ktx2WriterOptions.UastcRdo
+  nameWithType: Ktx2WriterOptions.UastcRdo
+- uid: Egami.Formats.Extended.Ktx.Ktx2WriterOptions.UastcRdo*
+  name: UastcRdo
+  href: api/Egami.Formats.Extended.Ktx.Ktx2WriterOptions.html#Egami_Formats_Extended_Ktx_Ktx2WriterOptions_UastcRdo_
+  commentId: Overload:Egami.Formats.Extended.Ktx.Ktx2WriterOptions.UastcRdo
+  isSpec: "True"
+  fullName: Egami.Formats.Extended.Ktx.Ktx2WriterOptions.UastcRdo
+  nameWithType: Ktx2WriterOptions.UastcRdo
 - uid: Egami.Formats.Extended.Ktx.KtxAlphaMode
   name: KtxAlphaMode
   href: api/Egami.Formats.Extended.Ktx.KtxAlphaMode.html
@@ -43482,6 +43793,450 @@ references:
   commentId: F:Egami.Formats.Extended.Ktx.KtxSupercompression.Zstandard
   fullName: Egami.Formats.Extended.Ktx.KtxSupercompression.Zstandard
   nameWithType: KtxSupercompression.Zstandard
+- uid: Egami.Formats.Extended.Ktx.KtxTextureFormat
+  name: KtxTextureFormat
+  href: api/Egami.Formats.Extended.Ktx.KtxTextureFormat.html
+  commentId: T:Egami.Formats.Extended.Ktx.KtxTextureFormat
+  fullName: Egami.Formats.Extended.Ktx.KtxTextureFormat
+  nameWithType: KtxTextureFormat
+- uid: Egami.Formats.Extended.Ktx.KtxTextureFormat.Astc10x10
+  name: Astc10x10
+  href: api/Egami.Formats.Extended.Ktx.KtxTextureFormat.html#Egami_Formats_Extended_Ktx_KtxTextureFormat_Astc10x10
+  commentId: F:Egami.Formats.Extended.Ktx.KtxTextureFormat.Astc10x10
+  fullName: Egami.Formats.Extended.Ktx.KtxTextureFormat.Astc10x10
+  nameWithType: KtxTextureFormat.Astc10x10
+- uid: Egami.Formats.Extended.Ktx.KtxTextureFormat.Astc10x5
+  name: Astc10x5
+  href: api/Egami.Formats.Extended.Ktx.KtxTextureFormat.html#Egami_Formats_Extended_Ktx_KtxTextureFormat_Astc10x5
+  commentId: F:Egami.Formats.Extended.Ktx.KtxTextureFormat.Astc10x5
+  fullName: Egami.Formats.Extended.Ktx.KtxTextureFormat.Astc10x5
+  nameWithType: KtxTextureFormat.Astc10x5
+- uid: Egami.Formats.Extended.Ktx.KtxTextureFormat.Astc10x6
+  name: Astc10x6
+  href: api/Egami.Formats.Extended.Ktx.KtxTextureFormat.html#Egami_Formats_Extended_Ktx_KtxTextureFormat_Astc10x6
+  commentId: F:Egami.Formats.Extended.Ktx.KtxTextureFormat.Astc10x6
+  fullName: Egami.Formats.Extended.Ktx.KtxTextureFormat.Astc10x6
+  nameWithType: KtxTextureFormat.Astc10x6
+- uid: Egami.Formats.Extended.Ktx.KtxTextureFormat.Astc10x8
+  name: Astc10x8
+  href: api/Egami.Formats.Extended.Ktx.KtxTextureFormat.html#Egami_Formats_Extended_Ktx_KtxTextureFormat_Astc10x8
+  commentId: F:Egami.Formats.Extended.Ktx.KtxTextureFormat.Astc10x8
+  fullName: Egami.Formats.Extended.Ktx.KtxTextureFormat.Astc10x8
+  nameWithType: KtxTextureFormat.Astc10x8
+- uid: Egami.Formats.Extended.Ktx.KtxTextureFormat.Astc12x10
+  name: Astc12x10
+  href: api/Egami.Formats.Extended.Ktx.KtxTextureFormat.html#Egami_Formats_Extended_Ktx_KtxTextureFormat_Astc12x10
+  commentId: F:Egami.Formats.Extended.Ktx.KtxTextureFormat.Astc12x10
+  fullName: Egami.Formats.Extended.Ktx.KtxTextureFormat.Astc12x10
+  nameWithType: KtxTextureFormat.Astc12x10
+- uid: Egami.Formats.Extended.Ktx.KtxTextureFormat.Astc12x12
+  name: Astc12x12
+  href: api/Egami.Formats.Extended.Ktx.KtxTextureFormat.html#Egami_Formats_Extended_Ktx_KtxTextureFormat_Astc12x12
+  commentId: F:Egami.Formats.Extended.Ktx.KtxTextureFormat.Astc12x12
+  fullName: Egami.Formats.Extended.Ktx.KtxTextureFormat.Astc12x12
+  nameWithType: KtxTextureFormat.Astc12x12
+- uid: Egami.Formats.Extended.Ktx.KtxTextureFormat.Astc4x4
+  name: Astc4x4
+  href: api/Egami.Formats.Extended.Ktx.KtxTextureFormat.html#Egami_Formats_Extended_Ktx_KtxTextureFormat_Astc4x4
+  commentId: F:Egami.Formats.Extended.Ktx.KtxTextureFormat.Astc4x4
+  fullName: Egami.Formats.Extended.Ktx.KtxTextureFormat.Astc4x4
+  nameWithType: KtxTextureFormat.Astc4x4
+- uid: Egami.Formats.Extended.Ktx.KtxTextureFormat.Astc5x4
+  name: Astc5x4
+  href: api/Egami.Formats.Extended.Ktx.KtxTextureFormat.html#Egami_Formats_Extended_Ktx_KtxTextureFormat_Astc5x4
+  commentId: F:Egami.Formats.Extended.Ktx.KtxTextureFormat.Astc5x4
+  fullName: Egami.Formats.Extended.Ktx.KtxTextureFormat.Astc5x4
+  nameWithType: KtxTextureFormat.Astc5x4
+- uid: Egami.Formats.Extended.Ktx.KtxTextureFormat.Astc5x5
+  name: Astc5x5
+  href: api/Egami.Formats.Extended.Ktx.KtxTextureFormat.html#Egami_Formats_Extended_Ktx_KtxTextureFormat_Astc5x5
+  commentId: F:Egami.Formats.Extended.Ktx.KtxTextureFormat.Astc5x5
+  fullName: Egami.Formats.Extended.Ktx.KtxTextureFormat.Astc5x5
+  nameWithType: KtxTextureFormat.Astc5x5
+- uid: Egami.Formats.Extended.Ktx.KtxTextureFormat.Astc6x5
+  name: Astc6x5
+  href: api/Egami.Formats.Extended.Ktx.KtxTextureFormat.html#Egami_Formats_Extended_Ktx_KtxTextureFormat_Astc6x5
+  commentId: F:Egami.Formats.Extended.Ktx.KtxTextureFormat.Astc6x5
+  fullName: Egami.Formats.Extended.Ktx.KtxTextureFormat.Astc6x5
+  nameWithType: KtxTextureFormat.Astc6x5
+- uid: Egami.Formats.Extended.Ktx.KtxTextureFormat.Astc6x6
+  name: Astc6x6
+  href: api/Egami.Formats.Extended.Ktx.KtxTextureFormat.html#Egami_Formats_Extended_Ktx_KtxTextureFormat_Astc6x6
+  commentId: F:Egami.Formats.Extended.Ktx.KtxTextureFormat.Astc6x6
+  fullName: Egami.Formats.Extended.Ktx.KtxTextureFormat.Astc6x6
+  nameWithType: KtxTextureFormat.Astc6x6
+- uid: Egami.Formats.Extended.Ktx.KtxTextureFormat.Astc8x5
+  name: Astc8x5
+  href: api/Egami.Formats.Extended.Ktx.KtxTextureFormat.html#Egami_Formats_Extended_Ktx_KtxTextureFormat_Astc8x5
+  commentId: F:Egami.Formats.Extended.Ktx.KtxTextureFormat.Astc8x5
+  fullName: Egami.Formats.Extended.Ktx.KtxTextureFormat.Astc8x5
+  nameWithType: KtxTextureFormat.Astc8x5
+- uid: Egami.Formats.Extended.Ktx.KtxTextureFormat.Astc8x6
+  name: Astc8x6
+  href: api/Egami.Formats.Extended.Ktx.KtxTextureFormat.html#Egami_Formats_Extended_Ktx_KtxTextureFormat_Astc8x6
+  commentId: F:Egami.Formats.Extended.Ktx.KtxTextureFormat.Astc8x6
+  fullName: Egami.Formats.Extended.Ktx.KtxTextureFormat.Astc8x6
+  nameWithType: KtxTextureFormat.Astc8x6
+- uid: Egami.Formats.Extended.Ktx.KtxTextureFormat.Astc8x8
+  name: Astc8x8
+  href: api/Egami.Formats.Extended.Ktx.KtxTextureFormat.html#Egami_Formats_Extended_Ktx_KtxTextureFormat_Astc8x8
+  commentId: F:Egami.Formats.Extended.Ktx.KtxTextureFormat.Astc8x8
+  fullName: Egami.Formats.Extended.Ktx.KtxTextureFormat.Astc8x8
+  nameWithType: KtxTextureFormat.Astc8x8
+- uid: Egami.Formats.Extended.Ktx.KtxTextureFormat.Bc1
+  name: Bc1
+  href: api/Egami.Formats.Extended.Ktx.KtxTextureFormat.html#Egami_Formats_Extended_Ktx_KtxTextureFormat_Bc1
+  commentId: F:Egami.Formats.Extended.Ktx.KtxTextureFormat.Bc1
+  fullName: Egami.Formats.Extended.Ktx.KtxTextureFormat.Bc1
+  nameWithType: KtxTextureFormat.Bc1
+- uid: Egami.Formats.Extended.Ktx.KtxTextureFormat.Bc2
+  name: Bc2
+  href: api/Egami.Formats.Extended.Ktx.KtxTextureFormat.html#Egami_Formats_Extended_Ktx_KtxTextureFormat_Bc2
+  commentId: F:Egami.Formats.Extended.Ktx.KtxTextureFormat.Bc2
+  fullName: Egami.Formats.Extended.Ktx.KtxTextureFormat.Bc2
+  nameWithType: KtxTextureFormat.Bc2
+- uid: Egami.Formats.Extended.Ktx.KtxTextureFormat.Bc3
+  name: Bc3
+  href: api/Egami.Formats.Extended.Ktx.KtxTextureFormat.html#Egami_Formats_Extended_Ktx_KtxTextureFormat_Bc3
+  commentId: F:Egami.Formats.Extended.Ktx.KtxTextureFormat.Bc3
+  fullName: Egami.Formats.Extended.Ktx.KtxTextureFormat.Bc3
+  nameWithType: KtxTextureFormat.Bc3
+- uid: Egami.Formats.Extended.Ktx.KtxTextureFormat.Bc4
+  name: Bc4
+  href: api/Egami.Formats.Extended.Ktx.KtxTextureFormat.html#Egami_Formats_Extended_Ktx_KtxTextureFormat_Bc4
+  commentId: F:Egami.Formats.Extended.Ktx.KtxTextureFormat.Bc4
+  fullName: Egami.Formats.Extended.Ktx.KtxTextureFormat.Bc4
+  nameWithType: KtxTextureFormat.Bc4
+- uid: Egami.Formats.Extended.Ktx.KtxTextureFormat.Bc5
+  name: Bc5
+  href: api/Egami.Formats.Extended.Ktx.KtxTextureFormat.html#Egami_Formats_Extended_Ktx_KtxTextureFormat_Bc5
+  commentId: F:Egami.Formats.Extended.Ktx.KtxTextureFormat.Bc5
+  fullName: Egami.Formats.Extended.Ktx.KtxTextureFormat.Bc5
+  nameWithType: KtxTextureFormat.Bc5
+- uid: Egami.Formats.Extended.Ktx.KtxTextureFormat.Bc6h
+  name: Bc6h
+  href: api/Egami.Formats.Extended.Ktx.KtxTextureFormat.html#Egami_Formats_Extended_Ktx_KtxTextureFormat_Bc6h
+  commentId: F:Egami.Formats.Extended.Ktx.KtxTextureFormat.Bc6h
+  fullName: Egami.Formats.Extended.Ktx.KtxTextureFormat.Bc6h
+  nameWithType: KtxTextureFormat.Bc6h
+- uid: Egami.Formats.Extended.Ktx.KtxTextureFormat.Bc6hSigned
+  name: Bc6hSigned
+  href: api/Egami.Formats.Extended.Ktx.KtxTextureFormat.html#Egami_Formats_Extended_Ktx_KtxTextureFormat_Bc6hSigned
+  commentId: F:Egami.Formats.Extended.Ktx.KtxTextureFormat.Bc6hSigned
+  fullName: Egami.Formats.Extended.Ktx.KtxTextureFormat.Bc6hSigned
+  nameWithType: KtxTextureFormat.Bc6hSigned
+- uid: Egami.Formats.Extended.Ktx.KtxTextureFormat.Bc7
+  name: Bc7
+  href: api/Egami.Formats.Extended.Ktx.KtxTextureFormat.html#Egami_Formats_Extended_Ktx_KtxTextureFormat_Bc7
+  commentId: F:Egami.Formats.Extended.Ktx.KtxTextureFormat.Bc7
+  fullName: Egami.Formats.Extended.Ktx.KtxTextureFormat.Bc7
+  nameWithType: KtxTextureFormat.Bc7
+- uid: Egami.Formats.Extended.Ktx.KtxTextureFormat.Bgr565
+  name: Bgr565
+  href: api/Egami.Formats.Extended.Ktx.KtxTextureFormat.html#Egami_Formats_Extended_Ktx_KtxTextureFormat_Bgr565
+  commentId: F:Egami.Formats.Extended.Ktx.KtxTextureFormat.Bgr565
+  fullName: Egami.Formats.Extended.Ktx.KtxTextureFormat.Bgr565
+  nameWithType: KtxTextureFormat.Bgr565
+- uid: Egami.Formats.Extended.Ktx.KtxTextureFormat.Bgra4444
+  name: Bgra4444
+  href: api/Egami.Formats.Extended.Ktx.KtxTextureFormat.html#Egami_Formats_Extended_Ktx_KtxTextureFormat_Bgra4444
+  commentId: F:Egami.Formats.Extended.Ktx.KtxTextureFormat.Bgra4444
+  fullName: Egami.Formats.Extended.Ktx.KtxTextureFormat.Bgra4444
+  nameWithType: KtxTextureFormat.Bgra4444
+- uid: Egami.Formats.Extended.Ktx.KtxTextureFormat.Bgra5551
+  name: Bgra5551
+  href: api/Egami.Formats.Extended.Ktx.KtxTextureFormat.html#Egami_Formats_Extended_Ktx_KtxTextureFormat_Bgra5551
+  commentId: F:Egami.Formats.Extended.Ktx.KtxTextureFormat.Bgra5551
+  fullName: Egami.Formats.Extended.Ktx.KtxTextureFormat.Bgra5551
+  nameWithType: KtxTextureFormat.Bgra5551
+- uid: Egami.Formats.Extended.Ktx.KtxTextureFormat.Bgra8
+  name: Bgra8
+  href: api/Egami.Formats.Extended.Ktx.KtxTextureFormat.html#Egami_Formats_Extended_Ktx_KtxTextureFormat_Bgra8
+  commentId: F:Egami.Formats.Extended.Ktx.KtxTextureFormat.Bgra8
+  fullName: Egami.Formats.Extended.Ktx.KtxTextureFormat.Bgra8
+  nameWithType: KtxTextureFormat.Bgra8
+- uid: Egami.Formats.Extended.Ktx.KtxTextureFormat.D16
+  name: D16
+  href: api/Egami.Formats.Extended.Ktx.KtxTextureFormat.html#Egami_Formats_Extended_Ktx_KtxTextureFormat_D16
+  commentId: F:Egami.Formats.Extended.Ktx.KtxTextureFormat.D16
+  fullName: Egami.Formats.Extended.Ktx.KtxTextureFormat.D16
+  nameWithType: KtxTextureFormat.D16
+- uid: Egami.Formats.Extended.Ktx.KtxTextureFormat.D32F
+  name: D32F
+  href: api/Egami.Formats.Extended.Ktx.KtxTextureFormat.html#Egami_Formats_Extended_Ktx_KtxTextureFormat_D32F
+  commentId: F:Egami.Formats.Extended.Ktx.KtxTextureFormat.D32F
+  fullName: Egami.Formats.Extended.Ktx.KtxTextureFormat.D32F
+  nameWithType: KtxTextureFormat.D32F
+- uid: Egami.Formats.Extended.Ktx.KtxTextureFormat.EacR11
+  name: EacR11
+  href: api/Egami.Formats.Extended.Ktx.KtxTextureFormat.html#Egami_Formats_Extended_Ktx_KtxTextureFormat_EacR11
+  commentId: F:Egami.Formats.Extended.Ktx.KtxTextureFormat.EacR11
+  fullName: Egami.Formats.Extended.Ktx.KtxTextureFormat.EacR11
+  nameWithType: KtxTextureFormat.EacR11
+- uid: Egami.Formats.Extended.Ktx.KtxTextureFormat.EacR11Signed
+  name: EacR11Signed
+  href: api/Egami.Formats.Extended.Ktx.KtxTextureFormat.html#Egami_Formats_Extended_Ktx_KtxTextureFormat_EacR11Signed
+  commentId: F:Egami.Formats.Extended.Ktx.KtxTextureFormat.EacR11Signed
+  fullName: Egami.Formats.Extended.Ktx.KtxTextureFormat.EacR11Signed
+  nameWithType: KtxTextureFormat.EacR11Signed
+- uid: Egami.Formats.Extended.Ktx.KtxTextureFormat.EacRg11
+  name: EacRg11
+  href: api/Egami.Formats.Extended.Ktx.KtxTextureFormat.html#Egami_Formats_Extended_Ktx_KtxTextureFormat_EacRg11
+  commentId: F:Egami.Formats.Extended.Ktx.KtxTextureFormat.EacRg11
+  fullName: Egami.Formats.Extended.Ktx.KtxTextureFormat.EacRg11
+  nameWithType: KtxTextureFormat.EacRg11
+- uid: Egami.Formats.Extended.Ktx.KtxTextureFormat.EacRg11Signed
+  name: EacRg11Signed
+  href: api/Egami.Formats.Extended.Ktx.KtxTextureFormat.html#Egami_Formats_Extended_Ktx_KtxTextureFormat_EacRg11Signed
+  commentId: F:Egami.Formats.Extended.Ktx.KtxTextureFormat.EacRg11Signed
+  fullName: Egami.Formats.Extended.Ktx.KtxTextureFormat.EacRg11Signed
+  nameWithType: KtxTextureFormat.EacRg11Signed
+- uid: Egami.Formats.Extended.Ktx.KtxTextureFormat.Etc1
+  name: Etc1
+  href: api/Egami.Formats.Extended.Ktx.KtxTextureFormat.html#Egami_Formats_Extended_Ktx_KtxTextureFormat_Etc1
+  commentId: F:Egami.Formats.Extended.Ktx.KtxTextureFormat.Etc1
+  fullName: Egami.Formats.Extended.Ktx.KtxTextureFormat.Etc1
+  nameWithType: KtxTextureFormat.Etc1
+- uid: Egami.Formats.Extended.Ktx.KtxTextureFormat.Etc1s
+  name: Etc1s
+  href: api/Egami.Formats.Extended.Ktx.KtxTextureFormat.html#Egami_Formats_Extended_Ktx_KtxTextureFormat_Etc1s
+  commentId: F:Egami.Formats.Extended.Ktx.KtxTextureFormat.Etc1s
+  fullName: Egami.Formats.Extended.Ktx.KtxTextureFormat.Etc1s
+  nameWithType: KtxTextureFormat.Etc1s
+- uid: Egami.Formats.Extended.Ktx.KtxTextureFormat.Etc2Rgb
+  name: Etc2Rgb
+  href: api/Egami.Formats.Extended.Ktx.KtxTextureFormat.html#Egami_Formats_Extended_Ktx_KtxTextureFormat_Etc2Rgb
+  commentId: F:Egami.Formats.Extended.Ktx.KtxTextureFormat.Etc2Rgb
+  fullName: Egami.Formats.Extended.Ktx.KtxTextureFormat.Etc2Rgb
+  nameWithType: KtxTextureFormat.Etc2Rgb
+- uid: Egami.Formats.Extended.Ktx.KtxTextureFormat.Etc2RgbA1
+  name: Etc2RgbA1
+  href: api/Egami.Formats.Extended.Ktx.KtxTextureFormat.html#Egami_Formats_Extended_Ktx_KtxTextureFormat_Etc2RgbA1
+  commentId: F:Egami.Formats.Extended.Ktx.KtxTextureFormat.Etc2RgbA1
+  fullName: Egami.Formats.Extended.Ktx.KtxTextureFormat.Etc2RgbA1
+  nameWithType: KtxTextureFormat.Etc2RgbA1
+- uid: Egami.Formats.Extended.Ktx.KtxTextureFormat.Etc2Rgba
+  name: Etc2Rgba
+  href: api/Egami.Formats.Extended.Ktx.KtxTextureFormat.html#Egami_Formats_Extended_Ktx_KtxTextureFormat_Etc2Rgba
+  commentId: F:Egami.Formats.Extended.Ktx.KtxTextureFormat.Etc2Rgba
+  fullName: Egami.Formats.Extended.Ktx.KtxTextureFormat.Etc2Rgba
+  nameWithType: KtxTextureFormat.Etc2Rgba
+- uid: Egami.Formats.Extended.Ktx.KtxTextureFormat.R11G11B10F
+  name: R11G11B10F
+  href: api/Egami.Formats.Extended.Ktx.KtxTextureFormat.html#Egami_Formats_Extended_Ktx_KtxTextureFormat_R11G11B10F
+  commentId: F:Egami.Formats.Extended.Ktx.KtxTextureFormat.R11G11B10F
+  fullName: Egami.Formats.Extended.Ktx.KtxTextureFormat.R11G11B10F
+  nameWithType: KtxTextureFormat.R11G11B10F
+- uid: Egami.Formats.Extended.Ktx.KtxTextureFormat.R16
+  name: R16
+  href: api/Egami.Formats.Extended.Ktx.KtxTextureFormat.html#Egami_Formats_Extended_Ktx_KtxTextureFormat_R16
+  commentId: F:Egami.Formats.Extended.Ktx.KtxTextureFormat.R16
+  fullName: Egami.Formats.Extended.Ktx.KtxTextureFormat.R16
+  nameWithType: KtxTextureFormat.R16
+- uid: Egami.Formats.Extended.Ktx.KtxTextureFormat.R16SInt
+  name: R16SInt
+  href: api/Egami.Formats.Extended.Ktx.KtxTextureFormat.html#Egami_Formats_Extended_Ktx_KtxTextureFormat_R16SInt
+  commentId: F:Egami.Formats.Extended.Ktx.KtxTextureFormat.R16SInt
+  fullName: Egami.Formats.Extended.Ktx.KtxTextureFormat.R16SInt
+  nameWithType: KtxTextureFormat.R16SInt
+- uid: Egami.Formats.Extended.Ktx.KtxTextureFormat.R16UInt
+  name: R16UInt
+  href: api/Egami.Formats.Extended.Ktx.KtxTextureFormat.html#Egami_Formats_Extended_Ktx_KtxTextureFormat_R16UInt
+  commentId: F:Egami.Formats.Extended.Ktx.KtxTextureFormat.R16UInt
+  fullName: Egami.Formats.Extended.Ktx.KtxTextureFormat.R16UInt
+  nameWithType: KtxTextureFormat.R16UInt
+- uid: Egami.Formats.Extended.Ktx.KtxTextureFormat.R32F
+  name: R32F
+  href: api/Egami.Formats.Extended.Ktx.KtxTextureFormat.html#Egami_Formats_Extended_Ktx_KtxTextureFormat_R32F
+  commentId: F:Egami.Formats.Extended.Ktx.KtxTextureFormat.R32F
+  fullName: Egami.Formats.Extended.Ktx.KtxTextureFormat.R32F
+  nameWithType: KtxTextureFormat.R32F
+- uid: Egami.Formats.Extended.Ktx.KtxTextureFormat.R32SInt
+  name: R32SInt
+  href: api/Egami.Formats.Extended.Ktx.KtxTextureFormat.html#Egami_Formats_Extended_Ktx_KtxTextureFormat_R32SInt
+  commentId: F:Egami.Formats.Extended.Ktx.KtxTextureFormat.R32SInt
+  fullName: Egami.Formats.Extended.Ktx.KtxTextureFormat.R32SInt
+  nameWithType: KtxTextureFormat.R32SInt
+- uid: Egami.Formats.Extended.Ktx.KtxTextureFormat.R32UInt
+  name: R32UInt
+  href: api/Egami.Formats.Extended.Ktx.KtxTextureFormat.html#Egami_Formats_Extended_Ktx_KtxTextureFormat_R32UInt
+  commentId: F:Egami.Formats.Extended.Ktx.KtxTextureFormat.R32UInt
+  fullName: Egami.Formats.Extended.Ktx.KtxTextureFormat.R32UInt
+  nameWithType: KtxTextureFormat.R32UInt
+- uid: Egami.Formats.Extended.Ktx.KtxTextureFormat.R8
+  name: R8
+  href: api/Egami.Formats.Extended.Ktx.KtxTextureFormat.html#Egami_Formats_Extended_Ktx_KtxTextureFormat_R8
+  commentId: F:Egami.Formats.Extended.Ktx.KtxTextureFormat.R8
+  fullName: Egami.Formats.Extended.Ktx.KtxTextureFormat.R8
+  nameWithType: KtxTextureFormat.R8
+- uid: Egami.Formats.Extended.Ktx.KtxTextureFormat.R8SInt
+  name: R8SInt
+  href: api/Egami.Formats.Extended.Ktx.KtxTextureFormat.html#Egami_Formats_Extended_Ktx_KtxTextureFormat_R8SInt
+  commentId: F:Egami.Formats.Extended.Ktx.KtxTextureFormat.R8SInt
+  fullName: Egami.Formats.Extended.Ktx.KtxTextureFormat.R8SInt
+  nameWithType: KtxTextureFormat.R8SInt
+- uid: Egami.Formats.Extended.Ktx.KtxTextureFormat.R8UInt
+  name: R8UInt
+  href: api/Egami.Formats.Extended.Ktx.KtxTextureFormat.html#Egami_Formats_Extended_Ktx_KtxTextureFormat_R8UInt
+  commentId: F:Egami.Formats.Extended.Ktx.KtxTextureFormat.R8UInt
+  fullName: Egami.Formats.Extended.Ktx.KtxTextureFormat.R8UInt
+  nameWithType: KtxTextureFormat.R8UInt
+- uid: Egami.Formats.Extended.Ktx.KtxTextureFormat.Rg16
+  name: Rg16
+  href: api/Egami.Formats.Extended.Ktx.KtxTextureFormat.html#Egami_Formats_Extended_Ktx_KtxTextureFormat_Rg16
+  commentId: F:Egami.Formats.Extended.Ktx.KtxTextureFormat.Rg16
+  fullName: Egami.Formats.Extended.Ktx.KtxTextureFormat.Rg16
+  nameWithType: KtxTextureFormat.Rg16
+- uid: Egami.Formats.Extended.Ktx.KtxTextureFormat.Rg16SInt
+  name: Rg16SInt
+  href: api/Egami.Formats.Extended.Ktx.KtxTextureFormat.html#Egami_Formats_Extended_Ktx_KtxTextureFormat_Rg16SInt
+  commentId: F:Egami.Formats.Extended.Ktx.KtxTextureFormat.Rg16SInt
+  fullName: Egami.Formats.Extended.Ktx.KtxTextureFormat.Rg16SInt
+  nameWithType: KtxTextureFormat.Rg16SInt
+- uid: Egami.Formats.Extended.Ktx.KtxTextureFormat.Rg16UInt
+  name: Rg16UInt
+  href: api/Egami.Formats.Extended.Ktx.KtxTextureFormat.html#Egami_Formats_Extended_Ktx_KtxTextureFormat_Rg16UInt
+  commentId: F:Egami.Formats.Extended.Ktx.KtxTextureFormat.Rg16UInt
+  fullName: Egami.Formats.Extended.Ktx.KtxTextureFormat.Rg16UInt
+  nameWithType: KtxTextureFormat.Rg16UInt
+- uid: Egami.Formats.Extended.Ktx.KtxTextureFormat.Rg32SInt
+  name: Rg32SInt
+  href: api/Egami.Formats.Extended.Ktx.KtxTextureFormat.html#Egami_Formats_Extended_Ktx_KtxTextureFormat_Rg32SInt
+  commentId: F:Egami.Formats.Extended.Ktx.KtxTextureFormat.Rg32SInt
+  fullName: Egami.Formats.Extended.Ktx.KtxTextureFormat.Rg32SInt
+  nameWithType: KtxTextureFormat.Rg32SInt
+- uid: Egami.Formats.Extended.Ktx.KtxTextureFormat.Rg32UInt
+  name: Rg32UInt
+  href: api/Egami.Formats.Extended.Ktx.KtxTextureFormat.html#Egami_Formats_Extended_Ktx_KtxTextureFormat_Rg32UInt
+  commentId: F:Egami.Formats.Extended.Ktx.KtxTextureFormat.Rg32UInt
+  fullName: Egami.Formats.Extended.Ktx.KtxTextureFormat.Rg32UInt
+  nameWithType: KtxTextureFormat.Rg32UInt
+- uid: Egami.Formats.Extended.Ktx.KtxTextureFormat.Rg8
+  name: Rg8
+  href: api/Egami.Formats.Extended.Ktx.KtxTextureFormat.html#Egami_Formats_Extended_Ktx_KtxTextureFormat_Rg8
+  commentId: F:Egami.Formats.Extended.Ktx.KtxTextureFormat.Rg8
+  fullName: Egami.Formats.Extended.Ktx.KtxTextureFormat.Rg8
+  nameWithType: KtxTextureFormat.Rg8
+- uid: Egami.Formats.Extended.Ktx.KtxTextureFormat.Rg8SInt
+  name: Rg8SInt
+  href: api/Egami.Formats.Extended.Ktx.KtxTextureFormat.html#Egami_Formats_Extended_Ktx_KtxTextureFormat_Rg8SInt
+  commentId: F:Egami.Formats.Extended.Ktx.KtxTextureFormat.Rg8SInt
+  fullName: Egami.Formats.Extended.Ktx.KtxTextureFormat.Rg8SInt
+  nameWithType: KtxTextureFormat.Rg8SInt
+- uid: Egami.Formats.Extended.Ktx.KtxTextureFormat.Rg8UInt
+  name: Rg8UInt
+  href: api/Egami.Formats.Extended.Ktx.KtxTextureFormat.html#Egami_Formats_Extended_Ktx_KtxTextureFormat_Rg8UInt
+  commentId: F:Egami.Formats.Extended.Ktx.KtxTextureFormat.Rg8UInt
+  fullName: Egami.Formats.Extended.Ktx.KtxTextureFormat.Rg8UInt
+  nameWithType: KtxTextureFormat.Rg8UInt
+- uid: Egami.Formats.Extended.Ktx.KtxTextureFormat.Rgb10A2
+  name: Rgb10A2
+  href: api/Egami.Formats.Extended.Ktx.KtxTextureFormat.html#Egami_Formats_Extended_Ktx_KtxTextureFormat_Rgb10A2
+  commentId: F:Egami.Formats.Extended.Ktx.KtxTextureFormat.Rgb10A2
+  fullName: Egami.Formats.Extended.Ktx.KtxTextureFormat.Rgb10A2
+  nameWithType: KtxTextureFormat.Rgb10A2
+- uid: Egami.Formats.Extended.Ktx.KtxTextureFormat.Rgb16
+  name: Rgb16
+  href: api/Egami.Formats.Extended.Ktx.KtxTextureFormat.html#Egami_Formats_Extended_Ktx_KtxTextureFormat_Rgb16
+  commentId: F:Egami.Formats.Extended.Ktx.KtxTextureFormat.Rgb16
+  fullName: Egami.Formats.Extended.Ktx.KtxTextureFormat.Rgb16
+  nameWithType: KtxTextureFormat.Rgb16
+- uid: Egami.Formats.Extended.Ktx.KtxTextureFormat.Rgb32SInt
+  name: Rgb32SInt
+  href: api/Egami.Formats.Extended.Ktx.KtxTextureFormat.html#Egami_Formats_Extended_Ktx_KtxTextureFormat_Rgb32SInt
+  commentId: F:Egami.Formats.Extended.Ktx.KtxTextureFormat.Rgb32SInt
+  fullName: Egami.Formats.Extended.Ktx.KtxTextureFormat.Rgb32SInt
+  nameWithType: KtxTextureFormat.Rgb32SInt
+- uid: Egami.Formats.Extended.Ktx.KtxTextureFormat.Rgb32UInt
+  name: Rgb32UInt
+  href: api/Egami.Formats.Extended.Ktx.KtxTextureFormat.html#Egami_Formats_Extended_Ktx_KtxTextureFormat_Rgb32UInt
+  commentId: F:Egami.Formats.Extended.Ktx.KtxTextureFormat.Rgb32UInt
+  fullName: Egami.Formats.Extended.Ktx.KtxTextureFormat.Rgb32UInt
+  nameWithType: KtxTextureFormat.Rgb32UInt
+- uid: Egami.Formats.Extended.Ktx.KtxTextureFormat.Rgb8
+  name: Rgb8
+  href: api/Egami.Formats.Extended.Ktx.KtxTextureFormat.html#Egami_Formats_Extended_Ktx_KtxTextureFormat_Rgb8
+  commentId: F:Egami.Formats.Extended.Ktx.KtxTextureFormat.Rgb8
+  fullName: Egami.Formats.Extended.Ktx.KtxTextureFormat.Rgb8
+  nameWithType: KtxTextureFormat.Rgb8
+- uid: Egami.Formats.Extended.Ktx.KtxTextureFormat.Rgb9E5
+  name: Rgb9E5
+  href: api/Egami.Formats.Extended.Ktx.KtxTextureFormat.html#Egami_Formats_Extended_Ktx_KtxTextureFormat_Rgb9E5
+  commentId: F:Egami.Formats.Extended.Ktx.KtxTextureFormat.Rgb9E5
+  fullName: Egami.Formats.Extended.Ktx.KtxTextureFormat.Rgb9E5
+  nameWithType: KtxTextureFormat.Rgb9E5
+- uid: Egami.Formats.Extended.Ktx.KtxTextureFormat.RgbF32
+  name: RgbF32
+  href: api/Egami.Formats.Extended.Ktx.KtxTextureFormat.html#Egami_Formats_Extended_Ktx_KtxTextureFormat_RgbF32
+  commentId: F:Egami.Formats.Extended.Ktx.KtxTextureFormat.RgbF32
+  fullName: Egami.Formats.Extended.Ktx.KtxTextureFormat.RgbF32
+  nameWithType: KtxTextureFormat.RgbF32
+- uid: Egami.Formats.Extended.Ktx.KtxTextureFormat.Rgba16
+  name: Rgba16
+  href: api/Egami.Formats.Extended.Ktx.KtxTextureFormat.html#Egami_Formats_Extended_Ktx_KtxTextureFormat_Rgba16
+  commentId: F:Egami.Formats.Extended.Ktx.KtxTextureFormat.Rgba16
+  fullName: Egami.Formats.Extended.Ktx.KtxTextureFormat.Rgba16
+  nameWithType: KtxTextureFormat.Rgba16
+- uid: Egami.Formats.Extended.Ktx.KtxTextureFormat.Rgba16SInt
+  name: Rgba16SInt
+  href: api/Egami.Formats.Extended.Ktx.KtxTextureFormat.html#Egami_Formats_Extended_Ktx_KtxTextureFormat_Rgba16SInt
+  commentId: F:Egami.Formats.Extended.Ktx.KtxTextureFormat.Rgba16SInt
+  fullName: Egami.Formats.Extended.Ktx.KtxTextureFormat.Rgba16SInt
+  nameWithType: KtxTextureFormat.Rgba16SInt
+- uid: Egami.Formats.Extended.Ktx.KtxTextureFormat.Rgba16UInt
+  name: Rgba16UInt
+  href: api/Egami.Formats.Extended.Ktx.KtxTextureFormat.html#Egami_Formats_Extended_Ktx_KtxTextureFormat_Rgba16UInt
+  commentId: F:Egami.Formats.Extended.Ktx.KtxTextureFormat.Rgba16UInt
+  fullName: Egami.Formats.Extended.Ktx.KtxTextureFormat.Rgba16UInt
+  nameWithType: KtxTextureFormat.Rgba16UInt
+- uid: Egami.Formats.Extended.Ktx.KtxTextureFormat.Rgba32SInt
+  name: Rgba32SInt
+  href: api/Egami.Formats.Extended.Ktx.KtxTextureFormat.html#Egami_Formats_Extended_Ktx_KtxTextureFormat_Rgba32SInt
+  commentId: F:Egami.Formats.Extended.Ktx.KtxTextureFormat.Rgba32SInt
+  fullName: Egami.Formats.Extended.Ktx.KtxTextureFormat.Rgba32SInt
+  nameWithType: KtxTextureFormat.Rgba32SInt
+- uid: Egami.Formats.Extended.Ktx.KtxTextureFormat.Rgba32UInt
+  name: Rgba32UInt
+  href: api/Egami.Formats.Extended.Ktx.KtxTextureFormat.html#Egami_Formats_Extended_Ktx_KtxTextureFormat_Rgba32UInt
+  commentId: F:Egami.Formats.Extended.Ktx.KtxTextureFormat.Rgba32UInt
+  fullName: Egami.Formats.Extended.Ktx.KtxTextureFormat.Rgba32UInt
+  nameWithType: KtxTextureFormat.Rgba32UInt
+- uid: Egami.Formats.Extended.Ktx.KtxTextureFormat.Rgba8
+  name: Rgba8
+  href: api/Egami.Formats.Extended.Ktx.KtxTextureFormat.html#Egami_Formats_Extended_Ktx_KtxTextureFormat_Rgba8
+  commentId: F:Egami.Formats.Extended.Ktx.KtxTextureFormat.Rgba8
+  fullName: Egami.Formats.Extended.Ktx.KtxTextureFormat.Rgba8
+  nameWithType: KtxTextureFormat.Rgba8
+- uid: Egami.Formats.Extended.Ktx.KtxTextureFormat.Rgba8SInt
+  name: Rgba8SInt
+  href: api/Egami.Formats.Extended.Ktx.KtxTextureFormat.html#Egami_Formats_Extended_Ktx_KtxTextureFormat_Rgba8SInt
+  commentId: F:Egami.Formats.Extended.Ktx.KtxTextureFormat.Rgba8SInt
+  fullName: Egami.Formats.Extended.Ktx.KtxTextureFormat.Rgba8SInt
+  nameWithType: KtxTextureFormat.Rgba8SInt
+- uid: Egami.Formats.Extended.Ktx.KtxTextureFormat.Rgba8UInt
+  name: Rgba8UInt
+  href: api/Egami.Formats.Extended.Ktx.KtxTextureFormat.html#Egami_Formats_Extended_Ktx_KtxTextureFormat_Rgba8UInt
+  commentId: F:Egami.Formats.Extended.Ktx.KtxTextureFormat.Rgba8UInt
+  fullName: Egami.Formats.Extended.Ktx.KtxTextureFormat.Rgba8UInt
+  nameWithType: KtxTextureFormat.Rgba8UInt
+- uid: Egami.Formats.Extended.Ktx.KtxTextureFormat.RgbaF16
+  name: RgbaF16
+  href: api/Egami.Formats.Extended.Ktx.KtxTextureFormat.html#Egami_Formats_Extended_Ktx_KtxTextureFormat_RgbaF16
+  commentId: F:Egami.Formats.Extended.Ktx.KtxTextureFormat.RgbaF16
+  fullName: Egami.Formats.Extended.Ktx.KtxTextureFormat.RgbaF16
+  nameWithType: KtxTextureFormat.RgbaF16
+- uid: Egami.Formats.Extended.Ktx.KtxTextureFormat.RgbaF32
+  name: RgbaF32
+  href: api/Egami.Formats.Extended.Ktx.KtxTextureFormat.html#Egami_Formats_Extended_Ktx_KtxTextureFormat_RgbaF32
+  commentId: F:Egami.Formats.Extended.Ktx.KtxTextureFormat.RgbaF32
+  fullName: Egami.Formats.Extended.Ktx.KtxTextureFormat.RgbaF32
+  nameWithType: KtxTextureFormat.RgbaF32
+- uid: Egami.Formats.Extended.Ktx.KtxTextureFormat.Uastc
+  name: Uastc
+  href: api/Egami.Formats.Extended.Ktx.KtxTextureFormat.html#Egami_Formats_Extended_Ktx_KtxTextureFormat_Uastc
+  commentId: F:Egami.Formats.Extended.Ktx.KtxTextureFormat.Uastc
+  fullName: Egami.Formats.Extended.Ktx.KtxTextureFormat.Uastc
+  nameWithType: KtxTextureFormat.Uastc
 - uid: Egami.Formats.Extended.Pcx
   name: Egami.Formats.Extended.Pcx
   href: api/Egami.Formats.Extended.Pcx.html
@@ -44861,6 +45616,338 @@ references:
   isSpec: "True"
   fullName: Egami.Formats.Extended.SunRaster.SunRasterWriterOptions.Rle
   nameWithType: SunRasterWriterOptions.Rle
+- uid: Egami.Formats.Extended.Textures
+  name: Egami.Formats.Extended.Textures
+  href: api/Egami.Formats.Extended.Textures.html
+  commentId: N:Egami.Formats.Extended.Textures
+  fullName: Egami.Formats.Extended.Textures
+  nameWithType: Egami.Formats.Extended.Textures
+- uid: Egami.Formats.Extended.Textures.Texture
+  name: Texture
+  href: api/Egami.Formats.Extended.Textures.Texture.html
+  commentId: T:Egami.Formats.Extended.Textures.Texture
+  fullName: Egami.Formats.Extended.Textures.Texture
+  nameWithType: Texture
+- uid: Egami.Formats.Extended.Textures.Texture.Depth
+  name: Depth
+  href: api/Egami.Formats.Extended.Textures.Texture.html#Egami_Formats_Extended_Textures_Texture_Depth
+  commentId: P:Egami.Formats.Extended.Textures.Texture.Depth
+  fullName: Egami.Formats.Extended.Textures.Texture.Depth
+  nameWithType: Texture.Depth
+- uid: Egami.Formats.Extended.Textures.Texture.Depth*
+  name: Depth
+  href: api/Egami.Formats.Extended.Textures.Texture.html#Egami_Formats_Extended_Textures_Texture_Depth_
+  commentId: Overload:Egami.Formats.Extended.Textures.Texture.Depth
+  isSpec: "True"
+  fullName: Egami.Formats.Extended.Textures.Texture.Depth
+  nameWithType: Texture.Depth
+- uid: Egami.Formats.Extended.Textures.Texture.Dispose
+  name: Dispose()
+  href: api/Egami.Formats.Extended.Textures.Texture.html#Egami_Formats_Extended_Textures_Texture_Dispose
+  commentId: M:Egami.Formats.Extended.Textures.Texture.Dispose
+  fullName: Egami.Formats.Extended.Textures.Texture.Dispose()
+  nameWithType: Texture.Dispose()
+- uid: Egami.Formats.Extended.Textures.Texture.Dispose*
+  name: Dispose
+  href: api/Egami.Formats.Extended.Textures.Texture.html#Egami_Formats_Extended_Textures_Texture_Dispose_
+  commentId: Overload:Egami.Formats.Extended.Textures.Texture.Dispose
+  isSpec: "True"
+  fullName: Egami.Formats.Extended.Textures.Texture.Dispose
+  nameWithType: Texture.Dispose
+- uid: Egami.Formats.Extended.Textures.Texture.Faces
+  name: Faces
+  href: api/Egami.Formats.Extended.Textures.Texture.html#Egami_Formats_Extended_Textures_Texture_Faces
+  commentId: P:Egami.Formats.Extended.Textures.Texture.Faces
+  fullName: Egami.Formats.Extended.Textures.Texture.Faces
+  nameWithType: Texture.Faces
+- uid: Egami.Formats.Extended.Textures.Texture.Faces*
+  name: Faces
+  href: api/Egami.Formats.Extended.Textures.Texture.html#Egami_Formats_Extended_Textures_Texture_Faces_
+  commentId: Overload:Egami.Formats.Extended.Textures.Texture.Faces
+  isSpec: "True"
+  fullName: Egami.Formats.Extended.Textures.Texture.Faces
+  nameWithType: Texture.Faces
+- uid: Egami.Formats.Extended.Textures.Texture.FromSlices(System.Collections.Generic.IReadOnlyList{Egami.Raster})
+  name: FromSlices(IReadOnlyList<Raster>)
+  href: api/Egami.Formats.Extended.Textures.Texture.html#Egami_Formats_Extended_Textures_Texture_FromSlices_System_Collections_Generic_IReadOnlyList_Egami_Raster__
+  commentId: M:Egami.Formats.Extended.Textures.Texture.FromSlices(System.Collections.Generic.IReadOnlyList{Egami.Raster})
+  name.vb: FromSlices(IReadOnlyList(Of Raster))
+  fullName: Egami.Formats.Extended.Textures.Texture.FromSlices(System.Collections.Generic.IReadOnlyList<Egami.Raster>)
+  fullName.vb: Egami.Formats.Extended.Textures.Texture.FromSlices(System.Collections.Generic.IReadOnlyList(Of Egami.Raster))
+  nameWithType: Texture.FromSlices(IReadOnlyList<Raster>)
+  nameWithType.vb: Texture.FromSlices(IReadOnlyList(Of Raster))
+- uid: Egami.Formats.Extended.Textures.Texture.FromSlices*
+  name: FromSlices
+  href: api/Egami.Formats.Extended.Textures.Texture.html#Egami_Formats_Extended_Textures_Texture_FromSlices_
+  commentId: Overload:Egami.Formats.Extended.Textures.Texture.FromSlices
+  isSpec: "True"
+  fullName: Egami.Formats.Extended.Textures.Texture.FromSlices
+  nameWithType: Texture.FromSlices
+- uid: Egami.Formats.Extended.Textures.Texture.FromSurfaces(System.Collections.Generic.IReadOnlyList{Egami.Raster},System.Boolean)
+  name: FromSurfaces(IReadOnlyList<Raster>, bool)
+  href: api/Egami.Formats.Extended.Textures.Texture.html#Egami_Formats_Extended_Textures_Texture_FromSurfaces_System_Collections_Generic_IReadOnlyList_Egami_Raster__System_Boolean_
+  commentId: M:Egami.Formats.Extended.Textures.Texture.FromSurfaces(System.Collections.Generic.IReadOnlyList{Egami.Raster},System.Boolean)
+  name.vb: FromSurfaces(IReadOnlyList(Of Raster), Boolean)
+  fullName: Egami.Formats.Extended.Textures.Texture.FromSurfaces(System.Collections.Generic.IReadOnlyList<Egami.Raster>, bool)
+  fullName.vb: Egami.Formats.Extended.Textures.Texture.FromSurfaces(System.Collections.Generic.IReadOnlyList(Of Egami.Raster), Boolean)
+  nameWithType: Texture.FromSurfaces(IReadOnlyList<Raster>, bool)
+  nameWithType.vb: Texture.FromSurfaces(IReadOnlyList(Of Raster), Boolean)
+- uid: Egami.Formats.Extended.Textures.Texture.FromSurfaces*
+  name: FromSurfaces
+  href: api/Egami.Formats.Extended.Textures.Texture.html#Egami_Formats_Extended_Textures_Texture_FromSurfaces_
+  commentId: Overload:Egami.Formats.Extended.Textures.Texture.FromSurfaces
+  isSpec: "True"
+  fullName: Egami.Formats.Extended.Textures.Texture.FromSurfaces
+  nameWithType: Texture.FromSurfaces
+- uid: Egami.Formats.Extended.Textures.Texture.GenerateMips(System.Int32,Egami.Operations.ColorSpace)
+  name: GenerateMips(int, ColorSpace)
+  href: api/Egami.Formats.Extended.Textures.Texture.html#Egami_Formats_Extended_Textures_Texture_GenerateMips_System_Int32_Egami_Operations_ColorSpace_
+  commentId: M:Egami.Formats.Extended.Textures.Texture.GenerateMips(System.Int32,Egami.Operations.ColorSpace)
+  name.vb: GenerateMips(Integer, ColorSpace)
+  fullName: Egami.Formats.Extended.Textures.Texture.GenerateMips(int, Egami.Operations.ColorSpace)
+  fullName.vb: Egami.Formats.Extended.Textures.Texture.GenerateMips(Integer, Egami.Operations.ColorSpace)
+  nameWithType: Texture.GenerateMips(int, ColorSpace)
+  nameWithType.vb: Texture.GenerateMips(Integer, ColorSpace)
+- uid: Egami.Formats.Extended.Textures.Texture.GenerateMips*
+  name: GenerateMips
+  href: api/Egami.Formats.Extended.Textures.Texture.html#Egami_Formats_Extended_Textures_Texture_GenerateMips_
+  commentId: Overload:Egami.Formats.Extended.Textures.Texture.GenerateMips
+  isSpec: "True"
+  fullName: Egami.Formats.Extended.Textures.Texture.GenerateMips
+  nameWithType: Texture.GenerateMips
+- uid: Egami.Formats.Extended.Textures.Texture.GetImage(System.Int32,System.Int32,System.Int32,System.Int32)
+  name: GetImage(int, int, int, int)
+  href: api/Egami.Formats.Extended.Textures.Texture.html#Egami_Formats_Extended_Textures_Texture_GetImage_System_Int32_System_Int32_System_Int32_System_Int32_
+  commentId: M:Egami.Formats.Extended.Textures.Texture.GetImage(System.Int32,System.Int32,System.Int32,System.Int32)
+  name.vb: GetImage(Integer, Integer, Integer, Integer)
+  fullName: Egami.Formats.Extended.Textures.Texture.GetImage(int, int, int, int)
+  fullName.vb: Egami.Formats.Extended.Textures.Texture.GetImage(Integer, Integer, Integer, Integer)
+  nameWithType: Texture.GetImage(int, int, int, int)
+  nameWithType.vb: Texture.GetImage(Integer, Integer, Integer, Integer)
+- uid: Egami.Formats.Extended.Textures.Texture.GetImage*
+  name: GetImage
+  href: api/Egami.Formats.Extended.Textures.Texture.html#Egami_Formats_Extended_Textures_Texture_GetImage_
+  commentId: Overload:Egami.Formats.Extended.Textures.Texture.GetImage
+  isSpec: "True"
+  fullName: Egami.Formats.Extended.Textures.Texture.GetImage
+  nameWithType: Texture.GetImage
+- uid: Egami.Formats.Extended.Textures.Texture.Height
+  name: Height
+  href: api/Egami.Formats.Extended.Textures.Texture.html#Egami_Formats_Extended_Textures_Texture_Height
+  commentId: P:Egami.Formats.Extended.Textures.Texture.Height
+  fullName: Egami.Formats.Extended.Textures.Texture.Height
+  nameWithType: Texture.Height
+- uid: Egami.Formats.Extended.Textures.Texture.Height*
+  name: Height
+  href: api/Egami.Formats.Extended.Textures.Texture.html#Egami_Formats_Extended_Textures_Texture_Height_
+  commentId: Overload:Egami.Formats.Extended.Textures.Texture.Height
+  isSpec: "True"
+  fullName: Egami.Formats.Extended.Textures.Texture.Height
+  nameWithType: Texture.Height
+- uid: Egami.Formats.Extended.Textures.Texture.IsCube
+  name: IsCube
+  href: api/Egami.Formats.Extended.Textures.Texture.html#Egami_Formats_Extended_Textures_Texture_IsCube
+  commentId: P:Egami.Formats.Extended.Textures.Texture.IsCube
+  fullName: Egami.Formats.Extended.Textures.Texture.IsCube
+  nameWithType: Texture.IsCube
+- uid: Egami.Formats.Extended.Textures.Texture.IsCube*
+  name: IsCube
+  href: api/Egami.Formats.Extended.Textures.Texture.html#Egami_Formats_Extended_Textures_Texture_IsCube_
+  commentId: Overload:Egami.Formats.Extended.Textures.Texture.IsCube
+  isSpec: "True"
+  fullName: Egami.Formats.Extended.Textures.Texture.IsCube
+  nameWithType: Texture.IsCube
+- uid: Egami.Formats.Extended.Textures.Texture.IsVolume
+  name: IsVolume
+  href: api/Egami.Formats.Extended.Textures.Texture.html#Egami_Formats_Extended_Textures_Texture_IsVolume
+  commentId: P:Egami.Formats.Extended.Textures.Texture.IsVolume
+  fullName: Egami.Formats.Extended.Textures.Texture.IsVolume
+  nameWithType: Texture.IsVolume
+- uid: Egami.Formats.Extended.Textures.Texture.IsVolume*
+  name: IsVolume
+  href: api/Egami.Formats.Extended.Textures.Texture.html#Egami_Formats_Extended_Textures_Texture_IsVolume_
+  commentId: Overload:Egami.Formats.Extended.Textures.Texture.IsVolume
+  isSpec: "True"
+  fullName: Egami.Formats.Extended.Textures.Texture.IsVolume
+  nameWithType: Texture.IsVolume
+- uid: Egami.Formats.Extended.Textures.Texture.Layers
+  name: Layers
+  href: api/Egami.Formats.Extended.Textures.Texture.html#Egami_Formats_Extended_Textures_Texture_Layers
+  commentId: P:Egami.Formats.Extended.Textures.Texture.Layers
+  fullName: Egami.Formats.Extended.Textures.Texture.Layers
+  nameWithType: Texture.Layers
+- uid: Egami.Formats.Extended.Textures.Texture.Layers*
+  name: Layers
+  href: api/Egami.Formats.Extended.Textures.Texture.html#Egami_Formats_Extended_Textures_Texture_Layers_
+  commentId: Overload:Egami.Formats.Extended.Textures.Texture.Layers
+  isSpec: "True"
+  fullName: Egami.Formats.Extended.Textures.Texture.Layers
+  nameWithType: Texture.Layers
+- uid: Egami.Formats.Extended.Textures.Texture.Load(System.IO.Stream,Egami.EgamiContext)
+  name: Load(Stream, EgamiContext?)
+  href: api/Egami.Formats.Extended.Textures.Texture.html#Egami_Formats_Extended_Textures_Texture_Load_System_IO_Stream_Egami_EgamiContext_
+  commentId: M:Egami.Formats.Extended.Textures.Texture.Load(System.IO.Stream,Egami.EgamiContext)
+  name.vb: Load(Stream, EgamiContext)
+  fullName: Egami.Formats.Extended.Textures.Texture.Load(System.IO.Stream, Egami.EgamiContext?)
+  fullName.vb: Egami.Formats.Extended.Textures.Texture.Load(System.IO.Stream, Egami.EgamiContext)
+  nameWithType: Texture.Load(Stream, EgamiContext?)
+  nameWithType.vb: Texture.Load(Stream, EgamiContext)
+- uid: Egami.Formats.Extended.Textures.Texture.Load(System.ReadOnlyMemory{System.Byte},Egami.EgamiContext)
+  name: Load(ReadOnlyMemory<byte>, EgamiContext?)
+  href: api/Egami.Formats.Extended.Textures.Texture.html#Egami_Formats_Extended_Textures_Texture_Load_System_ReadOnlyMemory_System_Byte__Egami_EgamiContext_
+  commentId: M:Egami.Formats.Extended.Textures.Texture.Load(System.ReadOnlyMemory{System.Byte},Egami.EgamiContext)
+  name.vb: Load(ReadOnlyMemory(Of Byte), EgamiContext)
+  fullName: Egami.Formats.Extended.Textures.Texture.Load(System.ReadOnlyMemory<byte>, Egami.EgamiContext?)
+  fullName.vb: Egami.Formats.Extended.Textures.Texture.Load(System.ReadOnlyMemory(Of Byte), Egami.EgamiContext)
+  nameWithType: Texture.Load(ReadOnlyMemory<byte>, EgamiContext?)
+  nameWithType.vb: Texture.Load(ReadOnlyMemory(Of Byte), EgamiContext)
+- uid: Egami.Formats.Extended.Textures.Texture.Load(System.String,Egami.EgamiContext)
+  name: Load(string, EgamiContext?)
+  href: api/Egami.Formats.Extended.Textures.Texture.html#Egami_Formats_Extended_Textures_Texture_Load_System_String_Egami_EgamiContext_
+  commentId: M:Egami.Formats.Extended.Textures.Texture.Load(System.String,Egami.EgamiContext)
+  name.vb: Load(String, EgamiContext)
+  fullName: Egami.Formats.Extended.Textures.Texture.Load(string, Egami.EgamiContext?)
+  fullName.vb: Egami.Formats.Extended.Textures.Texture.Load(String, Egami.EgamiContext)
+  nameWithType: Texture.Load(string, EgamiContext?)
+  nameWithType.vb: Texture.Load(String, EgamiContext)
+- uid: Egami.Formats.Extended.Textures.Texture.Load*
+  name: Load
+  href: api/Egami.Formats.Extended.Textures.Texture.html#Egami_Formats_Extended_Textures_Texture_Load_
+  commentId: Overload:Egami.Formats.Extended.Textures.Texture.Load
+  isSpec: "True"
+  fullName: Egami.Formats.Extended.Textures.Texture.Load
+  nameWithType: Texture.Load
+- uid: Egami.Formats.Extended.Textures.Texture.MipDepth(System.Int32)
+  name: MipDepth(int)
+  href: api/Egami.Formats.Extended.Textures.Texture.html#Egami_Formats_Extended_Textures_Texture_MipDepth_System_Int32_
+  commentId: M:Egami.Formats.Extended.Textures.Texture.MipDepth(System.Int32)
+  name.vb: MipDepth(Integer)
+  fullName: Egami.Formats.Extended.Textures.Texture.MipDepth(int)
+  fullName.vb: Egami.Formats.Extended.Textures.Texture.MipDepth(Integer)
+  nameWithType: Texture.MipDepth(int)
+  nameWithType.vb: Texture.MipDepth(Integer)
+- uid: Egami.Formats.Extended.Textures.Texture.MipDepth*
+  name: MipDepth
+  href: api/Egami.Formats.Extended.Textures.Texture.html#Egami_Formats_Extended_Textures_Texture_MipDepth_
+  commentId: Overload:Egami.Formats.Extended.Textures.Texture.MipDepth
+  isSpec: "True"
+  fullName: Egami.Formats.Extended.Textures.Texture.MipDepth
+  nameWithType: Texture.MipDepth
+- uid: Egami.Formats.Extended.Textures.Texture.MipHeight(System.Int32)
+  name: MipHeight(int)
+  href: api/Egami.Formats.Extended.Textures.Texture.html#Egami_Formats_Extended_Textures_Texture_MipHeight_System_Int32_
+  commentId: M:Egami.Formats.Extended.Textures.Texture.MipHeight(System.Int32)
+  name.vb: MipHeight(Integer)
+  fullName: Egami.Formats.Extended.Textures.Texture.MipHeight(int)
+  fullName.vb: Egami.Formats.Extended.Textures.Texture.MipHeight(Integer)
+  nameWithType: Texture.MipHeight(int)
+  nameWithType.vb: Texture.MipHeight(Integer)
+- uid: Egami.Formats.Extended.Textures.Texture.MipHeight*
+  name: MipHeight
+  href: api/Egami.Formats.Extended.Textures.Texture.html#Egami_Formats_Extended_Textures_Texture_MipHeight_
+  commentId: Overload:Egami.Formats.Extended.Textures.Texture.MipHeight
+  isSpec: "True"
+  fullName: Egami.Formats.Extended.Textures.Texture.MipHeight
+  nameWithType: Texture.MipHeight
+- uid: Egami.Formats.Extended.Textures.Texture.MipLevels
+  name: MipLevels
+  href: api/Egami.Formats.Extended.Textures.Texture.html#Egami_Formats_Extended_Textures_Texture_MipLevels
+  commentId: P:Egami.Formats.Extended.Textures.Texture.MipLevels
+  fullName: Egami.Formats.Extended.Textures.Texture.MipLevels
+  nameWithType: Texture.MipLevels
+- uid: Egami.Formats.Extended.Textures.Texture.MipLevels*
+  name: MipLevels
+  href: api/Egami.Formats.Extended.Textures.Texture.html#Egami_Formats_Extended_Textures_Texture_MipLevels_
+  commentId: Overload:Egami.Formats.Extended.Textures.Texture.MipLevels
+  isSpec: "True"
+  fullName: Egami.Formats.Extended.Textures.Texture.MipLevels
+  nameWithType: Texture.MipLevels
+- uid: Egami.Formats.Extended.Textures.Texture.MipWidth(System.Int32)
+  name: MipWidth(int)
+  href: api/Egami.Formats.Extended.Textures.Texture.html#Egami_Formats_Extended_Textures_Texture_MipWidth_System_Int32_
+  commentId: M:Egami.Formats.Extended.Textures.Texture.MipWidth(System.Int32)
+  name.vb: MipWidth(Integer)
+  fullName: Egami.Formats.Extended.Textures.Texture.MipWidth(int)
+  fullName.vb: Egami.Formats.Extended.Textures.Texture.MipWidth(Integer)
+  nameWithType: Texture.MipWidth(int)
+  nameWithType.vb: Texture.MipWidth(Integer)
+- uid: Egami.Formats.Extended.Textures.Texture.MipWidth*
+  name: MipWidth
+  href: api/Egami.Formats.Extended.Textures.Texture.html#Egami_Formats_Extended_Textures_Texture_MipWidth_
+  commentId: Overload:Egami.Formats.Extended.Textures.Texture.MipWidth
+  isSpec: "True"
+  fullName: Egami.Formats.Extended.Textures.Texture.MipWidth
+  nameWithType: Texture.MipWidth
+- uid: Egami.Formats.Extended.Textures.Texture.Save(System.IO.Stream,Egami.Formats.FormatInfo,Egami.Formats.WriterOptions)
+  name: Save(Stream, FormatInfo, WriterOptions?)
+  href: api/Egami.Formats.Extended.Textures.Texture.html#Egami_Formats_Extended_Textures_Texture_Save_System_IO_Stream_Egami_Formats_FormatInfo_Egami_Formats_WriterOptions_
+  commentId: M:Egami.Formats.Extended.Textures.Texture.Save(System.IO.Stream,Egami.Formats.FormatInfo,Egami.Formats.WriterOptions)
+  name.vb: Save(Stream, FormatInfo, WriterOptions)
+  fullName: Egami.Formats.Extended.Textures.Texture.Save(System.IO.Stream, Egami.Formats.FormatInfo, Egami.Formats.WriterOptions?)
+  fullName.vb: Egami.Formats.Extended.Textures.Texture.Save(System.IO.Stream, Egami.Formats.FormatInfo, Egami.Formats.WriterOptions)
+  nameWithType: Texture.Save(Stream, FormatInfo, WriterOptions?)
+  nameWithType.vb: Texture.Save(Stream, FormatInfo, WriterOptions)
+- uid: Egami.Formats.Extended.Textures.Texture.Save(System.String,Egami.Formats.WriterOptions)
+  name: Save(string, WriterOptions?)
+  href: api/Egami.Formats.Extended.Textures.Texture.html#Egami_Formats_Extended_Textures_Texture_Save_System_String_Egami_Formats_WriterOptions_
+  commentId: M:Egami.Formats.Extended.Textures.Texture.Save(System.String,Egami.Formats.WriterOptions)
+  name.vb: Save(String, WriterOptions)
+  fullName: Egami.Formats.Extended.Textures.Texture.Save(string, Egami.Formats.WriterOptions?)
+  fullName.vb: Egami.Formats.Extended.Textures.Texture.Save(String, Egami.Formats.WriterOptions)
+  nameWithType: Texture.Save(string, WriterOptions?)
+  nameWithType.vb: Texture.Save(String, WriterOptions)
+- uid: Egami.Formats.Extended.Textures.Texture.Save*
+  name: Save
+  href: api/Egami.Formats.Extended.Textures.Texture.html#Egami_Formats_Extended_Textures_Texture_Save_
+  commentId: Overload:Egami.Formats.Extended.Textures.Texture.Save
+  isSpec: "True"
+  fullName: Egami.Formats.Extended.Textures.Texture.Save
+  nameWithType: Texture.Save
+- uid: Egami.Formats.Extended.Textures.Texture.SetImage(Egami.Raster,System.Int32,System.Int32,System.Int32,System.Int32)
+  name: SetImage(Raster, int, int, int, int)
+  href: api/Egami.Formats.Extended.Textures.Texture.html#Egami_Formats_Extended_Textures_Texture_SetImage_Egami_Raster_System_Int32_System_Int32_System_Int32_System_Int32_
+  commentId: M:Egami.Formats.Extended.Textures.Texture.SetImage(Egami.Raster,System.Int32,System.Int32,System.Int32,System.Int32)
+  name.vb: SetImage(Raster, Integer, Integer, Integer, Integer)
+  fullName: Egami.Formats.Extended.Textures.Texture.SetImage(Egami.Raster, int, int, int, int)
+  fullName.vb: Egami.Formats.Extended.Textures.Texture.SetImage(Egami.Raster, Integer, Integer, Integer, Integer)
+  nameWithType: Texture.SetImage(Raster, int, int, int, int)
+  nameWithType.vb: Texture.SetImage(Raster, Integer, Integer, Integer, Integer)
+- uid: Egami.Formats.Extended.Textures.Texture.SetImage*
+  name: SetImage
+  href: api/Egami.Formats.Extended.Textures.Texture.html#Egami_Formats_Extended_Textures_Texture_SetImage_
+  commentId: Overload:Egami.Formats.Extended.Textures.Texture.SetImage
+  isSpec: "True"
+  fullName: Egami.Formats.Extended.Textures.Texture.SetImage
+  nameWithType: Texture.SetImage
+- uid: Egami.Formats.Extended.Textures.Texture.TrimMips(System.Int32)
+  name: TrimMips(int)
+  href: api/Egami.Formats.Extended.Textures.Texture.html#Egami_Formats_Extended_Textures_Texture_TrimMips_System_Int32_
+  commentId: M:Egami.Formats.Extended.Textures.Texture.TrimMips(System.Int32)
+  name.vb: TrimMips(Integer)
+  fullName: Egami.Formats.Extended.Textures.Texture.TrimMips(int)
+  fullName.vb: Egami.Formats.Extended.Textures.Texture.TrimMips(Integer)
+  nameWithType: Texture.TrimMips(int)
+  nameWithType.vb: Texture.TrimMips(Integer)
+- uid: Egami.Formats.Extended.Textures.Texture.TrimMips*
+  name: TrimMips
+  href: api/Egami.Formats.Extended.Textures.Texture.html#Egami_Formats_Extended_Textures_Texture_TrimMips_
+  commentId: Overload:Egami.Formats.Extended.Textures.Texture.TrimMips
+  isSpec: "True"
+  fullName: Egami.Formats.Extended.Textures.Texture.TrimMips
+  nameWithType: Texture.TrimMips
+- uid: Egami.Formats.Extended.Textures.Texture.Width
+  name: Width
+  href: api/Egami.Formats.Extended.Textures.Texture.html#Egami_Formats_Extended_Textures_Texture_Width
+  commentId: P:Egami.Formats.Extended.Textures.Texture.Width
+  fullName: Egami.Formats.Extended.Textures.Texture.Width
+  nameWithType: Texture.Width
+- uid: Egami.Formats.Extended.Textures.Texture.Width*
+  name: Width
+  href: api/Egami.Formats.Extended.Textures.Texture.html#Egami_Formats_Extended_Textures_Texture_Width_
+  commentId: Overload:Egami.Formats.Extended.Textures.Texture.Width
+  isSpec: "True"
+  fullName: Egami.Formats.Extended.Textures.Texture.Width
+  nameWithType: Texture.Width
 - uid: Egami.Formats.Extended.Wbmp
   name: Egami.Formats.Extended.Wbmp
   href: api/Egami.Formats.Extended.Wbmp.html

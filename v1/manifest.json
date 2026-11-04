@@ -6561,7 +6561,21 @@
       "Uid": null,
       "IsMRef": true,
       "Title": "Egami.Formats.Extended.Ktx.Ktx2Format",
-      "Summary": "<p sourcefile=\"api/Egami.Formats.Extended.Ktx.Ktx2Format.yml\" sourcestartlinenumber=\"1\">KTX 2.0, the Khronos texture container for Vulkan, glTF and the web: a header naming the Vulkan format, a level index, a\ndata format descriptor with the colour space, key/value data, then the mip levels smallest first, each optionally\nsupercompressed with Zstandard or zlib. Load gives mip 0 of the first surface, turned upright and swizzled as the file\nsays; LoadAll and <xref href=\"Egami.Formats.Extended.Ktx.KtxReaderOptions\" data-throw-if-not-resolved=\"false\"></xref> reach the others. Uncompressed, BC1 to BC7, ETC2, EAC, 2D ASTC (LDR and\nHDR) and Basis Universal (ETC1S, UASTC LDR and HDR 4 × 4) textures read; 3D ASTC, PVRTC and the newer Basis Universal\nfamilies (UASTC HDR 6 × 6, XUASTC, XUBC7) are refused. Read only. Registered with <xref href=\"Egami.Formats.Extended.ExtendedContextExtensions.WithKtx2(Egami.EgamiContext)\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n"
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Extended.Ktx.Ktx2Format.yml\" sourcestartlinenumber=\"1\">KTX 2.0, the Khronos texture container for Vulkan, glTF and the web: a header naming the Vulkan format, a level index, a\ndata format descriptor with the colour space, key/value data, then the mip levels smallest first, each optionally\nsupercompressed with Zstandard or zlib. Load gives mip 0 of the first surface, turned upright and swizzled as the file\nsays; LoadAll and <xref href=\"Egami.Formats.Extended.Ktx.KtxReaderOptions\" data-throw-if-not-resolved=\"false\"></xref> reach the others. Uncompressed, BC1 to BC7, ETC2, EAC, 2D ASTC (LDR and\nHDR) and Basis Universal (ETC1S, UASTC LDR and HDR 4 × 4) textures read; 3D ASTC, PVRTC and the newer Basis Universal\nfamilies (UASTC HDR 6 × 6, XUASTC, XUBC7) are refused. Save and SaveAll write every one of those but ASTC HDR and UASTC HDR,\nwith mips, arrays, cube maps and supercompression (<xref href=\"Egami.Formats.Extended.Ktx.Ktx2WriterOptions\" data-throw-if-not-resolved=\"false\"></xref>). Registered with\n<xref href=\"Egami.Formats.Extended.ExtendedContextExtensions.WithKtx2(Egami.EgamiContext)\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Extended.Ktx.Ktx2WriterOptions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Extended.Ktx.Ktx2WriterOptions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Extended.Ktx.Ktx2WriterOptions",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Extended.Ktx.Ktx2WriterOptions.yml\" sourcestartlinenumber=\"1\">Options for writing KTX 2.</p>\n"
     },
     {
       "type": "ManagedReference",
@@ -6646,6 +6660,20 @@
       "IsMRef": true,
       "Title": "Egami.Formats.Extended.Ktx.KtxSupercompression",
       "Summary": "<p sourcefile=\"api/Egami.Formats.Extended.Ktx.KtxSupercompression.yml\" sourcestartlinenumber=\"1\">How a KTX 2 file's mip levels are compressed on top of their texture format.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Extended.Ktx.KtxTextureFormat.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Extended.Ktx.KtxTextureFormat.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Extended.Ktx.KtxTextureFormat",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Extended.Ktx.KtxTextureFormat.yml\" sourcestartlinenumber=\"1\">The formats the KTX 2 writer writes, each a Vulkan <code>VkFormat</code> (or a Basis Universal format, VkFormat 0);\n<xref href=\"Egami.Formats.Extended.Ktx.Ktx2WriterOptions.Srgb\" data-throw-if-not-resolved=\"false\"></xref> picks the _SRGB form where there is one.</p>\n"
     },
     {
       "type": "ManagedReference",
@@ -6995,6 +7023,34 @@
       "Uid": null,
       "IsMRef": true,
       "Title": "Egami.Formats.Extended.SunRaster",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Extended.Textures.Texture.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Extended.Textures.Texture.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Extended.Textures.Texture",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Extended.Textures.Texture.yml\" sourcestartlinenumber=\"1\">A whole GPU texture: every array layer, cube face and depth slice at every mip level, loaded from DDS, KTX or KTX 2, edited\nimage by image, and saved to DDS or KTX 2 with exactly the mips it holds. Each image is a <xref href=\"Egami.Raster\" data-throw-if-not-resolved=\"false\"></xref> in the pixel\ntype the reader gives the format; the texture owns them and disposes them with itself.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Extended.Textures.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Extended.Textures.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Extended.Textures",
       "Summary": null
     },
     {
