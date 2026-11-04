@@ -18,6 +18,12 @@ Canon sRAW and Panasonic levels as Adobe's (RAW follow-up). No API changes.
   plus 15. The DMC-L10 (whose values Adobe stores with that black subtracted) and the Leica C (Typ 112) sample developed with
   blacks 15 and 4 levels too light.
 
+Faster Fujifilm compressed RAF decoding (RAW follow-up). No API changes; every file decodes bit for bit as before.
+
+- The compressed RAF decoder predicts and codes without branches, reads its bits eight bytes at a time and copies whole
+  rows. A 16-bit GFX100S file decodes in 18 % less time with half the allocation, and converts to DNG on one thread in 7.3 s
+  (7.8 s before) where Adobe DNG Converter pinned to one core takes 8.2 s.
+
 Smaller DNGs from lossy NEFs (RAW follow-up). No API changes.
 
 - `RawFormat.ConvertToDng` stores a lossy Nikon NEF as Adobe DNG Converter does: the codes before the camera's curve, with

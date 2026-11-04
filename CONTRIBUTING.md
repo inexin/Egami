@@ -16,7 +16,9 @@ Thanks for helping build Egami, a fully managed, MIT-licensed imaging library fo
 
 ## Building and testing
 
-You need the .NET 10 SDK and Python 3 for the scripts in `tools/`.
+You need the .NET 10 SDK, version 10.0.403 or later (`global.json` sets the minimum), and Python 3 for the scripts in
+`tools/`. Older SDKs bring a .NET runtime and Native AOT compiler with known security advisories, and restore fails on
+them (NU1903) because warnings are errors.
 
 ```sh
 dotnet build Egami.slnx
