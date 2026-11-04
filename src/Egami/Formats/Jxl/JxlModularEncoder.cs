@@ -210,7 +210,14 @@ internal sealed class JxlModularEncoder
             (int st, int ch) = units[u];
             parts[u] = Tokenize(_streams[st].Channels[ch], ch, st, property, value, left, right, predictor, context, usesWp, multiplier);
         });
-        List<List<JxlToken>> tokens = [.. _streams.Select(_ => new List<JxlToken>())];
+        // Each stream's list is made at its final size, as one copy of its channels' tokens.
+        int[] counts = new int[_streams.Length];
+        for (int u = 0; u < units.Count; u++)
+        {
+            counts[units[u].Stream] += parts[u].Count;
+        }
+
+        List<List<JxlToken>> tokens = [.. counts.Select(n => new List<JxlToken>(n))];
         int[] widths = new int[_streams.Length];
         for (int u = 0; u < units.Count; u++)
         {
@@ -642,7 +649,14 @@ internal sealed class JxlModularEncoder
         _wpRows = null;
         JxlStageTimes.Lap(JxlStage.Tokens);
 
-        List<List<JxlToken>> tokens = [.. _streams.Select(_ => new List<JxlToken>())];
+        // Each stream's list is made at its final size, as one copy of its channels' tokens.
+        int[] counts = new int[_streams.Length];
+        for (int u = 0; u < units.Count; u++)
+        {
+            counts[units[u].Stream] += parts[u].Count;
+        }
+
+        List<List<JxlToken>> tokens = [.. counts.Select(n => new List<JxlToken>(n))];
         int[] widths = new int[_streams.Length];
         for (int u = 0; u < units.Count; u++)
         {

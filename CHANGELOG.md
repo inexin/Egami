@@ -5,6 +5,16 @@ changes that break code come only in a new major version.
 
 ## Egami (unreleased)
 
+Smaller DNGs from lossy NEFs (RAW follow-up). No API changes.
+
+- `RawFormat.ConvertToDng` stores a lossy Nikon NEF as Adobe DNG Converter does: the codes before the camera's curve, with
+  the curve as the DNG's LinearizationTable (DNG 1.7.1, tag 50712), when the curve rises over the codes the file uses. A
+  reader that applies the table gets the same values back, and the develop is the same. The Nikon D90 sample's DNG goes from
+  20.9 % larger than Adobe's to 0.7 % smaller, and the corpus's DNGs from 0.7 % to 0.9 % smaller than Adobe's.
+- Fix: Panasonic and Leica files whose mapped defective pixels (stored as 0) lie two pixels apart no longer decode
+  differently from run to run. Each is filled from the stored samples around it; filling in place on several threads let
+  one fill read another's result.
+
 Faster lossless JPEG XL encoding (roadmap 2.4.11). No API changes; every file is byte for byte the same as before.
 
 - Effort 1 splits planes with vector code and writes its bits two codes at a time without branches.
@@ -13,6 +23,11 @@ Faster lossless JPEG XL encoding (roadmap 2.4.11). No API changes; every file is
 - Tree learning packs each sample's key into one value, counts the properties of large nodes in parallel parts, and learns
   large subtrees at the same time. The RCT search reuses the costs of channels a transform only moves.
 - The token writer divides by multiplying, and gradient-only trees (effort 2) code whole rows directly.
+- Tree learning sizes its working arrays for each property's values and the tokens in use, reuses them from node to node, and
+  learns only as many subtrees at the same time as fit in four times the memory one full set took. Learning subtrees at the
+  same time had made effort 10 on 24 threads allocate up to 1.8 times as much as before 2.4.11; the kodim01 photo now
+  allocates 1.0 GB instead of 2.1 GB (1.16 GB before 2.4.11) at the same speed, and on one thread efforts 4 to 10 allocate 5
+  to 25 % less than before 2.4.11.
 - The 0.39-megapixel kodim05 on one thread: effort 1 from 6.8 to 5.3 ms, effort 2 from 61 to 46 ms, effort 3 from 117 to
   76 ms and effort 7 from 945 to 616 ms; on 24 threads effort 7 from 483 to 343 ms, and the 3.4-megapixel flower from 3,350
   to 1,831 ms. Efforts 2 and 3 allocate a third less, effort 7 a fifth less.

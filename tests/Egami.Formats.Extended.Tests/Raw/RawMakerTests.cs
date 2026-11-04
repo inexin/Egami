@@ -181,6 +181,33 @@ public class RawMakerTests
     }
 
     [Fact]
+    public void PanasonicZerosFillFromStoredValuesOnly()
+    {
+        // Gate finding: zeros (mapped defective pixels) filled in place on several threads could read a neighbour another
+        // thread had just filled, so files with neighbouring zeros decoded differently from run to run. Each fill now takes
+        // the mean of the stored non-zero samples of its colour two pixels away, whatever the thread count.
+        const int w = 20, h = 8;
+        static int Value(int x, int y) => 100 + (10 * x) + (50 * y);
+        (int X, int Y)[] zeros = [(2, 2), (4, 2), (2, 4)];
+        byte[] data = new byte[2 * w * h];
+        for (int y = 0; y < h; y++)
+        {
+            for (int x = 0; x < w; x++)
+            {
+                BinaryPrimitives.WriteUInt16LittleEndian(data.AsSpan(2 * ((y * w) + x)), (ushort)(zeros.Contains((x, y)) ? 0 : Value(x, y) << 4));
+            }
+        }
+
+        byte[] file = OldPanasonicFile(w, h, data);
+        using Raster<Gray16> many = Raster.Load<Gray16>(file, Context, Mosaic);
+        using Raster<Gray16> one = Raster.Load<Gray16>(file, Context with { MaxParallelism = 1 }, Mosaic);
+        Assert.Equal((Value(0, 2) + Value(2, 0)) / 2, many.Row(2)[2].L);
+        Assert.Equal((Value(6, 2) + Value(4, 0) + Value(4, 4)) / 3, many.Row(2)[4].L);
+        Assert.Equal((Value(4, 4) + Value(2, 6) + Value(0, 4)) / 3, many.Row(4)[2].L);
+        Assert.Equal(Enumerable.Range(0, h).SelectMany(y => many.Row(y).ToArray()), Enumerable.Range(0, h).SelectMany(y => one.Row(y).ToArray()));
+    }
+
+    [Fact]
     public void OldPanasonicFileWithTwelveBitPackingDecodes()
     {
         // Gate finding: a .RAW without tag 0x0118 (DMC-FZ8) holding 12-bit values with a control byte after every ten.
@@ -261,6 +288,48 @@ public class RawMakerTests
         BinaryPrimitives.WriteUInt16LittleEndian(meta.AsSpan(10), 5000);
         Exception? error = Record.Exception(() => Raster.Load<Gray16>(NikonFile(meta, [0, 0, 0, 0, 0, 0, 0, 0, 0]), Context, Mosaic).Dispose());
         Assert.True(error is null or CorruptDataException, error?.ToString());
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void LossyNefConvertsToDngCodesWithItsCurveAsLinearization(bool monotonic)
+    {
+        // A lossy NEF (0x44 0x10) with a 64-point curve, every difference 0 so each pixel is its initial predictor's curve
+        // value. Its DNG stores the codes and the curve as LinearizationTable, which gives the same values back (egami-compare
+        // checks the develops on real files); a curve that falls is kept applied, as a table of it would not be monotonic.
+        byte[] meta = new byte[600];
+        meta[0] = 0x44;
+        meta[1] = 0x10;
+        ushort[] seeds = [10, 20, 30, 40];
+        for (int i = 0; i < 4; i++)
+        {
+            BinaryPrimitives.WriteUInt16LittleEndian(meta.AsSpan(2 + (2 * i)), seeds[i]);
+        }
+
+        BinaryPrimitives.WriteUInt16LittleEndian(meta.AsSpan(10), 64);
+        for (int i = 0; i < 64; i++)
+        {
+            int value = monotonic || i != 25 ? i * i : 0;
+            BinaryPrimitives.WriteUInt16LittleEndian(meta.AsSpan(12 + (2 * i)), (ushort)value);
+        }
+
+        BitWriter bits = new();
+        for (int i = 0; i < 8; i++)
+        {
+            bits.Write(0b11110, 5);
+        }
+
+        byte[] file = NikonFile(meta, bits.ToArray());
+        using MemoryStream dng = new();
+        RawFormat.ConvertToDng(new MemoryStream(file), dng, null, Context);
+
+        using Raster<Gray16> source = Raster.Load<Gray16>(file, Context, Mosaic);
+        using Raster<Gray16> stored = Raster.Load<Gray16>(dng.ToArray(), Context, Mosaic);
+        Assert.Equal([100, 400, 100, 400, 900, 1600, 900, 1600], Values(source));
+        Assert.Equal(monotonic ? [10, 20, 10, 20, 30, 40, 30, 40] : Values(source), Values(stored));
+
+        static int[] Values(Raster<Gray16> r) => [.. Enumerable.Range(0, r.Height).SelectMany(y => r.Row(y).ToArray().Select(p => (int)p.L))];
     }
 
     [Fact]

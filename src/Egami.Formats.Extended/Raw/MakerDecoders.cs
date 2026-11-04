@@ -143,10 +143,14 @@ internal static class MakerDecoders
     /// </summary>
     private static void FillZeros(RawPixels pixels, ParallelOptions parallel)
     {
+        // Each fill comes from the stored values alone, all found before any is written: filling in place on several threads
+        // let a fill read a neighbour another thread had just filled, so the result changed from run to run.
         int width = pixels.Width, height = pixels.Height;
+        List<(int Y, int X, ushort Value)> fills = [];
         RawParallel.For(0, height, parallel, y =>
         {
-            Span<ushort> row = pixels.U16Row(y);
+            ReadOnlySpan<ushort> row = pixels.U16Row(y);
+            List<(int, int, ushort)>? found = null;
             for (int x = 0; x < width; x++)
             {
                 if (row[x] != 0)
@@ -155,11 +159,10 @@ internal static class MakerDecoders
                 }
 
                 int sum = 0, n = 0;
-                ReadOnlySpan<ushort> all = pixels.U16;
                 for (int k = 0; k < 4; k++)
                 {
                     int xx = x + (k == 0 ? -2 : k == 1 ? 2 : 0), yy = y + (k == 2 ? -2 : k == 3 ? 2 : 0);
-                    if (xx >= 0 && xx < width && yy >= 0 && yy < height && all[(yy * width) + xx] is ushort v and > 0)
+                    if (xx >= 0 && xx < width && yy >= 0 && yy < height && pixels.U16Row(yy)[xx] is ushort v and > 0)
                     {
                         sum += v;
                         n++;
@@ -168,10 +171,23 @@ internal static class MakerDecoders
 
                 if (n > 0)
                 {
-                    row[x] = (ushort)(sum / n);
+                    (found ??= []).Add((y, x, (ushort)(sum / n)));
+                }
+            }
+
+            if (found is not null)
+            {
+                lock (fills)
+                {
+                    fills.AddRange(found);
                 }
             }
         });
+
+        foreach ((int y, int x, ushort value) in fills)
+        {
+            pixels.U16Row(y)[x] = value;
+        }
     }
 
     private static void Unpacked16(ReadOnlySpan<byte> data, RawPixels pixels, bool bigEndian)
@@ -409,21 +425,17 @@ internal static class MakerDecoders
         ([0, 1, 4, 2, 2, 3, 1, 2, 0, 0, 0, 0, 0, 0, 0, 0], [7, 6, 8, 5, 9, 4, 10, 3, 11, 12, 2, 0, 1, 13, 14]),
     ];
 
-    /// <summary>Nikon NEF Huffman with its curve and split row (NEF spec, sections 3 to 6).</summary>
-    private static void Nikon(ReadOnlySpan<byte> data, RawPixels pixels, NikonMeta meta, int bits)
+    /// <summary>
+    /// Returns a Nikon file's curve from its metadata block, indexed by the decoded code (NEF spec, section 4): the stored
+    /// points (linearly interpolated between for the stepped kind of lossy data), the identity past them and for lossless data.
+    /// </summary>
+    internal static ushort[] NikonCurve(NikonMeta meta, int bits)
     {
-        if (data.Length >= 4 && data[0] == 0xFF && data[1] == 0x10 && data[2] == 0xFF && data[3] == 0x50)
-        {
-            throw new NotSupportedException("Egami does not read Nikon's High Efficiency (JPEG XS) raw data.");
-        }
-
         byte[] m = meta.Bytes;
         int U(int at) => at + 2 <= m.Length ? (meta.BigEndian ? BinaryPrimitives.ReadUInt16BigEndian(m.AsSpan(at)) : BinaryPrimitives.ReadUInt16LittleEndian(m.AsSpan(at))) : 0;
         int ver0 = m.Length > 0 ? m[0] : 0, ver1 = m.Length > 1 ? m[1] : 0;
         int at = 2 + (ver0 == 0x49 || ver1 == 0x58 ? 2110 : 0);
 
-        // The initial vertical predictors in LibRaw's order (open point of the spec): (even, even), (even, odd), (odd, even), (odd, odd).
-        int[,] vpred = { { U(at), U(at + 2) }, { U(at + 4), U(at + 6) } };
         int csize = U(at + 8);
         int max = (1 << bits) & 0x7FFF;
         ushort[] curve = new ushort[0x10000];
@@ -469,6 +481,25 @@ internal static class MakerDecoders
             }
         }
 
+        return curve;
+    }
+
+    /// <summary>Nikon NEF Huffman with its curve and split row (NEF spec, sections 3 to 6).</summary>
+    private static void Nikon(ReadOnlySpan<byte> data, RawPixels pixels, NikonMeta meta, int bits)
+    {
+        if (data.Length >= 4 && data[0] == 0xFF && data[1] == 0x10 && data[2] == 0xFF && data[3] == 0x50)
+        {
+            throw new NotSupportedException("Egami does not read Nikon's High Efficiency (JPEG XS) raw data.");
+        }
+
+        byte[] m = meta.Bytes;
+        int U(int at) => at + 2 <= m.Length ? (meta.BigEndian ? BinaryPrimitives.ReadUInt16BigEndian(m.AsSpan(at)) : BinaryPrimitives.ReadUInt16LittleEndian(m.AsSpan(at))) : 0;
+        int ver0 = m.Length > 0 ? m[0] : 0, ver1 = m.Length > 1 ? m[1] : 0;
+        int at = 2 + (ver0 == 0x49 || ver1 == 0x58 ? 2110 : 0);
+
+        // The initial vertical predictors in LibRaw's order (open point of the spec): (even, even), (even, odd), (odd, even), (odd, odd).
+        int[,] vpred = { { U(at), U(at + 2) }, { U(at + 4), U(at + 6) } };
+        ushort[] curve = NikonCurve(meta, bits);
         int split = ver0 == 0x44 && (ver1 is 0x20 or 0x40) ? U(562) : 0;
         int tree = (ver0 == 0x46 ? 2 : 0) + (bits == 14 ? 3 : 0);
         PeekTable codes = PeekTable.Canonical(NikonTables[tree].Counts, NikonTables[tree].Symbols);
