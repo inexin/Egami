@@ -1049,12 +1049,14 @@ internal sealed class JxlModularEncoder
         costs[0] = Combine(baseCosts);
         Parallel.For(1, tries, _parallel, k =>
         {
-            (int[] a, int[] b, int[] c) = ApplyRct(original, order[k]);
+            // A channel the RCT only moves keeps its cost.
+            (int[]? a, int[]? b, int[]? c) = ApplyRct(original, order[k], changedOnly: true);
+            (int i0, int i1, int i2) = RctInputs(order[k]);
             (long, float, long)[] mine = [.. baseCosts];
             JxlChannel shape = original[0];
-            mine[begin] = ChannelCost(Wrap(shape, a));
-            mine[begin + 1] = ChannelCost(Wrap(shape, b));
-            mine[begin + 2] = ChannelCost(Wrap(shape, c));
+            mine[begin] = a is null ? baseCosts[begin + i0] : ChannelCost(Wrap(shape, a));
+            mine[begin + 1] = b is null ? baseCosts[begin + i1] : ChannelCost(Wrap(shape, b));
+            mine[begin + 2] = c is null ? baseCosts[begin + i2] : ChannelCost(Wrap(shape, c));
             costs[k] = Combine(mine);
         });
 
@@ -1092,20 +1094,58 @@ internal sealed class JxlModularEncoder
         gi.Transforms.Add(new JxlRct(begin, type));
     }
 
-    /// <summary>The forward RCT (enc_rct.cc): a channel order, then one of six lifting steps or YCoCg.</summary>
-    private static (int[] A, int[] B, int[] C) ApplyRct(JxlChannel[] input, int type)
+    /// <summary>Gets the input channel each output of an RCT starts from: its channel order.</summary>
+    private static (int First, int Second, int Third) RctInputs(int type)
     {
         int permutation = type / 7;
+        return (permutation % 3, (permutation + 1 + (permutation / 3)) % 3, (permutation + 2 - (permutation / 3)) % 3);
+    }
+
+    /// <summary>The forward RCT (enc_rct.cc): a channel order, then one of six lifting steps or YCoCg.</summary>
+    private static (int[] A, int[] B, int[] C) ApplyRct(JxlChannel[] input, int type) => ApplyRct(input, type, false)!;
+
+    /// <summary>
+    /// The forward RCT; with <paramref name="changedOnly"/>, an output that is only its input moved comes back
+    /// <see langword="null"/>.
+    /// </summary>
+    private static (int[]? A, int[]? B, int[]? C) ApplyRct(JxlChannel[] input, int type, bool changedOnly)
+    {
         int transform = type % 7;
-        int[] p0 = input[permutation % 3].Data;
-        int[] p1 = input[(permutation + 1 + (permutation / 3)) % 3].Data;
-        int[] p2 = input[(permutation + 2 - (permutation / 3)) % 3].Data;
+        (int i0, int i1, int i2) = RctInputs(type);
+        int[] p0 = input[i0].Data;
+        int[] p1 = input[i1].Data;
+        int[] p2 = input[i2].Data;
         int n = p0.Length;
+        int second = transform >> 1;
+        bool third = (transform & 1) != 0;
+        if (changedOnly && transform != 6)
+        {
+            int[]? s1 = null;
+            int[]? s2 = null;
+            if (second != 0)
+            {
+                s1 = new int[n];
+                for (int i = 0; i < n; i++)
+                {
+                    s1[i] = unchecked(second == 1 ? p1[i] - p0[i] : p1[i] - ((p0[i] + p2[i]) >> 1));
+                }
+            }
+
+            if (third)
+            {
+                s2 = new int[n];
+                for (int i = 0; i < n; i++)
+                {
+                    s2[i] = unchecked(p2[i] - p0[i]);
+                }
+            }
+
+            return (null, s1, s2);
+        }
+
         int[] o0 = new int[n];
         int[] o1 = new int[n];
         int[] o2 = new int[n];
-        int second = transform >> 1;
-        bool third = (transform & 1) != 0;
         for (int i = 0; i < n; i++)
         {
             unchecked
