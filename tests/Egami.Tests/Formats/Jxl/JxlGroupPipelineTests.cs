@@ -5,9 +5,10 @@ using Egami.Tests.Formats.Tiff;
 namespace Egami.Tests.Formats.Jxl;
 
 /// <summary>
-/// The group pipeline (roadmap 2.4.11, D1 and D2) gives the same pixels as the whole-frame path, bit for bit: on the lossy
-/// files of the corpus (alpha, progressive, 16-bit, float, gray, HDR, wide gamut, every EPF setting) and on odd sizes whose
-/// groups and seams fall at the frame's edges, in the natural type, as floats and on one thread. A damaged file fails on both.
+/// The group pipeline straight into pixels (roadmap 2.4.11, D1, D2 and D7) gives the same pixels as the frame rendered in planes
+/// and converted after, bit for bit: on the lossy files of the corpus (alpha, progressive, 16-bit, float, gray, HDR, wide gamut,
+/// every EPF setting) and on odd sizes whose groups and seams fall at the frame's edges, in the natural type, as floats and on
+/// one thread. A damaged file fails on both.
 /// </summary>
 public class JxlGroupPipelineTests
 {
@@ -17,7 +18,7 @@ public class JxlGroupPipelineTests
 
     [Theory]
     [MemberData(nameof(Files))]
-    public void PixelsAreTheSameAsTheWholeFramePath(string file)
+    public void PixelsAreTheSameAsThePlanePath(string file)
     {
         byte[] data = File.ReadAllBytes(Path.Combine(Corpus, file));
         Same(data, file);
@@ -29,7 +30,7 @@ public class JxlGroupPipelineTests
     [InlineData(257, 300)]
     [InlineData(513, 40)]
     [InlineData(8, 600)]
-    public void OddSizesAreTheSameAsTheWholeFramePath(int width, int height)
+    public void OddSizesAreTheSameAsThePlanePath(int width, int height)
     {
         using Raster<Rgba8> raster = Raster.Create<Rgba8>(width, height);
         uint seed = 7;

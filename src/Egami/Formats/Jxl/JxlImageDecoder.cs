@@ -173,7 +173,7 @@ internal static class JxlImageDecoder
             }
 
             JxlFrameHeader f = sequence[^1].Header;
-            JxlFrameDecoder decoder = new(data, file.Header, f, sequence[^1].Toc, sequence[^1].Offset, input.Limits) { Parallel = parallel };
+            JxlFrameDecoder decoder = new(data, file.Header, f, sequence[^1].Toc, sequence[^1].Offset, input.Limits) { Parallel = parallel, Unfiltered = true };
             JxlFrameChannels frame = decoder.Decode(lfFrames[f.LfLevel]);
             return [.. frame.ColorPlanes!.Select((plane, c) => Crop(plane, frame.ColorStrides[c], frame.Width, frame.Height))];
         }
@@ -413,6 +413,7 @@ internal static class JxlImageDecoder
 
         // The LF image alone (1:8): for a single VarDCT frame with nothing drawn on it and no extra channels.
         List<JxlFrameHeader> regular = [.. sequence.Select(s => s.Header).Where(f => f.Type != JxlFrameType.Lf)];
+        int lfFrameCount = sequence.Count - regular.Count;
         lfOnly = lfOnly && !layers && regular.Count == 1 && regular[0] is { Modular: false, YCbCr: false, HaveCrop: false, Upsampling: 1 } only
             && (only.Flags & 0x13) == 0 && h.ExtraChannels.Count == 0;
         for (int i = 0; i < sequence.Count; i++)
@@ -454,7 +455,7 @@ internal static class JxlImageDecoder
                 return;
             }
 
-            if (pixels && !layers && f.IsKeyFrame && JxlGroupPipeline.For(decoder, f, h, file, sequence.Count) is JxlGroupPipeline pipeline)
+            if (pixels && !layers && f.IsKeyFrame && JxlGroupPipeline.For(decoder, f, h, file, sequence.Count - lfFrameCount, lfFrames[f.LfLevel]) is JxlGroupPipeline pipeline)
             {
                 emit(new JxlDecoded(file, f.Width, f.Height, pipeline), f);
                 return;
@@ -733,18 +734,10 @@ internal static class JxlImageDecoder
         }
 
         JxlStageTimes.Lap(JxlStage.Planes);
-        if (f.Gaborish)
+        if (!frame.Filtered)
         {
-            JxlFilters.Gaborish(color, width, height, width, f.LoopFilter.GaborishWeights, parallel);
-        }
-
-        JxlStageTimes.Lap(JxlStage.Gaborish);
-        if (f.EpfIterations > 0)
-        {
-            float[]? sigma = frame.VarDct?.EpfSigma;
-            int blocksX = frame.VarDct?.BlocksX ?? 0;
-            float modularSigma = f.LoopFilter.SigmaForModular;
-            JxlFilters.Epf(color, width, height, width, f.LoopFilter, sigma is null ? (_, _) => modularSigma : (bx, by) => sigma[(by * blocksX) + bx], parallel);
+            // The restoration filters, in tiles; a VarDCT frame without subsampled chroma had them group by group.
+            color = JxlGroupPipeline.Filter(color, width, height, f, frame.VarDct?.EpfSigma, frame.VarDct?.BlocksX ?? 0, parallel);
         }
 
         JxlStageTimes.Lap(JxlStage.Epf);

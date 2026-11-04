@@ -6,7 +6,7 @@ namespace Egami.Tests.Formats.Jxl;
 
 /// <summary>
 /// The JPEG XL decoder holds its Modular channels, and for frames of several passes its coefficients, in managed arrays, and a
-/// single-pass lossy frame keeps the strips beside its group seams, so what it allocates grows with the image;
+/// lossy frame keeps the strips beside its group seams, so what it allocates grows with the image;
 /// these budgets cap the bytes per added pixel (roadmap 2.4.11) so that the growth cannot creep back up unnoticed. One thread,
 /// so every allocation is on the calling thread where the meter counts it.
 /// </summary>
@@ -20,6 +20,7 @@ public class JxlDecodeAllocationTests
     {
         { "d1e3", 3 }, // 2.0 when set, in the group pipeline (37.7 before it)
         { "d1e7", 3 }, // 2.4 (41.9)
+        { "d1e7p", 18 }, // 15.2: the passes' coefficient planes (12), then the group pipeline
         { "ll-e1", 69 }, // 57.5
         { "ll-e3", 31 }, // 26.1
         { "ll-e7", 32 }, // 27
@@ -32,7 +33,7 @@ public class JxlDecodeAllocationTests
         AllocationMeter.SkipUnlessOnDemand();
         JxlWriterOptions options = setting.StartsWith("ll-e", StringComparison.Ordinal)
             ? new() { Lossless = true, Effort = int.Parse(setting[4..], System.Globalization.CultureInfo.InvariantCulture) }
-            : new() { Lossless = false, Distance = 1f, Effort = int.Parse(setting[3..], System.Globalization.CultureInfo.InvariantCulture) };
+            : new() { Lossless = false, Distance = 1f, Effort = int.Parse(setting[3..4], System.Globalization.CultureInfo.InvariantCulture), Progressive = setting.EndsWith('p') };
         byte[] small = Encode(128, options);
         byte[] large = Encode(512, options);
         long smallBytes = AllocationMeter.Fewest(() => Raster.Load(small, OneThread).Dispose(), warmUps: 2, tries: 3);

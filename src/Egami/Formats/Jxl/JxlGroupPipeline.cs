@@ -64,13 +64,15 @@ internal sealed class JxlGroupScratch
 }
 
 /// <summary>
-/// Decodes a single-pass VarDCT frame group by group, libjxl's way (roadmap 2.4.11, D1 and D2): each pass group is decoded,
-/// dequantized and transformed into a per-thread buffer, then rendered there (Gaborish, the EPF steps, the color conversion and
-/// the pixel type) straight into the output plane. The restoration filters reach <see cref="_border"/> pixels across, so a group
-/// renders only the pixels at least that far from its neighbours; it keeps the 2 × border rows and columns next to each seam in
-/// frame-wide strips, from which the seams are rendered once every group is in. No frame-sized float plane is made. Every step
-/// does what the whole-frame path (<see cref="JxlVarDct.Reconstruct"/>, <see cref="JxlFilters"/>) does, in the same order with
-/// the same arithmetic and the same mirroring at the frame's edges, so the pixels are the same.
+/// Renders a frame group by group, libjxl's way (roadmap 2.4.11, D1 and D2). For a VarDCT frame each pass group is decoded,
+/// dequantized and transformed into a per-thread buffer, then rendered there: the restoration filters (Gaborish, the EPF
+/// steps), then either the color conversion and the pixel type straight into the output plane, or the filtered XYB into
+/// frame-sized planes for the steps that work on the whole frame (patches, splines, upsampling, noise, blending). The filters
+/// reach <see cref="_border"/> pixels across, so a group renders only the pixels at least that far from its neighbours; it keeps
+/// the 2 × border rows and columns next to each seam in frame-wide strips, from which the seams are rendered once every group is
+/// in. A frame already in planes (Modular, subsampled chroma) is filtered in tiles read straight from them. Every step does
+/// what <see cref="JxlVarDct.Reconstruct"/> and <see cref="JxlFilters"/> do, in the same order with the same arithmetic and the
+/// same mirroring at the frame's edges, so the pixels are the same.
 /// </summary>
 internal sealed class JxlGroupPipeline
 {
@@ -87,9 +89,11 @@ internal sealed class JxlGroupPipeline
     [ThreadStatic]
     private static bool t_disabled;
 
-    private readonly JxlFrameDecoder _decoder;
+    private readonly JxlFrameDecoder? _decoder;
     private readonly JxlFrameHeader _frame;
-    private readonly JxlFile _file;
+    private readonly JxlFile? _file;
+    private readonly JxlParallel _parallel;
+    private readonly float[][]? _lfFrame;
     private readonly int _width;
     private readonly int _height;
     private readonly int _groupDim;
@@ -101,31 +105,43 @@ internal sealed class JxlGroupPipeline
     private readonly int[] _reach;
     private readonly int _border;
     private readonly ConcurrentBag<Worker> _workers = [];
-    private JxlVarDct? _varDct;
+
+    // The frame's planes when it is filtered from them rather than decoded group by group.
+    private readonly float[][]? _source;
+
+    // XYB to 8-bit sRGB in one step, when the output is plain sRGB (see WriteSrgbBytes).
+    private readonly JxlXyb8? _srgb8;
+
+    // The EPF sigma of each block (BlocksX a row), or the one sigma of a Modular frame.
+    private float[]? _sigma;
+    private int _sigmaBlocksX;
+    private float _modularSigma;
 
     // The pixels after the inverse transforms within 2 × border of each seam: rows of the whole width for the seams between
     // group rows, columns of the whole height for those between group columns.
     private float[][][] _rowStrips = [];
     private float[][][] _columnStrips = [];
 
-    private JxlGroupPipeline(JxlFrameDecoder decoder, JxlFrameHeader frame, JxlFile file)
+    private JxlGroupPipeline(JxlFrameDecoder? decoder, JxlFrameHeader frame, JxlFile? file, int width, int height, JxlParallel parallel, bool filters, float[][]? lfFrame, float[][]? source)
     {
         _decoder = decoder;
         _frame = frame;
         _file = file;
-        (long w, long h) = frame.CodedSize;
-        _width = (int)w;
-        _height = (int)h;
+        _parallel = parallel;
+        _lfFrame = lfFrame;
+        _source = source;
+        _width = width;
+        _height = height;
         _groupDim = frame.GroupDim;
         _groupsX = (_width + _groupDim - 1) / _groupDim;
         _groupsY = (_height + _groupDim - 1) / _groupDim;
         List<int> steps = [];
-        if (frame.Gaborish)
+        if (frame.Gaborish && filters)
         {
             steps.Add(-1);
         }
 
-        int iterations = frame.EpfIterations;
+        int iterations = filters ? frame.EpfIterations : 0;
         if (iterations == 3)
         {
             steps.Add(0);
@@ -142,6 +158,12 @@ internal sealed class JxlGroupPipeline
         }
 
         _steps = [.. steps];
+        if (file is { Output: JxlOutput o } && file.Header.XybEncoded && o is { Transform: null, Gray: false } && (o.Matrix is null || o.Opsin is not null)
+            && o.Curve is { Gamma: 0, TransferFunction: not (1 or 8 or 16 or 17 or 18) } && System.Runtime.Intrinsics.X86.Fma.IsSupported && System.Runtime.Intrinsics.X86.Avx2.IsSupported)
+        {
+            _srgb8 = new JxlXyb8(o.Opsin ?? JxlColor.Opsin(file.Header), file.Header.ToneMapping.IntensityTarget);
+        }
+
         _reach = [.. steps.Select(s => s switch { -1 => 1, 0 => 3, 1 => 2, _ => 1 })];
         _border = _reach.Sum();
     }
@@ -154,26 +176,121 @@ internal sealed class JxlGroupPipeline
     }
 
     /// <summary>
-    /// Gets a pipeline for the frame when it can take one: a VarDCT frame alone in the codestream, with XYB or plain color but
-    /// no subsampled chroma, LF frame, patches, splines, noise, upsampling, crop or blending, and no extra channel other than
-    /// straight alpha and channels the pixels do not show, none upsampled; decoded whole. Otherwise <see langword="null"/>, and
-    /// the frame takes the whole-frame path.
+    /// Gets a pipeline that decodes the frame straight into pixels when it can: a VarDCT frame, the only frame shown (after any
+    /// LF frames, whose image is <paramref name="lfFrame"/>), with XYB or plain color but no subsampled chroma, patches, splines,
+    /// noise, upsampling, crop or blending, and no extra channel other than straight alpha and channels the pixels do not show,
+    /// none upsampled; decoded whole. Otherwise <see langword="null"/>, and the frame is rendered in planes.
     /// </summary>
-    internal static JxlGroupPipeline? For(JxlFrameDecoder decoder, JxlFrameHeader f, JxlImageHeader h, JxlFile file, int frames)
+    internal static JxlGroupPipeline? For(JxlFrameDecoder decoder, JxlFrameHeader f, JxlImageHeader h, JxlFile file, int regularFrames, float[][]? lfFrame)
     {
-        bool fits = !t_disabled && frames == 1 && f is { Modular: false, YCbCr: false, Upsampling: 1, HaveCrop: false, Type: JxlFrameType.Regular, IsLast: true }
-            && (f.Flags & (0x01 | 0x02 | 0x10 | 0x20)) == 0 && f.Blending.Mode == JxlBlendMode.Replace
+        bool fits = !t_disabled && regularFrames == 1 && f is { Modular: false, YCbCr: false, Upsampling: 1, HaveCrop: false, Type: JxlFrameType.Regular, IsLast: true }
+            && (f.Flags & (0x01 | 0x02 | 0x10)) == 0 && ((f.Flags & 0x20) == 0 || lfFrame is not null) && f.Blending.Mode == JxlBlendMode.Replace
             && f.ExtraChannelBlending.All(b => b.Mode == JxlBlendMode.Replace) && f.ExtraChannelUpsampling.All(u => u == 1)
             && !h.ExtraChannels.Any(e => e.Type is JxlExtraChannelType.SpotColor or JxlExtraChannelType.Black || e.AlphaAssociated)
             && decoder.Needed is null && decoder.Arrived == long.MaxValue && !decoder.CoefficientsOnly;
-        return fits ? new JxlGroupPipeline(decoder, f, file) : null;
+        (long w, long ht) = f.CodedSize;
+        return fits ? new JxlGroupPipeline(decoder, f, file, (int)w, (int)ht, decoder.Parallel, filters: true, lfFrame, source: null) : null;
+    }
+
+    /// <summary>
+    /// Decodes a VarDCT frame without subsampled chroma group by group into its X, Y and B planes (the coded size, a row the
+    /// frame's width), after the restoration filters when <paramref name="filters"/> is set; begins and ends the frame's groups.
+    /// </summary>
+    internal static float[][] Planes(JxlFrameDecoder decoder, JxlFrameHeader f, float[][]? lfFrame, bool filters)
+    {
+        (long w, long h) = f.CodedSize;
+        JxlGroupPipeline pipeline = new(decoder, f, null, (int)w, (int)h, decoder.Parallel, filters, lfFrame, source: null);
+        float[][] planes = [GC.AllocateUninitializedArray<float>((int)(w * h)), GC.AllocateUninitializedArray<float>((int)(w * h)), GC.AllocateUninitializedArray<float>((int)(w * h))];
+        pipeline.Run(new PlaneSink(planes, (int)w));
+        return planes;
+    }
+
+    /// <summary>
+    /// Applies the frame's restoration filters to planes of <paramref name="width"/> × <paramref name="height"/> (a row the
+    /// width), as <see cref="JxlFilters.Gaborish"/> and <see cref="JxlFilters.Epf"/> do, in tiles; returns new planes, or
+    /// <paramref name="planes"/> when the frame has no filter. EPF takes each block's sigma from <paramref name="sigma"/>
+    /// (<paramref name="blocksX"/> a row), or the frame's Modular sigma.
+    /// </summary>
+    internal static float[][] Filter(float[][] planes, int width, int height, JxlFrameHeader f, float[]? sigma, int blocksX, JxlParallel parallel)
+    {
+        if (!f.Gaborish && f.EpfIterations == 0)
+        {
+            return planes;
+        }
+
+        JxlGroupPipeline pipeline = new(null, f, null, width, height, parallel, filters: true, null, planes)
+        {
+            _sigma = sigma,
+            _sigmaBlocksX = blocksX,
+            _modularSigma = f.LoopFilter.SigmaForModular,
+        };
+        float[][] result = [GC.AllocateUninitializedArray<float>(width * height), GC.AllocateUninitializedArray<float>(width * height), GC.AllocateUninitializedArray<float>(width * height)];
+        pipeline.Run(new PlaneSink(result, width));
+        return result;
     }
 
     /// <summary>Decodes the frame into <paramref name="output"/>, which is the frame's size.</summary>
     internal void Render<TPixel>(PixelPlane<TPixel> output)
         where TPixel : unmanaged, IPixelType<TPixel>
     {
-        _varDct = _decoder.BeginGroups();
+        Run(new PixelSink<TPixel>(this, output));
+
+        // Last, as every color step writes an alpha of 1.
+        WriteAlpha(output);
+        JxlStageTimes.Lap(JxlStage.Render);
+    }
+
+    /// <summary>Renders every pixel of the frame into <paramref name="sink"/>: group by group from the decoder, or in tiles from the frame's planes.</summary>
+    private void Run(ISink sink)
+    {
+        try
+        {
+            if (_decoder is null)
+            {
+                RunPlanes(sink);
+            }
+            else
+            {
+                RunGroups(_decoder, sink);
+            }
+        }
+        finally
+        {
+            while (_workers.TryTake(out Worker? worker))
+            {
+                worker.Return();
+            }
+        }
+    }
+
+    /// <summary>Renders a frame from its planes, in tiles of a group's width and up to <see cref="TileRows"/> rows.</summary>
+    private void RunPlanes(ISink sink)
+    {
+        Window source = new(_source!, 0, 0, _width);
+        int tilesX = (_width + _groupDim - 1) / _groupDim;
+        int tilesY = (_height + TileRows - 1) / TileRows;
+        _parallel.For(tilesX * tilesY, t =>
+        {
+            int x0 = t % tilesX * _groupDim;
+            int y0 = t / tilesX * TileRows;
+            Worker worker = Take();
+            try
+            {
+                RenderTile(source, x0, y0, Math.Min(_width, x0 + _groupDim), Math.Min(_height, y0 + TileRows), worker, sink);
+            }
+            finally
+            {
+                _workers.Add(worker);
+            }
+        });
+    }
+
+    /// <summary>Decodes and renders the frame's pass groups, then the seams between them from the strips.</summary>
+    private void RunGroups(JxlFrameDecoder decoder, ISink sink)
+    {
+        JxlVarDct varDct = decoder.BeginGroups(_lfFrame);
+        _sigma = varDct.EpfSigma;
+        _sigmaBlocksX = varDct.BlocksX;
         int b2 = 2 * _border;
         if (_border > 0)
         {
@@ -194,97 +311,83 @@ internal sealed class JxlGroupPipeline
             }
         }
 
-        try
+        // Each group: decoded, kept next to its seams, and its inner part rendered.
+        decoder.GroupParallel.For(_groupsX * _groupsY, g =>
         {
-            // Each group: decoded, kept next to its seams, and its inner part rendered.
-            _decoder.GroupParallel.For(_groupsX * _groupsY, g =>
+            Worker worker = Take();
+            try
             {
-                Worker worker = Take();
-                try
-                {
-                    _decoder.DecodeGroupPixels(g, worker.Group);
-                    int gx = g % _groupsX;
-                    int gy = g / _groupsX;
-                    int x0 = gx * _groupDim;
-                    int y0 = gy * _groupDim;
-                    int x1 = Math.Min(_width, x0 + _groupDim);
-                    int y1 = Math.Min(_height, y0 + _groupDim);
-                    Window source = new(worker.Group.Planes, x0, y0, _groupDim);
-                    KeepStrips(source, x0, y0, x1, y1);
-                    int ix0 = gx > 0 ? x0 + _border : x0;
-                    int iy0 = gy > 0 ? y0 + _border : y0;
-                    int ix1 = gx < _groupsX - 1 ? x1 - _border : x1;
-                    int iy1 = gy < _groupsY - 1 ? y1 - _border : y1;
-                    RenderArea(source, ix0, iy0, ix1, iy1, worker, output);
-                }
-                finally
-                {
-                    _workers.Add(worker);
-                }
-            });
-            _decoder.EndGroups();
-            JxlStageTimes.Lap(JxlStage.Entropy);
-
-            // The seams: the rows across every seam between group rows, then the columns across those between group columns.
-            List<(int Strip, bool Rows, int X0, int Y0, int X1, int Y1)> seams = [];
-            for (int j = 0; j < _rowStrips.Length; j++)
-            {
-                int y = (j + 1) * _groupDim;
-                for (int x = 0; x < _width; x += _groupDim)
-                {
-                    seams.Add((j, true, x, y - _border, Math.Min(_width, x + _groupDim), Math.Min(_height, y + _border)));
-                }
+                decoder.DecodeGroupPixels(g, worker.Group);
+                int gx = g % _groupsX;
+                int gy = g / _groupsX;
+                int x0 = gx * _groupDim;
+                int y0 = gy * _groupDim;
+                int x1 = Math.Min(_width, x0 + _groupDim);
+                int y1 = Math.Min(_height, y0 + _groupDim);
+                Window source = new(worker.Group.Planes, x0, y0, _groupDim);
+                KeepStrips(source, x0, y0, x1, y1);
+                int ix0 = gx > 0 ? x0 + _border : x0;
+                int iy0 = gy > 0 ? y0 + _border : y0;
+                int ix1 = gx < _groupsX - 1 ? x1 - _border : x1;
+                int iy1 = gy < _groupsY - 1 ? y1 - _border : y1;
+                RenderArea(source, ix0, iy0, ix1, iy1, worker, sink);
             }
-
-            for (int i = 0; i < _columnStrips.Length; i++)
+            finally
             {
-                int x = (i + 1) * _groupDim;
-                for (int gy = 0; gy < _groupsY; gy++)
-                {
-                    int y0 = (gy * _groupDim) + (gy > 0 ? _border : 0);
-                    int y1 = Math.Min(_height, (gy + 1) * _groupDim) - (gy < _groupsY - 1 ? _border : 0);
-                    if (y1 > y0)
-                    {
-                        seams.Add((i, false, x - _border, y0, Math.Min(_width, x + _border), y1));
-                    }
-                }
+                _workers.Add(worker);
             }
+        });
+        decoder.EndGroups();
+        JxlStageTimes.Lap(JxlStage.Entropy);
 
-            _decoder.Parallel.For(seams.Count, k =>
-            {
-                (int strip, bool rows, int x0, int y0, int x1, int y1) = seams[k];
-                Window source = rows
-                    ? new Window(_rowStrips[strip], 0, ((strip + 1) * _groupDim) - b2, _width)
-                    : new Window(_columnStrips[strip], ((strip + 1) * _groupDim) - b2, 0, Math.Min(_width, ((strip + 1) * _groupDim) + b2) - (((strip + 1) * _groupDim) - b2));
-                Worker worker = Take();
-                try
-                {
-                    RenderArea(source, x0, y0, x1, y1, worker, output);
-                }
-                finally
-                {
-                    _workers.Add(worker);
-                }
-            }, minimumPerThread: 4);
-
-            // Last, as every color step writes an alpha of 1.
-            WriteAlpha(output);
-            JxlStageTimes.Lap(JxlStage.Render);
-        }
-        finally
+        // The seams: the rows across every seam between group rows, then the columns across those between group columns.
+        List<(int Strip, bool Rows, int X0, int Y0, int X1, int Y1)> seams = [];
+        for (int j = 0; j < _rowStrips.Length; j++)
         {
-            while (_workers.TryTake(out Worker? worker))
+            int y = (j + 1) * _groupDim;
+            for (int x = 0; x < _width; x += _groupDim)
             {
-                worker.Return();
+                seams.Add((j, true, x, y - _border, Math.Min(_width, x + _groupDim), Math.Min(_height, y + _border)));
             }
         }
+
+        for (int i = 0; i < _columnStrips.Length; i++)
+        {
+            int x = (i + 1) * _groupDim;
+            for (int gy = 0; gy < _groupsY; gy++)
+            {
+                int y0 = (gy * _groupDim) + (gy > 0 ? _border : 0);
+                int y1 = Math.Min(_height, (gy + 1) * _groupDim) - (gy < _groupsY - 1 ? _border : 0);
+                if (y1 > y0)
+                {
+                    seams.Add((i, false, x - _border, y0, Math.Min(_width, x + _border), y1));
+                }
+            }
+        }
+
+        _parallel.For(seams.Count, k =>
+        {
+            (int strip, bool rows, int x0, int y0, int x1, int y1) = seams[k];
+            Window source = rows
+                ? new Window(_rowStrips[strip], 0, ((strip + 1) * _groupDim) - b2, _width)
+                : new Window(_columnStrips[strip], ((strip + 1) * _groupDim) - b2, 0, Math.Min(_width, ((strip + 1) * _groupDim) + b2) - (((strip + 1) * _groupDim) - b2));
+            Worker worker = Take();
+            try
+            {
+                RenderArea(source, x0, y0, x1, y1, worker, sink);
+            }
+            finally
+            {
+                _workers.Add(worker);
+            }
+        }, minimumPerThread: 4);
     }
 
     /// <summary>Writes the alpha sample of every pixel from the alpha channel, as <c>JxlImageDecoder.Plane</c> does; the color steps left it 1.</summary>
     private void WriteAlpha<TPixel>(PixelPlane<TPixel> output)
         where TPixel : unmanaged, IPixelType<TPixel>
     {
-        JxlImageHeader h = _file.Header;
+        JxlImageHeader h = _file!.Header;
         int index = h.AlphaIndex;
         PixelLayoutInfo layout = TPixel.Layout;
         if (index < 0 || !layout.HasAlpha)
@@ -292,11 +395,11 @@ internal sealed class JxlGroupPipeline
             return;
         }
 
-        int[] data = _decoder.ExtraChannel(index).Data;
+        int[] data = _decoder!.ExtraChannel(index).Data;
         JxlBitDepth depth = h.ExtraChannels[index].BitDepth;
         int samples = layout.ChannelCount;
         int width = _width;
-        _decoder.Parallel.For(_height, y =>
+        _parallel.For(_height, y =>
         {
             Span<byte> bytes = MemoryMarshal.AsBytes(output.Row(y));
             int at = y * width;
@@ -365,24 +468,22 @@ internal sealed class JxlGroupPipeline
     }
 
     /// <summary>Renders the pixels from (<paramref name="x0"/>, <paramref name="y0"/>) to (<paramref name="x1"/>, <paramref name="y1"/>) into the output, in tiles.</summary>
-    private void RenderArea<TPixel>(Window source, int x0, int y0, int x1, int y1, Worker worker, PixelPlane<TPixel> output)
-        where TPixel : unmanaged, IPixelType<TPixel>
+    private void RenderArea(Window source, int x0, int y0, int x1, int y1, Worker worker, ISink sink)
     {
         for (int ty = y0; ty < y1; ty += TileRows)
         {
             for (int tx = x0; tx < x1; tx += _groupDim)
             {
-                RenderTile(source, tx, ty, Math.Min(x1, tx + _groupDim), Math.Min(y1, ty + TileRows), worker, output);
+                RenderTile(source, tx, ty, Math.Min(x1, tx + _groupDim), Math.Min(y1, ty + TileRows), worker, sink);
             }
         }
     }
 
     /// <summary>
     /// Renders one tile: its pixels and the border around it fetched from <paramref name="source"/> (mirrored past the frame's
-    /// edges), each filter step over a smaller area, then color and pixel type.
+    /// edges), each filter step over a smaller area, then the sink.
     /// </summary>
-    private void RenderTile<TPixel>(Window source, int x0, int y0, int x1, int y1, Worker worker, PixelPlane<TPixel> output)
-        where TPixel : unmanaged, IPixelType<TPixel>
+    private void RenderTile(Window source, int x0, int y0, int x1, int y1, Worker worker, ISink sink)
     {
         int b = _border;
         Area area = new(x0 - b, y0 - b, x1 - x0 + (2 * b), y1 - y0 + (2 * b));
@@ -410,31 +511,7 @@ internal sealed class JxlGroupPipeline
             input = worker.Input;
         }
 
-        // Color, a row at a time, then the pixel type.
-        JxlOutput outputSpace = _file.Output!;
-        float[][] color = worker.Color;
-        (color[0], color[1], color[2]) = (input[0], input[1], input[2]);
-        for (int y = y0; y < y1; y++)
-        {
-            int at = area.Index(x0, y);
-            JxlImageDecoder.ToColorSpace(color, at, at + x1 - x0, _file);
-        }
-
-        if (outputSpace.Transform?.Target.Model == Colors.ColorModel.Gray)
-        {
-            color[1] = color[0];
-            color[2] = color[0];
-        }
-        else if (outputSpace.Transform is null && outputSpace.Gray)
-        {
-            color[0] = color[1];
-            color[2] = color[1];
-        }
-
-        for (int y = y0; y < y1; y++)
-        {
-            WriteRow(output.Row(y).Slice(x0, x1 - x0), color, area.Index(x0, y));
-        }
+        sink.Write(input, area, x0, y0, x1, y1, worker);
     }
 
     /// <summary>Fills an area's buffer with the source's pixels; places past the frame's edges take the pixel mirrored into it.</summary>
@@ -564,8 +641,8 @@ internal sealed class JxlGroupPipeline
         int taps = kernel.Length / 2;
         int n = dist.Length / 2;
         int reach = step == 2 ? 0 : 1;
-        float[] sigma = _varDct!.EpfSigma;
-        int blocksX = _varDct.BlocksX;
+        float[]? sigma = _sigma;
+        int blocksX = _sigmaBlocksX;
         float scaleFactor = 6.6f * (MathF.Sqrt(0.5f) - 1);
         float inner = stepMultiplier;
         float edge = stepMultiplier * border;
@@ -615,7 +692,7 @@ internal sealed class JxlGroupPipeline
                 for (int x = x0; x < x1;)
                 {
                     int bx = x >> 3;
-                    float s = sigma[((y >> 3) * blocksX) + bx];
+                    float s = sigma is null ? _modularSigma : sigma[((y >> 3) * blocksX) + bx];
                     float t = scaleFactor / s;
                     float fi = s < 0.3f ? float.NaN : t * (yBorder ? edge : inner);
                     float fe = s < 0.3f ? float.NaN : t * edge;
@@ -830,8 +907,8 @@ internal sealed class JxlGroupPipeline
     }
 
     /// <summary>
-    /// Writes a row of 8-bit gray, RGB or RGBA (alpha 255), eight pixels at a time: each sample clamped, scaled and rounded to nearest even as
-    /// <see cref="WriteRow"/> does, then narrowed to bytes and the three channels interleaved with byte shuffles.
+    /// Writes a row of 8-bit gray, RGB or RGBA (alpha 255), eight pixels at a time: each sample clamped, scaled and rounded to
+    /// nearest even as <see cref="WriteRow"/> does, then narrowed to bytes and the channels interleaved with byte shuffles.
     /// </summary>
     private static void WriteBytes(Span<byte> bytes, float[][] color, int at, int samples)
     {
@@ -841,24 +918,60 @@ internal sealed class JxlGroupPipeline
         float[] p1 = color[samples == 1 ? 0 : 1];
         float[] p2 = color[samples == 1 ? 0 : 2];
         int x = 0;
+        for (; x + 8 <= width; x += 8)
+        {
+            Store8(ref to, x, samples, Round8(Load8(p0, at + x)), Round8(Load8(p1, at + x)), Round8(Load8(p2, at + x)));
+        }
+
+        WriteBytesTail(bytes, color, at, samples, x);
+    }
+
+    /// <summary>
+    /// Writes a row of XYB as 8-bit sRGB gray, RGB or RGBA (alpha 255), eight pixels at a time with each step kept in registers:
+    /// the same arithmetic as <see cref="JxlImageDecoder.ToColorSpace(float[][], int, int, JxlFile)"/> (XYB to linear sRGB,
+    /// the sRGB curve) and <see cref="WriteBytes"/>; the last pixels through those.
+    /// </summary>
+    private static void WriteSrgbBytes(Span<byte> bytes, float[][] color, int at, int samples, in JxlXyb8 xyb, JxlFile file)
+    {
+        int width = bytes.Length / samples;
+        ref byte to = ref MemoryMarshal.GetReference(bytes);
+        float[] p0 = color[0];
+        float[] p1 = color[1];
+        float[] p2 = color[2];
+        int x = 0;
+        for (; x + 8 <= width; x += 8)
+        {
+            (Vector256<float> r, Vector256<float> g, Vector256<float> b) = xyb.ToLinear(Load8(p0, at + x), Load8(p1, at + x), Load8(p2, at + x));
+            Vector256<int> ri = Round8(JxlColor.EncodeSrgb8(r));
+            Store8(ref to, x, samples, ri, samples == 1 ? ri : Round8(JxlColor.EncodeSrgb8(g)), samples == 1 ? ri : Round8(JxlColor.EncodeSrgb8(b)));
+        }
+
+        if (x < width)
+        {
+            JxlImageDecoder.ToColorSpace(color, at + x, at + width, file);
+            WriteBytesTail(bytes, color, at, samples, x);
+        }
+    }
+
+    /// <summary>Stores eight pixels of gray, RGB or RGBA (alpha 255) from their rounded samples at pixel <paramref name="x"/>.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static void Store8(ref byte to, int x, int samples, Vector256<int> r, Vector256<int> g, Vector256<int> b)
+    {
         if (samples == 3)
         {
             Vector128<byte> lowR = Vector128.Create((byte)0, 8, 0x80, 1, 9, 0x80, 2, 10, 0x80, 3, 11, 0x80, 4, 12, 0x80, 5);
             Vector128<byte> lowB = Vector128.Create((byte)0x80, 0x80, 0, 0x80, 0x80, 1, 0x80, 0x80, 2, 0x80, 0x80, 3, 0x80, 0x80, 4, 0x80);
             Vector128<byte> highR = Vector128.Create((byte)13, 0x80, 6, 14, 0x80, 7, 15, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80);
             Vector128<byte> highB = Vector128.Create((byte)0x80, 5, 0x80, 0x80, 6, 0x80, 0x80, 7, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80);
-            for (; x + 8 <= width; x += 8)
-            {
-                Vector256<short> rg = Vector256.Narrow(Round8(p0, at + x), Round8(p1, at + x));
-                Vector256<short> b = Vector256.Narrow(Round8(p2, at + x), Vector256<int>.Zero);
-                Vector256<byte> all = Vector256.Narrow(rg.AsUInt16(), b.AsUInt16());
-                Vector128<byte> first = all.GetLower();
-                Vector128<byte> second = all.GetUpper();
-                Vector128<byte> out0 = System.Runtime.Intrinsics.X86.Ssse3.Shuffle(first, lowR) | System.Runtime.Intrinsics.X86.Ssse3.Shuffle(second, lowB);
-                Vector128<byte> out1 = System.Runtime.Intrinsics.X86.Ssse3.Shuffle(first, highR) | System.Runtime.Intrinsics.X86.Ssse3.Shuffle(second, highB);
-                out0.StoreUnsafe(ref to, (nuint)(x * 3));
-                Unsafe.WriteUnaligned(ref Unsafe.Add(ref to, (x * 3) + 16), out1.AsUInt64().ToScalar());
-            }
+            Vector256<short> rg = Vector256.Narrow(r, g);
+            Vector256<short> bz = Vector256.Narrow(b, Vector256<int>.Zero);
+            Vector256<byte> all = Vector256.Narrow(rg.AsUInt16(), bz.AsUInt16());
+            Vector128<byte> first = all.GetLower();
+            Vector128<byte> second = all.GetUpper();
+            Vector128<byte> out0 = System.Runtime.Intrinsics.X86.Ssse3.Shuffle(first, lowR) | System.Runtime.Intrinsics.X86.Ssse3.Shuffle(second, lowB);
+            Vector128<byte> out1 = System.Runtime.Intrinsics.X86.Ssse3.Shuffle(first, highR) | System.Runtime.Intrinsics.X86.Ssse3.Shuffle(second, highB);
+            out0.StoreUnsafe(ref to, (nuint)(x * 3));
+            Unsafe.WriteUnaligned(ref Unsafe.Add(ref to, (x * 3) + 16), out1.AsUInt64().ToScalar());
         }
         else if (samples == 4)
         {
@@ -867,27 +980,28 @@ internal sealed class JxlGroupPipeline
             Vector128<byte> lowBa = Vector128.Create((byte)0x80, 0x80, 0, 8, 0x80, 0x80, 1, 9, 0x80, 0x80, 2, 10, 0x80, 0x80, 3, 11);
             Vector128<byte> highRg = Vector128.Create((byte)4, 12, 0x80, 0x80, 5, 13, 0x80, 0x80, 6, 14, 0x80, 0x80, 7, 15, 0x80, 0x80);
             Vector128<byte> highBa = Vector128.Create((byte)0x80, 0x80, 4, 12, 0x80, 0x80, 5, 13, 0x80, 0x80, 6, 14, 0x80, 0x80, 7, 15);
-            Vector256<int> opaque = Vector256.Create(255);
-            for (; x + 8 <= width; x += 8)
-            {
-                Vector256<short> rg = Vector256.Narrow(Round8(p0, at + x), Round8(p1, at + x));
-                Vector256<short> ba = Vector256.Narrow(Round8(p2, at + x), opaque);
-                Vector256<byte> all = Vector256.Narrow(rg.AsUInt16(), ba.AsUInt16());
-                Vector128<byte> first = all.GetLower();
-                Vector128<byte> second = all.GetUpper();
-                (System.Runtime.Intrinsics.X86.Ssse3.Shuffle(first, lowRg) | System.Runtime.Intrinsics.X86.Ssse3.Shuffle(second, lowBa)).StoreUnsafe(ref to, (nuint)(x * 4));
-                (System.Runtime.Intrinsics.X86.Ssse3.Shuffle(first, highRg) | System.Runtime.Intrinsics.X86.Ssse3.Shuffle(second, highBa)).StoreUnsafe(ref to, (nuint)((x * 4) + 16));
-            }
+            Vector256<short> rg = Vector256.Narrow(r, g);
+            Vector256<short> ba = Vector256.Narrow(b, Vector256.Create(255));
+            Vector256<byte> all = Vector256.Narrow(rg.AsUInt16(), ba.AsUInt16());
+            Vector128<byte> first = all.GetLower();
+            Vector128<byte> second = all.GetUpper();
+            (System.Runtime.Intrinsics.X86.Ssse3.Shuffle(first, lowRg) | System.Runtime.Intrinsics.X86.Ssse3.Shuffle(second, lowBa)).StoreUnsafe(ref to, (nuint)(x * 4));
+            (System.Runtime.Intrinsics.X86.Ssse3.Shuffle(first, highRg) | System.Runtime.Intrinsics.X86.Ssse3.Shuffle(second, highBa)).StoreUnsafe(ref to, (nuint)((x * 4) + 16));
         }
         else
         {
-            for (; x + 8 <= width; x += 8)
-            {
-                Vector256<short> v = Vector256.Narrow(Round8(p0, at + x), Vector256<int>.Zero);
-                Unsafe.WriteUnaligned(ref Unsafe.Add(ref to, x), Vector256.Narrow(v.AsUInt16(), Vector256<ushort>.Zero).GetLower().AsUInt64().ToScalar());
-            }
+            Vector256<short> v = Vector256.Narrow(r, Vector256<int>.Zero);
+            Unsafe.WriteUnaligned(ref Unsafe.Add(ref to, x), Vector256.Narrow(v.AsUInt16(), Vector256<ushort>.Zero).GetLower().AsUInt64().ToScalar());
         }
+    }
 
+    /// <summary>Writes pixels <paramref name="x"/> onward of a row of 8-bit gray, RGB or RGBA (alpha 255) one at a time.</summary>
+    private static void WriteBytesTail(Span<byte> bytes, float[][] color, int at, int samples, int x)
+    {
+        int width = bytes.Length / samples;
+        float[] p0 = color[0];
+        float[] p1 = color[samples == 1 ? 0 : 1];
+        float[] p2 = color[samples == 1 ? 0 : 2];
         for (; x < width; x++)
         {
             bytes[x * samples] = (byte)MathF.Round(Math.Clamp(p0[at + x], 0, 1) * 255);
@@ -904,11 +1018,13 @@ internal sealed class JxlGroupPipeline
         }
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static Vector256<float> Load8(float[] plane, int at) => Vector256.LoadUnsafe(ref MemoryMarshal.GetArrayDataReference(plane), (nuint)at);
+
     /// <summary>Eight samples clamped to 0 to 1, scaled to 255 and rounded to nearest even.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static Vector256<int> Round8(float[] plane, int at)
+    private static Vector256<int> Round8(Vector256<float> f)
     {
-        Vector256<float> f = Vector256.LoadUnsafe(ref MemoryMarshal.GetArrayDataReference(plane), (nuint)at);
         f = Vector256.Min(Vector256.Max(f, Vector256<float>.Zero), Vector256<float>.One) * Vector256.Create(255f);
         return System.Runtime.Intrinsics.X86.Avx.ConvertToVector256Int32(System.Runtime.Intrinsics.X86.Avx.RoundToNearestInteger(f));
     }
@@ -918,6 +1034,73 @@ internal sealed class JxlGroupPipeline
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static void Store(ref float origin, int at, Vector<float> value) => Unsafe.WriteUnaligned(ref Unsafe.As<float, byte>(ref Unsafe.Add(ref origin, at)), value);
+
+    /// <summary>Where a tile's filtered pixels go.</summary>
+    private interface ISink
+    {
+        /// <summary>Takes the pixels (x0, y0) to (x1, y1) from the tile's planes.</summary>
+        void Write(float[][] planes, Area area, int x0, int y0, int x1, int y1, Worker worker);
+    }
+
+    /// <summary>Converts a tile's pixels to the output color space, a row at a time, and writes them as <typeparamref name="TPixel"/>.</summary>
+    private sealed class PixelSink<TPixel>(JxlGroupPipeline pipeline, PixelPlane<TPixel> output) : ISink
+        where TPixel : unmanaged, IPixelType<TPixel>
+    {
+        public void Write(float[][] planes, Area area, int x0, int y0, int x1, int y1, Worker worker)
+        {
+            JxlFile file = pipeline._file!;
+            JxlOutput outputSpace = file.Output!;
+            float[][] color = worker.Color;
+            (color[0], color[1], color[2]) = (planes[0], planes[1], planes[2]);
+            PixelLayoutInfo layout = TPixel.Layout;
+            if (pipeline._srgb8 is JxlXyb8 xyb && layout.ChannelType == PixelChannelType.Unorm8 && (layout.ChannelCount is 1 or 3 ? !layout.HasAlpha : layout.ChannelCount == 4 && layout.HasAlpha))
+            {
+                for (int y = y0; y < y1; y++)
+                {
+                    WriteSrgbBytes(MemoryMarshal.AsBytes(output.Row(y).Slice(x0, x1 - x0)), color, area.Index(x0, y), layout.ChannelCount, xyb, file);
+                }
+
+                return;
+            }
+
+            for (int y = y0; y < y1; y++)
+            {
+                int at = area.Index(x0, y);
+                JxlImageDecoder.ToColorSpace(color, at, at + x1 - x0, file);
+            }
+
+            if (outputSpace.Transform?.Target.Model == Colors.ColorModel.Gray)
+            {
+                color[1] = color[0];
+                color[2] = color[0];
+            }
+            else if (outputSpace.Transform is null && outputSpace.Gray)
+            {
+                color[0] = color[1];
+                color[2] = color[1];
+            }
+
+            for (int y = y0; y < y1; y++)
+            {
+                WriteRow(output.Row(y).Slice(x0, x1 - x0), color, area.Index(x0, y));
+            }
+        }
+    }
+
+    /// <summary>Copies a tile's pixels into frame-sized planes, <paramref name="width"/> a row.</summary>
+    private sealed class PlaneSink(float[][] planes, int width) : ISink
+    {
+        public void Write(float[][] tile, Area area, int x0, int y0, int x1, int y1, Worker worker)
+        {
+            for (int c = 0; c < 3; c++)
+            {
+                for (int y = y0; y < y1; y++)
+                {
+                    tile[c].AsSpan(area.Index(x0, y), x1 - x0).CopyTo(planes[c].AsSpan((y * width) + x0));
+                }
+            }
+        }
+    }
 
     /// <summary>Planes holding a rectangle of the frame from (<see cref="X0"/>, <see cref="Y0"/>), <see cref="Stride"/> samples a row.</summary>
     private readonly record struct Window(float[][] Planes, int X0, int Y0, int Stride)
