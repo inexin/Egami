@@ -306,7 +306,7 @@ internal sealed class DdsWriter : IFormatWriter, IMultiImageWriter
     }
 
     /// <summary>Converts a raster into the working pixel type's memory, rows packed.</summary>
-    private static byte[] Work(Raster level, TextureNatural natural)
+    internal static byte[] Work(Raster level, TextureNatural natural)
     {
         return natural switch
         {
@@ -344,7 +344,7 @@ internal sealed class DdsWriter : IFormatWriter, IMultiImageWriter
         }
     }
 
-    private static void Premultiply(byte[] work, TextureNatural natural)
+    internal static void Premultiply(byte[] work, TextureNatural natural)
     {
         switch (natural)
         {

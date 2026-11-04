@@ -47,6 +47,7 @@ public static class Ktx2Format
         SignatureLength = 12,
         Matches = Ktx2Header.Matches,
         Reader = new KtxReader(KtxContainer.Ktx2),
+        Writer = new Ktx2Writer(),
     };
 }
 
