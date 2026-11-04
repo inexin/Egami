@@ -584,6 +584,12 @@ internal sealed class PsdFile
             at = level = Math.Max(0, level - 1);
         }
 
+        if (kind is PsdLayerKind.OpenGroup or PsdLayerKind.ClosedGroup && sectionKey is not null && sectionKey != key)
+        {
+            // A group's mode is its section divider's: Photoshop writes Normal in the record of a pass-through group.
+            key = sectionKey;
+        }
+
         Rect bounds = right > left && bottom > top ? new Rect(left, top, (int)Math.Min((long)right - left, int.MaxValue), (int)Math.Min((long)bottom - top, int.MaxValue)) : default;
         PsdLayer info = new(name, bounds, opacity, key, BlendModeOf(key), visible, clipped, kind, at)
         {

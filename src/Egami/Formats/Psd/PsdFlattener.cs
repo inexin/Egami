@@ -34,6 +34,7 @@ internal sealed partial class PsdFlattener
     private readonly int _channels;
     private readonly int _stride;
     private readonly Dictionary<float[], long> _rented = new(ReferenceEqualityComparer.Instance);
+    private readonly bool _knocks;
     private float[]? _scratch;
     private long _bytes;
 
@@ -55,6 +56,7 @@ internal sealed partial class PsdFlattener
         _channels = file.Mode == PsdColorMode.Cmyk ? 4 : 3;
         _stride = _channels + 1;
         _row = new float[_stride * _width];
+        _knocks = file.Records.Exists(r => r.Knockout is 1 or 2);
 
         // Each group's hidden start record (its GroupEnd) is matched with the group record that ends it, above its contents.
         Stack<int> open = new();
@@ -214,6 +216,7 @@ internal sealed partial class PsdFlattener
         ReleaseVector();
         _featherFor = null;
         _featherPlane = null;
+        _background = null;
     }
 
     private float[] Complete()
@@ -265,11 +268,6 @@ internal sealed partial class PsdFlattener
     /// <summary>Notes what a visible layer has that the flattening leaves out.</summary>
     private void Note(PsdLayer info, PsdLayerRecord record)
     {
-        if (record.Knockout != 0)
-        {
-            Skip("Psd.KnockoutSkipped", info.Name);
-        }
-
         if (EffectsOn(record))
         {
             Skip("Psd.EffectsSkipped", info.Name);
@@ -302,7 +300,7 @@ internal sealed partial class PsdFlattener
         }
 
         bool hidden = parent.Hidden || (info is not null && !info.IsVisible) || (clipped && parent.Pending!.Hidden);
-        bool passThrough = info is not null && info.BlendMode is null && info.BlendModeKey == "pass" && !clipped;
+        bool passThrough = info is not null && info.BlendMode is null && info.BlendModeKey == "pass" && !clipped && !IsClipBase(group);
         float[] canvas;
         if (hidden)
         {
@@ -319,6 +317,23 @@ internal sealed partial class PsdFlattener
         }
 
         _frames.Add(new Frame(canvas, group, info, hidden, passThrough));
+    }
+
+    /// <summary>Returns whether something above the group record at <paramref name="group"/> is clipped to it, which isolates a pass-through group.</summary>
+    private bool IsClipBase(int group)
+    {
+        int above = group + 1;
+        if (above >= _file.Records.Count)
+        {
+            return false;
+        }
+
+        if (_file.Records[above].Info.Kind == PsdLayerKind.GroupEnd)
+        {
+            above = _groupOf.TryGetValue(above, out int g) ? g : -1;
+        }
+
+        return above >= 0 && _file.Records[above].Info.Kind != PsdLayerKind.GroupEnd && _infoOf(above).IsClipped;
     }
 
     private void Close(Frame frame, PsdMask? mask)
@@ -406,7 +421,16 @@ internal sealed partial class PsdFlattener
     {
         if (frame.Pending is { Hidden: false, Buffer: not null } pending)
         {
-            BlendDown(pending.Buffer, pending.Area, pending.Info, pending.Record.BlendRanges, frame.Canvas);
+            if (pending.Record.Knockout is 1 or 2)
+            {
+                Knock(frame, pending);
+            }
+            else
+            {
+                BlendDown(pending.Buffer, pending.Area, pending.Info, pending.Record.BlendRanges, frame.Canvas);
+            }
+
+            KeepBackground(frame, pending);
             Release(pending.Buffer);
             if (pending.Clip is not null)
             {
