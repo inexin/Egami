@@ -148,6 +148,14 @@ internal sealed class JpegLsScanDecoder
     /// </summary>
     public void DecodeGroup(JpegLsLineSink sink, bool strict)
     {
+        if (_group == 0)
+        {
+            foreach (Lane lane in _lanes)
+            {
+                lane.Allocate();
+            }
+        }
+
         if (_restart > 0 && _group > 0 && _group % _restart == 0)
         {
             NextInterval(strict);
@@ -620,11 +628,11 @@ internal sealed class JpegLsScanDecoder
 
         public JpegLsComponent Component { get; } = component;
 
-        /// <summary>Gets the line above, with one sample of margin on each side.</summary>
-        public int[] Previous { get; private set; } = new int[component.Width + 2];
+        /// <summary>Gets the line above, with one sample of margin on each side; empty until <see cref="Allocate"/>.</summary>
+        public int[] Previous { get; private set; } = [];
 
-        /// <summary>Gets the line being decoded, with one sample of margin on each side.</summary>
-        public int[] Current { get; private set; } = new int[component.Width + 2];
+        /// <summary>Gets the line being decoded, with one sample of margin on each side; empty until <see cref="Allocate"/>.</summary>
+        public int[] Current { get; private set; } = [];
 
         /// <summary>Gets or sets how many lines of this component a group holds.</summary>
         public int Lines { get; set; } = 1;
@@ -633,6 +641,19 @@ internal sealed class JpegLsScanDecoder
         public int Y { get; set; }
 
         public void Swap() => (Previous, Current) = (Current, Previous);
+
+        /// <summary>
+        /// Allocates the lines, at the first line group: a probe reads the header alone, and the reader checks the frame size
+        /// against the safety limits before it decodes.
+        /// </summary>
+        public void Allocate()
+        {
+            if (Previous.Length == 0)
+            {
+                Previous = new int[Component.Width + 2];
+                Current = new int[Component.Width + 2];
+            }
+        }
 
         public void Clear()
         {

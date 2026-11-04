@@ -177,6 +177,36 @@ public sealed class JpegLsFormatTests
     }
 
     [Fact]
+    public void ProbesAHugeLseSizeWithoutAllocatingForIt()
+    {
+        // A frame of width 0 with an LSE type 4 width of 2^31 - 1: probing allocates nothing for the lines, and loading stops
+        // at the limits before it does.
+        byte[] file = [0xFF, 0xD8, 0xFF, 0xF7, 0, 11, 8, 0, 1, 0, 0, 1, 1, 0x11, 0, 0xFF, 0xF8, 0, 12, 4, 4, 0, 0, 0, 1, 0x7F, 0xFF, 0xFF, 0xFF, 0xFF, 0xDA, 0, 8, 1, 1, 0, 0, 0, 0, 0, 0];
+        long before = GC.GetAllocatedBytesForCurrentThread();
+        RasterInfo info = Raster.Probe(file, TestImages.Context);
+        Assert.True(GC.GetAllocatedBytesForCurrentThread() - before < 1 << 20, "Probe allocated for the lines.");
+        Assert.Equal((int.MaxValue, 1), (info.Width, info.Height));
+        before = GC.GetAllocatedBytesForCurrentThread();
+        Assert.Throws<LimitExceededException>(() => Raster.Load(file, TestImages.Context));
+        Assert.True(GC.GetAllocatedBytesForCurrentThread() - before < 1 << 20, "Load allocated before checking the limits.");
+    }
+
+    [Fact]
+    public void SizesSubsampledComponentsOfHugeFrames()
+    {
+        JpegLsHeader header = new()
+        {
+            Width = 1_500_000_001,
+            Height = 3,
+            HMax = 2,
+            VMax = 1,
+            Components = [new JpegLsComponent { Id = 1, H = 2, V = 1 }, new JpegLsComponent { Id = 2, Index = 1, H = 1, V = 1 }],
+        };
+        JpegLsSegments.Finish(header);
+        Assert.Equal((1_500_000_001, 750_000_001), (header.Components[0].Width, header.Components[1].Width));
+    }
+
+    [Fact]
     public void ChecksTheSampleWritersArguments()
     {
         ushort[] samples = new ushort[12];

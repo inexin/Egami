@@ -248,8 +248,8 @@ internal static class JpegLsSegments
 
         foreach (JpegLsComponent c in header.Components)
         {
-            c.Width = (int)(((long)header.Width * c.H) + header.HMax - 1) / header.HMax;
-            c.Height = (int)(((long)header.Height * c.V) + header.VMax - 1) / header.VMax;
+            c.Width = (int)((((long)header.Width * c.H) + header.HMax - 1) / header.HMax);
+            c.Height = (int)((((long)header.Height * c.V) + header.VMax - 1) / header.VMax);
         }
     }
 
