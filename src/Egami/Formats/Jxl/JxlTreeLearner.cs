@@ -639,18 +639,20 @@ internal sealed class JxlTreeLearner
             {
                 NodeScan scan = new(begin, end, maxSymbols, maxValues, nodeTotal, counts, totalExtra, tree[pos].Predictor, changePenalty);
 
-                // Each property is priced on its own; large nodes price them in parallel, and the results combine in order.
+                // Each property is priced on its own; large nodes price them in parallel, and the results combine in order. With
+                // more threads than properties, the largest nodes also count each property's samples in parts.
                 if (parallelism > 1 && end - begin >= 4096)
                 {
-                    Parallel.For(0, properties, new ParallelOptions { MaxDegreeOfParallelism = parallelism }, prop => found[prop] = ScanProperty(prop, scan, scratch[prop]));
+                    int parts = Math.Clamp(parallelism / properties, 1, (end - begin) / 65536 + 1);
+                    ParallelOptions options = new() { MaxDegreeOfParallelism = parallelism };
+                    Parallel.For(0, properties, options, prop => found[prop] = ScanProperty(prop, scan, scratch[prop], parts, options));
                 }
                 else
                 {
                     for (int prop = 0; prop < properties; prop++)
                     {
-                        found[prop] = ScanProperty(prop, scan, scratch[prop]);
+                        found[prop] = ScanProperty(prop, scan, scratch[prop], 1, null);
                     }
-
                 }
             }
 
@@ -708,7 +710,7 @@ internal sealed class JxlTreeLearner
     /// Prices every split of a node on one property: for each predictor, the entropy of the samples at or below each used value
     /// and of those above it, moving one value's counts across at a time (libjxl's inner loop of FindBestSplit).
     /// </summary>
-    private Candidates ScanProperty(int prop, NodeScan n, Scratch scratch)
+    private Candidates ScanProperty(int prop, NodeScan n, Scratch scratch, int parts, ParallelOptions? options)
     {
         int predictors = _predictors.Length;
         int size = _compact[prop].Length + 1;
@@ -729,13 +731,30 @@ internal sealed class JxlTreeLearner
             {
                 // A large node: one pass counts every value's tokens, and the totals and raw bits follow from those counts.
                 Array.Clear(countIncrease, 0, predictors * size * maxSymbols);
-                if (prop < _staticCount)
+                if (parts > 1)
                 {
-                    GatherAll(_static[prop], n.Begin, n.End, used, countIncrease, size, maxSymbols);
+                    // Each part counts into arrays of its own; integer sums, so the totals do not depend on the split.
+                    int length = predictors * size * maxSymbols;
+                    int[][] partUsed = new int[parts][];
+                    int[][] partCounts = new int[parts][];
+                    Parallel.For(0, parts, options!, k =>
+                    {
+                        int from = n.Begin + (int)((long)(n.End - n.Begin) * k / parts);
+                        int to = n.Begin + (int)((long)(n.End - n.Begin) * (k + 1) / parts);
+                        partUsed[k] = new int[size];
+                        partCounts[k] = new int[length];
+                        GatherProperty(prop, from, to, partUsed[k], partCounts[k], size, maxSymbols);
+                    });
+
+                    for (int k = 0; k < parts; k++)
+                    {
+                        Add(partUsed[k], used.AsSpan(0, size));
+                        Add(partCounts[k], countIncrease.AsSpan(0, length));
+                    }
                 }
                 else
                 {
-                    GatherAll(_props[prop - _staticCount], n.Begin, n.End, used, countIncrease, size, maxSymbols);
+                    GatherProperty(prop, n.Begin, n.End, used, countIncrease, size, maxSymbols);
                 }
 
                 first = used.AsSpan(0, size).IndexOfAnyExcept(0);
@@ -894,6 +913,37 @@ internal sealed class JxlTreeLearner
 
         first = lo;
         last = hi;
+    }
+
+    /// <summary>Runs <see cref="GatherAll"/> on samples [begin, end) of a property.</summary>
+    private void GatherProperty(int prop, int begin, int end, int[] used, int[] countIncrease, int size, int maxSymbols)
+    {
+        if (prop < _staticCount)
+        {
+            GatherAll(_static[prop], begin, end, used, countIncrease, size, maxSymbols);
+        }
+        else
+        {
+            GatherAll(_props[prop - _staticCount], begin, end, used, countIncrease, size, maxSymbols);
+        }
+    }
+
+    /// <summary>Adds <paramref name="from"/> into <paramref name="to"/>.</summary>
+    private static void Add(ReadOnlySpan<int> from, Span<int> to)
+    {
+        int i = 0;
+        if (Vector256.IsHardwareAccelerated)
+        {
+            for (; i + 8 <= to.Length; i += 8)
+            {
+                (Vector256.Create(from.Slice(i, 8)) + Vector256.Create(to.Slice(i, 8))).CopyTo(to.Slice(i, 8));
+            }
+        }
+
+        for (; i < to.Length; i++)
+        {
+            to[i] += from[i];
+        }
     }
 
     /// <summary>One pass for a large node: which values occur and each predictor's token counts per value.</summary>
