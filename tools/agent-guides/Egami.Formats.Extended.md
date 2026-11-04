@@ -1,7 +1,7 @@
 # Egami.Formats.Extended: guide for coding agents
 
 Egami.Formats.Extended reads and writes image formats that most apps never meet but some still need: PCX, SGI, Sun raster, XBM,
-XPM, WBMP, Farbfeld and DDS textures (BC1 to BC7, mips, cube maps, arrays and volumes), reads KTX and KTX 2 textures (BC1 to BC7, ETC1, ETC2, EAC, 2D ASTC LDR and HDR, and uncompressed; Zstandard and zlib supercompressed), and reads camera RAW (DNG, CR2, NEF, PEF, ARW, ORF, RW2 and RAF; CR3 previews and metadata), developed on
+XPM, WBMP, Farbfeld and DDS textures (BC1 to BC7, mips, cube maps, arrays and volumes), reads KTX and KTX 2 textures (BC1 to BC7, ETC1, ETC2, EAC, 2D ASTC LDR and HDR, Basis Universal ETC1S and UASTC, and uncompressed; Zstandard and zlib supercompressed), and reads camera RAW (DNG, CR2, NEF, PEF, ARW, ORF, RW2 and RAF; CR3 previews and metadata), developed on
 load. Each is a plugin on core Egami's public format API.
 
 Namespaces: `Egami.Formats.Extended` (the `With...` methods), `Egami.Formats.Extended.<Format>` (`PcxFormat` and the other
@@ -19,7 +19,7 @@ format infos and options), with `Egami` and `Egami.Formats`.
   block formats, arrays and cube maps.
 - KTX and KTX 2 (read only): `KtxFormat` and `Ktx2Format`; `KtxReaderOptions` (`Surface`, `MipLevel`, `IncludeMipLevels`,
   `ReconstructNormalZ`, `KeepStoredLayout`) as DDS's; `KtxDetails` keeps the Vulkan or OpenGL format, supercompression,
-  orientation, swizzle and key/value pairs. ETC, ASTC, PVRTC and Basis Universal throw `UnsupportedFormatException`.
+  orientation, swizzle and key/value pairs. 3D ASTC, PVRTC, UASTC HDR 6 × 6, XUASTC and XUBC7 throw `UnsupportedFormatException`.
 - RAW: Load develops a DNG into `Rgb16` sRGB (or straight into the RGB space `ConvertColorTo` names); `RawReaderOptions`
   (`Output` = `Developed`, `HalfSize`, `Preview` or `Mosaic`; `WhiteBalance`, `Temperature`, `Tint`, `Exposure`, `Demosaic`,
   `Highlights`, `LuminanceNoiseReduction`, `ColorNoiseReduction`, `LensCorrections`, `ApplyProfile`) sets it; `RawDetails`

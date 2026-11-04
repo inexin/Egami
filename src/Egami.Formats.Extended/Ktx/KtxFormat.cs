@@ -29,8 +29,9 @@ public static class KtxFormat
 /// KTX 2.0, the Khronos texture container for Vulkan, glTF and the web: a header naming the Vulkan format, a level index, a
 /// data format descriptor with the colour space, key/value data, then the mip levels smallest first, each optionally
 /// supercompressed with Zstandard or zlib. Load gives mip 0 of the first surface, turned upright and swizzled as the file
-/// says; LoadAll and <see cref="KtxReaderOptions"/> reach the others. Uncompressed, BC1 to BC7, ETC2, EAC and 2D ASTC (LDR and
-/// HDR) textures read; Basis Universal, 3D ASTC and PVRTC ones are refused. Read only. Registered with <see cref="ExtendedContextExtensions.WithKtx2"/>.
+/// says; LoadAll and <see cref="KtxReaderOptions"/> reach the others. Uncompressed, BC1 to BC7, ETC2, EAC, 2D ASTC (LDR and
+/// HDR) and Basis Universal (ETC1S, UASTC LDR and HDR 4 × 4) textures read; 3D ASTC, PVRTC and the newer Basis Universal
+/// families (UASTC HDR 6 × 6, XUASTC, XUBC7) are refused. Read only. Registered with <see cref="ExtendedContextExtensions.WithKtx2"/>.
 /// </summary>
 /// <example>
 /// <code language="csharp" source="../../../tests/Egami.DocSamples/FormatsExtended.cs" region="ktx-load"/>
@@ -74,7 +75,7 @@ public enum KtxSupercompression
     /// <summary>Not supercompressed; always so in KTX 1.</summary>
     None = 0,
 
-    /// <summary>Basis Universal's BasisLZ, for ETC1S textures. Not read yet.</summary>
+    /// <summary>Basis Universal's BasisLZ, for ETC1S textures: codebooks in the global data, Huffman-coded slices in the levels.</summary>
     BasisLZ = 1,
 
     /// <summary>Zstandard, each level on its own.</summary>

@@ -8,15 +8,16 @@ the Egami.Formats.Extended package: register them with `WithKtx()` and `WithKtx2
 
 | | |
 | --- | --- |
-| Reads | KTX 1.1 in both byte orders and KTX 2.0, uncompressed or Zstandard and zlib supercompressed: the 8, 16 and 32-bit UNORM, SNORM, sRGB, UINT, SINT and float formats, BGRA, the 565, 5551 and 4444 packed formats, A2B10G10R10, B10G11R11 and E5B9G9R9 floats, BC1 to BC7 with BC6H unsigned and signed, ETC1, ETC2 (RGB8, RGB8A1, RGBA8, UNORM and sRGB), EAC R11 and RG11 (unsigned and signed), and ASTC in all 14 2D footprints, UNORM, sRGB and HDR (SFLOAT). 1D and 2D textures, arrays, cube maps and volume textures, with their mips |
+| Reads | KTX 1.1 in both byte orders and KTX 2.0, uncompressed or Zstandard and zlib supercompressed: the 8, 16 and 32-bit UNORM, SNORM, sRGB, UINT, SINT and float formats, BGRA, the 565, 5551 and 4444 packed formats, A2B10G10R10, B10G11R11 and E5B9G9R9 floats, BC1 to BC7 with BC6H unsigned and signed, ETC1, ETC2 (RGB8, RGB8A1, RGBA8, UNORM and sRGB), EAC R11 and RG11 (unsigned and signed), ASTC in all 14 2D footprints, UNORM, sRGB and HDR (SFLOAT), and Basis Universal: ETC1S (BasisLZ, with or without an alpha slice, video included), UASTC LDR 4 × 4 and UASTC HDR 4 × 4. 1D and 2D textures, arrays, cube maps and volume textures, with their mips |
 | Writes | No |
-| Natural pixel type | As [DDS](dds.md): `Rgba8` for BC1, BC2, BC3, BC7, ETC2 RGB8A1 and RGBA8, ASTC LDR and 8-bit RGBA; `Gray8` for BC4 and R8; `Rgb8` for BC5, ETC1, ETC2 RGB8, RG8 and RGB8; `Gray16` for EAC R11; `Rgb16` for EAC RG11; `Rgba16` for 16-bit UNORM; `RgbaF16` for BC6H, ASTC HDR, half floats and the packed floats; `RgbaF32` for 32-bit floats; `Bgr565`, `Bgra5551` and `Bgra4444` for the packed formats. A swizzle that moves channels widens the type to its RGBA form |
+| Natural pixel type | As [DDS](dds.md): `Rgba8` for BC1, BC2, BC3, BC7, ETC2 RGB8A1 and RGBA8, ASTC LDR, Basis Universal with alpha and 8-bit RGBA; `Gray8` for BC4 and R8; `Rgb8` for BC5, ETC1, ETC2 RGB8, Basis Universal without alpha, RG8 and RGB8; `Gray16` for EAC R11; `Rgb16` for EAC RG11; `Rgba16` for 16-bit UNORM; `RgbaF16` for BC6H, ASTC HDR, UASTC HDR, half floats and the packed floats; `RgbaF32` for 32-bit floats; `Bgr565`, `Bgra5551` and `Bgra4444` for the packed formats. A swizzle that moves channels widens the type to its RGBA form |
 | `FormatInfo` | `KtxFormat.Info`: name `KTX`, extension `.ktx`, MIME type `image/ktx`. `Ktx2Format.Info`: name `KTX2`, extension `.ktx2`, MIME type `image/ktx2` |
 
 [!code-csharp[](../../../tests/Egami.DocSamples/FormatsExtended.cs#ktx-load)]
 
-3D ASTC, PVRTC and Basis Universal (ETC1S with BasisLZ, and UASTC) are not read: a load or probe throws `UnsupportedFormatException`
-that names the family, such as "KTX 2 textures in Basis Universal UASTC compression are not supported yet".
+3D ASTC, PVRTC and the newer Basis Universal families (UASTC HDR 6 × 6, XUASTC LDR and XUBC7) are not read: a load or probe
+throws `UnsupportedFormatException` that names the family, such as "KTX 2 textures in Basis Universal UASTC HDR 6x6 compression
+are not supported yet (supercompression scheme 4)".
 
 ## Surfaces and mips
 
@@ -50,6 +51,21 @@ astcenc does, bit for bit: LDR blocks to 8 bits per channel (sRGB files interpol
 says), HDR blocks to half floats, an illegal block to magenta (LDR) or NaN (HDR), and blocks of any of the 14 2D footprints. Two-channel formats load with blue 0;
 `KtxReaderOptions.ReconstructNormalZ` rebuilds blue as a normal map's Z. SNORM, SINT and UINT formats map as DDS's do. A KTX 1
 file written big-endian is swapped by its `glTypeSize`, and the 4-byte row padding of KTX 1 uncompressed data is skipped.
+
+## Basis Universal
+
+Basis Universal textures decode straight to pixels, bit for bit as basisu's own unpacker does, with no detour through a GPU
+format. An ETC1S file (Vulkan format 0, BasisLZ supercompression) keeps its endpoint and selector codebooks and Huffman tables
+in the file's global data, and each image is a slice of codebook references; a second slice per image, when the descriptor has
+one, is the alpha (its green channel). An ETC1S video (the `KTXanimData` key) codes later frames against the one before, so a
+P-frame surface decodes from the last I-frame up. A UASTC LDR file (descriptor colour model 166) is 4 × 4 blocks of 16 bytes in
+any of UASTC's 19 modes, often supercompressed with Zstandard; the reserved mode decodes to magenta, as basisu's does. A UASTC
+HDR 4 × 4 file (colour model 167) holds ASTC HDR blocks and decodes as ASTC HDR does, to `RgbaF16`.
+
+The descriptor says whether there is alpha: ETC1S with an alpha slice, and UASTC whose sample is RGBA or RRRG, load as
+`Rgba8`; the rest load as `Rgb8`. `KtxDetails.FormatName` names the family, the channels and the transfer, such as
+`ETC1S_RGBA_SRGB` or `UASTC_4x4_RGB_UNORM`, and `KtxDetails.VkFormat` is 0 for ETC1S and UASTC LDR. A lenient read of a BasisLZ level that does
+not decode keeps the blocks decoded so far and leaves the rest black, with `LevelDamaged`; a strict read throws.
 
 ## Colour, alpha and details
 

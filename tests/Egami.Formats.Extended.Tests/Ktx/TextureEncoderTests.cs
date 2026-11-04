@@ -1,10 +1,11 @@
+using Egami.Compression;
 using Egami.Formats.Extended.Textures.Blocks;
 using Egami.Pixels;
 
 namespace Egami.Formats.Extended.Tests.Ktx;
 
 /// <summary>
-/// The ETC, EAC and ASTC block encoders the KTX writer will use: each encodes a 120 × 120 crop of the duck photo, the matching
+/// The ETC, EAC, ASTC and UASTC block encoders the KTX writer will use: each encodes a 120 × 120 crop of the duck photo, the matching
 /// decoder decodes it, and the PSNR must reach what the encoder reached when it was written (a little below, so harmless changes
 /// pass). Higher efforts must not do worse, and the blocks must not depend on the number of threads.
 /// </summary>
@@ -13,6 +14,9 @@ public class TextureEncoderTests
     private const int Size = 120;
 
     private static readonly int[] Efforts = [0, 2, 4, 6];
+
+    /// <summary>The endpoint ranges of the opaque UASTC modes other than 1 and 5.</summary>
+    private static readonly int[] CoarseRanges = [7, 8, 11, 12, 18, 19];
 
     private static readonly Lazy<byte[]> Duck = new(() =>
     {
@@ -75,6 +79,15 @@ public class TextureEncoderTests
         { "r11-signed", 4, 39.6 },
     };
 
+    public static TheoryData<int, double, double> UastcCases => new()
+    {
+        // Effort, minimum PSNR (RGBA), minimum PSNR (RGB).
+        { 0, 33.8, 33.9 },
+        { 2, 37.4, 36.7 },
+        { 4, 37.7, 37.0 },
+        { 6, 37.9, 37.2 },
+    };
+
     [Theory]
     [MemberData(nameof(AstcCases))]
     public void AstcReachesItsQuality(int width, int height, int effort, bool srgb, double minimum)
@@ -130,6 +143,125 @@ public class TextureEncoderTests
         Assert.Equal(EncodeEtc("etc2", 4, parallel: false), EncodeEtc("etc2", 4, parallel: true));
     }
 
+    [Theory]
+    [MemberData(nameof(UastcCases))]
+    public void UastcReachesItsQuality(int effort, double minimumRgba, double minimumRgb)
+    {
+        byte[] decoded = DecodeUastc(EncodeUastc(Duck.Value, effort, parallel: false));
+        double rgba = Psnr(Duck.Value, decoded, 4, 255);
+        double rgb = Psnr(Duck.Value, decoded, 3, 255);
+        Assert.True(rgba >= minimumRgba && rgb >= minimumRgb, $"CASE e{effort}: PSNR {rgba:F2} dB RGBA, {rgb:F2} dB RGB, below {minimumRgba} / {minimumRgb}");
+    }
+
+    [Fact]
+    public void UastcHigherEffortsDoNoWorse()
+    {
+        double[] psnr = [.. Efforts.Select(e => Psnr(Duck.Value, DecodeUastc(EncodeUastc(Duck.Value, e, parallel: false)), 4, 255))];
+        for (int i = 1; i < psnr.Length; i++)
+        {
+            Assert.True(psnr[i] >= psnr[i - 1] - 0.05, string.Join(", ", psnr));
+        }
+    }
+
+    [Fact]
+    public void UastcBlocksDoNotDependOnThreads()
+    {
+        Assert.Equal(EncodeUastc(Duck.Value, 4, parallel: false), EncodeUastc(Duck.Value, 4, parallel: true));
+        byte[] blocks = EncodeUastc(Duck.Value, 2, parallel: false);
+        byte[] one = (byte[])blocks.Clone();
+        byte[] four = (byte[])blocks.Clone();
+        UastcEncoder.Rdo(Duck.Value, Size, Size, one, 4f, 2, maxParallelism: 1);
+        UastcEncoder.Rdo(Duck.Value, Size, Size, four, 4f, 2, maxParallelism: 4);
+        Assert.Equal(one, four);
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(3)]
+    [InlineData(6)]
+    public void UastcScoresWhatTheDecoderDecodes(int effort)
+    {
+        // Every family of modes: the duck with its alpha, opaque, gray and gray with alpha.
+        foreach (byte[] image in Variants())
+        {
+            byte[] texels = new byte[64];
+            byte[] block = new byte[16];
+            byte[] decoded = new byte[64];
+            for (int b = 0; b < (Size / 4) * (Size / 4); b += 7)
+            {
+                Gather(image, (b % (Size / 4)) * 4, (b / (Size / 4)) * 4, 4, 4, texels);
+                long error = UastcEncoder.Encode(texels, block, effort);
+                Assert.True(Uastc.Unpack(block, decoded));
+                Assert.Equal(error, SquaredError(texels, decoded));
+            }
+        }
+    }
+
+    [Fact]
+    public void UastcReachesEveryMode()
+    {
+        var used = new HashSet<int>();
+        foreach (byte[] image in Variants())
+        {
+            byte[] blocks = EncodeUastc(image, 6, parallel: true);
+            for (int b = 0; b < blocks.Length; b += 16)
+            {
+                used.Add(Uastc.Mode(blocks[b]));
+            }
+        }
+
+        // Blocks crafted for the modes a photo rarely picks.
+        foreach (byte[] texels in CraftedBlocks())
+        {
+            byte[] block = new byte[16];
+            UastcEncoder.Encode(texels, block, 6);
+            used.Add(Uastc.Mode(block[0]));
+        }
+
+        Assert.Equal(Enumerable.Range(0, Uastc.Modes), used.Order());
+    }
+
+    [Fact]
+    public void UastcWritesConstantBlocksAsSolid()
+    {
+        byte[] texels = new byte[64];
+        for (int i = 0; i < 64; i += 4)
+        {
+            (texels[i], texels[i + 1], texels[i + 2], texels[i + 3]) = (12, 200, 99, 180);
+        }
+
+        byte[] block = new byte[16];
+        Assert.Equal(0, UastcEncoder.Encode(texels, block, 4));
+        Assert.Equal(8, Uastc.Mode(block[0]));
+        byte[] decoded = new byte[64];
+        Assert.True(Uastc.Unpack(block, decoded));
+        Assert.Equal(texels, decoded);
+    }
+
+    [Fact]
+    public void UastcRdoShrinksTheZstandardStream()
+    {
+        byte[] blocks = EncodeUastc(Duck.Value, 4, parallel: false);
+        double psnr = Psnr(Duck.Value, DecodeUastc(blocks), 4, 255);
+        int size = ZstandardSize(blocks);
+        byte[] untouched = (byte[])blocks.Clone();
+        UastcEncoder.Rdo(Duck.Value, Size, Size, untouched, 0f, 4);
+        Assert.Equal(blocks, untouched);
+
+        int previous = size;
+        foreach ((float lambda, double maxLoss) in new[] { (4f, 0.4), (16f, 2.0) })
+        {
+            byte[] rdo = (byte[])blocks.Clone();
+            UastcEncoder.Rdo(Duck.Value, Size, Size, rdo, lambda, 4);
+            byte[] decoded = DecodeUastc(rdo);
+            double loss = psnr - Psnr(Duck.Value, decoded, 4, 255);
+            int compressed = ZstandardSize(rdo);
+            Assert.True(compressed < previous, $"lambda {lambda}: {compressed} bytes, not below {previous}");
+            Assert.True(loss <= maxLoss, $"lambda {lambda}: PSNR down {loss:F2} dB, more than {maxLoss}");
+            previous = compressed;
+        }
+    }
+
     [Fact]
     public void AstcWritesConstantBlocksAsVoidExtent()
     {
@@ -175,6 +307,97 @@ public class TextureEncoderTests
 
         Run(rows, parallel, Row);
         return blocks;
+    }
+
+    private static byte[] EncodeUastc(byte[] image, int effort, bool parallel)
+    {
+        int columns = Size / 4;
+        byte[] blocks = new byte[columns * columns * 16];
+        void Row(int by)
+        {
+            byte[] texels = new byte[64];
+            for (int bx = 0; bx < columns; bx++)
+            {
+                Gather(image, bx * 4, by * 4, 4, 4, texels);
+                UastcEncoder.Encode(texels, blocks.AsSpan(((by * columns) + bx) * 16, 16), effort);
+            }
+        }
+
+        Run(columns, parallel, Row);
+        return blocks;
+    }
+
+    private static byte[] DecodeUastc(byte[] blocks)
+    {
+        int columns = Size / 4;
+        byte[] image = new byte[Size * Size * 4];
+        byte[] texels = new byte[64];
+        for (int b = 0; b < blocks.Length / 16; b++)
+        {
+            Assert.True(Uastc.Unpack(blocks.AsSpan(b * 16, 16), texels));
+            Scatter(texels, (b % columns) * 4, (b / columns) * 4, 4, 4, image);
+        }
+
+        return image;
+    }
+
+    private static int ZstandardSize(byte[] data) => Zstandard.Compress(data, new byte[Zstandard.MaxCompressedLength(data.Length)]);
+
+    private static long SquaredError(byte[] expected, byte[] actual)
+    {
+        long sum = 0;
+        for (int i = 0; i < expected.Length; i++)
+        {
+            int d = expected[i] - actual[i];
+            sum += d * d;
+        }
+
+        return sum;
+    }
+
+    /// <summary>The duck as it is, opaque, gray and gray with its alpha, so every family of UASTC modes is used.</summary>
+    private static IEnumerable<byte[]> Variants()
+    {
+        yield return Duck.Value;
+        for (int variant = 0; variant < 3; variant++)
+        {
+            byte[] image = (byte[])Duck.Value.Clone();
+            for (int i = 0; i < image.Length; i += 4)
+            {
+                if (variant > 0)
+                {
+                    byte y = (byte)(((image[i] * 77) + (image[i + 1] * 150) + (image[i + 2] * 29) + 128) >> 8);
+                    image[i] = image[i + 1] = image[i + 2] = y;
+                }
+
+                if (variant < 2)
+                {
+                    image[i + 3] = 255;
+                }
+            }
+
+            yield return image;
+        }
+    }
+
+    /// <summary>Blocks for the modes a photo rarely picks: a constant block (mode 8), and two colours only mode 1 holds exactly.</summary>
+    private static IEnumerable<byte[]> CraftedBlocks()
+    {
+        byte[] solid = new byte[64];
+        solid.AsSpan().Fill(77);
+        yield return solid;
+
+        // Values no endpoint range but the 256-level one holds, so of the opaque modes only 1 and 5 (tried after it) are exact.
+        byte[] offGrid = [.. Enumerable.Range(0, 256).Select(v => (byte)v)
+            .Where(v => CoarseRanges.All(r => Array.IndexOf(AstcIse.ColorUnquantized[r], v) < 0))];
+        byte[] two = new byte[64];
+        for (int t = 0; t < 16; t++)
+        {
+            int first = (t * 7) % 3 == 0 ? 0 : offGrid.Length - 3;
+            (two[t * 4], two[(t * 4) + 1], two[(t * 4) + 2], two[(t * 4) + 3]) = (offGrid[first], offGrid[first + 1], offGrid[first + 2], 255);
+        }
+
+        yield return two;
     }
 
     private static byte[] DecodeAstc(Astc astc, byte[] blocks, bool srgb)
@@ -288,14 +511,16 @@ public class TextureEncoderTests
     }
 
     /// <summary>Copies a block of texels, repeating the last row and column past the image's edge.</summary>
-    private static void Gather(int x0, int y0, int width, int height, byte[] texels)
+    private static void Gather(int x0, int y0, int width, int height, byte[] texels) => Gather(Duck.Value, x0, y0, width, height, texels);
+
+    private static void Gather(byte[] image, int x0, int y0, int width, int height, byte[] texels)
     {
         for (int y = 0; y < height; y++)
         {
             for (int x = 0; x < width; x++)
             {
                 int source = ((Math.Min(y0 + y, Size - 1) * Size) + Math.Min(x0 + x, Size - 1)) * 4;
-                Duck.Value.AsSpan(source, 4).CopyTo(texels.AsSpan(((y * width) + x) * 4));
+                image.AsSpan(source, 4).CopyTo(texels.AsSpan(((y * width) + x) * 4));
             }
         }
     }
