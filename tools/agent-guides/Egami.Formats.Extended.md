@@ -1,7 +1,7 @@
 # Egami.Formats.Extended: guide for coding agents
 
 Egami.Formats.Extended reads and writes image formats that most apps never meet but some still need: PCX, SGI, Sun raster, XBM,
-XPM, WBMP, Farbfeld and DDS textures (BC1 to BC7, mips, cube maps, arrays and volumes), reads KTX and KTX 2 textures (BC1 to BC7, ETC1, ETC2, EAC, 2D ASTC LDR and HDR, Basis Universal ETC1S and UASTC, and uncompressed; Zstandard and zlib supercompressed), and reads camera RAW (DNG, CR2, NEF, PEF, ARW, ORF, RW2 and RAF; CR3 previews and metadata), developed on
+XPM, WBMP, Farbfeld and DDS textures (BC1 to BC7, mips, cube maps, arrays and volumes), reads KTX and KTX 2 textures and writes KTX 2 (BC1 to BC7, ETC1, ETC2, EAC, 2D ASTC LDR and HDR, Basis Universal ETC1S and UASTC, and uncompressed; Zstandard and zlib supercompressed), and reads camera RAW (DNG, CR2, NEF, PEF, ARW, ORF, RW2 and RAF; CR3 previews and metadata), developed on
 load. Each is a plugin on core Egami's public format API.
 
 Namespaces: `Egami.Formats.Extended` (the `With...` methods), `Egami.Formats.Extended.<Format>` (`PcxFormat` and the other
@@ -16,10 +16,15 @@ format infos and options), with `Egami` and `Egami.Formats`.
 - DDS: Load gives mip 0 of the first surface; `DdsReaderOptions` (`Surface`, `MipLevel`, `IncludeMipLevels`,
   `ReconstructNormalZ`) and LoadAll reach every face, array slice, depth slice and mip; `DdsDetails` keeps the DXGI format.
   Save writes a full mip chain; `DdsWriterOptions` (`Format`, `MipLevels`, `Effort`, `Srgb`, `Cube`) and SaveAll write
-  block formats, arrays and cube maps.
-- KTX and KTX 2 (read only): `KtxFormat` and `Ktx2Format`; `KtxReaderOptions` (`Surface`, `MipLevel`, `IncludeMipLevels`,
+  block formats, arrays and cube maps. Integer and depth formats write mip 0 alone by default.
+- KTX and KTX 2: `KtxFormat` (read only) and `Ktx2Format` (read and write); `KtxReaderOptions` (`Surface`, `MipLevel`, `IncludeMipLevels`,
   `ReconstructNormalZ`, `KeepStoredLayout`) as DDS's; `KtxDetails` keeps the Vulkan or OpenGL format, supercompression,
   orientation, swizzle and key/value pairs. 3D ASTC, PVRTC, UASTC HDR 6 × 6, XUASTC and XUBC7 throw `UnsupportedFormatException`.
+  `Ktx2WriterOptions` (`Format` a `KtxTextureFormat`, `MipLevels`, `Effort`, `Srgb`, `Cube`, `Supercompression`,
+  `CompressionLevel`, `BasisQuality`, `UastcRdo`) writes uncompressed, BC, ETC, EAC, ASTC LDR, ETC1S and UASTC; no KTX 1.1
+  writing, no ASTC HDR or UASTC HDR, no SNORM.
+- `Texture` (`Egami.Formats.Extended.Textures`): `Texture.Load` a whole DDS, KTX or KTX 2 file; `GetImage`/`SetImage` by mip,
+  layer, face and slice; `GenerateMips`, `TrimMips`; `Save` to .dds or .ktx2 with exactly its mips (volumes too).
 - RAW: Load develops a DNG into `Rgb16` sRGB (or straight into the RGB space `ConvertColorTo` names); `RawReaderOptions`
   (`Output` = `Developed`, `HalfSize`, `Preview` or `Mosaic`; `WhiteBalance`, `Temperature`, `Tint`, `Exposure`, `Demosaic`,
   `Highlights`, `LuminanceNoiseReduction`, `ColorNoiseReduction`, `LensCorrections`, `ApplyProfile`) sets it; `RawDetails`

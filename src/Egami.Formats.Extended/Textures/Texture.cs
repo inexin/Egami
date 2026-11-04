@@ -266,6 +266,9 @@ public sealed class Texture : IDisposable
     /// <param name="path">The file.</param>
     /// <param name="options"><see cref="DdsWriterOptions"/> or <see cref="Ktx2WriterOptions"/>, or <see langword="null"/> for the defaults.</param>
     /// <exception cref="NotSupportedException">The extension is neither <c>.dds</c> nor <c>.ktx2</c>.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/FormatsExtended.cs" region="texture"/>
+    /// </example>
     public void Save(string path, WriterOptions? options = null)
     {
         ArgumentNullException.ThrowIfNull(path);
@@ -288,6 +291,9 @@ public sealed class Texture : IDisposable
     /// <param name="format"><see cref="DdsFormat.Info"/> or <see cref="Ktx2Format.Info"/>.</param>
     /// <param name="options"><see cref="DdsWriterOptions"/> or <see cref="Ktx2WriterOptions"/>, or <see langword="null"/> for the defaults.</param>
     /// <exception cref="NotSupportedException">The format is not DDS or KTX 2, or DDS is asked to hold an array of volumes.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/FormatsExtended.cs" region="texture"/>
+    /// </example>
     public void Save(Stream output, FormatInfo format, WriterOptions? options = null)
     {
         ArgumentNullException.ThrowIfNull(output);

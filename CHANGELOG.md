@@ -168,6 +168,21 @@ KTX stage C (Basis Universal; roadmap 2.3.11). No API changes.
   with optional rate-distortion optimization for Zstandard) encoders for the KTX writer to come; their output does not depend
   on the number of threads, and ETC1S files they make pass `ktx validate` and decode the same in libktx.
 
+KTX stage D (writing and whole textures; roadmap 2.3.11). Additive.
+
+- `Ktx2Format` writes KTX 2.0 through Save and SaveAll with `Ktx2WriterOptions`: `Format` (a `KtxTextureFormat`: the
+  uncompressed formats, UINT and SINT, D16 and D32F, BC1 to BC7, ETC1, ETC2, EAC, ASTC LDR in all 14 footprints, ETC1S and
+  UASTC LDR), `MipLevels`, `Effort` (0 to 6), `Srgb`, `PremultipliedAlpha`, `Cube`, `Supercompression` (Zstandard or zlib)
+  with `CompressionLevel`, `BasisQuality` for ETC1S and `UastcRdo` for UASTC. Left alone it writes the uncompressed format
+  nearest the pixel type, or a KTX or DDS source's own format, with the full mip chain. The data format descriptor carries the
+  raster's primaries and transfer function. Every file in the test set passes `ktx validate` and decodes the same in libktx
+  (`tools/make-ktx-references.py --written`); the output does not depend on the number of threads.
+- `Texture` (`Egami.Formats.Extended.Textures`) holds a whole DDS, KTX or KTX 2 texture, every layer, face, depth slice and mip:
+  `Load`, `FromSurfaces`, `FromSlices`, `GetImage`, `SetImage`, `GenerateMips`, `TrimMips` and `Save` to DDS or KTX 2 with
+  exactly the mips it holds. DDS volume textures are written through it.
+- The DDS writer adds the UINT and SINT formats, D16, D24S8, D32F and D32FS8 depth, and NV12, P010 and P016. Integer and depth
+  formats, in DDS and KTX 2, write mip 0 alone unless `MipLevels` asks for more.
+
 ## Egami train 1.4.0, Egami.SystemDrawing 1.0.0-preview.3 and Egami.Metafiles 1.0.2 (2026-11-01)
 
 The release train (Egami, Egami.Drawing, Egami.Fonts, Egami.Svg, Egami.Css, Egami.Heic, Egami.Formats.Extended and Egami.Cli)
