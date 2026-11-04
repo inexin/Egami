@@ -288,12 +288,10 @@ The activity and tag names are never renamed once shipped, like the diagnostic i
 | `Psd.DataTruncated` | Warning | The file ends inside the flattened image; the missing pixels are 0 |
 | `Psd.EffectsSkipped` | Warning | Flattening did not draw layer effects; the warning names the layers |
 | `Psd.FillSkipped` | Warning | Flattening left out gradient and pattern fill layers; the warning names them |
-| `Psd.FlattenUnsupported` | Warning | Load was asked to flatten a Lab, bitmap, indexed or multichannel file; the stored composite was loaded |
-| `Psd.KnockoutSkipped` | Warning | Flattening did not apply knockout; the warning names the layers |
+| `Psd.FlattenUnsupported` | Warning | Load was asked to flatten a bitmap, indexed, multichannel or 32-bit Lab file; the stored composite was loaded |
 | `Psd.LayerDataDamaged` | Warning | A layer channel's data is damaged or uses an unknown compression; its missing pixels are 0 |
 | `Psd.LayerDataTruncated` | Warning | A layer channel's data ends early; its missing pixels are 0 |
 | `Psd.LayersDamaged` | Warning | A layer record is damaged; the records after it were not read, which the flattened image does not need |
-| `Psd.MaskFeatherSkipped` | Warning | Flattening did not feather masks; the warning names the layers |
 | `Psd.NoComposite` | Warning | The file was saved without Maximize Compatibility and `PsdComposite.Stored` was asked for; its stored placeholder was loaded |
 | `Psd.ProfileUnreadable` | Warning | The embedded ICC profile of a CMYK file could not be read; its layers use FOGRA39's inks |
 | `Psd.ResourcesDamaged` | Warning | An image resource is damaged; the resources after it were skipped |

@@ -246,9 +246,7 @@ internal sealed partial class PsdFlattener
             "Psd.EffectsSkipped" => $"Layer effects were not drawn, on {list}.",
             "Psd.AdjustmentSkipped" => $"Adjustment layers of a kind Egami does not apply were left out: {list}.",
             "Psd.FillSkipped" => $"Gradient and pattern fill layers were left out: {list}.",
-            "Psd.KnockoutSkipped" => $"Knockout was not applied, on {list}.",
             "Psd.BlendModeUnknown" => $"Layers with a blend mode Egami does not know were blended Normal: {list}.",
-            "Psd.MaskFeatherSkipped" => $"Mask feathering was not applied, on {list}.",
             "Psd.ClippingBlendSkipped" => $"Clipped layers that blend with the layers under the base were blended with the base alone: {list}.",
             _ => $"{id}: {list}.",
         };
@@ -703,7 +701,7 @@ internal sealed partial class PsdFlattener
         }
     }
 
-    private static readonly PsdLayer PlainNormal =new("", default, 1, "norm", BlendMode.SourceOver, true, false, PsdLayerKind.Layer, 0);
+    private static readonly PsdLayer PlainNormal = new("", default, 1, "norm", BlendMode.SourceOver, true, false, PsdLayerKind.Layer, 0);
 
     private float[] Scratch()
     {

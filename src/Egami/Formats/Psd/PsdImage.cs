@@ -135,18 +135,19 @@ public sealed partial class PsdDocument : IDisposable
 
     /// <summary>
     /// Composites the layers as Photoshop does, with each layer's <see cref="PsdLayerImage.Info"/> as it is now, so a changed copy
-    /// (a layer hidden, another opacity or blend mode) flattens differently: visibility, opacity, fill opacity, blend mode (all of
-    /// Photoshop's), pixel and vector masks, clipping, pass-through and isolated groups, blending ranges, solid color fills and
-    /// the levels, curves, hue/saturation, brightness/contrast and invert adjustments. Layer effects, other adjustments,
-    /// gradient and pattern fills and knockout are left out with one warning a kind naming the layers. 8 and 16-bit documents
-    /// blend their stored values, 32-bit ones linear light.
+    /// (a layer hidden, another opacity or blend mode) flattens differently: visibility, opacity, fill opacity (inside the
+    /// formula of Photoshop's eight special modes), blend mode (all of Photoshop's), pixel and vector masks with their density
+    /// and feather, clipping, pass-through and isolated groups, shallow and deep knockout, blending ranges, solid color fills
+    /// and the levels, curves, hue/saturation, brightness/contrast and invert adjustments. Layer effects, other adjustments and
+    /// gradient and pattern fills are left out with one warning a kind naming the layers. 8 and 16-bit documents blend their
+    /// stored values (Lab its L*, a* and b*, turned into sRGB at the end), 32-bit ones linear light.
     /// </summary>
     /// <param name="options">The options, or <see langword="null"/> for the defaults.</param>
     /// <returns>
     /// The flattened image at the canvas's size, in the type Load gives a file of this mode and depth: with alpha only when some
     /// pixel is not opaque. Its metadata is the document's, with the warnings of the flattening. The caller must dispose it.
     /// </returns>
-    /// <exception cref="UnsupportedFormatException">The document is Lab, bitmap, indexed or multichannel, which Egami does not flatten.</exception>
+    /// <exception cref="UnsupportedFormatException">The document is bitmap, indexed, multichannel or 32-bit Lab, which Egami does not flatten.</exception>
     /// <exception cref="LimitExceededException">The canvases the flattening needs break <see cref="SafetyLimits.MaxTotalBytes"/>.</exception>
     /// <exception cref="ObjectDisposedException">The document has been disposed.</exception>
     /// <example>
