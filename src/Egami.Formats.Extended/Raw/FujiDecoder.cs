@@ -116,6 +116,7 @@ internal static class FujiDecoder
     /// <summary>A quantisation table: thresholds, quantiser base and the derived step, size and raw width (spec, section 7.3).</summary>
     private sealed class QTable
     {
+        private readonly sbyte[]? _q;
         private readonly int _max;
         private readonly int _t0;
         private readonly int _t1;
@@ -147,6 +148,15 @@ internal static class FujiDecoder
             }
 
             (_t0, _t1, _t2, _t3) = (t0, t1, t2, t3);
+            if (max < 1 << 15)
+            {
+                // Up to 14 bits the table is at most 32 KB and a lookup beats the comparisons; 16-bit data's would be 128 KB.
+                _q = new sbyte[(2 * max) + 1];
+                for (int v = -max; v <= max; v++)
+                {
+                    _q[v + max] = (sbyte)Compare(v);
+                }
+            }
         }
 
         public int Q { get; }
@@ -161,12 +171,17 @@ internal static class FujiDecoder
 
         /// <summary>
         /// Quantises a gradient: −4 at or below −T3, −3 at or below −T2, −2 at or below −T1, −1 below −T0, 0 to T0, 1 below T1, 2
-        /// below T2, 3 below T3, else 4. As a sum of comparisons rather than a table, which for 16-bit data is 128 KB and missed
-        /// the cache.
+        /// below T2, 3 below T3, else 4. From the table when there is one, else as a sum of comparisons: 16-bit data's table
+        /// would be 128 KB and miss the cache.
         /// </summary>
         public int Of(int v)
         {
             v = Math.Clamp(v, -_max, _max);
+            return _q is sbyte[] q ? q[v + _max] : Compare(v);
+        }
+
+        private int Compare(int v)
+        {
             return (v > _t0 ? 1 : 0) + (v >= _t1 ? 1 : 0) + (v >= _t2 ? 1 : 0) + (v >= _t3 ? 1 : 0)
                 - (v < -_t0 ? 1 : 0) - (v <= -_t1 ? 1 : 0) - (v <= -_t2 ? 1 : 0) - (v <= -_t3 ? 1 : 0);
         }
