@@ -173,10 +173,12 @@ EXIF (with GPS) and XMP come through as for TIFF.
   Over the corpus the measure is a median 1.2 times Adobe's calibrated profiles, but for a few files (strongly textured scenes,
   the Canon EOS 350D, the Panasonic GH6) it reads up to several times higher, so the same setting reduces more. Luminance
   noise reduction works on the mosaic, so Canon sRAW and mRAW files get colour noise reduction only.
-- Adobe DNG Converter stores the Panasonic DMC-L10's values 15 levels below the file's, by a rule not yet known; Egami keeps
-  the file's, so its develop has slightly lighter blacks.
-- Adobe gives some Canon sRAW and mRAW files a brighter baseline exposure than the camera's normal raws (+0.25 EV for the EOS 5D
-  Mark II, +0.34 EV for the EOS 70D, by a rule not yet known); Egami uses the camera's raw one.
+- Adobe DNG Converter picks a Canon sRAW or mRAW file's white level by its ISO, from its own tables, and moves the baseline
+  exposure with it. Egami uses the pair Adobe gave the camera's sample, which develops to the same brightness at every ISO,
+  but clips highlights at that sample's white level: at other ISOs Adobe's can be higher (EOS 7D: 9000 at ISO 160 and 1250,
+  11400 at most others) or lower (EOS 6D and 70D: 11800 at ISO 160 and 1250, against 13000).
+- Adobe DNG Converter stores the Panasonic DMC-L10's values with its black level (15) subtracted; Egami keeps the file's
+  values and gives the black level instead, which develops the same.
 - DNG writing writes BigTIFF past 4 GB (which DNG readers, Egami's included, may not open), and makes previews from Egami's
   own develop.
 
