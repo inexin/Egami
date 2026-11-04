@@ -20,8 +20,9 @@ internal sealed class PsdPlanes : IDisposable
     private readonly long _length;
     private readonly bool _strict;
     private readonly int[] _channelSlot;
-    private readonly long[][]? _rowOffsets;
-    private readonly int[][]? _rowLengths;
+    // PackBits rows: each needed channel's row offsets and byte counts, from the pools.
+    private long[][]? _rowOffsets;
+    private int[][]? _rowLengths;
     private readonly byte[]? _inflated;
     private byte[] _scratch = [];
     private bool _held;
@@ -45,7 +46,16 @@ internal sealed class PsdPlanes : IDisposable
         switch (file.Compression)
         {
             case PsdCompression.PackBits:
-                (_rowOffsets, _rowLengths) = ReadRowCounts(channels);
+                try
+                {
+                    (_rowOffsets, _rowLengths) = ReadRowCounts(channels);
+                }
+                catch
+                {
+                    Dispose();
+                    throw;
+                }
+
                 break;
             case PsdCompression.Deflate or PsdCompression.DeflatePredicted:
                 _inflated = Inflate();
@@ -60,7 +70,7 @@ internal sealed class PsdPlanes : IDisposable
     public WarningList Warnings { get; }
 
     /// <summary>Gets the bytes held besides the caller's: the inflated planes, a stream read whole, and the PackBits row table.</summary>
-    public long WorkingBytes => (_inflated?.LongLength ?? 0) + (_held ? _memory.Count : 0) + ((_rowOffsets?.Sum(r => r.LongLength) ?? 0) * 12) + RowBytes;
+    public long WorkingBytes => (_inflated?.LongLength ?? 0) + (_held ? _memory.Count : 0) + ((_rowOffsets?.LongLength ?? 0) * _file.Height * 12) + RowBytes;
 
     /// <summary>Returns what <see cref="Open"/> will hold for a file read from a seekable stream or memory, before opening it.</summary>
     public static long PlannedBytes(PsdFile file, int channels)
@@ -203,10 +213,12 @@ internal sealed class PsdPlanes : IDisposable
         int[][] lengths = new int[channels.Count][];
         for (int i = 0; i < channels.Count; i++)
         {
-            offsets[i] = new long[height];
-            lengths[i] = new int[height];
+            offsets[i] = ArrayPool<long>.Shared.Rent(height);
+            lengths[i] = ArrayPool<int>.Shared.Rent(height);
         }
 
+        // Disposing returns them; set now so a throw below returns them too.
+        (_rowOffsets, _rowLengths) = (offsets, lengths);
         long maxRow = (2L * RowBytes) + 64;
         long at = tableBytes;
         byte[] chunk = ArrayPool<byte>.Shared.Rent(Math.Min(64 * 1024, (int)Math.Max(entry, tableBytes)));
@@ -410,6 +422,21 @@ internal sealed class PsdPlanes : IDisposable
     {
         ArrayPool<byte>.Shared.Return(_scratch);
         _scratch = [];
+        if (_rowOffsets is not null)
+        {
+            foreach (long[] offsets in _rowOffsets)
+            {
+                ArrayPool<long>.Shared.Return(offsets);
+            }
+
+            foreach (int[] lengths in _rowLengths!)
+            {
+                ArrayPool<int>.Shared.Return(lengths);
+            }
+
+            (_rowOffsets, _rowLengths) = (null, null);
+        }
+
         if (_held && _memory.Array is byte[] held)
         {
             ArrayPool<byte>.Shared.Return(held);

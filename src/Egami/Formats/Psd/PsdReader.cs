@@ -481,6 +481,7 @@ internal sealed class PsdReader : IFormatReader, IRowSourceReader
         private readonly PsdPlanes _planes;
         private readonly bool _ownsInput;
         private readonly byte[][] _channelRows;
+        private readonly int[] _needed;
         private readonly TNatural[] _natural;
         private readonly byte[] _palette = [];
         private int _row = -1;
@@ -493,9 +494,9 @@ internal sealed class PsdReader : IFormatReader, IRowSourceReader
             _planes = planes;
             _ownsInput = ownsInput;
             Metadata = metadata;
-            List<int> needed = Needed(file);
-            _channelRows = new byte[needed.Count][];
-            for (int i = 0; i < needed.Count; i++)
+            _needed = [.. Needed(file)];
+            _channelRows = new byte[_needed.Length][];
+            for (int i = 0; i < _needed.Length; i++)
             {
                 _channelRows[i] = ArrayPool<byte>.Shared.Rent(planes.RowBytes);
             }
@@ -560,10 +561,9 @@ internal sealed class PsdReader : IFormatReader, IRowSourceReader
         /// <summary>Reads row <paramref name="y"/> of every needed channel and converts it into the natural row.</summary>
         private void Gather(int y)
         {
-            List<int> needed = Needed(_file);
-            for (int i = 0; i < needed.Count; i++)
+            for (int i = 0; i < _needed.Length; i++)
             {
-                _planes.ReadRow(needed[i], y, _channelRows[i]);
+                _planes.ReadRow(_needed[i], y, _channelRows[i]);
             }
 
             Span<byte> natural = MemoryMarshal.AsBytes(_natural.AsSpan(0, _file.Width));
