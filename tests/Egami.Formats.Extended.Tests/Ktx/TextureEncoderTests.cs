@@ -67,16 +67,16 @@ public class TextureEncoderTests
     public static TheoryData<string, int, double> EtcCases => new()
     {
         // Format, effort, minimum PSNR (RGB, or RGBA for the formats with alpha, or the EAC channel).
-        { "etc1", 0, 31.5 },
-        { "etc1", 4, 32.5 },
-        { "etc2", 0, 31.5 },
-        { "etc2", 4, 32.6 },
-        { "a1", 4, 33.0 },
-        { "rgba", 0, 32.8 },
-        { "rgba", 4, 33.9 },
-        { "r11", 0, 38.9 },
-        { "r11", 4, 39.6 },
-        { "r11-signed", 4, 39.6 },
+        { "etc1", 0, 31.6 },
+        { "etc1", 4, 32.65 },
+        { "etc2", 0, 31.6 },
+        { "etc2", 4, 32.75 },
+        { "a1", 4, 33.1 },
+        { "rgba", 0, 32.85 },
+        { "rgba", 4, 34.0 },
+        { "r11", 0, 39.0 },
+        { "r11", 4, 39.9 },
+        { "r11-signed", 4, 39.9 },
     };
 
     public static TheoryData<int, double, double> UastcCases => new()
@@ -108,8 +108,8 @@ public class TextureEncoderTests
 
     [Theory]
     [Trait("Category", "Slow")]
-    [InlineData("etc1", 6, 32.5)]
-    [InlineData("etc2", 6, 32.7)]
+    [InlineData("etc1", 6, 32.8)]
+    [InlineData("etc2", 6, 32.95)]
     public void EtcReachesItsQualityAtEffortSix(string format, int effort, double minimum) => EtcReachesItsQuality(format, effort, minimum);
 
     [Fact]
