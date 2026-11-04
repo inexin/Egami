@@ -189,6 +189,8 @@ as Adobe DNG Converter writes it: a 256-pixel thumbnail and the camera tags in I
 JPEG preview in another. A converted file keeps the source's levels, active area, crop, colour filter pattern, linearization
 table and opcode lists, a colour profile from the file or the camera table (both illuminants' ColorMatrix, CameraCalibration
 and ForwardMatrix, and the baseline exposure), EXIF, XMP and the maker note, which goes into DNGPrivateData in Adobe's form. A
+lossy Nikon NEF is stored as Adobe stores it: the codes before the camera's curve, with the curve as the LinearizationTable,
+when the curve rises over the codes the file uses (the codes span a few hundred values, so they compress much better). A
 DNG source keeps every tag it had, its values exactly. A camera with colour data in neither the file nor the table gets the
 profile Egami develops it with (the camera treated as sRGB) and a `Raw.DngCameraUnknown` warning through
 `EgamiContext.Diagnostics`.
@@ -212,7 +214,8 @@ previews show the raster itself.
 | `Preview` | `DngPreview.Medium` | A 256-pixel thumbnail and a 1024-pixel JPEG; `Thumbnail`, `Full` (a full-size JPEG) or `None` (the raw data is the first image) |
 | `ParallelCompression` | `true` | Codes tiles on several threads; the file is the same |
 
-On the 57 corpus files Egami reads as RAW, a converted DNG loads back with its mosaic, levels, areas and pattern bit for bit,
+On the 57 corpus files Egami reads as RAW, a converted DNG loads back with its mosaic (after its linearization table), levels,
+areas and pattern bit for bit,
 and develops to the source's develop within a level in 16 bits. Adobe DNG Converter, LibRaw (through Magick.NET), Windows'
 Raw Image Extension and Adobe's dng_validate open it. Its colour tags are Adobe's for the same file. With lossless JPEG and
 the medium preview it is 0.7 % smaller than Adobe's DNG over the corpus, within 2 % file by file but for a lossy Nikon NEF,

@@ -409,21 +409,17 @@ internal static class MakerDecoders
         ([0, 1, 4, 2, 2, 3, 1, 2, 0, 0, 0, 0, 0, 0, 0, 0], [7, 6, 8, 5, 9, 4, 10, 3, 11, 12, 2, 0, 1, 13, 14]),
     ];
 
-    /// <summary>Nikon NEF Huffman with its curve and split row (NEF spec, sections 3 to 6).</summary>
-    private static void Nikon(ReadOnlySpan<byte> data, RawPixels pixels, NikonMeta meta, int bits)
+    /// <summary>
+    /// Returns a Nikon file's curve from its metadata block, indexed by the decoded code (NEF spec, section 4): the stored
+    /// points (linearly interpolated between for the stepped kind of lossy data), the identity past them and for lossless data.
+    /// </summary>
+    internal static ushort[] NikonCurve(NikonMeta meta, int bits)
     {
-        if (data.Length >= 4 && data[0] == 0xFF && data[1] == 0x10 && data[2] == 0xFF && data[3] == 0x50)
-        {
-            throw new NotSupportedException("Egami does not read Nikon's High Efficiency (JPEG XS) raw data.");
-        }
-
         byte[] m = meta.Bytes;
         int U(int at) => at + 2 <= m.Length ? (meta.BigEndian ? BinaryPrimitives.ReadUInt16BigEndian(m.AsSpan(at)) : BinaryPrimitives.ReadUInt16LittleEndian(m.AsSpan(at))) : 0;
         int ver0 = m.Length > 0 ? m[0] : 0, ver1 = m.Length > 1 ? m[1] : 0;
         int at = 2 + (ver0 == 0x49 || ver1 == 0x58 ? 2110 : 0);
 
-        // The initial vertical predictors in LibRaw's order (open point of the spec): (even, even), (even, odd), (odd, even), (odd, odd).
-        int[,] vpred = { { U(at), U(at + 2) }, { U(at + 4), U(at + 6) } };
         int csize = U(at + 8);
         int max = (1 << bits) & 0x7FFF;
         ushort[] curve = new ushort[0x10000];
@@ -469,6 +465,25 @@ internal static class MakerDecoders
             }
         }
 
+        return curve;
+    }
+
+    /// <summary>Nikon NEF Huffman with its curve and split row (NEF spec, sections 3 to 6).</summary>
+    private static void Nikon(ReadOnlySpan<byte> data, RawPixels pixels, NikonMeta meta, int bits)
+    {
+        if (data.Length >= 4 && data[0] == 0xFF && data[1] == 0x10 && data[2] == 0xFF && data[3] == 0x50)
+        {
+            throw new NotSupportedException("Egami does not read Nikon's High Efficiency (JPEG XS) raw data.");
+        }
+
+        byte[] m = meta.Bytes;
+        int U(int at) => at + 2 <= m.Length ? (meta.BigEndian ? BinaryPrimitives.ReadUInt16BigEndian(m.AsSpan(at)) : BinaryPrimitives.ReadUInt16LittleEndian(m.AsSpan(at))) : 0;
+        int ver0 = m.Length > 0 ? m[0] : 0, ver1 = m.Length > 1 ? m[1] : 0;
+        int at = 2 + (ver0 == 0x49 || ver1 == 0x58 ? 2110 : 0);
+
+        // The initial vertical predictors in LibRaw's order (open point of the spec): (even, even), (even, odd), (odd, even), (odd, odd).
+        int[,] vpred = { { U(at), U(at + 2) }, { U(at + 4), U(at + 6) } };
+        ushort[] curve = NikonCurve(meta, bits);
         int split = ver0 == 0x44 && (ver1 is 0x20 or 0x40) ? U(562) : 0;
         int tree = (ver0 == 0x46 ? 2 : 0) + (bits == 14 ? 3 : 0);
         PeekTable codes = PeekTable.Canonical(NikonTables[tree].Counts, NikonTables[tree].Symbols);

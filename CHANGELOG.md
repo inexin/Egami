@@ -5,6 +5,13 @@ changes that break code come only in a new major version.
 
 ## Egami (unreleased)
 
+Smaller DNGs from lossy NEFs (RAW follow-up). No API changes.
+
+- `RawFormat.ConvertToDng` stores a lossy Nikon NEF as Adobe DNG Converter does: the codes before the camera's curve, with
+  the curve as the DNG's LinearizationTable (DNG 1.7.1, tag 50712), when the curve rises over the codes the file uses. A
+  reader that applies the table gets the same values back, and the develop is the same. The Nikon D90 sample's DNG goes from
+  20.9 % larger than Adobe's to 0.7 % smaller.
+
 Faster lossless JPEG XL encoding (roadmap 2.4.11). No API changes; every file is byte for byte the same as before.
 
 - Effort 1 splits planes with vector code and writes its bits two codes at a time without branches.
