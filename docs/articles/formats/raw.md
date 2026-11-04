@@ -219,8 +219,8 @@ areas and pattern bit for bit,
 and develops to the source's develop within a level in 16 bits. Adobe DNG Converter, LibRaw (through Magick.NET), Windows'
 Raw Image Extension and Adobe's dng_validate open it. Its colour tags are Adobe's for the same file. With lossless JPEG and
 the medium preview it is 0.9 % smaller than Adobe's DNG over the corpus and within 2 % file by file. On one thread it
-converts the corpus in 70 % of the time Adobe DNG Converter takes pinned to one core (one large Fujifilm file takes 3 %
-longer than Adobe).
+converts the corpus in 70 % of the time Adobe DNG Converter takes pinned to one core, and each file faster than Adobe: the
+closest, a 16-bit Fujifilm GFX100S file, in 90 % of Adobe's time.
 
 Limits: a DNG past 4 GB is written as BigTIFF, which Egami's own RAW reader does not open.
 `Save` has no context, so it reports no `Raw.DngCameraUnknown` warning; `ConvertToDng` and `Transcode` do. dng_validate warns of

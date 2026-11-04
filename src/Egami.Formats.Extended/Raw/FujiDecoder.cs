@@ -1,5 +1,7 @@
 using System.Buffers.Binary;
 using System.Numerics;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace Egami.Formats.Extended.Raw;
 
@@ -114,8 +116,12 @@ internal static class FujiDecoder
     /// <summary>A quantisation table: thresholds, quantiser base and the derived step, size and raw width (spec, section 7.3).</summary>
     private sealed class QTable
     {
-        private readonly sbyte[] _q;
+        private readonly sbyte[]? _q;
         private readonly int _max;
+        private readonly int _t0;
+        private readonly int _t1;
+        private readonly int _t2;
+        private readonly int _t3;
 
         public QTable(int max, int q, int t1, int t2, int t3, int mult)
         {
@@ -141,10 +147,15 @@ internal static class FujiDecoder
                 t3 = t2;
             }
 
-            _q = new sbyte[(2 * max) + 1];
-            for (int v = -max; v <= max; v++)
+            (_t0, _t1, _t2, _t3) = (t0, t1, t2, t3);
+            if (max < 1 << 15)
             {
-                _q[v + max] = (sbyte)(v <= -t3 ? -4 : v <= -t2 ? -3 : v <= -t1 ? -2 : v < -t0 ? -1 : v <= t0 ? 0 : v < t1 ? 1 : v < t2 ? 2 : v < t3 ? 3 : 4);
+                // Up to 14 bits the table is at most 32 KB and a lookup beats the comparisons; 16-bit data's would be 128 KB.
+                _q = new sbyte[(2 * max) + 1];
+                for (int v = -max; v <= max; v++)
+                {
+                    _q[v + max] = (sbyte)Compare(v);
+                }
             }
         }
 
@@ -158,7 +169,22 @@ internal static class FujiDecoder
 
         public int RawBits { get; }
 
-        public int Of(int v) => _q[Math.Clamp(v, -_max, _max) + _max];
+        /// <summary>
+        /// Quantises a gradient: −4 at or below −T3, −3 at or below −T2, −2 at or below −T1, −1 below −T0, 0 to T0, 1 below T1, 2
+        /// below T2, 3 below T3, else 4. From the table when there is one, else as a sum of comparisons: 16-bit data's table
+        /// would be 128 KB and miss the cache.
+        /// </summary>
+        public int Of(int v)
+        {
+            v = Math.Clamp(v, -_max, _max);
+            return _q is sbyte[] q ? q[v + _max] : Compare(v);
+        }
+
+        private int Compare(int v)
+        {
+            return (v > _t0 ? 1 : 0) + (v >= _t1 ? 1 : 0) + (v >= _t2 ? 1 : 0) + (v >= _t3 ? 1 : 0)
+                - (v < -_t0 ? 1 : 0) - (v <= -_t1 ? 1 : 0) - (v <= -_t2 ? 1 : 0) - (v <= -_t3 ? 1 : 0);
+        }
 
         public int Initial => Math.Max(2, (Total + 32) >> 6);
     }
@@ -176,6 +202,7 @@ internal static class FujiDecoder
         private readonly ReadOnlySpan<byte> _q;
         private readonly RawPixels _pixels;
         private readonly int _w;
+        private readonly int _stride;
         private readonly int _max;
         private readonly int _maxBits;
         private readonly int[] _lines;
@@ -198,6 +225,7 @@ internal static class FujiDecoder
             _q = q;
             _pixels = pixels;
             _w = h.XTransType ? BlockWidth * 2 / 3 : BlockWidth / 2;
+            _stride = _w + 2;
             _max = (1 << h.Bits) - 1;
             _maxBits = 4 * (32 - BitOperations.LeadingZeroCount((uint)_max));
             _lines = new int[18 * (_w + 2)];
@@ -226,9 +254,10 @@ internal static class FujiDecoder
             }
         }
 
-        private readonly int Cell(int line, int p) => _lines[(line * (_w + 2)) + p + 1];
+        // Lines are 0 to 17 and positions -1 to W, by construction, so the colour lines need no bounds checks.
+        private readonly int Cell(int line, int p) => Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(_lines), (line * _stride) + p + 1);
 
-        private readonly void Set(int line, int p, int v) => _lines[(line * (_w + 2)) + p + 1] = v;
+        private readonly void Set(int line, int p, int v) => Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(_lines), (line * _stride) + p + 1) = v;
 
         public void Run()
         {
@@ -318,8 +347,10 @@ internal static class FujiDecoder
             if (even)
             {
                 int dnw = Math.Abs(nw - n), dnn = Math.Abs(nn - n), dne = Math.Abs(ne - n);
-                int s = dnw > dnn && dnw > dne ? nn + ne + (2 * n) : dne > dnw && dne > dnn ? nn + nw + (2 * n) : ne + nw + (2 * n);
-                pred = s >> 2;
+                // The two neighbours beside the largest difference, without branches: they are hard to predict.
+                bool westOut = (dnw > dnn) & (dnw > dne), eastOut = !westOut & (dne > dnw) & (dne > dnn);
+                int left = westOut ? nn : nw, right = eastOut ? nn : ne;
+                pred = (left + right + (2 * n)) >> 2;
                 v1 = n - nn;
                 v2 = nw - n;
                 m = dnw + dnn;
@@ -332,7 +363,9 @@ internal static class FujiDecoder
             else
             {
                 int wc = Cell(line, p - 1), ec = Cell(line, p + 1);
-                pred = (n > nw && n > ne) || (n < nw && n < ne) ? (wc + ec + (2 * n)) >> 2 : (wc + ec) >> 1;
+                bool extreme = Math.Sign(n - nw) * Math.Sign(n - ne) > 0;
+                int sum = wc + ec;
+                pred = extreme ? (sum + (2 * n)) >> 2 : sum >> 1;
                 v1 = n - nw;
                 v2 = nw - wc;
                 m = Math.Abs(n - nw) + Math.Abs(nw - wc);
@@ -364,10 +397,12 @@ internal static class FujiDecoder
             int code;
             if (z < _maxBits - t.RawBits - 1)
             {
-                int kk = 0;
-                while (kk < 15 && nArr[ctx] << kk < a[ctx])
+                // The least kk (at most 15) with n << kk at least a: n's top bit shifted to a's, or one more.
+                int count = nArr[ctx], sum = a[ctx], kk = 0;
+                if (count < sum)
                 {
-                    kk++;
+                    kk = BitOperations.LeadingZeroCount((uint)count) - BitOperations.LeadingZeroCount((uint)sum);
+                    kk = Math.Min(15, count << kk < sum ? kk + 1 : kk);
                 }
 
                 code = (z << kk) + (int)Read(kk);
@@ -382,7 +417,8 @@ internal static class FujiDecoder
                 throw new InvalidDataException($"a code outside the table at line {line}, position {p}");
             }
 
-            int e = (code & 1) == 0 ? code >> 1 : -((code + 1) >> 1);
+            // Even codes 2m are m, odd codes 2m + 1 are −(m + 1).
+            int e = (code >> 1) ^ -(code & 1);
             a[ctx] += Math.Abs(e);
             if (nArr[ctx] == 64)
             {
@@ -391,7 +427,8 @@ internal static class FujiDecoder
             }
 
             nArr[ctx]++;
-            int value = g >= 0 ? pred + (e * t.Step) : pred - (e * t.Step);
+            int sign = g >> 31, step = e * t.Step;
+            int value = pred + ((step ^ sign) - sign);
             if (value < -t.Q)
             {
                 value += t.Total * t.Step;
@@ -409,18 +446,47 @@ internal static class FujiDecoder
         {
             int x0 = _strip * BlockWidth;
             int width = Math.Min(BlockWidth, _h.Width - x0);
+            Span<int> sources = stackalloc int[6];
             for (int r = 0; r < 6; r++)
             {
-                Span<ushort> row = _pixels.U16Row((line * 6) + r);
-                for (int x = 0; x < width; x++)
+                Span<ushort> row = _pixels.U16Row((line * 6) + r).Slice(x0, width);
+                if (_h.XTransType)
                 {
-                    int colour = _h.XTransType ? XTrans[(r * 6) + (x % 6)] : (((r & 1) << 1) | (x & 1)) switch { 0 => 0, 3 => 2, _ => 1 };
-                    int source = colour switch { 0 => R0 + 2 + (r / 2), 1 => G0 + 2 + r, _ => B0 + 2 + (r / 2) };
-                    int idx = _h.XTransType ? (2 * (x / 3)) + (x % 3 == 0 ? 0 : 1) : x / 2;
-                    row[x0 + x] = (ushort)Cell(source, idx);
+                    // Each 6 columns hold cells 4c to 4c + 3: columns 0, 1 and 2 cells 4c, 4c + 1, 4c + 1, columns 3 to 5
+                    // cells 4c + 2, 4c + 3, 4c + 3, each from its colour's line.
+                    for (int i = 0; i < 6; i++)
+                    {
+                        sources[i] = Source(XTrans[(r * 6) + i], r);
+                    }
+
+                    for (int x = 0; x < width; x++)
+                    {
+                        int i = x % 6;
+                        int idx = (2 * (x / 3)) + (x % 3 == 0 ? 0 : 1);
+                        row[x] = (ushort)Cell(sources[i], idx);
+                    }
+                }
+                else
+                {
+                    // Bayer: even rows red and green, odd rows green and blue; columns 2c and 2c + 1 both read cell c.
+                    int even = Source((r & 1) == 0 ? 0 : 1, r), odd = Source((r & 1) == 0 ? 1 : 2, r);
+                    int x = 0;
+                    for (; x + 1 < width; x += 2)
+                    {
+                        row[x] = (ushort)Cell(even, x >> 1);
+                        row[x + 1] = (ushort)Cell(odd, x >> 1);
+                    }
+
+                    if (x < width)
+                    {
+                        row[x] = (ushort)Cell(even, x >> 1);
+                    }
                 }
             }
         }
+
+        /// <summary>The colour line a raw row's samples of a colour come from.</summary>
+        private static int Source(int colour, int r) => colour switch { 0 => R0 + 2 + (r / 2), 1 => G0 + 2 + r, _ => B0 + 2 + (r / 2) };
 
         private int Zeros()
         {
@@ -466,6 +532,23 @@ internal static class FujiDecoder
 
         private void Fill()
         {
+            if (_count > 56)
+            {
+                return;
+            }
+
+            if (_pos + 8 <= _data.Length)
+            {
+                // As many whole bytes as fit, from one big-endian read: the same bits as a byte at a time.
+                int bytes = (64 - _count) >> 3;
+                ulong word = BinaryPrimitives.ReadUInt64BigEndian(_data[_pos..]) >> _count;
+                int kept = _count + (bytes * 8);
+                _buffer |= kept == 64 ? word : word & ~(ulong.MaxValue >> kept);
+                _pos += bytes;
+                _count = kept;
+                return;
+            }
+
             while (_count <= 56)
             {
                 ulong b = _pos < _data.Length ? _data[_pos] : 0UL;
