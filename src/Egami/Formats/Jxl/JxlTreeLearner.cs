@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -581,20 +582,48 @@ internal sealed class JxlTreeLearner
 
     private void FindBestSplit(List<JxlTreeNode> tree, float threshold, float fastDecodeMultiplier, int parallelism)
     {
-        Stack<(int Pos, int Begin, int End)> nodes = new();
-        nodes.Push((0, 0, _n));
+        Learning learning = new(tree, threshold, fastDecodeMultiplier, 800f / (100f + threshold), _compact.Max(c => c.Length) + 1, parallelism);
+        LearnSubtree(learning, 0, 0, _n);
+
+        // A subtree adds the tasks of its own large subtrees before it ends, so once none is left all of them are done.
+        while (learning.Pending.TryTake(out Task? task))
+        {
+            task.Wait();
+        }
+    }
+
+    /// <summary>
+    /// Splits a node and its descendants. Each node's split depends only on its own samples, and the tree is written out by
+    /// following child links, so when both halves of a split are large they are learned at the same time.
+    /// </summary>
+    private void LearnSubtree(Learning learning, int root, int rootBegin, int rootEnd)
+    {
+        List<JxlTreeNode> tree = learning.Tree;
+        float threshold = learning.Threshold;
+        int parallelism = learning.Parallelism;
         int predictors = _predictors.Length;
         int properties = _properties.Length;
-        float changePenalty = 800f / (100f + threshold);
-        int maxValues = _compact.Max(c => c.Length) + 1;
+        int maxValues = learning.MaxValues;
         Candidates[] found = new Candidates[properties];
-        Scratch[] scratch = [.. Enumerable.Range(0, properties).Select(_ => new Scratch(maxValues, predictors))];
+        if (!learning.Scratch.TryTake(out Scratch[]? scratch))
+        {
+            scratch = [.. Enumerable.Range(0, properties).Select(_ => new Scratch(maxValues, predictors))];
+        }
+
+        Stack<(int Pos, int Begin, int End)> nodes = new();
+        nodes.Push((root, rootBegin, rootEnd));
         while (nodes.Count > 0)
         {
             (int pos, int begin, int end) = nodes.Pop();
             if (begin == end)
             {
                 continue;
+            }
+
+            int predictor;
+            lock (learning.TreeLock)
+            {
+                predictor = tree[pos].Predictor;
             }
 
             int maxSymbols = 0;
@@ -632,12 +661,12 @@ internal sealed class JxlTreeLearner
                 totalExtra[pr] = extra;
             }
 
-            int nodePredictor = Array.IndexOf(_predictors, tree[pos].Predictor);
+            int nodePredictor = Array.IndexOf(_predictors, predictor);
             float baseBits = EstimateBits(counts.AsSpan(nodePredictor * maxSymbols, maxSymbols), nodeTotal) + totalExtra[nodePredictor];
             Array.Fill(found, Candidates.None);
             if (baseBits > threshold)
             {
-                NodeScan scan = new(begin, end, maxSymbols, maxValues, nodeTotal, counts, totalExtra, tree[pos].Predictor, changePenalty);
+                NodeScan scan = new(begin, end, maxSymbols, maxValues, nodeTotal, counts, totalExtra, predictor, learning.ChangePenalty);
 
                 // Each property is priced on its own; large nodes price them in parallel, and the results combine in order. With
                 // more threads than properties, the largest nodes also count each property's samples in parts.
@@ -669,12 +698,12 @@ internal sealed class JxlTreeLearner
             }
 
             Split chosen = nonStatic;
-            if (noWp.Cost + threshold < baseBits && noWp.Cost <= fastDecodeMultiplier * chosen.Cost)
+            if (noWp.Cost + threshold < baseBits && noWp.Cost <= learning.FastDecodeMultiplier * chosen.Cost)
             {
                 chosen = noWp;
             }
 
-            if (staticSplit.Cost + threshold < baseBits && staticSplit.Cost <= fastDecodeMultiplier * chosen.Cost)
+            if (staticSplit.Cost + threshold < baseBits && staticSplit.Cost <= learning.FastDecodeMultiplier * chosen.Cost)
             {
                 chosen = staticSplit;
             }
@@ -689,21 +718,62 @@ internal sealed class JxlTreeLearner
                 continue;
             }
 
-            int left = tree.Count;
-            JxlTreeNode node = tree[pos];
-            node.Property = _properties[chosen.Prop];
-            node.SplitValue = _compact[chosen.Prop][chosen.Value];
-            node.Left = left;
-            node.Right = left + 1;
-            tree[pos] = node;
+            int left;
+            lock (learning.TreeLock)
+            {
+                left = tree.Count;
+                JxlTreeNode node = tree[pos];
+                node.Property = _properties[chosen.Prop];
+                node.SplitValue = _compact[chosen.Prop][chosen.Value];
+                node.Left = left;
+                node.Right = left + 1;
+                tree[pos] = node;
 
-            // The left child takes the samples above the split, coded with the right side's predictor in libjxl's naming.
-            tree.Add(JxlTreeNode.Leaf(chosen.RightPredictor));
-            tree.Add(JxlTreeNode.Leaf(chosen.LeftPredictor));
+                // The left child takes the samples above the split, coded with the right side's predictor in libjxl's naming.
+                tree.Add(JxlTreeNode.Leaf(chosen.RightPredictor));
+                tree.Add(JxlTreeNode.Leaf(chosen.LeftPredictor));
+            }
+
             SplitSamples(begin, chosen.Pos, end, chosen.Prop, chosen.Value);
-            nodes.Push((left + 1, begin, chosen.Pos));
-            nodes.Push((left, chosen.Pos, end));
+            int below = chosen.Pos;
+            if (parallelism > 1 && below - begin >= MinParallelSubtree && end - below >= MinParallelSubtree)
+            {
+                learning.Pending.Add(Task.Run(() => LearnSubtree(learning, left + 1, begin, below)));
+            }
+            else
+            {
+                nodes.Push((left + 1, begin, below));
+            }
+
+            nodes.Push((left, below, end));
         }
+
+        learning.Scratch.Add(scratch);
+    }
+
+    /// <summary>The samples both halves of a split need before they are learned at the same time.</summary>
+    private const int MinParallelSubtree = 1 << 14;
+
+    /// <summary>What every subtree of one learned tree shares: the tree, the settings, spare scratch arrays and running subtrees.</summary>
+    private sealed class Learning(List<JxlTreeNode> tree, float threshold, float fastDecodeMultiplier, float changePenalty, int maxValues, int parallelism)
+    {
+        internal List<JxlTreeNode> Tree { get; } = tree;
+
+        internal Lock TreeLock { get; } = new();
+
+        internal float Threshold { get; } = threshold;
+
+        internal float FastDecodeMultiplier { get; } = fastDecodeMultiplier;
+
+        internal float ChangePenalty { get; } = changePenalty;
+
+        internal int MaxValues { get; } = maxValues;
+
+        internal int Parallelism { get; } = parallelism;
+
+        internal ConcurrentBag<Scratch[]> Scratch { get; } = [];
+
+        internal ConcurrentBag<Task> Pending { get; } = [];
     }
 
     /// <summary>
