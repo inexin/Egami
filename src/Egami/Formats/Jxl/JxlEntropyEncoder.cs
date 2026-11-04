@@ -821,20 +821,20 @@ internal sealed class JxlEntropyCode
     /// <summary>Writes one stream: the final ANS state, then the renormalization bits and raw bits in decoding order.</summary>
     internal void WriteTokens(IJxlBitSink w, List<JxlToken> tokens)
     {
-        // Coded last to first; a token's raw bits follow its symbol when decoding, so they are pushed first here. Each chunk
-        // keeps its bits low and its bit count above them.
+        // Coded last to first. Each token keeps what it writes in one chunk, in decoding order: the 16 renormalization bits
+        // when bit 38 is set (bits 40 to 55), then its raw bits (the low 32, their count in bits 32 to 37).
         ReadOnlySpan<JxlToken> all = CollectionsMarshal.AsSpan(tokens);
-        ulong[] chunks = ArrayPool<ulong>.Shared.Rent(Math.Max(1, all.Length * 2));
+        ulong[] chunks = ArrayPool<ulong>.Shared.Rent(Math.Max(1, all.Length));
         ulong[][] magic = _magic ??= Magic(_freq);
         byte[] contextMap = _contextMap;
         JxlUintConfig[] configs = _configs;
-        int count = 0;
         uint state = 0x130000;
         for (int i = all.Length - 1; i >= 0; i--)
         {
             JxlToken t = all[i];
             int histo = contextMap[t.Context];
             uint tok = t.Value;
+            ulong chunk = 0;
             ref readonly JxlUintConfig c = ref configs[histo];
             if (t.IsLz77Length || tok >= c.Split)
             {
@@ -844,18 +844,17 @@ internal sealed class JxlEntropyCode
                     tok += Lz77MinSymbol;
                 }
 
-                if (nbits > 0)
-                {
-                    chunks[count++] = bits | ((ulong)nbits << 32);
-                }
+                chunk = bits | ((ulong)nbits << 32);
             }
 
             uint freq = _freq[histo][tok];
             if ((state >> (32 - LogTab)) >= freq)
             {
-                chunks[count++] = (state & 0xFFFF) | (16UL << 32);
+                chunk |= (1UL << 38) | ((ulong)(state & 0xFFFF) << 40);
                 state >>= 16;
             }
+
+            chunks[i] = chunk;
 
             // state / freq by a multiply (Lemire, Kaser and Kurz, "Faster remainder by direct computation"), exact for 32-bit
             // numerators; a frequency of 1 has no 64-bit reciprocal and is marked 0.
@@ -868,16 +867,36 @@ internal sealed class JxlEntropyCode
         if (w is JxlBitWriter writer)
         {
             // The sealed writer directly, without an interface call per chunk.
-            for (int i = count - 1; i >= 0; i--)
+            for (int i = 0; i < all.Length; i++)
             {
-                writer.Write((uint)chunks[i], (int)(chunks[i] >> 32));
+                ulong chunk = chunks[i];
+                if ((chunk & (1UL << 38)) != 0)
+                {
+                    writer.Write((uint)(chunk >> 40), 16);
+                }
+
+                int nbits = (int)(chunk >> 32) & 63;
+                if (nbits > 0)
+                {
+                    writer.Write((uint)chunk, nbits);
+                }
             }
         }
         else
         {
-            for (int i = count - 1; i >= 0; i--)
+            for (int i = 0; i < all.Length; i++)
             {
-                w.Write((uint)chunks[i], (int)(chunks[i] >> 32));
+                ulong chunk = chunks[i];
+                if ((chunk & (1UL << 38)) != 0)
+                {
+                    w.Write((uint)(chunk >> 40), 16);
+                }
+
+                int nbits = (int)(chunk >> 32) & 63;
+                if (nbits > 0)
+                {
+                    w.Write((uint)chunk, nbits);
+                }
             }
         }
 

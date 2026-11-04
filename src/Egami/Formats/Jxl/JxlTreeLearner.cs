@@ -1,3 +1,4 @@
+using System.Buffers;
 using System.Collections.Concurrent;
 using System.Numerics;
 using System.Runtime.CompilerServices;
@@ -51,7 +52,8 @@ internal sealed class JxlTreeLearner
     private int[] _table = [];
 
     // Each sample's tokens, static properties (two bytes each) and other properties packed in 16 bytes, when they fit, for
-    // hashing and comparing while samples are added; the raw bit counts follow from the tokens.
+    // hashing and comparing while samples are added; the raw bit counts follow from the tokens. Rented, and given back once
+    // learning starts.
     private UInt128[]? _keys;
     private int[][] _compact = [];
     private ushort[][] _staticMapping = [];
@@ -69,7 +71,7 @@ internal sealed class JxlTreeLearner
         _static = [.. Enumerable.Range(0, _staticCount).Select(_ => new int[capacity])];
         _props = [.. Enumerable.Range(0, properties.Length - _staticCount).Select(_ => new byte[capacity])];
         _counts = new ushort[capacity];
-        _keys = predictors.Length + (2 * _staticCount) + _props.Length <= 16 ? new UInt128[capacity] : null;
+        _keys = predictors.Length + (2 * _staticCount) + _props.Length <= 16 ? ArrayPool<UInt128>.Shared.Rent(capacity) : null;
         Rehash(BitOperations.RoundUpToPowerOf2((uint)capacity * 2));
     }
 
@@ -210,7 +212,12 @@ internal sealed class JxlTreeLearner
     {
         List<JxlTreeNode> tree = [JxlTreeNode.Leaf(_predictors[0])];
         _table = [];
-        _keys = null;
+        if (_keys is not null)
+        {
+            ArrayPool<UInt128>.Shared.Return(_keys);
+            _keys = null;
+        }
+
         if (_n == 0)
         {
             return tree;
@@ -424,7 +431,10 @@ internal sealed class JxlTreeLearner
         Array.Resize(ref _counts, size);
         if (_keys is not null)
         {
-            Array.Resize(ref _keys, size);
+            UInt128[] keys = ArrayPool<UInt128>.Shared.Rent(size);
+            _keys.AsSpan(0, _n).CopyTo(keys);
+            ArrayPool<UInt128>.Shared.Return(_keys);
+            _keys = keys;
         }
     }
 
@@ -582,7 +592,23 @@ internal sealed class JxlTreeLearner
 
     private void FindBestSplit(List<JxlTreeNode> tree, float threshold, float fastDecodeMultiplier, int parallelism)
     {
-        Learning learning = new(tree, threshold, fastDecodeMultiplier, 800f / (100f + threshold), _compact.Max(c => c.Length) + 1, parallelism);
+        int symbols = 0;
+        foreach (byte[] toks in _tokens)
+        {
+            for (int i = 0; i < _n; i++)
+            {
+                symbols = Math.Max(symbols, toks[i] + 1);
+            }
+        }
+
+        Learning learning = new(tree, threshold, fastDecodeMultiplier, 800f / (100f + threshold), _compact.Max(c => c.Length) + 1, Padded(symbols), parallelism);
+
+        // Every subtree learned at the same time needs scratch arrays of its own, sized for each property's values and the tokens
+        // in use. The sets may take up to four times what one set sized for the most values and every byte value would; at least
+        // enough to keep the threads busy, and no more than the threads.
+        long set = _compact.Sum(c => (long)(c.Length + 1)) * learning.Symbols;
+        long budget = (long)_properties.Length * learning.MaxValues * 1024;
+        learning.MaxSubtrees = (int)Math.Min(parallelism - 1, Math.Max((budget / set) - 1, (parallelism / _properties.Length) - 1));
         LearnSubtree(learning, 0, 0, _n);
 
         // A subtree adds the tasks of its own large subtrees before it ends, so once none is left all of them are done.
@@ -607,9 +633,12 @@ internal sealed class JxlTreeLearner
         Candidates[] found = new Candidates[properties];
         if (!learning.Scratch.TryTake(out Scratch[]? scratch))
         {
-            scratch = [.. Enumerable.Range(0, properties).Select(_ => new Scratch(maxValues, predictors))];
+            scratch = [.. Enumerable.Range(0, properties).Select(p => new Scratch(_compact[p].Length + 1, predictors, learning.Symbols))];
         }
 
+        // Each node's token counts, strided by the node's own padded symbol count, in arrays kept for the whole subtree.
+        int[] counts = new int[learning.Symbols * predictors];
+        long[] totalExtra = new long[predictors];
         Stack<(int Pos, int Begin, int End)> nodes = new();
         nodes.Push((root, rootBegin, rootEnd));
         while (nodes.Count > 0)
@@ -637,8 +666,7 @@ internal sealed class JxlTreeLearner
             }
 
             maxSymbols = Padded(maxSymbols);
-            int[] counts = new int[maxSymbols * predictors];
-            long[] totalExtra = new long[predictors];
+            Array.Clear(counts, 0, maxSymbols * predictors);
             int nodeTotal = 0;
             for (int i = begin; i < end; i++)
             {
@@ -736,9 +764,19 @@ internal sealed class JxlTreeLearner
 
             SplitSamples(begin, chosen.Pos, end, chosen.Prop, chosen.Value);
             int below = chosen.Pos;
-            if (parallelism > 1 && below - begin >= MinParallelSubtree && end - below >= MinParallelSubtree)
+            if (parallelism > 1 && below - begin >= MinParallelSubtree && end - below >= MinParallelSubtree && learning.TryStartSubtree())
             {
-                learning.Pending.Add(Task.Run(() => LearnSubtree(learning, left + 1, begin, below)));
+                learning.Pending.Add(Task.Run(() =>
+                {
+                    try
+                    {
+                        LearnSubtree(learning, left + 1, begin, below);
+                    }
+                    finally
+                    {
+                        learning.EndSubtree();
+                    }
+                }));
             }
             else
             {
@@ -755,8 +793,11 @@ internal sealed class JxlTreeLearner
     private const int MinParallelSubtree = 1 << 14;
 
     /// <summary>What every subtree of one learned tree shares: the tree, the settings, spare scratch arrays and running subtrees.</summary>
-    private sealed class Learning(List<JxlTreeNode> tree, float threshold, float fastDecodeMultiplier, float changePenalty, int maxValues, int parallelism)
+    private sealed class Learning(List<JxlTreeNode> tree, float threshold, float fastDecodeMultiplier, float changePenalty, int maxValues, int symbols, int parallelism)
     {
+        // The subtrees being learned besides the first.
+        private int _subtrees;
+
         internal List<JxlTreeNode> Tree { get; } = tree;
 
         internal Lock TreeLock { get; } = new();
@@ -769,11 +810,31 @@ internal sealed class JxlTreeLearner
 
         internal int MaxValues { get; } = maxValues;
 
+        /// <summary>Gets the padded count of token values the samples use, which the scratch arrays are sized for.</summary>
+        internal int Symbols { get; } = symbols;
+
         internal int Parallelism { get; } = parallelism;
 
         internal ConcurrentBag<Scratch[]> Scratch { get; } = [];
 
         internal ConcurrentBag<Task> Pending { get; } = [];
+
+        /// <summary>Gets the most subtrees learned at the same time as the first one.</summary>
+        internal int MaxSubtrees { get; set; }
+
+        /// <summary>Counts a subtree in when there is room for another, which then must call <see cref="EndSubtree"/>.</summary>
+        internal bool TryStartSubtree()
+        {
+            if (Interlocked.Increment(ref _subtrees) <= MaxSubtrees)
+            {
+                return true;
+            }
+
+            Interlocked.Decrement(ref _subtrees);
+            return false;
+        }
+
+        internal void EndSubtree() => Interlocked.Decrement(ref _subtrees);
     }
 
     /// <summary>
@@ -805,14 +866,14 @@ internal sealed class JxlTreeLearner
                 {
                     // Each part counts into arrays of its own; integer sums, so the totals do not depend on the split.
                     int length = predictors * size * maxSymbols;
-                    int[][] partUsed = new int[parts][];
-                    int[][] partCounts = new int[parts][];
+                    int[][] partUsed = scratch.PartUsed(parts);
+                    int[][] partCounts = scratch.PartCounts(parts);
                     Parallel.For(0, parts, options!, k =>
                     {
                         int from = n.Begin + (int)((long)(n.End - n.Begin) * k / parts);
                         int to = n.Begin + (int)((long)(n.End - n.Begin) * (k + 1) / parts);
-                        partUsed[k] = new int[size];
-                        partCounts[k] = new int[length];
+                        Array.Clear(partUsed[k], 0, size);
+                        Array.Clear(partCounts[k], 0, length);
                         GatherProperty(prop, from, to, partUsed[k], partCounts[k], size, maxSymbols);
                     });
 
@@ -1141,14 +1202,17 @@ internal sealed class JxlTreeLearner
         internal static Candidates None => new() { StaticConstant = Split.None, Static = Split.None, NonStatic = Split.None, NoWp = Split.None };
     }
 
-    /// <summary>One property scan's working arrays, sized for any node (tokens are below 256).</summary>
-    private sealed class Scratch(int values, int predictors)
+    /// <summary>One property scan's working arrays, sized for any node.</summary>
+    private sealed class Scratch(int values, int predictors, int symbols)
     {
+        private int[][] _partUsed = [];
+        private int[][] _partCounts = [];
+
         internal int[] Used { get; } = new int[values];
 
         internal int[] ValueTotal { get; } = new int[values];
 
-        internal int[] CountIncrease { get; } = new int[predictors * values * 256];
+        internal int[] CountIncrease { get; } = new int[predictors * values * symbols];
 
         internal int[] CountsAbove { get; } = new int[256];
 
@@ -1159,6 +1223,27 @@ internal sealed class JxlTreeLearner
         internal (float Cost, float Extra, int Predictor)[] CostsL { get; } = new (float, float, int)[values];
 
         internal (float Cost, float Extra, int Predictor)[] CostsR { get; } = new (float, float, int)[values];
+
+        /// <summary>Gets the used-value arrays of a count split in parts, kept from one large node to the next.</summary>
+        internal int[][] PartUsed(int parts) => Parts(ref _partUsed, parts, values);
+
+        /// <summary>Gets the token-count arrays of a count split in parts, kept from one large node to the next.</summary>
+        internal int[][] PartCounts(int parts) => Parts(ref _partCounts, parts, CountIncrease.Length);
+
+        private static int[][] Parts(ref int[][] kept, int parts, int length)
+        {
+            if (kept.Length < parts)
+            {
+                int had = kept.Length;
+                Array.Resize(ref kept, parts);
+                for (int k = had; k < parts; k++)
+                {
+                    kept[k] = new int[length];
+                }
+            }
+
+            return kept;
+        }
     }
 
     /// <summary>What every property's scan of one node shares.</summary>
