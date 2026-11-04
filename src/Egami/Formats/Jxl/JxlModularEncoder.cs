@@ -1,3 +1,6 @@
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+
 namespace Egami.Formats.Jxl;
 
 /// <summary>A Modular image being encoded: its channels after the transforms so far, meta channels first.</summary>
@@ -2113,9 +2116,22 @@ internal sealed class JxlModularEncoder
         bool usesWp = only == 15 || lut.Any(leaf => predictor[leaf] == 6);
         JxlWeightedPredictor? wp = usesWp ? new JxlWeightedPredictor(width, wpParams ?? new JxlWpParams()) : null;
         List<JxlToken> tokens = new(width * height);
+        CollectionsMarshal.SetCount(tokens, width * height);
+        Span<JxlToken> output = CollectionsMarshal.AsSpan(tokens);
+        bool gradient = wp is null && lut.All(leaf => predictor[leaf] == 5 && (multiplier is null || multiplier[leaf] <= 1));
+        long[] wpRow = wp is null ? [] : new long[width];
+        int[] errorRow = wp is null ? [] : new int[width];
         for (int y = 0; y < height; y++)
         {
             int row = y * width;
+            if (gradient && y > 0 && width > 1)
+            {
+                GradientRow(d, row, width, lut, range, context, output);
+                continue;
+            }
+
+            wp?.Row(d, y, wpRow, errorRow);
+
             for (int x = 0; x < width; x++)
             {
                 int at = row + x;
@@ -2124,14 +2140,8 @@ internal sealed class JxlModularEncoder
                 int nw = x > 0 && y > 0 ? d[at - width - 1] : w;
                 int ne = x + 1 < width && y > 0 ? d[at - width + 1] : n;
                 int nn = y > 1 ? d[at - (2 * width)] : n;
-                long wpPrediction = 0;
-                int v;
-                if (wp is not null)
-                {
-                    wpPrediction = wp.Predict(n, nw, ne, w, nn);
-                }
-
-                v = only == 15 ? wp!.MaxError : unchecked(w + n - nw);
+                long wpPrediction = wp is null ? 0 : wpRow[x];
+                int v = only == 15 ? errorRow[x] : unchecked(w + n - nw);
                 int leaf = lut[Math.Clamp(v, -range, range - 1) + range];
                 int pr = predictor[leaf];
                 long guess;
@@ -2153,12 +2163,40 @@ internal sealed class JxlModularEncoder
                     residual /= multiplier[leaf];
                 }
 
-                tokens.Add(new JxlToken(context[leaf], JxlTreeLearner.PackSigned(residual)));
-                wp?.Record(d[at]);
+                output[at] = new JxlToken(context[leaf], JxlTreeLearner.PackSigned(residual));
             }
         }
 
         return tokens;
+    }
+
+    /// <summary>
+    /// Codes a row below the first of a channel whose tree leaves all use the gradient predictor and test only the gradient
+    /// property (effort 2 and the gradient-only lookup).
+    /// </summary>
+    private static void GradientRow(int[] data, int row, int width, int[] lut, int range, int[] context, Span<JxlToken> output)
+    {
+        ref int d = ref MemoryMarshal.GetArrayDataReference(data);
+        ref int leaves = ref MemoryMarshal.GetArrayDataReference(lut);
+        ref int contexts = ref MemoryMarshal.GetArrayDataReference(context);
+        ref JxlToken o = ref MemoryMarshal.GetReference(output);
+        int up = row - width;
+
+        // The first column: west is north and so is north-west.
+        int n0 = Unsafe.Add(ref d, up);
+        int l0 = Unsafe.Add(ref leaves, Math.Clamp(n0, -range, range - 1) + range);
+        Unsafe.Add(ref o, row) = new JxlToken(Unsafe.Add(ref contexts, l0), JxlTreeLearner.PackSigned(unchecked(Unsafe.Add(ref d, row) - n0)));
+        for (int x = 1; x < width; x++)
+        {
+            int w = Unsafe.Add(ref d, row + x - 1);
+            int n = Unsafe.Add(ref d, up + x);
+            int nw = Unsafe.Add(ref d, up + x - 1);
+            int v = unchecked(w + n - nw);
+            int leaf = Unsafe.Add(ref leaves, Math.Clamp(v, -range, range - 1) + range);
+            long grad = (long)n + w - nw;
+            long guess = Math.Clamp(grad, Math.Min(w, n), Math.Max(w, n));
+            Unsafe.Add(ref o, row + x) = new JxlToken(Unsafe.Add(ref contexts, leaf), JxlTreeLearner.PackSigned(unchecked(Unsafe.Add(ref d, row + x) - (int)guess)));
+        }
     }
 
     /// <summary>A color's channel values, compared by value.</summary>

@@ -474,7 +474,6 @@ internal sealed class JxlChannelPlan
 /// </summary>
 internal sealed class JxlWeightedPredictor
 {
-    private static readonly uint[] DivLookup = BuildDivLookup();
 
     private readonly int _width;
     private readonly long _p1, _p2, _p3a, _p3b, _p3c, _p3d, _p3e;
@@ -482,6 +481,7 @@ internal sealed class JxlWeightedPredictor
     // The row above's errors, five per sample (the true error, then the four sub-predictors' errors), so a neighbour's are
     // one load apart.
     private readonly uint[] _errRow;
+    private int[]? _rows;
     private int _x;
     private int _y;
     private int _errW;
@@ -538,30 +538,13 @@ internal sealed class JxlWeightedPredictor
         long s = ((long)sum >> 1) - 1 + (_s0 * w0) + (_s1 * w1) + (_s2 * w2) + (_s3 * w3w);
         // Each weight is at least 4, so sum >> 4 is at least 1, and after the shift the sum is below 32.
         long prediction = (s * Divide(sum)) >> 24;
-        if (((errN ^ errW) | (errN ^ errNw)) <= 0)
-        {
-            long min = Math.Min(n3, Math.Min(w3, ne3));
-            long max = Math.Max(n3, Math.Max(w3, ne3));
-            prediction = Math.Clamp(prediction, min, max);
-        }
 
-        long maxError = errW;
-        if (Math.Abs(errN) > Math.Abs(maxError))
-        {
-            maxError = errN;
-        }
-
-        if (Math.Abs(errNw) > Math.Abs(maxError))
-        {
-            maxError = errNw;
-        }
-
-        if (Math.Abs(errNe) > Math.Abs(maxError))
-        {
-            maxError = errNe;
-        }
-
-        MaxError = (int)maxError;
+        // Clamped to the neighbours when the errors agree in sign; this and the largest error below avoid branches, which the
+        // data would mispredict.
+        long clamped = Min(Max(prediction, Min(n3, Min(w3, ne3))), Max(n3, Max(w3, ne3)));
+        long agree = (((errN ^ errW) | (errN ^ errNw)) - 1) >> 63;
+        prediction ^= (prediction ^ clamped) & agree;
+        MaxError = (int)LargestError(errW, errN, errNw, errNe);
         _prediction = prediction;
         return prediction;
     }
@@ -632,27 +615,227 @@ internal sealed class JxlWeightedPredictor
 
     private static ulong Abs(long v) => v < 0 ? (ulong)-v : (ulong)v;
 
+    /// <summary>Gets the error of largest magnitude, the first of equals, without branches.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static long LargestError(long errW, long errN, long errNw, long errNe)
+    {
+        long largest = errW;
+        long magnitude = AbsL(errW);
+        Larger(ref largest, ref magnitude, errN);
+        Larger(ref largest, ref magnitude, errNw);
+        Larger(ref largest, ref magnitude, errNe);
+        return largest;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static void Larger(ref long largest, ref long magnitude, long e)
+    {
+        long a = AbsL(e);
+        long more = (magnitude - a) >> 63;
+        largest ^= (largest ^ e) & more;
+        magnitude ^= (magnitude ^ a) & more;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static long AbsL(long v)
+    {
+        long m = v >> 63;
+        return (v ^ m) - m;
+    }
+
+    // Branch-free minimum and maximum, for values far from the ends of the range.
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static long Min(long a, long b)
+    {
+        long d = a - b;
+        return b + (d & (d >> 63));
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static long Max(long a, long b)
+    {
+        long d = a - b;
+        return a - (d & (d >> 63));
+    }
+
+    /// <summary>
+    /// Predicts every sample of row <paramref name="y"/> of a channel whose samples are all known, the encoder's case, and
+    /// records each: the same as <see cref="Predict"/> and <see cref="Record"/> per sample, with the state in locals. The
+    /// predictor must be at the start of that row.
+    /// </summary>
+    internal void Row(int[] data, int y, Span<long> prediction, Span<int> maxError)
+    {
+        int width = _width;
+        uint[] errRow = _errRow;
+        long p1 = _p1, p2 = _p2, p3a = _p3a, p3b = _p3b, p3c = _p3c, p3d = _p3d, p3e = _p3e;
+        uint mw0 = _w0, mw1 = _w1, mw2 = _w2, mw3 = _w3;
+        int errW = _errW, errNw = _errNw, errN = _errN, errNe = _errNe;
+        uint a0 = _subNwWw0, a1 = _subNwWw1, a2 = _subNwWw2, a3 = _subNwWw3;
+        uint b0 = _subNW0, b1 = _subNW1, b2 = _subNW2, b3 = _subNW3;
+        uint c0 = _subNe0, c1 = _subNe1, c2 = _subNe2, c3 = _subNe3;
+        ref uint errors = ref MemoryMarshal.GetArrayDataReference(errRow);
+
+        // The neighbours as rows with the edge rules filled in: the current row with its west of the first sample, the row
+        // above with its north-west and north-east past the ends, and the row two above (the row above on row 1).
+        int[] rows = _rows ??= new int[(3 * width) + 6];
+        int row = y * width;
+        Span<int> cur = rows.AsSpan(1, width + 1);
+        Span<int> up = rows.AsSpan(width + 3, width + 1);
+        Span<int> up2 = rows.AsSpan((2 * width) + 5, width);
+        data.AsSpan(row, width).CopyTo(cur[..width]);
+        if (y == 0)
+        {
+            rows[0] = 0;
+        }
+        else
+        {
+            data.AsSpan(row - width, width).CopyTo(up);
+            rows[width + 2] = data[row - width];
+            rows[(2 * width) + 3] = data[row - 1];
+            rows[0] = data[row - width];
+            data.AsSpan(y > 1 ? row - (2 * width) : row - width, width).CopyTo(up2);
+        }
+
+        ref int pc = ref rows[1];
+        ref int pu = ref rows[width + 3];
+        ref int pu2 = ref rows[(2 * width) + 5];
+        prediction = prediction[..width];
+        maxError = maxError[..width];
+        for (int x = 0; x < width; x++)
+        {
+            int w = Unsafe.Add(ref pc, x - 1);
+            int n, nw, ne, nn;
+            if (y > 0)
+            {
+                n = Unsafe.Add(ref pu, x);
+                nw = Unsafe.Add(ref pu, x - 1);
+                ne = Unsafe.Add(ref pu, x + 1);
+                nn = Unsafe.Add(ref pu2, x);
+            }
+            else
+            {
+                n = nw = ne = nn = w;
+            }
+
+            unchecked
+            {
+                long n3 = (long)n << 3;
+                long nw3 = (long)nw << 3;
+                long ne3 = (long)ne << 3;
+                long w3 = (long)w << 3;
+                long nn3 = (long)nn << 3;
+                long s0 = w3 + ne3 - n3;
+                long s1 = n3 - ((((long)errW + errN + errNe) * p1) >> 5);
+                long s2 = w3 - ((((long)errW + errN + errNw) * p2) >> 5);
+                long s3 = n3 - ((((long)errNw * p3a) + ((long)errN * p3b) + ((long)errNe * p3c) + ((nn3 - n3) * p3d) + ((nw3 - w3) * p3e)) >> 5);
+                uint w0 = Weight(a0 + b0 + c0, mw0);
+                uint w1 = Weight(a1 + b1 + c1, mw1);
+                uint w2 = Weight(a2 + b2 + c2, mw2);
+                uint w3w = Weight(a3 + b3 + c3, mw3);
+                uint sum = w0 + w1 + w2 + w3w;
+                int logWeight = System.Numerics.BitOperations.Log2(sum >> 4);
+                w0 >>= logWeight;
+                w1 >>= logWeight;
+                w2 >>= logWeight;
+                w3w >>= logWeight;
+                sum = w0 + w1 + w2 + w3w;
+                long sw = ((long)sum >> 1) - 1 + (s0 * w0) + (s1 * w1) + (s2 * w2) + (s3 * w3w);
+                long predicted = (sw * Divide(sum)) >> 24;
+
+                long clamped = Min(Max(predicted, Min(n3, Min(w3, ne3))), Max(n3, Max(w3, ne3)));
+                long agree = ((long)((errN ^ errW) | (errN ^ errNw)) - 1) >> 63;
+                predicted ^= (predicted ^ clamped) & agree;
+
+                long me = LargestError(errW, errN, errNw, errNe);
+
+                prediction[x] = predicted;
+                maxError[x] = (int)me;
+
+                // Record.
+                long s8 = (long)Unsafe.Add(ref pc, x) << 3;
+                int trueErr = (int)(predicted - s8);
+                uint e0 = (uint)((AbsL(s0 - s8) + 3) >> 3);
+                uint e1 = (uint)((AbsL(s1 - s8) + 3) >> 3);
+                uint e2 = (uint)((AbsL(s2 - s8) + 3) >> 3);
+                uint e3 = (uint)((AbsL(s3 - s8) + 3) >> 3);
+                ref uint here = ref Unsafe.Add(ref errors, 5 * x);
+                here = (uint)trueErr;
+                Unsafe.Add(ref here, 1) = e0;
+                Unsafe.Add(ref here, 2) = e1;
+                Unsafe.Add(ref here, 3) = e2;
+                Unsafe.Add(ref here, 4) = e3;
+                if (x + 1 >= width)
+                {
+                    break;
+                }
+
+                errW = trueErr;
+                errNw = errN;
+                errN = errNe;
+                (a0, a1, a2, a3) = (b0, b1, b2, b3);
+                b0 = c0 + e0;
+                b1 = c1 + e1;
+                b2 = c2 + e2;
+                b3 = c3 + e3;
+                if (x + 2 >= width)
+                {
+                    errNe = errN;
+                    (c0, c1, c2, c3) = (b0, b1, b2, b3);
+                }
+                else if (y != 0)
+                {
+                    ref uint next = ref Unsafe.Add(ref errors, 5 * (x + 2));
+                    errNe = (int)next;
+                    (c0, c1, c2, c3) = (Unsafe.Add(ref next, 1), Unsafe.Add(ref next, 2), Unsafe.Add(ref next, 3), Unsafe.Add(ref next, 4));
+                }
+            }
+        }
+
+        // The row end, as Record does it.
+        _y = y + 1;
+        _x = 0;
+        _errW = 0;
+        _errN = (int)errRow[0];
+        _errNw = _errN;
+        (_subNW0, _subNW1, _subNW2, _subNW3) = (errRow[1], errRow[2], errRow[3], errRow[4]);
+        (_subNwWw0, _subNwWw1, _subNwWw2, _subNwWw3) = (_subNW0, _subNW1, _subNW2, _subNW3);
+        if (width <= 1)
+        {
+            _errNe = _errN;
+            (_subNe0, _subNe1, _subNe2, _subNe3) = (_subNW0, _subNW1, _subNW2, _subNW3);
+        }
+        else
+        {
+            _errNe = (int)errRow[5];
+            (_subNe0, _subNe1, _subNe2, _subNe3) = (errRow[6], errRow[7], errRow[8], errRow[9]);
+        }
+    }
+
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static uint Weight(uint errorSum, uint maxWeight)
     {
         uint shifted = (uint)(((ulong)errorSum + 1) >> 5);
-        int shift = shifted == 0 ? 0 : System.Numerics.BitOperations.Log2(shifted);
+        int shift = System.Numerics.BitOperations.Log2(shifted | 1);
         // errorSum + 1 is below 2^(shift + 6), so the index is at most 64.
         return 4 + ((maxWeight * Divide((errorSum >> shift) + 1)) >> shift);
     }
 
     /// <summary>Gets 2^24 / <paramref name="i"/> (0 for 0) from the table; callers keep <paramref name="i"/> at most 64.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static uint Divide(uint i) => Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(DivLookup), (nint)i);
+    private static uint Divide(uint i) => Unsafe.Add(ref MemoryMarshal.GetReference(DivLookup), (nint)i);
 
-    private static uint[] BuildDivLookup()
-    {
-        uint[] table = new uint[65];
-        for (int i = 1; i <= 64; i++)
-        {
-            table[i] = (uint)((1 << 24) / i);
-        }
-
-        return table;
-    }
+    // 2^24 / i for i from 0 (as 0) to 64, as constant data so no class initialization check guards it.
+    private static ReadOnlySpan<uint> DivLookup =>
+    [
+        0, 16777216, 8388608, 5592405, 4194304, 3355443, 2796202, 2396745,
+        2097152, 1864135, 1677721, 1525201, 1398101, 1290555, 1198372, 1118481,
+        1048576, 986895, 932067, 883011, 838860, 798915, 762600, 729444,
+        699050, 671088, 645277, 621378, 599186, 578524, 559240, 541200,
+        524288, 508400, 493447, 479349, 466033, 453438, 441505, 430185,
+        419430, 409200, 399457, 390167, 381300, 372827, 364722, 356962,
+        349525, 342392, 335544, 328965, 322638, 316551, 310689, 305040,
+        299593, 294337, 289262, 284359, 279620, 275036, 270600, 266305,
+        262144,
+    ];
 }
