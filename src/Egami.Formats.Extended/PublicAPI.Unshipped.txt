@@ -1,4 +1,31 @@
 #nullable enable
+Egami.Formats.Extended.Dds.DdsTextureFormat.R8UInt = 27 -> Egami.Formats.Extended.Dds.DdsTextureFormat
+Egami.Formats.Extended.Dds.DdsTextureFormat.R8SInt = 28 -> Egami.Formats.Extended.Dds.DdsTextureFormat
+Egami.Formats.Extended.Dds.DdsTextureFormat.Rg8UInt = 29 -> Egami.Formats.Extended.Dds.DdsTextureFormat
+Egami.Formats.Extended.Dds.DdsTextureFormat.Rg8SInt = 30 -> Egami.Formats.Extended.Dds.DdsTextureFormat
+Egami.Formats.Extended.Dds.DdsTextureFormat.Rgba8UInt = 31 -> Egami.Formats.Extended.Dds.DdsTextureFormat
+Egami.Formats.Extended.Dds.DdsTextureFormat.Rgba8SInt = 32 -> Egami.Formats.Extended.Dds.DdsTextureFormat
+Egami.Formats.Extended.Dds.DdsTextureFormat.R16UInt = 33 -> Egami.Formats.Extended.Dds.DdsTextureFormat
+Egami.Formats.Extended.Dds.DdsTextureFormat.R16SInt = 34 -> Egami.Formats.Extended.Dds.DdsTextureFormat
+Egami.Formats.Extended.Dds.DdsTextureFormat.Rg16UInt = 35 -> Egami.Formats.Extended.Dds.DdsTextureFormat
+Egami.Formats.Extended.Dds.DdsTextureFormat.Rg16SInt = 36 -> Egami.Formats.Extended.Dds.DdsTextureFormat
+Egami.Formats.Extended.Dds.DdsTextureFormat.Rgba16UInt = 37 -> Egami.Formats.Extended.Dds.DdsTextureFormat
+Egami.Formats.Extended.Dds.DdsTextureFormat.Rgba16SInt = 38 -> Egami.Formats.Extended.Dds.DdsTextureFormat
+Egami.Formats.Extended.Dds.DdsTextureFormat.R32UInt = 39 -> Egami.Formats.Extended.Dds.DdsTextureFormat
+Egami.Formats.Extended.Dds.DdsTextureFormat.R32SInt = 40 -> Egami.Formats.Extended.Dds.DdsTextureFormat
+Egami.Formats.Extended.Dds.DdsTextureFormat.Rg32UInt = 41 -> Egami.Formats.Extended.Dds.DdsTextureFormat
+Egami.Formats.Extended.Dds.DdsTextureFormat.Rg32SInt = 42 -> Egami.Formats.Extended.Dds.DdsTextureFormat
+Egami.Formats.Extended.Dds.DdsTextureFormat.Rgb32UInt = 43 -> Egami.Formats.Extended.Dds.DdsTextureFormat
+Egami.Formats.Extended.Dds.DdsTextureFormat.Rgb32SInt = 44 -> Egami.Formats.Extended.Dds.DdsTextureFormat
+Egami.Formats.Extended.Dds.DdsTextureFormat.Rgba32UInt = 45 -> Egami.Formats.Extended.Dds.DdsTextureFormat
+Egami.Formats.Extended.Dds.DdsTextureFormat.Rgba32SInt = 46 -> Egami.Formats.Extended.Dds.DdsTextureFormat
+Egami.Formats.Extended.Dds.DdsTextureFormat.D16 = 47 -> Egami.Formats.Extended.Dds.DdsTextureFormat
+Egami.Formats.Extended.Dds.DdsTextureFormat.D24S8 = 48 -> Egami.Formats.Extended.Dds.DdsTextureFormat
+Egami.Formats.Extended.Dds.DdsTextureFormat.D32F = 49 -> Egami.Formats.Extended.Dds.DdsTextureFormat
+Egami.Formats.Extended.Dds.DdsTextureFormat.D32FS8 = 50 -> Egami.Formats.Extended.Dds.DdsTextureFormat
+Egami.Formats.Extended.Dds.DdsTextureFormat.Nv12 = 51 -> Egami.Formats.Extended.Dds.DdsTextureFormat
+Egami.Formats.Extended.Dds.DdsTextureFormat.P010 = 52 -> Egami.Formats.Extended.Dds.DdsTextureFormat
+Egami.Formats.Extended.Dds.DdsTextureFormat.P016 = 53 -> Egami.Formats.Extended.Dds.DdsTextureFormat
 Egami.Formats.Extended.Ktx.Ktx2Format
 Egami.Formats.Extended.Ktx.Ktx2WriterOptions
 Egami.Formats.Extended.Ktx.Ktx2WriterOptions.BasisQuality.get -> int

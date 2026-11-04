@@ -283,6 +283,216 @@ public class DdsWriterTests
         Assert.Equal((Half.One, (Half)0.5f, Half.Zero), (back.Row(0)[0].R, back.Row(0)[0].G, back.Row(0)[0].B));
     }
 
+    public static TheoryData<DdsTextureFormat, string> IntegerFormats => new()
+    {
+        { DdsTextureFormat.R8UInt, "R8_UINT" }, { DdsTextureFormat.R8SInt, "R8_SINT" },
+        { DdsTextureFormat.Rg8UInt, "R8G8_UINT" }, { DdsTextureFormat.Rg8SInt, "R8G8_SINT" },
+        { DdsTextureFormat.Rgba8UInt, "R8G8B8A8_UINT" }, { DdsTextureFormat.Rgba8SInt, "R8G8B8A8_SINT" },
+        { DdsTextureFormat.R16UInt, "R16_UINT" }, { DdsTextureFormat.R16SInt, "R16_SINT" },
+        { DdsTextureFormat.Rg16UInt, "R16G16_UINT" }, { DdsTextureFormat.Rg16SInt, "R16G16_SINT" },
+        { DdsTextureFormat.Rgba16UInt, "R16G16B16A16_UINT" }, { DdsTextureFormat.Rgba16SInt, "R16G16B16A16_SINT" },
+        { DdsTextureFormat.R32UInt, "R32_UINT" }, { DdsTextureFormat.R32SInt, "R32_SINT" },
+        { DdsTextureFormat.Rg32UInt, "R32G32_UINT" }, { DdsTextureFormat.Rg32SInt, "R32G32_SINT" },
+        { DdsTextureFormat.Rgb32UInt, "R32G32B32_UINT" }, { DdsTextureFormat.Rgb32SInt, "R32G32B32_SINT" },
+        { DdsTextureFormat.Rgba32UInt, "R32G32B32A32_UINT" }, { DdsTextureFormat.Rgba32SInt, "R32G32B32A32_SINT" },
+        { DdsTextureFormat.D16, "D16_UNORM" }, { DdsTextureFormat.D32F, "D32_FLOAT" }, { DdsTextureFormat.D32FS8, "D32_FLOAT_S8X24_UINT" },
+    };
+
+    [Theory]
+    [MemberData(nameof(IntegerFormats))]
+    public void RoundTripsIntegerAndDepthFormatsExactly(DdsTextureFormat format, string name)
+    {
+        // Every value the format holds comes back as it was written, in the pixel type the reader loads the format as.
+        switch (format)
+        {
+            case DdsTextureFormat.R8UInt or DdsTextureFormat.R8SInt:
+                Check<Gray8>(0, false);
+                break;
+            case DdsTextureFormat.Rg8UInt or DdsTextureFormat.Rg8SInt:
+                Check<Rgb8>(3, false);
+                break;
+            case DdsTextureFormat.Rgba8UInt or DdsTextureFormat.Rgba8SInt:
+                Check<Rgba8>(0, false);
+                break;
+            case DdsTextureFormat.R16UInt or DdsTextureFormat.R16SInt or DdsTextureFormat.D16:
+                Check<Gray16>(0, false);
+                break;
+            case DdsTextureFormat.Rg16UInt or DdsTextureFormat.Rg16SInt:
+                Check<Rgb16>(3, false);
+                break;
+            case DdsTextureFormat.Rgba16UInt or DdsTextureFormat.Rgba16SInt:
+                Check<Rgba16>(0, false);
+                break;
+            case DdsTextureFormat.R32UInt or DdsTextureFormat.R32SInt or DdsTextureFormat.D32F or DdsTextureFormat.D32FS8:
+                Check<GrayF32>(0, true);
+                break;
+            case DdsTextureFormat.Rg32UInt or DdsTextureFormat.Rg32SInt:
+                Check<RgbF32>(3, true);
+                break;
+            case DdsTextureFormat.Rgb32UInt or DdsTextureFormat.Rgb32SInt:
+                Check<RgbF32>(0, true);
+                break;
+            default:
+                Check<RgbaF32>(0, true);
+                break;
+        }
+
+        void Check<TPixel>(int channels, bool floats)
+            where TPixel : unmanaged, IPixelType<TPixel>
+        {
+            Random random = new(7);
+            bool signed = name.EndsWith("SINT", StringComparison.Ordinal);
+            using Raster<TPixel> source = Raster.Create<TPixel>(9, 5, Context);
+            for (int y = 0; y < source.Height; y++)
+            {
+                if (floats)
+                {
+                    Span<float> row = MemoryMarshal.Cast<TPixel, float>(source.Row(y));
+                    for (int i = 0; i < row.Length; i++)
+                    {
+                        // Integers a float holds exactly, the 32-bit extremes among them.
+                        row[i] = format is DdsTextureFormat.D32F or DdsTextureFormat.D32FS8 ? random.NextSingle()
+                            : (i + y) % 7 == 0 ? (signed ? (y % 2 == 0 ? int.MinValue : int.MaxValue) : uint.MaxValue)
+                            : signed ? random.Next(-(1 << 24), 1 << 24) : random.Next(0, 1 << 24);
+                    }
+                }
+                else
+                {
+                    random.NextBytes(MemoryMarshal.AsBytes(source.Row(y)));
+                }
+
+                if (channels > 0)
+                {
+                    // Two-channel formats keep no blue; the reader fills it with 0.
+                    Span<byte> bytes = MemoryMarshal.AsBytes(source.Row(y));
+                    int sample = bytes.Length / (source.Width * channels);
+                    for (int x = 0; x < source.Width; x++)
+                    {
+                        bytes.Slice(((x * channels) + 2) * sample, sample).Clear();
+                    }
+                }
+            }
+
+            byte[] file = Save(source, new DdsWriterOptions { Format = format, MipLevels = 1 });
+            Assert.Equal(name, Details(file).FormatName);
+            using Raster loaded = Raster.Load(file, Context);
+            using Raster<TPixel> back = loaded.As<TPixel>();
+            for (int y = 0; y < source.Height; y++)
+            {
+                Assert.True(MemoryMarshal.AsBytes(source.Row(y)).SequenceEqual(MemoryMarshal.AsBytes(back.Row(y))), $"{format}: row {y} differs.");
+            }
+
+            Assert.Empty(loaded.Metadata.Warnings);
+            if (format == DdsTextureFormat.D32FS8)
+            {
+                // The stencil and unused bits after each depth are 0.
+                for (int p = 0; p < source.Width * source.Height; p++)
+                {
+                    Assert.Equal(0u, BinaryPrimitives.ReadUInt32LittleEndian(file.AsSpan(Dx10HeaderBytes + (p * 8) + 4)));
+                }
+            }
+        }
+    }
+
+    [Fact]
+    public void WritesSignedIntegersAsTheReaderMapsThem()
+    {
+        // The reader loads a signed integer v as v + 128 (v + 32768 for 16 bits), so 0 stores −128 and 128 stores 0.
+        using Raster<Gray8> gray8 = Raster.Create<Gray8>(1, 1, new Gray8(0));
+        Assert.Equal(0x80, Save(gray8, new DdsWriterOptions { Format = DdsTextureFormat.R8SInt, MipLevels = 1 })[Dx10HeaderBytes]);
+        using Raster<Gray16> gray16 = Raster.Create<Gray16>(1, 1, new Gray16(32768));
+        Assert.Equal(0, BinaryPrimitives.ReadInt16LittleEndian(Save(gray16, new DdsWriterOptions { Format = DdsTextureFormat.R16SInt, MipLevels = 1 }).AsSpan(Dx10HeaderBytes)));
+
+        // 32-bit integers round to nearest and clamp to the type's range; NaN stores 0.
+        using Raster<GrayF32> floats = Raster.Create<GrayF32>(4, 1, Context);
+        floats.Row(0)[0] = new GrayF32(2.5f);
+        floats.Row(0)[1] = new GrayF32(-3.7f);
+        floats.Row(0)[2] = new GrayF32(1e12f);
+        floats.Row(0)[3] = new GrayF32(float.NaN);
+        byte[] unsigned = Save(floats, new DdsWriterOptions { Format = DdsTextureFormat.R32UInt, MipLevels = 1 });
+        Assert.Equal([2u, 0u, uint.MaxValue, 0u], Enumerable.Range(0, 4).Select(i => BinaryPrimitives.ReadUInt32LittleEndian(unsigned.AsSpan(Dx10HeaderBytes + (i * 4)))));
+        byte[] signed = Save(floats, new DdsWriterOptions { Format = DdsTextureFormat.R32SInt, MipLevels = 1 });
+        Assert.Equal([2, -4, int.MaxValue, 0], Enumerable.Range(0, 4).Select(i => BinaryPrimitives.ReadInt32LittleEndian(signed.AsSpan(Dx10HeaderBytes + (i * 4)))));
+    }
+
+    [Fact]
+    public void WritesD24S8Depth()
+    {
+        // Depth k / (2²⁴ − 1) comes back as written, clamped to 0 to 1; stencil, the top byte, is 0.
+        using Raster<GrayF32> depth = Raster.Create<GrayF32>(8, 2, Context);
+        int[] codes = [0, 1, 2, 8388607, 8388608, 16777213, 16777214, 16777215];
+        for (int x = 0; x < 8; x++)
+        {
+            depth.Row(0)[x] = new GrayF32(codes[x] / 16777215f);
+            depth.Row(1)[x] = new GrayF32((x - 4) * 0.5f);
+        }
+
+        byte[] file = Save(depth, new DdsWriterOptions { Format = DdsTextureFormat.D24S8, MipLevels = 1 });
+        Assert.Equal("D24_UNORM_S8_UINT", Details(file).FormatName);
+        Assert.Equal(codes, Enumerable.Range(0, 8).Select(i => (int)BinaryPrimitives.ReadUInt32LittleEndian(file.AsSpan(Dx10HeaderBytes + (i * 4)))));
+        Assert.Equal([0, 0, 0, 0, 0, 8388608, 16777215, 16777215], Enumerable.Range(8, 8).Select(i => (int)BinaryPrimitives.ReadUInt32LittleEndian(file.AsSpan(Dx10HeaderBytes + (i * 4)))));
+        using Raster<GrayF32> back = Raster.Load<GrayF32>(file, Context);
+        for (int x = 0; x < 8; x++)
+        {
+            Assert.Equal(depth.Row(0)[x].L, back.Row(0)[x].L);
+        }
+    }
+
+    [Theory]
+    [InlineData(DdsTextureFormat.Nv12, "NV12", 1, 257)]
+    [InlineData(DdsTextureFormat.P010, "P010", 2, 128)]
+    [InlineData(DdsTextureFormat.P016, "P016", 2, 4)]
+    public void RoundTripsPlanarVideo(DdsTextureFormat format, string name, int sample, int tolerance)
+    {
+        // Colour flat over each 2 × 2 block loses nothing to subsampling, so only the Y′CbCr rounding is left: one 8-bit step
+        // for NV12, two 10-bit steps for P010 and a few 16-bit ones for P016 (measured 257, 109 and 4).
+        Random random = new(11);
+        using Raster<Rgb16> blocks = Raster.Create<Rgb16>(16, 10, Context);
+        for (int y = 0; y < blocks.Height; y += 2)
+        {
+            for (int x = 0; x < blocks.Width; x += 2)
+            {
+                Rgb16 c = new((ushort)(random.Next(256) * 257), (ushort)(random.Next(256) * 257), (ushort)(random.Next(256) * 257));
+                blocks.Row(y)[x] = blocks.Row(y)[x + 1] = blocks.Row(y + 1)[x] = blocks.Row(y + 1)[x + 1] = c;
+            }
+        }
+
+        byte[] file = Save(blocks, new DdsWriterOptions { Format = format });
+        DdsDetails details = Details(file);
+        Assert.Equal((name, 1), (details.FormatName, details.MipLevels));
+        Assert.Equal(Dx10HeaderBytes + (16 * 10 * sample * 3 / 2), file.Length);
+        Assert.InRange(MaxError(blocks, file), 0, tolerance);
+
+        // A photo's chroma averages over 2 × 2 blocks; the worst error, at its hard edges, is that of 4:2:0 (measured 14 8-bit
+        // steps for each format).
+        using Raster<Rgba8> photo = Photo(Context, opaque: true);
+        using Raster<Rgb16> wide = photo.As<Rgb16>();
+        Assert.InRange(MaxError(wide, Save(photo, new DdsWriterOptions { Format = format })), 0, 15 * 257);
+
+        // 4:2:0 needs an even size.
+        using Raster<Rgb8> odd = Raster.Create<Rgb8>(5, 4, Context);
+        Assert.Throws<ArgumentException>(() => Save(odd, new DdsWriterOptions { Format = format }));
+
+        static int MaxError(Raster<Rgb16> expected, byte[] file)
+        {
+            using Raster<Rgb16> back = Raster.Load<Rgb16>(file, Context);
+            int worst = 0;
+            for (int y = 0; y < expected.Height; y++)
+            {
+                for (int x = 0; x < expected.Width; x++)
+                {
+                    Rgb16 e = expected.Row(y)[x], a = back.Row(y)[x];
+                    worst = Math.Max(worst, Math.Max(Math.Abs(e.R - a.R), Math.Max(Math.Abs(e.G - a.G), Math.Abs(e.B - a.B))));
+                }
+            }
+
+            return worst;
+        }
+    }
+
+    /// <summary>The length of a DX10 file's headers: magic, header and DX10 extension.</summary>
+    private const int Dx10HeaderBytes = 4 + 124 + 20;
+
     private static byte[] Save(Raster raster, DdsWriterOptions? options)
     {
         using MemoryStream output = new();

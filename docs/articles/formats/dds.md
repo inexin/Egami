@@ -79,6 +79,13 @@ BC1 keeps alpha as on or off: a pixel below half alpha becomes transparent black
 BC5 and R8G8 its red and green. BC6H keeps no alpha; the unsigned form writes negative values as 0. The [Textures](../guides/textures.md)
 guide says which format suits which content.
 
+The writer also writes what the reader reads back for data rather than colour, each with the DX10 header. The UINT and SINT
+formats (`R8UInt` to `Rgba32SInt`, in 8, 16 and 32 bits) store the raster's channels as integers: 8- and 16-bit ones as they
+are, SINT offset by 128 or 32768 the way the reader maps them back (128 stores 0), and 32-bit ones from a float raster rounded
+and clamped to the type, exact up to 2²⁴. The depth formats `D16`, `D24S8`, `D32F` and `D32FS8` store the raster's gray as depth
+and 0 as stencil. `Nv12`, `P010` and `P016` store 4:2:0 video in BT.601 studio range, as the reader converts it back; they need
+an even width and height and write mip 0 alone, as Direct3D allows no mips for planar formats.
+
 [!code-csharp[](../../../tests/Egami.DocSamples/FormatsExtended.cs#dds-save)]
 
 ## Streaming and damaged files
