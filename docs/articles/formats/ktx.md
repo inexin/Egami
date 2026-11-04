@@ -92,7 +92,7 @@ included; a block format is otherwise only chosen with `Ktx2WriterOptions.Format
 | --- | --- | --- |
 | BC | `Bc1` to `Bc5`, `Bc6h`, `Bc6hSigned`, `Bc7` | The DDS writer's encoders |
 | ETC | `Etc1`, `Etc2Rgb`, `Etc2RgbA1`, `Etc2Rgba`, `EacR11`, `EacRg11` and their signed forms | Mode search for ETC1, plus T, H and planar for ETC2 from effort 3 up; EAC is a table search. Effort 0 is a fast tier (about 30 megapixels a second on one thread); effort 4 matches etc2comp's quality at its effort 40 |
-| ASTC | `Astc4x4` to `Astc12x12`, LDR | Direct, base+offset, base+scale and mixed endpoint modes, dual planes and 2 to 4 partitions, with least-squares weight fits; effort 4 is within about 0.2 dB of astcenc `-medium`. ASTC HDR is not encoded |
+| ASTC | `Astc4x4` to `Astc12x12`, LDR | Direct, base+offset, base+scale and mixed endpoint modes, dual planes and 2 to 4 partitions, with least-squares weight fits. Efforts 1 to 5 stop after one quick encode when a block already scores well, so smooth and noisy pictures go fast; effort 4 is within about 0.2 dB of astcenc `-medium`. ASTC HDR is not encoded |
 | Basis Universal | `Etc1s`, `Uastc` | ETC1S codebooks (`BasisQuality`, 1 to 255) with BasisLZ; UASTC's 19 modes with BC1 and ETC1 transcoder hints and optional RDO (`UastcRdo`) |
 
 `Effort` runs 0 (fastest) to 6 (best) and defaults to 4. `Srgb` picks a format's _SRGB form; left `null`, it follows the
