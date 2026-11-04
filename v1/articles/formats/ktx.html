@@ -102,7 +102,7 @@ the Egami.Formats.Extended package: register them with <code>WithKtx()</code> an
 <tbody>
 <tr>
 <td>Reads</td>
-<td>KTX 1.1 in both byte orders and KTX 2.0, uncompressed or Zstandard and zlib supercompressed: the 8, 16 and 32-bit UNORM, SNORM, sRGB, UINT, SINT and float formats, BGRA, the 565, 5551 and 4444 packed formats, A2B10G10R10, B10G11R11 and E5B9G9R9 floats, BC1 to BC7 with BC6H unsigned and signed, ETC1, ETC2 (RGB8, RGB8A1, RGBA8, UNORM and sRGB), EAC R11 and RG11 (unsigned and signed), and ASTC in all 14 2D footprints, UNORM, sRGB and HDR (SFLOAT). 1D and 2D textures, arrays, cube maps and volume textures, with their mips</td>
+<td>KTX 1.1 in both byte orders and KTX 2.0, uncompressed or Zstandard and zlib supercompressed: the 8, 16 and 32-bit UNORM, SNORM, sRGB, UINT, SINT and float formats, BGRA, the 565, 5551 and 4444 packed formats, A2B10G10R10, B10G11R11 and E5B9G9R9 floats, BC1 to BC7 with BC6H unsigned and signed, ETC1, ETC2 (RGB8, RGB8A1, RGBA8, UNORM and sRGB), EAC R11 and RG11 (unsigned and signed), ASTC in all 14 2D footprints, UNORM, sRGB and HDR (SFLOAT), and Basis Universal: ETC1S (BasisLZ, with or without an alpha slice, video included), UASTC LDR 4 × 4 and UASTC HDR 4 × 4. 1D and 2D textures, arrays, cube maps and volume textures, with their mips</td>
 </tr>
 <tr>
 <td>Writes</td>
@@ -110,7 +110,7 @@ the Egami.Formats.Extended package: register them with <code>WithKtx()</code> an
 </tr>
 <tr>
 <td>Natural pixel type</td>
-<td>As <a href="dds.html">DDS</a>: <code>Rgba8</code> for BC1, BC2, BC3, BC7, ETC2 RGB8A1 and RGBA8, ASTC LDR and 8-bit RGBA; <code>Gray8</code> for BC4 and R8; <code>Rgb8</code> for BC5, ETC1, ETC2 RGB8, RG8 and RGB8; <code>Gray16</code> for EAC R11; <code>Rgb16</code> for EAC RG11; <code>Rgba16</code> for 16-bit UNORM; <code>RgbaF16</code> for BC6H, ASTC HDR, half floats and the packed floats; <code>RgbaF32</code> for 32-bit floats; <code>Bgr565</code>, <code>Bgra5551</code> and <code>Bgra4444</code> for the packed formats. A swizzle that moves channels widens the type to its RGBA form</td>
+<td>As <a href="dds.html">DDS</a>: <code>Rgba8</code> for BC1, BC2, BC3, BC7, ETC2 RGB8A1 and RGBA8, ASTC LDR, Basis Universal with alpha and 8-bit RGBA; <code>Gray8</code> for BC4 and R8; <code>Rgb8</code> for BC5, ETC1, ETC2 RGB8, Basis Universal without alpha, RG8 and RGB8; <code>Gray16</code> for EAC R11; <code>Rgb16</code> for EAC RG11; <code>Rgba16</code> for 16-bit UNORM; <code>RgbaF16</code> for BC6H, ASTC HDR, UASTC HDR, half floats and the packed floats; <code>RgbaF32</code> for 32-bit floats; <code>Bgr565</code>, <code>Bgra5551</code> and <code>Bgra4444</code> for the packed formats. A swizzle that moves channels widens the type to its RGBA form</td>
 </tr>
 <tr>
 <td><code>FormatInfo</code></td>
@@ -129,8 +129,9 @@ texture.Save(&quot;texture.png&quot;);
 RasterInfo info = Raster.Probe(&quot;sky.ktx2&quot;, context);
 Console.WriteLine($&quot;{info.Width}×{info.Height}, {info.ImageCount} surface(s)&quot;);
 </code></pre>
-<p>3D ASTC, PVRTC and Basis Universal (ETC1S with BasisLZ, and UASTC) are not read: a load or probe throws <code>UnsupportedFormatException</code>
-that names the family, such as &quot;KTX 2 textures in Basis Universal UASTC compression are not supported yet&quot;.</p>
+<p>3D ASTC, PVRTC and the newer Basis Universal families (UASTC HDR 6 × 6, XUASTC LDR and XUBC7) are not read: a load or probe
+throws <code>UnsupportedFormatException</code> that names the family, such as &quot;KTX 2 textures in Basis Universal UASTC HDR 6x6 compression
+are not supported yet (supercompression scheme 4)&quot;.</p>
 <h2 id="surfaces-and-mips">Surfaces and mips</h2>
 <p>Load reads mip 0 of the first surface. The surfaces are the array layers, each with its cube faces (in the order +X, −X, +Y,
 −Y, +Z, −Z) or depth slices; <code>RasterInfo.ImageCount</code> counts them. LoadAll gives each at mip 0, and with
@@ -165,6 +166,18 @@ astcenc does, bit for bit: LDR blocks to 8 bits per channel (sRGB files interpol
 says), HDR blocks to half floats, an illegal block to magenta (LDR) or NaN (HDR), and blocks of any of the 14 2D footprints. Two-channel formats load with blue 0;
 <code>KtxReaderOptions.ReconstructNormalZ</code> rebuilds blue as a normal map's Z. SNORM, SINT and UINT formats map as DDS's do. A KTX 1
 file written big-endian is swapped by its <code>glTypeSize</code>, and the 4-byte row padding of KTX 1 uncompressed data is skipped.</p>
+<h2 id="basis-universal">Basis Universal</h2>
+<p>Basis Universal textures decode straight to pixels, bit for bit as basisu's own unpacker does, with no detour through a GPU
+format. An ETC1S file (Vulkan format 0, BasisLZ supercompression) keeps its endpoint and selector codebooks and Huffman tables
+in the file's global data, and each image is a slice of codebook references; a second slice per image, when the descriptor has
+one, is the alpha (its green channel). An ETC1S video (the <code>KTXanimData</code> key) codes later frames against the one before, so a
+P-frame surface decodes from the last I-frame up. A UASTC LDR file (descriptor colour model 166) is 4 × 4 blocks of 16 bytes in
+any of UASTC's 19 modes, often supercompressed with Zstandard; the reserved mode decodes to magenta, as basisu's does. A UASTC
+HDR 4 × 4 file (colour model 167) holds ASTC HDR blocks and decodes as ASTC HDR does, to <code>RgbaF16</code>.</p>
+<p>The descriptor says whether there is alpha: ETC1S with an alpha slice, and UASTC whose sample is RGBA or RRRG, load as
+<code>Rgba8</code>; the rest load as <code>Rgb8</code>. <code>KtxDetails.FormatName</code> names the family, the channels and the transfer, such as
+<code>ETC1S_RGBA_SRGB</code> or <code>UASTC_4x4_RGB_UNORM</code>, and <code>KtxDetails.VkFormat</code> is 0 for ETC1S and UASTC LDR. A lenient read of a BasisLZ level that does
+not decode keeps the blocks decoded so far and leaves the rest black, with <code>LevelDamaged</code>; a strict read throws.</p>
 <h2 id="colour-alpha-and-details">Colour, alpha and details</h2>
 <p>A KTX 2 file's data format descriptor names its colour primaries and transfer function. sRGB transfer with BT.709 primaries is
 tagged <code>ColorSpaceHint.Srgb</code>, linear with BT.709 <code>ColorSpaceHint.Linear</code>, and other pairs (Display P3, BT.2020 with PQ or HLG

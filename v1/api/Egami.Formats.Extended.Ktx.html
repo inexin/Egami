@@ -99,8 +99,9 @@ Classes
       <dd><p>KTX 2.0, the Khronos texture container for Vulkan, glTF and the web: a header naming the Vulkan format, a level index, a
 data format descriptor with the colour space, key/value data, then the mip levels smallest first, each optionally
 supercompressed with Zstandard or zlib. Load gives mip 0 of the first surface, turned upright and swizzled as the file
-says; LoadAll and <a class="xref" href="Egami.Formats.Extended.Ktx.KtxReaderOptions.html">KtxReaderOptions</a> reach the others. Uncompressed, BC1 to BC7, ETC2, EAC and 2D ASTC (LDR and
-HDR) textures read; Basis Universal, 3D ASTC and PVRTC ones are refused. Read only. Registered with <a class="xref" href="Egami.Formats.Extended.ExtendedContextExtensions.html#Egami_Formats_Extended_ExtendedContextExtensions_WithKtx2_Egami_EgamiContext_">WithKtx2(EgamiContext)</a>.</p>
+says; LoadAll and <a class="xref" href="Egami.Formats.Extended.Ktx.KtxReaderOptions.html">KtxReaderOptions</a> reach the others. Uncompressed, BC1 to BC7, ETC2, EAC, 2D ASTC (LDR and
+HDR) and Basis Universal (ETC1S, UASTC LDR and HDR 4 × 4) textures read; 3D ASTC, PVRTC and the newer Basis Universal
+families (UASTC HDR 6 × 6, XUASTC, XUBC7) are refused. Read only. Registered with <a class="xref" href="Egami.Formats.Extended.ExtendedContextExtensions.html#Egami_Formats_Extended_ExtendedContextExtensions_WithKtx2_Egami_EgamiContext_">WithKtx2(EgamiContext)</a>.</p>
 </dd>
     </dl>
     <dl class="jumplist">
