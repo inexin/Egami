@@ -818,7 +818,11 @@ internal static class EtcEncoder
         }
     }
 
-    /// <summary>Tries the T and H modes, which paint the block with colours around two base colours.</summary>
+    /// <summary>
+    /// Tries the T and H modes, which paint the block with colours around two base colours. For opaque blocks each candidate
+    /// colour's error per texel, alone and with every distance either side, is worked out once, so each pairing costs only
+    /// a few minimums.
+    /// </summary>
     private static void TwoColors(ReadOnlySpan<int> px, ReadOnlySpan<bool> clear, in Rows rows, int effort, bool punchThrough, bool opaque, ref Best best)
     {
         Span<int> group = stackalloc int[16];
@@ -827,58 +831,69 @@ internal static class EtcEncoder
             return;
         }
 
-        Span<int> first = stackalloc int[3 * 27];
-        Span<int> second = stackalloc int[3 * 27];
-        int na = Neighbours(r0, g0, b0, effort, first);
-        int nb = Neighbours(r1, g1, b1, effort, second);
+        // The candidate colours: those near the first cluster, then those near the second.
+        Span<int> colors = stackalloc int[3 * 54];
+        int na = Neighbours(r0, g0, b0, effort, colors);
+        int nb = Neighbours(r1, g1, b1, effort, colors[(3 * na)..]);
         Span<int> paint = stackalloc int[12];
 
+        // Per colour: the error of each row's texels from the colour alone (slot 0), then from the nearer of the colour plus
+        // and minus each distance (slots 1 to 8).
+        Span<Vector128<int>> errors = opaque ? stackalloc Vector128<int>[(na + nb) * 36] : default;
+        for (int x = 0; opaque && x < na + nb; x++)
+        {
+            int r8 = Etc.Extend4(colors[x * 3]), g8 = Etc.Extend4(colors[(x * 3) + 1]), b8 = Etc.Extend4(colors[(x * 3) + 2]);
+            Span<Vector128<int>> mine = errors.Slice(x * 36, 36);
+            for (int q = 0; q < 4; q++)
+            {
+                mine[q] = Error(rows.R(q), rows.G(q), rows.B(q), r8, g8, b8);
+                for (int d = 0; d < 8; d++)
+                {
+                    mine[4 + (d * 4) + q] = Pair(rows, q, r8, g8, b8, Etc.Distances[d]);
+                }
+            }
+        }
+
         // The best T or H block found: its mode (0 none, 1 T, 2 H), colours and distance; indices come at the end.
-        int mode = 0, br1 = 0, bg1 = 0, bb1 = 0, br2 = 0, bg2 = 0, bb2 = 0, bestD = 0;
+        int mode = 0, bestC = 0, bestDColor = 0, bestD = 0;
         long bestError = best.Error;
         for (int i = 0; i < na; i++)
         {
-            for (int j = 0; j < nb; j++)
+            for (int j = na; j < na + nb; j++)
             {
-                int ar = first[i * 3], ag = first[(i * 3) + 1], ab = first[(i * 3) + 2];
-                int br = second[j * 3], bg = second[(j * 3) + 1], bb = second[(j * 3) + 2];
                 for (int swap = 0; swap < 2; swap++)
                 {
-                    (int cr, int cg, int cb, int dr, int dg, int db) = swap == 0 ? (ar, ag, ab, br, bg, bb) : (br, bg, bb, ar, ag, ab);
-                    int cr8 = Etc.Extend4(cr), cg8 = Etc.Extend4(cg), cb8 = Etc.Extend4(cb);
-                    int dr8 = Etc.Extend4(dr), dg8 = Etc.Extend4(dg), db8 = Etc.Extend4(db);
+                    (int c, int e) = swap == 0 ? (i, j) : (j, i);
+                    int cr = colors[c * 3], cg = colors[(c * 3) + 1], cb = colors[(c * 3) + 2];
+                    int dr = colors[e * 3], dg = colors[(e * 3) + 1], db = colors[(e * 3) + 2];
                     bool firstHigh = ((cr << 8) | (cg << 4) | cb) >= ((dr << 8) | (dg << 4) | db);
-
-                    // The T mode's two unshifted colours, nearest of, for every distance.
+                    ReadOnlySpan<Vector128<int>> ce = opaque ? errors.Slice(c * 36, 36) : default, de = opaque ? errors.Slice(e * 36, 36) : default;
                     Vector128<int> t0 = default, t1 = default, t2 = default, t3 = default;
                     if (opaque)
                     {
-                        t0 = Vector128.Min(Error(rows.R(0), rows.G(0), rows.B(0), cr8, cg8, cb8), Error(rows.R(0), rows.G(0), rows.B(0), dr8, dg8, db8));
-                        t1 = Vector128.Min(Error(rows.R(1), rows.G(1), rows.B(1), cr8, cg8, cb8), Error(rows.R(1), rows.G(1), rows.B(1), dr8, dg8, db8));
-                        t2 = Vector128.Min(Error(rows.R(2), rows.G(2), rows.B(2), cr8, cg8, cb8), Error(rows.R(2), rows.G(2), rows.B(2), dr8, dg8, db8));
-                        t3 = Vector128.Min(Error(rows.R(3), rows.G(3), rows.B(3), cr8, cg8, cb8), Error(rows.R(3), rows.G(3), rows.B(3), dr8, dg8, db8));
+                        // The T mode's two unshifted colours, nearest of, for every distance.
+                        (t0, t1, t2, t3) = (Vector128.Min(ce[0], de[0]), Vector128.Min(ce[1], de[1]), Vector128.Min(ce[2], de[2]), Vector128.Min(ce[3], de[3]));
                     }
 
                     for (int d = 0; d < 8; d++)
                     {
-                        int distance = Etc.Distances[d];
+                        int at = 4 + (d * 4);
 
                         // T: one colour on its own, the other with the distance either side.
                         long error;
                         if (opaque)
                         {
-                            error = Vector128.Sum(Vector128.Min(t0, Pair(rows, 0, dr8, dg8, db8, distance)) + Vector128.Min(t1, Pair(rows, 1, dr8, dg8, db8, distance))
-                                + Vector128.Min(t2, Pair(rows, 2, dr8, dg8, db8, distance)) + Vector128.Min(t3, Pair(rows, 3, dr8, dg8, db8, distance)));
+                            error = Vector128.Sum(Vector128.Min(t0, de[at]) + Vector128.Min(t1, de[at + 1]) + Vector128.Min(t2, de[at + 2]) + Vector128.Min(t3, de[at + 3]));
                         }
                         else
                         {
-                            PaintT(paint, cr8, cg8, cb8, dr8, dg8, db8, distance);
+                            PaintT(paint, Etc.Extend4(cr), Etc.Extend4(cg), Etc.Extend4(cb), Etc.Extend4(dr), Etc.Extend4(dg), Etc.Extend4(db), Etc.Distances[d]);
                             error = Score(px, clear, paint, opaque, bestError, out _);
                         }
 
                         if (error < bestError)
                         {
-                            (bestError, mode, br1, bg1, bb1, br2, bg2, bb2, bestD) = (error, 1, cr, cg, cb, dr, dg, db, d);
+                            (bestError, mode, bestC, bestDColor, bestD) = (error, 1, c, e, d);
                         }
 
                         // H: both colours with the distance either side; the order of the colours holds the distance's low bit.
@@ -889,21 +904,18 @@ internal static class EtcEncoder
 
                         if (opaque)
                         {
-                            error = 0;
-                            for (int q = 0; q < 4; q++)
-                            {
-                                error += Vector128.Sum(Vector128.Min(Pair(rows, q, cr8, cg8, cb8, distance), Pair(rows, q, dr8, dg8, db8, distance)));
-                            }
+                            error = Vector128.Sum(Vector128.Min(ce[at], de[at]) + Vector128.Min(ce[at + 1], de[at + 1]) + Vector128.Min(ce[at + 2], de[at + 2])
+                                + Vector128.Min(ce[at + 3], de[at + 3]));
                         }
                         else
                         {
-                            PaintH(paint, cr8, cg8, cb8, dr8, dg8, db8, distance);
+                            PaintH(paint, Etc.Extend4(cr), Etc.Extend4(cg), Etc.Extend4(cb), Etc.Extend4(dr), Etc.Extend4(dg), Etc.Extend4(db), Etc.Distances[d]);
                             error = Score(px, clear, paint, opaque, bestError, out _);
                         }
 
                         if (error < bestError)
                         {
-                            (bestError, mode, br1, bg1, bb1, br2, bg2, bb2, bestD) = (error, 2, cr, cg, cb, dr, dg, db, d);
+                            (bestError, mode, bestC, bestDColor, bestD) = (error, 2, c, e, d);
                         }
                     }
                 }
@@ -915,6 +927,8 @@ internal static class EtcEncoder
             return;
         }
 
+        int br1 = colors[bestC * 3], bg1 = colors[(bestC * 3) + 1], bb1 = colors[(bestC * 3) + 2];
+        int br2 = colors[bestDColor * 3], bg2 = colors[(bestDColor * 3) + 1], bb2 = colors[(bestDColor * 3) + 2];
         int distanceOut = Etc.Distances[bestD];
         if (mode == 1)
         {
