@@ -93,7 +93,7 @@ included; a block format is otherwise only chosen with `Ktx2WriterOptions.Format
 | BC | `Bc1` to `Bc5`, `Bc6h`, `Bc6hSigned`, `Bc7` | The DDS writer's encoders |
 | ETC | `Etc1`, `Etc2Rgb`, `Etc2RgbA1`, `Etc2Rgba`, `EacR11`, `EacRg11` and their signed forms | Mode search for ETC1, plus T, H and planar for ETC2 from effort 3 up; EAC is a table search |
 | ASTC | `Astc4x4` to `Astc12x12`, LDR | Partition, block mode and weight search; ASTC HDR is not encoded |
-| Basis Universal | `Etc1s`, `Uastc` | ETC1S codebooks (`BasisQuality`, 1 to 255) with BasisLZ; UASTC's 19 modes with transcoder hints and optional RDO (`UastcRdo`) |
+| Basis Universal | `Etc1s`, `Uastc` | ETC1S codebooks (`BasisQuality`, 1 to 255) with BasisLZ; UASTC's 19 modes with BC1 and ETC1 transcoder hints and optional RDO (`UastcRdo`) |
 
 `Effort` runs 0 (fastest) to 6 (best) and defaults to 4. `Srgb` picks a format's _SRGB form; left `null`, it follows the
 source file, or else the raster's tag: an untagged raster is sRGB, as Egami reads it, and a linear one is not. Formats with no
@@ -112,6 +112,10 @@ output is the same for any number of threads: blocks encode on their own, ETC1S 
 UASTC's rate-distortion pass works in fixed bands.
 
 Recipes:
+
+`BasisQuality` is not basisu's `-q` scale: Egami's ETC1S at about 170 makes files the size of basisu's at 128, with slightly
+higher quality, and lower qualities also trade some quality for size in the endpoints. A UASTC block's BC1 hint is set only when
+the shortcut it allows stays close to a full BC1 encode, so a transcoder never takes a bad shortcut.
 
 - **glTF and the web:** `Uastc` with `UastcRdo` 1 to 4 and `Zstandard` for colour that must look right; `Etc1s` at
   `BasisQuality` 64 to 128 for the smallest downloads. Viewers transcode both to the GPU's own format.
