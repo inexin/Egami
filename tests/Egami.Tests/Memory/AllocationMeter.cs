@@ -98,6 +98,30 @@ internal static class AllocationMeter
         return counted > 0 ? fewest : fewestOfAll;
     }
 
+    /// <summary>
+    /// Returns the fewest bytes one call of <paramref name="action"/> allocated on every thread of the process over
+    /// <paramref name="tries"/> calls, after <paramref name="warmUps"/> calls. For work spread over worker threads; only a test
+    /// that runs alone (a collection with parallelization off) measures itself and nothing else.
+    /// </summary>
+    public static long FewestOnAllThreads(Action action, int warmUps = 2, int tries = 3)
+    {
+        SkipUnlessOnDemand();
+        for (int i = 0; i < warmUps; i++)
+        {
+            action();
+        }
+
+        long fewest = long.MaxValue;
+        for (int i = 0; i < tries; i++)
+        {
+            long before = GC.GetTotalAllocatedBytes(precise: true);
+            action();
+            fewest = Math.Min(fewest, GC.GetTotalAllocatedBytes(precise: true) - before);
+        }
+
+        return fewest;
+    }
+
     /// <summary>Counts the array pools' buffer allocations per thread; a pool raises its events on the renting thread.</summary>
     private sealed class PoolMissListener : EventListener
     {
