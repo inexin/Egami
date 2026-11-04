@@ -283,6 +283,16 @@ internal static class MakerParser
                 }
 
                 frame.White = [camera.White];
+                if (frame.Sensor.CodecData is PanasonicTags { Ifd: RawIfd p } && p.Int(0x002D, 0) is 3 or 4 && frame.Cfa is { Rows: 2, Columns: 2 } cfa
+                    && p.Has(0x001C) && p.Has(0x001D) && p.Has(0x001E))
+                {
+                    // For encodings 3 and 4 Adobe DNG Converter's black is the file's black level tags (red, green, blue) plus 15:
+                    // it stores that for the GH4, GH5 and D-LUX 4 and subtracts it from the DMC-L10's values instead, so the
+                    // table measured the L10's as 0.
+                    double[] tags = [p.Double(0x001C) + 15, p.Double(0x001D) + 15, p.Double(0x001E) + 15];
+                    frame.BlackRows = frame.BlackColumns = 2;
+                    frame.Black = [.. Enumerable.Range(0, 4).Select(i => tags[cfa.ColorAt(i & 1, i >> 1)])];
+                }
             }
         }
         else
@@ -853,8 +863,6 @@ internal static class MakerParser
         bool setA = model.EndsWith("5D Mark II", StringComparison.OrdinalIgnoreCase) || model.EndsWith("EOS 7D", StringComparison.OrdinalIgnoreCase)
             || model.EndsWith("EOS 50D", StringComparison.OrdinalIgnoreCase) || model.EndsWith("1D Mark IV", StringComparison.OrdinalIgnoreCase)
             || model.EndsWith("EOS 60D", StringComparison.OrdinalIgnoreCase);
-        int f = (h * v) - 1;
-        int hue = (f + 1) * 4;
         long firmware = 0;
         if (note?.Ifd.Ascii(0x0007) is string text && Regex.Match(text, @"(\d+)\.(\d+)\.(\d+)") is { Success: true } version)
         {
@@ -862,10 +870,7 @@ internal static class MakerParser
                 + (long.Parse(version.Groups[2].Value, CultureInfo.InvariantCulture) * 1000) + long.Parse(version.Groups[3].Value, CultureInfo.InvariantCulture);
         }
 
-        if (id >= 0x80000281 || (id == 0x80000218 && firmware > 1000006))
-        {
-            hue = f * 2;
-        }
+        int hue = CanonSrawHue(model, firmware, h, v);
 
         RawSensor strip = Sensor(raw, RawCodec.CanonSraw, width, height, 15);
         RawFrame frame = new()
@@ -904,6 +909,22 @@ internal static class MakerParser
         frame.Active = new Rect(0, 0, width, height);
         frame.Crop = (0, 0, width, height);
         return frame;
+    }
+
+    /// <summary>
+    /// Gets the hue offset formula set A adds to an sRAW or mRAW file's chroma, as Adobe DNG Converter applies it (measured by
+    /// changing only a file's firmware string): four times a group's luma samples for the 50D before firmware 1.0.6 and the
+    /// 5D Mark II at exactly 1.0.6, and the group's sample count (luma and both chroma) for every other body and firmware.
+    /// </summary>
+    /// <param name="model">The body's model name.</param>
+    /// <param name="firmware">The firmware version as a × 10⁶ + b × 10³ + c, or 0.</param>
+    /// <param name="h">The luma samples of a group across.</param>
+    /// <param name="v">The luma samples of a group down.</param>
+    internal static int CanonSrawHue(string model, long firmware, int h, int v)
+    {
+        bool older = (model.EndsWith("EOS 50D", StringComparison.OrdinalIgnoreCase) && firmware < 1_000_006)
+            || (model.EndsWith("5D Mark II", StringComparison.OrdinalIgnoreCase) && firmware == 1_000_006);
+        return older ? h * v * 4 : (h * v) + 2;
     }
 
     private static RawFrame Cr2(RawTiff tiff, List<RawIfd> chain, List<RawIfd> all, MakerNote? note)

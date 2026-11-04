@@ -5,6 +5,19 @@ changes that break code come only in a new major version.
 
 ## Egami (unreleased)
 
+Canon sRAW and Panasonic levels as Adobe's (RAW follow-up). No API changes.
+
+- Canon sRAW and mRAW files take the baseline exposure Adobe DNG Converter gives them, which the camera table now records
+  with their white level (the ReducedExposure column). Adobe picks that white level by ISO and moves the exposure with it, so
+  the pair gives its brightness at every ISO. The EOS 5D Mark II, 5D Mark IV, 5DS R, 50D, 60D, 6D Mark II, 70D, 7D and
+  7D Mark II differ from their full-resolution exposure by -0.25 to +0.35 EV.
+- Fix: the hue offset of the sRAW formulas for the EOS 5D Mark II, 7D, 50D, 60D and 1D Mark IV is the one Adobe applies,
+  measured on files that differ only in their firmware string. The 7D mRAW's develop loses a 2 % blue cast, and the others
+  match Adobe's DNGs within 0.15 % a channel.
+- Fix: Panasonic and Leica files with the raw encodings 3 and 4 take the black level Adobe gives them, the file's black tags
+  plus 15. The DMC-L10 (whose values Adobe stores with that black subtracted) and the Leica C (Typ 112) sample developed with
+  blacks 15 and 4 levels too light.
+
 Smaller DNGs from lossy NEFs (RAW follow-up). No API changes.
 
 - `RawFormat.ConvertToDng` stores a lossy Nikon NEF as Adobe DNG Converter does: the codes before the camera's curve, with

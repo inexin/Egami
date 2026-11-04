@@ -242,6 +242,50 @@ public class RawMakerTests
     }
 
     [Theory]
+    [InlineData(3, 0, 0, 0, new double[] { 15, 15, 15, 15 })]
+    [InlineData(4, 128, 129, 130, new double[] { 143, 144, 144, 145 })]
+    public void PanasonicEncodingsThreeAndFourTakeTheBlackTagsPlusFifteen(int encoding, int red, int green, int blue, double[] black)
+    {
+        // RAW follow-up: Adobe DNG Converter's black for these encodings is the file's black tags plus 15. It stores that for the
+        // GH4, GH5 and D-LUX 4, and subtracts it from the DMC-L10's values instead, which put a black of 0 in the camera table.
+        TiffBuilder.Ifd ifd0 = new() { OffsetsTag = 0x0118, CountsTag = 0xC6FF };
+        ifd0.Tags.AddRange([TiffTag.Ascii(271, "Panasonic"), TiffTag.Ascii(272, "DMC-L10"), TiffTag.Short(0x0002, 64), TiffTag.Short(0x0003, 64),
+            TiffTag.Short(0x0009, 1), TiffTag.Short(0x000A, 12), TiffTag.Short(0x002D, (ushort)encoding), TiffTag.Short(0x001C, (ushort)red),
+            TiffTag.Short(0x001D, (ushort)green), TiffTag.Short(0x001E, (ushort)blue)]);
+        ifd0.Units.Add(new byte[0x4000]);
+        byte[] file = TiffBuilder.Write(ifd0);
+        file[2] = 0x55;
+        using Raster mosaic = Raster.Load(file, Context, new RawReaderOptions { Output = RawOutput.Mosaic, Recovery = RecoveryMode.Lenient });
+        Assert.Equal(black, ((RawDetails)mosaic.Metadata.FormatDetails!).BlackLevels);
+    }
+
+    [Theory]
+    [InlineData("Canon EOS 7D", 1_000_000, 2, 2, 6)]
+    [InlineData("Canon EOS 7D", 2_000_003, 2, 2, 6)]
+    [InlineData("Canon EOS 50D", 1_000_005, 2, 1, 8)]
+    [InlineData("Canon EOS 50D", 1_000_006, 2, 1, 4)]
+    [InlineData("Canon EOS 5D Mark II", 1_000_005, 2, 1, 4)]
+    [InlineData("Canon EOS 5D Mark II", 1_000_006, 2, 1, 8)]
+    [InlineData("Canon EOS 5D Mark II", 2_001_002, 2, 1, 4)]
+    [InlineData("Canon EOS-1D Mark IV", 1_001_000, 2, 1, 4)]
+    [InlineData("Canon EOS 60D", 1_000_000, 2, 1, 4)]
+    public void CanonSrawHueIsAdobes(string model, long firmware, int h, int v, int hue)
+    {
+        // RAW follow-up: measured on Adobe DNG Converter's DNGs of the CC0 samples with only their firmware string changed. The
+        // 7D mRAW's earlier hue of 16 gave its develop a 2 % blue cast.
+        Assert.Equal(hue, MakerParser.CanonSrawHue(model, firmware, h, v));
+    }
+
+    [Fact]
+    public void CanonSrawTakesTheTablesReducedExposure()
+    {
+        // RAW follow-up: Adobe moves an sRAW file's baseline exposure with the white level it picks by ISO; the table keeps the
+        // pair it measured, which differs from the full-resolution exposure (70D: +0.25 against -0.09).
+        RawCameraEntry camera = RawCameraTable.Find("Canon", "Canon EOS 70D")!;
+        Assert.Equal((13000.0, 0.25, -0.09), (camera.ReducedWhite, camera.ReducedExposure, camera.Profile.BaselineExposure));
+    }
+
+    [Theory]
     [InlineData("rwl", "image/x-leica-rwl")]
     [InlineData("rw2", "image/x-panasonic-rw2")]
     public void PanasonicAndLeicaExtensionsAreRaw(string extension, string mime)
