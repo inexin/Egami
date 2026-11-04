@@ -10,7 +10,10 @@ Smaller DNGs from lossy NEFs (RAW follow-up). No API changes.
 - `RawFormat.ConvertToDng` stores a lossy Nikon NEF as Adobe DNG Converter does: the codes before the camera's curve, with
   the curve as the DNG's LinearizationTable (DNG 1.7.1, tag 50712), when the curve rises over the codes the file uses. A
   reader that applies the table gets the same values back, and the develop is the same. The Nikon D90 sample's DNG goes from
-  20.9 % larger than Adobe's to 0.7 % smaller.
+  20.9 % larger than Adobe's to 0.7 % smaller, and the corpus's DNGs from 0.7 % to 0.9 % smaller than Adobe's.
+- Fix: Panasonic and Leica files whose mapped defective pixels (stored as 0) lie two pixels apart no longer decode
+  differently from run to run. Each is filled from the stored samples around it; filling in place on several threads let
+  one fill read another's result.
 
 Faster lossless JPEG XL encoding (roadmap 2.4.11). No API changes; every file is byte for byte the same as before.
 

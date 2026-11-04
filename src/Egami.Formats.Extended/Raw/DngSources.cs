@@ -1,3 +1,4 @@
+using System.Buffers;
 using System.Runtime.InteropServices;
 
 using Egami.Colors;
@@ -108,9 +109,21 @@ internal static class DngSources
     private static void Uncurve(RawFrame frame, RawPixels pixels, ushort[] curve)
     {
         // The decoder clamps its codes to 14 bits; each value gets the smallest code the curve maps to it.
+        int[] code = ArrayPool<int>.Shared.Rent(65536);
+        try
+        {
+            Uncurve(frame, pixels, curve, code);
+        }
+        finally
+        {
+            ArrayPool<int>.Shared.Return(code);
+        }
+    }
+
+    private static void Uncurve(RawFrame frame, RawPixels pixels, ushort[] curve, int[] code)
+    {
         const int Codes = 0x4000;
-        int[] code = new int[65536];
-        Array.Fill(code, -1);
+        Array.Fill(code, -1, 0, 65536);
         for (int c = Codes - 1; c >= 0; c--)
         {
             code[curve[c]] = c;

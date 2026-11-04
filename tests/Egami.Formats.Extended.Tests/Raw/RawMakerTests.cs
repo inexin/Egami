@@ -181,6 +181,33 @@ public class RawMakerTests
     }
 
     [Fact]
+    public void PanasonicZerosFillFromStoredValuesOnly()
+    {
+        // Gate finding: zeros (mapped defective pixels) filled in place on several threads could read a neighbour another
+        // thread had just filled, so files with neighbouring zeros decoded differently from run to run. Each fill now takes
+        // the mean of the stored non-zero samples of its colour two pixels away, whatever the thread count.
+        const int w = 20, h = 8;
+        static int Value(int x, int y) => 100 + (10 * x) + (50 * y);
+        (int X, int Y)[] zeros = [(2, 2), (4, 2), (2, 4)];
+        byte[] data = new byte[2 * w * h];
+        for (int y = 0; y < h; y++)
+        {
+            for (int x = 0; x < w; x++)
+            {
+                BinaryPrimitives.WriteUInt16LittleEndian(data.AsSpan(2 * ((y * w) + x)), (ushort)(zeros.Contains((x, y)) ? 0 : Value(x, y) << 4));
+            }
+        }
+
+        byte[] file = OldPanasonicFile(w, h, data);
+        using Raster<Gray16> many = Raster.Load<Gray16>(file, Context, Mosaic);
+        using Raster<Gray16> one = Raster.Load<Gray16>(file, Context with { MaxParallelism = 1 }, Mosaic);
+        Assert.Equal((Value(0, 2) + Value(2, 0)) / 2, many.Row(2)[2].L);
+        Assert.Equal((Value(6, 2) + Value(4, 0) + Value(4, 4)) / 3, many.Row(2)[4].L);
+        Assert.Equal((Value(4, 4) + Value(2, 6) + Value(0, 4)) / 3, many.Row(4)[2].L);
+        Assert.Equal(Enumerable.Range(0, h).SelectMany(y => many.Row(y).ToArray()), Enumerable.Range(0, h).SelectMany(y => one.Row(y).ToArray()));
+    }
+
+    [Fact]
     public void OldPanasonicFileWithTwelveBitPackingDecodes()
     {
         // Gate finding: a .RAW without tag 0x0118 (DMC-FZ8) holding 12-bit values with a control byte after every ten.

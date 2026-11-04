@@ -218,8 +218,7 @@ On the 57 corpus files Egami reads as RAW, a converted DNG loads back with its m
 areas and pattern bit for bit,
 and develops to the source's develop within a level in 16 bits. Adobe DNG Converter, LibRaw (through Magick.NET), Windows'
 Raw Image Extension and Adobe's dng_validate open it. Its colour tags are Adobe's for the same file. With lossless JPEG and
-the medium preview it is 0.7 % smaller than Adobe's DNG over the corpus, within 2 % file by file but for a lossy Nikon NEF,
-which Adobe stores as the codes before the camera's tone curve, with a linearization table (21 % smaller). On one thread it
+the medium preview it is 0.9 % smaller than Adobe's DNG over the corpus and within 2 % file by file. On one thread it
 converts the corpus in 70 % of the time Adobe DNG Converter takes pinned to one core (one large Fujifilm file takes 3 %
 longer than Adobe).
 

@@ -143,10 +143,14 @@ internal static class MakerDecoders
     /// </summary>
     private static void FillZeros(RawPixels pixels, ParallelOptions parallel)
     {
+        // Each fill comes from the stored values alone, all found before any is written: filling in place on several threads
+        // let a fill read a neighbour another thread had just filled, so the result changed from run to run.
         int width = pixels.Width, height = pixels.Height;
+        List<(int Y, int X, ushort Value)> fills = [];
         RawParallel.For(0, height, parallel, y =>
         {
-            Span<ushort> row = pixels.U16Row(y);
+            ReadOnlySpan<ushort> row = pixels.U16Row(y);
+            List<(int, int, ushort)>? found = null;
             for (int x = 0; x < width; x++)
             {
                 if (row[x] != 0)
@@ -155,11 +159,10 @@ internal static class MakerDecoders
                 }
 
                 int sum = 0, n = 0;
-                ReadOnlySpan<ushort> all = pixels.U16;
                 for (int k = 0; k < 4; k++)
                 {
                     int xx = x + (k == 0 ? -2 : k == 1 ? 2 : 0), yy = y + (k == 2 ? -2 : k == 3 ? 2 : 0);
-                    if (xx >= 0 && xx < width && yy >= 0 && yy < height && all[(yy * width) + xx] is ushort v and > 0)
+                    if (xx >= 0 && xx < width && yy >= 0 && yy < height && pixels.U16Row(yy)[xx] is ushort v and > 0)
                     {
                         sum += v;
                         n++;
@@ -168,10 +171,23 @@ internal static class MakerDecoders
 
                 if (n > 0)
                 {
-                    row[x] = (ushort)(sum / n);
+                    (found ??= []).Add((y, x, (ushort)(sum / n)));
+                }
+            }
+
+            if (found is not null)
+            {
+                lock (fills)
+                {
+                    fills.AddRange(found);
                 }
             }
         });
+
+        foreach ((int y, int x, ushort value) in fills)
+        {
+            pixels.U16Row(y)[x] = value;
+        }
     }
 
     private static void Unpacked16(ReadOnlySpan<byte> data, RawPixels pixels, bool bigEndian)
