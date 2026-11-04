@@ -1,10 +1,25 @@
+using System.Buffers;
 using System.Numerics;
+using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
 
 namespace Egami.Formats.Jxl;
 
 /// <summary>One value to entropy code, in a context; an LZ77 length when <see cref="IsLz77Length"/> is set.</summary>
-internal readonly record struct JxlToken(int Context, uint Value, bool IsLz77Length = false);
+internal readonly struct JxlToken(int context, uint value, bool isLz77Length = false)
+{
+    // The context, with the LZ77 flag in the sign bit, so a token takes eight bytes.
+    private readonly int _context = isLz77Length ? context | int.MinValue : context;
+
+    /// <summary>Gets the context.</summary>
+    internal int Context => _context & int.MaxValue;
+
+    /// <summary>Gets the value, or the LZ77 length.</summary>
+    internal uint Value { get; } = value;
+
+    /// <summary>Gets whether the token is an LZ77 length.</summary>
+    internal bool IsLz77Length => _context < 0;
+}
 
 /// <summary>Something bits can be written to: a <see cref="JxlBitWriter"/>, or a counter that only adds up their number.</summary>
 internal interface IJxlBitSink
@@ -719,6 +734,7 @@ internal sealed class JxlEntropyCode
     private ushort[][] _freq = [];
     private ushort[][] _reverse = [];
     private ushort[][] _start = [];
+    private ulong[][]? _magic;
     private bool _lz77;
 
     /// <summary>Makes a hybrid integer configuration from its split exponent and the bits kept in the token.</summary>
@@ -805,50 +821,83 @@ internal sealed class JxlEntropyCode
     /// <summary>Writes one stream: the final ANS state, then the renormalization bits and raw bits in decoding order.</summary>
     internal void WriteTokens(IJxlBitSink w, List<JxlToken> tokens)
     {
-        // Coded last to first; a token's raw bits follow its symbol when decoding, so they are pushed first here.
-        List<(uint Bits, int Count)> chunks = new(tokens.Count * 2);
+        // Coded last to first; a token's raw bits follow its symbol when decoding, so they are pushed first here. Each chunk
+        // keeps its bits low and its bit count above them.
+        ReadOnlySpan<JxlToken> all = CollectionsMarshal.AsSpan(tokens);
+        ulong[] chunks = ArrayPool<ulong>.Shared.Rent(Math.Max(1, all.Length * 2));
+        ulong[][] magic = _magic ??= Magic(_freq);
+        byte[] contextMap = _contextMap;
+        JxlUintConfig[] configs = _configs;
+        int count = 0;
         uint state = 0x130000;
-        for (int i = tokens.Count - 1; i >= 0; i--)
+        for (int i = all.Length - 1; i >= 0; i--)
         {
-            JxlToken t = tokens[i];
-            int histo = _contextMap[t.Context];
-            (uint tok, int nbits, uint bits) = Split(t.IsLz77Length ? Lz77LengthConfig : _configs[histo], t.Value);
-            if (t.IsLz77Length)
+            JxlToken t = all[i];
+            int histo = contextMap[t.Context];
+            uint tok = t.Value;
+            ref readonly JxlUintConfig c = ref configs[histo];
+            if (t.IsLz77Length || tok >= c.Split)
             {
-                tok += Lz77MinSymbol;
-            }
+                (tok, int nbits, uint bits) = Split(t.IsLz77Length ? Lz77LengthConfig : c, t.Value);
+                if (t.IsLz77Length)
+                {
+                    tok += Lz77MinSymbol;
+                }
 
-            if (nbits > 0)
-            {
-                chunks.Add((bits, nbits));
+                if (nbits > 0)
+                {
+                    chunks[count++] = bits | ((ulong)nbits << 32);
+                }
             }
 
             uint freq = _freq[histo][tok];
             if ((state >> (32 - LogTab)) >= freq)
             {
-                chunks.Add((state & 0xFFFF, 16));
+                chunks[count++] = (state & 0xFFFF) | (16UL << 32);
                 state >>= 16;
             }
 
-            state = ((state / freq) << LogTab) + _reverse[histo][_start[histo][tok] + (state % freq)];
+            // state / freq by a multiply (Lemire, Kaser and Kurz, "Faster remainder by direct computation"), exact for 32-bit
+            // numerators; a frequency of 1 has no 64-bit reciprocal and is marked 0.
+            ulong m = magic[histo][tok];
+            uint q = m == 0 ? state : (uint)Math.BigMul(m, state, out _);
+            state = (q << LogTab) + _reverse[histo][_start[histo][tok] + (state - (q * freq))];
         }
 
         w.Write(state, 32);
         if (w is JxlBitWriter writer)
         {
             // The sealed writer directly, without an interface call per chunk.
-            for (int i = chunks.Count - 1; i >= 0; i--)
+            for (int i = count - 1; i >= 0; i--)
             {
-                writer.Write(chunks[i].Bits, chunks[i].Count);
+                writer.Write((uint)chunks[i], (int)(chunks[i] >> 32));
             }
-
-            return;
         }
-
-        for (int i = chunks.Count - 1; i >= 0; i--)
+        else
         {
-            w.Write(chunks[i].Bits, chunks[i].Count);
+            for (int i = count - 1; i >= 0; i--)
+            {
+                w.Write((uint)chunks[i], (int)(chunks[i] >> 32));
+            }
         }
+
+        ArrayPool<ulong>.Shared.Return(chunks);
+    }
+
+    /// <summary>Gets 2^64 / f + 1 for each frequency f above 1, and 0 for 0 and 1.</summary>
+    private static ulong[][] Magic(ushort[][] freq)
+    {
+        ulong[][] magic = new ulong[freq.Length][];
+        for (int h = 0; h < freq.Length; h++)
+        {
+            magic[h] = new ulong[freq[h].Length];
+            for (int s = 0; s < freq[h].Length; s++)
+            {
+                magic[h][s] = freq[h][s] > 1 ? (ulong.MaxValue / freq[h][s]) + 1 : 0;
+            }
+        }
+
+        return magic;
     }
 
     private static void WriteLz77Header(IJxlBitSink w, bool enabled)
@@ -1350,6 +1399,7 @@ internal sealed class JxlEntropyCode
 
         cost += configCost.Bits;
         _freq = new ushort[clustered.Count][];
+        _magic = null;
         _reverse = new ushort[clustered.Count][];
         _start = new ushort[clustered.Count][];
         for (int c = 0; c < clustered.Count; c++)

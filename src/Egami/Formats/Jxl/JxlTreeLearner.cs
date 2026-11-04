@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -48,6 +49,10 @@ internal sealed class JxlTreeLearner
     private ushort[] _counts;
     private int _n;
     private int[] _table = [];
+
+    // Each sample's tokens, static properties (two bytes each) and other properties packed in 16 bytes, when they fit, for
+    // hashing and comparing while samples are added; the raw bit counts follow from the tokens.
+    private UInt128[]? _keys;
     private int[][] _compact = [];
     private ushort[][] _staticMapping = [];
     private byte[][] _mapping = [];
@@ -64,6 +69,7 @@ internal sealed class JxlTreeLearner
         _static = [.. Enumerable.Range(0, _staticCount).Select(_ => new int[capacity])];
         _props = [.. Enumerable.Range(0, properties.Length - _staticCount).Select(_ => new byte[capacity])];
         _counts = new ushort[capacity];
+        _keys = predictors.Length + (2 * _staticCount) + _props.Length <= 16 ? new UInt128[capacity] : null;
         Rehash(BitOperations.RoundUpToPowerOf2((uint)capacity * 2));
     }
 
@@ -139,6 +145,29 @@ internal sealed class JxlTreeLearner
             _props[i - _staticCount][a] = _mapping[i - _staticCount][Math.Clamp(properties[_properties[i]], -PropertyRange, PropertyRange) + PropertyRange];
         }
 
+        if (_keys is not null)
+        {
+            Span<byte> key = stackalloc byte[16];
+            int k = 0;
+            for (int i = 0; i < _predictors.Length; i++)
+            {
+                key[k++] = _tokens[i][a];
+            }
+
+            for (int i = 0; i < _staticCount; i++)
+            {
+                key[k++] = (byte)_static[i][a];
+                key[k++] = (byte)(_static[i][a] >> 8);
+            }
+
+            for (int i = 0; i < _props.Length; i++)
+            {
+                key[k++] = _props[i][a];
+            }
+
+            _keys[a] = MemoryMarshal.Read<UInt128>(key);
+        }
+
         SampleCount++;
         int mask = _table.Length - 1;
         int slot = Hash(a) & mask;
@@ -181,6 +210,7 @@ internal sealed class JxlTreeLearner
     {
         List<JxlTreeNode> tree = [JxlTreeNode.Leaf(_predictors[0])];
         _table = [];
+        _keys = null;
         if (_n == 0)
         {
             return tree;
@@ -392,6 +422,10 @@ internal sealed class JxlTreeLearner
         }
 
         Array.Resize(ref _counts, size);
+        if (_keys is not null)
+        {
+            Array.Resize(ref _keys, size);
+        }
     }
 
     private void Rehash(long size)
@@ -418,6 +452,12 @@ internal sealed class JxlTreeLearner
 
     private int Hash(int a)
     {
+        if (_keys is not null)
+        {
+            UInt128 key = _keys[a];
+            return Mix((ulong)key ^ (BitOperations.RotateLeft((ulong)(key >> 64), 29) * 0x9E3779B97F4A7C15));
+        }
+
         ulong h = 0x1e35a7bd;
         for (int i = 0; i < _tokens.Length; i++)
         {
@@ -435,7 +475,12 @@ internal sealed class JxlTreeLearner
             h = (h * 0x1e35a7bd) + p[a];
         }
 
-        // A final mix (splitmix64's), so that samples differing only in their last fields still spread over the table.
+        return Mix(h);
+    }
+
+    /// <summary>A final mix (splitmix64's), so that samples differing only in their last fields still spread over the table.</summary>
+    private static int Mix(ulong h)
+    {
         h ^= h >> 30;
         h *= 0xbf58476d1ce4e5b9;
         h ^= h >> 27;
@@ -446,6 +491,11 @@ internal sealed class JxlTreeLearner
 
     private bool Same(int a, int b)
     {
+        if (_keys is not null)
+        {
+            return _keys[a] == _keys[b];
+        }
+
         for (int i = 0; i < _tokens.Length; i++)
         {
             if (_tokens[i][a] != _tokens[i][b] || _nbits[i][a] != _nbits[i][b])
@@ -532,20 +582,48 @@ internal sealed class JxlTreeLearner
 
     private void FindBestSplit(List<JxlTreeNode> tree, float threshold, float fastDecodeMultiplier, int parallelism)
     {
-        Stack<(int Pos, int Begin, int End)> nodes = new();
-        nodes.Push((0, 0, _n));
+        Learning learning = new(tree, threshold, fastDecodeMultiplier, 800f / (100f + threshold), _compact.Max(c => c.Length) + 1, parallelism);
+        LearnSubtree(learning, 0, 0, _n);
+
+        // A subtree adds the tasks of its own large subtrees before it ends, so once none is left all of them are done.
+        while (learning.Pending.TryTake(out Task? task))
+        {
+            task.Wait();
+        }
+    }
+
+    /// <summary>
+    /// Splits a node and its descendants. Each node's split depends only on its own samples, and the tree is written out by
+    /// following child links, so when both halves of a split are large they are learned at the same time.
+    /// </summary>
+    private void LearnSubtree(Learning learning, int root, int rootBegin, int rootEnd)
+    {
+        List<JxlTreeNode> tree = learning.Tree;
+        float threshold = learning.Threshold;
+        int parallelism = learning.Parallelism;
         int predictors = _predictors.Length;
         int properties = _properties.Length;
-        float changePenalty = 800f / (100f + threshold);
-        int maxValues = _compact.Max(c => c.Length) + 1;
+        int maxValues = learning.MaxValues;
         Candidates[] found = new Candidates[properties];
-        Scratch[] scratch = [.. Enumerable.Range(0, properties).Select(_ => new Scratch(maxValues, predictors))];
+        if (!learning.Scratch.TryTake(out Scratch[]? scratch))
+        {
+            scratch = [.. Enumerable.Range(0, properties).Select(_ => new Scratch(maxValues, predictors))];
+        }
+
+        Stack<(int Pos, int Begin, int End)> nodes = new();
+        nodes.Push((root, rootBegin, rootEnd));
         while (nodes.Count > 0)
         {
             (int pos, int begin, int end) = nodes.Pop();
             if (begin == end)
             {
                 continue;
+            }
+
+            int predictor;
+            lock (learning.TreeLock)
+            {
+                predictor = tree[pos].Predictor;
             }
 
             int maxSymbols = 0;
@@ -583,25 +661,27 @@ internal sealed class JxlTreeLearner
                 totalExtra[pr] = extra;
             }
 
-            int nodePredictor = Array.IndexOf(_predictors, tree[pos].Predictor);
+            int nodePredictor = Array.IndexOf(_predictors, predictor);
             float baseBits = EstimateBits(counts.AsSpan(nodePredictor * maxSymbols, maxSymbols), nodeTotal) + totalExtra[nodePredictor];
             Array.Fill(found, Candidates.None);
             if (baseBits > threshold)
             {
-                NodeScan scan = new(begin, end, maxSymbols, maxValues, nodeTotal, counts, totalExtra, tree[pos].Predictor, changePenalty);
+                NodeScan scan = new(begin, end, maxSymbols, maxValues, nodeTotal, counts, totalExtra, predictor, learning.ChangePenalty);
 
-                // Each property is priced on its own; large nodes price them in parallel, and the results combine in order.
+                // Each property is priced on its own; large nodes price them in parallel, and the results combine in order. With
+                // more threads than properties, the largest nodes also count each property's samples in parts.
                 if (parallelism > 1 && end - begin >= 4096)
                 {
-                    Parallel.For(0, properties, new ParallelOptions { MaxDegreeOfParallelism = parallelism }, prop => found[prop] = ScanProperty(prop, scan, scratch[prop]));
+                    int parts = Math.Clamp(parallelism / properties, 1, (end - begin) / 65536 + 1);
+                    ParallelOptions options = new() { MaxDegreeOfParallelism = parallelism };
+                    Parallel.For(0, properties, options, prop => found[prop] = ScanProperty(prop, scan, scratch[prop], parts, options));
                 }
                 else
                 {
                     for (int prop = 0; prop < properties; prop++)
                     {
-                        found[prop] = ScanProperty(prop, scan, scratch[prop]);
+                        found[prop] = ScanProperty(prop, scan, scratch[prop], 1, null);
                     }
-
                 }
             }
 
@@ -618,12 +698,12 @@ internal sealed class JxlTreeLearner
             }
 
             Split chosen = nonStatic;
-            if (noWp.Cost + threshold < baseBits && noWp.Cost <= fastDecodeMultiplier * chosen.Cost)
+            if (noWp.Cost + threshold < baseBits && noWp.Cost <= learning.FastDecodeMultiplier * chosen.Cost)
             {
                 chosen = noWp;
             }
 
-            if (staticSplit.Cost + threshold < baseBits && staticSplit.Cost <= fastDecodeMultiplier * chosen.Cost)
+            if (staticSplit.Cost + threshold < baseBits && staticSplit.Cost <= learning.FastDecodeMultiplier * chosen.Cost)
             {
                 chosen = staticSplit;
             }
@@ -638,28 +718,69 @@ internal sealed class JxlTreeLearner
                 continue;
             }
 
-            int left = tree.Count;
-            JxlTreeNode node = tree[pos];
-            node.Property = _properties[chosen.Prop];
-            node.SplitValue = _compact[chosen.Prop][chosen.Value];
-            node.Left = left;
-            node.Right = left + 1;
-            tree[pos] = node;
+            int left;
+            lock (learning.TreeLock)
+            {
+                left = tree.Count;
+                JxlTreeNode node = tree[pos];
+                node.Property = _properties[chosen.Prop];
+                node.SplitValue = _compact[chosen.Prop][chosen.Value];
+                node.Left = left;
+                node.Right = left + 1;
+                tree[pos] = node;
 
-            // The left child takes the samples above the split, coded with the right side's predictor in libjxl's naming.
-            tree.Add(JxlTreeNode.Leaf(chosen.RightPredictor));
-            tree.Add(JxlTreeNode.Leaf(chosen.LeftPredictor));
+                // The left child takes the samples above the split, coded with the right side's predictor in libjxl's naming.
+                tree.Add(JxlTreeNode.Leaf(chosen.RightPredictor));
+                tree.Add(JxlTreeNode.Leaf(chosen.LeftPredictor));
+            }
+
             SplitSamples(begin, chosen.Pos, end, chosen.Prop, chosen.Value);
-            nodes.Push((left + 1, begin, chosen.Pos));
-            nodes.Push((left, chosen.Pos, end));
+            int below = chosen.Pos;
+            if (parallelism > 1 && below - begin >= MinParallelSubtree && end - below >= MinParallelSubtree)
+            {
+                learning.Pending.Add(Task.Run(() => LearnSubtree(learning, left + 1, begin, below)));
+            }
+            else
+            {
+                nodes.Push((left + 1, begin, below));
+            }
+
+            nodes.Push((left, below, end));
         }
+
+        learning.Scratch.Add(scratch);
+    }
+
+    /// <summary>The samples both halves of a split need before they are learned at the same time.</summary>
+    private const int MinParallelSubtree = 1 << 14;
+
+    /// <summary>What every subtree of one learned tree shares: the tree, the settings, spare scratch arrays and running subtrees.</summary>
+    private sealed class Learning(List<JxlTreeNode> tree, float threshold, float fastDecodeMultiplier, float changePenalty, int maxValues, int parallelism)
+    {
+        internal List<JxlTreeNode> Tree { get; } = tree;
+
+        internal Lock TreeLock { get; } = new();
+
+        internal float Threshold { get; } = threshold;
+
+        internal float FastDecodeMultiplier { get; } = fastDecodeMultiplier;
+
+        internal float ChangePenalty { get; } = changePenalty;
+
+        internal int MaxValues { get; } = maxValues;
+
+        internal int Parallelism { get; } = parallelism;
+
+        internal ConcurrentBag<Scratch[]> Scratch { get; } = [];
+
+        internal ConcurrentBag<Task> Pending { get; } = [];
     }
 
     /// <summary>
     /// Prices every split of a node on one property: for each predictor, the entropy of the samples at or below each used value
     /// and of those above it, moving one value's counts across at a time (libjxl's inner loop of FindBestSplit).
     /// </summary>
-    private Candidates ScanProperty(int prop, NodeScan n, Scratch scratch)
+    private Candidates ScanProperty(int prop, NodeScan n, Scratch scratch, int parts, ParallelOptions? options)
     {
         int predictors = _predictors.Length;
         int size = _compact[prop].Length + 1;
@@ -674,37 +795,79 @@ internal sealed class JxlTreeLearner
         (float Cost, float Extra, int Predictor)[] costsR = scratch.CostsR;
         {
             Array.Clear(used, 0, size);
-            Array.Clear(valueTotal, 0, size);
             int first = size;
             int last = 0;
-            if (prop < _staticCount)
+            if ((long)(n.End - n.Begin) * 4 >= (long)size * maxSymbols * predictors)
             {
-                Count(_static[prop], n.Begin, n.End, used, valueTotal, ref first, ref last);
+                // A large node: one pass counts every value's tokens, and the totals and raw bits follow from those counts.
+                Array.Clear(countIncrease, 0, predictors * size * maxSymbols);
+                if (parts > 1)
+                {
+                    // Each part counts into arrays of its own; integer sums, so the totals do not depend on the split.
+                    int length = predictors * size * maxSymbols;
+                    int[][] partUsed = new int[parts][];
+                    int[][] partCounts = new int[parts][];
+                    Parallel.For(0, parts, options!, k =>
+                    {
+                        int from = n.Begin + (int)((long)(n.End - n.Begin) * k / parts);
+                        int to = n.Begin + (int)((long)(n.End - n.Begin) * (k + 1) / parts);
+                        partUsed[k] = new int[size];
+                        partCounts[k] = new int[length];
+                        GatherProperty(prop, from, to, partUsed[k], partCounts[k], size, maxSymbols);
+                    });
+
+                    for (int k = 0; k < parts; k++)
+                    {
+                        Add(partUsed[k], used.AsSpan(0, size));
+                        Add(partCounts[k], countIncrease.AsSpan(0, length));
+                    }
+                }
+                else
+                {
+                    GatherProperty(prop, n.Begin, n.End, used, countIncrease, size, maxSymbols);
+                }
+
+                first = used.AsSpan(0, size).IndexOfAnyExcept(0);
+                last = used.AsSpan(0, size).LastIndexOfAnyExcept(0);
+                if (last <= first)
+                {
+                    return Candidates.None;
+                }
+
+                Totals(countIncrease, valueTotal, extraIncrease, first, last, size, maxSymbols);
             }
             else
             {
-                Count(_props[prop - _staticCount], n.Begin, n.End, used, valueTotal, ref first, ref last);
-            }
+                Array.Clear(valueTotal, 0, size);
+                if (prop < _staticCount)
+                {
+                    Count(_static[prop], n.Begin, n.End, used, valueTotal, ref first, ref last);
+                }
+                else
+                {
+                    Count(_props[prop - _staticCount], n.Begin, n.End, used, valueTotal, ref first, ref last);
+                }
 
-            if (last <= first)
-            {
-                return Candidates.None;
-            }
+                if (last <= first)
+                {
+                    return Candidates.None;
+                }
 
-            // Only the values that occur need clearing.
-            for (int pr = 0; pr < predictors; pr++)
-            {
-                Array.Clear(countIncrease, ((pr * size) + first) * maxSymbols, (last - first + 1) * maxSymbols);
-                Array.Clear(extraIncrease, (pr * size) + first, last - first + 1);
-            }
+                // Only the values that occur need clearing.
+                for (int pr = 0; pr < predictors; pr++)
+                {
+                    Array.Clear(countIncrease, ((pr * size) + first) * maxSymbols, (last - first + 1) * maxSymbols);
+                    Array.Clear(extraIncrease, (pr * size) + first, last - first + 1);
+                }
 
-            if (prop < _staticCount)
-            {
-                Gather(_static[prop], n.Begin, n.End, countIncrease, extraIncrease, size, maxSymbols);
-            }
-            else
-            {
-                Gather(_props[prop - _staticCount], n.Begin, n.End, countIncrease, extraIncrease, size, maxSymbols);
+                if (prop < _staticCount)
+                {
+                    Gather(_static[prop], n.Begin, n.End, countIncrease, extraIncrease, size, maxSymbols);
+                }
+                else
+                {
+                    Gather(_props[prop - _staticCount], n.Begin, n.End, countIncrease, extraIncrease, size, maxSymbols);
+                }
             }
 
             Array.Fill(costsL, (float.MaxValue, 0f, 0), 0, last - first);
@@ -820,6 +983,104 @@ internal sealed class JxlTreeLearner
 
         first = lo;
         last = hi;
+    }
+
+    /// <summary>Runs <see cref="GatherAll"/> on samples [begin, end) of a property.</summary>
+    private void GatherProperty(int prop, int begin, int end, int[] used, int[] countIncrease, int size, int maxSymbols)
+    {
+        if (prop < _staticCount)
+        {
+            GatherAll(_static[prop], begin, end, used, countIncrease, size, maxSymbols);
+        }
+        else
+        {
+            GatherAll(_props[prop - _staticCount], begin, end, used, countIncrease, size, maxSymbols);
+        }
+    }
+
+    /// <summary>Adds <paramref name="from"/> into <paramref name="to"/>.</summary>
+    private static void Add(ReadOnlySpan<int> from, Span<int> to)
+    {
+        int i = 0;
+        if (Vector256.IsHardwareAccelerated)
+        {
+            for (; i + 8 <= to.Length; i += 8)
+            {
+                (Vector256.Create(from.Slice(i, 8)) + Vector256.Create(to.Slice(i, 8))).CopyTo(to.Slice(i, 8));
+            }
+        }
+
+        for (; i < to.Length; i++)
+        {
+            to[i] += from[i];
+        }
+    }
+
+    /// <summary>One pass for a large node: which values occur and each predictor's token counts per value.</summary>
+    private void GatherAll<T>(T[] values, int begin, int end, int[] used, int[] countIncrease, int size, int maxSymbols)
+        where T : IBinaryInteger<T>
+    {
+        int predictors = _predictors.Length;
+        ushort[] counts = _counts;
+        if (predictors == 2)
+        {
+            byte[] t0 = _tokens[0];
+            byte[] t1 = _tokens[1];
+            int second = size * maxSymbols;
+            for (int i = begin; i < end; i++)
+            {
+                int p = int.CreateTruncating(values[i]);
+                int c = counts[i];
+                used[p]++;
+                countIncrease[(p * maxSymbols) + t0[i]] += c;
+                countIncrease[second + (p * maxSymbols) + t1[i]] += c;
+            }
+
+            return;
+        }
+
+        for (int i = begin; i < end; i++)
+        {
+            int p = int.CreateTruncating(values[i]);
+            int c = counts[i];
+            used[p]++;
+            for (int pr = 0; pr < predictors; pr++)
+            {
+                countIncrease[(((pr * size) + p) * maxSymbols) + _tokens[pr][i]] += c;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Works out, from <see cref="GatherAll"/>'s token counts, each value's total count and each predictor's raw bits per value
+    /// (a token of 16 or more carries 1 + (token − 16) / 8 raw bits, see <see cref="ResidualToken"/>).
+    /// </summary>
+    private void Totals(int[] countIncrease, int[] valueTotal, long[] extraIncrease, int first, int last, int size, int maxSymbols)
+    {
+        for (int pr = 0; pr < _predictors.Length; pr++)
+        {
+            for (int p = first; p <= last; p++)
+            {
+                ReadOnlySpan<int> tokens = countIncrease.AsSpan(((pr * size) + p) * maxSymbols, maxSymbols);
+                long extra = 0;
+                for (int t = 16; t < tokens.Length; t++)
+                {
+                    extra += (long)tokens[t] * (1 + ((t - 16) >> 3));
+                }
+
+                extraIncrease[(pr * size) + p] = extra;
+                if (pr == 0)
+                {
+                    int total = 0;
+                    foreach (int count in tokens)
+                    {
+                        total += count;
+                    }
+
+                    valueTotal[p] = total;
+                }
+            }
+        }
     }
 
     /// <summary>A second pass: each predictor's token counts and raw bits per property value.</summary>

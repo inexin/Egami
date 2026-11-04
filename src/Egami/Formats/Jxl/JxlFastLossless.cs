@@ -1230,7 +1230,8 @@ internal static class JxlFastLossless
 
         /// <summary>
         /// Writes a whole chunk of 16 residuals: each one's token, bit count and bits worked out eight at a time (the token from
-        /// the exponent of the value as a float, exact for the 24-bit residuals of at most 16-bit samples), then merged in order.
+        /// the exponent of the value as a float, exact for the 24-bit residuals of at most 16-bit samples), then written in order,
+        /// two at a time when they are short.
         /// </summary>
         internal void WriteChunk(uint[] residuals, CodeTables tables)
         {
@@ -1239,49 +1240,64 @@ internal static class JxlFastLossless
                 Grow(Math.Max(_data.Length * 2, _bytes + 256));
             }
 
-            Span<uint> counts = stackalloc uint[ChunkSize];
-            Span<uint> values = stackalloc uint[ChunkSize];
+            // Each residual's bits and count, eight at a time.
             ref uint res = ref MemoryMarshal.GetArrayDataReference(residuals);
-            for (int h = 0; h < ChunkSize; h += 8)
+            (Vector256<uint> value0, Vector256<int> count0) = Code(Vector256.LoadUnsafe(ref res), tables);
+            (Vector256<uint> value1, Vector256<int> count1) = Code(Vector256.LoadUnsafe(ref res, 8), tables);
+
+            // Fewer than 8 bits are held, so a piece of at most 56 bits fits the 64-bit buffer: short residuals go two at a
+            // time, the second's bits above the first's, and longer ones (at most 15 + 23 bits) one at a time.
+            if (!Vector256.GreaterThanAny(Vector256.Max(count0, count1), Vector256.Create(28)))
             {
-                Vector256<uint> v = Vector256.LoadUnsafe(ref res, (nuint)h);
-                Vector256<int> exponent = Avx2.ShiftRightLogical(Avx.ConvertToVector256Single(v.AsInt32()).AsInt32(), 23);
-                Vector256<int> token = Vector256.Max(exponent - Vector256.Create(126), Vector256<int>.Zero);
-                Vector256<int> raw = Vector256.Max(token - Vector256<int>.One, Vector256<int>.Zero);
-                Vector256<int> rn = CodeTables.Lookup(token, tables.N0, tables.N1, tables.N2);
-                Vector256<int> code = CodeTables.Lookup(token, tables.C0, tables.C1, tables.C2);
-                Vector256<uint> mask = Avx2.ShiftLeftLogicalVariable(Vector256<uint>.One, raw.AsUInt32()) - Vector256<uint>.One;
-                Vector256<uint> value = code.AsUInt32() | Avx2.ShiftLeftLogicalVariable(v & mask, rn.AsUInt32());
-                (rn + raw).AsUInt32().StoreUnsafe(ref MemoryMarshal.GetReference(counts), (nuint)h);
-                value.StoreUnsafe(ref MemoryMarshal.GetReference(values), (nuint)h);
+                Vector256<ulong> low = Vector256.Create(0xFFFF_FFFFUL);
+                Vector256<ulong> firstCount0 = count0.AsUInt64() & low;
+                Vector256<ulong> firstCount1 = count1.AsUInt64() & low;
+                Flush((value0.AsUInt64() & low) | Avx2.ShiftLeftLogicalVariable(value0.AsUInt64() >> 32, firstCount0), firstCount0 + (count0.AsUInt64() >> 32));
+                Flush((value1.AsUInt64() & low) | Avx2.ShiftLeftLogicalVariable(value1.AsUInt64() >> 32, firstCount1), firstCount1 + (count1.AsUInt64() >> 32));
+                return;
             }
 
+            Flush(Avx2.ConvertToVector256Int64(value0.GetLower()).AsUInt64(), Avx2.ConvertToVector256Int64(count0.GetLower()).AsUInt64());
+            Flush(Avx2.ConvertToVector256Int64(value0.GetUpper()).AsUInt64(), Avx2.ConvertToVector256Int64(count0.GetUpper()).AsUInt64());
+            Flush(Avx2.ConvertToVector256Int64(value1.GetLower()).AsUInt64(), Avx2.ConvertToVector256Int64(count1.GetLower()).AsUInt64());
+            Flush(Avx2.ConvertToVector256Int64(value1.GetUpper()).AsUInt64(), Avx2.ConvertToVector256Int64(count1.GetUpper()).AsUInt64());
+        }
+
+        /// <summary>Gets eight residuals' prefix-coded bits and bit counts: the token's code, then the raw bits.</summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static (Vector256<uint> Value, Vector256<int> Count) Code(Vector256<uint> v, CodeTables tables)
+        {
+            Vector256<int> exponent = Avx2.ShiftRightLogical(Avx.ConvertToVector256Single(v.AsInt32()).AsInt32(), 23);
+            Vector256<int> token = Vector256.Max(exponent - Vector256.Create(126), Vector256<int>.Zero);
+            Vector256<int> raw = Vector256.Max(token - Vector256<int>.One, Vector256<int>.Zero);
+            Vector256<int> rn = CodeTables.Lookup(token, tables.N0, tables.N1, tables.N2);
+            Vector256<int> code = CodeTables.Lookup(token, tables.C0, tables.C1, tables.C2);
+            Vector256<uint> mask = Avx2.ShiftLeftLogicalVariable(Vector256<uint>.One, raw.AsUInt32()) - Vector256<uint>.One;
+            return (code.AsUInt32() | Avx2.ShiftLeftLogicalVariable(v & mask, rn.AsUInt32()), rn + raw);
+        }
+
+        /// <summary>Writes four pieces of at most 56 bits each, in order, the buffer kept in registers.</summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void Flush(Vector256<ulong> pieces, Vector256<ulong> pieceCounts)
+        {
             ref byte data = ref MemoryMarshal.GetArrayDataReference(_data);
             ulong buffer = _buffer;
             int bits = _bits;
             int bytes = _bytes;
-            for (int i = 0; i < ChunkSize; i++)
+            for (int i = 0; i < 4; i++)
             {
-                buffer |= (ulong)values[i] << bits;
-                bits += (int)counts[i];
-                if (bits >= 32)
-                {
-                    Unsafe.WriteUnaligned(ref Unsafe.Add(ref data, bytes), BitConverter.IsLittleEndian ? (uint)buffer : BinaryPrimitives.ReverseEndianness((uint)buffer));
-                    bytes += 4;
-                    buffer >>= 32;
-                    bits -= 32;
-                }
+                buffer |= pieces.GetElement(i) << bits;
+                bits += (int)pieceCounts.GetElement(i);
+                Unsafe.WriteUnaligned(ref Unsafe.Add(ref data, bytes), BitConverter.IsLittleEndian ? buffer : BinaryPrimitives.ReverseEndianness(buffer));
+                int n = bits >> 3;
+                bytes += n;
+                buffer >>= n * 8;
+                bits &= 7;
             }
 
             _buffer = buffer;
             _bits = bits;
             _bytes = bytes;
-            while (_bits >= 8)
-            {
-                _data[_bytes++] = (byte)_buffer;
-                _buffer >>= 8;
-                _bits -= 8;
-            }
         }
 
         /// <summary>Appends every bit of <paramref name="other"/>, seven bytes at a time.</summary>

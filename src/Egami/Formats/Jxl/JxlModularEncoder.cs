@@ -1,3 +1,6 @@
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+
 namespace Egami.Formats.Jxl;
 
 /// <summary>A Modular image being encoded: its channels after the transforms so far, meta channels first.</summary>
@@ -52,6 +55,10 @@ internal sealed class JxlModularEncoder
     private float[]? _lfDequant;
     private int _lastPass;
     private bool _chunk;
+
+    // While a frame is coded, the weighted predictor's predictions and max errors of each (stream, channel) tree learning has
+    // worked out, for coding to take instead of running the predictor again.
+    private System.Collections.Concurrent.ConcurrentDictionary<(int Stream, int Channel), WpRows>? _wpRows;
 
     // What opens the LF global section before the LF dequantization: a frame's patch dictionary.
     private JxlBitWriter? _lfGlobalStart;
@@ -618,6 +625,7 @@ internal sealed class JxlModularEncoder
             return WriteLocal();
         }
 
+        _wpRows = new();
         List<JxlTreeNode> tree = BuildTree();
         JxlStageTimes.Lap(JxlStage.Tree);
         List<List<JxlToken>> treeTokens = [[]];
@@ -629,8 +637,9 @@ internal sealed class JxlModularEncoder
         Parallel.For(0, units.Count, _parallel, u =>
         {
             (int st, int ch) = units[u];
-            parts[u] = Tokenize(_streams[st].Channels[ch], ch, st, property, value, left, right, predictor, context, usesWp, wpParams: _streams[st].Wp);
+            parts[u] = Tokenize(_streams[st].Channels[ch], ch, st, property, value, left, right, predictor, context, usesWp, wpParams: _streams[st].Wp, wpRows: TakeWpRows(st, ch));
         });
+        _wpRows = null;
         JxlStageTimes.Lap(JxlStage.Tokens);
 
         List<List<JxlToken>> tokens = [.. _streams.Select(_ => new List<JxlToken>())];
@@ -697,6 +706,7 @@ internal sealed class JxlModularEncoder
     /// </summary>
     private List<byte[]> WriteLocal()
     {
+        _wpRows = new();
         JxlHistogramParams p = JxlHistogramParams.ForModular(_effort);
         JxlBitWriter global = new();
         if (_lfGlobalStart is not null)
@@ -725,6 +735,7 @@ internal sealed class JxlModularEncoder
             groupSections[g] = w.ToArray();
         });
         sections.AddRange(groupSections);
+        _wpRows = null;
         return sections;
     }
 
@@ -755,7 +766,7 @@ internal sealed class JxlModularEncoder
         {
             if (image.Channels[c].Width > 0 && image.Channels[c].Height > 0)
             {
-                tokens.AddRange(Tokenize(image.Channels[c], c, stream, property, value, left, right, predictor, context, usesWp, wpParams: image.Wp));
+                tokens.AddRange(Tokenize(image.Channels[c], c, stream, property, value, left, right, predictor, context, usesWp, wpParams: image.Wp, wpRows: TakeWpRows(stream, c)));
             }
         }
 
@@ -1046,12 +1057,14 @@ internal sealed class JxlModularEncoder
         costs[0] = Combine(baseCosts);
         Parallel.For(1, tries, _parallel, k =>
         {
-            (int[] a, int[] b, int[] c) = ApplyRct(original, order[k]);
+            // A channel the RCT only moves keeps its cost.
+            (int[]? a, int[]? b, int[]? c) = ApplyRct(original, order[k], changedOnly: true);
+            (int i0, int i1, int i2) = RctInputs(order[k]);
             (long, float, long)[] mine = [.. baseCosts];
             JxlChannel shape = original[0];
-            mine[begin] = ChannelCost(Wrap(shape, a));
-            mine[begin + 1] = ChannelCost(Wrap(shape, b));
-            mine[begin + 2] = ChannelCost(Wrap(shape, c));
+            mine[begin] = a is null ? baseCosts[begin + i0] : ChannelCost(Wrap(shape, a));
+            mine[begin + 1] = b is null ? baseCosts[begin + i1] : ChannelCost(Wrap(shape, b));
+            mine[begin + 2] = c is null ? baseCosts[begin + i2] : ChannelCost(Wrap(shape, c));
             costs[k] = Combine(mine);
         });
 
@@ -1089,20 +1102,58 @@ internal sealed class JxlModularEncoder
         gi.Transforms.Add(new JxlRct(begin, type));
     }
 
-    /// <summary>The forward RCT (enc_rct.cc): a channel order, then one of six lifting steps or YCoCg.</summary>
-    private static (int[] A, int[] B, int[] C) ApplyRct(JxlChannel[] input, int type)
+    /// <summary>Gets the input channel each output of an RCT starts from: its channel order.</summary>
+    private static (int First, int Second, int Third) RctInputs(int type)
     {
         int permutation = type / 7;
+        return (permutation % 3, (permutation + 1 + (permutation / 3)) % 3, (permutation + 2 - (permutation / 3)) % 3);
+    }
+
+    /// <summary>The forward RCT (enc_rct.cc): a channel order, then one of six lifting steps or YCoCg.</summary>
+    private static (int[] A, int[] B, int[] C) ApplyRct(JxlChannel[] input, int type) => ApplyRct(input, type, false)!;
+
+    /// <summary>
+    /// The forward RCT; with <paramref name="changedOnly"/>, an output that is only its input moved comes back
+    /// <see langword="null"/>.
+    /// </summary>
+    private static (int[]? A, int[]? B, int[]? C) ApplyRct(JxlChannel[] input, int type, bool changedOnly)
+    {
         int transform = type % 7;
-        int[] p0 = input[permutation % 3].Data;
-        int[] p1 = input[(permutation + 1 + (permutation / 3)) % 3].Data;
-        int[] p2 = input[(permutation + 2 - (permutation / 3)) % 3].Data;
+        (int i0, int i1, int i2) = RctInputs(type);
+        int[] p0 = input[i0].Data;
+        int[] p1 = input[i1].Data;
+        int[] p2 = input[i2].Data;
         int n = p0.Length;
+        int second = transform >> 1;
+        bool third = (transform & 1) != 0;
+        if (changedOnly && transform != 6)
+        {
+            int[]? s1 = null;
+            int[]? s2 = null;
+            if (second != 0)
+            {
+                s1 = new int[n];
+                for (int i = 0; i < n; i++)
+                {
+                    s1[i] = unchecked(second == 1 ? p1[i] - p0[i] : p1[i] - ((p0[i] + p2[i]) >> 1));
+                }
+            }
+
+            if (third)
+            {
+                s2 = new int[n];
+                for (int i = 0; i < n; i++)
+                {
+                    s2[i] = unchecked(p2[i] - p0[i]);
+                }
+            }
+
+            return (null, s1, s2);
+        }
+
         int[] o0 = new int[n];
         int[] o1 = new int[n];
         int[] o2 = new int[n];
-        int second = transform >> 1;
-        bool third = (transform & 1) != 0;
         for (int i = 0; i < n; i++)
         {
             unchecked
@@ -1161,9 +1212,10 @@ internal sealed class JxlModularEncoder
     /// <summary>One channel's part of <see cref="EstimateCost"/>.</summary>
     private static (long Histo, float Frac, long Extra) ChannelCost(JxlChannel ch)
     {
-        // The context is the number of cutoffs (0, 1, 3, 5, ..., 500) the spread is below, looked up for spreads up to 500.
+        // The context is the number of cutoffs (0, 1, 3, 5, ..., 500) the spread is below, looked up for spreads up to 500;
+        // entry 501 stands for every larger spread.
         ReadOnlySpan<uint> cutoffs = [0, 1, 3, 5, 7, 11, 15, 23, 31, 47, 63, 95, 127, 191, 255, 392, 500];
-        Span<byte> contextOf = stackalloc byte[501];
+        Span<byte> contextOf = stackalloc byte[502];
         for (int v = 0; v <= 500; v++)
         {
             int ctx = 0;
@@ -1174,6 +1226,8 @@ internal sealed class JxlModularEncoder
 
             contextOf[v] = (byte)ctx;
         }
+
+        contextOf[501] = 0;
 
         const int Tokens = 256;
         long histoCost = 0;
@@ -1186,6 +1240,12 @@ internal sealed class JxlModularEncoder
             for (int y = 0; y < ch.Height; y++)
             {
                 int row = y * w;
+                if (y > 0 && w > 1)
+                {
+                    extra += CostRow(d, row, w, contextOf, histo);
+                    continue;
+                }
+
                 for (int x = 0; x < w; x++)
                 {
                     int at = row + x;
@@ -1226,6 +1286,40 @@ internal sealed class JxlModularEncoder
         }
 
         return (histoCost, frac, extra);
+    }
+
+    /// <summary>
+    /// Counts a row below the first into <see cref="ChannelCost"/>'s histograms, without branches the data would mispredict,
+    /// and gives back its raw bits.
+    /// </summary>
+    private static long CostRow(int[] data, int row, int width, ReadOnlySpan<byte> contextOf, int[] histo)
+    {
+        ref int d = ref MemoryMarshal.GetArrayDataReference(data);
+        ref int h = ref MemoryMarshal.GetArrayDataReference(histo);
+        ref byte contexts = ref MemoryMarshal.GetReference(contextOf);
+        long extra = 0;
+        int up = row - width;
+        for (int x = 0; x < width; x++)
+        {
+            // The first column's left and top-left are its top.
+            long top = Unsafe.Add(ref d, up + x);
+            long left = x > 0 ? Unsafe.Add(ref d, row + x - 1) : top;
+            long topleft = x > 0 ? Unsafe.Add(ref d, up + x - 1) : top;
+            long max = JxlBranchFree.Max(left, JxlBranchFree.Max(top, topleft));
+            long min = JxlBranchFree.Min(left, JxlBranchFree.Min(top, topleft));
+            int ctx = Unsafe.Add(ref contexts, (nint)JxlBranchFree.Min(max - min, 501));
+            long grad = JxlBranchFree.Clamp(top + left - topleft, min, max);
+            uint v = JxlTreeLearner.PackSigned(unchecked(Unsafe.Add(ref d, row + x) - (int)grad));
+
+            // The 4, 2, 0 hybrid integer token and raw bits; values below 16 are their own token.
+            int n = System.Numerics.BitOperations.Log2(v | 16);
+            long large = (15L - v) >> 63;
+            uint tok = (uint)(v ^ ((v ^ (uint)(16 + ((n - 4) << 2) + ((v - (1u << n)) >> (n - 2)))) & (uint)large));
+            extra += (n - 2) & large;
+            Unsafe.Add(ref h, (ctx * 256) + (int)tok)++;
+        }
+
+        return extra;
     }
 
     private static float Entropy(ReadOnlySpan<int> counts)
@@ -1646,7 +1740,6 @@ internal sealed class JxlModularEncoder
 
         // Weighted and gradient (libjxl's Best) up to e9; every predictor (Variable) at e10.
         int[] predictors = _effort >= 10 ? [.. Enumerable.Range(0, 14)] : [6, 5];
-        JxlTreeLearner learner = new(predictors, properties, 1 << 16);
 
         List<long> groupPixels = [];
         List<long> channelPixels = [];
@@ -1658,7 +1751,6 @@ internal sealed class JxlModularEncoder
             CollectPixelSamples(_streams[s], s, repeats, groupPixels, channelPixels, pixelSamples, diffSamples);
         }
 
-        learner.Quantize(groupPixels, channelPixels, pixelSamples, diffSamples, maxValues);
 
         int start = streams.FirstOrDefault(s => _streams[s].Channels.Count > 0, -1);
         long totalPixels = 0;
@@ -1674,7 +1766,19 @@ internal sealed class JxlModularEncoder
         totalPixels = Math.Max(totalPixels, 1);
         List<(int Stream, int Channel)> units = [.. Units().Where(u => only is null || only.Contains(u.Stream))];
         SampleBuffer[] buffers = new SampleBuffer[units.Count];
-        Parallel.For(0, units.Count, parallel, u => buffers[u] = GatherTreeData(_streams[units[u].Stream].Channels[units[u].Channel], units[u].Channel, units[u].Stream, repeats, predictors, properties, _streams[units[u].Stream].Wp));
+        Parallel.For(0, units.Count, parallel, u =>
+        {
+            (int st, int ch) = units[u];
+            buffers[u] = GatherTreeData(_streams[st].Channels[ch], ch, st, repeats, predictors, properties, _streams[st].Wp, _wpRows is not null);
+            if (buffers[u].Wp is { } rows)
+            {
+                _wpRows![(st, ch)] = rows;
+                buffers[u].Wp = null;
+            }
+        });
+        // The learner sized for every sample, so it never grows.
+        JxlTreeLearner learner = new(predictors, properties, Math.Max(1 << 10, buffers.Sum(b => b.Count)));
+        learner.Quantize(groupPixels, channelPixels, pixelSamples, diffSamples, maxValues);
         Span<int> props = stackalloc int[16];
         Span<long> preds = stackalloc long[14];
         foreach (SampleBuffer b in buffers)
@@ -1788,6 +1892,7 @@ internal sealed class JxlModularEncoder
     /// <summary>Samples of one channel for the learner: values, the learner's properties and predictions, and the channel's pixel count.</summary>
     private sealed class SampleBuffer(int capacity, int properties, int predictors)
     {
+        internal WpRows? Wp;
         internal int Count;
         internal long Pixels;
         internal long[] Values = new long[capacity];
@@ -1796,7 +1901,7 @@ internal sealed class JxlModularEncoder
     }
 
     /// <summary>Takes samples of one channel, chosen by libjxl's xorshift (GatherTreeData).</summary>
-    private static SampleBuffer GatherTreeData(JxlChannel ch, int c, int stream, float repeats, int[] predictors, int[] properties, JxlWpParams wpParams)
+    private static SampleBuffer GatherTreeData(JxlChannel ch, int c, int stream, float repeats, int[] predictors, int[] properties, JxlWpParams wpParams, bool keepWp)
     {
         int width = ch.Width;
         int height = ch.Height;
@@ -1814,16 +1919,22 @@ internal sealed class JxlModularEncoder
         Span<long> near = stackalloc long[8];
         props[0] = c;
         props[1] = stream;
+        // With keepWp, the predictions of every row are kept for coding to take.
         JxlWeightedPredictor wp = new(width, wpParams);
+        WpRows rows = keepWp ? new(new long[width * height], new int[width * height]) : new(new long[width], new int[width]);
+        buffer.Wp = keepWp ? rows : null;
         int[] d = ch.Data;
         for (int y = 0; y < height; y++)
         {
             props[2] = y;
             props[9] = 0;
             int row = y * width;
+            Span<long> wpRow = rows.Prediction.AsSpan(keepWp ? row : 0, width);
+            Span<int> errorRow = rows.MaxError.AsSpan(keepWp ? row : 0, width);
+            wp.Row(d, y, wpRow, errorRow);
             for (int x = 0; x < width; x++)
             {
-                Compute(d, width, x, y, row, props, near, wp, false);
+                Compute(d, width, x, y, row, props, near, wpRow[x], errorRow[x], false);
                 ulong a = s0;
                 ulong b = s1;
                 ulong bits = a + b;
@@ -1854,8 +1965,6 @@ internal sealed class JxlModularEncoder
 
                     buffer.Count++;
                 }
-
-                wp.Record(d[row + x]);
             }
         }
 
@@ -1866,7 +1975,7 @@ internal sealed class JxlModularEncoder
     /// Works out the properties (H.4.1) of sample (x, y) into <paramref name="p"/>, whose channel, stream and row entries the
     /// caller sets and whose entry 9 carries the previous sample's gradient, and every predictor's prediction.
     /// </summary>
-    private static void Compute(int[] d, int width, int x, int y, int row, Span<int> p, Span<long> preds, JxlWeightedPredictor? wp, bool all)
+    private static void Compute(int[] d, int width, int x, int y, int row, Span<int> p, Span<long> preds, long wpPrediction, int maxError, bool all)
     {
         int at = row + x;
         int w = x > 0 ? d[at - 1] : y > 0 ? d[at - width] : 0;
@@ -1892,16 +2001,7 @@ internal sealed class JxlModularEncoder
             p[14] = w - ww;
         }
 
-        long wpPrediction = 0;
-        if (wp is not null)
-        {
-            wpPrediction = wp.Predict(n, nw, ne, w, nn);
-            p[15] = wp.MaxError;
-        }
-        else
-        {
-            p[15] = 0;
-        }
+        p[15] = maxError;
 
         if (all)
         {
@@ -2001,8 +2101,14 @@ internal sealed class JxlModularEncoder
         return units;
     }
 
+    /// <summary>Takes the weighted predictor's rows tree learning kept for a channel, if it kept them.</summary>
+    private WpRows? TakeWpRows(int stream, int channel) => _wpRows is { } kept && kept.TryRemove((stream, channel), out WpRows? rows) ? rows : null;
+
+    /// <summary>The weighted predictor's prediction and max error (property 15) for each sample of a channel, or of one row.</summary>
+    internal sealed record WpRows(long[] Prediction, int[] MaxError);
+
     /// <summary>Codes one channel as residual tokens through the tree (ModularCompress's per-channel loop).</summary>
-    internal static List<JxlToken> Tokenize(JxlChannel ch, int c, int stream, int[] property, int[] value, int[] left, int[] right, int[] predictor, int[] context, bool usesWp, int[]? multiplier = null, JxlWpParams? wpParams = null)
+    internal static List<JxlToken> Tokenize(JxlChannel ch, int c, int stream, int[] property, int[] value, int[] left, int[] right, int[] predictor, int[] context, bool usesWp, int[]? multiplier = null, JxlWpParams? wpParams = null, WpRows? wpRows = null)
     {
         if (SingleProperty(property, value, left, right, c, stream, out int only, out int range) is int[] lut)
         {
@@ -2014,7 +2120,10 @@ internal sealed class JxlModularEncoder
         Span<long> near = stackalloc long[8];
         int width = ch.Width;
         int[] d = ch.Data;
-        JxlWeightedPredictor? wp = usesWp ? new JxlWeightedPredictor(width, wpParams ?? new JxlWpParams()) : null;
+        // The predictions tree learning kept, or a row at a time.
+        bool kept = usesWp && wpRows is not null;
+        JxlWeightedPredictor? wp = usesWp && !kept ? new JxlWeightedPredictor(width, wpParams ?? new JxlWpParams()) : null;
+        WpRows rows = kept ? wpRows! : new(new long[width], new int[width]);
         props[0] = c;
         props[1] = stream;
         for (int y = 0; y < ch.Height; y++)
@@ -2022,9 +2131,12 @@ internal sealed class JxlModularEncoder
             props[2] = y;
             props[9] = 0;
             int row = y * width;
+            Span<long> wpRow = rows.Prediction.AsSpan(kept ? row : 0, width);
+            Span<int> errorRow = rows.MaxError.AsSpan(kept ? row : 0, width);
+            wp?.Row(d, y, wpRow, errorRow);
             for (int x = 0; x < width; x++)
             {
-                Compute(d, width, x, y, row, props, near, wp, false);
+                Compute(d, width, x, y, row, props, near, wpRow[x], errorRow[x], false);
                 int node = 0;
                 while (property[node] >= 0)
                 {
@@ -2039,7 +2151,6 @@ internal sealed class JxlModularEncoder
                 }
 
                 tokens.Add(new JxlToken(context[node], JxlTreeLearner.PackSigned(residual)));
-                wp?.Record(d[row + x]);
             }
         }
 
@@ -2113,9 +2224,22 @@ internal sealed class JxlModularEncoder
         bool usesWp = only == 15 || lut.Any(leaf => predictor[leaf] == 6);
         JxlWeightedPredictor? wp = usesWp ? new JxlWeightedPredictor(width, wpParams ?? new JxlWpParams()) : null;
         List<JxlToken> tokens = new(width * height);
+        CollectionsMarshal.SetCount(tokens, width * height);
+        Span<JxlToken> output = CollectionsMarshal.AsSpan(tokens);
+        bool gradient = wp is null && lut.All(leaf => predictor[leaf] == 5 && (multiplier is null || multiplier[leaf] <= 1));
+        long[] wpRow = wp is null ? [] : new long[width];
+        int[] errorRow = wp is null ? [] : new int[width];
         for (int y = 0; y < height; y++)
         {
             int row = y * width;
+            if (gradient && y > 0 && width > 1)
+            {
+                GradientRow(d, row, width, lut, range, context, output);
+                continue;
+            }
+
+            wp?.Row(d, y, wpRow, errorRow);
+
             for (int x = 0; x < width; x++)
             {
                 int at = row + x;
@@ -2124,14 +2248,8 @@ internal sealed class JxlModularEncoder
                 int nw = x > 0 && y > 0 ? d[at - width - 1] : w;
                 int ne = x + 1 < width && y > 0 ? d[at - width + 1] : n;
                 int nn = y > 1 ? d[at - (2 * width)] : n;
-                long wpPrediction = 0;
-                int v;
-                if (wp is not null)
-                {
-                    wpPrediction = wp.Predict(n, nw, ne, w, nn);
-                }
-
-                v = only == 15 ? wp!.MaxError : unchecked(w + n - nw);
+                long wpPrediction = wp is null ? 0 : wpRow[x];
+                int v = only == 15 ? errorRow[x] : unchecked(w + n - nw);
                 int leaf = lut[Math.Clamp(v, -range, range - 1) + range];
                 int pr = predictor[leaf];
                 long guess;
@@ -2153,12 +2271,40 @@ internal sealed class JxlModularEncoder
                     residual /= multiplier[leaf];
                 }
 
-                tokens.Add(new JxlToken(context[leaf], JxlTreeLearner.PackSigned(residual)));
-                wp?.Record(d[at]);
+                output[at] = new JxlToken(context[leaf], JxlTreeLearner.PackSigned(residual));
             }
         }
 
         return tokens;
+    }
+
+    /// <summary>
+    /// Codes a row below the first of a channel whose tree leaves all use the gradient predictor and test only the gradient
+    /// property (effort 2 and the gradient-only lookup).
+    /// </summary>
+    private static void GradientRow(int[] data, int row, int width, int[] lut, int range, int[] context, Span<JxlToken> output)
+    {
+        ref int d = ref MemoryMarshal.GetArrayDataReference(data);
+        ref int leaves = ref MemoryMarshal.GetArrayDataReference(lut);
+        ref int contexts = ref MemoryMarshal.GetArrayDataReference(context);
+        ref JxlToken o = ref MemoryMarshal.GetReference(output);
+        int up = row - width;
+
+        // The first column: west is north and so is north-west.
+        int n0 = Unsafe.Add(ref d, up);
+        int l0 = Unsafe.Add(ref leaves, Math.Clamp(n0, -range, range - 1) + range);
+        Unsafe.Add(ref o, row) = new JxlToken(Unsafe.Add(ref contexts, l0), JxlTreeLearner.PackSigned(unchecked(Unsafe.Add(ref d, row) - n0)));
+        for (int x = 1; x < width; x++)
+        {
+            int w = Unsafe.Add(ref d, row + x - 1);
+            int n = Unsafe.Add(ref d, up + x);
+            int nw = Unsafe.Add(ref d, up + x - 1);
+            int v = unchecked(w + n - nw);
+            int leaf = Unsafe.Add(ref leaves, Math.Clamp(v, -range, range - 1) + range);
+            long grad = (long)n + w - nw;
+            long guess = Math.Clamp(grad, Math.Min(w, n), Math.Max(w, n));
+            Unsafe.Add(ref o, row + x) = new JxlToken(Unsafe.Add(ref contexts, leaf), JxlTreeLearner.PackSigned(unchecked(Unsafe.Add(ref d, row + x) - (int)guess)));
+        }
     }
 
     /// <summary>A color's channel values, compared by value.</summary>
