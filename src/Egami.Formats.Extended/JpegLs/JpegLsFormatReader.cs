@@ -7,7 +7,7 @@ namespace Egami.Formats.Extended.JpegLs;
 
 /// <summary>
 /// Reads JPEG-LS, written from ITU-T T.87 and the LOCO-I paper (Weinberger, Seroussi and Sapiro, 2000). The file is read whole;
-/// when one scan holds every component at full size its rows are decoded as they are asked for, otherwise every scan is decoded
+/// when one scan holds every component at full size (sampling 1 × 1) its rows are decoded as they are asked for, otherwise every scan is decoded
 /// into planes first. Gray loads as Gray8 or Gray16, two components as gray and alpha, three as RGB and four as RGBA; samples
 /// of other depths are scaled to the pixel's range. A palettized file (one component and a mapping table) loads as its table's
 /// colours.

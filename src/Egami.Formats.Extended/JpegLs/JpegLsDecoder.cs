@@ -2,7 +2,7 @@ namespace Egami.Formats.Extended.JpegLs;
 
 /// <summary>
 /// Decodes a whole JPEG-LS stream held in memory: the header, then its scans one after another. When one scan holds every
-/// component at full size the lines can be taken group by group as they decode (<see cref="Streams"/>); otherwise every scan
+/// component at full size, one line a group, the lines can be taken group by group as they decode (<see cref="Streams"/>); otherwise every scan
 /// is decoded into planes first.
 /// </summary>
 internal sealed class JpegLsDecoder
@@ -52,7 +52,8 @@ internal sealed class JpegLsDecoder
             Header.Transform = JpegLsColorTransform.None;
         }
 
-        Streams = !Header.Subsampled && _scan.Components.Count() == Header.Components.Length;
+        // A line group of a line-interleaved scan holds V lines of each component, so only groups of one line are rows.
+        Streams = !Header.Subsampled && Header.VMax == 1 && _scan.Components.Count() == Header.Components.Length;
     }
 
     /// <summary>
@@ -73,7 +74,7 @@ internal sealed class JpegLsDecoder
     /// <summary>Gets the first scan, which gives NEAR and the interleave mode the details report.</summary>
     public JpegLsScanDecoder FirstScan { get; }
 
-    /// <summary>Gets whether the first scan holds every component at full size, so its line groups are whole rows.</summary>
+    /// <summary>Gets whether the first scan holds every component at full size, one line a group, so its line groups are whole rows.</summary>
     public bool Streams { get; }
 
     /// <summary>Decodes the next row of every component into <paramref name="sink"/>; only when <see cref="Streams"/>.</summary>

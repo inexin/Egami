@@ -258,6 +258,25 @@ public sealed class JpegLsFormatTests
     }
 
     [Fact]
+    public void StreamsLineInterleavedScansWhereEveryComponentIsTwoByTwo()
+    {
+        // Every component 2 × 2: nothing is subsampled, but each line group holds two lines of each component. A black image
+        // codes the same in either line order, so the frame header alone is patched.
+        using Raster<Rgb8> black = Raster.Create<Rgb8>(10, 9);
+        byte[] file = TestImages.Save(black, "JPEG-LS", new JpegLsWriterOptions { Interleave = JpegLsInterleave.Line });
+        int sof = Find(file, 0xF7);
+        for (int c = 0; c < 3; c++)
+        {
+            file[sof + 11 + (c * 3)] = 0x22;
+        }
+
+        Assert.Equal(RasterAccess.Buffered, Raster.Probe(file, TestImages.Context).Access);
+        using Raster<Rgb8> back = Raster.Load<Rgb8>(file, TestImages.Context, new ReaderOptions { Recovery = RecoveryMode.Strict });
+        Assert.Empty(back.Metadata.Warnings);
+        Assert.Equal(new Rgb8(0, 0, 0), back.Row(8)[9]);
+    }
+
+    [Fact]
     public void ChecksTheSampleWritersArguments()
     {
         ushort[] samples = new ushort[12];

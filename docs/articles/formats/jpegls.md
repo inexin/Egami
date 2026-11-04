@@ -21,10 +21,10 @@ detection looks for the JPEG-LS frame header; JPEG files still go to the JPEG re
 
 Samples of other depths than 8 and 16 bits are scaled to the pixel's full range, so a 12-bit file loads as `Gray16` with 4095
 at 65535. `JpegLsDetails` in `RasterMetadata.FormatDetails` keeps the stored depth, NEAR, the interleave mode, the colour
-transform, the number of components and whether a palette gave the colours. When one scan holds every component at full size,
-rows decode as `RasterDecoder` asks for them; files with one scan per component or with subsampled components are decoded
-whole first, and subsampled components are repeated up to full size. Files of more than four components load their first
-four, with a warning.
+transform, the number of components and whether a palette gave the colours. When one scan holds every component at full size
+(sampling 1 × 1), rows decode as `RasterDecoder` asks for them; files with one scan per component or with subsampled
+components are decoded whole first, and subsampled components are repeated up to full size. Files of more than four
+components load their first four, with a warning.
 
 A lenient read of a damaged file keeps what decoded. Inside a file with restart markers, a restart interval that cannot be
 decoded is left black and decoding goes on at the next marker (`JpegLs.IntervalDamaged`); without them the rows from the
