@@ -71,7 +71,7 @@ internal sealed partial class PsdFlattener
     /// </summary>
     internal static void Blur(float[] plane, int width, int height, double sigma)
     {
-        if (sigma <= 0 || width <= 0 || height <= 0)
+        if (!double.IsFinite(sigma) || sigma <= 0 || width <= 0 || height <= 0)
         {
             return;
         }
@@ -87,18 +87,20 @@ internal sealed partial class PsdFlattener
                 return;
             }
 
-            // Three boxes whose variances add up to σ²: m of width wl and the rest of width wl + 2.
+            // Three boxes whose variances add up to σ²: m of width wl and the rest of width wl + 2, in doubles so that a huge σ
+            // cannot overflow; a box at least as wide as the plane gives each line its mean.
             double ideal = Math.Sqrt((12 * sigma * sigma / 3) + 1);
-            int wl = (int)Math.Floor(ideal);
+            double wl = Math.Floor(ideal);
             if (wl % 2 == 0)
             {
                 wl--;
             }
 
-            int m = (int)Math.Round(((12 * sigma * sigma) - (3 * wl * wl) - (12 * wl) - 9) / ((-4.0 * wl) - 4));
+            double m = Math.Round(((12 * sigma * sigma) - (3 * wl * wl) - (12 * wl) - 9) / ((-4.0 * wl) - 4));
+            int longest = Math.Max(width, height);
             for (int pass = 0; pass < 3; pass++)
             {
-                int radius = ((pass < m ? wl : wl + 2) - 1) / 2;
+                int radius = (int)Math.Min(((pass < m ? wl : wl + 2) - 1) / 2, longest);
                 Passes(plane, width, height, line, copy, (src, dst, n) => Box(src, dst, n, radius));
             }
         }
@@ -149,9 +151,24 @@ internal sealed partial class PsdFlattener
         }
     }
 
-    /// <summary>A box of 2 <paramref name="radius"/> + 1 values by a running sum, the edge values repeated.</summary>
+    /// <summary>
+    /// A box of 2 <paramref name="radius"/> + 1 values by a running sum, the edge values repeated; the line's mean when the box
+    /// reaches past both ends of it.
+    /// </summary>
     private static void Box(float[] source, float[] target, int count, int radius)
     {
+        if (radius >= count)
+        {
+            double mean = 0;
+            for (int i = 0; i < count; i++)
+            {
+                mean += source[i];
+            }
+
+            target.AsSpan(0, count).Fill((float)(mean / count));
+            return;
+        }
+
         float scale = 1f / ((2 * radius) + 1);
         double sum = 0;
         for (int k = -radius; k <= radius; k++)

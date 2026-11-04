@@ -85,6 +85,24 @@ public class PsdFlattenMathTests
         Assert.Equal(sigma * sigma, variance, sigma < 2 ? 0.01 : sigma * sigma * 0.1);
     }
 
+    /// <summary>A σ far wider than the plane gives every value the plane's mean, quickly and without overflow.</summary>
+    [Theory]
+    [InlineData(1000.0)]
+    [InlineData(1e9)]
+    [InlineData(1e300)]
+    public void HugeSigmaGivesTheMean(double sigma)
+    {
+        float[] plane = [.. Enumerable.Range(0, 7 * 5).Select(i => (float)(i % 11) / 10)];
+        float mean = plane.Average();
+        PsdFlattener.Blur(plane, 7, 5, sigma);
+        Assert.All(plane, v => Assert.Equal(mean, v, 1e-5f));
+
+        float[] same = [0.5f, 0.25f];
+        PsdFlattener.Blur(same, 2, 1, double.NaN);
+        PsdFlattener.Blur(same, 2, 1, double.PositiveInfinity);
+        Assert.Equal([0.5f, 0.25f], same);
+    }
+
     /// <summary>Lab's non-separable modes work on lightness, chroma and hue of the encoded values.</summary>
     [Fact]
     public void LabModes()

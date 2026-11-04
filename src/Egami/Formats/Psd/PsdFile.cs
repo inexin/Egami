@@ -660,7 +660,7 @@ internal sealed class PsdFile
 
             if ((which & 2) != 0 && at + 8 <= rest.Length)
             {
-                data.UserFeather = BinaryPrimitives.ReadDoubleBigEndian(rest[at..]);
+                data.UserFeather = Feather(BinaryPrimitives.ReadDoubleBigEndian(rest[at..]));
                 at += 8;
             }
 
@@ -671,7 +671,7 @@ internal sealed class PsdFile
 
             if ((which & 8) != 0 && at + 8 <= rest.Length)
             {
-                data.VectorFeather = BinaryPrimitives.ReadDoubleBigEndian(rest[at..]);
+                data.VectorFeather = Feather(BinaryPrimitives.ReadDoubleBigEndian(rest[at..]));
             }
         }
 
@@ -680,6 +680,9 @@ internal sealed class PsdFile
         static PsdMaskRecord Rectangle(ReadOnlySpan<byte> b, int color, int flags) => new(
             BinaryPrimitives.ReadInt32BigEndian(b), BinaryPrimitives.ReadInt32BigEndian(b[4..]), BinaryPrimitives.ReadInt32BigEndian(b[8..]),
             BinaryPrimitives.ReadInt32BigEndian(b[12..]), color, flags);
+
+        // A feather radius in pixels: Photoshop's range is 0 to 1000; anything else (negative, infinite, NaN) is no feather.
+        static double Feather(double radius) => double.IsFinite(radius) && radius > 0 ? Math.Min(radius, 1000) : 0;
 
         static int ParametersSize(int which) => 1 + ((which & 1) != 0 ? 1 : 0) + ((which & 2) != 0 ? 8 : 0) + ((which & 4) != 0 ? 1 : 0) + ((which & 8) != 0 ? 8 : 0);
 

@@ -5,8 +5,8 @@ using Egami.Pixels;
 
 namespace Egami.Tests.Formats.Psd;
 
-/// <summary>Which groups a clipping isolates: only a pass-through group with layers clipped to it, not one inside a clipped group.</summary>
-public class PsdGroupClipTests
+/// <summary>Flattening files written here byte by byte, for layouts the corpus does not have.</summary>
+public class PsdHandBuiltTests
 {
     /// <summary>
     /// A clipped group whose top child is a pass-through group: the clipping is the parent's, so the pass-through group's
@@ -34,9 +34,37 @@ public class PsdGroupClipTests
         Assert.Equal(new Rgba8(100, 100, 0, 255), pixels.Row(1)[1]);
     }
 
-    private sealed record Layer(string Name, string Blend, (byte R, byte G, byte B)? Color = null, int Section = 0, bool Clipped = false);
+    /// <summary>A feather radius out of range or not a number reads as no feather or 1000 pixels, so flattening stays quick.</summary>
+    [Theory]
+    [InlineData(1e9)]
+    [InlineData(double.PositiveInfinity)]
+    [InlineData(double.NaN)]
+    [InlineData(-5.0)]
+    public void HugeOrBrokenFeathersFlattenQuickly(double feather)
+    {
+        byte[] file = Write(
+        [
+            new("Background", "norm", Color: (255, 255, 255)),
+            new("Masked", "norm", Color: (0, 0, 0), Feather: feather),
+        ]);
 
-    /// <summary>Writes a 4 by 4 8-bit RGB file of opaque full-canvas layers and group records (lsct), raw channels, a white composite.</summary>
+        System.Diagnostics.Stopwatch clock = System.Diagnostics.Stopwatch.StartNew();
+        using PsdDocument document = PsdImage.ReadLayers(new MemoryStream(file));
+        Assert.InRange(document.Layers[1].Mask!.Feather, 0, 1000);
+        using Raster flat = document.Flatten();
+        Assert.True(clock.Elapsed < TimeSpan.FromSeconds(5), $"{clock.Elapsed}");
+
+        // The mask is white everywhere, so feathered or not the layer covers the canvas.
+        using Raster<Rgba8> pixels = flat.As<Rgba8>();
+        Assert.Equal(new Rgba8(0, 0, 0, 255), pixels.Row(2)[2]);
+    }
+
+    private sealed record Layer(string Name, string Blend, (byte R, byte G, byte B)? Color = null, int Section = 0, bool Clipped = false, double? Feather = null);
+
+    /// <summary>
+    /// Writes a 4 by 4 8-bit RGB file of opaque full-canvas layers and group records (lsct), raw channels, a white composite; a
+    /// layer with a feather has a white user mask over the canvas with that feather in its mask parameters.
+    /// </summary>
     private static byte[] Write(Layer[] layers)
     {
         const int size = 4;
@@ -51,10 +79,17 @@ public class PsdGroupClipTests
             I32(0);
             I32(pixels ? size : 0);
             I32(pixels ? size : 0);
-            I16(pixels ? 3 : 0);
+            bool masked = layer.Feather is not null;
+            I16((pixels ? 3 : 0) + (masked ? 1 : 0));
             for (int c = 0; pixels && c < 3; c++)
             {
                 I16(c);
+                I32(2 + (size * size));
+            }
+
+            if (masked)
+            {
+                I16(-2);
                 I32(2 + (size * size));
             }
 
@@ -64,8 +99,24 @@ public class PsdGroupClipTests
             byte[] name = System.Text.Encoding.ASCII.GetBytes(layer.Name);
             int padded = (name.Length + 1 + 3) & ~3;
             int blocks = layer.Section != 0 ? 12 + 12 : 0;
-            I32(4 + 4 + padded + blocks);
-            I32(0);
+            // The mask: rectangle, default color 0, flags 0x10 (parameters follow), then parameter bit 1 (user feather), the
+            // feather as a double, and one byte of padding.
+            int maskBytes = masked ? 16 + 2 + 1 + 8 + 1 : 0;
+            I32(4 + maskBytes + 4 + padded + blocks);
+            I32(maskBytes);
+            if (masked)
+            {
+                I32(0);
+                I32(0);
+                I32(size);
+                I32(size);
+                info.Write([0, 0x10, 0x02]);
+                byte[] radius = new byte[8];
+                BinaryPrimitives.WriteDoubleBigEndian(radius, layer.Feather!.Value);
+                info.Write(radius);
+                info.WriteByte(0);
+            }
+
             I32(0);
             info.WriteByte((byte)name.Length);
             info.Write(name);
@@ -89,6 +140,12 @@ public class PsdGroupClipTests
                     I16(0);
                     info.Write(Enumerable.Repeat(v, size * size).ToArray());
                 }
+            }
+
+            if (layer.Feather is not null)
+            {
+                I16(0);
+                info.Write(Enumerable.Repeat((byte)255, size * size).ToArray());
             }
         }
 
