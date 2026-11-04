@@ -443,6 +443,18 @@
   "libktx": "same",
   "validate": "valid"
  },
+ "w-texture-cube": {
+  "descriptor": "2c0000000000000002002800a301020003030000080000000000000000003f000000000000000000ffffffff",
+  "dfd": "same",
+  "libktx": "same",
+  "validate": "valid"
+ },
+ "w-texture-volume": {
+  "descriptor": "2c00000000000000020028008601020003030000100000000000000000007f000000000000000000ffffffff",
+  "dfd": "same",
+  "libktx": "same",
+  "validate": "valid"
+ },
  "w-uastc": {
   "descriptor": "2c0000000000000002002800a601010003030000100000000000000000007f030000000000000000ffffffff",
   "dfd": "same",

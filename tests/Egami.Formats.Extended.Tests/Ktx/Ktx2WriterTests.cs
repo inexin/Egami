@@ -5,6 +5,7 @@ using System.Text.Json;
 using Egami.Colors;
 using Egami.Formats.Extended.Dds;
 using Egami.Formats.Extended.Ktx;
+using Egami.Formats.Extended.Textures;
 using Egami.Metadata;
 using Egami.Pixels;
 
@@ -269,21 +270,10 @@ public class Ktx2WriterTests
         Assert.Equal("valid", entry.GetProperty("validate").GetString());
         Assert.Equal("same", entry.GetProperty("libktx").GetString());
         Assert.Equal("same", entry.GetProperty("dfd").GetString());
-        (string _, Raster[] rasters, Ktx2WriterOptions options) = Checked().Single(c => c.Name == name);
-        try
-        {
-            byte[] file = SaveAll(rasters, options);
-            int offset = BinaryPrimitives.ReadInt32LittleEndian(file.AsSpan(48));
-            int length = BinaryPrimitives.ReadInt32LittleEndian(file.AsSpan(52));
-            Assert.Equal(entry.GetProperty("descriptor").GetString(), Convert.ToHexStringLower(file.AsSpan(offset, length)));
-        }
-        finally
-        {
-            foreach (Raster raster in rasters)
-            {
-                raster.Dispose();
-            }
-        }
+        byte[] file = Checked().Single(c => c.Name == name).Save();
+        int offset = BinaryPrimitives.ReadInt32LittleEndian(file.AsSpan(48));
+        int length = BinaryPrimitives.ReadInt32LittleEndian(file.AsSpan(52));
+        Assert.Equal(entry.GetProperty("descriptor").GetString(), Convert.ToHexStringLower(file.AsSpan(offset, length)));
     }
 
     [Fact]
@@ -296,17 +286,13 @@ public class Ktx2WriterTests
             return;
         }
 
-        foreach ((string name, Raster[] rasters, Ktx2WriterOptions options) in Checked())
+        foreach ((string name, Func<byte[]> save) in Checked())
         {
-            byte[] file = SaveAll(rasters, options);
+            byte[] file = save();
             File.WriteAllBytes(Path.Combine(folder, name + ".ktx2"), file);
             using Raster<Rgba8> decoded = Raster.Load<Rgba8>(file, Context);
             decoded.Save(Path.Combine(folder, name + ".png"));
             File.WriteAllText(Path.Combine(folder, name + ".txt"), Details(file).FormatName);
-            foreach (Raster raster in rasters)
-            {
-                raster.Dispose();
-            }
         }
     }
 
@@ -314,36 +300,74 @@ public class Ktx2WriterTests
     /// The files checked against KTX-Software: every format at effort 0 with its full mip chain, and the variants that change the
     /// layout or descriptor (sRGB, supercompression, arrays, cube maps, premultiplied alpha, colour tags).
     /// </summary>
-    private static IEnumerable<(string Name, Raster[] Rasters, Ktx2WriterOptions Options)> Checked()
+    private static IEnumerable<(string Name, Func<byte[]> Save)> Checked()
+    {
+        foreach ((string name, Func<Raster[]> rasters, Ktx2WriterOptions options) in CheckedRasters())
+        {
+            yield return (name, () =>
+            {
+                Raster[] made = rasters();
+                try
+                {
+                    return SaveAll(made, options);
+                }
+                finally
+                {
+                    foreach (Raster raster in made)
+                    {
+                        raster.Dispose();
+                    }
+                }
+            });
+        }
+
+        // Textures saved with their own mips: a volume with three mips, and a cube map with hand-made ones.
+        yield return ("w-texture-volume", () =>
+        {
+            using Texture volume = Texture.Load(KtxFiles.Corpus("rgba8-volume.ktx2"), Context);
+            return SaveTexture(volume, new Ktx2WriterOptions { Format = KtxTextureFormat.Bc7, Effort = 0 });
+        });
+        yield return ("w-texture-cube", () =>
+        {
+            using Texture cube = Texture.Load(KtxFiles.Corpus("rgba8-cube.ktx2"), Context);
+            cube.GenerateMips();
+            return SaveTexture(cube, new Ktx2WriterOptions { Format = KtxTextureFormat.Etc1s, Effort = 0 });
+        });
+    }
+
+    private static IEnumerable<(string Name, Func<Raster[]> Rasters, Ktx2WriterOptions Options)> CheckedRasters()
     {
         foreach (KtxTextureFormat format in Enum.GetValues<KtxTextureFormat>())
         {
-            yield return ($"w-{format}".ToLowerInvariant(), [Input(format)], new Ktx2WriterOptions { Format = format, Effort = 0, Srgb = false });
+            yield return ($"w-{format}".ToLowerInvariant(), () => [Input(format)], new Ktx2WriterOptions { Format = format, Effort = 0, Srgb = false });
         }
 
         foreach (KtxTextureFormat format in (KtxTextureFormat[])[KtxTextureFormat.Rgba8, KtxTextureFormat.Bgra8, KtxTextureFormat.Rgb8, KtxTextureFormat.R8,
             KtxTextureFormat.Rg8, KtxTextureFormat.Bc1, KtxTextureFormat.Bc2, KtxTextureFormat.Bc3, KtxTextureFormat.Bc7, KtxTextureFormat.Etc2Rgb,
             KtxTextureFormat.Etc2RgbA1, KtxTextureFormat.Etc2Rgba, KtxTextureFormat.Astc6x5, KtxTextureFormat.Etc1s, KtxTextureFormat.Uastc])
         {
-            yield return ($"w-{format}-srgb".ToLowerInvariant(), [Input(format)], new Ktx2WriterOptions { Format = format, Effort = 0, Srgb = true });
+            yield return ($"w-{format}-srgb".ToLowerInvariant(), () => [Input(format)], new Ktx2WriterOptions { Format = format, Effort = 0, Srgb = true });
         }
 
-        yield return ("w-rgba8-zstd", [Input(KtxTextureFormat.Rgba8)], new Ktx2WriterOptions { Supercompression = KtxSupercompression.Zstandard });
-        yield return ("w-bc7-zlib", [Input(KtxTextureFormat.Bc7)], new Ktx2WriterOptions { Format = KtxTextureFormat.Bc7, Effort = 0, Supercompression = KtxSupercompression.Zlib });
-        yield return ("w-uastc-rdo-zstd", [Input(KtxTextureFormat.Uastc)], new Ktx2WriterOptions { Format = KtxTextureFormat.Uastc, Effort = 0, UastcRdo = 4, Supercompression = KtxSupercompression.Zstandard });
-        yield return ("w-rgba8-premultiplied", [Input(KtxTextureFormat.Rgba8)], new Ktx2WriterOptions { PremultipliedAlpha = true });
-        yield return ("w-rgba8-mip0", [Input(KtxTextureFormat.Rgba8)], new Ktx2WriterOptions { MipLevels = 1 });
-        yield return ("w-rgb8-array", [.. Enumerable.Range(0, 3).Select(i => Square(i))], new Ktx2WriterOptions { Format = KtxTextureFormat.Rgb8 });
-        yield return ("w-rgba8-cube", [.. Enumerable.Range(0, 6).Select(i => Square(i))], new Ktx2WriterOptions { Cube = true });
-        yield return ("w-bc1-cube-array", [.. Enumerable.Range(0, 12).Select(i => Square(i))], new Ktx2WriterOptions { Cube = true, Format = KtxTextureFormat.Bc1, Effort = 0 });
-        yield return ("w-etc1s-array", [.. Enumerable.Range(0, 3).Select(i => Square(i))], new Ktx2WriterOptions { Format = KtxTextureFormat.Etc1s, Effort = 0 });
-        yield return ("w-uastc-cube", [.. Enumerable.Range(0, 6).Select(i => Square(i))], new Ktx2WriterOptions { Cube = true, Format = KtxTextureFormat.Uastc, Effort = 0 });
-        Raster<RgbaF16> pq = Input(KtxTextureFormat.RgbaF16).As<RgbaF16>();
-        pq.Metadata.CodePoints = ColorCodePoints.Rec2100Pq;
-        yield return ("w-rgbaf16-pq", [pq], new Ktx2WriterOptions { MipLevels = 1 });
-        Raster p3 = Input(KtxTextureFormat.Rgba8);
-        p3.Metadata.CodePoints = new ColorCodePoints(12, 13, 0, true);
-        yield return ("w-rgba8-p3", [p3], new Ktx2WriterOptions { MipLevels = 1 });
+        yield return ("w-rgba8-zstd", () => [Input(KtxTextureFormat.Rgba8)], new Ktx2WriterOptions { Supercompression = KtxSupercompression.Zstandard });
+        yield return ("w-bc7-zlib", () => [Input(KtxTextureFormat.Bc7)], new Ktx2WriterOptions { Format = KtxTextureFormat.Bc7, Effort = 0, Supercompression = KtxSupercompression.Zlib });
+        yield return ("w-uastc-rdo-zstd", () => [Input(KtxTextureFormat.Uastc)], new Ktx2WriterOptions { Format = KtxTextureFormat.Uastc, Effort = 0, UastcRdo = 4, Supercompression = KtxSupercompression.Zstandard });
+        yield return ("w-rgba8-premultiplied", () => [Input(KtxTextureFormat.Rgba8)], new Ktx2WriterOptions { PremultipliedAlpha = true });
+        yield return ("w-rgba8-mip0", () => [Input(KtxTextureFormat.Rgba8)], new Ktx2WriterOptions { MipLevels = 1 });
+        yield return ("w-rgb8-array", () => [.. Enumerable.Range(0, 3).Select(i => Square(i))], new Ktx2WriterOptions { Format = KtxTextureFormat.Rgb8 });
+        yield return ("w-rgba8-cube", () => [.. Enumerable.Range(0, 6).Select(i => Square(i))], new Ktx2WriterOptions { Cube = true });
+        yield return ("w-bc1-cube-array", () => [.. Enumerable.Range(0, 12).Select(i => Square(i))], new Ktx2WriterOptions { Cube = true, Format = KtxTextureFormat.Bc1, Effort = 0 });
+        yield return ("w-etc1s-array", () => [.. Enumerable.Range(0, 3).Select(i => Square(i))], new Ktx2WriterOptions { Format = KtxTextureFormat.Etc1s, Effort = 0 });
+        yield return ("w-uastc-cube", () => [.. Enumerable.Range(0, 6).Select(i => Square(i))], new Ktx2WriterOptions { Cube = true, Format = KtxTextureFormat.Uastc, Effort = 0 });
+        yield return ("w-rgbaf16-pq", () => [Tagged(KtxTextureFormat.RgbaF16, ColorCodePoints.Rec2100Pq)], new Ktx2WriterOptions { MipLevels = 1 });
+        yield return ("w-rgba8-p3", () => [Tagged(KtxTextureFormat.Rgba8, new ColorCodePoints(12, 13, 0, true))], new Ktx2WriterOptions { MipLevels = 1 });
+
+        static Raster Tagged(KtxTextureFormat format, ColorCodePoints points)
+        {
+            Raster raster = Input(format);
+            raster.Metadata.CodePoints = points;
+            return raster;
+        }
 
         static Raster Square(int i)
         {
@@ -377,6 +401,13 @@ public class Ktx2WriterTests
     {
         using MemoryStream output = new();
         raster.Save(output, Ktx2Format.Info, options);
+        return output.ToArray();
+    }
+
+    private static byte[] SaveTexture(Texture texture, Ktx2WriterOptions options)
+    {
+        using MemoryStream output = new();
+        texture.Save(output, Ktx2Format.Info, options);
         return output.ToArray();
     }
 

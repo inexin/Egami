@@ -22,7 +22,7 @@ namespace Egami.Formats.Extended.Ktx;
 /// bands, ETC1S builds its codebooks deterministically), so the bytes never depend on the thread count. A texture is written
 /// whole, so the writer has no row encoder.
 /// </summary>
-internal sealed partial class Ktx2Writer : IFormatWriter, IMultiImageWriter
+internal sealed partial class Ktx2Writer : IFormatWriter, IMultiImageWriter, ITextureWriter
 {
     private static readonly byte[] Identifier = [0xAB, 0x4B, 0x54, 0x58, 0x20, 0x32, 0x30, 0xBB, 0x0D, 0x0A, 0x1A, 0x0A];
 
@@ -54,6 +54,68 @@ internal sealed partial class Ktx2Writer : IFormatWriter, IMultiImageWriter
             throw new ArgumentException($"A cube map needs square faces, six a cube; {rasters.Count} rasters of {first.Width}×{first.Height} were given.", nameof(rasters));
         }
 
+        int full = 1 + (int)Math.Log2(Math.Max(first.Width, first.Height));
+        int mips = ktx.MipLevels == 0 ? full : Math.Min(ktx.MipLevels, full);
+        int layers = ktx.Cube ? rasters.Count / 6 : rasters.Count;
+        Write(output, ktx, rasters, first.Width, first.Height, 0, layers > 1 ? layers : 0, ktx.Cube ? 6 : 1, mips, _ => rasters.Count, srgb => Chains(rasters, mips, srgb));
+    }
+
+    public void WriteTexture(Texture texture, Stream output, WriterOptions options)
+    {
+        ArgumentNullException.ThrowIfNull(texture);
+        ArgumentNullException.ThrowIfNull(output);
+        Ktx2WriterOptions ktx = options as Ktx2WriterOptions ?? Ktx2WriterOptions.Default;
+        int mips = ktx.MipLevels == 0 ? texture.MipLevels : Math.Min(ktx.MipLevels, texture.MipLevels);
+        Write(output, ktx, texture.Level(0), texture.Width, texture.Height, texture.IsVolume ? texture.Depth : 0, texture.Layers > 1 ? texture.Layers : 0,
+            texture.Faces, mips, m => texture.Level(m).Count, _ => Images(texture, mips));
+
+        static IEnumerable<(int, int, Raster)> Images(Texture texture, int mips)
+        {
+            for (int m = 0; m < mips; m++)
+            {
+                IReadOnlyList<Raster> level = texture.Level(m);
+                for (int i = 0; i < level.Count; i++)
+                {
+                    yield return (m, i, level[i]);
+                }
+            }
+        }
+    }
+
+    /// <summary>Yields each raster's mips, made with <see cref="MipChain"/>, as (mip, index in the level, image).</summary>
+    private static IEnumerable<(int, int, Raster)> Chains(IReadOnlyList<Raster> rasters, int mips, bool srgb)
+    {
+        for (int i = 0; i < rasters.Count; i++)
+        {
+            Raster raster = rasters[i];
+            using MipChain? chain = mips > 1 ? MipChain.Build(raster, srgb ? ColorSpace.Linear : ColorSpace.Encoded) : null;
+            for (int m = 0; m < mips; m++)
+            {
+                // A KTX mip rounds its size down; the chain's halving rounds up, so an odd size takes a box resize from it.
+                int w = Math.Max(1, raster.Width >> m);
+                int h = Math.Max(1, raster.Height >> m);
+                Raster level = chain is null ? raster : chain.Levels[m];
+                if (level.Width == w && level.Height == h)
+                {
+                    yield return (m, i, level);
+                }
+                else
+                {
+                    using Raster resized = chain!.Resize(w, h, ResampleFilter.Box);
+                    yield return (m, i, resized);
+                }
+            }
+        }
+    }
+
+    /// <summary>
+    /// Writes a texture whose images <paramref name="images"/> yields, in any order, as (mip, index in the level, image); a level
+    /// holds <paramref name="count"/> images in the file's order: every layer, every face of it, every depth slice of that.
+    /// </summary>
+    private static void Write(Stream output, Ktx2WriterOptions ktx, IReadOnlyList<Raster> surfaces, int width, int height, int depth, int layers, int faces,
+        int mips, Func<int, int> count, Func<bool, IEnumerable<(int Mip, int Index, Raster Image)>> images)
+    {
+        Raster first = surfaces[0];
         KtxDetails? ktxSource = first.Metadata.FormatDetails as KtxDetails;
         DdsDetails? ddsSource = first.Metadata.FormatDetails as DdsDetails;
         Target target = Target.For(ktx.Format ?? FromKtx(ktxSource) ?? FromDds(ddsSource) ?? FromPixels(first.Layout));
@@ -62,7 +124,7 @@ internal sealed partial class Ktx2Writer : IFormatWriter, IMultiImageWriter
         {
             if (ktx.Srgb == true)
             {
-                throw new ArgumentException($"KTX 2: {target.Format} has no sRGB form.", nameof(options));
+                throw new ArgumentException($"KTX 2: {target.Format} has no sRGB form.", nameof(ktx));
             }
 
             srgb = false;
@@ -71,86 +133,60 @@ internal sealed partial class Ktx2Writer : IFormatWriter, IMultiImageWriter
         KtxSupercompression scheme = target.Format == KtxTextureFormat.Etc1s ? KtxSupercompression.BasisLZ : ktx.Supercompression;
         if (scheme == KtxSupercompression.BasisLZ && target.Format != KtxTextureFormat.Etc1s)
         {
-            throw new ArgumentException("KTX 2: BasisLZ supercompression is for KtxTextureFormat.Etc1s only.", nameof(options));
+            throw new ArgumentException("KTX 2: BasisLZ supercompression is for KtxTextureFormat.Etc1s only.", nameof(ktx));
         }
 
         if (scheme is not (KtxSupercompression.None or KtxSupercompression.BasisLZ or KtxSupercompression.Zstandard or KtxSupercompression.Zlib))
         {
-            throw new ArgumentOutOfRangeException(nameof(options), scheme, "The KTX 2 supercompression scheme is not defined.");
+            throw new ArgumentOutOfRangeException(nameof(ktx), scheme, "The KTX 2 supercompression scheme is not defined.");
         }
 
         if (scheme == KtxSupercompression.Zlib && ktx.CompressionLevel > 9)
         {
-            throw new ArgumentException($"KTX 2: zlib levels run 1 to 9; {ktx.CompressionLevel} was given.", nameof(options));
+            throw new ArgumentException($"KTX 2: zlib levels run 1 to 9; {ktx.CompressionLevel} was given.", nameof(ktx));
         }
 
-        int full = 1 + (int)Math.Log2(Math.Max(first.Width, first.Height));
-        int mips = ktx.MipLevels == 0 ? full : Math.Min(ktx.MipLevels, full);
-        int cubes = ktx.Cube ? rasters.Count / 6 : 0;
-        int layers = ktx.Cube ? cubes : rasters.Count;
         bool premultiplied = ktx.PremultipliedAlpha;
         int maxParallelism = Math.Max(1, first.Context.MaxParallelism);
-
-        // Each level's images in the file's order: every layer, every face of it.
-        byte[][] levels = new byte[mips][];
-        byte[] globalData = [];
-        bool alpha = target.Format is KtxTextureFormat.Etc1s or KtxTextureFormat.Uastc && rasters.Any(HasTransparency);
-        List<byte[]>[] images = new List<byte[]>[mips];
-        List<Etc1sImage> etc1s = [];
+        bool alpha = target.Format is KtxTextureFormat.Etc1s or KtxTextureFormat.Uastc && surfaces.Any(HasTransparency);
+        byte[][][] encoded = new byte[mips][][];
         for (int m = 0; m < mips; m++)
         {
-            images[m] = [];
+            encoded[m] = new byte[count(m)][];
         }
 
-        foreach (Raster raster in rasters)
+        List<(int Index, Etc1sImage Image)> etc1s = [];
+        foreach ((int m, int index, Raster image) in images(srgb))
         {
-            using MipChain? chain = mips > 1 ? MipChain.Build(raster, srgb ? ColorSpace.Linear : ColorSpace.Encoded) : null;
-            for (int m = 0; m < mips; m++)
+            byte[] work = DdsWriter.Work(image, target.Work);
+            if (premultiplied)
             {
-                // A KTX mip rounds its size down; the chain's halving rounds up, so an odd size takes a box resize from it.
-                int w = Math.Max(1, raster.Width >> m);
-                int h = Math.Max(1, raster.Height >> m);
-                Raster level = chain is null ? raster : chain.Levels[m];
-                Raster? resized = level.Width == w && level.Height == h ? null : chain!.Resize(w, h, ResampleFilter.Box);
-                try
-                {
-                    Raster source = resized ?? level;
-                    byte[] work = DdsWriter.Work(source, target.Work);
-                    if (premultiplied)
-                    {
-                        DdsWriter.Premultiply(work, target.Work);
-                    }
+                DdsWriter.Premultiply(work, target.Work);
+            }
 
-                    if (target.Format == KtxTextureFormat.Etc1s)
-                    {
-                        etc1s.Add(new Etc1sImage(work, w, h, m));
-                    }
-                    else
-                    {
-                        images[m].Add(Encode(work, w, h, target, ktx, srgb, maxParallelism));
-                    }
-                }
-                finally
-                {
-                    resized?.Dispose();
-                }
+            if (target.Format == KtxTextureFormat.Etc1s)
+            {
+                etc1s.Add((index, new Etc1sImage(work, image.Width, image.Height, m)));
+            }
+            else
+            {
+                encoded[m][index] = Encode(work, image.Width, image.Height, target, ktx, srgb, maxParallelism);
             }
         }
 
+        byte[][] levels;
+        byte[] globalData = [];
         if (target.Format == KtxTextureFormat.Etc1s)
         {
-            // Etc1sEncoder wants mip level order, then layer and face; the loop above went raster by raster.
-            Etc1sImage[] ordered = [.. etc1s.OrderBy(i => i.Level)];
-            Etc1sEncoded encoded = Etc1sEncoder.Encode(ordered, alpha, ktx.BasisQuality, ktx.Effort, maxParallelism);
-            globalData = encoded.GlobalData;
-            levels = encoded.Levels;
+            // Etc1sEncoder wants mip level order, then layer, face and slice.
+            Etc1sImage[] ordered = [.. etc1s.OrderBy(i => i.Image.Level).ThenBy(i => i.Index).Select(i => i.Image)];
+            Etc1sEncoded basis = Etc1sEncoder.Encode(ordered, alpha, ktx.BasisQuality, ktx.Effort, maxParallelism);
+            globalData = basis.GlobalData;
+            levels = basis.Levels;
         }
         else
         {
-            for (int m = 0; m < mips; m++)
-            {
-                levels[m] = images[m].Count == 1 ? images[m][0] : [.. images[m].SelectMany(i => i)];
-            }
+            levels = [.. encoded.Select(level => level.Length == 1 ? level[0] : [.. level.SelectMany(i => i)])];
         }
 
         long[] uncompressed = new long[mips];
@@ -166,8 +202,8 @@ internal sealed partial class Ktx2Writer : IFormatWriter, IMultiImageWriter
         }
 
         byte[] dfd = Dfd(target, srgb, alpha, premultiplied, first.Metadata);
-        byte[] kvd = KeyValues();
-        Assemble(output, target.VkFor(srgb), target, first.Width, first.Height, layers > 1 ? layers : 0, ktx.Cube ? 6 : 1, scheme, dfd, kvd, globalData, levels, uncompressed);
+        byte[] kvd = KeyValues(depth > 0 ? "rdi" : "rd");
+        Assemble(output, target.VkFor(srgb), target, width, height, depth, layers, faces, scheme, dfd, kvd, globalData, levels, uncompressed);
     }
 
     /// <summary>Returns whether any pixel of a raster with an alpha channel is not opaque.</summary>
@@ -478,12 +514,12 @@ internal sealed partial class Ktx2Writer : IFormatWriter, IMultiImageWriter
         return compressed.ToArray();
     }
 
-    /// <summary>The key/value data: KTXorientation (rows top-down, columns left to right) and KTXwriter, sorted by key.</summary>
-    private static byte[] KeyValues()
+    /// <summary>The key/value data: KTXorientation (rows top-down, columns left to right, slices front to back) and KTXwriter, sorted by key.</summary>
+    private static byte[] KeyValues(string orientation)
     {
         using MemoryStream data = new();
         Span<byte> length = stackalloc byte[4];
-        foreach ((string key, string value) in (ReadOnlySpan<(string, string)>)[("KTXorientation", "rd"), ("KTXwriter", WriterName)])
+        foreach ((string key, string value) in (ReadOnlySpan<(string, string)>)[("KTXorientation", orientation), ("KTXwriter", WriterName)])
         {
             byte[] pair = [.. Encoding.UTF8.GetBytes(key), 0, .. Encoding.UTF8.GetBytes(value), 0];
             BinaryPrimitives.WriteUInt32LittleEndian(length, (uint)pair.Length);
@@ -496,7 +532,7 @@ internal sealed partial class Ktx2Writer : IFormatWriter, IMultiImageWriter
     }
 
     /// <summary>Writes the header, level index, descriptor, key/values, global data and levels, each placed as the specification aligns it.</summary>
-    private static void Assemble(Stream output, int vk, Target target, int width, int height, int layers, int faces, KtxSupercompression scheme,
+    private static void Assemble(Stream output, int vk, Target target, int width, int height, int depth, int layers, int faces, KtxSupercompression scheme,
         byte[] dfd, byte[] kvd, byte[] globalData, byte[][] levels, long[] uncompressed)
     {
         int mips = levels.Length;
@@ -517,7 +553,7 @@ internal sealed partial class Ktx2Writer : IFormatWriter, IMultiImageWriter
         byte[] head = new byte[dfdOffset];
         Span<byte> h = head;
         Identifier.CopyTo(h);
-        uint[] fields = [(uint)vk, (uint)target.TypeSize, (uint)width, (uint)height, 0, (uint)layers, (uint)faces, (uint)mips, (uint)scheme,
+        uint[] fields = [(uint)vk, (uint)target.TypeSize, (uint)width, (uint)height, (uint)depth, (uint)layers, (uint)faces, (uint)mips, (uint)scheme,
             (uint)dfdOffset, (uint)dfd.Length, kvd.Length > 0 ? (uint)kvdOffset : 0, (uint)kvd.Length];
         for (int i = 0; i < fields.Length; i++)
         {

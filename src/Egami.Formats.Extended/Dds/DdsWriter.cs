@@ -15,7 +15,7 @@ namespace Egami.Formats.Extended.Dds;
 /// blocks in parallel; each block depends only on its own pixels, so the bytes never depend on the thread count. A texture is
 /// written whole, so the writer has no row encoder: Save and a streamed encode gather the image first.
 /// </summary>
-internal sealed class DdsWriter : IFormatWriter, IMultiImageWriter
+internal sealed class DdsWriter : IFormatWriter, IMultiImageWriter, ITextureWriter
 {
     public void Write<TPixel>(Raster<TPixel> raster, Stream output, WriterOptions options)
         where TPixel : unmanaged, IPixelType<TPixel>
@@ -43,25 +43,7 @@ internal sealed class DdsWriter : IFormatWriter, IMultiImageWriter
             throw new ArgumentException($"A cube map needs square faces, six a cube; {rasters.Count} rasters of {first.Width}×{first.Height} were given.", nameof(rasters));
         }
 
-        DdsDetails? source = first.Metadata.FormatDetails as DdsDetails;
-        Target target = Target.For(dds.Format ?? FromSource(source) ?? FromPixels(first.Layout));
-        bool srgb = dds.Srgb ?? source?.IsSrgb ?? false;
-        if (srgb && target.SrgbDxgi == 0)
-        {
-            if (dds.Srgb == true)
-            {
-                throw new ArgumentException($"DDS: {target.Format} has no sRGB form.", nameof(options));
-            }
-
-            srgb = false;
-        }
-
-        if (target.IsPlanar && (first.Width % 2 != 0 || first.Height % 2 != 0))
-        {
-            throw new ArgumentException($"DDS: {target.Format} is 4:2:0 and needs an even width and height; {first.Width}×{first.Height} was given.", nameof(rasters));
-        }
-
-        int dxgi = srgb ? target.SrgbDxgi : target.Dxgi;
+        (Target target, bool srgb, int dxgi) = Choose(dds, first);
         int full = target.IsPlanar ? 1 : 1 + (int)Math.Log2(Math.Max(first.Width, first.Height));
         int mips = dds.MipLevels == 0 ? (target.IsData ? 1 : full) : Math.Min(dds.MipLevels, full);
         bool premultiplied = dds.PremultipliedAlpha;
@@ -81,7 +63,7 @@ internal sealed class DdsWriter : IFormatWriter, IMultiImageWriter
         int arraySize = dds.Cube ? cubes : rasters.Count;
         bool dx10 = dds.Dx10Header || srgb || target.Legacy is null || arraySize > 1 || (premultiplied && target.Format is not (DdsTextureFormat.Bc2 or DdsTextureFormat.Bc3));
         Span<byte> header = stackalloc byte[DdsHeader.Length + DdsHeader.Dx10Length];
-        int headerLength = Header(header, first.Width, first.Height, mips, target, dxgi, dx10, dds.Cube, arraySize, premultiplied);
+        int headerLength = Header(header, first.Width, first.Height, 1, mips, target, dxgi, dx10, dds.Cube, arraySize, premultiplied);
         output.Write(header[..headerLength]);
         for (int i = 0; i < rasters.Count; i++)
         {
@@ -117,6 +99,78 @@ internal sealed class DdsWriter : IFormatWriter, IMultiImageWriter
                 }
             }
         }
+    }
+
+    public void WriteTexture(Texture texture, Stream output, WriterOptions options)
+    {
+        ArgumentNullException.ThrowIfNull(texture);
+        ArgumentNullException.ThrowIfNull(output);
+        DdsWriterOptions dds = options as DdsWriterOptions ?? DdsWriterOptions.Default;
+        if (texture.IsVolume && texture.Layers > 1)
+        {
+            throw new NotSupportedException("DDS holds one volume texture, not an array of them; save it as KTX 2.");
+        }
+
+        Raster first = texture.Level(0)[0];
+        (Target target, bool srgb, int dxgi) = Choose(dds, first);
+        int mips = dds.MipLevels == 0 ? texture.MipLevels : Math.Min(dds.MipLevels, texture.MipLevels);
+        if (target.IsPlanar && mips > 1)
+        {
+            throw new ArgumentException($"DDS: {target.Format} holds mip 0 alone; the texture has {mips} mips (TrimMips(1) drops the rest).", nameof(options));
+        }
+
+        bool premultiplied = dds.PremultipliedAlpha;
+        int arraySize = texture.IsVolume ? 1 : texture.Layers;
+        bool dx10 = dds.Dx10Header || srgb || target.Legacy is null || arraySize > 1 || (premultiplied && target.Format is not (DdsTextureFormat.Bc2 or DdsTextureFormat.Bc3));
+        Span<byte> header = stackalloc byte[DdsHeader.Length + DdsHeader.Dx10Length];
+        int headerLength = Header(header, texture.Width, texture.Height, texture.Depth, mips, target, dxgi, dx10, texture.IsCube, arraySize, premultiplied);
+        output.Write(header[..headerLength]);
+        if (texture.IsVolume)
+        {
+            // A volume is stored mip by mip, each mip's slices front to back.
+            for (int m = 0; m < mips; m++)
+            {
+                foreach (Raster slice in texture.Level(m))
+                {
+                    output.Write(Encode(slice, target, dds.Effort, premultiplied));
+                }
+            }
+
+            return;
+        }
+
+        // Surfaces are stored one after another, each with its mips.
+        for (int i = 0; i < texture.Level(0).Count; i++)
+        {
+            for (int m = 0; m < mips; m++)
+            {
+                output.Write(Encode(texture.Level(m)[i], target, dds.Effort, premultiplied));
+            }
+        }
+    }
+
+    /// <summary>Picks the format, its sRGB form and DXGI number for what is written, from the options or the first image.</summary>
+    private static (Target Target, bool Srgb, int Dxgi) Choose(DdsWriterOptions dds, Raster first)
+    {
+        DdsDetails? source = first.Metadata.FormatDetails as DdsDetails;
+        Target target = Target.For(dds.Format ?? FromSource(source) ?? FromPixels(first.Layout));
+        bool srgb = dds.Srgb ?? source?.IsSrgb ?? false;
+        if (srgb && target.SrgbDxgi == 0)
+        {
+            if (dds.Srgb == true)
+            {
+                throw new ArgumentException($"DDS: {target.Format} has no sRGB form.", nameof(dds));
+            }
+
+            srgb = false;
+        }
+
+        if (target.IsPlanar && (first.Width % 2 != 0 || first.Height % 2 != 0))
+        {
+            throw new ArgumentException($"DDS: {target.Format} is 4:2:0 and needs an even width and height; {first.Width}×{first.Height} was given.", nameof(dds));
+        }
+
+        return (target, srgb, srgb ? target.SrgbDxgi : target.Dxgi);
     }
 
     /// <summary>Returns a DDS source's format when the writer can write it.</summary>
@@ -225,28 +279,30 @@ internal sealed class DdsWriter : IFormatWriter, IMultiImageWriter
     }
 
     /// <summary>Writes the header and returns its length.</summary>
-    private static int Header(Span<byte> h, int width, int height, int mips, Target target, int dxgi, bool dx10, bool cube, int arraySize, bool premultiplied)
+    private static int Header(Span<byte> h, int width, int height, int depth, int mips, Target target, int dxgi, bool dx10, bool cube, int arraySize, bool premultiplied)
     {
         h.Clear();
         long pitch = target.IsBlock ? Math.Max(1, (width + 3) / 4) * (long)target.BlockBytes * Math.Max(1, (height + 3) / 4) : (long)width * target.PixelBytes;
-        uint flags = 0x1007 | (mips > 1 ? 0x20000u : 0) | (target.IsBlock ? 0x80000u : 0x8u);
+        bool volume = depth > 1;
+        uint flags = 0x1007 | (mips > 1 ? 0x20000u : 0) | (target.IsBlock ? 0x80000u : 0x8u) | (volume ? 0x800000u : 0);
         BinaryPrimitives.WriteUInt32LittleEndian(h, DdsHeader.Magic);
         BinaryPrimitives.WriteUInt32LittleEndian(h[4..], 124);
         BinaryPrimitives.WriteUInt32LittleEndian(h[8..], flags);
         BinaryPrimitives.WriteUInt32LittleEndian(h[12..], (uint)height);
         BinaryPrimitives.WriteUInt32LittleEndian(h[16..], (uint)width);
         BinaryPrimitives.WriteUInt32LittleEndian(h[20..], (uint)Math.Min(pitch, uint.MaxValue));
+        BinaryPrimitives.WriteUInt32LittleEndian(h[24..], volume ? (uint)depth : 0);
         BinaryPrimitives.WriteUInt32LittleEndian(h[28..], (uint)mips);
         BinaryPrimitives.WriteUInt32LittleEndian(h[76..], 32);
-        uint caps = 0x1000 | (mips > 1 || cube ? 0x8u : 0) | (mips > 1 ? 0x400000u : 0);
+        uint caps = 0x1000 | (mips > 1 || cube || volume ? 0x8u : 0) | (mips > 1 ? 0x400000u : 0);
         BinaryPrimitives.WriteUInt32LittleEndian(h[108..], caps);
-        BinaryPrimitives.WriteUInt32LittleEndian(h[112..], cube ? 0xFE00u : 0);
+        BinaryPrimitives.WriteUInt32LittleEndian(h[112..], cube ? 0xFE00u : volume ? 0x200000u : 0);
         if (dx10)
         {
             BinaryPrimitives.WriteUInt32LittleEndian(h[80..], 0x4);
             BinaryPrimitives.WriteUInt32LittleEndian(h[84..], 0x30315844);
             BinaryPrimitives.WriteUInt32LittleEndian(h[128..], (uint)dxgi);
-            BinaryPrimitives.WriteUInt32LittleEndian(h[132..], 3);
+            BinaryPrimitives.WriteUInt32LittleEndian(h[132..], volume ? 4u : 3);
             BinaryPrimitives.WriteUInt32LittleEndian(h[136..], cube ? 4u : 0);
             BinaryPrimitives.WriteUInt32LittleEndian(h[140..], (uint)arraySize);
             BinaryPrimitives.WriteUInt32LittleEndian(h[144..], premultiplied ? 2u : 0);

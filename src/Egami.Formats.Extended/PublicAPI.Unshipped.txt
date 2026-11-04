@@ -1,24 +1,4 @@
 #nullable enable
-Egami.Formats.Extended.Dds.DdsTextureFormat.R8UInt = 27 -> Egami.Formats.Extended.Dds.DdsTextureFormat
-Egami.Formats.Extended.Dds.DdsTextureFormat.R8SInt = 28 -> Egami.Formats.Extended.Dds.DdsTextureFormat
-Egami.Formats.Extended.Dds.DdsTextureFormat.Rg8UInt = 29 -> Egami.Formats.Extended.Dds.DdsTextureFormat
-Egami.Formats.Extended.Dds.DdsTextureFormat.Rg8SInt = 30 -> Egami.Formats.Extended.Dds.DdsTextureFormat
-Egami.Formats.Extended.Dds.DdsTextureFormat.Rgba8UInt = 31 -> Egami.Formats.Extended.Dds.DdsTextureFormat
-Egami.Formats.Extended.Dds.DdsTextureFormat.Rgba8SInt = 32 -> Egami.Formats.Extended.Dds.DdsTextureFormat
-Egami.Formats.Extended.Dds.DdsTextureFormat.R16UInt = 33 -> Egami.Formats.Extended.Dds.DdsTextureFormat
-Egami.Formats.Extended.Dds.DdsTextureFormat.R16SInt = 34 -> Egami.Formats.Extended.Dds.DdsTextureFormat
-Egami.Formats.Extended.Dds.DdsTextureFormat.Rg16UInt = 35 -> Egami.Formats.Extended.Dds.DdsTextureFormat
-Egami.Formats.Extended.Dds.DdsTextureFormat.Rg16SInt = 36 -> Egami.Formats.Extended.Dds.DdsTextureFormat
-Egami.Formats.Extended.Dds.DdsTextureFormat.Rgba16UInt = 37 -> Egami.Formats.Extended.Dds.DdsTextureFormat
-Egami.Formats.Extended.Dds.DdsTextureFormat.Rgba16SInt = 38 -> Egami.Formats.Extended.Dds.DdsTextureFormat
-Egami.Formats.Extended.Dds.DdsTextureFormat.R32UInt = 39 -> Egami.Formats.Extended.Dds.DdsTextureFormat
-Egami.Formats.Extended.Dds.DdsTextureFormat.R32SInt = 40 -> Egami.Formats.Extended.Dds.DdsTextureFormat
-Egami.Formats.Extended.Dds.DdsTextureFormat.Rg32UInt = 41 -> Egami.Formats.Extended.Dds.DdsTextureFormat
-Egami.Formats.Extended.Dds.DdsTextureFormat.Rg32SInt = 42 -> Egami.Formats.Extended.Dds.DdsTextureFormat
-Egami.Formats.Extended.Dds.DdsTextureFormat.Rgb32UInt = 43 -> Egami.Formats.Extended.Dds.DdsTextureFormat
-Egami.Formats.Extended.Dds.DdsTextureFormat.Rgb32SInt = 44 -> Egami.Formats.Extended.Dds.DdsTextureFormat
-Egami.Formats.Extended.Dds.DdsTextureFormat.Rgba32UInt = 45 -> Egami.Formats.Extended.Dds.DdsTextureFormat
-Egami.Formats.Extended.Dds.DdsTextureFormat.Rgba32SInt = 46 -> Egami.Formats.Extended.Dds.DdsTextureFormat
 Egami.Formats.Extended.Dds.DdsTextureFormat.D16 = 47 -> Egami.Formats.Extended.Dds.DdsTextureFormat
 Egami.Formats.Extended.Dds.DdsTextureFormat.D24S8 = 48 -> Egami.Formats.Extended.Dds.DdsTextureFormat
 Egami.Formats.Extended.Dds.DdsTextureFormat.D32F = 49 -> Egami.Formats.Extended.Dds.DdsTextureFormat
@@ -26,6 +6,26 @@ Egami.Formats.Extended.Dds.DdsTextureFormat.D32FS8 = 50 -> Egami.Formats.Extende
 Egami.Formats.Extended.Dds.DdsTextureFormat.Nv12 = 51 -> Egami.Formats.Extended.Dds.DdsTextureFormat
 Egami.Formats.Extended.Dds.DdsTextureFormat.P010 = 52 -> Egami.Formats.Extended.Dds.DdsTextureFormat
 Egami.Formats.Extended.Dds.DdsTextureFormat.P016 = 53 -> Egami.Formats.Extended.Dds.DdsTextureFormat
+Egami.Formats.Extended.Dds.DdsTextureFormat.R16SInt = 34 -> Egami.Formats.Extended.Dds.DdsTextureFormat
+Egami.Formats.Extended.Dds.DdsTextureFormat.R16UInt = 33 -> Egami.Formats.Extended.Dds.DdsTextureFormat
+Egami.Formats.Extended.Dds.DdsTextureFormat.R32SInt = 40 -> Egami.Formats.Extended.Dds.DdsTextureFormat
+Egami.Formats.Extended.Dds.DdsTextureFormat.R32UInt = 39 -> Egami.Formats.Extended.Dds.DdsTextureFormat
+Egami.Formats.Extended.Dds.DdsTextureFormat.R8SInt = 28 -> Egami.Formats.Extended.Dds.DdsTextureFormat
+Egami.Formats.Extended.Dds.DdsTextureFormat.R8UInt = 27 -> Egami.Formats.Extended.Dds.DdsTextureFormat
+Egami.Formats.Extended.Dds.DdsTextureFormat.Rg16SInt = 36 -> Egami.Formats.Extended.Dds.DdsTextureFormat
+Egami.Formats.Extended.Dds.DdsTextureFormat.Rg16UInt = 35 -> Egami.Formats.Extended.Dds.DdsTextureFormat
+Egami.Formats.Extended.Dds.DdsTextureFormat.Rg32SInt = 42 -> Egami.Formats.Extended.Dds.DdsTextureFormat
+Egami.Formats.Extended.Dds.DdsTextureFormat.Rg32UInt = 41 -> Egami.Formats.Extended.Dds.DdsTextureFormat
+Egami.Formats.Extended.Dds.DdsTextureFormat.Rg8SInt = 30 -> Egami.Formats.Extended.Dds.DdsTextureFormat
+Egami.Formats.Extended.Dds.DdsTextureFormat.Rg8UInt = 29 -> Egami.Formats.Extended.Dds.DdsTextureFormat
+Egami.Formats.Extended.Dds.DdsTextureFormat.Rgb32SInt = 44 -> Egami.Formats.Extended.Dds.DdsTextureFormat
+Egami.Formats.Extended.Dds.DdsTextureFormat.Rgb32UInt = 43 -> Egami.Formats.Extended.Dds.DdsTextureFormat
+Egami.Formats.Extended.Dds.DdsTextureFormat.Rgba16SInt = 38 -> Egami.Formats.Extended.Dds.DdsTextureFormat
+Egami.Formats.Extended.Dds.DdsTextureFormat.Rgba16UInt = 37 -> Egami.Formats.Extended.Dds.DdsTextureFormat
+Egami.Formats.Extended.Dds.DdsTextureFormat.Rgba32SInt = 46 -> Egami.Formats.Extended.Dds.DdsTextureFormat
+Egami.Formats.Extended.Dds.DdsTextureFormat.Rgba32UInt = 45 -> Egami.Formats.Extended.Dds.DdsTextureFormat
+Egami.Formats.Extended.Dds.DdsTextureFormat.Rgba8SInt = 32 -> Egami.Formats.Extended.Dds.DdsTextureFormat
+Egami.Formats.Extended.Dds.DdsTextureFormat.Rgba8UInt = 31 -> Egami.Formats.Extended.Dds.DdsTextureFormat
 Egami.Formats.Extended.Ktx.Ktx2Format
 Egami.Formats.Extended.Ktx.Ktx2WriterOptions
 Egami.Formats.Extended.Ktx.Ktx2WriterOptions.BasisQuality.get -> int
@@ -163,6 +163,25 @@ Egami.Formats.Extended.Ktx.KtxTextureFormat.Rgba8 = 0 -> Egami.Formats.Extended.
 Egami.Formats.Extended.Ktx.KtxTextureFormat.RgbaF16 = 9 -> Egami.Formats.Extended.Ktx.KtxTextureFormat
 Egami.Formats.Extended.Ktx.KtxTextureFormat.RgbaF32 = 12 -> Egami.Formats.Extended.Ktx.KtxTextureFormat
 Egami.Formats.Extended.Ktx.KtxTextureFormat.Uastc = 50 -> Egami.Formats.Extended.Ktx.KtxTextureFormat
+Egami.Formats.Extended.Textures.Texture
+Egami.Formats.Extended.Textures.Texture.Depth.get -> int
+Egami.Formats.Extended.Textures.Texture.Dispose() -> void
+Egami.Formats.Extended.Textures.Texture.Faces.get -> int
+Egami.Formats.Extended.Textures.Texture.GenerateMips(int mipLevels = 0, Egami.Operations.ColorSpace colorSpace = Egami.Operations.ColorSpace.Encoded) -> void
+Egami.Formats.Extended.Textures.Texture.GetImage(int mip = 0, int layer = 0, int face = 0, int slice = 0) -> Egami.Raster!
+Egami.Formats.Extended.Textures.Texture.Height.get -> int
+Egami.Formats.Extended.Textures.Texture.IsCube.get -> bool
+Egami.Formats.Extended.Textures.Texture.IsVolume.get -> bool
+Egami.Formats.Extended.Textures.Texture.Layers.get -> int
+Egami.Formats.Extended.Textures.Texture.MipDepth(int mip) -> int
+Egami.Formats.Extended.Textures.Texture.MipHeight(int mip) -> int
+Egami.Formats.Extended.Textures.Texture.MipLevels.get -> int
+Egami.Formats.Extended.Textures.Texture.MipWidth(int mip) -> int
+Egami.Formats.Extended.Textures.Texture.Save(System.IO.Stream! output, Egami.Formats.FormatInfo! format, Egami.Formats.WriterOptions? options = null) -> void
+Egami.Formats.Extended.Textures.Texture.Save(string! path, Egami.Formats.WriterOptions? options = null) -> void
+Egami.Formats.Extended.Textures.Texture.SetImage(Egami.Raster! image, int mip = 0, int layer = 0, int face = 0, int slice = 0) -> void
+Egami.Formats.Extended.Textures.Texture.TrimMips(int mipLevels) -> void
+Egami.Formats.Extended.Textures.Texture.Width.get -> int
 override Egami.Formats.Extended.Ktx.KtxDetails.Copy() -> Egami.Metadata.FormatDetails!
 override Egami.Formats.Extended.Ktx.KtxReaderOptions.<Clone>$() -> Egami.Formats.Extended.Ktx.KtxReaderOptions!
 override Egami.Formats.Extended.Ktx.KtxReaderOptions.Equals(object? obj) -> bool
@@ -176,3 +195,8 @@ static Egami.Formats.Extended.Ktx.Ktx2WriterOptions.Default.get -> Egami.Formats
 static Egami.Formats.Extended.Ktx.KtxFormat.Info.get -> Egami.Formats.FormatInfo!
 static Egami.Formats.Extended.Ktx.KtxReaderOptions.operator !=(Egami.Formats.Extended.Ktx.KtxReaderOptions? left, Egami.Formats.Extended.Ktx.KtxReaderOptions? right) -> bool
 static Egami.Formats.Extended.Ktx.KtxReaderOptions.operator ==(Egami.Formats.Extended.Ktx.KtxReaderOptions? left, Egami.Formats.Extended.Ktx.KtxReaderOptions? right) -> bool
+static Egami.Formats.Extended.Textures.Texture.FromSlices(System.Collections.Generic.IReadOnlyList<Egami.Raster!>! slices) -> Egami.Formats.Extended.Textures.Texture!
+static Egami.Formats.Extended.Textures.Texture.FromSurfaces(System.Collections.Generic.IReadOnlyList<Egami.Raster!>! surfaces, bool cube = false) -> Egami.Formats.Extended.Textures.Texture!
+static Egami.Formats.Extended.Textures.Texture.Load(System.IO.Stream! stream, Egami.EgamiContext? context = null) -> Egami.Formats.Extended.Textures.Texture!
+static Egami.Formats.Extended.Textures.Texture.Load(System.ReadOnlyMemory<byte> data, Egami.EgamiContext? context = null) -> Egami.Formats.Extended.Textures.Texture!
+static Egami.Formats.Extended.Textures.Texture.Load(string! path, Egami.EgamiContext? context = null) -> Egami.Formats.Extended.Textures.Texture!
