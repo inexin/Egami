@@ -360,7 +360,8 @@ public class Ktx2WriterTests
                         raster.Dispose();
                     }
                 }
-            });
+            }
+            );
         }
 
         // Textures saved with their own mips: a volume with three mips, and a cube map with hand-made ones.
@@ -368,13 +369,15 @@ public class Ktx2WriterTests
         {
             using Texture volume = Texture.Load(KtxFiles.Corpus("rgba8-volume.ktx2"), Context);
             return SaveTexture(volume, new Ktx2WriterOptions { Format = KtxTextureFormat.Bc7, Effort = 0 });
-        });
+        }
+        );
         yield return ("w-texture-cube", () =>
         {
             using Texture cube = Texture.Load(KtxFiles.Corpus("rgba8-cube.ktx2"), Context);
             cube.GenerateMips();
             return SaveTexture(cube, new Ktx2WriterOptions { Format = KtxTextureFormat.Etc1s, Effort = 0 });
-        });
+        }
+        );
     }
 
     private static IEnumerable<(string Name, Func<Raster[]> Rasters, Ktx2WriterOptions Options)> CheckedRasters()
