@@ -5,6 +5,18 @@ changes that break code come only in a new major version.
 
 ## Egami (unreleased)
 
+Faster lossless JPEG XL encoding (roadmap 2.4.11). No API changes; every file is byte for byte the same as before.
+
+- Effort 1 splits planes with vector code and writes its bits two codes at a time without branches.
+- The weighted predictor works a row at a time without branches, which removes most of the encoder's branch mispredictions,
+  and runs once per channel: tree learning keeps its predictions for coding.
+- Tree learning packs each sample's key into one value, counts the properties of large nodes in parallel parts, and learns
+  large subtrees at the same time. The RCT search reuses the costs of channels a transform only moves.
+- The token writer divides by multiplying, and gradient-only trees (effort 2) code whole rows directly.
+- The 0.39-megapixel kodim05 on one thread: effort 1 from 6.8 to 5.3 ms, effort 2 from 61 to 46 ms, effort 3 from 117 to
+  76 ms and effort 7 from 945 to 616 ms; on 24 threads effort 7 from 483 to 343 ms, and the 3.4-megapixel flower from 3,350
+  to 1,831 ms. Efforts 2 and 3 allocate a third less, effort 7 a fifth less.
+
 Faster JPEG encoding (step 2.4.10). No API changes; every file is byte for byte the same as before, and so the same as
 libjpeg-turbo's `cjpeg` with the same settings.
 
