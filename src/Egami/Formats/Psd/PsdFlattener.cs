@@ -328,9 +328,16 @@ internal sealed partial class PsdFlattener
             return false;
         }
 
-        if (_file.Records[above].Info.Kind == PsdLayerKind.GroupEnd)
+        PsdLayerKind kind = _file.Records[above].Info.Kind;
+        if (kind == PsdLayerKind.GroupEnd)
         {
+            // A sibling group starts above: its group record is the one that can be clipped.
             above = _groupOf.TryGetValue(above, out int g) ? g : -1;
+        }
+        else if (kind != PsdLayerKind.Layer)
+        {
+            // The group is its parent's top child: the record above is the parent's own, whose clipping is the parent's, not this group's.
+            return false;
         }
 
         return above >= 0 && _file.Records[above].Info.Kind != PsdLayerKind.GroupEnd && _infoOf(above).IsClipped;
