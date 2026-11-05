@@ -146,8 +146,8 @@ when a layer has none of those), with several of a kind in the newer files, the 
   only what the dialog shows: the sizes are stored already scaled.
 
 Against the composites Photoshop stored, the drop shadow files reach 40 to 55 dB PSNR, the glows 38 dB, and the stroke
-files 39 dB and over (several exactly). Bevel and emboss is close but not exact (about 30 to 34 dB): Photoshop's height
-profile is fitted, not known. These effect settings are not checked against a Photoshop-saved file: radial and other
+files 39 dB and over (several exactly). Bevel and emboss is close but not exact (about 30 to 34 dB), below the 38 dB the
+other effects are held to: Photoshop's height profile is fitted, not known, so bevel results are recorded, not gated. These effect settings are not checked against a Photoshop-saved file: radial and other
 non-linear gradient overlays (one file fits only with a smaller radius than the gradient fill's), pattern overlays and
 pattern strokes linked to the layer, gradient strokes other than linear, the chisel techniques, emboss and pillow emboss,
 stroke emboss, bevel textures and contours, satin, inner glow from the center, effects in CMYK, Lab and 32-bit documents, and
