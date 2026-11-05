@@ -145,6 +145,7 @@ internal static class FitsTiles
             }
             else if (ok)
             {
+                bool real = false;
                 if (!bytes.IsEmpty)
                 {
                     ok = compression switch
@@ -153,18 +154,26 @@ internal static class FitsTiles
                         "GZIP_1" => Gunzip(bytes, n * intBytes, ref scratch) && Integers(scratch, intBytes, n, v, hdu.Bitpix == 8 && !quantized, false),
                         "GZIP_2" => Gunzip(bytes, n * intBytes, ref scratch) && Integers(scratch, intBytes, n, v, hdu.Bitpix == 8 && !quantized, true),
                         "PLIO_1" => Plio(bytes, v),
-                        "NOCOMPRESS" => Raw(bytes, element, n, v, out _),
+                        // Uncompressed tiles in a byte column (as cfitsio writes them) hold the values big endian at the
+                        // image's width (4-byte integers when quantized); a typed column holds them as its own type.
+                        "NOCOMPRESS" => element == 'B'
+                            ? bytes.Length >= n * intBytes && Integers(bytes, intBytes, n, v, hdu.Bitpix == 8 && !quantized, false)
+                            : Raw(bytes, element, n, v, out real),
                         _ => false,
                     };
                 }
 
-                if (ok && quantized)
+                if (ok && real)
+                {
+                    Place(image, axes, at, size, v, true, 1, 0, null);
+                }
+                else if (ok && quantized)
                 {
                     Dequantize(image, axes, at, size, v, scale, zero, blank ?? NullValue, dither, (k + dither0 - 1) % 10000);
                 }
-                else if (ok && isFloat && compression is "GZIP_1" or "GZIP_2")
+                else if (ok && isFloat && compression is "GZIP_1" or "GZIP_2" or "NOCOMPRESS")
                 {
-                    // Floats that were not quantized: the gzip stream holds their IEEE bits (shuffled for GZIP_2), lossless.
+                    // Floats that were not quantized: the bytes hold their IEEE bits (shuffled for GZIP_2), lossless.
                     if (hdu.Bitpix == -32)
                     {
                         for (int i = 0; i < n; i++)

@@ -135,7 +135,7 @@ internal static class FitsFiles
         List<byte> rows = [];
         List<byte> heap = [];
         Span<byte> b = stackalloc byte[8];
-        int elementWidth = element switch { 'I' => 2, 'J' => 4, _ => 1 };
+        int elementWidth = element switch { 'I' => 2, 'J' or 'E' => 4, 'K' or 'D' => 8, _ => 1 };
         foreach (Tile t in tiles)
         {
             BinaryPrimitives.WriteInt32BigEndian(b, t.Data.Length / elementWidth);

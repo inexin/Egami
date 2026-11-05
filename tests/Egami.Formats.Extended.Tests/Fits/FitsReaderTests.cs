@@ -277,6 +277,40 @@ public sealed class FitsReaderTests
         AssertDecodes(file, values, type, zbitpix);
     }
 
+    [Theory]
+    [InlineData(8, 'B')]
+    [InlineData(16, 'B')]
+    [InlineData(32, 'B')]
+    [InlineData(-32, 'B')]
+    [InlineData(-64, 'B')]
+    [InlineData(16, 'I')]
+    [InlineData(-32, 'E')]
+    [InlineData(-64, 'D')]
+    public void ReadsUncompressedTiles(int zbitpix, char element)
+    {
+        // cfitsio (and so astropy) writes NOCOMPRESS tiles to a byte column, big endian at the image's width; a typed column
+        // holds them as its own type.
+        long[] axes = [4, 3], tile = [4, 1];
+        double[] values = [.. Enumerable.Range(0, 12).Select(i => zbitpix < 0 && i == 5 ? double.NaN : zbitpix == 8 ? i * 20 : (i * 1000.5) - 4000)];
+        if (zbitpix > 0)
+        {
+            values = [.. values.Select(v => Math.Floor(v))];
+        }
+
+        List<Tile> tiles = [.. Enumerable.Range(0, 3).Select(row => new Tile(Samples(zbitpix, values.Skip(row * 4).Take(4))))];
+        byte[] file = [.. Empty(), .. Compressed("NOCOMPRESS", zbitpix, axes, tile, tiles, element)];
+        AssertDecodes(file, values, "NOCOMPRESS", zbitpix);
+    }
+
+    [Fact]
+    public void ReadsUncompressedQuantizedTiles()
+    {
+        int[] quantized = [-3, 0, 7, 12, 100, -50];
+        List<Tile> tiles = [new Tile(Samples(32, quantized.Select(q => (double)q)), 0.5, 10)];
+        byte[] file = [.. Empty(), .. Compressed("NOCOMPRESS", -32, [6, 1], [6, 1], tiles, 'B', Card("ZQUANTIZ", "NO_DITHER"))];
+        AssertDecodes(file, quantized.Select(q => (q * 0.5) + 10), "NOCOMPRESS", -32);
+    }
+
     [Fact]
     public void ReadsPlioTiles()
     {
