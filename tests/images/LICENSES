@@ -302,6 +302,11 @@ fuzz/dds-seeds/
   Small DDS files for the dds fuzz target, one of each header and pixel format family, written byte by byte with random pixel
   data by a script for this repository. Public domain (CC0).
 
+fuzz/dicom-seeds/
+  Small DICOM files for the dicom fuzz target, written byte by byte from PS3.5 and PS3.10 by a script for this repository:
+  each transfer syntax, sequences, encapsulated fragments, and the Japanese and Korean values of PS3.5 Annexes H and I. The
+  patient and study values are made up. Public domain (CC0).
+
 zstd/
   Zstandard files made by tools/make-zstd-references.py with zstd 1.5.6 (BSD-3) from generated text, noise and runs and from
   crops of ops/duck.png and ops/egret.png above; skippable frames written byte by byte by the script. Public domain, as their

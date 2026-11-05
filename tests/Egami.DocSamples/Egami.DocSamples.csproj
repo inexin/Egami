@@ -9,7 +9,7 @@
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
     <!-- The samples read as user code, which passes cancellation tokens only where the example is about them. -->
-    <NoWarn>$(NoWarn);xUnit1051</NoWarn>
+    <NoWarn>$(NoWarn);xUnit1051;EGAMIX001</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -26,6 +26,8 @@
     <None Include="../images/ops/duck.png" Link="images/duck.png" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../images/gif/loop-3.gif" Link="images/loop.gif" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../images/ico/set.ico" Link="images/app.ico" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../images/fuzz/dicom-seeds/explicit.dcm" Link="images/scan.dcm" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../images/fuzz/dicom-seeds/encapsulated.dcm" Link="images/compressed.dcm" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../images/metafiles/synthetic/plus-shapes.dual.emf" Link="images/shapes-plus.emf" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../video/corpus/audio/opus/opus-hybrid.opus" Link="images/talk.opus" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../video/corpus/audio/vorbis/q6-stereo-48k.ogg" Link="images/song.ogg" CopyToOutputDirectory="PreserveNewest" />

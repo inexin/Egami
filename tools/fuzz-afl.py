@@ -48,7 +48,7 @@ SEEDS = {"png": "tests/images/pngsuite/*.png tests/images/fuzz/png-seeds/*.png",
          "jxl": "tests/images/fuzz/jxl-seeds/*", "jxlbox": "tests/images/fuzz/jxlbox-seeds/*", "jxlentropy": "tests/images/fuzz/jxlentropy-seeds/*",
          "jxl-write": "tests/images/fuzz/jpeg-write-seeds/*", "jxl-lossy": "tests/images/fuzz/jpeg-write-seeds/*", "jxl-frames": "tests/images/fuzz/jpeg-write-seeds/*", "jxl-partial": "tests/images/fuzz/jxl-seeds/*", "jxl-jpeg": "tests/images/jpeg/duck-q50.jpg tests/images/jpeg/odd-*.jpg tests/images/jpeg/transform/t4*.jpg tests/images/jpeg/transform/tprog.jpg tests/images/jpeg/testorig.jpg",
          "css": "tests/images/fuzz/css-seeds/*", "hocr": "tests/images/ocr/*.hocr", "alto": "tests/images/ocr/*.xml", "paragraph": "tests/images/fuzz/paragraph-seeds/*",
-         "svg": "tests/images/fuzz/svg-seeds/*", "dds": "tests/images/fuzz/dds-seeds/*", "ktx": "tests/images/fuzz/ktx-seeds/*", "ktx2": "tests/images/fuzz/ktx2-seeds/*", "jpegls": "tests/images/fuzz/jpegls-seeds/*", "raw": "tests/images/fuzz/raw-seeds/*",
+         "svg": "tests/images/fuzz/svg-seeds/*", "dds": "tests/images/fuzz/dds-seeds/*", "ktx": "tests/images/fuzz/ktx-seeds/*", "ktx2": "tests/images/fuzz/ktx2-seeds/*", "jpegls": "tests/images/fuzz/jpegls-seeds/*", "dicom": "tests/images/fuzz/dicom-seeds/*", "raw": "tests/images/fuzz/raw-seeds/*",
          # One RAW format family at a time: the raw target with that family's seeds.
          "raw-dng": "tests/images/fuzz/raw-seeds/*.dng", "raw-canon": "tests/images/fuzz/raw-seeds/*.cr2 tests/images/fuzz/raw-seeds/*.cr3",
          "raw-nikon": "tests/images/fuzz/raw-seeds/*.nef", "raw-fuji": "tests/images/fuzz/raw-seeds/*.raf", "raw-samsung": "tests/images/fuzz/raw-seeds/*.srw",
