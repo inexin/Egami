@@ -98,6 +98,21 @@ DPX and Cineon (DICOM and science formats, stage B). All additive.
   Cineon (10-bit RGB). `DpxDetails` and `CineonDetails` keep the transfer, colorimetric and the file, film and television
   fields (timecode, frame rate, slate), and the writers write them back.
 
+FITS (DICOM and science formats, stage C). All additive.
+
+- `FitsFormat` in Egami.Formats.Extended, registered by `WithExtendedFormats()` and `WithFits()`, reads FITS (Standard 4.0):
+  the primary HDU and every `IMAGE` extension, BITPIX 8, 16, 32, 64, -32 and -64 with BSCALE, BZERO and BLANK, each plane of
+  a cube an image of its own, and tile-compressed images (RICE_1, GZIP_1, GZIP_2, PLIO_1, NOCOMPRESS, with quantized floats
+  and subtractive dither undone). Load gives `GrayF32` turned upright and stretched into 0 to 1; `FitsReaderOptions.Stretch`
+  picks `MinMax` (the default, from DATAMIN and DATAMAX when present), `ZScale`, `Asinh` or `None` for the physical values,
+  `Image` picks an image and `Rgb` reads a three-plane cube as one `RgbF32` image. HCOMPRESS is not read.
+- `FitsDetails` keeps the whole header as a `FitsHeader` of `FitsCard`s (CONTINUE strings joined, HIERARCH keywords), with
+  the HDU, plane, BITPIX, compression and stretch. `FitsFile` lists every HDU (`FitsHdu`, tables included) and reads an
+  image's values in file order.
+- Save writes one primary HDU at BITPIX 8, 16 (BZERO 32768) or -32 (`FitsWriterOptions.Bitpix`), gray as a 2D image and
+  colour as a three-plane cube, with a FITS raster's header cards and `FitsWriterOptions.Keywords`. Files Egami writes read in
+  ImageMagick with the same values and orientation, and ImageMagick's read in Egami the same way.
+
 Canon sRAW and Panasonic levels as Adobe's (RAW follow-up). No API changes.
 
 - Canon sRAW and mRAW files take the baseline exposure Adobe DNG Converter gives them, which the camera table now records

@@ -359,6 +359,10 @@ fuzz/dpx-seeds/ and fuzz/cineon-seeds/
   The seeds of the dpx and cineon fuzz targets: small DPX and Cineon files built by hand from generated samples (every packing,
   run-length coding, CbYCr, float, two elements, flips), written by Egami, and written by ffmpeg and ImageMagick (run as tools)
   from generated samples. Public domain.
+fuzz/fits-seeds/
+  Small FITS files made for the fits fuzz target with the test builders in tests/Egami.Formats.Extended.Tests/Fits/FitsFiles.cs:
+  every BITPIX, scaled and blank values, a cube, extensions, long headers and RICE_1, GZIP_1, GZIP_2, PLIO_1 and quantized
+  tiles. Public domain.
 fuzz/jpegls-seeds/
   The seeds of the jpegls fuzz target: small JPEG-LS files Egami wrote from generated samples, some patched by hand to reach
   other paths (a palette, an LSE size, a DNL height), and inputs the fuzzer found (regress-*). Public domain.
