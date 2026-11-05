@@ -92,7 +92,7 @@ map), TIFF, Radiance .hdr, OpenEXR, JPEG XL, AVIF, and Windows icons and cursors
 2000, Windows animated cursors (ANI) and Photoshop's PSD and PSB, layers included. HEIC phone photos load and save through the
 separate, opt-in Egami.Heic package; core Egami detects and probes them. SVG and Windows metafiles (WMF, EMF) load through the separate
 <a href="../guides/svg.html">Egami.Svg</a> and <a href="../guides/metafiles.html">Egami.Metafiles</a> packages, and PCX, SGI, Sun raster, XBM, XPM, WBMP
-Farbfeld, JPEG-LS, DDS and KTX textures, DPX and Cineon film frames, camera RAW (DNG and the camera makers' formats, with DNG written) and, as a preview, the DICOM dataset through
+Farbfeld, JPEG-LS, DDS and KTX textures, DPX and Cineon film frames, FITS, camera RAW (DNG and the camera makers' formats, with DNG written) and, as a preview, the DICOM dataset through
 <a href="extended.html">Egami.Formats.Extended</a>. The Package column says which package holds each format. Every reader checks sizes against the
 safety limits before it allocates, and every reader has been fuzzed.</p>
 <p>Each format has its own page with its options and what it keeps from the file; the table below links them. VP8 and AV1 video frames decode
@@ -338,6 +338,13 @@ through <a href="vp8.html"><code>Vp8StreamDecoder</code></a> and <a href="av1.ht
 <td>DPX 1.0 to 3.0 and Cineon 4.5: 1 to 16-bit integer and 32 and 64-bit float samples, every packing and byte order, luma, RGB, RGBA and CbYCr, run-length coding; every image element; log to linear on request</td>
 <td>DPX: gray, RGB or RGBA at 8, 10, 12 or 16 bits; Cineon: 10-bit RGB</td>
 <td>The stored code values: <code>Rgb16</code>, <code>Rgba16</code>, <code>Gray16</code> or their 8-bit forms; <code>RgbF32</code> and others for float or linearized</td>
+<td>Egami.Formats.Extended</td>
+</tr>
+<tr>
+<td><a href="fits.html">FITS</a></td>
+<td>Image HDUs and cube planes, BITPIX 8 to 64 and floats, BSCALE, BZERO and BLANK, tile-compressed images (Rice, gzip, PLIO); stretched for viewing or as physical values</td>
+<td>BITPIX 8, 16 or -32, gray or a three-plane colour cube, with the header cards</td>
+<td><code>GrayF32</code>, or <code>RgbF32</code> for a colour cube</td>
 <td>Egami.Formats.Extended</td>
 </tr>
 <tr>

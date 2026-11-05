@@ -6803,6 +6803,160 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Extended.Fits.FitsCard.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Extended.Fits.FitsCard.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Extended.Fits.FitsCard",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Extended.Fits.FitsCard.yml\" sourcestartlinenumber=\"1\">One header card: a keyword, its value and its comment. The value is a <xref href=\"System.String\" data-throw-if-not-resolved=\"false\"></xref>, a <xref href=\"System.Boolean\" data-throw-if-not-resolved=\"false\"></xref>, a\n<xref href=\"System.Int64\" data-throw-if-not-resolved=\"false\"></xref>, a <xref href=\"System.Double\" data-throw-if-not-resolved=\"false\"></xref>, or <a href=\"https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null\">null</a> for a card without one (<code>COMMENT</code>,\n<code>HISTORY</code>, a blank keyword). A value the reader does not type, such as a complex number, is kept as its text.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Extended.Fits.FitsDetails.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Extended.Fits.FitsDetails.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Extended.Fits.FitsDetails",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Extended.Fits.FitsDetails.yml\" sourcestartlinenumber=\"1\">Details only FITS has, kept in <xref href=\"Egami.Metadata.RasterMetadata.FormatDetails\" data-throw-if-not-resolved=\"false\"></xref>: the HDU's header and how its values became the\npicture. The writer writes the header's own keywords (all but the structural ones) back.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Extended.Fits.FitsFile.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Extended.Fits.FitsFile.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Extended.Fits.FitsFile",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Extended.Fits.FitsFile.yml\" sourcestartlinenumber=\"1\">A whole FITS file, for the numbers rather than a picture: every HDU's header cards, and an image's physical values,\n<code>BZERO + BSCALE × stored</code>, unstretched, with missing pixels (<code>BLANK</code>, NaN, damaged tiles, data past the file's end)\nas NaN. Tile-compressed images decode as plain ones. World coordinate (WCS) keywords are in the header; Egami does no sky\ncoordinate math.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Extended.Fits.FitsFormat.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Extended.Fits.FitsFormat.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Extended.Fits.FitsFormat",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Extended.Fits.FitsFormat.yml\" sourcestartlinenumber=\"1\">FITS (Flexible Image Transport System, standard 4.0), astronomy's image format: headers of 80-character keyword cards in\n2880-byte blocks, then big-endian 8, 16, 32 or 64-bit integer or 32 or 64-bit float data. Load gives a viewable picture of\nthe first image, stretched into 0 to 1 (<xref href=\"Egami.Formats.Extended.Fits.FitsReaderOptions.Stretch\" data-throw-if-not-resolved=\"false\"></xref>); LoadAll gives every image of every HDU and\nevery plane of a cube. <xref href=\"Egami.Formats.Extended.Fits.FitsFile\" data-throw-if-not-resolved=\"false\"></xref> gives the header cards and the physical values themselves. Registered with\n<xref href=\"Egami.Formats.Extended.ExtendedContextExtensions.WithFits(Egami.EgamiContext)\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Extended.Fits.FitsHdu.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Extended.Fits.FitsHdu.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Extended.Fits.FitsHdu",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Extended.Fits.FitsHdu.yml\" sourcestartlinenumber=\"1\">One HDU of a FITS file: its header, and for an image, its BITPIX and axes. A tile-compressed image reports the image's own\nBITPIX and axes (<code>ZBITPIX</code>, <code>ZNAXISn</code>), not the table's.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Extended.Fits.FitsHduKind.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Extended.Fits.FitsHduKind.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Extended.Fits.FitsHduKind",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Extended.Fits.FitsHduKind.yml\" sourcestartlinenumber=\"1\">What a FITS HDU (header and data unit) holds.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Extended.Fits.FitsHeader.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Extended.Fits.FitsHeader.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Extended.Fits.FitsHeader",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Extended.Fits.FitsHeader.yml\" sourcestartlinenumber=\"1\">The cards of one FITS header, in order, with typed lookups by keyword. Long string values continued over <code>CONTINUE</code>\ncards are joined into one card.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Extended.Fits.FitsReaderOptions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Extended.Fits.FitsReaderOptions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Extended.Fits.FitsReaderOptions",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Extended.Fits.FitsReaderOptions.yml\" sourcestartlinenumber=\"1\">Options for reading FITS.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Extended.Fits.FitsStretch.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Extended.Fits.FitsStretch.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Extended.Fits.FitsStretch",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Extended.Fits.FitsStretch.yml\" sourcestartlinenumber=\"1\">How Load turns a FITS image's physical values into a picture.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Extended.Fits.FitsWriterOptions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Extended.Fits.FitsWriterOptions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Extended.Fits.FitsWriterOptions",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Extended.Fits.FitsWriterOptions.yml\" sourcestartlinenumber=\"1\">Options for writing FITS.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Extended.Fits.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Extended.Fits.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Extended.Fits",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.Formats.Extended.JpegLs.JpegLsColorTransform.yml",
       "output": {
         ".html": {
@@ -19720,6 +19874,16 @@
       "output": {
         ".html": {
           "relative_path": "articles/formats/farbfeld.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "articles/formats/fits.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/formats/fits.html"
         }
       },
       "version": ""
