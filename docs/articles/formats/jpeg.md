@@ -10,7 +10,8 @@ Arithmetic-coded files load like Huffman-coded ones. 12-bit files load in their 
 Lossless JPEG, the kind inside DNG tiles and many DICOM files, decodes to its exact samples at 2 to 16 bits: up to 8 bits as
 `Gray8` or `Rgb8`, deeper as `Gray16` or `Rgb16`. Three-component lossless files are RGB unless a JFIF segment or Adobe
 transform says YCbCr. Lossless files have no DCT, so `MinimumSize` reduces them after a full decode. `JpegDetails.Precision`,
-`Arithmetic` and `Lossless` say what a file is. Hierarchical files are refused with `UnsupportedFormatException`.
+`Arithmetic` and `Lossless` say what a file is; `SampleImage.Load` gives the stored samples at the file's own precision,
+without color conversion (see [Stored samples](index.md#stored-samples)). Hierarchical files are refused with `UnsupportedFormatException`.
 
 Browsers show none of these modes. Egami writes each of them on request (below).
 
