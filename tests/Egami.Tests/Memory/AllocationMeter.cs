@@ -1,4 +1,6 @@
+using System.Diagnostics;
 using System.Diagnostics.Tracing;
+using System.Reflection;
 
 namespace Egami.Tests.Memory;
 
@@ -12,7 +14,9 @@ namespace Egami.Tests.Memory;
 /// <remarks>
 /// The allocation-budget tests still go a few bytes over now and then when other tests run alongside, so they run only on
 /// demand: they skip unless <c>EGAMI_ALLOCATION_TESTS=1</c> is set, and carry the trait <c>Category=Allocation</c> so a run can
-/// pick them alone.
+/// pick them alone. They measure a Release build of Egami and fail on a Debug one: without the JIT's optimizations a constant
+/// table such as <c>ReadOnlySpan&lt;uint&gt; Table =&gt; [...]</c> allocates a field handle on every use, which a Release build never
+/// does, so a Debug run reports allocations the shipped library does not make.
 /// </remarks>
 internal static class AllocationMeter
 {
@@ -26,8 +30,18 @@ internal static class AllocationMeter
 
     private const string SkipReason = "Allocation-budget test: set EGAMI_ALLOCATION_TESTS=1 to run it.";
 
-    /// <summary>Skips the calling allocation-budget test unless <see cref="OnDemand"/>.</summary>
-    public static void SkipUnlessOnDemand() => Assert.SkipUnless(OnDemand, SkipReason);
+    /// <summary>Gets whether Egami was built with the JIT's optimizations on, as a Release build is.</summary>
+    public static bool Optimized { get; } =
+        typeof(Raster).Assembly.GetCustomAttribute<DebuggableAttribute>()?.IsJITOptimizerDisabled != true;
+
+    /// <summary>
+    /// Skips the calling allocation-budget test unless <see cref="OnDemand"/>, and fails it when Egami is not <see cref="Optimized"/>.
+    /// </summary>
+    public static void SkipUnlessOnDemand()
+    {
+        Assert.SkipUnless(OnDemand, SkipReason);
+        Assert.True(Optimized, "Allocation-budget tests measure a Release build: run them with -c Release.");
+    }
 
     /// <summary>
     /// Gets a budget theory's rows when <see cref="OnDemand"/>, and otherwise one skipped row, so a normal run reports one skip for

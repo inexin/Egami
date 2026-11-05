@@ -63,13 +63,15 @@ library in Docker. Regenerate them with the script, never by hand.
 
 The allocation-budget tests (managed allocations must not grow with the image, and warm calls allocate nothing) measure bytes
 allocated by the test thread, so other tests running alongside can push them a few bytes over. They skip in a normal run and in
-CI; run them on demand, alone, when you change hot code:
+CI; run them on demand, alone and in Release, when you change hot code:
 
 ```
-EGAMI_ALLOCATION_TESTS=1 dotnet test tests/Egami.Tests --filter Category=Allocation
+EGAMI_ALLOCATION_TESTS=1 dotnet test tests/Egami.Tests -c Release --filter Category=Allocation
 ```
 
-In PowerShell: `$env:EGAMI_ALLOCATION_TESTS=1; dotnet test tests/Egami.Tests --filter Category=Allocation`.
+In PowerShell: `$env:EGAMI_ALLOCATION_TESTS=1; dotnet test tests/Egami.Tests -c Release --filter Category=Allocation`. They fail on a
+Debug build, where the JIT's missing optimizations allocate on their own (a constant `ReadOnlySpan<uint>` table allocates on each
+use, for one).
 
 Benchmarks: `dotnet run -c Release --project benchmarks/Egami.Benchmarks` (also `Egami.Drawing.Benchmarks` and
 `Egami.Fonts.Benchmarks`).
