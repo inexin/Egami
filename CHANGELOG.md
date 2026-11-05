@@ -15,6 +15,20 @@ JPEG-LS in Egami.Formats.Extended (DICOM and science formats, stage A).
   and `JpegLsDetails` keeps what the file said. `JpegLsWriter.Write` codes plain samples (1 to 4 components) for callers such
   as DICOM writers. Files decode exactly in CharLS, and lossless files are the size CharLS writes.
 
+PSD flattening extras, stage A (roadmap 2.3.13). No API changes.
+
+- `PsdDocument.Flatten`, and Load when it flattens, apply fill opacity inside the formula of Photoshop's eight special modes,
+  give Photoshop's Vivid Light and Hard Mix at pure black and white, use the combined mask Photoshop stores for a
+  layer with a user and a vector mask, feather masks, and knock out (shallow and deep). The `Psd.MaskFeatherSkipped` and
+  `Psd.KnockoutSkipped` warnings are gone.
+- Lab documents flatten: their layers blend in Lab as stored (lightness, chroma and hue for the non-separable modes) and the
+  result is sRGB. `Psd.FlattenUnsupported` is now only for bitmap, indexed, multichannel and 32-bit Lab files.
+- A group's blend mode comes from its section divider when the two disagree, as Photoshop reads it; a pass-through group with
+  layers clipped to it blends isolated.
+- Against the composites Photoshop stored in 89 public Photoshop-saved files, the Hard Mix and Vivid Light files go from a
+  mean error of 30 levels to 0.2, the feathered-mask file from 31 to 0.75, and the knockout file from 12 dB PSNR to 59 dB.
+- A Load of the stored composite allocates the same for any height; it allocated about 113 bytes a row (150 for PackBits).
+
 DPX and Cineon (DICOM and science formats, stage B). All additive.
 
 - `DpxFormat` and `CineonFormat` in Egami.Formats.Extended, registered by `WithExtendedFormats()`, `WithDpx()` and

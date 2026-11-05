@@ -49,8 +49,8 @@ A file saved without Photoshop's Maximize Compatibility holds no real flattened 
 `PsdDocument.Flatten` does, one layer at a time as they come in the file. `PsdReaderOptions.Composite` chooses:
 `PsdComposite.Auto` (the default), `Stored` (always the stored image, the placeholder with the `Psd.NoComposite` warning) or
 `Flatten` (always the layers flattened). A flattened image's type comes from the layer records before any pixel is read: with
-alpha unless an opaque Normal layer covers the canvas at the top level. Lab, bitmap, indexed and multichannel files give their stored
-image.
+alpha unless an opaque Normal layer covers the canvas at the top level. Lab files flatten in Lab and give sRGB; bitmap, indexed
+and multichannel files give their stored image.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Psd.cs#psd-composite)]
 
@@ -80,18 +80,32 @@ place, the value outside it, and whether it is disabled. The channels are read i
 `PsdDocument.Flatten` composites the layers as Photoshop does, with each layer's `Info` as it is now, so a copy changed with
 `with` (a layer hidden, another opacity or blend mode) flattens differently. It covers visibility, opacity and fill opacity, all
 of Photoshop's blend modes (Soft Light with Photoshop's own formula), pixel masks (density, the default color outside them,
-disabled ones), vector masks (filled with the non-zero rule and antialiased), clipping (the clipped layers blend onto their base
-and keep its coverage), pass-through and isolated groups, blending ranges ("blend if") and solid color fill layers. Layer
-effects, gradient and pattern fills, knockout and mask feathering are left out with one warning a kind naming the layers.
-8 and 16-bit documents blend their stored values and 32-bit ones linear light, as Photoshop does. The result has the type Load
-gives the file, with alpha only when some pixel is not opaque. `PsdFlattenOptions.ApplyAdjustments` turns adjustment layers off.
-Lab, bitmap, indexed and multichannel documents are not flattened.
+disabled ones), vector masks (filled with the non-zero rule and antialiased), the feather of both, clipping (the clipped layers
+blend onto their base and keep its coverage), pass-through and isolated groups, shallow and deep knockout, blending ranges
+("blend if") and solid color fill layers. Layer effects and gradient and pattern fills are left out with one warning a kind
+naming the layers. 8 and 16-bit documents blend their stored values and 32-bit ones linear light, as Photoshop does. The result
+has the type Load gives the file, with alpha only when some pixel is not opaque. `PsdFlattenOptions.ApplyAdjustments` turns
+adjustment layers off. Bitmap, indexed and multichannel documents are not flattened.
+
+- **Fill opacity** in Photoshop's eight special modes (Color Burn, Linear Burn, Color Dodge, Linear Dodge, Vivid Light,
+  Linear Light, Hard Mix, Difference) goes into the formula, as in Photoshop: it pulls the layer's color toward the mode's
+  neutral color, and the result covers the backdrop by the layer's coverage and opacity. Vivid Light keeps a source of pure
+  black or white, as Photoshop does.
+- **Masks.** When a layer has both a user and a vector mask, the combined mask Photoshop stores with them is used. A feathered
+  mask is blurred by a Gaussian whose σ is the feather radius, which matches Photoshop's feathered masks within a level on
+  average.
+- **Knockout** shows, through the layers of a group set to knock out, the group's backdrop (shallow: what is under the group,
+  or nothing in an isolated group) or the Background layer (deep, and shallow at the top level).
+- **Lab** documents blend their L\*, a\* and b\* values as stored, the separable modes as for RGB and Hue, Saturation, Color,
+  Luminosity, Darker Color and Lighter Color on lightness, chroma and hue, then become sRGB as Load converts Lab. Adjustments
+  work through sRGB, as CMYK's work through RGB.
+
+Hard Mix at a fill opacity under 100 %, deep knockout, Lab's non-separable modes and Lab adjustments are written from the
+specification and Photoshop's documentation but no Photoshop-saved file checks them yet.
 
 Levels, curves and invert follow Photoshop's documented formulas. Hue/saturation and the current (not legacy)
 brightness/contrast are close approximations that have not been checked against Photoshop yet, so expect small color
-differences there. Hard Mix and Vivid Light can differ from Photoshop at pure black and white, and Photoshop's fill opacity in
-its eight special modes (Color Burn, Linear Burn, Color Dodge, Linear Dodge, Vivid Light, Linear Light, Hard Mix, Difference)
-works like opacity here.
+differences there.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Psd.cs#psd-flatten)]
 

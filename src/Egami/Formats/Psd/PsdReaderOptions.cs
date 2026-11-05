@@ -32,8 +32,9 @@ public sealed record PsdReaderOptions : ReaderOptions
 
     /// <summary>
     /// Gets which image Load, Probe and the row readers give: by default the stored composite, or the layers flattened when the
-    /// file has no real one. Flattening reads the layers one at a time, as they come in the file. Lab, bitmap, indexed and
-    /// multichannel files always give the stored composite; asked to flatten, with the <c>Psd.FlattenUnsupported</c> warning.
+    /// file has no real one. Flattening reads the layers one at a time, as they come in the file; Lab files blend in Lab and
+    /// give sRGB. Bitmap, indexed and multichannel files always give the stored composite; asked to flatten, with the
+    /// <c>Psd.FlattenUnsupported</c> warning.
     /// </summary>
     /// <exception cref="ArgumentOutOfRangeException">The value is not defined.</exception>
     public PsdComposite Composite

@@ -325,6 +325,92 @@
   ],
   "mode": "gray"
  },
+ "layered-lab-modes8.psd": {
+  "depth": 8,
+  "flat": "own",
+  "layers": [
+   {
+    "height": 48,
+    "layout": "Rgba8",
+    "name": "Background",
+    "width": 64,
+    "x": 0,
+    "y": 0
+   },
+   {
+    "height": 20,
+    "layout": "Rgba8",
+    "name": "Multiply",
+    "width": 28,
+    "x": 3,
+    "y": 2
+   },
+   {
+    "height": 20,
+    "layout": "Rgba8",
+    "name": "Luminosity",
+    "width": 28,
+    "x": 10,
+    "y": 7
+   },
+   {
+    "height": 20,
+    "layout": "Rgba8",
+    "name": "Color",
+    "width": 28,
+    "x": 17,
+    "y": 12
+   },
+   {
+    "height": 20,
+    "layout": "Rgba8",
+    "name": "Hue",
+    "width": 28,
+    "x": 24,
+    "y": 17
+   },
+   {
+    "height": 20,
+    "layout": "Rgba8",
+    "name": "Saturation",
+    "width": 28,
+    "x": 31,
+    "y": 22
+   }
+  ],
+  "mode": "lab"
+ },
+ "layered-lab16.psd": {
+  "depth": 16,
+  "flat": "own",
+  "layers": [
+   {
+    "height": 48,
+    "layout": "Rgba16",
+    "name": "Background",
+    "width": 64,
+    "x": 0,
+    "y": 0
+   },
+   {
+    "height": 30,
+    "layout": "Rgba16",
+    "name": "Off canvas",
+    "width": 40,
+    "x": -6,
+    "y": 10
+   },
+   {
+    "height": 20,
+    "layout": "Rgba16",
+    "name": "Masked",
+    "width": 24,
+    "x": 30,
+    "y": 4
+   }
+  ],
+  "mode": "lab"
+ },
  "layered-lab8.psd": {
   "depth": 8,
   "layers": [
