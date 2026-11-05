@@ -1,6 +1,7 @@
 using Egami.Formats;
 using Egami.Formats.Extended;
 using Egami.Formats.Extended.Dds;
+using Egami.Formats.Extended.Dpx;
 using Egami.Formats.Extended.JpegLs;
 using Egami.Formats.Extended.Ktx;
 using Egami.Formats.Extended.Pcx;
@@ -613,6 +614,117 @@ public class FormatsExtended
         #endregion
 
         Assert.Null(details.LensProfile);
+    }
+
+    [Fact]
+    public void DpxLoad()
+    {
+        using SampleFiles files = new();
+        using (Raster duck = Raster.Load("duck.png", EgamiContext.Default.WithDpx()))
+        {
+            duck.Save("duck.dpx");
+        }
+
+        #region dpx-load
+        // DPX (.dpx) and Cineon (.cin) are two formats; WithExtendedFormats() registers both.
+        EgamiContext context = EgamiContext.Default.WithDpx().WithCineon();
+
+        // Load gives the stored code values, unchanged: a 10-bit file loads as Rgb16 or Rgba16, code 1023 at 65535.
+        using Raster frame = Raster.Load("duck.dpx", context);
+        frame.Save("frame.png");
+
+        // Probe reads the header alone: one image per image element Egami reads.
+        RasterInfo info = Raster.Probe("duck.dpx", context);
+        Console.WriteLine($"{info.Width}×{info.Height} {info.Layout.ChannelOrder}, {info.ImageCount} element(s)");
+        #endregion
+
+        Assert.Equal(PixelChannelOrder.Rgba, info.Layout.ChannelOrder);
+        Assert.Equal(16, info.Layout.BitsPerChannel);
+    }
+
+    [Fact]
+    public void DpxDetailsSample()
+    {
+        using SampleFiles files = new();
+        EgamiContext context = EgamiContext.Default.WithDpx();
+        using (Raster duck = Raster.Load("duck.png", context))
+        {
+            duck.Save("duck.dpx");
+        }
+
+        #region dpx-details
+        // What the header says: the element's descriptor, depth, packing and transfer, and the file, film and TV fields.
+        using Raster frame = Raster.Load("duck.dpx", context);
+        if (frame.Metadata.FormatDetails is DpxDetails dpx)
+        {
+            Console.WriteLine($"{dpx.BitsPerSample}-bit, packing {dpx.Packing}, transfer {dpx.Transfer}, {(dpx.BigEndian ? "big" : "little")} endian");
+            Console.WriteLine($"timecode {dpx.Timecode ?? "none"}, {dpx.FrameRate} fps, frame {dpx.FramePosition}");
+
+            // The writer takes the fields back: change one and save.
+            dpx.Timecode = "01:00:00:00";
+            dpx.FrameRate = 24;
+            frame.Save("tagged.dpx");
+        }
+        #endregion
+
+        DpxDetails back = Assert.IsType<DpxDetails>(Raster.Load("tagged.dpx", context).Metadata.FormatDetails);
+        Assert.Equal(("01:00:00:00", 24f), (back.Timecode, back.FrameRate));
+    }
+
+    [Fact]
+    public void DpxLinearize()
+    {
+        using SampleFiles files = new();
+        EgamiContext context = EgamiContext.Default.WithDpx().WithCineon();
+        using (Raster duck = Raster.Load("duck.png", context))
+        {
+            duck.Save("scan.cin");
+        }
+
+        #region dpx-linearize
+        // A printing-density (log) scan, converted to scene-linear light with Kodak's conversion:
+        // code 685 is 1.0 (white) and code 95 is 0.0 (black). Linear and video DPX files load unchanged.
+        using Raster<RgbF32> linear = Raster.Load<RgbF32>("scan.cin", context, new DpxReaderOptions { Linearize = true });
+        #endregion
+
+        Assert.True(linear.Row(0)[0].R > 0);
+    }
+
+    [Fact]
+    public void DpxSave()
+    {
+        using SampleFiles files = new();
+        using Raster image = Raster.Load("duck.png", EgamiContext.Default.WithDpx());
+
+        #region dpx-save
+        // 10-bit, big-endian, filled three samples to a 32-bit word: what most tools read. Options pick the depth,
+        // byte order and transfer characteristic.
+        image.Save("duck.dpx");
+        image.Save("duck-16.dpx", new DpxWriterOptions { BitsPerSample = 16, BigEndian = false, Transfer = DpxTransfer.Linear });
+        #endregion
+
+        DpxDetails details = Assert.IsType<DpxDetails>(Raster.Load("duck-16.dpx", EgamiContext.Default.WithDpx()).Metadata.FormatDetails);
+        Assert.Equal((16, false, DpxTransfer.Linear), (details.BitsPerSample, details.BigEndian, details.Transfer));
+    }
+
+    [Fact]
+    public void Cineon()
+    {
+        using SampleFiles files = new();
+        EgamiContext context = EgamiContext.Default.WithCineon();
+        using Raster image = Raster.Load("duck.png", context);
+
+        #region cineon
+        // Cineon is written as the classic file: 10-bit printing-density RGB, three samples to a big-endian 32-bit word.
+        image.Save("duck.cin");
+        using Raster scan = Raster.Load("duck.cin", context);
+        if (scan.Metadata.FormatDetails is CineonDetails cineon)
+        {
+            Console.WriteLine($"{cineon.Channels} channels of {cineon.BitsPerSample} bits, film format {cineon.FilmFormat}");
+        }
+        #endregion
+
+        Assert.Equal("Cineon", scan.Metadata.FormatName);
     }
 
     /// <summary>

@@ -1,7 +1,7 @@
 # Egami.Formats.Extended: guide for coding agents
 
 Egami.Formats.Extended reads and writes image formats that most apps never meet but some still need: PCX, SGI, Sun raster, XBM,
-XPM, WBMP, Farbfeld, JPEG-LS and DDS textures (BC1 to BC7, mips, cube maps, arrays and volumes), reads KTX and KTX 2 textures and writes KTX 2 (BC1 to BC7, ETC1, ETC2, EAC, 2D ASTC LDR and HDR, Basis Universal ETC1S and UASTC, and uncompressed; Zstandard and zlib supercompressed), and reads camera RAW (DNG, CR2, NEF, PEF, ARW, ORF, RW2 and RAF; CR3 previews and metadata), developed on
+XPM, WBMP, Farbfeld, JPEG-LS and DDS textures (BC1 to BC7, mips, cube maps, arrays and volumes), reads KTX and KTX 2 textures and writes KTX 2 (BC1 to BC7, ETC1, ETC2, EAC, 2D ASTC LDR and HDR, Basis Universal ETC1S and UASTC, and uncompressed; Zstandard and zlib supercompressed), reads and writes DPX and Cineon film frames, and reads camera RAW (DNG, CR2, NEF, PEF, ARW, ORF, RW2 and RAF; CR3 previews and metadata), developed on
 load. Each is a plugin on core Egami's public format API.
 
 Namespaces: `Egami.Formats.Extended` (the `With...` methods), `Egami.Formats.Extended.<Format>` (`PcxFormat` and the other
@@ -12,7 +12,7 @@ format infos and options), with `Egami` and `Egami.Formats`.
 ## Entry points
 
 - `WithExtendedFormats()`: every format in a context; `WithPcx()`, `WithSgi()`, `WithSunRaster()`, `WithXbm()`, `WithXpm()`,
-  `WithWbmp()`, `WithFarbfeld()`, `WithJpegLs()`, `WithDds()`, `WithKtx()`, `WithKtx2()` and `WithRaw()` one at a time.
+  `WithWbmp()`, `WithFarbfeld()`, `WithJpegLs()`, `WithDds()`, `WithKtx()`, `WithKtx2()`, `WithDpx()`, `WithCineon()` and `WithRaw()` one at a time.
 - DDS: Load gives mip 0 of the first surface; `DdsReaderOptions` (`Surface`, `MipLevel`, `IncludeMipLevels`,
   `ReconstructNormalZ`) and LoadAll reach every face, array slice, depth slice and mip; `DdsDetails` keeps the DXGI format.
   Save writes a full mip chain; `DdsWriterOptions` (`Format`, `MipLevels`, `Effort`, `Srgb`, `Cube`) and SaveAll write
@@ -30,6 +30,11 @@ format infos and options), with `Egami` and `Egami.Formats`.
   `GetIntegers`, `GetDate`, `GetTime`, `GetDateTime`, `GetPersonName`, `GetTags`, `Items`, `Fragments`, `RawValue`).
   `WithDicom()` (not in `WithExtendedFormats()`) registers `DicomFormat.Info` for detection and Probe; `Raster.Load` throws
   `NotSupportedException` until pixel decoding lands. Warnings are `Dicom.*` diagnostics in `DicomFile.Warnings`.
+- DPX and Cineon: `DpxFormat`, `CineonFormat`. Load gives the stored code values unchanged (10-bit RGB as `Rgb16`, code 1023
+  at 65535); `DpxReaderOptions.Linearize` gives scene-linear `RgbF32` by Kodak's conversion (685 white, 95 black) for log
+  elements; `DpxReaderOptions.Element` and LoadAll reach every image element. `DpxDetails` and `CineonDetails` keep the depth,
+  packing, transfer and the file, film and TV fields (timecode, frame rate, slate), and the writers write them back.
+  `DpxWriterOptions` (`BitsPerSample` 8, 10, 12 or 16, `BigEndian`, `Transfer`); Cineon writes 10-bit RGB only.
 - RAW: Load develops a DNG into `Rgb16` sRGB (or straight into the RGB space `ConvertColorTo` names); `RawReaderOptions`
   (`Output` = `Developed`, `HalfSize`, `Preview` or `Mosaic`; `WhiteBalance`, `Temperature`, `Tint`, `Exposure`, `Demosaic`,
   `Highlights`, `LuminanceNoiseReduction`, `ColorNoiseReduction`, `LensCorrections`, `ApplyProfile`) sets it; `RawDetails`
@@ -59,6 +64,10 @@ KTX surfaces, mips and the stored layout:
 
 {{sample FormatsExtended.cs#ktx-surfaces}}
 
+DPX code values and linear light:
+
+{{sample FormatsExtended.cs#dpx-linearize}}
+
 A RAW develop:
 
 {{sample FormatsExtended.cs#raw-develop}}
@@ -82,6 +91,7 @@ JPEG-LS, near-lossless and from plain samples:
 - Expecting a RAW load to turn the image upright: like every Egami load it returns the pixels as stored; `AutoOrient` turns
   them by `RasterInfo.Orientation`.
 - Registering RAW with `WithFormat(RawFormat.Info)`: that puts it after TIFF, which then claims every DNG. Use `WithRaw()`.
+- Expecting a DPX or Cineon scan to load as linear light: Load gives the log code values; set `DpxReaderOptions.Linearize`.
 - Ignoring `Warnings` after a lenient read of a damaged file: it keeps what decoded and says what it recovered from.
 
 ## More

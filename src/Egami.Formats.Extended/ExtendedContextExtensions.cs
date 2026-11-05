@@ -1,5 +1,6 @@
 using Egami.Formats.Extended.Dds;
 using Egami.Formats.Extended.Dicom;
+using Egami.Formats.Extended.Dpx;
 using Egami.Formats.Extended.Farbfeld;
 using Egami.Formats.Extended.JpegLs;
 using Egami.Formats.Extended.Ktx;
@@ -24,7 +25,7 @@ public static class ExtendedContextExtensions
 {
     /// <summary>
     /// Returns a copy of <paramref name="context"/> with every stable format of this package registered: PCX, SGI, Sun raster,
-    /// XBM, XPM, WBMP, Farbfeld, DDS, KTX, KTX 2, JPEG-LS and camera RAW. Formats in preview are never included; each has its own method. Call it once, for example
+    /// XBM, XPM, WBMP, Farbfeld, DDS, KTX, KTX 2, JPEG-LS, camera RAW, DPX and Cineon. Formats in preview are never included; each has its own method. Call it once, for example
     /// <c>EgamiContext.SetDefault(new EgamiContext().WithExtendedFormats())</c> at startup.
     /// </summary>
     /// <param name="context">The context to add the formats to.</param>
@@ -36,7 +37,7 @@ public static class ExtendedContextExtensions
     public static EgamiContext WithExtendedFormats(this EgamiContext context)
     {
         ArgumentNullException.ThrowIfNull(context);
-        return context.WithPcx().WithSgi().WithSunRaster().WithXbm().WithXpm().WithWbmp().WithFarbfeld().WithDds().WithKtx().WithKtx2().WithJpegLs().WithRaw();
+        return context.WithPcx().WithSgi().WithSunRaster().WithXbm().WithXpm().WithWbmp().WithFarbfeld().WithDds().WithKtx().WithKtx2().WithJpegLs().WithRaw().WithDpx().WithCineon();
     }
 
     /// <summary>Returns a copy of <paramref name="context"/> that reads and writes PCX (<see cref="PcxFormat"/>).</summary>
@@ -98,6 +99,18 @@ public static class ExtendedContextExtensions
     /// <returns>The new context.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="context"/> is <see langword="null"/>.</exception>
     public static EgamiContext WithKtx2(this EgamiContext context) => Add(context, Ktx2Format.Info);
+
+    /// <summary>Returns a copy of <paramref name="context"/> that reads and writes DPX (<see cref="DpxFormat"/>).</summary>
+    /// <param name="context">The context to add the format to.</param>
+    /// <returns>The new context.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="context"/> is <see langword="null"/>.</exception>
+    public static EgamiContext WithDpx(this EgamiContext context) => Add(context, DpxFormat.Info);
+
+    /// <summary>Returns a copy of <paramref name="context"/> that reads and writes Cineon (<see cref="CineonFormat"/>).</summary>
+    /// <param name="context">The context to add the format to.</param>
+    /// <returns>The new context.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="context"/> is <see langword="null"/>.</exception>
+    public static EgamiContext WithCineon(this EgamiContext context) => Add(context, CineonFormat.Info);
 
     /// <summary>
     /// Returns a copy of <paramref name="context"/> that reads and writes JPEG-LS (<see cref="JpegLsFormat"/>). JPEG-LS is
