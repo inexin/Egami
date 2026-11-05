@@ -2,7 +2,7 @@
 # Egami.Formats.Extended: guide for coding agents
 
 Egami.Formats.Extended reads and writes image formats that most apps never meet but some still need: PCX, SGI, Sun raster, XBM,
-XPM, WBMP, Farbfeld and DDS textures (BC1 to BC7, mips, cube maps, arrays and volumes), reads KTX and KTX 2 textures and writes KTX 2 (BC1 to BC7, ETC1, ETC2, EAC, 2D ASTC LDR and HDR, Basis Universal ETC1S and UASTC, and uncompressed; Zstandard and zlib supercompressed), and reads camera RAW (DNG, CR2, NEF, PEF, ARW, ORF, RW2 and RAF; CR3 previews and metadata), developed on
+XPM, WBMP, Farbfeld, FITS and DDS textures (BC1 to BC7, mips, cube maps, arrays and volumes), reads KTX and KTX 2 textures and writes KTX 2 (BC1 to BC7, ETC1, ETC2, EAC, 2D ASTC LDR and HDR, Basis Universal ETC1S and UASTC, and uncompressed; Zstandard and zlib supercompressed), and reads camera RAW (DNG, CR2, NEF, PEF, ARW, ORF, RW2 and RAF; CR3 previews and metadata), developed on
 load. Each is a plugin on core Egami's public format API.
 
 Namespaces: `Egami.Formats.Extended` (the `With...` methods), `Egami.Formats.Extended.<Format>` (`PcxFormat` and the other
@@ -28,7 +28,7 @@ and no `Configuration`.
 ## Entry points
 
 - `WithExtendedFormats()`: every format in a context; `WithPcx()`, `WithSgi()`, `WithSunRaster()`, `WithXbm()`, `WithXpm()`,
-  `WithWbmp()`, `WithFarbfeld()`, `WithDds()`, `WithKtx()`, `WithKtx2()` and `WithRaw()` one at a time.
+  `WithWbmp()`, `WithFarbfeld()`, `WithDds()`, `WithKtx()`, `WithKtx2()`, `WithFits()` and `WithRaw()` one at a time.
 - DDS: Load gives mip 0 of the first surface; `DdsReaderOptions` (`Surface`, `MipLevel`, `IncludeMipLevels`,
   `ReconstructNormalZ`) and LoadAll reach every face, array slice, depth slice and mip; `DdsDetails` keeps the DXGI format.
   Save writes a full mip chain; `DdsWriterOptions` (`Format`, `MipLevels`, `Effort`, `Srgb`, `Cube`) and SaveAll write
@@ -41,6 +41,11 @@ and no `Configuration`.
   writing, no ASTC HDR or UASTC HDR, no SNORM.
 - `Texture` (`Egami.Formats.Extended.Textures`): `Texture.Load` a whole DDS, KTX or KTX 2 file; `GetImage`/`SetImage` by mip,
   layer, face and slice; `GenerateMips`, `TrimMips`; `Save` to .dds or .ktx2 with exactly its mips (volumes too).
+- FITS (`Egami.Formats.Extended.Fits`): Load gives `GrayF32` stretched into 0 to 1; `FitsReaderOptions` (`Stretch` =
+  `MinMax`, `ZScale`, `Asinh` or `None` for the physical values; `Image` picks an HDU or cube plane; `Rgb` reads a
+  three-plane cube as `RgbF32`); `FitsDetails.Header` keeps every card. `FitsFile.Load` lists every HDU and reads values.
+  Tile-compressed images (RICE_1, GZIP_1, GZIP_2, PLIO_1) read; HCOMPRESS throws. Save writes BITPIX 8, 16 or -32
+  (`FitsWriterOptions.Bitpix`, `Keywords`).
 - RAW: Load develops a DNG into `Rgb16` sRGB (or straight into the RGB space `ConvertColorTo` names); `RawReaderOptions`
   (`Output` = `Developed`, `HalfSize`, `Preview` or `Mosaic`; `WhiteBalance`, `Temperature`, `Tint`, `Exposure`, `Demosaic`,
   `Highlights`, `LuminanceNoiseReduction`, `ColorNoiseReduction`, `LensCorrections`, `ApplyProfile`) sets it; `RawDetails`
@@ -111,6 +116,25 @@ using RasterList all = Raster.LoadAll("texture.ktx2", context, new KtxReaderOpti
 using Raster stored = Raster.Load("texture.ktx2", context, new KtxReaderOptions { KeepStoredLayout = true });
 ```
 
+FITS stretches:
+
+```csharp
+// ZScale shows faint detail the way astronomy viewers do; Asinh lifts the faint end and keeps the bright one.
+using Raster zscale = Raster.Load("m51.fits", context, new FitsReaderOptions { Stretch = FitsStretch.ZScale });
+
+// None keeps the physical values (BSCALE and BZERO applied, blanks as NaN) for measuring.
+using Raster<GrayF32> values = Raster.Load<GrayF32>("m51.fits", context, new FitsReaderOptions { Stretch = FitsStretch.None });
+
+// The header, and the values that became black and white, are in the details.
+if (zscale.Metadata.FormatDetails is FitsDetails fits)
+{
+    Console.WriteLine($"{fits.Header.GetString("OBJECT")}: BITPIX {fits.Bitpix}, {fits.Low} to {fits.High}");
+}
+
+// A three-plane cube as one RGB image instead of three gray ones.
+using Raster colour = Raster.Load("m51-rgb.fits", context, new FitsReaderOptions { Rgb = true });
+```
+
 A RAW develop:
 
 ```csharp
@@ -141,6 +165,8 @@ photo.Save("photo-p3.png");
 - Expecting a DDS cube map or array to load whole with Load: it gives one surface. Use LoadAll, or `DdsReaderOptions.Surface`.
 - Expecting a KTX texture written bottom-up (`KTXorientation` `ru`) to load bottom-up: Load turns it upright and applies
   `KTXswizzle`; `KtxReaderOptions.KeepStoredLayout` keeps the stored rows and channels.
+- Measuring FITS values from a plain Load: it is stretched for viewing. Use `FitsStretch.None` or `FitsFile.ReadValues`;
+  Load also turns the image upright (the file stores the bottom row first), `ReadValues` keeps file order.
 - Expecting BC5 normal maps to have blue: it loads as 0 unless `DdsReaderOptions.ReconstructNormalZ` is set.
 - Expecting a RAW load to turn the image upright: like every Egami load it returns the pixels as stored; `AutoOrient` turns
   them by `RasterInfo.Orientation`.

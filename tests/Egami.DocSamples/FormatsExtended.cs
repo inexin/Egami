@@ -1,6 +1,7 @@
 using Egami.Formats;
 using Egami.Formats.Extended;
 using Egami.Formats.Extended.Dds;
+using Egami.Formats.Extended.Fits;
 using Egami.Formats.Extended.Ktx;
 using Egami.Formats.Extended.Pcx;
 using Egami.Formats.Extended.Raw;
@@ -718,6 +719,137 @@ public class FormatsExtended
     }
 
     private static int TypeSize(int type) => type switch { 3 => 2, 4 => 4, 5 or 10 => 8, _ => 1 };
+
+    [Fact]
+    public void FitsLoad()
+    {
+        using SampleFiles files = new();
+        WriteFits();
+
+        #region fits-load
+        // Load stretches the values into 0 to 1 (from the smallest to the largest, or DATAMIN to DATAMAX when the header gives
+        // them) as GrayF32; the first stored row is at the bottom, as astronomy viewers show it.
+        EgamiContext context = EgamiContext.Default.WithFits();
+        using Raster image = Raster.Load("m51.fits", context);
+        image.Save("m51.png");
+
+        // Every image HDU, and every plane of a cube, is an image of its own.
+        RasterInfo info = Raster.Probe("m51.fits", context);
+        Console.WriteLine($"{info.Width}×{info.Height}, {info.ImageCount} image(s)");
+        #endregion
+
+        Assert.Equal((64, 1), (image.Width, info.ImageCount));
+    }
+
+    [Fact]
+    public void FitsStretchSample()
+    {
+        using SampleFiles files = new();
+        WriteFits();
+        EgamiContext context = EgamiContext.Default.WithFits();
+
+        #region fits-stretch
+        // ZScale shows faint detail the way astronomy viewers do; Asinh lifts the faint end and keeps the bright one.
+        using Raster zscale = Raster.Load("m51.fits", context, new FitsReaderOptions { Stretch = FitsStretch.ZScale });
+
+        // None keeps the physical values (BSCALE and BZERO applied, blanks as NaN) for measuring.
+        using Raster<GrayF32> values = Raster.Load<GrayF32>("m51.fits", context, new FitsReaderOptions { Stretch = FitsStretch.None });
+
+        // The header, and the values that became black and white, are in the details.
+        if (zscale.Metadata.FormatDetails is FitsDetails fits)
+        {
+            Console.WriteLine($"{fits.Header.GetString("OBJECT")}: BITPIX {fits.Bitpix}, {fits.Low} to {fits.High}");
+        }
+
+        // A three-plane cube as one RGB image instead of three gray ones.
+        using Raster colour = Raster.Load("m51-rgb.fits", context, new FitsReaderOptions { Rgb = true });
+        #endregion
+
+        FitsDetails details = Assert.IsType<FitsDetails>(zscale.Metadata.FormatDetails);
+        Assert.Equal(("M51", -32), (details.Header.GetString("OBJECT"), details.Bitpix));
+        Assert.InRange(values.Row(63)[0].L, -1, 1001);
+        Assert.Equal(PixelChannelOrder.Rgb, colour.Layout.ChannelOrder);
+    }
+
+    [Fact]
+    public void FitsFileSample()
+    {
+        using SampleFiles files = new();
+        WriteFits();
+
+        #region fits-file
+        // FitsFile lists every HDU with its header, tables included, and reads an image's values in file order.
+        FitsFile file = FitsFile.Load("m51.fits");
+        foreach (FitsHdu hdu in file.Hdus)
+        {
+            Console.WriteLine($"HDU {hdu.Index}: {hdu.Kind}, {string.Join(" × ", hdu.Axes)}");
+        }
+
+        FitsHdu image = file.FirstImage!;
+        double exposure = image.Header.GetReal("EXPTIME") ?? 0;
+        double[] counts = file.ReadValues(image);
+        using Raster<GrayF32> plane = file.ReadPlane(image);
+        #endregion
+
+        Assert.Equal((300d, 64 * 64, 64), (exposure, counts.Length, plane.Width));
+    }
+
+    [Fact]
+    public void FitsSave()
+    {
+        using SampleFiles files = new();
+        WriteFits();
+        EgamiContext context = EgamiContext.Default.WithFits();
+        using Raster<GrayF32> values = Raster.Load<GrayF32>("m51.fits", context, new FitsReaderOptions { Stretch = FitsStretch.None });
+        using Raster photo = Raster.Load("duck.png");
+
+        #region fits-save
+        // BITPIX follows the pixel type: -32 for floating point, 16 for 16-bit, 8 otherwise. The cards of a loaded header go
+        // with it, and Keywords adds more.
+        using (FileStream output = File.Create("m51-copy.fits"))
+        {
+            values.Save(output, FitsFormat.Info, new FitsWriterOptions { Keywords = [new FitsCard("HISTORY", null, "dark subtracted")] });
+        }
+
+        // A colour image becomes a three-plane cube; Bitpix picks the depth.
+        using (FileStream output = File.Create("duck.fits"))
+        {
+            photo.Save(output, FitsFormat.Info, new FitsWriterOptions { Bitpix = 16 });
+        }
+        #endregion
+
+        FitsHeader header = FitsFile.Load("m51-copy.fits").Hdus[0].Header;
+        Assert.Equal(("M51", -32L), (header.GetString("OBJECT"), header.GetInteger("BITPIX")));
+        Assert.Contains(header, c => c.Comment == "dark subtracted");
+        Assert.Equal([photo.Width, photo.Height, 3L], FitsFile.Load("duck.fits").Hdus[0].Axes);
+    }
+
+    private static void WriteFits()
+    {
+        using Raster<GrayF32> sky = Raster.Create<GrayF32>(64, 64);
+        for (int y = 0; y < 64; y++)
+        {
+            for (int x = 0; x < 64; x++)
+            {
+                double r = Math.Sqrt(((x - 32) * (x - 32)) + ((y - 32) * (y - 32)));
+                sky.Row(y)[x] = new GrayF32((float)(100 + (900 * Math.Exp(-r / 6))));
+            }
+        }
+
+        sky.Metadata.FormatDetails = new FitsDetails
+        {
+            Header = new FitsHeader([new FitsCard("OBJECT", "M51"), new FitsCard("EXPTIME", 300.0, "seconds")]),
+            Stretch = FitsStretch.None,
+        };
+        using (FileStream output = File.Create("m51.fits"))
+        {
+            sky.Save(output, FitsFormat.Info);
+        }
+
+        using Raster<Rgb8> colour = Raster.Load<Rgb8>("duck.png");
+        using FileStream rgb = File.Create("m51-rgb.fits");
+        colour.Save(rgb, FitsFormat.Info);
+    }
 
     private static void WriteTexture(string path, int faces, int size)
     {

@@ -1,5 +1,6 @@
 using Egami.Formats.Extended.Dds;
 using Egami.Formats.Extended.Farbfeld;
+using Egami.Formats.Extended.Fits;
 using Egami.Formats.Extended.Ktx;
 using Egami.Formats.Extended.Pcx;
 using Egami.Formats.Extended.Raw;
@@ -22,7 +23,7 @@ public static class ExtendedContextExtensions
 {
     /// <summary>
     /// Returns a copy of <paramref name="context"/> with every stable format of this package registered: PCX, SGI, Sun raster,
-    /// XBM, XPM, WBMP, Farbfeld, DDS, KTX, KTX 2 and camera RAW. Formats in preview are never included; each has its own method. Call it once, for example
+    /// XBM, XPM, WBMP, Farbfeld, DDS, KTX, KTX 2, FITS and camera RAW. Formats in preview are never included; each has its own method. Call it once, for example
     /// <c>EgamiContext.SetDefault(new EgamiContext().WithExtendedFormats())</c> at startup.
     /// </summary>
     /// <param name="context">The context to add the formats to.</param>
@@ -34,7 +35,7 @@ public static class ExtendedContextExtensions
     public static EgamiContext WithExtendedFormats(this EgamiContext context)
     {
         ArgumentNullException.ThrowIfNull(context);
-        return context.WithPcx().WithSgi().WithSunRaster().WithXbm().WithXpm().WithWbmp().WithFarbfeld().WithDds().WithKtx().WithKtx2().WithRaw();
+        return context.WithPcx().WithSgi().WithSunRaster().WithXbm().WithXpm().WithWbmp().WithFarbfeld().WithDds().WithKtx().WithKtx2().WithFits().WithRaw();
     }
 
     /// <summary>Returns a copy of <paramref name="context"/> that reads and writes PCX (<see cref="PcxFormat"/>).</summary>
@@ -78,6 +79,12 @@ public static class ExtendedContextExtensions
     /// <returns>The new context.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="context"/> is <see langword="null"/>.</exception>
     public static EgamiContext WithFarbfeld(this EgamiContext context) => Add(context, FarbfeldFormat.Info);
+
+    /// <summary>Returns a copy of <paramref name="context"/> that reads and writes FITS (<see cref="FitsFormat"/>).</summary>
+    /// <param name="context">The context to add the format to.</param>
+    /// <returns>The new context.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="context"/> is <see langword="null"/>.</exception>
+    public static EgamiContext WithFits(this EgamiContext context) => Add(context, FitsFormat.Info);
 
     /// <summary>Returns a copy of <paramref name="context"/> that reads DDS textures (<see cref="DdsFormat"/>).</summary>
     /// <param name="context">The context to add the format to.</param>

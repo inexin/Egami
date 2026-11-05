@@ -348,3 +348,8 @@ ktx/
 
 fuzz/ktx-seeds/ and fuzz/ktx2-seeds/
   Copies of ktx/ files above, the seeds of the ktx and ktx2 fuzz targets. Public domain.
+
+fuzz/fits-seeds/
+  Small FITS files made for the fits fuzz target with the test builders in tests/Egami.Formats.Extended.Tests/Fits/FitsFiles.cs:
+  every BITPIX, scaled and blank values, a cube, extensions, long headers and RICE_1, GZIP_1, GZIP_2, PLIO_1 and quantized
+  tiles. Public domain.

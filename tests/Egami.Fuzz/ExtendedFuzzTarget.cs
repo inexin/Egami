@@ -1,6 +1,7 @@
 using Egami.Formats;
 using Egami.Formats.Extended;
 using Egami.Formats.Extended.Dds;
+using Egami.Formats.Extended.Fits;
 using Egami.Formats.Extended.Ktx;
 using Egami.Formats.Extended.Raw;
 using Egami.Pixels;
@@ -8,7 +9,7 @@ using Egami.Pixels;
 namespace Egami.Fuzz;
 
 /// <summary>
-/// The Egami.Formats.Extended fuzz targets (pcx, sgi, sun, xbm, xpm, wbmp, farbfeld, dds, ktx, ktx2 and raw): each loads its format every way, Probe,
+/// The Egami.Formats.Extended fuzz targets (pcx, sgi, sun, xbm, xpm, wbmp, farbfeld, dds, ktx, ktx2, fits and raw): each loads its format every way, Probe,
 /// Load leniently and strictly, as Rgba8 from a stream that cannot seek and row by row through RasterDecoder, which must agree
 /// with Load; a file that loads is saved back in its format and must load again at its size. Only EgamiExceptions may escape.
 /// </summary>
@@ -59,6 +60,23 @@ internal static class ExtendedFuzzTarget
                     using RasterList all = Raster.LoadAll(data, format, context, new KtxReaderOptions { Recovery = recovery, IncludeMipLevels = true, ReconstructNormalZ = true });
                     using RasterList stored = Raster.LoadAll(data, format, context, new KtxReaderOptions { Recovery = recovery, KeepStoredLayout = true });
                     using Raster small = Raster.Load(data, format, context, options with { MinimumSize = new Size(1, 1) });
+                }
+
+                if (format == FitsFormat.Info)
+                {
+                    // Every stretch, every image and plane, a colour cube, and the file's own view of its HDUs.
+                    foreach (FitsStretch stretch in Enum.GetValues<FitsStretch>())
+                    {
+                        using Raster stretched = Raster.Load(data, format, context, new FitsReaderOptions { Recovery = recovery, Stretch = stretch });
+                    }
+
+                    using RasterList all = Raster.LoadAll(data, format, context, options);
+                    using Raster rgb = Raster.Load(data, format, context, new FitsReaderOptions { Recovery = recovery, Rgb = true });
+                    FitsFile file = FitsFile.Load(new MemoryStream(data), context);
+                    foreach (FitsHdu hdu in file.Hdus.Where(h => h.IsImage))
+                    {
+                        _ = file.ReadValues(hdu);
+                    }
                 }
 
                 if (format == RawFormat.Info)
