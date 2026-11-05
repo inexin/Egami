@@ -2,7 +2,7 @@
 # Egami.Formats.Extended: guide for coding agents
 
 Egami.Formats.Extended reads and writes image formats that most apps never meet but some still need: PCX, SGI, Sun raster, XBM,
-XPM, WBMP, Farbfeld, FITS and DDS textures (BC1 to BC7, mips, cube maps, arrays and volumes), reads KTX and KTX 2 textures and writes KTX 2 (BC1 to BC7, ETC1, ETC2, EAC, 2D ASTC LDR and HDR, Basis Universal ETC1S and UASTC, and uncompressed; Zstandard and zlib supercompressed), and reads camera RAW (DNG, CR2, NEF, PEF, ARW, ORF, RW2 and RAF; CR3 previews and metadata), developed on
+XPM, WBMP, Farbfeld, JPEG-LS, FITS and DDS textures (BC1 to BC7, mips, cube maps, arrays and volumes), reads KTX and KTX 2 textures and writes KTX 2 (BC1 to BC7, ETC1, ETC2, EAC, 2D ASTC LDR and HDR, Basis Universal ETC1S and UASTC, and uncompressed; Zstandard and zlib supercompressed), and reads camera RAW (DNG, CR2, NEF, PEF, ARW, ORF, RW2 and RAF; CR3 previews and metadata), developed on
 load. Each is a plugin on core Egami's public format API.
 
 Namespaces: `Egami.Formats.Extended` (the `With...` methods), `Egami.Formats.Extended.<Format>` (`PcxFormat` and the other
@@ -28,7 +28,7 @@ and no `Configuration`.
 ## Entry points
 
 - `WithExtendedFormats()`: every format in a context; `WithPcx()`, `WithSgi()`, `WithSunRaster()`, `WithXbm()`, `WithXpm()`,
-  `WithWbmp()`, `WithFarbfeld()`, `WithDds()`, `WithKtx()`, `WithKtx2()`, `WithFits()` and `WithRaw()` one at a time.
+  `WithWbmp()`, `WithFarbfeld()`, `WithJpegLs()`, `WithDds()`, `WithKtx()`, `WithKtx2()`, `WithFits()` and `WithRaw()` one at a time.
 - DDS: Load gives mip 0 of the first surface; `DdsReaderOptions` (`Surface`, `MipLevel`, `IncludeMipLevels`,
   `ReconstructNormalZ`) and LoadAll reach every face, array slice, depth slice and mip; `DdsDetails` keeps the DXGI format.
   Save writes a full mip chain; `DdsWriterOptions` (`Format`, `MipLevels`, `Effort`, `Srgb`, `Cube`) and SaveAll write
@@ -50,6 +50,10 @@ and no `Configuration`.
   (`Output` = `Developed`, `HalfSize`, `Preview` or `Mosaic`; `WhiteBalance`, `Temperature`, `Tint`, `Exposure`, `Demosaic`,
   `Highlights`, `LuminanceNoiseReduction`, `ColorNoiseReduction`, `LensCorrections`, `ApplyProfile`) sets it; `RawDetails`
   keeps the camera, sensor layout and the colour the develop used.
+- JPEG-LS: `JpegLsFormat` (.jls, T.87) reads every interleave mode, 2 to 16 bits, palettes and HP colour transforms, and
+  is detected ahead of JPEG. `JpegLsWriterOptions` (`Near`, `Interleave`, `ColorTransform`, `BitsPerSample`,
+  `RestartInterval`); `JpegLsDetails` keeps NEAR, depth and interleave; `JpegLsWriter.Write` codes plain `ushort` samples
+  (1 to 4 components), for DICOM and the like. No JPEG-LS part 2 (T.870).
 - `EgamiContext.SetDefault(new EgamiContext().WithExtendedFormats())` at startup makes them work in every call.
 - Load, Probe, streaming decodes, Save and Transcode then work as they do for core formats, inside the same safety limits.
 
@@ -154,6 +158,44 @@ RawReaderOptions develop = new()
 };
 using Raster photo = Raster.Load("photo.dng", context, develop);
 photo.Save("photo-p3.png");
+```
+
+JPEG-LS, near-lossless and from plain samples:
+
+```csharp
+// Near-lossless: every sample within 2 of the original, for a much smaller file. Restart markers every 64 lines let a
+// damaged file be read again from the next one.
+using (FileStream near = File.Create("duck-near.jls"))
+{
+    duck.Save(near, JpegLsFormat.Info, new JpegLsWriterOptions { Near = 2, RestartInterval = 64 });
+}
+
+// Lossless with HP's colour transform, which shrinks most photographs further, sample-interleaved.
+using (FileStream hp = File.Create("duck-hp1.jls"))
+{
+    duck.Save(hp, JpegLsFormat.Info, new JpegLsWriterOptions { ColorTransform = JpegLsColorTransform.Hp1, Interleave = JpegLsInterleave.Sample });
+}
+
+// 12-bit samples from a 16-bit raster, as medical images often store them.
+using Raster<Gray16> scan = duck.As<Gray16>();
+using (FileStream twelve = File.Create("scan-12.jls"))
+{
+    scan.Save(twelve, JpegLsFormat.Info, new JpegLsWriterOptions { BitsPerSample = 12 });
+}
+```
+
+```csharp
+// Samples straight from another source, such as a DICOM pixel data element: 2 components, 10 bits, 64 × 32.
+ushort[] samples = new ushort[64 * 32 * 2];
+for (int i = 0; i < samples.Length; i++)
+{
+    samples[i] = (ushort)((i * 37) % 1024);
+}
+
+using (FileStream output = File.Create("samples.jls"))
+{
+    JpegLsWriter.Write(output, samples, components: 2, width: 64, bitsPerSample: 10);
+}
 ```
 
 ## Common mistakes

@@ -19,7 +19,7 @@ public class ExtendedFormatBenchmarks
     private FormatInfo _format = null!;
     private byte[] _file = [];
 
-    [Params("PCX", "SGI", "Sun raster", "XBM", "XPM", "WBMP", "Farbfeld", "FITS")]
+    [Params("PCX", "SGI", "Sun raster", "XBM", "XPM", "WBMP", "Farbfeld", "JPEG-LS", "FITS")]
     public string Format { get; set; } = "";
 
     [GlobalSetup]

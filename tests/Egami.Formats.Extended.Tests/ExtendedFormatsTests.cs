@@ -17,10 +17,10 @@ public class ExtendedFormatsTests
     {
         EgamiContext core = new();
         EgamiContext context = core.WithExtendedFormats();
-        // RAW goes first, ahead of TIFF (a DNG is a TIFF file); the others after the context's own.
-        Assert.Equal("RAW", context.Formats[0].Name);
-        Assert.Equal(core.Formats, context.Formats.Skip(1).Take(core.Formats.Count));
-        Assert.Equal(["PCX", "SGI", "Sun raster", "XBM", "XPM", "WBMP", "Farbfeld", "DDS", "KTX", "KTX2", "FITS"], context.Formats.Skip(core.Formats.Count + 1).Select(f => f.Name));
+        // RAW goes first, ahead of TIFF (a DNG is a TIFF file), and JPEG-LS ahead of JPEG; the others after the context's own.
+        Assert.Equal(["RAW", "JPEG-LS"], context.Formats.Take(2).Select(f => f.Name));
+        Assert.Equal(core.Formats, context.Formats.Skip(2).Take(core.Formats.Count));
+        Assert.Equal(["PCX", "SGI", "Sun raster", "XBM", "XPM", "WBMP", "Farbfeld", "DDS", "KTX", "KTX2", "FITS"], context.Formats.Skip(core.Formats.Count + 2).Select(f => f.Name));
 
         // Registering again replaces in place.
         Assert.Equal(context.Formats.Count, context.WithExtendedFormats().WithPcx().Formats.Count);
@@ -41,8 +41,16 @@ public class ExtendedFormatsTests
         Assert.Equal(info.Layout, natural.Layout);
         Assert.Equal(format, natural.Metadata.FormatName);
 
-        // Without the package the file is not an image Egami knows.
-        Assert.Throws<UnsupportedFormatException>(() => Raster.Probe(file));
+        // Without the package the file is not an image Egami knows; core JPEG takes a JPEG-LS file (both start with SOI) and
+        // rejects its frame header.
+        if (format == "JPEG-LS")
+        {
+            Assert.Throws<CorruptDataException>(() => Raster.Probe(file));
+        }
+        else
+        {
+            Assert.Throws<UnsupportedFormatException>(() => Raster.Probe(file));
+        }
     }
 
     [Theory]
@@ -74,7 +82,7 @@ public class ExtendedFormatsTests
                 Rgba8 p = colors.Row(y)[x];
                 Rgba8 expected = format switch
                 {
-                    "Farbfeld" or "SGI" => p,
+                    "Farbfeld" or "SGI" or "JPEG-LS" => p,
                     "PCX" or "Sun raster" => p with { A = 255 },
                     "XPM" => p.A < 128 ? default : p,
                     _ => Gray(p) >= 128 ? new Rgba8(255, 255, 255, 255) : new Rgba8(0, 0, 0, 255),
@@ -96,6 +104,7 @@ public class ExtendedFormatsTests
     [Theory]
     [InlineData("SGI")]
     [InlineData("Farbfeld")]
+    [InlineData("JPEG-LS")]
     public void KeepsSixteenBits(string format)
     {
         using Raster<Rgba16> wide = Raster.Create<Rgba16>(5, 3);
@@ -223,6 +232,7 @@ public class ExtendedFormatsTests
             "Sun raster" => [0x59, 0xA6, 0x6A, 0x95, 0, 0, 0xEA, 0x60, 0, 0, 0xEA, 0x60, 0, 0, 0, 24, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
             "SGI" => [.. (byte[])[0x01, 0xDA, 0, 1, 0, 3, 0xEA, 0x60, 0xEA, 0x60, 0, 3], .. new byte[500]],
             "XBM" => "#define a_width 60000\n#define a_height 60000\nstatic char a_bits[] = { 0x00 };\n"u8.ToArray(),
+            "JPEG-LS" => [0xFF, 0xD8, 0xFF, 0xF7, 0, 11, 8, 0xEA, 0x60, 0xEA, 0x60, 1, 1, 0x11, 0, 0xFF, 0xDA, 0, 8, 1, 1, 0, 0, 0, 0, 0, 0],
             "FITS" => Tests.Fits.FitsFiles.Header("SIMPLE  =                    T", "BITPIX  =                    8", "NAXIS   =                    2", "NAXIS1  =                60000", "NAXIS2  =                60000"),
             _ => "/* XPM */\nstatic char *a[] = {\n\"60000 60000 1 1\",\n\". c #000000\",\n};\n"u8.ToArray(),
         };

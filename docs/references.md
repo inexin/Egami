@@ -52,6 +52,7 @@ Licenses were checked on 2026-10-07 (the HEVC libraries on 2026-10-15, the barco
 | [ruzstd](https://github.com/KillingSpark/zstd-rs) | Rust | MIT | A pure Rust Zstandard decoder | TIFF ZSTD |
 | [LZMA SDK](https://www.7-zip.org/sdk.html) | C, C++, C# | Public domain | LZMA and LZMA2 as Igor Pavlov specifies them (lzma-specification.txt) | TIFF LZMA |
 | [XZ Utils](https://tukaani.org/xz/) (liblzma) | C | 0BSD (liblzma), public domain (older releases) | How liblzma reads and writes xz streams and LZMA2, as behaviour; its xz CLI makes the test corpus and the native speed | TIFF LZMA |
+| [CharLS](https://github.com/team-charls/charls) | C++ | BSD-3 | Run as a black box only: its public C API decodes and encodes for the JPEG-LS gates, and its output showed how HP's colour transforms (APP8 "mrfx") behave. The codec is written from ITU-T T.87 and the LOCO-I paper (Weinberger, Seroussi and Sapiro, IEEE Trans. Image Processing, 2000); its test images (the T.87 conformance set) are the test corpus | JPEG-LS |
 
 Specifications, textbooks and papers are always fine.
 
