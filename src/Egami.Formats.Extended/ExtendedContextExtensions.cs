@@ -1,5 +1,6 @@
 using Egami.Formats.Extended.Dds;
 using Egami.Formats.Extended.Farbfeld;
+using Egami.Formats.Extended.JpegLs;
 using Egami.Formats.Extended.Ktx;
 using Egami.Formats.Extended.Pcx;
 using Egami.Formats.Extended.Raw;
@@ -22,7 +23,7 @@ public static class ExtendedContextExtensions
 {
     /// <summary>
     /// Returns a copy of <paramref name="context"/> with every stable format of this package registered: PCX, SGI, Sun raster,
-    /// XBM, XPM, WBMP, Farbfeld, DDS, KTX, KTX 2 and camera RAW. Formats in preview are never included; each has its own method. Call it once, for example
+    /// XBM, XPM, WBMP, Farbfeld, DDS, KTX, KTX 2, JPEG-LS and camera RAW. Formats in preview are never included; each has its own method. Call it once, for example
     /// <c>EgamiContext.SetDefault(new EgamiContext().WithExtendedFormats())</c> at startup.
     /// </summary>
     /// <param name="context">The context to add the formats to.</param>
@@ -34,7 +35,7 @@ public static class ExtendedContextExtensions
     public static EgamiContext WithExtendedFormats(this EgamiContext context)
     {
         ArgumentNullException.ThrowIfNull(context);
-        return context.WithPcx().WithSgi().WithSunRaster().WithXbm().WithXpm().WithWbmp().WithFarbfeld().WithDds().WithKtx().WithKtx2().WithRaw();
+        return context.WithPcx().WithSgi().WithSunRaster().WithXbm().WithXpm().WithWbmp().WithFarbfeld().WithDds().WithKtx().WithKtx2().WithJpegLs().WithRaw();
     }
 
     /// <summary>Returns a copy of <paramref name="context"/> that reads and writes PCX (<see cref="PcxFormat"/>).</summary>
@@ -98,6 +99,19 @@ public static class ExtendedContextExtensions
     public static EgamiContext WithKtx2(this EgamiContext context) => Add(context, Ktx2Format.Info);
 
     /// <summary>
+    /// Returns a copy of <paramref name="context"/> that reads and writes JPEG-LS (<see cref="JpegLsFormat"/>). JPEG-LS is
+    /// detected ahead of the other formats, since a JPEG-LS file starts as a JPEG file does; without it, a .jls file fails to
+    /// load as JPEG.
+    /// </summary>
+    /// <param name="context">The context to add the format to.</param>
+    /// <returns>The new context.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="context"/> is <see langword="null"/>.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../tests/Egami.DocSamples/FormatsExtended.cs" region="jpegls"/>
+    /// </example>
+    public static EgamiContext WithJpegLs(this EgamiContext context) => First(context, JpegLsFormat.Info);
+
+    /// <summary>
     /// Returns a copy of <paramref name="context"/> that reads camera RAW files (<see cref="RawFormat"/>). RAW is detected ahead
     /// of every other format, since a DNG file is also a TIFF file; without it, a DNG opens as TIFF and only its preview pages load.
     /// </summary>
@@ -109,9 +123,14 @@ public static class ExtendedContextExtensions
     /// </example>
     public static EgamiContext WithRaw(this EgamiContext context)
     {
+        return First(context, RawFormat.Info);
+    }
+
+    /// <summary>Returns <paramref name="context"/> with <paramref name="format"/> first, so it is detected before the others.</summary>
+    private static EgamiContext First(EgamiContext context, FormatInfo format)
+    {
         ArgumentNullException.ThrowIfNull(context);
-        FormatInfo raw = RawFormat.Info;
-        return context with { Formats = [raw, .. context.Formats.Where(f => !string.Equals(f.Name, raw.Name, StringComparison.OrdinalIgnoreCase))] };
+        return context with { Formats = [format, .. context.Formats.Where(f => !string.Equals(f.Name, format.Name, StringComparison.OrdinalIgnoreCase))] };
     }
 
     private static EgamiContext Add(EgamiContext context, FormatInfo format)

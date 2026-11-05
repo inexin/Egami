@@ -348,3 +348,7 @@ ktx/
 
 fuzz/ktx-seeds/ and fuzz/ktx2-seeds/
   Copies of ktx/ files above, the seeds of the ktx and ktx2 fuzz targets. Public domain.
+
+fuzz/jpegls-seeds/
+  The seeds of the jpegls fuzz target: small JPEG-LS files Egami wrote from generated samples, some patched by hand to reach
+  other paths (a palette, an LSE size, a DNL height), and inputs the fuzzer found (regress-*). Public domain.

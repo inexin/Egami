@@ -1,6 +1,7 @@
 using Egami.Formats;
 using Egami.Formats.Extended;
 using Egami.Formats.Extended.Dds;
+using Egami.Formats.Extended.JpegLs;
 using Egami.Formats.Extended.Ktx;
 using Egami.Formats.Extended.Raw;
 using Egami.Pixels;
@@ -8,7 +9,7 @@ using Egami.Pixels;
 namespace Egami.Fuzz;
 
 /// <summary>
-/// The Egami.Formats.Extended fuzz targets (pcx, sgi, sun, xbm, xpm, wbmp, farbfeld, dds, ktx, ktx2 and raw): each loads its format every way, Probe,
+/// The Egami.Formats.Extended fuzz targets (pcx, sgi, sun, xbm, xpm, wbmp, farbfeld, dds, ktx, ktx2, jpegls and raw): each loads its format every way, Probe,
 /// Load leniently and strictly, as Rgba8 from a stream that cannot seek and row by row through RasterDecoder, which must agree
 /// with Load; a file that loads is saved back in its format and must load again at its size. Only EgamiExceptions may escape.
 /// </summary>
@@ -17,7 +18,10 @@ internal static class ExtendedFuzzTarget
     public static void Load(byte[] data, EgamiContext context, string name)
     {
         context = context.WithExtendedFormats();
-        FormatInfo format = context.Formats.Single(f => string.Equals(f.Name, name, StringComparison.OrdinalIgnoreCase));
+        // The target name is the format's name without spaces and dashes ("jpegls" for JPEG-LS) or its first word ("sun").
+        FormatInfo format = context.Formats.First(f =>
+            string.Equals(f.Name.Replace("-", "", StringComparison.Ordinal).Replace(" ", "", StringComparison.Ordinal), name, StringComparison.OrdinalIgnoreCase)
+            || string.Equals(f.Name.Split(' ')[0], name, StringComparison.OrdinalIgnoreCase));
         context = context with { Formats = [format] };
         foreach (RecoveryMode recovery in (RecoveryMode[])[RecoveryMode.Lenient, RecoveryMode.Strict])
         {
@@ -86,6 +90,18 @@ internal static class ExtendedFuzzTarget
                     if (back.Width != raster.Width || back.Height != raster.Height)
                     {
                         throw new InvalidOperationException($"{name}: a saved file loads at another size.");
+                    }
+
+                    if (format == JpegLsFormat.Info)
+                    {
+                        // Near-lossless, sample-interleaved, transformed and restarted coding of what loaded.
+                        using MemoryStream coded = new();
+                        raster.Save(coded, format, new JpegLsWriterOptions { Near = 2, BitsPerSample = 8, Interleave = JpegLsInterleave.Sample, ColorTransform = JpegLsColorTransform.Hp3, RestartInterval = 3 });
+                        using Raster again = Raster.Load(coded.ToArray(), format, context, new ReaderOptions { Recovery = RecoveryMode.Strict });
+                        if (again.Width != raster.Width || again.Height != raster.Height)
+                        {
+                            throw new InvalidOperationException($"{name}: a near-lossless file loads at another size.");
+                        }
                     }
                 }
             }
