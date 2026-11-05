@@ -80,6 +80,19 @@ public sealed class DpxWriterTests
     }
 
     [Fact]
+    public void KeepsEveryCharacterOfTheEdgeCodeFields()
+    {
+        // ST 268's film edge-code fields fill their whole width, with no room for a terminator.
+        using Raster<Rgb16> raster = Wide<Rgb16>(4, 2);
+        raster.Metadata.FormatDetails = new DpxDetails { FilmManufacturer = "KD", FilmType = "01", FilmOffset = "12", FilmPrefix = "123456", FilmCount = "7890" };
+        byte[] file = TestImages.Save(raster, "DPX");
+        Assert.True(file.AsSpan(1664, 16).SequenceEqual("KD01121234567890"u8));
+        using Raster back = Raster.Load(file, TestImages.Context);
+        DpxDetails details = Assert.IsType<DpxDetails>(back.Metadata.FormatDetails);
+        Assert.Equal(("KD", "01", "12", "123456", "7890"), (details.FilmManufacturer, details.FilmType, details.FilmOffset, details.FilmPrefix, details.FilmCount));
+    }
+
+    [Fact]
     public void WritesAndReadsCineon()
     {
         using Raster<Rgb16> raster = Wide<Rgb16>(11, 4);

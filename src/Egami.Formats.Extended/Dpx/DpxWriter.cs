@@ -112,11 +112,11 @@ internal sealed class DpxWriter : ExtendedWriter
         Text(s, 1556, 32, details?.InputDevice ?? "");
 
         // Film header.
-        Text(s, 1664, 2, details?.FilmManufacturer ?? "");
-        Text(s, 1666, 2, details?.FilmType ?? "");
-        Text(s, 1668, 2, details?.FilmOffset ?? "");
-        Text(s, 1670, 6, details?.FilmPrefix ?? "");
-        Text(s, 1676, 4, details?.FilmCount ?? "");
+        Text(s, 1664, 2, details?.FilmManufacturer ?? "", terminated: false);
+        Text(s, 1666, 2, details?.FilmType ?? "", terminated: false);
+        Text(s, 1668, 2, details?.FilmOffset ?? "", terminated: false);
+        Text(s, 1670, 6, details?.FilmPrefix ?? "", terminated: false);
+        Text(s, 1676, 4, details?.FilmCount ?? "", terminated: false);
         Text(s, 1680, 32, details?.FilmFormat ?? "");
         U32(s, 1712, details?.FramePosition ?? 0xFFFFFFFF, big);
         U32(s, 1716, details?.SequenceLength ?? 0xFFFFFFFF, big);
@@ -160,11 +160,15 @@ internal sealed class DpxWriter : ExtendedWriter
     internal static void F32(Span<byte> s, int at, float value, bool big) => U32(s, at, BitConverter.SingleToUInt32Bits(value), big);
 
     /// <summary>Writes up to <paramref name="length"/> − 1 Latin-1 characters, NUL-padded.</summary>
-    internal static void Text(Span<byte> s, int at, int length, string text)
+    /// <summary>
+    /// Writes <paramref name="text"/> into a fixed-length field, NUL-filled. A terminated field keeps room for a NUL; a field
+    /// ST 268 fills to its full width, such as the film edge code, does not.
+    /// </summary>
+    internal static void Text(Span<byte> s, int at, int length, string text, bool terminated = true)
     {
         Span<byte> field = s.Slice(at, length);
         field.Clear();
-        int n = Math.Min(text.Length, length - 1);
+        int n = Math.Min(text.Length, terminated ? length - 1 : length);
         for (int i = 0; i < n; i++)
         {
             field[i] = text[i] < 256 ? (byte)text[i] : (byte)'?';
