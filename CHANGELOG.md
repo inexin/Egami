@@ -5,6 +5,25 @@ changes that break code come only in a new major version.
 
 ## Egami (unreleased)
 
+DICOM pixel data, a preview (DICOM Build Plan stage D, tasks 17 to 19). Additive; every new type is `[Experimental]`
+(`EGAMIX001`).
+
+- `Raster.Load` of a DICOM file (registered with `WithDicom()`) decodes a frame: native data at 1, 8, 16 and 32 bits
+  allocated, any bits stored and high bit, signed or not, planar or interleaved, in every byte order; RLE Lossless (PS3.5
+  annex G); Deflated Image Frame Compression and encapsulated uncompressed frames; JPEG baseline, extended and lossless,
+  JPEG-LS, JPEG 2000, High-Throughput JPEG 2000 and JPEG XL. Frames are found by the Extended or Basic Offset Table, or
+  from where each codestream starts when the file has neither.
+- The load gives what a viewer shows: monochrome images through the Modality LUT or Rescale Slope and Intercept, the VOI
+  LUT or window (LINEAR, LINEAR_EXACT, SIGMOID), the frame's own range when the file gives neither, and MONOCHROME1 or
+  Presentation LUT Shape inversion, as `Gray8` or `Gray16`; RGB, YBR_FULL, YBR_FULL_422 and YBR_PARTIAL and palette colour
+  (segmented palettes too) as `Rgb8` or `Rgb16`. Enhanced multi-frame files take each frame's rescale and window from its
+  functional groups.
+- `DicomReaderOptions` picks the frame, a window of your own, which window or VOI LUT, and whether to give modality or
+  stored values (as `GrayF32`). `DicomDetails` says what was applied, with the cine frame time and rate. Each frame is an
+  image for `Raster.LoadAll`, and `DicomFile.LoadFrame` decodes frames of a file already read. MPEG, H.264, HEVC and JPIP
+  transfer syntaxes throw `NotSupportedException`.
+- The `dicom` fuzz target decodes the first frames every way, with new pixel-data seeds.
+
 High-Throughput JPEG 2000 (DICOM and science formats, task 23).
 
 - The JPEG 2000 reader decodes HTJ2K (ITU-T T.814 | ISO/IEC 15444-15): the HT block coder's cleanup, SigProp and MagRef
