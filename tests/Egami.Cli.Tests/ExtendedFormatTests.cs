@@ -26,6 +26,10 @@ public sealed class ExtendedFormatTests : IDisposable
         { "xpm", "XPM" },
         { "wbmp", "WBMP" },
         { "ff", "Farbfeld" },
+        { "jls", "JPEG-LS" },
+        { "dpx", "DPX" },
+        { "cin", "Cineon" },
+        { "fits", "FITS" },
     };
 
     [Theory]
@@ -99,6 +103,32 @@ public sealed class ExtendedFormatTests : IDisposable
         Assert.Equal(0, _tool.Run("info", "out.pcx", "--preview-formats").Code);
         Assert.Equal(0, _tool.Run("run", "out.pcx", "--preview-formats", "save", "again.xpm").Code);
         Assert.True(File.Exists(_tool.PathOf("again.xpm")));
+    }
+
+    [Fact]
+    public void ReadsAndWritesDicomOnlyWithPreviewFormats()
+    {
+        // DICOM Build Plan task 25: DICOM is in preview (EGAMIX001), so only --preview-formats lists, reads and writes it.
+        string png = _tool.Copy(Png);
+        Assert.DoesNotContain("DICOM", _tool.Run("formats").Text, StringComparison.Ordinal);
+        Assert.Contains("DICOM", _tool.Run("formats", "--preview-formats").Text, StringComparison.Ordinal);
+        Assert.NotEqual(0, _tool.Run("convert", png, "-o", "plain.dcm").Code);
+
+        ToolRun save = _tool.Run("convert", png, "-o", "out.dcm", "--preview-formats");
+        Assert.True(save.Code == 0, save.Error);
+        Assert.NotEqual(0, _tool.Run("info", "out.dcm").Code);
+        ToolRun info = _tool.Run("info", "out.dcm", "--preview-formats");
+        Assert.True(info.Code == 0, info.Error);
+        Assert.Contains("DICOM", info.Text, StringComparison.Ordinal);
+
+        ToolRun back = _tool.Run("convert", "out.dcm", "-o", "back.png", "--preview-formats");
+        Assert.True(back.Code == 0, back.Error);
+        using Raster<Pixels.Rgb8> before = Raster.Load<Pixels.Rgb8>(_tool.PathOf(png));
+        using Raster<Pixels.Rgb8> after = Raster.Load<Pixels.Rgb8>(_tool.PathOf("back.png"));
+        for (int y = 0; y < before.Height; y++)
+        {
+            Assert.True(before.Row(y).SequenceEqual(after.Row(y)), $"Row {y} differs.");
+        }
     }
 
     [Fact]

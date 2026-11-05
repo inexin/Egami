@@ -1,7 +1,8 @@
 # Extended formats
 
 Egami.Formats.Extended reads and writes image formats that most apps never meet but some still need: PCX, SGI, Sun raster,
-XBM, XPM, WBMP, Farbfeld, JPEG-LS, FITS, DDS and KTX 2 textures and DPX and Cineon film frames, reads KTX 1.1 textures and camera RAW files (DNG, CR2, NEF, PEF, ARW, ORF, RW2 and RAF) and writes DNG. They are plugins on core Egami's public format API, the one [your own format](custom.md) uses,
+XBM, XPM, WBMP, Farbfeld, JPEG-LS, FITS, DDS and KTX 2 textures and DPX and Cineon film frames, reads KTX 1.1 textures and camera RAW files (DNG, CR2, NEF, PEF, ARW, ORF, RW2 and RAF) and writes DNG, and has DICOM as a
+preview. They are plugins on core Egami's public format API, the one [your own format](custom.md) uses,
 so they load, probe, stream and save as the core formats do, inside the same safety limits. The package depends on core
 Egami only and ships with every Egami release.
 
@@ -65,5 +66,6 @@ to it does not compile until the app suppresses that id, which is the opt-in. A 
 removed in any minor release; it becomes stable after an API review, comparison gates and fuzzing, and the attribute comes off.
 
 The ids are `EGAMIX` and three digits, one per format, given out in order from `EGAMIX001` and never reused. Suppress one in the
-project file (`<NoWarn>$(NoWarn);EGAMIX001</NoWarn>`) or around the call (`#pragma warning disable EGAMIX001`). There are no
-formats in preview in this release. The `egami` command reads and writes them only with `--preview-formats`.
+project file (`<NoWarn>$(NoWarn);EGAMIX001</NoWarn>`) or around the call (`#pragma warning disable EGAMIX001`). DICOM
+(`WithDicom()`, `EGAMIX001`) is the one format in preview in this release. The `egami` command reads and writes it only with
+`--preview-formats`.

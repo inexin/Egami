@@ -2,7 +2,8 @@
 
 `egami` converts, inspects, resizes and edits images from a shell or a build script, with no C# to write. It is the
 `Egami.Cli` package, a .NET tool built on Egami's public API, and reads every format Egami and its packages read: SVG,
-WMF, EMF and [Egami.Formats.Extended](../formats/extended.md)'s PCX, SGI, Sun raster, XBM, XPM, WBMP and Farbfeld included. It has three layers:
+WMF, EMF and [Egami.Formats.Extended](../formats/extended.md)'s PCX, SGI, Sun raster, XBM, XPM, WBMP, Farbfeld, JPEG-LS, DDS,
+KTX, DPX, Cineon, FITS and camera RAW included. It has three layers:
 
 - **Single commands** for everyday jobs: `info`, `convert`, `resize`, `thumbnail`, `crop`, `rotate`, `flip`, `auto-orient`,
   `compare`, `stats`, `frames`, `metadata`, `color`, `text`, `overlay`, `montage` and `formats`.
@@ -69,8 +70,9 @@ egami convert in.tif -o out.png --set png.compression-level=9 --set png.filter=p
 
 `egami formats` lists what egami reads and writes. The keys come straight from the library, so the tool never lags it. HEIC is
 not part of the tool, since HEVC is covered by patents. Formats Egami.Formats.Extended has in preview are read and written only
-with `--preview-formats`, which every command takes; they may change or go in any minor release, and there are none in this
-release.
+with `--preview-formats`, which every command takes; they may change or go in any minor release. In this release that is
+[DICOM](../formats/dicom.md): `egami info scan.dcm --preview-formats` shows a file, and `egami convert scan.dcm -o scan.png
+--preview-formats` saves its first frame as a viewer shows it.
 
 Camera RAW files (DNG, CR2, NEF, ARW, RAF and the rest; [Camera RAW](../formats/raw.md)) are developed as they load, and the
 `--raw-*` options, which every command takes, set how: `--raw-output preview` (or `half-size`, `mosaic`) loads something other
