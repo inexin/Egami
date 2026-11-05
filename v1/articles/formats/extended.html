@@ -88,7 +88,8 @@
 <h1 id="extended-formats">Extended formats</h1>
 
 <p>Egami.Formats.Extended reads and writes image formats that most apps never meet but some still need: PCX, SGI, Sun raster,
-XBM, XPM, WBMP, Farbfeld, JPEG-LS, FITS, DDS and KTX 2 textures and DPX and Cineon film frames, reads KTX 1.1 textures and camera RAW files (DNG, CR2, NEF, PEF, ARW, ORF, RW2 and RAF) and writes DNG. They are plugins on core Egami's public format API, the one <a href="custom.html">your own format</a> uses,
+XBM, XPM, WBMP, Farbfeld, JPEG-LS, FITS, DDS and KTX 2 textures and DPX and Cineon film frames, reads KTX 1.1 textures and camera RAW files (DNG, CR2, NEF, PEF, ARW, ORF, RW2 and RAF) and writes DNG, and has DICOM as a
+preview. They are plugins on core Egami's public format API, the one <a href="custom.html">your own format</a> uses,
 so they load, probe, stream and save as the core formats do, inside the same safety limits. The package depends on core
 Egami only and ships with every Egami release.</p>
 <h2 id="registering-the-formats">Registering the formats</h2>
@@ -254,8 +255,9 @@ transparent black, with a <code>RowsMissing</code> warning such as <code>Pcx.Row
 to it does not compile until the app suppresses that id, which is the opt-in. A preview may change, change its output or be
 removed in any minor release; it becomes stable after an API review, comparison gates and fuzzing, and the attribute comes off.</p>
 <p>The ids are <code>EGAMIX</code> and three digits, one per format, given out in order from <code>EGAMIX001</code> and never reused. Suppress one in the
-project file (<code>&lt;NoWarn&gt;$(NoWarn);EGAMIX001&lt;/NoWarn&gt;</code>) or around the call (<code>#pragma warning disable EGAMIX001</code>). There are no
-formats in preview in this release. The <code>egami</code> command reads and writes them only with <code>--preview-formats</code>.</p>
+project file (<code>&lt;NoWarn&gt;$(NoWarn);EGAMIX001&lt;/NoWarn&gt;</code>) or around the call (<code>#pragma warning disable EGAMIX001</code>). DICOM
+(<code>WithDicom()</code>, <code>EGAMIX001</code>) is the one format in preview in this release. The <code>egami</code> command reads and writes it only with
+<code>--preview-formats</code>.</p>
 
 </article>
 

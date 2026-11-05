@@ -89,7 +89,8 @@
 
 <p><code>egami</code> converts, inspects, resizes and edits images from a shell or a build script, with no C# to write. It is the
 <code>Egami.Cli</code> package, a .NET tool built on Egami's public API, and reads every format Egami and its packages read: SVG,
-WMF, EMF and <a href="../formats/extended.html">Egami.Formats.Extended</a>'s PCX, SGI, Sun raster, XBM, XPM, WBMP and Farbfeld included. It has three layers:</p>
+WMF, EMF and <a href="../formats/extended.html">Egami.Formats.Extended</a>'s PCX, SGI, Sun raster, XBM, XPM, WBMP, Farbfeld, JPEG-LS, DDS,
+KTX, DPX, Cineon, FITS and camera RAW included. It has three layers:</p>
 <ul>
 <li><strong>Single commands</strong> for everyday jobs: <code>info</code>, <code>convert</code>, <code>resize</code>, <code>thumbnail</code>, <code>crop</code>, <code>rotate</code>, <code>flip</code>, <code>auto-orient</code>,
 <code>compare</code>, <code>stats</code>, <code>frames</code>, <code>metadata</code>, <code>color</code>, <code>text</code>, <code>overlay</code>, <code>montage</code> and <code>formats</code>.</li>
@@ -158,8 +159,8 @@ egami convert in.tif -o out.png --set png.compression-level=9 --set png.filter=p
 </code></pre>
 <p><code>egami formats</code> lists what egami reads and writes. The keys come straight from the library, so the tool never lags it. HEIC is
 not part of the tool, since HEVC is covered by patents. Formats Egami.Formats.Extended has in preview are read and written only
-with <code>--preview-formats</code>, which every command takes; they may change or go in any minor release, and there are none in this
-release.</p>
+with <code>--preview-formats</code>, which every command takes; they may change or go in any minor release. In this release that is
+<a href="../formats/dicom.html">DICOM</a>: <code>egami info scan.dcm --preview-formats</code> shows a file, and <code>egami convert scan.dcm -o scan.png --preview-formats</code> saves its first frame as a viewer shows it.</p>
 <p>Camera RAW files (DNG, CR2, NEF, ARW, RAF and the rest; <a href="../formats/raw.html">Camera RAW</a>) are developed as they load, and the
 <code>--raw-*</code> options, which every command takes, set how: <code>--raw-output preview</code> (or <code>half-size</code>, <code>mosaic</code>) loads something other
 than a full develop, <code>--raw-white-balance auto</code>, <code>--raw-exposure +0.5</code>, <code>--raw-demosaic malvar</code>, <code>--raw-highlights rebuild</code>,
