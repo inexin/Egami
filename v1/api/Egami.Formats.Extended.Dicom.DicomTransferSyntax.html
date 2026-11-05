@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class DicomTransferSyntax | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class DicomTransferSyntax | Egami ">
+      
+      <meta name="description" content="A transfer syntax: how a file encodes its dataset (VR explicit or implicit, byte order, deflate) and its pixel data (native or encapsulated in a codec&#39;s codestream), named by a UID of PS3.6 table A-1 (PS3.5 section 10).">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_Formats_Extended_Dicom_DicomTransferSyntax.md&amp;value=---%0Auid%3A%20Egami.Formats.Extended.Dicom.DicomTransferSyntax%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.Formats.Extended.Dicom.DicomTransferSyntax">
+
+
+
+  <h1 id="Egami_Formats_Extended_Dicom_DicomTransferSyntax" data-uid="Egami.Formats.Extended.Dicom.DicomTransferSyntax" class="text-break">
+Class DicomTransferSyntax  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dicom/DicomTransferSyntax.cs/#L12"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a>.<a class="xref" href="Egami.Formats.html">Formats</a>.<a class="xref" href="Egami.Formats.Extended.html">Extended</a>.<a class="xref" href="Egami.Formats.Extended.Dicom.html">Dicom</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.Formats.Extended.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>A transfer syntax: how a file encodes its dataset (VR explicit or implicit, byte order, deflate) and its pixel data (native
+or encapsulated in a codec's codestream), named by a UID of PS3.6 table A-1 (PS3.5 section 10).</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Experimental(&quot;EGAMIX001&quot;, UrlFormat = &quot;https://github.com/inexin/Egami/blob/main/docs/articles/formats/dicom.md&quot;)]
+public sealed class DicomTransferSyntax</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><span class="xref">DicomTransferSyntax</span></div>
+    </dd>
+  </dl>
+
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+  </dd></dl>
+
+
+
+  <h2 id="Egami_Formats_Extended_Dicom_DicomTransferSyntax_examples">Examples</h2>
+  <pre><code class="lang-csharp">// The dataset of a DICOM file, every element kept; the preview API needs EGAMIX001 suppressed.
+DicomFile file = DicomFile.Load("scan.dcm");
+Console.WriteLine($"{file.TransferSyntax.Name}, {file.Dataset.Count} elements");
+
+// Elements by PS3.6 keyword or by tag, null when the file has none.
+string? modality = file.Dataset.GetString("Modality");
+double? rows = file.Dataset.GetNumber("Rows");
+DicomElement? name = file.Dataset[new DicomTag(0x0010, 0x0010)];
+foreach (EgamiDiagnostic warning in file.Warnings)
+{
+    Console.WriteLine($"{warning.Id}: {warning.Message}");
+}</code></pre>
+
+
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="Egami_Formats_Extended_Dicom_DicomTransferSyntax_DeflatedExplicitVRLittleEndian_" data-uid="Egami.Formats.Extended.Dicom.DicomTransferSyntax.DeflatedExplicitVRLittleEndian*"></a>
+
+  <h3 id="Egami_Formats_Extended_Dicom_DicomTransferSyntax_DeflatedExplicitVRLittleEndian" data-uid="Egami.Formats.Extended.Dicom.DicomTransferSyntax.DeflatedExplicitVRLittleEndian">
+  DeflatedExplicitVRLittleEndian
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dicom/DicomTransferSyntax.cs/#L34"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets Deflated Explicit VR Little Endian (1.2.840.10008.1.2.1.99).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static DicomTransferSyntax DeflatedExplicitVRLittleEndian { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Formats.Extended.Dicom.DicomTransferSyntax.html">DicomTransferSyntax</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_Extended_Dicom_DicomTransferSyntax_ExplicitVRBigEndian_" data-uid="Egami.Formats.Extended.Dicom.DicomTransferSyntax.ExplicitVRBigEndian*"></a>
+
+  <h3 id="Egami_Formats_Extended_Dicom_DicomTransferSyntax_ExplicitVRBigEndian" data-uid="Egami.Formats.Extended.Dicom.DicomTransferSyntax.ExplicitVRBigEndian">
+  ExplicitVRBigEndian
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dicom/DicomTransferSyntax.cs/#L37"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets Explicit VR Big Endian (1.2.840.10008.1.2.2), retired but still met.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static DicomTransferSyntax ExplicitVRBigEndian { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Formats.Extended.Dicom.DicomTransferSyntax.html">DicomTransferSyntax</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_Extended_Dicom_DicomTransferSyntax_ExplicitVRLittleEndian_" data-uid="Egami.Formats.Extended.Dicom.DicomTransferSyntax.ExplicitVRLittleEndian*"></a>
+
+  <h3 id="Egami_Formats_Extended_Dicom_DicomTransferSyntax_ExplicitVRLittleEndian" data-uid="Egami.Formats.Extended.Dicom.DicomTransferSyntax.ExplicitVRLittleEndian">
+  ExplicitVRLittleEndian
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dicom/DicomTransferSyntax.cs/#L31"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets Explicit VR Little Endian (1.2.840.10008.1.2.1).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static DicomTransferSyntax ExplicitVRLittleEndian { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Formats.Extended.Dicom.DicomTransferSyntax.html">DicomTransferSyntax</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_Extended_Dicom_DicomTransferSyntax_ImplicitVRLittleEndian_" data-uid="Egami.Formats.Extended.Dicom.DicomTransferSyntax.ImplicitVRLittleEndian*"></a>
+
+  <h3 id="Egami_Formats_Extended_Dicom_DicomTransferSyntax_ImplicitVRLittleEndian" data-uid="Egami.Formats.Extended.Dicom.DicomTransferSyntax.ImplicitVRLittleEndian">
+  ImplicitVRLittleEndian
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dicom/DicomTransferSyntax.cs/#L28"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets Implicit VR Little Endian (1.2.840.10008.1.2), DICOM's default.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static DicomTransferSyntax ImplicitVRLittleEndian { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Formats.Extended.Dicom.DicomTransferSyntax.html">DicomTransferSyntax</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_Extended_Dicom_DicomTransferSyntax_IsBigEndian_" data-uid="Egami.Formats.Extended.Dicom.DicomTransferSyntax.IsBigEndian*"></a>
+
+  <h3 id="Egami_Formats_Extended_Dicom_DicomTransferSyntax_IsBigEndian" data-uid="Egami.Formats.Extended.Dicom.DicomTransferSyntax.IsBigEndian">
+  IsBigEndian
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dicom/DicomTransferSyntax.cs/#L49"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether binary values are big-endian.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool IsBigEndian { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_Extended_Dicom_DicomTransferSyntax_IsDeflated_" data-uid="Egami.Formats.Extended.Dicom.DicomTransferSyntax.IsDeflated*"></a>
+
+  <h3 id="Egami_Formats_Extended_Dicom_DicomTransferSyntax_IsDeflated" data-uid="Egami.Formats.Extended.Dicom.DicomTransferSyntax.IsDeflated">
+  IsDeflated
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dicom/DicomTransferSyntax.cs/#L52"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether the dataset after the file meta information is deflated (RFC 1951).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool IsDeflated { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_Extended_Dicom_DicomTransferSyntax_IsEncapsulated_" data-uid="Egami.Formats.Extended.Dicom.DicomTransferSyntax.IsEncapsulated*"></a>
+
+  <h3 id="Egami_Formats_Extended_Dicom_DicomTransferSyntax_IsEncapsulated" data-uid="Egami.Formats.Extended.Dicom.DicomTransferSyntax.IsEncapsulated">
+  IsEncapsulated
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dicom/DicomTransferSyntax.cs/#L55"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether pixel data is encapsulated: compressed, in fragments (PS3.5 section A.4).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool IsEncapsulated { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_Extended_Dicom_DicomTransferSyntax_IsExplicitVR_" data-uid="Egami.Formats.Extended.Dicom.DicomTransferSyntax.IsExplicitVR*"></a>
+
+  <h3 id="Egami_Formats_Extended_Dicom_DicomTransferSyntax_IsExplicitVR" data-uid="Egami.Formats.Extended.Dicom.DicomTransferSyntax.IsExplicitVR">
+  IsExplicitVR
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dicom/DicomTransferSyntax.cs/#L46"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether each element states its VR.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool IsExplicitVR { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_Extended_Dicom_DicomTransferSyntax_IsKnown_" data-uid="Egami.Formats.Extended.Dicom.DicomTransferSyntax.IsKnown*"></a>
+
+  <h3 id="Egami_Formats_Extended_Dicom_DicomTransferSyntax_IsKnown" data-uid="Egami.Formats.Extended.Dicom.DicomTransferSyntax.IsKnown">
+  IsKnown
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dicom/DicomTransferSyntax.cs/#L58"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether PS3.6 lists the UID.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool IsKnown { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_Extended_Dicom_DicomTransferSyntax_Name_" data-uid="Egami.Formats.Extended.Dicom.DicomTransferSyntax.Name*"></a>
+
+  <h3 id="Egami_Formats_Extended_Dicom_DicomTransferSyntax_Name" data-uid="Egami.Formats.Extended.Dicom.DicomTransferSyntax.Name">
+  Name
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dicom/DicomTransferSyntax.cs/#L43"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the PS3.6 name, such as <code>JPEG 2000 Image Compression (Lossless Only)</code>, or the UID when PS3.6 does not list it.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public string Name { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_Extended_Dicom_DicomTransferSyntax_Uid_" data-uid="Egami.Formats.Extended.Dicom.DicomTransferSyntax.Uid*"></a>
+
+  <h3 id="Egami_Formats_Extended_Dicom_DicomTransferSyntax_Uid" data-uid="Egami.Formats.Extended.Dicom.DicomTransferSyntax.Uid">
+  Uid
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dicom/DicomTransferSyntax.cs/#L40"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the UID.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public string Uid { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="Egami_Formats_Extended_Dicom_DicomTransferSyntax_FromUid_" data-uid="Egami.Formats.Extended.Dicom.DicomTransferSyntax.FromUid*"></a>
+
+  <h3 id="Egami_Formats_Extended_Dicom_DicomTransferSyntax_FromUid_System_String_" data-uid="Egami.Formats.Extended.Dicom.DicomTransferSyntax.FromUid(System.String)">
+  FromUid(string)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dicom/DicomTransferSyntax.cs/#L67"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns the transfer syntax a UID names. UIDs other than the four native ones are read as explicit VR little endian with
+encapsulated pixel data, as every compressed transfer syntax is.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static DicomTransferSyntax FromUid(string uid)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>uid</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The UID; trailing spaces and NUL padding are ignored.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Formats.Extended.Dicom.DicomTransferSyntax.html">DicomTransferSyntax</a></dt>
+    <dd><p>The transfer syntax.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentnullexception">ArgumentNullException</a></dt>
+    <dd><p><code class="paramref">uid</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Formats_Extended_Dicom_DicomTransferSyntax_ToString_" data-uid="Egami.Formats.Extended.Dicom.DicomTransferSyntax.ToString*"></a>
+
+  <h3 id="Egami_Formats_Extended_Dicom_DicomTransferSyntax_ToString" data-uid="Egami.Formats.Extended.Dicom.DicomTransferSyntax.ToString">
+  ToString()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dicom/DicomTransferSyntax.cs/#L83"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns the name and UID.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public override string ToString()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The transfer syntax as text.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dicom/DicomTransferSyntax.cs/#L12" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

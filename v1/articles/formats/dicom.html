@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>DICOM (preview) | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="DICOM (preview) | Egami ">
+      
+      
+      <link rel="icon" href="../../images/favicon.ico">
+      <link rel="stylesheet" href="../../public/docfx.min.css">
+      <link rel="stylesheet" href="../../public/main.css">
+      <meta name="docfx:navrel" content="../../toc.html">
+      <meta name="docfx:tocrel" content="../toc.html">
+      
+      <meta name="docfx:rel" content="../../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/blob/main/docs/articles/formats/dicom.md/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../../index.html">
+            <img id="logo" class="svg" src="../../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="dicom-preview">DICOM (preview)</h1>
+
+<p>DICOM is the format of medical imaging: a file (PS3.10) holds a dataset of tagged data elements (the patient, the study, how
+the pixels are stored), then the pixel data, native or compressed with JPEG, JPEG-LS, JPEG 2000, JPEG XL or RLE. DICOM reads
+through the Egami.Formats.Extended package, as a preview: every DICOM type is marked <code>[Experimental]</code> with the diagnostic id
+<code>EGAMIX001</code>, so code that uses it suppresses that id (<code>&lt;NoWarn&gt;$(NoWarn);EGAMIX001&lt;/NoWarn&gt;</code>), and the API may change before
+it is stable.</p>
+<p>This version reads the dataset. Decoding the pixel data, the display pipeline (rescale, window, color) and writing come in
+later versions; until then <code>Raster.Load</code> of a DICOM file throws <code>NotSupportedException</code>.</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Reads</td>
+<td>PS3.10 files with the 128-byte preamble and DICM, and bare datasets without them; implicit VR little endian, explicit VR little endian, explicit VR big endian and deflated explicit VR little endian datasets; sequences and items of defined and undefined length to 64 levels; every VR of PS3.5 table 6.2-1; encapsulated pixel data as fragments with the Basic and Extended Offset Tables; text in the character sets of PS3.3 C.12.1.1.2, ISO 2022 code extension included</td>
+</tr>
+<tr>
+<td>Writes</td>
+<td>Nothing yet</td>
+</tr>
+<tr>
+<td><code>FormatInfo</code></td>
+<td><code>DicomFormat.Info</code>: name <code>DICOM</code>, extensions <code>.dcm</code>, <code>.dicom</code> and <code>.dic</code>, MIME type <code>application/dicom</code>; registered with <code>WithDicom()</code>, not by <code>WithExtendedFormats()</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="the-dataset">The dataset</h2>
+<p><code>DicomFile.Load</code> reads a file into its file meta information and its dataset. Elements are found by PS3.6 keyword or by tag,
+and each one decodes its value by its VR (<code>DicomElement.VR</code>, a <code>DicomVR</code>).</p>
+<pre><code class="lang-csharp">// The dataset of a DICOM file, every element kept; the preview API needs EGAMIX001 suppressed.
+DicomFile file = DicomFile.Load(&quot;scan.dcm&quot;);
+Console.WriteLine($&quot;{file.TransferSyntax.Name}, {file.Dataset.Count} elements&quot;);
+
+// Elements by PS3.6 keyword or by tag, null when the file has none.
+string? modality = file.Dataset.GetString(&quot;Modality&quot;);
+double? rows = file.Dataset.GetNumber(&quot;Rows&quot;);
+DicomElement? name = file.Dataset[new DicomTag(0x0010, 0x0010)];
+foreach (EgamiDiagnostic warning in file.Warnings)
+{
+    Console.WriteLine($&quot;{warning.Id}: {warning.Message}&quot;);
+}
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Value</th>
+<th>Read with</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Text (AE, AS, CS, LO, LT, PN, SH, ST, UC, UI, UR, UT)</td>
+<td><code>GetString</code>, or <code>GetStrings</code> for each value of a multi-valued string</td>
+</tr>
+<tr>
+<td>Numbers (DS, IS, US, SS, UL, SL, UV, SV, FL, FD, and OW, OL, OV, OF, OD)</td>
+<td><code>GetNumbers</code>, <code>GetIntegers</code>; <code>DicomDataset.GetNumber</code> for the first</td>
+</tr>
+<tr>
+<td>Dates and times (DA, TM, DT)</td>
+<td><code>GetDate</code>, <code>GetTime</code>, <code>GetDateTime</code></td>
+</tr>
+<tr>
+<td>Person names (PN)</td>
+<td><code>GetPersonName</code>: a <code>DicomPersonName</code> with its alphabetic, ideographic and phonetic groups and the five name components</td>
+</tr>
+<tr>
+<td>Tags (AT)</td>
+<td><code>GetTags</code></td>
+</tr>
+<tr>
+<td>Sequences (SQ)</td>
+<td><code>Items</code>, each a <code>DicomDataset</code></td>
+</tr>
+<tr>
+<td>Bytes (OB, UN, private tags)</td>
+<td><code>RawValue</code>, as the file stores them</td>
+</tr>
+</tbody>
+</table>
+<pre><code class="lang-csharp">DicomDataset data = file.Dataset;
+DateOnly? studyDate = data[&quot;StudyDate&quot;]?.GetDate();
+DicomPersonName? patient = data[&quot;PatientName&quot;]?.GetPersonName();
+double[] window = data[&quot;WindowCenter&quot;]?.GetNumbers() ?? [];
+
+// A sequence is a list of datasets; text decodes by the dataset's Specific Character Set.
+foreach (DicomDataset item in data[&quot;ContentSequence&quot;]?.Items ?? [])
+{
+    Console.WriteLine(item.GetString(&quot;ReferencedSOPClassUID&quot;));
+}
+
+// Every element prints as a dump line, such as &quot;(0028,0010) US Rows: 4&quot;.
+foreach (DicomElement element in data)
+{
+    Console.WriteLine(element);
+}
+</code></pre>
+<p>Implicit VR files do not state the VR; it comes from PS3.6, with the choices PS3.6 leaves (US or SS, OB or OW) made from Pixel
+Representation and the element. Private elements read as UN (their creators as LO), and an unknown element of undefined length
+reads as the sequence PS3.5 section 6.2.2 says it is.</p>
+<h2 id="tags-and-the-dictionary">Tags and the dictionary</h2>
+<p><code>DicomTag</code> is a group and an element. Its keyword, name and retired flag come from the data dictionary of PS3.6, generated from
+the standard's own XML by <code>tools/make-dicom-dictionary.py</code> and embedded in the package; <code>DicomFile.DictionaryEdition</code> names the
+edition. Repeating groups such as the overlays (60xx) match every group they cover. <code>DicomTransferSyntax</code> names a file's
+transfer syntax from PS3.6's UID registry.</p>
+<pre><code class="lang-csharp">DicomTag tag = DicomTag.FromKeyword(&quot;PixelSpacing&quot;);             // (0028,0030)
+string? keyword = new DicomTag(0x6002, 0x3000).Keyword;          // OverlayData: repeating groups match
+bool isPrivate = new DicomTag(0x0009, 0x1001).IsPrivate;
+Console.WriteLine($&quot;{tag} {tag.Name}; dictionary {DicomFile.DictionaryEdition}&quot;);
+</code></pre><h2 id="character-sets">Character sets</h2>
+<p>Text in SH, LO, ST, LT, PN, UC and UT decodes by the dataset's Specific Character Set (0008,0005), which an item inherits
+unless it has its own: ISO-IR 6 (read as Latin-1 so that undeclared 8-bit text is kept), Latin-1 to Latin-5 and Latin-9,
+Cyrillic, Arabic, Greek, Hebrew, Thai, JIS X 0201, UTF-8 (ISO_IR 192), GB18030 and GBK, and with ISO 2022 code extension JIS X
+0208 and JIS X 0212, KS X 1001 and GB 2312 between escape sequences, reset at each delimiter as PS3.5 section 6.1.2.5.3 says.
+An unknown term reads as Latin-1 with the <code>Dicom.CharacterSet</code> warning.</p>
+<h2 id="compressed-pixel-data">Compressed pixel data</h2>
+<p>Encapsulated pixel data (any transfer syntax but the four native ones) is kept as its fragments, without the item headers,
+with the Basic Offset Table and, when the dataset has one, the Extended Offset Table (7FE0,0001) and its lengths (7FE0,0002).</p>
+<pre><code class="lang-csharp">// Compressed pixel data stays as the fragments the file stores, with its offset tables.
+DicomFile file = DicomFile.Load(&quot;compressed.dcm&quot;);
+DicomFragments? pixels = file.Dataset[DicomTag.PixelData]?.Fragments;
+if (pixels is not null)
+{
+    Console.WriteLine($&quot;{file.TransferSyntax.Name}: {pixels.Fragments.Count} fragments, {pixels.BasicOffsetTable.Count} frame offsets&quot;);
+}
+</code></pre><h2 id="detection-and-probing">Detection and probing</h2>
+<p>Registered with <code>WithDicom()</code>, DICOM files are found by the DICM prefix at byte 128, and <code>Raster.Probe</code> gives the size, the
+frame count and a pixel layout from Rows, Columns, Number of Frames, Samples per Pixel and Bits Allocated. Bare datasets are
+not detected; <code>DicomFile.Load</code> reads them, and <code>Raster.Probe</code> with <code>DicomFormat.Info</code> names the format.</p>
+<pre><code class="lang-csharp">// Registered, DICOM is detected and probed; decoding its pixel data comes in a later version.
+EgamiContext context = new EgamiContext().WithDicom();
+RasterInfo info = Raster.Probe(&quot;scan.dcm&quot;, context);
+Console.WriteLine($&quot;{info.Format.Name} {info.Width}x{info.Height}, {info.FrameCount} frames&quot;);
+</code></pre><h2 id="damaged-and-hostile-data">Damaged and hostile data</h2>
+<p>The file is read whole into memory, within <code>SafetyLimits.MaxTotalBytes</code>, and each element counts against the same budget, so
+a file of millions of empty elements cannot use more memory than the limit allows. Every length is checked against the data
+around it; sequences nest at most 64 levels deep (deeper throws <code>CorruptDataException</code>); a deflated dataset inflates within the
+limit.</p>
+<p>A lenient read (the default) keeps every element read before damage and says what happened in <code>DicomFile.Warnings</code>:</p>
+<table>
+<thead>
+<tr>
+<th>Id</th>
+<th>Means</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Dicom.Truncated</code></td>
+<td>A value, item or sequence says it is longer than the data; it was cut there</td>
+</tr>
+<tr>
+<td><code>Dicom.MissingDelimiter</code></td>
+<td>An item or sequence of undefined length ended without its delimiter</td>
+</tr>
+<tr>
+<td><code>Dicom.UndefinedLength</code>, <code>Dicom.BadItem</code>, <code>Dicom.BadFragment</code>, <code>Dicom.StrayDelimiter</code>, <code>Dicom.TrailingBytes</code></td>
+<td>Structure that breaks PS3.5; the rest was skipped</td>
+</tr>
+<tr>
+<td><code>Dicom.Deflate</code></td>
+<td>The deflated dataset is damaged; what inflated was read</td>
+</tr>
+</tbody>
+</table>
+<p>A strict read (<code>ReaderOptions.Recovery = RecoveryMode.Strict</code>) throws <code>CorruptDataException</code> for those. Irregularities that
+lose nothing are noted in both modes: <code>Dicom.NoPreamble</code>, <code>Dicom.ImplicitMeta</code>, <code>Dicom.NoMeta</code> (strict throws), <code>Dicom.NoTransferSyntax</code>,
+<code>Dicom.TransferSyntaxMismatch</code> (the dataset is read in the VR encoding it is really in), <code>Dicom.ImplicitElement</code>,
+<code>Dicom.UnknownVR</code>, <code>Dicom.OddLength</code>, <code>Dicom.TagOrder</code>, <code>Dicom.ZlibHeader</code> and <code>Dicom.CharacterSet</code>.</p>
+<h2 id="not-supported-yet">Not supported yet</h2>
+<p>Pixel data decoding (native, RLE, and the codecs), the display pipeline, multi-frame pages and writing are the next stages of
+the DICOM work. Networking (DIMSE, DICOMweb), DICOMDIR media, structured reports, presentation states, segmentation and RT
+objects, overlay burn-in and anonymization are not planned.</p>
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/docs/articles/formats/dicom.md/#L1" class="edit-link">Edit this page</a>
+        </div>
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

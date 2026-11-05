@@ -92,7 +92,7 @@ map), TIFF, Radiance .hdr, OpenEXR, JPEG XL, AVIF, and Windows icons and cursors
 2000, Windows animated cursors (ANI) and Photoshop's PSD and PSB, layers included. HEIC phone photos load and save through the
 separate, opt-in Egami.Heic package; core Egami detects and probes them. SVG and Windows metafiles (WMF, EMF) load through the separate
 <a href="../guides/svg.html">Egami.Svg</a> and <a href="../guides/metafiles.html">Egami.Metafiles</a> packages, and PCX, SGI, Sun raster, XBM, XPM, WBMP
-Farbfeld, JPEG-LS, DDS and KTX textures and camera RAW (DNG and the camera makers' formats, with DNG written) through
+Farbfeld, JPEG-LS, DDS and KTX textures, camera RAW (DNG and the camera makers' formats, with DNG written) and, as a preview, the DICOM dataset through
 <a href="extended.html">Egami.Formats.Extended</a>. The Package column says which package holds each format. Every reader checks sizes against the
 safety limits before it allocates, and every reader has been fuzzed.</p>
 <p>Each format has its own page with its options and what it keeps from the file; the table below links them. VP8 and AV1 video frames decode
@@ -338,6 +338,13 @@ through <a href="vp8.html"><code>Vp8StreamDecoder</code></a> and <a href="av1.ht
 <td>DNG 1.0 to 1.7, Canon CR2, Nikon NEF and NRW, Pentax PEF, Sony ARW and SR2, Olympus ORF, Panasonic RW2 and Fujifilm RAF, developed on load (white balance, demosaicing, noise reduction, opcodes, camera profiles, lens corrections), or their previews or sensor mosaic; CR3 previews and metadata</td>
 <td>DNG: any RAW file converted with its sensor data unchanged (<code>RawFormat.ConvertToDng</code>), or any raster</td>
 <td><code>Rgb16</code> sRGB when developed; <code>Gray16</code> for the mosaic</td>
+<td>Egami.Formats.Extended</td>
+</tr>
+<tr>
+<td><a href="dicom.html">DICOM</a></td>
+<td>Preview: the dataset of PS3.10 files (<code>DicomFile</code>), every native transfer syntax and deflated, sequences, character sets, compressed pixel data as fragments; probed, but the pixel data is not decoded yet</td>
+<td>No</td>
+<td>—</td>
 <td>Egami.Formats.Extended</td>
 </tr>
 </tbody>

@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class DicomElement | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class DicomElement | Egami ">
+      
+      <meta name="description" content="One data element of a : its tag, value representation and value, read as the file stores it and decoded on request by its VR (PS3.5 section 6.2).">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_Formats_Extended_Dicom_DicomElement.md&amp;value=---%0Auid%3A%20Egami.Formats.Extended.Dicom.DicomElement%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.Formats.Extended.Dicom.DicomElement">
+
+
+
+  <h1 id="Egami_Formats_Extended_Dicom_DicomElement" data-uid="Egami.Formats.Extended.Dicom.DicomElement" class="text-break">
+Class DicomElement  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dicom/DicomElement.cs/#L15"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a>.<a class="xref" href="Egami.Formats.html">Formats</a>.<a class="xref" href="Egami.Formats.Extended.html">Extended</a>.<a class="xref" href="Egami.Formats.Extended.Dicom.html">Dicom</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.Formats.Extended.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>One data element of a <a class="xref" href="Egami.Formats.Extended.Dicom.DicomDataset.html">DicomDataset</a>: its tag, value representation and value, read as the file stores it and
+decoded on request by its VR (PS3.5 section 6.2).</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Experimental(&quot;EGAMIX001&quot;, UrlFormat = &quot;https://github.com/inexin/Egami/blob/main/docs/articles/formats/dicom.md&quot;)]
+public sealed class DicomElement</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><span class="xref">DicomElement</span></div>
+    </dd>
+  </dl>
+
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+  </dd></dl>
+
+
+
+  <h2 id="Egami_Formats_Extended_Dicom_DicomElement_examples">Examples</h2>
+  <pre><code class="lang-csharp">DicomDataset data = file.Dataset;
+DateOnly? studyDate = data["StudyDate"]?.GetDate();
+DicomPersonName? patient = data["PatientName"]?.GetPersonName();
+double[] window = data["WindowCenter"]?.GetNumbers() ?? [];
+
+// A sequence is a list of datasets; text decodes by the dataset's Specific Character Set.
+foreach (DicomDataset item in data["ContentSequence"]?.Items ?? [])
+{
+    Console.WriteLine(item.GetString("ReferencedSOPClassUID"));
+}
+
+// Every element prints as a dump line, such as "(0028,0010) US Rows: 4".
+foreach (DicomElement element in data)
+{
+    Console.WriteLine(element);
+}</code></pre>
+
+
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="Egami_Formats_Extended_Dicom_DicomElement_Fragments_" data-uid="Egami.Formats.Extended.Dicom.DicomElement.Fragments*"></a>
+
+  <h3 id="Egami_Formats_Extended_Dicom_DicomElement_Fragments" data-uid="Egami.Formats.Extended.Dicom.DicomElement.Fragments">
+  Fragments
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dicom/DicomElement.cs/#L60"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the fragments of encapsulated (compressed) pixel data, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for any other element.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public DicomFragments? Fragments { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Formats.Extended.Dicom.DicomFragments.html">DicomFragments</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_Extended_Dicom_DicomElement_IsEmpty_" data-uid="Egami.Formats.Extended.Dicom.DicomElement.IsEmpty*"></a>
+
+  <h3 id="Egami_Formats_Extended_Dicom_DicomElement_IsEmpty" data-uid="Egami.Formats.Extended.Dicom.DicomElement.IsEmpty">
+  IsEmpty
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dicom/DicomElement.cs/#L63"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether the value is empty: no bytes, no items and no fragments.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool IsEmpty { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_Extended_Dicom_DicomElement_Items_" data-uid="Egami.Formats.Extended.Dicom.DicomElement.Items*"></a>
+
+  <h3 id="Egami_Formats_Extended_Dicom_DicomElement_Items" data-uid="Egami.Formats.Extended.Dicom.DicomElement.Items">
+  Items
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dicom/DicomElement.cs/#L57"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the items of a sequence (<a class="xref" href="Egami.Formats.Extended.Dicom.DicomVR.html#Egami_Formats_Extended_Dicom_DicomVR_SQ">SQ</a>), each a dataset; empty for other elements.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public IReadOnlyList&lt;DicomDataset&gt; Items { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="Egami.Formats.Extended.Dicom.DicomDataset.html">DicomDataset</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_Extended_Dicom_DicomElement_Offset_" data-uid="Egami.Formats.Extended.Dicom.DicomElement.Offset*"></a>
+
+  <h3 id="Egami_Formats_Extended_Dicom_DicomElement_Offset" data-uid="Egami.Formats.Extended.Dicom.DicomElement.Offset">
+  Offset
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dicom/DicomElement.cs/#L54"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the byte offset of the element's tag in the dataset as read (after inflating a deflated file).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public long Offset { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int64">long</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_Extended_Dicom_DicomElement_RawValue_" data-uid="Egami.Formats.Extended.Dicom.DicomElement.RawValue*"></a>
+
+  <h3 id="Egami_Formats_Extended_Dicom_DicomElement_RawValue" data-uid="Egami.Formats.Extended.Dicom.DicomElement.RawValue">
+  RawValue
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dicom/DicomElement.cs/#L51"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the value's bytes as the file stores them, padding included, in the byte order of the file's
+<a class="xref" href="Egami.Formats.Extended.Dicom.DicomFile.html#Egami_Formats_Extended_Dicom_DicomFile_TransferSyntax">TransferSyntax</a>. Empty for a sequence and for encapsulated pixel data, whose parts are
+<a class="xref" href="Egami.Formats.Extended.Dicom.DicomElement.html#Egami_Formats_Extended_Dicom_DicomElement_Items">Items</a> and <a class="xref" href="Egami.Formats.Extended.Dicom.DicomElement.html#Egami_Formats_Extended_Dicom_DicomElement_Fragments">Fragments</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public ReadOnlyMemory&lt;byte&gt; RawValue { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlymemory-1">ReadOnlyMemory</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.byte">byte</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_Extended_Dicom_DicomElement_Tag_" data-uid="Egami.Formats.Extended.Dicom.DicomElement.Tag*"></a>
+
+  <h3 id="Egami_Formats_Extended_Dicom_DicomElement_Tag" data-uid="Egami.Formats.Extended.Dicom.DicomElement.Tag">
+  Tag
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dicom/DicomElement.cs/#L38"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the tag.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public DicomTag Tag { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Formats.Extended.Dicom.DicomTag.html">DicomTag</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_Extended_Dicom_DicomElement_VR_" data-uid="Egami.Formats.Extended.Dicom.DicomElement.VR*"></a>
+
+  <h3 id="Egami_Formats_Extended_Dicom_DicomElement_VR" data-uid="Egami.Formats.Extended.Dicom.DicomElement.VR">
+  VR
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dicom/DicomElement.cs/#L44"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the value representation: the one the file wrote, or for implicit VR files the one PS3.6 gives the tag (<a class="xref" href="Egami.Formats.Extended.Dicom.DicomVR.html#Egami_Formats_Extended_Dicom_DicomVR_UN">UN</a>
+for private and unknown tags).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public DicomVR VR { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Formats.Extended.Dicom.DicomVR.html">DicomVR</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="Egami_Formats_Extended_Dicom_DicomElement_GetDate_" data-uid="Egami.Formats.Extended.Dicom.DicomElement.GetDate*"></a>
+
+  <h3 id="Egami_Formats_Extended_Dicom_DicomElement_GetDate" data-uid="Egami.Formats.Extended.Dicom.DicomElement.GetDate">
+  GetDate()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dicom/DicomElement.cs/#L209"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns the first date of a Date (DA) value: <code>YYYYMMDD</code>, or the older <code>YYYY.MM.DD</code>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public DateOnly? GetDate()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.dateonly">DateOnly</a>?</dt>
+    <dd><p>The date, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> when the value is empty.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.invalidoperationexception">InvalidOperationException</a></dt>
+    <dd><p>The VR is not DA.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.formatexception">FormatException</a></dt>
+    <dd><p>The value is not a date.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Formats_Extended_Dicom_DicomElement_GetDateTime_" data-uid="Egami.Formats.Extended.Dicom.DicomElement.GetDateTime*"></a>
+
+  <h3 id="Egami_Formats_Extended_Dicom_DicomElement_GetDateTime" data-uid="Egami.Formats.Extended.Dicom.DicomElement.GetDateTime">
+  GetDateTime()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dicom/DicomElement.cs/#L238"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns the first date and time of a Date Time (DT) value: <code>YYYYMMDDHHMMSS.FFFFFF&amp;ZZXX</code> with trailing parts
+optional. A value without its UTC offset (<code>&amp;ZZXX</code>) is given offset zero.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public DateTimeOffset? GetDateTime()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.datetimeoffset">DateTimeOffset</a>?</dt>
+    <dd><p>The date and time, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> when the value is empty.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.invalidoperationexception">InvalidOperationException</a></dt>
+    <dd><p>The VR is not DT.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.formatexception">FormatException</a></dt>
+    <dd><p>The value is not a date and time.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Formats_Extended_Dicom_DicomElement_GetIntegers_" data-uid="Egami.Formats.Extended.Dicom.DicomElement.GetIntegers*"></a>
+
+  <h3 id="Egami_Formats_Extended_Dicom_DicomElement_GetIntegers" data-uid="Egami.Formats.Extended.Dicom.DicomElement.GetIntegers">
+  GetIntegers()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dicom/DicomElement.cs/#L170"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns the integers of an integer VR: integer strings (IS) parsed, and the binary integers of US, SS, UL, SL, UV, SV, OW,
+OL and OV. UV and OV values above <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int64.maxvalue">MaxValue</a> come back as their two's-complement bits.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public long[] GetIntegers()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int64">long</a>[]</dt>
+    <dd><p>The integers; none when the value is empty.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.invalidoperationexception">InvalidOperationException</a></dt>
+    <dd><p>The VR holds no integers.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.formatexception">FormatException</a></dt>
+    <dd><p>An IS value is not an integer.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Formats_Extended_Dicom_DicomElement_GetNumbers_" data-uid="Egami.Formats.Extended.Dicom.DicomElement.GetNumbers*"></a>
+
+  <h3 id="Egami_Formats_Extended_Dicom_DicomElement_GetNumbers" data-uid="Egami.Formats.Extended.Dicom.DicomElement.GetNumbers">
+  GetNumbers()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dicom/DicomElement.cs/#L134"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns the numbers of a numeric VR: decimal and integer strings (DS, IS) parsed, and the binary numbers of US, SS, UL,
+SL, UV, SV, FL, FD, OW, OL, OV, OF and OD.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public double[] GetNumbers()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a>[]</dt>
+    <dd><p>The numbers; none when the value is empty.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.invalidoperationexception">InvalidOperationException</a></dt>
+    <dd><p>The VR holds no numbers.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.formatexception">FormatException</a></dt>
+    <dd><p>A DS or IS value is not a number.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Formats_Extended_Dicom_DicomElement_GetPersonName_" data-uid="Egami.Formats.Extended.Dicom.DicomElement.GetPersonName*"></a>
+
+  <h3 id="Egami_Formats_Extended_Dicom_DicomElement_GetPersonName" data-uid="Egami.Formats.Extended.Dicom.DicomElement.GetPersonName">
+  GetPersonName()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dicom/DicomElement.cs/#L281"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns the first name of a Person Name (PN) value.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public DicomPersonName? GetPersonName()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Formats.Extended.Dicom.DicomPersonName.html">DicomPersonName</a></dt>
+    <dd><p>The name, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> when the value is empty.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.invalidoperationexception">InvalidOperationException</a></dt>
+    <dd><p>The VR is not PN.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Formats_Extended_Dicom_DicomElement_GetString_" data-uid="Egami.Formats.Extended.Dicom.DicomElement.GetString*"></a>
+
+  <h3 id="Egami_Formats_Extended_Dicom_DicomElement_GetString" data-uid="Egami.Formats.Extended.Dicom.DicomElement.GetString">
+  GetString()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dicom/DicomElement.cs/#L72"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns the value as text: text VRs decoded by the dataset's Specific Character Set with trailing padding removed, every
+value of a multi-valued string included with its <code>&lt;/code&gt; separators; numbers and tags of binary VRs written out the same
+way, such as <code>512\512</code>.</code></p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public string GetString()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The value as text; empty when the value is empty.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.invalidoperationexception">InvalidOperationException</a></dt>
+    <dd><p>The VR holds bytes or items, not values: OB, UN, SQ or encapsulated pixel data.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Formats_Extended_Dicom_DicomElement_GetStrings_" data-uid="Egami.Formats.Extended.Dicom.DicomElement.GetStrings*"></a>
+
+  <h3 id="Egami_Formats_Extended_Dicom_DicomElement_GetStrings" data-uid="Egami.Formats.Extended.Dicom.DicomElement.GetStrings">
+  GetStrings()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dicom/DicomElement.cs/#L88"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns each value: a multi-valued string split at its <code>&lt;/code&gt; separators with padding removed, or each number or tag of
+a binary VR written out. Long Text, Short Text, Unlimited Text and URIs are one value.</code></p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public IReadOnlyList&lt;string&gt; GetStrings()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>&gt;</dt>
+    <dd><p>The values; none when the value is empty.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.invalidoperationexception">InvalidOperationException</a></dt>
+    <dd><p>The VR holds bytes or items, not values: OB, UN, SQ or encapsulated pixel data.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Formats_Extended_Dicom_DicomElement_GetTags_" data-uid="Egami.Formats.Extended.Dicom.DicomElement.GetTags*"></a>
+
+  <h3 id="Egami_Formats_Extended_Dicom_DicomElement_GetTags" data-uid="Egami.Formats.Extended.Dicom.DicomElement.GetTags">
+  GetTags()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dicom/DicomElement.cs/#L188"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns the tags of an Attribute Tag (AT) value.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public DicomTag[] GetTags()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Formats.Extended.Dicom.DicomTag.html">DicomTag</a>[]</dt>
+    <dd><p>The tags; none when the value is empty.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.invalidoperationexception">InvalidOperationException</a></dt>
+    <dd><p>The VR is not AT.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Formats_Extended_Dicom_DicomElement_GetTime_" data-uid="Egami.Formats.Extended.Dicom.DicomElement.GetTime*"></a>
+
+  <h3 id="Egami_Formats_Extended_Dicom_DicomElement_GetTime" data-uid="Egami.Formats.Extended.Dicom.DicomElement.GetTime">
+  GetTime()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dicom/DicomElement.cs/#L225"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns the first time of a Time (TM) value: <code>HHMMSS.FFFFFF</code> with trailing parts optional, or the older <code>HH:MM:SS</code>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public TimeOnly? GetTime()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.timeonly">TimeOnly</a>?</dt>
+    <dd><p>The time, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> when the value is empty.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.invalidoperationexception">InvalidOperationException</a></dt>
+    <dd><p>The VR is not TM.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.formatexception">FormatException</a></dt>
+    <dd><p>The value is not a time.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Formats_Extended_Dicom_DicomElement_ToString_" data-uid="Egami.Formats.Extended.Dicom.DicomElement.ToString*"></a>
+
+  <h3 id="Egami_Formats_Extended_Dicom_DicomElement_ToString" data-uid="Egami.Formats.Extended.Dicom.DicomElement.ToString">
+  ToString()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dicom/DicomElement.cs/#L289"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns the element as a line of a dump, such as <code>(0010,0010) PN PatientName: Doe^John</code>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public override string ToString()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The element as text.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dicom/DicomElement.cs/#L15" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>
